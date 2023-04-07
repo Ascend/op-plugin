@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/framework/utils/KernelNpuOutputSize.h"
+#include "plugin/framework/utils/KernelNpuOutputSize.h"
 
 namespace op_infer {
 int64_t CeilDiv(int64_t value, int64_t factor) {

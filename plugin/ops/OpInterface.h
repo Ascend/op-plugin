@@ -24,3 +24,5 @@ at::Tensor& abs_out(const at::Tensor& self, at::Tensor& result);
 at::Tensor abs(const at::Tensor& self);
 at::Tensor& abs_(at::Tensor& self);
 }  // namespace op_plugin
+
+#endif

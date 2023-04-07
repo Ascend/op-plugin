@@ -36,7 +36,7 @@ const int N_SIZE = 32;
 // npu tensor max size
 const int SIZE = 8;
 
-inline c10::SmallVector<int64_t, SIZE> infershape_for_elewise(const at::Tensor& x) { return x.sizes(); }
+inline c10::IntArrayRef infershape_for_elewise(const at::Tensor& x) { return x.sizes(); }
 
 c10::SmallVector<int64_t, SIZE> glu_npu_output_size(const at::Tensor& self, int64_t dim);
 
