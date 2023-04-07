@@ -1,0 +1,4 @@
+[submodule "torch"]
+	path = torch
+	url = https://gitee.com/clinglai/pytorch.git
+	branch = debug_op_plugin
