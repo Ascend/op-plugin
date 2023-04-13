@@ -1,6 +1,7 @@
 FILE(GLOB _OPS_PLUGIN_SRCS
-    ops/kernel/*.cpp
-    framework/utils/*.cpp)
+    ops/custom/*.cpp
+    ops/official/*.cpp
+    utils/*.cpp)
 
 LIST(APPEND OPS_PLUGIN_SRCS ${_OPS_PLUGIN_SRCS})
 

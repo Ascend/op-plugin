@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plugin/framework/utils/KernelNpuOutputSize.h"
+#include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_infer {
 int64_t CeilDiv(int64_t value, int64_t factor) {

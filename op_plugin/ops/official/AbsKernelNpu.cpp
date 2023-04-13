@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plugin/ops/OpInterface.h"
-#include "plugin/framework/utils/OpAdapter.h"
+#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;

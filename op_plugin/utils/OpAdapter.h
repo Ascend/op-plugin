@@ -1,8 +1,9 @@
-// Copyright (c) 2023, Huawei Technologies.All rights reserved.
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
 // you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// You may obtain a copy of the License at_npu
 //
 // https://opensource.org/licenses/BSD-3-Clause
 //
@@ -12,17 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef __TORCH_NPU_OP_PLUGIN_INTERFACE__
-#define __TORCH_NPU_OP_PLUGIN_INTERFACE__
+#pragma once
 
-#include <ATen/Tensor.h>
-#include <ATen/ATen.h>
+#include "op_plugin/utils/KernelNpuOutputSize.h"
 
-namespace op_plugin {
-// Abs
-at::Tensor& abs_out(const at::Tensor& self, at::Tensor& result);
-at::Tensor abs(const at::Tensor& self);
-at::Tensor& abs_(at::Tensor& self);
-}  // namespace op_plugin
-
-#endif
+#include "torch_npu/csrc/framework/OpCommand.h"
+#include "torch_npu/csrc/framework/utils/OpPreparation.h"
