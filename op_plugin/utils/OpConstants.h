@@ -13,10 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef __TORCH_NPU_OP_PLUGIN_UTILS_OPCONSTANTS__
+#define __TORCH_NPU_OP_PLUGIN_UTILS_OPCONSTANTS__
 
-#include "op_plugin/utils/KernelNpuOutputSize.h"
-#include "op_plugin/utils/OpConstants.h"
+namespace op_plugin {
 
-#include "torch_npu/csrc/framework/OpCommand.h"
-#include "torch_npu/csrc/framework/utils/OpPreparation.h"
+// smallvector max size
+const int N = 32;
+// npu tensor max size
+const int SHAPE_SIZE = 8;
+// HALF_MAX and HALF_MIN of NPU support
+const int NPU_HALF_MAX = 65504;
+const int NPU_HALF_MIN = -65504;
+const int NPU_MAX_OP_EXEC_TRY_NUM = 2;
+
+} // op_plugin
+#endif
