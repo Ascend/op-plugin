@@ -46,7 +46,7 @@ at::Tensor& ilshift_out_npu(
       .Input(self)
       .Input(other_broadcast)
       .Output(result)
-      .Run(); 
+      .Run();
   return result;
 }
 } // namespace

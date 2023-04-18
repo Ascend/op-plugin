@@ -21,7 +21,7 @@ namespace op_plugin {
 // smallvector max size
 const int N = 32;
 // npu tensor max size
-const int SHAPE_SIZE = 8;
+const int SIZE = 8;
 // HALF_MAX and HALF_MIN of NPU support
 const int NPU_HALF_MAX = 65504;
 const int NPU_HALF_MIN = -65504;

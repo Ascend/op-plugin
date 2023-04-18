@@ -229,5 +229,8 @@ c10::SmallVector<int64_t, SIZE> crop_and_resize_npu_output_size(const at::Tensor
 
 c10::SmallVector<int64_t, SIZE> decode_jpeg_npu_output_size(at::IntArrayRef image_shape, int64_t channels);
 
-}  // namespace op_infer
+c10::SmallVector<int64_t, SIZE> deprecated_broadcast_ops_npu_output_size(c10::IntArrayRef shape1,
+                                                                         c10::IntArrayRef shape2);
+
+} // namespace op_infer
 #endif

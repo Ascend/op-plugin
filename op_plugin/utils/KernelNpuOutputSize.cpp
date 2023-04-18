@@ -788,4 +788,33 @@ c10::SmallVector<int64_t, SIZE> decode_jpeg_npu_output_size(at::IntArrayRef imag
   return outputSize;
 }
 
-}  // namespace op_infer
+// This logic is specially made for stride_add, and will be removed in future version.
+c10::SmallVector<int64_t, SIZE> deprecated_broadcast_ops_npu_output_size(
+    c10::IntArrayRef shape1_,
+    c10::IntArrayRef shape2_) {
+  auto shape1 = op_infer::array_to_small_vector(shape1_);
+  auto shape2 = op_infer::array_to_small_vector(shape2_);
+
+  c10::SmallVector<int64_t, SIZE> output_shape;
+  if (shape1.size() < shape2.size()) {
+    c10::SmallVector<int64_t, SIZE> shapeTemp = shape1;
+    shape1 = shape2;
+    shape2 = shapeTemp;
+  }
+
+  int64_t shape1_size = shape1.size();
+  int64_t shape2_size = shape2.size();
+  for (int i = 0; i < shape1_size - shape2_size; i++) {
+    shape2.insert(shape2.begin(), 1);
+  }
+
+  for (int i = 0; i < shape1_size; i++) {
+    if (shape1[i] == 0 || shape2[i] == 0) {
+      output_shape.emplace_back((int64_t)0);
+    } else {
+      output_shape.emplace_back((shape1[i] > shape2[i]) ? shape1[i] : shape2[i]);
+    }
+  }
+  return output_shape;
+}
+} // namespace op_infer
