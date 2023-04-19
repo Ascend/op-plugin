@@ -48,7 +48,7 @@ at::Tensor npu_stride_add(
     const c10::Scalar &offset1,
     const c10::Scalar &offset2,
     const c10::Scalar &c1_len) {
-  auto output_size = op_infer::deprecated_broadcast_ops_npu_output_size(self.sizes(), other.sizes());
+  auto output_size = op_infer::infersize_stride_add(self.sizes(), other.sizes());
   output_size[1] = c1_len.toInt() * 16;
   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
   stride_add_out_npu_nocheck(result, self, other, offset1, offset2, c1_len);

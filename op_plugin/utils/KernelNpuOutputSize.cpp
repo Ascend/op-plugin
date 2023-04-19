@@ -789,7 +789,7 @@ c10::SmallVector<int64_t, SIZE> decode_jpeg_npu_output_size(at::IntArrayRef imag
 }
 
 // This logic is specially made for stride_add, and will be removed in future version.
-c10::SmallVector<int64_t, SIZE> deprecated_broadcast_ops_npu_output_size(
+c10::SmallVector<int64_t, SIZE> infersize_stride_add(
     c10::IntArrayRef shape1_,
     c10::IntArrayRef shape2_) {
   auto shape1 = op_infer::array_to_small_vector(shape1_);
@@ -816,5 +816,43 @@ c10::SmallVector<int64_t, SIZE> deprecated_broadcast_ops_npu_output_size(
     }
   }
   return output_shape;
+}
+
+c10::SmallVector<int64_t, SIZE> infersize_affine_grid_generator(at::IntArrayRef size) {
+  c10::SmallVector<int64_t, SIZE> output_size;
+  if (size.size() == 4) {
+    output_size = {size[0], size[2] * size[3], 2};
+  } else {
+    output_size = {size[0], size[2] * size[3] * size[4], 3};
+  }
+  return output_size;
+}
+
+c10::SmallVector<int64_t, SIZE> infersize_all(const at::Tensor& self, int64_t dim) {
+  c10::SmallVector<int64_t, SIZE> output_size;
+  for (int64_t i = 0; i < self.dim(); i++) {
+    if (dim != i) {
+      output_size.emplace_back(self.size(i));
+    }
+  }
+  return output_size;
+}
+
+c10::SmallVector<int64_t, SIZE> infersize_npu_anchor_response_flags(
+    at::IntArrayRef featmap_size,
+    int64_t num_base_anchors) {
+  int64_t output_value = featmap_size[0] * featmap_size[1] * num_base_anchors;
+  c10::SmallVector<int64_t, SIZE> output_size = {output_value};
+  return output_size;
+}
+
+c10::SmallVector<int64_t, SIZE> infersize_arange(
+    const at::Scalar& start,
+    const at::Scalar& end,
+    const at::Scalar& step) {
+  double size_arange = std::ceil(static_cast<double>(end.toDouble() - start.toDouble()) / step.toDouble());
+  int64_t size_value = static_cast<int64_t>(size_arange);
+  c10::SmallVector<int64_t, SIZE> output_size = {size_value};
+  return output_size;
 }
 } // namespace op_infer

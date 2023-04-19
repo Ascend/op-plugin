@@ -1,0 +1,159 @@
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// All rights reserved.
+//
+// Licensed under the BSD 3-Clause License  (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://opensource.org/licenses/BSD-3-Clause
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
+
+namespace op_plugin {
+using npu_preparation = at_npu::native::OpPreparation;
+using npu_compile_type = at_npu::native::CompileType;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
+using npu_utils = at_npu::native::NpuUtils;
+
+namespace{
+inline bool allIntegral(
+    std::initializer_list<std::reference_wrapper<at::Scalar>> values) {
+  for (at::Scalar& value : values) {
+    if (!value.isIntegral(true)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+at::Tensor& arange_out_npu_nocheck(
+    at::Tensor& result,
+    at::Scalar start,
+    at::Scalar end,
+    at::Scalar step) {
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Range")
+      .Input(start, result.scalar_type(), npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+      .Input(end, result.scalar_type(), npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+      .Input(step, result.scalar_type(), npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+      .Output(result)
+      .Run();
+  return result;
+}
+} // namespace
+
+at::Tensor arange(
+    const at::Scalar& start,
+    const at::Scalar& end,
+    const at::Scalar& step,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt) {
+  c10::TensorOptions option =
+      c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
+
+  float start_value = calcu_op_util::GetScalarFloatValue(start);
+  float end_value = calcu_op_util::GetScalarFloatValue(end);
+  float step_value = calcu_op_util::GetScalarFloatValue(step);
+
+  TORCH_CHECK(step_value != 0, "step must be nonzero");
+  TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
+      "upper bound and larger bound inconsistent with step sign");
+  at::Scalar start_opt = start;
+  at::Scalar end_opt = end;
+  at::Scalar step_opt = step;
+  bool set_to_integral_dtype =
+      !option.has_dtype() && allIntegral({start_opt, end_opt, step_opt});
+
+  // check start == end
+  if (set_to_integral_dtype) {
+    option = option.dtype(at::kLong);
+  }
+  at::Tensor result_check = npu_preparation::ApplyTensorWithFormat({0}, option, ACL_FORMAT_ND);
+  if (start_value == end_value) {
+    return result_check;
+  }
+
+  auto output_size = op_infer::infersize_arange(start, end, step);
+  at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, option, ACL_FORMAT_ND);
+  if(option.dtype() == at::kHalf) {
+    result = op_plugin::npu_dtype_cast(result, at::kFloat);
+  }
+  arange_out_npu_nocheck(result, start, end, step);
+  if(option.dtype() == at::kHalf) {
+    result = op_plugin::npu_dtype_cast(result, at::kHalf);
+  }
+  return result;
+}
+
+at::Tensor arange(
+    const at::Scalar& start,
+    const at::Scalar& end,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt) {
+  const at::Scalar step = 1;
+  return op_plugin::arange(start, end, step, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+}
+
+
+at::Tensor arange(
+    const at::Scalar& end,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt) {
+  const at::Scalar start = 0;
+  return op_plugin::arange(start, end, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+}
+
+at::Tensor& arange_out(
+    const at::Scalar& start,
+    const at::Scalar& end,
+    const at::Scalar& step,
+    at::Tensor& result) {
+  float start_value = calcu_op_util::GetScalarFloatValue(start);
+  float end_value = calcu_op_util::GetScalarFloatValue(end);
+  float step_value = calcu_op_util::GetScalarFloatValue(step);
+  TORCH_CHECK(step_value != 0, "step must be nonzero");
+  TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
+      "upper bound and larger bound inconsistent with step sign");
+
+  auto output_size = op_infer::infersize_arange(start, end, step);
+  result.resize_(output_size);
+  if (!npu_utils::check_match(&result)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    arange_out_npu_nocheck(contiguous_result, start, end, step);
+    npu_utils::format_fresh_view(result, contiguous_result);
+  } else {
+    arange_out_npu_nocheck(result, start, end, step);
+  }
+  return result;
+}
+
+at::Tensor& arange_out(const at::Scalar& end, at::Tensor& result) {
+  const at::Scalar start = 0;
+  const at::Scalar step = 1;
+  return op_plugin::arange_out(start, end, step, result);
+}
+
+at::Tensor _dim_arange(const at::Tensor& self, int64_t dim) {
+  c10::optional<at::ScalarType> dtype_opt(at::kInt);
+  c10::optional<at::Layout> layout_opt(self.options().layout());
+  c10::optional<at::Device> device_opt(self.options().device());
+  c10::optional<bool> pin_memory_opt(self.options().pinned_memory());
+
+  at::Tensor result = op_plugin::arange(
+      self.size(dim), dtype_opt, layout_opt, device_opt, pin_memory_opt);
+  return result;
+}
+} // namespace op_plugin

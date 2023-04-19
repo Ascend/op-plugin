@@ -32,7 +32,7 @@ using std::vector;
 
 namespace op_infer {
 
-const int N_SIZE = 32;
+const int N = 32;
 // npu tensor max size
 const int SIZE = 8;
 
@@ -229,8 +229,18 @@ c10::SmallVector<int64_t, SIZE> crop_and_resize_npu_output_size(const at::Tensor
 
 c10::SmallVector<int64_t, SIZE> decode_jpeg_npu_output_size(at::IntArrayRef image_shape, int64_t channels);
 
-c10::SmallVector<int64_t, SIZE> deprecated_broadcast_ops_npu_output_size(c10::IntArrayRef shape1,
-                                                                         c10::IntArrayRef shape2);
+c10::SmallVector<int64_t, SIZE> infersize_stride_add(c10::IntArrayRef shape1, c10::IntArrayRef shape2);
+
+c10::SmallVector<int64_t, SIZE> infersize_affine_grid_generator(at::IntArrayRef size);
+
+c10::SmallVector<int64_t, SIZE> infersize_all(const at::Tensor& self, int64_t dim);
+
+c10::SmallVector<int64_t, SIZE> infersize_npu_anchor_response_flags(at::IntArrayRef featmap_size,
+                                                                    int64_t num_base_anchors);
+
+c10::SmallVector<int64_t, SIZE> infersize_arange(const at::Scalar& start,
+                                                 const at::Scalar& end,
+                                                 const at::Scalar& step);
 
 } // namespace op_infer
 #endif
