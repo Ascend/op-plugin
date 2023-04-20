@@ -50,7 +50,7 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p) {
     auto output_size = op_infer::pdist_npu_output_size(self, p_float);
     result = npu_preparation::ApplyTensor(self, output_size);
     if(self.size(1) == 0){
-      result.fill_(0);
+      op_plugin::fill_(result, 0);
     } else {
       pdist_out_npu_nocheck(result, self, p_float);
     }
