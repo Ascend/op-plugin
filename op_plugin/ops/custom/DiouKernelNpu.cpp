@@ -1,0 +1,184 @@
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// All rights reserved.
+//
+// Licensed under the BSD 3-Clause License  (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://opensource.org/licenses/BSD-3-Clause
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include <torch/csrc/autograd/custom_function.h>
+
+#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
+
+namespace op_plugin {
+using npu_preparation = at_npu::native::OpPreparation;
+using torch::autograd::AutogradContext;
+using torch::autograd::Function;
+
+namespace{
+c10::SmallVector<int64_t, N> diou_output_size(
+    const at::Tensor& self,
+    const at::Tensor& gtboxes,
+    bool is_cross){
+  c10::SmallVector<int64_t, N> output_size;
+  if (is_cross) {
+    output_size = {gtboxes.size(1), self.size(1)};
+  } else {
+    output_size = {1, self.size(1)};
+  }
+  return output_size;
+}
+
+at::Tensor& diou_out_npu_nocheck(
+    at::Tensor& result,
+    const at::Tensor& self,
+    const at::Tensor& gtboxes,
+    bool trans,
+    bool is_cross,
+    int64_t mode){
+  auto output_size = diou_output_size(self, gtboxes, is_cross);
+  string mode_str = mode == 1 ? "iof" : "iou";
+
+  at_npu::native::OpCommand cmd;
+  cmd.Name("DIoU")
+      .Input(self)
+      .Input(gtboxes)
+      .Output(result)
+      .Attr("trans", trans)
+      .Attr("is_cross", is_cross)
+      .Attr("mode", mode_str)
+      .Run();
+  return result;
+}
+
+at::Tensor diou_npu_nocheck(
+    const at::Tensor& self,
+    const at::Tensor& gtboxes,
+    bool trans,
+    bool is_cross,
+    int64_t mode) {
+  // Op need form of [n, 4], but pass should be [4, n];
+  // Note: temp avoid! it'll be removed while op deal with fp16 issue!
+  bool self_is_half = self.scalar_type() == at::kHalf;
+  bool gtboxes_is_half = gtboxes.scalar_type() == at::kHalf;
+  at::Tensor self_cp = self_is_half ? op_plugin::npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor gtboxes_cp = gtboxes_is_half ? op_plugin::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
+
+  auto output_size = diou_output_size(self_cp, gtboxes_cp, is_cross);
+  at::Tensor result = npu_preparation::ApplyTensor(self_cp, output_size);
+  diou_out_npu_nocheck(result, self_cp, gtboxes_cp, trans, is_cross, mode);
+
+  if (self_is_half || gtboxes_is_half) {
+    result = op_plugin::npu_dtype_cast(result, at::kHalf);
+  }
+  return result;
+}
+
+std::tuple<at::Tensor&, at::Tensor&> diou_backward_out_npu_nocheck(
+    at::Tensor& dbboxes,
+    at::Tensor& dgtboxes,
+    const at::Tensor& grad,
+    const at::Tensor& bboxes,
+    const at::Tensor& gtboxes,
+    bool trans,
+    bool is_cross,
+    int64_t mode){
+  string mode_str = mode == 1 ? "iof" : "iou";
+  at_npu::native::OpCommand cmd;
+  cmd.Name("DIoUGrad")
+      .Input(grad)
+      .Input(bboxes)
+      .Input(gtboxes)
+      .Output(dbboxes)
+      .Output(dgtboxes)
+      .Attr("trans", trans)
+      .Attr("is_cross", is_cross)
+      .Attr("mode", mode_str)
+      .Run();
+  return std::tie(dbboxes, dgtboxes);
+}
+} // namespace
+
+std::tuple<at::Tensor, at::Tensor> npu_diou_backward(
+    const at::Tensor& grad,
+    const at::Tensor& bboxes,
+    const at::Tensor& gtboxes,
+    bool trans,
+    bool is_cross,
+    int64_t mode){
+  // Op need form of [n] grad
+  // Note: temp avoid! it'll be remove while op deal with fp16 issue!
+  at::Tensor grad_cp = at::squeeze(grad, 0);
+  if (grad_cp.scalar_type() == at::kHalf) {
+    grad_cp = op_plugin::npu_dtype_cast(grad_cp, at::kFloat);
+  }
+
+  bool bboxes_is_half = bboxes.scalar_type() == at::kHalf;
+  bool gtboxes_is_half = gtboxes.scalar_type() == at::kHalf;
+  at::Tensor bboxes_cp = bboxes_is_half ? op_plugin::npu_dtype_cast(bboxes, at::kFloat) : bboxes;
+  at::Tensor gtboxes_cp = gtboxes_is_half ? op_plugin::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
+  at::Tensor dbboxes = npu_preparation::ApplyTensor(bboxes_cp);
+  at::Tensor dgtboxes = npu_preparation::ApplyTensor(gtboxes_cp);
+
+  diou_backward_out_npu_nocheck(dbboxes, dgtboxes, grad_cp, bboxes_cp, gtboxes_cp, trans, is_cross, mode);
+  if (bboxes_is_half || gtboxes_is_half) {
+    dbboxes = op_plugin::npu_dtype_cast(dbboxes, at::kHalf);
+    dgtboxes = op_plugin::npu_dtype_cast(dgtboxes, at::kHalf);
+  }
+  return std::tie(dbboxes, dgtboxes);
+}
+
+class NPUDiouFunction : public torch::autograd::Function<NPUDiouFunction> {
+public:
+  static at::Tensor forward(AutogradContext *ctx,
+      const at::Tensor& self,
+      const at::Tensor& gtboxes,
+      bool trans,
+      bool is_cross,
+      int64_t mode) {
+    ctx->saved_data["trans"] = trans;
+    ctx->saved_data["is_cross"] = is_cross;
+    ctx->saved_data["mode"] = mode;
+    at::AutoNonVariableTypeMode g;
+    ctx->save_for_backward({self, gtboxes});
+    return diou_npu_nocheck(self, gtboxes, trans, is_cross, mode);
+  }
+
+  static std::vector<at::Tensor> backward(AutogradContext *ctx,
+      std::vector<at::Tensor> grad_outputs) {
+    auto trans = ctx->saved_data["trans"].toBool();
+    auto is_cross = ctx->saved_data["is_cross"].toBool();
+    auto mode = ctx->saved_data["mode"].toInt();
+    auto saved = ctx->get_saved_variables();
+    auto bboxes = saved[0];
+    auto gtboxes = saved[1];
+
+    std::tuple<at::Tensor, at::Tensor> result = op_plugin::npu_diou_backward(grad_outputs[0],
+        bboxes, gtboxes, trans, is_cross, mode);
+
+    std::vector<at::Tensor> output = {std::get<0>(result),
+        std::get<1>(result),
+        at::Tensor(),
+        at::Tensor(),
+        at::Tensor()};
+    return output;
+  }
+};
+
+at::Tensor npu_diou(
+    const at::Tensor& self,
+    const at::Tensor& gtboxes,
+    bool trans,
+    bool is_cross,
+    int64_t mode) {
+  return NPUDiouFunction::apply(self, gtboxes, trans, is_cross, mode);
+}
+} // namespace op_plugin
