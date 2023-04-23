@@ -30,10 +30,10 @@ at::Tensor _cdist_backward(
   TORCH_CHECK(cdist.is_contiguous(), "_cdist_backward requires dist to be contiguous");
   TORCH_CHECK(grad.is_contiguous(), "_cdist_backward requires grad to be contiguous");
   auto device1 = x1.device().type();
-  TORCH_CHECK(device1 == at::kCPU || device1 == at::kCUDA || device1 == at_npu::key::NativeDeviceType,
+  TORCH_CHECK(device1 == at_npu::key::NativeDeviceType,
               "_cdist_backward only supports CPU, CUDA and NPU devices, X1 got: ", device1);
   auto device2 = x2.device().type();
-  TORCH_CHECK(device2 == at::kCPU || device2 == at::kCUDA || device2 == at_npu::key::NativeDeviceType,
+  TORCH_CHECK(device2 == at_npu::key::NativeDeviceType,
               "_cdist_backward only supports CPU, CUDA and NPU devices, X2 got: ", device2);
 
   float p_float;
