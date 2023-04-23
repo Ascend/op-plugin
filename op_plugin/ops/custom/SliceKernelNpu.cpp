@@ -19,37 +19,32 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
-using npu_utils = at_npu::native::NpuUtils;
 
-namespace {
-
-at::Tensor& relu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
+at::Tensor& npu_slice_out(
+    const at::Tensor& self,
+    c10::IntArrayRef offsets,
+    c10::IntArrayRef size,
+    at::Tensor& result) {
+  c10::SmallVector<int64_t, N> offsetVec = op_infer::array_to_small_vector(offsets);
+  c10::SmallVector<int64_t, N> sizeVec = op_infer::array_to_small_vector(size);
   at_npu::native::OpCommand cmd;
-  cmd.Name("Relu")
+  cmd.Name("Slice")
       .Input(self)
+      .Input(offsetVec)
+      .Input(sizeVec)
       .Output(result)
       .Run();
-
-  return result;
-}
-} // namespace
-
-at::Tensor relu(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  relu_out_npu_nocheck(result, self);
   return result;
 }
 
-at::Tensor& relu_(at::Tensor& self) {
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    relu_out_npu_nocheck(contiguous_self, contiguous_self);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    relu_out_npu_nocheck(self, self);
-  }
+at::Tensor npu_slice(const at::Tensor& self, c10::IntArrayRef offsets, c10::IntArrayRef size) {
+  c10::SmallVector<int64_t, SIZE> output_size =
+      calcu_op_util::ConvertIntArrayRefToSmallVector(size);
+  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
 
-  return self;
+  op_plugin::npu_slice_out(self, offsets, size, result);
+
+  return result;
 }
 
 } // namespace op_plugin

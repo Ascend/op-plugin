@@ -18,14 +18,13 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 
-at::Tensor& relu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
+at::Tensor& sinh_out_nocheck( at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("Relu")
+  cmd.Name("Sinh")
       .Input(self)
       .Output(result)
       .Run();
@@ -34,22 +33,32 @@ at::Tensor& relu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
 }
 } // namespace
 
-at::Tensor relu(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  relu_out_npu_nocheck(result, self);
+at::Tensor& sinh_out(const at::Tensor& self, at::Tensor& result) {
+  npu_preparation::CheckOut(
+      {self},
+      result,
+      self);
+
+  if (!npu_utils::check_match(&result)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    sinh_out_nocheck(contiguous_result, self);
+    npu_utils::format_fresh_view(result, contiguous_result);
+  } else {
+    sinh_out_nocheck(result, self);
+  }
+
   return result;
 }
 
-at::Tensor& relu_(at::Tensor& self) {
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    relu_out_npu_nocheck(contiguous_self, contiguous_self);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    relu_out_npu_nocheck(self, self);
-  }
+at::Tensor sinh(const at::Tensor& self) {
+  at::Tensor result = npu_preparation::ApplyTensor(self);
+  sinh_out_nocheck(result, self);
 
-  return self;
+  return result;
+}
+
+at::Tensor& sinh_(at::Tensor& self) {
+  return op_plugin::sinh_out(self, self);
 }
 
 } // namespace op_plugin

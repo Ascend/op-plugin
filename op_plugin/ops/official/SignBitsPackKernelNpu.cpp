@@ -18,38 +18,22 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
-using npu_utils = at_npu::native::NpuUtils;
 
-namespace {
+at::Tensor npu_sign_bits_pack(const at::Tensor& self, int64_t size) {
+  TORCH_CHECK(self.dim() == 1, "input must be one-dimensional");
+  TORCH_CHECK(self.scalar_type() == at::ScalarType::Half || self.scalar_type() == at::ScalarType::Float,
+      "all only supports torch.float16 and torch.float32 dtypes");
+  auto ysize = (self.numel() + 7) / 8;
+  TORCH_CHECK(size != 0 && ysize % size == 0, "all must be divisible by size");
+  at::Tensor result = npu_preparation::ApplyTensor({size, ysize / size}, self.options().dtype(at::kByte), self);
 
-at::Tensor& relu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("Relu")
+  cmd.Name("SignBitsPack")
       .Input(self)
       .Output(result)
+      .Attr("size", size)
       .Run();
-
   return result;
-}
-} // namespace
-
-at::Tensor relu(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  relu_out_npu_nocheck(result, self);
-  return result;
-}
-
-at::Tensor& relu_(at::Tensor& self) {
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    relu_out_npu_nocheck(contiguous_self, contiguous_self);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    relu_out_npu_nocheck(self, self);
-  }
-
-  return self;
 }
 
 } // namespace op_plugin
