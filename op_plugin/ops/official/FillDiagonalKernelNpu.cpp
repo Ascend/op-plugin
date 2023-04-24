@@ -1,0 +1,55 @@
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// All rights reserved.
+//
+// Licensed under the BSD 3-Clause License  (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://opensource.org/licenses/BSD-3-Clause
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
+
+namespace op_plugin {
+using npu_preparation = at_npu::native::OpPreparation;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
+using npu_utils = at_npu::native::NpuUtils;
+
+at::Tensor& fill_diagonal_out_npu(
+    at::Tensor& result,
+    const at::Tensor& self,
+    const at::Scalar& value,
+    bool wrap) {
+  float fill_value = calcu_op_util::GetScalarFloatValue(value);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("FillDiagonal")
+      .Input(self)
+      .Output(result)
+      .Attr("fill_value", fill_value)
+      .Attr("wrap", wrap)
+      .Run();
+
+  return result;
+}
+
+at::Tensor& fill_diagonal_(at::Tensor& self, const at::Scalar& value, bool wrap) {
+  npu_preparation::CastBackToOriFormat(self);
+
+  if (!npu_utils::check_match(&self)) {
+    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+    fill_diagonal_out_npu(contiguous_self, contiguous_self, value, wrap);
+    npu_utils::format_fresh_view(self, contiguous_self);
+  } else {
+    fill_diagonal_out_npu(self, self, value, wrap);
+  }
+
+  return self;
+}
+
+} // namespace op_plugin
