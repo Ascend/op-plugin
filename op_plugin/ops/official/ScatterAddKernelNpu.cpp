@@ -18,38 +18,60 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 
-at::Tensor& relu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
+at::Tensor& scatter_add_out_npu_nocheck(
+    at::Tensor& result,
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& src) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("Relu")
+  cmd.Name("ScatterAddWithAxis")
       .Input(self)
+      .Input(index)
+      .Input(src)
       .Output(result)
+      .Attr("axis", dim)
       .Run();
-
   return result;
 }
 } // namespace
 
-at::Tensor relu(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  relu_out_npu_nocheck(result, self);
-  return result;
+at::Tensor scatter_add(
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& src) {
+  return self.clone(at::MemoryFormat::Contiguous).scatter_add_(dim, index, src);
 }
 
-at::Tensor& relu_(at::Tensor& self) {
+at::Tensor& scatter_add_(
+    at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& src) {
+  npu_preparation::CheckMemory({self, index, src}, {self});
+
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    relu_out_npu_nocheck(contiguous_self, contiguous_self);
+    scatter_add_out_npu_nocheck(contiguous_self, self, dim, index, src);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    relu_out_npu_nocheck(self, self);
+    scatter_add_out_npu_nocheck(self, self, dim, index, src);
   }
 
   return self;
+}
+
+at::Tensor scatter_add(
+    const at::Tensor& self,
+    at::Dimname dim,
+    const at::Tensor& index,
+    const at::Tensor& src) {
+  return op_plugin::scatter_add(self, dimname_to_position(self, dim), index, src);
 }
 
 } // namespace op_plugin

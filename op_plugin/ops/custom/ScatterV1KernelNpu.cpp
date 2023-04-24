@@ -18,38 +18,19 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
-using npu_utils = at_npu::native::NpuUtils;
 
-namespace {
-
-at::Tensor& relu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
+at::Tensor npu_scatter(const at::Tensor& self, const at::Tensor& indices, const at::Tensor& updates, int64_t dim) {
+  at::Tensor outputs = npu_preparation::ApplyTensor(self);
   at_npu::native::OpCommand cmd;
-  cmd.Name("Relu")
+  cmd.Name("ArgMaxGrad")
       .Input(self)
-      .Output(result)
+      .Input(indices)
+      .Input(updates)
+      .Output(outputs)
+      .Attr("dimension", dim)
       .Run();
 
-  return result;
-}
-} // namespace
-
-at::Tensor relu(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  relu_out_npu_nocheck(result, self);
-  return result;
-}
-
-at::Tensor& relu_(at::Tensor& self) {
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    relu_out_npu_nocheck(contiguous_self, contiguous_self);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    relu_out_npu_nocheck(self, self);
-  }
-
-  return self;
+  return outputs;
 }
 
 } // namespace op_plugin
