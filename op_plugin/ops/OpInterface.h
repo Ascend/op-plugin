@@ -1052,6 +1052,23 @@ at::Tensor zeros(at::IntArrayRef size, c10::optional<at::DimnameList> names, c10
 at::Tensor zeros(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory);
 at::Tensor zeros_like(const at::Tensor & self, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format);
 at::Tensor & zeros_out(at::IntArrayRef size, at::Tensor & out);
+
+// add op_interface 0424.
+::std::tuple<at::Tensor,at::Tensor> _prelu_kernel_backward(const at::Tensor & grad_output, const at::Tensor & self, const at::Tensor & weight);
+at::Tensor std(const at::Tensor & self, at::OptionalIntArrayRef dim, const c10::optional<at::Scalar> & correction, bool keepdim);
+at::Tensor _prelu_kernel(const at::Tensor & self, const at::Tensor & weight);
+at::Tensor count_nonzero(const at::Tensor & self, at::IntArrayRef dim);
+at::Tensor zeros_symint(c10::SymIntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory);
+at::Tensor repeat_interleave_symint(const at::Tensor & self, c10::SymInt repeats, c10::optional<int64_t> dim, c10::optional<int64_t> output_size);
+at::Tensor embedding_symint(const at::Tensor & weight, const at::Tensor & indices, c10::SymInt padding_idx, bool scale_grad_by_freq, bool sparse);
+at::Tensor count_nonzero(const at::Tensor & self, c10::optional<int64_t> dim);
+at::Tensor _embedding_bag_backward_symint(const at::Tensor & grad, const at::Tensor & indices, const at::Tensor & offsets, const at::Tensor & offset2bag, const at::Tensor & bag_size, const at::Tensor & maximum_indices, c10::SymInt num_weights, bool scale_grad_by_freq, int64_t mode, bool sparse, const c10::optional<at::Tensor> & per_sample_weights, int64_t padding_idx);
+at::Tensor embedding_backward_symint(const at::Tensor & grad, const at::Tensor & indices, c10::SymInt num_weights, c10::SymInt padding_idx, bool scale_grad_by_freq, bool sparse);
+at::Tensor _reshape_alias(const at::Tensor & self, at::IntArrayRef size, at::IntArrayRef stride);
+bool _amp_foreach_non_finite_check(at::TensorList scaled_grads);
+at::Tensor new_empty_strided_symint(const at::Tensor & self, c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory);
+const at::Tensor & as_strided__symint(const at::Tensor & self, c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<c10::SymInt> storage_offset);
+
 }  // namespace op_plugin
 
 #endif

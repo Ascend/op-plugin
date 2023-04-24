@@ -29,4 +29,8 @@ at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
       .Run();
   return result;
 }
+
+at::Tensor _prelu_kernel(const at::Tensor& self, const at::Tensor& weight) {
+  return op_plugin::prelu(self, weight);
+}
 } // namespace op_plugin
