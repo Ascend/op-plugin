@@ -21,7 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
-at::Tensor& fill_out_npu(at::Tensor& result, at::Tensor& self, const at::Tensor& other) {
+at::Tensor& fill_out_nocheck(at::Tensor& result, at::Tensor& self, const at::Tensor& other) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Fill");
   if (self.dim() == 0) {
@@ -36,7 +36,7 @@ at::Tensor& fill_out_npu(at::Tensor& result, at::Tensor& self, const at::Tensor&
   return result;
 }
 
-at::Tensor& fill_out_npu(at::Tensor& result, at::Tensor& self, at::Scalar other) {
+at::Tensor& fill_out_nocheck(at::Tensor& result, at::Tensor& self, at::Scalar other) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Fill");
   if (self.dim() == 0) {
@@ -50,16 +50,28 @@ at::Tensor& fill_out_npu(at::Tensor& result, at::Tensor& self, at::Scalar other)
       .Run();
   return result;
 }
+
+at::Tensor& fill_out_nocheck(at::Tensor& self, const at::Tensor& other) {
+  if (other.dim() == 0 && !at_npu::key::isDeviceTensor(other)) {
+    fill_out_nocheck(self, self, other.item());
+  } else {
+    fill_out_nocheck(self, self, other);
+  }
+  return self;
+}
 } // namespace
 
 at::Tensor& fill_(at::Tensor& self, const at::Tensor& other) {
   auto other_dim = other.dim();
   TORCH_CHECK(other_dim <= 1, "fill_ only supports 0 or 1 dimension value tensor but got tensor with ",
       other_dim, " dimension.");
-  if (other_dim == 0 && !at_npu::key::isDeviceTensor(other)) {
-    fill_out_npu(self, self, other.item());
+  npu_preparation::CheckMemory({self, other}, {self});
+  if (!npu_utils::check_match(&self)) {
+    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+    fill_out_nocheck(contiguous_self, other);
+    npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    fill_out_npu(self, self, other);
+    fill_out_nocheck(self, other);
   }
   return self;
 }
@@ -67,10 +79,10 @@ at::Tensor& fill_(at::Tensor& self, const at::Tensor& other) {
 at::Tensor& fill_(at::Tensor& self, const at::Scalar& other) {
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    fill_out_npu(contiguous_self, contiguous_self, other);
+    fill_out_nocheck(contiguous_self, contiguous_self, other);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    fill_out_npu(self, self, other);
+    fill_out_nocheck(self, self, other);
   }
   return self;
 }
