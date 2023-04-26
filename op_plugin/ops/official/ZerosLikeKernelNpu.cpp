@@ -21,8 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-
-at::Tensor& zeros_like_out_npu_nocheck(const at::Tensor& self, at::Tensor& result) {
+at::Tensor& zeros_like_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
   cmd.Name("ZerosLike")
       .Input(self)
@@ -56,7 +55,7 @@ at::Tensor zeros_like(
 at::Tensor& zero_(at::Tensor& self) {
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    zeros_like_out_npu_nocheck(contiguous_self, self);
+    zeros_like_out_npu_nocheck(contiguous_self, contiguous_self);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
     zeros_like_out_npu_nocheck(self, self);
