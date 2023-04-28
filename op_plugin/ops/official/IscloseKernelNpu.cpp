@@ -18,42 +18,31 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
-at::Tensor& cosh_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
+at::Tensor isclose(
+    const at::Tensor& self,
+    const at::Tensor& other,
+    double rtol,
+    double atol,
+    bool equal_nan) {
+  TORCH_CHECK(self.scalar_type() == other.scalar_type(), self.scalar_type(), " did not match ", other.scalar_type());
+  at::Tensor result = npu_preparation::ApplyTensor(self, self.options().dtype(at::kBool));
+  
+  std::cout << "Warning: Device do not support double dtype of rtol and atol now, " \
+      "dtype cast repalce with float." << std::endl;
+  auto rtol1 = static_cast<float>(rtol);
+  auto atol1 = static_cast<float>(atol);
+
   at_npu::native::OpCommand cmd;
-  cmd.Name("Cosh")
+  cmd.Name("IsClose")
       .Input(self)
+      .Input(other)
+      .Attr("rtol", rtol1)
+      .Attr("atol", atol1)
+      .Attr("equal_nan", equal_nan)
       .Output(result)
       .Run();
+
   return result;
 }
-} // namespace
-
-at::Tensor& cosh_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    cosh_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    cosh_out_npu_nocheck(result, self);
-  }
-  return result;
-}
-
-at::Tensor cosh(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  cosh_out_npu_nocheck(result, self);
-  return result;
-}
-
-at::Tensor& cosh_(at::Tensor& self) {
-  return op_plugin::cosh_out(self, self);
-}
-
 } // namespace op_plugin
