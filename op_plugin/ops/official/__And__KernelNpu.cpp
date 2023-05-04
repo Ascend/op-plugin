@@ -47,9 +47,9 @@ at::Tensor& and_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& other) {
-  if (other.dim() == 0 && !at_npu::key::isDeviceTensor(other)) {
+  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
     and_out_npu_nocheck(result, self, other.item());
-  } else if (self.dim() == 0 && !at_npu::key::isDeviceTensor(self)) {
+  } else if (self.dim() == 0 && !torch_npu::utils::is_npu(self)) {
     and_out_npu_nocheck(result, other, self.item());
   } else {
     at_npu::native::OpCommand cmd;

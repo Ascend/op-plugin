@@ -39,7 +39,7 @@ at::Tensor ones_like(
     c10::optional<bool> pin_memory_opt,
     c10::optional<c10::MemoryFormat> optional_memory_format) {
   auto device = c10::device_or_default(device_opt);
-  if (!(device.type() == c10::DeviceType::PrivateUse1)) {
+  if (!torch_npu::utils::is_npu(device)) {
     auto result = at::empty_like(self, dtype_opt, layout_opt, device_opt, pin_memory_opt, optional_memory_format);
     return op_plugin::fill_(result, 1.);
   }
