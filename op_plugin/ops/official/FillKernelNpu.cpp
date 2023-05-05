@@ -52,7 +52,7 @@ at::Tensor& fill_out_nocheck(at::Tensor& result, at::Tensor& self, at::Scalar ot
 }
 
 at::Tensor& fill_out_nocheck(at::Tensor& self, const at::Tensor& other) {
-  if (other.dim() == 0 && !at_npu::key::isDeviceTensor(other)) {
+  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
     fill_out_nocheck(self, self, other.item());
   } else {
     fill_out_nocheck(self, self, other);
