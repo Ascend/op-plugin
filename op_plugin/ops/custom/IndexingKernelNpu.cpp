@@ -73,12 +73,6 @@ at::Tensor& npu_indexing_out(
     int64_t new_axis_mask,
     int64_t shrink_axis_mask,
     at::Tensor& result) {
-  auto output_size = infersize_npu_indexing(self, begin, end, strides);
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self,
-      output_size);
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     npu_indexing_out_nocheck(contiguous_result, self, begin, end, strides, begin_mask, end_mask,
