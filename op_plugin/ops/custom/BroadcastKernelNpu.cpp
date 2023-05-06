@@ -35,35 +35,6 @@ at::Tensor& npu_broadcast_out_nocheck(
 }
 } // namespace
 
-at::Tensor& npu_broadcast_out(
-    const at::Tensor& self,
-    at::IntArrayRef size,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self,
-      size);
-  bool self_is_bool = self.dtype() == at::kBool;
-  at::Tensor self_cp = self_is_bool ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
-  at::Tensor result_cp = self_is_bool ? op_plugin::npu_dtype_cast(result, at::kInt) : result;
-
-  if (!npu_utils::check_match(&result_cp)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
-    npu_broadcast_out_nocheck(contiguous_result, self_cp, size);
-    npu_utils::format_fresh_view(result_cp, contiguous_result);
-  } else {
-    npu_broadcast_out_nocheck(result_cp, self_cp, size);
-  }
-  if (self_is_bool) {
-    result_cp = op_plugin::npu_dtype_cast(result_cp, at::kBool);
-    result.copy_(result_cp);
-  } else {
-    result = result_cp;
-  }
-  return result;
-}
-
 at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) {
   at::Tensor self_cp = self.dtype() == at::kBool ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
   at::Tensor result = npu_preparation::ApplyTensor(self_cp, size);
