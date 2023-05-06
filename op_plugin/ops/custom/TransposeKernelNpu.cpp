@@ -62,12 +62,6 @@ at::Tensor& npu_transpose_out(
     at::IntArrayRef perm,
     bool require_contiguous,
     at::Tensor& result) {
-  auto output_size = op_infer::transpose_npu_output_size(self, perm);
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self,
-      output_size);
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     npu_transpose_out_nocheck(contiguous_result, self, perm, require_contiguous);
