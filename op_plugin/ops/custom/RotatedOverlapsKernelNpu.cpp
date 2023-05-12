@@ -20,7 +20,6 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-
 at::Tensor& rotated_overlaps_npu_nocheck(
     at::Tensor& overlaps,
     const at::Tensor& self,
@@ -60,5 +59,4 @@ at::Tensor npu_rotated_overlaps(
   overlaps = op_plugin::npu_dtype_cast(overlaps, origin_dtype);
   return overlaps;
 }
-
 } // namespace op_plugin

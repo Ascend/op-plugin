@@ -20,7 +20,6 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-
 at::Tensor& rotated_iou_npu_nocheck(
     at::Tensor& iou,
     const at::Tensor& boxes,
@@ -79,5 +78,4 @@ at::Tensor npu_rotated_iou(
   iou = op_plugin::npu_dtype_cast(iou, origin_dtype);
   return iou;
 }
-
 } // namespace op_plugin
