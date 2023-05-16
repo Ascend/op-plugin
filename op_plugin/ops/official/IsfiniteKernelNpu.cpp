@@ -18,11 +18,11 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor isfinite(const at::Tensor& self_ex) {
   at::Tensor self = self_ex;
-  if (torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.npu_format_ !=
-      ACL_FORMAT_ND) {
+  if (calcu_op_util::GetTensorNpuFormat(self) != ACL_FORMAT_ND) {
     self = at_npu::native::NPUNativeFunctions::npu_format_cast(self_ex, ACL_FORMAT_ND);
   }
   if (self.scalar_type() == at::ScalarType::Half) {
