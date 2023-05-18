@@ -19,9 +19,9 @@ set -e
 
 CUR_DIR=$(dirname $(readlink -f $0))
 SUPPORTED_PY_VERSION=(3.8 3.9)
-SUPPORTED_PYTORCH_VERSION=('master' 'v2.0.0' 'debug_op_plugin')
+SUPPORTED_PYTORCH_VERSION=('master' 'v2.0.0')
 PY_VERSION='3.8' # Default supported python version is 3.8
-PYTORCH_VERSION='debug_op_plugin' # Default supported PyTorch version is master
+PYTORCH_VERSION='master' # Default supported PyTorch version is master
 DEFAULT_SCRIPT_ARGS_NUM_MAX=2 # Default max supported input parameters
 
 # Parse arguments inside script
@@ -116,31 +116,19 @@ function main()
     check_python_version
     check_pytorch_version
 
-    # clone torch_adapter
-    PYTORCH_PATH=${CUR_DIR}/../pytorch
+    # clone torch_adapter for ops ut
+    PYTORCH_PATH=${CUR_DIR}/../pytorch_ut
     if [ -d ${PYTORCH_PATH} ]; then
-        rm -rf ${PYTORCH_PATH}
+        rm -r ${PYTORCH_PATH}
     fi
-    git clone -b ${PYTORCH_VERSION} https://gitee.com/clinglai/pytorch.git ${PYTORCH_PATH}
+    git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
 
-    # copy op_plugin to torch_adapter/third_party
-    PYTORCH_THIRD_PATH=${PYTORCH_PATH}/third_party/op-plugin
-    if [ -d ${PYTORCH_THIRD_PATH} ]; then
-        rm -r ${PYTORCH_THIRD_PATH}/*
-    else
-        mkdir -p ${PYTORCH_THIRD_PATH}
-    fi
-    OP_PLUGIN_PATH=${CUR_DIR}/../op_plugin
-    cp -rf ${OP_PLUGIN_PATH} ${PYTORCH_THIRD_PATH}/
+    # copy modify_files.txt to torch_adapter/ci
+    cp ${CUR_DIR}/../modify_files.txt ${PYTORCH_PATH}/
 
-    # compile torch_adapter
-    bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION}
-
-    # copy dist/torch_npu.whl from torch_adapter to op_plugin
-    if [ -d ${OP_PLUGIN_PATH}/dist ]; then
-        rm -r ${OP_PLUGIN_PATH}/dist
-    fi
-    cp -rf ${PYTORCH_PATH}/dist ${CUR_DIR}
+    # exec ut
+    cd ${PYTORCH_PATH}/ci
+    python"${PY_VERSION}" access_control_test.py
 
     exit 0
 }

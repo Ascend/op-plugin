@@ -35,7 +35,6 @@ at::Tensor& abs_out_nocheck(at::Tensor& result, const at::Tensor& self)
 at::Tensor& abs_out(const at::Tensor& self, at::Tensor& result)
 {
   npu_preparation::CheckOut({self}, result, self);
-  npu_preparation::CheckMemory({self}, {result});
   if (!npu_utils::check_match(&result)) {
     at::Tensor contigTensor = npu_utils::format_contiguous(result);
     abs_out_nocheck(contigTensor, self);
