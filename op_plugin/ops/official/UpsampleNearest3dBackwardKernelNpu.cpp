@@ -1,0 +1,114 @@
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// All rights reserved.
+//
+// Licensed under the BSD 3-Clause License  (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://opensource.org/licenses/BSD-3-Clause
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
+
+namespace op_plugin {
+using npu_preparation = at_npu::native::OpPreparation;
+using npu_utils = at_npu::native::NpuUtils;
+
+namespace {
+at::SmallVector<int64_t, SIZE> upsample_nearest3d_backward_infer_size(
+    at::IntArrayRef output_size,
+    at::IntArrayRef input_size,
+    c10::optional<double> scales_d,
+    c10::optional<double> scales_h,
+    c10::optional<double> scales_w) {
+  TORCH_CHECK(
+      output_size.size() == 3,
+      "It is expected output_size equals to 3, but got size ",
+      output_size.size());
+
+  TORCH_CHECK(
+      input_size.size() == 5,
+      "It is expected input_size equals to 5, but got size ",
+      input_size.size());
+
+  int64_t output_depth = output_size[0];
+  int64_t output_height = output_size[1];
+  int64_t output_width = output_size[2];
+
+  int64_t nbatch = input_size[0];
+  int64_t channels = input_size[1];
+  int64_t input_depth = input_size[2];
+  int64_t input_height = input_size[3];
+  int64_t input_width = input_size[4];
+
+  at::SmallVector<int64_t, SIZE> output_sizes=
+    {nbatch, channels, input_depth, input_height, input_width};
+
+  return output_sizes;
+}
+
+at::Tensor& upsample_nearest3d_backward_out_nocheck(
+    at::Tensor& result,
+    const at::Tensor& grad_output,
+    at::IntArrayRef output_size,
+    at::IntArrayRef input_size,
+    c10::optional<double> scales_d,
+    c10::optional<double> scales_h,
+    c10::optional<double> scales_w) {
+  at::Tensor grad_output_copy = grad_output;
+  at_npu::native::OpCommand cmd;
+  cmd.Name("UpsampleNearest3dGrad")
+      .Input(grad_output)
+      .Output(result)
+      .Attr("input_size", input_size)
+      .Attr("output_size", output_size)
+      .Run();
+  return result;
+}
+} // namespace
+
+at::Tensor& upsample_nearest3d_backward_out(
+    const at::Tensor& grad_output,
+    at::IntArrayRef output_size,
+    at::IntArrayRef input_size,
+    c10::optional<double> scales_d,
+    c10::optional<double> scales_h,
+    c10::optional<double> scales_w,
+    at::Tensor& grad_input) {
+  auto op_infer_output_size = upsample_nearest3d_backward_infer_size(
+      output_size, input_size, scales_d, scales_h, scales_w);
+  npu_preparation::CheckOut({grad_output}, grad_input, grad_output, op_infer_output_size);
+  
+  if (!npu_utils::check_match(&grad_input)) {
+    auto contiguous_out = npu_utils::format_contiguous(grad_input);
+    upsample_nearest3d_backward_out_nocheck(
+        contiguous_out, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
+    npu_utils::format_fresh_view(grad_input, contiguous_out);
+  } else {
+    upsample_nearest3d_backward_out_nocheck(
+        grad_input, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
+  }
+  return grad_input;
+}
+
+at::Tensor upsample_nearest3d_backward(
+    const at::Tensor& grad_output,
+    at::IntArrayRef output_size,
+    at::IntArrayRef input_size,
+    c10::optional<double> scales_d,
+    c10::optional<double> scales_h,
+    c10::optional<double> scales_w) {
+  auto op_infer_output_size = upsample_nearest3d_backward_infer_size(
+      output_size, input_size, scales_d, scales_h, scales_w);
+  at::Tensor result = npu_preparation::ApplyTensor(grad_output, op_infer_output_size);
+  upsample_nearest3d_backward_out_nocheck(
+      result, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
+  return result;
+}
+} // namespace op_plugin
