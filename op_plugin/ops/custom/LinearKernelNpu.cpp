@@ -23,13 +23,12 @@
 namespace op_plugin {
 using torch::autograd::Function;
 using torch::autograd::AutogradContext;
-using tensor_list = std::vector<at::Tensor>;
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
-at::Tensor linear_npu(
+at::Tensor linear_npu_nocheck(
     const at::Tensor& input,
     const at::Tensor& weight,
     const c10::optional<at::Tensor> & bias_opt) {
@@ -92,7 +91,8 @@ std::tuple<at::Tensor, at::Tensor> npu_linear_backward(
     linear_backward_out_npu_nocheck(weight_grad, grad, input, true, false);
   } else {
     at::Tensor gradFormatcast = npu_preparation::ApplyTensor(grad, grad.sizes());
-    gradFormatcast = at_npu::native::NPUNativeFunctions::npu_format_cast(grad, calcu_op_util::GetTensorNpuFormat(weight));
+    gradFormatcast =
+        at_npu::native::NPUNativeFunctions::npu_format_cast(grad, calcu_op_util::GetTensorNpuFormat(weight));
     linear_backward_out_npu_nocheck(input_grad, gradFormatcast, weight, false, false);
     linear_backward_out_npu_nocheck(weight_grad, gradFormatcast, input, true, false);
   }
@@ -111,12 +111,10 @@ public:
 
     at::AutoNonVariableTypeMode g;
     ctx->save_for_backward({input, weight});
-    return linear_npu(input, weight, bias_opt);
+    return linear_npu_nocheck(input, weight, bias_opt);
   }
 
-  static tensor_list backward(
-      AutogradContext *ctx,
-      tensor_list grad_outputs) {
+  static std::vector<at::Tensor> backward(AutogradContext* ctx, std::vector<at::Tensor> grad_outputs) {
     auto bias_has_value = ctx->saved_data["bias_has_value"].toBool();
     auto saved = ctx->get_saved_variables();
     auto input = saved[0];
@@ -124,7 +122,7 @@ public:
 
     std::tuple<at::Tensor, at::Tensor> result = op_plugin::npu_linear_backward(grad_outputs[0], input, weight);
 
-    tensor_list output = {std::get<0>(result), std::get<1>(result), at::Tensor()};
+    std::vector<at::Tensor> output = {std::get<0>(result), std::get<1>(result), at::Tensor()};
     if (bias_has_value) {
       output = {std::get<0>(result), std::get<1>(result), grad_outputs[0]};
     }
@@ -137,18 +135,18 @@ at::Tensor npu_linear(
     const at::Tensor& weight,
     const c10::optional<at::Tensor>& bias_opt) {
   auto is_aligin = [&]() {
-  return (!(static_cast<uint64_t>(input.size(0)) & 0x0000000F)) &&
-          (!(static_cast<uint64_t>(input.size(1)) & 0x0000000F)) &&
-          (!(static_cast<uint64_t>(weight.size(0)) & 0x0000000F)) &&
-          (!(static_cast<uint64_t>(weight.size(1)) & 0x0000000F));
+    return (!(static_cast<uint64_t>(input.size(0)) & 0x0000000F)) &&
+           (!(static_cast<uint64_t>(input.size(1)) & 0x0000000F)) &&
+           (!(static_cast<uint64_t>(weight.size(0)) & 0x0000000F)) &&
+           (!(static_cast<uint64_t>(weight.size(1)) & 0x0000000F));
   };
-  
+
   static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
   static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
   at::Tensor input_cast = (npu_format_helper::IsBaseFormatType(input) && mm_bmm_nd &&
-  ((is_support_nd_out && calcu_op_util::IsNdToNzOnTheFly(input, weight)) ||
-  (!is_support_nd_out && is_aligin()))) ?
-      input : at_npu::native::NPUNativeFunctions::npu_format_cast(input, ACL_FORMAT_FRACTAL_NZ);
+      ((is_support_nd_out && calcu_op_util::IsNdToNzOnTheFly(input, weight)) ||
+      (!is_support_nd_out && is_aligin()))) ? input :
+      at_npu::native::NPUNativeFunctions::npu_format_cast(input, ACL_FORMAT_FRACTAL_NZ);
   return NPULinearFunction::apply(input_cast, weight, bias_opt);
 }
 } // namespace op_plugin

@@ -19,7 +19,7 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor flip(const at::Tensor& self, at::IntArrayRef dims){
+at::Tensor flip(const at::Tensor& self, at::IntArrayRef dims) {
     at::Tensor result = npu_preparation::ApplyTensor(self);
     at::SmallVector<int64_t,N> dim_vector = op_infer::array_to_small_vector(dims);
     at_npu::native::OpCommand cmd;

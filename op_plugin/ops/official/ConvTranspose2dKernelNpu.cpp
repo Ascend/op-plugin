@@ -42,7 +42,7 @@ at::Tensor& conv_transpose2d_out_npu(
       .Input(size_vector, at::kInt)
       .Input(input, "x", ACL_FORMAT_NCHW)
       .Input(weight, "filter", ACL_FORMAT_NCHW);
-  if (bias.defined()){
+  if (bias.defined()) {
     cmd.Input(bias);
   }
   cmd.Output(result, "y", ACL_FORMAT_NCHW)

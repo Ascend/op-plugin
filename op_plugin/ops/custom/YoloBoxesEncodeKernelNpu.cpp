@@ -57,7 +57,7 @@ at::Tensor npu_yolo_boxes_encode (
     const at::Tensor& anchor_boxes,
     const at::Tensor& gt_bboxes,
     const at::Tensor& stride,
-    bool performance_mode){
+    bool performance_mode) {
   yolo_boxes_encode_check(anchor_boxes, gt_bboxes, stride);
   at::Tensor result = npu_preparation::ApplyTensor(gt_bboxes);
   string impl_mode_str = performance_mode ? "high_performance" : "high_precision";

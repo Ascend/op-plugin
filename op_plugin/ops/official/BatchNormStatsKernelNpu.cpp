@@ -31,7 +31,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, doub
 
   c10::SmallVector<int64_t, N> dim;
   int dimN = self.ndimension();
-  for(int i = 0; i < dimN; i++){
+  for (int i = 0; i < dimN; i++) {
     if (i == 1) {
       continue;
     }
@@ -39,7 +39,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, doub
   }
 
   at::Tensor self_copy = self;
-  if (self.scalar_type() != at::kFloat){
+  if (self.scalar_type() != at::kFloat) {
     self_copy = op_plugin::npu_dtype_cast(self_copy, at::kFloat);
   }
 

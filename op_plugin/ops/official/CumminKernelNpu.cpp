@@ -36,7 +36,7 @@ void cummin_out_npu_nocheck (
 
 void _cummin_helper(const at::Tensor& self, at::Tensor& values, at::Tensor& indices, int64_t dim) {
   // process aicpu
-  if(self.scalar_type() == at::kLong){
+  if (self.scalar_type() == at::kLong) {
     at::Tensor values_temp = npu_preparation::ApplyTensor(self);
     at::Tensor indices_temp = npu_preparation::ApplyTensor(self, self.options().dtype(at::kLong));
     cummin_out_npu_nocheck(values_temp, indices_temp, self, dim);

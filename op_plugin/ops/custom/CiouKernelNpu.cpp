@@ -92,7 +92,7 @@ std::tuple<at::Tensor&, at::Tensor&> ciou_backward_inner_out_npu(
     const at::Tensor& atan_sub,
     bool trans,
     bool is_cross,
-    int64_t mode){
+    int64_t mode) {
   string mode_str = mode == 1 ? "iof" : "iou";
   at_npu::native::OpCommand cmd;
   cmd.Name("CIoUGrad")
@@ -118,7 +118,7 @@ std::tuple<at::Tensor, at::Tensor> npu_ciou_backward(
     const c10::optional<at::Tensor>& atan_sub_opt,
     bool trans,
     bool is_cross,
-    int64_t mode){
+    int64_t mode) {
   const at::Tensor& atan_sub = c10::value_or_else(atan_sub_opt, [] {return at::Tensor();});
   at::Tensor grad_cp = at::squeeze(grad, 0);
   if (grad_cp.scalar_type() == at::kHalf) {

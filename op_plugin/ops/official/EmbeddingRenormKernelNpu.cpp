@@ -72,7 +72,7 @@ at::Tensor& embedding_renorm_out_npu_nocheck(
     const at::Tensor& self,
     const at::Tensor& indices,
     double max_norm,
-    double norm_type){
+    double norm_type) {
   at::SmallVector<int64_t, SIZE> mid_size = {indices.size(0), self.size(1)};
   at::Tensor mid_input = npu_preparation::ApplyTensor(self, mid_size);
   at::Tensor mid_output = npu_preparation::ApplyTensor(self, mid_size);

@@ -21,7 +21,6 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
-using tensor_list = std::vector<at::Tensor>;
 using torch::autograd::AutogradContext;
 using torch::autograd::Function;
 
@@ -85,7 +84,7 @@ std::vector<at::Tensor> lstm_cell_npu_impl(
       .Run();
   at::Tensor h_out = h_output[0];
   at::Tensor c_out = c_output[0];
-  tensor_list results = {y_output, h_out, c_out, i_output, j_output, f_output, o_output, tanhc};
+  std::vector<at::Tensor> results = {y_output, h_out, c_out, i_output, j_output, f_output, o_output, tanhc};
   return results;
 }
 
@@ -203,8 +202,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 
 class NPULstmCellFunction : public torch::autograd::Function<NPULstmCellFunction> {
 public:
-  static tensor_list forward(
-      AutogradContext *ctx,
+  static std::vector<at::Tensor> forward(AutogradContext *ctx,
       const at::Tensor& input,
       const at::Tensor& w_ih,
       const at::Tensor& w_hh,
@@ -225,7 +223,8 @@ public:
     return results;
   }
 
-  static tensor_list backward(AutogradContext* ctx, tensor_list grad_outputs) {
+  static std::vector<at::Tensor> backward(AutogradContext* ctx,
+      std::vector<at::Tensor> grad_outputs) {
     auto saved = ctx->get_saved_variables();
     auto input = saved[0];
     auto w_ih = saved[1];
@@ -245,7 +244,7 @@ public:
         grad_outputs[0], grad_outputs[1], grad_outputs[2], input, w_ih,
         w_hh, h, c, y_output, h_output, c_output, i, j, f, o, tanhc);
 
-    tensor_list output_list = {
+    std::vector<at::Tensor> output_list = {
         std::get<0>(results),
         std::get<1>(results),
         std::get<2>(results),

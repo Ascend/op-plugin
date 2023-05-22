@@ -30,10 +30,10 @@ c10::SmallVector<int64_t, N> giou_output_size(
     const at::Tensor& gtboxes,
     bool is_cross) {
   c10::SmallVector<int64_t, N> output_size;
-  if(is_cross){
-      output_size = {gtboxes.size(1), self.size(1)};
+  if (is_cross) {
+    output_size = {gtboxes.size(1), self.size(1)};
   } else {
-      output_size = {1, self.size(1)};
+    output_size = {1, self.size(1)};
   }
   return output_size;
 }
@@ -66,7 +66,7 @@ at::Tensor giou_npu(
     bool trans,
     bool is_cross,
     int64_t mode) {
-  TORCH_CHECK(trans && !is_cross &&  mode == 0,
+  TORCH_CHECK(trans && !is_cross && mode == 0,
       "giou backward only support trans==True, ",
       "is_cross==False, ",
       "mode==0('iou') current version ",
@@ -125,7 +125,7 @@ std::tuple<at::Tensor, at::Tensor> npu_giou_backward(
     bool trans,
     bool is_cross,
     int64_t mode) {
-  TORCH_CHECK(trans && !is_cross &&  mode == 0,
+  TORCH_CHECK(trans && !is_cross && mode == 0,
       "giou backward only support trans==True, ",
       "is_cross==False, ",
       "mode==0('iou') current version ",

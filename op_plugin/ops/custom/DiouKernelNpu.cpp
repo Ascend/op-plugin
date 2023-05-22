@@ -27,7 +27,7 @@ namespace{
 c10::SmallVector<int64_t, N> diou_output_size(
     const at::Tensor& self,
     const at::Tensor& gtboxes,
-    bool is_cross){
+    bool is_cross) {
   c10::SmallVector<int64_t, N> output_size;
   if (is_cross) {
     output_size = {gtboxes.size(1), self.size(1)};
@@ -43,7 +43,7 @@ at::Tensor& diou_out_npu_nocheck(
     const at::Tensor& gtboxes,
     bool trans,
     bool is_cross,
-    int64_t mode){
+    int64_t mode) {
   auto output_size = diou_output_size(self, gtboxes, is_cross);
   string mode_str = mode == 1 ? "iof" : "iou";
 
@@ -90,7 +90,7 @@ std::tuple<at::Tensor&, at::Tensor&> diou_backward_out_npu_nocheck(
     const at::Tensor& gtboxes,
     bool trans,
     bool is_cross,
-    int64_t mode){
+    int64_t mode) {
   string mode_str = mode == 1 ? "iof" : "iou";
   at_npu::native::OpCommand cmd;
   cmd.Name("DIoUGrad")
@@ -113,7 +113,7 @@ std::tuple<at::Tensor, at::Tensor> npu_diou_backward(
     const at::Tensor& gtboxes,
     bool trans,
     bool is_cross,
-    int64_t mode){
+    int64_t mode) {
   // Op need form of [n] grad
   // Note: temp avoid! it'll be remove while op deal with fp16 issue!
   at::Tensor grad_cp = at::squeeze(grad, 0);

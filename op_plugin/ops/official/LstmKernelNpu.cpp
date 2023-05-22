@@ -20,7 +20,6 @@
 
 namespace op_plugin {
 using torch::autograd::AutogradContext;
-using tensor_list = std::vector<at::Tensor>;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -92,7 +91,7 @@ std::vector<at::Tensor> npu_lstm_npu_nocheck(
       .Attr("is_training", train)
       .Attr("gate_order", gate_order)
       .Run();
-  tensor_list results = {y_output, h_output, c_output, i_output, j_output, f_output, o_output, tanhc};
+  std::vector<at::Tensor> results = {y_output, h_output, c_output, i_output, j_output, f_output, o_output, tanhc};
   return results;
 }
 
@@ -184,8 +183,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_single_layer_bidirec_npu(
   at::Tensor h = hx[0].slice(0, 0, 1);
   at::Tensor c = hx[1].slice(0, 0, 1);
   // caculate forward direction, direction of attr is UNIDIRECTIONAL(npu_lstm need add the attr of direction)
-  auto results_forward = lstm_single_layer_direc_npu(input, {h, c}, params, has_biases, 
-      num_layers, dropout, train, bidirectional, batch_first, false); 
+  auto results_forward = lstm_single_layer_direc_npu(input, {h, c}, params, has_biases,
+      num_layers, dropout, train, bidirectional, batch_first, false);
 
   // get w/ b/ h/ c of backward direction
   at::Tensor weight_back;
@@ -197,10 +196,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_single_layer_bidirec_npu(
   at::Tensor seq_mask = at::empty({0}, input.options());
   auto rev_inputs = at::flip(input, {0});
 
-  // caculate backward direction, direction of attr is REDIRECTIONAL, 
-  // but the inverse operator does not support the specified direction, 
+  // caculate backward direction, direction of attr is REDIRECTIONAL,
+  // but the inverse operator does not support the specified direction,
   // it is necessary to flip the input and output at the adaptation layer.
-  auto results_backward = op_plugin::npu_lstm(rev_inputs, weight_back, bias_back, seq_mask, h_back, c_back, 
+  auto results_backward = op_plugin::npu_lstm(rev_inputs, weight_back, bias_back, seq_mask, h_back, c_back,
       has_biases, num_layers, dropout, train, bidirectional, batch_first, false, false);
 
   // get the first dimension of the T-axis when caculate reverse direction
@@ -328,15 +327,9 @@ at::Tensor get_mask(const at::Tensor& input, const at::Tensor& batch_sizes, cons
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_direc_packseq(
-    const at::Tensor& data,
-    const at::Tensor& batch_sizes,
-    at::TensorList hx,
-    at::TensorList params,
-    bool has_biases,
-    int64_t num_layers,
-    double dropout_p,
-    bool train,
-    bool bidirectional) {
+    const at::Tensor& data, const at::Tensor& batch_sizes, at::TensorList hx,
+    at::TensorList params, bool has_biases, int64_t num_layers, double dropout_p,
+    bool train, bool bidirectional) {
 
   int64_t t_size = batch_sizes.numel();
   if (t_size == 0) {
@@ -703,13 +696,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
   grad_ht = at::unsqueeze(grad_ht, 0);
   grad_ct = at::unsqueeze(grad_ct, 0);
 
-  return std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> {grad_input, grad_weight, grad_bias, grad_ht, grad_ct};
+  return std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor>{
+      grad_input, grad_weight, grad_bias, grad_ht, grad_ct};
 }
 
 class NPULstmFunction : public torch::autograd::Function<NPULstmFunction> {
 public:
-  static tensor_list forward(
-      AutogradContext *ctx,
+  static std::vector<at::Tensor> forward(AutogradContext *ctx,
       const at::Tensor& input,
       const at::Tensor& weight,
       const at::Tensor& bias,
@@ -725,21 +718,8 @@ public:
       bool flag_seq,
       bool flag_direction) {
     at::AutoNonVariableTypeMode g;
-    auto result = npu_lstm_npu_nocheck(
-        input,
-        weight,
-        bias,
-        seq_mask,
-        h,
-        c,
-        has_biases,
-        num_layers,
-        dropout,
-        train,
-        bidirectional,
-        batch_first,
-        flag_seq,
-        flag_direction);
+    auto result = npu_lstm_npu_nocheck(input, weight, bias, seq_mask, h, c, has_biases,
+        num_layers, dropout, train, bidirectional, batch_first, flag_seq, flag_direction);
     auto result0 = result[0];
     auto result1 = result[1];
     auto result2 = result[2];
@@ -748,24 +728,13 @@ public:
     auto result5 = result[5];
     auto result6 = result[6];
     auto result7 = result[7];
-    ctx->save_for_backward({
-        input,
-        weight,
-        bias,
-        h,
-        c,
-        result0,
-        result1,
-        result2,
-        result3,
-        result4,
-        result5,
-        result6,
-        result7});
+    ctx->save_for_backward(
+        {input, weight, bias, h, c, result0, result1, result2, result3, result4, result5, result6, result7});
     return result;
   }
 
-  static tensor_list backward(AutogradContext* ctx, tensor_list grad_outputs) {
+  static std::vector<at::Tensor> backward(AutogradContext* ctx,
+      std::vector<at::Tensor> grad_outputs) {
     auto saved = ctx->get_saved_variables();
     auto input = saved[0];
     auto weight = saved[1];
@@ -782,37 +751,11 @@ public:
     auto result7 = saved[12];
 
     std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> result = op_plugin::npu_lstm_backward(
-        grad_outputs[0],
-        grad_outputs[1],
-        grad_outputs[2],
-        input,
-        weight,
-        bias,
-        h,
-        c,
-        result0,
-        result1,
-        result2,
-        result3,
-        result4,
-        result5,
-        result6,
-        result7);
-    tensor_list output = {
-        std::get<0>(result),
-        std::get<1>(result),
-        std::get<2>(result),
-        at::Tensor(),
-        std::get<3>(result),
-        std::get<4>(result),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor()};
+        grad_outputs[0], grad_outputs[1], grad_outputs[2], input, weight, bias, h, c,
+        result0, result1, result2, result3, result4, result5, result6, result7);
+    std::vector<at::Tensor> output = {std::get<0>(result), std::get<1>(result), std::get<2>(result),
+        at::Tensor(), std::get<3>(result), std::get<4>(result), at::Tensor(), at::Tensor(), at::Tensor(),
+        at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor()};
     return output;
   }
 };
@@ -832,20 +775,7 @@ std::vector<at::Tensor> npu_lstm(
     bool batch_first,
     bool flag_seq,
     bool flag_direction) {
-  return NPULstmFunction::apply(
-      input,
-      weight,
-      bias,
-      seq_mask,
-      h,
-      c,
-      has_biases,
-      num_layers,
-      dropout,
-      train,
-      bidirectional,
-      batch_first,
-      flag_seq,
-      flag_direction);
+  return NPULstmFunction::apply(input, weight, bias, seq_mask, h, c, has_biases,
+      num_layers, dropout, train, bidirectional, batch_first, flag_seq, flag_direction);
 }
 } // namespace op_plugin

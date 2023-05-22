@@ -182,7 +182,7 @@ at::Tensor& convolution_transpose3d_out_npu_nocheck(
       .Input(sizeVec, at::kInt)
       .Input(input)
       .Input(weight);
-  if (bias.defined()){
+  if (bias.defined()) {
     cmd.Input(bias);
   }
   cmd.Output(result)
