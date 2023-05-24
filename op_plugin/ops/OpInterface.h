@@ -148,7 +148,6 @@ at::Tensor argmax(const at::Tensor & self, c10::optional<int64_t> dim, bool keep
 at::Tensor argmin(const at::Tensor & self, c10::optional<int64_t> dim, bool keepdim);
 at::Tensor argsort(const at::Tensor & self, at::Dimname dim, bool descending);
 at::Tensor argsort(const at::Tensor & self, int64_t dim, bool descending);
-at::Tensor as_strided(const at::Tensor & self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset);
 at::Tensor asin(const at::Tensor & self);
 at::Tensor & asin_(at::Tensor & self);
 at::Tensor & asin_out(const at::Tensor & self, at::Tensor & out);
@@ -156,7 +155,6 @@ at::Tensor asinh(const at::Tensor & self);
 at::Tensor & asinh_(at::Tensor & self);
 at::Tensor & asinh_out(const at::Tensor & self, at::Tensor & out);
 const at::Tensor & _conv_depthwise2d_out(const at::Tensor & self, const at::Tensor & weight, at::IntArrayRef kernel_size, const c10::optional<at::Tensor> & bias, at::IntArrayRef stride, at::IntArrayRef padding, at::IntArrayRef dilation, const at::Tensor & out);
-const at::Tensor & as_strided_(const at::Tensor & self, at::IntArrayRef size, at::IntArrayRef stride, c10::optional<int64_t> storage_offset);
 const at::Tensor & resize_(const at::Tensor & self, at::IntArrayRef size, c10::optional<at::MemoryFormat> memory_format);
 const at::Tensor & resize_as_(const at::Tensor & self, const at::Tensor & the_template, c10::optional<at::MemoryFormat> memory_format);
 at::Tensor atan(const at::Tensor & self);
@@ -1066,8 +1064,6 @@ at::Tensor _embedding_bag_backward_symint(const at::Tensor & grad, const at::Ten
 at::Tensor embedding_backward_symint(const at::Tensor & grad, const at::Tensor & indices, c10::SymInt num_weights, c10::SymInt padding_idx, bool scale_grad_by_freq, bool sparse);
 at::Tensor _reshape_alias(const at::Tensor & self, at::IntArrayRef size, at::IntArrayRef stride);
 bool _amp_foreach_non_finite_check(at::TensorList scaled_grads);
-at::Tensor new_empty_strided_symint(const at::Tensor & self, c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory);
-const at::Tensor & as_strided__symint(const at::Tensor & self, c10::SymIntArrayRef size, c10::SymIntArrayRef stride, c10::optional<c10::SymInt> storage_offset);
 
 }  // namespace op_plugin
 

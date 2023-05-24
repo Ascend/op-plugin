@@ -39,16 +39,20 @@ at::Tensor zeros_like(
     c10::optional<c10::Device> device_opt,
     c10::optional<bool> pin_memory_opt,
     c10::optional<c10::MemoryFormat> optional_memory_format) {
-  auto device = device_or_default(device_opt);
+  auto device = device_opt.has_value() ? device_opt.value() : self.device();
   if (!torch_npu::utils::is_npu(device)) {
-    auto result =
-        at::empty_like(self, dtype_opt, layout_opt, device_opt, pin_memory_opt, optional_memory_format);
-    return op_plugin::fill_(result, 0);
+    auto result = at::empty_like(
+        self, dtype_opt, layout_opt, device_opt, pin_memory_opt, optional_memory_format);
+    return result.fill_(0);
   }
 
-  c10::TensorOptions option =
-      c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::ApplyTensor(self, option);
+  auto other_options = c10::TensorOptions().dtype(dtype_opt)
+                                           .device(device_opt)
+                                           .layout(layout_opt)
+                                           .pinned_memory(pin_memory_opt);
+  auto options = self.options().merge_in(other_options);
+  at::Tensor result = npu_preparation::ApplyTensor(self, options);
+
   return op_plugin::zero_(result);
 }
 
@@ -63,5 +67,4 @@ at::Tensor& zero_(at::Tensor& self) {
 
   return self;
 }
-
 } // namespace op_plugin
