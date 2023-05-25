@@ -64,11 +64,11 @@ at::Tensor& renorm_out_nocheck(
     at::Scalar maxnorm) {
   auto ori_type = self.scalar_type();
   if(ori_type != c10::ScalarType::Half && ori_type != c10::ScalarType::Float) {
-    AT_ERROR("Renorm only support float16 or float32 type.");
+    TORCH_CHECK(false, "Renorm only support float16 or float32 type.");
   }
-  if(result.scalar_type() != ori_type) {
-    AT_ERROR("result's type must be equal to input's.");
-  }
+
+  TORCH_CHECK(result.scalar_type() == ori_type, "result's type must be equal to input's.");
+
   dim = calcu_op_util::MakeWrapDim(dim, self.dim());
   auto output_size = renorm_npu_output_size(self, dim);
   at::Tensor result_bak = npu_preparation::ApplyTensorWithFormat(

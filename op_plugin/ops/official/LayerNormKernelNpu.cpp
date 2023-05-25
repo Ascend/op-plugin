@@ -146,7 +146,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(
       ss << ", " << size;
     }
     ss << "], but got input of size" << input_shape;
-    AT_ERROR(ss.str());
+    TORCH_CHECK(false, ss.str());
   }
 
   const int axis = input_ndim - normalized_ndim;

@@ -332,9 +332,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_direc_packseq(
     bool train, bool bidirectional) {
 
   int64_t t_size = batch_sizes.numel();
-  if (t_size == 0) {
-    AT_ERROR("lstm_onelayer_direc_packseq: t_size is zero!");
-  }
+  TORCH_CHECK(t_size > 0, "lstm_onelayer_direc_packseq: t_size is zero!");
 
   at::Tensor input = data.reshape({t_size, data.size(0)/t_size, data.size(1)});
 
@@ -376,9 +374,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_bidirec_packseq(
     bool train,
     bool bidirectional) {
   int64_t t_size = batch_sizes.numel();
-  if (t_size == 0) {
-    AT_ERROR("lstm_onelayer_bidirec_packseq: t_size is zero!");
-  }
+  TORCH_CHECK(t_size > 0, "lstm_onelayer_bidirec_packseq: t_size is zero!");
 
   at::Tensor input = data.reshape({t_size, data.size(0)/t_size, data.size(1)});
   bool batch_first = false;
@@ -426,9 +422,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_double_layer_direc_packseq(
     bool train,
     bool bidirectional) {
   int64_t t_size = batch_sizes.numel();
-  if (t_size == 0) {
-    AT_ERROR("lstm_double_layer_direc_packseq: t_size is zero!");
-  }
+  TORCH_CHECK(t_size > 0, "lstm_double_layer_direc_packseq: t_size is zero!");
 
   at::Tensor input = data.reshape({t_size, data.size(0)/t_size, data.size(1)});
 

@@ -29,7 +29,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_expand_outplace(
     const char *api_name) {
   for (auto& t : {to_expand1, to_expand2, to_expand3}) {
     if (!t.defined()) {
-      AT_ERROR(api_name, "(...) called with an undefined Tensor");
+      TORCH_CHECK(false, api_name, "(...) called with an undefined Tensor");
     }
   }
 
@@ -71,8 +71,8 @@ at::Tensor& where_out_npu_npu_nocheck(
     other_cp = other;
   }
   if (condition.scalar_type() != at::ScalarType::Byte && condition.scalar_type() != at::ScalarType::Bool) {
-    AT_ERROR("Expected condition to have ScalarType Byte, but got ScalarType ",
-        toString(condition.scalar_type()));
+    TORCH_CHECK(false, "Expected condition to have ScalarType Byte, but got ScalarType ",
+                toString(condition.scalar_type()));
   }
 
   at_npu::native::OpCommand cmd;

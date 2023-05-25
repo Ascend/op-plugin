@@ -35,15 +35,15 @@ void single_check_errors(int64_t info, const char* name, bool allow_singular = f
       batch_info = ": For batch " + std::to_string(batch_idx);
   }
   if (info < 0) {
-    AT_ERROR(name, batch_info, ": Argument ", -info, " has illegal value");
+    TORCH_CHECK(false, name, batch_info, ": Argument ", -info, " has illegal value");
   } else if (info > 0) {
     if (strstr(name, "svd")) {
-      AT_ERROR(name, ": the updating process of SBDSDC did not converge (error: ", info, ")");
+      TORCH_CHECK(false, name, ": the updating process of SBDSDC did not converge (error: ", info, ")");
     } else if (strstr(name, "symeig")) {
-      AT_ERROR(name, batch_info, ": the algorithm failed to converge; ", info,
+      TORCH_CHECK(false, name, batch_info, ": the algorithm failed to converge; ", info,
           " off-diagonal elements of an intermediate tridiagonal form did not converge to zero.");
     } else if (!allow_singular) {
-      AT_ERROR(name, batch_info, ": U(", info, ",", info, ") is zero, singular U.");
+      TORCH_CHECK(false, name, batch_info, ": U(", info, ",", info, ") is zero, singular U.");
     }
   }
 }

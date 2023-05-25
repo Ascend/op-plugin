@@ -542,9 +542,8 @@ c10::SmallVector<int64_t, SIZE> quantized_max_pool2d_npu_output_size(const at::T
 }
 
 c10::SmallVector<int64_t, SIZE> range_npu_output_size(float start, float end, float step) {
-  if (step == 0) {
-    AT_ERROR("range_npu_output_size step is zero!");
-  }
+  TORCH_CHECK(step != 0, "range_npu_output_size step is zero!");
+  
   int64_t size_value = std::floor((end - start) / step);
   c10::SmallVector<int64_t, SIZE> outputSize = {size_value + 1};
 

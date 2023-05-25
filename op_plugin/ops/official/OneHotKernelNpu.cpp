@@ -29,11 +29,8 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
 
   TORCH_CHECK(self_temp.dim() < 8, "NPU error,can not support the input tensor's dim bigger than 7.");
   if (self.numel() == 0) {
-    if (num_classes <= 0) {
-      AT_ERROR("Can not infer total number of classes from empty tensor.");
-    } else {
+      TORCH_CHECK(num_classes > 0, "Can not infer total number of classes from empty tensor.");
       depth = num_classes;
-    }
   }
 
   TORCH_CHECK(self_temp.min().item().toLong() >= 0, "Class values must be non-negative.");
