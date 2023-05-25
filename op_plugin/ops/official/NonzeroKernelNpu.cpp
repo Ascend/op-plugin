@@ -44,19 +44,13 @@ at::Tensor& nonzero_out(const at::Tensor& self, at::Tensor& result) {
       at::ScalarType::Long,
       output_size);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    nonzero_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    nonzero_out_npu_nocheck(result, self);
-  }
+  nonzero_out_npu_nocheck(result, self);
   return result;
 }
 
 at::Tensor nonzero(const at::Tensor& self) {
   auto output_size = op_infer::nonzero_npu_max_output_size(self);
-  at::Tensor result = npu_preparation::ApplyTensor(output_size, self.options().dtype(at::kLong), self);
+  at::Tensor result = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kLong), self);
   nonzero_out_npu_nocheck(result, self);
   return result;
 }
