@@ -80,7 +80,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_apply_adam_w(
     const c10::optional<at::Tensor>& max_grad_norm,
     c10::optional<bool> amsgrad,
     c10::optional<bool> maximize) {
-  AT_ERROR("npu_apply_adam_w is not implemented for Tensor");
+  TORCH_CHECK(false, "npu_apply_adam_w is not implemented for Tensor");
 }
 
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_w_out(
