@@ -18,8 +18,8 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+at::Tensor _prelu_kernel(const at::Tensor& self, const at::Tensor& weight) {
+  at::Tensor result = npu_preparation::apply_tensor(self);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("PRelu")
@@ -28,9 +28,5 @@ at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
       .Output(result)
       .Run();
   return result;
-}
-
-at::Tensor _prelu_kernel(const at::Tensor& self, const at::Tensor& weight) {
-  return op_plugin::prelu(self, weight);
 }
 } // namespace op_plugin

@@ -286,7 +286,7 @@ at::Tensor & cumprod_out(const at::Tensor & self, at::Dimname dim, c10::optional
 at::Tensor & cumprod_out(const at::Tensor & self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor & out);
 at::Tensor & cumsum_out(const at::Tensor & self, at::Dimname dim, c10::optional<at::ScalarType> dtype, at::Tensor & out);
 at::Tensor & cumsum_out(const at::Tensor & self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor & out);
-at::Tensor decode_jpeg(const at::Tensor & self, at::IntArrayRef image_shape, int64_t channels);
+at::Tensor decode_jpeg(const at::Tensor & self, at::IntArrayRef image_shape, int64_t channels, bool try_recover_truncated=false);
 at::Tensor diag(const at::Tensor & self, int64_t diagonal);
 at::Tensor & diag_out(const at::Tensor & self, int64_t diagonal, at::Tensor & out);
 at::Tensor div(const at::Tensor & self, const at::Tensor & other, c10::optional<c10::string_view> rounding_mode);
@@ -785,8 +785,6 @@ at::Tensor & pow_(at::Tensor & self, const at::Scalar & exponent);
 at::Tensor & pow_out(const at::Scalar & self, const at::Tensor & exponent, at::Tensor & out);
 at::Tensor & pow_out(const at::Tensor & self, const at::Scalar & exponent, at::Tensor & out);
 at::Tensor & pow_out(const at::Tensor & self, const at::Tensor & exponent, at::Tensor & out);
-at::Tensor prelu(const at::Tensor & self, const at::Tensor & weight);
-::std::tuple<at::Tensor,at::Tensor> prelu_backward(const at::Tensor & grad_output, const at::Tensor & self, const at::Tensor & weight);
 at::Tensor prod(const at::Tensor & self, int64_t dim, bool keepdim, c10::optional<at::ScalarType> dtype);
 at::Tensor prod(const at::Tensor & self, c10::optional<at::ScalarType> dtype);
 at::Tensor prod(const at::Tensor & self, at::Dimname dim, bool keepdim, c10::optional<at::ScalarType> dtype);
