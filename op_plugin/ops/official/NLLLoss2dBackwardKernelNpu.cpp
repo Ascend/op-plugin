@@ -100,11 +100,11 @@ at::Tensor nll_loss2d_backward(
     const at::Tensor& total_weight) {
   // Check Target Dtype
   auto scalar_type = target.scalar_type();
-  TORCH_CHECK(scalar_type == at::kLong || scalar_type == at::kInt, "Expected object of scalar type ", at::kLong,
-              " or ", at::kInt, " but got scalar type ", scalar_type,
-              " for argument 'target'  in call to nll_loss2d_backward");
+  TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),
+      "Expected object of scalar type ", at::kLong, " or ", at::kInt,
+      " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss2d_backward");
+  at::Tensor target_cast = (scalar_type == at::kLong) ? op_plugin::npu_dtype_cast(target, at::kInt) : target;
 
-  at::Tensor target_cast = op_plugin::npu_dtype_cast(target, at::kInt);
   auto self_input = self.contiguous();
   self_input = self_input.permute({0, 2, 3, 1});
   self_input = self_input.reshape({-1, self.size(1)});

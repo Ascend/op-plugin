@@ -31,16 +31,11 @@ at::Tensor& nll_loss_backward_out_nocheck(
     int64_t reduction,
     int64_t ignore_index,
     const at::Tensor& total_weight) {
-  at::Tensor target_cast = target;
   auto scalar_type = target.scalar_type();
-  if (scalar_type == at::kLong) {
-    target_cast = op_plugin::npu_dtype_cast(target, at::kInt);
-  } else if (scalar_type == at::kInt) {
-    ;
-  } else {
-    TORCH_CHECK(false, "Expected object of scalar type ", at::kLong, " or ", at::kInt, " but got scalar type ",
-                scalar_type, " for argument 'target'  in call to nll_loss_backward");
-  }
+  TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),
+      "Expected object of scalar type ", at::kLong, " or ", at::kInt,
+      " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss_backward");
+  at::Tensor target_cast = (scalar_type == at::kLong) ? op_plugin::npu_dtype_cast(target, at::kInt) : target;
 
   string reduction_str = calcu_op_util::GetReductionStr(reduction);
   at_npu::native::OpCommand cmd;

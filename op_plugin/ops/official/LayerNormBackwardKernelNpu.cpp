@@ -129,15 +129,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm_backward(
   const auto input_shape = X.sizes();
   const auto input_ndim = X.dim();
 
-  if (input_ndim < normalized_ndim || !input_shape.slice(input_ndim - normalized_ndim).equals(normalized_shape)) {
-    std::stringstream ss;
-    ss << "Given normalized_shape=" << normalized_shape << ", expected input with shape [*";
-    for (auto size : normalized_shape) {
-      ss << ", " << size;
-    }
-    ss << "], but got input of size" << input_shape;
-    TORCH_CHECK(false, ss.str());
-  }
+  TORCH_CHECK((input_ndim >= normalized_ndim && input_shape.slice(input_ndim - normalized_ndim).equals(normalized_shape)),
+      "Given normalized_shape=", normalized_shape,
+      ", expected input with shape [*", op_infer::array_to_small_vector(normalized_shape),
+      "], but got input of size", input_shape);
 
   const int axis = input_ndim - normalized_ndim;
   const int64_t M = std::accumulate(
