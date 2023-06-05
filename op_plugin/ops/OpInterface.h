@@ -286,7 +286,7 @@ at::Tensor & cumprod_out(const at::Tensor & self, at::Dimname dim, c10::optional
 at::Tensor & cumprod_out(const at::Tensor & self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor & out);
 at::Tensor & cumsum_out(const at::Tensor & self, at::Dimname dim, c10::optional<at::ScalarType> dtype, at::Tensor & out);
 at::Tensor & cumsum_out(const at::Tensor & self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor & out);
-at::Tensor decode_jpeg(const at::Tensor & self, at::IntArrayRef image_shape, int64_t channels, bool try_recover_truncated=false);
+at::Tensor decode_jpeg(const at::Tensor & self, at::IntArrayRef image_shape, int64_t channels, bool try_recover_truncated);
 at::Tensor diag(const at::Tensor & self, int64_t diagonal);
 at::Tensor & diag_out(const at::Tensor & self, int64_t diagonal, at::Tensor & out);
 at::Tensor div(const at::Tensor & self, const at::Tensor & other, c10::optional<c10::string_view> rounding_mode);
@@ -1026,11 +1026,17 @@ at::Tensor & upsample_trilinear3d_out(const at::Tensor & self, at::IntArrayRef o
 at::Tensor var(const at::Tensor & self, at::DimnameList dim, bool unbiased, bool keepdim);
 at::Tensor var(const at::Tensor & self, bool unbiased);
 at::Tensor var(const at::Tensor & self, at::OptionalIntArrayRef dim, bool unbiased, bool keepdim);
+at::Tensor var(const at::Tensor & self, at::OptionalIntArrayRef dim, const c10::optional<c10::Scalar> & correction, bool keepdim);
+at::Tensor var(const at::Tensor & self, at::DimnameList dim, const c10::optional<c10::Scalar> & correction, bool keepdim);
 ::std::tuple<at::Tensor,at::Tensor> var_mean(const at::Tensor & self, at::DimnameList dim, bool unbiased, bool keepdim);
 ::std::tuple<at::Tensor,at::Tensor> var_mean(const at::Tensor & self, bool unbiased);
 ::std::tuple<at::Tensor,at::Tensor> var_mean(const at::Tensor & self, at::OptionalIntArrayRef dim, bool unbiased, bool keepdim);
+::std::tuple<at::Tensor,at::Tensor> var_mean(const at::Tensor & self, at::OptionalIntArrayRef dim, const c10::optional<c10::Scalar> & correction, bool keepdim);
+::std::tuple<at::Tensor,at::Tensor> var_mean(const at::Tensor & self, at::DimnameList dim, const c10::optional<c10::Scalar> & correction, bool keepdim);
 at::Tensor & var_out(const at::Tensor & self, at::OptionalIntArrayRef dim, bool unbiased, bool keepdim, at::Tensor & out);
 at::Tensor & var_out(const at::Tensor & self, at::DimnameList dim, bool unbiased, bool keepdim, at::Tensor & out);
+at::Tensor & var_out(const at::Tensor & self, at::OptionalIntArrayRef dim, const c10::optional<c10::Scalar> & correction, bool keepdim, at::Tensor & out);
+at::Tensor & var_out(const at::Tensor & self, at::DimnameList dim, const c10::optional<c10::Scalar> & correction, bool keepdim, at::Tensor & out);
 at::Tensor view(const at::Tensor & self, at::IntArrayRef size);
 ::std::vector<at::Tensor> where(const at::Tensor & condition);
 at::Tensor where(const at::Tensor & condition, const at::Tensor & self, const at::Tensor & other);

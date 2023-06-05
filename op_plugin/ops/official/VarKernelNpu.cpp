@@ -112,29 +112,39 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_out_nocheck(
 at::Tensor& var_out(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
-    bool unbiased,
+    const c10::optional<c10::Scalar>& correction,
     bool keepdim,
-    at::Tensor& var) {
+    at::Tensor& result) {
+  auto unbiased = !(correction.has_value() && correction.value().toInt() == 0);
   // check and trans dim
-  auto dim_now = check_and_trans_dim(self, dim.value());
+  auto dim_now = check_and_trans_dim(self, dim.value_or(at::IntArrayRef{}));
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
-
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
 
   npu_preparation::CheckOut(
       {self},
-      var,
+      result,
       self,
       output_size);
-  if (!npu_utils::check_match(&var)) {
-    at::Tensor contiguous_var = npu_utils::format_contiguous(var);
-    var_mean_out_nocheck(contiguous_var, mean, self, dim.value(), unbiased, keepdim);
-    npu_utils::format_fresh_view(var, contiguous_var);
+
+  if (!npu_utils::check_match(&result)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    var_mean_out_nocheck(contiguous_result, mean, self, dim.value_or(at::IntArrayRef{}), unbiased, keepdim);
+    npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    var_mean_out_nocheck(var, mean, self, dim.value(), unbiased, keepdim);
+    var_mean_out_nocheck(result, mean, self, dim.value_or(at::IntArrayRef{}), unbiased, keepdim);
   }
 
-  return var;
+  return result;
+}
+
+at::Tensor& var_out(
+    const at::Tensor& self,
+    at::DimnameList dim,
+    const c10::optional<c10::Scalar>& correction,
+    bool keepdim,
+    at::Tensor& result) {
+  return at::var_out(result, self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
 at::Tensor& var_out(
@@ -142,45 +152,76 @@ at::Tensor& var_out(
     at::DimnameList dim,
     bool unbiased,
     bool keepdim,
-    at::Tensor& var) {
-  return op_plugin::var_out(self, dimnames_to_positions(self, dim), unbiased, keepdim, var);
+    at::Tensor& result) {
+  return at::var_out(result, self, dimnames_to_positions(self, dim), c10::make_optional<c10::Scalar>(unbiased ? 1 : 0),
+      keepdim);
 }
 
-at::Tensor var(const at::Tensor& self, bool unbiased) {
-  bool keepdim = false;
-  c10::SmallVector<int64_t, N> dim = calcu_op_util::GetDimlistForTensor(self);
-
-  return op_plugin::var(self, dim, unbiased, keepdim);
+at::Tensor& var_out(
+    const at::Tensor& self,
+    at::OptionalIntArrayRef dim,
+    bool unbiased,
+    bool keepdim,
+    at::Tensor& result) {
+  return at::var_out(result, self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
 }
 
 at::Tensor var(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
-    bool unbiased,
+    const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
-  auto dim_now = check_and_trans_dim(self, dim.value());
+  auto unbiased = !(correction.has_value() && correction.value().toInt() == 0);
+  auto dim_now = check_and_trans_dim(self, dim.value_or(at::IntArrayRef{}));
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
 
   at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
-  var_mean_out_nocheck(variance, variance, self, dim.value(), unbiased, keepdim);
-
+  at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
+  var_mean_out_nocheck(variance, mean, self, dim.value_or(at::IntArrayRef{}), unbiased, keepdim);
   return variance;
 }
 
 at::Tensor var(
     const at::Tensor& self,
     at::DimnameList dim,
-    bool unbiased,
+    const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
-  return op_plugin::var(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+  return at::var(self, dimnames_to_positions(self, dim), correction, keepdim);
+}
+
+at::Tensor var(const at::Tensor& self, bool unbiased) {
+  c10::SmallVector<int64_t, N> dim = calcu_op_util::GetDimlistForTensor(self);
+  return at::var(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
+}
+
+at::Tensor var(const at::Tensor& self, at::OptionalIntArrayRef dim, bool unbiased, bool keepdim) {
+  return at::var(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
+}
+
+at::Tensor var(const at::Tensor& self, at::DimnameList dim, bool unbiased, bool keepdim) {
+  return at::var(self, dimnames_to_positions(self, dim),
+      c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
     const at::Tensor& self,
-    at::DimnameList dim,
-    bool unbiased,
+    at::OptionalIntArrayRef dim,
+    const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
-  return op_plugin::var_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+  auto unbiased = !(correction.has_value() && correction.value().toInt() == 0);
+  auto dim_now = check_and_trans_dim(self, dim.value_or(at::IntArrayRef{}));
+  auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
+
+  at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
+  at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
+  var_mean_out_nocheck(variance, mean, self, dim.value_or(at::IntArrayRef{}), unbiased, keepdim);
+
+  return std::tuple<at::Tensor, at::Tensor>(variance, mean);
+}
+
+std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor& self, bool unbiased) {
+  c10::SmallVector<int64_t, SIZE> dim = calcu_op_util::GetDimlistForTensor(self);
+  return at::var_mean(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
@@ -188,19 +229,23 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     at::OptionalIntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  auto dim_now = check_and_trans_dim(self, dim.value());
-  auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
-
-  at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
-  at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
-  var_mean_out_nocheck(variance, mean, self, dim.value(), unbiased, keepdim);
-
-  return std::tuple<at::Tensor, at::Tensor>(variance, mean);
+  return at::var_mean(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
 }
 
-std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor& self, bool unbiased) {
-  c10::SmallVector<int64_t, SIZE> dim = calcu_op_util::GetDimlistForTensor(self);
+std::tuple<at::Tensor, at::Tensor> var_mean(
+    const at::Tensor& self,
+    at::DimnameList dim,
+    bool unbiased,
+    bool keepdim) {
+  return at::var_mean(self, dimnames_to_positions(self, dim),
+      c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
+}
 
-  return op_plugin::var_mean(self, dim, unbiased, false);
+std::tuple<at::Tensor, at::Tensor> var_mean(
+    const at::Tensor& self,
+    at::DimnameList dim,
+    const c10::optional<c10::Scalar>& correction,
+    bool keepdim) {
+  return at::var_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 } // namespace op_plugin
