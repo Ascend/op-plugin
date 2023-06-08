@@ -97,7 +97,8 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_out_nocheck(
     at::IntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  auto dim_now = check_and_trans_dim(self, dim);
+  c10::SmallVector<int64_t, N> dim_now =
+      dim.empty() ? calcu_op_util::GetDimlistForTensor(self) : c10::SmallVector<int64_t, N>(dim);
   auto ori_type = self.scalar_type();
   TORCH_CHECK((ori_type == c10::ScalarType::Half || ori_type == c10::ScalarType::Float),
       "Var Mean only support float16 or float32 type.");
@@ -129,10 +130,10 @@ at::Tensor& var_out(
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    var_mean_out_nocheck(contiguous_result, mean, self, dim.value_or(at::IntArrayRef{}), unbiased, keepdim);
+    var_mean_out_nocheck(contiguous_result, mean, self, dim_now, unbiased, keepdim);
     npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    var_mean_out_nocheck(result, mean, self, dim.value_or(at::IntArrayRef{}), unbiased, keepdim);
+    var_mean_out_nocheck(result, mean, self, dim_now, unbiased, keepdim);
   }
 
   return result;
@@ -177,7 +178,7 @@ at::Tensor var(
 
   at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
-  var_mean_out_nocheck(variance, mean, self, dim.value_or(at::IntArrayRef{}), unbiased, keepdim);
+  var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim);
   return variance;
 }
 
@@ -214,7 +215,7 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
 
   at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
-  var_mean_out_nocheck(variance, mean, self, dim.value_or(at::IntArrayRef{}), unbiased, keepdim);
+  var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim);
 
   return std::tuple<at::Tensor, at::Tensor>(variance, mean);
 }
