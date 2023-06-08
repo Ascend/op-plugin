@@ -116,8 +116,9 @@ function main()
     check_python_version
     check_pytorch_version
 
+    CODE_ROOT_PATH=${CUR_DIR}/../
     # clone torch_adapter
-    PYTORCH_PATH=${CUR_DIR}/../pytorch
+    PYTORCH_PATH=${CODE_ROOT_PATH}/build/pytorch
     if [ -d ${PYTORCH_PATH} ]; then
         rm -rf ${PYTORCH_PATH}
     fi
@@ -125,22 +126,22 @@ function main()
 
     # copy op_plugin to torch_adapter/third_party
     PYTORCH_THIRD_PATH=${PYTORCH_PATH}/third_party/op-plugin
-    if [ -d ${PYTORCH_THIRD_PATH} ]; then
+    if [ -d ${PYTORCH_THIRD_PATH}/op_plugin ]; then
         rm -r ${PYTORCH_THIRD_PATH}/*
     else
         mkdir -p ${PYTORCH_THIRD_PATH}
     fi
-    OP_PLUGIN_PATH=${CUR_DIR}/../op_plugin
+    OP_PLUGIN_PATH=${CODE_ROOT_PATH}/op_plugin
     cp -rf ${OP_PLUGIN_PATH} ${PYTORCH_THIRD_PATH}/
 
     # compile torch_adapter
     bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION}
 
     # copy dist/torch_npu.whl from torch_adapter to op_plugin
-    if [ -d ${OP_PLUGIN_PATH}/dist ]; then
-        rm -r ${OP_PLUGIN_PATH}/dist
+    if [ -d ${CODE_ROOT_PATH}/dist ]; then
+        rm -r ${CODE_ROOT_PATH}/dist
     fi
-    cp -rf ${PYTORCH_PATH}/dist ${CUR_DIR}
+    cp -rf ${PYTORCH_PATH}/dist ${CODE_ROOT_PATH}
 
     exit 0
 }
