@@ -24,16 +24,18 @@ OP-Plugin算子插件的编译、使用依赖昇腾PyTorch Adapter。因此，�
 
 2. 编译生成插件的二进制安装包。
 
+   下载对应op_plugin版本分支代码，进入插件根目录，以master为例
    ```
-   # 下载对应op_plugin版本分支代码，进入插件根目录，以master为例
    git clone https://gitee.com/ascend/op-plugin.git
    cd op-plugin
-   # 可指定Python版本编包。如，--python3.8(缺省) --python3.9
-   # 可指定昇腾pytorch版本编包。当前仅支持昇腾pytorch 2.1版本，即master分支。如，--pytorch=master(缺省)。
-   bash ci/build.sh --python=3.8 --pytorch=master
-   # 编译过程中，会在插件根目录新建build文件夹，并下载昇腾pytorch对应版本的源码，协同编译。
-   # 若build/pytorch目录存在，则编译op-plugin时，不再重复下载昇腾pytorch源码。如需重新下载所依赖的昇腾pytorch源码，删除build/pytorch目录即可。
    ```
+   可指定Python版本编包。如，--python3.8(缺省) 或 --python3.9
+   可指定昇腾pytorch版本编包。当前仅支持昇腾pytorch 2.1版本，即master分支。如，--pytorch=master(缺省)。
+   ```
+   bash ci/build.sh --python=3.8
+   ```
+   编译过程中，会在插件根目录新建build文件夹，并下载昇腾pytorch对应版本的源码，协同编译。
+   若build/pytorch目录存在，则编译op-plugin时，不再重复下载昇腾pytorch源码。如需下载所依赖的最新昇腾pytorch源码，删除build/pytorch目录即可。
 
 3. 完成编译后，安装dist目录下生成的插件torch\_npu包，如果使用非root用户安装，需要在命令后加**--user**。
 
@@ -41,11 +43,3 @@ OP-Plugin算子插件的编译、使用依赖昇腾PyTorch Adapter。因此，�
    pip3 install --upgrade dist/torch_npu-1.11.0-cp37-cp37m-linux_aarch64.whl
    # 若用户在x86架构下安装插件，请替换为对应的whl包。
    ```
-
-4. 执行单元测试脚本，验证PyTorch是否安装成功。
-   ```
-   cd test/test_network_ops/
-   python3 test_div.py
-   ```
-
-   结果显示OK证明PyTorch框架与插件安装成功。
