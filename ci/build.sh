@@ -118,11 +118,14 @@ function main()
 
     CODE_ROOT_PATH=${CUR_DIR}/../
     # clone torch_adapter
-    PYTORCH_PATH=${CODE_ROOT_PATH}/build/pytorch
-    if [ -d ${PYTORCH_PATH} ]; then
-        rm -rf ${PYTORCH_PATH}
+    BUILD_PATH=${CODE_ROOT_PATH}/build
+    PYTORCH_PATH=${BUILD_PATH}/pytorch
+    if [ ! -d ${PYTORCH_PATH} ]; then
+        if [ -d ${BUILD_PATH} ]; then
+            rm -r ${BUILD_PATH}
+        fi
+        git clone -b ${PYTORCH_VERSION} https://gitee.com/clinglai/pytorch.git ${PYTORCH_PATH}
     fi
-    git clone -b ${PYTORCH_VERSION} https://gitee.com/clinglai/pytorch.git ${PYTORCH_PATH}
 
     # copy op_plugin to torch_adapter/third_party
     PYTORCH_THIRD_PATH=${PYTORCH_PATH}/third_party/op-plugin
