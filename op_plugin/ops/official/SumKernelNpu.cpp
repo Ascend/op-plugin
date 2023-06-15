@@ -21,7 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& sum_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -60,7 +60,7 @@ at::Tensor& sum_out(
   auto self_size = self.sizes();
   for (int64_t i = 0; i < self_size.size(); i++) {
     if (self_size[i] == 0) {
-      at::Tensor result_cast = at::empty(output_size);
+      at::Tensor result_cast = at::empty(output_size, self.options().dtype(res_type));
       result.copy_(result_cast);
       return result;
     }
@@ -116,7 +116,7 @@ at::Tensor sum(
 
   for (int64_t i = 0; i < self_size.size(); i++) {
     if (self_size[i] == 0) {
-      return at::zeros(output_size, self_cp.options());
+      return at::zeros(output_size, self_cp.options().dtype(out_type));
     }
   }
 
