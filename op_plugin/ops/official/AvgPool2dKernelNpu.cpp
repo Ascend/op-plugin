@@ -95,8 +95,6 @@ at::Tensor& avg_pool2d_out(
     bool count_include_pad,
     c10::optional<int64_t> divisor_override,
     at::Tensor& result) {
-  avg_pool2d_parameter_check(self, kernel_size, stride, padding, divisor_override);
-
   at::Tensor self_copy = self;
   if (self.dim() == 3) {
     self_copy = self_copy.unsqueeze(0);

@@ -101,8 +101,6 @@ at::Tensor& avg_pool3d_out(
     bool count_include_pad,
     c10::optional<int64_t> divisor_override,
     at::Tensor& out) {
-  avg_pool3d_parameter_check(self, kernel_size, stride, padding, divisor_override);
-
   const int k_T = at::native::safe_downcast<int, int64_t>(kernel_size[0]);
   const int k_H = kernel_size.size() == 1 ? k_T : at::native::safe_downcast<int, int64_t>(kernel_size[1]);
   const int k_W = kernel_size.size() == 1 ? k_T : at::native::safe_downcast<int, int64_t>(kernel_size[2]);

@@ -77,7 +77,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool3d_with_indices_out_nocheck(
   return std::tie(result, result);
 }
 
-c10::SmallVector<int64_t, SIZE> max_pool3d_with_indices_output_size(
+void max_pool3d_with_indices_parameter_check(
     const at::Tensor& self,
     at::IntArrayRef kernel_size,
     at::IntArrayRef stride,
@@ -96,7 +96,15 @@ c10::SmallVector<int64_t, SIZE> max_pool3d_with_indices_output_size(
       "maxpool3d expected input to be non-empty 5D(batch mode) or 4D tensor",
       "but input has dim: ",
       self.ndimension());
+}
 
+c10::SmallVector<int64_t, SIZE> max_pool3d_with_indices_output_size(
+    const at::Tensor& self,
+    at::IntArrayRef kernel_size,
+    at::IntArrayRef stride,
+    at::IntArrayRef pads,
+    at::IntArrayRef dilation,
+    bool ceil_mode) {
   const int k_T = at::native::safe_downcast<int, int64_t>(kernel_size[0]);
   const int k_H = kernel_size.size() == 1 ? k_T : at::native::safe_downcast<int, int64_t>(kernel_size[1]);
   const int k_W = kernel_size.size() == 1 ? k_T : at::native::safe_downcast<int, int64_t>(kernel_size[2]);
@@ -170,6 +178,7 @@ std::tuple<at::Tensor, at::Tensor> max_pool3d_with_indices(
     at::IntArrayRef pads,
     at::IntArrayRef dilation,
     bool ceil_mode) {
+  max_pool3d_with_indices_parameter_check(self, kernel_size, stride, pads, dilation, ceil_mode);
   at::Tensor self_cp = self.ndimension() == 4 ? self.unsqueeze(0) : self;
   c10::SmallVector<int64_t, SIZE> output_size =
       max_pool3d_with_indices_output_size(self, kernel_size, stride, pads, dilation, ceil_mode);

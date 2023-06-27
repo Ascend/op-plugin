@@ -89,8 +89,6 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool2d_with_indices_out(
     bool ceil_mode,
     at::Tensor& output,
     at::Tensor& indices) {
-  max_pool2d_with_indices_parameter_check(self, kernel_size, stride, padding, dilation);
-
   const int k_H = at::native::safe_downcast<int, int64_t>(kernel_size[0]);
   const int k_W = kernel_size.size() == 1 ? k_H : at::native::safe_downcast<int, int64_t>(kernel_size[1]);
   c10::SmallVector<int64_t, SIZE> kernel_sizes = {k_H, k_W};
