@@ -20,7 +20,7 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& npu_broadcast_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -34,6 +34,14 @@ at::Tensor& npu_broadcast_out_nocheck(
   return result;
 }
 } // namespace
+
+at::Tensor& npu_broadcast_out(
+    const at::Tensor& self,
+    at::IntArrayRef size,
+    at::Tensor& result) {
+  npu_broadcast_out_nocheck(result, self, size);
+  return result;
+}
 
 at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) {
   at::Tensor self_cp = self.dtype() == at::kBool ? op_plugin::npu_dtype_cast(self, at::kInt) : self;

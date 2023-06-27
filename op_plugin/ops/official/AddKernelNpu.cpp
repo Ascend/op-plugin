@@ -153,8 +153,7 @@ at::Tensor add(const at::Tensor& self, const at::Tensor& other, const at::Scalar
     at::Scalar other_c1_offset(
         other.storage_offset() / (other.size(2) * other.size(3) * c0_len));
     at::Scalar stride_len(self.size(1) / c0_len);
-    at::Tensor result = at_npu::native::NPUNativeFunctions::npu_stride_add(
-        self_use, other_use, self_c1_offset, other_c1_offset, stride_len);
+    at::Tensor result = op_plugin::npu_stride_add(self_use, other_use, self_c1_offset, other_c1_offset, stride_len);
     return result;
   }
   at::Tensor output_tensor = add_dest_output(self, other);
