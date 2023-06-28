@@ -96,7 +96,7 @@ at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
       set_transposed_npu_desc(contiguous_self);
     }
   } else {
-    contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self);
+    contiguous_self = npu_utils::format_contiguous(self);
   }
 
   if (is_mat2_t_flex) {
@@ -109,7 +109,7 @@ at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
       set_transposed_npu_desc(contiguous_mat2);
     }
   } else {
-    contiguous_mat2 = npu_utils::format_contiguous_add_copy_optimize(mat2);
+    contiguous_mat2 = npu_utils::format_contiguous(mat2);
   }
 
   at_npu::native::OpCommand cmd;

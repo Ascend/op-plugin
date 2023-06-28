@@ -29,8 +29,8 @@ namespace {
 at::Tensor& bmm_out_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mat2) {
   bool is_self_t = calcu_op_util::IsTransposeLastTwoDims(self);
   bool is_mat2_t = calcu_op_util::IsTransposeLastTwoDims(mat2);
-  at::Tensor contiguous_self = is_self_t ? self : npu_utils::format_contiguous_add_copy_optimize(self);
-  at::Tensor contiguous_mat2 = is_mat2_t ? mat2 : npu_utils::format_contiguous_add_copy_optimize(mat2);
+  at::Tensor contiguous_self = is_self_t ? self : npu_utils::format_contiguous(self);
+  at::Tensor contiguous_mat2 = is_mat2_t ? mat2 : npu_utils::format_contiguous(mat2);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("BatchMatMul")
