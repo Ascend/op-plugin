@@ -35,12 +35,12 @@ at::Tensor argmin(
       output_size,
       self.options().dtype(at::kInt),
       ACL_FORMAT_ND);
-  c10::SmallVector<int64_t, N> dim_vector = {dim_value};
+  c10::Scalar dim_scalar = dim_value;
 
   at_npu::native::OpCommand cmd;
   cmd.Name("ArgMin")
       .Input(input)
-      .Input(dim_vector, at::kInt)
+      .Input(dim_scalar, at::kInt)
       .Output(result)
       .Attr("keep_dims", keepdim_value)
       .Run();

@@ -18,6 +18,7 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -45,7 +46,10 @@ at::Tensor& npu_broadcast_out(
 
 at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) {
   at::Tensor self_cp = self.dtype() == at::kBool ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
-  at::Tensor result = npu_preparation::ApplyTensor(self_cp, size);
+  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+      size,
+      self_cp.options(),
+      calcu_op_util::GetTensorNpuFormat(self));
   npu_broadcast_out_nocheck(result, self_cp, size);
 
   if (self.dtype() == at::kBool) {
