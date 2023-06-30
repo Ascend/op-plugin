@@ -206,7 +206,7 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(
         // The sizes of the ByteTensor mask or bool tensor must match the sizes of the corresponding dimensions in self
         for (int64_t j = 0; j < index.dim(); j++) {
           int64_t srcIdx = result.size() + j;
-          TORCH_CHECK_INDEX(index.size(j) != self.size(srcIdx), "The shape of the mask ", index.sizes(), " at index ",
+          TORCH_CHECK_INDEX(index.size(j) == self.size(srcIdx), "The shape of the mask ", index.sizes(), " at index ",
                             j, " does not match the shape of the indexed tensor ", self.sizes(), " at index ", srcIdx);
         }
         // Replace with nonzeros
