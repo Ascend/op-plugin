@@ -39,6 +39,17 @@ at::Tensor& sum_out_npu_nocheck(
       .Run();
   return result;
 }
+
+at::Tensor check_dtype(
+    const at::Tensor &self,
+    c10::ScalarType out_type) {
+  if (isIntegralType(out_type, true)) {
+    out_type = at::kFloat;
+  }
+  at::Tensor self_cp = (self.scalar_type() == out_type) ? self :
+      op_plugin::npu_dtype_cast(self, out_type);
+  return self_cp;
+}
 } // namespace
 
 at::Tensor& sum_out(
@@ -57,17 +68,13 @@ at::Tensor& sum_out(
       res_type,
       output_size);
 
-  auto self_size = self.sizes();
-  for (int64_t i = 0; i < self_size.size(); i++) {
-    if (self_size[i] == 0) {
-      at::Tensor result_cast = at::empty(output_size, self.options().dtype(res_type));
-      result.copy_(result_cast);
-      return result;
-    }
+  if (self.numel() == 0) {
+    at::Tensor result_cast = at::empty(output_size, self.options().dtype(res_type));
+    result.copy_(result_cast);
+    return result;
   }
 
-  at::Tensor self_cp = isIntegralType(self.scalar_type(), true) ?
-      op_plugin::npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor self_cp = check_dtype(self, res_type);
   at::Tensor result_cp = result.scalar_type() == self_cp.scalar_type() ? result :
       op_plugin::npu_dtype_cast(result, self_cp.scalar_type());
 
@@ -102,10 +109,7 @@ at::Tensor sum(
     at::OptionalIntArrayRef dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype) {
-  at::Tensor self_cp = isIntegralType(self.scalar_type(), true) ?
-      op_plugin::npu_dtype_cast(self, at::kFloat) : self;
-  auto output_size = op_infer::reduce_ops_npu_output_size(self_cp, dim.value(), keepdim);
-  auto self_size = self_cp.sizes();
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim.value(), keepdim);
   auto out_type = self.scalar_type();
 
   if (dtype.has_value()) {
@@ -114,12 +118,11 @@ at::Tensor sum(
     out_type = at::kLong;
   }
 
-  for (int64_t i = 0; i < self_size.size(); i++) {
-    if (self_size[i] == 0) {
-      return at::zeros(output_size, self_cp.options().dtype(out_type));
-    }
+  if (self.numel() == 0) {
+    return at::zeros(output_size, self.options().dtype(out_type));
   }
 
+  at::Tensor self_cp = check_dtype(self, out_type);
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(
       output_size, self_cp.options(), ACL_FORMAT_ND);
   sum_out_npu_nocheck(result, self_cp, dim.value(), keepdim);
