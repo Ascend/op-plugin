@@ -989,7 +989,7 @@ at::Tensor zeros(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10:
 at::Tensor zeros_like(const at::Tensor & self, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format);
 at::Tensor & zeros_out(at::IntArrayRef size, at::Tensor & out);
 
-// add op_interface 0424.
+// add op_interface for 2.1.
 ::std::tuple<at::Tensor,at::Tensor> _prelu_kernel_backward(const at::Tensor & grad_output, const at::Tensor & self, const at::Tensor & weight);
 at::Tensor std(const at::Tensor & self, at::OptionalIntArrayRef dim, const c10::optional<at::Scalar> & correction, bool keepdim);
 at::Tensor _prelu_kernel(const at::Tensor & self, const at::Tensor & weight);

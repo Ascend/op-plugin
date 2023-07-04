@@ -19,9 +19,9 @@ set -e
 
 CUR_DIR=$(dirname $(readlink -f $0))
 SUPPORTED_PY_VERSION=(3.8 3.9)
-SUPPORTED_PYTORCH_VERSION=('master' 'v2.0.0' 'debug_op_plugin')
+SUPPORTED_PYTORCH_VERSION=('master' 'v2.0.0')
 PY_VERSION='3.8' # Default supported python version is 3.8
-PYTORCH_VERSION='debug_op_plugin' # Default supported PyTorch version is master
+PYTORCH_VERSION='master' # Default supported PyTorch version is master
 DEFAULT_SCRIPT_ARGS_NUM_MAX=2 # Default max supported input parameters
 
 # Parse arguments inside script
@@ -124,7 +124,7 @@ function main()
         if [ -d ${BUILD_PATH} ]; then
             rm -r ${BUILD_PATH}
         fi
-        git clone -b ${PYTORCH_VERSION} https://gitee.com/clinglai/pytorch.git ${PYTORCH_PATH}
+        git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
     fi
 
     # copy op_plugin to torch_adapter/third_party
