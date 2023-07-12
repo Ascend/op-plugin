@@ -251,4 +251,21 @@ std::vector<at::Tensor> AdvanceIndex::npu_broadcast_tensors(std::vector<at::Tens
   return result;
 }
 
+bool AdvanceIndex::is_expandable_to(c10::IntArrayRef shape, c10::IntArrayRef desired) {
+  // True if `shape` can be broadcasted to `desired`
+  size_t ndim = shape.size();
+  size_t target_dim = desired.size();
+  if (ndim > target_dim) {
+    return false;
+  }
+  for (size_t i = 0; i < ndim; i++) {
+    int64_t size = shape[ndim - i - 1];
+    int64_t target = desired[target_dim - i - 1];
+    if (size != target && size != 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
 } // namespace op_plugin
