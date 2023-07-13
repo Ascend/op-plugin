@@ -1006,6 +1006,8 @@ bool _amp_foreach_non_finite_check(at::TensorList scaled_grads);
 at::Tensor native_dropout_backward(const at::Tensor & grad_output, const at::Tensor & mask, double scale);
 at::Tensor reflection_pad1d_backward(const at::Tensor & grad_output, const at::Tensor & input, at::IntArrayRef padding);
 at::Tensor & reflection_pad1d_backward_out(const at::Tensor & grad_output, const at::Tensor & input, at::IntArrayRef padding, at::Tensor & grad_input);
+at::Tensor npu_rotary_mul(const at::Tensor& self, const at::Tensor& r1, const at::Tensor& r2);
+::std::tuple<at::Tensor,at::Tensor,at::Tensor> npu_rotary_mul_backward(const at::Tensor& grad, const at::Tensor& self, const at::Tensor& r1, const at::Tensor& r2);
 
 }  // namespace op_plugin
 
