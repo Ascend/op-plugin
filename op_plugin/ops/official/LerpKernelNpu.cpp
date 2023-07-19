@@ -21,6 +21,15 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
+c10::SmallVector<int64_t, SIZE> lerp_broadcast_size(
+    const at::Tensor& self,
+    const at::Tensor& end,
+    const at::Tensor& weight) {
+  auto expanded_size = op_infer::broadcast_ops_npu_output_size(self, end);
+  auto output_size = op_infer::broadcast_ops_npu_output_size(expanded_size, weight.sizes());
+  return output_size;
+}
+
 at::Tensor& lerp_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -57,10 +66,12 @@ at::Tensor& lerp_out(
     const at::Tensor& end,
     const at::Tensor& weight,
     at::Tensor& result) {
+  auto output_size = lerp_broadcast_size(self, end, weight);
   npu_preparation::CheckOut(
       {self, end, weight},
       result,
-      self);
+      self,
+      output_size);
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
@@ -77,10 +88,12 @@ at::Tensor& lerp_out(
     const at::Tensor& end,
     const at::Scalar& weight,
     at::Tensor& result) {
+  auto output_size = op_infer::broadcast_ops_npu_output_size(self, end);
   npu_preparation::CheckOut(
       {self, end},
       result,
-      self);
+      self,
+      output_size);
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     lerp_out_npu_nocheck(contiguous_result, self, end, weight);
@@ -91,23 +104,33 @@ at::Tensor& lerp_out(
   return result;
 }
 
-at::Tensor lerp(const at::Tensor& start, const at::Tensor& end, const at::Tensor& weight) {
-  at::Tensor result = npu_preparation::ApplyTensor(start);
-  lerp_out_npu_nocheck(result, start, end, weight);
+at::Tensor lerp(const at::Tensor& self, const at::Tensor& end, const at::Tensor& weight) {
+  auto output_size = lerp_broadcast_size(self, end, weight);
+  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  lerp_out_npu_nocheck(result, self, end, weight);
   return result;
 }
 
-at::Tensor lerp(const at::Tensor& start, const at::Tensor& end, const at::Scalar& weight) {
-  at::Tensor result = npu_preparation::ApplyTensor(start);
-  lerp_out_npu_nocheck(result, start, end, weight);
+at::Tensor lerp(const at::Tensor& self, const at::Tensor& end, const at::Scalar& weight) {
+  auto output_size = op_infer::broadcast_ops_npu_output_size(self, end);
+  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  lerp_out_npu_nocheck(result, self, end, weight);
   return result;
 }
 
 at::Tensor& lerp_(at::Tensor& self, const at::Tensor& end, const at::Tensor& weight) {
+  c10::SmallVector<int64_t, SIZE> self_size = op_infer::array_to_small_vector(self.sizes());
+  auto output_size = lerp_broadcast_size(self, end, weight);
+  TORCH_CHECK(self_size == output_size,
+      "output with shape ", self_size, " doesn't match the broadcast shape ", output_size);
   return op_plugin::lerp_out(self, end, weight, self);
 }
 
 at::Tensor& lerp_(at::Tensor& self, const at::Tensor& end, const at::Scalar& weight) {
+  c10::SmallVector<int64_t, SIZE> self_size = op_infer::array_to_small_vector(self.sizes());
+  auto output_size = op_infer::broadcast_ops_npu_output_size(self, end);
+  TORCH_CHECK(self_size == output_size,
+      "output with shape ", self_size, " doesn't match the broadcast shape ", output_size);
   return op_plugin::lerp_out(self, end, weight, self);
 }
 } // namespace op_plugin

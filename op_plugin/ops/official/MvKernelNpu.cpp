@@ -39,7 +39,6 @@ at::Tensor& mv_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
       .Output(result)
       .Run();
 
-  result = at::squeeze(result, 1);
   at_npu::native::npu_fast_reshape_(result);
   return result;
 }
@@ -52,7 +51,7 @@ at::Tensor& mv_out(const at::Tensor& self, const at::Tensor& vec, at::Tensor& re
       self,
       {self.size(0)});
 
-  result = at::unsqueeze(result, 1);
+  result.unsqueeze_(1);
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     mv_out_npu_nocheck(contiguous_result, self, vec);
@@ -60,12 +59,14 @@ at::Tensor& mv_out(const at::Tensor& self, const at::Tensor& vec, at::Tensor& re
   } else {
     mv_out_npu_nocheck(result, self, vec);
   }
+  result.squeeze_(1);
   return result;
 }
 
 at::Tensor mv(const at::Tensor& self, const at::Tensor& vec) {
   at::Tensor result = npu_preparation::ApplyTensor(self, {self.size(0), 1});
   mv_out_npu_nocheck(result, self, vec);
+  result.squeeze_(1);
   return result;
 }
 } // namespace op_plugin

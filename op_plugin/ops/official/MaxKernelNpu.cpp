@@ -68,6 +68,19 @@ at::Tensor& max_out_npu_nocheck(
       .Run();
   return result;
 }
+
+at::Tensor& max_out_npu_nocheck(
+    at::Tensor& result,
+    const at::Tensor& self,
+    const at::Scalar& other) {
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Maximum")
+      .Input(self)
+      .Input(other, self.scalar_type())
+      .Output(result)
+      .Run();
+  return result;
+}
 } // namespace
 
 std::tuple<at::Tensor&, at::Tensor&> max_out(
@@ -111,8 +124,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
     if (!indices_match) {
       npu_utils::format_fresh_view(indices_dtype_cast, contiguous_indices);
     }
-  }
-  else {
+  } else {
     max_out_npu_nocheck(output, indices_dtype_cast, self, dim, keepdim);
   }
 
@@ -140,7 +152,10 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor& self, int64_t dim, bool
   auto output_size = op_infer::reduce_ops_npu_output_size(self_cast, dims, keepdim);
 
   at::Tensor outputs = npu_preparation::ApplyTensorWithFormat(output_size, self_cast.options(), ACL_FORMAT_ND);
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(output_size, self_cast.options().dtype(at::ScalarType::Int), ACL_FORMAT_ND);
+  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(
+      output_size,
+      self_cast.options().dtype(at::ScalarType::Int),
+      ACL_FORMAT_ND);
 
   max_out_npu_nocheck(outputs, indices, self_cast, dim, keepdim);
   indices = op_plugin::npu_dtype_cast(indices, at::ScalarType::Long);
@@ -202,6 +217,12 @@ at::Tensor& maximum_out(const at::Tensor& self, const at::Tensor& other, at::Ten
 }
 
 at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
+  auto output_size_diff = self.sizes();
+  at::Tensor result_diff = npu_preparation::ApplyTensor(self, output_size_diff);
+  if (npu_preparation::IsCPUScalar(other)) {
+    max_out_npu_nocheck(result_diff, self, other.item());
+    return result_diff;
+  }
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType high_type = at::native::result_type(self, other);
   at::Tensor self_copy = (self.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(self)) ?
