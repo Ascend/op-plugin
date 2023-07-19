@@ -32,6 +32,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool2d_with_indices_out_nocheck(
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
     bool ceil_mode) {
+  at::Tensor self_cp = self.dim() == 3 ? self.unsqueeze(0) : self;
   int64_t stride_H = 1;
   int64_t stride_W = 1;
   if (stride.empty()) {
@@ -58,6 +59,11 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool2d_with_indices_out_nocheck(
       .Attr("dilation", dilations)
       .Attr("ceil_mode", ceil_mode)
       .Run();
+
+  if (self.dim() == 3) {
+    output.squeeze_(0);
+    indices.squeeze_(0);
+  }
   return std::tie(output, indices);
 }
 

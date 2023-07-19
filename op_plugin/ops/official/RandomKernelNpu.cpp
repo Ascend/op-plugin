@@ -51,22 +51,24 @@ at::Tensor& random_out_npu(
       .Input(at::Scalar(alg), at::ScalarType::Int);
   // StatelessRandomUniformV2 doesn't support int output
   if (isIntegralType(self.scalar_type(), true)) {
-    at::Tensor result_int = npu_preparation::ApplyTensor(self, self.options().dtype(at::kFloat));
+    at::Tensor result_cp = npu_preparation::ApplyTensor(self, self.options().dtype(at::kFloat));
     cmd.Attr("dtype", at::kFloat)
-        .Output(result_int)
+        .Output(result_cp)
         .Run();
     // StatelessRandomUniformV2 output: U(0~1) --> U(from~to)
-    result_int = result_int.mul(to).sub(result_int.mul(from).sub(static_cast<float>(from)));
-    result = op_plugin::npu_dtype_cast(result_int, self.scalar_type());
+    result_cp = result_cp.mul(to).sub(result_cp.mul(from).sub(static_cast<float>(from)));
+    result_cp = op_plugin::npu_dtype_cast(result_cp, self.scalar_type());
+    result.copy_(result_cp);
   } else {
     cmd.Attr("dtype", self.scalar_type())
         .Output(result)
         .Run();
     // StatelessRandomUniformV2 output: U(0~1) --> U(from~to)
-    result = result.mul(to).sub(result.mul(from).sub(static_cast<float>(from)));
+    auto result_cp = result.mul(to).sub(result.mul(from).sub(static_cast<float>(from)));
     // round off numbers
-    result = op_plugin::npu_dtype_cast(
-        op_plugin::npu_dtype_cast(result, at::kLong), self.scalar_type());
+    result_cp = op_plugin::npu_dtype_cast(result_cp, at::kLong);
+    result_cp = op_plugin::npu_dtype_cast(result_cp, self.scalar_type());
+    result.copy_(result_cp);
   }
   return result;
 }

@@ -33,6 +33,15 @@ at::Tensor& max_pool2d_with_indices_backward_out_nocheck(
     at::IntArrayRef dilation,
     bool ceil_mode,
     const at::Tensor& indices) {
+  at::Tensor self_cp = self;
+  at::Tensor grad_output_cp = grad_output;
+  at::Tensor indices_cp = indices;
+  if (self.dim() == 3) {
+    self_cp = self.unsqueeze(0);
+    grad_output_cp = grad_output.unsqueeze(0);
+    indices_cp = indices.unsqueeze(0);
+    grad_input.unsqueeze_(0);
+  }
   int64_t stride_H = 1;
   int64_t stride_W = 1;
   if (stride.empty()) {
@@ -59,6 +68,10 @@ at::Tensor& max_pool2d_with_indices_backward_out_nocheck(
       .Attr("dilations", dilations)
       .Attr("ceil_mode", ceil_mode)
       .Run();
+
+  if (self.dim() == 3) {
+    grad_input.squeeze_(0);
+  }
   return grad_input;
 }
 
@@ -137,15 +150,7 @@ at::Tensor max_pool2d_with_indices_backward(
   c10::SmallVector<int64_t, SIZE> dilations = {dilation_H, dilation_W};
   at::IntArrayRef dilationss = at::IntArrayRef(dilations);
 
-  const int64_t input_height = self.size(-2);
-  const int64_t input_width = self.size(-1);
-
-  const int64_t output_height_for_shape_check =
-      at::native::pooling_output_shape<int64_t>(input_height, k_H, pad_H, d_H, dilation_H, ceil_mode);
-  const int64_t output_width_for_shape_check =
-      at::native::pooling_output_shape<int64_t>(input_width, k_W, pad_W, d_W, dilation_W, ceil_mode);
-
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
+  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
 
   max_pool2d_with_indices_backward_out_nocheck(
       grad_input, grad_output_var, self, kernel_sizess, stridess, padss, dilationss, ceil_mode, indices);
