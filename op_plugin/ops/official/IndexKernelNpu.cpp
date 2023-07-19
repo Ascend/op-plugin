@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <third_party/acl/inc/op_proto/index_ops.h>
 #include "torch_npu/csrc/framework/graph/util/GraphModeGuard.h"
 
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
+#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
 namespace op_plugin {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;

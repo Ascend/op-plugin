@@ -15,11 +15,11 @@
 
 #include <ATen/native/IndexingUtils.h>
 #include <ATen/native/TypeProperties.h>
-#include <third_party/acl/inc/op_proto/experiment_ops.h>
 
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
+#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;

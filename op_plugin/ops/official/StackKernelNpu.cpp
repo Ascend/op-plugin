@@ -15,8 +15,8 @@
 
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
-#include <third_party/acl/inc/op_proto/split_combination_ops.h>
 
 namespace op_plugin {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
