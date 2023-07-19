@@ -93,9 +93,9 @@ at::Tensor& conv2d_backward_weight_out_nocheck(
   if (is_special_conv1d(input, weight, stride, padding, dilation, groups)) {
     at::Tensor mm_input = grad.permute({1, 0, 2}).reshape({grad.size(1), grad.size(0) * grad.size(2)});
     at::Tensor mm_other = input.reshape({input.size(0), grad.size(2), input.size(3) / grad.size(2)})
-                               .permute({2, 0, 1})
-                               .reshape({weight.size(3), input.size(0) * input.size(3) / weight.size(3)})
-                               .permute({1, 0});
+        .permute({2, 0, 1})
+        .reshape({weight.size(3), input.size(0) * input.size(3) / weight.size(3)})
+        .permute({1, 0});
     at::Tensor mm_result = at::matmul(mm_input, mm_other);
     grad_weight = mm_result.reshape({grad.size(1), 1, 1, weight.size(3)});
     return grad_weight;
@@ -187,8 +187,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(
   at::Tensor grad_weight;
   at::Tensor grad_bias;
   if (grad_input_mask[0]) {
+    int64_t grad_input_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
     grad_input = npu_preparation::ApplyTensorWithFormat(
-        std::get<0>(output_sizes), input.options(), ACL_FORMAT_NC1HWC0);
+        std::get<0>(output_sizes), input.options(), grad_input_format);
   }
 
   if (grad_input_mask[1]) {

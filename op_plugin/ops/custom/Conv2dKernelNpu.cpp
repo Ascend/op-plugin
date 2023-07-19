@@ -98,7 +98,8 @@ at::Tensor npu_conv2d(
   int64_t Ho = (H + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
   int64_t Wo = (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
   c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Ho, Wo};
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(input, output_size, ACL_FORMAT_NC1HWC0);
+  int64_t result_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
+  at::Tensor result = npu_preparation::ApplyTensorWithFormat(input, output_size, result_format);
   op_plugin::npu_conv2d_out(input, weight, bias, stride, padding, dilation, groups, result);
   return result;
 }

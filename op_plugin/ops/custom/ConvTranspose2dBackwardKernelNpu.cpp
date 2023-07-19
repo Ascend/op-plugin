@@ -23,7 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using namespace torch::autograd;
 
-namespace{
+namespace {
 at::Tensor& conv_transpose2d_backward_input_out_nocheck(
     at::Tensor& grad_input,
     const at::Tensor& input,
@@ -280,7 +280,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv_transpose2d_backward(
   at::Tensor grad_bias;
 
   if (output_mask[0]) {
-    grad_input = npu_preparation::ApplyTensorWithFormat(input, ACL_FORMAT_NC1HWC0);
+    int64_t grad_input_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
+    grad_input = npu_preparation::ApplyTensorWithFormat(input, grad_input_format);
   }
   if (output_mask[1]) {
     grad_weight = npu_preparation::ApplyTensorWithFormat(
@@ -326,7 +327,7 @@ public:
   }
 
   static std::vector<at::Tensor> backward(AutogradContext *ctx,
-        std::vector<at::Tensor> grad_outputs) {
+      std::vector<at::Tensor> grad_outputs) {
     auto padding = ctx->saved_data["padding"].toIntVector();
     auto output_padding = ctx->saved_data["output_padding"].toIntVector();
     auto stride = ctx->saved_data["stride"].toIntVector();

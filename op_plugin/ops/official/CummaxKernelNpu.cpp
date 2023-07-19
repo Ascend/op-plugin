@@ -19,9 +19,14 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
-void _cummax_helper(const at::Tensor& self, at::Tensor& values, at::Tensor& indices, int64_t dim) {
+void _cummax_helper(
+    const at::Tensor& self,
+    at::Tensor& values,
+    at::Tensor& indices,
+    int64_t dim) {
   at::Tensor values_temp = npu_preparation::ApplyTensor(self);
-  at::Tensor indices_temp = npu_preparation::ApplyTensor(self, self.options().dtype(at::kLong));
+  at::Tensor indices_temp = npu_preparation::ApplyTensorWithFormat(self.sizes(), self.options().dtype(at::kLong),
+      ACL_FORMAT_ND);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Cummax")

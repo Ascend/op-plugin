@@ -19,7 +19,7 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 at::Tensor& conv_transpose2d_out_npu(
     at::Tensor& result,
     const at::Tensor& input,
@@ -66,11 +66,12 @@ at::Tensor npu_conv_transpose2d(
     at::IntArrayRef stride,
     at::IntArrayRef dilation,
     int64_t groups) {
-  const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+  const at::Tensor& bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
   auto output_size = op_infer::conv_transpose2d_npu_output_size(
       input, weight, bias, padding, output_padding, stride, dilation, groups);
+  int64_t result_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
   at::Tensor result =
-      npu_preparation::ApplyTensorWithFormat(output_size, input.options(), ACL_FORMAT_NC1HWC0);
+      npu_preparation::ApplyTensorWithFormat(output_size, input.options(), result_format);
 
   conv_transpose2d_out_npu(
       result, input, weight, bias, padding, output_padding, stride, dilation, groups);

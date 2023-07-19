@@ -20,7 +20,7 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& ceil_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Ceil")
@@ -36,7 +36,7 @@ at::Tensor& ceil_out(const at::Tensor& self, at::Tensor& result) {
       {self},
       result,
       self);
-    if (!npu_utils::check_match(&result)) {
+  if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     ceil_out_npu_nocheck(contiguous_result, self);
     npu_utils::format_fresh_view(result, contiguous_result);

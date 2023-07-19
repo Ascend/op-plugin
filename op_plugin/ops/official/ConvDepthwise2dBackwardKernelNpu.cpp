@@ -87,7 +87,8 @@ std::tuple<at::Tensor, at::Tensor> _conv_depthwise2d_backward(
   at::Tensor grad_input;
   at::Tensor grad_weight;
   if (output_mask[0]) {
-    grad_input = npu_preparation::ApplyTensorWithFormat(self, ACL_FORMAT_NC1HWC0);
+    int64_t grad_input_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
+    grad_input = npu_preparation::ApplyTensorWithFormat(self, grad_input_format);
   }
   if (output_mask[1]) {
     grad_weight = npu_preparation::ApplyTensor(weight);
