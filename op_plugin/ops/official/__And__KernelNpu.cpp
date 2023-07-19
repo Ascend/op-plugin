@@ -20,7 +20,7 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
-namespace{
+namespace {
 at::Tensor and_dest_output(const at::Tensor& self, const at::Tensor& other) {
   bool isSelfWrapped = calcu_op_util::IsScalarWrappedToTensor(self);
   if (not isSelfWrapped) {
@@ -37,7 +37,7 @@ at::Tensor& and_out_npu_nocheck(
   at_npu::native::OpCommand cmd;
   cmd.Name((self.scalar_type() == at::kBool) ? "LogicalAnd" : "BitwiseAnd")
       .Input(self)
-      .Input(other,self.scalar_type())
+      .Input(other, self.scalar_type())
       .Output(result)
       .Run();
   return result;
@@ -47,9 +47,9 @@ at::Tensor& and_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& other) {
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+  if (npu_preparation::IsCPUScalar(other)) {
     and_out_npu_nocheck(result, self, other.item());
-  } else if (self.dim() == 0 && !torch_npu::utils::is_npu(self)) {
+  } else if (npu_preparation::IsCPUScalar(self)) {
     and_out_npu_nocheck(result, other, self.item());
   } else {
     at_npu::native::OpCommand cmd;
@@ -57,7 +57,7 @@ at::Tensor& and_out_npu_nocheck(
         .Input(self)
         .Input(other)
         .Output(result)
-        .Run(); 
+        .Run();
   }
   return result;
 }

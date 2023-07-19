@@ -20,7 +20,7 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
-namespace{
+namespace {
 at::Tensor or___dest_output(const at::Tensor& self, const at::Tensor& other) {
   bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
   if (is_self_wrapped) {
@@ -46,9 +46,9 @@ at::Tensor& or___out_tensor_npu(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& other) {
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+  if (npu_preparation::IsCPUScalar(other)) {
     or___out_scalar_npu(result, self, other.item());
-  } else if (self.dim() == 0 && !torch_npu::utils::is_npu(self)) {
+  } else if (npu_preparation::IsCPUScalar(self)) {
     or___out_scalar_npu(result, other, self.item());
   } else {
     string real_op_name = (self.dtype() == at::kBool) ? "LogicalOr" : "BitwiseOr";

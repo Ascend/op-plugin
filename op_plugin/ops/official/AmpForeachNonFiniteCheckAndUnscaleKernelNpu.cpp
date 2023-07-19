@@ -24,7 +24,7 @@ const int FLOAT_STATUS_OP_DIMS_SIZE = 8;
 } // namespace
 
 bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) {
-  std::cout << "Non finite check on NPU device!";
+  std::cout << "Non finite check on NPU device!" << std::endl;
 
   auto options = at::TensorOptions(torch_npu::utils::get_npu_device_type()).dtype(at::kFloat);
   at::Tensor float_status = at::zeros({FLOAT_STATUS_OP_DIMS_SIZE}, options);
@@ -34,7 +34,7 @@ bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) {
   if (result) {
     auto ans_clear = at_npu::native::NPUNativeFunctions::npu_clear_float_status(float_status);
   }
-  
+
   return result;
 }
 
@@ -42,7 +42,7 @@ void _amp_foreach_non_finite_check_and_unscale_(
     at::TensorList scaled_grads,
     at::Tensor& found_inf,
     const at::Tensor& inv_scale) {
-  std::cout << "Non finite check and unscale on NPU device!";
+  std::cout << "Non finite check and unscale on NPU device!" << std::endl;
   TORCH_CHECK(torch_npu::utils::is_npu(inv_scale), "inv_scale must be NPU-Tensor");
   TORCH_CHECK(inv_scale.numel() == 1, "inv_scale must be a 1-element tensor");
   TORCH_CHECK(inv_scale.scalar_type() == at::ScalarType::Float, "inv_scale must be a float tensor");
@@ -53,9 +53,10 @@ void _amp_foreach_non_finite_check_and_unscale_(
 
   bool is_finite = true;
   if (c10_npu::IsSupportInfNan()) {
-    for (auto scaled_grad : scaled_grads) {
-      auto res = op_plugin::isfinite(scaled_grad);
-      if (!op_plugin::all(res).item().toBool()) {
+    for (const auto& scaled_grad : scaled_grads) {
+      auto res = op_plugin::sum(scaled_grad, at::ScalarType::Float);
+      float cpu_sum = res.item().toFloat();
+      if (!std::isfinite(cpu_sum)) {
         is_finite = false;
         break;
       }
@@ -67,7 +68,7 @@ void _amp_foreach_non_finite_check_and_unscale_(
   if (is_finite) {
     auto expected_device = scaled_grads[0].device();
     auto expected_dtype = scaled_grads[0].dtype();
-    for (auto t : scaled_grads) {
+    for (const auto& t : scaled_grads) {
       TORCH_CHECK(torch_npu::utils::is_npu(t), "one of scaled_grads was not a NPU tensor.");
       TORCH_CHECK(t.device() == expected_device, "scaled_grads must be on the same device.");
       TORCH_CHECK(t.dtype() == expected_dtype, "scaled_grads must have the same dtype.");
