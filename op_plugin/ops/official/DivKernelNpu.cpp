@@ -36,7 +36,7 @@ at::Tensor& div_scalar_out_nocheck(at::Tensor& result, const at::Tensor& self, c
 }
 
 at::Tensor& div_out_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+  if (npu_preparation::IsCPUScalar(other)) {
     div_scalar_out_nocheck(result, self, other.item());
   } else {
     auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
@@ -64,10 +64,10 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType high_type = at::native::result_type(self, other);
   if (isIntegralType(high_type, true)) {
-      high_type = at::ScalarType::Float;
+    high_type = at::ScalarType::Float;
   }
   if (isFloatingType(result.scalar_type())) {
-      high_type = result.scalar_type();
+    high_type = result.scalar_type();
   }
   npu_preparation::CheckOut(
       {self},
@@ -94,7 +94,7 @@ at::Tensor& div_out(
     const at::Tensor& other,
     c10::optional<c10::string_view> rounding_mode,
     at::Tensor& result) {
-  if (*rounding_mode == "floor") {
+  if (rounding_mode.has_value() && *rounding_mode == "floor") {
     op_plugin::floor_divide_out(self, other, result);
     return result;
   }
@@ -142,7 +142,7 @@ at::Tensor div(
     const at::Tensor& self,
     const at::Scalar& other,
     c10::optional<c10::string_view> rounding_mode) {
-  if (*rounding_mode == "floor") {
+  if (rounding_mode.has_value() && *rounding_mode == "floor") {
     return op_plugin::floor_divide(self, other);
   }
   at::Tensor true_div_res = op_plugin::div(self, other);
@@ -158,7 +158,7 @@ at::Tensor div(
     const at::Tensor& self,
     const at::Tensor& other,
     c10::optional<c10::string_view> rounding_mode) {
-  if (*rounding_mode == "floor") {
+  if (rounding_mode.has_value() && *rounding_mode == "floor") {
     return op_plugin::floor_divide(self, other);
   }
   at::Tensor true_div_res = op_plugin::div(self, other);
@@ -198,7 +198,7 @@ at::Tensor& div_(
     at::Tensor& self,
     const at::Scalar& other,
     c10::optional<c10::string_view> rounding_mode) {
-  if (*rounding_mode == "floor") {
+  if (rounding_mode.has_value() && *rounding_mode == "floor") {
     return op_plugin::floor_divide_(self, other);
   }
   op_plugin::div_(self, other);
@@ -214,7 +214,7 @@ at::Tensor& div_(
     at::Tensor& self,
     const at::Tensor& other,
     c10::optional<c10::string_view> rounding_mode) {
-  if (*rounding_mode == "floor") {
+  if (rounding_mode.has_value() && *rounding_mode == "floor") {
     return op_plugin::floor_divide_(self, other);
   }
   op_plugin::div_(self, other);

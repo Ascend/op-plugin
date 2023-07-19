@@ -29,8 +29,8 @@ namespace {
 at::Tensor& bmm_out_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mat2) {
   bool is_self_t = calcu_op_util::IsTransposeLastTwoDims(self);
   bool is_mat2_t = calcu_op_util::IsTransposeLastTwoDims(mat2);
-  at::Tensor contiguous_self = is_self_t ? self : npu_utils::format_contiguous(self);
-  at::Tensor contiguous_mat2 = is_mat2_t ? mat2 : npu_utils::format_contiguous(mat2);
+  at::Tensor contiguous_self = is_self_t ? self : npu_utils::format_contiguous_add_copy_optimize(self);
+  at::Tensor contiguous_mat2 = is_mat2_t ? mat2 : npu_utils::format_contiguous_add_copy_optimize(mat2);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("BatchMatMul")
@@ -45,6 +45,11 @@ at::Tensor& bmm_out_nocheck(at::Tensor& result, const at::Tensor& self, const at
 } // namespace
 
 at::Tensor& bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& result) {
+  TORCH_CHECK(self.device() == mat2.device(),
+      "Expected all tensors to be on the same device, but found at least two devices, ",
+      (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
+      " and ",
+      (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "));
   auto output_size = {self.size(0), self.size(1), mat2.size(2)};
   npu_preparation::CheckOut(
       {self, mat2},
@@ -63,6 +68,11 @@ at::Tensor& bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& 
 }
 
 at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
+  TORCH_CHECK(self.device() == mat2.device(),
+      "Expected all tensors to be on the same device, but found at least two devices, ",
+      (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
+      " and ",
+      (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "));
   auto output_size = {self.size(0), self.size(1), mat2.size(2)};
 
   at::Tensor result;
@@ -73,9 +83,9 @@ at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
     // check is 16-algined with high-performance
     auto is_aligin = [&]() {
       return (!(static_cast<uint64_t>(self.size(1)) & 0x0000000F)) &&
-             (!(static_cast<uint64_t>(self.size(2)) & 0x0000000F)) &&
-             (!(static_cast<uint64_t>(mat2.size(1)) & 0x0000000F)) &&
-             (!(static_cast<uint64_t>(mat2.size(2)) & 0x0000000F));
+          (!(static_cast<uint64_t>(self.size(2)) & 0x0000000F)) &&
+          (!(static_cast<uint64_t>(mat2.size(1)) & 0x0000000F)) &&
+          (!(static_cast<uint64_t>(mat2.size(2)) & 0x0000000F));
     };
     static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
     static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;

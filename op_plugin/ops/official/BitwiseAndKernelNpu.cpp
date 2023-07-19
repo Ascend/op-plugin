@@ -21,7 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& bitwise_and_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -41,9 +41,9 @@ at::Tensor& bitwise_and_out_npu_nocheck(
     const at::Tensor& self,
     const at::Tensor& other) {
   auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+  if (npu_preparation::IsCPUScalar(other)) {
     op_plugin::bitwise_and_out(self, other.item(), result);
-  } else if (self.dim() == 0 && !torch_npu::utils::is_npu(self)) {
+  } else if (npu_preparation::IsCPUScalar(self)) {
     op_plugin::bitwise_and_out(other, self.item(), result);
   } else {
     string real_op_name = (self.dtype() == at::kBool) ? "LogicalAnd" : "BitwiseAnd";

@@ -22,20 +22,13 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& gather_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     bool sparse_grad) {
-  at::Tensor dtype_cast_of_self = self;
-  at::Tensor dtype_cast_of_result = result;
-  if (self.scalar_type() == at::ScalarType::Half) {
-    dtype_cast_of_self = op_plugin::npu_dtype_cast(dtype_cast_of_self, at::ScalarType::Float);
-    dtype_cast_of_result = op_plugin::npu_dtype_cast(dtype_cast_of_result, at::ScalarType::Float);
-  }
-
   if (self.scalar_type() == at::kLong) {
     TORCH_WARN_ONCE("The oprator of gather is executed, Currently High Accuracy but Low Performance OP"
       "with 64-bit has been used,Please Do Some Cast at Python Functions with 32-bit for Better Performance!");
@@ -43,12 +36,11 @@ at::Tensor& gather_out_npu_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("GatherElements")
-      .Input(dtype_cast_of_self)
+      .Input(self)
       .Input(index)
       .Attr("dim", dim)
-      .Output(dtype_cast_of_result)
+      .Output(result)
       .Run();
-  result.copy_(dtype_cast_of_result);
   return result;
 }
 } // namespace

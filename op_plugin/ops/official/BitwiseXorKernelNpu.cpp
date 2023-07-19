@@ -40,9 +40,9 @@ at::Tensor& bitwise_xor_out_npu_nocheck(
     const at::Tensor& self,
     const at::Tensor& other) {
   auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+  if (npu_preparation::IsCPUScalar(other)) {
     op_plugin::bitwise_xor_out(self, other.item(), result);
-  } else if (self.dim() == 0 && !torch_npu::utils::is_npu(self)) {
+  } else if (npu_preparation::IsCPUScalar(self)) {
     op_plugin::bitwise_xor_out(other, self.item(), result);
   } else {
     at_npu::native::OpCommand cmd;
@@ -118,7 +118,7 @@ at::Tensor bitwise_xor(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::Tensor output_tensor = is_self_wrapped ? other : self;
 
-  at::Tensor self_input  = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
+  at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
   at::Tensor other_input = (other.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(other, at::kInt) : other;
   at::Tensor result = output_tensor.dtype() == at::kBool ?
       npu_preparation::ApplyTensor(output_size, output_tensor.options().dtype(at::kInt), output_tensor) :

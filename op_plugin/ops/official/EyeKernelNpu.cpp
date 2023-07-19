@@ -20,13 +20,14 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& eye_out_npu_nocheck(at::Tensor& result, int64_t n, int64_t m) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Eye")
       .Output(result)
       .Attr("num_rows", n)
       .Attr("num_columns", m)
+      .Attr("dtype", result.scalar_type())
       .Run();
 
   return result;
@@ -94,9 +95,9 @@ at::Tensor eye(
   auto device = device_or_default(device_opt);
   at::TensorOptions option;
   option = option.dtype(dtype_opt)
-                 .layout(layout_opt)
-                 .device(device)
-                 .pinned_memory(pin_memory_opt);
+      .layout(layout_opt)
+      .device(device)
+      .pinned_memory(pin_memory_opt);
 
   // get the output size
   c10::SmallVector<int64_t, N> output_size = {n, m};
