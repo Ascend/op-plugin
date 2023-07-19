@@ -35,17 +35,19 @@ at::Tensor& pow_tensor_tensor_out_npu_nocheck(at::Tensor& result, const at::Tens
 
 // pow.Tensor_Scalar_out
 at::Tensor& pow_tensor_scalar_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::Scalar exp) {
-  if (exp.toFloat() == 2.0) {
-    op_plugin::mul_out(self, self, result);
-    return result;
-  }
   at_npu::native::OpCommand cmd;
-  cmd.Name("Pow")
-      .Input(self)
-      .Input(exp, self.scalar_type())
-      .Output(result)
-      .Run();
-
+  if (exp.toFloat() == 2.0) {
+    cmd.Name("Square")
+        .Input(self)
+        .Output(result)
+        .Run();
+  } else {
+    cmd.Name("Pow")
+        .Input(self)
+        .Input(exp, self.scalar_type())
+        .Output(result)
+        .Run();
+  }
   return result;
 }
 

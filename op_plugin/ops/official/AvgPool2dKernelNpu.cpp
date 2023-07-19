@@ -22,6 +22,36 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 
+c10::SmallVector<int64_t, N> get_paddings(
+    const at::Tensor& self,
+    at::IntArrayRef kernel_size,
+    at::IntArrayRef stride,
+    at::IntArrayRef padding,
+    bool ceil_mode) {
+  int64_t pad_down = padding[0];
+  int64_t pad_right = padding[1];
+  int H = self.size(-2);
+  int W = self.size(-1);
+
+  int64_t kH = op_infer::CeilDiv(H + 2 * padding[0] - kernel_size[0], stride[0]) + 1;
+  int64_t kW = op_infer::CeilDiv(W + 2 * padding[1] - kernel_size[1], stride[1]) + 1;
+  if (ceil_mode) {
+    if ((kH - 1) * stride[0] >= H + padding[0]) {
+      --kH;
+      int64_t need_pad_h = (kH - 1) * stride[0] + kernel_size[0] - H;
+      pad_down = need_pad_h - padding[0];
+    }
+    if ((kW - 1) * stride[1] >= W + padding[1]) {
+      --kW;
+      int64_t need_pad_w = (kW - 1) * stride[1] + kernel_size[1] - W;
+      pad_right = need_pad_w - padding[1];
+    }
+  }
+
+  c10::SmallVector<int64_t, N> pads = {padding[0], pad_down, padding[1], pad_right};
+  return pads;
+}
+
 at::Tensor& avg_pool2d_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -44,8 +74,9 @@ at::Tensor& avg_pool2d_out_nocheck(
   }
   c10::SmallVector<int64_t, N> kernel_size_new = {1, 1, kernel_size[0], kernel_size[1]};
   c10::SmallVector<int64_t, N> strides_size_new = {1, 1, stride_h, stride_w};
-  c10::SmallVector<int64_t, N> pads = {padding[0], padding[0], padding[1], padding[1]};
+  c10::SmallVector<int64_t, N> pads = get_paddings(self, kernel_size, stride, padding, ceil_mode);
   bool exclusive = !count_include_pad;
+  int64_t divisor_override_value = divisor_override.value_or(0);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("AvgPoolV2")
@@ -63,7 +94,8 @@ at::Tensor& avg_pool2d_out_nocheck(
   } else {
     cmd.Attr("exclusive", exclusive);
   }
-  cmd.Run();
+  cmd.Attr("divisor_override", divisor_override_value)
+      .Run();
   return result;
 }
 
@@ -81,8 +113,10 @@ void avg_pool2d_parameter_check(
       "avg_pool2d: padding must either be a single int, or a tuple of two ints");
   TORCH_CHECK((self.ndimension() == 3 || self.ndimension() == 4),
       "non-empty 2D or 3D (batch mode) tensor expected for input");
-  TORCH_CHECK(!divisor_override.has_value() || divisor_override.value() != 0,
-      "divisor must be not zero");
+  TORCH_CHECK(
+      (!divisor_override.has_value() || (divisor_override.value() > 0 && divisor_override.value() <= 255)),
+      "The value of divisor_override = ", divisor_override.value(), " is invaild, only support [1, 255] at present.");
+
 }
 } // namespace
 

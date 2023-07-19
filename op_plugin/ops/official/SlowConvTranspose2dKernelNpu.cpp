@@ -22,10 +22,10 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 c10::SmallVector<int64_t, SIZE> slow_conv_transpose2d_npu_output_size(
-    const at::Tensor & self,
-    const at::Tensor & weight,
+    const at::Tensor& self,
+    const at::Tensor& weight,
     at::IntArrayRef kernel_size,
-    const at::Tensor & bias,
+    const at::Tensor& bias,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef output_padding,
@@ -61,10 +61,10 @@ c10::SmallVector<int64_t, SIZE> slow_conv_transpose2d_npu_output_size(
 }
 
 inline void slow_conv_transpose2d_shape_check(
-    const at::Tensor & self,
-    const at::Tensor & weight,
+    const at::Tensor& self,
+    const at::Tensor& weight,
     at::IntArrayRef kernel_size,
-    const at::Tensor & bias,
+    const at::Tensor& bias,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef output_padding,
@@ -113,7 +113,7 @@ inline void slow_conv_transpose2d_shape_check(
       "non-empty 2D or 4D weight tensor expected, but got: ",
       weight.sizes());
   if (bias.defined()) {
-      check_dim_size(bias, 1, 0, weight.size(1));
+    check_dim_size(bias, 1, 0, weight.size(1));
   }
 
   TORCH_CHECK(
@@ -144,10 +144,10 @@ inline void slow_conv_transpose2d_shape_check(
 
 at::Tensor& slow_conv_transpose2d_out_nocheck(
     at::Tensor& out,
-    const at::Tensor & self,
-    const at::Tensor & weight,
+    const at::Tensor& self,
+    const at::Tensor& weight,
     at::IntArrayRef kernel_size,
-    const c10::optional<at::Tensor> & bias_opt,
+    const c10::optional<at::Tensor>& bias_opt,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef output_padding,
@@ -192,31 +192,32 @@ at::Tensor& slow_conv_transpose2d_out_nocheck(
 } // namespace
 
 at::Tensor& slow_conv_transpose2d_out(
-    const at::Tensor & self,
-    const at::Tensor & weight,
+    const at::Tensor& self,
+    const at::Tensor& weight,
     at::IntArrayRef kernel_size,
-    const c10::optional<at::Tensor> & bias_opt,
+    const c10::optional<at::Tensor>& bias_opt,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef output_padding,
     at::IntArrayRef dilation,
     at::Tensor& out) {
-  const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+  const at::Tensor& bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
   auto output_size = slow_conv_transpose2d_npu_output_size(
       self, weight, kernel_size, bias, stride, padding, output_padding, dilation);
 
+  int64_t out_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
   if (bias.defined()) {
     npu_preparation::CheckOut(
         {self, weight, bias},
         {out},
-        ACL_FORMAT_NC1HWC0,
+        out_format,
         self.scalar_type(),
         output_size);
   } else {
     npu_preparation::CheckOut(
         {self, weight},
         {out},
-        ACL_FORMAT_NC1HWC0,
+        out_format,
         self.scalar_type(),
         output_size);
   }
@@ -234,19 +235,20 @@ at::Tensor& slow_conv_transpose2d_out(
 }
 
 at::Tensor slow_conv_transpose2d(
-    const at::Tensor & self,
-    const at::Tensor & weight,
+    const at::Tensor& self,
+    const at::Tensor& weight,
     at::IntArrayRef kernel_size,
-    const c10::optional<at::Tensor> & bias_opt,
+    const c10::optional<at::Tensor>& bias_opt,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef output_padding,
     at::IntArrayRef dilation) {
-  const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+  const at::Tensor& bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
   auto output_size = slow_conv_transpose2d_npu_output_size(
       self, weight, kernel_size, bias, stride, padding, output_padding, dilation);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self, output_size, ACL_FORMAT_NC1HWC0);
+  int64_t result_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
+  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self, output_size, result_format);
   slow_conv_transpose2d_out_nocheck(
       result, self, weight, kernel_size, bias_opt, stride, padding, output_padding, dilation);
 
