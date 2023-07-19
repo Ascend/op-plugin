@@ -22,10 +22,12 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 at::Tensor& glu_npu_out_nocheck(at::Tensor& result, const at::Tensor& self, int64_t dim) {
-  auto chunked_input = self.chunk(2, dim);
-  at::Tensor first_half = chunked_input[0];
-  at::Tensor second_half = chunked_input[1];
-  result = first_half.mul(second_half.sigmoid());
+  at_npu::native::OpCommand cmd;
+  cmd.Name("GLU")
+      .Input(self)
+      .Output(result)
+      .Attr("dim", dim)
+      .Run();
   return result;
 }
 }  // namespace
@@ -62,7 +64,7 @@ at::Tensor glu(const at::Tensor& self, int64_t dim) {
 
   auto output_size = op_infer::glu_npu_output_size(self, dim);
   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
-  op_plugin::glu_out(self, dim, result);
+  glu_npu_out_nocheck(result, self, dim);
   return result;
 }
 }  // namespace op_plugin

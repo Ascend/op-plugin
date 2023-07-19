@@ -21,6 +21,14 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
+bool check_padding(at::IntArrayRef padding) {
+  for (int64_t i = 0; i < padding.size(); i++) {
+    if (padding[i] != 0) {
+      return false;
+    }
+  }
+  return true;
+}
 
 at::Tensor& replication_pad2d_backward_out_npu_nocheck(
     at::Tensor& grad_input,
@@ -63,6 +71,11 @@ at::Tensor& replication_pad2d_backward_out(
     const at::Tensor& input,
     at::IntArrayRef padding,
     at::Tensor& grad_input) {
+  if (check_padding(padding)) {
+    grad_input.copy_(grad_output);
+    return grad_input;
+  }
+
   npu_preparation::CheckOut(
       {input, grad_output},
       grad_input,
@@ -82,6 +95,10 @@ at::Tensor replication_pad2d_backward(
     const at::Tensor& input,
     at::IntArrayRef padding) {
   at::Tensor grad_input = npu_preparation::ApplyTensor(input);
+  if (check_padding(padding)) {
+    grad_input.copy_(grad_output);
+    return grad_input;
+  }
   replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, input, padding);
   return grad_input;
 }

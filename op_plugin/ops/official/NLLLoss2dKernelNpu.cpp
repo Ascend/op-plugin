@@ -31,7 +31,7 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nll
   c10::SmallVector<int64_t, SIZE> total_weight_size;
 
   if (reduction == at::Reduction::None) {
-    output_size = {self.size(0), self.size(2), self.size(3)};
+    output_size = {self.size(0)};
   }
 
   return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(
@@ -155,7 +155,7 @@ std::tuple<at::Tensor, at::Tensor> nll_loss2d_forward(
   auto target_input = target_cast.contiguous();
   target_input = target_cast.reshape({-1});
 
-  auto output_sizes = nll_loss2d_npu_output_size(self, target, reduction, ignore_index);
+  auto output_sizes = nll_loss2d_npu_output_size(self_input, target, reduction, ignore_index);
 
   at::Tensor result = npu_preparation::apply_tensor(self_input, std::get<0>(output_sizes));
   at::Tensor total_weight = npu_preparation::apply_tensor(self_input, std::get<1>(output_sizes));
@@ -163,6 +163,9 @@ std::tuple<at::Tensor, at::Tensor> nll_loss2d_forward(
   at::Tensor weight_tensor = check_weight_opt(self, weight_opt, ignore_index);
   nll_loss2d_forward_out_nocheck(result, total_weight, self_input, target_input, weight_tensor, reduction,
       ignore_index);
+  if (reduction == at::Reduction::None) {
+    result.resize_({self.size(0), self.size(2), self.size(3)});
+  }
 
   return std::tuple<at::Tensor, at::Tensor>(result, total_weight);
 }

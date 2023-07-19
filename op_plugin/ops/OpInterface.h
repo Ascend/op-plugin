@@ -1002,6 +1002,10 @@ at::Tensor _embedding_bag_backward_symint(const at::Tensor & grad, const at::Ten
 at::Tensor embedding_backward_symint(const at::Tensor & grad, const at::Tensor & indices, c10::SymInt num_weights, c10::SymInt padding_idx, bool scale_grad_by_freq, bool sparse);
 at::Tensor _reshape_alias(const at::Tensor & self, at::IntArrayRef size, at::IntArrayRef stride);
 bool _amp_foreach_non_finite_check(at::TensorList scaled_grads);
+::std::tuple<at::Tensor, at::Tensor> native_dropout(const at::Tensor & input, double p, c10::optional<bool> train);
+at::Tensor native_dropout_backward(const at::Tensor & grad_output, const at::Tensor & mask, double scale);
+at::Tensor reflection_pad1d_backward(const at::Tensor & grad_output, const at::Tensor & input, at::IntArrayRef padding);
+at::Tensor & reflection_pad1d_backward_out(const at::Tensor & grad_output, const at::Tensor & input, at::IntArrayRef padding, at::Tensor & grad_input);
 
 }  // namespace op_plugin
 

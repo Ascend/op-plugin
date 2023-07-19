@@ -34,14 +34,13 @@ at::Tensor& glu_grad_npu_out_nocheck(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     int64_t dim) {
-  auto chunked_input = self.chunk(2, dim);
-  at::Tensor first_half = chunked_input[0];
-  at::Tensor second_half = chunked_input[1];
-
-  second_half = second_half.sigmoid();
-  at::Tensor grad_first = second_half.mul(grad_output);
-  at::Tensor grad_second = first_half.mul(second_half).mul_(1-second_half).mul_(grad_output);
-  result = at::cat({grad_first, grad_second}, dim);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("GLUGrad")
+      .Input(grad_output)
+      .Input(self)
+      .Output(result)
+      .Attr("dim", dim)
+      .Run();
   return result;
 }
 } // namespace
