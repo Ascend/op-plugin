@@ -28,11 +28,11 @@ bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) {
 
   auto options = at::TensorOptions(torch_npu::utils::get_npu_device_type()).dtype(at::kFloat);
   at::Tensor float_status = at::zeros({FLOAT_STATUS_OP_DIMS_SIZE}, options);
-  auto ans = at_npu::native::NPUNativeFunctions::npu_get_float_status(float_status);
+  auto ans = op_plugin::npu_get_float_status(float_status);
 
   auto result = ans[0].item().to<bool>();
   if (result) {
-    auto ans_clear = at_npu::native::NPUNativeFunctions::npu_clear_float_status(float_status);
+    auto ans_clear = op_plugin::npu_clear_float_status(float_status);
   }
 
   return result;

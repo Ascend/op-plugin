@@ -80,7 +80,7 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss2d_forward_out_nocheck(
       .Output(total_weight)
       .Run();
 
-  at_npu::native::NPUNativeFunctions::npu_reshape_out(result, result.sizes(), true, result);
+  op_plugin::npu_reshape_out(result, result.sizes(), true, result);
   return std::tuple<at::Tensor&, at::Tensor&>(result, total_weight);
 }
 } // namespace
