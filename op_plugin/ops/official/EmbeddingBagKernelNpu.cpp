@@ -63,7 +63,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag(
   }
   
   auto result = at::native::_embedding_bag_cpu(weight_cpu, indices_cpu, offsets_cpu,
-      scale_grad_by_freq, mode, sparse, per_sample_weights_cpu, include_last_offset);
+      scale_grad_by_freq, mode, sparse, per_sample_weights_cpu, include_last_offset, padding_idx);
 
   auto weight_device = weight.device();
   at::Tensor output = std::get<0>(result).to(weight_device);
