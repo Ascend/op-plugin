@@ -988,6 +988,10 @@ at::Tensor zeros(at::IntArrayRef size, c10::optional<at::DimnameList> names, c10
 at::Tensor zeros(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory);
 at::Tensor zeros_like(const at::Tensor & self, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory, c10::optional<at::MemoryFormat> memory_format);
 at::Tensor & zeros_out(at::IntArrayRef size, at::Tensor & out);
+at::Tensor npu_alloc_float_status(const at::Tensor & self);
+at::Tensor npu_get_float_status(const at::Tensor & self);
+at::Tensor npu_clear_float_status(const at::Tensor & self);
+void npu_enque_tensor(at::TensorList tensors, c10::string_view tensor_name, int64_t capacity);
 
 // add op_interface for 2.1.
 ::std::tuple<at::Tensor,at::Tensor> _prelu_kernel_backward(const at::Tensor & grad_output, const at::Tensor & self, const at::Tensor & weight);
