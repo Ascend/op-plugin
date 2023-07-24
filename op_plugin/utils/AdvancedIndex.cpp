@@ -19,6 +19,55 @@
 
 namespace op_plugin {
 
+namespace {
+std::vector<at::Tensor> npu_expand_outplace(at::TensorList to_expand) {
+  // expands a list of Tensors; ignores undefined (null) tensors
+  bool first = true;
+  std::vector<int64_t> sizes;
+  for (size_t i = 0; i < to_expand.size(); ++i) {
+    if (!to_expand[i].defined()) {
+      continue;
+    } else if (first) {
+      sizes = to_expand[i].sizes().vec();
+      first = false;
+    } else {
+      sizes = at::infer_size(sizes, to_expand[i].sizes());
+    }
+  }
+
+  std::vector<at::Tensor> result(to_expand.size());
+  for (size_t i = 0; i < to_expand.size(); ++i) {
+    if (!to_expand[i].defined()) {
+      continue;
+    } else if (to_expand[i].sizes().equals(sizes)) {
+      result[i] = to_expand[i];
+    } else {
+      if (to_expand[i].dtype() == at::kLong) {
+        result[i] = to_expand[i].to(at::kInt).expand(sizes, true);
+      } else {
+        result[i] = to_expand[i].expand(sizes, true);
+      }
+    }
+  }
+  return result;
+}
+
+at::Tensor npu_nonzero_transpose(const at::Tensor& self) {
+  c10::SmallVector<int64_t, SIZE> output_size = {self.dim(), self.numel()};
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor(
+      output_size, self.options().dtype(at::kLong), self);
+  c10::SmallVector<int64_t, N> output_sync_idx = {0};
+  at_npu::native::OpCommand cmd;
+  cmd.Sync(output_sync_idx)
+      .Name("NonZero")
+      .Input(self)
+      .Output(result)
+      .Attr("transpose", true)
+      .Run();
+  return result;
+}
+} // namespace
+
 AdvancedIndex::AdvancedIndex(const at::Tensor& src, at::TensorList indices_list) {
   int64_t dims_before = 0, dims_after = 0, dims_indexed = 0;
   at::IntArrayRef replacement_shape;
@@ -109,38 +158,6 @@ std::string AdvanceIndex::shapes_as_str(at::TensorList tensors) {
   return os.str();
 }
 
-std::vector<at::Tensor> npu_expand_outplace(at::TensorList to_expand) {
-  // expands a list of Tensors; ignores undefined (null) tensors
-  bool first = true;
-  std::vector<int64_t> sizes;
-  for (size_t i = 0; i < to_expand.size(); ++i) {
-    if (!to_expand[i].defined()) {
-      continue;
-    } else if (first) {
-      sizes = to_expand[i].sizes().vec();
-      first = false;
-    } else {
-      sizes = at::infer_size(sizes, to_expand[i].sizes());
-    }
-  }
-
-  std::vector<at::Tensor> result(to_expand.size());
-  for (size_t i = 0; i < to_expand.size(); ++i) {
-    if (!to_expand[i].defined()) {
-      continue;
-    } else if (to_expand[i].sizes().equals(sizes)) {
-      result[i] = to_expand[i];
-    } else {
-      if (to_expand[i].dtype() == at::kLong) {
-        result[i] = to_expand[i].to(at::kInt).expand(sizes, true);
-      } else {
-        result[i] = to_expand[i].expand(sizes, true);
-      }
-    }
-  }
-  return result;
-}
-
 AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::optional<at::Tensor>>& orig) {
   at::native::checkIndexTensorTypes(orig);
   // first expand BoolTensor (masks) or ByteTensor (masks) into 1 or more LongTensors
@@ -168,21 +185,6 @@ AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::op
     }
   }
   return AdvancedIndex(self, indices);
-}
-
-at::Tensor npu_nonzero_transpose(const at::Tensor& self) {
-  c10::SmallVector<int64_t, SIZE> output_size = {self.dim(), self.numel()};
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor(
-      output_size, self.options().dtype(at::kLong), self);
-  c10::SmallVector<int64_t, N> output_sync_idx = {0};
-  at_npu::native::OpCommand cmd;
-  cmd.Sync(output_sync_idx)
-      .Name("NonZero")
-      .Input(self)
-      .Output(result)
-      .Attr("transpose", true)
-      .Run();
-  return result;
 }
 
 std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(
