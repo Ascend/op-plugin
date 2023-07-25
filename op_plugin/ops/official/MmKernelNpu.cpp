@@ -76,6 +76,61 @@ void set_transposed_npu_desc(at::Tensor& tensor) {
   at_npu::native::StorageDescHelper::SetDesc(tensor, temp_transpose_Tensor.sizes(), temp_transpose_Tensor.strides());
 }
 
+void mm_insert_input_transpose(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict) {
+  tensor = is_tensor_trans_flex ? tensor.clone() : tensor.transpose(-1, -2).clone();
+  is_tensor_trans_flex = !is_tensor_trans_flex;
+  is_tensor_trans_strict = !is_tensor_trans_strict;
+}
+
+void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict) {
+  if (is_tensor_trans_flex) {
+    if (!is_tensor_trans_strict) {
+      // Matmul cannot directly deal with view+transposed tensor with NZ format,
+      // so Transdata is necessary
+      tensor = npu_preparation::CastBackToOriFormat(tensor);
+      // Storage desc of view-transpose tensors should be refreshed to be
+      // matched.
+      set_transposed_npu_desc(tensor);
+    }
+  } else {
+    tensor = npu_utils::format_contiguous_add_copy_optimize(tensor);
+  }
+}
+
+bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool &is_support_nd_out) {
+  if (!is_support_nd_out || !(self.dtype() == at::ScalarType::Half && mat2.dtype() == at::ScalarType::Half) ||
+      !(format_helper::GetFormat(self) == ACL_FORMAT_ND && format_helper::GetFormat(mat2) == ACL_FORMAT_ND)) {
+    return false;
+  }
+  // split_k rule, maybe modified afterwards
+  const static int64_t kSplitKTimes = 8;
+  return self.size(1) >= kSplitKTimes * std::max(self.size(0), mat2.size(1));
+}
+
+bool mm_check_nd_to_nz_on_the_fly(const at::Tensor &self, const at::Tensor &mat2) {
+  const static int64_t kInnerAxisMinBytes = 256;
+  const static int64_t kInnerAxisMaxLimit = 65535;
+  int64_t self_inner_axis = self.size(self.dim() - 1);
+  int64_t self_outer_axis = self.size(self.dim() - 2);
+  int64_t mat2_inner_axis = mat2.size(mat2.dim() - 1);
+  int64_t mat2_outer_axis = mat2.size(mat2.dim() - 2);
+  if (calcu_op_util::IsMmTranspose(self)) {
+    self_inner_axis = self.size(self.dim() - 2);
+    self_outer_axis = self.size(self.dim() - 1);
+  }
+  if (calcu_op_util::IsMmTranspose(mat2)) {
+    mat2_inner_axis = mat2.size(mat2.dim() - 2);
+    mat2_outer_axis = mat2.size(mat2.dim() - 1);
+  }
+  int64_t data_type = elementSize(self.scalar_type());
+  if (self_outer_axis > kInnerAxisMaxLimit && self_inner_axis * data_type < kInnerAxisMinBytes &&
+      bool((self_inner_axis * data_type) & 0x1F)) {
+    return false;
+  }
+  return !((self_inner_axis > kInnerAxisMaxLimit && self_outer_axis > kInnerAxisMaxLimit) ||
+           (mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis > kInnerAxisMaxLimit));
+}
+
 at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mat2) {
   const auto& self_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(self);
   const auto& mat2_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(mat2);
@@ -86,31 +141,22 @@ at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
   at::Tensor contiguous_self = self;
   at::Tensor contiguous_mat2 = mat2;
 
-  if (is_self_t_flex) {
-    if (!is_self_t_strict) {
-      // Matmul cannot directly deal with view+transposed tensor with NZ format,
-      // so Transdata is necessary
-      contiguous_self = npu_preparation::CastBackToOriFormat(self);
-      // Storage desc of view-transpose tensors should be refreshed to be
-      // matched.
-      set_transposed_npu_desc(contiguous_self);
-    }
-  } else {
-    contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self);
+  bool is_transpose_self = calcu_op_util::IsTransposeInnerAxis(contiguous_self);
+  bool is_transpose_mat2 = calcu_op_util::IsTransposeInnerAxis(contiguous_mat2);
+  if (is_transpose_self && is_transpose_mat2 &&
+      !calcu_op_util::IsTransposeBothInnerAxis(contiguous_self, contiguous_mat2)) {
+    is_transpose_self = !is_transpose_self;
+    is_transpose_mat2 = !is_transpose_mat2;
+  }
+  if (is_transpose_self) {
+    mm_insert_input_transpose(contiguous_self, is_self_t_flex, is_self_t_strict);
+  }
+  if (is_transpose_mat2) {
+    mm_insert_input_transpose(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
   }
 
-  if (is_mat2_t_flex) {
-    if (!is_mat2_t_strict) {
-      // Matmul cannot directly deal with view+transposed tensor with NZ format,
-      // so Transdata is necessary
-      contiguous_mat2 = npu_preparation::CastBackToOriFormat(mat2);
-      // Storage desc of view-transpose tensors should be refreshed to be
-      // matched.
-      set_transposed_npu_desc(contiguous_mat2);
-    }
-  } else {
-    contiguous_mat2 = npu_utils::format_contiguous_add_copy_optimize(mat2);
-  }
+  mm_set_format_contiguous(contiguous_self, is_self_t_flex, is_self_t_strict);
+  mm_set_format_contiguous(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("MatMul")
@@ -146,49 +192,35 @@ at::Tensor& mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& r
 }
 
 at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
-  const static int SPLIT_K_MULTI = 8;
   auto output_size = {self.size(0), mat2.size(1)};
-  auto k_dim = self.size(1);
 
   at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
   bool need_nd_out = false;
   static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
-  bool split_k = is_support_nd_out && 
-      (k_dim >= SPLIT_K_MULTI * std::max(self.size(0), mat2.size(1))) &&
-      (self.dtype() == at::ScalarType::Half) && (mat2.dtype() == at::ScalarType::Half) &&
-      (format_helper::GetFormat(self) == ACL_FORMAT_ND) &&
-      (format_helper::GetFormat(mat2) == ACL_FORMAT_ND);
+  bool split_k = mm_check_split_k(self, mat2, is_support_nd_out);
   // check format_out of mm is NCHW. Delate after definite NLP model.
   if ((self.scalar_type() == at::ScalarType::Half)) {
     // check is 16-algined with high-performance
     auto is_aligin = [&]() {
-      return (!(static_cast<uint64_t>(self.size(0)) & 0x0000000F)) &&
-             (!(static_cast<uint64_t>(self.size(1)) & 0x0000000F)) &&
-             (!(static_cast<uint64_t>(mat2.size(0)) & 0x0000000F)) &&
-             (!(static_cast<uint64_t>(mat2.size(1)) & 0x0000000F));
+      return (!(static_cast<uint64_t>(self.size(0)) & 0xF)) && (!(static_cast<uint64_t>(self.size(1)) & 0xF)) &&
+             (!(static_cast<uint64_t>(mat2.size(0)) & 0xF)) && (!(static_cast<uint64_t>(mat2.size(1)) & 0xF));
     };
     // There is a data trampling problem in non-aligned scenes. For the time
     // being, only aligned scenes are supported.
     static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
-    if (format_helper::IsBaseFormatType(self) && format_helper::IsBaseFormatType(mat2)
-        && mm_bmm_nd && ((is_support_nd_out && calcu_op_util::IsNdToNzOnTheFly(self, mat2)) ||
-        (!is_support_nd_out && is_aligin()))) {
+    if (format_helper::IsBaseFormatType(self) && format_helper::IsBaseFormatType(mat2) && mm_bmm_nd &&
+        ((is_support_nd_out && mm_check_nd_to_nz_on_the_fly(self, mat2)) || (!is_support_nd_out && is_aligin()))) {
       if (split_k) {
-        result = npu_preparation::apply_tensor_with_format(
-            output_size,
-            self.options().dtype(at::ScalarType::Float),
-            ACL_FORMAT_ND);
+        result = npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::ScalarType::Float),
+                                                           ACL_FORMAT_ND);
       } else {
         result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
       }
     } else {
       need_nd_out = mm_bmm_nd;
       if (split_k) {
-        result = npu_preparation::apply_tensor_with_format(
-            output_size,
-            self.options().dtype(at::ScalarType::Float),
-            ACL_FORMAT_FRACTAL_NZ,
-            true);
+        result = npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::ScalarType::Float),
+                                                           ACL_FORMAT_FRACTAL_NZ, true);
       } else {
         result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);
       }
