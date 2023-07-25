@@ -35,7 +35,7 @@ at::Tensor bincount(
   sizes = (sizes < minlength) ? minlength : (sizes + 1);
 
   if (self.dtype() == at::kLong) {
-    std::cout << "CANN: Bincount cann't support dtype int64, input will be cast to int32." << std::endl;
+    TORCH_NPU_WARN_ONCE("CANN: Bincount cann't support dtype int64, input will be cast to int32.");
   }
   auto input = (self.dtype() == at::kInt) ? self : op_plugin::npu_dtype_cast(self, at::kInt);
 

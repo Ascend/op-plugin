@@ -25,7 +25,7 @@ namespace {
 at::Tensor& ne_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
   auto unified_result = npu_preparation::comparison_op_check(result, self, other, true);
   if(self.scalar_type() == at::kLong) {
-    TORCH_WARN_ONCE("The oprator of ne is executed, Currently High Accuracy but Low Performance OP with 64-bit has been used,"
+    TORCH_NPU_WARN_ONCE("The oprator of ne is executed, Currently High Accuracy but Low Performance OP with 64-bit has been used,"
         "Please Do Some Cast at Python Functions with 32-bit for Better Performance!");
   }
   at_npu::native::OpCommand cmd;
@@ -41,7 +41,7 @@ at::Tensor& ne_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
 
 at::Tensor& ne_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::Scalar other) {
   if(self.scalar_type() == at::kLong) {
-    TORCH_WARN_ONCE("The oprator of ne is executed, Currently High Accuracy but Low Performance OP with 64-bit has been used,"
+    TORCH_NPU_WARN_ONCE("The oprator of ne is executed, Currently High Accuracy but Low Performance OP with 64-bit has been used,"
         "Please Do Some Cast at Python Functions with 32-bit for Better Performance!");
   }
   at_npu::native::OpCommand cmd;

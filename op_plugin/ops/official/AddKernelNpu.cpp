@@ -82,9 +82,9 @@ at::Tensor& add_out_npu_nocheck(
 
     if (calcu_op_util::IsScalarOne(alpha)) {
       if (self.scalar_type() == at::kLong) {
-        std::cout << "The oprator of add is executed, Currently High Accuracy but Low Performance OP with 64-bit has "
-                     "been used, Please Do Some Cast at Python Functions with 32-bit for Better Performance!"
-                  << std::endl;
+        TORCH_NPU_WARN_ONCE(
+            "The oprator of add is executed, Currently High Accuracy but Low Performance OP with 64-bit has "
+            "been used, Please Do Some Cast at Python Functions with 32-bit for Better Performance!");
       }
 
       std::string real_type = "";

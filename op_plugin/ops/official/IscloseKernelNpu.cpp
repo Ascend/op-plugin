@@ -27,9 +27,8 @@ at::Tensor isclose(
     bool equal_nan) {
   TORCH_CHECK(self.scalar_type() == other.scalar_type(), self.scalar_type(), " did not match ", other.scalar_type());
   at::Tensor result = npu_preparation::ApplyTensor(self, self.options().dtype(at::kBool));
-  
-  std::cout << "Warning: Device do not support double dtype of rtol and atol now, " \
-      "dtype cast repalce with float." << std::endl;
+
+  TORCH_NPU_WARN_ONCE("Device do not support double dtype of rtol and atol now, dtype cast repalce with float.");
   auto rtol1 = static_cast<float>(rtol);
   auto atol1 = static_cast<float>(atol);
 

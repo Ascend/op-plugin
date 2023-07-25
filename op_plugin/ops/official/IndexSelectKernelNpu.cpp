@@ -30,7 +30,7 @@ at::Tensor& index_select_out_npu_nocheck(
     int64_t dim,
     const at::Tensor& index) {
   if (self.scalar_type() == at::kLong) {
-    TORCH_WARN_ONCE(
+    TORCH_NPU_WARN_ONCE(
         "The oprator of index_select is executed, Currently High Accuracy but Low Performance OP with 64-bit has been "
         "used, Please Do Some Cast at Python Functions with 32-bit for Better Performance!");
   }

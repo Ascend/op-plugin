@@ -30,7 +30,7 @@ at::Tensor& gather_out_npu_nocheck(
     const at::Tensor& index,
     bool sparse_grad) {
   if (self.scalar_type() == at::kLong) {
-    TORCH_WARN_ONCE("The oprator of gather is executed, Currently High Accuracy but Low Performance OP"
+    TORCH_NPU_WARN_ONCE("The oprator of gather is executed, Currently High Accuracy but Low Performance OP"
       "with 64-bit has been used,Please Do Some Cast at Python Functions with 32-bit for Better Performance!");
   }
 

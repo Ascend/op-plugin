@@ -24,7 +24,7 @@ const int FLOAT_STATUS_OP_DIMS_SIZE = 8;
 } // namespace
 
 bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) {
-  std::cout << "Non finite check on NPU device!" << std::endl;
+  TORCH_NPU_WARN_ONCE("Non finite check on NPU device!");
 
   auto options = at::TensorOptions(torch_npu::utils::get_npu_device_type()).dtype(at::kFloat);
   at::Tensor float_status = at::zeros({FLOAT_STATUS_OP_DIMS_SIZE}, options);
@@ -42,7 +42,7 @@ void _amp_foreach_non_finite_check_and_unscale_(
     at::TensorList scaled_grads,
     at::Tensor& found_inf,
     const at::Tensor& inv_scale) {
-  std::cout << "Non finite check and unscale on NPU device!" << std::endl;
+  TORCH_NPU_WARN_ONCE("Non finite check and unscale on NPU device!");
   TORCH_CHECK(torch_npu::utils::is_npu(inv_scale), "inv_scale must be NPU-Tensor");
   TORCH_CHECK(inv_scale.numel() == 1, "inv_scale must be a 1-element tensor");
   TORCH_CHECK(inv_scale.scalar_type() == at::ScalarType::Float, "inv_scale must be a float tensor");
