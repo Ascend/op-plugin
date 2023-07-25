@@ -1012,6 +1012,9 @@ at::Tensor reflection_pad1d_backward(const at::Tensor & grad_output, const at::T
 at::Tensor & reflection_pad1d_backward_out(const at::Tensor & grad_output, const at::Tensor & input, at::IntArrayRef padding, at::Tensor & grad_input);
 at::Tensor npu_rotary_mul(const at::Tensor& self, const at::Tensor& r1, const at::Tensor& r2);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> npu_rotary_mul_backward(const at::Tensor& grad, const at::Tensor& self, const at::Tensor& r1, const at::Tensor& r2);
+void npu_view_copy(at::Tensor& self, const at::Tensor& src, bool non_blocking);
+at::Tensor & npu_stride_copy_out(const at::Tensor& self, c10::IntArrayRef shape, c10::IntArrayRef stride, const c10::Scalar& storage_offset, at::Tensor& result);
+at::Tensor npu_stride_copy(const at::Tensor& self, c10::IntArrayRef shape, c10::IntArrayRef stride, const c10::Scalar& storage_offset);
 
 }  // namespace op_plugin
 
