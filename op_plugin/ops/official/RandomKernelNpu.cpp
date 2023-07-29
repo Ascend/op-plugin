@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <limits.h>
-#include "torch_npu/csrc/aten/NPUGeneratorImpl.h"
-
 #include "op_plugin/ops/OpInterface.h"
+
+#include <limits.h>
+#include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
+
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {

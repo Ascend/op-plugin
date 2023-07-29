@@ -13,9 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/framework/graph/util/TdtChannelForPrint.h"
-
 #include "op_plugin/ops/OpInterface.h"
+
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
+
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 

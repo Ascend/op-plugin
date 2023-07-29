@@ -13,14 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-#include "torch_npu/csrc/core/npu/SecondaryStreamGuard.h"
-#include "torch_npu/csrc/core/npu/NPUCachingAllocator.h"
-#include "torch_npu/csrc/framework/interface/EnvVariables.h"
-#include "torch_npu/csrc/aten/NPUGeneratorImpl.h"
-#include "torch_npu/csrc/core/npu/NPURunMode.h"
-
 #include "op_plugin/ops/OpInterface.h"
+
+#include <torch/csrc/autograd/custom_function.h>
+#include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
+
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {

@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/framework/graph/util/GraphModeGuard.h"
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
@@ -149,18 +147,6 @@ at::Tensor index_high_dims(const at::Tensor& self, std::vector<at::Tensor> indic
 } // namespace
 
 at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig) {
-  /**
-   * In the cann framework, index operator belongs to the fourth type of
-   * operator, which means that the execution of the index operator must go
-   * through the dynamic shape execution framework. In this case, constructing
-   * a large dynamic shape graph is not beneficial to the overall execution
-   * performance, because more dynamic shape operators are introduced.
-   * Therefore, when the fourth type of operator is encountered in graph
-   * mode, the single op mode is switched to execute by default.
-   */
-
-  at_npu::native::GraphModeGuard mode_guard(c10_npu::ModeKind::SINGLE_OP_MODE);
-
   at::native::checkIndexTensorTypes(orig);
   auto indices = op_plugin::AdvanceIndex::npu_expand_tensors(self, orig);
   auto broadcast_indices = op_plugin::AdvanceIndex::npu_broadcast_tensors(indices);

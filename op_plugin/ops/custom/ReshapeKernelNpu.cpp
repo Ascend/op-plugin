@@ -16,8 +16,7 @@
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-#include "torch_npu/csrc/framework/StorageDescHelper.h"
-#include "torch_npu/csrc/aten/common/InnerNpuNativeFunction.h"
+#include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;

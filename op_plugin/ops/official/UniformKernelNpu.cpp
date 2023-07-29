@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/aten/NPUGeneratorImpl.h"
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+
+#include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;

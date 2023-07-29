@@ -19,8 +19,6 @@
 #include <ATen/native/IndexingUtils.h>
 #include <ATen/ExpandUtils.h>
 
-#include "torch_npu/csrc/framework/utils/NpuUtils.h"
-
 namespace op_plugin {
 
 struct AdvancedIndex {
