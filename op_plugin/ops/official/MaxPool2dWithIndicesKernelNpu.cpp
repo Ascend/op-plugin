@@ -50,9 +50,9 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool2d_with_indices_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("MaxPoolWithArgmaxV1")
-      .Input(self, "x", ACL_FORMAT_NCHW)
-      .Output(output, "y", ACL_FORMAT_NCHW)
-      .Output(indices, "argmax", ACL_FORMAT_NCHW, "uint16")
+      .Input(self, "x")
+      .Output(output, "y")
+      .Output(indices, "argmax", c10::nullopt, "uint16")
       .Attr("ksize", kernel_size_new)
       .Attr("strides", strides_size)
       .Attr("pads", paddings)

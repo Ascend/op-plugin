@@ -84,14 +84,9 @@ at::Tensor dropout_gen_mask(const at::Tensor& self, at::Scalar prob) {
   auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
   // At present, the default value of random number may be very large,
   // which will cause overflow in graph mode, so we set seed = 0 to avoid it.
-  const int64_t seed = c10_npu::NpuRunMode::IsGraphMode() ? 0 : pair.first;
+  const int64_t seed = pair.first;
   const int64_t offset = pair.second;
-  at::SmallVector<int64_t, N> offset_list;
-  if (c10_npu::NpuRunMode::IsGraphMode()) {
-    offset_list = {0, 0};
-  } else {
-    offset_list = {0, offset};
-  }
+  at::SmallVector<int64_t, N> offset_list = {0, offset};
 
   const int64_t seed1 = 0;
   cmd.Name("StatelessDropOutGenMask")
@@ -232,14 +227,9 @@ at::Tensor npu_dropout_gen_mask(
   auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
   // At present, the default value of random number may be very large,
   // which will cause overflow in graph mode, so we set seed = 0 to avoid it.
-  const int64_t seed = c10_npu::NpuRunMode::IsGraphMode() ? 0 : pair.first;
+  const int64_t seed = pair.first;
   const int64_t offset = pair.second;
-  at::SmallVector<int64_t, N> offset_list;
-  if (c10_npu::NpuRunMode::IsGraphMode()) {
-    offset_list = {0, 0};
-  } else {
-    offset_list = {0, offset};
-  };
+  at::SmallVector<int64_t, N> offset_list = {0, offset};
 
   const int64_t seed1 = 0;
   cmd.Name("StatelessDropOutGenMask")

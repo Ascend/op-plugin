@@ -40,12 +40,12 @@ at::Tensor& conv_transpose2d_out_npu(
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv2DTranspose")
       .Input(size_vector, at::kInt)
-      .Input(input, "x", ACL_FORMAT_NCHW)
-      .Input(weight, "filter", ACL_FORMAT_NCHW);
+      .Input(input, "x")
+      .Input(weight, "filter");
   if (bias.defined()) {
     cmd.Input(bias);
   }
-  cmd.Output(result, "y", ACL_FORMAT_NCHW)
+  cmd.Output(result, "y")
       .Attr("pads", paddings)
       .Attr("output_padding", outputpadding)
       .Attr("strides", strides_size)

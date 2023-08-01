@@ -54,8 +54,8 @@ at::Tensor& avg_pool3d_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("AvgPool3D")
-      .Input(input, "x", ACL_FORMAT_NCDHW)
-      .Output(out, "y", ACL_FORMAT_NCDHW)
+      .Input(input, "x")
+      .Output(out, "y")
       .Attr("ksize", kernel_size)
       .Attr("strides", stride)
       .Attr("pads", pads)

@@ -58,8 +58,8 @@ at::Tensor& upsample_bicubic2d_backward_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("ResizeGradD")
-      .Input(grad_output, "grads", ACL_FORMAT_NCHW)
-      .Output(grad_input, "y", ACL_FORMAT_NCHW)
+      .Input(grad_output, "grads")
+      .Output(grad_input, "y")
       .Attr("scales", scales)
       .Attr("roi", roi)
       .Attr("original_size", input_size)

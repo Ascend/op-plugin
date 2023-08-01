@@ -68,8 +68,8 @@ at::Tensor& upsample_linear1d_backward_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("ResizeGradD")
-      .Input(grad_output, "grads", ACL_FORMAT_NCHW)
-      .Output(result, "y", ACL_FORMAT_NCHW)
+      .Input(grad_output, "grads")
+      .Output(result, "y")
       .Attr("original_size", input_size)
       .Attr("scales", sc)
       .Attr("coordinate_transformation_mode", coordinate_transformation_mode)

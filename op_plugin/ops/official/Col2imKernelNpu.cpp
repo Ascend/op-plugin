@@ -43,9 +43,9 @@ at::Tensor& col2im_out_npu_nocheck(
   c10::SmallVector<int64_t, N> strides_sizes = {stride[0], stride[1]};
   at_npu::native::OpCommand cmd;
   cmd.Name("Col2im")
-      .Input(grad_output_cp, "x", ACL_FORMAT_NCHW)
+      .Input(grad_output_cp, "x")
       .Input(input_sizes, at::kInt)
-      .Output(grad_input, "y", ACL_FORMAT_NCHW)
+      .Output(grad_input, "y")
       .Attr("kernel_size", kernel_sizes)
       .Attr("dilation", dilations)
       .Attr("padding", paddings)

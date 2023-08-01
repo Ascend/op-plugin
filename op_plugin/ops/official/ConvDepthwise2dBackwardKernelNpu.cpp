@@ -37,9 +37,9 @@ void _conv_depthwise2d_backward_input_out_nocheck(
   at_npu::native::OpCommand cmd;
   cmd.Name("DepthwiseConv2DBackpropInput")
       .Input(input_size, at::kInt)
-      .Input(weight, "filter", ACL_FORMAT_NCHW)
-      .Input(grad_output, "out_backprop", ACL_FORMAT_NCHW)
-      .Output(grad_input, "input_grad", ACL_FORMAT_NCHW)
+      .Input(weight, "filter")
+      .Input(grad_output, "out_backprop")
+      .Output(grad_input, "input_grad")
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilations", dilations)
@@ -63,10 +63,10 @@ void _conv_depthwise2d_backward_weight_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("DepthwiseConv2DBackpropFilter")
-      .Input(self, "input", ACL_FORMAT_NCHW)
+      .Input(self, "input")
       .Input(input_size, at::kInt)
-      .Input(grad_output, "out_backprop", ACL_FORMAT_NCHW)
-      .Output(grad_weight, "filter_grad", ACL_FORMAT_NCHW)
+      .Input(grad_output, "out_backprop")
+      .Output(grad_weight, "filter_grad")
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilations", dilations)

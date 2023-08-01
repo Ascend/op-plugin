@@ -55,13 +55,8 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss_forward_out_nocheck(
 
   if (ignore_index >= 0 && ignore_index < self.size(-1)) {
     at::Tensor zero = at::zeros(1, self.options());
-    if (c10_npu::NpuRunMode::IsGraphMode()) {
-      auto ignore_tensor = weight_tensor.view({-1}).slice(0, ignore_index, ignore_index + 1, 1);
-      ignore_tensor.copy_(zero);
-    } else {
-      calcu_op_util::AclrtMemcpyAsync({weight_tensor, ignore_index}, weight_tensor.itemsize(),
-          {zero, 0}, weight_tensor.itemsize(), ACL_MEMCPY_DEVICE_TO_DEVICE);
-    }
+    calcu_op_util::AclrtMemcpyAsync({weight_tensor, ignore_index}, weight_tensor.itemsize(),
+        {zero, 0}, weight_tensor.itemsize(), ACL_MEMCPY_DEVICE_TO_DEVICE);
   }
 
   string reduction_str = calcu_op_util::GetReductionStr(reduction);

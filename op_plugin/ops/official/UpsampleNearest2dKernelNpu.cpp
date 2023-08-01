@@ -44,9 +44,9 @@ at::Tensor& upsample_nearest2d_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("ResizeNearestNeighborV2")
-      .Input(self, "x", ACL_FORMAT_NCHW)
+      .Input(self, "x")
       .Input(output_size_vec, at::kInt)
-      .Output(result, "y", ACL_FORMAT_NCHW)
+      .Output(result, "y")
       .Attr("align_corners", false)
       .Attr("half_pixel_centers", false)
       .Run();

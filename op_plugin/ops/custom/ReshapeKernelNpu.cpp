@@ -28,23 +28,7 @@ at::Tensor& npu_reshape_out(
     at::IntArrayRef shape,
     bool can_refresh,
     at::Tensor& result) {
-  if (c10_npu::NpuRunMode::IsGraphMode()) {
-    std::vector<int64_t> out_strides = at::detail::defaultStrides(shape);
-    if (result.sizes() != shape || result.strides() != out_strides) {
-      auto allow_flag =
-          result.unsafeGetTensorImpl()->allow_tensor_metadata_change();
-      result.unsafeGetTensorImpl()->set_allow_tensor_metadata_change(true);
-      at_npu::native::StorageDescHelper::SetDesc(result, shape, out_strides);
-      result.unsafeGetTensorImpl()->set_allow_tensor_metadata_change(allow_flag);
-    }
-
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Reshape")
-        .InputWithoutContiguous(src)
-        .Input(shape, at::kLong)
-        .Output(result)
-        .Run();
-  } else if (can_refresh) {
+  if (can_refresh) {
     at_npu::native::StorageDescHelper::SetDesc(
         result,
         op_infer::array_to_small_vector(result.sizes()),

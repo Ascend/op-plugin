@@ -65,10 +65,10 @@ at::Tensor& max_pool3d_with_indices_backward_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("MaxPool3DGrad")
-      .Input(self, "orig_x", ACL_FORMAT_NCDHW)
-      .Input(indices, "orig_y", ACL_FORMAT_NCDHW)
-      .Input(grad_output, "grads", ACL_FORMAT_NCDHW)
-      .Output(grad_input, "y", ACL_FORMAT_NCDHW)
+      .Input(self, "orig_x")
+      .Input(indices, "orig_y")
+      .Input(grad_output, "grads")
+      .Output(grad_input, "y")
       .Attr("ksize", kernel_sizes)
       .Attr("strides", stride_sizes)
       .Attr("padding", padstr)

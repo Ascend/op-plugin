@@ -76,17 +76,12 @@ at::Tensor& nll_loss_backward_out(
 
   if (ignore_index >= 0 && ignore_index < self_cp.size(-1)) {
     at::Tensor zero = at::zeros(1, self_cp.options());
-    if (c10_npu::NpuRunMode::IsGraphMode()) {
-      auto ignore_tensor = weight_tensor.view({-1}).slice(0, ignore_index, ignore_index + 1, 1);
-      ignore_tensor.copy_(zero);
-    } else {
-      calcu_op_util::AclrtMemcpyAsync(
-          {weight_tensor, ignore_index},
-          weight_tensor.itemsize(),
-          {zero, 0},
-          weight_tensor.itemsize(),
-          ACL_MEMCPY_DEVICE_TO_DEVICE);
-    }
+    calcu_op_util::AclrtMemcpyAsync(
+        {weight_tensor, ignore_index},
+        weight_tensor.itemsize(),
+        {zero, 0},
+        weight_tensor.itemsize(),
+        ACL_MEMCPY_DEVICE_TO_DEVICE);
   }
 
   npu_preparation::CheckOut(

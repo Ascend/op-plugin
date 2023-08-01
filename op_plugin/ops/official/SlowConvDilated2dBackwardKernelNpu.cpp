@@ -38,9 +38,9 @@ at::Tensor& slow_conv_dilated2d_backward_input_out_nocheck(
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv2DBackpropInput")
       .Input(dim_list, at::kInt)
-      .Input(weight, "filter", ACL_FORMAT_NCHW)
-      .Input(grad_output, "out_backprop", ACL_FORMAT_NCHW)
-      .Output(grad_input, "y", ACL_FORMAT_NCHW)
+      .Input(weight, "filter")
+      .Input(grad_output, "out_backprop")
+      .Output(grad_input, "y")
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilations", dilations)
@@ -69,9 +69,9 @@ at::Tensor& slow_conv_dilated2d_backward_weight_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv2DBackpropFilter")
-      .Input(self, "x", ACL_FORMAT_NCHW)
+      .Input(self, "x")
       .Input(dim_list, at::kInt)
-      .Input(grad_output, "out_backprop", ACL_FORMAT_NCHW)
+      .Input(grad_output, "out_backprop")
       .Output(grad_weight)
       .Attr("strides", strides_size)
       .Attr("pads", paddings)

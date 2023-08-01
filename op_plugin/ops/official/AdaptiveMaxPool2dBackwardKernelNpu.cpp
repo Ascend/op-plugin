@@ -62,10 +62,10 @@ at::Tensor& adaptive_max_pool2d_backward_out_nocheck(
   bool ceil_mode = false;
   at_npu::native::OpCommand cmd;
   cmd.Name("MaxPoolGradWithArgmaxV1")
-      .Input(self, "x", ACL_FORMAT_NCHW)
-      .Input(grad_output, "grad", ACL_FORMAT_NCHW)
-      .Input(indices, "argmax", ACL_FORMAT_NCHW, "uint16")
-      .Output(grad_input, "y", ACL_FORMAT_NCHW)
+      .Input(self, "x")
+      .Input(grad_output, "grad")
+      .Input(indices, "argmax", c10::nullopt, "uint16")
+      .Output(grad_input, "y")
       .Attr("ksize", kernel_sizes)
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
