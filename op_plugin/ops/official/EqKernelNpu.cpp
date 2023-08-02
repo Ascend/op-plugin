@@ -97,25 +97,34 @@ at::Tensor& eq_out(
 at::Tensor eq(
     const at::Tensor& self,
     const at::Tensor& other) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
-  at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_plugin::eq(self, other.item());
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_plugin::eq(other, self.item());
+  } else {
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        self.device(), " and ", other.device());
+    at::Tensor format_cast_of_self = npu_preparation::cast_to_ori_format(self);
+    at::Tensor format_cast_of_other = npu_preparation::cast_to_ori_format(other);
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
-      output_size,
-      format_cast_of_self.options().dtype(at::kBool),
-      ACL_FORMAT_ND);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
+    at::Tensor result = npu_preparation::apply_tensor(
+        output_size,
+        format_cast_of_self.options().dtype(at::kBool),
+        format_cast_of_self);
 
-  eq_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
-  return result;
+    eq_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
+    return result;
+  }
 }
 
 at::Tensor eq(
     const at::Tensor& self,
     const at::Scalar& other) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+  at::Tensor format_cast_of_self = npu_preparation::cast_to_ori_format(self);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       format_cast_of_self.sizes(),
       format_cast_of_self.options().dtype(at::kBool),
       ACL_FORMAT_ND);
@@ -127,14 +136,14 @@ at::Tensor eq(
 at::Tensor& eq_(
     at::Tensor& self,
     const at::Tensor& other) {
-  npu_preparation::CastBackToOriFormat(self);
+  npu_preparation::cast_to_ori_format(self);
   return op_plugin::eq_out(self, other, self);
 }
 
 at::Tensor& eq_(
     at::Tensor& self,
     const at::Scalar& other) {
-  npu_preparation::CastBackToOriFormat(self);
+  npu_preparation::cast_to_ori_format(self);
   return op_plugin::eq_out(self, other, self);
 }
 } // namespace op_plugin
