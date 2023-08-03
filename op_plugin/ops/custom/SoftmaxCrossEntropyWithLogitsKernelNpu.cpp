@@ -13,14 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using torch::autograd::Function;
-using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -61,36 +57,11 @@ at::Tensor npu_softmax_cross_entropy_with_logits_backward(
   return result1 * grad.unsqueeze(-1);
 }
 
-class NPUSoftmaxCrossEntropyWithLogitsFunction:
-    public torch::autograd::Function<NPUSoftmaxCrossEntropyWithLogitsFunction> {
-public:
-  static at::Tensor forward(
-      AutogradContext *ctx,
-      const at::Tensor& self,
-      const at::Tensor& labels) {
-      at::AutoNonVariableTypeMode g;
-    ctx->save_for_backward({self, labels});
-    TORCH_CHECK(torch_npu::utils::is_npu(self));
-    return std::get<0>(softmax_cross_entropy_with_logits_impl_out_nocheck(self, labels));
-  }
-
-  static std::vector<at::Tensor> backward(
-      AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto self = saved[0];
-    auto labels = saved[1];
-
-    at::Tensor result = op_plugin::npu_softmax_cross_entropy_with_logits_backward(
-        grad_outputs[0], self, labels);
-    std::vector<at::Tensor> output = {result, at::Tensor()};
-    return output;
-  }
-};
 
 at::Tensor npu_softmax_cross_entropy_with_logits(
     const at::Tensor& self,
     const at::Tensor& labels) {
-  return NPUSoftmaxCrossEntropyWithLogitsFunction::apply(self, labels);
+  TORCH_CHECK(torch_npu::utils::is_npu(self));
+  return std::get<0>(softmax_cross_entropy_with_logits_impl_out_nocheck(self, labels));
 }
 } // namespace op_plugin

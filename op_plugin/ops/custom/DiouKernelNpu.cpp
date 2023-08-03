@@ -13,15 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using torch::autograd::AutogradContext;
-using torch::autograd::Function;
 
 namespace{
 c10::SmallVector<int64_t, N> diou_output_size(
@@ -136,49 +132,12 @@ std::tuple<at::Tensor, at::Tensor> npu_diou_backward(
   return std::tie(dbboxes, dgtboxes);
 }
 
-class NPUDiouFunction : public torch::autograd::Function<NPUDiouFunction> {
-public:
-  static at::Tensor forward(AutogradContext *ctx,
-      const at::Tensor& self,
-      const at::Tensor& gtboxes,
-      bool trans,
-      bool is_cross,
-      int64_t mode) {
-    ctx->saved_data["trans"] = trans;
-    ctx->saved_data["is_cross"] = is_cross;
-    ctx->saved_data["mode"] = mode;
-    at::AutoNonVariableTypeMode g;
-    ctx->save_for_backward({self, gtboxes});
-    return diou_npu_nocheck(self, gtboxes, trans, is_cross, mode);
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto trans = ctx->saved_data["trans"].toBool();
-    auto is_cross = ctx->saved_data["is_cross"].toBool();
-    auto mode = ctx->saved_data["mode"].toInt();
-    auto saved = ctx->get_saved_variables();
-    auto bboxes = saved[0];
-    auto gtboxes = saved[1];
-
-    std::tuple<at::Tensor, at::Tensor> result = op_plugin::npu_diou_backward(grad_outputs[0],
-        bboxes, gtboxes, trans, is_cross, mode);
-
-    std::vector<at::Tensor> output = {std::get<0>(result),
-        std::get<1>(result),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor()};
-    return output;
-  }
-};
-
 at::Tensor npu_diou(
     const at::Tensor& self,
     const at::Tensor& gtboxes,
     bool trans,
     bool is_cross,
     int64_t mode) {
-  return NPUDiouFunction::apply(self, gtboxes, trans, is_cross, mode);
+  return diou_npu_nocheck(self, gtboxes, trans, is_cross, mode);
 }
 } // namespace op_plugin

@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "torch_npu/csrc/framework/FormatHelper.h"
 
@@ -21,8 +20,6 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using torch::autograd::Function;
-using torch::autograd::AutogradContext;
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
@@ -100,36 +97,6 @@ std::tuple<at::Tensor, at::Tensor> npu_linear_backward(
   return std::tie(input_grad, weight_grad);
 }
 
-class NPULinearFunction : public torch::autograd::Function<NPULinearFunction> {
-public:
-  static at::Tensor forward(
-      AutogradContext *ctx,
-      const at::Tensor& input,
-      const at::Tensor& weight,
-      const c10::optional<at::Tensor>& bias_opt) {
-    ctx->saved_data["bias_has_value"] = (bias_opt.has_value() == true) ? bias_opt.value().requires_grad() : false;
-
-    at::AutoNonVariableTypeMode g;
-    ctx->save_for_backward({input, weight});
-    return linear_npu_nocheck(input, weight, bias_opt);
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext* ctx, std::vector<at::Tensor> grad_outputs) {
-    auto bias_has_value = ctx->saved_data["bias_has_value"].toBool();
-    auto saved = ctx->get_saved_variables();
-    auto input = saved[0];
-    auto weight = saved[1];
-
-    std::tuple<at::Tensor, at::Tensor> result = op_plugin::npu_linear_backward(grad_outputs[0], input, weight);
-
-    std::vector<at::Tensor> output = {std::get<0>(result), std::get<1>(result), at::Tensor()};
-    if (bias_has_value) {
-      output = {std::get<0>(result), std::get<1>(result), grad_outputs[0]};
-    }
-    return output;
-  }
-};
-
 at::Tensor npu_linear(
     const at::Tensor& input,
     const at::Tensor& weight,
@@ -147,6 +114,6 @@ at::Tensor npu_linear(
       ((is_support_nd_out && calcu_op_util::IsNdToNzOnTheFly(input, weight)) ||
       (!is_support_nd_out && is_aligin()))) ? input :
       at_npu::native::NPUNativeFunctions::npu_format_cast(input, ACL_FORMAT_FRACTAL_NZ);
-  return NPULinearFunction::apply(input_cast, weight, bias_opt);
+  return linear_npu_nocheck(input_cast, weight, bias_opt);
 }
 } // namespace op_plugin

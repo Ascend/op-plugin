@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "torch_npu/csrc/core/npu/SecondaryStreamGuard.h"
 #include "torch_npu/csrc/core/npu/NPUCachingAllocator.h"
 
@@ -27,8 +25,6 @@ using npu_compile_type = at_npu::native::CompileType;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-using torch::autograd::AutogradContext;
-
 at::Tensor dropout_genmask(const at::Tensor& self, at::Scalar prob) {
   uint32_t length = (self.numel() + 128 - 1) / 128 * 128;
   at::Tensor mask = npu_preparation::ApplyTensorWithFormat(
@@ -82,46 +78,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dropout_with_add_softmax_forw
       .Run();
   return std::tie(mask, result_softmax, result_dropout);
 }
-
-class NPUdropoutwasFunction : public torch::autograd::Function<NPUdropoutwasFunction> {
-public:
-  static std::vector<at::Tensor> forward(
-      AutogradContext *ctx,
-      const at::Tensor& self,
-      const at::Tensor& x1,
-      at::Scalar alpha,
-      double p,
-      int64_t dim) {
-    ctx->saved_data["alpha"] = alpha;
-    ctx->saved_data["p"] = p;
-    ctx->saved_data["dim"] = dim;
-    at::AutoNonVariableTypeMode g;
-    auto result = npu_dropout_with_add_softmax_forward(self, x1, alpha, p, dim);
-    auto result0 = std::get<0>(result);
-    auto result1 = std::get<1>(result);
-    ctx->save_for_backward({result0, result1});
-    std::vector<at::Tensor> result_list = {result0, result1, std::get<2>(result)};
-    return result_list;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext *ctx, std::vector<at::Tensor> grad_outputs) {
-    auto alpha = ctx->saved_data["alpha"].toScalar();
-    auto p = ctx->saved_data["p"].toDouble();
-    auto dim = ctx->saved_data["dim"].toInt();
-    auto saved = ctx->get_saved_variables();
-    auto result0 = saved[0];
-    auto result1 = saved[1];
-    auto result = npu_dropout_with_add_softmax_backward(grad_outputs[2], result0, result1, alpha, p, dim);
-    std::vector<at::Tensor> output = {
-        std::get<0>(result),
-        std::get<1>(result),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor()};
-    return output;
-  }
-};
-}
+} // namespace
 
 std::tuple<at::Tensor, at::Tensor> npu_dropout_with_add_softmax_backward(
     const at::Tensor& grad_out,
@@ -154,8 +111,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dropout_with_add_softmax(
     const at::Scalar& alpha,
     double p,
     int64_t dim) {
-  auto result = NPUdropoutwasFunction::apply(self, x1, alpha, p, dim);
-  return std::tie(result[0], result[1], result[2]);
+  return npu_dropout_with_add_softmax_forward(self, x1, alpha, p, dim);
 }
-
 } // namespace op_plugin
