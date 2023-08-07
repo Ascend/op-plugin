@@ -32,9 +32,9 @@ at::Tensor& roi_align_backward_npu_nocheck(
     c10::optional<int64_t> roi_end_mode) {
   at_npu::native::OpCommand cmd;
   cmd.Name("ROIAlignGrad")
-      .Input(self, "ydiff", ACL_FORMAT_NCHW)
+      .Input(self, "ydiff")
       .Input(rois)
-      .Output(result, "xdiff", ACL_FORMAT_NCHW)
+      .Output(result, "xdiff")
       .Attr("xdiff_shape", xdiff_shape)
       .Attr("spatial_scale", (float)spatial_scale)
       .Attr("pooled_height", pooled_height)

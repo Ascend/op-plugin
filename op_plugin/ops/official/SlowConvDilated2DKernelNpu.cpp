@@ -41,12 +41,12 @@ at::Tensor slow_conv_dilated2d(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv2D")
-      .Input(self, "x", ACL_FORMAT_NCHW)
-      .Input(weight, "filter", ACL_FORMAT_NCHW);
+      .Input(self, "x")
+      .Input(weight, "filter");
   if (bias.defined()){
      cmd.Input(bias);
   }
-  cmd.Output(result, "y", ACL_FORMAT_NCHW)
+  cmd.Output(result, "y")
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilations", dilations)

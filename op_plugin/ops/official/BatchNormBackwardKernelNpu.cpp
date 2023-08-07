@@ -41,15 +41,13 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_backward_training_update_nocheck
   at_npu::native::OpCommand cmd;
 
   string name = (self.dim() == 5) ? "BN3DTrainingUpdateGrad" : "BNTrainingUpdateGrad";
-  auto format = (self.dim() == 5) ? ACL_FORMAT_NCDHW : ACL_FORMAT_NCHW;
-
   cmd.Name(name)
-      .Input(grad_out, "grads", format)
-      .Input(self, "x", format)
-      .Input(save_mean, "batch_mean", format)
-      .Input(save_invstd, "batch_variance", format)
-      .Output(grad_weight, "diff_scale", format)
-      .Output(grad_bias, "diff_offset", format)
+      .Input(grad_out, "grads")
+      .Input(self, "x")
+      .Input(save_mean, "batch_mean")
+      .Input(save_invstd, "batch_variance")
+      .Output(grad_weight, "diff_scale")
+      .Output(grad_bias, "diff_offset")
       .Attr("epsilon", static_cast<float>(eps))
       .Run();
 
@@ -72,8 +70,6 @@ at::Tensor& batch_norm_backward_training_reduce_nocheck(
   at_npu::native::OpCommand cmd;
 
   string name = (self.dim() == 5) ? "BN3DTrainingReduceGrad" : "BNTrainingReduceGrad";
-  auto format = (self.dim() == 5) ? ACL_FORMAT_NCDHW : ACL_FORMAT_NCHW;
-
   at::Tensor weight_cp = weight;
   auto self_format = calcu_op_util::GetTensorNpuFormat(self);
   auto weight_format = calcu_op_util::GetTensorNpuFormat(weight);
@@ -83,14 +79,14 @@ at::Tensor& batch_norm_backward_training_reduce_nocheck(
     npu_format_helper::unsafe_format_cast(weight_cp, ACL_FORMAT_ND, ACL_FORMAT_NC1HWC0);
   }
   cmd.Name(name)
-      .Input(grad_out, "grads", format)
-      .Input(self, "x", format)
-      .Input(grad_weight, "diff_scale", format)
-      .Input(grad_bias, "diff_offset", format)
-      .Input(weight_cp, "scale", format)
-      .Input(save_mean, "batch_mean", format)
-      .Input(save_invstd, "batch_variance", format)
-      .Output(grad_input, "y", format)
+      .Input(grad_out, "grads")
+      .Input(self, "x")
+      .Input(grad_weight, "diff_scale")
+      .Input(grad_bias, "diff_offset")
+      .Input(weight_cp, "scale")
+      .Input(save_mean, "batch_mean")
+      .Input(save_invstd, "batch_variance")
+      .Output(grad_input, "y")
       .Attr("epsilon", static_cast<float>(eps))
       .Run();
   if (check_bn_5hd) {
@@ -114,10 +110,10 @@ at::Tensor& batch_norm_backward_infer_nocheck(
     double eps) {
   at_npu::native::OpCommand cmd;
   cmd.Name("BNInferGrad")
-      .Input(grad_out, "grads", ACL_FORMAT_NCHW)
-      .Input(weight, "scale", ACL_FORMAT_NCHW)
-      .Input(running_var, "batch_variance", ACL_FORMAT_NCHW)
-      .Output(grad_input, "x_backprop", ACL_FORMAT_NCHW)
+      .Input(grad_out, "grads")
+      .Input(weight, "scale")
+      .Input(running_var, "batch_variance")
+      .Output(grad_input, "x_backprop")
       .Attr("epsilon", static_cast<float>(eps))
       .Run();
 

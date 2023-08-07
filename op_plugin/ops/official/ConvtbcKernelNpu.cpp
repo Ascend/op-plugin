@@ -56,10 +56,10 @@ at::Tensor conv_tbc(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv2D")
-      .Input(self_tensor, "x", ACL_FORMAT_NCHW)
-      .Input(weight_tensor, "filter", ACL_FORMAT_NCHW)
+      .Input(self_tensor, "x")
+      .Input(weight_tensor, "filter")
       .Input(bias)
-      .Output(result, "y", ACL_FORMAT_NCHW)
+      .Output(result, "y")
       .Attr("pads", paddings)
       .Attr("strides", strides_size)
       .Attr("dilations", dilations)

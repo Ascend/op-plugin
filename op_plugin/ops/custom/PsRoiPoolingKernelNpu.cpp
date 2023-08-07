@@ -33,9 +33,9 @@ at::Tensor& ps_roi_pooling_npu_nocheck(
     int64_t output_dim) {
   npu_op_command cmd;
   cmd.Name("PSROIPoolingV2")
-      .Input(self, "x", ACL_FORMAT_NCHW)
+      .Input(self, "x")
       .Input(rois)
-      .Output(result, "y", ACL_FORMAT_NCHW)
+      .Output(result, "y")
       .Attr("spatial_scale", (float)spatial_scale)
       .Attr("output_dim", output_dim)
       .Attr("group_size", group_size)
@@ -76,9 +76,9 @@ at::Tensor& ps_roi_pooling_backward_npu_nocheck(
     at::IntArrayRef input_size) {
   npu_op_command cmd;
   cmd.Name("PSROIPoolingGradV2D")
-      .Input(output_grad, "x", ACL_FORMAT_NCHW)
+      .Input(output_grad, "x")
       .Input(rois)
-      .Output(input_grad, "y", ACL_FORMAT_NCHW)
+      .Output(input_grad, "y")
       .Attr("spatial_scale", (float)spatial_scale)
       .Attr("group_size", group_size)
       .Attr("output_dim", output_dim)

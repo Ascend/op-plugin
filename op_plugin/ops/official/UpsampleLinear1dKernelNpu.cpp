@@ -70,8 +70,8 @@ at::Tensor& upsample_linear1d_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("ResizeD")
-      .Input(selfcp, "X", ACL_FORMAT_NCHW)
-      .Output(result, "y", ACL_FORMAT_NCHW)
+      .Input(selfcp, "X")
+      .Output(result, "y")
       .Attr("sizes", output_size)
       .Attr("coordinate_transformation_mode", coordinate_transformation_mode)
       .Attr("mode", mode)

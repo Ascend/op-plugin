@@ -58,10 +58,10 @@ at::Tensor& max_pool2d_with_indices_backward_out_nocheck(
   c10::SmallVector<int64_t, N> dilations = {1, dilation[0], dilation[1], 1};
   at_npu::native::OpCommand cmd;
   cmd.Name("MaxPoolGradWithArgmaxV1")
-      .Input(self, "x", ACL_FORMAT_NCHW)
-      .Input(grad_output, "grad", ACL_FORMAT_NCHW)
-      .Input(indices, "argmax", ACL_FORMAT_NCHW, "uint16")
-      .Output(grad_input, "y", ACL_FORMAT_NCHW)
+      .Input(self, "x")
+      .Input(grad_output, "grad")
+      .Input(indices, "argmax", c10::nullopt, "uint16")
+      .Output(grad_input, "y")
       .Attr("ksize", kernel_size_new)
       .Attr("strides", strides_size)
       .Attr("pads", paddings)

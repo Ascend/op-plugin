@@ -38,12 +38,12 @@ const at::Tensor& _conv_depthwise2d_out(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("DepthwiseConv2D")
-      .Input(self, "x", ACL_FORMAT_NCHW)
-      .Input(weight_modify, "filter", ACL_FORMAT_NCHW);
+      .Input(self, "x")
+      .Input(weight_modify, "filter");
   if (bias.defined()) {
       cmd.Input(bias);
   }
-  cmd.Output(temp_out, "y", ACL_FORMAT_NCHW)
+  cmd.Output(temp_out, "y")
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilations", dilations)

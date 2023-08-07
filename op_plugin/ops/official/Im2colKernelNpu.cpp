@@ -120,7 +120,7 @@ at::Tensor& im2col_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Im2col")
-      .Input(self, "x", ACL_FORMAT_NCHW)
+      .Input(self, "x")
       .Output(result)
       .Attr("ksizes", kernel_sizes)
       .Attr("strides", stride_sizes)

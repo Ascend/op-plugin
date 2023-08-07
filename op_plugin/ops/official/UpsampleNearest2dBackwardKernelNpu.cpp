@@ -32,9 +32,9 @@ at::Tensor& upsample_nearest2d_backward_out_nocheck(
   at::SmallVector<int64_t, N> output_sizes = {input_size[2], input_size[3]};
   at_npu::native::OpCommand cmd;
   cmd.Name("ResizeNearestNeighborV2Grad")
-      .Input(grads, "grads", ACL_FORMAT_NCHW)
+      .Input(grads, "grads")
       .Input(output_sizes, at::kInt)
-      .Output(y, "y", ACL_FORMAT_NCHW)
+      .Output(y, "y")
       .Attr("align_corners", false)
       .Attr("half_pixel_centers", false)
       .Run();

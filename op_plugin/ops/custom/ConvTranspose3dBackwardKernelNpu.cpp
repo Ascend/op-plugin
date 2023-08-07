@@ -38,9 +38,9 @@ at::Tensor& conv_transpose3d_backward_input_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv3D")
-      .Input(grad_output, "x", ACL_FORMAT_NCDHW)
-      .Input(weight, "filter", ACL_FORMAT_NCDHW)
-      .Output(grad_input, "y", ACL_FORMAT_NCDHW)
+      .Input(grad_output, "x")
+      .Input(weight, "filter")
+      .Output(grad_input, "y")
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilations", dilations)
@@ -68,9 +68,9 @@ at::Tensor& conv_transpose3d_backward_weight_out_nocheck(
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv3DBackpropFilterD")
-      .Input(grad_output, "x", ACL_FORMAT_NCDHW)
-      .Input(input, "out_backprop", ACL_FORMAT_NCDHW)
-      .Output(grad_weight, "y", ACL_FORMAT_NCDHW)
+      .Input(grad_output, "x")
+      .Input(input, "out_backprop")
+      .Output(grad_weight, "y")
       .Attr("filter_size", dim_list)
       .Attr("strides", strides_size)
       .Attr("pads", paddings)

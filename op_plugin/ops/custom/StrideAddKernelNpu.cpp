@@ -29,9 +29,9 @@ at::Tensor& stride_add_out_npu_nocheck(
     c10::Scalar c1_len) {
   at_npu::native::OpCommand cmd;
   cmd.Name("StrideAdd")
-      .Input(self, "x1", ACL_FORMAT_NCHW)
-      .Input(other, "x2", ACL_FORMAT_NCHW)
-      .Output(result, "y", ACL_FORMAT_NCHW)
+      .Input(self, "x1")
+      .Input(other, "x2")
+      .Output(result, "y")
       .Attr("x1_c1_offset", (int64_t)offset1.toInt())
       .Attr("x2_c1_offset", (int64_t)offset2.toInt())
       .Attr("c1_len", (int64_t)c1_len.toInt())

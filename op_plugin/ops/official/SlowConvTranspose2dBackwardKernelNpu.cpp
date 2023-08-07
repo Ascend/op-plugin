@@ -38,9 +38,9 @@ at::Tensor& slow_conv_transpose2d_backward_grad_output_out_nocheck(
   int64_t groups = 1;
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv2D")
-      .Input(grad_output, "x", ACL_FORMAT_NCHW)
-      .Input(weight, "filter", ACL_FORMAT_NCHW)
-      .Output(grad_input, "y", ACL_FORMAT_NCHW)
+      .Input(grad_output, "x")
+      .Input(weight, "filter")
+      .Output(grad_input, "y")
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilations", dilations)
@@ -69,10 +69,10 @@ at::Tensor& slow_conv_transpose2d_backward_weight_out_nocheck(
   c10::SmallVector<int64_t, N> dim_list = op_infer::array_to_small_vector(weight.sizes());
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv2DBackpropFilter")
-      .Input(grad_output, "x", ACL_FORMAT_NCHW)
+      .Input(grad_output, "x")
       .Input(dim_list, at::kInt)
-      .Input(self, "out_backprop", ACL_FORMAT_NCHW)
-      .Output(grad_weight, "y", ACL_FORMAT_NCHW)
+      .Input(self, "out_backprop")
+      .Output(grad_weight, "y")
       .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilations", dilations)
