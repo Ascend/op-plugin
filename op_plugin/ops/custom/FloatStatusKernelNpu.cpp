@@ -13,11 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/core/npu/NpuVariables.h"
-#include "torch_npu/csrc/framework/graph/util/GraphModeGuard.h"
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_plugin {
 using npu_op_command = at_npu::native::OpCommand;
@@ -60,7 +58,6 @@ at::Tensor npu_get_float_status(const at::Tensor& self) {
 }
 
 at::Tensor npu_clear_float_status(const at::Tensor& self) {
-  at_npu::native::GraphModeGuard mode_guard(c10_npu::ModeKind::SINGLE_OP_MODE);
   at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   npu_op_command cmd;
   if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {

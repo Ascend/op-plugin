@@ -14,8 +14,7 @@
 // limitations under the License.
 
 #include <torch/csrc/autograd/custom_function.h>
-#include "torch_npu/csrc/aten/NPUGeneratorImpl.h"
-#include "torch_npu/csrc/core/npu/SecondaryStreamGuard.h"
+#include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"

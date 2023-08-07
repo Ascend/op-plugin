@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/core/npu/NpuVariables.h"
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_plugin {
 namespace {
