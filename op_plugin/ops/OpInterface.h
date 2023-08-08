@@ -1015,6 +1015,18 @@ at::Tensor npu_rotary_mul(const at::Tensor& self, const at::Tensor& r1, const at
 void npu_view_copy(at::Tensor& self, const at::Tensor& src, bool non_blocking);
 at::Tensor & npu_stride_copy_out(const at::Tensor& self, c10::IntArrayRef shape, c10::IntArrayRef stride, const c10::Scalar& storage_offset, at::Tensor& result);
 at::Tensor npu_stride_copy(const at::Tensor& self, c10::IntArrayRef shape, c10::IntArrayRef stride, const c10::Scalar& storage_offset);
+at::Tensor& linalg_matrix_norm_out(const at::Tensor& A, const at::Scalar& ord, at::IntArrayRef dim, bool keepdim, at::optional<at::ScalarType> opt_dtype, at::Tensor& result);
+at::Tensor& linalg_matrix_norm_out(const at::Tensor& A, c10::string_view ord, at::IntArrayRef dim, bool keepdim, at::optional<at::ScalarType> opt_dtype, at::Tensor& result);
+at::Tensor linalg_matrix_norm(const at::Tensor& self, const at::Scalar& scalar_ord, at::IntArrayRef dim, bool keepdim, at::optional<at::ScalarType> opt_dtype);
+at::Tensor linalg_matrix_norm(const at::Tensor& A, c10::string_view ord, at::IntArrayRef dim, bool keepdim, at::optional<at::ScalarType> opt_dtype);
+at::Tensor& linalg_vector_norm_out(const at::Tensor& self, const at::Scalar& scalar_ord, at::OptionalIntArrayRef opt_dim, bool keepdim, at::optional<at::ScalarType> opt_dtype, at::Tensor& result);
+at::Tensor linalg_vector_norm(const at::Tensor& self, const at::Scalar& scalar_ord, at::OptionalIntArrayRef opt_dim, bool keepdim, at::optional<at::ScalarType> opt_dtype);
+at::Tensor& linalg_norm_out(const at::Tensor& X, const at::optional<at::Scalar>& opt_ord, at::OptionalIntArrayRef opt_dim, bool keepdim, at::optional<at::ScalarType> opt_dtype, at::Tensor& result);
+at::Tensor& linalg_norm_out(const at::Tensor& X, c10::string_view ord, at::OptionalIntArrayRef opt_dim, bool keepdim, at::optional<at::ScalarType> opt_dtype, at::Tensor& result);
+at::Tensor linalg_norm(const at::Tensor& X, const at::optional<at::Scalar>& opt_ord, at::OptionalIntArrayRef opt_dim, bool keepdim, at::optional<at::ScalarType> opt_dtype);
+at::Tensor linalg_norm(const at::Tensor& X, c10::string_view ord, at::OptionalIntArrayRef opt_dim, bool keepdim, at::optional<at::ScalarType> opt_dtype);
+at::Tensor& linalg_svdvals_out(const at::Tensor& A, c10::optional<c10::string_view> driver, at::Tensor & S);
+at::Tensor linalg_svdvals(const at::Tensor& A, c10::optional<c10::string_view> driver);
 
 }  // namespace op_plugin
 
