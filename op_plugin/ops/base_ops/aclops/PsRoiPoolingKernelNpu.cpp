@@ -50,7 +50,7 @@ at::Tensor ps_roi_pooling(
     double spatial_scale,
     int64_t group_size,
     int64_t output_dim) {
-  auto output_size ={
+  auto output_size = {
       rois.size(0) * rois.size(2), output_dim, group_size, group_size};
 
   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
@@ -96,7 +96,7 @@ at::Tensor npu_ps_roi_pooling_backward(
     int64_t group_size,
     int64_t output_dim,
     at::IntArrayRef input_size) {
-  auto output_size ={
+  auto output_size = {
       rois.size(0), group_size * group_size * output_dim, input_size[0], input_size[1]};
 
   at::Tensor input_grad = npu_preparation::ApplyTensor(output_grad, output_size);
