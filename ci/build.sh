@@ -95,16 +95,30 @@ function check_python_version() {
 
 function check_pytorch_version() {
     matched_pytorch_version='false'
-    for ver in ${SUPPORTED_PY_VERSION[*]}; do
+    for ver in ${SUPPORTED_PYTORCH_VERSION[*]}; do
         if [ "${PYTORCH_VERSION}" = "${ver}" ]; then
-            matched_py_version='true'
+            matched_pytorch_version='true'
             return 0
         fi
     done
-    if [ "${matched_py_version}" = 'false' ]; then
+    if [ "${matched_pytorch_version}" = 'false' ]; then
         echo "${PYTORCH_VERSION} is an unsupported pytorch version, we suggest ${SUPPORTED_PYTORCH_VERSION[*]}"
         exit 1
     fi
+}
+
+function checkout_pytorch_branch() {
+    cd ${PYTORCH_PATH}
+    current_torch_branch=$(git symbolic-ref --short HEAD)
+    if [ "${current_torch_branch}" != "${PYTORCH_VERSION}" ]; then
+        if [ -d ${PYTORCH_PATH}/third_party/op-plugin ]; then
+            rm -r ${PYTORCH_PATH}/third_party/op-plugin
+        fi
+        echo "checkout to torch expected-branch[ ${PYTORCH_VERSION} ] "
+        git checkout "${PYTORCH_VERSION}" --recurse-submodules;
+        git checkout .;git clean -fdx;
+    fi
+    cd ${CUR_DIR}/../
 }
 
 function main()
@@ -115,7 +129,6 @@ function main()
     fi
     check_python_version
     check_pytorch_version
-
     CODE_ROOT_PATH=${CUR_DIR}/../
     # clone torch_adapter
     BUILD_PATH=${CODE_ROOT_PATH}/build
@@ -126,7 +139,7 @@ function main()
         fi
         git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
     fi
-
+    checkout_pytorch_branch
     # copy op_plugin to torch_adapter/third_party
     PYTORCH_THIRD_PATH=${PYTORCH_PATH}/third_party/op-plugin
     if [ -d ${PYTORCH_THIRD_PATH}/op_plugin ]; then
@@ -136,10 +149,8 @@ function main()
     fi
     OP_PLUGIN_PATH=${CODE_ROOT_PATH}/op_plugin
     cp -rf ${OP_PLUGIN_PATH} ${PYTORCH_THIRD_PATH}/
-
     # compile torch_adapter
     bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION}
-
     # copy dist/torch_npu.whl from torch_adapter to op_plugin
     if [ -d ${CODE_ROOT_PATH}/dist ]; then
         rm -r ${CODE_ROOT_PATH}/dist
