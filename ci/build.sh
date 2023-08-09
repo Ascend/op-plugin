@@ -18,8 +18,8 @@
 set -e
 
 CUR_DIR=$(dirname $(readlink -f $0))
-SUPPORTED_PY_VERSION=(3.8 3.9)
-SUPPORTED_PYTORCH_VERSION=('master' 'v2.0.0')
+SUPPORTED_PY_VERSION=(3.7 3.8 3.9)
+SUPPORTED_PYTORCH_VERSION=('master' 'v2.0.1' 'v1.11.0')
 PY_VERSION='3.8' # Default supported python version is 3.8
 PYTORCH_VERSION='master' # Default supported PyTorch version is master
 DEFAULT_SCRIPT_ARGS_NUM_MAX=2 # Default max supported input parameters
