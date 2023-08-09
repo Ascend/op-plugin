@@ -22,18 +22,18 @@ using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-int64_t calculate_p(c10::optional<at::Scalar> p) {
+float calculate_p(c10::optional<at::Scalar> p) {
   if (p.has_value()) {
     float val = calcu_op_util::GetScalarFloatValue(p.value());
     if (val == INFINITY) {
-      return static_cast<int64_t>(INT_MAX); // p = inf
+      return static_cast<float>(INT_MAX); // p = inf
     } else if (val == -INFINITY) {
-      return static_cast<int64_t>(INT_MIN); // p = -inf
+      return static_cast<float>(INT_MIN); // p = -inf
     } else {
-      return static_cast<int64_t>(val);
+      return p.value().toFloat();
     }
   } else {
-    return static_cast<int64_t>(2); // default: p = 2
+    return static_cast<float>(2.0); // default: p = 2.0
   }
 }
 
@@ -56,7 +56,7 @@ at::Tensor& norm_out_npu_nocheck(
   at::Tensor result = npu_preparation::ApplyTensorWithSizes(output_size, fp32_self.options());
   auto pvalue = calculate_p(p);
   at_npu::native::OpCommand cmd1;
-  cmd1.Name("LpNormReduce")
+  cmd1.Name("LpNormReduceV2")
       .Input(fp32_self)
       .Output(result_temp)
       .Attr("p", pvalue)
@@ -66,7 +66,7 @@ at::Tensor& norm_out_npu_nocheck(
       .Run();
 
   at_npu::native::OpCommand cmd2;
-  cmd2.Name("LpNormUpdate")
+  cmd2.Name("LpNormUpdateV2")
       .Input(result_temp)
       .Output(result)
       .Attr("p", pvalue)
