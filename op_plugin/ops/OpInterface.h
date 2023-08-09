@@ -1027,6 +1027,9 @@ at::Tensor linalg_norm(const at::Tensor& X, const at::optional<at::Scalar>& opt_
 at::Tensor linalg_norm(const at::Tensor& X, c10::string_view ord, at::OptionalIntArrayRef opt_dim, bool keepdim, at::optional<at::ScalarType> opt_dtype);
 at::Tensor& linalg_svdvals_out(const at::Tensor& A, c10::optional<c10::string_view> driver, at::Tensor & S);
 at::Tensor linalg_svdvals(const at::Tensor& A, c10::optional<c10::string_view> driver);
+at::Tensor nan_to_num(const at::Tensor& self, c10::optional<double> nan, c10::optional<double> pos_inf, c10::optional<double> neg_inf);
+at::Tensor & nan_to_num_(at::Tensor& self, c10::optional<double> nan, c10::optional<double> pos_inf, c10::optional<double> neg_inf);
+at::Tensor & nan_to_num_out( const at::Tensor& self, c10::optional<double> nan, c10::optional<double> pos_inf, c10::optional<double> neg_inf, at::Tensor& result);
 
 }  // namespace op_plugin
 
