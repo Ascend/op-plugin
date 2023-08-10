@@ -48,6 +48,9 @@ c10::SmallVector<int64_t, SIZE> broadcast_ops_npu_output_size(const at::Tensor& 
 
 c10::SmallVector<int64_t, SIZE> reduce_ops_npu_output_size(const at::Tensor& self, c10::IntArrayRef dim, bool keepdim);
 
+c10::SmallVector<int64_t, SIZE> mse_loss_npu_output_size(const at::Tensor& self, const at::Tensor& target,
+                                                         int64_t reduction);
+
 c10::SmallVector<int64_t, SIZE> adaptive_avg_pool3d_npu_output_size(const at::Tensor& self,
                                                                     c10::IntArrayRef output_size);
 
