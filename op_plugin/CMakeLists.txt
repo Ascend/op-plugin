@@ -11,6 +11,7 @@ FILE(GLOB _OPPLUGIN_BASE_OPS_SRCS
     ops/base_ops/opapi/*.cpp)
 
 FILE(GLOB _OPPLUGIN_UTILS_SRCS
+    *.cpp
     utils/*.cpp
     utils/custom_functions/aclops/*.cpp
     utils/custom_functions/opapi/*.cpp)
