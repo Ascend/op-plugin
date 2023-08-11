@@ -47,8 +47,7 @@ at::SmallVector<int64_t, SIZE> upsample_nearest3d_backward_infer_size(
   int64_t input_height = input_size[3];
   int64_t input_width = input_size[4];
 
-  at::SmallVector<int64_t, SIZE> output_sizes=
-    {nbatch, channels, input_depth, input_height, input_width};
+  at::SmallVector<int64_t, SIZE> output_sizes = {nbatch, channels, input_depth, input_height, input_width};
 
   return output_sizes;
 }
