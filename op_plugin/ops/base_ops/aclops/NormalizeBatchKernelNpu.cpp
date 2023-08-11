@@ -16,8 +16,6 @@
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-constexpr float_t EPSILON = 1e-5;
-
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -43,6 +41,7 @@ at::Tensor npu_normalize_batch(
   at::Tensor result = npu_preparation::ApplyTensor(self);
   string normalize_type_str = normalize_type == 0 ? "per_feature" : "all_features";
 
+  constexpr float_t EPSILON = 1e-5;
   at_npu::native::OpCommand cmd;
   cmd.Name("NormalizeBatch")
       .Input(self)

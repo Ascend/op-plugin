@@ -55,7 +55,7 @@ at::Tensor& multinomial_out(
     c10::optional<at::Generator> gen,
     at::Tensor& result) {
   auto input_dim = self.dim();
-  TORCH_CHECK(input_dim==1 || input_dim==2, "dim of input tensor only can be 1 or 2.");
+  TORCH_CHECK(input_dim == 1 || input_dim == 2, "dim of input tensor only can be 1 or 2.");
 
   auto output_size = op_infer::array_to_small_vector(self.sizes());
   output_size[input_dim - 1] = num_samples;
@@ -82,7 +82,7 @@ at::Tensor multinomial(
     bool replacement,
     c10::optional<at::Generator> gen) {
   auto dim = self.dim();
-  TORCH_CHECK(dim==1 || dim==2, "dim of input tensor only can be 1 or 2.");
+  TORCH_CHECK(dim == 1 || dim == 2, "dim of input tensor only can be 1 or 2.");
 
   auto shape = op_infer::array_to_small_vector(self.sizes());
   shape[dim-1] = num_samples;
