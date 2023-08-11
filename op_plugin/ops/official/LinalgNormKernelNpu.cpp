@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -85,7 +84,7 @@ static inline std::vector<int64_t> create_reverse_permutation(std::vector<int64_
 }
 
 float calculate_p(at::Scalar p) {
-    float val = calcu_op_util::GetScalarFloatValue(p);
+    float val = op_plugin::utils::get_scalar_float_value(p);
     if (val == INFINITY) {
         return static_cast<float>(INT_MAX); // p = inf
     } else if (val == -INFINITY) {

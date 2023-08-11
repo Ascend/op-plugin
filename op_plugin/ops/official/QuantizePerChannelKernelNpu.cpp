@@ -18,14 +18,13 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 c10::SmallVector<int64_t, SIZE> quantize_reshape_size(
     const at::Tensor& self,
     int64_t axis) {
   c10::SmallVector<int64_t, SIZE> out_size;
-  for(int64_t i=0; i < self.dim(); i++) {
+  for(int64_t i = 0; i < self.dim(); i++) {
     if(i != axis) {
       out_size.emplace_back(1);
     } else {
@@ -72,7 +71,7 @@ at::Tensor quantize_per_channel(
     const at::Tensor& zero_points,
     int64_t axis,
     at::ScalarType dtype) {
-  axis = calcu_op_util::MakeWrapDim(axis, self.dim());
+  axis = op_plugin::utils::make_warp_dim(axis, self.dim());
   TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1.");
   TORCH_CHECK(zero_points.dim() == 1, "Zero points' dim should be equal to 1.");
   TORCH_CHECK(scales.sizes()[0] == zero_points.sizes()[0], "Scales' size should be equal to zero points' size.");

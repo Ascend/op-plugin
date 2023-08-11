@@ -61,7 +61,7 @@ at::Tensor binary_cross_entropy_with_logits_nocheck(
     pos_weight_tensor = at::ones(self.sizes(), self.options());
   }
 
-  string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("SigmoidCrossEntropyWithLogitsV2")
       .Input(self.to(target.dtype()))
@@ -102,7 +102,7 @@ at::Tensor binary_cross_entropy_with_logits_backward(
   }
 
   at::Tensor dout_tensor = op_plugin::npu_broadcast(grad_output, self.sizes());
-  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("SigmoidCrossEntropyWithLogitsGradV2")
       .Input(self)

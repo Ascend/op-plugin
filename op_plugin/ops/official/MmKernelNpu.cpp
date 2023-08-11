@@ -21,7 +21,6 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using format_helper = at_npu::native::FormatHelper;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -99,6 +98,20 @@ bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool &is_s
   return self.size(1) >= kSplitKTimes * std::max(self.size(0), mat2.size(1));
 }
 
+bool is_mm_transpose(const at::Tensor &tensor) {
+  if (tensor.dim() < 2 || tensor.dim() > 3) {
+    return false;
+  }
+  int64_t dim1 = tensor.dim() - 1;
+  int64_t dim2 = tensor.dim() - 2;
+
+  if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool mm_check_nd_to_nz_on_the_fly(const at::Tensor &self, const at::Tensor &mat2) {
   const static int64_t kInnerAxisMinBytes = 256;
   const static int64_t kInnerAxisMaxLimit = 65535;
@@ -106,11 +119,11 @@ bool mm_check_nd_to_nz_on_the_fly(const at::Tensor &self, const at::Tensor &mat2
   int64_t self_outer_axis = self.size(self.dim() - 2);
   int64_t mat2_inner_axis = mat2.size(mat2.dim() - 1);
   int64_t mat2_outer_axis = mat2.size(mat2.dim() - 2);
-  if (calcu_op_util::IsMmTranspose(self)) {
+  if (is_mm_transpose(self)) {
     self_inner_axis = self.size(self.dim() - 2);
     self_outer_axis = self.size(self.dim() - 1);
   }
-  if (calcu_op_util::IsMmTranspose(mat2)) {
+  if (is_mm_transpose(mat2)) {
     mat2_inner_axis = mat2.size(mat2.dim() - 2);
     mat2_outer_axis = mat2.size(mat2.dim() - 1);
   }
@@ -123,6 +136,51 @@ bool mm_check_nd_to_nz_on_the_fly(const at::Tensor &self, const at::Tensor &mat2
            (mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis > kInnerAxisMaxLimit));
 }
 
+bool is_transpose_inner_axis(const at::Tensor &self) {
+  const static int64_t kInnerAxisMinBytes = 256;
+  const static int64_t kInnerAxisMaxLimit = 65535;
+  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1 || self.dim() < 2 ||
+      (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float)) {
+    return false;
+  }
+  int64_t data_type = elementSize(self.scalar_type());
+  int64_t self_inner_axis = self.size(self.dim() - 1);
+  int64_t self_outer_axis = self.size(self.dim() - 2);
+  if (is_mm_transpose(self)) {
+    self_inner_axis = self.size(self.dim() - 2);
+    self_outer_axis = self.size(self.dim() - 1);
+  }
+  if (self_inner_axis == 1 && self_outer_axis > kInnerAxisMaxLimit) {
+    return true;
+  }
+  if (self_inner_axis * self_outer_axis <= kInnerAxisMaxLimit) {
+    // too small tensor size
+    return false;
+  }
+  return ((self_inner_axis > kInnerAxisMaxLimit) ||
+          (self_inner_axis * data_type < kInnerAxisMinBytes && bool((self_inner_axis * data_type) & 0x1F))) &&
+         ((self_outer_axis * data_type >= kInnerAxisMinBytes && self_outer_axis <= kInnerAxisMaxLimit) ||
+          (self_outer_axis * data_type < kInnerAxisMinBytes && !((self_outer_axis * data_type) & 0x1F)));
+}
+
+bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2) {
+  const static int64_t kInnerAxisMaxLimit = 65535;
+  int64_t self_inner_axis = self.size(self.dim() - 1);
+  int64_t self_outer_axis = self.size(self.dim() - 2);
+  int64_t mat2_inner_axis = mat2.size(mat2.dim() - 1);
+  int64_t mat2_outer_axis = mat2.size(mat2.dim() - 2);
+  if (op_plugin::utils::is_transpose_last_two_dims(self)) {
+    self_inner_axis = self.size(self.dim() - 2);
+    self_outer_axis = self.size(self.dim() - 1);
+  }
+  if (op_plugin::utils::is_transpose_last_two_dims(mat2)) {
+    mat2_inner_axis = mat2.size(mat2.dim() - 2);
+    mat2_outer_axis = mat2.size(mat2.dim() - 1);
+  }
+  return self_inner_axis > kInnerAxisMaxLimit && self_outer_axis <= kInnerAxisMaxLimit &&
+         mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis <= kInnerAxisMaxLimit;
+}
+
 at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mat2) {
   const auto& self_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(self);
   const auto& mat2_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(mat2);
@@ -133,10 +191,10 @@ at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
   at::Tensor contiguous_self = self;
   at::Tensor contiguous_mat2 = mat2;
 
-  bool is_transpose_self = calcu_op_util::IsTransposeInnerAxis(contiguous_self);
-  bool is_transpose_mat2 = calcu_op_util::IsTransposeInnerAxis(contiguous_mat2);
+  bool is_transpose_self = is_transpose_inner_axis(contiguous_self);
+  bool is_transpose_mat2 = is_transpose_inner_axis(contiguous_mat2);
   if (is_transpose_self && is_transpose_mat2 &&
-      !calcu_op_util::IsTransposeBothInnerAxis(contiguous_self, contiguous_mat2)) {
+      !is_transpose_both_inner_axis(contiguous_self, contiguous_mat2)) {
     is_transpose_self = !is_transpose_self;
     is_transpose_mat2 = !is_transpose_mat2;
   }

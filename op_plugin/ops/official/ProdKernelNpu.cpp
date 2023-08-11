@@ -91,7 +91,7 @@ at::Tensor& prod_out(
 
   c10::SmallVector<int64_t, N> dim_now = {dim};
   if (self.dim() == 0) {
-    dim_now = calcu_op_util::GetDimlistForTensor(self);
+    dim_now = op_plugin::utils::get_dimlist_for_tensor(self);
   }
 
   if (!npu_utils::check_match(&result_tmp)) {
@@ -133,7 +133,7 @@ at::Tensor prod(
 
   c10::SmallVector<int64_t, N> dim_now = {dim};
   if (self.dim() == 0) {
-    dim_now = calcu_op_util::GetDimlistForTensor(self);
+    dim_now = op_plugin::utils::get_dimlist_for_tensor(self);
   }
 
   prod_out_npu_nocheck(result, self_tmp, dim_now, keepdim, dtype);
@@ -160,7 +160,7 @@ at::Tensor prod(const at::Tensor& self, c10::optional<at::ScalarType> dtype) {
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, self_tmp.options(), npu_format);
   at::ScalarType dst_type = get_dst_type(self, dtype);
 
-  prod_out_npu_nocheck(result, self_tmp, calcu_op_util::GetDimlistForTensor(self), false, dtype);
+  prod_out_npu_nocheck(result, self_tmp, op_plugin::utils::get_dimlist_for_tensor(self), false, dtype);
   if (cal_type != dst_type) {
     result = op_plugin::npu_dtype_cast(result, dst_type);
   }

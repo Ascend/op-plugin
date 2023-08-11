@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -28,7 +27,7 @@ std::tuple<at::Tensor&, at::Tensor&> multilabel_margin_loss_forward_out_nocheck(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction) {
-  string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("MultilabelMarginLoss")
       .Input(self)

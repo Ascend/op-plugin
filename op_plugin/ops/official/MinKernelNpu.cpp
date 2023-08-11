@@ -211,7 +211,7 @@ at::Tensor amin(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
 }
 
 at::Tensor min(const at::Tensor& self) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   return op_plugin::amin(self, dims, false);
 }
 

@@ -25,7 +25,7 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 c10::SmallVector<int64_t, SIZE> median_npu_output_size(const at::Tensor& self, int64_t dim, bool keepdim) {
-  dim = calcu_op_util::MakeWrapDim(dim, self.dim());
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   at::IntArrayRef dims(dim);
   return op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 }
@@ -54,7 +54,7 @@ std::tuple<at::Tensor&, at::Tensor&> median_out_value_nocheck(
     const at::Tensor& self,
     int64_t dim,
     bool keepdim) {
-  dim = calcu_op_util::MakeWrapDim(dim, self.dim());
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   int64_t k = self.dim() > 0 ? (self.size(dim) + 1) / 2 : 1;
 
   at::Tensor self_name = self.has_names() ? self.rename(c10::nullopt) : self;

@@ -17,8 +17,6 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using calcu_op_util = at_npu::native::CalcuOpUtil;
-
 std::tuple<at::Tensor, at::Tensor> _aminmax(const at::Tensor& self) {
   auto min = op_plugin::min(self);
   auto max = op_plugin::max(self);
@@ -44,7 +42,7 @@ std::tuple<at::Tensor&, at::Tensor&> aminmax_out(
     max = op_plugin::amax_out(self, dim.value(), keepdim, max);
     min = op_plugin::amin_out(self, dim.value(), keepdim, min);
   } else {
-    at::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+    at::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
     max = op_plugin::amax_out(self, dims, keepdim, max);
     min = op_plugin::amin_out(self, dims, keepdim, min);
   }

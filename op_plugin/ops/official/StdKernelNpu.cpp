@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -129,7 +128,7 @@ at::Tensor std(
 at::Tensor std(
     const at::Tensor& self,
     bool unbiased) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   return op_plugin::std(self, dims, unbiased, false);
 }
 
@@ -151,7 +150,7 @@ std::tuple <at::Tensor, at::Tensor> std_mean(
 std::tuple <at::Tensor, at::Tensor> std_mean(
     const at::Tensor& self,
     bool unbiased) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   return op_plugin::std_mean(self, dims, unbiased, false);
 }
 

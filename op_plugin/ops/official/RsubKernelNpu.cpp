@@ -34,7 +34,7 @@ at::Tensor& rsub_out_npu_nocheck(
     at::Scalar alpha) {
   // other*alpha
   at::Tensor other_mul_result;
-  if (!calcu_op_util::IsScalarOne(alpha)) {
+  if (!op_plugin::utils::is_scalar_one(alpha)) {
     other_mul_result = at::mul(self, alpha);
   }
 

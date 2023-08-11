@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 at::Tensor& repeat_out_npu_nocheck(
@@ -42,7 +41,7 @@ at::Tensor repeat(const at::Tensor& self, at::IntArrayRef repeats) {
   at::Tensor self_cp = self;
   if(repeats.size() > self_cp.ndimension()) {
     auto diff = repeats.size() - self_cp.ndimension();
-    for (int i=0; i<diff; i++) {
+    for (int i = 0; i < diff; i++) {
       self_cp = at::unsqueeze(self_cp, 0);
     }
   }

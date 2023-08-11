@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 void cummin_out_npu_nocheck (
     at::Tensor& values,
@@ -44,7 +43,7 @@ void _cummin_helper(const at::Tensor& self, at::Tensor& values, at::Tensor& indi
     indices.copy_(indices_temp);
   } else {
     // process aicore
-    int64_t first_dim = calcu_op_util::MakeWrapDim(0, self.dim());
+    int64_t first_dim = op_plugin::utils::make_warp_dim(0, self.dim());
     if (dim != first_dim) {
       c10::SmallVector<int64_t, SIZE> perm;
       for (int64_t i = 0; i < self.dim(); i++) {

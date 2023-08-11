@@ -31,7 +31,7 @@ at::Tensor& nll_loss2d_backward_out_nocheck(
     int64_t reduction,
     int64_t ignore_index,
     const at::Tensor& total_weight) {
-  auto reduction_str = calcu_op_util::GetReductionStr(reduction);
+  auto reduction_str = op_plugin::utils::get_reduction_str(reduction);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("NLLLossGrad")

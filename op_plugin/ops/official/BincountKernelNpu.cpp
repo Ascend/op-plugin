@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor bincount(
     const at::Tensor& self,
@@ -31,7 +30,7 @@ at::Tensor bincount(
   }
 
   auto sizes = static_cast<int64_t>(
-      calcu_op_util::GetScalarFloatValue(op_plugin::max(self).item()));
+      op_plugin::utils::get_scalar_float_value(op_plugin::max(self).item()));
   sizes = (sizes < minlength) ? minlength : (sizes + 1);
 
   if (self.dtype() == at::kLong) {

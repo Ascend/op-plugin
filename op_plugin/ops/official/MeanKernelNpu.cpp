@@ -37,7 +37,7 @@ at::Tensor& mean_out_no_dtype_nocheck(
 
   c10::SmallVector<int64_t, N> dim_vec;
   if (dim.empty()) {
-    dim_vec = calcu_op_util::GetDimlistForTensor(self);
+    dim_vec = op_plugin::utils::get_dimlist_for_tensor(self);
   } else {
     dim_vec = op_infer::array_to_small_vector(dim);
   }

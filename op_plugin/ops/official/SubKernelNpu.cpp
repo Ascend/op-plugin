@@ -28,8 +28,8 @@ at::Tensor& sub_scalar_out_npu(
     at::Scalar other,
     at::Scalar alpha) {
   // other*alpha
-  float other_value = calcu_op_util::GetScalarFloatValue(other);
-  float alpha_value = calcu_op_util::GetScalarFloatValue(alpha);
+  float other_value = op_plugin::utils::get_scalar_float_value(other);
+  float alpha_value = op_plugin::utils::get_scalar_float_value(alpha);
   at::Scalar scalarValue(other_value * alpha_value);
 
   at_npu::native::OpCommand cmd;
@@ -47,7 +47,7 @@ at::Tensor& sub_self_scalar_out_npu(
     at::Scalar self,
     const at::Tensor& other,
     at::Scalar alpha) {
-  at::Tensor other_mul_alpha = calcu_op_util::IsScalarOne(alpha) ? other : op_plugin::mul(other, alpha);
+  at::Tensor other_mul_alpha = op_plugin::utils::is_scalar_one(alpha) ? other : op_plugin::mul(other, alpha);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Sub")
@@ -71,7 +71,7 @@ at::Tensor& sub_out_npu_nocheck(
     sub_self_scalar_out_npu(result, self.item(), other, alpha);
   } else {
     at::Tensor other_mul_result = other;
-    if (!calcu_op_util::IsScalarOne(alpha)) {
+    if (!op_plugin::utils::is_scalar_one(alpha)) {
       other_mul_result = at::mul(other, alpha);
     }
 

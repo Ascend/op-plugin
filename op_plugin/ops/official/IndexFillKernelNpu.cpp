@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -26,7 +25,7 @@ void index_fill_d_check_index(at::IntArrayRef shape, const at::Tensor &index, in
   TORCH_CHECK(index.dim() == 1,"Index should be a one-dimensional tensor");
   int index_temp = INT_MAX;
   for (int i = 0; i < index.sizes()[0]; i++) {
-    index_temp = static_cast<int>(calcu_op_util::GetScalarFloatValue(index[i].item()));
+    index_temp = static_cast<int>(op_plugin::utils::get_scalar_float_value(index[i].item()));
     TORCH_CHECK(shape[dim] > index_temp, "Index out of range, it should be in [0,", shape[dim], ")");
   }
 }
@@ -85,13 +84,13 @@ at::Tensor index_fill_d_assist_help(
   at::IntArrayRef size = self.sizes();
   std::vector<int> index_vector;
   for (int i = 0; i < index.sizes()[0]; i++) {
-    int index_temp = static_cast<int>(calcu_op_util::GetScalarFloatValue(index[i].item()));
+    int index_temp = static_cast<int>(op_plugin::utils::get_scalar_float_value(index[i].item()));
     index_vector.push_back(index_temp);
   }
   // input
   // index is a 1-D tensor
   // value is a tensor which has only one item
-  float value_float = calcu_op_util::GetScalarFloatValue(value);
+  float value_float = op_plugin::utils::get_scalar_float_value(value);
   assist = index_fill_d_assist_help_init(dim, size, index_vector, flag, value_float);
   at::Tensor assist_help = at::from_blob(assist.data(), size, dtype(at::ScalarType::Float));
   return assist_help.to(at::device(torch_npu::utils::get_npu_device_type()));

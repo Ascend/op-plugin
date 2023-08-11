@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -71,9 +70,9 @@ at::Tensor range(
   c10::TensorOptions option =
       c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
 
-  float start_value = calcu_op_util::GetScalarFloatValue(start);
-  float end_value = calcu_op_util::GetScalarFloatValue(end);
-  float step_value = calcu_op_util::GetScalarFloatValue(step);
+  float start_value = op_plugin::utils::get_scalar_float_value(start);
+  float end_value = op_plugin::utils::get_scalar_float_value(end);
+  float step_value = op_plugin::utils::get_scalar_float_value(step);
 
   TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero");
   TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
@@ -89,9 +88,9 @@ at::Tensor& range_out(
     const at::Scalar& end,
     const at::Scalar& step,
     at::Tensor& result) {
-  float start_value = calcu_op_util::GetScalarFloatValue(start);
-  float end_value = calcu_op_util::GetScalarFloatValue(end);
-  float step_value = calcu_op_util::GetScalarFloatValue(step);
+  float start_value = op_plugin::utils::get_scalar_float_value(start);
+  float end_value = op_plugin::utils::get_scalar_float_value(end);
+  float step_value = op_plugin::utils::get_scalar_float_value(step);
 
   TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero");
   TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),

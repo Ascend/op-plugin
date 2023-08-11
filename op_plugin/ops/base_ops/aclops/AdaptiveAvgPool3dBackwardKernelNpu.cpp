@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -29,7 +28,7 @@ int64_t adaptive_avg_pool3d_backward_safe_size(const at::Tensor& self) {
      return size;
   }
   for (int64_t ndim : dims) {
-    ndim = calcu_op_util::MakeWrapDim(ndim, self.sizes().size());
+    ndim = op_plugin::utils::make_warp_dim(ndim, self.sizes().size());
     size *= self.sizes()[ndim];
   }
   return size;

@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -56,7 +55,7 @@ at::Tensor& mse_loss_backward_out(
       grad_input,
       self);
 
-  string reduction_str(calcu_op_util::GetReductionStr(reduction));
+  string reduction_str(op_plugin::utils::get_reduction_str(reduction));
 
   if (!npu_utils::check_match(&grad_input)) {
     at::Tensor contiguous_grad_input = npu_utils::format_contiguous(grad_input);

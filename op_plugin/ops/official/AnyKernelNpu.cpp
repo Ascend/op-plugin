@@ -45,7 +45,7 @@ at::Tensor& any_out(
     at::Tensor& result) {
   c10::SmallVector<int64_t, N> dim_list;
   if (dim == LLONG_MIN) {
-    dim_list = calcu_op_util::GetDimlistForTensor(self);
+    dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
   } else {
     dim_list = {dim};
   }
@@ -74,7 +74,7 @@ at::Tensor any(const at::Tensor& self, int64_t dim, bool keepdim) {
 
   if (dim == LLONG_MIN) {
     any_out_npu_nocheck(
-        result, self, calcu_op_util::GetDimlistForTensor(self), keepdim);
+        result, self, op_plugin::utils::get_dimlist_for_tensor(self), keepdim);
   } else {
     any_out_npu_nocheck(result, self, {dim}, keepdim);
   }
@@ -97,7 +97,7 @@ at::Tensor any(const at::Tensor& self) {
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
   any_out_npu_nocheck(
-      result, self, calcu_op_util::GetDimlistForTensor(self), false);
+      result, self, op_plugin::utils::get_dimlist_for_tensor(self), false);
   return result;
 }
 } // namespace op_plugin

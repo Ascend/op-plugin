@@ -20,7 +20,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -98,7 +97,7 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_out_nocheck(
     bool unbiased,
     bool keepdim) {
   c10::SmallVector<int64_t, N> dim_now =
-      dim.empty() ? calcu_op_util::GetDimlistForTensor(self) : c10::SmallVector<int64_t, N>(dim);
+      dim.empty() ? op_plugin::utils::get_dimlist_for_tensor(self) : c10::SmallVector<int64_t, N>(dim);
   auto ori_type = self.scalar_type();
   TORCH_CHECK((ori_type == c10::ScalarType::Half || ori_type == c10::ScalarType::Float),
       "Var Mean only support float16 or float32 type.");
@@ -191,7 +190,7 @@ at::Tensor var(
 }
 
 at::Tensor var(const at::Tensor& self, bool unbiased) {
-  c10::SmallVector<int64_t, N> dim = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, N> dim = op_plugin::utils::get_dimlist_for_tensor(self);
   return at::var(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
 }
 
@@ -221,7 +220,7 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor& self, bool unbiased) {
-  c10::SmallVector<int64_t, SIZE> dim = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dim = op_plugin::utils::get_dimlist_for_tensor(self);
   return at::var_mean(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
 }
 

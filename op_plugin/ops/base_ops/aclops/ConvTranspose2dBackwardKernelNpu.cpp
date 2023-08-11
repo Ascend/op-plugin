@@ -344,7 +344,7 @@ public:
     grad_input_mask[1] = weight.requires_grad();
     grad_input_mask[2] = bias_has_value;
 
-    tuple<at::Tensor, at::Tensor, at::Tensor> result = convolution_transpose_backward_nocheck(
+    std::tuple<at::Tensor, at::Tensor, at::Tensor> result = convolution_transpose_backward_nocheck(
         input,
         grad_outputs[0],
         weight,

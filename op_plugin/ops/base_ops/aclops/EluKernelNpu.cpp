@@ -20,7 +20,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 using torch::autograd::AutogradContext;
 using torch::autograd::Function;
@@ -32,9 +31,9 @@ at::Tensor& elu_out_nocheck(
     at::Scalar alpha,
     at::Scalar scale,
     at::Scalar input_scale) {
-  float alpha_value = calcu_op_util::GetScalarFloatValue(alpha);
-  float scale_value = calcu_op_util::GetScalarFloatValue(scale);
-  float input_scale_value = calcu_op_util::GetScalarFloatValue(input_scale);
+  float alpha_value = op_plugin::utils::get_scalar_float_value(alpha);
+  float scale_value = op_plugin::utils::get_scalar_float_value(scale);
+  float input_scale_value = op_plugin::utils::get_scalar_float_value(input_scale);
   at_npu::native::OpCommand cmd;
   cmd.Name("Elu")
       .Input(self)
@@ -63,7 +62,7 @@ at::Tensor& elu_backward_out_npu(
     at::Scalar scale,
     at::Scalar input_scale,
     const at::Tensor& output) {
-  float value = calcu_op_util::GetScalarFloatValue(alpha);
+  float value = op_plugin::utils::get_scalar_float_value(alpha);
   at_npu::native::OpCommand cmd;
   cmd.Name("EluGradV2")
       .Input(grad_output)

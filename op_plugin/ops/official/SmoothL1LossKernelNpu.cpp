@@ -35,7 +35,7 @@ at::Tensor& smooth_l1_loss_out_npu_nocheck(
     return result;
   }
 
-  string reduction_str(calcu_op_util::GetReductionStr(reduction));
+  string reduction_str(op_plugin::utils::get_reduction_str(reduction));
   at_npu::native::OpCommand cmd;
   cmd.Name("SmoothL1LossV2")
       .Input(self)

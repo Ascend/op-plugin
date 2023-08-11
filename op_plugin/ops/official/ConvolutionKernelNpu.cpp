@@ -22,7 +22,6 @@
 namespace op_plugin {
 using torch::autograd::Function;
 using torch::autograd::AutogradContext;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 constexpr int input_batch_size_dim = 0;
@@ -191,7 +190,7 @@ inline c10::SmallVector<int64_t, N> expand_dim_if_needed(
     }
     return expand_dim_param_vec;
   } else {
-    return calcu_op_util::ConvertIntArrayRefToSmallVector(list_param);
+    return op_plugin::utils::convert_array_to_vector(list_param);
   }
 }
 

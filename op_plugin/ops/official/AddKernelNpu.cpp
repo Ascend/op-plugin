@@ -42,8 +42,8 @@ at::Tensor& adds_out_npu_nocheck(
     const at::Scalar other,
     const at::Scalar alpha) {
   alpha_check_npu(self.scalar_type(), alpha);
-  float other_value = calcu_op_util::GetScalarFloatValue(other);
-  float alpha_value = calcu_op_util::GetScalarFloatValue(alpha);
+  float other_value = op_plugin::utils::get_scalar_float_value(other);
+  float alpha_value = op_plugin::utils::get_scalar_float_value(alpha);
   float value = other_value * alpha_value;
   at_npu::native::OpCommand cmd;
   std::string real_type = "";
@@ -80,7 +80,7 @@ at::Tensor& add_out_npu_nocheck(
     at_npu::native::OpCommand cmd;
     cmd.Expect(unified_result);
 
-    if (calcu_op_util::IsScalarOne(alpha)) {
+    if (op_plugin::utils::is_scalar_one(alpha)) {
       if (self.scalar_type() == at::kLong) {
         TORCH_NPU_WARN_ONCE(
             "The oprator of add is executed, Currently High Accuracy but Low Performance OP with 64-bit has "

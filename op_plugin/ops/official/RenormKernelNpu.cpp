@@ -26,7 +26,7 @@ c10::SmallVector<int64_t, SIZE> renorm_npu_output_size(
     const at::Tensor& self,
     int64_t dim) {
   c10::SmallVector<int64_t, SIZE> out_size;
-  for(int64_t i=0; i < self.dim(); i++) {
+  for(int64_t i = 0; i < self.dim(); i++) {
     if(i != dim) {
       out_size.emplace_back(1);
     } else {
@@ -42,8 +42,8 @@ at::Tensor& renorm_compute(
     at::Scalar p,
     int64_t dim,
     at::Scalar maxnorm) {
-  float p_value = calcu_op_util::GetScalarFloatValue(p);
-  float maxnorm_value = calcu_op_util::GetScalarFloatValue(maxnorm);
+  float p_value = op_plugin::utils::get_scalar_float_value(p);
+  float maxnorm_value = op_plugin::utils::get_scalar_float_value(maxnorm);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Renorm")
@@ -69,7 +69,7 @@ at::Tensor& renorm_out_nocheck(
 
   TORCH_CHECK(result.scalar_type() == ori_type, "result's type must be equal to input's.");
 
-  dim = calcu_op_util::MakeWrapDim(dim, self.dim());
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   auto output_size = renorm_npu_output_size(self, dim);
   at::Tensor result_bak = npu_preparation::ApplyTensorWithFormat(
       output_size,

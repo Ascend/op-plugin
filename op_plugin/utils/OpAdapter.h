@@ -17,6 +17,7 @@
 
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 #include "op_plugin/utils/OpConstants.h"
+#include "op_plugin/utils/OpUtils.h"
 
 #include "torch_npu/csrc/framework/OpCommand.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"

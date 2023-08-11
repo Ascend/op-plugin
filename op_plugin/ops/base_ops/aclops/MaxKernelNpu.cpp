@@ -246,7 +246,7 @@ at::Tensor amax(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
 }
 
 at::Tensor max(const at::Tensor& self) {
-  at::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  at::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   return op_plugin::amax(self, dims, false);
 }
 

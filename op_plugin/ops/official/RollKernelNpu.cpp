@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 
@@ -74,9 +73,9 @@ at::Tensor& roll_out_npu(
   } else {
     TORCH_CHECK(dims.size() == shifts.size(),
                 "The size of shifts and dims should be the same when the size of dims is not 0.");
-    int64_t first_dim = calcu_op_util::MakeWrapDim(0, self.dim());
+    int64_t first_dim = op_plugin::utils::make_warp_dim(0, self.dim());
     for (int i = 0; i < dims.size(); i++) {
-      int64_t axis = calcu_op_util::MakeWrapDim(dims[i], self.dim());
+      int64_t axis = op_plugin::utils::make_warp_dim(dims[i], self.dim());
       if (i == 0) {
         if (axis == first_dim) {
           c10::SmallVector<int64_t, SIZE> dim = {first_dim};

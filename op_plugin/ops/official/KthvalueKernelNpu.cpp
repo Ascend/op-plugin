@@ -133,7 +133,7 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
 
   TORCH_CHECK(self.scalar_type() == at::kHalf || self.scalar_type() == at::kFloat || self.scalar_type() == at::kInt,
               "the type of input must be float16, float32, or int32");
-  dim = calcu_op_util::MakeWrapDim(dim, self.dim());
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
 
   TORCH_CHECK(k >= 0 && k <= (self.dim() > 0 ? self.size(dim) : 1), "selected index k out of range");
 

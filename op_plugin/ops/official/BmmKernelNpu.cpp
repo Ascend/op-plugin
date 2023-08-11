@@ -22,13 +22,12 @@
 namespace op_plugin {
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 at::Tensor& bmm_out_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mat2) {
-  bool is_self_t = calcu_op_util::IsTransposeLastTwoDims(self);
-  bool is_mat2_t = calcu_op_util::IsTransposeLastTwoDims(mat2);
+  bool is_self_t = op_plugin::utils::is_transpose_last_two_dims(self);
+  bool is_mat2_t = op_plugin::utils::is_transpose_last_two_dims(mat2);
   at::Tensor contiguous_self = is_self_t ? self : npu_utils::format_contiguous_add_copy_optimize(self);
   at::Tensor contiguous_mat2 = is_mat2_t ? mat2 : npu_utils::format_contiguous_add_copy_optimize(mat2);
 
@@ -89,7 +88,7 @@ at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
     static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
     // There is a data trampling problem in non-aligned scenes. For the time being, only aligned scenes are supported.
     if (npu_format_helper::IsBaseFormatType(self) && npu_format_helper::IsBaseFormatType(mat2) &&
-        mm_bmm_nd && ((is_support_nd_out && calcu_op_util::IsNdToNzOnTheFly(self, mat2)) ||
+        mm_bmm_nd && ((is_support_nd_out && op_plugin::utils::is_nd_to_nz_on_fly(self, mat2)) ||
         (!is_support_nd_out && is_aligin()))) {
       result = npu_preparation::ApplyTensorWithFormat(output_size, self.options(), ACL_FORMAT_ND);
     } else {

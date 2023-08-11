@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -31,7 +30,7 @@ at::Tensor& soft_margin_loss_out_nocheck(
   if(target.sizes() != self.sizes()) {
     target_broadcast = op_plugin::npu_broadcast(target, self.sizes());
   }
-  string reduction_str(calcu_op_util::GetReductionStr(reduction));
+  string reduction_str(op_plugin::utils::get_reduction_str(reduction));
   at_npu::native::OpCommand cmd;
   cmd.Name("SoftMarginLoss")
       .Input(self)

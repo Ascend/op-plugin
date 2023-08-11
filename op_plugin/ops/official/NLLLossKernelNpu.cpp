@@ -59,7 +59,7 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss_forward_out_nocheck(
         {zero, 0}, weight_tensor.itemsize(), ACL_MEMCPY_DEVICE_TO_DEVICE);
   }
 
-  string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  string reduction_str = op_plugin::utils::get_reduction_str(reduction);
 
   auto scalar_type = target.scalar_type();
   TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),

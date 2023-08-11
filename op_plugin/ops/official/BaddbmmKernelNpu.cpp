@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -31,8 +30,8 @@ at::Tensor& baddbmm_nocheck(
     at::Scalar alpha) {
   auto output_size = op_infer::baddbmm_npu_output_size(tensor1, tensor2);
   at::Tensor batch_matmul_tensor = npu_preparation::ApplyTensor(self, output_size);
-  bool is_self_t = calcu_op_util::IsTransposeLastTwoDims(tensor1);
-  bool is_mat2_t = calcu_op_util::IsTransposeLastTwoDims(tensor2);
+  bool is_self_t = op_plugin::utils::is_transpose_last_two_dims(tensor1);
+  bool is_mat2_t = op_plugin::utils::is_transpose_last_two_dims(tensor2);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("BatchMatMul")

@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 at::Tensor& fill_diagonal_out_npu(
@@ -26,7 +25,7 @@ at::Tensor& fill_diagonal_out_npu(
     const at::Tensor& self,
     const at::Scalar& value,
     bool wrap) {
-  float fill_value = calcu_op_util::GetScalarFloatValue(value);
+  float fill_value = op_plugin::utils::get_scalar_float_value(value);
   at_npu::native::OpCommand cmd;
   cmd.Name("FillDiagonal")
       .Input(self)

@@ -37,7 +37,7 @@ at::Tensor& nll_loss_backward_out_nocheck(
       " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss_backward");
   at::Tensor target_cast = (scalar_type == at::kLong) ? op_plugin::npu_dtype_cast(target, at::kInt) : target;
 
-  string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("NLLLossGrad")
       .Input(self)

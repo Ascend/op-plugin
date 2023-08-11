@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -28,7 +27,7 @@ at::Tensor& sum_out_npu_nocheck(
     at::IntArrayRef dim,
     bool keepdim) {
   at::dim_list_to_bitset(dim, self.dim());
-  c10::SmallVector<int64_t, N> dim_list = dim.empty() ? calcu_op_util::GetDimlistForTensor(self) :
+  c10::SmallVector<int64_t, N> dim_list = dim.empty() ? op_plugin::utils::get_dimlist_for_tensor(self) :
       c10::SmallVector<int64_t, N>(dim);
   at_npu::native::OpCommand cmd;
   cmd.Name("ReduceSum")

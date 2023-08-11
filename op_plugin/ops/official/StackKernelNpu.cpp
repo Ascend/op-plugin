@@ -21,7 +21,6 @@
 namespace op_plugin {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -35,7 +34,7 @@ at_npu::native::DynamicInputRegFunc stack_func =
 at::SmallVector<int64_t, SIZE> stack_npu_output_size(
     at::TensorList tensors,
     int64_t dim) {
-  dim = calcu_op_util::MakeWrapDim(dim, tensors[0].dim() + 1);
+  dim = op_plugin::utils::make_warp_dim(dim, tensors[0].dim() + 1);
   at::SmallVector<int64_t, SIZE> shape;
   for (int i = 0; i < dim; i++) {
     shape.emplace_back(tensors[0].size(i));
@@ -49,9 +48,12 @@ at::SmallVector<int64_t, SIZE> stack_npu_output_size(
 }
 
 at::Tensor& stack_out_nocheck(at::Tensor& result, at::TensorList tensors, int64_t dim) {
-  auto input_tensors = calcu_op_util::ConvertTensorListToSmallVector(tensors);
-  auto dynamic_num = input_tensors.size();
+  c10::SmallVector<at::Tensor, N> input_tensors;
+  for (int i = 0; i < tensors.size(); i++) {
+    input_tensors.emplace_back(tensors[i]);
+  }
 
+  auto dynamic_num = input_tensors.size();
   at_npu::native::OpCommand cmd;
   cmd.Name("Pack")
       .DynamicInputReg(stack_func, {{dynamic_num, 0}});

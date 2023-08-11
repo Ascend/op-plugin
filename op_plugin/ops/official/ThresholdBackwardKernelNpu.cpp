@@ -29,7 +29,7 @@ at::Tensor threshold_backward_out_npu(
   at_npu::native::OpCommand cmd;
   // The performance of the ReluGrad operator is better than that of ThresholdGradV2D.
   // However, ReluGrad does not support the scenario where threshold is not 0.
-  if (calcu_op_util::GetScalarFloatValue(threshold) != 0) {
+  if (op_plugin::utils::get_scalar_float_value(threshold) != 0) {
     cmd.Name("ThresholdGradV2D")
         .Input(grad_output)
         .Input(self)

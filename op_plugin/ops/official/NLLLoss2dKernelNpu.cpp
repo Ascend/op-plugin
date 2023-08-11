@@ -68,7 +68,7 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss2d_forward_out_nocheck(
     const at::Tensor& weight_tensor,
     int64_t reduction,
     int64_t ignore_index) {
-  auto reduction_str = calcu_op_util::GetReductionStr(reduction);
+  auto reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("NLLLoss")
       .Input(self)

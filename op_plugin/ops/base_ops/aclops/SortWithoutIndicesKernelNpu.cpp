@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -49,8 +48,8 @@ at::Tensor& npu_sort_v2_out(
       result,
       self);
   
-  dim = calcu_op_util::MakeWrapDim(dim, self.dim());
-  int64_t last_dim = calcu_op_util::MakeWrapDim(-1, self.dim());
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
+  int64_t last_dim = op_plugin::utils::make_warp_dim(-1, self.dim());
 
   if (dim != last_dim) {
     c10::SmallVector<int64_t, SIZE> perm;
@@ -84,8 +83,8 @@ at::Tensor npu_sort_v2(
     bool descending) {
   at::Tensor result = npu_preparation::ApplyTensor(self);
 
-  dim = calcu_op_util::MakeWrapDim(dim, self.dim());
-  int64_t last_dim = calcu_op_util::MakeWrapDim(-1, self.dim());
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
+  int64_t last_dim = op_plugin::utils::make_warp_dim(-1, self.dim());
 
   if (dim != last_dim) {
     c10::SmallVector<int64_t, SIZE> perm;

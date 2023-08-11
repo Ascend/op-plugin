@@ -21,7 +21,6 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 std::tuple<at::Tensor&, at::Tensor&> max_pool3d_with_indices_out_nocheck(
@@ -52,9 +51,9 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool3d_with_indices_out_nocheck(
   int64_t ws = self.size(-1);
   c10::SmallVector<int64_t, SIZE> padrs(pads);
   if (ceil_mode) {
-    padrs[0] += calcu_op_util::CompletePad(ds, pads[0], kernel_size[0], stride_T);
-    padrs[1] += calcu_op_util::CompletePad(hs, pads[1], kernel_size[1], stride_H);
-    padrs[2] += calcu_op_util::CompletePad(ws, pads[2], kernel_size[2], stride_W);
+    padrs[0] += op_plugin::utils::complete_pad(ds, pads[0], kernel_size[0], stride_T);
+    padrs[1] += op_plugin::utils::complete_pad(hs, pads[1], kernel_size[1], stride_H);
+    padrs[2] += op_plugin::utils::complete_pad(ws, pads[2], kernel_size[2], stride_W);
   }
   c10::SmallVector<int64_t, SIZE> kernel_sizes = {1, 1, kernel_size[0], kernel_size[1], kernel_size[2]};
   c10::SmallVector<int64_t, SIZE> stride_sizes = {1, 1, stride_T, stride_H, stride_W};

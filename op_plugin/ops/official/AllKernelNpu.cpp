@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -117,7 +116,7 @@ at::Tensor all(const at::Tensor& self) {
   all_out_npu_nocheck(
       result,
       self_cast,
-      calcu_op_util::GetDimlistForTensor(self),
+      op_plugin::utils::get_dimlist_for_tensor(self),
       false);
   return result;
 }

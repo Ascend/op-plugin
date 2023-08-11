@@ -22,7 +22,6 @@
 namespace op_plugin {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -108,7 +107,7 @@ at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensor
   } else {
     return result;
   }
-  dim = calcu_op_util::MakeWrapDim(dim, dim_post_expr);
+  dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
 
   int64_t input_number = 0;
   at_npu::native::OpCommand cmd;
@@ -142,7 +141,7 @@ at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& 
     result.resize_({0}).copy_(output);
     return result;
   }
-  dim = calcu_op_util::MakeWrapDim(dim, dim_post_expr);
+  dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
   auto output_size = cat_npu_output_size(input_tensors, dim);
   npu_preparation::CheckOut(
       {materialized[0].get()},
@@ -176,7 +175,7 @@ at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim) {
     at::Tensor result = npu_preparation::ApplyTensor(materialized[0]);
     return result;
   }
-  dim = calcu_op_util::MakeWrapDim(dim, dim_post_expr);
+  dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
 
   auto output_size = cat_npu_output_size(input_tensors, dim);
 

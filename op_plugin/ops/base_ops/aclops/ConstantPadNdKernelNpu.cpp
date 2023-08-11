@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace{
 bool is_backward(at::IntArrayRef pad) {
@@ -99,7 +98,7 @@ at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at
     vector_int.emplace_back(paddings_vector[i - 1]);
   }
 
-  float val = calcu_op_util::GetScalarFloatValue(value);
+  float val = op_plugin::utils::get_scalar_float_value(value);
   at::Tensor value_tensor = at::empty({1}, self.options());
   op_plugin::fill_(value_tensor, val);
 
