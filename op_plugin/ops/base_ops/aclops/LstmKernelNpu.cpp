@@ -45,14 +45,14 @@ std::vector<at::Tensor> npu_lstm_npu_nocheck(
 
   c10::SmallVector<int64_t, SIZE> output_size = {num_step, batch_size, hidden_size};
 
-  at::Tensor y_output = npu_preparation::ApplyTensor(input, output_size);
-  at::Tensor h_output = npu_preparation::ApplyTensor(input, output_size);
-  at::Tensor c_output = npu_preparation::ApplyTensor(input, output_size);
-  at::Tensor i_output = npu_preparation::ApplyTensorWithFormat(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor j_output = npu_preparation::ApplyTensorWithFormat(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor f_output = npu_preparation::ApplyTensorWithFormat(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor o_output = npu_preparation::ApplyTensorWithFormat(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor tanhc = npu_preparation::ApplyTensorWithFormat(input, output_size, ACL_FORMAT_FRACTAL_NZ); 
+  at::Tensor y_output = npu_preparation::apply_tensor(input, output_size);
+  at::Tensor h_output = npu_preparation::apply_tensor(input, output_size);
+  at::Tensor c_output = npu_preparation::apply_tensor(input, output_size);
+  at::Tensor i_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor j_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor f_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor o_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor tanhc = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ); 
  
   string direction = flag_direction? "REDIRECTIONAL" : "UNIDIRECTIONAL";
   string gate_order = "ifjo";
@@ -326,6 +326,212 @@ at::Tensor get_mask(const at::Tensor& input, const at::Tensor& batch_sizes, cons
   return mask;
 }
 
+std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> lstm_backward_out_npu_nocheck(
+    at::Tensor& dw,
+    at::Tensor& db,
+    at::Tensor& dx,
+    at::Tensor& dht,
+    at::Tensor& dct,
+    const at::Tensor& x,
+    const at::Tensor& w,
+    const at::Tensor& b,
+    const at::Tensor& init_h,
+    const at::Tensor& init_c,
+    const at::Tensor& dy,
+    const at::Tensor& dh,
+    const at::Tensor& dc,
+    const at::Tensor& y,
+    const at::Tensor& h,
+    const at::Tensor& c,
+    const at::Tensor& i,
+    const at::Tensor& j,
+    const at::Tensor& f,
+    const at::Tensor& o,
+    const at::Tensor& tanhc,
+    const c10::optional<at::Tensor>& batch_sizes_ = c10::nullopt) {
+  const at::Tensor& batch_sizes = c10::value_or_else(batch_sizes_, [] {return at::Tensor();});
+  at::Tensor seqmask_h = at::unsqueeze(init_h, 0);
+  at::Tensor seq_length = batch_sizes.defined() ?
+      get_mask(x, batch_sizes, seqmask_h, batch_sizes.size(0)) : at::zeros({}, x.options());
+  at::Tensor mask = at::zeros({}, x.options().dtype(at::kByte));
+  at::Tensor wci = at::zeros({}, x.options());
+  at::Tensor wcf = at::zeros({}, x.options());
+  at::Tensor wco = at::zeros({}, x.options());
+  string gate_order = "ifjo";
+
+  at_npu::native::OpCommand cmd;
+  cmd.Name("DynamicRNNGrad")
+      .Input(x)
+      .Input(w)
+      .Input(b)
+      .Input(y)
+      .Input(init_h)
+      .Input(init_c)
+      .Input(h)
+      .Input(c)
+      .Input(dy)
+      .Input(dh)
+      .Input(dc)
+      .Input(i)
+      .Input(j)
+      .Input(f)
+      .Input(o)
+      .Input(tanhc)
+      .Input(seq_length)
+      .Input(mask)
+      .Input(wci)
+      .Input(wcf)
+      .Input(wco)
+      .Output(dw)
+      .Output(db)
+      .Output(dx)
+      .Output(dht)
+      .Output(dct)
+      .Attr("cell_type", "LSTM")
+      .Attr("direction", "UNIDIRECTIONAL")
+      .Attr("cell_depth", (int64_t)0)
+      .Attr("use_peephole", (bool)false)
+      .Attr("keep_prob", (float)-1.0)
+      .Attr("cell_clip", (float)-1.0)
+      .Attr("num_proj", (int64_t)0)
+      .Attr("time_major", (bool)true)
+      .Attr("forget_bias", (float)0.0)
+      .Attr("gate_order", gate_order)
+      .Run();
+
+  return std::tie(dx, dw, db, dht, dct);
+}
+
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_data_backward(
+    const c10::optional<at::Tensor>& grady_opt,
+    const c10::optional<at::Tensor>& gradh_opt,
+    const c10::optional<at::Tensor>& gradc_opt,
+    const at::Tensor& input,
+    const at::Tensor& batch_sizes,
+    const at::Tensor& weight,
+    const at::Tensor& bias,
+    const at::Tensor& init_h,
+    const at::Tensor& init_c,
+    const at::Tensor& y,
+    const at::Tensor& h,
+    const at::Tensor& c,
+    const at::Tensor& i,
+    const at::Tensor& j,
+    const at::Tensor& f,
+    const at::Tensor& o,
+    const at::Tensor& tanhc) {
+  const at::Tensor& grady = c10::value_or_else(grady_opt, [] {return at::Tensor();});
+  const at::Tensor& gradh = c10::value_or_else(gradh_opt, [] {return at::Tensor();});
+  const at::Tensor& gradc = c10::value_or_else(gradc_opt, [] {return at::Tensor();});
+
+  at::Tensor inh = at::squeeze(init_h, 0);
+  at::Tensor inc = at::squeeze(init_c, 0);
+
+  at::Tensor grad_input = npu_preparation::apply_tensor(input);
+  at::Tensor grad_weight = npu_preparation::apply_tensor(weight);
+  at::Tensor grad_bias = npu_preparation::apply_tensor(bias);
+  at::Tensor grad_ht = npu_preparation::apply_tensor(inh);
+  at::Tensor grad_ct = npu_preparation::apply_tensor(inc);
+
+  auto grad_y = grady.defined() ? grady : at::zeros(y.sizes(), y.options());
+  auto grad_h = gradh.defined() ? gradh[input.size(0)-1] : at::zeros(inh.sizes(), h.options());
+  auto grad_c = gradc.defined() ? gradc[input.size(0)-1] : at::zeros(inc.sizes(), c.options());
+
+  lstm_backward_out_npu_nocheck(grad_weight, grad_bias, grad_input, grad_ht, grad_ct, input, weight,
+                        bias, inh, inc, grad_y, grad_h, grad_c, y, h, c, i, j, f, o, tanhc, batch_sizes);
+  grad_ht = at::unsqueeze(grad_ht, 0);
+  grad_ct = at::unsqueeze(grad_ct, 0);
+
+  return std::tie(grad_input, grad_weight, grad_bias, grad_ht, grad_ct);
+}
+
+class NPULstmDataFunction : public torch::autograd::Function<NPULstmDataFunction> {
+public:
+  static std::vector<at::Tensor> forward(AutogradContext *ctx,
+      const at::Tensor& input,
+      const at::Tensor& batch_sizes,
+      const at::Tensor& weight,
+      const at::Tensor& bias,
+      const at::Tensor& seq_mask,
+      const at::Tensor& h,
+      const at::Tensor& c,
+      bool has_biases,
+      int64_t num_layers,
+      double dropout,
+      bool train,
+      bool bidirectional,
+      bool batch_first,
+      bool flag_seq,
+      bool flag_direction) {
+    at::AutoNonVariableTypeMode g;
+    auto result = npu_lstm_npu_nocheck(input, weight, bias, seq_mask, h, c, has_biases, num_layers,
+        dropout, train, bidirectional, batch_first, flag_seq, flag_direction);
+    ctx->save_for_backward({input, batch_sizes, weight, bias, h, c,
+        result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7]});
+    return result;
+  }
+
+  static std::vector<at::Tensor> backward(AutogradContext *ctx,
+    std::vector<at::Tensor> grad_outputs) {
+    auto saved = ctx->get_saved_variables();
+    auto input = saved[0];
+    auto batch_sizes = saved[1];
+    auto weight = saved[2];
+    auto bias = saved[3];
+    auto h = saved[4];
+    auto c = saved[5];
+    auto result0 = saved[6];
+    auto result1 = saved[7];
+    auto result2 = saved[8];
+    auto result3 = saved[9];
+    auto result4 = saved[10];
+    auto result5 = saved[11];
+    auto result6 = saved[12];
+    auto result7 = saved[13];
+
+    std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> result = npu_lstm_data_backward(
+        grad_outputs[0], grad_outputs[1], grad_outputs[2], input, batch_sizes, weight, bias, h, c,
+        result0, result1, result2, result3, result4, result5, result6, result7);
+    std::vector<at::Tensor> output = {
+        std::get<0>(result),
+        at::Tensor(),
+        std::get<1>(result),
+        std::get<2>(result),
+        at::Tensor(),
+        std::get<3>(result),
+        std::get<4>(result),
+        at::Tensor(),
+        at::Tensor(),
+        at::Tensor(),
+        at::Tensor(),
+        at::Tensor(),
+        at::Tensor(),
+        at::Tensor(),
+        at::Tensor()};
+    return output;
+  }
+};
+
+std::vector<at::Tensor> npu_lstm_data(
+    const at::Tensor& input,
+    const at::Tensor& batch_sizes,
+    const at::Tensor& weight,
+    const at::Tensor& bias,
+    const at::Tensor& seq_mask,
+    const at::Tensor& h,
+    const at::Tensor& c,
+    bool has_biases,
+    int64_t num_layers,
+    double dropout,
+    bool train,
+    bool bidirectional,
+    bool batch_first,
+    bool flag_seq,
+    bool flag_direction){
+  return NPULstmDataFunction::apply(input, batch_sizes, weight, bias, seq_mask, h, c, has_biases,
+      num_layers, dropout, train, bidirectional, batch_first, flag_seq, flag_direction);
+}
+
 std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_direc_packseq(
     const at::Tensor& data, const at::Tensor& batch_sizes, at::TensorList hx,
     at::TensorList params, bool has_biases, int64_t num_layers, double dropout_p,
@@ -354,7 +560,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_direc_packseq(
   int64_t max_len = input.size(0);
 
   at::Tensor mask = get_mask(input, batch_sizes, h, max_len);
-  auto results = op_plugin::npu_lstm(input, weight, bias, mask, h, c, has_biases, num_layers,
+  auto results = npu_lstm_data(input, batch_sizes, weight, bias, mask, h, c, has_biases, num_layers,
       dropout_p, train, bidirectional, false, true, false);
 
   at::Tensor th_output = at::unsqueeze(results[1][num_step-1], 0);
@@ -397,7 +603,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_bidirec_packseq(
 
   at::Tensor mask = get_mask(input, batch_sizes, h, max_len);
   // caculate forward direction, direction of attr is REDIRECTIONAL
-  auto results_backward = op_plugin::npu_lstm(input, weight_back, bias_back, mask, h_back, c_back,
+  auto results_backward = npu_lstm_data(input, batch_sizes, weight_back, bias_back, mask, h_back, c_back,
       has_biases, num_layers, dropout_p, train, bidirectional, batch_first, true, true);
 
   // get the first dimension of the T-axis when caculate reverse direction	
@@ -446,10 +652,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_double_layer_direc_packseq(
   at::Tensor mask = get_mask(input, batch_sizes, h, max_len);
   at::Tensor input_2_layer = std::get<0>(results);
 
-  auto results_2_layer = op_plugin::npu_lstm(input_2_layer, weight_2_layer, bias_2_layer, mask, h_2_layer, c_2_layer,
+  auto results_2_layer = npu_lstm_data(input_2_layer, batch_sizes, weight_2_layer, bias_2_layer, mask, h_2_layer, c_2_layer,
       has_biases, num_layers, dropout_p, train, bidirectional, batch_first, true, false);
-  at::Tensor th_output_2_layer = at::unsqueeze(results_2_layer[1][num_step-1], 0);
-  at::Tensor tc_output_2_layer = at::unsqueeze(results_2_layer[2][num_step-1], 0);
+  at::Tensor th_output_2_layer = at::unsqueeze(results_2_layer[1][num_step - 1], 0);
+  at::Tensor tc_output_2_layer = at::unsqueeze(results_2_layer[2][num_step - 1], 0);
   at::Tensor th = at::cat({std::get<1>(results), th_output_2_layer}, 0);
   at::Tensor tc = at::cat({std::get<2>(results), tc_output_2_layer}, 0);
 
@@ -498,78 +704,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_double_layer_bidirec_packseq
   at::Tensor th = at::cat({std::get<1>(results_layer1), h}, 0);
   at::Tensor tc = at::cat({std::get<2>(results_layer1), c}, 0);
   return std::tie(y, th, tc);
-}
-
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> lstm_backward_out_npu_nocheck(
-    at::Tensor& dw,
-    at::Tensor& db,
-    at::Tensor& dx,
-    at::Tensor& dht,
-    at::Tensor& dct,
-    const at::Tensor& x,
-    const at::Tensor& w,
-    const at::Tensor& b,
-    const at::Tensor& init_h,
-    const at::Tensor& init_c,
-    const at::Tensor& dy,
-    const at::Tensor& dh,
-    const at::Tensor& dc,
-    const at::Tensor& y,
-    const at::Tensor& h,
-    const at::Tensor& c,
-    const at::Tensor& i,
-    const at::Tensor& j,
-    const at::Tensor& f,
-    const at::Tensor& o,
-    const at::Tensor& tanhc) {
-  at::Tensor seq_length = at::zeros({}, x.options());
-  at::Tensor mask = at::zeros({}, x.options().dtype(at::kByte));
-  at::Tensor wci = at::zeros({}, x.options());
-  at::Tensor wcf = at::zeros({}, x.options());
-  at::Tensor wco = at::zeros({}, x.options());
-  string gate_order = "ifjo";
-
-  at_npu::native::OpCommand cmd;
-  cmd.Name("DynamicRNNGrad")
-      .Input(x)
-      .Input(w)
-      .Input(b)
-      .Input(y)
-      .Input(init_h)
-      .Input(init_c)
-      .Input(h)
-      .Input(c)
-      .Input(dy)
-      .Input(dh)
-      .Input(dc)
-      .Input(i)
-      .Input(j)
-      .Input(f)
-      .Input(o)
-      .Input(tanhc)
-      .Input(seq_length)
-      .Input(mask)
-      .Input(wci)
-      .Input(wcf)
-      .Input(wco)
-      .Output(dw)
-      .Output(db)
-      .Output(dx)
-      .Output(dht)
-      .Output(dct)
-      .Attr("cell_type", "LSTM")
-      .Attr("direction", "UNIDIRECTIONAL")
-      .Attr("cell_depth", (int64_t)0)
-      .Attr("use_peephole", (bool)false)
-      .Attr("keep_prob", (float)-1.0)
-      .Attr("cell_clip", (float)-1.0)
-      .Attr("num_proj", (int64_t)0)
-      .Attr("time_major", (bool)true)
-      .Attr("forget_bias", (float)0.0)
-      .Attr("gate_order", gate_order)
-      .Run();
-
-  return std::tuple< at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> {dx, dw, db, dht, dct};
 }
 } // namespace
 
@@ -675,11 +809,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
   at::Tensor inh = at::squeeze(init_h, 0);
   at::Tensor inc = at::squeeze(init_c, 0);
 
-  at::Tensor grad_input = npu_preparation::ApplyTensor(input); 
-  at::Tensor grad_weight = npu_preparation::ApplyTensor(weight);
-  at::Tensor grad_bias = npu_preparation::ApplyTensor(bias);
-  at::Tensor grad_ht = npu_preparation::ApplyTensor(inh);
-  at::Tensor grad_ct = npu_preparation::ApplyTensor(inc);
+  at::Tensor grad_input = npu_preparation::apply_tensor(input); 
+  at::Tensor grad_weight = npu_preparation::apply_tensor(weight);
+  at::Tensor grad_bias = npu_preparation::apply_tensor(bias);
+  at::Tensor grad_ht = npu_preparation::apply_tensor(inh);
+  at::Tensor grad_ct = npu_preparation::apply_tensor(inc);
   
   auto grad_y = grady.defined() ? grady : at::zeros(y.sizes(), y.options());
   auto grad_h = gradh.defined() ? gradh[input.size(0)-1] : at::zeros(inh.sizes(), h.options());

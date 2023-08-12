@@ -22,7 +22,7 @@ using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
-inline at::Tensor& any_out_npu_nocheck(
+at::Tensor& any_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     c10::SmallVector<int64_t, N> dim_list,
@@ -66,10 +66,45 @@ at::Tensor& any_out(
   return result;
 }
 
+at::Tensor& any_out(
+    const at::Tensor& self,
+    at::Tensor& result) {
+  // when self's dim = 0, convert [1] tensor and reduce it
+  if (self.dim() == 0) {
+    at::Tensor self_tmp = self.unsqueeze(0);
+    self_tmp = op_plugin::npu_dtype_cast(self_tmp, at::kBool);
+    return op_plugin::any_out(self_tmp, 0, false, result);
+  }
+
+  at::SmallVector<int64_t, N> dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
+  bool keepdim = false;
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim_list, keepdim);
+  npu_preparation::CheckOut(
+      {self},
+      result,
+      self,
+      output_size);
+
+  if (self.numel() == 0) {
+    result.fill_(false);
+    return result;
+  }
+
+  if (!npu_utils::check_match(&result)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    any_out_npu_nocheck(contiguous_result, self, dim_list, keepdim);
+    npu_utils::format_fresh_view(result, contiguous_result);
+  } else {
+    any_out_npu_nocheck(result, self, dim_list, keepdim);
+  }
+
+  return result;
+}
+
 at::Tensor any(const at::Tensor& self, int64_t dim, bool keepdim) {
   at::IntArrayRef dims(dim);
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size, self.options(), calcu_op_util::GetTensorNpuFormat(self));
 
   if (dim == LLONG_MIN) {
@@ -84,11 +119,7 @@ at::Tensor any(const at::Tensor& self, int64_t dim, bool keepdim) {
 at::Tensor any(const at::Tensor& self) { 
   // when self's dim = 0, convert [1] tensor and reduce it.
   if (self.dim() == 0) {
-    at::Tensor self_tmp = npu_preparation::ApplyTensorWithFormat(
-        {1}, 
-        self.options().dtype(at::ScalarType::Float), 
-        calcu_op_util::GetTensorNpuFormat(self));
-    op_plugin::fill_(self_tmp, self.item());
+    at::Tensor self_tmp = self.unsqueeze(0);
     self_tmp = op_plugin::npu_dtype_cast(self_tmp, at::kBool);
     return op_plugin::any(self_tmp, 0, false);
   }

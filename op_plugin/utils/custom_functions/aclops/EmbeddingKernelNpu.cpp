@@ -13,16 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-at::Tensor embedding_symint(
+using npu_preparation = at_npu::native::OpPreparation;
+
+at::Tensor embedding_common_nocheck(
     const at::Tensor& weight,
-    const at::Tensor& indices,
-    c10::SymInt padding_idx,
-    bool scale_grad_by_freq,
-    bool sparse) {
-  return embedding_common_nocheck(weight, indices);
+    const at::Tensor& indices) {
+  auto output_size = op_infer::array_to_small_vector(indices.sizes());
+  output_size.emplace_back(weight.size(weight.dim() - 1));
+  at::Tensor result = npu_preparation::apply_tensor(weight, output_size);
+
+  c10::SmallVector<int64_t, N> dim_vec = {0};
+  int64_t batch_dims = 0;
+
+  at_npu::native::OpCommand cmd;
+  cmd.Name("GatherV2")
+      .Input(weight)
+      .Input(indices)
+      .Input(dim_vec)
+      .Output(result)
+      .Attr("batch_dims", batch_dims)
+      .Run();
+  return result;
 }
 } // namespace op_plugin

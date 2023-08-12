@@ -14,23 +14,23 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-at::Tensor& sum_out(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
-  return sum_out_common_nocheck(result, self, dim.value(), keepdim, dtype);
-}
+using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor sum(
+at::Tensor cumsum(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return sum_common_nocheck(self, dim.value(), keepdim, dtype);
+    int64_t dim,
+    const c10::optional<at::ScalarType> dtype) {
+  at::Tensor result;
+  if (dtype.has_value()) {
+    result = npu_preparation::apply_tensor(self, self.options().dtype(dtype.value()));
+  } else if (self.scalar_type() == at::ScalarType::Bool) {
+    result = npu_preparation::apply_tensor(self, self.options().dtype(at::kLong));
+  } else {
+    result = npu_preparation::apply_tensor(self);
+  }
+  return op_plugin::cumsum_out(self, dim, dtype, result);
 }
 } // namespace op_plugin

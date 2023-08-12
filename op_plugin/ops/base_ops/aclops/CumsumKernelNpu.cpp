@@ -21,6 +21,7 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -53,20 +54,20 @@ at::Tensor& cumsum_out(
     int64_t dim,
     c10::optional<at::ScalarType> dtype,
     at::Tensor& result) {
-  at::ScalarType dst_type;
+  at::ScalarType dst_type = self.scalar_type();
   if (dtype.has_value()) {
     dst_type = dtype.value();
   } else if (result.defined()) {
     dst_type = result.scalar_type();
-  } else {
-    dst_type = self.scalar_type();
   }
   at::Tensor self_cp = self.scalar_type() == dst_type ? self :
       op_plugin::npu_dtype_cast(self, dst_type);
   npu_preparation::CheckOut(
       {self_cp},
       result,
-      self_cp);
+      calcu_op_util::GetTensorNpuFormat(result),
+      dst_type,
+      self_cp.sizes());
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     cumsum_out_nocheck(contiguous_result, self_cp, dim);

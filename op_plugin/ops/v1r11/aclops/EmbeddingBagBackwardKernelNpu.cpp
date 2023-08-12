@@ -16,14 +16,14 @@
 #include "op_plugin/ops/OpInterface.h"
 
 namespace op_plugin {
-at::Tensor _embedding_bag_backward_symint(
+at::Tensor _embedding_bag_backward(
     const at::Tensor& grad,
     const at::Tensor& indices,
     const at::Tensor& offsets,
     const at::Tensor& offset2bag,
     const at::Tensor& bag_size,
     const at::Tensor& maximum_indices,
-    c10::SymInt num_weights,
+    int64_t num_weights,
     bool scale_grad_by_freq,
     int64_t mode,
     bool sparse,
@@ -42,13 +42,12 @@ at::Tensor _embedding_bag_backward_symint(
     per_sample_weights_cpu = per_sample_weights_cpu.to("cpu");
   }
 
-  at::Tensor result = at::_embedding_bag_backward_symint(
+  at::Tensor result = at::_embedding_bag_backward(
       grad_cpu, indices_cpu, offsets_cpu, offset2bag_cpu, bag_size_cpu,
       maximum_indices_cpu, num_weights, scale_grad_by_freq, mode, sparse, per_sample_weights_cpu);
   
   result = at::native::sparse_to_dense(result);
   result = result.to(indices.device());
-
   return result;
 }
 } // namespace op_plugin

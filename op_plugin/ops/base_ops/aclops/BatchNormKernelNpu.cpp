@@ -188,6 +188,48 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
     bool train,
     double momentum,
     double eps) {
+  int64_t dim_c = self.size(1);
+  at::TensorOptions options = self.options().dtype(at::kFloat);
+  const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] {return at::Tensor();});
+  const at::Tensor& running_var = c10::value_or_else(running_var_opt, [] {return at::Tensor();});
+  const at::Tensor running_mean_tensor = running_mean.defined() ? running_mean : at::zeros({dim_c}, options);
+  const at::Tensor running_var_tensor = running_var.defined() ? running_var : at::ones({dim_c}, options);
+
+  at::Tensor result;
+  at::Tensor save_mean;
+  at::Tensor save_invstd;
+  if (train) {
+    save_mean = (self.dim() == 5) ?
+        npu_preparation::apply_tensor(
+            running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), running_mean_tensor) :
+        npu_preparation::apply_tensor(
+            running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), self);
+    save_invstd = (self.dim() == 5) ?
+        npu_preparation::apply_tensor(
+            running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), running_var_tensor) :
+        npu_preparation::apply_tensor(
+            running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), self);
+  } else {
+    save_mean = at::empty({0}, self.options());
+    save_invstd = at::empty({0}, self.options());
+  }
+
+  return op_plugin::native_batch_norm_out(self, weight_opt, bias_opt,
+      running_mean_opt, running_var_opt, train, momentum, eps, result, save_mean, save_invstd);
+}
+
+std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
+    const at::Tensor& self,
+    const c10::optional<at::Tensor>& weight_opt,
+    const c10::optional<at::Tensor>& bias_opt,
+    const c10::optional<at::Tensor>& running_mean_opt,
+    const c10::optional<at::Tensor>& running_var_opt,
+    bool train,
+    double momentum,
+    double eps,
+    at::Tensor& result,
+    at::Tensor& save_mean,
+    at::Tensor& save_invstd) {
   const at::Tensor& weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
   const at::Tensor& bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
   const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] { return at::Tensor(); });
@@ -208,6 +250,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
     c10::SmallVector<int64_t, N> nchw_shape(self_shape);
     nchw_shape.resize(4, 1);
     self_reshape = self.reshape(nchw_shape);
+    if (result.defined()) {
+      result = result.reshape(nchw_shape);
+    }
   } else if (train && self.dim() == 5) {
     // Use 3D BN ops for training, merging axes is not required.
     self_reshape = self;
@@ -220,6 +265,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
         {self_shape[0] * self_shape[2], self_shape[1], self_shape[3], self_shape[4]};
     // ndchw -> nchw
     self_reshape = self_reshape.reshape(nchw_shape);
+    if (result.defined()) {
+      result = npu_preparation::apply_tensor(self_reshape);
+    }
   }
 
   // process when affine=Flase and track_running_stats=False
@@ -237,24 +285,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
   at::Tensor weight_tensor = weight.defined() ? weight_cp : at::ones({dim_c}, options);
   at::Tensor bias_tensor = bias.defined() ? bias_cp : at::zeros({dim_c}, options);
 
-  at::Tensor result = npu_preparation::apply_tensor(self_reshape.sizes(), self_reshape.options(), self_reshape);
-
-  at::Tensor save_mean;
-  at::Tensor save_invstd;
-  if (train) {
-    save_mean = (self.dim() == 5) ?
-        npu_preparation::apply_tensor(
-            running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), running_mean_tensor) :
-        npu_preparation::apply_tensor(
-            running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), self);
-    save_invstd = (self.dim() == 5) ?
-        npu_preparation::apply_tensor(
-            running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), running_var_tensor) :
-        npu_preparation::apply_tensor(
-            running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), self);
-  } else {
-    save_mean = at::empty({0}, self.options());
-    save_invstd = at::empty({0}, self.options());
+  if (!result.defined()) {
+    result = npu_preparation::apply_tensor(self_reshape);
   }
 
   batch_norm_impl(result, save_mean, save_invstd, self_reshape, weight_tensor, bias_tensor, running_mean_tensor,

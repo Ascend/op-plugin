@@ -32,11 +32,13 @@ at::Tensor& baddbmm_nocheck(
   at::Tensor batch_matmul_tensor = npu_preparation::ApplyTensor(self, output_size);
   bool is_self_t = op_plugin::utils::is_transpose_last_two_dims(tensor1);
   bool is_mat2_t = op_plugin::utils::is_transpose_last_two_dims(tensor2);
+  at::Tensor contiguous_self = is_self_t ? tensor1 : npu_utils::format_contiguous(tensor1);
+  at::Tensor contiguous_mat2 = is_mat2_t ? tensor2 : npu_utils::format_contiguous(tensor2);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("BatchMatMul")
-      .Input(tensor1)
-      .Input(tensor2) 
+      .InputWithoutContiguous(contiguous_self)
+      .InputWithoutContiguous(contiguous_mat2)
       .Output(batch_matmul_tensor)
       .Attr("adj_x1", is_self_t)
       .Attr("adj_x2", is_mat2_t)

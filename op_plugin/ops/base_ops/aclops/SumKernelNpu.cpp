@@ -14,23 +14,27 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
 at::Tensor& sum_out(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
+    at::DimnameList dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
     at::Tensor& result) {
-  return sum_out_common_nocheck(result, self, dim.value(), keepdim, dtype);
+  return op_plugin::sum_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
 }
 
 at::Tensor sum(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
+    at::DimnameList dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype) {
-  return sum_common_nocheck(self, dim.value(), keepdim, dtype);
+  return op_plugin::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
+}
+
+at::Tensor sum(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
+  return op_plugin::sum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
 }
 } // namespace op_plugin
