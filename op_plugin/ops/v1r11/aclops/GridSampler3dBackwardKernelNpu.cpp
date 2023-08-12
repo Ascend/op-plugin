@@ -16,21 +16,17 @@
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
-at::Tensor& sum_out(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
-  return sum_out_common_nocheck(result, self, dim.value(), keepdim, dtype);
-}
 
-at::Tensor sum(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return sum_common_nocheck(self, dim.value(), keepdim, dtype);
+namespace op_plugin {
+using npu_preparation = at_npu::native::OpPreparation;
+
+std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
+    const at::Tensor& grad,
+    const at::Tensor& input,
+    const at::Tensor& grid,
+    int64_t interpolation_mode,
+    int64_t padding_mode,
+    bool align_corners) {
+  return grid_sampler3d_backward_common_nocheck(grad, input, grid, interpolation_mode, padding_mode, align_corners);
 }
 } // namespace op_plugin

@@ -17,20 +17,7 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-at::Tensor& sum_out(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
-  return sum_out_common_nocheck(result, self, dim.value(), keepdim, dtype);
-}
-
-at::Tensor sum(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return sum_common_nocheck(self, dim.value(), keepdim, dtype);
+at::Tensor gelu_backward(const at::Tensor& grad, const at::Tensor& self) {
+  return gelu_backward_common_nocheck(grad, self);
 }
 } // namespace op_plugin

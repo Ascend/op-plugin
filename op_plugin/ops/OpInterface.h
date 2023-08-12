@@ -78,6 +78,7 @@ at::Tensor _pdist_forward(const at::Tensor & self, double p);
 at::Tensor _slow_conv2d_forward(const at::Tensor & self, const at::Tensor & weight, at::IntArrayRef kernel_size, const c10::optional<at::Tensor> & bias, at::IntArrayRef stride, at::IntArrayRef padding);
 at::Tensor & _slow_conv2d_forward_out(const at::Tensor & self, const at::Tensor & weight, at::IntArrayRef kernel_size, const c10::optional<at::Tensor> & bias, at::IntArrayRef stride, at::IntArrayRef padding, at::Tensor & output);
 at::Tensor _softmax(const at::Tensor & self, int64_t dim, bool half_to_float);
+at::Tensor & _softmax_out(const at::Tensor & self, int64_t dim, bool half_to_float, at::Tensor & result);
 at::Tensor _softmax_backward_data(const at::Tensor & grad_output, const at::Tensor & output, int64_t dim, at::ScalarType input_dtype);
 at::Tensor & _softmax_backward_data_out(const at::Tensor & grad_output, const at::Tensor & output, int64_t dim, at::ScalarType input_dtype, at::Tensor & grad_input);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> _unique2(const at::Tensor & self, bool sorted, bool return_inverse, bool return_counts);
@@ -128,6 +129,7 @@ at::Tensor affine_grid_generator_backward(const at::Tensor & grad, at::IntArrayR
 at::Tensor all(const at::Tensor & self, int64_t dim, bool keepdim);
 at::Tensor all(const at::Tensor & self);
 at::Tensor & all_out(const at::Tensor & self, int64_t dim, bool keepdim, at::Tensor & out);
+at::Tensor & all_out(const at::Tensor & self, at::Tensor & out);
 at::Tensor amax(const at::Tensor & self, at::IntArrayRef dim, bool keepdim);
 at::Tensor & amax_out(const at::Tensor & self, at::IntArrayRef dim, bool keepdim, at::Tensor & out);
 at::Tensor amin(const at::Tensor & self, at::IntArrayRef dim, bool keepdim);
@@ -136,6 +138,7 @@ at::Tensor & amin_out(const at::Tensor & self, at::IntArrayRef dim, bool keepdim
 at::Tensor any(const at::Tensor & self, int64_t dim, bool keepdim);
 at::Tensor any(const at::Tensor & self);
 at::Tensor & any_out(const at::Tensor & self, int64_t dim, bool keepdim, at::Tensor & out);
+at::Tensor & any_out(const at::Tensor & self, at::Tensor & out);
 at::Tensor arange(const at::Scalar & start, const at::Scalar & end, const at::Scalar & step, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory);
 at::Tensor arange(const at::Scalar & end, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory);
 at::Tensor arange(const at::Scalar & start, const at::Scalar & end, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory);
@@ -143,6 +146,7 @@ at::Tensor & arange_out(const at::Scalar & start, const at::Scalar & end, const 
 at::Tensor & arange_out(const at::Scalar & end, at::Tensor & out);
 at::Tensor argmax(const at::Tensor & self, c10::optional<int64_t> dim, bool keepdim);
 at::Tensor argmin(const at::Tensor & self, c10::optional<int64_t> dim, bool keepdim);
+at::Tensor & argmin_out(const at::Tensor & self, c10::optional<int64_t> dim, bool keepdim, at::Tensor & out);
 at::Tensor argsort(const at::Tensor & self, at::Dimname dim, bool descending);
 at::Tensor argsort(const at::Tensor & self, int64_t dim, bool descending);
 at::Tensor asin(const at::Tensor & self);
@@ -560,6 +564,7 @@ at::Tensor & multinomial_out(const at::Tensor & self, int64_t num_samples, bool 
 at::Tensor mv(const at::Tensor & self, const at::Tensor & vec);
 at::Tensor & mv_out(const at::Tensor & self, const at::Tensor & vec, at::Tensor & out);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> native_batch_norm(const at::Tensor & input, const c10::optional<at::Tensor> & weight, const c10::optional<at::Tensor> & bias, const c10::optional<at::Tensor> & running_mean, const c10::optional<at::Tensor> & running_var, bool training, double momentum, double eps);
+::std::tuple<at::Tensor &,at::Tensor &,at::Tensor &> native_batch_norm_out(const at::Tensor & self, const c10::optional<at::Tensor> & weight_opt, const c10::optional<at::Tensor> & bias_opt, const c10::optional<at::Tensor> & running_mean_opt, const c10::optional<at::Tensor> & running_var_opt, bool train, double momentum, double eps, at::Tensor & result, at::Tensor & save_mean, at::Tensor & save_invstd);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> native_batch_norm_backward(const at::Tensor & grad_out, const at::Tensor & input, const c10::optional<at::Tensor> & weight, const c10::optional<at::Tensor> & running_mean, const c10::optional<at::Tensor> & running_var, const c10::optional<at::Tensor> & save_mean, const c10::optional<at::Tensor> & save_invstd, bool train, double eps, ::std::array<bool,3> output_mask);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> native_layer_norm(const at::Tensor & input, at::IntArrayRef normalized_shape, const c10::optional<at::Tensor> & weight, const c10::optional<at::Tensor> & bias, double eps);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> native_layer_norm_backward(const at::Tensor & grad_out, const at::Tensor & input, at::IntArrayRef normalized_shape, const at::Tensor & mean, const at::Tensor & rstd, const c10::optional<at::Tensor> & weight, const c10::optional<at::Tensor> & bias, ::std::array<bool,3> output_mask);

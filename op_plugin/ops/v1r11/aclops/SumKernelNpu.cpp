@@ -14,32 +14,23 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-namespace {
-at::Tensor& gelu_backward_out_nocheck(
-    at::Tensor& grad_input,
-    const at::Tensor& grad,
-    const at::Tensor& self) {
-  at::Tensor unused = grad;
-  at_npu::native::OpCommand cmd;
-  cmd.Name("GeluGrad")
-      .Input(grad)
-      .Input(self)
-      .Input(unused)
-      .Output(grad_input)
-      .Run();
-  return grad_input;
-}
-} // namespace
-
-at::Tensor gelu_backward(
-    const at::Tensor& grad,
+at::Tensor& sum_out(
     const at::Tensor& self,
-    c10::string_view approximate) {
-  at::Tensor grad_input = at_npu::native::OpPreparation::apply_tensor(self);
-  gelu_backward_out_nocheck(grad_input, grad, self);
-  return grad_input;
+    at::IntArrayRef dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype,
+    at::Tensor& result) {
+  return sum_out_common_nocheck(result, self, dim, keepdim, dtype);
+}
+
+at::Tensor sum(
+    const at::Tensor& self,
+    at::IntArrayRef dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype) {
+  return sum_common_nocheck(self, dim, keepdim, dtype);
 }
 } // namespace op_plugin

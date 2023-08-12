@@ -13,24 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-at::Tensor& sum_out(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
-  return sum_out_common_nocheck(result, self, dim.value(), keepdim, dtype);
-}
-
-at::Tensor sum(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return sum_common_nocheck(self, dim.value(), keepdim, dtype);
+at::Tensor gelu_common_nocheck(const at::Tensor& self) {
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Gelu")
+      .Input(self)
+      .Output(result)
+      .Run();
+  return result;
 }
 } // namespace op_plugin

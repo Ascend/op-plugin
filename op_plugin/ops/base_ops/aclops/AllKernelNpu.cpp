@@ -21,7 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-inline at::Tensor all_out_npu_nocheck(
+at::Tensor all_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     c10::SmallVector<int64_t, N> dim_list,
@@ -35,23 +35,12 @@ inline at::Tensor all_out_npu_nocheck(
       .Run();
   return result;
 }
-} // namespace
 
-at::Tensor& all_out(
+at::Tensor& all_out_nocheck(
+    at::Tensor& result,
     const at::Tensor& self,
-    int64_t dim,
-    bool keepdim,
-    at::Tensor& result) {
-  TORCH_CHECK((result.scalar_type() == at::ScalarType::Bool || result.scalar_type() == at::ScalarType::Byte),
-      "all only supports bool tensor for result, got: ", result.scalar_type());
-  c10::SmallVector<int64_t, N> dim_list = {dim};
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim_list, keepdim);
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      result,
-      output_size);
-
+    c10::SmallVector<int64_t, N> dim_list,
+    bool keepdim) {
   at::Tensor self_cast = (self.scalar_type() == at::ScalarType::Bool) ?
       self : op_plugin::npu_dtype_cast(self, at::ScalarType::Bool);
   bool result_is_bool = (result.scalar_type() == at::ScalarType::Bool);
@@ -71,6 +60,40 @@ at::Tensor& all_out(
     result.copy_(result_cast);
   }
   return result;
+}
+} // namespace
+
+at::Tensor& all_out(
+    const at::Tensor& self,
+    int64_t dim,
+    bool keepdim,
+    at::Tensor& result) {
+  TORCH_CHECK((result.scalar_type() == at::ScalarType::Bool || result.scalar_type() == at::ScalarType::Byte),
+      "all only supports bool tensor for result, got: ", result.scalar_type());
+  c10::SmallVector<int64_t, N> dim_list = {dim};
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim_list, keepdim);
+  npu_preparation::CheckOut(
+      {self},
+      result,
+      result,
+      output_size);
+
+  return all_out_nocheck(result, self, dim_list, keepdim);
+}
+
+at::Tensor& all_out(const at::Tensor& self, at::Tensor& result) {
+  TORCH_CHECK((result.scalar_type() == at::ScalarType::Bool || result.scalar_type() == at::ScalarType::Byte),
+      "all only supports bool tensor for result, got: ", result.scalar_type());
+  at::IntArrayRef dims;
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
+  npu_preparation::CheckOut(
+      {self},
+      result,
+      result,
+      output_size);
+  auto dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
+
+  return all_out_nocheck(result, self, dim_list, false);
 }
 
 at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
