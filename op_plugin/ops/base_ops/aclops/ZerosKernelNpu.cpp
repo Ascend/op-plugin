@@ -14,13 +14,14 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+using npu_preparation = at_npu::native::OpPreparation;
+using npu_utils = at_npu::native::NpuUtils;
+
+at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& result) {
+  result.resize_(size);
+  return result.zero_();
 }
 } // namespace op_plugin

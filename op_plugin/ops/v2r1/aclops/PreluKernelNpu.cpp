@@ -13,20 +13,10 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-using npu_preparation = at_npu::native::OpPreparation;
-
 at::Tensor _prelu_kernel(const at::Tensor& self, const at::Tensor& weight) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-
-  at_npu::native::OpCommand cmd;
-  cmd.Name("PRelu")
-      .Input(self)
-      .Input(weight)
-      .Output(result)
-      .Run();
-  return result;
+  return prelu_common_nocheck(self, weight);
 }
 } // namespace op_plugin

@@ -17,10 +17,15 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
+using npu_preparation = at_npu::native::OpPreparation;
+
+at::Tensor softplus_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+    const at::Scalar& beta,
+    const at::Scalar& threshold) {
+  at::Tensor result = npu_preparation::apply_tensor(self);
+  softplus_backward_out_common_nocheck(result, grad_output, self, beta, threshold);
+  return result;
 }
 } // namespace op_plugin

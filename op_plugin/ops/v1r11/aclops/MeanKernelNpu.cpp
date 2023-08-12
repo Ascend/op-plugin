@@ -17,10 +17,20 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
-    const at::Tensor& grad_output,
+at::Tensor& mean_out(
     const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+    at::IntArrayRef dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype,
+    at::Tensor& result) {
+  return mean_out_common_nocheck(self, dim, keepdim, dtype, result);
+}
+
+at::Tensor mean(
+    const at::Tensor& self,
+    at::IntArrayRef dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype) {
+  return mean_common_nocheck(self, dim, keepdim, dtype);
 }
 } // namespace op_plugin

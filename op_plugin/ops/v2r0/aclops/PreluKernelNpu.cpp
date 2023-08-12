@@ -1,5 +1,4 @@
-// Copyright (c) 2023 Huawei Technologies Co., Ltd
-// All rights reserved.
+// Copyright (c) 2020, Huawei Technologies.All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,10 +16,7 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
+  return prelu_common_nocheck(self, weight);
 }
 } // namespace op_plugin

@@ -13,14 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+using npu_preparation = at_npu::native::OpPreparation;
+
+at::Tensor zeros_common_nocheck(
+    at::IntArrayRef size,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt) {
+  at::TensorOptions option =
+      option.dtype(dtype_opt).layout(layout_opt).device(device_opt).pinned_memory(pin_memory_opt);
+  at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
+  return result.zero_();
 }
 } // namespace op_plugin

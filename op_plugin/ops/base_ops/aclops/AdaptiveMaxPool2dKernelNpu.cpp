@@ -72,10 +72,10 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out_nocheck(
   auto inputsize = self.sizes();
   c10::SmallVector<int64_t, N> input_size;
   if (inputsize.size() == 3) {
-    c10::SmallVector<int64_t, N> size = { inputsize[1], inputsize[2] };
+    c10::SmallVector<int64_t, N> size = {inputsize[1], inputsize[2]};
     input_size = at::IntArrayRef(size);
   } else if (inputsize.size() == 4) {
-    c10::SmallVector<int64_t, N> size = { inputsize[2], inputsize[3] };
+    c10::SmallVector<int64_t, N> size = {inputsize[2], inputsize[3]};
     input_size = at::IntArrayRef(size);
   }
 
@@ -95,8 +95,8 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out_nocheck(
   kernel_size[0] = kernel_size_h;
   kernel_size[1] = kernel_size_w;
   padding[0] = padding[1] = 0;
-  c10::SmallVector<int64_t, N> kernelSize = {1, kernel_size[0], kernel_size[1], 1};
-  c10::SmallVector<int64_t, N> stridesSize = {1, stride[0], stride[1], 1};
+  c10::SmallVector<int64_t, N> kernel_sizes = {1, kernel_size[0], kernel_size[1], 1};
+  c10::SmallVector<int64_t, N> strides_size = {1, stride[0], stride[1], 1};
   c10::SmallVector<int64_t, N> paddings = {1, padding[0], padding[1], 1};
   c10::SmallVector<int64_t, N> dilations = {1, 1, 1, 1};
   bool ceil_mode = false;
@@ -106,8 +106,8 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out_nocheck(
       .Input(self, "x")
       .Output(output, "y")
       .Output(indices, "argmax", c10::nullopt, "uint16")
-      .Attr("ksize", kernelSize)
-      .Attr("strides", stridesSize)
+      .Attr("ksize", kernel_sizes)
+      .Attr("strides", strides_size)
       .Attr("pads", paddings)
       .Attr("dilation", dilations)
       .Attr("ceil_mode", ceil_mode)
@@ -164,7 +164,7 @@ std::tuple<at::Tensor, at::Tensor> adaptive_max_pool2d(
   c10::SmallVector<int64_t, SIZE> output_sizes = std::get<0>(adaptive_max_pool2d_infer_size(self, output_size));
   c10::SmallVector<int64_t, SIZE> indices_size = std::get<1>(adaptive_max_pool2d_infer_size(self, output_size));
   at::Tensor output = npu_preparation::ApplyTensor(self, output_sizes);
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(indices_size, self.options().dtype(at::kLong), ACL_FORMAT_NC1HWC0);
+  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(indices_size, self.options().dtype(at::kShort), ACL_FORMAT_NC1HWC0);
   adaptive_max_pool2d_out_nocheck(output, indices, self, output_size);
 
   return std::tuple<at::Tensor, at::Tensor>(output, indices);

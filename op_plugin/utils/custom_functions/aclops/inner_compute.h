@@ -35,5 +35,25 @@ at::Tensor& index_copy_npu_impl(const int64_t dim, const at::Tensor& index, cons
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(const at::Tensor& A, const bool full_matrices,
                                                                         const bool compute_uv, at::Tensor& U,
                                                                         at::Tensor& S, at::Tensor& Vh);
-}  // namespace op_plugin
+at::Tensor& softplus_backward_out_common_nocheck(at::Tensor& grad_input, const at::Tensor& grad_output,
+                                                 const at::Tensor& self, at::Scalar beta, at::Scalar threshold);
+::std::tuple<at::Tensor, at::Tensor> triangular_solve_out_common_nocheck(const at::Tensor& self, const at::Tensor& A,
+                                                                         bool upper, bool transpose, bool unitriangular);
+at::Tensor& mean_out_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
+                                    c10::optional<c10::ScalarType> dtype, at::Tensor& result);
+at::Tensor mean_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
+                               c10::optional<c10::ScalarType> dtype);
+at::Tensor& scatter_npu_common_nocheck(at::Tensor& self, int64_t dim, const at::Tensor& index, const at::Tensor& src);
+at::Tensor& scatter_npu_src_impl(at::Tensor& self, int64_t dim, const at::Tensor& index_ex, const at::Tensor& src_ex);
+::std::tuple<at::Tensor, at::Tensor> prelu_backward_commom_nocheck(const at::Tensor& grad_output,
+                                                                   const at::Tensor& self, const at::Tensor& weight);
+at::Tensor prelu_common_nocheck(const at::Tensor& self, const at::Tensor& weight);
+at::Tensor zeros_common_nocheck(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt,
+                                c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
+                                c10::optional<bool> pin_memory_opt);
+at::Tensor repeat_interleave_common_nocheck(const at::Tensor& self, int64_t repeats,
+                                            c10::optional<int64_t> dim, c10::optional<int64_t> output_size);
+at::Tensor repeat_interleave_common_nocheck(const at::Tensor& self, const at::Tensor& repeats,
+                                            c10::optional<int64_t> dim, c10::optional<int64_t> output_size);
+} // namespace op_plugin
 #endif

@@ -17,10 +17,19 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
-    const at::Tensor& grad_output,
+at::Tensor repeat_interleave(
     const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+    int64_t repeats,
+    c10::optional<int64_t> dim,
+    c10::optional<int64_t> output_size) {
+  return repeat_interleave_common_nocheck(self, repeats, dim, output_size);
+}
+
+at::Tensor repeat_interleave(
+    const at::Tensor& self,
+    const at::Tensor& repeats,
+    c10::optional<int64_t> dim,
+    c10::optional<int64_t> output_size) {
+  return repeat_interleave_common_nocheck(self, repeats, dim, output_size);
 }
 } // namespace op_plugin

@@ -17,7 +17,7 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
+std::tuple<at::Tensor, at::Tensor> prelu_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& weight) {

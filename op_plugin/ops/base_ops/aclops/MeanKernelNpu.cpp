@@ -14,13 +14,27 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
-    const at::Tensor& grad_output,
+at::Tensor& mean_out(
     const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+    at::DimnameList dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype,
+    at::Tensor& result) {
+  return op_plugin::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
+}
+
+at::Tensor mean(
+    const at::Tensor& self,
+    at::DimnameList dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype) {
+  return op_plugin::mean(self, dimnames_to_positions(self, dim), keepdim, dtype);
+}
+
+at::Tensor mean(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
+  return op_plugin::mean(self, c10::SmallVector < int64_t, N > {}, false, dtype);
 }
 } // namespace op_plugin

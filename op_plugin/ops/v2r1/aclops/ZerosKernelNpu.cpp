@@ -14,39 +14,18 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
-
-namespace {
-at::Tensor zeros_without_symint(
-    at::IntArrayRef size,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  at::TensorOptions option =
-      option.dtype(dtype_opt).layout(layout_opt).device(device_opt).pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
-  return op_plugin::zero_(result);
-}
-}
-
-at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& result) {
-  result.resize_(size);
-  return op_plugin::zero_(result);
-}
-
 at::Tensor zeros_symint(
     c10::SymIntArrayRef size,
     c10::optional<at::ScalarType> dtype_opt,
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
-  return zeros_without_symint(c10::asIntArrayRefUnchecked(size), dtype_opt, layout_opt, device_opt, pin_memory_opt);
+  return zeros_common_nocheck(c10::asIntArrayRefUnchecked(size), dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
+
 
 at::Tensor zeros(
     at::IntArrayRef size,
@@ -55,6 +34,6 @@ at::Tensor zeros(
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
-  return zeros_without_symint(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+  return zeros_common_nocheck(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
 } // namespace op_plugin

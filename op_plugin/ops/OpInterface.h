@@ -825,6 +825,7 @@ at::Tensor & sigmoid_out(const at::Tensor & self, at::Tensor & out);
 at::Tensor sign(const at::Tensor & self);
 at::Tensor & sign_(at::Tensor & self);
 at::Tensor & sign_out(const at::Tensor & self, at::Tensor & out);
+at::Tensor sgn(const at::Tensor& self);
 at::Tensor silu(const at::Tensor & self);
 at::Tensor & silu_(at::Tensor & self);
 at::Tensor & silu_out(const at::Tensor & self, at::Tensor & out);

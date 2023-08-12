@@ -17,10 +17,21 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+at::Tensor zeros(
+    at::IntArrayRef size,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt) {
+  return zeros_common_nocheck(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+}
+
+at::Tensor zeros(
+    at::IntArrayRef size,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt) {
+  return op_plugin::zeros(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
 } // namespace op_plugin
