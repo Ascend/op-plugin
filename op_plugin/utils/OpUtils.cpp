@@ -141,5 +141,12 @@ c10::optional<double> get_scale_value(c10::optional<c10::ArrayRef<double>> scale
   return scales->at(idx);
 }
 
+at::ScalarType get_divide_high_type(const at::Tensor& self, const at::Tensor& other) {
+  at::ScalarType high_type = at::native::result_type(self, other);
+  if (isIntegralType(high_type, true)) {
+    high_type = at::kFloat;
+  }
+  return high_type;
+}
 }  // namespace utils
 }  // namespace op_plugin
