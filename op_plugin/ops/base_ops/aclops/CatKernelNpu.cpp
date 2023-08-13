@@ -17,22 +17,11 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using npu_preparation = at_npu::native::OpPreparation;
+at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result) {
+  return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
+}
 
-at::Tensor leaky_relu_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Scalar& negval,
-    bool is_result) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("LeakyReluGrad")
-      .Input(grad_output)
-      .Input(self)
-      .Output(result)
-      .Attr("negative_slope", negval)
-      .Run();
-
-  return result;
+at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
+  return at::cat(tensors, dimname_to_position(tensors[0], dim));
 }
 } // namespace op_plugin

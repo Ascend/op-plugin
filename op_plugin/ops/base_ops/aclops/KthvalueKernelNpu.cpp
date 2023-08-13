@@ -88,23 +88,49 @@ void kthvalue_calculate(
   at::namedinference::propagate_names_for_reduction(result, self, dim, keepdim);
   return;
 }
+
+void check_self_dim(const at::Tensor& self, int64_t k, int64_t dim) {
+  TORCH_CHECK(self.scalar_type() == at::kHalf || self.scalar_type() == at::kFloat || self.scalar_type() == at::kInt,
+              "the type of input must be float16, float32, or int32");
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
+  TORCH_CHECK(k >= 0 && k <= (self.dim() > 0 ? self.size(dim) : 1), "selected index k out of range");
+}
+
+std::tuple<at::Tensor, at::Tensor> kthvalue_out_nocheck(
+    at::Tensor& values,
+    at::Tensor& indices,
+    const at::Tensor& self,
+    int64_t k,
+    int64_t dim,
+    bool keepdim) {
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
+  at::Tensor self_rename = self.rename(c10::nullopt);
+  kthvalue_shape_modify(values, indices, self, dim, keepdim);
+
+  bool change_type = false;
+  if (self.scalar_type() != at::kHalf) {
+    change_type = true;
+    self_rename = op_plugin::npu_dtype_cast(self_rename, at::kHalf);
+  }
+  auto ret = at::topk(self_rename, k, dim, false, true);
+
+  kthvalue_calculate(self, values, std::get<0>(ret), k, dim, keepdim, change_type, false);
+  kthvalue_calculate(self, indices, std::get<1>(ret), k, dim, keepdim, false, true);
+  return std::tuple<at::Tensor, at::Tensor>(values, indices);
+}
 } // namespace
 
 std::tuple<at::Tensor, at::Tensor> kthvalue(const at::Tensor& self, int64_t k, int64_t dim, bool keepdim) {
+  check_self_dim(self, k, dim);
   auto output_size = kthvalue_npu_output_size(self, dim, keepdim);
   at::Tensor values = npu_preparation::apply_tensor(self, output_size);
   at::Tensor indices =
       npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::kLong), ACL_FORMAT_NCHW);
-
-  op_plugin::kthvalue_out(self, k, dim, keepdim, values, indices);
+  kthvalue_out_nocheck(values, indices, self, k, dim, keepdim);
   return std::tuple<at::Tensor, at::Tensor>(values, indices);
 }
 
-std::tuple<at::Tensor, at::Tensor> kthvalue(
-    const at::Tensor& self,
-    int64_t k,
-    at::Dimname dim,
-    bool keepdim) {
+std::tuple<at::Tensor, at::Tensor> kthvalue(const at::Tensor& self, int64_t k, at::Dimname dim, bool keepdim) {
   return op_plugin::kthvalue(self, k, dimname_to_position(self, dim), keepdim);
 }
 
@@ -115,7 +141,8 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
     bool keepdim,
     at::Tensor& values,
     at::Tensor& indices) {
-  at::SmallVector<int64_t, SIZE> dims = {dim };
+  check_self_dim(self, k, dim);
+  at::SmallVector<int64_t, SIZE> dims = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
   npu_preparation::CheckOut(
       {self},
@@ -131,22 +158,7 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
       at::ScalarType::Long,
       output_size);
 
-  TORCH_CHECK(self.scalar_type() == at::kHalf || self.scalar_type() == at::kFloat || self.scalar_type() == at::kInt,
-              "the type of input must be float16, float32, or int32");
-  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
-
-  TORCH_CHECK(k >= 0 && k <= (self.dim() > 0 ? self.size(dim) : 1), "selected index k out of range");
-
-  at::Tensor self_rename = self.rename(c10::nullopt);
-  kthvalue_shape_modify(values, indices, self, dim, keepdim);
-  bool change_type = false;
-  if (self.scalar_type() != at::kHalf) {
-    change_type = true;
-    self_rename = op_plugin::npu_dtype_cast(self_rename, at::kHalf);
-  }
-  auto ret = at::topk(self_rename, k, dim, false, true);
-  kthvalue_calculate(self, values, std::get<0>(ret), k, dim, keepdim, change_type, false);
-  kthvalue_calculate(self, indices, std::get<1>(ret), k, dim, keepdim, false, true);
+  kthvalue_out_nocheck(values, indices, self, k, dim, keepdim);  
   return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
 }
 

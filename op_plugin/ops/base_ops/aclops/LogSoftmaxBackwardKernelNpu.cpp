@@ -28,13 +28,13 @@ at::Tensor& log_softmax_backward_data_out_nocheck(
     const at::Tensor& output,
     int64_t dim,
     at::ScalarType input_dtype) {
-  c10::SmallVector<int64_t, N> dimList = {dim};
+  c10::SmallVector<int64_t, N> dim_list = {dim};
   at_npu::native::OpCommand cmd;
   cmd.Name("LogSoftmaxGrad")
       .Input(grad_output)
       .Input(output)
       .Output(result)
-      .Attr("axis", dimList)
+      .Attr("axis", dim_list)
       .Run();
   return result;
 }
@@ -59,7 +59,6 @@ at::Tensor& _log_softmax_backward_data_out(
   } else {
     log_softmax_backward_data_out_nocheck(result, grad_output, output, dim, input_dtype);
   }
-
   return result;
 }
 
@@ -74,7 +73,7 @@ at::Tensor _log_softmax_backward_data(
   if (calcu_op_util::GetTensorNpuFormat(temp_output) == ACL_FORMAT_NC1HWC0) {
     at_npu::native::NPUNativeFunctions::npu_format_cast(temp_output, calcu_op_util::GetTensorNpuFormat(grad_output));
   }
-  at::Tensor grad_input = npu_preparation::ApplyTensor(temp_output, output_size);
+  at::Tensor grad_input = npu_preparation::apply_tensor(temp_output, output_size);
   log_softmax_backward_data_out_nocheck(grad_input, grad_output, temp_output, dim, input_dtype);
   return grad_input;
 }

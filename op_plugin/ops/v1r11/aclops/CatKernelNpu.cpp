@@ -35,29 +35,23 @@ at_npu::native::DynamicInputRegFunc concat_func =
   return ge_op;
 };
 
-c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(const at::MaterializedITensorListRef& tensors) {
-  auto high_type = at::native::result_type(tensors);
+c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(at::TensorList tensors) {
+  at::ScalarType high_type = at::native::result_type(tensors);
   c10::SmallVector<at::Tensor, N> dst_tensor_list;
   // pytorch supports empty tensors, which needs to be removed from the NPU.
-  for (const at::Tensor& t : tensors) {
-    at::Tensor tensor = t;
+  for (at::Tensor tensor : tensors) {
     if (tensor.dim() == 1 && tensor.sizes()[0] == 0) {
       continue;
     }
     if (tensor.scalar_type() != high_type) {
-      tensor = op_plugin::npu_dtype_cast(tensor, high_type);
+      tensor = NPUNativeFunctions::npu_dtype_cast(tensor, high_type);
     }
     dst_tensor_list.emplace_back(tensor);
   }
   return dst_tensor_list;
 }
 
-
-at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensorListRef& tensors, int64_t dim) {
-  if (tensors.size() == 1) {
-    return result.copy_(tensors[0].get());
-  }
-
+at::Tensor& cat_out_nocheck(at::Tensor& result, at::TensorList tensors, int64_t dim) {
   c10::SmallVector<at::Tensor, N> input_tensors = cat_dest_tensor_list(tensors);
   int64_t dim_post_expr = 0;
   if (input_tensors.size() > 0) {
@@ -66,10 +60,10 @@ at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensor
     return result;
   }
   dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
-
   int64_t input_number = 0;
-  at_npu::native::OpCommand cmd;
+  OpCommand cmd;
   cmd.Name("ConcatD");
+
   // In graph mode, if all of input tensors are null numel,
   // these null tensors should be passed to ConcatD as inputs.
   // Otherwise, an error will be reported when infershape.
@@ -100,46 +94,57 @@ at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensor
 }
 } // namespace
 
-at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& result) {
-  auto materialized = tensors.materialize();
-  c10::SmallVector<at::Tensor, N> input_tensors = cat_dest_tensor_list(materialized);
+at::Tensor& _cat_out(at::TensorList tensors, int64_t dim, at::Tensor& result) {
+  if (tensors.size() == 1) {
+    return result.copy_(tensors[0]);
+  }
+
+  if (!npu_utils::check_match(&result)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    cat_out_nocheck(contiguous_result, tensors, dim);
+    npu_utils::format_fresh_view(result, contiguous_result);
+  } else {
+    cat_out_nocheck(result, tensors, dim);
+  }
+  return result;
+}
+
+at::Tensor& cat_out(at::TensorList tensors, int64_t dim, at::Tensor& result) {
+  c10::SmallVector<at::Tensor, N> input_tensors = cat_dest_tensor_list(tensors);
 
   int64_t dim_post_expr = 0;
   if (input_tensors.size() > 0) {
     dim_post_expr = input_tensors[0].dim();
   } else {
-    at::Tensor output = npu_preparation::apply_tensor(materialized[0], result.options());
-    result.resize_({0}).copy_(output);
     return result;
   }
   dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
   auto output_size = op_infer::cat_npu_output_size(input_tensors, dim);
   npu_preparation::CheckOut(
-      {materialized[0].get()},
+      {tensors[0]},
       result,
       ACL_FORMAT_ND,
-      materialized[0].get().scalar_type(),
+      tensors[0].scalar_type(),
       output_size);
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    cat_output_nocheck(contiguous_result, materialized, dim);
+    at::_cat_out(contiguous_result, tensors, dim);
     npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    cat_output_nocheck(result, materialized, dim);
+    at::_cat_out(result, tensors, dim);
   }
   return result;
 }
 
-at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim) {
-  auto materialized = tensors.materialize();
-  c10::SmallVector<at::Tensor, N> input_tensors = cat_dest_tensor_list(materialized);
+at::Tensor _cat(at::TensorList tensors, int64_t dim) {
+  c10::SmallVector<at::Tensor, N> input_tensors = cat_dest_tensor_list(tensors);
 
   int64_t dim_post_expr = 0;
   if (input_tensors.size() > 0) {
     dim_post_expr = input_tensors[0].dim();
   } else {
-    at::Tensor result = npu_preparation::apply_tensor(materialized[0]);
+    at::Tensor result = npu_preparation::apply_tensor(tensors[0]);
     return result;
   }
   dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
@@ -147,7 +152,7 @@ at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim) {
 
   // check tensors_dim for output format setting
   bool tensors_dim_check = true;
-  for (at::Tensor t : materialized) {
+  for (at::Tensor t : tensors) {
     if (t.sizes().size() != 4) {
       break;
     }
@@ -158,10 +163,19 @@ at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim) {
     }
   }
 
-  at::Tensor result = tensors_dim_check ?
-      npu_preparation::apply_tensor(input_tensors[0], output_size) :
-      npu_preparation::ApplyTensorWithFormat(input_tensors[0], output_size, ACL_FORMAT_ND);
-  cat_output_nocheck(result, materialized, dim);
+  at::Tensor result = npu_preparation::apply_tensor(input_tensors[0], output_size);
+  if (!tensors_dim_check) {
+    result = npu_preparation::apply_tensor_with_format(input_tensors[0], output_size, ACL_FORMAT_ND);
+  }
+  op_plugin::_cat_out(tensors, dim, result);
   return result;
+}
+
+at::Tensor cat(at::TensorList tensors, int64_t dim) {
+  return at::_cat(tensors, dim);
+}
+
+at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
+  return at::cat(tensors, dimname_to_position(tensors[0], dim));
 }
 } // namespace op_plugin

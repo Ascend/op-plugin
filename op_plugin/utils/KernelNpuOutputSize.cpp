@@ -893,4 +893,51 @@ c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(
   int64_t out_w = (self.size(3) + 2 * pads[1] - (dilations[1] * (ksizes[1] - 1) + 1)) / strides[1] + 1;
   return {self.size(0), self.size(1) * ksizes[0] * ksizes[1], out_h * out_w};
 }
+
+c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor, N>& tensors, int64_t dimension) {
+  bool all_skipped = true;
+  int64_t n_dims = 0;
+  at::Tensor* not_skipped_tensor;
+  auto num_inputs = tensors.size();
+  auto should_skip = [](const at::Tensor* t) {
+    return t->nbytes() == 0 && t->dim() == 1;
+  };
+
+  for (int i = 0; i < num_inputs; i++) {
+    if (should_skip((at::Tensor*)&tensors[i])) {
+      continue;
+    }
+    // found a non-empty tensor
+    all_skipped = false;
+    not_skipped_tensor = (at::Tensor*)&tensors[i];
+    n_dims = not_skipped_tensor->dim();
+    break;
+  }
+
+  if (all_skipped) {
+    c10::SmallVector<int64_t, SIZE> size = {0};
+    return size;
+  }
+
+  // Compute size of the result in the cat dimension
+  int64_t cat_dim_size = 0;
+  for (int i = 0; i < num_inputs; i++) {
+    at::Tensor* tensor = (at::Tensor*)&tensors[i];
+    if (should_skip(tensor)) {
+      continue;
+    }
+    cat_dim_size += tensor->size(dimension);
+  }
+
+  c10::SmallVector<int64_t, SIZE> size;
+  size.resize(n_dims);
+  for (int dim = 0; dim < n_dims; dim++) {
+    int64_t result_dim_size = not_skipped_tensor->size(dim);
+    if (dim == dimension) {
+      result_dim_size = cat_dim_size;
+    }
+    size[dim] = result_dim_size;
+  }
+  return size;
+}
 } // namespace op_infer

@@ -23,13 +23,12 @@ at::Tensor embedding_common_nocheck(const at::Tensor& weight, const at::Tensor& 
 at::Tensor gelu_common_nocheck(const at::Tensor& self);
 at::Tensor gelu_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& self);
 std::tuple<at::Tensor, at::Tensor> grid_sampler3d_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& input,
-                                                                   const at::Tensor& grid, int64_t interpolation_mode,
-                                                                   int64_t padding_mode, bool align_corners);
-at::Tensor& sum_out_common_nocheck(at::Tensor& result, const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
-                           c10::optional<c10::ScalarType> dtype);
+                                                                          const at::Tensor& grid, int64_t interpolation_mode,
+                                                                          int64_t padding_mode, bool align_corners);
+at::Tensor& sum_out_common_nocheck(at::Tensor& result, const at::Tensor& self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype);
 at::Tensor sum_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype);
-
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_expand_outplace(const at::Tensor& to_expand1, const at::Tensor& to_expand2, const at::Tensor& to_expand3, const char *api_name);
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_expand_outplace(const at::Tensor& to_expand1, const at::Tensor& to_expand2,
+                                                                   const at::Tensor& to_expand3, const char* api_name);
 at::Tensor& where_out_nocheck(at::Tensor& out, const at::Tensor& condition, const at::Tensor& self, const at::Tensor& other);
 at::Tensor& index_copy_npu_impl(const int64_t dim, const at::Tensor& index, const at::Tensor& source, at::Tensor& result);
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(const at::Tensor& A, const bool full_matrices,
@@ -55,5 +54,9 @@ at::Tensor repeat_interleave_common_nocheck(const at::Tensor& self, int64_t repe
                                             c10::optional<int64_t> dim, c10::optional<int64_t> output_size);
 at::Tensor repeat_interleave_common_nocheck(const at::Tensor& self, const at::Tensor& repeats,
                                             c10::optional<int64_t> dim, c10::optional<int64_t> output_size);
+at::Tensor leaky_relu_backward_out_nocheck(at::Tensor result, const at::Tensor& grad_output, const at::Tensor& self,
+                                           at::Scalar negval, bool is_result);
+at::Tensor log_softmax_nocheck(at::Tensor& result, const at::Tensor& self, int64_t dim,
+                               c10::optional<c10::ScalarType> dtype);
 } // namespace op_plugin
 #endif
