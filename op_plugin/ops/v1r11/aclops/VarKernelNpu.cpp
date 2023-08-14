@@ -20,19 +20,23 @@
 namespace op_plugin {
 at::Tensor& var_out(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    const c10::optional<c10::Scalar>& correction,
+    c10::optional<at::IntArrayRef> dims,
+    c10::optional<int64_t> correction,
     bool keepdim,
     at::Tensor& result) {
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  return cal_var_out(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim, result);
+  c10::SmallVector<int64_t, N> dim = CalcuOpUtil::GetDimlistForTensor(self);
+  if (dims.has_value()) {
+    dim = op_infer::array_to_small_vector(dims.value());
+  }
+  bool unbiased = !(correction.has_value() && correction.value() == 0);
+  int64_t real_correction = correction.has_value() ? correction.value() : 1;
+  return cal_var_out(self, dim, real_correction, unbiased, keepdim, result);
 }
 
 at::Tensor& var_out(
     const at::Tensor& self,
     at::DimnameList dim,
-    const c10::optional<c10::Scalar>& correction,
+    c10::optional<int64_t> correction,
     bool keepdim,
     at::Tensor& result) {
   return at::var_out(result, self, dimnames_to_positions(self, dim), correction, keepdim);
@@ -44,76 +48,83 @@ at::Tensor& var_out(
     bool unbiased,
     bool keepdim,
     at::Tensor& result) {
-  return at::var_out(result, self, dimnames_to_positions(self, dim), c10::make_optional<c10::Scalar>(unbiased ? 1 : 0),
-      keepdim);
+  return at::var_out(result, self, dimnames_to_positions(self, dim), unbiased, keepdim);
 }
 
 at::Tensor& var_out(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
+    at::IntArrayRef dim,
     bool unbiased,
     bool keepdim,
     at::Tensor& result) {
-  return at::var_out(result, self, at::OptionalIntArrayRef(dim), c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
+  return at::var_out(result, self, c10::optional<at::IntArrayRef>(dim), int64_t{unbiased ? 1 : 0}, keepdim);
 }
 
 at::Tensor var(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    const c10::optional<c10::Scalar>& correction,
+    c10::optional<at::IntArrayRef> dims,
+    c10::optional<int64_t> correction,
     bool keepdim) {
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim); 
+  c10::SmallVector<int64_t, N> dim = CalcuOpUtil::GetDimlistForTensor(self);
+  if (dims.has_value()) {
+    dim = op_infer::array_to_small_vector(dims.value());
+  }
+  int64_t real_correction = correction.has_value() ? correction.value() : 1;
+  bool unbiased = !(correction.has_value() && correction.value() == 0);
+  return cal_var(self, dim, real_correction, unbiased, keepdim);
 }
 
 at::Tensor var(
     const at::Tensor& self,
     at::DimnameList dim,
-    const c10::optional<c10::Scalar>& correction,
+    c10::optional<int64_t> correction,
     bool keepdim) {
   return at::var(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
 at::Tensor var(const at::Tensor& self, bool unbiased) {
-  return at::var(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0));
+  return at::var(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
 }
 
 at::Tensor var(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
+    at::IntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  return at::var(self, at::OptionalIntArrayRef(dim), c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
+  return at::var(self, c10::optional<at::IntArrayRef>(dim), int64_t{unbiased ? 1 : 0}, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    const c10::optional<c10::Scalar>& correction,
+    c10::optional<at::IntArrayRef> dims,
+    c10::optional<int64_t> correction,
     bool keepdim) {
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, real_correction, keepdim);
+  c10::SmallVector<int64_t, N> dim = CalcuOpUtil::GetDimlistForTensor(self);
+  if (dims.has_value()) {
+    dim = op_infer::array_to_small_vector(dims.value());
+  }
+  bool unbiased = !(correction.has_value() && correction.value() == 0);
+  int64_t real_correction = correction.has_value() ? correction.value() : 1;
+  return cal_var_mean(self, dim, unbiased, correction, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
     const at::Tensor& self,
     at::DimnameList dim,
-    const c10::optional<c10::Scalar>& correction,
+    c10::optional<int64_t> correction,
     bool keepdim) {
   return at::var_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor& self, bool unbiased) {
-  return at::var_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0));
+  return at::var_mean(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
+    at::IntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  return at::var_mean(self, at::OptionalIntArrayRef(dim), c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
+  return at::var_mean(self, c10::optional<at::IntArrayRef>(dim), int64_t{unbiased ? 1 : 0}, keepdim);
 }
 } // namespace op_plugin

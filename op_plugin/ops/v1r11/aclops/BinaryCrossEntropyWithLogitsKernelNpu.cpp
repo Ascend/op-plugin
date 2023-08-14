@@ -1,5 +1,4 @@
-// Copyright (c) 2020 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -14,14 +13,66 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/framework/utils/CalcuOpUtil.h"
-#include "torch_npu/csrc/framework/utils/OpAdapter.h"
-#include "torch_npu/csrc/aten/NPUNativeFunctions.h"
+#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
 
-namespace at_npu {
-namespace native {
+namespace op_plugin {
+using npu_preparation = at_npu::native::OpPreparation;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
+using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor NPUNativeFunctions::binary_cross_entropy_with_logits(
+namespace {
+at::Tensor binary_cross_entropy_with_logits_nocheck(
+    const at::Tensor& self,
+    const at::Tensor& target,
+    const at::Tensor& weight,
+    const at::Tensor& pos_weight,
+    int64_t reduction) {
+  at::IntArrayRef output_size;
+  int64_t result_format = calcu_op_util::GetTensorNpuFormat(self);
+
+  if (reduction == at::Reduction::None) {
+    output_size = self.sizes();
+  } else {
+    output_size = at::ArrayRef<int64_t>();
+    result_format = ACL_FORMAT_ND;
+  }
+
+  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), result_format);
+  at::Tensor weight_tensor;
+  if (weight.defined()) {
+    weight_tensor = npu_utils::format_contiguous(weight);
+    weight_tensor = (weight.scalar_type() != self.scalar_type()) ?
+        op_plugin::npu_dtype_cast(weight_tensor, self.scalar_type()) : weight_tensor;
+  } else {
+    weight_tensor = at::ones(self.sizes(), self.options());
+  }
+
+  at::Tensor pos_weight_tensor;
+  if (pos_weight.defined()) {
+    pos_weight_tensor = npu_utils::format_contiguous(pos_weight);
+    pos_weight_tensor = (pos_weight_tensor.scalar_type() != self.scalar_type()) ?
+        op_plugin::npu_dtype_cast(pos_weight_tensor, self.scalar_type()) : pos_weight_tensor;
+  } else {
+    pos_weight_tensor = at::ones(self.sizes(), self.options());
+  }
+
+  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("SigmoidCrossEntropyWithLogitsV2")
+      .Input(self.to(target.dtype()))
+      .Input(target)
+      .Input(weight_tensor)
+      .Input(pos_weight_tensor)
+      .Output(result)
+      .Attr("reduction", reduction_str)
+      .Run();
+
+  return result;
+}
+} // namespace
+
+at::Tensor binary_cross_entropy_with_logits(
     const at::Tensor& self,
     const at::Tensor& target,
     const c10::optional<at::Tensor>& weight_opt,
@@ -29,47 +80,6 @@ at::Tensor NPUNativeFunctions::binary_cross_entropy_with_logits(
     int64_t reduction) {
   const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
   const at::Tensor& pos_weight = c10::value_or_else(pos_weight_opt, [] {return at::Tensor();});
-  at::IntArrayRef outputSize;
-  int64_t resultformat = CalcuOpUtil::GetTensorNpuFormat(self);
-
-  if (reduction == at::Reduction::None) {
-    outputSize = input_same_output_size(self);
-  } else {
-    outputSize = at::ArrayRef<int64_t>();
-    resultformat = ACL_FORMAT_ND;
-  }
-
-  at::Tensor result = OpPreparation::ApplyTensorWithFormat(outputSize, self.options(), resultformat);
-  at::Tensor weightTensor;
-  if (weight.defined()) {
-    weightTensor = NpuUtils::format_contiguous(weight);
-    weightTensor = (weight.scalar_type() != self.scalar_type()) ? NPUNativeFunctions::npu_dtype_cast(weightTensor,
-        self.scalar_type()) : weightTensor;
-  } else {
-    weightTensor = at::ones(self.sizes(), self.options());
-  }
-
-  at::Tensor posWeightTensor;
-  if (pos_weight.defined()) {
-    posWeightTensor = NpuUtils::format_contiguous(pos_weight);
-    posWeightTensor = (posWeightTensor.scalar_type() != self.scalar_type()) ? NPUNativeFunctions::npu_dtype_cast(posWeightTensor,
-        self.scalar_type()) : posWeightTensor;
-  } else {
-    posWeightTensor = at::ones(self.sizes(), self.options());
-  }
-
-  string reductionStr = CalcuOpUtil::GetReductionStr(reduction);
-  OpCommand cmd;
-  cmd.Name("SigmoidCrossEntropyWithLogitsV2")
-      .Input(self.to(target.dtype()))
-      .Input(target)
-      .Input(weightTensor)
-      .Input(posWeightTensor)
-      .Output(result)
-      .Attr("reduction", reductionStr)
-      .Run();
-
-  return result;
+  return binary_cross_entropy_with_logits_nocheck(self, target, weight, pos_weight, reduction);
 }
-} // namespace native
-} // namespace at_npu
+} // namespace op_plugin
