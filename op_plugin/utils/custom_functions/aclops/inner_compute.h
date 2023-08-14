@@ -58,5 +58,11 @@ at::Tensor leaky_relu_backward_out_nocheck(at::Tensor result, const at::Tensor& 
                                            at::Scalar negval, bool is_result);
 at::Tensor log_softmax_nocheck(at::Tensor& result, const at::Tensor& self, int64_t dim,
                                c10::optional<c10::ScalarType> dtype);
+at::Tensor& cal_var_out(const at::Tensor& self, at::IntArrayRef dim, const int64_t correction, const bool unbiased,
+                        const bool keepdim, at::Tensor& result);
+at::Tensor cal_var(const at::Tensor& self, at::IntArrayRef dim, const int64_t correction, const bool unbiased,
+                   const bool keepdim);
+std::tuple<at::Tensor, at::Tensor> cal_var_mean(const at::Tensor& self, at::IntArrayRef dim, bool unbiased,
+                                                int64_t correction, bool keepdim);
 } // namespace op_plugin
 #endif

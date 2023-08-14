@@ -1,5 +1,4 @@
-// Copyright (c) 2020 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -14,57 +13,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/framework/utils/OpAdapter.h"
-#include "torch_npu/csrc/aten/NPUNativeFunctions.h"
-#include "torch_npu/csrc/framework/utils/CalcuOpUtil.h"
+#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
 
-namespace at_npu {
-namespace native {
+namespace op_plugin {
+using npu_preparation = at_npu::native::OpPreparation;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
+using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor NPUNativeFunctions::binary_cross_entropy_with_logits_backward(
+at::Tensor binary_cross_entropy_with_logits_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& target,
     const c10::optional<at::Tensor>& weight_opt,
     const c10::optional<at::Tensor>& pos_weight_opt,
     int64_t reduction) {
-
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
   const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
   const at::Tensor& pos_weight = c10::value_or_else(pos_weight_opt, [] {return at::Tensor();});
-
-  at::Tensor gradInput = OpPreparation::ApplyTensor(self);
-  at::Tensor weightTensor;
+  at::Tensor weight_tensor;
   if (weight.defined()) {
-    weightTensor = NpuUtils::format_contiguous(weight);
-    weightTensor = (weightTensor.scalar_type() != self.scalar_type()) ?
-        NPUNativeFunctions::npu_dtype_cast(weightTensor, self.scalar_type()) : weightTensor;
+    weight_tensor = npu_utils::format_contiguous(weight);
+    weight_tensor = (weight_tensor.scalar_type() != self.scalar_type()) ?
+        op_plugin::npu_dtype_cast(weight_tensor, self.scalar_type()) : weight_tensor;
   } else {
-    weightTensor = at::ones(self.sizes(), self.options());
+    weight_tensor = at::ones(self.sizes(), self.options());
   }
-  
-  at::Tensor posWeightTensor;
+
+  at::Tensor pos_weight_tensor;
   if (pos_weight.defined()) {
-    posWeightTensor = NpuUtils::format_contiguous(pos_weight);
-    posWeightTensor = (posWeightTensor.scalar_type() != self.scalar_type()) ?
-        NPUNativeFunctions::npu_dtype_cast(posWeightTensor, self.scalar_type()) : posWeightTensor;
+    pos_weight_tensor = npu_utils::format_contiguous(pos_weight);
+    pos_weight_tensor = (pos_weight_tensor.scalar_type() != self.scalar_type()) ?
+        op_plugin::npu_dtype_cast(pos_weight_tensor, self.scalar_type()) : pos_weight_tensor;
   } else {
-    posWeightTensor = at::ones(self.sizes(), self.options());
+    pos_weight_tensor = at::ones(self.sizes(), self.options());
   }
- 
-  at::Tensor doutTensor = NPUNativeFunctions::npu_broadcast(grad_output, self.sizes());
-  std::string reductionStr = CalcuOpUtil::GetReductionStr(reduction);
-  OpCommand cmd;
+
+  at::Tensor dout_tensor = op_plugin::npu_broadcast(grad_output, self.sizes());
+  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  at_npu::native::OpCommand cmd;
   cmd.Name("SigmoidCrossEntropyWithLogitsGradV2")
       .Input(self)
       .Input(target)
-      .Input(doutTensor)
-      .Input(weightTensor)
-      .Input(posWeightTensor)
-      .Output(gradInput)
-      .Attr("reduction", reductionStr)
+      .Input(dout_tensor)
+      .Input(weight_tensor)
+      .Input(pos_weight_tensor)
+      .Output(grad_input)
+      .Attr("reduction", reduction_str)
       .Run();
 
-  return gradInput;
+  return grad_input;
 }
-} // namespace native
-} // namespace at_npu
+} // namespace op_plugin
