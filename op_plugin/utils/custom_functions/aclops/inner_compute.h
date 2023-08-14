@@ -28,5 +28,8 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler3d_backward_common_nocheck(const 
 at::Tensor& sum_out_common_nocheck(at::Tensor& result, const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
                            c10::optional<c10::ScalarType> dtype);
 at::Tensor sum_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype);
-} // namespace op_plugin
+std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(const at::Tensor& A, const bool full_matrices,
+                                                                        const bool compute_uv, at::Tensor& U,
+                                                                        at::Tensor& S, at::Tensor& Vh);
+}  // namespace op_plugin
 #endif

@@ -21,41 +21,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(
-    const at::Tensor& self,
-    at::IntArrayRef ksizes,
-    at::IntArrayRef strides,
-    at::IntArrayRef dilations,
-    at::IntArrayRef pads) {
-
-  if (ksizes.size() == 1) {
-    c10::SmallVector<int64_t, SIZE> kernel_sizes = {ksizes[0], ksizes[0]};
-    ksizes = at::IntArrayRef(kernel_sizes);
-  }
-
-  strides = strides.empty() ? at::IntArrayRef({1}) : strides;
-  if (strides.size() == 1) {
-    c10::SmallVector<int64_t, SIZE> stride_sizes = {strides[0], strides[0]};
-    strides = at::IntArrayRef(stride_sizes);
-  }
-
-  dilations = dilations.empty() ? at::IntArrayRef({1}) : dilations;
-  if (dilations.size() == 1) {
-    c10::SmallVector<int64_t, SIZE> dilation_sizes = {dilations[0], dilations[0]};
-    dilations = at::IntArrayRef(dilation_sizes);
-  }
-
-  pads = pads.empty() ? at::IntArrayRef({0}) : pads;
-  if (pads.size() == 1) {
-    c10::SmallVector<int64_t, SIZE> pad_sizes = {pads[0], pads[0]};
-    pads = at::IntArrayRef(pad_sizes);
-  }
-
-  int64_t out_h = (self.size(2) + 2 * pads[0] - (dilations[0] * (ksizes[0] - 1) + 1)) / strides[0] + 1;
-  int64_t out_w = (self.size(3) + 2 * pads[1] - (dilations[1] * (ksizes[1] - 1) + 1)) / strides[1] + 1;
-  return {self.size(0), self.size(1) * ksizes[0] * ksizes[1], out_h * out_w};
-}
-
 at::Tensor& im2col_out_nocheck(
     at::Tensor& result,
     const at::Tensor &self,
@@ -139,7 +104,7 @@ at::Tensor& im2col_out(
     at::IntArrayRef stride,
     at::Tensor& result) {
   at::Tensor self_cp = self.dim() == 3 ? at::unsqueeze(self, 0) : self;
-  auto output_size = image_to_col_npu_output_size(self_cp, kernel_size, stride, dilation, padding);
+  auto output_size = op_infer::image_to_col_npu_output_size(self_cp, kernel_size, stride, dilation, padding);
 
   npu_preparation::CheckOut(
       {self_cp},
@@ -168,7 +133,7 @@ at::Tensor im2col(
     at::IntArrayRef padding,
     at::IntArrayRef stride) {
   at::Tensor self_cp = self.dim() == 3 ? at::unsqueeze(self, 0) : self;
-  auto output_size = image_to_col_npu_output_size(self_cp, kernel_size, stride, dilation, padding);
+  auto output_size = op_infer::image_to_col_npu_output_size(self_cp, kernel_size, stride, dilation, padding);
   at::Tensor result = npu_preparation::ApplyTensor(self_cp, output_size);
   im2col_out_nocheck(result, self_cp, kernel_size, dilation, padding, stride);
   if (self.dim() == 3) {
