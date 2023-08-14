@@ -240,5 +240,9 @@ c10::SmallVector<int64_t, SIZE> infersize_arange(const at::Scalar& start,
                                                  const at::Scalar& end,
                                                  const at::Scalar& step);
 
+c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(const at::Tensor& self, at::IntArrayRef ksizes,
+                                                             at::IntArrayRef strides, at::IntArrayRef dilations,
+                                                             at::IntArrayRef pads);
+
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE

@@ -21,7 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& col2im_out_npu_nocheck(
+at::Tensor& col2im_out_nocheck(
     at::Tensor& grad_input,
     const at::Tensor& grad_output,
     at::IntArrayRef input_size,
@@ -78,10 +78,10 @@ at::Tensor& col2im_out(
 
   if (!npu_utils::check_match(&grad_input)) {
     at::Tensor contiguous_grad_input = npu_utils::format_contiguous(grad_input);
-    col2im_out_npu_nocheck(contiguous_grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);
+    col2im_out_nocheck(contiguous_grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);
     npu_utils::format_fresh_view(grad_input, contiguous_grad_input);
   } else {
-    col2im_out_npu_nocheck(grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);
+    col2im_out_nocheck(grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);
   }
 
   if (grad_output.dim() == 2) {
@@ -105,8 +105,8 @@ at::Tensor col2im(
     input_size[1]
     };
 
-  at::Tensor grad_input = npu_preparation::ApplyTensor(grad_output_cp, output_size);
-  col2im_out_npu_nocheck(grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output_cp, output_size);
+  col2im_out_nocheck(grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);
 
   if (grad_output.dim() == 2) {
     grad_input = at::squeeze(grad_input, 0);

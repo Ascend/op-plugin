@@ -22,7 +22,6 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
     const at::Tensor& A,
     const bool full_matrices,
     const bool compute_uv,
-    c10::optional<c10::string_view> driver,
     at::Tensor& U,
     at::Tensor& S,
     at::Tensor& Vh) {

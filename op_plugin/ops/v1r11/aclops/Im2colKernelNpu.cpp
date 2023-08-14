@@ -15,17 +15,24 @@
 
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
-    const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv,
-    c10::optional<c10::string_view> driver,
-    at::Tensor& U,
-    at::Tensor& S,
-    at::Tensor& Vh) {
-  return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
+at::Tensor col2im_backward(
+    const at::Tensor& self, 
+    at::IntArrayRef kernel_size, 
+    at::IntArrayRef dilation,
+    at::IntArrayRef padding, 
+    at::IntArrayRef stride) {
+  return op_plugin::im2col(self, kernel_size, dilation, padding, stride);
+}
+
+at::Tensor& col2im_backward_out(
+    const at::Tensor& self, 
+    at::IntArrayRef kernel_size,
+    at::IntArrayRef dilation,
+    at::IntArrayRef padding, 
+    at::IntArrayRef stride, 
+    at::Tensor& result) {
+  return op_plugin::im2col_out(self, kernel_size, dilation, padding, stride, result);
 }
 } // namespace op_plugin
