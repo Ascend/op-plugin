@@ -1,4 +1,5 @@
-// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2020, Huawei Technologies.
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -19,39 +20,39 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& where_out(
-    const at::Tensor& condition,
-    const at::Tensor& self,
-    const at::Tensor& other,
-    at::Tensor& out) {
-  at::Tensor b_condition, b_self, b_other;
-  std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
-  npu_preparation::CheckOut(
-      {condition, self, other},
-      out,
-      b_self);
-  if (!npu_utils::check_match(&out)) {
-    at::Tensor contiguous_out = npu_utils::format_contiguous(out);
-    where_out_nocheck(contiguous_out, condition, self, other);
-    npu_utils::format_fresh_view(out, contiguous_out);
-  } else {
-    where_out_nocheck(out, condition, self, other);
-  }
-
-  return out;
-}
-
-at::Tensor where(
+at::Tensor NPUNativeFunctions::_s_where(
     const at::Tensor& condition,
     const at::Tensor& self,
     const at::Tensor& other) {
+  at::Tensor result = npu_preparation::apply_tensor(self);
+
+  OpCommand cmd;
+  cmd.Name("Select")
+      .Input(condition)
+      .Input(self)
+      .Input(other)
+      .Output(result)
+      .Run();
+
+  return result;
+}
+
+at::Tensor NPUNativeFunctions::where(
+    const at::Tensor& condition,
+    const at::Tensor& self,
+    const at::Tensor& other) {
+  TORCH_CHECK(condition.device() == self.device() && self.device() == other.device(),
+      "expected condition, x and y to be on the same device, but condition is on ",
+      condition.device(), " and x and y are on ", self.device(), " and ", other.device(),
+      " respectively");
+  if (condition.scalar_type() != at::ScalarType::Byte && condition.scalar_type() != at::ScalarType::Bool) {
+    AT_ERROR("Expected condition to have ScalarType Byte, but got ScalarType ",
+        toString(condition.scalar_type()));
+  }
   at::Tensor b_condition, b_self, b_other;
   std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
-  at::Tensor ret = npu_preparation::apply_tensor(b_self);
-  where_out_nocheck(ret, b_condition, b_self, b_other);
-  return ret;
+  return at::_s_where(b_condition, b_self, b_other);
 }
 
 } // namespace op_plugin

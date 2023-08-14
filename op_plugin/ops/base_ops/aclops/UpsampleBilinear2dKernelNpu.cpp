@@ -50,7 +50,7 @@ at::Tensor& upsample_bilinear2d_out(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
-    at::Tensor& result){
+    at::Tensor& result) {
   at::Tensor self = self_ex;
   if (self.scalar_type() != at::ScalarType::Float) {
     self = op_plugin::npu_dtype_cast(self, at::ScalarType::Float);
@@ -87,7 +87,7 @@ at::Tensor upsample_bilinear2d(
   }
   auto op_infer_output_size = op_infer::upsample_bilinear2d_npu_output_size(
       self, output_size, align_corners, scales_h, scales_w);
-  at::Tensor result = npu_preparation::ApplyTensor(self, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, op_infer_output_size);
 
   upsample_bilinear2d_out_nocheck(
       result, self, output_size, align_corners, scales_h, scales_w);

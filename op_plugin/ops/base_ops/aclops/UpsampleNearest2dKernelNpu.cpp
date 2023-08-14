@@ -86,7 +86,7 @@ at::Tensor upsample_nearest2d(
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
   at::SmallVector<int64_t, SIZE> op_infer_output_size = upsample_nearest2d_infer_size(self, output_size);
-  at::Tensor result = npu_preparation::ApplyTensor(self, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, op_infer_output_size);
   upsample_nearest2d_out_nocheck(result, self, output_size, scales_h, scales_w);
 
   return result;

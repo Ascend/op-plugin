@@ -201,7 +201,7 @@ c10::SmallVector<int64_t, SIZE> topk_npu_output_size(const at::Tensor& self, int
 c10::SmallVector<int64_t, SIZE> trace_npu_output_size(const at::Tensor& self);
 
 c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(c10::IntArrayRef input_size,
-                                                            at::OptionalIntArrayRef output_size,
+                                                            c10::optional<c10::IntArrayRef> output_size,
                                                             c10::optional<c10::ArrayRef<double>> scale_factors);
 
 c10::IntArrayRef upsample_bicubic2d_backward_npu_output_size(c10::IntArrayRef input_size);

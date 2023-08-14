@@ -37,10 +37,6 @@ at::SmallVector<int64_t, SIZE> upsample_trilinear3d_backward_infer_size(
       "It is expected input_size equals to 5, but got size ",
       input_size.size());
 
-  int64_t output_depth = output_size[0];
-  int64_t output_height = output_size[1];
-  int64_t output_width = output_size[2];
-
   int64_t nbatch = input_size[0];
   int64_t channels = input_size[1];
   int64_t input_depth = input_size[2];
@@ -113,7 +109,7 @@ at::Tensor upsample_trilinear3d_backward(
     c10::optional<double> scales_w) {
   auto op_infer_output_size = upsample_trilinear3d_backward_infer_size(
       output_size, input_size, scales_d, scales_h, scales_w);
-  at::Tensor result = npu_preparation::ApplyTensor(grad_output, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
   upsample_trilinear3d_backward_out_nocheck(
       result, grad_output, output_size, input_size, align_corners, scales_d, scales_h, scales_w);
   return result;

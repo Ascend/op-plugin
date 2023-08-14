@@ -90,7 +90,7 @@ at::Tensor& upsample_bicubic2d_backward_out(
       grad_input,
       grad_output,
       op_infer_output_size);
-  
+
   if (!npu_utils::check_match(&grad_input)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
     upsample_bicubic2d_backward_out_nocheck(
@@ -105,15 +105,16 @@ at::Tensor& upsample_bicubic2d_backward_out(
 }
 
 at::Tensor upsample_bicubic2d_backward(
-    const at::Tensor& grad_output, 
-    at::IntArrayRef output_size, 
-    at::IntArrayRef input_size, 
-    bool align_corners, 
+    const at::Tensor& grad_output,
+    at::IntArrayRef output_size,
+    at::IntArrayRef input_size,
+    bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
   auto op_infer_output_size = op_infer::upsample_bicubic2d_backward_npu_output_size(input_size);
-  at::Tensor result = npu_preparation::ApplyTensor(grad_output, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
   return upsample_bicubic2d_backward_out_nocheck(
       result, grad_output, output_size, input_size, align_corners, scales_h, scales_w);
 }
+
 } // namespace op_plugin

@@ -100,7 +100,7 @@ at::Tensor upsample_nearest1d_backward(
     at::IntArrayRef input_size,
     c10::optional<double> scales) {
   c10::SmallVector<int64_t, SIZE> op_infer_output_size = upsample_nearest1d_backward_infer_size(input_size);
-  at::Tensor grad_input = npu_preparation::ApplyTensor(grad_output, op_infer_output_size);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
 
   upsample_nearest1d_backward_out_nocheck(
       grad_input, grad_output, output_size, input_size, scales);

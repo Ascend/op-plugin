@@ -36,7 +36,7 @@ inline void upsample_linear1d_check(
 
   int64_t input_width = self.size(2);
   int64_t output_width = output_size[0];
-  
+
   TORCH_CHECK(
       input_width > 0 && output_width > 0,
       "Input and output sizes should be greater than 0, but got input (W: ",
@@ -115,7 +115,7 @@ at::Tensor upsample_linear1d(
     c10::optional<double> scales) {
   auto output_sizes = op_infer::upsample_linear1d_npu_output_size(
       self, output_size, align_corners, scales);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_sizes);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_sizes);
 
   upsample_linear1d_out_nocheck(result, self, output_size, align_corners, scales);
 

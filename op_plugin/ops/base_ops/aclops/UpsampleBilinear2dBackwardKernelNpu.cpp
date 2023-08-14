@@ -30,7 +30,7 @@ at::Tensor& upsample_bilinear2d_backward_out_nocheck(
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
   at_npu::native::OpCommand cmd;
-  at::Tensor original_image = npu_preparation::ApplyTensor(grad_output, input_size);
+  at::Tensor original_image = npu_preparation::apply_tensor(grad_output, input_size);
   bool half_pixel_centers = !align_corners;
   cmd.Name("ResizeBilinearV2Grad")
       .Input(grad_output, "grads")
@@ -77,7 +77,7 @@ at::Tensor upsample_bilinear2d_backward(
     c10::optional<double> scales_w) {
   auto op_infer_output_size = op_infer::upsample_bilinear2d_backward_npu_output_size(
       grad_output, output_size, input_size, align_corners, scales_h, scales_w);
-  at::Tensor grad_input = npu_preparation::ApplyTensor(grad_output, op_infer_output_size);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
 
   upsample_bilinear2d_backward_out_nocheck(
       grad_input, grad_output, output_size, input_size, align_corners, scales_h, scales_w);
