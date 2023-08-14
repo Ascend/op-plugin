@@ -21,7 +21,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-
 at::Tensor& sign_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Sign")
@@ -53,7 +52,7 @@ at::Tensor& sgn_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor sign(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   sign_out_npu_nocheck(result, self);
 
   return result;
@@ -63,4 +62,7 @@ at::Tensor& sign_(at::Tensor& self) {
   return op_plugin::sign_out(self, self);
 }
 
+at::Tensor sgn(const at::Tensor& self) {
+  return op_plugin::sign(self);
+}
 } // namespace op_plugin

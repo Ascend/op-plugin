@@ -17,12 +17,7 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
-using npu_utils = at_npu::native::NpuUtils;
-
-namespace {
-at::Tensor& scatter_npu_nocheck(
+at::Tensor& scatter_npu_common_nocheck(
     at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
@@ -58,54 +53,12 @@ at::Tensor& scatter_npu_src_impl(
     src = op_plugin::npu_dtype_cast(src, self.scalar_type());
   }
 
-  scatter_npu_nocheck(self, dim, index, src);
+  scatter_npu_common_nocheck(self, dim, index, src);
   
   if(self.scalar_type() != self_type) {
     self = op_plugin::npu_dtype_cast(self, self_type);
   }
 
   return self;
-}
-} // namespace
-
-at::Tensor& scatter_out(
-    const at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& src,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self, src, index},
-      result,
-      self);
-  result = at_npu::native::NPUNativeFunctions::copy_(result, self, false);
-  scatter_npu_src_impl(result, dim, index, src);
-  return result;
-}
-
-at::Tensor& scatter_out(
-    const at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Scalar& value,
-    at::Tensor& result) {
-  at::Tensor src_tensor = scalar_to_tensor(value).to(at::ScalarType::Float);
-  src_tensor = calcu_op_util::CopyTensorHostToDevice(src_tensor);
-  at::Tensor src_tensor_broadcast = op_plugin::npu_broadcast(
-      src_tensor, op_infer::array_to_small_vector(index.sizes()));
-  npu_preparation::CheckOut(
-      {self, index, src_tensor_broadcast},
-      result,
-      self);
-  result = at_npu::native::NPUNativeFunctions::copy_(result, self, false);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    scatter_npu_src_impl(contiguous_result, dim, index, src_tensor_broadcast);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
-  }
-  scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
-  return result;
 }
 } // namespace op_plugin

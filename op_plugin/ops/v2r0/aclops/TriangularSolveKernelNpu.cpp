@@ -14,13 +14,20 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
+#include <ATen/native/LinearAlgebraUtils.h>
+
 namespace op_plugin {
-std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
-    const at::Tensor& grad_output,
+std::tuple<at::Tensor, at::Tensor> triangular_solve(
     const at::Tensor& self,
-    const at::Tensor& weight) {
-  return prelu_backward_commom_nocheck(grad_output, self, weight);
+    const at::Tensor& A,
+    bool upper,
+    bool transpose,
+    bool unitriangular) {
+  at::Tensor result_tmp, clone_a_tmp;
+  std::tie(result_tmp, clone_a_tmp) = triangular_solve_out_common_nocheck(self, A, upper, transpose, unitriangular);
+  return std::tuple<at::Tensor, at::Tensor>(result_tmp, clone_a_tmp);
 }
-} // namespace op_plugin
+}// namespace op_plugin

@@ -33,26 +33,22 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
       depth = num_classes;
   }
 
-  TORCH_CHECK(self_temp.min().item().toLong() >= 0, "Class values must be non-negative.");
   if (num_classes == -1) {
     depth = self_temp.max().item().toLong() + 1;
   } else {
-    TORCH_CHECK(
-        num_classes > self_temp.max().item().toLong(),
-        "Class values must be smaller than num_classes.");
     depth = num_classes;
   }
 
   auto output_size = op_infer::array_to_small_vector(self.sizes());
   output_size.emplace_back(depth);
-  at::Tensor result = npu_preparation::ApplyTensor(output_size, self.options().dtype(at::ScalarType::Int), self);
+  at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
   at::Scalar depth_copy = depth;
   at_npu::native::OpCommand cmd;
   cmd.Name("OneHot")
       .Input(self)
-      .Input(depth_copy, at::ScalarType::Int, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
-      .Input(on_value, at::ScalarType::Int)
-      .Input(off_value, at::ScalarType::Int)
+      .Input(depth_copy, self.scalar_type(), npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+      .Input(on_value, self.scalar_type())
+      .Input(off_value, self.scalar_type())
       .Output(result)
       .Attr("axis", axis)
       .Run();
