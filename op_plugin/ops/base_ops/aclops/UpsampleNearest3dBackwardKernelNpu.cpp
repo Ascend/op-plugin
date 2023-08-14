@@ -37,17 +37,14 @@ at::SmallVector<int64_t, SIZE> upsample_nearest3d_backward_infer_size(
       "It is expected input_size equals to 5, but got size ",
       input_size.size());
 
-  int64_t output_depth = output_size[0];
-  int64_t output_height = output_size[1];
-  int64_t output_width = output_size[2];
-
   int64_t nbatch = input_size[0];
   int64_t channels = input_size[1];
   int64_t input_depth = input_size[2];
   int64_t input_height = input_size[3];
   int64_t input_width = input_size[4];
 
-  at::SmallVector<int64_t, SIZE> output_sizes = {nbatch, channels, input_depth, input_height, input_width};
+  at::SmallVector<int64_t, SIZE> output_sizes =
+      {nbatch, channels, input_depth, input_height, input_width};
 
   return output_sizes;
 }
@@ -83,7 +80,7 @@ at::Tensor& upsample_nearest3d_backward_out(
   auto op_infer_output_size = upsample_nearest3d_backward_infer_size(
       output_size, input_size, scales_d, scales_h, scales_w);
   npu_preparation::CheckOut({grad_output}, grad_input, grad_output, op_infer_output_size);
-  
+
   if (!npu_utils::check_match(&grad_input)) {
     auto contiguous_out = npu_utils::format_contiguous(grad_input);
     upsample_nearest3d_backward_out_nocheck(
@@ -105,7 +102,7 @@ at::Tensor upsample_nearest3d_backward(
     c10::optional<double> scales_w) {
   auto op_infer_output_size = upsample_nearest3d_backward_infer_size(
       output_size, input_size, scales_d, scales_h, scales_w);
-  at::Tensor result = npu_preparation::ApplyTensor(grad_output, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
   upsample_nearest3d_backward_out_nocheck(
       result, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
   return result;

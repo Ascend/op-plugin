@@ -63,7 +63,7 @@ at::Tensor& upsample_bicubic2d_out_nocheck(
       .Attr("mode", (string)"cubic")
       .Attr("nearest_mode", (string)"round_prefer_floor")
       .Run();
-      
+
   return result;
 }
 } // namespace
@@ -109,9 +109,9 @@ at::Tensor upsample_bicubic2d(
   int64_t H = output_size[0];
   int64_t W = output_size[1];
   c10::SmallVector<int64_t, SIZE> op_infer_output_size = {N, C, H, W};
-  at::Tensor result = npu_preparation::ApplyTensor(self, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, op_infer_output_size);
   upsample_bicubic2d_out_nocheck(result, self, output_size, align_corners, scales_h, scales_w);
-  
+
   return result;
 }
 } // namespace op_plugin

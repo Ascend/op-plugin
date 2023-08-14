@@ -78,7 +78,7 @@ at::Tensor upsample_nearest2d_backward(
   if (grad_output.scalar_type() != at::ScalarType::Float) {
     grads = op_plugin::npu_dtype_cast(grad_output, at::kFloat);
   }
-  at::Tensor grad_input = npu_preparation::ApplyTensor(
+  at::Tensor grad_input = npu_preparation::apply_tensor(
       input_size, grads.options(), grad_output);
   upsample_nearest2d_backward_out_nocheck(
       grad_input, grads, output_size, input_size, scales_h, scales_w);

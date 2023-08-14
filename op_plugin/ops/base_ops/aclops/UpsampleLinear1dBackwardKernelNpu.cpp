@@ -87,7 +87,7 @@ at::Tensor upsample_linear1d_backward(
     c10::optional<double> scales) {
   upsample_linear1d_backward_check(grad_output, output_size, input_size);
   at::Tensor grad_output_cp = grad_output;
-  if(grad_output.scalar_type() != at::ScalarType::Float) {
+  if (grad_output.scalar_type() != at::ScalarType::Float) {
     grad_output_cp = op_plugin::npu_dtype_cast(grad_output_cp, at::ScalarType::Float);
   }
   int64_t N = grad_output_cp.size(0);
@@ -99,7 +99,7 @@ at::Tensor upsample_linear1d_backward(
   // input grad_output (3 dimensions) to 4 dimensions as the input of npu
   auto grad_output_4dim = grad_output_cp.unsqueeze(2);
 
-  at::Tensor result = npu_preparation::ApplyTensor(grad_output_cp, output_sizes);
+  at::Tensor result = npu_preparation::apply_tensor(grad_output_cp, output_sizes);
   upsample_linear1d_backward_out_nocheck(
       result, grad_output_4dim, input_size, align_corners, scales);
 

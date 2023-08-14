@@ -21,7 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::SmallVector<int64_t, SIZE> upsample_trilinear3d_infer_size(
+at::SmallVector<int64_t, SIZE> upsample_nearest3d_infer_size(
     const at::Tensor& input,
     at::IntArrayRef output_size,
     c10::optional<double> scales_d,
@@ -38,43 +38,39 @@ at::SmallVector<int64_t, SIZE> upsample_trilinear3d_infer_size(
 
   int64_t nbatch = input.size(0);
   int64_t channels = input.size(1);
-  int64_t input_depth = input.size(2);
-  int64_t input_height = input.size(3);
-  int64_t input_width = input.size(4);
 
   at::SmallVector<int64_t, SIZE> output_sizes =
       {nbatch, channels, output_depth, output_height, output_width};
+
   return output_sizes;
 }
 
-at::Tensor& upsample_trilinear3d_out_nocheck(
+at::Tensor& upsample_nearest3d_out_nocheck(
     at::Tensor& result,
     const at::Tensor& input,
     at::IntArrayRef output_size,
-    bool align_corners,
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("UpsampleTrilinear3d")
+  cmd.Name("UpsampleNearest3d")
       .Input(input)
       .Output(result)
       .Attr("output_size", output_size)
-      .Attr("align_corners", align_corners)
       .Run();
+
   return result;
 }
 } // namespace
 
-at::Tensor& upsample_trilinear3d_out(
+at::Tensor& upsample_nearest3d_out(
     const at::Tensor& input,
     at::IntArrayRef output_size,
-    bool align_corners,
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
     at::Tensor& result) {
-  auto op_infer_output_size = upsample_trilinear3d_infer_size(
+  auto op_infer_output_size = upsample_nearest3d_infer_size(
       input, output_size, scales_d, scales_h, scales_w);
   npu_preparation::CheckOut(
       {input},
@@ -83,29 +79,28 @@ at::Tensor& upsample_trilinear3d_out(
       op_infer_output_size);
 
   if (!npu_utils::check_match(&result)) {
-    auto contiguous_out = npu_utils::format_contiguous(result);
-    upsample_trilinear3d_out_nocheck(
-        contiguous_out, input, output_size, align_corners, scales_d, scales_h, scales_w);
-    npu_utils::format_fresh_view(result, contiguous_out);
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    upsample_nearest3d_out_nocheck(
+        contiguous_result, input, output_size, scales_d, scales_h, scales_w);
+    npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    upsample_trilinear3d_out_nocheck(
-        result, input, output_size, align_corners, scales_d, scales_h, scales_w);
+    upsample_nearest3d_out_nocheck(
+        result, input, output_size, scales_d, scales_h, scales_w);
   }
   return result;
 }
 
-at::Tensor upsample_trilinear3d(
+at::Tensor upsample_nearest3d(
     const at::Tensor& input,
     at::IntArrayRef output_size,
-    bool align_corners,
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
-  auto op_infer_output_size = upsample_trilinear3d_infer_size(
+  auto op_infer_output_size = upsample_nearest3d_infer_size(
       input, output_size, scales_d, scales_h, scales_w);
-  at::Tensor result = npu_preparation::ApplyTensor(input, op_infer_output_size);
-  upsample_trilinear3d_out_nocheck(
-      result, input, output_size, align_corners, scales_d, scales_h, scales_w);
+  at::Tensor result = npu_preparation::apply_tensor(input, op_infer_output_size);
+  upsample_nearest3d_out_nocheck(
+      result, input, output_size, scales_d, scales_h, scales_w);
   return result;
 }
 } // namespace op_plugin

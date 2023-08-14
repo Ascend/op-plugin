@@ -28,6 +28,10 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler3d_backward_common_nocheck(const 
 at::Tensor& sum_out_common_nocheck(at::Tensor& result, const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
                            c10::optional<c10::ScalarType> dtype);
 at::Tensor sum_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype);
+
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_expand_outplace(const at::Tensor& to_expand1, const at::Tensor& to_expand2, const at::Tensor& to_expand3, const char *api_name);
+at::Tensor& where_out_nocheck(at::Tensor& out, const at::Tensor& condition, const at::Tensor& self, const at::Tensor& other);
+at::Tensor& index_copy_npu_impl(const int64_t dim, const at::Tensor& index, const at::Tensor& source, at::Tensor& result);
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(const at::Tensor& A, const bool full_matrices,
                                                                         const bool compute_uv, at::Tensor& U,
                                                                         at::Tensor& S, at::Tensor& Vh);

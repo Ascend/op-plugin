@@ -28,6 +28,11 @@ at::Tensor& where_out(
     at::Tensor& out) {
   at::Tensor b_condition, b_self, b_other;
   std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
+  if (self.dtype() != other.dtype()) {
+    auto result_type = at::native::result_type(self, other);
+    b_self = op_plugin::npu_dtype_cast(b_self, result_type);
+    b_other = op_plugin::npu_dtype_cast(b_other, result_type);
+  }
   npu_preparation::CheckOut(
       {condition, self, other},
       out,

@@ -82,7 +82,7 @@ at::Tensor& upsample_nearest1d_out(
       result,
       self,
       op_infer_output_size);
-  
+
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     upsample_nearest1d_out_nocheck(contiguous_result, self, output_size, scales);
@@ -99,7 +99,7 @@ at::Tensor upsample_nearest1d(
     at::IntArrayRef output_size,
     c10::optional<double> scales) {
   c10::SmallVector<int64_t, SIZE> op_infer_output_size = upsample_nearest1d_infer_size(self, output_size);
-  at::Tensor result = npu_preparation::ApplyTensor(self, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, op_infer_output_size);
 
   upsample_nearest1d_out_nocheck(result, self, output_size, scales);
   return result;

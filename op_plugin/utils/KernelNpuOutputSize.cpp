@@ -38,8 +38,6 @@ int64_t make_wrap_dim(int64_t dim, int64_t dim_post_expr) {
     dim_post_expr = 1;
   }
 
-  int64_t min = -dim_post_expr;
-  int64_t max = dim_post_expr - 1;
   if (dim < 0) {
     dim += dim_post_expr;
   }
@@ -697,7 +695,7 @@ c10::SmallVector<int64_t, SIZE> trace_npu_output_size(const at::Tensor &self) {
 }
 
 c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(c10::IntArrayRef input_size,
-                                                            at::OptionalIntArrayRef output_size,
+                                                            c10::optional<c10::IntArrayRef> output_size,
                                                             c10::optional<c10::ArrayRef<double>> scale_factors) {
   const auto spatial_dimensions = static_cast<int64_t>(input_size.size()) - 2;
   if (output_size) {
