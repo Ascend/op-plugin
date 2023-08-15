@@ -15,7 +15,7 @@
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& softplus_backward_out_common_nocheck(
     at::Tensor& grad_input,
     const at::Tensor& grad_output,
@@ -33,4 +33,4 @@ at::Tensor& softplus_backward_out_common_nocheck(
 
     return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

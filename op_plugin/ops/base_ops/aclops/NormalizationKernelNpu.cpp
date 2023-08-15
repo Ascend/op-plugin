@@ -16,10 +16,10 @@
 #include <ATen/Tensor.h>
 #include <c10/util/SmallVector.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor batch_norm(
     const at::Tensor& input,
     const c10::optional<at::Tensor>& weight_opt,
@@ -88,4 +88,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _batch_norm_impl_index_backward(
       grad_output, input, weight, running_mean, running_var,
       save_mean, save_var_transform, train, epsilon, output_mask);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, double eps) {
@@ -40,7 +40,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, doub
 
   at::Tensor self_copy = self;
   if (self.scalar_type() != at::kFloat) {
-    self_copy = op_plugin::npu_dtype_cast(self_copy, at::kFloat);
+    self_copy = acl_op::npu_dtype_cast(self_copy, at::kFloat);
   }
 
   at_npu::native::OpCommand cmd_mean;
@@ -73,4 +73,4 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, doub
 
   return std::tie(mean, invstd);
 }
-} // namespace op_plugin
+} // namespace acl_op

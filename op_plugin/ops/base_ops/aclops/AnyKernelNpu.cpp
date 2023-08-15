@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -72,8 +72,8 @@ at::Tensor& any_out(
   // when self's dim = 0, convert [1] tensor and reduce it
   if (self.dim() == 0) {
     at::Tensor self_tmp = self.unsqueeze(0);
-    self_tmp = op_plugin::npu_dtype_cast(self_tmp, at::kBool);
-    return op_plugin::any_out(self_tmp, 0, false, result);
+    self_tmp = acl_op::npu_dtype_cast(self_tmp, at::kBool);
+    return acl_op::any_out(self_tmp, 0, false, result);
   }
 
   at::SmallVector<int64_t, N> dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
@@ -120,8 +120,8 @@ at::Tensor any(const at::Tensor& self) {
   // when self's dim = 0, convert [1] tensor and reduce it.
   if (self.dim() == 0) {
     at::Tensor self_tmp = self.unsqueeze(0);
-    self_tmp = op_plugin::npu_dtype_cast(self_tmp, at::kBool);
-    return op_plugin::any(self_tmp, 0, false);
+    self_tmp = acl_op::npu_dtype_cast(self_tmp, at::kBool);
+    return acl_op::any(self_tmp, 0, false);
   }
 
   at::IntArrayRef dims;
@@ -131,4 +131,4 @@ at::Tensor any(const at::Tensor& self) {
       result, self, op_plugin::utils::get_dimlist_for_tensor(self), false);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

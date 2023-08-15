@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -79,6 +79,6 @@ at::Tensor& addcdiv_(
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
     const at::Scalar& value) {
-  return op_plugin::addcdiv_out(self, tensor1, tensor2, value, self);
+  return acl_op::addcdiv_out(self, tensor1, tensor2, value, self);
 }
-}  // namespace op_plugin
+}  // namespace acl_op

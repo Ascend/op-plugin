@@ -16,8 +16,6 @@
 #ifndef __TORCH_NPU_OP_PLUGIN_UTILS_OPCONSTANTS__
 #define __TORCH_NPU_OP_PLUGIN_UTILS_OPCONSTANTS__
 
-namespace op_plugin {
-
 // smallvector max size
 const int N = 32;
 // npu tensor max size
@@ -27,5 +25,4 @@ const int NPU_HALF_MAX = 65504;
 const int NPU_HALF_MIN = -65504;
 const int NPU_MAX_OP_EXEC_TRY_NUM = 2;
 
-} // op_plugin
 #endif

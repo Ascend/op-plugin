@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor log_softmax(
@@ -37,7 +37,7 @@ at::Tensor log_softmax(
     const at::Tensor& self,
     at::Dimname dim,
     c10::optional<c10::ScalarType> dtype) {
-  return op_plugin::log_softmax(self, dimname_to_position(self, dim), dtype);
+  return acl_op::log_softmax(self, dimname_to_position(self, dim), dtype);
 }
 
 at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float) {
@@ -46,4 +46,4 @@ at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float)
   log_softmax_nocheck(result, self, dim, result_type);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

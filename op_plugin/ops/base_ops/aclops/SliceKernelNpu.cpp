@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& npu_slice_out(
@@ -40,9 +40,9 @@ at::Tensor npu_slice(const at::Tensor& self, c10::IntArrayRef offsets, c10::IntA
   c10::SmallVector<int64_t, SIZE> output_size = op_plugin::utils::convert_array_to_vector(size);
   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
 
-  op_plugin::npu_slice_out(self, offsets, size, result);
+  acl_op::npu_slice_out(self, offsets, size, result);
 
   return result;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result) {
   return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
 }
@@ -24,4 +24,4 @@ at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result)
 at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
   return at::cat(tensors, dimname_to_position(tensors[0], dim));
 }
-} // namespace op_plugin
+} // namespace acl_op

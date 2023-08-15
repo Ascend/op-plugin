@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -26,7 +26,7 @@ at::Tensor& add_relu_out_nocheck(
     const at::Tensor& self,
     const at::Tensor& other,
     at::Scalar alpha) {
-  at::Tensor add_result = op_plugin::add(self, other, alpha);
+  at::Tensor add_result = acl_op::add(self, other, alpha);
   at_npu::native::OpCommand cmd;
   cmd.Name("Relu")
       .Input(add_result)
@@ -63,6 +63,6 @@ at::Tensor _add_relu(const at::Tensor& self, const at::Tensor& other, const at::
 }
 
 at::Tensor& _add_relu_(at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
-  return op_plugin::_add_relu_out(self, other, alpha, self);
+  return acl_op::_add_relu_out(self, other, alpha, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

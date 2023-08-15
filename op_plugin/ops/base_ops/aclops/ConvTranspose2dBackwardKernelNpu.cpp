@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using namespace torch::autograd;
@@ -99,7 +99,7 @@ at::Tensor& conv_transpose2d_backward_bias_out_nocheck(
     at::IntArrayRef dilation,
     int64_t groups) {
   at::Tensor grad_view = grad_output.contiguous().view({grad_output.size(0), grad_output.size(1), -1});
-  op_plugin::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2}, false, grad_view.scalar_type(), grad_bias);
+  acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2}, false, grad_view.scalar_type(), grad_bias);
   return grad_bias;
 }
 
@@ -229,7 +229,7 @@ at::Tensor convolution_transpose_kernel_nocheck(
   int64_t dim = input.ndimension();
   at::Tensor output;
   if (dim == 4) {
-    output = op_plugin::npu_conv_transpose2d(
+    output = acl_op::npu_conv_transpose2d(
         input, weight, bias, padding, output_padding, stride, dilation, groups);
   } else if (dim == 5) {
     output = convolution_transpose3d_nocheck(
@@ -251,15 +251,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_transpose_backward_no
   int64_t dim = input.ndimension();
   std::tuple<at::Tensor, at::Tensor, at::Tensor> output;
   if (dim == 4) {
-    output = op_plugin::npu_conv_transpose2d_backward(
+    output = acl_op::npu_conv_transpose2d_backward(
         input, grad, weight, padding, output_padding, stride, dilation, groups, grad_input_mask);
   } else if (dim == 5) {
-    output = op_plugin::npu_conv_transpose3d_backward(
+    output = acl_op::npu_conv_transpose3d_backward(
         input, grad, weight, padding, output_padding, stride, dilation, groups, grad_input_mask);
   }
   // Note:weight.grad should be equal weight
   if (std::get<1>(output).defined()) {
-    std::get<1>(output) = op_plugin::npu_dtype_cast(std::get<1>(output), weight.scalar_type());
+    std::get<1>(output) = acl_op::npu_dtype_cast(std::get<1>(output), weight.scalar_type());
   }
   return output;
 }
@@ -392,4 +392,4 @@ at::Tensor npu_convolution_transpose(
       dilation,
       groups);
 }
-} // namespace op_plugin
+} // namespace acl_op

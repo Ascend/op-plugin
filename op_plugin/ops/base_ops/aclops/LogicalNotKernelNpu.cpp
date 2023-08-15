@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -44,8 +44,8 @@ at::Tensor& logical_not_out(const at::Tensor& self, at::Tensor& result) {
 
   bool self_is_bool = src_type == at::ScalarType::Bool;
   bool result_is_bool = result_dtype == at::ScalarType::Bool;
-  at::Tensor self_cast = self_is_bool ? self : op_plugin::npu_dtype_cast(self, at::kBool);
-  at::Tensor result_cast = result_is_bool ? result : op_plugin::npu_dtype_cast(result, at::kBool);
+  at::Tensor self_cast = self_is_bool ? self : acl_op::npu_dtype_cast(self, at::kBool);
+  at::Tensor result_cast = result_is_bool ? result : acl_op::npu_dtype_cast(result, at::kBool);
 
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
@@ -56,7 +56,7 @@ at::Tensor& logical_not_out(const at::Tensor& self, at::Tensor& result) {
   }
 
   if (!result_is_bool) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result_dtype);
+    result_cast = acl_op::npu_dtype_cast(result_cast, result_dtype);
     result.copy_(result_cast);
   }
   return result;
@@ -64,13 +64,13 @@ at::Tensor& logical_not_out(const at::Tensor& self, at::Tensor& result) {
 
 at::Tensor logical_not(const at::Tensor& self) {
   at::Tensor self_cast =
-      self.scalar_type() != at::ScalarType::Bool ? op_plugin::npu_dtype_cast(self, at::kBool) : self;
+      self.scalar_type() != at::ScalarType::Bool ? acl_op::npu_dtype_cast(self, at::kBool) : self;
   at::Tensor result = npu_preparation::apply_tensor(self_cast);
   logical_not_out_nocheck(result, self_cast);
   return result;
 }
 
 at::Tensor& logical_not_(at::Tensor& self) {
-  return op_plugin::logical_not_out(self, self);
+  return acl_op::logical_not_out(self, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

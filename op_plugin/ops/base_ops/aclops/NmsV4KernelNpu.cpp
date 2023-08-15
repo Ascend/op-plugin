@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -31,7 +31,7 @@ std::tuple<at::Tensor&, at::Tensor&> nms_v4_npu_nocheck(
     const at::Tensor& scores_threshold,
     bool pad_to_max_output_size) {
   at::Tensor max_output_size_tensor = npu_preparation::ApplyTensor({}, self.options().dtype(at::kInt), self);
-  op_plugin::fill_(max_output_size_tensor, max_output_size);
+  acl_op::fill_(max_output_size_tensor, max_output_size);
   at_npu::native::OpCommand cmd;
   cmd.Name("NonMaxSuppressionV4")
       .Input(self)
@@ -78,4 +78,4 @@ std::tuple<at::Tensor, at::Tensor> npu_nms_v4(
   return std::tie(selected_indices, valid_outputs);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

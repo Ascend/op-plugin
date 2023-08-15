@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -84,7 +84,7 @@ at::Tensor& true_divide_out(const at::Tensor& self, const at::Tensor& other, at:
   at::Tensor self_temp = (self.scalar_type() == high_type) ? self : self.to(high_type);
   at::Tensor other_temp = (other.scalar_type() == high_type) ? other : other.to(high_type);
 
-  at::Tensor result_cast = result_type == high_type ? result : op_plugin::npu_dtype_cast(result, high_type);
+  at::Tensor result_cast = result_type == high_type ? result : acl_op::npu_dtype_cast(result, high_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     true_div_out_npu_nocheck(contiguous_result, self_temp, other_temp);
@@ -94,7 +94,7 @@ at::Tensor& true_divide_out(const at::Tensor& self, const at::Tensor& other, at:
   }
 
   if (result_type != high_type) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result_type);
+    result_cast = acl_op::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
   return result;
@@ -122,7 +122,7 @@ at::Tensor true_divide(const at::Tensor& self, const at::Scalar& other) {
 }
 
 at::Tensor& true_divide_(at::Tensor& self, const at::Tensor& other) {
-  return op_plugin::true_divide_out(self, other, self);
+  return acl_op::true_divide_out(self, other, self);
 }
 
 at::Tensor& true_divide_(at::Tensor& self, const at::Scalar& other) {
@@ -135,4 +135,4 @@ at::Tensor& true_divide_(at::Tensor& self, const at::Scalar& other) {
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -71,18 +71,18 @@ void kthvalue_calculate(
     bool change_type,
     bool is_indices) {
   at::Tensor index = npu_preparation::apply_tensor({1}, self.options().dtype(at::kInt), self);
-  op_plugin::fill_(index, k - 1);
+  acl_op::fill_(index, k - 1);
 
-  at::Tensor y = op_plugin::index_select(x, dim, index);
+  at::Tensor y = acl_op::index_select(x, dim, index);
   if (!keepdim) {
     y.squeeze_(dim);
   }
 
   if (change_type) {
-    y = op_plugin::npu_dtype_cast(y, self.scalar_type());
+    y = acl_op::npu_dtype_cast(y, self.scalar_type());
   }
   if (is_indices) {
-    y = op_plugin::npu_dtype_cast(y, at::kLong);
+    y = acl_op::npu_dtype_cast(y, at::kLong);
   }
   result.copy_(y, false);
   at::namedinference::propagate_names_for_reduction(result, self, dim, keepdim);
@@ -110,7 +110,7 @@ std::tuple<at::Tensor, at::Tensor> kthvalue_out_nocheck(
   bool change_type = false;
   if (self.scalar_type() != at::kHalf) {
     change_type = true;
-    self_rename = op_plugin::npu_dtype_cast(self_rename, at::kHalf);
+    self_rename = acl_op::npu_dtype_cast(self_rename, at::kHalf);
   }
   auto ret = at::topk(self_rename, k, dim, false, true);
 
@@ -131,7 +131,7 @@ std::tuple<at::Tensor, at::Tensor> kthvalue(const at::Tensor& self, int64_t k, i
 }
 
 std::tuple<at::Tensor, at::Tensor> kthvalue(const at::Tensor& self, int64_t k, at::Dimname dim, bool keepdim) {
-  return op_plugin::kthvalue(self, k, dimname_to_position(self, dim), keepdim);
+  return acl_op::kthvalue(self, k, dimname_to_position(self, dim), keepdim);
 }
 
 std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
@@ -169,6 +169,6 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
     bool keepdim,
     at::Tensor& values,
     at::Tensor& indices) {
-  return op_plugin::kthvalue_out(self, k, dimname_to_position(self, dim), keepdim, values, indices);
+  return acl_op::kthvalue_out(self, k, dimname_to_position(self, dim), keepdim, values, indices);
 }
-} // namespace op_plugin
+} // namespace acl_op

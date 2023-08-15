@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -218,7 +218,7 @@ at::Tensor slow_conv3d(
     const c10::optional<at::Tensor>& bias,
     at::IntArrayRef stride,
     at::IntArrayRef padding) {
-  return op_plugin::slow_conv3d_forward(self, weight, kernel_size, bias, stride, padding);
+  return acl_op::slow_conv3d_forward(self, weight, kernel_size, bias, stride, padding);
 }
 
 at::Tensor& slow_conv3d_out(
@@ -229,6 +229,6 @@ at::Tensor& slow_conv3d_out(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::Tensor& result) {
-  return op_plugin::slow_conv3d_forward_out(self, weight, kernel_size, bias, stride, padding, result);
+  return acl_op::slow_conv3d_forward_out(self, weight, kernel_size, bias, stride, padding, result);
 }
-} // namespace op_plugin
+} // namespace acl_op

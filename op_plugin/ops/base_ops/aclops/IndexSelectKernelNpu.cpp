@@ -15,10 +15,10 @@
 
 #include <ATen/NamedTensorUtils.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -64,7 +64,7 @@ at::Tensor& index_select_out(
   }
   at::Tensor input = self;
   if (self.dtype() == at::kBool) {
-    input = op_plugin::npu_dtype_cast(input, at::kInt);
+    input = acl_op::npu_dtype_cast(input, at::kInt);
   }
   npu_preparation::CheckOut(
       {input, index_tmp},
@@ -82,7 +82,7 @@ at::Tensor& index_select_out(
   }
 
   if (self.dtype() == at::kBool) {
-    result = op_plugin::npu_dtype_cast(result, at::kBool);
+    result = acl_op::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }
@@ -102,12 +102,12 @@ at::Tensor index_select(
   }
   at::Tensor input = self;
   if (self.dtype() == at::kBool) {
-    input = op_plugin::npu_dtype_cast(input, at::kInt);
+    input = acl_op::npu_dtype_cast(input, at::kInt);
   }
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(input, output_size, npu_format);
   index_select_out_npu_nocheck(result, input, dim, index_tmp);
   if (self.dtype() == at::kBool) {
-    result = op_plugin::npu_dtype_cast(result, at::kBool);
+    result = acl_op::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }
@@ -121,13 +121,13 @@ at::Tensor& index_select_out(
   if (index_tmp.ndimension() == 0) {
     index_tmp = index.unsqueeze(0);
   }
-  return op_plugin::index_select_out(self, dimname_to_position(self, dim), index_tmp, result);
+  return acl_op::index_select_out(self, dimname_to_position(self, dim), index_tmp, result);
 }
 
 at::Tensor index_select(
     const at::Tensor& self, 
     at::Dimname dim, 
     const at::Tensor& index) {
-  return op_plugin::index_select(self, dimname_to_position(self, dim), index);
+  return acl_op::index_select(self, dimname_to_position(self, dim), index);
 }
-} // namespace op_plugin
+} // namespace acl_op

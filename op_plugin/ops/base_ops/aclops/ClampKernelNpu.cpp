@@ -17,10 +17,10 @@
 #include <float.h>
 #include <ATen/native/TypeProperties.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -168,10 +168,10 @@ at::Tensor& clamp_out(
   TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None");
   if (!min.has_value()) {
     at::Scalar max_value = max.value();
-    return op_plugin::clamp_max_out(self, max_value, result);
+    return acl_op::clamp_max_out(self, max_value, result);
   } else if (!max.has_value()) {
     at::Scalar min_value = min.value();
-    return op_plugin::clamp_min_out(self, min_value, result);
+    return acl_op::clamp_min_out(self, min_value, result);
   } else {
     at::Scalar min_value = min.value();
     at::Scalar max_value = max.value();
@@ -192,20 +192,20 @@ at::Tensor& clamp_out(
 
 at::Tensor clamp_min(const at::Tensor& self, const at::Scalar& min) {
   at::Tensor result = npu_preparation::ApplyTensor(self);
-  return op_plugin::clamp_min_out(self, min, result);
+  return acl_op::clamp_min_out(self, min, result);
 }
 
 at::Tensor& clamp_min_(at::Tensor& self, const at::Scalar& min) {
-  return op_plugin::clamp_min_out(self, min, self);
+  return acl_op::clamp_min_out(self, min, self);
 }
 
 at::Tensor clamp_max(const at::Tensor& self, const at::Scalar& max) {
   at::Tensor result = npu_preparation::ApplyTensor(self);
-  return op_plugin::clamp_max_out(self, max, result);
+  return acl_op::clamp_max_out(self, max, result);
 }
 
 at::Tensor& clamp_max_(at::Tensor& self, const at::Scalar& max) {
-  return op_plugin::clamp_max_out(self, max, self);
+  return acl_op::clamp_max_out(self, max, self);
 }
 
 at::Tensor clamp(
@@ -213,14 +213,14 @@ at::Tensor clamp(
     const c10::optional<at::Scalar>& min,
     const c10::optional<at::Scalar>& max) {
   at::Tensor result = npu_preparation::ApplyTensor(self);
-  return op_plugin::clamp_out(self, min, max, result);
+  return acl_op::clamp_out(self, min, max, result);
 }
 
 at::Tensor& clamp_(
     at::Tensor& self,
     const c10::optional<at::Scalar>& min,
     const c10::optional<at::Scalar>& max) {
-  return op_plugin::clamp_out(self, min, max, self);
+  return acl_op::clamp_out(self, min, max, self);
 }
 
 at::Tensor& clamp_min_out(
@@ -233,10 +233,10 @@ at::Tensor& clamp_min_out(
       "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype);
   TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'");
 
-  at::Tensor self_cp = self.scalar_type() == result_dtype ? self : op_plugin::npu_dtype_cast(self, result_dtype);
-  at::Tensor min_cp = min.scalar_type() == result_dtype ? min : op_plugin::npu_dtype_cast(min, result_dtype);
+  at::Tensor self_cp = self.scalar_type() == result_dtype ? self : acl_op::npu_dtype_cast(self, result_dtype);
+  at::Tensor min_cp = min.scalar_type() == result_dtype ? min : acl_op::npu_dtype_cast(min, result_dtype);
   if (min_cp.sizes() != self.sizes()) {
-    min_cp = op_plugin::npu_broadcast(min_cp, self.sizes());
+    min_cp = acl_op::npu_broadcast(min_cp, self.sizes());
   }
   npu_preparation::CheckOut(
       {self_cp, min_cp},
@@ -262,10 +262,10 @@ at::Tensor& clamp_max_out(
       "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype);
   TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'");
 
-  at::Tensor self_cp = self.scalar_type() == result_dtype ? self : op_plugin::npu_dtype_cast(self, result_dtype);
-  at::Tensor max_cp = max.scalar_type() == result_dtype ? max : op_plugin::npu_dtype_cast(max, result_dtype);
+  at::Tensor self_cp = self.scalar_type() == result_dtype ? self : acl_op::npu_dtype_cast(self, result_dtype);
+  at::Tensor max_cp = max.scalar_type() == result_dtype ? max : acl_op::npu_dtype_cast(max, result_dtype);
   if (max_cp.sizes() != self.sizes()) {
-    max_cp = op_plugin::npu_broadcast(max_cp, self.sizes());
+    max_cp = acl_op::npu_broadcast(max_cp, self.sizes());
   }
   npu_preparation::CheckOut(
       {self_cp, max_cp},
@@ -289,10 +289,10 @@ at::Tensor& clamp_out(
   TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None");
   if (!min.has_value()) {
     const at::Tensor& max_value = max.value();
-    return op_plugin::clamp_max_out(self, max_value, result);
+    return acl_op::clamp_max_out(self, max_value, result);
   } else if (!max.has_value()) {
     const at::Tensor& min_value = min.value();
-    return op_plugin::clamp_min_out(self, min_value, result);
+    return acl_op::clamp_min_out(self, min_value, result);
   } else {
     const at::Tensor& min_value = min.value();
     const at::Tensor& max_value = max.value();
@@ -304,16 +304,16 @@ at::Tensor& clamp_out(
     TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'");
 
     at::Tensor self_cp = self.scalar_type() == result_dtype ? self :
-        op_plugin::npu_dtype_cast(self, result_dtype);
+        acl_op::npu_dtype_cast(self, result_dtype);
     at::Tensor min_value_cp = min_value.scalar_type() == result_dtype ? min_value :
-        op_plugin::npu_dtype_cast(min_value, result_dtype);
+        acl_op::npu_dtype_cast(min_value, result_dtype);
     at::Tensor max_value_cp = max_value.scalar_type() == result_dtype ? max_value :
-        op_plugin::npu_dtype_cast(max_value, result_dtype);
+        acl_op::npu_dtype_cast(max_value, result_dtype);
     if (max_value_cp.sizes() != self.sizes()) {
-      max_value_cp = op_plugin::npu_broadcast(max_value_cp, self.sizes());
+      max_value_cp = acl_op::npu_broadcast(max_value_cp, self.sizes());
     }
     if (min_value_cp.sizes() != self.sizes()) {
-      min_value_cp = op_plugin::npu_broadcast(min_value_cp, self.sizes());
+      min_value_cp = acl_op::npu_broadcast(min_value_cp, self.sizes());
     }
     npu_preparation::CheckOut(
         {self_cp, min_value_cp, max_value_cp},
@@ -332,20 +332,20 @@ at::Tensor& clamp_out(
 
 at::Tensor clamp_min(const at::Tensor& self, const at::Tensor& min) {
   at::Tensor result = npu_preparation::ApplyTensor(self);
-  return op_plugin::clamp_min_out(self, min, result);
+  return acl_op::clamp_min_out(self, min, result);
 }
 
 at::Tensor& clamp_min_(at::Tensor& self, const at::Tensor& min) {
-  return op_plugin::clamp_min_out(self, min, self);
+  return acl_op::clamp_min_out(self, min, self);
 }
 
 at::Tensor clamp_max(const at::Tensor& self, const at::Tensor& max) {
   at::Tensor result = npu_preparation::ApplyTensor(self);
-  return op_plugin::clamp_max_out(self, max, result);
+  return acl_op::clamp_max_out(self, max, result);
 }
 
 at::Tensor& clamp_max_(at::Tensor& self, const at::Tensor& max) {
-  return op_plugin::clamp_max_out(self, max, self);
+  return acl_op::clamp_max_out(self, max, self);
 }
 
 at::Tensor clamp(
@@ -353,13 +353,13 @@ at::Tensor clamp(
     const c10::optional<at::Tensor>& min,
     const c10::optional<at::Tensor>& max) {
   at::Tensor result = npu_preparation::ApplyTensor(self);
-  return op_plugin::clamp_out(self, min, max, result);
+  return acl_op::clamp_out(self, min, max, result);
 }
 
 at::Tensor& clamp_(
     at::Tensor& self,
     const c10::optional<at::Tensor>& min,
     const c10::optional<at::Tensor>& max) {
-  return op_plugin::clamp_out(self, min, max, self);
+  return acl_op::clamp_out(self, min, max, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

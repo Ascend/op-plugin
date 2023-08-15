@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 namespace {
 const int FLOAT_STATUS_OP_DIMS_SIZE = 8;
 } // namespace
@@ -28,11 +28,11 @@ bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) {
 
   auto options = at::TensorOptions(torch_npu::utils::get_npu_device_type()).dtype(at::kFloat);
   at::Tensor float_status = at::zeros({FLOAT_STATUS_OP_DIMS_SIZE}, options);
-  auto ans = op_plugin::npu_get_float_status(float_status);
+  auto ans = acl_op::npu_get_float_status(float_status);
 
   auto result = ans[0].item().to<bool>();
   if (result) {
-    auto ans_clear = op_plugin::npu_clear_float_status(float_status);
+    auto ans_clear = acl_op::npu_clear_float_status(float_status);
   }
 
   return result;
@@ -54,7 +54,7 @@ void _amp_foreach_non_finite_check_and_unscale_(
   bool is_finite = true;
   if (c10_npu::IsSupportInfNan()) {
     for (const auto& scaled_grad : scaled_grads) {
-      auto res = op_plugin::sum(scaled_grad, at::ScalarType::Float);
+      auto res = acl_op::sum(scaled_grad, at::ScalarType::Float);
       float cpu_sum = res.item().toFloat();
       if (!std::isfinite(cpu_sum)) {
         is_finite = false;
@@ -62,7 +62,7 @@ void _amp_foreach_non_finite_check_and_unscale_(
       }
     }
   } else {
-    is_finite = !op_plugin::_amp_foreach_non_finite_check(scaled_grads);
+    is_finite = !acl_op::_amp_foreach_non_finite_check(scaled_grads);
   }
 
   if (is_finite) {
@@ -80,4 +80,4 @@ void _amp_foreach_non_finite_check_and_unscale_(
     found_inf.add_(1);
   }
 }
-} // namespace op_plugin
+} // namespace acl_op

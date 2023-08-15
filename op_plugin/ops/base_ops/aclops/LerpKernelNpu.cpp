@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -123,7 +123,7 @@ at::Tensor& lerp_(at::Tensor& self, const at::Tensor& end, const at::Tensor& wei
   auto output_size = lerp_broadcast_size(self, end, weight);
   TORCH_CHECK(self_size == output_size,
       "output with shape ", self_size, " doesn't match the broadcast shape ", output_size);
-  return op_plugin::lerp_out(self, end, weight, self);
+  return acl_op::lerp_out(self, end, weight, self);
 }
 
 at::Tensor& lerp_(at::Tensor& self, const at::Tensor& end, const at::Scalar& weight) {
@@ -131,6 +131,6 @@ at::Tensor& lerp_(at::Tensor& self, const at::Tensor& end, const at::Scalar& wei
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, end);
   TORCH_CHECK(self_size == output_size,
       "output with shape ", self_size, " doesn't match the broadcast shape ", output_size);
-  return op_plugin::lerp_out(self, end, weight, self);
+  return acl_op::lerp_out(self, end, weight, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

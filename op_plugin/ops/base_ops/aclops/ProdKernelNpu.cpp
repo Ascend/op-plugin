@@ -11,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -86,8 +86,8 @@ at::Tensor& prod_out(
       output_size);
 
   at::ScalarType cal_type = get_cal_type(self, dtype);
-  at::Tensor self_tmp = self.scalar_type() != cal_type ? op_plugin::npu_dtype_cast(self, cal_type) : self;
-  at::Tensor result_tmp = result.scalar_type() != cal_type ? op_plugin::npu_dtype_cast(result, cal_type) : result;
+  at::Tensor self_tmp = self.scalar_type() != cal_type ? acl_op::npu_dtype_cast(self, cal_type) : self;
+  at::Tensor result_tmp = result.scalar_type() != cal_type ? acl_op::npu_dtype_cast(result, cal_type) : result;
 
   c10::SmallVector<int64_t, N> dim_now = {dim};
   if (self.dim() == 0) {
@@ -103,7 +103,7 @@ at::Tensor& prod_out(
   }
 
   if (cal_type != dst_type) {
-    result_tmp = op_plugin::npu_dtype_cast(result_tmp, dst_type);
+    result_tmp = acl_op::npu_dtype_cast(result_tmp, dst_type);
     result.copy_(result_tmp);
   }
   return result;
@@ -115,7 +115,7 @@ at::Tensor& prod_out(
     bool keepdim,
     c10::optional<at::ScalarType> dtype,
     at::Tensor& result) {
-  return op_plugin::prod_out(self, dimname_to_position(self, dim), keepdim, dtype, result);
+  return acl_op::prod_out(self, dimname_to_position(self, dim), keepdim, dtype, result);
 }
 
 at::Tensor prod(
@@ -124,7 +124,7 @@ at::Tensor prod(
     bool keepdim,
     c10::optional<at::ScalarType> dtype) {
   at::ScalarType cal_type = get_cal_type(self, dtype);
-  at::Tensor self_tmp = self.scalar_type() != cal_type ? op_plugin::npu_dtype_cast(self, cal_type) : self;
+  at::Tensor self_tmp = self.scalar_type() != cal_type ? acl_op::npu_dtype_cast(self, cal_type) : self;
 
   auto output_size = op_infer::prod_npu_output_size(self, dim, keepdim);
   int64_t npu_format = calculate_prod_output_format(self_tmp, output_size);
@@ -138,7 +138,7 @@ at::Tensor prod(
 
   prod_out_npu_nocheck(result, self_tmp, dim_now, keepdim, dtype);
   if (cal_type != dst_type) {
-    result = op_plugin::npu_dtype_cast(result, dst_type);
+    result = acl_op::npu_dtype_cast(result, dst_type);
   }
   return result;
 }
@@ -148,12 +148,12 @@ at::Tensor prod(
     at::Dimname dim,
     bool keepdim,
     c10::optional<at::ScalarType> dtype) {
-  return op_plugin::prod(self, dimname_to_position(self, dim), keepdim, dtype);
+  return acl_op::prod(self, dimname_to_position(self, dim), keepdim, dtype);
 }
 
 at::Tensor prod(const at::Tensor& self, c10::optional<at::ScalarType> dtype) {
   at::ScalarType cal_type = get_cal_type(self, dtype);
-  at::Tensor self_tmp = self.scalar_type() != cal_type ? op_plugin::npu_dtype_cast(self, cal_type) : self;
+  at::Tensor self_tmp = self.scalar_type() != cal_type ? acl_op::npu_dtype_cast(self, cal_type) : self;
 
   auto output_size = op_infer::prod_npu_output_size(self, false);
   int64_t npu_format = calculate_prod_output_format(self, output_size);
@@ -162,8 +162,8 @@ at::Tensor prod(const at::Tensor& self, c10::optional<at::ScalarType> dtype) {
 
   prod_out_npu_nocheck(result, self_tmp, op_plugin::utils::get_dimlist_for_tensor(self), false, dtype);
   if (cal_type != dst_type) {
-    result = op_plugin::npu_dtype_cast(result, dst_type);
+    result = acl_op::npu_dtype_cast(result, dst_type);
   }
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

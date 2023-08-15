@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -42,9 +42,9 @@ at::Tensor& bitwise_or_out_npu_nocheck(
     const at::Tensor& other) {
   auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
   if (npu_preparation::IsCPUScalar(other)) {
-    op_plugin::bitwise_or_out(self, other.item(), result);
+    acl_op::bitwise_or_out(self, other.item(), result);
   } else if (npu_preparation::IsCPUScalar(self)) {
-    op_plugin::bitwise_or_out(other, self.item(), result);
+    acl_op::bitwise_or_out(other, self.item(), result);
   } else {
     string real_op_name = (self.dtype() == at::kBool) ? "LogicalOr" : "BitwiseOr";
     at_npu::native::OpCommand cmd;
@@ -115,4 +115,4 @@ at::Tensor bitwise_or(const at::Tensor& self, const at::Scalar& other) {
   bitwise_or_out_npu_nocheck(result, self, other);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

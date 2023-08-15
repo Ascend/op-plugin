@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace{
@@ -25,7 +25,7 @@ at::Tensor& lshift_out_npu_nocheck(
     const at::Tensor& self,
     at::Scalar other) {
   at::Tensor other_tensor = at::empty(self.sizes(), self.options());
-  at::Tensor other_broadcast = op_plugin::fill_(other_tensor, other);
+  at::Tensor other_broadcast = acl_op::fill_(other_tensor, other);
   at_npu::native::OpCommand cmd;
   cmd.Name("LeftShift")
       .Input(self)
@@ -61,4 +61,4 @@ at::Tensor __lshift__(const at::Tensor& self, const at::Scalar& other) {
   lshift_out_npu_nocheck(result, self, other);
   return result;
 }
-}  // namespace op_plugin
+}  // namespace acl_op

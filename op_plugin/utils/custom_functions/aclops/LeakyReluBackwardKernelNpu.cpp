@@ -15,7 +15,7 @@
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor leaky_relu_backward_out_nocheck(
     at::Tensor result,
     const at::Tensor& grad_output,
@@ -31,4 +31,4 @@ at::Tensor leaky_relu_backward_out_nocheck(
       .Run();
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

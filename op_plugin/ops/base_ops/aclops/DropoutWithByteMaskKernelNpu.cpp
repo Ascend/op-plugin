@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 #include <torch/csrc/autograd/custom_function.h>
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::AutogradContext;
 using npu_utils = at_npu::native::NpuUtils;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -179,4 +179,4 @@ at::Tensor dropout_with_byte_mask(const at::Tensor& self, double p, bool train) 
   return std::get<0>(_dropout_with_byte_mask(self, p));
 }
 
-} // namespace op_plugin
+} // namespace acl_op

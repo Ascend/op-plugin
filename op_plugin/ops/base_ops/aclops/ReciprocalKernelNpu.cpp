@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -51,7 +51,7 @@ at::Tensor& reciprocal_out(const at::Tensor& self, at::Tensor& result) {
 
 at::Tensor reciprocal(const at::Tensor& self) {
   at::Tensor self_cp = isIntegralType(self.scalar_type(), true) ?
-      op_plugin::npu_dtype_cast(self, at::kFloat) : self;
+      acl_op::npu_dtype_cast(self, at::kFloat) : self;
   at::Tensor result = npu_preparation::ApplyTensor(self_cp);
   reciprocal_out_npu_nocheck(result, self_cp);
 
@@ -59,9 +59,9 @@ at::Tensor reciprocal(const at::Tensor& self) {
 }
 
 at::Tensor& reciprocal_(at::Tensor& self) {
-  op_plugin::reciprocal_out(self, self);
+  acl_op::reciprocal_out(self, self);
 
   return self;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

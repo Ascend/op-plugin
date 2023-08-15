@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -76,7 +76,7 @@ at::Tensor upsample_nearest2d_backward(
     c10::optional<double> scales_w) {
   at::Tensor grads = grad_output;
   if (grad_output.scalar_type() != at::ScalarType::Float) {
-    grads = op_plugin::npu_dtype_cast(grad_output, at::kFloat);
+    grads = acl_op::npu_dtype_cast(grad_output, at::kFloat);
   }
   at::Tensor grad_input = npu_preparation::apply_tensor(
       input_size, grads.options(), grad_output);
@@ -84,4 +84,4 @@ at::Tensor upsample_nearest2d_backward(
       grad_input, grads, output_size, input_size, scales_h, scales_w);
   return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

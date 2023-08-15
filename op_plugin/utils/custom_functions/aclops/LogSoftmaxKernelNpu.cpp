@@ -1,6 +1,6 @@
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& log_softmax_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -37,4 +37,4 @@ at::Tensor log_softmax_nocheck(
   log_softmax_nocheck(result, self.toType(dst_type), dim);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

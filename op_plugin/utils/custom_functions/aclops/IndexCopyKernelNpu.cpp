@@ -16,10 +16,10 @@
 #include <ATen/NamedTensorUtils.h>
 #include <ATen/native/NonSymbolicBC.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 
 namespace {
 void index_copy_npu_par_check(
@@ -88,4 +88,4 @@ at::Tensor& index_copy_npu_impl(
   return result;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

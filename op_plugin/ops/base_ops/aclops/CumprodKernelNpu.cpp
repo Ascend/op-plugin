@@ -15,10 +15,10 @@
 
 #include <ATen/NamedTensorUtils.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -56,7 +56,7 @@ at::Tensor& cumprod_out(
   }
 
   at::Tensor self_cp = self.scalar_type() == dst_type ? self :
-      op_plugin::npu_dtype_cast(self, dst_type);
+      acl_op::npu_dtype_cast(self, dst_type);
   npu_preparation::CheckOut(
       {self_cp},
       result,
@@ -78,7 +78,7 @@ at::Tensor& cumprod_out(
     at::Dimname dim,
     c10::optional<at::ScalarType> dtype,
     at::Tensor& result) {
-  return op_plugin::cumprod_out(self, dimname_to_position(self, dim), dtype, result);
+  return acl_op::cumprod_out(self, dimname_to_position(self, dim), dtype, result);
 }
 
 at::Tensor& cumprod_(
@@ -92,10 +92,10 @@ at::Tensor& cumprod_(
       " and ",
       toString(dtype.value()),
       ".");
-  return op_plugin::cumprod_out(self, dim, dtype, self);
+  return acl_op::cumprod_out(self, dim, dtype, self);
 }
 
 at::Tensor& cumprod_(at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype) {
-  return op_plugin::cumprod_(self, dimname_to_position(self, dim), dtype);
+  return acl_op::cumprod_(self, dimname_to_position(self, dim), dtype);
 }
-} // namespace op_plugin
+} // namespace acl_op

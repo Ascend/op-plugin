@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& scatter_npu_common_nocheck(
     at::Tensor& self,
     int64_t dim,
@@ -40,25 +40,25 @@ at::Tensor& scatter_npu_src_impl(
     const at::Tensor& src_ex) {
   at::ScalarType self_type = self.scalar_type();
   if (self_type == at::ScalarType::Half) {
-    self = op_plugin::npu_dtype_cast(self, at::ScalarType::Float);
+    self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
   }
 
   at::Tensor index(index_ex);
   if (index.scalar_type() == at::ScalarType::Half) {
-    index = op_plugin::npu_dtype_cast(index, at::ScalarType::Float);
+    index = acl_op::npu_dtype_cast(index, at::ScalarType::Float);
   }
 
   at::Tensor src(src_ex);
   if (src.scalar_type() != self.scalar_type()) {
-    src = op_plugin::npu_dtype_cast(src, self.scalar_type());
+    src = acl_op::npu_dtype_cast(src, self.scalar_type());
   }
 
   scatter_npu_common_nocheck(self, dim, index, src);
   
   if(self.scalar_type() != self_type) {
-    self = op_plugin::npu_dtype_cast(self, self_type);
+    self = acl_op::npu_dtype_cast(self, self_type);
   }
 
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

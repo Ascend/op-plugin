@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -61,6 +61,6 @@ at::Tensor threshold(const at::Tensor& self, const at::Scalar& threshold, const 
 }
 
 at::Tensor& threshold_(at::Tensor& self, const at::Scalar& threshold, const at::Scalar& value) {
-  return op_plugin::threshold_out(self, threshold, value, self);
+  return acl_op::threshold_out(self, threshold, value, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

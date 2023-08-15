@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -68,8 +68,8 @@ at::Tensor npu_roi_align(
   at::Tensor self_cast = self;
   at::Tensor rois_cast = rois;
   if (self.scalar_type() == at::kHalf || rois.scalar_type() == at::kHalf) {
-    self_cast = op_plugin::npu_dtype_cast(self, at::kFloat);
-    rois_cast = op_plugin::npu_dtype_cast(rois, at::kFloat);
+    self_cast = acl_op::npu_dtype_cast(self, at::kFloat);
+    rois_cast = acl_op::npu_dtype_cast(rois, at::kFloat);
   }
 
   auto output_size =
@@ -89,10 +89,10 @@ at::Tensor npu_roi_align(
       roi_end_mode);
 
   if (self.scalar_type() == at::kHalf || rois.scalar_type() == at::kHalf) {
-    result = op_plugin::npu_dtype_cast(result, at::kHalf);
+    result = acl_op::npu_dtype_cast(result, at::kHalf);
   }
 
   return result;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

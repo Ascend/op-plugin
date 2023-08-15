@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
@@ -50,7 +50,7 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
     }
     auto index = at::from_blob(tmp_vector.data(), {len}, at::kInt);
     index = calcu_op_util::CopyTensorHostToDevice(index);
-    output = op_plugin::index_select(output, 0, index);
+    output = acl_op::index_select(output, 0, index);
     timesize = len;
   }
 
@@ -77,4 +77,4 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
   }
   return std::tie(output, batchsizes);
 }
-} // namespace op_plugin
+} // namespace acl_op

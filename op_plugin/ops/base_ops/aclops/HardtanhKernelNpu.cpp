@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -64,6 +64,6 @@ at::Tensor hardtanh(const at::Tensor& self, const at::Scalar& min, const at::Sca
 }
 
 at::Tensor& hardtanh_(at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
-  return op_plugin::hardtanh_out(self, min, max, self);
+  return acl_op::hardtanh_out(self, min, max, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

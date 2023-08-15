@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -35,7 +35,7 @@ at::Tensor& nll_loss_backward_out_nocheck(
   TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),
       "Expected object of scalar type ", at::kLong, " or ", at::kInt,
       " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss_backward");
-  at::Tensor target_cast = (scalar_type == at::kLong) ? op_plugin::npu_dtype_cast(target, at::kInt) : target;
+  at::Tensor target_cast = (scalar_type == at::kLong) ? acl_op::npu_dtype_cast(target, at::kInt) : target;
 
   string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
@@ -111,8 +111,8 @@ at::Tensor nll_loss_backward(
     int64_t ignore_index,
     const at::Tensor& total_weight) {
   at::Tensor grad_input = npu_preparation::ApplyTensor(self);
-  op_plugin::nll_loss_backward_out(grad_output, self, target, weight_opt, reduction, ignore_index,
+  acl_op::nll_loss_backward_out(grad_output, self, target, weight_opt, reduction, ignore_index,
       total_weight, grad_input);
   return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

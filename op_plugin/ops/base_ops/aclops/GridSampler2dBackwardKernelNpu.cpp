@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
@@ -35,13 +35,13 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
   at::Tensor format_cast_of_grid = grid;
 
   if (format_cast_of_grad.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_grad = op_plugin::npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
+    format_cast_of_grad = acl_op::npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
   }
   if (format_cast_of_input.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_input = op_plugin::npu_dtype_cast(format_cast_of_input, at::ScalarType::Float);
+    format_cast_of_input = acl_op::npu_dtype_cast(format_cast_of_input, at::ScalarType::Float);
   }
   if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_grid = op_plugin::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
+    format_cast_of_grid = acl_op::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
   }
 
   at::Tensor dx = npu_preparation::ApplyTensor(format_cast_of_input);
@@ -64,10 +64,10 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
 
   at::ScalarType input_scalar_type(input.scalar_type());
   if (dx.scalar_type() != input_scalar_type) {
-    dx = op_plugin::npu_dtype_cast(dx, input_scalar_type);
-    dgrid = op_plugin::npu_dtype_cast(dgrid, input_scalar_type);
+    dx = acl_op::npu_dtype_cast(dx, input_scalar_type);
+    dgrid = acl_op::npu_dtype_cast(dgrid, input_scalar_type);
   }
 
   return std::tuple<at::Tensor, at::Tensor>(dx, dgrid);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::Function;
 using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -83,4 +83,4 @@ public:
 at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
   return NPUDtypeCastFunction::apply(self, dtype);
 }
-}  // namespace op_plugin
+}  // namespace acl_op

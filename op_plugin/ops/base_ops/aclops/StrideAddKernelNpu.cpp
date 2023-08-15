@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace{
@@ -52,4 +52,4 @@ at::Tensor npu_stride_add(
   stride_add_out_npu_nocheck(result, self, other, offset1, offset2, c1_len);
   return result;
 }
-}  // namespace op_plugin
+}  // namespace acl_op

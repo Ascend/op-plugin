@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 using torch::autograd::AutogradContext;
@@ -240,7 +240,7 @@ public:
     auto o = saved[11];
     auto tanhc = saved[12];
 
-    auto results = op_plugin::npu_lstm_cell_backward(
+    auto results = acl_op::npu_lstm_cell_backward(
         grad_outputs[0], grad_outputs[1], grad_outputs[2], input, w_ih,
         w_hh, h, c, y_output, h_output, c_output, i, j, f, o, tanhc);
 
@@ -278,8 +278,8 @@ std::tuple<at::Tensor, at::Tensor> lstm_cell(
   at::Tensor weight_hh = w_hh.t().to(input.dtype());
   at::Tensor h = hx[0];
   at::Tensor c = hx[1];
-  auto result = op_plugin::npu_lstm_cell(input, weight_ih, weight_hh, h, c, b_ih_opt, b_hh_opt);
+  auto result = acl_op::npu_lstm_cell(input, weight_ih, weight_hh, h, c, b_ih_opt, b_hh_opt);
   std::tuple<at::Tensor, at::Tensor> output(result[1], result[2]);
   return output;
 }
-}  // namespace op_plugin
+}  // namespace acl_op

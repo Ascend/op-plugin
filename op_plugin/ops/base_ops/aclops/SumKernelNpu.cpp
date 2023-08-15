@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& sum_out(
     const at::Tensor& self,
     at::DimnameList dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
     at::Tensor& result) {
-  return op_plugin::sum_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
+  return acl_op::sum_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
 }
 
 at::Tensor sum(
@@ -31,10 +31,10 @@ at::Tensor sum(
     at::DimnameList dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype) {
-  return op_plugin::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
+  return acl_op::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
 }
 
 at::Tensor sum(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
-  return op_plugin::sum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
+  return acl_op::sum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -88,7 +88,7 @@ at::Tensor upsample_linear1d_backward(
   upsample_linear1d_backward_check(grad_output, output_size, input_size);
   at::Tensor grad_output_cp = grad_output;
   if (grad_output.scalar_type() != at::ScalarType::Float) {
-    grad_output_cp = op_plugin::npu_dtype_cast(grad_output_cp, at::ScalarType::Float);
+    grad_output_cp = acl_op::npu_dtype_cast(grad_output_cp, at::ScalarType::Float);
   }
   int64_t N = grad_output_cp.size(0);
   int64_t C = grad_output_cp.size(1);
@@ -109,4 +109,4 @@ at::Tensor upsample_linear1d_backward(
 
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

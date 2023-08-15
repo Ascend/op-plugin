@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -57,6 +57,6 @@ at::Tensor cos(const at::Tensor& self) {
 }
 
 at::Tensor& cos_(at::Tensor& self) {
-  return op_plugin::cos_out(self, self);
+  return acl_op::cos_out(self, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

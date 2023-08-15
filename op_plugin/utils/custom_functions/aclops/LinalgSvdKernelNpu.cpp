@@ -15,7 +15,7 @@
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 int64_t batch_count(const at::Tensor& batched_matrices) {
@@ -190,4 +190,4 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(
   }
   at::_linalg_check_errors(info, "linalg.svd", A.dim() == 2);
 }
-} // namespace op_plugin
+} // namespace acl_op

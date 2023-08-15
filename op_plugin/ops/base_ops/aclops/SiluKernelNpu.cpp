@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::Function;
 using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -109,7 +109,7 @@ public:
     auto input = saved[0];
     auto result = saved[1];
 
-    at::Tensor output = op_plugin::npu_silu_backward(grad_outputs[0], input, result);
+    at::Tensor output = acl_op::npu_silu_backward(grad_outputs[0], input, result);
     std::vector<at::Tensor> output_list = {output};
 
     return output_list;
@@ -147,7 +147,7 @@ public:
     auto input = saved[0];
     auto result = saved[1];
 
-    at::Tensor output = op_plugin::npu_silu_backward(grad_outputs[0], input, result);
+    at::Tensor output = acl_op::npu_silu_backward(grad_outputs[0], input, result);
     std::vector<at::Tensor> output_list = {output};
 
     return output_list;
@@ -160,4 +160,4 @@ at::Tensor& silu_(at::Tensor& self) {
   return self;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor var(
     const at::Tensor& self,
     at::DimnameList dim,
@@ -32,4 +32,4 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     bool keepdim) {
   return at::var_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
 }
-} // namespace op_plugin
+} // namespace acl_op

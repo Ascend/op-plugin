@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> npu_ifmr(
@@ -53,4 +53,4 @@ std::tuple<at::Tensor, at::Tensor> npu_ifmr(
       .Run();
   return std::tie(scale, offset);
 }
-} // namespace op_plugin
+} // namespace acl_op

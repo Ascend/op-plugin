@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -28,7 +28,7 @@ at::Tensor& soft_margin_loss_out_nocheck(
     int64_t reduction) {
   at::Tensor target_broadcast = target;
   if(target.sizes() != self.sizes()) {
-    target_broadcast = op_plugin::npu_broadcast(target, self.sizes());
+    target_broadcast = acl_op::npu_broadcast(target, self.sizes());
   }
   string reduction_str(op_plugin::utils::get_reduction_str(reduction));
   at_npu::native::OpCommand cmd;
@@ -76,4 +76,4 @@ at::Tensor soft_margin_loss(const at::Tensor& self, const at::Tensor& target, in
     return result.reshape({});
   }
 }
-} // namespace op_plugin
+} // namespace acl_op

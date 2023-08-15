@@ -15,10 +15,10 @@
 
 #include <ATen/NamedTensorUtils.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -32,7 +32,7 @@ at::Tensor& index_add_out_npu_nocheck(
     const at::Scalar& alpha) {
   at::Tensor indices = index;
   if (index.scalar_type() != at::ScalarType::Int) {
-    indices = op_plugin::npu_dtype_cast(index, at::kInt);
+    indices = acl_op::npu_dtype_cast(index, at::kInt);
   }
   if (index.dim() == 0) {
     indices.unsqueeze_(0);
@@ -40,7 +40,7 @@ at::Tensor& index_add_out_npu_nocheck(
 
   at::SmallVector<int64_t, N> pad_size = op_infer::array_to_small_vector(self.sizes());
   pad_size[dim] = indices.sizes()[0];
-  at::Tensor source_broadcast = op_plugin::npu_broadcast(source, pad_size);
+  at::Tensor source_broadcast = acl_op::npu_broadcast(source, pad_size);
   source_broadcast.mul_(alpha);
   at_npu::native::OpCommand cmd;
   cmd.Name("InplaceIndexAdd")
@@ -92,6 +92,6 @@ at::Tensor index_add(
     const at::Tensor& index,
     const at::Tensor& source,
     const at::Scalar& alpha) {
-  return op_plugin::index_add(self, dimname_to_position(self, dim), index, source, alpha);
+  return acl_op::index_add(self, dimname_to_position(self, dim), index, source, alpha);
 }
-} // namespace op_plugin
+} // namespace acl_op

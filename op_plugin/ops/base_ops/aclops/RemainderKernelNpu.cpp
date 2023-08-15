@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -43,7 +43,7 @@ at::Tensor& remainder_out_tensor_npu_nocheck(
     const at::Tensor& other) {
   auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
   if (other.dim() == 0) {
-    op_plugin::remainder_out(self, other.item(), result);
+    acl_op::remainder_out(self, other.item(), result);
   } else {
     at_npu::native::OpCommand cmd;
     cmd.Name("FloorMod")
@@ -117,11 +117,11 @@ at::Tensor remainder(const at::Tensor& self, const at::Scalar& other) {
 }
 
 at::Tensor& remainder_(at::Tensor& self, const at::Tensor& other) {
-  return op_plugin::remainder_out(self, other, self);
+  return acl_op::remainder_out(self, other, self);
 }
 
 at::Tensor& remainder_(at::Tensor& self, const at::Scalar& other) {
-  return op_plugin::remainder_out(self, other, self);
+  return acl_op::remainder_out(self, other, self);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -26,7 +26,7 @@ at::Tensor isfinite(const at::Tensor& self_ex) {
     self = at_npu::native::NPUNativeFunctions::npu_format_cast(self_ex, ACL_FORMAT_ND);
   }
   if (self.scalar_type() == at::ScalarType::Half) {
-    self = op_plugin::npu_dtype_cast(self, at::ScalarType::Float);
+    self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
   }
   auto output_size = self.sizes();
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(
@@ -39,4 +39,4 @@ at::Tensor isfinite(const at::Tensor& self_ex) {
       .Run();
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

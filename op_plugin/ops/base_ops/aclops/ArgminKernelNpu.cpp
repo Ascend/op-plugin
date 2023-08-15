@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -56,7 +56,7 @@ at::Tensor argmin(
   c10::Scalar dim_scalar = dim_value;
 
   argmin_out_nocheck(result, input, dim_scalar, keepdim_value);
-  result = op_plugin::npu_dtype_cast(result, at::kLong);
+  result = acl_op::npu_dtype_cast(result, at::kLong);
   return result;
 }
 
@@ -82,9 +82,9 @@ at::Tensor& argmin_out(
       output_size);
 
   c10::Scalar dim_scalar = dim_value;
-  at::Tensor result_cast = op_plugin::npu_dtype_cast(result, at::kInt);
+  at::Tensor result_cast = acl_op::npu_dtype_cast(result, at::kInt);
   argmin_out_nocheck(result_cast, input, dim_scalar, keepdim_value);
-  result = op_plugin::npu_dtype_cast(result_cast, at::kLong);
+  result = acl_op::npu_dtype_cast(result_cast, at::kLong);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

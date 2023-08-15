@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
 

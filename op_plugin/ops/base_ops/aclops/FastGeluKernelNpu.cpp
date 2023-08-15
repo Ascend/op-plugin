@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using torch::autograd::AutogradContext;
 
@@ -56,6 +56,6 @@ at::Tensor npu_fast_gelu_backward(
 }
 
 at::Tensor fast_gelu(const at::Tensor& self) {
-  return op_plugin::npu_fast_gelu(self);
+  return acl_op::npu_fast_gelu(self);
 }
-} // namespace op_plugin
+} // namespace acl_op

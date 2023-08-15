@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -103,7 +103,7 @@ at::Tensor nll_loss2d_backward(
   TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),
       "Expected object of scalar type ", at::kLong, " or ", at::kInt,
       " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss2d_backward");
-  at::Tensor target_cast = (scalar_type == at::kLong) ? op_plugin::npu_dtype_cast(target, at::kInt) : target;
+  at::Tensor target_cast = (scalar_type == at::kLong) ? acl_op::npu_dtype_cast(target, at::kInt) : target;
 
   auto self_input = self.contiguous();
   self_input = self_input.permute({0, 2, 3, 1});
@@ -121,11 +121,11 @@ at::Tensor nll_loss2d_backward(
   auto output_size = op_infer::input_same_output_size(self_input);
   at::Tensor grad_input = npu_preparation::apply_tensor(self_input, output_size);
 
-  op_plugin::nll_loss2d_backward_out(grad_output_reshape, self_input, target_input, weight_opt, reduction,
+  acl_op::nll_loss2d_backward_out(grad_output_reshape, self_input, target_input, weight_opt, reduction,
       ignore_index, total_weight, grad_input);
 
   grad_input = grad_input.reshape({self.size(0), self.size(2),self.size(3), self.size(1)}).permute({0, 3, 1, 2});
 
   return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

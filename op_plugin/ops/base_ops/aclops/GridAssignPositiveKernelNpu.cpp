@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -50,9 +50,9 @@ at::Tensor npu_grid_assign_positive(
 
   at::Scalar s(num_gts);
   auto num = at::empty({}, option);
-  at::Tensor num_of_gts = op_plugin::fill_(num, s);
-  at::Tensor argmax_overLaps = op_plugin::npu_dtype_cast(argmax_overlaps, at::ScalarType::Int);
-  at::Tensor gt_argmax_overLaps = op_plugin::npu_dtype_cast(gt_argmax_overlaps, at::ScalarType::Int);
+  at::Tensor num_of_gts = acl_op::fill_(num, s);
+  at::Tensor argmax_overLaps = acl_op::npu_dtype_cast(argmax_overlaps, at::ScalarType::Int);
+  at::Tensor gt_argmax_overLaps = acl_op::npu_dtype_cast(gt_argmax_overlaps, at::ScalarType::Int);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("GridAssignPositive")

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -97,23 +97,23 @@ std::tuple<at::Tensor, at::Tensor> npu_giou_backward(
   // Note: temp avoid! it'll be remove while op deal with fp16 issue!
   at::Tensor grad_cp = at::squeeze(grad, 0);
   if (grad_cp.scalar_type() == at::kHalf) {
-    grad_cp = op_plugin::npu_dtype_cast(grad_cp, at::kFloat);
+    grad_cp = acl_op::npu_dtype_cast(grad_cp, at::kFloat);
   }
   at::Tensor bboxes_cp = bboxes;
   if (bboxes_cp.scalar_type() == at::kHalf) {
-    bboxes_cp = op_plugin::npu_dtype_cast(bboxes_cp, at::kFloat);
+    bboxes_cp = acl_op::npu_dtype_cast(bboxes_cp, at::kFloat);
   }
   at::Tensor gtboxes_cp = gtboxes;
   if (gtboxes_cp.scalar_type() == at::kHalf) {
-    gtboxes_cp = op_plugin::npu_dtype_cast(gtboxes_cp, at::kFloat);
+    gtboxes_cp = acl_op::npu_dtype_cast(gtboxes_cp, at::kFloat);
   }
   at::Tensor dbboxes = npu_preparation::ApplyTensor(bboxes_cp);
   at::Tensor dgtboxes = npu_preparation::ApplyTensor(gtboxes_cp);
 
   giou_backward_inner_out_npu_nocheck(dbboxes, dgtboxes, grad_cp, bboxes_cp, gtboxes_cp, trans, is_cross, mode);
   if (bboxes.scalar_type() == at::kHalf || gtboxes.scalar_type() == at::kHalf) {
-    dbboxes = op_plugin::npu_dtype_cast(dbboxes, at::kHalf);
-    dgtboxes = op_plugin::npu_dtype_cast(dgtboxes, at::kHalf);
+    dbboxes = acl_op::npu_dtype_cast(dbboxes, at::kHalf);
+    dgtboxes = acl_op::npu_dtype_cast(dgtboxes, at::kHalf);
   }
   return std::tie(dbboxes, dgtboxes);
 }
@@ -132,9 +132,9 @@ at::Tensor npu_giou(
       "please ensure your parameter is correct!");
 
   at::Tensor self_cp = (self.scalar_type() == at::kHalf) ?
-      op_plugin::npu_dtype_cast(self, at::kFloat) : self;
+      acl_op::npu_dtype_cast(self, at::kFloat) : self;
   at::Tensor gtboxes_cp = (gtboxes.scalar_type() == at::kHalf) ?
-      op_plugin::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
+      acl_op::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
 
   auto output_size = giou_output_size(self_cp, gtboxes_cp, is_cross);
   at::Tensor result = npu_preparation::ApplyTensor(self_cp, output_size);
@@ -143,8 +143,8 @@ at::Tensor npu_giou(
   //op's output is [1, n], same with CPU output, but pass need [n, 1].
   result = result.permute({1, 0});
   if (self.scalar_type() == at::kHalf || gtboxes.scalar_type() == at::kHalf) {
-    result = op_plugin::npu_dtype_cast(result, at::kHalf);
+    result = acl_op::npu_dtype_cast(result, at::kHalf);
   }
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

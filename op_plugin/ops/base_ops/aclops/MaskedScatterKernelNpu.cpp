@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -28,7 +28,7 @@ at::Tensor& masked_scatter_out_npu_nocheck(
     const at::Tensor& source) {
   at::Tensor mask_bool = mask;
   if (!(mask.dtype() == at::kBool)) {
-    mask_bool = op_plugin::npu_dtype_cast(mask_bool, at::kBool);
+    mask_bool = acl_op::npu_dtype_cast(mask_bool, at::kBool);
   }
   at_npu::native::OpCommand cmd;
   cmd.Name("MaskedScatter")
@@ -56,4 +56,4 @@ at::Tensor& masked_scatter_(
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

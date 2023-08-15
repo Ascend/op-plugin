@@ -15,10 +15,10 @@
 
 #include <ATen/NamedTensorUtils.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -74,7 +74,7 @@ at::Tensor& gather_out(
     const at::Tensor& index,
     bool sparse_grad,
     at::Tensor& result) {
-  return op_plugin::gather_out(self, dimname_to_position(self, dim), index, sparse_grad, result);
+  return acl_op::gather_out(self, dimname_to_position(self, dim), index, sparse_grad, result);
 }
 
 at::Tensor gather(
@@ -92,6 +92,6 @@ at::Tensor gather(
     at::Dimname dim,
     const at::Tensor& index,
     bool sparse_grad) {
-  return op_plugin::gather(self, dimname_to_position(self, dim), index, sparse_grad);
+  return acl_op::gather(self, dimname_to_position(self, dim), index, sparse_grad);
 }
 }  // op_plugin

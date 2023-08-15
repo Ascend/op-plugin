@@ -15,12 +15,11 @@
 
 #include <ATen/WrapDimUtils.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 at::IntArrayRef var_check_and_trans_dim(const at::Tensor& self, at::IntArrayRef dim) {
@@ -85,7 +84,7 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_compute(
   auto mean_output_size_not_keepdim = op_infer::var_npu_output_size(self, dim, false);
   mean = at::mean(self, dim, false);
   mean.resize_(mean_output_size_keepdim);
-  at::Tensor mean_broadcast = op_plugin::npu_broadcast(mean, self.sizes());
+  at::Tensor mean_broadcast = acl_op::npu_broadcast(mean, self.sizes());
   if (!keepdim) {
     mean.resize_(mean_output_size_not_keepdim);
   }
@@ -111,7 +110,7 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_out_nocheck(
     bool keepdim,
     int64_t correction) {
   c10::SmallVector<int64_t, N> dim_now =
-      dim.empty() ? calcu_op_util::GetDimlistForTensor(self) : c10::SmallVector<int64_t, N>(dim);
+      dim.empty() ? op_plugin::utils::get_dimlist_for_tensor(self) : c10::SmallVector<int64_t, N>(dim);
   auto ori_type = self.scalar_type();
   TORCH_CHECK((ori_type == c10::ScalarType::Half || ori_type == c10::ScalarType::Float),
       "Var Mean only support float16 or float32 type.");
@@ -177,4 +176,4 @@ std::tuple<at::Tensor, at::Tensor> cal_var_mean(
   var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim, correction); 
   return std::tuple<at::Tensor, at::Tensor>(variance, mean);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 
@@ -25,7 +25,7 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
   at::Scalar off_value = 0;
   int64_t axis = -1;
   int64_t depth;
-  auto self_temp = op_plugin::npu_dtype_cast(self, at::kFloat);
+  auto self_temp = acl_op::npu_dtype_cast(self, at::kFloat);
 
   TORCH_CHECK(self_temp.dim() < 8, "NPU error,can not support the input tensor's dim bigger than 7.");
   if (self.numel() == 0) {
@@ -54,4 +54,4 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
       .Run();
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

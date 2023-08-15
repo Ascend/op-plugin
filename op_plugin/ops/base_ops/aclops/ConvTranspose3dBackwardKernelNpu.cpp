@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -96,7 +96,7 @@ at::Tensor& conv_transpose3d_backward_bias_out_nocheck(
       grad_output.size(1),
       grad_output.size(2),
       -1});
-  op_plugin::sum_out(gradView, c10::SmallVector<int64_t, N>{0, 2, 3}, false, gradView.scalar_type(), grad_bias);
+  acl_op::sum_out(gradView, c10::SmallVector<int64_t, N>{0, 2, 3}, false, gradView.scalar_type(), grad_bias);
   return grad_bias;
 }
 
@@ -194,4 +194,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv_transpose3d_backward(
       output_mask);
   return std::tie(grad_input, grad_weight, grad_bias);
 }
-} // namespace op_plugin
+} // namespace acl_op

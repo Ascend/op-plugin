@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -169,4 +169,4 @@ std::tuple<at::Tensor, at::Tensor> adaptive_max_pool2d(
 
   return std::tuple<at::Tensor, at::Tensor>(output, indices);
 }
-} // namespace op_plugin
+} // namespace acl_op

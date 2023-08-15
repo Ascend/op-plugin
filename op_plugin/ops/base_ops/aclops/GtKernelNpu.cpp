@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -28,8 +28,8 @@ at::Tensor& gt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
   at::Tensor self_cast = self;
   at::Tensor other_cast = other;
   if (self.dtype() == at::ScalarType::Bool || other.dtype() == at::ScalarType::Bool) {
-    self_cast = op_plugin::npu_dtype_cast(self, at::ScalarType::Float);
-    other_cast = op_plugin::npu_dtype_cast(other, at::ScalarType::Float);
+    self_cast = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    other_cast = acl_op::npu_dtype_cast(other, at::ScalarType::Float);
   }
 
   at_npu::native::OpCommand cmd;
@@ -46,7 +46,7 @@ at::Tensor& gt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
 at::Tensor& gt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::Scalar other) {
   at::Tensor self_cast = self;
   if (self.dtype() == at::ScalarType::Bool) {
-    self_cast = op_plugin::npu_dtype_cast(self, at::ScalarType::Float);
+    self_cast = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
   }
 
   at_npu::native::OpCommand cmd;
@@ -106,9 +106,9 @@ at::Tensor& gt_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 
 at::Tensor gt(const at::Tensor& self, const at::Tensor& other) {
   if (npu_preparation::IsCPUScalar(other)) {
-    return op_plugin::gt(self, other.item());
+    return acl_op::gt(self, other.item());
   } else if (npu_preparation::IsCPUScalar(self)) {
-    return op_plugin::lt(other, self.item());
+    return acl_op::lt(other, self.item());
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
@@ -141,7 +141,7 @@ at::Tensor gt(const at::Tensor& self, const at::Scalar& other) {
 
 at::Tensor& gt_(at::Tensor& self, const at::Tensor& other) {
   if (npu_preparation::IsCPUScalar(other)) {
-    return op_plugin::gt_(self, other.item());
+    return acl_op::gt_(self, other.item());
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
@@ -190,4 +190,4 @@ at::Tensor& gt_(at::Tensor& self, const at::Scalar& other) {
   self.copy_(result);
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

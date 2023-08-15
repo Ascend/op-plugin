@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -78,8 +78,8 @@ at::Tensor& renorm_out_nocheck(
   if(ori_type == c10::ScalarType::Half) {
     at::Tensor self_no_name = self.rename(c10::nullopt);
     at::Tensor result_no_name = result.rename(c10::nullopt);
-    self_no_name = op_plugin::npu_dtype_cast(self_no_name, c10::ScalarType::Float);
-    result_no_name = op_plugin::npu_dtype_cast(result_no_name, c10::ScalarType::Float);
+    self_no_name = acl_op::npu_dtype_cast(self_no_name, c10::ScalarType::Float);
+    result_no_name = acl_op::npu_dtype_cast(result_no_name, c10::ScalarType::Float);
     renorm_compute(
         result_bak,
         self_no_name,
@@ -87,9 +87,9 @@ at::Tensor& renorm_out_nocheck(
         dim,
         maxnorm);
 
-    at::Tensor result_broadcast = op_plugin::npu_broadcast(result_bak, self.sizes());
+    at::Tensor result_broadcast = acl_op::npu_broadcast(result_bak, self.sizes());
     at::mul_out(result_no_name, result_broadcast, self_no_name);
-    op_plugin::npu_dtype_cast_(result, result_no_name);
+    acl_op::npu_dtype_cast_(result, result_no_name);
   } else {
     renorm_compute(
         result_bak,
@@ -98,7 +98,7 @@ at::Tensor& renorm_out_nocheck(
         dim,
         maxnorm);
 
-    at::Tensor result_broadcast = op_plugin::npu_broadcast(result_bak, self.sizes());
+    at::Tensor result_broadcast = acl_op::npu_broadcast(result_bak, self.sizes());
     at::mul_out(result, result_broadcast, self);
   }
   return result;
@@ -134,6 +134,6 @@ at::Tensor renorm(const at::Tensor& self, const at::Scalar& p, int64_t dim, cons
 }
 
 at::Tensor& renorm_(at::Tensor& self, const at::Scalar& p, int64_t dim, const at::Scalar& maxnorm) {
-    return op_plugin::renorm_out(self, p, dim, maxnorm, self);
+    return acl_op::renorm_out(self, p, dim, maxnorm, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

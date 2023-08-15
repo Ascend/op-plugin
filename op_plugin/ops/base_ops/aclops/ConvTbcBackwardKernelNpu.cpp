@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 std::tuple<at::Tensor, at::Tensor, at::Tensor> conv_tbc_backward(
     const at::Tensor& self,
     const at::Tensor& input,
     const at::Tensor& weight,
     const at::Tensor& bias,
     int64_t pad) {
-  auto output = op_plugin::npu_conv2d_backward(
+  auto output = acl_op::npu_conv2d_backward(
       input.permute({1, 2, 0}).unsqueeze(2),
       self.permute({1, 2, 0}).unsqueeze(2),
       weight.permute({2, 1, 0}).unsqueeze(2),
@@ -38,4 +38,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> conv_tbc_backward(
       std::move((std::get<1>(output)).squeeze(2).permute({2, 1, 0})),
       std::move(std::get<2>(output)));
 }
-} // namespace op_plugin
+} // namespace acl_op

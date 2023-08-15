@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 namespace {
 // c = a @ b, then
 // a_grad = c_grad @ b^H
@@ -76,8 +76,8 @@ std::tuple<at::Tensor, at::Tensor> npu_matmul_backward(
       grad_other = unfolded_grad_T.mm(dim_self == 1 ? self.unsqueeze(0) : self).view(size_other_T).transpose(-1, -2);
     }
   } else {
-    grad_self = mask[0] ? op_plugin::matmul(grad, other.transpose(-1, -2)) : grad_self;
-    grad_other = mask[1] ? op_plugin::matmul(self.transpose(-1, -2), grad): grad_other;
+    grad_self = mask[0] ? acl_op::matmul(grad, other.transpose(-1, -2)) : grad_self;
+    grad_other = mask[1] ? acl_op::matmul(self.transpose(-1, -2), grad): grad_other;
   }
 
   return std::make_tuple(grad_self, grad_other);
@@ -112,4 +112,4 @@ std::tuple<at::Tensor, at::Tensor> matmul_backward(
   npu_matmul_backward(grad, self, other, mask, grad_self, grad_other);
   return std::make_tuple(grad_self, grad_other);
 }
-} // namespace op_plugin
+} // namespace acl_op

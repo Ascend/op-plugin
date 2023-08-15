@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 bool equal(const at::Tensor& self, const at::Tensor& other) {
@@ -46,4 +46,4 @@ bool equal(const at::Tensor& self, const at::Tensor& other) {
 
   return result.item().to<bool>();
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -57,13 +57,13 @@ at::Tensor& npu_sort_v2_out(
       perm.emplace_back(i);
     }
     std::swap(perm[dim], perm[last_dim]);
-    at::Tensor transpose_self = op_plugin::npu_transpose(self, perm, true);
+    at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
 
     auto output_size = op_infer::transpose_npu_output_size(result, perm);
     at::Tensor transpose_result = npu_preparation::ApplyTensor(result, output_size);
 
     sort_without_indices_out_nocheck(transpose_result, transpose_self, last_dim, descending);
-    op_plugin::npu_transpose_out(transpose_result, perm, true, result);
+    acl_op::npu_transpose_out(transpose_result, perm, true, result);
   } else {
     if (!npu_utils::check_match(&result)) {
       at::Tensor contiguous_result = npu_utils::format_contiguous(result);
@@ -92,17 +92,17 @@ at::Tensor npu_sort_v2(
       perm.emplace_back(i);
     }
     std::swap(perm[dim], perm[last_dim]);
-    at::Tensor transpose_self = op_plugin::npu_transpose(self, perm, true);
+    at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
 
     auto output_size = op_infer::transpose_npu_output_size(result, perm);
     at::Tensor transpose_result = npu_preparation::ApplyTensor(result, output_size);
 
     sort_without_indices_out_nocheck(transpose_result, transpose_self, last_dim, descending);
-    op_plugin::npu_transpose_out(transpose_result, perm, true, result);
+    acl_op::npu_transpose_out(transpose_result, perm, true, result);
   } else {
     sort_without_indices_out_nocheck(result, self, dim, descending);
   }
 
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

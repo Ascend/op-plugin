@@ -15,10 +15,10 @@
 
 #include <ATen/native/Pool.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -225,4 +225,4 @@ at::Tensor avg_pool3d_backward(
   return output;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

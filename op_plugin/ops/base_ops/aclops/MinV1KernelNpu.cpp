@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::Function;
 using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -74,7 +74,7 @@ at::Tensor npu_min_backward(
     new_grad = grad.squeeze(dim);
     new_indices = indices.squeeze(dim);
   }
-  auto grad_input = op_plugin::npu_scatter(
+  auto grad_input = acl_op::npu_scatter(
       at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
   return grad_input;
 }
@@ -99,7 +99,7 @@ public:
     auto size = ctx->saved_data["size"].toIntVector();
     auto saved = ctx->get_saved_variables();
     auto indices = saved[0];
-    at::Tensor result = op_plugin::npu_min_backward(grad_outputs[0], dim, indices, size, keepdim);
+    at::Tensor result = acl_op::npu_min_backward(grad_outputs[0], dim, indices, size, keepdim);
     std::vector<at::Tensor> output = {result, at::Tensor(), at::Tensor()};
     return output;
   }
@@ -110,4 +110,4 @@ std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, int64_t dim, 
   std::tuple<at::Tensor, at::Tensor> output(result[0], result[1]);
   return output;
 }
-} // namespace op_plugin
+} // namespace acl_op

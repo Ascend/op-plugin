@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -47,7 +47,7 @@ at::Tensor binary_cross_entropy_with_logits_nocheck(
   if (weight.defined()) {
     weight_tensor = npu_utils::format_contiguous(weight);
     weight_tensor = (weight.scalar_type() != self.scalar_type()) ?
-        op_plugin::npu_dtype_cast(weight_tensor, self.scalar_type()) : weight_tensor;
+        acl_op::npu_dtype_cast(weight_tensor, self.scalar_type()) : weight_tensor;
   } else {
     weight_tensor = at::ones(self.sizes(), self.options());
   }
@@ -56,12 +56,12 @@ at::Tensor binary_cross_entropy_with_logits_nocheck(
   if (pos_weight.defined()) {
     pos_weight_tensor = npu_utils::format_contiguous(pos_weight);
     pos_weight_tensor = (pos_weight_tensor.scalar_type() != self.scalar_type()) ?
-        op_plugin::npu_dtype_cast(pos_weight_tensor, self.scalar_type()) : pos_weight_tensor;
+        acl_op::npu_dtype_cast(pos_weight_tensor, self.scalar_type()) : pos_weight_tensor;
   } else {
     pos_weight_tensor = at::ones(self.sizes(), self.options());
   }
 
-  string reduction_str = op_plugin::utils::get_reduction_str(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("SigmoidCrossEntropyWithLogitsV2")
       .Input(self.to(target.dtype()))
@@ -87,7 +87,7 @@ at::Tensor binary_cross_entropy_with_logits_backward(
   if (weight.defined()) {
     weight_tensor = npu_utils::format_contiguous(weight);
     weight_tensor = (weight_tensor.scalar_type() != self.scalar_type()) ?
-        op_plugin::npu_dtype_cast(weight_tensor, self.scalar_type()) : weight_tensor;
+        acl_op::npu_dtype_cast(weight_tensor, self.scalar_type()) : weight_tensor;
   } else {
     weight_tensor = at::ones(self.sizes(), self.options());
   }
@@ -96,12 +96,12 @@ at::Tensor binary_cross_entropy_with_logits_backward(
   if (pos_weight.defined()) {
     pos_weight_tensor = npu_utils::format_contiguous(pos_weight);
     pos_weight_tensor = (pos_weight_tensor.scalar_type() != self.scalar_type()) ?
-        op_plugin::npu_dtype_cast(pos_weight_tensor, self.scalar_type()) : pos_weight_tensor;
+        acl_op::npu_dtype_cast(pos_weight_tensor, self.scalar_type()) : pos_weight_tensor;
   } else {
     pos_weight_tensor = at::ones(self.sizes(), self.options());
   }
 
-  at::Tensor dout_tensor = op_plugin::npu_broadcast(grad_output, self.sizes());
+  at::Tensor dout_tensor = acl_op::npu_broadcast(grad_output, self.sizes());
   std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("SigmoidCrossEntropyWithLogitsGradV2")
@@ -155,4 +155,4 @@ at::Tensor binary_cross_entropy_with_logits(
     int64_t reduction) {
     return NPUBinaryCrossEntropyWithLogitsFunction::apply(self, target, weight_opt, pos_weight_opt, reduction);
 }
-} // namespace op_plugin
+} // namespace acl_op

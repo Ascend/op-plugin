@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -50,7 +50,7 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p) {
     auto output_size = op_infer::pdist_npu_output_size(self, p_float);
     result = npu_preparation::ApplyTensor(self, output_size);
     if (self.size(1) == 0) {
-      op_plugin::fill_(result, 0);
+      acl_op::fill_(result, 0);
     } else {
       pdist_out_npu_nocheck(result, self, p_float);
     }
@@ -66,4 +66,4 @@ at::Tensor pdist(const at::Tensor& self, double p) {
 
   return at::_pdist_forward(self, p);
 }
-} // namespace op_plugin
+} // namespace acl_op

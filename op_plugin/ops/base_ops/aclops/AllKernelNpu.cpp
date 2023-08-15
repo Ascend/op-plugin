@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -42,10 +42,10 @@ at::Tensor& all_out_nocheck(
     c10::SmallVector<int64_t, N> dim_list,
     bool keepdim) {
   at::Tensor self_cast = (self.scalar_type() == at::ScalarType::Bool) ?
-      self : op_plugin::npu_dtype_cast(self, at::ScalarType::Bool);
+      self : acl_op::npu_dtype_cast(self, at::ScalarType::Bool);
   bool result_is_bool = (result.scalar_type() == at::ScalarType::Bool);
   at::Tensor result_cast = result_is_bool ?
-      result : op_plugin::npu_dtype_cast(result, at::ScalarType::Bool);
+      result : acl_op::npu_dtype_cast(result, at::ScalarType::Bool);
 
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result_cast = npu_utils::format_contiguous(result_cast);
@@ -56,7 +56,7 @@ at::Tensor& all_out_nocheck(
   }
 
   if (!result_is_bool) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result.scalar_type());
+    result_cast = acl_op::npu_dtype_cast(result_cast, result.scalar_type());
     result.copy_(result_cast);
   }
   return result;
@@ -98,7 +98,7 @@ at::Tensor& all_out(const at::Tensor& self, at::Tensor& result) {
 
 at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
   at::Tensor self_cast = self.scalar_type() == at::ScalarType::Bool ?
-      self : op_plugin::npu_dtype_cast(self, at::ScalarType::Bool);
+      self : acl_op::npu_dtype_cast(self, at::ScalarType::Bool);
 
   if (self.dim() != 0) {
     TORCH_CHECK((dim >= -(self.dim()) && dim < self.dim()),
@@ -114,7 +114,7 @@ at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
         output_size,
         self.options().dtype(at::kBool),
         self);
-    op_plugin::fill_(result, 1);
+    acl_op::fill_(result, 1);
     return result;
   }
   at::IntArrayRef dims(dim);
@@ -126,10 +126,10 @@ at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
 
 at::Tensor all(const at::Tensor& self) {
   at::Tensor self_cast = self.scalar_type() == at::ScalarType::Bool ?
-      self : op_plugin::npu_dtype_cast(self, at::ScalarType::Bool);
+      self : acl_op::npu_dtype_cast(self, at::ScalarType::Bool);
   if (self.numel() == 0) {
     at::Tensor result = npu_preparation::ApplyTensor({}, self.options().dtype(at::kBool), self);
-    op_plugin::fill_(result, 1);
+    acl_op::fill_(result, 1);
     return result;
   }
 
@@ -143,4 +143,4 @@ at::Tensor all(const at::Tensor& self) {
       false);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

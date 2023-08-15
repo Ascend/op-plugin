@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -31,14 +31,14 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_gather_stats_update_npu_impl(
     double momentum,
     double eps,
     const at::Tensor& counts) {
-  at::Tensor counts_cp = counts.scalar_type() == at::kInt ? counts : op_plugin::npu_dtype_cast(counts, at::kInt);
+  at::Tensor counts_cp = counts.scalar_type() == at::kInt ? counts : acl_op::npu_dtype_cast(counts, at::kInt);
 
   auto running_mean_dtype = running_mean.scalar_type();
-  at::Tensor running_mean_ = op_plugin::npu_dtype_cast(
+  at::Tensor running_mean_ = acl_op::npu_dtype_cast(
       at_npu::native::NPUNativeFunctions::npu_format_cast(
           (running_mean.defined() ? running_mean : at::zeros({self.size(1)}, sum.options())), ACL_FORMAT_ND),
       sum.scalar_type());
-  at::Tensor running_var_ = op_plugin::npu_dtype_cast(
+  at::Tensor running_var_ = acl_op::npu_dtype_cast(
       at_npu::native::NPUNativeFunctions::npu_format_cast(
           (running_var.defined() ? running_var : at::ones({self.size(1)}, sum.options())), ACL_FORMAT_ND),
       sum.scalar_type());
@@ -60,8 +60,8 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_gather_stats_update_npu_impl(
 
   if (running_mean.defined()) {
     if (running_mean_.scalar_type() != running_mean_dtype) {
-      running_mean_ = op_plugin::npu_dtype_cast(running_mean_, running_mean_dtype);
-      running_var_ = op_plugin::npu_dtype_cast(running_var_, running_mean_dtype);
+      running_mean_ = acl_op::npu_dtype_cast(running_mean_, running_mean_dtype);
+      running_var_ = acl_op::npu_dtype_cast(running_var_, running_mean_dtype);
     }
     running_mean.copy_(running_mean_);
     running_var.copy_(running_var_);
@@ -91,4 +91,4 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_update(
       running_mean, running_var, momentum, eps, counts);
   return std::make_tuple(mean_all, invstd_all);
 }
-} // namespace op_plugin
+} // namespace acl_op

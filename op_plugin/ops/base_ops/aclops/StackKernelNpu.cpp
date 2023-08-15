@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
 
-namespace op_plugin {
+namespace acl_op {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
@@ -102,4 +102,4 @@ at::Tensor stack(at::TensorList tensors, int64_t dim) {
 
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

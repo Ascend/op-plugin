@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::vector<at::Tensor> npu_fused_attention_qkv_grad(
@@ -68,4 +68,4 @@ std::vector<at::Tensor> npu_fused_attention_qkv_grad(
       grad_hidden_states, grad_w_query, grad_w_key, grad_w_value, grad_b_query, grad_b_key, grad_b_value};
   return results;
 }
-} // namespace op_plugin
+} // namespace acl_op

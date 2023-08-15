@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
-namespace op_plugin {
+namespace acl_op {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 
 namespace{
@@ -52,4 +52,4 @@ void npu_enque_tensor(
       .Attr("channel_name", channel_name)
       .Run();
 }
-} // namespace op_plugin
+} // namespace acl_op

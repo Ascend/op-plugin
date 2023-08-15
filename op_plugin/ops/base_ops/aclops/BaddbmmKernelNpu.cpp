@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -44,9 +44,9 @@ at::Tensor& baddbmm_nocheck(
       .Attr("adj_x2", is_mat2_t)
       .Run();
 
-  at::Tensor alpha_mul_tensor = op_plugin::mul(batch_matmul_tensor, alpha);
-  at::Tensor beta_mul_tensor = op_plugin::mul(self, beta);
-  op_plugin::add_out(alpha_mul_tensor, beta_mul_tensor, 1, result);
+  at::Tensor alpha_mul_tensor = acl_op::mul(batch_matmul_tensor, alpha);
+  at::Tensor beta_mul_tensor = acl_op::mul(self, beta);
+  acl_op::add_out(alpha_mul_tensor, beta_mul_tensor, 1, result);
   return result;
 }
 } // namespace
@@ -89,6 +89,6 @@ at::Tensor& baddbmm_(
     const at::Tensor& tensor2,
     const at::Scalar& beta,
     const at::Scalar& alpha) {
-  return op_plugin::baddbmm_out(self, tensor1, tensor2, beta, alpha, self);
+  return acl_op::baddbmm_out(self, tensor1, tensor2, beta, alpha, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

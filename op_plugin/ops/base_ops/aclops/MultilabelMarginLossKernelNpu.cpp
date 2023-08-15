@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -102,7 +102,7 @@ std::tuple<at::Tensor, at::Tensor> multilabel_margin_loss_forward(
   auto output = npu_preparation::ApplyTensor(self, output_size);
   auto is_target = npu_preparation::ApplyTensor(target);
 
-  op_plugin::multilabel_margin_loss_forward_out(
+  acl_op::multilabel_margin_loss_forward_out(
       self,
       target,
       reduction,
@@ -110,4 +110,4 @@ std::tuple<at::Tensor, at::Tensor> multilabel_margin_loss_forward(
       is_target);
   return std::make_tuple(output, is_target);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 void _cummax_helper(
@@ -39,4 +39,4 @@ void _cummax_helper(
   values.copy_(values_temp);
   indices.copy_(indices_temp);
 }
-} // namespace op_plugin
+} // namespace acl_op

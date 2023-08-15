@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 using npu_utils = at_npu::native::NpuUtils;
@@ -180,7 +180,7 @@ at::Tensor& normal_(
     double mean,
     double std,
     c10::optional<at::Generator> generator) {
-  op_plugin::normal_out(mean, std, self.sizes(), generator, self);
+  acl_op::normal_out(mean, std, self.sizes(), generator, self);
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op
