@@ -22,7 +22,7 @@ using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& muls_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar other) {
+at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar& other) {
   auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
   if (!other.isFloatingPoint()) {
     unified_result.common_type = self.scalar_type();
@@ -42,9 +42,9 @@ at::Tensor& muls_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, con
 
 at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
   if (npu_preparation::IsCPUScalar(other)) {
-    muls_out_npu_nocheck(result, self, other.item());
+    mul_out_npu_nocheck(result, self, other.item());
   } else if (npu_preparation::IsCPUScalar(self)) {
-    muls_out_npu_nocheck(result, other, self.item());
+    mul_out_npu_nocheck(result, other, self.item());
   } else {
     auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
     at_npu::native::OpCommand cmd;
@@ -54,39 +54,35 @@ at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, cons
         .Input(other)
         .Output(result)
         .Run();
+    return result;
   }
-  return result;
-}
-
-at::Tensor mul_dest_output(const at::Tensor& self, const at::Tensor& other) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
-  return is_self_wrapped ? other : self;
 }
 } // namespace
 
 at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  at::Tensor output_tensor = mul_dest_output(self, other);
-  auto high_type = output_tensor.scalar_type();
+  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self) || npu_preparation::IsCPUScalar(self);
+  at::Tensor output_tensor = is_self_wrapped ? other : self;
   auto result_type = result.scalar_type();
-  TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
-      " can't be cast to the desired output type ", result_type);
-
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   npu_preparation::CheckOut(
       {self, other},
       result,
-      result,
+      calcu_op_util::GetTensorNpuFormat(output_tensor),
+      result_type,
       output_size);
-  at::Tensor self_cast = self;
-  at::Tensor other_cast = other;
-  if (self.dtype() == at::kBool && other.dtype() == at::kBool) {
-    self_cast = op_plugin::npu_dtype_cast(self, at::kFloat);
-    other_cast = op_plugin::npu_dtype_cast(other, at::kFloat);
+
+  auto calculate_type = at::native::result_type(self, other);
+  TORCH_CHECK(canCast(calculate_type, result_type),
+      "result type ", calculate_type, " can't be cast to the desired output type ", result_type);
+
+  if (calculate_type == at::kBool) {
+    calculate_type = at::kFloat;
   }
+  at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
+  at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
-  bool result_is_cast = (result.scalar_type() != self.scalar_type());
-  at::Tensor result_cast = result_is_cast ? op_plugin::npu_dtype_cast(result, self.scalar_type()) : result;
-
+  at::Tensor result_cast = (result_type == calculate_type) ? result :
+      op_plugin::npu_dtype_cast(result, calculate_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     mul_out_npu_nocheck(contiguous_result, self_cast, other_cast);
@@ -95,75 +91,51 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
     mul_out_npu_nocheck(result_cast, self_cast, other_cast);
   }
 
-  if (result_is_cast) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result.scalar_type());
+  if (result_type != calculate_type) {
+    result_cast = op_plugin::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
-  return result;
 }
 
 at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
-  at::Tensor self_cast = self;
-  at::Tensor other_cast = other;
-  bool self_other_is_bool =
-      (self.dtype() == c10::ScalarType::Bool && other.dtype() == c10::ScalarType::Bool);
-  if (self_other_is_bool) {
-    self_cast = op_plugin::npu_dtype_cast(self, at::kFloat);
-    other_cast = op_plugin::npu_dtype_cast(other, at::kFloat);
+  auto calculate_type = at::native::result_type(self, other);
+  bool out_is_bool = (calculate_type == at::kBool);
+  if (out_is_bool) {
+    calculate_type = at::kFloat;
   }
 
-  at::Tensor output_tensor = mul_dest_output(self_cast, other_cast);
+  at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
+  at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
+
+  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self_cast) || npu_preparation::IsCPUScalar(self_cast);
+  at::Tensor output_tensor = is_self_wrapped ? other_cast : self_cast;
   auto output_size = op_infer::broadcast_ops_npu_output_size(self_cast, other_cast);
-  at::Tensor result = npu_preparation::ApplyTensor(output_tensor, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
 
   mul_out_npu_nocheck(result, self_cast, other_cast);
-
-  if (self_other_is_bool) {
+  if (out_is_bool) {
     result = op_plugin::npu_dtype_cast(result, at::kBool);
   }
-
   return result;
 }
 
 at::Tensor mul(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  muls_out_npu_nocheck(result, self, other);
+  at::Tensor result = npu_preparation::apply_tensor(self);
+  mul_out_npu_nocheck(result, self, other);
   return result;
 }
 
 at::Tensor& mul_(at::Tensor& self, const at::Tensor& other) {
-  TORCH_CHECK(torch_npu::utils::is_npu(self), "input self must be NPU-Tensor");
-  npu_preparation::CheckMemory({self, other}, {self});
-
-  at::Tensor self_dtype_cast =
-      (self.scalar_type() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kFloat) : self;
-  at::Tensor other_dtype_cast =
-      (other.scalar_type() == at::kBool) ? op_plugin::npu_dtype_cast(other, at::kFloat) : other;
-
-  if (!npu_utils::check_match(&self_dtype_cast)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self_dtype_cast);
-    mul_out_npu_nocheck(contiguous_self, contiguous_self, other_dtype_cast);
-    npu_utils::format_fresh_view(self_dtype_cast, contiguous_self);
-  } else {
-    mul_out_npu_nocheck(self_dtype_cast, self_dtype_cast, other_dtype_cast);
-  }
-
-  if (self_dtype_cast.scalar_type() != self.scalar_type()) {
-    self_dtype_cast = op_plugin::npu_dtype_cast(self_dtype_cast, self.scalar_type());
-    self.copy_(self_dtype_cast);
-  } else {
-    self = self_dtype_cast;
-  }
-  return self;
+  return op_plugin::mul_out(self, other, self);
 }
 
 at::Tensor& mul_(at::Tensor& self, const at::Scalar& other) {
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    muls_out_npu_nocheck(contiguous_self, contiguous_self, other);
+    mul_out_npu_nocheck(contiguous_self, contiguous_self, other);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    muls_out_npu_nocheck(self, self, other);
+    mul_out_npu_nocheck(self, self, other);
   }
   return self;
 }

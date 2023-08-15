@@ -77,26 +77,25 @@ at::ScalarType get_cal_type(const at::ScalarType high_type) {
 } // namespace
 
 at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  at::ScalarType high_type = at::native::result_type(self, other);
+  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self) || npu_preparation::IsCPUScalar(self);
+  at::Tensor output_tensor = is_self_wrapped ? other : self;
   at::ScalarType result_type = result.scalar_type();
+  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+
+  npu_preparation::CheckOut(
+      {self, other},
+      result,
+      calcu_op_util::GetTensorNpuFormat(output_tensor),
+      result_type,
+      output_size);
+
+  at::ScalarType high_type = at::native::result_type(self, other);
   TORCH_CHECK(canCast(high_type, result_type),
       "result type ", high_type, " can't be cast to the desired output type ", result_type);
 
   at::ScalarType cal_type = get_cal_type(high_type);
   at::Tensor self_cast = self.scalar_type() != cal_type ? self.to(cal_type) : self;
   at::Tensor other_cast = other.scalar_type() != cal_type ? other.to(cal_type) : other;
-
-  bool is_self_wrapped =
-      calcu_op_util::IsScalarWrappedToTensor(self_cast) || npu_preparation::IsCPUScalar(self_cast);
-  at::Tensor output_tensor = is_self_wrapped ? other_cast : self_cast;
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self_cast, other_cast);
-
-  npu_preparation::CheckOut(
-      {self_cast, other_cast},
-      result,
-      calcu_op_util::GetTensorNpuFormat(output_tensor),
-      result_type,
-      output_size);
 
   bool result_type_is_cal_type = result_type == cal_type;
   at::Tensor result_cast = result_type_is_cal_type ? result : op_plugin::npu_dtype_cast(result, cal_type);
