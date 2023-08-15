@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/OpAPIInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/OpInterface.h"
 
 namespace ${namespace} {

@@ -249,7 +249,7 @@ def gen_return(
     if (at_npu::native::env::CheckJitDisable() && at_npu::native::FormatHelper::IsOpInputBaseFormat(input)) {{
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
-        return acl_ops::{impl_name}({args_exprs_str});
+        return acl_op::{impl_name}({args_exprs_str});
     }}
 }}
 """
