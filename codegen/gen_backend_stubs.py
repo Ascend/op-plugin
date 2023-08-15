@@ -41,7 +41,7 @@ def main() -> None:
         },
     )
     fm.write_with_template(
-        "OpAPIInterface.h",
+        "OpApiInterface.h",
         "Interface.h",
         lambda: {
             "namespace": "op_api",
