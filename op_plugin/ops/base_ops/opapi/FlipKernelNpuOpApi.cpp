@@ -1,4 +1,6 @@
-// Copyright (c) 2023, Huawei Technologies.All rights reserved.
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2023, Facebook CORPORATION.
+// All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +16,15 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
-#include "op_plugin/OpInterface.h"
-#include "torch_npu/csrc/framework/interface/EnvVariables.h"
-#include "torch_npu/csrc/framework/FormatHelper.h"
+#include "op_plugin/utils/op_api_common.h"
 
-namespace ${namespace} {
-${declarations}
-}  // namespace acl_op
+namespace op_api {
+using npu_preparation = at_npu::native::OpPreparation;
+
+at::Tensor flip(const at::Tensor& self, at::IntArrayRef dims) {
+  DO_COMPATIBILITY(aclnnFlip, acl_op::flip(self, dims));
+  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+  EXEC_NPU_CMD(aclnnFlip, self, dims, result);
+  return result;
+}
+} // namespace op_api
