@@ -45,8 +45,10 @@ def native_function_manager(g: Union[NativeFunctionsGroup, NativeFunction]) -> I
 
     # print("f", f['func'])
     with context(lambda: f'in native_functions.yaml func:\n  {f.func}'):
-        # with local.parametrize(new_use_const_ref_for_mutable_tensors=f.use_const_ref_for_mutable_tensors):
-        with local.parametrize(new_use_const_ref_for_mutable_tensors=False):
+        with local.parametrize(
+            use_const_ref_for_mutable_tensors=f.use_const_ref_for_mutable_tensors,
+            use_ilistref_for_tensor_lists=f.part_of_structured_group,
+        ):
             yield
 
 # Given a function that operates on NativeFunction, wrap it into a new function

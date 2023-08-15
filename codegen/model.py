@@ -422,7 +422,7 @@ class NativeFunction:
     impl_ns: Optional[str]
     # Whether or not to generate mutable tensor arguments like regular
     # ones
-    # use_const_ref_for_mutable_tensors: bool
+    use_const_ref_for_mutable_tensors: bool
 
     # # Whether or not to omit automatic generation of a DeviceGuard
     # device_guard: bool
@@ -474,11 +474,11 @@ class NativeFunction:
     # # delegate to the out function using the structured_delegate keyword.
     # # Every structured kernel must have at least an out and a functional
     # # variant.
-    # structured: bool
+    structured: bool
 
     # # Whether or not this non-out function is a structured kernel, defined
     # # in terms of the out kernel referenced by the string here.
-    # structured_delegate: Optional["OperatorName"]
+    structured_delegate: Optional["OperatorName"]
 
     # # Only valid for structured kernels.  Specifies alternative of what
     # # to inherit from when defining the meta class for the structured
@@ -548,12 +548,18 @@ class NativeFunction:
         
         impl_name = e.pop("impl_name", None)
         impl_ns = e.pop("impl_ns", "").split(', ')
+        use_const_ref_for_mutable_tensors = e.pop("use_const_ref_for_mutable_tensors", False)
+        structured = e.pop("structured", False)
+        structured_delegate = e.pop("structured_delegate", None)
 
         return (
             NativeFunction(
                 func=func,
                 impl_name=impl_name,
                 impl_ns=impl_ns,
+                use_const_ref_for_mutable_tensors=use_const_ref_for_mutable_tensors,
+                structured=structured,
+                structured_delegate=structured_delegate,
             ),
             None,
         )
