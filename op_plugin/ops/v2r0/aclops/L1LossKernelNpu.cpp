@@ -22,14 +22,13 @@ namespace op_plugin {
 using torch::autograd::AutogradContext;
 using tensor_list = std::vector<at::Tensor>;
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::calcu_op_util;
 
 at::Tensor& l1_loss_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& target,
     const int64_t reduction) {
-  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("LpLoss")
       .Input(self)
@@ -60,7 +59,7 @@ at::Tensor& l1_loss_backward_out_nocheck(
     const at::Tensor& self,
     const at::Tensor& target,
     const int64_t reduction) {
-  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("L1LossGrad")
       .Input(grad_output)

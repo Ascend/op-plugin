@@ -17,12 +17,12 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-at::Tensor& NPUNativeFunctions::index_add_(
+at::Tensor& index_add_(
     at::Tensor& self,
-    int64_t dim, 
+    int64_t dim,
     const at::Tensor& index,
     const at::Tensor& source,
-    const at::Scalar& alpha)  {
+    const at::Scalar& alpha) {
   return op_plugin::index_add_out(self, dim, index, source, alpha, self);
 }
 } // namespace op_plugin

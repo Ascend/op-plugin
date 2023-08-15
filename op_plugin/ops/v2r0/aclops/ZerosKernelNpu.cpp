@@ -28,6 +28,7 @@ at::Tensor zeros(
 
 at::Tensor zeros(
     at::IntArrayRef size,
+    c10::optional<at::DimnameList> names,
     c10::optional<at::ScalarType> dtype_opt,
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,

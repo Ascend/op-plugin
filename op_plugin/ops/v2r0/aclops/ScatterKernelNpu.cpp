@@ -18,6 +18,8 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
+using npu_preparation = at_npu::native::OpPreparation;
+
 at::Tensor scatter(
     const at::Tensor& self,
     int64_t dim,
@@ -53,7 +55,7 @@ at::Tensor& scatter_(
     int64_t dim,
     const at::Tensor& index_ex,
     const at::Scalar& src) {
-  at::Tensor src_tensor = calcu_op_util::CopyScalarToDevice(src, self.scalar_type());
+  at::Tensor src_tensor = at_npu::native::CalcuOpUtil::CopyScalarToDevice(src, self.scalar_type());
   at::Tensor src_tensor_broadcast = op_plugin::npu_broadcast(
       src_tensor, op_infer::array_to_small_vector(index_ex.sizes()));
   scatter_npu_src_impl(self, dim, index_ex, src_tensor_broadcast);

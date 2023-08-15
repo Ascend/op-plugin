@@ -18,7 +18,6 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -31,7 +30,7 @@ int64_t calc_shape_prod(const at::Tensor& self, at::IntArrayRef dim) {
       shape_prod *= self.size(i);
     }
   } else {
-    for(auto i = 0; i < dim.size(); i++) {
+    for (auto i = 0; i < dim.size(); i++) {
       shape_prod *= self.size(dim[i]);
     }
   }
@@ -46,7 +45,7 @@ std::tuple<at::Tensor&, at::Tensor&> std_mean_out_npu_nocheck(
     bool unbiased,
     bool keepdim,
     int64_t correction) {
-  at_npu::native::OpCommandOpCommand cmd1;
+  at_npu::native::OpCommand cmd1;
   cmd1.Name("ReduceMeanD")
       .Input(self)
       .Output(result_mean)
@@ -66,14 +65,14 @@ std::tuple<at::Tensor&, at::Tensor&> std_mean_out_npu_nocheck(
 
   at::Tensor result_mean_copy = result_mean;
   if (result_mean.dim() != 0 && keepdim == false) {
-    auto dimVector = array_to_small_vector(dim);
+    auto dimVector = op_infer::array_to_small_vector(dim);
     std::sort(dimVector.begin(), dimVector.end());
     for (int64_t i = 0; i < dimVector.size(); i++) {
       result_mean_copy = result_mean_copy.unsqueeze(dimVector[i]);
     }
   }
   result_mean_copy = result_mean_copy.expand(self.sizes());
-  at_npu::native::OpCommandOpCommand cmd2;
+  at_npu::native::OpCommand cmd2;
   cmd2.Name("ReduceStdWithMean")
       .Input(self)
       .Input(result_mean_copy)
@@ -112,7 +111,7 @@ at::Tensor& std_out(
     c10::optional<int64_t> correction,
     bool keepdim,
     at::Tensor& result) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   if (dim.has_value()) {
     dims = op_infer::array_to_small_vector(dim.value());
   }
@@ -129,10 +128,12 @@ at::Tensor& std_out(
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    std_mean_out_npu_nocheck(contiguous_result, mean_result, self, dims, correction.has_value() ? true : false, keepdim, real_correction);
+    std_mean_out_npu_nocheck(
+        contiguous_result, mean_result, self, dims, correction.has_value() ? true : false, keepdim, real_correction);
     npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    std_mean_out_npu_nocheck(result, mean_result, self, dims, correction.has_value() ? true : false, keepdim, real_correction);
+    std_mean_out_npu_nocheck(
+        result, mean_result, self, dims, correction.has_value() ? true : false, keepdim, real_correction);
   }
 
   return result;
@@ -147,20 +148,20 @@ at::Tensor& std_out(
   return op_plugin::std_out(self, dimnames_to_positions(self, dim), unbiased, keepdim, result);
 }
 
-std::tuple <at::Tensor, at::Tensor> std_mean(
-    const at::Tensor & self,
+std::tuple<at::Tensor, at::Tensor> std_mean(
+    const at::Tensor& self,
     at::DimnameList dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
   return op_plugin::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
-std::tuple <at::Tensor, at::Tensor> std_mean(
-    const at::Tensor & self,
+std::tuple<at::Tensor, at::Tensor> std_mean(
+    const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   if (dim.has_value()) {
     dims = op_infer::array_to_small_vector(dim.value());
   }
@@ -173,7 +174,7 @@ std::tuple <at::Tensor, at::Tensor> std_mean(
   bool unbiased = true;
   if (correction.has_value()) {
     real_correction = correction.value();
-    unbiased = real_correction !=0;
+    unbiased = real_correction != 0;
   }
   std_mean_out_npu_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
 
@@ -181,7 +182,7 @@ std::tuple <at::Tensor, at::Tensor> std_mean(
 }
 
 at::Tensor std(
-    const at::Tensor & self,
+    const at::Tensor& self,
     at::DimnameList dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
@@ -189,11 +190,11 @@ at::Tensor std(
 }
 
 at::Tensor std(
-    const at::Tensor & self,
+    const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   if (dim.has_value()) {
     dims = op_infer::array_to_small_vector(dim.value());
   }
@@ -207,7 +208,7 @@ at::Tensor std(
   bool unbiased = true;
   if (correction.has_value()) {
     real_correction = correction.value();
-    unbiased = real_correction !=0;
+    unbiased = real_correction != 0;
   }
   std_mean_out_npu_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
   return result1;

@@ -52,7 +52,6 @@ c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(const at::MaterializedITens
   return dst_tensor_list;
 }
 
-
 at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensorListRef& tensors, int64_t dim) {
   if (tensors.size() == 1) {
     return result.copy_(tensors[0].get());
@@ -160,7 +159,7 @@ at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim) {
 
   at::Tensor result = tensors_dim_check ?
       npu_preparation::apply_tensor(input_tensors[0], output_size) :
-      npu_preparation::ApplyTensorWithFormat(input_tensors[0], output_size, ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(input_tensors[0], output_size, ACL_FORMAT_ND);
   cat_output_nocheck(result, materialized, dim);
   return result;
 }
