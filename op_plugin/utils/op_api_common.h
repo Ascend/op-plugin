@@ -23,9 +23,11 @@
 #include <type_traits>
 #include <ATen/Tensor.h>
 #include <acl/acl_base.h>
+#include "op_plugin/utils/KernelNpuOutputSize.h"
+#include "op_plugin/utils/OpConstants.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/core/npu/NPUStream.h"
 #include "torch_npu/csrc/framework/OpCommand.h"
-#include "torch_npu/csrc/framework/utils/CalcuOpUtil.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
@@ -107,7 +109,7 @@ inline aclTensor* ConvertType(const at::Tensor& at_tensor) {
   }
   TORCH_CHECK(torch_npu::utils::is_npu(at_tensor), "only npu tensor is supported");
   at::ScalarType scalar_data_type = at_tensor.scalar_type();
-  aclDataType acl_data_type = at_npu::native::CalcuOpUtil::ConvertToAclDataType(scalar_data_type);
+  aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(scalar_data_type);
   c10::SmallVector<int64_t, 5> storageDims;
   // if acl_data_type is ACL_STRING, storageDims is empty.
   if (acl_data_type != ACL_STRING) {
@@ -130,9 +132,9 @@ inline aclTensor* ConvertType(const at::Tensor& at_tensor) {
       format = ACL_FORMAT_ND;
   }
 
-  if (at_npu::native::CalcuOpUtil::IsScalarWrappedToTensor(at_tensor)) {
-    c10::Scalar expScalar = at_npu::native::CalcuOpUtil::ConvertTensorToScalar(at_tensor);
-    at::Tensor aclInput = at_npu::native::CalcuOpUtil::CopyScalarToDevice(expScalar, scalar_data_type);
+  if (at_npu::native::OpPreparation::is_scalar_wrapped_to_tensor(at_tensor)) {
+    c10::Scalar expScalar = at_tensor.item();
+    at::Tensor aclInput = at_npu::native::OpPreparation::copy_scalar_to_device(expScalar, scalar_data_type);
     return aclCreateTensor(aclInput.sizes().data(), aclInput.sizes().size(), acl_data_type, aclInput.strides().data(),
                            aclInput.storage_offset(), format, storageDims.data(), storageDims.size(),
                            const_cast<void*>(aclInput.storage().data()));
@@ -151,7 +153,7 @@ inline aclScalar* ConvertType(const at::Scalar& at_scalar) {
   }
 
   at::ScalarType scalar_data_type = at_scalar.type();
-  aclDataType acl_data_type = at_npu::native::CalcuOpUtil::ConvertToAclDataType(scalar_data_type);
+  aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(scalar_data_type);
   aclScalar* acl_scalar = nullptr;
   switch (scalar_data_type) {
     case at::ScalarType::Double: {
@@ -251,7 +253,7 @@ inline aclScalar* ConvertType(const c10::optional<at::Scalar>& opt_scalar) {
 }
 
 inline aclDataType ConvertType(const at::ScalarType scalarType) {
-  return at_npu::native::CalcuOpUtil::ConvertToAclDataType(scalarType);
+  return at_npu::native::OpPreparation::convert_to_acl_data_type(scalarType);
 }
 
 template <typename T>
