@@ -23,6 +23,32 @@
 namespace op_plugin {
 using npu_utils = at_npu::native::NpuUtils;
 
+namespace {
+at::Tensor& index_copy_npu_impl(
+    const int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& source,
+    at::Tensor& result) {
+  index_copy_npu_par_check(dim, index, source, result);
+  int64_t num_indices = index.numel();
+  int64_t i;
+  if (result.dim() > 1) {
+    at::Tensor des;
+    at::Tensor src;
+    for (i = 0; i < num_indices; i++) {
+      des = at::native::select(result, dim, index[i].item<int64_t>());
+      src = at::native::select(source, dim, i);
+      at_npu::native::NPUNativeFunctions::copy_(des, src, false);
+    }
+  } else {
+    for (i = 0; i < num_indices; i++) {
+      result[i] = source[index[i].item<int64_t>()];
+    }
+  }
+  return result;
+}
+} // namespace
+
 at::Tensor index_copy(
     const at::Tensor& self,
     const int64_t dim,
