@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
@@ -132,4 +132,4 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_out(
   }
   return std::tie(var, m, v);
 }
-} // namespace op_plugin
+} // namespace acl_op

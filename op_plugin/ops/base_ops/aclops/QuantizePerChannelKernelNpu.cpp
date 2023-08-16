@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -44,8 +44,8 @@ at::Tensor& quantize_per_channel_out_nocheck(
   auto reshape_size = quantize_reshape_size(self, axis);
   at::Tensor scales_reshape = scales.reshape(reshape_size);
   at::Tensor zp_reshape = zero_points.reshape(reshape_size);
-  at::Tensor scales_broadcast = op_plugin::npu_broadcast(scales_reshape, self.sizes());
-  at::Tensor zp_broadcast = op_plugin::npu_broadcast(zp_reshape, self.sizes());
+  at::Tensor scales_broadcast = acl_op::npu_broadcast(scales_reshape, self.sizes());
+  at::Tensor zp_broadcast = acl_op::npu_broadcast(zp_reshape, self.sizes());
   string dtype_str = "torch.qint8";
   if (dtype == at::ScalarType::QUInt8) {
     dtype_str = "torch.quint8";
@@ -88,4 +88,4 @@ at::Tensor quantize_per_channel(
   quantize_per_channel_out_nocheck(result, self, scales, zero_points, axis, dtype);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

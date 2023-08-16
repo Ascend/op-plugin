@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 
@@ -35,7 +35,7 @@ at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdi
       .Output(result)
       .Attr("keep_dims", keepdim_value)
       .Run();
-  result = op_plugin::npu_dtype_cast(result, at::kLong);
+  result = acl_op::npu_dtype_cast(result, at::kLong);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

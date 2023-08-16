@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -31,8 +31,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> unique_consecutive_out_nocheck
     c10::optional<int64_t> dim) {
   at::Tensor self_copy = self;
   if (self.scalar_type() == at::ScalarType::Half) {
-    self_copy = op_plugin::npu_dtype_cast(self, at::ScalarType::Float);
-    output = op_plugin::npu_dtype_cast(output, at::ScalarType::Float);
+    self_copy = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    output = acl_op::npu_dtype_cast(output, at::ScalarType::Float);
   }
   c10::SmallVector<int64_t, N> output_sync_idx = {0, 2};
   at_npu::native::OpCommand cmd;
@@ -49,7 +49,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> unique_consecutive_out_nocheck
   }
   cmd.Run();
   if (self.scalar_type() == at::ScalarType::Half) {
-    output = op_plugin::npu_dtype_cast(output, at::ScalarType::Half);
+    output = acl_op::npu_dtype_cast(output, at::ScalarType::Half);
   }
   return std::tie(output, inverse_indices, counts);
 }
@@ -117,4 +117,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_consecutive(
   return std::tie(output, inverse_indices, counts);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

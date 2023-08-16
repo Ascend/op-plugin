@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -77,4 +77,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(
   rotary_mul_backward_nocheck(dx, dr1, dr2, self, r1, r2, grad);
   return std::tie(dx, dr1, dr2);
 }
-} // namespace op_plugin
+} // namespace acl_op

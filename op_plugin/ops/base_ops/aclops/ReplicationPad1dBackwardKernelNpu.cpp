@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 
 at::Tensor& replication_pad1d_backward_out(
     const at::Tensor& grad_output,
@@ -26,7 +26,7 @@ at::Tensor& replication_pad1d_backward_out(
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
   at::Tensor input_cp = input.unsqueeze(0);
   at::Tensor grad_output_cp = grad_output.unsqueeze(0);
-  op_plugin::replication_pad2d_backward_out(grad_output_cp, input_cp, paddings, grad_input);
+  acl_op::replication_pad2d_backward_out(grad_output_cp, input_cp, paddings, grad_input);
   grad_input.squeeze_(0);
   return grad_input;
 }
@@ -38,9 +38,9 @@ at::Tensor replication_pad1d_backward(
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
   at::Tensor input_cp = input.unsqueeze(0);
   at::Tensor grad_output_cp = grad_output.unsqueeze(0);
-  at::Tensor grad_input = op_plugin::replication_pad2d_backward(grad_output_cp, input_cp, paddings);
+  at::Tensor grad_input = acl_op::replication_pad2d_backward(grad_output_cp, input_cp, paddings);
   grad_input.squeeze_(0);
   return grad_input;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

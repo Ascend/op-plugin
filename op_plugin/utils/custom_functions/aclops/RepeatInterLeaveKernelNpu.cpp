@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -116,8 +116,8 @@ at::Tensor repeat_interleave_common_nocheck(
     self_tensor = self_tensor.transpose(0, real_dim);
   }
 
-  repeats_tensor = op_plugin::npu_dtype_cast(repeats_tensor, at::ScalarType::Int);
-  repeats_tensor = op_plugin::npu_dtype_cast(repeats_tensor, at::ScalarType::Float);
+  repeats_tensor = acl_op::npu_dtype_cast(repeats_tensor, at::ScalarType::Int);
+  repeats_tensor = acl_op::npu_dtype_cast(repeats_tensor, at::ScalarType::Float);
   auto op_infer_output_size = op_infer::repeat_interleave_npu_output_size(self_tensor, repeats_tensor, 0);
 
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(self_tensor, op_infer_output_size, ACL_FORMAT_ND);
@@ -127,4 +127,4 @@ at::Tensor repeat_interleave_common_nocheck(
   }
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -37,7 +37,7 @@ at::Tensor& logspace_out_nocheck(
   int64_t dtype = 0;
   auto result_type = result.scalar_type();
   if (result_type == at::ScalarType::Half) {
-    inputs = op_plugin::npu_dtype_cast(
+    inputs = acl_op::npu_dtype_cast(
         at::arange(0, steps, at::device(torch_npu::utils::get_npu_device_type())),
         at::kHalf);
     dtype = 0;
@@ -99,4 +99,4 @@ at::Tensor logspace(
   at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, options, ACL_FORMAT_ND);
   return logspace_out_nocheck(result, start, end, steps, base);
 }
-} // namespace op_plugin
+} // namespace acl_op

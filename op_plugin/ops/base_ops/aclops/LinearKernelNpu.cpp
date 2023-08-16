@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
@@ -117,4 +117,4 @@ at::Tensor npu_linear(
       at_npu::native::NPUNativeFunctions::npu_format_cast(input, ACL_FORMAT_FRACTAL_NZ);
   return linear_npu_nocheck(input_cast, weight, bias_opt);
 }
-} // namespace op_plugin
+} // namespace acl_op

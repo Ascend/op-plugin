@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -60,7 +60,7 @@ at::Tensor& floor_divide_out_nocheck(at::Tensor& result, const at::Tensor& self,
 
 at::Tensor& check_self_dtype_npu(at::Tensor& self) {
   if (self.dtype() == at::kBool || self.dtype() == at::kInt) {
-    self = op_plugin::npu_dtype_cast(self, at::kFloat);
+    self = acl_op::npu_dtype_cast(self, at::kFloat);
   }
   return self;
 }
@@ -98,7 +98,7 @@ at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at
   at::Tensor other_cast = other.scalar_type() != cal_type ? other.to(cal_type) : other;
 
   bool result_type_is_cal_type = result_type == cal_type;
-  at::Tensor result_cast = result_type_is_cal_type ? result : op_plugin::npu_dtype_cast(result, cal_type);
+  at::Tensor result_cast = result_type_is_cal_type ? result : acl_op::npu_dtype_cast(result, cal_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     floor_divide_out_nocheck(contiguous_result, self_cast, other_cast);
@@ -108,7 +108,7 @@ at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at
   }
 
   if (!result_type_is_cal_type) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result_type);
+    result_cast = acl_op::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
   return result;
@@ -128,7 +128,7 @@ at::Tensor floor_divide(const at::Tensor& self, const at::Tensor& other) {
 
   floor_divide_out_nocheck(result, self_cast, other_cast);
   if (result.scalar_type() != high_type) {
-      result = op_plugin::npu_dtype_cast(result, high_type);
+      result = acl_op::npu_dtype_cast(result, high_type);
   }
   return result;
 }
@@ -144,7 +144,7 @@ at::Tensor floor_divide(const at::Tensor& self, const at::Scalar& other) {
 }
 
 at::Tensor& floor_divide_(at::Tensor& self, const at::Tensor& other) {
-  return op_plugin::floor_divide_out(self, other, self);
+  return acl_op::floor_divide_out(self, other, self);
 }
 
 at::Tensor& floor_divide_(at::Tensor& self, const at::Scalar& other) {
@@ -158,4 +158,4 @@ at::Tensor& floor_divide_(at::Tensor& self, const at::Scalar& other) {
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

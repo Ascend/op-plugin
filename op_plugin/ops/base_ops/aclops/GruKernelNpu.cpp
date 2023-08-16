@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::Function;
 using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -143,14 +143,14 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_bidirec(
   }
   at::Tensor seq_length = npu_preparation::apply_tensor_with_format({}, input.options(), ACL_FORMAT_ND);
 
-  auto results = op_plugin::npu_gru(input, hx.first, fw_weight_input, fw_weight_hidden, fw_bias_input,
+  auto results = acl_op::npu_gru(input, hx.first, fw_weight_input, fw_weight_hidden, fw_bias_input,
       fw_bias_hidden, seq_length, has_biases, num_layers, dropout, train, bidirectional, batch_first);
 
   int64_t num_step = input.size(0);
   at::Tensor fw_output_hy = at::unsqueeze(results[1][num_step - 1], 0);
   at::Tensor fw_output = results[0];
   auto rev_inputs = at::flip(input, {0}); // reverse input;
-  auto rev_results = op_plugin::npu_gru(rev_inputs, hx.second, rev_weight_input, rev_weight_hidden, rev_bias_input,
+  auto rev_results = acl_op::npu_gru(rev_inputs, hx.second, rev_weight_input, rev_weight_hidden, rev_bias_input,
       rev_bias_hidden, seq_length, has_biases, num_layers, dropout, train, bidirectional, batch_first);
 
   at::Tensor rev_output_hy = at::unsqueeze(rev_results[1][num_step - 1], 0);
@@ -186,7 +186,7 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_direc_npu(
   }
 
   at::Tensor seq_length = npu_preparation::apply_tensor_with_format({}, input.options(), ACL_FORMAT_ND);
-  auto results = op_plugin::npu_gru(input, hx, weight_input, weight_hidden, bias_input, bias_hidden,
+  auto results = acl_op::npu_gru(input, hx, weight_input, weight_hidden, bias_input, bias_hidden,
       seq_length, has_biases, num_layers, dropout, train, bidirectional, batch_first);
   int64_t num_step = input.size(0);
   at::Tensor output_hy = at::unsqueeze(results[1][num_step - 1], 0);
@@ -400,7 +400,7 @@ public:
     auto result5 = saved[11];
     auto seq_length = saved[12];
 
-    std::vector<at::Tensor> result = op_plugin::npu_gru_backward(grad_outputs[0], grad_outputs[1],
+    std::vector<at::Tensor> result = acl_op::npu_gru_backward(grad_outputs[0], grad_outputs[1],
         input, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, hx,
         result0, result1, result2, result3, result4, result5);
 
@@ -462,4 +462,4 @@ std::tuple<at::Tensor, at::Tensor> gru(
   std::get<0>(result) = batch_first ? std::get<0>(result).transpose(0, 1) : std::get<0>(result);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

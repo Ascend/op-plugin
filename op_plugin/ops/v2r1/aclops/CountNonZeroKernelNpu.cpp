@@ -15,24 +15,24 @@
 
 #include <ATen/WrapDimUtilsMulti.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 
 at::Tensor count_nonzero(
     const at::Tensor& self,
     c10::IntArrayRef dim) {
-  return op_plugin::sum((self != 0), dim, false, at::ScalarType::Long);
+  return acl_op::sum((self != 0), dim, false, at::ScalarType::Long);
 }
 
 at::Tensor count_nonzero(
     const at::Tensor& self,
     c10::optional<int64_t> dim) {
   if (dim.has_value()) {
-    return op_plugin::count_nonzero(self, at::IntArrayRef{dim.value()});
+    return acl_op::count_nonzero(self, at::IntArrayRef{dim.value()});
   }
-  return op_plugin::count_nonzero(self, at::IntArrayRef{});
+  return acl_op::count_nonzero(self, at::IntArrayRef{});
 }
 
-} // namespace op_plugin
+} // namespace acl_op

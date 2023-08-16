@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor bincount(
@@ -30,21 +30,21 @@ at::Tensor bincount(
   }
 
   auto sizes = static_cast<int64_t>(
-      op_plugin::utils::get_scalar_float_value(op_plugin::max(self).item()));
+      op_plugin::utils::get_scalar_float_value(acl_op::max(self).item()));
   sizes = (sizes < minlength) ? minlength : (sizes + 1);
 
   if (self.dtype() == at::kLong) {
     TORCH_NPU_WARN_ONCE("CANN: Bincount cann't support dtype int64, input will be cast to int32.");
   }
-  auto input = (self.dtype() == at::kInt) ? self : op_plugin::npu_dtype_cast(self, at::kInt);
+  auto input = (self.dtype() == at::kInt) ? self : acl_op::npu_dtype_cast(self, at::kInt);
 
   // weight convert dtype as same as output defined by torch
   auto weight = weights;
   if (!weights.defined()) {
     at::TensorOptions options = input.options();
-    weight = op_plugin::ones(input.sizes(), at::kLong, options.layout(), options.device(), options.pinned_memory());
+    weight = acl_op::ones(input.sizes(), at::kLong, options.layout(), options.device(), options.pinned_memory());
   } else if (!(weights.dtype() == at::kFloat)) {
-    weight = op_plugin::npu_dtype_cast(weights, at::kDouble);
+    weight = acl_op::npu_dtype_cast(weights, at::kDouble);
   }
   auto result = npu_preparation::ApplyTensor(weight, {sizes});
 
@@ -58,4 +58,4 @@ at::Tensor bincount(
 
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

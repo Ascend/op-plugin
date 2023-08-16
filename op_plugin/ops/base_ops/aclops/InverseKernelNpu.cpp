@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -25,11 +25,11 @@ at::Tensor& inverse_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) 
   at::Tensor self_cast = self;
   at::Tensor result_cast = result;
   if(self.scalar_type() == at::kHalf) {
-    self_cast = op_plugin::npu_dtype_cast(self, at::kFloat);
+    self_cast = acl_op::npu_dtype_cast(self, at::kFloat);
   }
 
   if(result.scalar_type() == at::kHalf) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, at::kFloat);
+    result_cast = acl_op::npu_dtype_cast(result_cast, at::kFloat);
   }
 
   at_npu::native::OpCommand cmd;
@@ -65,4 +65,4 @@ at::Tensor inverse(const at::Tensor& self) {
   inverse_out_npu_nocheck(result, self);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

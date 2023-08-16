@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -41,7 +41,7 @@ at::Tensor ones_like(
   auto device = c10::device_or_default(device_opt);
   if (!torch_npu::utils::is_npu(device)) {
     auto result = at::empty_like(self, dtype_opt, layout_opt, device_opt, pin_memory_opt, optional_memory_format);
-    return op_plugin::fill_(result, 1.);
+    return acl_op::fill_(result, 1.);
   }
 
   c10::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
@@ -50,7 +50,7 @@ at::Tensor ones_like(
       .pinned_memory(pin_memory_opt);
   at::Tensor result = npu_preparation::ApplyTensor(self, option);
 
-  return op_plugin::one_(result);
+  return acl_op::one_(result);
 }
 
 at::Tensor& one_(at::Tensor& self) {
@@ -63,4 +63,4 @@ at::Tensor& one_(at::Tensor& self) {
   }
   return self;
 }
-}  // namespace op_plugin
+}  // namespace acl_op

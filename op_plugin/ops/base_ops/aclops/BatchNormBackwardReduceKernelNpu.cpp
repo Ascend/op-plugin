@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -39,13 +39,13 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_backwa
   at::Tensor grad_bias_sum;
 
   at::Tensor grad_out_scalar = grad_out.scalar_type() == at::kFloat ? grad_out :
-      op_plugin::npu_dtype_cast(grad_out, at::kFloat);
+      acl_op::npu_dtype_cast(grad_out, at::kFloat);
   at::Tensor self_scalar = self.scalar_type() == at::kFloat ? self :
-      op_plugin::npu_dtype_cast(self, at::kFloat);
+      acl_op::npu_dtype_cast(self, at::kFloat);
   at::Tensor mean_scalar = mean.scalar_type() == at::kFloat ? mean :
-      op_plugin::npu_dtype_cast(mean, at::kFloat);
+      acl_op::npu_dtype_cast(mean, at::kFloat);
   at::Tensor invstd_scalar = invstd.scalar_type() == at::kFloat ? invstd :
-      op_plugin::npu_dtype_cast(invstd, at::kFloat);
+      acl_op::npu_dtype_cast(invstd, at::kFloat);
 
   c10::SmallVector<int64_t, N> axes;
   int dimN = self_scalar.ndimension();
@@ -134,4 +134,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> batch_norm_backward_r
       grad_out, self, mean, invstd, weight, input_g, weight_g, bias_g, is_fully_fp16);
   return std::tie(sum_dy_val, sum_dy_xmu_val, grad_weight_val, grad_bias_val);
 }
-} // namespace op_plugin
+} // namespace acl_op

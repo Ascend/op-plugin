@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 at::Tensor& logical_and_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar other) {
-  auto self_copy = (self.dtype() == at::kBool) ? self : op_plugin::npu_dtype_cast(self, at::kBool);
+  auto self_copy = (self.dtype() == at::kBool) ? self : acl_op::npu_dtype_cast(self, at::kBool);
   at_npu::native::OpCommand cmd;
   cmd.Name("LogicalAnd")
       .Input(self_copy)
@@ -39,8 +39,8 @@ at::Tensor& logical_and_out_npu_nocheck(at::Tensor& result, const at::Tensor& se
   } else if (other.dim() == 0) {
     logical_and_out_npu_nocheck(result, self, other.item());
   } else {
-    auto self_copy = (self.dtype() == at::kBool) ? self : op_plugin::npu_dtype_cast(self, at::kBool);
-    auto other_copy = (other.dtype() == at::kBool) ? other : op_plugin::npu_dtype_cast(other, at::kBool);
+    auto self_copy = (self.dtype() == at::kBool) ? self : acl_op::npu_dtype_cast(self, at::kBool);
+    auto other_copy = (other.dtype() == at::kBool) ? other : acl_op::npu_dtype_cast(other, at::kBool);
 
     at_npu::native::OpCommand cmd;
     cmd.Name("LogicalAnd")
@@ -67,7 +67,7 @@ at::Tensor& logical_and_out(const at::Tensor& self, const at::Tensor& other, at:
   } else {
     auto result_copy = npu_preparation::ApplyTensorWithSizes(output_size, self.options().dtype(at::kBool));
     logical_and_out_npu_nocheck(result_copy, self, other);
-    result_copy = op_plugin::npu_dtype_cast(result_copy, self.scalar_type());
+    result_copy = acl_op::npu_dtype_cast(result_copy, self.scalar_type());
     npu_utils::format_fresh_view(result, result_copy);
   }
   return result;
@@ -87,6 +87,6 @@ at::Tensor& logical_and_(at::Tensor& self, const at::Tensor& other) {
   TORCH_CHECK(self.dtype() == other.dtype(), "Expected object of scalar type ",
       self.dtype(), " but got scalar type ",
       other.dtype(), " for argument 'other'");
-  return op_plugin::logical_and_out(self, other, self);;
+  return acl_op::logical_and_out(self, other, self);;
 }
-} // namespace op_plugin
+} // namespace acl_op

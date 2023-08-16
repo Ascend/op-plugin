@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -44,7 +44,7 @@ at::Tensor addbmm(
     const at::Scalar& alpha) {
   auto output_size = op_infer::addbmm_npu_output_size(self, batch1, batch2, beta, alpha);
   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
-  op_plugin::addbmm_out(self, batch1, batch2, beta, alpha, result);
+  acl_op::addbmm_out(self, batch1, batch2, beta, alpha, result);
   return result;
 }
 
@@ -57,11 +57,11 @@ at::Tensor& addbmm_(
   npu_preparation::CheckMemory({self, batch1, batch2}, {self});
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    op_plugin::addbmm_out(contiguous_self, batch1, batch2, beta, alpha, contiguous_self);
+    acl_op::addbmm_out(contiguous_self, batch1, batch2, beta, alpha, contiguous_self);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    op_plugin::addbmm_out(self, batch1, batch2, beta, alpha, self);
+    acl_op::addbmm_out(self, batch1, batch2, beta, alpha, self);
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

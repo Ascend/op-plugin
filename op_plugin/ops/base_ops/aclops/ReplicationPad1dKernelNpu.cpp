@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 
 at::Tensor& replication_pad1d_out(
     const at::Tensor& self,
@@ -24,7 +24,7 @@ at::Tensor& replication_pad1d_out(
     at::Tensor& result) {
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
   at::Tensor self_cp = self.unsqueeze(0);
-  op_plugin::replication_pad2d_out(self_cp, paddings, result);
+  acl_op::replication_pad2d_out(self_cp, paddings, result);
   result.squeeze_(0);
   return result;
 }
@@ -32,9 +32,9 @@ at::Tensor& replication_pad1d_out(
 at::Tensor replication_pad1d(const at::Tensor& self, at::IntArrayRef padding) {
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
   at::Tensor self_cp = self.unsqueeze(0);
-  at::Tensor result = op_plugin::replication_pad2d(self_cp, paddings);
+  at::Tensor result = acl_op::replication_pad2d(self_cp, paddings);
   result.squeeze_(0);
   return result;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -157,6 +157,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_layernorm_grad(
     const c10::optional<at::Tensor>& gamma,
     const c10::optional<at::Tensor>& beta) {
   std::array<bool, 3> output_mask = {true, true, true};
-  return op_plugin::native_layer_norm_backward(d_y, X, normalized_shape, mean, variance, gamma, beta, output_mask);
+  return acl_op::native_layer_norm_backward(d_y, X, normalized_shape, mean, variance, gamma, beta, output_mask);
 }
-} // namespace op_plugin
+} // namespace acl_op

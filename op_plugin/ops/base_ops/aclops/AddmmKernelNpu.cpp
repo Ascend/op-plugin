@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -49,7 +49,7 @@ at::Tensor addmm(
      ACL_FORMAT_FRACTAL_NZ : ACL_FORMAT_ND;
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, self.options(), res_format);
 
-  op_plugin::addmm_out(self, mat1, mat2, beta, alpha, result);
+  acl_op::addmm_out(self, mat1, mat2, beta, alpha, result);
   return result;
 }
 
@@ -62,11 +62,11 @@ at::Tensor& addmm_(
   npu_preparation::CheckMemory({self, mat1, mat2}, {self});
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    op_plugin::addmm_out(contiguous_self, mat1, mat2, beta, alpha, contiguous_self);
+    acl_op::addmm_out(contiguous_self, mat1, mat2, beta, alpha, contiguous_self);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    op_plugin::addmm_out(self, mat1, mat2, beta, alpha, self);
+    acl_op::addmm_out(self, mat1, mat2, beta, alpha, self);
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

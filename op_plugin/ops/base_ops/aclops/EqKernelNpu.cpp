@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -25,8 +25,8 @@ at::Tensor& eq_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& other) {
-  at::Tensor self_cast = self.dtype() == at::kInt ? op_plugin::npu_dtype_cast(self, at::kFloat) : self;
-  at::Tensor other_cast = other.dtype() == at::kInt ? op_plugin::npu_dtype_cast(other, at::kFloat) : other;
+  at::Tensor self_cast = self.dtype() == at::kInt ? acl_op::npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor other_cast = other.dtype() == at::kInt ? acl_op::npu_dtype_cast(other, at::kFloat) : other;
   auto unified_result = npu_preparation::comparison_op_check(result, self_cast, other_cast, true);
   at_npu::native::OpCommand cmd;
   cmd.Name("Equal")
@@ -42,7 +42,7 @@ at::Tensor& eq_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     at::Scalar other) {
-  at::Tensor self_cast = self.dtype() == at::kInt ? op_plugin::npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor self_cast = self.dtype() == at::kInt ? acl_op::npu_dtype_cast(self, at::kFloat) : self;
   at_npu::native::OpCommand cmd;
   cmd.Name("Equal")
       .Input(self_cast)
@@ -98,9 +98,9 @@ at::Tensor eq(
     const at::Tensor& self,
     const at::Tensor& other) {
   if (npu_preparation::IsCPUScalar(other)) {
-    return op_plugin::eq(self, other.item());
+    return acl_op::eq(self, other.item());
   } else if (npu_preparation::IsCPUScalar(self)) {
-    return op_plugin::eq(other, self.item());
+    return acl_op::eq(other, self.item());
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
@@ -137,13 +137,13 @@ at::Tensor& eq_(
     at::Tensor& self,
     const at::Tensor& other) {
   npu_preparation::cast_to_ori_format(self);
-  return op_plugin::eq_out(self, other, self);
+  return acl_op::eq_out(self, other, self);
 }
 
 at::Tensor& eq_(
     at::Tensor& self,
     const at::Scalar& other) {
   npu_preparation::cast_to_ori_format(self);
-  return op_plugin::eq_out(self, other, self);
+  return acl_op::eq_out(self, other, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

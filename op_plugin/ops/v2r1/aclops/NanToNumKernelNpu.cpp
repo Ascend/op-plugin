@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -142,7 +142,7 @@ at::Tensor& nan_to_num_(
     c10::optional<double> nan,
     c10::optional<double> pos_inf,
     c10::optional<double> neg_inf) {
-  return op_plugin::nan_to_num_out(self, nan, pos_inf, neg_inf, self);
+  return acl_op::nan_to_num_out(self, nan, pos_inf, neg_inf, self);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

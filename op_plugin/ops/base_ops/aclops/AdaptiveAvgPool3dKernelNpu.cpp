@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -85,6 +85,6 @@ at::Tensor adaptive_avg_pool3d(const at::Tensor& self, at::IntArrayRef output_si
 }
 
 at::Tensor _adaptive_avg_pool3d(const at::Tensor& self, at::IntArrayRef output_size) {
-  return op_plugin::adaptive_avg_pool3d(self, output_size);
+  return acl_op::adaptive_avg_pool3d(self, output_size);
 }
-} // namespace op_plugin
+} // namespace acl_op

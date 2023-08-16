@@ -15,7 +15,7 @@
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor gelu_common_nocheck(const at::Tensor& self) {
   at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self);
   at_npu::native::OpCommand cmd;
@@ -25,4 +25,4 @@ at::Tensor gelu_common_nocheck(const at::Tensor& self) {
       .Run();
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

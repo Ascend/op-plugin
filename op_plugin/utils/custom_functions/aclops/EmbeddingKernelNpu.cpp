@@ -15,7 +15,7 @@
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor embedding_common_nocheck(
@@ -38,4 +38,4 @@ at::Tensor embedding_common_nocheck(
       .Run();
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

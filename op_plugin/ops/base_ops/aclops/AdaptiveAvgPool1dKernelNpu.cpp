@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 namespace {
 void adaptive_avg_pool1d_check(
     const char* function_name,
@@ -32,8 +32,8 @@ void adaptive_avg_pool1d_check(
 at::Tensor adaptive_avg_pool1d(const at::Tensor& self, at::IntArrayRef output_size) {
   at::checkDimRange("adaptive_avg_pool1d", at::TensorArg(self, "self", 1), 2, 4 /* exclusive */);
   adaptive_avg_pool1d_check("adaptive_avg_pool1d", "output_size", output_size);
-  auto output = op_plugin::adaptive_avg_pool2d(self.unsqueeze(-2), {1, output_size[0]});
+  auto output = acl_op::adaptive_avg_pool2d(self.unsqueeze(-2), {1, output_size[0]});
   return output.squeeze(-2);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -76,4 +76,4 @@ at::Tensor binary_cross_entropy_backward(
   binary_cross_entropy_backward_out_npu_nocheck(grad_input, grad_output, self, target, weight, reduction);
   return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

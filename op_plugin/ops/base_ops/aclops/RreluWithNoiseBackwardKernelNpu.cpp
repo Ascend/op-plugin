@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor rrelu_with_noise_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self_or_result,
@@ -32,7 +32,7 @@ at::Tensor rrelu_with_noise_backward(
     return grad_output.mul(noise);
   } else {
     at::Scalar negative_slope = (folat_lower + float_upper) / 2;
-    return op_plugin::leaky_relu_backward(grad_output, self_or_result, negative_slope, is_result);
+    return acl_op::leaky_relu_backward(grad_output, self_or_result, negative_slope, is_result);
   }
 }
-} // namespace op_plugin
+} // namespace acl_op

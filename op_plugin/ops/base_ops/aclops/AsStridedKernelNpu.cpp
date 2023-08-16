@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -30,7 +30,7 @@ at::Tensor& stride_copy_out_npu_nocheck(
     at::Scalar storage_offset) {
   if ((result.nbytes() < 32) && (!at_npu::native::StorageDescHelper::MetaDataAreMatch(&result))) {
     // [算子限制] 对于1. 小于一个block的数据搬运 2.result不match，Astrided暂不支持。
-    op_plugin::npu_view_copy(result, self, false);
+    acl_op::npu_view_copy(result, self, false);
     return result;
   } 
 
@@ -68,7 +68,7 @@ at::Tensor& stride_copy_out_npu_nocheck(
       output_perm[output_perm_origin[i]] = i;
     }
     at::IntArrayRef output_perm_array(output_perm);
-    result = op_plugin::npu_transpose(result_out, output_perm_array, true);
+    result = acl_op::npu_transpose(result_out, output_perm_array, true);
     return result;
   } else {
     // (Ascend) Fix multi-compiling of asstrided op by wrapping attr storage_offset as a NPU Tensor instead of GE Const node.
@@ -107,4 +107,4 @@ at::Tensor npu_stride_copy(
   return result;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

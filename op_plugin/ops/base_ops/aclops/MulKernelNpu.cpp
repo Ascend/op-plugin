@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -82,7 +82,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
   at::Tensor result_cast = (result_type == calculate_type) ? result :
-      op_plugin::npu_dtype_cast(result, calculate_type);
+      acl_op::npu_dtype_cast(result, calculate_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     mul_out_npu_nocheck(contiguous_result, self_cast, other_cast);
@@ -92,7 +92,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   }
 
   if (result_type != calculate_type) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result_type);
+    result_cast = acl_op::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
 }
@@ -114,7 +114,7 @@ at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
 
   mul_out_npu_nocheck(result, self_cast, other_cast);
   if (out_is_bool) {
-    result = op_plugin::npu_dtype_cast(result, at::kBool);
+    result = acl_op::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }
@@ -126,7 +126,7 @@ at::Tensor mul(const at::Tensor& self, const at::Scalar& other) {
 }
 
 at::Tensor& mul_(at::Tensor& self, const at::Tensor& other) {
-  return op_plugin::mul_out(self, other, self);
+  return acl_op::mul_out(self, other, self);
 }
 
 at::Tensor& mul_(at::Tensor& self, const at::Scalar& other) {
@@ -139,4 +139,4 @@ at::Tensor& mul_(at::Tensor& self, const at::Scalar& other) {
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::Function;
 using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -318,7 +318,7 @@ public:
     auto result5 = saved[16];
     auto result6 = saved[17];
     auto result7 = saved[18];
-    auto result = op_plugin::npu_multi_head_attention_backward(
+    auto result = acl_op::npu_multi_head_attention_backward(
         query, key, value, query_weight, key_weight, value_weight, out_proj_weight, query_bias, key_bias, value_bias,
         out_proj_bias, result2, result3, result4, result5, result6, result7, grad_outputs[0], result1, attn_head_num,
         attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float);
@@ -355,4 +355,4 @@ std::vector<at::Tensor> npu_multi_head_attention(
       out_proj_bias_opt, dropout_mask_opt, attn_head_num, attn_dim_per_head, src_len, tgt_len,
       dropout_prob, softmax_use_float);
 }
-} // namespace op_plugin
+} // namespace acl_op

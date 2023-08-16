@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -84,9 +84,9 @@ at::Tensor& embedding_renorm_out_npu_nocheck(
   at::Tensor input_indices;
 
   if (num_indices - 1 == 0) {
-    input_indices = op_plugin::npu_dtype_cast(at::zeros({1}, self.options()), at::kLong);
+    input_indices = acl_op::npu_dtype_cast(at::zeros({1}, self.options()), at::kLong);
   } else {
-    input_indices = op_plugin::npu_dtype_cast(at::range(0, num_indices - 1, self.options()), at::kLong);
+    input_indices = acl_op::npu_dtype_cast(at::range(0, num_indices - 1, self.options()), at::kLong);
   }
 
   auto num_mid_output = mid_output.numel();
@@ -124,4 +124,4 @@ at::Tensor& embedding_renorm_(
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

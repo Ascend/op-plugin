@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 #include <torch/csrc/autograd/custom_function.h>
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::AutogradContext;
 using npu_utils = at_npu::native::NpuUtils;
 using npu_compile_type = at_npu::native::CompileType;
@@ -183,7 +183,7 @@ public:
     auto p = ctx->saved_data["p"].toDouble();
     auto saved = ctx->get_saved_variables();
     auto mask = saved[0];
-    at::Tensor result = op_plugin::npu_dropout_backward(grad_outputs[0], mask, p);
+    at::Tensor result = acl_op::npu_dropout_backward(grad_outputs[0], mask, p);
     std::vector<at::Tensor> output = {result, at::Tensor(), at::Tensor()};
     return output;
   }
@@ -284,4 +284,4 @@ at::Tensor dropout(const at::Tensor& self, double p, bool train) {
   return result;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

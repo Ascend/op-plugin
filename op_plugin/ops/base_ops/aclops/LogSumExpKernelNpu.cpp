@@ -15,10 +15,10 @@
 
 #include <ATen/WrapDimUtilsMulti.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -46,7 +46,7 @@ at::Tensor& logsumexp_out_nocheck(at::Tensor& result, const at::Tensor& self, at
   at::NoNamesGuard guard;
   if (self.numel() != 0) {
     at_npu::native::OpCommand cmd;
-    auto maxes = op_plugin::amax(self, dims, true);
+    auto maxes = acl_op::amax(self, dims, true);
     auto maxes_squeezed = (keepdim ? maxes : squeeze_multiple(maxes, dims));
     maxes_squeezed.masked_fill_(maxes_squeezed.abs() == INFINITY, 0);
     cmd.Name("ReduceLogSumExp")
@@ -93,7 +93,7 @@ at::Tensor logsumexp(const at::Tensor& self, at::IntArrayRef dims, bool keepdim)
 }
 
 at::Tensor logsumexp(const at::Tensor& self, at::DimnameList dims, bool keepdim) {
-  return op_plugin::logsumexp(self, dimnames_to_positions(self, dims), keepdim);
+  return acl_op::logsumexp(self, dimnames_to_positions(self, dims), keepdim);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

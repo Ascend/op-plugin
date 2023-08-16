@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -64,11 +64,11 @@ at::Tensor& addmv_(
   npu_preparation::CheckMemory({self, mat, vec}, {self});
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    op_plugin::addmv_out(contiguous_self, mat, vec, beta, alpha, contiguous_self);
+    acl_op::addmv_out(contiguous_self, mat, vec, beta, alpha, contiguous_self);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    op_plugin::addmv_out(self, mat, vec, beta, alpha, self);
+    acl_op::addmv_out(self, mat, vec, beta, alpha, self);
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

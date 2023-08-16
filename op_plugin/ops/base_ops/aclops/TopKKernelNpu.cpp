@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -62,7 +62,7 @@ std::tuple<at::Tensor&, at::Tensor&> topk_out_npu_nocheck(
     }
     std::swap(perm[dim], perm[last_dim]);
 
-    at::Tensor transpose_self = op_plugin::npu_transpose(self, perm, true);
+    at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
     auto output_size = op_infer::transpose_npu_output_size(values, perm);
     at::Tensor transpose_value = npu_preparation::ApplyTensor(values, output_size);
     at::Tensor transpose_indices = npu_preparation::ApplyTensor(indices, output_size);
@@ -74,8 +74,8 @@ std::tuple<at::Tensor&, at::Tensor&> topk_out_npu_nocheck(
         last_dim,
         largest,
         sorted);
-    op_plugin::npu_transpose_out(transpose_value, perm, true, values);
-    op_plugin::npu_transpose_out(transpose_indices, perm, true, indices);
+    acl_op::npu_transpose_out(transpose_value, perm, true, values);
+    acl_op::npu_transpose_out(transpose_indices, perm, true, indices);
   } else {
     topk_out_npu_no_transpose(
         values, indices, self, k, last_dim, largest, sorted);
@@ -107,7 +107,7 @@ std::tuple<at::Tensor&, at::Tensor&> topk_out(
       at::ScalarType::Long,
       output_size);
 
-  at::Tensor indices_cp = op_plugin::npu_dtype_cast(indices, at::kInt);
+  at::Tensor indices_cp = acl_op::npu_dtype_cast(indices, at::kInt);
   bool values_match = npu_utils::check_match(&values);
   bool indices_match = npu_utils::check_match(&indices_cp);
   if (!(values_match && indices_match)) {
@@ -124,7 +124,7 @@ std::tuple<at::Tensor&, at::Tensor&> topk_out(
     topk_out_npu_nocheck(values, indices_cp, self_cp, k, dim, largest, sorted);
   }
   // indices dtype transform Int64
-  indices = op_plugin::npu_dtype_cast(indices, at::kLong);
+  indices = acl_op::npu_dtype_cast(indices, at::kLong);
   indices.copy_(indices_cp);
   return std::tie(values, indices);
 }
@@ -143,8 +143,8 @@ std::tuple<at::Tensor, at::Tensor> topk(
   topk_out_npu_nocheck(values, indices, self_cp, k, dim, largest, sorted);
 
   // indices dtype transform Int64
-  indices = op_plugin::npu_dtype_cast(indices, at::kLong);
+  indices = acl_op::npu_dtype_cast(indices, at::kLong);
 
   return std::tie(values, indices);
 }
-} // namespace op_plugin
+} // namespace acl_op

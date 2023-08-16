@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -56,11 +56,11 @@ at::Tensor logical_or(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
   logical_or_out_npu_nocheck(result, self, other);
-  result = op_plugin::npu_dtype_cast(result, at::kBool);
+  result = acl_op::npu_dtype_cast(result, at::kBool);
   return result;
 }
 
 at::Tensor& logical_or_(at::Tensor& self, const at::Tensor& other) {
-  return op_plugin::logical_or_out(self, other, self);;
+  return acl_op::logical_or_out(self, other, self);;
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,16 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
 at::Tensor& frac_out_nocheck(at::Tensor& result, const at::Tensor& self) {
-  at::Tensor cast_return_Tensor = op_plugin::npu_dtype_cast(self, at::kInt);
+  at::Tensor cast_return_Tensor = acl_op::npu_dtype_cast(self, at::kInt);
   at::sub_out(result, self, cast_return_Tensor);
   return result;
 }
@@ -50,6 +50,6 @@ at::Tensor frac(const at::Tensor& self) {
 }
 
 at::Tensor& frac_(at::Tensor& self) {
-  return op_plugin::frac_out(self, self);
+  return acl_op::frac_out(self, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -364,4 +364,4 @@ at::Tensor npu_bmmV2(const at::Tensor& self, const at::Tensor& mat2, at::IntArra
   return NPUBmmV2Function::apply(self, mat2, output_sizes);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

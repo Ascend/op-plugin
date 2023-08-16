@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using torch::autograd::AutogradContext;
 using torch::autograd::Function;
@@ -105,7 +105,7 @@ public:
     auto perm = ctx->saved_data["perm"].toIntVector();
     auto shape = ctx->saved_data["shape"].toIntVector();
     auto transpose_first = ctx->saved_data["transpose_first"].toBool();
-    at::Tensor result = op_plugin::npu_confusion_transpose_backward(grad_outputs[0], perm, shape, transpose_first);
+    at::Tensor result = acl_op::npu_confusion_transpose_backward(grad_outputs[0], perm, shape, transpose_first);
 
     std::vector<at::Tensor> output = {result, at::Tensor(), at::Tensor(), at::Tensor()};
     return output;
@@ -118,4 +118,4 @@ at::Tensor npu_confusion_transpose(const at::Tensor& self,
     bool transpose_first) {
   return NPUConfusionTransposeFunction::apply(self, perm, shape, transpose_first);
 }
-} // namespace op_plugin
+} // namespace acl_op

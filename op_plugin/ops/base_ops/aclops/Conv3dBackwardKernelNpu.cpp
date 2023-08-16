@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -34,7 +34,7 @@ at::Tensor& conv3d_backward_input_nocheck(
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1], padding[2], padding[2]};
   c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1], dilation[2]};
   at::IntArrayRef input_size = input.sizes();
-  at::Tensor weight_cast = op_plugin::npu_dtype_cast(weight, grad.scalar_type());
+  at::Tensor weight_cast = acl_op::npu_dtype_cast(weight, grad.scalar_type());
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Conv3DBackpropInput")
@@ -91,10 +91,10 @@ at::Tensor& conv3d_backward_bias_nocheck(
     int64_t groups) {
   if (input.numel() == input.size(0) * input.size(1) * input.size(2)) {
     at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1), grad.size(2)});
-    op_plugin::sum_out(grad_view, c10::SmallVector<int64_t, N>{0}, false, grad_view.scalar_type(), grad_bias);
+    acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0}, false, grad_view.scalar_type(), grad_bias);
   } else {
     at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1), grad.size(2), -1});
-    op_plugin::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2, 3}, false, grad_view.scalar_type(), grad_bias);
+    acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2, 3}, false, grad_view.scalar_type(), grad_bias);
   }
   return grad_bias;
 }
@@ -133,4 +133,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv3d_backward(
   }
   return std::tie(grad_input, grad_weight, grad_bias);
 }
-} // namespace op_plugin
+} // namespace acl_op

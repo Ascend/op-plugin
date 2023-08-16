@@ -18,7 +18,7 @@
 
 #include <ATen/native/LinearAlgebraUtils.h>
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> triangular_solve_out_common_nocheck(
@@ -49,4 +49,4 @@ std::tuple<at::Tensor, at::Tensor> triangular_solve_out_common_nocheck(
 
   return std::tie(self_working_copy, a_working_copy);
 }
-}// namespace op_plugin
+}// namespace acl_op

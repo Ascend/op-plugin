@@ -18,7 +18,7 @@
 #include <ATen/ATen.h>
 #include <ATen/Tensor.h>
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor embedding_common_nocheck(const at::Tensor& weight, const at::Tensor& indices);
 at::Tensor gelu_common_nocheck(const at::Tensor& self);
 at::Tensor gelu_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& self);
@@ -64,5 +64,5 @@ at::Tensor cal_var(const at::Tensor& self, at::IntArrayRef dim, const int64_t co
                    const bool keepdim);
 std::tuple<at::Tensor, at::Tensor> cal_var_mean(const at::Tensor& self, at::IntArrayRef dim, bool unbiased,
                                                 int64_t correction, bool keepdim);
-} // namespace op_plugin
+} // namespace acl_op
 #endif

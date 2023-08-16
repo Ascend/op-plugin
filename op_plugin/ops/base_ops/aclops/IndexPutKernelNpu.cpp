@@ -16,12 +16,12 @@
 #include <ATen/native/IndexingUtils.h>
 #include <ATen/native/TypeProperties.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
 #include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 using npu_compile_type = at_npu::native::CompileType;
@@ -98,13 +98,13 @@ at::Tensor& index_put_aicore_nocheck(
   at::Tensor temp_self = self;
   at::Tensor temp_value = value;
   if (self.scalar_type() == at::ScalarType::Half) {
-    temp_self = op_plugin::npu_dtype_cast(self, at::ScalarType::Float);
-    temp_value = op_plugin::npu_dtype_cast(value, at::ScalarType::Float);
+    temp_self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    temp_value = acl_op::npu_dtype_cast(value, at::ScalarType::Float);
   }
   at::Tensor temp_value_broadcast = temp_value;
   if (self.dim() == 1 && all_defined_indices.size() == 1 && all_defined_indices[0].scalar_type() == at::kLong &&
       all_defined_indices[0].sizes()[0] != value.sizes()[0]) {
-    temp_value_broadcast = op_plugin::npu_broadcast(temp_value, all_defined_indices[0].sizes());
+    temp_value_broadcast = acl_op::npu_broadcast(temp_value, all_defined_indices[0].sizes());
   }
 
   at_npu::native::OpCommand cmd;
@@ -122,7 +122,7 @@ at::Tensor& index_put_aicore_nocheck(
       .Attr("accumulate", accumulate)
       .Run();
   if (self.scalar_type() == at::ScalarType::Half) {
-    temp_self = op_plugin::npu_dtype_cast(temp_self, at::ScalarType::Half);
+    temp_self = acl_op::npu_dtype_cast(temp_self, at::ScalarType::Half);
     self.copy_(temp_self);
   } else {
     self = temp_self;
@@ -165,9 +165,9 @@ at::Tensor& index_put_aicpu_nocheck(
   at::Tensor temp_self = self;
   at::Tensor temp_value = value;
   if (self.scalar_type() == at::ScalarType::Half) {
-    temp_self = op_plugin::npu_dtype_cast(self, at::ScalarType::Float);
-    temp_value = op_plugin::npu_dtype_cast(value, at::ScalarType::Float);
-    result = op_plugin::npu_dtype_cast(result, at::ScalarType::Float);
+    temp_self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    temp_value = acl_op::npu_dtype_cast(value, at::ScalarType::Float);
+    result = acl_op::npu_dtype_cast(result, at::ScalarType::Float);
   }
 
   at_npu::native::OpCommand cmd;
@@ -187,7 +187,7 @@ at::Tensor& index_put_aicpu_nocheck(
       .Run();
 
   if (self.scalar_type() == at::ScalarType::Half) {
-    result = op_plugin::npu_dtype_cast(result, at::ScalarType::Half);
+    result = acl_op::npu_dtype_cast(result, at::ScalarType::Half);
   }
   return result;
 }
@@ -221,7 +221,7 @@ at::Tensor& index_put_aicore(
   auto index_output_size = op_infer::index_npu_output_size(self, indices_expand);
   auto value_shape = op_infer::array_to_small_vector(value.sizes());
   at::Tensor value_broadcast = (index_output_size != value_shape) ?
-      op_plugin::npu_broadcast(value, index_output_size) : value;
+      acl_op::npu_broadcast(value, index_output_size) : value;
 
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
@@ -306,4 +306,4 @@ at::Tensor& _index_put_impl_(
   self.copy_(self_copy);
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

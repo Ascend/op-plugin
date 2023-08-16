@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -26,11 +26,11 @@ at::Tensor npu_iou(
     int64_t mode) {
   at::Tensor bboxes_fp16 = bboxes;
   if (bboxes.scalar_type() != at::ScalarType::Half) {
-    bboxes_fp16 = op_plugin::npu_dtype_cast(bboxes, at::kHalf);
+    bboxes_fp16 = acl_op::npu_dtype_cast(bboxes, at::kHalf);
   }
   at::Tensor gtboxes_fp16 = gtboxes;
   if (gtboxes.scalar_type() != at::ScalarType::Half) {
-    gtboxes_fp16 = op_plugin::npu_dtype_cast(gtboxes, at::kHalf);
+    gtboxes_fp16 = acl_op::npu_dtype_cast(gtboxes, at::kHalf);
   }
 
   auto output_size = {gtboxes.size(0), bboxes.size(0)};
@@ -53,7 +53,7 @@ at::Tensor npu_iou(
       .Run();
 
   if (overlap.scalar_type() != bboxes.scalar_type()) {
-    overlap = op_plugin::npu_dtype_cast(overlap, bboxes.scalar_type());
+    overlap = acl_op::npu_dtype_cast(overlap, bboxes.scalar_type());
   }
   return overlap;
 }
@@ -62,6 +62,6 @@ at::Tensor npu_ptiou(
     const at::Tensor& bboxes,
     const at::Tensor& gtboxes,
     int64_t mode) {
-  return op_plugin::npu_iou(bboxes, gtboxes, mode);
+  return acl_op::npu_iou(bboxes, gtboxes, mode);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 using npu_utils = at_npu::native::NpuUtils;
@@ -111,4 +111,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dropout_with_add_softmax(
     int64_t dim) {
   return npu_dropout_with_add_softmax_forward(self, x1, alpha, p, dim);
 }
-} // namespace op_plugin
+} // namespace acl_op

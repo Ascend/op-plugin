@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -94,7 +94,7 @@ at::Tensor& slow_conv_transpose2d_backward_bias_out_nocheck(
     at::IntArrayRef output_padding,
     at::IntArrayRef dilation) {
   at::Tensor grad_view = grad_output.contiguous().view({grad_output.size(0), grad_output.size(1), -1});
-  op_plugin::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2}, false, grad_view.scalar_type(), grad_bias);
+  acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2}, false, grad_view.scalar_type(), grad_bias);
 
   return grad_bias;
 }
@@ -155,4 +155,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> slow_conv_transpose2d_backward(
       grad_output, self, weight, kernel_size, stride, padding,
       output_padding, dilation, grad_input, grad_weight, grad_bias);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 namespace {
 c10::SmallVector<int64_t, SIZE> _embedding_bag_npu_output_size(
     const at::Tensor& weight,
@@ -83,7 +83,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_forwar
     const c10::optional<at::Tensor>& per_sample_weights_opt,
     bool include_last_offset,
     int64_t padding_idx) {
-  return op_plugin::_embedding_bag(weight, indices, offsets,
+  return acl_op::_embedding_bag(weight, indices, offsets,
       scale_grad_by_freq, mode, sparse, per_sample_weights_opt, include_last_offset, padding_idx);
 }
-} // namespace op_plugin
+} // namespace acl_op

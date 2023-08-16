@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -91,7 +91,7 @@ at::Tensor& std_out(
     bool unbiased,
     bool keepdim,
     at::Tensor& result) {
-  return op_plugin::std_out(self, dimnames_to_positions(self, dim), unbiased, keepdim, result);
+  return acl_op::std_out(self, dimnames_to_positions(self, dim), unbiased, keepdim, result);
 }
 
 at::Tensor std(
@@ -114,7 +114,7 @@ at::Tensor std(
     const c10::optional<at::Scalar>& correction,
     bool keepdim) {
   const auto correction_double = correction.value_or(1).toDouble();
-  return op_plugin::std(self, dim, correction_double > 0, keepdim);
+  return acl_op::std(self, dim, correction_double > 0, keepdim);
 }
 
 at::Tensor std(
@@ -122,14 +122,14 @@ at::Tensor std(
     at::DimnameList dim,
     bool unbiased,
     bool keepdim) {
-  return op_plugin::std(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+  return acl_op::std(self, dimnames_to_positions(self, dim), unbiased, keepdim);
 }
 
 at::Tensor std(
     const at::Tensor& self,
     bool unbiased) {
   c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
-  return op_plugin::std(self, dims, unbiased, false);
+  return acl_op::std(self, dims, unbiased, false);
 }
 
 std::tuple <at::Tensor, at::Tensor> std_mean(
@@ -151,7 +151,7 @@ std::tuple <at::Tensor, at::Tensor> std_mean(
     const at::Tensor& self,
     bool unbiased) {
   c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
-  return op_plugin::std_mean(self, dims, unbiased, false);
+  return acl_op::std_mean(self, dims, unbiased, false);
 }
 
 std::tuple <at::Tensor, at::Tensor> std_mean(
@@ -159,6 +159,6 @@ std::tuple <at::Tensor, at::Tensor> std_mean(
     at::DimnameList dim,
     bool unbiased,
     bool keepdim) {
-  return op_plugin::std_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+  return acl_op::std_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
 }
-} // namespace op_plugin
+} // namespace acl_op

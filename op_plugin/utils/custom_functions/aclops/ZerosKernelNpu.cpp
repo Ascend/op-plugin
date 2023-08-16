@@ -16,7 +16,7 @@
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor zeros_common_nocheck(
@@ -30,4 +30,4 @@ at::Tensor zeros_common_nocheck(
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
   return result.zero_();
 }
-} // namespace op_plugin
+} // namespace acl_op

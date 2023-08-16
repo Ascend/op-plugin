@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -45,8 +45,8 @@ at::Tensor npu_rotated_overlaps(
               "and equal to 3!");
   auto origin_dtype = self.scalar_type();
   // the Op only support fp32 currently!
-  at::Tensor self_cp = op_plugin::npu_dtype_cast(self, at::kFloat).permute({0, 2, 1});
-  at::Tensor query_boxes_cp = op_plugin::npu_dtype_cast(query_boxes, at::kFloat).permute({0, 2, 1});
+  at::Tensor self_cp = acl_op::npu_dtype_cast(self, at::kFloat).permute({0, 2, 1});
+  at::Tensor query_boxes_cp = acl_op::npu_dtype_cast(query_boxes, at::kFloat).permute({0, 2, 1});
 
   int64_t B = self_cp.size(0);
   int64_t N = self_cp.size(-1);
@@ -56,7 +56,7 @@ at::Tensor npu_rotated_overlaps(
   at::Tensor overlaps = npu_preparation::ApplyTensor(self_cp, output_size);
 
   rotated_overlaps_npu_nocheck(overlaps, self_cp, query_boxes_cp, trans);
-  overlaps = op_plugin::npu_dtype_cast(overlaps, origin_dtype);
+  overlaps = acl_op::npu_dtype_cast(overlaps, origin_dtype);
   return overlaps;
 }
-} // namespace op_plugin
+} // namespace acl_op

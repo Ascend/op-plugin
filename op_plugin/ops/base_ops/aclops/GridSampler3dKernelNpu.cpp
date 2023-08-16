@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -51,10 +51,10 @@ at::Tensor grid_sampler_3d(
   at::Tensor format_cast_of_self = self;
   at::Tensor format_cast_of_grid = grid;
   if (format_cast_of_self.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_self = op_plugin::npu_dtype_cast(format_cast_of_self, at::ScalarType::Float);
+    format_cast_of_self = acl_op::npu_dtype_cast(format_cast_of_self, at::ScalarType::Float);
   }
   if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_grid = op_plugin::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
+    format_cast_of_grid = acl_op::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
   }
 
   c10::SmallVector<int64_t, SIZE> output_size = {
@@ -79,8 +79,8 @@ at::Tensor grid_sampler_3d(
 
   at::ScalarType self_scalar_type(self.scalar_type());
   if (result.scalar_type() != self_scalar_type) {
-    result = op_plugin::npu_dtype_cast(result, self_scalar_type);
+    result = acl_op::npu_dtype_cast(result, self_scalar_type);
   }
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

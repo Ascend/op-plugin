@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 
 std::tuple<at::Tensor, at::Tensor> native_dropout(
     const at::Tensor& input,
@@ -30,7 +30,7 @@ std::tuple<at::Tensor, at::Tensor> native_dropout(
 
   at::TensorOptions options = input.options();
   if (p == 0 || !dropout_train) {
-    at::Tensor mask = op_plugin::ones(
+    at::Tensor mask = acl_op::ones(
         input.sizes(),
         at::kBool,
         options.layout(),
@@ -44,7 +44,7 @@ std::tuple<at::Tensor, at::Tensor> native_dropout(
     return std::make_tuple(output, mask);
   }
 
-  return op_plugin::_npu_dropout(input, p);
+  return acl_op::_npu_dropout(input, p);
 }
 
 at::Tensor native_dropout_backward(
@@ -59,7 +59,7 @@ at::Tensor native_dropout_backward(
   if (p == 1) {
     return at::zeros(grad_output.sizes(), options);
   }
-  return op_plugin::npu_dropout_backward(grad_output, mask, p);
+  return acl_op::npu_dropout_backward(grad_output, mask, p);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

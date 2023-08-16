@@ -14,10 +14,10 @@
 // limitations under the License.
 #include <ATen/native/TypeProperties.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -57,10 +57,10 @@ at::Tensor& addr_out(
   npu_utils::check_1d(vec2, "vec2", "addr");
   bool result_to_cast = (high_dtype == at::ScalarType::Bool);
 
-  at::Tensor self_cast = result_to_cast ? op_plugin::npu_dtype_cast(self, at::kFloat) : self;
-  at::Tensor vec1_cast = result_to_cast ? op_plugin::npu_dtype_cast(vec1, at::kFloat) : vec1;
-  at::Tensor vec2_cast = result_to_cast ? op_plugin::npu_dtype_cast(vec2, at::kFloat) : vec2;
-  at::Tensor result_cast = result_to_cast ? op_plugin::npu_dtype_cast(result, at::kFloat) : result;
+  at::Tensor self_cast = result_to_cast ? acl_op::npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor vec1_cast = result_to_cast ? acl_op::npu_dtype_cast(vec1, at::kFloat) : vec1;
+  at::Tensor vec2_cast = result_to_cast ? acl_op::npu_dtype_cast(vec2, at::kFloat) : vec2;
+  at::Tensor result_cast = result_to_cast ? acl_op::npu_dtype_cast(result, at::kFloat) : result;
   at::Scalar beta_cast = result_to_cast ? beta.toFloat() : beta;
   at::Scalar alpha_cast = result_to_cast ? alpha.toFloat() : alpha;
 
@@ -77,7 +77,7 @@ at::Tensor& addr_out(
   at::add_out(result_cast, mul_result_alpha, self_cast, beta_cast);
 
   if (result_to_cast) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, at::ScalarType::Bool);
+    result_cast = acl_op::npu_dtype_cast(result_cast, at::ScalarType::Bool);
     result.copy_(result_cast);
   }
 
@@ -106,12 +106,12 @@ at::Tensor& addr_(
   npu_preparation::CheckMemory({self, vec1, vec2}, {self});
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    op_plugin::addr_out(contiguous_self, vec1, vec2, beta, alpha, contiguous_self);
+    acl_op::addr_out(contiguous_self, vec1, vec2, beta, alpha, contiguous_self);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    op_plugin::addr_out(self, vec1, vec2, beta, alpha, self);
+    acl_op::addr_out(self, vec1, vec2, beta, alpha, self);
   }
 
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

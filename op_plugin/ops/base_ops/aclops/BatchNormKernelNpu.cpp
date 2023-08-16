@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
@@ -141,16 +141,16 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_impl(
   auto weight_fp32 = weight;
 
   if (train && (running_mean.scalar_type() != at::kFloat)) {
-    running_mean_fp32 = op_plugin::npu_dtype_cast(running_mean, at::kFloat);
+    running_mean_fp32 = acl_op::npu_dtype_cast(running_mean, at::kFloat);
   }
 
   if (train && (running_var.scalar_type() != at::kFloat)) {
-    running_var_fp32 = op_plugin::npu_dtype_cast(running_var, at::kFloat);
+    running_var_fp32 = acl_op::npu_dtype_cast(running_var, at::kFloat);
   }
 
   // (Ascend) change dtype for matching op requirement.
   if (train && (weight.scalar_type() != at::kFloat)) {
-    weight_fp32 = op_plugin::npu_dtype_cast(weight, at::kFloat);
+    weight_fp32 = acl_op::npu_dtype_cast(weight, at::kFloat);
   }
   at::Tensor bias_cp = bias;
   auto self_format = calcu_op_util::GetTensorNpuFormat(self);
@@ -214,7 +214,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
     save_invstd = at::empty({0}, self.options());
   }
 
-  return op_plugin::native_batch_norm_out(self, weight_opt, bias_opt,
+  return acl_op::native_batch_norm_out(self, weight_opt, bias_opt,
       running_mean_opt, running_var_opt, train, momentum, eps, result, save_mean, save_invstd);
 }
 
@@ -307,4 +307,4 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
   return std::tie(result, save_mean, save_invstd);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

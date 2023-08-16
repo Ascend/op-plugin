@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -30,7 +30,7 @@ at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& se
   }
 
   if ((mask.dtype() != at::kBool)) {
-    mask_bool = op_plugin::npu_dtype_cast(mask, at::kBool);
+    mask_bool = acl_op::npu_dtype_cast(mask, at::kBool);
   }
   at::Tensor value_tensor = value;
   if (value.dtype() != self.dtype()) {
@@ -61,7 +61,7 @@ at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& se
   }
 
   if (!(mask.dtype() == at::kBool)) {
-    mask_bool = op_plugin::npu_dtype_cast(mask, at::kBool);
+    mask_bool = acl_op::npu_dtype_cast(mask, at::kBool);
   }
 
   at_npu::native::OpCommand cmd;
@@ -81,7 +81,7 @@ at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& se
 
 at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Tensor& value) {
   if (npu_preparation::IsCPUScalar(value)) {
-    return op_plugin::masked_fill_(self, mask, value.item());
+    return acl_op::masked_fill_(self, mask, value.item());
   }
 
   if (!npu_utils::check_match(&self)) {
@@ -105,4 +105,4 @@ at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Sca
 
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -97,9 +97,9 @@ at::Tensor& ne_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 
 at::Tensor ne(const at::Tensor& self, const at::Tensor& other) {
   if (npu_preparation::IsCPUScalar(other)) {
-    return op_plugin::ne(self, other.item());
+    return acl_op::ne(self, other.item());
   } else if (npu_preparation::IsCPUScalar(self)) {
-    return op_plugin::ne(other, self.item());
+    return acl_op::ne(other, self.item());
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
@@ -131,7 +131,7 @@ at::Tensor ne(const at::Tensor& self, const at::Scalar& other) {
 
 at::Tensor& ne_(at::Tensor& self, const at::Tensor& other) {
   if (npu_preparation::IsCPUScalar(other)) {
-    return op_plugin::ne_(self, other.item());
+    return acl_op::ne_(self, other.item());
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
@@ -171,4 +171,4 @@ at::Tensor& ne_(at::Tensor& self, const at::Scalar& other) {
   self.copy_(result);
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

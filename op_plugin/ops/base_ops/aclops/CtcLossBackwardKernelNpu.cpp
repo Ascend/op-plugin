@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor _ctc_loss_backward(
@@ -30,13 +30,13 @@ at::Tensor _ctc_loss_backward(
     int64_t blank,
     bool zeroInfinity) {
   at::Tensor grad_out_cast = grad_out.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(grad_out, at::kFloat) : grad_out;
+      acl_op::npu_dtype_cast(grad_out, at::kFloat) : grad_out;
   at::Tensor log_probs_cast = log_probs.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(log_probs, at::kFloat) : log_probs;
+      acl_op::npu_dtype_cast(log_probs, at::kFloat) : log_probs;
   at::Tensor neg_log_likelihood_cast = neg_log_likelihood.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(neg_log_likelihood, at::kFloat) : neg_log_likelihood;
+      acl_op::npu_dtype_cast(neg_log_likelihood, at::kFloat) : neg_log_likelihood;
   at::Tensor log_alpha_cast = log_alpha.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(log_alpha, at::kFloat) : log_alpha;
+      acl_op::npu_dtype_cast(log_alpha, at::kFloat) : log_alpha;
 
   auto input_lengths_tensor = at::tensor(input_lengths, targets.options());
   auto target_lengths_tensor = at::tensor(target_lengths, targets.options());
@@ -57,8 +57,8 @@ at::Tensor _ctc_loss_backward(
       .Run();
 
   if (grad_out.scalar_type() == at::kHalf) {
-    grad = op_plugin::npu_dtype_cast(grad, at::kHalf);
+    grad = acl_op::npu_dtype_cast(grad, at::kHalf);
   }
   return grad;
 }
-} // namespace op_plugin
+} // namespace acl_op

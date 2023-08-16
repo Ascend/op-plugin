@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -127,7 +127,7 @@ at::Tensor pow(const at::Tensor& self, const at::Tensor& exp) {
 at::Tensor pow(const at::Tensor& self, const at::Scalar& exp) {
   auto result_type = at::result_type(self, exp);
   at::Tensor result = npu_preparation::ApplyTensor(self, self.options().dtype(result_type));
-  at::Tensor self_copy = (self.scalar_type() != result_type) ? op_plugin::npu_dtype_cast(self, result_type) : self;
+  at::Tensor self_copy = (self.scalar_type() != result_type) ? acl_op::npu_dtype_cast(self, result_type) : self;
   pow_tensor_scalar_out_npu_nocheck(result, self_copy, exp);
   return result;
 }
@@ -135,18 +135,18 @@ at::Tensor pow(const at::Tensor& self, const at::Scalar& exp) {
 at::Tensor pow(const at::Scalar& self, const at::Tensor& exp) {
   auto result_type = at::result_type(exp, self);
   at::Tensor result = npu_preparation::ApplyTensor(exp, exp.options().dtype(result_type));
-  at::Tensor exp_copy = (exp.scalar_type() != result_type) ? op_plugin::npu_dtype_cast(exp, result_type) : exp;
+  at::Tensor exp_copy = (exp.scalar_type() != result_type) ? acl_op::npu_dtype_cast(exp, result_type) : exp;
   pow_scalar_out_npu_nocheck(result, self, exp_copy);
   return result;
 }
 
 at::Tensor& pow_(at::Tensor& self, const at::Tensor& exp) {
-  op_plugin::pow_out(self, exp, self);
+  acl_op::pow_out(self, exp, self);
   return self;
 }
 
 at::Tensor& pow_(at::Tensor& self, const at::Scalar& exp) {
-  op_plugin::pow_out(self, exp, self);
+  acl_op::pow_out(self, exp, self);
   return self;
 }
 } // namespace at_npu

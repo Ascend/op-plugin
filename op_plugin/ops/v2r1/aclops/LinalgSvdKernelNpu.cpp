@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
     const at::Tensor& A,
     const bool full_matrices,
@@ -28,4 +28,4 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
     at::Tensor& Vh) {
   return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
 }
-} // namespace op_plugin
+} // namespace acl_op

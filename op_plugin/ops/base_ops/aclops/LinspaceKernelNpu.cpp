@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -29,7 +29,7 @@ at::Tensor& linspace_npu_out_nocheck(
   if (steps == 0) {
     // skip
   } else if (steps == 1) {
-    op_plugin::fill_(result, start);
+    acl_op::fill_(result, start);
   } else {
     c10::SmallVector<int64_t, N> size_vec = {steps};
     at_npu::native::OpCommand cmd;
@@ -55,7 +55,7 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
 
   at::Tensor result_cast = result;
   if (result_is_not_float) {
-    result_cast = op_plugin::npu_dtype_cast(result, at::kFloat);
+    result_cast = acl_op::npu_dtype_cast(result, at::kFloat);
   }
 
   if (!npu_utils::check_match(&result_cast)) {
@@ -67,7 +67,7 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
   }
 
   if (result_is_not_float) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result.scalar_type());
+    result_cast = acl_op::npu_dtype_cast(result_cast, result.scalar_type());
     result.copy_(result_cast);
   } else {
     result = result_cast;
@@ -95,15 +95,15 @@ at::Tensor linspace(
   bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;
 
   if (result_is_not_float) {
-    result_cast = op_plugin::npu_dtype_cast(result, at::kFloat);
+    result_cast = acl_op::npu_dtype_cast(result, at::kFloat);
   }
 
   linspace_npu_out_nocheck(result_cast, start, end, steps);
 
   if (result_is_not_float) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result.scalar_type());
+    result_cast = acl_op::npu_dtype_cast(result_cast, result.scalar_type());
   }
   result = result_cast;
   return result;
 }
-}  // namespace op_plugin
+}  // namespace acl_op

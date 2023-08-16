@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& weight) {
   return prelu_backward_commom_nocheck(grad_output, self, weight);
 }
-} // namespace op_plugin
+} // namespace acl_op

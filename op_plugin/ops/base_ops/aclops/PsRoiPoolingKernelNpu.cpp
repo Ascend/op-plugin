@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_op_command = at_npu::native::OpCommand;
@@ -142,7 +142,7 @@ public:
     auto self = saved[0];
     auto rois = saved[1];
 
-    at::Tensor result = op_plugin::npu_ps_roi_pooling_backward(grad_outputs[0],
+    at::Tensor result = acl_op::npu_ps_roi_pooling_backward(grad_outputs[0],
         rois,
         spatial_scale,
         group_size,
@@ -165,4 +165,4 @@ at::Tensor npu_ps_roi_pooling(const at::Tensor& self,
     return NPUPsRoiPoolingFunction::apply(self, rois, spatial_scale, group_size, output_dim);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

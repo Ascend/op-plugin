@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -73,8 +73,8 @@ at::Tensor smooth_l1_loss_backward(
     int64_t reduction,
     double beta) {
   at::Tensor grad_input = npu_preparation::ApplyTensor(self);
-  op_plugin::smooth_l1_loss_backward_out(
+  acl_op::smooth_l1_loss_backward_out(
       grad_out, self, target, reduction, beta, grad_input);
   return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

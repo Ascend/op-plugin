@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -171,7 +171,7 @@ at::Tensor& linalg_vector_norm_out(
       self.scalar_type(),
       output_size);
 
-  result = op_plugin::linalg_vector_norm(self, scalar_ord, opt_dim, keepdim, opt_dtype);
+  result = acl_op::linalg_vector_norm(self, scalar_ord, opt_dim, keepdim, opt_dtype);
   return result;
 }
 
@@ -190,7 +190,7 @@ at::Tensor& linalg_matrix_norm_out(
       A.scalar_type(),
       output_size);
 
-  result = op_plugin::linalg_matrix_norm(A, ord, dim, keepdim, opt_dtype);
+  result = acl_op::linalg_matrix_norm(A, ord, dim, keepdim, opt_dtype);
   return result;
 }
 
@@ -209,7 +209,7 @@ at::Tensor& linalg_matrix_norm_out(
       A.scalar_type(),
       output_size);
 
-  result = op_plugin::linalg_matrix_norm(A, ord, dim, keepdim, opt_dtype);
+  result = acl_op::linalg_matrix_norm(A, ord, dim, keepdim, opt_dtype);
   return result;
 }
 
@@ -234,7 +234,7 @@ at::Tensor linalg_matrix_norm(
     auto permutation = create_dim_backshift_permutation(dim_[0], dim_[1], A.dim());
 
     auto A_ = opt_dtype.has_value() ? A.to(*opt_dtype) : A;
-    auto result = max_min(op_plugin::linalg_svdvals(A_.permute(permutation), ""), -1);
+    auto result = max_min(acl_op::linalg_svdvals(A_.permute(permutation), ""), -1);
     if (keepdim) {
       auto permutation_reverse = create_reverse_permutation(std::move(permutation));
       result = result.unsqueeze(-1).permute(permutation_reverse);
@@ -251,7 +251,7 @@ at::Tensor linalg_matrix_norm(
     if (!keepdim && (dim_[0] < dim_[1])) {
       dim_[1]--;
     }
-    return max_min(op_plugin::linalg_vector_norm(A, 1., {dim_[0]}, keepdim, opt_dtype), dim_[1]);
+    return max_min(acl_op::linalg_vector_norm(A, 1., {dim_[0]}, keepdim, opt_dtype), dim_[1]);
   }
 }
 
@@ -270,13 +270,13 @@ at::Tensor linalg_matrix_norm(
   _linalg_matrix_norm_checks(A, dim_, opt_dtype, ord != "nuc");
 
   if (ord == "fro") {
-    return op_plugin::linalg_vector_norm(A, 2, dim_, keepdim, opt_dtype);
+    return acl_op::linalg_vector_norm(A, 2, dim_, keepdim, opt_dtype);
   } else {  // nuc
     auto A_ = opt_dtype.has_value() ? A.to(*opt_dtype) : A;
 
     // Move dims to the end
     auto permutation = create_dim_backshift_permutation(dim_[0], dim_[1], A_.dim());
-    auto result = op_plugin::linalg_svdvals(A_.permute(permutation), "").sum(-1, keepdim);
+    auto result = acl_op::linalg_svdvals(A_.permute(permutation), "").sum(-1, keepdim);
     if (keepdim) {
       auto permutation_reverse = create_reverse_permutation(std::move(permutation));
       result = result.unsqueeze(-1).permute(permutation_reverse);
@@ -300,7 +300,7 @@ at::Tensor& linalg_norm_out(
       X.scalar_type(),
       output_size);
 
-  result = op_plugin::linalg_norm(X, opt_ord, opt_dim, keepdim, opt_dtype);
+  result = acl_op::linalg_norm(X, opt_ord, opt_dim, keepdim, opt_dtype);
   return result;
 }
 
@@ -319,7 +319,7 @@ at::Tensor& linalg_norm_out(
       X.scalar_type(),
       output_size);
 
-  result = op_plugin::linalg_norm(X, ord, opt_dim, keepdim, opt_dtype);
+  result = acl_op::linalg_norm(X, ord, opt_dim, keepdim, opt_dtype);
   return result;
 }
 
@@ -345,10 +345,10 @@ at::Tensor linalg_norm(
        ((opt_dim.has_value() && opt_dim->size() == 2) ||
         (!opt_dim.has_value() && X.dim() == 2))) {
     auto dim = opt_dim.has_value() ? opt_dim.value().vec() : std::vector<at::IntArrayRef::value_type>{0, 1};
-    return op_plugin::linalg_matrix_norm(X, *opt_ord, dim, keepdim, opt_dtype);
+    return acl_op::linalg_matrix_norm(X, *opt_ord, dim, keepdim, opt_dtype);
   } else {
     auto scalar_ord = opt_ord.value_or(at::Scalar(2.));
-    return op_plugin::linalg_vector_norm(X, scalar_ord, opt_dim, keepdim, opt_dtype);
+    return acl_op::linalg_vector_norm(X, scalar_ord, opt_dim, keepdim, opt_dtype);
   }
 }
 
@@ -366,6 +366,6 @@ at::Tensor linalg_norm(
                 "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.");
   }
   auto dim = opt_dim.has_value() ? opt_dim.value().vec() : std::vector<at::IntArrayRef::value_type>{0, 1};
-  return op_plugin::linalg_matrix_norm(X, ord, dim, keepdim, opt_dtype);
+  return acl_op::linalg_matrix_norm(X, ord, dim, keepdim, opt_dtype);
 }
-} // namespace op_plugin
+} // namespace acl_op

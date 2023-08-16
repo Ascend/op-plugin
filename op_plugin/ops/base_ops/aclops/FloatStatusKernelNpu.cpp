@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_op_command = at_npu::native::OpCommand;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -71,4 +71,4 @@ at::Tensor npu_clear_float_status(const at::Tensor& self) {
   }
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

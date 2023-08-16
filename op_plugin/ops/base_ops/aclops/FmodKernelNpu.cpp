@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -76,11 +76,11 @@ at::Tensor& fmod_out(const at::Tensor& self, const at::Scalar& other, at::Tensor
 }
 
 at::Tensor& fmod_(at::Tensor& self, const at::Scalar& other) {
-  return op_plugin::fmod_out(self, other, self);
+  return acl_op::fmod_out(self, other, self);
 }
 
 at::Tensor& fmod_(at::Tensor& self, const at::Tensor& other) {
-  return op_plugin::fmod_out(self, other, self);
+  return acl_op::fmod_out(self, other, self);
 }
 
 at::Tensor fmod(const at::Tensor& self, const at::Scalar& other) {
@@ -95,4 +95,4 @@ at::Tensor fmod(const at::Tensor& self, const at::Tensor& other) {
   fmod_out_npu_nocheck(result, self, other);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

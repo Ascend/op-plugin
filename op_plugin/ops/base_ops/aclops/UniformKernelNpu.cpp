@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 using npu_compile_type = at_npu::native::CompileType;
@@ -63,4 +63,4 @@ at::Tensor& uniform_(at::Tensor& self, double from, double to, c10::optional<at:
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

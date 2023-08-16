@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -29,7 +29,7 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(
     bool zero_infinity) {
   at::Tensor log_probs_cast = log_probs;
   if (log_probs.scalar_type() == at::kHalf) {
-    log_probs_cast = op_plugin::npu_dtype_cast(log_probs_cast, at::kFloat);
+    log_probs_cast = acl_op::npu_dtype_cast(log_probs_cast, at::kFloat);
   }
 
   auto input_lengths_tensor = at::tensor(input_lengths_list, targets.options());
@@ -69,8 +69,8 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(
       .Run();
 
   if (log_probs.scalar_type() == at::kHalf) {
-    neg_log_likelihood = op_plugin::npu_dtype_cast(neg_log_likelihood, at::kHalf);
-    log_alpha = op_plugin::npu_dtype_cast(log_alpha, at::kHalf);
+    neg_log_likelihood = acl_op::npu_dtype_cast(neg_log_likelihood, at::kHalf);
+    log_alpha = acl_op::npu_dtype_cast(log_alpha, at::kHalf);
   }
 
   return std::tie(neg_log_likelihood, log_alpha);
@@ -133,4 +133,4 @@ at::Tensor ctc_loss(
 
   return at::ctc_loss(log_probs, targets, input_lengths_list, target_lengths_list, blank, reduction, zero_infinity);
 }
-} // namespace op_plugin
+} // namespace acl_op

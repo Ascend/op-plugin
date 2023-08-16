@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -100,7 +100,7 @@ at::Tensor npu_conv2d(
   c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Ho, Wo};
   int64_t result_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(input, output_size, result_format);
-  op_plugin::npu_conv2d_out(input, weight, bias, stride, padding, dilation, groups, result);
+  acl_op::npu_conv2d_out(input, weight, bias, stride, padding, dilation, groups, result);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

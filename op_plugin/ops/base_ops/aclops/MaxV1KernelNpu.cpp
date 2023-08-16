@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
@@ -69,9 +69,9 @@ at::Tensor npu_max_backward(
     new_indices = indices.squeeze(dim);
   }
   if (new_indices.dtype() == at::kLong) {
-    new_indices = op_plugin::npu_dtype_cast(new_indices, at::kInt);
+    new_indices = acl_op::npu_dtype_cast(new_indices, at::kInt);
   }
-  auto grad_input = op_plugin::npu_scatter(at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
+  auto grad_input = acl_op::npu_scatter(at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
   return grad_input;
 }
 
@@ -99,7 +99,7 @@ public:
     auto keepdim = ctx->saved_data["keepdim"].toBool();
     auto saved = ctx->get_saved_variables();
     auto indices = saved[0];
-    at::Tensor result = op_plugin::npu_max_backward(grad_outputs[0], dim, indices, sizes, keepdim);
+    at::Tensor result = acl_op::npu_max_backward(grad_outputs[0], dim, indices, sizes, keepdim);
 
     std::vector<at::Tensor> output = {result, at::Tensor(), at::Tensor()};
     return output;
@@ -113,6 +113,6 @@ std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, int64_t dim, 
 }
 
 std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, at::Dimname dim, bool keepdim) {
-  return op_plugin::npu_max(self, dimname_to_position(self, dim), keepdim);
+  return acl_op::npu_max(self, dimname_to_position(self, dim), keepdim);
 }
-} // namespace op_plugin
+} // namespace acl_op

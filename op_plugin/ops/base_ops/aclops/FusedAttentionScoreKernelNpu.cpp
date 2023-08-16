@@ -16,10 +16,10 @@
 #include <torch/csrc/autograd/custom_function.h>
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 using torch::autograd::AutogradContext;
@@ -191,7 +191,7 @@ public:
     auto key_layer = saved[2];
     auto value_layer = saved[3];
     auto drop_mask = saved[4];
-    auto result = op_plugin::npu_fused_attention_score_backward(
+    auto result = acl_op::npu_fused_attention_score_backward(
         grad_outputs[0], softmax_output, query_layer, key_layer, value_layer, drop_mask, scale,
         keep_prob, query_transpose, key_transpose, value_transpose, dx_transpose);
     std::vector<at::Tensor> output = {
@@ -275,7 +275,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_fused_attention_score_grad(
   at::Tensor query_dx = npu_preparation::ApplyTensorWithFormat(grad_output, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor key_dw = npu_preparation::ApplyTensorWithFormat(grad_output, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor value_dw = npu_preparation::ApplyTensorWithFormat(grad_output, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor grad_output_permute = op_plugin::npu_confusion_transpose(grad_output, {0, 2, 1, 3},
+  at::Tensor grad_output_permute = acl_op::npu_confusion_transpose(grad_output, {0, 2, 1, 3},
       {query_layer.size(0), query_layer.size(2), query_layer.size(1), query_layer.size(3)}, false);
   at_npu::native::OpCommand cmd;
   cmd.Name("AttentionScoreGrad")
@@ -297,4 +297,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_fused_attention_score_grad(
       .Run();
   return std::tie(query_dx, key_dw, value_dw);
 }
-} // namespace op_plugin
+} // namespace acl_op

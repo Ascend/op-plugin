@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::vector<at::Tensor> npu_fused_attention_layernorm_qkv_fwd(
@@ -72,4 +72,4 @@ std::vector<at::Tensor> npu_fused_attention_layernorm_qkv_fwd(
   std::vector<at::Tensor> results = {norm, query_output, key_output, value_output, mean, variance};
   return results;
 }
-} // namespace op_plugin
+} // namespace acl_op

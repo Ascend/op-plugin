@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using torch::autograd::AutogradContext;
 using torch::autograd::Function;
@@ -70,15 +70,15 @@ std::tuple<at::Tensor, at::Tensor> ciou_npu(
     bool atan_sub_flag) {
   bool self_is_half = self.scalar_type() == at::kHalf;
   bool gtboxes_is_half = gtboxes.scalar_type() == at::kHalf;
-  at::Tensor self_cp = self_is_half ? op_plugin::npu_dtype_cast(self, at::kFloat) : self;
-  at::Tensor gtboxes_cp = gtboxes_is_half ? op_plugin::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
+  at::Tensor self_cp = self_is_half ? acl_op::npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor gtboxes_cp = gtboxes_is_half ? acl_op::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
 
   auto output_size = ciou_output_size(self_cp, gtboxes_cp, is_cross);
   at::Tensor overlap = npu_preparation::ApplyTensor(self_cp, output_size);
   at::Tensor atan_sub = npu_preparation::ApplyTensor(self_cp, output_size);
   ciou_inner_out_npu(overlap, atan_sub, self_cp, gtboxes_cp, trans, is_cross, mode, atan_sub_flag);
   if (self_is_half || gtboxes_is_half) {
-    overlap = op_plugin::npu_dtype_cast(overlap, at::kHalf);
+    overlap = acl_op::npu_dtype_cast(overlap, at::kHalf);
   }
   return std::tie(overlap, atan_sub);
 }
@@ -122,19 +122,19 @@ std::tuple<at::Tensor, at::Tensor> npu_ciou_backward(
   const at::Tensor& atan_sub = c10::value_or_else(atan_sub_opt, [] {return at::Tensor();});
   at::Tensor grad_cp = at::squeeze(grad, 0);
   if (grad_cp.scalar_type() == at::kHalf) {
-    grad_cp = op_plugin::npu_dtype_cast(grad_cp, at::kFloat);
+    grad_cp = acl_op::npu_dtype_cast(grad_cp, at::kFloat);
   }
   bool bboxes_is_half = bboxes.scalar_type() == at::kHalf;
   bool gtboxes_is_half = gtboxes.scalar_type() == at::kHalf;
-  at::Tensor bboxes_cp = bboxes_is_half ? op_plugin::npu_dtype_cast(bboxes, at::kFloat) : bboxes;
-  at::Tensor gtboxes_cp = gtboxes_is_half ? op_plugin::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
+  at::Tensor bboxes_cp = bboxes_is_half ? acl_op::npu_dtype_cast(bboxes, at::kFloat) : bboxes;
+  at::Tensor gtboxes_cp = gtboxes_is_half ? acl_op::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
 
   at::Tensor dbboxes = npu_preparation::ApplyTensor(bboxes_cp);
   at::Tensor dgtboxes = npu_preparation::ApplyTensor(gtboxes_cp);
   ciou_backward_inner_out_npu(dbboxes, dgtboxes, grad_cp, bboxes_cp, gtboxes_cp, atan_sub, trans, is_cross, mode);
   if (bboxes_is_half || gtboxes_is_half) {
-    dbboxes = op_plugin::npu_dtype_cast(dbboxes, at::kHalf);
-    dgtboxes = op_plugin::npu_dtype_cast(dgtboxes, at::kHalf);
+    dbboxes = acl_op::npu_dtype_cast(dbboxes, at::kHalf);
+    dgtboxes = acl_op::npu_dtype_cast(dgtboxes, at::kHalf);
   }
   return std::tie(dbboxes, dgtboxes);
 }
@@ -167,7 +167,7 @@ public:
     auto gtboxes = saved[1];
     auto atan_sub = saved[2];
 
-    auto result = op_plugin::npu_ciou_backward(grad_outputs[0],
+    auto result = acl_op::npu_ciou_backward(grad_outputs[0],
         bboxes, gtboxes, atan_sub, trans, is_cross, mode);
 
     std::vector<at::Tensor> output = {std::get<0>(result),
@@ -189,4 +189,4 @@ at::Tensor npu_ciou(
     bool atan_sub_flag) {
   return NPUCiouFunction::apply(self, gtboxes, trans, is_cross, mode, atan_sub_flag);
 }
-} // namespace op_plugin
+} // namespace acl_op

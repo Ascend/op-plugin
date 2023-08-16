@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -42,7 +42,7 @@ at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result) {
   }
   result.resize_({n, m});
   bool result_is_bool = result.scalar_type() == at::kBool;
-  at::Tensor result_cp = result_is_bool ? op_plugin::npu_dtype_cast(result, at::kInt) : result;
+  at::Tensor result_cp = result_is_bool ? acl_op::npu_dtype_cast(result, at::kInt) : result;
   if (!npu_utils::check_match(&result_cp)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
     eye_out_npu_nocheck(contiguous_result, n, m);
@@ -52,14 +52,14 @@ at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result) {
   }
 
   if (result_is_bool) {
-    result_cp = op_plugin::npu_dtype_cast(result_cp, at::kBool);
+    result_cp = acl_op::npu_dtype_cast(result_cp, at::kBool);
     result.copy_(result_cp);
   }
   return result;
 }
 
 at::Tensor& eye_out(int64_t n, at::Tensor& result) {
-  return op_plugin::eye_out(n, -1, result);
+  return acl_op::eye_out(n, -1, result);
 }
 
 at::Tensor eye(
@@ -78,9 +78,9 @@ at::Tensor eye(
       npu_preparation::ApplyTensorWithFormat(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
       npu_preparation::ApplyTensorWithFormat(output_size, option, ACL_FORMAT_ND);
 
-  op_plugin::eye_out(n, result);
+  acl_op::eye_out(n, result);
   if (option.dtype() == at::kBool) {
-    result = op_plugin::npu_dtype_cast(result, at::kBool);
+    result = acl_op::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }
@@ -109,8 +109,8 @@ at::Tensor eye(
 
   eye_out_npu_nocheck(result, n, m);
   if (option.dtype() == at::kBool) {
-    result = op_plugin::npu_dtype_cast(result, at::kBool);
+    result = acl_op::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

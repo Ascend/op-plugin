@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -56,7 +56,7 @@ at::Tensor& randperm_out(int64_t n, c10::optional<at::Generator> generator, at::
 }
 
 at::Tensor& randperm_out(int64_t n, at::Tensor& result) {
-  return op_plugin::randperm_out(n, static_cast<c10::optional<at::Generator>>(c10::nullopt), result);
+  return acl_op::randperm_out(n, static_cast<c10::optional<at::Generator>>(c10::nullopt), result);
 }
 
 at::Tensor randperm(
@@ -84,6 +84,6 @@ at::Tensor randperm(
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
     c10::optional<bool> pin_memory) {
-  return op_plugin::randperm(n, static_cast<c10::optional<at::Generator>>(c10::nullopt), dtype, layout, device, pin_memory);
+  return acl_op::randperm(n, static_cast<c10::optional<at::Generator>>(c10::nullopt), dtype, layout, device, pin_memory);
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -18,4 +18,4 @@
 
 namespace ${namespace} {
 ${declarations}
-}  // namespace op_plugin
+}  // namespace acl_op

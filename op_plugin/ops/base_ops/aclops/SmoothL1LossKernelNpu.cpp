@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -30,7 +30,7 @@ at::Tensor& smooth_l1_loss_out_npu_nocheck(
     double beta) {
   if (self.numel() == 0) {
     // In this scenario, needs to return nan. And the nan of the NPU can only be fp32.
-    result = op_plugin::npu_dtype_cast(result, at::kFloat).fill_(0);
+    result = acl_op::npu_dtype_cast(result, at::kFloat).fill_(0);
     result = result / 0;
     return result;
   }
@@ -82,4 +82,4 @@ at::Tensor smooth_l1_loss(
   smooth_l1_loss_out_npu_nocheck(result, self, target, reduction, beta);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

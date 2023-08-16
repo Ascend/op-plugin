@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor leaky_relu_backward(
@@ -29,4 +29,4 @@ at::Tensor leaky_relu_backward(
   leaky_relu_backward_out_nocheck(result, grad_output, self, negval, is_result);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

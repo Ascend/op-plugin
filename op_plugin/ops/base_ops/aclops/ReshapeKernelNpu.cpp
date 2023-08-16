@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -43,8 +43,8 @@ at::Tensor& npu_reshape_out(
 
 at::Tensor npu_reshape(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh) {
   at::Tensor result = npu_preparation::apply_tensor(self, shape);
-  op_plugin::npu_reshape_out(self, shape, can_refresh, result);
+  acl_op::npu_reshape_out(self, shape, can_refresh, result);
 
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

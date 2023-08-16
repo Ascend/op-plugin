@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -62,4 +62,4 @@ at::Tensor _adaptive_avg_pool2d_backward(
   adaptive_avg_pool2d_backward_out_nocheck(result, grad_output, self);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

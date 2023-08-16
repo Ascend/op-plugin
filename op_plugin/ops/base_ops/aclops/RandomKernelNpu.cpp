@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 #include <limits.h>
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 using npu_compile_type = at_npu::native::CompileType;
@@ -58,7 +58,7 @@ at::Tensor& random_out_npu(
         .Run();
     // StatelessRandomUniformV2 output: U(0~1) --> U(from~to)
     result_cp = result_cp.mul(to).sub(result_cp.mul(from).sub(static_cast<float>(from)));
-    result_cp = op_plugin::npu_dtype_cast(result_cp, self.scalar_type());
+    result_cp = acl_op::npu_dtype_cast(result_cp, self.scalar_type());
     result.copy_(result_cp);
   } else {
     cmd.Attr("dtype", self.scalar_type())
@@ -67,8 +67,8 @@ at::Tensor& random_out_npu(
     // StatelessRandomUniformV2 output: U(0~1) --> U(from~to)
     auto result_cp = result.mul(to).sub(result.mul(from).sub(static_cast<float>(from)));
     // round off numbers
-    result_cp = op_plugin::npu_dtype_cast(result_cp, at::kLong);
-    result_cp = op_plugin::npu_dtype_cast(result_cp, self.scalar_type());
+    result_cp = acl_op::npu_dtype_cast(result_cp, at::kLong);
+    result_cp = acl_op::npu_dtype_cast(result_cp, self.scalar_type());
     result.copy_(result_cp);
   }
   return result;
@@ -117,4 +117,4 @@ at::Tensor& random_(at::Tensor& self, c10::optional<at::Generator> gen) {
 
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

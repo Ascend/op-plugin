@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -134,10 +134,10 @@ at::Tensor& conv2d_backward_bias_out_nocheck(
     int64_t groups) {
   if (grad.numel() == grad.size(0) * grad.size(1)) {
     at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1)});
-    op_plugin::sum_out(grad_view, c10::SmallVector<int64_t, N>{0}, false, grad_view.scalar_type(), grad_bias);
+    acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0}, false, grad_view.scalar_type(), grad_bias);
   } else {
     at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1), -1});
-    op_plugin::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2}, false, grad_view.scalar_type(), grad_bias);
+    acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2}, false, grad_view.scalar_type(), grad_bias);
   }
 
   return grad_bias;
@@ -229,4 +229,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(
   return std::make_tuple(
       std::move(grad_input), std::move(grad_weight), std::move(grad_bias));
 }
-} // namespace op_plugin
+} // namespace acl_op

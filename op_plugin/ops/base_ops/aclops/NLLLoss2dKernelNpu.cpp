@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -80,7 +80,7 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss2d_forward_out_nocheck(
       .Output(total_weight)
       .Run();
 
-  op_plugin::npu_reshape_out(result, result.sizes(), true, result);
+  acl_op::npu_reshape_out(result, result.sizes(), true, result);
   return std::tuple<at::Tensor&, at::Tensor&>(result, total_weight);
 }
 } // namespace
@@ -145,7 +145,7 @@ std::tuple<at::Tensor, at::Tensor> nll_loss2d_forward(
   TORCH_CHECK(scalar_type == at::kLong || scalar_type == at::kInt,
       "Expected object of scalar type ", at::kLong, " or ", at::kInt,
       " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss2d_forward");
-  at::Tensor target_cast = (scalar_type == at::kLong) ? op_plugin::npu_dtype_cast(target, at::kInt) : target;
+  at::Tensor target_cast = (scalar_type == at::kLong) ? acl_op::npu_dtype_cast(target, at::kInt) : target;
 
   auto self_input = self.contiguous();
   self_input = at_npu::native::NPUNativeFunctions::npu_format_cast(self_input, ACL_FORMAT_ND);
@@ -169,4 +169,4 @@ std::tuple<at::Tensor, at::Tensor> nll_loss2d_forward(
 
   return std::tuple<at::Tensor, at::Tensor>(result, total_weight);
 }
-} // namespace op_plugin
+} // namespace acl_op

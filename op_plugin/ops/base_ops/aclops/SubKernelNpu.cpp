@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -47,7 +47,7 @@ at::Tensor& sub_self_scalar_out_npu(
     at::Scalar self,
     const at::Tensor& other,
     at::Scalar alpha) {
-  at::Tensor other_mul_alpha = op_plugin::utils::is_scalar_one(alpha) ? other : op_plugin::mul(other, alpha);
+  at::Tensor other_mul_alpha = op_plugin::utils::is_scalar_one(alpha) ? other : acl_op::mul(other, alpha);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Sub")
@@ -97,9 +97,9 @@ at::Tensor& sub_out(
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType result_type = at::native::result_type(self, other);
   at::Tensor self_cp = (self.scalar_type() != result_type && !calcu_op_util::IsScalarWrappedToTensor(self)) ?
-      op_plugin::npu_dtype_cast(self, result_type) : self;
+      acl_op::npu_dtype_cast(self, result_type) : self;
   at::Tensor other_cp = (other.scalar_type() != result_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
-      op_plugin::npu_dtype_cast(other, result_type) : other;
+      acl_op::npu_dtype_cast(other, result_type) : other;
   npu_preparation::CheckOut(
       {self_cp},
       result,
@@ -124,9 +124,9 @@ at::Tensor sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType result_type = at::native::result_type(self, other);
   at::Tensor self_cp = (self.scalar_type() != result_type && !calcu_op_util::IsScalarWrappedToTensor(self)) ?
-      op_plugin::npu_dtype_cast(self, result_type) : self;
+      acl_op::npu_dtype_cast(self, result_type) : self;
   at::Tensor other_cp = (other.scalar_type() != result_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
-      op_plugin::npu_dtype_cast(other, result_type) : other;
+      acl_op::npu_dtype_cast(other, result_type) : other;
 
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(
       output_size,
@@ -149,9 +149,9 @@ at::Tensor& sub_(at::Tensor& self, const at::Tensor& other, const at::Scalar& al
   TORCH_CHECK(canCast(result_type, self_type), "result type ", result_type,
       " can't be cast to the desired output type ", self_type);
   at::Tensor self_cp = (self_type != result_type && !calcu_op_util::IsScalarWrappedToTensor(self)) ?
-      op_plugin::npu_dtype_cast(self, result_type) : self;
+      acl_op::npu_dtype_cast(self, result_type) : self;
   at::Tensor other_cp = (other.scalar_type() != result_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
-      op_plugin::npu_dtype_cast(other, result_type) : other;
+      acl_op::npu_dtype_cast(other, result_type) : other;
 
   npu_preparation::CheckMemory({self_cp, other_cp}, {self_cp});
   if (!npu_utils::check_match(&self_cp)) {
@@ -181,4 +181,4 @@ at::Tensor& sub_(at::Tensor& self, const at::Scalar& other, const at::Scalar& al
 
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

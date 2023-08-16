@@ -15,10 +15,10 @@
 
 #include <ATen/native/Pool.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -188,4 +188,4 @@ std::tuple<at::Tensor, at::Tensor> max_pool3d_with_indices(
   return std::tie(result, result);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

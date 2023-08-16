@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 std::tuple<at::Tensor, at::Tensor> _aminmax(const at::Tensor& self) {
-  auto min = op_plugin::min(self);
-  auto max = op_plugin::max(self);
+  auto min = acl_op::min(self);
+  auto max = acl_op::max(self);
   return std::tie(min, max);
 }
 
@@ -27,8 +27,8 @@ std::tuple<at::Tensor, at::Tensor> _aminmax(
     const at::Tensor& self,
     const int64_t dim,
     const bool keepdim) {
-  auto min = op_plugin::min(self, {dim}, keepdim);
-  auto max = op_plugin::max(self, {dim}, keepdim);
+  auto min = acl_op::min(self, {dim}, keepdim);
+  auto max = acl_op::max(self, {dim}, keepdim);
   return std::tie(std::get<0>(min), std::get<0>(max));
 }
 
@@ -39,13 +39,13 @@ std::tuple<at::Tensor&, at::Tensor&> aminmax_out(
     at::Tensor& min,
     at::Tensor& max) {
   if (dim.has_value()) {
-    max = op_plugin::amax_out(self, dim.value(), keepdim, max);
-    min = op_plugin::amin_out(self, dim.value(), keepdim, min);
+    max = acl_op::amax_out(self, dim.value(), keepdim, max);
+    min = acl_op::amin_out(self, dim.value(), keepdim, min);
   } else {
     at::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
-    max = op_plugin::amax_out(self, dims, keepdim, max);
-    min = op_plugin::amin_out(self, dims, keepdim, min);
+    max = acl_op::amax_out(self, dims, keepdim, max);
+    min = acl_op::amin_out(self, dims, keepdim, min);
   }
   return std::tie(min,max);
 }
-} // namespace op_plugin
+} // namespace acl_op

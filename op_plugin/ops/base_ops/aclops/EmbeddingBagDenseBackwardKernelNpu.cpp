@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor _embedding_bag_dense_backward(
     const at::Tensor& grad,
     const at::Tensor& indices,
@@ -45,4 +45,4 @@ at::Tensor _embedding_bag_dense_backward(
   result = result.to(indices.device());
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

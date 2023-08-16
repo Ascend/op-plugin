@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -45,7 +45,7 @@ at::Tensor& norm_out_npu_nocheck(
     at::ScalarType dtype) {
   at::Tensor fp32_self(self);
   if (self.scalar_type() != at::ScalarType::Float) {
-    fp32_self = op_plugin::npu_dtype_cast(fp32_self, at::ScalarType::Float);
+    fp32_self = acl_op::npu_dtype_cast(fp32_self, at::ScalarType::Float);
   }
   auto output_size = op_infer::reduce_ops_npu_output_size(fp32_self, dim, keepdim);
   if (output_size.empty()) {
@@ -72,7 +72,7 @@ at::Tensor& norm_out_npu_nocheck(
       .Attr("epsilon", static_cast<float>(0))
       .Run();
   if (result.scalar_type() != dtype) {
-    result = op_plugin::npu_dtype_cast(result, dtype);
+    result = acl_op::npu_dtype_cast(result, dtype);
   }
   // until now, can not support resize shape of out correctly,
   // so the shape of out must be equal to output_size
@@ -147,13 +147,13 @@ at::Tensor norm(
     const at::Tensor& self,
     const c10::optional<at::Scalar>& p,
     at::ScalarType dtype) {
-  return op_plugin::norm(self, p, {}, false, dtype);
+  return acl_op::norm(self, p, {}, false, dtype);
 }
 
 at::Tensor norm(
     const at::Tensor& self,
     const at::Scalar& p) {
-  return op_plugin::norm(self, p, {}, false, self.scalar_type());
+  return acl_op::norm(self, p, {}, false, self.scalar_type());
 }
 
 at::Tensor norm(
@@ -161,7 +161,7 @@ at::Tensor norm(
     const c10::optional<at::Scalar>& p,
     at::IntArrayRef dim,
     bool keepdim) {
-  return op_plugin::norm(self, p, dim, keepdim, self.scalar_type());
+  return acl_op::norm(self, p, dim, keepdim, self.scalar_type());
 }
 
-} // namespace op_plugin
+} // namespace acl_op

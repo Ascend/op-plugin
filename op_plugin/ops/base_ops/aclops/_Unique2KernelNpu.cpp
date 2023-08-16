@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace{
@@ -56,7 +56,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
    * 此外，算子去重时，fp16存在数据精度损失，因此这里将fp16强转fp32处理.
    */
   const at::Tensor self = self_op.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(self_op, at::kFloat) : self_op;
+      acl_op::npu_dtype_cast(self_op, at::kFloat) : self_op;
   
   if (self.numel() == 0) {
     at::Tensor result = npu_preparation::ApplyTensor(self, {0});
@@ -74,8 +74,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
 
   _unique2_out_npu(y, y_inverse, y_counts, self, sorted, return_inverse, return_counts);
   if (self_op.scalar_type() == at::kHalf) {
-    y = op_plugin::npu_dtype_cast(y, at::kHalf);
+    y = acl_op::npu_dtype_cast(y, at::kHalf);
   }
   return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, y_inverse, y_counts);
 }
-}  // namespace op_plugin
+}  // namespace acl_op

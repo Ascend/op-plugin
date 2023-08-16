@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -50,7 +50,7 @@ at::Tensor& roll_transpose(
     perm.emplace_back(i);
   }
   std::swap(perm[axis], perm[first_dim]);
-  at::Tensor transpose_self = op_plugin::npu_transpose(self, perm, true);
+  at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
   auto output_size = op_infer::transpose_npu_output_size(result, perm);
   at::Tensor transpose_result = npu_preparation::ApplyTensor(self, output_size);
   c10::SmallVector<int64_t, SIZE> dim = {first_dim};
@@ -58,7 +58,7 @@ at::Tensor& roll_transpose(
   at::IntArrayRef dim_now = at::IntArrayRef(dim);
   at::IntArrayRef shift_now = at::IntArrayRef(shift_bak);
   roll_out_npu_no_transpose(transpose_result, transpose_self, shift_now, dim_now);
-  op_plugin::npu_transpose_out(transpose_result, perm, true, result);
+  acl_op::npu_transpose_out(transpose_result, perm, true, result);
   return result;
 }
 
@@ -104,4 +104,4 @@ at::Tensor roll(
   return result;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

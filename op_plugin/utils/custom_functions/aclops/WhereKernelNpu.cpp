@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 
 at::Tensor& where_out_nocheck(
     at::Tensor& out,
@@ -26,8 +26,8 @@ at::Tensor& where_out_nocheck(
   at::Tensor self_cp, other_cp;
   if (self.dtype() != other.dtype()) {
     auto result_type = at::native::result_type(self, other);
-    self_cp = op_plugin::npu_dtype_cast(self, result_type);
-    other_cp = op_plugin::npu_dtype_cast(other, result_type);
+    self_cp = acl_op::npu_dtype_cast(self, result_type);
+    other_cp = acl_op::npu_dtype_cast(other, result_type);
   } else {
     self_cp = self;
     other_cp = other;

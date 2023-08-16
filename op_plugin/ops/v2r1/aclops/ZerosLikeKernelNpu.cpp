@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -53,7 +53,7 @@ at::Tensor zeros_like(
   auto options = self.options().merge_in(other_options);
   at::Tensor result = npu_preparation::ApplyTensor(self, options);
 
-  return op_plugin::zero_(result);
+  return acl_op::zero_(result);
 }
 
 at::Tensor& zero_(at::Tensor& self) {
@@ -67,4 +67,4 @@ at::Tensor& zero_(at::Tensor& self) {
 
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
 using npu_compile_type = at_npu::native::CompileType;
 
@@ -76,7 +76,7 @@ bool AicoreValid(at::Tensor& self, const at::Tensor& src) {
 }
 } // namespace
 
-void npu_view_copy(
+at::Tensor& npu_view_copy(
     at::Tensor& self,
     const at::Tensor& src,
     bool non_blocking) {
@@ -121,6 +121,6 @@ void npu_view_copy(
       .Run();
   }
   
-  return;
+  return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

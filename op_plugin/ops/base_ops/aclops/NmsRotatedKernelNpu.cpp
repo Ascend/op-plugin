@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> npu_nms_rotated(
@@ -32,8 +32,8 @@ std::tuple<at::Tensor, at::Tensor> npu_nms_rotated(
   at::Tensor scores_cast = scores;
   at::Tensor labels = at::zeros({}, scores.options().dtype(at::kInt));
   if (origin_dtype != at::ScalarType::Float) {
-    dets_cast = op_plugin::npu_dtype_cast(dets, at::kFloat);
-    scores_cast = op_plugin::npu_dtype_cast(scores, at::kFloat);
+    dets_cast = acl_op::npu_dtype_cast(dets, at::kFloat);
+    scores_cast = acl_op::npu_dtype_cast(scores, at::kFloat);
   }
   c10::SmallVector<int64_t, SIZE> selected_index_size = {dets.size(0)};
   at::Tensor selected_box = npu_preparation::ApplyTensor(dets_cast);
@@ -55,8 +55,8 @@ std::tuple<at::Tensor, at::Tensor> npu_nms_rotated(
       .Run();
 
   at::Tensor selected_num = npu_preparation::ApplyTensor({1}, scores.options().dtype(at::kInt), scores);
-  op_plugin::fill_(selected_num, selected_index.size(0));
+  acl_op::fill_(selected_num, selected_index.size(0));
   return std::tie(selected_index, selected_num);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

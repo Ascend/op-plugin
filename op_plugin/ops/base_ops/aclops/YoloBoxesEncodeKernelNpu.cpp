@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -61,7 +61,7 @@ at::Tensor npu_yolo_boxes_encode (
   yolo_boxes_encode_check(anchor_boxes, gt_bboxes, stride);
   at::Tensor result = npu_preparation::ApplyTensor(gt_bboxes);
   string impl_mode_str = performance_mode ? "high_performance" : "high_precision";
-  at::Tensor stride_cp = op_plugin::npu_dtype_cast(stride, at::ScalarType::Int);
+  at::Tensor stride_cp = acl_op::npu_dtype_cast(stride, at::ScalarType::Int);
   at_npu::native::OpCommand cmd;
   cmd.Name("YoloBoxesEncode")
       .Input(anchor_boxes)
@@ -72,4 +72,4 @@ at::Tensor npu_yolo_boxes_encode (
       .Run();
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

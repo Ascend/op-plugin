@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using format_helper = at_npu::native::FormatHelper;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
@@ -225,8 +225,8 @@ void insert_input_pad(at::Tensor &self, at::Tensor &mat2) {
     mat2_pad[2 * (1 - is_mat2_trans) + 1] = pad_num;
     self = is_self_trans ? self.transpose(-1, -2) : self;
     mat2 = is_mat2_trans ? mat2.transpose(-1, -2) : mat2;
-    self = op_plugin::constant_pad_nd(self, self_pad, 0);
-    mat2 = op_plugin::constant_pad_nd(mat2, mat2_pad, 0);
+    self = acl_op::constant_pad_nd(self, self_pad, 0);
+    mat2 = acl_op::constant_pad_nd(mat2, mat2_pad, 0);
     self = is_self_trans ? self.transpose(-1, -2) : self;
     mat2 = is_mat2_trans ? mat2.transpose(-1, -2) : mat2;
   }
@@ -354,7 +354,7 @@ at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
   if (need_nd_out) {
     result = at_npu::native::NPUNativeFunctions::npu_format_cast(result, ACL_FORMAT_ND);
   }
-  result = split_k ? op_plugin::npu_dtype_cast(result, at::ScalarType::Half) : result;
+  result = split_k ? acl_op::npu_dtype_cast(result, at::ScalarType::Half) : result;
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

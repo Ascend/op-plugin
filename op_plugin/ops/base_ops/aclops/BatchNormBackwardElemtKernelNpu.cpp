@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -27,12 +27,12 @@ void batch_norm_backward_elemt_npu_expand_tensor(
     int64_t input_ndim,
     at::IntArrayRef input_shape) {
   if (input_ndim >2) {
-    expand_tensor = op_plugin::npu_broadcast(expand_tensor, {1, dim_c}).t();
+    expand_tensor = acl_op::npu_broadcast(expand_tensor, {1, dim_c}).t();
     for (int64_t i = 0; i < input_ndim - 3; i++) {
       expand_tensor = expand_tensor.unsqueeze(1);
     }
   }
-  expand_tensor = op_plugin::npu_broadcast(expand_tensor, input_shape);
+  expand_tensor = acl_op::npu_broadcast(expand_tensor, input_shape);
 }
 } // namespace
 
@@ -86,4 +86,4 @@ at::Tensor batch_norm_backward_elemt(
 
   return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

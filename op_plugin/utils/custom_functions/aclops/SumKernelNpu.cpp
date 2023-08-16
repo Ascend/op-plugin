@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -46,7 +46,7 @@ at::Tensor check_dtype(
     out_type = at::kFloat;
   }
   at::Tensor self_cp = (self.scalar_type() == out_type) ? self :
-      op_plugin::npu_dtype_cast(self, out_type);
+      acl_op::npu_dtype_cast(self, out_type);
   return self_cp;
 }
 } // namespace
@@ -75,7 +75,7 @@ at::Tensor& sum_out_common_nocheck(
 
   at::Tensor self_cp = check_dtype(self, res_type);
   at::Tensor result_cp = result.scalar_type() == self_cp.scalar_type() ? result :
-      op_plugin::npu_dtype_cast(result, self_cp.scalar_type());
+      acl_op::npu_dtype_cast(result, self_cp.scalar_type());
 
   if (!npu_utils::check_match(&result_cp)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
@@ -86,7 +86,7 @@ at::Tensor& sum_out_common_nocheck(
   }
 
   if (result_cp.scalar_type() != res_type) {
-    result_cp = op_plugin::npu_dtype_cast(result_cp, res_type);
+    result_cp = acl_op::npu_dtype_cast(result_cp, res_type);
     result.copy_(result_cp);
   } else {
     result = result_cp;
@@ -119,8 +119,8 @@ at::Tensor sum_common_nocheck(
   sum_out_npu_nocheck(result, self_cp, dim, keepdim);
 
   if (result.scalar_type() != out_type) {
-    result = op_plugin::npu_dtype_cast(result, out_type);
+    result = acl_op::npu_dtype_cast(result, out_type);
   }
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -27,18 +27,18 @@ at::Tensor& one_hot_out_npu(
     int64_t depth,
     at::Scalar on_value,
     at::Scalar off_value) {
-  at::Tensor self_copy = op_plugin::npu_dtype_cast(self, at::kInt);
+  at::Tensor self_copy = acl_op::npu_dtype_cast(self, at::kInt);
   at::Tensor on_tmp = npu_preparation::ApplyTensor(
       {1},
       self_copy.options().dtype(at::ScalarType::Float),
       self_copy);
-  op_plugin::fill_(on_tmp, on_value);
+  acl_op::fill_(on_tmp, on_value);
 
   at::Tensor off_tmp = npu_preparation::ApplyTensor(
       {1},
       self_copy.options().dtype(at::ScalarType::Float),
       self_copy);
-  op_plugin::fill_(off_tmp, off_value);
+  acl_op::fill_(off_tmp, off_value);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("OneHotD")
@@ -69,4 +69,4 @@ at::Tensor npu_one_hot(
   one_hot_out_npu(result, self, axis, depth, on_value, off_value);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

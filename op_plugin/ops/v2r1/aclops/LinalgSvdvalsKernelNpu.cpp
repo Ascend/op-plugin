@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& linalg_svdvals_out(const at::Tensor& A, c10::optional<c10::string_view> driver, at::Tensor & S) {
   // Dummies
   auto U = at::empty({0}, A.options());
   auto Vh = at::empty({0}, A.options());
-  op_plugin::_linalg_svd_out(A, false, false, driver, U, S, Vh);
+  acl_op::_linalg_svd_out(A, false, false, driver, U, S, Vh);
   return S;
 }
 
@@ -37,7 +37,7 @@ at::Tensor linalg_svdvals(const at::Tensor& A, c10::optional<c10::string_view> d
   auto S = npu_preparation::ApplyTensor(A, sizes);
   S.fill_(0);
 
-  op_plugin::_linalg_svd_out(A, false, false, driver, U, S, Vh);
+  acl_op::_linalg_svd_out(A, false, false, driver, U, S, Vh);
   return S;
 }
-} // namespace op_plugin
+} // namespace acl_op

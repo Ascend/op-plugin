@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -56,6 +56,6 @@ at::Tensor leaky_relu(const at::Tensor& self, const at::Scalar& negval) {
 }
 
 at::Tensor& leaky_relu_(at::Tensor& self, const at::Scalar& neg_val) {
-  return op_plugin::leaky_relu_out(self, neg_val, self);
+  return acl_op::leaky_relu_out(self, neg_val, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

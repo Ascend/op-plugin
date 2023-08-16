@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using torch::autograd::AutogradContext;
 using tensor_list = std::vector<at::Tensor>;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -29,7 +29,7 @@ at::Tensor& l1_loss_out_nocheck(
     const at::Tensor& self,
     const at::Tensor& target,
     const int64_t reduction) {
-  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("LpLoss")
       .Input(self)
@@ -60,7 +60,7 @@ at::Tensor& l1_loss_backward_out_nocheck(
     const at::Tensor& self,
     const at::Tensor& target,
     const int64_t reduction) {
-  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("L1LossGrad")
       .Input(grad_output)
@@ -80,10 +80,10 @@ at::Tensor npu_l1_loss_backward(
   at::Tensor grad_output_broadcast = grad_output;
   at::Tensor target_broadcast = target;
   if (grad_output.sizes() != self.sizes()) {
-    grad_output_broadcast = op_plugin::npu_broadcast(grad_output, self.sizes());
+    grad_output_broadcast = acl_op::npu_broadcast(grad_output, self.sizes());
   }
   if (target.sizes() != self.sizes()) {
-    target_broadcast = op_plugin::npu_broadcast(target, self.sizes());
+    target_broadcast = acl_op::npu_broadcast(target, self.sizes());
   }
   at::Tensor result = npu_preparation::apply_tensor(self);
   l1_loss_backward_out_nocheck(result, grad_output_broadcast, self, target_broadcast, reduction);
@@ -121,4 +121,4 @@ at::Tensor l1_loss(
     int64_t reduction) {
   return NPUL1LossFunction::apply(self, target, reduction);
 }
-} // namespace op_plugin
+} // namespace acl_op

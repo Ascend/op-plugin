@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -116,11 +116,11 @@ at::Tensor& index_fill_d_nocheck(
   at::Tensor assistHelp2 = index_fill_d_assist_help(self, index, dim, value, false);
 
   if (aclInput->scalar_type() == at::ScalarType::Int) {
-    assistHelp1 = op_plugin::npu_dtype_cast(assistHelp1, at::ScalarType::Int);
-    assistHelp2 = op_plugin::npu_dtype_cast(assistHelp2, at::ScalarType::Int);
+    assistHelp1 = acl_op::npu_dtype_cast(assistHelp1, at::ScalarType::Int);
+    assistHelp2 = acl_op::npu_dtype_cast(assistHelp2, at::ScalarType::Int);
   } else if (aclInput->scalar_type() == at::ScalarType::Half) {
-    assistHelp1 = op_plugin::npu_dtype_cast(assistHelp1, at::ScalarType::Half);
-    assistHelp2 = op_plugin::npu_dtype_cast(assistHelp2, at::ScalarType::Half);
+    assistHelp1 = acl_op::npu_dtype_cast(assistHelp1, at::ScalarType::Half);
+    assistHelp2 = acl_op::npu_dtype_cast(assistHelp2, at::ScalarType::Half);
   }
 
   at_npu::native::OpCommand cmd;
@@ -198,4 +198,4 @@ at::Tensor& index_fill_(
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

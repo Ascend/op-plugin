@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -64,7 +64,7 @@ at::Tensor npu_roi_alignbk(
   // Check the self empty
   for (int i = 0; i < self.dim(); i++) {
     if (self.size(i) == 0) {
-      op_plugin::fill_(result, 0);
+      acl_op::fill_(result, 0);
       return result;
     }
   }
@@ -83,4 +83,4 @@ at::Tensor npu_roi_alignbk(
   return result;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

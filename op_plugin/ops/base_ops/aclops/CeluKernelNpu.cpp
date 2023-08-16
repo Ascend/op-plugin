@@ -15,10 +15,10 @@
 
 #include <torch/csrc/autograd/custom_function.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 using torch::autograd::AutogradContext;
@@ -98,4 +98,4 @@ at::Tensor& celu_(at::Tensor& self, const at::Scalar& alpha) {
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

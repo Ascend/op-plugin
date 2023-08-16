@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -93,7 +93,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
   at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
-  at::Tensor result_cast = (result_type == calculate_type) ? result : op_plugin::npu_dtype_cast(result, calculate_type);
+  at::Tensor result_cast = (result_type == calculate_type) ? result : acl_op::npu_dtype_cast(result, calculate_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     div_out_nocheck(contiguous_result, self_cast, other_cast);
@@ -103,7 +103,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   }
 
   if (result_type != calculate_type) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result_type);
+    result_cast = acl_op::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
   return result;
@@ -115,14 +115,14 @@ at::Tensor& div_out(
     c10::optional<c10::string_view> rounding_mode,
     at::Tensor& result) {
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    op_plugin::floor_divide_out(self, other, result);
+    acl_op::floor_divide_out(self, other, result);
     return result;
   }
-  op_plugin::div_out(self, other, result);
+  acl_op::div_out(self, other, result);
   if (!rounding_mode.has_value()) {
     return result;
   } else if (*rounding_mode == "trunc") {
-    op_plugin::trunc_(result);
+    acl_op::trunc_(result);
     return result;
   }
   div_torch_check(rounding_mode);
@@ -155,13 +155,13 @@ at::Tensor div(
     const at::Scalar& other,
     c10::optional<c10::string_view> rounding_mode) {
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    return op_plugin::floor_divide(self, other);
+    return acl_op::floor_divide(self, other);
   }
-  at::Tensor true_div_res = op_plugin::div(self, other);
+  at::Tensor true_div_res = acl_op::div(self, other);
   if (!rounding_mode.has_value()) {
     return true_div_res;
   } else if (*rounding_mode == "trunc") {
-    return op_plugin::trunc(true_div_res);
+    return acl_op::trunc(true_div_res);
   }
   div_torch_check(rounding_mode);
 }
@@ -171,20 +171,20 @@ at::Tensor div(
     const at::Tensor& other,
     c10::optional<c10::string_view> rounding_mode) {
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    return op_plugin::floor_divide(self, other);
+    return acl_op::floor_divide(self, other);
   }
-  at::Tensor true_div_res = op_plugin::div(self, other);
+  at::Tensor true_div_res = acl_op::div(self, other);
   if (!rounding_mode.has_value()) {
     return true_div_res;
   } else if (*rounding_mode == "trunc") {
-    return op_plugin::trunc(true_div_res);
+    return acl_op::trunc(true_div_res);
   }
 
   div_torch_check(rounding_mode);
 }
 
 at::Tensor& div_(at::Tensor& self, const at::Tensor& other) {
-  return op_plugin::div_out(self, other, self);
+  return acl_op::div_out(self, other, self);
 }
 
 at::Tensor& div_(at::Tensor& self, const at::Scalar& other) {
@@ -203,13 +203,13 @@ at::Tensor& div_(
     const at::Scalar& other,
     c10::optional<c10::string_view> rounding_mode) {
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    return op_plugin::floor_divide_(self, other);
+    return acl_op::floor_divide_(self, other);
   }
-  op_plugin::div_(self, other);
+  acl_op::div_(self, other);
   if (!rounding_mode.has_value()) {
     return self;
   } else if (*rounding_mode == "trunc") {
-    return op_plugin::trunc_(self);
+    return acl_op::trunc_(self);
   }
   div_torch_check(rounding_mode);
 }
@@ -218,6 +218,6 @@ at::Tensor& div_(
     at::Tensor& self,
     const at::Tensor& other,
     c10::optional<c10::string_view> rounding_mode) {
-  return op_plugin::div_out(self, other, rounding_mode, self);
+  return acl_op::div_out(self, other, rounding_mode, self);
 }
-} // namespace op_plugin
+} // namespace acl_op
