@@ -30,7 +30,7 @@ at::Tensor sum_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_expand_outplace(const at::Tensor& to_expand1, const at::Tensor& to_expand2,
                                                                    const at::Tensor& to_expand3, const char* api_name);
 at::Tensor& where_out_nocheck(at::Tensor& out, const at::Tensor& condition, const at::Tensor& self, const at::Tensor& other);
-void index_copy_npu_par_check(dim, index, source, result);
+void index_copy_npu_par_check(const int64_t dim, const at::Tensor& index, const at::Tensor& source, const at::Tensor& result);
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(const at::Tensor& A, const bool full_matrices,
                                                                         const bool compute_uv, at::Tensor& U,
                                                                         at::Tensor& S, at::Tensor& Vh);
