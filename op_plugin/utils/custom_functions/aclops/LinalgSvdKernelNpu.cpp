@@ -133,6 +133,62 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor& sel
   return std::make_tuple(U_working_copy, S_working_copy, VT_working_copy.mH());
 }
 
+static void linalg_check_errors(
+    const at::Tensor& infos,
+    const c10::string_view api_name,
+    bool is_matrix) {
+  TORCH_CHECK(infos.scalar_type() == at::kInt);
+  TORCH_CHECK(infos.is_contiguous());
+  if (infos.is_meta()) {
+    return;
+  }
+
+  // If it's all zeros, we return early.
+  // We optimise for the most likely case.
+  if (C10_LIKELY(!infos.to(at::kBool).any().item<bool>())) {
+    return;
+  }
+
+  int32_t info;
+  std::string batch_str;
+  if (is_matrix) {
+    info = infos.item<int>();
+    // batch_str needn't be set for matrices
+  } else {
+    // Find the first non-zero info
+    auto infos_cpu = infos.to(at::kCPU);
+    auto ptr = infos_cpu.data_ptr<int32_t>();
+    auto n = infos.numel();
+    auto info_ptr = std::find_if(ptr, ptr + n, [](int32_t x) { return x != 0; });
+    info = *info_ptr;
+    batch_str = ": (Batch element " + std::to_string(std::distance(ptr, info_ptr)) + ")";
+  }
+
+  if (info < 0) {
+    // Reference LAPACK 3.10+ changed `info` behavior for inputs with non-finite values
+    // Previously, it would return `info` > 0, but now it returns `info` = -4
+    // OpenBLAS 0.3.15+ uses the Reference LAPACK 3.10+.
+    // MKL 2022.0+ uses the Reference LAPACK 3.10+.
+    // Older version of MKL and OpenBLAS follow the old behavior (return `info` > 0).
+    // Here we check for the case where `info` is -4 and raise an error
+    if (api_name.find("svd") != api_name.npos) {
+      TORCH_CHECK(info != -4, api_name, batch_str,
+          ": The algorithm failed to converge because the input matrix contained non-finite values.");
+    }
+    TORCH_CHECK(false, api_name, batch_str,
+        ": Argument ", -info, " has illegal value. Most certainly there is a bug in the implementation calling the backend library.");
+  } else if (info > 0) {
+    if (api_name.find("svd") != api_name.npos) {
+      TORCH_CHECK(false, api_name, batch_str,
+          ": The algorithm failed to converge because the input matrix is ill-conditioned or has too many repeated singular values (error code: ", info, ").");
+    } else {
+      TORCH_CHECK(false, api_name, ": Unknown error code: ", info, ".");
+    }
+  }
+  // We should never reach this point as info was non-zero
+  TORCH_CHECK(false);
+}
+
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(
     const at::Tensor& A,
     const bool full_matrices,
@@ -188,6 +244,6 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(
   if (!Vh_ready) {
     Vh.copy_(V_tmp);
   }
-  at::_linalg_check_errors(info, "linalg.svd", A.dim() == 2);
+  linalg_check_errors(info, "linalg.svd", A.dim() == 2);
 }
 } // namespace acl_op

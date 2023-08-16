@@ -64,7 +64,7 @@ at::Tensor var(
     bool keepdim) {
   bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
   int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim); 
+  return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim);
 }
 
 at::Tensor var(

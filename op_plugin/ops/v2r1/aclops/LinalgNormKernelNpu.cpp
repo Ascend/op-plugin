@@ -46,10 +46,10 @@ static void _linalg_matrix_norm_checks(
   TORCH_CHECK(A.dim() >= 2, "linalg.matrix_norm", ": The input tensor ", "A", " must have at least 2 dimensions.");
   auto dtype = A.scalar_type();
   TORCH_CHECK((at::isFloatingType(dtype) || at::isComplexType(dtype)),
-              "linalg.matrix_norm", ": Expected a floating point or complex tensor as input. Got ", dtype);
+      "linalg.matrix_norm", ": Expected a floating point or complex tensor as input. Got ", dtype);
   if (!low_precision) {
     TORCH_CHECK(dtype == at::kFloat || dtype == at::kDouble || dtype == at::kComplexFloat || dtype == at::kComplexDouble,
-                "linalg.matrix_norm", ": Low precision dtypes not supported. Got ", dtype);
+        "linalg.matrix_norm", ": Low precision dtypes not supported. Got ", dtype);
   }
 
   // dim
@@ -84,38 +84,38 @@ static inline std::vector<int64_t> create_reverse_permutation(std::vector<int64_
 }
 
 float calculate_p(at::Scalar p) {
-    float val = op_plugin::utils::get_scalar_float_value(p);
-    if (val == INFINITY) {
-        return static_cast<float>(INT_MAX); // p = inf
-    } else if (val == -INFINITY) {
-        return static_cast<float>(INT_MIN); // p = -inf
-    } else {
-        return static_cast<float>(val);
-    }
+  float val = op_plugin::utils::get_scalar_float_value(p);
+  if (val == INFINITY) {
+    return static_cast<float>(INT_MAX); // p = inf
+  } else if (val == -INFINITY) {
+    return static_cast<float>(INT_MIN); // p = -inf
+  } else {
+    return static_cast<float>(val);
+  }
 }
 
-at::Tensor &linalg_norm_out_npu_nocheck(
-    at::Tensor &out,
-    const at::Tensor &self,
+at::Tensor& linalg_norm_out_npu_nocheck(
+    at::Tensor& out,
+    const at::Tensor& self,
     const at::Scalar& ord,
     at::IntArrayRef dim,
     bool keepdim,
     at::optional<at::ScalarType> dtype) {
-  at::Tensor fp32Self(self);
+  at::Tensor fp32_self(self);
   if (self.scalar_type() != at::ScalarType::Float) {
-    fp32Self = npu_dtype_cast(fp32Self, at::ScalarType::Float);
+    fp32_self = npu_dtype_cast(fp32_self, at::ScalarType::Float);
   }
-  auto outputSize = op_infer::reduce_ops_npu_output_size(fp32Self, dim, keepdim);
-  if (outputSize.empty()){
-    outputSize.push_back(1);
+  auto output_size = op_infer::reduce_ops_npu_output_size(fp32_self, dim, keepdim);
+  if (output_size.empty()) {
+    output_size.push_back(1);
   }
-  at::Tensor resultTemp = npu_preparation::ApplyTensorWithSizes(outputSize, fp32Self.options());
-  at::Tensor result = npu_preparation::ApplyTensorWithSizes(outputSize, fp32Self.options());
+  at::Tensor result_temp = npu_preparation::ApplyTensorWithSizes(output_size, fp32_self.options());
+  at::Tensor result = npu_preparation::ApplyTensorWithSizes(output_size, fp32_self.options());
   auto pvalue = calculate_p(ord);
   at_npu::native::OpCommand cmd1;
   cmd1.Name("LpNormReduceV2")
-      .Input(fp32Self)
-      .Output(resultTemp)
+      .Input(fp32_self)
+      .Output(result_temp)
       .Attr("p", pvalue)
       .Attr("axes", dim)
       .Attr("keepdim", keepdim)
@@ -124,7 +124,7 @@ at::Tensor &linalg_norm_out_npu_nocheck(
 
   at_npu::native::OpCommand cmd2;
   cmd2.Name("LpNormUpdateV2")
-      .Input(resultTemp)
+      .Input(result_temp)
       .Output(result)
       .Attr("p", pvalue)
       .Attr("epsilon", static_cast<float>(0))
@@ -135,7 +135,7 @@ at::Tensor &linalg_norm_out_npu_nocheck(
     result = npu_dtype_cast(result, dtype_);
   }
   // until now, can not support resize shape of out correctly,
-  // so the shape of out must be equal to outputSize
+  // so the shape of out must be equal to output_size
   out = out.copy_(result);
   return out;
 }
@@ -149,9 +149,9 @@ at::Tensor linalg_vector_norm(
     at::optional<at::ScalarType> opt_dtype) {
   auto dim = opt_dim.value_or(at::IntArrayRef{});
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-  auto self_ = opt_dtype.has_value() ? self.to(opt_dtype.value()) : self;
-  at::Tensor out = npu_preparation::ApplyTensorWithSizes(output_size, self_.options());
-  linalg_norm_out_npu_nocheck(out, self_, scalar_ord, dim, keepdim, opt_dtype);
+  auto self_val = opt_dtype.has_value() ? self.to(opt_dtype.value()) : self;
+  at::Tensor out = npu_preparation::ApplyTensorWithSizes(output_size, self_val.options());
+  linalg_norm_out_npu_nocheck(out, self_val, scalar_ord, dim, keepdim, opt_dtype);
   return out;
 }
 
@@ -233,14 +233,14 @@ at::Tensor linalg_matrix_norm(
     // Move dims to the end
     auto permutation = create_dim_backshift_permutation(dim_[0], dim_[1], A.dim());
 
-    auto A_ = opt_dtype.has_value() ? A.to(*opt_dtype) : A;
-    auto result = max_min(acl_op::linalg_svdvals(A_.permute(permutation), ""), -1);
+    auto A_val = opt_dtype.has_value() ? A.to(*opt_dtype) : A;
+    auto result = max_min(acl_op::linalg_svdvals(A_val.permute(permutation), ""), -1);
     if (keepdim) {
       auto permutation_reverse = create_reverse_permutation(std::move(permutation));
       result = result.unsqueeze(-1).permute(permutation_reverse);
     }
     return result;
-  } else {  // 1, -1, inf, -inf
+  } else { // 1, -1, inf, -inf
     // The infty norm is like the 1 norm on the transposed matrix
     if (abs_ord == INFINITY) {
       std::swap(dim_[0], dim_[1]);
@@ -272,11 +272,11 @@ at::Tensor linalg_matrix_norm(
   if (ord == "fro") {
     return acl_op::linalg_vector_norm(A, 2, dim_, keepdim, opt_dtype);
   } else {  // nuc
-    auto A_ = opt_dtype.has_value() ? A.to(*opt_dtype) : A;
+    auto A_val = opt_dtype.has_value() ? A.to(*opt_dtype) : A;
 
     // Move dims to the end
-    auto permutation = create_dim_backshift_permutation(dim_[0], dim_[1], A_.dim());
-    auto result = acl_op::linalg_svdvals(A_.permute(permutation), "").sum(-1, keepdim);
+    auto permutation = create_dim_backshift_permutation(dim_[0], dim_[1], A_val.dim());
+    auto result = acl_op::linalg_svdvals(A_val.permute(permutation), "").sum(-1, keepdim);
     if (keepdim) {
       auto permutation_reverse = create_reverse_permutation(std::move(permutation));
       result = result.unsqueeze(-1).permute(permutation_reverse);
@@ -331,19 +331,19 @@ at::Tensor linalg_norm(
     at::optional<at::ScalarType> opt_dtype) {
   if (opt_dim.has_value()) {
     TORCH_CHECK(opt_dim->size() == 1 || opt_dim ->size() == 2, "linalg.norm: If ",
-              "dim is specified, it must be of length 1 or 2. Got ", *opt_dim);
+        "dim is specified, it must be of length 1 or 2. Got ", *opt_dim);
   } else {
     if (opt_ord.has_value()) {
       TORCH_CHECK(X.dim() == 1 || X.dim() == 2, "linalg.norm: If ",
-                  "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.");
+          "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.");
     }
   }
 
   // If ord=None, we'll always use the 2-norm or frob norm (which are the same) so we go through
   // vector_norm
   if (opt_ord.has_value() &&
-       ((opt_dim.has_value() && opt_dim->size() == 2) ||
-        (!opt_dim.has_value() && X.dim() == 2))) {
+      ((opt_dim.has_value() && opt_dim->size() == 2) ||
+      (!opt_dim.has_value() && X.dim() == 2))) {
     auto dim = opt_dim.has_value() ? opt_dim.value().vec() : std::vector<at::IntArrayRef::value_type>{0, 1};
     return acl_op::linalg_matrix_norm(X, *opt_ord, dim, keepdim, opt_dtype);
   } else {
@@ -360,10 +360,10 @@ at::Tensor linalg_norm(
     at::optional<at::ScalarType> opt_dtype) {
   if (opt_dim.has_value()) {
     TORCH_CHECK(opt_dim->size() == 1 || opt_dim ->size() == 2, "linalg.norm: If ",
-              "dim is specified, it mut be of length 1 or 2. Got ", *opt_dim);
+        "dim is specified, it mut be of length 1 or 2. Got ", *opt_dim);
   } else {
     TORCH_CHECK(X.dim() == 1 || X.dim() == 2, "linalg.norm: If ",
-                "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.");
+        "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.");
   }
   auto dim = opt_dim.has_value() ? opt_dim.value().vec() : std::vector<at::IntArrayRef::value_type>{0, 1};
   return acl_op::linalg_matrix_norm(X, ord, dim, keepdim, opt_dtype);
