@@ -22,4 +22,5 @@ std::tuple<at::Tensor, at::Tensor> prelu_backward(
     const at::Tensor& self,
     const at::Tensor& weight) {
   return prelu_backward_commom_nocheck(grad_output, self, weight);
+}
 } // namespace op_plugin

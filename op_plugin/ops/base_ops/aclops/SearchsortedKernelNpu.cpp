@@ -88,7 +88,7 @@ at::Tensor searchsorted(
     const c10::optional<c10::string_view> side_opt,
     const c10::optional<at::Tensor>& sorter_opt) {
   at::ScalarType scalar_type = out_int32 ? at::kInt : at::kLong;
-  at::Tensor self_op = calcu_op_util::CopyScalarToDevice(self, sorted_sequence.scalar_type());
+  at::Tensor self_op = at_npu::native::CalcuOpUtil::CopyScalarToDevice(self, sorted_sequence.scalar_type());
   self_op = self_op.unsqueeze(0);
   at::Tensor result = npu_preparation::ApplyTensor({}, sorted_sequence.options().dtype(scalar_type), sorted_sequence);
   searchsorted_out_nocheck(result, sorted_sequence, self_op, out_int32, right);

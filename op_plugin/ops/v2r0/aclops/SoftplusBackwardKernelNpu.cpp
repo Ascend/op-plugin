@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {

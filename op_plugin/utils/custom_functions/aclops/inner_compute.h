@@ -64,5 +64,6 @@ at::Tensor cal_var(const at::Tensor& self, at::IntArrayRef dim, const int64_t co
                    const bool keepdim);
 std::tuple<at::Tensor, at::Tensor> cal_var_mean(const at::Tensor& self, at::IntArrayRef dim, bool unbiased,
                                                 int64_t correction, bool keepdim);
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor& self, bool some, bool compute_uv);
 } // namespace acl_op
 #endif

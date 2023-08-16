@@ -22,7 +22,6 @@ namespace op_plugin {
 using torch::autograd::AutogradContext;
 using tensor_list = std::vector<at::Tensor>;
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::calcu_op_util;
 
 at::Tensor npu_kl_div(
     const at::Tensor& self,
@@ -30,7 +29,7 @@ at::Tensor npu_kl_div(
     int64_t reduction,
     bool log_target) {
   at::Tensor result = reduction == at::Reduction::None ?
-      npu_preparation::ApplyTensor(self) : npu_preparation::ApplyTensor({}, self.options(), self);
+      npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
   string reductionStr;
   if (reduction == at::Reduction::Mean) {
     reductionStr = "batchmean";
@@ -39,7 +38,7 @@ at::Tensor npu_kl_div(
   } else if (reduction == at::Reduction::None) {
     reductionStr = "none";
   }
-  OpCommand cmd;
+  at_npu::native::OpCommand cmd;
   cmd.Name("KLDiv")
       .Input(self)
       .Input(target)
@@ -61,8 +60,8 @@ at::Tensor npu_kl_div_backward(
     const at::Tensor& target,
     int64_t reduction,
     bool log_target) {
-  auto outputSize = input_same_output_size(self);
-  at::Tensor grad_input = npu_preparation::ApplyTensor(outputSize, self.options(), self);
+  auto output_size = op_infer::input_same_output_size(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(output_size, self.options(), self);
   string reductionStr;
   if (reduction == at::Reduction::Mean) {
     reductionStr = "batchmean";
@@ -71,7 +70,7 @@ at::Tensor npu_kl_div_backward(
   } else if (reduction == at::Reduction::None) {
     reductionStr = "none";
   }
-  at_npu::native::OpCommandOpCommand cmd;
+  at_npu::native::OpCommand cmd;
   cmd.Name("KlDivLossGrad")
       .Input(grad_output)
       .Input(self)
@@ -121,6 +120,6 @@ at::Tensor kl_div(
     const at::Tensor& target,
     int64_t reduction,
     bool log_target) {
-    return NPUKlDivFunction::apply(self, target, reduction, log_target);
+  return NPUKlDivFunction::apply(self, target, reduction, log_target);
 }
 } // namespace op_plugin

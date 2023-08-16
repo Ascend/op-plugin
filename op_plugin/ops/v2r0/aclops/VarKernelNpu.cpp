@@ -87,14 +87,14 @@ at::Tensor var(
   return at::var(self, at::OptionalIntArrayRef(dim), c10::make_optional<int64_t>({unbiased ? 1 : 0}), keepdim);
 }
 
-std::tuple<at::Tensor, at::Tensor> NPUNativeFunctions::var_mean(
+std::tuple<at::Tensor, at::Tensor> var_mean(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
   bool unbiased = !(correction.has_value() && correction.value() == 0);
   int64_t real_correction = correction.has_value() ? correction.value() : 1;
-  return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, correction, keepdim);
+  return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, real_correction, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
