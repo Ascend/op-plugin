@@ -18,6 +18,7 @@
 
 namespace op_plugin {
 using calcu_op_util = at_npu::native::CalcuOpUtil;
+using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor upsample_bicubic2d_backward(
     const at::Tensor& grad_output,
@@ -28,8 +29,6 @@ at::Tensor upsample_bicubic2d_backward(
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_h = calcu_op_util::GetScaleValue(scale_factors, 0);
   auto scales_w = calcu_op_util::GetScaleValue(scale_factors, 1);
-  return op_plugin::upsample_bicubic2d_backward(
-      result, grad_output, osize, input_size, align_corners, scales_h, scales_w);
+  return op_plugin::upsample_bicubic2d_backward(grad_output, osize, input_size, align_corners, scales_h, scales_w);
 }
-
 } // namespace op_plugin

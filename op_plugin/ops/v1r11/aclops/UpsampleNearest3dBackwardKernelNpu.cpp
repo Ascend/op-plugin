@@ -29,6 +29,6 @@ at::Tensor upsample_nearest3d_backward(
   auto scales_h = calcu_op_util::GetScaleValue(scale_factors, 1);
   auto scales_w = calcu_op_util::GetScaleValue(scale_factors, 2);
 
-  return op_plugin::upsample_nearest3d_backward(grad_output, osize, scales_d, scales_h, scales_w);
+  return op_plugin::upsample_nearest3d_backward(grad_output, osize, input_size, scales_d, scales_h, scales_w);
 }
 } // namespace op_plugin

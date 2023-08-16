@@ -19,7 +19,6 @@
 namespace op_plugin {
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
-namespace {
 at::Tensor upsample_bilinear2d_backward(
     const at::Tensor& grad_output,
     c10::optional<at::IntArrayRef> output_size,

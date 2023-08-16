@@ -14,14 +14,12 @@
 // limitations under the License.
 
 #include <ATen/NamedTensorUtils.h>
-#include <ATen/native/NonSymbolicBC.h>
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
 
-namespace {
 void index_copy_npu_par_check(
     const int64_t dim,
     const at::Tensor& index,
@@ -62,30 +60,4 @@ void index_copy_npu_par_check(
       "index_copy_(): Number of indices (", num_indices,
       ") should be equal to source.size(newDim) (", source.size(new_dim), ")");
 }
-} // namespace
-
-at::Tensor& index_copy_npu_impl(
-    const int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& source,
-    at::Tensor& result) {
-  index_copy_npu_par_check(dim, index, source, result);
-  int64_t num_indices = index.numel();
-  int64_t i;
-  if (result.dim() > 1) {
-    at::Tensor des;
-    at::Tensor src;
-    for (i = 0; i < num_indices; i++) {
-      des = at::native::select(result, dim, index[i].item<int64_t>());
-      src = at::native::select(source, dim, i);
-      at_npu::native::NPUNativeFunctions::copy_(des, src, false);
-    }
-  } else {
-    for (i = 0; i < num_indices; i++) {
-      result[i] = source[index[i].item<int64_t>()];
-    }
-  }
-  return result;
-}
-
 } // namespace acl_op

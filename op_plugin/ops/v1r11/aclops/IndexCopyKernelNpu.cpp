@@ -14,7 +14,6 @@
 // limitations under the License.
 
 #include <ATen/NamedTensorUtils.h>
-#include <ATen/native/NonSymbolicBC.h>
 
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -24,6 +23,30 @@ namespace op_plugin {
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
+at::Tensor& index_copy_npu_impl(
+    const int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& source,
+    at::Tensor& result) {
+  index_copy_npu_par_check(dim, index, source, result);
+  int64_t num_indices = index.numel();
+  int64_t i;
+  if (result.dim() > 1) {
+    at::Tensor des;
+    at::Tensor src;
+    for (i = 0; i < num_indices; i++) {
+      des = at::native::select(result, dim, index[i].item<int64_t>());
+      src = at::native::select(source, dim, i);
+      at_npu::native::NPUNativeFunctions::copy_(des, src, false);
+    }
+  } else {
+    for (i = 0; i < num_indices; i++) {
+      result[i] = source[index[i].item<int64_t>()];
+    }
+  }
+  return result;
+}
+
 at::Tensor index_copy_npu(
     const at::Tensor& self,
     const int64_t dim,
@@ -49,7 +72,7 @@ at::Tensor& index_copy_npu_(
     const at::Tensor& source) {
   at::Tensor contiguous_self(self);
   if (!npu_utils::check_match(&self)) {
-    contiguousSelf = npu_utils::format_contiguous(self);
+    contiguous_self = npu_utils::format_contiguous(self);
   }
   at::Tensor result = index_copy_npu_impl(dimname_to_position(self, dim), index, source, contiguous_self);
   npu_utils::format_fresh_view(self, result);
@@ -65,7 +88,7 @@ at::Tensor& _index_copy_(
     const at::Tensor& source) {
   at::Tensor contiguous_self(self);
   if (!npu_utils::check_match(&self)) {
-    contiguousSelf = npu_utils::format_contiguous(self);
+    contiguous_self = npu_utils::format_contiguous(self);
   }
   at::Tensor result = index_copy_npu_impl(dim, index, source, contiguous_self);
   npu_utils::format_fresh_view(self, result);

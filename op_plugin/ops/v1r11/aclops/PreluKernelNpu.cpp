@@ -17,5 +17,6 @@
 
 namespace op_plugin {
 at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
-  return prelu_common_nocheck(grad_output, self, weight);
+  return prelu_common_nocheck(self, weight);
+}
 } // namespace op_plugin

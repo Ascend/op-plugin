@@ -46,7 +46,7 @@ std::tuple<at::Tensor&, at::Tensor&> std_mean_out_npu_nocheck(
     bool unbiased,
     bool keepdim,
     int64_t correction) {
-  at_npu::native::OpCommandOpCommand cmd1;
+  at_npu::native::OpCommand cmd1;
   cmd1.Name("ReduceMeanD")
       .Input(self)
       .Output(result_mean)
@@ -66,14 +66,14 @@ std::tuple<at::Tensor&, at::Tensor&> std_mean_out_npu_nocheck(
 
   at::Tensor result_mean_copy = result_mean;
   if (result_mean.dim() != 0 && keepdim == false) {
-    auto dimVector = array_to_small_vector(dim);
-    std::sort(dimVector.begin(), dimVector.end());
-    for (int64_t i = 0; i < dimVector.size(); i++) {
-      result_mean_copy = result_mean_copy.unsqueeze(dimVector[i]);
+    auto dim_vector = op_infer::array_to_small_vector(dim);
+    std::sort(dim_vector.begin(), dim_vector.end());
+    for (int64_t i = 0; i < dim_vector.size(); i++) {
+      result_mean_copy = result_mean_copy.unsqueeze(dim_vector[i]);
     }
   }
   result_mean_copy = result_mean_copy.expand(self.sizes());
-  at_npu::native::OpCommandOpCommand cmd2;
+  at_npu::native::OpCommand cmd2;
   cmd2.Name("ReduceStdWithMean")
       .Input(self)
       .Input(result_mean_copy)
@@ -112,7 +112,7 @@ at::Tensor& std_out(
     c10::optional<int64_t> correction,
     bool keepdim,
     at::Tensor& result) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   if (dim.has_value()) {
     dims = op_infer::array_to_small_vector(dim.value());
   }
@@ -144,7 +144,7 @@ at::Tensor& std_out(
     bool unbiased,
     bool keepdim,
     at::Tensor& result) {
-  return op_plugin::std_out(self, dimnames_to_positions(self, dim), unbiased, keepdim, result);
+  return op_plugin::std_out(self, at::IntArrayRef(dimnames_to_positions(self, dim)), unbiased, keepdim, result);
 }
 
 std::tuple <at::Tensor, at::Tensor> std_mean(
@@ -160,7 +160,7 @@ std::tuple <at::Tensor, at::Tensor> std_mean(
     c10::optional<at::IntArrayRef> dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   if (dim.has_value()) {
     dims = op_infer::array_to_small_vector(dim.value());
   }
@@ -189,7 +189,7 @@ at::Tensor std(
     c10::optional<at::IntArrayRef> dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
-  c10::SmallVector<int64_t, SIZE> dims = calcu_op_util::GetDimlistForTensor(self);
+  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   if (dim.has_value()) {
     dims = op_infer::array_to_small_vector(dim.value());
   }

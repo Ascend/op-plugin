@@ -18,14 +18,15 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
+using npu_utils = at_npu::native::NpuUtils;
 
+namespace {
 at::Tensor& l1_loss_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& target,
     const int64_t reduction) {
-  std::string reduction_str = calcu_op_util::Getreduction_str(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("LpLoss")
       .Input(self)
@@ -36,8 +37,9 @@ at::Tensor& l1_loss_out_nocheck(
       .Run();
   return result;
 }
+} // namespace
 
-at::Tensor& NPUNativeFunctions::l1_loss_out(
+at::Tensor& l1_loss_out(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
@@ -57,7 +59,7 @@ at::Tensor& NPUNativeFunctions::l1_loss_out(
   return result;
 }
 
-at::Tensor NPUNativeFunctions::l1_loss(
+at::Tensor l1_loss(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction) {

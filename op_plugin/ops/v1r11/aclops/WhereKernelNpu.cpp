@@ -21,13 +21,13 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor NPUNativeFunctions::_s_where(
+at::Tensor _s_where(
     const at::Tensor& condition,
     const at::Tensor& self,
     const at::Tensor& other) {
   at::Tensor result = npu_preparation::apply_tensor(self);
 
-  OpCommand cmd;
+  at_npu::native::OpCommand cmd;
   cmd.Name("Select")
       .Input(condition)
       .Input(self)
@@ -38,7 +38,7 @@ at::Tensor NPUNativeFunctions::_s_where(
   return result;
 }
 
-at::Tensor NPUNativeFunctions::where(
+at::Tensor where(
     const at::Tensor& condition,
     const at::Tensor& self,
     const at::Tensor& other) {
