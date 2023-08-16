@@ -14,7 +14,6 @@
 // limitations under the License.
 
 #include <ATen/NamedTensorUtils.h>
-#include <ATen/native/NonSymbolicBC.h>
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"

@@ -19,7 +19,6 @@
 namespace op_plugin {
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
-namespace {
 at::Tensor upsample_bicubic2d(
     const at::Tensor& self,
     c10::optional<at::IntArrayRef> output_size,

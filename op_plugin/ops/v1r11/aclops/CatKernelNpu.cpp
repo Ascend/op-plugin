@@ -44,7 +44,7 @@ c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(at::TensorList tensors) {
       continue;
     }
     if (tensor.scalar_type() != high_type) {
-      tensor = NPUNativeFunctions::npu_dtype_cast(tensor, high_type);
+      tensor = op_plugin::npu_dtype_cast(tensor, high_type);
     }
     dst_tensor_list.emplace_back(tensor);
   }
@@ -61,7 +61,7 @@ at::Tensor& cat_out_nocheck(at::Tensor& result, at::TensorList tensors, int64_t 
   }
   dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
   int64_t input_number = 0;
-  OpCommand cmd;
+  at_npu::native::OpCommand cmd;
   cmd.Name("ConcatD");
 
   // In graph mode, if all of input tensors are null numel,
@@ -173,9 +173,5 @@ at::Tensor _cat(at::TensorList tensors, int64_t dim) {
 
 at::Tensor cat(at::TensorList tensors, int64_t dim) {
   return at::_cat(tensors, dim);
-}
-
-at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
-  return at::cat(tensors, dimname_to_position(tensors[0], dim));
 }
 } // namespace op_plugin

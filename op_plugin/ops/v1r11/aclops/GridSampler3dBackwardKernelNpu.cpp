@@ -18,8 +18,6 @@
 
 
 namespace op_plugin {
-using npu_preparation = at_npu::native::OpPreparation;
-
 std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
     const at::Tensor& grad,
     const at::Tensor& input,

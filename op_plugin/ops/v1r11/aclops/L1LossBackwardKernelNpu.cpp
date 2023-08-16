@@ -18,7 +18,7 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
+using npu_utils = at_npu::native::NpuUtils;
 
 at::Tensor& l1_loss_backward_out_nocheck(
     at::Tensor& grad_input,
@@ -31,7 +31,7 @@ at::Tensor& l1_loss_backward_out_nocheck(
   at::Tensor target_broadcast =
       target.sizes() != self.sizes() ? op_plugin::npu_broadcast(target, self.sizes()) : target;
 
-  std::string reduction_str = calcu_op_util::Getreduction_str(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("L1LossGrad")
       .Input(grad_output_broadcast)
@@ -70,7 +70,7 @@ at::Tensor l1_loss_backward(
     const at::Tensor& target,
     int64_t reduction) {
   at::Tensor result = npu_preparation::apply_tensor(self);
-  l1_loss_backward_out_nocheck(result, grad_output_broadcast, self, target_broadcast, reduction);
+  l1_loss_backward_out_nocheck(result, grad_output, self, target, reduction);
   return result;
 }
 } // namespace op_plugin

@@ -18,7 +18,9 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
+using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_preparation = at_npu::native::OpPreparation;
+using npu_utils = at_npu::native::NpuUtils;
 
 at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float, at::Tensor& result) {
   c10::ScalarType result_type = half_to_float ? c10::ScalarType::Float : result.scalar_type();

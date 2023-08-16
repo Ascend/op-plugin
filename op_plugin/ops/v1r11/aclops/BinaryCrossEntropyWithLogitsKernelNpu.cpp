@@ -57,7 +57,7 @@ at::Tensor binary_cross_entropy_with_logits_nocheck(
     pos_weight_tensor = at::ones(self.sizes(), self.options());
   }
 
-  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("SigmoidCrossEntropyWithLogitsV2")
       .Input(self.to(target.dtype()))

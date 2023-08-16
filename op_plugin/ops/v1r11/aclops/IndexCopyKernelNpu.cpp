@@ -14,7 +14,6 @@
 // limitations under the License.
 
 #include <ATen/NamedTensorUtils.h>
-#include <ATen/native/NonSymbolicBC.h>
 
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -49,7 +48,7 @@ at::Tensor& index_copy_npu_(
     const at::Tensor& source) {
   at::Tensor contiguous_self(self);
   if (!npu_utils::check_match(&self)) {
-    contiguousSelf = npu_utils::format_contiguous(self);
+    contiguous_self = npu_utils::format_contiguous(self);
   }
   at::Tensor result = index_copy_npu_impl(dimname_to_position(self, dim), index, source, contiguous_self);
   npu_utils::format_fresh_view(self, result);
@@ -65,7 +64,7 @@ at::Tensor& _index_copy_(
     const at::Tensor& source) {
   at::Tensor contiguous_self(self);
   if (!npu_utils::check_match(&self)) {
-    contiguousSelf = npu_utils::format_contiguous(self);
+    contiguous_self = npu_utils::format_contiguous(self);
   }
   at::Tensor result = index_copy_npu_impl(dim, index, source, contiguous_self);
   npu_utils::format_fresh_view(self, result);
