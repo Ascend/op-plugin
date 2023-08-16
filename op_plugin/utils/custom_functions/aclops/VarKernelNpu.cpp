@@ -168,12 +168,12 @@ std::tuple<at::Tensor, at::Tensor> cal_var_mean(
     at::IntArrayRef dim,
     bool unbiased,
     int64_t correction,
-    bool keepdim) {  
+    bool keepdim) {
   at::IntArrayRef dim_now = var_check_and_trans_dim(self, dim);
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
   at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
-  var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim, correction); 
+  var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim, correction);
   return std::tuple<at::Tensor, at::Tensor>(variance, mean);
 }
 } // namespace acl_op
