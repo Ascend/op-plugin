@@ -1764,13 +1764,9 @@ custom:
     impl_ns: acl_op
   - func: npu_roi_alignbk(Tensor self, Tensor rois, int[] xdiff_shape, int pooled_width, int pooled_height, float spatial_scale, int sample_num, int? roi_end_mode=None) -> Tensor
     impl_ns: acl_op
-  - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, int[] input_size) -> Tensor
-    impl_ns: acl_op
   - func: npu_sort_v2.out(Tensor self, int dim=-1, bool descending=False, *, Tensor(a!) out) -> Tensor(a!)
     impl_ns: acl_op
   - func: npu_sort_v2(Tensor self, int dim=-1, bool descending=False) -> Tensor
-    impl_ns: acl_op
-  - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, int[] shape, bool transpose_first) -> Tensor
     impl_ns: acl_op
   - func: npu_one_hot(Tensor self, int num_classes=-1, int depth=1, Scalar on_value=1, Scalar off_value=0) -> Tensor
     impl_ns: acl_op
@@ -1792,8 +1788,6 @@ custom:
     impl_ns: acl_op
   - func: npu_layer_norm_eval(Tensor input, int[] normalized_shape, Tensor? weight=None, Tensor? bias=None, float eps=1e-05) -> Tensor
     impl_ns: acl_op
-  - func: npu_max_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim=False) -> Tensor
-    impl_ns: acl_op
   - func: npu_rotated_box_encode(Tensor self, Tensor gt_bboxes, Tensor weight) -> Tensor
     impl_ns: acl_op
   - func: npu_rotated_box_decode(Tensor self, Tensor deltas, Tensor weight) -> Tensor
@@ -1806,11 +1800,9 @@ custom:
     impl_ns: acl_op
   - func: npu_nms_with_mask(Tensor input, Scalar iou_threshold) -> (Tensor, Tensor, Tensor)
     impl_ns: acl_op
-  - func: npu_gru_backward(Tensor? grady, Tensor? gradh, Tensor input, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, Tensor hx, Tensor y_output, Tensor h_output, Tensor output_updata, Tensor output_reset, Tensor output_new, Tensor hidden_new) -> Tensor[]
+  - func: npu_gru_backward(Tensor? grady, Tensor? gradh, Tensor input, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, Tensor hx, Tensor y_output, Tensor h_output, Tensor output_updata, Tensor output_reset, Tensor output_new, Tensor hidden_new) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_mish_backward(Tensor grad, Tensor input) -> Tensor
-    impl_ns: acl_op
-  - func: npu_min_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim=False) -> Tensor
     impl_ns: acl_op
   - func: npu_reshape(Tensor self, int[] shape, bool can_refresh=False) -> Tensor
     impl_ns: acl_op
@@ -1858,7 +1850,7 @@ custom:
     tags: nondeterministic_seeded
   - func: npu_dropout_with_add_softmax_backward(Tensor grad, Tensor mask, Tensor softmax_out, Scalar alpha, float prob, int dim) -> (Tensor, Tensor)
     impl_ns: acl_op
-  - func: npu_multi_head_attention_backward(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor query_res, Tensor key_res, Tensor value_res, Tensor attn_scores, Tensor attn_res, Tensor context, Tensor y_grad, Tensor dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> Tensor[]
+  - func: npu_multi_head_attention_backward(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor query_res, Tensor key_res, Tensor value_res, Tensor attn_scores, Tensor attn_res, Tensor context, Tensor y_grad, Tensor dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_dropout_gen_mask(int[] size, float p, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     impl_ns: acl_op
@@ -1942,7 +1934,7 @@ custom:
     impl_ns: acl_op
   - func: npu_silu_(Tensor(a!) self) -> Tensor(a!)
     impl_ns: acl_op
-  - func: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> Tensor[]
+  - func: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
     tags: nondeterministic_seeded
   - func: npu_mish(Tensor self) -> Tensor
@@ -1957,9 +1949,11 @@ custom:
     impl_ns: acl_op
   - func: npu_diou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=False, int mode=0) -> Tensor
     impl_ns: acl_op
-  - func: npu_lstm(Tensor input, Tensor weight, Tensor bias, Tensor seqMask, Tensor h, Tensor c, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, bool flagSeq, bool direction) -> Tensor[]
+  - func: npu_lstm(Tensor input, Tensor weight, Tensor bias, Tensor seq_mask, Tensor h, Tensor c, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, bool flag_seq, bool direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
     tags: nondeterministic_seeded
+  - func: npu_lstm_data(Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor seq_mask, Tensor h, Tensor c, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, bool flag_seq, bool direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+    impl_ns: acl_op
   - func: _dropout_with_byte_mask(Tensor self, float p) -> (Tensor, Tensor)
     impl_ns: acl_op
     tags: nondeterministic_seeded
@@ -1968,7 +1962,7 @@ custom:
     tags: nondeterministic_seeded
   - func: npu_scaled_masked_softmax(Tensor x, Tensor mask, Scalar scale=1, bool fixed_triu_mask=False) -> Tensor
     impl_ns: acl_op
-  - func: npu_multi_head_attention(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor attn_mask, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor? dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> Tensor[]
+  - func: npu_multi_head_attention(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor attn_mask, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor? dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
     tags: nondeterministic_seeded
   - func: npu_dropout_do_mask(Tensor self, Tensor mask, float p) -> (Tensor, Tensor)
@@ -1976,9 +1970,11 @@ custom:
     tags: nondeterministic_seeded
   - func: npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> Tensor
     impl_ns: acl_op
-  - func: npu_lstm_cell(Tensor input, Tensor w_ih, Tensor w_hh, Tensor h, Tensor c, Tensor? b_ih=None, Tensor? b_hh=None) -> Tensor[]
+  - func: npu_lstm_cell(Tensor input, Tensor w_ih, Tensor w_hh, Tensor h, Tensor c, Tensor? bias=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_fused_attention_score(Tensor query_layer, Tensor key_layer, Tensor value_layer, Tensor attention_mask, Scalar scale, float keep_prob, bool query_transpose=False, bool key_transpose=False, bool bmm_score_transpose_a=False, bool bmm_score_transpose_b=False, bool value_transpose=False, bool dx_transpose=False) -> Tensor
     impl_ns: acl_op
   - func: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2) -> Tensor
+    impl_ns: acl_op
+  - func: _npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> (Tensor, Tensor)
     impl_ns: acl_op

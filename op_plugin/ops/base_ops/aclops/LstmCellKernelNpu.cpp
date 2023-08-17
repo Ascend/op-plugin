@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
+#include "torch_npu/csrc/framework/utils/CustomFunctions.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -21,11 +21,10 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
-using torch::autograd::AutogradContext;
-using torch::autograd::Function;
 
 namespace {
-std::vector<at::Tensor> lstm_cell_npu_impl(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
+    at::Tensor, at::Tensor, at::Tensor, at::Tensor> lstm_cell_npu_impl(
     const at::Tensor& input,
     const at::Tensor& w_ih,
     const at::Tensor& w_hh,
@@ -40,14 +39,14 @@ std::vector<at::Tensor> lstm_cell_npu_impl(
   int64_t hidden_size = w_hh.size(1) / 4;
 
   at::SmallVector<int64_t, SIZE> output_size = {num_step, batch_size, hidden_size};
-  at::Tensor y_output = npu_preparation::ApplyTensor(input_reshape, output_size);
-  at::Tensor h_output = npu_preparation::ApplyTensor(input_reshape, output_size);
-  at::Tensor c_output = npu_preparation::ApplyTensor(input_reshape, output_size);
-  at::Tensor i_output = npu_preparation::ApplyTensorWithFormat(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor j_output = npu_preparation::ApplyTensorWithFormat(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor f_output = npu_preparation::ApplyTensorWithFormat(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor o_output = npu_preparation::ApplyTensorWithFormat(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor tanhc = npu_preparation::ApplyTensorWithFormat(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor y_output = npu_preparation::apply_tensor(input_reshape, output_size);
+  at::Tensor h_output = npu_preparation::apply_tensor(input_reshape, output_size);
+  at::Tensor c_output = npu_preparation::apply_tensor(input_reshape, output_size);
+  at::Tensor i_output = npu_preparation::apply_tensor_with_format(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor j_output = npu_preparation::apply_tensor_with_format(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor f_output = npu_preparation::apply_tensor_with_format(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor o_output = npu_preparation::apply_tensor_with_format(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
+  at::Tensor tanhc = npu_preparation::apply_tensor_with_format(input_reshape, output_size, ACL_FORMAT_FRACTAL_NZ);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("DynamicRNNV2")
@@ -84,8 +83,7 @@ std::vector<at::Tensor> lstm_cell_npu_impl(
       .Run();
   at::Tensor h_out = h_output[0];
   at::Tensor c_out = c_output[0];
-  std::vector<at::Tensor> results = {y_output, h_out, c_out, i_output, j_output, f_output, o_output, tanhc};
-  return results;
+  return std::make_tuple(y_output, h_out, c_out, i_output, j_output, f_output, o_output, tanhc);
 }
 
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> lstm_cell_backward_npu_impl_nocheck(
@@ -189,82 +187,27 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
   auto grad_c = grad_c_opt_val.defined() ? grad_c_opt_val : at::zeros(c.sizes(), c_output.options());
   int64_t hidden_size = y_output.size(2);
   at::SmallVector<int64_t, SIZE> output_size = {4 * hidden_size};
-  at::Tensor grad_input = npu_preparation::ApplyTensor(input);
-  at::Tensor grad_wih = npu_preparation::ApplyTensor(w_ih);
-  at::Tensor grad_whh = npu_preparation::ApplyTensor(w_hh);
-  at::Tensor grad_bias = npu_preparation::ApplyTensor(i, output_size);
-  at::Tensor grad_ht = npu_preparation::ApplyTensor(h);
-  at::Tensor grad_ct = npu_preparation::ApplyTensor(c);
+  at::Tensor grad_input = npu_preparation::apply_tensor(input);
+  at::Tensor grad_wih = npu_preparation::apply_tensor(w_ih);
+  at::Tensor grad_whh = npu_preparation::apply_tensor(w_hh);
+  at::Tensor grad_bias = npu_preparation::apply_tensor(i, output_size);
+  at::Tensor grad_ht = npu_preparation::apply_tensor(h);
+  at::Tensor grad_ct = npu_preparation::apply_tensor(c);
   lstm_cell_backward_npu_impl_nocheck(grad_input, grad_wih, grad_whh, grad_bias, grad_ht, grad_ct,
       grad_y, grad_h, grad_c, input, w_ih, w_hh, h, c, y_output, h_output, c_output, i, j, f, o, tanhc);
   return std::tie(grad_input, grad_wih, grad_whh, grad_bias, grad_ht, grad_ct);
 }
 
-class NPULstmCellFunction : public torch::autograd::Function<NPULstmCellFunction> {
-public:
-  static std::vector<at::Tensor> forward(AutogradContext *ctx,
-      const at::Tensor& input,
-      const at::Tensor& w_ih,
-      const at::Tensor& w_hh,
-      const at::Tensor& h,
-      const at::Tensor& c,
-      const c10::optional<at::Tensor>& b_ih_opt,
-      const c10::optional<at::Tensor>& b_hh_opt) {
-    at::AutoNonVariableTypeMode g;
-    const at::Tensor& b_ih = c10::value_or_else(b_ih_opt, [] {return at::Tensor();});
-    const at::Tensor& b_hh = c10::value_or_else(b_hh_opt, [] {return at::Tensor();});
-    at::Tensor bias;
-    if (b_ih.defined()) {
-      bias = at::add(b_ih, b_hh).to(input.dtype());
-    }
-    auto results = lstm_cell_npu_impl(input, w_ih, w_hh, h, c, bias);
-    ctx->save_for_backward({input, w_ih, w_hh, h, c,
-        results[0], results[1], results[2], results[3], results[4], results[5], results[6], results[7]});
-    return results;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext* ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto input = saved[0];
-    auto w_ih = saved[1];
-    auto w_hh = saved[2];
-    auto h = saved[3];
-    auto c = saved[4];
-    auto y_output = saved[5];
-    auto h_output = saved[6];
-    auto c_output = saved[7];
-    auto i = saved[8];
-    auto j = saved[9];
-    auto f = saved[10];
-    auto o = saved[11];
-    auto tanhc = saved[12];
-
-    auto results = acl_op::npu_lstm_cell_backward(
-        grad_outputs[0], grad_outputs[1], grad_outputs[2], input, w_ih,
-        w_hh, h, c, y_output, h_output, c_output, i, j, f, o, tanhc);
-
-    std::vector<at::Tensor> output_list = {
-        std::get<0>(results),
-        std::get<1>(results),
-        std::get<2>(results),
-        std::get<4>(results),
-        std::get<5>(results),
-        std::get<3>(results),
-        std::get<3>(results)};
-    return output_list;
-  }
-};
-
-std::vector<at::Tensor> npu_lstm_cell(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
+    at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_cell(
     const at::Tensor& input,
     const at::Tensor& w_ih,
     const at::Tensor& w_hh,
     const at::Tensor& h,
     const at::Tensor& c,
-    const c10::optional<at::Tensor>& b_ih_opt,
-    const c10::optional<at::Tensor>& b_hh_opt) {
-  return NPULstmCellFunction::apply(input, w_ih, w_hh, h, c, b_ih_opt, b_hh_opt);
+    const c10::optional<at::Tensor>& bias_opt) {
+  const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+  return lstm_cell_npu_impl(input, w_ih, w_hh, h, c, bias);
 }
 
 std::tuple<at::Tensor, at::Tensor> lstm_cell(
@@ -278,8 +221,13 @@ std::tuple<at::Tensor, at::Tensor> lstm_cell(
   at::Tensor weight_hh = w_hh.t().to(input.dtype());
   at::Tensor h = hx[0];
   at::Tensor c = hx[1];
-  auto result = acl_op::npu_lstm_cell(input, weight_ih, weight_hh, h, c, b_ih_opt, b_hh_opt);
-  std::tuple<at::Tensor, at::Tensor> output(result[1], result[2]);
-  return output;
+  const at::Tensor& b_ih = c10::value_or_else(b_ih_opt, [] {return at::Tensor();});
+  const at::Tensor& b_hh = c10::value_or_else(b_hh_opt, [] {return at::Tensor();});
+  at::Tensor bias;
+  if (b_ih.defined()) {
+    bias = at::add(b_ih, b_hh).to(input.dtype());
+  }
+  auto result = at_npu::native::custom_ops::npu_lstm_cell(input, weight_ih, weight_hh, h, c, bias);
+  return std::tuple<at::Tensor, at::Tensor>(std::get<1>(result), std::get<2>(result));
 }
 }  // namespace acl_op

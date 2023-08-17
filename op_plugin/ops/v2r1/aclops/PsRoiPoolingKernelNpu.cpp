@@ -15,43 +15,50 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_op_command = at_npu::native::OpCommand;
 
 namespace {
-at::Tensor& ps_roi_pooling_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
+at::Tensor& ps_roi_pooling_backward_npu_nocheck(
+    at::Tensor& input_grad,
+    const at::Tensor& output_grad,
     const at::Tensor& rois,
     double spatial_scale,
     int64_t group_size,
-    int64_t output_dim) {
+    int64_t output_dim,
+    at::IntArrayRef input_size) {
   npu_op_command cmd;
-  cmd.Name("PSROIPoolingV2")
-      .Input(self, "x")
+  cmd.Name("PSROIPoolingGradV2D")
+      .Input(output_grad, "x")
       .Input(rois)
-      .Output(result, "y")
+      .Output(input_grad, "y")
       .Attr("spatial_scale", (float)spatial_scale)
-      .Attr("output_dim", output_dim)
       .Attr("group_size", group_size)
+      .Attr("output_dim", output_dim)
+      .Attr("input_size", input_size)
       .Run();
 
-  return result;
+  return input_grad;
 }
 } // namespace
 
-
-at::Tensor npu_ps_roi_pooling(
-    const at::Tensor& self,
+at::Tensor npu_ps_roi_pooling_backward(
+    const at::Tensor& output_grad,
     const at::Tensor& rois,
     double spatial_scale,
     int64_t group_size,
-    int64_t output_dim) {
-  auto output_size = {rois.size(0) * rois.size(2), output_dim, group_size, group_size};
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  ps_roi_pooling_npu_nocheck(result, self, rois, spatial_scale, group_size, output_dim);
-  return result;
+    int64_t output_dim,
+    c10::SymIntArrayRef size) {
+  auto input_size = c10::asIntArrayRefUnchecked(size);
+  auto output_size = {rois.size(0), group_size * group_size * output_dim, input_size[0], input_size[1]};
+
+  at::Tensor input_grad = npu_preparation::apply_tensor(output_grad, output_size);
+  ps_roi_pooling_backward_npu_nocheck(input_grad, output_grad,
+      rois, spatial_scale, group_size, output_dim, input_size);
+
+  return input_grad;
 }
 } // namespace acl_op

@@ -13,14 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
+#include "torch_npu/csrc/framework/utils/CustomFunctions.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using torch::autograd::Function;
-using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -45,7 +43,7 @@ std::vector<std::pair<at::Tensor, at::Tensor>> make_pair_vec(const std::vector<a
   return result;
 }
 
-std::vector<at::Tensor> gru_nocheck(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> gru_nocheck(
     const at::Tensor& input,
     const at::Tensor& hx,
     const at::Tensor& weight_input,
@@ -103,9 +101,7 @@ std::vector<at::Tensor> gru_nocheck(
       .Attr("reset_after", true)
       .Attr("is_training", true)
       .Run();
-  std::vector<at::Tensor> results = {output_y, output_h, output_updata,
-      output_reset, output_new, hidden_new};
-  return results;
+  return std::make_tuple(output_y, output_h, output_updata, output_reset, output_new, hidden_new);
 }
 
 std::tuple<at::Tensor, at::Tensor> gru_single_layer_bidirec(
@@ -143,18 +139,20 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_bidirec(
   }
   at::Tensor seq_length = npu_preparation::apply_tensor_with_format({}, input.options(), ACL_FORMAT_ND);
 
-  auto results = acl_op::npu_gru(input, hx.first, fw_weight_input, fw_weight_hidden, fw_bias_input,
-      fw_bias_hidden, seq_length, has_biases, num_layers, dropout, train, bidirectional, batch_first);
+  auto results = at_npu::native::custom_ops::npu_gru(
+      input, hx.first, fw_weight_input, fw_weight_hidden, fw_bias_input, fw_bias_hidden, seq_length,
+      has_biases, num_layers, dropout, train, bidirectional, batch_first);
 
   int64_t num_step = input.size(0);
-  at::Tensor fw_output_hy = at::unsqueeze(results[1][num_step - 1], 0);
-  at::Tensor fw_output = results[0];
+  at::Tensor fw_output_hy = at::unsqueeze(std::get<1>(results)[num_step - 1], 0);
+  at::Tensor fw_output = std::get<0>(results);
   auto rev_inputs = at::flip(input, {0}); // reverse input;
-  auto rev_results = acl_op::npu_gru(rev_inputs, hx.second, rev_weight_input, rev_weight_hidden, rev_bias_input,
-      rev_bias_hidden, seq_length, has_biases, num_layers, dropout, train, bidirectional, batch_first);
+  auto rev_results = at_npu::native::custom_ops::npu_gru(
+      rev_inputs, hx.second, rev_weight_input, rev_weight_hidden, rev_bias_input, rev_bias_hidden, seq_length,
+      has_biases, num_layers, dropout, train, bidirectional, batch_first);
 
-  at::Tensor rev_output_hy = at::unsqueeze(rev_results[1][num_step - 1], 0);
-  at::Tensor rev_output = at::flip(rev_results[0],{0});
+  at::Tensor rev_output_hy = at::unsqueeze(std::get<1>(rev_results)[num_step - 1], 0);
+  at::Tensor rev_output = at::flip(std::get<0>(rev_results),{0});
 
   return std::make_tuple(at::cat({fw_output, rev_output}, -1),
       at::cat({fw_output_hy, rev_output_hy}));
@@ -186,11 +184,12 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_direc_npu(
   }
 
   at::Tensor seq_length = npu_preparation::apply_tensor_with_format({}, input.options(), ACL_FORMAT_ND);
-  auto results = acl_op::npu_gru(input, hx, weight_input, weight_hidden, bias_input, bias_hidden,
-      seq_length, has_biases, num_layers, dropout, train, bidirectional, batch_first);
+  auto results = at_npu::native::custom_ops::npu_gru(
+      input, hx, weight_input, weight_hidden, bias_input, bias_hidden, seq_length,
+      has_biases, num_layers, dropout, train, bidirectional, batch_first);
   int64_t num_step = input.size(0);
-  at::Tensor output_hy = at::unsqueeze(results[1][num_step - 1], 0);
-  return std::tuple<at::Tensor, at::Tensor>(results[0], output_hy);
+  at::Tensor output_hy = at::unsqueeze(std::get<1>(results)[num_step - 1], 0);
+  return std::tuple<at::Tensor, at::Tensor>(std::get<0>(results), output_hy);
 }
 
 std::tuple<at::Tensor, at::Tensor> apply_layer_stack(
@@ -275,7 +274,7 @@ std::tuple<at::Tensor, at::Tensor> apply_layer_stack(
 }
 } // namespace
 
-std::vector<at::Tensor> npu_gru_backward(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_gru_backward(
     const c10::optional<at::Tensor>& grady_opt,
     const c10::optional<at::Tensor>& gradh_opt,
     const at::Tensor& input,
@@ -347,70 +346,10 @@ std::vector<at::Tensor> npu_gru_backward(
       .Attr("gate_order", (string) "rzh")
       .Attr("reset_after", (bool)true)
       .Run();
-  std::vector<at::Tensor> results = {grad_x, grad_h_prev, grad_w_input, grad_w_hidden, grad_b_input, grad_b_hidden};
-  return results;
+  return std::make_tuple(grad_w_input, grad_w_hidden, grad_x, grad_b_input, grad_b_hidden, grad_h_prev);
 }
 
-class NPUGruFunction : public torch::autograd::Function<NPUGruFunction> {
-public:
-  static std::vector<at::Tensor> forward(AutogradContext *ctx,
-      const at::Tensor& input,
-      const at::Tensor& hx,
-      const at::Tensor& weight_input,
-      const at::Tensor& weight_hidden,
-      const at::Tensor& bias_input,
-      const at::Tensor& bias_hidden,
-      const at::Tensor& seq_length,
-      bool has_biases,
-      int64_t num_layers,
-      double dropout,
-      bool train,
-      bool bidirectional,
-      bool batch_first) {
-    auto result = gru_nocheck(input, hx, weight_input, weight_hidden, bias_input, bias_hidden,
-        seq_length, has_biases, num_layers, dropout, train, bidirectional, batch_first);
-
-    auto result0 = result[0];
-    auto result1 = result[1];
-    auto result2 = result[2];
-    auto result3 = result[3];
-    auto result4 = result[4];
-    auto result5 = result[5];
-
-    at::AutoNonVariableTypeMode g;
-    ctx->save_for_backward({weight_input, weight_hidden, input, bias_input, bias_hidden, hx,
-        result0, result1, result2, result3, result4, result5, seq_length});
-    return result;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext* ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto weight_input = saved[0];
-    auto weight_hidden = saved[1];
-    auto input = saved[2];
-    auto bias_input = saved[3];
-    auto bias_hidden = saved[4];
-    auto hx = saved[5];
-    auto result0 = saved[6];
-    auto result1 = saved[7];
-    auto result2 = saved[8];
-    auto result3 = saved[9];
-    auto result4 = saved[10];
-    auto result5 = saved[11];
-    auto seq_length = saved[12];
-
-    std::vector<at::Tensor> result = acl_op::npu_gru_backward(grad_outputs[0], grad_outputs[1],
-        input, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, hx,
-        result0, result1, result2, result3, result4, result5);
-
-    std::vector<at::Tensor> output = {result[0], result[1], result[2], result[3], result[4], result[5],
-        at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor()};
-    return output;
-  }
-};
-
-std::vector<at::Tensor> npu_gru(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_gru(
     const at::Tensor& input,
     const at::Tensor& hx,
     const at::Tensor& weight_input,
@@ -424,7 +363,7 @@ std::vector<at::Tensor> npu_gru(
     bool train,
     bool bidirectional,
     bool batch_first) {
-  return NPUGruFunction::apply(input, hx, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, has_biases,
+  return gru_nocheck(input, hx, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, has_biases,
       num_layers, dropout, train, bidirectional, batch_first);
 }
 

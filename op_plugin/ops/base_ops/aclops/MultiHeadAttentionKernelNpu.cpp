@@ -13,14 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using torch::autograd::Function;
-using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -29,7 +25,8 @@ static const int64_t FZ_ALIGN_NUM1 = 16;
 static const size_t BIAS_BUM1 = 4;
 static const int64_t FZ_ALIGN_NUM = 16;
 
-std::vector<at::Tensor> multi_head_attention_npu(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
+    at::Tensor, at::Tensor, at::Tensor, at::Tensor> multi_head_attention_nocheck(
     const at::Tensor& query,
     const at::Tensor& key,
     const at::Tensor& value,
@@ -62,27 +59,27 @@ std::vector<at::Tensor> multi_head_attention_npu(
   auto query_options = query.options();
   auto query_format = calcu_op_util::GetTensorNpuFormat(query);
 
-  at::Tensor y = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor y = npu_preparation::apply_tensor_with_format(
       {query_shape[0], weight_col}, query_options, query_format);
-  at::Tensor dropout_mask = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor dropout_mask = npu_preparation::apply_tensor_with_format(
       {batch * attn_head_num * tgt_len * src_len / 8}, query.options().dtype(at::kByte), ACL_FORMAT_ND);
-  at::Tensor query_res = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor query_res = npu_preparation::apply_tensor_with_format(
       {batch, attn_head_num, tgt_len, attn_dim_per_head}, query_options, query_format);
-  at::Tensor key_res = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor key_res = npu_preparation::apply_tensor_with_format(
       {batch, attn_head_num, src_len, attn_dim_per_head}, query_options, query_format);
-  at::Tensor value_res = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor value_res = npu_preparation::apply_tensor_with_format(
       {batch, attn_head_num, src_len, attn_dim_per_head}, query_options, query_format);
   at::Tensor attn_scores;
   if (softmax_use_float) {
-    attn_scores = npu_preparation::ApplyTensorWithFormat(
+    attn_scores = npu_preparation::apply_tensor_with_format(
         {batch, attn_head_num, tgt_len, src_len}, query.options().dtype(at::kFloat), query_format);
   } else {
-    attn_scores = npu_preparation::ApplyTensorWithFormat(
+    attn_scores = npu_preparation::apply_tensor_with_format(
         {batch, attn_head_num, tgt_len, src_len}, query_options, query_format);
   }
-  at::Tensor attn_res = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor attn_res = npu_preparation::apply_tensor_with_format(
       {batch, attn_head_num, tgt_len, src_len}, query_options, query_format);
-  at::Tensor context = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor context = npu_preparation::apply_tensor_with_format(
       {query_shape[0], weight_col}, query_options, query_format);
 
   at_npu::native::OpCommand cmd;
@@ -127,13 +124,12 @@ std::vector<at::Tensor> multi_head_attention_npu(
       .Attr("softmax_use_float", softmax_use_float)
       .Run();
 
-  std::vector<at::Tensor> result1 =
-      {y, dropout_mask, query_res, key_res, value_res, attn_scores, attn_res, context};
-  return result1;
+  return std::make_tuple(y, dropout_mask, query_res, key_res, value_res, attn_scores, attn_res, context);
 }
 } // namespace
 
-std::vector<at::Tensor> npu_multi_head_attention_backward(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor,
+    at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_multi_head_attention_backward(
     const at::Tensor& query,
     const at::Tensor& key,
     const at::Tensor& value,
@@ -172,17 +168,17 @@ std::vector<at::Tensor> npu_multi_head_attention_backward(
   auto query_shape = query.sizes();
   int64_t batch = query_shape[0] / tgt_len;
   auto weight_col = attn_head_num * attn_dim_per_head;
-  at::Tensor query_weight_grad = npu_preparation::ApplyTensor(query_weight, {weight_col, weight_col});
-  at::Tensor key_weight_grad = npu_preparation::ApplyTensor(key_weight, {weight_col, weight_col});
-  at::Tensor value_weight_grad = npu_preparation::ApplyTensor(value_weight, {weight_col, weight_col});
-  at::Tensor out_proj_weight_grad = npu_preparation::ApplyTensor(out_proj_weight, {weight_col, weight_col});
-  at::Tensor query_grad = npu_preparation::ApplyTensor(query, {query_shape[0], weight_col});
-  at::Tensor key_grad = npu_preparation::ApplyTensor(key, {batch * src_len, weight_col});
-  at::Tensor value_grad = npu_preparation::ApplyTensor(value, {batch * src_len, weight_col});
-  at::Tensor query_bias_grad = npu_preparation::ApplyTensor(query_bias, {1, weight_col});
-  at::Tensor key_bias_grad = npu_preparation::ApplyTensor(key_bias, {1, weight_col});
-  at::Tensor value_bias_grad = npu_preparation::ApplyTensor(value_bias, {1, weight_col});
-  at::Tensor out_proj_bias_grad = npu_preparation::ApplyTensor(out_proj_bias, {1, weight_col});
+  at::Tensor query_weight_grad = npu_preparation::apply_tensor(query_weight, {weight_col, weight_col});
+  at::Tensor key_weight_grad = npu_preparation::apply_tensor(key_weight, {weight_col, weight_col});
+  at::Tensor value_weight_grad = npu_preparation::apply_tensor(value_weight, {weight_col, weight_col});
+  at::Tensor out_proj_weight_grad = npu_preparation::apply_tensor(out_proj_weight, {weight_col, weight_col});
+  at::Tensor query_grad = npu_preparation::apply_tensor(query, {query_shape[0], weight_col});
+  at::Tensor key_grad = npu_preparation::apply_tensor(key, {batch * src_len, weight_col});
+  at::Tensor value_grad = npu_preparation::apply_tensor(value, {batch * src_len, weight_col});
+  at::Tensor query_bias_grad = npu_preparation::apply_tensor(query_bias, {1, weight_col});
+  at::Tensor key_bias_grad = npu_preparation::apply_tensor(key_bias, {1, weight_col});
+  at::Tensor value_bias_grad = npu_preparation::apply_tensor(value_bias, {1, weight_col});
+  at::Tensor out_proj_bias_grad = npu_preparation::apply_tensor(out_proj_bias, {1, weight_col});
   vector<uint8_t> grad_mask(BIAS_BUM1);
   grad_mask.clear();
   grad_mask.push_back(query_bias.defined());
@@ -232,105 +228,12 @@ std::vector<at::Tensor> npu_multi_head_attention_backward(
       .Attr("bias_grad_mask", bias_grad_mask)
       .Run();
 
-  std::vector<at::Tensor> result1 = {query_grad, key_grad, value_grad,
-      query_weight_grad, key_weight_grad, value_weight_grad, out_proj_weight_grad,
-      query_bias_grad, key_bias_grad, value_bias_grad, out_proj_bias_grad};
-
-  return result1;
+  return std::make_tuple(query_weight_grad, key_weight_grad, value_weight_grad, out_proj_weight_grad,
+      query_grad, key_grad, value_grad, query_bias_grad, key_bias_grad, value_bias_grad, out_proj_bias_grad);
 }
 
-class NPUMultiHeadAttentionFunction: public torch::autograd::Function<NPUMultiHeadAttentionFunction> {
-public:
-  static std::vector<at::Tensor> forward(
-      AutogradContext* ctx,
-      const at::Tensor& query,
-      const at::Tensor& key,
-      const at::Tensor& value,
-      const at::Tensor& query_weight,
-      const at::Tensor& key_weight,
-      const at::Tensor& value_weight,
-      const at::Tensor& attn_mask,
-      const at::Tensor& out_proj_weight,
-      const c10::optional<at::Tensor>& query_bias_opt,
-      const c10::optional<at::Tensor>& key_bias_opt,
-      const c10::optional<at::Tensor>& value_bias_opt,
-      const c10::optional<at::Tensor>& out_proj_bias_opt,
-      const c10::optional<at::Tensor>& dropout_mask_opt,
-      int64_t attn_head_num,
-      int64_t attn_dim_per_head,
-      int64_t src_len,
-      int64_t tgt_len,
-      double dropout_prob,
-      bool softmax_use_float) {
-    const at::Tensor& query_bias = c10::value_or_else(query_bias_opt, [] { return at::Tensor(); });
-    const at::Tensor& key_bias = c10::value_or_else(key_bias_opt, [] { return at::Tensor(); });
-    const at::Tensor& value_bias = c10::value_or_else(value_bias_opt, [] { return at::Tensor(); });
-    const at::Tensor& out_proj_bias = c10::value_or_else(out_proj_bias_opt, [] { return at::Tensor(); });
-    const at::Tensor& mask = c10::value_or_else(dropout_mask_opt, [] { return at::Tensor(); });
-
-    auto result = multi_head_attention_npu(
-        query, key, value, query_weight, key_weight, value_weight, attn_mask,
-        out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias, mask,
-        attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float);
-
-    ctx->saved_data["attn_head_num"] = attn_head_num;
-    ctx->saved_data["attn_dim_per_head"] = attn_dim_per_head;
-    ctx->saved_data["src_len"] = src_len;
-    ctx->saved_data["tgt_len"] = tgt_len;
-    ctx->saved_data["dropout_prob"] = dropout_prob;
-    ctx->saved_data["softmax_use_float"] = softmax_use_float;
-
-    at::AutoNonVariableTypeMode g;
-
-    ctx->save_for_backward({
-        query, key, value, query_weight, key_weight, value_weight, attn_mask,
-        out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias,
-        result[1], result[2], result[3], result[4], result[5], result[6], result[7]});
-    return result;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext* ctx, std::vector<at::Tensor> grad_outputs) {
-    auto attn_head_num = ctx->saved_data["attn_head_num"].toInt();
-    auto attn_dim_per_head = ctx->saved_data["attn_dim_per_head"].toInt();
-    auto src_len = ctx->saved_data["src_len"].toInt();
-    auto tgt_len = ctx->saved_data["tgt_len"].toInt();
-    auto dropout_prob = ctx->saved_data["dropout_prob"].toDouble();
-    auto softmax_use_float = ctx->saved_data["softmax_use_float"].toBool();
-
-    auto saved = ctx->get_saved_variables();
-    auto query = saved[0];
-    auto key = saved[1];
-    auto value = saved[2];
-    auto query_weight = saved[3];
-    auto key_weight = saved[4];
-    auto value_weight = saved[5];
-    auto attn_mask = saved[6];
-    auto out_proj_weight = saved[7];
-    auto query_bias = saved[8];
-    auto key_bias = saved[9];
-    auto value_bias = saved[10];
-
-    auto out_proj_bias = saved[11];
-    auto result1 = saved[12];
-    auto result2 = saved[13];
-    auto result3 = saved[14];
-    auto result4 = saved[15];
-    auto result5 = saved[16];
-    auto result6 = saved[17];
-    auto result7 = saved[18];
-    auto result = acl_op::npu_multi_head_attention_backward(
-        query, key, value, query_weight, key_weight, value_weight, out_proj_weight, query_bias, key_bias, value_bias,
-        out_proj_bias, result2, result3, result4, result5, result6, result7, grad_outputs[0], result1, attn_head_num,
-        attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float);
-
-    std::vector<at::Tensor> output = {result[0], result[1], result[2], result[3], result[4],
-        result[5], at::Tensor(), result[6], result[7], result[8], result[9], result[10], at::Tensor(),
-        at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor()};
-    return output;
-  }
-};
-
-std::vector<at::Tensor> npu_multi_head_attention(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
+    at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_multi_head_attention(
     const at::Tensor& query,
     const at::Tensor& key,
     const at::Tensor& value,
@@ -350,9 +253,15 @@ std::vector<at::Tensor> npu_multi_head_attention(
     int64_t tgt_len,
     double dropout_prob,
     bool softmax_use_float) {
-  return NPUMultiHeadAttentionFunction::apply(query, key, value, query_weight, key_weight,
-      value_weight, attn_mask, out_proj_weight, query_bias_opt, key_bias_opt, value_bias_opt,
-      out_proj_bias_opt, dropout_mask_opt, attn_head_num, attn_dim_per_head, src_len, tgt_len,
-      dropout_prob, softmax_use_float);
+  const at::Tensor& query_bias = c10::value_or_else(query_bias_opt, [] { return at::Tensor(); });
+  const at::Tensor& key_bias = c10::value_or_else(key_bias_opt, [] { return at::Tensor(); });
+  const at::Tensor& value_bias = c10::value_or_else(value_bias_opt, [] { return at::Tensor(); });
+  const at::Tensor& out_proj_bias = c10::value_or_else(out_proj_bias_opt, [] { return at::Tensor(); });
+  const at::Tensor& mask = c10::value_or_else(dropout_mask_opt, [] { return at::Tensor(); });
+
+  return multi_head_attention_nocheck(
+      query, key, value, query_weight, key_weight, value_weight, attn_mask,
+      out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias, mask,
+      attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float);
 }
 } // namespace acl_op

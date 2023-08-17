@@ -13,15 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/AclOpsInterface.h"
-
-#include <torch/csrc/autograd/custom_function.h>
+#include "torch_npu/csrc/framework/utils/CustomFunctions.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using torch::autograd::AutogradContext;
 using npu_utils = at_npu::native::NpuUtils;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
@@ -69,7 +67,7 @@ at::Tensor dropout_gen_byte_mask(const at::Tensor& self, at::Scalar prob) {
   return mask;
 }
 
-std::tuple<at::Tensor, at::Tensor> dropout_npu_impl(
+std::tuple<at::Tensor, at::Tensor> dropout_out_nocheck(
     at::Tensor result,
     const at::Tensor& self,
     double p) {
@@ -100,39 +98,7 @@ std::tuple<at::Tensor, at::Tensor> dropout_npu_impl(
 
   return std::tie(result, mask);
 }
-
-std::tuple<at::Tensor, at::Tensor> _dropout_with_byte_mask_new(
-    const at::Tensor& self,
-    double p) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  return dropout_npu_impl(result, self, p);
-}
 } // namespace
-
-class NPUdropoutwbmFunction : public torch::autograd::Function<NPUdropoutwbmFunction> {
-public:
-  static std::vector<at::Tensor> forward(AutogradContext* ctx,
-      const at::Tensor& self,
-      double p) {
-    ctx->saved_data["p"] = p;
-    at::AutoNonVariableTypeMode g;
-    auto result = _dropout_with_byte_mask_new(self, p);
-    auto result1 = std::get<1>(result);
-    ctx->save_for_backward({result1});
-    std::vector<at::Tensor> result_list = {std::get<0>(result), result1};
-    return result_list;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext* ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto p = ctx->saved_data["p"].toDouble();
-    auto saved = ctx->get_saved_variables();
-    auto mask = saved[0];
-    at::Tensor result = _dropout_with_byte_mask_backward(grad_outputs[0], mask, p);
-    std::vector<at::Tensor> output = {result, at::Tensor()};
-    return output;
-  }
-};
 
 at::Tensor _dropout_with_byte_mask_backward(
     const at::Tensor& grad_output,
@@ -161,9 +127,8 @@ at::Tensor _dropout_with_byte_mask_backward(
 std::tuple<at::Tensor, at::Tensor> _dropout_with_byte_mask(
     const at::Tensor& self,
     double p) {
-  auto result = NPUdropoutwbmFunction::apply(self, p);
-  std::tuple<at::Tensor, at::Tensor> output(result[0], result[1]);
-  return output;
+  at::Tensor result = npu_preparation::apply_tensor(self);
+  return dropout_out_nocheck(result, self, p);
 }
 
 at::Tensor dropout_with_byte_mask(const at::Tensor& self, double p, bool train) {
@@ -176,7 +141,8 @@ at::Tensor dropout_with_byte_mask(const at::Tensor& self, double p, bool train) 
   if (p == 1) {
     return self.mul(at::zeros(self.sizes(), self.options()));
   }
-  return std::get<0>(_dropout_with_byte_mask(self, p));
+  auto results = at_npu::native::custom_ops::_dropout_with_byte_mask(self, p);
+  return std::get<0>(results);
 }
 
 } // namespace acl_op

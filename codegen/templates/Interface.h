@@ -18,7 +18,7 @@
 #include <ATen/Tensor.h>
 #include <ATen/ATen.h>
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/custom_functions/BackwardManual.h"
+#include "op_plugin/ops/v2r1/BackwardManual.h"
 
 namespace ${namespace} {
 ${declarations}
