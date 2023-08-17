@@ -60,11 +60,11 @@ at::Tensor npu_rotated_iou(
 
   at::Tensor boxes_cp = boxes.permute({0, 2, 1});
   if (origin_dtype == at::kHalf){
-    boxes_cp = acl_op::npu_dtype_cast(boxes_cp, at::kFloat);
+    boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(boxes_cp, at::kFloat);
   }
   at::Tensor query_boxes_cp = query_boxes.permute({0, 2, 1});
   if (query_boxes_cp.scalar_type() == at::kHalf){
-    query_boxes_cp = acl_op::npu_dtype_cast(query_boxes_cp, at::kFloat);
+    query_boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(query_boxes_cp, at::kFloat);
   }
 
   int64_t B = boxes_cp.size(0);
@@ -75,7 +75,7 @@ at::Tensor npu_rotated_iou(
   at::Tensor iou = npu_preparation::ApplyTensor(boxes_cp, output_size);
 
   rotated_iou_npu_nocheck(iou, boxes_cp, query_boxes_cp, trans, mode, is_cross, v_threshold, e_threshold);
-  iou = acl_op::npu_dtype_cast(iou, origin_dtype);
+  iou = at_npu::native::custom_ops::npu_dtype_cast(iou, origin_dtype);
   return iou;
 }
 } // namespace acl_op

@@ -39,13 +39,13 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_backwa
   at::Tensor grad_bias_sum;
 
   at::Tensor grad_out_scalar = grad_out.scalar_type() == at::kFloat ? grad_out :
-      acl_op::npu_dtype_cast(grad_out, at::kFloat);
+      at_npu::native::custom_ops::npu_dtype_cast(grad_out, at::kFloat);
   at::Tensor self_scalar = self.scalar_type() == at::kFloat ? self :
-      acl_op::npu_dtype_cast(self, at::kFloat);
+      at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
   at::Tensor mean_scalar = mean.scalar_type() == at::kFloat ? mean :
-      acl_op::npu_dtype_cast(mean, at::kFloat);
+      at_npu::native::custom_ops::npu_dtype_cast(mean, at::kFloat);
   at::Tensor invstd_scalar = invstd.scalar_type() == at::kFloat ? invstd :
-      acl_op::npu_dtype_cast(invstd, at::kFloat);
+      at_npu::native::custom_ops::npu_dtype_cast(invstd, at::kFloat);
 
   c10::SmallVector<int64_t, N> axes;
   int dimN = self_scalar.ndimension();

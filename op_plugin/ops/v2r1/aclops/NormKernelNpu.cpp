@@ -45,7 +45,7 @@ at::Tensor& norm_out_npu_nocheck(
     at::ScalarType dtype) {
   at::Tensor fp32_self(self);
   if (self.scalar_type() != at::ScalarType::Float) {
-    fp32_self = acl_op::npu_dtype_cast(fp32_self, at::ScalarType::Float);
+    fp32_self = at_npu::native::custom_ops::npu_dtype_cast(fp32_self, at::ScalarType::Float);
   }
   auto output_size = op_infer::reduce_ops_npu_output_size(fp32_self, dim, keepdim);
   if (output_size.empty()) {
@@ -72,7 +72,7 @@ at::Tensor& norm_out_npu_nocheck(
       .Attr("epsilon", static_cast<float>(0))
       .Run();
   if (result.scalar_type() != dtype) {
-    result = acl_op::npu_dtype_cast(result, dtype);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, dtype);
   }
   // until now, can not support resize shape of out correctly,
   // so the shape of out must be equal to output_size

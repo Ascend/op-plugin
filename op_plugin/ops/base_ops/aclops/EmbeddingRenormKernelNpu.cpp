@@ -84,9 +84,9 @@ at::Tensor& embedding_renorm_out_npu_nocheck(
   at::Tensor input_indices;
 
   if (num_indices - 1 == 0) {
-    input_indices = acl_op::npu_dtype_cast(at::zeros({1}, self.options()), at::kLong);
+    input_indices = at_npu::native::custom_ops::npu_dtype_cast(at::zeros({1}, self.options()), at::kLong);
   } else {
-    input_indices = acl_op::npu_dtype_cast(at::range(0, num_indices - 1, self.options()), at::kLong);
+    input_indices = at_npu::native::custom_ops::npu_dtype_cast(at::range(0, num_indices - 1, self.options()), at::kLong);
   }
 
   auto num_mid_output = mid_output.numel();

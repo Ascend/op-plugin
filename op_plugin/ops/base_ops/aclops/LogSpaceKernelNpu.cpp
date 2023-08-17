@@ -37,7 +37,7 @@ at::Tensor& logspace_out_nocheck(
   int64_t dtype = 0;
   auto result_type = result.scalar_type();
   if (result_type == at::ScalarType::Half) {
-    inputs = acl_op::npu_dtype_cast(
+    inputs = at_npu::native::custom_ops::npu_dtype_cast(
         at::arange(0, steps, at::device(torch_npu::utils::get_npu_device_type())),
         at::kHalf);
     dtype = 0;

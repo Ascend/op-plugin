@@ -56,7 +56,7 @@ at::Tensor argmin(
   c10::Scalar dim_scalar = dim_value;
 
   argmin_out_nocheck(result, input, dim_scalar, keepdim_value);
-  result = acl_op::npu_dtype_cast(result, at::kLong);
+  result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kLong);
   return result;
 }
 
@@ -82,9 +82,9 @@ at::Tensor& argmin_out(
       output_size);
 
   c10::Scalar dim_scalar = dim_value;
-  at::Tensor result_cast = acl_op::npu_dtype_cast(result, at::kInt);
+  at::Tensor result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kInt);
   argmin_out_nocheck(result_cast, input, dim_scalar, keepdim_value);
-  result = acl_op::npu_dtype_cast(result_cast, at::kLong);
+  result = at_npu::native::custom_ops::npu_dtype_cast(result_cast, at::kLong);
   return result;
 }
 } // namespace acl_op

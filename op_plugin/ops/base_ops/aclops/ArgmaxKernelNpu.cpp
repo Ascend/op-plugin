@@ -35,7 +35,7 @@ at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdi
       .Output(result)
       .Attr("keep_dims", keepdim_value)
       .Run();
-  result = acl_op::npu_dtype_cast(result, at::kLong);
+  result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kLong);
   return result;
 }
 } // namespace acl_op

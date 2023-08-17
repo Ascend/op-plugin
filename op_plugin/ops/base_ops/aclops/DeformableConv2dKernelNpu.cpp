@@ -34,7 +34,7 @@ std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(
     bool modulated) {
   const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
   at::Tensor bias_fp32 = (bias.defined() && bias.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(bias, at::kFloat) : bias;
+      at_npu::native::custom_ops::npu_dtype_cast(bias, at::kFloat) : bias;
   auto output_size = op_infer::deformable_conv2d_npu_output_size(
       input, weight, offset, bias, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
 
@@ -114,15 +114,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_deformable_conv2d
     int64_t deformable_groups,
     bool modulated) {
   at::Tensor input = (input_ori.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(input_ori, at::kFloat) : input_ori;
+      at_npu::native::custom_ops::npu_dtype_cast(input_ori, at::kFloat) : input_ori;
   at::Tensor grad_output = (grad_output_ori.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(grad_output_ori, at::kFloat) : grad_output_ori;
+      at_npu::native::custom_ops::npu_dtype_cast(grad_output_ori, at::kFloat) : grad_output_ori;
   at::Tensor offset_out = (offset_out_ori.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(offset_out_ori, at::kFloat) : offset_out_ori;
+      at_npu::native::custom_ops::npu_dtype_cast(offset_out_ori, at::kFloat) : offset_out_ori;
   at::Tensor weight = (weight_ori.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(weight_ori, at::kFloat) : weight_ori;
+      at_npu::native::custom_ops::npu_dtype_cast(weight_ori, at::kFloat) : weight_ori;
   at::Tensor offset = (offset_ori.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(offset_ori, at::kFloat) : offset_ori;
+      at_npu::native::custom_ops::npu_dtype_cast(offset_ori, at::kFloat) : offset_ori;
   // deformable_conv2d_backward includes conv2d_backward and DeformableOffsetsGrad
   c10::SmallVector<int64_t, SIZE> conv2d_stride = op_infer::array_to_small_vector(kernel_size);
   c10::SmallVector<int64_t, SIZE> conv2d_padding = {0, 0, 0, 0};
@@ -217,11 +217,11 @@ std::tuple<at::Tensor, at::Tensor> npu_deformable_conv2d(
     int64_t deformable_groups,
     bool modulated) {
   at::Tensor input = (input_ori.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(input_ori, at::kFloat) : input_ori;
+      at_npu::native::custom_ops::npu_dtype_cast(input_ori, at::kFloat) : input_ori;
   at::Tensor weight = (weight_ori.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(weight_ori, at::kFloat) : weight_ori;
+      at_npu::native::custom_ops::npu_dtype_cast(weight_ori, at::kFloat) : weight_ori;
   at::Tensor offset = (offset_ori.dtype() != at::kFloat) ?
-      acl_op::npu_dtype_cast(offset_ori, at::kFloat) : offset_ori;
+      at_npu::native::custom_ops::npu_dtype_cast(offset_ori, at::kFloat) : offset_ori;
   return deformable_conv2d_nocheck(
       input, weight, offset, bias_opt, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
 }

@@ -25,8 +25,8 @@ at::Tensor& eq_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& other) {
-  at::Tensor self_cast = self.dtype() == at::kInt ? acl_op::npu_dtype_cast(self, at::kFloat) : self;
-  at::Tensor other_cast = other.dtype() == at::kInt ? acl_op::npu_dtype_cast(other, at::kFloat) : other;
+  at::Tensor self_cast = self.dtype() == at::kInt ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor other_cast = other.dtype() == at::kInt ? at_npu::native::custom_ops::npu_dtype_cast(other, at::kFloat) : other;
   auto unified_result = npu_preparation::comparison_op_check(result, self_cast, other_cast, true);
   at_npu::native::OpCommand cmd;
   cmd.Name("Equal")
@@ -42,7 +42,7 @@ at::Tensor& eq_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     at::Scalar other) {
-  at::Tensor self_cast = self.dtype() == at::kInt ? acl_op::npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor self_cast = self.dtype() == at::kInt ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat) : self;
   at_npu::native::OpCommand cmd;
   cmd.Name("Equal")
       .Input(self_cast)

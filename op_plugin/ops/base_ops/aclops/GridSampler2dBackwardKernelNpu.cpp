@@ -35,13 +35,13 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
   at::Tensor format_cast_of_grid = grid;
 
   if (format_cast_of_grad.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_grad = acl_op::npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
+    format_cast_of_grad = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
   }
   if (format_cast_of_input.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_input = acl_op::npu_dtype_cast(format_cast_of_input, at::ScalarType::Float);
+    format_cast_of_input = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_input, at::ScalarType::Float);
   }
   if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_grid = acl_op::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
+    format_cast_of_grid = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
   }
 
   at::Tensor dx = npu_preparation::ApplyTensor(format_cast_of_input);
@@ -64,8 +64,8 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
 
   at::ScalarType input_scalar_type(input.scalar_type());
   if (dx.scalar_type() != input_scalar_type) {
-    dx = acl_op::npu_dtype_cast(dx, input_scalar_type);
-    dgrid = acl_op::npu_dtype_cast(dgrid, input_scalar_type);
+    dx = at_npu::native::custom_ops::npu_dtype_cast(dx, input_scalar_type);
+    dgrid = at_npu::native::custom_ops::npu_dtype_cast(dgrid, input_scalar_type);
   }
 
   return std::tuple<at::Tensor, at::Tensor>(dx, dgrid);

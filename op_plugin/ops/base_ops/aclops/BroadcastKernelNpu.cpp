@@ -44,12 +44,12 @@ at::Tensor& npu_broadcast_out(
 }
 
 at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) {
-  at::Tensor self_cp = self.dtype() == at::kBool ? acl_op::npu_dtype_cast(self, at::kInt) : self;
+  at::Tensor self_cp = self.dtype() == at::kBool ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt) : self;
   at::Tensor result = npu_preparation::ApplyTensor(self_cp, size);
   npu_broadcast_out_nocheck(result, self_cp, size);
 
   if (self.dtype() == at::kBool) {
-    result = acl_op::npu_dtype_cast(result, at::kBool);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }

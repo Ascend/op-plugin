@@ -65,7 +65,7 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss_forward_out_nocheck(
   TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),
       "Expected object of scalar type ", at::kLong, " or ", at::kInt,
       " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss_forward");
-  at::Tensor target_cast = (scalar_type == at::kLong) ? acl_op::npu_dtype_cast(target, at::kInt) : target;
+  at::Tensor target_cast = (scalar_type == at::kLong) ? at_npu::native::custom_ops::npu_dtype_cast(target, at::kInt) : target;
 
   at_npu::native::OpCommand cmd;
   cmd.Name("NLLLoss")

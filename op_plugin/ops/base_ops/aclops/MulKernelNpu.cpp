@@ -82,7 +82,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
   at::Tensor result_cast = (result_type == calculate_type) ? result :
-      acl_op::npu_dtype_cast(result, calculate_type);
+      at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     mul_out_npu_nocheck(contiguous_result, self_cast, other_cast);
@@ -92,7 +92,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   }
 
   if (result_type != calculate_type) {
-    result_cast = acl_op::npu_dtype_cast(result_cast, result_type);
+    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
 }
@@ -114,7 +114,7 @@ at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
 
   mul_out_npu_nocheck(result, self_cast, other_cast);
   if (out_is_bool) {
-    result = acl_op::npu_dtype_cast(result, at::kBool);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }

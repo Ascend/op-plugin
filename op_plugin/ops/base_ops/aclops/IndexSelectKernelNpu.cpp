@@ -64,7 +64,7 @@ at::Tensor& index_select_out(
   }
   at::Tensor input = self;
   if (self.dtype() == at::kBool) {
-    input = acl_op::npu_dtype_cast(input, at::kInt);
+    input = at_npu::native::custom_ops::npu_dtype_cast(input, at::kInt);
   }
   npu_preparation::CheckOut(
       {input, index_tmp},
@@ -82,7 +82,7 @@ at::Tensor& index_select_out(
   }
 
   if (self.dtype() == at::kBool) {
-    result = acl_op::npu_dtype_cast(result, at::kBool);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }
@@ -102,12 +102,12 @@ at::Tensor index_select(
   }
   at::Tensor input = self;
   if (self.dtype() == at::kBool) {
-    input = acl_op::npu_dtype_cast(input, at::kInt);
+    input = at_npu::native::custom_ops::npu_dtype_cast(input, at::kInt);
   }
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(input, output_size, npu_format);
   index_select_out_npu_nocheck(result, input, dim, index_tmp);
   if (self.dtype() == at::kBool) {
-    result = acl_op::npu_dtype_cast(result, at::kBool);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }

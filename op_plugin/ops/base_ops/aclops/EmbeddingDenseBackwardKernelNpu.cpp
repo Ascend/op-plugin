@@ -29,7 +29,7 @@ at::Tensor embedding_dense_backward(
   at::Tensor result = npu_preparation::ApplyTensor(grad_output, output_size);
 
   // indices must be int64 in pytorch, but npu can only support int32
-  auto indices_int32 = acl_op::npu_dtype_cast(indices, at::kInt);
+  auto indices_int32 = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kInt);
   at_npu::native::OpCommand cmd;
   cmd.Name("EmbeddingDenseGrad")
       .Input(grad_output)

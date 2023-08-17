@@ -30,13 +30,13 @@ at::Tensor _ctc_loss_backward(
     int64_t blank,
     bool zeroInfinity) {
   at::Tensor grad_out_cast = grad_out.scalar_type() == at::kHalf ?
-      acl_op::npu_dtype_cast(grad_out, at::kFloat) : grad_out;
+      at_npu::native::custom_ops::npu_dtype_cast(grad_out, at::kFloat) : grad_out;
   at::Tensor log_probs_cast = log_probs.scalar_type() == at::kHalf ?
-      acl_op::npu_dtype_cast(log_probs, at::kFloat) : log_probs;
+      at_npu::native::custom_ops::npu_dtype_cast(log_probs, at::kFloat) : log_probs;
   at::Tensor neg_log_likelihood_cast = neg_log_likelihood.scalar_type() == at::kHalf ?
-      acl_op::npu_dtype_cast(neg_log_likelihood, at::kFloat) : neg_log_likelihood;
+      at_npu::native::custom_ops::npu_dtype_cast(neg_log_likelihood, at::kFloat) : neg_log_likelihood;
   at::Tensor log_alpha_cast = log_alpha.scalar_type() == at::kHalf ?
-      acl_op::npu_dtype_cast(log_alpha, at::kFloat) : log_alpha;
+      at_npu::native::custom_ops::npu_dtype_cast(log_alpha, at::kFloat) : log_alpha;
 
   auto input_lengths_tensor = at::tensor(input_lengths, targets.options());
   auto target_lengths_tensor = at::tensor(target_lengths, targets.options());
@@ -57,7 +57,7 @@ at::Tensor _ctc_loss_backward(
       .Run();
 
   if (grad_out.scalar_type() == at::kHalf) {
-    grad = acl_op::npu_dtype_cast(grad, at::kHalf);
+    grad = at_npu::native::custom_ops::npu_dtype_cast(grad, at::kHalf);
   }
   return grad;
 }

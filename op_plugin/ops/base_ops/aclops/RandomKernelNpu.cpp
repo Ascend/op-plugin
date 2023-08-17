@@ -58,7 +58,7 @@ at::Tensor& random_out_npu(
         .Run();
     // StatelessRandomUniformV2 output: U(0~1) --> U(from~to)
     result_cp = result_cp.mul(to).sub(result_cp.mul(from).sub(static_cast<float>(from)));
-    result_cp = acl_op::npu_dtype_cast(result_cp, self.scalar_type());
+    result_cp = at_npu::native::custom_ops::npu_dtype_cast(result_cp, self.scalar_type());
     result.copy_(result_cp);
   } else {
     cmd.Attr("dtype", self.scalar_type())
@@ -67,8 +67,8 @@ at::Tensor& random_out_npu(
     // StatelessRandomUniformV2 output: U(0~1) --> U(from~to)
     auto result_cp = result.mul(to).sub(result.mul(from).sub(static_cast<float>(from)));
     // round off numbers
-    result_cp = acl_op::npu_dtype_cast(result_cp, at::kLong);
-    result_cp = acl_op::npu_dtype_cast(result_cp, self.scalar_type());
+    result_cp = at_npu::native::custom_ops::npu_dtype_cast(result_cp, at::kLong);
+    result_cp = at_npu::native::custom_ops::npu_dtype_cast(result_cp, self.scalar_type());
     result.copy_(result_cp);
   }
   return result;

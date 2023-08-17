@@ -33,20 +33,20 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_gather_stats_with_counts_npu_imp
     const at::Tensor& counts) {
   auto options = self.options();
   auto dim_c = self.size(1);
-  at::Tensor mean_cp = acl_op::npu_dtype_cast(mean, at::kFloat);
-  at::Tensor invstd_cp = acl_op::npu_dtype_cast(invstd, at::kFloat);
+  at::Tensor mean_cp = at_npu::native::custom_ops::npu_dtype_cast(mean, at::kFloat);
+  at::Tensor invstd_cp = at_npu::native::custom_ops::npu_dtype_cast(invstd, at::kFloat);
   auto running_mean_dtype = running_mean.scalar_type();
-  at::Tensor running_mean_val = acl_op::npu_dtype_cast(
+  at::Tensor running_mean_val = at_npu::native::custom_ops::npu_dtype_cast(
       at_npu::native::NPUNativeFunctions::npu_format_cast(
           (running_mean.defined() ? running_mean.unsqueeze(0) : at::zeros({1, dim_c}, options)), ACL_FORMAT_ND),
       at::kFloat);
-  at::Tensor running_var_val = acl_op::npu_dtype_cast(
+  at::Tensor running_var_val = at_npu::native::custom_ops::npu_dtype_cast(
       at_npu::native::NPUNativeFunctions::npu_format_cast(
           (running_var.defined() ? running_var.unsqueeze(0) : at::ones({1, dim_c}, options)), ACL_FORMAT_ND),
       at::kFloat);
   at::IntArrayRef axes({0});
   at::Tensor counts_tensor;
-  counts_tensor = acl_op::npu_dtype_cast(counts, mean_cp.scalar_type());
+  counts_tensor = at_npu::native::custom_ops::npu_dtype_cast(counts, mean_cp.scalar_type());
   at::Tensor counts_tensor_t = counts_tensor.unsqueeze(-1);
   at::Tensor counts_tensor_broadcast = acl_op::npu_broadcast(counts_tensor_t, invstd.sizes());
   at::Tensor counts_all_sum = npu_preparation::apply_tensor_with_sizes({1, dim_c}, mean_cp.options());
@@ -94,8 +94,8 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_gather_stats_with_counts_npu_imp
         .Run();
     // running_mean almost apply is the same as running_var
     if (running_mean_val.scalar_type() != running_mean_dtype) {
-      running_mean_val = acl_op::npu_dtype_cast(running_mean_val, running_mean_dtype);
-      running_var_val = acl_op::npu_dtype_cast(running_var_val, running_mean_dtype);
+      running_mean_val = at_npu::native::custom_ops::npu_dtype_cast(running_mean_val, running_mean_dtype);
+      running_var_val = at_npu::native::custom_ops::npu_dtype_cast(running_var_val, running_mean_dtype);
     }
     running_mean.copy_(running_mean_val.squeeze(0));
     running_var.copy_(running_var_val.squeeze(0));
@@ -128,8 +128,8 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_with_counts(
       momentum, eps, counts);
 
   if (is_fully_fp16) {
-    mean_all = acl_op::npu_dtype_cast(mean_all, at::kHalf);
-    invstd_all = acl_op::npu_dtype_cast(invstd_all, at::kHalf);
+    mean_all = at_npu::native::custom_ops::npu_dtype_cast(mean_all, at::kHalf);
+    invstd_all = at_npu::native::custom_ops::npu_dtype_cast(invstd_all, at::kHalf);
   }
 
   return std::make_tuple(mean_all.squeeze(0), invstd_all.squeeze(0));

@@ -40,7 +40,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, doub
 
   at::Tensor self_copy = self;
   if (self.scalar_type() != at::kFloat) {
-    self_copy = acl_op::npu_dtype_cast(self_copy, at::kFloat);
+    self_copy = at_npu::native::custom_ops::npu_dtype_cast(self_copy, at::kFloat);
   }
 
   at_npu::native::OpCommand cmd_mean;

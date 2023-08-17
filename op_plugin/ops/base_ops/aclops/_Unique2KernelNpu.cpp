@@ -56,7 +56,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
    * 此外，算子去重时，fp16存在数据精度损失，因此这里将fp16强转fp32处理.
    */
   const at::Tensor self = self_op.scalar_type() == at::kHalf ?
-      acl_op::npu_dtype_cast(self_op, at::kFloat) : self_op;
+      at_npu::native::custom_ops::npu_dtype_cast(self_op, at::kFloat) : self_op;
   
   if (self.numel() == 0) {
     at::Tensor result = npu_preparation::ApplyTensor(self, {0});
@@ -74,7 +74,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
 
   _unique2_out_npu(y, y_inverse, y_counts, self, sorted, return_inverse, return_counts);
   if (self_op.scalar_type() == at::kHalf) {
-    y = acl_op::npu_dtype_cast(y, at::kHalf);
+    y = at_npu::native::custom_ops::npu_dtype_cast(y, at::kHalf);
   }
   return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, y_inverse, y_counts);
 }

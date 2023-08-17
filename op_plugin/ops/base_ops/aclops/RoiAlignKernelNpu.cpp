@@ -68,8 +68,8 @@ at::Tensor npu_roi_align(
   at::Tensor self_cast = self;
   at::Tensor rois_cast = rois;
   if (self.scalar_type() == at::kHalf || rois.scalar_type() == at::kHalf) {
-    self_cast = acl_op::npu_dtype_cast(self, at::kFloat);
-    rois_cast = acl_op::npu_dtype_cast(rois, at::kFloat);
+    self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
+    rois_cast = at_npu::native::custom_ops::npu_dtype_cast(rois, at::kFloat);
   }
 
   auto output_size =
@@ -89,7 +89,7 @@ at::Tensor npu_roi_align(
       roi_end_mode);
 
   if (self.scalar_type() == at::kHalf || rois.scalar_type() == at::kHalf) {
-    result = acl_op::npu_dtype_cast(result, at::kHalf);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kHalf);
   }
 
   return result;

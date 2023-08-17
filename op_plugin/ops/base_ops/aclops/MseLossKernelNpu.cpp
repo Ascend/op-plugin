@@ -28,7 +28,7 @@ at::Tensor& mse_loss_out_npu_nocheck(
     int64_t reduction) {
   if (self.numel() == 0 || target.numel() == 0) {
     // In this scenario, needs to return nan. And the nan of the NPU can only be fp32.
-    result = acl_op::npu_dtype_cast(result, at::kFloat);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
     acl_op::fill_(result, 0);
     result = result / 0;
     return result;

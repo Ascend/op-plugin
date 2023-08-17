@@ -26,7 +26,7 @@ at::Tensor isfinite(const at::Tensor& self_ex) {
     self = at_npu::native::NPUNativeFunctions::npu_format_cast(self_ex, ACL_FORMAT_ND);
   }
   if (self.scalar_type() == at::ScalarType::Half) {
-    self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
   auto output_size = self.sizes();
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(

@@ -289,7 +289,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_convolution_transpose_backwar
   }
   // Note:weight.grad should be equal weight
   if (std::get<1>(output).defined()) {
-    std::get<1>(output) = acl_op::npu_dtype_cast(std::get<1>(output), weight.scalar_type());
+    std::get<1>(output) = at_npu::native::custom_ops::npu_dtype_cast(std::get<1>(output), weight.scalar_type());
   }
   return output;
 }

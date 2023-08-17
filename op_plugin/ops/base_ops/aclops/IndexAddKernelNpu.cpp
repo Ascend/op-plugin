@@ -32,7 +32,7 @@ at::Tensor& index_add_out_npu_nocheck(
     const at::Scalar& alpha) {
   at::Tensor indices = index;
   if (index.scalar_type() != at::ScalarType::Int) {
-    indices = acl_op::npu_dtype_cast(index, at::kInt);
+    indices = at_npu::native::custom_ops::npu_dtype_cast(index, at::kInt);
   }
   if (index.dim() == 0) {
     indices.unsqueeze_(0);
