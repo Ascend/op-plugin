@@ -13,15 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using torch::autograd::AutogradContext;
-using torch::autograd::Function;
 
 namespace {
 std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(
@@ -208,98 +204,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_deformable_conv2d
   return std::tie(grad_input, grad_weight, grad_offset, grad_bias);
 }
 
-class NPUDeformableConv2dFunction : public torch::autograd::Function<NPUDeformableConv2dFunction> {
-public:
-  static std::vector<at::Tensor> forward(AutogradContext *ctx,
-      const at::Tensor& input_ori,
-      const at::Tensor& weight_ori,
-      const at::Tensor& offset_ori,
-      const c10::optional<at::Tensor>& bias_opt,
-      at::IntArrayRef kernel_size,
-      at::IntArrayRef stride,
-      at::IntArrayRef padding,
-      at::IntArrayRef dilation,
-      int64_t groups,
-      int64_t deformable_groups,
-      bool modulated) {
-    at::Tensor input = (input_ori.dtype() != at::kFloat) ?
-        acl_op::npu_dtype_cast(input_ori, at::kFloat) : input_ori;
-    at::Tensor weight = (weight_ori.dtype() != at::kFloat) ?
-        acl_op::npu_dtype_cast(weight_ori, at::kFloat) : weight_ori;
-    at::Tensor offset = (offset_ori.dtype() != at::kFloat) ?
-        acl_op::npu_dtype_cast(offset_ori, at::kFloat) : offset_ori;
-    ctx->saved_data["kernel_size"] = kernel_size;
-    ctx->saved_data["stride"] = stride;
-    ctx->saved_data["padding"] = padding;
-    ctx->saved_data["dilation"] = dilation;
-    ctx->saved_data["groups"] = groups;
-    ctx->saved_data["deformable_groups"] = deformable_groups;
-    ctx->saved_data["modulated"] = modulated;
-    ctx->saved_data["bias_has_value"] = (bias_opt.has_value() == true) ? bias_opt.value().requires_grad() : false;
-
-    at::AutoNonVariableTypeMode g;
-    auto result = deformable_conv2d_nocheck(
-        input, weight, offset, bias_opt, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
-    auto result1 = std::get<1>(result);
-    ctx->save_for_backward({input, weight, offset, result1});
-    std::vector<at::Tensor> result_list = {std::get<0>(result), result1};
-    return result_list;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto kernel_size = ctx->saved_data["kernel_size"].toIntVector();
-    auto stride = ctx->saved_data["stride"].toIntVector();
-    auto padding = ctx->saved_data["padding"].toIntVector();
-    auto dilation = ctx->saved_data["dilation"].toIntVector();
-    auto groups = ctx->saved_data["groups"].toInt();
-    auto deformable_groups = ctx->saved_data["deformable_groups"].toInt();
-    auto modulated = ctx->saved_data["modulated"].toBool();
-    auto bias_has_value = ctx->saved_data["bias_has_value"].toBool();
-
-    auto saved = ctx->get_saved_variables();
-    auto input = saved[0];
-    auto weight = saved[1];
-    auto offset = saved[2];
-    auto offset_out = saved[3];
-
-    auto result = acl_op::npu_deformable_conv2dbk(input, grad_outputs[0], offset_out, weight,
-        offset, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
-
-    std::vector<at::Tensor> output;
-    if (bias_has_value) {
-      output = {std::get<0>(result),
-          std::get<1>(result),
-          std::get<2>(result),
-          std::get<3>(result),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor()};
-    } else {
-      output = {std::get<0>(result),
-          std::get<1>(result),
-          std::get<2>(result),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor(),
-          at::Tensor()};
-    }
-    return output;
-  }
-};
-
 std::tuple<at::Tensor, at::Tensor> npu_deformable_conv2d(
-    const at::Tensor& input,
-    const at::Tensor& weight,
-    const at::Tensor& offset,
+    const at::Tensor& input_ori,
+    const at::Tensor& weight_ori,
+    const at::Tensor& offset_ori,
     const c10::optional<at::Tensor>& bias_opt,
     at::IntArrayRef kernel_size,
     at::IntArrayRef stride,
@@ -308,9 +216,13 @@ std::tuple<at::Tensor, at::Tensor> npu_deformable_conv2d(
     int64_t groups,
     int64_t deformable_groups,
     bool modulated) {
-  auto result = NPUDeformableConv2dFunction::apply(
+  at::Tensor input = (input_ori.dtype() != at::kFloat) ?
+      acl_op::npu_dtype_cast(input_ori, at::kFloat) : input_ori;
+  at::Tensor weight = (weight_ori.dtype() != at::kFloat) ?
+      acl_op::npu_dtype_cast(weight_ori, at::kFloat) : weight_ori;
+  at::Tensor offset = (offset_ori.dtype() != at::kFloat) ?
+      acl_op::npu_dtype_cast(offset_ori, at::kFloat) : offset_ori;
+  return deformable_conv2d_nocheck(
       input, weight, offset, bias_opt, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
-  std::tuple<at::Tensor, at::Tensor> output(result[0], result[1]);
-  return output;
 }
 } // namespace acl_op

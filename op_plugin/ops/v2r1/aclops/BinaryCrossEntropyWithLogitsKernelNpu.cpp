@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
@@ -22,8 +20,6 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
-using torch::autograd::AutogradContext;
-using torch::autograd::Function;
 
 namespace {
 at::Tensor binary_cross_entropy_with_logits_nocheck(
@@ -74,15 +70,18 @@ at::Tensor binary_cross_entropy_with_logits_nocheck(
 
   return result;
 }
+} //namespace
 
-at::Tensor binary_cross_entropy_with_logits_backward(
+at::Tensor npu_binary_cross_entropy_with_logits_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& target,
-    const at::Tensor& weight,
-    const at::Tensor& pos_weight,
+    const c10::optional<at::Tensor>& weight_opt,
+    const c10::optional<at::Tensor>& pos_weight_opt,
     int64_t reduction) {
   at::Tensor grad_input = npu_preparation::apply_tensor(self);
+  const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
+  const at::Tensor& pos_weight = c10::value_or_else(pos_weight_opt, [] {return at::Tensor();});
   at::Tensor weight_tensor;
   if (weight.defined()) {
     weight_tensor = npu_utils::format_contiguous(weight);
@@ -116,36 +115,6 @@ at::Tensor binary_cross_entropy_with_logits_backward(
 
   return grad_input;
 }
-} // namespace
-
-class NPUBinaryCrossEntropyWithLogitsFunction :
-    public torch::autograd::Function<NPUBinaryCrossEntropyWithLogitsFunction> {
-public:
-  static at::Tensor forward(AutogradContext *ctx,
-      const at::Tensor& self,
-      const at::Tensor& target,
-      const c10::optional<at::Tensor>& weight_opt,
-      const c10::optional<at::Tensor>& pos_weight_opt,
-      int64_t reduction) {
-    const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
-    const at::Tensor& pos_weight = c10::value_or_else(pos_weight_opt, [] {return at::Tensor();});
-    at::AutoNonVariableTypeMode g;
-    at::Tensor result = binary_cross_entropy_with_logits_nocheck(self, target, weight, pos_weight, reduction);
-    ctx->save_for_backward({self, target, weight, pos_weight});
-    ctx->saved_data["reduction"] = reduction;
-    return result;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto reduction = ctx->saved_data["reduction"].toInt();
-    auto self_grad = binary_cross_entropy_with_logits_backward(
-        grad_outputs[0], saved[0], saved[1], saved[2], saved[3], reduction);
-    std::vector<at::Tensor> output = {self_grad, at::Tensor(), at::Tensor(), at::Tensor(), at::Tensor()};
-    return output;
-  }
-};
 
 at::Tensor binary_cross_entropy_with_logits(
     const at::Tensor& self,
@@ -153,6 +122,8 @@ at::Tensor binary_cross_entropy_with_logits(
     const c10::optional<at::Tensor>& weight_opt,
     const c10::optional<at::Tensor>& pos_weight_opt,
     int64_t reduction) {
-    return NPUBinaryCrossEntropyWithLogitsFunction::apply(self, target, weight_opt, pos_weight_opt, reduction);
+  const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
+  const at::Tensor& pos_weight = c10::value_or_else(pos_weight_opt, [] {return at::Tensor();});
+  return binary_cross_entropy_with_logits_nocheck(self, target, weight, pos_weight, reduction);
 }
 } // namespace acl_op
