@@ -42,7 +42,7 @@ at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result) {
   }
   result.resize_({n, m});
   bool result_is_bool = result.scalar_type() == at::kBool;
-  at::Tensor result_cp = result_is_bool ? acl_op::npu_dtype_cast(result, at::kInt) : result;
+  at::Tensor result_cp = result_is_bool ? at_npu::native::custom_ops::npu_dtype_cast(result, at::kInt) : result;
   if (!npu_utils::check_match(&result_cp)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
     eye_out_npu_nocheck(contiguous_result, n, m);
@@ -52,7 +52,7 @@ at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result) {
   }
 
   if (result_is_bool) {
-    result_cp = acl_op::npu_dtype_cast(result_cp, at::kBool);
+    result_cp = at_npu::native::custom_ops::npu_dtype_cast(result_cp, at::kBool);
     result.copy_(result_cp);
   }
   return result;
@@ -80,7 +80,7 @@ at::Tensor eye(
 
   acl_op::eye_out(n, result);
   if (option.dtype() == at::kBool) {
-    result = acl_op::npu_dtype_cast(result, at::kBool);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }
@@ -109,7 +109,7 @@ at::Tensor eye(
 
   eye_out_npu_nocheck(result, n, m);
   if (option.dtype() == at::kBool) {
-    result = acl_op::npu_dtype_cast(result, at::kBool);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }

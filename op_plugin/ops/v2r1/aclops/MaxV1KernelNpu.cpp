@@ -32,7 +32,7 @@ at::Tensor npu_max_backward(
     new_indices = indices.squeeze(dim);
   }
   if (new_indices.dtype() == at::kLong) {
-    new_indices = acl_op::npu_dtype_cast(new_indices, at::kInt);
+    new_indices = at_npu::native::custom_ops::npu_dtype_cast(new_indices, at::kInt);
   }
   auto grad_input = acl_op::npu_scatter(at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
   return grad_input;

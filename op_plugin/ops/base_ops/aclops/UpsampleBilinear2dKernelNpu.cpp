@@ -53,7 +53,7 @@ at::Tensor& upsample_bilinear2d_out(
     at::Tensor& result) {
   at::Tensor self = self_ex;
   if (self.scalar_type() != at::ScalarType::Float) {
-    self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
   auto op_infer_output_size = op_infer::upsample_bilinear2d_npu_output_size(
       self, output_size, align_corners, scales_h, scales_w);
@@ -83,7 +83,7 @@ at::Tensor upsample_bilinear2d(
     c10::optional<double> scales_w) {
   at::Tensor self = self_ex;
   if (self.scalar_type() != at::ScalarType::Float) {
-    self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
   auto op_infer_output_size = op_infer::upsample_bilinear2d_npu_output_size(
       self, output_size, align_corners, scales_h, scales_w);
@@ -92,7 +92,7 @@ at::Tensor upsample_bilinear2d(
   upsample_bilinear2d_out_nocheck(
       result, self, output_size, align_corners, scales_h, scales_w);
   if (result.dtype() != self_ex.dtype()) {
-    result = acl_op::npu_dtype_cast(result, self_ex.scalar_type());
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, self_ex.scalar_type());
   }
   return result;
 }

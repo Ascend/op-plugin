@@ -107,7 +107,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
       at::ScalarType::Long,
       output_size);
 
-  at::Tensor indices_dtype_cast = acl_op::npu_dtype_cast(indices, at::ScalarType::Int);
+  at::Tensor indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices, at::ScalarType::Int);
   bool output_match = npu_utils::check_match(&output);
   bool indices_match = npu_utils::check_match(&indices_dtype_cast);
 
@@ -128,7 +128,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
     max_out_npu_nocheck(output, indices_dtype_cast, self, dim, keepdim);
   }
 
-  indices_dtype_cast = acl_op::npu_dtype_cast(indices_dtype_cast, at::ScalarType::Long);
+  indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices_dtype_cast, at::ScalarType::Long);
   indices.copy_(indices_dtype_cast);
   return std::tie(output, indices);
 }
@@ -145,7 +145,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
 std::tuple<at::Tensor, at::Tensor> max(const at::Tensor& self, int64_t dim, bool keepdim) {
   at::Tensor self_cast = self;
   if (self.dtype() == at::ScalarType::Bool || self.dtype() == at::ScalarType::Int) {
-    self_cast = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
 
   at::SmallVector<int64_t, SIZE> dims = {dim};
@@ -158,10 +158,10 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor& self, int64_t dim, bool
       ACL_FORMAT_ND);
 
   max_out_npu_nocheck(outputs, indices, self_cast, dim, keepdim);
-  indices = acl_op::npu_dtype_cast(indices, at::ScalarType::Long);
+  indices = at_npu::native::custom_ops::npu_dtype_cast(indices, at::ScalarType::Long);
 
   if (self.dtype() == at::ScalarType::Bool || self.dtype() == at::ScalarType::Int) {
-    outputs = acl_op::npu_dtype_cast(outputs, self.scalar_type());
+    outputs = at_npu::native::custom_ops::npu_dtype_cast(outputs, self.scalar_type());
   }
 
   return std::tie(outputs, indices);
@@ -176,9 +176,9 @@ at::Tensor& max_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
 
   at::ScalarType high_type = at::native::result_type(self, other);
   at::Tensor self_copy = (self.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(self)) ?
-      acl_op::npu_dtype_cast(self, high_type) : self;
+      at_npu::native::custom_ops::npu_dtype_cast(self, high_type) : self;
   at::Tensor other_copy = (other.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
-      acl_op::npu_dtype_cast(other, high_type) : other;
+      at_npu::native::custom_ops::npu_dtype_cast(other, high_type) : other;
 
   npu_preparation::CheckOut(
       {self_copy, other_copy},
@@ -226,9 +226,9 @@ at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType high_type = at::native::result_type(self, other);
   at::Tensor self_copy = (self.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(self)) ?
-      acl_op::npu_dtype_cast(self, high_type) : self;
+      at_npu::native::custom_ops::npu_dtype_cast(self, high_type) : self;
   at::Tensor other_copy = (other.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
-      acl_op::npu_dtype_cast(other, high_type) : other;
+      at_npu::native::custom_ops::npu_dtype_cast(other, high_type) : other;
   at::Tensor result = npu_preparation::ApplyTensor(self_copy, output_size);
   max_out_npu_nocheck(result, self_copy, other_copy);
   return result;

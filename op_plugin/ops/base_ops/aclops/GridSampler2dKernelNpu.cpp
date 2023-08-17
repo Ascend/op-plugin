@@ -31,10 +31,10 @@ at::Tensor grid_sampler_2d(
   at::Tensor dtype_cast_of_self = self;
   at::Tensor dtype_cast_of_grid = grid;
   if (dtype_cast_of_self.scalar_type() == c10::ScalarType::Half) {
-    dtype_cast_of_self = acl_op::npu_dtype_cast(dtype_cast_of_self, c10::ScalarType::Float);
+    dtype_cast_of_self = at_npu::native::custom_ops::npu_dtype_cast(dtype_cast_of_self, c10::ScalarType::Float);
   }
   if (dtype_cast_of_grid.scalar_type() == c10::ScalarType::Half) {
-    dtype_cast_of_grid = acl_op::npu_dtype_cast(dtype_cast_of_grid, c10::ScalarType::Float);
+    dtype_cast_of_grid = at_npu::native::custom_ops::npu_dtype_cast(dtype_cast_of_grid, c10::ScalarType::Float);
   }
 
   c10::SmallVector<int64_t, SIZE> output_size = {
@@ -58,7 +58,7 @@ at::Tensor grid_sampler_2d(
 
   c10::ScalarType self_scalar_type(self.scalar_type());
   if (result.scalar_type() != self_scalar_type) {
-    result = acl_op::npu_dtype_cast(result, self_scalar_type);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, self_scalar_type);
   }
   return result;
 }

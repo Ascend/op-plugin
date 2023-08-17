@@ -98,8 +98,8 @@ at::Tensor& index_put_aicore_nocheck(
   at::Tensor temp_self = self;
   at::Tensor temp_value = value;
   if (self.scalar_type() == at::ScalarType::Half) {
-    temp_self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
-    temp_value = acl_op::npu_dtype_cast(value, at::ScalarType::Float);
+    temp_self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
+    temp_value = at_npu::native::custom_ops::npu_dtype_cast(value, at::ScalarType::Float);
   }
   at::Tensor temp_value_broadcast = temp_value;
   if (self.dim() == 1 && all_defined_indices.size() == 1 && all_defined_indices[0].scalar_type() == at::kLong &&
@@ -122,7 +122,7 @@ at::Tensor& index_put_aicore_nocheck(
       .Attr("accumulate", accumulate)
       .Run();
   if (self.scalar_type() == at::ScalarType::Half) {
-    temp_self = acl_op::npu_dtype_cast(temp_self, at::ScalarType::Half);
+    temp_self = at_npu::native::custom_ops::npu_dtype_cast(temp_self, at::ScalarType::Half);
     self.copy_(temp_self);
   } else {
     self = temp_self;
@@ -165,9 +165,9 @@ at::Tensor& index_put_aicpu_nocheck(
   at::Tensor temp_self = self;
   at::Tensor temp_value = value;
   if (self.scalar_type() == at::ScalarType::Half) {
-    temp_self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
-    temp_value = acl_op::npu_dtype_cast(value, at::ScalarType::Float);
-    result = acl_op::npu_dtype_cast(result, at::ScalarType::Float);
+    temp_self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
+    temp_value = at_npu::native::custom_ops::npu_dtype_cast(value, at::ScalarType::Float);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Float);
   }
 
   at_npu::native::OpCommand cmd;
@@ -187,7 +187,7 @@ at::Tensor& index_put_aicpu_nocheck(
       .Run();
 
   if (self.scalar_type() == at::ScalarType::Half) {
-    result = acl_op::npu_dtype_cast(result, at::ScalarType::Half);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Half);
   }
   return result;
 }

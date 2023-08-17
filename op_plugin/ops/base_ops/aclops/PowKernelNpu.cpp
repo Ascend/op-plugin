@@ -127,7 +127,7 @@ at::Tensor pow(const at::Tensor& self, const at::Tensor& exp) {
 at::Tensor pow(const at::Tensor& self, const at::Scalar& exp) {
   auto result_type = at::result_type(self, exp);
   at::Tensor result = npu_preparation::ApplyTensor(self, self.options().dtype(result_type));
-  at::Tensor self_copy = (self.scalar_type() != result_type) ? acl_op::npu_dtype_cast(self, result_type) : self;
+  at::Tensor self_copy = (self.scalar_type() != result_type) ? at_npu::native::custom_ops::npu_dtype_cast(self, result_type) : self;
   pow_tensor_scalar_out_npu_nocheck(result, self_copy, exp);
   return result;
 }
@@ -135,7 +135,7 @@ at::Tensor pow(const at::Tensor& self, const at::Scalar& exp) {
 at::Tensor pow(const at::Scalar& self, const at::Tensor& exp) {
   auto result_type = at::result_type(exp, self);
   at::Tensor result = npu_preparation::ApplyTensor(exp, exp.options().dtype(result_type));
-  at::Tensor exp_copy = (exp.scalar_type() != result_type) ? acl_op::npu_dtype_cast(exp, result_type) : exp;
+  at::Tensor exp_copy = (exp.scalar_type() != result_type) ? at_npu::native::custom_ops::npu_dtype_cast(exp, result_type) : exp;
   pow_scalar_out_npu_nocheck(result, self, exp_copy);
   return result;
 }

@@ -60,7 +60,7 @@ at::Tensor& floor_divide_out_nocheck(at::Tensor& result, const at::Tensor& self,
 
 at::Tensor& check_self_dtype_npu(at::Tensor& self) {
   if (self.dtype() == at::kBool || self.dtype() == at::kInt) {
-    self = acl_op::npu_dtype_cast(self, at::kFloat);
+    self = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
   }
   return self;
 }
@@ -98,7 +98,7 @@ at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at
   at::Tensor other_cast = other.scalar_type() != cal_type ? other.to(cal_type) : other;
 
   bool result_type_is_cal_type = result_type == cal_type;
-  at::Tensor result_cast = result_type_is_cal_type ? result : acl_op::npu_dtype_cast(result, cal_type);
+  at::Tensor result_cast = result_type_is_cal_type ? result : at_npu::native::custom_ops::npu_dtype_cast(result, cal_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     floor_divide_out_nocheck(contiguous_result, self_cast, other_cast);
@@ -108,7 +108,7 @@ at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at
   }
 
   if (!result_type_is_cal_type) {
-    result_cast = acl_op::npu_dtype_cast(result_cast, result_type);
+    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
   return result;
@@ -128,7 +128,7 @@ at::Tensor floor_divide(const at::Tensor& self, const at::Tensor& other) {
 
   floor_divide_out_nocheck(result, self_cast, other_cast);
   if (result.scalar_type() != high_type) {
-      result = acl_op::npu_dtype_cast(result, high_type);
+      result = at_npu::native::custom_ops::npu_dtype_cast(result, high_type);
   }
   return result;
 }

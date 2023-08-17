@@ -48,7 +48,7 @@ at::Tensor npu_anchor_response_flags(
   auto output_size = op_infer::infersize_npu_anchor_response_flags(featmap_size, num_base_anchors);
   auto options = self.options().dtype(at::kByte);
   at::Tensor result = npu_preparation::ApplyTensor(output_size, options, self);
-  at::Tensor self_cp = acl_op::npu_dtype_cast(self, at::kFloat);
+  at::Tensor self_cp = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("AnchorResponseFlags")

@@ -93,7 +93,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
   at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
-  at::Tensor result_cast = (result_type == calculate_type) ? result : acl_op::npu_dtype_cast(result, calculate_type);
+  at::Tensor result_cast = (result_type == calculate_type) ? result : at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     div_out_nocheck(contiguous_result, self_cast, other_cast);
@@ -103,7 +103,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   }
 
   if (result_type != calculate_type) {
-    result_cast = acl_op::npu_dtype_cast(result_cast, result_type);
+    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
   return result;

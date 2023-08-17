@@ -27,7 +27,7 @@ at::Tensor& one_hot_out_npu(
     int64_t depth,
     at::Scalar on_value,
     at::Scalar off_value) {
-  at::Tensor self_copy = acl_op::npu_dtype_cast(self, at::kInt);
+  at::Tensor self_copy = at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt);
   at::Tensor on_tmp = npu_preparation::ApplyTensor(
       {1},
       self_copy.options().dtype(at::ScalarType::Float),

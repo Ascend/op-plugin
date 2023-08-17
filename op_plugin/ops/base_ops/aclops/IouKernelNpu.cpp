@@ -26,11 +26,11 @@ at::Tensor npu_iou(
     int64_t mode) {
   at::Tensor bboxes_fp16 = bboxes;
   if (bboxes.scalar_type() != at::ScalarType::Half) {
-    bboxes_fp16 = acl_op::npu_dtype_cast(bboxes, at::kHalf);
+    bboxes_fp16 = at_npu::native::custom_ops::npu_dtype_cast(bboxes, at::kHalf);
   }
   at::Tensor gtboxes_fp16 = gtboxes;
   if (gtboxes.scalar_type() != at::ScalarType::Half) {
-    gtboxes_fp16 = acl_op::npu_dtype_cast(gtboxes, at::kHalf);
+    gtboxes_fp16 = at_npu::native::custom_ops::npu_dtype_cast(gtboxes, at::kHalf);
   }
 
   auto output_size = {gtboxes.size(0), bboxes.size(0)};
@@ -53,7 +53,7 @@ at::Tensor npu_iou(
       .Run();
 
   if (overlap.scalar_type() != bboxes.scalar_type()) {
-    overlap = acl_op::npu_dtype_cast(overlap, bboxes.scalar_type());
+    overlap = at_npu::native::custom_ops::npu_dtype_cast(overlap, bboxes.scalar_type());
   }
   return overlap;
 }

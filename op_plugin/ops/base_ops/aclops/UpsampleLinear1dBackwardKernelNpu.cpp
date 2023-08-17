@@ -88,7 +88,7 @@ at::Tensor upsample_linear1d_backward(
   upsample_linear1d_backward_check(grad_output, output_size, input_size);
   at::Tensor grad_output_cp = grad_output;
   if (grad_output.scalar_type() != at::ScalarType::Float) {
-    grad_output_cp = acl_op::npu_dtype_cast(grad_output_cp, at::ScalarType::Float);
+    grad_output_cp = at_npu::native::custom_ops::npu_dtype_cast(grad_output_cp, at::ScalarType::Float);
   }
   int64_t N = grad_output_cp.size(0);
   int64_t C = grad_output_cp.size(1);

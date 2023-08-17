@@ -43,7 +43,7 @@ at::Tensor softmax(
     c10::optional<at::ScalarType> dtype) {
   auto result = [&]() {
     at::NoNamesGuard guard;
-    at::Tensor converted = dtype.has_value() ? acl_op::npu_dtype_cast(self, dtype.value()) : self;
+    at::Tensor converted = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
     return at::_softmax(converted, dim, false);
   }();
   at::namedinference::propagate_names(result, self);
@@ -77,7 +77,7 @@ at::Tensor _softmax(const at::Tensor &self, int64_t dim, bool half_to_float) {
     dst_type = self.scalar_type();
   }
 
-  at::Tensor self_cast = dst_type == self.scalar_type() ? self : acl_op::npu_dtype_cast(self, dst_type);
+  at::Tensor self_cast = dst_type == self.scalar_type() ? self : at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);
   softmax_out_nocheck(result, self_cast, dim);
   return result;
 }
@@ -102,7 +102,7 @@ at::Tensor& _softmax_out(
     TORCH_CHECK(at::isFloatingType(self_dtype), "_softmax_npu not implemented for '", toString(self_dtype), "'");
   }
 
-  at::Tensor self_cast = dst_type == self.scalar_type() ? self : acl_op::npu_dtype_cast(self, dst_type);
+  at::Tensor self_cast = dst_type == self.scalar_type() ? self : at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     softmax_out_nocheck(contiguous_result, self_cast, dim);

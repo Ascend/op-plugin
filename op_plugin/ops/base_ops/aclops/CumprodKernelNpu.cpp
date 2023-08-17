@@ -56,7 +56,7 @@ at::Tensor& cumprod_out(
   }
 
   at::Tensor self_cp = self.scalar_type() == dst_type ? self :
-      acl_op::npu_dtype_cast(self, dst_type);
+      at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);
   npu_preparation::CheckOut(
       {self_cp},
       result,

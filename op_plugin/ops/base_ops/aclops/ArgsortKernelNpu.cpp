@@ -61,7 +61,7 @@ at::Tensor argsort(
 
   argsort_out_npu_nocheck(transpose_values, transpose_indices, transpose_self, last_dim, descending);
   acl_op::npu_transpose_out(transpose_indices, perm, true, indices);
-  indices = acl_op::npu_dtype_cast(indices, at::kLong);
+  indices = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kLong);
   return indices;
 }
 

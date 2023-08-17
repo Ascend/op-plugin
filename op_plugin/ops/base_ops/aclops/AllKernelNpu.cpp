@@ -42,10 +42,10 @@ at::Tensor& all_out_nocheck(
     c10::SmallVector<int64_t, N> dim_list,
     bool keepdim) {
   at::Tensor self_cast = (self.scalar_type() == at::ScalarType::Bool) ?
-      self : acl_op::npu_dtype_cast(self, at::ScalarType::Bool);
+      self : at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Bool);
   bool result_is_bool = (result.scalar_type() == at::ScalarType::Bool);
   at::Tensor result_cast = result_is_bool ?
-      result : acl_op::npu_dtype_cast(result, at::ScalarType::Bool);
+      result : at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Bool);
 
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result_cast = npu_utils::format_contiguous(result_cast);
@@ -56,7 +56,7 @@ at::Tensor& all_out_nocheck(
   }
 
   if (!result_is_bool) {
-    result_cast = acl_op::npu_dtype_cast(result_cast, result.scalar_type());
+    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result.scalar_type());
     result.copy_(result_cast);
   }
   return result;
@@ -98,7 +98,7 @@ at::Tensor& all_out(const at::Tensor& self, at::Tensor& result) {
 
 at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
   at::Tensor self_cast = self.scalar_type() == at::ScalarType::Bool ?
-      self : acl_op::npu_dtype_cast(self, at::ScalarType::Bool);
+      self : at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Bool);
 
   if (self.dim() != 0) {
     TORCH_CHECK((dim >= -(self.dim()) && dim < self.dim()),
@@ -126,7 +126,7 @@ at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
 
 at::Tensor all(const at::Tensor& self) {
   at::Tensor self_cast = self.scalar_type() == at::ScalarType::Bool ?
-      self : acl_op::npu_dtype_cast(self, at::ScalarType::Bool);
+      self : at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Bool);
   if (self.numel() == 0) {
     at::Tensor result = npu_preparation::ApplyTensor({}, self.options().dtype(at::kBool), self);
     acl_op::fill_(result, 1);

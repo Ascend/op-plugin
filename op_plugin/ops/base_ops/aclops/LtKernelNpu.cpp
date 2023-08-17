@@ -28,8 +28,8 @@ at::Tensor& lt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
   if (self.dtype() == at::ScalarType::Int || other.dtype() == at::ScalarType::Int ||
       self.dtype() == at::ScalarType::Bool || other.dtype() == at::ScalarType::Bool ||
       self.dtype() == at::ScalarType::Long || other.dtype() == at::ScalarType::Long) {
-    self_cast = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
-    other_cast = acl_op::npu_dtype_cast(other, at::ScalarType::Float);
+    self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
+    other_cast = at_npu::native::custom_ops::npu_dtype_cast(other, at::ScalarType::Float);
   }
   auto unified_result = npu_preparation::comparison_op_check(result, self_cast, other_cast, true);
 
@@ -48,7 +48,7 @@ at::Tensor& lt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::S
   if (self.dtype() == at::ScalarType::Int ||
       self.dtype() == at::ScalarType::Long ||
       self.dtype() == at::ScalarType::Bool) {
-    self_cast = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+    self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
 
   at_npu::native::OpCommand cmd;

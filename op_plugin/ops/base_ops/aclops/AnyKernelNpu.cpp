@@ -72,7 +72,7 @@ at::Tensor& any_out(
   // when self's dim = 0, convert [1] tensor and reduce it
   if (self.dim() == 0) {
     at::Tensor self_tmp = self.unsqueeze(0);
-    self_tmp = acl_op::npu_dtype_cast(self_tmp, at::kBool);
+    self_tmp = at_npu::native::custom_ops::npu_dtype_cast(self_tmp, at::kBool);
     return acl_op::any_out(self_tmp, 0, false, result);
   }
 
@@ -120,7 +120,7 @@ at::Tensor any(const at::Tensor& self) {
   // when self's dim = 0, convert [1] tensor and reduce it.
   if (self.dim() == 0) {
     at::Tensor self_tmp = self.unsqueeze(0);
-    self_tmp = acl_op::npu_dtype_cast(self_tmp, at::kBool);
+    self_tmp = at_npu::native::custom_ops::npu_dtype_cast(self_tmp, at::kBool);
     return acl_op::any(self_tmp, 0, false);
   }
 

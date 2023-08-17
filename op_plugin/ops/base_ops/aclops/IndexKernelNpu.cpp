@@ -136,7 +136,7 @@ at::Tensor index_high_dims(const at::Tensor& self, std::vector<at::Tensor> indic
 
   if (is_aicore && (self.scalar_type() == at::kByte || self.scalar_type() == at::kBool)) {
     is_casted = true;
-    self_data = acl_op::npu_dtype_cast(self_nd, at::kInt);
+    self_data = at_npu::native::custom_ops::npu_dtype_cast(self_nd, at::kInt);
   }
   auto output_size = op_infer::index_npu_output_size(self_data, indices);
   auto result = npu_preparation::apply_tensor_with_format(self_data, output_size, ACL_FORMAT_ND);
@@ -144,7 +144,7 @@ at::Tensor index_high_dims(const at::Tensor& self, std::vector<at::Tensor> indic
   index_out_nocheck(self_data, masks, all_defined_indices, result, is_aicore);
 
   if (is_casted) {
-    auto result_casted = acl_op::npu_dtype_cast(result, self.scalar_type());
+    auto result_casted = at_npu::native::custom_ops::npu_dtype_cast(result, self.scalar_type());
     return result_casted;
   }
 

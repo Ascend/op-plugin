@@ -84,11 +84,11 @@ at::Tensor arange(
   auto output_size = op_infer::infersize_arange(start, end, step);
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, option, ACL_FORMAT_ND);
   if(option.dtype() == at::kHalf) {
-    result = acl_op::npu_dtype_cast(result, at::kFloat);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
   }
   arange_out_npu_nocheck(result, start, end, step);
   if(option.dtype() == at::kHalf) {
-    result = acl_op::npu_dtype_cast(result, at::kHalf);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kHalf);
   }
   return result;
 }
