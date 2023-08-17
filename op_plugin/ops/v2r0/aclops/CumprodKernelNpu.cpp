@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace{
@@ -43,9 +43,9 @@ at::Tensor cumprod(
     const at::Tensor& self,
     int64_t dim,
     c10::optional<at::ScalarType> dtype) {
-  at::Tensor self_cast = dtype.has_value() ? op_plugin::npu_dtype_cast(self, dtype.value()) : self;
+  at::Tensor self_cast = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
   at::Tensor result = npu_preparation::apply_tensor(self_cast);
   cumprod_out_nocheck(result, self_cast, dim);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

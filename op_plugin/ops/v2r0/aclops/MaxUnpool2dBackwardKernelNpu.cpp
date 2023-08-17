@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& max_unpool2d_backward_out(
@@ -64,7 +64,7 @@ at::Tensor& max_unpool2d_backward_out(
   grad_input = grad_input.reshape({n, c, h * w});
   const int dim = 2;
 
-  grad_input = op_plugin::gather_out(grad_output_contiguous, dim, indices_contiguous, false, grad_input);
+  grad_input = acl_op::gather_out(grad_output_contiguous, dim, indices_contiguous, false, grad_input);
   if (self_dim == 3) {
     grad_input = grad_input.reshape({c, h, w});
   } else {
@@ -83,4 +83,4 @@ at::Tensor max_unpool2d_backward(
   return grad_input;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

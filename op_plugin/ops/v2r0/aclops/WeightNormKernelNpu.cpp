@@ -14,25 +14,18 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor col2im_backward(
-    const at::Tensor& self, 
-    at::IntArrayRef kernel_size, 
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding, 
-    at::IntArrayRef stride) {
-  return acl_op::im2col(self, kernel_size, dilation, padding, stride);
-}
-
-at::Tensor& col2im_backward_out(
-    const at::Tensor& self, 
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding, 
-    at::IntArrayRef stride, 
-    at::Tensor& result) {
-  return acl_op::im2col_out(self, kernel_size, dilation, padding, stride, result);
+at::Tensor _weight_norm(
+    const at::Tensor& v_in,
+    const at::Tensor& g_in,
+    int64_t dim) {
+  TORCH_CHECK(
+      v_in.device() == g_in.device(),
+      "weight_norm: expected v_in and g_in to be on the same device, but v_in is "
+      "on ", v_in.device(), " and g_in is on ", g_in.device());
+  auto v = v_in.contiguous();
+  auto g = g_in.contiguous();
+  return v * (g / at::norm_except_dim(v, 2, dim));
 }
 } // namespace acl_op

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor repeat_interleave(
     const at::Tensor& self,
     int64_t repeats,
@@ -32,4 +32,4 @@ at::Tensor repeat_interleave(
     c10::optional<int64_t> output_size) {
   return repeat_interleave_common_nocheck(self, repeats, dim, output_size);
 }
-} // namespace op_plugin
+} // namespace acl_op
