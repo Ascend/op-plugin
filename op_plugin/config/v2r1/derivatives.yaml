@@ -27,3 +27,21 @@
 - name: npu_dropout_with_add_softmax(Tensor self, Tensor x1, Scalar alpha, float prob, int dim) -> (Tensor, Tensor, Tensor)
   output_differentiability: [False, False, True]
   self, x1: npu_dropout_with_add_softmax_backward(grad, result0, result1, alpha, prob, dim)
+
+- name: npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor
+  self: npu_dtype_cast_backward(grad, self.scalar_type())
+
+- name: npu_convolution_transpose(Tensor input, Tensor weight, Tensor? bias, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups) -> Tensor
+  input, weight, bias: npu_convolution_transpose_backward(input, grad, weight, padding, output_padding, stride, dilation, groups, grad_input_mask)
+
+- name: npu_convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, int groups) -> Tensor
+  input, weight, bias: npu_convolution_backward(input, grad, weight, stride, padding, dilation, groups, grad_input_mask)
+
+- name: npu_deformable_conv2d(Tensor input, Tensor weight, Tensor offset, Tensor? bias, int[2] kernel_size, int[] stride, int[] padding, int[] dilation=[1,1,1,1], int groups=1, int deformable_groups=1, bool modulated=True) -> (Tensor, Tensor)
+  input, weight, offset, bias: npu_deformable_conv2dbk(input, grad, result1, weight, offset, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated)
+
+- name: npu_scaled_masked_softmax(Tensor x, Tensor mask, Scalar scale=1, bool fixed_triu_mask=False) -> Tensor
+  x: npu_scaled_masked_softmax_backward(grad, result, mask, scale, fixed_triu_mask)
+
+- name: binary_cross_entropy_with_logits(Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
+  self: npu_binary_cross_entropy_with_logits_backward(grad, self, target, weight, pos_weight, reduction)

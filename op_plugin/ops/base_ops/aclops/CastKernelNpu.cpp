@@ -13,14 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
+#include "torch_npu/csrc/framework/utils/CustomFunctions.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using torch::autograd::Function;
-using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
@@ -41,7 +39,7 @@ at::Tensor npu_dtype_cast_impl(const at::Tensor& self, at::ScalarType dtype) {
   if (self.dtype() == dtype) {
     return self.clone();
   }
-  at::Tensor result = npu_preparation::ApplyTensor(self.sizes(), self.options().dtype(dtype), self);
+  at::Tensor result = npu_preparation::apply_tensor(self.sizes(), self.options().dtype(dtype), self);
   cast_nocheck(result, self);
   return result;
 }
@@ -53,7 +51,7 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
   }
 
   if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_preparation::ApplyTensor(self);
+    at::Tensor contiguous_self = npu_preparation::apply_tensor(self);
     cast_nocheck(contiguous_self, src);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
@@ -62,25 +60,13 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
   return self;
 }
 
-class NPUDtypeCastFunction : public torch::autograd::Function<NPUDtypeCastFunction> {
-public:
-  static at::Tensor forward(AutogradContext *ctx,
-      at::Tensor self, 
-      at::ScalarType dtype) {
-    at::AutoNonVariableTypeMode g;
-    ctx->saved_data["dtype"] = self.scalar_type();
-    return npu_dtype_cast_impl(self, dtype);
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto dtype = ctx->saved_data["dtype"].toScalarType();
-    grad_outputs[0].requires_grad_();
-    return {NPUDtypeCastFunction::apply(grad_outputs[0], dtype), at::Tensor()};
-  }
-};
-
 at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
-  return NPUDtypeCastFunction::apply(self, dtype);
+  return npu_dtype_cast_impl(self, dtype);
 }
+
+at::Tensor npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype){
+  grad.requires_grad_();
+  return at_npu::native::custom_ops::npu_dtype_cast(grad, dtype);
+}
+
 }  // namespace acl_op

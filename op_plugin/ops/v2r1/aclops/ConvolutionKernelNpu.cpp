@@ -13,15 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <c10/core/GradMode.h>
 #include <ATen/native/ConvUtils.h>
-#include <torch/csrc/autograd/custom_function.h>
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using torch::autograd::Function;
-using torch::autograd::AutogradContext;
 
 namespace {
 constexpr int input_batch_size_dim = 0;
@@ -372,32 +371,6 @@ at::native::ConvBackend select_conv_backend(
   return select_conv_backend(input, weight, bias_sizes_opt, need_backward, params);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_convolution_transpose_backward(
-    const at::Tensor& input,
-    const at::Tensor& grad,
-    const at::Tensor& weight,
-    at::IntArrayRef padding,
-    at::IntArrayRef output_padding,
-    at::IntArrayRef stride,
-    at::IntArrayRef dilation,
-    int64_t groups,
-    std::array<bool, 3> grad_input_mask) {
-  int64_t dim = input.ndimension();
-
-  std::tuple<at::Tensor, at::Tensor, at::Tensor> output;
-  if (dim == 4) {
-    output = acl_op::npu_conv_transpose2d_backward(
-        input, grad, weight, padding, output_padding, stride, dilation, groups, grad_input_mask);
-  } else if (dim == 5) {
-    output = acl_op::npu_conv_transpose3d_backward(
-        input, grad, weight, padding, output_padding, stride, dilation, groups, grad_input_mask);
-  }
-  // Note:weight.grad should be equal weight
-  if (std::get<1>(output).defined()) {
-    std::get<1>(output) = acl_op::npu_dtype_cast(std::get<1>(output), weight.scalar_type());
-  }
-  return output;
-}
 } // namespace
 
 at::Tensor conv_transpose2d(
@@ -514,70 +487,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_convolution_backward(
   return output;
 }
 
-class NPUConvlutionFunction : public torch::autograd::Function<NPUConvlutionFunction> {
-public:
-  static at::Tensor forward(AutogradContext *ctx,
-      const at::Tensor& input,
-      const at::Tensor& weight,
-      const c10::optional<at::Tensor>& bias,
-      at::IntArrayRef stride,
-      at::IntArrayRef padding,
-      at::IntArrayRef dilation,
-      int64_t groups) {
-    ctx->saved_data["padding"] = padding;
-    ctx->saved_data["stride"] = stride;
-    ctx->saved_data["dilation"] = dilation;
-    ctx->saved_data["groups"] = groups;
-    ctx->saved_data["bias_has_value"] = (bias.has_value() == true) ? bias.value().requires_grad() : false;
-
-    at::AutoNonVariableTypeMode g;
-    ctx->save_for_backward({input, weight});
-    int64_t dim = input.ndimension();
-    auto kernel_size = weight.sizes().slice(2);
-
-    at::Tensor output;
-    if (dim == 4) {
-      output = acl_op::npu_conv2d(input, weight, bias, stride, padding, dilation, groups);
-    } else if (dim == 5) {
-      bool is_dilated = false;
-      for (int d : dilation) {
-        is_dilated |= (d != 1);
-      }
-      output = (groups == 1 && !is_dilated) ? at::slow_conv3d(input, weight, kernel_size, bias, stride, padding) :
-          acl_op::npu_conv3d(input, weight, bias, stride, padding, dilation, groups);
-    }
-    return output;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto padding = ctx->saved_data["padding"].toIntVector();
-    auto stride = ctx->saved_data["stride"].toIntVector();
-    auto dilation = ctx->saved_data["dilation"].toIntVector();
-    auto groups = ctx->saved_data["groups"].toInt();
-    auto bias_has_value = ctx->saved_data["bias_has_value"].toBool();
-    auto saved = ctx->get_saved_variables();
-    auto input = saved[0];
-    auto weight = saved[1];
-
-    std::array<bool, 3> grad_input_mask;
-    grad_input_mask[0] = input.requires_grad();
-    grad_input_mask[1] = weight.requires_grad();
-    grad_input_mask[2] = bias_has_value;
-
-    std::tuple<at::Tensor, at::Tensor, at::Tensor> result = acl_op::npu_convolution_backward(
-        input, grad_outputs[0], weight, stride, padding, dilation, groups, grad_input_mask);
-    std::vector<at::Tensor> output = {
-        std::get<0>(result),
-        std::get<1>(result),
-        std::get<2>(result),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor(),
-        at::Tensor()};
-    return output;
-  }
-};
 
 at::Tensor npu_convolution(
     const at::Tensor& input,
@@ -593,7 +502,22 @@ at::Tensor npu_convolution(
       bias = bias_opt;
     }
   }
-  return NPUConvlutionFunction::apply(input, weight, bias, stride, padding, dilation, groups);
+
+  int64_t dim = input.ndimension();
+  auto kernel_size = weight.sizes().slice(2);
+
+  at::Tensor output;
+  if (dim == 4) {
+    output = acl_op::npu_conv2d(input, weight, bias, stride, padding, dilation, groups);
+  } else if (dim == 5) {
+    bool is_dilated = false;
+    for (int d : dilation) {
+      is_dilated |= (d != 1);
+    }
+    output = (groups == 1 && !is_dilated) ? at::slow_conv3d(input, weight, kernel_size, bias, stride, padding) :
+        acl_op::npu_conv3d(input, weight, bias, stride, padding, dilation, groups);
+  }
+  return output;
 }
 
 at::Tensor convolution_overrideable(
@@ -734,7 +658,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward(
         std::tie(backend_grad_input, backend_grad_weight, backend_grad_bias) = acl_op::npu_convolution_backward(
             input, grad_output, weight, params.stride, params.padding, params.dilation, params.groups, output_mask);
       } else {
-        std::tie(backend_grad_input, backend_grad_weight, backend_grad_bias) = npu_convolution_transpose_backward(
+        std::tie(backend_grad_input, backend_grad_weight, backend_grad_bias) = acl_op::npu_convolution_transpose_backward(
             input, grad_output, weight, params.padding, params.output_padding, params.stride,
             params.dilation, params.groups, output_mask);
       }
