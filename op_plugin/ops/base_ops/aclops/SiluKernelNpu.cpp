@@ -92,32 +92,8 @@ at::Tensor npu_silu_backward(const at::Tensor& grad_output, const at::Tensor& x0
   return grad_input;
 }
 
-class NPUSiluFunction : public torch::autograd::Function<NPUSiluFunction> {
-public:
-  static at::Tensor forward(AutogradContext *ctx,
-      const at::Tensor& self) {
-    at::AutoNonVariableTypeMode g;
-    at::Tensor result = silu_kernel_npu(self);
-    ctx->save_for_backward({self, result});
-
-    return result;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto input = saved[0];
-    auto result = saved[1];
-
-    at::Tensor output = acl_op::npu_silu_backward(grad_outputs[0], input, result);
-    std::vector<at::Tensor> output_list = {output};
-
-    return output_list;
-  }
-};
-
 at::Tensor npu_silu(const at::Tensor& self) {
-  return NPUSiluFunction::apply(self);
+  return silu_kernel_npu(self);
 }
 
 at::Tensor& silu_out(const at::Tensor& self, at::Tensor& result) {

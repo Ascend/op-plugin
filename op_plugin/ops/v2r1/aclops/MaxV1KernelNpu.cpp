@@ -15,33 +15,26 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
-
-at::Tensor npu_confusion_transpose(const at::Tensor& self,
-    at::IntArrayRef perm,
-    at::IntArrayRef shape,
-    bool transpose_first) {
-  c10::SmallVector<int64_t, SIZE> output_size;
-  if (transpose_first) {
-    output_size = op_infer::array_to_small_vector(shape);
-  } else {
-    for (int i = 0; i < perm.size(); i++) {
-      output_size.emplace_back(shape[perm[i]]);
-    }
+at::Tensor npu_max_backward(
+    const at::Tensor& grad,
+    int64_t dim,
+    const at::Tensor& indices,
+    c10::SymIntArrayRef size,
+    bool keepdim) {
+  auto sizes = c10::asIntArrayRefUnchecked(size);
+  at::Tensor new_grad = grad;
+  at::Tensor new_indices = indices;
+  if (keepdim && sizes.size() > 0) {
+    new_grad = grad.squeeze(dim);
+    new_indices = indices.squeeze(dim);
   }
-
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ConfusionTransposeD")
-      .Input(self)
-      .Output(result)
-      .Attr("perm", perm)
-      .Attr("shape", shape)
-      .Attr("transpose_first", transpose_first)
-      .Run();
-
-  return result;
+  if (new_indices.dtype() == at::kLong) {
+    new_indices = acl_op::npu_dtype_cast(new_indices, at::kInt);
+  }
+  auto grad_input = acl_op::npu_scatter(at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
+  return grad_input;
 }
 } // namespace acl_op

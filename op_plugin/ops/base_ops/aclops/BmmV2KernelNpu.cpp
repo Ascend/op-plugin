@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
@@ -23,9 +21,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-using torch::autograd::Function;
-using torch::autograd::AutogradContext;
-
 bool is_transpose_last_two_dims_v2(const at::Tensor& Tensors) {
   if (Tensors.dim() < 2) {
     return false;
@@ -294,74 +289,9 @@ at::Tensor npu_bmmV2_impl(const at::Tensor& self, const at::Tensor& mat2, at::In
   infer_output_size = bmm_v2_output_size(tmp_self, tmp_mat2);
   return pure_bmm_v2(tmp_self, tmp_mat2, infer_output_size).view(expect_output_size);
 }
-
-at::Tensor npu_bmm_v2_mat1_backward(
-    const at::Tensor& grad,
-    const at::Tensor& mat1,
-    const at::Tensor& mat2,
-    at::IntArrayRef sizes) {
-  // da = grad * b^T
-  auto grad_with_full_size = grad;
-
-  std::vector<int64_t> axis_reshape(grad.sizes().begin(), grad.sizes().end());
-  if (mat1.dim() == 1) {
-    axis_reshape.insert(axis_reshape.begin() + axis_reshape.size() - 1, 1);
-  } else if (mat2.dim() == 1) {
-    axis_reshape.insert(axis_reshape.end(), 1);
-  }
-
-  return npu_bmmV2_impl(
-      grad.view(axis_reshape), mat2.dim() == 1 ? mat2.view({1, mat2.size(0)}) : mat2.transpose(-2, -1), sizes);
-}
-
-at::Tensor npu_bmm_v2_mat2_backward(
-    const at::Tensor& grad,
-    const at::Tensor& mat1,
-    const at::Tensor& mat2,
-    at::IntArrayRef sizes) {
-  // db = a^T * grad
-  auto grad_with_full_size = grad;
-
-  std::vector<int64_t> axis_reshape(grad.sizes().begin(), grad.sizes().end());
-  if (mat1.dim() == 1) {
-    axis_reshape.insert(axis_reshape.begin() + axis_reshape.size() - 1, 1);
-  } else if (mat2.dim() == 1) {
-    axis_reshape.insert(axis_reshape.end(), 1);
-  }
-
-  if (mat1.dim() == 1) {
-    return npu_bmmV2_impl(mat1.view({mat1.size(0), 1}), grad.view(axis_reshape), sizes);
-  }
-  return npu_bmmV2_impl(mat1.transpose(-2, -1), grad.view(axis_reshape), sizes);
-}
-
-class NPUBmmV2Function : public torch::autograd::Function<NPUBmmV2Function> {
-public:
-  static at::Tensor forward(
-      AutogradContext* ctx,
-      const at::Tensor& self,
-      const at::Tensor& mat2,
-      at::IntArrayRef output_sizes) {
-    at::AutoNonVariableTypeMode g;
-    ctx->save_for_backward({self, mat2});
-    return npu_bmmV2_impl(self, mat2, output_sizes);
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext* ctx, std::vector<at::Tensor> grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto self = saved[0];
-    auto mat2 = saved[1];
-
-    at::Tensor self_grad = npu_bmm_v2_mat1_backward(grad_outputs[0], self, mat2, self.sizes());
-    at::Tensor mat2_grad = npu_bmm_v2_mat2_backward(grad_outputs[0], self, mat2, mat2.sizes());
-    std::vector<at::Tensor> output = {self_grad, mat2_grad, at::Tensor()};
-    return output;
-  }
-};
-}
+} // namespace
 
 at::Tensor npu_bmmV2(const at::Tensor& self, const at::Tensor& mat2, at::IntArrayRef output_sizes) {
-  return NPUBmmV2Function::apply(self, mat2, output_sizes);
+  return npu_bmmV2_impl(self, mat2, output_sizes);
 }
-
 } // namespace acl_op
