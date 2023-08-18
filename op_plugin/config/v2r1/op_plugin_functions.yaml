@@ -1438,11 +1438,21 @@ official:
    impl_ns: acl_op
  - func: std.out(Tensor self, int[1]? dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: std.correction_out(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: std.correction_names(Tensor self, Dimname[1] dim, *, Scalar? correction=None, bool keepdim=False) -> Tensor
+   impl_ns: acl_op
+ - func: std.correction_names_out(Tensor self, Dimname[1] dim, *, Scalar? correction=None, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: std_mean(Tensor self, bool unbiased=True) -> (Tensor, Tensor)
    impl_ns: acl_op
  - func: std_mean.dim(Tensor self, int[1]? dim, bool unbiased=True, bool keepdim=False) -> (Tensor, Tensor)
    impl_ns: acl_op
  - func: std_mean.names_dim(Tensor self, Dimname[1] dim, bool unbiased=True, bool keepdim=False) -> (Tensor, Tensor)
+   impl_ns: acl_op
+ - func: std_mean.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> (Tensor, Tensor)
+   impl_ns: acl_op
+ - func: std_mean.correction_names(Tensor self, Dimname[1] dim, *, Scalar? correction=None, bool keepdim=False) -> (Tensor, Tensor)
    impl_ns: acl_op
  - func: sub.Scalar(Tensor self, Scalar other, Scalar alpha=1) -> Tensor
    impl_ns: acl_op
