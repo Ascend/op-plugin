@@ -1480,11 +1480,21 @@ supported:
    wrap_impl: std_out
  - func: std.out
    wrap_impl: std_out
+ - func: std.correction_names
+   wrap_impl: std
+ - func: std.correction_out
+   wrap_impl: std_out
+ - func: std.correction_names_out
+   wrap_impl: std_out
  - func: std_mean
    wrap_impl: std_mean
  - func: std_mean.dim
    wrap_impl: std_mean
  - func: std_mean.names_dim
+   wrap_impl: std_mean
+ - func: std_mean.correction
+   wrap_impl: std_mean
+ - func: std_mean.correction_names
    wrap_impl: std_mean
  - func: sub.Scalar
    wrap_impl: sub

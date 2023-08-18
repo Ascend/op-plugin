@@ -22,7 +22,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::IntArrayRef var_check_and_trans_dim(const at::Tensor& self, at::IntArrayRef dim) {
+std::vector<int64_t> var_check_and_trans_dim(const at::Tensor& self, at::IntArrayRef dim) {
   std::vector<int64_t> result_dim;
   auto self_dim = self.dim();
   for (int64_t i = 0; i < dim.size(); i++) {
@@ -50,7 +50,7 @@ int64_t var_get_shape_prod(const at::Tensor& self, at::IntArrayRef dim) {
 }
 
 at::Tensor& var_after_out_nocheck(
-    at::Tensor& var,
+    at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& mean_broadcast,
     at::IntArrayRef dim,
@@ -62,14 +62,14 @@ at::Tensor& var_after_out_nocheck(
   cmd.Name("ReduceStdV2Update")
       .Input(self)
       .Input(mean_broadcast)
-      .Output(var)
+      .Output(result)
       .Attr("dim", dim)
       .Attr("if_std", if_std)
       .Attr("unbiased", unbiased)
       .Attr("keepdim", keepdim)
       .Attr("correction", correction)
       .Run();
-  return var;
+  return result;
 }
 
 std::tuple<at::Tensor&, at::Tensor&> var_mean_compute(
@@ -129,7 +129,7 @@ at::Tensor& cal_var_out(
     const bool keepdim,
     at::Tensor& result) {
   // check and trans dim
-  at::IntArrayRef dim_now = var_check_and_trans_dim(self, dim);
+  auto dim_now = var_check_and_trans_dim(self, dim);
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
 
@@ -155,7 +155,7 @@ at::Tensor cal_var(
     const int64_t correction,
     const bool unbiased,
     const bool keepdim) {
-  at::IntArrayRef dim_now = var_check_and_trans_dim(self, dim);
+  auto dim_now = var_check_and_trans_dim(self, dim);
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
   at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
@@ -169,7 +169,7 @@ std::tuple<at::Tensor, at::Tensor> cal_var_mean(
     bool unbiased,
     int64_t correction,
     bool keepdim) {
-  at::IntArrayRef dim_now = var_check_and_trans_dim(self, dim);
+  auto dim_now = var_check_and_trans_dim(self, dim);
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
   at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);

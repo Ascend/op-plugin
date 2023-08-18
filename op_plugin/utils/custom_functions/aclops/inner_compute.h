@@ -86,6 +86,7 @@ at::Tensor cal_var(const at::Tensor& self, at::IntArrayRef dim, const int64_t co
                    const bool keepdim);
 std::tuple<at::Tensor, at::Tensor> cal_var_mean(const at::Tensor& self, at::IntArrayRef dim, bool unbiased,
                                                 int64_t correction, bool keepdim);
+int64_t var_get_shape_prod(const at::Tensor& self, at::IntArrayRef dim);
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor& self, bool some, bool compute_uv);
 ::std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_convolution_transpose_backward(const at::Tensor & input,
         const at::Tensor & grad, const at::Tensor & weight, at::IntArrayRef padding, at::IntArrayRef output_padding,
