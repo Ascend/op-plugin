@@ -32,10 +32,15 @@ def main() -> None:
 
     fm = make_file_manager(options.output_dir)
 
+    import os
+    pytorch_version = os.environ.get('PYTORCH_VERSION').split('.')
+    torch_dir = f"v{pytorch_version[0]}r{pytorch_version[1]}"
+
     fm.write_with_template(
         "OpInterface.h",
         "Interface.h",
         lambda: {
+            "torch_dir": torch_dir,
             "namespace": "op_plugin",
             "declarations": backend_declarations,
         },
@@ -44,6 +49,7 @@ def main() -> None:
         "OpApiInterface.h",
         "Interface.h",
         lambda: {
+            "torch_dir": torch_dir,
             "namespace": "op_api",
             "declarations": backend_declarations,
         },
@@ -52,6 +58,7 @@ def main() -> None:
         "AclOpsInterface.h",
         "Interface.h",
         lambda: {
+            "torch_dir": torch_dir,
             "namespace": "acl_op",
             "declarations": backend_declarations,
         },

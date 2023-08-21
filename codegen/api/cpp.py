@@ -1,4 +1,6 @@
 from typing import List, Optional, Sequence, Set, Union
+from distutils.version import LooseVersion
+import os
 
 from codegen import local
 from codegen.api.types import (
@@ -65,6 +67,7 @@ from codegen.utils import assert_never
 # BTW: policy on name collisions: we try not to have types with
 # collisions, but functions are fair game to collide
 
+PYTORCH_VERSION = os.environ.get('PYTORCH_VERSION')
 
 def name(
     func: FunctionSchema,
@@ -167,14 +170,15 @@ def argumenttype_type(
                     binds, ConstRefCType(OptionalCType(BaseCType(tensorT)))
                 )
         elif str(t.elem) == "Scalar":
-            return NamedCType(binds, ConstRefCType(OptionalCType(BaseCType(scalarT))))
-        elif isinstance(t.elem, ListType) and str(t.elem.elem) == "int":
-            return NamedCType(binds, BaseCType(optionalIntArrayRefT))
-        elif isinstance(t.elem, ListType) and str(t.elem.elem) == "SymInt":
-            if symint:
-                return NamedCType(binds, BaseCType(optionalSymIntArrayRefT))
-            else:
+            return NamedCType(binds, ConstRefCType(OptionalCType(BaseCType(scalarT))))   
+        elif LooseVersion(PYTORCH_VERSION) >= LooseVersion('2.0'):
+            if isinstance(t.elem, ListType) and str(t.elem.elem) == "int":
                 return NamedCType(binds, BaseCType(optionalIntArrayRefT))
+            elif isinstance(t.elem, ListType) and str(t.elem.elem) == "SymInt":
+                if symint:
+                    return NamedCType(binds, BaseCType(optionalSymIntArrayRefT))
+                else:
+                    return NamedCType(binds, BaseCType(optionalIntArrayRefT))
         elem = argumenttype_type(t.elem, mutable=mutable, binds=binds, symint=symint)
         return NamedCType(binds, OptionalCType(elem.type))
     elif isinstance(t, ListType):
@@ -196,6 +200,9 @@ def argumenttype_type(
                 else:
                     return NamedCType(binds, BaseCType(intArrayRefT))
         if str(t.elem) == "Tensor":
+            if LooseVersion(PYTORCH_VERSION) < LooseVersion('2.0'):
+                return NamedCType(binds, BaseCType(tensorListT))
+
             if local.use_ilistref_for_tensor_lists():
                 return NamedCType(binds, ConstRefCType(BaseCType(iTensorListRefT)))
             else:

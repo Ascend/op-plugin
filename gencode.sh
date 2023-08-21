@@ -24,6 +24,8 @@ IFS='.' read -ra version_parts <<< "$PYTORCH_VERSION"
 PYTORCH_VERSION_DIR="v${version_parts[0]}r${version_parts[1]}"
 python_execute="$2"
 
+export PYTORCH_VERSION="$PYTORCH_VERSION"
+
 ${python_execute} -m codegen.gen_backend_stubs  \
   --version="$PYTORCH_VERSION" \
   --output_dir="$CDIR/op_plugin/" \
