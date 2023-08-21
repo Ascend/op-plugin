@@ -95,6 +95,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
     result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
+  return result;
 }
 
 at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
