@@ -940,4 +940,25 @@ c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor,
   }
   return size;
 }
+
+c10::SmallVector<int64_t, SIZE> max_pool2d_out_size(
+    const at::Tensor &self,
+    at::IntArrayRef output_size) {
+  auto shape = array_to_small_vector(self.sizes());
+  if ((self.dim() == 3 || self.dim() == 4) && output_size.size() == 2) {
+    shape[shape.size() - 2] = output_size[0];
+    shape[shape.size() - 1] = output_size[1];
+  }
+  return shape;
+}
+
+c10::SmallVector<int64_t, SIZE> ger_output_size(
+    const at::Tensor& self,
+    const at::Tensor& vec2) {
+  int64_t outputsize_0 = self.size(0);
+  int64_t outputsize_1 = vec2.size(0);
+  c10::SmallVector<int64_t, SIZE> output_size = {outputsize_0, outputsize_1};
+  return output_size;
+}
+
 } // namespace op_infer

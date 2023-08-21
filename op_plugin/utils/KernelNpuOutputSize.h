@@ -245,6 +245,9 @@ c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor,
 c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(const at::Tensor& self, at::IntArrayRef ksizes,
                                                              at::IntArrayRef strides, at::IntArrayRef dilations,
                                                              at::IntArrayRef pads);
+c10::SmallVector<int64_t, SIZE> max_pool2d_out_size(const at::Tensor &self, at::IntArrayRef output_size);
+
+c10::SmallVector<int64_t, SIZE> ger_output_size(const at::Tensor& self, const at::Tensor& vec2);
 
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE
