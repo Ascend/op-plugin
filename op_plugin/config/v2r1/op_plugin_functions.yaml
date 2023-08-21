@@ -1964,6 +1964,7 @@ custom:
     tags: nondeterministic_seeded
   - func: npu_lstm_data(Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor seq_mask, Tensor h, Tensor c, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, bool flag_seq, bool direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
+    tags: nondeterministic_seeded
   - func: _dropout_with_byte_mask(Tensor self, float p) -> (Tensor, Tensor)
     impl_ns: acl_op
     tags: nondeterministic_seeded
