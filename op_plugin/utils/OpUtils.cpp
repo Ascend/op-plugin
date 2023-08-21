@@ -1,4 +1,5 @@
 #include "op_plugin/utils/OpUtils.h"
+#include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 
 namespace op_plugin {
@@ -147,6 +148,12 @@ at::ScalarType get_divide_high_type(const at::Tensor& self, const at::Tensor& ot
     high_type = at::kFloat;
   }
   return high_type;
+}
+
+at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type) {
+  at::Tensor self_cast = (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
+  self_cast = at_npu::native::OpPreparation::CastBackToOriFormat(self_cast);
+  return self_cast;
 }
 }  // namespace utils
 }  // namespace op_plugin

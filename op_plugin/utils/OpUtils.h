@@ -17,6 +17,7 @@ c10::SmallVector<int64_t, N> get_dimlist_for_tensor(const at::Tensor &self);
 int64_t complete_pad(int64_t s_size, int64_t p_size, int64_t k_size, int64_t stride);
 c10::optional<double> get_scale_value(c10::optional<c10::ArrayRef<double>> scales, int idx);
 at::ScalarType get_divide_high_type(const at::Tensor& self, const at::Tensor& other);
+at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type);
 }  // namespace utils
 }  // namespace op_plugin
 
