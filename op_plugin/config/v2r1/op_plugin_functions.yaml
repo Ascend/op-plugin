@@ -1258,6 +1258,8 @@ official:
    impl_ns: acl_op
  - func: remainder_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
    impl_ns: acl_op
+ - func: remainder.Scalar_Tensor(Scalar self, Tensor other) -> Tensor
+   impl_ns: acl_op
  - func: renorm(Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor
    impl_ns: acl_op
  - func: renorm.out(Tensor self, Scalar p, int dim, Scalar maxnorm, *, Tensor(a!) out) -> Tensor(a!)
