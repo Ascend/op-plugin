@@ -539,11 +539,59 @@ c10::SmallVector<int64_t, SIZE> quantized_max_pool2d_npu_output_size(const at::T
 
 c10::SmallVector<int64_t, SIZE> range_npu_output_size(float start, float end, float step) {
   TORCH_CHECK(step != 0, "range_npu_output_size step is zero!");
-  
+
   int64_t size_value = std::floor((end - start) / step);
   c10::SmallVector<int64_t, SIZE> outputSize = {size_value + 1};
 
   return outputSize;
+}
+
+c10::SmallVector<int64_t, SIZE> reflection_pad1d_npu_out_size(
+    const at::Tensor& self, at::IntArrayRef padding) {
+  int64_t padding_num = padding.size();
+  int64_t self_num = self.dim();
+  TORCH_CHECK(padding_num == 2, "padding length should be 2");
+  TORCH_CHECK(self_num == 2 || self_num == 3, "self should be 2D or 3D");
+  // 0, 1, -2, -1 are indexes
+  int64_t padding_l = padding[0];
+  int64_t padding_r = padding[1];
+  int64_t C = self.size(-2);
+  int64_t W = self.size(-1);
+  int64_t Wo = W + padding_l + padding_r;
+  c10::SmallVector<int64_t, SIZE> output_size = {C, Wo};
+  // 3 is dim
+  if (self_num == 3) {
+    // -3 is index
+    int64_t N = self.size(-3);
+    output_size = {N, C, Wo};
+  }
+  return output_size;
+}
+
+c10::SmallVector<int64_t, SIZE> reflection_pad2d_npu_out_size(
+    const at::Tensor& self, at::IntArrayRef padding) {
+  int64_t padding_num = padding.size();
+  int64_t self_num = self.dim();
+  TORCH_CHECK(padding_num == 4, "padding length should be 4");
+  TORCH_CHECK(self_num == 3 || self_num == 4, "self should be 3D or 4D");
+  // -3, -2, -1, 0, 1, 2, 3 are indexes
+  int64_t padding_l = padding[0];
+  int64_t padding_r = padding[1];
+  int64_t padding_t = padding[2];
+  int64_t padding_b = padding[3];
+  int64_t C = self.size(-3);
+  int64_t H = self.size(-2);
+  int64_t W = self.size(-1);
+  int64_t Ho = H + padding_t + padding_b;
+  int64_t Wo = W + padding_l + padding_r;
+  c10::SmallVector<int64_t, SIZE> output_size = {C, Ho, Wo};
+  // 4 is dim
+  if (self_num == 4) {
+    // -4 is index
+    int64_t N = self.size(-4);
+    output_size = {N, C, Ho, Wo};
+  }
+  return output_size;
 }
 
 c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size(const at::Tensor &self, int64_t repeats,
@@ -575,6 +623,28 @@ c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size(const at::Tens
   return shape;
 }
 
+c10::SmallVector<int64_t, SIZE> replication_pad1d_npu_out_size(
+    const at::Tensor& self, at::IntArrayRef padding) {
+  int64_t padding_num = padding.size();
+  int64_t self_num = self.dim();
+  TORCH_CHECK(padding_num == 2, "padding length should be 2");
+  TORCH_CHECK(self_num == 2 || self_num == 3, "self should be 2D or 3D");
+  // 0, 1, -2, -1 are indexes
+  int64_t padding_l = padding[0];
+  int64_t padding_r = padding[1];
+  int64_t C = self.size(-2);
+  int64_t W = self.size(-1);
+  int64_t Wo = W + padding_l + padding_r;
+  c10::SmallVector<int64_t, SIZE> output_size = {C, Wo};
+  // 3 is dim
+  if (self_num == 3) {
+    // -3 is index
+    int64_t N = self.size(-3);
+    output_size = {N, C, Wo};
+  }
+  return output_size;
+}
+
 c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_output_size(const at::Tensor &self, c10::IntArrayRef padding) {
   int64_t N = self.dim() == 3 ? 1 : self.size(-4);
   int64_t C = self.size(-3);
@@ -600,6 +670,32 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_output_size(const at::Tens
 
   c10::SmallVector<int64_t, SIZE> outputSize = {N, C, Ho, Wo};
   return outputSize;
+}
+
+c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_out_size(
+    const at::Tensor& self, at::IntArrayRef padding) {
+  int64_t padding_num = padding.size();
+  int64_t self_num = self.dim();
+  TORCH_CHECK(padding_num == 4, "padding length should be 4");
+  TORCH_CHECK(self_num == 3 || self_num == 4, "self should be 3D or 4D");
+  // -3, -2, -1, 0, 1, 2, 3 are indexes
+  int64_t padding_l = padding[0];
+  int64_t padding_r = padding[1];
+  int64_t padding_t = padding[2];
+  int64_t padding_b = padding[3];
+  int64_t C = self.size(-3);
+  int64_t H = self.size(-2);
+  int64_t W = self.size(-1);
+  int64_t Ho = H + padding_t + padding_b;
+  int64_t Wo = W + padding_l + padding_r;
+  c10::SmallVector<int64_t, SIZE> output_size = {C, Ho, Wo};
+  // 4 is dim
+  if (self_num == 4) {
+    // -4 is index
+    int64_t N = self.size(-4);
+    output_size = {N, C, Ho, Wo};
+  }
+  return output_size;
 }
 
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nms_v4_npu_output_size(
@@ -1013,4 +1109,56 @@ c10::SmallVector<int64_t, SIZE> ger_output_size(
   return output_size;
 }
 
+// infer output shape for int repeats case
+c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size_opapi(const at::Tensor &self,
+    int64_t repeats, c10::optional<int64_t> dim) {
+    c10::SmallVector<int64_t, SIZE> shape;
+    if (dim.has_value()) {
+        int64_t real_dim = dim.value_or(0);
+        real_dim = (real_dim < 0) ? (real_dim + self.dim()) : real_dim;
+        for (int64_t i = 0; i < self.dim(); i++) {
+            if (i == real_dim) {
+                shape.emplace_back(repeats * self.size(i));
+            }
+            else {
+                shape.emplace_back(self.size(i));
+            }
+        }
+    } else {
+        shape.emplace_back(repeats * self.numel());
+    }
+    return shape;
+}
+
+// infer output shape for tensor repeats case
+c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size_opapi(const at::Tensor &self,
+    const at::Tensor &repeats, c10::optional<int64_t> dim) {
+    c10::SmallVector<int64_t, SIZE> shape;
+    if (dim.has_value()) {
+        int64_t real_dim = dim.value_or(0);
+        real_dim = (real_dim < 0) ? (real_dim + self.dim()) : real_dim;
+        for (int64_t i = 0; i < self.dim(); i++) {
+            if (i == real_dim) {
+                // if repeats only has one element, size will be sum(repeats)*self.size(dim). Otherwise is sum(repeats)
+                int64_t arg = 1;
+                if (repeats.numel() == 1) {
+                    arg = self.size(real_dim);
+                }
+                shape.emplace_back(arg * (repeats.sum().item()).toLong());
+            }
+            else
+                shape.emplace_back(self.size(i));
+        }
+    }
+    // without dim, need flatten
+    else {
+        // if repeats only has one element, size will be sum(repeats) * self.numel(). Otherwise is sum(repeats)
+        int64_t base = repeats.sum().item().toLong();
+        if (repeats.numel() == 1) {
+            base *= self.numel();
+        }
+        shape.emplace_back(base);
+    }
+    return shape;
+}
 } // namespace op_infer
