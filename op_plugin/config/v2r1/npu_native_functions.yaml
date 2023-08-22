@@ -939,6 +939,10 @@ supported:
    wrap_impl: lt_
  - func: lt_.Tensor
    wrap_impl: lt_
+ - func: kl_div
+   wrap_impl: kl_div
+ - func: l1_loss
+   wrap_impl: l1_loss
  - func: masked_fill_.Scalar
    wrap_impl: masked_fill_
  - func: masked_fill_.Tensor

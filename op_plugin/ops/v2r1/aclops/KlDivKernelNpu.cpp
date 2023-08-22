@@ -13,14 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using torch::autograd::AutogradContext;
-using tensor_list = std::vector<at::Tensor>;
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor npu_kl_div(
@@ -30,45 +27,45 @@ at::Tensor npu_kl_div(
     bool log_target) {
   at::Tensor result = reduction == at::Reduction::None ?
       npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
-  string reductionStr;
+  std::string reduction_str;
   if (reduction == at::Reduction::Mean) {
-    reductionStr = "batchmean";
+    reduction_str = "batchmean";
   } else if (reduction == at::Reduction::Sum) {
-    reductionStr = "sum";
+    reduction_str = "sum";
   } else if (reduction == at::Reduction::None) {
-    reductionStr = "none";
+    reduction_str = "none";
   }
   at_npu::native::OpCommand cmd;
   cmd.Name("KLDiv")
       .Input(self)
       .Input(target)
       .Output(result)
-      .Attr("reduction", reductionStr)
+      .Attr("reduction", reduction_str)
       .Attr("log_target", log_target)
       .Run();
   if (reduction == at::Reduction::Mean) {
-    auto inputShape = self.sizes();
-    int batchSquareSize = c10::multiply_integers(inputShape) / inputShape[0];
-    result.div_(batchSquareSize);
+    auto input_shape = self.sizes();
+    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
+    result.div_(batch_square_size);
   }
   return result;
 }
 
-at::Tensor npu_kl_div_backward(
+at::Tensor kl_div_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
     bool log_target) {
-  auto outputSize = op_infer::input_same_output_size(self);
-  at::Tensor grad_input = npu_preparation::apply_tensor(outputSize, self.options(), self);
-  string reductionStr;
+  auto output_size = op_infer::input_same_output_size(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(output_size, self.options(), self);
+  std::string reduction_str;
   if (reduction == at::Reduction::Mean) {
-    reductionStr = "batchmean";
+    reduction_str = "batchmean";
   } else if (reduction == at::Reduction::Sum) {
-    reductionStr = "sum";
+    reduction_str = "sum";
   } else if (reduction == at::Reduction::None) {
-    reductionStr = "none";
+    reduction_str = "none";
   }
   at_npu::native::OpCommand cmd;
   cmd.Name("KlDivLossGrad")
@@ -76,50 +73,22 @@ at::Tensor npu_kl_div_backward(
       .Input(self)
       .Input(target)
       .Output(grad_input)
-      .Attr("reduction", reductionStr)
+      .Attr("reduction", reduction_str)
       .Attr("log_target", log_target)
       .Run();
   if (reduction == at::Reduction::Mean) {
-    auto inputShape = self.sizes();
-    int batchSquareSize = c10::multiply_integers(inputShape) / inputShape[0];
-    grad_input.div_(batchSquareSize);
+    auto input_shape = self.sizes();
+    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
+    grad_input.div_(batch_square_size);
   }
   return grad_input;
 }
-
-class NPUKlDivFunction : public torch::autograd::Function<NPUKlDivFunction> {
-public:
-  static at::Tensor forward(
-      AutogradContext *ctx,
-      const at::Tensor& self,
-      const at::Tensor& target,
-      int64_t reduction,
-      bool log_target) {
-    at::AutoNonVariableTypeMode g;
-    auto result = npu_kl_div(self, target, reduction, log_target);
-    ctx->save_for_backward({self, target});
-    ctx->saved_data["reduction"] = reduction;
-    ctx->saved_data["log_target"] = log_target;
-    return result;
-  }
-
-  static tensor_list backward(
-      AutogradContext *ctx,
-      tensor_list grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto reduction = ctx->saved_data["reduction"].toInt();
-    auto log_target = ctx->saved_data["log_target"].toBool();
-    auto grad_input = npu_kl_div_backward(grad_outputs[0], saved[0], saved[1], reduction, log_target);
-    tensor_list output = {grad_input, at::Tensor(), at::Tensor(), at::Tensor()};
-    return output;
-  }
-};
 
 at::Tensor kl_div(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
     bool log_target) {
-    return NPUKlDivFunction::apply(self, target, reduction, log_target);
+    return npu_kl_div(self, target, reduction, log_target);
 }
 } // namespace acl_op
