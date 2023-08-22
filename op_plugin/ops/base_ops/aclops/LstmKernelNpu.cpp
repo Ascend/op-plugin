@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/framework/utils/CustomFunctions.h"
+#include "torch_npu/csrc/aten/CustomFunctions.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -53,8 +53,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
   at::Tensor j_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor f_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor o_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-  at::Tensor tanhc = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ); 
- 
+  at::Tensor tanhc = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
+
   string direction = flag_direction? "REDIRECTIONAL" : "UNIDIRECTIONAL";
   string gate_order = "ifjo";
   at_npu::native::OpCommand cmd;
@@ -101,9 +101,9 @@ std::tuple<at::Tensor, at::Tensor> get_wb_single_layer_direc(
     bool has_biases) {
   // get weight
   at::Tensor ih_weight = params[0];
-  at::Tensor hh_weight = params[1];	
+  at::Tensor hh_weight = params[1];
   at::Tensor weight = at::cat({ih_weight, hh_weight}, 1).t().to(input.dtype());
-  
+
   // get bias
   at::Tensor bias = at::zeros(weight.size(1), weight.options());
   if (has_biases) {
@@ -117,7 +117,7 @@ std::tuple<at::Tensor, at::Tensor> get_wb_double_layer_or_bidirec(
     at::TensorList params,
     bool has_biases) {
   at::Tensor weight;
-  at::Tensor bias; 
+  at::Tensor bias;
   if (has_biases) {
     weight = at::cat({params[4], params[5]}, 1).t().to(input.dtype());
     bias = at::add(params[6], params[7]).to(input.dtype());
@@ -140,28 +140,28 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_single_layer_direc_npu(
     bool batch_first,
     bool direction) {
   int64_t num_step = input.size(0);
-  
+
   // get weight
   at::Tensor ih_weight = params[0];
   at::Tensor hh_weight = params[1];
-	
+
   at::Tensor weight = at::cat({ih_weight, hh_weight}, 1).t().to(input.dtype());
-  
+
   // get bias
   at::Tensor bias = at::zeros(weight.size(1), weight.options());
   if (has_biases) {
     bias = at::add(params[2], params[3]).to(input.dtype());
   }
-  
+
   // get init_h, init_c
   at::Tensor h = hx[0];
   at::Tensor c = hx[1];
-  
+
   at::Tensor seq_mask = at::empty({0}, input.options());
   auto results = at_npu::native::custom_ops::npu_lstm(input, weight, bias, seq_mask, h, c, has_biases, num_layers, dropout,
       train, bidirectional, batch_first, false, direction);
 
-  // get the last dimension of the T-axis	
+  // get the last dimension of the T-axis
   at::Tensor th_output = at::unsqueeze(std::get<1>(results)[num_step-1], 0);
   at::Tensor tc_output = at::unsqueeze(std::get<2>(results)[num_step-1], 0);
 
@@ -269,7 +269,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_double_layer_bidirec_npu(
     bool batch_first) {
   int64_t num_step = input.size(0);
 
-  // get h and c of first layer 
+  // get h and c of first layer
   at::Tensor hL0 = hx[0].slice(0, 0, 2);
   at::Tensor cL0 = hx[1].slice(0, 0, 2);
 
@@ -419,7 +419,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_direc_packseq(
   int64_t num_step = input.size(0);
 
   at::Tensor ih_weight = params[0];
-  at::Tensor hh_weight = params[1];	
+  at::Tensor hh_weight = params[1];
   at::Tensor weight = at::cat({ih_weight, hh_weight}, 1).t().to(input.dtype());
 
   at::Tensor bias = at::zeros(weight.size(1), weight.options());
@@ -464,7 +464,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_bidirec_packseq(
   // get w/ b/ h/ c of backward direction
   at::Tensor h_back = hx[0].slice(0, 1, 2);
   at::Tensor c_back = hx[1].slice(0, 1, 2);
-  
+
   at::Tensor weight_back;
   at::Tensor bias_back;
   std::tie(weight_back, bias_back) = get_wb_double_layer_or_bidirec(input, params, has_biases);
@@ -476,7 +476,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_onelayer_bidirec_packseq(
   auto results_backward = at_npu::native::custom_ops::npu_lstm_data(input, batch_sizes, weight_back, bias_back, mask, h_back, c_back,
       has_biases, num_layers, dropout_p, train, bidirectional, batch_first, true, true);
 
-  // get the first dimension of the T-axis when caculate reverse direction	
+  // get the first dimension of the T-axis when caculate reverse direction
   at::Tensor th_output = at::unsqueeze(std::get<1>(results_backward)[0], 0);
   at::Tensor tc_output = at::unsqueeze(std::get<2>(results_backward)[0], 0);
 
@@ -679,12 +679,12 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
   at::Tensor inh = at::squeeze(init_h, 0);
   at::Tensor inc = at::squeeze(init_c, 0);
 
-  at::Tensor grad_input = npu_preparation::apply_tensor(input); 
+  at::Tensor grad_input = npu_preparation::apply_tensor(input);
   at::Tensor grad_weight = npu_preparation::apply_tensor(weight);
   at::Tensor grad_bias = npu_preparation::apply_tensor(bias);
   at::Tensor grad_ht = npu_preparation::apply_tensor(inh);
   at::Tensor grad_ct = npu_preparation::apply_tensor(inc);
-  
+
   auto grad_y = grady.defined() ? grady : at::zeros(y.sizes(), y.options());
   auto grad_h = gradh.defined() ? gradh[input.size(0)-1] : at::zeros(inh.sizes(), h.options());
   auto grad_c = gradc.defined() ? gradc[input.size(0)-1] : at::zeros(inc.sizes(), c.options());

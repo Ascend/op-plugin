@@ -54,8 +54,8 @@ at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, cons
         .Input(other)
         .Output(result)
         .Run();
-    return result;
   }
+  return result;
 }
 } // namespace
 

@@ -13,17 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using torch::autograd::AutogradContext;
-using tensor_list = std::vector<at::Tensor>;
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
+namespace {
 at::Tensor& l1_loss_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -38,19 +35,6 @@ at::Tensor& l1_loss_out_nocheck(
       .Attr("p", (int64_t)1)
       .Output(result)
       .Run();
-  return result;
-}
-
-at::Tensor npu_l1_loss(
-    const at::Tensor& self,
-    const at::Tensor& target,
-    int64_t reduction) {
-  at::IntArrayRef output_size;
-  if (reduction == at::Reduction::None) {
-    output_size = op_infer::input_same_output_size(self);
-  }
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  l1_loss_out_nocheck(result, self, target, reduction);
   return result;
 }
 
@@ -71,8 +55,9 @@ at::Tensor& l1_loss_backward_out_nocheck(
       .Run();
   return grad_input;
 }
+} // namespace
 
-at::Tensor npu_l1_loss_backward(
+at::Tensor l1_loss_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& target,
@@ -90,35 +75,23 @@ at::Tensor npu_l1_loss_backward(
   return result;
 }
 
-class NPUL1LossFunction : public torch::autograd::Function<NPUL1LossFunction> {
-public:
-  static at::Tensor forward(
-      AutogradContext *ctx,
-      const at::Tensor& self,
-      const at::Tensor& target,
-      int64_t reduction) {
-    at::AutoNonVariableTypeMode g;
-    auto result = npu_l1_loss(self, target, reduction);
-    ctx->save_for_backward({self, target});
-    ctx->saved_data["reduction"] = reduction;
-    return result;
+at::Tensor npu_l1_loss(
+    const at::Tensor& self,
+    const at::Tensor& target,
+    int64_t reduction) {
+  at::IntArrayRef output_size;
+  if (reduction == at::Reduction::None) {
+    output_size = op_infer::input_same_output_size(self);
   }
-
-  static tensor_list backward(
-      AutogradContext *ctx,
-      tensor_list grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto reduction = ctx->saved_data["reduction"].toInt();
-    auto grad_input = npu_l1_loss_backward(grad_outputs[0], saved[0], saved[1], reduction);
-    tensor_list output = {grad_input, -grad_input, at::Tensor()};
-    return output;
-  }
-};
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+  l1_loss_out_nocheck(result, self, target, reduction);
+  return result;
+}
 
 at::Tensor l1_loss(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction) {
-  return NPUL1LossFunction::apply(self, target, reduction);
+  return npu_l1_loss(self, target, reduction);
 }
 } // namespace acl_op

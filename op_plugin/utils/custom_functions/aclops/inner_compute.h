@@ -41,6 +41,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
     const at::Tensor& weight, const at::Tensor& bias, const at::Tensor& init_h, const at::Tensor& init_c,
     const at::Tensor& y, const at::Tensor& h, const at::Tensor& c, const at::Tensor& i, const at::Tensor& j,
     const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc);
+at::Tensor l1_loss_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+                            int64_t reduction);
+at::Tensor kl_div_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+                           int64_t reduction, bool log_target);
 at::Tensor embedding_common_nocheck(const at::Tensor& weight, const at::Tensor& indices);
 at::Tensor gelu_common_nocheck(const at::Tensor& self);
 at::Tensor gelu_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& self);

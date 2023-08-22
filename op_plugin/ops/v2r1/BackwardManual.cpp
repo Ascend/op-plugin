@@ -81,4 +81,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
   return acl_op::npu_lstm_data_backward(grady_opt, gradh_opt, gradc_opt, input, batch_sizes, weight, bias, init_h,
                                         init_c, y, h, c, i, j, f, o, tanhc);
 }
+
+at::Tensor l1_loss_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+                            int64_t reduction) {
+  return acl_op::l1_loss_backward(grad_output, self, target, reduction);
+}
+
+at::Tensor kl_div_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+                           int64_t reduction, bool log_target) {
+  return acl_op::kl_div_backward(grad_output, self, target, reduction, log_target);
+}
 }  // namespace op_plugin
