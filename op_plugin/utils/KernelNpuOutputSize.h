@@ -246,5 +246,8 @@ c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(const at::Tensor& s
                                                              at::IntArrayRef strides, at::IntArrayRef dilations,
                                                              at::IntArrayRef pads);
 
+c10::SmallVector<int64_t, SIZE> im2col_backward_npu_output_size(const at::Tensor& grad_output,
+                                                                const at::IntArrayRef& input_size,
+                                                                const at::IntArrayRef& kernel_size);
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE
