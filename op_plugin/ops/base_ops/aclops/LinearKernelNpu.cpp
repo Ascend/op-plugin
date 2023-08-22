@@ -90,7 +90,7 @@ std::tuple<at::Tensor, at::Tensor> npu_linear_backward(
   } else {
     at::Tensor gradFormatcast = npu_preparation::ApplyTensor(grad, grad.sizes());
     gradFormatcast =
-        at_npu::native::NPUNativeFunctions::npu_format_cast(grad, calcu_op_util::GetTensorNpuFormat(weight));
+        at_npu::native::custom_ops::npu_format_cast(grad, calcu_op_util::GetTensorNpuFormat(weight));
     linear_backward_out_npu_nocheck(input_grad, gradFormatcast, weight, false, false);
     linear_backward_out_npu_nocheck(weight_grad, gradFormatcast, input, true, false);
   }
@@ -114,7 +114,7 @@ at::Tensor npu_linear(
   at::Tensor input_cast = (npu_format_helper::IsBaseFormatType(input) && mm_bmm_nd &&
       ((is_support_nd_out && op_plugin::utils::is_nd_to_nz_on_fly(input, weight)) ||
       (!is_support_nd_out && is_aligin()))) ? input :
-      at_npu::native::NPUNativeFunctions::npu_format_cast(input, ACL_FORMAT_FRACTAL_NZ);
+      at_npu::native::custom_ops::npu_format_cast(input, ACL_FORMAT_FRACTAL_NZ);
   return linear_npu_nocheck(input_cast, weight, bias_opt);
 }
 } // namespace acl_op

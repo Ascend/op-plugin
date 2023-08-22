@@ -57,7 +57,7 @@ at::Tensor threshold_backward(
   if ((calcu_op_util::GetTensorNpuFormat(grad_output) == ACL_FORMAT_NCHW) &&
       (calcu_op_util::GetTensorNpuFormat(self) == ACL_FORMAT_NC1HWC0)) {
     at::Tensor grad_output_5HD =
-        at_npu::native::NPUNativeFunctions::npu_format_cast(grad_output, ACL_FORMAT_NC1HWC0);
+        at_npu::native::custom_ops::npu_format_cast(grad_output, ACL_FORMAT_NC1HWC0);
     threshold_backward_out_npu(result, grad_output_5HD, self, threshold);
     return result;
   } else {

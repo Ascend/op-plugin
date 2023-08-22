@@ -352,7 +352,7 @@ at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
   mm_out_npu_nocheck(result, self, mat2);
 
   if (need_nd_out) {
-    result = at_npu::native::NPUNativeFunctions::npu_format_cast(result, ACL_FORMAT_ND);
+    result = at_npu::native::custom_ops::npu_format_cast(result, ACL_FORMAT_ND);
   }
   result = split_k ? at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Half) : result;
   return result;
