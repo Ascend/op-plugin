@@ -1011,6 +1011,8 @@ supported:
    wrap_impl: hardshrink
  - func: hardshrink_backward
    wrap_impl: hardshrink_backward
+ - func: hardshrink_backward.grad_input
+   wrap_impl: hardshrink_backward_out
  - func: hardsigmoid
    wrap_impl: hardsigmoid
    op_api: True
