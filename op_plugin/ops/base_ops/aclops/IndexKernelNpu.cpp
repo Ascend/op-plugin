@@ -128,7 +128,7 @@ at::Tensor index_high_dims(const at::Tensor& self, std::vector<at::Tensor> indic
     return result;
   }
 
-  at::Tensor self_nd = at_npu::native::NPUNativeFunctions::npu_format_cast(self, ACL_FORMAT_ND);
+  at::Tensor self_nd = at_npu::native::custom_ops::npu_format_cast(self, ACL_FORMAT_ND);
 
   bool is_aicore = check_index_aicore(self_nd, all_defined_indices, masks);
   bool is_casted = false;

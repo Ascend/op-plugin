@@ -114,3 +114,6 @@
 
 - name: l1_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
   self: l1_loss_backward(grad, self, target, reduction)
+
+- name: npu_format_cast(Tensor self, int acl_format) -> Tensor
+  self: grad

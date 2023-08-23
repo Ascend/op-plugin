@@ -37,11 +37,11 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_gather_stats_with_counts_npu_imp
   at::Tensor invstd_cp = at_npu::native::custom_ops::npu_dtype_cast(invstd, at::kFloat);
   auto running_mean_dtype = running_mean.scalar_type();
   at::Tensor running_mean_val = at_npu::native::custom_ops::npu_dtype_cast(
-      at_npu::native::NPUNativeFunctions::npu_format_cast(
+      at_npu::native::custom_ops::npu_format_cast(
           (running_mean.defined() ? running_mean.unsqueeze(0) : at::zeros({1, dim_c}, options)), ACL_FORMAT_ND),
       at::kFloat);
   at::Tensor running_var_val = at_npu::native::custom_ops::npu_dtype_cast(
-      at_npu::native::NPUNativeFunctions::npu_format_cast(
+      at_npu::native::custom_ops::npu_format_cast(
           (running_var.defined() ? running_var.unsqueeze(0) : at::ones({1, dim_c}, options)), ACL_FORMAT_ND),
       at::kFloat);
   at::IntArrayRef axes({0});

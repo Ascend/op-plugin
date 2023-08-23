@@ -23,7 +23,7 @@ using calcu_op_util = at_npu::native::CalcuOpUtil;
 at::Tensor isfinite(const at::Tensor& self_ex) {
   at::Tensor self = self_ex;
   if (calcu_op_util::GetTensorNpuFormat(self) != ACL_FORMAT_ND) {
-    self = at_npu::native::NPUNativeFunctions::npu_format_cast(self_ex, ACL_FORMAT_ND);
+    self = at_npu::native::custom_ops::npu_format_cast(self_ex, ACL_FORMAT_ND);
   }
   if (self.scalar_type() == at::ScalarType::Half) {
     self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);

@@ -37,7 +37,7 @@ std::vector<at::Tensor> where(const at::Tensor& condition) {
   at::Tensor format_cast_of_condition = condition;
   if (calcu_op_util::GetTensorNpuFormat(condition) != ACL_FORMAT_ND) {
     format_cast_of_condition =
-        at_npu::native::NPUNativeFunctions::npu_format_cast(format_cast_of_condition, ACL_FORMAT_ND);
+        at_npu::native::custom_ops::npu_format_cast(format_cast_of_condition, ACL_FORMAT_ND);
   }
   if (condition.scalar_type() == at::ScalarType::Half) {
     format_cast_of_condition = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_condition, at::ScalarType::Float);
