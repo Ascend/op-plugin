@@ -23,9 +23,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor npu_confusion_transpose_backward(
     const at::Tensor& grad,
     at::IntArrayRef perm,
-    c10::SymIntArrayRef size,
+    at::IntArrayRef shape,
     bool transpose_first) {
-  auto shape = c10::asIntArrayRefUnchecked(size);
   c10::SmallVector<int64_t, SIZE> svec_shape;
   if (transpose_first) {
     svec_shape = op_infer::array_to_small_vector(shape);

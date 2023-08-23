@@ -51,8 +51,7 @@ at::Tensor npu_ps_roi_pooling_backward(
     double spatial_scale,
     int64_t group_size,
     int64_t output_dim,
-    c10::SymIntArrayRef size) {
-  auto input_size = c10::asIntArrayRefUnchecked(size);
+    at::IntArrayRef input_size) {
   auto output_size = {rois.size(0), group_size * group_size * output_dim, input_size[0], input_size[1]};
 
   at::Tensor input_grad = npu_preparation::apply_tensor(output_grad, output_size);
