@@ -21,8 +21,7 @@ at::Tensor npu_bmm_v2_mat1_backward(
     const at::Tensor& grad,
     const at::Tensor& mat1,
     const at::Tensor& mat2,
-    c10::SymIntArrayRef size) {
-  auto sizes = c10::asIntArrayRefUnchecked(size);
+    at::IntArrayRef sizes) {
   // da = grad * b^T
   auto grad_with_full_size = grad;
 
@@ -41,8 +40,7 @@ at::Tensor npu_bmm_v2_mat2_backward(
     const at::Tensor& grad,
     const at::Tensor& mat1,
     const at::Tensor& mat2,
-    c10::SymIntArrayRef size) {
-  auto sizes = c10::asIntArrayRefUnchecked(size);
+    at::IntArrayRef sizes) {
   // db = a^T * grad
   auto grad_with_full_size = grad;
 

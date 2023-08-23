@@ -22,9 +22,8 @@ at::Tensor npu_min_backward(
     const at::Tensor& grad,
     int64_t dim,
     const at::Tensor& indices,
-    c10::SymIntArrayRef size,
+    at::IntArrayRef sizes,
     bool keepdim) {
-  auto sizes = c10::asIntArrayRefUnchecked(size);
   at::Tensor new_grad = grad;
   at::Tensor new_indices = indices;
   if (keepdim && sizes.size() > 0) {

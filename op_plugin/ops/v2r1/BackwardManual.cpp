@@ -31,32 +31,33 @@ at::Tensor npu_binary_cross_entropy_with_logits_backward(
 
 at::Tensor npu_confusion_transpose_backward(const at::Tensor& grad, at::IntArrayRef perm, c10::SymIntArrayRef shape,
                                             bool transpose_first) {
-  return acl_op::npu_confusion_transpose_backward(grad, perm, shape, transpose_first);
+  return acl_op::npu_confusion_transpose_backward(grad, perm, c10::asIntArrayRefUnchecked(shape), transpose_first);
 }
 
 at::Tensor npu_max_backward(const at::Tensor& grad, int64_t dim, const at::Tensor& indices, c10::SymIntArrayRef sizes,
                             bool keepdim) {
-  return acl_op::npu_max_backward(grad, dim, indices, sizes, keepdim);
+  return acl_op::npu_max_backward(grad, dim, indices, c10::asIntArrayRefUnchecked(sizes), keepdim);
 }
 
 at::Tensor npu_min_backward(const at::Tensor& grad, int64_t dim, const at::Tensor& indices, c10::SymIntArrayRef sizes,
                             bool keepdim) {
-  return acl_op::npu_min_backward(grad, dim, indices, sizes, keepdim);
+  return acl_op::npu_min_backward(grad, dim, indices, c10::asIntArrayRefUnchecked(sizes), keepdim);
 }
 
 at::Tensor npu_ps_roi_pooling_backward(const at::Tensor& output_grad, const at::Tensor& rois, double spatial_scale,
                                        int64_t group_size, int64_t output_dim, c10::SymIntArrayRef input_size) {
-  return acl_op::npu_ps_roi_pooling_backward(output_grad, rois, spatial_scale, group_size, output_dim, input_size);
+  return acl_op::npu_ps_roi_pooling_backward(output_grad, rois, spatial_scale, group_size, output_dim,
+                                             c10::asIntArrayRefUnchecked(input_size));
 }
 
 at::Tensor npu_bmm_v2_mat1_backward(const at::Tensor& grad, const at::Tensor& mat1, const at::Tensor& mat2,
                                     c10::SymIntArrayRef size) {
-  return acl_op::npu_bmm_v2_mat1_backward(grad, mat1, mat2, size);
+  return acl_op::npu_bmm_v2_mat1_backward(grad, mat1, mat2, c10::asIntArrayRefUnchecked(size));
 }
 
 at::Tensor npu_bmm_v2_mat2_backward(const at::Tensor& grad, const at::Tensor& mat1, const at::Tensor& mat2,
                                     c10::SymIntArrayRef size) {
-  return acl_op::npu_bmm_v2_mat2_backward(grad, mat1, mat2, size);
+  return acl_op::npu_bmm_v2_mat2_backward(grad, mat1, mat2, c10::asIntArrayRefUnchecked(size));
 }
 
 at::Tensor celu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Tensor& output) {
