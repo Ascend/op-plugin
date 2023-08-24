@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2023, Facebook CORPORATION.
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -19,7 +19,54 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+
+at::Tensor& lt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
+  DO_COMPATIBILITY(aclnnLtTensor, acl_op::lt_out(self, other, result));
+  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+
+  at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
+
+  EXEC_NPU_CMD(aclnnLtTensor, self, other, result);
+  return result;
+}
+
+at::Tensor lt(const at::Tensor& self, const at::Tensor& other) {
+  DO_COMPATIBILITY(aclnnLtTensor, acl_op::lt(self, other));
+  // calculate the output size
+  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+
+  // construct the output tensor of the NPU
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, 
+                                                                                 self.options().dtype(at::kBool));
+
+  // calculate the output result of the NPU
+  EXEC_NPU_CMD(aclnnLtTensor, self, other, result);
+  return result;
+}
+
+at::Tensor& lt_out(const at::Tensor &self, const at::Scalar& other, at::Tensor &result)
+{
+  DO_COMPATIBILITY(aclnnLtScalar, acl_op::lt_out(self, other, result));
+  auto outputSize = self.sizes();
+  at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
+
+  EXEC_NPU_CMD(aclnnLtScalar, self, other, result);
+  return result;
+}
+
+at::Tensor lt(const at::Tensor &self, const at::Scalar& other)
+{
+  DO_COMPATIBILITY(aclnnLtScalar, acl_op::lt(self, other));
+  // calculate the output size
+  auto outputSize = op_infer::input_same_output_size(self);
+  // construct the output tensor of the NPU
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, 
+                                                                                 self.options().dtype(at::kBool));
+
+  // calculate the output result of the NPU
+  EXEC_NPU_CMD(aclnnLtScalar, self, other, result);
+  return result;
+}
 
 at::Tensor& lt_(at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnInplaceLtTensor, acl_op::lt_(self, other));
@@ -34,3 +81,4 @@ at::Tensor& lt_(at::Tensor& self, const at::Scalar& other) {
 }
 
 }  // namespace op_api
+
