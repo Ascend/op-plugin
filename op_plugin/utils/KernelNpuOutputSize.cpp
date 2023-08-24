@@ -894,6 +894,26 @@ c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(
   return {self.size(0), self.size(1) * ksizes[0] * ksizes[1], out_h * out_w};
 }
 
+c10::SmallVector<int64_t, SIZE> clamp_npu_output_size(const at::Tensor& self, const c10::optional<at::Tensor>& min,
+                                                      const c10::optional<at::Tensor>& max) {
+  TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None");
+  if (self.numel() == 0) {
+    c10::SmallVector<int64_t, SIZE> empty_sizes;
+    for (int64_t i = 0; i < self.dim(); ++i) {
+      empty_sizes.push_back(self.size(i));
+    }
+    return empty_sizes;
+  }
+  if (min.has_value() && max.has_value()) {
+    auto brc_shape_min = broadcast_ops_npu_output_size(self.sizes(), min.value().sizes());
+    return broadcast_ops_npu_output_size(brc_shape_min, max.value().sizes());
+  }
+  if (min.has_value()) {
+    return broadcast_ops_npu_output_size(self.sizes(), min.value().sizes());
+  }
+  return broadcast_ops_npu_output_size(self.sizes(), max.value().sizes());
+}
+
 c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor, N>& tensors, int64_t dimension) {
   bool all_skipped = true;
   int64_t n_dims = 0;

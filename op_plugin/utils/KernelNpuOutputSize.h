@@ -242,6 +242,10 @@ c10::SmallVector<int64_t, SIZE> infersize_arange(const at::Scalar& start,
 
 c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor, N>& tensors, int64_t dimension);
 
+c10::SmallVector<int64_t, SIZE> clamp_npu_output_size(const at::Tensor &self,
+                                                      const c10::optional<at::Tensor> &min,
+                                                      const c10::optional<at::Tensor> &max);
+
 c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(const at::Tensor& self, at::IntArrayRef ksizes,
                                                              at::IntArrayRef strides, at::IntArrayRef dilations,
                                                              at::IntArrayRef pads);
