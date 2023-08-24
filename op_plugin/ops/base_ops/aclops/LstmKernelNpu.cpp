@@ -348,6 +348,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> lstm
     const at::Tensor& f,
     const at::Tensor& o,
     const at::Tensor& tanhc,
+    bool flag_direction = false,
     const c10::optional<at::Tensor>& batch_sizes_ = c10::nullopt) {
   const at::Tensor& batch_sizes = c10::value_or_else(batch_sizes_, [] {return at::Tensor();});
   at::Tensor seqmask_h = at::unsqueeze(init_h, 0);
@@ -358,6 +359,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> lstm
   at::Tensor wcf = at::zeros({}, x.options());
   at::Tensor wco = at::zeros({}, x.options());
   string gate_order = "ifjo";
+  string direction = flag_direction ? "REDIRECTIONAL" : "UNIDIRECTIONAL";
 
   at_npu::native::OpCommand cmd;
   cmd.Name("DynamicRNNGrad")
@@ -388,7 +390,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> lstm
       .Output(dht)
       .Output(dct)
       .Attr("cell_type", "LSTM")
-      .Attr("direction", "UNIDIRECTIONAL")
+      .Attr("direction", direction)
       .Attr("cell_depth", (int64_t)0)
       .Attr("use_peephole", (bool)false)
       .Attr("keep_prob", (float)-1.0)
@@ -756,7 +758,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
     const at::Tensor& j,
     const at::Tensor& f,
     const at::Tensor& o,
-    const at::Tensor& tanhc) {
+    const at::Tensor& tanhc,
+    bool flag_direction) {
   const at::Tensor& grady = c10::value_or_else(grady_opt, [] {return at::Tensor();});
   const at::Tensor& gradh = c10::value_or_else(gradh_opt, [] {return at::Tensor();});
   const at::Tensor& gradc = c10::value_or_else(gradc_opt, [] {return at::Tensor();});
@@ -775,7 +778,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
   auto grad_c = gradc.defined() ? gradc[input.size(0) - 1] : at::zeros(inc.sizes(), c.options());
 
   lstm_backward_out_npu_nocheck(grad_weight, grad_bias, grad_input, grad_ht, grad_ct, input, weight,
-                        bias, inh, inc, grad_y, grad_h, grad_c, y, h, c, i, j, f, o, tanhc, batch_sizes);
+      bias, inh, inc, grad_y, grad_h, grad_c, y, h, c, i, j, f, o, tanhc, flag_direction, batch_sizes);
   grad_ht = at::unsqueeze(grad_ht, 0);
   grad_ct = at::unsqueeze(grad_ct, 0);
 

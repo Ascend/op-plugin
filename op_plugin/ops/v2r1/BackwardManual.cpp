@@ -78,9 +78,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
     const c10::optional<at::Tensor>& gradc_opt, const at::Tensor& input, const at::Tensor& batch_sizes,
     const at::Tensor& weight, const at::Tensor& bias, const at::Tensor& init_h, const at::Tensor& init_c,
     const at::Tensor& y, const at::Tensor& h, const at::Tensor& c, const at::Tensor& i, const at::Tensor& j,
-    const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc) {
+    const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc, bool flag_direction) {
   return acl_op::npu_lstm_data_backward(grady_opt, gradh_opt, gradc_opt, input, batch_sizes, weight, bias, init_h,
-                                        init_c, y, h, c, i, j, f, o, tanhc);
+                                        init_c, y, h, c, i, j, f, o, tanhc, flag_direction);
 }
 
 at::Tensor l1_loss_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
