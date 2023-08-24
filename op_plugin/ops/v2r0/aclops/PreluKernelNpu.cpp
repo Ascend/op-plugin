@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
-at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
+namespace acl_op {
+at::Tensor _prelu_kernel(const at::Tensor& self, const at::Tensor& weight) {
   return prelu_common_nocheck(self, weight);
 }
-} // namespace op_plugin
+} // namespace acl_op

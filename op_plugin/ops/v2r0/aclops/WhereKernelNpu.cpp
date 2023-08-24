@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -30,8 +30,8 @@ at::Tensor& where_out(
   std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
   if (self.dtype() != other.dtype()) {
     auto result_type = at::native::result_type(self, other);
-    b_self = op_plugin::npu_dtype_cast(b_self, result_type);
-    b_other = op_plugin::npu_dtype_cast(b_other, result_type);
+    b_self = at_npu::native::custom_ops::npu_dtype_cast(b_self, result_type);
+    b_other = at_npu::native::custom_ops::npu_dtype_cast(b_other, result_type);
   }
   npu_preparation::CheckOut(
       {condition, self, other},
@@ -59,4 +59,4 @@ at::Tensor where(
   return ret;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

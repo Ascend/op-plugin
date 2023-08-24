@@ -15,24 +15,23 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor col2im_backward(
-    const at::Tensor& self, 
-    at::IntArrayRef kernel_size, 
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding, 
-    at::IntArrayRef stride) {
-  return acl_op::im2col(self, kernel_size, dilation, padding, stride);
-}
-
-at::Tensor& col2im_backward_out(
-    const at::Tensor& self, 
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding, 
-    at::IntArrayRef stride, 
-    at::Tensor& result) {
-  return acl_op::im2col_out(self, kernel_size, dilation, padding, stride, result);
+at::Tensor npu_min_backward(
+    const at::Tensor& grad,
+    int64_t dim,
+    const at::Tensor& indices,
+    at::IntArrayRef sizes,
+    bool keepdim) {
+  at::Tensor new_grad = grad;
+  at::Tensor new_indices = indices;
+  if (keepdim && sizes.size() > 0) {
+    new_grad = grad.squeeze(dim);
+    new_indices = indices.squeeze(dim);
+  }
+  auto grad_input = acl_op::npu_scatter(
+      at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
+  return grad_input;
 }
 } // namespace acl_op

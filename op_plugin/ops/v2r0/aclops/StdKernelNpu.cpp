@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -93,7 +93,7 @@ at::Tensor& std_out(
     bool unbiased,
     bool keepdim,
     at::Tensor& result) {
-  return op_plugin::std_out(self, dim, c10::make_optional<int64_t>({unbiased ? 1 : 0}), keepdim, result);
+  return acl_op::std_out(self, dim, c10::make_optional<int64_t>({unbiased ? 1 : 0}), keepdim, result);
 }
 
 at::Tensor& std_out(
@@ -102,7 +102,7 @@ at::Tensor& std_out(
     c10::optional<int64_t> correction,
     bool keepdim,
     at::Tensor& result) {
-  return op_plugin::std_out(self, dimnames_to_positions(self, dim), correction, keepdim, result);
+  return acl_op::std_out(self, dimnames_to_positions(self, dim), correction, keepdim, result);
 }
 
 at::Tensor& std_out(
@@ -145,7 +145,7 @@ at::Tensor& std_out(
     bool unbiased,
     bool keepdim,
     at::Tensor& result) {
-  return op_plugin::std_out(self, dimnames_to_positions(self, dim), unbiased, keepdim, result);
+  return acl_op::std_out(self, dimnames_to_positions(self, dim), unbiased, keepdim, result);
 }
 
 std::tuple<at::Tensor, at::Tensor> std_mean(
@@ -153,7 +153,7 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
     at::DimnameList dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
-  return op_plugin::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
+  return acl_op::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> std_mean(
@@ -186,7 +186,7 @@ at::Tensor std(
     at::DimnameList dim,
     c10::optional<int64_t> correction,
     bool keepdim) {
-  return op_plugin::std(self, dimnames_to_positions(self, dim), correction, keepdim);
+  return acl_op::std(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
 at::Tensor std(
@@ -213,4 +213,4 @@ at::Tensor std(
   std_mean_out_npu_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
   return result1;
 }
-} // namespace op_plugin
+} // namespace acl_op

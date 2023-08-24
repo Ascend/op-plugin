@@ -15,12 +15,12 @@
 
 #include <ATen/native/TypeProperties.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
@@ -45,7 +45,7 @@ c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(const at::MaterializedITens
       continue;
     }
     if (tensor.scalar_type() != high_type) {
-      tensor = op_plugin::npu_dtype_cast(tensor, high_type);
+      tensor = at_npu::native::custom_ops::npu_dtype_cast(tensor, high_type);
     }
     dst_tensor_list.emplace_back(tensor);
   }
@@ -163,4 +163,4 @@ at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim) {
   cat_output_nocheck(result, materialized, dim);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

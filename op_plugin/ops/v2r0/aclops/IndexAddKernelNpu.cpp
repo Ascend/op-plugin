@@ -13,16 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& index_add_(
     at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& source,
     const at::Scalar& alpha) {
-  return op_plugin::index_add_out(self, dim, index, source, alpha, self);
+  return acl_op::index_add_out(self, dim, index, source, alpha, self);
 }
-} // namespace op_plugin
+} // namespace acl_op

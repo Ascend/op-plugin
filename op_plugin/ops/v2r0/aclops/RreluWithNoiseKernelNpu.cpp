@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 #include <ATen/core/DistributionsHelper.h>
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -76,7 +76,7 @@ at::Tensor& rrelu_with_noise_out_nocheck(
     auto float_lower = lower.toFloat();
     auto float_upper = upper.toFloat();
     at::Scalar negative_slope = (float_lower + float_upper) / 2;
-    return op_plugin::leaky_relu_out(self, negative_slope, output);
+    return acl_op::leaky_relu_out(self, negative_slope, output);
   }
 }
 } // namespace
@@ -99,7 +99,7 @@ at::Tensor& rrelu_with_noise_(
     const at::Scalar& upper,
     bool training,
     c10::optional<at::Generator> generator) {
-  return op_plugin::rrelu_with_noise_out(self, noise, lower, upper, training, generator, self);
+  return acl_op::rrelu_with_noise_out(self, noise, lower, upper, training, generator, self);
 }
 
 at::Tensor& rrelu_with_noise_out(
@@ -125,4 +125,4 @@ at::Tensor& rrelu_with_noise_out(
 
   return output;
 }
-} // namespace op_plugin
+} // namespace acl_op

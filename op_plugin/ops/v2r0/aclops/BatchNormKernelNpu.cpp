@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
-namespace op_plugin {
+namespace acl_op {
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
     const at::Tensor& self,
     const c10::optional<at::Tensor>& weight_opt,
@@ -25,7 +25,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
     bool train,
     double momentum,
     double eps) {
-  return op_plugin::native_batch_norm(
+  return acl_op::native_batch_norm(
       self, weight_opt, bias_opt, running_mean_opt, running_var_opt, train, momentum, eps);
 }
-} // namespace op_plugin
+} // namespace acl_op

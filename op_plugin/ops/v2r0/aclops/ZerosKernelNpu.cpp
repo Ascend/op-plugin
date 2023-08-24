@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor zeros(
     at::IntArrayRef size,
     c10::optional<at::ScalarType> dtype_opt,
@@ -33,6 +33,6 @@ at::Tensor zeros(
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
-  return op_plugin::zeros(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+  return acl_op::zeros(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
-} // namespace op_plugin
+} // namespace acl_op

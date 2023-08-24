@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
@@ -38,4 +38,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
     c10::optional<c10::string_view> driver) {
   return _svd_helper(A, !full_matrices, compute_uv);
 }
-} // namespace op_plugin
+} // namespace acl_op

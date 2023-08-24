@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor embedding_symint(
     const at::Tensor& weight,
     const at::Tensor& indices,
@@ -25,4 +25,4 @@ at::Tensor embedding_symint(
     bool sparse) {
   return embedding_common_nocheck(weight, indices);
 }
-} // namespace op_plugin
+} // namespace acl_op
