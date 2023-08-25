@@ -240,6 +240,12 @@ official:
    impl_ns: acl_op
  - func: arange.start_step(Scalar start, Scalar end, Scalar step=1, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
+ - func: argmax(Tensor self, int? dim=None, bool keepdim=False) -> Tensor
+   impl_ns: acl_op
+ - func: argmin(Tensor self, int? dim=None, bool keepdim=False) -> Tensor
+   impl_ns: acl_op
+ - func: argmin.out(Tensor self, int? dim=None, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: argsort(Tensor self, int dim=-1, bool descending=False) -> Tensor
    impl_ns: acl_op
  - func: argsort.dimname(Tensor self, Dimname dim, bool descending=False) -> Tensor
@@ -1241,6 +1247,8 @@ official:
  - func: remainder_.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
    impl_ns: acl_op
  - func: remainder_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: remainder.Scalar_Tensor(Scalar self, Tensor other) -> Tensor
    impl_ns: acl_op
  - func: renorm(Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor
    impl_ns: acl_op
