@@ -256,5 +256,8 @@ c10::SmallVector<int64_t, SIZE> max_pool2d_out_size(const at::Tensor &self, at::
 
 c10::SmallVector<int64_t, SIZE> ger_output_size(const at::Tensor& self, const at::Tensor& vec2);
 
+c10::SmallVector<int64_t, SIZE> im2col_backward_npu_output_size(const at::Tensor& grad_output,
+                                                                const at::IntArrayRef& input_size,
+                                                                const at::IntArrayRef& kernel_size);
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE
