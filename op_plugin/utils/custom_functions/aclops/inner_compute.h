@@ -70,8 +70,11 @@ at::Tensor mean_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool
                                c10::optional<c10::ScalarType> dtype);
 at::Tensor& scatter_npu_common_nocheck(at::Tensor& self, int64_t dim, const at::Tensor& index, const at::Tensor& src);
 at::Tensor& scatter_npu_src_impl(at::Tensor& self, int64_t dim, const at::Tensor& index_ex, const at::Tensor& src_ex);
-::std::tuple<at::Tensor, at::Tensor> prelu_backward_commom_nocheck(const at::Tensor& grad_output,
-                                                                   const at::Tensor& self, const at::Tensor& weight);
+::std::tuple<at::Tensor, at::Tensor> prelu_backward_commom_nocheck(at::Tensor& grad_input,
+                                                                   at::Tensor& grad_weight,
+                                                                   const at::Tensor& grad_output,
+                                                                   const at::Tensor& self,
+                                                                   const at::Tensor& weight);
 at::Tensor prelu_common_nocheck(const at::Tensor& self, const at::Tensor& weight);
 at::Tensor zeros_common_nocheck(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt,
                                 c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
