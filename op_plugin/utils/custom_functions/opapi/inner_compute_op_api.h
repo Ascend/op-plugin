@@ -1,4 +1,6 @@
-// Copyright (c) 2023, Huawei Technologies.All rights reserved.
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
+// All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
 // you may not use this file except in compliance with the License.
