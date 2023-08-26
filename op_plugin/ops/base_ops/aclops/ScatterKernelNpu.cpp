@@ -62,4 +62,24 @@ at::Tensor& scatter_out(
   scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
   return result;
 }
+
+at::Tensor& scatter_out(
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& src,
+    c10::string_view reduce,
+    at::Tensor& result) {
+    TORCH_CHECK(false, "scatter.reduce_out is not supported.");
+}
+
+at::Tensor& scatter_out(
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Scalar& value,
+    c10::string_view reduce,
+    at::Tensor& result) {
+    TORCH_CHECK(false, "scatter.value_reduce_out is not supported.");
+}
 } // namespace acl_op

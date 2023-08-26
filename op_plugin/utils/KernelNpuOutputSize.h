@@ -168,7 +168,15 @@ c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size(const at::Tens
 c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size(const at::Tensor& self, const at::Tensor& repeats,
                                                                   int64_t dim);
 
+c10::SmallVector<int64_t, SIZE> reflection_pad1d_npu_out_size(const at::Tensor& self, at::IntArrayRef padding);
+
+c10::SmallVector<int64_t, SIZE> reflection_pad2d_npu_out_size(const at::Tensor& self, at::IntArrayRef padding);
+
+c10::SmallVector<int64_t, SIZE> replication_pad1d_npu_out_size(const at::Tensor& self, at::IntArrayRef padding);
+
 c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_output_size(const at::Tensor& self, c10::IntArrayRef padding);
+
+c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_out_size(const at::Tensor& self, at::IntArrayRef padding);
 
 c10::SmallVector<int64_t, SIZE> roi_align_backward_npu_output_size(c10::IntArrayRef xdiff_shape);
 
@@ -259,5 +267,13 @@ c10::SmallVector<int64_t, SIZE> ger_output_size(const at::Tensor& self, const at
 c10::SmallVector<int64_t, SIZE> im2col_backward_npu_output_size(const at::Tensor& grad_output,
                                                                 const at::IntArrayRef& input_size,
                                                                 const at::IntArrayRef& kernel_size);
+
+c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size_opapi(const at::Tensor &self,
+                                                                        int64_t repeats,
+                                                                        c10::optional<int64_t> dim);
+
+c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size_opapi(const at::Tensor &self,
+                                                                        const at::Tensor &repeats,
+                                                                        c10::optional<int64_t> dim);
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE
