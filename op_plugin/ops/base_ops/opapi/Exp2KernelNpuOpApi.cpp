@@ -31,21 +31,26 @@ at::Tensor& exp2_out(const at::Tensor& self, at::Tensor& out) {
 }
 
 at::Tensor exp2(const at::Tensor& self) {
-    
+
     DO_COMPATIBILITY(aclnnExp2, acl_op::exp2(self));
 
     auto out_Dtype = self.dtype();
     if (isIntegralType(self.scalar_type(), true)) {
         out_Dtype = at::ScalarType::Float;
     }
-    
-    at::Tensor out = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), 
+
+    at::Tensor out = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(),
                      self.options().dtype(out_Dtype));
-    
+
     EXEC_NPU_CMD(aclnnExp2, self, out);
     return out;
 }
-    
-   
+
+at::Tensor& exp2_(at::Tensor& self) {
+  DO_COMPATIBILITY(aclnnInplaceExp2, acl_op::exp2_(self));
+  EXEC_NPU_CMD(aclnnInplaceExp2, self);
+  return self;
+}
+
 }  // namespace op_api
 
