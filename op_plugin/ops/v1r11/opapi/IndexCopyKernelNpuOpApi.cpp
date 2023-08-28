@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2023, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -19,25 +18,12 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& fill_(at::Tensor& self, const at::Scalar& value) {
-  DO_COMPATIBILITY(aclnnInplaceFillScalar, acl_op::fill_(self, value));
-  EXEC_NPU_CMD(aclnnInplaceFillScalar, self, value);
+at::Tensor& _index_copy_(at::Tensor& self, const int64_t dim, const at::Tensor& index,
+                         const at::Tensor& source) {
+  DO_COMPATIBILITY(aclnnInplaceIndexCopy, acl_op::_index_copy_(self, dim, index, source));
+  EXEC_NPU_CMD(aclnnInplaceIndexCopy, self, dim, index, source);
   return self;
 }
 
-at::Tensor& fill_(at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnInplaceFillScalar, acl_op::fill_(self, other));
-  DO_COMPATIBILITY(aclnnInplaceFillTensor, acl_op::fill_(self, other));
-
-  if (npu_preparation::IsCPUScalar(other)) {
-    const at::Scalar other_value = other.item();
-    EXEC_NPU_CMD(aclnnInplaceFillScalar, self, other_value);
-  } else {
-    EXEC_NPU_CMD(aclnnInplaceFillTensor, self, other);
-  }
-
-  return self;
-}
-} // namespace op_api
+}  // namespace op_api
