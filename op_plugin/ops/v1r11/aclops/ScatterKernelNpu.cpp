@@ -15,16 +15,25 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
-    const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv,
-    at::Tensor& U,
-    at::Tensor& S,
-    at::Tensor& Vh) {
-  return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
+at::Tensor& scatter_out(
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& src,
+    c10::string_view reduce,
+    at::Tensor& result) {
+  TORCH_CHECK(false, "scatter.reduce_out is not supported.");
+}
+
+at::Tensor& scatter_out(
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Scalar& value,
+    c10::string_view reduce,
+    at::Tensor& result) {
+  TORCH_CHECK(false, "scatter.value_reduce_out is not supported.");
 }
 } // namespace acl_op

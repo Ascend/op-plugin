@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& im2col_backward_out(
     const at::Tensor& grad_output,
     at::IntArrayRef input_size,
@@ -25,7 +25,7 @@ at::Tensor& im2col_backward_out(
     at::IntArrayRef padding,
     at::IntArrayRef stride,
     at::Tensor& grad_input) {
-  return op_plugin::col2im_out(grad_output, input_size, kernel_size, dilation, padding, stride, grad_input);
+  return acl_op::col2im_out(grad_output, input_size, kernel_size, dilation, padding, stride, grad_input);
 }
 
 at::Tensor im2col_backward(
@@ -35,6 +35,6 @@ at::Tensor im2col_backward(
     at::IntArrayRef dilation,
     at::IntArrayRef padding,
     at::IntArrayRef stride) {
-  return op_plugin::col2im(grad_output, input_size, kernel_size, dilation, padding, stride);
+  return acl_op::col2im(grad_output, input_size, kernel_size, dilation, padding, stride);
 }
-} // namespace op_plugin
+} // namespace acl_op

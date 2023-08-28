@@ -615,8 +615,14 @@ c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size(const at::Tens
   c10::SmallVector<int64_t, SIZE> shape;
   for (int64_t i = 0; i < self.dim(); i++) {
     if (i == dim) {
-      shape.emplace_back(repeats.sum().item().toLong());
-    } else {
+      if (repeats.numel() == 1) {
+        shape.emplace_back(repeats.item().toLong() * self.size(i));
+      }
+      else {
+        shape.emplace_back(repeats.sum().item().toLong());
+      }
+    }
+    else {
       shape.emplace_back(self.size(i));
     }
   }

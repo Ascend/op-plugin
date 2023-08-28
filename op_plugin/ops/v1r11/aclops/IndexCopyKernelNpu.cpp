@@ -15,11 +15,11 @@
 
 #include <ATen/NamedTensorUtils.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -95,4 +95,4 @@ at::Tensor& _index_copy_(
 
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

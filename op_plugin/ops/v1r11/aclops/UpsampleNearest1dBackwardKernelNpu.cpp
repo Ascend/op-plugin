@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor upsample_nearest1d_backward(
@@ -27,7 +27,7 @@ at::Tensor upsample_nearest1d_backward(
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_w = calcu_op_util::GetScaleValue(scale_factors, 0);
 
-  return op_plugin::upsample_nearest1d_backward(grad_output, osize, input_size, scales_w);
+  return acl_op::upsample_nearest1d_backward(grad_output, osize, input_size, scales_w);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

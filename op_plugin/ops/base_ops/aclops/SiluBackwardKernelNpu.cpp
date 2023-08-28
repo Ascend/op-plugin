@@ -48,4 +48,4 @@ at::Tensor silu_backward(const at::Tensor& grad_output, const at::Tensor& self) 
   return grad_input;
 }
 
-} // namespace op_plugin
+} // namespace acl_op
