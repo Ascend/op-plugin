@@ -13,13 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
+namespace {
 at::Tensor& l1_loss_backward_out_nocheck(
     at::Tensor& grad_input,
     const at::Tensor& grad_output,
@@ -27,9 +28,9 @@ at::Tensor& l1_loss_backward_out_nocheck(
     const at::Tensor& target,
     const int64_t reduction) {
   at::Tensor grad_output_broadcast =
-      grad_output.sizes() != self.sizes() ? op_plugin::npu_broadcast(grad_output, self.sizes()) : grad_output;
+      grad_output.sizes() != self.sizes() ? acl_op::npu_broadcast(grad_output, self.sizes()) : grad_output;
   at::Tensor target_broadcast =
-      target.sizes() != self.sizes() ? op_plugin::npu_broadcast(target, self.sizes()) : target;
+      target.sizes() != self.sizes() ? acl_op::npu_broadcast(target, self.sizes()) : target;
 
   std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
@@ -42,6 +43,7 @@ at::Tensor& l1_loss_backward_out_nocheck(
       .Run();
   return grad_input;
 }
+} // namespace
 
 at::Tensor& l1_loss_backward_out(
     const at::Tensor& grad_output,
@@ -73,4 +75,4 @@ at::Tensor l1_loss_backward(
   l1_loss_backward_out_nocheck(result, grad_output, self, target, reduction);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

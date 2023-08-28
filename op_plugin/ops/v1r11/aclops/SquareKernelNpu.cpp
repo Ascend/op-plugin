@@ -15,16 +15,10 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
-    const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv,
-    at::Tensor& U,
-    at::Tensor& S,
-    at::Tensor& Vh) {
-  return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
+at::Tensor& square_out(const at::Tensor& self, at::Tensor& result) {
+  at::Scalar exp = 2;
+  return acl_op::pow_out(self, exp, result);
 }
 } // namespace acl_op

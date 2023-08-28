@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor embedding_backward(
     const at::Tensor& grad, 
     const at::Tensor& indices, 
@@ -27,4 +27,4 @@ at::Tensor embedding_backward(
   // run dense tensor backward
   return at::embedding_dense_backward(grad, indices, num_weights, padding_idx, scale_grad_by_freq);
 }
-} // namespace op_plugin
+} // namespace acl_op

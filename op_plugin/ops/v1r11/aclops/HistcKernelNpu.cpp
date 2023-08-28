@@ -15,51 +15,60 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& scatter_out(
+namespace {
+at::Tensor& histc_out_nocheck(
+    at::Tensor& result,
     const at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& src,
+    int64_t bins,
+    const at::Scalar& min, 
+    const at::Scalar& max) {
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Histogram")
+      .Input(self)
+      .Output(result)
+      .Attr("bins", bins)
+      .Attr("min", min)
+      .Attr("max", max)
+      .Run();
+  return result;
+}
+} // namespace
+
+at::Tensor& histc_out(
+    const at::Tensor& self,
+    int64_t bins,
+    const at::Scalar& min, 
+    const at::Scalar& max,
     at::Tensor& result) {
   npu_preparation::CheckOut(
-      {self, src, index},
+      {self},
       result,
       self);
-  result = at_npu::native::NPUNativeFunctions::copy_(result, self, false);
-  scatter_npu_src_impl(result, dim, index, src);
+  if (!npu_utils::check_match(&result)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    histc_out_nocheck(contiguous_result, self, bins, min, max);
+    npu_utils::format_fresh_view(result, contiguous_result);
+  } else {
+    histc_out_nocheck(result, self, bins, min, max);
+  }
   return result;
 }
 
-at::Tensor& scatter_out(
+at::Tensor histc(
     const at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Scalar& value,
-    at::Tensor& result) {
-  at::Tensor src_tensor = scalar_to_tensor(value).to(at::ScalarType::Float);
-  src_tensor = calcu_op_util::CopyTensorHostToDevice(src_tensor);
-  at::Tensor src_tensor_broadcast = acl_op::npu_broadcast(
-      src_tensor, op_infer::array_to_small_vector(index.sizes()));
-  npu_preparation::CheckOut(
-      {self, index, src_tensor_broadcast},
-      result,
-      self);
-  result = at_npu::native::NPUNativeFunctions::copy_(result, self, false);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    scatter_npu_src_impl(contiguous_result, dim, index, src_tensor_broadcast);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
-  }
-  scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
+    int64_t bins,
+    const at::Scalar& min, 
+    const at::Scalar& max) {
+  TORCH_CHECK(self.dtype() == at::kInt || self.dtype() == at::kFloat || self.dtype() == at::kHalf,
+      "histc input only supported Int32, Float16, Float32, but got", self.dtype());
+  bool is_fp = (self.dtype() == at::kInt) ? false : true;
+  at::Tensor result = npu_preparation::apply_tensor({bins}, self.options().dtype(is_fp ? at::kFloat : at::kInt), self);
+  histc_out_nocheck(result, self, bins, min, max);
   return result;
 }
 } // namespace acl_op

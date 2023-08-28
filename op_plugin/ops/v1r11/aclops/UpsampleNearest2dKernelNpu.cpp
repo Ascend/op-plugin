@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor upsample_nearest2d(
@@ -27,6 +27,6 @@ at::Tensor upsample_nearest2d(
   auto scale_h = calcu_op_util::GetScaleValue(scale_factors, 0);
   auto scale_w = calcu_op_util::GetScaleValue(scale_factors, 1);
 
-  return op_plugin::upsample_nearest2d(input, osize, scale_h, scale_w);
+  return acl_op::upsample_nearest2d(input, osize, scale_h, scale_w);
 }
-} // namespace op_plugin
+} // namespace acl_op

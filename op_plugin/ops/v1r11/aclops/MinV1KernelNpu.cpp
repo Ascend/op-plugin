@@ -18,13 +18,20 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
-    const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv,
-    at::Tensor& U,
-    at::Tensor& S,
-    at::Tensor& Vh) {
-  return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
+at::Tensor npu_min_backward(
+    const at::Tensor& grad,
+    int64_t dim,
+    const at::Tensor& indices,
+    at::IntArrayRef sizes,
+    bool keepdim) {
+  at::Tensor new_grad = grad;
+  at::Tensor new_indices = indices;
+  if (keepdim && sizes.size() > 0) {
+    new_grad = grad.squeeze(dim);
+    new_indices = indices.squeeze(dim);
+  }
+  auto grad_input = acl_op::npu_scatter(
+      at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
+  return grad_input;
 }
 } // namespace acl_op

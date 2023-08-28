@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> prelu_backward(
@@ -28,4 +29,4 @@ std::tuple<at::Tensor, at::Tensor> prelu_backward(
   prelu_backward_commom_nocheck(grad_input, grad_weight, grad_output, self, weight);
   return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
 }
-} // namespace op_plugin
+} // namespace acl_op

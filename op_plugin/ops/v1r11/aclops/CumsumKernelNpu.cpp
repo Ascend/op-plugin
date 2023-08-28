@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor cumsum(
@@ -31,6 +31,6 @@ at::Tensor cumsum(
   } else {
     result = npu_preparation::apply_tensor(self);
   }
-  return op_plugin::cumsum_out(self, dim, dtype, result);
+  return acl_op::cumsum_out(self, dim, dtype, result);
 }
-} // namespace op_plugin
+} // namespace acl_op

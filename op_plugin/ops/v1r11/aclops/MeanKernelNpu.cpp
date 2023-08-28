@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& mean_out(
     const at::Tensor& self,
     at::IntArrayRef dim,
@@ -33,4 +33,4 @@ at::Tensor mean(
     c10::optional<c10::ScalarType> dtype) {
   return mean_common_nocheck(self, dim, keepdim, dtype);
 }
-} // namespace op_plugin
+} // namespace acl_op
