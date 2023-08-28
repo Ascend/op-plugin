@@ -80,4 +80,17 @@ at::Tensor bitwise_xor(const at::Tensor& self, const at::Tensor& other) {
   bitwise_xor_out_nocheck(result, self, other);
   return result;
 }
+
+at::Tensor& bitwise_xor_(at::Tensor& self, const at::Tensor& other) {
+  DO_COMPATIBILITY(aclnnInplaceBitwiseXorTensor, acl_op::bitwise_xor_(self, other));
+  npu_preparation::check_memory({self, other}, {self});
+  EXEC_NPU_CMD(aclnnInplaceBitwiseXorTensor, self, other);
+  return self;
+}
+
+at::Tensor& bitwise_xor_(at::Tensor& self, const at::Scalar& other) {
+  DO_COMPATIBILITY(aclnnInplaceBitwiseXorScalar, acl_op::bitwise_xor_(self, other));
+  EXEC_NPU_CMD(aclnnInplaceBitwiseXorScalar, self, other);
+  return self;
+}
 } // namespace op_api
