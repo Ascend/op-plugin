@@ -56,20 +56,20 @@ typedef int (*_aclDestroyFloatArray)(const aclFloatArray* array);
 typedef int (*_aclDestroyBoolArray)(const aclBoolArray* array);
 typedef int (*_aclDestroyTensorList)(const aclTensorList* array);
 
-constexpr int g_hashBufSize = 8192;
-constexpr int g_hashBufMaxSize = g_hashBufSize + 1024;
-extern thread_local char g_hashBuf[g_hashBufSize];
-extern thread_local int g_hashOffset;
+constexpr int g_hash_buf_size = 8192;
+constexpr int g_hash_buf_max_size = g_hash_buf_size + 1024;
+extern thread_local char g_hash_buf[g_hash_buf_size];
+extern thread_local int g_hash_offset;
 
 #define GET_OP_API_FUNC(apiName) reinterpret_cast<_##apiName>(GetOpApiFuncAddr(#apiName))
 
 #define MEMCPY_TO_BUF(data_expression, size_expression)                                                    \
-  if (g_hashOffset + (size_expression) > g_hashBufSize) {                                                   \
-      g_hashOffset = g_hashBufMaxSize;                                                                      \
+  if (g_hash_offset + (size_expression) > g_hash_buf_size) {                                                   \
+      g_hash_offset = g_hash_buf_max_size;                                                                      \
       return;                                                                                              \
   }                                                                                                        \
-  memcpy(g_hashBuf + g_hashOffset, data_expression, size_expression);                                      \
-  g_hashOffset += size_expression;
+  memcpy(g_hash_buf + g_hash_offset, data_expression, size_expression);                                      \
+  g_hash_offset += size_expression;
 
 
 inline const char* GetOpApiLibName(void) {
@@ -364,34 +364,34 @@ auto ConvertToOpApiFunc(const Tuple& params, void* opApiAddr) {
 }
 
 template<std::size_t N>
-void AddParamToBuf(const std::array<bool, N> &value) {
+void add_param_to_buf(const std::array<bool, N> &value) {
   MEMCPY_TO_BUF(value.data(), value.size() * sizeof(bool));
 }
 
 template<typename T>
-void AddParamToBuf(const T &value) {
+void add_param_to_buf(const T &value) {
   MEMCPY_TO_BUF(&value, sizeof(T));
 }
 
-void AddParamToBuf(const at::Tensor &);
-void AddParamToBuf(const at::Scalar &);
-void AddParamToBuf(const at::IntArrayRef &);
-void AddParamToBuf(const at::ArrayRef<bool> &);
-void AddParamToBuf(const at::TensorList &);
-void AddParamToBuf(const c10::optional<at::Tensor> &);
-void AddParamToBuf(const c10::optional<at::IntArrayRef> &);
-void AddParamToBuf(const c10::optional<at::Scalar> &);
-void AddParamToBuf(const at::ScalarType);
-void AddParamToBuf(const string &);
-void AddParamToBuf();
+void add_param_to_buf(const at::Tensor &);
+void add_param_to_buf(const at::Scalar &);
+void add_param_to_buf(const at::IntArrayRef &);
+void add_param_to_buf(const at::ArrayRef<bool> &);
+void add_param_to_buf(const at::TensorList &);
+void add_param_to_buf(const c10::optional<at::Tensor> &);
+void add_param_to_buf(const c10::optional<at::IntArrayRef> &);
+void add_param_to_buf(const c10::optional<at::Scalar> &);
+void add_param_to_buf(const at::ScalarType);
+void add_param_to_buf(const string &);
+void add_param_to_buf();
 
 template<typename T, typename... Args>
-void AddParamToBuf(const T &arg, Args&...args) {
-  AddParamToBuf(arg);
-  AddParamToBuf(args...);
+void add_param_to_buf(const T &arg, Args&...args) {
+  add_param_to_buf(arg);
+  add_param_to_buf(args...);
 }
 
-uint64_t CalcHashId();
+uint64_t calc_hash_id();
 
 #define DO_COMPATIBILITY(aclnn_api, originCallExpression)                                                      \
   do {                                                                                                         \
@@ -445,9 +445,9 @@ typedef bool(*CanUsePTACache) (const char *);
     bool can_use = canUsePTACacheFunc && canUsePTACacheFunc(#aclnn_api);                                  \
     if (has_func && can_use) {                                                                            \
       initPTACacheThreadLocalFunc();                                                                      \
-      g_hashOffset = 0;                                                                                   \
-      AddParamToBuf(std::string(#aclnn_api), __VA_ARGS__);                                                \
-      uint64_t hashId = CalcHashId();                                                                     \
+      g_hash_offset = 0;                                                                                   \
+      add_param_to_buf(std::string(#aclnn_api), __VA_ARGS__);                                                \
+      uint64_t hashId = calc_hash_id();                                                                     \
       setPTAHashKeyFunc(hashId);                                                                          \
       executor = ptaGetExecCacheFunc(hashId, workspace_size_addr);                                        \
       if (executor != nullptr) {                                                                          \

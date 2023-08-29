@@ -1,12 +1,12 @@
 #include "op_api_common.h"
 
-thread_local char g_hashBuf[g_hashBufSize];
-thread_local int g_hashOffset = 0;
+thread_local char g_hash_buf[g_hash_buf_size];
+thread_local int g_hash_offset = 0;
 constexpr int g_mix64Shift = 33;
 
 typedef void(*AddTensorAddrToCachedList) (void *addr);
 
-void AddParamToBuf(const at::Tensor &at_tensor) {
+void add_param_to_buf(const at::Tensor &at_tensor) {
     static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");
     AddTensorAddrToCachedList addTensorAddrToCachedListFunc =
         reinterpret_cast<AddTensorAddrToCachedList>(addTensorAddrToCachedListAddr);
@@ -37,7 +37,7 @@ void AddParamToBuf(const at::Tensor &at_tensor) {
     addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
 }
 
-void AddParamToBuf(const at::Scalar &at_scalar) {
+void add_param_to_buf(const at::Scalar &at_scalar) {
     at::ScalarType scalar_data_type = at_scalar.type();
     switch (scalar_data_type) {
         case at::ScalarType::Double: {
@@ -66,55 +66,55 @@ void AddParamToBuf(const at::Scalar &at_scalar) {
     }
 }
 
-void AddParamToBuf(const at::IntArrayRef &at_array) {
+void add_param_to_buf(const at::IntArrayRef &at_array) {
     MEMCPY_TO_BUF(at_array.data(), at_array.size() * sizeof(int64_t));
 }
 
-void AddParamToBuf(const at::ArrayRef<bool> &at_array) {
+void add_param_to_buf(const at::ArrayRef<bool> &at_array) {
     MEMCPY_TO_BUF(at_array.data(), at_array.size() * sizeof(bool));
 }
 
-void AddParamToBuf(const at::TensorList &at_tensor_list) {
+void add_param_to_buf(const at::TensorList &at_tensor_list) {
     for (size_t i = 0; i < at_tensor_list.size(); i++) {
-        AddParamToBuf(at_tensor_list[i]);
+        add_param_to_buf(at_tensor_list[i]);
     }
     auto counter = at_tensor_list.size();
     MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
-void AddParamToBuf(const c10::optional<at::Tensor> &opt_tensor) {
+void add_param_to_buf(const c10::optional<at::Tensor> &opt_tensor) {
     if (opt_tensor.has_value() && opt_tensor.value().defined()) {
-        AddParamToBuf(opt_tensor.value());
+        add_param_to_buf(opt_tensor.value());
     } else {
         MEMCPY_TO_BUF(",", 1);
     }
 }
 
-void AddParamToBuf(const c10::optional<at::IntArrayRef> &opt_array) {
+void add_param_to_buf(const c10::optional<at::IntArrayRef> &opt_array) {
     if (opt_array.has_value()) {
-        AddParamToBuf(opt_array.value());
+        add_param_to_buf(opt_array.value());
     } else {
         MEMCPY_TO_BUF(",", 1);
     }
 }
 
-void AddParamToBuf(const c10::optional<at::Scalar> &opt_scalar) {
+void add_param_to_buf(const c10::optional<at::Scalar> &opt_scalar) {
     if (opt_scalar.has_value()) {
-        AddParamToBuf(opt_scalar.value());
+        add_param_to_buf(opt_scalar.value());
     } else {
         MEMCPY_TO_BUF(",", 1);
     }
 }
 
-void AddParamToBuf(const at::ScalarType scalar_type) {
+void add_param_to_buf(const at::ScalarType scalar_type) {
     MEMCPY_TO_BUF(&scalar_type, sizeof(scalar_type));
 }
 
-void AddParamToBuf(const string& s) {
+void add_param_to_buf(const string& s) {
     MEMCPY_TO_BUF(s.c_str(), s.size());
 }
 
-void AddParamToBuf() {}
+void add_param_to_buf() {}
 
 inline uint64_t rotl64(uint64_t x, int8_t r) {
     return (x << r) | (x >> (64 - r));
@@ -139,7 +139,7 @@ inline uint64_t fmix64(uint64_t k) {
     return k;
 }
 
-uint64_t MurmurHash(const void *key, const int len, const uint32_t seed = 0xdeadb0d7) {
+uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0d7) {
     const uint8_t *data = (const uint8_t *)key;
     // the length of each block is 16 bytes
     const int nblocks = len / 16;
@@ -261,10 +261,10 @@ uint64_t MurmurHash(const void *key, const int len, const uint32_t seed = 0xdead
     return h2;
 }
 
-uint64_t CalcHashId() {
-    if (g_hashOffset == g_hashBufMaxSize) {
+uint64_t calc_hash_id() {
+    if (g_hash_offset == g_hash_buf_max_size) {
         return 0;
     }
-    uint64_t hash_id = MurmurHash(g_hashBuf, g_hashOffset);
+    uint64_t hash_id = murmur_hash(g_hash_buf, g_hash_offset);
     return hash_id;
 }
