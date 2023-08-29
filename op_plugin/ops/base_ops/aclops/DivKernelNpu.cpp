@@ -75,17 +75,14 @@ void div_torch_check(c10::optional<c10::string_view> rounding_mode) {
 } // namespace
 
 at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self) || npu_preparation::IsCPUScalar(self);
-  at::Tensor output_tensor = is_self_wrapped ? other : self;
-  auto result_type = result.scalar_type();
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   npu_preparation::CheckOut(
       {self, other},
       result,
-      calcu_op_util::GetTensorNpuFormat(output_tensor),
-      result_type,
+      result,
       output_size);
 
+  auto result_type = result.scalar_type();
   auto calculate_type = op_plugin::utils::get_divide_high_type(self, other);
   TORCH_CHECK(canCast(calculate_type, result_type),
       "result type ", calculate_type, " can't be cast to the desired output type ", result_type);
