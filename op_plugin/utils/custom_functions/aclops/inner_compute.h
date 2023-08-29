@@ -108,5 +108,6 @@ at::Tensor npu_binary_cross_entropy_with_logits_backward(
     const c10::optional<at::Tensor>& weight_opt,
     const c10::optional<at::Tensor>& pos_weight_opt,
     int64_t reduction);
+at::Tensor index_common(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig);
 } // namespace acl_op
 #endif
