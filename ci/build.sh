@@ -18,7 +18,7 @@
 set -e
 
 CUR_DIR=$(dirname $(readlink -f $0))
-SUPPORTED_PY_VERSION=(3.7 3.8 3.9)
+SUPPORTED_PY_VERSION=(3.7 3.8 3.9 3.10)
 SUPPORTED_PYTORCH_VERSION=('master' 'v2.0.1' 'v1.11.0')
 PY_VERSION='3.8' # Default supported python version is 3.8
 PYTORCH_VERSION='master' # Default supported PyTorch version is master
@@ -150,9 +150,15 @@ function main()
 
     cp -rf ${CODE_ROOT_PATH}/op_plugin ${PYTORCH_THIRD_PATH}/
     cp -rf ${CODE_ROOT_PATH}/codegen ${PYTORCH_THIRD_PATH}/
-    cp -rf ${CODE_ROOT_PATH}/gencode.sh ${PYTORCH_THIRD_PATH}/
+    cp -rf ${CODE_ROOT_PATH}/*.sh ${PYTORCH_THIRD_PATH}/
+
     # compile torch_adapter
-    bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION}
+    if [ "${PYTORCH_VERSION}" = 'v1.11.0' ]; then
+        bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION} --enable_submodule
+    else
+        bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION}
+    fi
+
     # copy dist/torch_npu.whl from torch_adapter to op_plugin
     if [ -d ${CODE_ROOT_PATH}/dist ]; then
         rm -r ${CODE_ROOT_PATH}/dist
