@@ -152,7 +152,7 @@ at::Tensor index_high_dims(const at::Tensor& self, std::vector<at::Tensor> indic
 }
 } // namespace
 
-at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig) {
+at::Tensor index_common(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig) {
   at::native::checkIndexTensorTypes(orig);
   auto indices = op_plugin::AdvanceIndex::npu_expand_tensors(self, orig);
   auto broadcast_indices = op_plugin::AdvanceIndex::npu_broadcast_tensors(indices);
