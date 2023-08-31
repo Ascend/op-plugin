@@ -23,6 +23,13 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& eq_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq_out(self, other, result));
+
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_api::eq_out(self, other.item(), result);
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_api::eq_out(other, self.item(), result);
+  }
+
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   npu_preparation::check_tensor({self, other}, result, at::IntArrayRef(output_size));
   EXEC_NPU_CMD(aclnnEqTensor, self, other, result);
@@ -31,6 +38,12 @@ at::Tensor& eq_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 
 at::Tensor eq(const at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq(self, other));
+
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_api::eq(self, other.item());
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_api::eq(other, self.item());
+  }
 
   // calculate the output size
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
