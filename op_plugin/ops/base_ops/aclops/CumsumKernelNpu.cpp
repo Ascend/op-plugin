@@ -86,4 +86,19 @@ at::Tensor& cumsum_out(
     at::Tensor& result) {
   return acl_op::cumsum_out(self, dimname_to_position(self, dim), dtype, result);
 }
+
+at::Tensor cumsum(
+    const at::Tensor& self,
+    int64_t dim,
+    const c10::optional<at::ScalarType> dtype) {
+  at::Tensor result;
+  if (dtype.has_value()) {
+    result = npu_preparation::apply_tensor(self, self.options().dtype(dtype.value()));
+  } else if (self.scalar_type() == at::ScalarType::Bool) {
+    result = npu_preparation::apply_tensor(self, self.options().dtype(at::kLong));
+  } else {
+    result = npu_preparation::apply_tensor(self);
+  }
+  return acl_op::cumsum_out(self, dim, dtype, result);
+}
 } // namespace acl_op
