@@ -585,7 +585,7 @@ official:
  - func: expm1.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: expm1_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: eye(int n, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: eye.m(int n, int m, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
@@ -643,6 +643,8 @@ official:
  - func: gather.dimname_out(Tensor self, Dimname dim, Tensor index, *, bool sparse_grad=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: gather.out(Tensor self, int dim, Tensor index, *, bool sparse_grad=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
+ - func: gcd.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: ge.Scalar(Tensor self, Scalar other) -> Tensor
    impl_ns: acl_op, op_api
@@ -778,6 +780,10 @@ official:
    impl_ns: acl_op, op_api
  - func: isfinite(Tensor self) -> Tensor
    impl_ns: acl_op
+ - func: isposinf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
+ - func: isneginf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: kl_div(Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
    impl_ns: acl_op
  - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
