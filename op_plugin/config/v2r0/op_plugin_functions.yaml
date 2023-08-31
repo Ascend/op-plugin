@@ -1668,6 +1668,8 @@ official:
    impl_ns: acl_op
  - func: matmul(Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op
+ - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
+   impl_ns: acl_op
  - func: matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: batch_norm(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, bool cudnn_enabled) -> Tensor
