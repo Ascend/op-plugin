@@ -57,6 +57,10 @@ official:
    impl_ns: acl_op
  - func: _batch_norm_impl_index_backward(int impl_index, Tensor input, Tensor grad_output, Tensor? weight, Tensor? running_mean, Tensor? running_var, Tensor? save_mean, Tensor? save_var_transform, bool train, float eps, bool[3] output_mask, Tensor reservedSpace) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op
+ - func: _cat(Tensor[] tensors, int dim=0) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: _cat.out(Tensor[] tensors, int dim=0, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: _cdist_backward(Tensor grad, Tensor x1, Tensor x2, float p, Tensor cdist) -> Tensor
    impl_ns: acl_op
  - func: _cdist_forward(Tensor x1, Tensor x2, float p, int? compute_mode) -> Tensor
