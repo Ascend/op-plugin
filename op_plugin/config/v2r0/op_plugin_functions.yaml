@@ -435,9 +435,9 @@ official:
  - func: clamp_min_.Tensor(Tensor(a!) self, Tensor min) -> Tensor(a!)
    impl_ns: acl_op
  - func: col2im(Tensor self, SymInt[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: col2im.out(Tensor self, SymInt[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: constant_pad_nd(Tensor self, SymInt[] pad, Scalar value=0) -> Tensor
    impl_ns: acl_op
  - func: conv_tbc(Tensor self, Tensor weight, Tensor bias, int pad=0) -> Tensor
@@ -835,7 +835,7 @@ official:
  - func: log2.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: log2_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: log_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op
  - func: log_sigmoid(Tensor self) -> Tensor
