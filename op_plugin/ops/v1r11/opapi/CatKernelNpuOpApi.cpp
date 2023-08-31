@@ -95,7 +95,6 @@ at::Tensor& cat_out(at::TensorList tensors, int64_t dim, at::Tensor& result) {
   if (inputTensors.size() > 0) {
     dim_post_expr = inputTensors[0].dim();
   } else {
-    npu_preparation::check_tensor({tensors[0]}, result, tensors[0].scalar_type(), {0});
     return result;
   }
   dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
