@@ -836,6 +836,7 @@ supported:
    op_api: False
  - func: expm1_
    wrap_impl: expm1_
+   op_api: True
  - func: eye
    wrap_impl: eye
    op_api: True
@@ -925,6 +926,9 @@ supported:
    op_api: True
  - func: gather.out
    wrap_impl: gather_out
+   op_api: True
+ - func: gcd.out
+   wrap_impl: gcd.out
    op_api: True
  - func: ge.Scalar
    wrap_impl: ge
@@ -1123,6 +1127,12 @@ supported:
    op_api: False
  - func: isfinite
    wrap_impl: isfinite
+ - func: isposinf.out
+   wrap_impl: isposinf.out
+   op_api: True
+ - func: isneginf.out
+   wrap_impl: isneginf.out
+   op_api: True
  - isnan
  - func: kl_div
    wrap_impl: kl_div
@@ -2638,10 +2648,7 @@ tocpu:
   - unique_dim_consecutive
   - vdot
   - sinc.out
-  - gcd.out
   - lcm.out
-  - isposinf.out
-  - isneginf.out
   - fmin
   - fmin.out
   - fmax

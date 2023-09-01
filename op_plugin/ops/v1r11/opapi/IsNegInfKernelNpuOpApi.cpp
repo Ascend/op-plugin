@@ -23,38 +23,16 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& expm1_out(const at::Tensor& self, at::Tensor& out) {
-  DO_COMPATIBILITY(aclnnExpm1, acl_op::expm1_out(self, out));
+at::Tensor& isneginf_out(const at::Tensor& self, at::Tensor& out) {
+  DO_COMPATIBILITY(aclnnIsNegInf, acl_op::isneginf_out(self, out));
   // resize_ the output size when size of out and self don't match with each other.
   if (out.sizes() != self.sizes()) {
     auto output_size = op_infer::input_same_output_size(self);
     out.resize_(output_size);
   }
   // dispatch hostAPI
-  EXEC_NPU_CMD(aclnnExpm1, self, out);
+  EXEC_NPU_CMD(aclnnIsNegInf, self, out);
   return out;
-}
-
-at::Tensor expm1(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnExpm1, acl_op::expm1(self));
-  // construct the output tensor of NPU. If dtype of self isn't included in floating point list,
-  // dtype of out must be float32.
-  auto output_size = op_infer::input_same_output_size(self);
-  at::ScalarType out_type = self.scalar_type();
-  if (!isFloatingType(self.scalar_type())) {
-    out_type = at::kFloat;
-  }
-  at::Tensor out = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(out_type));
-  // dispatch hostAPI
-  EXEC_NPU_CMD(aclnnExpm1, self, out);
-  return out;
-}
-
-at::Tensor& expm1_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceExpm1, acl_op::expm1_(self));
-  // dispatch hostAPI
-  EXEC_NPU_CMD(aclnnInplaceExpm1, self);
-  return self;
 }
 
 } // namespace op_api

@@ -581,7 +581,7 @@ official:
  - func: expm1.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: expm1_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: eye(int n, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
  - func: eye.m(int n, int m, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
