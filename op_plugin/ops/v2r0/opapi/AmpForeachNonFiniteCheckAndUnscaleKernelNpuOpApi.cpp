@@ -24,7 +24,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 const int FLOAT_STATUS_OP_DIMS_SIZE = 8;
 
-static bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) {
+bool _amp_foreach_non_finite_check(at::TensorList scaled_grads) {
   TORCH_NPU_WARN_ONCE("Non finite check on NPU device!");
 
   auto options = at::TensorOptions(torch_npu::utils::get_npu_device_type()).dtype(at::kFloat);

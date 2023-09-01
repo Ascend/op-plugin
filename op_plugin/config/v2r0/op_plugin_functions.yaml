@@ -82,6 +82,8 @@ official:
    impl_ns: acl_op
  - func: _embedding_bag_backward(Tensor grad, Tensor indices, Tensor offsets, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
    impl_ns: acl_op
+ - func: _embedding_bag_dense_backward(Tensor grad, Tensor indices, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
+   impl_ns: acl_op
  - func: _embedding_bag_forward_only(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False, int padding_idx=-1) -> (Tensor, Tensor, Tensor, Tensor)
    impl_ns: acl_op
  - func: _index_put_impl_(Tensor(a!) self, Tensor?[] indices, Tensor values, bool accumulate=False, bool unsafe=False) -> Tensor(a!)
@@ -952,9 +954,17 @@ official:
    impl_ns: acl_op
  - func: max_unpool2d.out(Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: max_unpool2d_backward(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size) -> Tensor
+   impl_ns: acl_op
+ - func: max_unpool2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) grad_input) -> Tensor(a!)
+   impl_ns: acl_op
  - func: max_unpool3d(Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding) -> Tensor
    impl_ns: acl_op
  - func: max_unpool3d.out(Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: max_unpool3d_backward(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding) -> Tensor
+   impl_ns: acl_op
+ - func: max_unpool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op
  - func: maximum(Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op
@@ -1678,6 +1688,8 @@ official:
    impl_ns: acl_op
  - func: softmax.int(Tensor self, int dim, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op
+ - func: _symeig_helper(Tensor self, bool eigenvectors, bool upper) -> (Tensor, Tensor)
+   impl_ns: acl_op
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1976,6 +1988,8 @@ custom:
   - func: fast_gelu(Tensor self) -> Tensor
     impl_ns: acl_op
   - func: npu_fast_gelu_backward(Tensor grad, Tensor self) -> Tensor
+    impl_ns: acl_op
+  - func: _amp_foreach_non_finite_check(Tensor[] scaled_grads) -> bool
     impl_ns: acl_op
   - func: npu_sign_bits_pack(Tensor self, int size) -> Tensor
     impl_ns: acl_op
