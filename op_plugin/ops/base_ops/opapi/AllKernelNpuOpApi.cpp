@@ -35,6 +35,20 @@ at::Tensor& all_out(const at::Tensor& self, int64_t dim, bool keepdim, at::Tenso
   return result;
 }
 
+at::Tensor& all_out(const at::Tensor& self, at::Tensor& result) {
+  DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, result));
+  at::IntArrayRef dims;
+
+  // check result for return
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
+  npu_preparation::check_tensor({self}, result, result, output_size);
+
+  // calculate the output result of the NPU
+  bool keepdim = false;
+  EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
+  return result;
+}
+
 at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
   DO_COMPATIBILITY(aclnnAll, acl_op::all(self, dim, keepdim));
 

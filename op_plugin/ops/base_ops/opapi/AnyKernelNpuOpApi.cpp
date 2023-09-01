@@ -35,6 +35,19 @@ at::Tensor& any_out(const at::Tensor& self, int64_t dim, bool keepdim, at::Tenso
   return result;
 }
 
+at::Tensor& any_out(const at::Tensor& self, at::Tensor& result) {
+  DO_COMPATIBILITY(aclnnAny, acl_op::any_out(self, result));
+  at::SmallVector<int64_t, op_infer::N> dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
+  bool keep_dim = false;
+  
+  // check result for return
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim_list, keep_dim);
+  npu_preparation::check_tensor({self}, result, result, output_size);
+  at::IntArrayRef dims(dim_list);
+  EXEC_NPU_CMD(aclnnAny, self, dims, keep_dim, result);
+  return result;
+}
+
 at::Tensor any(const at::Tensor& self, int64_t dim, bool keepdim) {
   DO_COMPATIBILITY(aclnnAny, acl_op::any(self, dim, keepdim));
   

@@ -218,6 +218,8 @@ official:
    impl_ns: acl_op
  - func: all.out(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: all.all_out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: amax(Tensor self, int[1] dim=[], bool keepdim=False) -> Tensor
    impl_ns: acl_op
  - func: amax.out(Tensor self, int[1] dim=[], bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
@@ -231,6 +233,8 @@ official:
  - func: any.dim(Tensor self, int dim, bool keepdim=False) -> Tensor
    impl_ns: acl_op
  - func: any.out(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: any.all_out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: arange(Scalar end, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
