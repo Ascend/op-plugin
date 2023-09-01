@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
+// Copyright (c) 2023, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -15,19 +15,14 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
-namespace acl_op {
+namespace op_api {
+using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor upsample_linear1d(
-    const at::Tensor& self,
-    c10::optional<at::IntArrayRef> output_size,
-    bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  auto osize = op_infer::upsample_infershape_with_scale(self.sizes(), output_size, scale_factors);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
-
-  return acl_op::upsample_linear1d(self, osize, align_corners, scales_w);
+at::Tensor &square_out(const at::Tensor &self, at::Tensor &out) {
+    return op_api::mul_out(self, self, out);
 }
 
-} // namespace acl_op
+} // namespace op_api

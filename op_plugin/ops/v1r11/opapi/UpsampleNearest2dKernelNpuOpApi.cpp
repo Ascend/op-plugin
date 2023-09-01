@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
+// Copyright (c) 2023, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -15,20 +15,20 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
-namespace acl_op {
+namespace op_api {
 
-at::Tensor upsample_nearest3d_backward(
-    const at::Tensor& grad_output,
+at::Tensor upsample_nearest2d(
+    const at::Tensor& input,
     c10::optional<at::IntArrayRef> output_size,
-    at::IntArrayRef input_size,
     c10::optional<at::ArrayRef<double>> scale_factors) {
-  auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-  auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
+  auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
+  auto scale_h = op_plugin::utils::get_scale_value(scale_factors, 0);
+  auto scale_w = op_plugin::utils::get_scale_value(scale_factors, 1);
 
-  return acl_op::upsample_nearest3d_backward(grad_output, osize, input_size, scales_d, scales_h, scales_w);
+  return op_api::upsample_nearest2d(input, osize, scale_h, scale_w);
 }
-} // namespace acl_op
+
+} // namespace op_api

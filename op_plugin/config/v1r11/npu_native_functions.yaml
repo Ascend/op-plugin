@@ -181,13 +181,13 @@ supported:
    op_api: True
  - func: acosh
    wrap_impl: acosh
-   op_api: False
+   op_api: True
  - func: acosh.out
    wrap_impl: acosh_out
-   op_api: False
+   op_api: True
  - func: acosh_
    wrap_impl: acosh_
-   op_api: False
+   op_api: True
  - func: adaptive_avg_pool1d
    wrap_impl: adaptive_avg_pool1d
  - func: adaptive_avg_pool2d
@@ -857,7 +857,7 @@ supported:
    op_api: True
  - func: fill_diagonal_
    wrap_impl: fill_diagonal_
-   op_api: False
+   op_api: True
  - func: flip
    wrap_impl: flip
    op_api: True
@@ -959,10 +959,10 @@ supported:
    op_api: True
  - func: ger
    wrap_impl: ger
-   op_api: False
+   op_api: True
  - func: ger.out
    wrap_impl: ger_out
-   op_api: False
+   op_api: True
  - func: glu
    wrap_impl: glu
    op_api: False
@@ -1028,7 +1028,7 @@ supported:
    op_api: True
  - func: hardsigmoid_backward
    wrap_impl: hardsigmoid_backward
-   op_api: False
+   op_api: True
  - func: hardswish
    wrap_impl: hardswish
    op_api: True
@@ -1142,7 +1142,7 @@ supported:
  - isnan
  - func: kl_div
    wrap_impl: kl_div
-   op_api: False
+   op_api: True
  - func: kl_div_backward
    wrap_impl: kl_div_backward
    op_api: True
@@ -1468,13 +1468,16 @@ supported:
    op_api: True
  - func: median.dim
    wrap_impl: median
+   op_api: True
  - func: median.dim_values
    wrap_impl: median
    op_api: True
  - func: median.names_dim
    wrap_impl: median
+   op_api: True
  - func: median.names_dim_values
    wrap_impl: median
+   op_api: True
  - func: min
    wrap_impl: min
    op_api: True
@@ -1505,7 +1508,7 @@ supported:
    wrap_impl: mish_
  - func: mish_backward
    wrap_impl: mish_backward
-   op_api: False
+   op_api: True
  - func: mm
    wrap_impl: mm
    op_api: True
@@ -1727,10 +1730,10 @@ supported:
    op_api: True
  - func: pow_.Scalar
    wrap_impl: pow_
-   op_api: False
+   op_api: True
  - func: pow_.Tensor
    wrap_impl: pow_
-   op_api: False
+   op_api: True
  - func: prelu
    wrap_impl: prelu
    op_api: True
@@ -2014,13 +2017,13 @@ supported:
    op_api: True
  - func: sinh
    wrap_impl: sinh
-   op_api: False
+   op_api: True
  - func: sinh.out
    wrap_impl: sinh_out
-   op_api: False
+   op_api: True
  - func: sinh_
    wrap_impl: sinh_
-   op_api: False
+   op_api: True
  - func: linalg_slogdet
    wrap_impl: linalg_slogdet
    op_api: False
@@ -2075,7 +2078,7 @@ supported:
    op_api: True
  - func: softplus_backward.grad_input
    wrap_impl: softplus_backward_out
-   op_api: False
+   op_api: True
  - func: softshrink
    wrap_impl: softshrink
  - func: softshrink.out
@@ -2152,10 +2155,10 @@ supported:
    op_api: True
  - func: sub_.Scalar
    wrap_impl: sub_
-   op_api: False
+   op_api: True
  - func: sub_.Tensor
    wrap_impl: sub_
-   op_api: False
+   op_api: True
  - func: sum
    wrap_impl: sum
    op_api: True
@@ -2278,7 +2281,7 @@ supported:
    op_api: True
  - func: unique_consecutive
    wrap_impl: unique_consecutive
-   op_api: False
+   op_api: True
  - unsqueeze
  - func: upsample_bicubic2d
    wrap_impl: upsample_bicubic2d
@@ -2303,13 +2306,13 @@ supported:
    op_api: True
  - func: upsample_bilinear2d_backward
    wrap_impl: upsample_bilinear2d_backward
-   op_api: False
+   op_api: True
  - func: upsample_bilinear2d_backward.grad_input
    wrap_impl: upsample_bilinear2d_backward_out
-   op_api: False
+   op_api: True
  - func: upsample_bilinear2d_backward.vec
    wrap_impl: upsample_bilinear2d_backward
-   op_api: False
+   op_api: True
  - func: upsample_linear1d
    wrap_impl: upsample_linear1d
  - func: upsample_linear1d.out
@@ -2349,13 +2352,13 @@ supported:
    op_api: True
  - func: upsample_nearest2d_backward
    wrap_impl: upsample_nearest2d_backward
-   op_api: False
+   op_api: True
  - func: upsample_nearest2d_backward.grad_input
    wrap_impl: upsample_nearest2d_backward_out
-   op_api: False
+   op_api: True
  - func: upsample_nearest2d_backward.vec
    wrap_impl: upsample_nearest2d_backward
-   op_api: False
+   op_api: True
  - func: upsample_nearest3d
    wrap_impl: upsample_nearest3d
  - func: upsample_nearest3d.out
