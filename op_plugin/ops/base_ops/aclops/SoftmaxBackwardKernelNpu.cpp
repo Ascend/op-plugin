@@ -70,7 +70,7 @@ at::Tensor _softmax_backward_data(
   auto output_size = op_infer::input_same_output_size(grad_output);
   at::Tensor temp_output = output;
   if (calcu_op_util::GetTensorNpuFormat(temp_output) == ACL_FORMAT_NC1HWC0) {
-    at_npu::native::NPUNativeFunctions::npu_format_cast_(temp_output, calcu_op_util::GetTensorNpuFormat(grad_output));
+    at_npu::native::custom_ops::npu_format_cast_(temp_output, calcu_op_util::GetTensorNpuFormat(grad_output));
   }
   at::Tensor grad_input = npu_preparation::ApplyTensor(temp_output, output_size);
   softmax_backward_out_nocheck(grad_input, grad_output, temp_output, dim, input_dtype);

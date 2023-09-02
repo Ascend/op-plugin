@@ -138,7 +138,7 @@ function main()
         if [ -d ${BUILD_PATH} ]; then
             rm -r ${BUILD_PATH}
         fi
-        git clone --recursive -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
+        git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
     fi
     checkout_pytorch_branch
     # copy op_plugin to torch_adapter/third_party
@@ -154,10 +154,10 @@ function main()
     cp -rf ${CODE_ROOT_PATH}/*.sh ${PYTORCH_THIRD_PATH}/
 
     # compile torch_adapter
-    if [ "${PYTORCH_VERSION}" = 'v1.11.0' ]; then
-        bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION} --enable_submodule
-    else
+    if [ "${PYTORCH_VERSION}" = 'v1.11.0' ] || [ "${PYTORCH_VERSION}" = 'v2.0.1' ]; then
         bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION}
+    else
+        bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION} --disable_torchair
     fi
 
     # copy dist/torch_npu.whl from torch_adapter to op_plugin
