@@ -415,7 +415,7 @@ official:
  - func: clamp_max(Tensor self, Scalar max) -> Tensor
    impl_ns: acl_op, op_api
  - func: clamp_max.out(Tensor self, Scalar max, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: clamp_max_(Tensor(a!) self, Scalar max) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: clamp_min(Tensor self, Scalar min) -> Tensor
@@ -435,7 +435,7 @@ official:
  - func: clamp_max.Tensor_out(Tensor self, Tensor max, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: clamp_max_.Tensor(Tensor(a!) self, Tensor max) -> Tensor(a!)
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: clamp_min.Tensor(Tensor self, Tensor min) -> Tensor
    impl_ns: acl_op, op_api
  - func: clamp_min.Tensor_out(Tensor self, Tensor min, *, Tensor(a!) out) -> Tensor(a!)
@@ -780,6 +780,10 @@ official:
    impl_ns: acl_op, op_api
  - func: inverse.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: isin.Tensor_Scalar(Tensor element, Scalar test_elements, *, bool assume_unique=False, bool invert=False) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: isin.Tensor_Scalar_out(Tensor element, Scalar test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: isclose(Tensor self, Tensor other, float rtol=1e-05, float atol=1e-08, bool equal_nan=False) -> Tensor
    impl_ns: acl_op, op_api
  - func: isfinite(Tensor self) -> Tensor
@@ -919,10 +923,6 @@ official:
  - func: logical_or.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: logical_or_(Tensor(a!) self, Tensor other) -> Tensor(a!)
-   impl_ns: acl_op, op_api
- - func: logical_xor(Tensor self, Tensor other) -> Tensor
-   impl_ns: acl_op, op_api
- - func: logical_xor.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: logspace(Scalar start, Scalar end, int steps, float base=10.0, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
@@ -1229,7 +1229,7 @@ official:
  - func: prelu(Tensor self, Tensor weight) -> Tensor
    impl_ns: acl_op, op_api
  - func: prelu_backward(Tensor grad_output, Tensor self, Tensor weight) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: prod(Tensor self, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: prod.Dimname_out(Tensor self, Dimname dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)

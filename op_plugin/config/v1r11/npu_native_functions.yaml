@@ -1122,6 +1122,12 @@ supported:
    op_api: False
  - is_pinned
  - is_set_to
+ - func: isin.Tensor_Scalar_out
+   wrap_impl: isin_out
+   op_api: True
+ - func: isin.Tensor_Scalar
+   wrap_impl: isin
+   op_api: True
  - func: isclose
    wrap_impl: isclose
    op_api: False
@@ -2729,8 +2735,6 @@ unsupported:
   - frexp.Tensor_out
   - isin.Tensor_Tensor_out
   - isin.Tensor_Tensor
-  - isin.Tensor_Scalar_out
-  - isin.Tensor_Scalar
   - isin.Scalar_Tensor_out
   - isin.Scalar_Tensor
   - cholesky.out

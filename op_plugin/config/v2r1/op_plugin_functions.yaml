@@ -95,7 +95,7 @@ official:
  - func: _log_softmax(Tensor self, int dim, bool half_to_float) -> Tensor
    impl_ns: acl_op, op_api
  - func: _log_softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: op_api 
+   impl_ns: op_api
  - func: _log_softmax_backward_data(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype) -> Tensor
    impl_ns: acl_op, op_api
  - func: _log_softmax_backward_data.out(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype, *, Tensor(a!) out) -> Tensor(a!)
@@ -757,6 +757,10 @@ official:
  - func: inverse(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: inverse.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
+ - func: isin.Tensor_Scalar(Tensor element, Scalar test_elements, *, bool assume_unique=False, bool invert=False) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: isin.Tensor_Scalar_out(Tensor element, Scalar test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: isclose(Tensor self, Tensor other, float rtol=1e-05, float atol=1e-08, bool equal_nan=False) -> Tensor
    impl_ns: acl_op, op_api
