@@ -2006,6 +2006,9 @@ supported:
  - func: sign_
    wrap_impl: sign_
    op_api: True
+ - func: signbit.out
+   wrap_impl: signbit_out
+   op_api: True
  - func: sin
    wrap_impl: sin
    op_api: True
@@ -2014,6 +2017,15 @@ supported:
    op_api: True
  - func: sin_
    wrap_impl: sin_
+   op_api: True
+ - func: sinc
+   wrap_impl: sinc
+   op_api: True
+ - func: sinc.out
+   wrap_impl: sinc_out
+   op_api: True
+ - func: sinc_
+   wrap_impl: sinc_
    op_api: True
  - func: sinh
    wrap_impl: sinh
@@ -2655,7 +2667,6 @@ tocpu:
   - unique_dim
   - unique_dim_consecutive
   - vdot
-  - sinc.out
   - lcm.out
   - fmin
   - fmin.out
@@ -2682,7 +2693,6 @@ tocpu:
   - igammac
   - igammac_
   - i0.out
-  - signbit.out
   - hypot.out
   - hypot
   - nextafter.out
