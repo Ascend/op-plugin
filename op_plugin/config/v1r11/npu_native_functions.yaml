@@ -1581,6 +1581,10 @@ supported:
  - func: native_dropout_backward
    wrap_impl: native_dropout_backward
    op_api: False
+ - func: native_group_norm
+   wrap_impl: native_group_norm
+ - func: native_group_norm_backward
+   wrap_impl: native_group_norm_backward
  - func: native_layer_norm
    wrap_impl: native_layer_norm
    op_api: True
@@ -2633,7 +2637,6 @@ tocpu:
   - nansum
   - nansum.dim_IntList
   - nansum.IntList_out
-  - native_group_norm_backward
   - narrow_copy.out
   - poisson
   - polar.out
