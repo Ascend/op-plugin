@@ -1128,6 +1128,9 @@ supported:
  - func: isin.Tensor_Scalar
    wrap_impl: isin
    op_api: True
+ - func: isin.Scalar_Tensor_out
+   wrap_impl: isin_out
+   op_api: True
  - func: isclose
    wrap_impl: isclose
    op_api: False
@@ -1739,10 +1742,6 @@ supported:
  - func: prod
    wrap_impl: prod
    op_api: True
- - func: prod.Dimname_out
-   wrap_impl: prod_out
- - func: prod.dim_Dimname
-   wrap_impl: prod
  - func: prod.dim_int
    wrap_impl: prod
    op_api: True
@@ -2735,8 +2734,6 @@ unsupported:
   - frexp.Tensor_out
   - isin.Tensor_Tensor_out
   - isin.Tensor_Tensor
-  - isin.Scalar_Tensor_out
-  - isin.Scalar_Tensor
   - cholesky.out
   - cholesky
   - geqrf.a

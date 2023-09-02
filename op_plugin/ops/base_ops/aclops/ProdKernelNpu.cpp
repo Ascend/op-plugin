@@ -111,15 +111,6 @@ at::Tensor& prod_out(
   return result;
 }
 
-at::Tensor& prod_out(
-    const at::Tensor& self,
-    at::Dimname dim,
-    bool keepdim,
-    c10::optional<at::ScalarType> dtype,
-    at::Tensor& result) {
-  return acl_op::prod_out(self, dimname_to_position(self, dim), keepdim, dtype, result);
-}
-
 at::Tensor prod(
     const at::Tensor& self,
     int64_t dim,
@@ -143,14 +134,6 @@ at::Tensor prod(
     result = at_npu::native::custom_ops::npu_dtype_cast(result, dst_type);
   }
   return result;
-}
-
-at::Tensor prod(
-    const at::Tensor& self,
-    at::Dimname dim,
-    bool keepdim,
-    c10::optional<at::ScalarType> dtype) {
-  return acl_op::prod(self, dimname_to_position(self, dim), keepdim, dtype);
 }
 
 at::Tensor prod(const at::Tensor& self, c10::optional<at::ScalarType> dtype) {

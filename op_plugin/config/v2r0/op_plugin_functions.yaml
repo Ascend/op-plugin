@@ -1190,10 +1190,6 @@ official:
    impl_ns: acl_op
  - func: prod(Tensor self, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op
- - func: prod.Dimname_out(Tensor self, Dimname dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
- - func: prod.dim_Dimname(Tensor self, Dimname dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-   impl_ns: acl_op
  - func: prod.dim_int(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op
  - func: prod.int_out(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
