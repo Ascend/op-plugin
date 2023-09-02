@@ -478,6 +478,16 @@ c10::SmallVector<int64_t, SIZE> nonzero_npu_max_output_size(const at::Tensor &se
   return maxOutputSize;
 }
 
+c10::SmallVector<int64_t, SIZE> prelu_backward_npu_grad_weight_output_size(const at::Tensor& weight) {
+  int64_t weight_num = weight.numel();
+  if (weight_num == 1) {
+    return array_to_small_vector(weight.sizes());
+  }
+
+  c10::SmallVector<int64_t, SIZE> output_size = {weight_num};
+  return output_size;
+}
+
 c10::SmallVector<int64_t, SIZE> pad_npu_output_size(const at::Tensor &input, c10::IntArrayRef paddings) {
   c10::SmallVector<int64_t, SIZE> outputSize;
   for (int i = 0; i < input.dim(); i++) {
