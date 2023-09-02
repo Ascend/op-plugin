@@ -160,6 +160,12 @@ supported:
  - func: _unique2
    wrap_impl: _unique2
    op_api: True
+ - func: _unique
+   wrap_impl: _unique
+   op_api: False
+ - func: dequantize.self
+   wrap_impl: dequantize
+   op_api: False
  - _reshape_alias
  - func: abs
    wrap_impl: abs
@@ -1608,8 +1614,10 @@ supported:
    op_api: True
  - func: ne_.Scalar
    wrap_impl: ne_
+   op_api: False
  - func: ne_.Tensor
    wrap_impl: ne_
+   op_api: False
  - func: neg
    wrap_impl: neg
    op_api: True
@@ -2276,8 +2284,10 @@ supported:
    op_api: False
  - func: true_divide_.Scalar
    wrap_impl: true_divide_
+   op_api: False
  - func: true_divide_.Tensor
    wrap_impl: true_divide_
+   op_api: False
  - func: trace
    wrap_impl: trace
    op_api: True
@@ -2622,7 +2632,6 @@ tocpu:
   - _test_optional_filled_intlist
   - _test_optional_floatlist
   - _solve_helper
-  - _unique
   - angle
   - angle.out
   - binomial
