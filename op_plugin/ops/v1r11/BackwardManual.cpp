@@ -65,15 +65,6 @@ at::Tensor npu_bmm_v2_mat2_backward(const at::Tensor& grad, const at::Tensor& ma
   return acl_op::npu_bmm_v2_mat2_backward(grad, mat1, mat2, size);
 }
 
-at::Tensor celu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Tensor& output) {
-  return acl_op::celu_backward(grad_output, alpha, output);
-}
-
-at::Tensor elu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Scalar& scale,
-                        const at::Scalar& input_scale, const at::Tensor& output) {
-  return acl_op::elu_backward(grad_output, alpha, scale, input_scale, output);
-}
-
 at::Tensor selu_backward(const at::Tensor& grad_output, const at::Tensor& result) {
   return acl_op::selu_backward(grad_output, result);
 }

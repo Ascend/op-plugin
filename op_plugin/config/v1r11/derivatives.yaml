@@ -53,9 +53,6 @@
 - name: npu_confusion_transpose(Tensor self, int[] perm, int[] shape, bool transpose_first) -> Tensor
   self: npu_confusion_transpose_backward(grad, perm, self.sizes(), !transpose_first)
 
-- name: celu(Tensor self, Scalar alpha=1.0) -> Tensor
-  self: celu_backward(grad, alpha, result)
-
 - name: npu_silu(Tensor self) -> Tensor
   self: npu_silu_backward(grad, self, result)
 

@@ -38,25 +38,7 @@ at::Tensor celu_out_nocheck(const at::Tensor& self, const at::Scalar& alpha) {
   celu_out_npu_nocheck(result, self, alpha);
   return result;
 }
-
-at::Tensor& celu_backward_out_npu(at::Tensor& grad_input, const at::Tensor& grad_output,
-    const at::Scalar& alpha, const at::Tensor& output) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("EluGradV2")
-      .Input(grad_output)
-      .Input(output)
-      .Output(grad_input)
-      .Attr("alpha", alpha)
-      .Run();
-  return grad_input;
-}
 } // namespace
-
-at::Tensor celu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Tensor& output) {
-  at::Tensor result = npu_preparation::apply_tensor(grad_output);
-  celu_backward_out_npu(result, grad_output, alpha, output);
-  return result;
-}
 
 at::Tensor celu(const at::Tensor& self, const at::Scalar& alpha) {
   return celu_out_nocheck(self, alpha);
