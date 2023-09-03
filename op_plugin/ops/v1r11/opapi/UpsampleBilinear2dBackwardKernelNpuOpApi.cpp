@@ -15,19 +15,35 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/custom_functions/opapi/inner_compute_op_api.h"
 
-namespace acl_op {
+namespace op_api {
+using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor upsample_bicubic2d_backward(
+at::Tensor upsample_bilinear2d_backward(
     const at::Tensor& grad_output,
     c10::optional<at::IntArrayRef> output_size,
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<at::ArrayRef<double>> scale_factors) {
+  DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackward,
+                   acl_op::upsample_bilinear2d_backward(grad_output, output_size, input_size,
+                                                                    align_corners, scale_factors));
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
   auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
-  return acl_op::upsample_bicubic2d_backward(grad_output, osize, input_size, align_corners, scales_h, scales_w);
+  double scales_h_attr = scales_h.value_or(1);
+  double scales_w_attr = scales_w.value_or(1);
+  
+  auto outputsize = at::IntArrayRef(osize);
+  auto outputSize = op_infer::upsample_bilinear2d_backward_npu_output_size(
+      grad_output, osize, input_size, align_corners, scales_h, scales_w);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, outputSize);
+
+  EXEC_NPU_CMD(aclnnUpsampleBilinear2dBackward, grad_output, outputsize, input_size, align_corners,
+               scales_h_attr, scales_w_attr, grad_input);
+  return grad_input;
 }
-} // namespace acl_op
+} // namespace op_api

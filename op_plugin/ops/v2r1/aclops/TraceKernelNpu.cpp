@@ -13,22 +13,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
 
-at::Tensor upsample_nearest3d_backward(
-    const at::Tensor& grad_output,
-    c10::optional<at::IntArrayRef> output_size,
-    at::IntArrayRef input_size,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-  auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
-
-  return acl_op::upsample_nearest3d_backward(grad_output, osize, input_size, scales_d, scales_h, scales_w);
+using npu_preparation = at_npu::native::OpPreparation;
+  
+at::Tensor trace(const at::Tensor &self)
+{
+  TORCH_CHECK(self.dim() == 2, "trace: expected a matrix, but got tensor with dim ", self.dim());
+  c10::SmallVector<int64_t, N> outputSize = {};
+  auto outDtype = (isIntegralType(self.scalar_type(), true)) ? at::kLong : self.scalar_type();
+  at::Tensor result = npu_preparation::ApplyTensor(outputSize, self.options().dtype(outDtype), self);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Trace")
+    .Input(self)
+    .Output(result)
+    .Run();
+  return result;
 }
-} // namespace acl_op
+
+} // namespace op_plugin
+
