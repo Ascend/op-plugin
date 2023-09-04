@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-void index_fill_d_check_index(at::IntArrayRef shape, const at::Tensor &index, int64_t dim) {
+void index_fill_d_check_index(at::IntArrayRef shape, const at::Tensor& index, int64_t dim) {
   TORCH_CHECK(index.dim() == 1,"Index should be a one-dimensional tensor");
   int index_temp = INT_MAX;
   for (int i = 0; i < index.sizes()[0]; i++) {
@@ -76,8 +76,8 @@ c10::SmallVector<float, N> index_fill_d_assist_help_init(
 }
 
 at::Tensor index_fill_d_assist_help(
-    const at::Tensor &self,
-    const at::Tensor &index,
+    const at::Tensor& self,
+    const at::Tensor& index,
     int64_t dim,
     at::Scalar value,
     bool flag) {
@@ -112,23 +112,20 @@ at::Tensor& index_fill_d_nocheck(
   }
   at::Scalar value_zeros = at::Scalar(0.0);
   const at::Tensor* aclInput = &self;
-  at::Tensor assistHelp1 =
+  at::Tensor assist_help1 =
       index_fill_d_assist_help(self, index, dim, value_zeros, true);
-  at::Tensor assistHelp2 = index_fill_d_assist_help(self, index, dim, value, false);
-
-  if (aclInput->scalar_type() == at::ScalarType::Int) {
-    assistHelp1 = at_npu::native::custom_ops::npu_dtype_cast(assistHelp1, at::ScalarType::Int);
-    assistHelp2 = at_npu::native::custom_ops::npu_dtype_cast(assistHelp2, at::ScalarType::Int);
-  } else if (aclInput->scalar_type() == at::ScalarType::Half) {
-    assistHelp1 = at_npu::native::custom_ops::npu_dtype_cast(assistHelp1, at::ScalarType::Half);
-    assistHelp2 = at_npu::native::custom_ops::npu_dtype_cast(assistHelp2, at::ScalarType::Half);
-  }
+  at::Tensor assist_help2 = index_fill_d_assist_help(self, index, dim, value, false);
+  at::ScalarType self_type = self.scalar_type();
+  assist_help1 = assist_help1.scalar_type() == self_type ?
+      assist_help1 : at_npu::native::custom_ops::npu_dtype_cast(assist_help1, self_type);
+  assist_help2 = assist_help2.scalar_type() == self_type ?
+      assist_help2 : at_npu::native::custom_ops::npu_dtype_cast(assist_help2, self_type);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("IndexFillD")
       .Input(self)
-      .Input(assistHelp1)
-      .Input(assistHelp2)
+      .Input(assist_help1)
+      .Input(assist_help2)
       .Attr("dim", dim)
       .Output(result)
       .Run();
@@ -141,7 +138,7 @@ at::Tensor index_fill(
     int64_t dim,
     const at::Tensor& index,
     const at::Scalar& value) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   index_fill_d_nocheck(result, self, dim, index, value);
   return result;
 }
@@ -160,7 +157,7 @@ at::Tensor& index_fill_(
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
     index_fill_d_nocheck(self, self, dim, index, value);
-  }  
+  }
   return self;
 }
 
@@ -171,10 +168,10 @@ at::Tensor index_fill(
     const at::Tensor& value) {
   at::IntArrayRef shape_self = self.sizes();
   index_fill_d_check_index(shape_self, index, dim);
-  TORCH_CHECK(value.dim() == 0, 
+  TORCH_CHECK(value.dim() == 0,
       "Value should be a 0-dimensional tensor,but got ", value.dim());
   at::Scalar value_scalar = value.item();
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   index_fill_d_nocheck(result, self, dim, index, value_scalar);
   return result;
 }
@@ -186,7 +183,7 @@ at::Tensor& index_fill_(
     const at::Tensor& value) {
   at::IntArrayRef shape_self = self.sizes();
   index_fill_d_check_index(shape_self, index, dim);
-  TORCH_CHECK(value.dim() == 0, 
+  TORCH_CHECK(value.dim() == 0,
       "Value should be a 0-dimensional tensor,but got ",value.dim());
   at::Scalar value_scalar = value.item();
 
