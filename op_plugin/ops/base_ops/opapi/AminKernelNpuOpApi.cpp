@@ -20,6 +20,28 @@
 
 namespace op_api {
 
+std::tuple<at::Tensor, at::Tensor> _aminmax(const at::Tensor &self,
+                                            const int64_t dim,
+                                            bool keepdim) {
+  DO_COMPATIBILITY(aclnnAminmaxDim, acl_op::_aminmax(self, dim, keepdim));
+  at::SmallVector<int64_t, SIZE> dims = {dim};
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+  auto min = at_npu::native::OpPreparation::apply_tensor_without_format(self, output_size);
+  auto max = at_npu::native::OpPreparation::apply_tensor_without_format(self, output_size);
+  EXEC_NPU_CMD(aclnnAminmaxDim, self, dim, keepdim, min, max);
+  return std::tie(min, max);
+}
+
+std::tuple<at::Tensor, at::Tensor> _aminmax(const at::Tensor &self) {
+  DO_COMPATIBILITY(aclnnAminmaxDim, acl_op::_aminmax(self));
+  at::IntArrayRef dims = op_plugin::utils::get_dimlist_for_tensor(self);
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
+  auto min = at_npu::native::OpPreparation::apply_tensor_without_format(self, output_size);
+  auto max = at_npu::native::OpPreparation::apply_tensor_without_format(self, output_size);
+  EXEC_NPU_CMD(aclnnAminmaxAll, self, min, max);
+  return std::tie(min, max);
+}
+
 at::Tensor& amin_out(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnAmin, acl_op::amin_out(self, dim, keepdim, result));
 

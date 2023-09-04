@@ -46,9 +46,11 @@ official:
  - func: _add_relu_.Tensor(Tensor(a!) self, Tensor other, *, Scalar alpha=1) -> Tensor(a!)
    impl_ns: acl_op
  - func: _aminmax(Tensor self) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: _aminmax.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
+ - func: signbit.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: aminmax.out(Tensor self, *, int? dim=None, bool keepdim=False, Tensor(a!) min, Tensor(b!) max) -> (Tensor(a!) min, Tensor(b!) max)
    impl_ns: acl_op
  - func: _amp_foreach_non_finite_check_and_unscale_(Tensor(a!)[] self, Tensor(b!) found_inf, Tensor inv_scale) -> ()
