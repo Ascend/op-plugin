@@ -1409,8 +1409,10 @@ supported:
    op_api: True
  - func: max.names_dim
    wrap_impl: max
+   op_api: True
  - func: max.names_dim_max
    wrap_impl: max
+   op_api: True
  - func: max.out
    wrap_impl: max_out
    op_api: False
@@ -1498,8 +1500,10 @@ supported:
    op_api: True
  - func: min.names_dim
    wrap_impl: min
+   op_api: True
  - func: min.names_dim_min
    wrap_impl: min
+   op_api: True
  - func: min.out
    wrap_impl: min_out
    op_api: False

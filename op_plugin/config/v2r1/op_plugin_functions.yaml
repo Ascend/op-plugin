@@ -951,9 +951,9 @@ official:
  - func: max.dim_max(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) max, Tensor(b!) max_values) -> (Tensor(a!) values, Tensor(b!) indices)
    impl_ns: acl_op, op_api
  - func: max.names_dim(Tensor self, Dimname dim, bool keepdim=False) -> (Tensor values, Tensor indices)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: max.names_dim_max(Tensor self, Dimname dim, bool keepdim=False, *, Tensor(a!) max, Tensor(b!) max_values) -> (Tensor(a!) values, Tensor(b!) indices)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: max.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: max_pool2d_with_indices(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False) -> (Tensor, Tensor)
@@ -1011,9 +1011,9 @@ official:
  - func: min.dim_min(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) min, Tensor(b!) min_indices) -> (Tensor(a!) values, Tensor(b!) indices)
    impl_ns: acl_op, op_api
  - func: min.names_dim(Tensor self, Dimname dim, bool keepdim=False) -> (Tensor values, Tensor indices)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: min.names_dim_min(Tensor self, Dimname dim, bool keepdim=False, *, Tensor(a!) min, Tensor(b!) min_indices) -> (Tensor(a!) values, Tensor(b!) indices)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: min.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: minimum(Tensor self, Tensor other) -> Tensor
@@ -1197,7 +1197,7 @@ official:
  - func: _prelu_kernel(Tensor self, Tensor weight) -> Tensor
    impl_ns: acl_op, op_api
  - func: _prelu_kernel_backward(Tensor grad_output, Tensor self, Tensor weight) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: prod(Tensor self, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: prod.dim_int(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor

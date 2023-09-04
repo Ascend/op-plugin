@@ -32,7 +32,7 @@ at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnMaximum, acl_op::maximum(self, other));
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType high_type = at::native::result_type(self, other);
-  at::Tensor result = 
+  at::Tensor result =
       at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(high_type));
   EXEC_NPU_CMD(aclnnMaximum, self, other, result);
   return result;
@@ -65,7 +65,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
 std::tuple<at::Tensor, at::Tensor> max(
     const at::Tensor& self,
     int64_t dim,
-    bool keepdim) { 
+    bool keepdim) {
   DO_COMPATIBILITY(aclnnMaxDim, acl_op::max(self, dim, keepdim));
   at::SmallVector<int64_t, op_infer::SIZE> dims = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
@@ -82,6 +82,22 @@ at::Tensor& max_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   at_npu::native::OpPreparation::check_tensor({self, other}, result, result.scalar_type(), output_size);
   EXEC_NPU_CMD(aclnnMaximum, self, other, result);
   return result;
+}
+
+std::tuple<at::Tensor&, at::Tensor&> max_out(
+    const at::Tensor& self,
+    at::Dimname dim,
+    bool keepdim,
+    at::Tensor& output,
+    at::Tensor& indices) {
+  DO_COMPATIBILITY(aclnnMaxDim, acl_op::max_out(self, dim, keepdim, output, indices));
+
+  return max_out(self, dimname_to_position(self, dim), keepdim, output, indices);
+}
+
+std::tuple<at::Tensor, at::Tensor> max(const at::Tensor& self, at::Dimname dim, bool keepdim) {
+  DO_COMPATIBILITY(aclnnMaxDim, acl_op::max(self, dim, keepdim));
+  return op_api::max(self, dimname_to_position(self, dim), keepdim);
 }
 
 }  // namespace op_api
