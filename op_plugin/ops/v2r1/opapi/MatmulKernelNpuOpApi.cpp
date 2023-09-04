@@ -14,7 +14,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -24,8 +23,6 @@ namespace op_api {
 const int8_t ALLOW_FP32_DOWN_PRECISION = 1;
 const int8_t KEEP_DTYPE = 0;
 
-using torch::autograd::AutogradContext;
-using torch::autograd::Function;
 using tensor_list = std::vector<at::Tensor>;
 
 static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tensor &tensor1,
@@ -178,13 +175,20 @@ at::Tensor matmul_mat2_backward(const at::Tensor self, const at::Tensor other,
 std::tuple<at::Tensor, at::Tensor> matmul_backward(const at::Tensor &grad,
                                                    const at::Tensor &self,
                                                    const at::Tensor &other,
-                                                   ::std::array<bool,2> mask) {
+                                                   ::std::array<bool,2> grad_input_mask) {
   if (!grad.defined()) {
     return std::make_tuple(at::Tensor(), at::Tensor());
   }
   // backward mat1 and mat2 separately
-  auto self_grad = matmul_mat1_backward(self, other, grad);
-  auto other_grad = matmul_mat2_backward(self, other, grad);
+  at::Tensor self_grad;
+  at::Tensor other_grad;
+  if (grad_input_mask[1]) {
+    other_grad = matmul_mat2_backward(self, other, grad);
+  }
+
+  if (grad_input_mask[0]) {
+    self_grad = matmul_mat1_backward(self, other, grad);
+  }
 
   // strip added dim: (5,1)->(5)
   if (other.dim() == 1 && other_grad.size(-1) == 1) {

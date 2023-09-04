@@ -235,13 +235,13 @@ supported:
    op_api: True
  - func: addbmm
    wrap_impl: addbmm
-   op_api: False
+   op_api: True
  - func: addbmm.out
    wrap_impl: addbmm_out
-   op_api: False
+   op_api: True
  - func: addbmm_
    wrap_impl: addbmm_
-   op_api: False
+   op_api: True
  - func: addcdiv
    wrap_impl: addcdiv
    op_api: True
@@ -462,10 +462,10 @@ supported:
    op_api: True
  - func: binary_cross_entropy
    wrap_impl: binary_cross_entropy
-   op_api: False
+   op_api: True
  - func: binary_cross_entropy.out
    wrap_impl: binary_cross_entropy_out
-   op_api: False
+   op_api: True
  - func: binary_cross_entropy_backward
    wrap_impl: binary_cross_entropy_backward
    op_api: True
@@ -1257,13 +1257,13 @@ supported:
    op_api: True
  - func: log1p
    wrap_impl: log1p
-   op_api: False
+   op_api: True
  - func: log1p.out
    wrap_impl: log1p_out
-   op_api: False
+   op_api: True
  - func: log1p_
    wrap_impl: log1p_
-   op_api: False
+   op_api: True
  - func: log2
    wrap_impl: log2
    op_api: True
@@ -1278,10 +1278,10 @@ supported:
    op_api: False
  - func: log_sigmoid
    wrap_impl: log_sigmoid
-   op_api: False
+   op_api: True
  - func: log_sigmoid.out
    wrap_impl: log_sigmoid_out
-   op_api: False
+   op_api: True
  - func: log_sigmoid_backward
    wrap_impl: log_sigmoid_backward
    op_api: False
@@ -1300,16 +1300,16 @@ supported:
    wrap_impl: log_softmax
  - func: logaddexp
    wrap_impl: logaddexp
-   op_api: False
+   op_api: True
  - func: logaddexp.out
    wrap_impl: logaddexp_out
-   op_api: False
+   op_api: True
  - func: logaddexp2
    wrap_impl: logaddexp2
-   op_api: False
+   op_api: True
  - func: logaddexp2.out
    wrap_impl: logaddexp2_out
-   op_api: False
+   op_api: True
  - func: logical_and
    wrap_impl: logical_and
    op_api: True
@@ -1710,7 +1710,7 @@ supported:
    op_api: True
  - func: one_hot
    wrap_impl: one_hot
-   op_api: False
+   op_api: True
  - func: ones
    wrap_impl: ones
    op_api: True
@@ -1768,10 +1768,10 @@ supported:
    op_api: True
  - func: qr
    wrap_impl: qr
-   op_api: False
+   op_api: True
  - func: qr.Q
    wrap_impl: qr
-   op_api: False
+   op_api: True
  - func: quantize_per_channel
    wrap_impl: quantize_per_channel
  - func: quantize_per_tensor
@@ -1845,37 +1845,37 @@ supported:
    op_api: True
  - func: remainder.Scalar
    wrap_impl: remainder
-   op_api: False
+   op_api: True
  - func: remainder.Scalar_out
    wrap_impl: remainder_out
-   op_api: False
+   op_api: True
  - func: remainder.Tensor
    wrap_impl: remainder
-   op_api: False
+   op_api: True
  - func: remainder.Tensor_out
    wrap_impl: remainder_out
-   op_api: False
+   op_api: True
  - func: remainder_.Scalar
    wrap_impl: remainder_
-   op_api: False
+   op_api: True
  - func: remainder_.Tensor
    wrap_impl: remainder_
-   op_api: False
+   op_api: True
  - func: remainder.Scalar_Tensor
    wrap_impl: remainder
-   op_api: False
+   op_api: True
  - func: renorm
    wrap_impl: renorm
-   op_api: False
+   op_api: True
  - func: renorm.out
    wrap_impl: renorm_out
-   op_api: False
+   op_api: True
  - func: renorm_
    wrap_impl: renorm_
-   op_api: False
+   op_api: True
  - func: repeat
    wrap_impl: repeat
-   op_api: False
+   op_api: True
  - func: repeat_interleave.self_Tensor
    wrap_impl: repeat_interleave
    op_api: True
@@ -1884,22 +1884,22 @@ supported:
    op_api: True
  - func: replication_pad1d
    wrap_impl: replication_pad1d
-   op_api: False
+   op_api: True
  - func: replication_pad1d.out
    wrap_impl: replication_pad1d_out
-   op_api: False
+   op_api: True
  - func: replication_pad1d_backward
    wrap_impl: replication_pad1d_backward
-   op_api: False
+   op_api: True
  - func: replication_pad1d_backward.grad_input
    wrap_impl: replication_pad1d_backward_out
-   op_api: False
+   op_api: True
  - func: replication_pad2d
    wrap_impl: replication_pad2d
-   op_api: False
+   op_api: True
  - func: replication_pad2d.out
    wrap_impl: replication_pad2d_out
-   op_api: False
+   op_api: True
  - func: replication_pad2d_backward
    wrap_impl: replication_pad2d_backward
    op_api: True
@@ -1937,13 +1937,13 @@ supported:
    op_api: True
  - func: rsqrt
    wrap_impl: rsqrt
-   op_api: False
+   op_api: True
  - func: rsqrt.out
    wrap_impl: rsqrt_out
-   op_api: False
+   op_api: True
  - func: rsqrt_
    wrap_impl: rsqrt_
-   op_api: False
+   op_api: True
  - func: rsub.Scalar
    wrap_impl: rsub
    op_api: False
@@ -2293,13 +2293,13 @@ supported:
    op_api: True
  - func: trunc
    wrap_impl: trunc
-   op_api: False
+   op_api: True
  - func: trunc.out
    wrap_impl: trunc_out
-   op_api: False
+   op_api: True
  - func: trunc_
    wrap_impl: trunc_
-   op_api: False
+   op_api: True
  - unfold
  - func: uniform_
    wrap_impl: uniform_
@@ -2479,19 +2479,19 @@ supported:
    op_api: False
  - func: silu
    wrap_impl: silu
-   op_api: False
+   op_api: True
  - func: silu_
    wrap_impl: silu_
-   op_api: False
+   op_api: True
  - func: silu.out
    wrap_impl: silu_out
-   op_api: False
+   op_api: True
  - func: silu_backward.grad_input
    wrap_impl: silu_backward_out
-   op_api: False
+   op_api: True
  - func: silu_backward
    wrap_impl: silu_backward
-   op_api: False
+   op_api: True
  - func: celu
    wrap_impl: celu
  - func: celu_

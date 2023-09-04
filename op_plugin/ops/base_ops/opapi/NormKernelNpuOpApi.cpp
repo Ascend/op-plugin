@@ -20,18 +20,14 @@
 
 
 namespace op_api {
+using npu_preparation = at_npu::native::OpPreparation;
 
-// norm.out
-at::Tensor& norm_out(
-    const at::Tensor &self,
-    const c10::optional<at::Scalar>& p,
-    at::IntArrayRef dim,
-    bool keepdim,
-    at::Tensor &out) {
-  DO_COMPATIBILITY(aclnnNorm, acl_op::norm_out(self, p, dim, keepdim, out));
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-  at_npu::native::OpPreparation::check_tensor({self}, out, self.scalar_type(), outputSize);
-  
+namespace{
+inline at::Tensor &norm_out_npu_nocheck_opapi(at::Tensor &out,
+                                              const at::Tensor &self,
+                                              c10::optional<at::Scalar> p,
+                                              at::IntArrayRef dim,
+                                              bool keepdim) {
   at::Scalar pvalue = 2;
   if (p.has_value()) {
     pvalue = p.value();
@@ -40,4 +36,81 @@ at::Tensor& norm_out(
   return out;
 }
 
+inline at::Tensor &norm_out_imp(const at::Tensor &self,
+                                const c10::optional<at::Scalar> &p,
+                                at::IntArrayRef dim,
+                                bool keepdim,
+                                at::ScalarType dtype,
+                                at::Tensor &out) {
+  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+  npu_preparation::check_tensor({self}, out, dtype, outputSize);
+  return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
+}
+
+inline at::Tensor norm_imp(const at::Tensor &self,
+                           const c10::optional<at::Scalar> &p,
+                           at::IntArrayRef dim,
+                           bool keepdim,
+                           at::ScalarType dtype) {
+  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+  at::Tensor out = npu_preparation::apply_tensor_with_sizes(outputSize, self.options().dtype(dtype));
+  return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
+}
+} // namespace
+
+// norm.dtype_out
+at::Tensor& norm_out(const at::Tensor &self,
+                     const c10::optional<at::Scalar> &p,
+                     at::IntArrayRef dim,
+                     bool keepdim,
+                     at::ScalarType dtype,
+                     at::Tensor &out) {
+  DO_COMPATIBILITY(aclnnNorm, acl_op::norm_out(self, p, dim, keepdim, dtype, out));
+  return norm_out_imp(self, p, dim, keepdim, out.scalar_type(), out);
+}
+
+// norm.out
+at::Tensor& norm_out(const at::Tensor &self,
+                     const c10::optional<at::Scalar> &p,
+                     at::IntArrayRef dim,
+                     bool keepdim,
+                     at::Tensor &out) {
+  DO_COMPATIBILITY(aclnnNorm, acl_op::norm_out(self, p, dim, keepdim, out));
+  return norm_out_imp(self, p, dim, keepdim, out.scalar_type(), out);
+}
+
+// norm.ScalarOpt_dim_dtype
+at::Tensor norm(const at::Tensor &self,
+                const c10::optional<at::Scalar> &p,
+                at::IntArrayRef dim,
+                bool keepdim,
+                at::ScalarType dtype) {
+  DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dim, keepdim, dtype));
+  return norm_imp(self, p, dim, keepdim, dtype);
+}
+
+// norm.ScalarOpt_dtype
+at::Tensor norm(const at::Tensor &self,
+                const c10::optional<at::Scalar> &p,
+                at::ScalarType dtype) {
+  DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dtype));
+  return norm_imp(self, p, {}, false, dtype);
+}
+
+// norm.Scalar
+at::Tensor norm(const at::Tensor &self,
+                const at::Scalar &p) {
+  DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p));
+  return norm_imp(self, p, {}, false, self.scalar_type());
+}
+
+// norm.ScalarOpt_dim
+at::Tensor norm(const at::Tensor &self,
+                const c10::optional<at::Scalar> &p,
+                at::IntArrayRef dim,
+                bool keepdim) {
+  DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dim, keepdim));
+  return norm_imp(self, p, dim, false, self.scalar_type());
+}
 } // namespace op_api
+
