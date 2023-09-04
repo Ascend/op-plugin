@@ -1304,6 +1304,12 @@ official:
    impl_ns: acl_op
  - func: round_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op
+ - func: round.decimals(Tensor self, *, int decimals) -> Tensor
+   impl_ns: acl_op
+ - func: round_.decimals(Tensor(a!) self, *, int decimals) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: round.decimals_out(Tensor self, *, int decimals, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: rrelu_with_noise(Tensor self, Tensor noise, Scalar lower=0.125, Scalar upper=0.3333333333333333, bool training=False, Generator? generator=None) -> Tensor
    impl_ns: acl_op
  - func: rrelu_with_noise.out(Tensor self, Tensor noise, Scalar lower=0.125, Scalar upper=0.3333333333333333, bool training=False, Generator? generator=None, *, Tensor(a!) out) -> Tensor(a!)
