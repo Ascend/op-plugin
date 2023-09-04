@@ -55,4 +55,23 @@ at::Tensor le(const at::Tensor& self, const at::Scalar& other) {
   return result;
 }
 
+at::Tensor& le_(at::Tensor& self, const at::Scalar& other) {
+  DO_COMPATIBILITY(aclnnInplaceLeScalar, acl_op::le_(self, other));
+  EXEC_NPU_CMD(aclnnInplaceLeScalar, self, other);
+  return self;
+}
+
+at::Tensor& le_(at::Tensor &self, const at::Tensor &other) {
+  DO_COMPATIBILITY(aclnnInplaceLeTensor, acl_op::le_(self, other));
+  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+    return op_api::le_(self, other.item());
+  } else {
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices");
+    at_npu::native::OpPreparation::CheckMemory({self, other}, {self});
+    EXEC_NPU_CMD(aclnnInplaceLeTensor, self, other);
+    return self;
+  }
+}
+
 }  // namespace op_api

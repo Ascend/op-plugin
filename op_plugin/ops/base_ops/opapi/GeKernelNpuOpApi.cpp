@@ -37,6 +37,12 @@ at::Tensor ge(const at::Tensor& self, const at::Scalar& other) {
   return result;
 }
 
+at::Tensor& ge_(at::Tensor& self, const at::Scalar& other) {
+  DO_COMPATIBILITY(aclnnInplaceGeScalar, acl_op::ge_(self, other));
+  EXEC_NPU_CMD(aclnnInplaceGeScalar, self, other);
+  return self;
+}
+
 at::Tensor& ge_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnGeTensor, acl_op::ge_out(self, other, result));
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -64,6 +70,19 @@ at::Tensor ge(const at::Tensor& self, const at::Tensor& other) {
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
     EXEC_NPU_CMD(aclnnGeTensor, self, other, result);
     return result;
+  }
+}
+
+at::Tensor& ge_(at::Tensor &self, const at::Tensor &other) {
+  DO_COMPATIBILITY(aclnnInplaceGeTensor, acl_op::ge_(self, other));
+  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+    return op_api::ge_(self, other.item());
+  } else {
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices");
+    npu_preparation::CheckMemory({self, other}, {self});
+    EXEC_NPU_CMD(aclnnInplaceGeTensor, self, other);
+    return self;
   }
 }
 } // namespace op_api
