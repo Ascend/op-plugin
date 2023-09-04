@@ -24,7 +24,7 @@ at::Tensor minimum(const at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnMinimum, acl_op::minimum(self, other));
   auto result_type = at::result_type(self, other);
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = 
+  at::Tensor result =
       at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
   EXEC_NPU_CMD(aclnnMinimum, self, other, result);
   return result;
@@ -79,6 +79,21 @@ at::Tensor& min_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   at_npu::native::OpPreparation::check_tensor({self, other}, result, result.scalar_type(), output_size);
   EXEC_NPU_CMD(aclnnMinimum, self, other, result);
   return result;
+}
+
+std::tuple<at::Tensor&, at::Tensor&> min_out(
+    const at::Tensor& self,
+    at::Dimname dim,
+    bool keepdim,
+    at::Tensor& output,
+    at::Tensor& indices) {
+  DO_COMPATIBILITY(aclnnMinDim, acl_op::min_out(self, dim, keepdim, output, indices));
+  return op_api::min_out(self, dimname_to_position(self, dim), keepdim, output, indices);
+}
+
+std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, at::Dimname dim, bool keepdim) {
+  DO_COMPATIBILITY(aclnnMinDim, acl_op::min(self, dim, keepdim));
+  return op_api::min(self, dimname_to_position(self, dim), keepdim);
 }
 
 }  // namespace op_api
