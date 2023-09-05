@@ -1378,12 +1378,6 @@ official:
    impl_ns: acl_op
  - func: sin_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op
- - func: sinc(Tensor self) -> Tensor
-   impl_ns: acl_op, op_api
- - func: sinc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
- - func: sinc_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op, op_api
  - func: sinh(Tensor self) -> Tensor
    impl_ns: acl_op
  - func: sinh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -1858,6 +1852,7 @@ tocpu:
   - vdot
   - view_as_complex
   - view_as_real
+  - sinc.out
   - gcd.out
   - lcm.out
   - isposinf.out
