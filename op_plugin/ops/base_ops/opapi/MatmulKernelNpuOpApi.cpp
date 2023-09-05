@@ -14,7 +14,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -23,10 +22,6 @@
 namespace op_api {
 const int8_t ALLOW_FP32_DOWN_PRECISION = 1;
 const int8_t KEEP_DTYPE = 0;
-
-using torch::autograd::AutogradContext;
-using torch::autograd::Function;
-using tensor_list = std::vector<at::Tensor>;
 
 static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tensor &tensor1,
                                                                  const at::Tensor &tensor2) {
@@ -80,105 +75,13 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tenso
   return output_size;
 }
 
-static inline void matmul_implement_npu(at::Tensor &out, 
+static inline void matmul_implement_npu(at::Tensor &out,
                                         const at::Tensor &self,
                                         const at::Tensor &mat2) {
   // allow dicrease precision
   int8_t cube_math_type = ALLOW_FP32_DOWN_PRECISION;
   EXEC_NPU_CMD(aclnnMatmul, self, mat2, out, cube_math_type);
   return;
-}
-
-at::Tensor matmul_mat1_backward(const at::Tensor self,
-                                const at::Tensor other,
-                                const at::Tensor grad_output) {
-  /*mat1_grad = grad * mat2^T*/
-  at::Tensor mat1 = self;
-  at::Tensor mat2 = other;
-  at::Tensor grad = grad_output;
-
-  // strip mat: (1, 1, m, n)-> (m, n)
-  while (mat1.dim() > 2 && mat1.size(0) == 1) {
-    mat1 = mat1.squeeze(0);
-  }
-  // unsqueese: (5)*(5)^ -> (1*5)*(1,5)^
-  if (mat2.dim() == 1) {
-    mat2 = mat2.unsqueeze(-1);
-    grad = grad.unsqueeze(-1);
-  }
-  if (mat1.dim() == 1) {
-    mat1 = mat1.unsqueeze(0);
-    grad = grad.unsqueeze(-2);
-  }
-  at::Tensor output;
-  if (mat1.dim() == 2 && mat2.dim() > 2) { // mm
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(mat1.sizes(), grad.options());
-    mat2 = mat2.transpose(-2, -1);
-    mat2 = mat2.reshape({-1, mat2.size(-1)});
-    grad = grad.view({grad.size(-2), -1});
-    matmul_implement_npu(output, grad, mat2);
-    output = output.reshape(self.sizes());
-  } else { // bmm
-    mat2 = mat2.transpose(-2, -1);
-    auto expend_sizes = get_output_size(grad, mat2);
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(expend_sizes, grad.options());
-    matmul_implement_npu(output, grad, mat2);
-  }
-  return output;
-}
-
-at::Tensor matmul_mat2_backward(const at::Tensor self,
-                                const at::Tensor other,
-                                const at::Tensor grad_output) {
-  /*mat2_grad = mat1^T * grad*/
-  at::Tensor mat1 = self;
-  at::Tensor mat2 = other;
-  at::Tensor grad = grad_output;
-  // strip mat: (1, 1, m, n)-> (m, n)
-  while (mat2.dim() > 2 && mat2.size(0) == 1) {
-    mat2 = mat2.squeeze(0);
-  }
-  // unsqueese: (5)*(5)^ -> (1*5)*(1,5)^
-  if (mat2.dim() == 1) {
-    mat2 = mat2.unsqueeze(-1);
-    grad = grad.unsqueeze(-1);
-  }
-  if (mat1.dim() == 1) {
-    mat1 = mat1.unsqueeze(0);
-    grad = grad.unsqueeze(-2);
-  }
-  at::Tensor output;
-  if (mat2.dim() == 2 && mat1.dim() > 2) { // mm
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(mat2.sizes(), mat1.options());
-    mat1 = mat1.reshape({-1, mat1.size(-1)});
-    grad = grad.reshape({-1, grad.size(-1)});
-    mat1 = mat1.transpose(-2, -1);
-    matmul_implement_npu(output, mat1, grad);
-    output = output.reshape(other.sizes());
-  } else { // bmm
-    mat1 = mat1.transpose(-2, -1);
-    auto expend_sizes = get_output_size(mat1, grad);
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(expend_sizes, mat1.options());
-    matmul_implement_npu(output, mat1, grad);
-  }
-  return output;
-}
-
-std::tuple<at::Tensor, at::Tensor> matmul_backward(const at::Tensor &grad,
-                                                   const at::Tensor &self,
-                                                   const at::Tensor &other) {
-  if (!grad.defined()) {
-    return std::make_tuple(at::Tensor(), at::Tensor());
-  }
-  // backward mat1 and mat2 separately
-  auto self_grad = matmul_mat1_backward(self, other, grad);
-  auto other_grad = matmul_mat2_backward(self, other, grad);
-
-  // strip added dim: (5,1)->(5)
-  if (other.dim() == 1 && other_grad.size(-1) == 1) {
-    other_grad = other_grad.squeeze(-1);
-  }
-  return std::make_tuple(self_grad, other_grad);
 }
 
 at::Tensor matmul_forward(const at::Tensor &self,
@@ -190,31 +93,11 @@ at::Tensor matmul_forward(const at::Tensor &self,
   return out;
 }
 
-class NPUMatmulOpApiFunction : public torch::autograd::Function<NPUMatmulOpApiFunction> {
-public:
-  static at::Tensor forward(AutogradContext *ctx,
-                            const at::Tensor &self,
-                            const at::Tensor &other) {
-    at::AutoNonVariableTypeMode g;
-    ctx->save_for_backward({self, other});
-    auto result = matmul_forward(self, other);
-    return result;
-  }
-  static tensor_list backward(AutogradContext *ctx, tensor_list grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto self = saved[0];
-    auto other = saved[1];
-    auto grads = matmul_backward(grad_outputs[0], self, other);
-    tensor_list output = {std::get<0>(grads), std::get<1>(grads)};
-    return output;
-  }
-};
-
 at::Tensor matmul(const at::Tensor &tensor1,
                   const at::Tensor &tensor2) {
   DO_COMPATIBILITY(aclnnMatmul, acl_op::matmul(tensor1, tensor2));
   auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
-  auto result = NPUMatmulOpApiFunction::apply(tensor1, tensor2);
+  auto result = matmul_forward(tensor1, tensor2);
   at::namedinference::propagate_names_if_nonempty(result, maybe_outnames);
   return result;
 }
