@@ -129,7 +129,7 @@ official:
  - func: _unique2(Tensor self, bool sorted=True, bool return_inverse=False, bool return_counts=False) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: _unique(Tensor self, bool sorted=True, bool return_inverse=False) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: dequantize.self(Tensor self) -> Tensor
    impl_ns: acl_op
  - func: abs(Tensor self) -> Tensor
@@ -1027,13 +1027,13 @@ official:
  - func: max_unpool2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: max_unpool3d(Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: max_unpool3d.out(Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: max_unpool3d_backward(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: max_unpool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: maximum(Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op, op_api
  - func: maximum.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
@@ -1153,9 +1153,9 @@ official:
  - func: ne.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: ne_.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: ne_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: neg(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: neg.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -1601,9 +1601,9 @@ official:
  - func: true_divide.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: true_divide_.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: true_divide_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: trunc(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: trunc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
