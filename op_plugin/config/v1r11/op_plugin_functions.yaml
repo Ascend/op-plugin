@@ -1463,13 +1463,13 @@ official:
  - func: smooth_l1_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, float beta, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: soft_margin_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: soft_margin_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: soft_margin_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: soft_margin_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softmax.Dimname(Tensor self, Dimname dim, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op
  - func: softmax.int(Tensor self, int dim, ScalarType? dtype=None) -> Tensor
