@@ -21,6 +21,20 @@
 
 namespace op_api {
 
+at::Tensor softmax(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype) {
+  DO_COMPATIBILITY(aclnnSoftmax, acl_op::softmax(self, dim, dtype));
+  auto result = [&]() {
+    at::Tensor converted = dtype.has_value() ? op_api::npu_dtype_cast(self, dtype.value()) : self;
+    return at::_softmax(converted, dim, false);
+  }();
+  at::namedinference::propagate_names(result, self);
+  return result;
+}
+
+at::Tensor softmax(const at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype) {
+  return op_api::softmax(self, dimname_to_position(self, dim), dtype);
+}
+
 at::Tensor _softmax(const at::Tensor& self, int64_t dim, bool half_to_float) {
   DO_COMPATIBILITY(aclnnSoftmax, acl_op::_softmax(self, dim, half_to_float));
   // construct the output tensor of the NPU
@@ -36,8 +50,7 @@ at::Tensor _softmax(const at::Tensor& self, int64_t dim, bool half_to_float) {
   return result;
 }
 
-at::Tensor& _softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float,
-                         at::Tensor& out) {
+at::Tensor& _softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float, at::Tensor& out) {
   // calculate the output result of the NPU
   EXEC_NPU_CMD(aclnnSoftmax, self, dim, out);
   return out;
