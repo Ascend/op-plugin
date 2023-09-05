@@ -96,6 +96,12 @@ at::Tensor clamp_max(const at::Tensor& self, const at::Tensor& max) {
   return result;
 }
 
+at::Tensor& clamp_max_(at::Tensor& self, const at::Tensor& max) {
+  DO_COMPATIBILITY(aclnnInplaceClampMaxTensor, acl_op::clamp_max_(self, max));
+  EXEC_NPU_CMD(aclnnInplaceClampMaxTensor, self, max);
+  return self;
+}
+
 at::Tensor& clamp_min_out(const at::Tensor& self, const at::Tensor& min, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnClampMinTensor, acl_op::clamp_min_out(self, min, result));
   npu_preparation::check_tensor({self}, result, self.scalar_type(), self.sizes());
