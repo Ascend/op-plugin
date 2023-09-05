@@ -709,8 +709,10 @@ supported:
  - decode_jpeg
  - func: diag
    wrap_impl: diag
+   op_api: False
  - func: diag.out
    wrap_impl: diag_out
+   op_api: False
  - func: div.Scalar
    wrap_impl: div
    op_api: True
@@ -741,6 +743,18 @@ supported:
  - func: div_.Tensor_mode
    wrap_impl: div_
    op_api: True
+ - func: complex.out
+   wrap_impl: complex_out
+   op_api: False
+ - func: complex
+   wrap_impl: complex
+   op_api: False
+ - func: diagflat
+   wrap_impl: diagflat
+   op_api: False
+ - func: real
+   wrap_impl: real
+   op_api: False
  - func: dot
    wrap_impl: dot
    op_api: True
@@ -2645,7 +2659,6 @@ tocpu:
   - cauchy_
   - cholesky_inverse
   - cholesky_inverse.out
-  - complex.out
   - exponential_
   - geometric_
   - linalg_vector_norm
