@@ -435,7 +435,7 @@ official:
  - func: clamp_max.Tensor_out(Tensor self, Tensor max, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: clamp_max_.Tensor(Tensor(a!) self, Tensor max) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: clamp_min.Tensor(Tensor self, Tensor min) -> Tensor
    impl_ns: acl_op, op_api
  - func: clamp_min.Tensor_out(Tensor self, Tensor min, *, Tensor(a!) out) -> Tensor(a!)
