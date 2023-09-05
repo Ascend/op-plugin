@@ -2041,6 +2041,10 @@ custom:
     impl_ns: acl_op
   - func: npu_softmax_cross_entropy_with_logits_backward(Tensor grad, Tensor self, Tensor labels) -> Tensor
     impl_ns: acl_op
+  - func: npu_stride_copy(Tensor self, int[] shape, int[] stride, Scalar storage_offset) -> Tensor
+    impl_ns: acl_op
+  - func: npu_stride_copy.out(Tensor self, int[] shape, int[] stride, Scalar storage_offset, *, Tensor(a!) out) -> Tensor(a!)
+    impl_ns: acl_op
   - func: npu_roi_align(Tensor self, Tensor rois, float spatial_scale, int pooled_height, int pooled_width, int sample_num, int roi_end_mode) -> Tensor
     impl_ns: acl_op
   - func: npu_roi_alignbk(Tensor self, Tensor rois, int[] xdiff_shape, int pooled_width, int pooled_height, float spatial_scale, int sample_num, int? roi_end_mode=None) -> Tensor
