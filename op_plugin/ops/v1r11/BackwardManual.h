@@ -42,9 +42,6 @@ at::Tensor npu_bmm_v2_mat1_backward(const at::Tensor& grad, const at::Tensor& ma
                                     at::IntArrayRef size);
 at::Tensor npu_bmm_v2_mat2_backward(const at::Tensor& grad, const at::Tensor& mat1, const at::Tensor& mat2,
                                     at::IntArrayRef size);
-at::Tensor celu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Tensor& output);
-at::Tensor elu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Scalar& scale,
-                        const at::Scalar& input_scale, const at::Tensor& output);
 at::Tensor selu_backward(const at::Tensor& grad_output, const at::Tensor& result);
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_data_backward(
     const c10::optional<at::Tensor>& grady_opt, const c10::optional<at::Tensor>& gradh_opt,

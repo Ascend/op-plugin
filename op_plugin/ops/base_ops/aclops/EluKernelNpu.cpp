@@ -52,36 +52,7 @@ at::Tensor elu_out_nocheck(
   elu_out_nocheck(result, self, alpha, scale, input_scale);
   return result;
 }
-
-at::Tensor& elu_backward_out_npu(
-    at::Tensor& grad_input,
-    const at::Tensor& grad_output,
-    at::Scalar alpha,
-    at::Scalar scale,
-    at::Scalar input_scale,
-    const at::Tensor& output) {
-  float value = op_plugin::utils::get_scalar_float_value(alpha);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("EluGradV2")
-      .Input(grad_output)
-      .Input(output)
-      .Output(grad_input)
-      .Attr("alpha", value)
-      .Run();
-  return grad_input;
-}
 } // namespace
-
-at::Tensor elu_backward(
-    const at::Tensor& grad_output,
-    const at::Scalar& alpha,
-    const at::Scalar& scale,
-    const at::Scalar& input_scale,
-    const at::Tensor& output) {
-  at::Tensor result = npu_preparation::apply_tensor(grad_output);
-  elu_backward_out_npu(result, grad_output, alpha, scale, input_scale, output);
-  return result;
-}
 
 at::Tensor& elu_out(
     const at::Tensor& self,
