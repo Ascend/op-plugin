@@ -60,10 +60,10 @@ official:
  - func: _cdist_forward(Tensor x1, Tensor x2, float p, int? compute_mode) -> Tensor
    impl_ns: acl_op
  - func: _conv_depthwise2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, int[2] dilation) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: _conv_depthwise2d.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, int[2] dilation, *, Tensor(a!) out) -> Tensor(a!)
    use_const_ref_for_mutable_tensors: True
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: _convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, bool transposed, int[] output_padding, int groups, bool benchmark, bool deterministic, bool cudnn_enabled, bool allow_tf32) -> Tensor
    impl_ns: acl_op, op_api
  - func: _ctc_loss(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, bool zero_infinity=False) -> (Tensor, Tensor)
