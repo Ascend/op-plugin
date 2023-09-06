@@ -977,9 +977,9 @@ official:
  - func: max_unpool2d.out(Tensor self, Tensor indices, SymInt[2] output_size, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: max_unpool3d(Tensor self, Tensor indices, SymInt[3] output_size, int[3] stride, int[3] padding) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: max_unpool3d.out(Tensor self, Tensor indices, SymInt[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: maximum(Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op, op_api
  - func: maximum.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
