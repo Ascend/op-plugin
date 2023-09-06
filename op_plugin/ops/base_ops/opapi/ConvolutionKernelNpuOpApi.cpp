@@ -89,9 +89,7 @@ static at::Tensor _calc_convolution(const at::Tensor &input, const at::Tensor &w
 
   auto promotedDtype = promote_dtype(input, weight);
   auto output = npu_preparation::apply_tensor_without_format(out_size, input.options().dtype(promotedDtype));
-  // stub cube_math_type = 1
-  int8_t cube_math_type = 1;
-  //  = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
   EXEC_NPU_CMD(aclnnConvolution, input, weight, bias, stride, padding, dilation, transposed, output_padding, groups,
                output, cube_math_type);
 
@@ -203,8 +201,7 @@ at::Tensor& slow_conv_transpose2d_out(
     output =  at::Tensor();
     return output;
   }
-  // stub cube_math_type = 1
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
     EXEC_NPU_CMD(aclnnConvolution, input, weight, bias, stride, padding, dilation, transposed, output_padding, groups,
                output, cube_math_type);
 

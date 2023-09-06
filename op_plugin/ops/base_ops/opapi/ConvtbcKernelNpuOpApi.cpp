@@ -33,8 +33,7 @@ at::Tensor conv_tbc(const at::Tensor &self, const at::Tensor &weight, const at::
   int64_t Wo = self.size(0) + 2 * pad - weight.size(0) + 1;
   c10::SmallVector<int64_t, SIZE> outputSize = {Wo, self.size(1), weight.size(2)};
   at::Tensor output = npu_preparation::apply_tensor_without_format(self, outputSize);
-  // stub cube_math_type = 1
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
   EXEC_NPU_CMD(aclnnConvTbc, self, weight, bias, pad, output, cube_math_type);
   return output;
 }
