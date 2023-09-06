@@ -275,11 +275,11 @@ official:
  - func: atan.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: atan2(Tensor self, Tensor other) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: atan2.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: atan2_(Tensor(a!) self, Tensor other) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: atan_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: atanh(Tensor self) -> Tensor
