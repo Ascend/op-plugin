@@ -894,6 +894,25 @@ c10::SmallVector<int64_t, SIZE> upsample_linear1d_npu_output_size(const at::Tens
   return outputSize;
 }
 
+c10::SmallVector<int64_t, SIZE> upsample_trilinear3d_npu_output_size(const at::Tensor& input,
+                                                                     at::IntArrayRef output_size) {
+  TORCH_CHECK(
+      output_size.size() == 3,
+      "It is expected output_size equals to 3, but got size ",
+      output_size.size());
+
+  int64_t output_depth = output_size[0];
+  int64_t output_height = output_size[1];
+  int64_t output_width = output_size[2];
+
+  int64_t nbatch = input.size(0);
+  int64_t channels = input.size(1);
+
+  c10::SmallVector<int64_t, SIZE> outputSize =
+      {nbatch, channels, output_depth, output_height, output_width};
+  return outputSize;
+}
+
 c10::SmallVector<int64_t, SIZE> var_npu_output_size(const at::Tensor &self, c10::IntArrayRef dim, bool keepdim) {
   c10::SmallVector<int64_t, SIZE> outputSize = reduce_ops_npu_output_size(self, dim, keepdim);
   return outputSize;

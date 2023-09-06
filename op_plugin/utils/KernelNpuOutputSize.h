@@ -233,6 +233,9 @@ c10::IntArrayRef upsample_bilinear2d_backward_npu_output_size(const at::Tensor& 
 c10::SmallVector<int64_t, SIZE> upsample_linear1d_npu_output_size(const at::Tensor& self, c10::IntArrayRef output_size,
                                                                   bool align_corners, c10::optional<double> scales);
 
+c10::SmallVector<int64_t, SIZE> upsample_trilinear3d_npu_output_size(const at::Tensor& input,
+                                                                     at::IntArrayRef output_size);
+
 c10::SmallVector<int64_t, SIZE> var_npu_output_size(const at::Tensor& self, c10::IntArrayRef dim, bool keepdim);
 
 c10::SmallVector<int64_t, SIZE> crop_and_resize_npu_output_size(const at::Tensor& self, at::IntArrayRef box_index,
