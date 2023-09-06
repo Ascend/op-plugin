@@ -129,7 +129,7 @@ at::Tensor sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar
   at::Tensor other_cp = (other.scalar_type() != result_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
       at_npu::native::custom_ops::npu_dtype_cast(other, result_type) : other;
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size,
       output_tensor.options().dtype(result_type),
       calcu_op_util::GetTensorNpuFormat(output_tensor));
@@ -139,7 +139,7 @@ at::Tensor sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar
 }
 
 at::Tensor sub(const at::Tensor& self, const at::Scalar& other, const at::Scalar& alpha) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   sub_scalar_out_npu(result, self, other, alpha);
   return result;
 }

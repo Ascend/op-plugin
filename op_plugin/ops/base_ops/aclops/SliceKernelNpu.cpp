@@ -39,7 +39,7 @@ at::Tensor& npu_slice_out(
 
 at::Tensor npu_slice(const at::Tensor& self, c10::IntArrayRef offsets, c10::IntArrayRef size) {
   c10::SmallVector<int64_t, SIZE> output_size = op_plugin::utils::convert_array_to_vector(size);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
 
   acl_op::npu_slice_out(self, offsets, size, result);
 

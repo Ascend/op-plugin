@@ -83,7 +83,7 @@ at::Tensor gather(
     int64_t dim,
     const at::Tensor& index,
     bool sparse_grad) {
-  at::Tensor result = npu_preparation::ApplyTensor(self, index.sizes());
+  at::Tensor result = npu_preparation::apply_tensor(self, index.sizes());
   gather_out_npu_nocheck(result, self, dim, index, sparse_grad);
   return result;
 }

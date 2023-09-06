@@ -37,7 +37,7 @@ at::Tensor ones(
       .layout(layout_opt)
       .device(device)
       .pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
 
   return acl_op::one_(result);
 }
@@ -55,7 +55,7 @@ at::Tensor ones(
       .layout(layout_opt)
       .device(device)
       .pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
 
   return acl_op::one_(result);
 }

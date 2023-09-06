@@ -58,7 +58,7 @@ at::Tensor& _add_relu_out(
 }
 
 at::Tensor _add_relu(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   add_relu_out_nocheck(result, self, other, alpha);
   return result;
 }

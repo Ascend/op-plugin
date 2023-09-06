@@ -109,7 +109,7 @@ at::Tensor adaptive_max_pool2d_backward(
   TORCH_CHECK(
       (self.dim() == 3 || self.dim() == 4),
       "non-empty 3D or 4D (batch mode) tensor expected for input");
-  at::Tensor grad_input = npu_preparation::ApplyTensorWithFormat(self, ACL_FORMAT_NC1HWC0);
+  at::Tensor grad_input = npu_preparation::apply_tensor_with_format(self, ACL_FORMAT_NC1HWC0);
   adaptive_max_pool2d_backward_out_nocheck(grad_input, grad_output, self, indices);
   return grad_input;
 }

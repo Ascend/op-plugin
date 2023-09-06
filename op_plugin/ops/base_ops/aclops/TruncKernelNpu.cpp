@@ -53,7 +53,7 @@ at::Tensor& trunc_(at::Tensor& self) {
 }
 
 at::Tensor trunc(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   trunc_nocheck(result, self);
   return result;
 }

@@ -121,7 +121,7 @@ at::Tensor prod(
 
   auto output_size = op_infer::prod_npu_output_size(self, dim, keepdim);
   int64_t npu_format = calculate_prod_output_format(self_tmp, output_size);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, self_tmp.options(), npu_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self_tmp.options(), npu_format);
   at::ScalarType dst_type = get_dst_type(self, dtype);
 
   c10::SmallVector<int64_t, N> dim_now = {dim};
@@ -142,7 +142,7 @@ at::Tensor prod(const at::Tensor& self, c10::optional<at::ScalarType> dtype) {
 
   auto output_size = op_infer::prod_npu_output_size(self, false);
   int64_t npu_format = calculate_prod_output_format(self, output_size);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, self_tmp.options(), npu_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self_tmp.options(), npu_format);
   at::ScalarType dst_type = get_dst_type(self, dtype);
 
   prod_out_npu_nocheck(result, self_tmp, op_plugin::utils::get_dimlist_for_tensor(self), false, dtype);

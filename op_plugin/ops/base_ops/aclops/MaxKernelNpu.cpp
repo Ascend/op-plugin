@@ -152,8 +152,8 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor& self, int64_t dim, bool
   at::SmallVector<int64_t, SIZE> dims = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self_cast, dims, keepdim);
 
-  at::Tensor outputs = npu_preparation::ApplyTensorWithFormat(output_size, self_cast.options(), ACL_FORMAT_ND);
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor outputs = npu_preparation::apply_tensor_with_format(output_size, self_cast.options(), ACL_FORMAT_ND);
+  at::Tensor indices = npu_preparation::apply_tensor_with_format(
       output_size,
       self_cast.options().dtype(at::ScalarType::Int),
       ACL_FORMAT_ND);
@@ -219,7 +219,7 @@ at::Tensor& maximum_out(const at::Tensor& self, const at::Tensor& other, at::Ten
 
 at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
   auto output_size_diff = self.sizes();
-  at::Tensor result_diff = npu_preparation::ApplyTensor(self, output_size_diff);
+  at::Tensor result_diff = npu_preparation::apply_tensor(self, output_size_diff);
   if (npu_preparation::IsCPUScalar(other)) {
     max_out_npu_nocheck(result_diff, self, other.item());
     return result_diff;
@@ -230,7 +230,7 @@ at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
       at_npu::native::custom_ops::npu_dtype_cast(self, high_type) : self;
   at::Tensor other_copy = (other.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
       at_npu::native::custom_ops::npu_dtype_cast(other, high_type) : other;
-  at::Tensor result = npu_preparation::ApplyTensor(self_copy, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_copy, output_size);
   max_out_npu_nocheck(result, self_copy, other_copy);
   return result;
 }
@@ -241,7 +241,7 @@ at::Tensor amax(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
   if (output_size.empty()) {
     npu_format = ACL_FORMAT_ND;
   }
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self, output_size, npu_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(self, output_size, npu_format);
   max_out_npu_nocheck(result, self, dims, keepdim);
   return result;
 }

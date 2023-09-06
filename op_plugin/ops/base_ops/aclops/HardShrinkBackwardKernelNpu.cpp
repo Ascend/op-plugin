@@ -33,7 +33,7 @@ at::Tensor hardshrink_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& lambd) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
   at_npu::native::OpCommand cmd;
   cmd.Name("HardShrinkGrad")
       .Input(grad_output)

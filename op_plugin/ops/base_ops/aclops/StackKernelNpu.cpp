@@ -94,7 +94,7 @@ at::Tensor& stack_out(at::TensorList tensors, int64_t dim, at::Tensor& result) {
 at::Tensor stack(at::TensorList tensors, int64_t dim) {
   auto output_size = stack_npu_output_size(tensors, dim);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size,
       tensors[0].options(),
       ACL_FORMAT_ND);

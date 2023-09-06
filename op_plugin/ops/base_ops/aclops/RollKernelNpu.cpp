@@ -53,7 +53,7 @@ at::Tensor& roll_transpose(
   std::swap(perm[axis], perm[first_dim]);
   at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
   auto output_size = op_infer::transpose_npu_output_size(result, perm);
-  at::Tensor transpose_result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor transpose_result = npu_preparation::apply_tensor(self, output_size);
   c10::SmallVector<int64_t, SIZE> dim = {first_dim};
   c10::SmallVector<int64_t, SIZE> shift_bak = {shifts[id]};
   at::IntArrayRef dim_now = at::IntArrayRef(dim);
@@ -100,7 +100,7 @@ at::Tensor roll(
     const at::Tensor& self,
     at::IntArrayRef shifts,
     at::IntArrayRef dims) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   roll_out_npu(result, self, shifts, dims);
   return result;
 }

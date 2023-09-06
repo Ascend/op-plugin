@@ -25,7 +25,7 @@ at::Tensor flip(const at::Tensor& self, at::IntArrayRef dims) {
     return self.clone();
   }
 
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   at::SmallVector<int64_t, N> dim_vector = op_infer::array_to_small_vector(dims);
   at_npu::native::OpCommand cmd;
   cmd.Name("ReverseV2")

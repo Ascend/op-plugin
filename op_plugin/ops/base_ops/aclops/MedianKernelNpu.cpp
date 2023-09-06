@@ -64,7 +64,7 @@ std::tuple<at::Tensor&, at::Tensor&> median_out_value_nocheck(
   at::Tensor topkIndices = std::get<1>(ret);
 
   //NCHW -> reflush base format
-  at::Tensor index = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor index = npu_preparation::apply_tensor_with_format(
       {1}, self_name.options().dtype(at::kLong), ACL_FORMAT_NCHW);
   acl_op::fill_(index, k - 1);
   at::Tensor values_index_select = acl_op::index_select(topk_values, dim, index);
@@ -140,7 +140,7 @@ std::tuple<at::Tensor&, at::Tensor&> median_out(
 }
 
 at::Tensor median(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       {}, self.options(), calcu_op_util::GetTensorNpuFormat(self));
   median_out_nocheck(result, self);
   return result;
@@ -148,9 +148,9 @@ at::Tensor median(const at::Tensor& self) {
 
 std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self, int64_t dim, bool keepdim) {
   auto output_size = median_npu_output_size(self, dim, keepdim);
-  at::Tensor values = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor values = npu_preparation::apply_tensor_with_format(
       output_size, self.options(), calcu_op_util::GetTensorNpuFormat(self));
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor indices = npu_preparation::apply_tensor_with_format(
       output_size, self.options().dtype(at::kLong), ACL_FORMAT_NCHW);
   median_out_value_nocheck(values, indices, self, dim, keepdim);
   return std::tuple<at::Tensor&, at::Tensor&>(values, indices);

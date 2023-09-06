@@ -106,13 +106,13 @@ at::Tensor bitwise_or(const at::Tensor& self, const at::Tensor& other) {
   at::Tensor output_tensor = is_self_wrapped ? other : self;
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
 
-  at::Tensor result = npu_preparation::ApplyTensor(output_tensor, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
   bitwise_or_out_npu_nocheck(result, self, other);
   return result;
 }
 
 at::Tensor bitwise_or(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   bitwise_or_out_npu_nocheck(result, self, other);
   return result;
 }

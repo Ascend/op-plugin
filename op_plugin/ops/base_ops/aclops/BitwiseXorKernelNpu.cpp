@@ -122,8 +122,8 @@ at::Tensor bitwise_xor(const at::Tensor& self, const at::Tensor& other) {
   at::Tensor self_input = (self.dtype() == at::kBool) ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt) : self;
   at::Tensor other_input = (other.dtype() == at::kBool) ? at_npu::native::custom_ops::npu_dtype_cast(other, at::kInt) : other;
   at::Tensor result = output_tensor.dtype() == at::kBool ?
-      npu_preparation::ApplyTensor(output_size, output_tensor.options().dtype(at::kInt), output_tensor) :
-      npu_preparation::ApplyTensor(output_tensor, output_size);
+      npu_preparation::apply_tensor(output_size, output_tensor.options().dtype(at::kInt), output_tensor) :
+      npu_preparation::apply_tensor(output_tensor, output_size);
 
   bitwise_xor_out_npu_nocheck(result, self_input, other_input);
   if (output_tensor.dtype() == at::kBool) {
@@ -134,7 +134,7 @@ at::Tensor bitwise_xor(const at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor bitwise_xor(const at::Tensor& self, const at::Scalar& other) {
   at::Tensor self_input = (self.dtype() == at::kBool) ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt) : self;
-  at::Tensor result = npu_preparation::ApplyTensor(self_input);
+  at::Tensor result = npu_preparation::apply_tensor(self_input);
   bitwise_xor_out_npu_nocheck(result, self_input, other);
   if (self.dtype() == at::kBool) {
     result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);

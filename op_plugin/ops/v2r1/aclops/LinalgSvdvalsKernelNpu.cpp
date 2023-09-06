@@ -35,7 +35,7 @@ at::Tensor linalg_svdvals(const at::Tensor& A, c10::optional<c10::string_view> d
   int64_t k = std::min(A.size(-2), A.size(-1));
   sizes.pop_back();
   sizes.end()[-1] = k;
-  auto S = npu_preparation::ApplyTensor(A, sizes);
+  auto S = npu_preparation::apply_tensor(A, sizes);
   S.fill_(0);
 
   acl_op::_linalg_svd_out(A, false, false, driver, U, S, Vh);

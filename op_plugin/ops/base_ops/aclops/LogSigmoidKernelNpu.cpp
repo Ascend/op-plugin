@@ -52,7 +52,7 @@ std::tuple<at::Tensor&, at::Tensor&> log_sigmoid_forward_out(
 }
 
 std::tuple<at::Tensor, at::Tensor> log_sigmoid_forward(const at::Tensor& self) {
-  at::Tensor output = npu_preparation::ApplyTensor(self);
+  at::Tensor output = npu_preparation::apply_tensor(self);
   at::Tensor buffer = npu_preparation::ApplyTensorWithSizes({0}, self.options());
   log_sigmoid_forward_out_nocheck(output, buffer, self);
   return std::tie(output, buffer);

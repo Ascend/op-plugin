@@ -39,7 +39,7 @@ at::Tensor& pdist_out_npu_nocheck(
 at::Tensor _pdist_forward(const at::Tensor& self, double p) {
   at::Tensor result;
   if (self.size(0) <= 1) {
-    result = npu_preparation::ApplyTensor(self, {0});
+    result = npu_preparation::apply_tensor(self, {0});
   } else {
     // double is not supported in NPU,  type of P needs to be converted from double to float.
     float p_float;
@@ -50,7 +50,7 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p) {
       p_float = static_cast<float>(p);
     }
     auto output_size = op_infer::pdist_npu_output_size(self, p_float);
-    result = npu_preparation::ApplyTensor(self, output_size);
+    result = npu_preparation::apply_tensor(self, output_size);
     if (self.size(1) == 0) {
       acl_op::fill_(result, 0);
     } else {

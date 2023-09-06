@@ -189,7 +189,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(
   at::Tensor grad_bias;
   if (grad_input_mask[0]) {
     int64_t grad_input_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
-    grad_input = npu_preparation::ApplyTensorWithFormat(
+    grad_input = npu_preparation::apply_tensor_with_format(
         std::get<0>(output_sizes), input.options(), grad_input_format);
   }
 
@@ -197,12 +197,12 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(
     // For group conv2d: keep consistent with weight to avoid allreduce accuracy problem.
     // For more info: https://gitee.com/ascend/pytorch-develop/pulls/2255
     if (groups > 1) {
-      grad_weight = npu_preparation::ApplyTensorWithFormat(
+      grad_weight = npu_preparation::apply_tensor_with_format(
           std::get<1>(output_sizes),
           weight.options().dtype(at::kFloat),
           ACL_FORMAT_NCHW);
     } else {
-      grad_weight = npu_preparation::ApplyTensorWithFormat(
+      grad_weight = npu_preparation::apply_tensor_with_format(
           std::get<1>(output_sizes),
           weight.options().dtype(at::kFloat),
           calcu_op_util::GetTensorNpuFormat(weight));
@@ -210,7 +210,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(
   }
 
   if (grad_input_mask[2]) {
-    grad_bias = npu_preparation::ApplyTensorWithFormat(
+    grad_bias = npu_preparation::apply_tensor_with_format(
         std::get<2>(output_sizes), grad.options(), ACL_FORMAT_NCHW);
   }
 

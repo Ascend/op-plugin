@@ -135,7 +135,7 @@ at::Tensor im2col(
     at::IntArrayRef stride) {
   at::Tensor self_cp = self.dim() == 3 ? at::unsqueeze(self, 0) : self;
   auto output_size = op_infer::image_to_col_npu_output_size(self_cp, kernel_size, stride, dilation, padding);
-  at::Tensor result = npu_preparation::ApplyTensor(self_cp, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
   im2col_out_nocheck(result, self_cp, kernel_size, dilation, padding, stride);
   if (self.dim() == 3) {
     result = at::squeeze(result, 0);

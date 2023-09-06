@@ -48,7 +48,7 @@ at::Tensor& erfinv_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor erfinv(const at::Tensor& self) {
-  auto result = npu_preparation::ApplyTensor(self);
+  auto result = npu_preparation::apply_tensor(self);
   erfinv_out_nocheck(result, self);
   return result;
 }

@@ -39,7 +39,7 @@ at::Tensor& leaky_relu_out(const at::Tensor& self, const at::Scalar& negval, at:
       {self},
       result,
       self);
-  
+
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     leaky_relu_out_nocheck(contiguous_result, self, negval);
@@ -51,7 +51,7 @@ at::Tensor& leaky_relu_out(const at::Tensor& self, const at::Scalar& negval, at:
 }
 
 at::Tensor leaky_relu(const at::Tensor& self, const at::Scalar& negval) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   leaky_relu_out_nocheck(result, self, negval);
   return result;
 }

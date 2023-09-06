@@ -87,7 +87,7 @@ at::Tensor multinomial(
 
   auto shape = op_infer::array_to_small_vector(self.sizes());
   shape[dim-1] = num_samples;
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       shape,
       self.options().dtype(at::kLong),
       calcu_op_util::GetTensorNpuFormat(self));

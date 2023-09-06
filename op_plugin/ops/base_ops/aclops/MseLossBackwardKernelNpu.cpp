@@ -78,7 +78,7 @@ at::Tensor mse_loss_backward(
   if (grad_out.dim() == 0) {
     grad_out.view(1);
   }
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
   acl_op::mse_loss_backward_out(
       grad_out,
       self,

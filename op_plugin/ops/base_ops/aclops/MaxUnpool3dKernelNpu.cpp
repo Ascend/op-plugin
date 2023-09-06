@@ -115,7 +115,7 @@ at::Tensor max_unpool3d(
   max_unpool3d_check(self, indices, output_size);
   auto out_shape = max_pool3d_npu_output_size(self, output_size);
   at::Tensor data = at::zeros(out_shape, self.options());
-  at::Tensor result = npu_preparation::ApplyTensor(data);
+  at::Tensor result = npu_preparation::apply_tensor(data);
   max_unpool3d_out_nocheck(result, self, indices, data, output_size);
 
   return result;

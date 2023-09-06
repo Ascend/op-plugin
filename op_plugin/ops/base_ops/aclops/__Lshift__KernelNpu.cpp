@@ -52,13 +52,13 @@ at::Tensor& lshift_out_npu_nocheck(
 } // namespace
 
 at::Tensor __lshift__(const at::Tensor& self, const at::Tensor& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   lshift_out_npu_nocheck(result, self, other);
   return result;
 }
 
 at::Tensor __lshift__(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   lshift_out_npu_nocheck(result, self, other);
   return result;
 }

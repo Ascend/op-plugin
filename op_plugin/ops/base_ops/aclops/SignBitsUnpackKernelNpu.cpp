@@ -33,7 +33,7 @@ at::Tensor npu_sign_bits_unpack(
   TORCH_CHECK((input_size * 8) % size == 0, "input value length*8 must be multiple of size");
   TORCH_CHECK(dtype == at::ScalarType::Float || dtype == at::ScalarType::Half, "The argument 'dtype'  must be torch.float32 or torch.float16");
   int64_t m = input_size * 8 / size;
-  at::Tensor result = npu_preparation::ApplyTensor({size, m}, input.options().dtype(dtype), input);
+  at::Tensor result = npu_preparation::apply_tensor({size, m}, input.options().dtype(dtype), input);
 
   int64_t type_enum = dtype == at::ScalarType::Half ? 1 : 0;
   at_npu::native::OpCommand cmd;

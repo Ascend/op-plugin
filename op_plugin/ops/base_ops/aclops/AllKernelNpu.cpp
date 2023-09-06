@@ -111,7 +111,7 @@ at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
 
   if (self.numel() == 0) {
     auto output_size = op_infer::infersize_all(self, dim);
-    at::Tensor result = npu_preparation::ApplyTensor(
+    at::Tensor result = npu_preparation::apply_tensor(
         output_size,
         self.options().dtype(at::kBool),
         self);
@@ -120,7 +120,7 @@ at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
   }
   at::IntArrayRef dims(dim);
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  at::Tensor result = npu_preparation::ApplyTensor(self_cast, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_cast, output_size);
   all_out_npu_nocheck(result, self_cast, {dim}, keepdim);
   return result;
 }
@@ -129,14 +129,14 @@ at::Tensor all(const at::Tensor& self) {
   at::Tensor self_cast = self.scalar_type() == at::ScalarType::Bool ?
       self : at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Bool);
   if (self.numel() == 0) {
-    at::Tensor result = npu_preparation::ApplyTensor({}, self.options().dtype(at::kBool), self);
+    at::Tensor result = npu_preparation::apply_tensor({}, self.options().dtype(at::kBool), self);
     acl_op::fill_(result, 1);
     return result;
   }
 
   at::IntArrayRef dims;
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
-  at::Tensor result = npu_preparation::ApplyTensor(self_cast, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_cast, output_size);
   all_out_npu_nocheck(
       result,
       self_cast,

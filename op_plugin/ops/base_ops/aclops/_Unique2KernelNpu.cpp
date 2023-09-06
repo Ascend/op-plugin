@@ -58,20 +58,20 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
    */
   const at::Tensor self = self_op.scalar_type() == at::kHalf ?
       at_npu::native::custom_ops::npu_dtype_cast(self_op, at::kFloat) : self_op;
-  
+
   if (self.numel() == 0) {
-    at::Tensor result = npu_preparation::ApplyTensor(self, {0});
-    at::Tensor y_inverse = npu_preparation::ApplyTensor({0}, self.options().dtype(at::kLong), self);
-    at::Tensor y_counts = npu_preparation::ApplyTensor({0}, self.options().dtype(at::kLong), self);
+    at::Tensor result = npu_preparation::apply_tensor(self, {0});
+    at::Tensor y_inverse = npu_preparation::apply_tensor({0}, self.options().dtype(at::kLong), self);
+    at::Tensor y_counts = npu_preparation::apply_tensor({0}, self.options().dtype(at::kLong), self);
     return std::tie(result, y_inverse, y_counts);
   }
-  at::Tensor y = npu_preparation::ApplyTensor(self, self.numel());
+  at::Tensor y = npu_preparation::apply_tensor(self, self.numel());
   at::Tensor y_inverse = !(return_counts || return_inverse) ?
-      npu_preparation::ApplyTensorWithFormat({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND) :
-      npu_preparation::ApplyTensorWithFormat(self.sizes(), self.options().dtype(at::kLong), ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND) :
+      npu_preparation::apply_tensor_with_format(self.sizes(), self.options().dtype(at::kLong), ACL_FORMAT_ND);
   at::Tensor y_counts = return_counts ?
-      npu_preparation::ApplyTensorWithFormat(self.numel(), self.options().dtype(at::kLong), ACL_FORMAT_ND) :
-      npu_preparation::ApplyTensorWithFormat({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(self.numel(), self.options().dtype(at::kLong), ACL_FORMAT_ND) :
+      npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
 
   _unique2_out_npu(y, y_inverse, y_counts, self, sorted, return_inverse, return_counts);
   if (self_op.scalar_type() == at::kHalf) {

@@ -23,8 +23,8 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 at::Tensor& logaddexp_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
-  at::Tensor self_exp = npu_preparation::ApplyTensor(self);
-  at::Tensor other_exp = npu_preparation::ApplyTensor(self);
+  at::Tensor self_exp = npu_preparation::apply_tensor(self);
+  at::Tensor other_exp = npu_preparation::apply_tensor(self);
 
   at_npu::native::OpCommand cmd_exp_1, cmd_exp_2, cmd_add, cmd_log;
   cmd_exp_1.Name("Exp")
@@ -37,7 +37,7 @@ at::Tensor& logaddexp_out_npu_nocheck(at::Tensor& result, const at::Tensor& self
       .Output(other_exp)
       .Run();
 
-  at::Tensor add_result = npu_preparation::ApplyTensor(self);
+  at::Tensor add_result = npu_preparation::apply_tensor(self);
   auto unified_result = npu_preparation::binary_op_check(add_result, self_exp, other_exp, true);
 
   cmd_add.Name("Add")
@@ -79,7 +79,7 @@ at::Tensor& logaddexp_out(const at::Tensor& self, const at::Tensor& other, at::T
 
 at::Tensor logaddexp(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   logaddexp_out_npu_nocheck(result, self, other);
   return result;
 }

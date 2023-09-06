@@ -100,8 +100,8 @@ std::tuple<at::Tensor, at::Tensor> multilabel_margin_loss_forward(
   if (reduction == at::Reduction::None) {
     output_size = {nframe};
   }
-  auto output = npu_preparation::ApplyTensor(self, output_size);
-  auto is_target = npu_preparation::ApplyTensor(target);
+  auto output = npu_preparation::apply_tensor(self, output_size);
+  auto is_target = npu_preparation::apply_tensor(target);
 
   acl_op::multilabel_margin_loss_forward_out(
       self,

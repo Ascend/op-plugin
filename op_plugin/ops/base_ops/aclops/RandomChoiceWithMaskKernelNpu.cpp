@@ -35,8 +35,8 @@ std::tuple<at::Tensor, at::Tensor> npu_random_choice_with_mask(
       self.dim());
   TORCH_CHECK(count > 0, "The count must greater than 0, but get", count);
 
-  at::Tensor result = npu_preparation::ApplyTensor({count, self.dim()}, self.options().dtype(at::kInt), self);
-  at::Tensor mask = npu_preparation::ApplyTensor(self, {count});
+  at::Tensor result = npu_preparation::apply_tensor({count, self.dim()}, self.options().dtype(at::kInt), self);
+  at::Tensor mask = npu_preparation::apply_tensor(self, {count});
   at_npu::native::OpCommand cmd;
   cmd.Name("RandomChoiceWithMask")
       .Input(self)

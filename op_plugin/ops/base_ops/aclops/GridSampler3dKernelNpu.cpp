@@ -66,7 +66,7 @@ at::Tensor grid_sampler_3d(
       format_cast_of_grid.size(3)};
 
   at::Tensor result =
-      npu_preparation::ApplyTensorWithFormat(output_size, format_cast_of_self.options(), ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(output_size, format_cast_of_self.options(), ACL_FORMAT_ND);
   std::string inter_mode[] = {"bilinear", "nearest", "bicubic"};
   std::string pad_mode[] = {"zeros", "border", "reflection"};
 

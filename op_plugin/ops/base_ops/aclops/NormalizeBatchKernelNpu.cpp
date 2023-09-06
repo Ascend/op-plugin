@@ -39,7 +39,7 @@ at::Tensor npu_normalize_batch(
       "normalize_type expected to be in range [0, 1], but got ",
       normalize_type);
 
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   string normalize_type_str = normalize_type == 0 ? "per_feature" : "all_features";
 
   constexpr float_t EPSILON = 1e-5;

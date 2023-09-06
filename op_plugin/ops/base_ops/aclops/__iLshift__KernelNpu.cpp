@@ -26,7 +26,7 @@ at::Tensor& ilshift_out_npu(
     at::Tensor& result,
     at::Tensor& self,
     at::Scalar other) {
-  at::Tensor other_tensor = npu_preparation::ApplyTensor(self);
+  at::Tensor other_tensor = npu_preparation::apply_tensor(self);
   at::Tensor other_broadcast = acl_op::fill_(other_tensor, other);
   at_npu::native::OpCommand cmd;
   cmd.Name("LeftShift")

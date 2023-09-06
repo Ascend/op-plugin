@@ -47,12 +47,12 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(
   blank = blank + max_length * shape[2];
 
   auto output_sizes = op_infer::ctc_loss_npu_output_size(log_probs, max_length);
-  at::Tensor neg_log_likelihood = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor neg_log_likelihood = npu_preparation::apply_tensor_with_format(
       std::get<0>(output_sizes),
       log_probs_cast.options(),
       calcu_op_util::GetTensorNpuFormat(log_probs_cast));
 
-  at::Tensor log_alpha = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor log_alpha = npu_preparation::apply_tensor_with_format(
       std::get<1>(output_sizes),
       log_probs_cast.options(),
       calcu_op_util::GetTensorNpuFormat(log_probs_cast));

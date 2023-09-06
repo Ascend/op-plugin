@@ -63,17 +63,17 @@ at::Tensor quantize_per_tensor(
   } else if (dtype == at::ScalarType::QInt32) {
     output_dtype = at::kInt;
   }
-  at::Tensor scale_tensor = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor scale_tensor = npu_preparation::apply_tensor_with_format(
       {1},
       self.options().dtype(at::kFloat),
       calcu_op_util::GetTensorNpuFormat(self));
   scale_tensor[0] = scale_float;
-  at::Tensor zp_tensor = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor zp_tensor = npu_preparation::apply_tensor_with_format(
       {1},
       self.options().dtype(at::kInt),
       calcu_op_util::GetTensorNpuFormat(self));
   zp_tensor[0] = zero_point;
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size,
       self.options().dtype(output_dtype),
       calcu_op_util::GetTensorNpuFormat(self));

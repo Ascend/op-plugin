@@ -52,7 +52,7 @@ at::Tensor& sinh_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor sinh(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   sinh_out_nocheck(result, self);
 
   return result;

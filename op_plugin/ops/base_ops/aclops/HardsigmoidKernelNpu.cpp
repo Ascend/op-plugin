@@ -52,7 +52,7 @@ at::Tensor& hardsigmoid_out(
 }
 
 at::Tensor hardsigmoid(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   hardsigmoid_out_nocheck(result, self);
   return result;
 }

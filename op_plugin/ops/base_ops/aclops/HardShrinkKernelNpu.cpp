@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor hardshrink(const at::Tensor& self, const at::Scalar& lambd) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   at_npu::native::OpCommand cmd;
   cmd.Name("HardShrink")
       .Input(self)

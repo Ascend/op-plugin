@@ -28,7 +28,7 @@ at::Tensor zeros_common_nocheck(
     c10::optional<bool> pin_memory_opt) {
   at::TensorOptions option =
       option.dtype(dtype_opt).layout(layout_opt).device(device_opt).pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
   return result.zero_();
 }
 } // namespace acl_op

@@ -46,7 +46,7 @@ at::Tensor& rsqrt_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor rsqrt(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   rsqrt_out_npu_nocheck(result, self);
   return result;
 }

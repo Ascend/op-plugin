@@ -117,7 +117,7 @@ at::Tensor any(const at::Tensor& self, int64_t dim, bool keepdim) {
   return result;
 }
 
-at::Tensor any(const at::Tensor& self) { 
+at::Tensor any(const at::Tensor& self) {
   // when self's dim = 0, convert [1] tensor and reduce it.
   if (self.dim() == 0) {
     at::Tensor self_tmp = self.unsqueeze(0);
@@ -127,7 +127,7 @@ at::Tensor any(const at::Tensor& self) {
 
   at::IntArrayRef dims;
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   any_out_npu_nocheck(
       result, self, op_plugin::utils::get_dimlist_for_tensor(self), false);
   return result;

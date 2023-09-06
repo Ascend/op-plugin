@@ -72,7 +72,7 @@ at::Tensor& renorm_out_nocheck(
 
   dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   auto output_size = renorm_npu_output_size(self, dim);
-  at::Tensor result_bak = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result_bak = npu_preparation::apply_tensor_with_format(
       output_size,
       self.options().dtype(at::kFloat),
       calcu_op_util::GetTensorNpuFormat(self));
@@ -129,7 +129,7 @@ at::Tensor& renorm_out(
 }
 
 at::Tensor renorm(const at::Tensor& self, const at::Scalar& p, int64_t dim, const at::Scalar& maxnorm) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   renorm_out_nocheck(result, self, p, dim, maxnorm);
   return result;
 }

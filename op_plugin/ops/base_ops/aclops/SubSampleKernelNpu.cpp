@@ -24,7 +24,7 @@ at::Tensor npu_sub_sample(
     const at::Tensor& self,
     int64_t per_images,
     double positive_fraction) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   at_npu::native::OpCommand cmd;
   cmd.Name("SubSample")
       .Input(self)

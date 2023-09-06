@@ -58,7 +58,7 @@ at::Tensor& take_out(const at::Tensor& self, const at::Tensor& index, at::Tensor
 }
 
 at::Tensor take(const at::Tensor& self, const at::Tensor& index) {
-  at::Tensor result = npu_preparation::ApplyTensor(self, index.sizes());
+  at::Tensor result = npu_preparation::apply_tensor(self, index.sizes());
   take_out_nocheck(result, self, index);
   return result;
 }

@@ -142,14 +142,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> slow_conv_transpose2d_backward(
 
   int64_t grad_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
   if (output_mask[0]) {
-    grad_input = npu_preparation::ApplyTensorWithFormat(self, std::get<0>(output_sizes), grad_format);
+    grad_input = npu_preparation::apply_tensor_with_format(self, std::get<0>(output_sizes), grad_format);
   }
   if (output_mask[1]) {
-    grad_weight = npu_preparation::ApplyTensorWithFormat(
+    grad_weight = npu_preparation::apply_tensor_with_format(
         std::get<1>(output_sizes), weight.options().dtype(at::kFloat), calcu_op_util::GetTensorNpuFormat(weight));
   }
   if (output_mask[flag]) {
-    grad_bias = npu_preparation::ApplyTensorWithFormat(grad_output, {grad_output.size(1)}, ACL_FORMAT_NCHW);
+    grad_bias = npu_preparation::apply_tensor_with_format(grad_output, {grad_output.size(1)}, ACL_FORMAT_NCHW);
   }
 
   return slow_conv_transpose2d_backward_out_nocheck(

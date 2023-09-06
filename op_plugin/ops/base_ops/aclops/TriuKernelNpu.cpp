@@ -49,7 +49,7 @@ at::Tensor& triu_out(const at::Tensor& self, int64_t k, at::Tensor& result) {
 }
 
 at::Tensor triu(const at::Tensor& self, int64_t k) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   triu_out_npu_nocheck(result, self, k);
   return result;
 }

@@ -52,7 +52,7 @@ at::Tensor zeros_like(
                                            .layout(layout_opt)
                                            .pinned_memory(pin_memory_opt);
   auto options = self.options().merge_in(other_options);
-  at::Tensor result = npu_preparation::ApplyTensor(self, options);
+  at::Tensor result = npu_preparation::apply_tensor(self, options);
 
   return acl_op::zero_(result);
 }

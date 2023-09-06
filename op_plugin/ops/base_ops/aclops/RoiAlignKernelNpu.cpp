@@ -77,7 +77,7 @@ at::Tensor npu_roi_align(
       roi_align_npu_output_size(self, rois, pooled_height, pooled_width);
 
   at::Tensor result =
-      npu_preparation::ApplyTensorWithFormat(self, output_size, ACL_FORMAT_NC1HWC0);
+      npu_preparation::apply_tensor_with_format(self, output_size, ACL_FORMAT_NC1HWC0);
 
   roi_align_npu_nocheck(
       result,

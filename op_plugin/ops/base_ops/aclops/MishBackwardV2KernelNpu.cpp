@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor mish_backward(const at::Tensor& grad_output, const at::Tensor& self) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
   at_npu::native::OpCommand cmd;
   cmd.Name("MishGrad")
       .Input(grad_output)

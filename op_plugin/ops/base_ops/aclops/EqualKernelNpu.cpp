@@ -33,7 +33,7 @@ bool equal(const at::Tensor& self, const at::Tensor& other) {
       other.scalar_type(),
       " for argument #2 'other' in call to equal_npu");
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       {1},
       self.options().dtype(at::kBool),
       ACL_FORMAT_ND);

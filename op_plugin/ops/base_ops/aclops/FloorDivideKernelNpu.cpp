@@ -121,7 +121,7 @@ at::Tensor floor_divide(const at::Tensor& self, const at::Tensor& other) {
       calcu_op_util::IsScalarWrappedToTensor(self_cast) || npu_preparation::IsCPUScalar(self_cast);
   at::Tensor output_tensor = is_self_wrapped ? other_cast : self_cast;
   auto output_size = op_infer::broadcast_ops_npu_output_size(self_cast, other_cast);
-  at::Tensor result = npu_preparation::ApplyTensor(output_tensor, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
 
   floor_divide_out_nocheck(result, self_cast, other_cast);
   if (result.scalar_type() != high_type) {
@@ -135,7 +135,7 @@ at::Tensor floor_divide(const at::Tensor& self, const at::Scalar& other) {
   check_self_dtype_npu(self_cast);
   at::Tensor format_cast_self = npu_preparation::CastBackToOriFormat(self_cast);
   auto output_size = format_cast_self.sizes();
-  at::Tensor result = npu_preparation::ApplyTensor(self_cast, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_cast, output_size);
   floor_divide_scalar_out_nocheck(result, format_cast_self, other);
   return result;
 }

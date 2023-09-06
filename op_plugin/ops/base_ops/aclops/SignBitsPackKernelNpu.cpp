@@ -26,7 +26,7 @@ at::Tensor npu_sign_bits_pack(const at::Tensor& self, int64_t size) {
       "all only supports torch.float16 and torch.float32 dtypes");
   auto ysize = (self.numel() + 7) / 8;
   TORCH_CHECK(size != 0 && ysize % size == 0, "all must be divisible by size");
-  at::Tensor result = npu_preparation::ApplyTensor({size, ysize / size}, self.options().dtype(at::kByte), self);
+  at::Tensor result = npu_preparation::apply_tensor({size, ysize / size}, self.options().dtype(at::kByte), self);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("SignBitsPack")

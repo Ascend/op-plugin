@@ -62,8 +62,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_backwa
   grad_bias_sum = at::sum(grad_out_scalar, axes, false);
   sum_dy_sum = grad_bias_sum;
 
-  at::Tensor sum_dy_xmu_out = npu_preparation::ApplyTensor(sum_dy_sum);
-  at::Tensor grad_weight_res = npu_preparation::ApplyTensor(invstd_scalar);
+  at::Tensor sum_dy_xmu_out = npu_preparation::apply_tensor(sum_dy_sum);
+  at::Tensor grad_weight_res = npu_preparation::apply_tensor(invstd_scalar);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("SyncBatchNormBackwardReduce")
@@ -119,16 +119,16 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> batch_norm_backward_r
 
   auto mean_dtype = mean.options().dtype(fp_type);
   if (input_g) {
-      sum_dy_val = npu_preparation::ApplyTensor(mean, mean_dtype);
-      sum_dy_xmu_val = npu_preparation::ApplyTensor(mean, mean_dtype);
+      sum_dy_val = npu_preparation::apply_tensor(mean, mean_dtype);
+      sum_dy_xmu_val = npu_preparation::apply_tensor(mean, mean_dtype);
   }
 
   auto weight_dtype = weight_val.options().dtype(fp_type);
   if (weight_g) {
-      grad_weight_val = npu_preparation::ApplyTensor({n_input}, weight_dtype, weight_val);
+      grad_weight_val = npu_preparation::apply_tensor({n_input}, weight_dtype, weight_val);
   }
   if (bias_g) {
-      grad_bias_val = npu_preparation::ApplyTensor({n_input}, weight_dtype, weight_val);
+      grad_bias_val = npu_preparation::apply_tensor({n_input}, weight_dtype, weight_val);
   }
 
   batch_norm_backward_reduce_npu_impl(sum_dy_val, sum_dy_xmu_val, grad_weight_val, grad_bias_val,

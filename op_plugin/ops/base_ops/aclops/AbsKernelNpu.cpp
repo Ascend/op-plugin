@@ -22,41 +22,36 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
-at::Tensor& abs_out_nocheck(at::Tensor& result, const at::Tensor& self)
-{
+at::Tensor& abs_out_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Abs")
-     .Input(self)
-     .Output(result)
-     .Run();
+      .Input(self)
+      .Output(result)
+      .Run();
   return result;
 }
 }
 
-at::Tensor& abs_out(const at::Tensor& self, at::Tensor& result)
-{
+at::Tensor& abs_out(const at::Tensor& self, at::Tensor& result) {
   npu_preparation::CheckOut({self}, result, self);
   if (!npu_utils::check_match(&result)) {
-    at::Tensor contigTensor = npu_utils::format_contiguous(result);
-    abs_out_nocheck(contigTensor, self);
-    npu_utils::format_fresh_view(result, contigTensor);
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    abs_out_nocheck(contiguous_result, self);
+    npu_utils::format_fresh_view(result, contiguous_result);
   } else {
     abs_out_nocheck(result, self);
   }
   return result;
 }
 
-at::Tensor abs(const at::Tensor& self)
-{
+at::Tensor abs(const at::Tensor& self) {
   auto output_size = op_infer::infershape_for_elewise(self);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   abs_out_nocheck(result, self);
   return result;
 }
 
-at::Tensor& abs_(at::Tensor& self)
-{
-  acl_op::abs_out(self, self);
-  return self;
+at::Tensor& abs_(at::Tensor& self) {
+  return acl_op::abs_out(self, self);
 }
-}  // namespace acl_op
+} // namespace acl_op

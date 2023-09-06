@@ -151,7 +151,7 @@ at::Tensor max_pool2d_with_indices_backward(
   c10::SmallVector<int64_t, SIZE> dilations = {dilation_H, dilation_W};
   at::IntArrayRef dilationss = at::IntArrayRef(dilations);
 
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
 
   max_pool2d_with_indices_backward_out_nocheck(
       grad_input, grad_output_var, self, kernel_sizess, stridess, padss, dilationss, ceil_mode, indices);

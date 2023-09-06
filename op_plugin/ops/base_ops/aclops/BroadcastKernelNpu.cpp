@@ -46,7 +46,7 @@ at::Tensor& npu_broadcast_out(
 
 at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) {
   at::Tensor self_cp = self.dtype() == at::kBool ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt) : self;
-  at::Tensor result = npu_preparation::ApplyTensor(self_cp, size);
+  at::Tensor result = npu_preparation::apply_tensor(self_cp, size);
   npu_broadcast_out_nocheck(result, self_cp, size);
 
   if (self.dtype() == at::kBool) {

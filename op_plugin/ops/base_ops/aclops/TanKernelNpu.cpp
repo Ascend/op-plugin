@@ -51,7 +51,7 @@ at::Tensor& tan_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor tan(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   tan_out_nocheck(result, self);
   return result;
 }

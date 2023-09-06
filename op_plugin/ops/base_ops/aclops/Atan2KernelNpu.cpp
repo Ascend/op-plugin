@@ -60,7 +60,7 @@ at::Tensor& atan2_out(
 
 at::Tensor atan2(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   atan2_out_npu_nocheck(result, self, other);
   return result;
 }

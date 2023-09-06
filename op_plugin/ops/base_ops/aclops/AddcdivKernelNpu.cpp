@@ -70,7 +70,7 @@ at::Tensor addcdiv(
     const at::Scalar& value) {
   auto div_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
   auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), div_output_size);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   addcdiv_npu_nocheck(result, self, tensor1, tensor2, value);
   return result;
 }

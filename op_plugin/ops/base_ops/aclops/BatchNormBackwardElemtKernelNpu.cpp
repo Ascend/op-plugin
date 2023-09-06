@@ -71,7 +71,7 @@ at::Tensor batch_norm_backward_elemt(
   at::Tensor mean_dy_xmu_expanded(mean_dy_xmu);
 
   batch_norm_backward_elemt_npu_expand_tensor(mean_dy_xmu_expanded, dim_c, input_ndim, input_shape);
-  at::Tensor grad_input = npu_preparation::ApplyTensor(input);
+  at::Tensor grad_input = npu_preparation::apply_tensor(input);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("SyncBatchNormBackwardElemt")

@@ -110,19 +110,19 @@ at::Tensor xlogy(const at::Tensor& self, const at::Tensor& other) {
   bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
   at::Tensor output_tensor = is_self_wrapped ? other : self;
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensor(output_tensor, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
   xlogy_out_npu_nocheck(result, self, other);
   return result;
 }
 
 at::Tensor xlogy(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   xlogy_out_npu_nocheck(result, self, other);
   return result;
 }
 
 at::Tensor xlogy(const at::Scalar& self, const at::Tensor& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(other);
+  at::Tensor result = npu_preparation::apply_tensor(other);
   xlogy_out_npu_nocheck(result, self, other);
   return result;
 }

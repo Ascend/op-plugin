@@ -50,7 +50,7 @@ at::Tensor& acosh_out(
 }
 
 at::Tensor acosh(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   acosh_out_npu_nocheck(result, self);
   return result;
 }

@@ -50,7 +50,7 @@ at::Tensor& asinh_out(
 }
 
 at::Tensor asinh(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   asinh_out_npu_nocheck(result, self);
   return result;
 }

@@ -48,7 +48,7 @@ at::Tensor& atan_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor atan(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   atan_out_npu_nocheck(result, self);
   return result;
 }

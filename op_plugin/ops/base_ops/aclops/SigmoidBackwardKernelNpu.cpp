@@ -57,7 +57,7 @@ at::Tensor& sigmoid_backward_out(
 }
 
 at::Tensor sigmoid_backward(const at::Tensor& grad_output, const at::Tensor& output) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(grad_output);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
   sigmoid_backward_out_npu_nocheck(grad_input, grad_output, output);
 
   return grad_input;

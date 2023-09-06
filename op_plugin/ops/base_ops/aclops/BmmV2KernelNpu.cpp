@@ -88,8 +88,8 @@ at::Tensor pure_bmm_v2(
   auto tensor2 = mat2.dim() == 1 ? mat2.view({mat2.size(0), 1}) : mat2;
 
   at::Tensor result = (tensor1.scalar_type() == at::ScalarType::Half) ?
-      npu_preparation::ApplyTensorWithFormat(output_size, tensor1.options(), ACL_FORMAT_FRACTAL_NZ, true) :
-      npu_preparation::ApplyTensorWithFormat(output_size, tensor1.options(), ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(output_size, tensor1.options(), ACL_FORMAT_FRACTAL_NZ, true) :
+      npu_preparation::apply_tensor_with_format(output_size, tensor1.options(), ACL_FORMAT_ND);
 
   at::Tensor contiguous_self = tensor1;
   at::Tensor contiguous_mat2 = tensor2;

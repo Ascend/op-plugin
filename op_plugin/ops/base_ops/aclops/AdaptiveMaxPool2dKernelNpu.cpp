@@ -164,8 +164,8 @@ std::tuple<at::Tensor, at::Tensor> adaptive_max_pool2d(
   adaptive_max_pool2d_check(self, output_size);
   c10::SmallVector<int64_t, SIZE> output_sizes = std::get<0>(adaptive_max_pool2d_infer_size(self, output_size));
   c10::SmallVector<int64_t, SIZE> indices_size = std::get<1>(adaptive_max_pool2d_infer_size(self, output_size));
-  at::Tensor output = npu_preparation::ApplyTensor(self, output_sizes);
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(indices_size, self.options().dtype(at::kShort), ACL_FORMAT_NC1HWC0);
+  at::Tensor output = npu_preparation::apply_tensor(self, output_sizes);
+  at::Tensor indices = npu_preparation::apply_tensor_with_format(indices_size, self.options().dtype(at::kShort), ACL_FORMAT_NC1HWC0);
   adaptive_max_pool2d_out_nocheck(output, indices, self, output_size);
 
   return std::tuple<at::Tensor, at::Tensor>(output, indices);

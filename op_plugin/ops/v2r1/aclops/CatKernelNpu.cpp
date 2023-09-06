@@ -146,7 +146,7 @@ at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim) {
 
   at::Tensor result = tensors_dim_check ?
       npu_preparation::apply_tensor(input_tensors[0], output_size) :
-      npu_preparation::ApplyTensorWithFormat(input_tensors[0], output_size, ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(input_tensors[0], output_size, ACL_FORMAT_ND);
   cat_output_nocheck(result, materialized, dim);
   return result;
 }

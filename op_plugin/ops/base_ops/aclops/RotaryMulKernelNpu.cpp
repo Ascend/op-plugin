@@ -62,7 +62,7 @@ at::Tensor npu_rotary_mul(
     const at::Tensor& self,
     const at::Tensor& r1,
     const at::Tensor& r2) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   rotary_mul_nocheck(result, self, r1, r2);
   return result;
 }
@@ -72,9 +72,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(
     const at::Tensor& self,
     const at::Tensor& r1,
     const at::Tensor& r2) {
-  at::Tensor dx = npu_preparation::ApplyTensor(self);
-  at::Tensor dr1 = npu_preparation::ApplyTensor(r1);
-  at::Tensor dr2 = npu_preparation::ApplyTensor(r2);
+  at::Tensor dx = npu_preparation::apply_tensor(self);
+  at::Tensor dr1 = npu_preparation::apply_tensor(r1);
+  at::Tensor dr2 = npu_preparation::apply_tensor(r2);
   rotary_mul_backward_nocheck(dx, dr1, dr2, self, r1, r2, grad);
   return std::tie(dx, dr1, dr2);
 }

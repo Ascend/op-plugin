@@ -46,7 +46,7 @@ at::Tensor conv_tbc(
   c10::SmallVector<int64_t, SIZE> output_size = {self.size(1), C, 1, W};
 
   // construct the output tensor of the NPU
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self, output_size, ACL_FORMAT_NCHW);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(self, output_size, ACL_FORMAT_NCHW);
 
   c10::SmallVector<int64_t, N> paddings = {0, 0, pad, pad};
   c10::SmallVector<int64_t, N> strides_size = {1, 1, 1, 1};

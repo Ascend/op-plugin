@@ -76,8 +76,8 @@ at::Tensor eye(
 
   // The operator does not support the bool type and needs to be converted to an integer.
   at::Tensor result = (option.dtype() == at::kBool) ?
-      npu_preparation::ApplyTensorWithFormat(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
-      npu_preparation::ApplyTensorWithFormat(output_size, option, ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
+      npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_ND);
 
   acl_op::eye_out(n, result);
   if (option.dtype() == at::kBool) {
@@ -105,8 +105,8 @@ at::Tensor eye(
 
   // The operator does not support the bool type and needs to be converted to an integer.
   at::Tensor result = (option.dtype() == at::kBool) ?
-      npu_preparation::ApplyTensorWithFormat(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
-      npu_preparation::ApplyTensorWithFormat(output_size, option, ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
+      npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_ND);
 
   eye_out_npu_nocheck(result, n, m);
   if (option.dtype() == at::kBool) {

@@ -73,7 +73,7 @@ at::Tensor& replication_pad2d_out(
 
 at::Tensor replication_pad2d(const at::Tensor& self, at::IntArrayRef padding) {
   auto output_size = op_infer::replication_pad2d_npu_output_size(self, padding);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   replication_pad2d_out_npu_nocheck(result, self, padding);
   return result;
 }

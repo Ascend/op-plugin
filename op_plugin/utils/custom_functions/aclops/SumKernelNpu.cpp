@@ -117,7 +117,7 @@ at::Tensor sum_common_nocheck(
   }
 
   at::Tensor self_cp = check_dtype(self, out_type);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size, self_cp.options(), ACL_FORMAT_ND);
   sum_out_npu_nocheck(result, self_cp, dim, keepdim);
 

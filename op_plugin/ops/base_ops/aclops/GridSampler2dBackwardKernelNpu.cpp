@@ -45,8 +45,8 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
     format_cast_of_grid = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
   }
 
-  at::Tensor dx = npu_preparation::ApplyTensor(format_cast_of_input);
-  at::Tensor dgrid = npu_preparation::ApplyTensor(format_cast_of_grid);
+  at::Tensor dx = npu_preparation::apply_tensor(format_cast_of_input);
+  at::Tensor dgrid = npu_preparation::apply_tensor(format_cast_of_grid);
 
   c10::SmallVector<string, SIZE> inter_mode = {"bilinear", "nearest", "bicubic"};
   c10::SmallVector<string, SIZE> pad_mode = {"zeros", "border", "reflection"};

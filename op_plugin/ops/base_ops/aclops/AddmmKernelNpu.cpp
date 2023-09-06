@@ -48,7 +48,7 @@ at::Tensor addmm(
   // then directly get NZ result
   int64_t res_format = (self.dim() == 1 && self.size(0) % 16 == 0 && self.scalar_type() == at::kHalf) ?
      ACL_FORMAT_FRACTAL_NZ : ACL_FORMAT_ND;
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, self.options(), res_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), res_format);
 
   acl_op::addmm_out(self, mat1, mat2, beta, alpha, result);
   return result;

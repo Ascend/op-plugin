@@ -66,7 +66,7 @@ at::Tensor _nnpack_spatial_convolution(
   const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
   auto output_size = op_infer::nnpack_spatial_convolution_npu_output_size(input, weight, padding, stride);
   int64_t result_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, input.options(), result_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, input.options(), result_format);
   _nnpack_spatial_convolution_npu_nocheck(result, input, weight, bias, padding, stride);
   return result;
 }

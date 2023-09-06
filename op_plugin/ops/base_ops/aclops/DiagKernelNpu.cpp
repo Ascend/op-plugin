@@ -97,7 +97,7 @@ at::Tensor diag(
               "If the value is 2-dimensional tensor, the diagonal shoule less than shape.Diagonal is ", diagonal);
 
   auto output_size = diag_npu_output_size(self, diagonal);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   diag_out_npu_nocheck(result, self, diagonal);
   return result;
 }

@@ -29,13 +29,13 @@ at::Tensor& one_hot_out_npu(
     at::Scalar on_value,
     at::Scalar off_value) {
   at::Tensor self_copy = at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt);
-  at::Tensor on_tmp = npu_preparation::ApplyTensor(
+  at::Tensor on_tmp = npu_preparation::apply_tensor(
       {1},
       self_copy.options().dtype(at::ScalarType::Float),
       self_copy);
   acl_op::fill_(on_tmp, on_value);
 
-  at::Tensor off_tmp = npu_preparation::ApplyTensor(
+  at::Tensor off_tmp = npu_preparation::apply_tensor(
       {1},
       self_copy.options().dtype(at::ScalarType::Float),
       self_copy);
@@ -63,7 +63,7 @@ at::Tensor npu_one_hot(
   auto output_size = op_infer::array_to_small_vector(self.sizes());
   output_size.emplace_back(depth);
 
-  at::Tensor result = npu_preparation::ApplyTensor(
+  at::Tensor result = npu_preparation::apply_tensor(
       output_size,
       self.options().dtype(at::ScalarType::Float),
       self);

@@ -52,7 +52,7 @@ at::Tensor& cos_out(
 }
 
 at::Tensor cos(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   cos_out_npu_nocheck(result, self);
   return result;
 }

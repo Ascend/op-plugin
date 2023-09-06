@@ -214,7 +214,7 @@ at::Tensor avg_pool3d_backward(
       input, grad_input, nslices, k_T, k_H, k_W, d_T, d_H, d_W, pad_T, pad_H, pad_W, itime, iheight, iwidth,
       otime_for_shape_check, oheight_for_shape_check, owidth_for_shape_check, "avg_pool3d_backward_out()");
 
-  at::Tensor output = npu_preparation::ApplyTensorWithFormat(input, ACL_FORMAT_NCDHW);
+  at::Tensor output = npu_preparation::apply_tensor_with_format(input, ACL_FORMAT_NCDHW);
   avg_pool3d_backward_out_nocheck(
       output, grad_input, input, kernel_sizess, stridess, paddingss, ceil_mode, count_include_pad,
       divisor_override);

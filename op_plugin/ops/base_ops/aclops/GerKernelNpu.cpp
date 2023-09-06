@@ -68,7 +68,7 @@ at::Tensor ger(const at::Tensor& self, const at::Tensor& vec2) {
   TORCH_CHECK(vec2.dim() == 1, "Input2 must have only 1 dims.");
 
   auto output_size = ger_npu_output_size(self, vec2);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   ger_out_npu_nocheck(result, self, vec2);
 
   return result;

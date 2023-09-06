@@ -48,7 +48,7 @@ at::Tensor& erfc_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor erfc(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   erfc_out_npu_no_check(result, self);
   return result;
 }

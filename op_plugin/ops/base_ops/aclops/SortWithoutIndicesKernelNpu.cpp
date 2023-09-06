@@ -48,7 +48,7 @@ at::Tensor& npu_sort_v2_out(
       {self},
       result,
       self);
-  
+
   dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   int64_t last_dim = op_plugin::utils::make_warp_dim(-1, self.dim());
 
@@ -61,7 +61,7 @@ at::Tensor& npu_sort_v2_out(
     at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
 
     auto output_size = op_infer::transpose_npu_output_size(result, perm);
-    at::Tensor transpose_result = npu_preparation::ApplyTensor(result, output_size);
+    at::Tensor transpose_result = npu_preparation::apply_tensor(result, output_size);
 
     sort_without_indices_out_nocheck(transpose_result, transpose_self, last_dim, descending);
     acl_op::npu_transpose_out(transpose_result, perm, true, result);
@@ -82,7 +82,7 @@ at::Tensor npu_sort_v2(
     const at::Tensor& self,
     int64_t dim,
     bool descending) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
 
   dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   int64_t last_dim = op_plugin::utils::make_warp_dim(-1, self.dim());
@@ -96,7 +96,7 @@ at::Tensor npu_sort_v2(
     at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
 
     auto output_size = op_infer::transpose_npu_output_size(result, perm);
-    at::Tensor transpose_result = npu_preparation::ApplyTensor(result, output_size);
+    at::Tensor transpose_result = npu_preparation::apply_tensor(result, output_size);
 
     sort_without_indices_out_nocheck(transpose_result, transpose_self, last_dim, descending);
     acl_op::npu_transpose_out(transpose_result, perm, true, result);

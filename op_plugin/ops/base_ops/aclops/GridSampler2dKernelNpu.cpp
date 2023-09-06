@@ -44,7 +44,7 @@ at::Tensor grid_sampler_2d(
       dtype_cast_of_grid.size(1),
       dtype_cast_of_grid.size(2)};
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(dtype_cast_of_self, output_size, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(dtype_cast_of_self, output_size, ACL_FORMAT_ND);
   std::string inter_mode[] = {"bilinear", "nearest", "bicubic"};
   std::string pad_mode[] = {"zeros", "border", "reflection"};
   at_npu::native::OpCommand cmd;

@@ -53,7 +53,7 @@ at::Tensor& random_out_npu(
       .Input(at::Scalar(alg), at::ScalarType::Int);
   // StatelessRandomUniformV2 doesn't support int output
   if (isIntegralType(self.scalar_type(), true)) {
-    at::Tensor result_cp = npu_preparation::ApplyTensor(self, self.options().dtype(at::kFloat));
+    at::Tensor result_cp = npu_preparation::apply_tensor(self, self.options().dtype(at::kFloat));
     cmd.Attr("dtype", at::kFloat)
         .Output(result_cp)
         .Run();

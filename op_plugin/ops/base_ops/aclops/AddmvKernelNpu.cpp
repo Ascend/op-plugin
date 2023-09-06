@@ -51,7 +51,7 @@ at::Tensor addmv(
     const at::Scalar& beta,
     const at::Scalar& alpha) {
   auto output_size = op_infer::addmv_npu_output_size(self, mat, vec, beta, alpha);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   addmv_out(self, mat, vec, beta, alpha, result);
   return result;
 }

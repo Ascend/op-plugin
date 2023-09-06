@@ -73,7 +73,7 @@ at::Tensor binary_cross_entropy_backward(
     const c10::optional<at::Tensor>& weight_opt,
     int64_t reduction) {
   const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
   binary_cross_entropy_backward_out_npu_nocheck(grad_input, grad_output, self, target, weight, reduction);
   return grad_input;
 }

@@ -107,7 +107,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv3d_backward(
     const at::Tensor& weight,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
-    at::IntArrayRef dilation, 
+    at::IntArrayRef dilation,
     int64_t groups,
     std::array<bool, 3> grad_input_mask) {
   at::Tensor grad_input;
@@ -116,20 +116,20 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv3d_backward(
 
   if (grad_input_mask[0]) {
     // format should be NDC1HWC0
-    grad_input = npu_preparation::ApplyTensorWithFormat(input, ACL_FORMAT_NDC1HWC0);
+    grad_input = npu_preparation::apply_tensor_with_format(input, ACL_FORMAT_NDC1HWC0);
     conv3d_backward_input_nocheck(grad_input, input, grad, weight, stride, padding, dilation, groups);
   }
 
   if (grad_input_mask[1]) {
     // format should be FRACTAL_Z_3D
-    grad_weight = npu_preparation::ApplyTensorWithFormat(
+    grad_weight = npu_preparation::apply_tensor_with_format(
         weight.sizes(), weight.options().dtype(at::kFloat), calcu_op_util::GetTensorNpuFormat(weight));
     conv3d_backward_weight_nocheck(grad_weight, input, grad, weight, stride, padding, dilation, groups);
   }
 
   if (grad_input_mask[2]) {
     // format should be NCHW, gradias.size = grad.size(1)
-    grad_bias = npu_preparation::ApplyTensorWithFormat({grad.size(1)}, grad.options(), ACL_FORMAT_NCHW);
+    grad_bias = npu_preparation::apply_tensor_with_format({grad.size(1)}, grad.options(), ACL_FORMAT_NCHW);
     conv3d_backward_bias_nocheck(grad_bias, input, grad, weight, stride, padding, dilation, groups);
   }
   return std::tie(grad_input, grad_weight, grad_bias);

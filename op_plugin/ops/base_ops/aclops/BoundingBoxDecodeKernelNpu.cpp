@@ -34,7 +34,7 @@ at::Tensor npu_bounding_box_decode(
     at::IntArrayRef max_shape,
     double wh_ratio_clip) {
   c10::SmallVector<int64_t, SIZE> output_size = {rois.size(0), 4};
-  at::Tensor result = npu_preparation::ApplyTensor(rois, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(rois, output_size);
   c10::SmallVector<float, SIZE> means = {
       static_cast<float>(means0),
       static_cast<float>(means1),

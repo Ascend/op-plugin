@@ -44,12 +44,12 @@ std::vector<at::Tensor> npu_fused_attention_layernorm_qkv_fwd(
 
   c10::SmallVector<int64_t, SIZE> qkv_output_shape = {x.size(0) / seq_len, num_heads, seq_len, x.size(1) / num_heads};
   c10::SmallVector<int64_t, SIZE> mean_output_shape = {x.size(0)};
-  at::Tensor norm = npu_preparation::ApplyTensor(x);
-  at::Tensor query_output = npu_preparation::ApplyTensor(kernel_query, qkv_output_shape);
-  at::Tensor key_output = npu_preparation::ApplyTensor(kernel_key, qkv_output_shape);
-  at::Tensor value_output = npu_preparation::ApplyTensor(kernel_value, qkv_output_shape);
-  at::Tensor mean = npu_preparation::ApplyTensorWithFormat(kernel_query, mean_output_shape, ACL_FORMAT_ND);
-  at::Tensor variance = npu_preparation::ApplyTensorWithFormat(kernel_query, mean_output_shape, ACL_FORMAT_ND);
+  at::Tensor norm = npu_preparation::apply_tensor(x);
+  at::Tensor query_output = npu_preparation::apply_tensor(kernel_query, qkv_output_shape);
+  at::Tensor key_output = npu_preparation::apply_tensor(kernel_key, qkv_output_shape);
+  at::Tensor value_output = npu_preparation::apply_tensor(kernel_value, qkv_output_shape);
+  at::Tensor mean = npu_preparation::apply_tensor_with_format(kernel_query, mean_output_shape, ACL_FORMAT_ND);
+  at::Tensor variance = npu_preparation::apply_tensor_with_format(kernel_query, mean_output_shape, ACL_FORMAT_ND);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("AttentionLnQKV")

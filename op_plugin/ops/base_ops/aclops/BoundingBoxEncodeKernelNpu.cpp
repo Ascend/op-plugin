@@ -31,7 +31,7 @@ at::Tensor npu_bounding_box_encode(
     double stds1,
     double stds2,
     double stds3) {
-  at::Tensor result = npu_preparation::ApplyTensor(anchor_box, {anchor_box.size(0), 4});
+  at::Tensor result = npu_preparation::apply_tensor(anchor_box, {anchor_box.size(0), 4});
   c10::SmallVector<float, SIZE> means = {
       static_cast<float>(means0),
       static_cast<float>(means1),

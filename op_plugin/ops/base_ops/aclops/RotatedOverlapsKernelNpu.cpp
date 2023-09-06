@@ -54,7 +54,7 @@ at::Tensor npu_rotated_overlaps(
   int64_t K = query_boxes_cp.size(-1);
 
   c10::SmallVector<int64_t, SIZE> output_size({B, N, K});
-  at::Tensor overlaps = npu_preparation::ApplyTensor(self_cp, output_size);
+  at::Tensor overlaps = npu_preparation::apply_tensor(self_cp, output_size);
 
   rotated_overlaps_npu_nocheck(overlaps, self_cp, query_boxes_cp, trans);
   overlaps = at_npu::native::custom_ops::npu_dtype_cast(overlaps, origin_dtype);

@@ -38,7 +38,7 @@ at::Tensor& affine_grid_generator_backward_nocheck(
     at::IntArrayRef size,
     bool align_corners) {
   c10::SmallVector<int64_t, SIZE> output_size = {size[0], size[2], size[3], 3};
-  at::Tensor assist = npu_preparation::ApplyTensor(grad, output_size);
+  at::Tensor assist = npu_preparation::apply_tensor(grad, output_size);
   assist.select(-1, 0).copy_(_linspace_from_neg_one(grad, size[3], align_corners));
   assist.select(-1, 1).copy_(_linspace_from_neg_one(grad, size[2], align_corners).unsqueeze_(-1));
   assist.select(-1, 2).fill_(1);
@@ -68,7 +68,7 @@ at::Tensor affine_grid_generator_backward(
   TORCH_CHECK(size.size() == 4, "AffineGridGeneratorBackward needs 4d (spatial) input.")
 
   c10::SmallVector<int64_t, SIZE> output_size = {size[0], 3, 2};
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(grad, output_size, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(grad, output_size, ACL_FORMAT_ND);
 
   affine_grid_generator_backward_nocheck(
       result,

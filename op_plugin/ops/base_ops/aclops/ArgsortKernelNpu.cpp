@@ -55,10 +55,10 @@ at::Tensor argsort(
   std::swap(perm[dim], perm[last_dim]);
 
   auto output_size = op_infer::transpose_npu_output_size(self, perm);
-  at::Tensor indices = npu_preparation::ApplyTensor(self, self.options().dtype(at::kInt));
+  at::Tensor indices = npu_preparation::apply_tensor(self, self.options().dtype(at::kInt));
   at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
-  at::Tensor transpose_values = npu_preparation::ApplyTensor(self, output_size);
-  at::Tensor transpose_indices = npu_preparation::ApplyTensor(indices, output_size);
+  at::Tensor transpose_values = npu_preparation::apply_tensor(self, output_size);
+  at::Tensor transpose_indices = npu_preparation::apply_tensor(indices, output_size);
 
   argsort_out_npu_nocheck(transpose_values, transpose_indices, transpose_self, last_dim, descending);
   acl_op::npu_transpose_out(transpose_indices, perm, true, indices);

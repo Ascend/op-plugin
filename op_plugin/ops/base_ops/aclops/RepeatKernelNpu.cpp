@@ -48,7 +48,7 @@ at::Tensor repeat(const at::Tensor& self, at::IntArrayRef repeats) {
   }
 
   auto output_size = op_infer::repeat_npu_output_size(self_cp, repeats);
-  at::Tensor result = npu_preparation::ApplyTensor(self_cp, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
 
   repeat_out_npu_nocheck(result, self_cp, repeats);
   return result;

@@ -42,12 +42,12 @@ at::Tensor& hardswish_out(const at::Tensor& self, at::Tensor& result) {
   } else {
       hardswish_out_nocheck(result, self);
   }
-  
+
   return result;
 }
 
 at::Tensor hardswish(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   hardswish_out_nocheck(result, self);
   return result;
 }

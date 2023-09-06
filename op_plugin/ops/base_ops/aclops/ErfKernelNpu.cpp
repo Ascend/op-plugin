@@ -49,7 +49,7 @@ at::Tensor& erf_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor erf(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   erf_npu_nocheck(result, self);
   return result;
 }

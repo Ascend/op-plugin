@@ -77,12 +77,11 @@ at::Tensor& adaptive_avg_pool3d_out(
 at::Tensor adaptive_avg_pool3d(const at::Tensor& self, at::IntArrayRef output_size) {
   adaptive_avg_pooling3d_check(self);
   auto op_infer_output_size = op_infer::adaptive_avg_pool3d_npu_output_size(self, output_size);
-  at::Tensor result = npu_preparation::ApplyTensor(self, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, op_infer_output_size);
 
   TORCH_CHECK(output_size[0] == 1 && output_size[1] == 1 && output_size[2] == 1,
       "adaptive_avg_pool3d only support D=1 && H=1 && W=1 current!");
   return at::mean(self, {self.dim() - 3, self.dim() - 2, self.dim() - 1}, true);
-
 }
 
 at::Tensor _adaptive_avg_pool3d(const at::Tensor& self, at::IntArrayRef output_size) {

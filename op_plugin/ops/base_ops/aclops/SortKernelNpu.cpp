@@ -58,8 +58,8 @@ std::tuple<at::Tensor&, at::Tensor&> sort_out_npu_transpose(
 
     at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
     auto output_size = op_infer::transpose_npu_output_size(values, perm);
-    at::Tensor transpose_values = npu_preparation::ApplyTensor(values, output_size);
-    at::Tensor transpose_indices = npu_preparation::ApplyTensor(indices, output_size);
+    at::Tensor transpose_values = npu_preparation::apply_tensor(values, output_size);
+    at::Tensor transpose_indices = npu_preparation::apply_tensor(indices, output_size);
 
     sort_out_npu_nocheck(
         transpose_values, transpose_indices, transpose_self, last_dim, descending);
@@ -131,8 +131,8 @@ std::tuple<at::Tensor, at::Tensor> sort(
     bool descending) {
   auto output_size = op_infer::input_same_output_size(self);
 
-  at::Tensor values = npu_preparation::ApplyTensor(self);
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor values = npu_preparation::apply_tensor(self);
+  at::Tensor indices = npu_preparation::apply_tensor_with_format(
       output_size, self.options().dtype(at::kInt), ACL_FORMAT_NCHW);
 
   sort_out_npu_transpose(values, indices, self, dim, descending);

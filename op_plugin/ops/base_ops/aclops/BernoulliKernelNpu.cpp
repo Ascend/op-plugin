@@ -90,7 +90,7 @@ at::Tensor& bernoulli_(at::Tensor& self, const at::Tensor& p, c10::optional<at::
 }
 
 at::Tensor bernoulli(const at::Tensor& self, c10::optional<at::Generator> gen) {
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self.sizes(), self.options(), ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(self.sizes(), self.options(), ACL_FORMAT_ND);
   bernoulli_npu_nocheck(result, self, gen);
   return result;
 }

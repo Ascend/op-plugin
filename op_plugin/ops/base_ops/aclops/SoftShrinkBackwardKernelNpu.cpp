@@ -65,7 +65,7 @@ at::Tensor softshrink_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& lambd) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
 
   softshrink_backward_out_nocheck(
       grad_input, grad_output, self, lambd);
