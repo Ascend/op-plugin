@@ -52,7 +52,7 @@ at::Tensor& log2_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor log2(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   log2_out_npu_nocheck(result, self);
   return result;
 }

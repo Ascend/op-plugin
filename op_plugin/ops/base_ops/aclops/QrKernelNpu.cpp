@@ -106,8 +106,8 @@ std::tuple<at::Tensor, at::Tensor> qr(
     bool some) {
   qr_check(self);
   auto sizes = qr_npu_output_size(self, some);
-  at::Tensor Q = npu_preparation::ApplyTensor(self, std::get<0>(sizes));
-  at::Tensor R = npu_preparation::ApplyTensor(self, std::get<1>(sizes));
+  at::Tensor Q = npu_preparation::apply_tensor(self, std::get<0>(sizes));
+  at::Tensor R = npu_preparation::apply_tensor(self, std::get<1>(sizes));
 
   qr_out_npu_nocheck(Q, R, self, some);
   return std::tie(Q, R);

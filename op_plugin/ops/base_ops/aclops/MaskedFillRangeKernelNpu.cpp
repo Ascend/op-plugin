@@ -49,7 +49,7 @@ at::Tensor npu_masked_fill_range(
       " and self dtype is ",
       self.scalar_type());
 
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   at_npu::native::OpCommand cmd;
   cmd.Name("MaskedFillRange")
       .Input(self)

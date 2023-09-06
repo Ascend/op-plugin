@@ -71,7 +71,7 @@ at::Tensor soft_margin_loss_backward(
     const at::Tensor& input,
     const at::Tensor& target,
     int64_t reduction) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(input);
+  at::Tensor grad_input = npu_preparation::apply_tensor(input);
   soft_margin_loss_backward_out_nocheck(
       grad_input, grad_output, input, target, reduction);
   return grad_input;

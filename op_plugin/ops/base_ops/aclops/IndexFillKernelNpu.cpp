@@ -141,7 +141,7 @@ at::Tensor index_fill(
     int64_t dim,
     const at::Tensor& index,
     const at::Scalar& value) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   index_fill_d_nocheck(result, self, dim, index, value);
   return result;
 }
@@ -160,7 +160,7 @@ at::Tensor& index_fill_(
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
     index_fill_d_nocheck(self, self, dim, index, value);
-  }  
+  }
   return self;
 }
 
@@ -171,10 +171,10 @@ at::Tensor index_fill(
     const at::Tensor& value) {
   at::IntArrayRef shape_self = self.sizes();
   index_fill_d_check_index(shape_self, index, dim);
-  TORCH_CHECK(value.dim() == 0, 
+  TORCH_CHECK(value.dim() == 0,
       "Value should be a 0-dimensional tensor,but got ", value.dim());
   at::Scalar value_scalar = value.item();
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   index_fill_d_nocheck(result, self, dim, index, value_scalar);
   return result;
 }
@@ -186,7 +186,7 @@ at::Tensor& index_fill_(
     const at::Tensor& value) {
   at::IntArrayRef shape_self = self.sizes();
   index_fill_d_check_index(shape_self, index, dim);
-  TORCH_CHECK(value.dim() == 0, 
+  TORCH_CHECK(value.dim() == 0,
       "Value should be a 0-dimensional tensor,but got ",value.dim());
   at::Scalar value_scalar = value.item();
 

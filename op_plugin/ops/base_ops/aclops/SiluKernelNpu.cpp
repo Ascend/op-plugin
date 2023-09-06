@@ -42,7 +42,7 @@ at::Tensor& silu_out_npu(const at::Tensor& self, at::Tensor& result) {
       {self},
       result,
       self);
-    
+
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     silu_out_npu_nocheck(contiguous_result, self);
@@ -55,7 +55,7 @@ at::Tensor& silu_out_npu(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor silu_kernel_npu(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
 
   silu_out_npu_nocheck(result, self);
 
@@ -87,7 +87,7 @@ at::Tensor& npu_silu_(at::Tensor& self) {
 }
 
 at::Tensor npu_silu_backward(const at::Tensor& grad_output, const at::Tensor& x0, const at::Tensor& x1) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(grad_output);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
   silu_backward_out_npu_nocheck(grad_input, grad_output, x0, x1);
 
   return grad_input;

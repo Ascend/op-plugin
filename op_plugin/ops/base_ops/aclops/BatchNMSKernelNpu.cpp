@@ -29,19 +29,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_batch_nms(
     int64_t max_total_size,
     bool change_coordinate_frame,
     bool transpose_box) {
-  at::Tensor nmsed_boxes = npu_preparation::ApplyTensor(
+  at::Tensor nmsed_boxes = npu_preparation::apply_tensor(
       {self.size(0), max_total_size, 4},
       self.options(),
       self);
-  at::Tensor nmsed_scores = npu_preparation::ApplyTensor(
+  at::Tensor nmsed_scores = npu_preparation::apply_tensor(
       {self.size(0), max_total_size},
       self.options(),
       self);
-  at::Tensor nmsed_classes = npu_preparation::ApplyTensor(
+  at::Tensor nmsed_classes = npu_preparation::apply_tensor(
       {self.size(0), max_total_size},
       self.options(),
       self);
-  at::Tensor nmsed_num = npu_preparation::ApplyTensor(
+  at::Tensor nmsed_num = npu_preparation::apply_tensor(
       {self.size(0)},
       self.options().dtype(at::kInt),
       self);

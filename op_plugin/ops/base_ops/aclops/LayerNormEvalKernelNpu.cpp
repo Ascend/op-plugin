@@ -38,7 +38,7 @@ at::Tensor npu_layer_norm_eval(
       1LL,
       std::multiplies<int64_t>());
 
-  at::Tensor result = npu_preparation::ApplyTensor(input);
+  at::Tensor result = npu_preparation::apply_tensor(input);
   int64_t numels = 1;
   int64_t begin_dim = 0;
   c10::SmallVector<int64_t, SIZE> tmp_size;
@@ -74,8 +74,8 @@ at::Tensor npu_layer_norm_eval(
     }
   }
 
-  at::Tensor mean = npu_preparation::ApplyTensor(resize_weight, output_size);
-  at::Tensor rstd = npu_preparation::ApplyTensor(resize_weight, output_size);
+  at::Tensor mean = npu_preparation::apply_tensor(resize_weight, output_size);
+  at::Tensor rstd = npu_preparation::apply_tensor(resize_weight, output_size);
   at_npu::native::OpCommand cmd;
   cmd.Name("LayerNorm")
       .Input(input)

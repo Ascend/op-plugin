@@ -76,7 +76,7 @@ at::Tensor& logical_and_out(const at::Tensor& self, const at::Tensor& other, at:
 
 at::Tensor logical_and(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size,
       self.options().dtype(at::kBool),
       calcu_op_util::GetTensorNpuFormat(self));

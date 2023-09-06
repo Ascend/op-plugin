@@ -72,7 +72,7 @@ at::Tensor npu_conv_transpose2d(
       input, weight, bias, padding, output_padding, stride, dilation, groups);
   int64_t result_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
   at::Tensor result =
-      npu_preparation::ApplyTensorWithFormat(output_size, input.options(), result_format);
+      npu_preparation::apply_tensor_with_format(output_size, input.options(), result_format);
 
   conv_transpose2d_out_npu(
       result, input, weight, bias, padding, output_padding, stride, dilation, groups);

@@ -85,8 +85,8 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_update(
   const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] { return at::Tensor(); });
   const at::Tensor& running_var = c10::value_or_else(running_var_opt, [] { return at::Tensor(); });
 
-  at::Tensor mean_all = npu_preparation::ApplyTensor(sum, output_size);
-  at::Tensor invstd_all = npu_preparation::ApplyTensor(sum, output_size);
+  at::Tensor mean_all = npu_preparation::apply_tensor(sum, output_size);
+  at::Tensor invstd_all = npu_preparation::apply_tensor(sum, output_size);
 
   batch_norm_gather_stats_update_npu_impl(mean_all, invstd_all, self, sum, square_sum,
       running_mean, running_var, momentum, eps, counts);

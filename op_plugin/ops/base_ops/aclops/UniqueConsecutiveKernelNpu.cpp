@@ -107,13 +107,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_consecutive(
     const bool return_counts,
     c10::optional<int64_t> dim) {
   at::Tensor output = (dim.has_value()) ?
-      npu_preparation::ApplyTensor(self) : npu_preparation::ApplyTensor(self, {self.numel()});
+      npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor(self, {self.numel()});
   at::Tensor inverse_indices = (dim.has_value()) ?
-      npu_preparation::ApplyTensorWithFormat(self.size(dim.value()), self.options().dtype(at::kLong), ACL_FORMAT_ND) :
-      npu_preparation::ApplyTensorWithFormat(self.sizes(), self.options().dtype(at::kLong), ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(self.size(dim.value()), self.options().dtype(at::kLong), ACL_FORMAT_ND) :
+      npu_preparation::apply_tensor_with_format(self.sizes(), self.options().dtype(at::kLong), ACL_FORMAT_ND);
   at::Tensor counts = (dim.has_value()) ?
-      npu_preparation::ApplyTensorWithFormat(self.size(dim.value()), self.options().dtype(at::kLong), ACL_FORMAT_ND) :
-      npu_preparation::ApplyTensorWithFormat({self.numel()}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
+      npu_preparation::apply_tensor_with_format(self.size(dim.value()), self.options().dtype(at::kLong), ACL_FORMAT_ND) :
+      npu_preparation::apply_tensor_with_format({self.numel()}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
   unique_consecutive_out_nocheck(output, inverse_indices, counts, self, return_inverse, return_counts, dim);
   return std::tie(output, inverse_indices, counts);
 }

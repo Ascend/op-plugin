@@ -41,7 +41,7 @@ at::Tensor _ctc_loss_backward(
 
   auto input_lengths_tensor = at::tensor(input_lengths, targets.options());
   auto target_lengths_tensor = at::tensor(target_lengths, targets.options());
-  at::Tensor grad = npu_preparation::ApplyTensor(log_probs_cast);
+  at::Tensor grad = npu_preparation::apply_tensor(log_probs_cast);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("CTCLossV2Grad")

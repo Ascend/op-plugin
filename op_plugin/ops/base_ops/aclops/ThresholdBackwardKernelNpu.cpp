@@ -53,7 +53,7 @@ at::Tensor threshold_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& threshold) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   // use 5HD in Relu
   if ((calcu_op_util::GetTensorNpuFormat(grad_output) == ACL_FORMAT_NCHW) &&
       (calcu_op_util::GetTensorNpuFormat(self) == ACL_FORMAT_NC1HWC0)) {

@@ -111,7 +111,7 @@ at::Tensor nll_loss_backward(
     int64_t reduction,
     int64_t ignore_index,
     const at::Tensor& total_weight) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
   acl_op::nll_loss_backward_out(grad_output, self, target, weight_opt, reduction, ignore_index,
       total_weight, grad_input);
   return grad_input;

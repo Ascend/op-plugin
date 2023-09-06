@@ -37,19 +37,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> layer_norm_npu_support(
   DCHECK(!weight.defined() || weight.numel() == N);
   DCHECK(!bias.defined() || bias.numel() == N);
 
-  at::Tensor Y = npu_preparation::ApplyTensor(input);
+  at::Tensor Y = npu_preparation::apply_tensor(input);
   at::Tensor mean;
   at::Tensor variance;
   if (M < 0) {
-    mean = npu_preparation::ApplyTensorWithFormat({M}, input.options(), ACL_FORMAT_ND);
-    variance = npu_preparation::ApplyTensorWithFormat({M}, input.options(), ACL_FORMAT_ND);
+    mean = npu_preparation::apply_tensor_with_format({M}, input.options(), ACL_FORMAT_ND);
+    variance = npu_preparation::apply_tensor_with_format({M}, input.options(), ACL_FORMAT_ND);
   } else {
     int64_t numels = 1;
     int64_t begin_dim = 0;
-    
+
     // the output of mean and rstd is Multidimension
     at::SmallVector<int64_t, 8> reduce_dims;
-    
+
     // the input of weight is Multidimension
     at::SmallVector<int64_t, 8> weight_dims;
     for (int64_t i = 0; i < input.dim(); i++) {
@@ -80,8 +80,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> layer_norm_npu_support(
       bias.resize_(weight_dims);
     }
 
-    mean = npu_preparation::ApplyTensorWithFormat(reduce_dims, weight.options(), ACL_FORMAT_ND);
-    variance = npu_preparation::ApplyTensorWithFormat(reduce_dims, weight.options(), ACL_FORMAT_ND);
+    mean = npu_preparation::apply_tensor_with_format(reduce_dims, weight.options(), ACL_FORMAT_ND);
+    variance = npu_preparation::apply_tensor_with_format(reduce_dims, weight.options(), ACL_FORMAT_ND);
 
     at_npu::native::OpCommand cmd;
     cmd.Name("LayerNorm")

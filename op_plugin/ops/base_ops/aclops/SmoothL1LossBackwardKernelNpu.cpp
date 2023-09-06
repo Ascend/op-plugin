@@ -73,7 +73,7 @@ at::Tensor smooth_l1_loss_backward(
     const at::Tensor& target,
     int64_t reduction,
     double beta) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
   acl_op::smooth_l1_loss_backward_out(
       grad_out, self, target, reduction, beta, grad_input);
   return grad_input;

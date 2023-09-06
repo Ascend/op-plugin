@@ -56,7 +56,7 @@ at::Tensor& threshold_out(
 }
 
 at::Tensor threshold(const at::Tensor& self, const at::Scalar& threshold, const at::Scalar& value) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   threshold_out_nocheck(result, self, threshold, value);
   return result;
 }

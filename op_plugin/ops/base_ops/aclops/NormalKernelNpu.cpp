@@ -131,7 +131,7 @@ at::Tensor normal(
     const at::Tensor& mean,
     double std,
     c10::optional<at::Generator> generator) {
-  at::Tensor result = npu_preparation::ApplyTensor(mean);
+  at::Tensor result = npu_preparation::apply_tensor(mean);
   normal_out_npu_nocheck(result, generator);
   result.mul_(std).add_(mean);
   return result;
@@ -141,7 +141,7 @@ at::Tensor normal(
     double mean,
     const at::Tensor& std,
     c10::optional<at::Generator> generator) {
-  at::Tensor result = npu_preparation::ApplyTensor(std);
+  at::Tensor result = npu_preparation::apply_tensor(std);
   normal_out_npu_nocheck(result, generator);
   result.mul_(std).add_(mean);
   return result;
@@ -152,7 +152,7 @@ at::Tensor normal(
     const at::Tensor& std,
     c10::optional<at::Generator> generator) {
   at::SmallVector<int64_t, SIZE> output_size = op_infer::broadcast_ops_npu_output_size(mean, std);
-  at::Tensor result = npu_preparation::ApplyTensor(mean, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(mean, output_size);
   normal_out_npu_nocheck(result, generator);
   result.mul_(std).add_(mean);
   return result;
@@ -170,7 +170,7 @@ at::Tensor normal(
                                                   .device(device_opt)
                                                   .layout(layout_opt)
                                                   .pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
   normal_out_npu_nocheck(result, generator);
   result.mul_(std).add_(mean);
   return result;

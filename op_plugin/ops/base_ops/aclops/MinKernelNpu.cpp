@@ -126,12 +126,12 @@ std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, int64_t dim, bool
   c10::SmallVector<int64_t, SIZE> dims = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self_cast, dims, keepdim);
 
-  at::Tensor outputs = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor outputs = npu_preparation::apply_tensor_with_format(
       output_size,
       self_cast.options(),
       ACL_FORMAT_ND);
 
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor indices = npu_preparation::apply_tensor_with_format(
       output_size,
       self_cast.options().dtype(at::ScalarType::Int),
       ACL_FORMAT_NCHW);
@@ -184,7 +184,7 @@ at::Tensor minimum(const at::Tensor& self, const at::Tensor& other) {
       at_npu::native::custom_ops::npu_dtype_cast(other, result_type) : other;
 
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensor(self_copy, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_copy, output_size);
   min_out_npu_nocheck(result, self_copy, other_copy);
   return result;
 }
@@ -206,7 +206,7 @@ at::Tensor& minimum_out(const at::Tensor& self, const at::Tensor& other, at::Ten
 at::Tensor amin(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
   int64_t npu_format = output_size.empty() ? ACL_FORMAT_NCHW : calcu_op_util::GetTensorNpuFormat(self);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self, output_size, npu_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(self, output_size, npu_format);
   min_out_npu_nocheck(result, self, dims, keepdim);
   return result;
 }

@@ -208,7 +208,7 @@ at::Tensor convolution_transpose3d_nocheck(
   auto output_size = convolution_transpose3d_npu_output_size(
       input, weight, bias, padding, output_padding, stride, dilation, groups);
   at::Tensor result =
-      npu_preparation::ApplyTensorWithFormat(input, output_size, ACL_FORMAT_NDC1HWC0);
+      npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_NDC1HWC0);
 
   convolution_transpose3d_out_npu_nocheck(
       result, input, weight, bias, padding, output_padding, stride, dilation, groups);
@@ -254,14 +254,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv_transpose2d_backward(
 
   if (output_mask[0]) {
     int64_t grad_input_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
-    grad_input = npu_preparation::ApplyTensorWithFormat(input, grad_input_format);
+    grad_input = npu_preparation::apply_tensor_with_format(input, grad_input_format);
   }
   if (output_mask[1]) {
-    grad_weight = npu_preparation::ApplyTensorWithFormat(
+    grad_weight = npu_preparation::apply_tensor_with_format(
         weight.sizes(), weight.options().dtype(at::kFloat), calcu_op_util::GetTensorNpuFormat(weight));
   }
   if (output_mask[2]) {
-    grad_bias = npu_preparation::ApplyTensorWithFormat({grad_output.size(1)}, grad_output.options(), ACL_FORMAT_NCHW);
+    grad_bias = npu_preparation::apply_tensor_with_format({grad_output.size(1)}, grad_output.options(), ACL_FORMAT_NCHW);
   }
 
   conv_transpose2d_backward_out_nocheck(grad_input, grad_weight, grad_bias,

@@ -53,7 +53,7 @@ at::Tensor& tanh_backward_out(
 }
 
 at::Tensor tanh_backward(const at::Tensor& grad_output, const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   tanh_backward_out_npu_nocheck(result, grad_output, self);
   return result;
 }

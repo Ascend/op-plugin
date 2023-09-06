@@ -79,7 +79,7 @@ at::Tensor smooth_l1_loss(
     int64_t reduction,
     double beta) {
   auto output_size = op_infer::smooth_l1_loss_npu_output_size(self, target, reduction);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   smooth_l1_loss_out_npu_nocheck(result, self, target, reduction, beta);
   return result;
 }

@@ -76,16 +76,16 @@ at::Tensor& xor_out_npu(
     const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   if (self.dtype() == at::ScalarType::Bool) {
-    auto not_self_result = npu_preparation::ApplyTensor(self, output_size);
+    auto not_self_result = npu_preparation::apply_tensor(self, output_size);
     not_out_npu(not_self_result, self);
 
-    auto not_other_result = npu_preparation::ApplyTensor(self, output_size);
+    auto not_other_result = npu_preparation::apply_tensor(self, output_size);
     not_out_npu(not_other_result, other);
 
-    auto not_self_and_other = npu_preparation::ApplyTensor(self, output_size);
+    auto not_self_and_other = npu_preparation::apply_tensor(self, output_size);
     and_out_npu(not_self_and_other, not_self_result, other);
 
-    auto self_and_not_other = npu_preparation::ApplyTensor(self, output_size);
+    auto self_and_not_other = npu_preparation::apply_tensor(self, output_size);
     and_out_npu(self_and_not_other, self, not_other_result);
 
     npu_op_command cmd;
@@ -110,16 +110,16 @@ at::Tensor& xor_out_npu(
     const at::Tensor& self,
     const at::Scalar& other) {
   if (self.dtype() == at::ScalarType::Bool) {
-    auto not_self_result = npu_preparation::ApplyTensor(self);
+    auto not_self_result = npu_preparation::apply_tensor(self);
     not_out_npu(not_self_result, self);
 
-    auto not_self_or_other = npu_preparation::ApplyTensor(self);
+    auto not_self_or_other = npu_preparation::apply_tensor(self);
     or_out_npu(not_self_or_other, not_self_result, other);
 
-   auto not_not_self_or_other = npu_preparation::ApplyTensor(self);
+    auto not_not_self_or_other = npu_preparation::apply_tensor(self);
     not_out_npu(not_not_self_or_other, not_self_or_other);
 
-    auto not_self_and_other = npu_preparation::ApplyTensor(self);
+    auto not_self_and_other = npu_preparation::apply_tensor(self);
     and_out_npu(not_self_and_other, not_self_result, other);
 
     npu_op_command cmd;
@@ -142,13 +142,13 @@ at::Tensor& xor_out_npu(
 
 at::Tensor __xor__(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   xor_out_npu(result, self, other);
   return result;
 }
 
 at::Tensor __xor__(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   xor_out_npu(result, self, other);
   return result;
 }

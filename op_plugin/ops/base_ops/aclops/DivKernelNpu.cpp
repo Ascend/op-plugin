@@ -142,7 +142,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
 }
 
 at::Tensor div(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   div_scalar_out_nocheck(result, self, other);
 
   return result;

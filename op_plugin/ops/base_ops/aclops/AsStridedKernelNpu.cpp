@@ -33,7 +33,7 @@ at::Tensor& stride_copy_out_npu_nocheck(
     // [算子限制] 对于1. 小于一个block的数据搬运 2.result不match，Astrided暂不支持。
     acl_op::npu_view_copy(result, self, false);
     return result;
-  } 
+  }
 
   at_npu::native::OpCommand cmd;
   // When the last dimension of the input tensor stride is greater than 256, we use
@@ -55,7 +55,7 @@ at::Tensor& stride_copy_out_npu_nocheck(
     }
     at::IntArrayRef output_stride_array(output_stride);
     at::IntArrayRef output_shape_array(output_shape);
-    at::Tensor result_out = npu_preparation::ApplyTensorWithFormat(
+    at::Tensor result_out = npu_preparation::apply_tensor_with_format(
         output_shape_array, self.options(), ACL_FORMAT_ND);
     cmd.Name("AsStrided")
       .InputWithoutContiguous(self)
@@ -102,7 +102,7 @@ at::Tensor npu_stride_copy(
     c10::IntArrayRef stride,
     const c10::Scalar& storage_offset) {
   // AsStrided OP only supports ND input
-  at::Tensor result = at_npu::native::OpPreparation::ApplyTensorWithFormat(
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_with_format(
       shape, self.options(), ACL_FORMAT_ND);
   stride_copy_out_npu_nocheck(result, self, shape, stride, storage_offset);
   return result;

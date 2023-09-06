@@ -65,8 +65,8 @@ std::tuple<at::Tensor&, at::Tensor&> topk_out_npu_nocheck(
 
     at::Tensor transpose_self = acl_op::npu_transpose(self, perm, true);
     auto output_size = op_infer::transpose_npu_output_size(values, perm);
-    at::Tensor transpose_value = npu_preparation::ApplyTensor(values, output_size);
-    at::Tensor transpose_indices = npu_preparation::ApplyTensor(indices, output_size);
+    at::Tensor transpose_value = npu_preparation::apply_tensor(values, output_size);
+    at::Tensor transpose_indices = npu_preparation::apply_tensor(indices, output_size);
     topk_out_npu_no_transpose(
         transpose_value,
         transpose_indices,
@@ -138,8 +138,8 @@ std::tuple<at::Tensor, at::Tensor> topk(
     bool sorted) {
   at::Tensor self_cp = npu_preparation::CastBackToOriFormat(self);
   auto output_size = op_infer::topk_npu_output_size(self_cp, k, dim, largest, sorted);
-  at::Tensor values = npu_preparation::ApplyTensor(self_cp, output_size);
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor values = npu_preparation::apply_tensor(self_cp, output_size);
+  at::Tensor indices = npu_preparation::apply_tensor_with_format(
       output_size, self_cp.options().dtype(at::kInt), ACL_FORMAT_ND);
   topk_out_npu_nocheck(values, indices, self_cp, k, dim, largest, sorted);
 

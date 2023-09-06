@@ -67,7 +67,7 @@ at::Tensor& soft_margin_loss_out(
 
 at::Tensor soft_margin_loss(const at::Tensor& self, const at::Tensor& target, int64_t reduction) {
   auto output_size = op_infer::soft_margin_loss_npu_output_size(self, target, reduction);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
 
   soft_margin_loss_out_nocheck(result, self, target, reduction);
 

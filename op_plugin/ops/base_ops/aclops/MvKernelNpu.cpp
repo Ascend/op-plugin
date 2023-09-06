@@ -64,7 +64,7 @@ at::Tensor& mv_out(const at::Tensor& self, const at::Tensor& vec, at::Tensor& re
 }
 
 at::Tensor mv(const at::Tensor& self, const at::Tensor& vec) {
-  at::Tensor result = npu_preparation::ApplyTensor(self, {self.size(0), 1});
+  at::Tensor result = npu_preparation::apply_tensor(self, {self.size(0), 1});
   mv_out_npu_nocheck(result, self, vec);
   result.squeeze_(1);
   return result;

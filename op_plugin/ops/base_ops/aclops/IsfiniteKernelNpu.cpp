@@ -30,7 +30,7 @@ at::Tensor isfinite(const at::Tensor& self_ex) {
     self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
   auto output_size = self.sizes();
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size, self.options().dtype(at::kBool), ACL_FORMAT_ND);
 
   at_npu::native::OpCommand cmd;

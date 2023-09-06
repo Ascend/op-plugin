@@ -59,7 +59,7 @@ at::Tensor& hardtanh_out(
 }
 
 at::Tensor hardtanh(const at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   hardtanh_out(self, min, max, result);
   return result;
 }

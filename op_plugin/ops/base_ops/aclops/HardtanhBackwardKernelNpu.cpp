@@ -67,7 +67,7 @@ at::Tensor hardtanh_backward(
     const at::Tensor& self,
     const at::Scalar& min_val,
     const at::Scalar& max_val) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
   hardtanh_backward_out(grad_output, self, min_val, max_val, grad_input);
   return grad_input;
 }

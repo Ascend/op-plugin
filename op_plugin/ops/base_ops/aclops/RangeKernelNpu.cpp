@@ -80,7 +80,7 @@ at::Tensor range(
       "upper bound and larger bound inconsistent with step sign");
 
   auto output_size = op_infer::range_npu_output_size(start_value, end_value, step_value);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, option, ACL_FORMAT_NCHW);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_NCHW);
   return range_out_nocheck(result, start, end, step);
 }
 

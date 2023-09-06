@@ -70,7 +70,7 @@ at::Tensor diou_npu_nocheck(
   at::Tensor gtboxes_cp = gtboxes_is_half ? at_npu::native::custom_ops::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
 
   auto output_size = diou_output_size(self_cp, gtboxes_cp, is_cross);
-  at::Tensor result = npu_preparation::ApplyTensor(self_cp, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
   diou_out_npu_nocheck(result, self_cp, gtboxes_cp, trans, is_cross, mode);
 
   if (self_is_half || gtboxes_is_half) {
@@ -122,8 +122,8 @@ std::tuple<at::Tensor, at::Tensor> npu_diou_backward(
   bool gtboxes_is_half = gtboxes.scalar_type() == at::kHalf;
   at::Tensor bboxes_cp = bboxes_is_half ? at_npu::native::custom_ops::npu_dtype_cast(bboxes, at::kFloat) : bboxes;
   at::Tensor gtboxes_cp = gtboxes_is_half ? at_npu::native::custom_ops::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
-  at::Tensor dbboxes = npu_preparation::ApplyTensor(bboxes_cp);
-  at::Tensor dgtboxes = npu_preparation::ApplyTensor(gtboxes_cp);
+  at::Tensor dbboxes = npu_preparation::apply_tensor(bboxes_cp);
+  at::Tensor dgtboxes = npu_preparation::apply_tensor(gtboxes_cp);
 
   diou_backward_out_npu_nocheck(dbboxes, dgtboxes, grad_cp, bboxes_cp, gtboxes_cp, trans, is_cross, mode);
   if (bboxes_is_half || gtboxes_is_half) {

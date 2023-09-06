@@ -52,7 +52,7 @@ at::Tensor& floor_(at::Tensor& self) {
 }
 
 at::Tensor floor(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   floor_out_npu_nocheck(result, self);
   return result;
 }

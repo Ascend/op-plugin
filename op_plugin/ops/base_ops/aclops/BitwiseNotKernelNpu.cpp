@@ -49,7 +49,7 @@ at::Tensor& bitwise_not_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor bitwise_not(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   bitwise_not_out_npu_nocheck(result, self);
   return result;
 }

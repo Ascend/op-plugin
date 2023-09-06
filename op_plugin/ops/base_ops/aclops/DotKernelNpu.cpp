@@ -55,7 +55,7 @@ at::Tensor& dot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor
 
 at::Tensor dot(const at::Tensor& self, const at::Tensor& tensor) {
   c10::SmallVector<int64_t, N> output_size = {};
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   dot_out_npu_nocheck(result, self, tensor);
   return result;
 }

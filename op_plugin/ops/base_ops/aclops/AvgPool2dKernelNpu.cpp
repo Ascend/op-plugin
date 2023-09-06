@@ -210,7 +210,7 @@ at::Tensor avg_pool2d(
 
   auto output_sizes = op_infer::avg_pool2d_npu_output_size(
       self_copy, kernel_sizess, stridess, paddingss, ceil_mode, count_include_pad, divisor_override);
-  at::Tensor result = npu_preparation::ApplyTensor(self_copy, output_sizes);
+  at::Tensor result = npu_preparation::apply_tensor(self_copy, output_sizes);
 
   avg_pool2d_out_nocheck(
       result, self_copy, kernel_sizess, stridess, paddingss, ceil_mode, count_include_pad, divisor_override);

@@ -35,7 +35,7 @@ at::Tensor npu_iou(
   }
 
   auto output_size = {gtboxes.size(0), bboxes.size(0)};
-  at::Tensor overlap = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor overlap = npu_preparation::apply_tensor_with_format(
       bboxes_fp16,
       output_size,
       calcu_op_util::GetTensorNpuFormat(bboxes));

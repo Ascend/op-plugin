@@ -62,7 +62,7 @@ at::Tensor& inverse_out(
 }
 
 at::Tensor inverse(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   inverse_out_npu_nocheck(result, self);
   return result;
 }

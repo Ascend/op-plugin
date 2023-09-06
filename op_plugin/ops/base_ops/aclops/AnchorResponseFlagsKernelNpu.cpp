@@ -28,7 +28,7 @@ inline void anchor_response_flags_check(
   TORCH_CHECK(
       featmap_size.size() == 2,
       "expected feat_map_size equals to 2, but got size ",
-      featmap_size.size()); 
+      featmap_size.size());
   TORCH_CHECK(
       self.dim() == 2 && self.size(1) == 4,
       "Non-empty 2D gt_bboxes tensor expected but got a tensor with sizes ",
@@ -48,7 +48,7 @@ at::Tensor npu_anchor_response_flags(
   anchor_response_flags_check(self, featmap_size, stride);
   auto output_size = op_infer::infersize_npu_anchor_response_flags(featmap_size, num_base_anchors);
   auto options = self.options().dtype(at::kByte);
-  at::Tensor result = npu_preparation::ApplyTensor(output_size, options, self);
+  at::Tensor result = npu_preparation::apply_tensor(output_size, options, self);
   at::Tensor self_cp = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
 
   at_npu::native::OpCommand cmd;

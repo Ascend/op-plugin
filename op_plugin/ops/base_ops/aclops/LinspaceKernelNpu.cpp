@@ -90,7 +90,7 @@ at::Tensor linspace(
   at::TensorOptions option;
   option = option.dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat({steps}, option, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, option, ACL_FORMAT_ND);
   at::Tensor result_cast = result;
 
   bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;

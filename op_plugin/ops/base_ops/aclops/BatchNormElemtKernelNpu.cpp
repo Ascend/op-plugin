@@ -93,7 +93,7 @@ at::Tensor batch_norm_elemt(
     const at::Tensor& mean,
     const at::Tensor& invstd,
     double eps) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   batch_norm_elemt_nocheck(result, self, weight, bias, mean, invstd, eps);
   return result;
 }

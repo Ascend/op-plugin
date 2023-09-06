@@ -105,7 +105,7 @@ at::Tensor index_select(
   if (self.dtype() == at::kBool) {
     input = at_npu::native::custom_ops::npu_dtype_cast(input, at::kInt);
   }
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(input, output_size, npu_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(input, output_size, npu_format);
   index_select_out_npu_nocheck(result, input, dim, index_tmp);
   if (self.dtype() == at::kBool) {
     result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
@@ -126,8 +126,8 @@ at::Tensor& index_select_out(
 }
 
 at::Tensor index_select(
-    const at::Tensor& self, 
-    at::Dimname dim, 
+    const at::Tensor& self,
+    at::Dimname dim,
     const at::Tensor& index) {
   return acl_op::index_select(self, dimname_to_position(self, dim), index);
 }

@@ -182,7 +182,7 @@ std::tuple<at::Tensor, at::Tensor> max_pool3d_with_indices(
   at::Tensor self_cp = self.ndimension() == 4 ? self.unsqueeze(0) : self;
   c10::SmallVector<int64_t, SIZE> output_size =
       max_pool3d_with_indices_output_size(self, kernel_size, stride, pads, dilation, ceil_mode);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, self_cp.options(), ACL_FORMAT_NDC1HWC0);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self_cp.options(), ACL_FORMAT_NDC1HWC0);
 
   max_pool3d_with_indices_out_nocheck(result, self, kernel_size, stride, pads, dilation, ceil_mode, result);
   result = self.ndimension() == 4 ? result.squeeze(0) : result;

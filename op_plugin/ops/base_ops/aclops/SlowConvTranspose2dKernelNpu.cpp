@@ -249,7 +249,7 @@ at::Tensor slow_conv_transpose2d(
       self, weight, kernel_size, bias, stride, padding, output_padding, dilation);
 
   int64_t result_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self, output_size, result_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(self, output_size, result_format);
   slow_conv_transpose2d_out_nocheck(
       result, self, weight, kernel_size, bias_opt, stride, padding, output_padding, dilation);
 

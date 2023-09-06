@@ -27,7 +27,7 @@ at::Tensor l1_loss(const at::Tensor& self,
   DO_COMPATIBILITY(aclnnL1Loss, acl_op::l1_loss(self, target, reduction));
   // construct the output tensor of NPU
   // 1. If reduction='none', the output size should be the same size as self.
-  // 2. Otherwise pass {} to ApplyTensor.
+  // 2. Otherwise pass {} to apply_tensor.
   // 3. Dtype of output should be the same dtype as self.
   at::IntArrayRef output_size;
   if (reduction == at::Reduction::None) {

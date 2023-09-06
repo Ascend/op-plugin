@@ -56,7 +56,7 @@ at::Tensor& exp2_(at::Tensor& self) {
 }
 
 at::Tensor exp2(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   exp2_out_npu_nocheck(result, self);
   return result;
 }

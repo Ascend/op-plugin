@@ -41,10 +41,10 @@ at::Tensor affine_grid_generator(
     const at::Tensor& theta,
     at::IntArrayRef size,
     bool align_corners) {
-  TORCH_CHECK(size.size() == 4 || size.size() == 5, 
+  TORCH_CHECK(size.size() == 4 || size.size() == 5,
       "AffineGridGenerator needs 4d or 5d size(input).");
   auto output_size = op_infer::infersize_affine_grid_generator(size);
-  at::Tensor result = npu_preparation::ApplyTensor(theta, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(theta, output_size);
   affine_grid_generator_npu_nocheck(
       result,
       theta,

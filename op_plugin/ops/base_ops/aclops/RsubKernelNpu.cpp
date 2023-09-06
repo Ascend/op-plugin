@@ -79,14 +79,14 @@ at::Tensor& rsub_out_npu_nocheck(
 at::Tensor rsub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
   at::Tensor output_tensor = rsub_dest_output(self, other);
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensor(output_tensor, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
   rsub_out_npu_nocheck(result, self, other, alpha);
 
   return result;
 }
 
 at::Tensor rsub(const at::Tensor& self, const at::Scalar& other, const at::Scalar& alpha) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   rsub_out_npu_nocheck(result, self, other, alpha);
 
   return result;

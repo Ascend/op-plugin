@@ -39,7 +39,7 @@ at::Tensor& reverse_out_nocheck(
 at::Tensor reverse(
     const at::Tensor& self,
     at::IntArrayRef axis) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   reverse_out_nocheck(result, self, axis);
 
   return result;

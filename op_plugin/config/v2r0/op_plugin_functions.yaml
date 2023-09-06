@@ -1,8 +1,4 @@
 official:
- - func: __and__.Scalar(Tensor self, Scalar other) -> Tensor
-   impl_ns: acl_op
- - func: __and__.Tensor(Tensor self, Tensor other) -> Tensor
-   impl_ns: acl_op
  - func: __ilshift__.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
    impl_ns: acl_op
  - func: __ilshift__.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
@@ -18,10 +14,6 @@ official:
  - func: __lshift__.Scalar(Tensor self, Scalar other) -> Tensor
    impl_ns: acl_op
  - func: __lshift__.Tensor(Tensor self, Tensor other) -> Tensor
-   impl_ns: acl_op
- - func: __or__.Scalar(Tensor self, Scalar other) -> Tensor
-   impl_ns: acl_op
- - func: __or__.Tensor(Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op
  - func: __rshift__.Scalar(Tensor self, Scalar other) -> Tensor
    impl_ns: acl_op

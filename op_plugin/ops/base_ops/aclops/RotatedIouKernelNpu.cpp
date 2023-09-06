@@ -73,7 +73,7 @@ at::Tensor npu_rotated_iou(
   int64_t K = query_boxes_cp.size(-1);
 
   c10::SmallVector<int64_t, SIZE> output_size({B, N, K});
-  at::Tensor iou = npu_preparation::ApplyTensor(boxes_cp, output_size);
+  at::Tensor iou = npu_preparation::apply_tensor(boxes_cp, output_size);
 
   rotated_iou_npu_nocheck(iou, boxes_cp, query_boxes_cp, trans, mode, is_cross, v_threshold, e_threshold);
   iou = at_npu::native::custom_ops::npu_dtype_cast(iou, origin_dtype);

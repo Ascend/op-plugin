@@ -76,8 +76,8 @@ at::Tensor mse_loss(const at::Tensor& self, const at::Tensor& target, int64_t re
     output_size = op_infer::input_same_output_size(self);
   }
   at::Tensor result = (reduction == at::Reduction::None) ?
-      npu_preparation::ApplyTensor(self, output_size) :
-      npu_preparation::ApplyTensorWithFormat(self, output_size, ACL_FORMAT_ND);
+      npu_preparation::apply_tensor(self, output_size) :
+      npu_preparation::apply_tensor_with_format(self, output_size, ACL_FORMAT_ND);
 
   mse_loss_out_npu_nocheck(result, self, target, reduction);
   return result;

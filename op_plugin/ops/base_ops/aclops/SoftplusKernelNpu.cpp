@@ -62,7 +62,7 @@ at::Tensor softplus(
     const at::Tensor& self,
     const at::Scalar& beta,
     const at::Scalar& threshold) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   softplus_out_nocheck(result, self, beta, threshold);
   return result;
 }

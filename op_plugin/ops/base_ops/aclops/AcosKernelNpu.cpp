@@ -48,7 +48,7 @@ at::Tensor& acos_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor acos(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   acos_out_npu_nocheck(result, self);
   return result;
 }

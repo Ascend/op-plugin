@@ -100,7 +100,7 @@ at::Tensor npu_conv2d(
   int64_t Wo = (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
   c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Ho, Wo};
   int64_t result_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(input, output_size, result_format);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(input, output_size, result_format);
   acl_op::npu_conv2d_out(input, weight, bias, stride, padding, dilation, groups, result);
   return result;
 }

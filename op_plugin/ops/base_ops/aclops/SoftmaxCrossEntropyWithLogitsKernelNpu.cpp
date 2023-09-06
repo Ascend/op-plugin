@@ -41,8 +41,8 @@ std::tuple<at::Tensor, at::Tensor> softmax_cross_entropy_with_logits_impl_out_no
     const at::Tensor& self,
     const at::Tensor& labels) {
   auto output_sizes = op_infer::softmax_cross_entropy_with_logits_impl_npu_output_size(self);
-  at::Tensor result = npu_preparation::ApplyTensor(self, std::get<0>(output_sizes));
-  at::Tensor backprop = npu_preparation::ApplyTensor(self, std::get<1>(output_sizes));
+  at::Tensor result = npu_preparation::apply_tensor(self, std::get<0>(output_sizes));
+  at::Tensor backprop = npu_preparation::apply_tensor(self, std::get<1>(output_sizes));
 
   softmax_cross_entropy_with_logits_out_nocheck(result, backprop, self, labels);
 

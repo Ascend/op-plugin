@@ -57,7 +57,7 @@ at::Tensor log_sigmoid_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& buffer) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(grad_output);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
   log_sigmoid_backward_out(grad_output, self, buffer, grad_input);
 
   return grad_input;

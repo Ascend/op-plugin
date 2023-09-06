@@ -129,7 +129,7 @@ at::Tensor stride_add_tensor_get(const at::Tensor& src) {
     return src;
   } else {
     auto src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
-    at::Tensor src_new = npu_preparation::ApplyTensorWithFormat(
+    at::Tensor src_new = npu_preparation::apply_tensor_with_format(
         src_desc.base_sizes_, src.options(), ACL_FORMAT_NC1HWC0);
     src_new.set_(
         src.storage(),
@@ -165,7 +165,7 @@ at::Tensor add(const at::Tensor& self, const at::Tensor& other, const at::Scalar
   at::Tensor other_cp = (other.scalar_type() != result_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
       at_npu::native::custom_ops::npu_dtype_cast(other, result_type) : other;
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size,
       output_tensor.options().dtype(result_type),
       calcu_op_util::GetTensorNpuFormat(output_tensor));
@@ -175,7 +175,7 @@ at::Tensor add(const at::Tensor& self, const at::Tensor& other, const at::Scalar
 
 at::Tensor add(const at::Tensor& self, const at::Scalar& other, const at::Scalar& alpha) {
   alpha_check_npu(self.scalar_type(), alpha);
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   adds_out_npu_nocheck(result, self, other, alpha);
   return result;
 }

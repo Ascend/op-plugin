@@ -89,7 +89,7 @@ at::Tensor& logsumexp_out(const at::Tensor& self, at::IntArrayRef dims, bool kee
 
 at::Tensor logsumexp(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
   auto output_size = logsumexp_npu_output_size(self, dims, keepdim);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   return logsumexp_out_nocheck(result, self, dims, keepdim);
 }
 

@@ -31,7 +31,7 @@ std::tuple<at::Tensor&, at::Tensor&> nms_v4_npu_nocheck(
     const at::Tensor& iou_threshold,
     const at::Tensor& scores_threshold,
     bool pad_to_max_output_size) {
-  at::Tensor max_output_size_tensor = npu_preparation::ApplyTensor({}, self.options().dtype(at::kInt), self);
+  at::Tensor max_output_size_tensor = npu_preparation::apply_tensor({}, self.options().dtype(at::kInt), self);
   acl_op::fill_(max_output_size_tensor, max_output_size);
   at_npu::native::OpCommand cmd;
   cmd.Name("NonMaxSuppressionV4")
@@ -57,11 +57,11 @@ std::tuple<at::Tensor, at::Tensor> npu_nms_v4(
     bool pad_to_max_output_size) {
   auto output_sizes = op_infer::nms_v4_npu_output_size(max_output_size);
 
-  at::Tensor selected_indices = npu_preparation::ApplyTensor(
+  at::Tensor selected_indices = npu_preparation::apply_tensor(
       std::get<0>(output_sizes),
       self.options().dtype(at::kInt),
       self);
-  at::Tensor valid_outputs = npu_preparation::ApplyTensor(
+  at::Tensor valid_outputs = npu_preparation::apply_tensor(
       std::get<1>(output_sizes),
       self.options().dtype(at::kInt),
       self);

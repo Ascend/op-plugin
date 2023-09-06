@@ -55,7 +55,7 @@ at::Tensor _cdist_backward(
   at::Tensor tensor2_broadcast = x2.view(tensor2_expand_size).expand(tensor_broadcast_size).contiguous();
   at::Tensor grad_broadcast = grad.view(grad_expand_size).expand(tensor_broadcast_size).contiguous();
   at::Tensor cdist_broadcast = cdist.view(cdist_expand_size).expand(tensor_broadcast_size).contiguous();
-  at::Tensor result = npu_preparation::ApplyTensor(tensor1_broadcast, x1.sizes());
+  at::Tensor result = npu_preparation::apply_tensor(tensor1_broadcast, x1.sizes());
 
   at_npu::native::OpCommand cmd;
   cmd.Name("CdistGrad")

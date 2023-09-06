@@ -52,7 +52,7 @@ at::Tensor& npu_transpose_out_nocheck(
 
 at::Tensor npu_transpose(const at::Tensor &self, at::IntArrayRef perm, bool require_contiguous) {
   auto output_size = op_infer::transpose_npu_output_size(self, perm);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   npu_transpose_out_nocheck(result, self, perm, require_contiguous);
 
   return result;

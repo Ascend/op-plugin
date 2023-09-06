@@ -23,7 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor hardsigmoid_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(grad_output);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
   at_npu::native::OpCommand cmd;
   cmd.Name("HardSigmoidGrad")
       .Input(grad_output)

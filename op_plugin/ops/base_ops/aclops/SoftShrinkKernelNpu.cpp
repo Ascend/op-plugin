@@ -60,10 +60,10 @@ at::Tensor& softshrink_out(
 
 at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd) {
   TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0");
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
 
   softshrink_out_nocheck(result, self, lambd);
-  
+
   return result;
 }
 } // namespace acl_op

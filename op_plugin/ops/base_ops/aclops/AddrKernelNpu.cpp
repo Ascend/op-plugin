@@ -93,7 +93,7 @@ at::Tensor addr(
     const at::Scalar& alpha) {
   at::ScalarType high_dtype = at::native::result_type({self, vec1, vec2});
   auto output_size = op_infer::addr_npu_output_size(self, vec1, vec2, beta, alpha);
-  at::Tensor result = npu_preparation::ApplyTensor(output_size, self.options().dtype(high_dtype), self);
+  at::Tensor result = npu_preparation::apply_tensor(output_size, self.options().dtype(high_dtype), self);
   addr_out(self, vec1, vec2, beta, alpha, result);
   return result;
 }

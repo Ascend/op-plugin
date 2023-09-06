@@ -50,7 +50,7 @@ at::Tensor& tanh_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor tanh(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   tanh_out_nocheck(result, self);
   return result;
 }

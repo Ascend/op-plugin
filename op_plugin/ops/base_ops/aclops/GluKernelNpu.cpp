@@ -64,7 +64,7 @@ at::Tensor glu(const at::Tensor& self, int64_t dim) {
   TORCH_CHECK(n_in % 2 == 0, "Halving dimension must be even, but dimension ", wrap_dim, " is size ", n_in);
 
   auto output_size = op_infer::glu_npu_output_size(self, dim);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   glu_npu_out_nocheck(result, self, dim);
   return result;
 }

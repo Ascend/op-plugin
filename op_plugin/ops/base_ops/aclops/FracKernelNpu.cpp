@@ -31,7 +31,7 @@ at::Tensor& frac_out_nocheck(at::Tensor& result, const at::Tensor& self) {
 
 at::Tensor& frac_out(const at::Tensor& self, at::Tensor& result) {
   npu_preparation::CheckOut(
-      {self}, 
+      {self},
       result,
       self);
   if (!npu_utils::check_match(&result)) {
@@ -45,7 +45,7 @@ at::Tensor& frac_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor frac(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   frac_out_nocheck(result, self);
   return result;
 }

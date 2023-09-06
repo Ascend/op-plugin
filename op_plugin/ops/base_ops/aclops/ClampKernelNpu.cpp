@@ -38,12 +38,12 @@ at::Tensor& clamp_out_npu_nocheck(
       .Input(max, self.scalar_type())
       .Output(result)
       .Run();
-  return result; 
+  return result;
 }
 
 at::Tensor& clamp_min_out_npu_nocheck(
     at::Tensor& result,
-    const at::Tensor& self, 
+    const at::Tensor& self,
     at::Scalar min) {
   // Set max according to self.dtype()
   at::Scalar max;
@@ -192,7 +192,7 @@ at::Tensor& clamp_out(
 }
 
 at::Tensor clamp_min(const at::Tensor& self, const at::Scalar& min) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   return acl_op::clamp_min_out(self, min, result);
 }
 
@@ -201,7 +201,7 @@ at::Tensor& clamp_min_(at::Tensor& self, const at::Scalar& min) {
 }
 
 at::Tensor clamp_max(const at::Tensor& self, const at::Scalar& max) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   return acl_op::clamp_max_out(self, max, result);
 }
 
@@ -213,7 +213,7 @@ at::Tensor clamp(
     const at::Tensor& self,
     const c10::optional<at::Scalar>& min,
     const c10::optional<at::Scalar>& max) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   return acl_op::clamp_out(self, min, max, result);
 }
 
@@ -225,7 +225,7 @@ at::Tensor& clamp_(
 }
 
 at::Tensor& clamp_min_out(
-    const at::Tensor& self, 
+    const at::Tensor& self,
     const at::Tensor& min,
     at::Tensor& result) {
   auto high_dtype = at::native::result_type(self, min);
@@ -332,7 +332,7 @@ at::Tensor& clamp_out(
 }
 
 at::Tensor clamp_min(const at::Tensor& self, const at::Tensor& min) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   return acl_op::clamp_min_out(self, min, result);
 }
 
@@ -341,7 +341,7 @@ at::Tensor& clamp_min_(at::Tensor& self, const at::Tensor& min) {
 }
 
 at::Tensor clamp_max(const at::Tensor& self, const at::Tensor& max) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   return acl_op::clamp_max_out(self, max, result);
 }
 
@@ -353,7 +353,7 @@ at::Tensor clamp(
     const at::Tensor& self,
     const c10::optional<at::Tensor>& min,
     const c10::optional<at::Tensor>& max) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   return acl_op::clamp_out(self, min, max, result);
 }
 

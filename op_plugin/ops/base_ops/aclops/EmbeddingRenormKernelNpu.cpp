@@ -75,8 +75,8 @@ at::Tensor& embedding_renorm_out_npu_nocheck(
     double max_norm,
     double norm_type) {
   at::SmallVector<int64_t, SIZE> mid_size = {indices.size(0), self.size(1)};
-  at::Tensor mid_input = npu_preparation::ApplyTensor(self, mid_size);
-  at::Tensor mid_output = npu_preparation::ApplyTensor(self, mid_size);
+  at::Tensor mid_input = npu_preparation::apply_tensor(self, mid_size);
+  at::Tensor mid_output = npu_preparation::apply_tensor(self, mid_size);
 
   embedding_renorm_gather2d_nocheck(mid_input, self, indices);
   embedding_renorm_execute_nocheck(mid_output, mid_input, max_norm, norm_type);
@@ -92,7 +92,7 @@ at::Tensor& embedding_renorm_out_npu_nocheck(
 
   auto num_mid_output = mid_output.numel();
   mid_output.resize_(num_mid_output);
-  at::Tensor scalar_out = npu_preparation::ApplyTensor(self, {num_indices, 1});
+  at::Tensor scalar_out = npu_preparation::apply_tensor(self, {num_indices, 1});
   embedding_renorm_gather2d_nocheck(scalar_out, mid_output, input_indices);
 
   at::Tensor out_res = mid_input * scalar_out;

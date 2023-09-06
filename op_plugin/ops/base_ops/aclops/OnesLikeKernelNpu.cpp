@@ -49,7 +49,7 @@ at::Tensor ones_like(
       .device(device_opt)
       .layout(layout_opt)
       .pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::ApplyTensor(self, option);
+  at::Tensor result = npu_preparation::apply_tensor(self, option);
 
   return acl_op::one_(result);
 }

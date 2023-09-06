@@ -77,13 +77,13 @@ at::Tensor arange(
   if (set_to_integral_dtype) {
     option = option.dtype(at::kLong);
   }
-  at::Tensor result_check = npu_preparation::ApplyTensorWithFormat({0}, option, ACL_FORMAT_ND);
+  at::Tensor result_check = npu_preparation::apply_tensor_with_format({0}, option, ACL_FORMAT_ND);
   if (start_value == end_value) {
     return result_check;
   }
 
   auto output_size = op_infer::infersize_arange(start, end, step);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, option, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_ND);
   if(option.dtype() == at::kHalf) {
     result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
   }

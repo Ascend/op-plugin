@@ -33,7 +33,7 @@ at::Tensor linear_npu_nocheck(
     const c10::optional<at::Tensor> & bias_opt) {
   const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
   c10::SmallVector<int64_t, SIZE> output_size = {input.size(0), weight.size(0)};
-  at::Tensor output = npu_preparation::ApplyTensor(input, output_size);
+  at::Tensor output = npu_preparation::apply_tensor(input, output_size);
 
   int64_t offset_x = 0;
   at_npu::native::OpCommand cmd;
@@ -82,14 +82,14 @@ std::tuple<at::Tensor, at::Tensor> npu_linear_backward(
   c10::SmallVector<int64_t, SIZE> weight_grad_output_size = {
       grad.size(1),
       input.size(1)};
-  at::Tensor input_grad = npu_preparation::ApplyTensor(input, input_grad_output_size);
-  at::Tensor weight_grad = npu_preparation::ApplyTensor(weight, weight_grad_output_size);
+  at::Tensor input_grad = npu_preparation::apply_tensor(input, input_grad_output_size);
+  at::Tensor weight_grad = npu_preparation::apply_tensor(weight, weight_grad_output_size);
 
   if (calcu_op_util::GetTensorNpuFormat(grad) == calcu_op_util::GetTensorNpuFormat(weight)) {
     linear_backward_out_npu_nocheck(input_grad, grad, weight, false, false);
     linear_backward_out_npu_nocheck(weight_grad, grad, input, true, false);
   } else {
-    at::Tensor gradFormatcast = npu_preparation::ApplyTensor(grad, grad.sizes());
+    at::Tensor gradFormatcast = npu_preparation::apply_tensor(grad, grad.sizes());
     gradFormatcast =
         at_npu::native::custom_ops::npu_format_cast(grad, calcu_op_util::GetTensorNpuFormat(weight));
     linear_backward_out_npu_nocheck(input_grad, gradFormatcast, weight, false, false);

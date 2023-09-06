@@ -169,14 +169,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv_transpose3d_backward(
   at::Tensor grad_bias;
 
   if (output_mask[0]) {
-    grad_input = npu_preparation::ApplyTensorWithFormat(input, ACL_FORMAT_NDC1HWC0);
+    grad_input = npu_preparation::apply_tensor_with_format(input, ACL_FORMAT_NDC1HWC0);
   }
   if (output_mask[1]) {
-    grad_weight = npu_preparation::ApplyTensorWithFormat(
+    grad_weight = npu_preparation::apply_tensor_with_format(
         weight.sizes(), weight.options().dtype(at::kFloat), calcu_op_util::GetTensorNpuFormat(weight));
   }
   if (output_mask[2]) {
-    grad_bias = npu_preparation::ApplyTensorWithFormat(
+    grad_bias = npu_preparation::apply_tensor_with_format(
         {grad_output.size(1)}, grad_output.options(), ACL_FORMAT_NCDHW);
   }
 

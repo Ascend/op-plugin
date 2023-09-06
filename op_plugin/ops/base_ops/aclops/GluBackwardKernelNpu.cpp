@@ -66,7 +66,7 @@ at::Tensor& glu_backward_out(const at::Tensor& grad_output, const at::Tensor& se
 
 at::Tensor glu_backward(const at::Tensor& grad_output, const at::Tensor& self, int64_t dim) {
   glu_grad_npu_check(self, dim);
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   glu_grad_npu_out_nocheck(result, grad_output, self, dim);
   return result;
 }

@@ -22,8 +22,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& self, double eps) {
   auto output_size = {self.size(1)};
-  at::Tensor sum = npu_preparation::ApplyTensor(output_size, self.options().dtype(at::kFloat), self);
-  at::Tensor square_sum = npu_preparation::ApplyTensor(output_size, self.options().dtype(at::kFloat), self);
+  at::Tensor sum = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kFloat), self);
+  at::Tensor square_sum = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kFloat), self);
 
   at::Tensor self_copy = self;
   if (self.scalar_type() != at::kFloat) {

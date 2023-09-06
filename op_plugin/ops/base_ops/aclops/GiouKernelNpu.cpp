@@ -108,8 +108,8 @@ std::tuple<at::Tensor, at::Tensor> npu_giou_backward(
   if (gtboxes_cp.scalar_type() == at::kHalf) {
     gtboxes_cp = at_npu::native::custom_ops::npu_dtype_cast(gtboxes_cp, at::kFloat);
   }
-  at::Tensor dbboxes = npu_preparation::ApplyTensor(bboxes_cp);
-  at::Tensor dgtboxes = npu_preparation::ApplyTensor(gtboxes_cp);
+  at::Tensor dbboxes = npu_preparation::apply_tensor(bboxes_cp);
+  at::Tensor dgtboxes = npu_preparation::apply_tensor(gtboxes_cp);
 
   giou_backward_inner_out_npu_nocheck(dbboxes, dgtboxes, grad_cp, bboxes_cp, gtboxes_cp, trans, is_cross, mode);
   if (bboxes.scalar_type() == at::kHalf || gtboxes.scalar_type() == at::kHalf) {
@@ -138,7 +138,7 @@ at::Tensor npu_giou(
       at_npu::native::custom_ops::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
 
   auto output_size = giou_output_size(self_cp, gtboxes_cp, is_cross);
-  at::Tensor result = npu_preparation::ApplyTensor(self_cp, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
 
   giou_inner_out_npu_nocheck(result, self_cp, gtboxes_cp, trans, is_cross, mode);
   //op's output is [1, n], same with CPU output, but pass need [n, 1].

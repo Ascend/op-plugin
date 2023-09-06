@@ -71,7 +71,7 @@ at::Tensor randperm(
   at::TensorOptions options;
   options = options.dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       {n},
       options,
       ACL_FORMAT_ND);

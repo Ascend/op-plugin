@@ -42,9 +42,9 @@ std::tuple<at::Tensor, at::Tensor> nanmedian(const at::Tensor &self, int64_t dim
       "Warning: kernel [nanmedian.dim] is not supported by NPU currently. Now this kernel is running on CPU.");
   auto output_size = median_npu_output_size(self, dim, keepdim);
   at::Tensor values =
-      npu_preparation::ApplyTensorWithFormat(output_size, self.options(), npu_preparation::get_tensor_npu_format(self));
+      npu_preparation::apply_tensor_with_format(output_size, self.options(), npu_preparation::get_tensor_npu_format(self));
   at::Tensor indices =
-      npu_preparation::ApplyTensorWithFormat(output_size, self.options().dtype(at::kLong), ACL_FORMAT_NCHW);
+      npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::kLong), ACL_FORMAT_NCHW);
 
   auto self_cpu = self.cpu();
   auto values_cpu = values.cpu();

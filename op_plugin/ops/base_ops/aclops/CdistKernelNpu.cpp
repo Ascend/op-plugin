@@ -44,7 +44,7 @@ at::Tensor _cdist_forward(
 
   int64_t mode = compute_mode.value_or(0);
   TORCH_CHECK(mode >= 0 && mode <= 2, "possible modes: 0, 1, 2, but was: ", mode);
-  
+
   // Broadcast
   int64_t c1 = x1.size(-1);
   int64_t c2 = x2.size(-1);
@@ -71,13 +71,13 @@ at::Tensor _cdist_forward(
   // Broadcast batch dim.
   at::Tensor tensor1_expanded = x1.expand(tensor1_expand_size).contiguous().view(tensor1_view);
   at::Tensor tensor2_expanded = x2.expand(tensor2_expand_size).contiguous().view(tensor2_view);
-  
+
   // Broadcast r1 and r2.
   at::Tensor tensor1_broadcast = tensor1_expanded.expand(tensor_broadcast_size).contiguous();
   at::Tensor tensor2_broadcast = tensor2_expanded.expand(tensor_broadcast_size).contiguous();
-  
+
   auto output_size = op_infer::cdist_npu_output_size(x1, x2);
-  at::Tensor result = npu_preparation::ApplyTensor(tensor1_broadcast, result_size);
+  at::Tensor result = npu_preparation::apply_tensor(tensor1_broadcast, result_size);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Cdist")

@@ -25,8 +25,8 @@ void _cummax_helper(
     at::Tensor& values,
     at::Tensor& indices,
     int64_t dim) {
-  at::Tensor values_temp = npu_preparation::ApplyTensor(self);
-  at::Tensor indices_temp = npu_preparation::ApplyTensorWithFormat(self.sizes(), self.options().dtype(at::kLong),
+  at::Tensor values_temp = npu_preparation::apply_tensor(self);
+  at::Tensor indices_temp = npu_preparation::apply_tensor_with_format(self.sizes(), self.options().dtype(at::kLong),
       ACL_FORMAT_ND);
 
   at_npu::native::OpCommand cmd;

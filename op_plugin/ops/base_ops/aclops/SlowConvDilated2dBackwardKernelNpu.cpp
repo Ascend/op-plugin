@@ -144,11 +144,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> slow_conv_dilated2d_backward(
     std::array<bool, 3> output_mask) {
   at::Tensor undefined;
   at::Tensor grad_input =
-      (output_mask[0] ? npu_preparation::ApplyTensor(grad_output, self.sizes()) : undefined);
+      (output_mask[0] ? npu_preparation::apply_tensor(grad_output, self.sizes()) : undefined);
   at::Tensor grad_weight =
-      (output_mask[1] ? npu_preparation::ApplyTensor(grad_output, weight.sizes()) : undefined);
+      (output_mask[1] ? npu_preparation::apply_tensor(grad_output, weight.sizes()) : undefined);
   at::Tensor grad_bias =
-      (output_mask[2] ? npu_preparation::ApplyTensor(grad_output, weight.size(0)) : undefined);
+      (output_mask[2] ? npu_preparation::apply_tensor(grad_output, weight.size(0)) : undefined);
 
   slow_conv_dilated2d_backward_out_nocheck(
       grad_input, grad_weight, grad_bias, grad_output, self,

@@ -59,7 +59,7 @@ at::Tensor& adaptive_avg_pool2d_backward_out_nocheck(
 at::Tensor _adaptive_avg_pool2d_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   adaptive_avg_pool2d_backward_out_nocheck(result, grad_output, self);
   return result;
 }

@@ -94,7 +94,7 @@ at::Tensor reflection_pad2d_backward(
     const at::Tensor& grad_output,
     const at::Tensor& input,
     at::IntArrayRef padding) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(input);
+  at::Tensor grad_input = npu_preparation::apply_tensor(input);
   if (check_padding(padding)) {
     grad_input.copy_(grad_output);
     return grad_input;

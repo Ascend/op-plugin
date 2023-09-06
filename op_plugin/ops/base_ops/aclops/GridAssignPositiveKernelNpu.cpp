@@ -46,7 +46,7 @@ at::Tensor npu_grid_assign_positive(
     double min_pos_iou,
     bool gt_max_assign_all) {
   grid_assign_positive_check(argmax_overlaps, gt_argmax_overlaps);
-  at::Tensor result = npu_preparation::ApplyTensor(assigned_gt_inds);
+  at::Tensor result = npu_preparation::apply_tensor(assigned_gt_inds);
   auto option = assigned_gt_inds.options().dtype(at::kInt);
 
   at::Scalar s(num_gts);

@@ -24,13 +24,13 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 at::Tensor& baddbmm_nocheck(
     at::Tensor& result,
-    const at::Tensor& self,	
+    const at::Tensor& self,
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
     at::Scalar beta,
     at::Scalar alpha) {
   auto output_size = op_infer::baddbmm_npu_output_size(tensor1, tensor2);
-  at::Tensor batch_matmul_tensor = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor batch_matmul_tensor = npu_preparation::apply_tensor(self, output_size);
   bool is_self_t = op_plugin::utils::is_transpose_last_two_dims(tensor1);
   bool is_mat2_t = op_plugin::utils::is_transpose_last_two_dims(tensor2);
   at::Tensor contiguous_self = is_self_t ? tensor1 : npu_utils::format_contiguous(tensor1);
@@ -53,7 +53,7 @@ at::Tensor& baddbmm_nocheck(
 } // namespace
 
 at::Tensor& baddbmm_out(
-    const at::Tensor& self,	
+    const at::Tensor& self,
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
     const at::Scalar& beta,
@@ -79,13 +79,13 @@ at::Tensor baddbmm(
     const at::Tensor& tensor2,
     const at::Scalar& beta,
     const at::Scalar& alpha) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   baddbmm_nocheck(result, self, tensor1, tensor2, beta, alpha);
   return result;
 }
 
 at::Tensor& baddbmm_(
-    at::Tensor& self, 
+    at::Tensor& self,
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
     const at::Scalar& beta,

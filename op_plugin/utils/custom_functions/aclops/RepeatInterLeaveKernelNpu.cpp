@@ -80,7 +80,7 @@ at::Tensor repeat_interleave_common_nocheck(
   }
 
   auto op_infer_output_size = op_infer::repeat_interleave_npu_output_size(self_tensor, repeats, 0);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self_tensor, op_infer_output_size, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(self_tensor, op_infer_output_size, ACL_FORMAT_ND);
   repeat_interleave_out_nocheck(result, self_tensor, repeats);
   if (self_dim > 1 && real_dim != 0) {
     result = result.transpose(0, real_dim);
@@ -118,7 +118,7 @@ at::Tensor repeat_interleave_common_nocheck(
   repeats_tensor = acl_op::npu_dtype_cast(repeats_tensor, at::ScalarType::Float);
   auto op_infer_output_size = op_infer::repeat_interleave_npu_output_size(self_tensor, repeats_tensor, 0);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(self_tensor, op_infer_output_size, ACL_FORMAT_ND);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(self_tensor, op_infer_output_size, ACL_FORMAT_ND);
   repeat_interleave_out_nocheck(result, self_tensor, repeats);
   if (self_dim > 1 && real_dim != 0) {
     result = result.transpose(0, real_dim);

@@ -91,13 +91,13 @@ at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
     if (npu_format_helper::IsBaseFormatType(self) && npu_format_helper::IsBaseFormatType(mat2) &&
         mm_bmm_nd && ((is_support_nd_out && op_plugin::utils::is_nd_to_nz_on_fly(self, mat2)) ||
         (!is_support_nd_out && is_aligin()))) {
-      result = npu_preparation::ApplyTensorWithFormat(output_size, self.options(), ACL_FORMAT_ND);
+      result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
     } else {
-      result = npu_preparation::ApplyTensorWithFormat(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);
+      result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);
       need_nd_out = mm_bmm_nd;
     }
   } else {
-    result = npu_preparation::ApplyTensorWithFormat(output_size, self.options(), ACL_FORMAT_ND);
+    result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
   }
 
   bmm_out_nocheck(result, self, mat2);

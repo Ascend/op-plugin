@@ -64,10 +64,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm(
     int64_t HxW,
     int64_t group,
     double eps) {
-  at::Tensor result = npu_preparation::ApplyTensor(X);
-  at::Tensor mean = npu_preparation::ApplyTensor(X, {N * group});
-  at::Tensor variance = npu_preparation::ApplyTensor(X, {N * group});
-  at::Tensor rstd = npu_preparation::ApplyTensor(X, {N * group});
+  at::Tensor result = npu_preparation::apply_tensor(X);
+  at::Tensor mean = npu_preparation::apply_tensor(X, {N * group});
+  at::Tensor variance = npu_preparation::apply_tensor(X, {N * group});
+  at::Tensor rstd = npu_preparation::apply_tensor(X, {N * group});
   return native_group_norm_out_npu(result, mean, variance, rstd, X, gamma_opt, beta_opt, group, eps, C);
 }
 } // namespace acl_op

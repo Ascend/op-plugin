@@ -181,7 +181,7 @@ at::Tensor max_pool3d_with_indices_backward(
     indices_cp = indices_cp.unsqueeze(0);
   }
   auto output_size = op_infer::input_same_output_size(self_cp);
-  at::Tensor grad_input = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor grad_input = npu_preparation::apply_tensor_with_format(
       output_size,
       self_cp.options().dtype(c10::ScalarType::Float),
       ACL_FORMAT_NDC1HWC0);

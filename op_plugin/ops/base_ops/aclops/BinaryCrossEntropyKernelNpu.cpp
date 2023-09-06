@@ -92,7 +92,7 @@ at::Tensor binary_cross_entropy(
     output_size = at::ArrayRef<int64_t>();
   }
 
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   if (self.numel() == 0) {
     result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
     acl_op::fill_(result, 0);

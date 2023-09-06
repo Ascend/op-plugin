@@ -95,7 +95,7 @@ at::Tensor _adaptive_avg_pool2d(const at::Tensor& self, at::IntArrayRef output_s
   op_infer_output_size[self.dim()-1] = output_size[1];
   op_infer_output_size[self.dim()-2] = output_size[0];
 
-  at::Tensor result = npu_preparation::ApplyTensor(self, op_infer_output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, op_infer_output_size);
   adaptive_avg_pool2d_out_nocheck(result, self, output_size);
 
   return result;

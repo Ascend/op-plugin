@@ -131,7 +131,7 @@ at::Tensor avg_pool2d_backward(
     bool ceil_mode,
     bool count_include_pad,
     c10::optional<int64_t> divisor_override) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(self);
+  at::Tensor grad_input = npu_preparation::apply_tensor(self);
 
   acl_op::avg_pool2d_backward_out(
       grad_output,

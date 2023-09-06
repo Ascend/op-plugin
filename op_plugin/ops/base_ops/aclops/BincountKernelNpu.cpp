@@ -47,7 +47,7 @@ at::Tensor bincount(
   } else if (!(weights.dtype() == at::kFloat)) {
     weight = at_npu::native::custom_ops::npu_dtype_cast(weights, at::kDouble);
   }
-  auto result = npu_preparation::ApplyTensor(weight, {sizes});
+  auto result = npu_preparation::apply_tensor(weight, {sizes});
 
   at_npu::native::OpCommand cmd;
   cmd.Name("Bincount")

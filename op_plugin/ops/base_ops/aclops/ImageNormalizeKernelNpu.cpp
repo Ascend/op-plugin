@@ -53,9 +53,9 @@ at::Tensor image_normalize(
     int64_t dtype) {
   at::Tensor result;
   if (dtype == 0) {
-    result = npu_preparation::ApplyTensor(self, self.options().dtype(at::kFloat));
+    result = npu_preparation::apply_tensor(self, self.options().dtype(at::kFloat));
   } else {
-    result = npu_preparation::ApplyTensor(self, self.options().dtype(at::kHalf));
+    result = npu_preparation::apply_tensor(self, self.options().dtype(at::kHalf));
   }
   image_normalize_out_nocheck(result, self, mean, variance, dtype);
   return result;

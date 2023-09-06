@@ -107,14 +107,14 @@ at::Tensor& lerp_out(
 
 at::Tensor lerp(const at::Tensor& self, const at::Tensor& end, const at::Tensor& weight) {
   auto output_size = lerp_broadcast_size(self, end, weight);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   lerp_out_npu_nocheck(result, self, end, weight);
   return result;
 }
 
 at::Tensor lerp(const at::Tensor& self, const at::Tensor& end, const at::Scalar& weight) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, end);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   lerp_out_npu_nocheck(result, self, end, weight);
   return result;
 }

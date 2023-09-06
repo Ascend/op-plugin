@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor img_to_tensor(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self, self.options().dtype(at::kFloat));
+  at::Tensor result = npu_preparation::apply_tensor(self, self.options().dtype(at::kFloat));
   at_npu::native::OpCommand cmd;
   cmd.Name("ImgToTensor")
       .Input(self)

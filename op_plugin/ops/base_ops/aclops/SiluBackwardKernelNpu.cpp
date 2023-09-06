@@ -44,7 +44,7 @@ at::Tensor& silu_backward_out(const at::Tensor& grad_output, const at::Tensor& s
 }
 
 at::Tensor silu_backward(const at::Tensor& grad_output, const at::Tensor& self) {
-  at::Tensor grad_input = npu_preparation::ApplyTensor(grad_output);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
   silu_backward_out_nocheck(grad_input, grad_output, self);
   return grad_input;
 }

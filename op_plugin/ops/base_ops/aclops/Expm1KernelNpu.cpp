@@ -48,7 +48,7 @@ at::Tensor& expm1_out(const at::Tensor& self, at::Tensor& result) {
 }
 
 at::Tensor expm1(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   expm1_out_nocheck(result, self);
   return result;
 }
