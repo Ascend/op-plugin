@@ -36,8 +36,8 @@ at::Tensor ceil(const at::Tensor& self) {
 }
 
 at::Tensor& ceil_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnCeil, acl_op::ceil_(self));
-  op_api::ceil_out(self, self);
+  DO_COMPATIBILITY(aclnnInplaceCeil, acl_op::ceil_(self));
+  EXEC_NPU_CMD(aclnnInplaceCeil, self);
   return self;
 }
 
