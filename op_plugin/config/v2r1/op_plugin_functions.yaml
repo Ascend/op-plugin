@@ -644,6 +644,8 @@ official:
    impl_ns: acl_op, op_api
  - func: gather.out(Tensor self, int dim, Tensor index, *, bool sparse_grad=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: gcd.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: ge.Scalar(Tensor self, Scalar other) -> Tensor
    impl_ns: acl_op, op_api
  - func: ge.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
@@ -770,6 +772,10 @@ official:
    impl_ns: acl_op, op_api
  - func: isin.Scalar_Tensor_out(Scalar element, Tensor test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: op_api
+ - func: isposinf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
+ - func: isneginf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: kthvalue(Tensor self, int k, int dim=-1, bool keepdim=False) -> (Tensor values, Tensor indices)
    impl_ns: acl_op, op_api
  - func: kthvalue.dimname(Tensor self, int k, Dimname dim, bool keepdim=False) -> (Tensor values, Tensor indices)
