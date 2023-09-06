@@ -23,42 +23,15 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 at::Tensor& logaddexp2_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
-  at::Tensor self_exp2 = npu_preparation::apply_tensor(self);
-  at::Tensor other_exp2 = npu_preparation::apply_tensor(self);
-
-  at::Scalar base(2);
-
-  at_npu::native::OpCommand cmd_exp2_1, cmd_exp2_2, cmd_add, cmd_log;
-  cmd_exp2_1.Name("Pow")
-      .Input(base, self.scalar_type())
-      .Input(self)
-      .Output(self_exp2)
-      .Run();
-
-  cmd_exp2_2.Name("Pow")
-      .Input(base, other.scalar_type())
-      .Input(other)
-      .Output(other_exp2)
-      .Run();
-
-  at::Tensor add_result = npu_preparation::apply_tensor(self);
-  auto unified_result = npu_preparation::binary_op_check(add_result, self_exp2, other_exp2, true);
-
-  cmd_add.Name("Add")
-      .Expect(unified_result)
-      .Input(self_exp2)
-      .Input(other_exp2)
-      .Output(add_result)
-      .Run();
-
-  cmd_log.Name("Log")
-      .Input(add_result)
-      .Output(result)
-      .Attr("base", (float)2.0)
-      .Attr("scale", (float)1.0)
-      .Attr("shift", (float)0.0)
-      .Run();
-
+  at_npu::native::OpCommand cmd;
+  cmd.Name("LogAddExp")
+    .Input(self)
+    .Input(other)
+    .Output(result)
+    .Attr("base", (float)2.0)
+    .Attr("scale", (float)1.0)
+    .Attr("shift", (float)0.0)
+    .Run();
   return result;
 }
 } // namespace
