@@ -702,6 +702,8 @@ official:
    impl_ns: acl_op
  - func: hardshrink_backward(Tensor grad_out, Tensor self, Scalar lambd) -> Tensor
    impl_ns: acl_op
+ - func: hardshrink_backward.grad_input(Tensor grad_out, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)
+   impl_ns: acl_op
  - func: hardsigmoid(Tensor self) -> Tensor
    impl_ns: acl_op
  - func: hardsigmoid.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
