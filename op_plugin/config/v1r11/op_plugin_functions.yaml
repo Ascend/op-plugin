@@ -1440,6 +1440,8 @@ official:
    impl_ns: acl_op, op_api
  - func: slogdet(Tensor self) -> (Tensor sign, Tensor logabsdet)
    impl_ns: acl_op, op_api
+ - func: logdet(Tensor self) -> Tensor
+   impl_ns: acl_op, op_api
  - func: slow_conv3d(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, int[3] padding=0) -> Tensor
    impl_ns: acl_op
  - func: slow_conv3d.out(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, int[3] padding=0, *, Tensor(a!) out) -> Tensor(a!)
@@ -2023,7 +2025,6 @@ unsupported:
   - cholesky
   - geqrf.a
   - geqrf
-  - logdet
   - linalg_lu_factor_ex
   - linalg_lu_factor_ex.out
   - lu_solve.out
