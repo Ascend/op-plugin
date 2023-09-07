@@ -485,7 +485,19 @@ c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at::Tensor &self, at
 
 c10::SmallVector<int64_t, SIZE> index_select_npu_output_size(const at::Tensor &self, int64_t dim,
                                                              const at::Tensor &index) {
-  int64_t indexSize = index.size(0);
+  at::Tensor indexTmp(index);
+  if (indexTmp.ndimension() == 0) {
+    indexTmp = index.unsqueeze(0);
+  }
+  int64_t indexSize = indexTmp.size(0);
+
+  int64_t selfDim = self.ndimension() > 0 ? self.ndimension() : 1;
+  bool dim_valid = dim >= -selfDim && dim < selfDim;
+  TORCH_CHECK(dim_valid,
+              "Dimension out of range (expected to be in range of [",
+              -selfDim, ", ", selfDim - 1, "], but got ", dim, ")");
+  if (dim < 0)
+    dim += selfDim;
 
   c10::SmallVector<int64_t, SIZE> outputSize;
   for (int64_t i = 0; i < self.sizes().size(); ++i) {
