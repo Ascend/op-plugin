@@ -35,8 +35,11 @@ at::Tensor &complex_out(const at::Tensor &real, const at::Tensor &imag, at::Tens
   at::Tensor real_cpu = real.to("cpu");
   at::Tensor imag_cpu = imag.to("cpu");
   at::Tensor out_cpu = out.to("cpu");
-  out_cpu = at::native::complex_out(real_cpu, imag_cpu, out_cpu);
-  out = out_cpu.to(real.device());
+  at::native::complex_out(real_cpu, imag_cpu, out_cpu);
+  // calculate the output size
+  auto output_size = op_infer::broadcast_ops_npu_output_size(real, imag);
+  out.resize_(output_size);
+  out.copy_(out_cpu);
   return out;
 }
 } // namespace acl_op
