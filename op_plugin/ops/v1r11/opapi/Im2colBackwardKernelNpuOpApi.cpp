@@ -23,6 +23,8 @@ at::Tensor& im2col_backward_out(const at::Tensor& grad_output, at::IntArrayRef i
                                 at::IntArrayRef kernel_size, at::IntArrayRef dilation,
                                 at::IntArrayRef padding, at::IntArrayRef stride,
                                 at::Tensor& grad_input) {
+  DO_COMPATIBILITY(aclnnIm2colBackward, acl_op::im2col_backward_out(grad_output, input_size, kernel_size, dilation,
+                                                                    padding, stride, grad_input));
   auto output_size = op_infer::im2col_backward_npu_output_size(grad_output, input_size, kernel_size);
   at_npu::native::OpPreparation::check_tensor({grad_output}, grad_input, grad_input.scalar_type(), output_size);
   // calculate the output result of the NPU
@@ -34,6 +36,8 @@ at::Tensor& im2col_backward_out(const at::Tensor& grad_output, at::IntArrayRef i
 at::Tensor im2col_backward(const at::Tensor& grad_output, at::IntArrayRef input_size,
                            at::IntArrayRef kernel_size, at::IntArrayRef dilation,
                            at::IntArrayRef padding, at::IntArrayRef stride) {
+  DO_COMPATIBILITY(aclnnIm2colBackward, acl_op::im2col_backward(grad_output, input_size, kernel_size, dilation,
+                                                                padding, stride));
   auto output_size = op_infer::im2col_backward_npu_output_size(grad_output, input_size, kernel_size);
   at::Tensor grad_input = at_npu::native::OpPreparation::apply_tensor_without_format(grad_output, output_size);
   // calculate the output result of the NPU
