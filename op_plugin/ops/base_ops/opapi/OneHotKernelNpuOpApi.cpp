@@ -38,11 +38,18 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
       depth = MIN_DEPTH;
     }
   }
+  // construct on_value tensor
+  at::Tensor on_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
+  on_value_tensor.fill_(1);
+  // construct off_value tensor
+  at::Tensor off_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
+  off_value_tensor.fill_(0);
   auto output_size = op_infer::array_to_small_vector(self.sizes());
   output_size.emplace_back(depth);
   // construct the output tensor of the NPU
   at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
-  EXEC_NPU_CMD(aclnnOneHot, self, depth, result);
+  int64_t axis = -1;
+  EXEC_NPU_CMD(aclnnOneHot, self, depth, on_value_tensor, off_value_tensor, axis, result);
   return result;
 }
 }  // namespace op_api
