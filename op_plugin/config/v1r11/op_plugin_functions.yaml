@@ -441,9 +441,9 @@ official:
  - func: clamp_min_.Tensor(Tensor(a!) self, Tensor min) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: complex(Tensor real, Tensor imag) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: complex.out(Tensor real, Tensor imag, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: diagflat(Tensor self, int offset=0) -> Tensor
    impl_ns: acl_op
  - func: real(Tensor(a) self) -> Tensor(a)
@@ -509,9 +509,9 @@ official:
  - func: cumsum.out(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: diag(Tensor self, int diagonal=0) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: diag.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: div.Scalar(Tensor self, Scalar other) -> Tensor
    impl_ns: acl_op, op_api
  - func: div.Scalar_mode(Tensor self, Scalar other, *, str? rounding_mode) -> Tensor
@@ -1903,7 +1903,6 @@ tocpu:
   - cauchy_
   - cholesky_inverse
   - cholesky_inverse.out
-  - complex.out
   - exponential_
   - geometric_
   - linalg_vector_norm
