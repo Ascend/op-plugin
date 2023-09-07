@@ -91,6 +91,13 @@ at::Tensor& pow_out(const at::Tensor& self, const at::Scalar& exp, at::Tensor& r
       result,
       self);
 
+  auto exp_value = exp.toFloat();
+  if (exp_value == 0.0) {
+    return result.fill_(1);
+  } else if (exp_value == 1.0) {
+    return result.copy_(self);
+  }
+
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     pow_tensor_scalar_out_npu_nocheck(contiguous_result, self, exp);
@@ -128,6 +135,14 @@ at::Tensor pow(const at::Tensor& self, const at::Tensor& exp) {
 at::Tensor pow(const at::Tensor& self, const at::Scalar& exp) {
   auto result_type = at::result_type(self, exp);
   at::Tensor result = npu_preparation::apply_tensor(self, self.options().dtype(result_type));
+
+  auto exp_value = exp.toFloat();
+  if (exp_value == 0.0) {
+    return result.fill_(1);
+  } else if (exp_value == 1.0) {
+    return result.copy_(self);
+  }
+
   at::Tensor self_copy = (self.scalar_type() != result_type) ? at_npu::native::custom_ops::npu_dtype_cast(self, result_type) : self;
   pow_tensor_scalar_out_npu_nocheck(result, self_copy, exp);
   return result;

@@ -46,7 +46,7 @@ at::Tensor& baddbmm_nocheck(
       .Run();
 
   at::Tensor alpha_mul_tensor = acl_op::mul(batch_matmul_tensor, alpha);
-  at::Tensor beta_mul_tensor = acl_op::mul(self, beta);
+  at::Tensor beta_mul_tensor = (beta.toFloat() == 0.0) ? at::zeros_like(self) : acl_op::mul(self, beta);
   acl_op::add_out(alpha_mul_tensor, beta_mul_tensor, 1, result);
   return result;
 }
