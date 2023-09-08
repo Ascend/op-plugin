@@ -1029,11 +1029,11 @@ official:
  - func: minimum.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: mish(Tensor self) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mish.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mish_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mish_backward(Tensor grad_output, Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: mm(Tensor self, Tensor mat2) -> Tensor
