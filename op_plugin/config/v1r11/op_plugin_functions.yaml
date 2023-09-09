@@ -1183,15 +1183,15 @@ official:
  - func: nonzero.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: norm.Scalar(Tensor self, Scalar p=2) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: norm.ScalarOpt_dim(Tensor self, Scalar? p, int[1] dim, bool keepdim=False) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: norm.ScalarOpt_dim_dtype(Tensor self, Scalar? p, int[1] dim, bool keepdim, *, ScalarType dtype) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: norm.ScalarOpt_dtype(Tensor self, Scalar? p, *, ScalarType dtype) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: norm.dtype_out(Tensor self, Scalar? p, int[1] dim, bool keepdim, *, ScalarType dtype, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: norm.out(Tensor self, Scalar? p, int[1] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: normal.Tensor_Tensor(Tensor mean, Tensor std, *, Generator? generator=None) -> Tensor
@@ -1481,9 +1481,9 @@ official:
  - func: softplus_backward.grad_input(Tensor grad_output, Tensor self, Scalar beta, Scalar threshold, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: softshrink(Tensor self, Scalar lambd=0.5) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softshrink.out(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softshrink_backward(Tensor grad_output, Tensor self, Scalar lambd) -> Tensor
    impl_ns: acl_op
  - func: softshrink_backward.grad_input(Tensor grad_output, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)
