@@ -125,11 +125,11 @@ official:
  - func: abs_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: acos(Tensor self) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: acos.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: acos_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: acosh(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: acosh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
