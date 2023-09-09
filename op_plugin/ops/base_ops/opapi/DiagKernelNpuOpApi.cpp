@@ -45,7 +45,7 @@ static c10::SmallVector<int64_t, SIZE> diag_npu_output_size_opapi(const at::Tens
 at::Tensor& diag_out(const at::Tensor& self, int64_t diagonal, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnDiag, acl_op::diag_out(self, diagonal, result));
   auto outputSize = diag_npu_output_size_opapi(self, diagonal);
-  npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
+  npu_preparation::check_tensor({self}, result, self.scalar_type(), outputSize);
   EXEC_NPU_CMD(aclnnDiag, self, diagonal, result);
   return result;
 }
