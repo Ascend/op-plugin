@@ -527,7 +527,7 @@ official:
  - func: dot.out(Tensor self, Tensor tensor, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: dropout(Tensor input, float p, bool train) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
    impl_ns: acl_op, op_api
  - func: embedding_backward(Tensor grad, Tensor indices, SymInt num_weights, SymInt padding_idx, bool scale_grad_by_freq, bool sparse) -> Tensor
@@ -1091,9 +1091,9 @@ official:
  - func: native_batch_norm.out(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, *, Tensor(a!) out, Tensor(b!) save_mean, Tensor(c!) save_invstd) -> (Tensor(a!), Tensor(b!), Tensor(c!))
    impl_ns: acl_op, op_api
  - func: native_dropout(Tensor input, float p, bool? train) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: native_dropout_backward(Tensor grad_output, Tensor mask, float scale) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: native_layer_norm(Tensor input, SymInt[] normalized_shape, Tensor? weight, Tensor? bias, float eps) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: native_layer_norm_backward(Tensor grad_out, Tensor input, SymInt[] normalized_shape, Tensor mean, Tensor rstd, Tensor? weight, Tensor? bias, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
@@ -1833,7 +1833,7 @@ custom:
   - func: npu_anchor_response_flags(Tensor self, int[2] featmap_size, int[2] stride, int num_base_anchors) -> Tensor
     impl_ns: acl_op
   - func: npu_dropout_backward(Tensor grad_output, Tensor mask, float p) -> Tensor
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
   - func: npu_nms_rotated(Tensor self, Tensor scores, float iou_threshold, float scores_threshold=0, int max_output_size=-1, int mode=0) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_masked_fill_range(Tensor self, Tensor start, Tensor end, Tensor value, int axis=-1) -> Tensor
@@ -1974,7 +1974,7 @@ custom:
   - func: npu_linear(Tensor input, Tensor weight, Tensor? bias=None) -> Tensor
     impl_ns: acl_op
   - func: _npu_dropout(Tensor self, float p) -> (Tensor, Tensor)
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
     tags: nondeterministic_seeded
   - func: npu_softmax_cross_entropy_with_logits(Tensor self, Tensor labels) -> Tensor
     impl_ns: acl_op
