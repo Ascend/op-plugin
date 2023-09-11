@@ -403,7 +403,7 @@ official:
  - func: diagflat(Tensor self, int offset=0) -> Tensor
    impl_ns: acl_op
  - func: real(Tensor(a) self) -> Tensor(a)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: channel_shuffle(Tensor self, int groups) -> Tensor
    impl_ns: acl_op
  - func: clamp(Tensor self, Scalar? min=None, Scalar? max=None) -> Tensor
