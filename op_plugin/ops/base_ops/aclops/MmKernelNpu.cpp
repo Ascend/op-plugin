@@ -198,7 +198,7 @@ int64_t ceil_div(int64_t x, int64_t y) {
 }
 
 
-void insert_input_pad(at::Tensor &self, at::Tensor &mat2) {
+bool insert_input_pad(at::Tensor &self, at::Tensor &mat2) {
   bool is_self_trans = calcu_op_util::IsTransposeLastTwoDims(self);
   bool is_mat2_trans = calcu_op_util::IsTransposeLastTwoDims(mat2);
   int64_t m_dim = self.size(-2);
@@ -210,15 +210,15 @@ void insert_input_pad(at::Tensor &self, at::Tensor &mat2) {
   // when k_dim exceeds 4096, pad + aligned matmul costs more than single unaligned matmul
   const int64_t max_k_dim = 4096;
   // 512B aligned shape is soc friendly
-  const int64_t k_package512 = 512;
+  const int64_t package_512 = 512;
   // one block takes 32 bytes
   const int64_t k_block_bytes = 32;
-  bool valid_scenario = (m_dim * data_size) % k_package512 == 0 && (n_dim * data_size) % k_package512 == 0;
+  bool valid_scenario = (m_dim * data_size) % package_512 == 0 && (n_dim * data_size) % package_512 == 0;
   valid_scenario &= (k_dim * data_size) % k_block_bytes != 0 && is_half_float_dtype(self);
   valid_scenario &= m_dim > k_dim && n_dim > k_dim && k_dim > min_k_dim && k_dim < max_k_dim;
   valid_scenario &= c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
   if (valid_scenario) {
-    int64_t pad_num = ceil(k_dim, ceil_div(k_package512, data_size)) - k_dim;
+    int64_t pad_num = ceil(k_dim, ceil_div(package_512, data_size)) - k_dim;
     // pad: left, right, top, bottom
     vector<int64_t> self_pad = {0, 0, 0, 0};
     vector<int64_t> mat2_pad = {0, 0, 0, 0};
@@ -230,7 +230,9 @@ void insert_input_pad(at::Tensor &self, at::Tensor &mat2) {
     mat2 = acl_op::constant_pad_nd(mat2, mat2_pad, 0);
     self = is_self_trans ? self.transpose(-1, -2) : self;
     mat2 = is_mat2_trans ? mat2.transpose(-1, -2) : mat2;
+    return true;
   }
+  return false;
 }
 
 at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mat2) {
@@ -250,32 +252,41 @@ at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
     is_transpose_self = !is_transpose_self;
     is_transpose_mat2 = !is_transpose_mat2;
   }
+  bool is_k_padded = false;
+  // no need to pad k when both k_axis is outer axis
+  if (!is_transpose_self && !is_transpose_mat2 && !(is_self_t_flex && !is_mat2_t_flex)) {
+    is_k_padded = insert_input_pad(contiguous_self, contiguous_mat2);
+  }
 
   int64_t m_dim = self.size(-2);
   int64_t k_dim = self.size(-1);
   int64_t n_dim = mat2.size(-1);
   int64_t data_size = elementSize(self.scalar_type());
+  int64_t self_inner_dim = is_self_t_flex ? m_dim : k_dim;
+  int64_t self_outer_dim = is_self_t_flex ? k_dim : m_dim;
+  int64_t mat2_inner_dim = is_mat2_t_flex ? k_dim : n_dim;
+  int64_t mat2_outer_dim = is_mat2_t_flex ? n_dim : k_dim;
   // 512B aligned shape is soc friendly
-  const int64_t k_package512 = 512;
+  const int64_t package_512 = 512;
   // 128 unaligned inner axis performs bad
-  const int64_t k_inner_dim_alignment = 128;
-  // k_dim less than 512 is skipped
-  const int64_t k_min_kdim = 2048;
-  // m/n should be less than 16384 to gain perf improvement
-  const int64_t k_max_inner_dim = 16384;
-  bool common_rule = k_dim > k_min_kdim && ((k_dim * data_size) % k_package512 == 0);
-  common_rule &= c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 && is_half_float_dtype(self);
-  bool self_cache_opti = is_self_t_flex && (m_dim % k_inner_dim_alignment != 0) && m_dim < k_max_inner_dim;
-
+  const int64_t inner_dim_alignment = 128;
+  const int64_t min_outer_dim = 2048;
+  const int64_t min_inner_dim = 1024;
+  // inner axis should be less than 16384 to gain perf improvement
+  const int64_t max_inner_dim = 16384;
+  bool common_rule = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
+  common_rule &= !is_k_padded && is_half_float_dtype(self);
+  bool self_cache_opti = self_outer_dim > min_outer_dim && ((self_outer_dim * data_size) % package_512 == 0);
+  self_cache_opti &= (self_inner_dim % inner_dim_alignment != 0) && self_inner_dim < max_inner_dim;
+  self_cache_opti &= self_inner_dim > min_inner_dim;
   if (is_transpose_self || (self_cache_opti && common_rule)) {
     mm_insert_input_transpose(contiguous_self, is_self_t_flex, is_self_t_strict);
   }
-  bool mat2_cache_opti = !is_mat2_t_flex && (n_dim % k_inner_dim_alignment != 0) && n_dim < k_max_inner_dim;
+  bool mat2_cache_opti = mat2_outer_dim > min_outer_dim && ((mat2_outer_dim * data_size) % package_512 == 0);
+  mat2_cache_opti &= (mat2_inner_dim % inner_dim_alignment != 0) && mat2_inner_dim < max_inner_dim;
+  mat2_cache_opti &= mat2_inner_dim > min_inner_dim;
   if (is_transpose_mat2 || (mat2_cache_opti && common_rule)) {
     mm_insert_input_transpose(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
-  }
-  if (!is_transpose_self && !is_transpose_mat2) {
-    insert_input_pad(contiguous_self, contiguous_mat2);
   }
 
   mm_set_format_contiguous(contiguous_self, is_self_t_flex, is_self_t_strict);
