@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -59,14 +58,14 @@ at::Tensor& logical_xor_out(const at::Tensor& self, const at::Tensor& other, at:
   npu_preparation::CheckOut(
       {self},
       result,
-      calcu_op_util::GetTensorNpuFormat(self),
+      npu_preparation::get_tensor_npu_format(self),
       result.scalar_type(),
       outputSize);
 
   if (npu_utils::check_match(&result) && (result.dtype() == at::kBool)) {
     logical_xor_out_npu_nocheck(self, other, result);
   } else {
-    auto result_copy = npu_preparation::ApplyTensorWithSizes(outputSize, self.options().dtype(at::kBool));
+    auto result_copy = npu_preparation::apply_tensor_with_sizes(outputSize, self.options().dtype(at::kBool));
     logical_xor_out_npu_nocheck(self, other, result_copy);
     result_copy = at_npu::native::custom_ops::npu_dtype_cast(result_copy, result.scalar_type());
     npu_utils::format_fresh_view(result, result_copy);
@@ -76,10 +75,10 @@ at::Tensor& logical_xor_out(const at::Tensor& self, const at::Tensor& other, at:
 
 at::Tensor logical_xor(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
     output_size,
     self.options().dtype(at::kBool), 
-    calcu_op_util::GetTensorNpuFormat(self));
+    npu_preparation::get_tensor_npu_format(self));
   logical_xor_out_npu_nocheck(self, other, result);
   return result;
 }
