@@ -1328,8 +1328,6 @@ official:
    impl_ns: acl_op, op_api
  - func: rrelu_with_noise_(Tensor(a!) self, Tensor noise, Scalar lower=0.125, Scalar upper=0.3333333333333333, bool training=False, Generator? generator=None) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: rrelu_with_noise_backward(Tensor grad_output, Tensor self, Tensor noise, Scalar lower, Scalar upper, bool training, bool self_is_result) -> Tensor
-   impl_ns: acl_op
  - func: rsqrt(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: rsqrt.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
