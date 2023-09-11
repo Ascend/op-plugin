@@ -291,9 +291,9 @@ official:
  - func: avg_pool2d.out(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: avg_pool2d_backward(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, bool ceil_mode, bool count_include_pad, int? divisor_override) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: avg_pool2d_backward.grad_input(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, bool ceil_mode, bool count_include_pad, int? divisor_override, *, Tensor(a!) grad_input) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: avg_pool3d(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None) -> Tensor
    impl_ns: acl_op
  - func: avg_pool3d.out(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None, *, Tensor(a!) out) -> Tensor(a!)
@@ -1423,11 +1423,11 @@ official:
  - func: sign_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: sin(Tensor self) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: sin.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: sin_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: sinc(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: sinc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
