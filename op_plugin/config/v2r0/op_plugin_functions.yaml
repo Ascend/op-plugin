@@ -900,6 +900,10 @@ official:
    impl_ns: acl_op
  - func: logical_or_(Tensor(a!) self, Tensor other) -> Tensor(a!)
    impl_ns: acl_op
+ - func: logical_xor(Tensor self, Tensor other) -> Tensor
+   impl_ns: acl_op
+ - func: logical_xor.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: logspace(Scalar start, Scalar end, int steps, float base=10.0, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
  - func: logspace.out(Scalar start, Scalar end, int steps, float base=10.0, *, Tensor(a!) out) -> Tensor(a!)
@@ -1823,7 +1827,6 @@ tocpu:
   - linalg_vector_norm.out
   - linalg_slogdet
   - linalg_slogdet.out
-  - logical_xor.out
   - log_normal_
   - logit
   - logit_
