@@ -251,11 +251,11 @@ official:
  - func: argsort.dimname(Tensor self, Dimname dim, bool descending=False) -> Tensor
    impl_ns: acl_op, op_api
  - func: asin(Tensor self) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: asin.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: asin_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: asinh(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: asinh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -697,7 +697,7 @@ official:
  - func: gt_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: hardshrink(Tensor self, Scalar lambd=0.5) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: hardshrink_backward(Tensor grad_out, Tensor self, Scalar lambd) -> Tensor
    impl_ns: acl_op
  - func: hardshrink_backward.grad_input(Tensor grad_out, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)
