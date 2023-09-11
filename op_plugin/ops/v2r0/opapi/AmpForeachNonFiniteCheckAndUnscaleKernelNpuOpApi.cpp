@@ -76,7 +76,7 @@ void _amp_foreach_non_finite_check_and_unscale_(at::TensorList scaled_grads, at:
   }
 
   // saturation mode
-  bool is_finite = !acl_op::_amp_foreach_non_finite_check_(scaled_grads);
+  bool is_finite = !_amp_foreach_non_finite_check_(scaled_grads);
   if (!is_finite) {
     op_api::ones_out(1, found_inf);
   }
