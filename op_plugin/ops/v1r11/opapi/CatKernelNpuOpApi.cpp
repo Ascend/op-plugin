@@ -121,7 +121,7 @@ at::Tensor _cat(at::TensorList tensors, int64_t dim) {
   auto outputSize = cat_npu_output_size_opapi(inputTensors, dim);
   at::Tensor result =
       npu_preparation::apply_tensor_without_format(outputSize, inputTensors[0].options().dtype(high_type));
-  acl_op::_cat_out(tensors, dim, result);
+  op_api::_cat_out(tensors, dim, result);
   return result;
 }
 
