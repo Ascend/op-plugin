@@ -479,7 +479,7 @@ official:
  - func: diagflat(Tensor self, int offset=0) -> Tensor
    impl_ns: acl_op
  - func: real(Tensor(a) self) -> Tensor(a)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: ctc_loss.IntList(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
    impl_ns: acl_op
  - func: ctc_loss.Tensor(Tensor log_probs, Tensor targets, Tensor input_lengths, Tensor target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
