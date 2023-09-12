@@ -27,20 +27,26 @@ namespace {
 at::Tensor dropout_genmask(const at::Tensor& self, at::Scalar prob) {
   uint32_t length = (self.numel() + 128 - 1) / 128 * 128;
   at::Tensor mask = npu_preparation::apply_tensor_with_format(
-      {length},
+      {length / 8},
       self.options().dtype(at::kByte),
       ACL_FORMAT_ND);
   at::IntArrayRef self_shape = self.sizes();
 
-  int64_t seed = 2;
-  int64_t seed2 = 0;
+  const auto gen = at_npu::detail::getDefaultNPUGenerator();
+  auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
+  const int64_t seed = pair.first;
+  const int64_t seed1 = 0;
+  const int64_t offset = pair.second;
+  at::SmallVector<int64_t, N> offsetList = {0, offset};
+
   at_npu::native::OpCommand cmd;
-  cmd.Name("DropOutGenMaskV3")
+  cmd.Name("StatelessDropOutGenMask")
       .Input(self_shape)
       .Input(prob, self.scalar_type(), npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+      .Input(at::Scalar(seed), at::ScalarType::Int)
+      .Input(at::Scalar(seed1), at::ScalarType::Int)
+      .Input(offsetList, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
       .Output(mask)
-      .Attr("seed", seed)
-      .Attr("seed2", seed2)
       .Run();
   return mask;
 }
