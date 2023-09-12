@@ -44,7 +44,7 @@ at::Tensor index_high_dims_op_api(const at::Tensor& self, std::vector<at::Tensor
 at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig) {
   DO_COMPATIBILITY(aclnnIndex, acl_op::index(self, orig));
   if (self.device().type() == at::kCPU) {
-    return acl_op::index(self, orig);
+    return at::native::index(self, orig);
   }
   at::native::checkIndexTensorTypes(orig);
   auto indices = op_plugin::AdvanceIndex::npu_expand_tensors(self, orig);
