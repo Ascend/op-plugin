@@ -694,10 +694,6 @@ official:
    impl_ns: acl_op
  - func: grid_sampler_3d_backward(Tensor grad_output, Tensor input, Tensor grid, int interpolation_mode, int padding_mode, bool align_corners) -> (Tensor, Tensor)
    impl_ns: acl_op
- - func: native_group_norm(Tensor input, Tensor? weight, Tensor? bias, int N, int C, int HxW, int group, float eps) -> (Tensor, Tensor, Tensor)
-   impl_ns: acl_op
- - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
-   impl_ns: acl_op
  - func: gru.input(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)
    impl_ns: acl_op
  - func: gt.Scalar(Tensor self, Scalar other) -> Tensor
@@ -2006,6 +2002,7 @@ tocpu:
   - orgqr.out
   - orgqr
   - _lu_with_info
+  - native_group_norm_backward
 
 unsupported:
   - _conj
