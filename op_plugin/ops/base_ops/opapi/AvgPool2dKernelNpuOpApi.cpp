@@ -20,8 +20,6 @@
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
-
 at::Tensor& avg_pool2d_out_npu_nocheck_opapi(at::Tensor& result,
                                              const at::Tensor& self,
                                              at::IntArrayRef kernel,
@@ -36,9 +34,9 @@ at::Tensor& avg_pool2d_out_npu_nocheck_opapi(at::Tensor& result,
     TORCH_CHECK(s_divisor_override != 0, "divisor must be not zero.");
   }
 
-  int8_t cube_math_type = 1;
+  const int8_t cube_math_type = 1;
   EXEC_NPU_CMD(aclnnAvgPool2d, self, kernel, stride, padding, ceil_mode, count_include_pad, s_divisor_override,
-               cube_math_type, result);
+      cube_math_type, result);
 
   return result;
 }
@@ -52,7 +50,6 @@ c10::SmallVector<int64_t, op_infer::SIZE> calc_output_size_with_generalized_attr
     bool count_include_pad,
     c10::optional<int64_t> divisor_override) {
   // generalize kernels, strides and paddings to 2D-shape
-  TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints");
   const int64_t k_h = kernel_size[0];
   const int64_t k_w = kernel_size.size() == 1 ? k_h : kernel_size[1];
   c10::SmallVector<int64_t, op_infer::SIZE> kernel_sizes = {k_h, k_w};
@@ -86,7 +83,7 @@ at::Tensor& avg_pool2d_out(const at::Tensor& self,
                            at::Tensor& result) {
   c10::SmallVector<int64_t, op_infer::SIZE> output_size = calc_output_size_with_generalized_attrs(self, kernel_size,
       stride, padding, ceil_mode, count_include_pad, divisor_override);
-  npu_preparation::check_tensor({self}, result, self, output_size);
+  at_npu::native::OpPreparation::check_tensor({self}, result, self, output_size);
 
   DO_COMPATIBILITY(aclnnAvgPool2d,
       acl_op::avg_pool2d_out(self, kernel_size, stride, padding, ceil_mode, count_include_pad,
@@ -108,7 +105,7 @@ at::Tensor avg_pool2d(const at::Tensor& self,
   c10::SmallVector<int64_t, op_infer::SIZE> output_size = calc_output_size_with_generalized_attrs(self, kernel_size,
       stride, padding, ceil_mode, count_include_pad, divisor_override);
 
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self, output_size);
 
   DO_COMPATIBILITY(aclnnAvgPool2d,
       acl_op::avg_pool2d(self, kernel_size, stride, padding, ceil_mode, count_include_pad,
