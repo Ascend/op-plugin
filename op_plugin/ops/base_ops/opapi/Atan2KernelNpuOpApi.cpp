@@ -33,7 +33,11 @@ at::Tensor atan2(const at::Tensor &self, const at::Tensor &other) {
     DO_COMPATIBILITY(aclnnAtan2, acl_op::atan2(self, other));
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     c10::ScalarType infer_dtype = at::native::result_type(self, other);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(infer_dtype));
+    auto out_dtype = infer_dtype;
+    if (isIntegralType(infer_dtype, true)) {
+        out_dtype = at::kFloat;
+    }
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(out_dtype));
     EXEC_NPU_CMD(aclnnAtan2, self, other, result);
     return result;
 }
