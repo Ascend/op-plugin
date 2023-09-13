@@ -1441,9 +1441,9 @@ official:
  - func: softplus_backward.grad_input(Tensor grad_output, Tensor self, Scalar beta, Scalar threshold, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: softshrink(Tensor self, Scalar lambd=0.5) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softshrink.out(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softshrink_backward(Tensor grad_output, Tensor self, Scalar lambd) -> Tensor
    impl_ns: acl_op
  - func: softshrink_backward.grad_input(Tensor grad_output, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)
