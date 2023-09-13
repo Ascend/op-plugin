@@ -23,6 +23,23 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 const int FLOAT_STATUS_OP_DIMS_SIZE = 8;
+constexpr size_t MAX_TENSOR_COUNT = 250;
+
+void _split_and_exec_npu_cmd_(at::TensorList& scaled_grads,
+                              at::Tensor& found_inf,
+                              const at::Tensor& inv_scale) {
+  size_t tensor_count = scaled_grads.size();
+  size_t loop_time = tensor_count / MAX_TENSOR_COUNT;  // Upward division
+  for (size_t i = 0; i < loop_time; i++) {
+    at::TensorList temp_scaled_grads(scaled_grads.data() + i * MAX_TENSOR_COUNT, MAX_TENSOR_COUNT);
+    EXEC_NPU_CMD(aclnnForeachNonFiniteCheckAndUnscale, temp_scaled_grads, found_inf, inv_scale);
+  }
+  size_t remaining_count = tensor_count % MAX_TENSOR_COUNT;
+  if (remaining_count) {
+    at::TensorList temp_scaled_grads(scaled_grads.data() + loop_time * MAX_TENSOR_COUNT, remaining_count);
+    EXEC_NPU_CMD(aclnnForeachNonFiniteCheckAndUnscale, temp_scaled_grads, found_inf, inv_scale);
+  }
+}
 
 void _amp_foreach_non_finite_check_and_unscale_(at::TensorList scaled_grads, at::Tensor& found_inf,
                                                 const at::Tensor& inv_scale) {
@@ -37,20 +54,14 @@ void _amp_foreach_non_finite_check_and_unscale_(at::TensorList scaled_grads, at:
     return;
   }
 
-  bool is_finite = true;
+  // inf/nan mode
   if (c10_npu::IsSupportInfNan()) {
-    for (const auto& scaled_grad : scaled_grads) {
-      auto res = op_api::sum(scaled_grad, at::ScalarType::Float);
-      float cpu_sum = res.item().toFloat();
-      if (!std::isfinite(cpu_sum)) {
-        is_finite = false;
-        break;
-      }
-    }
-  } else {
-    is_finite = !acl_op::_amp_foreach_non_finite_check(scaled_grads);
+    _split_and_exec_npu_cmd_(scaled_grads, found_inf, inv_scale);
+    return;
   }
 
+  // saturation mode
+  bool is_finite = !acl_op::_amp_foreach_non_finite_check(scaled_grads);
   if (!is_finite) {
     op_api::ones_out(1, found_inf);
   }
