@@ -1351,11 +1351,11 @@ official:
  - func: roll(Tensor self, int[1] shifts, int[1] dims=[]) -> Tensor
    impl_ns: acl_op, op_api
  - func: round(Tensor self) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: round.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: round_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: round.decimals(Tensor self, *, int decimals) -> Tensor
    impl_ns: acl_op, op_api
  - func: round_.decimals(Tensor(a!) self, *, int decimals) -> Tensor(a!)
@@ -1489,9 +1489,9 @@ official:
  - func: softshrink.out(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: softshrink_backward(Tensor grad_output, Tensor self, Scalar lambd) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softshrink_backward.grad_input(Tensor grad_output, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: sort(Tensor self, int dim=-1, bool descending=False) -> (Tensor values, Tensor indices)
    impl_ns: acl_op, op_api
  - func: sort.dimname(Tensor self, Dimname dim, bool descending=False) -> (Tensor values, Tensor indices)
@@ -1503,7 +1503,7 @@ official:
  - func: sort.stable(Tensor self, *, bool? stable, int dim=-1, bool descending=False) -> (Tensor values, Tensor indices)
    impl_ns: acl_op, op_api
  - func: sort.values_stable(Tensor self, *, bool? stable, int dim=-1, bool descending=False, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: sqrt(Tensor self) -> Tensor
    impl_ns: acl_op
  - func: sqrt.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
