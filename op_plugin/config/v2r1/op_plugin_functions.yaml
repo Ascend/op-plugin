@@ -1695,7 +1695,7 @@ official:
  - func: zeros.out(SymInt[] size, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: zeros_like(Tensor self, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, MemoryFormat? memory_format=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: celu(Tensor self, Scalar alpha=1.0) -> Tensor
    impl_ns: acl_op, op_api
  - func: celu_(Tensor(a!) self, Scalar alpha=1.0) -> Tensor(a!)
