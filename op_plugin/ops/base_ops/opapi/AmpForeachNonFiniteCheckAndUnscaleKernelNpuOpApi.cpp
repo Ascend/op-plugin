@@ -18,12 +18,68 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
+#include "third_party/acl/inc/acl/acl_rt.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
+#define NON_FINITE_CHECK_RESULT_ESTIMATE(result, host_mem_out, device_mem_out, log_str) do {       \
+  if ((result) != ACL_ERROR_NONE) {                                                                \
+    TORCH_NPU_WARN_ONCE(log_str);                                                                  \
+    if ((host_mem_out) != nullptr) {                                                               \
+      aclrtFreeHost(host_mem_out);                                                                 \
+      host_mem_out = nullptr;                                                                      \
+    }                                                                                              \
+    if ((device_mem_out) != nullptr) {                                                             \
+      aclrtFree(device_mem_out);                                                                   \
+      device_mem_out = nullptr;                                                                    \
+    }                                                                                              \
+    return acl_op::_amp_foreach_non_finite_check(scaled_grads);                                    \
+  }                                                                                                \
+} while (0);
+
 const int FLOAT_STATUS_OP_DIMS_SIZE = 8;
 constexpr size_t MAX_TENSOR_COUNT = 250;
+
+static bool amp_foreach_non_finite_check(at::TensorList& scaled_grads) {
+  // apply for output host memory
+  uint64_t buff_size = 64;
+  void *host_mem_out = nullptr;
+  void *device_mem_out = nullptr;
+  aclrtStream aclStream = c10_npu::getCurrentNPUStream().stream(false);
+
+  aclError err = aclrtMallocHost((void **)&host_mem_out, buff_size);
+  NON_FINITE_CHECK_RESULT_ESTIMATE(err, host_mem_out, device_mem_out, "malloc host memory failed!");
+
+  err = aclrtMemset(host_mem_out, buff_size, 0, buff_size);
+  NON_FINITE_CHECK_RESULT_ESTIMATE(err, host_mem_out, device_mem_out, "set host memory failed!");
+
+  // apply for input parameter device memory(size is 64)
+  err = aclrtMalloc(&device_mem_out, buff_size, aclrtMemMallocPolicy::ACL_MEM_MALLOC_HUGE_FIRST);
+  NON_FINITE_CHECK_RESULT_ESTIMATE(err, host_mem_out, device_mem_out, "malloc host memory failed!");
+
+  err = aclrtGetOverflowStatus(device_mem_out, buff_size, aclStream);
+  NON_FINITE_CHECK_RESULT_ESTIMATE(err, host_mem_out, device_mem_out, "get overflow status failed!");
+
+  err = aclrtSynchronizeStream(aclStream);
+  NON_FINITE_CHECK_RESULT_ESTIMATE(err, host_mem_out, device_mem_out, "synchronize stream failed!");
+
+  err = aclrtMemcpy(host_mem_out, buff_size, device_mem_out, buff_size, aclrtMemcpyKind::ACL_MEMCPY_DEVICE_TO_HOST);
+  NON_FINITE_CHECK_RESULT_ESTIMATE(err, host_mem_out, device_mem_out, "memory copy failed!");
+
+  err = aclrtResetOverflowStatus(aclStream);
+  NON_FINITE_CHECK_RESULT_ESTIMATE(err, host_mem_out, device_mem_out, "reset overflow status failed!");
+
+  err = aclrtSynchronizeStream(aclStream);
+  NON_FINITE_CHECK_RESULT_ESTIMATE(err, host_mem_out, device_mem_out, "synchronize stream failed!");
+
+  uint64_t over_flow_flag = *(uint64_t*)host_mem_out;
+  aclrtFreeHost(host_mem_out);
+  host_mem_out = nullptr;
+  aclrtFree(device_mem_out);
+  device_mem_out = nullptr;
+  return over_flow_flag != 0;
+}
 
 void _split_and_exec_npu_cmd_(at::TensorList& scaled_grads,
                               at::Tensor& found_inf,
@@ -61,7 +117,7 @@ void _amp_foreach_non_finite_check_and_unscale_(at::TensorList scaled_grads, at:
   }
 
   // saturation mode
-  bool is_finite = !acl_op::_amp_foreach_non_finite_check(scaled_grads);
+  bool is_finite = !amp_foreach_non_finite_check(scaled_grads);
   if (!is_finite) {
     op_api::ones_out(1, found_inf);
   }
