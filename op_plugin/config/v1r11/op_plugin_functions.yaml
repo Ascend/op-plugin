@@ -797,7 +797,7 @@ official:
  - func: isfinite(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: isin.Scalar_Tensor_out(Scalar element, Tensor test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: op_api
+   impl_ns: acl_op, op_api
  - func: isposinf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: isneginf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)

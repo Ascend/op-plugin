@@ -778,6 +778,8 @@ official:
    impl_ns: acl_op, op_api
  - func: isin.Tensor_Scalar_out(Tensor element, Scalar test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: isin.Scalar_Tensor_out(Scalar element, Tensor test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: isclose(Tensor self, Tensor other, float rtol=1e-05, float atol=1e-08, bool equal_nan=False) -> Tensor
    impl_ns: acl_op
  - func: isfinite(Tensor self) -> Tensor
@@ -1952,8 +1954,6 @@ unsupported:
   - frexp.Tensor_out
   - isin.Tensor_Tensor_out
   - isin.Tensor_Tensor
-  - isin.Scalar_Tensor_out
-  - isin.Scalar_Tensor
   - cholesky.out
   - cholesky
   - geqrf.a
