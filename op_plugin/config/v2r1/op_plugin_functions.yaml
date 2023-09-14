@@ -1241,11 +1241,11 @@ official:
  - func: randperm.out(SymInt n, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: range(Scalar start, Scalar end, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: range.out(Scalar start, Scalar end, Scalar step=1, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: range.step(Scalar start, Scalar end, Scalar step=1, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: reciprocal(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: reciprocal.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
