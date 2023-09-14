@@ -37,4 +37,11 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p) {
   EXEC_NPU_CMD(aclnnPdist, self, p_float, result);
   return result;
 }
+
+at::Tensor pdist(
+    const at::Tensor& self,
+    double p) {
+  return op_api::_pdist_forward(self, p);
+}
+
 } // namespace op_api

@@ -1191,7 +1191,7 @@ official:
  - func: ones_like(Tensor self, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, MemoryFormat? memory_format=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: pdist(Tensor self, float p=2) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: pow.Scalar(Scalar self, Tensor exponent) -> Tensor
    impl_ns: acl_op, op_api
  - func: pow.Scalar_out(Scalar self, Tensor exponent, *, Tensor(a!) out) -> Tensor(a!)
