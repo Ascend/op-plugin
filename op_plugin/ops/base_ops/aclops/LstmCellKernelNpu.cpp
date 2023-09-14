@@ -183,7 +183,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
   const at::Tensor& grad_y_opt_val = c10::value_or_else(grad_y_opt, [] {return at::Tensor();});
   const at::Tensor& grad_h_opt_val = c10::value_or_else(grad_h_opt, [] {return at::Tensor();});
   const at::Tensor& grad_c_opt_val = c10::value_or_else(grad_c_opt, [] {return at::Tensor();});
-  auto grad_y = grad_y_opt_val.defined() ? grad_y_opt_val : at::zeros(h.sizes(), h.options());
+  auto grad_y = grad_y_opt_val.defined() ? grad_y_opt_val : at::zeros(y_output.sizes(), h.options());
   auto grad_h = grad_h_opt_val.defined() ? grad_h_opt_val : at::zeros(h.sizes(), h_output.options());
   auto grad_c = grad_c_opt_val.defined() ? grad_c_opt_val : at::zeros(c.sizes(), c_output.options());
   int64_t hidden_size = y_output.size(2);
