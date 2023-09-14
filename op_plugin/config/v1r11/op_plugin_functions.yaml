@@ -43,6 +43,8 @@ official:
    impl_ns: acl_op, op_api
  - func: signbit.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: op_api
+ - func: aminmax(Tensor self, *, int? dim=None, bool keepdim=False) -> (Tensor min, Tensor max)
+   impl_ns: op_api
  - func: aminmax.out(Tensor self, *, int? dim=None, bool keepdim=False, Tensor(a!) min, Tensor(b!) max) -> (Tensor(a!) min, Tensor(b!) max)
    impl_ns: acl_op, op_api
  - func: _amp_foreach_non_finite_check_and_unscale_(Tensor(a!)[] self, Tensor(b!) found_inf, Tensor inv_scale) -> ()
