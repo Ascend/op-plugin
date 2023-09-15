@@ -138,6 +138,22 @@ at::Tensor var(
   return result;
 }
 
+at::Tensor var(
+    const at::Tensor& self,
+    at::DimnameList dim,
+    bool unbiased,
+    bool keepdim) {
+  return op_api::var(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+}
+
+std::tuple<at::Tensor, at::Tensor> var_mean(
+    const at::Tensor& self,
+    at::DimnameList dim,
+    bool unbiased,
+    bool keepdim) {
+  return op_api::var_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+}
+
 std::tuple<at::Tensor, at::Tensor> var_mean(
     const at::Tensor& self,
     c10::optional<at::IntArrayRef> dims,
