@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& dot_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& tensor) {
+at::Tensor& vdot_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& tensor) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Dot")
       .Input(self)
@@ -34,7 +34,7 @@ at::Tensor& dot_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, cons
 }
 } // namespace
 
-at::Tensor& dot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor& result) {
+at::Tensor& vdot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor& result) {
   c10::SmallVector<int64_t, N> output_size = {};
   npu_preparation::CheckOut(
       {self, tensor},
@@ -44,19 +44,19 @@ at::Tensor& dot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    dot_out_npu_nocheck(contiguous_result, self, tensor);
+    vdot_out_npu_nocheck(contiguous_result, self, tensor);
     npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    dot_out_npu_nocheck(result, self, tensor);
+    vdot_out_npu_nocheck(result, self, tensor);
   }
 
   return result;
 }
 
-at::Tensor dot(const at::Tensor& self, const at::Tensor& tensor) {
+at::Tensor vdot(const at::Tensor& self, const at::Tensor& tensor) {
   c10::SmallVector<int64_t, N> output_size = {};
   at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  dot_out_npu_nocheck(result, self, tensor);
+  vdot_out_npu_nocheck(result, self, tensor);
   return result;
 }
-} // acl_op
+} // op_plugin
