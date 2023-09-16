@@ -33,8 +33,8 @@ at::Tensor& where_out(
   at::Tensor self_cp, other_cp;
   if (self.dtype() != other.dtype()) {
     auto result_type = at::native::result_type(self, other);
-    self_cp = npu_dtype_cast(self, result_type);
-    other_cp = npu_dtype_cast(other, result_type);
+    self_cp = self.to(result_type);
+    other_cp = other.to(result_type);
   } else {
     self_cp = self;
     other_cp = other;
