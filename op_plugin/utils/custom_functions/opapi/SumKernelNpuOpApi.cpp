@@ -31,8 +31,7 @@ at::Tensor& sum_out_common_nocheck(const at::Tensor &self,
   auto res_type = dtype.has_value() ? dtype.value() : result.scalar_type();
   npu_preparation::check_tensor({self}, result, res_type, output_size);
 
-  auto des_dim = ConvertType(dim);
-  EXEC_NPU_CMD(aclnnReduceSum, self, des_dim, keepdim, res_type, result);
+  EXEC_NPU_CMD(aclnnReduceSum, self, dim, keepdim, res_type, result);
   return result;
 }
 
@@ -58,8 +57,7 @@ at::Tensor sum_common_nocheck(const at::Tensor &self,
   }
 
   at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(out_type));
-  auto des_dim = ConvertType(dim);
-  EXEC_NPU_CMD(aclnnReduceSum, self, des_dim, keepdim, out_type, result);
+  EXEC_NPU_CMD(aclnnReduceSum, self, dim, keepdim, out_type, result);
   return result;
 }
 } // namespace op_api
