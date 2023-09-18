@@ -42,7 +42,7 @@ at::Tensor& index_copy_npu_impl(
     }
   } else {
     for (i = 0; i < num_indices; i++) {
-      result[i] = source[index[i].item<int64_t>()];
+      result[index[i].item<int64_t>()] = source[i];
     }
   }
   return result;
