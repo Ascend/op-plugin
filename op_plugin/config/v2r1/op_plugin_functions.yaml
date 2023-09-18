@@ -528,6 +528,10 @@ official:
    impl_ns: acl_op, op_api
  - func: dot.out(Tensor self, Tensor tensor, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: vdot(Tensor self, Tensor other) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: vdot.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: dropout(Tensor input, float p, bool train) -> Tensor
    impl_ns: acl_op, op_api
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
