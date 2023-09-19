@@ -209,6 +209,10 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_output_size(const at::Tens
 
 c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_out_size(const at::Tensor& self, at::IntArrayRef padding);
 
+c10::SmallVector<int64_t, SIZE> conv_depthwise2d_npu_output_size(const at::Tensor &self, const at::Tensor &weight,
+                                                                 at::IntArrayRef kernel_size, at::IntArrayRef stride,
+                                                                 at::IntArrayRef padding, at::IntArrayRef dilation);
+
 c10::SmallVector<int64_t, SIZE> roi_align_backward_npu_output_size(c10::IntArrayRef xdiff_shape);
 
 c10::SmallVector<int64_t, SIZE> repeat_npu_output_size(const at::Tensor& self, c10::IntArrayRef repeats);
