@@ -22,12 +22,9 @@ namespace op_api {
 
 at::Tensor& log2_out(const at::Tensor& self, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnLog2, acl_op::log2_out(self, result));
-  at::ScalarType expext_dtype = self.scalar_type();
-  if (self.dtype() == at::kLong || self.dtype() == at::kBool) {
-    // int need cast to float
-    expext_dtype = at::kFloat;
-  }
-  at_npu::native::OpPreparation::check_tensor({self}, result, expext_dtype, self.sizes());
+  TORCH_CHECK(!isIntegralType(result.scalar_type(), true),
+              "result type Float can't be cast to the desired output type ", toString(self.scalar_type()));
+  at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
   EXEC_NPU_CMD(aclnnLog2, self, result);
   return result;
 }
@@ -35,14 +32,12 @@ at::Tensor& log2_out(const at::Tensor& self, at::Tensor& result) {
 at::Tensor log2(const at::Tensor& self) {
   DO_COMPATIBILITY(aclnnLog2, acl_op::log2(self));
   // construct the output tensor of the NPU
-  at::ScalarType expext_dtype = self.scalar_type();
-  if (self.dtype() == at::kLong || self.dtype() == at::kBool) {
-    // int need cast to float
-    expext_dtype = at::kFloat;
+  at::ScalarType out_dtype = self.scalar_type();
+  if (isIntegralType(self.scalar_type(), true)) {
+    out_dtype = at::kFloat;
   }
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(
-      self.sizes(),
-      self.options().dtype(expext_dtype));
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(),
+                                                                                 self.options().dtype(out_dtype));
 
   // calculate the output result of the NPU
   EXEC_NPU_CMD(aclnnLog2, self, result);
@@ -52,8 +47,9 @@ at::Tensor log2(const at::Tensor& self) {
 
 at::Tensor& log2_(at::Tensor& self) {
   DO_COMPATIBILITY(aclnnInplaceLog2, acl_op::log2_(self));
+  TORCH_CHECK(!isIntegralType(self.scalar_type(), true),
+              "result type Float can't be cast to the desired output type ", toString(self.scalar_type()));
   EXEC_NPU_CMD(aclnnInplaceLog2, self);
   return self;
 }
 } // namespace op_api
-
