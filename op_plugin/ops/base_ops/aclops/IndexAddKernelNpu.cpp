@@ -42,12 +42,12 @@ at::Tensor& index_add_out_npu_nocheck(
   at::SmallVector<int64_t, N> pad_size = op_infer::array_to_small_vector(self.sizes());
   pad_size[dim] = indices.sizes()[0];
   at::Tensor source_broadcast = acl_op::npu_broadcast(source, pad_size);
-  source_broadcast.mul_(alpha);
   at_npu::native::OpCommand cmd;
   cmd.Name("InplaceIndexAdd")
       .Input(self)
       .Input(indices)
       .Input(source_broadcast)
+      .Input(alpha, self.scalar_type())
       .Output(result)
       .Attr("axis", dim)
       .Run();
