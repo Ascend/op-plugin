@@ -50,7 +50,7 @@ at::Tensor& _index_put_impl_(
   if (self.device().type() == at::kCPU) {
     return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
   }
-  auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices);
+  auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, true);
   std::vector<at::Tensor> all_defined_indices;
   at::SmallVector<int64_t, op_infer::N> zeroSize = {0};
   at::Tensor emptyTensor = npu_preparation::apply_tensor_without_format(self, zeroSize);
