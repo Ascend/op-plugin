@@ -21,37 +21,56 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-static std::tuple<c10::SmallVector<int64_t, op_infer::N>, c10::SmallVector<int64_t, op_infer::N>> qr_infer_shape(
+static inline bool mode_valid(c10::string_view mode) {
+    return (mode == "reduced" || mode == "complete" || mode == "r");
+}
+
+static inline int64_t get_mode(c10::string_view mode) {
+    if (mode == "complete") {
+        // complete模式对应输入为1
+        return 1;
+    }
+    if (mode == "r") {
+        // r模式对应输入为2
+        return 2;
+    }
+    return 0;
+}
+
+static std::tuple<c10::SmallVector<int64_t, op_infer::N>, c10::SmallVector<int64_t, op_infer::N>> linalg_qr_infer_shape(
     const at::Tensor& self,
-    bool some) {
+    c10::string_view mode) {
   int m = self.size(-2);
   int n = self.size(-1);
   auto k = std::min<int>(m, n);
   auto shape = op_infer::array_to_small_vector(self.sizes());
+  c10::SmallVector<int64_t, op_infer::N> Esize = {0};
   c10::SmallVector<int64_t, op_infer::N> Qsize(shape.begin(), shape.end()-2);
   c10::SmallVector<int64_t, op_infer::N> Rsize(shape.begin(), shape.end()-2);
-  if (some) {
-    Qsize.insert(Qsize.end(), {m, k});
+  if (mode == "r") {
+    Qsize = Esize;
     Rsize.insert(Rsize.end(), {k, n});
-  } else {
+  } else if (mode == "complete") {
     Qsize.insert(Qsize.end(), {m, m});
     Rsize.insert(Rsize.end(), {m, n});
+  } else {
+    Qsize.insert(Qsize.end(), {m, k});
+    Rsize.insert(Rsize.end(), {k, n});
   }
   return std::tie(Qsize, Rsize);
 }
 
-static inline void qr_check(const at::Tensor& self) {
-  TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim());
-}
-
-std::tuple<at::Tensor&, at::Tensor&> qr_out(
+std::tuple<at::Tensor&, at::Tensor&> linalg_qr_out(
     const at::Tensor& self,
-    bool some,
+    c10::string_view mode,
     at::Tensor& Q,
     at::Tensor& R) {
-  DO_COMPATIBILITY(aclnnQr, acl_op::qr_out(self, some, Q, R));
-  qr_check(self);
-  auto sizes = qr_infer_shape(self, some);
+  DO_COMPATIBILITY(aclnnLinalgQr, acl_op::linalg_qr_out(self, mode, Q, R));
+  // 输入至少为2维tensor
+  TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim());
+  TORCH_CHECK(mode_valid(mode),
+              "qr received unrecognized mode but expected one of 'reduced'(default), 'r', or 'complete'");
+  auto sizes = linalg_qr_infer_shape(self, mode);
   npu_preparation::check_tensor(
       {self},
       Q,
@@ -62,17 +81,20 @@ std::tuple<at::Tensor&, at::Tensor&> qr_out(
       R,
       self,
       std::get<1>(sizes));
-  EXEC_NPU_CMD(aclnnQr, self, some, Q, R);
+  int64_t mode_int = get_mode(mode);
+  EXEC_NPU_CMD(aclnnLinalgQr, self, mode_int, Q, R);
   return std::tie(Q, R);
 }
 
-std::tuple<at::Tensor, at::Tensor> qr(const at::Tensor& self, bool some) {
-  DO_COMPATIBILITY(aclnnQr, acl_op::qr(self, some));
-  qr_check(self);
-  auto sizes = qr_infer_shape(self, some);
+std::tuple<at::Tensor, at::Tensor> linalg_qr(const at::Tensor& self, c10::string_view mode) {
+  DO_COMPATIBILITY(aclnnLinalgQr, acl_op::linalg_qr(self, mode));
+  TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim());
+  TORCH_CHECK(mode_valid(mode), "Mode should be reduced, complete or r");
+  auto sizes = linalg_qr_infer_shape(self, mode);
   at::Tensor Q = npu_preparation::apply_tensor_without_format(std::get<0>(sizes), self.options());
   at::Tensor R = npu_preparation::apply_tensor_without_format(std::get<1>(sizes), self.options());
-  EXEC_NPU_CMD(aclnnQr, self, some, Q, R);
+  int64_t mode_int = get_mode(mode);
+  EXEC_NPU_CMD(aclnnLinalgQr, self, mode_int, Q, R);
   return std::tie(Q, R);
 }
 

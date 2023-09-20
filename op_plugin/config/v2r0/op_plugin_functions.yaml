@@ -836,6 +836,10 @@ official:
    impl_ns: acl_op
  - func: linalg_cross.out(Tensor self, Tensor other, *, int dim=-1, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: linalg_qr(Tensor self, str mode='reduced') -> (Tensor Q, Tensor R)
+   impl_ns: acl_op
+ - func: linalg_qr.out(Tensor self, str mode='reduced', *, Tensor(a!) Q, Tensor(b!) R) -> (Tensor(a!) Q, Tensor(b!) R)
+   impl_ns: acl_op
  - func: linspace(Scalar start, Scalar end, int steps, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
  - func: linspace.out(Scalar start, Scalar end, int steps, *, Tensor(a!) out) -> Tensor(a!)
@@ -1215,10 +1219,6 @@ official:
  - func: prod.int_out(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: put_(Tensor(a!) self, Tensor index, Tensor source, bool accumulate=False) -> Tensor(a!)
-   impl_ns: acl_op
- - func: qr(Tensor self, bool some=True) -> (Tensor Q, Tensor R)
-   impl_ns: acl_op
- - func: qr.Q(Tensor self, bool some=True, *, Tensor(a!) Q, Tensor(b!) R) -> (Tensor(a!) Q, Tensor(b!) R)
    impl_ns: acl_op
  - func: quantize_per_channel(Tensor self, Tensor scales, Tensor zero_points, int axis, ScalarType dtype) -> Tensor
    impl_ns: acl_op

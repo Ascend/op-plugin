@@ -66,11 +66,12 @@ std::tuple<at::Tensor&, at::Tensor&> qr_out_npu_nocheck(
 }
 } // namespace
 
-std::tuple<at::Tensor&, at::Tensor&> qr_out(
+std::tuple<at::Tensor&, at::Tensor&> linalg_qr_out(
     const at::Tensor& self,
-    bool some,
+    c10::string_view mode,
     at::Tensor& Q,
     at::Tensor& R) {
+  bool some = (mode == "complete") ? false : true;
   qr_check(self);
   auto sizes = qr_npu_output_size(self, some);
   npu_preparation::CheckOut(
@@ -98,18 +99,27 @@ std::tuple<at::Tensor&, at::Tensor&> qr_out(
   } else {
     qr_out_npu_nocheck(Q, R, self, some);
   }
+  if (mode == "r") {
+    c10::SmallVector<int64_t, op_infer::N> Esize = {0};
+    npu_preparation::CheckOut({self}, Q, self, Esize);
+  }
   return std::tie(Q, R);
 }
 
-std::tuple<at::Tensor, at::Tensor> qr(
+std::tuple<at::Tensor, at::Tensor> linalg_qr(
     const at::Tensor& self,
-    bool some) {
+    c10::string_view mode) {
+  bool some = (mode == "complete") ? false : true;
   qr_check(self);
   auto sizes = qr_npu_output_size(self, some);
   at::Tensor Q = npu_preparation::apply_tensor(self, std::get<0>(sizes));
   at::Tensor R = npu_preparation::apply_tensor(self, std::get<1>(sizes));
 
   qr_out_npu_nocheck(Q, R, self, some);
+  if (mode == "r") {
+    c10::SmallVector<int64_t, op_infer::N> Esize = {0};
+    Q = npu_preparation::apply_tensor_without_format(Esize, self.options());
+  }
   return std::tie(Q, R);
 }
 } // namespace acl_op
