@@ -271,7 +271,7 @@ official:
  - func: asinh_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: atan(Tensor self) -> Tensor
-   impl_ns: acl_op, op_apiv
+   impl_ns: acl_op, op_api
  - func: atan.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: atan2(Tensor self, Tensor other) -> Tensor
