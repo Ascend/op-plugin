@@ -1670,6 +1670,8 @@ official:
    impl_ns: acl_op, op_api
  - func: var_mean.correction_names(Tensor self, Dimname[1] dim, *, Scalar? correction=None, bool keepdim=False) -> (Tensor, Tensor)
    impl_ns: acl_op, op_api
+ - func: _weight_norm(Tensor v, Tensor g, int dim=0) -> Tensor
+   impl_ns: acl_op
  - func: where(Tensor condition) -> Tensor[]
    impl_ns: acl_op
  - func: where.self(Tensor condition, Tensor self, Tensor other) -> Tensor
