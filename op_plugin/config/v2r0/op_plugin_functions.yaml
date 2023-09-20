@@ -439,7 +439,7 @@ official:
  - func: col2im.out(Tensor self, SymInt[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: constant_pad_nd(Tensor self, SymInt[] pad, Scalar value=0) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: conv_tbc(Tensor self, Tensor weight, Tensor bias, int pad=0) -> Tensor
    impl_ns: acl_op
  - func: conv_tbc_backward(Tensor self, Tensor input, Tensor weight, Tensor bias, int pad) -> (Tensor, Tensor, Tensor)
