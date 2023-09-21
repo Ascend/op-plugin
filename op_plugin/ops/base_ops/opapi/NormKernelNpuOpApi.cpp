@@ -110,7 +110,7 @@ at::Tensor norm(const at::Tensor &self,
                 at::IntArrayRef dim,
                 bool keepdim) {
   DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dim, keepdim));
-  return norm_imp(self, p, dim, false, self.scalar_type());
+  return norm_imp(self, p, dim, keepdim, self.scalar_type());
 }
 } // namespace op_api
 
