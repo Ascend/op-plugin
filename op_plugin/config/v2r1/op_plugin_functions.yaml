@@ -704,6 +704,8 @@ official:
    impl_ns: acl_op, op_api
  - func: hardshrink(Tensor self, Scalar lambd=0.5) -> Tensor
    impl_ns: acl_op, op_api
+ - func: hardshrink.out(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: hardshrink_backward(Tensor grad_out, Tensor self, Scalar lambd) -> Tensor
    impl_ns: acl_op, op_api
  - func: hardshrink_backward.grad_input(Tensor grad_out, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)

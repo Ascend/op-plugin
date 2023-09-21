@@ -31,5 +31,16 @@ at::Tensor hardshrink(const at::Tensor& self, const at::Scalar& lambd) {
   EXEC_NPU_CMD(aclnnHardshrink, self, lambd, result);
   return result;
 }
+
+at::Tensor& hardshrink_out(const at::Tensor& self, const at::Scalar& lambd, at::Tensor& result) {
+  DO_COMPATIBILITY(aclnnHardshrink, acl_op::hardshrink_out(self, lambd, result));
+
+  auto output_size = op_infer::input_same_output_size(self);
+  npu_preparation::check_tensor({self}, result, result.scalar_type(), output_size);
+
+  // calculate the output result of the NPU
+  EXEC_NPU_CMD(aclnnHardshrink, self, lambd, result);
+  return result;
+}
 }  // namespace op_api
 
