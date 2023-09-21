@@ -1730,6 +1730,8 @@ official:
    impl_ns: acl_op
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
+ - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1753,7 +1755,6 @@ tocpu:
   - _fft_c2c
   - _fft_c2c.out
   - _foreach_sub.Scalar
-  - _foreach_sub_.Scalar
   - _foreach_sub.List
   - _foreach_sub_.List
   - _foreach_sub.ScalarList

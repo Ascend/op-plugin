@@ -1788,6 +1788,8 @@ official:
    impl_ns: acl_op, op_api
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
+ - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
 
 symint:
 
@@ -1808,7 +1810,6 @@ tocpu:
   - _foreach_add.Scalar
   - _foreach_add_.Scalar
   - _foreach_sub.Scalar
-  - _foreach_sub_.Scalar
   - _foreach_mul.Scalar
   - _foreach_div.Scalar
   - _foreach_div_.Scalar
