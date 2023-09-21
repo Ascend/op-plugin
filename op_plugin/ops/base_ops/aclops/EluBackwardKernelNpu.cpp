@@ -32,6 +32,14 @@ at::Tensor& elu_backward_out_nocheck(
   float alphaValue = op_plugin::utils::get_scalar_float_value(alpha);
   float scaleValue = op_plugin::utils::get_scalar_float_value(scale);
   float inputScaleValue = op_plugin::utils::get_scalar_float_value(input_scale);
+
+  if (is_result) {
+    TORCH_CHECK((alphaValue >= 0),
+        "In-place elu backward calculation is triggered with a negative slope which is not supported. "
+        "This is caused by calling in-place forward function with a negative slope, "
+        "please call out-of-place version instead.");
+  }
+
   at_npu::native::OpCommand cmd;
   cmd.Name("EluGradV2")
       .Input(grad_output)
