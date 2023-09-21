@@ -17,14 +17,15 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-
+#include "op_plugin/utils/OpAdapter.h"
 
 namespace op_api {
 
 at::Tensor softmax(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype) {
   DO_COMPATIBILITY(aclnnSoftmax, acl_op::softmax(self, dim, dtype));
   auto result = [&]() {
-    at::Tensor converted = dtype.has_value() ? op_api::npu_dtype_cast(self, dtype.value()) : self;
+    at::NoNamesGuard guard;
+    at::Tensor converted = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
     return at::_softmax(converted, dim, false);
   }();
   at::namedinference::propagate_names(result, self);

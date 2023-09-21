@@ -1439,9 +1439,9 @@ official:
  - func: soft_margin_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: softmax.Dimname(Tensor self, Dimname dim, *, ScalarType? dtype=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softmax.int(Tensor self, int dim, ScalarType? dtype=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softplus(Tensor self, Scalar beta=1, Scalar threshold=20) -> Tensor
    impl_ns: acl_op, op_api
  - func: softplus.out(Tensor self, Scalar beta=1, Scalar threshold=20, *, Tensor(a!) out) -> Tensor(a!)
