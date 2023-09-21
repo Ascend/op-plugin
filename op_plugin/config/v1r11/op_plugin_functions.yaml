@@ -1431,11 +1431,11 @@ official:
  - func: sign_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: sin(Tensor self) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: sin.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: sin_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: sinc(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: sinc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)

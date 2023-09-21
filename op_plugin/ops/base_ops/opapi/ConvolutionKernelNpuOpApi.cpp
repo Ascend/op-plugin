@@ -234,23 +234,6 @@ at::Tensor slow_conv_dilated2d(
   return _calc_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups);
 }
 
-at::Tensor conv_transpose2d(
-    const at::Tensor& input,
-    const at::Tensor& weight,
-    const c10::optional<at::Tensor>& bias,
-    at::IntArrayRef stride,
-    at::IntArrayRef padding,
-    at::IntArrayRef output_padding,
-    int64_t groups,
-    at::IntArrayRef dilation) {
-
-  bool transposed = true;
-  DO_COMPATIBILITY(aclnnConvolution, acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed,
-                                                          output_padding, groups, false, false, false, false));
-
-  return _calc_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups);
-}
-
 at::Tensor _slow_conv2d_forward(
     const at::Tensor& input,
     const at::Tensor& weight,
