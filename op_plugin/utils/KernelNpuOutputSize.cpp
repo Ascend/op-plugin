@@ -260,6 +260,14 @@ std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>> 
     const at::Tensor &input, const at::Tensor &grad, const at::Tensor &weight, c10::IntArrayRef stride,
     c10::IntArrayRef padding, c10::IntArrayRef dilation, int64_t groups) {
   c10::SmallVector<int64_t, SIZE> gradBiasSize = {grad.size(1)};
+  // input dim = 3, grad dim = 3, weight dim = 4
+  if (input.ndimension() == 3 && grad.ndimension() == 3 && weight.ndimension() == 4) {
+    c10::SmallVector<int64_t, SIZE> input_unsqueeze_size = {1, input.size(0), input.size(1), input.size(2)};
+    c10::SmallVector<int64_t, SIZE> grad_unsqueeze_size = {1, grad.size(0), grad.size(1), grad.size(2)};
+    input.resize_(input_unsqueeze_size);
+    grad.resize_(grad_unsqueeze_size);
+    gradBiasSize = {grad.size(1)};
+  }
   return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>(input.sizes(), weight.sizes(),
                                                                                          gradBiasSize);
 }
