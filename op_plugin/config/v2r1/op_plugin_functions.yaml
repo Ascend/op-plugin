@@ -1053,9 +1053,9 @@ official:
  - func: mish_backward(Tensor grad_output, Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: mm(Tensor self, Tensor mat2) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mse_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
    impl_ns: acl_op, op_api
  - func: mse_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)
