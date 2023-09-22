@@ -135,6 +135,12 @@ function main()
     fi
     cp -rf ${PYTORCH_PATH}/dist ${CODE_ROOT_PATH}
 
+    whl_file=${CODE_ROOT_PATH}/dist/torch_npu*.whl
+    file_name=$(basename $whl_file)
+    git_commit=$(echo "$file_name" | grep -o '+git[0-9,a-z]\+')
+    npu_name=${file_name/$git_commit}
+    mv ${CODE_ROOT_PATH}/dist/${file_name} ${CODE_ROOT_PATH}/dist/${npu_name}
+
     exit 0
 }
 
