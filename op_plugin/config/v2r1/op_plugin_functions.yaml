@@ -2099,3 +2099,7 @@ custom:
     impl_ns: acl_op
   - func: scatter_update(Tensor data, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op
+  - func: npu_prompt_flash_attention(Tensor query, Tensor key, Tensor value, *, Tensor? padding_mask=None, Tensor? atten_mask=None, int[]? actual_seq_lengths=None, int num_heads=1, float scale_value=1.0, int pre_tokens=2147473647, int next_tokens=0, str input_layout="BSH", int num_key_value_heads=0) -> Tensor
+    impl_ns: op_api
+  - func: npu_incre_flash_attention(Tensor query, Tensor key, Tensor value, *, Tensor? padding_mask=None, Tensor? atten_mask=None, int[]? actual_seq_lengths=None, int num_heads=1, float scale_value=1.0, str input_layout="BSH", int num_key_value_heads=0) -> Tensor
+    impl_ns: op_api
