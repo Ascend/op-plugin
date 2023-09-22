@@ -43,12 +43,7 @@ at::Tensor addmm(
     const at::Scalar& beta,
     const at::Scalar& alpha) {
   auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
-
-  // add supports NZ with 1 dimension, and this axis can be added by ND divisible by 16,
-  // then directly get NZ result
-  int64_t res_format = (self.dim() == 1 && self.size(0) % 16 == 0 && self.scalar_type() == at::kHalf) ?
-     ACL_FORMAT_FRACTAL_NZ : ACL_FORMAT_ND;
-  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), res_format);
+  at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
 
   acl_op::addmm_out(self, mat1, mat2, beta, alpha, result);
   return result;
