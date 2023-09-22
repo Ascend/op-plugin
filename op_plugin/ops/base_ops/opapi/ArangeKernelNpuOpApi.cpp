@@ -62,7 +62,6 @@ at::Tensor arange(const at::Scalar& start, const at::Scalar& end, const at::Scal
   at::Scalar end_opt = end;
   at::Scalar step_opt = step;
   bool set_to_integral_dtype = !option.has_dtype() && all_integral({start_opt, end_opt, step_opt});
-
   if (set_to_integral_dtype) {
     option = option.dtype(at::ScalarType::Long);
   }

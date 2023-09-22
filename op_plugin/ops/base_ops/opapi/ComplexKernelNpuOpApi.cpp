@@ -19,8 +19,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& complex_out(const at::Tensor& real, const at::Tensor& imag,
-                                                 at::Tensor& result) {
+at::Tensor& complex_out(const at::Tensor& real, const at::Tensor& imag, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnComplex, acl_op::complex_out(real, imag, result));
   auto outputSize = op_infer::broadcast_ops_npu_output_size(real, imag);
   npu_preparation::check_tensor({real}, result, result.scalar_type(), outputSize);
@@ -40,8 +39,7 @@ at::Tensor complex(const at::Tensor& real, const at::Tensor& imag) {
     high_type = at::ScalarType::ComplexHalf;
   }
   auto outputSize = op_infer::broadcast_ops_npu_output_size(real, imag);
-  at::Tensor result = 
-    npu_preparation::apply_tensor_without_format(outputSize, real.options().dtype(high_type));
+  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, real.options().dtype(high_type));
   // calculate the output result of the NPU
   EXEC_NPU_CMD(aclnnComplex, real, imag, result);
   return result;
