@@ -22,7 +22,6 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -66,7 +65,7 @@ at::Tensor& cumsum_out(
   npu_preparation::CheckOut(
       {self_cp},
       result,
-      calcu_op_util::GetTensorNpuFormat(result),
+      npu_preparation::get_tensor_npu_format(result),
       dst_type,
       self_cp.sizes());
   if (!npu_utils::check_match(&result)) {

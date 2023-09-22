@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -61,7 +60,7 @@ at::Tensor& xlogy_out(const at::Tensor& self, const at::Tensor& other, at::Tenso
   npu_preparation::CheckOut(
       {self, other},
       result,
-      calcu_op_util::GetTensorNpuFormat(format_cast_of_self),
+      npu_preparation::get_tensor_npu_format(format_cast_of_self),
       result.scalar_type(),
       output_size);
   if (!npu_utils::check_match(&result)) {
@@ -93,7 +92,7 @@ at::Tensor& xlogy_out(const at::Scalar& self, const at::Tensor& other, at::Tenso
   npu_preparation::CheckOut(
      {other},
      result,
-     calcu_op_util::GetTensorNpuFormat(other),
+     npu_preparation::get_tensor_npu_format(other),
      other.scalar_type(),
      other.sizes());
   if (!npu_utils::check_match(&result)) {
@@ -107,7 +106,7 @@ at::Tensor& xlogy_out(const at::Scalar& self, const at::Tensor& other, at::Tenso
 }
 
 at::Tensor xlogy(const at::Tensor& self, const at::Tensor& other) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+  bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
   at::Tensor output_tensor = is_self_wrapped ? other : self;
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);

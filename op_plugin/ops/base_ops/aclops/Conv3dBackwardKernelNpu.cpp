@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace{
 at::Tensor& conv3d_backward_input_nocheck(
@@ -123,7 +122,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv3d_backward(
   if (grad_input_mask[1]) {
     // format should be FRACTAL_Z_3D
     grad_weight = npu_preparation::apply_tensor_with_format(
-        weight.sizes(), weight.options().dtype(at::kFloat), calcu_op_util::GetTensorNpuFormat(weight));
+        weight.sizes(), weight.options().dtype(at::kFloat), npu_preparation::get_tensor_npu_format(weight));
     conv3d_backward_weight_nocheck(grad_weight, input, grad, weight, stride, padding, dilation, groups);
   }
 

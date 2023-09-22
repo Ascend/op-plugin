@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -131,7 +130,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
   at::Tensor self_temp = (self.scalar_type() == high_type) ? self : self.to(high_type);
   at::Tensor other_temp = (other.scalar_type() == high_type) ? other : other.to(high_type);
 
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self_temp) || npu_preparation::IsCPUScalar(self_temp);
+  bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self_temp) || npu_preparation::IsCPUScalar(self_temp);
   at::Tensor output_tensor = is_self_wrapped ? other_temp : self_temp;
   auto output_size = op_infer::broadcast_ops_npu_output_size(self_temp, other_temp);
 

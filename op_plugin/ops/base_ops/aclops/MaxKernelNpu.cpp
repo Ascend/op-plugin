@@ -21,7 +21,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -176,9 +175,9 @@ at::Tensor& max_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
 
   at::ScalarType high_type = at::native::result_type(self, other);
-  at::Tensor self_copy = (self.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(self)) ?
+  at::Tensor self_copy = (self.scalar_type() != high_type && !npu_preparation::is_scalar_wrapped_to_tensor(self)) ?
       at_npu::native::custom_ops::npu_dtype_cast(self, high_type) : self;
-  at::Tensor other_copy = (other.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
+  at::Tensor other_copy = (other.scalar_type() != high_type && !npu_preparation::is_scalar_wrapped_to_tensor(other)) ?
       at_npu::native::custom_ops::npu_dtype_cast(other, high_type) : other;
 
   npu_preparation::CheckOut(
@@ -226,9 +225,9 @@ at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
   }
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType high_type = at::native::result_type(self, other);
-  at::Tensor self_copy = (self.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(self)) ?
+  at::Tensor self_copy = (self.scalar_type() != high_type && !npu_preparation::is_scalar_wrapped_to_tensor(self)) ?
       at_npu::native::custom_ops::npu_dtype_cast(self, high_type) : self;
-  at::Tensor other_copy = (other.scalar_type() != high_type && !calcu_op_util::IsScalarWrappedToTensor(other)) ?
+  at::Tensor other_copy = (other.scalar_type() != high_type && !npu_preparation::is_scalar_wrapped_to_tensor(other)) ?
       at_npu::native::custom_ops::npu_dtype_cast(other, high_type) : other;
   at::Tensor result = npu_preparation::apply_tensor(self_copy, output_size);
   max_out_npu_nocheck(result, self_copy, other_copy);
@@ -237,7 +236,7 @@ at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor amax(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  int64_t npu_format = calcu_op_util::GetTensorNpuFormat(self);
+  int64_t npu_format = npu_preparation::get_tensor_npu_format(self);
   if (output_size.empty()) {
     npu_format = ACL_FORMAT_ND;
   }

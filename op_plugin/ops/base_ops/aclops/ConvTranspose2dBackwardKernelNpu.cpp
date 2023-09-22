@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 at::Tensor& conv_transpose2d_backward_input_out_nocheck(
@@ -258,7 +257,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv_transpose2d_backward(
   }
   if (output_mask[1]) {
     grad_weight = npu_preparation::apply_tensor_with_format(
-        weight.sizes(), weight.options().dtype(at::kFloat), calcu_op_util::GetTensorNpuFormat(weight));
+        weight.sizes(), weight.options().dtype(at::kFloat), npu_preparation::get_tensor_npu_format(weight));
   }
   if (output_mask[2]) {
     grad_bias = npu_preparation::apply_tensor_with_format({grad_output.size(1)}, grad_output.options(), ACL_FORMAT_NCHW);

@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 std::tuple<at::Tensor&, at::Tensor&> min_v1_out_npu_nocheck(
@@ -49,7 +48,7 @@ std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, int64_t dim, 
   c10::SmallVector<int64_t, SIZE> output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
   c10::SmallVector<int64_t, SIZE> indices_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 
-  int64_t npu_format = output_size.empty() ? ACL_FORMAT_NCHW : calcu_op_util::GetTensorNpuFormat(self);
+  int64_t npu_format = output_size.empty() ? ACL_FORMAT_NCHW : npu_preparation::get_tensor_npu_format(self);
 
   at::Tensor outputs = npu_preparation::apply_tensor_with_format(output_size, self.options(), npu_format);
   at::Tensor indices =

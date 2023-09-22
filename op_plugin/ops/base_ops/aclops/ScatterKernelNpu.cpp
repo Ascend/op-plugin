@@ -20,7 +20,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 at::Tensor& scatter_out(
@@ -45,7 +44,7 @@ at::Tensor& scatter_out(
     const at::Scalar& value,
     at::Tensor& result) {
   at::Tensor src_tensor = scalar_to_tensor(value).to(at::ScalarType::Float);
-  src_tensor = calcu_op_util::CopyTensorHostToDevice(src_tensor);
+  src_tensor = npu_preparation::copy_tensor_host_to_device(src_tensor);
   at::Tensor src_tensor_broadcast = acl_op::npu_broadcast(
       src_tensor, op_infer::array_to_small_vector(index.sizes()));
   npu_preparation::CheckOut(

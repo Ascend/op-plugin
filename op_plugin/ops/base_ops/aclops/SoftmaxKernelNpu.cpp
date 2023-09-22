@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -91,8 +90,8 @@ at::Tensor& _softmax_out(
   auto dst_type = half_to_float ? at::kFloat : self.scalar_type();
   npu_preparation::CheckOut(
       {self},
-      result, 
-      calcu_op_util::GetTensorNpuFormat(result),
+      result,
+      npu_preparation::get_tensor_npu_format(result),
       dst_type,
       self.sizes());
 

@@ -19,11 +19,10 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor isfinite(const at::Tensor& self_ex) {
   at::Tensor self = self_ex;
-  if (calcu_op_util::GetTensorNpuFormat(self) != ACL_FORMAT_ND) {
+  if (npu_preparation::get_tensor_npu_format(self) != ACL_FORMAT_ND) {
     self = at_npu::native::custom_ops::npu_format_cast(self_ex, ACL_FORMAT_ND);
   }
   if (self.scalar_type() == at::ScalarType::Half) {

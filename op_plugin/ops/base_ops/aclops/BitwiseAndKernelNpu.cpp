@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -76,7 +75,7 @@ at::Tensor& bitwise_and_out(const at::Tensor& self, const at::Scalar& other, at:
 }
 
 at::Tensor& bitwise_and_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+  bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
   at::Tensor output_tensor = is_self_wrapped ? other : self;
 
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -97,7 +96,7 @@ at::Tensor& bitwise_and_out(const at::Tensor& self, const at::Tensor& other, at:
 }
 
 at::Tensor bitwise_and(const at::Tensor& self, const at::Tensor& other) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+  bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
   at::Tensor output_tensor = is_self_wrapped ? other : self;
 
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);

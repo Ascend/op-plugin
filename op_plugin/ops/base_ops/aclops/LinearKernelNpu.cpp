@@ -24,7 +24,6 @@
 namespace acl_op {
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 at::Tensor linear_npu_nocheck(
@@ -85,13 +84,13 @@ std::tuple<at::Tensor, at::Tensor> npu_linear_backward(
   at::Tensor input_grad = npu_preparation::apply_tensor(input, input_grad_output_size);
   at::Tensor weight_grad = npu_preparation::apply_tensor(weight, weight_grad_output_size);
 
-  if (calcu_op_util::GetTensorNpuFormat(grad) == calcu_op_util::GetTensorNpuFormat(weight)) {
+  if (npu_preparation::get_tensor_npu_format(grad) == npu_preparation::get_tensor_npu_format(weight)) {
     linear_backward_out_npu_nocheck(input_grad, grad, weight, false, false);
     linear_backward_out_npu_nocheck(weight_grad, grad, input, true, false);
   } else {
     at::Tensor gradFormatcast = npu_preparation::apply_tensor(grad, grad.sizes());
     gradFormatcast =
-        at_npu::native::custom_ops::npu_format_cast(grad, calcu_op_util::GetTensorNpuFormat(weight));
+        at_npu::native::custom_ops::npu_format_cast(grad, npu_preparation::get_tensor_npu_format(weight));
     linear_backward_out_npu_nocheck(input_grad, gradFormatcast, weight, false, false);
     linear_backward_out_npu_nocheck(weight_grad, gradFormatcast, input, true, false);
   }

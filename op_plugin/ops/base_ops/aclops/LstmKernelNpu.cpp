@@ -22,7 +22,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace{
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
@@ -311,7 +310,7 @@ at::Tensor get_mask(const at::Tensor& input, const at::Tensor& batch_sizes, cons
     int64_t len = cout_len.item().toInt();
     lens.emplace_back(len);
   }
-  at::Tensor length = calcu_op_util::CopyTensorHostToDevice(
+  at::Tensor length = npu_preparation::copy_tensor_host_to_device(
       at::from_blob(lens.data(), {lens.size()}, at::kLong));
 
   c10::SmallVector<at::Tensor, N> mask_list;

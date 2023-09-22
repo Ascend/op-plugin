@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 bool is_special_conv1d(
@@ -205,7 +204,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(
       grad_weight = npu_preparation::apply_tensor_with_format(
           std::get<1>(output_sizes),
           weight.options().dtype(at::kFloat),
-          calcu_op_util::GetTensorNpuFormat(weight));
+          npu_preparation::get_tensor_npu_format(weight));
     }
   }
 

@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -59,7 +58,7 @@ at::Tensor& smooth_l1_loss_out(
   npu_preparation::CheckOut(
       {self, target},
       result,
-      calcu_op_util::GetTensorNpuFormat(self),
+      npu_preparation::get_tensor_npu_format(self),
       self.scalar_type(),
       output_size);
 

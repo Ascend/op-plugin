@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -50,7 +49,7 @@ void kthvalue_shape_modify(
 
   if (indices.defined()) {
     TORCH_CHECK(
-        indices.dtype() == at::kLong, 
+        indices.dtype() == at::kLong,
         "output indices must be of scalar type Long");
     TORCH_CHECK(
         indices.device() == self.device(),
@@ -148,7 +147,7 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
   npu_preparation::CheckOut(
       {self},
       values,
-      calcu_op_util::GetTensorNpuFormat(values),
+      npu_preparation::get_tensor_npu_format(values),
       self.scalar_type(),
       output_size);
 
@@ -159,7 +158,7 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
       at::ScalarType::Long,
       output_size);
 
-  kthvalue_out_nocheck(values, indices, self, k, dim, keepdim);  
+  kthvalue_out_nocheck(values, indices, self, k, dim, keepdim);
   return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
 }
 

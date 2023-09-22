@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 static const int64_t FZ_ALIGN_NUM1 = 16;
@@ -58,7 +57,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
   auto weight_col = attn_head_num * attn_dim_per_head;
 
   auto query_options = query.options();
-  auto query_format = calcu_op_util::GetTensorNpuFormat(query);
+  auto query_format = npu_preparation::get_tensor_npu_format(query);
 
   at::Tensor y = npu_preparation::apply_tensor_with_format(
       {query_shape[0], weight_col}, query_options, query_format);

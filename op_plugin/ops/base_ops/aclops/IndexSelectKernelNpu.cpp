@@ -21,7 +21,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -59,7 +58,7 @@ at::Tensor& index_select_out(
     index_tmp = index.unsqueeze(0);
   }
   auto output_size = op_infer::index_select_npu_output_size(self, dim, index_tmp);
-  int64_t npu_format = calcu_op_util::GetTensorNpuFormat(self);
+  int64_t npu_format = npu_preparation::get_tensor_npu_format(self);
   if (output_size.empty()) {
     npu_format = ACL_FORMAT_ND;
   }
@@ -97,7 +96,7 @@ at::Tensor index_select(
     index_tmp = index.unsqueeze(0);
   }
   auto output_size = op_infer::index_select_npu_output_size(self, dim, index_tmp);
-  int64_t npu_format = calcu_op_util::GetTensorNpuFormat(self);
+  int64_t npu_format = npu_preparation::get_tensor_npu_format(self);
   if (output_size.empty()) {
     npu_format = ACL_FORMAT_ND;
   }

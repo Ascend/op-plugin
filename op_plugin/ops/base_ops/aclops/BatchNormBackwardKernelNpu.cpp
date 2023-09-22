@@ -23,7 +23,6 @@ namespace acl_op {
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 std::tuple<at::Tensor&, at::Tensor&> batch_norm_backward_training_update_nocheck(
@@ -71,8 +70,8 @@ at::Tensor& batch_norm_backward_training_reduce_nocheck(
 
   string name = (self.dim() == 5) ? "BN3DTrainingReduceGrad" : "BNTrainingReduceGrad";
   at::Tensor weight_cp = weight;
-  auto self_format = calcu_op_util::GetTensorNpuFormat(self);
-  auto weight_format = calcu_op_util::GetTensorNpuFormat(weight);
+  auto self_format = npu_preparation::get_tensor_npu_format(self);
+  auto weight_format = npu_preparation::get_tensor_npu_format(weight);
 
   bool check_bn_5hd = (self_format == ACL_FORMAT_NC1HWC0 && weight_format == ACL_FORMAT_ND) ? true : false;
   if (check_bn_5hd) {
@@ -250,8 +249,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm_backward(
   }
 
   if (grad_weight.defined()) {
-    auto weight_format = calcu_op_util::GetTensorNpuFormat(weight);
-    auto grad_weight_format = calcu_op_util::GetTensorNpuFormat(grad_weight);
+    auto weight_format = npu_preparation::get_tensor_npu_format(weight);
+    auto grad_weight_format = npu_preparation::get_tensor_npu_format(grad_weight);
 
     if (grad_weight_format == ACL_FORMAT_NC1HWC0 && weight_format == ACL_FORMAT_ND) {
       npu_format_helper::unsafe_format_cast(grad_weight, ACL_FORMAT_NC1HWC0, ACL_FORMAT_ND);

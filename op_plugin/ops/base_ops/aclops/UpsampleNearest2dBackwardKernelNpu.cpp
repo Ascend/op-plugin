@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -54,7 +53,7 @@ at::Tensor& upsample_nearest2d_backward_out(
   npu_preparation::CheckOut(
       {grads},
       y,
-      calcu_op_util::GetTensorNpuFormat(y),
+      npu_preparation::get_tensor_npu_format(y),
       grads.scalar_type(),
       input_size);
 

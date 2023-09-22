@@ -19,11 +19,10 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 at::Tensor rsub_dest_output(const at::Tensor& self, const at::Tensor& other) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+  bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
 
   return is_self_wrapped ? other : self;
 }

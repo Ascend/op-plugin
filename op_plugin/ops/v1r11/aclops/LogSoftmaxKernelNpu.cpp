@@ -19,7 +19,6 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -28,7 +27,7 @@ at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_f
   npu_preparation::CheckOut(
     {self},
     result,
-    calcu_op_util::GetTensorNpuFormat(result),
+    npu_preparation::get_tensor_npu_format(result),
     result_type,
     self.sizes());
 

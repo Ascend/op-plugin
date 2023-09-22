@@ -20,7 +20,6 @@
 
 namespace acl_op {
 using npu_op_command = at_npu::native::OpCommand;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -31,7 +30,7 @@ const c10::SmallVector<int64_t, SIZE> output_size = {FLOAT_STATUS_OP_DIMS_SIZE};
 at::Tensor npu_alloc_float_status(const at::Tensor& self) {
   auto options = at::TensorOptions(torch_npu::utils::get_npu_device_type()).dtype(at::kFloat);
   at::Tensor result = npu_preparation::apply_tensor_with_format(
-      output_size, options, calcu_op_util::GetTensorNpuFormat(self));
+      output_size, options, npu_preparation::get_tensor_npu_format(self));
   npu_op_command cmd;
   cmd.Name("NPUAllocFloatStatus")
       .Output(result)
@@ -43,7 +42,7 @@ at::Tensor npu_get_float_status(const at::Tensor& self) {
   npu_op_command cmd;
   if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
     at::Tensor out_tensor = npu_preparation::apply_tensor_with_format(
-        output_size, self.options().dtype(at::kInt), calcu_op_util::GetTensorNpuFormat(self));
+        output_size, self.options().dtype(at::kInt), npu_preparation::get_tensor_npu_format(self));
     cmd.Name("NPUGetFloatStatusV2")
         .Output(out_tensor)
         .Run();

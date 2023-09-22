@@ -20,7 +20,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 at::SmallVector<int64_t, SIZE> where_npu_output_size(const at::Tensor& condition) {
@@ -36,7 +35,7 @@ at::SmallVector<int64_t, SIZE> where_npu_output_size(const at::Tensor& condition
 
 std::vector<at::Tensor> where(const at::Tensor& condition) {
   at::Tensor format_cast_of_condition = condition;
-  if (calcu_op_util::GetTensorNpuFormat(condition) != ACL_FORMAT_ND) {
+  if (npu_preparation::get_tensor_npu_format(condition) != ACL_FORMAT_ND) {
     format_cast_of_condition =
         at_npu::native::custom_ops::npu_format_cast(format_cast_of_condition, ACL_FORMAT_ND);
   }

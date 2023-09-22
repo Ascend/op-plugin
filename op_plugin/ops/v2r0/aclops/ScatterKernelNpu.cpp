@@ -56,7 +56,7 @@ at::Tensor& scatter_(
     int64_t dim,
     const at::Tensor& index_ex,
     const at::Scalar& src) {
-  at::Tensor src_tensor = at_npu::native::CalcuOpUtil::CopyScalarToDevice(src, self.scalar_type());
+  at::Tensor src_tensor = npu_preparation::copy_scalar_to_device(src, self.scalar_type());
   at::Tensor src_tensor_broadcast = acl_op::npu_broadcast(
       src_tensor, op_infer::array_to_small_vector(index_ex.sizes()));
   scatter_npu_src_impl(self, dim, index_ex, src_tensor_broadcast);

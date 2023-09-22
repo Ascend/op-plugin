@@ -21,7 +21,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -141,7 +140,7 @@ std::tuple<at::Tensor&, at::Tensor&> median_out(
 
 at::Tensor median(const at::Tensor& self) {
   at::Tensor result = npu_preparation::apply_tensor_with_format(
-      {}, self.options(), calcu_op_util::GetTensorNpuFormat(self));
+      {}, self.options(), npu_preparation::get_tensor_npu_format(self));
   median_out_nocheck(result, self);
   return result;
 }
@@ -149,7 +148,7 @@ at::Tensor median(const at::Tensor& self) {
 std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self, int64_t dim, bool keepdim) {
   auto output_size = median_npu_output_size(self, dim, keepdim);
   at::Tensor values = npu_preparation::apply_tensor_with_format(
-      output_size, self.options(), calcu_op_util::GetTensorNpuFormat(self));
+      output_size, self.options(), npu_preparation::get_tensor_npu_format(self));
   at::Tensor indices = npu_preparation::apply_tensor_with_format(
       output_size, self.options().dtype(at::kLong), ACL_FORMAT_NCHW);
   median_out_value_nocheck(values, indices, self, dim, keepdim);

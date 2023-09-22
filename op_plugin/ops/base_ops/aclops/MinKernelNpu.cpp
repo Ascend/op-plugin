@@ -21,7 +21,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -205,7 +204,7 @@ at::Tensor& minimum_out(const at::Tensor& self, const at::Tensor& other, at::Ten
 
 at::Tensor amin(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  int64_t npu_format = output_size.empty() ? ACL_FORMAT_NCHW : calcu_op_util::GetTensorNpuFormat(self);
+  int64_t npu_format = output_size.empty() ? ACL_FORMAT_NCHW : npu_preparation::get_tensor_npu_format(self);
   at::Tensor result = npu_preparation::apply_tensor_with_format(self, output_size, npu_format);
   min_out_npu_nocheck(result, self, dims, keepdim);
   return result;

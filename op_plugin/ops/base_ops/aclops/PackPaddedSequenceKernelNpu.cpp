@@ -18,7 +18,7 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using calcu_op_util = at_npu::native::CalcuOpUtil;
+using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
     const at::Tensor& input,
@@ -50,7 +50,7 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
       tmp_vector.emplace_back(i);
     }
     auto index = at::from_blob(tmp_vector.data(), {len}, at::kInt);
-    index = calcu_op_util::CopyTensorHostToDevice(index);
+    index = npu_preparation::copy_tensor_host_to_device(index);
     output = acl_op::index_select(output, 0, index);
     timesize = len;
   }

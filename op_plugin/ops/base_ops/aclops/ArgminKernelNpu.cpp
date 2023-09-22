@@ -19,13 +19,12 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 at::Tensor& argmin_out_nocheck(
     at::Tensor& result,
-    const at::Tensor& self, 
-    const at::Scalar& dim, 
+    const at::Tensor& self,
+    const at::Scalar& dim,
     bool keepdim) {
   at_npu::native::OpCommand cmd;
   cmd.Name("ArgMin")
@@ -39,8 +38,8 @@ at::Tensor& argmin_out_nocheck(
 } // namespace
 
 at::Tensor argmin(
-    const at::Tensor& self, 
-    c10::optional<int64_t> dim, 
+    const at::Tensor& self,
+    c10::optional<int64_t> dim,
     bool keepdim) {
   TORCH_CHECK(
       self.numel() > 0,
@@ -62,8 +61,8 @@ at::Tensor argmin(
 }
 
 at::Tensor& argmin_out(
-    const at::Tensor& self, 
-    c10::optional<int64_t> dim, 
+    const at::Tensor& self,
+    c10::optional<int64_t> dim,
     bool keepdim,
     at::Tensor& result) {
   TORCH_CHECK(
@@ -77,8 +76,8 @@ at::Tensor& argmin_out(
 
   npu_preparation::CheckOut(
       {self},
-      result, 
-      calcu_op_util::GetTensorNpuFormat(result),
+      result,
+      npu_preparation::get_tensor_npu_format(result),
       at::kLong,
       output_size);
 

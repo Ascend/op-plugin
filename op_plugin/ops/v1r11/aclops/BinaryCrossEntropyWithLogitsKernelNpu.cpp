@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -30,7 +29,7 @@ at::Tensor binary_cross_entropy_with_logits_nocheck(
     const at::Tensor& pos_weight,
     int64_t reduction) {
   at::IntArrayRef output_size;
-  int64_t result_format = calcu_op_util::GetTensorNpuFormat(self);
+  int64_t result_format = npu_preparation::get_tensor_npu_format(self);
 
   if (reduction == at::Reduction::None) {
     output_size = self.sizes();

@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -59,7 +58,7 @@ at::Tensor& mean_out_no_dtype(
     at::IntArrayRef dim,
     bool keepdim) {
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-  int64_t npu_format = calcu_op_util::GetTensorNpuFormat(result);
+  int64_t npu_format = npu_preparation::get_tensor_npu_format(result);
   // scalar scene and rank=1 scene do not support NZ
   if (output_size.size() < 2) {
     npu_format = ACL_FORMAT_NCHW;
@@ -114,7 +113,7 @@ at::Tensor mean_common_nocheck(
 
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
 
-  int64_t npu_format = calcu_op_util::GetTensorNpuFormat(self);
+  int64_t npu_format = npu_preparation::get_tensor_npu_format(self);
   if (output_size.empty()) {
     npu_format = ACL_FORMAT_NCHW;
   }

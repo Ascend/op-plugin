@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 at::Tensor& quantize_per_tensor_out_nocheck(
@@ -66,17 +65,17 @@ at::Tensor quantize_per_tensor(
   at::Tensor scale_tensor = npu_preparation::apply_tensor_with_format(
       {1},
       self.options().dtype(at::kFloat),
-      calcu_op_util::GetTensorNpuFormat(self));
+      npu_preparation::get_tensor_npu_format(self));
   scale_tensor[0] = scale_float;
   at::Tensor zp_tensor = npu_preparation::apply_tensor_with_format(
       {1},
       self.options().dtype(at::kInt),
-      calcu_op_util::GetTensorNpuFormat(self));
+      npu_preparation::get_tensor_npu_format(self));
   zp_tensor[0] = zero_point;
   at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size,
       self.options().dtype(output_dtype),
-      calcu_op_util::GetTensorNpuFormat(self));
+      npu_preparation::get_tensor_npu_format(self));
   quantize_per_tensor_out_nocheck(result, self, scale_tensor, zp_tensor, dtype);
 
   return result;

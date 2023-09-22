@@ -18,14 +18,13 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 static inline int64_t calculate_prod_output_format(
     const at::Tensor& self,
     at::IntArrayRef size) {
-  int64_t npu_format = calcu_op_util::GetTensorNpuFormat(self);
+  int64_t npu_format = npu_preparation::get_tensor_npu_format(self);
   // scalar scene no support nz
   if (size.empty()) {
     npu_format = ACL_FORMAT_ND;

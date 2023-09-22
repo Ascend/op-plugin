@@ -21,7 +21,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -63,7 +62,7 @@ at::Tensor& multinomial_out(
   npu_preparation::CheckOut(
       {self},
       result,
-      calcu_op_util::GetTensorNpuFormat(result),
+      npu_preparation::get_tensor_npu_format(result),
       at::ScalarType::Long,
       output_size);
 
@@ -90,7 +89,7 @@ at::Tensor multinomial(
   at::Tensor result = npu_preparation::apply_tensor_with_format(
       shape,
       self.options().dtype(at::kLong),
-      calcu_op_util::GetTensorNpuFormat(self));
+      npu_preparation::get_tensor_npu_format(self));
   multinomial_out_npu_nocheck(result, self, num_samples, replacement, gen);
   return result;
 }

@@ -23,7 +23,6 @@ namespace acl_op {
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 at::Tensor& batch_norm_infer_nocheck(
@@ -154,8 +153,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_impl(
     weight_fp32 = at_npu::native::custom_ops::npu_dtype_cast(weight, at::kFloat);
   }
   at::Tensor bias_cp = bias;
-  auto self_format = calcu_op_util::GetTensorNpuFormat(self);
-  auto weight_format = calcu_op_util::GetTensorNpuFormat(weight_fp32);
+  auto self_format = npu_preparation::get_tensor_npu_format(self);
+  auto weight_format = npu_preparation::get_tensor_npu_format(weight_fp32);
 
   bool check_bn_5hd = (self_format == ACL_FORMAT_NC1HWC0 && weight_format == ACL_FORMAT_ND) ? true : false;
   if (check_bn_5hd) {
@@ -239,7 +238,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
   at::Tensor self_reshape;
   c10::SmallVector<int64_t, N> self_shape = op_infer::array_to_small_vector(self.sizes());
 
-  int64_t self_npu_format = calcu_op_util::GetTensorNpuFormat(self);
+  int64_t self_npu_format = npu_preparation::get_tensor_npu_format(self);
   // BatchNorm is axis sensitive, the size of mean/var depends on dim_c.
   TORCH_CHECK(
       !(self_npu_format == ACL_FORMAT_NDHWC || self_npu_format == ACL_FORMAT_NHWC),

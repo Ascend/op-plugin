@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -59,7 +58,7 @@ at::Tensor& logical_and_out(const at::Tensor& self, const at::Tensor& other, at:
   npu_preparation::CheckOut(
       {self},
       result,
-      calcu_op_util::GetTensorNpuFormat(self),
+      npu_preparation::get_tensor_npu_format(self),
       result.scalar_type(),
       output_size);
 
@@ -79,7 +78,7 @@ at::Tensor logical_and(const at::Tensor& self, const at::Tensor& other) {
   at::Tensor result = npu_preparation::apply_tensor_with_format(
       output_size,
       self.options().dtype(at::kBool),
-      calcu_op_util::GetTensorNpuFormat(self));
+      npu_preparation::get_tensor_npu_format(self));
   logical_and_out_npu_nocheck(result, self, other);
   return result;
 }

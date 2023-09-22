@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor npu_iou(
     const at::Tensor& bboxes,
@@ -38,7 +37,7 @@ at::Tensor npu_iou(
   at::Tensor overlap = npu_preparation::apply_tensor_with_format(
       bboxes_fp16,
       output_size,
-      calcu_op_util::GetTensorNpuFormat(bboxes));
+      npu_preparation::get_tensor_npu_format(bboxes));
   string mode_str = "iou";
   if (mode == 1) {
     mode_str = "iof";

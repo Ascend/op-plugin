@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -75,7 +74,7 @@ at::Tensor& renorm_out_nocheck(
   at::Tensor result_bak = npu_preparation::apply_tensor_with_format(
       output_size,
       self.options().dtype(at::kFloat),
-      calcu_op_util::GetTensorNpuFormat(self));
+      npu_preparation::get_tensor_npu_format(self));
   if(ori_type == c10::ScalarType::Half) {
     at::Tensor self_no_name = self.rename(c10::nullopt);
     at::Tensor result_no_name = result.rename(c10::nullopt);
