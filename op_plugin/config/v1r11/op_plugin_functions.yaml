@@ -1788,6 +1788,14 @@ official:
    impl_ns: acl_op, op_api
  - func: selu_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: _foreach_ceil_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_floor_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_trunc_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_round_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
  - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
@@ -1861,7 +1869,6 @@ tocpu:
   - _foreach_atan
   - _foreach_atan_
   - _foreach_ceil
-  - _foreach_ceil_
   - _foreach_cos
   - _foreach_cos_
   - _foreach_cosh
@@ -1873,7 +1880,6 @@ tocpu:
   - _foreach_expm1
   - _foreach_expm1_
   - _foreach_floor
-  - _foreach_floor_
   - _foreach_log
   - _foreach_log_
   - _foreach_log10
@@ -1893,7 +1899,6 @@ tocpu:
   - _foreach_sinh
   - _foreach_sinh_
   - _foreach_round
-  - _foreach_round_
   - _foreach_lgamma
   - _foreach_lgamma_
   - _foreach_frac
@@ -1903,7 +1908,6 @@ tocpu:
   - _foreach_sigmoid
   - _foreach_sigmoid_
   - _foreach_trunc
-  - _foreach_trunc_
   - _foreach_addcdiv_.Scalar
   - _foreach_addcmul_.Scalar
   - _foreach_addcdiv_.ScalarList

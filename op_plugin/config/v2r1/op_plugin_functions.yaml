@@ -1754,6 +1754,14 @@ official:
    impl_ns: op_api
  - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
    impl_ns: op_api
+ - func: _foreach_ceil_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_floor_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_trunc_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_round_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
  - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
