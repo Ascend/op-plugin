@@ -30,7 +30,7 @@ at::Tensor& mish_out(const at::Tensor& self, at::Tensor& result) {
   return result;
 }
 
-at::Tensor mish(const at::Tensor &self) {
+at::Tensor mish(const at::Tensor& self) {
   DO_COMPATIBILITY(aclnnMish, acl_op::mish(self));
   at::Tensor result = npu_preparation::apply_tensor(self);
   EXEC_NPU_CMD(aclnnMish, self, result);
@@ -38,7 +38,9 @@ at::Tensor mish(const at::Tensor &self) {
 }
 
 at::Tensor& mish_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnMish, acl_op::mish_(self));
-  return op_api::mish_out(self, self);
+  DO_COMPATIBILITY(aclnnInplaceMish, acl_op::mish_(self));
+  EXEC_NPU_CMD(aclnnInplaceMish, self);
+  return self;
 }
+
 }  // namespace op_api
