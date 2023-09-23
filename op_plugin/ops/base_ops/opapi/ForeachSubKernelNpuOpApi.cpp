@@ -57,5 +57,5 @@ void _foreach_sub_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
   at::native::check_foreach_api_restrictions(tensors, scalars);
   return at::native::foreach_tensor_sub_scalarlist_kernel_slow_(tensors, scalars);
 }
-
 }  // namespace op_api
+

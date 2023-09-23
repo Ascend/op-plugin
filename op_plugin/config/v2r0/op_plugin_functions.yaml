@@ -1774,6 +1774,12 @@ official:
    impl_ns: op_api
  - func: _foreach_mul_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
    impl_ns: op_api
+ - func: _foreach_mul.Scalar(Tensor[] tensors, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1845,8 +1851,6 @@ tocpu:
   - _foreach_frac_
   - _foreach_reciprocal
   - _foreach_reciprocal_
-  - _foreach_sigmoid
-  - _foreach_sigmoid_
   - _foreach_trunc
   - _foreach_maximum.List
   - _foreach_minimum.List
