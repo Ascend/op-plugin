@@ -42,7 +42,7 @@ void exec_npu_cmd(at::TensorList self, const char roundMode)
 bool if_use_slow_route(at::TensorList tensors)
 {
     at::native::check_foreach_api_restrictions(tensors);
-    return !at::native::can_use_fast_route(tensors) || at::native::has_integral_tensor(tensors, true);
+    return !at::native::can_use_fast_route(tensors);
 }
 
 void _foreach_floor_(at::TensorList self)
