@@ -1844,6 +1844,23 @@ official:
    impl_ns: op_api
  - func: _foreach_sigmoid_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
+ - func: _foreach_add.Scalar(Tensor[] tensors, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_add_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_addcdiv_.Scalar(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_addcdiv.Scalar(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_addcmul_.Scalar(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_addcmul.Scalar(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_cos_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_cos(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+
 
 symint:
 
@@ -1861,8 +1878,6 @@ tocpu:
   - _fft_c2r.out
   - _fft_c2c
   - _fft_c2c.out
-  - _foreach_add.Scalar
-  - _foreach_add_.Scalar
   - _foreach_exp
   - _foreach_zero_
   - _foreach_exp_
@@ -1914,12 +1929,8 @@ tocpu:
   - _foreach_reciprocal
   - _foreach_reciprocal_
   - _foreach_trunc
-  - _foreach_addcdiv_.Scalar
-  - _foreach_addcmul_.Scalar
   - _foreach_addcdiv_.ScalarList
   - _foreach_addcmul_.ScalarList
-  - _foreach_addcdiv.Scalar
-  - _foreach_addcmul.Scalar
   - _foreach_addcdiv.ScalarList
   - _foreach_addcmul.ScalarList
   - _foreach_maximum.List

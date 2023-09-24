@@ -1786,6 +1786,22 @@ official:
    impl_ns: op_api
  - func: _foreach_sigmoid_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
+ - func: _foreach_add.Scalar(Tensor[] tensors, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_add_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_addcdiv_.Scalar(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_addcdiv.Scalar(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_addcmul_.Scalar(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_addcmul.Scalar(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_cos_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_cos(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
