@@ -1800,6 +1800,12 @@ official:
    impl_ns: op_api
  - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
+ - func: _foreach_sub.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_div_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_div.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
  - func: _foreach_add.List(Tensor[] tensors1, Tensor[] tensors2, *, Scalar alpha=1) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_add_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
@@ -1857,9 +1863,6 @@ tocpu:
   - _fft_c2c.out
   - _foreach_add.Scalar
   - _foreach_add_.Scalar
-  - _foreach_sub.Scalar
-  - _foreach_div.Scalar
-  - _foreach_div_.Scalar
   - _foreach_exp
   - _foreach_zero_
   - _foreach_exp_

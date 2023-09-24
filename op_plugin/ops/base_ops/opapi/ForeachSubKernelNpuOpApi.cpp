@@ -57,5 +57,47 @@ void _foreach_sub_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
   at::native::check_foreach_api_restrictions(tensors, scalars);
   return at::native::foreach_tensor_sub_scalarlist_kernel_slow_(tensors, scalars);
 }
+
+std::vector<at::Tensor> _foreach_sub(at::TensorList self, const at::Scalar& scalar)
+{
+    // Fallback
+    at::native::check_foreach_api_restrictions(self, scalar);
+    if (!at::native::can_use_fast_route(self, scalar, false)) {
+        return at::native::foreach_tensor_sub_scalar_kernel_slow(self, scalar);
+    }
+
+    std::vector<at::Tensor> result;
+    result.reserve(self.size());
+
+    // Empty check
+    if (self.empty()) {
+        return result;
+    }
+
+    auto iter = std::find_if(self.begin(), self.end(), [](const at::Tensor& tensor) {
+        return tensor.numel() != 0;
+    });
+    if (iter == self.end()) {
+        return result;
+    }
+
+    // Type Check
+    auto scalar_type = self[0].scalar_type();
+    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
+        TORCH_CHECK(false, "input must be half, float or int32");
+    }
+
+    for (const at::Tensor &tensor : self) {
+        auto output_size = op_infer::input_same_output_size(tensor);
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+    }
+    at::TensorList result_ = at::TensorList(result);
+
+    at::Tensor scalar_tensor = npu_calcu_util::CopyScalarToDevice(scalar, scalar_type);
+    EXEC_NPU_CMD(aclnnForeachSubScalar, self, scalar_tensor, result_);
+
+    return result;
+}
+
 }  // namespace op_api
 
