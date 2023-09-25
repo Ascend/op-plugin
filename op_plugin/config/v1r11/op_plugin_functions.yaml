@@ -1860,7 +1860,10 @@ official:
    impl_ns: op_api
  - func: _foreach_cos(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
-
+ - func: native_group_norm(Tensor input, Tensor? weight, Tensor? bias, int N, int C, int HxW, int group, float eps) -> (Tensor, Tensor, Tensor)
+   impl_ns: acl_op
+ - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
+   impl_ns: acl_op
 
 symint:
 
@@ -2046,7 +2049,6 @@ tocpu:
   - orgqr.out
   - orgqr
   - _lu_with_info
-  - native_group_norm_backward
 
 unsupported:
   - _conj
