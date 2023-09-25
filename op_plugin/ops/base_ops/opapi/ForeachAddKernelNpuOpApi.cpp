@@ -8,7 +8,6 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-using npu_calcu_util = at_npu::native::CalcuOpUtil;
 
 std::vector<at::Tensor> _foreach_add(at::TensorList tensors1,
                                      at::TensorList tensors2, const at::Scalar& alpha) {
@@ -26,8 +25,8 @@ std::vector<at::Tensor> _foreach_add(at::TensorList tensors1,
   }
   at::TensorList result_ = at::TensorList(result);
 
-  // 暂时在PTA侧scalar转tensor，待后续ascendc算子aclnn框架支持scalar类型处理
-  at::Tensor scalar_ = npu_calcu_util::CopyScalarToDevice(alpha, scalar_type);
+  // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
+  at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type);
 
   EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, result_);
   return result;
@@ -38,22 +37,22 @@ void _foreach_add_(at::TensorList tensors1, at::TensorList tensors2, const at::S
   if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
     return at::native::foreach_tensor_add_list_kernel_slow_(tensors1, tensors2, alpha);
   }
-  // 暂时在PTA侧scalar转tensor，待后续ascendc算子aclnn框架支持scalar类型处理
+  // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
   auto scalar_type = tensors1[0].scalar_type();
-  at::Tensor scalar_ = npu_calcu_util::CopyScalarToDevice(alpha, scalar_type);
+  at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type);
 
   EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, tensors1);
   return;
 }
 
 std::vector<at::Tensor> _foreach_add(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
-  // 暂时默认走slow路径，待后续ascendc算子aclnn框架支持scalarlist类型处理
+  // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
   at::native::check_foreach_api_restrictions(tensors, scalars);
   return at::native::foreach_tensor_add_scalarlist_kernel_slow(tensors, scalars);
 }
 
 void _foreach_add_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
-  // 暂时默认走slow路径，待后续ascendc算子aclnn框架支持scalar类型处理
+  // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
   at::native::check_foreach_api_restrictions(tensors, scalars);
   return at::native::foreach_tensor_add_scalarlist_kernel_slow_(tensors, scalars);
 }

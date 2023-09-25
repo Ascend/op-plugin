@@ -8,7 +8,6 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-using npu_calcu_util = at_npu::native::CalcuOpUtil;
 
 std::vector<at::Tensor> _foreach_div(at::TensorList tensors1, at::TensorList tensors2) {
   at::native::check_foreach_api_restrictions(tensors1, tensors2);
@@ -40,13 +39,13 @@ void _foreach_div_(at::TensorList tensors1, at::TensorList tensors2) {
 }
 
 std::vector<at::Tensor> _foreach_div(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
-  // 暂时默认走slow路径，待后续ascendc算子aclnn框架支持scalarlist类型处理
+  // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
   at::native::check_foreach_api_restrictions(tensors, scalars);
   return at::native::foreach_tensor_div_scalarlist_kernel_slow(tensors, scalars);
 }
 
 void _foreach_div_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
-  // 暂时默认走slow路径，待后续ascendc算子aclnn框架支持scalarlist类型处理
+  // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
   at::native::check_foreach_api_restrictions(tensors, scalars);
   return at::native::foreach_tensor_div_scalarlist_kernel_slow_(tensors, scalars);
 }
@@ -73,7 +72,7 @@ void _foreach_div_(const at::TensorList self, const at::Scalar& scalar)
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
         TORCH_CHECK(false, "input must be half or float");
     }
-    at::Tensor scalar_tensor = at_npu::native::CalcuOpUtil::CopyScalarToDevice(scalar, scalar_type);
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
     EXEC_NPU_CMD(aclnnForeachDivScalar, self, scalar_tensor, self);
 }
 
@@ -112,7 +111,7 @@ std::vector<at::Tensor> _foreach_div(at::TensorList self, const at::Scalar& scal
     }
     at::TensorList result_ = at::TensorList(result);
 
-    at::Tensor scalar_tensor = npu_calcu_util::CopyScalarToDevice(scalar, scalar_type);
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
     EXEC_NPU_CMD(aclnnForeachDivScalar, self, scalar_tensor, result_);
 
     return result;
