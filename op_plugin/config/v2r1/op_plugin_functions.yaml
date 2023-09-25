@@ -1276,6 +1276,10 @@ official:
    impl_ns: acl_op, op_api
  - func: reflection_pad2d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: reflection_pad3d(Tensor self, SymInt[6] padding) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: reflection_pad3d.out(Tensor self, SymInt[6] padding, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: relu(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: relu_(Tensor(a!) self) -> Tensor(a!)
