@@ -26,21 +26,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_consecutive(
     bool return_inverse,
     bool return_counts,
     c10::optional<int64_t> dim) {
-
   DO_COMPATIBILITY(aclnnUniqueConsecutive, acl_op::unique_consecutive(self, return_inverse, return_counts, dim));
-  at::Tensor y = dim.has_value() ? npu_preparation::apply_tensor_without_format(self) 
+  at::Tensor y = dim.has_value() ? npu_preparation::apply_tensor_without_format(self)
                                  : npu_preparation::apply_tensor_without_format(self, self.numel());
   at::Tensor y_inverse = dim.has_value() ? npu_preparation::apply_tensor_without_format(self.size(dim.value()),
                                                                                         self.options().dtype(at::kLong))
-                                         : npu_preparation::apply_tensor_without_format(
-                                                                                        self.sizes(),
+                                         : npu_preparation::apply_tensor_without_format(self.sizes(),
                                                                                         self.options().dtype(at::kLong)
                                                                                         );
   at::Tensor y_counts = dim.has_value() ? npu_preparation::apply_tensor_without_format(self.size(dim.value()),
                                                                                        self.options().dtype(at::kLong))
                                         : npu_preparation::apply_tensor_without_format(self.numel(),
                                                                                        self.options().dtype(at::kLong));
-  static auto opApiFuncAddr = [](){
+  static auto opApiFuncAddr = []() {
     auto ret = GetOpApiFuncAddr("aclGetViewShape");
     TORCH_CHECK(ret != nullptr, "GetOpApiFuncAddr failed.");
     return ret;

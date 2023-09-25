@@ -28,15 +28,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     bool return_counts) {
   DO_COMPATIBILITY(aclnnUnique2, acl_op::_unique2(self, sorted, return_inverse, return_counts));
   at::Tensor y = npu_preparation::apply_tensor_without_format(self, self.numel());
-  at::Tensor y_inverse = (return_inverse || return_counts) 
+  at::Tensor y_inverse = (return_inverse || return_counts)
                             ? npu_preparation::apply_tensor_without_format(self.sizes(),
-                                                                           self.options().dtype(at::kLong)) 
+                                                                           self.options().dtype(at::kLong))
                             : npu_preparation::apply_tensor_without_format({0}, self.options().dtype(at::kLong));
   at::Tensor y_counts = return_counts ? npu_preparation::apply_tensor_without_format(self.numel(),
-                                                                                     self.options().dtype(at::kLong)) 
+                                                                                     self.options().dtype(at::kLong))
                                       : npu_preparation::apply_tensor_without_format({0},
                                                                                      self.options().dtype(at::kLong));
-  static auto opApiFuncAddr = [](){
+  static auto opApiFuncAddr = []() {
     auto ret = GetOpApiFuncAddr("aclGetViewShape");
     TORCH_CHECK(ret != nullptr);
     return ret;

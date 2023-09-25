@@ -30,7 +30,7 @@ at::Tensor& max_unpool3d_backward_out(
     at::IntArrayRef padding,
     at::Tensor& grad_input) {
   DO_COMPATIBILITY(aclnnMaxUnpool3dBackward, acl_op::max_unpool3d_backward_out(grad_output, self, indices, output_size,
-                   stride, padding, grad_input));
+                                                                               stride, padding, grad_input));
   npu_preparation::check_tensor({grad_output, self, indices}, grad_input, self);
   EXEC_NPU_CMD(aclnnMaxUnpool3dBackward, grad_output, self, indices, output_size, stride, padding, grad_input);
   return grad_input;

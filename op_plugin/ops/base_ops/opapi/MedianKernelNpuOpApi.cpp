@@ -30,9 +30,9 @@ at::Tensor median(const at::Tensor& self) {
   return result;
 }
 
-std::tuple<at::Tensor,at::Tensor> median(const at::Tensor& self,
-                                         int64_t dim,
-                                         bool keepdim) {
+std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self,
+                                          int64_t dim,
+                                          bool keepdim) {
   DO_COMPATIBILITY(aclnnMedianDim, acl_op::median(self, dim, keepdim));
   at::SmallVector<int64_t, op_infer::SIZE> dims = {dim};
   auto outputSize = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
@@ -42,9 +42,9 @@ std::tuple<at::Tensor,at::Tensor> median(const at::Tensor& self,
   return std::tie(values, indices);
 }
 
-std::tuple<at::Tensor,at::Tensor> median(const at::Tensor& self,
-                                         at::Dimname dim,
-                                         bool keepdim) {
+std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self,
+                                          at::Dimname dim,
+                                          bool keepdim) {
   DO_COMPATIBILITY(aclnnMedianDim, acl_op::median(self, dim, keepdim));
   int64_t real_dim = dimname_to_position(self, dim);
   at::SmallVector<int64_t, op_infer::SIZE> dims = {real_dim};
@@ -69,11 +69,11 @@ std::tuple<at::Tensor&, at::Tensor&> median_out(const at::Tensor& self,
   return std::tie(values, indices);
 }
 
-std::tuple<at::Tensor&,at::Tensor&> median_out(const at::Tensor& self,
-                                               at::Dimname dim,
-                                               bool keepdim,
-                                               at::Tensor& values,
-                                               at::Tensor& indices) {
+std::tuple<at::Tensor&, at::Tensor&> median_out(const at::Tensor& self,
+                                                at::Dimname dim,
+                                                bool keepdim,
+                                                at::Tensor& values,
+                                                at::Tensor& indices) {
   DO_COMPATIBILITY(aclnnMedianDim, acl_op::median_out(self, dim, keepdim, values, indices));
   int64_t real_dim = dimname_to_position(self, dim);
   at::SmallVector<int64_t, op_infer::SIZE> dims = {real_dim};

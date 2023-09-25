@@ -21,7 +21,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& ger_out(const at::Tensor& self , const at::Tensor& vec2, at::Tensor& result) {
+at::Tensor& ger_out(const at::Tensor& self, const at::Tensor& vec2, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnGer, acl_op::ger_out(self, vec2, result));
   auto output_size = op_infer::ger_output_size(self, vec2);
   auto result_type = at::result_type(self, vec2);

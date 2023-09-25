@@ -16,10 +16,10 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-namespace op_api{
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor & multilabel_margin_loss_out(
+at::Tensor& multilabel_margin_loss_out(
     const at::Tensor & self,
     const at::Tensor & target,
     int64_t reduction,
@@ -34,7 +34,7 @@ at::Tensor & multilabel_margin_loss_out(
     is_target_size = op_infer::array_to_small_vector(target.sizes());
   }
   auto is_target = npu_preparation::apply_tensor_without_format(self, is_target_size);
-  return std::get<0>(op_api::multilabel_margin_loss_forward_out(self, target, reduction,output, is_target));
+  return std::get<0>(op_api::multilabel_margin_loss_forward_out(self, target, reduction, output, is_target));
 }
 
 at::Tensor multilabel_margin_loss(
@@ -89,8 +89,7 @@ std::tuple<at::Tensor, at::Tensor> multilabel_margin_loss_forward(
   auto output = npu_preparation::apply_tensor_without_format(self, output_size);
   auto is_target = npu_preparation::apply_tensor_without_format(self, is_target_size);
 
-  op_api::multilabel_margin_loss_forward_out(
-    self, target, reduction, output, is_target);
+  op_api::multilabel_margin_loss_forward_out(self, target, reduction, output, is_target);
   return std::make_tuple(output, is_target);
 }
 } // namespace op_api

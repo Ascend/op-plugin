@@ -17,7 +17,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-namespace op_api{
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& where_out(
@@ -30,7 +30,8 @@ at::Tensor& where_out(
   auto broadcast_output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   auto output_size = op_infer::broadcast_ops_npu_output_size(condition.sizes(), broadcast_output_size);
 
-  at::Tensor self_cp, other_cp;
+  at::Tensor self_cp;
+  at::Tensor other_cp;
   if (self.dtype() != other.dtype()) {
     auto result_type = at::native::result_type(self, other);
     self_cp = npu_dtype_cast(self, result_type);
@@ -54,7 +55,8 @@ at::Tensor where(
   DO_COMPATIBILITY(aclnnSWhere, acl_op::where(condition, self, other));
   auto broadcast_output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   auto output_size = op_infer::broadcast_ops_npu_output_size(condition.sizes(), broadcast_output_size);
-  at::Tensor self_cp, other_cp;
+  at::Tensor self_cp;
+  at::Tensor other_cp;
   if (self.dtype() != other.dtype()) {
     auto result_type = at::native::result_type(self, other);
     self_cp = npu_dtype_cast(self, result_type);

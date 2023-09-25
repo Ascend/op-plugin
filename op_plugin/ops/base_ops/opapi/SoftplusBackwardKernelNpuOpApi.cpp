@@ -26,7 +26,7 @@ at::Tensor& softplus_backward_out(
     const at::Scalar& beta,
     const at::Scalar& threshold,
     at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnSoftplusBackward, acl_op::softplus_backward_out(grad_output, self, beta, 
+  DO_COMPATIBILITY(aclnnSoftplusBackward, acl_op::softplus_backward_out(grad_output, self, beta,
                                                                         threshold, grad_input));
   EXEC_NPU_CMD(aclnnSoftplusBackward, grad_output, self, beta, threshold, grad_input);
   return grad_input;

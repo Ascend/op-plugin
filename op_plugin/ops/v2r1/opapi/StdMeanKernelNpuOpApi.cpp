@@ -22,10 +22,10 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> std_mean(
-      const at::Tensor& self,
-      at::DimnameList dim,
-      const c10::optional<at::Scalar>& correction,
-      bool keepdim) {
+    const at::Tensor& self,
+    at::DimnameList dim,
+    const c10::optional<at::Scalar>& correction,
+    bool keepdim) {
   return op_api::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 

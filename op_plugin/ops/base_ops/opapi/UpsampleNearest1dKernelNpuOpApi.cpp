@@ -22,9 +22,9 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& upsample_nearest1d_out(const at::Tensor& self,
-                                  at::IntArrayRef output_size,
-                                  c10::optional<double> scales,
-                                  at::Tensor& result) {
+                                   at::IntArrayRef output_size,
+                                   c10::optional<double> scales,
+                                   at::Tensor& result) {
   DO_COMPATIBILITY(aclnnUpsampleNearest1d, acl_op::upsample_nearest1d_out(self, output_size, scales, result));
   c10::SmallVector<int64_t, SIZE> out_size = op_infer::upsample_linear1d_npu_output_size(self, output_size, false,
                                                                                          scales);

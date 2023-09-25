@@ -18,7 +18,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-namespace op_api{
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& xlogy_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
@@ -65,7 +65,7 @@ at::Tensor xlogy(const at::Tensor& self, const at::Scalar& other) {
 at::Tensor xlogy(const at::Scalar& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnXLogYScalarSelf, acl_op::xlogy(self, other));
   at::ScalarType result_type = at::result_type(self, other);
-  result_type = (isIntegralType(result_type, true)) ? at::kFloat : result_type;  
+  result_type = (isIntegralType(result_type, true)) ? at::kFloat : result_type;
   at::Tensor result = npu_preparation::apply_tensor_without_format(other.sizes(), other.options().dtype(result_type));
   EXEC_NPU_CMD(aclnnXLogYScalarSelf, self, other, result);
   return result;

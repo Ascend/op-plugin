@@ -24,8 +24,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor kl_div(const at::Tensor& self, const at::Tensor& target, int64_t reduction, bool log_target) {
   DO_COMPATIBILITY(aclnnKlDiv, acl_op::kl_div(self, target, reduction, log_target));
   at::IntArrayRef output_size;
-  output_size = reduction == at::Reduction::None 
-                             ? op_infer::broadcast_ops_npu_output_size(self.sizes(), target.sizes()) 
+  output_size = reduction == at::Reduction::None
+                             ? op_infer::broadcast_ops_npu_output_size(self.sizes(), target.sizes())
                              : at::ArrayRef<int64_t>();
   at::ScalarType result_type = at::native::result_type(self, target);
   at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));

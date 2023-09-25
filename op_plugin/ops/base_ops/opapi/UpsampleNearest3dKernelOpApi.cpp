@@ -29,7 +29,7 @@ at::Tensor& upsample_nearest3d_out(
     c10::optional<double> scales_w,
     at::Tensor& result) {
   DO_COMPATIBILITY(aclnnUpsampleNearest3d,
-                   acl_op::upsample_nearest3d_out(input, output_size,scales_d, scales_h, scales_w, result));
+                   acl_op::upsample_nearest3d_out(input, output_size, scales_d, scales_h, scales_w, result));
   auto output_osize = op_infer::upsample_nearest3d_npu_output_size(input, output_size, scales_d, scales_h, scales_w);
   npu_preparation::check_tensor({input}, result, input, output_osize);
   double scales_d_attr = scales_d.value_or(0);

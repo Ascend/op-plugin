@@ -18,7 +18,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-namespace op_api{
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& upsample_nearest1d_backward_out(
@@ -51,7 +51,7 @@ at::Tensor upsample_nearest1d_backward(
   EXEC_NPU_CMD(aclnnUpsampleNearest1dBackward, grad_output, output_size, input_size, scales_attr,
                grad_input);
   return grad_input;
-}  
-  
+}
+
 } // namespace op_api
 

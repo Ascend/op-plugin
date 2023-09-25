@@ -23,7 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::SmallVector<int64_t, SIZE> upsample_nearest2d_output_size_npu(
     const at::Tensor& input,
-    at::IntArrayRef output_size){
+    at::IntArrayRef output_size) {
   int64_t N = input.size(0);
   int64_t C = input.size(1);
   int64_t H = output_size[0];

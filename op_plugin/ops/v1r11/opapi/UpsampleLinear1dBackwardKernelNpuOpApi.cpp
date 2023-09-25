@@ -29,7 +29,7 @@ at::Tensor upsample_linear1d_backward(
     c10::optional<at::ArrayRef<double>> scale_factors) {
   DO_COMPATIBILITY(aclnnUpsampleLinear1dBackward,
                    acl_op::upsample_linear1d_backward(grad_output, output_size, input_size,
-                                                                  align_corners, scale_factors));
+                                                      align_corners, scale_factors));
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto outputsize = at::IntArrayRef(osize);
   auto scales_l = op_plugin::utils::get_scale_value(scale_factors, 0);

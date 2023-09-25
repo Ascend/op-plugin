@@ -30,7 +30,7 @@ at::Tensor upsample_bilinear2d_backward(
     c10::optional<at::ArrayRef<double>> scale_factors) {
   DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackward,
                    acl_op::upsample_bilinear2d_backward(grad_output, output_size, input_size,
-                                                                    align_corners, scale_factors));
+                                                        align_corners, scale_factors));
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
   auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
