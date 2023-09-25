@@ -1859,6 +1859,14 @@ official:
  - func: _foreach_addcmul.ScalarList(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar[] scalars) -> Tensor[]
    impl_ns: op_api
 
+ - func: _foreach_exp_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_exp(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_neg(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_neg_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
