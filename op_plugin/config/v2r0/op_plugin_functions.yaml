@@ -1806,6 +1806,10 @@ official:
    impl_ns: op_api
  - func: _foreach_cos(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
+ - func: _foreach_maximum.List(Tensor[] self, Tensor[] other) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_minimum.List(Tensor[] self, Tensor[] other) -> Tensor[]
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1877,8 +1881,6 @@ tocpu:
   - _foreach_reciprocal
   - _foreach_reciprocal_
   - _foreach_trunc
-  - _foreach_maximum.List
-  - _foreach_minimum.List
   - _logcumsumexp
   - _logcumsumexp.out
   - _pdist_backward

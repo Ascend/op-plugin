@@ -1868,6 +1868,10 @@ official:
    impl_ns: acl_op
  - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op
+ - func: _foreach_maximum.List(Tensor[] self, Tensor[] other) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_minimum.List(Tensor[] self, Tensor[] other) -> Tensor[]
+   impl_ns: op_api
 
 symint:
 
@@ -1940,8 +1944,6 @@ tocpu:
   - _foreach_addcmul_.ScalarList
   - _foreach_addcdiv.ScalarList
   - _foreach_addcmul.ScalarList
-  - _foreach_maximum.List
-  - _foreach_minimum.List
   - _linalg_inv_out_helper_
   - _linalg_qr_helper
   - _logcumsumexp

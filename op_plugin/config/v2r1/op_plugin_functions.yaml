@@ -1834,7 +1834,14 @@ official:
    impl_ns: op_api
  - func: _foreach_pow_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
-
+ - func: _foreach_maximum.List(Tensor[] self, Tensor[] other) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_minimum.List(Tensor[] self, Tensor[] other) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_maximum_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
+ - func: _foreach_minimum_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
