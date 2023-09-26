@@ -23,6 +23,21 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace{
+float calculate_p(c10::optional<at::Scalar> p) {
+  if (p.has_value()) {
+    float val = op_plugin::utils::get_scalar_float_value(p.value());
+    if (val == INFINITY) {
+      return static_cast<float>(INT_MAX); // p = inf
+    } else if (val == -INFINITY) {
+      return static_cast<float>(INT_MIN); // p = -inf
+    } else {
+      return p.value().toFloat();
+    }
+  } else {
+    return static_cast<float>(2.0); // default: p = 2.0
+  }
+}
+
 inline at::Tensor &norm_out_npu_nocheck_opapi(at::Tensor &out,
                                               const at::Tensor &self,
                                               c10::optional<at::Scalar> p,
@@ -32,7 +47,13 @@ inline at::Tensor &norm_out_npu_nocheck_opapi(at::Tensor &out,
   if (p.has_value()) {
     pvalue = p.value();
   }
-  EXEC_NPU_CMD(aclnnNorm, self, pvalue, dim, keepdim, out);
+  float pfloat = calculate_p(p);
+  if (pfloat == 0.0 || pfloat == 1.0 || pfloat == 2.0 || pfloat == 3.0) {
+    EXEC_NPU_CMD(aclnnNorm, self, pvalue, dim, keepdim, out);
+  } else {
+    return acl_op::norm_out(self, p, dim, keepdim, out);
+  }
+
   return out;
 }
 
@@ -112,5 +133,5 @@ at::Tensor norm(const at::Tensor &self,
   DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dim, keepdim));
   return norm_imp(self, p, dim, keepdim, self.scalar_type());
 }
-} // namespace op_api
 
+} // namespace op_api
