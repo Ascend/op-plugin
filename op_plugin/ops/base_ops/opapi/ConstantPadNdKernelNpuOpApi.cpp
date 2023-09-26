@@ -21,7 +21,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at::Scalar& value) {
-  DO_COMPATIBILITY(aclnnConstantPadNd, acl_op::constant_pad_nd(self, pad,value));
+  DO_COMPATIBILITY(aclnnConstantPadNd, acl_op::constant_pad_nd(self, pad, value));
   TORCH_CHECK(pad.size() % 2 == 0, "Length of pad must be even but instead it equals ", pad.size());
 
   auto input_sizes = self.sizes();

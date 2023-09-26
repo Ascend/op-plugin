@@ -25,8 +25,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& gcd_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnGcd, acl_op::gcd_out(self, other, result));
-  at::IntArrayRef output_size;
-  output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+  at::IntArrayRef output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   // Shape of result must be the same as broadcastshape of self and other, dtype has no limitation.
   if (result.sizes() != output_size) {
     result.resize_(output_size);

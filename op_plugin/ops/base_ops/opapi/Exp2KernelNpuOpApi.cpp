@@ -21,7 +21,6 @@
 namespace op_api {
 
 at::Tensor& exp2_out(const at::Tensor& self, at::Tensor& out) {
-
     DO_COMPATIBILITY(aclnnExp2, acl_op::exp2_out(self, out));
     at_npu::native::OpPreparation::check_tensor({self}, out, out.scalar_type(), self.sizes());
 
@@ -31,7 +30,6 @@ at::Tensor& exp2_out(const at::Tensor& self, at::Tensor& out) {
 }
 
 at::Tensor exp2(const at::Tensor& self) {
-
     DO_COMPATIBILITY(aclnnExp2, acl_op::exp2(self));
 
     auto out_Dtype = self.dtype();
@@ -40,7 +38,7 @@ at::Tensor exp2(const at::Tensor& self) {
     }
 
     at::Tensor out = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(),
-                     self.options().dtype(out_Dtype));
+        self.options().dtype(out_Dtype));
 
     EXEC_NPU_CMD(aclnnExp2, self, out);
     return out;
