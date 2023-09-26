@@ -1762,6 +1762,26 @@ official:
    impl_ns: op_api
  - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
    impl_ns: op_api
+ - func: _foreach_maximum.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_maximum_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_maximum.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_maximum_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_minimum.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_minimum_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_minimum.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_minimum_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_sqrt(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sqrt_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: _foreach_ceil_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
  - func: _foreach_floor_(Tensor(a!)[] self) -> ()

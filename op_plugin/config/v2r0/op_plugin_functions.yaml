@@ -1738,6 +1738,10 @@ official:
    impl_ns: acl_op
  - func: _symeig_helper(Tensor self, bool eigenvectors, bool upper) -> (Tensor, Tensor)
    impl_ns: acl_op
+ - func: _foreach_sqrt(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sqrt_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: _foreach_ceil_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
  - func: _foreach_floor_(Tensor(a!)[] self) -> ()
