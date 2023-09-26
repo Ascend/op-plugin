@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 c10::SmallVector<int64_t, SIZE> diag_npu_output_size(
     const at::Tensor& self,
     int64_t diagonal) {

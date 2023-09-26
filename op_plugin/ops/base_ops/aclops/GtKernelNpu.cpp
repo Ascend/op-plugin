@@ -50,7 +50,7 @@ at::Tensor& gt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::S
 at::ScalarType get_gt_calculate_type(const at::Tensor& self, const at::Tensor& other) {
   at::ScalarType calculate_type = at::native::result_type(self, other);
   if (calculate_type == at::kBool) {
-    calculate_type = at::kFloat; 
+    calculate_type = at::kFloat;
   }
   return calculate_type;
 }
@@ -58,7 +58,7 @@ at::ScalarType get_gt_calculate_type(const at::Tensor& self, const at::Tensor& o
 at::ScalarType get_gt_calculate_type(const at::Tensor& self, const at::Scalar& other) {
   at::ScalarType calculate_type = at::native::result_type(self, other);
   if (calculate_type == at::kBool) {
-    calculate_type = at::kFloat; 
+    calculate_type = at::kFloat;
   }
   return calculate_type;
 }

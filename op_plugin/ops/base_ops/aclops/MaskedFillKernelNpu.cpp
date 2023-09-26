@@ -55,7 +55,6 @@ at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& se
 at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mask, at::Scalar value) {
   at::Tensor mask_bool = mask;
   int64_t dim_of_self = self.dim();
-
   /* Avoid the problem that the TBE operator does not support 0-dimensional tensor input */
   if (dim_of_self == 0) {
     self.unsqueeze_(0);

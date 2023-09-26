@@ -46,8 +46,7 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_gather_stats_with_counts_npu_imp
           (running_var.defined() ? running_var.unsqueeze(0) : at::ones({1, dim_c}, options)), ACL_FORMAT_ND),
       at::kFloat);
   at::IntArrayRef axes({0});
-  at::Tensor counts_tensor;
-  counts_tensor = at_npu::native::custom_ops::npu_dtype_cast(counts, mean_cp.scalar_type());
+  at::Tensor counts_tensor = at_npu::native::custom_ops::npu_dtype_cast(counts, mean_cp.scalar_type());
   at::Tensor counts_tensor_t = counts_tensor.unsqueeze(-1);
   at::Tensor counts_tensor_broadcast = acl_op::npu_broadcast(counts_tensor_t, invstd.sizes());
   at::Tensor counts_all_sum = npu_preparation::apply_tensor_with_sizes({1, dim_c}, mean_cp.options());
@@ -85,7 +84,7 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_gather_stats_with_counts_npu_imp
       .Attr("epsilon", static_cast<float>(eps))
       .Run();
 
-  if (running_mean.defined()){
+  if (running_mean.defined()) {
     at_npu::native::OpCommand cmd_sync;
     cmd_sync.Name("SyncBNTrainingUpdate")
         .Input(mean_all)

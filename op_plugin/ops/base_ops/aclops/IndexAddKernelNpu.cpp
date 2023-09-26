@@ -84,12 +84,12 @@ at::Tensor index_add(
     const at::Scalar& alpha) {
   at::Tensor result(self.clone());
   index_add_out_npu_nocheck(result, result, dim, index, source, alpha);
-  return result; 
+  return result;
 }
 
 at::Tensor index_add(
     const at::Tensor& self,
-    at::Dimname dim, 
+    at::Dimname dim,
     const at::Tensor& index,
     const at::Tensor& source,
     const at::Scalar& alpha) {

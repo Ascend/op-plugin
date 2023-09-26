@@ -28,7 +28,7 @@ std::tuple<at::Tensor, at::Tensor> npu_matmul_backward(
     const at::Tensor& grad,
     const at::Tensor& self,
     const at::Tensor& other,
-    std::array<bool,2> mask,
+    std::array<bool, 2> mask,
     at::Tensor& grad_self,
     at::Tensor& grad_other) {
   // select feasible path by checking tensor dimension
@@ -89,13 +89,13 @@ std::tuple<at::Tensor, at::Tensor> matmul_backward(
     const at::Tensor& grad,
     const at::Tensor& self,
     const at::Tensor& other,
-    std::array<bool,2> mask) {
+    std::array<bool, 2> mask) {
   if (!grad.defined()) {
     return std::make_tuple(at::Tensor(), at::Tensor());
   }
 
-  at::Tensor grad_self, grad_other;
-
+  at::Tensor grad_self;
+  at::Tensor grad_other;
   if (!mask[0] && !mask[1]) {
     return std::make_tuple(grad_self, grad_other);
   }

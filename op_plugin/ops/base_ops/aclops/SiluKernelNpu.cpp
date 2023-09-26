@@ -67,7 +67,6 @@ at::Tensor& silu_backward_out_npu_nocheck(
     const at::Tensor& grad_output,
     const at::Tensor& x0,
     const at::Tensor& x1) {
-
   at_npu::native::OpCommand cmd;
   cmd.Name("SwishGrad")
       .Input(grad_output)

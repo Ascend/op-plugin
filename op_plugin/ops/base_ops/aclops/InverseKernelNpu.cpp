@@ -25,11 +25,11 @@ namespace {
 at::Tensor& inverse_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
   at::Tensor self_cast = self;
   at::Tensor result_cast = result;
-  if(self.scalar_type() == at::kHalf) {
+  if (self.scalar_type() == at::kHalf) {
     self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
   }
 
-  if(result.scalar_type() == at::kHalf) {
+  if (result.scalar_type() == at::kHalf) {
     result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, at::kFloat);
   }
 

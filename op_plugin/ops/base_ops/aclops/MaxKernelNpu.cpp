@@ -89,7 +89,6 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
     bool keepdim,
     at::Tensor& output,
     at::Tensor& indices) {
-
   at::SmallVector<int64_t, SIZE> dims = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 
@@ -110,7 +109,6 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
   at::Tensor indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices, at::ScalarType::Int);
   bool output_match = npu_utils::check_match(&output);
   bool indices_match = npu_utils::check_match(&indices_dtype_cast);
-
   if (!(output_match && indices_match)) {
     at::Tensor contiguous_output = output_match ? output : npu_utils::format_contiguous(output);
     at::Tensor contiguous_indices =

@@ -67,16 +67,15 @@ at::Tensor randperm(
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
     c10::optional<bool> pin_memory) {
-  TORCH_CHECK(n >= 0, "n must be non-negative, got", n);
-  at::TensorOptions options;
-  options = options.dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
-
-  at::Tensor result = npu_preparation::apply_tensor_with_format(
-      {n},
-      options,
-      ACL_FORMAT_ND);
-  randperm_out_nocheck(result, n, generator);
-  return result;
+    TORCH_CHECK(n >= 0, "n must be non-negative, got", n);
+    at::TensorOptions options = c10::TensorOptions()
+        .dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
+    at::Tensor result = npu_preparation::apply_tensor_with_format(
+        {n},
+        options,
+        ACL_FORMAT_ND);
+    randperm_out_nocheck(result, n, generator);
+    return result;
 }
 
 at::Tensor randperm(

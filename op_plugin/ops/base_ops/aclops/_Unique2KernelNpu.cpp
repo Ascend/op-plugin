@@ -20,7 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _unique2_out_npu(
     at::Tensor& y,
     at::Tensor& y_inverse,
@@ -58,7 +58,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
    */
   const at::Tensor self = self_op.scalar_type() == at::kHalf ?
       at_npu::native::custom_ops::npu_dtype_cast(self_op, at::kFloat) : self_op;
-
   if (self.numel() == 0) {
     at::Tensor result = npu_preparation::apply_tensor(self, {0});
     at::Tensor y_inverse = npu_preparation::apply_tensor({0}, self.options().dtype(at::kLong), self);

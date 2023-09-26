@@ -54,8 +54,7 @@ void index_copy_npu_par_check(
           !std::equal(self_sliced_sizes.begin(), self_sliced_sizes.end(), source_sliced_sizes.begin())),
       "index_copy_(): Source/destination tensor must have same slice shapes.\n",
       "Destination slice shape: ", self_sliced_sizes, " at dimension ", new_dim,
-      " and source slice shape: ", source_sliced_sizes, " at dimension 0."
-  );
+      " and source slice shape: ", source_sliced_sizes, " at dimension 0.");
 
   TORCH_CHECK_INDEX(source.dim() == 0 || num_indices == source.size(new_dim),
       "index_copy_(): Number of indices (", num_indices,

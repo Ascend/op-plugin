@@ -59,7 +59,6 @@ at::Tensor softmax(
 }
 
 at::Tensor _softmax(const at::Tensor &self, int64_t dim, bool half_to_float) {
-
   at::Tensor result;
   if (half_to_float) {
     result = npu_preparation::apply_tensor(self, self.options().dtype(at::ScalarType::Float));

@@ -63,7 +63,7 @@ at::Tensor& l1_loss_backward_out(
     npu_utils::format_fresh_view(grad_input, contiguous_grad_input);
   } else {
     l1_loss_backward_out_nocheck(grad_input, grad_output, self, target, reduction);
-  }  
+  }
   return grad_input;
 }
 

@@ -87,14 +87,13 @@ at::Tensor linspace(
     c10::optional<bool> pin_memory_opt) {
   TORCH_CHECK(steps >= 0, "number of steps must be non-negative");
   auto device = c10::device_or_default(device_opt);
-  at::TensorOptions option;
-  option = option.dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+  at::TensorOptions option = c10::TensorOptions()
+      .dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
 
   at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, option, ACL_FORMAT_ND);
   at::Tensor result_cast = result;
 
   bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;
-
   if (result_is_not_float) {
     result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
   }

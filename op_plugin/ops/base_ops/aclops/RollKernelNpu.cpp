@@ -45,7 +45,6 @@ at::Tensor& roll_transpose(
     int64_t first_dim,
     at::IntArrayRef shifts,
     int64_t id) {
-
   c10::SmallVector<int64_t, SIZE> perm;
   for (int64_t i = 0; i < self.dim(); i++) {
     perm.emplace_back(i);
@@ -68,7 +67,6 @@ at::Tensor& roll_out_npu(
     const at::Tensor& self,
     at::IntArrayRef shifts,
     at::IntArrayRef dims) {
-
   if (dims.size() == 0) {
     roll_out_npu_no_transpose(result, self, shifts, dims);
   } else {

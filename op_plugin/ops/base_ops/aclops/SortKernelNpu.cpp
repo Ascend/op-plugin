@@ -48,7 +48,6 @@ std::tuple<at::Tensor&, at::Tensor&> sort_out_npu_transpose(
     bool descending) {
   dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   int64_t last_dim = op_plugin::utils::make_warp_dim(-1, self.dim());
-
   if (dim != last_dim) {
     at::SmallVector<int64_t, SIZE> perm;
     for (int64_t i = 0; i < self.dim(); i++) {

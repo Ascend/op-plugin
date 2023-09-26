@@ -20,7 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 bool is_backward(at::IntArrayRef pad) {
   for (int i = 0; i<pad.size(); i++) {
     if (pad[i] < 0) {

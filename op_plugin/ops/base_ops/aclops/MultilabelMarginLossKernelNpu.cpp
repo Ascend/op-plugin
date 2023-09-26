@@ -69,7 +69,6 @@ std::tuple<at::Tensor&, at::Tensor&> multilabel_margin_loss_forward_out(
 
   bool output_match = npu_utils::check_match(&output);
   bool is_target_match = npu_utils::check_match(&is_target);
-
   if (!(output_match && is_target_match)) {
     at::Tensor contiguous_output = output_match ? output : npu_utils::format_contiguous(output);
     at::Tensor contiguous_is_target = is_target_match ? is_target : npu_utils::format_contiguous(is_target);

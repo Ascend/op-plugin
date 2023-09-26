@@ -141,7 +141,7 @@ at::Tensor npu_giou(
   at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
 
   giou_inner_out_npu_nocheck(result, self_cp, gtboxes_cp, trans, is_cross, mode);
-  //op's output is [1, n], same with CPU output, but pass need [n, 1].
+  // op's output is [1, n], same with CPU output, but pass need [n, 1].
   result = result.permute({1, 0});
   if (self.scalar_type() == at::kHalf || gtboxes.scalar_type() == at::kHalf) {
     result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kHalf);

@@ -95,8 +95,8 @@ at::Tensor logspace(
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
   auto device = c10::device_or_default(device_opt);
-  at::TensorOptions options;
-  options = options.dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+  at::TensorOptions options = c10::TensorOptions()
+      .dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
   at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, options, ACL_FORMAT_ND);
   return logspace_out_nocheck(result, start, end, steps, base);
 }

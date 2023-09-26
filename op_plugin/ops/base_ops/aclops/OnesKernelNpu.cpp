@@ -32,8 +32,7 @@ at::Tensor ones(
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
   auto device = c10::device_or_default(device_opt);
-  at::TensorOptions option;
-  option = option.dtype(dtype_opt)
+  at::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
       .layout(layout_opt)
       .device(device)
       .pinned_memory(pin_memory_opt);
@@ -50,8 +49,7 @@ at::Tensor ones(
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
   auto device = c10::device_or_default(device_opt);
-  at::TensorOptions option;
-  option = option.dtype(dtype_opt)
+  at::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
       .layout(layout_opt)
       .device(device)
       .pinned_memory(pin_memory_opt);

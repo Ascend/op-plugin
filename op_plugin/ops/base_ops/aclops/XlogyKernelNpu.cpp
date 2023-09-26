@@ -90,11 +90,11 @@ at::Tensor& xlogy_out(const at::Tensor& self, const at::Scalar& other, at::Tenso
 
 at::Tensor& xlogy_out(const at::Scalar& self, const at::Tensor& other, at::Tensor& result) {
   npu_preparation::CheckOut(
-     {other},
-     result,
-     npu_preparation::get_tensor_npu_format(other),
-     other.scalar_type(),
-     other.sizes());
+      {other},
+      result,
+      npu_preparation::get_tensor_npu_format(other),
+      other.scalar_type(),
+      other.sizes());
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     xlogy_out_npu_nocheck(contiguous_result, self, other);

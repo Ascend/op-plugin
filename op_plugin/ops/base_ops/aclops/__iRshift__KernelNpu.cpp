@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& irshift_out_npu_nocheck(
     at::Tensor& result,
     at::Tensor& self,
@@ -29,7 +29,7 @@ at::Tensor& irshift_out_npu_nocheck(
   at_npu::native::OpCommand cmd;
   cmd.Name("RightShift")
       .Input(self)
-      .Input(other,self.scalar_type())
+      .Input(other, self.scalar_type())
       .Output(result)
       .Run();
   return result;

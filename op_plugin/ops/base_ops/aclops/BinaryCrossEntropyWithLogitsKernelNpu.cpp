@@ -70,7 +70,7 @@ at::Tensor binary_cross_entropy_with_logits_nocheck(
 
   return result;
 }
-} //namespace
+} // namespace
 
 at::Tensor npu_binary_cross_entropy_with_logits_backward(
     const at::Tensor& grad_output,

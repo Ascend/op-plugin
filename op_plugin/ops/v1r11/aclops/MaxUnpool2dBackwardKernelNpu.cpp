@@ -48,7 +48,6 @@ at::Tensor& max_unpool2d_backward_out(
   int64_t h = self.size(1);
   int64_t w = self.size(2);
   int64_t self_dim = self.ndimension();
-
   if (self_dim == 4) {
     n = self.size(0);
     c = self.size(1);

@@ -74,7 +74,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> layer_norm_backward_npu_support(
   for (int64_t i = X.dim() - 1; i >= 0; i--) {
     numels *= X.size(i);
     tmp_size.emplace_back(X.size(i));
-    if(numels == N) {
+    if (numels == N) {
       break;
     }
   }
@@ -107,7 +107,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> layer_norm_backward_npu_support(
         c10::nullopt /* pin_memory */,
         LEGACY_CONTIGUOUS_MEMORY_FORMAT);
     return std::make_tuple(std::move(d_x), std::move(dgamma), std::move(dbeta));
-  }  
+  }
 
   d_x = npu_preparation::apply_tensor(X, std::get<0>(output_sizes));
   dgamma = npu_preparation::apply_tensor(gamma_temp, std::get<1>(output_sizes));

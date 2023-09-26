@@ -20,7 +20,7 @@ namespace acl_op {
 at::Tensor complex(const at::Tensor &real, const at::Tensor &imag)
 {
   TORCH_NPU_WARN_ONCE(
-    "Warning: kernel [complex] is not supported by NPU currently. Now this kernel is running on CPU.");
+      "Warning: kernel [complex] is not supported by NPU currently. Now this kernel is running on CPU.");
   at::Tensor real_cpu = real.to("cpu");
   at::Tensor imag_cpu = imag.to("cpu");
   auto result = at::native::complex(real_cpu, imag_cpu);
@@ -31,7 +31,7 @@ at::Tensor complex(const at::Tensor &real, const at::Tensor &imag)
 at::Tensor &complex_out(const at::Tensor &real, const at::Tensor &imag, at::Tensor &out)
 {
   TORCH_NPU_WARN_ONCE(
-    "Warning: kernel [complex_out] is not supported by NPU currently. Now this kernel is running on CPU.");
+      "Warning: kernel [complex_out] is not supported by NPU currently. Now this kernel is running on CPU.");
   at::Tensor real_cpu = real.to("cpu");
   at::Tensor imag_cpu = imag.to("cpu");
   at::Tensor out_cpu = out.to("cpu");

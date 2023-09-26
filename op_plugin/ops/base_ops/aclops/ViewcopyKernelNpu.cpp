@@ -54,25 +54,25 @@ bool AicoreValid(at::Tensor& self, const at::Tensor& src) {
   // if diff or diff_index equals 0, no need viewcopy.
   if (diff == 0 || diff_index == 0) {
     return false;
-  } 
+  }
 
   const auto& dst_base_stride = torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.base_strides_;
   // dst_base_stride should be equal to dst_storage_stride except for diff_index
   if (self_stride.size() > dst_base_stride.size()) {
     return false;
-  } 
-  
+  }
+
   for (int64_t i = 0; i < self_stride.size(); i++) {
     if (dst_base_stride[i] != self_stride[i] && i != diff_index) {
       return false;
-    } 
+    }
   }
 
   // dtype cannot be double and dst_size has to be equal with src_size.
   if (self.dtype() == at::ScalarType::Double || self_size != src.sizes()) {
     return false;
-  } 
-  
+  }
+
   return true;
 }
 } // namespace
@@ -81,7 +81,6 @@ at::Tensor& npu_view_copy(
     at::Tensor& self,
     const at::Tensor& src,
     bool non_blocking) {
-
   auto self_size = self.sizes();
   auto self_stride = self.strides();
   auto src_size = src.sizes();

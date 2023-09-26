@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& binary_cross_entropy_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,

@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 inline bool allIntegral(
     std::initializer_list<std::reference_wrapper<at::Scalar>> values) {
   for (at::Scalar& value : values) {
@@ -72,7 +72,6 @@ at::Tensor arange(
   at::Scalar step_opt = step;
   bool set_to_integral_dtype =
       !option.has_dtype() && allIntegral({start_opt, end_opt, step_opt});
-
   // check start == end
   if (set_to_integral_dtype) {
     option = option.dtype(at::kLong);
@@ -84,11 +83,11 @@ at::Tensor arange(
 
   auto output_size = op_infer::infersize_arange(start, end, step);
   at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_ND);
-  if(option.dtype() == at::kHalf) {
+  if (option.dtype() == at::kHalf) {
     result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
   }
   arange_out_npu_nocheck(result, start, end, step);
-  if(option.dtype() == at::kHalf) {
+  if (option.dtype() == at::kHalf) {
     result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kHalf);
   }
   return result;

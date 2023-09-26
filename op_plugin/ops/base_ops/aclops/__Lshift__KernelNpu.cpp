@@ -20,7 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 at::Tensor& lshift_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,

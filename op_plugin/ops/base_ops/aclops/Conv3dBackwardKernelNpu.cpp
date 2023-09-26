@@ -20,7 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 at::Tensor& conv3d_backward_input_nocheck(
     at::Tensor& grad_input,
     const at::Tensor& input,

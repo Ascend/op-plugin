@@ -32,7 +32,7 @@ int64_t calc_shape_prod(const at::Tensor& self, at::IntArrayRef dim) {
       shape_prod *= self.size(i);
     }
   } else {
-    for(auto i = 0; i < dim.size(); i++) {
+    for (auto i = 0; i < dim.size(); i++) {
       shape_prod *= self.size(dim[i]);
     }
   }

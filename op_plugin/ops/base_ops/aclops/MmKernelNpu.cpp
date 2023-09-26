@@ -44,7 +44,6 @@ bool is_transpose_last_two_dims_flex(const at::Tensor& tensor) {
 
   int64_t dim1 = tensor.dim() - 1;
   int64_t dim2 = tensor.dim() - 2;
-
   if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
     return true;
   } else {
@@ -106,7 +105,6 @@ bool is_mm_transpose(const at::Tensor &tensor) {
   }
   int64_t dim1 = tensor.dim() - 1;
   int64_t dim2 = tensor.dim() - 2;
-
   if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
     return true;
   } else {
