@@ -1808,6 +1808,18 @@ official:
    impl_ns: op_api
  - func: _foreach_round_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
+ - func: _foreach_ceil(Tensor(a!)[] self) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_floor(Tensor(a!)[] self) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_trunc(Tensor(a!)[] self) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_round(Tensor(a!)[] self) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_frac_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_frac(Tensor(a!)[] self) -> Tensor[]
+   impl_ns: op_api 
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
  - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
@@ -1949,14 +1961,10 @@ tocpu:
   - _foreach_sin_
   - _foreach_sinh
   - _foreach_sinh_
-  - _foreach_round
   - _foreach_lgamma
   - _foreach_lgamma_
-  - _foreach_frac
-  - _foreach_frac_
   - _foreach_reciprocal
   - _foreach_reciprocal_
-  - _foreach_trunc
   - _linalg_inv_out_helper_
   - _linalg_qr_helper
   - _logcumsumexp
