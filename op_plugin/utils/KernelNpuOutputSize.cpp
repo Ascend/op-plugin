@@ -220,9 +220,9 @@ c10::SmallVector<int64_t, SIZE> conv1d_npu_output_size(const at::Tensor &input, 
   int64_t N = input.size(0);
   int64_t L = input.size(2);
   int64_t C_out = weight.size(0);
+  C_out = (weight.size(1) != 0) ? C_out : 0;
 
   auto kernel_size = weight.sizes().slice(2);
-
   int64_t L_out = (L + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0]  + 1;
   c10::SmallVector<int64_t, SIZE> output_size = {N, C_out, L_out};
   return output_size;

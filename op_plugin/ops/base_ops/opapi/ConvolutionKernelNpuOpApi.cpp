@@ -34,11 +34,12 @@ static inline c10::SmallVector<int64_t, op_infer::N> expand_dim(at::IntArrayRef 
   }
 }
 
-static inline at::ScalarType promote_dtype(const at::Tensor& input_t, const at::Tensor& weight_t) {
-  if (input_t.dtype() == at::ScalarType::Float || weight_t.dtype() == at::ScalarType::Float) {
-    return at::ScalarType::Float;
-  }
-  return at::ScalarType::Half;
+static inline at::ScalarType promote_dtype(const at::Tensor& input_t, const at::Tensor& weight_t)
+{
+    if (input_t.dtype() == at::ScalarType::Float || weight_t.dtype() == at::ScalarType::Float) {
+        return at::ScalarType::Float;
+    }
+    return at::ScalarType::Half;
 }
 
 at::Tensor convolution(const at::Tensor &input, const at::Tensor &weight,
