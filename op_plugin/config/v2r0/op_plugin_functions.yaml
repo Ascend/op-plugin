@@ -476,8 +476,6 @@ official:
    impl_ns: acl_op, op_api
  - func: complex.out(Tensor real, Tensor imag, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: diagflat(Tensor self, int offset=0) -> Tensor
-   impl_ns: acl_op
  - func: real(Tensor(a) self) -> Tensor(a)
    impl_ns: acl_op, op_api
  - func: ctc_loss.IntList(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
