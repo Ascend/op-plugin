@@ -1526,6 +1526,10 @@ official:
    impl_ns: acl_op, op_api
  - func: sum.dim_IntList(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op, op_api
+ - func: nansum(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
+   impl_ns: op_api
+ - func: nansum.out(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: take(Tensor self, Tensor index) -> Tensor
    impl_ns: acl_op, op_api
  - func: take.out(Tensor self, Tensor index, *, Tensor(a!) out) -> Tensor(a!)
