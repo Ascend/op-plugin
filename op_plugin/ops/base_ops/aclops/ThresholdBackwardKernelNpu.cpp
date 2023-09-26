@@ -53,16 +53,7 @@ at::Tensor threshold_backward(
     const at::Tensor& self,
     const at::Scalar& threshold) {
   at::Tensor result = npu_preparation::apply_tensor(self);
-  // use 5HD in Relu
-  if ((npu_preparation::get_tensor_npu_format(grad_output) == ACL_FORMAT_NCHW) &&
-      (npu_preparation::get_tensor_npu_format(self) == ACL_FORMAT_NC1HWC0)) {
-    at::Tensor grad_output_5HD =
-        at_npu::native::custom_ops::npu_format_cast(grad_output, ACL_FORMAT_NC1HWC0);
-    threshold_backward_out_npu(result, grad_output_5HD, self, threshold);
-    return result;
-  } else {
-    threshold_backward_out_npu(result, grad_output, self, threshold);
-    return result;
-  }
+  threshold_backward_out_npu(result, grad_output, self, threshold);
+  return result;
 }
 } // namespace acl_op
