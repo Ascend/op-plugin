@@ -97,7 +97,7 @@
 - name: npu_scaled_masked_softmax(Tensor x, Tensor mask, Scalar scale=1, bool fixed_triu_mask=False) -> Tensor
   x: npu_scaled_masked_softmax_backward(grad, result, mask, scale, fixed_triu_mask)
 
-- name: npu_format_cast(Tensor self, int acl_format) -> Tensor
+- name: _npu_format_cast(Tensor self, int acl_format) -> Tensor 
   self: grad
 
 - name: selu(Tensor self) -> Tensor
