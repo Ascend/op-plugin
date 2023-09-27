@@ -1324,6 +1324,10 @@ official:
    impl_ns: acl_op, op_api
  - func: replication_pad2d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: replication_pad3d(Tensor self, SymInt[6] padding) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: replication_pad3d.out(Tensor self, SymInt[6] padding, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: roll(Tensor self, SymInt[1] shifts, int[1] dims=[]) -> Tensor
    impl_ns: acl_op, op_api
  - func: round(Tensor self) -> Tensor

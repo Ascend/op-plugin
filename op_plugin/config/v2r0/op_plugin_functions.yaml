@@ -1316,6 +1316,10 @@ official:
    impl_ns: acl_op
  - func: replication_pad2d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op
+ - func: replication_pad3d(Tensor self, SymInt[6] padding) -> Tensor
+   impl_ns: acl_op
+ - func: replication_pad3d.out(Tensor self, SymInt[6] padding, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: roll(Tensor self, int[1] shifts, int[1] dims=[]) -> Tensor
    impl_ns: acl_op
  - func: round(Tensor self) -> Tensor
@@ -2014,8 +2018,6 @@ tocpu:
   - fractional_max_pool2d
   - fractional_max_pool2d_backward.grad_input
   - fractional_max_pool2d_backward
-  - replication_pad3d.out
-  - replication_pad3d
   - logit_backward.grad_input
   - logit_backward
   - orgqr.out

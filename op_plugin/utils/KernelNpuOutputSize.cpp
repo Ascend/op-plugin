@@ -914,6 +914,39 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_out_size(
   return output_size;
 }
 
+c10::SmallVector<int64_t, SIZE> replication_pad3d_npu_out_size(
+    const at::Tensor& self, at::IntArrayRef padding)
+{
+  int64_t padding_num = padding.size();
+  int64_t self_num = self.dim();
+  // 6 is padding length
+  TORCH_CHECK(padding_num == 6, "padding length should be 6");
+  // 4 and 5 are dim number of self
+  TORCH_CHECK(self_num == 4 || self_num == 5, "self should be 4D or 5D");
+  // -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 are indexes of self and padding
+  int64_t padding_l = padding[0];
+  int64_t padding_r = padding[1];
+  int64_t padding_t = padding[2];
+  int64_t padding_b = padding[3];
+  int64_t padding_f = padding[4];
+  int64_t padding_back = padding[5];
+  int64_t C = self.size(-4);
+  int64_t D = self.size(-3);
+  int64_t H = self.size(-2);
+  int64_t W = self.size(-1);
+  int64_t Do = D + padding_f + padding_back;
+  int64_t Ho = H + padding_t + padding_b;
+  int64_t Wo = W + padding_l + padding_r;
+  c10::SmallVector<int64_t, SIZE> output_size = {C, Do, Ho, Wo};
+  // 5 means self format is NCDHW
+  if (self_num == 5) {
+    // 0 is the first index of self
+    int64_t N = self.size(0);
+    output_size = {N, C, Do, Ho, Wo};
+  }
+  return output_size;
+}
+
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nms_v4_npu_output_size(
     c10::Scalar max_output_size) {
   c10::SmallVector<int64_t, SIZE> selected_indices = {max_output_size.toInt()};
