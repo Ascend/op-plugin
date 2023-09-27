@@ -35,7 +35,7 @@ at::Tensor& avg_pool2d_out_npu_nocheck_opapi(at::Tensor& result,
     TORCH_CHECK(s_divisor_override != 0, "divisor must be not zero");
   }
 
-  const int8_t cube_math_type = 1;
+  const int8_t cube_math_type = at_npu::native::OpPreparation::get_cube_math_type(false);
   EXEC_NPU_CMD(aclnnAvgPool2d, self, kernel, stride, padding, ceil_mode, count_include_pad, s_divisor_override,
       cube_math_type, result);
 

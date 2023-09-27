@@ -28,7 +28,7 @@ at::Tensor &avg_pool2d_backward_out_npu_nocheck_api(const at::Tensor &grad_outpu
                                                     at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
                                                     c10::optional<int64_t> divisor_override, at::Tensor &grad_input) {
   int64_t new_divisor_override = divisor_override.has_value() ? divisor_override.value() : 0;
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(false);
   EXEC_NPU_CMD(aclnnAvgPool2dBackward, grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
                new_divisor_override, cube_math_type, grad_input);
   return grad_input;
