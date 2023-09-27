@@ -32,7 +32,7 @@ at::Tensor& clamp_out_npu_nocheck(
     at::Scalar min,
     at::Scalar max) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("ClipByValue")
+  cmd.Name("ClipByValueV2")
       .Input(self)
       .Input(min, self.scalar_type())
       .Input(max, self.scalar_type())
@@ -81,7 +81,7 @@ at::Tensor& clamp_out_npu_nocheck(
     const at::Tensor& min,
     const at::Tensor& max) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("ClipByValue")
+  cmd.Name("ClipByValueV2")
       .Input(self)
       .Input(min)
       .Input(max)
