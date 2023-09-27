@@ -32,7 +32,7 @@ at::Tensor & baddbmm_out(
   DO_COMPATIBILITY(aclnnBaddbmm, acl_op::baddbmm_out(self, batch1, batch2, beta, alpha, result));
   auto output_size = op_infer::baddbmm_npu_output_size(batch1, batch2);
   npu_preparation::check_tensor({self, batch1, batch2}, result, self.scalar_type(), output_size);
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnBaddbmm, self, batch1, batch2, beta, alpha, result, cube_math_type);
   return result;
 }
@@ -43,7 +43,7 @@ at::Tensor baddbmm(const at::Tensor &self, const at::Tensor &batch1, const at::T
   DO_COMPATIBILITY(aclnnBaddbmm, acl_op::baddbmm(self, batch1, batch2, beta, alpha));
   auto output_size = op_infer::baddbmm_npu_output_size(batch1, batch2);
   at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnBaddbmm, self, batch1, batch2, beta, alpha, result, cube_math_type);
   return result;
 }

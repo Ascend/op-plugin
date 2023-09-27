@@ -39,7 +39,7 @@ at::Tensor & addbmm_out(
       result,
       self.scalar_type(),
       output_size);
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnAddbmm, self, batch1, batch2, beta, alpha, result, cube_math_type);
 
   return result;
@@ -59,7 +59,7 @@ at::Tensor addbmm(
   auto output_size = {size_first, size_second};
   at::Tensor result = npu_preparation::apply_tensor_with_sizes(output_size, self.options());
 
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnAddbmm, self, batch1, batch2, beta, alpha, result, cube_math_type);
 
   return result;

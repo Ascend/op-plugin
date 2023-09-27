@@ -29,7 +29,7 @@ at::Tensor &addmm_out(
     const at::Scalar &alpha,
     at::Tensor &result) {
   DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm_out(self, mat1, mat2, beta, alpha, result));
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
   npu_preparation::check_tensor({self, mat1, mat2}, result, result.scalar_type(), output_size);
   EXEC_NPU_CMD(aclnnAddmm, self, mat1, mat2, beta, alpha, result, cube_math_type);
@@ -46,7 +46,7 @@ at::Tensor addmm(
   DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm(self, mat1, mat2, beta, alpha));
   auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
   at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnAddmm, self, mat1, mat2, beta, alpha, result, cube_math_type);
 
   return result;
@@ -62,7 +62,7 @@ at::Tensor &addmm_(
   auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
   npu_preparation::check_tensor({self, mat1, mat2}, self, self.scalar_type(), output_size);
 
-  int8_t cube_math_type = 1;
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnInplaceAddmm, self, mat1, mat2, beta, alpha, cube_math_type);
 
   return self;
