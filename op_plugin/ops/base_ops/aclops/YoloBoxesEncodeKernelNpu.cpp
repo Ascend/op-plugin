@@ -54,7 +54,7 @@ inline void yolo_boxes_encode_check(
 }
 } // namespace
 
-at::Tensor npu_yolo_boxes_encode (
+at::Tensor npu_yolo_boxes_encode(
     const at::Tensor& anchor_boxes,
     const at::Tensor& gt_bboxes,
     const at::Tensor& stride,

@@ -46,7 +46,6 @@ at::Tensor& logical_not_out(const at::Tensor& self, at::Tensor& result) {
   bool result_is_bool = result_dtype == at::ScalarType::Bool;
   at::Tensor self_cast = self_is_bool ? self : at_npu::native::custom_ops::npu_dtype_cast(self, at::kBool);
   at::Tensor result_cast = result_is_bool ? result : at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
-
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     logical_not_out_nocheck(contiguous_result, self_cast);

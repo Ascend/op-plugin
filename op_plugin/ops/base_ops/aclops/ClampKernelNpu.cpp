@@ -15,7 +15,7 @@
 // limitations under the License.
 
 #include <climits>
-#include <float.h>
+#include <cfloat>
 #include <ATen/native/TypeProperties.h>
 
 #include "op_plugin/AclOpsInterface.h"

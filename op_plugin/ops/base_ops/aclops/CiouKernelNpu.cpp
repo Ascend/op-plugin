@@ -22,7 +22,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 c10::SmallVector<int64_t, N> ciou_output_size(
     const at::Tensor& self,
     const at::Tensor& gtboxes,

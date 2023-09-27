@@ -20,7 +20,7 @@
 namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> bert_apply_adam_out_npu_nocheck(
     at::Tensor& var,
     at::Tensor& m,

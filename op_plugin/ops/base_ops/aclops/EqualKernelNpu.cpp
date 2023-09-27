@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 bool equal(const at::Tensor& self, const at::Tensor& other) {
-  if(self.sizes() != other.sizes()) {
+  if (self.sizes() != other.sizes()) {
     return false;
   }
 

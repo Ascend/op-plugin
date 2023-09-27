@@ -79,7 +79,6 @@ at::Tensor& sum_out_common_nocheck(
   at::Tensor self_cp = check_dtype(self, res_type);
   at::Tensor result_cp = result.scalar_type() == self_cp.scalar_type() ? result :
       acl_op::npu_dtype_cast(result, self_cp.scalar_type());
-
   if (!npu_utils::check_match(&result_cp)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
     sum_out_npu_nocheck(contiguous_result, self_cp, dim, keepdim);

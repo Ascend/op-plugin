@@ -28,10 +28,12 @@ std::tuple<at::Tensor, at::Tensor> triangular_solve_out_common_nocheck(
     bool upper,
     bool transpose,
     bool unitriangular) {
-  at::Tensor self_broadcasted, a_broadcasted;
+  at::Tensor self_broadcasted;
+  at::Tensor a_broadcasted;
   std::tie(self_broadcasted, a_broadcasted) = at::native::_linalg_broadcast_batch_dims(self, A, "triangular_solve");
   TORCH_CHECK(self_broadcasted.dtype() == at::kFloat && a_broadcasted.dtype() == at::kFloat,
-      "_triangular_solve_helper_npu only supported Float, but get ", self_broadcasted.dtype(), ' ', a_broadcasted.dtype());
+              "_triangular_solve_helper_npu only supported Float, but get ", self_broadcasted.dtype(), ' ',
+              a_broadcasted.dtype());
   auto self_working_copy = npu_preparation::apply_tensor(self_broadcasted);
   auto a_working_copy = a_broadcasted.clone();
   at::Tensor a_tensor = a_broadcasted;
@@ -50,4 +52,4 @@ std::tuple<at::Tensor, at::Tensor> triangular_solve_out_common_nocheck(
 
   return std::tie(self_working_copy, a_working_copy);
 }
-}// namespace acl_op
+}  // namespace acl_op

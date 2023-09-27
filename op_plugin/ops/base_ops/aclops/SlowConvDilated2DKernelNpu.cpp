@@ -31,12 +31,12 @@ at::Tensor slow_conv_dilated2d(
   TORCH_CHECK(stride[0] != 0, "slow_conv_dilated2d_npu_output_size: stride[0] can not be zero");
   TORCH_CHECK(padding[0] >= 0 && padding[1] >= 0,
               "slow_conv_dilated2d_npu_output_size: padding can not be less than zero");
-  auto output_size = op_infer::slow_conv_dilated2d_npu_output_size( self, weight, stride, padding, dilation);
+  auto output_size = op_infer::slow_conv_dilated2d_npu_output_size(self, weight, stride, padding, dilation);
   int64_t result_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
   at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), result_format);
   const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
   int64_t groups = 1;
-  c10::SmallVector<int64_t,N> strides_size = {1,1,stride[0],stride[1]};
+  c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
   c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1]};
 
@@ -44,8 +44,8 @@ at::Tensor slow_conv_dilated2d(
   cmd.Name("Conv2D")
       .Input(self, "x")
       .Input(weight, "filter");
-  if (bias.defined()){
-     cmd.Input(bias);
+  if (bias.defined()) {
+    cmd.Input(bias);
   }
   cmd.Output(result, "y")
       .Attr("strides", strides_size)

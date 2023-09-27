@@ -94,11 +94,8 @@ at::Tensor eye(
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
   auto device = device_or_default(device_opt);
-  at::TensorOptions option;
-  option = option.dtype(dtype_opt)
-      .layout(layout_opt)
-      .device(device)
-      .pinned_memory(pin_memory_opt);
+  c10::TensorOptions option =
+      c10::TensorOptions().dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
 
   // get the output size
   c10::SmallVector<int64_t, N> output_size = {n, m};

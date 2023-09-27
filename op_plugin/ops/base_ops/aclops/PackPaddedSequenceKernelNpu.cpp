@@ -69,7 +69,7 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
   int64_t last = batchsize - 1;
   for (int ti = 0; ti < timesize; ti++) {
     for (int bi = last; bi >= 0 ; bi--) {
-      if (lengths_vec[bi] > ti ) {
+      if (lengths_vec[bi] > ti) {
         batchsize_vec[ti] = (bi + 1);
         last = bi;
         break;

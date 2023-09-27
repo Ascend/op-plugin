@@ -25,11 +25,11 @@ using npu_utils = at_npu::native::NpuUtils;
 at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float, at::Tensor& result) {
   c10::ScalarType result_type = half_to_float ? c10::ScalarType::Float : result.scalar_type();
   npu_preparation::CheckOut(
-    {self},
-    result,
-    npu_preparation::get_tensor_npu_format(result),
-    result_type,
-    self.sizes());
+      {self},
+      result,
+      npu_preparation::get_tensor_npu_format(result),
+      result_type,
+      self.sizes());
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);

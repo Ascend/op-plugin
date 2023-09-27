@@ -76,7 +76,9 @@ at::Tensor npu_nonzero_notranspose(const at::Tensor& self) {
 } // namespace
 
 AdvancedIndex::AdvancedIndex(const at::Tensor& src, at::TensorList indices_list) {
-  int64_t dims_before = 0, dims_after = 0, dims_indexed = 0;
+  int64_t dims_before = 0;
+  int64_t dims_after = 0;
+  int64_t dims_indexed = 0;
   at::IntArrayRef replacement_shape;
   for (size_t dim = 0; dim < indices_list.size(); dim++) {
     if (!indices_list[dim].defined()) {

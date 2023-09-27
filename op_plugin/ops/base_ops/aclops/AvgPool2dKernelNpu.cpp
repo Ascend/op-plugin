@@ -117,7 +117,6 @@ void avg_pool2d_parameter_check(
   TORCH_CHECK(
       (!divisor_override.has_value() || (divisor_override.value() > 0 && divisor_override.value() <= 255)),
       "The value of divisor_override = ", divisor_override.value(), " is invaild, only support [1, 255] at present.");
-
 }
 } // namespace
 

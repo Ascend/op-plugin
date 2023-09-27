@@ -19,6 +19,11 @@
 #include "op_plugin/utils/AdvancedIndex.h"
 
 namespace op_infer {
+using tuple_array_vector = std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>;
+using tuple_vector = std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>;
+using tuple_vectors =
+    std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>;
+
 int64_t CeilDiv(int64_t value, int64_t factor) {
   int64_t value_num = 0;
   if (factor == 0) {
@@ -322,11 +327,10 @@ c10::SmallVector<int64_t, SIZE> cosine_similarity_npu_output_size(const at::Tens
   return reduce_ops_npu_output_size(x1, dims, keepdim);
 }
 
-std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>
-conv_transpose2d_backward_npu_output_size(const at::Tensor &input, const at::Tensor &grad_output,
-                                          const at::Tensor &weight, c10::IntArrayRef padding,
-                                          c10::IntArrayRef output_padding, c10::IntArrayRef stride,
-                                          c10::IntArrayRef dilation, int64_t groups) {
+tuple_array_vector conv_transpose2d_backward_npu_output_size(const at::Tensor &input, const at::Tensor &grad_output,
+                                                             const at::Tensor &weight, c10::IntArrayRef padding,
+                                                             c10::IntArrayRef output_padding, c10::IntArrayRef stride,
+                                                             c10::IntArrayRef dilation, int64_t groups) {
   c10::SmallVector<int64_t, SIZE> gradBiasSize = {grad_output.size(1)};
   return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>(input.sizes(), weight.sizes(),
                                                                                          gradBiasSize);
@@ -490,7 +494,9 @@ c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at::Tensor &self, at
     std::tie(src, end_indices) = at::native::transposeToFront(self, mid_indices);
   }
 
-  int64_t dims_before = 0, dims_after = 0, dims_indexed = 0;
+  int64_t dims_before = 0;
+  int64_t dims_after = 0;
+  int64_t dims_indexed = 0;
   c10::SmallVector<int64_t, SIZE> replacement_shape;
   at::DimVector indexed_sizes;
   for (size_t dim = 0; dim < end_indices.size(); dim++) {
@@ -596,8 +602,7 @@ c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const
   return outputSize;
 }
 
-std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
-nms_with_mask_npu_output_size(const at::Tensor &input) {
+tuple_vectors nms_with_mask_npu_output_size(const at::Tensor &input) {
   c10::SmallVector<int64_t, SIZE> boxesSize = {input.size(0), 5};
   c10::SmallVector<int64_t, SIZE> idxSize = {
       input.size(0),
@@ -956,12 +961,12 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nms
 
 c10::SmallVector<int64_t, SIZE> im2col_backward_npu_output_size(const at::Tensor& grad_output,
                                                                 const at::IntArrayRef& input_size,
-                                                                const at::IntArrayRef& kernel_size)
-{
+                                                                const at::IntArrayRef& kernel_size) {
   TORCH_CHECK((grad_output.dim() == 2 && grad_output.size(0) != 0 && grad_output.size(1) != 0) ||
-              (grad_output.dim() == 3 && grad_output.size(1) != 0 && grad_output.size(2) != 0),
-                  "Expected 2D or 3D (batch mode) tensor for gradOutput with possibly 0 batch size and non-zero "
-                  "dimensions for gradOutput, but got: ", grad_output.sizes());
+                  (grad_output.dim() == 3 && grad_output.size(1) != 0 && grad_output.size(2) != 0),
+              "Expected 2D or 3D (batch mode) tensor for gradOutput with possibly 0 batch size and non-zero "
+              "dimensions for gradOutput, but got: ",
+              grad_output.sizes());
   c10::SmallVector<int64_t, SIZE> outputSize;
   if (grad_output.dim() == 2) {
     outputSize = {grad_output.size(0) / (kernel_size[0] * kernel_size[1]), input_size[0], input_size[1]};
@@ -1034,8 +1039,7 @@ c10::IntArrayRef smooth_l1_loss_npu_output_size(const at::Tensor &self, const at
   return outputSize;
 }
 
-std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
-softmax_cross_entropy_with_logits_impl_npu_output_size(const at::Tensor &self) {
+tuple_vector softmax_cross_entropy_with_logits_impl_npu_output_size(const at::Tensor &self) {
   c10::SmallVector<int64_t, SIZE> resultSize = array_to_small_vector(self.size(0));
   c10::SmallVector<int64_t, SIZE> backpropSize = array_to_small_vector(self.sizes());
 
@@ -1283,7 +1287,6 @@ c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(
     at::IntArrayRef strides,
     at::IntArrayRef dilations,
     at::IntArrayRef pads) {
-
   if (ksizes.size() == 1) {
     c10::SmallVector<int64_t, SIZE> kernel_sizes = {ksizes[0], ksizes[0]};
     ksizes = at::IntArrayRef(kernel_sizes);

@@ -96,7 +96,6 @@ std::tuple<at::Tensor&, at::Tensor&> min_out(
   at::Tensor indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kInt);
   bool output_match = npu_utils::check_match(&output);
   bool indices_match = npu_utils::check_match(&indices);
-
   if (!(output_match && indices_match)) {
     at::Tensor contiguous_output = output_match ? output : npu_utils::format_contiguous(output);
     at::Tensor contiguous_indices =
@@ -119,7 +118,7 @@ std::tuple<at::Tensor&, at::Tensor&> min_out(
 
 std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, int64_t dim, bool keepdim) {
   at::Tensor self_cast = self;
-  if(self.dtype() == at::ScalarType::Bool) {
+  if (self.dtype() == at::ScalarType::Bool) {
     self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
   c10::SmallVector<int64_t, SIZE> dims = {dim};
@@ -137,7 +136,7 @@ std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, int64_t dim, bool
 
   min_out_npu_nocheck(outputs, indices, self_cast, dim, keepdim);
   indices = at_npu::native::custom_ops::npu_dtype_cast(indices, at::ScalarType::Long);
-  if(self.dtype() == at::ScalarType::Bool) {
+  if (self.dtype() == at::ScalarType::Bool) {
     outputs = at_npu::native::custom_ops::npu_dtype_cast(outputs, at::ScalarType::Bool);
   }
   return std::tie(outputs, indices);

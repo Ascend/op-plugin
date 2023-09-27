@@ -50,7 +50,7 @@ std::tuple<at::Tensor, at::Tensor> linalg_slogdet(const at::Tensor& self) {
   return std::tie(sign, result);
 }
 
-std::tuple<at::Tensor& , at::Tensor&> linalg_slogdet_out(
+std::tuple<at::Tensor&, at::Tensor&> linalg_slogdet_out(
     const at::Tensor& self,
     at::Tensor& sign,
     at::Tensor& result) {
@@ -58,15 +58,15 @@ std::tuple<at::Tensor& , at::Tensor&> linalg_slogdet_out(
   auto output_size = op_infer::array_to_small_vector(self.sizes());
   output_size.erase(output_size.end() - 2, output_size.end());
   npu_preparation::CheckOut(
-    {self},
-    sign,
-    sign,
-    output_size);
+      {self},
+      sign,
+      sign,
+      output_size);
   npu_preparation::CheckOut(
-    {self},
-    result,
-    result,
-    output_size);
+      {self},
+      result,
+      result,
+      output_size);
 
   slogdet_out_nocheck(sign, result, self);
   bool sign_match = npu_utils::check_match(&sign);

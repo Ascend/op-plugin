@@ -18,11 +18,11 @@
 
 namespace acl_op {
 at::Tensor embedding_backward(
-    const at::Tensor& grad, 
-    const at::Tensor& indices, 
-    int64_t num_weights, 
-    int64_t padding_idx, 
-    bool scale_grad_by_freq, 
+    const at::Tensor& grad,
+    const at::Tensor& indices,
+    int64_t num_weights,
+    int64_t padding_idx,
+    bool scale_grad_by_freq,
     bool sparse) {
   TORCH_CHECK(sparse == false, "the current NPU does not yet support sparse tensor, when sparse is set to True");
   // run dense tensor backward

@@ -27,7 +27,8 @@ std::tuple<at::Tensor&, at::Tensor&> triangular_solve_out(
     bool unitriangular,
     at::Tensor& result,
     at::Tensor& clone_a) {
-  at::Tensor result_tmp, clone_a_tmp;
+  at::Tensor result_tmp;
+  at::Tensor clone_a_tmp;
   std::tie(result_tmp, clone_a_tmp) = triangular_solve_out_common_nocheck(self, A, upper, transpose, unitriangular);
   result.resize_as_(result_tmp).copy_(result_tmp);
   clone_a.resize_as_(clone_a_tmp).copy_(clone_a_tmp);

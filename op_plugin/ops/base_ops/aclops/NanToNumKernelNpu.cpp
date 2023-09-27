@@ -36,10 +36,10 @@ std::tuple<float, float> get_posinf_and_neginf(
     at::ScalarType self_dtype,
     c10::optional<double> posinf,
     c10::optional<double> neginf) {
-  float new_posinf, new_neginf;
+  float new_posinf;
+  float new_neginf;
   bool posinf_has_value = posinf.has_value();
   bool neginf_has_value = neginf.has_value();
-
   if (posinf_has_value && neginf_has_value) {
     new_posinf = posinf.value();
     new_neginf = neginf.value();

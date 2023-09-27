@@ -67,7 +67,6 @@ at::Tensor& bitwise_xor_out(
       self);
   at::Tensor self_input = (self.dtype() == at::kBool) ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt) : self;
   at::Tensor result_cp = (result.dtype() == at::kBool) ? at_npu::native::custom_ops::npu_dtype_cast(result, at::kInt) : result;
-
   if (!npu_utils::check_match(&result_cp)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
     bitwise_xor_out_npu_nocheck(contiguous_result, self_input, other);
@@ -98,7 +97,6 @@ at::Tensor& bitwise_xor_out(
   at::Tensor self_input = (self.dtype() == at::kBool) ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt) : self;
   at::Tensor other_input = (other.dtype() == at::kBool) ? at_npu::native::custom_ops::npu_dtype_cast(other, at::kInt) : other;
   at::Tensor result_cp = (result.dtype() == at::kBool) ? at_npu::native::custom_ops::npu_dtype_cast(result, at::kInt) : result;
-
   if (!npu_utils::check_match(&result_cp)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
     bitwise_xor_out_npu_nocheck(contiguous_result, self_input, other_input);

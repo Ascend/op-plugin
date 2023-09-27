@@ -45,7 +45,7 @@ at::Tensor npu_layer_norm_eval(
   for (int64_t i = input.dim() - 1; i >= 0; i--) {
     numels *= input.size(i);
     tmp_size.emplace_back(input.size(i));
-    if(numels == N) {
+    if (numels == N) {
       begin_dim = i;
       break;
     }

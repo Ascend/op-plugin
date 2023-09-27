@@ -51,8 +51,8 @@ at::Tensor batch_norm_backward_elemt(
   TORCH_CHECK(input_ndim > 1, "input.dim() <= 1")
 
   auto divisor = count.sum();
-  auto mean_dy = sum_dy / divisor;
-  auto mean_dy_xmu = sum_dy_xmu / divisor;
+  auto mean_dy = sum_dy.div(divisor);
+  auto mean_dy_xmu = sum_dy_xmu.div(divisor);
 
   size_t dim_c = input.size(1);
   at::IntArrayRef input_shape = input.sizes();

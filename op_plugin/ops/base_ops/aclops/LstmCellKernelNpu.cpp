@@ -22,10 +22,11 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
+using tuple_tensor =
+    std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor>;
 
 namespace {
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
-    at::Tensor, at::Tensor, at::Tensor, at::Tensor> lstm_cell_npu_impl(
+tuple_tensor lstm_cell_npu_impl(
     const at::Tensor& input,
     const at::Tensor& w_ih,
     const at::Tensor& w_hh,
@@ -199,8 +200,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
   return std::tie(grad_input, grad_wih, grad_whh, grad_bias, grad_ht, grad_ct);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
-    at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_cell(
+tuple_tensor npu_lstm_cell(
     const at::Tensor& input,
     const at::Tensor& w_ih,
     const at::Tensor& w_hh,

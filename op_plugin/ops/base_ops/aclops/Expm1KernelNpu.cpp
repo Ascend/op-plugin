@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& expm1_out_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Expm1")

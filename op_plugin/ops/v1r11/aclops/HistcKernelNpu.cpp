@@ -26,7 +26,7 @@ at::Tensor& histc_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     int64_t bins,
-    const at::Scalar& min, 
+    const at::Scalar& min,
     const at::Scalar& max) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Histogram")
@@ -43,7 +43,7 @@ at::Tensor& histc_out_nocheck(
 at::Tensor& histc_out(
     const at::Tensor& self,
     int64_t bins,
-    const at::Scalar& min, 
+    const at::Scalar& min,
     const at::Scalar& max,
     at::Tensor& result) {
   npu_preparation::CheckOut(
@@ -63,7 +63,7 @@ at::Tensor& histc_out(
 at::Tensor histc(
     const at::Tensor& self,
     int64_t bins,
-    const at::Scalar& min, 
+    const at::Scalar& min,
     const at::Scalar& max) {
   TORCH_CHECK(self.dtype() == at::kInt || self.dtype() == at::kFloat || self.dtype() == at::kHalf,
       "histc input only supported Int32, Float16, Float32, but got", self.dtype());

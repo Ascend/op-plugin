@@ -86,7 +86,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor& sel
   int64_t n = self.size(-1);
   int64_t k = std::min(m, n);
 
-  at::Tensor U_working_copy, S_working_copy, VT_working_copy;
+  at::Tensor U_working_copy;
+  at::Tensor S_working_copy;
+  at::Tensor VT_working_copy;
   auto sizes = self.sizes().vec();
 
   auto number_a = 2;
@@ -234,7 +236,9 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> linalg_svd_out_common(
       (use_cusolver && Vh.is_contiguous());
   const auto Vh_ = borrow_else_clone(Vh_ready, Vh, Vh, use_cusolver);
 
-  at::Tensor U_tmp, S_tmp, V_tmp;
+  at::Tensor U_tmp;
+  at::Tensor S_tmp;
+  at::Tensor V_tmp;
   std::tie(U_tmp, S_tmp, V_tmp) = _svd_helper(A, !full_matrices, compute_uv);
   if (!U_ready) {
     U.copy_(U_tmp);

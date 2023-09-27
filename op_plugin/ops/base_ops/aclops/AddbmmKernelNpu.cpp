@@ -29,7 +29,7 @@ at::Tensor& addbmm_out(
     const at::Scalar& alpha,
     at::Tensor& result) {
   at::Tensor mul_result = at::mul(batch1, alpha);
-  at::Tensor bmm_result = at::bmm(mul_result,batch2);
+  at::Tensor bmm_result = at::bmm(mul_result, batch2);
   int64_t dim[2] = {batch1.size(1), batch2.size(2)};
   at::Tensor sum_result = at::sum_to(bmm_result, dim);
   // sum_result + self*beta

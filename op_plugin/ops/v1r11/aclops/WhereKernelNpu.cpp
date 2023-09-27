@@ -50,7 +50,9 @@ at::Tensor where(
     AT_ERROR("Expected condition to have ScalarType Byte, but got ScalarType ",
         toString(condition.scalar_type()));
   }
-  at::Tensor b_condition, b_self, b_other;
+  at::Tensor b_condition;
+  at::Tensor b_self;
+  at::Tensor b_other;
   std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
   return at::_s_where(b_condition, b_self, b_other);
 }

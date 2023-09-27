@@ -106,7 +106,7 @@ at::Tensor ctc_loss(
     auto target_lengths_tensor = npu_preparation::copy_tensor_host_to_device(
         at::from_blob(target_lengths_vector.data(), {target_lengths_vector.size()}, at::kLong)).clamp_min(1);
     at::Tensor target_lengths_tensor_ = target_lengths_tensor.to(res.dtype());
-    return (res / target_lengths_tensor_).mean();
+    return res.div(target_lengths_tensor_).mean();
   } else if (reduction == at::Reduction::Sum) {
     return res.sum();
   }

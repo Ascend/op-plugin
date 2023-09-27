@@ -19,14 +19,17 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
+using tuple_tensor =
+    std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor>;
+using tuple_tensors = std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
+    at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor>;
 
 namespace {
 static const int64_t FZ_ALIGN_NUM1 = 16;
 static const size_t BIAS_BUM1 = 4;
 static const int64_t FZ_ALIGN_NUM = 16;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
-    at::Tensor, at::Tensor, at::Tensor, at::Tensor> multi_head_attention_nocheck(
+tuple_tensor multi_head_attention_nocheck(
     const at::Tensor& query,
     const at::Tensor& key,
     const at::Tensor& value,
@@ -128,8 +131,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
 }
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor,
-    at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_multi_head_attention_backward(
+tuple_tensors npu_multi_head_attention_backward(
     const at::Tensor& query,
     const at::Tensor& key,
     const at::Tensor& value,
@@ -232,8 +234,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
       query_grad, key_grad, value_grad, query_bias_grad, key_bias_grad, value_bias_grad, out_proj_bias_grad);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
-    at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_multi_head_attention(
+tuple_tensor npu_multi_head_attention(
     const at::Tensor& query,
     const at::Tensor& key,
     const at::Tensor& value,

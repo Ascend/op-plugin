@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_op_command = at_npu::native::OpCommand;
 
-namespace{
+namespace {
 at::Tensor& not_out_npu(at::Tensor& result, const at::Tensor& self) {
   npu_op_command cmd;
   cmd.Name("LogicalNot")
