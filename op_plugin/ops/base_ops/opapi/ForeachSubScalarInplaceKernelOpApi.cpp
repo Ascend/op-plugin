@@ -27,8 +27,8 @@ void _foreach_sub_(const at::TensorList self, const at::Scalar& scalar)
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
         TORCH_CHECK(false, "input must be half, float or int32");
     }
-    at::Tensor scalar_tensor = at_npu::native::CalcuOpUtil::CopyScalarToDevice(scalar, self[0].scalar_type());
-    EXEC_NPU_CMD(aclnnForeachSubScalarInplace, self, scalar_tensor);
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
+    EXEC_NPU_CMD(aclnnForeachSubScalar, self, scalar_tensor, self);
 }
 
 }

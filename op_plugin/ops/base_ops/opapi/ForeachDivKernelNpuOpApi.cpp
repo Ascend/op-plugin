@@ -53,7 +53,7 @@ void _foreach_div_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
 void _foreach_div_(const at::TensorList self, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, false)) {
+    if (!at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_div_scalar_kernel_slow_(self, scalar);
     }
 
@@ -79,8 +79,8 @@ void _foreach_div_(const at::TensorList self, const at::Scalar& scalar)
 std::vector<at::Tensor> _foreach_div(at::TensorList self, const at::Scalar& scalar)
 {
     // Fallback
-    at::native::check_foreach_api_restrictions(self, scalar);
-    if (!at::native::can_use_fast_route(self, scalar, false)) {
+    at::native::check_foreach_api_restrictions(self);
+    if (!at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_div_scalar_kernel_slow(self, scalar);
     }
 

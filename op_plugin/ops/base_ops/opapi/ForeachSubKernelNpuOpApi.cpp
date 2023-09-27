@@ -60,7 +60,7 @@ void _foreach_sub_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
 std::vector<at::Tensor> _foreach_sub(at::TensorList self, const at::Scalar& scalar)
 {
     // Fallback
-    at::native::check_foreach_api_restrictions(self, scalar);
+    at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self, scalar, false)) {
         return at::native::foreach_tensor_sub_scalar_kernel_slow(self, scalar);
     }
