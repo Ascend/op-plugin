@@ -21,21 +21,24 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& ceil_out(const at::Tensor& self, at::Tensor& result) {
+at::Tensor& ceil_out(const at::Tensor& self, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnCeil, acl_op::ceil_out(self, result));
   npu_preparation::check_tensor({self}, result, self);
   EXEC_NPU_CMD(aclnnCeil, self, result);
   return result;
 }
 
-at::Tensor ceil(const at::Tensor& self) {
+at::Tensor ceil(const at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnCeil, acl_op::ceil(self));
   at::Tensor result = npu_preparation::apply_tensor_without_format(self);
   EXEC_NPU_CMD(aclnnCeil, self, result);
   return result;
 }
 
-at::Tensor& ceil_(at::Tensor& self) {
+at::Tensor& ceil_(at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnInplaceCeil, acl_op::ceil_(self));
   EXEC_NPU_CMD(aclnnInplaceCeil, self);
   return self;

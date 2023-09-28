@@ -25,8 +25,8 @@ at::Tensor linalg_cross_output(const at::Tensor& self, const at::Tensor& other) 
   return is_self_wrapped ? other : self;
 }
 
-at::Tensor& linalg_cross_out(const at::Tensor& self, const at::Tensor& other,
-  int64_t dim, at::Tensor& result) {
+at::Tensor& linalg_cross_out(const at::Tensor& self, const at::Tensor& other, int64_t dim, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnLinalgCross, acl_op::linalg_cross_out(self, other, dim, result));
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   npu_preparation::check_tensor({self}, result, self.scalar_type(), output_size);
@@ -34,7 +34,8 @@ at::Tensor& linalg_cross_out(const at::Tensor& self, const at::Tensor& other,
   return result;
 }
 
-at::Tensor linalg_cross(const at::Tensor& self, const at::Tensor& other, int64_t dim) {
+at::Tensor linalg_cross(const at::Tensor& self, const at::Tensor& other, int64_t dim)
+{
   DO_COMPATIBILITY(aclnnLinalgCross, acl_op::linalg_cross(self, other, dim));
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::Tensor output_tensor = linalg_cross_output(self, other);

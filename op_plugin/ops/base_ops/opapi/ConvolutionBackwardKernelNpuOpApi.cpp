@@ -47,7 +47,7 @@ static std::tuple<at::Tensor, at::Tensor, at::Tensor> _calc_convolution_backward
   int64_t dim = k - 2;
   int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
 
-  /* k == 5 and groups > 3 currently unsupported by the binary file
+  /* k == 5 currently unsupported by the binary file
     CheckForbidInternalFormat = False: turn on private format；CheckJitDisable = False: turn on JitCompile
   */
   if (k == 5 || (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable())) {
@@ -68,8 +68,8 @@ static std::tuple<at::Tensor, at::Tensor, at::Tensor> _calc_convolution_backward
                                                                                       dim);
   output_padding = at::IntArrayRef(output_padding_expand);
 
-  auto outputSizes = op_infer::conv2d_backward_npu_output_size(
-    input, grad_output, weight, stride, padding, dilation, groups);
+  auto outputSizes = op_infer::conv2d_backward_npu_output_size(input, grad_output, weight, stride, padding, dilation,
+                                                               groups);
 
   // construct the output tensor of the NPU
   at::Tensor gradInput;
@@ -77,34 +77,11 @@ static std::tuple<at::Tensor, at::Tensor, at::Tensor> _calc_convolution_backward
   at::Tensor gradBias;
 
   gradInput = npu_preparation::apply_tensor_without_format(std::get<0>(outputSizes), input.options());
-
-  if (groups > 1) {
-    gradWeight = npu_preparation::apply_tensor_without_format(std::get<1>(outputSizes), weight.options());
-  } else {
-    gradWeight = npu_preparation::apply_tensor_without_format(std::get<1>(outputSizes), weight.options());
-  }
-
-  // use 2nd dimension of outputSizes
+  gradWeight = npu_preparation::apply_tensor_without_format(std::get<1>(outputSizes), weight.options());
   gradBias = npu_preparation::apply_tensor_without_format(std::get<2>(outputSizes), grad_output.options());
 
-  int64_t input_dim = input.ndimension();
-
-  EXEC_NPU_CMD(aclnnConvolutionBackward,
-    grad_output,
-    input,
-    weight,
-    bias_sizes_opt,
-    stride,
-    padding,
-    dilation,
-    transposed,
-    output_padding,
-    groups,
-    output_mask,
-    cube_math_type,
-    gradInput,
-    gradWeight,
-    gradBias);
+  EXEC_NPU_CMD(aclnnConvolutionBackward, grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
+               transposed, output_padding, groups, output_mask, cube_math_type, gradInput, gradWeight, gradBias);
   return std::make_tuple(std::move(gradInput), std::move(gradWeight), std::move(gradBias));
 }
 
@@ -115,19 +92,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward(
     at::IntArrayRef dilation, bool transposed, at::IntArrayRef output_padding, int64_t groups,
     ::std::array<bool, 3> output_mask)
 {
-  DO_COMPATIBILITY(aclnnConvolutionBackward,
-    acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding,
-                                 dilation, transposed, output_padding, groups, output_mask));
+  DO_COMPATIBILITY(aclnnConvolutionBackward, acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt,
+                                                                          stride, padding, dilation, transposed,
+                                                                          output_padding, groups, output_mask));
   return _calc_convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                                     transposed, output_padding, groups, output_mask);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> conv_tbc_backward(
-    const at::Tensor& self,
-    const at::Tensor& input,
-    const at::Tensor& weight,
-    const at::Tensor& bias,
-    int64_t pad) {
+std::tuple<at::Tensor, at::Tensor, at::Tensor> conv_tbc_backward(const at::Tensor& self,
+                                                                 const at::Tensor& input,
+                                                                 const at::Tensor& weight,
+                                                                 const at::Tensor& bias,
+                                                                 int64_t pad)
+{
   DO_COMPATIBILITY(aclnnConvTbcBackward, acl_op::conv_tbc_backward(self, input, weight, bias, pad));
   // construct other inputs of the NPU
   int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
@@ -149,25 +126,23 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> conv_tbc_backward(
   return std::make_tuple(gradInput, gradWeight, gradBias);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> slow_conv_transpose2d_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& input,
-    const at::Tensor& weight,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef stride,
-    at::IntArrayRef padding,
-    at::IntArrayRef output_padding,
-    at::IntArrayRef dilation,
-    std::array<bool, 3> output_mask) {
-
+std::tuple<at::Tensor, at::Tensor, at::Tensor> slow_conv_transpose2d_backward(const at::Tensor& grad_output,
+                                                                              const at::Tensor& input,
+                                                                              const at::Tensor& weight,
+                                                                              at::IntArrayRef kernel_size,
+                                                                              at::IntArrayRef stride,
+                                                                              at::IntArrayRef padding,
+                                                                              at::IntArrayRef output_padding,
+                                                                              at::IntArrayRef dilation,
+                                                                              std::array<bool, 3> output_mask)
+{
   int64_t groups = 1;
   bool transposed = true;
   c10::optional<at::IntArrayRef> bias_sizes_opt = {grad_output.size(1)};
-  DO_COMPATIBILITY(aclnnConvolutionBackward,
-    acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
-                                             transposed, output_padding, groups, output_mask));
-  return _calc_convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
-                                    transposed, output_padding, groups, output_mask);
+  DO_COMPATIBILITY(aclnnConvolutionBackward, acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt,
+                   stride, padding, dilation, transposed, output_padding, groups, output_mask));
+  return _calc_convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation, transposed,
+                                    output_padding, groups, output_mask);
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> slow_conv_dilated2d_backward(
@@ -178,8 +153,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> slow_conv_dilated2d_backward(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
-    std::array<bool, 3> output_mask) {
-
+    std::array<bool, 3> output_mask)
+{
   at::IntArrayRef output_padding = {0, 0};
   int64_t groups = 1;
   bool transposed = true;
@@ -191,37 +166,67 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> slow_conv_dilated2d_backward(
                                     transposed, output_padding, groups, output_mask);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> _slow_conv2d_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& input,
-    const at::Tensor& weight,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef stride,
-    at::IntArrayRef padding,
-    std::array<bool, 3> output_mask) {
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _slow_conv2d_backward(const at::Tensor& grad_output,
+                                                                     const at::Tensor& input,
+                                                                     const at::Tensor& weight,
+                                                                     at::IntArrayRef kernel_size,
+                                                                     at::IntArrayRef stride,
+                                                                     at::IntArrayRef padding,
+                                                                     std::array<bool, 3> output_mask)
+{
   c10::optional<at::IntArrayRef> bias_sizes_opt = {grad_output.size(1)};
   at::IntArrayRef dilation = {1, 1};
   int64_t groups = 1;
   bool transposed = false;
   at::IntArrayRef output_padding = {0, 0};
-  DO_COMPATIBILITY(aclnnConvolutionBackward,
-    acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
-                                             transposed, output_padding, groups, output_mask));
+  auto w_sizes = weight.sizes();
+  at::Tensor orig_weight = npu_preparation::apply_tensor_without_format(w_sizes, weight.options());
+  int64_t s1 = w_sizes[0];
+  // get the product of w_sizes from the 1 index to the last
+  int64_t s2 = c10::multiply_integers(w_sizes.slice(1));
+  c10::SmallVector<int64_t, SIZE> slow_weight_size = {s1, s2, 1, 1};
+  weight.resize_(slow_weight_size);
+  DO_COMPATIBILITY(aclnnConvolutionBackward, acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt,
+                   stride, padding, dilation, transposed, output_padding, groups, output_mask));
 
-  return _calc_convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
-                                    transposed, output_padding, groups, output_mask);
+  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
+
+  /* k == 5 and groups > 3 currently unsupported by the binary file
+    CheckForbidInternalFormat = False: turn on private format；CheckJitDisable = False: turn on JitCompile
+  */
+  if (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable()) {
+    return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
+                                        transposed, output_padding, groups, output_mask);
+  }
+
+  auto outputSizes = op_infer::conv2d_backward_npu_output_size(input, grad_output, weight, stride, padding, dilation,
+                                                               groups);
+
+  // construct the output tensor of the NPU
+  at::Tensor gradInput;
+  at::Tensor gradWeight;
+  at::Tensor gradBias;
+
+  gradInput = npu_preparation::apply_tensor_without_format(std::get<0>(outputSizes), input.options());
+  gradWeight = npu_preparation::apply_tensor_without_format(std::get<1>(outputSizes), weight.options());
+  gradBias = npu_preparation::apply_tensor_without_format(std::get<2>(outputSizes), grad_output.options());
+
+  EXEC_NPU_CMD(aclnnConvolutionBackward, grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
+               transposed, output_padding, groups, output_mask, cube_math_type, gradInput, gradWeight, gradBias);
+  auto orig_sizes = orig_weight.sizes();
+  gradWeight.resize_(orig_sizes);
+  return std::make_tuple(std::move(gradInput), std::move(gradWeight), std::move(gradBias));
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward_overrideable(
     const at::Tensor & grad_output, const at::Tensor & input, const at::Tensor & weight,
-    c10::IntArrayRef stride, c10::IntArrayRef padding,
-    c10::IntArrayRef dilation, bool transposed, c10::IntArrayRef output_padding,
-    int64_t groups, std::array<bool,3> output_mask) {
+    c10::IntArrayRef stride, c10::IntArrayRef padding, c10::IntArrayRef dilation, bool transposed,
+    c10::IntArrayRef output_padding, int64_t groups, std::array<bool,3> output_mask)
+{
   c10::optional<at::IntArrayRef> bias_sizes_opt = {grad_output.size(1)};
-
-  DO_COMPATIBILITY(aclnnConvolutionBackward,
-    acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
-                                             transposed, output_padding, groups, output_mask));
+  DO_COMPATIBILITY(aclnnConvolutionBackward, acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt,
+                                                                          stride, padding, dilation, transposed,
+                                                                          output_padding, groups, output_mask));
   return _calc_convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                                     transposed, output_padding, groups, output_mask);
 }
