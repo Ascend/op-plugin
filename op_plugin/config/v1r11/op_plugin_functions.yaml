@@ -1747,7 +1747,7 @@ official:
  - func: _s_where(Tensor condition, Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op, op_api
  - func: where(Tensor condition) -> Tensor[]
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: where.self(Tensor condition, Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op, op_api
  - func: xlogy.OutScalar_Other(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
