@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& ior_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -51,7 +51,7 @@ at::Tensor& ior_out_npu_nocheck(
 }
 } // namespace
 
-at::Tensor& __ior__(at::Tensor& self, const at::Tensor& other) { 
+at::Tensor& __ior__(at::Tensor& self, const at::Tensor& other) {
   npu_preparation::CheckMemory({self, other}, {self});
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);

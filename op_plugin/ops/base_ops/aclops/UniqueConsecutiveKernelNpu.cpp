@@ -68,7 +68,6 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> unique_consecutive_out_npu(
     npu_preparation::CheckOut({self}, output, self);
     npu_preparation::CheckOut({self}, inverse_indices, ACL_FORMAT_ND, self.scalar_type(), self.size(dim.value()));
     npu_preparation::CheckOut({self}, counts, ACL_FORMAT_ND, self.scalar_type(), self.size(dim.value()));
-
   } else {
     npu_preparation::CheckOut({self}, output, self, {self.numel()});
     npu_preparation::CheckOut({self}, inverse_indices, ACL_FORMAT_ND, self.scalar_type(), self.sizes());

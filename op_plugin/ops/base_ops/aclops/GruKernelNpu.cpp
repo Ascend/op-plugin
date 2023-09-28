@@ -153,7 +153,7 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_bidirec(
       has_biases, num_layers, dropout, train, bidirectional, batch_first);
 
   at::Tensor rev_output_hy = at::unsqueeze(std::get<1>(rev_results)[num_step - 1], 0);
-  at::Tensor rev_output = at::flip(std::get<0>(rev_results),{0});
+  at::Tensor rev_output = at::flip(std::get<0>(rev_results), {0});
 
   return std::make_tuple(at::cat({fw_output, rev_output}, -1),
       at::cat({fw_output_hy, rev_output_hy}));
@@ -252,12 +252,12 @@ std::tuple<at::Tensor, at::Tensor> apply_layer_stack(
   std::vector<CellParams> weights;
   std::vector<at::Tensor>::iterator params_it = params.begin();
   if (has_biases) {
-    for (int64_t i = 0; i < params_size; i = i + 4){
+    for (int64_t i = 0; i < params_size; i = i + 4) {
       weights.emplace_back(CellParams(*(params_it+i), *(params_it+i+1),
           *(params_it+i+2), *(params_it+i+3)));
     }
   } else {
-    for (int64_t i = 0; i < params_size; i = i + 2){
+    for (int64_t i = 0; i < params_size; i = i + 2) {
       weights.emplace_back(CellParams(*(params_it+i), *(params_it+i+1)));
     }
   }

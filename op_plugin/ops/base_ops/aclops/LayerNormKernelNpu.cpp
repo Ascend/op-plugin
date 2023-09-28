@@ -137,7 +137,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(
 
   const auto input_shape = input.sizes();
   const auto input_ndim = input.dim();
-
   if (input_ndim < normalized_ndim ||
       !input_shape.slice(input_ndim - normalized_ndim).equals(normalized_shape)) {
     std::stringstream ss;

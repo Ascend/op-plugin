@@ -251,7 +251,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm_backward(
   if (grad_weight.defined()) {
     auto weight_format = npu_preparation::get_tensor_npu_format(weight);
     auto grad_weight_format = npu_preparation::get_tensor_npu_format(grad_weight);
-
     if (grad_weight_format == ACL_FORMAT_NC1HWC0 && weight_format == ACL_FORMAT_ND) {
       npu_format_helper::unsafe_format_cast(grad_weight, ACL_FORMAT_NC1HWC0, ACL_FORMAT_ND);
       npu_format_helper::unsafe_format_cast(grad_bias, ACL_FORMAT_NC1HWC0, ACL_FORMAT_ND);

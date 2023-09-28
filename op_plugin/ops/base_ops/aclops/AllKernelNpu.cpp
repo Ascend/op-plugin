@@ -47,7 +47,6 @@ at::Tensor& all_out_nocheck(
   bool result_is_bool = (result.scalar_type() == at::ScalarType::Bool);
   at::Tensor result_cast = result_is_bool ?
       result : at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Bool);
-
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result_cast = npu_utils::format_contiguous(result_cast);
     all_out_npu_nocheck(contiguous_result_cast, self_cast, dim_list, keepdim);

@@ -61,6 +61,6 @@ at::Tensor logical_or(const at::Tensor& self, const at::Tensor& other) {
 }
 
 at::Tensor& logical_or_(at::Tensor& self, const at::Tensor& other) {
-  return acl_op::logical_or_out(self, other, self);;
+  return acl_op::logical_or_out(self, other, self);
 }
 } // namespace acl_op

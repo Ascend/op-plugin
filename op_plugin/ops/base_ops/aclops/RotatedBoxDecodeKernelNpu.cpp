@@ -24,7 +24,7 @@ using npu_utils = at_npu::native::NpuUtils;
 at::Tensor npu_rotated_box_decode(
     const at::Tensor& self,
     const at::Tensor& deltas,
-    const at::Tensor& weight){
+    const at::Tensor& weight) {
   at::Tensor result = npu_preparation::apply_tensor(self);
   at::Tensor weight_cpu = weight.to(at::Device(at::kCPU), at::kFloat);
   at::ArrayRef<float> weight_list(weight_cpu.data_ptr<float>(), weight_cpu.numel());

@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& erfc_out_npu_no_check(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
   cmd.Name("Erfc")

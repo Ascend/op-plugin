@@ -22,7 +22,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 at::Tensor& argsort_out_npu_nocheck(
     at::Tensor& values,
     at::Tensor& indices,

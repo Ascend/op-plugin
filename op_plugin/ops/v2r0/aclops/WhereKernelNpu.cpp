@@ -27,7 +27,9 @@ at::Tensor& where_out(
     const at::Tensor& self,
     const at::Tensor& other,
     at::Tensor& out) {
-  at::Tensor b_condition, b_self, b_other;
+  at::Tensor b_condition;
+  at::Tensor b_self;
+  at::Tensor b_other;
   std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
   if (self.dtype() != other.dtype()) {
     auto result_type = at::native::result_type(self, other);

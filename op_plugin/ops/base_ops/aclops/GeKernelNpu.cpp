@@ -46,16 +46,16 @@ at::Tensor& ge_out_nocheck(at::Tensor& result, const at::Tensor& self, at::Scala
 
 at::ScalarType get_ge_calculate_type(const at::Tensor& self, const at::Tensor& other) {
   at::ScalarType calculate_type = at::native::result_type(self, other);
-  if (calculate_type == at::kInt ||calculate_type == at::kBool) {
-    calculate_type = at::kFloat; 
+  if (calculate_type == at::kInt || calculate_type == at::kBool) {
+    calculate_type = at::kFloat;
   }
   return calculate_type;
 }
 
 at::ScalarType get_ge_calculate_type(const at::Tensor& self, const at::Scalar& other) {
   at::ScalarType calculate_type = at::native::result_type(self, other);
-  if (calculate_type == at::kInt ||calculate_type == at::kBool) {
-    calculate_type = at::kFloat; 
+  if (calculate_type == at::kInt || calculate_type == at::kBool) {
+    calculate_type = at::kFloat;
   }
   return calculate_type;
 }

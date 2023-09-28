@@ -25,8 +25,8 @@ c10::SmallVector<int64_t, SIZE> quantize_reshape_size(
     const at::Tensor& self,
     int64_t axis) {
   c10::SmallVector<int64_t, SIZE> out_size;
-  for(int64_t i = 0; i < self.dim(); i++) {
-    if(i != axis) {
+  for (int64_t i = 0; i < self.dim(); i++) {
+    if (i != axis) {
       out_size.emplace_back(1);
     } else {
       out_size.emplace_back(self.sizes()[i]);

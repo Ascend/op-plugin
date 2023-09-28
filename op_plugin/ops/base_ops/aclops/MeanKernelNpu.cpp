@@ -36,6 +36,6 @@ at::Tensor mean(
 }
 
 at::Tensor mean(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
-  return acl_op::mean(self, c10::SmallVector < int64_t, N > {}, false, dtype);
+  return acl_op::mean(self, c10::SmallVector<int64_t, N> {}, false, dtype);
 }
 } // namespace acl_op

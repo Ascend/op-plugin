@@ -47,6 +47,6 @@ std::tuple<at::Tensor&, at::Tensor&> aminmax_out(
     max = acl_op::amax_out(self, dims, keepdim, max);
     min = acl_op::amin_out(self, dims, keepdim, min);
   }
-  return std::tie(min,max);
+  return std::tie(min, max);
 }
 } // namespace acl_op

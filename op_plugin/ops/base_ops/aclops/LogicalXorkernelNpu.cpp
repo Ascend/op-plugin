@@ -44,11 +44,11 @@ at::Tensor& logical_xor_out_npu_nocheck(const at::Tensor& self, const at::Tensor
     
     at_npu::native::OpCommand cmd;
     cmd.Name("NotEqual")
-      .Input(selfCopy)
-      .Input(otherCopy)
-      .Output(result)
-      .Run();
-  }    
+        .Input(selfCopy)
+        .Input(otherCopy)
+        .Output(result)
+        .Run();
+  }
   return result;
 }
 } // namespace
@@ -76,9 +76,9 @@ at::Tensor& logical_xor_out(const at::Tensor& self, const at::Tensor& other, at:
 at::Tensor logical_xor(const at::Tensor& self, const at::Tensor& other) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::Tensor result = npu_preparation::apply_tensor_with_format(
-    output_size,
-    self.options().dtype(at::kBool), 
-    npu_preparation::get_tensor_npu_format(self));
+      output_size,
+      self.options().dtype(at::kBool),
+      npu_preparation::get_tensor_npu_format(self));
   logical_xor_out_npu_nocheck(self, other, result);
   return result;
 }

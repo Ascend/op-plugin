@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& embedding_renorm_gather2d_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -106,7 +106,6 @@ at::Tensor& embedding_renorm_(
     const at::Tensor& indices,
     double max_norm,
     double norm_type) {
-
   auto self_arg = at::TensorArg(self, "self", 1);
   auto indices_arg = at::TensorArg(indices, "indices", 2);
   at::checkDim("embedding_renorm_", self_arg, 2);

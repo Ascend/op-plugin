@@ -20,7 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 at::Tensor& affine_grid_generator_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& theta,
@@ -51,7 +51,7 @@ at::Tensor affine_grid_generator(
       size,
       align_corners);
 
-  if(size.size() == 4) {
+  if (size.size() == 4) {
     result = result.view({size[0], size[2], size[3], 2});
   } else {
     result = result.view({size[0], size[2], size[3], size[4], 3});

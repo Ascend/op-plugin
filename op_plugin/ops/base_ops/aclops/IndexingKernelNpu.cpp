@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& npu_indexing_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -98,7 +98,7 @@ at::Tensor npu_indexing(
     int64_t shrink_axis_mask) {
   auto output_size = infersize_npu_indexing(self, begin, end, strides);
   at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  npu_indexing_out_nocheck(result, self, begin, end, strides,begin_mask, end_mask,
+  npu_indexing_out_nocheck(result, self, begin, end, strides, begin_mask, end_mask,
       ellipsis_mask, new_axis_mask, shrink_axis_mask);
   return result;
 }

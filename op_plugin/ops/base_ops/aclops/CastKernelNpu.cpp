@@ -24,7 +24,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
-namespace{
+namespace {
 at::Tensor& cast_nocheck(at::Tensor& result, const at::Tensor& self) {
   int64_t dst_data_type = calcu_op_util::ConvertToAclDataType(result.scalar_type());
   at_npu::native::OpCommand cmd;
@@ -65,7 +65,7 @@ at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
   return npu_dtype_cast_impl(self, dtype);
 }
 
-at::Tensor npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype){
+at::Tensor npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype) {
   grad.requires_grad_();
   return at_npu::native::custom_ops::npu_dtype_cast(grad, dtype);
 }

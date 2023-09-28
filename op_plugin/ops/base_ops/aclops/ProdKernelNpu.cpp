@@ -68,7 +68,7 @@ at::ScalarType get_dst_type(const at::Tensor& self, const c10::optional<at::Scal
   }
   return dst_type;
 }
-} //namespace
+} // namespace
 
 at::Tensor& prod_out(
     const at::Tensor& self,

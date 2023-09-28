@@ -24,7 +24,8 @@ at::Tensor& where_out_nocheck(
     const at::Tensor& condition,
     const at::Tensor& self,
     const at::Tensor& other) {
-  at::Tensor self_cp, other_cp;
+  at::Tensor self_cp;
+  at::Tensor other_cp;
   if (self.dtype() != other.dtype()) {
     auto result_type = at::native::result_type(self, other);
     self_cp = acl_op::npu_dtype_cast(self, result_type);

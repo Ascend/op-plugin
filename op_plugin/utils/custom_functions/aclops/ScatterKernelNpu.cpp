@@ -55,8 +55,8 @@ at::Tensor& scatter_npu_src_impl(
   }
 
   scatter_npu_common_nocheck(self, dim, index, src);
-  
-  if(self.scalar_type() != self_type) {
+
+  if (self.scalar_type() != self_type) {
     self = acl_op::npu_dtype_cast(self, self_type);
   }
 

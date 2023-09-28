@@ -36,9 +36,8 @@ at::Tensor _cdist_forward(
   float p_float;
   if (std::isinf(p)) {
     p_float = -1;
-  }
-  else {
-    TORCH_CHECK(p <= std::numeric_limits<float>::max(), "npu dose not support float64" );
+  } else {
+    TORCH_CHECK(p <= std::numeric_limits<float>::max(), "npu does not support float64");
     p_float = static_cast<float>(p);
   }
 

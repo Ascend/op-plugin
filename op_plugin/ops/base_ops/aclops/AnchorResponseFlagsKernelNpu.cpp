@@ -20,7 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 inline void anchor_response_flags_check(
     const at::Tensor& self,
     at::IntArrayRef featmap_size,

@@ -60,7 +60,6 @@ at::Tensor index_copy(
     contiguous_self = npu_utils::format_contiguous(contiguous_self);
   }
   return index_copy_npu_impl(dim, index, source, contiguous_self);
-
 }
 
 at::Tensor& index_copy_(

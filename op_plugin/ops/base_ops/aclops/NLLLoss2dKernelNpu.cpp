@@ -113,7 +113,6 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss2d_forward_out(
 
   bool result_match = npu_utils::check_match(&result);
   bool total_weight_match = npu_utils::check_match(&total_weight);
-
   if (!(result_match && total_weight_match)) {
     at::Tensor contiguous_result = result_match ? result : npu_utils::format_contiguous(result);
     at::Tensor contiguous_total_weight = total_weight_match ?

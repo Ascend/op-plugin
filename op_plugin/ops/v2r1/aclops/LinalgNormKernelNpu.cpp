@@ -24,8 +24,8 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 static inline std::vector<int64_t> create_dim_backshift_permutation(int64_t dim0, int64_t dim1, int64_t ndim) {
   TORCH_CHECK(
-    (dim0 != dim1) && (dim0 < ndim) && (dim0 >= 0) && (dim1 < ndim) && (dim1 >= 0),
-    "duplicate or invalid dimensions");
+      (dim0 != dim1) && (dim0 < ndim) && (dim0 >= 0) && (dim1 < ndim) && (dim1 >= 0),
+      "duplicate or invalid dimensions");
   std::vector<int64_t> permutation(ndim);
   int64_t cur_permuted_dim = 0;
   for (const auto dim_ind : c10::irange(ndim)) {

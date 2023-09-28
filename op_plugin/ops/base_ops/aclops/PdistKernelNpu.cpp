@@ -46,7 +46,7 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p) {
     if (std::isinf(p)) {
       p_float = std::numeric_limits<float>::infinity();
     } else {
-      TORCH_CHECK(p <= std::numeric_limits<float>::max(), "npu dose not support float64" );
+      TORCH_CHECK(p <= std::numeric_limits<float>::max(), "npu dose not support float64");
       p_float = static_cast<float>(p);
     }
     auto output_size = op_infer::pdist_npu_output_size(self, p_float);

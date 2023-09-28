@@ -200,10 +200,10 @@ std::tuple<at::Tensor, at::Tensor> std_mean(const at::Tensor& self, bool unbiase
 }
 
 std::tuple<at::Tensor, at::Tensor> std_mean(
-      const at::Tensor& self,
-      at::DimnameList dim,
-      const c10::optional<c10::Scalar>& correction,
-      bool keepdim) {
+    const at::Tensor& self,
+    at::DimnameList dim,
+    const c10::optional<c10::Scalar>& correction,
+    bool keepdim) {
   return at::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 

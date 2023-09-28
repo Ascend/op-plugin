@@ -29,7 +29,6 @@ at::Tensor& upsample_bicubic2d_out_nocheck(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
-
   TORCH_CHECK(
       output_size.size() == 2,
       "It is expected output_size equals to 2, but got size ",

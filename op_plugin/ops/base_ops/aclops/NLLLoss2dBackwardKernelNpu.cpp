@@ -125,7 +125,7 @@ at::Tensor nll_loss2d_backward(
   acl_op::nll_loss2d_backward_out(grad_output_reshape, self_input, target_input, weight_opt, reduction,
       ignore_index, total_weight, grad_input);
 
-  grad_input = grad_input.reshape({self.size(0), self.size(2),self.size(3), self.size(1)}).permute({0, 3, 1, 2});
+  grad_input = grad_input.reshape({self.size(0), self.size(2), self.size(3), self.size(1)}).permute({0, 3, 1, 2});
 
   return grad_input;
 }

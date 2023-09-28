@@ -21,7 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& bitwise_not_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
   string real_op_name = (self.dtype() == at::kBool) ? "LogicalNot" : "Invert";
   at_npu::native::OpCommand cmd;

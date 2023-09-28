@@ -26,7 +26,6 @@ at::Tensor log_softmax(
     int64_t dim,
     c10::optional<c10::ScalarType> dtype) {
   c10::ScalarType dst_type = dtype.has_value() ? dtype.value() : self.scalar_type();
-
   if (dst_type == self.scalar_type()) {
     return at::_log_softmax(self, dim, false);
   }

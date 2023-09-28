@@ -44,7 +44,6 @@ at::Tensor& softshrink_backward_out(
     const at::Tensor& self,
     const at::Scalar& lambd,
     at::Tensor& grad_input) {
-
   npu_preparation::CheckOut(
       {self, grad_output},
       grad_input,

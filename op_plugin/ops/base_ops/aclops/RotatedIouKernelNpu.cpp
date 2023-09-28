@@ -60,11 +60,11 @@ at::Tensor npu_rotated_iou(
   auto origin_dtype = boxes.scalar_type();
 
   at::Tensor boxes_cp = boxes.permute({0, 2, 1});
-  if (origin_dtype == at::kHalf){
+  if (origin_dtype == at::kHalf) {
     boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(boxes_cp, at::kFloat);
   }
   at::Tensor query_boxes_cp = query_boxes.permute({0, 2, 1});
-  if (query_boxes_cp.scalar_type() == at::kHalf){
+  if (query_boxes_cp.scalar_type() == at::kHalf) {
     query_boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(query_boxes_cp, at::kFloat);
   }
 

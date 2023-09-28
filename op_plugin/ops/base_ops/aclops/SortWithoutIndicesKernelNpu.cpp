@@ -51,7 +51,6 @@ at::Tensor& npu_sort_v2_out(
 
   dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   int64_t last_dim = op_plugin::utils::make_warp_dim(-1, self.dim());
-
   if (dim != last_dim) {
     c10::SmallVector<int64_t, SIZE> perm;
     for (int64_t i = 0; i < self.dim(); i++) {
@@ -86,7 +85,6 @@ at::Tensor npu_sort_v2(
 
   dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   int64_t last_dim = op_plugin::utils::make_warp_dim(-1, self.dim());
-
   if (dim != last_dim) {
     c10::SmallVector<int64_t, SIZE> perm;
     for (int64_t i = 0; i < self.dim(); i++) {

@@ -62,7 +62,7 @@ std::tuple<at::Tensor&, at::Tensor&> median_out_value_nocheck(
   at::Tensor topk_values = std::get<0>(ret);
   at::Tensor topkIndices = std::get<1>(ret);
 
-  //NCHW -> reflush base format
+  // NCHW -> reflush base format
   at::Tensor index = npu_preparation::apply_tensor_with_format(
       {1}, self_name.options().dtype(at::kLong), ACL_FORMAT_NCHW);
   acl_op::fill_(index, k - 1);
@@ -112,7 +112,6 @@ std::tuple<at::Tensor&, at::Tensor&> median_out(
 
   bool values_match = npu_utils::check_match(&values);
   bool indices_match = npu_utils::check_match(&indices);
-
   if (!(values_match && indices_match)) {
     at::Tensor contiguous_values = values_match ? values : npu_utils::format_contiguous(values);
     at::Tensor contiguous_indices = indices_match ? indices : npu_utils::format_contiguous(indices);

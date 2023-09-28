@@ -22,10 +22,11 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
+using tensor_list = std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor,
+                               at::Tensor>;
 
-namespace{
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
-    at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_npu_nocheck(
+namespace {
+tensor_list npu_lstm_npu_nocheck(
     const at::Tensor& input,
     const at::Tensor& weight,
     const at::Tensor& bias,
@@ -55,7 +56,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
   at::Tensor o_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor tanhc = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
 
-  string direction = flag_direction? "REDIRECTIONAL" : "UNIDIRECTIONAL";
+  string direction = flag_direction ? "REDIRECTIONAL" : "UNIDIRECTIONAL";
   string gate_order = "ifjo";
   at_npu::native::OpCommand cmd;
   cmd.Name("DynamicRNN")
@@ -66,7 +67,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
   // if input is PackSequence, seq_mask is not None, Otherwise, it is None.
   if (!flag_seq) {
     cmd.Input();
-  } else{
+  } else {
     cmd.Input(seq_mask, "seq_length");
   }
   cmd.Input(h, "init_h")
@@ -303,7 +304,7 @@ at::Tensor get_mask(const at::Tensor& input, const at::Tensor& batch_sizes, cons
   // caculate lengths, but input expected to be sorted
   std::vector<int64_t> lens;
   for (int64_t i = 0; i < input.size(1); ++i) {
-    auto batch_sizes_temp = at::sub(batch_sizes , i);
+    auto batch_sizes_temp = at::sub(batch_sizes, i);
     auto batch_sizes_bool = at::gt(batch_sizes_temp, 0);
     auto batch_sizes_int = batch_sizes_bool.to(at::ScalarType::Int);
     auto cout_len = at::sum(batch_sizes_int, at::ScalarType::Int);
@@ -700,8 +701,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
       grad_input, grad_weight, grad_bias, grad_ht, grad_ct};
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
-    at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm(
+tensor_list npu_lstm(
     const at::Tensor& input,
     const at::Tensor& weight,
     const at::Tensor& bias,
@@ -720,8 +720,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
       num_layers, dropout, train, bidirectional, batch_first, flag_seq, flag_direction);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
-    at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_data(
+tensor_list npu_lstm_data(
     const at::Tensor& input,
     const at::Tensor& batch_sizes,
     const at::Tensor& weight,

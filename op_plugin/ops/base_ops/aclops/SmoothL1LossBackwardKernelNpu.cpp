@@ -51,7 +51,7 @@ at::Tensor& smooth_l1_loss_backward_out(
     double beta,
     at::Tensor& grad_input) {
   npu_preparation::CheckOut(
-      {grad_out,self, target},
+      {grad_out, self, target},
       grad_input,
       self);
 

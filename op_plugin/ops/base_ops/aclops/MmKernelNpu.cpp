@@ -186,12 +186,12 @@ bool is_half_float_dtype(const at::Tensor& tensor) {
 }
 
 int64_t ceil(int64_t x, int64_t y) {
-  TORCH_CHECK(y != 0 , "Error, zero division.");
+  TORCH_CHECK(y != 0, "Error, zero division.");
   return ((x + y - 1) / y) * y;
 }
 
 int64_t ceil_div(int64_t x, int64_t y) {
-  TORCH_CHECK(y != 0 , "Error, zero division.");
+  TORCH_CHECK(y != 0, "Error, zero division.");
   return (x + y - 1) / y;
 }
 

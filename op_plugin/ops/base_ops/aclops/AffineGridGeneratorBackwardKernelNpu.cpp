@@ -20,7 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 at::Tensor _linspace_from_neg_one(const at::Tensor& grid, int64_t num_steps, bool align_corners) {
   if (num_steps <= 1) {
     return at::tensor(0, grid.options());

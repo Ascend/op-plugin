@@ -37,7 +37,7 @@ std::tuple<at::Tensor, at::Tensor> _pad_packed_sequence(
   auto batchsize = batch_size_vec[0];
   auto timesize = batch_sizes.size(0);
 
-  //make tensor after padding, [B, T, *] or [T, B, *]
+  // make tensor after padding, [B, T, *] or [T, B, *]
   at::SmallVector<int64_t, N> shape;
   shape.emplace_back(timesize);
   shape.emplace_back(batchsize);
@@ -57,7 +57,7 @@ std::tuple<at::Tensor, at::Tensor> _pad_packed_sequence(
   int64_t last = timesize - 1;
   for (int bi = 0; bi < batchsize; bi++) {
     for (int ti = last; ti >= 0; ti--) {
-      if (batch_size_vec[ti] > bi ) {
+      if (batch_size_vec[ti] > bi) {
         batch_sizes_vec[bi] = (ti + 1);
         last = ti;
         break;

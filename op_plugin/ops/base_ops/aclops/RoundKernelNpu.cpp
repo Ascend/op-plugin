@@ -24,7 +24,7 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 
 at::Tensor& round_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
-   at_npu::native::OpCommand cmd;
+  at_npu::native::OpCommand cmd;
   cmd.Name("Round")
       .Input(self)
       .Output(result)
@@ -45,7 +45,6 @@ at::Tensor& round_out(const at::Tensor& self, at::Tensor& result) {
     round_out_npu_nocheck(result, self);
   }
   return result;
-
 }
 
 at::Tensor round(const at::Tensor& self) {

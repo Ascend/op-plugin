@@ -26,8 +26,8 @@ c10::SmallVector<int64_t, SIZE> renorm_npu_output_size(
     const at::Tensor& self,
     int64_t dim) {
   c10::SmallVector<int64_t, SIZE> out_size;
-  for(int64_t i = 0; i < self.dim(); i++) {
-    if(i != dim) {
+  for (int64_t i = 0; i < self.dim(); i++) {
+    if (i != dim) {
       out_size.emplace_back(1);
     } else {
       out_size.emplace_back(self.sizes()[i]);
@@ -63,7 +63,7 @@ at::Tensor& renorm_out_nocheck(
     int64_t dim,
     at::Scalar maxnorm) {
   auto ori_type = self.scalar_type();
-  if(ori_type != c10::ScalarType::Half && ori_type != c10::ScalarType::Float) {
+  if (ori_type != c10::ScalarType::Half && ori_type != c10::ScalarType::Float) {
     TORCH_CHECK(false, "Renorm only support float16 or float32 type.");
   }
 
@@ -75,7 +75,7 @@ at::Tensor& renorm_out_nocheck(
       output_size,
       self.options().dtype(at::kFloat),
       npu_preparation::get_tensor_npu_format(self));
-  if(ori_type == c10::ScalarType::Half) {
+  if (ori_type == c10::ScalarType::Half) {
     at::Tensor self_no_name = self.rename(c10::nullopt);
     at::Tensor result_no_name = result.rename(c10::nullopt);
     self_no_name = at_npu::native::custom_ops::npu_dtype_cast(self_no_name, c10::ScalarType::Float);
