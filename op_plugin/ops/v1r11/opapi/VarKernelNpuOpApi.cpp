@@ -24,17 +24,7 @@ at::Tensor& var_out(
     bool unbiased,
     bool keepdim,
     at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnVar, acl_op::var_out(self, dim, unbiased, keepdim, result));
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-
-  at_npu::native::OpPreparation::check_tensor(
-      {self},
-      result,
-      result,
-      output_size);
-
-  EXEC_NPU_CMD(aclnnVar, self, dim, unbiased, keepdim, result);
-  return result;
+  return op_api::var_out(self, c10::optional<at::IntArrayRef>(dim), int64_t{unbiased ? 1 : 0}, keepdim, result);
 }
 
 at::Tensor& var_out(
