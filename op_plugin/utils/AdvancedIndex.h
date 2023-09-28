@@ -20,9 +20,11 @@
 #include <ATen/native/IndexingUtils.h>
 #include <ATen/ExpandUtils.h>
 
+#include "op_plugin/utils/Export.h"
+
 namespace op_plugin {
 
-struct AdvancedIndex {
+struct OP_PLUGIN_HIDDEN AdvancedIndex {
     AdvancedIndex(const at::Tensor& src, at::TensorList indices);
     at::Tensor src;
     std::vector<at::Tensor> indices;
@@ -32,7 +34,7 @@ struct AdvancedIndex {
     int64_t dims_after;
 };
 
-class AdvanceIndex {
+class OP_PLUGIN_HIDDEN AdvanceIndex {
 public:
   static bool all_strides_match(at::TensorList tensors);
   static at::Tensor reshape_indexer(const at::Tensor& index, int64_t dims_before, int64_t dims_after);

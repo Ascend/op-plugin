@@ -14,15 +14,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef __TORCH_NPU_OP_PLUGIN_${namespace}_INTERFACE__
-#define __TORCH_NPU_OP_PLUGIN_${namespace}_INTERFACE__
+#ifndef OP_PLUGIN_UTILS_EXPORT
+#define OP_PLUGIN_UTILS_EXPORT
 
-#include <ATen/Tensor.h>
-#include <ATen/ATen.h>
-#include "op_plugin/utils/Export.h"
-#include "op_plugin/ops/${torch_dir}/BackwardManual.h"
+#if defined(_MSC_VER)
+#define OP_PLUGIN_HIDDEN
+#endif // _MSC_VER
+#if defined(__GNUC__)
+#define OP_PLUGIN_HIDDEN __attribute__((visibility("hidden")))
+#else // __GNUC__
+#define OP_PLUGIN_HIDDEN
+#endif // __GNUC__
 
-namespace ${namespace} {
-${declarations}
-}  // namespace acl_op
-#endif
+#endif // OP_PLUGIN_UTILS_EXPORT

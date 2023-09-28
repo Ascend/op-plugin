@@ -223,7 +223,7 @@ def gen_function_declaration(
             op_name += "_out"
 
         sig = NativeSignature(f.func, prefix='', symint=has_symint)
-        ret = f"{sig.decl(name=op_name)};"
+        ret = f"OP_PLUGIN_HIDDEN {sig.decl(name=op_name)};"
 
     return [ret]
 
