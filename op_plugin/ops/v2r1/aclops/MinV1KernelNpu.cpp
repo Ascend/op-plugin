@@ -19,12 +19,13 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor npu_min_backward(
+at::Tensor npu_min_backward_symint(
     const at::Tensor& grad,
     int64_t dim,
     const at::Tensor& indices,
-    at::IntArrayRef sizes,
+    c10::SymIntArrayRef sizes_symint,
     bool keepdim) {
+  at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
   at::Tensor new_grad = grad;
   at::Tensor new_indices = indices;
   if (keepdim && sizes.size() > 0) {

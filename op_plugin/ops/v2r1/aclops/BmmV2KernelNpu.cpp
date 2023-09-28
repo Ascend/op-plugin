@@ -18,11 +18,12 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor npu_bmm_v2_mat1_backward(
+at::Tensor npu_bmm_v2_mat1_backward_symint(
     const at::Tensor& grad,
     const at::Tensor& mat1,
     const at::Tensor& mat2,
-    at::IntArrayRef sizes) {
+    c10::SymIntArrayRef sizes_symint) {
+  at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
   // da = grad * b^T
   auto grad_with_full_size = grad;
 
@@ -37,11 +38,12 @@ at::Tensor npu_bmm_v2_mat1_backward(
       grad.view(axis_reshape), mat2.dim() == 1 ? mat2.view({1, mat2.size(0)}) : mat2.transpose(-2, -1), sizes);
 }
 
-at::Tensor npu_bmm_v2_mat2_backward(
+at::Tensor npu_bmm_v2_mat2_backward_symint(
     const at::Tensor& grad,
     const at::Tensor& mat1,
     const at::Tensor& mat2,
-    at::IntArrayRef sizes) {
+    c10::SymIntArrayRef sizes_symint) {
+  at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
   // db = a^T * grad
   auto grad_with_full_size = grad;
 

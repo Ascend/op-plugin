@@ -42,20 +42,20 @@
   query_layer, key_layer, value_layer: npu_fused_attention_score_backward(grad, result1, query_layer, key_layer, value_layer, result2, scale, keep_prob, query_transpose, key_transpose, value_transpose, dx_transpose)
 
 - name: npu_bmmV2(Tensor self, Tensor mat2, int[] output_sizes) -> Tensor
-  self: npu_bmm_v2_mat1_backward(grad, self, mat2, self.sym_sizes())
-  mat2: npu_bmm_v2_mat2_backward(grad, self, mat2, mat2.sym_sizes())
+  self: npu_bmm_v2_mat1_backward_symint(grad, self, mat2, self.sym_sizes())
+  mat2: npu_bmm_v2_mat2_backward_symint(grad, self, mat2, mat2.sym_sizes())
 
 - name: npu_max.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
-  self: npu_max_backward(grad, dim, indices, self.sym_sizes(), keepdim)
+  self: npu_max_backward_symint(grad, dim, indices, self.sym_sizes(), keepdim)
 
 - name: npu_min.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
-  self: npu_min_backward(grad, dim, indices, self.sym_sizes(), keepdim)
+  self: npu_min_backward_symint(grad, dim, indices, self.sym_sizes(), keepdim)
 
 - name: npu_ps_roi_pooling(Tensor self, Tensor rois, float spatial_scale, int group_size, int output_dim) -> Tensor
-  self: npu_ps_roi_pooling_backward(grad, rois, spatial_scale, group_size, output_dim, {self.sym_size(2), self.sym_size(3)})
+  self: npu_ps_roi_pooling_backward_symint(grad, rois, spatial_scale, group_size, output_dim, {self.sym_size(2), self.sym_size(3)})
 
 - name: npu_confusion_transpose(Tensor self, int[] perm, int[] shape, bool transpose_first) -> Tensor
-  self: npu_confusion_transpose_backward(grad, perm, self.sym_sizes(), !transpose_first)
+  self: npu_confusion_transpose_backward_symint(grad, perm, self.sym_sizes(), !transpose_first)
 
 - name: selu(Tensor self) -> Tensor
   self: selu_backward(grad, result)

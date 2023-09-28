@@ -2435,3 +2435,25 @@ custom:
     impl_ns: acl_op
   - func: npu_binary_cross_entropy_with_logits_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
     impl_ns: acl_op
+  - func: npu_convolution_transpose_backward(Tensor input, Tensor grad, Tensor weight, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups, bool[3] grad_input_mask) -> (Tensor, Tensor, Tensor)
+    impl_ns: acl_op
+  - func: npu_scaled_masked_softmax_backward(Tensor y_grad, Tensor y, Tensor mask, Scalar scale, bool fixed_triu_mask) -> Tensor
+    impl_ns: acl_op
+  - func: npu_dtype_cast_backward(Tensor grad, ScalarType dtype) -> Tensor
+    impl_ns: acl_op, op_api
+  - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, int[] shape, bool transpose_first) -> Tensor
+    impl_ns: acl_op
+  - func: npu_max_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim) -> Tensor
+    impl_ns: acl_op
+  - func: npu_min_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim) -> Tensor
+    impl_ns: acl_op
+  - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, int[] input_size) -> Tensor
+    impl_ns: acl_op
+  - func: npu_bmm_v2_mat1_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
+    impl_ns: acl_op
+  - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
+    impl_ns: acl_op
+  - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
+    impl_ns: acl_op
+  - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+    impl_ns: acl_op

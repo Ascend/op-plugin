@@ -46,13 +46,14 @@ at::Tensor& ps_roi_pooling_backward_npu_nocheck(
 }
 } // namespace
 
-at::Tensor npu_ps_roi_pooling_backward(
+at::Tensor npu_ps_roi_pooling_backward_symint(
     const at::Tensor& output_grad,
     const at::Tensor& rois,
     double spatial_scale,
     int64_t group_size,
     int64_t output_dim,
-    at::IntArrayRef input_size) {
+    c10::SymIntArrayRef input_size_symint) {
+  at::IntArrayRef input_size = c10::asIntArrayRefUnchecked(input_size_symint);
   auto output_size = {rois.size(0), group_size * group_size * output_dim, input_size[0], input_size[1]};
 
   at::Tensor input_grad = npu_preparation::apply_tensor(output_grad, output_size);

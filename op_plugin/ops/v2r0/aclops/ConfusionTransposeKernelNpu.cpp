@@ -21,11 +21,12 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_confusion_transpose_backward(
+at::Tensor npu_confusion_transpose_backward_symint(
     const at::Tensor& grad,
     at::IntArrayRef perm,
-    at::IntArrayRef shape,
+    c10::SymIntArrayRef shape_symint,
     bool transpose_first) {
+  at::IntArrayRef shape = c10::asIntArrayRefUnchecked(shape_symint);
   c10::SmallVector<int64_t, SIZE> svec_shape;
   if (transpose_first) {
     svec_shape = op_infer::array_to_small_vector(shape);
