@@ -181,8 +181,8 @@ bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2
          mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis <= kInnerAxisMaxLimit;
 }
 
-bool is_half_float_dtype(const at::Tensor& tensor) {
-  return tensor.scalar_type() == at::ScalarType::Half || tensor.scalar_type() == at::ScalarType::BFloat16;
+bool is_bfloat_dtype(const at::Tensor& tensor) {
+  return tensor.scalar_type() == at::ScalarType::BFloat16;
 }
 
 int64_t ceil(int64_t x, int64_t y) {
@@ -212,7 +212,7 @@ bool insert_input_pad(at::Tensor &self, at::Tensor &mat2) {
   // one block takes 32 bytes
   const int64_t k_block_bytes = 32;
   bool valid_scenario = (m_dim * data_size) % package_512 == 0 && (n_dim * data_size) % package_512 == 0;
-  valid_scenario &= (k_dim * data_size) % k_block_bytes != 0 && is_half_float_dtype(self);
+  valid_scenario &= (k_dim * data_size) % k_block_bytes != 0 && is_bfloat_dtype(self);
   valid_scenario &= m_dim > k_dim && n_dim > k_dim && k_dim > min_k_dim && k_dim < max_k_dim;
   valid_scenario &= c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
   if (valid_scenario) {
@@ -273,7 +273,7 @@ at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
   // inner axis should be less than 16384 to gain perf improvement
   const int64_t max_inner_dim = 16384;
   bool common_rule = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
-  common_rule &= !is_k_padded && is_half_float_dtype(self);
+  common_rule &= !is_k_padded && is_bfloat_dtype(self);
   bool self_cache_opti = self_outer_dim > min_outer_dim && ((self_outer_dim * data_size) % package_512 == 0);
   self_cache_opti &= (self_inner_dim % inner_dim_alignment != 0) && self_inner_dim < max_inner_dim;
   self_cache_opti &= self_inner_dim > min_inner_dim;
