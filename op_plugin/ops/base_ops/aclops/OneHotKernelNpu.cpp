@@ -47,7 +47,7 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
   at_npu::native::OpCommand cmd;
   cmd.Name("OneHot")
       .Input(self)
-      .Input(depth_copy, self.scalar_type(), npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+      .Input(depth_copy, at::kInt, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
       .Input(on_value, self.scalar_type())
       .Input(off_value, self.scalar_type())
       .Output(result)
