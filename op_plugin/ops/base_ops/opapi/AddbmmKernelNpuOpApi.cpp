@@ -21,7 +21,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor & addbmm_out(
+at::Tensor& addbmm_out(
     const at::Tensor &self,
     const at::Tensor &batch1,
     const at::Tensor &batch2,
@@ -65,7 +65,7 @@ at::Tensor addbmm(
   return result;
 }
 
-at::Tensor & addbmm_(
+at::Tensor& addbmm_(
     at::Tensor &self,
     const at::Tensor &batch1,
     const at::Tensor &batch2,

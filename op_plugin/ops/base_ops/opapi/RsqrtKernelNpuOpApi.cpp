@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& rsqrt_out(const at::Tensor& self, at::Tensor& result) {
+at::Tensor& rsqrt_out(const at::Tensor& self, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnRsqrt, acl_op::rsqrt_out(self, result));
   auto result_dtype = self.scalar_type();
   if (isIntegralType(self.scalar_type(), true)) {
@@ -34,7 +35,8 @@ at::Tensor& rsqrt_out(const at::Tensor& self, at::Tensor& result) {
   return result;
 }
 
-at::Tensor& rsqrt_(at::Tensor& self) {
+at::Tensor& rsqrt_(at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnInplaceRsqrt, acl_op::rsqrt_(self));
   TORCH_CHECK(!isIntegralType(self.scalar_type(), true),
               "result dtype float can't be cast to the desired output type ", self.dtype(), ".\n");
@@ -42,7 +44,8 @@ at::Tensor& rsqrt_(at::Tensor& self) {
   return self;
 }
 
-at::Tensor rsqrt(const at::Tensor& self) {
+at::Tensor rsqrt(const at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnRsqrt, acl_op::rsqrt(self));
   auto outDtype = self.dtype();
   if (isIntegralType(self.scalar_type(), true)) {

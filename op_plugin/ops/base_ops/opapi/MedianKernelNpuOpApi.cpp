@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor median(const at::Tensor& self) {
+at::Tensor median(const at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnMedian, acl_op::median(self));
   at::SmallVector<int64_t, op_infer::SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
@@ -32,7 +33,8 @@ at::Tensor median(const at::Tensor& self) {
 
 std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self,
                                           int64_t dim,
-                                          bool keepdim) {
+                                          bool keepdim)
+{
   DO_COMPATIBILITY(aclnnMedianDim, acl_op::median(self, dim, keepdim));
   at::SmallVector<int64_t, op_infer::SIZE> dims = {dim};
   auto outputSize = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
@@ -44,7 +46,8 @@ std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self,
 
 std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self,
                                           at::Dimname dim,
-                                          bool keepdim) {
+                                          bool keepdim)
+{
   DO_COMPATIBILITY(aclnnMedianDim, acl_op::median(self, dim, keepdim));
   int64_t real_dim = dimname_to_position(self, dim);
   at::SmallVector<int64_t, op_infer::SIZE> dims = {real_dim};
@@ -59,7 +62,8 @@ std::tuple<at::Tensor&, at::Tensor&> median_out(const at::Tensor& self,
                                                 int64_t dim,
                                                 bool keepdim,
                                                 at::Tensor& values,
-                                                at::Tensor& indices) {
+                                                at::Tensor& indices)
+{
   DO_COMPATIBILITY(aclnnMedianDim, acl_op::median_out(self, dim, keepdim, values, indices));
   at::SmallVector<int64_t, op_infer::SIZE> dims = {dim};
   auto outputSize = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
@@ -73,7 +77,8 @@ std::tuple<at::Tensor&, at::Tensor&> median_out(const at::Tensor& self,
                                                 at::Dimname dim,
                                                 bool keepdim,
                                                 at::Tensor& values,
-                                                at::Tensor& indices) {
+                                                at::Tensor& indices)
+{
   DO_COMPATIBILITY(aclnnMedianDim, acl_op::median_out(self, dim, keepdim, values, indices));
   int64_t real_dim = dimname_to_position(self, dim);
   at::SmallVector<int64_t, op_infer::SIZE> dims = {real_dim};

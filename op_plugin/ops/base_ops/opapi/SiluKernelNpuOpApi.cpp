@@ -19,21 +19,24 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor& silu_out(const at::Tensor& self, at::Tensor& result) {
+at::Tensor& silu_out(const at::Tensor& self, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnSilu, acl_op::silu_out(self, result));
   at_npu::native::OpPreparation::check_tensor({self}, result, self);
   EXEC_NPU_CMD(aclnnSilu, self, result);
   return result;
 }
 
-at::Tensor silu(const at::Tensor& self) {
+at::Tensor silu(const at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnSilu, acl_op::silu(self));
   at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
   EXEC_NPU_CMD(aclnnSilu, self, result);
   return result;
 }
 
-at::Tensor& silu_(at::Tensor& self) {
+at::Tensor& silu_(at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnSilu, acl_op::silu_(self));
   op_api::silu_out(self, self);
   return self;

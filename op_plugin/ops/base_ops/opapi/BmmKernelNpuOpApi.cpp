@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& result) {
+at::Tensor& bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnBatchMatMul, acl_op::bmm_out(self, mat2, result));
   auto output_size = {self.size(0), self.size(1), mat2.size(2)};
   npu_preparation::check_tensor({self, mat2}, result, self.scalar_type(), output_size);
@@ -33,15 +34,15 @@ at::Tensor& bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& 
   return result;
 }
 
-at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
+at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2)
+{
   DO_COMPATIBILITY(aclnnBatchMatMul, acl_op::bmm(self, mat2));
 
   // calculate the output size
   auto output_size = {self.size(0), self.size(1), mat2.size(2)};
 
   // construct the output tensor of the NPU
-  at::Tensor result = npu_preparation::apply_tensor_without_format(
-      output_size, self.options());
+  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
 
   // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should use
   // and functions such as hfloat32 can be enabled through this switch

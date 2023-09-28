@@ -25,9 +25,9 @@ at::Tensor &smooth_l1_loss_out(const at::Tensor &self,
                                const at::Tensor &target,
                                int64_t reduction,
                                double beta,
-                               at::Tensor &result) {
-  DO_COMPATIBILITY(aclnnSmoothL1Loss,
-                   acl_op::smooth_l1_loss_out(self, target, reduction, beta, result));
+                               at::Tensor &result)
+{
+  DO_COMPATIBILITY(aclnnSmoothL1Loss, acl_op::smooth_l1_loss_out(self, target, reduction, beta, result));
   auto outputSize = op_infer::smooth_l1_loss_npu_output_size(self, target, reduction);
   npu_preparation::check_tensor({self, target}, result, result.scalar_type(), outputSize);
   npu_preparation::check_memory({self, target}, {result});
@@ -39,9 +39,9 @@ at::Tensor &smooth_l1_loss_out(const at::Tensor &self,
 at::Tensor smooth_l1_loss(const at::Tensor &self,
                           const at::Tensor &target,
                           int64_t reduction,
-                          double beta) {
-  DO_COMPATIBILITY(aclnnSmoothL1Loss,
-                   acl_op::smooth_l1_loss(self, target, reduction, beta));
+                          double beta)
+{
+  DO_COMPATIBILITY(aclnnSmoothL1Loss, acl_op::smooth_l1_loss(self, target, reduction, beta));
   auto outputSize = op_infer::smooth_l1_loss_npu_output_size(self, target, reduction);
   at::Tensor result = npu_preparation::apply_tensor_without_format(self, outputSize);
   float sigma = static_cast<float>(beta);

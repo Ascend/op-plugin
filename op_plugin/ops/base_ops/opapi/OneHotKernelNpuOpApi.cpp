@@ -25,7 +25,8 @@ static const int64_t MIN_DEPTH = 1;
 static const int64_t AUTO_DEPTH = -1;
 static const int64_t MIN_NUM_CLASSES = 0;
 
-at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
+at::Tensor one_hot(const at::Tensor& self, int64_t num_classes)
+{
   DO_COMPATIBILITY(aclnnOneHot, acl_op::one_hot(self, num_classes));
   int64_t depth = num_classes;
   TORCH_CHECK(depth >= AUTO_DEPTH, "NPU error, not yet support negative num_classes, when num_classes less than -1");

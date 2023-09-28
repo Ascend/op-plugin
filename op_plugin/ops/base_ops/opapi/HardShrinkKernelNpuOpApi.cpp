@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor hardshrink(const at::Tensor& self, const at::Scalar& lambd) {
+at::Tensor hardshrink(const at::Tensor& self, const at::Scalar& lambd)
+{
   DO_COMPATIBILITY(aclnnHardshrink, acl_op::hardshrink(self, lambd));
 
   auto output_size = op_infer::input_same_output_size(self);
@@ -32,7 +33,8 @@ at::Tensor hardshrink(const at::Tensor& self, const at::Scalar& lambd) {
   return result;
 }
 
-at::Tensor& hardshrink_out(const at::Tensor& self, const at::Scalar& lambd, at::Tensor& result) {
+at::Tensor& hardshrink_out(const at::Tensor& self, const at::Scalar& lambd, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnHardshrink, acl_op::hardshrink_out(self, lambd, result));
 
   auto output_size = op_infer::input_same_output_size(self);

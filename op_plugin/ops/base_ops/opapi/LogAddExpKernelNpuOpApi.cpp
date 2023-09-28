@@ -20,7 +20,8 @@
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_api {
-at::Tensor& logaddexp_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out) {
+at::Tensor& logaddexp_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
+{
   DO_COMPATIBILITY(aclnnLogAddExp, acl_op::logaddexp_out(self, other, out));
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at_npu::native::OpPreparation::check_tensor({self}, out, out, output_size);
@@ -29,7 +30,8 @@ at::Tensor& logaddexp_out(const at::Tensor &self, const at::Tensor &other, at::T
   return out;
 }
 
-at::Tensor logaddexp(const at::Tensor &self, const at::Tensor &other) {
+at::Tensor logaddexp(const at::Tensor &self, const at::Tensor &other)
+{
   DO_COMPATIBILITY(aclnnLogAddExp, acl_op::logaddexp(self, other));
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType output_type = at::native::result_type(self, other);

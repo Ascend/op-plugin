@@ -28,11 +28,12 @@ at::Tensor rrelu_with_noise(
     const at::Scalar& lower,
     const at::Scalar& upper,
     bool training,
-    c10::optional<at::Generator> generator) {
+    c10::optional<at::Generator> generator)
+{
   DO_COMPATIBILITY(aclnnRReluWithNoise, acl_op::rrelu_with_noise(self, noise, lower, upper, training, generator));
   at::Tensor result = npu_preparation::apply_tensor_without_format(self);
   auto gen_ =
-      at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(1 << 28);
   const int64_t seed = pair.first;
   const int64_t offset = pair.second;
@@ -48,11 +49,12 @@ at::Tensor& rrelu_with_noise_(
     const at::Scalar& lower,
     const at::Scalar& upper,
     bool training,
-    c10::optional<at::Generator> generator) {
+    c10::optional<at::Generator> generator)
+{
   DO_COMPATIBILITY(aclnnInplaceRReluWithNoise,
                    acl_op::rrelu_with_noise_(self, noise, lower, upper, training, generator));
   auto gen_ =
-      at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(1 << 28);
   const int64_t seed = pair.first;
   const int64_t offset = pair.second;
@@ -68,7 +70,8 @@ at::Tensor& rrelu_with_noise_out(
     const at::Scalar& upper,
     bool training,
     c10::optional<at::Generator> generator,
-    at::Tensor& output) {
+    at::Tensor& output)
+{
   DO_COMPATIBILITY(aclnnRReluWithNoise,
                    acl_op::rrelu_with_noise_out(self, noise, lower, upper, training, generator, output));
   npu_preparation::check_tensor(
@@ -76,7 +79,7 @@ at::Tensor& rrelu_with_noise_out(
       output,
       self);
   auto gen_ =
-      at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(1 << 28);
   const int64_t seed = pair.first;
   const int64_t offset = pair.second;

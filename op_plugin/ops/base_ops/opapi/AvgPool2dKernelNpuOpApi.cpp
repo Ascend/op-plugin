@@ -28,7 +28,8 @@ at::Tensor& avg_pool2d_out_npu_nocheck_opapi(at::Tensor& result,
                                              at::IntArrayRef padding,
                                              bool ceil_mode,
                                              bool count_include_pad,
-                                             c10::optional<int64_t> divisor_override) {
+                                             c10::optional<int64_t> divisor_override)
+{
   int64_t s_divisor_override = 0;
   if (divisor_override.has_value()) {
     s_divisor_override = divisor_override.value();
@@ -49,7 +50,8 @@ c10::SmallVector<int64_t, op_infer::SIZE> calc_output_size_with_generalized_attr
     at::IntArrayRef padding,
     bool ceil_mode,
     bool count_include_pad,
-    c10::optional<int64_t> divisor_override) {
+    c10::optional<int64_t> divisor_override)
+{
   // generalize kernels, strides and paddings to 2D-shape
   TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints");
   const int64_t k_h = kernel_size[0];
@@ -83,7 +85,8 @@ at::Tensor& avg_pool2d_out(const at::Tensor& self,
                            bool ceil_mode,
                            bool count_include_pad,
                            c10::optional<int64_t> divisor_override,
-                           at::Tensor& result) {
+                           at::Tensor& result)
+{
   c10::SmallVector<int64_t, op_infer::SIZE> output_size = calc_output_size_with_generalized_attrs(self, kernel_size,
       stride, padding, ceil_mode, count_include_pad, divisor_override);
   at_npu::native::OpPreparation::check_tensor({self}, result, self, output_size);
@@ -104,7 +107,8 @@ at::Tensor avg_pool2d(const at::Tensor& self,
                       at::IntArrayRef padding,
                       bool ceil_mode,
                       bool count_include_pad,
-                      c10::optional<int64_t> divisor_override) {
+                      c10::optional<int64_t> divisor_override)
+{
   c10::SmallVector<int64_t, op_infer::SIZE> output_size = calc_output_size_with_generalized_attrs(self, kernel_size,
       stride, padding, ceil_mode, count_include_pad, divisor_override);
 

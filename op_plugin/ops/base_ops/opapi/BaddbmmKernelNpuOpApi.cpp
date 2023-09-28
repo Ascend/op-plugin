@@ -21,7 +21,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor & baddbmm_out(
+at::Tensor& baddbmm_out(
     const at::Tensor &self,
     const at::Tensor &batch1,
     const at::Tensor &batch2,
@@ -48,8 +48,8 @@ at::Tensor baddbmm(const at::Tensor &self, const at::Tensor &batch1, const at::T
   return result;
 }
 
-at::Tensor & baddbmm_(at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2, const at::Scalar &beta,
-                      const at::Scalar &alpha)
+at::Tensor& baddbmm_(at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2, const at::Scalar &beta,
+                     const at::Scalar &alpha)
 {
   DO_COMPATIBILITY(aclnnBaddbmm, acl_op::baddbmm_(self, batch1, batch2, beta, alpha));
   op_api::baddbmm_out(self, batch1, batch2, beta, alpha, self);

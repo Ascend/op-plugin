@@ -26,34 +26,36 @@ at::Tensor &binary_cross_entropy_out(
     const at::Tensor &target,
     const c10::optional<at::Tensor> &weight_opt,
     int64_t reduction,
-    at::Tensor &result) {
-    DO_COMPATIBILITY(aclnnBinaryCrossEntropy,
-        acl_op::binary_cross_entropy_out(self, target, weight_opt, reduction, result));
-    EXEC_NPU_CMD(aclnnBinaryCrossEntropy, self, target, weight_opt, reduction, result);
+    at::Tensor &result)
+{
+  DO_COMPATIBILITY(aclnnBinaryCrossEntropy,
+      acl_op::binary_cross_entropy_out(self, target, weight_opt, reduction, result));
+  EXEC_NPU_CMD(aclnnBinaryCrossEntropy, self, target, weight_opt, reduction, result);
 
-    return result;
+  return result;
 }
 
 at::Tensor binary_cross_entropy(
     const at::Tensor &self,
     const at::Tensor &target,
     const c10::optional<at::Tensor> &weight_opt,
-    int64_t reduction) {
-    DO_COMPATIBILITY(aclnnBinaryCrossEntropy,
-        acl_op::binary_cross_entropy(self, target, weight_opt, reduction));
-    const at::Tensor &weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
+    int64_t reduction)
+{
+  DO_COMPATIBILITY(aclnnBinaryCrossEntropy,
+      acl_op::binary_cross_entropy(self, target, weight_opt, reduction));
+  const at::Tensor &weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
 
-    at::IntArrayRef outputSize;
-    if (reduction == at::Reduction::None) {
-        outputSize = op_infer::input_same_output_size(self);
-    } else {
-        outputSize = at::ArrayRef<int64_t>();
-    }
+  at::IntArrayRef outputSize;
+  if (reduction == at::Reduction::None) {
+    outputSize = op_infer::input_same_output_size(self);
+  } else {
+    outputSize = at::ArrayRef<int64_t>();
+  }
 
-    at::Tensor result = npu_preparation::apply_tensor_without_format(self, outputSize);
-    EXEC_NPU_CMD(aclnnBinaryCrossEntropy, self, target, weight_opt, reduction, result);
+  at::Tensor result = npu_preparation::apply_tensor_without_format(self, outputSize);
+  EXEC_NPU_CMD(aclnnBinaryCrossEntropy, self, target, weight_opt, reduction, result);
 
-    return result;
+  return result;
 }
 
 }  // namespace op_api

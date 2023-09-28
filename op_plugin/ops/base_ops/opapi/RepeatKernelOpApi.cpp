@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor repeat(const at::Tensor &self, at::IntArrayRef repeats) {
+at::Tensor repeat(const at::Tensor &self, at::IntArrayRef repeats)
+{
   DO_COMPATIBILITY(aclnnRepeat, acl_op::repeat(self, repeats));
   auto outputSize = op_infer::repeat_npu_output_size(self, repeats);
   at::Tensor result = npu_preparation::apply_tensor_with_sizes(outputSize, self.options());

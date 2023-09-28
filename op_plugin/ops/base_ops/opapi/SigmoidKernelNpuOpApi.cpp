@@ -19,7 +19,8 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor& sigmoid_out(const at::Tensor& self, at::Tensor& result) {
+at::Tensor& sigmoid_out(const at::Tensor& self, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnSigmoid, acl_op::sigmoid_out(self, result));
   auto result_dtype = self.scalar_type();
   if (isIntegralType(self.scalar_type(), true)) {
@@ -32,14 +33,16 @@ at::Tensor& sigmoid_out(const at::Tensor& self, at::Tensor& result) {
   return result;
 }
 
-at::Tensor& sigmoid_(at::Tensor& self) {
+at::Tensor& sigmoid_(at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnInplaceSigmoid, acl_op::sigmoid_(self));
   TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
   EXEC_NPU_CMD(aclnnInplaceSigmoid, self);
   return self;
 }
 
-at::Tensor sigmoid(const at::Tensor& self) {
+at::Tensor sigmoid(const at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnSigmoid, acl_op::sigmoid(self));
   auto outDtype = self.dtype();
   if (isIntegralType(self.scalar_type(), true)) {

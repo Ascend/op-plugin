@@ -26,7 +26,8 @@ const int8_t ALLOW_FP32_DOWN_PRECISION = 1;
 const int8_t KEEP_DTYPE = 0;
 
 static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tensor &tensor1,
-                                                                 const at::Tensor &tensor2) {
+                                                                 const at::Tensor &tensor2)
+{
   c10::SmallVector<int64_t, op_infer::SIZE> output_size;
   auto dim_tensor1 = tensor1.dim();
   auto dim_tensor2 = tensor2.dim();
@@ -79,7 +80,8 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tenso
 
 static inline void matmul_implement_npu(at::Tensor &out,
                                         const at::Tensor &self,
-                                        const at::Tensor &mat2) {
+                                        const at::Tensor &mat2)
+{
   // allow dicrease precision
   int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnMatmul, self, mat2, out, cube_math_type);
@@ -87,7 +89,8 @@ static inline void matmul_implement_npu(at::Tensor &out,
 }
 
 at::Tensor matmul_forward(const at::Tensor &self,
-                          const at::Tensor &mat2) {
+                          const at::Tensor &mat2)
+{
   at::NoNamesGuard guard;
   auto output_size = get_output_size(self, mat2);
   auto out = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options());
@@ -96,7 +99,8 @@ at::Tensor matmul_forward(const at::Tensor &self,
 }
 
 at::Tensor matmul(const at::Tensor &tensor1,
-                  const at::Tensor &tensor2) {
+                  const at::Tensor &tensor2)
+{
   DO_COMPATIBILITY(aclnnMatmul, acl_op::matmul(tensor1, tensor2));
   auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
   auto result = matmul_forward(tensor1, tensor2);
@@ -106,7 +110,8 @@ at::Tensor matmul(const at::Tensor &tensor1,
 
 at::Tensor &matmul_out(const at::Tensor &tensor1,
                        const at::Tensor &tensor2,
-                       at::Tensor &result) {
+                       at::Tensor &result)
+{
   DO_COMPATIBILITY(aclnnMatmul, acl_op::matmul_out(tensor1, tensor2, result));
   auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
   // matmul_out don't support backward

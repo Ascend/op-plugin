@@ -22,7 +22,8 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor nanmedian(const at::Tensor& self) {
+at::Tensor nanmedian(const at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnNanMedian, acl_op::nanmedian(self));
   at::SmallVector<int64_t, op_infer::SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
@@ -31,7 +32,8 @@ at::Tensor nanmedian(const at::Tensor& self) {
   return result;
 }
 
-std::tuple<at::Tensor, at::Tensor> nanmedian(const at::Tensor &self, int64_t dim, bool keepdim) {
+std::tuple<at::Tensor, at::Tensor> nanmedian(const at::Tensor &self, int64_t dim, bool keepdim)
+{
   DO_COMPATIBILITY(aclnnNanMedianDim, acl_op::nanmedian(self, dim, keepdim));
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
   at::Tensor output = npu_preparation::apply_tensor_without_format(self, output_size);

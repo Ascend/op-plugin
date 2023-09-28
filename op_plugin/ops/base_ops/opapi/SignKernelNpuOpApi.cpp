@@ -21,21 +21,24 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &sign_out(const at::Tensor &self, at::Tensor &result) {
+at::Tensor &sign_out(const at::Tensor &self, at::Tensor &result)
+{
   DO_COMPATIBILITY(aclnnSign, acl_op::sign_out(self, result));
   npu_preparation::check_tensor({self}, result, self);
   EXEC_NPU_CMD(aclnnSign, self, result);
   return result;
 }
 
-at::Tensor &sgn_out(const at::Tensor &self, at::Tensor &result) {
+at::Tensor &sgn_out(const at::Tensor &self, at::Tensor &result)
+{
   DO_COMPATIBILITY(aclnnSign, acl_op::sgn_out(self, result));
   npu_preparation::check_tensor({self}, result, self);
   EXEC_NPU_CMD(aclnnSign, self, result);
   return result;
 }
 
-at::Tensor sgn(const at::Tensor &self) {
+at::Tensor sgn(const at::Tensor &self)
+{
   DO_COMPATIBILITY(aclnnSign, acl_op::sgn(self));
   auto outputSize = op_infer::input_same_output_size(self);
   at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
@@ -43,7 +46,8 @@ at::Tensor sgn(const at::Tensor &self) {
   return result;
 }
 
-at::Tensor sign(const at::Tensor &self) {
+at::Tensor sign(const at::Tensor &self)
+{
   DO_COMPATIBILITY(aclnnSign, acl_op::sign(self));
   auto outputSize = op_infer::input_same_output_size(self);
   at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
@@ -51,7 +55,8 @@ at::Tensor sign(const at::Tensor &self) {
   return result;
 }
 
-at::Tensor &sign_(at::Tensor &self) {
+at::Tensor &sign_(at::Tensor &self)
+{
   DO_COMPATIBILITY(aclnnSign, acl_op::sign_(self));
   EXEC_NPU_CMD(aclnnSign, self, self);
   return self;

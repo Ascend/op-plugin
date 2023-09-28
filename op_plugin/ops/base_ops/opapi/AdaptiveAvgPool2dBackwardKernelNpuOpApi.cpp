@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor _adaptive_avg_pool2d_backward(const at::Tensor& grad_output, const at::Tensor& self) {
+at::Tensor _adaptive_avg_pool2d_backward(const at::Tensor& grad_output, const at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnAdaptiveAvgPool2dBackward, acl_op::_adaptive_avg_pool2d_backward(grad_output, self));
   at::Tensor result = npu_preparation::apply_tensor_without_format(self);
   EXEC_NPU_CMD(aclnnAdaptiveAvgPool2dBackward, grad_output, self, result);

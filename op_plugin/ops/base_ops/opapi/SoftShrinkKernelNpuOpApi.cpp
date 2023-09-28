@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd) {
+at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd)
+{
   DO_COMPATIBILITY(aclnnSoftshrink, acl_op::softshrink(self, lambd));
 
   TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0");
@@ -33,7 +34,8 @@ at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd) {
   return result;
 }
 
-at::Tensor& softshrink_out(const at::Tensor& self, const at::Scalar& lambd, at::Tensor& result) {
+at::Tensor& softshrink_out(const at::Tensor& self, const at::Scalar& lambd, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnSoftshrink, acl_op::softshrink_out(self, lambd, result));
 
   TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0");

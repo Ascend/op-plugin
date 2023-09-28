@@ -18,7 +18,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor logdet(const at::Tensor &self) {
+at::Tensor logdet(const at::Tensor &self)
+{
   DO_COMPATIBILITY(aclnnLogdet, acl_op::logdet(self));
   // calculate the output size
   auto output_size = op_infer::array_to_small_vector(self.sizes());

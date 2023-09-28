@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> linalg_slogdet(const at::Tensor& self) {
+std::tuple<at::Tensor, at::Tensor> linalg_slogdet(const at::Tensor& self)
+{
   DO_COMPATIBILITY(aclnnSlogdet, acl_op::linalg_slogdet(self));
   // calculate the output size
   auto output_size = op_infer::array_to_small_vector(self.sizes());
@@ -37,7 +38,8 @@ std::tuple<at::Tensor, at::Tensor> linalg_slogdet(const at::Tensor& self) {
 
 std::tuple<at::Tensor &, at::Tensor &> linalg_slogdet_out(const at::Tensor& self,
                                                           at::Tensor& sign,
-                                                          at::Tensor& log) {
+                                                          at::Tensor& log)
+{
   DO_COMPATIBILITY(aclnnSlogdet, acl_op::linalg_slogdet_out(self, sign, log));
   EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
 
