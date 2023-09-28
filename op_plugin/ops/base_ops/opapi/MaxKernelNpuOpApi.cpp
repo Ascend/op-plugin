@@ -22,19 +22,29 @@ namespace op_api {
 
 at::Tensor& maximum_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnMaximum, acl_op::maximum_out(self, other, result));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at_npu::native::OpPreparation::check_tensor({self, other}, result, result, output_size);
-  EXEC_NPU_CMD(aclnnMaximum, self, other, result);
+  at::Tensor cp_other = other;
+  if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+    at::Scalar scalar = other.item();
+    cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type());
+  }
+  auto output_size = op_infer::broadcast_ops_npu_output_size(self, cp_other);
+  at_npu::native::OpPreparation::check_tensor({self, cp_other}, result, result, output_size);
+  EXEC_NPU_CMD(aclnnMaximum, self, cp_other, result);
   return result;
 }
 
 at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnMaximum, acl_op::maximum(self, other));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::ScalarType high_type = at::native::result_type(self, other);
+  at::Tensor cp_other = other;
+  if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+    at::Scalar scalar = other.item();
+    cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type());
+  }
+  auto output_size = op_infer::broadcast_ops_npu_output_size(self, cp_other);
+  at::ScalarType high_type = at::native::result_type(self, cp_other);
   at::Tensor result =
       at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(high_type));
-  EXEC_NPU_CMD(aclnnMaximum, self, other, result);
+  EXEC_NPU_CMD(aclnnMaximum, self, cp_other, result);
   return result;
 }
 
