@@ -446,8 +446,6 @@ official:
    impl_ns: acl_op, op_api
  - func: complex.out(Tensor real, Tensor imag, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: real(Tensor(a) self) -> Tensor(a)
-   impl_ns: acl_op, op_api
  - func: col2im(Tensor self, int[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride) -> Tensor
    impl_ns: acl_op, op_api
  - func: col2im.out(Tensor self, int[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)
@@ -2018,6 +2016,7 @@ tocpu:
   - narrow_copy.out
   - poisson
   - polar.out
+  - real
   - replication_pad3d_backward.grad_input
   - replication_pad3d_backward
   - repeat_interleave.Tensor

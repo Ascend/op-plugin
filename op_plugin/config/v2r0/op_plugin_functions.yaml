@@ -476,8 +476,6 @@ official:
    impl_ns: acl_op, op_api
  - func: complex.out(Tensor real, Tensor imag, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: real(Tensor(a) self) -> Tensor(a)
-   impl_ns: acl_op, op_api
  - func: ctc_loss.IntList(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
    impl_ns: acl_op
  - func: ctc_loss.Tensor(Tensor log_probs, Tensor targets, Tensor input_lengths, Tensor target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
@@ -1970,6 +1968,7 @@ tocpu:
   - narrow_copy.out
   - poisson
   - polar.out
+  - real
   - replication_pad3d_backward.grad_input
   - replication_pad3d_backward
   - repeat_interleave.Tensor
