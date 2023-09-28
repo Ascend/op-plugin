@@ -864,6 +864,10 @@ official:
    impl_ns: acl_op, op_api
  - func: linalg_slogdet.out(Tensor self, *, Tensor(a!) sign, Tensor(b!) logabsdet) -> (Tensor(a!) sign, Tensor(b!) logabsdet)
    impl_ns: acl_op, op_api
+ - func: linalg_vector_norm(Tensor self, Scalar ord=2, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: linalg_vector_norm.out(Tensor self, Scalar ord=2, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: linalg_cross(Tensor self, Tensor other, *, int dim=-1) -> Tensor
    impl_ns: acl_op, op_api
  - func: linalg_cross.out(Tensor self, Tensor other, *, int dim=-1, Tensor(a!) out) -> Tensor(a!)
@@ -1999,8 +2003,6 @@ tocpu:
   - cholesky_inverse.out
   - exponential_
   - geometric_
-  - linalg_vector_norm
-  - linalg_vector_norm.out
   - log_normal_
   - logit
   - logit_
