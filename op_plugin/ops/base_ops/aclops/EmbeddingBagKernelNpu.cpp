@@ -16,75 +16,182 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
+using npu_preparation = at_npu::native::OpPreparation;
+
 namespace {
+
 c10::SmallVector<int64_t, SIZE> _embedding_bag_npu_output_size(
-    const at::Tensor& weight,
-    const at::Tensor& indices,
-    const at::Tensor& offsets) {
-  c10::SmallVector<int64_t, SIZE> output_size = {indices.size(0), weight.size(1)};
-  if (indices.dim() == 1) {
-    output_size = {offsets.size(0), weight.size(1)};
-  }
-  return output_size;
+    const at::Tensor &weight, const at::Tensor &indices, const at::Tensor &offsets, bool include_last_offset)
+{
+    c10::SmallVector<int64_t, SIZE> outputSize = {};
+    if (indices.dim() == 1) {
+      int64_t offset_size = offsets.size(0);
+      if (include_last_offset) {
+          offset_size = offsets.size(0) - 1;
+      }
+        outputSize = {offset_size, weight.size(1)};
+    } else {
+        outputSize = {indices.size(0), weight.size(1)};
+    }
+    return outputSize;
 }
 
-string get_mode_str(bool mode) {
-  string mode_str = "mean";
-  if (mode == 0) {
-    mode_str = "sum";
-  } else if (mode == 1) {
-    mode_str = "mean";
-  } else {
-    mode_str = "max";
-  }
-  return mode_str;
+string get_mode_str(const int64_t mode)
+{
+    string modeStr = "mean";
+    if (mode == 0) {
+        modeStr = "sum";
+    } else if (mode == 1) {
+        modeStr = "mean";
+    } else {
+        modeStr = "max";
+    }
+    return modeStr;
 }
 } // namespace
 
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_out_npu_nocheck(
+    const at::Tensor &weight, const at::Tensor &indices,
+    const at::Tensor &offsets,  bool scale_grad_by_freq,  int64_t mode, bool sparse,
+    const at::Tensor& per_sample_weights,
+    bool include_last_offset, int64_t padding_idx,
+    at::Tensor &output,
+    at::Tensor &offset2bag,
+    at::Tensor &bag_size,
+    at::Tensor &max_indices)
+{
+    string mode_str = get_mode_str(mode);
+    at_npu::native::OpCommand cmd;
+
+    cmd.Name("EmbeddingBag").Input(weight).Input(indices).Input(offsets);
+    if (per_sample_weights.defined()) {
+        cmd.Input(per_sample_weights);
+    }
+    cmd.Output(output)
+       .Output(offset2bag)
+       .Output(bag_size)
+       .Output(max_indices)
+       .Attr("mode", mode_str)
+       .Attr("scale_grad_by_freq", scale_grad_by_freq)
+       .Attr("sparse", sparse)
+       .Attr("include_last_offset", include_last_offset)
+       .Attr("padding_idx", padding_idx)
+       .Run();
+    if (mode_str == "sum" && padding_idx == -1) {
+        offset2bag = npu_preparation::ApplyTensor(indices, 0);
+    }
+
+    return std::tie(output, offset2bag, bag_size, max_indices);
+}
+
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag(
-    const at::Tensor& weight,
-    const at::Tensor& indices,
-    const at::Tensor& offsets,
-    const bool scale_grad_by_freq,
-    const int64_t mode,
-    bool sparse,
-    const c10::optional<at::Tensor>& per_sample_weights_opt,
-    bool include_last_offset,
+    const at::Tensor &weight, const at::Tensor &indices, const at::Tensor &offsets, bool scale_grad_by_freq,
+    int64_t mode, bool sparse, const c10::optional<at::Tensor>& per_sample_weights, bool include_last_offset,
     int64_t padding_idx) {
-  const at::Tensor& per_sample_weights = c10::value_or_else(per_sample_weights_opt, [] {return at::Tensor();});
+      TORCH_CHECK((indices.dim() > 0), "indices.dim() must be greater than 0");
+      TORCH_CHECK((weight.dim() > 0), "weight.dim() must be greater than 0");
+      TORCH_CHECK((offsets.dim() > 0), "offsets.dim() must be greater than 0");
 
-  at::Tensor weight_cpu = weight.to("cpu").requires_grad_();
-  at::Tensor indices_cpu = indices.to("cpu");
-  at::Tensor offsets_cpu = offsets.to("cpu");
-  at::Tensor per_sample_weights_cpu = per_sample_weights;
-  if (per_sample_weights_cpu.defined()) {
-    per_sample_weights_cpu = per_sample_weights_cpu.to("cpu");
-  }
-  
-  auto result = at::native::_embedding_bag_cpu(weight_cpu, indices_cpu, offsets_cpu,
-      scale_grad_by_freq, mode, sparse, per_sample_weights_cpu, include_last_offset, padding_idx);
+    const at::Tensor& per_sample_weights_core =
+        c10::value_or_else(per_sample_weights, [] { return at::Tensor(); });
 
-  auto weight_device = weight.device();
-  at::Tensor output = std::get<0>(result).to(weight_device);
-  at::Tensor offset2bag = std::get<1>(result).to(weight_device);
-  at::Tensor bag_size = std::get<2>(result).to(weight_device);
-  at::Tensor max_indices = std::get<3>(result).to(weight_device);
-  return std::tie(output, offset2bag, bag_size, max_indices);
+    c10::SmallVector<int64_t, SIZE> result_size = _embedding_bag_npu_output_size(weight, indices, offsets,
+                                                                                 include_last_offset);
+
+    at::Tensor output_tensor = npu_preparation::ApplyTensor(weight, result_size);
+    // 申请offset2bag的Tensor
+    int64_t indices_num = indices.size(0);
+
+    string mode_str = get_mode_str(mode);
+
+    at::Tensor offset2bag = npu_preparation::ApplyTensor(indices);
+    at::Tensor bag_size = npu_preparation::ApplyTensor(offsets);
+
+    if (include_last_offset) {
+        bag_size = npu_preparation::ApplyTensor(offsets, offsets.size(0) - 1);
+    }
+
+    at::Tensor max_indices;
+    if (mode_str == "max") {
+        c10::SmallVector<int64_t, SIZE> max_indices_size = _embedding_bag_npu_output_size(weight, indices, offsets,
+                                                                                          include_last_offset);
+        max_indices = npu_preparation::ApplyTensor(offsets, max_indices_size);
+    } else {
+        max_indices = npu_preparation::ApplyTensor(offsets);
+        if (include_last_offset) {
+            max_indices = npu_preparation::ApplyTensor(offsets, offsets.size(0) - 1);
+        }
+    }
+
+    return _embedding_bag_out_npu_nocheck(weight,
+        indices,
+        offsets,
+        scale_grad_by_freq,
+        mode,
+        sparse,
+        per_sample_weights_core,
+        include_last_offset,
+        padding_idx,
+        output_tensor,
+        offset2bag,
+        bag_size,
+        max_indices);
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_forward_only(
-    const at::Tensor& weight,
-    const at::Tensor& indices,
-    const at::Tensor& offsets,
-    const bool scale_grad_by_freq,
-    const int64_t mode,
-    bool sparse,
-    const c10::optional<at::Tensor>& per_sample_weights_opt,
-    bool include_last_offset,
+    const at::Tensor &weight, const at::Tensor &indices, const at::Tensor &offsets, bool scale_grad_by_freq,
+    int64_t mode, bool sparse, const c10::optional<at::Tensor> &per_sample_weights, bool include_last_offset,
     int64_t padding_idx) {
-  return acl_op::_embedding_bag(weight, indices, offsets,
-      scale_grad_by_freq, mode, sparse, per_sample_weights_opt, include_last_offset, padding_idx);
-}
+      TORCH_CHECK((indices.dim() > 0), "indices.dim() must be greater than 0");
+      TORCH_CHECK((weight.dim() > 0), "weight.dim() must be greater than 0");
+      TORCH_CHECK((offsets.dim() > 0), "offsets.dim() must be greater than 0");
+
+    const at::Tensor& per_sample_weights_core =
+        c10::value_or_else(per_sample_weights, [] { return at::Tensor(); });
+
+    c10::SmallVector<int64_t, SIZE> result_size = _embedding_bag_npu_output_size(weight, indices, offsets,
+                                                                                 include_last_offset);
+
+    at::Tensor output_tensor = npu_preparation::ApplyTensor(weight, result_size);
+    // 申请offset2bag的Tensor
+    int64_t indices_num = indices.size(0);
+
+    string mode_str = get_mode_str(mode);
+
+    at::Tensor offset2bag = npu_preparation::ApplyTensor(indices);
+    at::Tensor bag_size = npu_preparation::ApplyTensor(offsets);
+
+    if (include_last_offset) {
+        bag_size = npu_preparation::ApplyTensor(offsets, offsets.size(0) - 1);
+    }
+
+    at::Tensor max_indices;
+    if (mode_str == "max") {
+        c10::SmallVector<int64_t, SIZE> max_indices_size = _embedding_bag_npu_output_size(weight, indices, offsets,
+                                                                                          include_last_offset);
+        max_indices = npu_preparation::ApplyTensor(offsets, max_indices_size);
+    } else {
+        max_indices = npu_preparation::ApplyTensor(offsets);
+        if (include_last_offset) {
+            max_indices = npu_preparation::ApplyTensor(offsets, offsets.size(0) - 1);
+        }
+    }
+
+    return _embedding_bag_out_npu_nocheck(weight,
+        indices,
+        offsets,
+        scale_grad_by_freq,
+        mode,
+        sparse,
+        per_sample_weights_core,
+        include_last_offset,
+        padding_idx,
+        output_tensor,
+        offset2bag,
+        bag_size,
+        max_indices);
+  }
 } // namespace acl_op
