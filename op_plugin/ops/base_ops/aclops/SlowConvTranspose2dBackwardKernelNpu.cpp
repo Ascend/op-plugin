@@ -111,6 +111,15 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> slow_conv_transpose2d_backward
     at::Tensor& grad_input,
     at::Tensor& grad_weight,
     at::Tensor& grad_bias) {
+    TORCH_CHECK(dilation.size() >= 2, "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
+                                      " but input dilation has sizes ",
+                dilation.size());
+    TORCH_CHECK(padding.size() >= 2, "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
+                                      " but input padding has sizes ",
+                padding.size());
+    TORCH_CHECK(stride.size() >= 2, "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
+                                    " but input stride has sizes ",
+                stride.size());
   slow_conv_transpose2d_backward_grad_output_out_nocheck(
       grad_input, grad_output, self, weight, kernel_size, stride, padding, output_padding, dilation);
   slow_conv_transpose2d_backward_weight_out_nocheck(

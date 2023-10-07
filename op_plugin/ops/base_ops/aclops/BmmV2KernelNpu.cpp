@@ -22,39 +22,43 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
+static const int64_t TENSORS_DIMS_LOWER_LIMIT = 2;
+static const int64_t PENULT_DIM = -2;
 bool is_transpose_last_two_dims_v2(const at::Tensor& Tensors) {
-  if (Tensors.dim() < 2) {
-    return false;
-  }
-  int64_t numel = at_npu::native::NPUNativeFunctions::get_storage_size(Tensors);
+    if (Tensors.dim() < TENSORS_DIMS_LOWER_LIMIT) {
+      return false;
+    }
+    int64_t numel = at_npu::native::NPUNativeFunctions::get_storage_size(Tensors);
 
-  int64_t dim1 = Tensors.dim() - 1;
-  int64_t dim2 = Tensors.dim() - 2;
-
-  int64_t tensor_size = Tensors.storage().nbytes() / Tensors.element_size();
-  auto tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(Tensors)->get_npu_desc();
-  if (tensor_desc.base_sizes_.size() == Tensors.dim() &&
-      Tensors.stride(dim2) == 1 && Tensors.stride(dim1) == Tensors.size(dim2) &&
-      Tensors.size(dim1) == tensor_desc.base_sizes_[dim2] &&
-      Tensors.size(dim2) == tensor_desc.base_sizes_[dim1] &&
-      tensor_size == numel) {
-    return true;
-  } else {
-    return false;
-  }
+    int64_t dim1 = Tensors.dim() - 1;
+    int64_t dim2 = Tensors.dim() - TENSORS_DIMS_LOWER_LIMIT;
+    TORCH_CHECK(Tensors.element_size() > 0, "expected Tensors valid, "
+                                            "but input Tensors has element_size ",
+                Tensors.element_size());
+    int64_t tensor_size = Tensors.storage().nbytes() / Tensors.element_size();
+    auto tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(Tensors)->get_npu_desc();
+    if (tensor_desc.base_sizes_.size() == Tensors.dim() &&
+        Tensors.stride(dim2) == 1 && Tensors.stride(dim1) == Tensors.size(dim2) &&
+        Tensors.size(dim1) == tensor_desc.base_sizes_[dim2] &&
+        Tensors.size(dim2) == tensor_desc.base_sizes_[dim1] &&
+        tensor_size == numel) {
+      return true;
+    } else {
+      return false;
+    }
 }
 
 c10::SmallVector<int64_t, SIZE> bmm_v2_output_size(const at::Tensor& mat1, const at::Tensor& mat2) {
   auto dim_tensor1 = mat1.dim();
   auto dim_tensor2 = mat2.dim();
 
-  int64_t m = dim_tensor1 == 1 ? 1 : mat1.size(-2);
+  int64_t m = dim_tensor1 == 1 ? 1 : mat1.size(PENULT_DIM);
   int64_t n = dim_tensor2 == 1 ? 1 : mat2.size(-1);
 
   auto batch_a = op_infer::array_to_small_vector(
-      at::IntArrayRef(mat1.sizes().data(), std::max<int64_t>(dim_tensor1 - 2, 0)));
+      at::IntArrayRef(mat1.sizes().data(), std::max<int64_t>(dim_tensor1 + PENULT_DIM, 0)));
   auto batch_b = op_infer::array_to_small_vector(
-      at::IntArrayRef(mat2.sizes().data(), std::max<int64_t>(dim_tensor2 - 2, 0)));
+      at::IntArrayRef(mat2.sizes().data(), std::max<int64_t>(dim_tensor2 + PENULT_DIM, 0)));
 
   batch_a.insert(batch_a.begin(), std::max<int64_t>(batch_a.size(), batch_b.size()) - batch_a.size(), 1);
   batch_b.insert(batch_b.begin(), std::max<int64_t>(batch_a.size(), batch_b.size()) - batch_b.size(), 1);
@@ -198,9 +202,9 @@ c10::SmallVector<int64_t, SIZE> align_small_vector(
 void expand_tensor(at::Tensor& self, at::Tensor& mat2, c10::SmallVector<int64_t, SIZE>& expand_output_size) {
   self = self.dim() == 1 ? self.view({1, self.size(0)}) : self;
   mat2 = mat2.dim() == 1 ? mat2.view({mat2.size(0), 1}) : mat2;
-  int64_t m = self.size(-2);
+  int64_t m = self.size(PENULT_DIM);
   int64_t k1 = self.size(-1);
-  int64_t k2 = mat2.size(-2);
+  int64_t k2 = mat2.size(PENULT_DIM);
   int64_t n = mat2.size(-1);
 
   std::vector<int64_t> expand_batch_portion(expand_output_size.begin(), expand_output_size.end() - 2);

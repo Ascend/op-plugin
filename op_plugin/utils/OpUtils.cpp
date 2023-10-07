@@ -152,10 +152,11 @@ int64_t complete_pad(int64_t s_size, int64_t p_size, int64_t k_size, int64_t str
 
 c10::optional<double> get_scale_value(c10::optional<c10::ArrayRef<double>> scales, int idx)
 {
-  if (!scales) {
-    return c10::nullopt;
-  }
-  return scales->at(idx);
+    if (!scales) {
+        return c10::nullopt;
+    }
+    TORCH_CHECK(scales->size() > idx, "idx", idx, "is overrange scales->at(idx) ", scales->size());
+    return scales->at(idx);
 }
 
 at::ScalarType get_divide_high_type(const at::Tensor& self, const at::Tensor& other) {

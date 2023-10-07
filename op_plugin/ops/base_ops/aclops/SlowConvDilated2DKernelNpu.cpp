@@ -28,6 +28,15 @@ at::Tensor slow_conv_dilated2d(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef dilation) {
+    TORCH_CHECK(dilation.size() >= 2, "slow_conv_dilated2d expected dilation greater than or equal to 2D,"
+                                      " but input dilation has sizes ",
+                dilation.size());
+    TORCH_CHECK(padding.size() >= 2, "slow_conv_dilated2d expected dilation greater than or equal to 2D,"
+                                     " but input padding has sizes ",
+                padding.size());
+    TORCH_CHECK(stride.size() >= 2, "slow_conv_dilated2d expected dilation greater than or equal to 2D,"
+                                    " but input stride has sizes ",
+                stride.size());
   TORCH_CHECK(stride[0] != 0, "slow_conv_dilated2d_npu_output_size: stride[0] can not be zero");
   TORCH_CHECK(padding[0] >= 0 && padding[1] >= 0,
               "slow_conv_dilated2d_npu_output_size: padding can not be less than zero");

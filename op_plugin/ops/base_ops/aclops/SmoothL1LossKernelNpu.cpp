@@ -28,12 +28,11 @@ at::Tensor& smooth_l1_loss_out_npu_nocheck(
     const at::Tensor& target,
     int64_t reduction,
     double beta) {
-  if (self.numel() == 0) {
-    // In this scenario, needs to return nan. And the nan of the NPU can only be fp32.
-    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat).fill_(0);
-    result = result / 0;
-    return result;
-  }
+    if (self.numel() == 0) {
+      // In this scenario, needs to return nan. And the nan of the NPU can only be fp32.
+      result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat).fill_(NAN);
+      return result;
+    }
 
   string reduction_str(op_plugin::utils::get_reduction_str(reduction));
   at_npu::native::OpCommand cmd;

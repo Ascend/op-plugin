@@ -142,14 +142,16 @@ at::Tensor AdvanceIndex::reshape_indexer(const at::Tensor& index, int64_t dims_b
 
 at::Tensor AdvanceIndex::restride_src(const at::Tensor& src, int64_t dims_before, int64_t dims_indexed,
     at::IntArrayRef replacement_shape) {
-  auto shape = at::DimVector(src.sizes());
-  auto strides = at::DimVector(src.strides());
-  int64_t end = dims_before + dims_indexed;
-  shape.erase(shape.begin() + dims_before, shape.begin() + end);
-  strides.erase(strides.begin() + dims_before, strides.begin() + end);
-  shape.insert(shape.begin() + dims_before, replacement_shape.begin(), replacement_shape.end());
-  strides.insert(strides.begin() + dims_before, replacement_shape.size(), 0);
-  return src.as_strided(shape, strides);
+    auto shape = at::DimVector(src.sizes());
+    auto strides = at::DimVector(src.strides());
+    int64_t end = dims_before + dims_indexed;
+    TORCH_CHECK(shape.size() >= end, "end", end, "is overrange shape.size() ", shape.size());
+    shape.erase(shape.begin() + dims_before, shape.begin() + end);
+    TORCH_CHECK(strides.size() >= end, "end", end, "is overrange strides.size() ", strides.size());
+    strides.erase(strides.begin() + dims_before, strides.begin() + end);
+    shape.insert(shape.begin() + dims_before, replacement_shape.begin(), replacement_shape.end());
+    strides.insert(strides.begin() + dims_before, replacement_shape.size(), 0);
+    return src.as_strided(shape, strides);
 }
 
 std::string AdvanceIndex::shapes_as_str(at::TensorList tensors) {

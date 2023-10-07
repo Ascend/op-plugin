@@ -28,7 +28,11 @@ at::Tensor npu_confusion_transpose(const at::Tensor& self,
   if (transpose_first) {
     output_size = op_infer::array_to_small_vector(shape);
   } else {
+    auto shape_size = shape.size();
     for (int i = 0; i < perm.size(); i++) {
+        TORCH_CHECK(shape_size > perm[i], "npu_confusion_transpose input invalid, "
+                                          "shape has size ",
+                    shape_size, " but perm[i] is, ", perm[i]);
       output_size.emplace_back(shape[perm[i]]);
     }
   }

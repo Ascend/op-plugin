@@ -53,6 +53,37 @@ at::Tensor& col2im_out_nocheck(
       .Run();
   return grad_input;
 }
+
+inline void check_func(
+    const at::Tensor &grad_output,
+    at::IntArrayRef input_size,
+    at::IntArrayRef kernel_size,
+    at::IntArrayRef dilation,
+    at::IntArrayRef padding,
+    at::IntArrayRef stride)
+{
+    TORCH_CHECK(grad_output.dim() >= 2, "col2im expected grad_output greater than or equal to 2D, "
+                                        "but input grad_output has sizes ",
+                grad_output.dim());
+    TORCH_CHECK(input_size.size() >= 2, "col2im expected input_size greater than or equal to 2D, "
+                                        "but input input_size has sizes ",
+                input_size.size());
+    TORCH_CHECK(kernel_size.size() >= 2, "col2im expected kernel_size greater than or equal to 2D, "
+                                          "but input kernel_size has sizes ",
+                kernel_size.size());
+    TORCH_CHECK(dilation.size() >= 2, "col2im expected dilation greater than or equal to 2D, "
+                                      "but input dilation has sizes ",
+                dilation.size());
+    TORCH_CHECK(padding.size() >= 2, "col2im expected padding greater than or equal to 2D, "
+                                      "but input padding has sizes ",
+                padding.size());
+    TORCH_CHECK(stride.size() >= 2, "col2im expected stride greater than or equal to 2D, "
+                                    "but input stride has sizes ",
+                stride.size());
+    TORCH_CHECK((kernel_size[0] * kernel_size[1]) > 0, "col2im expected kernel_size valid, "
+                                                        "but input kernel_size has value ",
+                kernel_size[0], kernel_size[1]);
+}
 } // namespace
 
 at::Tensor& col2im_out(
@@ -63,6 +94,7 @@ at::Tensor& col2im_out(
     at::IntArrayRef padding,
     at::IntArrayRef stride,
     at::Tensor& grad_input) {
+  check_func(grad_output, input_size, kernel_size, dilation, padding, stride);
   at::Tensor grad_output_cp = grad_output.dim() == 2 ? at::unsqueeze(grad_output, 0) : grad_output;
   c10::SmallVector<int64_t, SIZE> output_size = {
     grad_output_cp.size(0),
@@ -98,6 +130,7 @@ at::Tensor col2im(
     at::IntArrayRef dilation,
     at::IntArrayRef padding,
     at::IntArrayRef stride) {
+  check_func(grad_output, input_size, kernel_size, dilation, padding, stride);
   at::Tensor grad_output_cp = grad_output.dim() == 2 ? at::unsqueeze(grad_output, 0) : grad_output;
   c10::SmallVector<int64_t, SIZE> output_size = {
     grad_output_cp.size(0),
