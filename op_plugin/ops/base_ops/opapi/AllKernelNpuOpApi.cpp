@@ -77,7 +77,8 @@ at::Tensor all(const at::Tensor& self) {
 
   // construct the output tensor of the NPU
   at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
-  at::IntArrayRef dimList(op_plugin::utils::get_dimlist_for_tensor(self));
+  c10::SmallVector<int64_t, op_infer::N> dim_vec = op_plugin::utils::get_dimlist_for_tensor(self);
+  at::IntArrayRef dimList = dim_vec;
   bool keepdim = false;
 
   // calculate the output result of the NPU
