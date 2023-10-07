@@ -164,7 +164,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&, at::
 }
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_cell_backward(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_cell_backward(
     const c10::optional<at::Tensor>& grad_y_opt,
     const c10::optional<at::Tensor>& grad_h_opt,
     const c10::optional<at::Tensor>& grad_c_opt,
@@ -197,7 +197,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
   at::Tensor grad_ct = npu_preparation::apply_tensor(c);
   lstm_cell_backward_npu_impl_nocheck(grad_input, grad_wih, grad_whh, grad_bias, grad_ht, grad_ct,
       grad_y, grad_h, grad_c, input, w_ih, w_hh, h, c, y_output, h_output, c_output, i, j, f, o, tanhc);
-  return std::tie(grad_input, grad_wih, grad_whh, grad_bias, grad_ht, grad_ct);
+  return std::tie(grad_input, grad_wih, grad_whh, grad_bias, grad_bias, grad_ht, grad_ct);
 }
 
 tuple_tensor npu_lstm_cell(
@@ -206,8 +206,14 @@ tuple_tensor npu_lstm_cell(
     const at::Tensor& w_hh,
     const at::Tensor& h,
     const at::Tensor& c,
-    const c10::optional<at::Tensor>& bias_opt) {
-  const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+    const c10::optional<at::Tensor>& b_ih_opt,
+    const c10::optional<at::Tensor>& b_hh_opt) {
+  const at::Tensor& b_ih = c10::value_or_else(b_ih_opt, [] {return at::Tensor();});
+  const at::Tensor& b_hh = c10::value_or_else(b_hh_opt, [] {return at::Tensor();});
+  at::Tensor bias;
+  if (b_ih.defined()) {
+    bias = at::add(b_ih, b_hh).to(input.dtype());
+  }
   return lstm_cell_npu_impl(input, w_ih, w_hh, h, c, bias);
 }
 
@@ -222,13 +228,7 @@ std::tuple<at::Tensor, at::Tensor> lstm_cell(
   at::Tensor weight_hh = w_hh.t().to(input.dtype());
   at::Tensor h = hx[0];
   at::Tensor c = hx[1];
-  const at::Tensor& b_ih = c10::value_or_else(b_ih_opt, [] {return at::Tensor();});
-  const at::Tensor& b_hh = c10::value_or_else(b_hh_opt, [] {return at::Tensor();});
-  at::Tensor bias;
-  if (b_ih.defined()) {
-    bias = at::add(b_ih, b_hh).to(input.dtype());
-  }
-  auto result = at_npu::native::custom_ops::npu_lstm_cell(input, weight_ih, weight_hh, h, c, bias);
+  auto result = at_npu::native::custom_ops::npu_lstm_cell(input, weight_ih, weight_hh, h, c, b_ih_opt, b_hh_opt);
   return std::tuple<at::Tensor, at::Tensor>(std::get<1>(result), std::get<2>(result));
 }
 }  // namespace acl_op

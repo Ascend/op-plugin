@@ -22,9 +22,9 @@
   output_differentiability: [True, True, True, False, False, False, False, False]
   input, weight, bias, h, c: npu_lstm_data_backward(grads[0], grads[1], grads[2], input, batch_sizes, weight, bias, h, c, result0, result1, result2, result3, result4, result5, result6, result7, direction)
 
-- name: npu_lstm_cell(Tensor input, Tensor w_ih, Tensor w_hh, Tensor h, Tensor c, Tensor? bias=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+- name: npu_lstm_cell(Tensor input, Tensor w_ih, Tensor w_hh, Tensor h, Tensor c, Tensor? b_ih=None, Tensor? b_hh=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [True, True, True, False, False, False, False, False]
-  input, w_ih, w_hh, bias, h, c: npu_lstm_cell_backward(grads[0], grads[1], grads[2], input, w_ih, w_hh, h, c, result0, result1, result2, result3, result4, result5, result6, result7)
+  input, w_ih, w_hh, b_ih, b_hh, h, c: npu_lstm_cell_backward(grads[0], grads[1], grads[2], input, w_ih, w_hh, h, c, result0, result1, result2, result3, result4, result5, result6, result7)
 
 - name: _dropout_with_byte_mask(Tensor self, float p) -> (Tensor, Tensor)
   self: _dropout_with_byte_mask_backward(grad, result1, p)
