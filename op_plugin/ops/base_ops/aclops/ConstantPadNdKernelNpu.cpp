@@ -90,29 +90,34 @@ at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at
     return result;
   }
 
-  at::Tensor result = npu_preparation::apply_tensor(self, new_shape);
-  c10::SmallVector<int64_t, N> vector_int;
-  c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(pad);
-  paddings_vector.resize(2 * self.dim(), 0);
-  for (int64_t i = paddings_vector.size(); i > 0; i -= 2) {
-    vector_int.emplace_back(paddings_vector[i - 2]);
-    vector_int.emplace_back(paddings_vector[i - 1]);
-  }
+    at::Tensor result = npu_preparation::apply_tensor(self, new_shape);
+    if (self.numel() == 0) {
+      acl_op::fill_(result, value);
+    return result;
+    }
+  
+    c10::SmallVector<int64_t, N> vector_int;
+    c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(pad);
+    paddings_vector.resize(2 * self.dim(), 0);
+    for (int64_t i = paddings_vector.size(); i > 0; i -= 2) {
+      vector_int.emplace_back(paddings_vector[i - 2]);
+      vector_int.emplace_back(paddings_vector[i - 1]);
+    }
 
-  float val = op_plugin::utils::get_scalar_float_value(value);
-  at::Tensor value_tensor = at::empty({1}, self.options());
-  acl_op::fill_(value_tensor, val);
+    float val = op_plugin::utils::get_scalar_float_value(value);
+    at::Tensor value_tensor = at::empty({1}, self.options());
+    acl_op::fill_(value_tensor, val);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("PadV3")
-      .Input(self)
-      .Input(vector_int, at::kInt)
-      .Input(value_tensor)
-      .Output(result)
-      .Attr("mode", (string)"constant")
-      .Attr("paddings_contiguous", true)
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("PadV3")
+        .Input(self)
+        .Input(vector_int, at::kInt)
+        .Input(value_tensor)
+        .Output(result)
+        .Attr("mode", (string)"constant")
+        .Attr("paddings_contiguous", true)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace acl_op
