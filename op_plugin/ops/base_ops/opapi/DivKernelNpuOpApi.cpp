@@ -20,6 +20,8 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+static const int MODE_TRUNC = 1;
+static const int MODE_FLOOR = 2;
 
 static void check_rounding_mode_npu(c10::optional<c10::string_view> rounding_mode) {
   TORCH_CHECK((!rounding_mode.has_value() || *rounding_mode == "trunc" || *rounding_mode == "floor"),
@@ -85,9 +87,9 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, c10::option
 
   int mode = 0;
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    mode = 2;
+    mode = MODE_FLOOR;
   } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
-    mode = 1;
+    mode = MODE_TRUNC;
   }
 
   // calculate the output result of the NPU
@@ -142,9 +144,9 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<c1
   // construct the output tensor of the NPU
   int mode = 0;
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    mode = 2;
+    mode = MODE_FLOOR;
   } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
-    mode = 1;
+    mode = MODE_TRUNC;
   } else {
     if (!isFloatingType(high_type)) {
       high_type = at::ScalarType::Float;
@@ -203,9 +205,9 @@ at::Tensor& div_(at::Tensor& self, const at::Tensor& other, c10::optional<c10::s
   npu_preparation::check_memory(inputs, outputs);
   int mode = 0;
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    mode = 2;
+    mode = MODE_FLOOR;
   } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
-    mode = 1;
+    mode = MODE_TRUNC;
   }
   inplace_div_out_mode_npu_no_check(self, other, mode);
   return self;
@@ -231,9 +233,9 @@ at::Tensor div(const at::Tensor& self, const at::Scalar& other, c10::optional<c1
   // construct the output tensor of the NPU
   int mode = 0;
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    mode = 2;
+    mode = MODE_FLOOR;
   } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
-    mode = 1;
+    mode = MODE_TRUNC;
   } else {
     if (!isFloatingType(high_type)) {
       high_type = at::ScalarType::Float;
@@ -255,9 +257,9 @@ at::Tensor& div_(at::Tensor& self, const at::Scalar& other, c10::optional<c10::s
   check_rounding_mode_npu(rounding_mode);
   int mode = 0;
   if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    mode = 2;
+    mode = MODE_FLOOR;
   } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
-    mode = 1;
+    mode = MODE_TRUNC;
   }
   EXEC_NPU_CMD(aclnnInplaceDivMods, self, other, mode);
   return self;
