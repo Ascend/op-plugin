@@ -38,7 +38,6 @@ except ImportError:
 YamlDumper = Dumper
 
 
-# A little trick from https://github.com/python/mypy/issues/6366
 # for getting mypy to do exhaustiveness checking
 # TODO: put this somewhere else, maybe
 def assert_never(x: NoReturn) -> NoReturn:
@@ -55,7 +54,6 @@ def concatMap(func: Callable[[T], Sequence[S]], xs: Iterable[T]) -> Iterator[S]:
 
 
 # A custom loader for YAML that errors on duplicate keys.
-# This doesn't happen by default: see https://github.com/yaml/pyyaml/issues/165
 class YamlLoader(Loader):
     def construct_mapping(self, node, deep=False):  # type: ignore[no-untyped-def]
         mapping = []
