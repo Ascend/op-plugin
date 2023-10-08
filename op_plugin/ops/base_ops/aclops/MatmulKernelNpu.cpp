@@ -147,7 +147,7 @@ at::Tensor matmul(const at::Tensor& tensor1, const at::Tensor& tensor2) {
 
 at::Tensor& matmul_out(const at::Tensor& tensor1, const at::Tensor& tensor2, at::Tensor& result) {
   auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
-  if (!npu_utils::check_match(&result)) {
+  if (!result.is_contiguous()) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     matmul_opt_nocheck(c10::optional<at::Tensor>(contiguous_result), tensor1, tensor2);
     npu_utils::format_fresh_view(result, contiguous_result);
