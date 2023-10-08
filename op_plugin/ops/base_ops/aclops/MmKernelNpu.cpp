@@ -266,7 +266,7 @@ at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const
 } // namespace
 
 at::Tensor& mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& result) {
-  if (!npu_utils::check_match(&result)) {
+  if (!result.is_contiguous()) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     mm_out_npu_nocheck(contiguous_result, self, mat2);
     npu_utils::format_fresh_view(result, contiguous_result);
