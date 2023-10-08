@@ -24,6 +24,11 @@ at::Tensor upsample_nearest1d_backward(
     c10::optional<at::IntArrayRef> output_size,
     at::IntArrayRef input_size,
     c10::optional<at::ArrayRef<double>> scale_factors) {
+    TORCH_CHECK(
+        input_size.size() == 3,
+        "It is expected input_size equals to 3, but got size ",
+        input_size.size());
+
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
 

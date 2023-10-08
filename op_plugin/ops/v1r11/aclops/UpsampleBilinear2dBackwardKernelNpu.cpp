@@ -25,6 +25,11 @@ at::Tensor upsample_bilinear2d_backward(
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<at::ArrayRef<double>> scale_factors) {
+    TORCH_CHECK(
+        input_size.size() == 4,
+        "It is expected input_size equals to 4, but got size ",
+        input_size.size());
+
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
   auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);

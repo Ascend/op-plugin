@@ -25,6 +25,11 @@ at::Tensor upsample_trilinear3d_backward(
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<at::ArrayRef<double>> scale_factors) {
+    TORCH_CHECK(
+        input_size.size() == 5,
+        "It is expected input_size equals to 5, but got size ",
+        input_size.size());
+
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
   auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);

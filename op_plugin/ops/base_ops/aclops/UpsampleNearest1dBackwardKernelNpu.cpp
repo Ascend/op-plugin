@@ -23,6 +23,11 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 c10::SmallVector<int64_t, SIZE> upsample_nearest1d_backward_infer_size(at::IntArrayRef input_size) {
+    TORCH_CHECK(
+        input_size.size() == 3,
+        "It is expected input_size equals to 3, but got size ",
+        input_size.size());
+
   c10::SmallVector<int64_t, SIZE> output_size;
   int64_t N = input_size[0];
   int64_t C = input_size[1];
@@ -49,6 +54,7 @@ at::Tensor& upsample_nearest1d_backward_out_nocheck(
         .Attr("half_pixel_centers", false)
         .Run();
   } else {
+    TORCH_CHECK(output_size[0] != 0, "output_size must not equals to 0, but got ", output_size[0]);
     c10::SmallVector<int64_t, SIZE> origin_size = upsample_nearest1d_backward_infer_size(input_size);
     at::Scalar scales_cp = scales.has_value() ? scales.value() : input_size[0] / output_size[0];
     cmd.Name("ResizeGrad")

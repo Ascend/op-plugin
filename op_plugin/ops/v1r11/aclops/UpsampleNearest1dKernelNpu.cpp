@@ -23,6 +23,11 @@ at::Tensor upsample_nearest1d(
     const at::Tensor& input,
     c10::optional<at::IntArrayRef> output_size,
     c10::optional<at::ArrayRef<double>> scale_factors) {
+    TORCH_CHECK(
+        input.dim() == 3,
+        "It is expected input_size equals to 3, but got size ",
+        input.dim());
+
   auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
   auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
   return acl_op::upsample_nearest1d(input, osize, scales_w);
