@@ -24,7 +24,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
-namespace{
+namespace {
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
     at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_npu_nocheck(
     const at::Tensor& input,
@@ -56,7 +56,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
   at::Tensor o_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor tanhc = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
 
-  string direction = flag_direction? "REDIRECTIONAL" : "UNIDIRECTIONAL";
+  string direction = flag_direction ? "REDIRECTIONAL" : "UNIDIRECTIONAL";
   string gate_order = "ifjo";
   at_npu::native::OpCommand cmd;
   cmd.Name("DynamicRNN")
@@ -67,7 +67,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor,
   // if input is PackSequence, seq_mask is not None, Otherwise, it is None.
   if (!flag_seq) {
     cmd.Input();
-  } else{
+  } else {
     cmd.Input(seq_mask, "seq_length");
   }
   cmd.Input(h, "init_h")
@@ -127,6 +127,24 @@ std::tuple<at::Tensor, at::Tensor> get_wb_double_layer_or_bidirec(
     bias = at::zeros(weight.size(1), weight.options());
   }
   return std::tie(weight, bias);
+}
+
+std::tuple<at::Tensor, at::Tensor> get_wb_multi_layer_or_bidirec(
+    const at::Tensor& input,
+    at::TensorList params,
+    int64_t layers,
+    bool hasBiases) {
+    TORCH_CHECK(layers > 0, "layers should be greater than 0.");
+    at::Tensor weight;
+    at::Tensor bias;
+    if (hasBiases) {
+      weight = at::cat({params[layers * 4 - 4], params[layers * 4 - 3]}, 1).t().to(input.dtype());
+      bias = at::add(params[layers * 4 - 2], params[layers * 4 - 1]).to(input.dtype());
+    } else {
+      weight = at::cat({params[layers * 2 - 2], params[layers * 2 - 1]}, 1).t().to(input.dtype());
+      bias = at::zeros(weight.size(1), weight.options());
+    }
+    return std::tie(weight, bias);
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_single_layer_direc_npu(
@@ -217,94 +235,114 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_single_layer_bidirec_npu(
   return std::tie(y, h_out, c_out);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_double_layer_direc_npu(
+std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_multi_layer_direc_npu(
     const at::Tensor& input,
     at::TensorList hx,
     at::TensorList params,
     bool has_biases,
+    int64_t layers,
     int64_t num_layers,
     double dropout,
     bool train,
     bool bidirectional,
     bool batch_first) {
-  int64_t num_step = input.size(0);
-  // get h and c of first layer
-  at::Tensor h = hx[0].slice(0, 0, 1);
-  at::Tensor c = hx[1].slice(0, 0, 1);
+    TORCH_CHECK(layers > 0, "layers should be greater than 0.");
+    int64_t num_step = input.size(0);
+    at::Tensor y;
+    at::Tensor h;
+    at::Tensor c;
+    // caculate first layer
+    if (layers == 1) {
+      return lstm_single_layer_direc_npu(input, hx, params, has_biases, num_layers, dropout, train, bidirectional,
+                                         batch_first, false);
+    } else {
+      // get h and c of first layer
+      at::Tensor h1 = hx[0].slice(0, 0, layers - 1);
+      at::Tensor c1 = hx[1].slice(0, 0, layers - 1);
+      std::tie(y, h, c) = lstm_multi_layer_direc_npu(input, {h1, c1}, params, has_biases, layers - 1, num_layers,
+                                                     dropout, train, bidirectional, batch_first);
+    }
+    // get w/ b/ h/ c of twice layer
+    at::Tensor weight_multi_layer;
+    at::Tensor bias_multi_layer;
+    at::Tensor h_multi_layer = hx[0].slice(0, layers - 1, layers);
+    at::Tensor c_multi_layer = hx[1].slice(0, layers - 1, layers);
+    std::tie(weight_multi_layer, bias_multi_layer) = get_wb_multi_layer_or_bidirec(input, params, layers, has_biases);
 
-  // caculate first layer
-  auto results = lstm_single_layer_direc_npu(input, {h, c}, params, has_biases,
-      num_layers, dropout, train, bidirectional, batch_first, false);
-
-  // get w/ b/ h/ c of twice layer
-  at::Tensor weight_2_layer;
-  at::Tensor bias_2_layer;
-  at::Tensor h_2_layer = hx[0].slice(0, 1, 2);
-  at::Tensor c_2_layer = hx[1].slice(0, 1, 2);
-  std::tie(weight_2_layer, bias_2_layer) = get_wb_double_layer_or_bidirec(input, params, has_biases);
-
-  // output of first layer as input of second layer
-  at::Tensor input_2_layer = std::get<0>(results);
-  at::Tensor seq_mask = at::empty({0}, input.options());
-
-  // caculate output of second layer
-  auto results_2_layer = at_npu::native::custom_ops::npu_lstm(input_2_layer, weight_2_layer, bias_2_layer, seq_mask, h_2_layer, c_2_layer,
-      has_biases, num_layers, dropout, train, bidirectional, batch_first, false, false);
-  at::Tensor th_output_2_layer = at::unsqueeze(std::get<1>(results_2_layer)[num_step-1], 0);
-  at::Tensor tc_output_2_layer = at::unsqueeze(std::get<2>(results_2_layer)[num_step-1], 0);
-  at::Tensor th = at::cat({std::get<1>(results), th_output_2_layer}, 0);
-  at::Tensor tc = at::cat({std::get<2>(results), tc_output_2_layer}, 0);
-
-  return std::tie(std::get<0>(results_2_layer), th, tc);
+    at::Tensor seq_mask = at::empty({0}, input.options());
+    // caculate output of second layer
+    auto results_multi_layer = at_npu::native::custom_ops::npu_lstm(y, weight_multi_layer, bias_multi_layer, seq_mask,
+        h_multi_layer, c_multi_layer, has_biases, num_layers, dropout, train, bidirectional, batch_first, false, false);
+    at::Tensor th_output_multi_layer = at::unsqueeze(std::get<1>(results_multi_layer)[num_step - 1], 0);
+    at::Tensor tc_output_multi_layer = at::unsqueeze(std::get<2>(results_multi_layer)[num_step - 1], 0);
+    at::Tensor th = at::cat({h, th_output_multi_layer}, 0);
+    at::Tensor tc = at::cat({c, tc_output_multi_layer}, 0);
+    return std::tie(std::get<0>(results_multi_layer), th, tc);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_double_layer_bidirec_npu(
+std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_multi_layer_bidirec_npu(
     const at::Tensor& input,
     at::TensorList hx,
     at::TensorList params,
     bool has_biases,
+    int64_t layers,
     int64_t num_layers,
     double dropout,
     bool train,
     bool bidirectional,
     bool batch_first) {
-  int64_t num_step = input.size(0);
+    TORCH_CHECK(layers > 0, "layers should be greater than 0.");
+    int64_t num_step = input.size(0);
+    // get h and c of first layer
+    at::Tensor hL0 = hx[0].slice(0, 0, 2);
+    at::Tensor cL0 = hx[1].slice(0, 0, 2);
+    // get h and c of second layer
+    at::Tensor hL1 = hx[0].slice(0, 2, layers * 2);
+    at::Tensor cL1 = hx[1].slice(0, 2, layers * 2);
 
-  // get h and c of first layer
-  at::Tensor hL0 = hx[0].slice(0, 0, 2);
-  at::Tensor cL0 = hx[1].slice(0, 0, 2);
+    // first Single-layer bidirectional LSTM
+    auto results_layer1 = lstm_single_layer_bidirec_npu(input, {hL0, cL0}, params, has_biases,
+        num_layers, dropout, train, bidirectional, batch_first);
+    if (layers == 1) {
+      return results_layer1;
+    }
 
-  // get h and c of second layer
-  at::Tensor hL1 = hx[0].slice(0, 2, 4);
-  at::Tensor cL1 = hx[1].slice(0, 2, 4);
-
-  // first Single-layer bidirectional LSTM
-  auto results_layer1 = lstm_single_layer_bidirec_npu(input, {hL0, cL0}, params, has_biases,
-      num_layers, dropout, train, bidirectional, batch_first);
-
-  // second Single-layer bidirectional LSTM, output of Single-layer bidirectional LSTM as input of second layer
-  at::Tensor inputLayer2 = std::get<0>(results_layer1);
-  at::Tensor y;
-  at::Tensor h;
-  at::Tensor c;
-  if (has_biases) {
-    std::tie(y, h, c) = lstm_single_layer_bidirec_npu(inputLayer2, {hL1, cL1}, params.slice(8, 8),
-        has_biases, num_layers, dropout, train, bidirectional, batch_first);
-  } else {
-    std::tie(y, h, c) = lstm_single_layer_bidirec_npu(inputLayer2, {hL1, cL1}, params.slice(4, 4),
-        has_biases, num_layers, dropout, train, bidirectional, batch_first);
-  }
-
-  at::Tensor th = at::cat({std::get<1>(results_layer1), h}, 0);
-  at::Tensor tc = at::cat({std::get<2>(results_layer1), c}, 0);
-  return std::tie(y, th, tc);
+    // second Single-layer bidirectional LSTM, output of Single-layer bidirectional LSTM as input of second layer
+    at::Tensor inputLayer2 = std::get<0>(results_layer1);
+    at::Tensor y;
+    at::Tensor h;
+    at::Tensor c;
+    if (layers < 3) {
+      if (has_biases) {
+        std::tie(y, h, c) = lstm_single_layer_bidirec_npu(inputLayer2, {hL1, cL1}, params.slice(8, (layers - 1) * 8),
+                                                          has_biases, num_layers, dropout, train, bidirectional,
+                                                          batch_first);
+      } else {
+        std::tie(y, h, c) = lstm_single_layer_bidirec_npu(inputLayer2, {hL1, cL1}, params.slice(4, (layers - 1) * 4),
+                                                          has_biases, num_layers, dropout, train, bidirectional,
+                                                          batch_first);
+      }
+    } else {
+      if (has_biases) {
+        std::tie(y, h, c) = lstm_multi_layer_bidirec_npu(inputLayer2, {hL1, cL1}, params.slice(8, (layers - 1) * 8),
+                                                         has_biases, layers - 1, num_layers, dropout, train,
+                                                         bidirectional, batch_first);
+      } else {
+        std::tie(y, h, c) = lstm_multi_layer_bidirec_npu(inputLayer2, {hL1, cL1}, params.slice(4, (layers - 1) * 4),
+                                                         has_biases, layers - 1, num_layers, dropout, train,
+                                                         bidirectional, batch_first);
+      }
+    }
+    at::Tensor th = at::cat({std::get<1>(results_layer1), h}, 0);
+    at::Tensor tc = at::cat({std::get<2>(results_layer1), c}, 0);
+    return std::tie(y, th, tc);
 }
 
 at::Tensor get_mask(const at::Tensor& input, const at::Tensor& batch_sizes, const at::Tensor& h, int64_t max_len) {
   // caculate lengths, but input expected to be sorted
   std::vector<int64_t> lens;
   for (int64_t i = 0; i < input.size(1); ++i) {
-    auto batch_sizes_temp = at::sub(batch_sizes , i);
+    auto batch_sizes_temp = at::sub(batch_sizes, i);
     auto batch_sizes_bool = at::gt(batch_sizes_temp, 0);
     auto batch_sizes_int = batch_sizes_bool.to(at::ScalarType::Int);
     auto cout_len = at::sum(batch_sizes_int, at::ScalarType::Int);
@@ -596,24 +634,12 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm(
   at::Tensor h;
   at::Tensor c;
 
-  if (num_layers == 1) {
-    if (!bidirectional) {
-      std::tie(y, h, c) = lstm_single_layer_direc_npu(input_trans, hx, params, has_biases, num_layers,
-          dropout, train, bidirectional, batch_first, false);
-    } else {
-      std::tie(y, h, c) = lstm_single_layer_bidirec_npu(input_trans, hx, params, has_biases, num_layers,
-          dropout, train, bidirectional, batch_first);
-    }
-  }
-
-  if (num_layers == 2) {
-    if (!bidirectional) {
-      std::tie(y, h, c) = lstm_double_layer_direc_npu(input_trans, hx, params, has_biases, num_layers,
-          dropout, train, bidirectional, batch_first);
-    } else {
-      std::tie(y, h, c) = lstm_double_layer_bidirec_npu(input_trans, hx, params, has_biases, num_layers,
-          dropout, train, bidirectional, batch_first);
-    }
+  if (!bidirectional) {
+    std::tie(y, h, c) = lstm_multi_layer_direc_npu(input, hx, params, has_biases, num_layers, num_layers,
+        dropout, train, bidirectional, batch_first);
+  } else {
+    std::tie(y, h, c) = lstm_multi_layer_bidirec_npu(input, hx, params, has_biases, num_layers, num_layers,
+        dropout, train, bidirectional, batch_first);
   }
 
   // the Bacth axis of output should be first axis when batch_first is True!
