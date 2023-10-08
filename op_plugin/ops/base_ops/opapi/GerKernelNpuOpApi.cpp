@@ -27,17 +27,17 @@ at::Tensor& ger_out(const at::Tensor& self , const at::Tensor& vec2, at::Tensor&
   auto result_type = at::result_type(self, vec2);
   npu_preparation::check_tensor({self, vec2}, result, result_type, output_size);
 
+  // ger_out does not have a grad_fn, so it calls aclnnGer.
   EXEC_NPU_CMD(aclnnGer, self, vec2, result);
   return result;
 }
 
 at::Tensor ger(const at::Tensor& self, const at::Tensor& vec2) {
-  DO_COMPATIBILITY(aclnnGer, acl_op::ger(self, vec2));
-  auto output_size = op_infer::ger_output_size(self, vec2);
-  auto result_type = at::result_type(self, vec2);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
+  TORCH_CHECK(self.dim() == 1, "Input1 must have only 1 dims.");
+  TORCH_CHECK(vec2.dim() == 1, "Input2 must have only 1 dims.");
 
-  EXEC_NPU_CMD(aclnnGer, self, vec2, result);
-  return result;
+  // if ger calls aclnnGer, self does not have a grad_fn.
+  // So ger is consistent with the torch, calls mul.
+  return self.reshape({self.size(0), 1}) * vec2;
 }
 } // namespace op_api
