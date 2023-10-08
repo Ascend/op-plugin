@@ -6,6 +6,10 @@
   output_differentiability: [True, False, False, False, False, False, False, False]
   query_weight, key_weight, value_weight, out_proj_weight, query, key, value, query_bias, key_bias, value_bias, out_proj_bias: npu_multi_head_attention_backward(query, key, value, query_weight, key_weight, value_weight, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias, result2, result3, result4, result5, result6, result7, grad, result1, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float)
 
+- name: npu_flash_attention(Tensor query, Tensor key, Tensor value, int head_num, str input_layout, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, float scale=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=1, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
+  output_differentiability: [True, True, True, True, False, False, False]
+  query, key, value, pse: npu_flash_attention_grad(query, key, value, grad, head_num, input_layout, pse, padding_mask, atten_mask, result1, result2, result3, result0, scale, keep_prob, pre_tockens, next_tockens, inner_precise, result4, result5, result6, gen_mask_parallel, sync)
+
 - name: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [True, True, False, False, False, False]
   weight_input, weight_hidden, input, bias_input, bias_hidden, hx: npu_gru_backward(grads[0], grads[1], input, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, hx, result0, result1, result2, result3, result4, result5)
