@@ -37,286 +37,305 @@ Return:
 Matmul: [1] 2-2-t(strict transpose); [2] 2-n-view+t(view transpose).
   False--Tensor is not transposed, proceed to format_contiguous.
 *****************************************/
-bool is_transpose_last_two_dims_flex(const at::Tensor& tensor) {
-  if (tensor.dim() != 2) {
-    return false;
-  }
+bool is_transpose_last_two_dims_flex(const at::Tensor &tensor)
+{
+    if (tensor.dim() != 2) {
+        return false;
+    }
 
-  int64_t dim1 = tensor.dim() - 1;
-  int64_t dim2 = tensor.dim() - 2;
-  if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
-    return true;
-  } else {
-    return false;
-  }
+    int64_t dim1 = tensor.dim() - 1;
+    int64_t dim2 = tensor.dim() - 2;
+    if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // Pick out strict-transpose tensors from flex-transpose tensors.
-bool is_transpose_last_two_dims_strict(const at::Tensor& tensor, bool is_transpose_flex) {
-  auto base_sizes = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->get_npu_desc().base_sizes_;
-  if (is_transpose_flex && base_sizes.size() == tensor.dim() &&
-      tensor.size(-1) == base_sizes[tensor.dim() - 2] &&
-      tensor.size(-2) == base_sizes[tensor.dim() - 1]) {
-    return true;
-  }
-  return false;
+bool is_transpose_last_two_dims_strict(const at::Tensor &tensor, bool is_transpose_flex)
+{
+    auto base_sizes = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->get_npu_desc().base_sizes_;
+    if (is_transpose_flex && base_sizes.size() == tensor.dim() && tensor.size(-1) == base_sizes[tensor.dim() - 2] &&
+        tensor.size(-2) == base_sizes[tensor.dim() - 1]) {
+        return true;
+    }
+    return false;
 }
 
 // Refresh storage desc of view-transpose tensor.
-void set_transposed_npu_desc(at::Tensor& tensor) {
-  at::Tensor temp_transpose_Tensor = tensor.transpose(-1, -2);
-  at_npu::native::StorageDescHelper::SetDesc(tensor, temp_transpose_Tensor.sizes(), temp_transpose_Tensor.strides());
+void set_transposed_npu_desc(at::Tensor &tensor)
+{
+    at::Tensor temp_transpose_Tensor = tensor.transpose(-1, -2);
+    at_npu::native::StorageDescHelper::SetDesc(tensor, temp_transpose_Tensor.sizes(), temp_transpose_Tensor.strides());
 }
 
-void mm_insert_input_transpose(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict) {
-  tensor = is_tensor_trans_flex ? tensor.clone() : tensor.transpose(-1, -2).clone();
-  is_tensor_trans_flex = !is_tensor_trans_flex;
-  is_tensor_trans_strict = !is_tensor_trans_strict;
+void mm_insert_input_transpose(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict)
+{
+    tensor = is_tensor_trans_flex ? tensor.clone() : tensor.transpose(-1, -2).clone();
+    is_tensor_trans_flex = !is_tensor_trans_flex;
+    is_tensor_trans_strict = !is_tensor_trans_strict;
 }
 
-void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict) {
-  if (is_tensor_trans_flex) {
-    if (!is_tensor_trans_strict) {
-      // Matmul cannot directly deal with view+transposed tensor with NZ format,
-      // so Transdata is necessary
-      tensor = npu_preparation::CastBackToOriFormat(tensor);
-      // Storage desc of view-transpose tensors should be refreshed to be
-      // matched.
-      set_transposed_npu_desc(tensor);
+void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict)
+{
+    if (is_tensor_trans_flex) {
+        if (!is_tensor_trans_strict) {
+            // Matmul cannot directly deal with view+transposed tensor with NZ format,
+            // so Transdata is necessary
+            tensor = npu_preparation::CastBackToOriFormat(tensor);
+            // Storage desc of view-transpose tensors should be refreshed to be
+            // matched.
+            set_transposed_npu_desc(tensor);
+        }
+    } else {
+        tensor = npu_utils::format_contiguous_add_copy_optimize(tensor);
     }
-  } else {
-    tensor = npu_utils::format_contiguous_add_copy_optimize(tensor);
-  }
 }
 
-bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool &is_support_nd_out) {
-  if (!is_support_nd_out || !(self.dtype() == at::ScalarType::Half && mat2.dtype() == at::ScalarType::Half) ||
-      !(format_helper::GetFormat(self) == ACL_FORMAT_ND && format_helper::GetFormat(mat2) == ACL_FORMAT_ND)) {
-    return false;
-  }
-  // split_k rule, maybe modified afterwards
-  const static int64_t kSplitKTimes = 8;
-  return self.size(1) >= kSplitKTimes * std::max(self.size(0), mat2.size(1));
+bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool &is_support_nd_out)
+{
+    if (!is_support_nd_out || !(self.dtype() == at::ScalarType::Half && mat2.dtype() == at::ScalarType::Half) ||
+        !(format_helper::GetFormat(self) == ACL_FORMAT_ND && format_helper::GetFormat(mat2) == ACL_FORMAT_ND)) {
+        return false;
+    }
+    // split_k rule, maybe modified afterwards
+    const static int64_t kSplitKTimes = 8;
+    return self.size(1) >= kSplitKTimes * std::max(self.size(0), mat2.size(1));
 }
 
-bool is_mm_transpose(const at::Tensor &tensor) {
-  if (tensor.dim() < 2 || tensor.dim() > 3) {
-    return false;
-  }
-  int64_t dim1 = tensor.dim() - 1;
-  int64_t dim2 = tensor.dim() - 2;
-  if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
-    return true;
-  } else {
-    return false;
-  }
+bool is_mm_transpose(const at::Tensor &tensor)
+{
+    if (tensor.dim() < 2 || tensor.dim() > 3) {
+        return false;
+    }
+    int64_t dim1 = tensor.dim() - 1;
+    int64_t dim2 = tensor.dim() - 2;
+    if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-bool mm_check_nd_to_nz_on_the_fly(const at::Tensor &self, const at::Tensor &mat2) {
-  const static int64_t kInnerAxisMinBytes = 256;
-  const static int64_t kInnerAxisMaxLimit = 65535;
-  int64_t self_inner_axis = self.size(self.dim() - 1);
-  int64_t self_outer_axis = self.size(self.dim() - 2);
-  int64_t mat2_inner_axis = mat2.size(mat2.dim() - 1);
-  int64_t mat2_outer_axis = mat2.size(mat2.dim() - 2);
-  if (is_mm_transpose(self)) {
-    self_inner_axis = self.size(self.dim() - 2);
-    self_outer_axis = self.size(self.dim() - 1);
-  }
-  if (is_mm_transpose(mat2)) {
-    mat2_inner_axis = mat2.size(mat2.dim() - 2);
-    mat2_outer_axis = mat2.size(mat2.dim() - 1);
-  }
-  int64_t data_type = elementSize(self.scalar_type());
-  if (self_outer_axis > kInnerAxisMaxLimit && self_inner_axis * data_type < kInnerAxisMinBytes &&
-      bool((self_inner_axis * data_type) & 0x1F)) {
-    return false;
-  }
-  return !((self_inner_axis > kInnerAxisMaxLimit && self_outer_axis > kInnerAxisMaxLimit) ||
-           (mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis > kInnerAxisMaxLimit));
+bool mm_check_nd_to_nz_on_the_fly(const at::Tensor &self, const at::Tensor &mat2)
+{
+    const static int64_t kInnerAxisMinBytes = 256;
+    const static int64_t kInnerAxisMaxLimit = 65535;
+    int64_t self_inner_axis = self.size(self.dim() - 1);
+    int64_t self_outer_axis = self.size(self.dim() - 2);
+    int64_t mat2_inner_axis = mat2.size(mat2.dim() - 1);
+    int64_t mat2_outer_axis = mat2.size(mat2.dim() - 2);
+    if (is_mm_transpose(self)) {
+        self_inner_axis = self.size(self.dim() - 2);
+        self_outer_axis = self.size(self.dim() - 1);
+    }
+    if (is_mm_transpose(mat2)) {
+        mat2_inner_axis = mat2.size(mat2.dim() - 2);
+        mat2_outer_axis = mat2.size(mat2.dim() - 1);
+    }
+    int64_t data_type = elementSize(self.scalar_type());
+    if (self_outer_axis > kInnerAxisMaxLimit && self_inner_axis * data_type < kInnerAxisMinBytes &&
+        bool((self_inner_axis * data_type) & 0x1F)) {
+        return false;
+    }
+    return !((self_inner_axis > kInnerAxisMaxLimit && self_outer_axis > kInnerAxisMaxLimit) ||
+             (mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis > kInnerAxisMaxLimit));
 }
 
-bool is_transpose_inner_axis(const at::Tensor &self) {
-  const static int64_t kInnerAxisMinBytes = 256;
-  const static int64_t kInnerAxisMaxLimit = 65535;
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1 || self.dim() < 2 ||
-      (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float)) {
-    return false;
-  }
-  int64_t data_type = elementSize(self.scalar_type());
-  int64_t self_inner_axis = self.size(self.dim() - 1);
-  int64_t self_outer_axis = self.size(self.dim() - 2);
-  if (is_mm_transpose(self)) {
-    self_inner_axis = self.size(self.dim() - 2);
-    self_outer_axis = self.size(self.dim() - 1);
-  }
-  if (self_inner_axis == 1 && self_outer_axis > kInnerAxisMaxLimit) {
-    return true;
-  }
-  if (self_inner_axis * self_outer_axis <= kInnerAxisMaxLimit) {
-    // too small tensor size
-    return false;
-  }
-  return ((self_inner_axis > kInnerAxisMaxLimit) ||
-          (self_inner_axis * data_type < kInnerAxisMinBytes && bool((self_inner_axis * data_type) & 0x1F))) &&
-         ((self_outer_axis * data_type >= kInnerAxisMinBytes && self_outer_axis <= kInnerAxisMaxLimit) ||
-          (self_outer_axis * data_type < kInnerAxisMinBytes && !((self_outer_axis * data_type) & 0x1F)));
+bool is_transpose_inner_axis(const at::Tensor &self)
+{
+    const static int64_t kInnerAxisMinBytes = 256;
+    const static int64_t kInnerAxisMaxLimit = 65535;
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1 || self.dim() < 2 ||
+        (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float)) {
+        return false;
+    }
+    int64_t data_type = elementSize(self.scalar_type());
+    int64_t self_inner_axis = self.size(self.dim() - 1);
+    int64_t self_outer_axis = self.size(self.dim() - 2);
+    if (is_mm_transpose(self)) {
+        self_inner_axis = self.size(self.dim() - 2);
+        self_outer_axis = self.size(self.dim() - 1);
+    }
+    if (self_inner_axis == 1 && self_outer_axis > kInnerAxisMaxLimit) {
+        return true;
+    }
+    if (self_inner_axis * self_outer_axis <= kInnerAxisMaxLimit) {
+        // too small tensor size
+        return false;
+    }
+    return ((self_inner_axis > kInnerAxisMaxLimit) ||
+            (self_inner_axis * data_type < kInnerAxisMinBytes && bool((self_inner_axis * data_type) & 0x1F))) &&
+           ((self_outer_axis * data_type >= kInnerAxisMinBytes && self_outer_axis <= kInnerAxisMaxLimit) ||
+            (self_outer_axis * data_type < kInnerAxisMinBytes && !((self_outer_axis * data_type) & 0x1F)));
 }
 
-bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2) {
-  const static int64_t kInnerAxisMaxLimit = 65535;
-  int64_t self_inner_axis = self.size(self.dim() - 1);
-  int64_t self_outer_axis = self.size(self.dim() - 2);
-  int64_t mat2_inner_axis = mat2.size(mat2.dim() - 1);
-  int64_t mat2_outer_axis = mat2.size(mat2.dim() - 2);
-  if (op_plugin::utils::is_transpose_last_two_dims(self)) {
-    self_inner_axis = self.size(self.dim() - 2);
-    self_outer_axis = self.size(self.dim() - 1);
-  }
-  if (op_plugin::utils::is_transpose_last_two_dims(mat2)) {
-    mat2_inner_axis = mat2.size(mat2.dim() - 2);
-    mat2_outer_axis = mat2.size(mat2.dim() - 1);
-  }
-  return self_inner_axis > kInnerAxisMaxLimit && self_outer_axis <= kInnerAxisMaxLimit &&
-         mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis <= kInnerAxisMaxLimit;
+bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2)
+{
+    const static int64_t kInnerAxisMaxLimit = 65535;
+    int64_t self_inner_axis = self.size(self.dim() - 1);
+    int64_t self_outer_axis = self.size(self.dim() - 2);
+    int64_t mat2_inner_axis = mat2.size(mat2.dim() - 1);
+    int64_t mat2_outer_axis = mat2.size(mat2.dim() - 2);
+    if (op_plugin::utils::is_transpose_last_two_dims(self)) {
+        self_inner_axis = self.size(self.dim() - 2);
+        self_outer_axis = self.size(self.dim() - 1);
+    }
+    if (op_plugin::utils::is_transpose_last_two_dims(mat2)) {
+        mat2_inner_axis = mat2.size(mat2.dim() - 2);
+        mat2_outer_axis = mat2.size(mat2.dim() - 1);
+    }
+    return self_inner_axis > kInnerAxisMaxLimit && self_outer_axis <= kInnerAxisMaxLimit &&
+           mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis <= kInnerAxisMaxLimit;
 }
 
-int64_t ceil(int64_t x, int64_t y) {
-  TORCH_CHECK(y != 0, "Error, zero division.");
-  return ((x + y - 1) / y) * y;
+int64_t ceil(int64_t x, int64_t y)
+{
+    TORCH_CHECK(y != 0, "Error, zero division.");
+    return ((x + y - 1) / y) * y;
 }
 
-int64_t ceil_div(int64_t x, int64_t y) {
-  TORCH_CHECK(y != 0, "Error, zero division.");
-  return (x + y - 1) / y;
+int64_t ceil_div(int64_t x, int64_t y)
+{
+    TORCH_CHECK(y != 0, "Error, zero division.");
+    return (x + y - 1) / y;
 }
 
 
-at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mat2) {
-  const auto& self_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(self);
-  const auto& mat2_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(mat2);
-  bool is_self_t_flex = is_transpose_last_two_dims_flex(self);
-  bool is_mat2_t_flex = is_transpose_last_two_dims_flex(mat2);
-  bool is_self_t_strict = is_transpose_last_two_dims_strict(self, is_self_t_flex);
-  bool is_mat2_t_strict = is_transpose_last_two_dims_strict(mat2, is_mat2_t_flex);
-  at::Tensor contiguous_self = self;
-  at::Tensor contiguous_mat2 = mat2;
+at::Tensor &mm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &mat2)
+{
+    const auto &self_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(self);
+    const auto &mat2_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(mat2);
+    bool is_self_t_flex = is_transpose_last_two_dims_flex(self);
+    bool is_mat2_t_flex = is_transpose_last_two_dims_flex(mat2);
+    bool is_self_t_strict = is_transpose_last_two_dims_strict(self, is_self_t_flex);
+    bool is_mat2_t_strict = is_transpose_last_two_dims_strict(mat2, is_mat2_t_flex);
+    at::Tensor contiguous_self = self;
+    at::Tensor contiguous_mat2 = mat2;
 
-  bool is_transpose_self = is_transpose_inner_axis(contiguous_self);
-  bool is_transpose_mat2 = is_transpose_inner_axis(contiguous_mat2);
-  if (is_transpose_self && is_transpose_mat2 &&
-      !is_transpose_both_inner_axis(contiguous_self, contiguous_mat2)) {
-    is_transpose_self = !is_transpose_self;
-    is_transpose_mat2 = !is_transpose_mat2;
-  }
+    bool is_transpose_self = is_transpose_inner_axis(contiguous_self);
+    bool is_transpose_mat2 = is_transpose_inner_axis(contiguous_mat2);
+    if (is_transpose_self && is_transpose_mat2 && !is_transpose_both_inner_axis(contiguous_self, contiguous_mat2)) {
+        is_transpose_self = !is_transpose_self;
+        is_transpose_mat2 = !is_transpose_mat2;
+    }
 
-  int64_t m_dim = self.size(-2);
-  int64_t k_dim = self.size(-1);
-  int64_t n_dim = mat2.size(-1);
-  int64_t data_size = elementSize(self.scalar_type());
-  int64_t self_inner_dim = is_self_t_flex ? m_dim : k_dim;
-  int64_t self_outer_dim = is_self_t_flex ? k_dim : m_dim;
-  int64_t mat2_inner_dim = is_mat2_t_flex ? k_dim : n_dim;
-  int64_t mat2_outer_dim = is_mat2_t_flex ? n_dim : k_dim;
-  // 512B aligned shape is soc friendly
-  const int64_t package_512 = 512;
-  // 128 unaligned inner axis performs bad
-  const int64_t inner_dim_alignment = 128;
-  const int64_t min_outer_dim = 2048;
-  const int64_t min_inner_dim = 1024;
-  // inner axis should be less than 16384 to gain perf improvement
-  const int64_t max_inner_dim = 16384;
-  bool self_cache_opti = self_outer_dim > min_outer_dim && ((self_outer_dim * data_size) % package_512 == 0);
-  self_cache_opti &= (self_inner_dim % inner_dim_alignment != 0) && self_inner_dim < max_inner_dim;
-  self_cache_opti &= self_inner_dim > min_inner_dim;
-  if (is_transpose_self) {
-    mm_insert_input_transpose(contiguous_self, is_self_t_flex, is_self_t_strict);
-  }
-  bool mat2_cache_opti = mat2_outer_dim > min_outer_dim && ((mat2_outer_dim * data_size) % package_512 == 0);
-  mat2_cache_opti &= (mat2_inner_dim % inner_dim_alignment != 0) && mat2_inner_dim < max_inner_dim;
-  mat2_cache_opti &= mat2_inner_dim > min_inner_dim;
-  if (is_transpose_mat2) {
-    mm_insert_input_transpose(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
-  }
+    int64_t m_dim = self.size(-2);
+    int64_t k_dim = self.size(-1);
+    int64_t n_dim = mat2.size(-1);
+    int64_t data_size = elementSize(self.scalar_type());
+    int64_t self_inner_dim = is_self_t_flex ? m_dim : k_dim;
+    int64_t self_outer_dim = is_self_t_flex ? k_dim : m_dim;
+    int64_t mat2_inner_dim = is_mat2_t_flex ? k_dim : n_dim;
+    int64_t mat2_outer_dim = is_mat2_t_flex ? n_dim : k_dim;
+    // 512B aligned shape is soc friendly
+    const int64_t package_512 = 512;
+    // 128 unaligned inner axis performs bad
+    const int64_t inner_dim_alignment = 128;
+    const int64_t min_outer_dim = 2048;
+    const int64_t min_inner_dim = 1024;
+    // inner axis should be less than 16384 to gain perf improvement
+    const int64_t max_inner_dim = 16384;
+    bool self_cache_opti = self_outer_dim > min_outer_dim && ((self_outer_dim * data_size) % package_512 == 0);
+    self_cache_opti &= (self_inner_dim % inner_dim_alignment != 0) && self_inner_dim < max_inner_dim;
+    self_cache_opti &= self_inner_dim > min_inner_dim;
+    if (is_transpose_self) {
+        mm_insert_input_transpose(contiguous_self, is_self_t_flex, is_self_t_strict);
+    }
+    bool mat2_cache_opti = mat2_outer_dim > min_outer_dim && ((mat2_outer_dim * data_size) % package_512 == 0);
+    mat2_cache_opti &= (mat2_inner_dim % inner_dim_alignment != 0) && mat2_inner_dim < max_inner_dim;
+    mat2_cache_opti &= mat2_inner_dim > min_inner_dim;
+    if (is_transpose_mat2) {
+        mm_insert_input_transpose(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
+    }
 
-  mm_set_format_contiguous(contiguous_self, is_self_t_flex, is_self_t_strict);
-  mm_set_format_contiguous(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
+    mm_set_format_contiguous(contiguous_self, is_self_t_flex, is_self_t_strict);
+    mm_set_format_contiguous(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("MatMul")
-      .InputWithoutContiguous(contiguous_self)
-      .InputWithoutContiguous(contiguous_mat2)
-      .Output(result)
-      .Attr("transpose_x1", is_self_t_flex)
-      .Attr("transpose_x2", is_mat2_t_flex)
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("MatMul")
+        .InputWithoutContiguous(contiguous_self)
+        .InputWithoutContiguous(contiguous_mat2)
+        .Output(result)
+        .Attr("transpose_x1", is_self_t_flex)
+        .Attr("transpose_x2", is_mat2_t_flex)
+        .Run();
 
-  // Recover storage desc of view-transpose tensors, i.e. the inverse process of
-  // set_transposed_npu_desc
-  if (is_self_t_flex && (!is_self_t_strict)) {
-    torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_ = self_desc;
-  }
-  if (is_mat2_t_flex && (!is_mat2_t_strict)) {
-    torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_ = mat2_desc;
-  }
+    // Recover storage desc of view-transpose tensors, i.e. the inverse process of
+    // set_transposed_npu_desc
+    if (is_self_t_flex && (!is_self_t_strict)) {
+        torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_ = self_desc;
+    }
+    if (is_mat2_t_flex && (!is_mat2_t_strict)) {
+        torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_ = mat2_desc;
+    }
 
-  return result;
+    return result;
 }
 } // namespace
 
-at::Tensor& mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& result) {
-  if (!result.is_contiguous()) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    mm_out_npu_nocheck(contiguous_result, self, mat2);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    mm_out_npu_nocheck(result, self, mat2);
-  }
-  return result;
+at::Tensor &mm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result)
+{
+    TORCH_CHECK(self.dim() >= 2 && mat2.dim() >= 2, "both arguments to matmul need to be at least 2D, but they are ",
+                self.dim(), "D and ", mat2.dim(), "D");
+
+    if (!result.is_contiguous()) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        mm_out_npu_nocheck(contiguous_result, self, mat2);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        mm_out_npu_nocheck(result, self, mat2);
+    }
+    return result;
 }
 
-at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
-  auto output_size = {self.size(0), mat2.size(1)};
+at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
+{
+    TORCH_CHECK(self.dim() >= 2 && mat2.dim() >= 2, "both arguments to matmul need to be at least 2D, but they are ",
+                self.dim(), "D and ", mat2.dim(), "D");
+    auto output_size = {self.size(0), mat2.size(1)};
 
-  at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
-  bool need_nd_out = false;
-  static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
-  bool split_k = mm_check_split_k(self, mat2, is_support_nd_out);
-  // check format_out of mm is NCHW. Delate after definite NLP model.
-  if ((self.scalar_type() == at::ScalarType::Half)) {
-    // check is 16-algined with high-performance
-    auto is_aligin = [&]() {
-      return (!(static_cast<uint64_t>(self.size(0)) & 0xF)) && (!(static_cast<uint64_t>(self.size(1)) & 0xF)) &&
-             (!(static_cast<uint64_t>(mat2.size(0)) & 0xF)) && (!(static_cast<uint64_t>(mat2.size(1)) & 0xF));
-    };
-    // There is a data trampling problem in non-aligned scenes. For the time
-    // being, only aligned scenes are supported.
-    static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
-    if (format_helper::IsBaseFormatType(self) && format_helper::IsBaseFormatType(mat2) && mm_bmm_nd &&
-        ((is_support_nd_out && mm_check_nd_to_nz_on_the_fly(self, mat2)) || (!is_support_nd_out && is_aligin()))) {
-      if (split_k) {
-        result = npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::ScalarType::Float),
-                                                           ACL_FORMAT_ND);
-      } else {
-        result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
-      }
-    } else {
-      need_nd_out = mm_bmm_nd;
-      if (split_k) {
-        result = npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::ScalarType::Float),
-                                                           ACL_FORMAT_FRACTAL_NZ, true);
-      } else {
-        result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);
-      }
+    at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
+    bool need_nd_out = false;
+    static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
+    bool split_k = mm_check_split_k(self, mat2, is_support_nd_out);
+    // check format_out of mm is NCHW. Delate after definite NLP model.
+    if ((self.scalar_type() == at::ScalarType::Half)) {
+        // check is 16-algined with high-performance
+        auto is_aligin = [&]() {
+            return (!(static_cast<uint64_t>(self.size(0)) & 0xF)) && (!(static_cast<uint64_t>(self.size(1)) & 0xF)) &&
+                   (!(static_cast<uint64_t>(mat2.size(0)) & 0xF)) && (!(static_cast<uint64_t>(mat2.size(1)) & 0xF));
+        };
+        // There is a data trampling problem in non-aligned scenes. For the time
+        // being, only aligned scenes are supported.
+        static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
+        if (format_helper::IsBaseFormatType(self) && format_helper::IsBaseFormatType(mat2) && mm_bmm_nd &&
+            ((is_support_nd_out && mm_check_nd_to_nz_on_the_fly(self, mat2)) || (!is_support_nd_out && is_aligin()))) {
+            if (split_k) {
+                result = npu_preparation::apply_tensor_with_format(
+                    output_size, self.options().dtype(at::ScalarType::Float), ACL_FORMAT_ND);
+            } else {
+                result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
+            }
+        } else {
+            need_nd_out = mm_bmm_nd;
+            if (split_k) {
+                result = npu_preparation::apply_tensor_with_format(
+                    output_size, self.options().dtype(at::ScalarType::Float), ACL_FORMAT_FRACTAL_NZ, true);
+            } else {
+                result =
+                    npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);
+            }
+        }
     }
-  }
 
-  mm_out_npu_nocheck(result, self, mat2);
+    mm_out_npu_nocheck(result, self, mat2);
 
-  if (need_nd_out) {
-    result = at_npu::native::custom_ops::npu_format_cast(result, ACL_FORMAT_ND);
-  }
-  result = split_k ? at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Half) : result;
-  return result;
+    if (need_nd_out) {
+        result = at_npu::native::custom_ops::npu_format_cast(result, ACL_FORMAT_ND);
+    }
+    result = split_k ? at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Half) : result;
+    return result;
 }
 } // namespace acl_op

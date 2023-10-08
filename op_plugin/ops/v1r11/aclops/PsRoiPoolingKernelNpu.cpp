@@ -23,42 +23,36 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_op_command = at_npu::native::OpCommand;
 
 namespace {
-at::Tensor& ps_roi_pooling_backward_npu_nocheck(
-    at::Tensor& input_grad,
-    const at::Tensor& output_grad,
-    const at::Tensor& rois,
-    double spatial_scale,
-    int64_t group_size,
-    int64_t output_dim,
-    at::IntArrayRef input_size) {
-  npu_op_command cmd;
-  cmd.Name("PSROIPoolingGradV2D")
-      .Input(output_grad, "x")
-      .Input(rois)
-      .Output(input_grad, "y")
-      .Attr("spatial_scale", (float)spatial_scale)
-      .Attr("group_size", group_size)
-      .Attr("output_dim", output_dim)
-      .Attr("input_size", input_size)
-      .Run();
+at::Tensor &ps_roi_pooling_backward_npu_nocheck(at::Tensor &input_grad, const at::Tensor &output_grad,
+                                                const at::Tensor &rois, double spatial_scale, int64_t group_size,
+                                                int64_t output_dim, at::IntArrayRef input_size)
+{
+    npu_op_command cmd;
+    cmd.Name("PSROIPoolingGradV2D")
+        .Input(output_grad, "x")
+        .Input(rois)
+        .Output(input_grad, "y")
+        .Attr("spatial_scale", (float)spatial_scale)
+        .Attr("group_size", group_size)
+        .Attr("output_dim", output_dim)
+        .Attr("input_size", input_size)
+        .Run();
 
-  return input_grad;
+    return input_grad;
 }
 } // namespace
 
-at::Tensor npu_ps_roi_pooling_backward(
-    const at::Tensor& output_grad,
-    const at::Tensor& rois,
-    double spatial_scale,
-    int64_t group_size,
-    int64_t output_dim,
-    at::IntArrayRef input_size) {
-  auto output_size = {rois.size(0), group_size * group_size * output_dim, input_size[0], input_size[1]};
+at::Tensor npu_ps_roi_pooling_backward(const at::Tensor &output_grad, const at::Tensor &rois, double spatial_scale,
+                                       int64_t group_size, int64_t output_dim, at::IntArrayRef input_size)
+{
+    TORCH_CHECK(rois.dim() > 0, "rois must has dim > 0");
+    TORCH_CHECK(input_size.size() >= 2, "input_size must has dim >= 2");
+    auto output_size = {rois.size(0), group_size * group_size * output_dim, input_size[0], input_size[1]};
 
-  at::Tensor input_grad = npu_preparation::apply_tensor(output_grad, output_size);
-  ps_roi_pooling_backward_npu_nocheck(input_grad, output_grad,
-      rois, spatial_scale, group_size, output_dim, input_size);
+    at::Tensor input_grad = npu_preparation::apply_tensor(output_grad, output_size);
+    ps_roi_pooling_backward_npu_nocheck(input_grad, output_grad, rois, spatial_scale, group_size, output_dim,
+                                        input_size);
 
-  return input_grad;
+    return input_grad;
 }
 } // namespace acl_op

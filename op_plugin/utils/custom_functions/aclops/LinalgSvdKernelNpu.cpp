@@ -161,6 +161,7 @@ static void linalg_check_errors(
     // Find the first non-zero info
     auto infos_cpu = infos.to(at::kCPU);
     auto ptr = infos_cpu.data_ptr<int32_t>();
+    TORCH_CHECK(ptr != nullptr, "infos is null")
     auto n = infos.numel();
     auto info_ptr = std::find_if(ptr, ptr + n, [](int32_t x) { return x != 0; });
     info = *info_ptr;

@@ -34,6 +34,7 @@ std::tuple<at::Tensor, at::Tensor> _pad_packed_sequence(
   // input shape is [B*T, *], calculate the B and T
   auto batch_sizes_cpu = batch_sizes.to("cpu");
   int64_t* batch_size_vec = batch_sizes_cpu.data_ptr<int64_t>();
+  TORCH_CHECK(batch_size_vec != nullptr, "batch_sizes is null")
   auto batchsize = batch_size_vec[0];
   auto timesize = batch_sizes.size(0);
 
@@ -54,6 +55,7 @@ std::tuple<at::Tensor, at::Tensor> _pad_packed_sequence(
 
   auto batch_sizes_val = at::empty({batchsize}, batch_sizes_cpu.options());
   auto batch_sizes_vec = batch_sizes_val.data_ptr<int64_t>();
+  TORCH_CHECK(batch_sizes_vec != nullptr, "batch_sizes_val is null")
   int64_t last = timesize - 1;
   for (int bi = 0; bi < batchsize; bi++) {
     for (int ti = last; ti >= 0; ti--) {

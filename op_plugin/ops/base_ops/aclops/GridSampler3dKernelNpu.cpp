@@ -21,67 +21,68 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-at::Tensor& grid_sampler_3d_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    const at::Tensor& grid,
-    std::string inter_mode,
-    std::string padding_mode,
-    bool align_corners) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("GridSampler3D")
-      .Input(self)
-      .Input(grid)
-      .Output(result)
-      .Attr("interpolation_mode", inter_mode)
-      .Attr("padding_mode", padding_mode)
-      .Attr("align_corners", align_corners)
-      .Run();
-  return result;
+at::Tensor &grid_sampler_3d_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &grid,
+                                        std::string inter_mode, std::string padding_mode, bool align_corners)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("GridSampler3D")
+        .Input(self)
+        .Input(grid)
+        .Output(result)
+        .Attr("interpolation_mode", inter_mode)
+        .Attr("padding_mode", padding_mode)
+        .Attr("align_corners", align_corners)
+        .Run();
+    return result;
 }
 } // namespace
 
-at::Tensor grid_sampler_3d(
-    const at::Tensor& self,
-    const at::Tensor& grid,
-    int64_t interpolation_mode,
-    int64_t padding_mode,
-    bool align_corners) {
-  TORCH_CHECK((0 <= interpolation_mode && interpolation_mode <= 2), "interpolation_mode must be in range [0~2].")
-  TORCH_CHECK((0 <= padding_mode && padding_mode <= 2), "padding_mode must be in range [0~2].")
-  at::Tensor format_cast_of_self = self;
-  at::Tensor format_cast_of_grid = grid;
-  if (format_cast_of_self.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_self = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_self, at::ScalarType::Float);
-  }
-  if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_grid = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
-  }
+at::Tensor grid_sampler_3d(const at::Tensor &self, const at::Tensor &grid, int64_t interpolation_mode,
+                           int64_t padding_mode, bool align_corners)
+{
+    TORCH_CHECK((0 <= interpolation_mode && interpolation_mode <= 2), "interpolation_mode must be in range [0~2].")
+    TORCH_CHECK((0 <= padding_mode && padding_mode <= 2), "padding_mode must be in range [0~2].")
+    TORCH_CHECK(self.dim() == 5 && self.dim() == grid.dim(),
+                "grid_sampler(): expected 5D input and grid with same number of "
+                "dimensions, but got input with sizes ",
+                self.sizes(), " and grid with sizes ", grid.sizes());
+    TORCH_CHECK(self.defined(), "grid_sampler(): expected input to not be undefined");
+    TORCH_CHECK(grid.defined(), "grid_sampler(): expected grid to not be undefined");
+    TORCH_CHECK(self.size(0) == grid.size(0),
+                "grid_sampler(): expected grid and input to have same batch "
+                "size, but got "
+                "input with sizes ",
+                self.sizes(), " and grid with sizes ", grid.sizes());
+    TORCH_CHECK(grid.size(-1) == self.dim() - 2, "grid_sampler(): expected grid to have size ", self.dim() - 2,
+                " in last "
+                "dimension, but got grid with sizes ",
+                grid.sizes());
 
-  c10::SmallVector<int64_t, SIZE> output_size = {
-      format_cast_of_self.size(0),
-      format_cast_of_self.size(1),
-      format_cast_of_grid.size(1),
-      format_cast_of_grid.size(2),
-      format_cast_of_grid.size(3)};
+    at::Tensor format_cast_of_self = self;
+    at::Tensor format_cast_of_grid = grid;
+    if (format_cast_of_self.scalar_type() == at::ScalarType::Half) {
+        format_cast_of_self = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_self, at::ScalarType::Float);
+    }
+    if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
+        format_cast_of_grid = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
+    }
 
-  at::Tensor result =
-      npu_preparation::apply_tensor_with_format(output_size, format_cast_of_self.options(), ACL_FORMAT_ND);
-  std::string inter_mode[] = {"bilinear", "nearest", "bicubic"};
-  std::string pad_mode[] = {"zeros", "border", "reflection"};
+    c10::SmallVector<int64_t, SIZE> output_size = {format_cast_of_self.size(0), format_cast_of_self.size(1),
+                                                   format_cast_of_grid.size(1), format_cast_of_grid.size(2),
+                                                   format_cast_of_grid.size(3)};
 
-  grid_sampler_3d_npu_nocheck(
-      result,
-      format_cast_of_self,
-      format_cast_of_grid,
-      inter_mode[interpolation_mode],
-      pad_mode[padding_mode],
-      align_corners);
+    at::Tensor result =
+        npu_preparation::apply_tensor_with_format(output_size, format_cast_of_self.options(), ACL_FORMAT_ND);
+    std::string inter_mode[] = {"bilinear", "nearest", "bicubic"};
+    std::string pad_mode[] = {"zeros", "border", "reflection"};
 
-  at::ScalarType self_scalar_type(self.scalar_type());
-  if (result.scalar_type() != self_scalar_type) {
-    result = at_npu::native::custom_ops::npu_dtype_cast(result, self_scalar_type);
-  }
-  return result;
+    grid_sampler_3d_npu_nocheck(result, format_cast_of_self, format_cast_of_grid, inter_mode[interpolation_mode],
+                                pad_mode[padding_mode], align_corners);
+
+    at::ScalarType self_scalar_type(self.scalar_type());
+    if (result.scalar_type() != self_scalar_type) {
+        result = at_npu::native::custom_ops::npu_dtype_cast(result, self_scalar_type);
+    }
+    return result;
 }
 } // namespace acl_op

@@ -21,21 +21,16 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor npu_rotated_box_decode(
-    const at::Tensor& self,
-    const at::Tensor& deltas,
-    const at::Tensor& weight) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  at::Tensor weight_cpu = weight.to(at::Device(at::kCPU), at::kFloat);
-  at::ArrayRef<float> weight_list(weight_cpu.data_ptr<float>(), weight_cpu.numel());
+at::Tensor npu_rotated_box_decode(const at::Tensor &self, const at::Tensor &deltas, const at::Tensor &weight)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    at::Tensor weight_cpu = weight.to(at::Device(at::kCPU), at::kFloat);
+    auto weight_ptr = weight_cpu.data_ptr<float>();
+    TORCH_CHECK(weight_ptr != nullptr, "weight_ptr is nullptr.");
+    at::ArrayRef<float> weight_list(weight_ptr, weight_cpu.numel());
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("RotatedBoxDecode")
-      .Input(self)
-      .Input(deltas)
-      .Output(result)
-      .Attr("weight", weight_list)
-      .Run();
-  return result;
+    at_npu::native::OpCommand cmd;
+    cmd.Name("RotatedBoxDecode").Input(self).Input(deltas).Output(result).Attr("weight", weight_list).Run();
+    return result;
 }
 } // namespace acl_op

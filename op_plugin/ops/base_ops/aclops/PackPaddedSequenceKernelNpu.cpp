@@ -35,7 +35,7 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
       " (batch_size=", batchsize, ")");
 
   auto lengths_vec = lengths.contiguous().data_ptr<int64_t>();
-  TORCH_CHECK(lengths_vec[batchsize - 1] > 0,
+  TORCH_CHECK(lengths_vec != nullptr && lengths_vec[batchsize - 1] > 0,
       "Length of all samples has to be greater than 0, but found an element "
       "in 'lengths' that is <= 0");
 
@@ -66,6 +66,7 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
 
   at::Tensor batchsizes = at::empty({timesize}, lengths.options());
   auto batchsize_vec = batchsizes.data_ptr<int64_t>();
+  TORCH_CHECK(batchsize_vec != nullptr, "batchsizes is null")
   int64_t last = batchsize - 1;
   for (int ti = 0; ti < timesize; ti++) {
     for (int bi = last; bi >= 0 ; bi--) {
