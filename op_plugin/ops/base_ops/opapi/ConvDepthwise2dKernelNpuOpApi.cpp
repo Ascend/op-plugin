@@ -32,7 +32,7 @@ const at::Tensor& _conv_depthwise2d_out(
   DO_COMPATIBILITY(aclnnConvDepthwise2d, acl_op::_conv_depthwise2d_out(self, weight, kernel_size, bias_opt,
                                                                        stride, padding, dilation, out));
   if (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable()) {
-    return acl_op::_conv_depthwise2d(self, weight, kernel_size, bias_opt, stride, padding, dilation);
+    return acl_op::_conv_depthwise2d_out(self, weight, kernel_size, bias_opt, stride, padding, dilation, out);
   }
   const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
   int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());

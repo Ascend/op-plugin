@@ -23,6 +23,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> slogdet(const at::Tensor& self) {
   DO_COMPATIBILITY(aclnnSlogdet, acl_op::slogdet(self));
+  // input dimension at least 2
+  TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim());
   // calculate the output size
   auto outputSize = op_infer::array_to_small_vector(self.sizes());
   outputSize.erase(outputSize.end() - 2, outputSize.end());
