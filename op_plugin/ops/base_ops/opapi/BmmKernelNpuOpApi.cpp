@@ -29,7 +29,7 @@ at::Tensor& bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& 
 
   // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should use
   // and functions such as hfloat32 can be enabled through this switch
-  int cube_math_type = 1;
+  int cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnBatchMatMul, self, mat2, result, cube_math_type);
   return result;
 }
@@ -46,7 +46,7 @@ at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
 
   // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should use
   // and functions such as hfloat32 can be enabled through this switch
-  int cube_math_type = 1;
+  int cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
   EXEC_NPU_CMD(aclnnBatchMatMul, self, mat2, result, cube_math_type);
   return result;
 }
