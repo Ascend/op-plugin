@@ -37,6 +37,7 @@ std::tuple<at::Tensor, at::Tensor> triangular_solve_out_common_nocheck(
   auto self_working_copy = npu_preparation::apply_tensor(self_broadcasted);
   auto a_working_copy = a_broadcasted.clone();
   at::Tensor a_tensor = a_broadcasted;
+  TORCH_CHECK(a_tensor.dim() >= 2, "The dim of input tensor must larger than two.");
   if (unitriangular) {
     auto diagonal_tensor = at::eye(a_tensor.size(-2), a_tensor.size(-1), a_tensor.options());
     a_tensor = a_tensor * (1 - diagonal_tensor) + diagonal_tensor;

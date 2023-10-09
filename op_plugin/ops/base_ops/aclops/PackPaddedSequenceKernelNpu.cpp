@@ -24,11 +24,14 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
     const at::Tensor& input,
     const at::Tensor& lengths,
     bool batch_first) {
-  // get the size of B and T, the input size is [T, B, *] or [B, T, *]
-  auto batchsize = batch_first ? input.size(0) : input.size(1);
-  auto timesize = batch_first ? input.size(1) : input.size(0);
+    TORCH_CHECK(input.dim() >= 2, "Input must have two dims.", input.dim());
+    // get the size of B and T, the input size is [T, B, *] or [B, T, *]
+    auto batchsize = batch_first ? input.size(0) : input.size(1);
+    auto timesize = batch_first ? input.size(1) : input.size(0);
 
-  TORCH_CHECK(input.numel() > 0, "Cannot pack empty tensors.");
+    TORCH_CHECK(input.numel() > 0, "Cannot pack empty tensors.");
+    TORCH_CHECK(input.numel() < std::numeric_limits<int64_t>::max(),
+                "Input tensor contain more than the max number of int64.");
 
   TORCH_CHECK(lengths.size(0) == batchsize,
       "Expected 'len(lengths)' to be equal to batch_size, but got ", lengths.size(0),

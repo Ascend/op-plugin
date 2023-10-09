@@ -31,6 +31,9 @@ at::Tensor& slow_conv_transpose2d_backward_grad_output_out_nocheck(
     at::IntArrayRef padding,
     at::IntArrayRef output_padding,
     at::IntArrayRef dilation) {
+  TORCH_CHECK(stride.size() >= 2, "stride size must bigger than 2.");
+  TORCH_CHECK(padding.size() >= 2, "padding size must bigger than 2.");
+  TORCH_CHECK(dilation.size() >= 2, "dilation size must bigger than 2.");
   c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
   c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1]};

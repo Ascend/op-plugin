@@ -25,6 +25,7 @@ at::Tensor bincount(
     const c10::optional<at::Tensor>& weight_opt,
     int64_t minlength) {
   const at::Tensor& weights = c10::value_or_else(weight_opt, [] {return at::Tensor();});
+  TORCH_CHECK(self.numel() > 0, "The input tensor is an empty tensor.");
   if (self.sizes()[0] == 0) {
     auto result = npu_preparation::ApplyTensorWithSizes({0}, self.options().dtype(at::kLong));
     return result;

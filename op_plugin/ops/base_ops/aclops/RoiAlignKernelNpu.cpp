@@ -26,6 +26,8 @@ c10::SmallVector<int64_t, SIZE> roi_align_npu_output_size(
     const at::Tensor& rois,
     int64_t pooled_height,
     int64_t pooled_width) {
+  TORCH_CHECK(rois.dim() >= 1, "The dim of input tensor [rois] is less than 1.");
+  TORCH_CHECK(self.dim() >= 2, "The dim of input tensor [self] is less than 2.");
   return {
       rois.size(0),
       self.size(1),

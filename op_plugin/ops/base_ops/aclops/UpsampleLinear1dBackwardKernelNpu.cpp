@@ -58,26 +58,36 @@ at::Tensor& upsample_linear1d_backward_out_nocheck(
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<double> scales) {
-  c10::SmallVector<float, N> sc = {};
-  if (scales.has_value()) {
-    sc.push_back(scales.value());
-  } else {
-    float temp = float(grad_output.size(3)) / float(input_size[2]);
-    sc.push_back(temp);
-  }
-  string coordinate_transformation_mode = align_corners ? "align_corners" : "half_pixel";
+    c10::SmallVector<float, N> sc = {};
+    TORCH_CHECK(
+        input_size.size() == 3 && input_size[2] != 0,
+        "It is expected input_size equals to 3, but got size ",
+        input_size.size());
+    
+    TORCH_CHECK(
+        (grad_output.size(1) != 0 && grad_output.size(2) != 0) && grad_output.dim() == 3,
+        "Non-empty 3D data tensor expected but got a tensor with sizes ",
+        grad_output.sizes());
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ResizeGradD")
-      .Input(grad_output, "grads")
-      .Output(result, "y")
-      .Attr("original_size", input_size)
-      .Attr("scales", sc)
-      .Attr("coordinate_transformation_mode", coordinate_transformation_mode)
-      .Attr("mode", (string)"linear")
-      .Run();
-  return result;
-}
+    if (scales.has_value()) {
+        sc.push_back(scales.value());
+    } else {
+        float temp = float(grad_output.size(3)) / float(input_size[2]);
+        sc.push_back(temp);
+    }
+    string coordinate_transformation_mode = align_corners ? "align_corners" : "half_pixel";
+
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ResizeGradD")
+        .Input(grad_output, "grads")
+        .Output(result, "y")
+        .Attr("original_size", input_size)
+        .Attr("scales", sc)
+        .Attr("coordinate_transformation_mode", coordinate_transformation_mode)
+        .Attr("mode", (string)"linear")
+        .Run();
+    return result;
+  }
 } // namespace
 
 at::Tensor upsample_linear1d_backward(

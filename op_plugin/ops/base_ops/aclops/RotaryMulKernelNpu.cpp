@@ -50,7 +50,10 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> rotary_mul_backward_nocheck(
     const at::Tensor& r1,
     const at::Tensor& r2,
     const at::Tensor& dy) {
-  if (x.sizes()[3] % 64 != 0) {
+  TORCH_CHECK(x.dim() == 4, "The dim of input tensor [x] shoule equal to four.");
+  TORCH_CHECK(r1.dim() == 4, "The dim of input tensor [r1] shoule equal to four.");
+  TORCH_CHECK(r2.dim() == 4, "The dim of input tensor [r2] shoule equal to four.");
+  if (x.sizes()[3] % 64 == 0) {
     at::Tensor x_grad_mul = at::mul(x, dy);
     at::Tensor x1_grad_mul = at::mul(r1, dy);
     at::Tensor x2_grad_mul = at::mul(r2, dy);

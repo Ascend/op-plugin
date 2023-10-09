@@ -51,6 +51,7 @@ at::Tensor batch_norm_backward_elemt(
   TORCH_CHECK(input_ndim > 1, "input.dim() <= 1")
 
   auto divisor = count.sum();
+  TORCH_CHECK(divisor.numel() > 0, "The input tensor [count] is an empty tensor.");
   auto mean_dy = sum_dy.div(divisor);
   auto mean_dy_xmu = sum_dy_xmu.div(divisor);
 

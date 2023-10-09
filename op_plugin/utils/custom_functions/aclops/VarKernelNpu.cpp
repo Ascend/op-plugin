@@ -35,19 +35,23 @@ std::vector<int64_t> var_check_and_trans_dim(const at::Tensor& self, at::IntArra
 }
 
 int64_t var_get_shape_prod(const at::Tensor& self, at::IntArrayRef dim) {
-  int64_t shape_prod = 1;
-  if (self.dim() == 0) {
-    shape_prod = 1;
-  } else if (dim.size() == 0) {
-    for (auto i = 0; i < self.dim(); i++) {
-      shape_prod *= self.size(i);
+    TORCH_CHECK(self.numel() < std::numeric_limits<int64_t>::max(),
+                "Input tensor contain more than the max number of int64.");
+    int64_t shape_prod = 1;
+    if (self.dim() == 0) {
+        shape_prod = 1;
+    } else if (dim.size() == 0) {
+        for (auto i = 0; i < self.dim(); i++) {
+            shape_prod *= self.size(i);
+        }
+    } else {
+      for (auto i = 0; i < dim.size(); i++) {
+          shape_prod *= self.size(dim[i]);
+          TORCH_CHECK(shape_prod > std::numeric_limits<int64_t>::max(),
+                      "Result is larger than the max number of int64.");
+      }
     }
-  } else {
-    for (auto i = 0; i < dim.size(); i++) {
-      shape_prod *= self.size(dim[i]);
-    }
-  }
-  return shape_prod;
+    return shape_prod;
 }
 
 at::Tensor& var_after_out_nocheck(

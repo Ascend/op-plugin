@@ -29,6 +29,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_batch_nms(
     int64_t max_total_size,
     bool change_coordinate_frame,
     bool transpose_box) {
+  TORCH_CHECK(self.numel() > 0, "The input tensor [self] is an empty tensor.");
   at::Tensor nmsed_boxes = npu_preparation::apply_tensor(
       {self.size(0), max_total_size, 4},
       self.options(),

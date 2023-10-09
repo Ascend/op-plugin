@@ -24,12 +24,14 @@ std::tuple<at::Tensor, at::Tensor> _pad_packed_sequence(
     bool batch_first,
     const at::Scalar& padding_value,
     int64_t total_length) {
-  if (total_length > 0) {
-    TORCH_CHECK(total_length >= batch_sizes.size(0),
-        "Expected total_length to be at least the length of the longest "
-        "sequence in input, but got total_length=", total_length, " and "
-        "max sequence length being ", batch_sizes.size(0));
-  }
+    TORCH_CHECK(batch_sizes.dim() >= 1,
+                "Input batch_sizes dim number must larger than one.");
+    if (total_length > 0) {
+      TORCH_CHECK(total_length >= batch_sizes.size(0),
+                  "Expected total_length to be at least the length of the longest "
+                  "sequence in input, but got total_length=", total_length, " and "
+                  "max sequence length being ", batch_sizes.size(0));
+    }
 
   // input shape is [B*T, *], calculate the B and T
   auto batch_sizes_cpu = batch_sizes.to("cpu");
@@ -38,20 +40,20 @@ std::tuple<at::Tensor, at::Tensor> _pad_packed_sequence(
   auto batchsize = batch_size_vec[0];
   auto timesize = batch_sizes.size(0);
 
-  // make tensor after padding, [B, T, *] or [T, B, *]
-  at::SmallVector<int64_t, N> shape;
-  shape.emplace_back(timesize);
-  shape.emplace_back(batchsize);
+    // make tensor after padding, [B, T, *] or [T, B, *]
+    at::SmallVector<int64_t, N> shape;
+    shape.emplace_back(timesize);
+    shape.emplace_back(batchsize);
 
-  for (int i = 1; i < input.dim(); i++) {
-    shape.emplace_back(input.size(i));
-  }
+    for (int i = 1; i < input.dim(); i++) {
+      shape.emplace_back(input.size(i));
+    }
 
-  auto output = input.reshape(shape);
-  if (batch_first) {
-    output = output.transpose(0, 1);
-  }
-  output = output.contiguous();
+    auto output = input.reshape(shape);
+    if (batch_first) {
+      output = output.transpose(0, 1);
+    }
+    output = output.contiguous();
 
   auto batch_sizes_val = at::empty({batchsize}, batch_sizes_cpu.options());
   auto batch_sizes_vec = batch_sizes_val.data_ptr<int64_t>();
@@ -67,5 +69,5 @@ std::tuple<at::Tensor, at::Tensor> _pad_packed_sequence(
     }
   }
   return std::tie(output, batch_sizes_val);
-}
+  }
 } // namespace acl_op

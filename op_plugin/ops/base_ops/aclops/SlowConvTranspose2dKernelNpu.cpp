@@ -162,7 +162,10 @@ at::Tensor& slow_conv_transpose2d_out_nocheck(
   if (!out.sizes().equals(output_size)) {
     out.resize_(output_size);
   }
-
+  
+  TORCH_CHECK(stride.size() >= 2, "stride size must bigger than 2.");
+  TORCH_CHECK(padding.size() >= 2, "padding size must bigger than 2.");
+  TORCH_CHECK(dilation.size() >= 2, "dilation size must bigger than 2.");
   c10::SmallVector<int64_t, N> paddings = {
       padding[0], padding[0], padding[1], padding[1]};
   c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
