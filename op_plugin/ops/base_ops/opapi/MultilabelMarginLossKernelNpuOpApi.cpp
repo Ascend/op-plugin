@@ -18,6 +18,7 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+constexpr int INPUT_DIMS = 2;
 
 at::Tensor& multilabel_margin_loss_out(
     const at::Tensor & self,
@@ -28,7 +29,7 @@ at::Tensor& multilabel_margin_loss_out(
                    acl_op::multilabel_margin_loss_out(self, target, reduction,
                                                       output));
   c10::SmallVector<int64_t, op_infer::SIZE> is_target_size;
-  if (self.dim() == 2 && self.size(0) ==0) {
+  if (self.dim() == INPUT_DIMS && self.size(0) ==0) {
     is_target_size = {self.size(0)};
   } else {
     is_target_size = op_infer::array_to_small_vector(target.sizes());
@@ -54,11 +55,11 @@ std::tuple<at::Tensor&, at::Tensor&> multilabel_margin_loss_forward_out(
                    acl_op::multilabel_margin_loss_forward_out(self, target, reduction,
                                                               output, is_target));
   c10::SmallVector<int64_t, op_infer::SIZE> output_size;
-  if (self.dim() == 2 && reduction == at::Reduction::None) {
+  if (self.dim() == INPUT_DIMS && reduction == at::Reduction::None) {
     output_size = {self.size(0)};
   }
   c10::SmallVector<int64_t, op_infer::SIZE> is_target_size;
-  if (self.dim() == 2 && self.size(0) ==0) {
+  if (self.dim() == INPUT_DIMS && self.size(0) ==0) {
     is_target_size = {self.size(0)};
   } else {
     is_target_size = op_infer::array_to_small_vector(target.sizes());
@@ -77,11 +78,11 @@ std::tuple<at::Tensor, at::Tensor> multilabel_margin_loss_forward(
   DO_COMPATIBILITY(aclnnMultilabelMarginLoss,
                    acl_op::multilabel_margin_loss_forward(self, target, reduction));
   c10::SmallVector<int64_t, op_infer::SIZE> output_size;
-  if (self.dim() == 2 && reduction == at::Reduction::None) {
+  if (self.dim() == INPUT_DIMS && reduction == at::Reduction::None) {
     output_size = {self.size(0)};
   }
   c10::SmallVector<int64_t, op_infer::SIZE> is_target_size;
-  if (self.dim() == 2 && self.size(0) ==0) {
+  if (self.dim() == INPUT_DIMS && self.size(0) ==0) {
     is_target_size = {self.size(0)};
   } else {
     is_target_size = op_infer::array_to_small_vector(target.sizes());

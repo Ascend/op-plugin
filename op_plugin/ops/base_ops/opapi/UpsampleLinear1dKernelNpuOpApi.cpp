@@ -20,6 +20,7 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+constexpr int DEFAULT_SCALES = -1;
 
 at::Tensor& upsample_linear1d_out(
     const at::Tensor& self,
@@ -35,7 +36,7 @@ at::Tensor& upsample_linear1d_out(
   auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size,
                                                              align_corners, scales);
   npu_preparation::check_tensor({self}, result, self, outsize);
-  double scales_h_attr = scales.value_or(-1);
+  double scales_h_attr = scales.value_or(DEFAULT_SCALES);
 
   EXEC_NPU_CMD(aclnnUpsampleLinear1d, self, output_size, align_corners, scales_h_attr, result);
   return result;
@@ -52,7 +53,7 @@ at::Tensor upsample_linear1d(
 
   auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size,
                                                              align_corners, scales);
-  double scales_h_attr = scales.value_or(-1);
+  double scales_h_attr = scales.value_or(DEFAULT_SCALES);
 
   at::Tensor result = npu_preparation::apply_tensor_without_format(outsize, self.options());
 

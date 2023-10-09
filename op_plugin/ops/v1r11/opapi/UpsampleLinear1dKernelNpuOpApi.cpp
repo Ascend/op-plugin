@@ -34,7 +34,8 @@ at::Tensor upsample_linear1d(
   auto outsize = at::IntArrayRef(osize);
   auto out_size = op_infer::upsample_linear1d_npu_output_size(self, outsize,
                                                               align_corners, scales);
-  double scales_h_attr = scales.value_or(-1);
+  constexpr int DEFAULT_SCALES = -1;
+  double scales_h_attr = scales.value_or(DEFAULT_SCALES);
   at::Tensor result = npu_preparation::apply_tensor_without_format(out_size, self.options());
 
   EXEC_NPU_CMD(aclnnUpsampleLinear1d, self, outsize, align_corners, scales_h_attr, result);

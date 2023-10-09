@@ -31,7 +31,8 @@ at::Tensor upsample_nearest1d_backward(
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto output_osize = at::IntArrayRef(osize);
   auto scales = op_plugin::utils::get_scale_value(scale_factors, 0);
-  double scales_attr = scales.value_or(-1);
+  constexpr int DEFAULT_SCALES = -1;
+  double scales_attr = scales.value_or(DEFAULT_SCALES);
   at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
 
   EXEC_NPU_CMD(aclnnUpsampleNearest1dBackward, grad_output, output_osize, input_size,
