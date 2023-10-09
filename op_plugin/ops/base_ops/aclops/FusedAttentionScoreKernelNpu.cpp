@@ -148,6 +148,7 @@ at::Tensor npu_fused_attention_score(
     bool bmm_score_transpose_b,
     bool value_transpose,
     bool dx_transpose) {
+    TORCH_CHECK(query_layer.dim() >= 4, "query_layer must be at least 4-dimensional");
   auto results = at_npu::native::custom_ops::npu_fused_attention_score_fwd(
       query_layer, key_layer, value_layer, attention_mask, scale, keep_prob, query_transpose,
       key_transpose, bmm_score_transpose_a, bmm_score_transpose_b, value_transpose, dx_transpose);
@@ -196,6 +197,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_fused_attention_score_grad(
     bool key_transpose,
     bool value_transpose,
     bool dx_transpose) {
+    TORCH_CHECK(query_layer.dim() >= 4, "query_layer must be at least 4-dimensional");
+    TORCH_CHECK(grad_output.dim() >= 4, "grad_output must be at least 4-dimensional");
   at::Tensor query_dx = npu_preparation::apply_tensor_with_format(grad_output, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor key_dw = npu_preparation::apply_tensor_with_format(grad_output, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor value_dw = npu_preparation::apply_tensor_with_format(grad_output, ACL_FORMAT_FRACTAL_NZ);
