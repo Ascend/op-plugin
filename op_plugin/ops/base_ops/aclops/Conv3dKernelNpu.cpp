@@ -44,6 +44,10 @@ c10::SmallVector<int64_t, SIZE> conv3d_npu_output_size(const at::Tensor &input, 
     int64_t Ho = (H + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
     int64_t Wo = (W + 2 * padding[2] - dilation[2] * (kernel_size[2] - 1) - 1) / stride[2] + 1;
 
+    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do);
+    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho);
+    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo);
+
     c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Do, Ho, Wo};
     return output_size;
 }
@@ -96,6 +100,10 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> slo
     int64_t Do = (D + 2 * padding[0] - (kernel_size[0])) / stride[0] + 1;
     int64_t Ho = (H + 2 * padding[1] - (kernel_size[1])) / stride[1] + 1;
     int64_t Wo = (W + 2 * padding[2] - (kernel_size[2])) / stride[2] + 1;
+
+    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do);
+    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho);
+    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo);
 
     c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Do, Ho, Wo};
     c10::SmallVector<int64_t, SIZE> finput_size = {N, C * kernel_size[0] * kernel_size[1] * kernel_size[2],

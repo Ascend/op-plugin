@@ -33,6 +33,8 @@ at::Tensor conv_tbc(const at::Tensor &self, const at::Tensor &weight, const at::
 
     int64_t C = weight.size(2);
     int64_t W = (self.size(0) + 2 * pad - (weight.size(0) - 1) - 1) + 1;
+    TORCH_CHECK(W > 0, "W has to be positive, but got ", W);
+
     c10::SmallVector<int64_t, SIZE> output_size = {self.size(1), C, 1, W};
 
     // construct the output tensor of the NPU

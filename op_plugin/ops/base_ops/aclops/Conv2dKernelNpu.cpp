@@ -90,6 +90,10 @@ at::Tensor npu_conv2d(const at::Tensor &input, const at::Tensor &weight, const c
 
     int64_t Ho = (H + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
     int64_t Wo = (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
+    
+    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho);
+    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo);
+    
     c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Ho, Wo};
     int64_t result_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
     at::Tensor result = npu_preparation::apply_tensor_with_format(input, output_size, result_format);
