@@ -45,9 +45,9 @@ at::Tensor npu_kl_div(
       .Attr("log_target", log_target)
       .Run();
   if (reduction == at::Reduction::Mean) {
-    auto input_shape = self.sizes();
-    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
-    result.div_(batch_square_size);
+      auto input_shape = self.sizes();
+      int batch_square_size = input_shape.size() > 1 ? c10::multiply_integers(input_shape.slice(1)) : 1;
+      result.div_(batch_square_size);
   }
   return result;
 }
@@ -78,9 +78,9 @@ at::Tensor kl_div_backward(
       .Attr("log_target", log_target)
       .Run();
   if (reduction == at::Reduction::Mean) {
-    auto input_shape = self.sizes();
-    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
-    grad_input.div_(batch_square_size);
+      auto input_shape = self.sizes();
+      int batch_square_size = input_shape.size() > 1 ? c10::multiply_integers(input_shape.slice(1)) : 1;
+      grad_input.div_(batch_square_size);
   }
   return grad_input;
 }

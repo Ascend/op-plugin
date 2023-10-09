@@ -34,8 +34,14 @@ at::Tensor npu_bmm_v2_mat1_backward_symint(
     axis_reshape.insert(axis_reshape.end(), 1);
   }
 
-  return acl_op::npu_bmmV2(
-      grad.view(axis_reshape), mat2.dim() == 1 ? mat2.view({1, mat2.size(0)}) : mat2.transpose(-2, -1), sizes);
+    at::Tensor mat2_cp;
+    if (mat2.dim() == 1) {
+        mat2_cp = mat2.view({1, mat2.size(0)});
+    } else {
+        TORCH_CHECK(mat2.dim() >= 2, "mat2.dim must be greater than or equal to 1, but got ", mat2.dim());
+        mat2_cp = mat2.transpose(-2, -1);
+    }
+    return acl_op::npu_bmmV2(grad.view(axis_reshape), mat2_cp, sizes);
 }
 
 at::Tensor npu_bmm_v2_mat2_backward_symint(

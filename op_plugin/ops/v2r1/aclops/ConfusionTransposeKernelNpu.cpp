@@ -32,7 +32,10 @@ at::Tensor npu_confusion_transpose_backward_symint(
     svec_shape = op_infer::array_to_small_vector(shape);
   } else {
     for (int i = 0; i < perm.size(); i++) {
-      svec_shape.emplace_back(shape[perm[i]]);
+        TORCH_CHECK(-shape.size() <= perm[i] && perm[i] < shape.size(),
+                    "Dimension out of range (expected to be in range of [",
+                    -shape.size(), ", ", shape.size() - 1, "], but got ", perm[i], ")");
+        svec_shape.emplace_back(shape[perm[i]]);
     }
   }
   std::vector<int64_t> vec_perm;

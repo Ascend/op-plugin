@@ -89,8 +89,9 @@ at::Tensor rrelu_with_noise(
     const at::Scalar& upper,
     bool training,
     c10::optional<at::Generator> generator) {
-  auto output = at::empty_like(self, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
-  return rrelu_with_noise_out_nocheck(output, self, noise, lower, upper, training, generator);
+    TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!");
+    auto output = at::empty_like(self, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
+    return rrelu_with_noise_out_nocheck(output, self, noise, lower, upper, training, generator);
 }
 
 at::Tensor& rrelu_with_noise_(
@@ -100,7 +101,8 @@ at::Tensor& rrelu_with_noise_(
     const at::Scalar& upper,
     bool training,
     c10::optional<at::Generator> generator) {
-  return acl_op::rrelu_with_noise_out(self, noise, lower, upper, training, generator, self);
+    TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!");
+    return acl_op::rrelu_with_noise_out(self, noise, lower, upper, training, generator, self);
 }
 
 at::Tensor& rrelu_with_noise_out(
@@ -111,6 +113,7 @@ at::Tensor& rrelu_with_noise_out(
     bool training,
     c10::optional<at::Generator> generator,
     at::Tensor& output) {
+  TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!");
   npu_preparation::CheckOut(
       {self, noise},
       output,

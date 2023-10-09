@@ -26,20 +26,21 @@ at::Tensor embedding_dense_backward(
     int64_t num_weights,
     int64_t padding_idx,
     bool scale_grad_by_freq) {
-  auto output_size = {num_weights, grad_output.size(-1)};
-  at::Tensor result = npu_preparation::apply_tensor(grad_output, output_size);
+    TORCH_CHECK(grad_output.dim() >= 1, "The dim of input 'grad_output' must be greater than or equal to 1.");
+    auto output_size = {num_weights, grad_output.size(-1)};
+    at::Tensor result = npu_preparation::apply_tensor(grad_output, output_size);
 
-  // indices must be int64 in pytorch, but npu can only support int32
-  auto indices_int32 = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kInt);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("EmbeddingDenseGrad")
-      .Input(grad_output)
-      .Input(indices_int32)
-      .Attr("num_weights", num_weights)
-      .Attr("padding_idx", padding_idx)
-      .Attr("scale_grad_by_freq", scale_grad_by_freq)
-      .Output(result)
-      .Run();
-  return result;
+    // indices must be int64 in pytorch, but npu can only support int32
+    auto indices_int32 = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kInt);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("EmbeddingDenseGrad")
+        .Input(grad_output)
+        .Input(indices_int32)
+        .Attr("num_weights", num_weights)
+        .Attr("padding_idx", padding_idx)
+        .Attr("scale_grad_by_freq", scale_grad_by_freq)
+        .Output(result)
+        .Run();
+    return result;
 }
 } // namespace acl_op

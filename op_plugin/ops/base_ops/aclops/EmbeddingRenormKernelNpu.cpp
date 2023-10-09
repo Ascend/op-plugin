@@ -106,22 +106,23 @@ at::Tensor& embedding_renorm_(
     const at::Tensor& indices,
     double max_norm,
     double norm_type) {
-  auto self_arg = at::TensorArg(self, "self", 1);
-  auto indices_arg = at::TensorArg(indices, "indices", 2);
-  at::checkDim("embedding_renorm_", self_arg, 2);
-  at::checkScalarType("embedding_renorm_", indices_arg, at::kLong);
+    auto self_arg = at::TensorArg(self, "self", 1);
+    auto indices_arg = at::TensorArg(indices, "indices", 2);
+    at::checkDim("embedding_renorm_", self_arg, 2);
+    at::checkScalarType("embedding_renorm_", indices_arg, at::kLong);
 
-  auto num_indices = indices.numel();
-  at::native::resize_(indices, num_indices);
+    auto num_indices = indices.numel();
+    TORCH_CHECK(num_indices >= 1, "indices.numel() must be greater than or equal to 1, but got ", num_indices);
+    at::native::resize_(indices, num_indices);
 
-  npu_preparation::CheckMemory({self, indices}, {self});
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    embedding_renorm_out_npu_nocheck(contiguous_self, contiguous_self, indices, max_norm, norm_type);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    embedding_renorm_out_npu_nocheck(self, self, indices, max_norm, norm_type);
-  }
-  return self;
+    npu_preparation::CheckMemory({self, indices}, {self});
+    if (!npu_utils::check_match(&self)) {
+        at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+        embedding_renorm_out_npu_nocheck(contiguous_self, contiguous_self, indices, max_norm, norm_type);
+        npu_utils::format_fresh_view(self, contiguous_self);
+    } else {
+        embedding_renorm_out_npu_nocheck(self, self, indices, max_norm, norm_type);
+    }
+    return self;
 }
 } // namespace acl_op
