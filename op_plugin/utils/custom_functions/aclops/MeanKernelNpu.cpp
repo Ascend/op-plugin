@@ -29,8 +29,7 @@ at::Tensor& mean_out_no_dtype_nocheck(
     bool keepdim) {
   if (self.numel() == 0 && dim.size() == 0) {
     // In this scenario, needs to return nan. And the nan of the NPU can only be fp32.
-    result = acl_op::npu_dtype_cast(result, at::kFloat).fill_(0);
-    result = result / 0;
+    result = acl_op::npu_dtype_cast(result, at::kFloat).fill_(NAN);
     return result;
   }
 

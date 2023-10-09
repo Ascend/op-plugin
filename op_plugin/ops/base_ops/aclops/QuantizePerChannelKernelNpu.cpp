@@ -72,21 +72,22 @@ at::Tensor quantize_per_channel(
     const at::Tensor& zero_points,
     int64_t axis,
     at::ScalarType dtype) {
-  axis = op_plugin::utils::make_warp_dim(axis, self.dim());
-  TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1.");
-  TORCH_CHECK(zero_points.dim() == 1, "Zero points' dim should be equal to 1.");
-  TORCH_CHECK(scales.sizes()[0] == zero_points.sizes()[0], "Scales' size should be equal to zero points' size.");
-  TORCH_CHECK(scales.sizes()[0] == self.sizes()[axis], "length of scales must equal to the specified dimension.");
-  auto output_dtype = at::kInt;
-  if (dtype == at::ScalarType::QInt8) {
-    output_dtype = at::kChar;
-  } else if (dtype == at::ScalarType::QUInt8) {
-    output_dtype = at::kByte;
-  } else if (dtype == at::ScalarType::QInt32) {
-    output_dtype = at::kInt;
-  }
-  at::Tensor result = npu_preparation::apply_tensor(self, self.options().dtype(output_dtype));
-  quantize_per_channel_out_nocheck(result, self, scales, zero_points, axis, dtype);
-  return result;
+    axis = op_plugin::utils::make_warp_dim(axis, self.dim());
+    TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1.");
+    TORCH_CHECK(zero_points.dim() == 1, "Zero points' dim should be equal to 1.");
+    TORCH_CHECK(scales.sizes()[0] == zero_points.sizes()[0], "Scales' size should be equal to zero points' size.");
+    TORCH_CHECK(axis <= self.sizes().size() - 1, "Unexpected value of axis.");
+    TORCH_CHECK(scales.sizes()[0] == self.sizes()[axis], "length of scales must equal to the specified dimension.");
+    auto output_dtype = at::kInt;
+    if (dtype == at::ScalarType::QInt8) {
+        output_dtype = at::kChar;
+    } else if (dtype == at::ScalarType::QUInt8) {
+        output_dtype = at::kByte;
+    } else if (dtype == at::ScalarType::QInt32) {
+        output_dtype = at::kInt;
+    }
+    at::Tensor result = npu_preparation::apply_tensor(self, self.options().dtype(output_dtype));
+    quantize_per_channel_out_nocheck(result, self, scales, zero_points, axis, dtype);
+    return result;
 }
 } // namespace acl_op

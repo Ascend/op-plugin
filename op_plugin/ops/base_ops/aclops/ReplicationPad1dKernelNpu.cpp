@@ -23,6 +23,7 @@ at::Tensor& replication_pad1d_out(
     const at::Tensor& self,
     at::IntArrayRef padding,
     at::Tensor& result) {
+  TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2");
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
   at::Tensor self_cp = self.unsqueeze(0);
   acl_op::replication_pad2d_out(self_cp, paddings, result);
@@ -31,6 +32,7 @@ at::Tensor& replication_pad1d_out(
 }
 
 at::Tensor replication_pad1d(const at::Tensor& self, at::IntArrayRef padding) {
+  TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2");
   c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
   at::Tensor self_cp = self.unsqueeze(0);
   at::Tensor result = acl_op::replication_pad2d(self_cp, paddings);

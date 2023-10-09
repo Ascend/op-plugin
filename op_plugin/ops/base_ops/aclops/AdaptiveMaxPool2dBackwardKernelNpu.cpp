@@ -36,6 +36,7 @@ at::Tensor& adaptive_max_pool2d_backward_out_nocheck(
     c10::SmallVector<int64_t, N> size = { inputsize[2], inputsize[3] };
     input_size = at::IntArrayRef(size);
   }
+  TORCH_CHECK(grad_output.dim() >= 2, "The grad_output should be at least 2D");
   c10::SmallVector<int64_t, N> output_size = {
     grad_output.size(grad_output.dim() - 2),
     grad_output.size(grad_output.dim() - 1)};

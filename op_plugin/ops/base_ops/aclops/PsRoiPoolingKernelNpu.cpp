@@ -50,9 +50,12 @@ at::Tensor npu_ps_roi_pooling(
     double spatial_scale,
     int64_t group_size,
     int64_t output_dim) {
-  auto output_size = {rois.size(0) * rois.size(2), output_dim, group_size, group_size};
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  ps_roi_pooling_npu_nocheck(result, self, rois, spatial_scale, group_size, output_dim);
-  return result;
+    TORCH_CHECK(rois.dim() >= 3,
+        "rois only supports at least 3D tensors, rois got: ", rois.dim(), "D");
+
+    auto output_size = {rois.size(0) * rois.size(2), output_dim, group_size, group_size};
+    at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+    ps_roi_pooling_npu_nocheck(result, self, rois, spatial_scale, group_size, output_dim);
+    return result;
 }
 } // namespace acl_op

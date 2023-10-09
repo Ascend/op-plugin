@@ -34,42 +34,45 @@ void avg_pool3d_backward_out_nocheck(
     bool ceil_mode,
     bool count_include_pad,
     c10::optional<int64_t> divisor_override) {
-  at::Tensor input = self;
-  at::Tensor grads = grad_input.contiguous();
+    at::Tensor input = self;
+    at::Tensor grads = grad_input.contiguous();
 
-  grad_output.resize_as_(input);
-  grad_output.zero_();
-  if (self.ndimension() == 4) {
-    input = input.unsqueeze(0);
-    grads = grads.unsqueeze(0);
-    grad_output = grad_output.unsqueeze(0);
-  }
+    grad_output.resize_as_(input);
+    grad_output.zero_();
+    if (self.ndimension() == 4) {
+      input = input.unsqueeze(0);
+      grads = grads.unsqueeze(0);
+      grad_output = grad_output.unsqueeze(0);
+    }
 
-  c10::SmallVector<int64_t, N> dim_list(input.sizes());
-  c10::SmallVector<int64_t, N> pads =
-      {paddingss[0], paddingss[0], paddingss[1], paddingss[1], paddingss[2], paddingss[2]};
+    TORCH_CHECK(paddingss.size() >= 3,
+        "padding length shoud be at least 3, but got: ",
+        paddingss.size());
+    c10::SmallVector<int64_t, N> dim_list(input.sizes());
+    c10::SmallVector<int64_t, N> pads =
+        {paddingss[0], paddingss[0], paddingss[1], paddingss[1], paddingss[2], paddingss[2]};
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("AvgPool3DGrad")
-      .Input(dim_list)
-      .Input(grads, "grads")
-      .Output(grad_output, "output")
-      .Attr("ksize", kernel_sizess)
-      .Attr("strides", stridess)
-      .Attr("pads", pads)
-      .Attr("ceil_mode", ceil_mode)
-      .Attr("count_include_pad", count_include_pad);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("AvgPool3DGrad")
+        .Input(dim_list)
+        .Input(grads, "grads")
+        .Output(grad_output, "output")
+        .Attr("ksize", kernel_sizess)
+        .Attr("strides", stridess)
+        .Attr("pads", pads)
+        .Attr("ceil_mode", ceil_mode)
+        .Attr("count_include_pad", count_include_pad);
 
-  if (divisor_override.has_value()) {
-    cmd.Attr("divisor_override", divisor_override.value());
-  }
+    if (divisor_override.has_value()) {
+      cmd.Attr("divisor_override", divisor_override.value());
+    }
 
-  cmd.Attr("data_format", (string) "NCDHW")
-      .Run();
+    cmd.Attr("data_format", (string) "NCDHW")
+        .Run();
 
-  if (self.ndimension() == 4) {
-    grad_output = grad_output.squeeze(0);
-  }
+    if (self.ndimension() == 4) {
+      grad_output = grad_output.squeeze(0);
+    }
 }
 void avg_pool3d_backward_parameter_check(
     const at::Tensor& self,

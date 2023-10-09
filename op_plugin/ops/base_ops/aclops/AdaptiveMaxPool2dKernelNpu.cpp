@@ -49,6 +49,7 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ada
   int64_t c = self.size(1);
   int64_t h = self.size(2);
   int64_t w = self.size(3);
+  TORCH_CHECK(output_size[0] != 0 && output_size[1] != 0, "out put size cannot not be Zero");
   int64_t stride_h = h / output_size[0];
   int64_t stride_w = w / output_size[1];
   int64_t kernel_size_h = h - (output_size[0] - 1) * stride_h;

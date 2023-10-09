@@ -24,6 +24,7 @@ at::Tensor _weight_norm(const at::Tensor& v_in, const at::Tensor& g_in, int64_t 
   auto v = v_in.contiguous();
   auto g = g_in.contiguous();
   int64_t pow = 2;
-  return v * (g / at::norm_except_dim(v, pow, dim));
+  return v * g.div(at::norm_except_dim(v, pow, dim));
 }
 } // namespace acl_op
+ 

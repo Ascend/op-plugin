@@ -578,6 +578,7 @@ c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const
                                                                            const at::Tensor &weight,
                                                                            c10::IntArrayRef padding,
                                                                            c10::IntArrayRef stride) {
+  TORCH_CHECK(input.dim() >= 4, "The input should be at least 4D, but got: ", input.dim(), "D");
   int64_t N = input.size(0);
   int64_t H = input.size(2);
   int64_t W = input.size(3);

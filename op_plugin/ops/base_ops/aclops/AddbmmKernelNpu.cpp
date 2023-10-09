@@ -28,13 +28,17 @@ at::Tensor& addbmm_out(
     const at::Scalar& beta,
     const at::Scalar& alpha,
     at::Tensor& result) {
-  at::Tensor mul_result = at::mul(batch1, alpha);
-  at::Tensor bmm_result = at::bmm(mul_result, batch2);
-  int64_t dim[2] = {batch1.size(1), batch2.size(2)};
-  at::Tensor sum_result = at::sum_to(bmm_result, dim);
-  // sum_result + self*beta
-  at::add_out(result, sum_result, self, beta);
-  return result;
+    at::Tensor mul_result = at::mul(batch1, alpha);
+    at::Tensor bmm_result = at::bmm(mul_result, batch2);
+
+    TORCH_CHECK(batch1.dim() >= 2 && batch2.dim() >= 3,
+        "batch1 is expected to be at least 2D and batch2 is expected to be at least 3D, but got batch1: ",
+        batch1.dim(), "D, batch2: ", batch2.dim(), "D");
+    int64_t dim[2] = {batch1.size(1), batch2.size(2)};
+    at::Tensor sum_result = at::sum_to(bmm_result, dim);
+    // sum_result + self*beta
+    at::add_out(result, sum_result, self, beta);
+    return result;
 }
 
 at::Tensor addbmm(

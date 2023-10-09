@@ -45,6 +45,7 @@ at::Tensor& reflection_pad2d_backward_out_npu_nocheck(
     grad_output_cp = grad_output.unsqueeze(0);
     grad_input.unsqueeze_(0);
   }
+  TORCH_CHECK(input_cp.dim() != 0, "The input should not be empty");
   paddings_vector.resize(2 * input_cp.dim(), 0);
   for (int64_t i = paddings_vector.size(); i > 0; i -= 2) {
     vector_int.emplace_back(paddings_vector[i - 2]);

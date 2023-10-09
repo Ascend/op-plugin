@@ -75,27 +75,32 @@ at::Tensor& upsample_bicubic2d_out(
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
     at::Tensor& result) {
-  int64_t N = self.size(0);
-  int64_t C = self.size(1);
-  int64_t H = output_size[0];
-  int64_t W = output_size[1];
+    TORCH_CHECK(self.dim() >= 2, "The self shoud be at least 2D, but self got", self.dim(), "D");
+    TORCH_CHECK(output_size.size() == 2,
+        "It is expected output_size equals to 2, but got size ",
+        output_size.size());
 
-  c10::SmallVector<int64_t, SIZE> op_infer_output_size = {N, C, H, W};
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self,
-      op_infer_output_size);
+    int64_t N = self.size(0);
+    int64_t C = self.size(1);
+    int64_t H = output_size[0];
+    int64_t W = output_size[1];
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    upsample_bicubic2d_out_nocheck(contiguous_result, self, output_size, align_corners, scales_h, scales_w);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    upsample_bicubic2d_out_nocheck(result, self, output_size, align_corners, scales_h, scales_w);
-  }
+    c10::SmallVector<int64_t, SIZE> op_infer_output_size = {N, C, H, W};
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        self,
+        op_infer_output_size);
 
-  return result;
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        upsample_bicubic2d_out_nocheck(contiguous_result, self, output_size, align_corners, scales_h, scales_w);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        upsample_bicubic2d_out_nocheck(result, self, output_size, align_corners, scales_h, scales_w);
+    }
+
+    return result;
 }
 
 at::Tensor upsample_bicubic2d(
@@ -104,6 +109,11 @@ at::Tensor upsample_bicubic2d(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
+    TORCH_CHECK(self.dim() >= 2, "The self shoud be at least 2D, but self got", self.dim());
+    TORCH_CHECK(output_size.size() == 2,
+        "It is expected output_size equals to 2, but got size ",
+        output_size.size());
+
   int64_t N = self.size(0);
   int64_t C = self.size(1);
   int64_t H = output_size[0];
