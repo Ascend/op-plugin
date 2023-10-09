@@ -136,7 +136,7 @@ bool mm_check_nd_to_nz_on_the_fly(const at::Tensor &self, const at::Tensor &mat2
     }
     int64_t data_type = elementSize(self.scalar_type());
     if (self_outer_axis > kInnerAxisMaxLimit && self_inner_axis * data_type < kInnerAxisMinBytes &&
-        bool((self_inner_axis * data_type) & 0x1F)) {
+        bool((static_cast<uint64_t>(self_inner_axis) * static_cast<uint64_t>(data_type)) & 0x1F)) {
         return false;
     }
     return !((self_inner_axis > kInnerAxisMaxLimit && self_outer_axis > kInnerAxisMaxLimit) ||
@@ -166,9 +166,11 @@ bool is_transpose_inner_axis(const at::Tensor &self)
         return false;
     }
     return ((self_inner_axis > kInnerAxisMaxLimit) ||
-            (self_inner_axis * data_type < kInnerAxisMinBytes && bool((self_inner_axis * data_type) & 0x1F))) &&
+            (self_inner_axis * data_type < kInnerAxisMinBytes &&
+             bool((static_cast<uint64_t>(self_inner_axis) * static_cast<uint64_t>(data_type)) & 0x1F))) &&
            ((self_outer_axis * data_type >= kInnerAxisMinBytes && self_outer_axis <= kInnerAxisMaxLimit) ||
-            (self_outer_axis * data_type < kInnerAxisMinBytes && !((self_outer_axis * data_type) & 0x1F)));
+            (self_outer_axis * data_type < kInnerAxisMinBytes &&
+             !((static_cast<uint64_t>(self_outer_axis) * static_cast<uint64_t>(data_type)) & 0x1F)));
 }
 
 bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2)

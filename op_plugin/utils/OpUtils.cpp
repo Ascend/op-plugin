@@ -92,9 +92,9 @@ bool is_nd_to_nz_on_fly(const at::Tensor &self, const at::Tensor &mat2)
   }
   // self inner_axis and mat2_inner_axis both in [128, 65535] or in (0, 128) and is multi of 16
   return ((self_inner_axis >= kInnerAxisMinLimit && self_inner_axis <= kInnerAxisMaxLimit) ||
-          (self_inner_axis < kInnerAxisMinLimit && !(self_inner_axis & 0xF))) &&
+          (self_inner_axis < kInnerAxisMinLimit && !(static_cast<uint64_t>(self_inner_axis) & 0xF))) &&
          ((mat2_inner_axis >= kInnerAxisMinLimit && mat2_inner_axis <= kInnerAxisMaxLimit) ||
-          (mat2_inner_axis < kInnerAxisMinLimit && !(mat2_inner_axis & 0xF)));
+          (mat2_inner_axis < kInnerAxisMinLimit && !(static_cast<uint64_t>(mat2_inner_axis) & 0xF)));
 }
 
 bool is_scalar_one(const c10::Scalar &scalar)
