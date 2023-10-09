@@ -1,8 +1,6 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
 // Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
-// Copyright (c) 2019, Facebook CORPORATION.
-// All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +23,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& gcd_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnGcd, acl_op::gcd_out(self, other, result));
-  at::IntArrayRef output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+  auto output_size_vec = op_infer::broadcast_ops_npu_output_size(self, other);
+  at::IntArrayRef output_size = output_size_vec;
   // Shape of result must be the same as broadcastshape of self and other, dtype has no limitation.
   if (result.sizes() != output_size) {
     result.resize_(output_size);

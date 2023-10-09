@@ -31,7 +31,8 @@ at::Tensor l1_loss(const at::Tensor& self,
   // 3. Dtype of output should be the same dtype as self.
   at::IntArrayRef output_size;
   if (reduction == at::Reduction::None) {
-    output_size = op_infer::broadcast_ops_npu_output_size(self, target);
+    auto output_size_vec = op_infer::broadcast_ops_npu_output_size(self, target);
+    output_size = output_size_vec;
   }
   at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
   // dispatch hostAPI

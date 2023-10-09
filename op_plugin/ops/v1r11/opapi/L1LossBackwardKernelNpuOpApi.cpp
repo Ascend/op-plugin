@@ -30,10 +30,10 @@ at::Tensor& l1_loss_backward_out(const at::Tensor& grad_output,
   // check if grad_input on NPU
   TORCH_CHECK(torch_npu::utils::is_npu(grad_input), "grad_input with device ", grad_input.device(),
               " doesn't match the desired device NPU");
-  at::IntArrayRef output_size1;
-  at::IntArrayRef output_size2;
-  output_size1 = op_infer::broadcast_ops_npu_output_size(self, target);
-  output_size2 = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());
+  auto output_size1_vec = op_infer::broadcast_ops_npu_output_size(self, target);
+  at::IntArrayRef output_size1 = output_size1_vec;
+  auto output_size2_vec = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());
+  at::IntArrayRef output_size2 = output_size2_vec;
   if (grad_input.sizes() != output_size2) {
     grad_input.resize_(output_size2);
   }
@@ -48,10 +48,10 @@ at::Tensor l1_loss_backward(const at::Tensor& grad_output,
                             int64_t reduction) {
   DO_COMPATIBILITY(aclnnL1LossBackward, acl_op::l1_loss_backward(grad_output, self, target, reduction));
   // construct the output tensor of NPU
-  at::IntArrayRef output_size1;
-  at::IntArrayRef output_size2;
-  output_size1 = op_infer::broadcast_ops_npu_output_size(self, target);
-  output_size2 = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());
+  auto output_size1_vec = op_infer::broadcast_ops_npu_output_size(self, target);
+  at::IntArrayRef output_size1 = output_size1_vec;
+  auto output_size2_vec = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());
+  at::IntArrayRef output_size2 = output_size2_vec;
   // dtype promotion
   auto promote1 = at::native::result_type(target, self);
   auto grad_input_dtype = promoteTypes(grad_output.scalar_type(), promote1);
