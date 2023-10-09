@@ -22,11 +22,11 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
 bool is_backward(at::IntArrayRef pad) {
-  for (int i = 0; i<pad.size(); i++) {
-    if (pad[i] < 0) {
-      return true;
+    for (int i = 0; i < pad.size(); i++) {
+      if (pad[i] < 0) {
+        return true;
+      }
     }
-  }
   return false;
 }
 } // namespace

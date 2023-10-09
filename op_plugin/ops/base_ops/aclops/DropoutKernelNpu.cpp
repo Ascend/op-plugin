@@ -26,6 +26,9 @@ using npu_compile_type = at_npu::native::CompileType;
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
+const static int64_t LENGTH_DATA_ALIGN = 128;
+const static int64_t LENGTH_BOLCK_ALIGN = 8;
+const static int64_t INCREMENT = 10;
 at::Tensor& dropout_do_mask(
     at::Tensor& result,
     const at::Tensor& self,
@@ -62,9 +65,9 @@ at::Tensor dropout_gen_mask(const at::Tensor& self, at::Scalar prob) {
   auto desc_ = torch_npu::NPUBridge::GetNpuStorageImpl(self)->get_npu_desc();
   int64_t numels = is_not_jit_compile ? c10::multiply_integers(desc_.storage_sizes_) : self.numel();
 
-  uint64_t length = (numels + 128 - 1) / 128 * 128;
+  uint64_t length = (numels + LENGTH_DATA_ALIGN - 1) / LENGTH_DATA_ALIGN * LENGTH_DATA_ALIGN;
   at::Tensor mask = npu_preparation::apply_tensor_with_format(
-      {length / 8},
+      {length / LENGTH_BOLCK_ALIGN},
       self.options().dtype(at::kByte),
       ACL_FORMAT_ND);
 
@@ -77,7 +80,7 @@ at::Tensor dropout_gen_mask(const at::Tensor& self, at::Scalar prob) {
   // so, we set seed1 = 0 to ensure the seed which user set is equal to the seed
   // used by the operator DropOutGenMask
   const auto gen = at_npu::detail::getDefaultNPUGenerator();
-  auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
+  auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(INCREMENT);
   // At present, the default value of random number may be very large,
   // which will cause overflow in graph mode, so we set seed = 0 to avoid it.
   const int64_t seed = pair.first;

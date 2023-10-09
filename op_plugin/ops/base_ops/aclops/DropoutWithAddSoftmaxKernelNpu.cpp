@@ -24,8 +24,9 @@ using npu_compile_type = at_npu::native::CompileType;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
+const static int64_t LENGTH_DATA_ALIGN = 128;
 at::Tensor dropout_genmask(const at::Tensor& self, at::Scalar prob) {
-  uint32_t length = (self.numel() + 128 - 1) / 128 * 128;
+  uint32_t length = (self.numel() + LENGTH_DATA_ALIGN - 1) / LENGTH_DATA_ALIGN * LENGTH_DATA_ALIGN;
   at::Tensor mask = npu_preparation::apply_tensor_with_format(
       {length},
       self.options().dtype(at::kByte),
