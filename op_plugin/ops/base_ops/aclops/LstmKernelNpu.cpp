@@ -635,10 +635,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm(
   at::Tensor c;
 
   if (!bidirectional) {
-    std::tie(y, h, c) = lstm_multi_layer_direc_npu(input, hx, params, has_biases, num_layers, num_layers,
+    std::tie(y, h, c) = lstm_multi_layer_direc_npu(input_trans, hx, params, has_biases, num_layers, num_layers,
         dropout, train, bidirectional, batch_first);
   } else {
-    std::tie(y, h, c) = lstm_multi_layer_bidirec_npu(input, hx, params, has_biases, num_layers, num_layers,
+    std::tie(y, h, c) = lstm_multi_layer_bidirec_npu(input_trans, hx, params, has_biases, num_layers, num_layers,
         dropout, train, bidirectional, batch_first);
   }
 
