@@ -37,14 +37,12 @@ at::Tensor& log_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
 } // namespace
 
 at::Tensor& log_out(const at::Tensor& self, at::Tensor& result) {
-  if (!result.is_same(self)) {
-    npu_preparation::CheckOut(
-        {self},
-        result,
-        ACL_FORMAT_ND,
-        self.scalar_type(),
-        self.sizes());
-  }
+  npu_preparation::CheckOut(
+      {self},
+      result,
+      ACL_FORMAT_ND,
+      self.scalar_type(),
+      self.sizes());
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);

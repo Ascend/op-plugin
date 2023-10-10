@@ -28,10 +28,8 @@ at::SmallVector<int64_t, SIZE> upsample_trilinear3d_infer_size(
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
-  TORCH_CHECK(
-      output_size.size() == 3,
-      "It is expected output_size equals to 3, but got size ",
-      output_size.size());
+  TORCH_CHECK(input.dim() == 5, "The input should be 5D, but got ", input.dim(), "D");
+  TORCH_CHECK(output_size.size() == 3, "The length of output_size should be equal to 3, but got ", output_size.size());
 
   int64_t output_depth = output_size[0];
   int64_t output_height = output_size[1];

@@ -105,6 +105,8 @@ at::Tensor& max_pool2d_with_indices_backward_out(
     bool ceil_mode,
     const at::Tensor& indices,
     at::Tensor& grad_input) {
+  max_pool2d_with_indices_backward_parameter_check(self, kernel_size, stride, padding, dilation);
+
   npu_preparation::CheckOut({self, grad_output, indices}, grad_input, self);
   if (!npu_utils::check_match(&grad_input)) {
     at::Tensor contig_grad_input = npu_utils::format_contiguous(grad_input);

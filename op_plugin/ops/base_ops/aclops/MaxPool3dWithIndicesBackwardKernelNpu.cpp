@@ -78,6 +78,27 @@ at::Tensor& max_pool3d_with_indices_backward_out_nocheck(
 
   return grad_input;
 }
+
+void max_pool3d_with_indices_backward_parameter_check(
+    const at::Tensor& self,
+    at::IntArrayRef kernel_size,
+    at::IntArrayRef stride,
+    at::IntArrayRef padding,
+    at::IntArrayRef dilation)
+{
+    TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 3,
+        "max_pool3d: kernel_size must either be a single int, or a tuple of three ints")
+    TORCH_CHECK(stride.size() == 0 || stride.size() == 1 || stride.size() == 3,
+        "max_pool3d: stride must either be omitted, a single int, or a tuple of three ints")
+    TORCH_CHECK(padding.size() == 1 || padding.size() == 3,
+        "max_pool3d: padding must be either be a single int, or a tuple of three ints");
+    TORCH_CHECK(dilation.size() == 1 || dilation.size() == 3,
+        "max_pool3d: dilation must be either a single int, or a tuple of three ints");
+    TORCH_CHECK((self.ndimension() == 5 || self.ndimension() == 4),
+        "maxpool3d expected input to be non-empty 5D(batch mode) or 4D tensor",
+        "but input has dim: ",
+        self.ndimension());
+}
 } // namespace
 
 at::Tensor& max_pool3d_with_indices_backward_out(
@@ -90,6 +111,8 @@ at::Tensor& max_pool3d_with_indices_backward_out(
     bool ceil_mode,
     const at::Tensor& indices,
     at::Tensor& grad_input) {
+  max_pool3d_with_indices_backward_parameter_check(self, kernel_size, stride, padding, dilation);
+
   at::Tensor self_cp = self;
   if (self.ndimension() == 4) {
     self_cp = self_cp.unsqueeze(0);
@@ -121,18 +144,7 @@ at::Tensor max_pool3d_with_indices_backward(
     at::IntArrayRef dilation,
     bool ceil_mode,
     const at::Tensor& indices) {
-  TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 3,
-      "max_pool3d: kernel_size must either be a single int, or a tuple of three ints")
-  TORCH_CHECK(stride.size() == 0 || stride.size() == 1 || stride.size() == 3,
-      "max_pool3d: stride must either be omitted, a single int, or a tuple of three ints")
-  TORCH_CHECK(padding.size() == 1 || padding.size() == 3,
-      "max_pool3d: padding must be either be a single int, or a tuple of three ints");
-  TORCH_CHECK(dilation.size() == 1 || dilation.size() == 3,
-      "max_pool3d: dilation must be either a single int, or a tuple of three ints");
-  TORCH_CHECK((self.ndimension() == 5 || self.ndimension() == 4),
-      "maxpool3d expected input to be non-empty 5D(batch mode) or 4D tensor",
-      "but input has dim: ",
-      self.ndimension());
+  max_pool3d_with_indices_backward_parameter_check(self, kernel_size, stride, padding, dilation);
 
   const int k_T = at::native::safe_downcast<int, int64_t>(kernel_size[0]);
   const int k_H = kernel_size.size() == 1 ? k_T : at::native::safe_downcast<int, int64_t>(kernel_size[1]);

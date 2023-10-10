@@ -107,6 +107,7 @@ at::Tensor max_unpool2d(
     const at::Tensor& self,
     const at::Tensor& indices,
     at::IntArrayRef output_size) {
+  max_unpool2d_check(self, indices, output_size);
   auto output = npu_preparation::apply_tensor(self, {0});
   max_unpool2d_out_nocheck(output, self, indices, output_size);
   return output;

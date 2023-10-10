@@ -23,16 +23,8 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar& other) {
-  auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
-  if (!other.isFloatingPoint()) {
-    unified_result.common_type = self.scalar_type();
-    if (self.scalar_type() == at::kBool) {
-      unified_result.common_type = other.type();
-    }
-  }
   at_npu::native::OpCommand cmd;
   cmd.Name("Mul")
-      .Expect(unified_result)
       .Input(self)
       .Input(other, self.scalar_type())
       .Output(result)
@@ -46,10 +38,8 @@ at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, cons
   } else if (npu_preparation::IsCPUScalar(self)) {
     mul_out_npu_nocheck(result, other, self.item());
   } else {
-    auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
     at_npu::native::OpCommand cmd;
     cmd.Name("Mul")
-        .Expect(unified_result)
         .Input(self)
         .Input(other)
         .Output(result)

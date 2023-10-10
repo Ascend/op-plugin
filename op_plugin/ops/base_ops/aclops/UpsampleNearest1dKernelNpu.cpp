@@ -25,6 +25,10 @@ namespace {
 c10::SmallVector<int64_t, SIZE> upsample_nearest1d_infer_size(
     const at::Tensor& input,
     at::IntArrayRef output_size) {
+  TORCH_CHECK(input.dim() == 3 && (input.size(1) != 0 && input.size(2) != 0),
+              "Non-empty 3D data tensor expected but got a tensor with sizes ", input.sizes());
+  TORCH_CHECK(output_size.size() == 1, "The length of output_size should be equal to 1, but got ", output_size.size());
+
   c10::SmallVector<int64_t, SIZE> output_sizes;
   int64_t N = input.size(0);
   int64_t C = input.size(1);
@@ -38,11 +42,6 @@ at::Tensor& upsample_nearest1d_out_nocheck(
     const at::Tensor& self,
     at::IntArrayRef output_size,
     c10::optional<double> scales) {
-  TORCH_CHECK(
-      (self.size(1) != 0 && self.size(2) != 0) && self.dim() == 3,
-      "Non-empty 3D data tensor expected but got a tensor with sizes ",
-      self.sizes());
-
   at::Tensor self_cp = self.unsqueeze(2);
   at_npu::native::OpCommand cmd;
   if (self.scalar_type() == at::kFloat || self.scalar_type() == at::kHalf) {

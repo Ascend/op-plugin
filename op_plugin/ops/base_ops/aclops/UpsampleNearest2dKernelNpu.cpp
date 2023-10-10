@@ -25,6 +25,9 @@ namespace {
 at::SmallVector<int64_t, SIZE> upsample_nearest2d_infer_size(
     const at::Tensor& input,
     at::IntArrayRef output_size) {
+  TORCH_CHECK(input.dim() == 4, "The input should be 4D, but got ", input.dim(), "D");
+  TORCH_CHECK(output_size.size() == 2, "The length of output_size should be equal to 2, but got ", output_size.size());
+
   int64_t N = input.size(0);
   int64_t C = input.size(1);
   int64_t H = output_size[0];

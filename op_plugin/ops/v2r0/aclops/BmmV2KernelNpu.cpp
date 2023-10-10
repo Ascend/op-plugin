@@ -23,6 +23,8 @@ at::Tensor npu_bmm_v2_mat1_backward_symint(
     const at::Tensor& mat1,
     const at::Tensor& mat2,
     c10::SymIntArrayRef sizes_symint) {
+  TORCH_CHECK(mat2.dim() >= 1, "The mat2 must be at least 1D.");
+
   at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
   // da = grad * b^T
   auto grad_with_full_size = grad;
@@ -43,6 +45,8 @@ at::Tensor npu_bmm_v2_mat2_backward_symint(
     const at::Tensor& mat1,
     const at::Tensor& mat2,
     c10::SymIntArrayRef sizes_symint) {
+  TORCH_CHECK(mat1.dim() >= 1, "The mat1 must be at least 1D.");
+
   at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
   // db = a^T * grad
   auto grad_with_full_size = grad;

@@ -76,6 +76,7 @@ at::Tensor& max_unpool3d_out(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::Tensor& result) {
+  max_unpool3d_check(self, indices, output_size);
   auto out_shape = op_infer::max_pool3d_output_size(self, output_size);
   at::Tensor data = at::zeros(out_shape, self.options());
 

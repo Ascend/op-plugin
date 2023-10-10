@@ -28,13 +28,11 @@ at::Tensor npu_kl_div(
     bool log_target) {
   at::Tensor result = reduction == at::Reduction::None ?
       npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
-  std::string reduction_str;
+  std::string reduction_str = "none";
   if (reduction == at::Reduction::Mean) {
     reduction_str = "batchmean";
   } else if (reduction == at::Reduction::Sum) {
     reduction_str = "sum";
-  } else if (reduction == at::Reduction::None) {
-    reduction_str = "none";
   }
   at_npu::native::OpCommand cmd;
   cmd.Name("KLDiv")
@@ -60,13 +58,11 @@ at::Tensor kl_div_backward(
     bool log_target) {
   auto output_size = op_infer::input_same_output_size(self);
   at::Tensor grad_input = npu_preparation::apply_tensor(output_size, self.options(), self);
-  std::string reduction_str;
+  std::string reduction_str = "none";
   if (reduction == at::Reduction::Mean) {
     reduction_str = "batchmean";
   } else if (reduction == at::Reduction::Sum) {
     reduction_str = "sum";
-  } else if (reduction == at::Reduction::None) {
-    reduction_str = "none";
   }
   at_npu::native::OpCommand cmd;
   cmd.Name("KlDivLossGrad")

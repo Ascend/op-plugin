@@ -104,44 +104,6 @@ inline std::vector<int64_t> expand_param_if_needed(
   }
 }
 
-inline std::vector<int64_t> conv_output_size(
-    at::IntArrayRef input_size,
-    at::IntArrayRef weight_size,
-    at::IntArrayRef padding,
-    at::IntArrayRef stride,
-    at::IntArrayRef dilation = at::IntArrayRef()) {
-  bool has_dilation = dilation.size() > 0;
-  auto dim = input_size.size();
-  std::vector<int64_t> output_size(dim);
-  output_size[0] = input_size[input_batch_size_dim];
-  output_size[1] = weight_size[weight_output_channels_dim];
-  for (const auto d : c10::irange(2, dim)) {
-    auto dilation_opt = has_dilation ? dilation[d - 2] : 1;
-    auto kernel = dilation_opt * (weight_size[d] - 1) + 1;
-    output_size[d] = (input_size[d] + (2 * padding[d - 2]) - kernel) / stride[d - 2] + 1;
-  }
-  return output_size;
-}
-
-inline std::vector<int64_t> conv_input_size(
-    at::IntArrayRef output_size,
-    at::IntArrayRef weight_size,
-    at::IntArrayRef padding,
-    at::IntArrayRef output_padding,
-    at::IntArrayRef stride,
-    at::IntArrayRef dilation,
-    int64_t groups) {
-  auto dim = output_size.size();
-  std::vector<int64_t> input_size(dim);
-  input_size[0] = output_size[output_batch_size_dim];
-  input_size[1] = weight_size[weight_input_channels_dim] * groups;
-  for (const auto d : c10::irange(2, dim)) {
-    int kernel = dilation[d - 2] * (weight_size[d] - 1) + 1;
-    input_size[d] = (output_size[d] - 1) * stride[d - 2] - (2 * padding[d - 2]) + kernel + output_padding[d - 2];
-  }
-  return input_size;
-}
-
 void view1d_as_2d(
     c10::SmallVector<int64_t, N>& stride,
     c10::SmallVector<int64_t, N>& padding,
@@ -200,6 +162,8 @@ void check_shape_forward(
     const at::Tensor& bias,
     const ConvParams& params) {
   int64_t k = input.ndimension();
+  TORCH_CHECK(k >= 2, "The length of input_size should be at least 2");
+
   int64_t weight_dim = weight_sizes.size();
   int64_t groups = params.groups;
   const auto& padding = params.padding;
@@ -238,10 +202,15 @@ void check_shape_forward(
         ", expected bias to be 1-dimensional with ", weight_sizes[0], " elements",
         ", but got bias of size ", bias.sizes(), " instead");
 
+    TORCH_CHECK(k >= 3, "When transposed is true, the length of input_size should be at least 3");
+    int64_t dim_del = k - 2;
+    TORCH_CHECK(padding.size() >= dim_del, "The length of padding should be at least ", dim_del);
+    TORCH_CHECK(dilation.size() >= dim_del, "The length of dilation should be at least ", dim_del);
+
     for (const auto i : c10::irange(2, k)) {
-      input_shape.push_back(input.size(i) + 2 * padding[i-2]);
+      input_shape.push_back(input.size(i) + 2 * padding[i - 2]);
       // log new kernel size considering dilation
-      kernel_shape.push_back(dilation[i-2] * (weight_sizes[i]-1) + 1);
+      kernel_shape.push_back(dilation[i - 2] * (weight_sizes[i] - 1) + 1);
       if (input_shape.back() < kernel_shape.back()) {
         kernel_size_correct = false;
       }
