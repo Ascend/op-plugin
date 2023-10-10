@@ -184,7 +184,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _slow_conv2d_backward(const at::T
   int64_t s1 = w_sizes[0];
   // get the product of w_sizes from the 1 index to the last
   int64_t s2 = c10::multiply_integers(w_sizes.slice(1));
-  c10::SmallVector<int64_t, SIZE> slow_weight_size = {s1, s2, 1, 1};
+  s2 = s2 / (kernel_size[0] * kernel_size[1]);
+  c10::SmallVector<int64_t, SIZE> slow_weight_size = {s1, s2, kernel_size[0], kernel_size[1]};
   weight.resize_(slow_weight_size);
   DO_COMPATIBILITY(aclnnConvolutionBackward, acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt,
                    stride, padding, dilation, transposed, output_padding, groups, output_mask));
