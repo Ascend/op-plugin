@@ -75,51 +75,51 @@ at::Tensor npu_nonzero_notranspose(const at::Tensor& self) {
 }
 } // namespace
 
-AdvancedIndex::AdvancedIndex(const at::Tensor& src, at::TensorList indices_list) {
-  int64_t dims_before = 0;
-  int64_t dims_after = 0;
-  int64_t dims_indexed = 0;
+AdvancedIndex::AdvancedIndex(const at::Tensor& src, at::TensorList list_indices) {
+  int64_t before_dims = 0;
+  int64_t after_dims = 0;
+  int64_t indexed_dims = 0;
   at::IntArrayRef replacement_shape;
-  for (size_t dim = 0; dim < indices_list.size(); dim++) {
-    if (!indices_list[dim].defined()) {
-      if (dims_indexed == 0) {
-        dims_before++;
+  for (size_t dim = 0; dim < list_indices.size(); dim++) {
+    if (!list_indices[dim].defined()) {
+      if (indexed_dims == 0) {
+        before_dims++;
       } else {
-        dims_after++;
+        after_dims++;
       }
     } else {
-      dims_indexed++;
-      replacement_shape = indices_list[dim].sizes();
+      indexed_dims++;
+      replacement_shape = list_indices[dim].sizes();
       indexed_sizes.push_back(src.size(dim));
       indexed_strides.push_back(src.stride(dim));
     }
   }
 
-  // Check if the indexed subspace contains a dim of size 0, but the replacement
-  // shape does not. This implies that an index is out of bounds, because there
-  // is no number that's a valid index for an empty tensor. Normally, out of
-  // bounds is handled in the indexing kernel, but this case fails earlier in
-  // restride_src with an unhelpful error message.
-  if (std::find(indexed_sizes.begin(), indexed_sizes.end(), 0) != indexed_sizes.end() &&
-      std::find(replacement_shape.begin(), replacement_shape.end(), 0) == replacement_shape.end()) {
-    TORCH_CHECK_INDEX(false, "index is out of bounds for dimension with size 0");
+  // Check if the indexed subspace contains a dim of size 0, but the replacement shape does not.
+  // This implies that an index is out of bounds, because there
+  // is no number that's a valid index for an empty tensor.
+  // Normally, out of bounds is handled in the indexing kernel, but this case fails earlier
+  // in restride_src with an unhelpful error message.
+  if (std::find(replacement_shape.begin(), replacement_shape.end(), 0) == replacement_shape.end() &&
+      std::find(indexed_sizes.begin(), indexed_sizes.end(), 0) != indexed_sizes.end()) {
+    TORCH_CHECK_INDEX(false, "index is out of bounds for dimension with size 0.");
   }
 
-  this->dims_before = dims_before;
-  this->dims_after = dims_after;
-  this->src = AdvanceIndex::restride_src(src, dims_before, dims_indexed, replacement_shape);
+  this->dims_before = before_dims;
+  this->dims_after = after_dims;
+  this->src = AdvanceIndex::restride_src(src, before_dims, indexed_dims, replacement_shape);
 
-  for (auto& index : indices_list) {
+  for (auto& index : list_indices) {
     if (index.defined()) {
-      indices.push_back(AdvanceIndex::reshape_indexer(index, dims_before, dims_after));
+      indices.push_back(AdvanceIndex::reshape_indexer(index, before_dims, after_dims));
     }
   }
 }
 
-bool AdvanceIndex::all_strides_match(at::TensorList tensors) {
-  TORCH_CHECK(tensors.size() >= 1);
-  auto strides = tensors[0].strides();
-  for (auto& tensor : tensors.slice(1)) {
+bool AdvanceIndex::all_strides_match(at::TensorList tensor_list) {
+  TORCH_CHECK(tensor_list.size() >= 1);
+  auto strides = tensor_list[0].strides();
+  for (auto& tensor : tensor_list.slice(1)) {
     if (!strides.equals(tensor.strides())) {
       return false;
     }
@@ -140,29 +140,29 @@ at::Tensor AdvanceIndex::reshape_indexer(const at::Tensor& index, int64_t dims_b
   }
 }
 
-at::Tensor AdvanceIndex::restride_src(const at::Tensor& src, int64_t dims_before, int64_t dims_indexed,
+at::Tensor AdvanceIndex::restride_src(const at::Tensor& src, int64_t before_dims, int64_t dims_indexed,
     at::IntArrayRef replacement_shape) {
     auto shape = at::DimVector(src.sizes());
     auto strides = at::DimVector(src.strides());
-    int64_t end = dims_before + dims_indexed;
+    int64_t end = before_dims + dims_indexed;
     TORCH_CHECK(shape.size() >= end, "end", end, "is overrange shape.size() ", shape.size());
-    shape.erase(shape.begin() + dims_before, shape.begin() + end);
+    shape.erase(shape.begin() + before_dims, shape.begin() + end);
     TORCH_CHECK(strides.size() >= end, "end", end, "is overrange strides.size() ", strides.size());
-    strides.erase(strides.begin() + dims_before, strides.begin() + end);
-    shape.insert(shape.begin() + dims_before, replacement_shape.begin(), replacement_shape.end());
-    strides.insert(strides.begin() + dims_before, replacement_shape.size(), 0);
+    strides.erase(strides.begin() + before_dims, strides.begin() + end);
+    shape.insert(shape.begin() + before_dims, replacement_shape.begin(), replacement_shape.end());
+    strides.insert(strides.begin() + before_dims, replacement_shape.size(), 0);
     return src.as_strided(shape, strides);
 }
 
 std::string AdvanceIndex::shapes_as_str(at::TensorList tensors) {
   std::ostringstream os;
   bool first = true;
-  for (auto& tensor : tensors) {
-    if (tensor.defined()) {
+  for (auto& t : tensors) {
+    if (t.defined()) {
       if (!first) {
         os << ", ";
       }
-      os << tensor.sizes();
+      os << t.sizes();
       first = false;
     }
   }
@@ -177,15 +177,15 @@ AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::op
   try {
     indices = npu_expand_outplace(indices);
   } catch (std::exception& e) {
-    TORCH_CHECK_INDEX(false, "shape mismatch: indexing tensors could not be broadcast together"
-        " with shapes ", shapes_as_str(indices));
+    TORCH_CHECK_INDEX(false, "shape mismatch: indexing tensors could not be broadcast"
+        " together with shapes ", shapes_as_str(indices));
   }
-  // add missing null Tensors so that it matches self.dim()
+  // add missing null Tensors so that it matches self.dim().
   while (indices.size() < (size_t)self.dim()) {
     indices.emplace_back();
   }
-  // if the non-null indices are not all adjacent, transpose self and indices
-  // together so that they're adjacent at the front
+  // if the non-null indices are not all adjacent, transpose self
+  // and indices together so that they're adjacent at the front
   if (!at::native::hasContiguousSubspace(indices)) {
     std::tie(self, indices) = at::native::transposeToFront(self, indices);
   }
