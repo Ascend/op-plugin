@@ -28,13 +28,11 @@ at::Tensor npu_kl_div(
     bool log_target) {
   at::Tensor result = reduction == at::Reduction::None ?
       npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
-  std::string reduction_str;
+  std::string reduction_str = "none";
   if (reduction == at::Reduction::Mean) {
     reduction_str = "batchmean";
   } else if (reduction == at::Reduction::Sum) {
     reduction_str = "sum";
-  } else if (reduction == at::Reduction::None) {
-    reduction_str = "none";
   }
   at_npu::native::OpCommand cmd;
   cmd.Name("KLDiv")
@@ -45,9 +43,9 @@ at::Tensor npu_kl_div(
       .Attr("log_target", log_target)
       .Run();
   if (reduction == at::Reduction::Mean) {
-    auto input_shape = self.sizes();
-    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
-    result.div_(batch_square_size);
+      auto input_shape = self.sizes();
+      int batch_square_size = input_shape.size() > 1 ? c10::multiply_integers(input_shape.slice(1)) : 1;
+      result.div_(batch_square_size);
   }
   return result;
 }
@@ -60,13 +58,11 @@ at::Tensor kl_div_backward(
     bool log_target) {
   auto output_size = op_infer::input_same_output_size(self);
   at::Tensor grad_input = npu_preparation::apply_tensor(output_size, self.options(), self);
-  std::string reduction_str;
+  std::string reduction_str = "none";
   if (reduction == at::Reduction::Mean) {
     reduction_str = "batchmean";
   } else if (reduction == at::Reduction::Sum) {
     reduction_str = "sum";
-  } else if (reduction == at::Reduction::None) {
-    reduction_str = "none";
   }
   at_npu::native::OpCommand cmd;
   cmd.Name("KlDivLossGrad")
@@ -78,9 +74,9 @@ at::Tensor kl_div_backward(
       .Attr("log_target", log_target)
       .Run();
   if (reduction == at::Reduction::Mean) {
-    auto input_shape = self.sizes();
-    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
-    grad_input.div_(batch_square_size);
+      auto input_shape = self.sizes();
+      int batch_square_size = input_shape.size() > 1 ? c10::multiply_integers(input_shape.slice(1)) : 1;
+      grad_input.div_(batch_square_size);
   }
   return grad_input;
 }
