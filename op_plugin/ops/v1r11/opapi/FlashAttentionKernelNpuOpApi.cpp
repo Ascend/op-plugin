@@ -103,6 +103,10 @@ at::Tensor dropout_gen_mask(const at::Tensor &self, double keep_prob, int64_t he
         numels = self.size(0) * head_num * self.size(1) * self.size(1); // [B,N,S,S]
     } else if (input_layout == "SBH") {
         numels = self.size(1) * head_num * self.size(0) * self.size(0); // [B,N,S,S]
+    } else if (input_layout == "BNSD") {
+        numels = self.size(0) * self.size(1) * self.size(2) * self.size(2); // [B,N,S,S]
+    } else if (input_layout == "BSND") {
+        numels = self.size(0) * self.size(2) * self.size(1) * self.size(1); // [B,N,S,S]
     }
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     length += 32;
@@ -214,17 +218,17 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_flash_attention_g
     bool gen_mask_parallel,
     bool sync)
 {
-    TORCH_CHECK(query.dim() == 3, "The shapes of the input query should be 3-dimensional, but got ", query.dim(), "-dimensional");
-    TORCH_CHECK(key.dim() == 3, "The shapes of the input key should be 3-dimensional, but got ", key.dim(), "-dimensional");
-    TORCH_CHECK(value.dim() == 3, "The shapes of the input value should be 3-dimensional, but got ", value.dim(), "-dimensional");
-    TORCH_CHECK(dy.dim() == 3, "The shapes of the input dy should be 3-dimensional, but got ", dy.dim(), "-dimensional");
+    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", query.dim(), "-dimensional");
+    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(), "-dimensional");
+    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", value.dim(), "-dimensional");
+    TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ", dy.dim(), "-dimensional");
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
         c = toupper(c);
     }
-    TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH",
-        "The input_layout should be BSH/SBH(case-insensitive), but got ", input_layout);
+    TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH" || input_layout_str == "BNSD" || input_layout_str == "BSND",
+        "The input_layout should be BSH/SBH/BNSD/BSND(case-insensitive), but got ", input_layout);
 
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     length += 32;
@@ -259,20 +263,22 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const at::Tensor &padding_mask = padding_mask_opt.value_or(at::Tensor());
     const at::Tensor &atten_mask = atten_mask_opt.value_or(at::Tensor());
 
-    TORCH_CHECK(query.dim() == 3, "The shapes of the input query should be 3-dimensional, but got ", query.dim(), "-dimensional");
-    TORCH_CHECK(key.dim() == 3, "The shapes of the input key should be 3-dimensional, but got ", key.dim(), "-dimensional");
-    TORCH_CHECK(value.dim() == 3, "The shapes of the input value should be 3-dimensional, but got ", value.dim(), "-dimensional");
+    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", query.dim(), "-dimensional");
+    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(), "-dimensional");
+    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", value.dim(), "-dimensional");
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
         c = toupper(c);
     }
-    TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH",
-        "The input_layout should be BSH/SBH(case-insensitive), but got ", input_layout);
+    TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH" || input_layout_str == "BNSD" || input_layout_str == "BSND",
+        "The input_layout should be BSH/SBH/BNSD/BSND(case-insensitive), but got ", input_layout);
 
     int64_t B = 0;
     int64_t S0 = 0; // S for query
     int64_t S1 = 0; // S for key & value
+    int64_t N = 0;
+    int64_t D = 0;
     int64_t H = 0;
     if (input_layout_str == "BSH") {
         B = query.size(0);
@@ -284,6 +290,18 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         S0 = query.size(0);
         S1 = key.size(0);
         H = query.size(2);
+    } else if (input_layout_str == "BNSD") {
+        B = query.size(0);
+        N = query.size(1);
+        S0 = query.size(2);
+        S1 = key.size(2);
+        D = query.size(3);
+    } else if (input_layout_str == "BSND") {
+        B = query.size(0);
+        N = query.size(2);
+        S0 = query.size(1);
+        S1 = key.size(1);
+        D = query.size(3);
     }
 
     double scale_value = scale;
