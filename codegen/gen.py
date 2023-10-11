@@ -81,7 +81,8 @@ class FileManager:
     def write_with_template(self, filename: str, template_fn: str,
                             env_callable: Callable[[], Union[str, Dict[str, Any]]]) -> None:
         filename = '{}/{}'.format(self.install_dir, filename)
-        assert filename not in self.filenames, "duplicate file write {filename}"
+        if filename in self.filenames:
+            raise ValueError(f"duplicate file write {filename}")
         self.filenames.add(filename)
         if not self.dry_run:
             env = env_callable()
@@ -126,7 +127,8 @@ class FileManager:
         for key in sharded_keys:
             for shard in all_shards:
                 if key in shard:
-                    assert isinstance(shard[key], list), "sharded keys in base_env must be a list"
+                    if not isinstance(shard[key], list):
+                        raise TypeError("sharded keys in base_env must be a list")
                     shard[key] = shard[key].copy()
                 else:
                     shard[key] = []
@@ -134,7 +136,8 @@ class FileManager:
 
         def merge_env(into: Dict[str, List[str]], from_: Dict[str, List[str]]) -> None:
             for k, v in from_.items():
-                assert k in sharded_keys, f"undeclared sharded key {k}"
+                if k not in sharded_keys:
+                    raise KeyError("undeclared sharded key {k}")
                 into[k] += v
 
         for item in items:
@@ -198,7 +201,8 @@ def parse_native_yaml_struct(
     if es['custom']:
         all_funcs += es['custom']
 
-    assert isinstance(all_funcs, list)
+    if not isinstance(all_funcs, list):
+        raise TypeError("all_funcs must be a list")
 
     for e in all_funcs:
         funcs = e.get("func")

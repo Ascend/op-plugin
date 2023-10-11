@@ -59,7 +59,8 @@ class YamlLoader(Loader):
         mapping = []
         for key_node, value_node in node.value:
             key = self.construct_object(key_node, deep=deep)  # type: ignore[no-untyped-call]
-            assert key not in mapping, f"Found a duplicate key in the yaml. key={key}, line={node.start_mark.line}"
+            if key in mapping:
+                raise ValueError(f"Found a duplicate key in the yaml. key={key}, line={node.start_mark.line}")
             mapping.append(key)
         mapping = super().construct_mapping(node, deep=deep)  # type: ignore[no-untyped-call]
         return mapping
@@ -149,9 +150,9 @@ class NamespaceHelper:
     def __init__(self, namespace_str: str, entity_name: str = "", max_level: int = 2):
         # cpp_namespace can be a colon joined string such as torch::lazy
         cpp_namespaces = namespace_str.split("::")
-        assert (
-            len(cpp_namespaces) <= max_level
-        ), f"Codegen doesn't support more than {max_level} level(s) of custom namespace. Got {namespace_str}."
+        if len(cpp_namespaces) > max_level:
+            raise ValueError(f"Codegen doesn't support more than {max_level} level(s)"
+                             "of custom namespace. Got {namespace_str}.")
         self.cpp_namespace_ = namespace_str
         self.prologue_ = "\n".join([f"namespace {n} {{" for n in cpp_namespaces])
         self.epilogue_ = "\n".join(
