@@ -27,7 +27,7 @@ static int64_t get_output_size(const at::Scalar& start, const at::Scalar& end, c
   if (isFloatingType(resultType)) {
     size_range = std::floor((end.toDouble() - start.toDouble()) / step.toDouble());
   } else {
-    size_range = std::floor(static_cast<double>((end.toLong() - start.toLong()) / step.toLong()));
+    size_range = std::floor(static_cast<double>(end.toLong() - start.toLong()) / step.toLong());
   }
   size_range = static_cast<int64_t>(size_range) + 1;
   return size_range;
