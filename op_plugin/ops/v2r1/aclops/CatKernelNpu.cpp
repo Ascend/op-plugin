@@ -70,7 +70,7 @@ at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensor
   int64_t input_number = 0;
   at_npu::native::OpCommand cmd;
   cmd.Name("ConcatD");
-  for (int i = 0; i < input_tensors.size(); i++) {
+  for (uint64_t i = 0; i < input_tensors.size(); i++) {
     if (input_tensors[i].numel() != 0) {
       string input_name = "x" + std::to_string(input_number++);
       cmd.Input(input_tensors[i], input_name);

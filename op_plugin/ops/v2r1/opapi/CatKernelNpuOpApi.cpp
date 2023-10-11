@@ -41,7 +41,7 @@ static c10::SmallVector<int64_t, op_infer::SIZE> cat_npu_output_size_opapi(
   bool allSkipped = true;
   int64_t nDims = 0;
   at::Tensor* notSkippedTensor;
-  int numInputs = tensors.size();
+  int numInputs = static_cast<int64_t>(tensors.size());
   auto should_skip = [](const at::Tensor* t) { return t->nbytes() == 0 && t->dim() == 1; };
   for (int i = 0; i < numInputs; i++) {
     if (should_skip((at::Tensor*)&tensors[i])) {

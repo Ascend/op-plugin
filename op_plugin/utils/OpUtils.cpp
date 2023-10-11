@@ -58,7 +58,7 @@ bool is_transpose_last_two_dims(const at::Tensor &tensor) {
       tensor.size(dim1) == tensor_base_size[dim2] &&
       tensor.size(dim2) == tensor_base_size[dim1] &&
       tensor.numel() == numel &&
-      tensor_base_size.size() == tensor.dim()) {
+      static_cast<uint64_t>(tensor_base_size.size()) == tensor.dim()) {
     return true;
   } else {
     return false;
@@ -122,7 +122,7 @@ float get_scalar_float_value(const c10::Scalar &scalar)
 c10::SmallVector<int64_t, N> convert_array_to_vector(c10::IntArrayRef intArray)
 {
   c10::SmallVector<int64_t, N> intVec;
-  for (int i = 0; i < intArray.size(); i++) {
+  for (uint64_t i = 0; i < intArray.size(); i++) {
     intVec.emplace_back(intArray[i]);
   }
   return intVec;

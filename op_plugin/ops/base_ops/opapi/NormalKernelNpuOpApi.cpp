@@ -29,8 +29,8 @@ at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at:
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   float mean_cast = static_cast<float>(mean);
   float rstd_cast = static_cast<float>(std);
   EXEC_NPU_CMD(aclnnInplaceNormal, self, mean_cast, rstd_cast, seed, offset);
@@ -46,8 +46,8 @@ at::Tensor& normal_out(const at::Tensor &mean, const at::Tensor &std, c10::optio
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   EXEC_NPU_CMD(aclnnNormalTensorTensor, mean, std, seed, offset, result);
   return result;
 }
@@ -59,8 +59,8 @@ at::Tensor normal(const at::Tensor &mean, const at::Tensor &std, c10::optional<a
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   EXEC_NPU_CMD(aclnnNormalTensorTensor, mean, std, seed, offset, result);
   return result;
 }
@@ -74,8 +74,8 @@ at::Tensor& normal_out(const at::Tensor &mean, double std, c10::optional<at::Gen
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   float rstd_cast = static_cast<float>(std);
   EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, result);
   return result;
@@ -88,8 +88,8 @@ at::Tensor normal(const at::Tensor &mean, double std, c10::optional<at::Generato
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   float rstd_cast = static_cast<float>(std);
   EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, result);
   return result;
@@ -103,8 +103,8 @@ at::Tensor& normal_out(double mean, const at::Tensor &std, c10::optional<at::Gen
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   float mean_cast = static_cast<float>(mean);
   EXEC_NPU_CMD(aclnnNormalFloatTensor, mean_cast, std, seed, offset, result);
   return result;
@@ -116,8 +116,8 @@ at::Tensor normal(double mean, const at::Tensor &std, c10::optional<at::Generato
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   float mean_cast = static_cast<float>(mean);
   EXEC_NPU_CMD(aclnnNormalFloatTensor, mean_cast, std, seed, offset, result);
   return result;
@@ -132,8 +132,8 @@ at::Tensor& normal_out(double mean, double std, at::IntArrayRef size,
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   float mean_cast = static_cast<float>(mean);
   float rstd_cast = static_cast<float>(std);
   EXEC_NPU_CMD(aclnnNormalFloatFloat, mean_cast, rstd_cast, seed, offset, result);
@@ -157,8 +157,8 @@ at::Tensor normal(double mean, double std,
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                     at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   float mean_cast = static_cast<float>(mean);
   float rstd_cast = static_cast<float>(std);
   EXEC_NPU_CMD(aclnnNormalFloatFloat, mean_cast, rstd_cast, seed, offset, result);

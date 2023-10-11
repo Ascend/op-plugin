@@ -366,7 +366,7 @@ auto ConvertToOpApiFunc(const Tuple& params, void* opApiAddr) {
 
 template<std::size_t N>
 void add_param_to_buf(const std::array<bool, N> &value) {
-  MEMCPY_TO_BUF(value.data(), value.size() * sizeof(bool));
+  MEMCPY_TO_BUF(value.data(), static_cast<int64_t>(value.size() * sizeof(bool)));
 }
 
 template<typename T>

@@ -27,8 +27,8 @@ at::Tensor& uniform_(at::Tensor& self, double from, double to,
   DO_COMPATIBILITY(aclnnInplaceUniform, acl_op::uniform_(self, from, to, gen_));
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen_, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  int64_t seed = pair.first;
-  int64_t offset = pair.second;
+  int64_t seed = static_cast<int64_t>(pair.first);
+  int64_t offset = static_cast<int64_t>(pair.second);
   EXEC_NPU_CMD(aclnnInplaceUniform, self, from, to, seed, offset);
   return self;
 }

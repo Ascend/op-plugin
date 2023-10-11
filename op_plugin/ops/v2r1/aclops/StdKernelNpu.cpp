@@ -53,7 +53,7 @@ std::tuple<at::Tensor&, at::Tensor&> std_mean_out_nocheck(
   if (result_mean.dim() != 0 && keepdim == false) {
     auto dim_vector = op_infer::array_to_small_vector(dim);
     std::sort(dim_vector.begin(), dim_vector.end());
-    for (int64_t i = 0; i < dim_vector.size(); i++) {
+    for (uint64_t i = 0; i < dim_vector.size(); i++) {
       result_mean_copy = result_mean_copy.unsqueeze(dim_vector[i]);
     }
   }

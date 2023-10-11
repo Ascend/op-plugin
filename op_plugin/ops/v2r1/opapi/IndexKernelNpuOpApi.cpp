@@ -26,7 +26,7 @@ at::Tensor index_high_dims_op_api(const at::Tensor& self, std::vector<at::Tensor
   std::vector<at::Tensor> all_defined_indices;
   at::SmallVector<int64_t, op_infer::N> zeroSize = {0};
   at::Tensor emptyTensor = npu_preparation::apply_tensor_without_format(self, zeroSize);
-  for (int i = 0; i < indices.size(); i++) {
+  for (uint64_t i = 0; i < indices.size(); i++) {
     if (indices[i].defined()) {
       all_defined_indices.emplace_back(indices[i]);
       continue;

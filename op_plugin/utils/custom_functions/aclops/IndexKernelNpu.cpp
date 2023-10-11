@@ -57,7 +57,7 @@ bool check_index_aicore(const at::Tensor& self, const at::TensorList& indices, c
       return false;
     }
 
-    for (int32_t idx = 1; idx < indices.size(); idx++) {
+    for (uint64_t idx = 1; idx < indices.size(); idx++) {
       if (indices[idx].scalar_type() != at::kLong ||
           indices[idx].dim() != 1 ||
           indices[idx].sizes() != indices[idx - 1].sizes()) {
@@ -65,7 +65,7 @@ bool check_index_aicore(const at::Tensor& self, const at::TensorList& indices, c
       }
     }
 
-    if (self.dim() == indices.size()) {
+    if (static_cast<int64_t>(self.dim()) == indices.size()) {
       return true;
     }
   }
@@ -91,7 +91,7 @@ at::Tensor& index_out_nocheck(
       .Input(self, x_str)
       .Input(masks, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT, "", indexed_sizes_str)
       .Input(indexed_strides, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT, "", indexed_strides_str);
-  for (int i = 0; i < indices.size(); i++) {
+  for (uint64_t i = 0; i < indices.size(); i++) {
     std::string name = "indices" + std::to_string(i);
     cmd.Input(indices[i], name);
   }
@@ -108,7 +108,7 @@ at::Tensor index_high_dims(const at::Tensor& self, std::vector<at::Tensor> indic
   // masks corresponds to indices. 0 indicates undefined tensor.
   at::SmallVector<int64_t, N> masks;
   std::vector<at::Tensor> all_defined_indices;
-  for (int i = 0; i < indices.size(); i++) {
+  for (uint64_t i = 0; i < indices.size(); i++) {
     if (indices[i].defined()) {
       all_defined_indices.emplace_back(indices[i]);
       masks.emplace_back(1);

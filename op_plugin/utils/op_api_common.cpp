@@ -31,14 +31,14 @@ void add_param_to_buf(const at::Tensor &at_tensor) {
         return;
     }
     // view shape
-    MEMCPY_TO_BUF(at_tensor.sizes().data(), at_tensor.sizes().size() * sizeof(int64_t));
+    MEMCPY_TO_BUF(at_tensor.sizes().data(), static_cast<int64_t>(at_tensor.sizes().size() * sizeof(int64_t)));
     // data type
     auto st = at_tensor.scalar_type();
     MEMCPY_TO_BUF(&st, sizeof(st));
     // seperator
     MEMCPY_TO_BUF(",", 1);
     // strides
-    MEMCPY_TO_BUF(at_tensor.strides().data(), at_tensor.sizes().size() * sizeof(int64_t));
+    MEMCPY_TO_BUF(at_tensor.strides().data(), static_cast<int64_t>(at_tensor.sizes().size() * sizeof(int64_t)));
     // offset
     auto so = at_tensor.storage_offset();
     MEMCPY_TO_BUF(&so, sizeof(so));
@@ -49,7 +49,7 @@ void add_param_to_buf(const at::Tensor &at_tensor) {
         TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.");
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
-    MEMCPY_TO_BUF(storageDims.data(), storageDims.size() * sizeof(int64_t));
+    MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
 
     addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
 }
@@ -84,11 +84,11 @@ void add_param_to_buf(const at::Scalar &at_scalar) {
 }
 
 void add_param_to_buf(const at::IntArrayRef &at_array) {
-    MEMCPY_TO_BUF(at_array.data(), at_array.size() * sizeof(int64_t));
+    MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(int64_t)));
 }
 
 void add_param_to_buf(const at::ArrayRef<bool> &at_array) {
-    MEMCPY_TO_BUF(at_array.data(), at_array.size() * sizeof(bool));
+    MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(bool)));
 }
 
 void add_param_to_buf(const at::TensorList &at_tensor_list) {
@@ -128,7 +128,7 @@ void add_param_to_buf(const at::ScalarType scalar_type) {
 }
 
 void add_param_to_buf(const string& s) {
-    MEMCPY_TO_BUF(s.c_str(), s.size());
+    MEMCPY_TO_BUF(s.c_str(), static_cast<int64_t>(s.size()));
 }
 
 void add_param_to_buf() {}

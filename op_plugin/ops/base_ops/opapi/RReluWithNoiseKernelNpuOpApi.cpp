@@ -35,8 +35,8 @@ at::Tensor rrelu_with_noise(
   auto gen_ =
     at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(1 << 28);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
 
   EXEC_NPU_CMD(aclnnRReluWithNoise, self, noise, lower, upper, training, seed, offset, result);
 
@@ -56,8 +56,8 @@ at::Tensor& rrelu_with_noise_(
   auto gen_ =
     at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(1 << 28);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   EXEC_NPU_CMD(aclnnInplaceRReluWithNoise, self, noise, lower, upper, training, seed, offset);
 
   return self;
@@ -81,8 +81,8 @@ at::Tensor& rrelu_with_noise_out(
   auto gen_ =
     at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(1 << 28);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   EXEC_NPU_CMD(aclnnRReluWithNoise, self, noise, lower, upper, training, seed, offset, output);
 
   return output;

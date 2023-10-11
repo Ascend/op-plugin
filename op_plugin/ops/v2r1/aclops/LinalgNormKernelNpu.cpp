@@ -76,7 +76,7 @@ static void _linalg_matrix_norm_checks(
 }
 
 static inline std::vector<int64_t> create_reverse_permutation(std::vector<int64_t> permutation) {
-  int64_t ndim = permutation.size();
+  int64_t ndim = static_cast<int64_t>(permutation.size());
   std::vector<int64_t> reverse_permutation(ndim);
   for (const auto dim_ind : c10::irange(ndim)) {
     reverse_permutation[permutation[dim_ind]] = dim_ind;

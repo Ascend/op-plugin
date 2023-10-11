@@ -26,7 +26,7 @@ using npu_utils = at_npu::native::NpuUtils;
 std::vector<int64_t> var_check_and_trans_dim(const at::Tensor& self, at::IntArrayRef dim) {
   std::vector<int64_t> result_dim;
   auto self_dim = self.dim();
-  for (int64_t i = 0; i < dim.size(); i++) {
+  for (uint64_t i = 0; i < dim.size(); i++) {
     int64_t tmp_dim = c10::maybe_wrap_dim(dim[i], self_dim);
     result_dim.emplace_back(tmp_dim);
   }

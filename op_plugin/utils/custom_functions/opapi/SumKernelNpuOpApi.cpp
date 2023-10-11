@@ -50,7 +50,7 @@ at::Tensor sum_common_nocheck(const at::Tensor &self,
     out_type = at::kLong;
   }
 
-  for (int64_t i = 0; i < self_size.size(); i++) {
+  for (uint64_t i = 0; i < self_size.size(); i++) {
     if (self_size[i] == 0) {
       return at::zeros(output_size, self.options().dtype(out_type));
     }
