@@ -19,54 +19,57 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+  using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_consecutive(
-    const at::Tensor& self,
-    bool return_inverse,
-    bool return_counts,
-    c10::optional<int64_t> dim) {
-  DO_COMPATIBILITY(aclnnUniqueConsecutive, acl_op::unique_consecutive(self, return_inverse, return_counts, dim));
-  at::Tensor y = dim.has_value() ? npu_preparation::apply_tensor_without_format(self)
-                                 : npu_preparation::apply_tensor_without_format(self, self.numel());
-  at::Tensor y_inverse = dim.has_value() ? npu_preparation::apply_tensor_without_format(self.size(dim.value()),
-                                                                                        self.options().dtype(at::kLong))
-                                         : npu_preparation::apply_tensor_without_format(self.sizes(),
-                                                                                        self.options().dtype(at::kLong)
-                                                                                        );
-  at::Tensor y_counts = dim.has_value() ? npu_preparation::apply_tensor_without_format(self.size(dim.value()),
-                                                                                       self.options().dtype(at::kLong))
-                                        : npu_preparation::apply_tensor_without_format(self.numel(),
-                                                                                       self.options().dtype(at::kLong));
-  static auto opApiFuncAddr = []() {
-    auto ret = GetOpApiFuncAddr("aclGetViewShape");
-    TORCH_CHECK(ret != nullptr, "GetOpApiFuncAddr failed.");
-    return ret;
-  }();
-  using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
-  auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
-  constexpr int64_t NoneN = 1000;
-  int64_t dim_value = dim.has_value() ? dim.value() : NoneN;
-  auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnUniqueConsecutive, self, return_inverse, return_counts, dim_value, y,
-                                        y_inverse, y_counts);
-  int64_t* view_dims = nullptr;
-  uint64_t view_dim_num = 0;
-  constexpr int64_t Y_IDX = 4;
-  auto ret1 = aclGetViewShape(npuAclParams.Get<Y_IDX>(), &view_dims, &view_dim_num);
-  TORCH_CHECK(ret1 == 0, "aclGetViewShape for y failed.");
-  c10::SmallVector<int64_t, SIZE> output_size_y(view_dims, view_dims + view_dim_num);
-  y.resize_(output_size_y);
+  std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_consecutive(
+      const at::Tensor &self,
+      bool return_inverse,
+      bool return_counts,
+      c10::optional<int64_t> dim)
+  {
+    DO_COMPATIBILITY(aclnnUniqueConsecutive, acl_op::unique_consecutive(self, return_inverse, return_counts, dim));
+    at::Tensor y = dim.has_value() ? npu_preparation::apply_tensor_without_format(self)
+                                   : npu_preparation::apply_tensor_without_format(self, self.numel());
+    if (dim.has_value())
+    {
+      TORCH_CHECK(dim.value() < self.dim(), "Dim's value must be smaller than self's dim.");
+    }
+    at::Tensor y_inverse = dim.has_value() ? npu_preparation::apply_tensor_without_format(self.size(dim.value()),
+                                                                                          self.options().dtype(at::kLong))
+                                           : npu_preparation::apply_tensor_without_format(self.sizes(),
+                                                                                          self.options().dtype(at::kLong));
+    at::Tensor y_counts = dim.has_value() ? npu_preparation::apply_tensor_without_format(self.size(dim.value()),
+                                                                                         self.options().dtype(at::kLong))
+                                          : npu_preparation::apply_tensor_without_format(self.numel(),
+                                                                                         self.options().dtype(at::kLong));
+    static auto opApiFuncAddr = []() {
+      auto ret = GetOpApiFuncAddr("aclGetViewShape");
+      TORCH_CHECK(ret != nullptr, "GetOpApiFuncAddr failed.");
+      return ret;
+    } ();
+    using aclGetViewShapeFunc = int (*)(const aclTensor *tensor, int64_t **view_dims, uint64_t *view_dims_num);
+    auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
+    constexpr int64_t NoneN = 1000;
+    int64_t dim_value = dim.has_value() ? dim.value() : NoneN;
+    auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnUniqueConsecutive, self, return_inverse, return_counts, dim_value, y,
+                                          y_inverse, y_counts);
+    int64_t *view_dims = nullptr;
+    uint64_t view_dim_num = 0;
+    constexpr int64_t Y_IDX = 4;
+    auto ret1 = aclGetViewShape(npuAclParams.Get<Y_IDX>(), &view_dims, &view_dim_num);
+    TORCH_CHECK(ret1 == 0, "aclGetViewShape for y failed.");
+    c10::SmallVector<int64_t, SIZE> output_size_y(view_dims, view_dims + view_dim_num);
+    y.resize_(output_size_y);
 
-  constexpr int64_t Y_COUNTS_IDX = 6;
-  auto ret2 = aclGetViewShape(npuAclParams.Get<Y_COUNTS_IDX>(), &view_dims, &view_dim_num);
-  TORCH_CHECK(ret2 == 0, "aclGetViewShape for y_counts failed.");
-  c10::SmallVector<int64_t, SIZE> output_size_y_counts(view_dims, view_dims + view_dim_num);
-  y_counts.resize_(output_size_y_counts);
+    constexpr int64_t Y_COUNTS_IDX = 6;
+    auto ret2 = aclGetViewShape(npuAclParams.Get<Y_COUNTS_IDX>(), &view_dims, &view_dim_num);
+    TORCH_CHECK(ret2 == 0, "aclGetViewShape for y_counts failed.");
+    c10::SmallVector<int64_t, SIZE> output_size_y_counts(view_dims, view_dims + view_dim_num);
+    y_counts.resize_(output_size_y_counts);
 
-  delete view_dims;
-  view_dims = nullptr;
-  return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, y_inverse, y_counts);
-}
+    delete view_dims;
+    view_dims = nullptr;
+    return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, y_inverse, y_counts);
+  }
 
 } // namespace op_api
-

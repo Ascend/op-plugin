@@ -51,7 +51,7 @@ at::Tensor reciprocal(const at::Tensor& self)
 
 at::Tensor& reciprocal_(at::Tensor& self)
 {
-  // DO_COMPATIBILITY(aclnnInplaceReciprocal, acl_op::reciprocal_(self));
+  DO_COMPATIBILITY(aclnnInplaceReciprocal, acl_op::reciprocal_(self));
   EXEC_NPU_CMD(aclnnInplaceReciprocal, self);
   return self;
 }
