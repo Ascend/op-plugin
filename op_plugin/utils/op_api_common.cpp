@@ -46,6 +46,7 @@ void add_param_to_buf(const at::Tensor &at_tensor) {
     aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(st);
     c10::SmallVector<int64_t, 5> storageDims;
     if (acl_data_type != ACL_STRING) {
+        TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.");
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
     MEMCPY_TO_BUF(storageDims.data(), storageDims.size() * sizeof(int64_t));
@@ -206,7 +207,7 @@ uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdea
     uint64_t k2 = 0;
     // because the size of a block is 16, different offsets are calculated for tail blocks
     // for different sizes
-    switch (len & 15)
+    switch (static_cast<uint64_t>(len) & 15)
     {
     case 15:
         k2 ^= ((uint64_t)tail[14]) << 48;
@@ -261,10 +262,12 @@ uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdea
         k1 *= c2;
         h1 ^= k1;
         [[fallthrough]];;
+    default:
+        [[fallthrough]];;
     };
 
-    h1 ^= len;
-    h2 ^= len;
+    h1 ^= static_cast<uint64_t>(len);
+    h2 ^= static_cast<uint64_t>(len);
 
     h1 += h2;
     h2 += h1;

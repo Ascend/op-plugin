@@ -127,6 +127,7 @@ inline aclTensor* ConvertType(const at::Tensor& at_tensor) {
   c10::SmallVector<int64_t, 5> storageDims;
   // if acl_data_type is ACL_STRING, storageDims is empty.
   if (acl_data_type != ACL_STRING) {
+    TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.");
     storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
   }
 
