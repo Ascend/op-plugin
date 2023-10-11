@@ -26,14 +26,14 @@ at::Tensor npu_kl_div(
     const at::Tensor& target,
     int64_t reduction,
     bool log_target) {
-  at::Tensor result = reduction == at::Reduction::None ?
-      npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
-  std::string reduction_str = "none";
-  if (reduction == at::Reduction::Mean) {
-    reduction_str = "batchmean";
-  } else if (reduction == at::Reduction::Sum) {
-    reduction_str = "sum";
-  }
+    std::string reduction_str = "none";
+    if (reduction == at::Reduction::Mean) {
+        reduction_str = "batchmean";
+    } else if (reduction == at::Reduction::Sum) {
+        reduction_str = "sum";
+    }
+    at::Tensor result = reduction_str == "none" ?
+        npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
   at_npu::native::OpCommand cmd;
   cmd.Name("KLDiv")
       .Input(self)
