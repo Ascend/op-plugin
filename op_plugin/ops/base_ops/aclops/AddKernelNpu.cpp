@@ -147,6 +147,8 @@ at::Tensor add(const at::Tensor& self, const at::Tensor& other, const at::Scalar
       check_size(self, other)) {
     int64_t c0_len = 16;
     at::Tensor self_use = stride_add_tensor_get(self);
+    TORCH_CHECK(self.numel() > 0, "self must be non-empty tensor");
+    TORCH_CHECK(other.numel() > 0, "other must be non-empty tensor");
     at::Scalar self_c1_offset(
         self.storage_offset() / (self.size(2) * self.size(3) * c0_len));
     at::Tensor other_use = stride_add_tensor_get(other);

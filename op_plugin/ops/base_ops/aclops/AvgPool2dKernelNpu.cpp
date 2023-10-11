@@ -34,8 +34,12 @@ c10::SmallVector<int64_t, N> get_paddings(
   int H = self.size(-2);
   int W = self.size(-1);
 
-  int64_t kH = op_infer::CeilDiv(H + 2 * padding[0] - kernel_size[0], stride[0]) + 1;
-  int64_t kW = op_infer::CeilDiv(W + 2 * padding[1] - kernel_size[1], stride[1]) + 1;
+  int64_t totalH = H + 2 * padding[0] - kernel_size[0];
+  int64_t totalW = W + 2 * padding[1] - kernel_size[1];
+  TORCH_CHECK(totalH <= std::numeric_limits<int64_t>::max(), "Large padding causing data overflow");
+  TORCH_CHECK(totalW <= std::numeric_limits<int64_t>::max(), "Large padding causing data overflow");
+  int64_t kH = op_infer::CeilDiv(totalH, stride[0]) + 1;
+  int64_t kW = op_infer::CeilDiv(totalW, stride[1]) + 1;
   if (ceil_mode) {
     if ((kH - 1) * stride[0] >= H + padding[0]) {
       --kH;
