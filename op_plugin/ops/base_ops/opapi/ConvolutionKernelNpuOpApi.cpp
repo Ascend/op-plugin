@@ -34,13 +34,6 @@ static inline c10::SmallVector<int64_t, op_infer::N> expand_dim(at::IntArrayRef 
   }
 }
 
-static inline at::ScalarType promote_dtype(const at::Tensor& input_t, const at::Tensor& weight_t) {
-  if (input_t.dtype() == at::ScalarType::Float || weight_t.dtype() == at::ScalarType::Float) {
-    return at::ScalarType::Float;
-  }
-  return at::ScalarType::Half;
-}
-
 at::Tensor convolution(const at::Tensor &input, const at::Tensor &weight,
                                                  const c10::optional<at::Tensor> &bias, at::IntArrayRef stride,
                                                  at::IntArrayRef padding, at::IntArrayRef dilation, bool transposed,
@@ -87,8 +80,7 @@ static at::Tensor _calc_convolution(const at::Tensor &input, const at::Tensor &w
 
   out_size = op_infer::conv_npu_output_size(input, weight, bias, padding, output_padding, stride, dilation, groups, transposed);
 
-  auto promotedDtype = promote_dtype(input, weight);
-  auto output = npu_preparation::apply_tensor_without_format(out_size, input.options().dtype(promotedDtype));
+  auto output = npu_preparation::apply_tensor_without_format(out_size, input.options());
   int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
   EXEC_NPU_CMD(aclnnConvolution, input, weight, bias, stride, padding, dilation, transposed, output_padding, groups,
                output, cube_math_type);
