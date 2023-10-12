@@ -22,35 +22,32 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> triangular_solve_out_common_nocheck(
-    const at::Tensor& self,
-    const at::Tensor& A,
-    bool upper,
-    bool transpose,
-    bool unitriangular) {
-  at::Tensor self_broadcasted;
-  at::Tensor a_broadcasted;
-  std::tie(self_broadcasted, a_broadcasted) = at::native::_linalg_broadcast_batch_dims(self, A, "triangular_solve");
-  TORCH_CHECK(self_broadcasted.dtype() == at::kFloat && a_broadcasted.dtype() == at::kFloat,
-              "_triangular_solve_helper_npu only supported Float, but get ", self_broadcasted.dtype(), ' ',
-              a_broadcasted.dtype());
-  auto self_working_copy = npu_preparation::apply_tensor(self_broadcasted);
-  auto a_working_copy = a_broadcasted.clone();
-  at::Tensor a_tensor = a_broadcasted;
-  TORCH_CHECK(a_tensor.dim() >= 2, "The dim of input tensor must larger than two.");
-  if (unitriangular) {
-    auto diagonal_tensor = at::eye(a_tensor.size(-2), a_tensor.size(-1), a_tensor.options());
-    a_tensor = a_tensor * (1 - diagonal_tensor) + diagonal_tensor;
-  }
-  at_npu::native::OpCommand cmd;
-  cmd.Name("MatrixTriangularSolve")
-      .Input(a_tensor)
-      .Input(self_broadcasted)
-      .Output(self_working_copy)
-      .Attr("lower", !upper)
-      .Attr("adjoint", transpose)
-      .Run();
+std::tuple<at::Tensor, at::Tensor> triangular_solve_out_common_nocheck(const at::Tensor &self, const at::Tensor &A,
+                                                                       bool upper, bool transpose, bool unitriangular)
+{
+    at::Tensor self_broadcasted;
+    at::Tensor a_broadcasted;
+    std::tie(self_broadcasted, a_broadcasted) = at::native::_linalg_broadcast_batch_dims(self, A, "triangular_solve");
+    TORCH_CHECK(self_broadcasted.dtype() == at::kFloat && a_broadcasted.dtype() == at::kFloat,
+                "_triangular_solve_helper_npu only supported Float, but get ", self_broadcasted.dtype(), ' ',
+                a_broadcasted.dtype());
+    auto self_working_copy = npu_preparation::apply_tensor(self_broadcasted);
+    auto a_working_copy = a_broadcasted.clone();
+    at::Tensor a_tensor = a_broadcasted;
+    TORCH_CHECK(a_tensor.dim() >= 2, "The dim of input tensor must larger than two.");
+    if (unitriangular) {
+        auto diagonal_tensor = at::eye(a_tensor.size(-2), a_tensor.size(-1), a_tensor.options());
+        a_tensor = a_tensor * (1 - diagonal_tensor) + diagonal_tensor;
+    }
+    at_npu::native::OpCommand cmd;
+    cmd.Name("MatrixTriangularSolve")
+        .Input(a_tensor)
+        .Input(self_broadcasted)
+        .Output(self_working_copy)
+        .Attr("lower", !upper)
+        .Attr("adjoint", transpose)
+        .Run();
 
-  return std::tie(self_working_copy, a_working_copy);
+    return std::tie(self_working_copy, a_working_copy);
 }
-}  // namespace acl_op
+} // namespace acl_op

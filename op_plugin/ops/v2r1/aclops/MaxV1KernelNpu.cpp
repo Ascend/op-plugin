@@ -19,23 +19,20 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor npu_max_backward_symint(
-    const at::Tensor& grad,
-    int64_t dim,
-    const at::Tensor& indices,
-    c10::SymIntArrayRef sizes_symint,
-    bool keepdim) {
-  at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
-  at::Tensor new_grad = grad;
-  at::Tensor new_indices = indices;
-  if (keepdim && sizes.size() > 0) {
-    new_grad = grad.squeeze(dim);
-    new_indices = indices.squeeze(dim);
-  }
-  if (new_indices.dtype() == at::kLong) {
-    new_indices = at_npu::native::custom_ops::npu_dtype_cast(new_indices, at::kInt);
-  }
-  auto grad_input = acl_op::npu_scatter(at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
-  return grad_input;
+at::Tensor npu_max_backward_symint(const at::Tensor &grad, int64_t dim, const at::Tensor &indices,
+                                   c10::SymIntArrayRef sizes_symint, bool keepdim)
+{
+    at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
+    at::Tensor new_grad = grad;
+    at::Tensor new_indices = indices;
+    if (keepdim && sizes.size() > 0) {
+        new_grad = grad.squeeze(dim);
+        new_indices = indices.squeeze(dim);
+    }
+    if (new_indices.dtype() == at::kLong) {
+        new_indices = at_npu::native::custom_ops::npu_dtype_cast(new_indices, at::kInt);
+    }
+    auto grad_input = acl_op::npu_scatter(at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
+    return grad_input;
 }
 } // namespace acl_op

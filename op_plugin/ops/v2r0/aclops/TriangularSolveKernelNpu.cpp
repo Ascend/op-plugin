@@ -21,15 +21,12 @@
 #include <ATen/native/LinearAlgebraUtils.h>
 
 namespace acl_op {
-std::tuple<at::Tensor, at::Tensor> triangular_solve(
-    const at::Tensor& self,
-    const at::Tensor& A,
-    bool upper,
-    bool transpose,
-    bool unitriangular) {
-  at::Tensor result_tmp;
-  at::Tensor clone_a_tmp;
-  std::tie(result_tmp, clone_a_tmp) = triangular_solve_out_common_nocheck(self, A, upper, transpose, unitriangular);
-  return std::tuple<at::Tensor, at::Tensor>(result_tmp, clone_a_tmp);
+std::tuple<at::Tensor, at::Tensor> triangular_solve(const at::Tensor &self, const at::Tensor &A, bool upper,
+                                                    bool transpose, bool unitriangular)
+{
+    at::Tensor result_tmp;
+    at::Tensor clone_a_tmp;
+    std::tie(result_tmp, clone_a_tmp) = triangular_solve_out_common_nocheck(self, A, upper, transpose, unitriangular);
+    return std::tuple<at::Tensor, at::Tensor>(result_tmp, clone_a_tmp);
 }
 } // namespace acl_op

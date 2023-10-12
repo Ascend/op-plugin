@@ -23,77 +23,71 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 
-c10::SmallVector<int64_t, SIZE> reflection_pad2d_npu_output_size(const at::Tensor& self, at::IntArrayRef padding) {
-  TORCH_CHECK(self.dim() >= 3, "The self is expected to be at least 3D, but got: ", self.dim(), "D");
-  TORCH_CHECK(padding.size() >= 4, "padding size is expected to be at least 4, but got: ", padding.size());
-  int64_t N = self.dim() == 3 ? 1 : self.size(-4);
-  int64_t C = self.size(-3);
-  int64_t H = self.size(-2);
-  int64_t W = self.size(-1);
-  int64_t padding_l = padding[0];
-  int64_t padding_r = padding[1];
-  int64_t padding_t = padding[2];
-  int64_t padding_b = padding[3];
-  int64_t Ho = H + padding_t + padding_b;
-  int64_t Wo = W + padding_l + padding_r;
-  c10::SmallVector<int64_t, SIZE> output_size = {N, C, Ho, Wo};
-  return output_size;
+c10::SmallVector<int64_t, SIZE> reflection_pad2d_npu_output_size(const at::Tensor &self, at::IntArrayRef padding)
+{
+    TORCH_CHECK(self.dim() >= 3, "The self is expected to be at least 3D, but got: ", self.dim(), "D");
+    TORCH_CHECK(padding.size() >= 4, "padding size is expected to be at least 4, but got: ", padding.size());
+    int64_t N = self.dim() == 3 ? 1 : self.size(-4);
+    int64_t C = self.size(-3);
+    int64_t H = self.size(-2);
+    int64_t W = self.size(-1);
+    int64_t padding_l = padding[0];
+    int64_t padding_r = padding[1];
+    int64_t padding_t = padding[2];
+    int64_t padding_b = padding[3];
+    int64_t Ho = H + padding_t + padding_b;
+    int64_t Wo = W + padding_l + padding_r;
+    c10::SmallVector<int64_t, SIZE> output_size = {N, C, Ho, Wo};
+    return output_size;
 }
 
-at::Tensor& reflection_pad2d_out_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    at::IntArrayRef padding) {
-  TORCH_CHECK(padding.size() == 4, "padding size is expected to be 4");
-  at::Tensor self_cp = self.dim() == 3 ? self.unsqueeze(0) : self;
-  c10::SmallVector<int64_t, N> vector_int;
-  c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(padding);
-  TORCH_CHECK(self_cp.dim() != 0, "The self should not be empty");
-  paddings_vector.resize(2 * self_cp.dim(), 0);
-  for (int64_t i = paddings_vector.size(); i > 1; i -= 2) {
-    vector_int.emplace_back(paddings_vector[i - 2]);
-    vector_int.emplace_back(paddings_vector[i - 1]);
-  }
-  c10::SmallVector<int64_t, N> value_tensor = {(int64_t)0};
-  at_npu::native::OpCommand cmd;
-  cmd.Name("MirrorPad")
-      .Input(self_cp)
-      .Input(vector_int, at::kInt)
-      .Output(result)
-      .Attr("mode", (string)"REFLECT")
-      .Run();
-  if (self.dim() == 3) {
-    result.squeeze_(0);
-  }
-  return result;
+at::Tensor &reflection_pad2d_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, at::IntArrayRef padding)
+{
+    TORCH_CHECK(padding.size() == 4, "padding size is expected to be 4");
+    at::Tensor self_cp = self.dim() == 3 ? self.unsqueeze(0) : self;
+    c10::SmallVector<int64_t, N> vector_int;
+    c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(padding);
+    TORCH_CHECK(self_cp.dim() != 0, "The self should not be empty");
+    paddings_vector.resize(2 * self_cp.dim(), 0);
+    for (int64_t i = paddings_vector.size(); i > 1; i -= 2) {
+        vector_int.emplace_back(paddings_vector[i - 2]);
+        vector_int.emplace_back(paddings_vector[i - 1]);
+    }
+    c10::SmallVector<int64_t, N> value_tensor = {(int64_t)0};
+    at_npu::native::OpCommand cmd;
+    cmd.Name("MirrorPad")
+        .Input(self_cp)
+        .Input(vector_int, at::kInt)
+        .Output(result)
+        .Attr("mode", (string) "REFLECT")
+        .Run();
+    if (self.dim() == 3) {
+        result.squeeze_(0);
+    }
+    return result;
 }
 } // namespace
 
-at::Tensor& reflection_pad2d_out(
-    const at::Tensor& self,
-    at::IntArrayRef padding,
-    at::Tensor& result) {
-  auto output_size = reflection_pad2d_npu_output_size(self, padding);
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self,
-      output_size);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    reflection_pad2d_out_npu_nocheck(contiguous_result, self, padding);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    reflection_pad2d_out_npu_nocheck(result, self, padding);
-  }
-  return result;
+at::Tensor &reflection_pad2d_out(const at::Tensor &self, at::IntArrayRef padding, at::Tensor &result)
+{
+    auto output_size = reflection_pad2d_npu_output_size(self, padding);
+    npu_preparation::CheckOut({self}, result, self, output_size);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        reflection_pad2d_out_npu_nocheck(contiguous_result, self, padding);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        reflection_pad2d_out_npu_nocheck(result, self, padding);
+    }
+    return result;
 }
 
-at::Tensor reflection_pad2d(const at::Tensor& self, at::IntArrayRef padding) {
-  auto output_size = reflection_pad2d_npu_output_size(self, padding);
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  reflection_pad2d_out_npu_nocheck(result, self, padding);
-  return result;
+at::Tensor reflection_pad2d(const at::Tensor &self, at::IntArrayRef padding)
+{
+    auto output_size = reflection_pad2d_npu_output_size(self, padding);
+    at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+    reflection_pad2d_out_npu_nocheck(result, self, padding);
+    return result;
 }
 
 } // namespace acl_op

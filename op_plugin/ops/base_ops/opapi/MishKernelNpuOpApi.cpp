@@ -22,25 +22,28 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& mish_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnMish, acl_op::mish_out(self, result));
-  npu_preparation::CheckOut({self}, result, self);
-  
-  EXEC_NPU_CMD(aclnnMish, self, result);
-  return result;
+at::Tensor &mish_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnMish, acl_op::mish_out(self, result));
+    npu_preparation::CheckOut({self}, result, self);
+
+    EXEC_NPU_CMD(aclnnMish, self, result);
+    return result;
 }
 
-at::Tensor mish(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnMish, acl_op::mish(self));
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  EXEC_NPU_CMD(aclnnMish, self, result);
-  return result;
+at::Tensor mish(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnMish, acl_op::mish(self));
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    EXEC_NPU_CMD(aclnnMish, self, result);
+    return result;
 }
 
-at::Tensor& mish_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceMish, acl_op::mish_(self));
-  EXEC_NPU_CMD(aclnnInplaceMish, self);
-  return self;
+at::Tensor &mish_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceMish, acl_op::mish_(self));
+    EXEC_NPU_CMD(aclnnInplaceMish, self);
+    return self;
 }
 
-}  // namespace op_api
+} // namespace op_api

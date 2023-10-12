@@ -22,65 +22,57 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& logical_xor_out_npu_nocheck(const at::Tensor& self, const at::Scalar other, at::Tensor& result) {
+at::Tensor &logical_xor_out_npu_nocheck(const at::Tensor &self, const at::Scalar other, at::Tensor &result)
+{
     auto self_copy = (self.dtype() == at::kBool) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, at::kBool);
     at_npu::native::OpCommand cmd;
-    cmd.Name("NotEqual")
-        .Input(self_copy)
-        .Input(other, self_copy.scalar_type())
-        .Output(result)
-        .Run();
-  return result;
+    cmd.Name("NotEqual").Input(self_copy).Input(other, self_copy.scalar_type()).Output(result).Run();
+    return result;
 }
 
-at::Tensor& logical_xor_out_npu_nocheck(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  if (self.dim() == 0) {
-    logical_xor_out_npu_nocheck(other, self.item(), result);
-  } else if (other.dim() == 0) {
-    logical_xor_out_npu_nocheck(self, other.item(), result);
-  } else {
-    auto selfCopy = (self.dtype() == at::kBool) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, at::kBool);
-    auto otherCopy = (other.dtype() == at::kBool) ? other : at_npu::native::custom_ops::npu_dtype_cast(other, at::kBool);
-    
-    at_npu::native::OpCommand cmd;
-    cmd.Name("NotEqual")
-        .Input(selfCopy)
-        .Input(otherCopy)
-        .Output(result)
-        .Run();
-  }
-  return result;
+at::Tensor &logical_xor_out_npu_nocheck(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+{
+    if (self.dim() == 0) {
+        logical_xor_out_npu_nocheck(other, self.item(), result);
+    } else if (other.dim() == 0) {
+        logical_xor_out_npu_nocheck(self, other.item(), result);
+    } else {
+        auto selfCopy =
+            (self.dtype() == at::kBool) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, at::kBool);
+        auto otherCopy =
+            (other.dtype() == at::kBool) ? other : at_npu::native::custom_ops::npu_dtype_cast(other, at::kBool);
+
+        at_npu::native::OpCommand cmd;
+        cmd.Name("NotEqual").Input(selfCopy).Input(otherCopy).Output(result).Run();
+    }
+    return result;
 }
 } // namespace
 
-at::Tensor& logical_xor_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      npu_preparation::get_tensor_npu_format(self),
-      result.scalar_type(),
-      outputSize);
+at::Tensor &logical_xor_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+{
+    auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+    npu_preparation::CheckOut({self}, result, npu_preparation::get_tensor_npu_format(self), result.scalar_type(),
+                              outputSize);
 
-  if (npu_utils::check_match(&result) && (result.dtype() == at::kBool)) {
-    logical_xor_out_npu_nocheck(self, other, result);
-  } else {
-    auto result_copy = npu_preparation::apply_tensor_with_sizes(outputSize, self.options().dtype(at::kBool));
-    logical_xor_out_npu_nocheck(self, other, result_copy);
-    result_copy = at_npu::native::custom_ops::npu_dtype_cast(result_copy, result.scalar_type());
-    npu_utils::format_fresh_view(result, result_copy);
-  }
-  return result;
+    if (npu_utils::check_match(&result) && (result.dtype() == at::kBool)) {
+        logical_xor_out_npu_nocheck(self, other, result);
+    } else {
+        auto result_copy = npu_preparation::apply_tensor_with_sizes(outputSize, self.options().dtype(at::kBool));
+        logical_xor_out_npu_nocheck(self, other, result_copy);
+        result_copy = at_npu::native::custom_ops::npu_dtype_cast(result_copy, result.scalar_type());
+        npu_utils::format_fresh_view(result, result_copy);
+    }
+    return result;
 }
 
-at::Tensor logical_xor(const at::Tensor& self, const at::Tensor& other) {
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::apply_tensor_with_format(
-      output_size,
-      self.options().dtype(at::kBool),
-      npu_preparation::get_tensor_npu_format(self));
-  logical_xor_out_npu_nocheck(self, other, result);
-  return result;
+at::Tensor logical_xor(const at::Tensor &self, const at::Tensor &other)
+{
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::kBool),
+                                                                  npu_preparation::get_tensor_npu_format(self));
+    logical_xor_out_npu_nocheck(self, other, result);
+    return result;
 }
 
 } // namespace acl_op

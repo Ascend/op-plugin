@@ -20,19 +20,16 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_pad(const at::Tensor& input, at::IntArrayRef paddings) {
-  auto output_size = op_infer::pad_npu_output_size(input, paddings);
-  at::Tensor output = npu_preparation::apply_tensor(input, output_size);
-  c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(paddings);
-  paddings_vector.resize(2 * input.dim(), 0);
+at::Tensor npu_pad(const at::Tensor &input, at::IntArrayRef paddings)
+{
+    auto output_size = op_infer::pad_npu_output_size(input, paddings);
+    at::Tensor output = npu_preparation::apply_tensor(input, output_size);
+    c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(paddings);
+    paddings_vector.resize(2 * input.dim(), 0);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Pad")
-      .Input(input)
-      .Input(paddings_vector)
-      .Output(output)
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Pad").Input(input).Input(paddings_vector).Output(output).Run();
 
-  return output;
+    return output;
 }
 } // namespace acl_op

@@ -21,46 +21,44 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& l1_loss_backward_out(const at::Tensor& grad_output,
-                                 const at::Tensor& self,
-                                 const at::Tensor& target,
-                                 int64_t reduction,
-                                 at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnL1LossBackward, acl_op::l1_loss_backward_out(grad_output, self, target, reduction, grad_input));
-  // check if grad_input on NPU
-  TORCH_CHECK(torch_npu::utils::is_npu(grad_input), "grad_input with device ", grad_input.device(),
-              " doesn't match the desired device NPU");
-  auto output_size1_vec = op_infer::broadcast_ops_npu_output_size(self, target);
-  at::IntArrayRef output_size1 = output_size1_vec;
-  auto output_size2_vec = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());
-  at::IntArrayRef output_size2 = output_size2_vec;
-  if (grad_input.sizes() != output_size2) {
-    grad_input.resize_(output_size2);
-  }
-  // dispatch hostAPI
-  EXEC_NPU_CMD(aclnnL1LossBackward, grad_output, self, target, reduction, grad_input);
-  return grad_input;
+at::Tensor &l1_loss_backward_out(const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &target,
+                                 int64_t reduction, at::Tensor &grad_input)
+{
+    DO_COMPATIBILITY(aclnnL1LossBackward,
+                     acl_op::l1_loss_backward_out(grad_output, self, target, reduction, grad_input));
+    // check if grad_input on NPU
+    TORCH_CHECK(torch_npu::utils::is_npu(grad_input), "grad_input with device ", grad_input.device(),
+                " doesn't match the desired device NPU");
+    auto output_size1_vec = op_infer::broadcast_ops_npu_output_size(self, target);
+    at::IntArrayRef output_size1 = output_size1_vec;
+    auto output_size2_vec = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());
+    at::IntArrayRef output_size2 = output_size2_vec;
+    if (grad_input.sizes() != output_size2) {
+        grad_input.resize_(output_size2);
+    }
+    // dispatch hostAPI
+    EXEC_NPU_CMD(aclnnL1LossBackward, grad_output, self, target, reduction, grad_input);
+    return grad_input;
 }
 
-at::Tensor l1_loss_backward(const at::Tensor& grad_output,
-                            const at::Tensor& self,
-                            const at::Tensor& target,
-                            int64_t reduction) {
-  DO_COMPATIBILITY(aclnnL1LossBackward, acl_op::l1_loss_backward(grad_output, self, target, reduction));
-  // construct the output tensor of NPU
-  auto output_size1_vec = op_infer::broadcast_ops_npu_output_size(self, target);
-  at::IntArrayRef output_size1 = output_size1_vec;
-  auto output_size2_vec = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());
-  at::IntArrayRef output_size2 = output_size2_vec;
-  // dtype promotion
-  auto promote1 = at::native::result_type(target, self);
-  auto grad_input_dtype = promoteTypes(grad_output.scalar_type(), promote1);
-  // construct the output tensor of the NPU
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(output_size2,
-                                                                       self.options().dtype(grad_input_dtype));
-  // dispatch hostAPI
-  EXEC_NPU_CMD(aclnnL1LossBackward, grad_output, self, target, reduction, grad_input);
-  return grad_input;
+at::Tensor l1_loss_backward(const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &target,
+                            int64_t reduction)
+{
+    DO_COMPATIBILITY(aclnnL1LossBackward, acl_op::l1_loss_backward(grad_output, self, target, reduction));
+    // construct the output tensor of NPU
+    auto output_size1_vec = op_infer::broadcast_ops_npu_output_size(self, target);
+    at::IntArrayRef output_size1 = output_size1_vec;
+    auto output_size2_vec = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());
+    at::IntArrayRef output_size2 = output_size2_vec;
+    // dtype promotion
+    auto promote1 = at::native::result_type(target, self);
+    auto grad_input_dtype = promoteTypes(grad_output.scalar_type(), promote1);
+    // construct the output tensor of the NPU
+    at::Tensor grad_input =
+        npu_preparation::apply_tensor_without_format(output_size2, self.options().dtype(grad_input_dtype));
+    // dispatch hostAPI
+    EXEC_NPU_CMD(aclnnL1LossBackward, grad_output, self, target, reduction, grad_input);
+    return grad_input;
 }
 
 } // namespace op_api

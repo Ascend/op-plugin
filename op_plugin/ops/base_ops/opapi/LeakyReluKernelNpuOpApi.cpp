@@ -19,31 +19,33 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor& leaky_relu_out(const at::Tensor& self, const at::Scalar& negval,
-                           at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnLeakyRelu, acl_op::leaky_relu_out(self, negval, result));
+at::Tensor &leaky_relu_out(const at::Tensor &self, const at::Scalar &negval, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnLeakyRelu, acl_op::leaky_relu_out(self, negval, result));
 
-  at_npu::native::OpPreparation::check_tensor({self}, result, self.scalar_type(), self.sizes());
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnLeakyRelu, self, negval, result);
+    at_npu::native::OpPreparation::check_tensor({self}, result, self.scalar_type(), self.sizes());
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnLeakyRelu, self, negval, result);
 
-  return result;
+    return result;
 }
 
-at::Tensor leaky_relu(const at::Tensor& self, const at::Scalar& negval) {
-  DO_COMPATIBILITY(aclnnLeakyRelu, acl_op::leaky_relu(self, negval));
+at::Tensor leaky_relu(const at::Tensor &self, const at::Scalar &negval)
+{
+    DO_COMPATIBILITY(aclnnLeakyRelu, acl_op::leaky_relu(self, negval));
 
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnLeakyRelu, self, negval, result);
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnLeakyRelu, self, negval, result);
 
-  return result;
+    return result;
 }
 
-at::Tensor& leaky_relu_(at::Tensor& self, const at::Scalar& negval) {
-  DO_COMPATIBILITY(aclnnInplaceLeakyRelu, acl_op::leaky_relu_(self, negval));
-  EXEC_NPU_CMD(aclnnInplaceLeakyRelu, self, negval);
-  return self;
+at::Tensor &leaky_relu_(at::Tensor &self, const at::Scalar &negval)
+{
+    DO_COMPATIBILITY(aclnnInplaceLeakyRelu, acl_op::leaky_relu_(self, negval));
+    EXEC_NPU_CMD(aclnnInplaceLeakyRelu, self, negval);
+    return self;
 }
 
 } // namespace op_api

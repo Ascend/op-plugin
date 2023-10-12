@@ -19,31 +19,27 @@
 
 namespace acl_op {
 
-at::Tensor& replication_pad1d_backward_out(
-    const at::Tensor& grad_output,
-    const at::Tensor& input,
-    at::IntArrayRef padding,
-    at::Tensor& grad_input) {
-  TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2");
-  c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
-  at::Tensor input_cp = input.unsqueeze(0);
-  at::Tensor grad_output_cp = grad_output.unsqueeze(0);
-  acl_op::replication_pad2d_backward_out(grad_output_cp, input_cp, paddings, grad_input);
-  grad_input.squeeze_(0);
-  return grad_input;
+at::Tensor &replication_pad1d_backward_out(const at::Tensor &grad_output, const at::Tensor &input,
+                                           at::IntArrayRef padding, at::Tensor &grad_input)
+{
+    TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2");
+    c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
+    at::Tensor input_cp = input.unsqueeze(0);
+    at::Tensor grad_output_cp = grad_output.unsqueeze(0);
+    acl_op::replication_pad2d_backward_out(grad_output_cp, input_cp, paddings, grad_input);
+    grad_input.squeeze_(0);
+    return grad_input;
 }
 
-at::Tensor replication_pad1d_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& input,
-    at::IntArrayRef padding) {
-  TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2");
-  c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
-  at::Tensor input_cp = input.unsqueeze(0);
-  at::Tensor grad_output_cp = grad_output.unsqueeze(0);
-  at::Tensor grad_input = acl_op::replication_pad2d_backward(grad_output_cp, input_cp, paddings);
-  grad_input.squeeze_(0);
-  return grad_input;
+at::Tensor replication_pad1d_backward(const at::Tensor &grad_output, const at::Tensor &input, at::IntArrayRef padding)
+{
+    TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2");
+    c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
+    at::Tensor input_cp = input.unsqueeze(0);
+    at::Tensor grad_output_cp = grad_output.unsqueeze(0);
+    at::Tensor grad_input = acl_op::replication_pad2d_backward(grad_output_cp, input_cp, paddings);
+    grad_input.squeeze_(0);
+    return grad_input;
 }
 
 } // namespace acl_op

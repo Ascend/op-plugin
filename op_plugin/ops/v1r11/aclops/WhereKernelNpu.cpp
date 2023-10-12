@@ -21,40 +21,29 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor _s_where(
-    const at::Tensor& condition,
-    const at::Tensor& self,
-    const at::Tensor& other) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
+at::Tensor _s_where(const at::Tensor &condition, const at::Tensor &self, const at::Tensor &other)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Select")
-      .Input(condition)
-      .Input(self)
-      .Input(other)
-      .Output(result)
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Select").Input(condition).Input(self).Input(other).Output(result).Run();
 
-  return result;
+    return result;
 }
 
-at::Tensor where(
-    const at::Tensor& condition,
-    const at::Tensor& self,
-    const at::Tensor& other) {
-  TORCH_CHECK(condition.device() == self.device() && self.device() == other.device(),
-      "expected condition, x and y to be on the same device, but condition is on ",
-      condition.device(), " and x and y are on ", self.device(), " and ", other.device(),
-      " respectively");
-  if (condition.scalar_type() != at::ScalarType::Byte && condition.scalar_type() != at::ScalarType::Bool) {
-    AT_ERROR("Expected condition to have ScalarType Byte, but got ScalarType ",
-        toString(condition.scalar_type()));
-  }
-  at::Tensor b_condition;
-  at::Tensor b_self;
-  at::Tensor b_other;
-  std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
-  return at::_s_where(b_condition, b_self, b_other);
+at::Tensor where(const at::Tensor &condition, const at::Tensor &self, const at::Tensor &other)
+{
+    TORCH_CHECK(condition.device() == self.device() && self.device() == other.device(),
+                "expected condition, x and y to be on the same device, but condition is on ", condition.device(),
+                " and x and y are on ", self.device(), " and ", other.device(), " respectively");
+    if (condition.scalar_type() != at::ScalarType::Byte && condition.scalar_type() != at::ScalarType::Bool) {
+        AT_ERROR("Expected condition to have ScalarType Byte, but got ScalarType ", toString(condition.scalar_type()));
+    }
+    at::Tensor b_condition;
+    at::Tensor b_self;
+    at::Tensor b_other;
+    std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
+    return at::_s_where(b_condition, b_self, b_other);
 }
 
 } // namespace acl_op

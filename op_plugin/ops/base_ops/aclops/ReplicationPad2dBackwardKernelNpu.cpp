@@ -22,87 +22,79 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-bool check_padding(at::IntArrayRef padding) {
-  for (int64_t i = 0; i < padding.size(); i++) {
-    if (padding[i] != 0) {
-      return false;
+bool check_padding(at::IntArrayRef padding)
+{
+    for (int64_t i = 0; i < padding.size(); i++) {
+        if (padding[i] != 0) {
+            return false;
+        }
     }
-  }
-  return true;
+    return true;
 }
 
-at::Tensor& replication_pad2d_backward_out_npu_nocheck(
-    at::Tensor& grad_input,
-    const at::Tensor& grad_output,
-    const at::Tensor& input,
-    at::IntArrayRef padding) {
-  c10::SmallVector<int64_t, N> vector_int;
-  c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(padding);
-  at::Tensor input_cp = input;
-  at::Tensor grad_output_cp = grad_output;
-  if (input.dim() == 3) {
-    input_cp = input.unsqueeze(0);
-    grad_output_cp = grad_output.unsqueeze(0);
-    grad_input.unsqueeze_(0);
-  }
-  TORCH_CHECK(input_cp.dim() != 0, "The input should not be empty");
-  paddings_vector.resize(2 * input_cp.dim(), 0);
-  for (int64_t i = paddings_vector.size(); i > 1; i -= 2) {
-    vector_int.emplace_back(paddings_vector[i - 2]);
-    vector_int.emplace_back(paddings_vector[i - 1]);
-  }
+at::Tensor &replication_pad2d_backward_out_npu_nocheck(at::Tensor &grad_input, const at::Tensor &grad_output,
+                                                       const at::Tensor &input, at::IntArrayRef padding)
+{
+    c10::SmallVector<int64_t, N> vector_int;
+    c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(padding);
+    at::Tensor input_cp = input;
+    at::Tensor grad_output_cp = grad_output;
+    if (input.dim() == 3) {
+        input_cp = input.unsqueeze(0);
+        grad_output_cp = grad_output.unsqueeze(0);
+        grad_input.unsqueeze_(0);
+    }
+    TORCH_CHECK(input_cp.dim() != 0, "The input should not be empty");
+    paddings_vector.resize(2 * input_cp.dim(), 0);
+    for (int64_t i = paddings_vector.size(); i > 1; i -= 2) {
+        vector_int.emplace_back(paddings_vector[i - 2]);
+        vector_int.emplace_back(paddings_vector[i - 1]);
+    }
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("PadV3Grad")
-      .Input(grad_output_cp)
-      .Input(vector_int, at::kInt)
-      .Output(grad_input)
-      .Attr("mode", (string)"edge")
-      .Attr("paddings_contiguous", true)
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("PadV3Grad")
+        .Input(grad_output_cp)
+        .Input(vector_int, at::kInt)
+        .Output(grad_input)
+        .Attr("mode", (string) "edge")
+        .Attr("paddings_contiguous", true)
+        .Run();
 
-  if (input.dim() == 3) {
-    grad_input.squeeze_(0);
-  }
-  return grad_input;
+    if (input.dim() == 3) {
+        grad_input.squeeze_(0);
+    }
+    return grad_input;
 }
 } // namespace
 
-at::Tensor& replication_pad2d_backward_out(
-    const at::Tensor& grad_output,
-    const at::Tensor& input,
-    at::IntArrayRef padding,
-    at::Tensor& grad_input) {
-  if (check_padding(padding)) {
-    grad_input.copy_(grad_output);
-    return grad_input;
-  }
+at::Tensor &replication_pad2d_backward_out(const at::Tensor &grad_output, const at::Tensor &input,
+                                           at::IntArrayRef padding, at::Tensor &grad_input)
+{
+    if (check_padding(padding)) {
+        grad_input.copy_(grad_output);
+        return grad_input;
+    }
 
-  npu_preparation::CheckOut(
-      {input, grad_output},
-      grad_input,
-      input);
-  if (!npu_utils::check_match(&grad_input)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
-    replication_pad2d_backward_out_npu_nocheck(contiguous_result, grad_output, input, padding);
-    npu_utils::format_fresh_view(grad_input, contiguous_result);
-  } else {
-    replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, input, padding);
-  }
-  return grad_input;
+    npu_preparation::CheckOut({input, grad_output}, grad_input, input);
+    if (!npu_utils::check_match(&grad_input)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
+        replication_pad2d_backward_out_npu_nocheck(contiguous_result, grad_output, input, padding);
+        npu_utils::format_fresh_view(grad_input, contiguous_result);
+    } else {
+        replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, input, padding);
+    }
+    return grad_input;
 }
 
-at::Tensor replication_pad2d_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& input,
-    at::IntArrayRef padding) {
-  at::Tensor grad_input = npu_preparation::apply_tensor(input);
-  if (check_padding(padding)) {
-    grad_input.copy_(grad_output);
+at::Tensor replication_pad2d_backward(const at::Tensor &grad_output, const at::Tensor &input, at::IntArrayRef padding)
+{
+    at::Tensor grad_input = npu_preparation::apply_tensor(input);
+    if (check_padding(padding)) {
+        grad_input.copy_(grad_output);
+        return grad_input;
+    }
+    replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, input, padding);
     return grad_input;
-  }
-  replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, input, padding);
-  return grad_input;
 }
 
 } // namespace acl_op

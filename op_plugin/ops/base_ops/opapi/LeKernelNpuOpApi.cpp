@@ -20,58 +20,64 @@
 
 namespace op_api {
 
-at::Tensor& le_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnLeTensor, acl_op::le_out(self, other, result));
-  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
-  at_npu::native::OpPreparation::check_tensor({self}, result, at::kBool, outputSize);
-  EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
-  return result;
+at::Tensor &le_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnLeTensor, acl_op::le_out(self, other, result));
+    auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+    at_npu::native::OpPreparation::check_tensor({self}, result, at::kBool, outputSize);
+    EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
+    return result;
 }
 
-at::Tensor& le_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnLeScalar, acl_op::le_out(self, other, result));
-  auto outputSize = self.sizes();
-  at_npu::native::OpPreparation::check_tensor({self}, result, at::kBool, outputSize);
+at::Tensor &le_out(const at::Tensor &self, const at::Scalar &other, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnLeScalar, acl_op::le_out(self, other, result));
+    auto outputSize = self.sizes();
+    at_npu::native::OpPreparation::check_tensor({self}, result, at::kBool, outputSize);
 
-  EXEC_NPU_CMD(aclnnLeScalar, self, other, result);
-  return result;
+    EXEC_NPU_CMD(aclnnLeScalar, self, other, result);
+    return result;
 }
 
-at::Tensor le(const at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnLeTensor, acl_op::le(self, other));
-  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result =
-      at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
-  EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
-  return result;
+at::Tensor le(const at::Tensor &self, const at::Tensor &other)
+{
+    DO_COMPATIBILITY(aclnnLeTensor, acl_op::le(self, other));
+    auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::Tensor result =
+        at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
+    EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
+    return result;
 }
 
-at::Tensor le(const at::Tensor& self, const at::Scalar& other) {
-  DO_COMPATIBILITY(aclnnLeScalar, acl_op::le(self, other));
-  auto outputSize = op_infer::input_same_output_size(self);
-  at::Tensor result =
-      at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
-  EXEC_NPU_CMD(aclnnLeScalar, self, other, result);
-  return result;
+at::Tensor le(const at::Tensor &self, const at::Scalar &other)
+{
+    DO_COMPATIBILITY(aclnnLeScalar, acl_op::le(self, other));
+    auto outputSize = op_infer::input_same_output_size(self);
+    at::Tensor result =
+        at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
+    EXEC_NPU_CMD(aclnnLeScalar, self, other, result);
+    return result;
 }
 
-at::Tensor& le_(at::Tensor& self, const at::Scalar& other) {
-  DO_COMPATIBILITY(aclnnInplaceLeScalar, acl_op::le_(self, other));
-  EXEC_NPU_CMD(aclnnInplaceLeScalar, self, other);
-  return self;
-}
-
-at::Tensor& le_(at::Tensor &self, const at::Tensor &other) {
-  DO_COMPATIBILITY(aclnnInplaceLeTensor, acl_op::le_(self, other));
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
-    return op_api::le_(self, other.item());
-  } else {
-    TORCH_CHECK(self.device() == other.device(),
-        "Expected all tensors to be on the same device, but found at least two devices");
-    at_npu::native::OpPreparation::CheckMemory({self, other}, {self});
-    EXEC_NPU_CMD(aclnnInplaceLeTensor, self, other);
+at::Tensor &le_(at::Tensor &self, const at::Scalar &other)
+{
+    DO_COMPATIBILITY(aclnnInplaceLeScalar, acl_op::le_(self, other));
+    EXEC_NPU_CMD(aclnnInplaceLeScalar, self, other);
     return self;
-  }
 }
 
-}  // namespace op_api
+at::Tensor &le_(at::Tensor &self, const at::Tensor &other)
+{
+    DO_COMPATIBILITY(aclnnInplaceLeTensor, acl_op::le_(self, other));
+    if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+        return op_api::le_(self, other.item());
+    } else {
+        TORCH_CHECK(self.device() == other.device(),
+                    "Expected all tensors to be on the same device, but found at least two devices");
+        at_npu::native::OpPreparation::CheckMemory({self, other}, {self});
+        EXEC_NPU_CMD(aclnnInplaceLeTensor, self, other);
+        return self;
+    }
+}
+
+} // namespace op_api
