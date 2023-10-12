@@ -71,7 +71,7 @@ at::Tensor var(const at::Tensor &self, c10::optional<at::IntArrayRef> dim, c10::
 
 at::Tensor var(const at::Tensor &self, bool unbiased)
 {
-    return op_api::var(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
+    return at::var(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
 }
 
 at::Tensor var(const at::Tensor &self, at::DimnameList dim, c10::optional<int64_t> correction, bool keepdim)
@@ -81,18 +81,7 @@ at::Tensor var(const at::Tensor &self, at::DimnameList dim, c10::optional<int64_
 
 at::Tensor var(const at::Tensor &self, c10::optional<at::IntArrayRef> dim, bool unbiased, bool keepdim)
 {
-    DO_COMPATIBILITY(aclnnVar, acl_op::var(self, dim, unbiased, keepdim));
-    c10::SmallVector<int64_t, SIZE> real_dim = {};
-    if (dim.has_value()) {
-        real_dim = op_infer::array_to_small_vector(dim.value());
-    }
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
-    auto result = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options());
-
-    at_npu::native::OpPreparation::check_tensor({self}, result, self, output_size);
-
-    EXEC_NPU_CMD(aclnnVar, self, dim, unbiased, keepdim, result);
-    return result;
+    return at::var(self, dim, int64_t{unbiased ? 1 : 0}, keepdim);
 }
 
 at::Tensor var(const at::Tensor &self, at::DimnameList dim, bool unbiased, bool keepdim)
@@ -130,13 +119,13 @@ std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, at::DimnameL
 
 std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, bool unbiased)
 {
-    return op_api::var_mean(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
+    return at::var_mean(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, c10::optional<at::IntArrayRef> dim, bool unbiased,
                                             bool keepdim)
 {
-    return op_api::var_mean(self, c10::optional<at::IntArrayRef>(dim), int64_t{unbiased ? 1 : 0}, keepdim);
+    return at::var_mean(self, c10::optional<at::IntArrayRef>(dim), int64_t{unbiased ? 1 : 0}, keepdim);
 }
 
 } // namespace op_api

@@ -113,7 +113,7 @@ at::Tensor var(
 }
 
 at::Tensor var(const at::Tensor& self, bool unbiased) {
-  return op_api::var(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
+  return at::var(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
 }
 
 at::Tensor var(
@@ -130,23 +130,7 @@ at::Tensor var(
     at::OptionalIntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  DO_COMPATIBILITY(aclnnVar, acl_op::var(self, dim, unbiased, keepdim));
-  c10::SmallVector<int64_t, op_infer::SIZE> real_dim = {};
-  if (dim.has_value()) {
-    real_dim = op_infer::array_to_small_vector(dim.value());
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
-  auto result = npu_preparation::apply_tensor_without_format(output_size, self.options());
-
-  at_npu::native::OpPreparation::check_tensor(
-      {self},
-      result,
-      self,
-      output_size);
-
-  auto rd = at::IntArrayRef(real_dim);
-  EXEC_NPU_CMD(aclnnVar, self, rd, unbiased, keepdim, result);
-  return result;
+  return at::var(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
 }
 
 at::Tensor var(
@@ -193,7 +177,7 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor& self, bool unbiased) {
-  return op_api::var_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0));
+  return at::var_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0));
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
@@ -201,7 +185,7 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     at::OptionalIntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  return op_api::var_mean(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
+  return at::var_mean(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
 }
 
 } // namespace op_api

@@ -63,12 +63,12 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
     at::OptionalIntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  return op_api::std_mean(self, at::OptionalIntArrayRef(dim),
-                          c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
+  return at::std_mean(self, at::OptionalIntArrayRef(dim),
+                      c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> std_mean(const at::Tensor& self, bool unbiased) {
-  return op_api::std_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
+  return at::std_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
 }
 
 } // namespace op_api
