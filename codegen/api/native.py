@@ -58,13 +58,13 @@ from codegen.utils import assert_never
 
 
 def name(func: FunctionSchema) -> str:
-    name = str(func.name.name)
+    func_name = str(func.name.name)
     # TODO: delete this!
     if func.is_out_fn():
-        name += "_out"
+        func_name += "_out"
     if func.name.overload_name:
-        name += f"_{func.name.overload_name}"
-    return name
+        func_name += f"_{func.name.overload_name}"
+    return func_name
 
 
 def argumenttype_type(

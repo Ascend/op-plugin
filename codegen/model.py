@@ -217,11 +217,11 @@ class DispatchKey(Enum):
 
 
 def codegen_per_backend_entries() -> str:
-    r = []
-    for fk in FUNCTIONALITY_KEYS:
-        for bc in BACKEND_COMPONENTS:
-            r.append(f"    {fk}{bc} = auto()")
-    return "\n".join(r)
+    local_r = []
+    for local_fk in FUNCTIONALITY_KEYS:
+        for local_bc in BACKEND_COMPONENTS:
+            local_r.append(f"    {local_fk}{local_bc} = auto()")
+    return "\n".join(local_r)
 
 
 for fk in FUNCTIONALITY_KEYS:
@@ -990,10 +990,10 @@ class FunctionSchema:
         name = OperatorName.parse(ops)
         arguments = Arguments.parse(args)
         returns = parse_returns(return_decl)
-        r = FunctionSchema(name=name, arguments=arguments, returns=returns)
-        if str(r) != func:
-            raise ValueError(f"{str(r)} != {func}")
-        return r
+        func_schema_obj = FunctionSchema(name=name, arguments=arguments, returns=returns)
+        if str(func_schema_obj) != func:
+            raise ValueError(f"{str(func_schema_obj)} != {func}")
+        return func_schema_obj
 
     def returns_are_aliased(self) -> bool:
         # We assert earlier that schemas can't have a mix of aliased and non-aliased returns
@@ -1172,11 +1172,11 @@ class FunctionSchema:
     # If return names were enforced to be consistent with aliasing information, then we wouldn't need this.
     def aliased_return_names(self) -> List[Optional[str]]:
         outs: List[Optional[str]] = []
-        for r in self.returns:
+        for return_name in self.returns:
             aliased_args = [
                 a
                 for a in self.arguments.flat_all
-                if a.annotation is not None and a.annotation == r.annotation
+                if a.annotation is not None and a.annotation == return_name.annotation
             ]
             if len(aliased_args) == 0:
                 outs.append(None)
@@ -1185,7 +1185,7 @@ class FunctionSchema:
             else:
                 aliased_names = ", ".join(a.name for a in aliased_args)
                 raise AssertionError(
-                    f"Found a return ({r.name})that aliases multiple inputs ({aliased_names})"
+                    f"Found a return ({return_name.name})that aliases multiple inputs ({aliased_names})"
                 )
         return outs
 
@@ -1233,10 +1233,10 @@ class FunctionSchema:
         _fused_moving_avg_obs_fq_helper(Tensor self, Tensor observer_on, Tensor fake_quant_on, Tensor running_min, Tensor running_max, Tensor scale, Tensor zero_point, float averaging_const, int quant_min, int quant_max, int ch_axis, bool per_row_fake_quant=False, bool symmetric_quant=False) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)  # noqa: B950
         """
 
-        def strip_ret_annotation(r: Return) -> Return:
+        def strip_ret_annotation(return_name: Return) -> Return:
             return Return(
-                name=r.name if keep_return_names else None,
-                type=r.type,
+                name=return_name.name if keep_return_names else None,
+                type=return_name.type,
                 annotation=None,
             )
 
@@ -1360,12 +1360,12 @@ class Annotation:
         if len(before_alias) > 1 and len(after_set) > 1:
             raise ValueError(f"before alias set and after alias set cannot be larger " 
                               "than 1 at the same time, got {ann} instead.")
-        r = Annotation(
+        annotation_obj = Annotation(
             alias_set=alias_set, is_write=is_write, alias_set_after=after_set
         )
-        if str(r) != ann:
-            raise ValueError(f"{r} != {ann}")
-        return r
+        if str(annotation_obj) != ann:
+            raise ValueError(f"{annotation_obj} != {ann}")
+        return annotation_obj
 
     def __str__(self) -> str:
         alias_set = "|".join(self.alias_set)
@@ -1387,10 +1387,10 @@ class Annotation:
 class Type:
     @staticmethod
     def parse(t: str) -> "Type":
-        r = Type._parse(t)
-        if str(r) != t:
-            raise ValueError(f"{r} != {t}")
-        return r
+        parse_res = Type._parse(t)
+        if str(parse_res) != t:
+            raise ValueError(f"{parse_res} != {t}")
+        return parse_res
 
     @staticmethod
     def _parse(t: str) -> "Type":
@@ -1609,15 +1609,15 @@ class Argument:
             type_s = type_and_annot
             annotation = None
         type = Type.parse(type_s)
-        r = Argument(
+        argument_obj = Argument(
             name=name,
             type=type,
             default=default,
             annotation=annotation,
         )
-        if str(r) != arg:
-            raise ValueError(f"{str(r)} != {arg}")
-        return r
+        if str(argument_obj) != arg:
+            raise ValueError(f"{str(argument_obj)} != {arg}")
+        return argument_obj
 
     @property
     def is_write(self) -> bool:
@@ -1664,14 +1664,14 @@ class Return:
             type_s = type_and_annot
             annotation = None
         type = Type.parse(type_s)
-        r = Return(
+        return_obj = Return(
             name=name,
             type=type,
             annotation=annotation,
         )
-        if str(r) != arg:
-            raise ValueError(f"{str(r)} != {arg}")
-        return r
+        if str(return_obj) != arg:
+            raise ValueError(f"{str(return_obj)} != {arg}")
+        return return_obj
 
     @property
     def is_write(self) -> bool:
@@ -2113,15 +2113,15 @@ class BaseOperatorName:
         else:
             functional_overload = False
 
-        r = BaseOperatorName(
+        base_operator_name_obj = BaseOperatorName(
             base=base,
             inplace=inplace,
             dunder_method=dunder_method,
             functional_overload=functional_overload,
         )
-        if str(r) != op:
+        if str(base_operator_name_obj) != op:
             raise ValueError("str(r) != op")
-        return r
+        return base_operator_name_obj
 
     def __str__(self) -> str:
         if self.dunder_method:
@@ -2152,10 +2152,10 @@ class OperatorName:
         else:
             name = op_name
             overload_name = ""
-        r = OperatorName(name=BaseOperatorName.parse(name), overload_name=overload_name)
-        if str(r) != op_name:
-            raise ValueError(f"{str(r)} != {op_name}")
-        return r
+        operator_name_obj = OperatorName(name=BaseOperatorName.parse(name), overload_name=overload_name)
+        if str(operator_name_obj) != op_name:
+            raise ValueError(f"{str(operator_name_obj)} != {op_name}")
+        return operator_name_obj
 
     def __str__(self) -> str:
         if self.overload_name:
@@ -2374,10 +2374,10 @@ class Precompute:
             with_list_args = [Argument.parse(name.strip()) for name in with_list]
             replace[arg] = with_list_args
 
-        r = Precompute(replace=replace, add=add_args)
-        if r.to_list() != src:
+        precompute_obj = Precompute(replace=replace, add=add_args)
+        if precompute_obj.to_list() != src:
             raise ValueError("r.to_list() != src")
-        return r
+        return precompute_obj
 
     def __post_init__(self) -> None:
         # the template parameters are upper so if these are the

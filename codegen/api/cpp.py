@@ -91,16 +91,16 @@ def name(
     faithful_name_for_out_overloads: bool = False,
     symint_overload: bool = False,
 ) -> str:
-    name = str(func.name.name)
+    func_name = str(func.name.name)
     if symint_overload:
-        name += "_symint"
+        func_name += "_symint"
     if func.is_out_fn():
         if faithful_name_for_out_overloads:
-            name += "_outf"
+            func_name += "_outf"
         else:
-            name += "_out"
+            func_name += "_out"
 
-    return name
+    return func_name
 
 
 # Translation of "value types" in JIT schema to C++ API type.  Value
@@ -306,27 +306,27 @@ def return_names(f: NativeFunction, *, fallback_name: str = "result") -> Sequenc
         if f.func.name.name.inplace:
             if i != 0:
                 raise ValueError("illegal inplace function with multiple returns")
-            name = "self"
+            return_name = "self"
         # If we are out function, the name is the name of the
         # corresponding output function (r.name will get recorded
         # in field_name later.)
         elif f.func.is_out_fn():
-            name = f.func.arguments.out[i].name
+            return_name = f.func.arguments.out[i].name
         # If the return argument is explicitly named...
         elif r.name:
             name_conflict = any(
                 r.name == a.name for a in f.func.schema_order_arguments()
             )
             if name_conflict and not f.func.is_out_fn():
-                name = f"{r.name}_return"
+                return_name = f"{r.name}_return"
             else:
-                name = r.name
+                return_name = r.name
         # If there is no explicit name and no fallback name was passed in, we just name the output result,
         # unless it's a multi-return, in which case it's result0,
         # result1, etc (zero-indexed)
         else:
-            name = fallback_name if len(f.func.returns) == 1 else f"{fallback_name}{i}"
-        returns.append(name)
+            return_name = fallback_name if len(f.func.returns) == 1 else f"{fallback_name}{i}"
+        returns.append(return_name)
     return returns
 
 
