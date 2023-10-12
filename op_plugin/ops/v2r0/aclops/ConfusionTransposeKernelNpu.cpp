@@ -21,6 +21,21 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
+namespace {
+void check_confusion_transpose_perm(at::IntArrayRef perm, at::IntArrayRef shape)
+{
+    auto input_dim = shape.size();
+    TORCH_CHECK(perm.size() == input_dim, "The length of perm should be the same as shape.");
+    std::vector<bool> seen(input_dim);
+    for (const auto i : c10::irange(input_dim)) {
+        auto dim = at::maybe_wrap_dim(perm[i], input_dim);
+        TORCH_CHECK(!seen[dim], "Repeated dim in perm");
+        seen[dim] = true;
+    }
+}
+} // namespace
+
+
 at::Tensor npu_confusion_transpose_backward_symint(const at::Tensor &grad, at::IntArrayRef perm,
                                                    c10::SymIntArrayRef shape_symint, bool transpose_first)
 {
@@ -29,6 +44,7 @@ at::Tensor npu_confusion_transpose_backward_symint(const at::Tensor &grad, at::I
     if (transpose_first) {
         svec_shape = op_infer::array_to_small_vector(shape);
     } else {
+        check_confusion_transpose_perm(perm, shape);
         for (int i = 0; i < perm.size(); i++) {
             svec_shape.emplace_back(shape[perm[i]]);
         }
