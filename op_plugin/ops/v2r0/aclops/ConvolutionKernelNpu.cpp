@@ -641,6 +641,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward(
     case at::native::ConvBackend::Xnnpack2d:
       TORCH_CHECK(false, "Backward is not supported for xnnpack");
       break;
+    default:
+        TORCH_NPU_WARN_ONCE("Unkonwn Backward");
   }
 
   // Convert 2D inputs back to 1D for backends that don't natively support 1D
