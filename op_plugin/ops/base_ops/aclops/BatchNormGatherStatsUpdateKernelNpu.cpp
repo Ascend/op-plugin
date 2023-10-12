@@ -80,6 +80,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_update(
     double momentum,
     double eps,
     const at::Tensor& counts) {
+  TORCH_CHECK(self.dim() > 1, "The dim input tensor [self] must more than 1.");
   c10::SmallVector<int64_t, N> output_size = {self.size(1)};
 
   const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] { return at::Tensor(); });

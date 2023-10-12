@@ -56,7 +56,7 @@ at::Tensor& upsample_nearest1d_backward_out_nocheck(
   } else {
     TORCH_CHECK(output_size[0] != 0, "output_size must not equals to 0, but got ", output_size[0]);
     c10::SmallVector<int64_t, SIZE> origin_size = upsample_nearest1d_backward_infer_size(input_size);
-    at::Scalar scales_cp = scales.has_value() ? scales.value() : input_size[0] / output_size[0];
+    at::Scalar scales_cp = scales.has_value() ? scales.value() : -1;
     cmd.Name("ResizeGrad")
         .Input(grad_cp)
         .Input(scales_cp, at::kFloat)

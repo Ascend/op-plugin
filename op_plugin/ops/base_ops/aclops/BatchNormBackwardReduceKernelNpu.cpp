@@ -107,7 +107,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> batch_norm_backward_r
   if (self.scalar_type() == mean.scalar_type() && self.scalar_type() == at::kHalf) {
     is_fully_fp16 = true;
   }
-
+  
+  TORCH_CHECK(self.dim() >= 1, "The dim input tensor [self] must more than 1.");
   int64_t n_input = self.size(1);
   at::Tensor sum_dy_val;
   at::Tensor sum_dy_xmu_val;

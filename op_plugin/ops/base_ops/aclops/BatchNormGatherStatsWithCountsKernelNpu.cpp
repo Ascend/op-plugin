@@ -30,6 +30,7 @@ tensor_list1 batch_norm_gather_stats_with_counts_npu_impl(at::Tensor &mean_all, 
                                                           const at::Tensor &counts)
 {
     auto options = self.options();
+    TORCH_CHECK(self.dim() > 1, "The dim input tensor [self] must more than 1.");
     auto dim_c = self.size(1);
     at::Tensor mean_cp = at_npu::native::custom_ops::npu_dtype_cast(mean, at::kFloat);
     at::Tensor invstd_cp = at_npu::native::custom_ops::npu_dtype_cast(invstd, at::kFloat);

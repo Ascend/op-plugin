@@ -57,7 +57,7 @@ at::Tensor& upsample_linear1d_out_nocheck(
   // Since only NCHW format input is currently supported, first convert the
   // input self (3 dimensions) to 4 dimensions as the input of npu
   at::Tensor selfcp = self.unsqueeze(2);
-
+  TORCH_CHECK(selfcp.size(3) != 0, "selfcp.size(3) == 0.");
   // to calculate the value of scale
   c10::SmallVector<float, N> sc = {};
   if (scales.has_value()) {

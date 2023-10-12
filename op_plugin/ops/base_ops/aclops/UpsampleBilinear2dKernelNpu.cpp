@@ -31,6 +31,7 @@ at::Tensor& upsample_bilinear2d_out_nocheck(
     c10::optional<double> scales_w) {
   at_npu::native::OpCommand cmd;
   bool half_pixel_centers = !align_corners;
+  TORCH_CHECK(output_size.size() >= 1, "The dim input tensor [output_size] must more than 1.");
   int64_t H = output_size[0];
   int64_t W = output_size[1];
   at::SmallVector<int64_t, N> attr_size = {H, W};

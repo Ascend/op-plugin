@@ -21,6 +21,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& self, double eps) {
+    TORCH_CHECK(self.dim() > 1, "The dim input tensor [self] must more than 1.");
   auto output_size = {self.size(1)};
   at::Tensor sum = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kFloat), self);
   at::Tensor square_sum = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kFloat), self);
