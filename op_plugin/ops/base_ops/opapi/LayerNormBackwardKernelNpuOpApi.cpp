@@ -38,7 +38,7 @@ tensor_list3 native_layer_norm_backward(const at::Tensor &dY, const at::Tensor &
     // 根据输入input和normalized_shape计算M
     const size_t norm_dim = normalized_shape.size();
     const auto input_shape = X.sizes();
-    const size_t input_dim = X.dim();
+    const size_t input_dim = static_cast<size_t>(X.dim());
     const size_t begin_axis = input_dim - norm_dim;
 
     const int64_t M =

@@ -33,14 +33,14 @@ bool AicoreValid(at::Tensor& self, const at::Tensor& src) {
   auto self_size_len = self_size.size();
 
   // count the difference between dst_storage and dst_size.
-  int diff = dst_storage_size_len - self_size_len;
+  auto diff = dst_storage_size_len - self_size_len;
   if (diff < 0 || diff > 1) {
     return false;
   }
 
   // record the index of the difference.
-  int diff_index = self_size_len;
-  for (int64_t i = 0; i < self_size_len; i++) {
+  auto diff_index = self_size_len;
+  for (uint64_t i = 0; i < self_size_len; i++) {
     if (dst_storage_sizes[i] != self_size[i]) {
       ++diff;
       if (diff > 1) {
@@ -62,7 +62,7 @@ bool AicoreValid(at::Tensor& self, const at::Tensor& src) {
     return false;
   }
 
-  for (int64_t i = 0; i < self_stride.size(); i++) {
+  for (uint64_t i = 0; i < self_stride.size(); i++) {
     if (dst_base_stride[i] != self_stride[i] && i != diff_index) {
       return false;
     }

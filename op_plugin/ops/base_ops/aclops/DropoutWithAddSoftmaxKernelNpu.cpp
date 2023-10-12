@@ -27,7 +27,7 @@ namespace {
 const static int64_t LENGTH_DATA_ALIGN = 128;
 at::Tensor dropout_genmask(const at::Tensor &self, at::Scalar prob)
 {
-    uint32_t length = (self.numel() + LENGTH_DATA_ALIGN - 1) / LENGTH_DATA_ALIGN * LENGTH_DATA_ALIGN;
+    uint32_t length = (static_cast<uint32_t>(self.numel()) + LENGTH_DATA_ALIGN - 1) / LENGTH_DATA_ALIGN * LENGTH_DATA_ALIGN;
     at::Tensor mask =
         npu_preparation::apply_tensor_with_format({length}, self.options().dtype(at::kByte), ACL_FORMAT_ND);
     at::IntArrayRef self_shape = self.sizes();

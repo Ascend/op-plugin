@@ -56,8 +56,8 @@ bool is_transpose_last_two_dims_flex(const at::Tensor &tensor)
 bool is_transpose_last_two_dims_strict(const at::Tensor &tensor, bool is_transpose_flex)
 {
     auto base_sizes = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->get_npu_desc().base_sizes_;
-    if (is_transpose_flex && base_sizes.size() == tensor.dim() && tensor.size(-1) == base_sizes[tensor.dim() - 2] &&
-        tensor.size(-2) == base_sizes[tensor.dim() - 1]) {
+    if (is_transpose_flex && base_sizes.size() == static_cast<uint>(tensor.dim()) &&
+        tensor.size(-1) == base_sizes[tensor.dim() - 2] && tensor.size(-2) == base_sizes[tensor.dim() - 1]) {
         return true;
     }
     return false;
@@ -134,7 +134,7 @@ bool mm_check_nd_to_nz_on_the_fly(const at::Tensor &self, const at::Tensor &mat2
         mat2_inner_axis = mat2.size(mat2.dim() - 2);
         mat2_outer_axis = mat2.size(mat2.dim() - 1);
     }
-    int64_t data_type = elementSize(self.scalar_type());
+    int64_t data_type = static_cast<int64_t>(elementSize(self.scalar_type()));
     if (self_outer_axis > kInnerAxisMaxLimit && self_inner_axis * data_type < kInnerAxisMinBytes &&
         bool((static_cast<uint64_t>(self_inner_axis) * static_cast<uint64_t>(data_type)) & 0x1F)) {
         return false;
@@ -151,7 +151,7 @@ bool is_transpose_inner_axis(const at::Tensor &self)
         (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float)) {
         return false;
     }
-    int64_t data_type = elementSize(self.scalar_type());
+    int64_t data_type = static_cast<int64_t>(elementSize(self.scalar_type()));
     int64_t self_inner_axis = self.size(self.dim() - 1);
     int64_t self_outer_axis = self.size(self.dim() - 2);
     if (is_mm_transpose(self)) {

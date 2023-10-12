@@ -39,7 +39,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
     at::Tensor rstd_out;
 
     const size_t norm_ndim = normalized_shape.size();
-    const size_t input_ndim = input.dim();
+    const auto input_ndim = input.dim();
     const size_t begin_axis = input_ndim - norm_ndim;
 
     const auto input_shape = input.sizes();

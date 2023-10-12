@@ -73,7 +73,7 @@ at::Tensor& roll_out_npu(
     TORCH_CHECK(dims.size() == shifts.size(),
                 "The size of shifts and dims should be the same when the size of dims is not 0.");
     int64_t first_dim = op_plugin::utils::make_warp_dim(0, self.dim());
-    for (int i = 0; i < dims.size(); i++) {
+    for (uint i = 0; i < dims.size(); i++) {
       int64_t axis = op_plugin::utils::make_warp_dim(dims[i], self.dim());
       if (i == 0) {
         if (axis == first_dim) {

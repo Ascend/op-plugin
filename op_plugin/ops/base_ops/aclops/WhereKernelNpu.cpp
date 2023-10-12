@@ -55,7 +55,7 @@ std::vector<at::Tensor> where(const at::Tensor& condition) {
   result = result.transpose(1, 0);
   std::vector<at::Tensor> chunk_result = result.chunk(result.size(0), 0);
   std::vector<at::Tensor> squeeze_result;
-  for (int64_t i = 0; i < chunk_result.size(); i++) {
+  for (uint64_t i = 0; i < chunk_result.size(); i++) {
     squeeze_result.push_back(chunk_result[i].squeeze(0));
   }
 

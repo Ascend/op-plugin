@@ -30,8 +30,8 @@ at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> 
   DO_COMPATIBILITY(aclnnInplaceBernoulli, acl_op::bernoulli_(self, p, gen));
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(PHILOX_DEFAULT_NUM);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const uint64_t seed = pair.first;
+  const uint64_t offset = pair.second;
 
   const c10::Scalar& pScalar = at::Scalar(p);
   EXEC_NPU_CMD(aclnnInplaceBernoulli, self, pScalar, seed, offset);
@@ -42,8 +42,8 @@ at::Tensor& bernoulli_(at::Tensor& self, const at::Tensor& p, c10::optional<at::
   DO_COMPATIBILITY(aclnnInplaceBernoulliTensor, acl_op::bernoulli_(self, p, gen));
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(PHILOX_DEFAULT_NUM);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const uint64_t seed = pair.first;
+  const uint64_t offset = pair.second;
   EXEC_NPU_CMD(aclnnInplaceBernoulliTensor, self, p, seed, offset);
   return self;
 }

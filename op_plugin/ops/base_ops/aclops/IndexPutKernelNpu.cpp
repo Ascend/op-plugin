@@ -50,7 +50,7 @@ bool is_aicpu_valid(const at::Tensor& self,
   }
   // using aicore when index is continous, otherwise aicpu
   bool is_zero_in_masks = false;
-  for (int32_t i = 0; i < masks.size(); i++) {
+  for (uint32_t i = 0; i < masks.size(); i++) {
     if (is_zero_in_masks && masks[i] == 1) {
       return true;
     }
@@ -64,7 +64,7 @@ bool is_aicpu_valid(const at::Tensor& self,
   }
 
   // indices may need broadcast, in this case, indexput is implemented by aicpu
-  for (int32_t i = 1; i < all_defined_indices.size(); i++) {
+  for (uint32_t i = 1; i < all_defined_indices.size(); i++) {
     if (all_defined_indices[0].dim() != all_defined_indices[i].dim()) {
       return true;
     }
@@ -76,7 +76,7 @@ bool is_aicpu_valid(const at::Tensor& self,
   }
 
   int tail_size = 1;
-  for (int32_t i = all_defined_indices.size(); i < self.dim(); i++) {
+  for (uint32_t i = all_defined_indices.size(); i < self.dim(); i++) {
     tail_size = tail_size * self.sizes()[i];
   }
   if (self.scalar_type() != at::kHalf && self.scalar_type() != at::kFloat &&
@@ -114,7 +114,7 @@ at::Tensor& index_put_aicore_nocheck(
       .Input(temp_value_broadcast, value_str)
       .Input(masks, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, "", indexed_sizes_str)
       .Input(expand_masks, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, "", indexed_strides_str);
-  for (int i = 0; i < all_defined_indices.size(); i++) {
+  for (uint i = 0; i < all_defined_indices.size(); i++) {
     string input_name = "indices" +std::to_string(i);
     cmd.Input(all_defined_indices[i], input_name);
   }
@@ -177,7 +177,7 @@ at::Tensor& index_put_aicpu_nocheck(
       .Input(temp_value, value_str)
       .Input(masks, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, "", indexed_sizes_str)
       .Input(masks, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, "", indexed_strides_str);
-  for (int i = 0; i < all_defined_indices.size(); i++) {
+  for (uint i = 0; i < all_defined_indices.size(); i++) {
     string input_name = "indices" + std::to_string(i);
     cmd.Input(all_defined_indices[i], input_name);
   }

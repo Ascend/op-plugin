@@ -24,7 +24,7 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 bool check_padding(at::IntArrayRef padding)
 {
-    for (int64_t i = 0; i < padding.size(); i++) {
+    for (uint64_t i = 0; i < padding.size(); i++) {
         if (padding[i] != 0) {
             return false;
         }
@@ -46,7 +46,7 @@ at::Tensor &replication_pad2d_backward_out_npu_nocheck(at::Tensor &grad_input, c
     }
     TORCH_CHECK(input_cp.dim() != 0, "The input should not be empty");
     paddings_vector.resize(2 * input_cp.dim(), 0);
-    for (int64_t i = paddings_vector.size(); i > 1; i -= 2) {
+    for (uint64_t i = paddings_vector.size(); i > 1; i -= 2) {
         vector_int.emplace_back(paddings_vector[i - 2]);
         vector_int.emplace_back(paddings_vector[i - 1]);
     }

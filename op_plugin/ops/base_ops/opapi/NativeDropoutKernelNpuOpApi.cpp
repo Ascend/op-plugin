@@ -51,8 +51,8 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
     auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
     // At present, the default value of random number may be very large,
     // which will cause overflow in graph mode, so we set seed = 0 to avoid it.
-    const int64_t seed = pair.first;
-    const int64_t offset = pair.second;
+    const uint64_t seed = pair.first;
+    const uint64_t offset = pair.second;
     EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, p, seed, offset, mask);
   }
   // When tasks on multiple streams read and write the same block of memory,

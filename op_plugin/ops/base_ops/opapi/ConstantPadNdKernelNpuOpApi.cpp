@@ -25,10 +25,10 @@ at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at
   TORCH_CHECK(pad.size() % 2 == 0, "Length of pad must be even but instead it equals ", pad.size());
 
   auto input_sizes = self.sizes();
-  auto l_inp = self.dim();
+  auto l_inp = static_cast<uint64_t>(self.dim());
   auto l_pad = pad.size() / 2;
   auto l_diff = l_inp - l_pad;
-  TORCH_CHECK(l_inp >= (int64_t)l_pad, "Length of pad should be no more than twice the number of "
+  TORCH_CHECK(l_inp >= l_pad, "Length of pad should be no more than twice the number of "
       "dimensions of the input. Pad length is ", pad.size(), "while the input has ",
       l_inp, "dimensions.");
 

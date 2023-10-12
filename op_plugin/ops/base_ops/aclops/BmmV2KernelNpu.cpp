@@ -37,7 +37,7 @@ bool is_transpose_last_two_dims_v2(const at::Tensor &Tensors)
                 "expected Tensors valid, "
                 "but input Tensors has element_size ",
                 Tensors.element_size());
-    int64_t tensor_size = Tensors.storage().nbytes() / Tensors.element_size();
+    int64_t tensor_size = static_cast<int64_t>(Tensors.storage().nbytes()) / Tensors.element_size();
     auto tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(Tensors)->get_npu_desc();
     if (tensor_desc.base_sizes_.size() == Tensors.dim() && Tensors.stride(dim2) == 1 &&
         Tensors.stride(dim1) == Tensors.size(dim2) && Tensors.size(dim1) == tensor_desc.base_sizes_[dim2] &&

@@ -40,8 +40,8 @@ at::Tensor repeat(const at::Tensor& self, at::IntArrayRef repeats) {
   TORCH_CHECK(repeats.size() >= self.ndimension(),
               "Number of dimensions of repeat dims can not be smaller than number of dimensions of tensor");
   at::Tensor self_cp = self;
-  if (repeats.size() > self_cp.ndimension()) {
-    auto diff = repeats.size() - self_cp.ndimension();
+  if (static_cast<int>(repeats.size()) > self_cp.ndimension()) {
+    int diff = static_cast<int>(repeats.size()) - self_cp.ndimension();
     for (int i = 0; i < diff; i++) {
       self_cp = at::unsqueeze(self_cp, 0);
     }

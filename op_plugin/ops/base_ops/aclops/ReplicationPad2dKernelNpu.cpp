@@ -30,7 +30,7 @@ at::Tensor& replication_pad2d_out_npu_nocheck(at::Tensor& result, const at::Tens
   c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(padding);
   TORCH_CHECK(self_cp.dim() != 0, "The self should not be empty");
   paddings_vector.resize(2 * self_cp.dim(), 0);
-  for (int64_t i = paddings_vector.size(); i > 1; i -= 2) {
+  for (uint64_t i = paddings_vector.size(); i > 1; i -= 2) {
     vector_int.emplace_back(paddings_vector[i - 2]);
     vector_int.emplace_back(paddings_vector[i - 1]);
   }

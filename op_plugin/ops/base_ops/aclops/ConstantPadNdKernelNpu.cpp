@@ -23,7 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 namespace {
 bool is_backward(at::IntArrayRef pad)
 {
-    for (int i = 0; i < pad.size(); i++) {
+    for (uint i = 0; i < pad.size(); i++) {
         if (pad[i] < 0) {
             return true;
         }
@@ -103,7 +103,7 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
     c10::SmallVector<int64_t, N> vector_int;
     c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(pad);
     paddings_vector.resize(2 * self.dim(), 0);
-    for (int64_t i = paddings_vector.size(); i > 0; i -= 2) {
+    for (uint64_t i = paddings_vector.size(); i > 0; i -= 2) {
         vector_int.emplace_back(paddings_vector[i - 2]);
         vector_int.emplace_back(paddings_vector[i - 1]);
     }

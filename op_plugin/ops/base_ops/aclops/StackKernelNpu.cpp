@@ -50,7 +50,7 @@ at::SmallVector<int64_t, SIZE> stack_npu_output_size(
 
 at::Tensor& stack_out_nocheck(at::Tensor& result, at::TensorList tensors, int64_t dim) {
   c10::SmallVector<at::Tensor, N> input_tensors;
-  for (int i = 0; i < tensors.size(); i++) {
+  for (uint i = 0; i < tensors.size(); i++) {
     input_tensors.emplace_back(tensors[i]);
   }
 
@@ -58,7 +58,7 @@ at::Tensor& stack_out_nocheck(at::Tensor& result, at::TensorList tensors, int64_
   at_npu::native::OpCommand cmd;
   cmd.Name("Pack")
       .DynamicInputReg(stack_func, {{dynamic_num, 0}});
-  for (int i = 0; i < dynamic_num; i++) {
+  for (uint i = 0; i < dynamic_num; i++) {
     string input_name = "x" + std::to_string(i);
     cmd.Input(input_tensors[i], input_name);
   }

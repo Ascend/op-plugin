@@ -40,7 +40,7 @@ at::Tensor& stride_copy_out_npu_nocheck(
   // AsStrided + Transpose instead of AsStrided to get better performance.
   if (stride.back() >= 256) {
     std::set<std::pair<int, std::pair<int, int>>> stride_perm_shape_set;
-    int tensor_dim = stride.size();
+    int tensor_dim = static_cast<int>(stride.size());
     for (int i = 0; i < tensor_dim; i++) {
       stride_perm_shape_set.insert({stride[i], {i, shape[i]}});
     }

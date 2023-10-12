@@ -24,7 +24,7 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 void batch_norm_backward_elemt_npu_expand_tensor(
     at::Tensor& expand_tensor,
-    size_t dim_c,
+    int64_t dim_c,
     int64_t input_ndim,
     at::IntArrayRef input_shape) {
   if (input_ndim >2) {
@@ -55,7 +55,7 @@ at::Tensor batch_norm_backward_elemt(
   auto mean_dy = sum_dy.div(divisor);
   auto mean_dy_xmu = sum_dy_xmu.div(divisor);
 
-  size_t dim_c = input.size(1);
+  int64_t dim_c = input.size(1);
   at::IntArrayRef input_shape = input.sizes();
   at::Tensor mean_expanded(mean);
 

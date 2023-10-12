@@ -54,7 +54,7 @@ at::Tensor& _index_put_impl_(
   std::vector<at::Tensor> all_defined_indices;
   at::SmallVector<int64_t, op_infer::N> zeroSize = {0};
   at::Tensor emptyTensor = npu_preparation::apply_tensor_without_format(self, zeroSize);
-  for (int i = 0; i < indices_after.size(); i++) {
+  for (int i = 0; i < static_cast<int>(indices_after.size()); i++) {
     if (indices_after[i].defined()) {
       all_defined_indices.emplace_back(indices_after[i]);
       continue;

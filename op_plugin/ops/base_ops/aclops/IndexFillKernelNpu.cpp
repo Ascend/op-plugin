@@ -41,7 +41,7 @@ c10::SmallVector<float, N> index_fill_d_assist_help_init(
   int blocknum = 1;
   int n = 1;
 
-  for (int i = 0; i < sizes.size(); i++) {
+  for (uint i = 0; i < sizes.size(); i++) {
     if (i <= dim) {
       blocknum *= sizes[i];
     }
@@ -58,7 +58,7 @@ c10::SmallVector<float, N> index_fill_d_assist_help_init(
     ast = c10::SmallVector<float, N>(n, 0);
   }
 
-  for (int i = 0; i < index.size(); i++) {
+  for (uint i = 0; i < index.size(); i++) {
     int start = 0;
     int end = 0;
     int idx = index[i];

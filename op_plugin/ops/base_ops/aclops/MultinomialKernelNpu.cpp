@@ -32,8 +32,8 @@ at::Tensor& multinomial_out_npu_nocheck(
     c10::optional<at::Generator> gen) {
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("MultinomialWithReplacement")

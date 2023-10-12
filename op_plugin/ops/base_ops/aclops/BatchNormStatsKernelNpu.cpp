@@ -55,7 +55,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, doub
   at::Tensor mean_copy = mean;
   if (mean.dim() != 0) {
     auto dim_vector = op_infer::array_to_small_vector(dim);
-    for (int64_t i = 0; i < dim_vector.size(); i++) {
+    for (uint64_t i = 0; i < dim_vector.size(); i++) {
       mean_copy = mean_copy.unsqueeze(dim_vector[i]);
     }
   }

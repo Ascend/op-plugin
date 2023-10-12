@@ -65,7 +65,7 @@ at::Tensor dropout_gen_mask(const at::Tensor& self, at::Scalar prob) {
   auto desc_ = torch_npu::NPUBridge::GetNpuStorageImpl(self)->get_npu_desc();
   int64_t numels = is_not_jit_compile ? c10::multiply_integers(desc_.storage_sizes_) : self.numel();
 
-  uint64_t length = (numels + LENGTH_DATA_ALIGN - 1) / LENGTH_DATA_ALIGN * LENGTH_DATA_ALIGN;
+  uint64_t length = (static_cast<uint64_t>(numels) + LENGTH_DATA_ALIGN - 1) / LENGTH_DATA_ALIGN * LENGTH_DATA_ALIGN;
   at::Tensor mask = npu_preparation::apply_tensor_with_format(
       {length / LENGTH_BOLCK_ALIGN},
       self.options().dtype(at::kByte),
@@ -83,8 +83,8 @@ at::Tensor dropout_gen_mask(const at::Tensor& self, at::Scalar prob) {
   auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(INCREMENT);
   // At present, the default value of random number may be very large,
   // which will cause overflow in graph mode, so we set seed = 0 to avoid it.
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   at::SmallVector<int64_t, N> offset_list = {0, offset};
 
   const int64_t seed1 = 0;
@@ -154,7 +154,7 @@ at::Tensor npu_dropout_gen_mask(
   at::Scalar prob = at::Scalar(1. - p);
   int64_t numels = c10::multiply_integers(size);
 
-  uint64_t length = (numels + 128 - 1) / 128 * 128;
+  uint64_t length = (static_cast<uint64_t>(numels) + 128 - 1) / 128 * 128;
   at::Tensor mask = npu_preparation::apply_tensor_with_format(
       at::IntArrayRef{length / 8},
       options.dtype(at::kByte),
@@ -167,8 +167,8 @@ at::Tensor npu_dropout_gen_mask(
   auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
   // At present, the default value of random number may be very large,
   // which will cause overflow in graph mode, so we set seed = 0 to avoid it.
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   at::SmallVector<int64_t, N> offset_list = {0, offset};
 
   const int64_t seed1 = 0;

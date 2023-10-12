@@ -32,10 +32,10 @@ c10::SmallVector<int64_t, SIZE> logsumexp_npu_output_size(
 }
 
 at::Tensor squeeze_multiple(const at::Tensor& self, at::IntArrayRef dims) {
-  int ndims = self.sizes().size();
+  uint ndims = self.sizes().size();
   auto dims_to_squeeze = at::dim_list_to_bitset(dims, ndims);
   at::Tensor result = self;
-  for (int i = ndims - 1; i >= 0; --i) {
+  for (uint i = ndims - 1; i >= 0; --i) {
     if (dims_to_squeeze[i]) {
       result = result.squeeze(i);
     }

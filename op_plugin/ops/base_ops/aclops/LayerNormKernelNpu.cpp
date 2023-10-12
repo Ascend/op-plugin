@@ -114,7 +114,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(
     double eps) {
   const at::Tensor& weight = c10::value_or_else(weight_ex, [] {return at::Tensor();});
   const at::Tensor& bias = c10::value_or_else(bias_ex, [] {return at::Tensor();});
-  const int normalized_ndim = normalized_shape.size();
+  const int normalized_ndim = static_cast<int>(normalized_shape.size());
   TORCH_CHECK(
       normalized_ndim >= 1,
       "Expected normalized_shape to be at least 1-dimensional, i.e., ",

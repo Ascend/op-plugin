@@ -126,7 +126,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm_backward(
     const c10::optional<at::Tensor>& gamma,
     const c10::optional<at::Tensor>& beta,
     std::array<bool, 3> output_mask) {
-  const int normalized_ndim = normalized_shape.size();
+  const int normalized_ndim = static_cast<int>(normalized_shape.size());
   const auto input_shape = X.sizes();
   const auto input_ndim = X.dim();
 
