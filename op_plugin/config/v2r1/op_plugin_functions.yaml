@@ -499,9 +499,9 @@ official:
  - func: cumsum.out(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: diag(Tensor self, int diagonal=0) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: diag.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: div.Scalar(Tensor self, Scalar other) -> Tensor
    impl_ns: acl_op, op_api
  - func: div.Scalar_mode(Tensor self, Scalar other, *, str? rounding_mode) -> Tensor
