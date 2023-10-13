@@ -115,7 +115,7 @@ at::Tensor& norm_out(
       {self},
       result,
       ACL_FORMAT_ND,
-      self.scalar_type(),
+      dtype,
       output_size);
 
   if (!npu_utils::check_match(&result)) {
