@@ -25,32 +25,33 @@ at::Tensor& nll_loss2d_backward_out(const at::Tensor& grad_output, const at::Ten
                                     const c10::optional<at::Tensor>& weight_opt,
                                     int64_t reduction, int64_t ignore_index,
                                     const at::Tensor& total_weight, at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnNLLLoss2dBackward, acl_op::nll_loss2d_backward_out(grad_output, self, target, weight_opt,
-                                                                           reduction, ignore_index, total_weight,
-                                                                           grad_input));
-  at::Tensor weight_tensor = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
-  if (!weight_tensor.defined()) {
-    weight_tensor = at::ones(self.size(1), self.options());
-  }
+    DO_COMPATIBILITY(aclnnNLLLoss2dBackward, acl_op::nll_loss2d_backward_out(grad_output, self, target, weight_opt,
+                                                                             reduction, ignore_index, total_weight,
+                                                                             grad_input));
+    at::Tensor weight_tensor = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
+    TORCH_CHECK(self.dim() > 1, "self dim has to be more than 1");
+    if (!weight_tensor.defined()) {
+        weight_tensor = at::ones(self.size(1), self.options());
+    }
 
-  at_npu::native::OpPreparation::check_memory({self, grad_output, target, weight_tensor, total_weight}, {grad_input});
-  EXEC_NPU_CMD(aclnnNLLLoss2dBackward, grad_output, self, target, weight_tensor, reduction, ignore_index, total_weight,
-               grad_input);
-  return grad_input;
+    at_npu::native::OpPreparation::check_memory({self, grad_output, target, weight_tensor, total_weight}, {grad_input});
+    EXEC_NPU_CMD(aclnnNLLLoss2dBackward, grad_output, self, target, weight_tensor, reduction, ignore_index,
+                 total_weight, grad_input);
+    return grad_input;
 }
 
 at::Tensor nll_loss2d_backward(const at::Tensor& grad_output, const at::Tensor& self,
                                const at::Tensor& target,
                                const c10::optional<at::Tensor>& weight_opt, int64_t reduction,
                                int64_t ignore_index, const at::Tensor& total_weight) {
-  DO_COMPATIBILITY(aclnnNLLLoss2dBackward, acl_op::nll_loss2d_backward(grad_output, self, target, weight_opt,
-                                                                       reduction, ignore_index, total_weight));
-  at::Tensor grad_input = at_npu::native::OpPreparation::apply_tensor_without_format(self);
-  // calculate the output result of the NPU
-  nll_loss2d_backward_out(grad_output, self, target, weight_opt, reduction, ignore_index,
-                                                   total_weight, grad_input);
+    DO_COMPATIBILITY(aclnnNLLLoss2dBackward, acl_op::nll_loss2d_backward(grad_output, self, target, weight_opt,
+                                                                         reduction, ignore_index, total_weight));
+    at::Tensor grad_input = at_npu::native::OpPreparation::apply_tensor_without_format(self);
+    // calculate the output result of the NPU
+    nll_loss2d_backward_out(grad_output, self, target, weight_opt, reduction, ignore_index,
+                            total_weight, grad_input);
 
-  return grad_input;
+    return grad_input;
 }
 
 }  // namespace op_api
