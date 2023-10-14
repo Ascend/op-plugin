@@ -101,7 +101,7 @@ bool check_size(const at::Tensor &self, const at::Tensor &other)
     if (self.dim() != other.dim()) {
         return false;
     }
-    for (size_t i = 0; i < self.dim(); i++) {
+    for (size_t i = 0; i < static_cast<uint64_t>(self.dim()); i++) {
         if (self.size(i) != other.size(i)) {
             return false;
         }

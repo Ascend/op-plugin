@@ -38,9 +38,9 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
 
     auto input_sizes = self.sizes();
     auto l_inp = self.dim();
-    auto l_pad = pad.size() / 2;
+    auto l_pad = static_cast<int64_t>(pad.size()) / 2;
     auto l_diff = l_inp - l_pad;
-    TORCH_CHECK(l_inp >= (int64_t)l_pad,
+    TORCH_CHECK(l_inp >= l_pad,
                 "Length of pad should be no more than twice the number of "
                 "dimensions of the input. Pad length is ",
                 pad.size(), "while the input has ", l_inp, "dimensions.");
@@ -66,8 +66,8 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
 
         int64_t max_pad_size = 2 * self.dim();
         auto pad_vec = op_infer::array_to_small_vector(pad);
-        if (pad.size() < max_pad_size) {
-            for (int64_t i = 0; i < max_pad_size - pad.size(); i++) {
+        if (static_cast<int64_t>(pad.size()) < max_pad_size) {
+            for (int64_t i = 0; i < max_pad_size - static_cast<int64_t>(pad.size()); i++) {
                 pad_vec.emplace_back(0);
             }
         }

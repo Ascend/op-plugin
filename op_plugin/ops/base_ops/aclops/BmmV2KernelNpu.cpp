@@ -39,7 +39,7 @@ bool is_transpose_last_two_dims_v2(const at::Tensor &Tensors)
                 Tensors.element_size());
     int64_t tensor_size = static_cast<int64_t>(Tensors.storage().nbytes()) / Tensors.element_size();
     auto tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(Tensors)->get_npu_desc();
-    if (tensor_desc.base_sizes_.size() == Tensors.dim() && Tensors.stride(dim2) == 1 &&
+    if (tensor_desc.base_sizes_.size() == static_cast<uint64_t>(Tensors.dim()) && Tensors.stride(dim2) == 1 &&
         Tensors.stride(dim1) == Tensors.size(dim2) && Tensors.size(dim1) == tensor_desc.base_sizes_[dim2] &&
         Tensors.size(dim2) == tensor_desc.base_sizes_[dim1] && tensor_size == numel) {
         return true;
@@ -132,7 +132,7 @@ at::Tensor reshape_tensor_self(const at::Tensor &self, c10::SmallVector<int64_t,
                 continue;
             }
         } else if (i == self.dim() - 1) {
-            for (int64_t j = 0; j < self_batch_idx.size(); ++j) {
+            for (uint64_t j = 0; j < self_batch_idx.size(); ++j) {
                 self_permute_idx.emplace_back(self_batch_idx[j]);
             }
         }
@@ -144,7 +144,7 @@ at::Tensor reshape_tensor_self(const at::Tensor &self, c10::SmallVector<int64_t,
     c10::SmallVector<int64_t, SIZE> tmp_self_size;
     c10::SmallVector<int64_t, SIZE> tmp_self_size_low;
 
-    m_idx = self.dim() - self_batch_idx.size() - 1;
+    m_idx = self.dim() - static_cast<int64_t>(self_batch_idx.size()) - 1;
     tmp_self_size = op_infer::array_to_small_vector(tmp_self.sizes());
     tmp_self_size_low.insert(tmp_self_size_low.end(), tmp_self_size.begin(), tmp_self_size.begin() + m_idx);
     tmp_self_size_low.emplace_back(-1);
@@ -166,7 +166,7 @@ at::Tensor reshape_tensor_mat2(const at::Tensor &mat2, c10::SmallVector<int64_t,
                 continue;
             }
         } else if (i == mat2.dim() - 2) {
-            for (int64_t j = 0; j < mat2_batch_idx.size(); ++j) {
+            for (uint64_t j = 0; j < mat2_batch_idx.size(); ++j) {
                 mat2_permute_idx.emplace_back(mat2_batch_idx[j]);
             }
         }
@@ -178,7 +178,7 @@ at::Tensor reshape_tensor_mat2(const at::Tensor &mat2, c10::SmallVector<int64_t,
     c10::SmallVector<int64_t, SIZE> tmp_mat2_size;
     c10::SmallVector<int64_t, SIZE> tmp_mat2_size_low;
 
-    k_idx = mat2.dim() - mat2_batch_idx.size() - 2;
+    k_idx = mat2.dim() - static_cast<int64_t>(mat2_batch_idx.size()) - 2;
     tmp_mat2_size = op_infer::array_to_small_vector(tmp_mat2.sizes());
     tmp_mat2_size_low.insert(tmp_mat2_size_low.end(), tmp_mat2_size.begin(), tmp_mat2_size.begin() + k_idx);
     tmp_mat2_size_low.insert(tmp_mat2_size_low.end(), {-1, mat2.size(-1)});
@@ -193,7 +193,7 @@ c10::SmallVector<int64_t, SIZE> align_small_vector(c10::SmallVector<int64_t, SIZ
     // expect: [6,7,65] -> [1,6,7,65]
     c10::SmallVector<int64_t, SIZE> tmp_svec;
     tmp_svec = svec;
-    int64_t size_to_fill = golden_svec.size() - svec.size();
+    int64_t size_to_fill = static_cast<int64_t>(golden_svec.size() - svec.size());
     if (size_to_fill > 0) {
         tmp_svec.insert(tmp_svec.begin(), size_to_fill, 1);
     }
@@ -266,7 +266,7 @@ at::Tensor npu_bmmV2_impl(const at::Tensor &self, const at::Tensor &mat2, at::In
     c10::SmallVector<int64_t, SIZE> tmp_mat2_size;
 
     c10::SmallVector<int64_t, SIZE> tmp_expect_output_size = align_small_vector(expect_output_size, infer_output_size);
-    for (int i = 0; i < tmp_expect_output_size.size(); ++i) {
+    for (int i = 0; i < static_cast<int64_t>(tmp_expect_output_size.size()); ++i) {
         if (tmp_expect_output_size[i] != infer_output_size[i]) {
             axis_reduce.emplace_back(i);
         }

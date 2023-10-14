@@ -47,7 +47,7 @@ int64_t var_get_shape_prod(const at::Tensor &self, at::IntArrayRef dim)
             shape_prod *= self.size(i);
         }
     } else {
-        for (auto i = 0; i < dim.size(); i++) {
+        for (uint64_t i = 0; i < dim.size(); i++) {
             shape_prod *= self.size(dim[i]);
             TORCH_CHECK(shape_prod < std::numeric_limits<int64_t>::max(),
                         "Result is larger than the max number of int64.");

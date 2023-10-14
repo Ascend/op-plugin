@@ -43,8 +43,8 @@ bool is_transpose_last_two_dims_flex(const at::Tensor &tensor)
 bool is_transpose_last_two_dims_strict(const at::Tensor &tensor, bool is_transpose_flex)
 {
     auto base_sizes = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->get_npu_desc().base_sizes_;
-    if (is_transpose_flex && base_sizes.size() == tensor.dim() && tensor.size(-1) == base_sizes[tensor.dim() - 2] &&
-        tensor.size(-2) == base_sizes[tensor.dim() - 1]) {
+    if (is_transpose_flex && base_sizes.size() == static_cast<uint64_t>(tensor.dim()) &&
+        tensor.size(-1) == base_sizes[tensor.dim() - 2] && tensor.size(-2) == base_sizes[tensor.dim() - 1]) {
         return true;
     }
     return false;

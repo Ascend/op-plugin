@@ -33,8 +33,8 @@ at::Tensor& uniform_out_npu(
     c10::optional<at::Generator> gen_) {
   auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen_, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   c10::SmallVector<int64_t, N> seed_list = {seed};
   c10::SmallVector<int64_t, N> offset_list = {0, offset};
   int64_t alg = 1;

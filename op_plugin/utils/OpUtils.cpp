@@ -58,7 +58,7 @@ bool is_transpose_last_two_dims(const at::Tensor &tensor) {
       tensor.size(dim1) == tensor_base_size[dim2] &&
       tensor.size(dim2) == tensor_base_size[dim1] &&
       tensor.numel() == numel &&
-      static_cast<uint64_t>(tensor_base_size.size()) == tensor.dim()) {
+      tensor_base_size.size() == static_cast<uint64_t>(tensor.dim())) {
     return true;
   } else {
     return false;

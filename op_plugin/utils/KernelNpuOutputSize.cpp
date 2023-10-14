@@ -671,7 +671,7 @@ c10::SmallVector<int64_t, SIZE> prelu_backward_npu_grad_weight_output_size(const
 c10::SmallVector<int64_t, SIZE> pad_npu_output_size(const at::Tensor &input, c10::IntArrayRef paddings)
 {
     c10::SmallVector<int64_t, SIZE> outputSize;
-    for (uint64_t i = 0; i < input.dim(); i++) {
+    for (uint64_t i = 0; i < static_cast<uint64_t>(input.dim()); i++) {
         if (i * 2 + 1 < paddings.size()) {
             outputSize.emplace_back(input.size(i) + paddings[i * 2] + paddings[i * 2 + 1]);
         } else if (i * 2 < paddings.size()) {
@@ -960,7 +960,7 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_out_size(const at::Tensor 
 
 c10::SmallVector<int64_t, SIZE> replication_pad3d_npu_out_size(const at::Tensor &self, at::IntArrayRef padding)
 {
-    int64_t padding_num = padding.size();
+    uint64_t padding_num = padding.size();
     int64_t self_num = self.dim();
     // 6 is padding length
     TORCH_CHECK(padding_num == 6, "padding length should be 6");
