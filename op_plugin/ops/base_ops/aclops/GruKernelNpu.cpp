@@ -51,6 +51,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 {
     int64_t num_step = input.size(0);
     int64_t batch_size = input.size(1);
+    TORCH_CHECK(bias_input.dim() >= 1, "hx must have at least 1 dimensions");
     int64_t hidden_size = bias_input.size(0) / 3;
     c10::SmallVector<int64_t, SIZE> output_size = {num_step, batch_size, hidden_size};
 
@@ -155,6 +156,8 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_direc_npu(const at::Tensor &
 {
     at::Tensor weight_input = params.w_ih.t();
     at::Tensor weight_hidden = params.w_hh.t();
+    TORCH_CHECK(weight_input.dim() >= 2, "weight_ih must have at least 2 dimensions");
+    TORCH_CHECK(weight_hidden.dim() >= 2, "weight_hh must have at least 2 dimensions");
 
     at::Tensor bias_input;
     at::Tensor bias_hidden;

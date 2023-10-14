@@ -131,6 +131,7 @@ at::Tensor npu_giou(
       "mode==0('iou') current version ",
       "if you need to back propagation, ",
       "please ensure your parameter is correct!");
+  TORCH_CHECK(self.dim() >= 2 && gtboxes.dim() >= 2, "giou input dim must be >= 2");
 
   at::Tensor self_cp = (self.scalar_type() == at::kHalf) ?
       at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat) : self;

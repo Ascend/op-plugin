@@ -601,7 +601,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
 
 template <typename Tuple> class ConvertedParams {
 public:
-    ConvertedParams(Tuple &&convertedParams) : convertedParams_(std::move(convertedParams)){};
+    explicit ConvertedParams(Tuple &&convertedParams) : convertedParams_(std::move(convertedParams)){};
     ConvertedParams(ConvertedParams &&other) : convertedParams_(std::move(other.convertedParams_))
     {
         other.validParams_ = false;
