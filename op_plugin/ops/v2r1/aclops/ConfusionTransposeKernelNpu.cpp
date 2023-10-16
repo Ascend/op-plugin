@@ -35,11 +35,9 @@ void check_confusion_transpose_perm(at::IntArrayRef perm, at::IntArrayRef shape)
 }
 } // namespace
 
-at::Tensor npu_confusion_transpose_backward_symint(
-    const at::Tensor& grad,
-    at::IntArrayRef perm,
-    c10::SymIntArrayRef shape_symint,
-    bool transpose_first) {
+at::Tensor npu_confusion_transpose_backward_symint(const at::Tensor &grad, at::IntArrayRef perm,
+                                                   c10::SymIntArrayRef shape_symint, bool transpose_first)
+{
     at::IntArrayRef shape = c10::asIntArrayRefUnchecked(shape_symint);
     c10::SmallVector<int64_t, SIZE> svec_shape;
     if (transpose_first) {
@@ -56,7 +54,7 @@ at::Tensor npu_confusion_transpose_backward_symint(
     for (int64_t i = 0; i < perm_len; i++) {
         temp_perm[perm[i]] = i;
     }
-    vec_perm = std::vector<int64_t>(temp_perm, temp_perm+perm_len);
+    vec_perm = std::vector<int64_t>(temp_perm, temp_perm + perm_len);
     perm = at::IntArrayRef(vec_perm);
     at::Tensor result = npu_preparation::apply_tensor(grad, shape);
 

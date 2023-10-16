@@ -103,35 +103,31 @@ bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2
            mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis <= kInnerAxisMaxLimit;
 }
 
-at::Tensor& addmm_out(
-    const at::Tensor& self,
-    const at::Tensor& mat1,
-    const at::Tensor& mat2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha,
-    at::Tensor& result) {
+at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
+                      const at::Scalar &alpha, at::Tensor &result)
+{
     static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
     // k-cut is conflict with bias in mm
     bool need_to_convert_bias = !mm_check_split_k(mat1, mat2, is_support_nd_out) && self.dim() == 1;
     if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0 && need_to_convert_bias) {
-      bool is_mat1_t_flex = is_transpose_last_two_dims_flex(mat1);
-      bool is_mat2_t_flex = is_transpose_last_two_dims_flex(mat2);
-      bool is_mat1_t_strict = is_transpose_last_two_dims_strict(mat1, is_mat1_t_flex);
-      bool is_mat2_t_strict = is_transpose_last_two_dims_strict(mat2, is_mat2_t_flex);
-      at::Tensor contiguous_mat1 = mat1;
-      at::Tensor contiguous_mat2 = mat2;
-      mm_set_format_contiguous(contiguous_mat1, is_mat1_t_flex, is_mat1_t_strict);
-      mm_set_format_contiguous(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
-      at_npu::native::OpCommand cmd;
-      cmd.Name("MatMul")
-          .InputWithoutContiguous(contiguous_mat1)
-          .InputWithoutContiguous(contiguous_mat2)
-          .Input(self)
-          .Output(result)
-          .Attr("transpose_x1", is_mat1_t_flex)
-          .Attr("transpose_x2", is_mat2_t_flex)
-          .Run();
-      return result;
+        bool is_mat1_t_flex = is_transpose_last_two_dims_flex(mat1);
+        bool is_mat2_t_flex = is_transpose_last_two_dims_flex(mat2);
+        bool is_mat1_t_strict = is_transpose_last_two_dims_strict(mat1, is_mat1_t_flex);
+        bool is_mat2_t_strict = is_transpose_last_two_dims_strict(mat2, is_mat2_t_flex);
+        at::Tensor contiguous_mat1 = mat1;
+        at::Tensor contiguous_mat2 = mat2;
+        mm_set_format_contiguous(contiguous_mat1, is_mat1_t_flex, is_mat1_t_strict);
+        mm_set_format_contiguous(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
+        at_npu::native::OpCommand cmd;
+        cmd.Name("MatMul")
+            .InputWithoutContiguous(contiguous_mat1)
+            .InputWithoutContiguous(contiguous_mat2)
+            .Input(self)
+            .Output(result)
+            .Attr("transpose_x1", is_mat1_t_flex)
+            .Attr("transpose_x2", is_mat2_t_flex)
+            .Run();
+        return result;
     }
     at::Tensor mul_result = at::mul(mat1, alpha);
     at::Tensor mm_result = at::mm(mul_result, mat2);
@@ -141,12 +137,9 @@ at::Tensor& addmm_out(
     return result;
 }
 
-at::Tensor addmm(
-    const at::Tensor& self,
-    const at::Tensor& mat1,
-    const at::Tensor& mat2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha) {
+at::Tensor addmm(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
+                 const at::Scalar &alpha)
+{
     auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
     at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
 
@@ -154,19 +147,16 @@ at::Tensor addmm(
     return result;
 }
 
-at::Tensor& addmm_(
-    at::Tensor& self,
-    const at::Tensor& mat1,
-    const at::Tensor& mat2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha) {
+at::Tensor &addmm_(at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
+                   const at::Scalar &alpha)
+{
     npu_preparation::CheckMemory({self, mat1, mat2}, {self});
     if (!npu_utils::check_match(&self)) {
-      at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-      acl_op::addmm_out(contiguous_self, mat1, mat2, beta, alpha, contiguous_self);
-      npu_utils::format_fresh_view(self, contiguous_self);
+        at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+        acl_op::addmm_out(contiguous_self, mat1, mat2, beta, alpha, contiguous_self);
+        npu_utils::format_fresh_view(self, contiguous_self);
     } else {
-      acl_op::addmm_out(self, mat1, mat2, beta, alpha, self);
+        acl_op::addmm_out(self, mat1, mat2, beta, alpha, self);
     }
     return self;
 }
