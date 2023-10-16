@@ -7,15 +7,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 void _foreach_sub_(const at::TensorList self, const at::Scalar &scalar)
 {
-    if (self.empty()) {
-        return;
-    }
-
-    auto iter = std::find_if(self.begin(), self.end(), [](const at::Tensor &tensor) { return tensor.numel() != 0; });
-    if (iter == self.end()) {
-        return;
-    }
-
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self, scalar, false)) {
         return at::native::foreach_tensor_sub_scalar_kernel_slow_(self, scalar);
