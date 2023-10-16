@@ -56,6 +56,8 @@ typedef int (*_aclDestroyFloatArray)(const aclFloatArray *array);
 typedef int (*_aclDestroyBoolArray)(const aclBoolArray *array);
 typedef int (*_aclDestroyTensorList)(const aclTensorList *array);
 
+using OpApiFunc = int (*)(void *, uint64_t, aclOpExecutor *, const aclrtStream);
+
 constexpr int g_hash_buf_size = 8192;
 constexpr int g_hash_buf_max_size = g_hash_buf_size + 1024;
 extern thread_local char g_hash_buf[g_hash_buf_size];
@@ -471,7 +473,6 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         workspace_addr = const_cast<void *>(workspace_tensor.storage().data());
     }
     auto acl_call = [workspace_addr, workspace_size, acl_stream, executor, phrase2]() -> int {
-        typedef int (*OpApiFunc)(void *, uint64_t, aclOpExecutor *, const aclrtStream);
         OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(phrase2);
         auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);
         TORCH_CHECK(api_ret == 0, "call failed, detail:", aclGetRecentErrMsg());
@@ -520,7 +521,6 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]() -> int {            \
-            typedef int (*OpApiFunc)(void *, uint64_t, aclOpExecutor *, const aclrtStream);                            \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg());                    \
@@ -579,7 +579,6 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]() -> int {            \
-            typedef int (*OpApiFunc)(void *, uint64_t, aclOpExecutor *, const aclrtStream);                            \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg());                    \
@@ -678,7 +677,6 @@ private:
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor, apiName]() -> int {   \
-            typedef int (*OpApiFunc)(void *, uint64_t, aclOpExecutor *, const aclrtStream);                            \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg());                    \
