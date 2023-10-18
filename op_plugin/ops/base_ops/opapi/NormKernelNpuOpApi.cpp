@@ -38,6 +38,14 @@ float calculate_p(c10::optional<at::Scalar> p) {
   }
 }
 
+inline bool check_use_aclop(float pfloat)
+{
+  if (pfloat != 0.0 && pfloat != 1.0 && pfloat != 2.0 && pfloat != 3.0) {
+    return true;
+  }
+  return false;
+}
+
 inline at::Tensor &norm_out_npu_nocheck_opapi(at::Tensor &out,
                                               const at::Tensor &self,
                                               c10::optional<at::Scalar> p,
@@ -48,13 +56,7 @@ inline at::Tensor &norm_out_npu_nocheck_opapi(at::Tensor &out,
   if (p.has_value()) {
     pvalue = p.value();
   }
-  float pfloat = calculate_p(p);
-  if (pfloat == 0.0 || pfloat == 1.0 || pfloat == 2.0 || pfloat == 3.0) {
-    EXEC_NPU_CMD(aclnnNorm, self, pvalue, dim, keepdim, out);
-  } else {
-    return acl_op::norm_out(self, p, dim, keepdim, out);
-  }
-
+  EXEC_NPU_CMD(aclnnNorm, self, pvalue, dim, keepdim, out);
   return out;
 }
 
@@ -65,9 +67,14 @@ inline at::Tensor &norm_out_imp(const at::Tensor &self,
                                 at::ScalarType dtype,
                                 at::Tensor &out)
 {
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-  npu_preparation::check_tensor({self}, out, dtype, outputSize);
-  return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
+  float pfloat = calculate_p(p);
+  if (check_use_aclop(pfloat)) {
+    return acl_op::norm_out(self, p, dim, keepdim, dtype, out);
+  } else {
+    auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+    npu_preparation::check_tensor({self}, out, dtype, outputSize);
+    return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
+  }
 }
 
 inline at::Tensor norm_imp(const at::Tensor &self,
@@ -76,9 +83,18 @@ inline at::Tensor norm_imp(const at::Tensor &self,
                            bool keepdim,
                            at::ScalarType dtype)
 {
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-  at::Tensor out = npu_preparation::apply_tensor_with_sizes(outputSize, self.options().dtype(dtype));
-  return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
+  float pfloat = calculate_p(p);
+  if (check_use_aclop(pfloat)) {
+    return acl_op::norm(self, p, dim, keepdim, dtype);
+  } else {
+    auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+    auto dtype_checked = dtype;
+    if (self.is_complex()) {
+      dtype_checked = self.scalar_type() == at::kComplexFloat ? at::kFloat : at::kDouble;
+    }
+    at::Tensor out = npu_preparation::apply_tensor_with_sizes(outputSize, self.options().dtype(dtype_checked));
+    return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
+  }
 }
 } // namespace
 
