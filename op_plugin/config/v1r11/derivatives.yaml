@@ -10,6 +10,10 @@
   output_differentiability: [True, True, True, True, False, False, False]
   query, key, value, pse: npu_flash_attention_grad(query, key, value, grad, head_num, input_layout, pse, padding_mask, atten_mask, result1, result2, result3, result0, scale, keep_prob, pre_tockens, next_tockens, inner_precise, result4, result5, result6, gen_mask_parallel, sync)
 
+- name: npu_geglu(Tensor self, int dim=-1, int approximate=1) -> (Tensor, Tensor)
+  output_differentiability: [True, False]
+  self: npu_geglu_grad(grad, self, result1, dim, approximate)
+
 - name: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [True, True, False, False, False, False]
   weight_input, weight_hidden, input, bias_input, bias_hidden, hx: npu_gru_backward(grads[0], grads[1], input, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, hx, result0, result1, result2, result3, result4, result5)
@@ -101,7 +105,7 @@
 - name: npu_scaled_masked_softmax(Tensor x, Tensor mask, Scalar scale=1, bool fixed_triu_mask=False) -> Tensor
   x: npu_scaled_masked_softmax_backward(grad, result, mask, scale, fixed_triu_mask)
 
-- name: _npu_format_cast(Tensor self, int acl_format) -> Tensor 
+- name: _npu_format_cast(Tensor self, int acl_format) -> Tensor
   self: grad
 
 - name: selu(Tensor self) -> Tensor
