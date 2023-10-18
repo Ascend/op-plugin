@@ -34,8 +34,8 @@ at::Tensor& addbmm_out(
     TORCH_CHECK(batch1.dim() >= 2 && batch2.dim() >= 3,
         "batch1 is expected to be at least 2D and batch2 is expected to be at least 3D, but got batch1: ",
         batch1.dim(), "D, batch2: ", batch2.dim(), "D");
-    int64_t dim[2] = {batch1.size(1), batch2.size(2)};
-    at::Tensor sum_result = at::sum_to(bmm_result, dim);
+    std::vector<int64_t> dims = {batch1.size(1), batch2.size(2)};
+    at::Tensor sum_result = at::sum_to(bmm_result, dims);
     // sum_result + self*beta
     at::add_out(result, sum_result, self, beta);
     return result;
