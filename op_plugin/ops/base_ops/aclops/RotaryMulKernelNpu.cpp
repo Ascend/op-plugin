@@ -41,7 +41,7 @@ tensor_list rotary_mul_backward_nocheck(at::Tensor &dx, at::Tensor &dr1, at::Ten
     TORCH_CHECK(x.dim() == 4, "The dim of input tensor [x] shoule equal to four.");
     TORCH_CHECK(r1.dim() == 4, "The dim of input tensor [r1] shoule equal to four.");
     TORCH_CHECK(r2.dim() == 4, "The dim of input tensor [r2] shoule equal to four.");
-    if (x.sizes()[3] % 64 == 0) {
+    if (x.sizes()[3] % 64 != 0) {
         at::Tensor x_grad_mul = at::mul(x, dy);
         at::Tensor x1_grad_mul = at::mul(r1, dy);
         at::Tensor x2_grad_mul = at::mul(r2, dy);
