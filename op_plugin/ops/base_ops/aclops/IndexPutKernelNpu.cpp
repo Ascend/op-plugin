@@ -44,10 +44,6 @@ const std::string aicore_str = "AiCore";
 bool is_aicpu_valid(const at::Tensor &self, const std::vector<at::Tensor> &all_defined_indices,
                     const at::SmallVector<int64_t, N> masks)
 {
-    // using aicpu at non-binary scene
-    if (!at_npu::native::env::CheckJitDisable()) {
-        return true;
-    }
     // using aicore when index is continous, otherwise aicpu
     bool is_zero_in_masks = false;
     for (uint32_t i = 0; i < masks.size(); i++) {
