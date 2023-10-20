@@ -43,7 +43,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
   }();
   using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
   auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
-  sorted = true;
   auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnUnique2, self, sorted, return_inverse, return_counts, y, y_inverse,
                                         y_counts);
   int64_t* view_dims = nullptr;
