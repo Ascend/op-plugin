@@ -676,10 +676,6 @@ official:
    impl_ns: acl_op, op_api
  - func: gelu_backward(Tensor grad_output, Tensor self) -> Tensor
    impl_ns: acl_op, op_api
- - func: ger(Tensor self, Tensor vec2) -> Tensor
-   impl_ns: acl_op, op_api
- - func: ger.out(Tensor self, Tensor vec2, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
  - func: glu(Tensor self, int dim=-1) -> Tensor
    impl_ns: acl_op, op_api
  - func: glu.out(Tensor self, int dim=-1, *, Tensor(a!) out) -> Tensor(a!)
