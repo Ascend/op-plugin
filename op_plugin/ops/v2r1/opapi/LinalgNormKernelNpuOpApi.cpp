@@ -21,6 +21,14 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
+namespace {
+inline bool check_use_aclop(const at::Scalar& scalar_ord)
+{
+    float val = op_plugin::utils::get_scalar_float_value(scalar_ord);
+    return val != 0.0 && val != 1.0 && val != 2.0 && val != 3.0;
+}
+}
+
 at::Tensor linalg_vector_norm(
     const at::Tensor& self,
     const at::Scalar& scalar_ord,
@@ -28,6 +36,9 @@ at::Tensor linalg_vector_norm(
     bool keepdim,
     at::optional<at::ScalarType> opt_dtype)
 {
+    if (check_use_aclop(scalar_ord)) {
+        return acl_op::linalg_vector_norm(self, scalar_ord, opt_dim, keepdim, opt_dtype);
+    }
     DO_COMPATIBILITY(aclnnLinalgVectorNorm,
                      acl_op::linalg_vector_norm(self, scalar_ord, opt_dim, keepdim, opt_dtype));
     auto dim = opt_dim.value_or(at::IntArrayRef{});
@@ -46,6 +57,9 @@ at::Tensor& linalg_vector_norm_out(
     at::optional<at::ScalarType> opt_dtype,
     at::Tensor& result)
 {
+    if (check_use_aclop(scalar_ord)) {
+        return acl_op::linalg_vector_norm_out(self, scalar_ord, opt_dim, keepdim, opt_dtype, result);
+    }
     DO_COMPATIBILITY(aclnnLinalgVectorNorm,
                      acl_op::linalg_vector_norm_out(self, scalar_ord, opt_dim, keepdim, opt_dtype, result));
     auto dim = opt_dim.value_or(at::IntArrayRef{});

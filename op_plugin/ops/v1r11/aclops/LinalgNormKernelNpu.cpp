@@ -47,9 +47,6 @@ at::Tensor& linalg_norm_out_npu_nocheck(
         fp32_self = npu_dtype_cast(fp32_self, at::ScalarType::Float);
     }
     auto output_size = op_infer::reduce_ops_npu_output_size(fp32_self, dim, keepdim);
-    if (output_size.empty()) {
-        output_size.push_back(1);
-    }
     at::Tensor result_temp = npu_preparation::ApplyTensorWithSizes(output_size, fp32_self.options());
     at::Tensor result = npu_preparation::ApplyTensorWithSizes(output_size, fp32_self.options());
     auto pvalue = calculate_p(ord);
