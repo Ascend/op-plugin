@@ -23,27 +23,28 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace{
-float calculate_p(c10::optional<at::Scalar> p) {
-  if (p.has_value()) {
-    float val = op_plugin::utils::get_scalar_float_value(p.value());
-    if (val == INFINITY) {
-      return static_cast<float>(INT_MAX); // p = inf
-    } else if (val == -INFINITY) {
-      return static_cast<float>(INT_MIN); // p = -inf
+float calculate_p(c10::optional<at::Scalar> p)
+{
+    if (p.has_value()) {
+        float val = op_plugin::utils::get_scalar_float_value(p.value());
+        if (val == INFINITY) {
+            return static_cast<float>(INT_MAX); // p = inf
+        } else if (val == -INFINITY) {
+            return static_cast<float>(INT_MIN); // p = -inf
+        } else {
+            return p.value().toFloat();
+        }
     } else {
-      return p.value().toFloat();
+        return static_cast<float>(2.0); // default: p = 2.0
     }
-  } else {
-    return static_cast<float>(2.0); // default: p = 2.0
-  }
 }
 
 inline bool check_use_aclop(float pfloat)
 {
-  if (pfloat != 0.0 && pfloat != 1.0 && pfloat != 2.0 && pfloat != 3.0) {
-    return true;
-  }
-  return false;
+    if (pfloat != 0.0 && pfloat != 1.0 && pfloat != 2.0 && pfloat != 3.0) {
+        return true;
+    }
+    return false;
 }
 
 inline at::Tensor &norm_out_npu_nocheck_opapi(at::Tensor &out,
@@ -52,12 +53,12 @@ inline at::Tensor &norm_out_npu_nocheck_opapi(at::Tensor &out,
                                               at::IntArrayRef dim,
                                               bool keepdim)
 {
-  at::Scalar pvalue = 2;
-  if (p.has_value()) {
-    pvalue = p.value();
-  }
-  EXEC_NPU_CMD(aclnnNorm, self, pvalue, dim, keepdim, out);
-  return out;
+    at::Scalar pvalue = 2;
+    if (p.has_value()) {
+        pvalue = p.value();
+    }
+    EXEC_NPU_CMD(aclnnNorm, self, pvalue, dim, keepdim, out);
+    return out;
 }
 
 inline at::Tensor &norm_out_imp(const at::Tensor &self,
@@ -67,14 +68,14 @@ inline at::Tensor &norm_out_imp(const at::Tensor &self,
                                 at::ScalarType dtype,
                                 at::Tensor &out)
 {
-  float pfloat = calculate_p(p);
-  if (check_use_aclop(pfloat)) {
-    return acl_op::norm_out(self, p, dim, keepdim, dtype, out);
-  } else {
-    auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-    npu_preparation::check_tensor({self}, out, dtype, outputSize);
-    return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
-  }
+    float pfloat = calculate_p(p);
+    if (check_use_aclop(pfloat)) {
+        return acl_op::norm_out(self, p, dim, keepdim, dtype, out);
+    } else {
+        auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+        npu_preparation::check_tensor({self}, out, dtype, outputSize);
+        return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
+    }
 }
 
 inline at::Tensor norm_imp(const at::Tensor &self,
@@ -83,18 +84,18 @@ inline at::Tensor norm_imp(const at::Tensor &self,
                            bool keepdim,
                            at::ScalarType dtype)
 {
-  float pfloat = calculate_p(p);
-  if (check_use_aclop(pfloat)) {
-    return acl_op::norm(self, p, dim, keepdim, dtype);
-  } else {
-    auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-    auto dtype_checked = dtype;
-    if (self.is_complex()) {
-      dtype_checked = self.scalar_type() == at::kComplexFloat ? at::kFloat : at::kDouble;
+    float pfloat = calculate_p(p);
+    if (check_use_aclop(pfloat)) {
+        return acl_op::norm(self, p, dim, keepdim, dtype);
+    } else {
+        auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+        auto dtype_checked = dtype;
+        if (self.is_complex()) {
+            dtype_checked = self.scalar_type() == at::kComplexFloat ? at::kFloat : at::kDouble;
+        }
+        at::Tensor out = npu_preparation::apply_tensor_with_sizes(outputSize, self.options().dtype(dtype_checked));
+        return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
     }
-    at::Tensor out = npu_preparation::apply_tensor_with_sizes(outputSize, self.options().dtype(dtype_checked));
-    return norm_out_npu_nocheck_opapi(out, self, p, dim, keepdim);
-  }
 }
 } // namespace
 
@@ -106,8 +107,8 @@ at::Tensor& norm_out(const at::Tensor &self,
                      at::ScalarType dtype,
                      at::Tensor &out)
 {
-  DO_COMPATIBILITY(aclnnNorm, acl_op::norm_out(self, p, dim, keepdim, dtype, out));
-  return norm_out_imp(self, p, dim, keepdim, out.scalar_type(), out);
+    DO_COMPATIBILITY(aclnnNorm, acl_op::norm_out(self, p, dim, keepdim, dtype, out));
+    return norm_out_imp(self, p, dim, keepdim, out.scalar_type(), out);
 }
 
 // norm.out
@@ -117,8 +118,8 @@ at::Tensor& norm_out(const at::Tensor &self,
                      bool keepdim,
                      at::Tensor &out)
 {
-  DO_COMPATIBILITY(aclnnNorm, acl_op::norm_out(self, p, dim, keepdim, out));
-  return norm_out_imp(self, p, dim, keepdim, out.scalar_type(), out);
+    DO_COMPATIBILITY(aclnnNorm, acl_op::norm_out(self, p, dim, keepdim, out));
+    return norm_out_imp(self, p, dim, keepdim, out.scalar_type(), out);
 }
 
 // norm.ScalarOpt_dim_dtype
@@ -128,8 +129,8 @@ at::Tensor norm(const at::Tensor &self,
                 bool keepdim,
                 at::ScalarType dtype)
 {
-  DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dim, keepdim, dtype));
-  return norm_imp(self, p, dim, keepdim, dtype);
+    DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dim, keepdim, dtype));
+    return norm_imp(self, p, dim, keepdim, dtype);
 }
 
 // norm.ScalarOpt_dtype
@@ -137,16 +138,16 @@ at::Tensor norm(const at::Tensor &self,
                 const c10::optional<at::Scalar> &p,
                 at::ScalarType dtype)
 {
-  DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dtype));
-  return norm_imp(self, p, {}, false, dtype);
+    DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dtype));
+    return norm_imp(self, p, {}, false, dtype);
 }
 
 // norm.Scalar
 at::Tensor norm(const at::Tensor &self,
                 const at::Scalar &p)
 {
-  DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p));
-  return norm_imp(self, p, {}, false, self.scalar_type());
+    DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p));
+    return norm_imp(self, p, {}, false, self.scalar_type());
 }
 
 // norm.ScalarOpt_dim
@@ -155,8 +156,8 @@ at::Tensor norm(const at::Tensor &self,
                 at::IntArrayRef dim,
                 bool keepdim)
 {
-  DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dim, keepdim));
-  return norm_imp(self, p, dim, keepdim, self.scalar_type());
+    DO_COMPATIBILITY(aclnnNorm, acl_op::norm(self, p, dim, keepdim));
+    return norm_imp(self, p, dim, keepdim, self.scalar_type());
 }
 
 } // namespace op_api
