@@ -64,9 +64,8 @@ at::Tensor& upsample_linear1d_backward_out_nocheck(
         "It is expected input_size equals to 3, but got size ",
         input_size.size());
     
-    TORCH_CHECK(
-        (grad_output.size(1) != 0 && grad_output.size(2) != 0) && grad_output.dim() == 3,
-        "Non-empty 3D data tensor expected but got a tensor with sizes ",
+    TORCH_CHECK(grad_output.dim() >= 3,
+        "grad_output dim must larger than 3 ",
         grad_output.sizes());
 
     if (scales.has_value()) {
