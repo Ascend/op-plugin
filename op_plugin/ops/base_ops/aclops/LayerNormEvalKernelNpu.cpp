@@ -26,7 +26,7 @@ at::Tensor npu_layer_norm_eval(const at::Tensor &input, at::IntArrayRef normaliz
 {
     const at::Tensor &weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
     const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
-    const int normalized_ndim = (int)normalized_shape.size();
+    const int normalized_ndim = static_cast<int>(normalized_shape.size());
     const auto input_shape = input.sizes();
     const auto input_ndim = input.dim();
     const int axis = input_ndim - normalized_ndim;
