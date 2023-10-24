@@ -23,7 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& log10_out(const at::Tensor& self, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnLog10, acl_op::log10_out(self, result));
-  npu_preparation::check_tensor({self}, result, self.scalar_type(), self.sizes());
+  npu_preparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
   EXEC_NPU_CMD(aclnnLog10, self, result);
   return result;
 }
