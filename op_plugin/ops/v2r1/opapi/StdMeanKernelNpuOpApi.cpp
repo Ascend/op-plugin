@@ -23,14 +23,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> std_mean(
     const at::Tensor& self,
-    at::DimnameList dim,
-    const c10::optional<at::Scalar>& correction,
-    bool keepdim) {
-  return op_api::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     const c10::optional<at::Scalar>& correction,
     bool keepdim) {
@@ -48,27 +40,6 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
   auto real_dim_array = at::IntArrayRef(real_dim);
   EXEC_NPU_CMD(aclnnStdMeanCorrection, self, real_dim_array, real_correction, keepdim, std_out, mean_out);
   return std::tie(std_out, mean_out);
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool unbiased,
-    bool keepdim) {
-  return op_api::std_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool unbiased,
-    bool keepdim) {
-  return at::std_mean(self, at::OptionalIntArrayRef(dim),
-                      c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(const at::Tensor& self, bool unbiased) {
-  return at::std_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
 }
 
 } // namespace op_api

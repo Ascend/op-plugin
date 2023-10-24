@@ -44,20 +44,6 @@ std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self,
   return std::tie(values, indices);
 }
 
-std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self,
-                                          at::Dimname dim,
-                                          bool keepdim)
-{
-  DO_COMPATIBILITY(aclnnMedianDim, acl_op::median(self, dim, keepdim));
-  int64_t real_dim = dimname_to_position(self, dim);
-  at::SmallVector<int64_t, op_infer::SIZE> dims = {real_dim};
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  at::Tensor values = npu_preparation::apply_tensor_without_format(self, outputSize);
-  at::Tensor indices = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kLong));
-  EXEC_NPU_CMD(aclnnMedianDim, self, real_dim, keepdim, values, indices);
-  return std::tie(values, indices);
-}
-
 std::tuple<at::Tensor&, at::Tensor&> median_out(const at::Tensor& self,
                                                 int64_t dim,
                                                 bool keepdim,
@@ -70,22 +56,6 @@ std::tuple<at::Tensor&, at::Tensor&> median_out(const at::Tensor& self,
   npu_preparation::check_tensor({self}, values, values.scalar_type(), outputSize);
   npu_preparation::check_tensor({self}, indices, indices.scalar_type(), outputSize);
   EXEC_NPU_CMD(aclnnMedianDim, self, dim, keepdim, values, indices);
-  return std::tie(values, indices);
-}
-
-std::tuple<at::Tensor&, at::Tensor&> median_out(const at::Tensor& self,
-                                                at::Dimname dim,
-                                                bool keepdim,
-                                                at::Tensor& values,
-                                                at::Tensor& indices)
-{
-  DO_COMPATIBILITY(aclnnMedianDim, acl_op::median_out(self, dim, keepdim, values, indices));
-  int64_t real_dim = dimname_to_position(self, dim);
-  at::SmallVector<int64_t, op_infer::SIZE> dims = {real_dim};
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  npu_preparation::check_tensor({self}, values, values.scalar_type(), outputSize);
-  npu_preparation::check_tensor({self}, indices, indices.scalar_type(), outputSize);
-  EXEC_NPU_CMD(aclnnMedianDim, self, real_dim, keepdim, values, indices);
   return std::tie(values, indices);
 }
 

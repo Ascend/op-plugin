@@ -23,14 +23,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple <at::Tensor, at::Tensor> std_mean(
     const at::Tensor & self,
-    at::DimnameList dim,
-    c10::optional<int64_t> correction,
-    bool keepdim) {
-  return op_api::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
-}
-
-std::tuple <at::Tensor, at::Tensor> std_mean(
-    const at::Tensor & self,
     c10::optional<at::IntArrayRef> dim,
     c10::optional<int64_t> correction,
     bool keepdim) {

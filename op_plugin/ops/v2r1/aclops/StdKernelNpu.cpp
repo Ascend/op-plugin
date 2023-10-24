@@ -76,33 +76,6 @@ std::tuple<at::Tensor&, at::Tensor&> std_mean_out_nocheck(
 at::Tensor& std_out(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
-    bool unbiased,
-    bool keepdim,
-    at::Tensor& result) {
-  return at::std_out(result, self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
-}
-
-at::Tensor& std_out(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool unbiased,
-    bool keepdim,
-    at::Tensor& result) {
-  return at::std_out(result, self, dimnames_to_positions(self, dim), unbiased, keepdim);
-}
-
-at::Tensor& std_out(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    const c10::optional<c10::Scalar>& correction,
-    bool keepdim,
-    at::Tensor& result) {
-  return at::std_out(result, self, dimnames_to_positions(self, dim), correction, keepdim);
-}
-
-at::Tensor& std_out(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
     bool keepdim,
     at::Tensor& result) {
@@ -132,34 +105,6 @@ at::Tensor& std_out(
   return result;
 }
 
-at::Tensor std(const at::Tensor& self, bool unbiased) {
-  return at::std(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0));
-}
-
-at::Tensor std(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool unbiased,
-    bool keepdim) {
-  return at::std(self, dim, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
-}
-
-at::Tensor std(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool unbiased,
-    bool keepdim) {
-  return at::std(self, dimnames_to_positions(self, dim), unbiased, keepdim);
-}
-
-at::Tensor std(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    const c10::optional<c10::Scalar>& correction,
-    bool keepdim) {
-  return at::std(self, dimnames_to_positions(self, dim), correction, keepdim);
-}
-
 at::Tensor std(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
@@ -177,34 +122,6 @@ at::Tensor std(
   int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
   std_mean_out_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
   return result1;
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool unbiased,
-    bool keepdim) {
-  return at::std_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    bool unbiased,
-    bool keepdim) {
-  return at::std_mean(self, at::OptionalIntArrayRef(dim), c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(const at::Tensor& self, bool unbiased) {
-  return at::std_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0));
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    const c10::optional<c10::Scalar>& correction,
-    bool keepdim) {
-  return at::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> std_mean(

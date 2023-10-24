@@ -1058,10 +1058,6 @@ official:
    impl_ns: acl_op, op_api
  - func: median.dim_values(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
    impl_ns: acl_op, op_api
- - func: median.names_dim(Tensor self, Dimname dim, bool keepdim=False) -> (Tensor values, Tensor indices)
-   impl_ns: acl_op, op_api
- - func: median.names_dim_values(Tensor self, Dimname dim, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
-   impl_ns: acl_op, op_api
  - func: min(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: min.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
@@ -1534,17 +1530,7 @@ official:
    impl_ns: acl_op, op_api
  - func: std.correction_out(Tensor self, int[1]? dim, *, int? correction, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: std.correction_names(Tensor self, Dimname[1] dim, *, int? correction, bool keepdim=False) -> Tensor
-   impl_ns: acl_op, op_api
- - func: std.correction_names_out(Tensor self, Dimname[1] dim, *, int? correction, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
- - func: std.names_out(Tensor self, Dimname[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
- - func: std.out(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
  - func: std_mean.correction(Tensor self, int[1]? dim, *, int? correction, bool keepdim=False) -> (Tensor, Tensor)
-   impl_ns: acl_op, op_api
- - func: std_mean.correction_names(Tensor self, Dimname[1] dim, *, int? correction, bool keepdim=False) -> (Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: sub.Scalar(Tensor self, Scalar other, Scalar alpha=1) -> Tensor
    impl_ns: acl_op, op_api
@@ -1724,19 +1710,9 @@ official:
    impl_ns: acl_op, op_api
  - func: var.correction(Tensor self, int[1]? dim, *, int? correction, bool keepdim=False) -> Tensor
    impl_ns: acl_op, op_api
- - func: var.correction_names(Tensor self, Dimname[1] dim, *, int? correction, bool keepdim=False) -> Tensor
-   impl_ns: acl_op, op_api
- - func: var.out(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
- - func: var.names_out(Tensor self, Dimname[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
  - func: var.correction_out(Tensor self, int[1]? dim, *, int? correction, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: var.correction_names_out(Tensor self, Dimname[1] dim, *, int? correction, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
  - func: var_mean.correction(Tensor self, int[1]? dim, *, int? correction, bool keepdim=False) -> (Tensor, Tensor)
-   impl_ns: acl_op, op_api
- - func: var_mean.correction_names(Tensor self, Dimname[1] dim, *, int? correction, bool keepdim=False) -> (Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: _s_where(Tensor condition, Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op, op_api

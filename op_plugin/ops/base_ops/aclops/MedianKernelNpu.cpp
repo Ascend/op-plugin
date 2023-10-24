@@ -72,10 +72,10 @@ std::tuple<at::Tensor&, at::Tensor&> median_out_value_nocheck(
     values_index_select.squeeze_(dim);
     indices_index_select.squeeze_(dim);
   }
-  at::namedinference::propagate_names_for_reduction(values_index_select, self, dim, keepdim);
-  at::namedinference::propagate_names_for_reduction(indices_index_select, self, dim, keepdim);
   values.copy_(values_index_select);
   indices.copy_(indices_index_select);
+  at::namedinference::propagate_names_for_reduction(values, self, dim, keepdim);
+  at::namedinference::propagate_names_for_reduction(indices, self, dim, keepdim);
   return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
 }
 
@@ -128,15 +128,6 @@ std::tuple<at::Tensor&, at::Tensor&> median_out(
   return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
 }
 
-std::tuple<at::Tensor&, at::Tensor&> median_out(
-    const at::Tensor& self,
-    at::Dimname dim,
-    bool keepdim,
-    at::Tensor& values,
-    at::Tensor& indices) {
-  return at::median_out(values, indices, self, dimname_to_position(self, dim), keepdim);
-}
-
 at::Tensor median(const at::Tensor& self) {
   at::Tensor result = npu_preparation::apply_tensor_with_format(
       {}, self.options(), npu_preparation::get_tensor_npu_format(self));
@@ -154,7 +145,4 @@ std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self, int64_t dim, b
   return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
 }
 
-std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self, at::Dimname dim, bool keepdim) {
-  return acl_op::median(self, dimname_to_position(self, dim), keepdim);
-}
 } // namespace acl_op

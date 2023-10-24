@@ -94,24 +94,6 @@ std::tuple<at::Tensor&, at::Tensor&> std_mean_out_npu_nocheck(
 at::Tensor& std_out(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
-    bool unbiased,
-    bool keepdim,
-    at::Tensor& result) {
-  return acl_op::std_out(self, dim, c10::make_optional<int64_t>({unbiased ? 1 : 0}), keepdim, result);
-}
-
-at::Tensor& std_out(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    c10::optional<int64_t> correction,
-    bool keepdim,
-    at::Tensor& result) {
-  return acl_op::std_out(self, dimnames_to_positions(self, dim), correction, keepdim, result);
-}
-
-at::Tensor& std_out(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
     c10::optional<int64_t> correction,
     bool keepdim,
     at::Tensor& result) {
@@ -143,23 +125,6 @@ at::Tensor& std_out(
   return result;
 }
 
-at::Tensor& std_out(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool unbiased,
-    bool keepdim,
-    at::Tensor& result) {
-  return acl_op::std_out(self, dimnames_to_positions(self, dim), unbiased, keepdim, result);
-}
-
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    c10::optional<int64_t> correction,
-    bool keepdim) {
-  return acl_op::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
-}
-
 std::tuple<at::Tensor, at::Tensor> std_mean(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
@@ -183,14 +148,6 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
   std_mean_out_npu_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
 
   return std::tie(result1, result2);
-}
-
-at::Tensor std(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    c10::optional<int64_t> correction,
-    bool keepdim) {
-  return acl_op::std(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
 at::Tensor std(
