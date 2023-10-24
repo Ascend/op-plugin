@@ -77,7 +77,7 @@ bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool is_su
 {
     if (!is_support_nd_out || !(self.dtype() == at::ScalarType::Half && mat2.dtype() == at::ScalarType::Half) ||
         !(format_helper::GetFormat(self) == ACL_FORMAT_ND && format_helper::GetFormat(mat2) == ACL_FORMAT_ND)) {
-        return false;
+        return true;
     }
     // split_k rule, maybe modified afterwards
     const static int64_t kSplitKTimes = 8;
@@ -109,6 +109,8 @@ at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::
     static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
     // k-cut is conflict with bias in mm
     bool need_to_convert_bias = !mm_check_split_k(mat1, mat2, is_support_nd_out) && self.dim() == 1;
+    // bias should be 16 aligned
+    need_to_convert_bias &= self.size(-1) % 16 == 0;
     if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0 && need_to_convert_bias) {
         bool is_mat1_t_flex = is_transpose_last_two_dims_flex(mat1);
         bool is_mat2_t_flex = is_transpose_last_two_dims_flex(mat2);
