@@ -85,6 +85,7 @@ from codegen.utils import assert_never
 
 PYTORCH_VERSION = os.environ.get('PYTORCH_VERSION')
 
+
 def name(
     func: FunctionSchema,
     *,
@@ -181,7 +182,7 @@ def argumenttype_type(
             if mutable and not local.use_const_ref_for_mutable_tensors():
                 return NamedCType(
                     binds, MutRefCType(BaseCType(tensorT))
-                )  # TODO: fix this discrepancy
+                )
             else:
                 return NamedCType(
                     binds, ConstRefCType(OptionalCType(BaseCType(tensorT)))
@@ -199,7 +200,6 @@ def argumenttype_type(
         elem = argumenttype_type(t.elem, mutable=mutable, binds=binds, symint=symint)
         return NamedCType(binds, OptionalCType(elem.type))
     elif isinstance(t, ListType):
-        # TODO: remove these special cases, ArrayRef fallthrough works fine
         if str(t.elem) == "int":
             if remove_non_owning_ref_types:
                 return NamedCType(binds, VectorCType(BaseCType(longT)))
@@ -302,7 +302,6 @@ def return_names(f: NativeFunction, *, fallback_name: str = "result") -> Sequenc
     for i, r in enumerate(f.func.returns):
         # If we have an inplace function, the return argument is
         # implicitly named self.
-        # TODO: Consider incorporating this into the data model
         if f.func.name.name.inplace:
             if i != 0:
                 raise ValueError("illegal inplace function with multiple returns")
@@ -441,7 +440,7 @@ def argument(
             if all(x.default == "None" for x in a.all()):
                 default = "{}"
             elif a.dtype.default == "long":
-                default = "at::kLong"  # TODO: this is wrong
+                default = "at::kLong"
             return [
                 Binding(
                     nctype=NamedCType("options", BaseCType(tensorOptionsT)),
@@ -461,7 +460,7 @@ def argument(
 
 
 def arguments(
-    arguments: Arguments,
+    param_arguments: Arguments,
     *,
     faithful: bool,
     symint: bool = False,
@@ -470,20 +469,20 @@ def arguments(
 ) -> List[Binding]:
     args: List[Union[Argument, TensorOptionsArguments, SelfArgument]] = []
     if faithful:
-        args.extend(arguments.non_out)
-        args.extend(arguments.out)
+        args.extend(param_arguments.non_out)
+        args.extend(param_arguments.out)
     else:
-        args.extend(arguments.out)
-        args.extend(arguments.non_out)
-    return [
-        r.no_default() if faithful else r
-        for a in args
+        args.extend(param_arguments.out)
+        args.extend(param_arguments.non_out)
+    res = []
+    for a in args:
         for r in argument(
-            a,
-            faithful=faithful,
-            symint=symint,
-            method=method,
-            has_tensor_options=arguments.tensor_options is not None,
-            cpp_no_default_args=cpp_no_default_args,
-        )
-    ]
+                a,
+                faithful=faithful,
+                symint=symint,
+                method=method,
+                has_tensor_options=param_arguments.tensor_options is not None,
+                cpp_no_default_args=cpp_no_default_args,
+        ):
+            res.append(r.no_default() if faithful else r)
+    return res

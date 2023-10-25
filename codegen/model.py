@@ -583,7 +583,6 @@ class NativeFunction:
         )
 
     def validate_unstructured(self) -> None:
-        # TODO: probably better to accumulate these errors and report them all
         # at once
         if self.structured:
             raise ValueError("This function is structured, but there was "
@@ -902,7 +901,6 @@ class BackendIndex:
         if self.external:
             return f"{str(self.dispatch_key)}NativeFunctions"
         else:
-            # TODO: This discrepancy isn't required; we could also generated
             # a class for in-tree kernels. It'll just require carefully
             # updating every kernel definition + callsite of every in-tree aten kernel.
             return None
@@ -1245,16 +1243,8 @@ class FunctionSchema:
             base_name = base_name.replace("_copy", "")
 
         # find mutable inputs that are not originally returned, and convert them to returns
-        returns_from_mutable_inputs = tuple(
-            # When we're grouping functions we strip the return names,
-            # but when we're generating the actual functional variants then we follow
-            # a convention for what to name the returns
-            Return(
-                name=f"{a.name}_out" if keep_return_names else None,
-                type=a.type,
-                annotation=None,
-            )
-            for a in itertools.chain(
+        returns_from_mutable_inputs = []
+        for a in itertools.chain(
                 # Order is important here (otherwise e.g. inplace with mutable args
                 # and out= with mutable args won't have the same signature)
                 [self.arguments.self_arg.argument]
@@ -1262,14 +1252,21 @@ class FunctionSchema:
                 else [],
                 self.arguments.out,
                 self.arguments.post_self_positional,
-            )
-            if a.annotation is not None
-            and a.annotation.is_write
-            and not any(a.annotation == r.annotation for r in self.returns)
-        )
+        ):
+            if a.annotation is not None and a.annotation.is_write and not any(
+                    a.annotation == r.annotation for r in self.returns):
+                # When we're grouping functions we strip the return names,
+                # but when we're generating the actual functional variants then we follow
+                # a convention for what to name the returns
+                returns_from_mutable_inputs.append(Return(
+                    name=f"{a.name}_out" if keep_return_names else None,
+                    type=a.type,
+                    annotation=None,
+                ))
+
         original_returns = tuple(map(strip_ret_annotation, self.returns))
         # Ordering is important here. We expect the "mutable input" returns to come last.
-        returns = original_returns + returns_from_mutable_inputs
+        returns = original_returns + tuple(returns_from_mutable_inputs)
 
         args_sig = self.arguments.signature(strip_default=strip_default)
         # See Note [bernoulli.p schema]
@@ -1333,7 +1330,6 @@ class Annotation:
 
     @staticmethod
     def parse(ann: str) -> "Annotation":
-        # TODO: implement a proper parser if this gets more ugly
         # Regex Explanation:
         # Example: "a! -> a|b"
         # Group #1: alias before optional '|', required. Matches the first
@@ -1596,7 +1592,6 @@ class Argument:
         else:
             name = name_and_default
             default = None
-        # TODO: deduplicate annotation matching with Return
         match = re.match(r"Tensor\((.+)\)(.*)", type_and_annot)
         annotation: Optional[Annotation]
         if match:
@@ -1608,10 +1603,10 @@ class Argument:
         else:
             type_s = type_and_annot
             annotation = None
-        type = Type.parse(type_s)
+        parse_type = Type.parse(type_s)
         argument_obj = Argument(
             name=name,
-            type=type,
+            type=parse_type,
             default=default,
             annotation=annotation,
         )
@@ -1624,18 +1619,18 @@ class Argument:
         return self.annotation is not None and self.annotation.is_write
 
     def __str__(self) -> str:
-        type = f"{self.type}"
+        self_type = f"{self.type}"
         if self.annotation:
-            if type not in ["Tensor", "Tensor?", "Tensor[]"]:
+            if self_type not in ["Tensor", "Tensor?", "Tensor[]"]:
                 raise ValueError("Type is undefined")
-            type = type.replace("Tensor", f"Tensor({self.annotation})")
+            self_type = self_type.replace("Tensor", f"Tensor({self.annotation})")
         if self.name is None:
-            return type
+            return self_type
         else:
             mb_default = ""
             if self.default:
                 mb_default = f"={self.default}"
-            return f"{type} {self.name}{mb_default}"
+            return f"{self_type} {self.name}{mb_default}"
 
 
 @dataclass(frozen=True)
@@ -1663,10 +1658,10 @@ class Return:
         else:
             type_s = type_and_annot
             annotation = None
-        type = Type.parse(type_s)
+        parse_type = Type.parse(type_s)
         return_obj = Return(
             name=name,
-            type=type,
+            type=parse_type,
             annotation=annotation,
         )
         if str(return_obj) != arg:
@@ -1678,15 +1673,15 @@ class Return:
         return self.annotation is not None and self.annotation.is_write
 
     def __str__(self) -> str:
-        type = f"{self.type}"
+        self_type = f"{self.type}"
         if self.annotation:
-            if type not in ["Tensor", "Tensor?", "Tensor[]"]:
+            if self_type not in ["Tensor", "Tensor?", "Tensor[]"]:
                 raise ValueError("type not in [Tensor, Tensor?, Tensor[]]")
-            type = type.replace("Tensor", f"Tensor({self.annotation})")
+            self_type = self_type.replace("Tensor", f"Tensor({self.annotation})")
         if self.name is None:
-            return type
+            return self_type
         else:
-            return f"{type} {self.name}"
+            return f"{self_type} {self.name}"
 
 
 # Represents the self argument for functions that may be methods
@@ -1881,7 +1876,6 @@ class Arguments:
         out: List[Argument] = []
         arguments_acc = positional
 
-        # TODO: Use a real parser here; this will get bamboozled
         # by signatures that contain things like std::array<bool, 2> (note the space)
         for arg in args.split(", "):
             if not arg:
@@ -2001,8 +1995,6 @@ class Arguments:
         return ", ".join(all_arguments)
 
     def __post_init__(self) -> None:
-        # TODO: These invariants are weirdly asymmetric?
-        # TODO: Fancier types?
         if self.self_arg is None:
             if self.pre_self_positional:
                 raise ValueError("self.pre_self_positional is true.")
