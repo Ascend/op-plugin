@@ -50,7 +50,7 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
         new_shape.emplace_back(input_sizes[i]);
     }
 
-    for (size_t i = 0; i < (size_t)l_pad; i++) {
+    for (int64_t i = 0; i < l_pad; i++) {
         auto pad_idx = pad.size() - ((i + 1) * 2);
         auto new_dim = input_sizes[l_diff + i] + pad[pad_idx] + pad[pad_idx + 1];
         TORCH_CHECK(new_dim > 0, "The input size ", input_sizes[l_diff + i], ", plus negative padding ", pad[pad_idx],
