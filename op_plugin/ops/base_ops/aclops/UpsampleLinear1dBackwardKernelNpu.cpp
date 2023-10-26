@@ -21,49 +21,32 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-inline void upsample_linear1d_backward_check(
-    const at::Tensor& grad_output,
-    at::IntArrayRef output_size,
-    at::IntArrayRef input_size) {
-  TORCH_CHECK(
-      output_size.size() == 1,
-      "It is expected output_size equals to 1, but got size ",
-      output_size.size());
+inline void upsample_linear1d_backward_check(const at::Tensor &grad_output, at::IntArrayRef output_size,
+                                             at::IntArrayRef input_size)
+{
+    TORCH_CHECK(output_size.size() == 1, "It is expected output_size equals to 1, but got size ", output_size.size());
 
-  TORCH_CHECK(
-      input_size.size() == 3,
-      "It is expected input_size equals to 3, but got size ",
-      input_size.size());
+    TORCH_CHECK(input_size.size() == 3, "It is expected input_size equals to 3, but got size ", input_size.size());
 
-  TORCH_CHECK(grad_output.dim() >= 3,
-      "grad_output dim must larger than 3 ", grad_output.sizes());
+    TORCH_CHECK(grad_output.dim() >= 3, "grad_output dim must larger than 3 ", grad_output.sizes());
 
-  int64_t output_width = grad_output.size(2);
-  int64_t input_width = input_size[2];
+    int64_t output_width = grad_output.size(2);
+    int64_t input_width = input_size[2];
 
-  TORCH_CHECK(
-      output_width > 0 && input_width > 0,
-      "Input and output sizes should be greater than 0, but got input (W: ",
-      input_width,
-      ") and output (W: ",
-      output_width,
-      ")");
+    TORCH_CHECK(output_width > 0 && input_width > 0,
+                "Input and output sizes should be greater than 0, but got input (W: ", input_width,
+                ") and output (W: ", output_width, ")");
 }
 
-at::Tensor& upsample_linear1d_backward_out_nocheck(
-    at::Tensor& result,
-    const at::Tensor& grad_output,
-    at::IntArrayRef input_size,
-    bool align_corners,
-    c10::optional<double> scales) {
+at::Tensor &upsample_linear1d_backward_out_nocheck(at::Tensor &result, const at::Tensor &grad_output,
+                                                   at::IntArrayRef input_size, bool align_corners,
+                                                   c10::optional<double> scales)
+{
     c10::SmallVector<float, N> sc = {};
-    TORCH_CHECK(
-        input_size.size() == 3 && input_size[2] != 0,
-        "It is expected input_size equals to 3, but got size ",
-        input_size.size());
-    
-    TORCH_CHECK(grad_output.dim() >= 3,
-        "grad_output dim must larger than 3 ", grad_output.sizes());
+    TORCH_CHECK(input_size.size() == 3 && input_size[2] != 0, "It is expected input_size equals to 3, but got size ",
+                input_size.size());
+
+    TORCH_CHECK(grad_output.dim() >= 3, "grad_output dim must larger than 3 ", grad_output.sizes());
 
     if (scales.has_value()) {
         sc.push_back(scales.value());
@@ -83,37 +66,33 @@ at::Tensor& upsample_linear1d_backward_out_nocheck(
         .Attr("mode", (string)"linear")
         .Run();
     return result;
-  }
+}
 } // namespace
 
-at::Tensor upsample_linear1d_backward(
-    const at::Tensor& grad_output,
-    at::IntArrayRef output_size,
-    at::IntArrayRef input_size,
-    bool align_corners,
-    c10::optional<double> scales) {
-  upsample_linear1d_backward_check(grad_output, output_size, input_size);
-  at::Tensor grad_output_cp = grad_output;
-  if (grad_output.scalar_type() != at::ScalarType::Float) {
-    grad_output_cp = at_npu::native::custom_ops::npu_dtype_cast(grad_output_cp, at::ScalarType::Float);
-  }
-  int64_t N = grad_output_cp.size(0);
-  int64_t C = grad_output_cp.size(1);
-  int64_t W = input_size[2];
-  c10::SmallVector<int64_t, SIZE> output_sizes = {N, C, W};
+at::Tensor upsample_linear1d_backward(const at::Tensor &grad_output, at::IntArrayRef output_size,
+                                      at::IntArrayRef input_size, bool align_corners, c10::optional<double> scales)
+{
+    upsample_linear1d_backward_check(grad_output, output_size, input_size);
+    at::Tensor grad_output_cp = grad_output;
+    if (grad_output.scalar_type() != at::ScalarType::Float) {
+        grad_output_cp = at_npu::native::custom_ops::npu_dtype_cast(grad_output_cp, at::ScalarType::Float);
+    }
+    int64_t N = grad_output_cp.size(0);
+    int64_t C = grad_output_cp.size(1);
+    int64_t W = input_size[2];
+    c10::SmallVector<int64_t, SIZE> output_sizes = {N, C, W};
 
-  // Since only NCHW format input is currently supported, first convert the
-  // input grad_output (3 dimensions) to 4 dimensions as the input of npu
-  auto grad_output_4dim = grad_output_cp.unsqueeze(2);
+    // Since only NCHW format input is currently supported, first convert the
+    // input grad_output (3 dimensions) to 4 dimensions as the input of npu
+    auto grad_output_4dim = grad_output_cp.unsqueeze(2);
 
-  at::Tensor result = npu_preparation::apply_tensor(grad_output_cp, output_sizes);
-  upsample_linear1d_backward_out_nocheck(
-      result, grad_output_4dim, input_size, align_corners, scales);
+    at::Tensor result = npu_preparation::apply_tensor(grad_output_cp, output_sizes);
+    upsample_linear1d_backward_out_nocheck(result, grad_output_4dim, input_size, align_corners, scales);
 
-  if (result.dtype() != grad_output.dtype()) {
-    result = result.to(grad_output.dtype());
-  }
+    if (result.dtype() != grad_output.dtype()) {
+        result = result.to(grad_output.dtype());
+    }
 
-  return result;
+    return result;
 }
 } // namespace acl_op

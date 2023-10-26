@@ -115,6 +115,7 @@ def map_maybe(func: Callable[[T], Optional[S]], xs: Iterable[T]) -> Iterator[S]:
         if r is not None:
             yield r
 
+
 # Map over function that returns sequences and cat them all together
 def concat_map(func: Callable[[T], Sequence[S]], xs: Iterable[T]) -> Iterator[S]:
     for x in xs:
@@ -130,7 +131,6 @@ def context(msg_fn: Callable[[], str]) -> Iterator[None]:
     try:
         yield
     except Exception as e:
-        # TODO: this does the wrong thing with KeyError
         msg = msg_fn()
         msg = textwrap.indent(msg, '  ')
         msg = f'{e.args[0]}\n{msg}' if e.args else msg
