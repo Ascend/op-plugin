@@ -385,8 +385,8 @@ at::Tensor npu_incre_flash_attention(
     std::string input_layout_str = std::string(input_layout);
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
-    at::TensorList keyTensors = {key};
-    at::TensorList valueTensors = {value};
+    at::TensorList keyTensors = key;
+    at::TensorList valueTensors = value;
 
     auto actSeqLen = (actual_seq_lengths.has_value()) ? actual_seq_lengths.value().vec() : std::vector<at::IntArrayRef::value_type>{};
 
