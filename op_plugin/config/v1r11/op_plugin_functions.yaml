@@ -990,8 +990,6 @@ official:
    impl_ns: acl_op, op_api
  - func: matmul(Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op
- - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
-   impl_ns: acl_op
  - func: matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: max(Tensor self) -> Tensor
@@ -1908,8 +1906,6 @@ tocpu:
   - _fft_c2c
   - _fft_c2c.out
   - _foreach_zero_
-  - _foreach_sqrt
-  - _foreach_sqrt_
   - _foreach_abs
   - _foreach_abs_
   - _foreach_acos
@@ -1918,9 +1914,6 @@ tocpu:
   - _foreach_asin_
   - _foreach_atan
   - _foreach_atan_
-  - _foreach_ceil
-  - _foreach_cos
-  - _foreach_cos_
   - _foreach_cosh
   - _foreach_cosh_
   - _foreach_erf
@@ -1929,7 +1922,6 @@ tocpu:
   - _foreach_erfc_
   - _foreach_expm1
   - _foreach_expm1_
-  - _foreach_floor
   - _foreach_log
   - _foreach_log_
   - _foreach_log10
@@ -2429,6 +2421,8 @@ custom:
   - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
     impl_ns: acl_op
   - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
+    impl_ns: acl_op
+  - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
