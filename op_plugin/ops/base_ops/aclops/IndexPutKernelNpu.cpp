@@ -76,7 +76,7 @@ bool is_aicpu_valid(const at::Tensor &self, const std::vector<at::Tensor> &all_d
         tail_size = tail_size * self.sizes()[i];
     }
     if (self.scalar_type() != at::kHalf && self.scalar_type() != at::kFloat &&
-        (all_defined_indices[0].numel() > 200 || tail_size > 128)) {
+        self.scalar_type() != at::kBFloat16 && (all_defined_indices[0].numel() > 200 || tail_size > 128)) {
         return true;
     }
     return false;
