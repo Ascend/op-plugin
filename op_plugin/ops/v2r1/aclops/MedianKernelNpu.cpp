@@ -21,14 +21,16 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-c10::SmallVector<int64_t, SIZE> median_npu_output_size(const at::Tensor& self, int64_t dim, bool keepdim) {
+c10::SmallVector<int64_t, SIZE> median_npu_output_size(const at::Tensor &self, int64_t dim, bool keepdim)
+{
     dim = op_plugin::utils::make_warp_dim(dim, self.dim());
     at::IntArrayRef dims(dim);
     return op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 }
 } // namespace
 
-at::Tensor nanmedian(const at::Tensor& self) {
+at::Tensor nanmedian(const at::Tensor &self)
+{
     TORCH_NPU_WARN_ONCE(
         "Warning: kernel [nanmedian] is not supported by NPU currently. Now this kernel is running on CPU.");
     at::Tensor self_cpu = self.to("cpu");
@@ -37,12 +39,13 @@ at::Tensor nanmedian(const at::Tensor& self) {
     return output;
 }
 
-std::tuple<at::Tensor, at::Tensor> nanmedian(const at::Tensor &self, int64_t dim, bool keepdim) {
+std::tuple<at::Tensor, at::Tensor> nanmedian(const at::Tensor &self, int64_t dim, bool keepdim)
+{
     TORCH_WARN_ONCE(
         "Warning: kernel [nanmedian.dim] is not supported by NPU currently. Now this kernel is running on CPU.");
     auto output_size = median_npu_output_size(self, dim, keepdim);
-    at::Tensor values =
-        npu_preparation::apply_tensor_with_format(output_size, self.options(), npu_preparation::get_tensor_npu_format(self));
+    at::Tensor values = npu_preparation::apply_tensor_with_format(output_size, self.options(),
+                                                                  npu_preparation::get_tensor_npu_format(self));
     at::Tensor indices =
         npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::kLong), ACL_FORMAT_NCHW);
 
