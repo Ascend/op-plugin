@@ -144,8 +144,6 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> deformable_conv2d_npu_output_si
     c10::IntArrayRef kernel_size, c10::IntArrayRef stride, c10::IntArrayRef padding, c10::IntArrayRef dilation,
     int64_t groups, int64_t deformable_groups, bool modulated);
 
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> det_npu_output_size(const at::Tensor& self);
-
 OP_PLUGIN_HIDDEN std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ctc_loss_npu_output_size(
     const at::Tensor& logProbs, int64_t maxLength);
 
@@ -153,8 +151,6 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> dot_npu_output_size(const at::T
 
 OP_PLUGIN_HIDDEN std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nms_v4_npu_output_size(
     c10::Scalar max_output_size);
-
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> equal_npu_output_size(void);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> embedding_dense_backward_npu_output_size(
     const at::Tensor& grad_output, const at::Tensor& indices, int64_t num_weights, int64_t padding_idx,
@@ -165,19 +161,9 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at:
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> index_select_npu_output_size(const at::Tensor& self, int64_t dim,
                                                                               const at::Tensor& index);
 
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> iou_npu_output_size(const at::Tensor& bboxes,
-                                                                     const at::Tensor& gtboxes);
-
 OP_PLUGIN_HIDDEN std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> layer_norm_backward_npu_output_size(
     const at::Tensor& dY, const at::Tensor& X, const at::Tensor& mean, const at::Tensor& rstd, const at::Tensor& gamma,
     int64_t M, int64_t N);
-
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> lstm_npu_output_size(const at::Tensor& input,
-                                                                      const at::Tensor& weight, const at::Tensor& bias,
-                                                                      const at::Tensor& h, const at::Tensor& c,
-                                                                      bool has_biases, int64_t num_layers,
-                                                                      double dropout, bool train, bool bidirectional,
-                                                                      bool batch_first);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const at::Tensor& input,
                                                                                             const at::Tensor& weight,
@@ -202,10 +188,6 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> prod_npu_output_size(const at::
                                                                       bool keepdim);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> prod_npu_output_size(const at::Tensor& self, bool keepdim);
-
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> quantized_max_pool2d_npu_output_size(
-    const at::Tensor& self, c10::IntArrayRef kernel_size, c10::IntArrayRef stride, c10::IntArrayRef padding,
-    c10::IntArrayRef dilation, bool ceil_mode);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> range_npu_output_size(float start, float end, float step);
 
@@ -284,8 +266,6 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> sum_npu_output_size(const at::T
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> topk_npu_output_size(const at::Tensor& self, int64_t k, int64_t dim,
                                                                       bool largest, bool sorted);
-
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> trace_npu_output_size(const at::Tensor& self);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(
     c10::IntArrayRef input_size, c10::optional<c10::IntArrayRef> output_size,

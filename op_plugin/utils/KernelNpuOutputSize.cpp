@@ -130,6 +130,9 @@ c10::SmallVector<int64_t, SIZE> mse_loss_npu_output_size(const at::Tensor &self,
 c10::SmallVector<int64_t, SIZE> adaptive_avg_pool3d_npu_output_size(const at::Tensor &self,
                                                                     c10::IntArrayRef output_size)
 {
+    TORCH_CHECK(output_size.size() > 2, "output_size length should greater than 2, "
+        "but got the output_size length is ", output_size.size());
+
     auto shape = array_to_small_vector(self.sizes());
     auto iter = shape.rbegin();
     *iter = output_size[2];
@@ -147,6 +150,9 @@ c10::SmallVector<int64_t, SIZE> addmm_npu_output_size(const at::Tensor &self, co
 c10::SmallVector<int64_t, SIZE> addbmm_npu_output_size(const at::Tensor &self, const at::Tensor &batch1,
                                                        const at::Tensor &batch2, c10::Scalar beta, c10::Scalar alpha)
 {
+    TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
+        "but got Tensor of dimension ", self.dim());
+
     return {self.size(0), self.size(1)};
 }
 
@@ -217,6 +223,11 @@ small_vector avg_pool2d_backward_npu_output_size(const at::Tensor &grad_output, 
 
 c10::SmallVector<int64_t, SIZE> baddbmm_npu_output_size(const at::Tensor &self, const at::Tensor &mat2)
 {
+    TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
+        "but got Tensor of dimension ", self.dim());
+    TORCH_CHECK(mat2.dim() > 2, "tensor mat2's dimension must be greater than 2, "
+        "but got Tensor of dimension ", mat2.dim());
+
     return {self.size(0), self.size(1), mat2.size(2)};
 }
 
@@ -238,6 +249,17 @@ c10::SmallVector<int64_t, SIZE> conv1d_npu_output_size(const at::Tensor &input, 
                                                        c10::IntArrayRef padding, c10::IntArrayRef stride,
                                                        c10::IntArrayRef dilation)
 {
+    TORCH_CHECK(input.dim() > 2, "tensor input's dimension must be greater than 2, "
+        "but got Tensor of dimension ", input.dim());
+    TORCH_CHECK(weight.dim() > 2, "tensor weight's dimension must be greater than 2, "
+        "but got Tensor of dimension ", weight.dim());
+    TORCH_CHECK(stride.size() > 0, "stride length should be greater than 0, "
+        "but got the stride length is ", stride.size());
+    TORCH_CHECK(padding.size() > 0, "padding length should be greater than 0, "
+        "but got the padding length is ", padding.size());
+    TORCH_CHECK(dilation.size() > 0, "dilation length should be greater than 0, "
+        "but got the dilation length is ", dilation.size());
+
     int64_t N = input.size(0);
     int64_t L = input.size(2);
     int64_t C_out = weight.size(0);
@@ -253,6 +275,17 @@ c10::SmallVector<int64_t, SIZE> conv2d_npu_output_size(const at::Tensor &input, 
                                                        c10::IntArrayRef padding, c10::IntArrayRef stride,
                                                        c10::IntArrayRef dilation)
 {
+    TORCH_CHECK(input.dim() > 3, "tensor input's dimension must be greater than 3, "
+        "but got Tensor of dimension ", input.dim());
+    TORCH_CHECK(weight.dim() > 3, "tensor weight's dimension must be greater than 3, "
+        "but got Tensor of dimension ", weight.dim());
+    TORCH_CHECK(stride.size() > 1, "stride length should be greater than 1, "
+        "but got the stride length is ", stride.size());
+    TORCH_CHECK(padding.size() > 1, "padding length should be greater than 1, "
+        "but got the padding length is ", padding.size());
+    TORCH_CHECK(dilation.size() > 1, "dilation length should be greater than 1, "
+        "but got the dilation length is ", dilation.size());
+
     int64_t N = input.size(0);
     int64_t H = input.size(2);
     int64_t W = input.size(3);
@@ -272,6 +305,17 @@ c10::SmallVector<int64_t, SIZE> conv_transpose1d_npu_output_size(const at::Tenso
                                                                  c10::IntArrayRef stride, c10::IntArrayRef dilation,
                                                                  int64_t groups)
 {
+    TORCH_CHECK(input.dim() > 2, "tensor input's dimension must be greater than or equal to 2, "
+        "but got Tensor of dimension ", input.dim());
+    TORCH_CHECK(weight.dim() > 2, "tensor weight's dimension must be greater than or equal to 2, "
+        "but got Tensor of dimension ", weight.dim());
+    TORCH_CHECK(stride.size() > 0, "stride length should be greater than 0, "
+        "but got the stride length is ", stride.size());
+    TORCH_CHECK(padding.size() > 0, "padding length should be greater than 0, "
+        "but got the padding length is ", padding.size());
+    TORCH_CHECK(dilation.size() > 0, "dilation length should be greater than 0, "
+        "but got the dilation length is ", dilation.size());
+
     int64_t N = input.size(0);
     int64_t L = input.size(2);
     int64_t C_out = weight.size(1) * groups;
@@ -351,6 +395,9 @@ tuple_array_vector conv_transpose2d_backward_npu_output_size(const at::Tensor &i
                                                              c10::IntArrayRef output_padding, c10::IntArrayRef stride,
                                                              c10::IntArrayRef dilation, int64_t groups)
 {
+    TORCH_CHECK(grad_output.dim() > 1, "tensor grad_output's dimension must be greater than 1, "
+        "but got Tensor of dimension ", grad_output.dim());
+
     c10::SmallVector<int64_t, SIZE> gradBiasSize = {grad_output.size(1)};
     return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>(
         input.sizes(), weight.sizes(), gradBiasSize);
@@ -362,6 +409,17 @@ c10::SmallVector<int64_t, SIZE> conv_transpose2d_npu_output_size(const at::Tenso
                                                                  c10::IntArrayRef stride, c10::IntArrayRef dilation,
                                                                  int64_t groups)
 {
+    TORCH_CHECK(input.dim() > 3, "tensor input's dimension must be greater than 3, "
+        "but got Tensor of dimension ", input.dim());
+    TORCH_CHECK(weight.dim() > 3, "tensor weight's dimension must be greater than 3, "
+        "but got Tensor of dimension ", weight.dim());
+    TORCH_CHECK(stride.size() > 1, "stride length should be greater than 1, "
+        "but got the stride length is ", stride.size());
+    TORCH_CHECK(padding.size() > 1, "padding length should be greater than 1, "
+        "but got the padding length is ", padding.size());
+    TORCH_CHECK(dilation.size() > 1, "dilation length should be greater than 1, "
+        "but got the dilation length is ", dilation.size());
+
     int64_t N = input.size(0);
     int64_t H = input.size(2);
     int64_t W = input.size(3);
@@ -393,20 +451,6 @@ c10::SmallVector<int64_t, SIZE> deformable_conv2d_npu_output_size(const at::Tens
     return outputSize;
 }
 
-c10::SmallVector<int64_t, SIZE> det_npu_output_size(const at::Tensor &self)
-{
-    c10::SmallVector<long int, SIZE> dimVec;
-    auto InputSize = array_to_small_vector(self.sizes());
-    if (InputSize.size() > 2) {
-        for (uint64_t i = 0; i < InputSize.size() - 2; i++) {
-            dimVec.push_back(self.size(i));
-        }
-    } else {
-        return dimVec;
-    }
-    return dimVec;
-}
-
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
 ctc_loss_npu_output_size(const at::Tensor &log_probs, int64_t max_length)
 {
@@ -434,13 +478,6 @@ c10::SmallVector<int64_t, SIZE> embedding_dense_backward_npu_output_size(const a
                                                                          int64_t padding_idx, bool scale_grad_by_freq)
 {
     return {num_weights, grad_output.size(-1)};
-}
-
-c10::SmallVector<int64_t, SIZE> equal_npu_output_size(void)
-{
-    int64_t outputshape = 1;
-    c10::SmallVector<int64_t, SIZE> outputSize = {outputshape};
-    return outputSize;
 }
 
 int_array_ref_list layer_norm_backward_npu_output_size(const at::Tensor &dY, const at::Tensor &X,
@@ -586,25 +623,6 @@ c10::SmallVector<int64_t, SIZE> index_select_npu_output_size(const at::Tensor &s
     return outputSize;
 }
 
-c10::SmallVector<int64_t, SIZE> iou_npu_output_size(const at::Tensor &bboxes, const at::Tensor &gtboxes)
-{
-    return {gtboxes.size(0), bboxes.size(0)};
-}
-
-c10::SmallVector<int64_t, SIZE> lstm_npu_output_size(const at::Tensor &input, const at::Tensor &weight,
-                                                     const at::Tensor &bias, const at::Tensor &h, const at::Tensor &c,
-                                                     bool has_biases, int64_t num_layers, double dropout, bool train,
-                                                     bool bidirectional, bool batch_first)
-{
-    int64_t numStep = input.size(0);
-    int64_t batchSize = input.size(1);
-    int64_t hiddenSize = bias.size(0) / 4;
-
-    c10::SmallVector<int64_t, SIZE> outputSize = {numStep, batchSize, hiddenSize};
-
-    return outputSize;
-}
-
 c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const at::Tensor &input,
                                                                            const at::Tensor &weight,
                                                                            c10::IntArrayRef padding,
@@ -702,35 +720,6 @@ c10::SmallVector<int64_t, SIZE> prod_npu_output_size(const at::Tensor &self, boo
 {
     c10::IntArrayRef dims;
     return reduce_ops_npu_output_size(self, dims, keepdim);
-}
-
-c10::SmallVector<int64_t, SIZE> quantized_max_pool2d_npu_output_size(const at::Tensor &self,
-                                                                     c10::IntArrayRef kernel_size,
-                                                                     c10::IntArrayRef stride, c10::IntArrayRef padding,
-                                                                     c10::IntArrayRef dilation, bool ceil_mode)
-{
-    int64_t strideH = 1;
-    int64_t strideW = 1;
-    if (stride.empty()) {
-        strideH = kernel_size[0];
-        strideW = kernel_size[1];
-    } else {
-        strideH = stride[0];
-        strideW = stride[1];
-    }
-
-    int64_t N = self.size(0);
-    int64_t C = self.size(1);
-    int64_t H = self.size(2);
-    int64_t W = self.size(3);
-
-    int64_t Ho =
-        (H + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1 + (ceil_mode ? strideH - 1 : 0)) / strideH + 1;
-    int64_t Wo =
-        (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1 + (ceil_mode ? strideW - 1 : 0)) / strideW + 1;
-    c10::SmallVector<int64_t, SIZE> outputSize = {N, C, Ho, Wo};
-
-    return outputSize;
 }
 
 c10::SmallVector<int64_t, SIZE> range_npu_output_size(float start, float end, float step)
@@ -1047,6 +1036,9 @@ c10::SmallVector<int64_t, SIZE> slow_conv_dilated2d_npu_output_size(const at::Te
                                                                     c10::IntArrayRef stride, c10::IntArrayRef padding,
                                                                     c10::IntArrayRef dilation)
 {
+    TORCH_CHECK(input.dim() > 3, "tensor input's dimension must be greater than 3, "
+        "but got Tensor of dimension ", input.dim());
+
     int64_t N = input.size(0);
     int64_t H = input.size(2);
     int64_t W = input.size(3);
@@ -1121,12 +1113,6 @@ c10::SmallVector<int64_t, SIZE> transpose_npu_output_size(const at::Tensor &self
     return shape;
 }
 
-c10::SmallVector<int64_t, SIZE> trace_npu_output_size(const at::Tensor &self)
-{
-    c10::SmallVector<int64_t, SIZE> shape = {1};
-    return shape;
-}
-
 c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(c10::IntArrayRef input_size,
                                                             c10::optional<c10::IntArrayRef> output_size,
                                                             c10::optional<c10::ArrayRef<double>> scale_factors)
@@ -1159,6 +1145,11 @@ c10::SmallVector<int64_t, SIZE> upsample_bilinear2d_npu_output_size(const at::Te
                                                                     c10::optional<double> scales_h,
                                                                     c10::optional<double> scales_w)
 {
+    TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
+        "but got Tensor of dimension ", self.dim());
+    TORCH_CHECK(output_size.size() > 1, "output_size length should be greater than 1, "
+        "but got the output_size length is ", output_size.size());
+
     // the input's dim of upsample_bilinear2d
     int64_t N = self.size(0);
     int64_t C = self.size(1);
@@ -1180,6 +1171,11 @@ c10::IntArrayRef upsample_bilinear2d_backward_npu_output_size(const at::Tensor &
 c10::SmallVector<int64_t, SIZE> upsample_linear1d_npu_output_size(const at::Tensor &self, c10::IntArrayRef output_size,
                                                                   bool align_corners, c10::optional<double> scales)
 {
+    TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
+        "but got Tensor of dimension ", self.dim());
+    TORCH_CHECK(output_size.size() > 0, "output_size length should be greater than 0, "
+        "but got the output_size length is ", output_size.size());
+
     int64_t N = self.size(0);
     int64_t C = self.size(1);
     int64_t W = output_size[0];
@@ -1191,6 +1187,8 @@ c10::SmallVector<int64_t, SIZE> upsample_linear1d_npu_output_size(const at::Tens
 c10::SmallVector<int64_t, SIZE> upsample_trilinear3d_npu_output_size(const at::Tensor &input,
                                                                      at::IntArrayRef output_size)
 {
+    TORCH_CHECK(input.dim() > 1, "tensor input's dimension must be greater than 1, "
+        "but got Tensor of dimension ", input.dim());
     TORCH_CHECK(output_size.size() == 3, "It is expected output_size equals to 3, but got size ", output_size.size());
 
     int64_t output_depth = output_size[0];
@@ -1209,7 +1207,10 @@ c10::SmallVector<int64_t, SIZE> upsample_nearest3d_npu_output_size(const at::Ten
                                                                    c10::optional<double> scales_h,
                                                                    c10::optional<double> scales_w)
 {
-    TORCH_CHECK(output_size.size() == 3, "It is expected output_size equals to 3, but got size ", output_size.size());
+    TORCH_CHECK(input.dim() > 1, "tensor input's dimension must be greater than 1, "
+        "but got Tensor of dimension ", input.dim());
+    TORCH_CHECK(output_size.size() > 2, "It is expected output_size greater than 2, "
+        "but got size ", output_size.size());
 
     int64_t output_depth = output_size[0];
     int64_t output_height = output_size[1];
@@ -1304,6 +1305,8 @@ c10::SmallVector<int64_t, SIZE> infersize_affine_grid_generator(at::IntArrayRef 
     if (size.size() == 4) {
         output_size = {size[0], size[2] * size[3], 2};
     } else {
+        TORCH_CHECK(size.size() > 4, "It is expected size greater than 4, "
+            "but got size ", size.size());
         output_size = {size[0], size[2] * size[3] * size[4], 3};
     }
     return output_size;
