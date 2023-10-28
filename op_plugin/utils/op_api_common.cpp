@@ -18,7 +18,10 @@
 
 thread_local char g_hash_buf[g_hash_buf_size];
 thread_local int g_hash_offset = 0;
-constexpr int g_mix64Shift = 33;
+constexpr int g_rShift33Bits = 33;
+constexpr uint64_t MIX_STEP1 = 18397679294719823053LLU;
+constexpr uint64_t MIX_STEP2 = 14181476777654086739LLU;
+
 
 typedef void(*AddTensorAddrToCachedList) (void *addr);
 
@@ -142,157 +145,148 @@ void add_param_to_buf(const string& s) {
 
 void add_param_to_buf() {}
 
-inline uint64_t rotl64(uint64_t x, int8_t r) {
-    return (x << r) | (x >> (64 - r));
+inline uint64_t rotating_left(uint64_t x, uint8_t n) {
+    return (x << n) | (x >> (64 - n));
 }
 
-#define ROTL64(x, y) rotl64(x, y)
-#define BIG_CONSTANT(x) (x##LLU)
+inline uint64_t mixture(uint64_t x) {
+    // constants step1(18397679294719823053) and step2(14181476777654086739) are used to allow
+    // hash values to be more evenly distributed after multiplication.
+    x ^= x >> g_rShift33Bits;
+    x *= MIX_STEP1;
+    x ^= x >> g_rShift33Bits;
+    x *= MIX_STEP2;
+    x ^= x >> g_rShift33Bits;
 
-inline uint64_t GetBlock64(const uint64_t *p, int i) {
-    return p[i];
+    return x;
 }
 
-inline uint64_t fmix64(uint64_t k) {
-    // 0xff51afd7ed558ccd and 0xc4ceb9fe1a85ec53 are carefully selected constants to allow
-    // hash values to be more evenly distributed in 64-bit space after multiplication.
-    k ^= k >> g_mix64Shift;
-    k *= BIG_CONSTANT(0xff51afd7ed558ccd);
-    k ^= k >> g_mix64Shift;
-    k *= BIG_CONSTANT(0xc4ceb9fe1a85ec53);
-    k ^= k >> g_mix64Shift;
-
-    return k;
-}
-
-uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0d7) {
+uint64_t gen_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0d7) {
     const uint8_t *data = (const uint8_t *)key;
     // the length of each block is 16 bytes
-    const int nblocks = len / 16;
-    uint64_t h1 = seed;
-    uint64_t h2 = seed;
+    const int block_num = len / 16;
+    // has and hax are literal appromix to hash, and hax is the return value of this function.
+    uint64_t has = seed;
+    uint64_t hax = seed;
 
-    // 0x87c37b91114253d5 and 0x4cf5ad432745937f are carefully selected constants to
-    // blocking and obfuscation of input data
-    const uint64_t c1 = BIG_CONSTANT(0x87c37b91114253d5);
-    const uint64_t c2 = BIG_CONSTANT(0x4cf5ad432745937f);
+    // use 9782798678568883157 and 5545529020109919103 for blocking and obfuscation of input data
+    const uint64_t c1 = 9782798678568883157LLU;
+    const uint64_t c2 = 5545529020109919103LLU;
 
     const uint64_t *blocks = (const uint64_t *)(data);
 
-    for (int i = 0; i < nblocks; i++) {
+    for (int i = 0; i < block_num; i++) {
         int even_num = 2;
-        int odd_num = 1;
-        uint64_t k1 = GetBlock64(blocks, i * even_num);
-        uint64_t k2 = GetBlock64(blocks, i * even_num + odd_num);
+        uint64_t tmp1 = blocks[i * even_num];
+        uint64_t tmp2 = blocks[i * even_num + 1];
 
-        int8_t k1_shift = 31;
-        k1 *= c1;
-        k1  = ROTL64(k1, k1_shift);
-        k1 *= c2;
-        h1 ^= k1;
+        int8_t bits_31 = 31;
+        tmp1 *= c1;
+        tmp1  = rotating_left(tmp1, bits_31);
+        tmp1 *= c2;
+        has ^= tmp1;
 
-        int8_t h1_shift = 27;
-        h1 = ROTL64(h1, h1_shift);
-        h1 += h2;
+        int8_t bits_27 = 27;
+        has = rotating_left(has, bits_27);
+        has += hax;
         // increase randomness by mul by 5 and adding a constant
-        h1 = h1 * 5 + 0x52dce729;
+        has = has * 5 + 1390208809;
 
-        int8_t k2_shift = 33;
-        k2 *= c2;
-        k2  = ROTL64(k2, k2_shift);
-        k2 *= c1;
-        h2 ^= k2;
+        int8_t bits_33 = 33;
+        tmp2 *= c2;
+        tmp2  = rotating_left(tmp2, bits_33);
+        tmp2 *= c1;
+        hax ^= tmp2;
 
-        int8_t h2_shift = 31;
-        h2 = ROTL64(h2, h2_shift);
-        h2 += h1;
+        hax = rotating_left(hax, bits_31);
+        hax += has;
         // increase randomness by mul by 5 and adding a constant
-        h2 = h2 * 5 + 0x38495ab5;
+        hax = hax * 5 + 944331445;
     }
 
     // the length of each block is 16 bytes
-    const uint8_t *tail = (const uint8_t*)(data + nblocks * 16);
-    uint64_t k1 = 0;
-    uint64_t k2 = 0;
+    const uint8_t *tail = (const uint8_t*)(data + block_num * 16);
+    uint64_t t1 = 0;
+    uint64_t t2 = 0;
     // because the size of a block is 16, different offsets are calculated for tail blocks
     // for different sizes
     switch (static_cast<uint64_t>(len) & 15)
     {
-    case 15:
-        k2 ^= ((uint64_t)tail[14]) << 48;
-        [[fallthrough]];;
-    case 14:
-        k2 ^= ((uint64_t)tail[13]) << 40;
-        [[fallthrough]];;
-    case 13:
-        k2 ^= ((uint64_t)tail[12]) << 32;
-        [[fallthrough]];;
-    case 12:
-        k2 ^= ((uint64_t)tail[11]) << 24;
-        [[fallthrough]];;
-    case 11:
-        k2 ^= ((uint64_t)tail[10]) << 16;
-        [[fallthrough]];;
-    case 10:
-        k2 ^= ((uint64_t)tail[9]) << 8;
-        [[fallthrough]];;
-    case 9:
-        k2 ^= ((uint64_t)tail[8]) << 0;
-        k2 *= c2;
-        k2 = ROTL64(k2, 33);
-        k2 *= c1;
-        h2 ^= k2;
-        [[fallthrough]];;
-    case 8:
-        k1 ^= ((uint64_t)tail[7]) << 56;
-        [[fallthrough]];;
-    case 7:
-        k1 ^= ((uint64_t)tail[6]) << 48;
-        [[fallthrough]];;
-    case 6:
-        k1 ^= ((uint64_t)tail[5]) << 40;
-        [[fallthrough]];;
-    case 5:
-        k1 ^= ((uint64_t)tail[4]) << 32;
-        [[fallthrough]];;
-    case 4:
-        k1 ^= ((uint64_t)tail[3]) << 24;
-        [[fallthrough]];;
-    case 3:
-        k1 ^= ((uint64_t)tail[2]) << 16;
-        [[fallthrough]];;
-    case 2:
-        k1 ^= ((uint64_t)tail[1]) << 8;
-        [[fallthrough]];;
-    case 1:
-        k1 ^= ((uint64_t)tail[0]) << 0;
-        k1 *= c1;
-        k1 = ROTL64(k1, 31);
-        k1 *= c2;
-        h1 ^= k1;
-        [[fallthrough]];;
-    default:
-        [[fallthrough]];;
+        case 15:
+            t2 ^= ((uint64_t)tail[14]) << 48;
+            [[fallthrough]];;
+        case 14:
+            t2 ^= ((uint64_t)tail[13]) << 40;
+            [[fallthrough]];;
+        case 13:
+            t2 ^= ((uint64_t)tail[12]) << 32;
+            [[fallthrough]];;
+        case 12:
+            t2 ^= ((uint64_t)tail[11]) << 24;
+            [[fallthrough]];;
+        case 11:
+            t2 ^= ((uint64_t)tail[10]) << 16;
+            [[fallthrough]];;
+        case 10:
+            t2 ^= ((uint64_t)tail[9]) << 8;
+            [[fallthrough]];;
+        case 9:
+            t2 ^= ((uint64_t)tail[8]) << 0;
+            t2 *= c2;
+            t2 = rotating_left(t2, 33);
+            t2 *= c1;
+            hax ^= t2;
+            [[fallthrough]];;
+        case 8:
+            t1 ^= ((uint64_t)tail[7]) << 56;
+            [[fallthrough]];;
+        case 7:
+            t1 ^= ((uint64_t)tail[6]) << 48;
+            [[fallthrough]];;
+        case 6:
+            t1 ^= ((uint64_t)tail[5]) << 40;
+            [[fallthrough]];;
+        case 5:
+            t1 ^= ((uint64_t)tail[4]) << 32;
+            [[fallthrough]];;
+        case 4:
+            t1 ^= ((uint64_t)tail[3]) << 24;
+            [[fallthrough]];;
+        case 3:
+            t1 ^= ((uint64_t)tail[2]) << 16;
+            [[fallthrough]];;
+        case 2:
+            t1 ^= ((uint64_t)tail[1]) << 8;
+            [[fallthrough]];;
+        case 1:
+            t1 ^= ((uint64_t)tail[0]) << 0;
+            t1 *= c1;
+            t1 = rotating_left(t1, 31);
+            t1 *= c2;
+            has ^= t1;
+            [[fallthrough]];;
+        default:
+            [[fallthrough]];;
     };
 
-    h1 ^= static_cast<uint64_t>(len);
-    h2 ^= static_cast<uint64_t>(len);
+    has ^= static_cast<uint64_t>(len);
+    hax ^= static_cast<uint64_t>(len);
 
-    h1 += h2;
-    h2 += h1;
+    has += hax;
+    hax += has;
 
-    h1 = fmix64(h1);
-    h2 = fmix64(h2);
+    has = mixture(has);
+    hax = mixture(hax);
 
-    h1 += h2;
-    h2 += h1;
-    return h2;
+    has += hax;
+    hax += has;
+    return hax;
 }
 
 uint64_t calc_hash_id() {
     if (g_hash_offset == g_hash_buf_max_size) {
         return 0;
     }
-    uint64_t hash_id = murmur_hash(g_hash_buf, g_hash_offset);
+    uint64_t hash_id = gen_hash(g_hash_buf, g_hash_offset);
     return hash_id;
 }
