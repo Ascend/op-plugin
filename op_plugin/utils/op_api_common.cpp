@@ -99,6 +99,15 @@ void add_param_to_buf(const at::TensorList &at_tensor_list) {
     MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
+void add_param_to_buf(const at::ArrayRef<at::Scalar> &at_scalar_list) {
+    for (size_t i = 0; i < at_scalar_list.size(); i++) {
+        add_param_to_buf(at_scalar_list[i]);
+    }
+    auto counter = at_scalar_list.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+    MEMCPY_TO_BUF(",", 1);
+}
+
 void add_param_to_buf(const c10::optional<at::Tensor> &opt_tensor) {
     if (opt_tensor.has_value() && opt_tensor.value().defined()) {
         add_param_to_buf(opt_tensor.value());

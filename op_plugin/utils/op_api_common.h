@@ -39,6 +39,7 @@ typedef struct aclIntArray aclIntArray;
 typedef struct aclFloatArray aclFloatArray;
 typedef struct aclBoolArray aclBoolArray;
 typedef struct aclTensorList aclTensorList;
+typedef struct aclScalarList aclScalarList;
 
 typedef aclTensor *(*_aclCreateTensor)(const int64_t *view_dims, uint64_t view_dims_num, aclDataType data_type,
                                        const int64_t *stride, int64_t offset, aclFormat format,
@@ -48,6 +49,7 @@ typedef aclIntArray *(*_aclCreateIntArray)(const int64_t *value, uint64_t size);
 typedef aclFloatArray *(*_aclCreateFloatArray)(const float *value, uint64_t size);
 typedef aclBoolArray *(*_aclCreateBoolArray)(const bool *value, uint64_t size);
 typedef aclTensorList *(*_aclCreateTensorList)(const aclTensor *const *value, uint64_t size);
+typedef aclScalarList *(*_aclCreateScalarList)(const aclScalar *const *value, uint64_t size);
 
 typedef int (*_aclDestroyTensor)(const aclTensor *tensor);
 typedef int (*_aclDestroyScalar)(const aclScalar *scalar);
@@ -55,6 +57,7 @@ typedef int (*_aclDestroyIntArray)(const aclIntArray *array);
 typedef int (*_aclDestroyFloatArray)(const aclFloatArray *array);
 typedef int (*_aclDestroyBoolArray)(const aclBoolArray *array);
 typedef int (*_aclDestroyTensorList)(const aclTensorList *array);
+typedef int (*_aclDestroyScalarList)(const aclScalarList *array);
 
 using OpApiFunc = int (*)(void *, uint64_t, aclOpExecutor *, const aclrtStream);
 
@@ -260,6 +263,21 @@ inline aclTensorList *ConvertType(const at::TensorList &at_tensor_list)
     return acl_tensor_list;
 }
 
+inline aclScalarList *ConvertType(const at::ArrayRef<at::Scalar> &at_scalar_list)
+{
+    static const auto aclCreateScalarList = GET_OP_API_FUNC(aclCreateScalarList);
+    if (aclCreateScalarList == nullptr) {
+        return nullptr;
+    }
+
+    std::vector<const aclScalar *> scalar_list(at_scalar_list.size());
+    for (size_t i = 0; i < at_scalar_list.size(); i++) {
+        scalar_list[i] = ConvertType(at_scalar_list[i]);
+    }
+    auto acl_scalar_list = aclCreateScalarList(scalar_list.data(), scalar_list.size());
+    return acl_scalar_list;
+}
+
 inline aclTensor *ConvertType(const c10::optional<at::Tensor> &opt_tensor)
 {
     if (opt_tensor.has_value() && opt_tensor.value().defined()) {
@@ -345,6 +363,16 @@ inline void Release(aclTensorList *p)
     aclDestroyTensorList(p);
 }
 
+inline void Release(aclScalarList *p)
+{
+    static const auto aclDestroyScalarList = GET_OP_API_FUNC(aclDestroyScalarList);
+    if (aclDestroyScalarList == nullptr) {
+        return;
+    }
+
+    aclDestroyScalarList(p);
+}
+
 template <typename T> void Release(T value)
 {
     (void)value;
@@ -406,6 +434,7 @@ void add_param_to_buf(const at::Scalar &);
 void add_param_to_buf(const at::IntArrayRef &);
 void add_param_to_buf(const at::ArrayRef<bool> &);
 void add_param_to_buf(const at::TensorList &);
+void add_param_to_buf(const at::ArrayRef<at::Scalar> &);
 void add_param_to_buf(const c10::optional<at::Tensor> &);
 void add_param_to_buf(const c10::optional<at::IntArrayRef> &);
 void add_param_to_buf(const c10::optional<at::Scalar> &);
