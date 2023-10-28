@@ -17,28 +17,49 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor scatter_update(
-    const at::Tensor& data,
-    const at::Tensor& indices,
-    const at::Tensor& updates,
-    int64_t axis) {
-  TORCH_NPU_WARN_ONCE(
-      "Warning: kernel [scatter_update] is a out-of-place op, but it is supported by another in-place op cann.Scatter."
-      "This current usage may cause the input to be changed unexpectedly, "
-      "and the caller needs to pay attention to this feature.");
-  at::Tensor result = npu_preparation::apply_tensor(data);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Scatter")
-     .Input(data)
-     .Input(indices)
-     .Input(updates)
-     .Output(result)
-     .Attr("reduce", (string)"update")
-     .Attr("axis", axis)
-     .Run();
-  return data;
+    const at::Tensor &self,
+    const at::Tensor &indices,
+    const at::Tensor &updates,
+    int64_t axis)
+{
+    at::Tensor result = self.clone();
+
+    // Note:
+    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Scatter")
+        .Input(result)
+        .Input(indices)
+        .Input(updates)
+        .Output(result)
+        .Attr("reduce", (string) "update")
+        .Attr("axis", axis)
+        .Run();
+
+    return result;
+}
+
+at::Tensor &scatter_update_(
+    at::Tensor &self,
+    const at::Tensor &indices,
+    const at::Tensor &updates,
+    int64_t axis)
+{
+    // Note:
+    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Scatter")
+        .Input(self)
+        .Input(indices)
+        .Input(updates)
+        .Output(self)
+        .Attr("reduce", (string) "update")
+        .Attr("axis", axis)
+        .Run();
+
+    return self;
 }
 
 } // namespace acl_op
