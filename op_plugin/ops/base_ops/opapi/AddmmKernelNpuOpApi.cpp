@@ -19,56 +19,56 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-    using npu_preparation = at_npu::native::OpPreparation;
+using npu_preparation = at_npu::native::OpPreparation;
 
-    at::Tensor &addmm_out(
-        const at::Tensor &self,
-        const at::Tensor &mat1,
-        const at::Tensor &mat2,
-        const at::Scalar &beta,
-        const at::Scalar &alpha,
-        at::Tensor &result)
-    {
-      DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm_out(self, mat1, mat2, beta, alpha, result));
-      int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-      auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
-      npu_preparation::check_tensor({self, mat1, mat2}, result, result.scalar_type(), output_size);
-      EXEC_NPU_CMD(aclnnAddmm, self, mat1, mat2, beta, alpha, result, cube_math_type);
+at::Tensor &addmm_out(
+    const at::Tensor &self,
+    const at::Tensor &mat1,
+    const at::Tensor &mat2,
+    const at::Scalar &beta,
+    const at::Scalar &alpha,
+    at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm_out(self, mat1, mat2, beta, alpha, result));
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
+    npu_preparation::check_tensor({self, mat1, mat2}, result, result.scalar_type(), output_size);
+    EXEC_NPU_CMD(aclnnAddmm, self, mat1, mat2, beta, alpha, result, cube_math_type);
 
-      return result;
-    }
+    return result;
+}
 
-    at::Tensor addmm(
-        const at::Tensor &self,
-        const at::Tensor &mat1,
-        const at::Tensor &mat2,
-        const at::Scalar &beta,
-        const at::Scalar &alpha)
-    {
-      DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm(self, mat1, mat2, beta, alpha));
-      auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
-      at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
-      int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-      EXEC_NPU_CMD(aclnnAddmm, self, mat1, mat2, beta, alpha, result, cube_math_type);
+at::Tensor addmm(
+    const at::Tensor &self,
+    const at::Tensor &mat1,
+    const at::Tensor &mat2,
+    const at::Scalar &beta,
+    const at::Scalar &alpha)
+{
+    DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm(self, mat1, mat2, beta, alpha));
+    auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    EXEC_NPU_CMD(aclnnAddmm, self, mat1, mat2, beta, alpha, result, cube_math_type);
 
-      return result;
-    }
+    return result;
+}
 
-    at::Tensor &addmm_(
-        at::Tensor &self,
-        const at::Tensor &mat1,
-        const at::Tensor &mat2,
-        const at::Scalar &beta,
-        const at::Scalar &alpha)
-    {
-      DO_COMPATIBILITY(aclnnInplaceAddmm, acl_op::addmm_(self, mat1, mat2, beta, alpha));
-      auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
-      npu_preparation::check_tensor({self, mat1, mat2}, self, self.scalar_type(), output_size);
+at::Tensor &addmm_(
+    at::Tensor &self,
+    const at::Tensor &mat1,
+    const at::Tensor &mat2,
+    const at::Scalar &beta,
+    const at::Scalar &alpha)
+{
+    DO_COMPATIBILITY(aclnnInplaceAddmm, acl_op::addmm_(self, mat1, mat2, beta, alpha));
+    auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
+    npu_preparation::check_tensor({self, mat1, mat2}, self, self.scalar_type(), output_size);
 
-      int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-      EXEC_NPU_CMD(aclnnInplaceAddmm, self, mat1, mat2, beta, alpha, cube_math_type);
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    EXEC_NPU_CMD(aclnnInplaceAddmm, self, mat1, mat2, beta, alpha, cube_math_type);
 
-      return self;
-    }
+    return self;
+}
 
 } // namespace op_api
