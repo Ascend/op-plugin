@@ -21,18 +21,28 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor scatter_update(
-    const at::Tensor& data,
-    const at::Tensor& indices,
-    const at::Tensor& updates,
+    const at::Tensor &self,
+    const at::Tensor &indices,
+    const at::Tensor &updates,
     int64_t axis)
 {
-    DO_COMPATIBILITY(aclnnInplaceScatterUpdate, acl_op::scatter_update(data, indices, updates, axis));
-    TORCH_NPU_WARN_ONCE(
-        "Warning: kernel [scatter_update] is a out-of-place op, but it is supported by another in-place op cann.Scatter."
-        "This current usage may cause the input to be changed unexpectedly, "
-        "and the caller needs to pay attention to this feature.");
-    EXEC_NPU_CMD(aclnnInplaceScatterUpdate, data, indices, updates, axis);
-    return data;
+    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+    DO_COMPATIBILITY(aclnnInplaceScatterUpdate, acl_op::scatter_update(self, indices, updates, axis));
+    at::Tensor result = self.clone();
+    EXEC_NPU_CMD(aclnnInplaceScatterUpdate, result, indices, updates, axis);
+    return result;
+}
+
+at::Tensor &scatter_update_(
+    at::Tensor &self,
+    const at::Tensor &indices,
+    const at::Tensor &updates,
+    int64_t axis)
+{
+    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+    DO_COMPATIBILITY(aclnnInplaceScatterUpdate, acl_op::scatter_update_(self, indices, updates, axis));
+    EXEC_NPU_CMD(aclnnInplaceScatterUpdate, self, indices, updates, axis);
+    return self;
 }
 
 } // namespace op_api
