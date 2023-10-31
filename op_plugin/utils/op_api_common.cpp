@@ -25,7 +25,8 @@ constexpr uint64_t MIX_STEP2 = 14181476777654086739LLU;
 
 typedef void(*AddTensorAddrToCachedList) (void *addr);
 
-void add_param_to_buf(const at::Tensor &at_tensor) {
+void add_param_to_buf(const at::Tensor &at_tensor)
+{
     static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");
     AddTensorAddrToCachedList addTensorAddrToCachedListFunc =
         reinterpret_cast<AddTensorAddrToCachedList>(addTensorAddrToCachedListAddr);
@@ -57,7 +58,8 @@ void add_param_to_buf(const at::Tensor &at_tensor) {
     addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
 }
 
-void add_param_to_buf(const at::Scalar &at_scalar) {
+void add_param_to_buf(const at::Scalar &at_scalar)
+{
     at::ScalarType scalar_data_type = at_scalar.type();
     switch (scalar_data_type) {
         case at::ScalarType::Double: {
@@ -86,15 +88,18 @@ void add_param_to_buf(const at::Scalar &at_scalar) {
     }
 }
 
-void add_param_to_buf(const at::IntArrayRef &at_array) {
+void add_param_to_buf(const at::IntArrayRef &at_array)
+{
     MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(int64_t)));
 }
 
-void add_param_to_buf(const at::ArrayRef<bool> &at_array) {
+void add_param_to_buf(const at::ArrayRef<bool> &at_array)
+{
     MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(bool)));
 }
 
-void add_param_to_buf(const at::TensorList &at_tensor_list) {
+void add_param_to_buf(const at::TensorList &at_tensor_list)
+{
     for (size_t i = 0; i < at_tensor_list.size(); i++) {
         add_param_to_buf(at_tensor_list[i]);
     }
@@ -102,7 +107,8 @@ void add_param_to_buf(const at::TensorList &at_tensor_list) {
     MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
-void add_param_to_buf(const at::ArrayRef<at::Scalar> &at_scalar_list) {
+void add_param_to_buf(const at::ArrayRef<at::Scalar> &at_scalar_list)
+{
     for (size_t i = 0; i < at_scalar_list.size(); i++) {
         add_param_to_buf(at_scalar_list[i]);
     }
@@ -111,7 +117,8 @@ void add_param_to_buf(const at::ArrayRef<at::Scalar> &at_scalar_list) {
     MEMCPY_TO_BUF(",", 1);
 }
 
-void add_param_to_buf(const c10::optional<at::Tensor> &opt_tensor) {
+void add_param_to_buf(const c10::optional<at::Tensor> &opt_tensor)
+{
     if (opt_tensor.has_value() && opt_tensor.value().defined()) {
         add_param_to_buf(opt_tensor.value());
     } else {
@@ -119,7 +126,8 @@ void add_param_to_buf(const c10::optional<at::Tensor> &opt_tensor) {
     }
 }
 
-void add_param_to_buf(const c10::optional<at::IntArrayRef> &opt_array) {
+void add_param_to_buf(const c10::optional<at::IntArrayRef> &opt_array)
+{
     if (opt_array.has_value()) {
         add_param_to_buf(opt_array.value());
     } else {
@@ -127,7 +135,8 @@ void add_param_to_buf(const c10::optional<at::IntArrayRef> &opt_array) {
     }
 }
 
-void add_param_to_buf(const c10::optional<at::Scalar> &opt_scalar) {
+void add_param_to_buf(const c10::optional<at::Scalar> &opt_scalar)
+{
     if (opt_scalar.has_value()) {
         add_param_to_buf(opt_scalar.value());
     } else {
@@ -135,21 +144,25 @@ void add_param_to_buf(const c10::optional<at::Scalar> &opt_scalar) {
     }
 }
 
-void add_param_to_buf(const at::ScalarType scalar_type) {
+void add_param_to_buf(const at::ScalarType scalar_type)
+{
     MEMCPY_TO_BUF(&scalar_type, sizeof(scalar_type));
 }
 
-void add_param_to_buf(const string& s) {
+void add_param_to_buf(const string& s)
+{
     MEMCPY_TO_BUF(s.c_str(), static_cast<int64_t>(s.size()));
 }
 
 void add_param_to_buf() {}
 
-inline uint64_t rotating_left(uint64_t x, uint8_t n) {
+inline uint64_t rotating_left(uint64_t x, uint8_t n)
+{
     return (x << n) | (x >> (64 - n));
 }
 
-inline uint64_t mixture(uint64_t x) {
+inline uint64_t mixture(uint64_t x)
+{
     // constants step1(18397679294719823053) and step2(14181476777654086739) are used to allow
     // hash values to be more evenly distributed after multiplication.
     x ^= x >> g_rShift33Bits;
@@ -161,7 +174,8 @@ inline uint64_t mixture(uint64_t x) {
     return x;
 }
 
-uint64_t gen_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0d7) {
+uint64_t gen_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0d7)
+{
     const uint8_t *data = (const uint8_t *)key;
     // the length of each block is 16 bytes
     const int block_num = len / 16;
@@ -210,8 +224,7 @@ uint64_t gen_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0
     uint64_t t2 = 0;
     // because the size of a block is 16, different offsets are calculated for tail blocks
     // for different sizes
-    switch (static_cast<uint64_t>(len) & 15)
-    {
+    switch (static_cast<uint64_t>(len) & 15) {
         case 15:
             t2 ^= ((uint64_t)tail[14]) << 48;
             [[fallthrough]];;
@@ -283,7 +296,8 @@ uint64_t gen_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0
     return hax;
 }
 
-uint64_t calc_hash_id() {
+uint64_t calc_hash_id()
+{
     if (g_hash_offset == g_hash_buf_max_size) {
         return 0;
     }
