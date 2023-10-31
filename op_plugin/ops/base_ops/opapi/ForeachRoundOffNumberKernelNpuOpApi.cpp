@@ -49,7 +49,7 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
     auto scalarType = self[0].scalar_type();
     // construct the output tensorlist of the NPU
     std::vector<at::Tensor> result;
-    for (int i = 0; i < self.size(); i++) {
+    for (uint32_t i = 0; i < self.size(); i++) {
         at::Tensor tensor = self[i];
         auto output_size = op_infer::input_same_output_size(tensor);
         result.push_back(
