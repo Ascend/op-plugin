@@ -248,6 +248,7 @@ def gen_return(
     with native_function_manager(f):
         has_symint = False
         op_name = str(f.func.name.name)
+        force_aclnn = f"at_npu::native::ForceAclnn::GetInstance().IsForceAclnnOp(\"{op_name}\")"
         global SYMINT_SET
         if str(f.func.name) in SYMINT_SET:
             op_name += "_symint"
@@ -272,7 +273,7 @@ def gen_return(
 
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
             p = f"""{sig.defn(name=op_name)}{{
-    if (at_npu::native::env::CheckJitDisable(){format_check}) {{
+    if (({force_aclnn} || at_npu::native::env::CheckJitDisable()){format_check}) {{
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
         return acl_op::{impl_name}({args_exprs_str});
