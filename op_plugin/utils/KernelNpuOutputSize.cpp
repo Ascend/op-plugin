@@ -237,6 +237,8 @@ c10::SmallVector<int64_t, SIZE> cdist_npu_output_size(const at::Tensor &x1, cons
     int64_t r2 = x2.size(-2);
     int64_t dim1 = static_cast<int64_t>(x1.dim());
     int64_t dim2 = static_cast<int64_t>(x2.dim());
+    TORCH_CHECK(dim1 >= 2, "Dim of x1 should be grater than 2, but now is ", dim1);
+    TORCH_CHECK(dim2 >= 2, "Dim of x2 should be grater than 2, but now is ", dim2);
     c10::IntArrayRef batch_tensor1(x1.sizes().data(), dim1 - 2);
     c10::IntArrayRef batch_tensor2(x2.sizes().data(), dim2 - 2);
     c10::SmallVector<int64_t, SIZE> expand_batch_portion(at::infer_size(batch_tensor1, batch_tensor2));
