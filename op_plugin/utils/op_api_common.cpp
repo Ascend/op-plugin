@@ -28,6 +28,7 @@ typedef void(*AddTensorAddrToCachedList) (void *addr);
 void add_param_to_buf(const at::Tensor &at_tensor)
 {
     static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");
+    TORCH_CHECK(addTensorAddrToCachedListAddr != nullptr, "GetOpApiFuncAddr failed.");
     AddTensorAddrToCachedList addTensorAddrToCachedListFunc =
         reinterpret_cast<AddTensorAddrToCachedList>(addTensorAddrToCachedListAddr);
     if (!at_tensor.defined()) {

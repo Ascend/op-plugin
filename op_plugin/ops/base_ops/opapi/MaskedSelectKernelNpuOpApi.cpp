@@ -43,6 +43,7 @@ static inline at::SmallVector<int64_t, SIZE> masked_select_npu_output_size(const
 
 static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Tensor& mask, at::Tensor& out) {
   static auto opApiFuncAddr = GetOpApiFuncAddr("aclGetViewShape");
+  TORCH_CHECK(opApiFuncAddr != nullptr, "GetOpApiFuncAddr failed.");
   using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
   auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
   auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnMaskedSelect, self, mask, out);
