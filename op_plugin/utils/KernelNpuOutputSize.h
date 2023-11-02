@@ -300,6 +300,13 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> upsample_nearest3d_npu_output_s
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> var_npu_output_size(const at::Tensor& self, c10::IntArrayRef dim,
                                                                      bool keepdim);
 
+OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> crop_and_resize_npu_output_size(const at::Tensor& self,
+                                                                                 at::IntArrayRef box_index,
+                                                                                 at::IntArrayRef crop_size);
+
+OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> decode_jpeg_npu_output_size(at::IntArrayRef image_shape,
+                                                                             int64_t channels);
+
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> infersize_stride_add(c10::IntArrayRef shape1,
                                                                       c10::IntArrayRef shape2);
 

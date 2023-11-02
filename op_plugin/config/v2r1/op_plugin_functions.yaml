@@ -2067,6 +2067,18 @@ custom:
     impl_ns: acl_op
   - func: npu_sign_bits_unpack(Tensor input, int size, ScalarType dtype) -> Tensor
     impl_ns: acl_op
+  - func: decode_jpeg(Tensor self, int[] image_shape, int channels=3, bool try_recover_truncated=False) -> Tensor
+    impl_ns: acl_op
+  - func: crop_and_resize(Tensor self, float[]? boxes, int[] box_index, int[] crop_size, float extrapolation_value=0, str method="bilinear") -> Tensor
+    impl_ns: acl_op
+  - func: reverse(Tensor self, int[] axis) -> Tensor
+    impl_ns: acl_op
+  - func: image_normalize(Tensor self, float[]? mean, float[]? variance, int dtype=0) -> Tensor
+    impl_ns: acl_op
+  - func: image_normalize_(Tensor(a!) self, float[]? mean, float[]? variance, int dtype=0) -> Tensor(a!)
+    impl_ns: acl_op
+  - func: img_to_tensor(Tensor self) -> Tensor
+    impl_ns: acl_op
   - func: _conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)
     impl_ns: acl_op
   - func: slow_conv_dilated2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)

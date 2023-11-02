@@ -1241,6 +1241,37 @@ c10::SmallVector<int64_t, SIZE> glu_npu_output_size(const at::Tensor &self, int6
     return shape;
 }
 
+c10::SmallVector<int64_t, SIZE> crop_and_resize_npu_output_size(const at::Tensor &self, at::IntArrayRef box_index,
+                                                                at::IntArrayRef crop_size)
+{
+    TORCH_CHECK(self.dim() == 4, "input x dim must be 4");
+    TORCH_CHECK(crop_size.size() == 2, "crop_size size must be 2");
+    int64_t N = static_cast<int64_t>(box_index.size());
+    int64_t H = crop_size[0];
+    int64_t W = crop_size[1];
+    int64_t C = self.size(1);
+
+    c10::SmallVector<int64_t, SIZE> outputSize = {N, C, H, W};
+    return outputSize;
+}
+
+c10::SmallVector<int64_t, SIZE> decode_jpeg_npu_output_size(at::IntArrayRef image_shape, int64_t channels)
+{
+    TORCH_CHECK(image_shape.size() == 3, "image_shape size must be 3");
+    int64_t H = image_shape[0];
+    int64_t W = image_shape[1];
+    int64_t C = image_shape[2];
+
+    c10::SmallVector<int64_t, SIZE> outputSize;
+    if (channels == 0) {
+        outputSize = {C, H, W};
+    } else {
+        outputSize = {channels, H, W};
+    }
+
+    return outputSize;
+}
+
 // This logic is specially made for stride_add, and will be removed in future version.
 c10::SmallVector<int64_t, SIZE> infersize_stride_add(c10::IntArrayRef shape1_, c10::IntArrayRef shape2_)
 {
