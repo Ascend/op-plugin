@@ -1304,9 +1304,9 @@ official:
    impl_ns: acl_op, op_api
  - func: repeat(Tensor self, SymInt[] repeats) -> Tensor
    impl_ns: acl_op, op_api
- - func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
+ - func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, int? output_size=None) -> Tensor
    impl_ns: acl_op, op_api
- - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
+ - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, int? output_size=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: replication_pad1d(Tensor self, SymInt[2] padding) -> Tensor
    impl_ns: acl_op, op_api
@@ -1880,9 +1880,7 @@ symint:
    impl_ns: acl_op, op_api
  - func: _embedding_bag_backward(Tensor grad, Tensor indices, Tensor offsets, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
    impl_ns: acl_op
- - func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
-   impl_ns: acl_op, op_api
- - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
+ - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, int? output_size=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: zeros(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
