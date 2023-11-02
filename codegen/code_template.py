@@ -15,6 +15,8 @@
 # limitations under the License.
 
 import re
+import os
+import stat
 from typing import Match, Optional, Sequence, Mapping
 
 # match $identifier or ${identifier} and replace with value in env
@@ -44,7 +46,23 @@ class CodeTemplate:
     filename: str
 
     @staticmethod
+    def check_dir_path(file_path) -> 'CodeTemplate':
+        """
+        check file path readable.
+        """
+        file_path = os.path.realpath(file_path)
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"The path does not exist: {file_path}")
+        if os.stat(file_path).st_uid != os.getuid():
+            check_msg = input("The path does not belong to you, do you want to continue? [y/n]")
+            if check_msg.lower() != 'y':
+                raise RuntimeError("The user choose not to contiue")
+        if os.path.islink(file_path):
+            raise RuntimeError(f"Invalid path is a soft chain: {file_path}")
+
+    @staticmethod
     def from_file(filename: str) -> 'CodeTemplate':
+        CodeTemplate.check_dir_path(filename)
         with open(filename, 'r') as f:
             return CodeTemplate(f.read(), filename)
 
