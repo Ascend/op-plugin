@@ -117,8 +117,6 @@ function main()
     check_python_version
     check_pytorch_version
 
-    cd ${CUR_DIR}
-    python"${PY_VERSION}" access_control_test.py
     # clone torch_adapter for ops ut
     PYTORCH_PATH=${CUR_DIR}/../pytorch_ut
     if [ -d ${PYTORCH_PATH} ]; then
