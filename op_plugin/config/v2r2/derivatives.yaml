@@ -91,6 +91,7 @@
 
 - name: npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor
   self: npu_dtype_cast_backward(grad, self.scalar_type())
+  output_differentiability: ["isDifferentiableType(dtype)"]
 
 - name: npu_convolution_transpose(Tensor input, Tensor weight, Tensor? bias, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups) -> Tensor
   input, weight, bias: npu_convolution_transpose_backward(input, grad, weight, padding, output_padding, stride, dilation, groups, grad_input_mask)
