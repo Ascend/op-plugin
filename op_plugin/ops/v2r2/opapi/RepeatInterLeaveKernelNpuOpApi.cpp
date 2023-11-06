@@ -80,7 +80,7 @@ at::Tensor repeat_interleave_symint(
     const at::Tensor& self,
     c10::SymInt repeats,
     c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
+    c10::optional<c10::SymInt> output_size) {
   int64_t repeats_int = repeats.expect_int();
   if (dim.has_value()) {
     DO_COMPATIBILITY(aclnnRepeatInterleaveIntWithDim,
@@ -95,10 +95,15 @@ at::Tensor repeat_interleave_symint(
   TORCH_CHECK(repeats_int >= 0, "repeats can not be negative.");
 
   // check output_size value is valid
+  c10::optional<int64_t> _output_size = c10::nullopt;
+  if (output_size.has_value()) {
+    int64_t output_size_val = output_size.value().expect_int();
+    _output_size = c10::optional<int64_t>(output_size_val);
+  }
   auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats_int, dim);
   int64_t cur_dim = wrap_dim(self, dim);
   int64_t output_size_expected = output_shape[cur_dim];
-  at::Tensor result = apply_result_tensor(self, output_shape, dim, output_size);
+  at::Tensor result = apply_result_tensor(self, output_shape, dim, _output_size);
 
   if (dim.has_value()) {
     int64_t real_dim = dim.value_or(0);
@@ -109,15 +114,15 @@ at::Tensor repeat_interleave_symint(
   return result;
 }
 
-at::Tensor repeat_interleave(
+at::Tensor repeat_interleave_symint(
     const at::Tensor& self,
     const at::Tensor& repeats,
     c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
+    c10::optional<c10::SymInt> output_size) {
   if (dim.has_value()) {
-    DO_COMPATIBILITY(aclnnRepeatInterleaveWithDim, acl_op::repeat_interleave(self, repeats, dim, output_size));
+    DO_COMPATIBILITY(aclnnRepeatInterleaveWithDim, acl_op::repeat_interleave_symint(self, repeats, dim, output_size));
   } else {
-    DO_COMPATIBILITY(aclnnRepeatInterleave, acl_op::repeat_interleave(self, repeats, dim, output_size));
+    DO_COMPATIBILITY(aclnnRepeatInterleave, acl_op::repeat_interleave_symint(self, repeats, dim, output_size));
   }
 
   // argument repeat and dim must be valid
@@ -125,10 +130,15 @@ at::Tensor repeat_interleave(
   TORCH_CHECK(check_tensor_repeats(self, repeats, dim), "repeats must have the same size as input along dim");
 
   // check output_size value is valid
+  c10::optional<int64_t> _output_size = c10::nullopt;
+  if (output_size.has_value()) {
+    int64_t output_size_val = output_size.value().expect_int();
+    _output_size = c10::optional<int64_t>(output_size_val);
+  }
   auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats, dim);
   int64_t cur_dim = wrap_dim(self, dim);
   int64_t output_size_expected = output_shape[cur_dim];
-  at::Tensor result = apply_result_tensor(self, output_shape, dim, output_size);
+  at::Tensor result = apply_result_tensor(self, output_shape, dim, _output_size);
 
   if (dim.has_value()) {
     int64_t real_dim = dim.value_or(0);
