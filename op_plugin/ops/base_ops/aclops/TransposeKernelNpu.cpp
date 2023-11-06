@@ -25,52 +25,47 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 
-at::Tensor& npu_transpose_out_nocheck(
-    at::Tensor &result,
-    const at::Tensor &self,
-    at::IntArrayRef perm,
-    bool require_contiguous) {
-  at_npu::native::OpCommand cmd;
-  if (require_contiguous) {
-    // Any tensor-view(discontiguous) Input Tensor from users should be transformed to be contiguous here.
-    cmd.Name("Transpose")
-        .Input(self)
-        .Input(perm)
-        .Output(result)
-        .Run();
-  } else {
-    // For permute-opt in trans-contiguous, it accepts transposed(discontiguous) Input Tensor.
-    cmd.Name("Transpose")
-        .InputWithoutContiguous(self)
-        .Input(perm)
-        .Output(result)
-        .Run();
-  }
-  return result;
+at::Tensor &npu_transpose_out_nocheck(at::Tensor &result, const at::Tensor &self, at::IntArrayRef perm,
+                                      bool require_contiguous)
+{
+    at_npu::native::OpCommand cmd;
+    if (require_contiguous) {
+        // Any tensor-view(discontiguous) Input Tensor from users should be transformed to be contiguous here.
+        cmd.Name("Transpose").Input(self).Input(perm).Output(result).Run();
+    } else {
+        // For permute-opt in trans-contiguous, it accepts transposed(discontiguous) Input Tensor.
+        cmd.Name("Transpose").InputWithoutContiguous(self).Input(perm).Output(result).Run();
+    }
+    return result;
 }
 } // namespace
 
-at::Tensor npu_transpose(const at::Tensor &self, at::IntArrayRef perm, bool require_contiguous) {
-  auto output_size = op_infer::transpose_npu_output_size(self, perm);
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  npu_transpose_out_nocheck(result, self, perm, require_contiguous);
+at::Tensor npu_transpose(const at::Tensor &self, at::IntArrayRef perm, bool require_contiguous)
+{
+    auto output_size = op_infer::transpose_npu_output_size(self, perm);
+    at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+    npu_transpose_out_nocheck(result, self, perm, require_contiguous);
 
-  return result;
+    return result;
 }
 
-at::Tensor& npu_transpose_out(
-    const at::Tensor& self,
-    at::IntArrayRef perm,
-    bool require_contiguous,
-    at::Tensor& result) {
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    npu_transpose_out_nocheck(contiguous_result, self, perm, require_contiguous);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
+at::Tensor &npu_transpose_out(const at::Tensor &self, at::IntArrayRef perm, bool require_contiguous, at::Tensor &result)
+{
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        npu_transpose_out_nocheck(contiguous_result, self, perm, require_contiguous);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        npu_transpose_out_nocheck(result, self, perm, require_contiguous);
+    }
+    return result;
+}
+
+at::Tensor &npu_transpose_trans_contiguous_out(const at::Tensor &self, at::IntArrayRef perm, bool require_contiguous,
+                                               at::Tensor &result)
+{
     npu_transpose_out_nocheck(result, self, perm, require_contiguous);
-  }
-  return result;
+    return result;
 }
 
 } // namespace acl_op
