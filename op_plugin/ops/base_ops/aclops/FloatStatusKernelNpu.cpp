@@ -25,6 +25,11 @@ using npu_preparation = at_npu::native::OpPreparation;
 namespace {
 static const int64_t FLOAT_STATUS_OP_DIMS_SIZE = 8;
 const c10::SmallVector<int64_t, SIZE> output_size = {FLOAT_STATUS_OP_DIMS_SIZE};
+enum CheckOverflowMode {
+    OVERFLOW_ORIGINAL_MODE = 0,
+    OVERFLOW_DEBUG_MODE = 1,
+    OVERFLOW_UNDEFINED_MODE
+};
 } // namespace
 
 at::Tensor npu_alloc_float_status(const at::Tensor& self) {
@@ -38,37 +43,57 @@ at::Tensor npu_alloc_float_status(const at::Tensor& self) {
   return result;
 }
 
-at::Tensor npu_get_float_status(const at::Tensor& self) {
-  npu_op_command cmd;
-  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
-    at::Tensor out_tensor = npu_preparation::apply_tensor_with_format(
-        output_size, self.options().dtype(at::kInt), npu_preparation::get_tensor_npu_format(self));
-    cmd.Name("NPUGetFloatStatusV2")
-        .Output(out_tensor)
-        .Run();
-    return out_tensor;
-  } else {
-    at::Tensor out_tensor = npu_preparation::apply_tensor(self, output_size);
-    cmd.Name("NPUGetFloatStatus")
-        .Input(self)
-        .Output(out_tensor)
-        .Run();
-    return self;
-  }
+at::Tensor npu_get_float_status(const at::Tensor& self, int64_t mode) {
+    TORCH_CHECK((mode >= OVERFLOW_ORIGINAL_MODE && mode < OVERFLOW_UNDEFINED_MODE),
+        "mode only supported for ORIGINAL_MODE(0) DEBUG_MODE(1), but got mode:", mode);
+
+    npu_op_command cmd;
+    if (mode == OVERFLOW_ORIGINAL_MODE) {
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+            at::Tensor out_tensor = npu_preparation::apply_tensor_with_format(
+                output_size, self.options().dtype(at::kInt), npu_preparation::get_tensor_npu_format(self));
+            cmd.Name("NPUGetFloatStatusV2")
+                .Output(out_tensor)
+                .Run();
+            return out_tensor;
+        } else {
+            at::Tensor out_tensor = npu_preparation::apply_tensor(self, output_size);
+            cmd.Name("NPUGetFloatStatus")
+                .Input(self)
+                .Output(out_tensor)
+                .Run();
+            return self;
+        }
+    } else {
+        at::Tensor out_tensor = npu_preparation::apply_tensor_with_format(
+            output_size, self.options().dtype(at::kInt), npu_preparation::get_tensor_npu_format(self));
+        cmd.Name("NPUGetFloatDebugStatus")
+            .Output(out_tensor)
+            .Run();
+       return out_tensor;
+    }
 }
 
-at::Tensor npu_clear_float_status(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  npu_op_command cmd;
-  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
-    cmd.Name("NPUClearFloatStatusV2")
-        .Run();
-  } else {
-    cmd.Name("NPUClearFloatStatus")
-        .Input(self)
-        .Output(result)
-        .Run();
-  }
-  return result;
+at::Tensor npu_clear_float_status(const at::Tensor& self, int64_t mode) {
+    TORCH_CHECK((mode >= OVERFLOW_ORIGINAL_MODE && mode < OVERFLOW_UNDEFINED_MODE),
+        "mode only supported for ORIGINAL_MODE(0) DEBUG_MODE(1), but got mode:", mode);
+
+    at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+    npu_op_command cmd;
+    if (mode == OVERFLOW_ORIGINAL_MODE) {
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+            cmd.Name("NPUClearFloatStatusV2")
+                .Run();
+        } else {
+            cmd.Name("NPUClearFloatStatus")
+                .Input(self)
+                .Output(result)
+                .Run();
+        }
+    } else {
+        cmd.Name("NPUClearFloatDebugStatus")
+            .Run();
+    }
+    return result;
 }
 } // namespace acl_op
