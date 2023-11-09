@@ -110,8 +110,8 @@ at::Tensor dropout_gen_mask(const at::Tensor &self, double keep_prob, int64_t he
     if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const auto gen = at_npu::detail::getDefaultNPUGenerator();
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
-        seed = pair.first;
-        offset = pair.second;
+        seed = static_cast<int64_t>(pair.first);
+        offset = static_cast<int64_t>(pair.second);
         drop_mask = dropout_gen_mask_dispatch(self, at::Scalar(keep_prob), at::Scalar(seed),
             offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
@@ -344,7 +344,7 @@ at::Tensor npu_prompt_flash_attention(
     // convert str
     std::string input_layout_str = std::string(input_layout);
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
-    
+
     auto actSeqLen = (actual_seq_lengths.has_value()) ? actual_seq_lengths.value().vec() : std::vector<at::IntArrayRef::value_type>{};
 
     // dispatch hostAPI
