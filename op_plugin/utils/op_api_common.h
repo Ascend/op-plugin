@@ -448,8 +448,6 @@ template <typename T, typename... Args> void add_param_to_buf(const T &arg, Args
     add_param_to_buf(args...);
 }
 
-uint64_t calc_hash_id();
-
 #define DO_COMPATIBILITY(aclnn_api, originCallExpression)                                                              \
     do {                                                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(#aclnn_api "GetWorkspaceSize");                  \
@@ -464,23 +462,23 @@ uint64_t calc_hash_id();
 typedef int (*InitHugeMemThreadLocal)(void *, bool);
 typedef void (*UnInitHugeMemThreadLocal)(void *, bool);
 typedef void (*ReleaseHugeMem)(void *, bool);
-typedef aclOpExecutor *(*PTAGetExecCache)(uint64_t, uint64_t *);
+typedef aclOpExecutor *(*PTAFindExecCache)(uint8_t *, size_t, uint64_t *);
 typedef void (*InitPTACacheThreadLocal)();
-typedef void (*SetPTAHashKey)(uint64_t);
+typedef void (*SetPTACacheHashKey)(uint8_t *, size_t);
 typedef bool (*CanUsePTACache)(const char *);
 
 template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *aclnn_api, void *phrase2, Args &&...args)
 {
-    static const auto ptaGetExecCacheAddr = GetOpApiFuncAddr("PTAGetExecCache");
+    static const auto ptaFindExecCacheAddr = GetOpApiFuncAddr("PTAFindExecCache");
     static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");
-    static const auto setPTAHashKeyAddr = GetOpApiFuncAddr("SetPTAHashKey");
+    static const auto setPTACacheHashKeyAddr = GetOpApiFuncAddr("SetPTACacheHashKey");
     static const auto canUsePTACacheAddr = GetOpApiFuncAddr("CanUsePTACache");
-    PTAGetExecCache ptaGetExecCacheFunc = reinterpret_cast<PTAGetExecCache>(ptaGetExecCacheAddr);
+    PTAFindExecCache ptaFindExecCacheFunc = reinterpret_cast<PTAFindExecCache>(ptaFindExecCacheAddr);
     InitPTACacheThreadLocal initPTACacheThreadLocalFunc =
         reinterpret_cast<InitPTACacheThreadLocal>(initPTACacheThreadLocalAddr);
-    SetPTAHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTAHashKey>(setPTAHashKeyAddr);
+    SetPTACacheHashKey setPTACacheHashKeyFunc = reinterpret_cast<SetPTACacheHashKey>(setPTACacheHashKeyAddr);
     CanUsePTACache canUsePTACacheFunc = reinterpret_cast<CanUsePTACache>(canUsePTACacheAddr);
-    bool has_func = ptaGetExecCacheFunc && initPTACacheThreadLocalFunc && setPTAHashKeyFunc;
+    bool has_func = ptaFindExecCacheFunc && initPTACacheThreadLocalFunc && setPTACacheHashKeyFunc;
     bool can_use = canUsePTACacheFunc && canUsePTACacheFunc(aclnn_api);
     if (!has_func || !can_use) {
         return false;
@@ -490,9 +488,9 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
     initPTACacheThreadLocalFunc();
     g_hash_offset = 0;
     add_param_to_buf(std::string(aclnn_api), args...);
-    uint64_t hashId = calc_hash_id();
-    setPTAHashKeyFunc(hashId);
-    aclOpExecutor *executor = ptaGetExecCacheFunc(hashId, workspace_size_addr);
+    setPTACacheHashKeyFunc(reinterpret_cast<uint8_t *>(g_hash_buf), g_hash_offset);
+    aclOpExecutor *executor = ptaFindExecCacheFunc(reinterpret_cast<uint8_t *>(g_hash_buf),
+        g_hash_offset, workspace_size_addr);
     if (executor == nullptr) {
         return false;
     }
@@ -577,7 +575,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         static const auto unInitMemAddr = GetOpApiFuncAddr("UnInitHugeMemThreadLocal");                                \
         static const auto releaseMemAddr = GetOpApiFuncAddr("ReleaseHugeMem");                                         \
         static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");                   \
-        static const auto setPTAHashKeyAddr = GetOpApiFuncAddr("SetPTAHashKey");                                       \
+        static const auto setPTACacheHashKeyAddr = GetOpApiFuncAddr("SetPTACacheHashKey");                             \
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.");                                                                                     \
@@ -590,10 +588,10 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);            \
         InitPTACacheThreadLocal initPTACacheThreadLocalFunc =                                                          \
             reinterpret_cast<InitPTACacheThreadLocal>(initPTACacheThreadLocalAddr);                                    \
-        SetPTAHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTAHashKey>(setPTAHashKeyAddr);                          \
+        SetPTACacheHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTACacheHashKey>(setPTACacheHashKeyAddr);           \
         if (initPTACacheThreadLocalFunc && setPTAHashKeyFunc) {                                                        \
             initPTACacheThreadLocalFunc();                                                                             \
-            setPTAHashKeyFunc(0);                                                                                      \
+            setPTAHashKeyFunc(nullptr, 0);                                                                             \
         }                                                                                                              \
         if (initMemFunc) {                                                                                             \
             initMemFunc(nullptr, false);                                                                               \
@@ -680,7 +678,7 @@ private:
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(workspaceSizeApiName);                           \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(apiName);                                                   \
         static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");                   \
-        static const auto setPTAHashKeyAddr = GetOpApiFuncAddr("SetPTAHashKey");                                       \
+        static const auto setPTACacheHashKeyAddr = GetOpApiFuncAddr("SetPTACacheHashKey");                             \
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " and ",              \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.");                                                                                     \
@@ -691,10 +689,10 @@ private:
         aclOpExecutor **executor_addr = &executor;                                                                     \
         InitPTACacheThreadLocal initPTACacheThreadLocalFunc =                                                          \
             reinterpret_cast<InitPTACacheThreadLocal>(initPTACacheThreadLocalAddr);                                    \
-        SetPTAHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTAHashKey>(setPTAHashKeyAddr);                          \
+        SetPTACacheHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTACacheHashKey>(setPTACacheHashKeyAddr);           \
         if (initPTACacheThreadLocalFunc && setPTAHashKeyFunc) {                                                        \
             initPTACacheThreadLocalFunc();                                                                             \
-            setPTAHashKeyFunc(0);                                                                                      \
+            setPTAHashKeyFunc(nullptr, 0);                                                                             \
         }                                                                                                              \
         auto converted_params = ConvertTypes(args..., workspace_size_addr, executor_addr);                             \
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
