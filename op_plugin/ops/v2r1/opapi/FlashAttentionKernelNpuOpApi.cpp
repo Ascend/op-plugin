@@ -139,7 +139,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     double keep_prob,
     int64_t pre_tockens,
     int64_t next_tockens,
-    int64_t inner_precise)
+    int64_t inner_precise,
+    c10::OptionalIntArrayRef prefix,
+    int64_t sparse_mode)
 {
     double scale = scale_value;
 
@@ -151,6 +153,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     const at::Tensor &softmax_sum_const = softmax_sum.value_or(at::Tensor());
     const at::Tensor &softmax_const = softmax_in.value_or(at::Tensor());
     const at::Tensor &attention_const = attention_in.value_or(at::Tensor());
+    auto prefixN = prefix.value_or(at::IntArrayRef{});
 
     at::Tensor format_query = format_trans(query);
     at::Tensor format_key = format_trans(key);
@@ -178,9 +181,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
 
     EXEC_NPU_NO_FORMAT_CHECK_CMD(
         aclnnFlashAttentionScoreGrad, format_query, format_key, format_value, format_dy,
-        format_pse, format_drop_mask, format_padding_mask, format_atten_mask,
-        format_softmax_max, format_softmax_sum, format_softmax, format_attention, scale_value, keep_prob,
-        pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise, dq, dk, dv, dpse);
+        format_pse, format_drop_mask, format_padding_mask, format_atten_mask, format_softmax_max,
+        format_softmax_sum, format_softmax, format_attention, prefixN, scale_value, keep_prob,
+        pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise, sparse_mode, dq, dk, dv, dpse);
 
     if (!format_pse.defined()) {
         at::Tensor dpse_required;
@@ -212,6 +215,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     int64_t seed,
     int64_t offset,
     int64_t numels,
+    c10::OptionalIntArrayRef prefix,
+    int64_t sparse_mode,
     bool gen_mask_parallel,
     bool sync)
 {
@@ -220,6 +225,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     TORCH_CHECK(value.dim() == 3, "The shapes of the input value should be 3-dimensional, but got ", value.dim(), "-dimensional");
     TORCH_CHECK(dy.dim() == 3, "The shapes of the input dy should be 3-dimensional, but got ", dy.dim(), "-dimensional");
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
+    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparse_mode);
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
         c = toupper(c);
@@ -237,7 +243,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     auto result = npu_fusion_attention_backward(query,
         key, value, dy, head_num, input_layout_str, pse, drop_mask, padding_mask, atten_mask,
         softmax_max, softmax_sum, softmax_in, attention_in, scale_value,
-        keep_prob, pre_tockens, next_tockens, inner_precise);
+        keep_prob, pre_tockens, next_tockens, inner_precise, prefix, sparse_mode);
     if (!sync) {
         c10_npu::NPUEvent npu_event;
         npu_event.record(c10_npu::getCurrentNPUStream());
@@ -253,16 +259,18 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const c10::optional<at::Tensor> &pse_opt, const c10::optional<at::Tensor> &padding_mask_opt,
     const c10::optional<at::Tensor> &atten_mask_opt,
     double scale, double keep_prob, int64_t pre_tockens, int64_t next_tockens, int64_t inner_precise,
-    bool gen_mask_parallel, bool sync)
+    c10::OptionalIntArrayRef prefix_opt, int64_t sparse_mode, bool gen_mask_parallel, bool sync)
 {
     const at::Tensor &pse = pse_opt.value_or(at::Tensor());
     const at::Tensor &padding_mask = padding_mask_opt.value_or(at::Tensor());
     const at::Tensor &atten_mask = atten_mask_opt.value_or(at::Tensor());
+    auto prefixN = prefix_opt.value_or(at::IntArrayRef{});
 
     TORCH_CHECK(query.dim() == 3, "The shapes of the input query should be 3-dimensional, but got ", query.dim(), "-dimensional");
     TORCH_CHECK(key.dim() == 3, "The shapes of the input key should be 3-dimensional, but got ", key.dim(), "-dimensional");
     TORCH_CHECK(value.dim() == 3, "The shapes of the input value should be 3-dimensional, but got ", value.dim(), "-dimensional");
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
+    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparse_mode);
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
         c = toupper(c);
@@ -315,9 +323,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
 
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore, format_query, format_key, format_value,
-        format_pse, format_drop_mask, format_padding_mask, format_atten_mask,
+        format_pse, format_drop_mask, format_padding_mask, format_atten_mask, prefixN,
         scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise,
-        softmax_max, softmax_sum, softmax_out, attention_score);
+        sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
 
     if (!sync) {
         c10_npu::NPUEvent npu_event;
