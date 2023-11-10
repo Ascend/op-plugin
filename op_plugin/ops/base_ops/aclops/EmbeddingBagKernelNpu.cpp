@@ -55,7 +55,8 @@ string get_mode_str(const int64_t mode)
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_out_npu_nocheck(
     const at::Tensor &weight, const at::Tensor &indices, const at::Tensor &offsets, bool scale_grad_by_freq,
     int64_t mode, bool sparse, const at::Tensor &per_sample_weights, bool include_last_offset, int64_t padding_idx,
-    at::Tensor &output, at::Tensor &offset2bag, at::Tensor &bag_size, at::Tensor &max_indices)
+    at::Tensor &output, at::Tensor &offset2bag, at::Tensor &bag_size, at::Tensor &max_indices,
+    const at::Tensor &indices_ori, const at::Tensor &offsets_ori)
 {
     string mode_str = get_mode_str(mode);
     at_npu::native::OpCommand cmd;
@@ -88,8 +89,16 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_out_np
     if (mode_str == "sum" && padding_idx == -1) {
         offset2bag = npu_preparation::apply_tensor(indices, 0);
     }
+    at::Tensor offset2bag_cast = const_cast<at::Tensor &>(offset2bag);
+    at::Tensor bag_size_cast = const_cast<at::Tensor &>(bag_size);
+    at::Tensor max_indices_cast = const_cast<at::Tensor &>(max_indices);
+    if (indices_ori.dtype() == at::kLong || offsets_ori.dtype() == at::kLong) {
+        offset2bag_cast = offset2bag_cast.to(at::kLong);
+        bag_size_cast = bag_size_cast.to(at::kLong);
+        max_indices_cast = max_indices_cast.to(at::kLong);
+    }
 
-    return std::tie(output, offset2bag, bag_size, max_indices);
+    return std::tie(output, offset2bag_cast, bag_size_cast, max_indices_cast);
 }
 } // namespace
 
@@ -143,7 +152,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag(
 
     return _embedding_bag_out_npu_nocheck(weight, indices_cast, offsets_cast, scale_grad_by_freq, mode, sparse,
                                           per_sample_weights_core, include_last_offset, padding_idx, output_tensor,
-                                          offset2bag, bag_size, max_indices);
+                                          offset2bag, bag_size, max_indices, indices, offsets);
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_forward_only(
@@ -196,6 +205,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_forwar
 
     return _embedding_bag_out_npu_nocheck(weight, indices_cast, offsets_cast, scale_grad_by_freq, mode, sparse,
                                           per_sample_weights_core, include_last_offset, padding_idx, output_tensor,
-                                          offset2bag, bag_size, max_indices);
+                                          offset2bag, bag_size, max_indices, indices, offsets);
 }
 } // namespace acl_op
