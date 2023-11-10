@@ -89,10 +89,9 @@ function main()
 
     # clone torch_adapter for ops ut
     PYTORCH_PATH=${CUR_DIR}/../pytorch_ut
-    if [ -d ${PYTORCH_PATH} ]; then
-        rm -r ${PYTORCH_PATH}
+    if [ ! -d ${PYTORCH_PATH} ]; then
+        git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
     fi
-    git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
 
     # copy modify_files.txt to torch_adapter/ci
     cp ${CUR_DIR}/../modify_files.txt ${PYTORCH_PATH}/
