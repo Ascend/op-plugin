@@ -8288,6 +8288,10 @@ nn.functional.embedding_bag:
   - float32
   test_fake_autocast:
   - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_forward_ad:
   - float32
   test_neg_view:
