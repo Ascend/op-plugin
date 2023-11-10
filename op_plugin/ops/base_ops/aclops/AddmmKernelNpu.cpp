@@ -75,8 +75,7 @@ void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bo
 
 bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool is_support_nd_out)
 {
-    if (!is_support_nd_out || !(self.dtype() == at::ScalarType::Half && mat2.dtype() == at::ScalarType::Half) ||
-        !(format_helper::GetFormat(self) == ACL_FORMAT_ND && format_helper::GetFormat(mat2) == ACL_FORMAT_ND)) {
+    if (!is_support_nd_out || !(self.dtype() == at::ScalarType::Half && mat2.dtype() == at::ScalarType::Half)) {
         return true;
     }
     // split_k rule, maybe modified afterwards
