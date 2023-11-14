@@ -78,7 +78,11 @@ static tensor_list3 _calc_convolution_backward(const at::Tensor &grad_output, co
 
     gradInput = npu_preparation::apply_tensor_without_format(std::get<0>(outputSizes), input.options());
     gradWeight = npu_preparation::apply_tensor_without_format(std::get<1>(outputSizes), weight.options());
-    gradBias = npu_preparation::apply_tensor_without_format(std::get<2>(outputSizes), grad_output.options());
+    if (output_mask[2]) {
+        gradBias = npu_preparation::apply_tensor_without_format(*bias_sizes_opt, grad_output.options());
+    } else {
+        gradBias = npu_preparation::apply_tensor_without_format(std::get<2>(outputSizes), grad_output.options());
+    }
 
     EXEC_NPU_CMD(aclnnConvolutionBackward, grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                  transposed, output_padding, groups, output_mask, cube_math_type, gradInput, gradWeight, gradBias);

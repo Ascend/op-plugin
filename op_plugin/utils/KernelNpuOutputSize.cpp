@@ -321,6 +321,7 @@ c10::SmallVector<int64_t, SIZE> conv_transpose1d_npu_output_size(const at::Tenso
     int64_t N = input.size(0);
     int64_t L = input.size(2);
     int64_t C_out = weight.size(1) * groups;
+    C_out = (weight.size(0) != 0) ? C_out : 0;
 
     auto kernel_size = weight.sizes().slice(2);
 
