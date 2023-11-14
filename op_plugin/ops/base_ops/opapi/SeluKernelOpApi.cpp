@@ -23,17 +23,25 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor selu(const at::Tensor& self)
 {
-  DO_COMPATIBILITY(aclnnSelu, acl_op::selu(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnSelu, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnSelu, acl_op::selu(self));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnSelu, self, result);
+    return result;
 }
 
 at::Tensor& selu_(at::Tensor& self)
 {
-  DO_COMPATIBILITY(aclnnInplaceSelu, acl_op::selu_(self));
-  EXEC_NPU_CMD(aclnnInplaceSelu, self);
-  return self;
+    DO_COMPATIBILITY(aclnnInplaceSelu, acl_op::selu_(self));
+    EXEC_NPU_CMD(aclnnInplaceSelu, self);
+    return self;
+}
+
+at::Tensor selu_backward(const at::Tensor& grad_output, const at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnSeluBackward, acl_op::selu_backward(grad_output, result));
+    at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
+    EXEC_NPU_CMD(aclnnSeluBackward, grad_output, result, grad_input);
+    return grad_input;
 }
 
 }  // namespace op_api

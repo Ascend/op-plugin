@@ -2433,7 +2433,7 @@ custom:
   - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
     impl_ns: acl_op
   - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
   - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
@@ -2454,7 +2454,7 @@ custom_supported:
   - func: npu_bounding_box_decode(Tensor rois, Tensor deltas, float means0, float means1, float means2, float means3, float stds0, float stds1, float stds2, float stds3, int[1] max_shape, float wh_ratio_clip) -> Tensor
   - func: npu_broadcast(Tensor self, int[] size) -> Tensor
   - func: npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> Tensor
-  - func: npu_clear_float_status(Tensor self, int mode=0) -> Tensor 
+  - func: npu_clear_float_status(Tensor self, int mode=0) -> Tensor
   - func: npu_confusion_transpose(Tensor self, int[] perm, int[] shape, bool transpose_first) -> Tensor
   - func: npu_conv_transpose2d(Tensor input, Tensor weight, Tensor? bias, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups) -> Tensor
   - func: npu_conv2d(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, int groups) -> Tensor
