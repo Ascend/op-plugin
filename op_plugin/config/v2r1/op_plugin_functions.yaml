@@ -2313,6 +2313,10 @@ custom:
     impl_ns: acl_op, op_api
   - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
     impl_ns: acl_op
+  - func: mm_reduce_scatter_base(Tensor self, Tensor x2, str hcom, int world_size, str reduce_op='sum', Tensor? bias=None, int comm_turn=0) -> Tensor
+    impl_ns: op_api
+  - func: all_gather_base_mm(Tensor self, Tensor x2, str hcom, int world_size, Tensor? bias=None, int gather_index=0, bool gather_output=True, int comm_turn=0) -> (Tensor, Tensor)
+    impl_ns: op_api
   - func: scatter_update(Tensor self, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op, op_api
   - func: scatter_update_(Tensor(a!) self, Tensor indices, Tensor updates, int axis) -> Tensor(a!)
