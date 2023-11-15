@@ -28,7 +28,6 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
   int64_t depth;
   auto self_temp = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
 
-  TORCH_CHECK(self_temp.dim() < 8, "NPU error,can not support the input tensor's dim bigger than 7.");
   if (self.numel() == 0) {
       TORCH_CHECK(num_classes > 0, "Can not infer total number of classes from empty tensor.");
       depth = num_classes;
