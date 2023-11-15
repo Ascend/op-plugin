@@ -1771,7 +1771,7 @@ official:
  - func: binary_cross_entropy_with_logits(Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
    impl_ns: acl_op, op_api
  - func: binary_cross_entropy_with_logits_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: selu(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: selu_(Tensor(a!) self) -> Tensor(a!)
@@ -2413,7 +2413,7 @@ custom:
   - func: _npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_binary_cross_entropy_with_logits_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
   - func: npu_convolution_transpose_backward(Tensor input, Tensor grad, Tensor weight, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups, bool[3] grad_input_mask) -> (Tensor, Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_scaled_masked_softmax_backward(Tensor y_grad, Tensor y, Tensor mask, Scalar scale, bool fixed_triu_mask) -> Tensor
