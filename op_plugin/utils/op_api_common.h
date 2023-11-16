@@ -629,7 +629,10 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
 
 template <typename Tuple> class ConvertedParams {
 public:
-    explicit ConvertedParams(Tuple &&convertedParams) : convertedParams_(std::move(convertedParams)){};
+    explicit ConvertedParams(Tuple &&convertedParams, ReleaseHugeMem releaseMemFunc,
+                             UnInitHugeMemThreadLocal unInitMemFunc) : convertedParams_(std::move(convertedParams)),
+                                                                       releaseMemFunc_(releaseMemFunc),
+                                                                       unInitMemFunc_(unInitMemFunc){};
     ConvertedParams(ConvertedParams &&other) : convertedParams_(std::move(other.convertedParams_))
     {
         other.validParams_ = false;
@@ -654,6 +657,12 @@ public:
     {
         if (validParams_) {
             ReleaseConvertTypes(convertedParams_);
+            if (releaseMemFunc_) {
+                releaseMemFunc_(nullptr, false);
+            }
+            if (unInitMemFunc_) {
+                unInitMemFunc_(nullptr, false);
+            }
         }
     }
 
@@ -669,6 +678,8 @@ public:
 
 private:
     Tuple convertedParams_;
+    ReleaseHugeMem releaseMemFunc_ = nullptr;
+    UnInitHugeMemThreadLocal unInitMemFunc_ = nullptr;
     bool validParams_{true};
 };
 
@@ -679,6 +690,9 @@ private:
     [](const char *apiName, const char *workspaceSizeApiName, auto &...args) -> auto {                                 \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(workspaceSizeApiName);                           \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(apiName);                                                   \
+        static const auto initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");                                    \
+        static const auto unInitMemAddr = GetOpApiFuncAddr("UnInitHugeMemThreadLocal");                                \
+        static const auto releaseMemAddr = GetOpApiFuncAddr("ReleaseHugeMem");                                         \
         static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");                   \
         static const auto setPTAHashKeyAddr = GetOpApiFuncAddr("SetPTAHashKey");                                       \
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " and ",              \
@@ -689,12 +703,18 @@ private:
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
         aclOpExecutor *executor = nullptr;                                                                             \
         aclOpExecutor **executor_addr = &executor;                                                                     \
+        InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);                    \
+        UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);            \
+        ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                              \
         InitPTACacheThreadLocal initPTACacheThreadLocalFunc =                                                          \
             reinterpret_cast<InitPTACacheThreadLocal>(initPTACacheThreadLocalAddr);                                    \
         SetPTAHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTAHashKey>(setPTAHashKeyAddr);                          \
         if (initPTACacheThreadLocalFunc && setPTAHashKeyFunc) {                                                        \
             initPTACacheThreadLocalFunc();                                                                             \
             setPTAHashKeyFunc(0);                                                                                      \
+        }                                                                                                              \
+        if (initMemFunc) {                                                                                             \
+            initMemFunc(nullptr, false);                                                                               \
         }                                                                                                              \
         auto converted_params = ConvertTypes(args..., workspace_size_addr, executor_addr);                             \
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
@@ -716,7 +736,8 @@ private:
         cmd.SetCustomHandler(acl_call);                                                                                \
         cmd.Run();                                                                                                     \
         cmd.Sync();                                                                                                    \
-        return ConvertedParams<decltype(converted_params)>(std::move(converted_params));                               \
+        return ConvertedParams<decltype(converted_params)>(std::move(converted_params),                                \
+            releaseMemFunc, unInitMemFunc);                                                                            \
     }(#aclnn_api, #aclnn_api "GetWorkspaceSize", __VA_ARGS__)
 
 #endif //  TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_H_
