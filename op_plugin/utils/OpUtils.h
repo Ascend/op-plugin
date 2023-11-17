@@ -33,7 +33,8 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, N> convert_array_to_vector(c10::IntAr
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, N> get_dimlist_for_tensor(const at::Tensor &self);
 OP_PLUGIN_HIDDEN int64_t complete_pad(int64_t s_size, int64_t p_size, int64_t k_size, int64_t stride);
 OP_PLUGIN_HIDDEN c10::optional<double> get_scale_value(c10::optional<c10::ArrayRef<double>> scales, int idx);
-OP_PLUGIN_HIDDEN at::ScalarType get_divide_high_type(const at::Tensor& self, const at::Tensor& other);
+OP_PLUGIN_HIDDEN at::ScalarType get_divide_result_type(const at::Tensor& self, const at::Tensor& other);
+OP_PLUGIN_HIDDEN at::ScalarType get_divide_calculate_type(const at::Tensor& self, const at::Tensor& other);
 OP_PLUGIN_HIDDEN at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type);
 }  // namespace utils
 }  // namespace op_plugin

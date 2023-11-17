@@ -675,6 +675,8 @@ _refs.div:
   - float64
   - float64
   - float64
+  test_compare_cpu:
+  - float32
 _refs.dot:
   test_conj_view:
   - complex64
@@ -2127,6 +2129,8 @@ addcdiv:
   - float32
   test_fake_crossref_backward_amp:
   - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_forward_ad:
   - float32
   test_neg_conj_view:
@@ -2136,6 +2140,11 @@ addcdiv:
   test_operator:
   - float32
   test_variant_consistency_eager:
+  - float32
+  - complex64
+  test_compare_cpu:
+  - float32
+  test_pointwise_ops:
   - float32
 addcmul:
   test_backward:
@@ -3866,6 +3875,8 @@ div:
   - float32
   - float32
   - complex64
+  - float32
+  test_compare_cpu:
   - float32
 dot:
   test_conj_view:
@@ -8572,6 +8583,10 @@ nn.functional.kl_div:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
 nn.functional.l1_loss:
   test_backward:
   - float32
@@ -11549,6 +11564,14 @@ true_divide:
   test_variant_consistency_eager:
   - float32
   - complex64
+  test_fake:
+  - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_pointwise_ops:
+  - float32
 trunc:
   test_fake_autocast:
   - float32

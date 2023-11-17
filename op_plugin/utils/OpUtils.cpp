@@ -17,6 +17,7 @@
 #include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
+#include "torch_npu/csrc/aten/mirror/NPUTypeProperties.h"
 
 namespace op_plugin {
 namespace utils {
@@ -159,12 +160,21 @@ c10::optional<double> get_scale_value(c10::optional<c10::ArrayRef<double>> scale
     return scales->at(idx);
 }
 
-at::ScalarType get_divide_high_type(const at::Tensor& self, const at::Tensor& other) {
+at::ScalarType get_divide_result_type(const at::Tensor& self, const at::Tensor& other) {
   at::ScalarType high_type = at::native::result_type(self, other);
   if (isIntegralType(high_type, true)) {
     high_type = at::kFloat;
   }
   return high_type;
+}
+
+at::ScalarType get_divide_calculate_type(const at::Tensor &self, const at::Tensor &other)
+{
+    at::ScalarType calculate_type = at_npu::native::result_type(self.scalar_type(), other.scalar_type());
+    if (isIntegralType(calculate_type, true) || calculate_type == at::kDouble) {
+        calculate_type = at::kFloat;
+    }
+    return calculate_type;
 }
 
 at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type) {
