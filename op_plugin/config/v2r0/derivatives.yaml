@@ -112,6 +112,7 @@
 
 - name: l1_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
   self: l1_loss_backward(grad, self, target, reduction)
+  target: l1_loss_backward(grad, self, target, reduction) * -1
 
 - name: npu_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor)
   output_differentiability: [True, False]
