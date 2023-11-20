@@ -22,10 +22,23 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor &logical_or_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other)
+at::Tensor &logical_or_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Scalar &other)
 {
     at_npu::native::OpCommand cmd;
-    cmd.Name("LogicalOr").Input(self).Input(other).Output(result).Run();
+    cmd.Name("LogicalOr").Input(self).Input(other, self.scalar_type()).Output(result).Run();
+    return result;
+}
+
+at::Tensor &logical_or_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other)
+{
+    if (npu_preparation::IsCPUScalar(self)) {
+        logical_or_out_npu_nocheck(result, other, self.item());
+    } else if (npu_preparation::IsCPUScalar(other)) {
+        logical_or_out_npu_nocheck(result, self, other.item());
+    } else {
+        at_npu::native::OpCommand cmd;
+        cmd.Name("LogicalOr").Input(self).Input(other).Output(result).Run();
+    }
     return result;
 }
 } // namespace
@@ -33,7 +46,7 @@ at::Tensor &logical_or_out_npu_nocheck(at::Tensor &result, const at::Tensor &sel
 at::Tensor &logical_or_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
 {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-    npu_preparation::CheckOut({self}, result, npu_preparation::get_tensor_npu_format(self), result.scalar_type(),
+    npu_preparation::CheckOut({self, other}, result, npu_preparation::get_tensor_npu_format(self), result.scalar_type(),
                               output_size);
 
     if (!npu_utils::check_match(&result)) {
