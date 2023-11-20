@@ -468,6 +468,17 @@ typedef aclOpExecutor *(*PTAGetExecCache)(uint64_t, uint64_t *);
 typedef void (*InitPTACacheThreadLocal)();
 typedef void (*SetPTAHashKey)(uint64_t);
 typedef bool (*CanUsePTACache)(const char *);
+typedef void (*UnInitPTACacheThreadLocal)();
+
+inline void UnInitCacheThreadLocal()
+{
+    static const auto unInitPTACacheThreadLocalAddr = GetOpApiFuncAddr("UnInitPTACacheThreadLocal");
+    UnInitPTACacheThreadLocal unInitPTACacheThreadLocalFunc =
+        reinterpret_cast<UnInitPTACacheThreadLocal>(unInitPTACacheThreadLocalAddr);
+    if (unInitPTACacheThreadLocalFunc) {
+        unInitPTACacheThreadLocalFunc();
+    }
+}
 
 template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *aclnn_api, void *phrase2, Args &&...args)
 {
@@ -511,6 +522,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
     cmd.Name(aclnn_api);
     cmd.SetCustomHandler(acl_call);
     cmd.Run();
+    UnInitCacheThreadLocal();
     return true;
 }
 
@@ -537,6 +549,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         if (hit_cache(acl_stream, #aclnn_api, opApiFuncAddr, __VA_ARGS__)) {                                           \
             break;                                                                                                     \
         }                                                                                                              \
+        at_npu::native::SetDeterministic();                                                                            \
         if (initMemFunc) {                                                                                             \
             initMemFunc(nullptr, false);                                                                               \
         }                                                                                                              \
@@ -567,6 +580,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         if (unInitMemFunc) {                                                                                           \
             unInitMemFunc(nullptr, false);                                                                             \
         }                                                                                                              \
+        UnInitCacheThreadLocal();                                                                                      \
     } while (false)
 
 #define EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnn_api, ...)                                                                   \
@@ -595,6 +609,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
             initPTACacheThreadLocalFunc();                                                                             \
             setPTAHashKeyFunc(0);                                                                                      \
         }                                                                                                              \
+        at_npu::native::SetDeterministic();                                                                            \
         if (initMemFunc) {                                                                                             \
             initMemFunc(nullptr, false);                                                                               \
         }                                                                                                              \
@@ -625,6 +640,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         if (unInitMemFunc) {                                                                                           \
             unInitMemFunc(nullptr, false);                                                                             \
         }                                                                                                              \
+        UnInitCacheThreadLocal();                                                                                      \
     } while (false)
 
 template <typename Tuple> class ConvertedParams {
@@ -713,6 +729,7 @@ private:
             initPTACacheThreadLocalFunc();                                                                             \
             setPTAHashKeyFunc(0);                                                                                      \
         }                                                                                                              \
+        at_npu::native::SetDeterministic();                                                                            \
         if (initMemFunc) {                                                                                             \
             initMemFunc(nullptr, false);                                                                               \
         }                                                                                                              \
@@ -735,6 +752,7 @@ private:
         cmd.Name(apiName);                                                                                             \
         cmd.SetCustomHandler(acl_call);                                                                                \
         cmd.Run();                                                                                                     \
+        UnInitCacheThreadLocal();                                                                                      \
         cmd.Sync();                                                                                                    \
         return ConvertedParams<decltype(converted_params)>(std::move(converted_params),                                \
             releaseMemFunc, unInitMemFunc);                                                                            \
