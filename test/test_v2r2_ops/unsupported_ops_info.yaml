@@ -7213,6 +7213,14 @@ masked_scatter:
   test_variant_consistency_eager:
   - float32
   - complex64
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
 masked_select:
   test_backward:
   - float32
@@ -10102,6 +10110,14 @@ scatter:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
 scatter_add:
   test_backward:
   - float32
@@ -10124,6 +10140,14 @@ scatter_add:
   test_variant_consistency_eager:
   - float32
   - complex64
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
 scatter_reduce:
   test_backward:
   - float32
@@ -10171,6 +10195,14 @@ scatter_reduce:
   - float32
   - float32
   - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
 searchsorted:
   test_fake_autocast:
   - float32
@@ -10214,6 +10246,8 @@ select_scatter:
   test_operator:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_pointwise_ops:
   - float32
 sgn:
   test_backward:
@@ -10441,6 +10475,8 @@ slice_scatter:
   test_operator:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_pointwise_ops:
   - float32
 softmax:
   test_backward:
