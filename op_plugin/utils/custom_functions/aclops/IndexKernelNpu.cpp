@@ -40,56 +40,20 @@ at_npu::native::DynamicInputRegFunc index_func = [](DyNumAndIndex num_and_index,
 // Limitations of the aicore branch
 bool check_index_aicore(const at::Tensor &self, const at::TensorList &indices, const at::IntArrayRef masks)
 {
-    // This is non-first-axis index
-    if (indices[0].scalar_type() == at::kLong && masks[0] == 0 && masks[1] == 1 && masks.size() == 2 &&
-        indices[0].dim() == 1 && self.dim() == 2) {
-        return true;
-    }
-
-    // The input of the aicore does not support float64.
-    // Indices should start from dimension 0 of x and continuous.
-    if (self.scalar_type() == at::kDouble || masks[0] == 0 || masks.size() > indices.size()) {
-        return false;
-    }
-
-    if (indices.size() > 1) {
-        // The dtype of indices only support int64, and all indices's shape is (n,).
-        if (indices[0].scalar_type() != at::kLong || indices[0].dim() != 1) {
+    // indices must have same shape
+    for (uint64_t idx = 1; idx < indices.size(); idx++) {
+        if (indices[idx].sizes() != indices[idx - 1].sizes()) {
             return false;
         }
-
-        for (uint64_t idx = 1; idx < indices.size(); idx++) {
-            if (indices[idx].scalar_type() != at::kLong || indices[idx].dim() != 1 ||
-                indices[idx].sizes() != indices[idx - 1].sizes()) {
-                return false;
-            }
-        }
-
-        if (static_cast<uint64_t>(self.dim()) == indices.size()) {
-            return true;
-        }
-
-        if (static_cast<uint64_t>(self.dim()) >= indices.size()) {
-            if (masks.size() != indices.size()) {
-                return false;
-            }
-
-            for (uint64_t idx = 0; idx < masks.size(); idx++) {
-                if (masks[idx] != 1) {
-                    return false;
-                }
-            }
-            return true;
-        }
     }
 
-    if (indices.size() < 2) {
-        if (indices[0].scalar_type() == at::kLong && indices[0].dim() == 1) {
-            // Relax the scene : the dtype of indices is int64, the shape of the indices is 1d.
-            return true;
+    // only supports continuous indices
+    for (uint64_t idx = 1; idx < masks.size(); idx++) {
+        if (masks[idx] - masks[idx - 1] < 0) {
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 at::Tensor &index_out_nocheck(const at::Tensor &self, const at::IntArrayRef masks, const at::TensorList &indices,
