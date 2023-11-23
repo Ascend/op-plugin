@@ -210,6 +210,8 @@ def parse_native_yaml_struct(
         all_funcs += es['official']
     if es['custom']:
         all_funcs += es['custom']
+    if ('quant' in es) and es['quant']:
+        all_funcs += es['quant']
 
     if not isinstance(all_funcs, list):
         raise TypeError("all_funcs must be a list")
