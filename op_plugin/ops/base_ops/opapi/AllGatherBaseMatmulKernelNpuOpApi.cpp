@@ -34,10 +34,10 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size_gather(const at
     return {gather_out.size(0) * world_size, gather_out.size(1)};
 }
 
-std::tuple<at::Tensor, at::Tensor> all_gather_base_mm(const at::Tensor &self, const at::Tensor &x2,
-                                                      c10::string_view hcom, int64_t world_size,
-                                                      const c10::optional<at::Tensor> &bias, int64_t gather_index,
-                                                      bool gather_output, int64_t comm_turn)
+std::tuple<at::Tensor, at::Tensor> npu_all_gather_base_mm(const at::Tensor &self, const at::Tensor &x2,
+                                                          c10::string_view hcom, int64_t world_size,
+                                                          const c10::optional<at::Tensor> &bias, int64_t gather_index,
+                                                          bool gather_output, int64_t comm_turn)
 {
     TORCH_CHECK(self.dim() == 2 && x2.dim() == 2, "Both inputs of mm are required to be 2D, but the actual inputs are ",
                 self.dim(), "D and ", x2.dim(), "D");

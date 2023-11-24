@@ -23,7 +23,7 @@ class TestMmReduceScatterBase(TestCase):
         return dist
 
     @classmethod
-    def _test_mm_reduce_scatter_base(cls, rank, input_list):
+    def _test_npu_mm_reduce_scatter_base(cls, rank, input_list):
         x1, x2, world_size, init_pg, c2p = input_list
         pg = init_pg(rank, world_size)
         group = pg.distributed_c10d._get_default_group()
@@ -34,7 +34,7 @@ class TestMmReduceScatterBase(TestCase):
 
         x1 = x1.npu()
         x2 = x2.npu()
-        out = torch_npu.mm_reduce_scatter_base(x1,
+        out = torch_npu.npu_mm_reduce_scatter_base(x1,
                                                x2,
                                                hcom_name,
                                                world_size,
@@ -81,7 +81,7 @@ class TestMmReduceScatterBase(TestCase):
         return [out[index * i:index * (i + 1), :] for i in range(world_size)]
 
     @skipIfUnsupportMultiNPU(8)
-    def test_mm_reduce_scatter_base(self):
+    def test_npu_mm_reduce_scatter_base(self):
         world_size = 8
         dtype = np.float16
         data_format = -1
@@ -95,7 +95,7 @@ class TestMmReduceScatterBase(TestCase):
             x1_list.append(x1)
             x2_list.append(x2)
         expt_out_list = self._construct_excepted_result(x1_list, x2_list, world_size)
-        self._test_multiprocess(TestMmReduceScatterBase._test_mm_reduce_scatter_base,
+        self._test_multiprocess(TestMmReduceScatterBase._test_npu_mm_reduce_scatter_base,
                                 TestMmReduceScatterBase._init_dist_hccl, [expt_out_list, x1_list, x2_list, world_size])
 
 

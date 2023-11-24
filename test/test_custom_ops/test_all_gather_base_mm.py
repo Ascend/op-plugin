@@ -23,7 +23,7 @@ class TestAllGatherBaseMm(TestCase):
         return dist
 
     @classmethod
-    def _test_all_gather_base_mm(cls, rank, input_list):
+    def _test_npu_all_gather_base_mm(cls, rank, input_list):
         x1, x2, world_size, init_pg, c2p = input_list
         pg = init_pg(rank, world_size)
         group = pg.distributed_c10d._get_default_group()
@@ -34,14 +34,14 @@ class TestAllGatherBaseMm(TestCase):
 
         x1 = x1.npu()
         x2 = x2.npu()
-        out, gather_out = torch_npu.all_gather_base_mm(x1,
-                                                       x2,
-                                                       hcom_name,
-                                                       world_size,
-                                                       bias=None,
-                                                       gather_index=0,
-                                                       gather_output=True,
-                                                       comm_turn=0)
+        out, gather_out = torch_npu.npu_all_gather_base_mm(x1,
+                                                           x2,
+                                                           hcom_name,
+                                                           world_size,
+                                                           bias=None,
+                                                           gather_index=0,
+                                                           gather_output=True,
+                                                           comm_turn=0)
 
         c2p.put((rank, out.cpu(), gather_out.cpu()))
         pg.barrier()
@@ -78,7 +78,7 @@ class TestAllGatherBaseMm(TestCase):
         return out_list, gather_out
 
     @skipIfUnsupportMultiNPU(8)
-    def test_all_gather_base_mm(self):
+    def test_npu_all_gather_base_mm(self):
         world_size = 8
         dtype = np.float16
         data_format = -1
@@ -92,7 +92,7 @@ class TestAllGatherBaseMm(TestCase):
             x1_list.append(x1)
             x2_list.append(x2)
         expt_out_list, expt_gather = self._construct_excepted_result(x1_list, x2_list, world_size)
-        self._test_multiprocess(TestAllGatherBaseMm._test_all_gather_base_mm,
+        self._test_multiprocess(TestAllGatherBaseMm._test_npu_all_gather_base_mm,
                                 TestAllGatherBaseMm._init_dist_hccl, [expt_out_list, expt_gather, x1, x2, world_size])
 
 
