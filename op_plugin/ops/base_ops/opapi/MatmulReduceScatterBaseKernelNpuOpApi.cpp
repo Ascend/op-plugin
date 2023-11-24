@@ -23,7 +23,8 @@ at::Tensor npu_mm_reduce_scatter_base(const at::Tensor &self, const at::Tensor &
                                       int64_t world_size, c10::string_view reduce_op,
                                       const c10::optional<at::Tensor> &bias, int64_t comm_turn)
 {
-    TORCH_CHECK(world_size > 0, "world_size should be greater than 0, but the actual value is ", world_size);
+    TORCH_CHECK(world_size == 2 || world_size == 4 || world_size == 8,
+                "world_size should be 2 or 4 or 8, but the actual value is ", world_size);
     TORCH_CHECK(self.dim() == 2 && x2.dim() == 2, "Both inputs of mm are required to be 2D, but the actual inputs are ",
                 self.dim(), "D and ", x2.dim(), "D");
     TORCH_CHECK(self.size(1) == x2.size(0),

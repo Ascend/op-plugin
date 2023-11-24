@@ -39,6 +39,8 @@ std::tuple<at::Tensor, at::Tensor> npu_all_gather_base_mm(const at::Tensor &self
                                                           const c10::optional<at::Tensor> &bias, int64_t gather_index,
                                                           bool gather_output, int64_t comm_turn)
 {
+    TORCH_CHECK(world_size == 2 || world_size == 4 || world_size == 8,
+                "world_size should be 2 or 4 or 8, but the actual value is ", world_size);
     TORCH_CHECK(self.dim() == 2 && x2.dim() == 2, "Both inputs of mm are required to be 2D, but the actual inputs are ",
                 self.dim(), "D and ", x2.dim(), "D");
     TORCH_CHECK(self.size(1) == x2.size(0),
