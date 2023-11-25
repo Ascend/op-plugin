@@ -17,14 +17,26 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace acl_op {
-at::Tensor& isneginf_out(const at::Tensor &self, at::Tensor &out) {
-  // convert args to cpu in order to use at::native kernel
-  TORCH_NPU_WARN_ONCE("Warning: kernel [isneginf.out] is not supported by NPU currently. Now this kernel is running on CPU.");
-  const auto self_cpu = self.cpu();
-  auto out_cpu = out.cpu();
-  out_cpu = at::isneginf_out(out_cpu, self_cpu);
-  out.copy_(out_cpu);
-  return out;
+namespace acl_op
+{
+
+at::Tensor isneginf(const at::Tensor &self)
+{
+    // convert args to cpu in order to use at kernel
+    TORCH_NPU_WARN_ONCE("Warning: kernel [isneginf] is not supported by NPU currently. Now this kernel is running on CPU.");
+    const auto self_cpu = self.cpu();
+    auto result = at::isneginf(self_cpu);
+    return result.to(self.device());
+}
+
+at::Tensor& isneginf_out(const at::Tensor &self, at::Tensor &out)
+{
+    // convert args to cpu in order to use at kernel
+    TORCH_NPU_WARN_ONCE("Warning: kernel [isneginf.out] is not supported by NPU currently. Now this kernel is running on CPU.");
+    const auto self_cpu = self.cpu();
+    auto out_cpu = out.cpu();
+    out_cpu = at::isneginf_out(out_cpu, self_cpu);
+    out.copy_(out_cpu);
+    return out;
 }
 }  // acl_op

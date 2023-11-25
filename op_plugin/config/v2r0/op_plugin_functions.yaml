@@ -782,6 +782,10 @@ official:
    impl_ns: acl_op
  - func: isfinite(Tensor self) -> Tensor
    impl_ns: acl_op
+ - func: isposinf(Tensor self) -> Tensor
+   impl_ns: acl_op
+ - func: isneginf(Tensor self) -> Tensor
+   impl_ns: acl_op
  - func: isposinf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: isneginf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
