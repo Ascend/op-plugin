@@ -123,6 +123,10 @@
   output_differentiability: [True, False]
   self, gamma: npu_rms_norm_backward(grad, self, gamma, result1)
 
+- name: npu_add_layer_norm(Tensor x1, Tensor x2, Tensor gamma, Tensor beta, float epsilon=1e-05, bool additional_output=False) -> (Tensor, Tensor, Tensor, Tensor)
+  output_differentiability: [True, False, False, False]
+  x1, x2, gamma, beta: npu_add_layer_norm_backward(grad, x1, x2, result2, result1, gamma)
+
 - name: _npu_format_cast(Tensor self, int acl_format) -> Tensor
   self: grad
 
