@@ -21,6 +21,7 @@
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
 #include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -44,6 +45,11 @@ const std::string aicore_str = "AiCore";
 bool is_aicpu_valid(const at::Tensor &self, const std::vector<at::Tensor> &all_defined_indices,
                     const at::SmallVector<int64_t, N> masks)
 {
+    // using aicpu at non-binary scene
+    if (!at_npu::native::env::CheckJitDisable() &&
+        c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
+        return true;
+    }
     // using aicore when index is continous, otherwise aicpu
     bool is_zero_in_masks = false;
     for (uint32_t i = 0; i < masks.size(); i++) {
