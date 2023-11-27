@@ -366,6 +366,8 @@ addcmul:
   - complex128
   test_neg_view:
   - float64
+  test_variant_consistency_eager:
+  - complex64
 _refs.xlogy:
   test_compare_cpu:
   - float32

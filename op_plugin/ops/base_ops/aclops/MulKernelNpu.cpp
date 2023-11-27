@@ -92,8 +92,18 @@ at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
     calculate_type = at::kFloat;
   }
 
-  at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
-  at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
+    at::Tensor self_cast = self;
+    at::Tensor other_cast = other;
+    if (self.scalar_type() != calculate_type) {
+        self_cast = npu_preparation::IsCPUScalar(self) ?
+                        self.to(calculate_type) :
+                        at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
+    }
+    if (other.scalar_type() != calculate_type) {
+        other_cast = npu_preparation::IsCPUScalar(other) ?
+                         other.to(calculate_type) :
+                         at_npu::native::custom_ops::npu_dtype_cast(other, calculate_type);
+    }
 
   bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self_cast) || npu_preparation::IsCPUScalar(self_cast);
   at::Tensor output_tensor = is_self_wrapped ? other_cast : self_cast;
