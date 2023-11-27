@@ -2312,6 +2312,8 @@ custom:
     impl_ns: acl_op
   - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
     impl_ns: acl_op
+  - func: npu_mm_all_reduce_base(Tensor self, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, int comm_turn=0) -> Tensor
+    impl_ns: op_api
   - func: scatter_update(Tensor self, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op, op_api
   - func: scatter_update_(Tensor(a!) self, Tensor indices, Tensor updates, int axis) -> Tensor(a!)

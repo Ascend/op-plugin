@@ -2473,6 +2473,8 @@ custom:
     impl_ns: op_api
   - func: npu_all_gather_base_mm(Tensor self, Tensor x2, str hcom, int world_size, *, Tensor? bias=None, int gather_index=0, bool gather_output=True, int comm_turn=0) -> (Tensor, Tensor)
     impl_ns: op_api
+  - func: npu_mm_all_reduce_base(Tensor self, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, int comm_turn=0) -> Tensor
+    impl_ns: op_api
   - func: l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
     impl_ns: acl_op
   - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
