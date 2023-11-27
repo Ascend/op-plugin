@@ -59,7 +59,8 @@ static at::Tensor &inplace_add_out_npu_no_check(at::Tensor &self, const at::Tens
 
 static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::ScalarType result_type)
 {
-    if (npu_preparation::is_scalar_wrapped_to_tensor(tensor)) {
+    if (npu_preparation::is_scalar_wrapped_to_tensor(tensor) ||
+        (tensor.dim() == 0 && !torch_npu::utils::is_npu(tensor))) {
         at::Scalar scalar = tensor.item();
         return npu_preparation::copy_scalar_to_device(scalar, result_type);
     }
