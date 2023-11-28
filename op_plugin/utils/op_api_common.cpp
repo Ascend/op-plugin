@@ -305,3 +305,17 @@ uint64_t calc_hash_id()
     uint64_t hash_id = gen_hash(g_hash_buf, g_hash_offset);
     return hash_id;
 }
+
+void *GetOpApiFuncAddrFromFeatureLib(const char *api_name)
+{
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(ops_infer_handler, "libaclnn_ops_infer.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(ops_train_handler, "libaclnn_ops_train.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(adv_infer_handler, "libaclnn_adv_infer.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(adv_train_handler, "libaclnn_adv_train.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(dvpp_handler, "libacldvpp.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(sparse_handler, "libaclsparse.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(optim_handler, "libacloptim.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(fft_handler, "libaclfft.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(rand_handler, "libaclrand.so");
+    return nullptr;
+}

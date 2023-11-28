@@ -76,7 +76,6 @@ extern thread_local int g_hash_offset;
     memcpy(g_hash_buf + g_hash_offset, data_expression, size_expression);                                              \
     g_hash_offset += size_expression;
 
-
 inline const char *GetOpApiLibName(void)
 {
     return "libopapi.so";
@@ -105,6 +104,17 @@ inline void *GetOpApiLibHandler(const char *libName)
     return handler;
 }
 
+#define GET_OP_API_FUNC_FROM_FEATURE_LIB(lib_handler, lib_name)                                                        \
+    static auto lib_handler = GetOpApiLibHandler(lib_name);                                                            \
+    if ((lib_handler) != nullptr) {                                                                                      \
+        auto funcAddr = GetOpApiFuncAddrInLib(lib_handler, lib_name, api_name);                                        \
+        if (funcAddr != nullptr) {                                                                                     \
+            return funcAddr;                                                                                           \
+        }                                                                                                              \
+    }
+
+void *GetOpApiFuncAddrFromFeatureLib(const char *api_name);
+
 inline void *GetOpApiFuncAddr(const char *apiName)
 {
     static auto custOpApiHandler = GetOpApiLibHandler(GetCustOpApiLibName());
@@ -116,10 +126,13 @@ inline void *GetOpApiFuncAddr(const char *apiName)
     }
 
     static auto opApiHandler = GetOpApiLibHandler(GetOpApiLibName());
-    if (opApiHandler == nullptr) {
-        return nullptr;
+    if (opApiHandler != nullptr) {
+        auto funcAddr = GetOpApiFuncAddrInLib(opApiHandler, GetOpApiLibName(), apiName);
+        if (funcAddr != nullptr) {
+            return funcAddr;
+        }
     }
-    return GetOpApiFuncAddrInLib(opApiHandler, GetOpApiLibName(), apiName);
+    return GetOpApiFuncAddrFromFeatureLib(apiName);
 }
 
 inline aclTensor *ConvertType(const at::Tensor &at_tensor)
