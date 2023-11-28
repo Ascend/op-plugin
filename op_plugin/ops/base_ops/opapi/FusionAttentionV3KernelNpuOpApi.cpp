@@ -180,7 +180,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     }
     at::Tensor dqkv = OpPreparation::apply_tensor_without_format(format_qkv);
 
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusionAttentionGradV3, format_x, format_wgt, format_qkv,
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnAscendAttentionGrad, format_x, format_wgt, format_qkv,
         format_dy, format_pse, format_atten_mask, format_drop_mask, format_softmax_max,
         format_softmax_sum, format_attention, format_bias, scale_qk, scale_q, scale_k,
         keep_prob, pre_tokens, next_tokens, sparse_mode, head_num, dx, dwgt, dpse, dqkv);
@@ -284,7 +284,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const at::Tensor &prefix = prefix_opt.value_or(at::Tensor());
 
     TORCH_CHECK(x.dim() == 3, "The shapes of the input x should be 3-dimensional, but got ", x.dim(), "-dimensional");
-    TORCH_CHECK(weight.dim() == 3, "The shapes of the input key should be 3-dimensional, but got ", weight.dim(), "-dimensional");
+    TORCH_CHECK(weight.dim() == 2, "The shapes of the input weight should be 2-dimensional, but got ", weight.dim(), "-dimensional");
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
     std::string input_layout_str = std::string(input_layout);
     for (auto& c : input_layout_str) {
@@ -297,24 +297,25 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t S0 = 0; // S for query
     int64_t S1 = 0; // S for key & value
     int64_t H = 0;
+
     if (input_layout_str == "BSH") {
         B = x.size(0);
         S0 = x.size(1);
         S1 = x.size(1);
-        H = x.size(2);
+        H = weight.size(1) / 3;
     } else if (input_layout_str == "SBH") {
         B = x.size(1);
         S0 = x.size(0);
         S1 = x.size(0);
-        H = x.size(2);
+        H = weight.size(1) / 3;
     }
 
     double scale_qk_value = scale_qk;
     double scale_q_value = scale_q;
     double scale_k_value = scale_k;
 
-    at::Tensor format_query = format_trans(x);
-    at::Tensor attention_score = OpPreparation::apply_tensor_without_format(format_query);
+    at::Tensor format_x = format_trans(x);
+    at::Tensor attention_score = OpPreparation::apply_tensor_without_format({B, S0, H}, x.options());
     at::Tensor format_weight = format_trans(weight);
     at::Tensor format_bias = format_trans(bias);
 
@@ -324,7 +325,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t seed;
     int64_t offset;
     int64_t numels;
-    at::Tensor format_drop_mask = dropout_gen_mask(format_query, keep_prob, head_num, input_layout_str,
+    at::Tensor format_drop_mask = dropout_gen_mask(format_x, keep_prob, head_num, input_layout_str,
         gen_mask_parallel, sync, seed, offset, numels);
 
     at::Tensor softmax_max;
@@ -335,15 +336,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         x.options().dtype(at::kFloat)); // [B, N, S0, 8]
     softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
         x.options().dtype(at::kFloat)); // [B, N, S0, 8]
+
     qkv = OpPreparation::apply_tensor_without_format({B, S0, 3 * H},
-        x.options().dtype(at::kFloat)); // [B, S0, 3 * H]
+        x.options()); // [B, S0, 3 * H]
 
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusionAttentionV3, format_query, format_weight, format_bias,
-        format_pse, format_drop_mask, format_atten_mask,
-        scale_qk_value, scale_q_value, scale_k_value, keep_prob, sparse_mode, pre_tokens, next_tokens,
-        head_num, input_layout_ptr,
-        softmax_max, softmax_sum, qkv, attention_score);
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnAscendAttention, format_x, format_weight,
+        format_bias, format_pse, format_drop_mask, prefix, format_atten_mask,
+        scale_qk_value, scale_q_value, scale_k_value, keep_prob, pre_tokens, next_tokens, sparse_mode,
+        head_num, input_layout_ptr, pse_type, softmax_max, softmax_sum, qkv, attention_score);
 
     if (!sync) {
         c10_npu::NPUEvent npu_event;
