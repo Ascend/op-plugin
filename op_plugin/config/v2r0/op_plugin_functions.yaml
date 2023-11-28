@@ -2485,3 +2485,5 @@ custom:
     impl_ns: op_api
   - func: npu_masked_softmax_with_rel_pos_bias(Tensor x, Tensor? atten_mask, Tensor relative_pos_bias, float scale_value=1.0, int inner_precision_mode=0) -> Tensor
     impl_ns: op_api
+  - func: npu_ffn(Tensor x, Tensor weight1, Tensor weight2, str activation, int[]? expert_tokens=None, Tensor? bias1=None, Tensor? bias2=None, int inner_precise=0) -> Tensor
+    impl_ns: op_api
