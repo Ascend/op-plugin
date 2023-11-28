@@ -29,11 +29,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_deep_norm(const at::Tensor& x
                                                              double epsilon)
 {
     at::SmallVector<int64_t, SIZE> shape;
-    for (uint64_t index = 0; index < x.dim() - gamma.dim(); index++) {
-        shape.emplace_back(x.size(index));
+    auto param_dim = x.dim() - gamma.dim();
+    for (uint64_t index = 0; index < x.dim(); index++) {
+        if (index < param_dim) {
+            shape.emplace_back(x.size(index));
+        } else {
+            shape.emplace_back(1);
+        }
     }
-    shape.emplace_back(1);
-    
     at::Tensor y = npu_preparation::apply_tensor(x);
     at::Tensor mean = npu_preparation::apply_tensor(shape, x.options().dtype(at::kFloat), x);
     at::Tensor rstd = npu_preparation::apply_tensor(shape, x.options().dtype(at::kFloat), x);

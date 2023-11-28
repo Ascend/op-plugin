@@ -10,11 +10,15 @@ class TestNPUDeepNorm(TestCase):
     def supported_op_exec(self, x, gx, beta, gamma):
         alpha = 0.3
         epsilon = 1e-6
-        
+
+        len_shape_x = len(x.shape)
+        len_shape_gamma = len(gamma.shape)
+        reduce_axis = tuple(range(len_shape_x - len_shape_gamma, len_shape_x, 1))
+
         new_x = alpha * x + gx
-        mean = np.mean(new_x, axis=-1, keepdims=True)
+        mean = np.mean(new_x, axis=reduce_axis, keepdims=True)
         diff = new_x - mean
-        variance = np.mean(np.power(diff, 2), axis=-1, keepdims=True)
+        variance = np.mean(np.power(diff, 2), axis=reduce_axis, keepdims=True)
         std = np.sqrt(variance + epsilon)
         rstd = 1 / std
         result_mid = diff * rstd
@@ -28,10 +32,10 @@ class TestNPUDeepNorm(TestCase):
     def test_deep_norm(self, device="npu"):
         if device is None:
             device = get_npu_device()
-        cpu_input_x = np.random.uniform(0, 100, [1024, 12288]).astype(np.float32)
-        cpu_input_gx = np.random.uniform(0, 100, [1024, 12288]).astype(np.float32)
-        cpu_input_beta = np.random.uniform(0, 100, [12288]).astype(np.float32)
-        cpu_input_gamma = np.random.uniform(0, 100, [12288]).astype(np.float32)
+        cpu_input_x = np.random.uniform(0, 100, [1024, 2, 12288]).astype(np.float32)
+        cpu_input_gx = np.random.uniform(0, 100, [1024, 2, 12288]).astype(np.float32)
+        cpu_input_beta = np.random.uniform(0, 100, [2, 12288]).astype(np.float32)
+        cpu_input_gamma = np.random.uniform(0, 100, [2, 12288]).astype(np.float32)
         
         npu_input_x = torch.from_numpy(cpu_input_x).to(device)
         npu_input_gx = torch.from_numpy(cpu_input_gx).to(device)
