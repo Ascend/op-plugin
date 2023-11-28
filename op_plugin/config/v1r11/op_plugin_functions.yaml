@@ -1631,11 +1631,11 @@ official:
  - func: unique_consecutive(Tensor self, bool return_inverse=False, bool return_counts=False, int? dim=None) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: upsample_bicubic2d(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: upsample_bicubic2d.vec(Tensor input, int[]? output_size, bool align_corners, float[]? scale_factors) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: upsample_bicubic2d.out(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: upsample_bicubic2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
    impl_ns: acl_op
  - func: upsample_bicubic2d_backward.vec(Tensor grad_output, int[]? output_size, int[] input_size, bool align_corners, float[]? scale_factors) -> Tensor

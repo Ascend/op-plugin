@@ -1138,6 +1138,21 @@ c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(c10::IntArrayRef inp
     TORCH_CHECK(false, "Must specify exactly one of output_size and scale_factors");
 }
 
+c10::SmallVector<int64_t, SIZE> upsample_bicubic2d_npu_output_size(const at::Tensor &self,
+                                                                   c10::IntArrayRef output_size)
+{
+    TORCH_CHECK(self.dim() == 4, "It is expected input_size equals to 4, but got size ", self.dim());
+    TORCH_CHECK(output_size.size() == 2, "It is expected output_size equals to 2, but got size ", output_size.size());
+
+    int64_t N = self.size(0);
+    int64_t C = self.size(1);
+    int64_t H = output_size[0];
+    int64_t W = output_size[1];
+
+    c10::SmallVector<int64_t, SIZE> outputSize = {N, C, H, W};
+    return outputSize;
+}
+
 c10::IntArrayRef upsample_bicubic2d_backward_npu_output_size(c10::IntArrayRef input_size)
 {
     return input_size;

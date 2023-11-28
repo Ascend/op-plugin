@@ -271,6 +271,9 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(
     c10::IntArrayRef input_size, c10::optional<c10::IntArrayRef> output_size,
     c10::optional<c10::ArrayRef<double>> scale_factors);
 
+OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> upsample_bicubic2d_npu_output_size(const at::Tensor& self,
+                                                                                    c10::IntArrayRef output_size);
+
 OP_PLUGIN_HIDDEN c10::IntArrayRef upsample_bicubic2d_backward_npu_output_size(c10::IntArrayRef input_size);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> upsample_bilinear2d_npu_output_size(const at::Tensor& self,
