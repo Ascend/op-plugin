@@ -59,8 +59,33 @@ tensor_list rotary_mul_backward_nocheck(at::Tensor &dx, at::Tensor &dr1, at::Ten
         dr2 = at::sum(xq_chunk_cat, dims, true);
         dr1 = at::sum(x_grad_mul, dims, true);
     } else {
-        at_npu::native::OpCommand cmd;
-        cmd.Name("RotaryMulGrad").Input(x).Input(r1).Input(r2).Input(dy).Output(dx).Output(dr1).Output(dr2).Run();
+        if (r1.requires_grad() && r2.requires_grad()) {
+            bool need_backward = true;
+            at_npu::native::OpCommand cmd;
+            cmd.Name("RotaryMulGrad")
+                .Input(x)
+                .Input(r1)
+                .Input(r2)
+                .Input(dy)
+                .Output(dx)
+                .Output(dr1)
+                .Output(dr2)
+                .Attr("need_backward", need_backward)
+                .Run();
+        } else {
+            bool need_backward = false;
+            at_npu::native::OpCommand cmd;
+            cmd.Name("RotaryMulGrad")
+                .Input(x)
+                .Input(r1)
+                .Input(r2)
+                .Input(dy)
+                .Output(dx)
+                .Output(dr1)
+                .Output(dr2)
+                .Attr("need_backward", need_backward)
+                .Run();
+        }
     }
     return std::tie(dx, dr1, dr2);
 }
