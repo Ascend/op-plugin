@@ -1482,6 +1482,8 @@ official:
    impl_ns: acl_op
  - func: std_mean.correction(Tensor self, int[1]? dim=None, *, int? correction=None, bool keepdim=False) -> (Tensor, Tensor)
    impl_ns: acl_op
+ - func: stft(Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None) -> Tensor
+   impl_ns: op_api
  - func: sub.Scalar(Tensor self, Scalar other, Scalar alpha=1) -> Tensor
    impl_ns: acl_op
  - func: sub.Tensor(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor
