@@ -19,7 +19,7 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-
+using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor& lt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnLtTensor, acl_op::lt_out(self, other, result));
   auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -31,17 +31,22 @@ at::Tensor& lt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 }
 
 at::Tensor lt(const at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnLtTensor, acl_op::lt(self, other));
-  // calculate the output size
-  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+    DO_COMPATIBILITY(aclnnLtTensor, acl_op::lt(self, other));
+    // calculate the output size
+    auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
 
-  // construct the output tensor of the NPU
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, 
-                                                                                 self.options().dtype(at::kBool));
+    // construct the output tensor of the NPU
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize,
+                                                                                   self.options().dtype(at::kBool));
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnLtTensor, self, other, result);
-  return result;
+    // calculate the output result of the NPU
+    if (npu_preparation::IsCPUScalar(other)) {
+        const at::Scalar other_scalar = other.item();
+        EXEC_NPU_CMD(aclnnLtScalar, self, other_scalar, result);
+    } else {
+        EXEC_NPU_CMD(aclnnLtTensor, self, other, result);
+    }
+    return result;
 }
 
 at::Tensor& lt_out(const at::Tensor &self, const at::Scalar& other, at::Tensor &result)
@@ -60,7 +65,7 @@ at::Tensor lt(const at::Tensor &self, const at::Scalar& other)
   // calculate the output size
   auto outputSize = op_infer::input_same_output_size(self);
   // construct the output tensor of the NPU
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, 
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize,
                                                                                  self.options().dtype(at::kBool));
 
   // calculate the output result of the NPU
