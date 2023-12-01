@@ -2221,6 +2221,8 @@ custom:
     impl_ns: acl_op
   - func: npu_mish_backward(Tensor grad, Tensor input) -> Tensor
     impl_ns: acl_op
+  - func: npu_group_norm_silu(Tensor input, Tensor? weight, Tensor? bias, int group, float eps=0.00001) -> (Tensor, Tensor, Tensor)
+    impl_ns: op_api
   - func: npu_reshape(Tensor self, int[] shape, bool can_refresh=False) -> Tensor
     impl_ns: acl_op
     exposed: True
