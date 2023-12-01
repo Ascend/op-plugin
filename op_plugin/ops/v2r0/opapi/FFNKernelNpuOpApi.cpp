@@ -26,8 +26,8 @@ const static int MAX_EXPERT_NUM = 256;
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Tensor &weight2,
-    c10::string_view activation, at::OptionalIntArrayRef expert_tokens,
-    const c10::optional<at::Tensor> &bias1, const c10::optional<at::Tensor> &bias2, int64_t inner_precise)
+    c10::string_view activation, at::OptionalIntArrayRef expert_tokens, const c10::optional<at::Tensor> &bias1,
+    const c10::optional<at::Tensor> &bias2, c10::optional<int64_t> inner_precise)
 {
     auto weight1_dim_num = weight1.dim();
     auto weight2_dim_num = weight2.dim();
@@ -48,6 +48,7 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
     auto output_size = op_infer::array_to_small_vector(x.sizes());
     output_size[x.dim() - 1] = weight2.size(weight2.dim() - 1);
     at::Tensor result = npu_preparation::apply_tensor_without_format(x, output_size);
+    int64_t inner_precise_val = inner_precise.has_value() ? inner_precise.value() : 0;
     if (expert_tokens.has_value()) {
         auto expert_tokens_real = expert_tokens.value();
         auto token_size = expert_tokens_real.size();
@@ -56,14 +57,14 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
             "The dimension of weight(has expert_tokens) should be 3, but weight1_dim_num is ",
             weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
         EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_real, bias1_real, bias2_real,
-            scale, offset, deq_scale1, deq_scale2, activation_ptr, inner_precise, result);
+            scale, offset, deq_scale1, deq_scale2, activation_ptr, inner_precise_val, result);
     } else {
         auto expert_tokens_empty = at::Tensor();
         TORCH_CHECK(weight1_dim_num == NO_EXPERT_WEIGHT_DIM && weight2_dim_num == NO_EXPERT_WEIGHT_DIM,
             "The dimension of weight(no expert_tokens) should be 2, but weight1_dim_num is ",
             weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
         EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_empty, bias1_real, bias2_real,
-            scale, offset, deq_scale1, deq_scale2, activation_ptr, inner_precise, result);
+            scale, offset, deq_scale1, deq_scale2, activation_ptr, inner_precise_val, result);
     }
 
     return result;
