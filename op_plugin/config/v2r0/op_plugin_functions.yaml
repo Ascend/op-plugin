@@ -745,9 +745,9 @@ official:
  - func: index_add.out(Tensor self, int dim, Tensor index, Tensor source, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: index_copy(Tensor self, int dim, Tensor index, Tensor source) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: index_fill.int_Scalar(Tensor self, int dim, Tensor index, Scalar value) -> Tensor
    impl_ns: acl_op
  - func: index_fill.int_Tensor(Tensor self, int dim, Tensor index, Tensor value) -> Tensor

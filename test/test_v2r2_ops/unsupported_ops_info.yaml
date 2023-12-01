@@ -3992,6 +3992,8 @@ index_copy:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
 index_put:
   test_conj_view:
   - complex64

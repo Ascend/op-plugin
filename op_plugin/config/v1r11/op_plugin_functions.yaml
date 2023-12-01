@@ -756,6 +756,8 @@ official:
    impl_ns: acl_op, op_api
  - func: _index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: index_copy(Tensor self, int dim, Tensor index, Tensor source) -> Tensor
+   impl_ns: acl_op, op_api
  - func: index.Tensor(Tensor self, Tensor?[] indices) -> Tensor
    impl_ns: acl_op, op_api
  - func: index_add(Tensor self, int dim, Tensor index, Tensor source, *, Scalar alpha=1) -> Tensor
