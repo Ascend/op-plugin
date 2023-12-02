@@ -197,8 +197,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_fused_attention_score_grad(
     bool key_transpose,
     bool value_transpose,
     bool dx_transpose) {
-    TORCH_CHECK(query_layer.dim() >= 4, "query_layer must be at least 4-dimensional");
-    TORCH_CHECK(grad_output.dim() >= 4, "grad_output must be at least 4-dimensional");
+  TORCH_CHECK(query_layer.dim() >= 4, "query_layer must be at least 4-dimensional");
   at::Tensor query_dx = npu_preparation::apply_tensor_with_format(grad_output, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor key_dw = npu_preparation::apply_tensor_with_format(grad_output, ACL_FORMAT_FRACTAL_NZ);
   at::Tensor value_dw = npu_preparation::apply_tensor_with_format(grad_output, ACL_FORMAT_FRACTAL_NZ);
