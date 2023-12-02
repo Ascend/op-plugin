@@ -35,14 +35,17 @@ std::vector<at::Tensor> npu_fused_attention_qkv_grad(const at::Tensor &grad_outp
     at::Tensor grad_w_query = npu_preparation::apply_tensor(query_kernel);
     at::Tensor grad_w_key = npu_preparation::apply_tensor(key_kernel);
     at::Tensor grad_w_value = npu_preparation::apply_tensor(value_kernel);
-    at::Tensor grad_b_query =
-        npu_preparation::apply_tensor_with_format(query_kernel, query_kernel.size(0), ACL_FORMAT_ND);
-    at::Tensor grad_b_key = npu_preparation::apply_tensor_with_format(key_kernel, key_kernel.size(0), ACL_FORMAT_ND);
-    at::Tensor grad_b_value =
-        npu_preparation::apply_tensor_with_format(value_kernel, value_kernel.size(0), ACL_FORMAT_ND);
 
-    at_npu::native::OpCommand cmd;
-    cmd.Name("AttentionQKVGradX")
+    c10::SmallVector<int64_t, SIZE> grad_b_query_size = {query_kernel.size(0)};
+    c10::SmallVector<int64_t, SIZE> grad_b_key_size = {key_kernel.size(0)};
+    c10::SmallVector<int64_t, SIZE> grad_b_value_size = {value_kernel.size(0)};
+
+    at::Tensor grad_b_query = npu_preparation::apply_tensor_with_format(query_kernel, grad_b_query_size, ACL_FORMAT_ND);
+    at::Tensor grad_b_key = npu_preparation::apply_tensor_with_format(key_kernel, grad_b_key_size, ACL_FORMAT_ND);
+    at::Tensor grad_b_value = npu_preparation::apply_tensor_with_format(value_kernel, grad_b_value_size, ACL_FORMAT_ND);
+
+    at_npu::native::OpCommand cmd1;
+    cmd1.Name("AttentionQKVGradX")
         .Input(grad_output_ln)
         .Input(grad_output_query)
         .Input(grad_output_key)
@@ -54,7 +57,9 @@ std::vector<at::Tensor> npu_fused_attention_qkv_grad(const at::Tensor &grad_outp
         .Attr("trans_a", false)
         .Attr("trans_b", true)
         .Run();
-    cmd.Name("AttentionQKVGradW")
+
+    at_npu::native::OpCommand cmd2;
+    cmd2.Name("AttentionQKVGradW")
         .Input(hidden_states)
         .Input(grad_output_query)
         .Input(grad_output_key)
