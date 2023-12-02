@@ -1898,6 +1898,10 @@ official:
    impl_ns: op_api
  - func: _foreach_neg_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
+ - func: view_as_real(Tensor(a) self) -> Tensor(a)
+   impl_ns: acl_op
+ - func: view_as_complex(Tensor(a) self) -> Tensor(a)
+   impl_ns: acl_op
 
 symint:
 

@@ -1826,6 +1826,10 @@ official:
    impl_ns: acl_op, op_api
  - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
+ - func: view_as_real(Tensor(a) self) -> Tensor(a)
+   impl_ns: acl_op
+ - func: view_as_complex(Tensor(a) self) -> Tensor(a)
+   impl_ns: acl_op
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1952,8 +1956,6 @@ tocpu:
   - unfold_backward
   - unique_dim
   - unique_dim_consecutive
-  - view_as_complex
-  - view_as_real
   - lcm.out
   - fmin
   - fmin.out
