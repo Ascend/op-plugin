@@ -102,7 +102,7 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss_forward_out(
     auto options = self_cp.options();
     weight_tensor = acl_op::ones(
         self_cp.size(1),
-        optTypeMetaToScalarType(options.dtype_opt()),
+        c10::optTypeMetaToScalarType(options.dtype_opt()),
         options.layout_opt(),
         options.device_opt(),
         options.pinned_memory_opt());
