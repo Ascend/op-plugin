@@ -6120,6 +6120,8 @@ linalg.multi_dot:
   - complex64
   test_fake_autocast:
   - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_fake_crossref_backward_amp:
   - float32
   test_forward_ad:
@@ -8822,6 +8824,8 @@ nn.functional.mse_loss:
   test_operator:
   - float32
 nn.functional.multi_head_attention_forward:
+  test_fake_crossref_backward_amp:
+  - float32
   test_backward:
   - float32
   test_fake_autocast:
@@ -8833,15 +8837,27 @@ nn.functional.multi_head_attention_forward:
 nn.functional.multi_margin_loss:
   test_backward:
   - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_fake_autocast:
   - float32
   test_neg_view:
   - float64
   test_operator:
   - float32
+  test_out:
+  - float32
   test_variant_consistency_eager:
   - float32
 nn.functional.multilabel_margin_loss:
+  test_fake:
+  - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_backward:
   - float32
   test_compare_cpu:
@@ -8857,6 +8873,10 @@ nn.functional.multilabel_margin_loss:
   test_variant_consistency_eager:
   - float32
 nn.functional.multilabel_soft_margin_loss:
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_backward:
   - float32
   test_fake_autocast:
