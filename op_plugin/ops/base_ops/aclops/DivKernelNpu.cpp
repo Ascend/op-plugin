@@ -68,9 +68,16 @@ at::Tensor &div_out_with_dtype(at::Tensor &result, const at::Tensor &self, const
 
     auto calculate_type = op_plugin::utils::get_divide_calculate_type(self, other);
     at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
-    at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
-    at::Tensor result_cast =
-        (result_type == calculate_type) ? result : at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
+    at::Tensor other_cast = other;
+    at::Tensor result_cast;
+    if (npu_preparation::IsCPUScalar(other) && self.scalar_type() != calculate_type) {
+        result_cast = (result_type == calculate_type) ? result : self_cast;
+    } else {
+        other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
+        result_cast = (result_type == calculate_type) ? result :
+            at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
+    }
+
     if (!npu_utils::check_match(&result_cast)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
         div_out_nocheck(contiguous_result, self_cast, other_cast);
@@ -93,16 +100,21 @@ at::Tensor div_dtype_calibration(const at::Tensor &self, const at::Tensor &other
 {
     auto calculate_type = op_plugin::utils::get_divide_calculate_type(self, other);
     at::Tensor self_temp = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
-    at::Tensor other_temp = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
-    bool is_self_wrapped =
-        npu_preparation::is_scalar_wrapped_to_tensor(self_temp) || npu_preparation::IsCPUScalar(self_temp);
-    at::Tensor output_tensor = is_self_wrapped ? other_temp : self_temp;
-    auto output_size = op_infer::broadcast_ops_npu_output_size(self_temp, other_temp);
-    at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
+    if (npu_preparation::IsCPUScalar(other) && self.scalar_type() != calculate_type) {
+        return div_scalar_out_nocheck(self_temp, self_temp, other.item());
+    } else {
+        at::Tensor other_temp = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
-    div_out_nocheck(result, self_temp, other_temp);
-    return result;
+        bool is_self_wrapped =
+            npu_preparation::is_scalar_wrapped_to_tensor(self_temp) || npu_preparation::IsCPUScalar(self_temp);
+        at::Tensor output_tensor = is_self_wrapped ? other_temp : self_temp;
+        auto output_size = op_infer::broadcast_ops_npu_output_size(self_temp, other_temp);
+        at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
+
+        div_out_nocheck(result, self_temp, other_temp);
+        return result;
+    }
 }
 } // namespace
 
