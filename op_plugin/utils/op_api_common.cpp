@@ -175,6 +175,8 @@ inline uint64_t mixture(uint64_t x)
     return x;
 }
 
+// MurmurHash3 was written by Austin Appleby, and is placed in the public
+// domain. The author hereby disclaims copyright to this source code.
 uint64_t gen_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0d7)
 {
     const uint8_t *data = (const uint8_t *)key;
