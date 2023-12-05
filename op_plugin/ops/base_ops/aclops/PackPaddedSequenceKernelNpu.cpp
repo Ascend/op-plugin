@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
@@ -52,7 +53,7 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(const at::Tensor &input
         }
         auto index = at::from_blob(tmp_vector.data(), {len}, at::kInt);
         index = npu_preparation::copy_tensor_host_to_device(index);
-        output = acl_op::index_select(output, 0, index);
+        output = op_plugin::index_select(output, 0, index);
         timesize = len;
     }
 
