@@ -226,6 +226,10 @@ official:
    impl_ns: acl_op, op_api
  - func: amin.out(Tensor self, int[1] dim=[], bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: angle(Tensor self) -> Tensor
+   impl_ns: op_api
+ - func: angle.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: any(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: any.dim(Tensor self, int dim, bool keepdim=False) -> Tensor

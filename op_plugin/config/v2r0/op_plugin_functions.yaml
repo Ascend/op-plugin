@@ -222,6 +222,10 @@ official:
    impl_ns: acl_op
  - func: amin.out(Tensor self, int[1] dim=[], bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: angle(Tensor self) -> Tensor
+   impl_ns: op_api
+ - func: angle.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: any(Tensor self) -> Tensor
    impl_ns: acl_op
  - func: any.dim(Tensor self, int dim, bool keepdim=False) -> Tensor
@@ -1912,8 +1916,6 @@ tocpu:
   - _test_optional_filled_intlist
   - _test_optional_floatlist
   - _unique
-  - angle
-  - angle.out
   - binomial
   - cauchy_
   - cholesky_inverse

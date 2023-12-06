@@ -47,6 +47,10 @@ official:
    impl_ns: op_api
  - func: aminmax.out(Tensor self, *, int? dim=None, bool keepdim=False, Tensor(a!) min, Tensor(b!) max) -> (Tensor(a!) min, Tensor(b!) max)
    impl_ns: acl_op, op_api
+ - func: angle(Tensor self) -> Tensor
+   impl_ns: op_api
+ - func: angle.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: _amp_foreach_non_finite_check_and_unscale_(Tensor(a!)[] self, Tensor(b!) found_inf, Tensor inv_scale) -> ()
    impl_ns: acl_op, op_api
  - func: _batch_norm_impl_index(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, bool cudnn_enabled) -> (Tensor, Tensor, Tensor, Tensor, int)
@@ -1968,8 +1972,6 @@ tocpu:
   - _test_optional_filled_intlist
   - _test_optional_floatlist
   - _solve_helper
-  - angle
-  - angle.out
   - binomial
   - bucketize.Tensor
   - bucketize.Tensor_out
