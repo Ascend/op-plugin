@@ -1638,6 +1638,8 @@ official:
    impl_ns: acl_op, op_api
  - func: unique_consecutive(Tensor self, bool return_inverse=False, bool return_counts=False, int? dim=None) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
+ - func: unique_dim(Tensor self, int dim, bool sorted=True, bool return_inverse=False, bool return_counts=False) -> (Tensor, Tensor, Tensor)
+   impl_ns: acl_op, op_api
  - func: upsample_bicubic2d(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: upsample_bicubic2d.vec(Tensor input, int[]? output_size, bool align_corners, float[]? scale_factors) -> Tensor
@@ -2009,7 +2011,6 @@ tocpu:
   - to_sparse
   - to_mkldnn
   - unfold_backward
-  - unique_dim
   - unique_dim_consecutive
   - lcm.out
   - fmin
