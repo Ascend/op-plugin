@@ -44,7 +44,7 @@ at::Tensor check_weight_opt(const at::Tensor &self, const c10::optional<at::Tens
         weight_tensor = npu_utils::format_contiguous(weight);
     }
 
-    if (ignore_index >= 0 && ignore_index < self.size(-1)) {
+    if (ignore_index >= 0 && ignore_index < self.size(1)) {
         at::Tensor zero = at::zeros(1, self.options());
         calcu_op_util::AclrtMemcpyAsync({weight_tensor, ignore_index}, weight_tensor.itemsize(), {zero, 0},
                                         weight_tensor.itemsize(), ACL_MEMCPY_DEVICE_TO_DEVICE);

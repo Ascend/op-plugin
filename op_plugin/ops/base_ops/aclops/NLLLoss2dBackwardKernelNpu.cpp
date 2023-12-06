@@ -54,7 +54,7 @@ at::Tensor &nll_loss2d_backward_out(const at::Tensor &grad_output, const at::Ten
         weight_tensor = npu_utils::format_contiguous(weight);
     }
 
-    if (ignore_index >= 0 && ignore_index < self.size(-1)) {
+    if (ignore_index >= 0 && ignore_index < self.size(1)) {
         at::Tensor zero = at::zeros(1, self.options());
         calcu_op_util::AclrtMemcpyAsync({weight_tensor, ignore_index}, weight_tensor.itemsize(), {zero, 0},
                                         weight_tensor.itemsize(), ACL_MEMCPY_DEVICE_TO_DEVICE);
