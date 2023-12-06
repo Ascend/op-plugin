@@ -2116,6 +2116,10 @@ custom:
     exposed: True
   - func: npu_rms_norm_backward(Tensor dy, Tensor self, Tensor gamma, Tensor rstd) -> (Tensor, Tensor)
     impl_ns: acl_op, op_api
+  - func: npu_swiglu(Tensor self, int dim=-1) -> Tensor
+    impl_ns: op_api
+  - func: npu_swiglu_backward(Tensor grad_output, Tensor self, int dim=-1) -> Tensor
+    impl_ns: op_api
   - func: npu_deep_norm(Tensor x, Tensor gx, Tensor beta, Tensor gamma, float alpha=0.3, float epsilon=1e-06) -> (Tensor, Tensor, Tensor)
     impl_ns: acl_op, op_api
   - func: npu_deep_norm_backward(Tensor dy, Tensor x, Tensor gx, Tensor gamma, Tensor mean, Tensor rstd, float alpha=0.3) -> (Tensor, Tensor, Tensor, Tensor)
