@@ -20,17 +20,24 @@
 
 namespace op_api {
 
-at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Tensor& value) {
-  // OpPreparation::CheckMemory({self, mask, value}, {self});
-  DO_COMPATIBILITY(aclnnInplaceMaskedFillTensor, acl_op::masked_fill_(self, mask, value));
-  EXEC_NPU_CMD(aclnnInplaceMaskedFillTensor, self, mask, value);
-  return self;
+at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Tensor& value)
+{
+    DO_COMPATIBILITY(aclnnInplaceMaskedFillTensor, acl_op::masked_fill_(self, mask, value));
+    if (at_npu::native::OpPreparation::IsCPUScalar(value)) {
+        at::Scalar scalar = value.item();
+        auto value_cp = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, value.scalar_type());
+        EXEC_NPU_CMD(aclnnInplaceMaskedFillTensor, self, mask, value_cp);
+    } else {
+        EXEC_NPU_CMD(aclnnInplaceMaskedFillTensor, self, mask, value);
+    }
+    return self;
 }
 
-at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) {
-  DO_COMPATIBILITY(aclnnInplaceMaskedFillScalar, acl_op::masked_fill_(self, mask, value));
-  EXEC_NPU_CMD(aclnnInplaceMaskedFillScalar, self, mask, value);
-  return self;
+at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value)
+{
+    DO_COMPATIBILITY(aclnnInplaceMaskedFillScalar, acl_op::masked_fill_(self, mask, value));
+    EXEC_NPU_CMD(aclnnInplaceMaskedFillScalar, self, mask, value);
+    return self;
 }
 
 }  // namespace op_api
