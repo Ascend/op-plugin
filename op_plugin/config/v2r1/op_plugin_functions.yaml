@@ -408,8 +408,6 @@ official:
    impl_ns: acl_op, op_api
  - func: complex.out(Tensor real, Tensor imag, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: real(Tensor(a) self) -> Tensor(a)
-   impl_ns: acl_op
  - func: channel_shuffle(Tensor self, int groups) -> Tensor
    impl_ns: acl_op, op_api
  - func: clamp(Tensor self, Scalar? min=None, Scalar? max=None) -> Tensor
