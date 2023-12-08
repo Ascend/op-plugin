@@ -8,7 +8,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 void _foreach_cos_(const at::TensorList self)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
         return at::native::foreach_tensor_cos_slow_(self);
     }
     auto scalar_type = self[0].scalar_type();
@@ -21,7 +22,8 @@ void _foreach_cos_(const at::TensorList self)
 std::vector<at::Tensor> _foreach_cos(const at::TensorList self)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
         return at::native::foreach_tensor_cos_slow(self);
     }
 

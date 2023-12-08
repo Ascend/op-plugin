@@ -12,7 +12,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::vector<at::Tensor> _foreach_sqrt(at::TensorList tensors)
 {
     at::native::check_foreach_api_restrictions(tensors);
-    if (!at::native::can_use_fast_route(tensors) ||
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors) ||
         at::native::has_integral_tensor(tensors, true)) {
         return at::native::foreach_tensor_sqrt_slow(tensors);
     }
@@ -32,7 +33,8 @@ std::vector<at::Tensor> _foreach_sqrt(at::TensorList tensors)
 void _foreach_sqrt_(at::TensorList tensors)
 {
     at::native::check_foreach_api_restrictions(tensors);
-    if (!at::native::can_use_fast_route(tensors) ||
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors) ||
         at::native::has_integral_tensor(tensors, true)) {
         return at::native::foreach_tensor_sqrt_slow_(tensors);
     }

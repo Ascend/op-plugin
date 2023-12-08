@@ -12,7 +12,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::vector<at::Tensor> _foreach_div(at::TensorList tensors1, at::TensorList tensors2)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route(tensors1, tensors2, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors1, tensors2, true)) {
         return at::native::foreach_tensor_div_list_kernel_slow(tensors1, tensors2);
     }
     // construct the output tensorlist of the NPU
@@ -32,7 +33,8 @@ std::vector<at::Tensor> _foreach_div(at::TensorList tensors1, at::TensorList ten
 void _foreach_div_(at::TensorList tensors1, at::TensorList tensors2)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route(tensors1, tensors2, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors1, tensors2, true)) {
         return at::native::foreach_tensor_div_list_kernel_slow_(tensors1, tensors2);
     }
 
@@ -57,7 +59,8 @@ void _foreach_div_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 void _foreach_div_(const at::TensorList self, const at::Scalar &scalar)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_div_scalar_kernel_slow_(self, scalar);
     }
 
@@ -73,7 +76,8 @@ std::vector<at::Tensor> _foreach_div(at::TensorList self, const at::Scalar &scal
 {
     // Fallback
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_div_scalar_kernel_slow(self, scalar);
     }
 

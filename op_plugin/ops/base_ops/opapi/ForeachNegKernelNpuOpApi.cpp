@@ -24,7 +24,8 @@ using npu_calcu_util = at_npu::native::CalcuOpUtil;
 void _foreach_neg_(const at::TensorList self)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
         return at::native::foreach_tensor_neg_slow_(self);
     }
 
@@ -42,7 +43,8 @@ void _foreach_neg_(const at::TensorList self)
 std::vector<at::Tensor> _foreach_neg(const at::TensorList self)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
         return at::native::foreach_tensor_neg_slow(self);
     }
 

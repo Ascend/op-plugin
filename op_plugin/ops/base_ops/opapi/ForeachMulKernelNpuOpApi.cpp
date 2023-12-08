@@ -12,7 +12,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::vector<at::Tensor> _foreach_mul(at::TensorList tensors1, at::TensorList tensors2)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors1, tensors2, false)) {
         return at::native::foreach_tensor_mul_list_kernel_slow(tensors1, tensors2);
     }
     // construct the output tensorlist of the NPU
@@ -32,7 +33,8 @@ std::vector<at::Tensor> _foreach_mul(at::TensorList tensors1, at::TensorList ten
 void _foreach_mul_(at::TensorList tensors1, at::TensorList tensors2)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors1, tensors2, false)) {
         return at::native::foreach_tensor_mul_list_kernel_slow_(tensors1, tensors2);
     }
 

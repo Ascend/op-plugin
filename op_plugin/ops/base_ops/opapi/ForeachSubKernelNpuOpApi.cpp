@@ -12,7 +12,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::vector<at::Tensor> _foreach_sub(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar &alpha)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_sub_list_kernel_slow(tensors1, tensors2, alpha);
     }
     // construct the output tensorlist of the NPU
@@ -35,7 +36,8 @@ std::vector<at::Tensor> _foreach_sub(at::TensorList tensors1, at::TensorList ten
 void _foreach_sub_(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar &alpha)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_sub_list_kernel_slow_(tensors1, tensors2, alpha);
     }
     // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
@@ -64,7 +66,8 @@ std::vector<at::Tensor> _foreach_sub(at::TensorList self, const at::Scalar &scal
 {
     // Fallback
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, false)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, false)) {
         return at::native::foreach_tensor_sub_scalar_kernel_slow(self, scalar);
     }
 

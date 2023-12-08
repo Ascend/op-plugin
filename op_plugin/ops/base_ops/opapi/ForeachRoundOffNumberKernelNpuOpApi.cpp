@@ -76,8 +76,9 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
 bool if_use_slow_route(at::TensorList tensors, const bool isFrac)
 {
     at::native::check_foreach_api_restrictions(tensors);
-    return !at::native::can_use_fast_route(tensors)
-    || (isFrac && at::native::has_integral_tensor(tensors, true));
+    return !at_npu::native::env::CheckJitDisable() ||
+           !at::native::can_use_fast_route(tensors) ||
+           (isFrac && at::native::has_integral_tensor(tensors, true));
 }
 
 bool if_use_slow_route(at::TensorList tensors)

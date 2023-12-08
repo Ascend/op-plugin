@@ -6,16 +6,18 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 void _foreach_mul_(const at::TensorList self, const at::Scalar& scalar) {
-    if (self.empty()) {
-        return;
+    at::native::check_foreach_api_restrictions(self);
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, false)) {
+        return at::native::foreach_tensor_mul_scalar_kernel_slow_(self, scalar);
     }
+
     auto scalar_type = self[0].scalar_type();
-    bool is_support = true;
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        is_support = false;
-        TORCH_CHECK(is_support, "input must be half, float or int32");
+    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float &&
+        scalar_type != at::ScalarType::Int) {
+        TORCH_CHECK(false, "input must be half, float or int32");
     }
-    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type());
-    EXEC_NPU_CMD(aclnnForeachMulScalarInplace, self, scalar_tensor);
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
+    EXEC_NPU_CMD(aclnnForeachMulScalar, self, scalar_tensor, self);
 }
 }

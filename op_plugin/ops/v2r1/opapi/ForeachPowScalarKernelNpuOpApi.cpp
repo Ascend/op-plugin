@@ -8,7 +8,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::vector<at::Tensor> _foreach_pow(const at::TensorList self, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_pow_scalar_kernel_slow(self, scalar);
     }
     auto scalar_type = self[0].scalar_type();
@@ -30,7 +31,8 @@ std::vector<at::Tensor> _foreach_pow(const at::TensorList self, const at::Scalar
 void _foreach_pow_(const at::TensorList self, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, true)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_pow_scalar_kernel_slow_(self, scalar);
     }
     auto scalar_type = self[0].scalar_type();

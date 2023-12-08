@@ -12,7 +12,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::vector<at::Tensor> _foreach_maximum(at::TensorList tensors1, at::TensorList tensors2)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors1, tensors2, false)) {
         return at::native::foreach_tensor_clamp_min_list_kernel_slow(tensors1, tensors2);
     }
   // construct the output tensorlist of the NPU
@@ -32,7 +33,8 @@ std::vector<at::Tensor> _foreach_maximum(at::TensorList tensors1, at::TensorList
 void _foreach_maximum_(at::TensorList tensors1, at::TensorList tensors2)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors1, tensors2, false)) {
         return at::native::foreach_tensor_clamp_min_list_kernel_slow_(tensors1, tensors2);
     }
 
@@ -43,7 +45,8 @@ void _foreach_maximum_(at::TensorList tensors1, at::TensorList tensors2)
 std::vector<at::Tensor> _foreach_maximum(at::TensorList tensors, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(tensors);
-    if (!at::native::can_use_fast_route(tensors, scalar, false)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors, scalar, false)) {
         return at::native::foreach_tensor_clamp_min_scalar_kernel_slow(tensors, scalar);
     }
     // construct the output tensorlist of the NPU
@@ -63,7 +66,8 @@ std::vector<at::Tensor> _foreach_maximum(at::TensorList tensors, const at::Scala
 void _foreach_maximum_(at::TensorList tensors, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(tensors);
-    if (!at::native::can_use_fast_route(tensors, scalar, false)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors, scalar, false)) {
         return at::native::foreach_tensor_clamp_min_scalar_kernel_slow_(tensors, scalar);
     }
     auto scalar_type = tensors[0].scalar_type();

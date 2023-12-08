@@ -8,7 +8,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 void _foreach_sub_(const at::TensorList self, const at::Scalar &scalar)
 {
     at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, false)) {
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, false)) {
         return at::native::foreach_tensor_sub_scalar_kernel_slow_(self, scalar);
     }
 
