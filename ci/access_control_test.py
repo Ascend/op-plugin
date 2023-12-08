@@ -160,7 +160,7 @@ def exec_ut(files):
         return str(Path(ut_file).relative_to(TEST_DIR))[:-3]
 
     def get_ut_cmd(ut_type, ut_file):
-        cmd = ['python3', "run_test.py", "-v", "-i"]
+        cmd = [sys.executable, "run_test.py", "-v", "-i"]
         if ut_type == "op_ut_files":
             return cmd + ["test_ops", "--", "-k", get_op_name(ut_file)]
         return cmd + [get_ut_name(ut_file)]
