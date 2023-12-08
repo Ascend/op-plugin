@@ -29,8 +29,8 @@ class TestMmAllReduceBase(TestCase):
     def _test_npu_mm_all_reduce_base(cls, rank, input_list):
         x1, x2, world_size, init_pg, c2p = input_list
         pg = init_pg(rank, world_size)
-        group = pg.distributed.distributed_c10d._get_default_group()
-        if torch.__version__ > '2.0':
+        group = pg.distributed_c10d._get_default_group()
+        if torch.__version__ > '2.0.1':
             hcom_name = group._get_backend(torch.device('npu')).get_hccl_comm_name(rank)
         else:
             hcom_name = group.get_hccl_comm_name(rank)
@@ -76,7 +76,7 @@ class TestMmAllReduceBase(TestCase):
             else:
                 out = torch.add(out, out_single)
         for i in range(world_size):
-            out_list.append(out.to(out_dtype))
+            out_list.append(out.to(x1_list[0].dtype))
         return out_list
 
     @skipIfUnsupportMultiNPU(8)

@@ -23,11 +23,22 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &self, const at::Tensor &x2, 
                                   c10::string_view reduce_op, const c10::optional<at::Tensor> &bias,
                                   int64_t comm_turn)
 {
-    TORCH_CHECK(self.dim() == 2 && x2.dim() == 2, "both args to mm need to be 2D, but they are: ", self.dim(), "D and ",
-                x2.dim(), "D");
-    TORCH_CHECK(self.size(1) == x2.size(0), "K of x1 and x2 should be same, but they are x1_k: ", self.size(1),
-                ", x2_k: ", x2.size(0));
-    auto output_size = {self.size(0), x2.size(1)};
+    TORCH_CHECK(x2.dim() == 2, "x2 needs to be 2D, but got: ", x2.dim(), "D");
+    bool is_x2_t = op_plugin::utils::is_transpose_last_two_dims(x2);
+    if (!is_x2_t) {
+        TORCH_CHECK(self.size(self.dim() - 1) == x2.size(0), "K of x1 and x2 should be same, but they are x1_k: ",
+                    self.size(self.dim() - 1), ", x2_k: ", x2.size(0));
+    } else {
+        TORCH_CHECK(self.size(self.dim() - 1) == x2.size(1), "K of x1 and x2 should be same, but they are x1_k: ",
+                    self.size(self.dim() - 1), ", x2_k: ", x2.size(1));
+    }
+    // size of last dim of output should be the same as size of last dim of x2
+    auto output_size = op_infer::array_to_small_vector(self.sizes());
+    if (!is_x2_t) {
+        output_size[self.dim() - 1] = x2.size(1);
+    } else {
+        output_size[self.dim() - 1] = x2.size(0);
+    }
     auto result = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options());
     char *reduce_op_ptr = const_cast<char *>(reduce_op.data());
     char *hcom_ptr = const_cast<char *>(hcom.data());
