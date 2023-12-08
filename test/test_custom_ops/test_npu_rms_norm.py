@@ -1,8 +1,11 @@
+import unittest
 import numpy as np
 import torch_npu
 import torch
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import get_npu_device
+
+DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 
 
 class TestNPURmsNorm(TestCase):
@@ -20,6 +23,8 @@ class TestNPURmsNorm(TestCase):
         y, rstd = torch_npu.npu_rms_norm(x, gamma)
         return y.cpu().numpy(), rstd.cpu().numpy()
 
+    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
+        "OP `RmsNorm` is only supported on 910B, skip this ut for this device type!")
     def test_rms_norm(self, device="npu"):
         if device is None:
             device = get_npu_device()

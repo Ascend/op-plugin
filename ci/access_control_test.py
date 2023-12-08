@@ -43,11 +43,17 @@ class AccurateTest(metaclass=ABCMeta):
         test_base_path = os.path.join(TEST_DIR, 'test_base_ops')
         check_dir_path_readable(test_base_path)
         ut_files = self.find_ut_by_regex(regex, test_base_path)
+
         version_path = get_test_torch_version_path()
         test_version_path = os.path.join(TEST_DIR, version_path)
         check_dir_path_readable(test_version_path)
         version_ut_files = self.find_ut_by_regex(regex, test_version_path)
         ut_files.extend(version_ut_files)
+
+        test_custom_path = os.path.join(TEST_DIR, 'test_custom_ops')
+        check_dir_path_readable(test_custom_path)
+        custom_ut_files = self.find_ut_by_regex(regex, test_custom_path)
+        ut_files.extend(custom_ut_files)
         return ut_files
 
 
@@ -82,8 +88,11 @@ class DirectoryStrategy(AccurateTest):
         is_test_file = str(Path(modify_file).parts[0]) == "test" \
             and re.match("test_(.+).py", Path(modify_file).name)
         if is_test_file:
+            ut_files = []
             version_path = get_test_torch_version_path()
-            return [os.path.join(BASE_DIR, modify_file)] if version_path in modify_file else []
+            if str(Path(modify_file).parts[1]) in [version_path, "test_custom_ops", "test_base_ops"]:
+                ut_files.append(os.path.join(BASE_DIR, modify_file))
+            return ut_files
         return []
 
 

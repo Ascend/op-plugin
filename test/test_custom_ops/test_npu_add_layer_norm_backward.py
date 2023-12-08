@@ -1,8 +1,11 @@
+import unittest
 import numpy as np
 import torch_npu
 import torch
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import get_npu_device
+
+DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 
 
 class TestNPUAddLayerNormBackward(TestCase):
@@ -67,6 +70,8 @@ class TestNPUAddLayerNormBackward(TestCase):
         dbeta = dbeta.float().cpu()
         return dx0.numpy(), dgamma.numpy(), dbeta.numpy()
 
+    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
+        "OP `AddLayerNorm` is only supported on 910B, skip this ut for this device type!")
     def test_npu_add_layer_norm_backward(self, device="npu"):
         if device is None:
             device = get_npu_device()

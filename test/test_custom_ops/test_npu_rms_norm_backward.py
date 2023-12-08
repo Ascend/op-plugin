@@ -1,8 +1,11 @@
+import unittest
 import numpy as np
 import torch_npu
 import torch
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import get_npu_device
+
+DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 
 
 class TestNPURmsNormBackward(TestCase):
@@ -36,6 +39,8 @@ class TestNPURmsNormBackward(TestCase):
         dw = dw.float().cpu()
         return dx.numpy(), dw.numpy()
 
+    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
+        "OP `RmsNorm` is only supported on 910B, skip this ut for this device type!")
     def test_npu_rms_norm_backward(self, device="npu"):
         if device is None:
             device = get_npu_device()
