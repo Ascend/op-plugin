@@ -16,6 +16,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -178,7 +179,12 @@ at::Tensor &add_(at::Tensor &self, const at::Tensor &other, const at::Scalar &al
 
     npu_preparation::CheckMemory({self_cp, other_cp}, {self_cp});
     if (!npu_utils::check_match(&self_cp)) {
-        at::Tensor contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self_cp);
+        at::Tensor contiguous_self;
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+            contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self_cp);
+        } else {
+            contiguous_self = npu_utils::format_contiguous(self_cp);
+        }
         add_out_npu_nocheck(contiguous_self, contiguous_self, other_cp, alpha);
         npu_utils::format_fresh_view(self_cp, contiguous_self);
     } else {
@@ -196,7 +202,12 @@ at::Tensor &add_(at::Tensor &self, const at::Tensor &other, const at::Scalar &al
 at::Tensor &add_(at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha)
 {
     if (!npu_utils::check_match(&self)) {
-        at::Tensor contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self);
+        at::Tensor contiguous_self;
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+            contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self);
+        } else {
+            contiguous_self = npu_utils::format_contiguous(self);
+        }
         adds_out_npu_nocheck(contiguous_self, contiguous_self, other, alpha);
         npu_utils::format_fresh_view(self, contiguous_self);
     } else {
@@ -221,7 +232,12 @@ at::Tensor &add_out(const at::Tensor &self, const at::Tensor &other, const at::S
                               output_size);
 
     if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous_add_copy_optimize(result);
+        at::Tensor contiguous_result;
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+            contiguous_result = npu_utils::format_contiguous_add_copy_optimize(result);
+        } else {
+            contiguous_result = npu_utils::format_contiguous(result);
+        }
         add_out_npu_nocheck(contiguous_result, self_cp, other_cp, alpha);
         npu_utils::format_fresh_view(result, contiguous_result);
     } else {
