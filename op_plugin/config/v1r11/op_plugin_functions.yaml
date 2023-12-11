@@ -1318,6 +1318,10 @@ official:
    impl_ns: acl_op, op_api
  - func: reflection_pad3d.out(Tensor self, int[6] padding, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: reflection_pad3d_backward(Tensor grad_output, Tensor self, int[6] padding) -> Tensor
+   impl_ns: op_api
+ - func: reflection_pad3d_backward.grad_input(Tensor grad_output, Tensor self, int[6] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
+   impl_ns: op_api
  - func: relu(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: relu_(Tensor(a!) self) -> Tensor(a!)
@@ -1368,6 +1372,10 @@ official:
    impl_ns: acl_op, op_api
  - func: replication_pad3d.out(Tensor self, int[6] padding, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: replication_pad3d_backward(Tensor grad_output, Tensor self, int[6] padding) -> Tensor
+   impl_ns: op_api
+ - func: replication_pad3d_backward.grad_input(Tensor grad_output, Tensor self, int[6] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
+   impl_ns: op_api
  - func: roll(Tensor self, int[1] shifts, int[1] dims=[]) -> Tensor
    impl_ns: acl_op, op_api
  - func: round(Tensor self) -> Tensor
@@ -2001,8 +2009,6 @@ tocpu:
   - poisson
   - polar.out
   - real
-  - replication_pad3d_backward.grad_input
-  - replication_pad3d_backward
   - repeat_interleave.Tensor
   - slow_conv_dilated3d
   - slow_conv_transpose3d.out
