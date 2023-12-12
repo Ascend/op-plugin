@@ -45,6 +45,10 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
     const at::Tensor &offset = at::Tensor();
     const at::Tensor &deq_scale1 = at::Tensor();
     const at::Tensor &deq_scale2 = at::Tensor();
+    const at::Tensor &antiquant_scale1 = at::Tensor();
+    const at::Tensor &antiquant_scale2 = at::Tensor();
+    const at::Tensor &antiquant_offset1 = at::Tensor();
+    const at::Tensor &antiquant_offset2 = at::Tensor();
     auto output_size = op_infer::array_to_small_vector(x.sizes());
     output_size[x.dim() - 1] = weight2.size(weight2.dim() - 1);
     at::Tensor result = npu_preparation::apply_tensor_without_format(x, output_size);
@@ -57,16 +61,17 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
             "The dimension of weight(has expert_tokens) should be 3, but weight1_dim_num is ",
             weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
         EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_real, bias1_real, bias2_real,
-            scale, offset, deq_scale1, deq_scale2, activation_ptr, inner_precise_val, result);
+            scale, offset, deq_scale1, deq_scale2, antiquant_scale1, antiquant_scale2, antiquant_offset1,
+            antiquant_offset2, activation_ptr, inner_precise_val, result);
     } else {
         auto expert_tokens_empty = at::Tensor();
         TORCH_CHECK(weight1_dim_num == NO_EXPERT_WEIGHT_DIM && weight2_dim_num == NO_EXPERT_WEIGHT_DIM,
             "The dimension of weight(no expert_tokens) should be 2, but weight1_dim_num is ",
             weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
         EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_empty, bias1_real, bias2_real,
-            scale, offset, deq_scale1, deq_scale2, activation_ptr, inner_precise_val, result);
+            scale, offset, deq_scale1, deq_scale2, antiquant_scale1, antiquant_scale2, antiquant_offset1,
+            antiquant_offset2, activation_ptr, inner_precise_val, result);
     }
-
     return result;
 }
 }  // namespace op_api
