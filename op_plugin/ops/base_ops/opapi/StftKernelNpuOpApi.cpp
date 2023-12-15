@@ -17,7 +17,6 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -103,18 +102,7 @@ at::Tensor stft(at::Tensor const &self,
     c10::SmallVector<int64_t, SIZE> output_size = get_output_size(return_complex, batch, frames, n);
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_type));
 
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-        c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend910B4) {
-        EXEC_NPU_CMD(aclStft, self, window, output, n_fft, hop_length, win_length, normalized, onesided, return_complex);
-    } else {
-        at::Tensor self_cpu = self.to("cpu");
-        at::Tensor window_cpu = window;
-        if (window_cpu.defined()) {
-            window_cpu = window_cpu.to("cpu");
-        }
-        auto result = at::native::stft(self_cpu, n_fft, hop_length_opt, win_length_opt, window_cpu, normalized, onesided_opt, return_complex_opt);
-        output = result.to(self.device());
-    }
+    EXEC_NPU_CMD(aclStft, self, window, output, n_fft, hop_length, win_length, normalized, onesided, return_complex);
     return output;
 }
 }
