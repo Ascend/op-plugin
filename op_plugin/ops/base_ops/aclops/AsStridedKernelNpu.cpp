@@ -21,6 +21,7 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
+using npu_compile_type = at_npu::native::CompileType;
 
 namespace {
 at::Tensor& stride_copy_out_npu_nocheck(
@@ -57,11 +58,12 @@ at::Tensor& stride_copy_out_npu_nocheck(
     at::IntArrayRef output_shape_array(output_shape);
     at::Tensor result_out = npu_preparation::apply_tensor_with_format(
         output_shape_array, self.options(), ACL_FORMAT_ND);
+    at_npu::native::NpuStorageOffsetGuard guard_input(const_cast<at::Tensor &>(self));
     cmd.Name("AsStrided")
       .InputWithoutContiguous(self)
       .Input(output_shape_array)
       .Input(output_stride_array)
-      .Input(at::Scalar(0), at::kLong)
+      .Input(storage_offset, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
       .Output(result_out)
       .Run();
     std::vector<int64_t> output_perm(tensor_dim);
@@ -72,13 +74,12 @@ at::Tensor& stride_copy_out_npu_nocheck(
     result = acl_op::npu_transpose(result_out, output_perm_array, true);
     return result;
   } else {
-    // (Ascend) Fix multi-compiling of asstrided op by wrapping attr storage_offset as a NPU Tensor instead of GE Const node.
-    // If GE Data node can pass vaule of storage_offset to op, we can switch storage_offset to Data node finally.
+    at_npu::native::NpuStorageOffsetGuard guard_input(const_cast<at::Tensor &>(self));
     cmd.Name("AsStrided")
       .InputWithoutContiguous(self)
       .Input(shape)
       .Input(stride)
-      .Input(at::Scalar(0), at::kLong)
+      .Input(storage_offset, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
       .Output(result)
       .Run();
     return result;
