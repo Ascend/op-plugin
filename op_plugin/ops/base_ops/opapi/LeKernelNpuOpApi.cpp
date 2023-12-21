@@ -45,7 +45,12 @@ at::Tensor le(const at::Tensor &self, const at::Tensor &other)
     auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
     at::Tensor result =
         at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
-    EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
+    if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+        const at::Scalar other_scalar = other.item();
+        EXEC_NPU_CMD(aclnnLeScalar, self, other_scalar, result);
+    } else {
+        EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
+    }
     return result;
 }
 

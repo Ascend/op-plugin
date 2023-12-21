@@ -709,9 +709,21 @@ grid_sampler_2d:
   - float32
   test_compare_cpu:
   - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_neg_view:
   - float64
   test_operator:
+  - float32
+  test_pointwise_ops:
+  - float32
+  test_variant_consistency_eager:
   - float32
 half:
   test_backward:
