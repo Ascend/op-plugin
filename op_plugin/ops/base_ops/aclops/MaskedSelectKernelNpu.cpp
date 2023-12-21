@@ -59,7 +59,8 @@ at::Tensor& masked_select_out(const at::Tensor& self, const at::Tensor& mask, at
   npu_preparation::CheckOut(
       {self, masked_cast},
       result,
-      self,
+      ACL_FORMAT_ND,
+      self.scalar_type(),
       output_size);
 
   masked_select_out_npu_nocheck(result, self, masked_cast);
