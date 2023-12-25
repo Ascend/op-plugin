@@ -34,7 +34,7 @@ at::Tensor upsample_nearest3d_backward(
   auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
   auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
   auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
-  double scales_d_attr = scales_h.value_or(0);
+  double scales_d_attr = scales_d.value_or(0);
   double scales_h_attr = scales_h.value_or(0);
   double scales_w_attr = scales_w.value_or(0);
 
