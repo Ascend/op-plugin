@@ -159,13 +159,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_multi_head_attention_v2_backw
     at::Tensor key_grad;
     at::Tensor value_grad;
 
-    query_grad = OpPreparation::apply_tensor_without_format(format_query.sizes(), format_query.options().dtype(at::kFloat));
-    key_grad = OpPreparation::apply_tensor_without_format(format_key.sizes(), format_key.options().dtype(at::kFloat));
-    value_grad = OpPreparation::apply_tensor_without_format(format_value.sizes(), format_value.options().dtype(at::kFloat));
-
-    query_grad.zero_();
-    key_grad.zero_();
-    value_grad.zero_();
+    query_grad = OpPreparation::apply_tensor_without_format(format_query);
+    key_grad = OpPreparation::apply_tensor_without_format(format_key);
+    value_grad = OpPreparation::apply_tensor_without_format(format_value);
 
     char* input_layout_ptr = const_cast<char *>(input_layout.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnAscendFlashAttentionGrad,
@@ -174,10 +170,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_multi_head_attention_v2_backw
                                  format_atten_mask, format_alibi_mask, format_drop_mask,
                                  scale_value, head_num, input_layout_ptr, keep_prob, pre_tokens, next_tokens,
                                  query_grad, key_grad, value_grad);
-
-    query_grad = query_grad.to(query.scalar_type());
-    key_grad = key_grad.to(query.scalar_type());
-    value_grad = value_grad.to(query.scalar_type());
 
     return std::make_tuple(query_grad, key_grad, value_grad);
 }
