@@ -60,7 +60,7 @@ def tforward(q, k, v, pse, drop_mask, atten_mask, scale, keep_prob, is_fp16=Fals
     return y.cpu(), softmax_res, x_max, x_sum
 
 
-def test_cpu_fusion_attention_v3(x_, w_, n_):
+def test_cpu_fusion_attention_v3(x_, w_, n_, h_):
     # x: B, S, K
     # w: K, 3*H
     B, S, K = x_.shape
@@ -99,6 +99,7 @@ b, n, s, d, k_dim = 2, 5, 8192, 128, 5120
 h = n * d
 head_num = n
 input_layout = 'BSH'
+head_size = 128
 x_shape = (b, s, k_dim)
 w_shape = (k_dim, 3 * h)
 qkv_shape = (b, s, 3 * h)
@@ -108,27 +109,93 @@ softmax_sum_shape = (b, n, s, 8)
 attention_in_shape = (b, n, s, d)
 
 
+def test_cpu_fusion_attention_v3_02(x_, w_, n_, in_, h_):
+    # x: B, S, K
+    # w: K, 3*H
+    B, S, K = x_.shape
+    H = w_.shape[1] / 3
+    N = n_
+    if (N != 0):
+        D = int(H / N)
+    else:
+        D = 0
+    G = 1
+    pttype = x_.dtype
+    qkv = torch.matmul(x_.float(), w_.float())
+
+
+    def parse_qkv(l_index):
+        r_index = l_index + 1
+        bsh_res = qkv.flatten()[int(l_index * B * S * H) : int(r_index * B * S * H)]
+        bngsd_res = bsh_res.reshape(B, S, G, N, D).permute(0, 3, 2, 1, 4)
+        return bngsd_res
+
+
+    q = parse_qkv(0)
+    k = parse_qkv(1)
+    v = parse_qkv(2)
+    # null pse, atten, drop
+    null_pse = torch.from_numpy(np.zeros((B, N, G, S, S))).to(pttype)
+    null_drop_mask = torch.from_numpy(np.ones((B, N, G, S, S))).to(torch.uint8)
+    null_atten_mask = torch.from_numpy(np.zeros((B, N, G, S, S))).to(pttype)
+    default_scale = 1
+    default_keep_prob = 1
+    return tforward(q, k, v, null_pse, null_drop_mask, null_atten_mask, default_scale, default_keep_prob, is_fp16=True, dtype='fp16')
+
+
 class TestFusionAttentionV3(TestCase):
 
 
-    def supported_op_exec(self, x_, w_, head_num_, input_layout_):
-        return test_cpu_fusion_attention_v3(x_, w_, head_num_)
+    def supported_op_exec(self, x_, w_, head_num_, input_layout_, head_size_):
+        return test_cpu_fusion_attention_v3(x_, w_, head_num_, head_size_)
 
 
-    def custom_op_exec(self, x_, w_, head_num_, input_layout_):
-        return npu_fusion_attention_v3(x_, w_, head_num_, input_layout_)
+    def custom_op_exec(self, x_, w_, head_num_, input_layout_, head_size_):
+        return npu_fusion_attention_v3(x_, w_, head_num_, input_layout_, head_size_)
 
     @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
         "OP `AscendAttention` is only supported on 910B, skip this ut for this device type!")
     def test_npu_fusion_attention_v3(self, device="npu"):
         x = create_float16_tensor(x_shape)
         w = create_float16_tensor(w_shape)
-        supported_output = self.supported_op_exec(x, w, head_num, input_layout)[0]
+        supported_output = self.supported_op_exec(x, w, head_num, input_layout, head_size)[0]
         supported_output_bsh = supported_output.permute(0, 3, 2, 1, 4).reshape(dy_shape) # convert [BNGSD] into [BSH]
-        custom_output = self.custom_op_exec(x.npu(), w.npu(), head_num, input_layout)[0]
+        custom_output = self.custom_op_exec(x.npu(), w.npu(), head_num, input_layout, head_size)[0]
         # WARNING: Precision check will be enabled later
         # self.assertRtolEqual(supported_output_bsh, custom_output)
 
+# kernels case params
+b2, n2, s2, d2, k_dim2 = 2, 5, 8192, 128, 5120
+h2 = n2 * d2
+head_num2 = n2
+input_layout2 = 'SBH'
+head_size2 = 256
+x_shape2 = (s2, b2, k_dim2)
+w_shape2 = (k_dim2, 3 * h2)
+qkv_shape2 = (s2, b2, 3 * h2)
+dy_shape2 = (s2, b2, h2)
+softmax_max_shape2 = (b2, n2, s2, 8)
+softmax_sum_shape2 = (b2, n2, s2, 8)
+attention_in_shape2 = (b2, n2, s2, d2)
+
+
+class TestFusionAttentionV3_02(TestCase):
+
+    def supported_op_exec(self, x_, w_, head_num_, input_layout_, head_size_):
+        return test_cpu_fusion_attention_v3_02(x_, w_, head_num_, input_layout_, head_size_)
+
+
+    def custom_op_exec(self, x_, w_, head_num_, input_layout_, head_size_):
+        return npu_fusion_attention_v3(x_, w_, head_num_, input_layout_, head_size_)
+
+    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
+        "OP `AscendAttention` is only supported on 910B, skip this ut for this device type!")
+    def test_npu_fusion_attention_v3(self, device="npu"):
+        x = create_float16_tensor(x_shape2)
+        w = create_float16_tensor(w_shape2)
+        supported_output = self.supported_op_exec(x, w, head_num2, input_layout2, head_size2)[0]
+        supported_output_bsh = supported_output.permute(0, 3, 2, 1, 4).reshape(dy_shape2) # convert [BNGSD] into [BSH]
+        custom_output = self.custom_op_exec(x.npu(), w.npu(), head_num2, input_layout2, head_size2)[0]
 
 if __name__ == "__main__":
     run_tests()

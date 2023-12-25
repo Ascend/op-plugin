@@ -23,6 +23,8 @@
 
 namespace op_api {
 const static int FLASH_THRESHOLD = 512;
+const static int64_t DROPOUT_GEN_LEN = 128;
+const static int64_t BYTE_BIT = 8;
 
 using torch::autograd::AutogradContext;
 using torch::autograd::Function;
@@ -57,9 +59,10 @@ at::Tensor format_trans(const at::Tensor &at_tensor)
 at::Tensor dropout_gen_mask_impl(const at::Tensor &self, const at::Scalar &keep_prob, const at::Scalar &seed,
     const int64_t offset, const int64_t numels)
 {
-    int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
+    int64_t length = (numels + DROPOUT_GEN_LEN - 1) / DROPOUT_GEN_LEN * DROPOUT_GEN_LEN / BYTE_BIT;
     c10::TensorOptions options = self.options();
-    at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length + 32}, options.dtype(at::kByte));
+    at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length + 32},
+        options.dtype(at::kByte));
     at::SmallVector<int64_t, ::N> offsetList = {0, offset};
     const int64_t seed1 = 0;
     OpCommand cmd;
@@ -107,21 +110,22 @@ at::Tensor dropout_gen_mask(const at::Tensor &self, double keep_prob, int64_t he
     } else if (input_layout == "SBH") {
         numels = self.size(1) * head_num * self.size(0) * self.size(0); // [B,N,S,S]
     }
-    int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
+    int64_t length = (numels + DROPOUT_GEN_LEN - 1) / DROPOUT_GEN_LEN * DROPOUT_GEN_LEN / BYTE_BIT;
     length += 32;
     if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const auto gen = at_npu::detail::getDefaultNPUGenerator();
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
         seed = pair.first;
         offset = pair.second;
-        drop_mask = dropout_gen_mask_dispatch(self, at::Scalar(keep_prob), at::Scalar(seed), offset, numels, gen_mask_parallel, sync);
+        drop_mask = dropout_gen_mask_dispatch(self, at::Scalar(keep_prob), at::Scalar(seed), offset, numels,
+            gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, self.options().dtype(at::kByte));
     }
     return drop_mask;
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_backward_v3(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_backward_v3(
     // required input
     const at::Tensor &x,
     const at::Tensor &weight,
@@ -134,6 +138,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     const c10::optional<at::Tensor> &bias,
     const c10::optional<at::Tensor> &pse,
     const c10::optional<at::Tensor> &atten_mask,
+    c10::OptionalIntArrayRef prefix,
     const c10::optional<at::Tensor> &drop_mask,
 
     // optional attrs
@@ -144,12 +149,16 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     int64_t pre_tokens,
     int64_t next_tokens,
     int64_t sparse_mode,
-    int64_t head_num)
+    int64_t head_num,
+    const std::string input_layout,
+    int64_t pse_type,
+    int64_t head_size)
 {
     const at::Tensor &pse_const = pse.value_or(at::Tensor());
     const at::Tensor &atten_mask_const = atten_mask.value_or(at::Tensor());
     const at::Tensor &drop_mask_const = drop_mask.value_or(at::Tensor());
     const at::Tensor &bias_const = bias.value_or(at::Tensor());
+    auto prefix_n = prefix.value_or(at::IntArrayRef{});
 
     at::Tensor format_x = format_trans(x);
     at::Tensor format_wgt = format_trans(weight);
@@ -178,22 +187,23 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     } else {
         dbias = at::empty({0}, qkv.options());
     }
-    at::Tensor dqkv = OpPreparation::apply_tensor_without_format(format_qkv);
 
+    char* input_layout_ptr = const_cast<char *>(input_layout.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnAscendAttentionGrad, format_x, format_wgt, format_qkv,
-        format_dy, format_pse, format_atten_mask, format_drop_mask, format_softmax_max,
+        format_dy, format_pse, format_atten_mask, prefix_n, format_drop_mask, format_softmax_max,
         format_softmax_sum, format_attention, format_bias, scale_qk, scale_q, scale_k,
-        keep_prob, pre_tokens, next_tokens, sparse_mode, head_num, dx, dwgt, dpse, dqkv);
+        keep_prob, pre_tokens, next_tokens, sparse_mode, head_num, input_layout_ptr, pse_type,
+        head_size, dx, dwgt, dpse, dbias);
 
     if (!format_pse.defined()) {
         at::Tensor dpse_required;
         dpse = dpse_required;
     }
 
-    return std::make_tuple(dx, dwgt, dpse, dqkv, dbias);
+    return std::make_tuple(dx, dwgt, dpse, dbias);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_grad_v3(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_grad_v3(
     // required input
     const at::Tensor &x,
     const at::Tensor &weight,
@@ -206,12 +216,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     // required attrs
     int64_t head_num,
     c10::string_view input_layout,
+    int64_t head_size,
 
     // optional input
     const c10::optional<at::Tensor> &bias,
     const c10::optional<at::Tensor> &pse,
     const c10::optional<at::Tensor> &atten_mask,
-    const c10::optional<at::Tensor> &prefix,
+    c10::OptionalIntArrayRef prefix,
 
     // optional attrs
     double scale_qk,
@@ -222,7 +233,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     int64_t next_tokens,
     int64_t sparse_mode,
     int64_t pse_type,
-
     int64_t seed,
     int64_t offset,
     int64_t numels,
@@ -234,18 +244,26 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     TORCH_CHECK(qkv.dim() == 3, "The shapes of the input qkv should be 3-dimensional, but got ", qkv.dim(), "-dimensional");
     TORCH_CHECK(dy.dim() == 3, "The shapes of the input dy should be 3-dimensional, but got ", dy.dim(), "-dimensional");
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
+    std::string input_layout_str = std::string(input_layout);
+    for (auto& c : input_layout_str) {
+        c = toupper(c);
+    }
+    TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH",
+        "The input_layout should be BSH/SBH(case-insensitive), but got ", input_layout);
 
-    int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
+    int64_t length = (numels + DROPOUT_GEN_LEN - 1) / DROPOUT_GEN_LEN * DROPOUT_GEN_LEN / BYTE_BIT;
     length += 32;
     at::Tensor drop_mask;
     if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
-        drop_mask = dropout_gen_mask_dispatch(qkv, at::Scalar(keep_prob), at::Scalar(seed), offset, numels, gen_mask_parallel, sync);
+        drop_mask = dropout_gen_mask_dispatch(qkv, at::Scalar(keep_prob), at::Scalar(seed), offset, numels,
+            gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, qkv.options().dtype(at::kByte));
     }
     auto result = npu_fusion_attention_backward_v3(x, weight, qkv, dy, softmax_max,
-        softmax_sum, attention_in, bias, pse, atten_mask, drop_mask, scale_qk,
-        scale_q, scale_k, keep_prob, pre_tokens, next_tokens, sparse_mode, head_num);
+        softmax_sum, attention_in, bias, pse, atten_mask, prefix, drop_mask, scale_qk,
+        scale_q, scale_k, keep_prob, pre_tokens, next_tokens, sparse_mode, head_num, input_layout_str,
+        pse_type, head_size);
     if (!sync) {
         c10_npu::NPUEvent npu_event;
         npu_event.record(c10_npu::getCurrentNPUStream());
@@ -261,11 +279,12 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const at::Tensor &weight,
     int64_t head_num,
     c10::string_view input_layout,
+    int64_t head_size,
     // optional input
     const c10::optional<at::Tensor> &bias_opt,
     const c10::optional<at::Tensor> &pse_opt,
     const c10::optional<at::Tensor> &atten_mask_opt,
-    const c10::optional<at::Tensor>& prefix_opt,
+    c10::OptionalIntArrayRef prefix,
     // optional attrs
     double scale_qk,
     double scale_q,
@@ -281,7 +300,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const at::Tensor &bias = bias_opt.value_or(at::Tensor());
     const at::Tensor &pse = pse_opt.value_or(at::Tensor());
     const at::Tensor &atten_mask = atten_mask_opt.value_or(at::Tensor());
-    const at::Tensor &prefix = prefix_opt.value_or(at::Tensor());
+    auto prefix_n = prefix.value_or(at::IntArrayRef{});
 
     TORCH_CHECK(x.dim() == 3, "The shapes of the input x should be 3-dimensional, but got ", x.dim(), "-dimensional");
     TORCH_CHECK(weight.dim() == 2, "The shapes of the input weight should be 2-dimensional, but got ", weight.dim(), "-dimensional");
@@ -296,26 +315,37 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t B = 0;
     int64_t S0 = 0; // S for query
     int64_t S1 = 0; // S for key & value
-    int64_t H = 0;
+    int64_t D = head_size;
+    int64_t N1 = head_num;
+    int64_t H1 = N1 * D;
+    int64_t H2 = 0;
+    int64_t N2 = 0;
+    int64_t G = 1;
 
     if (input_layout_str == "BSH") {
         B = x.size(0);
         S0 = x.size(1);
         S1 = x.size(1);
-        H = weight.size(1) / 3;
+        H2 = (weight.size(1) - H1) / 2;
+        N2 = H2 / D;
     } else if (input_layout_str == "SBH") {
         B = x.size(1);
         S0 = x.size(0);
         S1 = x.size(0);
-        H = weight.size(1) / 3;
+        H2 = (weight.size(1) - H1) / 2;
+        N2 = H2 / D;
     }
+    G = N1 / N2;
 
     double scale_qk_value = scale_qk;
     double scale_q_value = scale_q;
     double scale_k_value = scale_k;
 
     at::Tensor format_x = format_trans(x);
-    at::Tensor attention_score = OpPreparation::apply_tensor_without_format({B, S0, H}, x.options());
+    at::Tensor attention_score = OpPreparation::apply_tensor_without_format({B, S0, H1}, x.options());
+    if (input_layout_str == "SBH") {
+        attention_score = OpPreparation::apply_tensor_without_format({S0, B, H1}, x.options());
+    }
     at::Tensor format_weight = format_trans(weight);
     at::Tensor format_bias = format_trans(bias);
 
@@ -337,21 +367,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
         x.options().dtype(at::kFloat)); // [B, N, S0, 8]
 
-    qkv = OpPreparation::apply_tensor_without_format({B, S0, 3 * H},
-        x.options()); // [B, S0, 3 * H]
+    qkv = OpPreparation::apply_tensor_without_format({B * N2 * (G + 2), S1, D},
+        x.options());
 
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnAscendAttention, format_x, format_weight,
-        format_bias, format_pse, format_drop_mask, prefix, format_atten_mask,
+        format_bias, format_pse, format_drop_mask, prefix_n, format_atten_mask,
         scale_qk_value, scale_q_value, scale_k_value, keep_prob, pre_tokens, next_tokens, sparse_mode,
-        head_num, input_layout_ptr, pse_type, softmax_max, softmax_sum, qkv, attention_score);
-
+        head_num, input_layout_ptr, pse_type, head_size, softmax_max, softmax_sum, qkv, attention_score);
     if (!sync) {
         c10_npu::NPUEvent npu_event;
         npu_event.record(c10_npu::getCurrentNPUStream());
         npu_event.block(c10_npu::getCurrentSecondaryStream());
     }
-
     return std::make_tuple(attention_score, softmax_max, softmax_sum, qkv,
         seed, offset, numels);
 }

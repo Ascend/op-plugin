@@ -10,9 +10,9 @@
   output_differentiability: [True, True, True, True, False, False, False]
   query, key, value, pse: npu_fusion_attention_grad(query, key, value, grad, head_num, input_layout, pse, padding_mask, atten_mask, result1, result2, result3, result0, scale, keep_prob, pre_tockens, next_tockens, inner_precise, result4, result5, result6, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode, gen_mask_parallel, sync)
 
-- name: npu_fusion_attention_v3(Tensor x, Tensor weight, int head_num, str input_layout, Tensor? bias=None, Tensor? pse=None, Tensor? atten_mask=None, Tensor? prefix=None, float scale_qk=1., float scale_q=1., float scale_k=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int sparse_mode=0, int pse_type=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
+- name: npu_fusion_attention_v3(Tensor x, Tensor weight, int head_num, str input_layout, int head_size, Tensor? bias=None, Tensor? pse=None, Tensor? atten_mask=None, int[]? prefix=None, float scale_qk=1., float scale_q=1., float scale_k=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int sparse_mode=0, int pse_type=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
   output_differentiability: [True, True, True, True, False, False, False]
-  x, weight, pse: npu_fusion_attention_grad_v3(x, weight, result3, grad, result1, result2, result0, head_num, input_layout, bias, pse, atten_mask, prefix, scale_qk, scale_q, scale_k, keep_prob, pre_tockens, next_tockens, sparse_mode, pse_type, result4, result5, result6, gen_mask_parallel, sync)
+  x, weight, pse, bias: npu_fusion_attention_grad_v3(x, weight, result3, grad, result1, result2, result0, head_num, input_layout, head_size, bias, pse, atten_mask, prefix, scale_qk, scale_q, scale_k, keep_prob, pre_tockens, next_tockens, sparse_mode, pse_type, result4, result5, result6, gen_mask_parallel, sync)
 
 - name: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [True, True, False, False, False, False]
