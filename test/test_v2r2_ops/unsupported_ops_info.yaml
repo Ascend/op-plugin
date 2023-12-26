@@ -317,6 +317,22 @@ _refs.var_mean:
   test_neg_view:
   - float64
 addcdiv:
+  test_pointwise_ops:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_fake:
+  - float32
+  test_operator:
+  - float32
+  test_forward_ad:
+  - float32
+  test_backward:
+  - float32
   test_compare_cpu:
   - float32
   test_conj_view:
@@ -326,6 +342,22 @@ addcdiv:
   test_neg_view:
   - float64
 addcmul:
+  test_pointwise_ops:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_fake:
+  - float32
+  test_operator:
+  - float32
+  test_forward_ad:
+  - float32
+  test_backward:
+  - float32
   test_compare_cpu:
   - float32
   test_conj_view:
@@ -334,12 +366,16 @@ addcmul:
   - complex128
   test_neg_view:
   - float64
+  test_variant_consistency_eager:
+  - complex64
 _refs.xlogy:
   test_compare_cpu:
   - float32
   test_neg_view:
   - float64
 addmm:
+  test_pointwise_ops:
+  - float32
   test_backward:
   - float32
   test_compare_cpu:
@@ -364,6 +400,14 @@ addmm:
   - complex64
   - float32
 addmv:
+  test_pointwise_ops:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_operator:
+  - float32
+  test_forward_ad:
+  - float32
   test_backward:
   - float32
   test_compare_cpu:
@@ -380,6 +424,18 @@ addmv:
   - complex64
   - float32
 addr:
+  test_pointwise_ops:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_fake:
+  - float32
+  test_operator:
+  - float32
+  test_forward_ad:
+  - float32
   test_backward:
   - float32
   test_compare_cpu:
@@ -653,9 +709,21 @@ grid_sampler_2d:
   - float32
   test_compare_cpu:
   - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_neg_view:
   - float64
   test_operator:
+  - float32
+  test_pointwise_ops:
+  - float32
+  test_variant_consistency_eager:
   - float32
 half:
   test_backward:
@@ -718,6 +786,10 @@ index_fill:
   - complex64
   - float32
 index_add:
+  test_pointwise_ops:
+  - float32
+  test_fake:
+  - float32
   test_backward:
   - float32
   test_compare_cpu:
@@ -2138,6 +2210,8 @@ renorm:
   - complex64
   - float32
 scatter_add:
+  test_fake_autocast:
+  - float32
   test_backward:
   - float32
   test_compare_cpu:
@@ -2565,6 +2639,14 @@ __rxor__:
   test_non_standard_bool_values:
   - bool
 add:
+  test_pointwise_ops:
+  - float32
+  test_operator:
+  - float32
+  test_forward_ad:
+  - float32
+  test_backward:
+  - float32
   test_conj_view:
   - complex64
   test_neg_conj_view:
@@ -5806,6 +5888,8 @@ _refs.special.i1:
   test_out:
   - float32
 addbmm:
+  test_pointwise_ops:
+  - float32
   test_backward:
   - float32
   test_conj_view:
