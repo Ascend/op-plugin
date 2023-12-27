@@ -60,11 +60,10 @@ at::Tensor &true_divide_out(const at::Tensor &self, const at::Tensor &other, at:
     npu_preparation::CheckOut({self, other}, result, result, output_size);
 
     auto result_type = result.scalar_type();
-    auto high_type = op_plugin::utils::get_divide_result_type(self, other);
-    TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
+    auto calculate_type = op_plugin::utils::get_divide_result_type(self, other);
+    TORCH_CHECK(canCast(calculate_type, result_type), "result type ", calculate_type,
                 " can't be cast to the desired output type ", result_type);
 
-    auto calculate_type = op_plugin::utils::get_divide_calculate_type(self, other);
     at::Tensor self_temp = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
     at::Tensor other_temp = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
     at::Tensor result_cast =
@@ -86,7 +85,7 @@ at::Tensor &true_divide_out(const at::Tensor &self, const at::Tensor &other, at:
 
 at::Tensor true_divide(const at::Tensor &self, const at::Tensor &other)
 {
-    auto calculate_type = op_plugin::utils::get_divide_calculate_type(self, other);
+    auto calculate_type = op_plugin::utils::get_divide_result_type(self, other);
     at::Tensor self_temp = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
     at::Tensor other_temp = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
@@ -96,11 +95,6 @@ at::Tensor true_divide(const at::Tensor &self, const at::Tensor &other)
     auto output_size = op_infer::broadcast_ops_npu_output_size(self_temp, other_temp);
     at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
     true_div_out_npu_nocheck(result, self_temp, other_temp);
-
-    auto high_type = op_plugin::utils::get_divide_result_type(self, other);
-    if (calculate_type != high_type) {
-        result = at_npu::native::custom_ops::npu_dtype_cast(result, high_type);
-    }
     return result;
 }
 
