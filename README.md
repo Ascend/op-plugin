@@ -32,9 +32,9 @@ OP-Plugin算子插件的编译、使用依赖昇腾PyTorch Adapter。因此，�
    cd op-plugin
    ```
    可指定Python版本编包。如，--python3.8(缺省) 或 --python3.9
-   可指定昇腾pytorch版本编包。当前支持昇腾pytorch 1.11/2.0/2.1(master)版本。如，--pytorch=master(缺省) 或 --pytorch=v1.11.0 或 --pytorch=v2.0.1。
+   可指定昇腾pytorch版本编包。当前支持昇腾pytorch 1.11/2.0/2.1 版本。如，--pytorch=v2.1.0-5.0.rc3 或 --pytorch=v1.11.0-5.0.rc3 或 --pytorch=v2.0.1-5.0.rc3。
    ```
-   bash ci/build.sh --python=3.8 --pytorch=master
+   bash ci/build.sh --python=3.8 --pytorch=v2.1.0-5.0.rc3
    ```
    编译过程中，会在插件根目录新建build文件夹，并下载昇腾pytorch对应版本的源码，协同编译。
    若build/pytorch目录存在，则编译op-plugin时，不再重复下载昇腾pytorch源码。如需下载所依赖的最新昇腾pytorch源码，删除build/pytorch目录即可。
