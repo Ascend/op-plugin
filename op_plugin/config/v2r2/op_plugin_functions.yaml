@@ -1737,9 +1737,9 @@ official:
  - func: kl_div(Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
    impl_ns: acl_op, op_api
  - func: histc(Tensor self, int bins=100, Scalar min=0, Scalar max=0) -> Tensor
-   impl_ns: op_api
+   impl_ns: acl_op, op_api
  - func: histc.out(Tensor self, int bins=100, Scalar min=0, Scalar max=0, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: op_api
+   impl_ns: acl_op, op_api
  - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: index_copy(Tensor self, int dim, Tensor index, Tensor source) -> Tensor

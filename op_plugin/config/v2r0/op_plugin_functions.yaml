@@ -702,6 +702,10 @@ official:
    impl_ns: acl_op
  - func: gt_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
    impl_ns: acl_op
+ - func: histc(Tensor self, int bins=100, Scalar min=0, Scalar max=0) -> Tensor
+   impl_ns: acl_op
+ - func: histc.out(Tensor self, int bins=100, Scalar min=0, Scalar max=0, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: hardshrink(Tensor self, Scalar lambd=0.5) -> Tensor
    impl_ns: acl_op
  - func: hardshrink.out(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)
