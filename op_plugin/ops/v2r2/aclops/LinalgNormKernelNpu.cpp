@@ -156,7 +156,7 @@ at::Tensor &linalg_vector_norm_out(const at::Tensor &self, const at::Scalar &sca
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
     npu_preparation::CheckOut({self}, result, ACL_FORMAT_ND, self.scalar_type(), output_size);
 
-    result = acl_op::linalg_vector_norm(self, scalar_ord, opt_dim, keepdim, opt_dtype);
+    linalg_norm_out_npu_nocheck(result, self, scalar_ord, dim, keepdim, opt_dtype);
     return result;
 }
 
