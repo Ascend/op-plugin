@@ -26,6 +26,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_dim(const at::Tensor &self
 {
     DO_COMPATIBILITY(aclnnUniqueDim, acl_op::unique_dim(self, dim, sorted, return_inverse, return_counts));
     TORCH_CHECK(dim < self.dim(), "Dim's value must be smaller than self's dim.");
+    auto sizes = self.sizes().vec();
+    // check how many zero dimensions exist
+    auto num_zero_dims = std::count(sizes.begin(), sizes.end(), 0);
+    // tensor is not well formed as it has 0 sized dimensions
+    if (self.size(dim) == 0) {
+        TORCH_CHECK(num_zero_dims == 1, "Number of zero sized dimensions is more than one, so unique cannot be applied.");
+        at::Tensor y = at::empty(sizes, self.options());
+        at::Tensor y_inverse = at::empty({0}, self.options().dtype(at::kLong));
+        at::Tensor y_counts = at::empty({0}, self.options().dtype(at::kLong));
+        return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, y_inverse, y_counts);
+    }
+    TORCH_CHECK(num_zero_dims == 0, "There are 0 sized dimensions, and they aren't selected, so unique cannot be applied.");
+
     at::Tensor y = npu_preparation::apply_tensor_without_format(self);
     at::Tensor y_inverse = npu_preparation::apply_tensor_without_format(self.size(dim), self.options().dtype(at::kLong));
     at::Tensor y_counts = npu_preparation::apply_tensor_without_format(self.size(dim), self.options().dtype(at::kLong));
