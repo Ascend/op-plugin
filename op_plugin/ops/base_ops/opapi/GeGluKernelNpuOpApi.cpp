@@ -20,7 +20,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> npu_geglu(const at::Tensor& self, int64_t dim, int64_t approximate)
+std::tuple<at::Tensor, at::Tensor> npu_geglu(const at::Tensor &self, int64_t dim, int64_t approximate, bool activate_left)
 {
     auto dim_num = self.dim();
     if (dim_num == 0) {
@@ -36,15 +36,15 @@ std::tuple<at::Tensor, at::Tensor> npu_geglu(const at::Tensor& self, int64_t dim
 
     at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
     at::Tensor result_gelu = npu_preparation::apply_tensor_without_format(self, output_size);
-    EXEC_NPU_CMD(aclnnGeGlu, self, dim, approximate, result, result_gelu);
+    EXEC_NPU_CMD(aclnnGeGluV3, self, dim, approximate, activate_left, result, result_gelu);
     return std::tuple<at::Tensor, at::Tensor>(result, result_gelu);
 }
 
 at::Tensor npu_geglu_grad(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& gelu, int64_t dim,
-                          int64_t approximate)
+                          int64_t approximate, bool activate_left)
 {
     at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
-    EXEC_NPU_CMD(aclnnGeGluBackward, grad_output, self, gelu, dim, approximate, grad_input);
+    EXEC_NPU_CMD(aclnnGeGluV3Backward, grad_output, self, gelu, dim, approximate, activate_left, grad_input);
     return grad_input;
 }
 

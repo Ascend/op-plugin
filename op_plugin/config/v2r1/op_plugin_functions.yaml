@@ -2132,10 +2132,10 @@ custom:
   - func: npu_ptiou(Tensor bboxes, Tensor gtboxes, int mode=0) -> Tensor
     impl_ns: acl_op
     exposed: True
-  - func: npu_geglu(Tensor self, int dim=-1, int approximate=1) -> (Tensor, Tensor)
+  - func: npu_geglu(Tensor self, int dim=-1, int approximate=1, bool activate_left=False) -> (Tensor, Tensor)
     impl_ns: op_api
     exposed: True
-  - func: npu_geglu_grad(Tensor grad_output, Tensor self, Tensor gelu, int dim=-1, int approximate=1) -> Tensor
+  - func: npu_geglu_grad(Tensor grad_output, Tensor self, Tensor gelu, int dim=-1, int approximate=1, bool activate_left=False) -> Tensor
     impl_ns: op_api
   - func: npu_lstm_backward(Tensor? grady, Tensor? gradh, Tensor? gradc, Tensor input, Tensor weight, Tensor bias, Tensor hx, Tensor cx, Tensor y_output, Tensor h_output, Tensor c_output, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op

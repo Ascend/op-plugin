@@ -18,9 +18,9 @@
   output_differentiability: [True, True, False, False, False, False]
   weight_input, weight_hidden, input, bias_input, bias_hidden, hx: npu_gru_backward(grads[0], grads[1], input, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, hx, result0, result1, result2, result3, result4, result5)
 
-- name: npu_geglu(Tensor self, int dim=-1, int approximate=1) -> (Tensor, Tensor)
+- name: npu_geglu(Tensor self, int dim=-1, int approximate=1, bool activate_left=False) -> (Tensor, Tensor)
   output_differentiability: [True, False]
-  self: npu_geglu_grad(grad, self, result1, dim, approximate)
+  self: npu_geglu_grad(grad, self, result1, dim, approximate, activate_left)
 
 - name: npu_lstm(Tensor input, Tensor weight, Tensor bias, Tensor seq_mask, Tensor h, Tensor c, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, bool flag_seq, bool direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [True, True, True, False, False, False, False, False]
