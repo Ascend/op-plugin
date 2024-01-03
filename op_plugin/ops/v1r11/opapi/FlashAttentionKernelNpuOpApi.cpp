@@ -377,7 +377,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         softmax_sum = OpPreparation::apply_tensor_without_format({T, N, 8},
             query.options().dtype(at::kFloat)); // [T, N, 8]
     }
-
+    softmax_out = at::empty({0}, query.options());
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_NO_FORMAT_CHECK_CMD(
