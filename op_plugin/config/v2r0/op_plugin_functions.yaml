@@ -2517,3 +2517,5 @@ custom:
     impl_ns: op_api
   - func: npu_weight_quant_batchmatmul(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor? antiquant_offset=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? bias=None) -> Tensor
     impl_ns: op_api
+  - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
+    impl_ns: op_api
