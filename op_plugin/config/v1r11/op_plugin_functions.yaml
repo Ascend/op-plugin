@@ -2577,3 +2577,5 @@ custom:
     impl_ns: op_api
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
     impl_ns: op_api
+  - func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, Tensor? offset=None, Tensor? bias=None) -> Tensor
+    impl_ns: op_api
