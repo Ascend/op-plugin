@@ -24,8 +24,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_add_layer_norm(
     at::Tensor x = npu_preparation::apply_tensor(x1);
     at::Tensor mean = npu_preparation::apply_tensor(shape, x1.options().dtype(at::kFloat), x1);
     at::Tensor rstd = npu_preparation::apply_tensor(shape, x1.options().dtype(at::kFloat), x1);
+    const at::Tensor& bias = at::Tensor();
     
-    EXEC_NPU_CMD(aclnnAddLayerNorm, x1, x2, gamma, beta, epsilon, additional_output, y, mean, rstd, x);
+    EXEC_NPU_CMD(aclnnAddLayerNorm, x1, x2, gamma, beta, bias, epsilon, additional_output, y, mean, rstd, x);
     return std::make_tuple(y, mean, rstd, x);
 }
 } // namespace op_api
