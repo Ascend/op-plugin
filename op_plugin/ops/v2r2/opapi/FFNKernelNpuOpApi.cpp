@@ -27,7 +27,11 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Tensor &weight2,
     c10::string_view activation, c10::OptionalIntArrayRef expert_tokens, const c10::optional<at::Tensor> &bias1,
-    const c10::optional<at::Tensor> &bias2, c10::optional<int64_t> inner_precise)
+    const c10::optional<at::Tensor> &bias2, const c10::optional<at::Tensor> &scale,
+    const c10::optional<at::Tensor> &offset, const c10::optional<at::Tensor> &deq_scale1,
+    const c10::optional<at::Tensor> &deq_scale2, const c10::optional<at::Tensor> &antiquant_scale1,
+    const c10::optional<at::Tensor> &antiquant_scale2, const c10::optional<at::Tensor> &antiquant_offset1,
+    const c10::optional<at::Tensor> &antiquant_offset2, c10::optional<int64_t> inner_precise)
 {
     auto weight1_dim_num = weight1.dim();
     auto weight2_dim_num = weight2.dim();
@@ -37,18 +41,23 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
     auto wight1_k_dim = weight1.size(weight1.dim() - 2);
     TORCH_CHECK(x_k_dim == wight1_k_dim, "The k of x and weight should be equal. but x_k_dim is ",
         x_k_dim, ", wight1_k_dim is ", wight1_k_dim);
+    bool quant_or_antiquant_case = (scale.has_value() || offset.has_value() || deq_scale1.has_value() ||
+                                   deq_scale2.has_value() || antiquant_scale1.has_value() ||
+                                   antiquant_scale2.has_value() || antiquant_offset1.has_value() ||
+                                   antiquant_offset2.has_value());
+    TORCH_CHECK(quant_or_antiquant_case == false, "Quant case or antiquant case is not support.");
 
     char *activation_ptr = const_cast<char *>(activation.data());
     const at::Tensor &bias1_real = bias1.value_or(at::Tensor());
     const at::Tensor &bias2_real = bias2.value_or(at::Tensor());
-    const at::Tensor &scale = at::Tensor();
-    const at::Tensor &offset = at::Tensor();
-    const at::Tensor &deq_scale1 = at::Tensor();
-    const at::Tensor &deq_scale2 = at::Tensor();
-    const at::Tensor &antiquant_scale1 = at::Tensor();
-    const at::Tensor &antiquant_scale2 = at::Tensor();
-    const at::Tensor &antiquant_offset1 = at::Tensor();
-    const at::Tensor &antiquant_offset2 = at::Tensor();
+    const at::Tensor &scale_real = at::Tensor();
+    const at::Tensor &offset_real = at::Tensor();
+    const at::Tensor &deq_scale1_real = at::Tensor();
+    const at::Tensor &deq_scale2_real = at::Tensor();
+    const at::Tensor &antiquant_scale1_real = at::Tensor();
+    const at::Tensor &antiquant_scale2_real = at::Tensor();
+    const at::Tensor &antiquant_offset1_real = at::Tensor();
+    const at::Tensor &antiquant_offset2_real = at::Tensor();
     auto output_size = op_infer::array_to_small_vector(x.sizes());
     output_size[x.dim() - 1] = weight2.size(weight2.dim() - 1);
     at::Tensor result = npu_preparation::apply_tensor_without_format(x, output_size);
@@ -61,16 +70,16 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
             "The dimension of weight(has expert_tokens) should be 3, but weight1_dim_num is ",
             weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
         EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_real, bias1_real, bias2_real,
-            scale, offset, deq_scale1, deq_scale2, antiquant_scale1, antiquant_scale2, antiquant_offset1,
-            antiquant_offset2, activation_ptr, inner_precise_val, result);
+            scale_real, offset_real, deq_scale1_real, deq_scale2_real, antiquant_scale1_real, antiquant_scale2_real,
+            antiquant_offset1_real, antiquant_offset2_real, activation_ptr, inner_precise_val, result);
     } else {
         auto expert_tokens_empty = at::Tensor();
         TORCH_CHECK(weight1_dim_num == NO_EXPERT_WEIGHT_DIM && weight2_dim_num == NO_EXPERT_WEIGHT_DIM,
             "The dimension of weight(no expert_tokens) should be 2, but weight1_dim_num is ",
             weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
         EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_empty, bias1_real, bias2_real,
-            scale, offset, deq_scale1, deq_scale2, antiquant_scale1, antiquant_scale2, antiquant_offset1,
-            antiquant_offset2, activation_ptr, inner_precise_val, result);
+            scale_real, offset_real, deq_scale1_real, deq_scale2_real, antiquant_scale1_real, antiquant_scale2_real,
+            antiquant_offset1_real, antiquant_offset2_real, activation_ptr, inner_precise_val, result);
     }
     return result;
 }
