@@ -26,8 +26,7 @@ class DeepNormGradOutputParams:
 
 
 class TestNPUDeepNormBackward(TestCase):
-    def supported_op_exec(self, dy, x, gx, gamma):
-        alpha = 0.3
+    def supported_op_exec(self, dy, x, gx, gamma, alpha):
         epsilon = 1e-6
 
         reduce_axis = len(dy.shape) - 1
@@ -67,7 +66,7 @@ class TestNPUDeepNormBackward(TestCase):
         return DeepNormGradOutputParams(pd_x, pd_gx, pd_beta, pd_gamma)
 
 
-    def custom_op_exec(self, beta, deepnormgrad_input: DeepNormGradInputParams):
+    def custom_op_exec(self, beta, alpha, deepnormgrad_input: DeepNormGradInputParams):
         dy = deepnormgrad_input.dy
         x = deepnormgrad_input.x
         gx = deepnormgrad_input.gx
@@ -79,7 +78,7 @@ class TestNPUDeepNormBackward(TestCase):
         gamma.requires_grad = True
         setattr(beta, 'sequence_parallel', False)
         setattr(gamma, 'sequence_parallel', False)
-        _, _, y = torch_npu.npu_deep_norm(x, gx, beta, gamma, float(0.3), 1e-6)
+        _, _, y = torch_npu.npu_deep_norm(x, gx, beta, gamma, alpha, 1e-6)
 
         y.backward(dy)
         dx = x.grad
@@ -98,15 +97,15 @@ class TestNPUDeepNormBackward(TestCase):
 
     @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
         "OP `DeepNorm` is only supported on 910B, skip this ut for this device type!")
-    def test_deep_norm_backward(self, device="npu"):
+    def test_deep_norm_backward_base(self, device="npu"):
         if device is None:
             device = get_npu_device()
 
-        cpu_input_dy = np.random.uniform(0, 100, [48, 2048]).astype(np.float32)
-        cpu_input_x = np.random.uniform(0, 100, [48, 2048]).astype(np.float32)
-        cpu_input_gx = np.random.uniform(0, 100, [48, 2048]).astype(np.float32)
-        cpu_input_beta = np.random.uniform(0, 100, [2048]).astype(np.float32)
-        cpu_input_gamma = np.random.uniform(0, 100, [2048]).astype(np.float32)
+        cpu_input_dy = np.random.uniform(0, 1, [48, 2048]).astype(np.float32)
+        cpu_input_x = np.random.uniform(0, 1, [48, 2048]).astype(np.float32)
+        cpu_input_gx = np.random.uniform(0, 1, [48, 2048]).astype(np.float32)
+        cpu_input_beta = np.random.uniform(0, 1, [2048]).astype(np.float32)
+        cpu_input_gamma = np.random.uniform(0, 1, [2048]).astype(np.float32)
 
         npu_input_dy = torch.from_numpy(cpu_input_dy).to(device)
         npu_input_x = torch.from_numpy(cpu_input_x).to(device)
@@ -114,13 +113,48 @@ class TestNPUDeepNormBackward(TestCase):
         npu_input_beta = torch.from_numpy(cpu_input_beta).to(device)
         npu_input_gamma = torch.from_numpy(cpu_input_gamma).to(device)
 
+        alpha = 0.3
+
         supported_output = self.supported_op_exec(cpu_input_dy, cpu_input_x,
-                                                  cpu_input_gx, cpu_input_gamma)
+                                                  cpu_input_gx, cpu_input_gamma, alpha)
 
         deepnormgrad_input = DeepNormGradInputParams(npu_input_dy, npu_input_x,
                                                      npu_input_gx, npu_input_gamma)
 
-        custom_output = self.custom_op_exec(npu_input_beta, deepnormgrad_input)
+        custom_output = self.custom_op_exec(npu_input_beta, alpha, deepnormgrad_input)
+
+        self.assertRtolEqual(supported_output.dx, custom_output.dx)
+        self.assertRtolEqual(supported_output.dgx, custom_output.dgx)
+        self.assertRtolEqual(supported_output.dbeta, custom_output.dbeta)
+        self.assertRtolEqual(supported_output.dgamma, custom_output.dgamma)
+
+    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
+        "OP `DeepNorm` is only supported on 910B, skip this ut for this device type!")
+    def test_deep_norm_backward_different_alpha(self, device="npu"):
+        if device is None:
+            device = get_npu_device()
+
+        cpu_input_dy = np.random.uniform(0, 1, [48, 2048]).astype(np.float32)
+        cpu_input_x = np.random.uniform(0, 1, [48, 2048]).astype(np.float32)
+        cpu_input_gx = np.random.uniform(0, 1, [48, 2048]).astype(np.float32)
+        cpu_input_beta = np.random.uniform(0, 1, [2048]).astype(np.float32)
+        cpu_input_gamma = np.random.uniform(0, 1, [2048]).astype(np.float32)
+
+        npu_input_dy = torch.from_numpy(cpu_input_dy).to(device)
+        npu_input_x = torch.from_numpy(cpu_input_x).to(device)
+        npu_input_gx = torch.from_numpy(cpu_input_gx).to(device)
+        npu_input_beta = torch.from_numpy(cpu_input_beta).to(device)
+        npu_input_gamma = torch.from_numpy(cpu_input_gamma).to(device)
+
+        alpha = 1
+
+        supported_output = self.supported_op_exec(cpu_input_dy, cpu_input_x,
+                                                  cpu_input_gx, cpu_input_gamma, alpha)
+
+        deepnormgrad_input = DeepNormGradInputParams(npu_input_dy, npu_input_x,
+                                                     npu_input_gx, npu_input_gamma)
+
+        custom_output = self.custom_op_exec(npu_input_beta, alpha, deepnormgrad_input)
 
         self.assertRtolEqual(supported_output.dx, custom_output.dx)
         self.assertRtolEqual(supported_output.dgx, custom_output.dgx)

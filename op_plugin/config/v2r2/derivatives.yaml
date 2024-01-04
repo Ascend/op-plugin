@@ -136,7 +136,7 @@
 
 - name: npu_deep_norm(Tensor x, Tensor gx, Tensor beta, Tensor gamma, float alpha=0.3, float epsilon=1e-06) -> (Tensor, Tensor, Tensor)
   output_differentiability: [False, False, True]
-  x, gx, beta, gamma: npu_deep_norm_backward(grad, x, gx, gamma, result0, result1, alpha=0.3)
+  x, gx, beta, gamma: npu_deep_norm_backward(grad, x, gx, gamma, result0, result1, alpha)
 
 - name: _npu_format_cast(Tensor self, int acl_format) -> Tensor
   self: grad
