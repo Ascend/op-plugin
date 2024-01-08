@@ -47,14 +47,20 @@ uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::
 
 void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &bias, uint64_t batch_val)
 {
-    auto bias_first_dim = bias.size(0);
-    auto bias_second_dim = bias.size(1);
-    auto bias_third_dim = bias.size(2);
     auto x2_dim_num = x2.dim();
     auto x2_n_dim = x2.size(x2_dim_num - 1);
-    TORCH_CHECK(batch_val == bias_first_dim,
+    auto bias_first_dim = bias.size(0);
+    if (bias.dim() == 1) {
+        TORCH_CHECK(bias_first_dim == x2_n_dim,
+                    "infered batch value should be equal to bias batch dim value. batch infered value is ", batch_val,
+                    " and bias batch dim value is ", bias_first_dim);
+        return;
+    }
+    auto bias_second_dim = bias.size(1);
+    auto bias_third_dim = bias.size(2);
+    TORCH_CHECK(bias_first_dim == batch_val,
                 "infered batch value should be equal to bias batch dim value. batch infered value is ", batch_val,
-                " and bias batch dim value is ", bias_first_dim)
+                " and bias batch dim value is ", bias_first_dim);
     TORCH_CHECK(bias_second_dim == 1, "second dim of bias should be 1, but bias_second_dim is ", bias_second_dim);
     TORCH_CHECK(bias_third_dim == x2_n_dim, "third dim should be equal to n, but bias_third_dim is ",
                 bias_third_dim, " and n dim is ", x2_n_dim);
@@ -81,6 +87,7 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
     uint64_t batch_val = infer_out_batch_shape(x1, x2, batch_record);
     const at::Tensor long_tensor = x1_dim_num > x2_dim_num ? x1 : x2;
     auto output_size = op_infer::array_to_small_vector(long_tensor.sizes());
+    output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX);
     output_size[long_tensor.dim() - 1] = x2.size(x2_dim_num - 1);
     for (size_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
         output_size[i] = batch_record[i];
