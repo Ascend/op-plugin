@@ -20,6 +20,15 @@ CDIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 cd $CDIR/
 
+# Let ops in v2r2 be baseline currently.
+# Following updates only add incompatible ops files in corresponding branch folder.
+cp -nr $CDIR/op_plugin/ops/v2r2/* $CDIR/op_plugin/ops/v2r3/
+# Merge base info and version related info (unsupported ops)
+sed -i "1r $CDIR/test/unsupported_ops_info_base.yaml" $CDIR/test/test_v2r1_ops/unsupported_ops_info.yaml
+sed -i "1r $CDIR/test/unsupported_ops_info_base.yaml" $CDIR/test/test_v2r2_ops/unsupported_ops_info.yaml
+sed -i "1r $CDIR/test/unsupported_ops_info_base.yaml" $CDIR/test/test_v2r3_ops/unsupported_ops_info.yaml
+
+
 PYTORCH_VERSION="$1"
 IFS='.' read -ra version_parts <<< "$PYTORCH_VERSION"
 PYTORCH_VERSION_DIR="v${version_parts[0]}r${version_parts[1]}"
