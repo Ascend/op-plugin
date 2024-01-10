@@ -52,8 +52,8 @@ void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tens
     auto bias_first_dim = bias.size(0);
     if (bias.dim() == 1) {
         TORCH_CHECK(bias_first_dim == x2_n_dim,
-                    "infered batch value should be equal to bias batch dim value. batch infered value is ", batch_val,
-                    " and bias batch dim value is ", bias_first_dim);
+                    "bias_first_dim should be equal to x2 n dim . bias_first_dim is ", bias_first_dim,
+                    " and x2_n_dim is ", x2_n_dim);
         return;
     }
     auto bias_second_dim = bias.size(1);
