@@ -41,8 +41,8 @@ namespace acl_op {
                 .Input(dim)
                 .Output(output)
                 .Output(idx)
-                .Output(inverse_indices)
                 .Output(counts)
+                .Output(inverse_indices)
                 .Attr("sorted", sorted)
                 .Attr("return_inverse", return_inverse);
             cmd.Run();
@@ -57,6 +57,19 @@ namespace acl_op {
         const bool return_inverse,
         const bool return_counts)
     {
+        auto sizes = self.sizes().vec();
+        // check how many zero dimensions exist
+        auto num_zero_dims = std::count(sizes.begin(), sizes.end(), 0);
+        // tensor is not well formed as it has 0 sized dimensions
+        if (self.size(dim) == 0) {
+            TORCH_CHECK(num_zero_dims == 1, "Number of zero sized dimensions is more than one, so unique cannot be applied.");
+            at::Tensor output = npu_preparation::apply_tensor_with_format(sizes, self.options(), ACL_FORMAT_ND);
+            at::Tensor inverse_indices = npu_preparation::apply_tensor_with_format({0}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
+            at::Tensor counts = npu_preparation::apply_tensor_with_format({0}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
+            return std::tie(output, inverse_indices, counts);
+        }
+        TORCH_CHECK(num_zero_dims == 0, "There are 0 sized dimensions, and they aren't selected, so unique cannot be applied.");
+        
         at::Tensor output = npu_preparation::apply_tensor(self);
         at::Tensor idx = npu_preparation::apply_tensor_with_format(self.size(dim), self.options().dtype(at::kLong), ACL_FORMAT_ND);
         at::Tensor inverse_indices = npu_preparation::apply_tensor_with_format(self.size(dim), self.options().dtype(at::kLong), ACL_FORMAT_ND);
