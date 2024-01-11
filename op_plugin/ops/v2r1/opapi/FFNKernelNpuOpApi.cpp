@@ -41,26 +41,23 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
     auto wight1_k_dim = weight1.size(weight1.dim() - 2);
     TORCH_CHECK(x_k_dim == wight1_k_dim, "The k of x and weight should be equal. but x_k_dim is ",
         x_k_dim, ", wight1_k_dim is ", wight1_k_dim);
-    bool quant_or_antiquant_case = (scale.has_value() || offset.has_value() || deq_scale1.has_value() ||
-                                   deq_scale2.has_value() || antiquant_scale1.has_value() ||
-                                   antiquant_scale2.has_value() || antiquant_offset1.has_value() ||
-                                   antiquant_offset2.has_value());
-    TORCH_CHECK(quant_or_antiquant_case == false, "Quant case or antiquant case is not support.");
 
     char *activation_ptr = const_cast<char *>(activation.data());
     const at::Tensor &bias1_real = bias1.value_or(at::Tensor());
     const at::Tensor &bias2_real = bias2.value_or(at::Tensor());
-    const at::Tensor &scale_real = at::Tensor();
-    const at::Tensor &offset_real = at::Tensor();
-    const at::Tensor &deq_scale1_real = at::Tensor();
-    const at::Tensor &deq_scale2_real = at::Tensor();
-    const at::Tensor &antiquant_scale1_real = at::Tensor();
-    const at::Tensor &antiquant_scale2_real = at::Tensor();
-    const at::Tensor &antiquant_offset1_real = at::Tensor();
-    const at::Tensor &antiquant_offset2_real = at::Tensor();
+    const at::Tensor &scale_real = scale.value_or(at::Tensor());
+    const at::Tensor &offset_real = offset.value_or(at::Tensor());
+    const at::Tensor &deq_scale1_real = deq_scale1.value_or(at::Tensor());
+    const at::Tensor &deq_scale2_real = deq_scale2.value_or(at::Tensor());
+    const at::Tensor &antiquant_scale1_real = antiquant_scale1.value_or(at::Tensor());
+    const at::Tensor &antiquant_scale2_real = antiquant_scale2.value_or(at::Tensor());
+    const at::Tensor &antiquant_offset1_real = antiquant_offset1.value_or(at::Tensor());
+    const at::Tensor &antiquant_offset2_real = antiquant_offset2.value_or(at::Tensor());
     auto output_size = op_infer::array_to_small_vector(x.sizes());
     output_size[x.dim() - 1] = weight2.size(weight2.dim() - 1);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(x, output_size);
+    c10::TensorOptions options =
+        deq_scale1.has_value() ? x.options().dtype(at::kHalf) : x.options().dtype(x.scalar_type());
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
     int64_t inner_precise_val = inner_precise.has_value() ? inner_precise.value() : 0;
     if (expert_tokens.has_value()) {
         auto expert_tokens_real = expert_tokens.value();
@@ -79,7 +76,7 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
             weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
         EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_empty, bias1_real, bias2_real,
             scale_real, offset_real, deq_scale1_real, deq_scale2_real, antiquant_scale1_real, antiquant_scale2_real,
-            antiquant_offset1_real, antiquant_offset2_real, inner_precise_val, result);
+            antiquant_offset1_real, antiquant_offset2_real, activation_ptr, inner_precise_val, result);
     }
 
     return result;
