@@ -410,6 +410,7 @@ at::Tensor npu_prompt_flash_attention(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
+    const c10::optional<at::Tensor> &pse_shift,
     c10::OptionalIntArrayRef actual_seq_lengths,
     int64_t num_heads, double scale_value,
     int64_t pre_tokens, int64_t next_tokens,
@@ -434,7 +435,7 @@ at::Tensor npu_prompt_flash_attention(
     const at::Tensor quant_offset2;
 
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV2, query, key, value, padding_mask, atten_mask, actSeqLen, actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2,
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV2, query, key, value, pse_shift, atten_mask, actSeqLen, actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2,
                                  num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, sparse_mode, output);
     return output;
 }
