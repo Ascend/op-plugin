@@ -36,7 +36,7 @@ tensor_list layer_norm_backward_nocheck(at::Tensor &d_x, at::Tensor &dgamma, at:
     double eps = 1e-05;
 
     at_npu::native::OpCommand cmd;
-    cmd.Name("LayerNormGrad")
+    cmd.Name("LayerNormGradV3")
         .Input(d_y)
         .Input(X)
         .Input(variance_ex)
