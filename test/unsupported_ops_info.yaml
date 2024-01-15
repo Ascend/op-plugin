@@ -7837,7 +7837,13 @@ native_dropout_backward:
 native_layer_norm:
   test_backward:
   - float32
+  test_fake:
+  - float32
   test_fake_autocast:
+  - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
   - float32
   test_neg_view:
   - float64
@@ -8685,7 +8691,13 @@ nn.functional.l1_loss:
 nn.functional.layer_norm:
   test_backward:
   - float32
+  test_fake:
+  - float32
   test_fake_autocast:
+  - float32
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
   - float32
   test_forward_ad:
   - float32

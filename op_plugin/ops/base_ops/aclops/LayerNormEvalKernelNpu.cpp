@@ -71,7 +71,7 @@ at::Tensor npu_layer_norm_eval(const at::Tensor &input, at::IntArrayRef normaliz
     at::Tensor mean = npu_preparation::apply_tensor(resize_weight, output_size);
     at::Tensor rstd = npu_preparation::apply_tensor(resize_weight, output_size);
     at_npu::native::OpCommand cmd;
-    cmd.Name("LayerNorm")
+    cmd.Name("LayerNormV3")
         .Input(input)
         .Input(resize_weight)
         .Input(resize_bias)
