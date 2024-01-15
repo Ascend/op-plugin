@@ -55,23 +55,23 @@ at::Tensor& quantize_per_channel_out_nocheck(
     }
     at_npu::native::OpCommand cmd;
     cmd.Name("Quantize")
-       .Input(self)
-       .Input(scales_reshape)
-       .Input(zp_reshape)
-       .Output(result)
-       .Attr("axis", axis)
-       .Attr("dtype", dtype_str)
-       .Run();
+        .Input(self)
+        .Input(scales_reshape)
+        .Input(zp_reshape)
+        .Output(result)
+        .Attr("axis", axis)
+        .Attr("dtype", dtype_str)
+        .Run();
     return result;
 }
 } // namespace
 
-at::Tensor quantize_per_channel(
+at::Tensor npu_quantize(
     const at::Tensor& self,
     const at::Tensor& scales,
     const at::Tensor& zero_points,
-    int64_t axis,
-    at::ScalarType dtype)
+    at::ScalarType dtype,
+    int64_t axis)
 {
     axis = op_plugin::utils::make_warp_dim(axis, self.dim());
     TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1.");

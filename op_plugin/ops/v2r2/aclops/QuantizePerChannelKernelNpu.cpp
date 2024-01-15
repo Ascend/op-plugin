@@ -50,8 +50,6 @@ at::Tensor& quantize_per_channel_out_nocheck(
     auto reshape_size = quantize_reshape_size(self, axis);
     at::Tensor scales_reshape = scales.reshape(reshape_size);
     at::Tensor zero_points_reshape = zero_points.reshape(reshape_size);
-    at::Tensor scales_broadcast = acl_op::npu_broadcast(scales_reshape, self.sizes());
-    at::Tensor zero_points_broadcast = acl_op::npu_broadcast(zero_points_reshape, self.sizes());
     string dtype_str = "torch.qint8";
     if (dtype == at::ScalarType::QUInt8) {
         dtype_str = "torch.quint8";
@@ -61,8 +59,8 @@ at::Tensor& quantize_per_channel_out_nocheck(
     at_npu::native::OpCommand cmd;
     cmd.Name("Quantize")
        .Input(self)
-       .Input(scales_broadcast)
-       .Input(zero_points_broadcast)
+       .Input(scales_reshape)
+       .Input(zero_points_reshape)
        .Output(result)
        .Attr("axis", axis)
        .Attr("dtype", dtype_str)
