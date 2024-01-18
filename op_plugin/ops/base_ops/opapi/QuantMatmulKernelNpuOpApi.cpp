@@ -66,8 +66,9 @@ void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tens
                 bias_third_dim, " and n dim is ", x2_n_dim);
 }
 
-at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &scale,
-                            const c10::optional<at::Tensor> &offset, const c10::optional<at::Tensor> &bias)
+at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& scale,
+                            const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& bias,
+                            c10::optional<c10::string_view> output_dtype)
 {
     auto x1_dim_num = x1.dim();
     TORCH_CHECK(x1_dim_num >= X_MIN_DIM && x1_dim_num <= X_MAX_DIM, "x1 shape dim num should be within 2~6, but it is ",
@@ -82,7 +83,7 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
     auto x2_k_dim = x2.size(x2_dim_num - 2);
     TORCH_CHECK(x1_k_dim == x2_k_dim, "The k of x1 and x2 should be equal. but x1_k_dim is ",
                 x1_k_dim, ", x2_k_dim is ", x2_k_dim);
-    
+
     std::vector<uint64_t> batch_record;
     uint64_t batch_val = infer_out_batch_shape(x1, x2, batch_record);
     const at::Tensor long_tensor = x1_dim_num > x2_dim_num ? x1 : x2;
@@ -92,8 +93,14 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
     for (size_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
         output_size[i] = batch_record[i];
     }
-    c10::TensorOptions options =
-        offset.has_value() ? x1.options().dtype(at::kChar) : x1.options().dtype(at::kHalf);
+    c10::TensorOptions options;
+    if (!output_dtype.has_value() ||  *output_dtype == "int8") {
+        options = x1.options().dtype(at::kChar);
+    } else if (*output_dtype == "float16") {
+        options = x1.options().dtype(at::kHalf);
+    } else if (*output_dtype == "bfloat16") {
+        options = x1.options().dtype(at::kBFloat16);
+    }
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
     const at::Tensor &offset_real = offset.value_or(at::Tensor());
