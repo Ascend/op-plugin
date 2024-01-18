@@ -26,7 +26,7 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
                                         const c10::optional<at::Tensor> &quant_scale,
                                         const c10::optional<at::Tensor> &quant_offset,
                                         const c10::optional<at::Tensor> &bias,
-                                        c10::optional<int64_t> antiquant_group_size)
+                                        int64_t antiquant_group_size)
 {
     auto x_dim_num = x.dim();
     auto weight_dim_num = weight.dim();
@@ -35,7 +35,6 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
 
     auto x_k_dim = x.size(1);
     auto weight_k_dim = weight.size(0);
-    auto weight_n_dim = weight.size(1);
     TORCH_CHECK(x_k_dim == weight_k_dim, "The k of x and weight should be equal. but x_k_dim is ", x_k_dim,
                 ", weight_k_dim is ", weight_k_dim);
 
@@ -43,12 +42,12 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
     const at::Tensor &quant_scale_real = quant_scale.value_or(at::Tensor());
     const at::Tensor &quant_offset_real = quant_offset.value_or(at::Tensor());
     const at::Tensor &bias_real = bias.value_or(at::Tensor());
-    int antiquant_group_size_real = static_cast<int>(antiquant_group_size.has_value() ? antiquant_group_size.value() : 0);
+    int antiquant_group_size_real = static_cast<int>(antiquant_group_size);
     bool is_group_size_vaild = antiquant_group_size_real == 0 || (antiquant_group_size_real >= 32 &&
-                antiquant_group_size_real <= weight_n_dim - 1 && antiquant_group_size_real != 0 &&
+                antiquant_group_size_real <= weight_k_dim - 1 && antiquant_group_size_real != 0 &&
                 antiquant_group_size_real % 32 == 0);
     TORCH_CHECK(is_group_size_vaild,
-                "antiquant_group_size can be either 0 or a multiple of 32 within the range 32 to weight_n_dim-1.");
+                "antiquant_group_size can be either 0 or a multiple of 32 within the range 32 to weight_k_dim - 1.");
     TORCH_CHECK((quant_scale.has_value() || !quant_offset.has_value()),
                 "Quantization parameters are incorrectly set, quant_offset cannot exist in isolation from quant_scale");
 
