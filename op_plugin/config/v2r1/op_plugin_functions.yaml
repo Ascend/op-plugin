@@ -2397,3 +2397,5 @@ custom:
     tags: nondeterministic_seeded
   - func: npu_quantize(Tensor self, Tensor scales, Tensor zero_points, ScalarType dtype, int axis=1) -> Tensor
     impl_ns: acl_op
+  - func: npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None, ScalarType? src_dtype=None) -> Tensor
+    impl_ns: op_api
