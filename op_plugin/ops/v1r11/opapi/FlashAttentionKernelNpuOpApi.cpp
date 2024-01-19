@@ -333,11 +333,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     at::Tensor softmax_sum;
     at::Tensor softmax_out;
 
-    softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
+    c10::SmallVector<int64_t, SIZE> softmax_sizes = {B, head_num, S0, 8};
+    softmax_max = OpPreparation::apply_tensor_without_format(softmax_sizes,
         query.options().dtype(at::kFloat)); // [B, N, S0, 8]
-    softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
+    softmax_sum = OpPreparation::apply_tensor_without_format(softmax_sizes,
         query.options().dtype(at::kFloat)); // [B, N, S0, 8]
-    softmax_out = at::empty({0}, query.options());
+    c10::SmallVector<int64_t, SIZE> softmax_out_sizes = {0};
+    softmax_out = at::empty(softmax_out_sizes, query.options());
 
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore, format_query, format_key, format_value,
