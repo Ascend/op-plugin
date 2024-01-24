@@ -446,6 +446,7 @@ at::Tensor npu_prompt_flash_attention(
 at::Tensor npu_incre_flash_attention_symint(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const c10::optional<at::Tensor> &padding_mask, const c10::optional<at::Tensor> &atten_mask,
+    const c10::optional<at::Tensor> &pse_shift,
     c10::OptionalArrayRef<c10::SymInt> actual_seq_lengths, const c10::optional<at::Tensor> &antiquant_scale,
     const c10::optional<at::Tensor> &antiquant_offset, const c10::optional<at::Tensor> &block_table,
     int64_t num_heads, double scale_value, c10::string_view input_layout, int64_t num_key_value_heads,
@@ -471,7 +472,7 @@ at::Tensor npu_incre_flash_attention_symint(
     c10::optional<at::Tensor> quant_offset2;
 
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV3, query, keyTensors, valueTensors, padding_mask, atten_mask, actSeqLen,
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV3, query, keyTensors, valueTensors, pse_shift, atten_mask, actSeqLen,
         dequant_scale1, quant_scale1, dequant_scale2, quant_scale2, quant_offset2, antiquant_scale, antiquant_offset, block_table,
         num_heads, scale_value, input_layout_ptr, num_key_value_heads, block_size, inner_precise, output);
     return output;
