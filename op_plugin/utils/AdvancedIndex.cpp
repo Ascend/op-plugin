@@ -17,6 +17,7 @@
 #include "op_plugin/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_plugin {
 
@@ -54,7 +55,7 @@ std::vector<at::Tensor> npu_expand_outplace(at::TensorList to_expand)
     return result;
 }
 
-at::Tensor npu_nonzero_transpose(const at::Tensor &self)
+at::Tensor npu_nonzero_aclop(const at::Tensor &self)
 {
     c10::SmallVector<int64_t, SIZE> output_size = {self.dim(), self.numel()};
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor(output_size, self.options().dtype(at::kLong), self);
@@ -64,11 +65,29 @@ at::Tensor npu_nonzero_transpose(const at::Tensor &self)
     return result;
 }
 
-at::Tensor npu_nonzero_notranspose(const at::Tensor &self)
+at::Tensor npu_nonzero_aclnn(const at::Tensor &self)
 {
-    at::Tensor result = op_plugin::nonzero(self);
-    result = result.transpose(1, 0);
-    return result;
+    DO_COMPATIBILITY(aclnnNonzeroV2, npu_nonzero_aclop(self));
+    auto out_size = op_infer::nonzero_npu_max_output_size(self);
+    at::Tensor out =
+        at_npu::native::OpPreparation::apply_tensor_without_format(out_size, self.options().dtype(at::kLong));
+    static auto opApiFuncAddr = []() {
+        auto ret = GetOpApiFuncAddr("aclGetViewShape");
+        TORCH_CHECK(ret != nullptr);
+        return ret;
+    }();
+    using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
+    auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
+    auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnNonzeroV2, self, out);
+    int64_t* view_dims = nullptr;
+    uint64_t view_dim_num = 0;
+    auto ret = aclGetViewShape(npuAclParams.Get<1>(), &view_dims, &view_dim_num);
+    TORCH_CHECK(ret == 0, "aclGetViewShape failed.");
+    c10::SmallVector<int64_t, op_infer::SIZE> output_size(view_dims, view_dims + view_dim_num);
+    out = out.resize_(output_size);
+    delete view_dims;
+    view_dims = nullptr;
+    return out;
 }
 } // namespace
 
@@ -232,7 +251,7 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor &self,
                 }
                 at::Tensor nonzero;
                 // Replace with nonzeros
-                nonzero = flag_aclnn ? npu_nonzero_notranspose(index) : npu_nonzero_transpose(index);
+                nonzero = flag_aclnn ? npu_nonzero_aclnn(index) : npu_nonzero_aclop(index);
                 for (int64_t j = 0; j < index.dim(); j++) {
                     result.emplace_back(nonzero.select(0, j));
                 }
