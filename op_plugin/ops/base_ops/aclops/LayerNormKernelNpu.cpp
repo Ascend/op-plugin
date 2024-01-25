@@ -82,7 +82,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> layer_norm_npu_support(const at::
         variance = npu_preparation::apply_tensor_with_format(reduce_dims, weight.options(), ACL_FORMAT_ND);
 
         at_npu::native::OpCommand cmd;
-        cmd.Name("LayerNormV3")
+        cmd.Name("LayerNorm")
             .Input(input)
             .Input(weight)
             .Input(bias)
