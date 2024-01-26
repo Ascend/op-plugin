@@ -18,8 +18,12 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace acl_op {
+static const int64_t INDICES_TYPE_CONVERT = 2;
+static const int64_t BLOCKSIZE = 16;
+
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
@@ -54,17 +58,52 @@ at::Tensor &max_pool2d_with_indices_backward_out_nocheck(at::Tensor &grad_input,
     c10::SmallVector<int64_t, N> paddings = {1, padding[0], padding[1], 1};
     c10::SmallVector<int64_t, N> dilations = {1, dilation[0], dilation[1], 1};
     at_npu::native::OpCommand cmd;
-    cmd.Name("MaxPoolGradWithArgmaxV1")
-        .Input(self, "x")
-        .Input(grad_output, "grad")
-        .Input(indices, "argmax", c10::nullopt, "uint16")
-        .Output(grad_input, "y")
-        .Attr("ksize", kernel_size_new)
-        .Attr("strides", strides_size)
-        .Attr("pads", paddings)
-        .Attr("dilations", dilations)
-        .Attr("ceil_mode", ceil_mode)
-        .Run();
+
+    if (indices.dtype() == at::kChar) {
+        /* Here to fix the situation when the foward is op_api.
+        ** The indices of op_api foward, has continuous storage memory, and dtype is int8, format is NCHW, shape is 4D.
+        ** To avoid FE insert transdata node, and damage the storage memory, modifing indices's format to NC1HWC0.
+        ** And modify the dtype to short to align with argmax of op parameter.
+        */
+        at::SmallVector<int64_t, N> shape;
+        for (int i = 0; i < indices.dim(); i++) {
+            shape.emplace_back((i == 3) ? indices.size(i) / INDICES_TYPE_CONVERT / BLOCKSIZE : indices.size(i));
+        }
+        shape.emplace_back(BLOCKSIZE);
+        
+        at::Tensor indices_para = indices.view(at::kShort);
+        torch_npu::NPUStorageDesc &desc = torch_npu::NPUBridge::GetNpuStorageImpl(indices_para)->npu_desc_;
+        desc.npu_format_ = ACL_FORMAT_NC1HWC0;
+        desc.storage_sizes_ = shape;
+        desc.data_type_ = at::ScalarType::Short;
+        desc.origin_format_ = ACL_FORMAT_NCHW;
+        desc.base_sizes_ = indices.sizes();
+        desc.base_strides_ = indices.strides();
+
+        cmd.Name("MaxPoolGradWithArgmaxV1")
+            .Input(self, "x")
+            .Input(grad_output, "grad")
+            .Input(indices_para, "argmax", c10::nullopt, "uint16")
+            .Output(grad_input, "y")
+            .Attr("ksize", kernel_size_new)
+            .Attr("strides", strides_size)
+            .Attr("pads", paddings)
+            .Attr("dilations", dilations)
+            .Attr("ceil_mode", ceil_mode)
+            .Run();
+    } else {
+        cmd.Name("MaxPoolGradWithArgmaxV1")
+            .Input(self, "x")
+            .Input(grad_output, "grad")
+            .Input(indices, "argmax", c10::nullopt, "uint16")
+            .Output(grad_input, "y")
+            .Attr("ksize", kernel_size_new)
+            .Attr("strides", strides_size)
+            .Attr("pads", paddings)
+            .Attr("dilations", dilations)
+            .Attr("ceil_mode", ceil_mode)
+            .Run();
+    }
 
     if (self.dim() == 3) {
         grad_input.squeeze_(0);
