@@ -2013,7 +2013,6 @@ class Arguments:
             raise ValueError("mutable pre_self_positional arguments are not currently supported in the schema")
 
 # Names that validly are __iXXX__ indicating inplace operations.
-# Taken from https://www.python.org/dev/peps/pep-0203/#new-methods
 # NB: PyTorch hasn't actually implemented all of these
 AUGMENTED_ASSIGNMENT_NAMES = [
     "add",

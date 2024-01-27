@@ -175,7 +175,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(const at::Ten
 
     if (grad_input_mask[1]) {
         // For group conv2d: keep consistent with weight to avoid allreduce accuracy problem.
-        // For more info: https://gitee.com/ascend/pytorch-develop/pulls/2255
         if (groups > 1) {
             grad_weight = npu_preparation::apply_tensor_with_format(
                 std::get<1>(output_sizes), weight.options().dtype(at::kFloat), ACL_FORMAT_NCHW);
