@@ -49,8 +49,11 @@ void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tens
 {
     auto x2_dim_num = x2.dim();
     auto x2_n_dim = x2.size(x2_dim_num - 1);
+    auto bias_dim_num = bias.dim();
+    TORCH_CHECK(bias_dim_num == 1 || bias_dim_num == 3, "bias dim num should be 1 or 3, but actual bias_dim_num is ",
+                bias_dim_num);
     auto bias_first_dim = bias.size(0);
-    if (bias.dim() == 1) {
+    if (bias_dim_num == 1) {
         TORCH_CHECK(bias_first_dim == x2_n_dim,
                     "bias_first_dim should be equal to x2 n dim . bias_first_dim is ", bias_first_dim,
                     " and x2_n_dim is ", x2_n_dim);
