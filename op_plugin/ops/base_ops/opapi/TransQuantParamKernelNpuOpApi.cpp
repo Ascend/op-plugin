@@ -23,16 +23,10 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor npu_trans_quant_param(const at::Tensor &scale, const c10::optional<at::Tensor> &offset)
 {
     auto scale_dim_num = scale.dim();
-    TORCH_CHECK(scale_dim_num == 1, "The scale dim num should be 1. but scale_dim_num is ", scale_dim_num);
-
     auto output_size = op_infer::array_to_small_vector(scale.sizes());
     c10::TensorOptions options = scale.options().dtype(at::kLong);
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
     const at::Tensor &offset_real = offset.value_or(at::Tensor());
-    if (offset.has_value()) {
-        auto offset_dim_num = offset_real.dim();
-        TORCH_CHECK(offset_dim_num == 1, "The offset dim num should be 1. but offset_dim_num is ", offset_dim_num);
-    }
     EXEC_NPU_CMD(aclnnTransQuantParamV2, scale, offset_real, result);
     return result;
 }
