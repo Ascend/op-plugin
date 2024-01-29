@@ -79,8 +79,6 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     auto x2_dim_num = x2.dim();
     TORCH_CHECK(x2_dim_num >= X_MIN_DIM && x2_dim_num <= X_MAX_DIM, "x2 shape dim num should be within 2~6, but it is ",
                 x2_dim_num);
-    TORCH_CHECK(x1_dim_num == x2_dim_num, "x1_dim_num should be equal to x2_dim_num, but x1_dim_num is ", x1_dim_num,
-                " and x2_dim_num is ", x2_dim_num);
     auto x1_k_dim = x1.size(x1_dim_num - 1);
     auto x2_n_dim = x2.size(x2_dim_num - 1);
     auto x2_k_dim = x2.size(x2_dim_num - 2);
