@@ -31,27 +31,27 @@ at::Tensor& index_add_out_npu_nocheck(
     const at::Tensor& index,
     const at::Tensor& source,
     const at::Scalar& alpha) {
-  at::Tensor indices = index;
-  if (index.scalar_type() != at::ScalarType::Int) {
-    indices = at_npu::native::custom_ops::npu_dtype_cast(index, at::kInt);
-  }
-  if (index.dim() == 0) {
-    indices.unsqueeze_(0);
-  }
+    at::Tensor indices = index;
+    if (index.scalar_type() != at::ScalarType::Int) {
+        indices = at_npu::native::custom_ops::npu_dtype_cast(index, at::kInt);
+    }
+    if (index.dim() == 0) {
+        indices.unsqueeze_(0);
+    }
 
-  at::SmallVector<int64_t, N> pad_size = op_infer::array_to_small_vector(self.sizes());
-  pad_size[dim] = indices.sizes()[0];
-  at::Tensor source_broadcast = acl_op::npu_broadcast(source, pad_size);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("InplaceIndexAdd")
-      .Input(self)
-      .Input(indices)
-      .Input(source_broadcast)
-      .Input(alpha, self.scalar_type())
-      .Output(result)
-      .Attr("axis", dim)
-      .Run();
-  return result;
+    at::SmallVector<int64_t, N> pad_size = op_infer::array_to_small_vector(self.sizes());
+    pad_size[dim] = indices.sizes()[0];
+    at::Tensor source_broadcast = acl_op::npu_broadcast(source, pad_size);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("InplaceIndexAdd")
+        .Input(self)
+        .Input(indices)
+        .Input(source_broadcast)
+        .Input(alpha, self.scalar_type())
+        .Output(result)
+        .Attr("axis", dim)
+        .Run();
+    return result;
 }
 } // namespace
 
@@ -62,17 +62,18 @@ at::Tensor& index_add_out(
     const at::Tensor& source,
     const at::Scalar& alpha,
     at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self, index, source},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    index_add_out_npu_nocheck(contiguous_result, self, dim, index, source, alpha);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    index_add_out_npu_nocheck(result, self, dim, index, source, alpha);
-  }
+    npu_preparation::CheckOut(
+        {self, index, source},
+        result,
+        self);
+    result.copy_(self);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        index_add_out_npu_nocheck(contiguous_result, contiguous_result, dim, index, source, alpha);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        index_add_out_npu_nocheck(result, result, dim, index, source, alpha);
+    }
   return result;
 }
 
@@ -82,9 +83,9 @@ at::Tensor index_add(
     const at::Tensor& index,
     const at::Tensor& source,
     const at::Scalar& alpha) {
-  at::Tensor result(self.clone());
-  index_add_out_npu_nocheck(result, result, dim, index, source, alpha);
-  return result;
+    at::Tensor result(self.clone());
+    index_add_out_npu_nocheck(result, result, dim, index, source, alpha);
+    return result;
 }
 
 at::Tensor index_add(
@@ -93,6 +94,6 @@ at::Tensor index_add(
     const at::Tensor& index,
     const at::Tensor& source,
     const at::Scalar& alpha) {
-  return acl_op::index_add(self, dimname_to_position(self, dim), index, source, alpha);
+    return acl_op::index_add(self, dimname_to_position(self, dim), index, source, alpha);
 }
 } // namespace acl_op
