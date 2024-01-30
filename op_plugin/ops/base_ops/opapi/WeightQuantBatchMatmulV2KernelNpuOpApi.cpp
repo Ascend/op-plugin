@@ -19,7 +19,7 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-
+constexpr int MINIMUM_SHAPE_SIZE = 2;
 at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &weight,
                                         const at::Tensor &antiquant_scale,
                                         const c10::optional<at::Tensor> &antiquant_offset,
@@ -30,22 +30,36 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
 {
     auto x_dim_num = x.dim();
     auto weight_dim_num = weight.dim();
-    TORCH_CHECK(x_dim_num == 2, "x shape dims should be 2, but it is ", x_dim_num);
-    TORCH_CHECK(weight_dim_num == 2, "weight shape dims should be 2, but it is ", weight_dim_num);
-
-    auto x_k_dim = x.size(1);
-    auto weight_k_dim = weight.size(0);
+    TORCH_CHECK(x_dim_num >= MINIMUM_SHAPE_SIZE, "x shape do not support dim num less than 2, but it is ", x_dim_num);
+    TORCH_CHECK(weight_dim_num >= MINIMUM_SHAPE_SIZE, "weight shape do not support dim num less than 2, but it is ", weight_dim_num);
+    TORCH_CHECK(!(std::min(x_dim_num, weight_dim_num) > MINIMUM_SHAPE_SIZE && x_dim_num != weight_dim_num),
+                "x dim is not the same as weight dim");
+    auto x_k_dim = x.size(x_dim_num - 1);
+    auto weight_k_dim = weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE);
     TORCH_CHECK(x_k_dim == weight_k_dim, "The k of x and weight should be equal. but x_k_dim is ", x_k_dim,
                 ", weight_k_dim is ", weight_k_dim);
-
+    auto out_dim_num = std::max(x_dim_num, weight_dim_num);
+    auto output_size = op_infer::array_to_small_vector(x.sizes());
+    output_size[out_dim_num - MINIMUM_SHAPE_SIZE] = x.size(x_dim_num - MINIMUM_SHAPE_SIZE);
+    output_size[out_dim_num - MINIMUM_SHAPE_SIZE + 1] = weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE + 1);
+    if (x_dim_num == weight_dim_num) {
+        for (auto i = 0; i < out_dim_num - MINIMUM_SHAPE_SIZE; i++) {
+            TORCH_CHECK(x.size(i) == weight.size(i), "batch of x is diff from batch of weight");
+            output_size[i] = x.size(i);
+        }
+    } else {
+        auto longer_tensor = x_dim_num > weight_dim_num ? x : weight;
+        for (auto i = 0; i < out_dim_num - MINIMUM_SHAPE_SIZE; i++) {
+            output_size[i] = longer_tensor.size(i);
+        }
+    }
     const at::Tensor &antiquant_offset_real = antiquant_offset.value_or(at::Tensor());
     const at::Tensor &quant_scale_real = quant_scale.value_or(at::Tensor());
     const at::Tensor &quant_offset_real = quant_offset.value_or(at::Tensor());
     const at::Tensor &bias_real = bias.value_or(at::Tensor());
     int antiquant_group_size_real = static_cast<int>(antiquant_group_size);
     bool is_group_size_vaild = antiquant_group_size_real == 0 || (antiquant_group_size_real >= 32 &&
-                antiquant_group_size_real <= weight_k_dim - 1 && antiquant_group_size_real != 0 &&
-                antiquant_group_size_real % 32 == 0);
+                antiquant_group_size_real <= weight_k_dim - 1 && antiquant_group_size_real % 32 == 0);
     TORCH_CHECK(is_group_size_vaild,
                 "antiquant_group_size can be either 0 or a multiple of 32 within the range 32 to weight_k_dim - 1.");
     TORCH_CHECK((quant_scale.has_value() || !quant_offset.has_value()),
@@ -54,9 +68,6 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
     c10::TensorOptions options =
         quant_scale.has_value() ? x.options().dtype(at::kChar) : x.options().dtype(x.scalar_type());
 
-    auto output_size = op_infer::array_to_small_vector(x.sizes());
-    output_size[0] = x.size(0);
-    output_size[1] = weight.size(1);
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
     EXEC_NPU_CMD(aclnnWeightQuantBatchMatmulV2, x, weight, antiquant_scale, antiquant_offset_real, quant_scale_real,
