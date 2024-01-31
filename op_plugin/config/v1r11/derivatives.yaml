@@ -124,8 +124,8 @@
   self: npu_swiglu_backward(grad, self, dim)
 
 - name: npu_add_layer_norm(Tensor x1, Tensor x2, Tensor gamma, Tensor beta, float epsilon=1e-05, bool additional_output=False) -> (Tensor, Tensor, Tensor, Tensor)
-  output_differentiability: [True, False, False, False]
-  x1, x2, gamma, beta: npu_add_layer_norm_backward(grad, x1, x2, result2, result1, gamma)
+  output_differentiability: [True, False, False, True]
+  x1, x2, gamma, beta: npu_add_layer_norm_backward(grads[0], x1, x2, result2, result1, gamma, grads[1])
 
 - name: npu_deep_norm(Tensor x, Tensor gx, Tensor beta, Tensor gamma, float alpha=0.3, float epsilon=1e-06) -> (Tensor, Tensor, Tensor)
   output_differentiability: [False, False, True]

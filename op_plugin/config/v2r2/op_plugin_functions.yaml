@@ -2125,7 +2125,7 @@ custom:
     impl_ns: op_api
   - func: npu_add_layer_norm(Tensor x1, Tensor x2, Tensor gamma, Tensor beta, float epsilon=1e-05, bool additional_output=False) -> (Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op, op_api
-  - func: npu_add_layer_norm_backward(Tensor dy, Tensor x1, Tensor x2, Tensor rstd, Tensor mean, Tensor gamma) -> (Tensor, Tensor, Tensor, Tensor)
+  - func: npu_add_layer_norm_backward(Tensor? dy_opt, Tensor x1, Tensor x2, Tensor rstd, Tensor mean, Tensor gamma, Tensor? dsum_opt) -> (Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op, op_api
   - func: npu_add_rms_norm(Tensor x1, Tensor x2, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor, Tensor)
     impl_ns: acl_op, op_api
