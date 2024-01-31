@@ -77,8 +77,8 @@ at::Tensor &max_pool2d_with_indices_backward_out_nocheck(at::Tensor &grad_input,
         desc.storage_sizes_ = shape;
         desc.data_type_ = at::ScalarType::Short;
         desc.origin_format_ = ACL_FORMAT_NCHW;
-        desc.base_sizes_ = indices.sizes();
-        desc.base_strides_ = indices.strides();
+        desc.base_sizes_ = indices_para.sizes();
+        desc.base_strides_ = indices_para.strides();
 
         cmd.Name("MaxPoolGradWithArgmaxV1")
             .Input(self, "x")
