@@ -67,11 +67,20 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
 
     c10::TensorOptions options =
         quant_scale.has_value() ? x.options().dtype(at::kChar) : x.options().dtype(x.scalar_type());
-
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
-    EXEC_NPU_CMD(aclnnWeightQuantBatchMatmulV2, x, weight, antiquant_scale, antiquant_offset_real, quant_scale_real,
-                 quant_offset_real, bias_real, antiquant_group_size_real, result);
+    if (quant_scale.has_value() && quant_scale_real.dtype() == at::kFloat) {
+        auto quant_scale_output_size = op_infer::array_to_small_vector(quant_scale_real.sizes());
+        c10::TensorOptions quant_scale_options = quant_scale_real.options().dtype(at::kLong);
+        at::Tensor quant_scale_result = npu_preparation::apply_tensor_without_format(quant_scale_output_size,
+                                                                                     quant_scale_options);
+        EXEC_NPU_CMD(aclnnTransQuantParamV2, quant_scale_real, quant_offset_real, quant_scale_result);
+        EXEC_NPU_CMD(aclnnWeightQuantBatchMatmulV2, x, weight, antiquant_scale, antiquant_offset_real,
+                     quant_scale_result, quant_offset_real, bias_real, antiquant_group_size_real, result);
+    } else {
+        EXEC_NPU_CMD(aclnnWeightQuantBatchMatmulV2, x, weight, antiquant_scale, antiquant_offset_real, quant_scale_real,
+                     quant_offset_real, bias_real, antiquant_group_size_real, result);
+    }
 
     return result;
 }
