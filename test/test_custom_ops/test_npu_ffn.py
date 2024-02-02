@@ -5,9 +5,7 @@ import torch
 
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
+from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestFFN(TestCase):
@@ -106,8 +104,7 @@ class TestFFN(TestCase):
         else:
             return torch_npu.npu_ffn(x, weight1, weight2, activation, inner_precise=1)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `FFN` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_npu_ffn(self, device="npu"):
         torch.manual_seed(0)
         x = torch.randn(8192, 320, dtype=torch.float16).npu()
@@ -123,8 +120,7 @@ class TestFFN(TestCase):
         self.assertRtolEqual(x, x_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `FFN` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_npu_ffn_antiquant(self, device="npu"):
         torch.manual_seed(0)
         np.random.seed(0)
@@ -157,8 +153,7 @@ class TestFFN(TestCase):
         self.assertRtolEqual(x, x_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `FFN` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_npu_ffn_quant(self, device="npu"):
         torch.manual_seed(0)
         np.random.seed(0)

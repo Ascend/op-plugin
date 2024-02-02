@@ -3,10 +3,8 @@ import numpy as np
 import torch_npu
 import torch
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import get_npu_device
+from torch_npu.testing.common_utils import get_npu_device, SupportedDevices
 torch.npu.set_compile_mode(jit_compile=False)
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 
 
 class TestNPUAddLayerNorm(TestCase):
@@ -23,8 +21,7 @@ class TestNPUAddLayerNorm(TestCase):
         y, mean, rstd, x = torch_npu.npu_add_layer_norm(x1, x2, gamma, beta, 1e-5, True)
         return y.cpu().numpy(), mean.cpu().numpy(), rstd.cpu().numpy(), x.cpu().numpy()
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `AddLayerNorm` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_add_layer_norm(self, device="npu"):
         if device is None:
             device = get_npu_device()

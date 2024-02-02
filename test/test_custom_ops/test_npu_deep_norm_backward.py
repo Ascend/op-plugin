@@ -3,10 +3,8 @@ import numpy as np
 import torch_npu
 import torch
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import get_npu_device
+from torch_npu.testing.common_utils import get_npu_device, SupportedDevices
 torch.npu.set_compile_mode(jit_compile=False)
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 
 
 class DeepNormGradInputParams:
@@ -95,8 +93,7 @@ class TestNPUDeepNormBackward(TestCase):
         return DeepNormGradOutputParams(dx.numpy(), dgx.numpy(),
                                         dbeta.numpy(), dgamma.numpy())
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `DeepNorm` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_deep_norm_backward_base(self, device="npu"):
         if device is None:
             device = get_npu_device()
@@ -128,8 +125,7 @@ class TestNPUDeepNormBackward(TestCase):
         self.assertRtolEqual(supported_output.dbeta, custom_output.dbeta)
         self.assertRtolEqual(supported_output.dgamma, custom_output.dgamma)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `DeepNorm` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_deep_norm_backward_different_alpha(self, device="npu"):
         if device is None:
             device = get_npu_device()

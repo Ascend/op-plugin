@@ -4,9 +4,7 @@ import torch
 
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestAntiQuant(TestCase):
@@ -28,8 +26,7 @@ class TestAntiQuant(TestCase):
         output = torch_npu.npu_anti_quant(input_x, scale, offset=offset, dst_dtype=dst_dtype, src_dtype=src_dtype)
         return output.cpu().detach()
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `AscendAntiQuant` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_anti_quant(self, device="npu"):
         shape_format = [
             [[np.int8, -1, [10, 100]], [np.float32, -1, [100]], None, torch.float16, None],

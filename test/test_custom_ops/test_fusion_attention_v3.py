@@ -4,9 +4,7 @@ import torch_npu
 import numpy as np
 from torch_npu import npu_fusion_attention_v3
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
+from torch_npu.testing.common_utils import SupportedDevices
 
 
 def create_float16_tensor(shape):
@@ -153,8 +151,7 @@ class TestFusionAttentionV3(TestCase):
     def custom_op_exec(self, x_, w_, head_num_, input_layout_, head_size_):
         return npu_fusion_attention_v3(x_, w_, head_num_, input_layout_, head_size_)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `AscendAttention` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_npu_fusion_attention_v3(self, device="npu"):
         x = create_float16_tensor(x_shape)
         w = create_float16_tensor(w_shape)
@@ -188,8 +185,7 @@ class TestFusionAttentionV3_02(TestCase):
     def custom_op_exec(self, x_, w_, head_num_, input_layout_, head_size_):
         return npu_fusion_attention_v3(x_, w_, head_num_, input_layout_, head_size_)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `AscendAttention` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_npu_fusion_attention_v3(self, device="npu"):
         x = create_float16_tensor(x_shape2)
         w = create_float16_tensor(w_shape2)

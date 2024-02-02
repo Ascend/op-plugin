@@ -8,10 +8,8 @@ import torch.multiprocessing as mp
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 
 
 class TestMmReduceScatterBase(TestCase):
@@ -84,8 +82,7 @@ class TestMmReduceScatterBase(TestCase):
         return [out[index * i:index * (i + 1), :] for i in range(world_size)]
 
     @skipIfUnsupportMultiNPU(8)
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-                     "OP `MatmulReduceScatter` is only supported on 910B, skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_npu_mm_reduce_scatter_base(self):
         world_size = 8
         dtype = np.float16

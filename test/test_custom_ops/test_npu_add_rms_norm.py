@@ -5,9 +5,7 @@ import torch
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import get_npu_device
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
+from torch_npu.testing.common_utils import get_npu_device, SupportedDevices
 
 
 class TestNPUAddRmsNorm(TestCase):
@@ -31,8 +29,7 @@ class TestNPUAddRmsNorm(TestCase):
         y, rstd, x = torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon)
         return y.cpu().numpy(), rstd.cpu().numpy(), x.cpu().numpy()
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `AddRmsNorm` is only supported on , skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_add_rms_norm_fp32(self, device="npu"):
         if device is None:
             device = get_npu_device()
@@ -49,8 +46,7 @@ class TestNPUAddRmsNorm(TestCase):
         self.assertRtolEqual(supported_output1, custom_output1, 0.0001)
         self.assertRtolEqual(supported_output2, custom_output2, 0.0001)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `AddRmsNorm` is only supported on , skip this ut for this device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_add_rms_norm_fp16(self):
         cpu_input0 = np.random.uniform(0, 100, [1024, 12288]).astype(np.float16)
         cpu_input1 = np.random.uniform(0, 100, [1024, 12288]).astype(np.float16)

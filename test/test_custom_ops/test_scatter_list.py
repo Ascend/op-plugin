@@ -5,9 +5,8 @@ import torch
 
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import SupportedDevices
 
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 torch.npu.set_compile_mode(jit_compile=False)
 torch.npu.config.allow_internal_format = False
 
@@ -32,8 +31,7 @@ class TestScatterList(TestCase):
         axis = -2
         return torch_npu.npu_scatter_list(var_list, indice, updates, mask, reduce, axis)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-                     "OP `ScatterList` is tested on 910B(support 910B/910C), skip this ut for other device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_npu_scatter_list(self, device="npu"):
         if torch.__version__ > '2.0':
             var_list = []

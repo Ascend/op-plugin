@@ -7,9 +7,7 @@ import numpy as np
 import torch
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
+from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestQuantMatmul(TestCase):
@@ -44,9 +42,7 @@ class TestQuantMatmul(TestCase):
     def custom_op_exec(self, x1, x2, uint64_deq_scale):
         return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B' or DEVICE_NAME != 'Ascend910C',
-        "OP `npu_quant_matmul` is only supported on 910B and 910C, skip this ut for this device type!")
-
+    @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul(self, device="npu"):
         torch.mannal_seed(0)
         x1 = torch.randn(8192, 320, dtype=torch.int8).npu()
