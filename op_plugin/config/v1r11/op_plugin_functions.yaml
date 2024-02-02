@@ -2587,6 +2587,6 @@ custom:
   - func: npu_quantize(Tensor self, Tensor scales, Tensor zero_points, ScalarType dtype, int axis=1) -> Tensor
     impl_ns: acl_op
   - func: scatter_update(Tensor self, Tensor indices, Tensor updates, int axis) -> Tensor
-    impl_ns: op_api
+    impl_ns: acl_op, op_api
   - func: scatter_update_(Tensor(a!) self, Tensor indices, Tensor updates, int axis) -> Tensor(a!)
-    impl_ns: op_api
+    impl_ns: acl_op, op_api
