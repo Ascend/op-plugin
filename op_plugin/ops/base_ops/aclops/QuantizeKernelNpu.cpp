@@ -36,7 +36,7 @@ c10::SmallVector<int64_t, SIZE> quantize_reshape_size(
     return out_size;
 }
 
-at::Tensor& quantize_per_channel_out_nocheck(
+at::Tensor& npu_quantize_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& scales,
@@ -46,7 +46,7 @@ at::Tensor& quantize_per_channel_out_nocheck(
 {
     auto reshape_size = quantize_reshape_size(self, axis);
     at::Tensor scales_reshape = scales.reshape(reshape_size);
-    at::Tensor zp_reshape = zero_points.reshape(reshape_size);
+    at::Tensor zp_reshape = zero_points.defined() ? zero_points.reshape(reshape_size) : (at::Tensor());
     string dtype_str = "torch.qint8";
     if (dtype == at::ScalarType::QUInt8) {
         dtype_str = "torch.quint8";
@@ -56,9 +56,13 @@ at::Tensor& quantize_per_channel_out_nocheck(
     at_npu::native::OpCommand cmd;
     cmd.Name("Quantize")
         .Input(self)
-        .Input(scales_reshape)
-        .Input(zp_reshape)
-        .Output(result)
+        .Input(scales_reshape);
+    if (zero_points.defined()) {
+        cmd.Input(zp_reshape);
+    } else {
+        cmd.Input();
+    }
+    cmd.Output(result)
         .Attr("axis", axis)
         .Attr("dtype", dtype_str)
         .Run();
@@ -69,14 +73,17 @@ at::Tensor& quantize_per_channel_out_nocheck(
 at::Tensor npu_quantize(
     const at::Tensor& self,
     const at::Tensor& scales,
-    const at::Tensor& zero_points,
+    const c10::optional<at::Tensor>& zero_points_opt,
     at::ScalarType dtype,
     int64_t axis)
 {
+    const at::Tensor& zero_points = c10::value_or_else(zero_points_opt, [] { return at::Tensor(); });
     axis = op_plugin::utils::make_warp_dim(axis, self.dim());
     TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1.");
-    TORCH_CHECK(zero_points.dim() == 1, "Zero points' dim should be equal to 1.");
-    TORCH_CHECK(scales.sizes()[0] == zero_points.sizes()[0], "Scales' size should be equal to zero points' size.");
+    if (zero_points.defined()) {
+        TORCH_CHECK(zero_points.dim() == 1, "Zero points' dim should be equal to 1.");
+        TORCH_CHECK(scales.sizes()[0] == zero_points.sizes()[0], "Scales' size should be equal to zero points' size.");
+    }
     TORCH_CHECK(axis <= self.sizes().size() - 1, "Unexpected value of axis.");
     TORCH_CHECK(scales.sizes()[0] == self.sizes()[axis], "length of scales must equal to the specified dimension.");
     auto output_dtype = at::kInt;
@@ -88,7 +95,7 @@ at::Tensor npu_quantize(
         output_dtype = at::kInt;
     }
     at::Tensor result = npu_preparation::apply_tensor(self, self.options().dtype(output_dtype));
-    quantize_per_channel_out_nocheck(result, self, scales, zero_points, axis, dtype);
+    npu_quantize_out_nocheck(result, self, scales, zero_points, axis, dtype);
     return result;
 }
 } // namespace acl_op

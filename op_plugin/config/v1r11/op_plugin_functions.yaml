@@ -2584,7 +2584,7 @@ custom:
   - func: _npu_dropout_gen_mask.Tensor(Tensor self, int[] size, float p, int seed, int offset, *, bool? parallel=True, bool? sync=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded
-  - func: npu_quantize(Tensor self, Tensor scales, Tensor zero_points, ScalarType dtype, int axis=1) -> Tensor
+  - func: npu_quantize(Tensor self, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1) -> Tensor
     impl_ns: acl_op
   - func: scatter_update(Tensor self, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op, op_api
