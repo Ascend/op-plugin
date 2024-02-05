@@ -438,11 +438,20 @@ at::Tensor npu_incre_flash_attention(
     const c10::optional<at::Tensor> &padding_mask, const c10::optional<at::Tensor> &atten_mask,
     c10::OptionalIntArrayRef actual_seq_lengths, const c10::optional<at::Tensor> &antiquant_scale,
     const c10::optional<at::Tensor> &antiquant_offset, const c10::optional<at::Tensor> &block_table,
-    int64_t num_heads, double scale_value, c10::string_view input_layout, int64_t num_key_value_heads,
-    int64_t block_size, int64_t inner_precise)
+    const c10::optional<at::Tensor> &dequant_scale1, const c10::optional<at::Tensor> &quant_scale1,
+    const c10::optional<at::Tensor> &dequant_scale2, const c10::optional<at::Tensor> &quant_scale2,
+    const c10::optional<at::Tensor> &quant_offset2, int64_t num_heads, double scale_value,
+    c10::string_view input_layout, int64_t num_key_value_heads, int64_t block_size, int64_t inner_precise)
 {
     // construct the output tensor of the NPU
-    auto output = npu_preparation::apply_tensor_without_format(query);
+    at::Tensor output;
+    if (ConvertType(quant_scale2) != nullptr) {
+        output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Char));
+    } else if (query.dtype() == at::kChar) {
+        output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Half));
+    } else {
+        output = npu_preparation::apply_tensor_without_format(query);
+    }
 
     // convert str
     std::string input_layout_str = std::string(input_layout);
@@ -452,12 +461,6 @@ at::Tensor npu_incre_flash_attention(
     at::TensorList valueTensors = value;
 
     auto actSeqLen = (actual_seq_lengths.has_value()) ? actual_seq_lengths.value().vec() : std::vector<at::IntArrayRef::value_type>{};
-
-    c10::optional<at::Tensor> dequant_scale1;
-    c10::optional<at::Tensor> quant_scale1;
-    c10::optional<at::Tensor> dequant_scale2;
-    c10::optional<at::Tensor> quant_scale2;
-    c10::optional<at::Tensor> quant_offset2;
 
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV3, query, keyTensors, valueTensors, padding_mask, atten_mask, actSeqLen,
