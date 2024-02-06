@@ -32,6 +32,13 @@ class TestTransQuantParam(TestCase):
         supported_output = self.supported_op_exec(deq_scale_shape, fp32_deq_scale)
         custom_output = self.custom_op_exec(fp32_deq_scale)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
+        
+        expect_ret = torch.randint(-1, 1, (4,), dtype=torch.int64).npu()
+        scale = torch.randn(1, dtype=torch.float32).npu()
+        offset = torch.randn(4, dtype=torch.float32).npu()
+        res = torch_npu.npu_trans_quant_param(scale, offset)
+        self.assertTrue(res.shape == expect_ret.shape)
+        self.assertTrue(res.dtype == expect_ret.dtype)
 
 
 if __name__ == "__main__":
