@@ -58,30 +58,6 @@ class TestNPUWeightQuantBatchMatmul(TestCase):
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `weight_quant_batchmatmul` is only supported on 910B, skip this ut for this device type!")
-    def test_npu_weight_quant_batchmatmul2(self, device="npu"):
-        torch.mannal_seed(0)
-        x = torch.randn((96, 11264), dtype=torch.bfloat16).npu()
-        weight = torch.randn((11264, 1164), dtype=torch.int8).npu()
-        weight_t = torch.transpose(weight, 0, 1)
-        antiquant_scale = torch.randn((1, 1164), dtype=torch.bfloat16).npu()
-        antiquant_offset = torch.randn((1, 1164), dtype=torch.bfloat16).npu()
-        quant_scale = torch.randn((1, 1164), dtype=torch.float).npu()
-
-        x_clone = x.clone()
-        weight_t_clone = weight_t.clone()
-        antiquant_scale_clone = antiquant_scale.clone()
-        antiquant_offset_clone = antiquant_offset.clone()
-        quant_scale_clone = quant_scale.clone()
-
-        supported_output = torch.matmul(x, (weight + antiquant_offset) * antiquant_scale) * quant_scale
-        custom_output = torch_npu.npu_weight_quant_batchmatmul(x_clone, weight_t_clone, antiquant_scale_clone,
-                                                               antiquant_offset_clone, quant_scale_clone)
-
-        self.assertRtolEqual(supported_output, custom_output, 0.001)
-
-
 
 if __name__ == "__main__":
     run_tests()

@@ -50,6 +50,8 @@ at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &
                 (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
                 " and ",
                 (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "));
+    TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
+                "bmm_out is not support int8 dtype")
     auto output_size = {self.size(0), self.size(1), mat2.size(2)};
     npu_preparation::CheckOut(
         {self, mat2},
@@ -73,8 +75,13 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2) {
                 (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
                 " and ",
                 (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "));
-    TORCH_CHECK(self.dim() >= 2, "bmm expect self at least 2D tensors, but got: ", self.dim());
-    TORCH_CHECK(mat2.dim() >= 3, "bmm expect mat2 at least 3D tensors, but got: ", mat2.dim());
+    TORCH_CHECK(self.dim() == 3 && mat2.dim() == 3, "bmm expect self 3D tensors, but got: ",
+        self.dim(), "D and ", mat2.dim(), "D");
+    // 1、cann bmm support int8(input)->int32(out)
+    // 2、onnx can support because of change y dtype to be int32.
+    // 3、torch need int8(input)->int8(out), cann can not support.
+    TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
+                "bmm is not support int8 dtype")
     auto output_size = {self.size(0), self.size(1), mat2.size(2)};
 
     at::Tensor result;
