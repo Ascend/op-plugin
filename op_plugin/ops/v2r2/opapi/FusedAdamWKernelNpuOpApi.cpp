@@ -63,4 +63,4 @@ void _fused_adamw_(
         }
     }
 }
-}
+} // namespace op_api

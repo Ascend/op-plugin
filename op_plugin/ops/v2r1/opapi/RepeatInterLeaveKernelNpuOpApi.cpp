@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -138,4 +137,3 @@ at::Tensor repeat_interleave(const at::Tensor& self, const at::Tensor& repeats,
   return result;
 }
 } // namespace op_api
-

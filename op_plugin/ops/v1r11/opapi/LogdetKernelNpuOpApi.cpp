@@ -33,4 +33,4 @@ at::Tensor logdet(const at::Tensor &self)
   return log;
 }
 
-}
+} // namespace op_api

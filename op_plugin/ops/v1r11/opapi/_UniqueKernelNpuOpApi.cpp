@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2023, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -52,4 +51,3 @@ std::tuple<at::Tensor, at::Tensor> _unique(
 }
 
 } // namespace op_api
-
