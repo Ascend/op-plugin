@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -25,7 +24,7 @@ at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float)
   // construct the output tensor of the NPU
   at::Tensor result;
   if (half_to_float) {
-    result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), 
+    result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(),
                                         self.options().dtype(c10::ScalarType::Float));
   } else {
     result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
