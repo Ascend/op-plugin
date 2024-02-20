@@ -1379,20 +1379,21 @@ c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(const at::Tensor &s
         c10::SmallVector<int64_t, SIZE> kernel_sizes = {ksizes[0], ksizes[0]};
         ksizes = at::IntArrayRef(kernel_sizes);
     }
-
-    strides = strides.empty() ? at::IntArrayRef({1}) : strides;
+    small_vector default_size = {1};
+    small_vector pads_default_size = {0};
+    strides = strides.empty() ? at::IntArrayRef(default_size) : strides;
     if (strides.size() == 1) {
         c10::SmallVector<int64_t, SIZE> stride_sizes = {strides[0], strides[0]};
         strides = at::IntArrayRef(stride_sizes);
     }
 
-    dilations = dilations.empty() ? at::IntArrayRef({1}) : dilations;
+    dilations = dilations.empty() ? at::IntArrayRef(default_size) : dilations;
     if (dilations.size() == 1) {
         c10::SmallVector<int64_t, SIZE> dilation_sizes = {dilations[0], dilations[0]};
         dilations = at::IntArrayRef(dilation_sizes);
     }
 
-    pads = pads.empty() ? at::IntArrayRef({0}) : pads;
+    pads = pads.empty() ? at::IntArrayRef(pads_default_size) : pads;
     if (pads.size() == 1) {
         c10::SmallVector<int64_t, SIZE> pad_sizes = {pads[0], pads[0]};
         pads = at::IntArrayRef(pad_sizes);

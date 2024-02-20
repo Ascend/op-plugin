@@ -48,9 +48,11 @@ at::Tensor &im2col_out_nocheck(at::Tensor &result, const at::Tensor &self, at::I
         c10::SmallVector<int64_t, SIZE> kernel_sizes = {kernel_size[0], kernel_size[0]};
         kernel_size = at::IntArrayRef(kernel_sizes);
     }
-    stride = stride.empty() ? at::IntArrayRef({1}) : stride;
-    dilation = dilation.empty() ? at::IntArrayRef({1}) : dilation;
-    auto padding_ = padding.empty() ? at::IntArrayRef({0}) : padding;
+    c10::SmallVector<int64_t, SIZE> default_size = {1};
+    c10::SmallVector<int64_t, SIZE> pads_default_size = {0};
+    stride = stride.empty() ? at::IntArrayRef(default_size) : stride;
+    dilation = dilation.empty() ? at::IntArrayRef(default_size) : dilation;
+    auto padding_ = padding.empty() ? at::IntArrayRef(pads_default_size) : padding;
     c10::SmallVector<int64_t, SIZE> pads;
     if (padding_.size() == 1) {
         pads = {padding_[0], padding_[0], padding_[0], padding_[0]};
