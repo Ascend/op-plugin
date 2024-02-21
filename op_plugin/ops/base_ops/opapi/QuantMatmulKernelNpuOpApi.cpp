@@ -124,6 +124,10 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     }
 
     if (bias.has_value()) {
+        if (bias_real.dim() == 3) {
+            TORCH_CHECK(output_size.size() == 3, "when bias dim is 3, output dim need to be 3. but output dim is ",
+                        output_size.size());
+        }
         bias_shape_check(x1, x2, bias_real, batch_val);
     }
 

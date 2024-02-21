@@ -30,30 +30,32 @@ class TestQuantMatmul(TestCase):
             uint64_deq_scale = np.frombuffer(temp_quant_tensor_api, np.uint64)
         return uint64_deq_scale
 
-    def supported_op_exec(self, x1, x2, uint64_deq_scale):
+    def supported_op_exec(self, x1, x2, uint64_deq_scale, bias):
         x1 = torch.from_numpy(x1).to(torch.int32)
         x2 = torch.from_numpy(x2).to(torch.int32)
         mm_res = torch.matmul(x1, x2)
         uint64_deq_scale_slice = uint64_deq_scale.reshape(1, -1)[:, :mm_res.shape[-1]]
         uint64_deq_scale_slice = torch.from_numpy(uint64_deq_scale_slice)
         output = (mm_res * uint64_deq_scale_slice).numpy().astype(np.float16)
+        output = torch.add(out, bias)
         return output
 
-    def custom_op_exec(self, x1, x2, uint64_deq_scale):
-        return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale)
+    def custom_op_exec(self, x1, x2, uint64_deq_scale, bias):
+        return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale, None, bias)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul(self, device="npu"):
         torch.mannal_seed(0)
-        x1 = torch.randn(8192, 320, dtype=torch.int8).npu()
-        x2 = torch.randn(320, 2560, dtype=torch.int8).npu()
+        x1 = torch.randn(1, 8192, 320, dtype=torch.int8).npu()
+        x2 = torch.randn(1, 320, 2560, dtype=torch.int8).npu()
         deq_scale_shape = (1,)
         x1_clone = x1.clone()
         x2_clone = x2.clone()
+        bias = torch.randint(-1, 1, (1, 1, 2560), dtype=torch.int32).npu()
         uint64_deq_scale = self.deq_scale_generate(deq_scale_shape, 'float16')
 
-        supported_output = self.supported_op_exec(x1, x2, uint64_deq_scale)
-        custom_output = self.custom_op_exec(x1_clone, x2_clone, uint64_deq_scale)
+        supported_output = self.supported_op_exec(x1, x2, uint64_deq_scale, bias)
+        custom_output = self.custom_op_exec(x1_clone, x2_clone, uint64_deq_scale, bias)
         self.assertRtolEqual(x1, x1_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
