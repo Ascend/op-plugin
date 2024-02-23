@@ -168,6 +168,7 @@ official:
    impl_ns: acl_op, op_api
  - func: add.out(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+   sparse: op_api
  - func: add_.Scalar(Tensor(a!) self, Scalar other, Scalar alpha=1) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: add_.Tensor(Tensor(a!) self, Tensor other, *, Scalar alpha=1) -> Tensor(a!)

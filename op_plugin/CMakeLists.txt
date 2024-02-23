@@ -35,6 +35,7 @@ endif()
 FILE(GLOB _OPPLUGIN_VERSION_SRCS
     ops/${OPS_VERSION_NAME}/aclops/*.cpp
     ops/${OPS_VERSION_NAME}/opapi/*.cpp
+    ops/${OPS_VERSION_NAME}/opapi/sparse/*.cpp
     ops/${OPS_VERSION_NAME}/*.cpp)
 LIST(APPEND OPS_PLUGIN_SRCS ${_OPPLUGIN_VERSION_SRCS})
 

@@ -2,6 +2,7 @@
 import argparse
 
 from codegen.gen import parse_native_yaml, FileManager
+from codegen.utils import concatMap
 
 
 def main() -> None:
@@ -36,33 +37,34 @@ def main() -> None:
     pytorch_version = os.environ.get('PYTORCH_VERSION').split('.')
     torch_dir = f"v{pytorch_version[0]}r{pytorch_version[1]}"
 
+    all_functions = sorted(set(concatMap(lambda f: [f],
+                                         set(v for sublist in backend_declarations.values() for v in sublist))))
+
     fm.write_with_template(
         "OpInterface.h",
         "Interface.h",
         lambda: {
             "torch_dir": torch_dir,
             "namespace": "op_plugin",
-            "declarations": backend_declarations,
+            "declarations": all_functions,
         },
     )
-    fm.write_with_template(
-        "OpApiInterface.h",
-        "Interface.h",
-        lambda: {
-            "torch_dir": torch_dir,
-            "namespace": "op_api",
-            "declarations": backend_declarations,
-        },
-    )
-    fm.write_with_template(
-        "AclOpsInterface.h",
-        "Interface.h",
-        lambda: {
-            "torch_dir": torch_dir,
-            "namespace": "acl_op",
-            "declarations": backend_declarations,
-        },
-    )
+
+    header_files = {
+        "op_api": "OpApiInterface.h",
+        "acl_op": "AclOpsInterface.h",
+        "sparse": "SparseOpsInterface.h",
+    }
+    for op_type, file_name in header_files.items():
+        fm.write_with_template(
+            file_name,
+            "Interface.h",
+            lambda: {
+                "torch_dir": torch_dir,
+                "namespace": op_type,
+                "declarations": backend_declarations[op_type],
+            },
+        )
 
     fm.write_with_template(
         "OpInterface.cpp",
