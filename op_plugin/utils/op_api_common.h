@@ -30,6 +30,7 @@
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
+#include "torch_npu/csrc/core/npu/NPUGuard.h"
 
 typedef struct aclOpExecutor aclOpExecutor;
 typedef struct aclTensor aclTensor;
@@ -539,10 +540,61 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
 }
 
 /**
+ * check arg is at::Tensor ?
+ */
+template<typename T>
+struct is_at_tensor : std::false_type {};
+
+template<>
+struct is_at_tensor<at::Tensor> : std::true_type {};
+
+/**
+ * check arg is at::TensorList ?
+ */
+template<typename T>
+struct is_at_tensor_list : std::false_type {};
+
+template<>
+struct is_at_tensor_list<at::TensorList> : std::true_type {};
+
+/**
+ * find first at::Tensor
+ */
+template <std::size_t I = 0, typename...Ts>
+typename std::enable_if<I == sizeof...(Ts), void>::type GetFirstTensor(const std::tuple<Ts...>& t, at::Tensor& res) {}
+
+template <std::size_t I = 0, typename... Ts>
+typename std::enable_if < I<sizeof...(Ts), void>::type GetFirstTensor(const std::tuple<Ts...> &t, at::Tensor &res)
+{
+    if constexpr (is_at_tensor<typename std::tuple_element<I, std::tuple<Ts...>>::type>::value) {
+        res = std::get<I>(t);
+        return;
+    } else if constexpr (is_at_tensor_list<typename std::tuple_element<I, std::tuple<Ts...>>::type>::value) {
+        res = std::get<I>(t)[0];
+        return;
+    }
+    return GetFirstTensor<I + 1, Ts...>(t, res);
+}
+
+/**
+ * get the device
+ */
+template <typename... Ts>
+auto DecodeDevice(Ts&... args) -> at::Device
+{
+    auto tp = std::make_tuple(args...);
+    at::Tensor ft;
+    GetFirstTensor(tp, ft);
+    return ft.device();
+}
+
+/**
  * 异步调用npu执行, 无返回值.
  */
 #define EXEC_NPU_CMD(aclnn_api, ...)                                                                                   \
     do {                                                                                                               \
+        auto device = DecodeDevice(__VA_ARGS__);                                                                       \
+        c10_npu::NPUGuard guard(device);                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(#aclnn_api "GetWorkspaceSize");                  \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(#aclnn_api);                                                \
         static const auto initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");                                    \
@@ -597,6 +649,8 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
 
 #define EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnn_api, ...)                                                                   \
     do {                                                                                                               \
+        auto device = DecodeDevice(__VA_ARGS__);                                                                       \
+        c10_npu::NPUGuard guard(device);                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(#aclnn_api "GetWorkspaceSize");                  \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(#aclnn_api);                                                \
         static const auto initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");                                    \
@@ -716,6 +770,8 @@ private:
  */
 #define EXEC_NPU_CMD_SYNC(aclnn_api, ...)                                                                              \
     [](const char *apiName, const char *workspaceSizeApiName, auto &...args) -> auto {                                 \
+        auto device = DecodeDevice(args...);                                                                           \
+        c10_npu::NPUGuard guard(device);                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(workspaceSizeApiName);                           \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(apiName);                                                   \
         static const auto initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");                                    \
