@@ -86,6 +86,8 @@ official:
    impl_ns: acl_op
  - func: _index_put_impl_(Tensor(a!) self, Tensor?[] indices, Tensor values, bool accumulate=False, bool unsafe=False) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: _unsafe_index.Tensor(Tensor self, Tensor?[] indices) -> Tensor
+   impl_ns: acl_op
  - func: _linalg_svd(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None) -> (Tensor U, Tensor S, Tensor Vh)
    impl_ns: acl_op
  - func: _linalg_svd.U(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None, Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh)
