@@ -45,9 +45,11 @@ public:
   static std::vector<at::Tensor> npu_expand_tensors(
       const at::Tensor& self,
       const torch::List<c10::optional<at::Tensor>>& indices,
+      bool needCast,
       bool flag_aclnn = false);
   static std::vector<at::Tensor> npu_broadcast_tensors(std::vector<at::Tensor> to_broadcast);
   static bool is_expandable_to(c10::IntArrayRef shape, c10::IntArrayRef desired);
+  static bool checkIndexTensorTypes(const torch::List<c10::optional<at::Tensor>> &indices);
 };
 
 } // namespace op_plugin
