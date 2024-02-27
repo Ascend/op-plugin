@@ -2383,6 +2383,8 @@ custom:
     impl_ns: op_api
   - func: npu_group_norm_silu(Tensor input, Tensor? weight, Tensor? bias, int group, float eps=0.00001) -> (Tensor, Tensor, Tensor)
     impl_ns: op_api
+  - func: npu_apply_rotary_pos_emb(Tensor query, Tensor key, Tensor cos, Tensor sin, str layout='BSH') -> (Tensor, Tensor)
+    impl_ns: op_api
   - func: npu_dropout_gen_mask(int[] size, float p, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded
