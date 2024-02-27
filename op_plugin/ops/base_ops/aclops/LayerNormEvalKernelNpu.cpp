@@ -46,8 +46,8 @@ at::Tensor npu_layer_norm_eval(const at::Tensor &input, at::IntArrayRef normaliz
     }
 
     std::reverse(tmp_size.begin(), tmp_size.end());
-    at::Tensor resize_weight = weight.detach().clone();
-    at::Tensor resize_bias = bias.detach().clone();
+    at::Tensor resize_weight = weight.defined() ? weight.detach().clone() : at::Tensor();
+    at::Tensor resize_bias = bias.defined() ? bias.detach().clone() : at::Tensor();
     if (!resize_weight.defined()) {
         resize_weight = at::ones(tmp_size, input.options());
     } else if (!resize_weight.sizes().equals(tmp_size)) {
