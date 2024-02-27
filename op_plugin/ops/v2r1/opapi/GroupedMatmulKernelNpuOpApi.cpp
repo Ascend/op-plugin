@@ -34,12 +34,29 @@ bool check_dims(int64_t split_item, size_t num_x, size_t num_weight, size_t num_
     }
 }
 
+void creat_new_tensor_multi_dim(std::vector<at::Tensor> &y, const at::Tensor &x_i, const at::Tensor &weight_i, c10::TensorOptions options)
+{
+    auto x_sizes = x_i.sizes();
+    std::vector<int64_t> y_sizes(x_sizes.begin(), x_sizes.end());
+    y_sizes.at(x_sizes.size() - 1) = weight_i.sizes()[1];
+
+    auto output_size = op_infer::array_to_small_vector(y_sizes);
+    y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
+}
+
 void creat_new_tensor(std::vector<at::Tensor> &y, size_t dim_m, size_t dim_n, c10::TensorOptions options)
 {
     auto output_size = op_infer::array_to_small_vector({dim_m, dim_n});
-    y.push_back(npu_preparation::apply_tensor_without_format(output_size, options));
+    y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
 }
 
+// Motivation for adapting this interface for each Torch version separately:
+// 1. Optional TensorList is only supported in Torch2.1 and later versions.
+//    Thus, "Tensor[] bias" is used in Torch1.11 and Torch2.0, while
+//    "Tensor[]? bias=None" is used in Torch2.1 and later versions.
+// 2. Even if "Int[]? group_list=None" is used for all Torch versions, the
+//    auto-generated data type for optional IntList group_list in Torch2.1
+//    is different from those in Torch1.11 and Torch2.0.
 std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                                            const at::TensorList weight,
                                            const c10::optional<at::TensorList> bias,
@@ -62,7 +79,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value) {
         y.reserve(num_x);
         for (int i = 0; i < num_x; i++) {
-            creat_new_tensor(y, x[i].sizes()[0], weight[i].sizes()[1], options);
+            creat_new_tensor_multi_dim(y, x[i], weight[i], options);
         }
     } else if (IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
         y.reserve(num_weight);
