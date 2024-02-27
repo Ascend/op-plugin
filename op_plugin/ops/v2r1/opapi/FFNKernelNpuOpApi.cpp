@@ -30,7 +30,8 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
     const c10::optional<at::Tensor> &offset, const c10::optional<at::Tensor> &deq_scale1,
     const c10::optional<at::Tensor> &deq_scale2, const c10::optional<at::Tensor> &antiquant_scale1,
     const c10::optional<at::Tensor> &antiquant_scale2, const c10::optional<at::Tensor> &antiquant_offset1,
-    const c10::optional<at::Tensor> &antiquant_offset2, c10::optional<int64_t> inner_precise)
+    const c10::optional<at::Tensor> &antiquant_offset2, c10::optional<int64_t> inner_precise,
+    c10::optional<at::ScalarType> output_dtype)
 {
     auto weight1_dim_num = weight1.dim();
     auto weight2_dim_num = weight2.dim();
@@ -54,8 +55,10 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
     const at::Tensor &antiquant_offset2_real = antiquant_offset2.value_or(at::Tensor());
     auto output_size = op_infer::array_to_small_vector(x.sizes());
     output_size[x.dim() - 1] = weight2.size(weight2.dim() - 1);
-    c10::TensorOptions options =
-        deq_scale1.has_value() ? x.options().dtype(at::kHalf) : x.options().dtype(x.scalar_type());
+    c10::TensorOptions options = x.options().dtype(x.scalar_type());
+    if (deq_scale1.has_value()) {
+        options = x.options().dtype(output_dtype.value_or(at::kHalf));
+    }
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
     int64_t inner_precise_val = inner_precise.has_value() ? inner_precise.value() : 0;
     if (expert_tokens.has_value()) {

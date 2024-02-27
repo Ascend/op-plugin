@@ -86,11 +86,12 @@ class TestFFN(TestCase):
 
     def custom_op_exec(self, x, weight1, weight2, activation, *, antiquant_scale1=None, antiquant_scale2=None,
                        antiquant_offset1=None, antiquant_offset2=None, scale=None, offset=None, deq_scale1=None,
-                       deq_scale2=None):
+                       deq_scale2=None, output_dtype=None):
         if antiquant_scale1 is not None:
             return torch_npu.npu_ffn(x, weight1, weight2, activation, antiquant_scale1=antiquant_scale1,
                                      antiquant_scale2=antiquant_scale2, antiquant_offset1=antiquant_offset1,
-                                     antiquant_offset2=antiquant_offset2, inner_precise=1)
+                                     antiquant_offset2=antiquant_offset2, inner_precise=1,
+                                     output_dtype=output_dtype)
         elif scale is not None:
             x = x.npu()
             weight1 = weight1.npu()
@@ -100,7 +101,8 @@ class TestFFN(TestCase):
             deq_scale1 = torch.from_numpy(deq_scale1.astype(np.int64)).npu()
             deq_scale2 = torch.from_numpy(deq_scale2.astype(np.int64)).npu()
             return torch_npu.npu_ffn(x, weight1, weight2, activation, scale=scale, offset=offset,
-                                     deq_scale1=deq_scale1, deq_scale2=deq_scale2, inner_precise=1)
+                                     deq_scale1=deq_scale1, deq_scale2=deq_scale2, inner_precise=1,
+                                     output_dtype=output_dtype)
         else:
             return torch_npu.npu_ffn(x, weight1, weight2, activation, inner_precise=1)
 
@@ -177,6 +179,33 @@ class TestFFN(TestCase):
         custom_output = self.custom_op_exec(x_clone, weight1_clone, weight2_clone, activation, scale=scale_clone,
                                             offset=offset_clone, deq_scale1=deq_scale1_uint64,
                                             deq_scale2=deq_scale2_uint64)
+        self.assertRtolEqual(x, x_clone, 0.001)
+        self.assertRtolEqual(supported_output, custom_output, 0.001)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_ffn_quant_with_outputdtype(self, device="npu"):
+        torch.manual_seed(0)
+        np.random.seed(0)
+        x = torch.from_numpy(np.random.randint(-128, 127, size=(8192, 320), dtype=np.int8))
+        weight1 = np.random.randint(-128, 127, size=(320, 2560), dtype=np.int8)
+        weight2 = np.random.randint(-128, 127, size=(2560, 320), dtype=np.int8)
+        scale = np.ones(1, dtype=np.float32)
+        offset = np.zeros(1, dtype=np.float32)
+        deq_scale1_fp32, deq_scale1_uint64 = self.deq_scale_generate((1, 2560))
+        deq_scale2_fp32, deq_scale2_uint64 = self.deq_scale_generate((1, 320))
+
+        x_clone = x.clone().npu()
+        weight1_clone = torch.from_numpy(weight1)
+        weight2_clone = torch.from_numpy(weight2)
+        scale_clone = torch.from_numpy(scale)
+        offset_clone = torch.from_numpy(offset)
+        activation = "gelu"
+
+        supported_output = self.supported_op_exec(x, weight1, weight2, activation, scale=scale, offset=offset,
+                                                  deq_scale1=deq_scale1_fp32, deq_scale2=deq_scale2_fp32)
+        custom_output = self.custom_op_exec(x_clone, weight1_clone, weight2_clone, activation, scale=scale_clone,
+                                            offset=offset_clone, deq_scale1=deq_scale1_uint64,
+                                            deq_scale2=deq_scale2_uint64, output_dtype=torch.float16)
         self.assertRtolEqual(x, x_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
