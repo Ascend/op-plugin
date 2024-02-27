@@ -599,6 +599,8 @@ official:
    impl_ns: acl_op, op_api
  - func: expm1_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: exponential_(Tensor(a!) self, float lambd=1, *, Generator? generator=None) -> Tensor(a!)
+   impl_ns: op_api
  - func: eye(SymInt n, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: eye.m(SymInt n, SymInt m, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
