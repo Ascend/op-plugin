@@ -439,8 +439,9 @@ at::Tensor npu_incre_flash_attention(
     const c10::optional<at::Tensor> &antiquant_offset, const c10::optional<at::Tensor> &block_table,
     const c10::optional<at::Tensor> &dequant_scale1, const c10::optional<at::Tensor> &quant_scale1,
     const c10::optional<at::Tensor> &dequant_scale2, const c10::optional<at::Tensor> &quant_scale2,
-    const c10::optional<at::Tensor> &quant_offset2, int64_t num_heads, double scale_value,
-    c10::string_view input_layout, int64_t num_key_value_heads, int64_t block_size, int64_t inner_precise)
+    const c10::optional<at::Tensor> &quant_offset2, const c10::optional<at::Tensor> &kv_padding_size,
+    int64_t num_heads, double scale_value, c10::string_view input_layout, int64_t num_key_value_heads,
+    int64_t block_size, int64_t inner_precise)
 {
     // construct the output tensor of the NPU
     at::Tensor output;
@@ -462,9 +463,9 @@ at::Tensor npu_incre_flash_attention(
     auto actSeqLen = (actual_seq_lengths.has_value()) ? actual_seq_lengths.value().vec() : std::vector<at::IntArrayRef::value_type>{};
 
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV3, query, keyTensors, valueTensors, padding_mask, atten_mask, actSeqLen,
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV4, query, keyTensors, valueTensors, padding_mask, atten_mask, actSeqLen,
         dequant_scale1, quant_scale1, dequant_scale2, quant_scale2, quant_offset2, antiquant_scale, antiquant_offset, block_table,
-        num_heads, scale_value, input_layout_ptr, num_key_value_heads, block_size, inner_precise, output);
+        kv_padding_size, num_heads, scale_value, input_layout_ptr, num_key_value_heads, block_size, inner_precise, output);
     return output;
 }
 } // namespace op_api
