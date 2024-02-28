@@ -1992,7 +1992,6 @@ tocpu:
   - cauchy_
   - cholesky_inverse
   - cholesky_inverse.out
-  - exponential_
   - geometric_
   - log_normal_
   - logit

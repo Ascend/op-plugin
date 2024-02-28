@@ -1937,7 +1937,6 @@ tocpu:
   - cauchy_
   - cholesky_inverse
   - cholesky_inverse.out
-  - exponential_
   - geometric_
   - linalg_vector_norm
   - linalg_vector_norm.out
