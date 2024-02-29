@@ -20,6 +20,8 @@
 
 namespace op_api {
 const static int FLASH_THRESHOLD = 512;
+const static int64_t PFA_SPARSE_HIGH_PRECISION_NO_MASK = 10;
+const static int64_t PFA_SPARSE_HIGH_PRECISION_BAND = 14;
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -443,6 +445,12 @@ at::Tensor npu_prompt_flash_attention(
     auto actSeqLenKv = actual_seq_lengths_kv.value_or(at::IntArrayRef{});
 
     int64_t inner_precise = 1;
+
+    if (sparse_mode >= PFA_SPARSE_HIGH_PRECISION_NO_MASK && sparse_mode <= PFA_SPARSE_HIGH_PRECISION_BAND) {
+        // for sparse in range [10,14], set inner calculate mode to high-precision
+        inner_precise = 0;
+        sparse_mode -= PFA_SPARSE_HIGH_PRECISION_NO_MASK;
+    }
 
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV3, query, key, value, pse_shift, atten_mask, actSeqLen, actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2,
