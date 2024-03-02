@@ -10045,6 +10045,8 @@ nn.functional.embedding:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.gelu:
   test_neg_view:
   - float64

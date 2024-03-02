@@ -142,7 +142,7 @@ int64_t complete_pad(int64_t s_size, int64_t p_size, int64_t k_size, int64_t str
   int64_t needpads = 0;
   int64_t sizeP = s_size + p_size * 2;
   int64_t leftLen = sizeP - k_size;
-  TORCH_CHECK(stride != 0, "CompletePad stride is zero!");
+  TORCH_CHECK(stride != 0, "CompletePad stride is zero!", OPS_ERROR(ErrCode::PARAM));
   auto reminder = leftLen % stride;
   if (reminder != 0) {
     needpads = stride - reminder;
@@ -155,7 +155,8 @@ c10::optional<double> get_scale_value(c10::optional<c10::ArrayRef<double>> scale
     if (!scales) {
         return c10::nullopt;
     }
-    TORCH_CHECK(scales->size() > idx, "idx", idx, "is overrange scales->at(idx) ", scales->size());
+    TORCH_CHECK(scales->size() > idx, "idx", idx, "is overrange scales->at(idx) ", scales->size(),
+        OPS_ERROR(ErrCode::PARAM));
     return scales->at(idx);
 }
 

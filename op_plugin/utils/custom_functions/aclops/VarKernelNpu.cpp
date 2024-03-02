@@ -37,7 +37,7 @@ std::vector<int64_t> var_check_and_trans_dim(const at::Tensor &self, at::IntArra
 int64_t var_get_shape_prod(const at::Tensor &self, at::IntArrayRef dim)
 {
     TORCH_CHECK(self.numel() < std::numeric_limits<int64_t>::max(),
-                "Input tensor contain more than the max number of int64.");
+                "Input tensor contain more than the max number of int64.", OPS_ERROR(ErrCode::VALUE));
     int64_t shape_prod = 1;
     if (self.dim() == 0) {
         shape_prod = 1;
@@ -49,7 +49,7 @@ int64_t var_get_shape_prod(const at::Tensor &self, at::IntArrayRef dim)
         for (uint64_t i = 0; i < dim.size(); i++) {
             shape_prod *= self.size(dim[i]);
             TORCH_CHECK(shape_prod < std::numeric_limits<int64_t>::max(),
-                        "Result is larger than the max number of int64.");
+                        "Result is larger than the max number of int64.", OPS_ERROR(ErrCode::VALUE));
         }
     }
     return shape_prod;
@@ -106,9 +106,9 @@ std::tuple<at::Tensor &, at::Tensor &> var_mean_out_nocheck(at::Tensor &variance
         dim.empty() ? op_plugin::utils::get_dimlist_for_tensor(self) : c10::SmallVector<int64_t, N>(dim);
     auto ori_type = self.scalar_type();
     TORCH_CHECK((ori_type == c10::ScalarType::Half || ori_type == c10::ScalarType::Float),
-                "Var Mean only support float16 or float32 type.");
+                "Var Mean only support float16 or float32 type.", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((variance.scalar_type() == mean.scalar_type() && variance.scalar_type() == ori_type),
-                "mean's type and variance' type must be equal to input's type.");
+                "mean's type and variance' type must be equal to input's type.", OPS_ERROR(ErrCode::PARAM));
     var_mean_compute(variance, mean, self, dim_now, unbiased, keepdim, correction);
 
     return std::tuple<at::Tensor &, at::Tensor &>(variance, mean);

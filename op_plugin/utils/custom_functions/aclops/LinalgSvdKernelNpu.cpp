@@ -35,13 +35,15 @@ void single_check_errors(int64_t info, const char *name, bool allow_singular = f
         batch_info = ": For batch " + std::to_string(batch_idx);
     }
     if (info < 0) {
-        TORCH_CHECK(false, name, batch_info, ": Argument ", -info, " has illegal value");
+        TORCH_CHECK(false, name, batch_info, ": Argument ", -info, " has illegal value", OPS_ERROR(ErrCode::VALUE));
     } else if (info > 0) {
         TORCH_CHECK(!strstr(name, "svd"), name, ": the updating process of SBDSDC did not converge (error: ", info,
-                    ")");
+                    ")", OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(!strstr(name, "symeig"), name, batch_info, ": the algorithm failed to converge; ", info,
-                    " off-diagonal elements of an intermediate tridiagonal form did not converge to zero.");
-        TORCH_CHECK(allow_singular, name, batch_info, ": U(", info, ",", info, ") is zero, singular U.");
+                    " off-diagonal elements of an intermediate tridiagonal form did not converge to zero.",
+                    OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(allow_singular, name, batch_info, ": U(", info, ",", info, ") is zero, singular U.",
+                    OPS_ERROR(ErrCode::PARAM));
     }
 }
 
@@ -87,8 +89,9 @@ inline c10::MaybeOwned<at::Tensor> borrow_else_clone(const bool cond, const at::
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor &self, bool some, bool compute_uv)
 {
-    TORCH_CHECK(self.dtype() == at::kFloat, "svd_npu only supported Float, but get", self.dtype());
-    TORCH_CHECK(self.dim() >= 2, "The dim of input tensor must larger than two.");
+    TORCH_CHECK(self.dtype() == at::kFloat, "svd_npu only supported Float, but get", self.dtype(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.dim() >= 2, "The dim of input tensor must larger than two.", OPS_ERROR(ErrCode::PARAM));
     std::vector<int64_t> infos(batch_count(self), 0);
     int64_t m = self.size(-2);
     int64_t n = self.size(-1);
@@ -146,8 +149,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor &sel
 
 static void linalg_check_errors(const at::Tensor &infos, const c10::string_view api_name, bool is_matrix)
 {
-    TORCH_CHECK(infos.scalar_type() == at::kInt);
-    TORCH_CHECK(infos.is_contiguous());
+    TORCH_CHECK(infos.scalar_type() == at::kInt, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(infos.is_contiguous(), OPS_ERROR(ErrCode::PARAM));
     if (infos.is_meta()) {
         return;
     }
@@ -167,7 +170,7 @@ static void linalg_check_errors(const at::Tensor &infos, const c10::string_view 
         // Find the first non-zero info
         auto infos_cpu = infos.to(at::kCPU);
         auto ptr = infos_cpu.data_ptr<int32_t>();
-        TORCH_CHECK(ptr != nullptr, "infos is null")
+        TORCH_CHECK(ptr != nullptr, "infos is null", OPS_ERROR(ErrCode::PTR))
         auto n = infos.numel();
         auto info_ptr = std::find_if(ptr, ptr + n, [](int32_t x) { return x != 0; });
         info = *info_ptr;
@@ -183,23 +186,25 @@ static void linalg_check_errors(const at::Tensor &infos, const c10::string_view 
         // Here we check for the case where `info` is -4 and raise an error
         if (api_name.find("svd") != api_name.npos) {
             TORCH_CHECK(info != -4, api_name, batch_str,
-                        ": The algorithm failed to converge because the input matrix contained non-finite values.");
+                        ": The algorithm failed to converge because the input matrix contained non-finite values.",
+                        OPS_ERROR(ErrCode::PARAM));
         }
         TORCH_CHECK(
             false, api_name, batch_str, ": Argument ", -info,
-            " has illegal value. Most certainly there is a bug in the implementation calling the backend library.");
+            " has illegal value. Most certainly there is a bug in the implementation calling the backend library.",
+            OPS_ERROR(ErrCode::PARAM));
     } else if (info > 0) {
         if (api_name.find("svd") != api_name.npos) {
             TORCH_CHECK(false, api_name, batch_str,
                         ": The algorithm failed to converge because the input matrix is ill-conditioned or has too "
                         "many repeated singular values (error code: ",
-                        info, ").");
+                        info, ").", OPS_ERROR(ErrCode::PARAM));
         } else {
-            TORCH_CHECK(false, api_name, ": Unknown error code: ", info, ".");
+            TORCH_CHECK(false, api_name, ": Unknown error code: ", info, ".", OPS_ERROR(ErrCode::PARAM));
         }
     }
     // We should never reach this point as info was non-zero
-    TORCH_CHECK(false);
+    TORCH_CHECK(false, OPS_ERROR(ErrCode::INTERNAL));
 }
 
 std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> linalg_svd_out_common(const at::Tensor &A,

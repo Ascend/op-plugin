@@ -13,9 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/utils/KernelNpuOutputSize.h"
 #include <bitset>
+#include "op_plugin/utils/KernelNpuOutputSize.h"
 #include "op_plugin/utils/AdvancedIndex.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
 
 namespace op_infer {
 using tuple_array_vector = std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>;
@@ -145,7 +146,7 @@ c10::SmallVector<int64_t, SIZE> adaptive_avg_pool3d_npu_output_size(const at::Te
                                                                     c10::IntArrayRef output_size)
 {
     TORCH_CHECK(output_size.size() > 2, "output_size length should greater than 2, "
-        "but got the output_size length is ", output_size.size());
+        "but got the output_size length is ", output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     auto shape = array_to_small_vector(self.sizes());
     auto iter = shape.rbegin();
@@ -165,7 +166,7 @@ c10::SmallVector<int64_t, SIZE> addbmm_npu_output_size(const at::Tensor &self, c
                                                        const at::Tensor &batch2, c10::Scalar beta, c10::Scalar alpha)
 {
     TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
-        "but got Tensor of dimension ", self.dim());
+        "but got Tensor of dimension ", self.dim(), OPS_ERROR(ErrCode::PARAM));
 
     return {self.size(0), self.size(1)};
 }
@@ -187,10 +188,11 @@ c10::SmallVector<int64_t, SIZE> avg_pool2d_npu_output_size(const at::Tensor &sel
                                                            bool ceil_mode, bool count_include_pad,
                                                            c10::optional<int64_t> divisor_override)
 {
-    TORCH_CHECK(self.dim() == 3 || self.dim() == 4, "tensor self's dimension must be 3 or 4");
-    TORCH_CHECK(kernel_size.size() == 2, "kernel_size length should be 2");
-    TORCH_CHECK(stride.size() == 2, "stride length should be 2");
-    TORCH_CHECK(padding.size() == 2, "padding length should be 2");
+    TORCH_CHECK(self.dim() == 3 || self.dim() == 4, "tensor self's dimension must be 3 or 4",
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(kernel_size.size() == 2, "kernel_size length should be 2", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() == 2, "stride length should be 2", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() == 2, "padding length should be 2", OPS_ERROR(ErrCode::PARAM));
 
     int self_h = self.size(-2);
     int self_w = self.size(-1);
@@ -225,7 +227,8 @@ small_vector avg_pool2d_backward_npu_output_size(const at::Tensor &grad_output, 
                                                  c10::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
                                                  c10::optional<int64_t> divisor_override)
 {
-    TORCH_CHECK(self.dim() == 3 || self.dim() == 4, "tensor self's dimension must be 3 or 4");
+    TORCH_CHECK(self.dim() == 3 || self.dim() == 4, "tensor self's dimension must be 3 or 4",
+        OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, SIZE> output_size;
     if (self.dim() == 3) {
         output_size = {self.size(0), self.size(1), self.size(2)};
@@ -238,9 +241,9 @@ small_vector avg_pool2d_backward_npu_output_size(const at::Tensor &grad_output, 
 c10::SmallVector<int64_t, SIZE> baddbmm_npu_output_size(const at::Tensor &self, const at::Tensor &mat2)
 {
     TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
-        "but got Tensor of dimension ", self.dim());
+        "but got Tensor of dimension ", self.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(mat2.dim() > 2, "tensor mat2's dimension must be greater than 2, "
-        "but got Tensor of dimension ", mat2.dim());
+        "but got Tensor of dimension ", mat2.dim(), OPS_ERROR(ErrCode::PARAM));
 
     return {self.size(0), self.size(1), mat2.size(2)};
 }
@@ -251,8 +254,8 @@ c10::SmallVector<int64_t, SIZE> cdist_npu_output_size(const at::Tensor &x1, cons
     int64_t r2 = x2.size(-2);
     int64_t dim1 = static_cast<int64_t>(x1.dim());
     int64_t dim2 = static_cast<int64_t>(x2.dim());
-    TORCH_CHECK(dim1 >= 2, "Dim of x1 should be grater than 2, but now is ", dim1);
-    TORCH_CHECK(dim2 >= 2, "Dim of x2 should be grater than 2, but now is ", dim2);
+    TORCH_CHECK(dim1 >= 2, "Dim of x1 should be grater than 2, but now is ", dim1, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dim2 >= 2, "Dim of x2 should be grater than 2, but now is ", dim2, OPS_ERROR(ErrCode::PARAM));
     c10::IntArrayRef batch_tensor1(x1.sizes().data(), dim1 - 2);
     c10::IntArrayRef batch_tensor2(x2.sizes().data(), dim2 - 2);
     c10::SmallVector<int64_t, SIZE> expand_batch_portion(at::infer_size(batch_tensor1, batch_tensor2));
@@ -266,15 +269,15 @@ c10::SmallVector<int64_t, SIZE> conv1d_npu_output_size(const at::Tensor &input, 
                                                        c10::IntArrayRef dilation)
 {
     TORCH_CHECK(input.dim() > 2, "tensor input's dimension must be greater than 2, "
-        "but got Tensor of dimension ", input.dim());
+        "but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight.dim() > 2, "tensor weight's dimension must be greater than 2, "
-        "but got Tensor of dimension ", weight.dim());
+        "but got Tensor of dimension ", weight.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() > 0, "stride length should be greater than 0, "
-        "but got the stride length is ", stride.size());
+        "but got the stride length is ", stride.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() > 0, "padding length should be greater than 0, "
-        "but got the padding length is ", padding.size());
+        "but got the padding length is ", padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() > 0, "dilation length should be greater than 0, "
-        "but got the dilation length is ", dilation.size());
+        "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t L = input.size(2);
@@ -292,15 +295,15 @@ c10::SmallVector<int64_t, SIZE> conv2d_npu_output_size(const at::Tensor &input, 
                                                        c10::IntArrayRef dilation)
 {
     TORCH_CHECK(input.dim() > 3, "tensor input's dimension must be greater than 3, "
-        "but got Tensor of dimension ", input.dim());
+        "but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight.dim() > 3, "tensor weight's dimension must be greater than 3, "
-        "but got Tensor of dimension ", weight.dim());
+        "but got Tensor of dimension ", weight.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() > 1, "stride length should be greater than 1, "
-        "but got the stride length is ", stride.size());
+        "but got the stride length is ", stride.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() > 1, "padding length should be greater than 1, "
-        "but got the padding length is ", padding.size());
+        "but got the padding length is ", padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() > 1, "dilation length should be greater than 1, "
-        "but got the dilation length is ", dilation.size());
+        "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t H = input.size(2);
@@ -322,15 +325,15 @@ c10::SmallVector<int64_t, SIZE> conv_transpose1d_npu_output_size(const at::Tenso
                                                                  int64_t groups)
 {
     TORCH_CHECK(input.dim() > 2, "tensor input's dimension must be greater than or equal to 2, "
-        "but got Tensor of dimension ", input.dim());
+        "but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight.dim() > 2, "tensor weight's dimension must be greater than or equal to 2, "
-        "but got Tensor of dimension ", weight.dim());
+        "but got Tensor of dimension ", weight.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() > 0, "stride length should be greater than 0, "
-        "but got the stride length is ", stride.size());
+        "but got the stride length is ", stride.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() > 0, "padding length should be greater than 0, "
-        "but got the padding length is ", padding.size());
+        "but got the padding length is ", padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() > 0, "dilation length should be greater than 0, "
-        "but got the dilation length is ", dilation.size());
+        "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t L = input.size(2);
@@ -413,7 +416,7 @@ tuple_array_vector conv_transpose2d_backward_npu_output_size(const at::Tensor &i
                                                              c10::IntArrayRef dilation, int64_t groups)
 {
     TORCH_CHECK(grad_output.dim() > 1, "tensor grad_output's dimension must be greater than 1, "
-        "but got Tensor of dimension ", grad_output.dim());
+        "but got Tensor of dimension ", grad_output.dim(), OPS_ERROR(ErrCode::PARAM));
 
     c10::SmallVector<int64_t, SIZE> gradBiasSize = {grad_output.size(1)};
     return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>(
@@ -427,15 +430,15 @@ c10::SmallVector<int64_t, SIZE> conv_transpose2d_npu_output_size(const at::Tenso
                                                                  int64_t groups)
 {
     TORCH_CHECK(input.dim() > 3, "tensor input's dimension must be greater than 3, "
-        "but got Tensor of dimension ", input.dim());
+        "but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight.dim() > 3, "tensor weight's dimension must be greater than 3, "
-        "but got Tensor of dimension ", weight.dim());
+        "but got Tensor of dimension ", weight.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() > 1, "stride length should be greater than 1, "
-        "but got the stride length is ", stride.size());
+        "but got the stride length is ", stride.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() > 1, "padding length should be greater than 1, "
-        "but got the padding length is ", padding.size());
+        "but got the padding length is ", padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() > 1, "dilation length should be greater than 1, "
-        "but got the dilation length is ", dilation.size());
+        "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t H = input.size(2);
@@ -597,7 +600,7 @@ c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at::Tensor &self, at
     }
     if (std::find(indexed_sizes.begin(), indexed_sizes.end(), 0) != indexed_sizes.end() &&
         std::find(replacement_shape.begin(), replacement_shape.end(), 0) == replacement_shape.end()) {
-        TORCH_CHECK_INDEX(false, "index is out of bounds for dimension with size 0");
+        TORCH_CHECK_INDEX(false, "index is out of bounds for dimension with size 0", OPS_ERROR(ErrCode::PARAM));
     }
     auto self_shape = at::DimVector(src.sizes());
     int64_t end = dims_before + dims_indexed;
@@ -624,7 +627,7 @@ c10::SmallVector<int64_t, SIZE> index_select_npu_output_size(const at::Tensor &s
     int64_t selfDim = self.ndimension() > 0 ? self.ndimension() : 1;
     bool dim_valid = dim >= -selfDim && dim < selfDim;
     TORCH_CHECK(dim_valid, "Dimension out of range (expected to be in range of [", -selfDim, ", ", selfDim - 1,
-                "], but got ", dim, ")");
+                "], but got ", dim, ")", OPS_ERROR(ErrCode::PARAM));
     if (dim < 0)
         dim += selfDim;
 
@@ -645,7 +648,8 @@ c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const
                                                                            c10::IntArrayRef padding,
                                                                            c10::IntArrayRef stride)
 {
-    TORCH_CHECK(input.dim() >= 4, "The input should be at least 4D, but got: ", input.dim(), "D");
+    TORCH_CHECK(input.dim() >= 4, "The input should be at least 4D, but got: ", input.dim(), "D",
+        OPS_ERROR(ErrCode::PARAM));
     int64_t N = input.size(0);
     int64_t H = input.size(2);
     int64_t W = input.size(3);
@@ -741,7 +745,7 @@ c10::SmallVector<int64_t, SIZE> prod_npu_output_size(const at::Tensor &self, boo
 
 c10::SmallVector<int64_t, SIZE> range_npu_output_size(float start, float end, float step)
 {
-    TORCH_CHECK(step != 0, "range_npu_output_size step is zero!");
+    TORCH_CHECK(step != 0, "range_npu_output_size step is zero!", OPS_ERROR(ErrCode::VALUE));
 
     int64_t size_value = std::floor((end - start) / step);
     c10::SmallVector<int64_t, SIZE> outputSize = {size_value + 1};
@@ -753,8 +757,8 @@ c10::SmallVector<int64_t, SIZE> reflection_pad1d_npu_out_size(const at::Tensor &
 {
     uint64_t padding_num = padding.size();
     int64_t self_num = self.dim();
-    TORCH_CHECK(padding_num == 2, "padding length should be 2");
-    TORCH_CHECK(self_num == 2 || self_num == 3, "self should be 2D or 3D");
+    TORCH_CHECK(padding_num == 2, "padding length should be 2", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self_num == 2 || self_num == 3, "self should be 2D or 3D", OPS_ERROR(ErrCode::PARAM));
     // 0, 1, -2, -1 are indexes
     int64_t padding_l = padding[0];
     int64_t padding_r = padding[1];
@@ -775,8 +779,8 @@ c10::SmallVector<int64_t, SIZE> reflection_pad2d_npu_out_size(const at::Tensor &
 {
     uint64_t padding_num = padding.size();
     int64_t self_num = self.dim();
-    TORCH_CHECK(padding_num == 4, "padding length should be 4");
-    TORCH_CHECK(self_num == 3 || self_num == 4, "self should be 3D or 4D");
+    TORCH_CHECK(padding_num == 4, "padding length should be 4", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self_num == 3 || self_num == 4, "self should be 3D or 4D", OPS_ERROR(ErrCode::PARAM));
     // -3, -2, -1, 0, 1, 2, 3 are indexes
     int64_t padding_l = padding[0];
     int64_t padding_r = padding[1];
@@ -807,10 +811,11 @@ c10::SmallVector<int64_t, SIZE> conv_depthwise2d_npu_output_size(const at::Tenso
     uint64_t stride_num = stride.size();
     uint64_t padding_num = padding.size();
     uint64_t dilation_num = dilation.size();
-    TORCH_CHECK(self_num == 4 && weight_num == 4, "self and weight should be 4D");
+    TORCH_CHECK(self_num == 4 && weight_num == 4, "self and weight should be 4D", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size_num == 2 && stride_num == 2 && padding_num == 2 && dilation_num == 2,
-                "Attr length should be 2");
-    TORCH_CHECK(kernel_size == weight.sizes().slice(2), "kernel size should be equal to the last 2 dim of weight");
+                "Attr length should be 2", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(kernel_size == weight.sizes().slice(2), "kernel size should be equal to the last 2 dim of weight",
+        OPS_ERROR(ErrCode::PARAM));
     int64_t N = self.size(0);
     int64_t Co = weight.size(0);
     int64_t H = self.size(2);
@@ -826,9 +831,9 @@ c10::SmallVector<int64_t, SIZE> reflection_pad3d_npu_out_size(const at::Tensor &
     uint64_t padding_num = padding.size();
     int64_t self_num = self.dim();
     // 6 is padding length
-    TORCH_CHECK(padding_num == 6, "padding length should be 6");
+    TORCH_CHECK(padding_num == 6, "padding length should be 6", OPS_ERROR(ErrCode::PARAM));
     // 4 and 5 are dim number of self
-    TORCH_CHECK(self_num == 4 || self_num == 5, "self should be 4D or 5D");
+    TORCH_CHECK(self_num == 4 || self_num == 5, "self should be 4D or 5D", OPS_ERROR(ErrCode::PARAM));
     // -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 are indexes of self and padding
     int64_t padding_l = padding[0];
     int64_t padding_r = padding[1];
@@ -891,8 +896,8 @@ c10::SmallVector<int64_t, SIZE> replication_pad1d_npu_out_size(const at::Tensor 
 {
     uint64_t padding_num = padding.size();
     int64_t self_num = self.dim();
-    TORCH_CHECK(padding_num == 2, "padding length should be 2");
-    TORCH_CHECK(self_num == 2 || self_num == 3, "self should be 2D or 3D");
+    TORCH_CHECK(padding_num == 2, "padding length should be 2", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self_num == 2 || self_num == 3, "self should be 2D or 3D", OPS_ERROR(ErrCode::PARAM));
     // 0, 1, -2, -1 are indexes
     int64_t padding_l = padding[0];
     int64_t padding_r = padding[1];
@@ -911,7 +916,8 @@ c10::SmallVector<int64_t, SIZE> replication_pad1d_npu_out_size(const at::Tensor 
 
 c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_output_size(const at::Tensor &self, c10::IntArrayRef padding)
 {
-    TORCH_CHECK(self.dim() >= 3, "The self is expected to be at least 3D, but got: ", self.dim(), "D");
+    TORCH_CHECK(self.dim() >= 3, "The self is expected to be at least 3D, but got: ", self.dim(), "D",
+        OPS_ERROR(ErrCode::PARAM));
     int64_t N = self.dim() == 3 ? 1 : self.size(-4);
     int64_t C = self.size(-3);
     int64_t H = self.size(-2);
@@ -942,8 +948,8 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_out_size(const at::Tensor 
 {
     uint64_t padding_num = padding.size();
     int64_t self_num = self.dim();
-    TORCH_CHECK(padding_num == 4, "padding length should be 4");
-    TORCH_CHECK(self_num == 3 || self_num == 4, "self should be 3D or 4D");
+    TORCH_CHECK(padding_num == 4, "padding length should be 4", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self_num == 3 || self_num == 4, "self should be 3D or 4D", OPS_ERROR(ErrCode::PARAM));
     // -3, -2, -1, 0, 1, 2, 3 are indexes
     int64_t padding_l = padding[0];
     int64_t padding_r = padding[1];
@@ -969,9 +975,9 @@ c10::SmallVector<int64_t, SIZE> replication_pad3d_npu_out_size(const at::Tensor 
     uint64_t padding_num = padding.size();
     int64_t self_num = self.dim();
     // 6 is padding length
-    TORCH_CHECK(padding_num == 6, "padding length should be 6");
+    TORCH_CHECK(padding_num == 6, "padding length should be 6", OPS_ERROR(ErrCode::PARAM));
     // 4 and 5 are dim number of self
-    TORCH_CHECK(self_num == 4 || self_num == 5, "self should be 4D or 5D");
+    TORCH_CHECK(self_num == 4 || self_num == 5, "self should be 4D or 5D", OPS_ERROR(ErrCode::PARAM));
     // -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 are indexes of self and padding
     int64_t padding_l = padding[0];
     int64_t padding_r = padding[1];
@@ -1013,7 +1019,7 @@ c10::SmallVector<int64_t, SIZE> im2col_backward_npu_output_size(const at::Tensor
                     (grad_output.dim() == 3 && grad_output.size(1) != 0 && grad_output.size(2) != 0),
                 "Expected 2D or 3D (batch mode) tensor for gradOutput with possibly 0 batch size and non-zero "
                 "dimensions for gradOutput, but got: ",
-                grad_output.sizes());
+                grad_output.sizes(), OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, SIZE> outputSize;
     if (grad_output.dim() == 2) {
         outputSize = {grad_output.size(0) / (kernel_size[0] * kernel_size[1]), input_size[0], input_size[1]};
@@ -1054,7 +1060,7 @@ c10::SmallVector<int64_t, SIZE> slow_conv_dilated2d_npu_output_size(const at::Te
                                                                     c10::IntArrayRef dilation)
 {
     TORCH_CHECK(input.dim() > 3, "tensor input's dimension must be greater than 3, "
-        "but got Tensor of dimension ", input.dim());
+        "but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t H = input.size(2);
@@ -1136,27 +1142,31 @@ c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(c10::IntArrayRef inp
 {
     const auto spatial_dimensions = static_cast<int64_t>(input_size.size()) - 2;
     if (output_size) {
-        TORCH_CHECK(!scale_factors, "Must specify exactly one of output_size and scale_factors");
-        TORCH_CHECK(static_cast<int64_t>(output_size->size()) == spatial_dimensions);
+        TORCH_CHECK(!scale_factors, "Must specify exactly one of output_size and scale_factors",
+            OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(static_cast<int64_t>(output_size->size()) == spatial_dimensions, OPS_ERROR(ErrCode::PARAM));
         return {output_size->data(), output_size->data() + output_size->size()};
     }
     if (scale_factors) {
-        TORCH_CHECK(!output_size, "Must specify exactly one of output_size and scale_factors");
-        TORCH_CHECK(static_cast<int64_t>(scale_factors->size()) == spatial_dimensions);
+        TORCH_CHECK(!output_size, "Must specify exactly one of output_size and scale_factors",
+            OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(static_cast<int64_t>(scale_factors->size()) == spatial_dimensions, OPS_ERROR(ErrCode::PARAM));
         c10::SmallVector<int64_t, 3> ret;
         for (const auto i : c10::irange(spatial_dimensions)) {
             ret.push_back(static_cast<double>(input_size[i + 2]) * scale_factors.value()[i]);
         }
         return ret;
     }
-    TORCH_CHECK(false, "Must specify exactly one of output_size and scale_factors");
+    TORCH_CHECK(false, "Must specify exactly one of output_size and scale_factors", OPS_ERROR(ErrCode::PARAM));
 }
 
 c10::SmallVector<int64_t, SIZE> upsample_bicubic2d_npu_output_size(const at::Tensor &self,
                                                                    c10::IntArrayRef output_size)
 {
-    TORCH_CHECK(self.dim() == 4, "It is expected input_size equals to 4, but got size ", self.dim());
-    TORCH_CHECK(output_size.size() == 2, "It is expected output_size equals to 2, but got size ", output_size.size());
+    TORCH_CHECK(self.dim() == 4, "It is expected input_size equals to 4, but got size ", self.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(output_size.size() == 2, "It is expected output_size equals to 2, but got size ", output_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = self.size(0);
     int64_t C = self.size(1);
@@ -1178,9 +1188,9 @@ c10::SmallVector<int64_t, SIZE> upsample_bilinear2d_npu_output_size(const at::Te
                                                                     c10::optional<double> scales_w)
 {
     TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
-        "but got Tensor of dimension ", self.dim());
+        "but got Tensor of dimension ", self.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() > 1, "output_size length should be greater than 1, "
-        "but got the output_size length is ", output_size.size());
+        "but got the output_size length is ", output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     // the input's dim of upsample_bilinear2d
     int64_t N = self.size(0);
@@ -1204,9 +1214,9 @@ c10::SmallVector<int64_t, SIZE> upsample_linear1d_npu_output_size(const at::Tens
                                                                   bool align_corners, c10::optional<double> scales)
 {
     TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
-        "but got Tensor of dimension ", self.dim());
+        "but got Tensor of dimension ", self.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() > 0, "output_size length should be greater than 0, "
-        "but got the output_size length is ", output_size.size());
+        "but got the output_size length is ", output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = self.size(0);
     int64_t C = self.size(1);
@@ -1220,8 +1230,9 @@ c10::SmallVector<int64_t, SIZE> upsample_trilinear3d_npu_output_size(const at::T
                                                                      at::IntArrayRef output_size)
 {
     TORCH_CHECK(input.dim() > 1, "tensor input's dimension must be greater than 1, "
-        "but got Tensor of dimension ", input.dim());
-    TORCH_CHECK(output_size.size() == 3, "It is expected output_size equals to 3, but got size ", output_size.size());
+        "but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(output_size.size() == 3, "It is expected output_size equals to 3, but got size ", output_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
     int64_t output_depth = output_size[0];
     int64_t output_height = output_size[1];
@@ -1240,9 +1251,9 @@ c10::SmallVector<int64_t, SIZE> upsample_nearest3d_npu_output_size(const at::Ten
                                                                    c10::optional<double> scales_w)
 {
     TORCH_CHECK(input.dim() > 1, "tensor input's dimension must be greater than 1, "
-        "but got Tensor of dimension ", input.dim());
+        "but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() > 2, "It is expected output_size greater than 2, "
-        "but got size ", output_size.size());
+        "but got size ", output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t output_depth = output_size[0];
     int64_t output_height = output_size[1];
@@ -1274,8 +1285,8 @@ c10::SmallVector<int64_t, SIZE> glu_npu_output_size(const at::Tensor &self, int6
 c10::SmallVector<int64_t, SIZE> crop_and_resize_npu_output_size(const at::Tensor &self, at::IntArrayRef box_index,
                                                                 at::IntArrayRef crop_size)
 {
-    TORCH_CHECK(self.dim() == 4, "input x dim must be 4");
-    TORCH_CHECK(crop_size.size() == 2, "crop_size size must be 2");
+    TORCH_CHECK(self.dim() == 4, "input x dim must be 4", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(crop_size.size() == 2, "crop_size size must be 2", OPS_ERROR(ErrCode::PARAM));
     int64_t N = static_cast<int64_t>(box_index.size());
     int64_t H = crop_size[0];
     int64_t W = crop_size[1];
@@ -1287,7 +1298,7 @@ c10::SmallVector<int64_t, SIZE> crop_and_resize_npu_output_size(const at::Tensor
 
 c10::SmallVector<int64_t, SIZE> decode_jpeg_npu_output_size(at::IntArrayRef image_shape, int64_t channels)
 {
-    TORCH_CHECK(image_shape.size() == 3, "image_shape size must be 3");
+    TORCH_CHECK(image_shape.size() == 3, "image_shape size must be 3", OPS_ERROR(ErrCode::PARAM));
     int64_t H = image_shape[0];
     int64_t W = image_shape[1];
     int64_t C = image_shape[2];
@@ -1338,7 +1349,7 @@ c10::SmallVector<int64_t, SIZE> infersize_affine_grid_generator(at::IntArrayRef 
         output_size = {size[0], size[2] * size[3], 2};
     } else {
         TORCH_CHECK(size.size() > 4, "It is expected size greater than 4, "
-            "but got size ", size.size());
+            "but got size ", size.size(), OPS_ERROR(ErrCode::PARAM));
         output_size = {size[0], size[2] * size[3] * size[4], 3};
     }
     return output_size;
@@ -1417,7 +1428,8 @@ c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(const at::Tensor &s
 c10::SmallVector<int64_t, SIZE> clamp_npu_output_size(const at::Tensor &self, const c10::optional<at::Tensor> &min,
                                                       const c10::optional<at::Tensor> &max)
 {
-    TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None");
+    TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None",
+        OPS_ERROR(ErrCode::PARAM));
     if (self.numel() == 0) {
         c10::SmallVector<int64_t, SIZE> empty_sizes;
         for (int64_t i = 0; i < self.dim(); ++i) {
@@ -1555,7 +1567,8 @@ small_vector repeat_interleave_npu_output_size_opapi(const at::Tensor &self, con
 std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_npu_output_size(const at::Tensor &self,
                                                                       const at::Tensor &gamma)
 {
-    TORCH_CHECK(self.dim() >= gamma.dim(), "The gamma shape should not be bigger than self shape.");
+    TORCH_CHECK(self.dim() >= gamma.dim(), "The gamma shape should not be bigger than self shape.",
+        OPS_ERROR(ErrCode::PARAM));
     auto x_shape = array_to_small_vector(self.sizes());
     auto x_dim_num = self.dim();
     auto gamma_dim_num = gamma.dim();

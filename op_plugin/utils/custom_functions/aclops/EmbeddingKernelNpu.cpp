@@ -22,7 +22,7 @@ at::Tensor embedding_common_nocheck(
     const at::Tensor& weight,
     const at::Tensor& indices) {
   auto output_size = op_infer::array_to_small_vector(indices.sizes());
-  TORCH_CHECK(weight.numel() > 0, "The input tensor is an empty tensor.");
+  TORCH_CHECK(weight.numel() > 0, "The input tensor is an empty tensor.", OPS_ERROR(ErrCode::PARAM));
   output_size.emplace_back(weight.size(weight.dim() - 1));
   at::Tensor result = npu_preparation::apply_tensor(weight, output_size);
 

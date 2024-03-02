@@ -50,7 +50,8 @@ void check_dim_valid(int64_t real_dim, int64_t self_dim) {
     int64_t dim_max = std::max(-self_dim, self_dim-1);
     TORCH_CHECK(
         (real_dim >= dim_min) && (real_dim <= dim_max),
-        "dim value should be in the range of [-x, x-1], x is the dimension number of input tensor.");
+        "dim value should be in the range of [-x, x-1], x is the dimension number of input tensor.",
+        OPS_ERROR(ErrCode::PARAM));
 }
 } // namespace
 
@@ -65,7 +66,8 @@ at::Tensor repeat_interleave_common_nocheck(
 
   TORCH_CHECK(
       repeats >= 1,
-      "repeats can not be negative.");
+      "repeats can not be negative.",
+      OPS_ERROR(ErrCode::VALUE));
   at::Tensor self_tensor = self;
   if (!dim.has_value()) {
     self_tensor = at::flatten(self_tensor);
@@ -107,7 +109,7 @@ at::Tensor repeat_interleave_common_nocheck(
 
   TORCH_CHECK(
       (repeats.size(0) == self_tensor.size(real_dim)) || (repeats.size(0) == 1),
-      "repeats must have the same size as input along dim.");
+      "repeats must have the same size as input along dim.", OPS_ERROR(ErrCode::PARAM));
 
   if (self_dim > 1 && real_dim != 0) {
     self_tensor = self_tensor.transpose(0, real_dim);
