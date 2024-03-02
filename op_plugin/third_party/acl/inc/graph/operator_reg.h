@@ -469,12 +469,13 @@ public:
 
 
 #define PASTE(g_register, y) g_register##y
-#define OP_END_IMPL(x, y)                                                                                      \
+#define OP_END_IMPL(x, y)                                                                                          \
   N();                                                                                                             \
   }                                                                                                                \
   static_assert(                                                                                                   \
-      std::is_same<(x), _THIS_TYPE>::value,                                                                          \
-      "The class name entered into the OP_END_FACTORY_REG needs to be the same as the operator name you define."); \
+      std::is_same<(x), _THIS_TYPE>::value,                                                                        \
+      "The class name entered into the OP_END_FACTORY_REG needs to be the same as the operator name you define." + \
+      OPS_ERROR(ErrCode::VALUE));                                                                                  \
   }                                                                                                                \
   ;                                                                                                                \
   static const OperatorCreatorRegister PASTE(g_register, y)(#x, [](const AscendString &name) { return x(name); }); \

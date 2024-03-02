@@ -84,7 +84,7 @@ at::Tensor gen_mask_dispatch(const at::Tensor &self, const at::Scalar &keep_prob
             c10_npu::SecondaryStreamGuard guard(c10_npu::getCurrentSecondaryStream());
             mask = gen_mask_impl(self, keep_prob, seed, offset, numels);
             if (sync) {
-                NPU_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(original_stream));
+                OPS_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(original_stream));
             }
         }
     } else {

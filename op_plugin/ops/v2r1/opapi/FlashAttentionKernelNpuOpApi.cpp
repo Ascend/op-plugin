@@ -87,7 +87,7 @@ at::Tensor dropout_gen_mask_dispatch(const at::Tensor &query, const at::Scalar &
             c10_npu::SecondaryStreamGuard guard(c10_npu::getCurrentSecondaryStream());
             mask = dropout_gen_mask_impl(query, keep_prob, seed, offset, numels);
             if (sync) {
-                NPU_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(original_stream));
+                OPS_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(original_stream));
             }
         }
     } else {
