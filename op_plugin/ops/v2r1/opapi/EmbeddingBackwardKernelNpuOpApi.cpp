@@ -16,20 +16,22 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
+
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor embedding_backward_symint(const at::Tensor& grad, const at::Tensor& indices, c10::SymInt num_weights,
                                      c10::SymInt padding_idx, bool scale_grad_by_freq, bool sparse) {
-  DO_COMPATIBILITY(aclnnEmbeddingDenseBackward,
-                   acl_op::embedding_backward_symint(grad, indices, num_weights, padding_idx, scale_grad_by_freq,
+    DO_COMPATIBILITY(aclnnEmbeddingDenseBackward,
+                     acl_op::embedding_backward_symint(grad, indices, num_weights, padding_idx, scale_grad_by_freq,
                                                      sparse));
-  TORCH_CHECK(sparse == false, "NPU error, not yet support sparse tensor, when sparse == True");
+    TORCH_CHECK(sparse == false, "NPU error, not yet support sparse tensor, when sparse == True" + OPS_ERROR(ErrCode::NOT_SUPPORT));
 
-  int64_t num_weights_int = num_weights.expect_int();
-  int64_t padding_idx_int = padding_idx.expect_int();
-  // run dense tensor backward
-  return op_api::embedding_dense_backward(grad, indices, num_weights_int, padding_idx_int, scale_grad_by_freq);
+    int64_t num_weights_int = num_weights.expect_int();
+    int64_t padding_idx_int = padding_idx.expect_int();
+    // run dense tensor backward
+    return op_api::embedding_dense_backward(grad, indices, num_weights_int, padding_idx_int, scale_grad_by_freq);
 }
 } // namespace op_api

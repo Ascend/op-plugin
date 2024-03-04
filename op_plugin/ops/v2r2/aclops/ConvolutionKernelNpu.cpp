@@ -98,7 +98,7 @@ inline std::vector<int64_t> expand_param_if_needed(
     return std::vector<int64_t>(expected_dim, list_param[0]);
   } else if ((int64_t)list_param.size() != expected_dim) {
     TORCH_CHECK(false, "expected ", param_name, " to be a single integer value or a list of ", expected_dim,
-                " values to match the convolution dimensions, but got ", param_name, "=", list_param);
+                " values to match the convolution dimensions, but got ", param_name, "=", list_param, OPS_ERROR(ErrCode::PARAM));
   } else {
     return list_param.vec();
   }
@@ -124,7 +124,7 @@ at::Tensor view4d(const at::Tensor& tensor) {
 at::Tensor view3d(const at::Tensor& tensor) {
   TORCH_CHECK(tensor.ndimension() == 4,
       "expected 4D tensor, got tensor with ", tensor.ndimension(),
-      " dimensions instead");
+      " dimensions instead", OPS_ERROR(ErrCode::PARAM));
   return tensor.squeeze(2);
 }
 
@@ -137,7 +137,7 @@ std::tuple<at::Tensor, bool> batchify(
   const auto is_batched = (input.dim() == dim_count_batch);
   TORCH_CHECK(input.dim() == dim_count_no_batch || is_batched,
       "Expected ", dim_count_no_batch, "D (unbatched) or ", dim_count_batch,
-      "D (batched) input to ", func_name, ", but got input of size: ", input.sizes());
+      "D (batched) input to ", func_name, ", but got input of size: ", input.sizes(), OPS_ERROR(ErrCode::PARAM));
   return std::make_tuple(is_batched ? input : input.unsqueeze(0), is_batched);
 }
 
@@ -168,21 +168,21 @@ void check_shape_forward(
   const auto& dilation = params.dilation;
   bool transposed = params.transposed;
 
-  TORCH_CHECK(!params.is_padding_neg(), "negative padding is not supported");
-  TORCH_CHECK(!params.is_output_padding_neg(), "negative output_padding is not supported");
-  TORCH_CHECK(!params.is_stride_nonpos(), "non-positive stride is not supported");
+  TORCH_CHECK(!params.is_padding_neg(), "negative padding is not supported" + OPS_ERROR(ErrCode::NOT_SUPPORT));
+  TORCH_CHECK(!params.is_output_padding_neg(), "negative output_padding is not supported" + OPS_ERROR(ErrCode::NOT_SUPPORT));
+  TORCH_CHECK(!params.is_stride_nonpos(), "non-positive stride is not supported" + OPS_ERROR(ErrCode::NOT_SUPPORT));
 
   TORCH_CHECK(weight_dim == k,
       "Expected ", weight_dim, "-dimensional input for ", weight_dim,
       "-dimensional weight ", weight_sizes, ", but got ", k, "-dimensional input of size ",
-      input.sizes(), " instead");
+      input.sizes(), " instead", OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(weight_sizes[0] >= groups,
       "Given groups=", groups, ", expected weight to be at least ", groups,
-      " at dimension 0, but got weight of size ", weight_sizes, " instead");
+      " at dimension 0, but got weight of size ", weight_sizes, " instead", OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(weight_sizes[0] % groups == 0,
       "Given groups=", groups, ", expected weight to be divisible by ",
       groups, " at dimension 0, but got weight of size [", weight_sizes,
-      "] instead");
+      "] instead", OPS_ERROR(ErrCode::PARAM));
 
   if (!transposed) {
     std::vector<int64_t> input_shape;
@@ -193,12 +193,12 @@ void check_shape_forward(
         "Given groups=", groups, ", weight of size ", weight_sizes,
         ", expected input", input.sizes(), " to have ",
         (weight_sizes[1] * groups), " channels, but got ", input.size(1),
-        " channels instead");
+        " channels instead", OPS_ERROR(ErrCode::PARAM));
 
     TORCH_CHECK(!bias.defined() || (bias.ndimension() == 1 && bias.size(0) == weight_sizes[0]),
         "Given weight of size ", weight_sizes,
         ", expected bias to be 1-dimensional with ", weight_sizes[0], " elements",
-        ", but got bias of size ", bias.sizes(), " instead");
+        ", but got bias of size ", bias.sizes(), " instead", OPS_ERROR(ErrCode::PARAM));
 
     for (const auto i : c10::irange(2, k)) {
       input_shape.push_back(input.size(i) + 2 * padding[i-2]);
@@ -209,7 +209,7 @@ void check_shape_forward(
       }
     }
 
-    TORCH_CHECK(input_shape.size() == kernel_shape.size(), "Inconsistent shape between Input and Kernel");
+    TORCH_CHECK(input_shape.size() == kernel_shape.size(), "Inconsistent shape between Input and Kernel", OPS_ERROR(ErrCode::PARAM));
 
     if (!kernel_size_correct) {
       // If kernel size is incorrect
@@ -224,18 +224,18 @@ void check_shape_forward(
       }
 
       TORCH_CHECK(false, "Calculated padded input size per channel: (", input_ss.str(), "). Kernel size: (",
-                  kernel_ss.str(), "). Kernel size can't be greater than actual input size");
+                  kernel_ss.str(), "). Kernel size can't be greater than actual input size", OPS_ERROR(ErrCode::PARAM));
     }
   } else {
     // transposed
     TORCH_CHECK(input.size(1) == weight_sizes[0],
         "Given transposed=", transposed, ", weight of size ", weight_sizes,
         ", expected input", input.sizes(), " to have ", weight_sizes[0],
-        " channels, but got ", input.size(1), " channels instead");
+        " channels, but got ", input.size(1), " channels instead", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(!bias.defined() || (bias.ndimension() == 1 && bias.size(0) == weight_sizes[1] * groups),
         "Given transposed=", transposed, ", weight of size ", weight_sizes,
         ", expected bias to be 1-dimensional with ", weight_sizes[1] * groups, " elements",
-        ", but got bias of size ", bias.sizes(), " instead");
+        ", but got bias of size ", bias.sizes(), " instead", OPS_ERROR(ErrCode::PARAM));
   }
 }
 
@@ -256,7 +256,7 @@ at::native::ConvBackend select_conv_backend(
   if (input.size(0) == 0 || input.size(1) == 0) {
     return at::native::ConvBackend::Empty;
   } else if (input.numel() == 0) {
-    TORCH_CHECK(false, "Only zero batch or zero channel inputs are supported, but got input shape: ", input.sizes());
+    TORCH_CHECK(false, "Only zero batch or zero channel inputs are supported, but got input shape: ", input.sizes(), OPS_ERROR(ErrCode::NOT_SUPPORT));
   }
 
   if (torch_npu::utils::is_npu(input)) {
@@ -267,7 +267,7 @@ at::native::ConvBackend select_conv_backend(
       } else if (input.ndimension() == 5) {
         return at::native::ConvBackend::SlowTranspose3d;
       } else {
-        TORCH_CHECK(false, "Only 4D or 5D input is supported");
+        TORCH_CHECK(false, "Only 4D or 5D input is supported", OPS_ERROR(ErrCode::NOT_SUPPORT));
       }
     } else {  /* Not transposed */
       if (input.ndimension() == 4) {
@@ -279,15 +279,15 @@ at::native::ConvBackend select_conv_backend(
       } else if (input.ndimension() == 5) {
         return at::native::ConvBackend::Slow3d;
       } else {
-        TORCH_CHECK(false, "Only 4D or 5D input is supported");
+        TORCH_CHECK(false, "Only 4D or 5D input is supported", OPS_ERROR(ErrCode::NOT_SUPPORT));
       }
     }
   } else {
     // Only reach here when input is backend with out-of-source implementation.
     return at::native::ConvBackend::Overrideable;
   }
-  // Error out if no suitable backend was found.
-  TORCH_CHECK(false, "unsupported ConvNd parameters");
+    // Error out if no suitable backend was found.
+    TORCH_CHECK(false, "unsupported ConvNd parameters", OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 
 // Selects a backend for convolution based on the inputs and params.
@@ -546,7 +546,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward(
   auto k = weight.ndimension();
   int64_t dim = k - 2;
 
-  TORCH_CHECK(dim > 0, "weight should have at least three dimensions");
+  TORCH_CHECK(dim > 0, "weight should have at least three dimensions", OPS_ERROR(ErrCode::PARAM));
 
   auto& ctx = at::globalContext();
   ConvParams params;
@@ -561,13 +561,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward(
   check_shape_backward(input, weight.sizes(), params);
   TORCH_CHECK(input.dim() == grad_output.dim(),
       "Expected input and grad_output to have the same number of dimensions, but got: ",
-      input.dim(), " and ", grad_output.dim());
+      input.dim(), " and ", grad_output.dim(), OPS_ERROR(ErrCode::PARAM));
 
   // output_padding is only supported for transposed convolutions
   if (!params.transposed) {
     for (auto pad : params.output_padding) {
       TORCH_CHECK(pad == 0, "output_padding is not supported for non-transposed convolutions; got: ",
-          params.output_padding);
+          params.output_padding, OPS_ERROR(ErrCode::NOT_SUPPORT));
     }
   }
 
@@ -629,10 +629,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward(
     }
     // Backward is not supported for these backends.
     case at::native::ConvBackend::Winograd3x3Depthwise:
-      TORCH_CHECK(false, "Backward is not supported for depthwise 3x3 winograd");
+      TORCH_CHECK(false, "Backward is not supported for depthwise 3x3 winograd" + OPS_ERROR(ErrCode::NOT_SUPPORT));
       break;
     case at::native::ConvBackend::Xnnpack2d:
-      TORCH_CHECK(false, "Backward is not supported for xnnpack");
+      TORCH_CHECK(false, "Backward is not supported for xnnpack" + OPS_ERROR(ErrCode::NOT_SUPPORT));
       break;
     default:
         TORCH_NPU_WARN_ONCE("Unkonwn Backward");

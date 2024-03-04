@@ -15,6 +15,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 
+
 namespace acl_op {
 at::Tensor _embedding_bag_backward_symint(
     const at::Tensor& grad,

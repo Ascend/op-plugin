@@ -44,7 +44,7 @@ DropOutStatus get_dropout_status(double keep_prob)
 at::Tensor format_trans(const at::Tensor &at_tensor)
 {
     if (at_tensor.defined()) {
-        TORCH_CHECK(torch_npu::utils::is_npu(at_tensor), "only npu tensor is supported");
+        TORCH_CHECK(torch_npu::utils::is_npu(at_tensor), "only npu tensor is supported" + OPS_ERROR(ErrCode::NOT_SUPPORT));
         return custom_ops::npu_format_cast(at_tensor, ACL_FORMAT_ND);
     }
     return at_tensor;
@@ -238,19 +238,25 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     bool gen_mask_parallel,
     bool sync)
 {
-    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", query.dim(), "-dimensional");
-    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(), "-dimensional");
-    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", value.dim(), "-dimensional");
-    TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ", dy.dim(), "-dimensional");
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
-    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparse_mode);
+    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ",
+        query.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ",
+        key.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ",
+        value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ", dy.dim(), "-dimensional",
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob,
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparse_mode,
+        OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
         c = toupper(c);
     }
     TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH" || input_layout_str == "BNSD" ||
         input_layout_str == "BSND" || input_layout_str == "TND",
-        "The input_layout should be BSH/SBH/BNSD/BSND/TND(case-insensitive), but got ", input_layout);
+        "The input_layout should be BSH/SBH/BNSD/BSND/TND(case-insensitive), but got ", input_layout, OPS_ERROR(ErrCode::PARAM));
 
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     length += 32;
@@ -289,18 +295,23 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     auto ac_seq_qlen = actual_seq_qlen.value_or(at::IntArrayRef{});
     auto ac_seq_kvlen = actual_seq_kvlen.value_or(at::IntArrayRef{});
 
-    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", query.dim(), "-dimensional");
-    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(), "-dimensional");
-    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", value.dim(), "-dimensional");
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
-    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparse_mode);
+    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ",
+        query.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(),
+        "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ",
+        value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob,
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ",
+        sparse_mode, OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
         c = toupper(c);
     }
     TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH" || input_layout_str == "BNSD" ||
                 input_layout_str == "BSND" || input_layout_str == "TND",
-        "The input_layout should be BSH/SBH/BNSD/BSND/TND(case-insensitive), but got ", input_layout);
+        "The input_layout should be BSH/SBH/BNSD/BSND/TND(case-insensitive), but got ", input_layout, OPS_ERROR(ErrCode::PARAM));
 
     int64_t B = 0;
     int64_t S0 = 0; // S for query

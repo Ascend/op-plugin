@@ -21,16 +21,16 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor trace(const at::Tensor &self)
 {
-  TORCH_CHECK(self.dim() == 2, "trace: expected a matrix, but got tensor with dim ", self.dim());
-  c10::SmallVector<int64_t, N> outputSize = {};
-  auto outDtype = (isIntegralType(self.scalar_type(), true)) ? at::kLong : self.scalar_type();
-  at::Tensor result = npu_preparation::apply_tensor(outputSize, self.options().dtype(outDtype), self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Trace")
-    .Input(self)
-    .Output(result)
-    .Run();
-  return result;
+    TORCH_CHECK(self.dim() == 2, "trace: expected a matrix, but got tensor with dim ", self.dim(), OPS_ERROR(ErrCode::PARAM));
+    c10::SmallVector<int64_t, N> outputSize = {};
+    auto outDtype = (isIntegralType(self.scalar_type(), true)) ? at::kLong : self.scalar_type();
+    at::Tensor result = npu_preparation::apply_tensor(outputSize, self.options().dtype(outDtype), self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Trace")
+        .Input(self)
+        .Output(result)
+        .Run();
+    return result;
 }
 
 } // namespace op_plugin

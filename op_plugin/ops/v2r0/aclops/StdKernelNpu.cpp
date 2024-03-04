@@ -33,7 +33,7 @@ int64_t calc_shape_prod(const at::Tensor& self, at::IntArrayRef dim) {
     for (auto i = 0; i < dim.size(); i++) {
         TORCH_CHECK(-self.dim() <= dim[i] && dim[i] < self.dim(),
                     "Dimension out of range (expected to be in range of [",
-                    -self.dim(), ", ", self.dim() - 1, "], but got ", dim[i], ")");
+                    -self.dim(), ", ", self.dim() - 1, "], but got ", dim[i], ")", OPS_ERROR(ErrCode::PARAM));
         shape_prod *= self.size(dim[i]);
     }
   }

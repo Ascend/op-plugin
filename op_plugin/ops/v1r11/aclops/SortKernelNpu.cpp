@@ -22,7 +22,7 @@ std::tuple<at::Tensor, at::Tensor> sort(
     c10::optional<bool> stable,
     int64_t dim,
     bool descending) {
-  TORCH_CHECK(false, "sort.stable is not supported.");
+    TORCH_CHECK(false, "sort.stable is not supported." + OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 
 std::tuple<at::Tensor&, at::Tensor&> sort_out(
@@ -32,7 +32,7 @@ std::tuple<at::Tensor&, at::Tensor&> sort_out(
     bool descending,
     at::Tensor& values,
     at::Tensor& indices) {
-  TORCH_CHECK(false, "sort.stable is not supported.");
+    TORCH_CHECK(false, "sort.stable is not supported." + OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 
 } // namespace acl_op

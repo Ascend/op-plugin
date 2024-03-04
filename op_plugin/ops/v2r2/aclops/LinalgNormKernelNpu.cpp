@@ -24,7 +24,7 @@ namespace {
 static inline std::vector<int64_t> create_dim_backshift_permutation(int64_t dim0, int64_t dim1, int64_t ndim)
 {
     TORCH_CHECK((dim0 != dim1) && (dim0 < ndim) && (dim0 >= 0) && (dim1 < ndim) && (dim1 >= 0),
-                "duplicate or invalid dimensions");
+                "duplicate or invalid dimensions", OPS_ERROR(ErrCode::PARAM));
     std::vector<int64_t> permutation(ndim);
     int64_t cur_permuted_dim = 0;
     for (const auto dim_ind : c10::irange(ndim)) {
@@ -41,22 +41,22 @@ static void _linalg_matrix_norm_checks(const at::Tensor &A, std::vector<int64_t>
                                        at::optional<at::ScalarType> opt_dtype, bool low_precision = true)
 {
     // A
-    TORCH_CHECK(A.dim() >= 2, "linalg.matrix_norm", ": The input tensor ", "A", " must have at least 2 dimensions.");
+    TORCH_CHECK(A.dim() >= 2, "linalg.matrix_norm", ": The input tensor ", "A", " must have at least 2 dimensions.", OPS_ERROR(ErrCode::PARAM));
     auto dtype = A.scalar_type();
     TORCH_CHECK((at::isFloatingType(dtype) || at::isComplexType(dtype)), "linalg.matrix_norm",
-                ": Expected a floating point or complex tensor as input. Got ", dtype);
+                ": Expected a floating point or complex tensor as input. Got ", dtype, OPS_ERROR(ErrCode::TYPE));
     if (!low_precision) {
         TORCH_CHECK(dtype == at::kFloat || dtype == at::kDouble || dtype == at::kComplexFloat ||
                         dtype == at::kComplexDouble,
-                    "linalg.matrix_norm", ": Low precision dtypes not supported. Got ", dtype);
+                    "linalg.matrix_norm", ": Low precision dtypes not supported. Got ", dtype, OPS_ERROR(ErrCode::TYPE));
     }
 
     // dim
-    TORCH_CHECK(dim.size() == 2, "linalg.matrix_norm: dim must be a 2-tuple. Got ", dim);
+    TORCH_CHECK(dim.size() == 2, "linalg.matrix_norm: dim must be a 2-tuple. Got ", dim, OPS_ERROR(ErrCode::PARAM));
     // wrap first to identify weird scenarios like A.ndim = 2, dim = (1, -1)
     // dim is modified in place while wrapping it
     at::maybe_wrap_dims(dim, A.dim());
-    TORCH_CHECK(dim[0] != dim[1], "linalg.matrix_norm: dims must be different. Got (", dim[0], ", ", dim[1], ")");
+    TORCH_CHECK(dim[0] != dim[1], "linalg.matrix_norm: dims must be different. Got (", dim[0], ", ", dim[1], ")", OPS_ERROR(ErrCode::PARAM));
 
     // dtype
     if (opt_dtype.has_value()) {
@@ -65,12 +65,12 @@ static void _linalg_matrix_norm_checks(const at::Tensor &A, std::vector<int64_t>
         TORCH_CHECK(isFloatingType(dtype) || isComplexType(dtype), "linalg.matrix_norm",
                     ": dtype should"
                     " be floating point or complex, but got ",
-                    dtype);
+                    dtype, OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK(isComplexType(self_dtype) == isComplexType(dtype), "linalg.matrix_norm", ": dtype should be ",
                     isComplexType(self_dtype) ? "complex" : "real", " for ",
-                    isComplexType(self_dtype) ? "complex" : "real", " inputs, but got ", dtype);
+                    isComplexType(self_dtype) ? "complex" : "real", " inputs, but got ", dtype, OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK(promoteTypes(self_dtype, dtype) == dtype, "linalg.matrix_norm", ": the dtype of the input ", "(",
-                    self_dtype, ") should be convertible ", "without narrowing to the specified dtype (", dtype, ")");
+                    self_dtype, ") should be convertible ", "without narrowing to the specified dtype (", dtype, ")", OPS_ERROR(ErrCode::TYPE));
     }
 }
 
@@ -186,7 +186,7 @@ at::Tensor linalg_matrix_norm(const at::Tensor &A, const at::Scalar &scalar_ord,
     auto ord = scalar_ord.toDouble();
     auto abs_ord = std::abs(ord);
     TORCH_CHECK(abs_ord == 2. || abs_ord == 1. || abs_ord == INFINITY, "linalg.matrix_norm: Order ", ord,
-                " not supported.");
+                " not supported.", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     auto dim_ = dim.vec();
     // Check A, dim, and dtype
@@ -226,7 +226,7 @@ at::Tensor linalg_matrix_norm(const at::Tensor &A, c10::string_view ord, at::Int
                               at::optional<at::ScalarType> opt_dtype)
 {
     // Check ord first as it will be used in the dtype check of A
-    TORCH_CHECK(ord == "fro" || ord == "nuc", "linalg.matrix_norm: Order ", ord, " not supported.");
+    TORCH_CHECK(ord == "fro" || ord == "nuc", "linalg.matrix_norm: Order ", ord, " not supported.", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     auto dim_ = dim.vec();
     // Check A, dim, and dtype
@@ -274,11 +274,11 @@ at::Tensor linalg_norm(const at::Tensor &X, const at::optional<at::Scalar> &opt_
 {
     if (opt_dim.has_value()) {
         TORCH_CHECK(opt_dim->size() == 1 || opt_dim->size() == 2, "linalg.norm: If ",
-                    "dim is specified, it must be of length 1 or 2. Got ", *opt_dim);
+                    "dim is specified, it must be of length 1 or 2. Got ", *opt_dim, OPS_ERROR(ErrCode::PARAM));
     } else {
         if (opt_ord.has_value()) {
             TORCH_CHECK(X.dim() == 1 || X.dim() == 2, "linalg.norm: If ",
-                        "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.");
+                        "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.", OPS_ERROR(ErrCode::PARAM));
         }
     }
 
@@ -299,10 +299,10 @@ at::Tensor linalg_norm(const at::Tensor &X, c10::string_view ord, at::OptionalIn
 {
     if (opt_dim.has_value()) {
         TORCH_CHECK(opt_dim->size() == 1 || opt_dim->size() == 2, "linalg.norm: If ",
-                    "dim is specified, it mut be of length 1 or 2. Got ", *opt_dim);
+                    "dim is specified, it mut be of length 1 or 2. Got ", *opt_dim, OPS_ERROR(ErrCode::PARAM));
     } else {
         TORCH_CHECK(X.dim() == 1 || X.dim() == 2, "linalg.norm: If ",
-                    "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.");
+                    "dim is not specified but ord is, the input must be 1D or 2D. Got ", X.dim(), "D.", OPS_ERROR(ErrCode::PARAM));
     }
     auto dim = opt_dim.has_value() ? opt_dim.value().vec() : std::vector<at::IntArrayRef::value_type>{0, 1};
     return acl_op::linalg_matrix_norm(X, ord, dim, keepdim, opt_dtype);

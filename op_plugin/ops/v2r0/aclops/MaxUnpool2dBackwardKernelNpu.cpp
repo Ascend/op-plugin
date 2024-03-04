@@ -25,35 +25,35 @@ at::Tensor& max_unpool2d_backward_out(
     const at::Tensor& indices,
     at::IntArrayRef output_size,
     at::Tensor& grad_input) {
-  npu_preparation::CheckOut(
-      {self, grad_output},
-      grad_input,
-      self);
-  TORCH_CHECK(
-      output_size.size() == 2,
-      "There should be exactly two elements (height, width) in outputSize");
-  TORCH_CHECK(
-      (self.ndimension() == 3 || self.ndimension() == 4),
-      "Input to max_unpooling2d should be a 3d or 4d Tensor");
-  TORCH_CHECK(
-      self.sizes() == indices.sizes(),
-      "Shape of indices should match shape of input");
-  TORCH_CHECK(self.numel() > 0, "Input must be non-empty");
+    npu_preparation::CheckOut(
+        {self, grad_output},
+        grad_input,
+        self);
+    TORCH_CHECK(
+        output_size.size() == 2,
+        "There should be exactly two elements (height, width) in outputSize" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(
+        (self.ndimension() == 3 || self.ndimension() == 4),
+        "Input to max_unpooling2d should be a 3d or 4d Tensor" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(
+        self.sizes() == indices.sizes(),
+        "Shape of indices should match shape of input" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.numel() > 0, "Input must be non-empty" + OPS_ERROR(ErrCode::VALUE));
 
-  auto oheight = output_size[0];
-  auto owidth = output_size[1];
-  int64_t n = 1;
-  int64_t c = self.size(0);
-  int64_t h = self.size(1);
-  int64_t w = self.size(2);
-  int64_t self_dim = self.ndimension();
+    auto oheight = output_size[0];
+    auto owidth = output_size[1];
+    int64_t n = 1;
+    int64_t c = self.size(0);
+    int64_t h = self.size(1);
+    int64_t w = self.size(2);
+    int64_t self_dim = self.ndimension();
 
-  if (self_dim == 4) {
-    n = self.size(0);
-    c = self.size(1);
-    h = self.size(2);
-    w = self.size(3);
-  }
+    if (self_dim == 4) {
+        n = self.size(0);
+        c = self.size(1);
+        h = self.size(2);
+        w = self.size(3);
+    }
 
   auto grad_output_contiguous = grad_output.contiguous();
   auto indices_contiguous = indices.contiguous();

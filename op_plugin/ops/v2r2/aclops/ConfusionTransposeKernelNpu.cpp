@@ -24,11 +24,11 @@ namespace {
 void check_confusion_transpose_perm(at::IntArrayRef perm, at::IntArrayRef shape)
 {
     auto input_dim = shape.size();
-    TORCH_CHECK(perm.size() == input_dim, "The length of perm should be the same as shape.");
+    TORCH_CHECK(perm.size() == input_dim, "The length of perm should be the same as shape." + OPS_ERROR(ErrCode::PARAM));
     std::vector<bool> seen(input_dim);
     for (const auto i : c10::irange(input_dim)) {
         auto dim = at::maybe_wrap_dim(perm[i], input_dim);
-        TORCH_CHECK(!seen[dim], "Repeated dim in perm");
+        TORCH_CHECK(!seen[dim], "Repeated dim in perm" + OPS_ERROR(ErrCode::PARAM));
         seen[dim] = true;
     }
 }

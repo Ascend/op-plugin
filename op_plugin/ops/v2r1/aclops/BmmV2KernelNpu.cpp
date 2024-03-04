@@ -15,6 +15,8 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
+
 
 namespace acl_op {
 at::Tensor npu_bmm_v2_mat1_backward_symint(const at::Tensor &grad, const at::Tensor &mat1, const at::Tensor &mat2,
@@ -35,7 +37,7 @@ at::Tensor npu_bmm_v2_mat1_backward_symint(const at::Tensor &grad, const at::Ten
     if (mat2.dim() == 1) {
         mat2_cp = mat2.view({1, mat2.size(0)});
     } else {
-        TORCH_CHECK(mat2.dim() >= 2, "mat2.dim must be greater than or equal to 1, but got ", mat2.dim());
+        TORCH_CHECK(mat2.dim() >= 2, "mat2.dim must be greater than or equal to 1, but got ", mat2.dim(), OPS_ERROR(ErrCode::PARAM));
         mat2_cp = mat2.transpose(-2, -1);
     }
     return acl_op::npu_bmmV2(grad.view(axis_reshape), mat2_cp, sizes);

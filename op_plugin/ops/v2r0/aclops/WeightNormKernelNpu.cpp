@@ -15,6 +15,8 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
+
 
 namespace acl_op {
 at::Tensor _weight_norm(
@@ -24,7 +26,7 @@ at::Tensor _weight_norm(
     TORCH_CHECK(
         v_in.device() == g_in.device(),
         "weight_norm: expected v_in and g_in to be on the same device, but v_in is "
-        "on ", v_in.device(), " and g_in is on ", g_in.device());
+        "on ", v_in.device(), " and g_in is on ", g_in.device(), OPS_ERROR(ErrCode::PARAM));
     auto v = v_in.contiguous();
     auto g = g_in.contiguous();
     return v * g.div(at::norm_except_dim(v, 2, dim));

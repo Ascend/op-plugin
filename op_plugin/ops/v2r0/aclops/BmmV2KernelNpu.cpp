@@ -15,12 +15,14 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
+
 
 namespace acl_op {
 at::Tensor npu_bmm_v2_mat1_backward_symint(const at::Tensor &grad, const at::Tensor &mat1, const at::Tensor &mat2,
                                            c10::SymIntArrayRef sizes_symint)
 {
-    TORCH_CHECK(mat2.dim() >= 1, "The mat2 must be at least 1D.");
+    TORCH_CHECK(mat2.dim() >= 1, "The mat2 must be at least 1D." + OPS_ERROR(ErrCode::PARAM));
 
     at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
     // da = grad * b^T
@@ -40,7 +42,7 @@ at::Tensor npu_bmm_v2_mat1_backward_symint(const at::Tensor &grad, const at::Ten
 at::Tensor npu_bmm_v2_mat2_backward_symint(const at::Tensor &grad, const at::Tensor &mat1, const at::Tensor &mat2,
                                            c10::SymIntArrayRef sizes_symint)
 {
-    TORCH_CHECK(mat1.dim() >= 1, "The mat1 must be at least 1D.");
+    TORCH_CHECK(mat1.dim() >= 1, "The mat1 must be at least 1D." + OPS_ERROR(ErrCode::PARAM));
 
     at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
     // db = a^T * grad

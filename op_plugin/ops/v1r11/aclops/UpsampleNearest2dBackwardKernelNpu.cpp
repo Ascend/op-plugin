@@ -27,7 +27,8 @@ at::Tensor upsample_nearest2d_backward(
     TORCH_CHECK(
         input_size.size() == 4,
         "It is expected input_size equals to 4, but got size ",
-        input_size.size());
+        input_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);

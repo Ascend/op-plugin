@@ -14,6 +14,8 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
+
 
 namespace acl_op {
 at::Tensor embedding_backward_symint(
@@ -23,8 +25,8 @@ at::Tensor embedding_backward_symint(
     c10::SymInt padding_idx,
     bool scale_grad_by_freq,
     bool sparse) {
-  TORCH_CHECK(sparse == false, "the current NPU does not yet support sparse tensor, when sparse is set to True");
-  // run dense tensor backward
-  return at::embedding_dense_backward_symint(grad, indices, std::move(num_weights), padding_idx, scale_grad_by_freq);
+    TORCH_CHECK(sparse == false, "the current NPU does not yet support sparse tensor, when sparse is set to True" + OPS_ERROR(ErrCode::NOT_SUPPORT));
+    // run dense tensor backward
+    return at::embedding_dense_backward_symint(grad, indices, std::move(num_weights), padding_idx, scale_grad_by_freq);
 }
 } // namespace acl_op

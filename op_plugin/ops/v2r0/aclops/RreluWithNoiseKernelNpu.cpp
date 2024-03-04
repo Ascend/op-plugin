@@ -77,7 +77,7 @@ at::Tensor &rrelu_with_noise_out_nocheck(at::Tensor &output, const at::Tensor &s
 at::Tensor rrelu_with_noise(const at::Tensor &self, const at::Tensor &noise, const at::Scalar &lower,
                             const at::Scalar &upper, bool training, c10::optional<at::Generator> generator)
 {
-    TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!");
+    TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!" + OPS_ERROR(ErrCode::PARAM));
     auto output = at::empty_like(self, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
     return rrelu_with_noise_out_nocheck(output, self, noise, lower, upper, training, generator);
 }
@@ -85,7 +85,7 @@ at::Tensor rrelu_with_noise(const at::Tensor &self, const at::Tensor &noise, con
 at::Tensor &rrelu_with_noise_(at::Tensor &self, const at::Tensor &noise, const at::Scalar &lower,
                               const at::Scalar &upper, bool training, c10::optional<at::Generator> generator)
 {
-    TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!");
+    TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!" + OPS_ERROR(ErrCode::PARAM));
     return acl_op::rrelu_with_noise_out(self, noise, lower, upper, training, generator, self);
 }
 
@@ -93,7 +93,7 @@ at::Tensor &rrelu_with_noise_out(const at::Tensor &self, const at::Tensor &noise
                                  const at::Scalar &upper, bool training, c10::optional<at::Generator> generator,
                                  at::Tensor &output)
 {
-    TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!");
+    TORCH_CHECK(noise.sizes().equals(self.sizes()), "The shape of noise must equal to the shape of self!" + OPS_ERROR(ErrCode::PARAM));
     npu_preparation::CheckOut({self, noise}, output, self);
 
     if (!npu_utils::check_match(&output)) {
