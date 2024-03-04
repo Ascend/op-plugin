@@ -146,10 +146,10 @@ at::Tensor AdvanceIndex::restride_src(const at::Tensor &src, int64_t before_dims
     auto shape = at::DimVector(src.sizes());
     auto strides = at::DimVector(src.strides());
     int64_t end = before_dims + dims_indexed;
-    TORCH_CHECK(shape.size() >= end, "end", end, "is overrange shape.size() ", shape.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(shape.size() >= end, "end", end, "is overrange shape.size() ", shape.size(), OPS_ERROR(ErrCode::VALUE));
     shape.erase(shape.begin() + before_dims, shape.begin() + end);
     TORCH_CHECK(strides.size() >= end, "end", end, "is overrange strides.size() ", strides.size(),
-        OPS_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::VALUE));
     strides.erase(strides.begin() + before_dims, strides.begin() + end);
     shape.insert(shape.begin() + before_dims, replacement_shape.begin(), replacement_shape.end());
     strides.insert(strides.begin() + before_dims, replacement_shape.size(), 0);
@@ -182,7 +182,7 @@ bool AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Ten
             if (scalarType != at::kLong && scalarType != at::kByte &&
                 scalarType != at::kBool && scalarType != at::kInt) {
                 TORCH_CHECK_INDEX(false, "tensors used as indices must be long, int, byte, or bool tensors",
-                    OPS_ERROR(ErrCode::PARAM));
+                    OPS_ERROR(ErrCode::TYPE));
             }
             if (!indicesDtype.has_value()) {
                 indicesDtype = scalarType;
@@ -207,7 +207,7 @@ AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::op
                           "shape mismatch: indexing tensors could not be broadcast"
                           " together with shapes ",
                           shapes_as_str(indices),
-                          OPS_ERROR(ErrCode::PARAM));
+                          OPS_ERROR(ErrCode::VALUE));
     }
     // add missing null Tensors so that it matches self.dim().
     while (indices.size() < (size_t)self.dim()) {
@@ -253,7 +253,7 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor &self,
                     uint64_t srcIdx = result.size() + j;
                     TORCH_CHECK_INDEX(index.size(j) == self.size(srcIdx), "The shape of the mask ", index.sizes(),
                                       " at index ", j, " does not match the shape of the indexed tensor ", self.sizes(),
-                                      " at index ", srcIdx, OPS_ERROR(ErrCode::PARAM));
+                                      " at index ", srcIdx, OPS_ERROR(ErrCode::VALUE));
                 }
                 at::Tensor nonzero;
                 // Replace with nonzeros

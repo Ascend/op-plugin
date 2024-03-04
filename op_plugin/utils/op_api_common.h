@@ -152,7 +152,7 @@ inline aclTensor *ConvertType(const at::Tensor &at_tensor)
     // if acl_data_type is ACL_STRING, storageDims is empty.
     if (acl_data_type != ACL_STRING) {
         TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
-            OPS_ERROR(ErrCode::PARAM));
+            OPS_ERROR(ErrCode::VALUE));
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
 

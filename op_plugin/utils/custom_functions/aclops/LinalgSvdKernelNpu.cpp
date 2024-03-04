@@ -90,8 +90,8 @@ inline c10::MaybeOwned<at::Tensor> borrow_else_clone(const bool cond, const at::
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor &self, bool some, bool compute_uv)
 {
     TORCH_CHECK(self.dtype() == at::kFloat, "svd_npu only supported Float, but get", self.dtype(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(self.dim() >= 2, "The dim of input tensor must larger than two.", OPS_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(self.dim() >= 2, "The dim of input tensor must larger than two.", OPS_ERROR(ErrCode::VALUE));
     std::vector<int64_t> infos(batch_count(self), 0);
     int64_t m = self.size(-2);
     int64_t n = self.size(-1);
@@ -149,8 +149,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor &sel
 
 static void linalg_check_errors(const at::Tensor &infos, const c10::string_view api_name, bool is_matrix)
 {
-    TORCH_CHECK(infos.scalar_type() == at::kInt, OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(infos.is_contiguous(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(infos.scalar_type() == at::kInt, OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(infos.is_contiguous(), OPS_ERROR(ErrCode::VALUE));
     if (infos.is_meta()) {
         return;
     }
@@ -187,12 +187,12 @@ static void linalg_check_errors(const at::Tensor &infos, const c10::string_view 
         if (api_name.find("svd") != api_name.npos) {
             TORCH_CHECK(info != -4, api_name, batch_str,
                         ": The algorithm failed to converge because the input matrix contained non-finite values.",
-                        OPS_ERROR(ErrCode::PARAM));
+                        OPS_ERROR(ErrCode::VALUE));
         }
         TORCH_CHECK(
             false, api_name, batch_str, ": Argument ", -info,
             " has illegal value. Most certainly there is a bug in the implementation calling the backend library.",
-            OPS_ERROR(ErrCode::PARAM));
+            OPS_ERROR(ErrCode::VALUE));
     } else if (info > 0) {
         if (api_name.find("svd") != api_name.npos) {
             TORCH_CHECK(false, api_name, batch_str,
@@ -200,7 +200,7 @@ static void linalg_check_errors(const at::Tensor &infos, const c10::string_view 
                         "many repeated singular values (error code: ",
                         info, ").", OPS_ERROR(ErrCode::PARAM));
         } else {
-            TORCH_CHECK(false, api_name, ": Unknown error code: ", info, ".", OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(false, api_name, ": Unknown error code: ", info, ".", OPS_ERROR(ErrCode::INTERNAL));
         }
     }
     // We should never reach this point as info was non-zero

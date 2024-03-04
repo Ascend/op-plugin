@@ -51,7 +51,7 @@ void check_dim_valid(int64_t real_dim, int64_t self_dim) {
     TORCH_CHECK(
         (real_dim >= dim_min) && (real_dim <= dim_max),
         "dim value should be in the range of [-x, x-1], x is the dimension number of input tensor.",
-        OPS_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::VALUE));
 }
 } // namespace
 
@@ -109,7 +109,7 @@ at::Tensor repeat_interleave_common_nocheck(
 
   TORCH_CHECK(
       (repeats.size(0) == self_tensor.size(real_dim)) || (repeats.size(0) == 1),
-      "repeats must have the same size as input along dim.", OPS_ERROR(ErrCode::PARAM));
+      "repeats must have the same size as input along dim.", OPS_ERROR(ErrCode::VALUE));
 
   if (self_dim > 1 && real_dim != 0) {
     self_tensor = self_tensor.transpose(0, real_dim);

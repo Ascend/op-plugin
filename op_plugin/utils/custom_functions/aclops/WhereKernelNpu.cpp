@@ -34,7 +34,7 @@ at::Tensor &where_out_nocheck(at::Tensor &out, const at::Tensor &condition, cons
 
     TORCH_CHECK(!(condition.scalar_type() != at::ScalarType::Byte && condition.scalar_type() != at::ScalarType::Bool),
                 "Expected condition to have ScalarType Byte, but got ScalarType ", toString(condition.scalar_type()),
-                OPS_ERROR(ErrCode::PARAM));
+                OPS_ERROR(ErrCode::TYPE));
 
     at_npu::native::OpCommand cmd;
     cmd.Name("Select").Input(condition).Input(self_cp).Input(other_cp).Output(out).Run();

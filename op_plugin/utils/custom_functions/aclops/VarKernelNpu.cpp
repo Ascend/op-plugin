@@ -106,9 +106,9 @@ std::tuple<at::Tensor &, at::Tensor &> var_mean_out_nocheck(at::Tensor &variance
         dim.empty() ? op_plugin::utils::get_dimlist_for_tensor(self) : c10::SmallVector<int64_t, N>(dim);
     auto ori_type = self.scalar_type();
     TORCH_CHECK((ori_type == c10::ScalarType::Half || ori_type == c10::ScalarType::Float),
-                "Var Mean only support float16 or float32 type.", OPS_ERROR(ErrCode::PARAM));
+                "Var Mean only support float16 or float32 type.", OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK((variance.scalar_type() == mean.scalar_type() && variance.scalar_type() == ori_type),
-                "mean's type and variance' type must be equal to input's type.", OPS_ERROR(ErrCode::PARAM));
+                "mean's type and variance' type must be equal to input's type.", OPS_ERROR(ErrCode::TYPE));
     var_mean_compute(variance, mean, self, dim_now, unbiased, keepdim, correction);
 
     return std::tuple<at::Tensor &, at::Tensor &>(variance, mean);
