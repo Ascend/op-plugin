@@ -2385,6 +2385,10 @@ custom:
     impl_ns: op_api
   - func: npu_apply_rotary_pos_emb(Tensor query, Tensor key, Tensor cos, Tensor sin, str layout='BSH') -> (Tensor, Tensor)
     impl_ns: op_api
+  - func: npu_scatter_nd_update(Tensor self, Tensor indices, Tensor updates) -> Tensor
+    impl_ns: op_api
+  - func: npu_scatter_nd_update_(Tensor(a!) self, Tensor indices, Tensor updates) -> Tensor(a!)
+    impl_ns: op_api
   - func: npu_dropout_gen_mask(int[] size, float p, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded

@@ -2386,6 +2386,10 @@ custom:
     impl_ns: op_api
   - func: npu_scatter_list_(Tensor(a!)[] self, Tensor indices, Tensor updates, Tensor? mask=None, str reduce='update', int axis=-2) -> ()
     impl_ns: op_api
+  - func: npu_scatter_nd_update(Tensor self, Tensor indices, Tensor updates) -> Tensor
+    impl_ns: op_api
+  - func: npu_scatter_nd_update_(Tensor(a!) self, Tensor indices, Tensor updates) -> Tensor(a!)
+    impl_ns: op_api
   - func: scatter_update(Tensor self, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op, op_api
   - func: scatter_update_(Tensor(a!) self, Tensor indices, Tensor updates, int axis) -> Tensor(a!)
