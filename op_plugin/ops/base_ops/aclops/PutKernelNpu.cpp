@@ -26,26 +26,27 @@ at::Tensor& put_(
     const at::Tensor& index,
     const at::Tensor& source,
     bool accumulate) {
-  TORCH_CHECK(index.numel() == source.numel(), "source should have the same number of elements as index");
-  if (source.numel() == 0) {
+    TORCH_CHECK(index.numel() == source.numel(), "source should have the same number of elements as index"
+        + OPS_ERROR(ErrCode::PARAM));
+    if (source.numel() == 0) {
+        return self;
+    }
+    npu_preparation::CheckMemory({self, index, source}, {self});
+
+    at::Tensor selfFlatten = npu_utils::format_contiguous(self.reshape(-1));
+    at::Tensor indexFlatten = index.reshape({-1, 1});
+    at::Tensor sourceFlatten = source.reshape(-1);
+
+    at_npu::native::OpCommand cmd;
+    accumulate ? cmd.Name("ScatterNdAdd") : cmd.Name("ScatterNdUpdate");
+    cmd.Input(selfFlatten)
+        .Input(indexFlatten)
+        .Input(sourceFlatten)
+        .Output(selfFlatten)
+        .Attr("use_locking", false)
+        .Run();
+
+    self.copy_(selfFlatten);
     return self;
-  }
-  npu_preparation::CheckMemory({self, index, source}, {self});
-
-  at::Tensor selfFlatten = npu_utils::format_contiguous(self.reshape(-1));
-  at::Tensor indexFlatten = index.reshape({-1, 1});
-  at::Tensor sourceFlatten = source.reshape(-1);
-
-  at_npu::native::OpCommand cmd;
-  accumulate ? cmd.Name("ScatterNdAdd") : cmd.Name("ScatterNdUpdate");
-  cmd.Input(selfFlatten)
-      .Input(indexFlatten)
-      .Input(sourceFlatten)
-      .Output(selfFlatten)
-      .Attr("use_locking", false)
-      .Run();
-
-  self.copy_(selfFlatten);
-  return self;
 }
 }  // namespace acl_op

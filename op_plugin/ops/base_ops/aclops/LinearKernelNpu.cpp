@@ -64,9 +64,12 @@ at::Tensor linear_backward_out_npu_nocheck(at::Tensor &result, const at::Tensor 
 std::tuple<at::Tensor, at::Tensor> npu_linear_backward(const at::Tensor &grad, const at::Tensor &input,
                                                        const at::Tensor &weight)
 {
-    TORCH_CHECK(grad.dim() >= 2, "torch.nn.functional.linear() grad must be at least two-dimensional.");
-    TORCH_CHECK(input.dim() >= 2, "torch.nn.functional.linear() input must be at least two-dimensional.");
-    TORCH_CHECK(weight.dim() >= 2, "torch.nn.functional.linear() weight must be at least two-dimensional.");
+    TORCH_CHECK(grad.dim() >= 2, "torch.nn.functional.linear() grad must be at least two-dimensional."
+        + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(input.dim() >= 2, "torch.nn.functional.linear() input must be at least two-dimensional."
+        + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 2, "torch.nn.functional.linear() weight must be at least two-dimensional."
+        + OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, SIZE> input_grad_output_size = {grad.size(0), weight.size(1)};
     c10::SmallVector<int64_t, SIZE> weight_grad_output_size = {grad.size(1), input.size(1)};
     at::Tensor input_grad = npu_preparation::apply_tensor(input, input_grad_output_size);
@@ -88,8 +91,10 @@ std::tuple<at::Tensor, at::Tensor> npu_linear_backward(const at::Tensor &grad, c
 
 at::Tensor npu_linear(const at::Tensor &input, const at::Tensor &weight, const c10::optional<at::Tensor> &bias_opt)
 {
-    TORCH_CHECK(input.dim() >= 2, "torch.nn.functional.linear() input must be at least two-dimensional.");
-    TORCH_CHECK(weight.dim() >= 2, "torch.nn.functional.linear() weight must be at least two-dimensional.");
+    TORCH_CHECK(input.dim() >= 2, "torch.nn.functional.linear() input must be at least two-dimensional."
+        + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 2, "torch.nn.functional.linear() weight must be at least two-dimensional."
+        + OPS_ERROR(ErrCode::PARAM));
 
     auto is_aligin = [&]() {
         return (!(static_cast<uint64_t>(input.size(0)) & 0x0000000F)) &&

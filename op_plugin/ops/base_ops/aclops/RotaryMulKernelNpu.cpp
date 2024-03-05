@@ -37,9 +37,9 @@ at::Tensor &rotary_mul_nocheck(at::Tensor &y, const at::Tensor &x, const at::Ten
 tensor_list rotary_mul_backward_nocheck(at::Tensor &dx, at::Tensor &dr1, at::Tensor &dr2, const at::Tensor &x,
                                         const at::Tensor &r1, const at::Tensor &r2, const at::Tensor &dy)
 {
-    TORCH_CHECK(x.dim() == 4, "The dim of input tensor [x] shoule equal to four.");
-    TORCH_CHECK(r1.dim() == 4, "The dim of input tensor [r1] shoule equal to four.");
-    TORCH_CHECK(r2.dim() == 4, "The dim of input tensor [r2] shoule equal to four.");
+    TORCH_CHECK(x.dim() == 4, "The dim of input tensor [x] shoule equal to four." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(r1.dim() == 4, "The dim of input tensor [r1] shoule equal to four." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(r2.dim() == 4, "The dim of input tensor [r2] shoule equal to four." + OPS_ERROR(ErrCode::PARAM));
     bool check_support = true;
     int64_t broadcast_dim_num = 1;
     for (int64_t i = 0; i < x.dim(); i++) {

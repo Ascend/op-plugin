@@ -24,22 +24,22 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(const at::Tensor &input, const at::Tensor &lengths,
                                                          bool batch_first)
 {
-    TORCH_CHECK(input.dim() >= 2, "Input must have two dims.", input.dim());
+    TORCH_CHECK(input.dim() >= 2, "Input must have two dims.", input.dim(), OPS_ERROR(ErrCode::PARAM));
     // get the size of B and T, the input size is [T, B, *] or [B, T, *]
     auto batchsize = batch_first ? input.size(0) : input.size(1);
     auto timesize = batch_first ? input.size(1) : input.size(0);
 
-    TORCH_CHECK(input.numel() > 0, "Cannot pack empty tensors.");
+    TORCH_CHECK(input.numel() > 0, "Cannot pack empty tensors." + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(input.numel() < std::numeric_limits<int64_t>::max(),
-                "Input tensor contain more than the max number of int64.");
+                "Input tensor contain more than the max number of int64." + OPS_ERROR(ErrCode::PARAM));
 
     TORCH_CHECK(lengths.size(0) == batchsize, "Expected 'len(lengths)' to be equal to batch_size, but got ",
-                lengths.size(0), " (batch_size=", batchsize, ")");
+                lengths.size(0), " (batch_size=", batchsize, ")" + OPS_ERROR(ErrCode::PARAM));
 
     auto lengths_vec = lengths.contiguous().data_ptr<int64_t>();
     TORCH_CHECK(lengths_vec != nullptr && lengths_vec[batchsize - 1] > 0,
                 "Length of all samples has to be greater than 0, but found an element "
-                "in 'lengths' that is <= 0");
+                "in 'lengths' that is <= 0" + OPS_ERROR(ErrCode::PARAM));
 
     // According to the TMG decision, adaptation avoidance scheme I
     // is temporarily adopted to retain the filling within effective T0,
@@ -68,7 +68,7 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(const at::Tensor &input
 
     at::Tensor batchsizes = at::empty({timesize}, lengths.options());
     auto batchsize_vec = batchsizes.data_ptr<int64_t>();
-    TORCH_CHECK(batchsize_vec != nullptr, "batchsizes is null")
+    TORCH_CHECK(batchsize_vec != nullptr, "batchsizes is null" + OPS_ERROR(ErrCode::PARAM));
     int64_t last = batchsize - 1;
     for (int ti = 0; ti < timesize; ti++) {
         for (int bi = last; bi >= 0; bi--) {

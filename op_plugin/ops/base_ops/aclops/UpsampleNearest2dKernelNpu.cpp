@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -23,9 +24,9 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 at::SmallVector<int64_t, SIZE> upsample_nearest2d_infer_size(const at::Tensor &input, at::IntArrayRef output_size)
 {
-    TORCH_CHECK(input.dim() == 4, "The input should be 4D, but got ", input.dim(), "D");
+    TORCH_CHECK(input.dim() == 4, "The input should be 4D, but got ", input.dim(), "D" + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() == 2, "The length of output_size should be equal to 2, but got ",
-                output_size.size());
+                output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t C = input.size(1);

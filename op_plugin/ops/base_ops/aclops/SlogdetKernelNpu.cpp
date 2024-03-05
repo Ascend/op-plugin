@@ -36,14 +36,14 @@ std::tuple<at::Tensor&, at::Tensor&> slogdet_out_nocheck(
 } // namespace
 
 std::tuple<at::Tensor, at::Tensor> slogdet(const at::Tensor& self) {
-  TORCH_CHECK(self.dim() >= 2, "input must be at least 2 dimensions");
-  auto output_size = op_infer::array_to_small_vector(self.sizes());
-  output_size.erase(output_size.end() - 2, output_size.end());
-  at::Tensor sign = npu_preparation::apply_tensor(self, output_size);
-  at::Tensor y = npu_preparation::apply_tensor(self, output_size);
+    TORCH_CHECK(self.dim() >= 2, "input must be at least 2 dimensions" + OPS_ERROR(ErrCode::PARAM));
+    auto output_size = op_infer::array_to_small_vector(self.sizes());
+    output_size.erase(output_size.end() - 2, output_size.end());
+    at::Tensor sign = npu_preparation::apply_tensor(self, output_size);
+    at::Tensor y = npu_preparation::apply_tensor(self, output_size);
 
-  slogdet_out_nocheck(sign, y, self);
+    slogdet_out_nocheck(sign, y, self);
 
-  return std::tie(sign, y);
+    return std::tie(sign, y);
 }
 } // namespace acl_op

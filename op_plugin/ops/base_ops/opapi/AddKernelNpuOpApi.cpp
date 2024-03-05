@@ -23,9 +23,10 @@ using npu_preparation = at_npu::native::OpPreparation;
 inline void alpha_check_npu(const at::ScalarType dtype, at::Scalar alpha)
 {
     TORCH_CHECK(!alpha.isBoolean() || dtype == at::ScalarType::Bool,
-                "Boolean alpha only supported for Boolean results.");
+                "Boolean alpha only supported for Boolean results." + OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(isFloatingType(dtype) || alpha.isIntegral(true),
-                "For integral input tensors, argument alpha must not be a floating point number.");
+                "For integral input tensors, argument alpha must not be a floating point number."
+                + OPS_ERROR(ErrCode::TYPE));
 }
 
 static at::Tensor &add_out_npu_nocheck(

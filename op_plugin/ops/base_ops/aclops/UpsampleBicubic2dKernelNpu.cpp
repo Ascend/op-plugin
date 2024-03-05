@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -31,7 +32,7 @@ at::Tensor& upsample_bicubic2d_out_nocheck(
   TORCH_CHECK(
       output_size.size() == 2,
       "It is expected output_size equals to 2, but got size ",
-      output_size.size());
+      output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   float temp_h = 0.0;
   float temp_w = 0.0;
@@ -74,10 +75,11 @@ at::Tensor& upsample_bicubic2d_out(
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
     at::Tensor& result) {
-    TORCH_CHECK(self.dim() >= 2, "The self should be at least 2D, but self got", self.dim(), "D");
+    TORCH_CHECK(self.dim() >= 2, "The self shoud be at least 2D, but self got", self.dim(),
+        "D" + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() == 2,
         "It is expected output_size equals to 2, but got size ",
-        output_size.size());
+        output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = self.size(0);
     int64_t C = self.size(1);
@@ -108,10 +110,11 @@ at::Tensor upsample_bicubic2d(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
-    TORCH_CHECK(self.dim() >= 2, "The self shoud be at least 2D, but self got", self.dim());
+    TORCH_CHECK(self.dim() >= 2, "The self shoud be at least 2D, but self got", self.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() == 2,
         "It is expected output_size equals to 2, but got size ",
-        output_size.size());
+        output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   int64_t N = self.size(0);
   int64_t C = self.size(1);

@@ -73,7 +73,7 @@ at::Tensor& remainder_out_scalar(
   at::ScalarType calculate_type = at::native::result_type(other, self);
   at::ScalarType result_type = result.scalar_type();
   TORCH_CHECK(canCast(calculate_type, result_type), "result type ", calculate_type,
-      " can't be cast to the desired output type ", result_type);
+      " can't be cast to the desired output type ", result_type, OPS_ERROR(ErrCode::TYPE));
 
   at::Tensor other_cast = (other.dtype() == calculate_type) ? other :
       at_npu::native::custom_ops::npu_dtype_cast(other, calculate_type);
@@ -115,7 +115,7 @@ at::Tensor& remainder_out(
   at::ScalarType calculate_type = at::native::result_type(self, other);
   at::ScalarType result_type = result.scalar_type();
   TORCH_CHECK(canCast(calculate_type, result_type), "result type ", calculate_type,
-      " can't be cast to the desired output type ", result_type);
+      " can't be cast to the desired output type ", result_type, OPS_ERROR(ErrCode::TYPE));
 
   at::Tensor self_cast = (self.dtype() == calculate_type) ? self :
       at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
@@ -155,11 +155,11 @@ at::Tensor& remainder_out(
     at::ScalarType calculate_type = at::native::result_type(self, other);
     at::ScalarType result_type = result.scalar_type();
     TORCH_CHECK(canCast(calculate_type, result_type), "result type ", calculate_type,
-        " can't be cast to the desired output type ", result_type);
+        " can't be cast to the desired output type ", result_type, OPS_ERROR(ErrCode::TYPE));
 
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
-        self.device(), " and ", other.device());
+        self.device(), " and ", other.device(), OPS_ERROR(ErrCode::PARAM));
 
     at::Tensor self_cast =
         (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
@@ -191,7 +191,7 @@ at::Tensor remainder(const at::Tensor& self, const at::Tensor& other) {
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
-        self.device(), " and ", other.device());
+        self.device(), " and ", other.device(), OPS_ERROR(ErrCode::PARAM));
 
     at::ScalarType calculate_type = at::native::result_type(self, other);
     at::Tensor self_cast =

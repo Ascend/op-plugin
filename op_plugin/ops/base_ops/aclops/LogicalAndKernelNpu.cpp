@@ -78,7 +78,7 @@ at::Tensor logical_and(const at::Tensor &self, const at::Tensor &other)
 at::Tensor &logical_and_(at::Tensor &self, const at::Tensor &other)
 {
     TORCH_CHECK(self.dtype() == other.dtype(), "Expected object of scalar type ", self.dtype(), " but got scalar type ",
-                other.dtype(), " for argument 'other'");
+        other.dtype(), " for argument 'other'" + OPS_ERROR(ErrCode::PARAM));
     return acl_op::logical_and_out(self, other, self);
 }
 } // namespace acl_op

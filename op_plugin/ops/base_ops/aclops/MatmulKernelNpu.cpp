@@ -134,7 +134,7 @@ at::Tensor matmul_opt_nocheck(c10::optional<at::Tensor> out_opt, const at::Tenso
     return has_out ? out.set_(output) : output;
   }
   TORCH_CHECK(false, "both arguments to matmul need to be at least 1D, but they are ", dim_tensor1, "D and ",
-              dim_tensor2, "D");
+              dim_tensor2, "D" + OPS_ERROR(ErrCode::PARAM));
 }
 } // namespace
 
@@ -143,7 +143,7 @@ at::Tensor matmul(const at::Tensor& tensor1, const at::Tensor& tensor2) {
     // 2、onnx can support because of change y dtype to be int32.
     // 3、torch need int8(input)->int8(out), cann can not support.
     TORCH_CHECK(tensor1.scalar_type() != at::ScalarType::Char && tensor2.scalar_type() != at::ScalarType::Char,
-                "matmul is not support int8 dtype")
+                "matmul is not support int8 dtype" + OPS_ERROR(ErrCode::TYPE))
     auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
     auto result = matmul_opt_nocheck(c10::nullopt, tensor1, tensor2);
     at::namedinference::propagate_names_if_nonempty(result, maybe_outnames);
@@ -155,7 +155,7 @@ at::Tensor& matmul_out(const at::Tensor& tensor1, const at::Tensor& tensor2, at:
     // 2、onnx can support because of change y dtype to be int32.
     // 3、torch need int8(input)->int8(out), cann can not support.
     TORCH_CHECK(tensor1.scalar_type() != at::ScalarType::Char && tensor2.scalar_type() != at::ScalarType::Char,
-                "matmul is not support int8 dtype")
+                "matmul is not support int8 dtype" + OPS_ERROR(ErrCode::TYPE))
     auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
     if (!result.is_contiguous()) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result);

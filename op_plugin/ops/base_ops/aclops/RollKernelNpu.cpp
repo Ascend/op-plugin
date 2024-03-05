@@ -70,7 +70,8 @@ at::Tensor& roll_out_npu(
     roll_out_npu_no_transpose(result, self, shifts, dims);
   } else {
     TORCH_CHECK(dims.size() == shifts.size(),
-                "The size of shifts and dims should be the same when the size of dims is not 0.");
+                "The size of shifts and dims should be the same when the size of dims is not 0."
+                + OPS_ERROR(ErrCode::PARAM));
     int64_t first_dim = op_plugin::utils::make_warp_dim(0, self.dim());
     for (uint i = 0; i < dims.size(); i++) {
       int64_t axis = op_plugin::utils::make_warp_dim(dims[i], self.dim());

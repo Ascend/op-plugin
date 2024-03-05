@@ -47,7 +47,7 @@ at::Tensor &mv_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const
 at::Tensor &mv_out(const at::Tensor &self, const at::Tensor &vec, at::Tensor &result)
 {
     TORCH_CHECK(self.dim() >= 1, "mv(): input tensor must has at least 1 dimension, but got ", self.dim(),
-                " dimensions");
+        " dimensions" + OPS_ERROR(ErrCode::PARAM));
     npu_preparation::CheckOut({self}, result, self, {self.size(0)});
 
     result.unsqueeze_(1);
@@ -65,7 +65,7 @@ at::Tensor &mv_out(const at::Tensor &self, const at::Tensor &vec, at::Tensor &re
 at::Tensor mv(const at::Tensor &self, const at::Tensor &vec)
 {
     TORCH_CHECK(self.dim() >= 1, "mv(): input tensor must has at least 1 dimension, but got ", self.dim(),
-                " dimensions");
+        " dimensions" + OPS_ERROR(ErrCode::PARAM));
     at::Tensor result = npu_preparation::apply_tensor(self, {self.size(0), 1});
     mv_out_npu_nocheck(result, self, vec);
     result.squeeze_(1);

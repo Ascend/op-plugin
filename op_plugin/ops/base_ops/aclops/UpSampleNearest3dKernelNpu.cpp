@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -26,9 +27,9 @@ at::SmallVector<int64_t, SIZE> upsample_nearest3d_infer_size(const at::Tensor &i
                                                              c10::optional<double> scales_h,
                                                              c10::optional<double> scales_w)
 {
-    TORCH_CHECK(input.dim() == 5, "The input should be 5D, but got ", input.dim(), "D");
+    TORCH_CHECK(input.dim() == 5, "The input should be 5D, but got ", input.dim(), "D" + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() == 3, "The length of output_size should be equal to 3, but got ",
-                output_size.size());
+                output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t output_depth = output_size[0];
     int64_t output_height = output_size[1];

@@ -35,19 +35,22 @@ at::Tensor npu_masked_fill_range(
       -x_dim,
       " ",
       x_dim - 1,
-      "] ");
+      "] " + OPS_ERROR(ErrCode::VALUE));
   TORCH_CHECK(
       start.ndimension() == 2 && start.sizes() == end.sizes(),
-      "Expected noempty 2D start tensor and start' sizes() should be equal end's sizes() ");
+      "Expected noempty 2D start tensor and start' sizes() should be equal end's sizes() "
+       + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
       start.size(0) == value.size(0),
-      "Expected value.length equal start loop num ");
+      "Expected value.length equal start loop num "
+      + OPS_ERROR(ErrCode::VALUE));
   TORCH_CHECK(
       self.scalar_type() == value.scalar_type(),
       "value dtype should be equal self dtype !, but value dtype is ",
       value.scalar_type(),
       " and self dtype is ",
-      self.scalar_type());
+      self.scalar_type(),
+      OPS_ERROR(ErrCode::TYPE));
 
   at::Tensor result = npu_preparation::apply_tensor(self);
   at_npu::native::OpCommand cmd;

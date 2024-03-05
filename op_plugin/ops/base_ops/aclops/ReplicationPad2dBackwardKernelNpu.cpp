@@ -44,7 +44,7 @@ at::Tensor &replication_pad2d_backward_out_npu_nocheck(at::Tensor &grad_input, c
         grad_output_cp = grad_output.unsqueeze(0);
         grad_input.unsqueeze_(0);
     }
-    TORCH_CHECK(input_cp.dim() != 0, "The input should not be empty");
+    TORCH_CHECK(input_cp.dim() != 0, "The input should not be empty" + OPS_ERROR(ErrCode::PARAM));
     paddings_vector.resize(2 * input_cp.dim(), 0);
     for (int64_t i = static_cast<int>(paddings_vector.size()); i > 1; i -= 2) {
         vector_int.emplace_back(paddings_vector[i - 2]);

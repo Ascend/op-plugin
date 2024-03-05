@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -23,18 +24,21 @@ namespace {
 inline void upsample_linear1d_backward_check(const at::Tensor &grad_output, at::IntArrayRef output_size,
                                              at::IntArrayRef input_size)
 {
-    TORCH_CHECK(output_size.size() == 1, "It is expected output_size equals to 1, but got size ", output_size.size());
+    TORCH_CHECK(output_size.size() == 1, "It is expected output_size equals to 1, but got size ", output_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(input_size.size() == 3, "It is expected input_size equals to 3, but got size ", input_size.size());
+    TORCH_CHECK(input_size.size() == 3, "It is expected input_size equals to 3, but got size ", input_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(grad_output.dim() >= 3, "grad_output dim must larger than 3 ", grad_output.sizes());
+    TORCH_CHECK(grad_output.dim() >= 3, "grad_output dim must larger than 3 ", grad_output.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
 
     int64_t output_width = grad_output.size(2);
     int64_t input_width = input_size[2];
 
     TORCH_CHECK(output_width > 0 && input_width > 0,
                 "Input and output sizes should be greater than 0, but got input (W: ", input_width,
-                ") and output (W: ", output_width, ")");
+                ") and output (W: ", output_width, ")" + OPS_ERROR(ErrCode::VALUE));
 }
 
 at::Tensor &upsample_linear1d_backward_out_nocheck(at::Tensor &result, const at::Tensor &grad_output,
@@ -43,9 +47,10 @@ at::Tensor &upsample_linear1d_backward_out_nocheck(at::Tensor &result, const at:
 {
     c10::SmallVector<float, N> sc = {};
     TORCH_CHECK(input_size.size() == 3 && input_size[2] != 0, "It is expected input_size equals to 3, but got size ",
-                input_size.size());
+                input_size.size(), OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(grad_output.dim() >= 3, "grad_output dim must larger than 3 ", grad_output.sizes());
+    TORCH_CHECK(grad_output.dim() >= 3, "grad_output dim must larger than 3 ", grad_output.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
 
     if (scales.has_value()) {
         sc.push_back(scales.value());

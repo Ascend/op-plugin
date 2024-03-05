@@ -22,7 +22,7 @@ namespace acl_op {
 at::Tensor &reflection_pad1d_backward_out(const at::Tensor &grad_output, const at::Tensor &input,
                                           at::IntArrayRef padding, at::Tensor &grad_input)
 {
-    TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2");
+    TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2" + OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
     at::Tensor input_cp = input.unsqueeze(0);
     at::Tensor grad_output_cp = grad_output.unsqueeze(0);
@@ -33,7 +33,7 @@ at::Tensor &reflection_pad1d_backward_out(const at::Tensor &grad_output, const a
 
 at::Tensor reflection_pad1d_backward(const at::Tensor &grad_output, const at::Tensor &input, at::IntArrayRef padding)
 {
-    TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2");
+    TORCH_CHECK(padding.size() >= 2, "padding length shoud be at least 2" + OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
     at::Tensor input_cp = input.unsqueeze(0);
     at::Tensor grad_output_cp = grad_output.unsqueeze(0);

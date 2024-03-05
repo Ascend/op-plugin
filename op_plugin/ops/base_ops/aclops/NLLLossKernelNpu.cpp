@@ -25,10 +25,12 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 void nll_loss_forward_check(const at::Tensor& self, const at::Tensor& target) {
   TORCH_CHECK(
-      self.dim() > 0 && self.dim() <= 2, "input tensor should be 1D or 2D");
+      self.dim() > 0 && self.dim() <= 2, "input tensor should be 1D or 2D"
+      + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
       target.dim() <= 1,
-      "0D or 1D target tensor expected, multi-target not supported");
+      "0D or 1D target tensor expected, multi-target not supported"
+      + OPS_ERROR(ErrCode::PARAM));
   auto no_batch_dim = self.dim() == 1 && target.dim() == 0;
   TORCH_CHECK(
       no_batch_dim || self.size(0) == target.size(0),
@@ -36,7 +38,8 @@ void nll_loss_forward_check(const at::Tensor& self, const at::Tensor& target) {
       self.sizes(),
       ", target: ",
       target.sizes(),
-      ")");
+      ")"
+      + OPS_ERROR(ErrCode::PARAM));
 }
 
 std::tuple<at::Tensor&, at::Tensor&> nll_loss_forward_out_nocheck(
@@ -65,7 +68,8 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss_forward_out_nocheck(
   auto scalar_type = target.scalar_type();
   TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),
       "Expected object of scalar type ", at::kLong, " or ", at::kInt,
-      " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss_forward");
+      " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss_forward"
+      + OPS_ERROR(ErrCode::TYPE));
   at::Tensor target_cast = (scalar_type == at::kLong) ? at_npu::native::custom_ops::npu_dtype_cast(target, at::kInt) : target;
 
   at_npu::native::OpCommand cmd;

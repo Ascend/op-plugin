@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -39,7 +40,8 @@ small_vector slow_conv_transpose2d_npu_output_size(const at::Tensor &self, const
     }
 
     TORCH_CHECK(self.numel() != 0 && (ndim == flag_a || ndim == flag),
-                "non-empty 3D or 4D input tensor expected but got a tensor with size ", self.sizes());
+        "non-empty 3D or 4D input tensor expected but got a tensor with size ", self.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
     int64_t N = self.size(0);
     int64_t Co = weight.size(1);
     int64_t H = self.size(dimh);
@@ -59,39 +61,44 @@ inline void slow_conv_transpose2d_shape_check(const at::Tensor &self, const at::
                                               at::IntArrayRef output_padding, at::IntArrayRef dilation)
 {
     TORCH_CHECK(kernel_size[0] > 0 && kernel_size[1] > 0,
-                "kernel size should be greater than zero, but got kernel_height: ", kernel_size[0],
-                " kernel_width: ", kernel_size[1]);
+        "kernel size should be greater than zero, but got kernel_height: ", kernel_size[0],
+        " kernel_width: ", kernel_size[1], OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride[0] > 0 && stride[1] > 0,
-                "stride should be greater than zero, but got stride_height: ", stride[0], " stride_width: ", stride[1]);
+        "stride should be greater than zero, but got stride_height: ", stride[0], " stride_width: ", stride[1],
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation[0] > 0 && dilation[1] > 0,
-                "dilation should be greater than zero, but got dilation_height: ", dilation[0],
-                ", dilation_width: ", dilation[1]);
+        "dilation should be greater than zero, but got dilation_height: ", dilation[0],
+        ", dilation_width: ", dilation[1], OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((output_padding[1] < stride[1] || output_padding[1] < dilation[1]) &&
-                    (output_padding[0] < stride[0] || output_padding[0] < dilation[0]),
+                (output_padding[0] < stride[0] || output_padding[0] < dilation[0]),
                 "output padding must be smaller than either stride or dilation, but got output_padding_height: ",
                 output_padding[0], " output_padding_width: ", output_padding[1], " stride_height: ", stride[0],
-                " stride_width: ", stride[1], " dilation_height: ", dilation[0], " dilation_width: ", dilation[1]);
+                " stride_width: ", stride[1], " dilation_height: ", dilation[0], " dilation_width: ", dilation[1],
+                OPS_ERROR(ErrCode::PARAM));
 
     auto flag_a = 2;
     auto flag_b = 4;
 
     TORCH_CHECK(weight.numel() != 0 && (weight.dim() == flag_a || weight.dim() == flag_b),
-                "non-empty 2D or 4D weight tensor expected, but got: ", weight.sizes());
+                "non-empty 2D or 4D weight tensor expected, but got: ", weight.sizes(), OPS_ERROR(ErrCode::PARAM));
     if (bias.defined()) {
         check_dim_size(bias, 1, 0, weight.size(1));
     }
 
     TORCH_CHECK(kernel_size.size() == flag_a, "It is expected kernel_size equals to 2, but got size ",
-                kernel_size.size());
+                kernel_size.size(), OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(dilation.size() == flag_a, "It is expected dilation equals to 2, but got size ", dilation.size());
+    TORCH_CHECK(dilation.size() == flag_a, "It is expected dilation equals to 2, but got size ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(padding.size() == flag_a, "It is expected padding equals to 2, but got size ", padding.size());
+    TORCH_CHECK(padding.size() == flag_a, "It is expected padding equals to 2, but got size ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(stride.size() == flag_a, "It is expected stride equals to 2, but got size ", stride.size());
+    TORCH_CHECK(stride.size() == flag_a, "It is expected stride equals to 2, but got size ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
     TORCH_CHECK(output_padding.size() == flag_a, "It is expected stride equals to 2, but got size ",
-                output_padding.size());
+                output_padding.size(), OPS_ERROR(ErrCode::PARAM));
 }
 
 at::Tensor &slow_conv_transpose2d_out_nocheck(at::Tensor &out, const at::Tensor &self, const at::Tensor &weight,
@@ -108,9 +115,9 @@ at::Tensor &slow_conv_transpose2d_out_nocheck(at::Tensor &out, const at::Tensor 
         out.resize_(output_size);
     }
 
-    TORCH_CHECK(stride.size() >= 2, "stride size must bigger than 2.");
-    TORCH_CHECK(padding.size() >= 2, "padding size must bigger than 2.");
-    TORCH_CHECK(dilation.size() >= 2, "dilation size must bigger than 2.");
+    TORCH_CHECK(stride.size() >= 2, "stride size must bigger than 2." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 2, "padding size must bigger than 2." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 2, "dilation size must bigger than 2." + OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
     c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1]};

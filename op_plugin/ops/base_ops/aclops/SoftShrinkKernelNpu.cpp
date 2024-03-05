@@ -40,29 +40,29 @@ at::Tensor& softshrink_out(
     const at::Tensor& self,
     const at::Scalar& lambd,
     at::Tensor& result) {
-  TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0");
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
+    TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0" + OPS_ERROR(ErrCode::VALUE));
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        self);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    softshrink_out_nocheck(contiguous_result, self, lambd);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    softshrink_out_nocheck(result, self, lambd);
-  }
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        softshrink_out_nocheck(contiguous_result, self, lambd);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        softshrink_out_nocheck(result, self, lambd);
+    }
 
-  return result;
+    return result;
 }
 
 at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd) {
-  TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0");
-  at::Tensor result = npu_preparation::apply_tensor(self);
+    TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0" + OPS_ERROR(ErrCode::VALUE));
+    at::Tensor result = npu_preparation::apply_tensor(self);
 
-  softshrink_out_nocheck(result, self, lambd);
+    softshrink_out_nocheck(result, self, lambd);
 
-  return result;
+    return result;
 }
 } // namespace acl_op

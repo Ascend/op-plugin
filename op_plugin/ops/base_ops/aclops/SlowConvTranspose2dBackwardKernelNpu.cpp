@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -26,9 +27,9 @@ at::Tensor &slow_conv_transpose2d_backward_grad_output_out_nocheck(
     at::IntArrayRef kernel_size, at::IntArrayRef stride, at::IntArrayRef padding, at::IntArrayRef output_padding,
     at::IntArrayRef dilation)
 {
-    TORCH_CHECK(stride.size() >= 2, "stride size must bigger than 2.");
-    TORCH_CHECK(padding.size() >= 2, "padding size must bigger than 2.");
-    TORCH_CHECK(dilation.size() >= 2, "dilation size must bigger than 2.");
+    TORCH_CHECK(stride.size() >= 2, "stride size must bigger than 2." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 2, "padding size must bigger than 2." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 2, "dilation size must bigger than 2." + OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
     c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1]};
@@ -95,17 +96,17 @@ std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> slow_conv_transpose2d_backw
     at::Tensor &grad_input, at::Tensor &grad_weight, at::Tensor &grad_bias)
 {
     TORCH_CHECK(dilation.size() >= 2,
-                "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
-                " but input dilation has sizes ",
-                dilation.size());
+        "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
+        " but input dilation has sizes ",
+        dilation.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() >= 2,
-                "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
-                " but input padding has sizes ",
-                padding.size());
+        "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
+        " but input padding has sizes ",
+        padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() >= 2,
-                "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
-                " but input stride has sizes ",
-                stride.size());
+        "slow_conv_transpose2d_backward expected dilation greater than or equal to 2D,"
+        " but input stride has sizes ",
+        stride.size(), OPS_ERROR(ErrCode::PARAM));
     slow_conv_transpose2d_backward_grad_output_out_nocheck(grad_input, grad_output, self, weight, kernel_size, stride,
                                                            padding, output_padding, dilation);
     slow_conv_transpose2d_backward_weight_out_nocheck(grad_weight, grad_output, self, weight, kernel_size, stride,

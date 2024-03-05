@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -32,12 +33,12 @@ at::Tensor& upsample_bicubic2d_backward_out_nocheck(
   TORCH_CHECK(
       output_size.size() == 2,
       "It is expected output_size equals to 2, but got size ",
-      output_size.size());
+      output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   TORCH_CHECK(
       input_size.size() == 4,
       "It is expected input_size equals to 4, but got size ",
-      input_size.size());
+      input_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   float temp_h = 0.0;
   float temp_w = 0.0;

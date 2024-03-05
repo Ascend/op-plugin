@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -25,7 +26,8 @@ at::Tensor &upsample_nearest2d_backward_out_nocheck(at::Tensor &y, const at::Ten
                                                     at::IntArrayRef input_size, c10::optional<double> scales_h,
                                                     c10::optional<double> scales_w)
 {
-    TORCH_CHECK(input_size.size() == 4, "The length of input_size should be equal to 4, but got ", input_size.size());
+    TORCH_CHECK(input_size.size() == 4, "The length of input_size should be equal to 4, but got ", input_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
     at::SmallVector<int64_t, N> output_sizes = {input_size[2], input_size[3]};
     at_npu::native::OpCommand cmd;

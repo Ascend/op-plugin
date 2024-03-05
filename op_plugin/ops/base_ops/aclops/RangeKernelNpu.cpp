@@ -75,9 +75,9 @@ at::Tensor range(
   float end_value = op_plugin::utils::get_scalar_float_value(end);
   float step_value = op_plugin::utils::get_scalar_float_value(step);
 
-  TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero");
+  TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero", OPS_ERROR(ErrCode::VALUE));
   TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
-      "upper bound and larger bound inconsistent with step sign");
+      "upper bound and larger bound inconsistent with step sign" + OPS_ERROR(ErrCode::VALUE));
 
   auto output_size = op_infer::range_npu_output_size(start_value, end_value, step_value);
   at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_NCHW);
@@ -93,9 +93,9 @@ at::Tensor& range_out(
   float end_value = op_plugin::utils::get_scalar_float_value(end);
   float step_value = op_plugin::utils::get_scalar_float_value(step);
 
-  TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero");
+  TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero" + OPS_ERROR(ErrCode::VALUE));
   TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
-      "upper bound and larger bound inconsistent with step sign");
+      "upper bound and larger bound inconsistent with step sign" + OPS_ERROR(ErrCode::VALUE));
 
   auto output_size = op_infer::range_npu_output_size(start_value, end_value, step_value);
   npu_preparation::CheckOut(

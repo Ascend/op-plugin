@@ -46,35 +46,36 @@ at::Tensor& linspace_npu_out_nocheck(
 }  // namespace
 
 at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& result) {
-  TORCH_CHECK(steps >= 0, "number of steps must be non-negative");
+    TORCH_CHECK(steps >= 0, "number of steps must be non-negative"
+        + OPS_ERROR(ErrCode::VALUE));
 
-  if (result.numel() != steps) {
-    result.resize_({steps});
-  }
+    if (result.numel() != steps) {
+        result.resize_({steps});
+    }
 
-  bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;
+    bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;
 
-  at::Tensor result_cast = result;
-  if (result_is_not_float) {
-    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
-  }
+    at::Tensor result_cast = result;
+    if (result_is_not_float) {
+        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
+    }
 
-  if (!npu_utils::check_match(&result_cast)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
-    linspace_npu_out_nocheck(contiguous_result, start, end, steps);
-    npu_utils::format_fresh_view(result_cast, contiguous_result);
-  } else {
-    linspace_npu_out_nocheck(result_cast, start, end, steps);
-  }
+    if (!npu_utils::check_match(&result_cast)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
+        linspace_npu_out_nocheck(contiguous_result, start, end, steps);
+        npu_utils::format_fresh_view(result_cast, contiguous_result);
+    } else {
+        linspace_npu_out_nocheck(result_cast, start, end, steps);
+    }
 
-  if (result_is_not_float) {
-    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result.scalar_type());
-    result.copy_(result_cast);
-  } else {
-    result = result_cast;
-  }
+    if (result_is_not_float) {
+        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result.scalar_type());
+        result.copy_(result_cast);
+    } else {
+        result = result_cast;
+    }
 
-  return result;
+    return result;
 }
 
 at::Tensor linspace(
@@ -85,25 +86,26 @@ at::Tensor linspace(
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
-  TORCH_CHECK(steps >= 0, "number of steps must be non-negative");
-  auto device = c10::device_or_default(device_opt);
-  at::TensorOptions option = c10::TensorOptions()
-      .dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+    TORCH_CHECK(steps >= 0, "number of steps must be non-negative"
+        + OPS_ERROR(ErrCode::VALUE));
+    auto device = c10::device_or_default(device_opt);
+    at::TensorOptions option = c10::TensorOptions()
+        .dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
 
-  at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, option, ACL_FORMAT_ND);
-  at::Tensor result_cast = result;
+    at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, option, ACL_FORMAT_ND);
+    at::Tensor result_cast = result;
 
-  bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;
-  if (result_is_not_float) {
-    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
-  }
+    bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;
+    if (result_is_not_float) {
+        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
+    }
 
-  linspace_npu_out_nocheck(result_cast, start, end, steps);
+    linspace_npu_out_nocheck(result_cast, start, end, steps);
 
-  if (result_is_not_float) {
-    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result.scalar_type());
-  }
-  result = result_cast;
-  return result;
+    if (result_is_not_float) {
+        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result.scalar_type());
+    }
+    result = result_cast;
+    return result;
 }
 }  // namespace acl_op

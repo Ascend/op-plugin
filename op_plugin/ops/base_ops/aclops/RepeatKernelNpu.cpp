@@ -38,7 +38,8 @@ at::Tensor& repeat_out_npu_nocheck(
 
 at::Tensor repeat(const at::Tensor& self, at::IntArrayRef repeats) {
   TORCH_CHECK(repeats.size() >= self.ndimension(),
-              "Number of dimensions of repeat dims can not be smaller than number of dimensions of tensor");
+              "Number of dimensions of repeat dims can not be smaller than number of dimensions of tensor"
+              + OPS_ERROR(ErrCode::PARAM));
   at::Tensor self_cp = self;
   if (static_cast<int>(repeats.size()) > self_cp.ndimension()) {
     int diff = static_cast<int>(repeats.size()) - self_cp.ndimension();

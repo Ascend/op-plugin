@@ -80,16 +80,21 @@ void max_pool3d_with_indices_backward_parameter_check(const at::Tensor &self, at
                                                       at::IntArrayRef dilation)
 {
     TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 3,
-                "max_pool3d: kernel_size must either be a single int, or a tuple of three ints")
+        "max_pool3d: kernel_size must either be a single int, or a tuple of three ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() == 0 || stride.size() == 1 || stride.size() == 3,
-                "max_pool3d: stride must either be omitted, a single int, or a tuple of three ints")
+        "max_pool3d: stride must either be omitted, a single int, or a tuple of three ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() == 1 || padding.size() == 3,
-                "max_pool3d: padding must be either be a single int, or a tuple of three ints");
+        "max_pool3d: padding must be either be a single int, or a tuple of three ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() == 1 || dilation.size() == 3,
-                "max_pool3d: dilation must be either a single int, or a tuple of three ints");
+        "max_pool3d: dilation must be either a single int, or a tuple of three ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((self.ndimension() == 5 || self.ndimension() == 4),
-                "maxpool3d expected input to be non-empty 5D(batch mode) or 4D tensor",
-                "but input has dim: ", self.ndimension());
+        "maxpool3d expected input to be non-empty 5D(batch mode) or 4D tensor",
+        "but input has dim: ", self.ndimension(),
+        OPS_ERROR(ErrCode::PARAM));
 }
 } // namespace
 

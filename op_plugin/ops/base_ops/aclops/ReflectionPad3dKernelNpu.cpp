@@ -23,11 +23,11 @@ at::Tensor& reflection_pad3d_out(
     const at::Tensor& self,
     at::IntArrayRef padding,
     at::Tensor& result) {
-  TORCH_CHECK(false, "reflection_pad3d.out is not supported.");
+    TORCH_CHECK(false, "reflection_pad3d.out is not supported." + OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 
 at::Tensor reflection_pad3d(const at::Tensor& self, at::IntArrayRef padding) {
-  TORCH_CHECK(false, "reflection_pad3d is not supported.");
+    TORCH_CHECK(false, "reflection_pad3d is not supported." + OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 
 } // namespace acl_op

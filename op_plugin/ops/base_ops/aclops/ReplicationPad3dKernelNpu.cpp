@@ -24,12 +24,12 @@ at::Tensor& replication_pad3d_out(
     at::IntArrayRef padding,
     at::Tensor& result)
 {
-  TORCH_CHECK(false, "replication_pad3d.out is not supported.")
+    TORCH_CHECK(false, "replication_pad3d.out is not supported." + OPS_ERROR(ErrCode::NOT_SUPPORT))
 }
 
 at::Tensor replication_pad3d(const at::Tensor& self, at::IntArrayRef padding)
 {
-  TORCH_CHECK(false, "replication_pad3d.out is not supported.")
+    TORCH_CHECK(false, "replication_pad3d.out is not supported." + OPS_ERROR(ErrCode::NOT_SUPPORT))
 }
 
 } // namespace acl_op

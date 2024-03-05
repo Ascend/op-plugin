@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -30,12 +31,12 @@ at::SmallVector<int64_t, SIZE> upsample_trilinear3d_backward_infer_size(
   TORCH_CHECK(
       output_size.size() == 3,
       "It is expected output_size equals to 3, but got size ",
-      output_size.size());
+      output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   TORCH_CHECK(
       input_size.size() == 5,
       "It is expected input_size equals to 5, but got size ",
-      input_size.size());
+      input_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   int64_t nbatch = input_size[0];
   int64_t channels = input_size[1];

@@ -121,7 +121,7 @@ at::Tensor &sub_(at::Tensor &self, const at::Tensor &other, const at::Scalar &al
     at::ScalarType result_type = at::native::result_type(self, other);
     at::ScalarType self_type = self.scalar_type();
     TORCH_CHECK(canCast(result_type, self_type), "result type ", result_type,
-                " can't be cast to the desired output type ", self_type);
+                " can't be cast to the desired output type ", self_type, OPS_ERROR(ErrCode::TYPE));
     at::Tensor self_cp = (self_type != result_type && !npu_preparation::is_scalar_wrapped_to_tensor(self)) ?
                              at_npu::native::custom_ops::npu_dtype_cast(self, result_type) :
                              self;

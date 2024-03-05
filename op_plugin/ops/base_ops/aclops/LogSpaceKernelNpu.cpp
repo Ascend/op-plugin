@@ -28,37 +28,39 @@ at::Tensor& logspace_out_nocheck(
     at::Scalar end,
     int64_t steps,
     double base) {
-  TORCH_CHECK(steps >= 0, "logspace requires non-negative steps, given steps is ", steps);
-  if ((base <= 0) && ((!start.isIntegral(false)) || (!end.isIntegral(false)))) {
-    std::cout << "Warning: start and end in logspace should both be int when base <= 0, "
-        << "get type " << start.type() << " and" << end.type() << std::endl;
-  }
+    TORCH_CHECK(steps >= 0, "logspace requires non-negative steps, given steps is ", steps,
+        OPS_ERROR(ErrCode::PARAM));
+    if ((base <= 0) && ((!start.isIntegral(false)) || (!end.isIntegral(false)))) {
+        std::cout << "Warning: start and end in logspace should both be int when base <= 0, "
+            << "get type " << start.type() << " and" << end.type() << std::endl;
+    }
 
-  at::Tensor inputs;
-  int64_t dtype = 0;
-  auto result_type = result.scalar_type();
-  if (result_type == at::ScalarType::Half) {
-    inputs = at_npu::native::custom_ops::npu_dtype_cast(
-        at::arange(0, steps, at::device(torch_npu::utils::get_npu_device_type())),
-        at::kHalf);
-    dtype = 0;
-  } else if (result_type == at::ScalarType::Float) {
-    inputs = at::arange(0, steps, at::device(torch_npu::utils::get_npu_device_type()).dtype(at::kFloat));
-    dtype = 1;
-  } else {
-    TORCH_CHECK(false, "logspace only support float32 and float16, given type is ", result_type);
-  }
-  at_npu::native::OpCommand cmd;
-  cmd.Name("LogSpaceD")
-      .Input(inputs)
-      .Output(result)
-      .Attr("start", start)
-      .Attr("end", end)
-      .Attr("steps", steps)
-      .Attr("base", static_cast<float>(base))
-      .Attr("dtype", dtype)
-      .Run();
-  return result;
+    at::Tensor inputs;
+    int64_t dtype = 0;
+    auto result_type = result.scalar_type();
+    if (result_type == at::ScalarType::Half) {
+        inputs = at_npu::native::custom_ops::npu_dtype_cast(
+            at::arange(0, steps, at::device(torch_npu::utils::get_npu_device_type())),
+            at::kHalf);
+        dtype = 0;
+    } else if (result_type == at::ScalarType::Float) {
+        inputs = at::arange(0, steps, at::device(torch_npu::utils::get_npu_device_type()).dtype(at::kFloat));
+        dtype = 1;
+    } else {
+        TORCH_CHECK(false, "logspace only support float32 and float16, given type is ", result_type,
+            OPS_ERROR(ErrCode::TYPE));
+    }
+    at_npu::native::OpCommand cmd;
+    cmd.Name("LogSpaceD")
+        .Input(inputs)
+        .Output(result)
+        .Attr("start", start)
+        .Attr("end", end)
+        .Attr("steps", steps)
+        .Attr("base", static_cast<float>(base))
+        .Attr("dtype", dtype)
+        .Run();
+    return result;
 }
 } // namespace
 

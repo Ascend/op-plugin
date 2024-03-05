@@ -1546,6 +1546,8 @@ mul:
   - complex64
   - float32
 mv:
+  test_backward:
+  - float32
   test_compare_cpu:
   - float32
   test_conj_view:

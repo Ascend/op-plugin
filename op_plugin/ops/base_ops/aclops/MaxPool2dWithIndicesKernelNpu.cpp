@@ -68,15 +68,20 @@ void max_pool2d_with_indices_parameter_check(const at::Tensor &self, at::IntArra
                                              at::IntArrayRef stride, at::IntArrayRef padding, at::IntArrayRef dilation)
 {
     TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 2,
-                "max_pool2d: kernel_size must either be a single int, or a tuple of two ints")
+        "max_pool2d: kernel_size must either be a single int, or a tuple of two ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() == 0 || stride.size() == 1 || stride.size() == 2,
-                "max_pool2d: stride must either be omitted, a single int, or a tuple of two ints")
+        "max_pool2d: stride must either be omitted, a single int, or a tuple of two ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() == 1 || padding.size() == 2,
-                "max_pool2d: padding must be either be a single int, or a tuple of two ints");
+        "max_pool2d: padding must be either be a single int, or a tuple of two ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() == 1 || dilation.size() == 2,
-                "max_pool2d: dilation must be either a single int, or a tuple of two ints");
+        "max_pool2d: dilation must be either a single int, or a tuple of two ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((self.ndimension() == 3 || self.ndimension() == 4),
-                "non-empty 3D or 4D (batch mode) tensor expected for input");
+        "non-empty 3D or 4D (batch mode) tensor expected for input"
+        + OPS_ERROR(ErrCode::PARAM));
 }
 } // namespace
 

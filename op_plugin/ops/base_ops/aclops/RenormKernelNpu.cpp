@@ -62,46 +62,47 @@ at::Tensor& renorm_out_nocheck(
     at::Scalar p,
     int64_t dim,
     at::Scalar maxnorm) {
-  auto ori_type = self.scalar_type();
-  if (ori_type != c10::ScalarType::Half && ori_type != c10::ScalarType::Float) {
-    TORCH_CHECK(false, "Renorm only support float16 or float32 type.");
-  }
+    auto ori_type = self.scalar_type();
+    if (ori_type != c10::ScalarType::Half && ori_type != c10::ScalarType::Float) {
+        TORCH_CHECK(false, "Renorm only support float16 or float32 type." + OPS_ERROR(ErrCode::TYPE));
+    }
 
-  TORCH_CHECK(result.scalar_type() == ori_type, "result's type must be equal to input's.");
+    TORCH_CHECK(result.scalar_type() == ori_type, "result's type must be equal to input's."
+        + OPS_ERROR(ErrCode::TYPE));
 
-  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
-  auto output_size = renorm_npu_output_size(self, dim);
-  at::Tensor result_bak = npu_preparation::apply_tensor_with_format(
-      output_size,
-      self.options().dtype(at::kFloat),
-      npu_preparation::get_tensor_npu_format(self));
-  if (ori_type == c10::ScalarType::Half) {
-    at::Tensor self_no_name = self.rename(c10::nullopt);
-    at::Tensor result_no_name = result.rename(c10::nullopt);
-    self_no_name = at_npu::native::custom_ops::npu_dtype_cast(self_no_name, c10::ScalarType::Float);
-    result_no_name = at_npu::native::custom_ops::npu_dtype_cast(result_no_name, c10::ScalarType::Float);
-    renorm_compute(
-        result_bak,
-        self_no_name,
-        p,
-        dim,
-        maxnorm);
+    dim = op_plugin::utils::make_warp_dim(dim, self.dim());
+    auto output_size = renorm_npu_output_size(self, dim);
+    at::Tensor result_bak = npu_preparation::apply_tensor_with_format(
+        output_size,
+        self.options().dtype(at::kFloat),
+        npu_preparation::get_tensor_npu_format(self));
+    if (ori_type == c10::ScalarType::Half) {
+        at::Tensor self_no_name = self.rename(c10::nullopt);
+        at::Tensor result_no_name = result.rename(c10::nullopt);
+        self_no_name = at_npu::native::custom_ops::npu_dtype_cast(self_no_name, c10::ScalarType::Float);
+        result_no_name = at_npu::native::custom_ops::npu_dtype_cast(result_no_name, c10::ScalarType::Float);
+        renorm_compute(
+            result_bak,
+            self_no_name,
+            p,
+            dim,
+            maxnorm);
 
-    at::Tensor result_broadcast = acl_op::npu_broadcast(result_bak, self.sizes());
-    at::mul_out(result_no_name, result_broadcast, self_no_name);
-    acl_op::npu_dtype_cast_(result, result_no_name);
-  } else {
-    renorm_compute(
-        result_bak,
-        self,
-        p,
-        dim,
-        maxnorm);
+        at::Tensor result_broadcast = acl_op::npu_broadcast(result_bak, self.sizes());
+        at::mul_out(result_no_name, result_broadcast, self_no_name);
+        acl_op::npu_dtype_cast_(result, result_no_name);
+    } else {
+        renorm_compute(
+            result_bak,
+            self,
+            p,
+            dim,
+            maxnorm);
 
-    at::Tensor result_broadcast = acl_op::npu_broadcast(result_bak, self.sizes());
-    at::mul_out(result, result_broadcast, self);
-  }
-  return result;
+        at::Tensor result_broadcast = acl_op::npu_broadcast(result_bak, self.sizes());
+        at::mul_out(result, result_broadcast, self);
+    }
+    return result;
 }
 } // namespace
 

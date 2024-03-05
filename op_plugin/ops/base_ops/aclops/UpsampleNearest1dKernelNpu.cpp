@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -24,9 +25,10 @@ namespace {
 c10::SmallVector<int64_t, SIZE> upsample_nearest1d_infer_size(const at::Tensor &input, at::IntArrayRef output_size)
 {
     TORCH_CHECK(input.dim() == 3 && (input.size(1) != 0 && input.size(2) != 0),
-                "Non-empty 3D data tensor expected but got a tensor with sizes ", input.sizes());
+                "Non-empty 3D data tensor expected but got a tensor with sizes ", input.sizes(),
+                OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() == 1, "The length of output_size should be equal to 1, but got ",
-                output_size.size());
+                output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     c10::SmallVector<int64_t, SIZE> output_sizes;
     int64_t N = input.size(0);

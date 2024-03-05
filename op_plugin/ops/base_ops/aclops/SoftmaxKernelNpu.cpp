@@ -85,29 +85,30 @@ at::Tensor& _softmax_out(
     int64_t dim,
     bool half_to_float,
     at::Tensor& result) {
-  auto dst_type = half_to_float ? at::kFloat : self.scalar_type();
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      npu_preparation::get_tensor_npu_format(result),
-      dst_type,
-      self.sizes());
+    auto dst_type = half_to_float ? at::kFloat : self.scalar_type();
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        npu_preparation::get_tensor_npu_format(result),
+        dst_type,
+        self.sizes());
 
-  auto self_dtype = self.scalar_type();
-  if (half_to_float) {
-    TORCH_CHECK(self_dtype == at::kHalf, "conversion is supported for Half type only");
-  } else {
-    TORCH_CHECK(at::isFloatingType(self_dtype), "_softmax_npu not implemented for '", toString(self_dtype), "'");
-  }
+    auto self_dtype = self.scalar_type();
+    if (half_to_float) {
+        TORCH_CHECK(self_dtype == at::kHalf, "conversion is supported for Half type only" + OPS_ERROR(ErrCode::TYPE));
+    } else {
+        TORCH_CHECK(at::isFloatingType(self_dtype), "_softmax_npu not implemented for '", toString(self_dtype),
+            "'" + OPS_ERROR(ErrCode::NOT_SUPPORT));
+    }
 
-  at::Tensor self_cast = dst_type == self.scalar_type() ? self : at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    softmax_out_nocheck(contiguous_result, self_cast, dim);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    softmax_out_nocheck(result, self_cast, dim);
-  }
-  return result;
+    at::Tensor self_cast = dst_type == self.scalar_type() ? self : at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        softmax_out_nocheck(contiguous_result, self_cast, dim);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        softmax_out_nocheck(result, self_cast, dim);
+    }
+    return result;
 }
 } // namespace acl_op

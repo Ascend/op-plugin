@@ -42,7 +42,7 @@ at::Tensor npu_rotated_overlaps(
     bool trans) {
   TORCH_CHECK(self.ndimension() == 3 && query_boxes.ndimension() == 3,
               "boxes' dim should be equal to query_boxes' ndimension() ",
-              "and equal to 3!");
+              "and equal to 3!" + OPS_ERROR(ErrCode::PARAM));
   auto origin_dtype = self.scalar_type();
   // the Op only support fp32 currently!
   at::Tensor self_cp = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat).permute({0, 2, 1});

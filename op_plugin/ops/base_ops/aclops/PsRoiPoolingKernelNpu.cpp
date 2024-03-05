@@ -51,7 +51,8 @@ at::Tensor npu_ps_roi_pooling(
     int64_t group_size,
     int64_t output_dim) {
     TORCH_CHECK(rois.dim() >= 3,
-        "rois only supports at least 3D tensors, rois got: ", rois.dim(), "D");
+        "rois only supports at least 3D tensors, rois got: ", rois.dim(), "D"
+        + OPS_ERROR(ErrCode::PARAM));
 
     auto output_size = {rois.size(0) * rois.size(2), output_dim, group_size, group_size};
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);

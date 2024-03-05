@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -27,12 +28,12 @@ inline void upsample_linear1d_check(
   TORCH_CHECK(
       output_size.size() == 1,
       "It is expected output_size equals to 1, but got size ",
-      output_size.size());
+      output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   TORCH_CHECK(
       (self.size(1) != 0 && self.size(2) != 0) && self.dim() == 3,
       "Non-empty 3D data tensor expected but got a tensor with sizes ",
-      self.sizes());
+      self.sizes(), OPS_ERROR(ErrCode::PARAM));
 
   int64_t input_width = self.size(2);
   int64_t output_width = output_size[0];
@@ -43,7 +44,7 @@ inline void upsample_linear1d_check(
       input_width,
       ") and output (W: ",
       output_width,
-      ")");
+      ")" + OPS_ERROR(ErrCode::VALUE));
 }
 
 at::Tensor& upsample_linear1d_out_nocheck(
@@ -56,7 +57,7 @@ at::Tensor& upsample_linear1d_out_nocheck(
   // Since only NCHW format input is currently supported, first convert the
   // input self (3 dimensions) to 4 dimensions as the input of npu
   at::Tensor selfcp = self.unsqueeze(2);
-  TORCH_CHECK(selfcp.size(3) != 0, "selfcp.size(3) == 0.");
+  TORCH_CHECK(selfcp.size(3) != 0, "selfcp.size(3) == 0." + OPS_ERROR(ErrCode::PARAM));
   // to calculate the value of scale
   c10::SmallVector<float, N> sc = {};
   if (scales.has_value()) {

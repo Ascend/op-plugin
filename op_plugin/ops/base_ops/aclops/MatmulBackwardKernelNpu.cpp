@@ -91,7 +91,7 @@ std::tuple<at::Tensor, at::Tensor> matmul_backward(const at::Tensor &grad, const
     }
 
     TORCH_CHECK(self.dim() > 0 && other.dim() > 0, "both matrices must be at least 1D,"
-                "but they are", self.dim(), "D and ", other.dim(), "D");
+                "but they are", self.dim(), "D and ", other.dim(), "D" + OPS_ERROR(ErrCode::PARAM));
     at::Tensor grad_self;
     at::Tensor grad_other;
     if (!mask[0] && !mask[1]) {

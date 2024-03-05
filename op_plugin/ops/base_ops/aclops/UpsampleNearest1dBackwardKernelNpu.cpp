@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -25,7 +26,7 @@ c10::SmallVector<int64_t, SIZE> upsample_nearest1d_backward_infer_size(at::IntAr
     TORCH_CHECK(
         input_size.size() == 3,
         "It is expected input_size equals to 3, but got size ",
-        input_size.size());
+        input_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   c10::SmallVector<int64_t, SIZE> output_size;
   int64_t N = input_size[0];
@@ -53,7 +54,8 @@ at::Tensor& upsample_nearest1d_backward_out_nocheck(
         .Attr("half_pixel_centers", false)
         .Run();
   } else {
-    TORCH_CHECK(output_size[0] != 0, "output_size must not equals to 0, but got ", output_size[0]);
+    TORCH_CHECK(output_size[0] != 0, "output_size must not equals to 0, but got ", output_size[0],
+        OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, SIZE> origin_size = upsample_nearest1d_backward_infer_size(input_size);
     at::Scalar scales_cp = scales.has_value() ? scales.value() : -1;
     cmd.Name("ResizeGrad")

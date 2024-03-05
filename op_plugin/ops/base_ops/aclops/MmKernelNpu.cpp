@@ -195,13 +195,13 @@ bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2
 
 int64_t ceil(int64_t x, int64_t y)
 {
-    TORCH_CHECK(y != 0, "Error, zero division.");
+    TORCH_CHECK(y != 0, "Error, zero division." + OPS_ERROR(ErrCode::VALUE));
     return ((x + y - 1) / y) * y;
 }
 
 int64_t ceil_div(int64_t x, int64_t y)
 {
-    TORCH_CHECK(y != 0, "Error, zero division.");
+    TORCH_CHECK(y != 0, "Error, zero division." + OPS_ERROR(ErrCode::VALUE));
     return (x + y - 1) / y;
 }
 
@@ -259,9 +259,9 @@ at::Tensor &mm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const
 at::Tensor &mm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result)
 {
     TORCH_CHECK(self.dim() == 2 && mat2.dim() == 2, "both arguments to matmul need to be 2D, but they are ",
-                self.dim(), "D and ", mat2.dim(), "D");
+                self.dim(), "D and ", mat2.dim(), "D", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
-                "mm_out is not support int8 dtype")
+                "mm_out is not support int8 dtype", OPS_ERROR(ErrCode::PARAM))
     if (!result.is_contiguous()) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result);
         mm_out_npu_nocheck(contiguous_result, self, mat2);
@@ -275,13 +275,13 @@ at::Tensor &mm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &r
 at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
 {
     TORCH_CHECK(self.dim() == 2 && mat2.dim() == 2, "both arguments to matmul need to be 2D, but they are ",
-                self.dim(), "D and ", mat2.dim(), "D");
+                self.dim(), "D and ", mat2.dim(), "D", OPS_ERROR(ErrCode::PARAM));
 
     // 1、cann bmm support int8(input)->int32(out)
     // 2、onnx can support because of change y dtype to be int32.
     // 3、torch need int8(input)->int8(out), cann can not support.
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
-                "mm is not support int8 dtype")
+                "mm is not support int8 dtype", OPS_ERROR(ErrCode::PARAM))
     auto output_size = {self.size(0), mat2.size(1)};
 
     at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);

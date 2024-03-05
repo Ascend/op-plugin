@@ -53,18 +53,19 @@ at::Tensor& normal_out(
     double std,
     c10::optional<at::Generator> generator,
     at::Tensor& result) {
-  TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std);
+    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std,
+        OPS_ERROR(ErrCode::VALUE));
 
-  npu_preparation::CheckOut({mean}, result, mean);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    normal_out_npu_nocheck(contiguous_result, generator);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    normal_out_npu_nocheck(result, generator);
-  }
-  result.mul_(std).add_(mean);
-  return result;
+    npu_preparation::CheckOut({mean}, result, mean);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        normal_out_npu_nocheck(contiguous_result, generator);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        normal_out_npu_nocheck(result, generator);
+    }
+    result.mul_(std).add_(mean);
+    return result;
 }
 
 at::Tensor& normal_out(
@@ -112,19 +113,20 @@ at::Tensor& normal_out(
     at::IntArrayRef size,
     c10::optional<at::Generator> generator,
     at::Tensor& result) {
-  TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std);
-  npu_preparation::CheckOut({}, result, result, size);
+    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std,
+        OPS_ERROR(ErrCode::VALUE));
+    npu_preparation::CheckOut({}, result, result, size);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    normal_out_npu_nocheck(contiguous_result, generator);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    normal_out_npu_nocheck(result, generator);
-  }
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        normal_out_npu_nocheck(contiguous_result, generator);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        normal_out_npu_nocheck(result, generator);
+    }
 
-  result.mul_(std).add_(mean);
-  return result;
+    result.mul_(std).add_(mean);
+    return result;
 }
 
 at::Tensor normal(

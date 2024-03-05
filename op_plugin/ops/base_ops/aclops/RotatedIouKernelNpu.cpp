@@ -54,28 +54,28 @@ at::Tensor npu_rotated_iou(
     bool is_cross,
     double v_threshold,
     double e_threshold) {
-  TORCH_CHECK(boxes.ndimension() == 3 && query_boxes.ndimension() == 3);
+    TORCH_CHECK(boxes.ndimension() == 3 && query_boxes.ndimension() == 3, OPS_ERROR(ErrCode::PARAM));
 
-  auto origin_dtype = boxes.scalar_type();
+    auto origin_dtype = boxes.scalar_type();
 
-  at::Tensor boxes_cp = boxes.permute({0, 2, 1});
-  if (origin_dtype == at::kHalf) {
-    boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(boxes_cp, at::kFloat);
-  }
-  at::Tensor query_boxes_cp = query_boxes.permute({0, 2, 1});
-  if (query_boxes_cp.scalar_type() == at::kHalf) {
-    query_boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(query_boxes_cp, at::kFloat);
-  }
+    at::Tensor boxes_cp = boxes.permute({0, 2, 1});
+    if (origin_dtype == at::kHalf) {
+        boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(boxes_cp, at::kFloat);
+    }
+    at::Tensor query_boxes_cp = query_boxes.permute({0, 2, 1});
+    if (query_boxes_cp.scalar_type() == at::kHalf) {
+        query_boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(query_boxes_cp, at::kFloat);
+    }
 
-  int64_t B = boxes_cp.size(0);
-  int64_t N = boxes_cp.size(-1);
-  int64_t K = query_boxes_cp.size(-1);
+    int64_t B = boxes_cp.size(0);
+    int64_t N = boxes_cp.size(-1);
+    int64_t K = query_boxes_cp.size(-1);
 
-  c10::SmallVector<int64_t, SIZE> output_size({B, N, K});
-  at::Tensor iou = npu_preparation::apply_tensor(boxes_cp, output_size);
+    c10::SmallVector<int64_t, SIZE> output_size({B, N, K});
+    at::Tensor iou = npu_preparation::apply_tensor(boxes_cp, output_size);
 
-  rotated_iou_npu_nocheck(iou, boxes_cp, query_boxes_cp, trans, mode, is_cross, v_threshold, e_threshold);
-  iou = at_npu::native::custom_ops::npu_dtype_cast(iou, origin_dtype);
-  return iou;
+    rotated_iou_npu_nocheck(iou, boxes_cp, query_boxes_cp, trans, mode, is_cross, v_threshold, e_threshold);
+    iou = at_npu::native::custom_ops::npu_dtype_cast(iou, origin_dtype);
+    return iou;
 }
 } // namespace acl_op

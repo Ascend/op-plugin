@@ -25,8 +25,10 @@ namespace {
 
 c10::SmallVector<int64_t, SIZE> reflection_pad2d_npu_output_size(const at::Tensor &self, at::IntArrayRef padding)
 {
-    TORCH_CHECK(self.dim() >= 3, "The self is expected to be at least 3D, but got: ", self.dim(), "D");
-    TORCH_CHECK(padding.size() >= 4, "padding size is expected to be at least 4, but got: ", padding.size());
+    TORCH_CHECK(self.dim() >= 3, "The self is expected to be at least 3D, but got: ", self.dim(),
+        "D" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 4, "padding size is expected to be at least 4, but got: ",
+        padding.size(), OPS_ERROR(ErrCode::PARAM));
     int64_t N = self.dim() == 3 ? 1 : self.size(-4);
     int64_t C = self.size(-3);
     int64_t H = self.size(-2);
@@ -43,11 +45,11 @@ c10::SmallVector<int64_t, SIZE> reflection_pad2d_npu_output_size(const at::Tenso
 
 at::Tensor &reflection_pad2d_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, at::IntArrayRef padding)
 {
-    TORCH_CHECK(padding.size() == 4, "padding size is expected to be 4");
+    TORCH_CHECK(padding.size() == 4, "padding size is expected to be 4" + OPS_ERROR(ErrCode::PARAM));
     at::Tensor self_cp = self.dim() == 3 ? self.unsqueeze(0) : self;
     c10::SmallVector<int64_t, N> vector_int;
     c10::SmallVector<int64_t, N> paddings_vector = op_infer::array_to_small_vector(padding);
-    TORCH_CHECK(self_cp.dim() != 0, "The self should not be empty");
+    TORCH_CHECK(self_cp.dim() != 0, "The self should not be empty" + OPS_ERROR(ErrCode::PARAM));
     paddings_vector.resize(2 * self_cp.dim(), 0);
     for (int64_t i = static_cast<int>(paddings_vector.size()); i > 1; i -= 2) {
         vector_int.emplace_back(paddings_vector[i - 2]);

@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -98,14 +99,21 @@ std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> slow_conv_dilated2d_backwar
     const at::Tensor &self, const at::Tensor &weight, at::IntArrayRef kernel_size, at::IntArrayRef stride,
     at::IntArrayRef padding, at::IntArrayRef dilation, std::array<bool, 3> output_mask)
 {
-    TORCH_CHECK(kernel_size.size() == 2, "kernel sizes length should be 2, but got ", kernel_size.size());
-    TORCH_CHECK(stride.size() == 2, "strides length should be 2, but got ", stride.size());
-    TORCH_CHECK(dilation.size() == 2, "dilations length should be 2, but got ", dilation.size());
-    TORCH_CHECK(padding.size() == 2, "pads length should be 2, but got ", padding.size());
+    TORCH_CHECK(kernel_size.size() == 2, "kernel sizes length should be 2, but got ", kernel_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() == 2, "strides length should be 2, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() == 2, "dilations length should be 2, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() == 2, "pads length should be 2, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(all_positive(kernel_size), "kernel size should be greater than zero, but got ", kernel_size);
-    TORCH_CHECK(all_positive(stride), "stride should be greater than zero, but got ", stride);
-    TORCH_CHECK(all_positive(dilation), "dilation should be greater than zero, but got ", dilation);
+    TORCH_CHECK(all_positive(kernel_size), "kernel size should be greater than zero, but got ", kernel_size,
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(all_positive(stride), "stride should be greater than zero, but got ", stride,
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(all_positive(dilation), "dilation should be greater than zero, but got ", dilation,
+        OPS_ERROR(ErrCode::PARAM));
     if (output_mask[0]) {
         slow_conv_dilated2d_backward_input_out_nocheck(grad_input, grad_output, self, weight, kernel_size, stride,
                                                        padding, dilation);

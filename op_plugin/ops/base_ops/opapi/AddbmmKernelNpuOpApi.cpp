@@ -25,9 +25,12 @@ at::Tensor &addbmm_out(const at::Tensor &self, const at::Tensor &batch1, const a
 {
     DO_COMPATIBILITY(aclnnAddbmm, acl_op::addbmm_out(self, batch1, batch2, beta, alpha, result));
 
-    TORCH_CHECK(self.ndimension() >= 2, "Expected least 2D tensor, but got a tensor with sizes ", self.dim());
-    TORCH_CHECK(batch1.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch1.dim());
-    TORCH_CHECK(batch2.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch2.dim());
+    TORCH_CHECK(self.ndimension() >= 2, "Expected least 2D tensor, but got a tensor with sizes ", self.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(batch1.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch1.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(batch2.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch2.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     auto size_first = self.size(0) > batch1.size(1) ? self.size(0) : batch1.size(1);
     auto size_second = self.size(1) > batch2.size(2) ? self.size(1) : batch2.size(2);
     auto output_size = {size_first, size_second};
@@ -43,9 +46,12 @@ at::Tensor addbmm(const at::Tensor &self, const at::Tensor &batch1, const at::Te
 {
     DO_COMPATIBILITY(aclnnAddbmm, acl_op::addbmm(self, batch1, batch2, beta, alpha));
 
-    TORCH_CHECK(self.ndimension() >= 2, "Expected least 2D tensor, but got a tensor with sizes ", self.dim());
-    TORCH_CHECK(batch1.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch1.dim());
-    TORCH_CHECK(batch2.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch2.dim());
+    TORCH_CHECK(self.ndimension() >= 2, "Expected least 2D tensor, but got a tensor with sizes ", self.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(batch1.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch1.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(batch2.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch2.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     auto size_first = self.size(0) > batch1.size(1) ? self.size(0) : batch1.size(1);
     auto size_second = self.size(1) > batch2.size(2) ? self.size(1) : batch2.size(2);
     auto output_size = {size_first, size_second};

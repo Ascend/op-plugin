@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2023, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -61,13 +62,15 @@ namespace acl_op {
         auto num_zero_dims = std::count(sizes.begin(), sizes.end(), 0);
         // tensor is not well formed as it has 0 sized dimensions
         if (self.size(dim) == 0) {
-            TORCH_CHECK(num_zero_dims == 1, "Number of zero sized dimensions is more than one, so unique cannot be applied.");
+            TORCH_CHECK(num_zero_dims == 1, "Number of zero sized dimensions is more than one, so unique cannot be applied."
+                + OPS_ERROR(ErrCode::PARAM));
             at::Tensor output = npu_preparation::apply_tensor_with_format(sizes, self.options(), ACL_FORMAT_ND);
             at::Tensor inverse_indices = npu_preparation::apply_tensor_with_format({0}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
             at::Tensor counts = npu_preparation::apply_tensor_with_format({0}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
             return std::tie(output, inverse_indices, counts);
         }
-        TORCH_CHECK(num_zero_dims == 0, "There are 0 sized dimensions, and they aren't selected, so unique cannot be applied.");
+        TORCH_CHECK(num_zero_dims == 0, "There are 0 sized dimensions, and they aren't selected, so unique cannot be applied."
+            + OPS_ERROR(ErrCode::PARAM));
         
         at::Tensor output = npu_preparation::apply_tensor(self);
         at::Tensor idx = npu_preparation::apply_tensor_with_format(self.size(dim), self.options().dtype(at::kLong), ACL_FORMAT_ND);

@@ -61,7 +61,7 @@ at::Tensor npu_softmax_cross_entropy_with_logits_backward(
 at::Tensor npu_softmax_cross_entropy_with_logits(
     const at::Tensor& self,
     const at::Tensor& labels) {
-  TORCH_CHECK(torch_npu::utils::is_npu(self));
-  return std::get<0>(softmax_cross_entropy_with_logits_impl_out_nocheck(self, labels));
+    TORCH_CHECK(torch_npu::utils::is_npu(self), OPS_ERROR(ErrCode::PARAM));
+    return std::get<0>(softmax_cross_entropy_with_logits_impl_out_nocheck(self, labels));
 }
 } // namespace acl_op
