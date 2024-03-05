@@ -20,11 +20,13 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& tanh_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnTanh, acl_op::tanh_out(self, result));
-  TORCH_CHECK(!isIntegralType(result.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
-  EXEC_NPU_CMD(aclnnTanh, self, result);
-  return result;
+at::Tensor& tanh_out(const at::Tensor& self, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnTanh, acl_op::tanh_out(self, result));
+    TORCH_CHECK(!isIntegralType(result.scalar_type(), true), "result dtype can't be cast to the desired output type.\n",
+                OPS_ERROR(ErrCode::TYPE));
+    EXEC_NPU_CMD(aclnnTanh, self, result);
+    return result;
 }
 
 at::Tensor tanh(const at::Tensor& self) {

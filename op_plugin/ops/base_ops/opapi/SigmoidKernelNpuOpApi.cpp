@@ -20,24 +20,26 @@
 namespace op_api {
 at::Tensor& sigmoid_out(const at::Tensor& self, at::Tensor& result)
 {
-  DO_COMPATIBILITY(aclnnSigmoid, acl_op::sigmoid_out(self, result));
-  auto result_dtype = self.scalar_type();
-  if (isIntegralType(self.scalar_type(), true)) {
-    result_dtype = at::kFloat;
-  }
-  TORCH_CHECK(!isIntegralType(result.scalar_type(), true),
-              "result dtype ", result_dtype, " can't be cast to the desired output type ", result.dtype(), ".\n");
-  at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
-  EXEC_NPU_CMD(aclnnSigmoid, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnSigmoid, acl_op::sigmoid_out(self, result));
+    auto result_dtype = self.scalar_type();
+    if (isIntegralType(self.scalar_type(), true)) {
+        result_dtype = at::kFloat;
+    }
+    TORCH_CHECK(!isIntegralType(result.scalar_type(), true),
+                "result dtype ", result_dtype, " can't be cast to the desired output type ", result.dtype(), ".\n",
+                OPS_ERROR(ErrCode::TYPE));
+    at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
+    EXEC_NPU_CMD(aclnnSigmoid, self, result);
+    return result;
 }
 
 at::Tensor& sigmoid_(at::Tensor& self)
 {
-  DO_COMPATIBILITY(aclnnInplaceSigmoid, acl_op::sigmoid_(self));
-  TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
-  EXEC_NPU_CMD(aclnnInplaceSigmoid, self);
-  return self;
+    DO_COMPATIBILITY(aclnnInplaceSigmoid, acl_op::sigmoid_(self));
+    TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n",
+                OPS_ERROR(ErrCode::TYPE));
+    EXEC_NPU_CMD(aclnnInplaceSigmoid, self);
+    return self;
 }
 
 at::Tensor sigmoid(const at::Tensor& self)

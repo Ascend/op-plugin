@@ -20,10 +20,12 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-static void round_decimals_check(const at::Tensor& self, int64_t decimals) {
-  if (isIntegralType(self.scalar_type(), true)) {
-    TORCH_CHECK(decimals == 0, "round_npu not implemented for ", toString(self.scalar_type()), " with decimals != 0");
-  }
+static void round_decimals_check(const at::Tensor& self, int64_t decimals)
+{
+    if (isIntegralType(self.scalar_type(), true)) {
+        TORCH_CHECK(decimals == 0, "round_npu not implemented for ", toString(self.scalar_type()), " with decimals != 0",
+                    OPS_ERROR(ErrCode::TYPE));
+    }
 }
 
 at::Tensor& round_out(const at::Tensor& self, int64_t decimals, at::Tensor& result) {

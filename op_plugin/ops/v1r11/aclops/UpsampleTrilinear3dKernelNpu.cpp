@@ -22,7 +22,7 @@ namespace acl_op {
 at::Tensor upsample_trilinear3d(const at::Tensor &input, c10::optional<at::IntArrayRef> output_size, bool align_corners,
                                 c10::optional<at::ArrayRef<double>> scale_factors)
 {
-    TORCH_CHECK(input.dim() == 5, "The input should be 5D, but got ", input.dim(), "D");
+    TORCH_CHECK(input.dim() == 5, "The input should be 5D, but got ", input.dim(), "D", OPS_ERROR(ErrCode::PARAM));
 
     auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
     auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);

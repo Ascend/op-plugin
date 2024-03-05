@@ -21,11 +21,12 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor embedding_backward(const at::Tensor& grad, const at::Tensor& indices, int64_t num_weights,
-                              int64_t padding_idx, bool scale_grad_by_freq, bool sparse) {
-  DO_COMPATIBILITY(aclnnEmbeddingDenseBackward,
-                   acl_op::embedding_backward(grad, indices, num_weights, padding_idx, scale_grad_by_freq, sparse));
-  TORCH_CHECK(sparse == false, "NPU error, not yet support sparse tensor, when sparse == True");
-  // run dense tensor backward
-  return op_api::embedding_dense_backward(grad, indices, num_weights, padding_idx, scale_grad_by_freq);
+                              int64_t padding_idx, bool scale_grad_by_freq, bool sparse)
+{
+    DO_COMPATIBILITY(aclnnEmbeddingDenseBackward,
+                     acl_op::embedding_backward(grad, indices, num_weights, padding_idx, scale_grad_by_freq, sparse));
+    TORCH_CHECK(sparse == false, "NPU error, not yet support sparse tensor, when sparse == True", OPS_ERROR(ErrCode::NOT_SUPPORT));
+    // run dense tensor backward
+    return op_api::embedding_dense_backward(grad, indices, num_weights, padding_idx, scale_grad_by_freq);
 }
 } // namespace op_api

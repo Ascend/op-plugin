@@ -26,7 +26,7 @@ at::Tensor upsample_nearest3d(
     TORCH_CHECK(
         input.dim() == 5,
         "It is expected input_size equals to 5, but got size ",
-        input.dim());
+        input.dim(), OPS_ERROR(ErrCode::PARAM));
 
   auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
   auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);

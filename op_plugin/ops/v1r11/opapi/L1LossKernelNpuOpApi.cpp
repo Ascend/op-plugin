@@ -28,7 +28,7 @@ at::Tensor& l1_loss_out(const at::Tensor& self,
     DO_COMPATIBILITY(aclnnL1Loss, acl_op::l1_loss_out(self, target, reduction, result));
     // check if result on NPU
     TORCH_CHECK(torch_npu::utils::is_npu(result), "result with device ", result.device(),
-                " doesn't match the desired device NPU");
+                " doesn't match the desired device NPU", OPS_ERROR(ErrCode::PARAM));
     // 1. When reduction = 'none', shape of result must be the same as self.
     // 2. When reduction != 'none', result must be a 0-dimensional tensor.
     at::IntArrayRef output_size;

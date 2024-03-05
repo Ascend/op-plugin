@@ -28,7 +28,7 @@ at::Tensor upsample_trilinear3d_backward(
     TORCH_CHECK(
         input_size.size() == 5,
         "It is expected input_size equals to 5, but got size ",
-        input_size.size());
+        input_size.size(), OPS_ERROR(ErrCode::PARAM));
 
   auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
   auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);

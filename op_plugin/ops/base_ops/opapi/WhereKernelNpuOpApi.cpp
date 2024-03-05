@@ -24,7 +24,7 @@ namespace op_api {
     {
         static auto opApiFuncAddr = []() {
             auto ret = GetOpApiFuncAddr("aclGetViewShape");
-            TORCH_CHECK(ret != nullptr);
+            TORCH_CHECK(ret != nullptr, OPS_ERROR(ErrCode::PTR));
             return ret;
         }();
         using aclGetViewShapeFunc = int (*)(const aclTensor *tensor, int64_t **view_dims, uint64_t *view_dims_num);
@@ -33,7 +33,7 @@ namespace op_api {
         int64_t *view_dims = nullptr;
         uint64_t view_dim_num = 0;
         auto ret = aclGetViewShape(npuAclParams.Get<1>(), &view_dims, &view_dim_num);
-        TORCH_CHECK(ret == 0, "aclGetViewShape failed.");
+        TORCH_CHECK(ret == 0, "aclGetViewShape failed.", OPS_ERROR(ErrCode::ACL));
         c10::SmallVector<int64_t, op_infer::SIZE> output_size(view_dims, view_dims + view_dim_num);
         out = out.resize_(output_size);
         delete view_dims;

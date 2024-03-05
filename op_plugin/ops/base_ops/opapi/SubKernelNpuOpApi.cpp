@@ -23,13 +23,15 @@ using npu_preparation = at_npu::native::OpPreparation;
 inline void alpha_check_npu_tensor(const at::ScalarType self_dtype, const at::ScalarType other_dtype, at::Scalar alpha)
 {
     TORCH_CHECK(isFloatingType(self_dtype) || isFloatingType(other_dtype) || alpha.isIntegral(true),
-                "For integral input tensors, argument alpha must not be a floating point number.");
+                "For integral input tensors, argument alpha must not be a floating point number.",
+                OPS_ERROR(ErrCode::TYPE));
 }
 
 inline void alpha_check_npu_scalar(const at::ScalarType self_dtype, at::Scalar other, at::Scalar alpha)
 {
     TORCH_CHECK(isFloatingType(self_dtype)|| other.isFloatingPoint() || alpha.isIntegral(true),
-                "For integral input tensors, argument alpha must not be a floating point number.");
+                "For integral input tensors, argument alpha must not be a floating point number.",
+                OPS_ERROR(ErrCode::TYPE));
 }
 
 static at::Tensor &sub_out_npu_nocheck(const at::Tensor &self, const at::Tensor &other, const at::Scalar alpha,

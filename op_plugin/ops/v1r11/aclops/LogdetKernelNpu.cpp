@@ -17,7 +17,8 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor logdet(const at::Tensor& self) {
-  TORCH_CHECK(false, "logdet is unsupported!");
+at::Tensor logdet(const at::Tensor& self)
+{
+    TORCH_CHECK(false, "logdet is unsupported!", OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 } // namespace acl_op

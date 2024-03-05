@@ -24,7 +24,7 @@ inline c10::SmallVector<int64_t, N> swiglu_backward_infershape(const at::Tensor 
     if (dim < 0) {
         dim += x.sizes().size();
     }
-    TORCH_CHECK(dim < x.sizes().size(), "dim out of range", dim);
+    TORCH_CHECK(dim < x.sizes().size(), "dim out of range", dim, OPS_ERROR(ErrCode::PARAM));
     auto output_sizes = op_infer::array_to_small_vector(x.sizes());
     output_sizes[dim] /= 2;
     return output_sizes;

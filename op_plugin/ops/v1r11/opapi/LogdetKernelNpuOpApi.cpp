@@ -20,17 +20,17 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor logdet(const at::Tensor &self)
 {
-  DO_COMPATIBILITY(aclnnLogdet, acl_op::logdet(self));
-  // input dimension at least 2
-  TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim());
-  // calculate the output size
-  auto output_size = op_infer::array_to_small_vector(self.sizes());
-  output_size.erase(output_size.end() - 2, output_size.end());
-  // construct the output tensor of the NPU
-  at::Tensor log = npu_preparation::apply_tensor(self, output_size);
-  EXEC_NPU_CMD(aclnnLogdet, self, log);
+    DO_COMPATIBILITY(aclnnLogdet, acl_op::logdet(self));
+    // input dimension at least 2
+    TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim(), OPS_ERROR(ErrCode::PARAM));
+    // calculate the output size
+    auto output_size = op_infer::array_to_small_vector(self.sizes());
+    output_size.erase(output_size.end() - 2, output_size.end());
+    // construct the output tensor of the NPU
+    at::Tensor log = npu_preparation::apply_tensor(self, output_size);
+    EXEC_NPU_CMD(aclnnLogdet, self, log);
 
-  return log;
+    return log;
 }
 
 } // namespace op_api

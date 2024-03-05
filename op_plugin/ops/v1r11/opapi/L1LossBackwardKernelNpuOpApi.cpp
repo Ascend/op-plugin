@@ -27,7 +27,7 @@ at::Tensor &l1_loss_backward_out(const at::Tensor &grad_output, const at::Tensor
                      acl_op::l1_loss_backward_out(grad_output, self, target, reduction, grad_input));
     // check if grad_input on NPU
     TORCH_CHECK(torch_npu::utils::is_npu(grad_input), "grad_input with device ", grad_input.device(),
-                " doesn't match the desired device NPU");
+                " doesn't match the desired device NPU", OPS_ERROR(ErrCode::PARAM));
     auto output_size1_vec = op_infer::broadcast_ops_npu_output_size(self, target);
     at::IntArrayRef output_size1 = output_size1_vec;
     auto output_size2_vec = op_infer::broadcast_ops_npu_output_size(output_size1, grad_output.sizes());

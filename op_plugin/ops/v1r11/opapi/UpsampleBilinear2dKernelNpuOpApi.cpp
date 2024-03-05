@@ -24,24 +24,26 @@ at::Tensor upsample_bilinear2d(
     const at::Tensor& self_ex,
     c10::optional<at::IntArrayRef> output_size,
     bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  DO_COMPATIBILITY(aclnnUpsampleBilinear2d,
-                   acl_op::upsample_bilinear2d(self_ex, output_size, align_corners, scale_factors));
-  at::Tensor self = self_ex;
-  auto osize = op_infer::upsample_infershape_with_scale(self_ex.sizes(), output_size, scale_factors);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
+    c10::optional<at::ArrayRef<double>> scale_factors)
+{
+    DO_COMPATIBILITY(aclnnUpsampleBilinear2d,
+                     acl_op::upsample_bilinear2d(self_ex, output_size, align_corners, scale_factors));
+    at::Tensor self = self_ex;
+    auto osize = op_infer::upsample_infershape_with_scale(self_ex.sizes(), output_size, scale_factors);
+    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
 
-  TORCH_CHECK(self.scalar_type() != at::ScalarType::Double, "upsample_binlinear_2d not support torch.fp64 dtypes");
+    TORCH_CHECK(self.scalar_type() != at::ScalarType::Double, "upsample_binlinear_2d not support torch.fp64 dtypes",
+                OPS_ERROR(ErrCode::TYPE));
 
-  auto output_osize = op_infer::upsample_bilinear2d_npu_output_size(self, osize, align_corners, scales_h, scales_w);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_osize, self.options());
+    auto output_osize = op_infer::upsample_bilinear2d_npu_output_size(self, osize, align_corners, scales_h, scales_w);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_osize, self.options());
 
-  auto output_osize2 = at::IntArrayRef(osize);
-  double scales_h_attr = scales_h.value_or(1);
-  double scales_w_attr = scales_w.value_or(1);
-  EXEC_NPU_CMD(aclnnUpsampleBilinear2d, self, output_osize2, align_corners, scales_h_attr, scales_w_attr, result);
-  return result;
+    auto output_osize2 = at::IntArrayRef(osize);
+    double scales_h_attr = scales_h.value_or(1);
+    double scales_w_attr = scales_w.value_or(1);
+    EXEC_NPU_CMD(aclnnUpsampleBilinear2d, self, output_osize2, align_corners, scales_h_attr, scales_w_attr, result);
+    return result;
 }
 
 } // namespace op_api

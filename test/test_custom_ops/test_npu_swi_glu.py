@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-
+from torch_npu.testing.common_utils import SupportedDevices
 
 torch.npu.config.allow_internal_format = False
 
@@ -26,6 +26,7 @@ class TestSwiGlu(TestCase):
         output = swiglu_v2(input_self_tensor)
         return output
 
+    @SupportedDevices(['Ascend910B'])
     def test_swiglu(self):
         shape = [8192, 1, 3904 * 2]
         dim = -1

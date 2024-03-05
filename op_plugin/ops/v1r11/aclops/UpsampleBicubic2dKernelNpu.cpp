@@ -23,11 +23,12 @@ at::Tensor upsample_bicubic2d(
     const at::Tensor& self,
     c10::optional<at::IntArrayRef> output_size,
     bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
+    c10::optional<at::ArrayRef<double>> scale_factors)
+{
     TORCH_CHECK(
         self.dim() == 4,
         "It is expected size equals to 4, but got size ",
-        self.dim());
+        self.dim(), OPS_ERROR(ErrCode::PARAM));
 
   auto osize = op_infer::upsample_infershape_with_scale(self.sizes(), output_size, scale_factors);
   auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);

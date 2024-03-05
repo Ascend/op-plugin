@@ -52,10 +52,11 @@ at::Tensor &max_unpool3d_backward_out(const at::Tensor &grad_output, const at::T
                                       at::IntArrayRef output_size, at::IntArrayRef stride, at::IntArrayRef padding,
                                       at::Tensor &grad_input)
 {
-    TORCH_CHECK(output_size.size() == 3, "There should be exactly 3 elements (depth, height, width) in output_size");
+    TORCH_CHECK(output_size.size() == 3, "There should be exactly 3 elements (depth, height, width) in output_size",
+                OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((self.ndimension() == 4 || self.ndimension() == 5),
-                "Input to max_unpooling2d should be a 4d or 5d Tensor");
-    TORCH_CHECK(self.sizes() == indices.sizes(), "Shape of indices should match shape of input");
+                "Input to max_unpooling2d should be a 4d or 5d Tensor", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.sizes() == indices.sizes(), "Shape of indices should match shape of input", OPS_ERROR(ErrCode::PARAM));
     npu_preparation::CheckOut({grad_output, self, indices}, grad_input, self);
     if (!npu_utils::check_match(&grad_input)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
@@ -70,11 +71,12 @@ at::Tensor &max_unpool3d_backward_out(const at::Tensor &grad_output, const at::T
 at::Tensor max_unpool3d_backward(const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &indices,
                                  at::IntArrayRef output_size, at::IntArrayRef stride, at::IntArrayRef padding)
 {
-    TORCH_CHECK(output_size.size() == 3, "There should be exactly 3 elements (depth, height, width) in output_size");
+    TORCH_CHECK(output_size.size() == 3, "There should be exactly 3 elements (depth, height, width) in output_size",
+                OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((self.ndimension() == 4 || self.ndimension() == 5),
-                "Input to max_unpooling2d should be a 4d or 5d Tensor");
-    TORCH_CHECK(self.sizes() == indices.sizes(), "Shape of indices should match shape of input");
-    TORCH_CHECK(self.numel() > 0, "Input must be non-empty");
+                "Input to max_unpooling2d should be a 4d or 5d Tensor", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.sizes() == indices.sizes(), "Shape of indices should match shape of input", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.numel() > 0, "Input must be non-empty", OPS_ERROR(ErrCode::PARAM));
 
     at::Tensor grad_input = npu_preparation::apply_tensor(self);
     max_unpool3d_backward_out_npu_nocheck(grad_input, grad_output, indices);

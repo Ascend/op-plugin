@@ -34,7 +34,7 @@ at::Tensor where(const at::Tensor &condition, const at::Tensor &self, const at::
 {
     TORCH_CHECK(condition.device() == self.device() && self.device() == other.device(),
                 "expected condition, x and y to be on the same device, but condition is on ", condition.device(),
-                " and x and y are on ", self.device(), " and ", other.device(), " respectively");
+                " and x and y are on ", self.device(), " and ", other.device(), " respectively", OPS_ERROR(ErrCode::PARAM));
     if (condition.scalar_type() != at::ScalarType::Byte && condition.scalar_type() != at::ScalarType::Bool) {
         AT_ERROR("Expected condition to have ScalarType Byte, but got ScalarType ", toString(condition.scalar_type()));
     }

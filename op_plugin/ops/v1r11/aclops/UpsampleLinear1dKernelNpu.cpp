@@ -27,7 +27,7 @@ at::Tensor upsample_linear1d(
     TORCH_CHECK(
         self.dim() == 3,
         "It is expected input_size equals to 3, but got size ",
-        self.dim());
+        self.dim(), OPS_ERROR(ErrCode::PARAM));
 
   auto osize = op_infer::upsample_infershape_with_scale(self.sizes(), output_size, scale_factors);
   auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
