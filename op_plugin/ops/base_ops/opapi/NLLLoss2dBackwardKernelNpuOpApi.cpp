@@ -29,7 +29,7 @@ at::Tensor& nll_loss2d_backward_out(const at::Tensor& grad_output, const at::Ten
                                                                              reduction, ignore_index, total_weight,
                                                                              grad_input));
     at::Tensor weight_tensor = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
-    TORCH_CHECK(self.dim() > 1, "self dim has to be more than 1");
+    TORCH_CHECK(self.dim() > 1, "self dim has to be more than 1", OPS_ERROR(ErrCode::PARAM));
     if (!weight_tensor.defined()) {
         weight_tensor = at::ones(self.size(1), self.options());
     }

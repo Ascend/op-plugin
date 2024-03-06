@@ -49,11 +49,11 @@ at::Tensor& scatter_out(const at::Tensor& self, int64_t dim, const at::Tensor& i
 at::Tensor& scatter_out(const at::Tensor& self, int64_t dim, const at::Tensor& index,
     const at::Tensor& src, c10::string_view reduce, at::Tensor& result)
 {
-  npu_preparation::check_tensor({self, src, index}, result, self);
-  TORCH_CHECK(reduce_valid(reduce), "Reduce should be either add or multiply");
-  int64_t reduction = get_reduce(reduce);
-  EXEC_NPU_CMD(aclnnScatter, self, dim, index, src, reduction, result);
-  return result;
+    npu_preparation::check_tensor({self, src, index}, result, self);
+    TORCH_CHECK(reduce_valid(reduce), "Reduce should be either add or multiply", OPS_ERROR(ErrCode::PARAM));
+    int64_t reduction = get_reduce(reduce);
+    EXEC_NPU_CMD(aclnnScatter, self, dim, index, src, reduction, result);
+    return result;
 }
 
 at::Tensor& scatter_out(const at::Tensor& self, int64_t dim, const at::Tensor& index,
@@ -69,11 +69,11 @@ at::Tensor& scatter_out(const at::Tensor& self, int64_t dim, const at::Tensor& i
 at::Tensor& scatter_out(const at::Tensor& self, int64_t dim, const at::Tensor& index,
     const at::Scalar& value, c10::string_view reduce, at::Tensor& result)
 {
-  npu_preparation::check_tensor({self, index}, result, self);
-  TORCH_CHECK(reduce_valid(reduce), "Reduce should be either add or multiply");
-  int64_t reduction = get_reduce(reduce);
-  EXEC_NPU_CMD(aclnnScatterValue, self, dim, index, value, reduction, result);
-  return result;
+    npu_preparation::check_tensor({self, index}, result, self);
+    TORCH_CHECK(reduce_valid(reduce), "Reduce should be either add or multiply", OPS_ERROR(ErrCode::PARAM));
+    int64_t reduction = get_reduce(reduce);
+    EXEC_NPU_CMD(aclnnScatterValue, self, dim, index, value, reduction, result);
+    return result;
 }
 }  // namespace op_api
 

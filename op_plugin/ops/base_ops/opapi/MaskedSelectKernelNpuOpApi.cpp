@@ -40,24 +40,25 @@ static inline at::SmallVector<int64_t, SIZE> masked_select_npu_output_size(const
   return outputSize;
 }
 
-static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Tensor& mask, at::Tensor& out) {
-  static auto opApiFuncAddr = GetOpApiFuncAddr("aclGetViewShape");
-  TORCH_CHECK(opApiFuncAddr != nullptr, "GetOpApiFuncAddr failed.");
-  using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
-  auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
-  auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnMaskedSelect, self, mask, out);
-  int64_t* view_dims = nullptr;
-  uint64_t view_dim_num = 0;
-  auto ret = aclGetViewShape(npuAclParams.Get<2>(), &view_dims, &view_dim_num);
-  TORCH_CHECK(ret == OK, "aclGetViewShape failed");
-  at::SmallVector<int64_t, SIZE> outputShapeSize = {};
-  for (uint64_t i = 0; i < view_dim_num; i++) {
-    outputShapeSize.push_back(view_dims[i]);
-  }
-  out.resize_(outputShapeSize);
-  delete view_dims;
-  view_dims = nullptr;
-  return out;
+static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Tensor& mask, at::Tensor& out)
+{
+    static auto opApiFuncAddr = GetOpApiFuncAddr("aclGetViewShape");
+    TORCH_CHECK(opApiFuncAddr != nullptr, "GetOpApiFuncAddr failed.", OPS_ERROR(ErrCode::PTR));
+    using aclGetViewShapeFunc = int (*)(const aclTensor *tensor, int64_t **view_dims, uint64_t *view_dims_num);
+    auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
+    auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnMaskedSelect, self, mask, out);
+    int64_t *view_dims = nullptr;
+    uint64_t view_dim_num = 0;
+    auto ret = aclGetViewShape(npuAclParams.Get<2>(), &view_dims, &view_dim_num);
+    TORCH_CHECK(ret == OK, "aclGetViewShape failed", OPS_ERROR(ErrCode::ACL));
+    at::SmallVector<int64_t, SIZE> outputShapeSize = {};
+    for (uint64_t i = 0; i < view_dim_num; i++) {
+        outputShapeSize.push_back(view_dims[i]);
+    }
+    out.resize_(outputShapeSize);
+    delete view_dims;
+    view_dims = nullptr;
+    return out;
 }
 
 at::Tensor masked_select(const at::Tensor& self, const at::Tensor& mask) {

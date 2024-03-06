@@ -20,21 +20,23 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& eye_out(int64_t n, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnEye, acl_op::eye_out(n, result));
-  TORCH_CHECK(n >= 0, "n must be greater or equal to 0, got ", n);
-  result.resize_({n, n});
-  EXEC_NPU_CMD(aclnnEye, n, n, result);
-  return result;
+at::Tensor& eye_out(int64_t n, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnEye, acl_op::eye_out(n, result));
+    TORCH_CHECK(n >= 0, "n must be greater or equal to 0, got ", n, OPS_ERROR(ErrCode::VALUE));
+    result.resize_({n, n});
+    EXEC_NPU_CMD(aclnnEye, n, n, result);
+    return result;
 }
 
-at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnEye, acl_op::eye_out(n, m, result));
-  TORCH_CHECK(n >= 0, "n must be greater or equal to 0, got ", n);
-  TORCH_CHECK(m >= 0, "m must be greater or equal to 0, got ", m);
-  result.resize_({n, m});
-  EXEC_NPU_CMD(aclnnEye, n, m, result);
-  return result;
+at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnEye, acl_op::eye_out(n, m, result));
+    TORCH_CHECK(n >= 0, "n must be greater or equal to 0, got ", n, OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(m >= 0, "m must be greater or equal to 0, got ", m, OPS_ERROR(ErrCode::VALUE));
+    result.resize_({n, m});
+    EXEC_NPU_CMD(aclnnEye, n, m, result);
+    return result;
 }
 
 at::Tensor eye(

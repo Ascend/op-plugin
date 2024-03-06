@@ -27,7 +27,7 @@ std::vector<at::Tensor> _foreach_add(const at::TensorList self, const at::Scalar
     }
     auto scalar_type = self[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        TORCH_CHECK(false, "input must be half, float or int32");
+        TORCH_CHECK(false, "input must be half, float or int32", OPS_ERROR(ErrCode::TYPE));
     }
     std::vector<at::Tensor> result;
     result.reserve(self.size());
@@ -51,7 +51,7 @@ void _foreach_add_(const at::TensorList self, const at::Scalar& scalar)
     }
     auto scalar_type = self[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        TORCH_CHECK(false, "input must be half, float or int32");
+        TORCH_CHECK(false, "input must be half, float or int32", OPS_ERROR(ErrCode::TYPE));
     }
     at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type());
     EXEC_NPU_CMD(aclnnForeachAddScalar, self, scalar_tensor, self);

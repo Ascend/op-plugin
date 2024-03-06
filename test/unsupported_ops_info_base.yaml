@@ -3498,6 +3498,8 @@ diagflat:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_operator:
+  - float32
 copysign:
   test_neg_view:
   - float64
@@ -10221,6 +10223,12 @@ eye:
   - float32
   test_fake_autocast:
   - float32
+  test_compare_cpu:
+  - float32
+  test_non_standard_bool_values:
+  - bool
+  test_operator:
+  - float32
 logspace:
   test_fake:
   - float32
@@ -10312,3 +10320,21 @@ view_as_real:
 unravel_index:
   test_out:
   - int64
+nn_functional_cosine_similarity:
+  test_operator:
+  - float32
+diagflat:
+  test_operator:
+  - float32
+_refs_block_diag:
+  test_conj_view:
+  - complex64
+  - complex128
+  test_neg_view:
+  - float64
+_refs_dot:
+  test_conj_view:
+  - complex64
+_refs_linalg_cross:
+  test_conj_view:
+  - complex64

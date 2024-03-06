@@ -20,13 +20,15 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& cos_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnCos, acl_op::cos_out(self, result));
-  TORCH_CHECK(!isIntegralType(result.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
-  auto outputSize = self.sizes();
-  npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
-  EXEC_NPU_CMD(aclnnCos, self, result);
-  return result;
+at::Tensor& cos_out(const at::Tensor& self, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnCos, acl_op::cos_out(self, result));
+    TORCH_CHECK(!isIntegralType(result.scalar_type(), true),
+        "result dtype can't be cast to the desired output type.\n", OPS_ERROR(ErrCode::TYPE));
+    auto outputSize = self.sizes();
+    npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
+    EXEC_NPU_CMD(aclnnCos, self, result);
+    return result;
 }
 
 at::Tensor cos(const at::Tensor& self) {
@@ -41,11 +43,13 @@ at::Tensor cos(const at::Tensor& self) {
   return result;
 }
 
-at::Tensor& cos_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceCos, acl_op::cos_(self));
-  TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
-  EXEC_NPU_CMD(aclnnInplaceCos, self);
-  return self;
+at::Tensor& cos_(at::Tensor& self)
+{
+    DO_COMPATIBILITY(aclnnInplaceCos, acl_op::cos_(self));
+    TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n",
+                OPS_ERROR(ErrCode::TYPE));
+    EXEC_NPU_CMD(aclnnInplaceCos, self);
+    return self;
 }
 
 }  // namespace op_api

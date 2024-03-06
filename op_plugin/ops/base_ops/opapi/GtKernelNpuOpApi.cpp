@@ -81,7 +81,7 @@ at::Tensor& gt_(at::Tensor &self, const at::Tensor &other) {
     return op_api::gt_(self, other.item());
   } else {
     TORCH_CHECK(self.device() == other.device(),
-        "Expected all tensors to be on the same device, but found at least two devices");
+        "Expected all tensors to be on the same device, but found at least two devices", OPS_ERROR(ErrCode::INTERNAL));
     npu_preparation::CheckMemory({self, other}, {self});
     EXEC_NPU_CMD(aclnnInplaceGtTensor, self, other);
     return self;

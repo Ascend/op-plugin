@@ -28,12 +28,13 @@ at::Tensor& randperm_op_api(int64_t n, c10::optional<at::Generator> gen_, at::Te
   return result;
 }
 
-at::Tensor& randperm_out(int64_t n, c10::optional<at::Generator> generator, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnRandperm, acl_op::randperm_out(n, generator, result));
-  TORCH_CHECK(n >= 0, "n must be non-negative, got", n);
-  at_npu::native::OpPreparation::check_tensor({}, result, result, {n});
-  randperm_op_api(n, generator, result);
-  return result;
+at::Tensor& randperm_out(int64_t n, c10::optional<at::Generator> generator, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnRandperm, acl_op::randperm_out(n, generator, result));
+    TORCH_CHECK(n >= 0, "n must be non-negative, got", n, OPS_ERROR(ErrCode::VALUE));
+    at_npu::native::OpPreparation::check_tensor({}, result, result, {n});
+    randperm_op_api(n, generator, result);
+    return result;
 }
 
 at::Tensor& randperm_out(int64_t n, at::Tensor& result) {
@@ -46,16 +47,17 @@ at::Tensor& randperm_out(int64_t n, at::Tensor& result) {
 
 at::Tensor randperm(int64_t n, c10::optional<at::Generator> generator,
                     c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
-                    c10::optional<at::Device> device, c10::optional<bool> pin_memory) {
-  DO_COMPATIBILITY(aclnnRandperm, acl_op::randperm(n, generator, dtype, layout, device, pin_memory));
-  TORCH_CHECK(n >= 0, "n must be non-negative, got", n);
-  at::TensorOptions options;
-  options = options.dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
+                    c10::optional<at::Device> device, c10::optional<bool> pin_memory)
+{
+    DO_COMPATIBILITY(aclnnRandperm, acl_op::randperm(n, generator, dtype, layout, device, pin_memory));
+    TORCH_CHECK(n >= 0, "n must be non-negative, got", n, OPS_ERROR(ErrCode::VALUE));
+    at::TensorOptions options;
+    options = options.dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
 
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format({n}, options);
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format({n}, options);
 
-  randperm_op_api(n, generator, result);
-  return result;
+    randperm_op_api(n, generator, result);
+    return result;
 }
 
 at::Tensor randperm(int64_t n, c10::optional<at::ScalarType> dtype,

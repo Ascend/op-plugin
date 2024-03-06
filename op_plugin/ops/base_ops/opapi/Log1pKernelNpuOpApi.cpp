@@ -23,22 +23,24 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& log1p_out(const at::Tensor& self, at::Tensor& result)
 {
-  DO_COMPATIBILITY(aclnnLog1p, acl_op::log1p_out(self, result));
-  TORCH_CHECK(!isIntegralType(result.scalar_type(), true),
-              "result type Float can't be cast to the desired output type ", toString(self.scalar_type()));
-  auto output_size = self.sizes();
-  npu_preparation::check_tensor({self}, result, result.scalar_type(), output_size);
-  EXEC_NPU_CMD(aclnnLog1p, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnLog1p, acl_op::log1p_out(self, result));
+    TORCH_CHECK(!isIntegralType(result.scalar_type(), true),
+                "result type Float can't be cast to the desired output type ",
+                toString(self.scalar_type()), OPS_ERROR(ErrCode::TYPE));
+    auto output_size = self.sizes();
+    npu_preparation::check_tensor({self}, result, result.scalar_type(), output_size);
+    EXEC_NPU_CMD(aclnnLog1p, self, result);
+    return result;
 }
 
 at::Tensor& log1p_(at::Tensor& self)
 {
-  DO_COMPATIBILITY(aclnnInplaceLog1p, acl_op::log1p_(self));
-  TORCH_CHECK(!isIntegralType(self.scalar_type(), true),
-              "result type Float can't be cast to the desired output type ", toString(self.scalar_type()));
-  EXEC_NPU_CMD(aclnnInplaceLog1p, self);
-  return self;
+    DO_COMPATIBILITY(aclnnInplaceLog1p, acl_op::log1p_(self));
+    TORCH_CHECK(!isIntegralType(self.scalar_type(), true),
+                "result type Float can't be cast to the desired output type ",
+                toString(self.scalar_type()), OPS_ERROR(ErrCode::TYPE));
+    EXEC_NPU_CMD(aclnnInplaceLog1p, self);
+    return self;
 }
 
 at::Tensor log1p(const at::Tensor& self)

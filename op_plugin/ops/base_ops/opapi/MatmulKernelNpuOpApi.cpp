@@ -32,7 +32,7 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tenso
     auto dim_tensor2 = tensor2.dim();
 
     TORCH_CHECK(dim_tensor1 > 0 && dim_tensor2 > 0, "matmul got error dimentions: ", "(", dim_tensor1, ", ",
-                dim_tensor2, ")");
+                dim_tensor2, ")", OPS_ERROR(ErrCode::PARAM));
 
     if (dim_tensor1 == 1 && dim_tensor2 == 1) {
         output_size = {};
@@ -71,7 +71,7 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tenso
         output_expand_size.insert(output_expand_size.end(), {n, p});
         output_size = output_expand_size;
     } else {
-        TORCH_CHECK(false, "matmul got error sizes: ", "(", dim_tensor1, ", ", dim_tensor2, ")");
+        TORCH_CHECK(false, "matmul got error sizes: ", "(", dim_tensor1, ", ", dim_tensor2, ")", OPS_ERROR(ErrCode::PARAM));
     }
 
     return output_size;

@@ -27,7 +27,7 @@ std::tuple<at::Tensor, at::Tensor> npu_geglu(const at::Tensor &self, int64_t dim
         dim_num = 1;
     }
     TORCH_CHECK(-dim_num - 1 < dim && dim < dim_num, " Expected npu_swiglu dim value ", dim,
-                " to be in range [", -dim_num, ", ", (dim_num - 1), "] but check failed.");
+                " to be in range [", -dim_num, ", ", (dim_num - 1), "] but check failed.", OPS_ERROR(ErrCode::VALUE));
     auto output_size = op_infer::array_to_small_vector(self.sizes());
     int64_t slice_dim = dim < 0 ? dim_num + dim : dim;
 

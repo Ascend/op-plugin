@@ -77,7 +77,7 @@ at::Tensor &le_(at::Tensor &self, const at::Tensor &other)
         return op_api::le_(self, other.item());
     } else {
         TORCH_CHECK(self.device() == other.device(),
-                    "Expected all tensors to be on the same device, but found at least two devices");
+                    "Expected all tensors to be on the same device, but found at least two devices", OPS_ERROR(ErrCode::INTERNAL));
         at_npu::native::OpPreparation::CheckMemory({self, other}, {self});
         EXEC_NPU_CMD(aclnnInplaceLeTensor, self, other);
         return self;

@@ -113,7 +113,7 @@ at::Tensor &mul_(at::Tensor &self, const at::Tensor &other)
 {
     DO_COMPATIBILITY(aclnnInplaceMul, acl_op::mul_(self, other));
     DO_COMPATIBILITY(aclnnInplaceMuls, acl_op::mul_(self, other));
-    TORCH_CHECK(torch_npu::utils::is_npu(self), "Inplace tensor self must be NPU-Tensor.");
+    TORCH_CHECK(torch_npu::utils::is_npu(self), "Inplace tensor self must be NPU-Tensor.", OPS_ERROR(ErrCode::PARAM));
     npu_preparation::check_memory({self, other}, {self});
     inplace_mul_out_npu_no_check(self, other);
     return self;
@@ -122,7 +122,7 @@ at::Tensor &mul_(at::Tensor &self, const at::Tensor &other)
 at::Tensor &mul_(at::Tensor &self, const at::Scalar &other)
 {
     DO_COMPATIBILITY(aclnnInplaceMuls, acl_op::mul_(self, other));
-    TORCH_CHECK(torch_npu::utils::is_npu(self), "Inplace tensor self must be NPU-Tensor.");
+    TORCH_CHECK(torch_npu::utils::is_npu(self), "Inplace tensor self must be NPU-Tensor.", OPS_ERROR(ErrCode::PARAM));
     EXEC_NPU_CMD(aclnnInplaceMuls, self, other);
     return self;
 }

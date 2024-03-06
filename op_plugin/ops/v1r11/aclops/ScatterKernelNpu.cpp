@@ -23,8 +23,9 @@ at::Tensor& scatter_out(
     const at::Tensor& index,
     const at::Tensor& src,
     c10::string_view reduce,
-    at::Tensor& result) {
-  TORCH_CHECK(false, "scatter.reduce_out is not supported.");
+    at::Tensor& result)
+{
+    TORCH_CHECK(false, "scatter.reduce_out is not supported.", OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 
 at::Tensor& scatter_out(
@@ -33,7 +34,8 @@ at::Tensor& scatter_out(
     const at::Tensor& index,
     const at::Scalar& value,
     c10::string_view reduce,
-    at::Tensor& result) {
-  TORCH_CHECK(false, "scatter.value_reduce_out is not supported.");
+    at::Tensor& result)
+{
+    TORCH_CHECK(false, "scatter.value_reduce_out is not supported.", OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 } // namespace acl_op

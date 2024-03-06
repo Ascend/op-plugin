@@ -75,7 +75,7 @@ void _foreach_div_(const at::TensorList self, const at::Scalar &scalar)
 
     auto scalar_type = self[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
-        TORCH_CHECK(false, "input must be half or float");
+        TORCH_CHECK(false, "input must be half or float", OPS_ERROR(ErrCode::TYPE));
     }
     at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
     EXEC_NPU_CMD(aclnnForeachDivScalar, self, scalar_tensor, self);
@@ -93,7 +93,7 @@ std::vector<at::Tensor> _foreach_div(at::TensorList self, const at::Scalar &scal
     // Type Check
     auto scalar_type = self[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
-        TORCH_CHECK(false, "input must be half or float");
+        TORCH_CHECK(false, "input must be half or float", OPS_ERROR(ErrCode::TYPE));
     }
 
     std::vector<at::Tensor> result;

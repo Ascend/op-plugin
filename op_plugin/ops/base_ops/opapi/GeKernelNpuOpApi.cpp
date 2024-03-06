@@ -73,16 +73,17 @@ at::Tensor ge(const at::Tensor& self, const at::Tensor& other) {
   }
 }
 
-at::Tensor& ge_(at::Tensor &self, const at::Tensor &other) {
-  DO_COMPATIBILITY(aclnnInplaceGeTensor, acl_op::ge_(self, other));
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
-    return op_api::ge_(self, other.item());
-  } else {
-    TORCH_CHECK(self.device() == other.device(),
-        "Expected all tensors to be on the same device, but found at least two devices");
-    npu_preparation::CheckMemory({self, other}, {self});
-    EXEC_NPU_CMD(aclnnInplaceGeTensor, self, other);
-    return self;
-  }
+at::Tensor& ge_(at::Tensor &self, const at::Tensor &other)
+{
+    DO_COMPATIBILITY(aclnnInplaceGeTensor, acl_op::ge_(self, other));
+    if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+        return op_api::ge_(self, other.item());
+    } else {
+        TORCH_CHECK(self.device() == other.device(),
+                    "Expected all tensors to be on the same device, but found at least two devices", OPS_ERROR(ErrCode::INTERNAL));
+        npu_preparation::CheckMemory({self, other}, {self});
+        EXEC_NPU_CMD(aclnnInplaceGeTensor, self, other);
+        return self;
+    }
 }
 } // namespace op_api

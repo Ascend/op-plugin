@@ -42,50 +42,54 @@ at::Tensor range(const at::Scalar& start, const at::Scalar& end, c10::optional<a
 
 at::Tensor range(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step,
                  c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt,
-                 c10::optional<at::Device> device_opt, c10::optional<bool> pin_memory_opt) {
-  DO_COMPATIBILITY(aclnnRange, acl_op::range(start, end, step, dtype_opt, layout_opt, device_opt, pin_memory_opt));
-  TORCH_CHECK(std::isfinite(start.toDouble()) && std::isfinite(end.toDouble()), "unsupported range: start -> end");
-  c10::TensorOptions option =
-      c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
+                 c10::optional<at::Device> device_opt, c10::optional<bool> pin_memory_opt)
+{
+    DO_COMPATIBILITY(aclnnRange, acl_op::range(start, end, step, dtype_opt, layout_opt, device_opt, pin_memory_opt));
+    TORCH_CHECK(std::isfinite(start.toDouble()) && std::isfinite(end.toDouble()), "unsupported range: start -> end",
+                OPS_ERROR(ErrCode::NOT_SUPPORT));
+    c10::TensorOptions option =
+        c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
 
-  float start_value = op_plugin::utils::get_scalar_float_value(start);
-  float end_value = op_plugin::utils::get_scalar_float_value(end);
-  float step_value = op_plugin::utils::get_scalar_float_value(step);
+    float start_value = op_plugin::utils::get_scalar_float_value(start);
+    float end_value = op_plugin::utils::get_scalar_float_value(end);
+    float step_value = op_plugin::utils::get_scalar_float_value(step);
 
-  TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero");
-  TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
-      "upper bound and larger bound inconsistent with step sign");
+    TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero", OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
+                "upper bound and larger bound inconsistent with step sign", OPS_ERROR(ErrCode::VALUE));
 
-  int64_t size_value = get_output_size(start, end, step, c10::typeMetaToScalarType(option.dtype()));
-  at::SmallVector<int64_t, op_infer::SIZE> output_size = {size_value};
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, option);
-  EXEC_NPU_CMD(aclnnRange, start, end, step, result);
-  return result;
+    int64_t size_value = get_output_size(start, end, step, c10::typeMetaToScalarType(option.dtype()));
+    at::SmallVector<int64_t, op_infer::SIZE> output_size = {size_value};
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, option);
+    EXEC_NPU_CMD(aclnnRange, start, end, step, result);
+    return result;
 }
 
-at::Tensor& range_out(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnRange, acl_op::range_out(start, end, step, result));
-  TORCH_CHECK(std::isfinite(start.toDouble()) && std::isfinite(end.toDouble()), "unsupported range: start -> end");
+at::Tensor& range_out(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnRange, acl_op::range_out(start, end, step, result));
+    TORCH_CHECK(std::isfinite(start.toDouble()) && std::isfinite(end.toDouble()), "unsupported range: start -> end",
+                OPS_ERROR(ErrCode::NOT_SUPPORT));
 
-  float start_value = op_plugin::utils::get_scalar_float_value(start);
-  float end_value = op_plugin::utils::get_scalar_float_value(end);
-  float step_value = op_plugin::utils::get_scalar_float_value(step);
-  
-  TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero");
-  TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
-      "upper bound and larger bound inconsistent with step sign");
-  TORCH_CHECK(isFloatingType(result.scalar_type()) || isIntegralType(result.scalar_type()),
-              "out datatype: ", result.scalar_type(), " unsupported datatype");
-  
-  int64_t output_size = get_output_size(start, end, step, result.scalar_type());
-  npu_preparation::check_tensor({ }, result, result.scalar_type(), result.sizes());
+    float start_value = op_plugin::utils::get_scalar_float_value(start);
+    float end_value = op_plugin::utils::get_scalar_float_value(end);
+    float step_value = op_plugin::utils::get_scalar_float_value(step);
 
-  if (result.numel() != output_size) {
-    result.resize_({output_size});
-  }
+    TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero", OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
+                "upper bound and larger bound inconsistent with step sign", OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(isFloatingType(result.scalar_type()) || isIntegralType(result.scalar_type()),
+                "out datatype: ", result.scalar_type(), " unsupported datatype", OPS_ERROR(ErrCode::TYPE));
 
-  EXEC_NPU_CMD(aclnnRange, start, end, step, result);
-  return result;
+    int64_t output_size = get_output_size(start, end, step, result.scalar_type());
+    npu_preparation::check_tensor({}, result, result.scalar_type(), result.sizes());
+
+    if (result.numel() != output_size) {
+        result.resize_({output_size});
+    }
+
+    EXEC_NPU_CMD(aclnnRange, start, end, step, result);
+    return result;
 }
 
 }  // namespace op_api

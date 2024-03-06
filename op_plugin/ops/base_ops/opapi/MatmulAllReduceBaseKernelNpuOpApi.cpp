@@ -38,9 +38,9 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
                   const c10::optional<at::Tensor> &dequant_scale)
 {
     // check shape: shape of x1:[s,m,k], shape of x2:[k,n], k_x1 == k_x2
-    TORCH_CHECK(x2.dim() == 2, "x2 needs to be 2D, but got: ", x2.dim(), "D");
+    TORCH_CHECK(x2.dim() == 2, "x2 needs to be 2D, but got: ", x2.dim(), "D", OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(x1.size(x1.dim() - 1) == x2.size(0), "K of x1 and x2 should be same, but they are x1_k: ",
-                x1.size(x1.dim() - 1), ", x2_k: ", x2.size(0));
+                x1.size(x1.dim() - 1), ", x2_k: ", x2.size(0), OPS_ERROR(ErrCode::VALUE));
 
     // check parameters.
     // aclnn apis for MC2 share one torch_npu api, therefore, each aclnn api only accepts parameters
@@ -48,23 +48,23 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
     // torch_npu api.
     // A8W8: antiquantScale and antiquantOffset should be None.
     if (isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
-        TORCH_CHECK(x1.scalar_type() == at::kChar, "x1 must be an int8 tensor for quant.");
-        TORCH_CHECK(x2.scalar_type() == at::kChar, "x2 must be an int8 tensor for quant.");
+        TORCH_CHECK(x1.scalar_type() == at::kChar, "x1 must be an int8 tensor for quant.", OPS_ERROR(ErrCode::TYPE));
+        TORCH_CHECK(x2.scalar_type() == at::kChar, "x2 must be an int8 tensor for quant.", OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK((!antiquant_scale.has_value() && !antiquant_offset.has_value()),
                     "when both dtype of x1 and dtype of x2 are equal to int8, "
-                    "antiquantScale, antiquantOffset should both be null");
+                    "antiquantScale, antiquantOffset should both be null", OPS_ERROR(ErrCode::TYPE));
     }
     // A16W8: dequantScale should be None.
     if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
-        TORCH_CHECK(x2.scalar_type() == at::kChar, "x2 must be an int8 tensor for weight quant.");
+        TORCH_CHECK(x2.scalar_type() == at::kChar, "x2 must be an int8 tensor for weight quant.", OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK((!dequant_scale.has_value()),
-                    "when only dtype of x2 is equal to int8, dequantScale should be null");
+                    "when only dtype of x2 is equal to int8, dequantScale should be null", OPS_ERROR(ErrCode::TYPE));
     }
     // MC2 without quantization. antiquantScale and antiquantOffset and dequantScale should be None.
     if (!isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type())) {
         TORCH_CHECK((!antiquant_scale.has_value() && !antiquant_offset.has_value() && !dequant_scale.has_value()),
                     "when neither dtype of x1 or dtype of x2 is equal to int8, "
-                    "antiquantScale, antiquantOffset and dequantScale should all be null");
+                    "antiquantScale, antiquantOffset and dequantScale should all be null", OPS_ERROR(ErrCode::TYPE));
     }
 
     // check x3 dtype and shape
@@ -75,9 +75,9 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
         auto output_dtype = get_output_dtype(x1, dequant_scale);
         const at::Tensor &x3_real = x3.value();
         TORCH_CHECK(x3_real.sizes().equals(output_size), "x3 with shape ", x3_real.sizes(),
-                    " doesn't match the output shape ", output_size);
+                    " doesn't match the output shape ", output_size, OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(x3_real.scalar_type() == output_dtype, "x3 with dtype ", x3_real.scalar_type(),
-                    " doesn't match the output dtype ", output_dtype);
+                    " doesn't match the output dtype ", output_dtype, OPS_ERROR(ErrCode::PARAM));
     }
 }
 

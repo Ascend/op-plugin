@@ -67,9 +67,11 @@ std::tuple<at::Tensor &, at::Tensor &> linalg_qr_out(const at::Tensor &self, c10
 {
     DO_COMPATIBILITY(aclnnLinalgQr, acl_op::linalg_qr_out(self, mode, Q, R));
     // 输入至少为2维tensor
-    TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim());
+    TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ",
+                self.dim(), OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(mode_valid(mode),
-                "qr received unrecognized mode but expected one of 'reduced'(default), 'r', or 'complete'");
+                "qr received unrecognized mode but expected one of 'reduced'(default), 'r', or 'complete'",
+                OPS_ERROR(ErrCode::TYPE));
     auto sizes = linalg_qr_infer_shape(self, mode);
     npu_preparation::check_tensor({self}, Q, self, std::get<0>(sizes));
     npu_preparation::check_tensor({self}, R, self, std::get<1>(sizes));
@@ -81,8 +83,9 @@ std::tuple<at::Tensor &, at::Tensor &> linalg_qr_out(const at::Tensor &self, c10
 std::tuple<at::Tensor, at::Tensor> linalg_qr(const at::Tensor &self, c10::string_view mode)
 {
     DO_COMPATIBILITY(aclnnLinalgQr, acl_op::linalg_qr(self, mode));
-    TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim());
-    TORCH_CHECK(mode_valid(mode), "Mode should be reduced, complete or r");
+    TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ",
+                self.dim(), OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(mode_valid(mode), "Mode should be reduced, complete or r", OPS_ERROR(ErrCode::TYPE));
     auto sizes = linalg_qr_infer_shape(self, mode);
     at::Tensor Q = npu_preparation::apply_tensor_without_format(std::get<0>(sizes), self.options());
     at::Tensor R = npu_preparation::apply_tensor_without_format(std::get<1>(sizes), self.options());

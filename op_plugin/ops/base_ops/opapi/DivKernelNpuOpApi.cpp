@@ -22,11 +22,12 @@ using npu_preparation = at_npu::native::OpPreparation;
 static const int MODE_TRUNC = 1;
 static const int MODE_FLOOR = 2;
 
-static void check_rounding_mode_npu(c10::optional<c10::string_view> rounding_mode) {
-  TORCH_CHECK((!rounding_mode.has_value() || *rounding_mode == "trunc" || *rounding_mode == "floor"),
-              "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
-              "but found '",
-              *rounding_mode, "'");
+static void check_rounding_mode_npu(c10::optional<c10::string_view> rounding_mode)
+{
+    TORCH_CHECK((!rounding_mode.has_value() || *rounding_mode == "trunc" || *rounding_mode == "floor"),
+                "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
+                "but found '",
+                *rounding_mode, "'", OPS_ERROR(ErrCode::VALUE));
 }
 
 static at::Tensor& div_out_npu_opapi_nocheck(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
@@ -69,36 +70,37 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
 }
 
 at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, c10::optional<c10::string_view> rounding_mode,
-                    at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnDivMods, acl_op::div_out(self, other, rounding_mode, result));
-  DO_COMPATIBILITY(aclnnDivMod, acl_op::div_out(self, other, rounding_mode, result));
-  if (rounding_mode.has_value() && *rounding_mode != "floor" && *rounding_mode != "trunc") {
-    TORCH_CHECK(false,
-                "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
-                "but found '",
-                *rounding_mode, "'");
-  }
+                    at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnDivMods, acl_op::div_out(self, other, rounding_mode, result));
+    DO_COMPATIBILITY(aclnnDivMod, acl_op::div_out(self, other, rounding_mode, result));
+    if (rounding_mode.has_value() && *rounding_mode != "floor" && *rounding_mode != "trunc") {
+        TORCH_CHECK(false,
+                    "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
+                    "but found '",
+                    *rounding_mode, "'", OPS_ERROR(ErrCode::VALUE));
+    }
 
-  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::ScalarType result_type = at::native::result_type(self, other);
-  at::Tensor self_cp = self_tensor_to_device(self, result_type);
-  npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
+    auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::ScalarType result_type = at::native::result_type(self, other);
+    at::Tensor self_cp = self_tensor_to_device(self, result_type);
+    npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
 
-  int mode = 0;
-  if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    mode = MODE_FLOOR;
-  } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
-    mode = MODE_TRUNC;
-  }
+    int mode = 0;
+    if (rounding_mode.has_value() && *rounding_mode == "floor") {
+        mode = MODE_FLOOR;
+    } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
+        mode = MODE_TRUNC;
+    }
 
-  // calculate the output result of the NPU
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
-    c10::Scalar others = other.item();
-    EXEC_NPU_CMD(aclnnDivMods, self_cp, others, mode, result);
-  } else {
-    EXEC_NPU_CMD(aclnnDivMod, self_cp, other, mode, result);
-  }
-  return result;
+    // calculate the output result of the NPU
+    if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+        c10::Scalar others = other.item();
+        EXEC_NPU_CMD(aclnnDivMods, self_cp, others, mode, result);
+    } else {
+        EXEC_NPU_CMD(aclnnDivMod, self_cp, other, mode, result);
+    }
+    return result;
 }
 
 at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
@@ -122,45 +124,46 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
   return result;
 }
 
-at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<c10::string_view> rounding_mode) {
-  DO_COMPATIBILITY(aclnnDivMods, acl_op::div(self, other, rounding_mode));
-  DO_COMPATIBILITY(aclnnDivMod, acl_op::div(self, other, rounding_mode));
-  if (rounding_mode.has_value() && *rounding_mode != "floor" && *rounding_mode != "trunc") {
-    TORCH_CHECK(false,
-                "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
-                "but found '",
-                *rounding_mode, "'");
-  }
-
-  // calculate the output size
-  bool isSelfWrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
-  at::Tensor outputTensor = isSelfWrapped ? other : self;
-
-  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::ScalarType high_type = at::native::result_type(self, other);
-  at::Tensor self_cp = self_tensor_to_device(self, high_type);
-
-  // construct the output tensor of the NPU
-  int mode = 0;
-  if (rounding_mode.has_value() && *rounding_mode == "floor") {
-    mode = MODE_FLOOR;
-  } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
-    mode = MODE_TRUNC;
-  } else {
-    if (!isFloatingType(high_type)) {
-      high_type = at::ScalarType::Float;
+at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<c10::string_view> rounding_mode)
+{
+    DO_COMPATIBILITY(aclnnDivMods, acl_op::div(self, other, rounding_mode));
+    DO_COMPATIBILITY(aclnnDivMod, acl_op::div(self, other, rounding_mode));
+    if (rounding_mode.has_value() && *rounding_mode != "floor" && *rounding_mode != "trunc") {
+        TORCH_CHECK(false,
+                    "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
+                    "but found '",
+                    *rounding_mode, "'", OPS_ERROR(ErrCode::VALUE));
     }
-  }
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, outputTensor.options().dtype(high_type));
 
-  // executing the NPU operator
-  if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
-    c10::Scalar others = other.item();
-    EXEC_NPU_CMD(aclnnDivMods, self_cp, others, mode, result);
-  } else {
-    EXEC_NPU_CMD(aclnnDivMod, self_cp, other, mode, result);
-  }
-  return result;
+    // calculate the output size
+    bool isSelfWrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
+    at::Tensor outputTensor = isSelfWrapped ? other : self;
+
+    auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::ScalarType high_type = at::native::result_type(self, other);
+    at::Tensor self_cp = self_tensor_to_device(self, high_type);
+
+    // construct the output tensor of the NPU
+    int mode = 0;
+    if (rounding_mode.has_value() && *rounding_mode == "floor") {
+        mode = MODE_FLOOR;
+    } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
+        mode = MODE_TRUNC;
+    } else {
+        if (!isFloatingType(high_type)) {
+            high_type = at::ScalarType::Float;
+        }
+    }
+    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, outputTensor.options().dtype(high_type));
+
+    // executing the NPU operator
+    if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
+        c10::Scalar others = other.item();
+        EXEC_NPU_CMD(aclnnDivMods, self_cp, others, mode, result);
+    } else {
+        EXEC_NPU_CMD(aclnnDivMod, self_cp, other, mode, result);
+    }
+    return result;
 }
 
 static at::Tensor& inplace_div_out_npu_no_check(at::Tensor& self, const at::Tensor& other) {

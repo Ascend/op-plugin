@@ -97,22 +97,23 @@ at::Tensor ctc_loss(
     const at::Tensor& target_lengths,
     int64_t blank,
     int64_t reduction,
-    bool zero_infinity) {
-  DO_COMPATIBILITY(aclnnCtcLoss, acl_op::ctc_loss(log_probs, targets, input_lengths, target_lengths, blank, reduction,
-                                                  zero_infinity));
-  TORCH_CHECK(isIntegralType(input_lengths.scalar_type(), false), "input_lengths must be integral");
-  TORCH_CHECK(isIntegralType(target_lengths.scalar_type(), false), "target_lengths must be integral");
+    bool zero_infinity)
+{
+    DO_COMPATIBILITY(aclnnCtcLoss, acl_op::ctc_loss(log_probs, targets, input_lengths, target_lengths, blank, reduction,
+                                                    zero_infinity));
+    TORCH_CHECK(isIntegralType(input_lengths.scalar_type(), false), "input_lengths must be integral", OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(isIntegralType(target_lengths.scalar_type(), false), "target_lengths must be integral", OPS_ERROR(ErrCode::TYPE));
 
-  at::Tensor input_lengths_tensor = input_lengths.to(at::Device(at::kCPU), at::kLong).contiguous();
-  at::Tensor target_lengths_tensor = target_lengths.to(at::Device(at::kCPU), at::kLong).contiguous();
+    at::Tensor input_lengths_tensor = input_lengths.to(at::Device(at::kCPU), at::kLong).contiguous();
+    at::Tensor target_lengths_tensor = target_lengths.to(at::Device(at::kCPU), at::kLong).contiguous();
 
-  auto input_length_ptr = input_lengths_tensor.data_ptr<int64_t>();
-  auto target_length_ptr = target_lengths_tensor.data_ptr<int64_t>();
-  TORCH_CHECK(input_length_ptr != nullptr, "input_lengths is null")
-  TORCH_CHECK(target_length_ptr != nullptr, "target_lengths is null")
-  at::IntArrayRef input_lengths_list(input_length_ptr, input_lengths_tensor.numel());
-  at::IntArrayRef target_lengths_list(target_length_ptr, target_lengths_tensor.numel());
+    auto input_length_ptr = input_lengths_tensor.data_ptr<int64_t>();
+    auto target_length_ptr = target_lengths_tensor.data_ptr<int64_t>();
+    TORCH_CHECK(input_length_ptr != nullptr, "input_lengths is null", OPS_ERROR(ErrCode::PTR))
+    TORCH_CHECK(target_length_ptr != nullptr, "target_lengths is null", OPS_ERROR(ErrCode::PTR))
+    at::IntArrayRef input_lengths_list(input_length_ptr, input_lengths_tensor.numel());
+    at::IntArrayRef target_lengths_list(target_length_ptr, target_lengths_tensor.numel());
 
-  return at::ctc_loss(log_probs, targets, input_lengths_list, target_lengths_list, blank, reduction, zero_infinity);
+    return at::ctc_loss(log_probs, targets, input_lengths_list, target_lengths_list, blank, reduction, zero_infinity);
 }
 } // namespace op_api

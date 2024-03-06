@@ -22,19 +22,20 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at::Generator> generator) {
-  DO_COMPATIBILITY(aclnnInplaceNormal, acl_op::normal_(self, mean, std, generator));
-  TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std);
-  npu_preparation::check_tensor({}, self, self, self.sizes());
-  auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                    at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = static_cast<int64_t>(pair.first);
-  const int64_t offset = static_cast<int64_t>(pair.second);
-  float mean_cast = static_cast<float>(mean);
-  float rstd_cast = static_cast<float>(std);
-  EXEC_NPU_CMD(aclnnInplaceNormal, self, mean_cast, rstd_cast, seed, offset);
-  return self;
+at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at::Generator> generator)
+{
+    DO_COMPATIBILITY(aclnnInplaceNormal, acl_op::normal_(self, mean, std, generator));
+    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
+    npu_preparation::check_tensor({}, self, self, self.sizes());
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
+                                                                      at_npu::detail::getDefaultNPUGenerator());
+    auto pair = gen->philox_engine_inputs(10);
+    const int64_t seed = static_cast<int64_t>(pair.first);
+    const int64_t offset = static_cast<int64_t>(pair.second);
+    float mean_cast = static_cast<float>(mean);
+    float rstd_cast = static_cast<float>(std);
+    EXEC_NPU_CMD(aclnnInplaceNormal, self, mean_cast, rstd_cast, seed, offset);
+    return self;
 }
 
 /* TensorTensor */
@@ -67,32 +68,34 @@ at::Tensor normal(const at::Tensor &mean, const at::Tensor &std, c10::optional<a
 
 /* TensorFloat */
 at::Tensor& normal_out(const at::Tensor &mean, double std, c10::optional<at::Generator> generator,
-                       at::Tensor &result) {
-  DO_COMPATIBILITY(aclnnNormalTensorFloat, acl_op::normal_out(mean, std, generator, result));
-  TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std);
-  npu_preparation::check_tensor({mean}, result, result);
-  auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                    at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = static_cast<int64_t>(pair.first);
-  const int64_t offset = static_cast<int64_t>(pair.second);
-  float rstd_cast = static_cast<float>(std);
-  EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, result);
-  return result;
+                       at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnNormalTensorFloat, acl_op::normal_out(mean, std, generator, result));
+    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
+    npu_preparation::check_tensor({mean}, result, result);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
+                                                                      at_npu::detail::getDefaultNPUGenerator());
+    auto pair = gen->philox_engine_inputs(10);
+    const int64_t seed = static_cast<int64_t>(pair.first);
+    const int64_t offset = static_cast<int64_t>(pair.second);
+    float rstd_cast = static_cast<float>(std);
+    EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, result);
+    return result;
 }
 
-at::Tensor normal(const at::Tensor &mean, double std, c10::optional<at::Generator> generator) {
-  DO_COMPATIBILITY(aclnnNormalTensorFloat, acl_op::normal(mean, std, generator));
-  TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(mean);
-  auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                    at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = static_cast<int64_t>(pair.first);
-  const int64_t offset = static_cast<int64_t>(pair.second);
-  float rstd_cast = static_cast<float>(std);
-  EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, result);
-  return result;
+at::Tensor normal(const at::Tensor &mean, double std, c10::optional<at::Generator> generator)
+{
+    DO_COMPATIBILITY(aclnnNormalTensorFloat, acl_op::normal(mean, std, generator));
+    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(mean);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
+                                                                      at_npu::detail::getDefaultNPUGenerator());
+    auto pair = gen->philox_engine_inputs(10);
+    const int64_t seed = static_cast<int64_t>(pair.first);
+    const int64_t offset = static_cast<int64_t>(pair.second);
+    float rstd_cast = static_cast<float>(std);
+    EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, result);
+    return result;
 }
 
 /* FloatTensor */
@@ -125,19 +128,20 @@ at::Tensor normal(double mean, const at::Tensor &std, c10::optional<at::Generato
 
 /* FloatFloat */
 at::Tensor& normal_out(double mean, double std, at::IntArrayRef size,
-                       c10::optional<at::Generator> generator, at::Tensor &result) {
-  DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal_out(mean, std, size, generator, result));
-  TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std);
-  npu_preparation::check_tensor({}, result, result, size);
-  auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                    at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen->philox_engine_inputs(10);
-  const int64_t seed = static_cast<int64_t>(pair.first);
-  const int64_t offset = static_cast<int64_t>(pair.second);
-  float mean_cast = static_cast<float>(mean);
-  float rstd_cast = static_cast<float>(std);
-  EXEC_NPU_CMD(aclnnNormalFloatFloat, mean_cast, rstd_cast, seed, offset, result);
-  return result;
+                       c10::optional<at::Generator> generator, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal_out(mean, std, size, generator, result));
+    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
+    npu_preparation::check_tensor({}, result, result, size);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
+                                                                      at_npu::detail::getDefaultNPUGenerator());
+    auto pair = gen->philox_engine_inputs(10);
+    const int64_t seed = static_cast<int64_t>(pair.first);
+    const int64_t offset = static_cast<int64_t>(pair.second);
+    float mean_cast = static_cast<float>(mean);
+    float rstd_cast = static_cast<float>(std);
+    EXEC_NPU_CMD(aclnnNormalFloatFloat, mean_cast, rstd_cast, seed, offset, result);
+    return result;
 }
 
 at::Tensor normal(double mean, double std,

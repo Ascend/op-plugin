@@ -29,7 +29,7 @@ at::Tensor &avg_pool2d_out_npu_nocheck_opapi(at::Tensor &result, const at::Tenso
     int64_t s_divisor_override = 0;
     if (divisor_override.has_value()) {
         s_divisor_override = divisor_override.value();
-        TORCH_CHECK(s_divisor_override != 0, "divisor must be not zero");
+        TORCH_CHECK(s_divisor_override != 0, "divisor must be not zero", OPS_ERROR(ErrCode::VALUE));
     }
 
     const int8_t cube_math_type = at_npu::native::OpPreparation::get_cube_math_type(false);
@@ -44,7 +44,7 @@ small_vector calc_output_size_with_generalized_attrs(const at::Tensor &self, at:
                                                      bool count_include_pad, c10::optional<int64_t> divisor_override)
 {
     // generalize kernels, strides and paddings to 2D-shape
-    TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints");
+    TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints", OPS_ERROR(ErrCode::PARAM));
     const int64_t k_h = kernel_size[0];
     const int64_t k_w = kernel_size.size() == 1 ? k_h : kernel_size[1];
     c10::SmallVector<int64_t, op_infer::SIZE> kernel_sizes = {k_h, k_w};
@@ -53,14 +53,15 @@ small_vector calc_output_size_with_generalized_attrs(const at::Tensor &self, at:
     const int64_t s_h = stride.empty() ? k_h : stride[0];
     const int64_t s_w = stride.empty() ? k_w : stride.size() == 1 ? s_h : stride[1];
     c10::SmallVector<int64_t, op_infer::SIZE> stride_sizes = {s_h, s_w};
-    TORCH_CHECK(s_h != 0 && s_w != 0, "stride should not be zero");
+    TORCH_CHECK(s_h != 0 && s_w != 0, "stride should not be zero", OPS_ERROR(ErrCode::VALUE));
     at::IntArrayRef strides = at::IntArrayRef(stride_sizes);
 
     const int64_t pad_h = padding[0];
     const int64_t pad_w = padding.size() == 1 ? pad_h : padding[1];
     c10::SmallVector<int64_t, op_infer::SIZE> padding_sizes = {pad_h, pad_w};
-    TORCH_CHECK(pad_h >= 0 && pad_w >= 0, "pad should not be less than 0");
-    TORCH_CHECK(pad_h <= k_h / 2 && pad_w <= k_w / 2, "pad should be smaller than or equal to half of kernel size");
+    TORCH_CHECK(pad_h >= 0 && pad_w >= 0, "pad should not be less than 0", OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(pad_h <= k_h / 2 && pad_w <= k_w / 2, "pad should be smaller than or equal to half of kernel size",
+        OPS_ERROR(ErrCode::VALUE));
     at::IntArrayRef paddings = at::IntArrayRef(padding_sizes);
 
     auto output_size = op_infer::avg_pool2d_npu_output_size(self, kernels, strides, paddings, ceil_mode,

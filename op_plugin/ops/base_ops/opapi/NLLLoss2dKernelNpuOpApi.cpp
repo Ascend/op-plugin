@@ -26,7 +26,7 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nll
     const at::Tensor& self, const at::Tensor& target, int64_t reduction, int64_t ignore_index) {
     c10::SmallVector<int64_t, SIZE> outputSize;
     c10::SmallVector<int64_t, SIZE> totalWeightSize;
-    TORCH_CHECK(self.dim() >= 4, "self dim has to be more than or equal 4");
+    TORCH_CHECK(self.dim() >= 4, "self dim has to be more than or equal 4", OPS_ERROR(ErrCode::PARAM));
     if (reduction == at::Reduction::None) {
         outputSize = {self.size(0), self.size(2), self.size(3)};
     }

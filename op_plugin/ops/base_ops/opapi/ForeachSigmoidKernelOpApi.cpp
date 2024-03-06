@@ -28,7 +28,7 @@ void _foreach_sigmoid_(const at::TensorList self)
 
     auto scalar_type = self[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
-        TORCH_CHECK(false, "input must be half or float");
+        TORCH_CHECK(false, "input must be half or float", OPS_ERROR(ErrCode::TYPE));
     }
     EXEC_NPU_CMD(aclnnForeachSigmoid, self, self);
 }
@@ -43,7 +43,7 @@ std::vector<at::Tensor> _foreach_sigmoid(const at::TensorList self)
 
     auto scalar_type = self[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
-        TORCH_CHECK(false, "input must be half or float");
+        TORCH_CHECK(false, "input must be half or float", OPS_ERROR(ErrCode::TYPE));
     }
 
     // construct output tensorlist
