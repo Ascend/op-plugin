@@ -27,10 +27,14 @@ std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(const at::Tensor &i
                                                              at::IntArrayRef padding, at::IntArrayRef dilation,
                                                              int64_t groups, int64_t deformable_groups, bool modulated)
 {
-    TORCH_CHECK(input.dim() >= 4, "input has to be more than 4D, but got Tensor of dimension ", input.dim());
-    TORCH_CHECK(offset.dim() >= 4, "offset has to more than 4D, but got Tensor of dimension ", offset.dim());
-    TORCH_CHECK(stride.size() >= 4, "stride has to contain more than 4 elements, but got ", stride.size());
-    TORCH_CHECK(dilation.size() >= 4, "dilation has to contain more than 4 elements, but got ", dilation.size());
+    TORCH_CHECK(input.dim() >= 4, "input has to be more than 4D, but got Tensor of dimension ", input.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(offset.dim() >= 4, "offset has to more than 4D, but got Tensor of dimension ", offset.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= 4, "stride has to contain more than 4 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 4, "dilation has to contain more than 4 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
     const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
     at::Tensor bias_fp32 = (bias.defined() && bias.dtype() != at::kFloat) ?
                                at_npu::native::custom_ops::npu_dtype_cast(bias, at::kFloat) :
@@ -38,7 +42,8 @@ std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(const at::Tensor &i
     auto output_size = op_infer::deformable_conv2d_npu_output_size(
         input, weight, offset, bias, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
     TORCH_CHECK(output_size.size() >= 4,
-                "output_size has to contain more than 4 elements, but got Tensor of dimension ", output_size.size());
+        "output_size has to contain more than 4 elements, but got Tensor of dimension ", output_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
     /*
      * DeformableOffsets and DeformableOffsetsGrad only support NHWC and don't support binary.
      * FE will insert Transpose before DeformableOffsets and DeformableOffsetsGrad.
@@ -107,11 +112,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_deformable_conv2d
     at::IntArrayRef padding, at::IntArrayRef dilation, int64_t groups, int64_t deformable_groups, bool modulated)
 {
     TORCH_CHECK(input_ori.dim() >= 4, "input_ori has to be more than 4D, but got Tensor of dimension ",
-                input_ori.dim());
+        input_ori.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(offset_ori.dim() >= 4, "offset_ori has to more than 4D, but got Tensor of dimension ",
-                offset_ori.dim());
-    TORCH_CHECK(stride.size() >= 4, "stride has to contain more than 4 elements, but got ", stride.size());
-    TORCH_CHECK(dilation.size() >= 4, "dilation has to contain more than 4 elements, but got ", dilation.size());
+        offset_ori.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= 4, "stride has to contain more than 4 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 4, "dilation has to contain more than 4 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
     at::Tensor input = (input_ori.dtype() != at::kFloat) ?
                            at_npu::native::custom_ops::npu_dtype_cast(input_ori, at::kFloat) :
                            input_ori;

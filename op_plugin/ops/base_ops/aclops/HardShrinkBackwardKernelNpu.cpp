@@ -25,8 +25,9 @@ at::Tensor& hardshrink_backward_out(
     const at::Tensor& self,
     const at::Scalar& lambd,
     at::Tensor& grad_input) {
-  TORCH_CHECK(false, "hardshrink_backward.grad_input is not supported.");
-  return grad_input;
+    TORCH_CHECK(false, "hardshrink_backward.grad_input is not supported."
+        + OPS_ERROR(ErrCode::NOT_SUPPORT));
+    return grad_input;
 }
 
 at::Tensor hardshrink_backward(

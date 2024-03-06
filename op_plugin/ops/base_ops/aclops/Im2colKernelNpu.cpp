@@ -28,17 +28,22 @@ void im2col_shape_check(const at::Tensor &self, at::IntArrayRef kernel_size, at:
     bool valid_dims = self.size(1) != 0 && self.size(2) != 0;
     int64_t ndim = self.dim();
     TORCH_CHECK((ndim == 3 && self.size(0) && valid_dims) || (ndim == 4 && valid_dims && self.size(3) != 0),
-                "Expected 3D or 4D (batch mode) tensor with possibly 0 batch size and other non-zero dimensions for "
-                "input, but got: ",
-                self.sizes());
+        "Expected 3D or 4D (batch mode) tensor with possibly 0 batch size and other non-zero dimensions for "
+        "input, but got: ",
+        self.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 2,
-                "im2col: kernel_size must either be a single int, or a tuple of two ints");
+        "im2col: kernel_size must either be a single int, or a tuple of two ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.empty() || stride.size() == 1 || stride.size() == 2,
-                "im2col: stride must either be omitted, a single int, or a tuple of two ints");
+        "im2col: stride must either be omitted, a single int, or a tuple of two ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.empty() || dilation.size() == 1 || dilation.size() == 2,
-                "im2col: dilation must either be omitted, a single int, or a tuple of two ints");
+        "im2col: dilation must either be omitted, a single int, or a tuple of two ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.empty() || padding.size() == 1 || padding.size() == 2,
-                "im2col: padding must either be omitted, a single int, or a tuple of two ints");
+        "im2col: padding must either be omitted, a single int, or a tuple of two ints"
+        + OPS_ERROR(ErrCode::PARAM));
 }
 
 at::Tensor &im2col_out_nocheck(at::Tensor &result, const at::Tensor &self, at::IntArrayRef kernel_size,

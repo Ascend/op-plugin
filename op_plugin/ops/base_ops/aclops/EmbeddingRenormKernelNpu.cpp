@@ -111,7 +111,8 @@ at::Tensor& embedding_renorm_(
     at::checkScalarType("embedding_renorm_", indices_arg, at::kLong);
 
     auto num_indices = indices.numel();
-    TORCH_CHECK(num_indices >= 1, "indices.numel() must be greater than or equal to 1, but got ", num_indices);
+    TORCH_CHECK(num_indices >= 1, "indices.numel() must be greater than or equal to 1, but got ", num_indices,
+        OPS_ERROR(ErrCode::PARAM));
     at::native::resize_(indices, num_indices);
 
     npu_preparation::CheckMemory({self, indices}, {self});

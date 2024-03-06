@@ -74,10 +74,11 @@ std::tuple<at::Tensor, at::Tensor> dropout_out_nocheck(
   at::Tensor self_cp = npu_utils::format_contiguous(self);
   TORCH_CHECK(
       p >= 0 && p <= 1,
-      "dropout probability has to be between 0 and 1, but got ", p);
+      "dropout probability has to be between 0 and 1, but got ", p,
+      OPS_ERROR(ErrCode::VALUE));
   TORCH_CHECK(
       at::isFloatingType(self_cp.scalar_type()),
-      "dropout only supports floating-point dtypes");
+      "dropout only supports floating-point dtypes" + OPS_ERROR(ErrCode::TYPE));
 
   double retain = 1. - p;
   at::Scalar prob = at::Scalar(retain);
@@ -106,10 +107,10 @@ at::Tensor _dropout_with_byte_mask_backward(
     double scale) {
   TORCH_CHECK(
       at::isFloatingType(grad_output.scalar_type()),
-      "dropoutbackward only supports floating-point dtypes");
+      "dropoutbackward only supports floating-point dtypes" + OPS_ERROR(ErrCode::TYPE));
   TORCH_CHECK(
       mask.scalar_type() == at::ScalarType::Byte,
-      "mask should be torch.uint8 dtype");
+      "mask should be torch.uint8 dtype" + OPS_ERROR(ErrCode::TYPE));
   double retain = 1. - scale;
   at::Tensor result = npu_preparation::apply_tensor(grad_output);
 
@@ -134,7 +135,7 @@ std::tuple<at::Tensor, at::Tensor> _dropout_with_byte_mask(
 at::Tensor dropout_with_byte_mask(const at::Tensor& self, double p, bool train) {
   TORCH_CHECK(
       torch_npu::utils::is_npu(self),
-      "dropout_with_byte_mask only supports device for NPU!");
+      "dropout_with_byte_mask only supports device for NPU!" + OPS_ERROR(ErrCode::NOT_SUPPORT));
   if (p == 0 || !train || self.numel() == 0) {
     return self;
   }

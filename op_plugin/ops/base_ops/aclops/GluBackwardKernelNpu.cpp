@@ -22,11 +22,12 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 void glu_grad_npu_check(const at::Tensor& self, int64_t dim) {
-  TORCH_CHECK(self.dim() > 0, "glu does not support 0-dimensional Tensors");
-  auto wrap_dim = at::maybe_wrap_dim(dim, self.dim());
-  const int64_t n_in = self.size(wrap_dim);
-  TORCH_CHECK(n_in % 2 == 0, "Halving dimension must be even, but dimension ",
-              wrap_dim, " is size ", n_in);
+    TORCH_CHECK(self.dim() > 0, "glu does not support 0-dimensional Tensors"
+        + OPS_ERROR(ErrCode::NOT_SUPPORT));
+    auto wrap_dim = at::maybe_wrap_dim(dim, self.dim());
+    const int64_t n_in = self.size(wrap_dim);
+    TORCH_CHECK(n_in % 2 == 0, "Halving dimension must be even, but dimension ",
+        wrap_dim, " is size ", n_in, OPS_ERROR(ErrCode::NOT_SUPPORT));
 }
 
 at::Tensor& glu_grad_npu_out_nocheck(

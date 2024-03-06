@@ -33,7 +33,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
     int64_t group,
     std::array<bool, DIM> grad_input_mask)
 {
-    TORCH_CHECK(group != 0, "group = 0 for group_norm_backward, please check!")
+    TORCH_CHECK(group != 0, "group = 0 for group_norm_backward, please check!"
+        + OPS_ERROR(ErrCode::VALUE));
     at::Tensor dY_reshaped_3;
     at::Tensor X_reshaped_3;
     if (X.dim() != DIM) {

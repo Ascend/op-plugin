@@ -84,7 +84,8 @@ at::Tensor& eq_out(
 
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
-        self.device(), " and ", other.device());
+        self.device(), " and ", other.device(),
+        OPS_ERROR(ErrCode::PARAM));
 
     auto calculate_type = get_eq_calculate_type(self, other);
     auto self_cast = op_plugin::utils::get_cast_input(self, calculate_type);
@@ -149,7 +150,8 @@ at::Tensor eq(
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
-        self.device(), " and ", other.device());
+        self.device(), " and ", other.device(),
+        OPS_ERROR(ErrCode::PARAM));
 
     auto calculate_type = get_eq_calculate_type(self, other);
     auto self_cast = op_plugin::utils::get_cast_input(self, calculate_type);

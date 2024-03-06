@@ -246,8 +246,9 @@ at::Tensor &_index_put_impl_(at::Tensor &self, const c10::List<c10::optional<at:
     }
     auto info = op_plugin::AdvanceIndex::make_info(self, indices_expand_list);
     TORCH_CHECK(op_plugin::AdvanceIndex::is_expandable_to(value.sizes(), info.src.sizes()),
-                "shape mismatch: value tensor of shape ", value.sizes(),
-                " cannot be broadcast to indexing result of shape ", info.src.sizes());
+        "shape mismatch: value tensor of shape ", value.sizes(),
+        " cannot be broadcast to indexing result of shape ", info.src.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
     for (c10::optional<at::Tensor> index_opt : indices_expand) {
         if (index_opt.has_value()) {
             const auto &index = *index_opt;

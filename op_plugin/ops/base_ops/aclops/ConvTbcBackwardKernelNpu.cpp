@@ -21,9 +21,12 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> conv_tbc_backward(const at::Tenso
                                                                  const at::Tensor &weight, const at::Tensor &bias,
                                                                  int64_t pad)
 {
-    TORCH_CHECK(input.dim() >= 3, "input has to be more than 3D, but got Tensor of dimension ", input.dim());
-    TORCH_CHECK(self.dim() >= 3, "self has to be more than 3D, but got Tensor of dimension ", self.dim());
-    TORCH_CHECK(weight.dim() >= 3, "weight has to be more than 3D, but got Tensor of dimension ", weight.dim());
+    TORCH_CHECK(input.dim() >= 3, "input has to be more than 3D, but got Tensor of dimension ", input.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.dim() >= 3, "self has to be more than 3D, but got Tensor of dimension ", self.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 3, "weight has to be more than 3D, but got Tensor of dimension ", weight.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     auto output =
         acl_op::npu_conv2d_backward(input.permute({1, 2, 0}).unsqueeze(2), self.permute({1, 2, 0}).unsqueeze(2),
                                     weight.permute({2, 1, 0}).unsqueeze(2), {1, 1}, {0, pad}, {1, 1}, 1, {1, 1, 1});

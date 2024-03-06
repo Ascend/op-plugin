@@ -26,9 +26,12 @@ at::Tensor &conv_transpose2d_backward_input_out_nocheck(at::Tensor &grad_input, 
                                                         at::IntArrayRef stride, at::IntArrayRef dilation,
                                                         int64_t groups)
 {
-    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size());
-    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size());
+    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
     // constructs the input and output NPUTensorDesc
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
@@ -55,9 +58,12 @@ at::Tensor &conv_transpose2d_backward_weight_out_nocheck(at::Tensor &grad_weight
                                                          at::IntArrayRef stride, at::IntArrayRef dilation,
                                                          int64_t groups)
 {
-    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size());
-    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size());
+    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, N> dimList = op_infer::array_to_small_vector(weight.sizes());
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
@@ -86,7 +92,7 @@ at::Tensor &conv_transpose2d_backward_bias_out_nocheck(at::Tensor &grad_bias, co
                                                        at::IntArrayRef stride, at::IntArrayRef dilation, int64_t groups)
 {
     TORCH_CHECK(grad_output.dim() >= 2, "grad_output has to be more than 2D, but got Tensor of dimension ",
-                grad_output.dim());
+        grad_output.dim(), OPS_ERROR(ErrCode::PARAM));
     at::Tensor grad_view = grad_output.contiguous().view({grad_output.size(0), grad_output.size(1), -1});
     acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0, 2}, false, grad_view.scalar_type(), grad_bias);
     return grad_bias;
@@ -117,11 +123,16 @@ c10::SmallVector<int64_t, SIZE> convolution_transpose3d_npu_output_size(
     const at::Tensor &input, const at::Tensor &weight, const at::Tensor &bias, at::IntArrayRef padding,
     at::IntArrayRef output_padding, at::IntArrayRef stride, at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(input.dim() >= 5, "input has to be more than 5D, but got Tensor of dimension ", input.dim());
-    TORCH_CHECK(weight.dim() >= 5, "weight has to be more than 5D, but got Tensor of dimension ", weight.dim());
-    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size());
-    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size());
-    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size());
+    TORCH_CHECK(input.dim() >= 5, "input has to be more than 5D, but got Tensor of dimension ", input.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 5, "weight has to be more than 5D, but got Tensor of dimension ", weight.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t D = input.size(2);
@@ -134,9 +145,9 @@ c10::SmallVector<int64_t, SIZE> convolution_transpose3d_npu_output_size(
     int64_t Ho = (H - 1) * stride[1] - 2 * padding[1] + dilation[1] * (kernel_size[1] - 1) + output_padding[1] + 1;
     int64_t Wo = (W - 1) * stride[2] - 2 * padding[2] + dilation[2] * (kernel_size[2] - 1) + output_padding[2] + 1;
 
-    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do);
-    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho);
-    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo);
+    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do, OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho, OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo, OPS_ERROR(ErrCode::VALUE));
 
     c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Do, Ho, Wo};
     return output_size;
@@ -147,9 +158,12 @@ at::Tensor &convolution_transpose3d_out_npu_nocheck(at::Tensor &result, const at
                                                     at::IntArrayRef padding, at::IntArrayRef output_padding,
                                                     at::IntArrayRef stride, at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size());
-    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size());
+    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1], padding[2], padding[2]};
     c10::SmallVector<int64_t, N> outputpadding = {0, 0, 0, 0, 0};

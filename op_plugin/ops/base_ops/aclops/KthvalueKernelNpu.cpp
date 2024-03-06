@@ -38,10 +38,12 @@ void kthvalue_shape_modify(
   if (values.defined()) {
     TORCH_CHECK(
         values.dtype() == self.dtype(),
-        "output values must be of same type as input");
+        "output values must be of same type as input"
+        + OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(
         values.device() == self.device(),
-        "output values must be on same values as input");
+        "output values must be on same values as input"
+        + OPS_ERROR(ErrCode::PARAM));
     values.resize_(output_size);
   } else {
     values = at::empty(output_size, self_rename.options());
@@ -50,10 +52,12 @@ void kthvalue_shape_modify(
   if (indices.defined()) {
     TORCH_CHECK(
         indices.dtype() == at::kLong,
-        "output indices must be of scalar type Long");
+        "output indices must be of scalar type Long"
+        + OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(
         indices.device() == self.device(),
-        "output indices must be on same device as input");
+        "output indices must be on same device as input"
+        + OPS_ERROR(ErrCode::PARAM));
     indices.resize_(output_size);
   } else {
     indices = at::empty(output_size, self_rename.options().dtype(at::kLong));
@@ -91,9 +95,11 @@ void kthvalue_calculate(
 
 void check_self_dim(const at::Tensor& self, int64_t k, int64_t dim) {
   TORCH_CHECK(self.scalar_type() == at::kHalf || self.scalar_type() == at::kFloat || self.scalar_type() == at::kInt,
-              "the type of input must be float16, float32, or int32");
+      "the type of input must be float16, float32, or int32"
+      + OPS_ERROR(ErrCode::TYPE));
   dim = op_plugin::utils::make_warp_dim(dim, self.dim());
-  TORCH_CHECK(k >= 0 && k <= (self.dim() > 0 ? self.size(dim) : 1), "selected index k out of range");
+  TORCH_CHECK(k >= 0 && k <= (self.dim() > 0 ? self.size(dim) : 1), "selected index k out of range"
+      + OPS_ERROR(ErrCode::VALUE));
 }
 
 std::tuple<at::Tensor, at::Tensor> kthvalue_out_nocheck(

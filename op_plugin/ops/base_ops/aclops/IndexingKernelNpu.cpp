@@ -48,7 +48,8 @@ c10::SmallVector<int64_t, SIZE> infersize_npu_indexing(const at::Tensor &self, c
 {
     c10::SmallVector<int64_t, SIZE> output_size;
     for (int i = 0; i < self.dim(); i++) {
-        TORCH_CHECK(strides[i] != 0, "stride should not be 0");
+        TORCH_CHECK(strides[i] != 0, "stride should not be 0"
+            + OPS_ERROR(ErrCode::VALUE));
         output_size.emplace_back((end[i] + strides[i] - 1 - begin[i]) / strides[i]);
     }
     return output_size;

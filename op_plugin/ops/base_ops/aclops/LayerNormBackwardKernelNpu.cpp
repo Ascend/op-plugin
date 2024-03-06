@@ -109,7 +109,8 @@ tensor_list3 native_layer_norm_backward(const at::Tensor &d_y, const at::Tensor 
     TORCH_CHECK(
         (input_ndim >= normalized_ndim && input_shape.slice(input_ndim - normalized_ndim).equals(normalized_shape)),
         "Given normalized_shape=", normalized_shape, ", expected input with shape [*",
-        op_infer::array_to_small_vector(normalized_shape), "], but got input of size", input_shape);
+        op_infer::array_to_small_vector(normalized_shape), "], but got input of size", input_shape,
+        OPS_ERROR(ErrCode::PARAM));
 
     const int axis = input_ndim - normalized_ndim;
     const int64_t M =

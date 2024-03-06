@@ -26,9 +26,12 @@ std::vector<at::Tensor> npu_fused_attention_qkv_grad(const at::Tensor &grad_outp
                                                      const at::Tensor &value_kernel, const at::Tensor &hidden_states,
                                                      const at::Tensor &grad_output_ln)
 {
-    TORCH_CHECK(query_kernel.dim() >= 1, "query_kernel must be at least 1 dimensions, but got ", query_kernel.dim());
-    TORCH_CHECK(key_kernel.dim() >= 1, "key_kernel must be at least 1 dimensions, but got ", key_kernel.dim());
-    TORCH_CHECK(value_kernel.dim() >= 1, "value_kernel must be at least 1 dimensions, but got ", value_kernel.dim());
+    TORCH_CHECK(query_kernel.dim() >= 1, "query_kernel must be at least 1 dimensions, but got ", query_kernel.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(key_kernel.dim() >= 1, "key_kernel must be at least 1 dimensions, but got ", key_kernel.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(value_kernel.dim() >= 1, "value_kernel must be at least 1 dimensions, but got ", value_kernel.dim(),
+        OPS_ERROR(ErrCode::PARAM));
 
     at::Tensor grad_hidden_states = npu_preparation::apply_tensor_with_format(hidden_states, ACL_FORMAT_FRACTAL_NZ);
     at::Tensor grad_w_query = npu_preparation::apply_tensor(query_kernel);

@@ -31,7 +31,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> layer_norm_npu_support(const at::
     const at::Tensor &bias_ = c10::value_or_else(bias_ex, [] { return at::Tensor(); });
     at::Tensor bias = bias_;
 
-    TORCH_CHECK(input.numel() == M * N, "The numel of input should be equal to M * N");
+    TORCH_CHECK(input.numel() == M * N, "The numel of input should be equal to M * N"
+        + OPS_ERROR(ErrCode::VALUE));
     DCHECK(!weight.defined() || weight.numel() == N);
     DCHECK(!bias.defined() || bias.numel() == N);
 
@@ -113,13 +114,16 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
     const at::Tensor &bias = c10::value_or_else(bias_ex, [] { return at::Tensor(); });
     const int normalized_ndim = static_cast<int>(normalized_shape.size());
     TORCH_CHECK(normalized_ndim >= 1, "Expected normalized_shape to be at least 1-dimensional, i.e., ",
-                "containing at least one element, but got normalized_shape = ", normalized_shape);
+        "containing at least one element, but got normalized_shape = ", normalized_shape,
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(!weight.defined() || weight.sizes().equals(normalized_shape),
-                "Expected weight to be of same shape as normalized_shape, but got ", "weight of shape ", weight.sizes(),
-                " and normalized_shape = ", normalized_shape);
+        "Expected weight to be of same shape as normalized_shape, but got ", "weight of shape ", weight.sizes(),
+        " and normalized_shape = ", normalized_shape,
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(!bias.defined() || bias.sizes().equals(normalized_shape),
-                "Expected bias to be of same shape as normalized_shape, but got ", "bias of shape ", bias.sizes(),
-                " and normalized_shape = ", normalized_shape);
+        "Expected bias to be of same shape as normalized_shape, but got ", "bias of shape ", bias.sizes(),
+        " and normalized_shape = ", normalized_shape,
+        OPS_ERROR(ErrCode::PARAM));
 
     const auto input_shape = input.sizes();
     const auto input_ndim = input.dim();
@@ -130,7 +134,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
             ss << ", " << size;
         }
         ss << "], but got input of size" << input_shape;
-        TORCH_CHECK(false, ss.str());
+        TORCH_CHECK(false, ss.str(),
+            OPS_ERROR(ErrCode::PARAM));
     }
 
     const int axis = input_ndim - normalized_ndim;

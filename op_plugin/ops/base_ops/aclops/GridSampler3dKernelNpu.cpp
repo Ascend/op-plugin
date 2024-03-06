@@ -40,23 +40,30 @@ at::Tensor &grid_sampler_3d_npu_nocheck(at::Tensor &result, const at::Tensor &se
 at::Tensor grid_sampler_3d(const at::Tensor &self, const at::Tensor &grid, int64_t interpolation_mode,
                            int64_t padding_mode, bool align_corners)
 {
-    TORCH_CHECK((0 <= interpolation_mode && interpolation_mode <= 2), "interpolation_mode must be in range [0~2].")
-    TORCH_CHECK((0 <= padding_mode && padding_mode <= 2), "padding_mode must be in range [0~2].")
+    TORCH_CHECK((0 <= interpolation_mode && interpolation_mode <= 2), "interpolation_mode must be in range [0~2]."
+        + OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK((0 <= padding_mode && padding_mode <= 2), "padding_mode must be in range [0~2]."
+        + OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(self.dim() == 5 && self.dim() == grid.dim(),
-                "grid_sampler(): expected 5D input and grid with same number of "
-                "dimensions, but got input with sizes ",
-                self.sizes(), " and grid with sizes ", grid.sizes());
-    TORCH_CHECK(self.defined(), "grid_sampler(): expected input to not be undefined");
-    TORCH_CHECK(grid.defined(), "grid_sampler(): expected grid to not be undefined");
+        "grid_sampler(): expected 5D input and grid with same number of "
+        "dimensions, but got input with sizes ",
+        self.sizes(), " and grid with sizes ", grid.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.defined(), "grid_sampler(): expected input to not be undefined"
+        + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(grid.defined(), "grid_sampler(): expected grid to not be undefined"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.size(0) == grid.size(0),
-                "grid_sampler(): expected grid and input to have same batch "
-                "size, but got "
-                "input with sizes ",
-                self.sizes(), " and grid with sizes ", grid.sizes());
+        "grid_sampler(): expected grid and input to have same batch "
+        "size, but got "
+        "input with sizes ",
+        self.sizes(), " and grid with sizes ", grid.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(grid.size(-1) == self.dim() - 2, "grid_sampler(): expected grid to have size ", self.dim() - 2,
-                " in last "
-                "dimension, but got grid with sizes ",
-                grid.sizes());
+        " in last "
+        "dimension, but got grid with sizes ",
+        grid.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
 
     at::Tensor format_cast_of_self = self;
     at::Tensor format_cast_of_grid = grid;

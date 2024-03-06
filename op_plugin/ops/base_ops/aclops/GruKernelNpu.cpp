@@ -35,7 +35,8 @@ struct CellParams {
 
 std::vector<std::pair<at::Tensor, at::Tensor>> make_pair_vec(const std::vector<at::Tensor> &vals)
 {
-    TORCH_CHECK(vals.size() % 2 == 0, "Odd number of params or hiddens given to a bidirectional RNN");
+    TORCH_CHECK(vals.size() % 2 == 0, "Odd number of params or hiddens given to a bidirectional RNN"
+        + OPS_ERROR(ErrCode::PARAM));
     std::vector<std::pair<at::Tensor, at::Tensor>> result;
     result.reserve(vals.size() / 2);
     for (size_t i = 0; i < vals.size(); i += 2) {
@@ -51,7 +52,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 {
     int64_t num_step = input.size(0);
     int64_t batch_size = input.size(1);
-    TORCH_CHECK(bias_input.dim() >= 1, "hx must have at least 1 dimensions");
+    TORCH_CHECK(bias_input.dim() >= 1, "hx must have at least 1 dimensions"
+        + OPS_ERROR(ErrCode::PARAM));
     int64_t hidden_size = bias_input.size(0) / 3;
     c10::SmallVector<int64_t, SIZE> output_size = {num_step, batch_size, hidden_size};
 
@@ -156,8 +158,10 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_direc_npu(const at::Tensor &
 {
     at::Tensor weight_input = params.w_ih.t();
     at::Tensor weight_hidden = params.w_hh.t();
-    TORCH_CHECK(weight_input.dim() >= 2, "weight_ih must have at least 2 dimensions");
-    TORCH_CHECK(weight_hidden.dim() >= 2, "weight_hh must have at least 2 dimensions");
+    TORCH_CHECK(weight_input.dim() >= 2, "weight_ih must have at least 2 dimensions"
+        + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight_hidden.dim() >= 2, "weight_hh must have at least 2 dimensions"
+        + OPS_ERROR(ErrCode::PARAM));
 
     at::Tensor bias_input;
     at::Tensor bias_hidden;
@@ -334,7 +338,8 @@ std::tuple<at::Tensor, at::Tensor> gru(const at::Tensor &input_val, const at::Te
                                        bool has_biases, int64_t num_layers, double dropout, bool train,
                                        bool bidirectional, bool batch_first)
 {
-    TORCH_CHECK(input_val.dim() >= 2, "input must have at least 2 dimensions");
+    TORCH_CHECK(input_val.dim() >= 2, "input must have at least 2 dimensions"
+        + OPS_ERROR(ErrCode::PARAM));
     // The operator of DynamicGRU only supports the T axis as the first axis.
     auto input = batch_first ? input_val.transpose(0, 1) : input_val;
 

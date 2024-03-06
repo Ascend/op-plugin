@@ -55,9 +55,9 @@ at::Tensor &div_out_nocheck(at::Tensor &result, const at::Tensor &self, const at
 void div_torch_check(c10::optional<c10::string_view> rounding_mode)
 {
     TORCH_CHECK(false,
-                "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
-                "but found '",
-                *rounding_mode, "'");
+        "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
+        "but found '",
+        *rounding_mode, "'" + OPS_ERROR(ErrCode::PARAM));
 }
 
 at::Tensor &div_out_with_dtype(at::Tensor &result, const at::Tensor &self, const at::Tensor &other,
@@ -123,7 +123,8 @@ at::Tensor &div_out(const at::Tensor &self, const at::Tensor &other, at::Tensor 
     auto high_type = op_plugin::utils::get_divide_result_type(self, other);
     auto result_type = result.scalar_type();
     TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
-                " can't be cast to the desired output type ", result_type);
+        " can't be cast to the desired output type ", result_type,
+        OPS_ERROR(ErrCode::TYPE));
     return div_out_with_dtype(result, self, other, result_type, false);
 }
 
@@ -138,7 +139,8 @@ at::Tensor &div_out(const at::Tensor &self, const at::Tensor &other, c10::option
         auto high_type = at::native::result_type(self, other);
         auto result_type = result.scalar_type();
         TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
-                    " can't be cast to the desired output type ", result_type);
+            " can't be cast to the desired output type ", result_type,
+            OPS_ERROR(ErrCode::TYPE));
         div_out_with_dtype(result, self, other, result_type, true);
         return result;
     }

@@ -25,12 +25,15 @@ std::vector<at::Tensor> npu_fused_attention_layernorm_qkv_fwd(
     const c10::optional<at::Tensor> &bias_key, const c10::optional<at::Tensor> &bias_value, int64_t seq_len,
     int64_t num_heads, double eps)
 {
-    TORCH_CHECK(seq_len != 0 || num_heads != 0, "seq_len and num_heads cannot be equal to 0.");
-    TORCH_CHECK(x.dim() >= 2, "x must be at least 2 dimensions, but got ", x.dim());
+    TORCH_CHECK(seq_len != 0 || num_heads != 0, "seq_len and num_heads cannot be equal to 0."
+        + OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(x.dim() >= 2, "x must be at least 2 dimensions, but got ", x.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(x.size(0) % seq_len == 0 && x.size(1) % num_heads == 0,
-                "In npu_fused_attention_layernorm_qkv_fwd, x.size(0) should be "
-                "divisible by seq_len",
-                "and x.size(1) should be divisible by num_heads.")
+        "In npu_fused_attention_layernorm_qkv_fwd, x.size(0) should be "
+        "divisible by seq_len",
+        "and x.size(1) should be divisible by num_heads."
+        + OPS_ERROR(ErrCode::PARAM));
     const at::Tensor &bias_query_input = c10::value_or_else(bias_query, [] { return at::Tensor(); });
     const at::Tensor &bias_key_input = c10::value_or_else(bias_key, [] { return at::Tensor(); });
     const at::Tensor &bias_value_input = c10::value_or_else(bias_value, [] { return at::Tensor(); });

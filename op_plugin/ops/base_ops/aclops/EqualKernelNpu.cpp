@@ -30,7 +30,8 @@ bool equal(const at::Tensor& self, const at::Tensor& other) {
       self.scalar_type(),
       ", but got ",
       other.scalar_type(),
-      " for argument #2 'other' in call to equal_npu");
+      " for argument #2 'other' in call to equal_npu"
+      + OPS_ERROR(ErrCode::TYPE));
 
   at::Tensor result = npu_preparation::apply_tensor_with_format(
       {1},

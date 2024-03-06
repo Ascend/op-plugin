@@ -65,7 +65,8 @@ at::Tensor &floor_divide_out(const at::Tensor &self, const at::Tensor &other, at
     at::ScalarType result_type = result.scalar_type();
     at::ScalarType high_type = at::native::result_type(self, other);
     TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
-                " can't be cast to the desired output type ", result_type);
+        " can't be cast to the desired output type ", result_type,
+        OPS_ERROR(ErrCode::TYPE));
 
     at::ScalarType cal_type = op_plugin::utils::get_divide_calculate_type(self, other);
     at::Tensor self_cast = self.scalar_type() != cal_type ? self.to(cal_type) : self;

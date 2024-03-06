@@ -37,7 +37,7 @@ at::Tensor& elu_backward_out_nocheck(
     TORCH_CHECK((alphaValue >= 0),
         "In-place elu backward calculation is triggered with a negative slope which is not supported. "
         "This is caused by calling in-place forward function with a negative slope, "
-        "please call out-of-place version instead.");
+        "please call out-of-place version instead." + OPS_ERROR(ErrCode::VALUE));
   }
 
   at_npu::native::OpCommand cmd;

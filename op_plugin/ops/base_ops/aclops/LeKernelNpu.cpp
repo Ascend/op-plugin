@@ -89,7 +89,8 @@ at::Tensor& le_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
-        self.device(), " and ", other.device());
+        self.device(), " and ", other.device(),
+        OPS_ERROR(ErrCode::PARAM));
 
     at::ScalarType calculate_type = at::native::result_type(self, other);
     auto self_cast = op_plugin::utils::get_cast_input(self, calculate_type);
@@ -130,7 +131,8 @@ at::Tensor le(const at::Tensor& self, const at::Tensor& other) {
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
-        self.device(), " and ", other.device());
+        self.device(), " and ", other.device(),
+        OPS_ERROR(ErrCode::PARAM));
 
     at::ScalarType calculate_type = at::native::result_type(self, other);
     auto self_cast = op_plugin::utils::get_cast_input(self, calculate_type);

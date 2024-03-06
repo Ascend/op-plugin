@@ -25,7 +25,8 @@ at::Tensor embedding_dense_backward(
     int64_t num_weights,
     int64_t padding_idx,
     bool scale_grad_by_freq) {
-    TORCH_CHECK(grad_output.dim() >= 1, "The dim of input 'grad_output' must be greater than or equal to 1.");
+    TORCH_CHECK(grad_output.dim() >= 1, "The dim of input 'grad_output' must be greater than or equal to 1."
+        + OPS_ERROR(ErrCode::PARAM));
     auto output_size = {num_weights, grad_output.size(-1)};
     at::Tensor result = npu_preparation::apply_tensor(grad_output, output_size);
 

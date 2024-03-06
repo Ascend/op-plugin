@@ -25,8 +25,10 @@ const int64_t IOF_MODE = 1;
 c10::SmallVector<int64_t, N> diou_output_size(const at::Tensor &self, const at::Tensor &gtboxes, bool is_cross)
 {
     c10::SmallVector<int64_t, N> output_size;
-    TORCH_CHECK(self.dim() == 2, "self has to be a 2D Tensor, but got Tensor of dimension ", self.dim());
-    TORCH_CHECK(gtboxes.dim() == 2, "gtboxes has to be a 2D Tensor, but got Tensor of dimension ", gtboxes.dim());
+    TORCH_CHECK(self.dim() == 2, "self has to be a 2D Tensor, but got Tensor of dimension ", self.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(gtboxes.dim() == 2, "gtboxes has to be a 2D Tensor, but got Tensor of dimension ", gtboxes.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     if (is_cross) {
         output_size = {gtboxes.size(1), self.size(1)};
     } else {

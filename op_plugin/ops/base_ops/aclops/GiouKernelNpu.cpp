@@ -76,8 +76,8 @@ std::tuple<at::Tensor, at::Tensor> npu_giou_backward(const at::Tensor &grad, con
                                                      const at::Tensor &gtboxes, bool trans, bool is_cross, int64_t mode)
 {
     TORCH_CHECK(trans && !is_cross && mode == 0, "giou backward only support trans==True, ", "is_cross==False, ",
-                "mode==0('iou') current version ", "if you need to back propagation, ",
-                "please ensure your parameter is correct!");
+        "mode==0('iou') current version ", "if you need to back propagation, ",
+        "please ensure your parameter is correct!" + OPS_ERROR(ErrCode::PARAM));
     // Op need form of [n] grad
     // Note: temp avoid! it'll be remove while op deal with fp16 issue!
     at::Tensor grad_cp = at::squeeze(grad, 0);
@@ -106,9 +106,10 @@ std::tuple<at::Tensor, at::Tensor> npu_giou_backward(const at::Tensor &grad, con
 at::Tensor npu_giou(const at::Tensor &self, const at::Tensor &gtboxes, bool trans, bool is_cross, int64_t mode)
 {
     TORCH_CHECK(trans && !is_cross && mode == 0, "giou backward only support trans==True, ", "is_cross==False, ",
-                "mode==0('iou') current version ", "if you need to back propagation, ",
-                "please ensure your parameter is correct!");
-    TORCH_CHECK(self.dim() >= 2 && gtboxes.dim() >= 2, "giou input dim must be >= 2");
+        "mode==0('iou') current version ", "if you need to back propagation, ",
+        "please ensure your parameter is correct!" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.dim() >= 2 && gtboxes.dim() >= 2, "giou input dim must be >= 2"
+        + OPS_ERROR(ErrCode::PARAM));
 
     at::Tensor self_cp =
         (self.scalar_type() == at::kHalf) ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat) : self;

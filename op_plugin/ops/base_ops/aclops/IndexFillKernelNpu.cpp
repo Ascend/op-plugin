@@ -24,11 +24,13 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 void index_fill_d_check_index(at::IntArrayRef shape, const at::Tensor &index, int64_t dim)
 {
-    TORCH_CHECK(index.dim() == 1, "Index should be a one-dimensional tensor");
+    TORCH_CHECK(index.dim() == 1, "Index should be a one-dimensional tensor"
+        + OPS_ERROR(ErrCode::PARAM));
     int index_temp = INT_MAX;
     for (int i = 0; i < index.sizes()[0]; i++) {
         index_temp = static_cast<int>(op_plugin::utils::get_scalar_float_value(index[i].item()));
-        TORCH_CHECK(shape[dim] > index_temp, "Index out of range, it should be in [0,", shape[dim], ")");
+        TORCH_CHECK(shape[dim] > index_temp, "Index out of range, it should be in [0,", shape[dim], ")"
+        + OPS_ERROR(ErrCode::VALUE));
     }
 }
 
@@ -148,7 +150,8 @@ at::Tensor index_fill(const at::Tensor &self, int64_t dim, const at::Tensor &ind
 {
     at::IntArrayRef shape_self = self.sizes();
     index_fill_d_check_index(shape_self, index, dim);
-    TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor,but got ", value.dim());
+    TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor,but got ", value.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     at::Scalar value_scalar = value.item();
     at::Tensor result = npu_preparation::apply_tensor(self);
     index_fill_d_nocheck(result, self, dim, index, value_scalar);
@@ -159,7 +162,8 @@ at::Tensor &index_fill_(at::Tensor &self, int64_t dim, const at::Tensor &index, 
 {
     at::IntArrayRef shape_self = self.sizes();
     index_fill_d_check_index(shape_self, index, dim);
-    TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor,but got ", value.dim());
+    TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor,but got ", value.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     at::Scalar value_scalar = value.item();
 
     if (!npu_utils::check_match(&self)) {

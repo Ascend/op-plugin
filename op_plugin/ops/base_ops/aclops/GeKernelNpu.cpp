@@ -76,7 +76,8 @@ at::Tensor& ge_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
-        self.device(), " and ", other.device());
+        self.device(), " and ", other.device(),
+        OPS_ERROR(ErrCode::PARAM));
 
     auto calculate_type = get_ge_calculate_type(self, other);
     auto self_cast = op_plugin::utils::get_cast_input(self, calculate_type);
@@ -136,7 +137,8 @@ at::Tensor ge(const at::Tensor& self, const at::Tensor& other) {
   } else {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
-        self.device(), " and ", other.device());
+        self.device(), " and ", other.device(),
+        OPS_ERROR(ErrCode::PARAM));
 
     auto calculate_type = get_ge_calculate_type(self, other);
     auto self_cast = op_plugin::utils::get_cast_input(self, calculate_type);

@@ -25,11 +25,13 @@ static inline void grid_assign_positive_check(const at::Tensor& argmax_overlaps,
     const at::Tensor& gt_argmax_overlaps) {
   TORCH_CHECK(
       at::isIntegralType(argmax_overlaps.scalar_type(), true) && argmax_overlaps.scalar_type() != at::ScalarType::Long,
-      "int32 argmax_overlaps tensor expected but got a tensor with dtype: ", argmax_overlaps.scalar_type());
+      "int32 argmax_overlaps tensor expected but got a tensor with dtype: ", argmax_overlaps.scalar_type(),
+      OPS_ERROR(ErrCode::TYPE));
   TORCH_CHECK(
       at::isIntegralType(gt_argmax_overlaps.scalar_type(), true) &&
           gt_argmax_overlaps.scalar_type() != at::ScalarType::Long,
-      "int32 gt_argmax_overlaps tensor expected but got a tensor with dtype: ", gt_argmax_overlaps.scalar_type());
+      "int32 gt_argmax_overlaps tensor expected but got a tensor with dtype: ", gt_argmax_overlaps.scalar_type(),
+      OPS_ERROR(ErrCode::TYPE));
 }
 }  // namespace
 

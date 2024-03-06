@@ -54,7 +54,8 @@ at::Tensor &histc_out(const at::Tensor &self, int64_t bins, const at::Scalar &mi
 at::Tensor histc(const at::Tensor &self, int64_t bins, const at::Scalar &min, const at::Scalar &max)
 {
     TORCH_CHECK(self.dtype() == at::kInt || self.dtype() == at::kFloat || self.dtype() == at::kHalf,
-                "histc input only supported Int32, Float16, Float32, but got", self.dtype());
+        "histc input only supported Int32, Float16, Float32, but got", self.dtype(),
+        OPS_ERROR(ErrCode::TYPE));
     bool is_fp = (self.dtype() == at::kInt) ? false : true;
     at::Tensor result =
         npu_preparation::apply_tensor({bins}, self.options().dtype(is_fp ? at::kFloat : at::kInt), self);

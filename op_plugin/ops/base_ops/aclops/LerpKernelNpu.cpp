@@ -123,7 +123,8 @@ at::Tensor& lerp_(at::Tensor& self, const at::Tensor& end, const at::Tensor& wei
   c10::SmallVector<int64_t, SIZE> self_size = op_infer::array_to_small_vector(self.sizes());
   auto output_size = lerp_broadcast_size(self, end, weight);
   TORCH_CHECK(self_size == output_size,
-      "output with shape ", self_size, " doesn't match the broadcast shape ", output_size);
+      "output with shape ", self_size, " doesn't match the broadcast shape ", output_size,
+      OPS_ERROR(ErrCode::PARAM));
   return acl_op::lerp_out(self, end, weight, self);
 }
 
@@ -131,7 +132,8 @@ at::Tensor& lerp_(at::Tensor& self, const at::Tensor& end, const at::Scalar& wei
   c10::SmallVector<int64_t, SIZE> self_size = op_infer::array_to_small_vector(self.sizes());
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, end);
   TORCH_CHECK(self_size == output_size,
-      "output with shape ", self_size, " doesn't match the broadcast shape ", output_size);
+      "output with shape ", self_size, " doesn't match the broadcast shape ", output_size,
+      OPS_ERROR(ErrCode::PARAM));
   return acl_op::lerp_out(self, end, weight, self);
 }
 } // namespace acl_op

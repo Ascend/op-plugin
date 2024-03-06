@@ -24,7 +24,8 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(const at::Tensor &log_probs, const 
                                              at::IntArrayRef input_lengths_list, at::IntArrayRef target_lengths_list,
                                              int64_t blank, bool zero_infinity)
 {
-    TORCH_CHECK(log_probs.dim() == 3, "log_probs has to be a 3D Tensor, but got Tensor of dimension ", log_probs.dim());
+    TORCH_CHECK(log_probs.dim() == 3, "log_probs has to be a 3D Tensor, but got Tensor of dimension ", log_probs.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     at::Tensor log_probs_cast = log_probs;
     if (log_probs.scalar_type() == at::kHalf) {
         log_probs_cast = at_npu::native::custom_ops::npu_dtype_cast(log_probs_cast, at::kFloat);
@@ -103,16 +104,18 @@ at::Tensor ctc_loss(const at::Tensor &log_probs, const at::Tensor &targets, at::
 at::Tensor ctc_loss(const at::Tensor &log_probs, const at::Tensor &targets, const at::Tensor &input_lengths,
                     const at::Tensor &target_lengths, int64_t blank, int64_t reduction, bool zero_infinity)
 {
-    TORCH_CHECK(isIntegralType(input_lengths.scalar_type(), false), "input_lengths must be integral");
-    TORCH_CHECK(isIntegralType(target_lengths.scalar_type(), false), "target_lengths must be integral");
+    TORCH_CHECK(isIntegralType(input_lengths.scalar_type(), false), "input_lengths must be integral"
+        + OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(isIntegralType(target_lengths.scalar_type(), false), "target_lengths must be integral"
+        + OPS_ERROR(ErrCode::TYPE));
 
     at::Tensor input_lengths_tensor = input_lengths.to(at::Device(at::kCPU), at::kLong).contiguous();
     at::Tensor target_lengths_tensor = target_lengths.to(at::Device(at::kCPU), at::kLong).contiguous();
 
     auto input_length_ptr = input_lengths_tensor.data_ptr<int64_t>();
     auto target_length_ptr = target_lengths_tensor.data_ptr<int64_t>();
-    TORCH_CHECK(input_length_ptr != nullptr, "input_lengths is null")
-    TORCH_CHECK(target_length_ptr != nullptr, "target_lengths is null")
+    TORCH_CHECK(input_length_ptr != nullptr, "input_lengths is null" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(target_length_ptr != nullptr, "target_lengths is null" + OPS_ERROR(ErrCode::PARAM));
     at::IntArrayRef input_lengths_list(input_length_ptr, input_lengths_tensor.numel());
     at::IntArrayRef target_lengths_list(target_length_ptr, target_lengths_tensor.numel());
 
