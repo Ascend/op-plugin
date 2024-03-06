@@ -16,6 +16,8 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -49,41 +51,64 @@ at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, cons
 }
 } // namespace
 
+bool check_mul_out_result(const at::Tensor *result)
+{
+    if (!result->is_contiguous()) {
+        return false;
+    }
+    if (at_npu::native::FormatHelper::IsBaseFormatType(*result)) {
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+            return true;
+        } else if ((result->numel() * result->element_size()) % 32 == 0) {
+            return true;
+        }
+    }
+    if (!at_npu::native::StorageDescHelper::MetaDataAreMatch(result)) {
+        return false;
+    }
+    bool isPadding = at_npu::native::FormatHelper::IsPadded(result);
+    if (isPadding && (!at_npu::native::StorageDescHelper::OffsetAreMatch(result))) {
+        return false;
+    }
+    return true;
+}
+
 at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::CheckOut(
-      {self, other},
-      result,
-      result,
-      output_size);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    npu_preparation::CheckOut(
+        {self, other},
+        result,
+        result,
+        output_size);
 
-  auto result_type = result.scalar_type();
-  auto calculate_type = at::native::result_type(self, other);
-  TORCH_CHECK(canCast(calculate_type, result_type),
-      "result type ", calculate_type, " can't be cast to the desired output type ", result_type,
-      OPS_ERROR(ErrCode::TYPE));
+    auto result_type = result.scalar_type();
+    auto calculate_type = at::native::result_type(self, other);
+    TORCH_CHECK(canCast(calculate_type, result_type),
+        "result type ", calculate_type, " can't be cast to the desired output type ", result_type,
+        OPS_ERROR(ErrCode::TYPE));
 
-  if (calculate_type == at::kBool) {
-    calculate_type = at::kFloat;
-  }
-  at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
-  at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
+    if (calculate_type == at::kBool) {
+        calculate_type = at::kFloat;
+    }
+    at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
+    at::Tensor other_cast = (other.scalar_type() == calculate_type ||
+                             other.dim() == 0) ? other : other.to(calculate_type);
 
-  at::Tensor result_cast = (result_type == calculate_type) ? result :
-      at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
-  if (!npu_utils::check_match(&result_cast)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
-    mul_out_npu_nocheck(contiguous_result, self_cast, other_cast);
-    npu_utils::format_fresh_view(result_cast, contiguous_result);
-  } else {
-    mul_out_npu_nocheck(result_cast, self_cast, other_cast);
-  }
+    at::Tensor result_cast = (result_type == calculate_type) ? result :
+        at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
+    if (!check_mul_out_result(&result_cast)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
+        mul_out_npu_nocheck(contiguous_result, self_cast, other_cast);
+        npu_utils::format_fresh_view(result_cast, contiguous_result);
+    } else {
+        mul_out_npu_nocheck(result_cast, self_cast, other_cast);
+    }
 
-  if (result_type != calculate_type) {
-    result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
-    result.copy_(result_cast);
-  }
-  return result;
+    if (result_type != calculate_type) {
+        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
+        result.copy_(result_cast);
+    }
+    return result;
 }
 
 at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
