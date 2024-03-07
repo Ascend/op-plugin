@@ -609,6 +609,12 @@ official:
    impl_ns: acl_op, op_api
  - func: eye.out(SymInt n, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: fake_quantize_per_channel_affine_cachemask(Tensor self, Tensor scale, Tensor zero_point, int axis, int quant_min, int quant_max) -> (Tensor output, Tensor mask)
+   impl_ns: op_api
+ - func: _fake_quantize_per_tensor_affine_cachemask_tensor_qparams(Tensor self, Tensor scale, Tensor zero_point, Tensor fake_quant_enabled, int quant_min, int quant_max) -> (Tensor output, Tensor mask)
+   impl_ns: op_api
+ - func: _fused_moving_avg_obs_fq_helper(Tensor self, Tensor observer_on, Tensor fake_quant_on, Tensor(a!) running_min, Tensor(b!) running_max, Tensor(c!) scale, Tensor(d!) zero_point, float averaging_const, int quant_min, int quant_max, int ch_axis, bool per_row_fake_quant=False, bool symmetric_quant=False) -> (Tensor output, Tensor mask)
+   impl_ns: op_api
  - func: fill_.Scalar(Tensor(a!) self, Scalar value) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: fill_.Tensor(Tensor(a!) self, Tensor value) -> Tensor(a!)

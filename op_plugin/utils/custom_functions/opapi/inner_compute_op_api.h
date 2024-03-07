@@ -24,5 +24,10 @@ at::Tensor& sum_out_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, 
                                    c10::optional<c10::ScalarType> dtype, at::Tensor& result);
 at::Tensor sum_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
                               c10::optional<c10::ScalarType> dtype);
+std::tuple<at::Tensor, at::Tensor> _fused_moving_avg_obs_fq_helper_common(
+    const at::Tensor& self, const at::Tensor& observer_on, const at::Tensor& fake_quant_on,
+    at::Tensor& running_min, at::Tensor& running_max, at::Tensor& scale, at::Tensor& zero_point,
+    const double averaging_const, const int64_t quant_min, const int64_t quant_max, const int64_t ch_axis,
+    bool per_row_fake_quant, bool symmetric_quant);
 } // namespace op_api
 #endif
