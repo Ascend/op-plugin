@@ -409,6 +409,8 @@ official:
    impl_ns: acl_op, op_api
  - func: ceil_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: _coalesce(Tensor self) -> Tensor
+   sparse: op_api
  - func: complex(Tensor real, Tensor imag) -> Tensor
    impl_ns: acl_op, op_api
  - func: complex.out(Tensor real, Tensor imag, *, Tensor(a!) out) -> Tensor(a!)

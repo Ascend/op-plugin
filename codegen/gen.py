@@ -280,23 +280,20 @@ def gen_return(
                 format_check += f" && at_npu::native::FormatHelper::IsOpInputBaseFormat({a.name})"
 
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
-            p = f"""{sig.defn(name=op_name)}{{
+            ret.append(f"""{sig.defn(name=op_name)}{{
     if (({force_aclnn} || at_npu::native::env::CheckJitDisable()){format_check}) {{
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
         return acl_op::{impl_name}({args_exprs_str});
     }}
 }}
-"""
+""")
         elif "op_api" in f.impl_ns or "acl_op" in f.impl_ns:
             ns = f.impl_ns[0]
-            p = f"""{sig.defn(name=op_name)}{{
+            ret.append(f"""{sig.defn(name=op_name)}{{
     return {ns}::{impl_name}({args_exprs_str});
 }}
-"""
-        else:
-            raise AssertionError(f"unknown namespace {f.impl_ns}")
-        ret.append(p)
+""")
         if f.sparse is not None:
             ret.append(f"""{sig.defn(name=op_name + "_sparse")}{{
     return sparse::{impl_name}_sparse({args_exprs_str});
