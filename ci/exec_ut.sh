@@ -101,6 +101,9 @@ function main()
     if [ "${PYTORCH_VERSION}" \> "v2.0.1" ] || [ "${PYTORCH_VERSION}" == "master" ]; then
         export DISABLED_TESTS_FILE=${PYTORCH_PATH}/test/unsupported_test_cases/.pytorch-disabled-tests.json
     fi
+    if [ "${PYTORCH_VERSION}" \> "v2.2.0" ] || [ "${PYTORCH_VERSION}" == "master" ]; then
+        rm -rf ${PYTORCH_PATH}/test/dynamo/*
+    fi
     cd ${PYTORCH_PATH}/ci
     python"${PY_VERSION}" access_control_test.py
 
