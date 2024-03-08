@@ -46,12 +46,13 @@ namespace {
 
 at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result) {
     TORCH_CHECK(self.device() == mat2.device(),
-                "Expected all tensors to be on the same device, but found at least two devices, ",
-                (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
-                " and ",
-                (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "));
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
+        " and ",
+        (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
-                "bmm_out is not support int8 dtype")
+        "bmm_out is not support int8 dtype" + OPS_ERROR(ErrCode::TYPE))
     auto output_size = {self.size(0), self.size(1), mat2.size(2)};
     npu_preparation::CheckOut(
         {self, mat2},
@@ -74,14 +75,15 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2) {
                 "Expected all tensors to be on the same device, but found at least two devices, ",
                 (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
                 " and ",
-                (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "));
+                (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "),
+                OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.dim() == 3 && mat2.dim() == 3, "bmm expect self 3D tensors, but got: ",
-        self.dim(), "D and ", mat2.dim(), "D");
+        self.dim(), "D and ", mat2.dim(), "D" + OPS_ERROR(ErrCode::PARAM));
     // 1、cann bmm support int8(input)->int32(out)
     // 2、onnx can support because of change y dtype to be int32.
     // 3、torch need int8(input)->int8(out), cann can not support.
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
-                "bmm is not support int8 dtype")
+                "bmm is not support int8 dtype" + OPS_ERROR(ErrCode::TYPE))
     auto output_size = {self.size(0), self.size(1), mat2.size(2)};
 
     at::Tensor result;

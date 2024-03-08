@@ -89,14 +89,14 @@ tensor_list4 batch_norm_backward_reduce(const at::Tensor &grad_out, const at::Te
 {
     const at::Tensor &weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
     TORCH_CHECK(self.scalar_type() == grad_out.scalar_type(), "Expected input's dtype equal grad_out's dtype ",
-                grad_out.scalar_type(), "But found ", self.scalar_type());
+        grad_out.scalar_type(), "But found ", self.scalar_type(), OPS_ERROR(ErrCode::TYPE));
 
     bool is_fully_fp16 = false;
     if (self.scalar_type() == mean.scalar_type() && self.scalar_type() == at::kHalf) {
         is_fully_fp16 = true;
     }
 
-    TORCH_CHECK(self.dim() >= 1, "The dim input tensor [self] must more than 1.");
+    TORCH_CHECK(self.dim() >= 1, "The dim input tensor [self] must more than 1." + OPS_ERROR(ErrCode::PARAM));
     int64_t n_input = self.size(1);
     at::Tensor sum_dy_val;
     at::Tensor sum_dy_xmu_val;

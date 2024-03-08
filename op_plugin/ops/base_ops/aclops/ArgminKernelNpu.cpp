@@ -43,7 +43,8 @@ at::Tensor argmin(
   TORCH_CHECK(
       self.numel() > 0,
       "cannot perform reduction function argmin on a "
-      "tensor with no elements because the operation does not have an identity");
+      "tensor with no elements because the operation does not have an identity"
+      + OPS_ERROR(ErrCode::PARAM));
   at::Tensor input = dim.has_value() ? self : self.reshape({-1});
   int64_t dim_value = dim.has_value() ? dim.value() : 0;
   bool keepdim_value = dim.has_value() ? keepdim : false;
@@ -67,7 +68,8 @@ at::Tensor& argmin_out(
   TORCH_CHECK(
       self.numel() > 0,
       "cannot perform reduction function argmin on a "
-      "tensor with no elements because the operation does not have an identity");
+      "tensor with no elements because the operation does not have an identity"
+      + OPS_ERROR(ErrCode::PARAM));
   at::Tensor input = dim.has_value() ? self : self.reshape({-1});
   int64_t dim_value = dim.has_value() ? dim.value() : 0;
   bool keepdim_value = dim.has_value() ? keepdim : false;

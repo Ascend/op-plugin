@@ -35,11 +35,16 @@ at::Tensor &conv2d_backward_input_out_nocheck(at::Tensor &grad_input, const at::
                                               const at::Tensor &weight, at::IntArrayRef stride, at::IntArrayRef padding,
                                               at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(grad.dim() >= 3, "grad has to be more than 3D, but got Tensor of dimension ", grad.dim());
-    TORCH_CHECK(weight.dim() >= 4, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim());
-    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size());
-    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size());
+    TORCH_CHECK(grad.dim() >= 3, "grad has to be more than 3D, but got Tensor of dimension ", grad.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 4, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
     // support special scenario
     if (is_special_conv1d(input, weight, stride, padding, dilation, groups)) {
         at::Tensor mm_input = grad.permute({0, 2, 1});
@@ -75,14 +80,20 @@ at::Tensor &conv2d_backward_weight_out_nocheck(at::Tensor &grad_weight, const at
                                                const at::Tensor &weight, at::IntArrayRef stride,
                                                at::IntArrayRef padding, at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(grad.dim() >= 3, "grad has to be more than 3D, but got Tensor of dimension ", grad.dim());
-    TORCH_CHECK(weight.dim() >= 4, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim());
-    TORCH_CHECK(input.dim() >= 4, "input has to be more than 4D, but got Tensor of dimension ", input.dim());
-    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size());
-    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size());
-    TORCH_CHECK(grad.size(2) != 0, "3rd dim of grad cannot be 0");
-    TORCH_CHECK(weight.size(3) != 0, "4th dim of weight cannot be 0");
+    TORCH_CHECK(grad.dim() >= 3, "grad has to be more than 3D, but got Tensor of dimension ", grad.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 4, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(input.dim() >= 4, "input has to be more than 4D, but got Tensor of dimension ", input.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(grad.size(2) != 0, "3rd dim of grad cannot be 0" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.size(3) != 0, "4th dim of weight cannot be 0" + OPS_ERROR(ErrCode::PARAM));
     // support special scenario
     if (is_special_conv1d(input, weight, stride, padding, dilation, groups)) {
         at::Tensor mm_input = grad.permute({1, 0, 2}).reshape({grad.size(1), grad.size(0) * grad.size(2)});
@@ -121,7 +132,8 @@ at::Tensor &conv2d_backward_bias_out_nocheck(at::Tensor &grad_bias, const at::Te
                                              const at::Tensor &weight, at::IntArrayRef stride, at::IntArrayRef padding,
                                              at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(grad.dim() >= 2, "grad has to be more than 2D, but got Tensor of dimension ", grad.dim());
+    TORCH_CHECK(grad.dim() >= 2, "grad has to be more than 2D, but got Tensor of dimension ", grad.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     if (grad.numel() == grad.size(0) * grad.size(1)) {
         at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1)});
         acl_op::sum_out(grad_view, c10::SmallVector<int64_t, N>{0}, false, grad_view.scalar_type(), grad_bias);

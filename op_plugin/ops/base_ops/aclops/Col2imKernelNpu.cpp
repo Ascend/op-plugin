@@ -51,33 +51,40 @@ inline void check_func(const at::Tensor &grad_output, at::IntArrayRef input_size
                        at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride)
 {
     TORCH_CHECK(grad_output.dim() >= 2,
-                "col2im expected grad_output greater than or equal to 2D, "
-                "but input grad_output has sizes ",
-                grad_output.dim());
+        "col2im expected grad_output greater than or equal to 2D, "
+        "but input grad_output has sizes ",
+        grad_output.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(input_size.size() >= 2,
-                "col2im expected input_size greater than or equal to 2D, "
-                "but input input_size has sizes ",
-                input_size.size());
+        "col2im expected input_size greater than or equal to 2D, "
+        "but input input_size has sizes ",
+        input_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size.size() >= 2,
-                "col2im expected kernel_size greater than or equal to 2D, "
-                "but input kernel_size has sizes ",
-                kernel_size.size());
+        "col2im expected kernel_size greater than or equal to 2D, "
+        "but input kernel_size has sizes ",
+        kernel_size.size(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() >= 2,
-                "col2im expected dilation greater than or equal to 2D, "
-                "but input dilation has sizes ",
-                dilation.size());
+        "col2im expected dilation greater than or equal to 2D, "
+        "but input dilation has sizes ",
+        dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() >= 2,
-                "col2im expected padding greater than or equal to 2D, "
-                "but input padding has sizes ",
-                padding.size());
+        "col2im expected padding greater than or equal to 2D, "
+        "but input padding has sizes ",
+        padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() >= 2,
-                "col2im expected stride greater than or equal to 2D, "
-                "but input stride has sizes ",
-                stride.size());
+        "col2im expected stride greater than or equal to 2D, "
+        "but input stride has sizes ",
+        stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((kernel_size[0] * kernel_size[1]) > 0,
-                "col2im expected kernel_size valid, "
-                "but input kernel_size has value ",
-                kernel_size[0], kernel_size[1]);
+        "col2im expected kernel_size valid, "
+        "but input kernel_size has value ",
+        kernel_size[0], kernel_size[1],
+        OPS_ERROR(ErrCode::PARAM));
 }
 } // namespace
 

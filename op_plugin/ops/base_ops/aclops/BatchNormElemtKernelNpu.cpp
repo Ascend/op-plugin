@@ -26,7 +26,8 @@ at::Tensor &batch_norm_elemt_nocheck(at::Tensor &result, const at::Tensor &self,
                                      const c10::optional<at::Tensor> &bias_opt, const at::Tensor &mean,
                                      const at::Tensor &invstd, double eps)
 {
-    TORCH_CHECK(self.dim() >= 2, "self's dim must be greater than or equal to 2, but got ", self.dim());
+    TORCH_CHECK(self.dim() >= 2, "self's dim must be greater than or equal to 2, but got ", self.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     auto dim_c = self.size(1);
     auto options = self.options().dtype(at::kFloat);
     const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
@@ -37,9 +38,9 @@ at::Tensor &batch_norm_elemt_nocheck(at::Tensor &result, const at::Tensor &self,
     at::Tensor mean_val = mean.defined() ? mean : at::ones({dim_c}, options);
     at::Tensor invstd_val = invstd.defined() ? invstd : at::ones({dim_c}, options);
     TORCH_CHECK(weight.dim() == 1 && bias.dim() == 1 && mean.dim() == 1 && invstd.dim() == 1,
-                "weight, bias, mean, invstd: must be only one dimension.");
+        "weight, bias, mean, invstd: must be only one dimension." + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight.size(0) == dim_c && bias.size(0) == dim_c && mean.size(0) == dim_c && invstd.size(0) == dim_c,
-                "weight, bias, mean, invstd: shape must be equal to  self's dim_c.");
+        "weight, bias, mean, invstd: shape must be equal to  self's dim_c." + OPS_ERROR(ErrCode::PARAM));
     at::Tensor one = at::ones({1}, options);
     auto variance = at::mul(invstd_val, invstd_val);
     variance = at::div(one, variance) - eps;

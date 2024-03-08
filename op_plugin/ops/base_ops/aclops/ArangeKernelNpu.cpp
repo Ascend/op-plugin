@@ -57,9 +57,9 @@ at::Tensor arange(const at::Scalar &start, const at::Scalar &end, const at::Scal
     float end_value = op_plugin::utils::get_scalar_float_value(end);
     float step_value = op_plugin::utils::get_scalar_float_value(step);
 
-    TORCH_CHECK(step_value != 0, "step must be nonzero");
+    TORCH_CHECK(step_value != 0, "step must be nonzero" + OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
-                "upper bound and larger bound inconsistent with step sign");
+        "upper bound and larger bound inconsistent with step sign" + OPS_ERROR(ErrCode::VALUE));
     at::Scalar start_opt = start;
     at::Scalar end_opt = end;
     at::Scalar step_opt = step;
@@ -106,9 +106,9 @@ at::Tensor &arange_out(const at::Scalar &start, const at::Scalar &end, const at:
     float start_value = op_plugin::utils::get_scalar_float_value(start);
     float end_value = op_plugin::utils::get_scalar_float_value(end);
     float step_value = op_plugin::utils::get_scalar_float_value(step);
-    TORCH_CHECK(step_value != 0, "step must be nonzero");
+    TORCH_CHECK(step_value != 0, "step must be nonzero" + OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
-                "upper bound and larger bound inconsistent with step sign");
+        "upper bound and larger bound inconsistent with step sign" + OPS_ERROR(ErrCode::VALUE));
 
     auto output_size = op_infer::infersize_arange(start, end, step);
     result.resize_(output_size);

@@ -23,27 +23,34 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor _cdist_forward(const at::Tensor &x1, const at::Tensor &x2, const double p,
                           c10::optional<int64_t> compute_mode)
 {
-    TORCH_CHECK(x1.dim() >= 2, "cdist only supports at least 2D tensors, X1 got: ", x1.dim(), "D");
-    TORCH_CHECK(x2.dim() >= 2, "cdist only supports at least 2D tensors, X2 got: ", x2.dim(), "D");
+    TORCH_CHECK(x1.dim() >= 2, "cdist only supports at least 2D tensors, X1 got: ", x1.dim(), "D"
+        + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x2.dim() >= 2, "cdist only supports at least 2D tensors, X2 got: ", x2.dim(), "D"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(x1.size(-1) == x2.size(-1), "X1 and X2 must have the same number of columns. X1: ", x1.size(-1),
-                " X2: ", x2.size(-1));
+        " X2: ", x2.size(-1),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(at::isFloatingType(x1.scalar_type()),
-                "cdist only supports floating-point dtypes, X1 got: ", x1.scalar_type());
+        "cdist only supports floating-point dtypes, X1 got: ", x1.scalar_type(),
+        OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(at::isFloatingType(x1.scalar_type()),
-                "cdist only supports floating-point dtypes, X2 got: ", x2.scalar_type());
-    TORCH_CHECK(p >= 0, "cdist only supports non-negative p values");
+        "cdist only supports floating-point dtypes, X2 got: ", x2.scalar_type(),
+        OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(p >= 0, "cdist only supports non-negative p values" + OPS_ERROR(ErrCode::PARAM));
 
     // Since double is not supported in NPU, the type of P needs to be converted from double to float.
     float p_float;
     if (std::isinf(p)) {
         p_float = -1;
     } else {
-        TORCH_CHECK(p <= std::numeric_limits<float>::max(), "npu does not support float64");
+        TORCH_CHECK(p <= std::numeric_limits<float>::max(), "npu does not support float64"
+            + OPS_ERROR(ErrCode::TYPE));
         p_float = static_cast<float>(p);
     }
 
     int64_t mode = compute_mode.value_or(0);
-    TORCH_CHECK(mode >= 0 && mode <= 2, "possible modes: 0, 1, 2, but was: ", mode);
+    TORCH_CHECK(mode >= 0 && mode <= 2, "possible modes: 0, 1, 2, but was: ", mode,
+        OPS_ERROR(ErrCode::VALUE));
 
     // Broadcast
     int64_t c1 = x1.size(-1);

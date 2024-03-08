@@ -39,7 +39,8 @@ void avg_pool3d_backward_out_nocheck(at::Tensor &grad_output, const at::Tensor &
         grad_output = grad_output.unsqueeze(0);
     }
 
-    TORCH_CHECK(paddingss.size() >= 3, "padding length shoud be at least 3, but got: ", paddingss.size());
+    TORCH_CHECK(paddingss.size() >= 3, "padding length shoud be at least 3, but got: ", paddingss.size(),
+        OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, N> dim_list(input.sizes());
     c10::SmallVector<int64_t, N> pads = {paddingss[0], paddingss[0], paddingss[1],
                                          paddingss[1], paddingss[2], paddingss[2]};
@@ -69,15 +70,19 @@ void avg_pool3d_backward_parameter_check(const at::Tensor &self, at::IntArrayRef
                                          at::IntArrayRef padding, c10::optional<int64_t> divisor_override)
 {
     TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 3,
-                "avg_pool3d_backward: kernel_size must be a single int, or a tuple of three ints");
+        "avg_pool3d_backward: kernel_size must be a single int, or a tuple of three ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.empty() || stride.size() == 1 || stride.size() == 3,
-                "avg_pool3d_backward: stride must be omitted, a single int, or a tuple of three ints");
+        "avg_pool3d_backward: stride must be omitted, a single int, or a tuple of three ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() == 1 || padding.size() == 3,
-                "avg_pool3d_backward: padding must be a single int, or a tuple of three ints");
+        "avg_pool3d_backward: padding must be a single int, or a tuple of three ints"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((self.ndimension() == 4 || self.ndimension() == 5),
-                "non-empty 4D or 5D (batch mode) tensor expected for input");
+        "non-empty 4D or 5D (batch mode) tensor expected for input"
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(!divisor_override.has_value() || divisor_override.value() != 0,
-                "avg_pool3d_backward divisor must be not zero");
+        "avg_pool3d_backward divisor must be not zero" + OPS_ERROR(ErrCode::PARAM));
 }
 } // namespace
 

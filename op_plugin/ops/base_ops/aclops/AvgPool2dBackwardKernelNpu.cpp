@@ -74,24 +74,28 @@ at::Tensor& avg_pool2d_backward_out(
     c10::optional<int64_t> divisor_override,
     at::Tensor& grad_input) {
   TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 2,
-              "avg_pool2d: kernel_size must either be a single int, or a tuple of two ints");
+      "avg_pool2d: kernel_size must either be a single int, or a tuple of two ints"
+      + OPS_ERROR(ErrCode::PARAM));
   if (kernel_size.size() == 1) {
     c10::SmallVector<int64_t, SIZE> kernel_sizes = {kernel_size[0], kernel_size[0]};
     kernel_size = at::IntArrayRef(kernel_sizes);
   }
   TORCH_CHECK(stride.empty() || stride.size() == 1 || stride.size() == 2,
-              "avg_pool2d: stride must either be omitted, a single int, or a tuple of two ints");
+      "avg_pool2d: stride must either be omitted, a single int, or a tuple of two ints"
+      + OPS_ERROR(ErrCode::PARAM));
   stride = stride.empty() ? kernel_size : stride;
   TORCH_CHECK(padding.size() == 1 || padding.size() == 2,
-              "avg_pool2d: padding must either be a single int, or a tuple of two ints");
+      "avg_pool2d: padding must either be a single int, or a tuple of two ints"
+      + OPS_ERROR(ErrCode::PARAM));
   if (padding.size() == 1) {
     c10::SmallVector<int64_t, SIZE> paddings = {padding[0], padding[0]};
     padding = at::IntArrayRef(paddings);
   }
   const int64_t ndim = self.ndimension();
   TORCH_CHECK((ndim == 3 || ndim == 4),
-              "non-empty 3D or 4D (batch mode) tensor expected for input");
-  TORCH_CHECK(!divisor_override.has_value() || divisor_override.value() != 0, "divisor must be not zero");
+      "non-empty 3D or 4D (batch mode) tensor expected for input" + OPS_ERROR(ErrCode::PARAM));
+  TORCH_CHECK(!divisor_override.has_value() || divisor_override.value() != 0, "divisor must be not zero"
+      + OPS_ERROR(ErrCode::VALUE));
   npu_preparation::CheckOut(
       {self, grad_output},
       grad_input,

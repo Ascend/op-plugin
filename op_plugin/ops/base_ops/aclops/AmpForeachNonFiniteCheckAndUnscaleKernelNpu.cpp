@@ -43,42 +43,42 @@ void _amp_foreach_non_finite_check_and_unscale_(
     at::TensorList scaled_grads,
     at::Tensor& found_inf,
     const at::Tensor& inv_scale) {
-  TORCH_NPU_WARN_ONCE("Non finite check and unscale on NPU device!");
-  TORCH_CHECK(torch_npu::utils::is_npu(inv_scale), "inv_scale must be NPU-Tensor");
-  TORCH_CHECK(inv_scale.numel() == 1, "inv_scale must be a 1-element tensor");
-  TORCH_CHECK(inv_scale.scalar_type() == at::ScalarType::Float, "inv_scale must be a float tensor");
+    TORCH_NPU_WARN_ONCE("Non finite check and unscale on NPU device!");
+    TORCH_CHECK(torch_npu::utils::is_npu(inv_scale), "inv_scale must be NPU-Tensor" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(inv_scale.numel() == 1, "inv_scale must be a 1-element tensor" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(inv_scale.scalar_type() == at::ScalarType::Float, "inv_scale must be a float tensor" + OPS_ERROR(ErrCode::TYPE));
 
-  if (scaled_grads.empty()) {
-    return;
-  }
-
-  bool is_finite = true;
-  if (c10_npu::IsSupportInfNan()) {
-    for (const auto& scaled_grad : scaled_grads) {
-      auto res = acl_op::sum(scaled_grad, at::ScalarType::Float);
-      float cpu_sum = res.item().toFloat();
-      if (!std::isfinite(cpu_sum)) {
-        is_finite = false;
-        break;
-      }
+    if (scaled_grads.empty()) {
+        return;
     }
-  } else {
-    is_finite = !acl_op::_amp_foreach_non_finite_check(scaled_grads);
-  }
 
-  if (is_finite) {
-    auto expected_device = scaled_grads[0].device();
-    auto expected_dtype = scaled_grads[0].dtype();
-    for (const auto& t : scaled_grads) {
-      TORCH_CHECK(torch_npu::utils::is_npu(t), "one of scaled_grads was not a NPU tensor.");
-      TORCH_CHECK(t.device() == expected_device, "scaled_grads must be on the same device.");
-      TORCH_CHECK(t.dtype() == expected_dtype, "scaled_grads must have the same dtype.");
-      TORCH_CHECK(t.layout() == at::kStrided, "one of scaled_grads was not a strided tensor.");
-
-      t.mul_(inv_scale);
+    bool is_finite = true;
+    if (c10_npu::IsSupportInfNan()) {
+        for (const auto& scaled_grad : scaled_grads) {
+            auto res = acl_op::sum(scaled_grad, at::ScalarType::Float);
+            float cpu_sum = res.item().toFloat();
+            if (!std::isfinite(cpu_sum)) {
+                is_finite = false;
+                break;
+            }
+        }
+    } else {
+        is_finite = !acl_op::_amp_foreach_non_finite_check(scaled_grads);
     }
-  } else {
-    found_inf.add_(1);
-  }
+
+    if (is_finite) {
+        auto expected_device = scaled_grads[0].device();
+        auto expected_dtype = scaled_grads[0].dtype();
+        for (const auto& t : scaled_grads) {
+            TORCH_CHECK(torch_npu::utils::is_npu(t), "one of scaled_grads was not a NPU tensor." + OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(t.device() == expected_device, "scaled_grads must be on the same device." + OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(t.dtype() == expected_dtype, "scaled_grads must have the same dtype." + OPS_ERROR(ErrCode::TYPE));
+            TORCH_CHECK(t.layout() == at::kStrided, "one of scaled_grads was not a strided tensor." + OPS_ERROR(ErrCode::PARAM));
+
+            t.mul_(inv_scale);
+        }
+    } else {
+        found_inf.add_(1);
+    }
 }
 } // namespace acl_op

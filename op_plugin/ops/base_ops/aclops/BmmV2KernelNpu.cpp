@@ -35,7 +35,8 @@ bool is_transpose_last_two_dims_v2(const at::Tensor &Tensors)
     TORCH_CHECK(Tensors.element_size() > 0,
                 "expected Tensors valid, "
                 "but input Tensors has element_size ",
-                Tensors.element_size());
+                Tensors.element_size(),
+                OPS_ERROR(ErrCode::PARAM));
     int64_t tensor_size = static_cast<int64_t>(Tensors.storage().nbytes()) / Tensors.element_size();
     auto tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(Tensors)->get_npu_desc();
     if (tensor_desc.base_sizes_.size() == static_cast<uint64_t>(Tensors.dim()) && Tensors.stride(dim2) == 1 &&
@@ -301,7 +302,7 @@ at::Tensor npu_bmmV2_impl(const at::Tensor &self, const at::Tensor &mat2, at::In
 at::Tensor npu_bmmV2(const at::Tensor &self, const at::Tensor &mat2, at::IntArrayRef output_sizes)
 {
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
-                "bmm is not support int8 dtype")
+                "bmm is not support int8 dtype" + OPS_ERROR(ErrCode::TYPE));
     return npu_bmmV2_impl(self, mat2, output_sizes);
 }
 } // namespace acl_op

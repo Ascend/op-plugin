@@ -18,12 +18,12 @@
 
 namespace acl_op {
 at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result) {
-    TORCH_CHECK(tensors.size() > 0, "cat inputs should not be empty.");
-  return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
+    TORCH_CHECK(tensors.size() > 0, "cat inputs should not be empty." + OPS_ERROR(ErrCode::PARAM));
+    return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
 }
 
 at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
-    TORCH_CHECK(tensors.size() > 0, "cat inputs should not be empty.");
+    TORCH_CHECK(tensors.size() > 0, "cat inputs should not be empty." + OPS_ERROR(ErrCode::PARAM));
     return at::cat(tensors, dimname_to_position(tensors[0], dim));
 }
 } // namespace acl_op

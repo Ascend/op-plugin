@@ -71,7 +71,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_bert_apply_adam(
     const c10::Scalar& weight_decay,
     const c10::optional<at::Scalar>& step_size,
     int64_t adam_mode) {
-  TORCH_CHECK(false, "npu_bert_apply_adam is not implemented for Tensor");
+  TORCH_CHECK(false, "npu_bert_apply_adam is not implemented for Tensor"
+      + OPS_ERROR(ErrCode::PARAM));
 }
 
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_bert_apply_adam_out(

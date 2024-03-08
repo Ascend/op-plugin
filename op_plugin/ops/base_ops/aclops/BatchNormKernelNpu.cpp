@@ -243,7 +243,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
       !(self_npu_format == ACL_FORMAT_NDHWC || self_npu_format == ACL_FORMAT_NHWC),
       "at::Tensor with channel last format (",
       self_npu_format,
-      ") is not supported in BatchNorm.");
+      ") is not supported in BatchNorm." + OPS_ERROR(ErrCode::TYPE));
 
   if (self.dim() <= 4) {
     c10::SmallVector<int64_t, N> nchw_shape(self_shape);

@@ -32,14 +32,14 @@ inline void adaptive_max_pool2d_check(const at::Tensor& self, at::IntArrayRef ou
         " with dimension ",
         i,
         " being "
-        "empty");
+        "empty" + OPS_ERROR(ErrCode::PARAM));
   }
   TORCH_CHECK(
       (self.dim() == 3 || self.dim() == 4),
-      "non-empty 3D or 4D (batch mode) tensor expected for input");
+      "non-empty 3D or 4D (batch mode) tensor expected for input" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
       (output_size.size() == 2),
-      "adaptive_max_pool2d: internal error: output_size.size() must be 2");
+      "adaptive_max_pool2d: internal error: output_size.size() must be 2" + OPS_ERROR(ErrCode::PARAM));
 }
 
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> adaptive_max_pool2d_infer_size(
@@ -49,7 +49,8 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ada
   int64_t c = self.size(1);
   int64_t h = self.size(2);
   int64_t w = self.size(3);
-  TORCH_CHECK(output_size[0] != 0 && output_size[1] != 0, "out put size cannot not be Zero");
+  TORCH_CHECK(output_size[0] != 0 && output_size[1] != 0, "out put size cannot not be Zero"
+      + OPS_ERROR(ErrCode::PARAM));
   int64_t stride_h = h / output_size[0];
   int64_t stride_w = w / output_size[1];
   int64_t kernel_size_h = h - (output_size[0] - 1) * stride_h;
@@ -83,7 +84,7 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out_nocheck(
 
   // H and W can not be divided, temporarily reported error processing
   TORCH_CHECK(input_size[0] % output_size[0] == 0 && input_size[1] % output_size[1] == 0,
-      "H and W must be divisible");
+      "H and W must be divisible" + OPS_ERROR(ErrCode::PARAM));
 
   int64_t kernel_size[2];
   int64_t stride[2];

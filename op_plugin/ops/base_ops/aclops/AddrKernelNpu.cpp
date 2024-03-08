@@ -31,17 +31,19 @@ void check_beta_aplha(
     const at::Scalar& alpha,
     at::ScalarType high_dtype) {
   TORCH_CHECK(((high_dtype == at::ScalarType::Bool) || !beta.isBoolean()),
-      "Boolean beta only supported for Boolean results.");
+      "Boolean beta only supported for Boolean results." + OPS_ERROR(ErrCode::TYPE));
   TORCH_CHECK(((high_dtype == at::ScalarType::Bool) || !alpha.isBoolean()),
-      "Boolean alpha only supported for Boolean results.");
+      "Boolean alpha only supported for Boolean results." + OPS_ERROR(ErrCode::TYPE));
 
   bool all_int_inputs = ((isIntegralType(self.scalar_type(), true)) && (isIntegralType(vec1.scalar_type(), true)) &&
       (isIntegralType(vec2.scalar_type(), true)));
 
   TORCH_CHECK(!all_int_inputs || beta.isIntegral(true),
-      "For integral input tensors, argument beta must not be a floating point number.");
+      "For integral input tensors, argument beta must not be a floating point number."
+      + OPS_ERROR(ErrCode::TYPE));
   TORCH_CHECK(!all_int_inputs || alpha.isIntegral(true),
-      "For integral input tensors, argument alpha must not be a floating point number.");
+      "For integral input tensors, argument alpha must not be a floating point number."
+      + OPS_ERROR(ErrCode::TYPE));
 }
 } // namespace
 

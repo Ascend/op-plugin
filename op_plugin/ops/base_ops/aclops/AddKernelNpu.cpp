@@ -25,9 +25,11 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 inline void alpha_check_npu(const at::ScalarType dtype, at::Scalar alpha)
 {
-    TORCH_CHECK(!alpha.isBoolean() || dtype == at::kBool, "Boolean alpha only supported for Boolean results.");
+    TORCH_CHECK(!alpha.isBoolean() || dtype == at::kBool, "Boolean alpha only supported for Boolean results."
+        + OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(isFloatingType(dtype) || alpha.isIntegral(true),
-                "For integral input tensors, argument alpha must not be a floating point number.");
+        "For integral input tensors, argument alpha must not be a floating point number."
+        + OPS_ERROR(ErrCode::TYPE));
 }
 
 at::Tensor add_dest_output(const at::Tensor &self, const at::Tensor &other)
@@ -131,8 +133,8 @@ at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar
         (npu_utils::check_5d_5d_match(self) || npu_utils::check_5d_5d_match(other)) && check_size(self, other)) {
         int64_t c0_len = 16;
         at::Tensor self_use = stride_add_tensor_get(self);
-        TORCH_CHECK(self.numel() > 0, "self must be non-empty tensor");
-        TORCH_CHECK(other.numel() > 0, "other must be non-empty tensor");
+        TORCH_CHECK(self.numel() > 0, "self must be non-empty tensor" + OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(other.numel() > 0, "other must be non-empty tensor" + OPS_ERROR(ErrCode::PARAM));
         at::Scalar self_c1_offset(self.storage_offset() / (self.size(2) * self.size(3) * c0_len));
         at::Tensor other_use = stride_add_tensor_get(other);
         at::Scalar other_c1_offset(other.storage_offset() / (other.size(2) * other.size(3) * c0_len));
@@ -169,7 +171,7 @@ at::Tensor &add_(at::Tensor &self, const at::Tensor &other, const at::Scalar &al
     at::ScalarType result_type = at::native::result_type(self, other);
     at::ScalarType self_type = self.scalar_type();
     TORCH_CHECK(canCast(result_type, self_type), "result type ", result_type,
-                " can't be cast to the desired output type ", self_type);
+        " can't be cast to the desired output type ", self_type, OPS_ERROR(ErrCode::TYPE));
     at::Tensor self_cp = (self_type != result_type && !npu_preparation::is_scalar_wrapped_to_tensor(self)) ?
                              at_npu::native::custom_ops::npu_dtype_cast(self, result_type) :
                              self;

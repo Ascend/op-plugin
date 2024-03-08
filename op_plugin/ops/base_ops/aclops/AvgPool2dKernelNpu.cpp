@@ -36,8 +36,10 @@ c10::SmallVector<int64_t, N> get_paddings(
 
   int64_t totalH = H + 2 * padding[0] - kernel_size[0];
   int64_t totalW = W + 2 * padding[1] - kernel_size[1];
-  TORCH_CHECK(totalH <= std::numeric_limits<int64_t>::max(), "Large padding causing data overflow");
-  TORCH_CHECK(totalW <= std::numeric_limits<int64_t>::max(), "Large padding causing data overflow");
+  TORCH_CHECK(totalH <= std::numeric_limits<int64_t>::max(), "Large padding causing data overflow"
+      + OPS_ERROR(ErrCode::VALUE));
+  TORCH_CHECK(totalW <= std::numeric_limits<int64_t>::max(), "Large padding causing data overflow"
+      + OPS_ERROR(ErrCode::VALUE));
   int64_t kH = op_infer::CeilDiv(totalH, stride[0]) + 1;
   int64_t kW = op_infer::CeilDiv(totalW, stride[1]) + 1;
   if (ceil_mode) {
@@ -111,16 +113,21 @@ void avg_pool2d_parameter_check(
     at::IntArrayRef padding,
     c10::optional<int64_t> divisor_override) {
   TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 2,
-      "avg_pool2d: kernel_size must either be a single int, or a tuple of two ints");
+      "avg_pool2d: kernel_size must either be a single int, or a tuple of two ints"
+      + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(stride.empty() || stride.size() == 1 || stride.size() == 2,
-      "avg_pool2d: stride must either be omitted, a single int, or a tuple of two ints");
+      "avg_pool2d: stride must either be omitted, a single int, or a tuple of two ints"
+      + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(padding.size() == 1 || padding.size() == 2,
-      "avg_pool2d: padding must either be a single int, or a tuple of two ints");
+      "avg_pool2d: padding must either be a single int, or a tuple of two ints"
+      + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK((self.ndimension() == 3 || self.ndimension() == 4),
-      "non-empty 2D or 3D (batch mode) tensor expected for input");
+      "non-empty 2D or 3D (batch mode) tensor expected for input"
+      + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
       (!divisor_override.has_value() || (divisor_override.value() > 0 && divisor_override.value() <= 255)),
-      "The value of divisor_override = ", divisor_override.value(), " is invaild, only support [1, 255] at present.");
+      "The value of divisor_override = ", divisor_override.value(), " is invaild, only support [1, 255] at present."
+      + OPS_ERROR(ErrCode::VALUE));
 }
 } // namespace
 

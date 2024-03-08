@@ -70,7 +70,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_apply_adam(
     const at::Tensor& grad,
     c10::optional<bool> use_locking,
     c10::optional<bool> use_nesterov) {
-  TORCH_CHECK(false, "npu_apply_adam is not implemented for Tensor");
+  TORCH_CHECK(false, "npu_apply_adam is not implemented for Tensor"
+      + OPS_ERROR(ErrCode::PARAM));
 }
 
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_out(

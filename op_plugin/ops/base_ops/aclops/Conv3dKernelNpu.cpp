@@ -26,12 +26,17 @@ c10::SmallVector<int64_t, SIZE> conv3d_npu_output_size(const at::Tensor &input, 
                                                        at::IntArrayRef padding, at::IntArrayRef dilation,
                                                        int64_t groups)
 {
-    TORCH_CHECK(input.dim() >= 5, "input has to be more than 5D, but got Tensor of dimension ", input.dim());
-    TORCH_CHECK(weight.dim() >= 5, "weight has to more than 5D, but got Tensor of dimension ", weight.dim());
-    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size());
-    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size());
-    TORCH_CHECK(stride[0] * stride[1] * stride[2] != 0, "Stride cannot contain 0");
+    TORCH_CHECK(input.dim() >= 5, "input has to be more than 5D, but got Tensor of dimension ", input.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 5, "weight has to more than 5D, but got Tensor of dimension ", weight.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride[0] * stride[1] * stride[2] != 0, "Stride cannot contain 0" + OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t D = input.size(2);
@@ -43,9 +48,12 @@ c10::SmallVector<int64_t, SIZE> conv3d_npu_output_size(const at::Tensor &input, 
     int64_t Ho = (H + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
     int64_t Wo = (W + 2 * padding[2] - dilation[2] * (kernel_size[2] - 1) - 1) / stride[2] + 1;
 
-    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do);
-    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho);
-    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo);
+    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do,
+        OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho,
+        OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo,
+        OPS_ERROR(ErrCode::VALUE));
 
     c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Do, Ho, Wo};
     return output_size;
@@ -55,9 +63,12 @@ at::Tensor &conv3d_out_nocheck(at::Tensor &result, const at::Tensor &input, cons
                                const at::Tensor &bias, at::IntArrayRef stride, at::IntArrayRef padding,
                                at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size());
-    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size());
+    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
     at::Tensor filter = weight.to(input.dtype());
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1], stride[2]};
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1], padding[2], padding[2]};
@@ -83,11 +94,15 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> slo
     const at::Tensor &input, const at::Tensor &weight, const at::Tensor &bias, at::IntArrayRef stride,
     at::IntArrayRef padding)
 {
-    TORCH_CHECK(input.dim() >= 5, "input has to be more than 5D, but got Tensor of dimension ", input.dim());
-    TORCH_CHECK(weight.dim() >= 5, "weight has to more than 5D, but got Tensor of dimension ", weight.dim());
-    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size());
-    TORCH_CHECK(stride[0] * stride[1] * stride[2] != 0, "Stride cannot contain 0");
+    TORCH_CHECK(input.dim() >= 5, "input has to be more than 5D, but got Tensor of dimension ", input.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 5, "weight has to more than 5D, but got Tensor of dimension ", weight.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride[0] * stride[1] * stride[2] != 0, "Stride cannot contain 0" + OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t C = input.size(1);
@@ -100,9 +115,12 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> slo
     int64_t Ho = (H + 2 * padding[1] - (kernel_size[1])) / stride[1] + 1;
     int64_t Wo = (W + 2 * padding[2] - (kernel_size[2])) / stride[2] + 1;
 
-    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do);
-    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho);
-    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo);
+    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do,
+        OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho,
+        OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo,
+        OPS_ERROR(ErrCode::VALUE));
 
     c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Do, Ho, Wo};
     c10::SmallVector<int64_t, SIZE> finput_size = {N, C * kernel_size[0] * kernel_size[1] * kernel_size[2],
@@ -115,8 +133,10 @@ at::Tensor &slow_conv3d_forward_npu_nocheck(at::Tensor &result, const at::Tensor
                                             at::IntArrayRef kernel_size, const at::Tensor &bias, at::IntArrayRef stride,
                                             at::IntArrayRef padding)
 {
-    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size());
-    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size());
+    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
 
     at::Tensor filter = weight.to(input.dtype());
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1], stride[2]};

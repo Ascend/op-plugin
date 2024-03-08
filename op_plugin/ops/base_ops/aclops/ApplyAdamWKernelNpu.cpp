@@ -80,7 +80,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_apply_adam_w(
     const c10::optional<at::Tensor>& max_grad_norm,
     c10::optional<bool> amsgrad,
     c10::optional<bool> maximize) {
-  TORCH_CHECK(false, "npu_apply_adam_w is not implemented for Tensor");
+  TORCH_CHECK(false, "npu_apply_adam_w is not implemented for Tensor"
+      + OPS_ERROR(ErrCode::PARAM));
 }
 
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_w_out(
@@ -103,7 +104,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_w_out(
   bool v_match = npu_utils::check_match(&v);
 
   if ((amsgrad.has_value()) && (amsgrad.value())) {
-    TORCH_CHECK(max_grad_norm.has_value(), "if amsgrad is true, max_grad_norm input must be entered");
+    TORCH_CHECK(max_grad_norm.has_value(), "if amsgrad is true, max_grad_norm input must be entered"
+        + OPS_ERROR(ErrCode::PARAM));
   }
   if (!(var_match && m_match && v_match)) {
     at::Tensor contiguous_var = var_match ? var : npu_utils::format_contiguous(var);

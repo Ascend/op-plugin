@@ -26,7 +26,7 @@ void adaptive_avg_pool1d_check(
   TORCH_CHECK(
       x.size() == 1,
       function_name, "() argument '", argument_name,
-      "' should contain one int (got ", x.size(), ")");
+      "' should contain one int (got ", x.size(), ")" + OPS_ERROR(ErrCode::PARAM));
 }
 } // namespace
 

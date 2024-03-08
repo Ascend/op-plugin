@@ -59,15 +59,15 @@ void avg_pool3d_parameter_check(
     at::IntArrayRef padding,
     c10::optional<int64_t> divisor_override) {
   TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 3,
-      "avg_pool3d: kernel_size must be a single int, or a tuple of three ints");
+      "avg_pool3d: kernel_size must be a single int, or a tuple of three ints" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(stride.empty() || stride.size() == 1 || stride.size() == 3,
-      "avg_pool3d: stride must be omitted, a single int, or a tuple of three ints");
+      "avg_pool3d: stride must be omitted, a single int, or a tuple of three ints" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(padding.size() == 1 || padding.size() == 3,
-      "avg_pool3d: padding must be a single int, or a tuple of three ints");
+      "avg_pool3d: padding must be a single int, or a tuple of three ints" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK((self.ndimension() == 4 || self.ndimension() == 5),
-      "non-empty 4D or 5D (batch mode) tensor expected for input");
+      "non-empty 4D or 5D (batch mode) tensor expected for input" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(!divisor_override.has_value() || divisor_override.value() != 0,
-      "divisor must be not zero");
+      "divisor must be not zero" + OPS_ERROR(ErrCode::VALUE));
 }
 
 c10::SmallVector<int64_t, SIZE> cal_kernel_size(at::IntArrayRef kernel_size) {

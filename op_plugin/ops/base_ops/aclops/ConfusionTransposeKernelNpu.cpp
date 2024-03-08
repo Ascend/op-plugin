@@ -30,8 +30,8 @@ at::Tensor npu_confusion_transpose(const at::Tensor& self,
     auto shape_size = shape.size();
     for (uint i = 0; i < perm.size(); i++) {
         TORCH_CHECK(shape_size > perm[i], "npu_confusion_transpose input invalid, "
-                                          "shape has size ",
-                    shape_size, " but perm[i] is, ", perm[i]);
+            "shape has size ", shape_size, " but perm[i] is, ", perm[i],
+            OPS_ERROR(ErrCode::PARAM));
       output_size.emplace_back(shape[perm[i]]);
     }
   }

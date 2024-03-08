@@ -32,11 +32,11 @@ inline void adaptive_avg_pool2d_check(const at::Tensor& self) {
         " with dimension ",
         i,
         " being "
-        "empty");
+        "empty" + OPS_ERROR(ErrCode::PARAM));
   }
   TORCH_CHECK(
       (self.dim() == 3 || self.dim() == 4),
-      "non-empty 3D or 4D (batch mode) tensor expected for input");
+      "non-empty 3D or 4D (batch mode) tensor expected for input" + OPS_ERROR(ErrCode::PARAM));
 }
 
 at::Tensor& adaptive_avg_pool2d_out_nocheck(

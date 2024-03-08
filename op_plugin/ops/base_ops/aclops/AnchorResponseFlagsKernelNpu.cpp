@@ -27,15 +27,15 @@ inline void anchor_response_flags_check(
   TORCH_CHECK(
       featmap_size.size() == 2,
       "expected feat_map_size equals to 2, but got size ",
-      featmap_size.size());
+      featmap_size.size(), OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
       self.dim() == 2 && self.size(1) == 4,
       "Non-empty 2D gt_bboxes tensor expected but got a tensor with sizes ",
-      self.sizes());
+      self.sizes(), OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
       self.scalar_type() == at::kHalf || self.scalar_type() == at::kFloat,
       "float16 or float32 tensor expected but got a tensor with dtype: ",
-      self.scalar_type());
+      self.scalar_type(), OPS_ERROR(ErrCode::TYPE));
 }
 } // namespace
 

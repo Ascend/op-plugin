@@ -47,10 +47,11 @@ at::Tensor batch_norm_backward_elemt(
     const at::Tensor& count) {
   const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
   int64_t input_ndim = input.dim();
-  TORCH_CHECK(input_ndim > 1, "input.dim() <= 1")
+  TORCH_CHECK(input_ndim > 1, "input.dim() <= 1" + OPS_ERROR(ErrCode::PARAM));
 
   auto divisor = count.sum();
-  TORCH_CHECK(divisor.numel() > 0, "The input tensor [count] is an empty tensor.");
+  TORCH_CHECK(divisor.numel() > 0, "The input tensor [count] is an empty tensor."
+      + OPS_ERROR(ErrCode::PARAM));
   auto mean_dy = sum_dy.div(divisor);
   auto mean_dy_xmu = sum_dy_xmu.div(divisor);
 

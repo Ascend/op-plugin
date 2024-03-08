@@ -25,10 +25,14 @@ at::Tensor _cdist_backward(
     const at::Tensor& x2,
     const double p,
     const at::Tensor& cdist) {
-  TORCH_CHECK(x1.is_contiguous(), "_cdist_backward requires X1 to be contiguous");
-  TORCH_CHECK(x2.is_contiguous(), "_cdist_backward requires X2 to be contiguous");
-  TORCH_CHECK(cdist.is_contiguous(), "_cdist_backward requires dist to be contiguous");
-  TORCH_CHECK(grad.is_contiguous(), "_cdist_backward requires grad to be contiguous");
+  TORCH_CHECK(x1.is_contiguous(), "_cdist_backward requires X1 to be contiguous"
+      + OPS_ERROR(ErrCode::TYPE));
+  TORCH_CHECK(x2.is_contiguous(), "_cdist_backward requires X2 to be contiguous"
+      + OPS_ERROR(ErrCode::TYPE));
+  TORCH_CHECK(cdist.is_contiguous(), "_cdist_backward requires dist to be contiguous"
+      + OPS_ERROR(ErrCode::TYPE));
+  TORCH_CHECK(grad.is_contiguous(), "_cdist_backward requires grad to be contiguous"
+      + OPS_ERROR(ErrCode::TYPE));
 
   float p_float;
   if (std::isinf(p)) {
