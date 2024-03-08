@@ -19,7 +19,7 @@
 #include <torch/torch.h>
 
 #include "torch_npu/csrc/core/npu/DeviceUtils.h"
-#include "op_plugin/OpInterface.h"
+#include "op_plugin/SparseOpsInterface.h"
 #include "SparseTensorUtils.h"
 
 namespace sparse {

@@ -987,6 +987,7 @@ official:
    impl_ns: acl_op, op_api
  - func: max(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
+   sparse: op_api
  - func: max.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
    impl_ns: acl_op, op_api
  - func: max.dim_max(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) max, Tensor(b!) max_values) -> (Tensor(a!) values, Tensor(b!) indices)
@@ -997,6 +998,7 @@ official:
    impl_ns: acl_op, op_api
  - func: max.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+   sparse: op_api
  - func: max_pool2d_with_indices(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False) -> (Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: max_pool2d_with_indices.out(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))
