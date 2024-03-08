@@ -30,7 +30,7 @@ void _foreach_mul_(const at::TensorList self, const at::Scalar& scalar) {
         scalar_type != at::ScalarType::Int) {
         TORCH_CHECK(false, "input must be half, float or int32", OPS_ERROR(ErrCode::TYPE));
     }
-    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, scalar_type, self[0].device());
     EXEC_NPU_CMD(aclnnForeachMulScalar, self, scalar_tensor, self);
 }
 }

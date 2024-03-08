@@ -38,7 +38,7 @@ std::vector<at::Tensor> _foreach_mul(const at::TensorList self, const at::Scalar
         result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
-    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type());
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type(), self[0].device());
 
     EXEC_NPU_CMD(aclnnForeachMulScalar, self, scalar_tensor, result_);
 

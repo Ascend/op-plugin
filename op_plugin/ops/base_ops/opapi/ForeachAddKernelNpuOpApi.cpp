@@ -36,7 +36,7 @@ std::vector<at::Tensor> _foreach_add(at::TensorList tensors1, at::TensorList ten
     at::TensorList result_ = at::TensorList(result);
 
     // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
-    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type);
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type, tensors1[0].device());
 
     EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, result_);
     return result;
@@ -51,7 +51,7 @@ void _foreach_add_(at::TensorList tensors1, at::TensorList tensors2, const at::S
     }
     // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
     auto scalar_type = tensors1[0].scalar_type();
-    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type);
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type, tensors1[0].device());
 
     EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, tensors1);
     return;

@@ -32,10 +32,12 @@ static at::Tensor& div_out_npu_opapi_nocheck(const at::Tensor& self, const at::T
   return result;
 }
 
-static at::Tensor self_tensor_to_device(const at::Tensor& tensor, const at::ScalarType result_type) {
+static at::Tensor self_tensor_to_device(const at::Tensor& tensor, const at::ScalarType result_type,
+                                        const c10::Device device)
+{
   if (npu_preparation::is_scalar_wrapped_to_tensor(tensor)) {
     at::Scalar scalar = tensor.item();
-    return npu_preparation::copy_scalar_to_device(scalar, result_type);
+    return npu_preparation::copy_scalar_to_device(scalar, result_type, device);
   }
   return tensor;
 }
@@ -48,7 +50,7 @@ at::Tensor true_divide(const at::Tensor &self, const at::Tensor &other) {
   at::Tensor output_tensor = is_self_wrapped ? other : self;
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType high_type = at::native::result_type(self, other);
-  at::Tensor self_cp = self_tensor_to_device(self, high_type);
+  at::Tensor self_cp = self_tensor_to_device(self, high_type, output_tensor.device());
 
   if (isIntegralType(high_type, true)) {
     high_type = at::ScalarType::Float;
@@ -76,23 +78,23 @@ at::Tensor true_divide(const at::Tensor &self, const at::Scalar &other) {
 }
 
 at::Tensor& true_divide_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnDivs, acl_op::true_divide_out(self, other, result));
-  DO_COMPATIBILITY(aclnnDiv, acl_op::true_divide_out(self, other, result));
-  // calculate the output size
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::ScalarType result_type = at::native::result_type(self, other);
-  if (isIntegralType(result_type, true)) {
-    result_type = at::ScalarType::Float;
-  }
-  if (isFloatingType(result.scalar_type())) {
-    result_type = result.scalar_type();
-  }
-  at::Tensor self_cp = self_tensor_to_device(self, result_type);
-  npu_preparation::check_tensor({self, other}, result, result_type, output_size);
+    DO_COMPATIBILITY(aclnnDivs, acl_op::true_divide_out(self, other, result));
+    DO_COMPATIBILITY(aclnnDiv, acl_op::true_divide_out(self, other, result));
+    // calculate the output size
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::ScalarType result_type = at::native::result_type(self, other);
+    if (isIntegralType(result_type, true)) {
+        result_type = at::ScalarType::Float;
+    }
+    if (isFloatingType(result.scalar_type())) {
+        result_type = result.scalar_type();
+    }
+    at::Tensor self_cp = self_tensor_to_device(self, result_type, result.device());
+    npu_preparation::check_tensor({self, other}, result, result_type, output_size);
 
-  // calculate the output result of the NPU
-  div_out_npu_opapi_nocheck(self_cp, other, result);
-  return result;
+    // calculate the output result of the NPU
+    div_out_npu_opapi_nocheck(self_cp, other, result);
+    return result;
 }
 
 at::Tensor& true_divide_(at::Tensor& self, const at::Tensor& other) {

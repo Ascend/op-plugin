@@ -69,7 +69,7 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors, const at::Scala
                                                                       tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
-    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type, tensors[0].device());
     EXEC_NPU_CMD(aclnnForeachMinimumScalar, tensors, scalar_, result_);
     return result;
     }
@@ -82,7 +82,7 @@ void _foreach_minimum_(at::TensorList tensors, const at::Scalar& scalar)
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow_(tensors, scalar);
     }
     auto scalar_type = tensors[0].scalar_type();
-    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type, tensors[0].device());
     EXEC_NPU_CMD(aclnnForeachMinimumScalar, tensors, scalar_, tensors);
     return;
 }

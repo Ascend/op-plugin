@@ -25,7 +25,7 @@ at::Tensor &maximum_out(const at::Tensor &self, const at::Tensor &other, at::Ten
     at::Tensor cp_other = other;
     if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
         at::Scalar scalar = other.item();
-        cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type());
+        cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type(), self.device());
     }
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, cp_other);
     at_npu::native::OpPreparation::check_tensor({self, cp_other}, result, result, output_size);
@@ -39,7 +39,7 @@ at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
     at::Tensor cp_other = other;
     if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
         at::Scalar scalar = other.item();
-        cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type());
+        cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type(), self.device());
     }
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, cp_other);
     at::ScalarType high_type = at::native::result_type(self, cp_other);

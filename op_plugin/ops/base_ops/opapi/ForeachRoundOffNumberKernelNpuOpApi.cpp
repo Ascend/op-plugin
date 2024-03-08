@@ -38,7 +38,7 @@ void exec_npu_cmd_(at::TensorList self, const char roundMode)
         return;
     }
     at::Tensor round_mode_scalar_tensor = at_npu::native::OpPreparation::copy_scalar_to_device(
-        roundMode, at::ScalarType::Char);
+        roundMode, at::ScalarType::Char, self[0].device());
     // dispatch hostAPI
     EXEC_NPU_CMD(aclnnForeachRoundOffNumber, self, round_mode_scalar_tensor, self);
 }
@@ -67,7 +67,7 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
     at::TensorList result_ = at::TensorList(result);
 
     at::Tensor round_mode_scalar_tensor = at_npu::native::OpPreparation::copy_scalar_to_device(
-        roundMode, at::ScalarType::Char);
+        roundMode, at::ScalarType::Char, self[0].device());
     // dispatch hostAPI
     EXEC_NPU_CMD(aclnnForeachRoundOffNumber, self, round_mode_scalar_tensor, result_);
     return result;

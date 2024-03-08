@@ -1293,6 +1293,8 @@ log_softmax:
   - float32
   test_conj_view:
   - complex64
+  test_fake:
+  - float32
   test_fake_crossref_backward_amp:
   - float32
   test_fake_crossref_backward_no_amp:
@@ -1308,6 +1310,8 @@ log_softmax:
   test_operator:
   - float32
   test_out:
+  - float32
+  test_pointwise_ops:
   - float32
   test_variant_consistency_eager:
   - complex64
@@ -2461,6 +2465,10 @@ softmax:
   - float32
   test_conj_view:
   - complex64
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
   test_fake_crossref_backward_amp:
   - float32
   test_fake_crossref_backward_no_amp:
@@ -2476,6 +2484,8 @@ softmax:
   test_operator:
   - float32
   test_out:
+  - float32
+  test_pointwise_ops:
   - float32
   test_variant_consistency_eager:
   - complex64
@@ -3284,6 +3294,8 @@ clamp_max:
   test_operator:
   - float32
   test_out:
+  - float32
+  test_pointwise_ops:
   - float32
   test_variant_consistency_eager:
   - float32
@@ -8211,6 +8223,12 @@ masked.log_softmax:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_fake_autocast:
+  - float32
+  test_pointwise_ops:
+  - float32
+  test_fake:
+  - float32
 masked.logaddexp:
   test_backward:
   - float32
@@ -8234,6 +8252,12 @@ masked.softmax:
   test_operator:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
   - float32
 masked.softmin:
   test_backward:
@@ -8456,10 +8480,16 @@ svd_lowrank:
   test_out:
   - float32
 _softmax_backward_data:
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
   test_forward_ad:
   - float32
   test_neg_view:
   - float64
+  test_pointwise_ops:
+  - float32
   test_variant_consistency_eager:
   - float32
 bernoulli:
@@ -10338,3 +10368,80 @@ _refs_dot:
 _refs_linalg_cross:
   test_conj_view:
   - complex64
+log_softmax_with_dtype:
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
+softmax_with_dtype:
+  test_fake_autocast:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
+max_reduction_with_dim:
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
+maximun:
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
+nn_functional_adaptive_max_pool1d:
+  test_pointwise_ops:
+  - float32
+nn_functional_adaptive_max_pool2d:
+  test_pointwise_ops:
+  - float32
+nn_functional_adaptive_max_pool3d:
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
+nn_functional_fractional_max_pool2d:
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
+nn_functional_fractional_max_pool3d:
+  test_fake_crossref_backward_amp:
+  - float32
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
+max_binary:
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32
+max_reduction_no_dim:
+  test_fake_crossref_backward_no_amp:
+  - float32
+  test_fake:
+  - float32
+  test_pointwise_ops:
+  - float32

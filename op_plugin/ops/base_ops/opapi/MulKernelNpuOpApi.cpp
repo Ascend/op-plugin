@@ -22,12 +22,13 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::ScalarType result_type)
+static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::ScalarType result_type,
+                                        const c10::Device device)
 {
     if (npu_preparation::is_scalar_wrapped_to_tensor(tensor) ||
        (tensor.dim() == 0 && !torch_npu::utils::is_npu(tensor))) {
         at::Scalar scalar = tensor.item();
-        return npu_preparation::copy_scalar_to_device(scalar, result_type);
+        return npu_preparation::copy_scalar_to_device(scalar, result_type, device);
     }
     return tensor;
 }
@@ -70,7 +71,7 @@ at::Tensor &mul_out(const at::Tensor &self, const at::Tensor &other, at::Tensor 
     at::Tensor output_tensor = mul_dest_output(self, other);
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType result_type = at::native::result_type(self, other);
-    at::Tensor self_cp = self_tensor_to_device(self, result_type);
+    at::Tensor self_cp = self_tensor_to_device(self, result_type, result.device());
     npu_preparation::check_tensor({self}, result, result.scalar_type(), output_size);
     // calculate the output result of the NPU
     mul_out_npu_no_check(self_cp, other, result);
@@ -86,7 +87,7 @@ at::Tensor mul(const at::Tensor &self, const at::Tensor &other)
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
 
     at::ScalarType result_type = at::native::result_type(self, other);
-    at::Tensor self_cp = self_tensor_to_device(self, result_type);
+    at::Tensor self_cp = self_tensor_to_device(self, result_type, output_tensor.device());
 
     // construct the output tensor of the NPU
     at::Tensor result =
