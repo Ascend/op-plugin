@@ -28,6 +28,18 @@ enum class DropOutStatus {
     DROPOUT_ALL
 };
 
+enum class SparseMode {
+    NO_MASK = 0,
+    ALL_MASK,
+    LEFT_UP_CAUSAL,
+    RIGHT_DOWN_CAUSAL,
+    BAND,
+    PREFIX,
+    PREFIX_COMPRESS,
+    RIGHT_DOWN_CAUSAL_BAND,
+    BAND_LEFT_UP_CAUSAL
+};
+
 namespace {
 DropOutStatus get_dropout_status(double keep_prob)
 {
@@ -247,9 +259,20 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_flash_attention_g
                 dy.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ",
                 keep_prob, OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ",
-                sparse_mode, OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
+    if (input_layout_str == "TND") {
+        TORCH_CHECK((sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
+                    sparse_mode < static_cast<int64_t>(SparseMode::PREFIX)) ||
+                    (sparse_mode > static_cast<int64_t>(SparseMode::PREFIX) &&
+                    sparse_mode <= static_cast<int64_t>(SparseMode::BAND_LEFT_UP_CAUSAL)),
+                    "The sparse_mode value must be in range of [0,5) or (5,8], but got ",
+                    sparse_mode, OPS_ERROR(ErrCode::PARAM));
+    } else {
+        TORCH_CHECK(sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
+                    sparse_mode <= static_cast<int64_t>(SparseMode::PREFIX_COMPRESS),
+                    "The sparse_mode value must be in range of [0,6], but got ",
+                    sparse_mode, OPS_ERROR(ErrCode::PARAM));
+    }
     for (auto &c : input_layout_str) {
         c = toupper(c);
     }
@@ -302,9 +325,20 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
                 value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ",
                 keep_prob, OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ",
-                sparse_mode, OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
+    if (input_layout_str == "TND") {
+        TORCH_CHECK((sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
+                    sparse_mode < static_cast<int64_t>(SparseMode::PREFIX)) ||
+                    (sparse_mode > static_cast<int64_t>(SparseMode::PREFIX) &&
+                    sparse_mode <= static_cast<int64_t>(SparseMode::BAND_LEFT_UP_CAUSAL)),
+                    "The sparse_mode value must be in range of [0,5) or (5,8], but got ",
+                    sparse_mode, OPS_ERROR(ErrCode::PARAM));
+    } else {
+        TORCH_CHECK(sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
+                    sparse_mode <= static_cast<int64_t>(SparseMode::PREFIX_COMPRESS),
+                    "The sparse_mode value must be in range of [0,6], but got ",
+                    sparse_mode, OPS_ERROR(ErrCode::PARAM));
+    }
     for (auto &c : input_layout_str) {
         c = toupper(c);
     }
