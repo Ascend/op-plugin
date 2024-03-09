@@ -5969,6 +5969,13 @@ split_with_sizes:
   - float32
   test_out:
   - float32
+split_with_sizes_copy:
+  test_non_standard_bool_values:
+  - bool
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
 squeeze:
   test_backward:
   - float32
