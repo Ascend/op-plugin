@@ -60,8 +60,13 @@ void creat_new_tensor(std::vector<at::Tensor> &y, size_t dim_m, size_t dim_n, c1
 std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                                            const at::TensorList weight,
                                            const at::TensorList bias,
+                                           const at::TensorList scale,
+                                           const at::TensorList offset,
+                                           const at::TensorList antiquant_scale,
+                                           const at::TensorList antiquant_offset,
                                            c10::optional<at::IntArrayRef> group_list,
-                                           c10::optional<int64_t> split_item)
+                                           c10::optional<int64_t> split_item,
+                                           c10::optional<at::ScalarType> output_dtype)
 {
     auto num_x = x.size();
     auto num_weight = weight.size();
@@ -70,7 +75,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     int64_t split_item_value = split_item.value_or(0);
 
     std::vector<at::Tensor> y;
-    c10::TensorOptions options = x[0].options().dtype(x[0].scalar_type());
+    c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
 
     TORCH_CHECK(check_dims(split_item_value, num_x, num_weight, num_group_list),
                 "Invalid value of split_item or invalid dims of inputs: split_item = ", split_item_value,
@@ -83,8 +88,9 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
         }
     } else if (IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
         y.reserve(num_weight);
-        for (int i = 0; i < num_weight; i++) {
-            creat_new_tensor(y, group_list_real[i], weight[i].sizes()[1], options);
+        creat_new_tensor(y, group_list_real[0], weight[0].sizes()[1], options);
+        for (int i = 1; i < num_weight; i++) {
+            creat_new_tensor(y, group_list_real[i] - group_list_real[i - 1], weight[i].sizes()[1], options);
         }
     } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value) {
         size_t dim_m = 0;
@@ -97,7 +103,8 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     }
     at::TensorList result = at::TensorList(y);
 
-    EXEC_NPU_CMD(aclnnGroupedMatmul, x, weight, bias, group_list_real, split_item_value, result);
+    EXEC_NPU_CMD(aclnnGroupedMatmul, x, weight, bias, scale, offset, antiquant_scale,
+                 antiquant_offset, group_list_real, split_item_value, result);
 
     return y;
 }
