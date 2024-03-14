@@ -1,16 +1,16 @@
 # Ascend OpPlugin for PyTorch
 
-### 简介
+## 简介
 
 本项目开发了NPU PyTorch算子插件，为使用PyTorch框架的开发者提供便捷的NPU算子库调用能力。
 OP-Plugin算子插件的编译、使用依赖昇腾Ascend Adapter for PyTorch。因此，在编译op\_plugin之前，需要了解、安装昇腾PyTorch。使用手册可参考昇腾社区[pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md)。
 
-### 编译、安装op_plugin
+## 编译、安装op_plugin
 
-#### 发布包安装
+### 发布包安装
 暂未正式发布
 
-#### 源码安装
+### 源码安装
 
 **安装依赖**
 
@@ -49,3 +49,7 @@ OP-Plugin算子插件的编译、使用依赖昇腾Ascend Adapter for PyTorch。
    pip3 install --upgrade dist/torch_npu-1.11.0-cp37-cp37m-linux_aarch64.whl
    # 若用户在x86架构下安装插件，请替换为对应的whl包。
    ```
+
+## 安全声明
+
+[Ascend OpPlugin for PyTorch 安全声明](SECURITYNOTE.md)
