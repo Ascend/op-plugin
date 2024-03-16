@@ -26,7 +26,6 @@ const static int64_t D_LIMIT = 512;
 const static int64_t BNSD_DIM = 4;
 const static int64_t TOKEN_MAX = 2147483647;
 const static int64_t LEFT_UP_CAUSAL = 2;
-using npu_preparation = at_npu::native::OpPreparation;
 
 inline void validate_sdpa_input(
     const at::Tensor &query,
@@ -77,6 +76,7 @@ c10::optional<at::Tensor> convert_boolean_attn_mask_math(
 }
 
 c10::optional<at::Tensor> convert_boolean_attn_mask(
+    const at::Tensor &query,
     const c10::optional<at::Tensor> &attn_mask,
     bool is_causal)
 {
@@ -87,11 +87,8 @@ c10::optional<at::Tensor> convert_boolean_attn_mask(
         TORCH_CHECK(!attn_mask.has_value(),
             "The attn_mask should be none when is_causal is true, but got ",
             attn_mask.has_value(), "-value");
-        at::Tensor atten_mask_shape =
-            npu_preparation::apply_tensor_without_format({ATTENMASK_LIMIT, ATTENMASK_LIMIT},
-                                                         c10::dtype(c10::ScalarType::Bool));
-        at::Tensor atten_mask_comp = op_api::logical_not(atten_mask_shape);
-        auto new_attn_mask = op_api::triu(atten_mask_comp, 1);
+        at::Tensor atten_mask_shape = at::ones({ATTENMASK_LIMIT, ATTENMASK_LIMIT}, query.options().dtype(at::kBool));
+        auto new_attn_mask = op_api::triu(atten_mask_shape, 1);
         return new_attn_mask;
     }
     const at::Tensor &atten_mask_in = attn_mask.value_or(at::Tensor());
@@ -133,7 +130,7 @@ at::Tensor scaled_dot_product_attention(
            3. For GQA, the key shape is [B, N2, S2, D], where N2 <= N_LIMIT, and N1 is a positive integer
               multiple of N2.
            4. It only supports SocVersion after Ascend910B1. */
-        c10::optional<at::Tensor> atten_mask = convert_boolean_attn_mask(attn_mask, is_causal);
+        c10::optional<at::Tensor> atten_mask = convert_boolean_attn_mask(query, attn_mask, is_causal);
         int64_t head_num = query.size(1);
         c10::string_view input_layout = "BNSD";
         auto input_scale = calculate_scale(query, scale);
