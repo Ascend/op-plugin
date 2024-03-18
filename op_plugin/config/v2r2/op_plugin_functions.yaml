@@ -1929,6 +1929,8 @@ symint:
    impl_ns: acl_op, op_api
  - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
    impl_ns: acl_op, op_api
+ - func: repeat_interleave_backward_int(Tensor grad, Tensor self, SymInt repeats, int? dim=None) -> Tensor
+   impl_ns: op_api
  - func: zeros(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
  - func: npu_bmm_v2_mat1_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
@@ -1945,6 +1947,10 @@ symint:
    impl_ns: acl_op
 
 custom:
+  - func: repeat_interleave_backward_tensor(Tensor grad, Tensor self, Tensor repeats, int? dim=None) -> Tensor
+    impl_ns: op_api
+  - func: repeat_interleave_backward_int(Tensor grad, Tensor self, SymInt repeats, int? dim=None) -> Tensor
+    impl_ns: op_api
   - func: npu_view_copy(Tensor(a!) self, Tensor other, bool non_blocking) -> Tensor(a!)
     impl_ns: acl_op
   - func: npu_transpose(Tensor self, int[] perm, bool require_contiguous=True) -> Tensor
