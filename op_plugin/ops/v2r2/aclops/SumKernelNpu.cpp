@@ -23,7 +23,7 @@ at::Tensor& sum_out(
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
     at::Tensor& result) {
-  return sum_out_common_nocheck(result, self, dim.value(), keepdim, dtype);
+    return sum_out_common_nocheck(result, self, dim.value_or(at::IntArrayRef{}), keepdim, dtype);
 }
 
 at::Tensor sum(
@@ -31,6 +31,6 @@ at::Tensor sum(
     at::OptionalIntArrayRef dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype) {
-  return sum_common_nocheck(self, dim.value(), keepdim, dtype);
+    return sum_common_nocheck(self, dim.value_or(at::IntArrayRef{}), keepdim, dtype);
 }
 } // namespace acl_op
