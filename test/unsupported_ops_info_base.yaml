@@ -12,6 +12,8 @@ __rmul__:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 __rpow__:
   test_compare_cpu:
   - float32
@@ -23,6 +25,8 @@ __rpow__:
   - float64
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 __rmatmul__:
   test_backward:
@@ -478,6 +482,8 @@ atan2:
   - bool
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 baddbmm:
   test_backward:
   - float32
@@ -536,6 +542,7 @@ bmm:
   - float32
   test_fake:
   - float32
+  - - float32
 chalf:
   test_backward:
   - float32
@@ -660,6 +667,8 @@ contiguous:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 cross:
   test_backward:
   - float32
@@ -691,6 +700,8 @@ dist:
   - float64
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 div:
   test_compare_cpu:
@@ -799,6 +810,10 @@ histc:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
   - float32
 index_fill:
   test_backward:
@@ -927,6 +942,7 @@ linalg.cholesky:
   - float32
   test_forward_ad:
   - float32
+  - - float32
   test_neg_conj_view:
   - complex128
   test_neg_view:
@@ -971,6 +987,8 @@ ldexp:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 linalg.inv:
   test_backward:
@@ -1286,6 +1304,10 @@ linspace:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
 log_softmax:
   test_backward:
   - float32
@@ -1372,6 +1394,10 @@ logaddexp:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
+  test_dtypes:
+  - ''
 lu_unpack:
   test_backward:
   - float32
@@ -1549,6 +1575,8 @@ mul:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 mv:
   test_backward:
   - float32
@@ -1696,6 +1724,8 @@ nn.functional.alpha_dropout:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.avg_pool1d:
   test_backward:
   - float32
@@ -1756,6 +1786,8 @@ nn.functional.bilinear:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.binary_cross_entropy:
   test_backward:
   - float32
@@ -1815,15 +1847,29 @@ nn.functional.conv3d:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+  test_operator:
+  - float32
 nn.functional.fractional_max_pool2d:
   test_variant_consistency_eager:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.fractional_max_pool3d:
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.embedding_bag:
   test_backward:
@@ -1889,6 +1935,8 @@ nn.functional.gaussian_nll_loss:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.hinge_embedding_loss:
   test_backward:
   - float32
@@ -1908,6 +1956,8 @@ nn.functional.hardtanh:
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.interpolate:
   test_backward:
@@ -2222,6 +2272,8 @@ nn.functional.relu6:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.unfold:
   test_backward:
   - float32
@@ -2277,6 +2329,8 @@ nn.functional.upsample_nearest:
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 ones_like:
   test_compare_cpu:
@@ -2727,6 +2781,8 @@ xlogy:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 H:
   test_backward:
   - float32
@@ -2771,6 +2827,8 @@ acosh:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 __getitem__:
   test_backward:
   - float32
@@ -2798,6 +2856,8 @@ __radd__:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 __rand__:
   test_non_standard_bool_values:
@@ -2847,6 +2907,8 @@ __rdiv__:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 __ror__:
   test_non_standard_bool_values:
@@ -2900,6 +2962,8 @@ asin:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 amax:
   test_backward:
   - float32
@@ -2935,6 +2999,8 @@ asinh:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 atan:
   test_conj_view:
   - complex64
@@ -2947,6 +3013,8 @@ atan:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 atanh:
   test_conj_view:
   - complex64
@@ -2958,6 +3026,8 @@ atanh:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 any:
   test_conj_view:
@@ -2992,6 +3062,8 @@ angle:
   - float32
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 argwhere:
   test_conj_view:
@@ -3041,6 +3113,8 @@ atleast_1d:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 atleast_2d:
   test_backward:
@@ -3334,6 +3408,8 @@ clone:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 cos:
   test_conj_view:
   - complex64
@@ -3346,6 +3422,8 @@ cos:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 cosh:
   test_conj_view:
   - complex64
@@ -3357,6 +3435,8 @@ cosh:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 cummax:
   test_backward:
@@ -3474,6 +3554,8 @@ conj:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 conj_physical:
   test_conj_view:
   - complex64
@@ -3488,7 +3570,11 @@ conj_physical:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 diagflat:
+  test_operator:
+  - float32
   test_backward:
   - float32
   test_conj_view:
@@ -3521,6 +3607,8 @@ copysign:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 count_nonzero:
   test_conj_view:
   - complex64
@@ -3539,6 +3627,8 @@ deg2rad:
   test_non_standard_bool_values:
   - bool
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 diag_embed:
   test_backward:
@@ -3565,6 +3655,8 @@ diagonal_copy:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 diagonal:
   test_backward:
@@ -3660,12 +3752,16 @@ erf:
   - bool
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 erfc:
   test_neg_view:
   - float64
   test_non_standard_bool_values:
   - bool
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 dstack:
   test_backward:
@@ -3690,6 +3786,8 @@ erfinv:
   - bool
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 exp2:
   test_conj_view:
   - complex64
@@ -3701,6 +3799,8 @@ exp2:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 exp:
   test_conj_view:
@@ -3714,6 +3814,8 @@ exp:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 expm1:
   test_conj_view:
   - complex64
@@ -3726,6 +3828,8 @@ expm1:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 fft.fftshift:
   test_conj_view:
   - complex64
@@ -3737,6 +3841,8 @@ fft.fftshift:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 eq:
   test_conj_view:
@@ -3789,6 +3895,8 @@ fft.hfft2:
   - float32
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_pointwise_ops:
   - float32
 fft.hfft:
   test_backward:
@@ -3873,6 +3981,8 @@ fft.ifftshift:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 expand:
   test_backward:
@@ -4127,6 +4237,10 @@ fft.irfft:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
 fft.irfftn:
   test_backward:
   - float32
@@ -4148,6 +4262,10 @@ fft.irfftn:
   - float32
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_fake_autocast:
+  - float32
+  test_pointwise_ops:
   - float32
 fft.rfft2:
   test_backward:
@@ -4206,6 +4324,8 @@ fft.rfftn:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_fake:
+  - float32
 fill:
   test_conj_view:
   - complex64
@@ -4218,9 +4338,15 @@ fill:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 full:
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
   - float32
 flatten:
   test_conj_view:
@@ -4234,6 +4360,8 @@ flatten:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 flip:
   test_conj_view:
   - complex64
@@ -4245,6 +4373,8 @@ flip:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 fliplr:
   test_conj_view:
@@ -4258,6 +4388,8 @@ fliplr:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 flipud:
   test_conj_view:
   - complex64
@@ -4269,6 +4401,8 @@ flipud:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 float:
   test_backward:
@@ -4325,6 +4459,8 @@ fmax:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 fmin:
   test_neg_view:
   - float64
@@ -4333,6 +4469,8 @@ fmin:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 full_like:
   test_conj_view:
@@ -4403,6 +4541,8 @@ hsplit:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 hstack:
   test_backward:
   - float32
@@ -4427,6 +4567,8 @@ i0:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 index_copy:
   test_backward:
@@ -4455,6 +4597,8 @@ index_put:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 index_select:
   test_backward:
@@ -4601,6 +4745,8 @@ log1p:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 kron:
   test_conj_view:
   - complex64
@@ -4612,6 +4758,8 @@ kron:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 lgamma:
   test_forward_ad:
@@ -4666,6 +4814,8 @@ log10:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 log2:
   test_conj_view:
   - complex64
@@ -4678,6 +4828,8 @@ log2:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 log:
   test_conj_view:
   - complex64
@@ -4689,6 +4841,8 @@ log:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 logical_and:
   test_conj_view:
@@ -4751,6 +4905,8 @@ logit:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 long:
   test_conj_view:
@@ -4826,6 +4982,8 @@ masked_fill:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 masked.mean:
   test_backward:
   - float32
@@ -4848,6 +5006,8 @@ maximum:
   test_non_standard_bool_values:
   - bool
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 masked.prod:
   test_backward:
@@ -4886,6 +5046,8 @@ masked_scatter:
   test_fake:
   - float32
   test_pointwise_ops:
+  - float32
+  test_backward:
   - float32
 masked_select:
   test_backward:
@@ -4939,12 +5101,16 @@ minimum:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 msort:
   test_neg_view:
   - float64
   test_non_standard_bool_values:
   - bool
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 meshgrid:
   test_backward:
@@ -5070,6 +5236,8 @@ narrow:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 ne:
   test_conj_view:
   - complex64
@@ -5126,6 +5294,10 @@ new_ones:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
 nn.functional.feature_alpha_dropout:
   test_conj_view:
   - complex64
@@ -5154,6 +5326,8 @@ nn.functional.pixel_shuffle:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.pixel_unshuffle:
   test_conj_view:
   - complex64
@@ -5168,6 +5342,8 @@ nn.functional.pixel_unshuffle:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 outer:
   test_conj_view:
   - complex64
@@ -5181,6 +5357,8 @@ outer:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 permute:
   test_backward:
@@ -5250,6 +5428,8 @@ rad2deg:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 ravel:
   test_backward:
   - float32
@@ -5314,6 +5494,8 @@ reciprocal:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 repeat_interleave:
   test_backward:
   - float32
@@ -5348,6 +5530,8 @@ roll:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 repeat:
   test_conj_view:
   - complex64
@@ -5361,6 +5545,8 @@ repeat:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 rsqrt:
   test_conj_view:
@@ -5376,6 +5562,8 @@ rsqrt:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 reshape:
   test_conj_view:
   - complex64
@@ -5390,6 +5578,8 @@ reshape:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 reshape_as:
   test_conj_view:
   - complex64
@@ -5403,6 +5593,8 @@ reshape_as:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 resize_:
   test_conj_view:
@@ -5442,6 +5634,8 @@ resolve_conj:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 resolve_neg:
   test_conj_view:
   - complex64
@@ -5456,6 +5650,8 @@ resolve_neg:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 rot90:
   test_conj_view:
   - complex64
@@ -5469,6 +5665,8 @@ rot90:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 sgn:
   test_backward:
@@ -5521,6 +5719,8 @@ sigmoid:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 sign:
   test_neg_view:
   - float64
@@ -5529,6 +5729,8 @@ sign:
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 signbit:
   test_fake:
@@ -5559,6 +5761,8 @@ sin:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 sinh:
   test_conj_view:
   - complex64
@@ -5572,6 +5776,8 @@ sinh:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 select_scatter:
   test_backward:
@@ -5631,6 +5837,8 @@ sinc:
   - float32
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 slice_scatter:
   test_backward:
@@ -5739,6 +5947,8 @@ special.entr:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 special.erfcx:
   test_neg_view:
   - float64
@@ -5747,6 +5957,8 @@ special.erfcx:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 special.hermite_polynomial_he:
   test_neg_view:
@@ -5768,6 +5980,8 @@ special.i1:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 special.i0e:
   test_neg_view:
   - float64
@@ -5776,6 +5990,8 @@ special.i0e:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 special.ndtr:
   test_neg_view:
@@ -5786,6 +6002,8 @@ special.ndtr:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 special.i1e:
   test_neg_view:
   - float64
@@ -5794,6 +6012,8 @@ special.i1e:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 special.laguerre_polynomial_l:
   test_neg_view:
@@ -5821,6 +6041,8 @@ special.log_ndtr:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 special.modified_bessel_k0:
   test_neg_view:
@@ -5857,6 +6079,8 @@ special.ndtri:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 special.polygamma:
   test_backward:
@@ -5924,6 +6148,8 @@ sqrt:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 special.xlog1py:
   test_neg_view:
   - float64
@@ -5932,6 +6158,8 @@ special.xlog1py:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 split:
   test_backward:
@@ -5972,10 +6200,17 @@ split_with_sizes:
 split_with_sizes_copy:
   test_non_standard_bool_values:
   - bool
+  - - bool
   test_conj_view:
   - complex64
+  - - complex64
   test_neg_conj_view:
   - complex128
+  - - complex128
+  test_backward:
+  - float32
+  test_neg_view:
+  - float64
 squeeze:
   test_backward:
   - float32
@@ -6008,6 +6243,8 @@ square:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 tan:
   test_conj_view:
   - complex64
@@ -6022,6 +6259,8 @@ tan:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 tanh:
   test_conj_view:
   - complex64
@@ -6035,6 +6274,8 @@ tanh:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 stack:
   test_backward:
@@ -6098,6 +6339,8 @@ t:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 take_along_dim:
   test_backward:
   - float32
@@ -6130,6 +6373,8 @@ tensor_split:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 tile:
   test_conj_view:
   - complex64
@@ -6143,6 +6388,8 @@ tile:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 transpose:
   test_backward:
@@ -6176,6 +6423,8 @@ tril:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 triu:
   test_conj_view:
   - complex64
@@ -6189,6 +6438,8 @@ triu:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 true_divide:
   test_backward:
@@ -6242,6 +6493,8 @@ unflatten:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 unfold_copy:
   test_conj_view:
   - complex64
@@ -6255,6 +6508,8 @@ unfold_copy:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 unfold:
   test_backward:
@@ -6293,6 +6548,14 @@ unsafe_chunk:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
 unsafe_split:
   test_conj_view:
   - complex64
@@ -6306,6 +6569,8 @@ unsafe_split:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 unsqueeze:
   test_backward:
@@ -6339,6 +6604,8 @@ view_as:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 view_copy:
   test_neg_view:
   - float64
@@ -6347,6 +6614,8 @@ view_copy:
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 view:
   test_conj_view:
@@ -6361,6 +6630,8 @@ view:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 vsplit:
   test_backward:
@@ -6412,6 +6683,8 @@ where:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 zero_:
   test_conj_view:
   - complex64
@@ -6426,11 +6699,17 @@ zero_:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 zeros:
   test_variant_consistency_eager:
   - complex64
   - float32
   test_out:
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
   - float32
 zeros_like:
   test_conj_view:
@@ -6466,6 +6745,8 @@ _native_batch_norm_legit:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 _refs.addr:
   test_conj_view:
@@ -6772,12 +7053,20 @@ histogram:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_pointwise_ops:
+  - float32
 hypot:
   test_neg_view:
   - float64
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 igamma:
   test_neg_view:
@@ -6883,6 +7172,12 @@ linalg.det:
   - float32
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_compare_cpu:
+  - float32
+  test_forward_ad:
+  - float32
+  test_operator:
   - float32
 linalg.eigh:
   test_backward:
@@ -7039,6 +7334,10 @@ linalg.slogdet:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_compare_cpu:
+  - float32
+  test_operator:
+  - float32
 linalg.solve_ex:
   test_backward:
   - float32
@@ -7107,6 +7406,8 @@ logcumsumexp:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 mvlgamma:
   test_backward:
   - float32
@@ -7154,6 +7455,8 @@ native_batch_norm:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 nextafter:
   test_neg_view:
   - float64
@@ -7177,6 +7480,8 @@ nn.functional.silu:
   - float32
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 norm:
   test_backward:
@@ -7208,6 +7513,8 @@ normal:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 searchsorted:
   test_fake:
   - float32
@@ -7234,6 +7541,8 @@ __rsub__:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 abs:
   test_conj_view:
   - complex64
@@ -7255,6 +7564,8 @@ acos:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 allclose:
   test_conj_view:
@@ -7339,6 +7650,8 @@ cumsum:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_backward:
+  - float32
 cumulative_trapezoid:
   test_backward:
   - float32
@@ -7362,6 +7675,8 @@ dot:
   - float64
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 gradient:
   test_backward:
@@ -7389,6 +7704,8 @@ geqrf:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_fake_autocast:
+  - float32
 lerp:
   test_conj_view:
   - complex64
@@ -7398,6 +7715,8 @@ lerp:
   - float64
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 linalg.cond:
   test_backward:
@@ -7485,6 +7804,16 @@ logdet:
   test_variant_consistency_eager:
   - complex64
   - float32
+  test_compare_cpu:
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_operator:
+  - float32
+  test_pointwise_ops:
+  - float32
 lu:
   test_backward:
   - float32
@@ -7557,6 +7886,8 @@ masked.normalize:
   - float64
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 masked.median:
   test_backward:
@@ -7653,6 +7984,8 @@ neg:
   - float64
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_backward:
   - float32
 nn.functional.binary_cross_entropy_with_logits:
   test_backward:
@@ -7867,6 +8200,8 @@ nn.functional.softsign:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.smooth_l1_loss:
   test_backward:
   - float32
@@ -7891,6 +8226,8 @@ nn.functional.tanhshrink:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.triplet_margin_loss:
   test_backward:
@@ -7960,6 +8297,8 @@ positive:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 pow:
   test_conj_view:
   - complex64
@@ -7971,6 +8310,8 @@ pow:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 rand_like:
   test_conj_view:
@@ -7999,6 +8340,10 @@ randn_like:
   - complex64
   - float32
   test_out:
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
   - float32
 qr:
   test_backward:
@@ -8031,6 +8376,8 @@ rsub:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 std:
   test_backward:
@@ -8082,6 +8429,8 @@ sub:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 trace:
   test_conj_view:
   - complex64
@@ -8093,6 +8442,8 @@ trace:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 trapezoid:
   test_backward:
@@ -8159,6 +8510,8 @@ vdot:
   - complex64
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 view_as_complex:
   test_backward:
@@ -8336,6 +8689,8 @@ nn.functional.cosine_similarity:
   - float32
   test_out:
   - float32
+  test_operator:
+  - float32
 nn.functional.cross_entropy:
   test_backward:
   - float32
@@ -8499,6 +8854,8 @@ _softmax_backward_data:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 bernoulli:
   test_forward_ad:
   - float32
@@ -8507,6 +8864,8 @@ bernoulli:
   test_out:
   - float32
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 masked.argmin:
   test_neg_view:
@@ -8541,6 +8900,10 @@ signal.windows.blackman:
   - float32
 signal.windows.cosine:
   test_out:
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
   - float32
 signal.windows.general_hamming:
   test_fake:
@@ -8590,6 +8953,12 @@ signal.windows.nuttall:
   test_operator:
   - float32
   test_out:
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_pointwise_ops:
   - float32
 _refs.T:
   test_conj_view:
@@ -9101,6 +9470,7 @@ _refs.index_fill:
   - complex64
   test_neg_conj_view:
   - complex128
+  - - complex128
   test_neg_view:
   - float64
   test_out:
@@ -9751,6 +10121,8 @@ __rmod__:
   - float64
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 _refs.amax:
   test_neg_view:
   - float64
@@ -9982,6 +10354,8 @@ _upsample_bilinear2d_aa:
   - float64
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 cauchy:
   test_neg_view:
   - float64
@@ -9992,10 +10366,14 @@ ceil:
   - float64
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 clamp:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 exponential:
   test_neg_view:
@@ -10012,15 +10390,21 @@ floor:
   - float64
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 fmod:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 frac:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 geometric:
   test_neg_view:
@@ -10032,6 +10416,12 @@ histogramdd:
   - float64
   test_variant_consistency_eager:
   - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_pointwise_ops:
+  - float32
 log_normal:
   test_neg_view:
   - float64
@@ -10041,6 +10431,8 @@ logaddexp2:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
+  - float32
+  test_backward:
   - float32
 multinomial:
   test_neg_view:
@@ -10054,12 +10446,16 @@ nn.functional.adaptive_max_pool3d:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.celu:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.dropout2d:
   test_neg_view:
@@ -10068,12 +10464,16 @@ nn.functional.dropout2d:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.elu:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.embedding:
   test_fake:
@@ -10093,12 +10493,16 @@ nn.functional.gelu:
   - float64
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 nn.functional.glu:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.group_norm:
   test_neg_view:
@@ -10107,12 +10511,16 @@ nn.functional.group_norm:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.hardsigmoid:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.hardswish:
   test_neg_view:
@@ -10121,12 +10529,16 @@ nn.functional.hardswish:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.huber_loss:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.leaky_relu:
   test_neg_view:
@@ -10135,6 +10547,8 @@ nn.functional.leaky_relu:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.mish:
   test_neg_view:
   - float64
@@ -10142,12 +10556,16 @@ nn.functional.mish:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.mse_loss:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.multi_margin_loss:
   test_compare_cpu:
@@ -10158,12 +10576,16 @@ nn.functional.multi_margin_loss:
   - float32
   test_variant_consistency_eager:
   - float32
+  test_backward:
+  - float32
 nn.functional.relu:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.rrelu:
   test_neg_view:
@@ -10172,12 +10594,16 @@ nn.functional.rrelu:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.selu:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.soft_margin_loss:
   test_compare_cpu:
@@ -10188,12 +10614,16 @@ nn.functional.soft_margin_loss:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.softplus:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 nn.functional.threshold:
   test_neg_view:
@@ -10202,12 +10632,16 @@ nn.functional.threshold:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 nn.functional.upsample_bilinear:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 remainder:
   test_neg_view:
@@ -10216,6 +10650,8 @@ remainder:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 round:
   test_neg_view:
   - float64
@@ -10223,12 +10659,16 @@ round:
   - float32
   test_out:
   - float32
+  test_backward:
+  - float32
 trunc:
   test_neg_view:
   - float64
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_backward:
   - float32
 arange:
   test_fake:
@@ -10360,9 +10800,6 @@ unravel_index:
 nn_functional_cosine_similarity:
   test_operator:
   - float32
-diagflat:
-  test_operator:
-  - float32
 _refs_block_diag:
   test_conj_view:
   - complex64
@@ -10451,4 +10888,125 @@ max_reduction_no_dim:
   test_fake:
   - float32
   test_pointwise_ops:
+  - float32
+_refs.block_diag:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs.dot:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs.frexp:
+  test_neg_view:
+  - float64
+_refs.linalg.cross:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs.linalg.vecdot:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs.nn.functional.pixel_shuffle:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs.nn.functional.pixel_unshuffle:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs.take_along_dim:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs.vdot:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs_linspace_tensor_overload:
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_refs_logspace_tensor_overload:
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+_segment_reduce_lengths:
+  test_backward:
+  - float32
+_segment_reduce_offsets:
+  test_backward:
+  - float32
+div_floor_rounding:
+  test_backward:
+  - float32
+div_no_rounding_mode:
+  test_backward:
+  - float32
+div_trunc_rounding:
+  test_backward:
+  - float32
+empty_strided:
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+linspace_tensor_overload:
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+logspace_tensor_overload:
+  test_neg_conj_view:
+  - complex128
+nn_functional_feature_alpha_dropout_with_train:
+  test_backward:
+  - float32
+nn_functional_feature_alpha_dropout_without_train:
+  test_backward:
+  - float32
+normal_number_mean:
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
+round_decimals_0:
+  test_backward:
+  - float32
+round_decimals_3:
+  test_backward:
+  - float32
+round_decimals_neg_3:
+  test_backward:
   - float32
