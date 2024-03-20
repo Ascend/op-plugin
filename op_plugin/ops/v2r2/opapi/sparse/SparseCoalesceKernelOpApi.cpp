@@ -42,33 +42,46 @@ SparseTensor _coalesce_sparse(const SparseTensor& self)
 
     at::Tensor values = self._values();
     at::Tensor indices = self._indices();
-
     at::Tensor indices_1d = flatten_indices(indices, self.sizes(), true);
     auto unique_indices_info = at::_unique2(indices_1d, true, true);
     at::Tensor unique_len = std::get<0>(unique_indices_info).to(at::kInt);
     auto new_nnz = unique_len.sizes()[0];
     auto new_values_size = values.sizes().vec();
     new_values_size[0] = new_nnz;
-
-    at::Tensor new_values = at::zeros(new_values_size, values.options());
     at::Tensor new_indices_t = at::zeros(
         {new_nnz, indices.sizes()[0]},
         indices.options().dtype(at::kInt));
     at::Tensor indices_t = at_npu::native::NpuUtils::format_contiguous(indices.transpose(0, 1)).to(at::kInt);
     at::Tensor unique_indices = std::get<1>(unique_indices_info).to(at::kInt);
-
-    EXEC_NPU_CMD(
-        aclnnCoalesceSparse,
-        unique_len,
-        unique_indices,
-        indices_t,
-        values,
-        new_indices_t,
-        new_values);
-    at::Tensor new_indices = new_indices_t.transpose(0, 1).to(at::kLong);
-
-    SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices, new_values, self.sizes())._coalesced_(true);
-    return dst;
+    if (values.scalar_type() == at::kHalf) {
+        at::Tensor values_f = at::zeros(new_values_size, values.options()).to(at::kFloat);
+        at::Tensor new_values_f = at::zeros(new_values_size, values.options()).to(at::kFloat);
+        EXEC_NPU_CMD(
+            aclnnCoalesceSparse,
+            unique_len,
+            unique_indices,
+            indices_t,
+            values_f,
+            new_indices_t,
+            new_values_f);
+        at::Tensor new_indices = new_indices_t.transpose(0, 1).to(at::kLong);
+        at::Tensor new_values = values_f.to(at::kHalf);
+        SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices, new_values, self.sizes())._coalesced_(true);
+        return dst;
+    } else {
+        at::Tensor new_values = at::zeros(new_values_size, values.options());
+        EXEC_NPU_CMD(
+            aclnnCoalesceSparse,
+            unique_len,
+            unique_indices,
+            indices_t,
+            values,
+            new_indices_t,
+            new_values);
+        at::Tensor new_indices = new_indices_t.transpose(0, 1).to(at::kLong);
+        SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices, new_values, self.sizes())._coalesced_(true);
+        return dst;
+    }
 }
 
 } // namespace at::native
