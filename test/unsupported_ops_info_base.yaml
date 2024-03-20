@@ -542,7 +542,6 @@ bmm:
   - float32
   test_fake:
   - float32
-  - - float32
 chalf:
   test_backward:
   - float32
@@ -942,7 +941,6 @@ linalg.cholesky:
   - float32
   test_forward_ad:
   - float32
-  - - float32
   test_neg_conj_view:
   - complex128
   test_neg_view:
@@ -6200,13 +6198,10 @@ split_with_sizes:
 split_with_sizes_copy:
   test_non_standard_bool_values:
   - bool
-  - - bool
   test_conj_view:
   - complex64
-  - - complex64
   test_neg_conj_view:
   - complex128
-  - - complex128
   test_backward:
   - float32
   test_neg_view:
@@ -9470,7 +9465,6 @@ _refs.index_fill:
   - complex64
   test_neg_conj_view:
   - complex128
-  - - complex128
   test_neg_view:
   - float64
   test_out:
