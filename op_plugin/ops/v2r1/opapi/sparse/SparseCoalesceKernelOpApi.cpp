@@ -54,7 +54,7 @@ SparseTensor _coalesce_sparse(const SparseTensor& self)
     at::Tensor indices_t = at_npu::native::NpuUtils::format_contiguous(indices.transpose(0, 1)).to(at::kInt);
     at::Tensor unique_indices = std::get<1>(unique_indices_info).to(at::kInt);
     if (values.scalar_type() == at::kHalf) {
-        at::Tensor values_f = at::zeros(new_values_size, values.options()).to(at::kFloat);
+        at::Tensor values_f = values.to(at::kFloat);
         at::Tensor new_values_f = at::zeros(new_values_size, values.options()).to(at::kFloat);
         EXEC_NPU_CMD(
             aclnnCoalesceSparse,
@@ -65,7 +65,7 @@ SparseTensor _coalesce_sparse(const SparseTensor& self)
             new_indices_t,
             new_values_f);
         at::Tensor new_indices = new_indices_t.transpose(0, 1).to(at::kLong);
-        at::Tensor new_values = values_f.to(at::kHalf);
+        at::Tensor new_values = new_values_f.to(at::kHalf);
         SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices, new_values, self.sizes())._coalesced_(true);
         return dst;
     } else {
