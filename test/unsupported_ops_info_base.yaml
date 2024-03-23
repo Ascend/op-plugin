@@ -623,6 +623,12 @@ cholesky_solve:
   - complex64
   - float32
 constant_pad_nd:
+  test_pointwise_ops:
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
   test_backward:
   - float32
   test_compare_cpu:
