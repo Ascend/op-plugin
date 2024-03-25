@@ -41,7 +41,7 @@ class TestQuantMatmul(TestCase):
         return output
 
     def custom_op_exec(self, x1, x2, uint64_deq_scale, bias):
-        return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale, None, bias)
+        return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale, bias=bias)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul(self, device="npu"):
