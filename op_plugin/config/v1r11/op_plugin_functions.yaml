@@ -1421,9 +1421,9 @@ official:
  - func: scatter.value_out(Tensor self, int dim, Tensor index, Scalar value, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: scatter.reduce_out(Tensor self, int dim, Tensor index, Tensor src, *, str reduce, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
+   impl_ns: op_api
  - func: scatter.value_reduce_out(Tensor self, int dim, Tensor index, Scalar value, *, str reduce, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
+   impl_ns: op_api
  - func: scatter_add(Tensor self, int dim, Tensor index, Tensor src) -> Tensor
    impl_ns: acl_op, op_api
  - func: scatter_add.dimname(Tensor self, Dimname dim, Tensor index, Tensor src) -> Tensor

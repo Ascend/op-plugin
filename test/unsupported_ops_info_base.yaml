@@ -3106,6 +3106,8 @@ as_strided_scatter:
   - float64
   test_non_standard_bool_values:
   - bool
+  test_pointwise_ops:
+  - float32
 atleast_1d:
   test_conj_view:
   - complex64
@@ -3691,6 +3693,10 @@ diagonal_scatter:
   - bool
   test_variant_consistency_eager:
   - complex64
+  - float32
+  test_pointwise_ops:
+  - float32
+  test_fake:
   - float32
 diff:
   test_backward:
@@ -5709,6 +5715,8 @@ scatter_reduce:
   - float32
   test_pointwise_ops:
   - float32
+  test_fake_autocast:
+  - float32
 sigmoid:
   test_conj_view:
   - complex64
@@ -5796,6 +5804,10 @@ select_scatter:
   - float32
   test_out:
   - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
+  - float32
 select:
   test_backward:
   - float32
@@ -5856,6 +5868,10 @@ slice_scatter:
   test_variant_consistency_eager:
   - float32
   test_out:
+  - float32
+  test_fake:
+  - float32
+  test_fake_autocast:
   - float32
 slice:
   test_backward:
