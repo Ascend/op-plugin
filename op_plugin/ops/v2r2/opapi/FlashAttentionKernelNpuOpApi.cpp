@@ -20,6 +20,7 @@
 
 namespace op_api {
 const static int FLASH_THRESHOLD = 512;
+const static int64_t SOFTMAXMAX_LAST_DIMSHAPE = 8;
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -62,27 +63,28 @@ at::Tensor format_trans(const at::Tensor &at_tensor)
     return at_tensor;
 }
 
-at::Tensor dropout_gen_mask_impl(const at::Tensor &query, const at::Scalar &keep_prob, const at::Scalar &seed,
+at::Tensor dropout_gen_mask_impl(const at::Tensor &query, double keep_prob, int64_t seed,
     const int64_t offset, const int64_t numels)
 {
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     c10::TensorOptions options = query.options();
-    at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length + 32}, options.dtype(at::kByte));
-    at::SmallVector<int64_t, ::N> offsetList = {0, offset};
-    const int64_t seed1 = 0;
-    OpCommand cmd;
-    cmd.Name("StatelessDropOutGenMask")
-        .Input(at::IntArrayRef{numels})
-        .Input(keep_prob, query.scalar_type(), CompileType::MEMORY_HOST_COMPILE_DEPENDENT)
-        .Input(seed, at::ScalarType::Int)
-        .Input(at::Scalar(seed1), at::ScalarType::Int)
-        .Input(offsetList, at::kLong, CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
-        .Output(mask)
-        .Run();
+    at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length}, options.dtype(at::kByte));
+    c10::SmallVector<int64_t, SIZE> shapeSize = {numels};
+    at::IntArrayRef shapeArray = at::IntArrayRef(shapeSize);
+    double prob;
+    at::Scalar probScalar;
+    if (query.scalar_type() == at::kHalf) {
+        probScalar = at::Scalar(at::Half(1.0)- at::Half(keep_prob));
+    } else {
+        probScalar = at::Scalar(at::BFloat16(1.0)- at::BFloat16(keep_prob));
+    }
+    prob = probScalar.toDouble();
+    aclDataType probDataType = at_npu::native::OpPreparation::convert_to_acl_data_type(query.scalar_type());
+    EXEC_NPU_CMD(aclnnDropoutGenMaskV2, shapeArray, prob, seed, offset, probDataType, mask);
     return mask;
 }
 
-at::Tensor dropout_gen_mask_dispatch(const at::Tensor &query, const at::Scalar &keep_prob, const at::Scalar &seed,
+at::Tensor dropout_gen_mask_dispatch(const at::Tensor &query, double keep_prob, int64_t seed,
     const int64_t offset, const int64_t numels, const bool gen_mask_parallel, const bool sync)
 {
     at::Tensor mask;
@@ -127,8 +129,7 @@ at::Tensor dropout_gen_mask(const at::Tensor &query, const at::Tensor &key, doub
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
         seed = pair.first;
         offset = pair.second;
-        drop_mask = dropout_gen_mask_dispatch(query, at::Scalar(keep_prob), at::Scalar(seed),
-            offset, numels, gen_mask_parallel, sync);
+        drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
     }
@@ -285,7 +286,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     length += 32;
     at::Tensor drop_mask;
     if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
-        drop_mask = dropout_gen_mask_dispatch(query, at::Scalar(keep_prob), at::Scalar(seed), offset, numels, gen_mask_parallel, sync);
+        drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
     }
@@ -412,21 +413,18 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     at::Tensor softmax_sum;
     at::Tensor softmax_out;
 
-    c10::SmallVector<int64_t, SIZE> softmax_sizes = {B, head_num, S0, 8};
-    c10::SmallVector<int64_t, SIZE> softmax_sizes_tnd = {T, N, 8};
     if (input_layout_str != "TND") {
-        softmax_max = OpPreparation::apply_tensor_without_format(softmax_sizes,
+        softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [B, N, S0, 8]
-        softmax_sum = OpPreparation::apply_tensor_without_format(softmax_sizes,
+        softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [B, N, S0, 8]
     } else {
-        softmax_max = OpPreparation::apply_tensor_without_format(softmax_sizes_tnd,
+        softmax_max = OpPreparation::apply_tensor_without_format({T, N, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [T, N, 8]
-        softmax_sum = OpPreparation::apply_tensor_without_format(softmax_sizes_tnd,
+        softmax_sum = OpPreparation::apply_tensor_without_format({T, N, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [T, N, 8]
     }
-    c10::SmallVector<int64_t, SIZE> softmax_out_sizes = {0};
-    softmax_out = at::empty(softmax_out_sizes, query.options());
+    softmax_out = at::empty({0}, query.options());
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_NO_FORMAT_CHECK_CMD(
