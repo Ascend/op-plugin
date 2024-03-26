@@ -609,6 +609,8 @@ official:
    impl_ns: acl_op, op_api
  - func: eye.out(SymInt n, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: fft_rfft(Tensor self, int? n=None, int dim=-1, str? norm=None) -> Tensor
+   impl_ns: op_api
  - func: fill_.Scalar(Tensor(a!) self, Scalar value) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: fill_.Tensor(Tensor(a!) self, Tensor value) -> Tensor(a!)
