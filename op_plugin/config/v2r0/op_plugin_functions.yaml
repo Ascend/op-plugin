@@ -2330,7 +2330,6 @@ custom:
     impl_ns: acl_op
     dispatch:
      CompositeExplicitAutograd: npu_dropout_gen_mask
-    exposed: True
   - func: npu_ciou_backward(Tensor grad, Tensor bboxes, Tensor gtboxes, Tensor? atan_sub, bool trans=False, bool is_cross=True, int mode=0) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_sign_bits_unpack(Tensor input, int size, ScalarType dtype) -> Tensor
@@ -2519,12 +2518,16 @@ custom:
     impl_ns: op_api
   - func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[] bias, Tensor[] scale, Tensor[] offset, Tensor[] antiquant_scale, Tensor[] antiquant_offset, int[]? group_list=None, int? split_item=0, ScalarType? output_dtype=None) -> Tensor[]
     impl_ns: op_api
+    exposed: True
   - func: npu_weight_quant_batchmatmul(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor? antiquant_offset=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? bias=None, int antiquant_group_size=0) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, Tensor? offset=None, Tensor? bias=None, str? output_dtype=None) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: _npu_dropout_gen_mask.Tensor(Tensor self, int[] size, float p, int seed, int offset, *, bool? parallel=True, bool? sync=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded

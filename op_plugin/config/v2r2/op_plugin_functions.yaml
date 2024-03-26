@@ -2184,7 +2184,6 @@ custom:
     tags: nondeterministic_seeded
     dispatch:
      CompositeExplicitAutograd: npu_dropout_gen_mask
-    exposed: True
   - func: npu_ciou_backward(Tensor grad, Tensor bboxes, Tensor gtboxes, Tensor? atan_sub, bool trans=False, bool is_cross=True, int mode=0) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_sign_bits_unpack(Tensor input, int size, ScalarType dtype) -> Tensor
@@ -2372,14 +2371,17 @@ custom:
     impl_ns: op_api
   - func: npu_scatter_nd_update(Tensor self, Tensor indices, Tensor updates) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_scatter_nd_update_(Tensor(a!) self, Tensor indices, Tensor updates) -> Tensor(a!)
     impl_ns: op_api
+    exposed: True
   - func: scatter_update(Tensor self, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op, op_api
   - func: scatter_update_(Tensor(a!) self, Tensor indices, Tensor updates, int axis) -> Tensor(a!)
     impl_ns: acl_op, op_api
   - func: npu_quant_scatter(Tensor self, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=0, int quant_axis=1, str reduce='update') -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_quant_scatter_(Tensor(a!) self, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=0, int quant_axis=1, str reduce='update') -> Tensor(a!)
     impl_ns: op_api
   - func: npu_multi_head_attention_v2(Tensor query, Tensor key, Tensor value, Tensor? atten_mask=None, Tensor? alibi_mask=None, float scale=1.0, int head_num=1, str input_layout="BNSD", float keep_prob=1., int pre_tokens=2147483647, int next_tokens=1, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, int, int, int)
@@ -2392,12 +2394,16 @@ custom:
     impl_ns: op_api
   - func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None, Tensor[]? offset=None, Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None, int[]? group_list=None, int? split_item=0, ScalarType? output_dtype=None) -> Tensor[]
     impl_ns: op_api
+    exposed: True
   - func: npu_weight_quant_batchmatmul(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor? antiquant_offset=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? bias=None, int antiquant_group_size=0) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, *, Tensor? offset=None, Tensor? pertoken_scale=None, Tensor? bias=None, ScalarType? output_dtype=None) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: _npu_dropout_gen_mask.Tensor(Tensor self, int[] size, float p, int seed, int offset, *, bool? parallel=True, bool? sync=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded
@@ -2405,6 +2411,7 @@ custom:
     impl_ns: acl_op
   - func: npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None, ScalarType? src_dtype=None) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: _npu_silent_check(Tensor(a!) input_grad, Tensor val, Tensor(b!) pre_val, Tensor(c!) min_val, Tensor(d!) max_val, Tensor val_counter, int c_min_steps, float c_thresh_l1, float c_coeff_l1, float c_thresh_l2, float c_coeff_l2) -> Tensor
     impl_ns: acl_op
   - func: npu_quant_conv2d(Tensor input, Tensor weight, Tensor scale, int[2] strides=1, int[2] pads=0, int[2] dilations=1, int groups=1, int offset_x=0, str round_mode='rint', ScalarType? output_dtype=None, Tensor? bias=None, Tensor? offset=None) -> Tensor
