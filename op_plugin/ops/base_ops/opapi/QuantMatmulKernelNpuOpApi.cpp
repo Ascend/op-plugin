@@ -31,8 +31,8 @@ uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::
     auto out_dim_num = std::max(x1_dim_num, x2_dim_num);
     auto &shape_long = x1_dim_num > x2_dim_num ? x1 : x2;
     auto &shape_short = x1_dim_num > x2_dim_num ? x2 : x1;
-    size_t vaild_offset = out_dim_num - std::min(x1_dim_num, x2_dim_num);
-    for (size_t i = 0; i < out_dim_num - LAST_SECOND_DIM_INDEX; i++) {
+    int64_t vaild_offset = out_dim_num - std::min(x1_dim_num, x2_dim_num);
+    for (int64_t i = 0; i < out_dim_num - LAST_SECOND_DIM_INDEX; i++) {
         auto short_dim = i < vaild_offset ? 1 : shape_short.size(i - vaild_offset);
         auto long_dim = shape_long.size(i);
         TORCH_CHECK(!(short_dim > 1 && long_dim > 1 && short_dim != long_dim),
@@ -92,8 +92,8 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     auto output_size = op_infer::array_to_small_vector(long_tensor.sizes());
     output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX);
     output_size[long_tensor.dim() - 1] = x2.size(x2_dim_num - 1);
-    for (size_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
-        output_size[i] = batch_record[i];
+    for (int64_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
+        output_size[i] = static_cast<int64_t>(batch_record[i]);
     }
     c10::TensorOptions options;
     if (!output_dtype.has_value() ||  output_dtype.value() == at::kChar) {

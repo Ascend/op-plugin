@@ -110,8 +110,8 @@ at::Tensor gen_mask(const at::Tensor &self, double keep_prob,
     if (get_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const auto gen = at_npu::detail::getDefaultNPUGenerator();
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
-        seed = pair.first;
-        offset = pair.second;
+        seed = static_cast<int64_t>(pair.first);
+        offset = static_cast<int64_t>(pair.second);
         drop_mask = gen_mask_dispatch(self, at::Scalar(keep_prob), at::Scalar(seed),
             offset, numels, gen_mask_parallel, sync);
     } else if (get_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {

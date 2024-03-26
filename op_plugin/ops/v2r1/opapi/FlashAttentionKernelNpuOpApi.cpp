@@ -402,7 +402,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
         numels = N;
         int64_t accum = ac_seq_qlen[0] * ac_seq_kvlen[0];
-        for (int64_t i = 1; i < ac_seq_qlen.size(); i++) {
+        for (uint64_t i = 1; i < ac_seq_qlen.size(); i++) {
             accum += ((ac_seq_qlen[i] - ac_seq_qlen[i - 1]) * (ac_seq_kvlen[i] - ac_seq_kvlen[i - 1]));
         }
         numels *= accum;

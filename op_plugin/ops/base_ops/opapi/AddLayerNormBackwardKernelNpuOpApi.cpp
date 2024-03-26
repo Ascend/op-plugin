@@ -34,7 +34,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor>npu_add_layer_norm_bac
     auto d_sum = dsum.defined() ? dsum : at::zeros(x1.sizes(), x1.options());
 
     at::SmallVector<int64_t, SIZE> shape;
-    for (uint64_t index = 0; index < gamma.dim(); index++) {
+    for (int64_t index = 0; index < gamma.dim(); index++) {
         shape.emplace_back(gamma.size(index));
     }
 
