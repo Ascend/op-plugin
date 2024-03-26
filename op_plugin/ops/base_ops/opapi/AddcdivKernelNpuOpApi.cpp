@@ -29,6 +29,18 @@ at::Tensor& addcdiv_out(const at::Tensor& self, const at::Tensor& tensor1, const
 
 at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
                    const at::Scalar& value) {
+    if (isIntegralType(tensor1.scalar_type(), true) && isIntegralType(tensor2.scalar_type(), true)) {
+        TORCH_CHECK(
+            false,
+            "Integer division with addcdiv is no longer supported, and in a future  ",
+            "release addcdiv will perform a true division of tensor1 and tensor2. ",
+            "The historic addcdiv behavior can be implemented as ",
+            "(input + value * torch.trunc(tensor1 / tensor2)).to(input.dtype) ",
+            "for integer inputs and as ",
+            "(input + value * tensor1 / tensor2) for float inputs. ",
+            "The future addcdiv behavior is just the latter implementation: ",
+            "(input + value * tensor1 / tensor2), for all dtypes.");
+    }
   DO_COMPATIBILITY(aclnnAddcdiv, acl_op::addcdiv(self, tensor1, tensor2, value));
   auto div_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
   auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), div_output_size);

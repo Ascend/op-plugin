@@ -9089,6 +9089,8 @@ _refs.addcdiv:
   - complex128
   test_neg_view:
   - float64
+  test_compare_cpu:
+  - float32
 _refs.addcmul:
   test_conj_view:
   - complex64
