@@ -2049,7 +2049,7 @@ custom:
     impl_ns: acl_op
     exposed: True
   - func: npu_linear_backward(Tensor grad, Tensor input, Tensor weight) -> (Tensor, Tensor)
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
   - func: npu_anchor_response_flags(Tensor self, int[2] featmap_size, int[2] stride, int num_base_anchors) -> Tensor
     impl_ns: acl_op
     exposed: True
@@ -2237,7 +2237,7 @@ custom:
     impl_ns: acl_op
     exposed: True
   - func: npu_linear(Tensor input, Tensor weight, Tensor? bias=None) -> Tensor
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
     exposed: True
   - func: _npu_dropout(Tensor self, float p) -> (Tensor, Tensor)
     impl_ns: acl_op, op_api
