@@ -345,5 +345,20 @@ class TestGroupedMatmul(TestCase):
         self.assertRtolEqual(x[0], x_clone[0], 1)
         self.assertRtolEqual(supported_output[0], custom_output[0], 1)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_0_empty_x_w(self, device="npu"):
+        torch.manual_seed(0)
+        x = []
+        weight = []
+        bias1 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias2 = torch.normal(mean=0., std=0.1, size=(1024,), dtype=torch.float16)
+        bias3 = torch.normal(mean=0., std=0.1, size=(128,), dtype=torch.float16)
+        bias = [bias1.npu(), bias2.npu(), bias3.npu()]
+        group_list = None
+        split_item = 0
+
+        with self.assertRaises(RuntimeError):
+            custom_output = self.custom_op_exec(x, weight, bias=bias, group_list=group_list, split_item=split_item)
+
 if __name__ == "__main__":
     run_tests()
