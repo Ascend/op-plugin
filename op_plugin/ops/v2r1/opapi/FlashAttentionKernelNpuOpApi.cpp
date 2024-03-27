@@ -66,6 +66,25 @@ at::Tensor format_trans(const at::Tensor &at_tensor)
     return at_tensor;
 }
 
+at::Tensor& stateless_dropout_gen_mask_aclop(const at::Tensor &query, double keep_prob, int64_t seed,
+    const int64_t offset, const int64_t numels, at::Tensor& mask)
+{
+    int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
+    c10::TensorOptions options = query.options();
+    at::SmallVector<int64_t, ::N> offsetList = {0, offset};
+    const int64_t seed1 = 0;
+    at_npu::native::OpCommand cmd;
+    cmd.Name("StatelessDropOutGenMask")
+        .Input(at::IntArrayRef{numels})
+        .Input(at::Scalar(keep_prob), query.scalar_type(),  at_npu::native::CompileType::MEMORY_HOST_COMPILE_DEPENDENT)
+        .Input(at::Scalar(seed), at::ScalarType::Int)
+        .Input(at::Scalar(seed1), at::ScalarType::Int)
+        .Input(offsetList, at::kLong,  at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Output(mask)
+        .Run();
+    return mask;
+}
+
 at::Tensor dropout_gen_mask_impl(const at::Tensor &query, double keep_prob, int64_t seed,
     const int64_t offset, const int64_t numels)
 {
@@ -83,6 +102,7 @@ at::Tensor dropout_gen_mask_impl(const at::Tensor &query, double keep_prob, int6
     }
     prob = probScalar.toDouble();
     aclDataType probDataType = at_npu::native::OpPreparation::convert_to_acl_data_type(query.scalar_type());
+    DO_COMPATIBILITY(aclnnDropoutGenMaskV2, stateless_dropout_gen_mask_aclop(query, keep_prob, seed, offset, numels, mask));
     EXEC_NPU_CMD(aclnnDropoutGenMaskV2, shapeArray, prob, seed, offset, probDataType, mask);
     return mask;
 }
