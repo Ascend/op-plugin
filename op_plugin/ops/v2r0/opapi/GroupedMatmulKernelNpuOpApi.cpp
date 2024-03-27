@@ -93,18 +93,18 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
 
     if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value) {
         y.reserve(num_x);
-        for (int i = 0; i < num_x; i++) {
+        for (size_t i = 0; i < num_x; i++) {
             creat_new_tensor_multi_dim(y, x[i], weight[i], options);
         }
     } else if (IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
         y.reserve(num_weight);
         creat_new_tensor(y, group_list_real[0], weight[0].sizes()[1], options);
-        for (int i = 1; i < num_weight; i++) {
+        for (size_t i = 1; i < num_weight; i++) {
             creat_new_tensor(y, group_list_real[i] - group_list_real[i - 1], weight[i].sizes()[1], options);
         }
     } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value) {
         size_t dim_m = 0;
-        for (int i = 0; i < num_x; i++) {
+        for (size_t i = 0; i < num_x; i++) {
             dim_m += x[i].sizes()[0];
         }
         creat_new_tensor(y, dim_m, weight[0].sizes()[1], options);

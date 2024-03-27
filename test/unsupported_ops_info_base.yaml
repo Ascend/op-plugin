@@ -3354,6 +3354,17 @@ chunk:
   test_variant_consistency_eager:
   - complex64
   - float32
+_chunk_cat:
+  test_non_standard_bool_values:
+  - bool
+  test_variant_consistency_eager:
+  - complex64
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
 clamp_max:
   test_backward:
   - float32
