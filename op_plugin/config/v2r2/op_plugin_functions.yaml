@@ -2428,6 +2428,8 @@ custom:
     impl_ns: acl_op
   - func: npu_quant_conv2d(Tensor input, Tensor weight, Tensor scale, int[2] strides=1, int[2] pads=0, int[2] dilations=1, int groups=1, int offset_x=0, str round_mode='rint', ScalarType? output_dtype=None, Tensor? bias=None, Tensor? offset=None) -> Tensor
     impl_ns: acl_op
+  - func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor skip1, Tensor? skip2, Tensor bias, Tensor scales, Tensor expanded_src_to_dst_row, Tensor export_for_source_row) -> Tensor
+    impl_ns: op_api
 
 quant:
  - func: q_scale(Tensor self) -> float
