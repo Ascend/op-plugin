@@ -23,6 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 static const int POSITIVE = 1;
 static const int NEGETIVE = 2;
 static const int SIZE_T_TWICE = 2;
+static const int DIM_THRESHOLD = 5;
 
 namespace {
 
@@ -158,14 +159,26 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
         acl_op::fill_(value_tensor, val);
 
         at_npu::native::OpCommand cmd;
-        cmd.Name("PadV3")
-            .Input(self)
-            .Input(vector_int, at::kInt)
-            .Input(value_tensor)
-            .Output(result)
-            .Attr("mode", (string) "constant")
-            .Attr("paddings_contiguous", true)
-            .Run();
+        if (l_inp <= DIM_THRESHOLD) {
+            cmd.Name("PadV3")
+                .Input(self)
+                .Input(vector_int, at::kInt)
+                .Input(value_tensor)
+                .Output(result)
+                .Attr("mode", (string) "constant")
+                .Attr("paddings_contiguous", true)
+                .Run();
+        } else {
+            cmd.Name("PadV3")
+                .Input(self)
+                .Input(vector_int, at::kInt)
+                .Input(value_tensor)
+                .Output(result)
+                .Attr("_exclude_engines", (string) "AiCore")
+                .Attr("mode", (string) "constant")
+                .Attr("paddings_contiguous", true)
+                .Run();
+        }
     }
     if ((sign_symbol & NEGETIVE) != 0) {     // pad参数中存在负数。
         if (sign_symbol == NEGETIVE) {
