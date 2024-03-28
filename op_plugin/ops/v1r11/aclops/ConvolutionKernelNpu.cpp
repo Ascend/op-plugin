@@ -206,7 +206,7 @@ void check_shape_forward(const at::Tensor &input, const c10::IntArrayRef &weight
                          const ConvParams &params)
 {
     int64_t k = input.ndimension();
-    int64_t weight_dim = weight_sizes.size();
+    int64_t weight_dim = static_cast<int64_t>(weight_sizes.size());
     int64_t groups = params.groups;
     const auto &padding = params.padding;
     const auto &dilation = params.dilation;
@@ -255,7 +255,7 @@ void check_shape_forward(const at::Tensor &input, const c10::IntArrayRef &weight
             std::ostringstream kernel_ss;
             std::string separator = "";
 
-            for (int i = 0, len = input_shape.size(); i < len; ++i) {
+            for (size_t i = 0, len = input_shape.size(); i < len; ++i) {
                 input_ss << separator << input_shape[i];
                 kernel_ss << separator << kernel_shape[i];
                 separator = " x ";

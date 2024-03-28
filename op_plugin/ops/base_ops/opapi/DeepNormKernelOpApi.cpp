@@ -30,7 +30,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_deep_norm(const at::Tensor& x
     DO_COMPATIBILITY(aclnnDeepNorm, acl_op::npu_deep_norm(x, gx, beta, gamma, alpha, epsilon));
     at::SmallVector<int64_t, SIZE> shape;
     auto param_dim = x.dim() - gamma.dim();
-    for (uint64_t index = 0; index < x.dim(); index++) {
+    for (int64_t index = 0; index < x.dim(); index++) {
         if (index < param_dim) {
             shape.emplace_back(x.size(index));
         } else {

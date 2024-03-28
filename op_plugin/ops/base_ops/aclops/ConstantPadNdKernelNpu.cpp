@@ -56,7 +56,7 @@ void check_negetive(const at::Tensor &self, at::IntArrayRef pad, std::vector<int
 void check_params(int l_pad, int l_diff,  at::IntArrayRef input_sizes, at::IntArrayRef pad)
 {
     for (int64_t i = 0; i < l_pad; i++) {
-        auto pad_idx = pad.size() - ((i + 1) * 2);
+        auto pad_idx = static_cast<int64_t>(pad.size()) - ((i + 1) * 2);
         auto new_dim = input_sizes[l_diff + i] + pad[pad_idx] + pad[pad_idx + 1];
         TORCH_CHECK(new_dim > 0, "The input size ", input_sizes[l_diff + i], ", plus negative padding ", pad[pad_idx],
             " and ", pad[pad_idx + 1],

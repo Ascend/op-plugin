@@ -146,8 +146,8 @@ at::Tensor dropout_gen_mask(const at::Tensor &query, const at::Tensor &key, doub
     if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const auto gen = at_npu::detail::getDefaultNPUGenerator();
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
-        seed = pair.first;
-        offset = pair.second;
+        seed = static_cast<int64_t>(pair.first);
+        offset = static_cast<int64_t>(pair.second);
         drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
@@ -419,7 +419,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
         numels = N;
         int64_t accum = ac_seq_qlen[0] * ac_seq_kvlen[0];
-        for (int64_t i = 1; i < ac_seq_qlen.size(); i++) {
+        for (size_t i = 1; i < ac_seq_qlen.size(); i++) {
             accum += ((ac_seq_qlen[i] - ac_seq_qlen[i - 1]) * (ac_seq_kvlen[i] - ac_seq_kvlen[i - 1]));
         }
         numels *= accum;

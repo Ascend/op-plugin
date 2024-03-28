@@ -40,18 +40,18 @@ static c10::SmallVector<int64_t, op_infer::SIZE> cat_npu_output_size_opapi(
   bool allSkipped = true;
   int64_t nDims = 0;
   at::Tensor* notSkippedTensor;
-  int numInputs = tensors.size();
+  size_t numInputs = tensors.size();
   auto should_skip = [](const at::Tensor* t) { return t->nbytes() == 0 && t->dim() == 1; };
-  for (int i = 0; i < numInputs; i++) {
-    if (should_skip((at::Tensor*)&tensors[i])) {
-      continue;
+    for (size_t i = 0; i < numInputs; i++) {
+        if (should_skip((at::Tensor*)&tensors[i])) {
+            continue;
+        }
+        // found a non-empty tensor
+        allSkipped = false;
+        notSkippedTensor = (at::Tensor*)&tensors[i];
+        nDims = notSkippedTensor->dim();
+        break;
     }
-    // found a non-empty tensor
-    allSkipped = false;
-    notSkippedTensor = (at::Tensor*)&tensors[i];
-    nDims = notSkippedTensor->dim();
-    break;
-  }
 
   if (allSkipped) {
     c10::SmallVector<int64_t, op_infer::SIZE> size = {0};
@@ -60,7 +60,7 @@ static c10::SmallVector<int64_t, op_infer::SIZE> cat_npu_output_size_opapi(
 
   // Compute size of the result in the cat dimension
   int64_t cat_dim_size = 0;
-  for (int i = 0; i < numInputs; i++) {
+  for (size_t i = 0; i < numInputs; i++) {
     at::Tensor* tensor = (at::Tensor*)&tensors[i];
     if (should_skip(tensor)) {
       continue;
