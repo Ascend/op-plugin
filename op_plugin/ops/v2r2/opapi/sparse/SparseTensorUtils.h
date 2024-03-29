@@ -22,8 +22,6 @@
 namespace sparse {
 using namespace at::sparse;
 
-at::Tensor flatten_indices(const at::Tensor& indices, c10::IntArrayRef full_size, bool force_clone);
-
 inline at::SparseTensorImpl* get_sparse_impl(const SparseTensor& self)
 {
     TORCH_CHECK(self.is_sparse(), "_internal_get_SparseTensorImpl: not a sparse tensor", OPS_ERROR(ErrCode::VALUE));

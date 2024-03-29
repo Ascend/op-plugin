@@ -42,7 +42,7 @@ SparseTensor _coalesce_sparse(const SparseTensor& self)
 
     at::Tensor values = self._values();
     at::Tensor indices = self._indices();
-    at::Tensor indices_1d = flatten_indices(indices, self.sizes(), true);
+    at::Tensor indices_1d = at::sparse::flatten_indices(indices, self.sizes(), true);
     auto unique_indices_info = at::_unique2(indices_1d, true, true);
     at::Tensor unique_len = std::get<0>(unique_indices_info).to(at::kInt);
     auto new_nnz = unique_len.sizes()[0];

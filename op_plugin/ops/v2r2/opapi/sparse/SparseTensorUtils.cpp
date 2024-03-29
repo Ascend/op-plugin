@@ -16,33 +16,18 @@
 
 #include "SparseTensorUtils.h"
 
+#include <ATen/native/DispatchStub.h>
+
 namespace sparse {
 at::Tensor flatten_indices_npu_kernel(const at::Tensor& indices, c10::IntArrayRef size)
 {
     std::vector<int64_t> flatten_size(size.size(), 1);
     for (size_t i = size.size() - 1; i > 0; i--) {
-        flatten_size[i - 1] = flatten_size[i - 1] * size[i];
+        flatten_size[i - 1] = flatten_size[i] * size[i];
     }
     auto tensor_temp = torch::tensor(flatten_size, indices.options().dtype(at::kFloat));
     tensor_temp = torch::unsqueeze(tensor_temp, 0);
     return torch::squeeze(at::matmul(tensor_temp, indices.to(at::kFloat)).to(at::kInt), 0);
-}
-
-at::Tensor flatten_indices(const at::Tensor& indices, c10::IntArrayRef full_size, bool force_clone)
-{
-    int64_t sparse_dim = indices.size(0);
-    if (sparse_dim == 1) {
-        if (force_clone) {
-            return indices.squeeze(0).clone(at::MemoryFormat::Contiguous);
-        } else {
-            return indices.squeeze(0);
-        }
-    } else {
-        if (!indices.numel()) {
-            return at::zeros({indices.size(1)}, indices.options().dtype(at::kLong));
-        }
-        return flatten_indices_npu_kernel(indices, full_size.slice(0, sparse_dim));
-    }
 }
 
 // --------------------------------------------------------------------
@@ -89,4 +74,12 @@ SparseTensor& mul_out_sparse_scalar(SparseTensor& r, const SparseTensor& t, cons
     return mul_out_sparse_zerodim(r, t, at::native::wrapped_scalar_tensor(value));
 }
 
+}
+
+namespace at {
+namespace native {
+using flatten_indices_fn = at::Tensor (*)(const at::Tensor& indices, at::IntArrayRef size);
+DECLARE_DISPATCH(flatten_indices_fn, flatten_indices_stub);
+REGISTER_PRIVATEUSE1_DISPATCH(flatten_indices_stub, &::sparse::flatten_indices_npu_kernel);
+}
 }

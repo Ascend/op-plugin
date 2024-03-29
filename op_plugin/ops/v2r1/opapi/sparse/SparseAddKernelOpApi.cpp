@@ -77,7 +77,7 @@ at::Tensor& add_out_dense_sparse_npu(
         return r_;
     }
 
-    at::Tensor indices_1D = flatten_indices(indices, sparse.sizes(), false);
+    at::Tensor indices_1D = at::sparse::flatten_indices(indices, sparse.sizes(), false);
 
     int64_t view_rows = 1;
     int64_t view_columns = 1;
