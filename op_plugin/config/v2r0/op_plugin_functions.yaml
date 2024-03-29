@@ -2306,6 +2306,8 @@ custom:
     exposed: True
   - func: npu_geglu_grad(Tensor grad_output, Tensor self, Tensor gelu, int dim=-1, int approximate=1, bool activate_left=False) -> Tensor
     impl_ns: op_api
+  - func: npu_moe_compute_expert_tokens(Tensor sorted_expert_for_source_row, int num_expert) -> Tensor
+    impl_ns: op_api
   - func: _dropout_with_byte_mask_backward(Tensor grad_output, Tensor mask, float p) -> Tensor
     impl_ns: acl_op
   - func: dropout_with_byte_mask(Tensor self, float p, bool train) -> Tensor
