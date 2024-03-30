@@ -68,7 +68,7 @@ at::Tensor npu_nonzero_aclop(const at::Tensor &self)
 at::Tensor npu_nonzero_aclnn(const at::Tensor &self)
 {
     DO_COMPATIBILITY(aclnnNonzeroV2, npu_nonzero_aclop(self));
-    auto out_size = op_infer::nonzero_npu_max_output_size(self);
+    c10::SmallVector<int64_t, SIZE> out_size = {self.dim(), self.numel()};
     at::Tensor out =
         at_npu::native::OpPreparation::apply_tensor_without_format(out_size, self.options().dtype(at::kLong));
     static auto opApiFuncAddr = []() {
