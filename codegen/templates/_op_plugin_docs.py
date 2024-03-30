@@ -3978,3 +3978,151 @@ graph output with mask: tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.00
         [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]],        device='npu:0', dtype=torch.float16)
 """
 )
+
+_add_torch_npu_docstr(
+    "npu_fused_infer_attention_score",
+    """
+功能描述:
+算子功能：适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当Query矩阵的S为1，进入IncreFlashAttention分支，其余场景进入PromptFlashAttention分支。 
+计算公式：atten_out = softmax(scale*(query*key)+atten_mask)*value
+
+接口原型:
+torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value, *, Tensor? pse_shift=None, Tensor? atten_mask=None, int[]? actual_seq_lengths=None, int[]? actual_seq_lengths_kv=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? block_table=None, Tensor? dequant_scale1=None, Tensor? quant_scale1=None, Tensor? dequant_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, Tensor? query_padding_size=None, Tensor? kv_padding_size=None, int num_heads=1, float scale=1.0, int pre_tokens=2147483647, int next_tokens=2147483647, str input_layout="BSH", int num_key_value_heads=0, int sparse_mode=0, int inner_precise=0, int block_size=0, int antiquant_mode=0, bool softmax_lse_flag=False) -> (Tensor, Tensor)
+
+参数说明:
+Query: 三维或者四维Device侧的Input Tensor; 三维: shape是(B,S,H), 对应的input_layout是BSH; 四维: shape是(B,N,S,D), 其中N*D=H, 数据类型支持FLOAT16、BFLOAT16, 数据格式支持ND。
+Key: 三维或者四维Device侧的Input Tensor; 三维: shape是(B,S,H), 对应的input_layout是BSH; 四维: shape是(B,N,S,D), 其中N*D=H, 数据类型支持FLOAT16、BFLOAT16, 数据格式支持ND。
+Value: 三维或者四维Device侧的Input Tensor; 三维: shape是(B,S,H), 对应的input_layout是BSH; 四维: shape是(B,N,S,D), 其中N*D=H, 数据类型支持FLOAT16、BFLOAT16, 数据格式支持ND。
+*: 代表其之前的变量是位置相关, 需要按照顺序输入, 必选; 之后的变量是键值对赋值的, 位置无关, 可选(不输入会使用默认值)。
+pse_shift: 四维Device侧的Input Tensor, shape是(B,N,Query S, Key S)或者(1,N,Query S, Key S), 默认值为None。数据类型支持FLOAT16, 数据格式支持ND。
+atten_mask: 四维Device侧的Input Tensor, shape是(B,1,Query S, Key S), 取值为1代表该位不参与计算(不生效), 为0代表该位参与计算, 默认值为None, 即全部参与计算; 数据类型支持FLOAT16、BOOL, 数据格式支持ND。
+actual_seq_lengths: 二维Host侧的Input数组, 其shape为(B,1), 形如[1, 2, 3], 代表每个batch中 query的有效序列长度, 默认值为默认值为None, 即全部有效。
+actual_seq_lengths_kv: Host侧的attribute, 每个batch中key和value的 S的有效长度, 其shape为(B,1), 代表kv中有效的序列长度, 默认值为默认值为None, 即全部有效; 数据类型为INT64。
+antiquantScale：Device侧的aclTensor，数据类型支持：FLOAT32、FLOAT16、BFLOAT16。数据格式支持ND（参考），表示反量化因子，支持per-tensor，per-channel，Q_S为1时只支持per-channel，综合约束请见约束与限制。
+antiquantOffset：Device侧的aclTensor，数据类型支持：FLOAT32、FLOAT16、BFLOAT16。数据格式支持ND（参考），表示反量化偏移，支持per-tensor，per-channel，Q_S为1时只支持per-channel，综合约束请见约束与限制。
+dequant_scale1: Device侧的Input Tensor, 其shape为(1), 数据类型支持: UINT64、FLOAT32。数据格式支持ND, 表示第1次Matmul计算后反量化的量化因子, 支持pre-tensor(scalar)。 如不使用该功能时可传入nullptr。
+quantScale1: Device侧的Input Tensor, 其shape为(1), 数据类型支持: FLOAT。数据格式支持ND, 表示第2次Matmul计算前量化的量化因子, 支持pre-tensor(scalar)。 如不使用该功能时可传入nullptr。
+dequant_scale2: Device侧的Input Tensor, 其shape为(1), 数据类型支持: UINT64、FLOAT32。数据格式支持ND, 表示第2次Matmul计算后量化的量化因子, 支持pre-tensor(scalar)。 如不使用该功能时可传入nullptr。
+quantScale2: Device侧的Input Tensor, 其shape为(1), 数据类型支持: FLOAT。数据格式支持ND, 表示输出量化的量化因子, 支持pre-tensor(scalar)。 如不使用该功能时可传入nullptr。
+quantOffset2: Device侧的Input Tensor, 其shape为(1), 数据类型支持: FLOAT。数据格式支持ND, 表示输出量化的量化偏移, 支持pre-tensor(scalar)。 如不使用该功能时可传入nullptr。
+blocktable：Device侧的aclTensor，数据类型支持：INT32。数据格式支持ND（参考）。表示PageAttention中KV存储使用的block映射表，如不使用该功能可传入nullptr；Q_S大于等于2时该参数无效。
+queryPaddingSize：Query中每个batch的数据是否右对齐，且右对齐的个数是多少。仅支持Q_S等于1；Q_S大于等于2时该参数无效。用户不特意指定时可传入默认值nullptr。
+kvPaddingSize：key/value中每个batch的数据是否右对齐，且右对齐的个数是多少。仅支持Q_S等于1；Q_S大于等于2时该参数无效。用户不特意指定时可传入默认值nullptr。
+num_heads: Host侧的attribute, query的头数, 即BNSD中的N, 其乘以D为H, 默认值为1; 数据类型为INT。
+scale: Host侧的attribute, 缩放系数, 用来约束梯度, 其默认值为1.0, 典型值为1/sqrt(D); 数据类型为FLOAT32。
+pre_tokens: Host侧的attribute, 用于指定参与计算的有效数据块, 其默认值为2147473647
+next_tokens: Host侧的attribute, 用于指定参与计算的有效数据块, 其默认值为0
+input_layout: Host侧的attribute, 代表query、key、value的布局, 根据输入的Query、Key、Value的shape确定, 三维张量是BSH, 四维张量是BNSD, 默认值为BSH; 数据类型为string。
+num_key_value_heads: Host侧的attribute, kv的头数, 默认值为0, 表示与q的头数相同; 否则表示kv的头数, 需要能被q的头数(num_heads)整除; 数据类型为INT64。
+sparse_mode: Host侧的attribute, 针对noMask、leftUpCasual、rightDownCasual、band四类sparse场景, 新增可选属性sparse_mode(UINT64, 枚举), 对应枚举值分别为0、2、3、4。
+innerPrecise：Host侧的int，一共4种模式：0、1、2、3。一共两位bit位，第0位（bit0）表示高精度或者高性能选择，第1位（bit1）表示是否做行无效修正。数据类型支持：INT64。Q_S为1时该参数无效。综合约束请见约束与限制。
+    innerPrecise为0时，代表开启高精度模式，且不做行无效修正。
+    innerPrecise为1时，代表高性能模式，且不做行无效修正。
+    innerPrecise为2时，代表开启高精度模式，且做行无效修正。
+    innerPrecise为3时，代表高性能模式，且做行无效修正。
+softmaxLseFlag：是否输出softmax_lse，支持S轴外切（增加输出）。预留参数，暂不支持。用户不特意指定时可传入默认值false。
+blockSize：Host侧的int64_t，PageAttention中KV存储每个block中最大的token个数，默认为0，数据类型支持INT64，Q_S大于等于2时该参数无效。
+antiquantMode：伪量化的方式，分为perchannel（perchannel包含pertensor）和pertoken。仅支持Q_S等于1；Q_S大于等于2时该参数无效。用户不特意指定时可传入默认值nullptr。
+attentionOut（aclTensor*，计算输出）：Device侧的aclTensor，公式中的输出，数据类型支持FLOAT16、BFLOAT16、INT8。数据格式支持ND。限制：该入参的shape需要与入参query的shape保持一致。
+softmaxLse（aclTensor*，计算输出）：flashdecode算法对query乘key的结果先取exp再取sum，最后取log得到的结果。预留参数，暂不支持。用户不特意指定时可传入默认值nullptr。
+输出说明共两个输出, atten_out为计算的最终结果, 类型为Tensor, shape与query保持一致。softmaxLse当前预留，暂不支持。
+
+约束说明:
+当Q_S等于1时：请参考Incre_Flash_Attention限制
+当Q_S大于1时：请参考Prompt_Flash_Attention限制
+
+支持的PyTorch版本:
+PyTorch 2.1
+
+支持的芯片型号:
+Atlas A2 训练系列产品
+
+调用示例:
+# 单算子调用方式
+import torch
+import torch_npu
+import math
+
+# 生成随机数据, 并发送到npu
+q = torch.randn(1, 8, 164, 576, dtype=torch.float16).npu()
+k = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
+v = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
+scale = 1/math.sqrt(576.0)
+
+# 调用FIA算子
+out = torch_npu.npu_fused_infer_attention_score(q, k, v, num_heads = 8, input_layout = "BNSD", scale = scale, pre_tokens=65535, next_tokens=65535)
+
+# 执行上述代码的输出类似如下
+tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
+        [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
+        [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
+        ...,
+        [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
+        [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
+        [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]],
+        device='npu:0', dtype=torch.float16)
+
+# 入图方式
+
+import torch
+import torch_npu
+import math
+
+import torchair as tng
+from torchair.ge_concrete_graph import ge_apis as ge
+from torchair.configs.compiler_config import CompilerConfig
+import torch._dynamo
+TORCHDYNAMO_VERBOSE=1
+TORCH_LOGS="+dynamo"
+
+# 支持入图的打印宏
+import logging
+from torchair.core.utils import logger
+logger.setLevel(logging.DEBUG)
+config = CompilerConfig()
+config.aoe_config.aoe_mode = "1"
+config.debug.graph_dump.type = "pbtxt"
+npu_backend = tng.get_npu_backend(compiler_config=config)
+from torch.library import Library, impl
+
+# 数据生成
+q = torch.randn(1, 8, 164, 576, dtype=torch.float16).npu()
+k = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
+v = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
+scale = 1/math.sqrt(576.0)
+
+class Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self):
+        return torch_npu.npu_fused_infer_attention_score(q, k, v, num_heads = 8, input_layout = "BNSD", scale = scale, pre_tokens=65535, next_tokens=65535)
+def MetaInfershape():
+    with torch.no_grad():
+        model = Model()
+        model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
+        graph_output = model()
+    single_op = torch_npu.npu_fused_infer_attention_score(q, k, v, num_heads = 8, input_layout = "BNSD", scale = scale, pre_tokens=65535, next_tokens=65535)
+    print("single op output with mask:", single_op, single_op.shape)
+    print("graph output with mask:", graph_output, graph_output.shape)
+if __name__ == "__main__":
+    MetaInfershape()
+
+# 执行上述代码的输出类似如下
+single op output with mask: tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
+        [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
+        [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
+        ...,
+        [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
+        [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
+        [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]],
+        device='npu:0', dtype=torch.float16)
+
+graph output with mask: tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
+        [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
+        [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
+        ...,
+        [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
+        [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
+        [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]],        device='npu:0', dtype=torch.float16)
+"""
+)
