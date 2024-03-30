@@ -25,7 +25,7 @@ static const int64_t BIT_NUMBER = 128;
 static const int64_t UINT8_BIT_NUMBER = 8;
 
 std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p) {
-  DO_COMPATIBILITY(aclnnDropoutGenMask, acl_op::_npu_dropout(self, p));
+  DO_COMPATIBILITY(aclnnDropoutGenMaskV2, acl_op::_npu_dropout(self, p));
   DO_COMPATIBILITY(aclnnDropoutDoMask, acl_op::_npu_dropout(self, p));
 
   int64_t length = (self.numel() + BIT_NUMBER - 1) / BIT_NUMBER * BIT_NUMBER / UINT8_BIT_NUMBER;
@@ -53,7 +53,8 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
     // which will cause overflow in graph mode, so we set seed = 0 to avoid it.
     const uint64_t seed = pair.first;
     const uint64_t offset = pair.second;
-    EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, p, seed, offset, mask);
+    aclDataType dataType = at_npu::native::OpPreparation::convert_to_acl_data_type(self.scalar_type());
+    EXEC_NPU_CMD(aclnnDropoutGenMaskV2, shapeArray, p, seed, offset, dataType, mask);
   }
   // When tasks on multiple streams read and write the same block of memory,
   // recordStream needs to be called to ensure the correctness of memory reuse.
@@ -72,7 +73,7 @@ at::Tensor npu_dropout_backward(const at::Tensor& grad_output, const at::Tensor&
 }
 
 std::tuple<at::Tensor, at::Tensor> native_dropout(const at::Tensor& input, double p, c10::optional<bool> train) {
-  DO_COMPATIBILITY(aclnnDropoutGenMask, acl_op::native_dropout(input, p, train));
+  DO_COMPATIBILITY(aclnnDropoutGenMaskV2, acl_op::native_dropout(input, p, train));
   DO_COMPATIBILITY(aclnnDropoutDoMask, acl_op::native_dropout(input, p, train));
 
   bool dropout_train = !train.has_value() ? true : train.value();
