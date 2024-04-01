@@ -26,32 +26,36 @@ at::Tensor& where_out(
     const at::Tensor& self,
     const at::Tensor& other,
     at::Tensor& out) {
-  at::Tensor b_condition, b_self, b_other;
-  std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
-  npu_preparation::CheckOut(
-      {condition, self, other},
-      out,
-      b_self);
-  if (!npu_utils::check_match(&out)) {
-    at::Tensor contiguous_out = npu_utils::format_contiguous(out);
-    where_out_nocheck(contiguous_out, condition, self, other);
-    npu_utils::format_fresh_view(out, contiguous_out);
-  } else {
-    where_out_nocheck(out, condition, self, other);
-  }
+    at::Tensor b_condition;
+    at::Tensor b_self;
+    at::Tensor b_other;
+    std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
+    npu_preparation::CheckOut(
+        {condition, self, other},
+        out,
+        b_self);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+        where_out_nocheck(contiguous_out, condition, self, other);
+        npu_utils::format_fresh_view(out, contiguous_out);
+    } else {
+        where_out_nocheck(out, condition, self, other);
+    }
 
-  return out;
+    return out;
 }
 
 at::Tensor where(
     const at::Tensor& condition,
     const at::Tensor& self,
     const at::Tensor& other) {
-  at::Tensor b_condition, b_self, b_other;
-  std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
-  at::Tensor ret = npu_preparation::apply_tensor(b_self);
-  where_out_nocheck(ret, b_condition, b_self, b_other);
-  return ret;
+    at::Tensor b_condition;
+    at::Tensor b_self;
+    at::Tensor b_other;
+    std::tie(b_condition, b_self, b_other) = npu_expand_outplace(condition, self, other, "where_npu");
+    at::Tensor ret = npu_preparation::apply_tensor(b_self);
+    where_out_nocheck(ret, b_condition, b_self, b_other);
+    return ret;
 }
 
 } // namespace acl_op

@@ -20,8 +20,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor> prelu_backward(const at::Tensor& grad_output,
-                                                                      const at::Tensor& self,
-                                                                      const at::Tensor& weight) {
+                                                  const at::Tensor& self,
+                                                  const at::Tensor& weight) {
   DO_COMPATIBILITY(aclnnPreluBackward, acl_op::prelu_backward(grad_output, self, weight));
   c10::SmallVector<int64_t, SIZE> output_size = op_infer::prelu_backward_npu_grad_weight_output_size(weight);
 

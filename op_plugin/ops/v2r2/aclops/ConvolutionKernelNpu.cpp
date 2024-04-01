@@ -585,7 +585,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward(
   at::native::ConvBackend backend = select_conv_backend(input, weight, bias_sizes_opt, true, params);
 
   // Call the backend.
-  at::Tensor backend_grad_input, backend_grad_weight, backend_grad_bias;
+  at::Tensor backend_grad_input;
+  at::Tensor backend_grad_weight;
+  at::Tensor backend_grad_bias;
   auto kernel_size = weight.sizes().slice(2);
 
   switch(backend) {

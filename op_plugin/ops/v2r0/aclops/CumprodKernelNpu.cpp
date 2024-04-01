@@ -19,7 +19,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 at::Tensor& cumprod_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,

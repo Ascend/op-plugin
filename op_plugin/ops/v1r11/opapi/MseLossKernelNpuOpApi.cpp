@@ -41,7 +41,7 @@ at::Tensor mse_loss(
     output_size = op_infer::broadcast_ops_npu_output_size(self, target);
   }
   at::ScalarType high_type = at::native::result_type(self, target);
-  at::Tensor result = 
+  at::Tensor result =
       at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(high_type));
   EXEC_NPU_CMD(aclnnMseLoss, self, target, reduction, result);
   return result;

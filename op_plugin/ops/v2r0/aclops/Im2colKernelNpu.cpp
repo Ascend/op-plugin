@@ -18,20 +18,20 @@
 
 namespace acl_op {
 at::Tensor col2im_backward(
-    const at::Tensor& self, 
-    at::IntArrayRef kernel_size, 
+    const at::Tensor& self,
+    at::IntArrayRef kernel_size,
     at::IntArrayRef dilation,
-    at::IntArrayRef padding, 
+    at::IntArrayRef padding,
     at::IntArrayRef stride) {
   return acl_op::im2col(self, kernel_size, dilation, padding, stride);
 }
 
 at::Tensor& col2im_backward_out(
-    const at::Tensor& self, 
+    const at::Tensor& self,
     at::IntArrayRef kernel_size,
     at::IntArrayRef dilation,
-    at::IntArrayRef padding, 
-    at::IntArrayRef stride, 
+    at::IntArrayRef padding,
+    at::IntArrayRef stride,
     at::Tensor& result) {
   return acl_op::im2col_out(self, kernel_size, dilation, padding, stride, result);
 }
