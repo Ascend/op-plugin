@@ -255,6 +255,8 @@ official:
    impl_ns: acl_op, op_api
  - func: argmax(Tensor self, int? dim=None, bool keepdim=False) -> Tensor
    impl_ns: acl_op, op_api
+ - func: argmax.out(Tensor self, int? dim=None, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: argmin(Tensor self, int? dim=None, bool keepdim=False) -> Tensor
    impl_ns: acl_op, op_api
  - func: argmin.out(Tensor self, int? dim=None, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)

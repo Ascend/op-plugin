@@ -20,24 +20,47 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim) {
-  DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax(self, dim, keepdim));
-  if (self.numel() == 0) {
-    return self;
-  }
-  at::Tensor input = self.reshape({-1});
-  int64_t realDim = 0;
-  bool realKeepDim = false;
-  if (dim.has_value()) {
-    input = self;
-    realDim = dim.value();
-    realKeepDim = keepdim;
-  }
-  auto outputSize = op_infer::reduce_ops_npu_output_size(input, realDim, realKeepDim);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kLong));
-
-  EXEC_NPU_CMD(aclnnArgMax, input, realDim, realKeepDim, result);
-  return result;
+static at::Tensor& argmax_exec(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result,
+                               bool out_mode)
+{
+    at::Tensor input = self.reshape({-1});
+    int64_t realDim = 0;
+    bool realKeepDim = false;
+    if (dim.has_value()) {
+        input = self;
+        realDim = dim.value();
+        realKeepDim = keepdim;
+    }
+    auto output_size = op_infer::reduce_ops_npu_output_size(input, realDim, realKeepDim);
+    if (out_mode) {
+        npu_preparation::check_tensor({self}, result, result, output_size);
+    } else {
+        result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kLong));
+    }
+    
+    EXEC_NPU_CMD(aclnnArgMax, input, realDim, realKeepDim, result);
+    return result;
 }
 
+
+at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim)
+{
+    DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax(self, dim, keepdim));
+    if (self.numel() == 0) {
+        return self;
+    }
+    at::Tensor result;
+    return argmax_exec(self, dim, keepdim, result, false);
+}
+
+
+at::Tensor& argmax_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax_out(self, dim, keepdim, result));
+    if (self.numel() == 0) {
+        result = self;
+        return result;
+    }
+    return argmax_exec(self, dim, keepdim, result, true);
+}
 } // namespace op_api
