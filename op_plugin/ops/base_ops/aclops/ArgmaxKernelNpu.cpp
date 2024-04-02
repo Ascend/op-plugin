@@ -19,23 +19,57 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
+using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim) {
-  at::Tensor input = dim.has_value() ? self : self.reshape({-1});
-  int64_t dim_value = dim.has_value() ? dim.value() : 0;
-  bool keepdim_value = dim.has_value() ? keepdim : false;
-  auto output_size = op_infer::reduce_ops_npu_output_size(input, dim_value, keepdim_value);
-  at::Tensor result = npu_preparation::ApplyTensorWithSizes(output_size, self.options().dtype(at::kInt));
-  at::Scalar dim_scalar = dim_value;
-
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ArgMaxV2")
-      .Input(input)
-      .Input(dim_scalar, at::kInt, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
-      .Output(result)
-      .Attr("keep_dims", keepdim_value)
-      .Run();
-  result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kLong);
-  return result;
+namespace {
+at::Tensor& argmax_out_nocheck(at::Tensor& result, const at::Tensor& input, at::Scalar& dim_scalar, bool keepdim_value)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ArgMaxV2")
+        .Input(input)
+        .Input(dim_scalar, at::kInt, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+        .Output(result)
+        .Attr("keep_dims", keepdim_value)
+        .Run();
+    return result;
 }
+}
+
+at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim)
+{
+    at::Tensor input = dim.has_value() ? self : self.reshape({-1});
+    int64_t dim_value = dim.has_value() ? dim.value() : 0;
+    bool keepdim_value = dim.has_value() ? keepdim : false;
+    auto output_size = op_infer::reduce_ops_npu_output_size(input, dim_value, keepdim_value);
+    at::Tensor result = npu_preparation::ApplyTensorWithSizes(output_size, self.options().dtype(at::kInt));
+    at::Scalar dim_scalar = dim_value;
+    argmax_out_nocheck(result, input, dim_scalar, keepdim_value);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kLong);
+    return result;
+}
+
+at::Tensor& argmax_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result)
+{
+    at::Tensor input = dim.has_value() ? self : self.reshape({-1});
+    int64_t dim_value = dim.has_value() ? dim.value() : 0;
+    bool keepdim_value = dim.has_value() ? keepdim : false;
+    auto output_size = op_infer::reduce_ops_npu_output_size(input, dim_value, keepdim_value);
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        npu_preparation::get_tensor_npu_format(result),
+        at::kLong,
+        output_size);
+    at::Scalar dim_scalar = dim_value;
+    at::Tensor result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kInt);
+    argmax_out_nocheck(result_cast, input, dim_scalar, keepdim_value);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = at_npu::native::custom_ops::npu_dtype_cast(result_cast, at::kLong);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        result = at_npu::native::custom_ops::npu_dtype_cast(result_cast, at::kLong);
+    }
+    return result;
+}
+
 } // namespace acl_op
