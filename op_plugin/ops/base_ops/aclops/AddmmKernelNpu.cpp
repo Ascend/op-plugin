@@ -102,49 +102,60 @@ bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2
            mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis <= kInnerAxisMaxLimit;
 }
 
+at::Tensor &addmm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &mat1,
+                                  const at::Tensor &mat2)
+{
+    const auto mat1_desc = torch_npu::NPUBridge::GetNpuStorageImpl(mat1)->npu_desc_;
+    const auto mat2_desc = torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_;
+    bool is_mat1_t_flex = is_transpose_last_two_dims_flex(mat1);
+    bool is_mat2_t_flex = is_transpose_last_two_dims_flex(mat2);
+    bool is_mat1_t_strict = is_transpose_last_two_dims_strict(mat1, is_mat1_t_flex);
+    bool is_mat2_t_strict = is_transpose_last_two_dims_strict(mat2, is_mat2_t_flex);
+    at::Tensor contiguous_mat1 = mat1;
+    at::Tensor contiguous_mat2 = mat2;
+    mm_set_format_contiguous(contiguous_mat1, is_mat1_t_flex, is_mat1_t_strict);
+    mm_set_format_contiguous(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("MatMul")
+        .InputWithoutContiguous(contiguous_mat1)
+        .InputWithoutContiguous(contiguous_mat2)
+        .Input(self)
+        .Output(result)
+        .Attr("transpose_x1", is_mat1_t_flex)
+        .Attr("transpose_x2", is_mat2_t_flex)
+        .Run();
+    // Recover storage desc of view-transpose tensors, i.e. the inverse process of
+    // set_transposed_npu_desc
+    if (is_mat1_t_flex && (!is_mat1_t_strict)) {
+        torch_npu::NPUBridge::GetNpuStorageImpl(mat1)->npu_desc_ = mat1_desc;
+    }
+    if (is_mat2_t_flex && (!is_mat2_t_strict)) {
+        torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_ = mat2_desc;
+    }
+    return result;
+}
+
 at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
                       const at::Scalar &alpha, at::Tensor &result)
 {
     static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
     // k-cut is conflict with bias in mm
-    bool need_to_convert_bias = !mm_check_split_k(mat1, mat2, is_support_nd_out) && self.dim() == 1;
-    // bias should be 16 aligned
-    need_to_convert_bias &= self.size(-1) % 16 == 0;
-    if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0 && need_to_convert_bias) {
-        const auto mat1_desc = torch_npu::NPUBridge::GetNpuStorageImpl(mat1)->npu_desc_;
-        const auto mat2_desc = torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_;
-        bool is_mat1_t_flex = is_transpose_last_two_dims_flex(mat1);
-        bool is_mat2_t_flex = is_transpose_last_two_dims_flex(mat2);
-        bool is_mat1_t_strict = is_transpose_last_two_dims_strict(mat1, is_mat1_t_flex);
-        bool is_mat2_t_strict = is_transpose_last_two_dims_strict(mat2, is_mat2_t_flex);
-        at::Tensor contiguous_mat1 = mat1;
-        at::Tensor contiguous_mat2 = mat2;
-        mm_set_format_contiguous(contiguous_mat1, is_mat1_t_flex, is_mat1_t_strict);
-        mm_set_format_contiguous(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
-        at_npu::native::OpCommand cmd;
-        cmd.Name("MatMul")
-            .InputWithoutContiguous(contiguous_mat1)
-            .InputWithoutContiguous(contiguous_mat2)
-            .Input(self)
-            .Output(result)
-            .Attr("transpose_x1", is_mat1_t_flex)
-            .Attr("transpose_x2", is_mat2_t_flex)
-            .Run();
-        // Recover storage desc of view-transpose tensors, i.e. the inverse process of
-        // set_transposed_npu_desc
-        if (is_mat1_t_flex && (!is_mat1_t_strict)) {
-            torch_npu::NPUBridge::GetNpuStorageImpl(mat1)->npu_desc_ = mat1_desc;
+    bool need_to_convert_bias = !mm_check_split_k(mat1, mat2, is_support_nd_out);
+    bool check_bias_shape = (self.dim() == 1 || (self.dim() == 2 && self.size(0) == 1));
+    if (check_bias_shape) {
+        if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0 && need_to_convert_bias) {
+            acl_op::addmm_out_npu_nocheck(result, self, mat1, mat2);
+        } else {
+            at::Tensor mul_result = at::mul(mat1, alpha);
+            at::Tensor bias = at::mul(self, beta);
+            acl_op::addmm_out_npu_nocheck(result, bias, mul_result, mat2);
         }
-        if (is_mat2_t_flex && (!is_mat2_t_strict)) {
-            torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_ = mat2_desc;
-        }
-        return result;
+    } else {
+        at::Tensor mul_result = at::mul(mat1, alpha);
+        at::Tensor mm_result = at::mm(mul_result, mat2);
+        // matmul*alpha+self*beta
+        at::add_out(result, mm_result, self, beta);
     }
-    at::Tensor mul_result = at::mul(mat1, alpha);
-    at::Tensor mm_result = at::mm(mul_result, mat2);
-
-    // matmul*alpha+self*beta
-    at::add_out(result, mm_result, self, beta);
     return result;
 }
 
