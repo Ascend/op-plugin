@@ -65,18 +65,18 @@ at::Tensor &conv_transpose3d_backward_weight_out_nocheck(at::Tensor &grad_weight
     TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size(),
         OPS_ERROR(ErrCode::PARAM));
 
-    c10::SmallVector<int64_t, N> dim_list = op_infer::array_to_small_vector(weight.sizes());
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1], stride[2]};
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1], padding[2], padding[2]};
     c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1], dilation[2]};
     string data_format = "NCDHW";
+    at::IntArrayRef input_size = weight.sizes();
 
     at_npu::native::OpCommand cmd;
-    cmd.Name("Conv3DBackpropFilterD")
+    cmd.Name("Conv3DBackpropFilter")
         .Input(grad_output, "x")
+        .Input(input_size, at::kInt)
         .Input(input, "out_backprop")
         .Output(grad_weight, "y")
-        .Attr("filter_size", dim_list)
         .Attr("strides", strides_size)
         .Attr("pads", paddings)
         .Attr("dilations", dilations)
