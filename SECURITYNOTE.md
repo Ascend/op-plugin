@@ -1,4 +1,4 @@
-# Ascend OpPlugin for PyTorch 安全声明
+# OpPlugin安全声明
 
 ## 系统安全加固
 建议用户在系统中配置开启ASLR（级别2 ），又称**全随机地址空间布局随机化**，可参考以下方式进行配置：
@@ -34,13 +34,13 @@
 
 
 ## 构建安全声明
-op_plugin的运行依赖torch_npu，本章内容请参考[torch_npu仓构建安全声明](https://gitee.com/ascend/pytorch/blob/master/SECURITYNOTE.md#%E6%9E%84%E5%BB%BA%E5%AE%89%E5%85%A8%E5%A3%B0%E6%98%8E)。
+OpPlugin的运行依赖torch_npu，本章内容请参考[torch_npu仓构建安全声明](https://gitee.com/ascend/pytorch/blob/master/SECURITYNOTE.md#%E6%9E%84%E5%BB%BA%E5%AE%89%E5%85%A8%E5%A3%B0%E6%98%8E)。
 
 ## 运行安全声明
-op_plugin的运行依赖torch_npu，本章内容请参考[torch_npu仓运行安全声明](https://gitee.com/ascend/pytorch/blob/master/SECURITYNOTE.md#%E8%BF%90%E8%A1%8C%E5%AE%89%E5%85%A8%E5%A3%B0%E6%98%8E)。
+OpPlugin的运行依赖torch_npu，本章内容请参考[torch_npu仓运行安全声明](https://gitee.com/ascend/pytorch/blob/master/SECURITYNOTE.md#%E8%BF%90%E8%A1%8C%E5%AE%89%E5%85%A8%E5%A3%B0%E6%98%8E)。
 
 ## 公网地址声明
-在op_plugin的配置文件和脚本中存在[公网地址](#公网地址)。
+在OpPlugin的配置文件和脚本中存在[公网地址](#公网地址)。
 
 ##### 公网地址
 
@@ -50,4 +50,4 @@ op_plugin的运行依赖torch_npu，本章内容请参考[torch_npu仓运行安�
 |   开发引入  |   不涉及   |   ci\exec_ut.sh   |   https://gitee.com/ascend/pytorch.git   |   UT脚本根据torch_npu仓库地址下拉取代码进行UT测试   |
 
 ## 公开接口声明
-op_plugin的运行依赖torch_npu，不提供公开接口。
+OpPlugin的运行依赖torch_npu，不提供公开接口。

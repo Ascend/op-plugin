@@ -1,11 +1,11 @@
-# Ascend OpPlugin for PyTorch
+# OpPlugin
 
 ## 简介
 
-本项目开发了NPU PyTorch算子插件，为使用PyTorch框架的开发者提供便捷的NPU算子库调用能力。
-OP-Plugin算子插件的编译、使用依赖昇腾Ascend Adapter for PyTorch。因此，在编译op\_plugin之前，需要了解、安装昇腾PyTorch。使用手册可参考昇腾社区[pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md)。
+本项目开发了Ascend Extension for Pytorch（torch_npu）算子插件，为使用PyTorch框架的开发者提供便捷的NPU算子库调用能力。
+OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch。因此，在编译OpPlugin之前，需要了解、安装昇腾PyTorch。使用手册可参考昇腾社区[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md)。
 
-## 编译、安装op_plugin
+## 编译、安装OpPlugin
 
 ### 发布包安装
 暂未正式发布
@@ -14,7 +14,7 @@ OP-Plugin算子插件的编译、使用依赖昇腾Ascend Adapter for PyTorch。
 
 **安装依赖**
 
-安装时需要安装系统依赖及官方PyTorch框架。安装指导可参考昇腾pytorch社区[安装依赖](https://gitee.com/ascend/pytorch/blob/master/README.zh.md#%E4%BD%BF%E7%94%A8%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85pytorch%E6%A1%86%E6%9E%B6)。
+安装时需要安装系统依赖及官方PyTorch框架。安装指导可参考[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md#%E4%BD%BF%E7%94%A8%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85pytorch%E6%A1%86%E6%9E%B6)。
 
 1. 配置CANN环境变量脚本。
 
@@ -26,12 +26,12 @@ OP-Plugin算子插件的编译、使用依赖昇腾Ascend Adapter for PyTorch。
 
 2. 编译生成插件的二进制安装包。
 
-   下载对应op_plugin版本分支代码，进入插件根目录，以master为例
+   下载对应OpPlugin版本分支代码，进入插件根目录，以master为例
    ```
    git clone https://gitee.com/ascend/op-plugin.git
    cd op-plugin
    ```
-   执行编译构建，当前支持昇腾pytorch 1.11/2.0/2.1/2.2(master)版本
+   执行编译构建，当前支持昇腾pytorch 1.11/2.0/2.1/2.2/2.3/master版本
    ```
    bash ci/build.sh --python=3.8 --pytorch=v2.1.0
    ```
@@ -52,4 +52,4 @@ OP-Plugin算子插件的编译、使用依赖昇腾Ascend Adapter for PyTorch。
 
 ## 安全声明
 
-[Ascend OpPlugin for PyTorch 安全声明](SECURITYNOTE.md)
+[OpPlugin安全声明](SECURITYNOTE.md)
