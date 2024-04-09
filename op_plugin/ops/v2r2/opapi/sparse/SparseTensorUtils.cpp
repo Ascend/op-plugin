@@ -22,12 +22,14 @@ namespace sparse {
 at::Tensor flatten_indices_npu_kernel(const at::Tensor& indices, c10::IntArrayRef size)
 {
     std::vector<int64_t> flatten_size(size.size(), 1);
-    for (size_t i = size.size() - 1; i > 0; i--) {
+    for (int i = size.size() - 1; i > 0; i--) {
         flatten_size[i - 1] = flatten_size[i] * size[i];
     }
-    auto tensor_temp = torch::tensor(flatten_size, indices.options().dtype(at::kFloat));
-    tensor_temp = torch::unsqueeze(tensor_temp, 0);
-    return torch::squeeze(at::matmul(tensor_temp, indices.to(at::kFloat)).to(at::kInt), 0);
+    auto tensor_temp = torch::zeros({indices.size(1)}, indices.options().dtype(at::kInt));
+    for (int i = 0; i < size.size(); i++) {
+        tensor_temp += indices[i] * flatten_size[i];
+    }
+    return tensor_temp;
 }
 
 // --------------------------------------------------------------------
