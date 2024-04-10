@@ -120,14 +120,8 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c1
     if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
         const at::Tensor &antiquant_scale_real = antiquant_scale.value_or(at::Tensor());
         const at::Tensor &antiquant_offset_real = antiquant_offset.value_or(at::Tensor());
-        if (x3.has_value()) {
-            EXEC_NPU_CMD(aclnnWeightQuantMatmulAllReduce, x1, x2, bias_real, antiquant_scale_real, antiquant_offset_real,
-                         x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, antiquant_group_size, x3_real);
-            return x3_real;
-        } else {
-            EXEC_NPU_CMD(aclnnWeightQuantMatmulAllReduce, x1, x2, bias_real, antiquant_scale_real, antiquant_offset_real,
-                         x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, antiquant_group_size, result);
-        }
+        EXEC_NPU_CMD(aclnnWeightQuantMatmulAllReduce, x1, x2, bias_real, antiquant_scale_real, antiquant_offset_real,
+                     x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, antiquant_group_size, result);
     }
 
     return result;
