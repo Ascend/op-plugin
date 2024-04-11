@@ -80,7 +80,6 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     TORCH_CHECK(x2_dim_num >= X_MIN_DIM && x2_dim_num <= X_MAX_DIM, "x2 shape dim num should be within 2~6, but it is ",
                 x2_dim_num);
     auto x1_k_dim = x1.size(x1_dim_num - 1);
-    auto x1_m_dim = x1.size(x1_dim_num - 2);
     auto x2_n_dim = x2.size(x2_dim_num - 1);
     auto x2_k_dim = x2.size(x2_dim_num - 2);
     TORCH_CHECK(x1_k_dim == x2_k_dim, "The k of x1 and x2 should be equal. but x1_k_dim is ",
@@ -133,12 +132,12 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
         bias_shape_check(x1, x2, bias_real, batch_val);
     }
 
-    if (scale.dtype() == at::kFloat) {
+    if (scale.dtype() == at::kFloat && !pertoken_scale.has_value()) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, quant_param, offset_real, bias_real,
+        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale_real, bias_real,
                      transpose1, transpose2, result);
     } else {
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, bias_real,
+        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, scale, offset_real, pertoken_scale_real, bias_real,
                      transpose1, transpose2, result);
     }
     return result;
