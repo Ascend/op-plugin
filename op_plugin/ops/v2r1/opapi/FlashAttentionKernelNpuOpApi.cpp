@@ -492,16 +492,22 @@ at::Tensor npu_prompt_flash_attention(
 {
     // construct the output tensor of the NPU
     at::Tensor output;
+    at::Tensor tmp_output = npu_preparation::apply_tensor_without_format(query);
+    std::string input_layout_str = std::string(input_layout);
+    if (input_layout_str == "BNSD_BSND") {
+        tmp_output = OpPreparation::apply_tensor_without_format({query.size(0), query.size(2), query.size(1), query.size(3)},
+            query.options().dtype(query.dtype()));
+    }
+
     if (ConvertType(quant_scale2) != nullptr) {
-        output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Char));
+        output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Char));
     } else if (query.dtype() == at::kChar) {
-        output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Half));
+        output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Half));
     } else {
-        output = npu_preparation::apply_tensor_without_format(query);
+        output = npu_preparation::apply_tensor_without_format(tmp_output);
     }
 
     // convert str
-    std::string input_layout_str = std::string(input_layout);
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
     auto actSeqLen = actual_seq_lengths.value_or(at::IntArrayRef{});
