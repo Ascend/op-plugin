@@ -25,12 +25,12 @@ const static int64_t PFA_SPARSE_HIGH_PRECISION_BAND = 14;
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score(
+std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const c10::optional<at::Tensor> &pse_shift,
     const c10::optional<at::Tensor> &atten_mask,
-    c10::OptionalIntArrayRef actual_seq_lengths,
-    c10::OptionalIntArrayRef actual_seq_lengths_kv,
+    c10::OptionalArrayRef<c10::SymInt> actual_seq_lengths,
+    c10::OptionalArrayRef<c10::SymInt> actual_seq_lengths_kv,
     const c10::optional<at::Tensor> &dequant_scale1,
     const c10::optional<at::Tensor> &quant_scale1,
     const c10::optional<at::Tensor> &dequant_scale2,
@@ -69,8 +69,10 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score(
 
     at::TensorList keyTensors = key;
     at::TensorList valueTensors = value;
-    auto actSeqLen = actual_seq_lengths.value_or(at::IntArrayRef{});
-    auto actSeqLenKv = actual_seq_lengths_kv.value_or(at::IntArrayRef{});
+    auto actSeqLenMiddle = actual_seq_lengths.value_or(at::ArrayRef<c10::SymInt>{});
+    auto actSeqLen = c10::asIntArrayRefUnchecked(actSeqLenMiddle);
+    auto actSeqLenKvMiddle = actual_seq_lengths_kv.value_or(at::ArrayRef<c10::SymInt>{});
+    auto actSeqLenKv = c10::asIntArrayRefUnchecked(actSeqLenKvMiddle);
 
     // construct softmax_lse tensor
     at::Tensor softmax_lse = npu_preparation::apply_tensor_without_format(query);
