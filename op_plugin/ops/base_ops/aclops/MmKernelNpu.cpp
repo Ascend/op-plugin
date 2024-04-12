@@ -93,17 +93,6 @@ void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bo
     }
 }
 
-bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool &is_support_nd_out)
-{
-    if (!is_support_nd_out || !(self.dtype() == at::ScalarType::Half && mat2.dtype() == at::ScalarType::Half) ||
-        !(format_helper::GetFormat(self) == ACL_FORMAT_ND && format_helper::GetFormat(mat2) == ACL_FORMAT_ND)) {
-        return false;
-    }
-    // split_k rule, maybe modified afterwards
-    const static int64_t kSplitKTimes = 8;
-    return self.size(1) >= kSplitKTimes * std::max(self.size(0), mat2.size(1));
-}
-
 bool is_mm_transpose(const at::Tensor &tensor)
 {
     if (tensor.dim() < 2 || tensor.dim() > 3) {
@@ -287,7 +276,6 @@ at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
     at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
     bool need_nd_out = false;
     static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
-    bool split_k = mm_check_split_k(self, mat2, is_support_nd_out);
     // check format_out of mm is NCHW. Delate after definite NLP model.
     if ((self.scalar_type() == at::ScalarType::Half)) {
         // check is 16-algined with high-performance
@@ -300,21 +288,11 @@ at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
         static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
         if (format_helper::IsBaseFormatType(self) && format_helper::IsBaseFormatType(mat2) && mm_bmm_nd &&
             ((is_support_nd_out && mm_check_nd_to_nz_on_the_fly(self, mat2)) || (!is_support_nd_out && is_aligin()))) {
-            if (split_k) {
-                result = npu_preparation::apply_tensor_with_format(
-                    output_size, self.options().dtype(at::ScalarType::Float), ACL_FORMAT_ND);
-            } else {
-                result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
-            }
+            result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
         } else {
             need_nd_out = mm_bmm_nd;
-            if (split_k) {
-                result = npu_preparation::apply_tensor_with_format(
-                    output_size, self.options().dtype(at::ScalarType::Float), ACL_FORMAT_FRACTAL_NZ, true);
-            } else {
-                result =
-                    npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);
-            }
+            result =
+                npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);
         }
     }
 
@@ -323,7 +301,6 @@ at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
     if (need_nd_out) {
         result = at_npu::native::custom_ops::npu_format_cast(result, ACL_FORMAT_ND);
     }
-    result = split_k ? at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Half) : result;
     return result;
 }
 } // namespace acl_op

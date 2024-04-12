@@ -72,17 +72,6 @@ void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bo
     }
 }
 
-bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool is_support_nd_out)
-{
-    if (!is_support_nd_out || !((self.dtype() == at::ScalarType::Half && mat2.dtype() == at::ScalarType::Half) ||
-        (self.dtype() == at::ScalarType::BFloat16 && mat2.dtype() == at::ScalarType::BFloat16))) {
-        return true;
-    }
-    // split_k rule, maybe modified afterwards
-    const static int64_t kSplitKTimes = 8;
-    return self.size(1) >= kSplitKTimes * std::max(self.size(0), mat2.size(1));
-}
-
 bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2)
 {
     const static int64_t kInnerAxisMaxLimit = 65535;
@@ -139,11 +128,9 @@ at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::
                       const at::Scalar &alpha, at::Tensor &result)
 {
     static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
-    // k-cut is conflict with bias in mm
-    bool need_to_convert_bias = !mm_check_split_k(mat1, mat2, is_support_nd_out);
     bool check_bias_shape = (self.dim() == 1 || (self.dim() == 2 && self.size(0) == 1));
     if (check_bias_shape) {
-        if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0 && need_to_convert_bias) {
+        if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0) {
             acl_op::addmm_out_npu_nocheck(result, self, mat1, mat2);
         } else {
             at::Tensor mul_result = at::mul(mat1, alpha);
