@@ -165,10 +165,7 @@ c10::SmallVector<int64_t, SIZE> addmm_npu_output_size(const at::Tensor &self, co
 c10::SmallVector<int64_t, SIZE> addbmm_npu_output_size(const at::Tensor &self, const at::Tensor &batch1,
                                                        const at::Tensor &batch2, c10::Scalar beta, c10::Scalar alpha)
 {
-    TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
-        "but got Tensor of dimension ", self.dim(), OPS_ERROR(ErrCode::PARAM));
-
-    return {self.size(0), self.size(1)};
+    return broadcast_ops_npu_output_size(self.sizes(), {batch1.size(1), batch2.size(2)});
 }
 
 c10::SmallVector<int64_t, SIZE> addmv_npu_output_size(const at::Tensor &self, const at::Tensor &mat,
