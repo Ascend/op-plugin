@@ -24,6 +24,110 @@ constexpr uint64_t MIX_STEP2 = 14181476777654086739LLU;
 
 typedef void(*AddTensorAddrToCachedList) (void *addr);
 
+static std::vector<std::string> split_str(std::string s, const std::string &del)
+{
+    int end = s.find(del);
+    std::vector<std::string> path_list;
+    while (end != -1) {
+        path_list.push_back(s.substr(0, end));
+        s.erase(s.begin(), s.begin() + end + 1);
+        end = s.find(del);
+    }
+    path_list.push_back(s);
+    return path_list;
+}
+
+static bool is_file_exist(const std::string &path)
+{
+    if (path.empty() || path.size() > PATH_MAX) {
+        return false;
+    }
+    return (access(path.c_str(), F_OK) == 0) ? true : false;
+}
+
+std::string real_path(const std::string &path)
+{
+    if (path.empty() || path.size() > PATH_MAX) {
+        return "";
+    }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        return "";
+    }
+    return std::string(realPath);
+}
+
+std::vector<std::string> get_custom_lib_path()
+{
+    char *ascend_custom_opppath = std::getenv("ASCEND_CUSTOM_OPP_PATH");
+    std::vector<std::string> custom_lib_path_list;
+
+    if (ascend_custom_opppath == NULL) {
+        ASCEND_LOGW("ASCEND_CUSTOM_OPP_PATH is not exists");
+        return std::vector<std::string>();
+    }
+
+    std::string ascend_custom_opppath_str(ascend_custom_opppath);
+    // split string with ":"
+    custom_lib_path_list = split_str(ascend_custom_opppath_str, ":");
+    if (custom_lib_path_list.empty()) {
+        return std::vector<std::string>();
+    }
+    for (auto &it : custom_lib_path_list) {
+        it = it + "/op_api/lib/";
+    }
+
+    return custom_lib_path_list;
+}
+
+std::vector<std::string> get_default_custom_lib_path()
+{
+    char *ascend_opp_path = std::getenv("ASCEND_OPP_PATH");
+    std::vector<std::string> default_vendors_list;
+
+    if (ascend_opp_path == NULL) {
+        ASCEND_LOGW("ASCEND_OPP_PATH is not exists");
+        return std::vector<std::string>();
+    }
+
+    std::string vendors_path(ascend_opp_path);
+    vendors_path = vendors_path + "/vendors";
+    std::string vendors_config_file = real_path(vendors_path + "/config.ini");
+    if (vendors_config_file.empty()) {
+        ASCEND_LOGW("config.ini is not exists");
+        return std::vector<std::string>();
+    }
+
+    if (!is_file_exist(vendors_config_file)) {
+        ASCEND_LOGW("config.ini is not exists or the path length is more than %d", PATH_MAX);
+        return std::vector<std::string>();
+    }
+
+    std::ifstream ifs(vendors_config_file);
+    std::string line;
+    while (std::getline(ifs, line)) {
+        if (line.find("load_priority=") == 0) {
+            break;
+        }
+    }
+    std::string head = "load_priority=";
+    line.erase(0, head.length());
+
+    // split string with ","
+    default_vendors_list = split_str(line, ",");
+    if (default_vendors_list.empty()) {
+        return std::vector<std::string>();
+    }
+    for (auto &it : default_vendors_list) {
+        it = real_path(vendors_path + "/" + it + "/op_api/lib/");
+    }
+
+    return default_vendors_list;
+}
+
+const std::vector<std::string> g_custom_lib_path = get_custom_lib_path();
+const std::vector<std::string> g_default_custom_lib_path = get_default_custom_lib_path();
+
 void add_param_to_buf(const at::Tensor &at_tensor)
 {
     static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");

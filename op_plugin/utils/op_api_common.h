@@ -16,6 +16,8 @@
 #ifndef TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_H_
 #define TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_H_
 
+#include <fstream>
+#include <sys/stat.h>
 #include <dlfcn.h>
 #include <vector>
 #include <functional>
@@ -65,6 +67,10 @@ constexpr int g_hash_buf_size = 8192;
 constexpr int g_hash_buf_max_size = g_hash_buf_size + 1024;
 extern thread_local char g_hash_buf[g_hash_buf_size];
 extern thread_local int g_hash_offset;
+extern const std::vector<std::string> g_custom_lib_path;
+extern const std::vector<std::string> g_default_custom_lib_path;
+
+std::string real_path(const std::string &path);
 
 #define GET_OP_API_FUNC(apiName) reinterpret_cast<_##apiName>(GetOpApiFuncAddr(#apiName))
 
@@ -117,12 +123,42 @@ void *GetOpApiFuncAddrFromFeatureLib(const char *api_name);
 
 inline void *GetOpApiFuncAddr(const char *apiName)
 {
-    static auto custOpApiHandler = GetOpApiLibHandler(GetCustOpApiLibName());
-    if (custOpApiHandler != nullptr) {
-        auto funcAddr = GetOpApiFuncAddrInLib(custOpApiHandler, GetCustOpApiLibName(), apiName);
-        if (funcAddr != nullptr) {
-            return funcAddr;
+    if (!g_custom_lib_path.empty()) {
+        for (auto &it : g_custom_lib_path) {
+            auto cust_opapi_lib = real_path(it + "/" + GetCustOpApiLibName());
+            if (cust_opapi_lib.empty()) {
+                break;
+            }
+            auto custOpApiHandler = GetOpApiLibHandler(cust_opapi_lib.c_str());
+            if (custOpApiHandler != nullptr) {
+                auto funcAddr =
+                    GetOpApiFuncAddrInLib(custOpApiHandler, GetCustOpApiLibName(), apiName);
+                if (funcAddr != nullptr) {
+                    ASCEND_LOGI("%s is found in %s.", apiName, cust_opapi_lib.c_str());
+                    return funcAddr;
+                }
+            }
         }
+        ASCEND_LOGI("%s is not in custom lib.", apiName);
+    }
+
+    if (!g_default_custom_lib_path.empty()) {
+        for (auto &it : g_default_custom_lib_path) {
+            auto default_cust_opapi_lib = real_path(it + "/" + GetCustOpApiLibName());
+            if (default_cust_opapi_lib.empty()) {
+                break;
+            }
+            auto custOpApiHandler = GetOpApiLibHandler(default_cust_opapi_lib.c_str());
+            if (custOpApiHandler != nullptr) {
+                auto funcAddr =
+                    GetOpApiFuncAddrInLib(custOpApiHandler, GetCustOpApiLibName(), apiName);
+                if (funcAddr != nullptr) {
+                    ASCEND_LOGI("%s is found in %s.", apiName, default_cust_opapi_lib.c_str());
+                    return funcAddr;
+                }
+            }
+        }
+        ASCEND_LOGI("%s is not in default custom lib.", apiName);
     }
 
     static auto opApiHandler = GetOpApiLibHandler(GetOpApiLibName());
