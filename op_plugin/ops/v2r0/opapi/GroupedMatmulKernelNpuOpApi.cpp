@@ -31,23 +31,25 @@ void check_dims(int64_t split_item, size_t num_x, size_t num_weight, size_t num_
                 IN_NOT_SPLIT_OUT_SPLIT == split_item || IN_SPLIT_OUT_SPLIT == split_item,
                 "Invalid value of split_item [", split_item, "], which should only be one of 0/1/2/3."
                 + OPS_ERROR(ErrCode::PARAM));
-    if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item || IN_NOT_SPLIT_OUT_SPLIT == split_item) {
-        TORCH_CHECK(num_x == num_weight && 0 == num_group_list, "Invalid inputs. "
-                    "When split_item = 0 or 2, the following two conditions are supposed to be satisfied: "
-                    "(1) length of x equals that of weight; (2) length of group_list equals 0. "
-                    "Actual lengths: x [", num_x, "], weight [", num_weight, "], group_list [", num_group_list, "]."
-                    + OPS_ERROR(ErrCode::PARAM));
-    } else if (IN_SPLIT_OUT_NOT_SPLIT == split_item || IN_SPLIT_OUT_SPLIT == split_item) {
-        TORCH_CHECK(num_x == 1 && num_weight == num_group_list, "Invalid inputs. "
-                    "When split_item = 1 or 3, the following two conditions are supposed to be satisfied: "
-                    "(1) length of x equals 1; (2) length of weight equals that of group_list. "
-                    "Actual lengths: x [", num_x, "], weight [", num_weight, "], group_list [", num_group_list, "]."
-                    + OPS_ERROR(ErrCode::PARAM));
+    if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item || IN_SPLIT_OUT_NOT_SPLIT == split_item) {
+        if (num_group_list > 0) {
+            TORCH_CHECK(num_x == 1 && num_weight == num_group_list, "Invalid inputs. "
+                        "When split_item = 0 or 1 and input group_list is not None, "
+                        "the following two conditions are supposed to be satisfied: "
+                        "(1) length of x equals 1; (2) length of weight equals that of group_list. "
+                        "Actual lengths: x [", num_x, "], weight [", num_weight, "], "
+                        "group_list [", num_group_list, "]." + OPS_ERROR(ErrCode::PARAM));
+        } else {
+            TORCH_CHECK(num_x == num_weight,
+                        "When split_item = 0 or 1 and input group_list is None, "
+                        "the num of x tensors must equal the num of weight tensors."
+                        "Actual lengths: x [", num_x, "], weight [", num_weight, "]." + OPS_ERROR(ErrCode::PARAM));
+        }
     }
 }
 
-void creat_new_tensor_multi_dim(std::vector<at::Tensor> &y, const at::Tensor &x_i, const at::Tensor &weight_i,
-                                c10::TensorOptions options)
+void create_new_tensor_multi_dim(std::vector<at::Tensor> &y, const at::Tensor &x_i, const at::Tensor &weight_i,
+                                 c10::TensorOptions options)
 {
     auto x_sizes = x_i.sizes();
     std::vector<int64_t> y_sizes(x_sizes.begin(), x_sizes.end());
@@ -57,7 +59,7 @@ void creat_new_tensor_multi_dim(std::vector<at::Tensor> &y, const at::Tensor &x_
     y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
 }
 
-void creat_new_tensor(std::vector<at::Tensor> &y, size_t dim_m, size_t dim_n, c10::TensorOptions options)
+void create_new_tensor(std::vector<at::Tensor> &y, size_t dim_m, size_t dim_n, c10::TensorOptions options)
 {
     auto output_size = op_infer::array_to_small_vector({dim_m, dim_n});
     y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
@@ -91,25 +93,29 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     std::vector<at::Tensor> y;
     c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
 
-    if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value) {
-        y.reserve(num_x);
-        for (size_t i = 0; i < num_x; i++) {
-            creat_new_tensor_multi_dim(y, x[i], weight[i], options);
+    if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value || IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
+        if (num_group_list > 0) {
+            y.reserve(num_group_list);
+            create_new_tensor(y, group_list_real[0], weight[0].sizes()[1], options);
+            for (int i = 1; i < num_group_list; i++) {
+                create_new_tensor(y, group_list_real[i] - group_list_real[i - 1], weight[i].sizes()[1], options);
+            }
+        } else {
+            y.reserve(num_x);
+            for (int i = 0; i < num_x; i++) {
+                create_new_tensor_multi_dim(y, x[i], weight[i], options);
+            }
+        }  // 校验NO_SPLIT时为特殊场景（groupList为空）或num_x > 1
+    } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value || IN_SPLIT_OUT_SPLIT == split_item_value) {
+        if (num_x > 1) {
+            size_t dim_m = 0;
+            for (int i = 0; i < num_x; i++) {
+                dim_m += x[i].sizes()[0];
+            }
+            create_new_tensor(y, dim_m, weight[0].sizes()[1], options);
+        } else if (num_x == 1) {
+            create_new_tensor(y, x[0].sizes()[0], weight[0].sizes()[1], options);
         }
-    } else if (IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
-        y.reserve(num_weight);
-        creat_new_tensor(y, group_list_real[0], weight[0].sizes()[1], options);
-        for (size_t i = 1; i < num_weight; i++) {
-            creat_new_tensor(y, group_list_real[i] - group_list_real[i - 1], weight[i].sizes()[1], options);
-        }
-    } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value) {
-        size_t dim_m = 0;
-        for (size_t i = 0; i < num_x; i++) {
-            dim_m += x[i].sizes()[0];
-        }
-        creat_new_tensor(y, dim_m, weight[0].sizes()[1], options);
-    } else if (IN_SPLIT_OUT_SPLIT == split_item_value) {
-        creat_new_tensor(y, x[0].sizes()[0], weight[0].sizes()[1], options);
     }
     at::TensorList result = at::TensorList(y);
 
