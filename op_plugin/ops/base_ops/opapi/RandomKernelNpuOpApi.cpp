@@ -20,7 +20,6 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
 
@@ -50,40 +49,34 @@ int64_t get_dtype_max_value(at::ScalarType dtype)
     return iter->second;
 }
 
-at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::optional<at::Generator> gen_)
-{
-    int64_t delta = to - from;
-    auto output_size = op_infer::input_same_output_size(self);
-    at::Tensor cache_base = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::ScalarType::Float));
-    cache_base = op_api::uniform_(cache_base, 0.0, 1.0, gen_);
-    cache_base = op_api::mul_(cache_base, at::Scalar(delta));
-    at::Tensor cache = op_api::npu_dtype_cast(cache_base, self.scalar_type());
-    self = op_api::add_(op_api::mul_(self, at::Scalar(0)), at::Scalar(from), at::Scalar(1));
-    return op_api::add_(self, cache, at::Scalar(1));
+at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::optional<at::Generator> gen_) {
+  auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen_, at_npu::detail::getDefaultNPUGenerator());
+  auto pair = gen->philox_engine_inputs(10);
+  EXEC_NPU_CMD(aclnnInplaceRandom, self, from, to, pair.first, pair.second);
+  return self;
 }
 
-at::Tensor& random_(at::Tensor& self, int64_t from, c10::optional<int64_t> to, c10::optional<at::Generator> gen_)
-{
-    DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, from, to, gen_));
-    int64_t to_ = to.value_or(get_dtype_max_value(self.scalar_type()));
-    random_op_api_(self, from, to_, gen_);
-    return self;
+at::Tensor& random_(at::Tensor& self, int64_t from, c10::optional<int64_t> to,
+                                             c10::optional<at::Generator> gen_) {
+  DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, from, to, gen_));
+  int64_t to_ = to.value_or(get_dtype_max_value(self.scalar_type()));
+  random_op_api_(self, from, to_, gen_);
+  return self;
 }
 
-at::Tensor& random_(at::Tensor& self, int64_t to, c10::optional<at::Generator> gen_)
-{
-    DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, to, gen_));
-    int64_t from = 0;
-    random_op_api_(self, from, to, gen_);
-    return self;
+at::Tensor& random_(at::Tensor& self, int64_t to, c10::optional<at::Generator> gen_) {
+  DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, to, gen_));
+  int64_t from = 0;
+  random_op_api_(self, from, to, gen_);
+  return self;
 }
 
-at::Tensor& random_(at::Tensor& self, c10::optional<at::Generator> gen_)
-{
-    DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, gen_));
-    int64_t from = 0;
-    int64_t to = get_dtype_max_value(self.scalar_type());
-    random_op_api_(self, from, to, gen_);
-    return self;
+at::Tensor& random_(at::Tensor& self, c10::optional<at::Generator> gen_) {
+  DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, gen_));
+  int64_t from = 0;
+  int64_t to = get_dtype_max_value(self.scalar_type());
+  random_op_api_(self, from, to, gen_);
+  return self;
 }
+
 }  // namespace op_api
