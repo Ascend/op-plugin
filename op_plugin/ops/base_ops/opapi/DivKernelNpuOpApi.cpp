@@ -80,7 +80,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, c10::option
         TORCH_CHECK(false,
                     "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
                     "but found '",
-                    *rounding_mode, "'", OPS_ERROR(ErrCode::VALUE));
+                    *rounding_mode, "'", OPS_ERROR(ErrCode::PARAM));
     }
 
     auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -134,7 +134,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<c1
         TORCH_CHECK(false,
                     "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
                     "but found '",
-                    *rounding_mode, "'", OPS_ERROR(ErrCode::VALUE));
+                    *rounding_mode, "'", OPS_ERROR(ErrCode::PARAM));
     }
 
     // calculate the output size
