@@ -19,7 +19,7 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(const at::Tensor &input)
+std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(const at::Tensor &input, const c10::optional<at::Tensor> &smooth_scales)
 {
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
@@ -30,7 +30,7 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(const at::Tensor &input)
     at::Tensor output = npu_preparation::apply_tensor_without_format(input.sizes(), c10::dtype(c10::ScalarType::Char));
     at::Tensor scale = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
 
-    EXEC_NPU_CMD(aclnnDynamicQuant, input, output, scale);
+    EXEC_NPU_CMD(aclnnDynamicQuant, input, smooth_scales, output, scale);
     return std::make_tuple(output, scale);
 }
 }
