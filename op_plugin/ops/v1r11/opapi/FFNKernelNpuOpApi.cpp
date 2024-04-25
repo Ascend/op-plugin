@@ -25,13 +25,13 @@ const static int MAX_EXPERT_NUM = 256;
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Tensor &weight2,
-    c10::string_view activation, c10::optional<at::IntArrayRef> expert_tokens, const c10::optional<at::Tensor> &bias1,
-    const c10::optional<at::Tensor> &bias2, const c10::optional<at::Tensor> &scale,
-    const c10::optional<at::Tensor> &offset, const c10::optional<at::Tensor> &deq_scale1,
-    const c10::optional<at::Tensor> &deq_scale2, const c10::optional<at::Tensor> &antiquant_scale1,
-    const c10::optional<at::Tensor> &antiquant_scale2, const c10::optional<at::Tensor> &antiquant_offset1,
-    const c10::optional<at::Tensor> &antiquant_offset2, c10::optional<int64_t> inner_precise,
-    c10::optional<at::ScalarType> output_dtype)
+    c10::string_view activation, c10::optional<at::IntArrayRef> expert_tokens, c10::optional<at::IntArrayRef> expert_tokens_index,
+    const c10::optional<at::Tensor> &bias1, const c10::optional<at::Tensor> &bias2,
+    const c10::optional<at::Tensor> &scale, const c10::optional<at::Tensor> &offset,
+    const c10::optional<at::Tensor> &deq_scale1, const c10::optional<at::Tensor> &deq_scale2,
+    const c10::optional<at::Tensor> &antiquant_scale1, const c10::optional<at::Tensor> &antiquant_scale2,
+    const c10::optional<at::Tensor> &antiquant_offset1, const c10::optional<at::Tensor> &antiquant_offset2,
+    c10::optional<int64_t> inner_precise, c10::optional<at::ScalarType> output_dtype)
 {
     auto weight1_dim_num = weight1.dim();
     auto weight2_dim_num = weight2.dim();
@@ -61,25 +61,15 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
     }
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
     int64_t inner_precise_val = inner_precise.has_value() ? inner_precise.value() : 0;
-    if (expert_tokens.has_value()) {
-        auto expert_tokens_real = expert_tokens.value();
-        auto token_size = expert_tokens_real.size();
-        TORCH_CHECK(token_size <= MAX_EXPERT_NUM, "expert_tokens should be smaller than 256, but it is ", token_size);
-        TORCH_CHECK(weight1_dim_num == EXPERT_WEIGHT_DIM && weight2_dim_num == EXPERT_WEIGHT_DIM,
-            "The dimension of weight(has expert_tokens) should be 3, but weight1_dim_num is ",
-            weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
-        EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_real, bias1_real, bias2_real,
-            scale_real, offset_real, deq_scale1_real, deq_scale2_real, antiquant_scale1_real, antiquant_scale2_real,
-            antiquant_offset1_real, antiquant_offset2_real, activation_ptr, inner_precise_val, result);
-    } else {
-        auto expert_tokens_empty = at::Tensor();
-        TORCH_CHECK(weight1_dim_num == NO_EXPERT_WEIGHT_DIM && weight2_dim_num == NO_EXPERT_WEIGHT_DIM,
-            "The dimension of weight(no expert_tokens) should be 2, but weight1_dim_num is ",
-            weight1_dim_num, ", weight2_dim_num is ", weight2_dim_num);
-        EXEC_NPU_CMD(aclnnFFN, x, weight1, weight2, expert_tokens_empty, bias1_real, bias2_real,
-            scale_real, offset_real, deq_scale1_real, deq_scale2_real, antiquant_scale1_real, antiquant_scale2_real,
-            antiquant_offset1_real, antiquant_offset2_real, activation_ptr, inner_precise_val, result);
+    auto expert_tokens_real = at::IntArrayRef{};
+    if (expert_tokens.has_value() || expert_tokens_index.has_value()) {
+        TORCH_CHECK(!(expert_tokens.has_value() && expert_tokens_index.has_value()), "expert_tokens and expert_tokens_index should not have the value simultaneously.");
+        expert_tokens_real = expert_tokens.has_value() ? expert_tokens.value() : expert_tokens_index.value();
     }
+    auto tokens_index_flag = expert_tokens_index.has_value();
+    EXEC_NPU_CMD(aclnnFFNV2, x, weight1, weight2, expert_tokens_real, bias1_real, bias2_real,
+        scale_real, offset_real, deq_scale1_real, deq_scale2_real, antiquant_scale1_real, antiquant_scale2_real,
+        antiquant_offset1_real, antiquant_offset2_real, activation_ptr, inner_precise_val, tokens_index_flag, result);
 
     return result;
 }
