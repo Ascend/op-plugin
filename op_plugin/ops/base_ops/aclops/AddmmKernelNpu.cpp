@@ -129,7 +129,7 @@ at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::
 {
     static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
     bool check_bias_shape = (self.dim() == 1 || (self.dim() == 2 && self.size(0) == 1));
-    if (check_bias_shape) {
+    if (check_bias_shape && is_support_nd_out) {
         if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0) {
             acl_op::addmm_out_npu_nocheck(result, self, mat1, mat2);
         } else {

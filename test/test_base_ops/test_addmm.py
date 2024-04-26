@@ -3,7 +3,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestAddmm(TestCase):
@@ -18,6 +18,7 @@ class TestAddmm(TestCase):
         output = output.numpy()
         return output
 
+    @SupportedDevices(['Ascend910B'])
     def test_mm_split_k_fp16(self):
         torch.npu.set_compile_mode(jit_compile=True)
         # dtype, format, shape, (transpose)
