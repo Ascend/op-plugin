@@ -142,7 +142,7 @@ at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::
     // k-cut is conflict with bias in mm
     bool need_to_convert_bias = !mm_check_split_k(mat1, mat2, is_support_nd_out);
     bool check_bias_shape = (self.dim() == 1 || (self.dim() == 2 && self.size(0) == 1));
-    if (check_bias_shape) {
+    if (check_bias_shape && is_support_nd_out) {
         if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0 && need_to_convert_bias) {
             acl_op::addmm_out_npu_nocheck(result, self, mat1, mat2);
         } else {
