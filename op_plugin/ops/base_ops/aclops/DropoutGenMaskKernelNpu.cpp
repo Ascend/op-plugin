@@ -26,7 +26,7 @@ namespace {
 at::Tensor gen_mask_impl(const at::Tensor &self, at::IntArrayRef size, double p, int64_t seed, int64_t offset)
 {
     const int64_t BYTE_BIT = 8;
-    const int64_t DATA_ALIGN = 256;
+    const int64_t DATA_ALIGN = 128;
     int64_t numels = c10::multiply_integers(size);
 
     uint64_t length = (static_cast<uint64_t>(numels) + DATA_ALIGN - 1) / DATA_ALIGN * DATA_ALIGN / BYTE_BIT;
@@ -41,7 +41,7 @@ at::Tensor gen_mask_impl(const at::Tensor &self, at::IntArrayRef size, double p,
     at_npu::native::OpCommand cmd;
     cmd.Name("StatelessDropOutGenMask")
         .Input(at::IntArrayRef{numels})
-        .Input(keep_prob, at::ScalarType::Float, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+        .Input(keep_prob, self.scalar_type(), npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
         .Input(at::Scalar(seed), at::ScalarType::Int)
         .Input(at::Scalar(seed1), at::ScalarType::Int)
         .Input(offset_list, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT)
