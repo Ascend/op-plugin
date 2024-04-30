@@ -138,6 +138,7 @@ void add_param_to_buf(const at::Tensor &at_tensor)
         MEMCPY_TO_BUF(",", 1);
         return;
     }
+    TORCH_CHECK(torch_npu::utils::is_npu(at_tensor), "only npu tensor is supported", OPS_ERROR(ErrCode::PARAM));
     // view shape
     MEMCPY_TO_BUF(at_tensor.sizes().data(), static_cast<int64_t>(at_tensor.sizes().size() * sizeof(int64_t)));
     // data type
