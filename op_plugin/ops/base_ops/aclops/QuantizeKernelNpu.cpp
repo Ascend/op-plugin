@@ -68,6 +68,25 @@ at::Tensor& npu_quantize_out_nocheck(
         .Run();
     return result;
 }
+at::Tensor& npu_ascend_quant_v2(
+    at::Tensor& result,
+    const at::Tensor& self,
+    const at::Tensor& scales,
+    const at::Tensor& zero_points,
+    at::ScalarType dtype)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("AscendQuantV2")
+        .Input(self)
+        .Input(scales)
+        .Input(zero_points)
+        .Output(result)
+        .Attr("sqrt_mode", false)
+        .Attr("round_mode", "round")
+        .Attr("dst_type", dtype)
+        .Run();
+    return result;
+}
 } // namespace
 
 at::Tensor npu_quantize(
@@ -75,9 +94,18 @@ at::Tensor npu_quantize(
     const at::Tensor& scales,
     const c10::optional<at::Tensor>& zero_points_opt,
     at::ScalarType dtype,
-    int64_t axis)
+    int64_t axis,
+    bool div_mode)
 {
     const at::Tensor& zero_points = c10::value_or_else(zero_points_opt, [] { return at::Tensor(); });
+    if (!div_mode) {
+        if (dtype != at::ScalarType::Char) {
+            TORCH_CHECK(false, "When div_mode is false, dtype must be Int8 " + OPS_ERROR(ErrCode::TYPE));
+        }
+        at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self, self.options().dtype(dtype));
+        npu_ascend_quant_v2(result, self, scales, zero_points, dtype);
+        return result;
+    }
     axis = op_plugin::utils::make_warp_dim(axis, self.dim());
     TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1." + OPS_ERROR(ErrCode::PARAM));
     if (zero_points.defined()) {
