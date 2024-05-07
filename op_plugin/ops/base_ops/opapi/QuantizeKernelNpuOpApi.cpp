@@ -32,6 +32,9 @@ at::Tensor npu_quantize(
     if (div_mode) {
         return acl_op::npu_quantize(self, scales, zero_points_opt, dtype, axis);
     }
+    if (dtype == at::kQInt8) {
+        dtype = at::kChar;
+    }
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self, self.options().dtype(dtype));
     const bool sqrt_mode = false;
     EXEC_NPU_CMD(aclnnAscendQuant, self, scales, zero_points_opt, sqrt_mode, "round", dtype, result);

@@ -99,7 +99,10 @@ at::Tensor npu_quantize(
 {
     const at::Tensor& zero_points = c10::value_or_else(zero_points_opt, [] { return at::Tensor(); });
     if (!div_mode) {
-        if (dtype != at::ScalarType::Char) {
+        if (dtype == at::kQInt8) {
+            dtype = at::kChar;
+        }
+        if (dtype != at::kChar) {
             TORCH_CHECK(false, "When div_mode is false, dtype must be Int8 " + OPS_ERROR(ErrCode::TYPE));
         }
         at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self, self.options().dtype(dtype));
