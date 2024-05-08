@@ -40,7 +40,7 @@ REG_OP(IndexPutV2)
     .ATTR(accumulate, Bool, false)
     .OP_END_FACTORY_REG(IndexPutV2)
 
-/**cd 
+/**cd
 * @brief According to the indices, return the value.
 
 * @par Inputs:

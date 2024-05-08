@@ -371,7 +371,7 @@ public:
     Operator::SetInput(#x, dstIndex, v);                                                      \
     return *this;                                                                             \
   }                                                                                           \
-  ATTRIBUTED_DEPRECATED(_THIS_TYPE &set_dynamic_input_##x(uint32_t, Operator &, const char *))\
+  ATTRIBUTED_DEPRECATED(_THIS_TYPE &set_dynamic_input_##x(uint32_t, Operator &, const char *)) \
   _THIS_TYPE &set_dynamic_input_##x(uint32_t dstIndex, Operator &v, const string &srcName) {  \
     Operator::SetInput(#x, dstIndex, v, srcName.c_str());                                     \
     return *this;                                                                             \
@@ -457,7 +457,7 @@ public:
   Graph get_dynamic_subgraph_##x(uint32_t index) const {                                      \
     return Operator::GetDynamicSubgraph(#x, index);                                           \
   }                                                                                           \
-  _THIS_TYPE &set_dynamic_subgraph_builder_##x(uint32_t index,const SubgraphBuilder &v) {     \
+  _THIS_TYPE &set_dynamic_subgraph_builder_##x(uint32_t index, const SubgraphBuilder &v) {    \
     Operator::SetSubgraphBuilder(#x, index, v);                                               \
     return *this;                                                                             \
   }                                                                                           \
@@ -541,7 +541,7 @@ graphStatus BroadCastInfer(const function<vector<int64_t>()> &get_in1_shape,
                            const function<void(const vector<int64_t> &y_shape)> &set_out_shape);
 
 #define BROADCAST_INFER(in1_name, in2_name, out_name)                                       \
-  [](Operator op) -> graphStatus {                                                          \
+  [](Operator op)->graphStatus {                                                          \
     return BroadCastInfer([&]() { return op.GetInputDescByName(in1_name).GetShape().GetDims(); }, \
                           [&]() { return op.GetInputDescByName(in2_name).GetShape().GetDims(); }, \
                           [&](const vector<int64_t> &y_shape) {                             \

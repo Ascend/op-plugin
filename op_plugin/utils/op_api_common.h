@@ -664,7 +664,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);             \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
-        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]() -> int {            \
+        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()-> int {             \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
@@ -789,7 +789,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);             \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
-        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]() -> int {            \
+        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()-> int {             \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
@@ -913,7 +913,7 @@ private:
             auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);             \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
-        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor, apiName]() -> int {   \
+        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor, apiName]()-> int {    \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
