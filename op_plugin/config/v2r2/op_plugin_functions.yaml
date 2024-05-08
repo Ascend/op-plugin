@@ -2073,6 +2073,8 @@ custom:
     exposed: True
   - func: npu_moe_init_routing(Tensor x, Tensor row_idx, Tensor expert_idx, int active_num) -> (Tensor, Tensor, Tensor)
     impl_ns: op_api
+  - func: npu_moe_gating_top_k_softmax(Tensor x, Tensor? finished=None, int k=1) -> (Tensor, Tensor, Tensor)
+    impl_ns: op_api
   - func: npu_sub_sample(Tensor self, int per_images, float positive_fraction) -> Tensor
     impl_ns: acl_op
   - func: npu_yolo_boxes_encode(Tensor self, Tensor gt_bboxes, Tensor stride, bool performance_mode=False) -> Tensor
