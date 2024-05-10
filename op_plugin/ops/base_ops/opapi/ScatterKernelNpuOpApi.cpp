@@ -76,22 +76,5 @@ at::Tensor& scatter_out(const at::Tensor& self, int64_t dim, const at::Tensor& i
     return result;
 }
 
-at::Tensor &scatter_(at::Tensor &self, int64_t dim, const at::Tensor &index_ex, const at::Tensor &src)
-{
-    DO_COMPATIBILITY(aclnnInplaceScatter, acl_op::scatter_(self, dim, index_ex, src));
-    npu_preparation::check_memory({self, index_ex, src}, {self});
-    int64_t reduction = 0;
-    EXEC_NPU_CMD(aclnnInplaceScatter, self, dim, index_ex, src, reduction);
-    return self;
-}
-
-at::Tensor &scatter_(at::Tensor &self, int64_t dim, const at::Tensor &index_ex, const at::Scalar& value)
-{
-    DO_COMPATIBILITY(aclnnInplaceScatterValue, acl_op::scatter_(self, dim, index_ex, value));
-    npu_preparation::check_memory({self, index_ex}, {self});
-    int64_t reduction = 0;
-    EXEC_NPU_CMD(aclnnInplaceScatterValue, self, dim, index_ex, value, reduction);
-    return self;
-}
 }  // namespace op_api
 
