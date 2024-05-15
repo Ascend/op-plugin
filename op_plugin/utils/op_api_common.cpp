@@ -201,11 +201,15 @@ void add_param_to_buf(const at::Scalar &at_scalar)
 void add_param_to_buf(const at::IntArrayRef &at_array)
 {
     MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(int64_t)));
+    auto counter = at_array.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
 void add_param_to_buf(const at::ArrayRef<bool> &at_array)
 {
     MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(bool)));
+    auto counter = at_array.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
 void add_param_to_buf(const at::TensorList &at_tensor_list)
@@ -262,6 +266,20 @@ void add_param_to_buf(const at::ScalarType scalar_type)
 void add_param_to_buf(const string& s)
 {
     MEMCPY_TO_BUF(s.c_str(), static_cast<int64_t>(s.size()));
+}
+
+void add_param_to_buf(char *c)
+{
+    MEMCPY_TO_BUF(c, strlen(c));
+    auto counter = strlen(c);
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+}
+
+void add_param_to_buf(const char *c)
+{
+    MEMCPY_TO_BUF(c, strlen(c));
+    auto counter = strlen(c);
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
 void add_param_to_buf() {}

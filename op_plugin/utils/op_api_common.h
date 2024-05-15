@@ -490,6 +490,8 @@ void add_param_to_buf(const c10::optional<at::IntArrayRef> &);
 void add_param_to_buf(const c10::optional<at::Scalar> &);
 void add_param_to_buf(const at::ScalarType);
 void add_param_to_buf(const string &);
+void add_param_to_buf(char *);
+void add_param_to_buf(const char *);
 void add_param_to_buf();
 
 template <typename T, typename... Args> void add_param_to_buf(const T &arg, Args &...args)
