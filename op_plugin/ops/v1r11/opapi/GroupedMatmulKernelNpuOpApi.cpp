@@ -96,8 +96,14 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value || IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
         if (num_group_list > 0) {
             y.reserve(num_group_list);
+            TORCH_CHECK(group_list_real[0] >= 0,
+                "group_list[0] should be larger than or equal to 0, but now is ", group_list_real[0], "." +
+                OPS_ERROR(ErrCode::VALUE));
             create_new_tensor(y, group_list_real[0], weight[0].sizes()[1], options);
             for (int i = 1; i < num_group_list; i++) {
+                TORCH_CHECK(group_list_real[i] - group_list_real[i - 1] >= 0,
+                    "group_list[", i, "] - group_list[", i - 1, "] should be larger than or equal to 0, but now is ",
+                    group_list_real[i] - group_list_real[i - 1], "." + OPS_ERROR(ErrCode::VALUE));
                 create_new_tensor(y, group_list_real[i] - group_list_real[i - 1], weight[i].sizes()[1], options);
             }
         } else {
