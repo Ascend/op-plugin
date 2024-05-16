@@ -50,11 +50,27 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
 {
     // construct the output tensor of the NPU
     at::Tensor output;
+    int64_t batchSize = 1;
+    int64_t qsSize = 1;
     at::Tensor tmp_output = npu_preparation::apply_tensor_without_format(query);
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "BNSD_BSND") {
         tmp_output = OpPreparation::apply_tensor_without_format({query.size(0), query.size(2), query.size(1), query.size(3)},
             query.options().dtype(query.dtype()));
+        batchSize = query.size(0);
+        qsSize = query.size(2);
+    } else if (input_layout_str == "NSD") {
+        batchSize = 1;
+        qsSize = query.size(1);
+    } else if (input_layout_str == "BSH") {
+        batchSize = query.size(0);
+        qsSize = query.size(1);
+    } else if (input_layout_str == "BSND") {
+        batchSize = query.size(0);
+        qsSize = query.size(1);
+    } else if (input_layout_str == "BNSD") {
+        batchSize = query.size(0);
+        qsSize = query.size(2);
     }
     if (ConvertType(quant_scale2) != nullptr) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Char));
@@ -75,7 +91,8 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
     auto actSeqLenKv = c10::asIntArrayRefUnchecked(actSeqLenKvMiddle);
 
     // construct softmax_lse tensor
-    at::Tensor softmax_lse = npu_preparation::apply_tensor_without_format(query);
+    at::Tensor softmax_lse = npu_preparation::apply_tensor_without_format({batchSize, num_heads, qsSize, 1},
+                                                                          c10::dtype(c10::ScalarType::Float));
 
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScore, query, keyTensors, valueTensors, pse_shift, atten_mask, actSeqLen, actSeqLenKv, dequant_scale1, quant_scale1, dequant_scale2,
