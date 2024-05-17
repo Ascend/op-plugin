@@ -49,12 +49,12 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> apply_adam_out_npu_nocheck(
       .Output(var_out)
       .Output(m_out)
       .Output(v_out);
-  if (use_locking != c10::nullopt) {
-    cmd.Attr("use_locking", bool(use_locking));
-  }
-  if (use_nesterov != c10::nullopt) {
-    cmd.Attr("use_nesterov", bool(use_nesterov));
-  }
+    if (use_locking.has_value()) {
+        cmd.Attr("use_locking", use_locking.value());
+    }
+    if (use_nesterov.has_value()) {
+        cmd.Attr("use_nesterov", use_nesterov.value());
+    }
   cmd.Run();
   return std::tie(var_out, m_out, v_out);
 }
