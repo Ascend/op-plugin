@@ -2595,10 +2595,14 @@ fixed_triu_mask(bool，默认值为False)- 是否使用自动生成的上三角b
 >>> import torch
 >>> import torch_npu
 >>> 
->>> x = torch.rand(4, 4, 2048, 2048).npu()
->>> mask = torch.rand(1, 1, 2048, 2048).npu()
->>> out = torch_npu.npu_scaled_masked_softmax(x, mask, 1.0, False)
->>> out.shape
+>>> shape = [4, 4, 2048, 2048]
+>>> x = torch.rand(shape).npu()
+>>> mask = torch.zeros_like(x).bool()
+>>> scale = 1.0
+>>> fixed_triu_mask = False
+>>> 
+>>> output = torch_npu.npu_scaled_masked_softmax(x, mask, scale, fixed_triu_mask)
+>>> output.shape
 torch.size([4, 4, 2048, 2048])
 """
 )
