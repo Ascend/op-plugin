@@ -47,24 +47,24 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
     // that will be used. Any unused parameter will be seen as illegal. The job must be done here in
     // torch_npu api.
     // A8W8: antiquantScale and antiquantOffset should be None.
+    // A16W8: dequantScale should be None.
+    // MC2 without quantization. antiquantScale and antiquantOffset and dequantScale should be None.
     if (isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
         TORCH_CHECK(x1.scalar_type() == at::kChar, "x1 must be an int8 tensor for quant.", OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK(x2.scalar_type() == at::kChar, "x2 must be an int8 tensor for quant.", OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK((!antiquant_scale.has_value() && !antiquant_offset.has_value()),
                     "when both dtype of x1 and dtype of x2 are equal to int8, "
                     "antiquantScale, antiquantOffset should both be null", OPS_ERROR(ErrCode::TYPE));
-    }
-    // A16W8: dequantScale should be None.
-    if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
+    } else if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
         TORCH_CHECK(x2.scalar_type() == at::kChar, "x2 must be an int8 tensor for weight quant.", OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK((!dequant_scale.has_value()),
                     "when only dtype of x2 is equal to int8, dequantScale should be null", OPS_ERROR(ErrCode::TYPE));
-    }
-    // MC2 without quantization. antiquantScale and antiquantOffset and dequantScale should be None.
-    if (!isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type())) {
+    } else if (!isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type())) {
         TORCH_CHECK((!antiquant_scale.has_value() && !antiquant_offset.has_value() && !dequant_scale.has_value()),
                     "when neither dtype of x1 or dtype of x2 is equal to int8, "
                     "antiquantScale, antiquantOffset and dequantScale should all be null", OPS_ERROR(ErrCode::TYPE));
+    } else {
+        TORCH_CHECK(false, "when neither dtype of x1 or dtype of x2 is valid. ", OPS_ERROR(ErrCode::TYPE));
     }
 
     // check x3 dtype and shape
@@ -105,8 +105,7 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c1
     if (!isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type())) {
         if (x3.has_value()) {
             EXEC_NPU_CMD(aclnnMatmulAllReduceV2, x1, x2, bias_real, x3_real, hcom_ptr, reduce_op_ptr, comm_turn,
-                         stream_mode, x3_real);
-            return x3_real;
+                         stream_mode, result);
         } else {
             EXEC_NPU_CMD(aclnnMatmulAllReduce, x1, x2, bias_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode,
                          result);
