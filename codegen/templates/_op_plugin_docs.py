@@ -3910,13 +3910,13 @@ import torch_npu
 import math
 
 # 生成随机数据, 并发送到npu
-q = torch.randn(1, 8, 164, 576, dtype=torch.float16).npu()
-k = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
-v = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
-scale = 1/math.sqrt(576.0)
+q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
+k = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+scale = 1/math.sqrt(128.0)
 
 # 调用PFA算子
-out = torch_npu.npu_prompt_flash_attention(q, k, v, num_heads = 8, input_layout = "BNSD", scale_value=scale_value, pre_tokens=65535, next_tokens=65535)
+out = torch_npu.npu_prompt_flash_attention(q, k, v, num_heads = 8, input_layout = "BNSD", scale_value=scale, pre_tokens=65535, next_tokens=65535)
 
 # 执行上述代码的输出类似如下
 tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
@@ -3946,28 +3946,28 @@ import logging
 from torchair.core.utils import logger
 logger.setLevel(logging.DEBUG)
 config = CompilerConfig()
-config.aoe_config.aoe_mode = "1"
+config.aoe_config.aoe_mode = "2"
 config.debug.graph_dump.type = "pbtxt"
 npu_backend = tng.get_npu_backend(compiler_config=config)
 from torch.library import Library, impl
 
 # 数据生成
-q = torch.randn(1, 8, 164, 576, dtype=torch.float16).npu()
-k = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
-v = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
-scale = 1/math.sqrt(576.0)
+q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
+k = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+scale = 1/math.sqrt(128.0)
 
 class Model(torch.nn.Module):
     def __init__(self):
         super().__init__()
     def forward(self):
-        return torch_npu.npu_prompt_flash_attention(q, k, v, num_heads = 8, input_layout = "BNSD", scale_value=scale_value, pre_tokens=65535, next_tokens=65535)
+        return torch_npu.npu_prompt_flash_attention(q, k, v, num_heads = 8, input_layout = "BNSD", scale_value=scale, pre_tokens=65535, next_tokens=65535)
 def MetaInfershape():
     with torch.no_grad():
         model = Model()
         model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
         graph_output = model()
-    single_op = torch_npu.npu_prompt_flash_attention(q, k, v, num_heads = 8, input_layout = "BNSD", scale_value=scale_value, pre_tokens=65535, next_tokens=65535)
+    single_op = torch_npu.npu_prompt_flash_attention(q, k, v, num_heads = 8, input_layout = "BNSD", scale_value=scale, pre_tokens=65535, next_tokens=65535)
     print("single op output with mask:", single_op, single_op.shape)
     print("graph output with mask:", graph_output, graph_output.shape)
 if __name__ == "__main__":
@@ -4058,10 +4058,10 @@ import torch_npu
 import math
 
 # 生成随机数据, 并发送到npu
-q = torch.randn(1, 8, 164, 576, dtype=torch.float16).npu()
-k = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
-v = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
-scale = 1/math.sqrt(576.0)
+q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
+k = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+scale = 1/math.sqrt(128.0)
 
 # 调用FIA算子
 out = torch_npu.npu_fused_infer_attention_score(q, k, v, num_heads = 8, input_layout = "BNSD", scale = scale, pre_tokens=65535, next_tokens=65535)
@@ -4094,16 +4094,16 @@ import logging
 from torchair.core.utils import logger
 logger.setLevel(logging.DEBUG)
 config = CompilerConfig()
-config.aoe_config.aoe_mode = "1"
+config.aoe_config.aoe_mode = "2"
 config.debug.graph_dump.type = "pbtxt"
 npu_backend = tng.get_npu_backend(compiler_config=config)
 from torch.library import Library, impl
 
 # 数据生成
-q = torch.randn(1, 8, 164, 576, dtype=torch.float16).npu()
-k = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
-v = torch.randn(1, 8, 1024, 576, dtype=torch.float16).npu()
-scale = 1/math.sqrt(576.0)
+q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
+k = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+scale = 1/math.sqrt(128.0)
 
 class Model(torch.nn.Module):
     def __init__(self):
