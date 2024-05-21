@@ -2915,88 +2915,76 @@ output = torch_npu.npu_swiglu(input_tensor, dim = -1)
 _add_torch_npu_docstr(
     "npu_trans_quant_param",
     """
-    功能描述:
-    完成量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维。
-    
-    接口原型:
-    npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, *，Tensor? offset=None, Tensor? pertoken_scale=None, Tensor? bias=None, ScalarType? output_dtype=None) -> Tensor
-    
-    参数说明:
-    x1(计算输入)：Device侧的Tensor类型，数据类型支持INT8。数据格式支持ND，shape最少是2维，最多是6维。
-    x2(计算输入)：Device侧的Tensor类型，数据类型支持INT8。数据格式支持ND，shape最少是2维，最多是6维。
-    scale(计算输入)：Device侧的Tensor类型，数据类型支持FLOAT32, INT64, BFLOAT16。数据格式支持ND，shape是1维(t，)，t = 1或n，其中n与x2的n一致。如需传入INT64数据类型的scale,  需要提前调用torch_npu.npu_trans_quant_param接口来获取INT64数据类型的scale。
-    offset( 计算输入)：Device侧的Tensor类型，可选参数。数据类型支持FLOAT32，数据格式支持ND，shape是1维(t，)，t = 1或n，其中n与x2的n一致。
-    pertoken_scale(计算输入)：Device侧的Tensor类型，可选参数。数据类型支持FLOAT32，数据格式支持ND，shape是1维(m，)，其中m与x1的m一致。目前仅在输出float16和bfloat16场景不为空。
-    bias( 计算输入)：Device侧的Tensor类型，可选参数。数据类型支持INT32，数据格式支持ND，shape支持1维(n，)或3维(batch,1,n)，n与x2的n一致。bias 3维(batch,1,n)只出现在out为3维的场景下，同时batch值需要等于x1, x2 boardcast后推导出的batch值。
-    output_dtype( 计算输入)：Device侧的字符串类型，可选参数。表示输出Tensor的数据类型，支持输入int8，float16, bfloat16。默认值为None，代表输出Tensor数据类型为INT8。
-    
-    输出说明:
-    一个Tensor类型的输出，代表量化matmul的计算结果。如果output_dtype为torch.float16，输出的数据类型为FLOAT16；如果output_dtype为torch.bfloat16，输出的数据类型为BFLOAT16；如果output_dtype为torch.int8或者None，输出的数据类型为INT8；如果output_dtype非以上数据类型，返回错误码。
-    
-    约束说明:
-    传入的x1、x2、scale不能是空。
-    x1、x2、bias、scale、offset、pertoken_scale、output_dtype的数据类型和数据格式需要在支持的范围之内。
-    x1、x2的shape需要在2-6维范围。
-    scale, offset的shape需要为1维(t，)，t = 1或n，n与x2的n一致。
-    pertoken_scale的shape需要为1维(m, )，m与x1的m一致。
-    bias的shape支持1维(n，)或3维(batch,1,n)，n与x2的n一致, batch值需要等于x1, x2 boardcast后推导出的batch值。
-    bias的shape在out 是2,4,5,6维情况下需要为1维，在out 是3维情况下可以为1维或3维。
-    output_dtype为bfloat16时，scale需要为BFLOAT16数据类型的Tensor。output_dtype为float16或int8时，scale在pertoken_scale为空时可为FLOAT32或INT64数据类型的Tensor。output_dtype为float16时，scale在pertoken_scale不为空时必须为float32。
-    pertoken_scale仅支持float32，目前仅在输出float16和bfloat16场景下可不为空。
-    offset不为空时，output_dtype仅支持int8。
-    
-    支持的PyTorch版本:
-    PyTorch 2.1
-    PyTorch 2.0
-    PyTorch 1.11.0
-    
-    支持的型号:
-    Atlas A2 训练系列产品
-    
-    调用示例:
-    单算子调用：
-    import torch
-    import torch_npu
-    import logging
-    import os
-    
-    cpu_x1 = torch.randint(-5, 5, (1, 256, 768), dtype=torch.int8)
-    cpu_x2 = torch.randint(-5, 5, (31, 768, 16), dtype=torch.int8)
-    scale = torch.randn(16, dtype=torch.float32)
-    offset = torch.randn(16, dtype=torch.float32)
-    bias = torch.randint(-5, 5, (31, 1, 16), dtype=torch.int32)
-    npu_out = torch_npu.npu_quant_matmul(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu())
-    
-    图模式：
-    import torch
-    import torch_npu
-    import torchair as tng
-    from torchair.ge_concrete_graph import ge_apis as ge
-    from torchair.configs.compiler_config import CompilerConfig
-    import logging
-    from torchair.core.utils import logger
-    logger.setLevel(logging.DEBUG)
-    import os
-    import numpy as np
-    os.environ["ENABLE_ACLNN"] = "true"
-    config = CompilerConfig()
-    npu_backend = tng.get_npu_backend(compiler_config=config)
-    
-    class MyModel(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-        def forward(self, x1, x2, scale, offset, bias):
-            scale_1 = torch_npu.npu_trans_quant_param(scale, offset)
-            return torch_npu.npu_quant_matmul(x1, x2, scale_1, offset, bias)
-    cpu_model = MyModel()
-    model = cpu_model.npu()
-    cpu_x1 = torch.randint(-1, 1, (15, 1, 512), dtype=torch.int8)
-    cpu_x2 = torch.randint(-1, 1, (15, 512, 128), dtype=torch.int8)
-    scale = torch.randn(1, dtype=torch.float32)
-    offset = torch.randn(1, dtype=torch.float32)
-    bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
-    npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu())
+功能描述:
+完成量化计算参数scale数据类型的转换
+
+接口原型:
+npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
+
+参数说明:
+scale(计算输入)：Device侧的Tensor类型，数据类型支持FLOAT32。数据格式支持ND，shape是1维(t，)或者2维(1, n)。其中t=1或n, 其中n与x2的n一致。
+offset( 计算输入)：Device侧的Tensor类型，可选参数。数据类型支持FLOAT32，数据格式支持ND，shape是1维(t，)，或者2维(1, n)。其中t=1或n, 其中n与x2的n一致。
+
+输出说明:
+一个Tensor类型的输出，代表npu_trans_quant_param的计算结果。
+
+约束说明:
+1.传入的scale，out不能是空。
+2.scale、offset、out的数据类型和数据格式需要在支持的范围之内。
+3.scale、offset的shape需要为1维(t,)或者2维(1, n)。其中t = 1或n，其中n与x2的n一致。
+4.当scale的shape为两维(1, n)时，scale和offset的shape需要保持一致，且输出shape也为(1, n)。
+
+支持的PyTorch版本:
+PyTorch 2.2
+PyTorch 2.1
+PyTorch 2.0
+PyTorch 1.11.0
+
+支持的型号:
+Atlas A2 训练系列产品
+
+调用示例:
+单算子调用：
+import torch
+import torch_npu
+import logging
+import os
+
+scale = torch.randn(16, dtype=torch.float32)
+offset = torch.randn(16, dtype=torch.float32)
+npu_out = torch_npu.npu_trans_quant_param(scale.npu(), offset.npu())
+
+图模式：
+说明：图模式下，npu_trans_quant_param计算出来的结果tensor为uint64数据类型。由于torch不支持该数据类型，需要搭配其他接口使用，如下面示例代码中的npu_quant_matmul。
+import torch
+import torch_npu
+import torchair as tng
+from torchair.ge_concrete_graph import ge_apis as ge
+from torchair.configs.compiler_config import CompilerConfig
+import logging
+from torchair.core.utils import logger
+logger.setLevel(logging.DEBUG)
+import os
+import numpy as np
+os.environ["ENABLE_ACLNN"] = "true"
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+class MyModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x1, x2, scale, offset, bias):
+        scale_1 = torch_npu.npu_trans_quant_param(scale, offset)
+        return torch_npu.npu_quant_matmul(x1, x2, scale_1, offset=offset, bias=bias)
+cpu_model = MyModel()
+model = cpu_model.npu()
+cpu_x1 = torch.randint(-1, 1, (15, 1, 512), dtype=torch.int8)
+cpu_x2 = torch.randint(-1, 1, (15, 512, 128), dtype=torch.int8)
+scale = torch.randn(1, dtype=torch.float32)
+offset = torch.randn(1, dtype=torch.float32)
+bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
+model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu())
 """
 )
 
@@ -3007,30 +2995,38 @@ _add_torch_npu_docstr(
 完成量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维。
 
 接口原型:
-npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, Tensor? offset=None, Tensor? bias=None, str? output_dtype=None) -> Tensor
+npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, *，Tensor? offset=None, Tensor? pertoken_scale=None, Tensor? bias=None, ScalarType? output_dtype=None) -> Tensor
 
 参数说明:
 x1(计算输入)：Device侧的Tensor类型，数据类型支持INT8。数据格式支持ND，shape最少是2维，最多是6维。
 x2(计算输入)：Device侧的Tensor类型，数据类型支持INT8。数据格式支持ND，shape最少是2维，最多是6维。
 scale(计算输入)：Device侧的Tensor类型，数据类型支持FLOAT32, INT64, BFLOAT16。数据格式支持ND，shape是1维(t，)，t = 1或n，其中n与x2的n一致。如需传入INT64数据类型的scale,  需要提前调用torch_npu.npu_trans_quant_param接口来获取INT64数据类型的scale。
 offset( 计算输入)：Device侧的Tensor类型，可选参数。数据类型支持FLOAT32，数据格式支持ND，shape是1维(t，)，t = 1或n，其中n与x2的n一致。
-bias( 计算输入)：Device侧的Tensor类型，可选参数。数据类型支持INT32，数据格式支持ND，shape支持1维(n，)或3维(batch,1,n)，n与x2的n一致。bias 3维(batch,1,n)只出现在out为3维的场景下，同时batch值需要等于x1, x2 boardcast后推导出的batch值。
-output_dtype( 计算输入)：Device侧的字符串类型，可选参数。表示输出Tensor的数据类型，支持输入int8，float16, bfloat16。默认值为None，代表输出Tensor数据类型为INT8。
+pertoken_scale(计算输入)：Device侧的Tensor类型，可选参数。数据类型支持FLOAT32，数据格式支持ND，shape是1维(m，)，其中m与x1的m一致。310P当前不支持pertoken_scale。
+bias( 计算输入)：Device侧的Tensor类型，可选参数。数据类型支持INT32，BFLOAT16, 数据格式支持ND，shape支持1维(n，)或3维(batch,1,n)，n与x2的n一致。bias 3维(batch,1,n)只出现在out为3维的场景下，同时batch值需要等于x1, x2 boardcast后推导出的batch值。
+output_dtype( 计算输入)：Device侧的ScalarType，可选参数。表示输出Tensor的数据类型，支持输入torch.int8，torch.float16, torch.bfloat16。默认值为None，代表输出Tensor数据类型为INT8。310P只支持output_dtype为torch.int8(含None, 下同)和torch.float16。
 
 输出说明:
-一个Tensor类型的输出，代表量化matmul的计算结果。如果output_dtype为float16，输出的数据类型为FLOAT16；如果output_dtype为bfloat16，输出的数据类型为BFLOAT16；如果output_dtype为int8或者None，输出的数据类型为INT8；如果output_dtype非以上数据类型，返回错误码。
+一个Tensor类型的输出，代表量化matmul的计算结果。如果output_dtype为torch.float16，输出的数据类型为FLOAT16；如果output_dtype为torch.bfloat16，输出的数据类型为BFLOAT16；如果output_dtype为torch.int8或者None，输出的数据类型为INT8；如果output_dtype非以上数据类型，返回错误码。
 
 约束说明:
 传入的x1、x2、scale不能是空。
-x1、x2、bias、scale、offset、output_dtype的数据类型和数据格式需要在支持的范围之内。
+x1、x2、bias、scale、offset、pertoken_scale、output_dtype的数据类型和数据格式需要在支持的范围之内。
 x1、x2的shape需要在2-6维范围。
-scale, offset的shape需要为1维(t，)，t = 1或n。
+scale, offset的shape需要为1维(t，)，t = 1或n，n与x2的n一致。
+pertoken_scale的shape需要为1维(m, )，m与x1的m一致，310P当前不支持pertoken_scale。
 bias的shape支持1维(n，)或3维(batch,1,n)，n与x2的n一致, batch值需要等于x1, x2 boardcast后推导出的batch值。
 bias的shape在out 是2,4,5,6维情况下需要为1维，在out 是3维情况下可以为1维或3维。
-output_dtype为bfloat16时，scale需要为BFLOAT16数据类型的Tensor。output_dtype为float16或int8时，scale需要为FLOAT32或INT64数据类型的Tensor。
+output_dtype为torch.bfloat16时，scale需要为BFLOAT16数据类型的Tensor。output_dtype为torch.float16或torch.int8时，scale在pertoken_scale为空时可为FLOAT32或INT64数据类型的Tensor。output_dtype为torch.float16时，scale在pertoken_scale不为空时必须为float32。
+bias为BFLOAT16数据类型时，output_dtype需要为torch.bfloat16。
+目前输出INT8/FLOAT16且无pertoken_scale情况下，图模式不支持scale直接传入FLOAT32数据类型。
+pertoken_scale仅支持float32，目前仅在输出float16和bfloat16场景下可不为空。
 offset不为空时，output_dtype仅支持int8。
+x1与x2最后一维的shape大小不能超过65535
+310P芯片下，需要开启环境变量去完成int8输入(weight)高性能数据排布功能。相关命令：export INT8_FORMAT_NZ_ENABLE=1。
 
 支持的PyTorch版本:
+PyTorch 2.2
 PyTorch 2.1
 PyTorch 2.0
 PyTorch 1.11.0
@@ -3050,7 +3046,7 @@ cpu_x2 = torch.randint(-5, 5, (31, 768, 16), dtype=torch.int8)
 scale = torch.randn(16, dtype=torch.float32)
 offset = torch.randn(16, dtype=torch.float32)
 bias = torch.randint(-5, 5, (31, 1, 16), dtype=torch.int32)
-npu_out = torch_npu.npu_quant_matmul(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu())
+npu_out = torch_npu.npu_quant_matmul(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset=offset.npu(), bias=bias.npu())
 
 图模式：
 import torch
@@ -3072,7 +3068,7 @@ class MyModel(torch.nn.Module):
         super().__init__()
     def forward(self, x1, x2, scale, offset, bias):
         scale_1 = torch_npu.npu_trans_quant_param(scale, offset)
-        return torch_npu.npu_quant_matmul(x1, x2, scale_1, offset, bias)
+        return torch_npu.npu_quant_matmul(x1, x2, scale_1, offset=offset, bias=bias)
 cpu_model = MyModel()
 model = cpu_model.npu()
 cpu_x1 = torch.randint(-1, 1, (15, 1, 512), dtype=torch.int8)
@@ -3080,7 +3076,8 @@ cpu_x2 = torch.randint(-1, 1, (15, 512, 128), dtype=torch.int8)
 scale = torch.randn(1, dtype=torch.float32)
 offset = torch.randn(1, dtype=torch.float32)
 bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu())
+model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu())
 """
 )
 
