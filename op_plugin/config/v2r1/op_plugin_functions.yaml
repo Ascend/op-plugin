@@ -393,6 +393,12 @@ official:
    impl_ns: acl_op, op_api
  - func: bmm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: bucketize.Scalar(Scalar self, Tensor boundaries, *, bool out_int32=False, bool right=False) -> Tensor
+   impl_ns: op_api
+ - func: bucketize.Tensor(Tensor self, Tensor boundaries, *, bool out_int32=False, bool right=False) -> Tensor
+   impl_ns: op_api
+ - func: bucketize.Tensor_out(Tensor self, Tensor boundaries, *, bool out_int32=False, bool right=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: cat(Tensor[] tensors, int dim=0) -> Tensor
    structured_delegate: cat.out
    impl_ns: acl_op, op_api
@@ -1922,6 +1928,18 @@ official:
  - func: view_as_complex(Tensor(a) self) -> Tensor(a)
    impl_ns: acl_op
  - func: _fused_adamw_(Tensor(a!)[] self, Tensor(b!)[] grads, Tensor(c!)[] exp_avgs, Tensor(d!)[] exp_avg_sqs, Tensor(e!)[] max_exp_avg_sqs, Tensor[] state_steps, *, float lr, float beta1, float beta2, float weight_decay, float eps, bool amsgrad, bool maximize, Tensor? grad_scale=None, Tensor? found_inf=None) -> ()
+   impl_ns: op_api
+ - func: _fft_c2c(Tensor self, SymInt[] dim, int normalization, bool forward) -> Tensor
+   impl_ns: op_api
+ - func: _fft_c2c.out(Tensor self, SymInt[] dim, int normalization, bool forward, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
+ - func: _fft_r2c(Tensor self, int[] dim, int normalization, bool onesided) -> Tensor
+   impl_ns: op_api
+ - func: _fft_r2c.out(Tensor self, int[] dim, int normalization, bool onesided, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
+ - func: _fft_c2r(Tensor self, int[] dim, int normalization, SymInt last_dim_size) -> Tensor
+   impl_ns: op_api
+ - func: _fft_c2r.out(Tensor self, int[] dim, int normalization, SymInt last_dim_size, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: op_api
 
 symint:

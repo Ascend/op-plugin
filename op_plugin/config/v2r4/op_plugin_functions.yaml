@@ -391,6 +391,12 @@ official:
    impl_ns: acl_op, op_api
  - func: bmm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: bucketize.Scalar(Scalar self, Tensor boundaries, *, bool out_int32=False, bool right=False) -> Tensor
+   impl_ns: op_api
+ - func: bucketize.Tensor(Tensor self, Tensor boundaries, *, bool out_int32=False, bool right=False) -> Tensor
+   impl_ns: op_api
+ - func: bucketize.Tensor_out(Tensor self, Tensor boundaries, *, bool out_int32=False, bool right=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: cat(Tensor[] tensors, int dim=0) -> Tensor
    structured_delegate: cat.out
    impl_ns: acl_op, op_api
