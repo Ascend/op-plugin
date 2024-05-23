@@ -219,14 +219,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     }
 
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
-        EXEC_NPU_NO_FORMAT_CHECK_CMD(
+        EXEC_NPU_CMD(
             aclnnFlashAttentionUnpaddingScoreGrad, format_query, format_key, format_value, format_dy,
             format_pse, format_drop_mask, format_padding_mask, format_atten_mask, format_softmax_max,
             format_softmax_sum, format_softmax, format_attention, prefixN, ac_seq_qlen, ac_seq_kvlen,
             scale_value, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise, sparse_mode,
             dq, dk, dv, dpse);
     } else {
-        EXEC_NPU_NO_FORMAT_CHECK_CMD(
+        EXEC_NPU_CMD(
             aclnnFlashAttentionScoreGrad, format_query, format_key, format_value, format_dy,
             format_pse, format_drop_mask, format_padding_mask, format_atten_mask, format_softmax_max,
             format_softmax_sum, format_softmax, format_attention, prefixN, scale_value, keep_prob,
@@ -443,14 +443,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     softmax_out = at::empty({0}, query.options());
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
-        EXEC_NPU_NO_FORMAT_CHECK_CMD(
+        EXEC_NPU_CMD(
             aclnnFlashAttentionVarLenScore, format_query, format_key, format_value,
             format_pse, format_drop_mask, format_padding_mask, format_atten_mask, prefixN,
             ac_seq_qlen, ac_seq_kvlen, scale, keep_prob, pre_tockens, next_tockens, head_num,
             input_layout_ptr, inner_precise, sparse_mode, softmax_max, softmax_sum,
             softmax_out, attention_score);
     } else {
-        EXEC_NPU_NO_FORMAT_CHECK_CMD(
+        EXEC_NPU_CMD(
             aclnnFlashAttentionScore, format_query, format_key, format_value,
             format_pse, format_drop_mask, format_padding_mask, format_atten_mask, prefixN,
             scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise,
