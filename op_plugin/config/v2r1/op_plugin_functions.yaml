@@ -1923,6 +1923,10 @@ official:
    impl_ns: acl_op, op_api
  - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
+ - func: fft_fftshift(Tensor self, int[1]? dim=None) -> Tensor
+   impl_ns: op_api
+ - func: fft_ifftshift(Tensor self, int[1]? dim=None) -> Tensor
+   impl_ns: op_api
  - func: view_as_real(Tensor(a) self) -> Tensor(a)
    impl_ns: acl_op
  - func: view_as_complex(Tensor(a) self) -> Tensor(a)
