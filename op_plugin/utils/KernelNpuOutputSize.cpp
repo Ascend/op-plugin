@@ -344,6 +344,52 @@ c10::SmallVector<int64_t, SIZE> conv_transpose1d_npu_output_size(const at::Tenso
     return output_size;
 }
 
+c10::SmallVector<int64_t, SIZE> conv3d_npu_output_size(const at::Tensor &input, const at::Tensor &weight,
+                                                       c10::IntArrayRef padding,
+                                                       c10::IntArrayRef output_padding, c10::IntArrayRef stride,
+                                                       c10::IntArrayRef dilation, int64_t groups, bool transposed)
+{
+    TORCH_CHECK(input.dim() >= 5, "input has to be more than 5D, but got Tensor of dimension ", input.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= 5, "weight has to be more than 5D, but got Tensor of dimension ", weight.dim(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= 3, "padding has to contain more than 3 elements, but got ", padding.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= 3, "stride has to contain more than 3 elements, but got ", stride.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size(),
+        OPS_ERROR(ErrCode::PARAM));
+    int64_t N = input.size(0);
+    int64_t D = input.size(2);
+    int64_t H = input.size(3);
+    int64_t W = input.size(4);
+    int64_t Co;
+    int64_t Do;
+    int64_t Ho;
+    int64_t Wo;
+
+    if (!transposed) {
+        TORCH_CHECK(stride[0] * stride[1] * stride[2] != 0, "Stride cannot contain 0" + OPS_ERROR(ErrCode::PARAM));
+        Co = weight.size(0);
+        auto kernel_size = weight.sizes().slice(2);
+        Do = (D + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
+        Ho = (H + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
+        Wo = (W + 2 * padding[2] - dilation[2] * (kernel_size[2] - 1) - 1) / stride[2] + 1;
+    } else {
+        Co = weight.size(1) * groups;
+        auto kernel_size = weight.sizes().slice(2);
+        Do = (D - 1) * stride[0] - 2 * padding[0] + dilation[0] * (kernel_size[0] - 1) + output_padding[0] + 1;
+        Ho = (H - 1) * stride[1] - 2 * padding[1] + dilation[1] * (kernel_size[1] - 1) + output_padding[1] + 1;
+        Wo = (W - 1) * stride[2] - 2 * padding[2] + dilation[2] * (kernel_size[2] - 1) + output_padding[2] + 1;
+    }
+    TORCH_CHECK(Do > 0, "Do has to be positive, but got ", Do, OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho, OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo, OPS_ERROR(ErrCode::VALUE));
+
+    c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Do, Ho, Wo};
+    return output_size;
+}
+
 c10::SmallVector<int64_t, SIZE> conv_npu_output_size(const at::Tensor &input, const at::Tensor &weight,
                                                      const c10::optional<at::Tensor> &bias, c10::IntArrayRef padding,
                                                      c10::IntArrayRef output_padding, c10::IntArrayRef stride,
@@ -353,22 +399,28 @@ c10::SmallVector<int64_t, SIZE> conv_npu_output_size(const at::Tensor &input, co
     if (!transposed) {
         if (dim == 1) {
             return conv1d_npu_output_size(input, weight, padding, stride, dilation);
-        } else {
+        } else if (dim == 2) {
             return conv2d_npu_output_size(input, weight, padding, stride, dilation);
+        } else {
+            return conv3d_npu_output_size(input, weight, padding, output_padding, stride,
+                                          dilation, groups, transposed);
         }
     } else {
         const at::Tensor &bias_tensor = c10::value_or_else(bias, [] { return at::Tensor(); });
         if (dim == 1) {
             return conv_transpose1d_npu_output_size(input, weight, bias_tensor, padding, output_padding, stride,
                                                     dilation, groups);
-        } else {
-            // input dim = 3
+        } else if (dim == 2) {
+            // input dim = 2
             if (input.ndimension() == 3) {
                 c10::SmallVector<int64_t, SIZE> unsqueeze_size = {1, input.size(0), input.size(1), input.size(2)};
                 input.resize_(unsqueeze_size);
             }
             return conv_transpose2d_npu_output_size(input, weight, bias_tensor, padding, output_padding, stride,
                                                     dilation, groups);
+        } else {
+            return conv3d_npu_output_size(input, weight, padding, output_padding, stride,
+                                          dilation, groups, transposed);
         }
     }
 }

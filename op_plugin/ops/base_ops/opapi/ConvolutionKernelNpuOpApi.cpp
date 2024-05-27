@@ -52,15 +52,13 @@ static at::Tensor _calc_convolution(const at::Tensor &input, const at::Tensor &w
     int64_t dim = k - 2; // Subtract nonspatial dimensions: 2
     bool unBatch = false;
 
-    // Groups > 1 and 3D scenes are currently not supported (binary operator problem), and path 3 implementation is
-    // temporarily called
     // CheckForbidInternalFormat = False: turn on private format；CheckJitDisable = False: turn on JitCompile
-    if (dim == 3 || (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable())) {
+    if ((!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable())) {
         return acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups,
                                     false, false, false, false);
     }
-    // Conv1D: 1, Conv2D: 2
-    if (dim != 1 && dim != 2) {
+    // Conv1D: 1, Conv2D: 2, Conv3D: 3
+    if (dim != 1 && dim != 2 && dim != 3) {
         return at::Tensor();
     }
 
@@ -164,13 +162,13 @@ at::Tensor &slow_conv_transpose2d_out(const at::Tensor &input, const at::Tensor 
     // Groups > 1 and 3D scenes are currently not supported (binary operator problem), and path 3 implementation is
     // temporarily called
     // CheckForbidInternalFormat = False: turn on private format; CheckJitDisable = False: turn on JitCompile
-    if (dim == 3 || (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable())) {
+    if ((!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable())) {
         output = acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding,
                                       groups, false, false, false, false);
         return output;
     }
     // Conv1D: 1, Conv2D: 2
-    if (dim != 1 && dim != 2) {
+    if (dim != 1 && dim != 2 && dim != 3) {
         output = at::Tensor();
         return output;
     }
