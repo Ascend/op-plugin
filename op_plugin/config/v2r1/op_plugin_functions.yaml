@@ -1515,6 +1515,10 @@ official:
    impl_ns: acl_op, op_api
  - func: sort.values(Tensor self, int dim=-1, bool descending=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
    impl_ns: acl_op, op_api
+ - func: sort.stable(Tensor self, *, bool? stable, int dim=-1, bool descending=False) -> (Tensor values, Tensor indices)
+   impl_ns: op_api
+ - func: sort.values_stable(Tensor self, *, bool? stable, int dim=-1, bool descending=False, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
+   impl_ns: op_api
  - func: sqrt(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: sqrt.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
