@@ -32,7 +32,6 @@
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
-#include "torch_npu/csrc/core/npu/NPUGuard.h"
 
 typedef struct aclOpExecutor aclOpExecutor;
 typedef struct aclTensor aclTensor;
@@ -632,8 +631,6 @@ auto DecodeDevice(Ts&... args) -> at::Device
  */
 #define EXEC_NPU_CMD(aclnn_api, ...)                                                                                   \
     do {                                                                                                               \
-        auto device = DecodeDevice(__VA_ARGS__);                                                                       \
-        c10_npu::NPUGuard guard(device);                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(#aclnn_api "GetWorkspaceSize");                  \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(#aclnn_api);                                                \
         static const auto initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");                                    \
@@ -693,10 +690,6 @@ auto DecodeDevice(Ts&... args) -> at::Device
  */
 #define EXEC_NPU_COPY_CMD(aclnn_api, ...)                                                                              \
     do {                                                                                                               \
-        auto args_tuple = std::make_tuple(__VA_ARGS__);                                                                \
-        auto second_tensor = std::get<1>(args_tuple);                                                                  \
-        auto device = second_tensor.device();                                                                          \
-        c10_npu::NPUGuard guard(device);                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(#aclnn_api "GetWorkspaceSize");                  \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(#aclnn_api);                                                \
         static const auto initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");                                    \
@@ -751,8 +744,6 @@ auto DecodeDevice(Ts&... args) -> at::Device
 
 #define EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnn_api, ...)                                                                   \
     do {                                                                                                               \
-        auto device = DecodeDevice(__VA_ARGS__);                                                                       \
-        c10_npu::NPUGuard guard(device);                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(#aclnn_api "GetWorkspaceSize");                  \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(#aclnn_api);                                                \
         static const auto initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");                                    \
@@ -874,8 +865,6 @@ private:
  */
 #define EXEC_NPU_CMD_SYNC(aclnn_api, ...)                                                                              \
     [](const char *apiName, const char *workspaceSizeApiName, auto &...args) -> auto {                                 \
-        auto device = DecodeDevice(args...);                                                                           \
-        c10_npu::NPUGuard guard(device);                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(workspaceSizeApiName);                           \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(apiName);                                                   \
         static const auto initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");                                    \
