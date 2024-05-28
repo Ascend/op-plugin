@@ -27,6 +27,7 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
                                         const c10::optional<at::Tensor> &bias,
                                         int64_t antiquant_group_size)
 {
+    bool trans_weight = op_plugin::utils::is_transpose_last_two_dims(weight);
     auto x_dim_num = x.dim();
     auto weight_dim_num = weight.dim();
     TORCH_CHECK(x_dim_num >= MINIMUM_SHAPE_SIZE, "x shape do not support dim num less than 2, but it is ", x_dim_num,
@@ -36,13 +37,17 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
     TORCH_CHECK(!(std::min(x_dim_num, weight_dim_num) > MINIMUM_SHAPE_SIZE && x_dim_num != weight_dim_num),
                 "x dim is not the same as weight dim", OPS_ERROR(ErrCode::PARAM));
     auto x_k_dim = x.size(x_dim_num - 1);
-    auto weight_k_dim = weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE);
+    auto weight_k_dim = (weight.dtype() == at::kInt && trans_weight) ?
+                        weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE) * 8 :
+                        weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE);
     TORCH_CHECK(x_k_dim == weight_k_dim, "The k of x and weight should be equal. but x_k_dim is ", x_k_dim,
                 ", weight_k_dim is ", weight_k_dim, OPS_ERROR(ErrCode::PARAM));
     auto out_dim_num = std::max(x_dim_num, weight_dim_num);
     auto output_size = op_infer::array_to_small_vector(x.sizes());
     output_size[out_dim_num - MINIMUM_SHAPE_SIZE] = x.size(x_dim_num - MINIMUM_SHAPE_SIZE);
-    output_size[out_dim_num - MINIMUM_SHAPE_SIZE + 1] = weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE + 1);
+    output_size[out_dim_num - MINIMUM_SHAPE_SIZE + 1] = (weight.dtype() == at::kInt && !trans_weight) ?
+                                                        weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE + 1) * 8 :
+                                                        weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE + 1);
     if (x_dim_num == weight_dim_num) {
         for (auto i = 0; i < out_dim_num - MINIMUM_SHAPE_SIZE; i++) {
             TORCH_CHECK(x.size(i) == weight.size(i), "batch of x is diff from batch of weight", OPS_ERROR(ErrCode::PARAM));

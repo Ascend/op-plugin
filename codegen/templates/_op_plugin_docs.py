@@ -3159,6 +3159,69 @@ model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)npu_out = mod
 )
 
 _add_torch_npu_docstr(
+    "npu_convert_weight_to_int4pack",
+    """
+功能描述:
+该接口将int32的输入tensor打包为int4存放，每8个int4数据通过一个int32数据承载，并进行交叠排放。
+
+接口原型:
+npu_convert_weight_to_int4pack(Tensor weight, int inner_k_tiles=0) -> Tensor
+
+参数说明:
+weight : Device侧Tensor类型，输入的weight。数据格式支持ND，数据类型支持INT32， 不支持非连续的Tensor。维度支持2维，shape支持（k, n）, (n, k)。最后一维度需要8个元素对齐。
+inner_k_tiles：int类型，用于制定内部打包格式中，多少个K-tiles被打包在一起，默认值为0. 预留参数，暂未使用。
+
+输出说明:
+输出为Tensor类型，代表int4打包后的输出。数据类型为INT32，shape为（k, n/8）, (n, k/8), 数据格式支持ND。
+
+约束说明:
+输入weight中的元素的值需要在int4的表示范围内，即[-8, 7]。
+
+支持的PyTorch版本:
+PyTorch 2.3.1
+PyTorch 2.0
+PyTorch 2.1
+PyTorch 2.2
+PyTorch 1.11
+
+支持的芯片型号:
+Atlas A2 训练系列产品
+
+调用示例:
+单算子模式：
+
+import torch
+import torch_npu
+
+m = 128
+k = 64
+n = 32
+trans_weight = False
+
+cpu_x = torch.randn((m, k), dtype=torch.float16)
+if trans_weight:
+    cpu_weight = torch.randint(low=-8, high=8, size=(n, k), dtype=torch.int32)
+    cpu_antiquantscale = torch.randn((n, 1), dtype=torch.float16)
+    cpu_antiquantoffset = torch.randn((n, 1), dtype=torch.float16)
+else:
+    cpu_weight = torch.randint(low=-8, high=8, size=(k, n), dtype=torch.int32)
+    cpu_antiquantscale = torch.randn((1, n), dtype=torch.float16)
+    cpu_antiquantoffset = torch.randn((1, n), dtype=torch.float16)
+
+weight_int4 = torch_npu.npu_convert_weight_to_int4pack(cpu_weight.npu())
+
+if trans_weight:
+    cpu_weight = cpu_weight.transpose(-1, -2)
+    weight_int4 = weight_int4.transpose(-1, -2)
+    cpu_antiquantscale = cpu_antiquantscale.transpose(-1, -2)
+    cpu_antiquantoffset = cpu_antiquantoffset.transpose(-1, -2)
+
+npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), weight_int4.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu())
+
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_grouped_matmul",
     """
 功能描述:

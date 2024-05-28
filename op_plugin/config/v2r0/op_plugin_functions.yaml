@@ -2533,6 +2533,9 @@ custom:
   - func: npu_weight_quant_batchmatmul(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor? antiquant_offset=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? bias=None, int antiquant_group_size=0) -> Tensor
     impl_ns: op_api
     exposed: True
+  - func: npu_convert_weight_to_int4pack(Tensor weight, int inner_k_tiles=0) -> Tensor
+    impl_ns: op_api
+    exposed: True
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
     impl_ns: op_api
     exposed: True
