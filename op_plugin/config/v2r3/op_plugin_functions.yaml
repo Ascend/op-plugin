@@ -1601,16 +1601,6 @@ official:
    impl_ns: acl_op, op_api
  - func: triu_(Tensor(a!) self, int diagonal=0) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: true_divide.Scalar(Tensor self, Scalar other) -> Tensor
-   impl_ns: acl_op, op_api
- - func: true_divide.Tensor(Tensor self, Tensor other) -> Tensor
-   impl_ns: acl_op, op_api
- - func: true_divide.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
- - func: true_divide_.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
-   impl_ns: acl_op, op_api
- - func: true_divide_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
-   impl_ns: acl_op, op_api
  - func: trunc(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: trunc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
