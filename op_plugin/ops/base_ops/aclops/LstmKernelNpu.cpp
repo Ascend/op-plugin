@@ -42,11 +42,12 @@ tensor_list npu_lstm_npu_nocheck(const at::Tensor &input, const at::Tensor &weig
     at::Tensor y_output = npu_preparation::apply_tensor(input, output_size);
     at::Tensor h_output = npu_preparation::apply_tensor(input, output_size);
     at::Tensor c_output = npu_preparation::apply_tensor(input, output_size);
-    at::Tensor i_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-    at::Tensor j_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-    at::Tensor f_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-    at::Tensor o_output = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
-    at::Tensor tanhc = npu_preparation::apply_tensor_with_format(input, output_size, ACL_FORMAT_FRACTAL_NZ);
+    int64_t output_format = train ? ACL_FORMAT_FRACTAL_NZ : ACL_FORMAT_ND;
+    at::Tensor i_output = npu_preparation::apply_tensor_with_format(input, output_size, output_format);
+    at::Tensor j_output = npu_preparation::apply_tensor_with_format(input, output_size, output_format);
+    at::Tensor f_output = npu_preparation::apply_tensor_with_format(input, output_size, output_format);
+    at::Tensor o_output = npu_preparation::apply_tensor_with_format(input, output_size, output_format);
+    at::Tensor tanhc = npu_preparation::apply_tensor_with_format(input, output_size, output_format);
 
     string direction = flag_direction ? "REDIRECTIONAL" : "UNIDIRECTIONAL";
     string gate_order = "ifjo";
