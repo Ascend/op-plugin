@@ -2485,3 +2485,5 @@ custom:
     impl_ns: acl_op
   - func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor skip1, Tensor? skip2, Tensor bias, Tensor scales, Tensor expanded_src_to_dst_row, Tensor export_for_source_row) -> Tensor
     impl_ns: op_api
+  - func: matmul_double_backward(Tensor? grad_self, Tensor? grad_other, Tensor grad_out, Tensor self, Tensor other, bool[3] mask) -> (Tensor, Tensor, Tensor)
+    impl_ns: op_api

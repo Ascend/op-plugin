@@ -146,3 +146,7 @@
 
 - name: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, int? output_size=None) -> Tensor
   self: repeat_interleave_backward_int(grad, self, repeats, dim)
+
+- name: matmul_backward(Tensor grad_out, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
+  output_differentiability: [True, True]
+  grad_out, self, other: matmul_double_backward(grads[0], grads[1], grad_out, self, other, grad_input_mask)
