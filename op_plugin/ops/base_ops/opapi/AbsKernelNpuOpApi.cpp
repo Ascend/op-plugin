@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/NamedTensorUtils.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -21,27 +23,29 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& abs_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnAbs, acl_op::abs_out(self, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnAbs, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnAbs, acl_op::abs_out(self, result));
+    npu_preparation::check_tensor({self}, result, self);
+    EXEC_NPU_CMD(aclnnAbs, self, result);
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 at::Tensor abs(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnAbs, acl_op::abs(self));
+    DO_COMPATIBILITY(aclnnAbs, acl_op::abs(self));
 
-  // construct the output tensor of the NPU
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+    // construct the output tensor of the NPU
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnAbs, self, result);
-  return result;
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnAbs, self, result);
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 at::Tensor& abs_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnAbs, acl_op::abs_(self));
-  op_api::abs_out(self, self);
-  return self;
+    DO_COMPATIBILITY(aclnnAbs, acl_op::abs_(self));
+    op_api::abs_out(self, self);
+    return self;
 }
 
 }  // namespace op_api

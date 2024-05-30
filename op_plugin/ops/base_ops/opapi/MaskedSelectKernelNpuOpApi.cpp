@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/NamedTensorUtils.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -62,26 +64,28 @@ static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Ten
 }
 
 at::Tensor masked_select(const at::Tensor& self, const at::Tensor& mask) {
-  DO_COMPATIBILITY(aclnnMaskedSelect, acl_op::masked_select(self, mask));
+    at::namedinference::compute_broadcast_outnames(self, mask);
+    DO_COMPATIBILITY(aclnnMaskedSelect, acl_op::masked_select(self, mask));
 
-  auto outputSize = masked_select_npu_output_size(self, mask);
-  at::Tensor out = at_npu::native::OpPreparation::apply_tensor_without_format(self, outputSize);
-  return exec_aclnn_masked_select(self, mask, out);
+    auto outputSize = masked_select_npu_output_size(self, mask);
+    at::Tensor out = at_npu::native::OpPreparation::apply_tensor_without_format(self, outputSize);
+    return exec_aclnn_masked_select(self, mask, out);
 }
 
 at::Tensor& masked_select_out(const at::Tensor& self, const at::Tensor& mask,
                               at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnMaskedSelect, acl_op::masked_select_out(self, mask, result));
+    at::namedinference::compute_broadcast_outnames(self, mask);
+    DO_COMPATIBILITY(aclnnMaskedSelect, acl_op::masked_select_out(self, mask, result));
 
-  auto outputSize = masked_select_npu_output_size(self, mask);
-  at_npu::native::OpPreparation::check_tensor({self, mask}, result, self.scalar_type(), outputSize);
+    auto outputSize = masked_select_npu_output_size(self, mask);
+    at_npu::native::OpPreparation::check_tensor({self, mask}, result, self.scalar_type(), outputSize);
 
-  auto out = result.is_contiguous() ? result : result.contiguous();
+    auto out = result.is_contiguous() ? result : result.contiguous();
 
-  auto output = exec_aclnn_masked_select(self, mask, out);
-  if (!result.is_contiguous()) {
-    result.copy_(output);
-  }
-  return result;
+    auto output = exec_aclnn_masked_select(self, mask, out);
+    if (!result.is_contiguous()) {
+        result.copy_(output);
+    }
+    return result;
 }
 }  // namespace op_api

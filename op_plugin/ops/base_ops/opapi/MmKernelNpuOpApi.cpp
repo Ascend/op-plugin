@@ -14,6 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/NamedTensorUtils.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -23,21 +25,25 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
 {
+    auto names = at::namedinference::compute_matmul_outnames(self, mat2);
     DO_COMPATIBILITY(aclnnMm, acl_op::mm(self, mat2));
     auto output_size = {self.size(0), mat2.size(1)};
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     EXEC_NPU_CMD(aclnnMm, self, mat2, result, cube_math_type);
+    at::namedinference::propagate_names_if_nonempty(result, names);
     return result;
 }
 
 at::Tensor &mm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result)
 {
+    auto names = at::namedinference::compute_matmul_outnames(self, mat2);
     DO_COMPATIBILITY(aclnnMm, acl_op::mm_out(self, mat2, result));
     auto output_size = {self.size(0), mat2.size(1)};
     npu_preparation::check_tensor({self, mat2}, result, self.scalar_type(), output_size);
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     EXEC_NPU_CMD(aclnnMm, self, mat2, result, cube_math_type);
+    at::namedinference::propagate_names_if_nonempty(result, names);
     return result;
 }
 
