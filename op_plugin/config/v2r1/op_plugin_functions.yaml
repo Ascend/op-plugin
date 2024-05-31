@@ -1939,6 +1939,8 @@ official:
    impl_ns: op_api
  - func: _fft_c2r.out(Tensor self, int[] dim, int normalization, SymInt last_dim_size, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: op_api
+ - func: _conj(Tensor(a) self) -> Tensor(a)
+   impl_ns: acl_op
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor

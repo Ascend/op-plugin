@@ -1913,6 +1913,8 @@ official:
    impl_ns: acl_op
  - func: view_as_complex(Tensor(a) self) -> Tensor(a)
    impl_ns: acl_op
+ - func: _conj(Tensor(a) self) -> Tensor(a)
+   impl_ns: acl_op
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
