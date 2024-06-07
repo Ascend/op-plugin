@@ -111,17 +111,12 @@ class TestGreaterEqual(TestCase):
             cpu_input1, npu_input1 = create_common_tensor(item[0], -100, 100)
             cpu_input2 = torch.randn(item[1][2]) < 0
             npu_input2 = cpu_input2.npu()
-            if cpu_input1.dtype == torch.float16:
-                cpu_input1 = cpu_input1.to(torch.float32)
-            if cpu_input2.dtype == torch.float16:
-                cpu_input2 = cpu_input2.to(torch.float32)
             scalar = self.generate_scalar(0, 100)
             cpu_output_out = self.cpu_op_exec_scalar_out(cpu_input1, scalar, cpu_input2)
             npu_output_out = self.npu_op_exec_scalar_out(npu_input1, scalar, npu_input2)
             cpu_output_out = cpu_output_out.astype(npu_output_out.dtype)
             self.assertRtolEqual(cpu_output_out, npu_output_out)
 
-    @unittest.skip("skip test_greater_equal_scalar_out now")
     def test_greater_equal_scalar_out(self):
         shape_format = [
             [[np.float16, 0, [4, 4, 128, 128]], [np.float16, 0, [256, 116, 1, 1]]],
