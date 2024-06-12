@@ -3828,16 +3828,16 @@ key: 三维或者四维Device侧的Input Tensor; 三维: shape是(B,S,H), 对应
 value: 三维或者四维Device侧的Input Tensor; 三维: shape是(B,S,H), 对应的input_layout是BSH; 四维: shape是(B,N,S,D), 对应的input_layout是BNSD, 其中N*D=H, 数据类型支持FLOAT16、BFLOAT16, 数据格式支持ND。
 *: 代表其之前的变量是位置相关, 需要按照顺序输入, 必选; 之后的变量是键值对赋值的, 位置无关, 可选(不输入会使用默认值)。
 padding_mask: 预留参数, 暂未使用, 默认值为None。
-atten_mask: 四维Device侧的Input Tensor, shape是(B,1,1,S); 取值为1代表该位不参与计算(不生效), 为0代表该位参与计算, 默认值为None, 即全部参与计算; 数据类型支持FLOAT16、BOOL, 数据格式支持ND。
+atten_mask: 四维Device侧的Input Tensor, shape是(B,1,1,S); 取值为1代表该位不参与计算(不生效), 为0代表该位参与计算, 默认值为None, 即全部参与计算; 数据类型支持BOOL、INT8、UINT8，数据格式支持ND。
 actual_seq_lengths: 二维Host侧的Input数组, 其shape为(B,1), 形如[1, 2, 3], 代表key、value中有效的S序列长度, 默认值为None, 即全部有效, 类型为List int; 数据类型为INT64, 数据格式支持ND。
-antiquantScale: Device侧的Input Tensor, 数据类型支持: FLOAT16。数据格式支持ND, 表示量化因子, 支持per-channel(list)。 如不使用该功能时可不传或传入None。
-antiquantOffset: Device侧的Input Tensor, 数据类型支持: FLOAT16 。数据格式支持ND, 表示量化偏移, 支持per-channel(list), 由shape决定。 如不使用该功能时可不传或传入None。
+antiquantScale: Device侧的Input Tensor, 数据类型支持: FLOAT16、BFLOAT16。数据格式支持ND, 表示量化因子, 支持per-channel(list)。 如不使用该功能时可不传或传入None。
+antiquantOffset: Device侧的Input Tensor, 数据类型支持: FLOAT16、BFLOAT16。数据格式支持ND, 表示量化偏移, 支持per-channel(list), 由shape决定。 如不使用该功能时可不传或传入None。
 blocktable: Device侧的Input Tensor, 数据类型支持: INT32。数据格式支持ND, 表示PageAttention中KV存储使用的block映射表。 如不使用该功能时可不传或传入None。
 dequantScale1: Device侧的Input Tensor, 数据类型支持: FLOAT32。数据格式支持ND, 表示BMM1后面反量化的量化因子, 支持per-tensor(scalar)。 如不使用该功能时可不传或传入None。
 quantScale1: Device侧的Input Tensor, 数据类型支持: FLOAT32。数据格式支持ND, 表示BMM2前面量化的量化因子, 支持per-tensor(scalar)。 如不使用该功能时可不传或传入None。
 dequantScale2: Device侧的Input Tensor, 数据类型支持: FLOAT32。数据格式支持ND, 表示BMM2后面反量化的量化因子, 支持per-tensor(scalar)。 如不使用该功能时可不传或传入None。
-quantScale2: Device侧的Input Tensor, 数据类型支持: FLOAT32。数据格式支持ND, 表示输出量化的量化因子, 支持per-tensor(scalar)。 如不使用该功能时可不传或传入None。
-quantOffset2: Device侧的Input Tensor, 数据类型支持: FLOAT32。数据格式支持ND, 表示输出量化的量化偏移, 支持per-tensor(scalar)。 如不使用该功能时可不传或传入None。
+quantScale2: Device侧的Input Tensor, 数据类型支持: FLOAT32、BFLOAT16。数据格式支持ND, 表示输出量化的量化因子, 支持per-tensor(scalar)。 如不使用该功能时可不传或传入None。
+quantOffset2: Device侧的Input Tensor, 数据类型支持: FLOAT32、BFLOAT16。数据格式支持ND, 表示输出量化的量化偏移, 支持per-tensor(scalar)。 如不使用该功能时可不传或传入None。
 kvPaddingSize: Device侧的aclTensor, 数据类型支持: INT64。数据格式支持ND, 表示kv左padding场景使能时, 最后一个有效token到S的距离。 如不使用该功能时可传入nullptr。
 num_heads: Host侧的attribute, 代表query的头数, 即query的N, 其乘D为H, 默认值为1; 数据类型为INT。
 scale_value: Host侧的attribute, 代表缩放系数, 用来约束梯度, 其默认值为1.0, 典型值为; 数据类型为FLOAT32。
@@ -3919,8 +3919,7 @@ from torch.library import Library, impl
 q = torch.randn(2, 1, 40 * 128, dtype=torch.float16).npu()
 k = torch.randn(2, 2048, 40 * 128, dtype=torch.float16).npu()
 v = torch.randn(2, 2048, 40 * 128, dtype=torch.float16).npu()
-atten = torch.randn(2, 1, 1, 2048, dtype=torch.float16).npu()
-atten = torch.where(atten < 0, 1, 0).to(torch.bool).to(torch.float16)
+atten = torch.randn(2, 1, 1, 2048, dtype=torch.bool).npu()
 scale_value = 1/math.sqrt(128.0)
 
 class Model(torch.nn.Module):
