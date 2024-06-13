@@ -62,14 +62,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> matmul_double_backward(const c10:
         return std::make_tuple(at::Tensor(), at::Tensor(), at::Tensor());
     }
 
-    const at::Tensor grad_self = grad_self_opt.value_or(at::Tensor());
-    const at::Tensor grad_other = grad_other_opt.value_or(at::Tensor());
+    at::Tensor grad_self = grad_self_opt.value_or(at::Tensor());
+    at::Tensor grad_other = grad_other_opt.value_or(at::Tensor());
 
     if (grad_self.defined() && grad_self.dim() != self.dim()) {
-        grad_self.reshape(self.sizes());
+        grad_self = grad_self.reshape(self.sizes());
     }
     if (grad_other.defined() && grad_other.dim() != other.dim()) {
-        grad_other.reshape(other.sizes());
+        grad_other = grad_other.reshape(other.sizes());
     }
 
     at::Tensor grad_grad;
@@ -82,12 +82,17 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> matmul_double_backward(const c10:
     if (grad_input_mask[1] && grad_other.defined()) {
         /* self_grad = grad_out * grad_other^T
         Because matmul_mat1_backward(mat1, mat2, grad) calculates mat1_grad = grad * mat2^T, we have: */
-        self_grad = op_api::matmul_mat1_backward(self, grad_other, grad_out).reshape(self.sizes());
+        self_grad = op_api::matmul_mat1_backward(self, grad_other, grad_out);
     }
     if (grad_input_mask[2] && grad_self.defined()) {
         /* other_grad = grad_self^T * grad_out
         Because matmul_mat2_backward(mat1, mat2, grad) calculates mat2_grad = mat1^T * grad, we have: */
-        other_grad = op_api::matmul_mat2_backward(grad_self, other, grad_out).reshape(other.sizes());
+        other_grad = op_api::matmul_mat2_backward(grad_self, other, grad_out);
+    }
+
+    // strip added dim: (5,1)->(5)
+    if (other.dim() == 1 && other_grad.size(-1) == 1) {
+        other_grad = other_grad.squeeze(-1);
     }
 
     return std::make_tuple(grad_grad, self_grad, other_grad);
