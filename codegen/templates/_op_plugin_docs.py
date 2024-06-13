@@ -3227,12 +3227,19 @@ _add_torch_npu_docstr(
 功能描述:
 GroupedMatmul算子可以实现分组矩阵乘计算，每组矩阵乘的维度大小可以不同，是一种灵活的支持方式。其主要输入与输出均为TensorList，其中输入数据x与输出结果y均支持切分及不切分的模式，根据参数split_item来确定x与y是否需要切分，在x需要切分的情况下使用参数group_list来描述对x的m轴进行切分的方式。
 根据输入x、输入weight与输出y的Tensor数量不同，可以支持如下4种场景：
-x、weight、y的Tensor数量等于组数，即每组的数据对应的Tensor是独立的。
-x的Tensor数量为1，weight/y的Tensor数量等于组数，此时需要通过可选属性group_list说明x在行上的分组情况，如group_list[0]=10说明x的前10行参与第一组矩阵乘计算。
-x、weight的Tensor数量等于组数，y的Tensor数量为1，此时每组矩阵乘的结果放在同一个Tensor中连续存放。
-x、y的Tensor数量为1，weight数量等于组数，属于前两种情况的组合。
+x、weight、y都为多Tensor，即每组的数据对应的Tensor是独立的。
+x为单Tensor，weight/y为多Tensor，此时需要通过可选参数group_list说明x在行上的分组情况，如group_list[0]=10说明x的前10行参与第一组矩阵乘计算。
+x、weight为多Tensor，y为单Tensor，此时每组矩阵乘的结果放在同一个Tensor中连续存放。
+x、y为单Tensor，weight为多Tensor，属于前两种情况的组合。
 计算公式为：
-y_i = x_i \times weight_i \add bias_i
+非量化场景：
+y_i = x_i * weight_i + bias_i
+量化场景：
+y_i = (x_i * weight_i + bias_i) * scale_i + offset_i
+反量化场景：
+y_i = (x_i * weight_i + bias_i) * scale_i
+伪量化场景：
+y_i = x_i * (weight_i + antiquant_offset_i) * antiquant_scale_i + bias_i
 
 接口原型:
 PyTorch 2.1及更高的版本中：
@@ -3249,7 +3256,7 @@ offset：可选参数，Device侧的TensorList，代表量化参数中的偏移�
 antiquantScale：可选参数，Device侧的TensorList，代表伪量化参数中的缩放因子，目前仅支持Ascend910B与Ascend910C，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，长度与weight相同。
 antiquantOffset：可选参数，Device侧的TensorList，代表伪量化参数中的偏移量，目前仅支持Ascend910B与Ascend910C，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，长度与weight相同。
 group_list：可选参数，Host侧的IntArray类型，是切分的索引，代表输入和输出M方向的matmul索引情况，数据类型支持INT64，数据格式支持ND，支持输入为1维，支持的最大长度为128个，默认为空。
-split_item：可选属性，Int类型，切分模式的说明，数据类型支持INT32，可取的值有4个：0和1表示输出不需要切分，2和3表示输出需要进行切分。默认值为0。
+split_item：可选属性，Int类型，切分模式的说明，数据类型支持INT32，可取的值有4个：0和1表示输出为多Tensor，2和3表示输出为单Tensor。默认值为0。
 output_dtype：可选属性，ScalarType类型，用于指定输出的数据类型，默认值为None，表明输出与输入是同一数据类型。
 
 输出说明:
@@ -3258,7 +3265,7 @@ Device侧的TensorList类型输出，代表GroupedMatmul的计算结果，当spl
 约束说明:
 若x为多Tensor，group_list可以为空；当x为单Tensor，group_list的长度与weight的Tensor个数相同。
 若bias不为空，其Tensor数量须与weight保持一致。
-记一个matmul计算涉及的x、weight与y的维度分别为(m×k)、(k×n)和(m×n)，每一个matmul的输入与输出须满足[m, k]和[k, n]的k维度相等关系。
+记一个matmul计算涉及的x、weight与y的维度分别为(m×k)、(k×n)和(m×n)，则每一个matmul的输入与输出须满足[m, k]和[k, n]的k维度相等关系。
 非量化场景支持的输入类型为：
 x为FLOAT16、weight为FLOAT16、bias为FLOAT16、scale为空、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为FLOAT16；
 x为BFLOAT16、weight为BFLOAT16、bias为FLOAT32、scale为空、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为BFLOAT16（当前仅在Ascend910B与Ascend910C上支持）；
@@ -3284,7 +3291,26 @@ Atlas A2 训练系列产品
 Atlas 推理系列产品（Ascend 310P处理器）
 
 调用示例:
-# 单算子调用模式，Torch2.1/2.2版本
+# 单算子调用模式，Torch1.11、Torch2.0版本
+import torch
+import torch_npu
+x1 = torch.randn(256, 256, device='npu', dtype=torch.float16)
+x2 = torch.randn(1024, 256, device='npu', dtype=torch.float16)
+x3 = torch.randn(512, 1024, device='npu', dtype=torch.float16)
+x = [x1, x2, x3]
+weight1 = torch.randn(256, 256, device='npu', dtype=torch.float16)
+weight2 = torch.randn(256, 1024, device='npu', dtype=torch.float16)
+weight3 = torch.randn(1024, 128, device='npu', dtype=torch.float16)
+weight = [weight1, weight2, weight3]
+bias1 = torch.randn(256, device='npu', dtype=torch.float16)
+bias2 = torch.randn(1024, device='npu', dtype=torch.float16)
+bias3 = torch.randn(128, device='npu', dtype=torch.float16)
+bias = [bias1, bias2, bias3]
+group_list = None
+split_item = 0
+npu_out = torch_npu.npu_grouped_matmul(x, weight, bias=bias, scale=[], offset=[], antiquant_scale=[], antiquant_offset=[], group_list=group_list, split_item=split_item)
+
+# 单算子调用模式，Torch2.1及更高的版本
 import torch
 import torch_npu
 x1 = torch.randn(256, 256, device='npu', dtype=torch.float16)
