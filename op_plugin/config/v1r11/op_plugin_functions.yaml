@@ -2609,7 +2609,7 @@ custom:
     impl_ns: op_api
     exposed: True
   - func: _npu_dropout_gen_mask.Tensor(Tensor self, int[] size, float p, int seed, int offset, *, bool? parallel=True, bool? sync=None) -> Tensor
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
     tags: nondeterministic_seeded
   - func: npu_quantize(Tensor self, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1, bool div_mode=True) -> Tensor
     impl_ns: acl_op, op_api
