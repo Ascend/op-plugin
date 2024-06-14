@@ -14,14 +14,14 @@
 // limitations under the License.
 
 #include "op_plugin/include/ops.h"
-#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpInterface.h"
 
 namespace at_npu {
 namespace native {
 at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, double p, int64_t seed, int64_t offset,
                                 c10::optional<bool> parallel, c10::optional<bool> sync)
 {
-    return acl_op::_npu_dropout_gen_mask(self, size, p, seed, offset, parallel, sync);
+    return op_plugin::_npu_dropout_gen_mask(self, size, p, seed, offset, parallel, sync);
 }
 }  // namespace native
 }  // namespace at_npu
