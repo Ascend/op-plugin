@@ -1988,9 +1988,6 @@ tocpu:
   - _test_optional_floatlist
   - _solve_helper
   - binomial
-  - bucketize.Tensor
-  - bucketize.Tensor_out
-  - bucketize.Scalar
   - cauchy_
   - cholesky_inverse
   - cholesky_inverse.out
