@@ -23,7 +23,11 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending)
 {
     DO_COMPATIBILITY(aclnnArgsort, acl_op::argsort(self, dim, descending));
-
+    if (self.dtype() == at::kInt || self.dtype() == at::kLong) {
+        TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel "
+                            "is running on AiCpu."
+                            "If you are more concerned about high-performance execution,please cast dtype to float32.");
+    }
     // construct the output tensor of the NPU
     at::Tensor indices = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong));
     EXEC_NPU_CMD(aclnnArgsort, self, dim, descending, indices);
@@ -34,8 +38,9 @@ at::Tensor argsort(const at::Tensor &self, at::Dimname dim, bool descending)
 {
     DO_COMPATIBILITY(aclnnArgsort, acl_op::argsort(self, dim, descending));
     if (self.dtype() == at::kInt || self.dtype() == at::kLong) {
-    TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel is running on AiCpu."
-                        "If you are more concerned about high-performance execution,please cast dtype to float32.");
+        TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel "
+                            "is running on AiCpu."
+                            "If you are more concerned about high-performance execution,please cast dtype to float32.");
     }
     return op_api::argsort(self, dimname_to_position(self, dim), descending);
 }
