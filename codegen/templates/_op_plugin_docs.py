@@ -3023,7 +3023,7 @@ bias为BFLOAT16数据类型时，output_dtype需要为torch.bfloat16。
 pertoken_scale仅支持float32，目前仅在输出float16和bfloat16场景下可不为空。
 offset不为空时，output_dtype仅支持int8。
 x1与x2最后一维的shape大小不能超过65535
-310P芯片下，需要开启环境变量去完成int8输入(weight)高性能数据排布功能。相关命令：export INT8_FORMAT_NZ_ENABLE=1。
+310P和Atlas A2芯片下，需要调用npu_format_cast完成输入x2(weight)高性能数据排布功能。310P需要将x2转置后调用npu_format_cast，Atlas A2需要将x2非转置后调用npu_format_cast。
 
 支持的PyTorch版本:
 PyTorch 2.2
@@ -3035,7 +3035,8 @@ PyTorch 1.11.0
 Atlas A2 训练系列产品
 
 调用示例:
-单算子调用：
+1.单算子调用：
+在单算子模式下不支持使能高带宽的x2数据排布，如果想追求极致性能，请使用图模式
 import torch
 import torch_npu
 import logging
@@ -3046,9 +3047,88 @@ cpu_x2 = torch.randint(-5, 5, (31, 768, 16), dtype=torch.int8)
 scale = torch.randn(16, dtype=torch.float32)
 offset = torch.randn(16, dtype=torch.float32)
 bias = torch.randint(-5, 5, (31, 1, 16), dtype=torch.int32)
+# Method 1: You can directly call npu_quant_matmul
 npu_out = torch_npu.npu_quant_matmul(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset=offset.npu(), bias=bias.npu())
 
-图模式：
+# Method 2: You can first call npu_trans_quant_param to convert scale and offset from float32 to int64 when output dtype is torch.int8 or torch.float16
+scale_1 = torch_npu.npu_trans_quant_param(scale.npu(), offset.npu())
+npu_out = torch_npu.npu_quant_matmul(cpu_x1.npu(), cpu_x2.npu(), scale_1, bias=bias.npu())
+
+
+2.图模式(输出int8/fp16且无pertoken情况下，必须先调用npu_trans_quant_param):
+2.1 通用
+2.1.1 示例一：输出float16
+import torch
+import torch_npu
+import torchair as tng
+from torchair.ge_concrete_graph import ge_apis as ge
+from torchair.configs.compiler_config import CompilerConfig
+import logging
+from torchair.core.utils import logger
+logger.setLevel(logging.DEBUG)
+import os
+import numpy as np
+# "ENABLE_ACLNN"是否使能走aclnn，true: 回调走aclnn，false: 在线编译
+os.environ["ENABLE_ACLNN"] = "true"
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+class MyModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x1, x2, scale, offset, bias):
+        return torch_npu.npu_quant_matmul(x1, x2, scale, offset=offset, bias=bias, output_dtype=torch.float16)
+cpu_model = MyModel()
+model = cpu_model.npu()
+cpu_x1 = torch.randint(-1, 1, (15, 1, 512), dtype=torch.int8)
+cpu_x2 = torch.randint(-1, 1, (15, 512, 128), dtype=torch.int8)
+scale = torch.randn(1, dtype=torch.float32)
+# pertoken_scale为空时，输出fp16必须先调用npu_trans_quant_param, 将scale(offset)从float转为int64.
+scale_1 = torch_npu.npu_trans_quant_param(scale.npu(), None)
+bias = torch.randint(-1, 1, (15, 1, 128), dtype=torch.int32)
+# dynamic=True: 动态图模式，dynamic=False: 静态图模式
+model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale_1, None, bias.npu())
+
+2.1.2 示例2：输出bfloat16
+import torch
+import torch_npu
+import torchair as tng
+from torchair.ge_concrete_graph import ge_apis as ge
+from torchair.configs.compiler_config import CompilerConfig
+import logging
+from torchair.core.utils import logger
+logger.setLevel(logging.DEBUG)
+import os
+import numpy as np
+os.environ["ENABLE_ACLNN"] = "true"
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+class MyModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x1, x2, scale, offset, bias, pertoken_scale):
+        return torch_npu.npu_quant_matmul(x1, x2.t(), scale, offset=offset, bias=bias, pertoken_scale=pertoken_scale, output_dtype=torch.bfloat16)
+cpu_model = MyModel()
+model = cpu_model.npu()
+m = 15
+k = 11264
+n = 6912
+bias_flag = True
+cpu_x1 = torch.randint(-1, 1, (m, k), dtype=torch.int8)
+cpu_x2 = torch.randint(-1, 1, (n, k), dtype=torch.int8)
+scale = torch.randint(-1, 1, (n,), dtype=torch.bfloat16)
+pertoken_scale = torch.randint(-1, 1, (m,), dtype=torch.float32)
+
+bias = torch.randint(-1, 1, (n,), dtype=torch.bfloat16)
+model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+if bias_flag:
+    npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), None, None, pertoken_scale.npu())
+else:
+    npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), None, bias.npu(), pertoken_scale.npu())
+
+2.2.1 310P 将x2转置(batch,n,k)后format
 import torch
 import torch_npu
 import torchair as tng
@@ -3067,17 +3147,59 @@ class MyModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
     def forward(self, x1, x2, scale, offset, bias):
-        scale_1 = torch_npu.npu_trans_quant_param(scale, offset)
-        return torch_npu.npu_quant_matmul(x1, x2, scale_1, offset=offset, bias=bias)
+        return torch_npu.npu_quant_matmul(x1, x2.transpose(2,1), scale, offset=offset, bias=bias)
 cpu_model = MyModel()
 model = cpu_model.npu()
-cpu_x1 = torch.randint(-1, 1, (15, 1, 512), dtype=torch.int8)
-cpu_x2 = torch.randint(-1, 1, (15, 512, 128), dtype=torch.int8)
-scale = torch.randn(1, dtype=torch.float32)
-offset = torch.randn(1, dtype=torch.float32)
-bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
+cpu_x1 = torch.randint(-1, 1, (15, 1, 512), dtype=torch.int8).npu()
+cpu_x2 = torch.randint(-1, 1, (15, 512, 128), dtype=torch.int8).npu()
+# Process x2 into a high-bandwidth format(29) offline to improve performance, please ensure that the input is continuous with (batch,n,k) layout
+cpu_x2_t_29 = torch_npu.npu_format_cast(cpu_x2.transpose(2,1).contiguous(), 29)
+scale = torch.randn(1, dtype=torch.float32).npu()
+offset = torch.randn(1, dtype=torch.float32).npu()
+bias = torch.randint(-1,1, (128,), dtype=torch.int32).npu()
+# Process scale from float32 to int64 offline to improve performance
+scale_1 = torch_npu.npu_trans_quant_param(scale, offset)
+model = torch.compile(cpu_model, backend=npu_backend, dynamic=False)
+npu_out = model(cpu_x1, cpu_x2_t_29, scale_1, offset, bias)
+
+2.2.2 Atlas A2将非转置(batch,k,n)后转format
+import torch
+import torch_npu
+import torchair as tng
+from torchair.ge_concrete_graph import ge_apis as ge
+from torchair.configs.compiler_config import CompilerConfig
+import logging
+from torchair.core.utils import logger
+logger.setLevel(logging.DEBUG)
+import os
+import numpy as np
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+class MyModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x1, x2, scale, offset, bias, pertoken_scale):
+        return torch_npu.npu_quant_matmul(x1, x2, scale, offset=offset, bias=bias, pertoken_scale=pertoken_scale,output_dtype=torch.bfloat16)
+cpu_model = MyModel()
+model = cpu_model.npu()
+m = 15
+k = 11264
+n = 6912
+bias_flag = True
+cpu_x1 = torch.randint(-1, 1, (m, k), dtype=torch.int8)
+cpu_x2 = torch.randint(-1, 1, (n, k), dtype=torch.int8)
+# Process x2 into a high-bandwidth format(29) offline to improve performance, please ensure that the input is continuous with (batch,k,n) layout
+x2_notranspose_29 = torch_npu.npu_format_cast(cpu_x2.npu().transpose(1,0).contiguous(), 29)
+scale = torch.randint(-1, 1, (n,), dtype=torch.bfloat16)
+pertoken_scale = torch.randint(-1, 1, (m,), dtype=torch.float32)
+
+bias = torch.randint(-1,1, (n,), dtype=torch.bfloat16)
 model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
-npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu())
+if bias_flag:
+    npu_out = model(cpu_x1.npu(), x2_notranspose_29, scale.npu(), None, None, pertoken_scale.npu())
+else:
+    npu_out = model(cpu_x1.npu(), x2_notranspose_29, scale.npu(), None, bias.npu(), pertoken_scale.npu())
 """
 )
 
