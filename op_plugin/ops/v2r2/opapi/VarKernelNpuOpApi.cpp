@@ -83,7 +83,7 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
   auto mean = npu_preparation::apply_tensor_without_format(output_size, self.options());
 
   auto rd = at::IntArrayRef(real_dim);
-  EXEC_NPU_CMD(aclnnVarMean, self, rd, real_correction, keepdim, mean, var);
-  return std::tuple<at::Tensor, at::Tensor>(mean, var);
+  EXEC_NPU_CMD(aclnnVarMean, self, rd, real_correction, keepdim, var, mean);
+  return std::tuple<at::Tensor, at::Tensor>(var, mean);
 }
 } // namespace op_api
