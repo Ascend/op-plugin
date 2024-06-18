@@ -65,11 +65,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> matmul_double_backward(const c10:
     at::Tensor grad_self = grad_self_opt.value_or(at::Tensor());
     at::Tensor grad_other = grad_other_opt.value_or(at::Tensor());
 
-    if (grad_self.defined() && grad_self.dim() != self.dim()) {
-        grad_self = grad_self.reshape(self.sizes());
+    if (grad_self.defined() && grad_self.dim() == self.dim() + 1) {
+        grad_self = grad_self[0];
     }
-    if (grad_other.defined() && grad_other.dim() != other.dim()) {
-        grad_other = grad_other.reshape(other.sizes());
+    if (grad_other.defined() && grad_other.dim() == other.dim() + 1) {
+        grad_other = grad_other[0];
     }
 
     at::Tensor grad_grad;
