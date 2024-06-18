@@ -927,6 +927,9 @@ c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size(const at::Tens
                                                                   int64_t dim)
 {
     c10::SmallVector<int64_t, SIZE> shape;
+    if (dim < 0) {
+        dim = dim + self.dim();
+    }
     for (int64_t i = 0; i < self.dim(); i++) {
         if (i == dim) {
             if (repeats.numel() == 1) {
