@@ -31,7 +31,7 @@ namespace op_api {
             return list.back().second;
         }
 
-        if (list.size() >= capacity) {
+        if (static_cast<int>(list.size()) >= capacity) {
             list.pop_front();
         }
 
@@ -102,9 +102,9 @@ namespace op_api {
         auto triangle = at::empty_like(theta);
 
         int64_t out_n = ((plan_key.plan_mode == PlanMode::r2c) && (index == (factors.size() - 1)))? (factor / 2) + 1 : factor;
-        int64_t out_complex = ((plan_key.plan_mode == PlanMode::c2r) && (index == (factors.size() - 1))) ? 1 : 2;
+        int64_t out_complex = ((plan_key.plan_mode == PlanMode::c2r) && (index == (factors.size() - 1))) ? static_cast<int64_t>(1) : static_cast<int64_t>(2);
         int64_t in_n = factor;
-        int64_t in_complex = ((plan_key.plan_mode == PlanMode::r2c || plan_key.plan_mode == PlanMode::r2c_bothside) && (index == 0)) ? 1 : 2;
+        int64_t in_complex = ((plan_key.plan_mode == PlanMode::r2c || plan_key.plan_mode == PlanMode::r2c_bothside) && (index == 0)) ? static_cast<int64_t>(1) : static_cast<int64_t>(2);
         
         std::array<int64_t, 5> rotate_shape{prev_n, out_n, out_complex, in_complex, in_n};
         auto rotate_matrix = at::empty(rotate_shape, options);
@@ -175,7 +175,7 @@ namespace op_api {
         if ((factors.size() == 1) || (factors[0] >= 16)) {
             return factors;
         }
-        for (int i = 1; i < factors.size(); i++) {
+        for (size_t i = 1; i < factors.size(); i++) {
             if (factors[i]>=16) {
                 int64_t tmp = factors[0];
                 factors[0] = factors[i];
@@ -193,12 +193,12 @@ namespace op_api {
         std::copy(factors_.rbegin(), factors_.rend(), factors.begin());
         std::vector<int64_t> merged_factors{};
         std::vector<bool> is_merged(factors.size());
-        for (int i = 0; i < is_merged.size(); i++) {
+        for (size_t i = 0; i < is_merged.size(); i++) {
             is_merged[i] = false;
         }
-        for (int i = 0; i < factors.size(); i++) {
+        for (size_t i = 0; i < factors.size(); i++) {
             int64_t factor = 1;
-            for (int j = i; j < factors.size(); j++) {
+            for (size_t j = i; j < factors.size(); j++) {
                 if (is_merged[j] == true) {
                     continue;
                 }
@@ -216,7 +216,7 @@ namespace op_api {
         if (merged_factors.size() > NDIM_BOUND) {
             std::vector<int64_t> merged_factors_(NDIM_BOUND);
             std::copy(merged_factors.begin() + merged_factors.size() - NDIM_BOUND, merged_factors.end(), merged_factors_.begin());
-            for (int i = 0; i < (merged_factors.size() - NDIM_BOUND); i++) {
+            for (size_t i = 0; i < (merged_factors.size() - NDIM_BOUND); i++) {
                 auto min_ = std::min_element(merged_factors_.begin(), merged_factors_.end());
                 *min_ *= merged_factors[i];
             }
@@ -237,7 +237,7 @@ namespace op_api {
 
         int64_t factor;
         int64_t prev_n = 1;
-        for (int i = 0; i < factors.size(); i++) {
+        for (size_t i = 0; i < factors.size(); i++) {
             at::Tensor device_tensor = npu_preparation::copy_tensor_host_to_device(one_rotate_matrix(prev_n, plan_key, factors, i));
             fftPlanItem.insert_rotate_matrix(i, device_tensor);
             prev_n *= factors[i];

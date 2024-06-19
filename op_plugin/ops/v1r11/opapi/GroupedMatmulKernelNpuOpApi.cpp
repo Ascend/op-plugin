@@ -100,7 +100,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                 "group_list[0] should be larger than or equal to 0, but now is ", group_list_real[0], "." +
                 OPS_ERROR(ErrCode::VALUE));
             create_new_tensor(y, group_list_real[0], weight[0].sizes()[1], options);
-            for (int i = 1; i < num_group_list; i++) {
+            for (size_t i = 1; i < num_group_list; i++) {
                 TORCH_CHECK(group_list_real[i] - group_list_real[i - 1] >= 0,
                     "group_list[", i, "] - group_list[", i - 1, "] should be larger than or equal to 0, but now is ",
                     group_list_real[i] - group_list_real[i - 1], "." + OPS_ERROR(ErrCode::VALUE));
@@ -108,14 +108,14 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
             }
         } else {
             y.reserve(num_x);
-            for (int i = 0; i < num_x; i++) {
+            for (size_t i = 0; i < num_x; i++) {
                 create_new_tensor_multi_dim(y, x[i], weight[i], options);
             }
         }  // 校验NO_SPLIT时为特殊场景（groupList为空）或num_x > 1
     } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value || IN_SPLIT_OUT_SPLIT == split_item_value) {
         if (num_x > 1) {
             size_t dim_m = 0;
-            for (int i = 0; i < num_x; i++) {
+            for (size_t i = 0; i < num_x; i++) {
                 dim_m += x[i].sizes()[0];
             }
             create_new_tensor(y, dim_m, weight[0].sizes()[1], options);

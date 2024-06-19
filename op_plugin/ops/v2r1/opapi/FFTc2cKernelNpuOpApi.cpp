@@ -132,7 +132,7 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
     auto mode = static_cast<fft_mode>(mode_code);
     auto self = self_.view(self_.sizes());
     const auto ndim = self.dim();
-    const int64_t signal_ndim = dim.size();
+    const auto signal_ndim = dim.size();
     const auto batch_dims = ndim - signal_ndim;
 
     // Permute dimensions so batch dimensions come first, and in stride order
