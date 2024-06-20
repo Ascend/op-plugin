@@ -35,7 +35,8 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
                   const c10::optional<at::Tensor> &antiquant_scale,
                   const c10::optional<at::Tensor> &antiquant_offset,
                   const c10::optional<at::Tensor> &x3,
-                  const c10::optional<at::Tensor> &dequant_scale)
+                  const c10::optional<at::Tensor> &dequant_scale,
+                  const c10::optional<at::Tensor> &pertoken_scale)
 {
     // check shape: shape of x1:[s,m,k], shape of x2:[k,n], k_x1 == k_x2
     TORCH_CHECK(x2.dim() == 2, "x2 needs to be 2D, but got: ", x2.dim(), "D", OPS_ERROR(ErrCode::VALUE));
@@ -79,6 +80,28 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
         TORCH_CHECK(x3_real.scalar_type() == output_dtype, "x3 with dtype ", x3_real.scalar_type(),
                     " doesn't match the output dtype ", output_dtype, OPS_ERROR(ErrCode::PARAM));
     }
+
+    // check pertoken_scale dtype and shape
+    if (pertoken_scale.has_value()) {
+        TORCH_CHECK((dequant_scale.has_value()),
+                    "when has pertoken_scale, dequantScale shoulden't be null", OPS_ERROR(ErrCode::TYPE));
+        
+        const at::Tensor &pertoken_scale_real = pertoken_scale.value();
+        TORCH_CHECK(pertoken_scale_real.dim() == 1, "pertoken_scale with shape ", pertoken_scale_real.sizes(),
+                    " pertoken_scale dim should be 1.", OPS_ERROR(ErrCode::PARAM));
+        
+        auto x1_size = op_infer::array_to_small_vector(x1.sizes());
+        int64_t x1_m = 1;
+        for (int dim = 0; dim < x1.dim() - 1; dim++) {
+            x1_m *= x1_size[dim];
+        }
+        TORCH_CHECK(x1_m == pertoken_scale_real.size(0), "pertoken_scale with shape ", pertoken_scale_real.sizes(),
+                    " doesn't match the input shape ", x1_size, OPS_ERROR(ErrCode::PARAM));
+
+        TORCH_CHECK(pertoken_scale_real.scalar_type() == at::ScalarType::Float,
+                    "pertoken_scale with dtype ", pertoken_scale_real.scalar_type(),
+                    " doesn't match the output dtype ", at::ScalarType::Float, OPS_ERROR(ErrCode::PARAM));
+    }
 }
 
 at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c10::string_view hcom,
@@ -86,9 +109,10 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c1
                                   const c10::optional<at::Tensor> &antiquant_scale,
                                   const c10::optional<at::Tensor> &antiquant_offset,
                                   const c10::optional<at::Tensor> &x3, const c10::optional<at::Tensor> &dequant_scale,
+                                  const c10::optional<at::Tensor> &pertoken_scale,
                                   int64_t antiquant_group_size, int64_t comm_turn)
 {
-    check_params(x1, x2, antiquant_scale, antiquant_offset, x3, dequant_scale);
+    check_params(x1, x2, antiquant_scale, antiquant_offset, x3, dequant_scale, pertoken_scale);
     // size of last dim of output should be the same as size of last dim of x2
     auto output_size = op_infer::array_to_small_vector(x1.sizes());
     output_size[x1.dim() - 1] = x2.size(1);
@@ -113,8 +137,14 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c1
     }
     if (isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
         const at::Tensor &dequant_scale_real = dequant_scale.value_or(at::Tensor());
-        EXEC_NPU_CMD(aclnnQuantMatmulAllReduce, x1, x2, bias_real, x3_real, dequant_scale_real, hcom_ptr,
-                     reduce_op_ptr, comm_turn, stream_mode, result);
+        if (pertoken_scale.has_value()) {
+            const at::Tensor &pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
+            EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV2, x1, x2, bias_real, x3_real, dequant_scale_real,
+                         pertoken_scale_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, result);
+        } else {
+            EXEC_NPU_CMD(aclnnQuantMatmulAllReduce, x1, x2, bias_real, x3_real, dequant_scale_real, hcom_ptr,
+                         reduce_op_ptr, comm_turn, stream_mode, result);
+        }
     }
     if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
         const at::Tensor &antiquant_scale_real = antiquant_scale.value_or(at::Tensor());

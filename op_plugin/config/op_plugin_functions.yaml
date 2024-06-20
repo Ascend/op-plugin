@@ -4537,7 +4537,7 @@ custom:
     impl_ns: op_api, op_api, op_api, op_api, op_api, op_api
     version: 1,11, 2.0, 2.1, 2.2, 2.3, 2.4
     kernel: op_api/KernelNpuOpApi.cpp
-  - func: npu_mm_all_reduce_base(Tensor x1, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? x3=None, Tensor? dequant_scale=None, int antiquant_group_size=0, int comm_turn=0) -> Tensor
+  - func: npu_mm_all_reduce_base(Tensor x1, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? x3=None, Tensor? dequant_scale=None, Tensor? pertoken_scale=None, int antiquant_group_size=0, int comm_turn=0) -> Tensor
     impl_ns: op_api, op_api, op_api, op_api, op_api, op_api
     version: 1,11, 2.0, 2.1, 2.2, 2.3, 2.4
     kernel: op_api/KernelNpuOpApi.cpp
