@@ -26,9 +26,9 @@ typedef void(*AddTensorAddrToCachedList) (void *addr);
 
 static std::vector<std::string> split_str(std::string s, const std::string &del)
 {
-    int end = s.find(del);
+    size_t end = s.find(del);
     std::vector<std::string> path_list;
-    while (end != -1) {
+    while (end != std::string::npos) {
         path_list.push_back(s.substr(0, end));
         s.erase(s.begin(), s.begin() + end + 1);
         end = s.find(del);
