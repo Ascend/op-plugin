@@ -94,8 +94,10 @@ at::Tensor dropout_gen_mask_impl(const at::Tensor &query, double keep_prob, int6
     at::Scalar probScalar;
     if (query.scalar_type() == at::kHalf) {
         probScalar = at::Scalar(at::Half(1.0)- at::Half(keep_prob));
-    } else {
+    } else if (query.scalar_type() == at::kBFloat16) {
         probScalar = at::Scalar(at::BFloat16(1.0)- at::BFloat16(keep_prob));
+    } else {
+        probScalar = at::Scalar(float(1.0)- float(keep_prob));
     }
     prob = probScalar.toDouble();
     aclDataType probDataType = at_npu::native::OpPreparation::convert_to_acl_data_type(query.scalar_type());
