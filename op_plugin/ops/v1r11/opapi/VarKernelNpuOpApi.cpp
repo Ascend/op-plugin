@@ -66,7 +66,7 @@ std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, c10::optiona
     auto var = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options());
     auto mean = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options());
 
-    EXEC_NPU_CMD(aclnnVarMean, self, dims, real_correction, keepdim, mean, var);
-    return std::tuple<at::Tensor, at::Tensor>(mean, var);
+    EXEC_NPU_CMD(aclnnVarMean, self, dims, real_correction, keepdim, var, mean);
+    return std::tuple<at::Tensor, at::Tensor>(var, mean);
 }
 } // namespace op_api
