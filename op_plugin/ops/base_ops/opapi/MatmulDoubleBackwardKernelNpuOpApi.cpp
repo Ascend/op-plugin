@@ -91,7 +91,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> matmul_double_backward(const c10:
     }
 
     // strip added dim: (5,1)->(5)
-    if (other.dim() == 1 && other_grad.size(-1) == 1) {
+    if (other.dim() == 1 && other_grad.size(-1) == 1 && other_grad.dim() != 1) {
         other_grad = other_grad.squeeze(-1);
     }
 

@@ -120,6 +120,12 @@ class TestMatMul(TestCase):
         ]
         self.matmul_backward_result(shape_format)
 
+    def test_matmul_backward_shape_format_fp16_case10(self):
+        shape_format = [
+            [[np.float16, 2, [9, 1]], [np.float16, 2, [1]]],
+        ]
+        self.matmul_backward_result(shape_format)
+
     def test_matmul_allow_hf32(self):
         torch.npu.matmul.allow_hf32 = True
         shape_format = [
