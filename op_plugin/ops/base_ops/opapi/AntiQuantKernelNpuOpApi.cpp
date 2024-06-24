@@ -28,8 +28,8 @@ at::Tensor npu_anti_quant(const at::Tensor &x, const at::Tensor &scale, const c1
     }
 
     at::ScalarType src_type = c10::value_or_else(src_dtype, [] {return at::ScalarType::Char;});
-    if (src_type != at::ScalarType::Char && src_type != at::ScalarType::QUInt4x2) {
-        TORCH_CHECK(false, "src_dtype must be Int8 or Int4" + OPS_ERROR(ErrCode::TYPE));
+    if (src_type != at::ScalarType::Char) {
+        TORCH_CHECK(false, "src_dtype must be Int8" + OPS_ERROR(ErrCode::TYPE));
     }
 
     at::ScalarType dst_type = c10::value_or_else(dst_dtype, [] {return at::ScalarType::Half;});
