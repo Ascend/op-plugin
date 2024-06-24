@@ -70,6 +70,7 @@ extern const std::vector<std::string> g_custom_lib_path;
 extern const std::vector<std::string> g_default_custom_lib_path;
 
 std::string real_path(const std::string &path);
+bool checkOwner(string cusLibPath);
 
 #define GET_OP_API_FUNC(apiName) reinterpret_cast<_##apiName>(GetOpApiFuncAddr(#apiName))
 
@@ -133,6 +134,10 @@ inline void *GetOpApiFuncAddr(const char *apiName)
                 auto funcAddr =
                     GetOpApiFuncAddrInLib(custOpApiHandler, GetCustOpApiLibName(), apiName);
                 if (funcAddr != nullptr) {
+                    // check owner
+                    if (!checkOwner(cust_opapi_lib)) {
+                        continue;
+                    }
                     ASCEND_LOGI("%s is found in %s.", apiName, cust_opapi_lib.c_str());
                     return funcAddr;
                 }
@@ -152,6 +157,10 @@ inline void *GetOpApiFuncAddr(const char *apiName)
                 auto funcAddr =
                     GetOpApiFuncAddrInLib(custOpApiHandler, GetCustOpApiLibName(), apiName);
                 if (funcAddr != nullptr) {
+                    // check owner
+                    if (!checkOwner(default_cust_opapi_lib)) {
+                        continue;
+                    }
                     ASCEND_LOGI("%s is found in %s.", apiName, default_cust_opapi_lib.c_str());
                     return funcAddr;
                 }
