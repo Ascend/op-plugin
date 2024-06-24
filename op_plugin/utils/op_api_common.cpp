@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <pwd.h>
+#include <sys/stat.h>
 #include "op_api_common.h"
 
 thread_local char g_hash_buf[g_hash_buf_size];
@@ -20,9 +22,28 @@ thread_local int g_hash_offset = 0;
 constexpr int g_rShift33Bits = 33;
 constexpr uint64_t MIX_STEP1 = 18397679294719823053LLU;
 constexpr uint64_t MIX_STEP2 = 14181476777654086739LLU;
+constexpr int OWNER_ROOT_UID = 0;
 
 
 typedef void(*AddTensorAddrToCachedList) (void *addr);
+
+bool checkOwner(string cusLibPath)
+{
+    struct stat fileInfo;
+    stat(cusLibPath.c_str(), &fileInfo);
+    auto cusLibOwnerUid = fileInfo.st_uid;
+    auto curOwnerUid = getuid();
+    if (curOwnerUid != OWNER_ROOT_UID && cusLibOwnerUid == OWNER_ROOT_UID) {
+        TORCH_NPU_WARN_ONCE("A common user is using the files of the root user.");
+        return true;
+    } else if ((curOwnerUid == OWNER_ROOT_UID && cusLibOwnerUid != OWNER_ROOT_UID) ||
+            (curOwnerUid != OWNER_ROOT_UID && (curOwnerUid != cusLibOwnerUid))) {
+        TORCH_NPU_WARN_ONCE("The ", cusLibPath,
+            " owner does not match current owner or the root user is using the files of a common user, will skip this file.");
+        return false;
+    }
+    return true;
+}
 
 static std::vector<std::string> split_str(std::string s, const std::string &del)
 {
