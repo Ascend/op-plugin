@@ -101,8 +101,8 @@ namespace op_api {
         // compute rotate
         auto triangle = at::empty_like(theta);
 
-        int64_t out_n = ((plan_key.plan_mode == PlanMode::r2c) && (index == (factors.size() - 1)))? (factor / 2) + 1 : factor;
-        int64_t out_complex = ((plan_key.plan_mode == PlanMode::c2r) && (index == (factors.size() - 1))) ? static_cast<int64_t>(1) : static_cast<int64_t>(2);
+        int64_t out_n = ((plan_key.plan_mode == PlanMode::r2c) && (index == static_cast<int64_t>(factors.size() - 1)))? (factor / 2) + 1 : factor;
+        int64_t out_complex = ((plan_key.plan_mode == PlanMode::c2r) && (index == static_cast<int64_t>(factors.size() - 1))) ? static_cast<int64_t>(1) : static_cast<int64_t>(2);
         int64_t in_n = factor;
         int64_t in_complex = ((plan_key.plan_mode == PlanMode::r2c || plan_key.plan_mode == PlanMode::r2c_bothside) && (index == 0)) ? static_cast<int64_t>(1) : static_cast<int64_t>(2);
         
