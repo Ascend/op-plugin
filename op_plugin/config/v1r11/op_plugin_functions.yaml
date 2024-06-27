@@ -1922,6 +1922,10 @@ official:
    impl_ns: acl_op
  - func: _amp_update_scale_(Tensor(a!) self, Tensor(b!) growth_tracker, Tensor found_inf, float growth_factor, float backoff_factor, int growth_interval) -> Tensor(a!)
    impl_ns: op_api
+ - func: _foreach_abs_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_abs(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
 
 symint:
 
@@ -1939,8 +1943,6 @@ tocpu:
   - _fft_c2c
   - _fft_c2c.out
   - _foreach_zero_
-  - _foreach_abs
-  - _foreach_abs_
   - _foreach_acos
   - _foreach_acos_
   - _foreach_asin

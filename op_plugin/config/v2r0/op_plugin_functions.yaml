@@ -1854,6 +1854,10 @@ official:
    impl_ns: acl_op
  - func: view_as_complex(Tensor(a) self) -> Tensor(a)
    impl_ns: acl_op
+ - func: _foreach_abs_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_abs(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1890,8 +1894,6 @@ tocpu:
   - _fft_c2c
   - _fft_c2c.out
   - _foreach_zero_
-  - _foreach_abs
-  - _foreach_abs_
   - _foreach_acos
   - _foreach_acos_
   - _foreach_asin
