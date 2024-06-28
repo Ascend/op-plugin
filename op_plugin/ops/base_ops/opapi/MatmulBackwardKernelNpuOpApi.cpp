@@ -87,101 +87,101 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tenso
 at::Tensor matmul_mat1_backward(const at::Tensor self,
                                 const at::Tensor other,
                                 const at::Tensor grad_output) {
-  /*mat1_grad = grad * mat2^T*/
-  at::Tensor mat1 = self;
-  at::Tensor mat2 = other;
-  at::Tensor grad = grad_output;
+    /*mat1_grad = grad * mat2^T*/
+    at::Tensor mat1 = self;
+    at::Tensor mat2 = other;
+    at::Tensor grad = grad_output;
 
-  // strip mat: (1, 1, m, n)-> (m, n)
-  while (mat1.dim() > 2 && mat1.size(0) == 1) {
-    mat1 = mat1.squeeze(0);
-  }
-  // unsqueese: (5)*(5)^ -> (1*5)*(1,5)^
-  if (mat2.dim() == 1) {
-    mat2 = mat2.unsqueeze(-1);
-    grad = grad.unsqueeze(-1);
-  }
-  if (mat1.dim() == 1) {
-    mat1 = mat1.unsqueeze(0);
-    grad = grad.unsqueeze(-2);
-  }
-  at::Tensor output;
-  if (mat1.dim() == 2 && mat2.dim() > 2) { // mm
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(mat1.sizes(), grad.options());
-    mat2 = mat2.transpose(-2, -1);
-    mat2 = mat2.reshape({-1, mat2.size(-1)});
-    grad = grad.view({grad.size(-2), -1});
-    matmul_implement_npu(output, grad, mat2);
-    output = output.reshape(self.sizes());
-  } else { // bmm
-    mat2 = mat2.transpose(-2, -1);
-    auto expend_sizes = get_output_size(grad, mat2);
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(expend_sizes, grad.options());
-    matmul_implement_npu(output, grad, mat2);
-  }
-  return output;
+    // strip mat: (1, 1, m, n)-> (m, n)
+    while (mat1.dim() > 2 && mat1.size(0) == 1) {
+        mat1 = mat1.squeeze(0);
+    }
+    // unsqueese: (5)*(5)^ -> (1*5)*(1,5)^
+    if (mat2.dim() == 1) {
+        mat2 = mat2.unsqueeze(-1);
+        grad = grad.unsqueeze(-1);
+    }
+    if (mat1.dim() == 1) {
+        mat1 = mat1.unsqueeze(0);
+        grad = grad.unsqueeze(-2);
+    }
+    at::Tensor output;
+    if (mat1.dim() == 2 && mat2.dim() > 2) { // mm
+        output = at_npu::native::OpPreparation::apply_tensor_without_format(mat1.sizes(), grad.options());
+        mat2 = mat2.transpose(-2, -1);
+        mat2 = mat2.reshape({-1, mat2.size(-1)});
+        grad = grad.view({grad.size(-2), -1});
+        matmul_implement_npu(output, grad, mat2);
+        output = output.reshape(self.sizes());
+    } else { // bmm
+        mat2 = mat2.transpose(-2, -1);
+        auto expend_sizes = get_output_size(grad, mat2);
+        output = at_npu::native::OpPreparation::apply_tensor_without_format(expend_sizes, grad.options());
+        matmul_implement_npu(output, grad, mat2);
+    }
+    return output;
 }
 
 at::Tensor matmul_mat2_backward(const at::Tensor self,
                                 const at::Tensor other,
                                 const at::Tensor grad_output) {
-  /*mat2_grad = mat1^T * grad*/
-  at::Tensor mat1 = self;
-  at::Tensor mat2 = other;
-  at::Tensor grad = grad_output;
-  // strip mat: (1, 1, m, n)-> (m, n)
-  while (mat2.dim() > 2 && mat2.size(0) == 1) {
-    mat2 = mat2.squeeze(0);
-  }
-  // unsqueese: (5)*(5)^ -> (1*5)*(1,5)^
-  if (mat2.dim() == 1) {
-    mat2 = mat2.unsqueeze(-1);
-    grad = grad.unsqueeze(-1);
-  }
-  if (mat1.dim() == 1) {
-    mat1 = mat1.unsqueeze(0);
-    grad = grad.unsqueeze(-2);
-  }
-  at::Tensor output;
-  if (mat2.dim() == 2 && mat1.dim() > 2) { // mm
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(mat2.sizes(), mat1.options());
-    mat1 = mat1.reshape({-1, mat1.size(-1)});
-    grad = grad.reshape({-1, grad.size(-1)});
-    mat1 = mat1.transpose(-2, -1);
-    matmul_implement_npu(output, mat1, grad);
-    output = output.reshape(other.sizes());
-  } else { // bmm
-    mat1 = mat1.transpose(-2, -1);
-    auto expend_sizes = get_output_size(mat1, grad);
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(expend_sizes, mat1.options());
-    matmul_implement_npu(output, mat1, grad);
-  }
-  return output;
+    /*mat2_grad = mat1^T * grad*/
+    at::Tensor mat1 = self;
+    at::Tensor mat2 = other;
+    at::Tensor grad = grad_output;
+    // strip mat: (1, 1, m, n)-> (m, n)
+    while (mat2.dim() > 2 && mat2.size(0) == 1) {
+        mat2 = mat2.squeeze(0);
+    }
+    // unsqueese: (5)*(5)^ -> (1*5)*(1,5)^
+    if (mat2.dim() == 1) {
+        mat2 = mat2.unsqueeze(-1);
+        grad = grad.unsqueeze(-1);
+    }
+    if (mat1.dim() == 1) {
+        mat1 = mat1.unsqueeze(0);
+        grad = grad.unsqueeze(-2);
+    }
+    at::Tensor output;
+    if (mat2.dim() == 2 && mat1.dim() > 2) { // mm
+        output = at_npu::native::OpPreparation::apply_tensor_without_format(mat2.sizes(), mat1.options());
+        mat1 = mat1.reshape({-1, mat1.size(-1)});
+        grad = grad.reshape({-1, grad.size(-1)});
+        mat1 = mat1.transpose(-2, -1);
+        matmul_implement_npu(output, mat1, grad);
+        output = output.reshape(other.sizes());
+    } else { // bmm
+        mat1 = mat1.transpose(-2, -1);
+        auto expend_sizes = get_output_size(mat1, grad);
+        output = at_npu::native::OpPreparation::apply_tensor_without_format(expend_sizes, mat1.options());
+        matmul_implement_npu(output, mat1, grad);
+    }
+    return output;
 }
 
 std::tuple<at::Tensor, at::Tensor> matmul_backward(const at::Tensor &grad,
                                                    const at::Tensor &self,
                                                    const at::Tensor &other,
                                                    std::array<bool, 2> grad_input_mask) {
-  if (!grad.defined()) {
-    return std::make_tuple(at::Tensor(), at::Tensor());
-  }
-  // backward mat1 and mat2 separately
-  at::Tensor self_grad;
-  at::Tensor other_grad;
-  if (grad_input_mask[1]) {
-    other_grad = matmul_mat2_backward(self, other, grad);
-  }
+    if (!grad.defined()) {
+        return std::make_tuple(at::Tensor(), at::Tensor());
+    }
+    // backward mat1 and mat2 separately
+    at::Tensor self_grad;
+    at::Tensor other_grad;
+    if (grad_input_mask[1]) {
+        other_grad = matmul_mat2_backward(self, other, grad);
+    }
 
-  if (grad_input_mask[0]) {
-    self_grad = matmul_mat1_backward(self, other, grad);
-  }
+    if (grad_input_mask[0]) {
+        self_grad = matmul_mat1_backward(self, other, grad);
+    }
 
-  // strip added dim: (5,1)->(5)
-  if (other.dim() == 1 && other_grad.size(-1) == 1) {
-    other_grad = other_grad.squeeze(-1);
-  }
-  return std::make_tuple(self_grad, other_grad);
+    // strip added dim: (5,1)->(5)
+    if (other.dim() == 1 && other_grad.size(-1) == 1 && other_grad.dim() != 1) {
+        other_grad = other_grad.squeeze(-1);
+    }
+    return std::make_tuple(self_grad, other_grad);
 }
 
 } // namespace op_api

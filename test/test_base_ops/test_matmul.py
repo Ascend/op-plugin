@@ -136,7 +136,6 @@ class TestMatMul(TestCase):
         self.matmul_backward_result(shape_format)
         torch.npu.matmul.allow_hf32 = False
 
-
 if __name__ == "__main__":
     np.random.seed(1234)
     run_tests()
