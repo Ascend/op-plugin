@@ -25,9 +25,9 @@ at::Tensor& polar_out(const at::Tensor& abs, const at::Tensor& angle, at::Tensor
     auto abs_cpu = abs.cpu();
     auto angle_cpu = angle.cpu();
     auto result_cpu = result.cpu();
-    result_cpu = at::polar_out(abs_cpu, angle_cpu, result_cpu);
+    result_cpu = at::polar_out(result_cpu, abs_cpu, angle_cpu);
 
-    result = result_cpu.to(result.device());
+    result.copy_(result_cpu.to(result.device()));
     return result;
 }
 
