@@ -17,11 +17,13 @@
 #define OP_PULGIN_UTILS_CALCULATE_OP_UTILS
 
 #include <ATen/ATen.h>
+
 #include "op_plugin/utils/OpConstants.h"
 #include "op_plugin/utils/Export.h"
 
 namespace op_plugin {
 namespace utils {
+using NameVector = c10::SmallVector<at::Dimname, at::kDimVectorStaticSize>;
 OP_PLUGIN_HIDDEN std::string get_reduction_str(int64_t reduction);
 OP_PLUGIN_HIDDEN int64_t make_warp_dim(int64_t dim, int64_t dim_post_expr);
 OP_PLUGIN_HIDDEN bool is_transpose_last_two_dims(const at::Tensor &tensor);
@@ -35,6 +37,7 @@ OP_PLUGIN_HIDDEN c10::optional<double> get_scale_value(c10::optional<c10::ArrayR
 OP_PLUGIN_HIDDEN at::ScalarType get_divide_result_type(const at::Tensor& self, const at::Tensor& other);
 OP_PLUGIN_HIDDEN at::ScalarType get_divide_calculate_type(const at::Tensor& self, const at::Tensor& other);
 OP_PLUGIN_HIDDEN at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type);
+OP_PLUGIN_HIDDEN NameVector compute_names_npu(std::vector<at::Tensor> tensor_list);
 }  // namespace utils
 }  // namespace op_plugin
 

@@ -3,7 +3,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestAngle(TestCase):
@@ -48,6 +48,7 @@ class TestAngle(TestCase):
             npu_output = self.npu_op_exec(npu_input1)
             self.assertRtolEqual(cpu_output, npu_output)
     
+    @SupportedDevices(['Ascend910B'])
     def test_angle_common_shape_format_complex64(self):
         format_list = [0]
         shape_list = [[2, 9], [2, 13, 4], [32, 64, 128, 3]]
@@ -89,6 +90,7 @@ class TestAngle(TestCase):
             npu_output = self.npu_op_exec_out(npu_input1, npu_input2)
             self.assertRtolEqual(cpu_output, npu_output)
 
+    @SupportedDevices(['Ascend910B'])
     def test_angle_out_common_shape_format_complex64(self):
         format_list = [0]
         shape_list = [[2, 9], [2, 13, 4], [32, 64, 128, 3]]

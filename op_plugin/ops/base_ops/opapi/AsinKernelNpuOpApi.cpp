@@ -28,20 +28,22 @@ at::Tensor& asin_out(const at::Tensor& self, at::Tensor& result)
     auto output_size = self.sizes();
     npu_preparation::check_tensor({self}, result, result.scalar_type(), output_size);
     EXEC_NPU_CMD(aclnnAsin, self, result);
+    at::namedinference::propagate_names(result, self);
     return result;
 }
 
 at::Tensor asin(const at::Tensor& self)
 {
-  DO_COMPATIBILITY(aclnnAsin, acl_op::asin(self));
-  auto output_size = self.sizes();
-  auto out_dtype = self.dtype();
-  if (isIntegralType(self.scalar_type(), true)) {
-    out_dtype = at::kFloat;
-  }
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(out_dtype));
-  EXEC_NPU_CMD(aclnnAsin, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnAsin, acl_op::asin(self));
+    auto output_size = self.sizes();
+    auto out_dtype = self.dtype();
+    if (isIntegralType(self.scalar_type(), true)) {
+        out_dtype = at::kFloat;
+    }
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(out_dtype));
+    EXEC_NPU_CMD(aclnnAsin, self, result);
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 at::Tensor& asin_(at::Tensor& self)

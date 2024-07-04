@@ -28,19 +28,21 @@ at::Tensor& atan_out(const at::Tensor& self, at::Tensor& result)
     auto outputSize = self.sizes();
     npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
     EXEC_NPU_CMD(aclnnAtan, self, result);
+    at::namedinference::propagate_names(result, self);
     return result;
 }
 
 at::Tensor atan(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnAtan, acl_op::atan(self));
-  auto outputSize = self.sizes();
-  auto outDtype = self.dtype();
-  if (isIntegralType(self.scalar_type(), true)) {
-    outDtype = at::kFloat;
-  }
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(outDtype));
-  EXEC_NPU_CMD(aclnnAtan, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnAtan, acl_op::atan(self));
+    auto outputSize = self.sizes();
+    auto outDtype = self.dtype();
+    if (isIntegralType(self.scalar_type(), true)) {
+        outDtype = at::kFloat;
+    }
+    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(outDtype));
+    EXEC_NPU_CMD(aclnnAtan, self, result);
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 at::Tensor& atan_(at::Tensor& self)

@@ -65,6 +65,7 @@ at::Tensor index_fill(const at::Tensor& self, int64_t dim, const at::Tensor& ind
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
 
     EXEC_NPU_CMD(aclnnIndexFillTensor, self, dim, index_array, value_scalar, result);
+    at::namedinference::propagate_names(result, self);
     return result;
 }
 
@@ -94,7 +95,7 @@ at::Tensor index_fill(const at::Tensor& self, int64_t dim, const at::Tensor& ind
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
 
     EXEC_NPU_CMD(aclnnIndexFillTensor, self, dim, index_array, value, result);
+    at::namedinference::propagate_names(result, self);
     return result;
 }
-
 }  // namespace op_api

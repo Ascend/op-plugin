@@ -11039,3 +11039,6 @@ round_decimals_3:
 round_decimals_neg_3:
   test_backward:
   - float32
+_refs.select_scatter:
+  test_neg_view:
+  - float64

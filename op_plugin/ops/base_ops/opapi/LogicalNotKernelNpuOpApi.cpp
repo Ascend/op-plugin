@@ -21,23 +21,25 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& logical_not_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnLogicalNot, acl_op::logical_not_out(self, result));
-  auto resultDtype = result.scalar_type();
-  npu_preparation::check_tensor({self}, result, resultDtype, self.sizes());
-  EXEC_NPU_CMD(aclnnLogicalNot, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnLogicalNot, acl_op::logical_not_out(self, result));
+    auto resultDtype = result.scalar_type();
+    npu_preparation::check_tensor({self}, result, resultDtype, self.sizes());
+    EXEC_NPU_CMD(aclnnLogicalNot, self, result);
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 at::Tensor logical_not(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnLogicalNot, acl_op::logical_not(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kBool));
-  EXEC_NPU_CMD(aclnnLogicalNot, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnLogicalNot, acl_op::logical_not(self));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kBool));
+    EXEC_NPU_CMD(aclnnLogicalNot, self, result);
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 at::Tensor& logical_not_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceLogicalNot, acl_op::logical_not_(self));
-  EXEC_NPU_CMD(aclnnInplaceLogicalNot, self);
-  return self;
+    DO_COMPATIBILITY(aclnnInplaceLogicalNot, acl_op::logical_not_(self));
+    EXEC_NPU_CMD(aclnnInplaceLogicalNot, self);
+    return self;
 }
 }  // namespace op_api

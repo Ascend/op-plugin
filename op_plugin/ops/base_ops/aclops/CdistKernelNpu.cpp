@@ -93,6 +93,17 @@ at::Tensor _cdist_forward(const at::Tensor &x1, const at::Tensor &x2, const doub
 
 at::Tensor cdist(const at::Tensor &x1, const at::Tensor &x2, const double p, c10::optional<int64_t> compute_mode)
 {
+    if (x1.has_names() || x2.has_names()) {
+        auto maybe_outnames = at::namedinference::compute_cdist_outnames(x1, x2);
+        // aten::view do not support named tensor now,
+        // therefore we have to drop names for x1 and x2
+        at::Tensor x1_no_name = npu_preparation::apply_tensor(x1);
+        at::Tensor x2_no_name = npu_preparation::apply_tensor(x2);
+        auto result = at::_cdist_forward(x1_no_name, x2_no_name, p, compute_mode);
+        at::namedinference::propagate_names_if_nonempty(result, maybe_outnames);
+        return result;
+    }
+
     return at::_cdist_forward(x1, x2, p, compute_mode);
 }
 } // namespace acl_op

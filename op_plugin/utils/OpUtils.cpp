@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/NamedTensorUtils.h>
+
 #include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
@@ -182,5 +184,32 @@ at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type)
   self_cast = at_npu::native::OpPreparation::CastBackToOriFormat(self_cast);
   return self_cast;
 }
+
+NameVector compute_names_npu(std::vector<at::Tensor> tensor_list)
+{
+    NameVector names;
+    bool has_names = false;
+
+    for (auto tensor : tensor_list) {
+        if (tensor.has_names()) {
+            has_names = true;
+            break;
+        }
+    }
+
+    if (!has_names) {
+        return names;
+    }
+
+    for (auto tensor : tensor_list) {
+        if (names.empty()) {
+            names = tensor.names();
+        } else {
+            names = NameVector(at::unify_from_right(names, tensor.names()));
+        }
+    }
+    return names;
+}
+
 }  // namespace utils
 }  // namespace op_plugin

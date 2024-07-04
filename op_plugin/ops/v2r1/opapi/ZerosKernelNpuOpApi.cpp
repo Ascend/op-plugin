@@ -43,13 +43,15 @@ at::Tensor zeros(
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
-  DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros(size, names, dtype_opt, layout_opt, device_opt, pin_memory_opt));
-  at::TensorOptions option = option.dtype(dtype_opt)
-                                  .layout(layout_opt)
-                                  .device(device_opt)
-                                  .pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(size, option);
-  return result.zero_();
+    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros(size, names, dtype_opt, layout_opt, device_opt, pin_memory_opt));
+    at::TensorOptions option = option.dtype(dtype_opt)
+                                    .layout(layout_opt)
+                                    .device(device_opt)
+                                    .pinned_memory(pin_memory_opt);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(size, option);
+    auto maybe_name = names.value_or(at::ArrayRef<at::Dimname>{});
+    at::namedinference::propagate_names_if_nonempty(result, maybe_name);
+    return result.zero_();
 }
 
 } // namespace op_api
