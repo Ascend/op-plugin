@@ -3370,34 +3370,29 @@ PyTorch 1.11与2.0版本：
 npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[] bias, Tensor[] scale, Tensor[] offset, Tensor[] antiquant_scale, Tensor[] antiquant_offset, int[]? group_list=None, int? split_item=0, ScalarType? output_dtype=None) -> Tensor[]
 
 参数说明:
-x：必选参数，Device侧的TensorList，即输入参数中的x，在Ascend910B与Ascend910C上数据类型支持FLOAT16、BFLOAT16、INT8、FLOAT32，数据格式支持ND，在Ascend310P上数据类型支持FLOAT16，数据格式支持ND，支持的最大长度为128个，其中每个Tensor在split_item=0的模式下支持输入2至6维，其余模式下支持输入为2维。
-weight：必选参数，Device侧的TensorList，即输入参数中matmul的weight输入，在Ascend910B与Ascend910C上数据类型支持FLOAT16、BFLOAT16、INT8、FLOAT32，数据格式支持ND，在Ascend310P上数据类型支持FLOAT16，数据格式支持FRACTAL_NZ，支持的最大长度为128个，其中每个Tensor支持输入为2维。
-bias：在PyTorch 1.11与2.0版本中是必选参数，在PyTorch 2.1与更高的版本中是可选参数，Device侧的TensorList，即输入参数中matmul的bias输入，在Ascend910B与Ascend910C上数据类型支持FLOAT16、FLOAT32、INT32，数据格式支持ND，在Ascend310P上数据类型支持FLOAT16，数据格式支持ND，支持的最大长度为128个，其中每个Tensor支持输入为1维。
-scale：可选参数，Device侧的TensorList，代表量化参数中的缩放因子，目前仅支持Ascend910B与Ascend910C，数据类型支持INT64，数据格式支持ND，长度与weight相同。
-offset：可选参数，Device侧的TensorList，代表量化参数中的偏移量，目前仅支持Ascend910B与Ascend910C，数据类型支持FLOAT32，数据格式支持ND，长度与weight相同。
-antiquantScale：可选参数，Device侧的TensorList，代表伪量化参数中的缩放因子，目前仅支持Ascend910B与Ascend910C，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，长度与weight相同。
-antiquantOffset：可选参数，Device侧的TensorList，代表伪量化参数中的偏移量，目前仅支持Ascend910B与Ascend910C，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，长度与weight相同。
-group_list：可选参数，Host侧的IntArray类型，是切分的索引，代表输入和输出M方向的matmul索引情况，数据类型支持INT64，数据格式支持ND，支持输入为1维，支持的最大长度为128个，默认为空。
-split_item：可选属性，Int类型，切分模式的说明，数据类型支持INT32，可取的值有4个：0和1表示输出为多Tensor，2和3表示输出为单Tensor。默认值为0。
-output_dtype：可选属性，ScalarType类型，用于指定输出的数据类型，默认值为None，表明输出与输入是同一数据类型。
+- x：必选参数，Device侧的TensorList，即输入参数中的x，数据类型支持FLOAT16、BFLOAT16、INT8；数据格式支持ND，支持的最大长度为128个，其中每个Tensor在split_item=0的模式下支持输入2至6维，其余模式下支持输入为2维。
+- weight：必选参数，Device侧的TensorList，即输入参数中matmul的weight输入，数据类型支持FLOAT16、BFLOAT16、INT8；数据格式支持ND，支持的最大长度为128个，其中每个Tensor支持输入为2维。
+- bias：在PyTorch 1.11与2.0版本中是必选参数，在PyTorch 2.1与更高的版本中是可选参数，Device侧的TensorList，即输入参数中matmul的bias输入，数据类型支持FLOAT16、FLOAT32、INT32；数据格式支持ND，支持的最大长度为128个，其中每个Tensor支持输入为1维。
+- scale：可选参数，Device侧的TensorList，代表量化参数中的缩放因子，数据类型支持INT64，数据格式支持ND，长度与weight相同。
+- offset：可选参数，Device侧的TensorList，代表量化参数中的偏移量，数据类型支持FLOAT32，数据格式支持ND，长度与weight相同。
+- antiquant_scale：可选参数，Device侧的TensorList，代表伪量化参数中的缩放因子，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，长度与weight相同。
+- antiquant_offset：可选参数，Device侧的TensorList，代表伪量化参数中的偏移量，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，长度与weight相同。
 
 输出说明:
 Device侧的TensorList类型输出，代表GroupedMatmul的计算结果，当split_item取0或1时，其Tensor个数与weight相同，当split_item取2或3时，其Tensor个数为1。
 
 约束说明:
-若x为多Tensor，group_list可以为空；当x为单Tensor，group_list的长度与weight的Tensor个数相同。
-若bias不为空，其Tensor数量须与weight保持一致。
-记一个matmul计算涉及的x、weight与y的维度分别为(m×k)、(k×n)和(m×n)，则每一个matmul的输入与输出须满足[m, k]和[k, n]的k维度相等关系。
-非量化场景支持的输入类型为：
-x为FLOAT16、weight为FLOAT16、bias为FLOAT16、scale为空、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为FLOAT16；
-x为BFLOAT16、weight为BFLOAT16、bias为FLOAT32、scale为空、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为BFLOAT16（当前仅在Ascend910B与Ascend910C上支持）；
-x为FLOAT32、weight为FLOAT32、bias为FLOAT32、scale为空、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为FLOAT32（当前仅在Ascend910B与Ascend910C上支持）；
-当前仅在Ascend910B与Ascend910C上支持量化场景，支持的输入类型为：
-x为INT8、weight为INT8、bias为INT32、scale为UINT64、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为INT8；
-当前仅在Ascend910B与Ascend910C上支持伪量化场景，支持的输入类型为：
-x为FLOAT16、weight为INT8、bias为FLOAT16、scale为空，offset为空，antiquant_scale为FLOAT16、antiquant_offset为FLOAT16、output_dtype为FLOAT16；
-x为BFLOAT16、weight为INT8、bias为FLOAT32、scale为空，offset为空，antiquant_scale为BFLOAT16、antiquant_offset为BFLOAT16、output_dtype为BFLOAT16；
-对于实际无bias的场景，在PyTorch 1.11与2.0版本中，须手动指定“bias=[]”；在PyTorch 2.1及更高的版本中，可以直接不指定bias参数。scale、offset、antiquantScale、antiquantOffset四个参数在不同PyTorch版本中的约束与bias相同。
+1. 若x为多Tensor，group_list可以为空；当x为单Tensor，group_list的长度与weight的Tensor个数相同。
+2. 若bias不为空，其Tensor数量须与weight保持一致。
+3. 记一个matmul计算涉及的x、weight与y的维度分别为(m×k)、(k×n)和(m×n)，则每一个matmul的输入与输出须满足[m, k]和[k, n]的k维度相等关系。
+4. 非量化场景支持的输入类型为：
+    - x为FLOAT16、weight为FLOAT16、bias为FLOAT16、scale为空、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为FLOAT16；
+    - x为BFLOAT16、weight为BFLOAT16、bias为FLOAT32、scale为空、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为BFLOAT16；
+5. 量化场景支持的输入类型为：x为INT8、weight为INT8、bias为INT32、scale为UINT64、offset为空、antiquant_scale为空、antiquant_offset为空、output_dtype为INT8；
+6. 伪量化场景支持的输入类型为：
+    - x为FLOAT16、weight为INT8、bias为FLOAT16、scale为空，offset为空，antiquant_scale为FLOAT16、antiquant_offset为FLOAT16、output_dtype为FLOAT16；
+    - x为BFLOAT16、weight为INT8、bias为FLOAT32、scale为空，offset为空，antiquant_scale为BFLOAT16、antiquant_offset为BFLOAT16、output_dtype为BFLOAT16；
+7. 对于实际无bias的场景，在PyTorch 1.11与2.0版本中，须手动指定“bias=[]”；在PyTorch 2.1及更高的版本中，可以直接不指定bias参数。scale、offset、antiquantScale、antiquantOffset四个参数在不同PyTorch版本中的约束与bias相同。
 output_dtype的数据类型当前只支持None，或者与输入x的数据类型相同。
 
 支持的PyTorch版本:
@@ -3409,10 +3404,10 @@ PyTorch 1.11
 
 支持的型号:
 Atlas A2 训练系列产品
-昇腾910C AI处理器
-Atlas 推理系列产品（Ascend 310P处理器）
+Atlas A3 训练系列产品
 
 调用示例:
+
 # 单算子调用模式，Torch1.11、Torch2.0版本
 import torch
 import torch_npu
