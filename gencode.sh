@@ -20,16 +20,16 @@ CDIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 cd $CDIR/
 
-# Let ops in v2r2 be baseline currently.
 # Following updates only add incompatible ops files in corresponding branch folder.
-cp -nr $CDIR/op_plugin/ops/v2r2/* $CDIR/op_plugin/ops/v2r3/
-cp -nr $CDIR/op_plugin/ops/v2r3/* $CDIR/op_plugin/ops/v2r4/
-# Merge base info and version related info (unsupported ops)
-sed -i "1r $CDIR/test/unsupported_ops_info_base.yaml" $CDIR/test/test_v2r1_ops/unsupported_ops_info.yaml
-sed -i "1r $CDIR/test/unsupported_ops_info_base.yaml" $CDIR/test/test_v2r2_ops/unsupported_ops_info.yaml
-sed -i "1r $CDIR/test/unsupported_ops_info_base.yaml" $CDIR/test/test_v2r3_ops/unsupported_ops_info.yaml
-sed -i "1r $CDIR/test/unsupported_ops_info_base.yaml" $CDIR/test/test_v2r4_ops/unsupported_ops_info.yaml
-
+newest_minor_version=5
+for minor_version in $(seq 1 ${newest_minor_version}); do
+    # Merge base info and version related info (unsupported ops)
+    sed -i "1r test/unsupported_ops_info_base.yaml" test/test_v2r${minor_version}_ops/unsupported_ops_info.yaml
+    # Let ops in v2r2 be baseline currently.
+    if [ ${minor_version} -ge 2 ] && [ ${minor_version} -lt ${newest_minor_version} ]; then
+        cp -nr $CDIR/op_plugin/ops/v2r${minor_version}/* $CDIR/op_plugin/ops/v2r$((minor_version + 1))/
+    fi
+done
 
 PYTORCH_VERSION="$1"
 IFS='.' read -ra version_parts <<< "$PYTORCH_VERSION"

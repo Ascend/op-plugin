@@ -31,15 +31,15 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
    git clone https://gitee.com/ascend/op-plugin.git
    cd op-plugin
    ```
-   执行编译构建，当前支持昇腾pytorch 1.11/2.0/2.1/2.2/2.3/master版本
+   执行编译构建，当前支持昇腾pytorch 1.11/2.1/2.2/2.3/2.4/master版本
    ```
    bash ci/build.sh --python=3.8 --pytorch=v2.1.0
    ```
 
-   | 参数      | 取值范围                                   | 说明                  | 缺省值    | 备注                                |
-   |---------|----------------------------------------|---------------------|--------|-----------------------------------|
-   | pytorch | v1.11.0, v2.1.0, v2.2.0, v2.3.0 master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.4            |
-   | python  | 3.7, 3.8, 3.9, 3.10                    | 指定编译过程中使用的python版本  | 3.8    | 仅pytorch版本为1.11时才支持指定python版本为3.7 |
+   | 参数      | 取值范围                                            | 说明                  | 缺省值    | 备注                                |
+   |---------|-------------------------------------------------|---------------------|--------|-----------------------------------|
+   | pytorch | v1.11.0, v2.1.0, v2.2.0, v2.3.1, v2.4.0, master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.5            |
+   | python  | 3.7, 3.8, 3.9, 3.10                             | 指定编译过程中使用的python版本  | 3.8    | 仅pytorch版本为1.11时才支持指定python版本为3.7 |
 
    >编译过程中，会在插件根目录新建build文件夹，并下载昇腾pytorch对应版本的源码，协同编译。 若build/pytorch目录存在，则编译op-plugin时，不再重复下载昇腾pytorch源码。如需下载所依赖的最新昇腾pytorch源码，删除build/pytorch目录即可。
 
