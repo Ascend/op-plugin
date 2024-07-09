@@ -14,15 +14,46 @@
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/custom_functions/opapi/scalar_op_api.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::vector<at::Tensor> _foreach_add(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar &alpha)
+void _split_and_exec_npu_cmd_add(at::TensorList& tensors1, at::TensorList tensors2,
+                                 const at::Scalar& scalar, at::TensorList& result_list,
+                                 bool is_inplace)
+{
+    size_t tensor_count = tensors1.size();
+    size_t max_tensor_count = is_inplace ? 24 : 16;
+    size_t loop_time = tensor_count / max_tensor_count;
+
+    at::Scalar scalar_ = op_api::adaptToDouble(scalar, tensors1);
+
+    if (tensor_count <= max_tensor_count) {
+        EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, result_list);
+        return;
+    }
+    for (size_t i = 0; i < loop_time; i++) {
+        at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, max_tensor_count);
+        at::TensorList temp_tensors2(tensors2.data() + i * max_tensor_count, max_tensor_count);
+        at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
+        EXEC_NPU_CMD(aclnnForeachAddList, temp_tensors1, temp_tensors2, scalar_, temp_result);
+    }
+
+    size_t remaining_count = tensor_count % max_tensor_count;
+    if (remaining_count) {
+        at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
+        at::TensorList temp_tensors2(tensors2.data() + loop_time * max_tensor_count, remaining_count);
+        at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
+        EXEC_NPU_CMD(aclnnForeachAddList, temp_tensors1, temp_tensors2, scalar_, temp_result);
+    }
+}
+
+std::vector<at::Tensor> _foreach_add(at::TensorList tensors1,
+                                     at::TensorList tensors2, const at::Scalar& alpha)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at_npu::native::env::CheckJitDisable() ||
-        !at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
+    if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_add_list_kernel_slow(tensors1, tensors2, alpha);
     }
     // construct the output tensorlist of the NPU
@@ -30,45 +61,83 @@ std::vector<at::Tensor> _foreach_add(at::TensorList tensors1, at::TensorList ten
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : tensors1) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(
-            npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size,
+            tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 
-    // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
-    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type, tensors1[0].device());
-
-    EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, result_);
+    _split_and_exec_npu_cmd_add(tensors1, tensors2, alpha, result_, false);
     return result;
 }
 
-void _foreach_add_(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar &alpha)
+void _foreach_add_(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar& alpha)
 {
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at_npu::native::env::CheckJitDisable() ||
-        !at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
+    if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_add_list_kernel_slow_(tensors1, tensors2, alpha);
     }
-    // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
-    auto scalar_type = tensors1[0].scalar_type();
-    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type, tensors1[0].device());
 
-    EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, tensors1);
+    _split_and_exec_npu_cmd_add(tensors1, tensors2, alpha, tensors1, true);
     return;
+}
+
+void _split_and_exec_npu_cmd_add_scalarlist(at::TensorList& tensors1, at::ArrayRef<at::Scalar> scalars,
+                                            at::TensorList& result_list, bool is_inplace)
+{
+    size_t tensor_count = tensors1.size();
+    size_t max_tensor_count = is_inplace ? 48 : 24;
+
+    size_t loop_time = tensor_count / max_tensor_count;
+
+    if (tensor_count <= max_tensor_count) {
+        EXEC_NPU_CMD(aclnnForeachAddScalarList, tensors1, scalars, result_list);
+        return;
+    }
+    for (size_t i = 0; i < loop_time; i++) {
+        at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, max_tensor_count);
+        at::ArrayRef<at::Scalar> temp_scalars(scalars.data() + i * max_tensor_count, max_tensor_count);
+        at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
+        EXEC_NPU_CMD(aclnnForeachAddScalarList, temp_tensors1, temp_scalars, temp_result);
+    }
+
+    size_t remaining_count = tensor_count % max_tensor_count;
+    if (remaining_count) {
+        at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
+        at::ArrayRef<at::Scalar> temp_scalars(scalars.data() + loop_time * max_tensor_count, remaining_count);
+        at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
+        EXEC_NPU_CMD(aclnnForeachAddScalarList, temp_tensors1, temp_scalars, temp_result);
+    }
 }
 
 std::vector<at::Tensor> _foreach_add(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 {
     // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
     at::native::check_foreach_api_restrictions(tensors, scalars);
-    return at::native::foreach_tensor_add_scalarlist_kernel_slow(tensors, scalars);
+    if (!at::native::can_use_fast_route(tensors, scalars, true)) {
+        return at::native::foreach_tensor_add_scalarlist_kernel_slow(tensors, scalars);
+    }
+
+    auto scalar_type = tensors[0].scalar_type();
+    std::vector<at::Tensor> result;
+    for (const at::Tensor &tensor : tensors) {
+        auto output_size = op_infer::input_same_output_size(tensor);
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size,
+                                                                      tensor.options().dtype(scalar_type)));
+    }
+    at::TensorList result_ = at::TensorList(result);
+    _split_and_exec_npu_cmd_add_scalarlist(tensors, scalars, result_, false);
+    return result;
 }
 
 void _foreach_add_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 {
     // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
     at::native::check_foreach_api_restrictions(tensors, scalars);
-    return at::native::foreach_tensor_add_scalarlist_kernel_slow_(tensors, scalars);
-}
+    if (!at::native::can_use_fast_route(tensors, scalars, true)) {
+        at::native::foreach_tensor_add_scalarlist_kernel_slow_(tensors, scalars);
+        return;
+    }
 
-} // namespace op_api
+    _split_and_exec_npu_cmd_add_scalarlist(tensors, scalars, tensors, true);
+}
+}  // namespace op_api
