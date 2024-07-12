@@ -29,6 +29,9 @@ at::Tensor npu_mm_reduce_scatter_base(const at::Tensor &self, const at::Tensor &
     TORCH_CHECK(self.size(1) == x2.size(0),
                 "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
                 self.size(1), " and the K-axis of x2 is ", x2.size(0), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.size(1) >= 256 && self.size(1) < 65535,
+                "The K-axis should be in range [256, 65535), but the actual value is ",
+                self.size(1), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.size(0) % world_size == 0, "The M-axis in input of Matmul should be be divisible by world_size",
                 OPS_ERROR(ErrCode::PARAM));
     auto output_size = {self.size(0) / world_size, x2.size(1)};

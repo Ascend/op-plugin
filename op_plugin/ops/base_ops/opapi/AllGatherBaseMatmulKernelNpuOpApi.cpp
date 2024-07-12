@@ -45,6 +45,9 @@ std::tuple<at::Tensor, at::Tensor> npu_all_gather_base_mm(const at::Tensor &self
     TORCH_CHECK(self.size(1) == x2.size(0),
                 "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
                 self.size(1), " and the K-axis of x2 is ", x2.size(0), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.size(1) >= 256 && self.size(1) < 65535,
+                "The K-axis should be in range [256, 65535), but the actual value is ",
+                self.size(1), OPS_ERROR(ErrCode::PARAM));
     auto out_gather_mm_size = get_output_size_gather_mm(self, x2, world_size, gather_index);
     auto out_gather_size = get_output_size_gather(self, x2, world_size, gather_index);
     auto out_gather_mm = at_npu::native::OpPreparation::apply_tensor_without_format(out_gather_mm_size, self.options());
