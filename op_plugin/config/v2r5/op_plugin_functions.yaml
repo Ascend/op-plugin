@@ -1909,6 +1909,26 @@ official:
    impl_ns: op_api
  - func: _foreach_exp(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
+ - func: _foreach_expm1_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_expm1(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_log1p_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_log1p(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_log_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_log(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_log10_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_log10(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_log2_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_log2(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
  - func: _foreach_neg(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_neg_(Tensor(a!)[] self) -> ()

@@ -20,34 +20,35 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_calcu_util = at_npu::native::CalcuOpUtil;
 
-void _split_and_exec_npu_cmd_exp(const at::TensorList tensors1, at::TensorList result_list, bool is_inplace)
+void _split_and_exec_npu_cmd_log(at::TensorList tensors1, at::TensorList result_list, bool is_inplace)
 {
     size_t tensor_count = tensors1.size();
     size_t max_tensor_count = is_inplace ? 48 : 24;
+    
     size_t loop_time = tensor_count / max_tensor_count;
     if (tensor_count <= max_tensor_count) {
-        EXEC_NPU_CMD(aclnnForeachExp, tensors1, result_list);
+        EXEC_NPU_CMD(aclnnForeachLog, tensors1, result_list);
         return;
     }
     for (size_t i = 0; i < loop_time; i++) {
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, max_tensor_count);
         at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
-        EXEC_NPU_CMD(aclnnForeachExp, temp_tensors1, temp_result);
+        EXEC_NPU_CMD(aclnnForeachLog, temp_tensors1, temp_result);
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
     if (remaining_count) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
-        EXEC_NPU_CMD(aclnnForeachExp, temp_tensors1, temp_result);
+        EXEC_NPU_CMD(aclnnForeachLog, temp_tensors1, temp_result);
     }
 }
 
-void _foreach_exp_(const at::TensorList self)
+void _foreach_log_(const at::TensorList self)
 {
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
-        return at::native::foreach_tensor_exp_slow_(self);
+        return at::native::foreach_tensor_log_slow_(self);
     }
 
     if (self.empty()) {
@@ -55,15 +56,17 @@ void _foreach_exp_(const at::TensorList self)
     }
     auto scalar_type = self[0].scalar_type();
     TORCH_CHECK(scalar_type == at::ScalarType::Half || scalar_type == at::ScalarType::Float ||
-                scalar_type == at::ScalarType::BFloat16, "input must be half, float, or bfloat16");
-    _split_and_exec_npu_cmd_exp(self, self, true);
+                scalar_type == at::ScalarType::BFloat16, "input must be half, float or bfloat16");
+
+    _split_and_exec_npu_cmd_log(self, self, true);
 }
 
-std::vector<at::Tensor> _foreach_exp(const at::TensorList self)
+
+std::vector<at::Tensor> _foreach_log(const at::TensorList self)
 {
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
-        return at::native::foreach_tensor_exp_slow(self);
+        return at::native::foreach_tensor_log_slow(self);
     }
 
     auto scalar_type = self[0].scalar_type();
@@ -78,7 +81,7 @@ std::vector<at::Tensor> _foreach_exp(const at::TensorList self)
     }
     at::TensorList result_ = at::TensorList(result);
 
-    _split_and_exec_npu_cmd_exp(self, result_, false);
+    _split_and_exec_npu_cmd_log(self, result_, false);
     return result;
 }
 } // namespace at_npu
