@@ -1765,6 +1765,14 @@ official:
    impl_ns: acl_op, op_api
  - func: index_copy(Tensor self, int dim, Tensor index, Tensor source) -> Tensor
    impl_ns: acl_op, op_api
+ - func: _foreach_lerp_.Scalar(Tensor(a!)[] self, Tensor[] tensors1, Scalar weight) -> ()
+   impl_ns: op_api
+ - func: _foreach_lerp.Scalar(Tensor[] self, Tensor[] tensors1, Scalar weight) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_lerp_.List(Tensor(a!)[] self, Tensor[] tensors1, Tensor[] weights) -> ()
+   impl_ns: op_api
+ - func: _foreach_lerp.List(Tensor[] self, Tensor[] tensors1, Tensor[] weights) -> Tensor[]
+   impl_ns: op_api
  - func: _foreach_maximum.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_maximum_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
