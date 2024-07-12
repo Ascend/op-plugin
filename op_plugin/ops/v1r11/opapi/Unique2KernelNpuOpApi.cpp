@@ -54,7 +54,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     if (return_counts) {
         y_counts.resize_(output_size);
     }
-    delete view_dims;
+    delete[] view_dims;
     view_dims = nullptr;
     return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, y_inverse, y_counts);
 }

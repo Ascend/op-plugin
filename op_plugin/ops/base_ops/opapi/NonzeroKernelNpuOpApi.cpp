@@ -36,7 +36,7 @@ at::Tensor exec_aclnn_non_zero(const at::Tensor& self, at::Tensor& out)
     TORCH_CHECK(ret == 0, "aclGetViewShape failed.", OPS_ERROR(ErrCode::ACL));
     c10::SmallVector<int64_t, op_infer::SIZE> output_size(view_dims, view_dims + view_dim_num);
     out = out.resize_(output_size);
-    delete view_dims;
+    delete[] view_dims;
     view_dims = nullptr;
     return out;
 }
@@ -56,7 +56,7 @@ at::Tensor& nonzero_out(const at::Tensor& self, at::Tensor& result) {
 at::Tensor nonzero(const at::Tensor& self) {
   DO_COMPATIBILITY(aclnnNonzero, acl_op::nonzero(self));
   auto out_size = op_infer::nonzero_npu_max_output_size(self);
-  at::Tensor out = 
+  at::Tensor out =
       at_npu::native::OpPreparation::apply_tensor_without_format(out_size, self.options().dtype(at::kLong));
   return exec_aclnn_non_zero(self, out);
 }

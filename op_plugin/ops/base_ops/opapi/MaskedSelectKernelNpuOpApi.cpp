@@ -56,7 +56,7 @@ static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Ten
         outputShapeSize.push_back(view_dims[i]);
     }
     out.resize_(outputShapeSize);
-    delete view_dims;
+    delete[] view_dims;
     view_dims = nullptr;
     return out;
 }
