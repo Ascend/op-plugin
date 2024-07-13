@@ -11,65 +11,71 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/native/ForeachUtils.h>
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include <ATen/native/ForeachUtils.h>
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-void _split_and_exec_npu_cmd_cos(const at::TensorList tensors1, at::TensorList result_list, bool is_inplace)
+void _split_and_exec_npu_cmd_tan(at::TensorList tensors1, at::TensorList result_list, bool is_inplace)
 {
     size_t tensor_count = tensors1.size();
     size_t max_tensor_count = is_inplace ? 48 : 24;
-    size_t loop_time = tensor_count / max_tensor_count;
+
     if (tensor_count <= max_tensor_count) {
-        EXEC_NPU_CMD(aclnnForeachCos, tensors1, result_list);
+        EXEC_NPU_CMD(aclnnForeachTan, tensors1, result_list);
         return;
     }
+    size_t loop_time = tensor_count / max_tensor_count;
+    
     for (size_t i = 0; i < loop_time; i++) {
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, max_tensor_count);
         at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
-        EXEC_NPU_CMD(aclnnForeachCos, temp_tensors1, temp_result);
+        EXEC_NPU_CMD(aclnnForeachTan, temp_tensors1, temp_result);
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
     if (remaining_count) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
-        EXEC_NPU_CMD(aclnnForeachCos, temp_tensors1, temp_result);
+        EXEC_NPU_CMD(aclnnForeachTan, temp_tensors1, temp_result);
     }
 }
 
-void _foreach_cos_(const at::TensorList self)
+void _foreach_tan_(const at::TensorList self)
 {
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
-        return at::native::foreach_tensor_cos_slow_(self);
+        return at::native::foreach_tensor_tan_slow_(self);
     }
 
-    _split_and_exec_npu_cmd_cos(self, self, true);
+    if (self.empty()) {
+        return;
+    }
+    
+    _split_and_exec_npu_cmd_tan(self, self, true);
 }
 
-std::vector<at::Tensor> _foreach_cos(const at::TensorList self)
+std::vector<at::Tensor> _foreach_tan(const at::TensorList self)
 {
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
-        return at::native::foreach_tensor_cos_slow(self);
+        return at::native::foreach_tensor_tan_slow(self);
     }
 
-    auto scalar_type = self[0].scalar_type();
+    auto type = self[0].scalar_type();
 
     // construct output tensorlist
     std::vector<at::Tensor> result;
-    result.reserve(self.size());
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(type)));
     }
     at::TensorList result_ = at::TensorList(result);
 
-    _split_and_exec_npu_cmd_cos(self, result_, false);
+    _split_and_exec_npu_cmd_tan(self, result_, false);
     return result;
 }
-}
+} // namespace at_npu

@@ -1765,6 +1765,46 @@ official:
    impl_ns: op_api
  - func: _foreach_lerp.List(Tensor[] self, Tensor[] tensors1, Tensor[] weights) -> Tensor[]
    impl_ns: op_api
+ - func: _foreach_erf(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_erf_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_erfc(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_erfc_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_acos_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_acos(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_asin_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_asin(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_atan_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_atan(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_cosh_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_cosh(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sin_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_sin(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sinh_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_sinh(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_tan_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_tan(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_tanh(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_tanh_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: _foreach_maximum.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_maximum_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()

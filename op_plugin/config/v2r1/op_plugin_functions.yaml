@@ -1947,6 +1947,46 @@ official:
    impl_ns: op_api
  - func: _foreach_abs(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
+ - func: _foreach_erf(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_erf_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_erfc(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_erfc_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_acos_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_acos(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_asin_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_asin(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_atan_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_atan(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_cosh_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_cosh(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sin_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_sin(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sinh_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_sinh(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_tan_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_tan(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_tanh(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_tanh_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: native_group_norm(Tensor input, Tensor? weight, Tensor? bias, int N, int C, int HxW, int group, float eps) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
