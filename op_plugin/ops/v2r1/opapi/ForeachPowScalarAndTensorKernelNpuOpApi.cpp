@@ -19,60 +19,52 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-void _split_and_exec_npu_cmd_mul(const at::TensorList tensors1, const at::Scalar &scalar, at::TensorList result_list, bool is_inplace)
+void _split_and_exec_npu_cmd_pow_scalar(const at::Scalar& scalar, const at::TensorList exponent, at::TensorList result_list, bool is_inplace)
 {
-    size_t tensor_count = tensors1.size();
+    size_t tensor_count = exponent.size();
     size_t max_tensor_count = is_inplace ? 48 : 24;
     size_t loop_time = tensor_count / max_tensor_count;
 
-    at::Scalar scalar_ = op_api::adaptToDouble(scalar, tensors1);
+    at::Scalar scalar_ = op_api::adaptToDouble(scalar, exponent);
+    scalar_ = op_api::adaptToInteger(scalar_, exponent);
 
     if (tensor_count <= max_tensor_count) {
-        EXEC_NPU_CMD(aclnnForeachMulScalar, tensors1, scalar_, result_list);
+        EXEC_NPU_CMD(aclnnForeachPowScalarAndTensor, scalar_, exponent, result_list);
         return;
     }
     for (size_t i = 0; i < loop_time; i++) {
-        at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, max_tensor_count);
+        at::TensorList temp_exponent(exponent.data() + i * max_tensor_count, max_tensor_count);
         at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
-        EXEC_NPU_CMD(aclnnForeachMulScalar, temp_tensors1, scalar_, temp_result);
+        EXEC_NPU_CMD(aclnnForeachPowScalarAndTensor, scalar_, temp_exponent, temp_result);
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
     if (remaining_count) {
-        at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
+        at::TensorList temp_exponent(exponent.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
-        EXEC_NPU_CMD(aclnnForeachMulScalar, temp_tensors1, scalar_, temp_result);
+        EXEC_NPU_CMD(aclnnForeachPowScalarAndTensor, scalar_, temp_exponent, temp_result);
     }
 }
 
-std::vector<at::Tensor> _foreach_mul(const at::TensorList self, const at::Scalar& scalar)
+std::vector<at::Tensor> _foreach_pow(const at::Scalar& scalar, const at::TensorList exponent)
 {
-    at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, false)) {
-        return at::native::foreach_tensor_mul_scalar_kernel_slow(self, scalar);
+    at::native::check_foreach_api_restrictions(exponent);
+    if (!at::native::can_use_fast_route(exponent, scalar, true)) {
+        return at::native::foreach_scalar_pow_list_kernel_slow(scalar, exponent);
     }
 
-    auto scalar_type = self[0].scalar_type();
-    
+    auto scalar_type = exponent[0].scalar_type();
+
     std::vector<at::Tensor> result;
-    result.reserve(self.size());
-    for (const at::Tensor &tensor : self) {
+    result.reserve(exponent.size());
+    for (const at::Tensor &tensor : exponent) {
         auto output_size = op_infer::input_same_output_size(tensor);
         result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
+
     at::TensorList result_ = at::TensorList(result);
-    _split_and_exec_npu_cmd_mul(self, scalar, result_, false);
-
+    
+    _split_and_exec_npu_cmd_pow_scalar(scalar, exponent, result_, false);
     return result;
-}
-
-void _foreach_mul_(const at::TensorList self, const at::Scalar& scalar)
-{
-    at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self, scalar, false)) {
-        return at::native::foreach_tensor_mul_scalar_kernel_slow_(self, scalar);
-    }
-
-    _split_and_exec_npu_cmd_mul(self, scalar, self, true);
 }
 }

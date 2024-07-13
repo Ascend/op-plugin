@@ -1889,6 +1889,8 @@ official:
    impl_ns: op_api
  - func: _foreach_pow_.ScalarList(Tensor(a!)[] self, Scalar[] exponent) -> ()
    impl_ns: op_api
+ - func: _foreach_pow.ScalarAndTensor(Scalar self, Tensor[] exponent) -> Tensor[]
+   impl_ns: op_api
  - func: _foreach_addcdiv_.ScalarList(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Scalar[] scalars) -> ()
    impl_ns: op_api
  - func: _foreach_addcdiv.ScalarList(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar[] scalars) -> Tensor[]
