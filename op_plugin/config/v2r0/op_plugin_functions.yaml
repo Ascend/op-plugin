@@ -1866,6 +1866,12 @@ official:
    impl_ns: op_api
  - func: _foreach_neg_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
+ - func: _foreach_reciprocal_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_reciprocal(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_zero_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: native_group_norm(Tensor input, Tensor? weight, Tensor? bias, int N, int C, int HxW, int group, float eps) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
@@ -1953,11 +1959,8 @@ tocpu:
   - _fft_c2r.out
   - _fft_c2c
   - _fft_c2c.out
-  - _foreach_zero_
   - _foreach_lgamma
   - _foreach_lgamma_
-  - _foreach_reciprocal
-  - _foreach_reciprocal_
   - _logcumsumexp
   - _logcumsumexp.out
   - _pdist_backward

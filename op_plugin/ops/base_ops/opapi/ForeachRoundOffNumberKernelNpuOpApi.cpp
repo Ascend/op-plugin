@@ -14,11 +14,12 @@
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/custom_functions/opapi/ForeachConstants.h"
 
 namespace op_api {
 const char ROUND_MODE_FLOOR = char(2);
 const char ROUND_MODE_CEIL = char(3);
-const char ROUND_MODE_ROUND = char(4);
+const char ROUND_MODE_ROUND = char(1);
 const char ROUND_MODE_TRUNC = char(5);
 const char ROUND_MODE_FRAC = char(7);
 
@@ -26,10 +27,35 @@ bool is_integral_tensor_list(at::TensorList self)
 {
     auto scalarType = self[0].scalar_type();
     return (scalarType == at::ScalarType::Byte
-    || scalarType == at::ScalarType::Char
-    || scalarType == at::ScalarType::Short
-    || scalarType == at::ScalarType::Int
-    || scalarType == at::ScalarType::Long);
+        || scalarType == at::ScalarType::Char
+        || scalarType == at::ScalarType::Short
+        || scalarType == at::ScalarType::Int
+        || scalarType == at::ScalarType::Long);
+}
+
+void _split_and_exec_npu_cmd_round(at::TensorList &tensors1, const char roundMode, at::TensorList &result_list, bool is_inplace)
+{
+    size_t tensor_count = tensors1.size();
+    size_t max_tensor_count = is_inplace ? SINGLE_FOREACH_OP_TENSOR_COUNT : DOUBLE_FOREACH_OP_TENSOR_COUNT;
+    size_t loop_time = tensor_count / max_tensor_count;
+    auto roundModeScalar = at::Scalar(roundMode);
+
+    if (tensor_count <= max_tensor_count) {
+        EXEC_NPU_CMD(aclnnForeachRoundOffNumber, tensors1, roundModeScalar, result_list);
+        return;
+    }
+    for (size_t i = 0; i < loop_time; i++) {
+        at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, max_tensor_count);
+        at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
+        EXEC_NPU_CMD(aclnnForeachRoundOffNumber, temp_tensors1, roundModeScalar, temp_result);
+    }
+
+    size_t remaining_count = tensor_count % max_tensor_count;
+    if (remaining_count) {
+        at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
+        at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
+        EXEC_NPU_CMD(aclnnForeachRoundOffNumber, temp_tensors1, roundModeScalar, temp_result);
+    }
 }
 
 void exec_npu_cmd_(at::TensorList self, const char roundMode)
@@ -37,26 +63,24 @@ void exec_npu_cmd_(at::TensorList self, const char roundMode)
     if (is_integral_tensor_list(self)) {
         return;
     }
-    at::Tensor round_mode_scalar_tensor = at_npu::native::OpPreparation::copy_scalar_to_device(
-        roundMode, at::ScalarType::Char, self[0].device());
     // dispatch hostAPI
-    EXEC_NPU_CMD(aclnnForeachRoundOffNumber, self, round_mode_scalar_tensor, self);
+    _split_and_exec_npu_cmd_round(self, roundMode, self, true);
 }
 
 std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
 {
     bool is_integral = is_integral_tensor_list(self);
     auto scalarType = self[0].scalar_type();
+    
     // construct the output tensorlist of the NPU
-    std::vector<at::Tensor> result;
-    for (uint32_t i = 0; i < self.size(); i++) {
+    std::vector<at::Tensor> result(self.size());
+    for (int i = 0; i < self.size(); i++) {
         at::Tensor tensor = self[i];
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(
-            at_npu::native::OpPreparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalarType))
-        );
         if (is_integral) {
             result[i] = tensor.clone();
+        } else {
+            result[i] = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalarType));
         }
     }
 
@@ -66,19 +90,15 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
 
     at::TensorList result_ = at::TensorList(result);
 
-    at::Tensor round_mode_scalar_tensor = at_npu::native::OpPreparation::copy_scalar_to_device(
-        roundMode, at::ScalarType::Char, self[0].device());
     // dispatch hostAPI
-    EXEC_NPU_CMD(aclnnForeachRoundOffNumber, self, round_mode_scalar_tensor, result_);
+    _split_and_exec_npu_cmd_round(self, roundMode, result_, false);
     return result;
 }
 
 bool if_use_slow_route(at::TensorList tensors, const bool isFrac)
 {
     at::native::check_foreach_api_restrictions(tensors);
-    return !at_npu::native::env::CheckJitDisable() ||
-           !at::native::can_use_fast_route(tensors) ||
-           (isFrac && at::native::has_integral_tensor(tensors, true));
+    return !at::native::can_use_fast_route(tensors) || (isFrac && at::native::has_integral_tensor(tensors, true));
 }
 
 bool if_use_slow_route(at::TensorList tensors)

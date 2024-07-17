@@ -1975,6 +1975,35 @@ official:
    impl_ns: op_api
  - func: _foreach_neg_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
+ - func: _foreach_reciprocal_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_reciprocal(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_zero_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_clamp_min.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_clamp_min_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_clamp_min.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_clamp_min_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_clamp_min.List(Tensor[] self, Tensor[] other) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_clamp_min_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+ - func: _foreach_clamp_max.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_clamp_max_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_clamp_max.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_clamp_max_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_clamp_max.List(Tensor[] self, Tensor[] other) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_clamp_max_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
  - func: _foreach_abs_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
  - func: _foreach_abs(Tensor[] tensors) -> Tensor[]
