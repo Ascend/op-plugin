@@ -256,6 +256,8 @@ official:
    impl_ns: acl_op
  - func: argsort.dimname(Tensor self, Dimname dim, bool descending=False) -> Tensor
    impl_ns: acl_op
+ - func: argsort.stable(Tensor self, bool stable=False, int dim=-1, bool descending=False) -> Tensor
+   impl_ns: op_api
  - func: asin(Tensor self) -> Tensor
    impl_ns: acl_op
  - func: asin.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)

@@ -974,6 +974,10 @@ official:
     impl_ns: acl_op, op_api, acl_op, acl_op, op_api, acl_op, op_api, acl_op, op_api, acl_op, op_api, acl_op, op_api
     version: v1.11, v1.11, v2.0, v2.1, v2.1, v2.2, v2.2, v2.3, v2.3, v2.4, v2.4, v2.5, v2.5
     kernel: aclops/ArgsortKernelNpu.cpp, opapi/ArgSortKernelNpuOpApi.cpp
+  - func: argsort.stable(Tensor self, bool stable=False, int dim=-1, bool descending=False) -> Tensor
+    impl_ns:  op_api, op_api, op_api, op_api, op_api, op_api
+    version: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    kernel: opapi/ArgSortKernelNpuOpApi.cpp
   - func: asin(Tensor self) -> Tensor
     impl_ns: acl_op, op_api, acl_op, acl_op, op_api, acl_op, op_api, acl_op, op_api, acl_op, op_api, acl_op, op_api
     version: v1.11, v1.11, v2.0, v2.1, v2.1, v2.2, v2.2, v2.3, v2.3, v2.4, v2.4, v2.5, v2.5
