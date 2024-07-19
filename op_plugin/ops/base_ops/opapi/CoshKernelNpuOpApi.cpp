@@ -16,22 +16,21 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& cosh_out(const at::Tensor& self, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnCosh, acl_op::cosh_out(self, result));
-  npu_preparation::check_tensor({self}, result, self);
+  npu_preparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
   EXEC_NPU_CMD(aclnnCosh, self, result);
   return result;
 }
 
 at::Tensor cosh(const at::Tensor &self) {
   DO_COMPATIBILITY(aclnnCosh, acl_op::cosh(self));
-  auto out_size = op_infer::input_same_output_size(self);
-  auto result = npu_preparation::apply_tensor_without_format(out_size, self.options());
+  auto output_options = (isIntegralType(self.scalar_type(), true)) ? self.options().dtype(at::kFloat) : self.options();
+  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), output_options);
   EXEC_NPU_CMD(aclnnCosh, self, result);
   return result;
 }
