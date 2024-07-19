@@ -1740,6 +1740,8 @@ official:
    impl_ns: acl_op
  - func: _symeig_helper(Tensor self, bool eigenvectors, bool upper) -> (Tensor, Tensor)
    impl_ns: acl_op
+ - func: _foreach_norm.Scalar(Tensor[] tensors, Scalar ord=2) -> Tensor[]
+   impl_ns: op_api
  - func: _foreach_sqrt(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_sqrt_(Tensor(a!)[] self) -> ()
