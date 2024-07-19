@@ -1994,6 +1994,7 @@ official:
  - func: _foreach_clamp_min.List(Tensor[] self, Tensor[] other) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_clamp_min_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
  - func: _foreach_clamp_max.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_clamp_max_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
