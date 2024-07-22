@@ -60,11 +60,9 @@ at::Tensor cumsum(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarT
         result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(dtype.value()));
         dtype_new = npu_preparation::convert_to_acl_data_type(dtype.value());
     } else {
-        if (self.scalar_type() == at::ScalarType::Bool) {
-            result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong));
-        } else {
-            result = npu_preparation::apply_tensor_without_format(self);
-        }
+        result = at::isFloatingType(self.scalar_type())
+                    ? npu_preparation::apply_tensor_without_format(self)
+                    : npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong));
         dtype_new = npu_preparation::convert_to_acl_data_type(result.scalar_type());
     }
 
