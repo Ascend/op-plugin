@@ -4,9 +4,6 @@ import os
 import stat
 import yaml
 
-OP_API = 'op_api'
-ACL_OP = 'acl_op'
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -29,29 +26,34 @@ def main():
 
     string = ['official', 'custom', 'symint', 'quant']
 
-    # official,custom,symint
+    # parse 'official', 'custom', 'symint', 'quant'
     for key in string:
         for item in old_yaml[key]:
-            if version in item['version']:
-                new_item = item
-                if item.get('impl_ns') and item.get('version'):
-                    impl_ns_list = re.split(', ', item['impl_ns'])
-                    version_list = re.split(', ', item['version'])
-                    version_idx = [idx for idx, val in enumerate(version_list) if val == version]
-                    support_version = [impl_ns_list[i] for i in version_idx]
-                    new_item['impl_ns'] = ', '.join(support_version)
-                del new_item['kernel'], new_item['version']
-                if (version == 'v1.11' or version == 'v2.0') and item.get('sparse'):
-                    del new_item['sparse']
+            acl_op_sup_ver = item.get('acl_op', '')
+            op_api_sup_ver = item.get('op_api', '')
+            sparse = item.get('sparse', '')
+            if version in (acl_op_sup_ver + op_api_sup_ver + sparse):
+                new_item = item.copy()
+                impl_ns = []
+                for i in ['acl_op', 'op_api']:
+                    if version in item.get(i, ''):
+                        impl_ns.append(i)
+                    new_item.pop(i, None)
+                if len(acl_op_sup_ver) > 0 or len(op_api_sup_ver) > 0:
+                    new_item['impl_ns'] = ', '.join(impl_ns)
 
-                if item.get('exposed') and version in version_list:
+                if version in item.get('sparse', ''):
+                    new_item['sparse'] = 'op_api'
+                else:
+                    new_item.pop('sparse', None)
+                if version in item.get('exposed', ''):
                     new_item['exposed'] = True
-                elif item.get('exposed'):
-                    del new_item['sparse']
+                else:
+                    new_item.pop('exposed', None)
 
                 new_yaml.get(key).append(new_item)
 
-    # tocpu and unsupported
+    # parse 'tocpu' and 'unsupported', only v1.11 and v2.0 supported
     if version in ['v1.11', 'v2.0']:
         for key in ['tocpu', 'unsupported']:
             for func in old_yaml[key]:
@@ -63,7 +65,7 @@ def main():
     if version in ['v1.11', 'v2.0', 'v2.1']:
         del new_yaml['quant']
 
-    # save to yaml
+    # save to new yaml
     flags = os.O_WRONLY | os.O_CREAT
     modes = stat.S_IWUSR | stat.S_IRUSR
     with os.fdopen(os.open(f'{output_dir}/new_op_plugin_functions.yaml', flags, modes), 'w') as f:
