@@ -305,6 +305,154 @@ void add_param_to_buf(const char *c)
 
 void add_param_to_buf() {}
 
+void add_param_to_buf_v2(TensorStructPtr at_tensor)
+{
+    static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");
+    TORCH_CHECK(addTensorAddrToCachedListAddr != nullptr, "GetOpApiFuncAddr failed.", OPS_ERROR(ErrCode::PTR));
+    AddTensorAddrToCachedList addTensorAddrToCachedListFunc =
+        reinterpret_cast<AddTensorAddrToCachedList>(addTensorAddrToCachedListAddr);
+    if (at_tensor == nullptr) {
+        MEMCPY_TO_BUF(",", 1);
+        return;
+    }
+    // view shape
+    MEMCPY_TO_BUF((*at_tensor).sizes.data(), static_cast<int64_t>((*at_tensor).sizes.size() * sizeof(int64_t)));
+    // data type
+    auto st = (*at_tensor).scalar_type;
+    MEMCPY_TO_BUF(&st, sizeof(st));
+    // seperator
+    MEMCPY_TO_BUF(",", 1);
+    // strides
+    MEMCPY_TO_BUF((*at_tensor).strides.data(), static_cast<int64_t>((*at_tensor).sizes.size() * sizeof(int64_t)));
+    // offset
+    auto so = (*at_tensor).storage_offset;
+    MEMCPY_TO_BUF(&so, sizeof(so));
+    // storage shape
+    aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(st);
+    c10::SmallVector<int64_t, 5> storageDims;
+    if (acl_data_type != ACL_STRING) {
+        TORCH_CHECK((*at_tensor).itemsize > 0, "the itemsize of tensor must be greater than 0.",
+                    OPS_ERROR(ErrCode::PARAM));
+        storageDims.push_back((*at_tensor).nbytes / (*at_tensor).itemsize);
+    }
+    MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
+
+    addTensorAddrToCachedListFunc((*at_tensor).data_ptr);
+}
+
+void add_param_to_buf_v2(const at::Scalar &at_scalar)
+{
+    at::ScalarType scalar_data_type = at_scalar.type();
+    switch (scalar_data_type) {
+        case at::ScalarType::Double: {
+            double value = at_scalar.toDouble();
+            MEMCPY_TO_BUF(&value, sizeof(double));
+            break;
+        }
+        case at::ScalarType::Long: {
+            int64_t value = at_scalar.toLong();
+            MEMCPY_TO_BUF(&value, sizeof(int64_t));
+            break;
+        }
+        case at::ScalarType::Bool: {
+            bool value = at_scalar.toBool();
+            MEMCPY_TO_BUF(&value, sizeof(bool));
+            break;
+        }
+        case at::ScalarType::ComplexDouble: {
+            auto value = at_scalar.toComplexDouble();
+            MEMCPY_TO_BUF(&value, sizeof(value));
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+}
+
+void add_param_to_buf_v2(const std::vector<int64_t> &at_array)
+{
+    MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(int64_t)));
+    auto counter = at_array.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+}
+
+void add_param_to_buf_v2(const std::vector<bool> &at_array)
+{
+    bool *value_ptr = reinterpret_cast<bool *>(malloc(at_array.size() * sizeof(bool)));
+    for (int i = 0; i < at_array.size(); i++) {
+        value_ptr[i] = at_array[i];
+    }
+    MEMCPY_TO_BUF(value_ptr, static_cast<int64_t>(at_array.size() * sizeof(int64_t)));
+    auto counter = at_array.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+}
+
+void add_param_to_buf_v2(const std::vector<TensorStructPtr> &at_tensor_list)
+{
+    for (size_t i = 0; i < at_tensor_list.size(); i++) {
+        add_param_to_buf_v2(at_tensor_list[i]);
+    }
+    auto counter = at_tensor_list.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+}
+
+void add_param_to_buf_v2(const std::vector<at::Scalar> &at_scalar_list)
+{
+    for (size_t i = 0; i < at_scalar_list.size(); i++) {
+        add_param_to_buf_v2(at_scalar_list[i]);
+    }
+    auto counter = at_scalar_list.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+    MEMCPY_TO_BUF(",", 1);
+}
+
+void add_param_to_buf_v2(const c10::optional<std::vector<int64_t>> &opt_array)
+{
+    if (opt_array.has_value()) {
+        add_param_to_buf_v2(opt_array.value());
+    } else {
+        MEMCPY_TO_BUF(",", 1);
+    }
+}
+
+void add_param_to_buf_v2(const c10::optional<at::Scalar> &opt_scalar)
+{
+    if (opt_scalar.has_value()) {
+        add_param_to_buf_v2(opt_scalar.value());
+    } else {
+        MEMCPY_TO_BUF(",", 1);
+    }
+}
+
+void add_param_to_buf_v2(const at::ScalarType scalar_type)
+{
+    MEMCPY_TO_BUF(&scalar_type, sizeof(scalar_type));
+}
+
+void add_param_to_buf_v2(const string& s)
+{
+    MEMCPY_TO_BUF(s.c_str(), static_cast<int64_t>(s.size()));
+}
+
+void add_param_to_buf_v2(char *c)
+{
+    MEMCPY_TO_BUF(c, strlen(c));
+    auto counter = strlen(c);
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+}
+
+void add_param_to_buf_v2(const char *c)
+{
+    MEMCPY_TO_BUF(c, strlen(c));
+    auto counter = strlen(c);
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+}
+
+void add_param_to_buf_v2()
+{
+}
+
 inline uint64_t rotating_left(uint64_t x, uint8_t n)
 {
     return (x << n) | (x >> (64 - n));
