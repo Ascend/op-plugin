@@ -203,19 +203,6 @@ void _foreach_clamp_min_(at::TensorList tensors1, at::TensorList tensors2)
     return;
 }
 
-
-std::vector<at::Tensor> _foreach_clamp_min(at::TensorList tensors, const at::Scalar& scalar)
-{
-    return op_api::_foreach_maximum(tensors, scalar);
-}
-
-void _foreach_clamp_min_(at::TensorList tensors, const at::Scalar& scalar)
-{
-    op_api::_foreach_maximum_(tensors, scalar);
-    return;
-}
-
-
 std::vector<at::Tensor> _foreach_clamp_min(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 {
     return op_api::_foreach_maximum(tensors, scalars);
