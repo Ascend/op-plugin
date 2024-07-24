@@ -56,7 +56,7 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList tensors1, at::TensorList ten
     auto scalarType = tensors1[0].scalar_type();
     // construct the output tensorlist of the NPU
     std::vector<at::Tensor> result;
-    for (int i = 0; i < tensors1.size(); i++) {
+    for (size_t i = 0; i < tensors1.size(); i++) {
         at::Tensor tensor = tensors1[i];
         auto output_size = op_infer::input_same_output_size(tensor);
         result.push_back(at_npu::native::OpPreparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalarType)));

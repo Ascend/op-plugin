@@ -74,7 +74,7 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
     
     // construct the output tensorlist of the NPU
     std::vector<at::Tensor> result(self.size());
-    for (int i = 0; i < self.size(); i++) {
+    for (size_t i = 0; i < self.size(); i++) {
         at::Tensor tensor = self[i];
         auto output_size = op_infer::input_same_output_size(tensor);
         if (is_integral) {
