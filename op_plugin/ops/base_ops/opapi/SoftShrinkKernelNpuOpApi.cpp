@@ -24,7 +24,6 @@ at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd)
 {
     DO_COMPATIBILITY(aclnnSoftshrink, acl_op::softshrink(self, lambd));
 
-    TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0", OPS_ERROR(ErrCode::PARAM));
     auto output_size = op_infer::input_same_output_size(self);
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
 
@@ -37,7 +36,6 @@ at::Tensor &softshrink_out(const at::Tensor &self, const at::Scalar &lambd, at::
 {
     DO_COMPATIBILITY(aclnnSoftshrink, acl_op::softshrink_out(self, lambd, result));
 
-    TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0", OPS_ERROR(ErrCode::PARAM));
     auto output_size = op_infer::input_same_output_size(self);
     npu_preparation::check_tensor({self}, result, result.scalar_type(), output_size);
 

@@ -84,6 +84,16 @@ class TestSoftShrink(TestCase):
         npu_output1 = self.npu_op_exec_out(input_x1, 0.5, output_y)
         self.assertRtolEqual(cpu_output1, npu_output1)
 
+    def test_softshrink_3_3_float32_with_lambd_0(self):
+        input_x1 = self.generate_data(-1, 1, (3, 3), np.float32)
+        cpu_output1 = self.cpu_op_exec(input_x1, 0)
+        npu_output1 = self.npu_op_exec(input_x1, 0)
+        self.assertRtolEqual(cpu_output1, npu_output1)
+
+    def test_softshrink_3_3_float32_with_lambda_neg_1(self):
+        input_x1 = self.generate_data(-1, 1, (3, 3), np.float32)
+        with self.assertRaises(RuntimeError):
+            npu_output1 = self.npu_op_exec(input_x1, -1)
 
 if __name__ == "__main__":
     run_tests()

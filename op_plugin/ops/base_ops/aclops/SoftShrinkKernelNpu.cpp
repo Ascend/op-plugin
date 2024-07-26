@@ -40,7 +40,7 @@ at::Tensor& softshrink_out(
     const at::Tensor& self,
     const at::Scalar& lambd,
     at::Tensor& result) {
-    TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0" + OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(lambd.toFloat() >= 0, "lambd should be greater or equal to 0" + OPS_ERROR(ErrCode::VALUE));
     npu_preparation::CheckOut(
         {self},
         result,
@@ -58,7 +58,7 @@ at::Tensor& softshrink_out(
 }
 
 at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd) {
-    TORCH_CHECK(lambd.toFloat() > 0, "lambd should be greater than 0" + OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(lambd.toFloat() >= 0, "lambd should be greater or equal to 0" + OPS_ERROR(ErrCode::VALUE));
     at::Tensor result = npu_preparation::apply_tensor(self);
 
     softshrink_out_nocheck(result, self, lambd);
