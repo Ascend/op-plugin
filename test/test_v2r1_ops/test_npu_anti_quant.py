@@ -35,6 +35,12 @@ class TestAntiQuant(TestCase):
             [[np.int8, -1, [10, 100]], [np.float32, -1, [100]], None, torch.float16, None],
             [[np.int8, -1, [10, 100]], [np.float32, -1, [100]], None, torch.bfloat16, None],
             [[np.int8, -1, [10, 100]], [np.float32, -1, [100]], [np.float32, -1, [100]], torch.bfloat16, torch.int8],
+            [[np.int32, -1, [10, 100]], [np.float32, -1, [100]], None, torch.float16, None],
+            [[np.int32, -1, [10, 100]], [np.float32, -1, [100]], [np.float32, -1, [100]], torch.float16, None],
+            [[np.int32, -1, [10, 100]], [np.float32, -1, [100]], None, torch.float16, torch.quint4x2],
+            [[np.int32, -1, [10, 100]], [np.float32, -1, [100]], None, torch.float16, None],
+            [[np.int32, -1, [10, 100]], [np.float32, -1, [100]], None, torch.bfloat16, None],
+            [[np.int32, -1, [10, 100]], [np.float32, -1, [100]], [np.float32, -1, [100]], torch.bfloat16, torch.quint4x2],
         ]
         
         for item in shape_format:

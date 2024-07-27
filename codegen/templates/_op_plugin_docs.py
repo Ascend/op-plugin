@@ -3709,7 +3709,7 @@ _add_torch_npu_docstr(
     "npu_anti_quant",
     """
 功能描述:
-将INT8数据反量化为FP16。
+将INT4或者INT8数据反量化为FP16或者BF16，其中输入是INT4类型时，将每8个数据看作是一个INT32数据。
 计算公式为：
 anti_quant(x)=float16((x+offset)*scale)
 anti_quant(x)=bfloat16((x+offset)*scale)
@@ -3718,11 +3718,11 @@ anti_quant(x)=bfloat16((x+offset)*scale)
 npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None, ScalarType? src_dtype=None) -> Tensor
 
 参数说明:
-x：Tensor类型，即输入参数中的x。数据类型支持INT8，数据格式支持ND，支持非连续的Tensor。输入最大支持8维。
+x：Tensor类型，即输入参数中的x。数据类型支持INT8、INT32，其中INT32类型数据的每个值是由8个INT4数值拼成的。数据格式支持ND，支持非连续的Tensor。输入最大支持8维。
 scale：Tensor类型，数据类型支持FLOAT32、BFLOAT16，数据格式支持ND，支持非连续的Tensor，仅支持1维Tensor。
 offset：Tensor类型，可选参数，数据类型支持FLOAT32，BFLOAT16，数据格式支持ND，支持非连续的Tensor，仅支持1维Tensor，且shape必须与scale的shape大小一致。
-dst_dtype：ScalarType类型，可选参数，默认值为torch.float16。
-src_dtype：ScalarType类型，可选参数，输入值允许为torch.int8或torch.int4，默认值为torch.int8。
+dst_dtype：ScalarType类型，可选参数，输入值允许为torch.float16或torch.bfloat16，默认值为torch.float16。
+src_dtype：ScalarType类型，可选参数，输入值允许为torch.quint4x2或torch.int8，默认值为torch.int8。
 
 输出说明:
 一个Tensor类型的输出，代表antiquant的计算结果。
