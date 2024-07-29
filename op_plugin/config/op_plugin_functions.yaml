@@ -673,8 +673,8 @@ official:
     op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: _unique(Tensor self, bool sorted=True, bool return_inverse=False) -> (Tensor, Tensor)
-    acl_op: v1.11
-    op_api: v1.11
+    acl_op: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: _unique2(Tensor self, bool sorted=True, bool return_inverse=False, bool return_counts=False) -> (Tensor, Tensor, Tensor)
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5

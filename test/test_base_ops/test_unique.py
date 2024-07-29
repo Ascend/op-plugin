@@ -30,30 +30,25 @@ class TestUnique(TestCase):
             [[np.int8, (2, 3)], True, True],
             [[np.int16, (2, 3)], True, True],
             [[np.int32, (2, 3)], True, True],
-            [[np.long, (2, 3)], True, True],
-            [[np.long, (5, 3)], True, False],
-            [[np.long, (2, 3, 4)], False, False],
-            [[np.long, (3, 3)], False, True],
+            [[np.int64, (2, 3)], True, True],
+            [[np.int64, (5, 3)], True, False],
+            [[np.int64, (2, 3, 4)], False, False],
+            [[np.int64, (3, 3)], False, True],
             [[np.float32, (2, 3)], True, False],
-            [[np.bool, (2, 3)], True, True],
+            [[np.bool_, (2, 3)], True, True],
             [[np.float16, (2, 3)], True, True],
-            # [[np.float16, (208, 3136, 19, 5)], False, False]
+            [[np.float16, (208, 3136, 19, 5)], False, False]
         ]
 
         for item in shape_format:
             input1 = np.random.uniform(-10, 10, item[0][1]).astype(item[0][0])
             cpu_input1 = torch.from_numpy(input1)
-            if item[0][0] == np.float16:
-                cpu_input1 = torch.from_numpy(input1.astype(np.float32))
             npu_input1 = torch.from_numpy(input1).npu()
 
             cpu_output_y, cpu_yInverse = torch._unique(cpu_input1, item[1], item[2])
             npu_output_y, npu_yInverse = torch._unique(npu_input1, item[1], item[2])
 
-            cpu_output_y = cpu_output_y.numpy()
-            if item[0][0] == np.float16:
-                cpu_output_y = cpu_output_y.astype(np.float16)
-            self.assertRtolEqual(cpu_output_y, npu_output_y.cpu().numpy())
+            self.assertRtolEqual(cpu_output_y.numpy(), npu_output_y.cpu().numpy())
             self.assertRtolEqual(cpu_yInverse.numpy(), npu_yInverse.cpu().numpy())
 
 

@@ -35,7 +35,7 @@ std::tuple<at::Tensor&, at::Tensor&> _unique_out_npu(
       .Output(y)
       .Output(y_inverse)
       .Output(y_counts)
-      .Attr("sorted", sorted)
+      .Attr("sorted", true)
       .Attr("return_inverse", return_inverse)
       .Attr("return_counts", false)
       .Run();
