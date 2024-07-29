@@ -1660,4 +1660,30 @@ c10::SmallVector<int64_t, SIZE> max_pool3d_output_size(const at::Tensor &self, a
     return shape;
 }
 
+c10::SmallVector<int64_t, SIZE> diag_output_size(const at::Tensor& self, int64_t diagonal)
+{
+    c10::SmallVector<int64_t, SIZE> shape;
+    if (self.dim() < 2) {
+        shape.emplace_back(self.size(0) + std::abs(diagonal));
+        shape.emplace_back(self.size(0) + std::abs(diagonal));
+        return shape;
+    }
+    int64_t m = self.size(0);
+    int64_t n = self.size(1);
+    if (diagonal > 0) {
+        shape.emplace_back(std::min(m, n - diagonal));
+        // Judge whether the parameter is out of range
+        TORCH_CHECK(diagonal <= n,
+                    "If the value is 2-dimensional tensor, the diagonal shoule be less than shape.Diagonal is ",
+                    diagonal, OPS_ERROR(ErrCode::VALUE));
+    } else {
+        shape.emplace_back(std::min(m + diagonal, n));
+        // Judge whether the parameter is out of range
+        TORCH_CHECK(-diagonal <= m,
+                    "If the value is 2-dimensional tensor, the diagonal shoule be less than shape.Diagonal is ",
+                    diagonal, OPS_ERROR(ErrCode::VALUE));
+    }
+    return shape;
+}
+
 } // namespace op_infer

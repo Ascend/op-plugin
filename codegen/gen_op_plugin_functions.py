@@ -29,6 +29,7 @@ def main():
     # parse 'official', 'custom', 'symint', 'quant'
     for key in string:
         for item in old_yaml[key]:
+            item.pop('gen_opapi', None)
             acl_op_sup_ver = item.get('acl_op', '')
             op_api_sup_ver = item.get('op_api', '')
             sparse = item.get('sparse', '')

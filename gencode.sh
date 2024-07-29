@@ -43,3 +43,8 @@ ${python_execute} -m codegen.gen_backend_stubs  \
   --output_dir="$CDIR/op_plugin/" \
   --source_yaml="$CDIR/op_plugin/config/$PYTORCH_VERSION_DIR/op_plugin_functions.yaml" \
   --impl_path="$CDIR/torch_npu/csrc/aten"  # Used to double-check the yaml file definitions.
+
+${python_execute} -m codegen.struct.gen_struct_opapi  \
+  --output_dir="$CDIR/op_plugin/ops/base_ops/opapi/" \
+  --native_yaml="$CDIR/op_plugin/config/$PYTORCH_VERSION_DIR/op_plugin_functions.yaml" \
+  --struct_yaml="$CDIR/op_plugin/config/op_plugin_functions.yaml"

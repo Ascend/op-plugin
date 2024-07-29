@@ -26,6 +26,7 @@
 #include <ATen/NamedTensorUtils.h>
 #include <acl/acl_base.h>
 #include "op_plugin/utils/KernelNpuOutputSize.h"
+#include "op_plugin/utils/KernelNpuOutputDtype.h"
 #include "op_plugin/utils/OpConstants.h"
 #include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/core/npu/NPUStream.h"

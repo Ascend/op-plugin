@@ -689,14 +689,24 @@ official:
   - func: abs(Tensor self) -> Tensor
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      structured_inherit: abs.out
 
   - func: abs.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+        name: self
+      exec: aclnnAbs, self, out
 
   - func: abs_(Tensor(a!) self) -> Tensor(a!)
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      structured_inherit: abs.out
 
   - func: acos(Tensor self) -> Tensor
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
@@ -713,14 +723,26 @@ official:
   - func: acosh(Tensor self) -> Tensor
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat : self.scalar_type()'
+      exec: aclnnAcosh
 
   - func: acosh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnAcosh
 
   - func: acosh_(Tensor(a!) self) -> Tensor(a!)
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      exec: aclnnInplaceAcosh
 
   - func: adaptive_avg_pool1d(Tensor self, int[1] output_size) -> Tensor
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
@@ -919,9 +941,16 @@ official:
 
   - func: angle(Tensor self) -> Tensor
     op_api: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      structured_inherit: angle.out
 
   - func: angle.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     op_api: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      out:
+        size: self
+        dtype: angle_out_dtype(self)
+      exec: aclnnAngleV2
 
   - func: any(Tensor self) -> Tensor
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
@@ -1534,10 +1563,17 @@ official:
   - func: diag(Tensor self, int diagonal=0) -> Tensor
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      structured_inherit: diag.out
 
   - func: diag.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      out:
+        size: diag_output_size(self, diagonal)
+        dtype: self
+      exec: aclnnDiag
 
   - func: div.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
