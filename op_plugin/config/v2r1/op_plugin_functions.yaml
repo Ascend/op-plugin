@@ -1975,10 +1975,6 @@ official:
    impl_ns: op_api
  - func: _foreach_copy_(Tensor(a!)[] self, Tensor[] src, bool non_blocking=False) -> ()
    impl_ns: op_api
- - func: _foreach_sign(Tensor[] self) -> Tensor[]
-   impl_ns: op_api
- - func: _foreach_sign_(Tensor(a!)[] self) -> ()
-   impl_ns: op_api
  - func: _foreach_erf(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_erf_(Tensor(a!)[] self) -> ()
