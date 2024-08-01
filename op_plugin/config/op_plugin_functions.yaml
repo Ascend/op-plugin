@@ -4643,6 +4643,13 @@ official:
   - func: zeros_like(Tensor self, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, MemoryFormat? memory_format=None) -> Tensor
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+  
+  - func: isin.Tensor_Tensor(Tensor elements, Tensor test_elements, *, bool assume_unique=False, bool invert=False) -> Tensor
+    op_api: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+
+  - func: isin.Tensor_Tensor_out(Tensor elements, Tensor test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
+    op_api: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+
 custom:
   - func: _amp_foreach_non_finite_check(Tensor[] scaled_grads) -> bool
     acl_op: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
@@ -5920,12 +5927,6 @@ unsupported:
     version: v1.11, v2.0
 
   - func: geqrf.a
-    version: v1.11, v2.0
-
-  - func: isin.Tensor_Tensor
-    version: v1.11, v2.0
-
-  - func: isin.Tensor_Tensor_out
     version: v1.11, v2.0
 
   - func: linalg_cholesky_ex
