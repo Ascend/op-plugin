@@ -1804,6 +1804,8 @@ official:
    impl_ns: acl_op, op_api
  - func: selu_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: _foreach_norm.Scalar(Tensor[] tensors, Scalar ord=2) -> Tensor[]
+   impl_ns: op_api
  - func: _foreach_sqrt(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_sqrt_(Tensor(a!)[] self) -> ()

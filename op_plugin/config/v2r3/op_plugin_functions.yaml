@@ -1825,6 +1825,8 @@ official:
    impl_ns: op_api
  - func: _foreach_minimum_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
    impl_ns: op_api
+ - func: _foreach_norm.Scalar(Tensor[] tensors, Scalar ord=2) -> Tensor[]
+   impl_ns: op_api
  - func: _foreach_sqrt(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_sqrt_(Tensor(a!)[] self) -> ()
@@ -1984,6 +1986,14 @@ official:
  - func: _foreach_reciprocal(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_zero_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_clamp_max.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_clamp_max_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_clamp_min.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_clamp_min_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
  - func: _foreach_clamp_min.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
    impl_ns: op_api

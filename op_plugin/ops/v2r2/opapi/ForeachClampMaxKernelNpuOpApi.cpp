@@ -40,4 +40,15 @@ void _foreach_clamp_max_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalar
     op_api::_foreach_minimum_(tensors, scalars);
     return;
 }
+
+std::vector<at::Tensor> _foreach_clamp_max(at::TensorList tensors, const at::Scalar& scalar)
+{
+    return op_api::_foreach_minimum(tensors, scalar);
+}
+
+void _foreach_clamp_max_(at::TensorList tensors, const at::Scalar& scalar)
+{
+    op_api::_foreach_minimum_(tensors, scalar);
+    return;
+}
 }  // namespace op_api
