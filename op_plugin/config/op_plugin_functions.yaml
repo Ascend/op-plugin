@@ -1634,6 +1634,9 @@ official:
     acl_op: all_version
     op_api: all_version
 
+  - func: dropout_(Tensor(a!) self, float p, bool train) -> Tensor(a!)
+    op_api: all_version
+
   - func: elu(Tensor self, Scalar alpha=1, Scalar scale=1, Scalar input_scale=1) -> Tensor
     acl_op: all_version
     op_api: all_version
