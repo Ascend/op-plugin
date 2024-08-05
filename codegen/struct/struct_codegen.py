@@ -87,7 +87,7 @@ def filt_op_branch(struct_ops: Dict) -> Dict:
 
     def filt(op) -> bool:
         op_api_version = op.get('op_api', None)
-        return 'gen_opapi' in op.keys() and version in op_api_version
+        return 'gen_opapi' in op.keys() and (version in op_api_version or op_api_version == 'all_version')
 
     filt_ops = list(filter(lambda op: filt(op), support_ops))
     return filt_ops

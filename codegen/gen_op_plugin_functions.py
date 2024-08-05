@@ -25,14 +25,20 @@ def main():
     new_yaml = {'official':[], 'custom':[], 'symint':[], 'tocpu':[], 'unsupported':[], 'quant':[]}
 
     string = ['official', 'custom', 'symint', 'quant']
+    all_version = old_yaml['all_version']
 
     # parse 'official', 'custom', 'symint', 'quant'
     for key in string:
         for item in old_yaml[key]:
             item.pop('gen_opapi', None)
-            acl_op_sup_ver = item.get('acl_op', '')
-            op_api_sup_ver = item.get('op_api', '')
-            sparse = item.get('sparse', '')
+
+            acl_op_sup_ver = ', '.join(all_version) if item.get('acl_op', '') == 'all_version' else item.get('acl_op', '')
+            op_api_sup_ver = ', '.join(all_version) if item.get('op_api', '') == 'all_version' else item.get('op_api', '')
+            sparse = ', '.join(all_version) if item.get('sparse', '') == 'all_version' else item.get('sparse', '')
+            item.update({'acl_op':acl_op_sup_ver})
+            item.update({'op_api':op_api_sup_ver})
+            item.update({'sparse':sparse})
+
             if version in (acl_op_sup_ver + op_api_sup_ver + sparse):
                 new_item = item.copy()
                 impl_ns = []
@@ -47,7 +53,7 @@ def main():
                     new_item['sparse'] = 'op_api'
                 else:
                     new_item.pop('sparse', None)
-                if version in item.get('exposed', ''):
+                if version in item.get('exposed', '') or item.get('exposed', '') == 'all_version':
                     new_item['exposed'] = True
                 else:
                     new_item.pop('exposed', None)
@@ -69,7 +75,7 @@ def main():
     # save to new yaml
     flags = os.O_WRONLY | os.O_CREAT
     modes = stat.S_IWUSR | stat.S_IRUSR
-    with os.fdopen(os.open(f'{output_dir}/new_op_plugin_functions.yaml', flags, modes), 'w') as f:
+    with os.fdopen(os.open(f'{output_dir}/op_plugin_functions.yaml', flags, modes), 'w') as f:
         yaml.dump(data=new_yaml, stream=f, width=2000, sort_keys=False)
 
 if __name__ == '__main__':
