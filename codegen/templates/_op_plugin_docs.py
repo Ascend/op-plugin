@@ -3718,11 +3718,11 @@ anti_quant(x)=bfloat16((x+offset)*scale)
 npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None, ScalarType? src_dtype=None) -> Tensor
 
 参数说明:
-x：Tensor类型，即输入参数中的x。数据类型支持INT8、INT32，其中INT32类型数据的每个值是由8个INT4数值拼成的。数据格式支持ND，支持非连续的Tensor。输入最大支持8维。
-scale：Tensor类型，数据类型支持FLOAT32、BFLOAT16，数据格式支持ND，支持非连续的Tensor，仅支持1维Tensor。
-offset：Tensor类型，可选参数，数据类型支持FLOAT32，BFLOAT16，数据格式支持ND，支持非连续的Tensor，仅支持1维Tensor，且shape必须与scale的shape大小一致。
-dst_dtype：ScalarType类型，可选参数，输入值允许为torch.float16或torch.bfloat16，默认值为torch.float16。
-src_dtype：ScalarType类型，可选参数，输入值允许为torch.quint4x2或torch.int8，默认值为torch.int8。
+x：Tensor类型，即输入参数中的x。数据类型支持INT8、INT32(仅Atlas A2 训练系列产品支持)，其中INT32类型数据的每个值是由8个INT4数值拼成的。数据格式支持ND，支持非连续的Tensor。输入最大支持8维。
+scale：Tensor类型，数据类型支持FLOAT32、BFLOAT16(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，仅支持1维Tensor。
+offset：Tensor类型，可选参数，数据类型支持FLOAT32、BFLOAT16(仅Atlas A2 训练系列产品支持)，且数据类型必须与scale的数据类型一致。数据格式支持ND，支持非连续的Tensor，仅支持1维Tensor，且shape必须与scale的shape大小一致。
+dst_dtype：ScalarType类型，可选参数，输入值允许为torch.float16、torch.bfloat16(仅Atlas A2 训练系列产品支持)，默认值为torch.float16。
+src_dtype：ScalarType类型，可选参数，输入值允许为torch.quint4x2(仅Atlas A2 训练系列产品支持)、torch.int8，默认值为torch.int8。
 
 输出说明:
 一个Tensor类型的输出，代表antiquant的计算结果。
@@ -3735,6 +3735,7 @@ x、scale这两个输入中不能含有空指针。
 PyTorch 2.1
 PyTorch 2.2
 PyTorch 2.3
+PyTorch 2.4
 
 支持的型号:
 Atlas A2训练系列产品
