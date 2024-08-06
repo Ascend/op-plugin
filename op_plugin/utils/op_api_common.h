@@ -1048,7 +1048,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
         TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                \
-                    OPS_ERROR(ErrCode::INTERNAL));                                                                     \
+                    OPS_ERROR(ErrCode::ACL));                                                                     \
         void *workspace_addr = nullptr;                                                                                \
         at::Tensor workspace_tensor;                                                                                   \
         if (workspace_size != 0) {                                                                                     \
@@ -1059,7 +1059,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
-                        OPS_ERROR(ErrCode::INTERNAL));                                                                 \
+                        OPS_ERROR(ErrCode::ACL));                                                                 \
             ReleaseConvertTypes(converted_params);                                                                     \
             ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                          \
             if (releaseMemFunc) {                                                                                      \
@@ -1108,7 +1108,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);                \
             auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                      \
             TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),            \
-                        OPS_ERROR(ErrCode::INTERNAL));                                                                 \
+                        OPS_ERROR(ErrCode::ACL));                                                                 \
             void *workspace_addr = nullptr;                                                                            \
             at::Tensor workspace_tensor;                                                                               \
             if (workspace_size != 0) {                                                                                 \
@@ -1118,7 +1118,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                                 \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
-                        OPS_ERROR(ErrCode::INTERNAL));                                                                 \
+                        OPS_ERROR(ErrCode::ACL));                                                                 \
             ReleaseConvertTypes(converted_params);                                                                     \
             ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                          \
             if (releaseMemFunc) {                                                                                      \
@@ -1180,7 +1180,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
         TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                \
-                    OPS_ERROR(ErrCode::INTERNAL));                                                                     \
+                    OPS_ERROR(ErrCode::ACL));                                                                     \
         void *workspace_addr = nullptr;                                                                                \
         at::Tensor workspace_tensor;                                                                                   \
         if (workspace_size != 0) {                                                                                     \
@@ -1191,7 +1191,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
-                        OPS_ERROR(ErrCode::INTERNAL));                                                                 \
+                        OPS_ERROR(ErrCode::ACL));                                                                 \
             ReleaseConvertTypes(converted_params);                                                                     \
             ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                          \
             if (releaseMemFunc) {                                                                                      \
@@ -1245,7 +1245,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);                \
             auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                      \
             TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),            \
-                        OPS_ERROR(ErrCode::INTERNAL));                                                                 \
+                        OPS_ERROR(ErrCode::ACL));                                                                 \
             void *workspace_addr = nullptr;                                                                            \
             at::Tensor workspace_tensor;                                                                               \
             if (workspace_size != 0) {                                                                                 \
@@ -1255,7 +1255,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
-                        OPS_ERROR(ErrCode::INTERNAL));                                                                 \
+                        OPS_ERROR(ErrCode::ACL));                                                                 \
             ReleaseConvertTypes(converted_params);                                                                     \
             ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                          \
             if (releaseMemFunc) {                                                                                      \
@@ -1377,7 +1377,7 @@ private:
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
         TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                \
-            OPS_ERROR(ErrCode::INTERNAL));                                                                             \
+            OPS_ERROR(ErrCode::ACL));                                                                             \
         void *workspace_addr = nullptr;                                                                                \
         at::Tensor workspace_tensor;                                                                                   \
         if (workspace_size != 0) {                                                                                     \
@@ -1388,7 +1388,7 @@ private:
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
-                OPS_ERROR(ErrCode::INTERNAL));                                                                         \
+                OPS_ERROR(ErrCode::ACL));                                                                         \
             return api_ret;                                                                                            \
         };                                                                                                             \
         at_npu::native::OpCommand cmd;                                                                                 \
