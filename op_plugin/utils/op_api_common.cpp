@@ -380,7 +380,7 @@ void add_param_to_buf_v2(const std::vector<int64_t> &at_array)
 void add_param_to_buf_v2(const std::vector<bool> &at_array)
 {
     bool *value_ptr = reinterpret_cast<bool *>(malloc(at_array.size() * sizeof(bool)));
-    for (int i = 0; i < at_array.size(); i++) {
+    for (size_t i = 0; i < at_array.size(); i++) {
         value_ptr[i] = at_array[i];
     }
     MEMCPY_TO_BUF(value_ptr, static_cast<int64_t>(at_array.size() * sizeof(int64_t)));

@@ -537,7 +537,7 @@ inline aclBoolArray *ConvertTypeV2(const std::vector<bool> &value)
     }
 
     bool *value_ptr = reinterpret_cast<bool *>(malloc(value.size() * sizeof(bool)));
-    for (int i = 0; i < value.size(); i++) {
+    for (size_t i = 0; i < value.size(); i++) {
         value_ptr[i] = value[i];
     }
     auto array = aclCreateBoolArray(value_ptr, value.size());
