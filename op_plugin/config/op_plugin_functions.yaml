@@ -270,6 +270,12 @@ official:
   - func: _foreach_copy_(Tensor(a!)[] self, Tensor[] src, bool non_blocking=False) -> ()
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
+  - func: _foreach_sign(Tensor[] self) -> Tensor[]
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    
+  - func: _foreach_sign_(Tensor(a!)[] self) -> ()
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+
   - func: _foreach_div.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
     op_api: all_version
 
