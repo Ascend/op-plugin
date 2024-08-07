@@ -284,7 +284,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_flash_attention_g
                 value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ",
                 dy.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ",
+    TORCH_CHECK(keep_prob > 0 && keep_prob <= 1, "The keep_prob value must be in range of (0, 1], but got ",
                 keep_prob, OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "TND") {
@@ -350,7 +350,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
                 key.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ",
                 value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ",
+    TORCH_CHECK(keep_prob > 0 && keep_prob <= 1, "The keep_prob value must be in range of (0, 1], but got ",
                 keep_prob, OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "TND") {
@@ -360,6 +360,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
                     sparse_mode <= static_cast<int64_t>(SparseMode::BAND_LEFT_UP_CAUSAL)),
                     "The sparse_mode value must be in range of [0,5) or (5,8], but got ",
                     sparse_mode, OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(ac_seq_qlen.size() != 0 && ac_seq_kvlen.size() != 0 && ac_seq_qlen.size() == ac_seq_kvlen.size(),
+                    "the size of actual_seq_qlen and actual_seq_kvlen must be the same and cannot be empty." +
+                    OPS_ERROR(ErrCode::PARAM));
     } else {
         TORCH_CHECK(sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
                     sparse_mode <= static_cast<int64_t>(SparseMode::PREFIX_COMPRESS),
@@ -422,7 +425,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t seed;
     int64_t offset;
     int64_t numels;
-    if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
+    if (input_layout_str == "TND") {
         numels = N;
         int64_t accum = ac_seq_qlen[0] * ac_seq_kvlen[0];
         for (size_t i = 1; i < ac_seq_qlen.size(); i++) {
@@ -627,7 +630,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ",
         dy.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob,
+    TORCH_CHECK(keep_prob > 0 && keep_prob <= 1, "The keep_prob value must be in range of (0, 1], but got ", keep_prob,
         OPS_ERROR(ErrCode::VALUE));
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "TND") {
@@ -690,7 +693,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", query.dim(), "-dimensional");
     TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(), "-dimensional");
     TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", value.dim(), "-dimensional");
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
+    TORCH_CHECK(keep_prob > 0 && keep_prob <= 1, "The keep_prob value must be in range of (0, 1], but got ", keep_prob);
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "TND") {
         TORCH_CHECK((sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
@@ -699,6 +702,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
                     sparse_mode <= static_cast<int64_t>(SparseMode::BAND_LEFT_UP_CAUSAL)),
                     "The sparse_mode value must be in range of [0,5) or (5,8], but got ",
                     sparse_mode, OPS_ERROR(ErrCode::PARAM));
+
+        TORCH_CHECK(ac_seq_qlen.size() != 0 && ac_seq_kvlen.size() != 0 && ac_seq_qlen.size() == ac_seq_kvlen.size(),
+                    "the size of actual_seq_qlen and actual_seq_kvlen must be the same and cannot be empty." +
+                    OPS_ERROR(ErrCode::PARAM));
     } else {
         TORCH_CHECK(sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
                     sparse_mode <= static_cast<int64_t>(SparseMode::PREFIX_COMPRESS),
@@ -762,7 +769,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t seed;
     int64_t offset;
     int64_t numels;
-    if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
+    if (input_layout_str == "TND") {
         numels = N;
         int64_t accum = ac_seq_qlen[0] * ac_seq_kvlen[0];
         for (size_t i = 1; i < ac_seq_qlen.size(); i++) {
@@ -968,7 +975,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ",
         dy.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob,
+    TORCH_CHECK(keep_prob > 0 && keep_prob <= 1, "The keep_prob value must be in range of (0, 1], but got ", keep_prob,
                 OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "TND") {
@@ -1034,7 +1041,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         key.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ",
         value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(keep_prob > 0 && keep_prob <= 1, "The keep_prob value must be in range of (0, 1], but got ", keep_prob, OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "TND") {
         TORCH_CHECK((sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
@@ -1043,6 +1050,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
                     sparse_mode <= static_cast<int64_t>(SparseMode::BAND_LEFT_UP_CAUSAL)),
                     "The sparse_mode value must be in range of [0,5) or (5,8], but got ",
                     sparse_mode, OPS_ERROR(ErrCode::PARAM));
+
+        TORCH_CHECK(ac_seq_qlen.size() != 0 && ac_seq_kvlen.size() != 0 && ac_seq_qlen.size() == ac_seq_kvlen.size(),
+                    "the size of actual_seq_qlen and actual_seq_kvlen must be the same and cannot be empty." +
+                    OPS_ERROR(ErrCode::PARAM));
     } else {
         TORCH_CHECK(sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
                     sparse_mode <= static_cast<int64_t>(SparseMode::PREFIX_COMPRESS),
@@ -1106,7 +1117,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t seed;
     int64_t offset;
     int64_t numels;
-    if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
+    if (input_layout_str == "TND") {
         numels = N;
         int64_t accum = ac_seq_qlen[0] * ac_seq_kvlen[0];
         for (uint64_t i = 1; i < ac_seq_qlen.size(); i++) {
@@ -1405,7 +1416,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ", dy.dim(), "-dimensional",
         OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob,
+    TORCH_CHECK(keep_prob > 0 && keep_prob <= 1, "The keep_prob value must be in range of (0, 1], but got ", keep_prob,
         OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "TND") {
@@ -1471,7 +1482,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         "-dimensional", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ",
         value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob,
+    TORCH_CHECK(keep_prob > 0 && keep_prob <= 1, "The keep_prob value must be in range of (0, 1], but got ", keep_prob,
         OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "TND") {
@@ -1481,6 +1492,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
                     sparse_mode <= static_cast<int64_t>(SparseMode::BAND_LEFT_UP_CAUSAL)),
                     "The sparse_mode value must be in range of [0,5) or (5,8], but got ",
                     sparse_mode, OPS_ERROR(ErrCode::PARAM));
+
+        TORCH_CHECK(ac_seq_qlen.size() != 0 && ac_seq_kvlen.size() != 0 && ac_seq_qlen.size() == ac_seq_kvlen.size(),
+                    "the size of actual_seq_qlen and actual_seq_kvlen must be the same and cannot be empty." +
+                    OPS_ERROR(ErrCode::PARAM));
     } else {
         TORCH_CHECK(sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
                     sparse_mode <= static_cast<int64_t>(SparseMode::PREFIX_COMPRESS),
@@ -1544,7 +1559,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t seed;
     int64_t offset;
     int64_t numels;
-    if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
+    if (input_layout_str == "TND") {
         numels = N;
         int64_t accum = ac_seq_qlen[0] * ac_seq_kvlen[0];
         for (size_t i = 1; i < ac_seq_qlen.size(); i++) {
