@@ -35,21 +35,22 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
     DO_COMPATIBILITY(aclnnGroupNormBackward,
                      acl_op::native_group_norm_backward(dY, X, mean, rstd, gamma_opt, N, C, HxW, group,
                                                         grad_input_mask));
-
+    c10::MaybeOwned<at::Tensor> gamma_maybe_owned = at::borrow_from_optional_tensor(gamma_opt);
+    const at::Tensor& gamma = *gamma_maybe_owned;
     at::Tensor grad_x;
     at::Tensor grad_gamma;
     at::Tensor grad_beta;
     if (grad_input_mask[0]) {
-        grad_x = npu_preparation::apply_tensor_without_format(dY);
+        grad_x = npu_preparation::apply_tensor_without_format(X);
     }
     if (grad_input_mask[1]) {
-        grad_gamma = npu_preparation::apply_tensor_without_format(X, {C});
+        grad_gamma = npu_preparation::apply_tensor_without_format(gamma);
     }
     if (grad_input_mask[2]) {
-        grad_beta = npu_preparation::apply_tensor_without_format(X, {C});
+        grad_beta = npu_preparation::apply_tensor_without_format(gamma);
     }
 
-    EXEC_NPU_CMD(aclnnGroupNormBackward, dY, X, mean, rstd, gamma_opt, N, C, HxW, group, grad_input_mask,
+    EXEC_NPU_CMD(aclnnGroupNormBackward, dY, X, mean, rstd, gamma, N, C, HxW, group, grad_input_mask,
                  grad_x, grad_gamma, grad_beta);
     return std::make_tuple(grad_x, grad_gamma, grad_beta);
 }
