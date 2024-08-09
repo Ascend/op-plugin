@@ -37,7 +37,7 @@ class TestUnique(TestCase):
             [[np.float32, (2, 3)], True, False],
             [[np.bool, (2, 3)], True, True],
             [[np.float16, (2, 3)], True, True],
-            # [[np.float16, (208, 3136, 19, 5)], False, False]
+            [[np.float16, (208, 3136, 19, 5)], False, False]
         ]
 
         for item in shape_format:

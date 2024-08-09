@@ -61,7 +61,7 @@ std::tuple<at::Tensor&, at::Tensor&> _unique_out_npu(
       .Output(y)
       .Output(y_inverse)
       .Output(y_counts)
-      .Attr("sorted", sorted)
+      .Attr("sorted", true)
       .Attr("return_inverse", return_inverse)
       .Attr("return_counts", false)
       .Run();
@@ -71,7 +71,32 @@ std::tuple<at::Tensor&, at::Tensor&> _unique_out_npu(
 #endif
 } // namespace
 
-#if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R1, VERSION_NEWEST)
+#if VERSION_BETWEEN(V1R11, V1R11)
+std::tuple<at::Tensor, at::Tensor> _unique(
+    const at::Tensor& self_op,
+    bool sorted,
+    bool return_inverse) {
+  const at::Tensor self = self_op.scalar_type() == at::kHalf ?
+      at_npu::native::custom_ops::npu_dtype_cast(self_op, at::kFloat) : self_op;
+  if (self.numel() == 0) {
+    at::Tensor result = npu_preparation::apply_tensor(self, {0});
+    at::Tensor y_inverse = npu_preparation::apply_tensor({0}, self.options().dtype(at::kLong), self);
+    return std::tie(result, y_inverse);
+  }
+  at::Tensor y = npu_preparation::apply_tensor(self, self.numel());
+  at::Tensor y_inverse = !return_inverse ?
+      npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND) :
+      npu_preparation::apply_tensor_with_format(self.sizes(), self.options().dtype(at::kLong), ACL_FORMAT_ND);
+
+  _unique_out_npu(y, y_inverse, self, sorted, return_inverse);
+  if (self_op.scalar_type() == at::kHalf) {
+    y = at_npu::native::custom_ops::npu_dtype_cast(y, at::kHalf);
+  }
+  return std::tuple<at::Tensor, at::Tensor>(y, y_inverse);
+}
+#endif
+
+#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> _unique(
     const at::Tensor& self,
     bool sorted,
