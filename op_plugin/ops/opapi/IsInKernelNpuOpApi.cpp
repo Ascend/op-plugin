@@ -106,16 +106,6 @@ void isin_Tensor_Tensor_out_impl(const at::Tensor& elements,
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& isin_out(const at::Scalar& element, const at::Tensor &test_element,
-                     bool assume_unique, bool invert, at::Tensor& result)
-{
-    DO_COMPATIBILITY(aclnnIsInScalarTensor, acl_op::isin_out(element, test_element, assume_unique, invert, result));
-    c10::SmallVector<int64_t, SIZE> shape_small_vec;
-    npu_preparation::check_tensor({test_element}, result, at::ScalarType::Bool, shape_small_vec);
-    EXEC_NPU_CMD(aclnnIsInScalarTensor, element, test_element, assume_unique, invert, result);
-    return result;
-}
-
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor& isin_out(const at::Tensor& elements, const at::Tensor &test_elements,
                      bool assume_unique, bool invert, at::Tensor& result)
