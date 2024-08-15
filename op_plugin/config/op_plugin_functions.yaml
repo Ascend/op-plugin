@@ -49,6 +49,11 @@ official:
   - func: _adaptive_avg_pool2d_backward(Tensor grad_output, Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnAdaptiveAvgPool2dBackward
 
   - func: _adaptive_avg_pool3d(Tensor self, SymInt[3] output_size) -> Tensor
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
@@ -59,6 +64,11 @@ official:
   - func: _adaptive_avg_pool3d_backward(Tensor grad_output, Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnAdaptiveAvgPool3dBackward
 
   - func: _add_relu.Tensor(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor
     acl_op: all_version
@@ -72,10 +82,26 @@ official:
   - func: _aminmax(Tensor self) -> (Tensor, Tensor)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out0:
+        size: reduce_ops_npu_output_size(self, get_dimlist_for_tensor(self), false)
+        dtype: self
+      out1:
+        size: reduce_ops_npu_output_size(self, get_dimlist_for_tensor(self), false)
+        dtype: self
+      exec: aclnnAminmaxAll
 
   - func: _aminmax.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor, Tensor)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out0:
+        size: reduce_ops_npu_output_size(self, {dim}, keepdim)
+        dtype: self
+      out1:
+        size: reduce_ops_npu_output_size(self, {dim}, keepdim)
+        dtype: self
+      exec: aclnnAminmaxDim
 
   - func: _amp_foreach_non_finite_check_and_unscale_(Tensor(a!)[] self, Tensor(b!) found_inf, Tensor inv_scale) -> ()
     acl_op: all_version
@@ -119,6 +145,11 @@ official:
   - func: _ctc_loss_backward(Tensor grad, Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, Tensor neg_log_likelihood, Tensor log_alpha, int blank, bool zero_infinity=False) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: log_probs
+        dtype: grad
+      exec: aclnnCtcLossBackward
 
   - func: _cummax_helper(Tensor self, Tensor(a!) values, Tensor(b!) indices, int dim) -> ()
     acl_op: all_version
@@ -608,18 +639,35 @@ official:
   - func: _log_softmax(Tensor self, int dim, bool half_to_float) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'half_to_float? at::kFloat: self.scalar_type()'
+      exec: aclnnLogSoftmax, self, dim, out
 
   - func: _log_softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
     op_api: all_version
+    gen_opapi:
+      exec: aclnnLogSoftmax, self, dim, out
 
   - func: _log_softmax_backward_data(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: grad_output
+        dtype: grad_output
+      exec: aclnnLogSoftmaxBackward, grad_output, output, dim, out
 
   - func: _log_softmax_backward_data.out(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: grad_output
+        dtype: grad_output
+      exec: aclnnLogSoftmaxBackward, grad_output, output, dim, out
 
   - func: _native_batch_norm_legit(Tensor input, Tensor? weight, Tensor? bias, Tensor(a!) running_mean, Tensor(b!) running_var, bool training, float momentum, float eps) -> (Tensor, Tensor, Tensor)
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
@@ -718,14 +766,27 @@ official:
   - func: acos(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat : self.scalar_type()'
+        name: self
+      exec: aclnnAcos
 
   - func: acos.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        name: self
+      exec: aclnnAcos
 
   - func: acos_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceAcos
 
   - func: acosh(Tensor self) -> Tensor
     acl_op: all_version
@@ -785,14 +846,26 @@ official:
   - func: adaptive_avg_pool3d_backward.grad_input(Tensor grad_output, Tensor self, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnAdaptiveAvgPool3dBackward
 
   - func: adaptive_max_pool2d(Tensor self, int[2] output_size) -> (Tensor, Tensor)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: adaptive_max_pool2d.out
 
   - func: adaptive_max_pool2d.out(Tensor self, int[2] output_size, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: max_pool2d_out_size(self, output_size)
+        dtype: self
+      indices:
+        size: max_pool2d_out_size(self, output_size)
+        dtype: at::kLong
+      exec: aclnnAdaptiveMaxPool2d
 
   - func: adaptive_max_pool2d_backward(Tensor grad_output, Tensor self, Tensor indices) -> Tensor
     acl_op: all_version
@@ -884,14 +957,23 @@ official:
   - func: addr(Tensor self, Tensor vec1, Tensor vec2, *, Scalar beta=1, Scalar alpha=1) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: addr_npu_output_size(self, vec1, vec2, beta, alpha)
+        dtype: at::native::result_type({self, vec1, vec2})
+      exec: aclnnAddr
 
   - func: addr.out(Tensor self, Tensor vec1, Tensor vec2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnAddr
 
   - func: addr_(Tensor(a!) self, Tensor vec1, Tensor vec2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceAddr
 
   - func: affine_grid_generator(Tensor theta, SymInt[] size, bool align_corners) -> Tensor
     acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
@@ -926,18 +1008,36 @@ official:
   - func: amax(Tensor self, int[1] dim=[], bool keepdim=False) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: reduce_ops_npu_output_size(self, dim, keepdim)
+        dtype: self
+      exec: aclnnAmax
 
   - func: amax.out(Tensor self, int[1] dim=[], bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: reduce_ops_npu_output_size(self, dim, keepdim)
+      exec: aclnnAmax
 
   - func: amin(Tensor self, int[1] dim=[], bool keepdim=False) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: reduce_ops_npu_output_size(self, dim, keepdim)
+        dtype: self
+      exec: aclnnAmin
 
   - func: amin.out(Tensor self, int[1] dim=[], bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: reduce_ops_npu_output_size(self, dim, keepdim)
+      exec: aclnnAmin
 
   - func: aminmax(Tensor self, *, int? dim=None, bool keepdim=False) -> (Tensor min, Tensor max)
     op_api: all_version
@@ -1025,34 +1125,69 @@ official:
   - func: asin(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat: self.scalar_type()'
+        name: self
+      exec: aclnnAsin
 
   - func: asin.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        name: self
+      exec: aclnnAsin
 
   - func: asin_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceAsin
 
   - func: asinh(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat : self.scalar_type()'
+      exec: aclnnAsinh
 
   - func: asinh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+      exec: aclnnAsinh
 
   - func: asinh_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceAsinh
 
   - func: atan(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'isIntegralType(self.scalar_type(), true)? at::kFloat: self.scalar_type()'
+        name: self
+      exec: aclnnAtan
 
   - func: atan.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        name: self
+      exec: aclnnAtan
 
   - func: atan2(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
@@ -1069,18 +1204,31 @@ official:
   - func: atan_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceAtan
 
   - func: atanh(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'isIntegralType(self.scalar_type(), true)? at::kFloat: self.scalar_type()'
+      exec: aclnnAtanh
 
   - func: atanh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+      exec: aclnnAtanh
 
   - func: atanh_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceAtanh
 
   - func: avg_pool2d(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None) -> Tensor
     acl_op: all_version
@@ -1131,6 +1279,11 @@ official:
   - func: batch_norm_backward_elemt(Tensor grad_out, Tensor input, Tensor mean, Tensor invstd, Tensor? weight, Tensor sum_dy, Tensor sum_dy_xmu, Tensor count) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: input
+        dtype: input
+      exec: aclnnBatchNormElemtBackward
 
   - func: batch_norm_backward_reduce(Tensor grad_out, Tensor input, Tensor mean, Tensor invstd, Tensor? weight, bool input_g, bool weight_g, bool bias_g) -> (Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -1147,10 +1300,26 @@ official:
   - func: batch_norm_gather_stats_with_counts(Tensor input, Tensor mean, Tensor invstd, Tensor? running_mean, Tensor? running_var, float momentum, float eps, Tensor counts) -> (Tensor, Tensor)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out0:
+        size: '{input.size(1)}'
+        dtype: 'input.scalar_type() == mean.scalar_type() && input.scalar_type() == at::kHalf? at::kHalf: at::kFloat'
+      out1:
+        size: '{input.size(1)}'
+        dtype: 'input.scalar_type() == mean.scalar_type() && input.scalar_type() == at::kHalf? at::kHalf: at::kFloat'
+      exec: aclnnBatchNormGatherStatsWithCounts
 
   - func: batch_norm_stats(Tensor input, float eps) -> (Tensor, Tensor)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out0:
+        size: '{input.size(1)}'
+        dtype: at::kFloat
+      out1:
+        size: '{input.size(1)}'
+        dtype: at::kFloat
+      exec: aclnnBatchNormStats
 
   - func: bernoulli(Tensor self, *, Generator? generator=None) -> Tensor
     acl_op: all_version
@@ -1175,18 +1344,32 @@ official:
   - func: binary_cross_entropy(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: 'reduction == at::Reduction::None? self.sizes(): at::ArrayRef<int64_t>()'
+        dtype: self
+      exec: aclnnBinaryCrossEntropy
 
   - func: binary_cross_entropy.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnBinaryCrossEntropy
 
   - func: binary_cross_entropy_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnBinaryCrossEntropyBackward
 
   - func: binary_cross_entropy_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnBinaryCrossEntropyBackward 
 
   - func: binary_cross_entropy_with_logits(Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
     acl_op: all_version
@@ -1226,14 +1409,24 @@ official:
   - func: bitwise_not(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: bitwise_not.out
 
   - func: bitwise_not.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+        name: self
+      exec: aclnnBitwiseNot
 
   - func: bitwise_not_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: bitwise_not.out
 
   - func: bitwise_or.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version

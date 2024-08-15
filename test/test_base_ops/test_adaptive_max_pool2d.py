@@ -7,6 +7,9 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
 
 
+torch.npu.set_compile_mode(jit_compile=False)
+
+
 class TestAdaptiveMaxPool2d(TestCase):
     def cpu_op_exec(self, input1, output_size):
         m = nn.AdaptiveMaxPool2d(output_size)

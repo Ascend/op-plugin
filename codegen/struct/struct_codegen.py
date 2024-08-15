@@ -209,7 +209,7 @@ def gen_op_api(
 ) -> None:
 
     fm.write_with_template(
-        f'StructKernelNpuOpapi.cpp', f'StructKernelNpuOpapi.cpp', lambda: {
+        f'StructKernelNpuOpApi.cpp', f'StructKernelNpuOpApi.cpp', lambda: {
             'op_api_definition': list(concatMap(
                 lambda f: compute_op_api_definition(f),
                 struct_functions
