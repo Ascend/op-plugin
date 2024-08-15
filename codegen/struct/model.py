@@ -19,10 +19,20 @@ import copy
 from dataclasses import dataclass
 
 from codegen.model import (BaseTy, SchemaKind, BaseType,
-                           NativeFunction)
+                           Argument, NativeFunction, ListType)
 from codegen.context import native_function_manager
 from codegen.api.types import NativeSignature
 from codegen.api import cpp
+
+
+def filt_input_tensor(arguments: Sequence[Argument]) -> List[str]:
+    input_tensors = list()
+    for arg in arguments:
+        if isinstance(arg.type, BaseType) and arg.type.name == BaseTy.Tensor:
+            input_tensors.append(arg.name)
+        if isinstance(arg.type, ListType) and arg.type.elem.name == BaseTy.Tensor:
+            input_tensors.append(f'{arg.name}[0]')
+    return input_tensors
 
 
 @dataclass(frozen=True)
@@ -43,8 +53,8 @@ class ResInfo:
                                f"That does not match {f.func.name}'s returns tensor number {tensor_number}")
 
         arguments = f.func.arguments.flat_all
-        input_tensors = [arg.name for arg in arguments
-                         if isinstance(arg.type, BaseType) and arg.type.name == BaseTy.Tensor]
+
+        input_tensors = filt_input_tensor(arguments)
         res_infos = []
 
         if kind == SchemaKind.out:
@@ -165,6 +175,8 @@ class StructInfo:
                     continue
                 else:
                     gen_opapi_info = struct_map.get(structured_inherit)
+                    if gen_opapi_info is None:
+                        raise RuntimeError(f'The structured_inherit func {structured_inherit} is None')
                     gen_opapi_info = gen_opapi_info.get('gen_opapi')
 
             aclnn_arguments = gen_opapi_info.pop('exec', None)

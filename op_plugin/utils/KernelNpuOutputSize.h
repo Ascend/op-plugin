@@ -362,5 +362,8 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> max_pool3d_output_size(const at
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> diag_output_size(const at::Tensor& self,
                                                                   int64_t diagonal);
 
+OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> stack_output_size(at::TensorList tensors,
+                                                                   int64_t dim);
+
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE

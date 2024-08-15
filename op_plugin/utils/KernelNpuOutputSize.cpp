@@ -16,6 +16,7 @@
 #include <bitset>
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 #include "op_plugin/utils/AdvancedIndex.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/core/npu/NPUException.h"
 
 namespace op_infer {
@@ -1682,6 +1683,20 @@ c10::SmallVector<int64_t, SIZE> diag_output_size(const at::Tensor& self, int64_t
         TORCH_CHECK(-diagonal <= m,
                     "If the value is 2-dimensional tensor, the diagonal shoule be less than shape.Diagonal is ",
                     diagonal, OPS_ERROR(ErrCode::VALUE));
+    }
+    return shape;
+}
+
+c10::SmallVector<int64_t, SIZE> stack_output_size(at::TensorList tensors, int64_t dim)
+{
+    dim = op_plugin::utils::make_warp_dim(dim, tensors[0].dim() + 1);
+    at::SmallVector<int64_t, SIZE> shape;
+    for (int i = 0; i < dim; i++) {
+        shape.emplace_back(tensors[0].size(i));
+    }
+    shape.emplace_back(tensors.size());
+    for (int i = dim; i < tensors[0].dim(); i++) {
+        shape.emplace_back(tensors[0].size(i));
     }
     return shape;
 }

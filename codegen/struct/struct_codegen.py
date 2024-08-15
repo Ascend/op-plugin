@@ -26,7 +26,7 @@ from codegen.utils import concatMap
 from codegen.context import native_function_manager
 from codegen.api.types import NativeSignature
 from codegen.api import cpp
-from .model import StructInfo, ResInfo
+from .model import StructInfo, ResInfo, filt_input_tensor
 
 
 USED_KEYS = ['official', 'custom']
@@ -149,9 +149,7 @@ def compute_op_api_definition(struct: StructInfo):
                                                        func_name=name,
                                                        args_exprs_str=args_exprs_str) if struct.acl_op else ""
 
-        arguments = f.func.arguments.flat_non_out
-        tensor_arguments = ", ".join([arg.name for arg in arguments
-                                      if isinstance(arg.type, BaseType) and arg.type.name == BaseTy.Tensor])
+        tensor_arguments = ", ".join(filt_input_tensor(f.func.arguments.flat_non_out))
 
         size_map, dtype_map = gen_size_dtype_map(res_infos)
 

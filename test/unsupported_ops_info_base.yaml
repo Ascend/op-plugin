@@ -11042,3 +11042,21 @@ round_decimals_neg_3:
 _refs.select_scatter:
   test_neg_view:
   - float64
+nn.functional.channel_shuffle:
+  test_conj_view:
+  - complex64
+  test_variant_consistency_eager:
+  - complex64
+  test_neg_view:
+  - float64
+  test_non_standard_bool_values:
+  - bool
+  test_neg_conj_view:
+  - complex128
+_refs.nn.functional.channel_shuffle:
+  test_neg_view:
+  - float64
+  test_conj_view:
+  - complex64  
+  test_neg_conj_view:
+  - complex128
