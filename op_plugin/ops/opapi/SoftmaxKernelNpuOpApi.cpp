@@ -35,24 +35,4 @@ at::Tensor softmax(const at::Tensor& self, at::Dimname dim, c10::optional<at::Sc
   return op_api::softmax(self, dimname_to_position(self, dim), dtype);
 }
 
-at::Tensor _softmax(const at::Tensor& self, int64_t dim, bool half_to_float) {
-  DO_COMPATIBILITY(aclnnSoftmax, acl_op::_softmax(self, dim, half_to_float));
-  // construct the output tensor of the NPU
-  at::Tensor result;
-  if (half_to_float) {
-    result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(),
-                                                                        self.options().dtype(at::ScalarType::Float));
-  } else {
-    result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
-  }
-
-  EXEC_NPU_CMD(aclnnSoftmax, self, dim, result);
-  return result;
-}
-
-at::Tensor& _softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float, at::Tensor& out) {
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnSoftmax, self, dim, out);
-  return out;
-}
 }

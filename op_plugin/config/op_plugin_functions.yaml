@@ -619,6 +619,8 @@ official:
   - func: _index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      exec: aclnnInplaceIndexCopy
 
   - func: _index_put_impl_(Tensor(a!) self, Tensor?[] indices, Tensor values, bool accumulate=False, bool unsafe=False) -> Tensor(a!)
     acl_op: all_version
@@ -691,22 +693,44 @@ official:
   - func: _s_where(Tensor condition, Tensor self, Tensor other) -> Tensor
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      out:
+        size: 'broadcast_ops_npu_output_size(condition.sizes(), broadcast_ops_npu_output_size(self, other))'
+        dtype: self
+      exec: aclnnSWhere
 
   - func: _softmax(Tensor self, int dim, bool half_to_float) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out: 
+        size: self
+        dtype: '(half_to_float == true) ? at::ScalarType::Float : self.scalar_type()'
+      exec: aclnnSoftmax, self, dim, out
 
   - func: _softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnSoftmax, self, dim, out
 
   - func: _softmax_backward_data(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: output
+        dtype: output
+      exec: aclnnSoftmaxBackward, grad_output, output, dim, grad_input
 
   - func: _softmax_backward_data.out(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: grad_output
+        dtype: grad_output
+      exec: aclnnSoftmaxBackward, grad_output, output, dim, grad_input
 
   - func: _symeig_helper(Tensor self, bool eigenvectors, bool upper) -> (Tensor, Tensor)
     acl_op: v1.11, v2.0
@@ -714,6 +738,11 @@ official:
   - func: _prelu_kernel(Tensor self, Tensor weight) -> Tensor
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnPrelu
 
   - func: _prelu_kernel_backward(Tensor grad_output, Tensor self, Tensor weight) -> (Tensor, Tensor)
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
@@ -1374,6 +1403,11 @@ official:
   - func: binary_cross_entropy_with_logits(Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: '(reduction == at::Reduction::None) ? input_same_output_size(target) : at::ArrayRef<int64_t>()'
+        dtype: target
+      exec: aclnnBinaryCrossEntropyWithLogits
 
   - func: binary_cross_entropy_with_logits_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
     acl_op: v1.11
@@ -2431,22 +2465,44 @@ official:
   - func: gelu(Tensor self) -> Tensor
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      structured_inherit: gelu.out
 
   - func: gelu(Tensor self, *, str approximate='none') -> Tensor
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnGelu, self, out
 
   - func: gelu.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnGelu
 
   - func: gelu_backward(Tensor grad_output, Tensor self) -> Tensor
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(grad_output, self)'
+        dtype: 'at::native::result_type(grad_output, self)'
+      exec: aclnnGeluBackward
 
   - func: gelu_backward(Tensor grad_output, Tensor self, *, str approximate='none') -> Tensor
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(grad_output, self)'
+        dtype: 'at::native::result_type(grad_output, self)'
+      exec: aclnnGeluBackward, grad_output, self, grad_input
 
   - func: glu(Tensor self, int dim=-1) -> Tensor
     acl_op: all_version
@@ -2520,6 +2576,14 @@ official:
   - func: grid_sampler_3d_backward(Tensor grad_output, Tensor input, Tensor grid, int interpolation_mode, int padding_mode, bool align_corners, bool[2] output_mask) -> (Tensor, Tensor)
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      dinput:
+        size: input
+        dtype: input
+      dgrid:
+        size: grid
+        dtype: grid
+      exec: aclnnGridSampler3DBackward
 
   - func: gru.input(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)
     acl_op: all_version
@@ -2708,10 +2772,17 @@ official:
   - func: index_copy(Tensor self, int dim, Tensor index, Tensor source) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnIndexCopy
 
   - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      exec: aclnnInplaceIndexCopy
 
   - func: index_fill.int_Scalar(Tensor self, int dim, Tensor index, Scalar value) -> Tensor
     acl_op: all_version
@@ -2845,10 +2916,20 @@ official:
   - func: im2col_backward(Tensor grad_output, int[2] input_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride) -> Tensor
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      grad_input:
+        size: 'im2col_backward_npu_output_size(grad_output, input_size, kernel_size)'
+        dtype: grad_output
+      exec: aclnnIm2colBackward
 
   - func: im2col_backward.grad_input(Tensor grad_output, int[2] input_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      grad_input:
+        size: 'im2col_backward_npu_output_size(grad_output, input_size, kernel_size)'
+        dtype: grad_input
+      exec: aclnnIm2colBackward
 
   - func: kl_div(Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
     acl_op: all_version
@@ -2864,6 +2945,11 @@ official:
   - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnKlDivBackward
 
   - func: kthvalue(Tensor self, int k, int dim=-1, bool keepdim=False) -> (Tensor values, Tensor indices)
     acl_op: all_version
@@ -2884,6 +2970,11 @@ official:
   - func: l1_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: '(reduction == at::Reduction::None) ? broadcast_ops_npu_output_size(self, target) : c10::SmallVector<int64_t, op_infer::SIZE>{}'
+        dtype: 'at::native::result_type(target, self)'
+      exec: aclnnL1Loss
 
   - func: l1_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -2892,10 +2983,20 @@ official:
   - func: l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(broadcast_ops_npu_output_size(self, target), grad_output.sizes())'
+        dtype: 'promoteTypes(grad_output.scalar_type(), at::native::result_type(target, self))'
+      exec: aclnnL1LossBackward
 
   - func: l1_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(broadcast_ops_npu_output_size(self, target), grad_output.sizes())'
+        dtype: grad_input
+      exec: aclnnL1LossBackward
 
   - func: le.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
@@ -3467,10 +3568,17 @@ official:
   - func: max_unpool2d_backward(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size) -> Tensor
     acl_op: v1.11, v2.0
     op_api: v1.11
+    gen_opapi:
+      structured_inherit: max_unpool2d_backward.grad_input
 
   - func: max_unpool2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11, v2.0
     op_api: v1.11
+    gen_opapi:
+      grad_input:
+        size: self
+        dtype: self
+      exec: aclnnMaxUnpool2dBackward
 
   - func: max_unpool3d(Tensor self, Tensor indices, SymInt[3] output_size, int[3] stride, int[3] padding) -> Tensor
     acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
@@ -3505,10 +3613,17 @@ official:
   - func: max_unpool3d_backward(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding) -> Tensor
     acl_op: v1.11, v2.0
     op_api: v1.11
-
+    gen_opapi:
+      structured_inherit: max_unpool3d_backward.grad_input
+    
   - func: max_unpool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11, v2.0
     op_api: v1.11
+    gen_opapi:
+      grad_input:
+        size: self
+        dtype: self
+      exec: aclnnMaxUnpool3dBackward
 
   - func: max_pool2d_with_indices(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False) -> (Tensor, Tensor)
     acl_op: all_version
@@ -4186,10 +4301,23 @@ official:
   - func: prelu(Tensor self, Tensor weight) -> Tensor
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnPrelu
 
   - func: prelu_backward(Tensor grad_output, Tensor self, Tensor weight) -> (Tensor, Tensor)
     acl_op: v1.11
     op_api: v1.11
+    gen_opapi:
+      grad_input:
+        size: grad_output
+        dtype: grad_output
+      grad_weight:
+        size: 'prelu_backward_npu_grad_weight_output_size(weight)'
+        dtype: weight
+      exec: aclnnPreluBackward
 
   - func: prod(Tensor self, *, ScalarType? dtype=None) -> Tensor
     acl_op: all_version
@@ -4887,22 +5015,41 @@ official:
   - func: searchsorted.Scalar(Tensor sorted_sequence, Scalar self, *, bool out_int32=False, bool right=False, str? side=None, Tensor? sorter=None) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: 'c10::SmallVector<int64_t, op_infer::SIZE>{}'
+        dtype: 'out_int32 ? at::kInt : at::kLong'
+      exec: aclnnSearchSorteds, sorted_sequence, self, out_int32, right, sorter, out
 
   - func: searchsorted.Tensor(Tensor sorted_sequence, Tensor self, *, bool out_int32=False, bool right=False, str? side=None, Tensor? sorter=None) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: searchsorted.Tensor_out
 
   - func: searchsorted.Tensor_out(Tensor sorted_sequence, Tensor self, *, bool out_int32=False, bool right=False, str? side=None, Tensor? sorter=None, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'out_int32 ? at::kInt : at::kLong'
+      exec: aclnnSearchSorted, sorted_sequence, self, out_int32, right, sorter, out
 
   - func: selu(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnSelu
 
   - func: selu_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceSelu
 
   - func: sgn(Tensor self) -> Tensor
     acl_op: all_version
@@ -4915,93 +5062,181 @@ official:
   - func: sigmoid(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: '(isIntegralType(self.scalar_type(), true)) ? at::kFloat : self.scalar_type()'
+      exec: aclnnSigmoid
 
   - func: sigmoid.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnSigmoid
 
   - func: sigmoid_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceSigmoid
 
   - func: sigmoid_backward(Tensor grad_output, Tensor output) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(grad_output, output)'
+        dtype: 'at::native::result_type(grad_output, output)'
+      exec: aclnnSigmoidBackward
 
   - func: sigmoid_backward.grad_input(Tensor grad_output, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(grad_output, output)'
+        dtype: grad_input
+      exec: aclnnSigmoidBackward
 
   - func: sign(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: sign.out
 
   - func: sign.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnSign
 
   - func: sign_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: sign.out
 
   - func: signbit.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnSignbit
 
   - func: silu(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: silu.out
 
   - func: silu.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnSilu
 
   - func: silu_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: silu.out
 
   - func: silu_backward(Tensor grad_output, Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: silu_backward.grad_input
 
   - func: silu_backward.grad_input(Tensor grad_output, Tensor self, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: grad_output
+        dtype: grad_output
+      exec: aclnnSiluBackward 
 
   - func: sin(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: '(isIntegralType(self.scalar_type(), true)) ? at::kFloat : self.scalar_type()'
+      exec: aclnnSin
 
   - func: sin.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnSin
 
   - func: sin_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceSin
 
   - func: sinc(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: '(isIntegralType(self.scalar_type(), true)) ? at::kFloat : self.scalar_type()'
+      exec: aclnnSinc
 
   - func: sinc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnSinc
 
   - func: sinc_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceSinc
 
   - func: sinh(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: '(isIntegralType(self.scalar_type(), true)) ? at::kFloat : self.scalar_type()'
+      exec: aclnnSinh
 
   - func: sinh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnSinh
 
   - func: sinh_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceSinh
 
   - func: slogdet(Tensor self) -> (Tensor sign, Tensor logabsdet)
     acl_op: all_version
@@ -5078,18 +5313,38 @@ official:
   - func: soft_margin_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: '(reduction == at::Reduction::None) ? broadcast_ops_npu_output_size(self, target) : c10::SmallVector<int64_t, op_infer::SIZE>{}'
+        dtype: self
+      exec: aclnnSoftMarginLoss
 
   - func: soft_margin_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: '(reduction == at::Reduction::None) ? broadcast_ops_npu_output_size(self, target) : c10::SmallVector<int64_t, op_infer::SIZE>{}'
+        dtype: out
+      exec: aclnnSoftMarginLoss
 
   - func: soft_margin_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(broadcast_ops_npu_output_size(grad_output.sizes(), self.sizes()), target.sizes())'
+        dtype: self
+      exec: aclnnSoftMarginLossBackward
 
   - func: soft_margin_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(broadcast_ops_npu_output_size(grad_output.sizes(), self.sizes()), target.sizes())'
+        dtype: grad_input
+      exec: aclnnSoftMarginLossBackward
 
   - func: softmax.Dimname(Tensor self, Dimname dim, *, ScalarType? dtype=None) -> Tensor
     acl_op: all_version
@@ -5102,10 +5357,17 @@ official:
   - func: softplus(Tensor self, Scalar beta=1, Scalar threshold=20) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: softplus.out
 
   - func: softplus.out(Tensor self, Scalar beta=1, Scalar threshold=20, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnSoftplus
 
   - func: softplus_backward(Tensor grad_output, Tensor self, Scalar beta, Scalar threshold) -> Tensor
     acl_op: v2.0
@@ -5113,22 +5375,44 @@ official:
   - func: softplus_backward.grad_input(Tensor grad_output, Tensor self, Scalar beta, Scalar threshold, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnSoftplusBackward
 
   - func: softshrink(Tensor self, Scalar lambd=0.5) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnSoftshrink
 
   - func: softshrink.out(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnSoftshrink
 
   - func: softshrink_backward(Tensor grad_output, Tensor self, Scalar lambd) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(grad_output, self)'
+        dtype: 'at::native::result_type(grad_output, self)'
+      exec: aclnnSoftshrinkBackward
 
   - func: softshrink_backward.grad_input(Tensor grad_output, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(grad_output, self)'
+        dtype: grad_input
+      exec: aclnnSoftshrinkBackward
 
   - func: sort(Tensor self, int dim=-1, bool descending=False) -> (Tensor values, Tensor indices)
     acl_op: all_version
@@ -5155,14 +5439,26 @@ official:
   - func: sqrt(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: '(isIntegralType(self.scalar_type(), true)) ? at::kFloat : self.scalar_type()'
+      exec: aclnnSqrt
 
   - func: sqrt.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnSqrt
 
   - func: sqrt_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceSqrt
 
   - func: square.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -5273,22 +5569,41 @@ official:
   - func: take(Tensor self, Tensor index) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: take.out
 
   - func: take.out(Tensor self, Tensor index, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: index
+        dtype: self
+      exec: aclnnTake
 
   - func: tan(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: '(isIntegralType(self.scalar_type(), true)) ? at::kFloat : self.scalar_type()'
+      exec: aclnnTan
 
   - func: tan.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnTan
 
   - func: tan_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceTan
 
   - func: tanh(Tensor self) -> Tensor
     acl_op: all_version
@@ -5305,10 +5620,17 @@ official:
   - func: tanh_backward(Tensor grad_output, Tensor output) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: tanh_backward.grad_input
 
   - func: tanh_backward.grad_input(Tensor grad_output, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(grad_output, output)'
+        dtype: grad_output
+      exec: aclnnTanhBackward
 
   - func: threshold(Tensor self, Scalar threshold, Scalar value) -> Tensor
     acl_op: all_version
@@ -5325,26 +5647,56 @@ official:
   - func: threshold_backward(Tensor grad_output, Tensor self, Scalar threshold) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnThresholdBackward
 
   - func: topk(Tensor self, SymInt k, int dim=-1, bool largest=True, bool sorted=True) -> (Tensor values, Tensor indices)
     acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      structured_inherit: topk.values
 
   - func: topk(Tensor self, int k, int dim=-1, bool largest=True, bool sorted=True) -> (Tensor values, Tensor indices)
     acl_op: v1.11, v2.0
     op_api: v1.11
+    gen_opapi:
+      structured_inherit: topk.values
 
   - func: topk.values(Tensor self, SymInt k, int dim=-1, bool largest=True, bool sorted=True, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
     acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      values:
+        size: 'topk_npu_output_size(self, k, dim, largest, sorted)'
+        dtype: self
+      indices:
+        size: 'topk_npu_output_size(self, k, dim, largest, sorted)'
+        dtype: 'at::kLong'
+      exec: aclnnTopk
 
   - func: topk.values(Tensor self, int k, int dim=-1, bool largest=True, bool sorted=True, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
     acl_op: v1.11, v2.0
     op_api: v1.11
+    gen_opapi:
+      values:
+        size: 'topk_npu_output_size(self, k, dim, largest, sorted)'
+        dtype: self
+      indices:
+        size: 'topk_npu_output_size(self, k, dim, largest, sorted)'
+        dtype: 'at::kLong'
+      exec: aclnnTopk
 
   - func: trace(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: 'c10::SmallVector<int64_t, op_infer::N>{}'
+        dtype: '(isIntegralType(self.scalar_type(), true)) ? at::kLong : self.scalar_type()'
+      exec: aclnnTrace
 
   - func: triangular_solve(Tensor self, Tensor A, bool upper=True, bool transpose=False, bool unitriangular=False) -> (Tensor solution, Tensor cloned_coefficient)
     acl_op: v2.0
@@ -5355,26 +5707,44 @@ official:
   - func: tril(Tensor self, int diagonal=0) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: tril.out
 
   - func: tril.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnTril
 
   - func: tril_(Tensor(a!) self, int diagonal=0) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceTril
 
   - func: triu(Tensor self, int diagonal=0) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: triu.out
 
   - func: triu.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self    
+      exec: aclnnTriu
 
   - func: triu_(Tensor(a!) self, int diagonal=0) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceTriu
 
   - func: true_divide.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: v2.0
@@ -5394,14 +5764,23 @@ official:
   - func: trunc(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: trunc.out
 
   - func: trunc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnTrunc
 
   - func: trunc_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceTrunc
 
   - func: uniform_(Tensor(a!) self, float from=0, float to=1, *, Generator? generator=None) -> Tensor(a!)
     acl_op: all_version
@@ -5723,10 +6102,20 @@ official:
   - func: vdot(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: 'c10::SmallVector<int64_t, op_infer::N>{}'
+        dtype: self
+      exec: aclnnDot
 
   - func: vdot.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: 'c10::SmallVector<int64_t, op_infer::N>{}'
+        dtype: out
+      exec: aclnnDot
 
   - func: view_as_complex(Tensor(a) self) -> Tensor(a)
     acl_op: all_version
@@ -5749,34 +6138,68 @@ official:
   - func: xlogy.OutScalar_Other(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: out
+      exec: aclnnXLogYScalarOther
 
   - func: xlogy.OutScalar_Self(Scalar self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: other
+        dtype: out
+      exec: aclnnXLogYScalarSelf
 
   - func: xlogy.OutTensor(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: 'broadcast_ops_npu_output_size(self, other)'
+        dtype: out
+      exec: aclnnXLogYTensor
 
   - func: xlogy.Scalar_Other(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: '(isIntegralType(at::result_type(self, other), true)) ? at::kFloat : at::result_type(self, other)'
+      exec: aclnnXLogYScalarOther
 
   - func: xlogy.Scalar_Self(Scalar self, Tensor other) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: other
+        dtype: '(isIntegralType(at::result_type(self, other), true)) ? at::kFloat : at::result_type(self, other)'
+      exec: aclnnXLogYScalarSelf, self, other, out
 
   - func: xlogy.Tensor(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      out:
+        size: 'broadcast_ops_npu_output_size(self, other)'
+        dtype: '(isIntegralType(at::result_type(self, other), true)) ? at::kFloat : at::result_type(self, other)'
+      exec: aclnnXLogYTensor
 
   - func: xlogy_.Scalar_Other(Tensor(a!) self, Scalar other) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      exec: aclnnInplaceXLogYScalarOther
 
   - func: xlogy_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      structured_inherit: xlogy.OutTensor
 
   - func: zero_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
@@ -5881,6 +6304,11 @@ custom:
   - func: l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    gen_opapi:
+      grad_input:
+        size: 'broadcast_ops_npu_output_size(broadcast_ops_npu_output_size(self, target), grad_output.sizes())'
+        dtype: 'promoteTypes(grad_output.scalar_type(), at::native::result_type(target, self))'
+      exec: aclnnL1LossBackward
 
   - func: slow_conv_dilated2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)
     acl_op: all_version
@@ -6589,9 +7017,19 @@ custom:
   - func: npu_swiglu(Tensor self, int dim=-1) -> Tensor
     op_api: all_version
     exposed: all_version
+    gen_opapi:
+      out:
+        size: 'swiglu_backward_infershape(self, dim)'
+        dtype: self
+      exec: aclnnSwiGlu
 
   - func: npu_swiglu_backward(Tensor grad_output, Tensor self, int dim=-1) -> Tensor
     op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnSwiGluGrad
 
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
     op_api: all_version
@@ -6647,6 +7085,11 @@ custom:
   - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      grad_input:
+        size: grad_output
+        dtype: grad_output
+      exec: aclnnSeluBackward
 
   - func: slow_conv_transpose2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] output_padding, int[2] dilation, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)
     acl_op: all_version

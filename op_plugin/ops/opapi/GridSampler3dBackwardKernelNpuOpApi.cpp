@@ -36,20 +36,4 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(const at::Tensor& gr
 }
 #endif
 
-#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
-std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(const at::Tensor& grad, const at::Tensor& input,
-                                                            const at::Tensor& grid, int64_t interpolation_mode,
-                                                            int64_t padding_mode, bool align_corners,
-                                                            std::array<bool, 2> output_mask)
-{
-    DO_COMPATIBILITY(aclnnGridSampler3DBackward, acl_op::grid_sampler_3d_backward(grad, input, grid, interpolation_mode,
-                                                                                  padding_mode, align_corners,
-                                                                                  output_mask));
-    at::Tensor dinput = npu_preparation::apply_tensor_without_format(input);
-    at::Tensor dgrid = npu_preparation::apply_tensor_without_format(grid);
-    EXEC_NPU_CMD(aclnnGridSampler3DBackward, grad, input, grid, interpolation_mode, padding_mode, align_corners,
-                 output_mask, dinput, dgrid);
-    return std::tuple<at::Tensor, at::Tensor>(dinput, dgrid);
-}
-#endif
 }
