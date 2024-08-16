@@ -71,7 +71,7 @@ symint:
 
 ### 适配代码实现
 
-当前支持适配`ACLOP`算子和`ACLNN`算子两类算子，`ACLOP`算子适配文件位于`op_plugin/ops/opapi`，`ACLNN`算子适配文件位于`op_plugin/ops/aclops`目录。一个算子所有版本的适配代码都在一个文件中，通过编译宏`VERSION_VXRX`来区分不同版本。
+当前支持适配`ACLOP`算子和`ACLNN`算子两类算子，`ACLOP`算子适配文件位于`op_plugin/ops/aclops`，`ACLNN`算子适配文件位于`op_plugin/ops/opapi`目录。一个算子所有版本的适配代码都在一个文件中，通过编译宏`VERSION_VXRX`来区分不同版本。
 
 #### ACLOP算子适配
 
