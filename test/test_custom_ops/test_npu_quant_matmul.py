@@ -16,18 +16,18 @@ class TestQuantMatmul(TestCase):
         uint32_deq_scale = np.frombuffer(fp32_deq_scale, np.uint32).reshape(deq_scale_shape)
         #与高19位运算，模拟硬件
         uint32_deq_scale &= 0XFFFFE000
-    
+
         if out_dtype != "int8":
             fp32_deq_scale = np.frombuffer(uint32_deq_scale, np.float32)
-            uint64_deq_scale = np.zeros(deq_scale_shape, np.uint64)
-            uint64_deq_scale |= np.uint64(uint32_deq_scale)
+            uint64_deq_scale = np.zeros(deq_scale_shape, np.int64)
+            uint64_deq_scale |= np.int64(uint32_deq_scale)
         elif out_dtype == "int8":
             temp_quant_tensor = np.random.randint(1, 3, deq_scale_shape).astype(np.float32)
-            temp_quant_tensor_api = copy.deepcopy(temp_quant_tensor).astype(np.uint64)
+            temp_quant_tensor_api = copy.deepcopy(temp_quant_tensor).astype(np.int64)
             for i, _ in enumerate(temp_quant_tensor_api):
                 temp_quant_tensor_api[i] = struct.unpack('!I', struct.pack('!f', temp_quant_tensor_api[i]))[0]
-                temp_quant_tensor_api[i] = temp_quant_tensor_api[i] | np.uint64(0x400000000000)
-            uint64_deq_scale = np.frombuffer(temp_quant_tensor_api, np.uint64)
+                temp_quant_tensor_api[i] = temp_quant_tensor_api[i] | np.int64(0x400000000000)
+            uint64_deq_scale = np.frombuffer(temp_quant_tensor_api, np.int64)
         return uint64_deq_scale
 
     def pertoken_scale_generate(self, pertoken_scale_shape):
@@ -40,29 +40,45 @@ class TestQuantMatmul(TestCase):
         mm_res = torch.matmul(x1, x2)
         uint64_deq_scale_slice = uint64_deq_scale.reshape(1, -1)[:, :mm_res.shape[-1]]
         uint64_deq_scale_slice = torch.from_numpy(uint64_deq_scale_slice)
-        output = (mm_res * uint64_deq_scale_slice * fp32_pertoken_scale).numpy().astype(np.float16)
-        output = torch.add(out, bias)
-        return output
+        if fp32_pertoken_scale is None:
+            output = (mm_res * uint64_deq_scale_slice).numpy().astype(np.float16)
+        else:
+            output = (mm_res * uint64_deq_scale_slice * fp32_pertoken_scale).numpy().astype(np.float16)
+        return torch.from_numpy(output)
 
     def custom_op_exec(self, x1, x2, uint64_deq_scale, fp32_pertoken_scale, bias):
-        return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale, pertoken_scale=fp32_pertoken_scale, bias=bias)
+        return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale, pertoken_scale=fp32_pertoken_scale, bias=bias, output_dtype=torch.float16)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul(self, device="npu"):
         torch.mannal_seed(0)
-        x1 = torch.randn(1, 8192, 320, dtype=torch.int8).npu()
-        x2 = torch.randn(1, 320, 2560, dtype=torch.int8).npu()
+        x1 = torch.randint(-5, 5, (8192, 320), dtype=torch.int8)
+        x2 = torch.randint(-5, 5, (320, 2560), dtype=torch.int8)
         deq_scale_shape = (1,)
-        pertoken_scale_shape = (8192,)
         x1_clone = x1.clone()
         x2_clone = x2.clone()
-        bias = torch.randint(-1, 1, (1, 1, 2560), dtype=torch.int32).npu()
+        bias = torch.randint(-1, 1, (2560,), dtype=torch.int32)
         uint64_deq_scale = self.deq_scale_generate(deq_scale_shape, 'float16')
-        fp32_pertoken_scale = self.pertoken_scale_generate(pertoken_scale_shape)
 
-        supported_output = self.supported_op_exec(x1, x2, uint64_deq_scale, fp32_pertoken_scale, bias)
-        custom_output = self.custom_op_exec(x1_clone, x2_clone, uint64_deq_scale, fp32_pertoken_scale, bias)
+        supported_output = self.supported_op_exec(x1.numpy(), x2.numpy(), uint64_deq_scale, None, bias.numpy())
+        custom_output = self.custom_op_exec(x1_clone.npu(), x2_clone.npu(), 
+                                            torch.from_numpy(uint64_deq_scale).npu(), None, bias.npu())
         self.assertRtolEqual(x1, x1_clone, 0.001)
+        self.assertRtolEqual(supported_output, custom_output, 0.001)
+
+        # a4w4 ut
+        torch.mannal_seed(0)
+        x1_a4w4 = torch.randint(-5, 5, (8192, 40), dtype=torch.int32)
+        x2_a4w4 = torch.randint(-5, 5, (320, 320), dtype=torch.int32)
+        deq_scale_shape = (1,)
+        x1_a4w4_clone = x1_a4w4.clone()
+        x2_a4w4_clone = x2_a4w4.clone()
+        bias = torch.randint(-1, 1, (320,), dtype=torch.int32).npu()
+        uint64_deq_scale = self.deq_scale_generate(deq_scale_shape, 'float16')
+
+        supported_output = self.supported_op_exec(x1_a4w4.numpy(), x2_a4w4.numpy(), uint64_deq_scale, None, bias.numpy())
+        custom_output = self.custom_op_exec(x1_a4w4_clone.npu(), x2_a4w4_clone.npu(), uint64_deq_scale.npu(), None, bias.npu())
+        self.assertRtolEqual(x1_a4w4, x1_a4w4_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
 

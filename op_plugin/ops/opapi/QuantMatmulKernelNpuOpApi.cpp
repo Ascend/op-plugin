@@ -19,9 +19,8 @@
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 
 namespace op_api {
-constexpr size_t X_MIN_DIM = 2;
 constexpr size_t LAST_SECOND_DIM_INDEX = 2;
-constexpr size_t X_MAX_DIM = 6;
+constexpr size_t INT4_NUMS_IN_INT32 = 8;
 using npu_preparation = at_npu::native::OpPreparation;
 
 uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::vector<uint64_t> &batch_record)
@@ -49,53 +48,25 @@ uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::
     return batch_val;
 }
 
-void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &bias, uint64_t batch_val)
-{
-    auto x2_dim_num = x2.dim();
-    auto x2_n_dim = x2.size(x2_dim_num - 1);
-    auto bias_dim_num = bias.dim();
-    TORCH_CHECK(bias_dim_num == 1 || bias_dim_num == 3, "bias dim num should be 1 or 3, but actual bias_dim_num is ",
-                bias_dim_num);
-    auto bias_first_dim = bias.size(0);
-    if (bias_dim_num == 1) {
-        TORCH_CHECK(bias_first_dim == x2_n_dim,
-                    "bias_first_dim should be equal to x2 n dim . bias_first_dim is ", bias_first_dim,
-                    " and x2_n_dim is ", x2_n_dim);
-        return;
-    }
-    auto bias_second_dim = bias.size(1);
-    auto bias_third_dim = bias.size(2);
-    TORCH_CHECK(bias_first_dim == batch_val,
-                "infered batch value should be equal to bias batch dim value. batch infered value is ", batch_val,
-                " and bias batch dim value is ", bias_first_dim);
-    TORCH_CHECK(bias_second_dim == 1, "second dim of bias should be 1, but bias_second_dim is ", bias_second_dim);
-    TORCH_CHECK(bias_third_dim == x2_n_dim, "third dim should be equal to n, but bias_third_dim is ",
-                bias_third_dim, " and n dim is ", x2_n_dim);
-}
-
 #if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& scale,
                             const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& pertoken_scale,
                             const c10::optional<at::Tensor>& bias, c10::optional<at::ScalarType> output_dtype)
 {
+    bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
+    bool trans_x2 = op_plugin::utils::is_transpose_last_two_dims(x2);
     auto x1_dim_num = x1.dim();
-    TORCH_CHECK(x1_dim_num >= X_MIN_DIM && x1_dim_num <= X_MAX_DIM, "x1 shape dim num should be within 2~6, but it is ",
-                x1_dim_num);
     auto x2_dim_num = x2.dim();
-    TORCH_CHECK(x2_dim_num >= X_MIN_DIM && x2_dim_num <= X_MAX_DIM, "x2 shape dim num should be within 2~6, but it is ",
-                x2_dim_num);
     auto x1_k_dim = x1.size(x1_dim_num - 1);
-    auto x2_n_dim = x2.size(x2_dim_num - 1);
-    auto x2_k_dim = x2.size(x2_dim_num - 2);
-    TORCH_CHECK(x1_k_dim == x2_k_dim, "The k of x1 and x2 should be equal. but x1_k_dim is ",
-                x1_k_dim, ", x2_k_dim is ", x2_k_dim);
+    auto x2_n_dim = (is_a4w4 && !trans_x2) ? x2.size(x2_dim_num - 1) * INT4_NUMS_IN_INT32 : x2.size(x2_dim_num - 1);
+    auto x2_k_dim = x2.size(x2_dim_num - LAST_SECOND_DIM_INDEX);
 
     std::vector<uint64_t> batch_record;
     uint64_t batch_val = infer_out_batch_shape(x1, x2, batch_record);
     const at::Tensor long_tensor = x1_dim_num > x2_dim_num ? x1 : x2;
     auto output_size = op_infer::array_to_small_vector(long_tensor.sizes());
     output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX);
-    output_size[long_tensor.dim() - 1] = x2.size(x2_dim_num - 1);
+    output_size[long_tensor.dim() - 1] = x2_n_dim;
     for (int64_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
         output_size[i] = static_cast<int64_t>(batch_record[i]);
     }
@@ -115,28 +86,6 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     bool transpose1 = false;
     bool transpose2 = false;
 
-    auto scale_dim_num = scale.dim();
-    TORCH_CHECK(scale_dim_num == 1, "The scale dim num should be 1. but scale_dim_num is ", scale_dim_num);
-    auto scale_first_dim = scale.size(0);
-    TORCH_CHECK(scale_first_dim == 1 || scale_first_dim == x2_n_dim,
-                "The scale 1st dim should be 1 or n, but scale_first_dim is ", scale_first_dim);
-
-    if (offset.has_value()) {
-        auto offset_dim_num = offset_real.dim();
-        TORCH_CHECK(offset_dim_num == 1, "The offset dim num should be 1. but offset_dim_num is ", offset_dim_num);
-        auto offset_first_dim_value = offset_real.size(0);
-        TORCH_CHECK(offset_first_dim_value == 1 || offset_first_dim_value == x2_n_dim,
-                    "The offset 1st dim should be 1 or n, but offset_first_dim is ", offset_first_dim_value);
-    }
-
-    if (bias.has_value()) {
-        if (bias_real.dim() == 3) {
-            TORCH_CHECK(output_size.size() == 3, "when bias dim is 3, output dim need to be 3. but output dim is ",
-                        output_size.size());
-        }
-        bias_shape_check(x1, x2, bias_real, batch_val);
-    }
-
     if (scale.dtype() == at::kFloat && !pertoken_scale.has_value()) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
         EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale_real, bias_real,
@@ -154,24 +103,20 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
                             const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& bias,
                             c10::optional<c10::string_view> output_dtype)
 {
+    bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
+    bool trans_x2 = op_plugin::utils::is_transpose_last_two_dims(x2);
     auto x1_dim_num = x1.dim();
-    TORCH_CHECK(x1_dim_num >= X_MIN_DIM && x1_dim_num <= X_MAX_DIM, "x1 shape dim num should be within 2~6, but it is ",
-                x1_dim_num);
     auto x2_dim_num = x2.dim();
-    TORCH_CHECK(x2_dim_num >= X_MIN_DIM && x2_dim_num <= X_MAX_DIM, "x2 shape dim num should be within 2~6, but it is ",
-                x2_dim_num);
     auto x1_k_dim = x1.size(x1_dim_num - 1);
-    auto x2_n_dim = x2.size(x2_dim_num - 1);
+    auto x2_n_dim = (is_a4w4 && !trans_x2) ? x2.size(x2_dim_num - 1) * INT4_NUMS_IN_INT32 : x2.size(x2_dim_num - 1);
     auto x2_k_dim = x2.size(x2_dim_num - 2);
-    TORCH_CHECK(x1_k_dim == x2_k_dim, "The k of x1 and x2 should be equal. but x1_k_dim is ",
-                x1_k_dim, ", x2_k_dim is ", x2_k_dim);
 
     std::vector<uint64_t> batch_record;
     uint64_t batch_val = infer_out_batch_shape(x1, x2, batch_record);
     const at::Tensor long_tensor = x1_dim_num > x2_dim_num ? x1 : x2;
     auto output_size = op_infer::array_to_small_vector(long_tensor.sizes());
     output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX);
-    output_size[long_tensor.dim() - 1] = x2.size(x2_dim_num - 1);
+    output_size[long_tensor.dim() - 1] = x2_n_dim;
     for (size_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
         output_size[i] = batch_record[i];
     }
@@ -189,28 +134,6 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     const at::Tensor &bias_real = bias.value_or(at::Tensor());
     bool transpose1 = false;
     bool transpose2 = false;
-
-    auto scale_dim_num = scale.dim();
-    TORCH_CHECK(scale_dim_num == 1, "The scale dim num should be 1. but scale_dim_num is ", scale_dim_num);
-    auto scale_first_dim = scale.size(0);
-    TORCH_CHECK(scale_first_dim == 1 || scale_first_dim == x2_n_dim,
-                "The scale 1st dim should be 1 or n, but scale_first_dim is ", scale_first_dim);
-
-    if (offset.has_value()) {
-        auto offset_dim_num = offset_real.dim();
-        TORCH_CHECK(offset_dim_num == 1, "The offset dim num should be 1. but offset_dim_num is ", offset_dim_num);
-        auto offset_first_dim_value = offset_real.size(0);
-        TORCH_CHECK(offset_first_dim_value == 1 || offset_first_dim_value == x2_n_dim,
-                    "The offset 1st dim should be 1 or n, but offset_first_dim is ", offset_first_dim_value);
-    }
-
-    if (bias.has_value()) {
-        if (bias_real.dim() == 3) {
-            TORCH_CHECK(output_size.size() == 3, "when bias dim is 3, output dim need to be 3. but output dim is ",
-                        output_size.size());
-        }
-        bias_shape_check(x1, x2, bias_real, batch_val);
-    }
 
     if (scale.dtype() == at::kFloat) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
