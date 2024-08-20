@@ -20,7 +20,7 @@
 
 namespace op_api {
 constexpr size_t LAST_SECOND_DIM_INDEX = 2;
-constexpr size_t INT4_NUMS_IN_INT32 = 8;
+constexpr int64_t INT4_NUMS_IN_INT32 = 8;
 using npu_preparation = at_npu::native::OpPreparation;
 
 uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::vector<uint64_t> &batch_record)
