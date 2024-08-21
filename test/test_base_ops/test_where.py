@@ -3,7 +3,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestWhere(TestCase):
@@ -110,6 +110,18 @@ class TestWhere(TestCase):
         shape_format = [[np.float16, i, [64, 112, 7, 7]] for i in format_list]
         self.where_result(shape_format)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_where_dtype_mixed(self):
+        condition = torch.randn(3, 5)
+        dtype_list = [torch.float16, torch.float32, torch.float64]
+        for dtype1 in dtype_list:
+            for dtype2 in dtype_list:
+                input1 = torch.randn(3, 5, dtype=dtype1)
+                input2 = torch.randn(3, 5, dtype=dtype2)
+
+                cpuout = torch.where(condition > 0, input1, input2)
+                npuout = torch.where((condition > 0).npu(), input1.npu(), input2.npu())
+                self.assertRtolEqual(cpuout, npuout.cpu())
 
 if __name__ == "__main__":
     run_tests()
