@@ -14,6 +14,7 @@
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 #include "op_plugin/utils/custom_functions/opapi/scalar_op_api.h"
 
 namespace op_api {
@@ -48,6 +49,13 @@ void _split_and_exec_npu_cmd_add_scalar(const at::TensorList tensors1, const at:
 
 std::vector<at::Tensor> _foreach_add(const at::TensorList self, const at::Scalar& scalar)
 {
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_add_scalar_kernel_slow(self, scalar);
+    }
+
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self, scalar, false)) {
         return at::native::foreach_tensor_add_scalar_kernel_slow(self, scalar);
@@ -68,6 +76,13 @@ std::vector<at::Tensor> _foreach_add(const at::TensorList self, const at::Scalar
 
 void _foreach_add_(const at::TensorList self, const at::Scalar& scalar)
 {
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_add_scalar_kernel_slow_(self, scalar);
+    }
+
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self, scalar, false)) {
         return at::native::foreach_tensor_add_scalar_kernel_slow_(self, scalar);

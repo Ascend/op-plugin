@@ -14,6 +14,7 @@
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 #include "op_plugin/utils/custom_functions/opapi/scalar_op_api.h"
 
 namespace op_api {
@@ -58,6 +59,13 @@ std::vector<at::Tensor> _foreach_addcmul(const at::TensorList input,
                                          const at::TensorList tensors2,
                                          const at::Scalar &scalar)
 {
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_addcmul_scalar_slow(input, tensors1, tensors2, scalar);
+    }
+
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2);
     if (!at::native::can_use_fast_route({input, tensors1, tensors2}, scalar) ||
         at::native::has_integral_tensor(input, true)) {
@@ -80,6 +88,13 @@ std::vector<at::Tensor> _foreach_addcmul(const at::TensorList input,
 void _foreach_addcmul_(const at::TensorList input, const at::TensorList tensors1,
                        const at::TensorList tensors2, const at::Scalar &scalar)
 {
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_addcmul_scalar_slow_(input, tensors1, tensors2, scalar);
+    }
+    
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2);
     if (!at::native::can_use_fast_route({input, tensors1, tensors2}, scalar) ||
         at::native::has_integral_tensor(input, true)) {
