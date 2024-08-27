@@ -15,6 +15,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/custom_functions/opapi/ForeachConstants.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 const char ROUND_MODE_FLOOR = char(2);
@@ -108,6 +109,14 @@ bool if_use_slow_route(at::TensorList tensors)
 
 void _foreach_floor_(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_floor_slow_(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_floor_slow_(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_floor_slow_(self);
     }
@@ -116,6 +125,14 @@ void _foreach_floor_(at::TensorList self)
 
 std::vector<at::Tensor> _foreach_floor(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_floor_slow(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_floor_slow(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_floor_slow(self);
     }
@@ -124,6 +141,14 @@ std::vector<at::Tensor> _foreach_floor(at::TensorList self)
 
 void _foreach_ceil_(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_ceil_slow_(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_ceil_slow_(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_ceil_slow_(self);
     }
@@ -132,6 +157,14 @@ void _foreach_ceil_(at::TensorList self)
 
 std::vector<at::Tensor> _foreach_ceil(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_ceil_slow(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_ceil_slow(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_ceil_slow(self);
     }
@@ -140,6 +173,14 @@ std::vector<at::Tensor> _foreach_ceil(at::TensorList self)
 
 void _foreach_round_(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_round_slow_(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_round_slow_(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_round_slow_(self);
     }
@@ -148,6 +189,14 @@ void _foreach_round_(at::TensorList self)
 
 std::vector<at::Tensor> _foreach_round(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_round_slow(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_round_slow(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_round_slow(self);
     }
@@ -156,6 +205,14 @@ std::vector<at::Tensor> _foreach_round(at::TensorList self)
 
 void _foreach_trunc_(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_trunc_slow_(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_trunc_slow_(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_trunc_slow_(self);
     }
@@ -164,6 +221,14 @@ void _foreach_trunc_(at::TensorList self)
 
 std::vector<at::Tensor> _foreach_trunc(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_trunc_slow(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_trunc_slow(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_trunc_slow(self);
     }
@@ -172,6 +237,14 @@ std::vector<at::Tensor> _foreach_trunc(at::TensorList self)
 
 void _foreach_frac_(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_frac_slow_(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_frac_slow_(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_frac_slow_(self);
     }
@@ -180,6 +253,14 @@ void _foreach_frac_(at::TensorList self)
 
 std::vector<at::Tensor> _foreach_frac(at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachRoundOffNumber, at::native::foreach_tensor_frac_slow(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_frac_slow(self);
+    }
+
     if (if_use_slow_route(self)) {
         return at::native::foreach_tensor_frac_slow(self);
     }

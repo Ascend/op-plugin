@@ -15,6 +15,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/custom_functions/opapi/scalar_op_api.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -50,6 +51,13 @@ void _split_and_exec_npu_cmd_sub(at::TensorList &tensors1, at::TensorList &tenso
 std::vector<at::Tensor> _foreach_sub(at::TensorList tensors1,
     at::TensorList tensors2, const at::Scalar &alpha)
 {
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_sub_list_kernel_slow(tensors1, tensors2, alpha);
+    }
+
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
     if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_sub_list_kernel_slow(tensors1, tensors2, alpha);
@@ -70,6 +78,13 @@ std::vector<at::Tensor> _foreach_sub(at::TensorList tensors1,
 
 void _foreach_sub_(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar& alpha)
 {
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_sub_list_kernel_slow_(tensors1, tensors2, alpha);
+    }
+
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
     if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_sub_list_kernel_slow_(tensors1, tensors2, alpha);
@@ -109,6 +124,14 @@ void _split_and_exec_npu_cmd_sub_scalarlist(at::TensorList& tensors1, at::ArrayR
 
 std::vector<at::Tensor> _foreach_sub(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 {
+    DO_COMPATIBILITY(aclnnForeachSubScalarList, at::native::foreach_tensor_sub_scalarlist_kernel_slow(tensors, scalars));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_sub_scalarlist_kernel_slow(tensors, scalars);
+    }
+
     // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
     at::native::check_foreach_api_restrictions(tensors, scalars);
     if (!at::native::can_use_fast_route(tensors, scalars, true)) {
@@ -129,6 +152,14 @@ std::vector<at::Tensor> _foreach_sub(at::TensorList tensors, at::ArrayRef<at::Sc
 
 void _foreach_sub_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 {
+    DO_COMPATIBILITY(aclnnForeachSubScalarList, at::native::foreach_tensor_sub_scalarlist_kernel_slow_(tensors, scalars));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_sub_scalarlist_kernel_slow_(tensors, scalars);
+    }
+
     // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
     at::native::check_foreach_api_restrictions(tensors, scalars);
     if (!at::native::can_use_fast_route(tensors, scalars, true)) {

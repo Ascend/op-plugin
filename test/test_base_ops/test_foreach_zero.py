@@ -43,7 +43,7 @@ class TestForeacZero(TestCase):
         return tuple(cpu_tensors), tuple(npu_tensors)
 
 
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_zero_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -53,7 +53,7 @@ class TestForeacZero(TestCase):
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
     
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_zero_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -73,7 +73,7 @@ class TestForeacZero(TestCase):
 
             self.assert_equal(cpu_tensors, npu_tensors)
 
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_zero_inplace_int32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -83,7 +83,7 @@ class TestForeacZero(TestCase):
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
 
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_zero_inplace_int16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :

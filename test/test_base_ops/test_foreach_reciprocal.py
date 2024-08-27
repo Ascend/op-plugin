@@ -37,7 +37,7 @@ class TestForeachReciprocal(TestCase):
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
 
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_reciprocal_out_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -47,7 +47,7 @@ class TestForeachReciprocal(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
     
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_reciprocal_out_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -67,7 +67,7 @@ class TestForeachReciprocal(TestCase):
 
             self.assert_equal(cpu_output, npu_output)
 
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_reciprocal_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -77,7 +77,7 @@ class TestForeachReciprocal(TestCase):
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
     
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_reciprocal_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
