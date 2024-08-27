@@ -15,6 +15,7 @@
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 
@@ -70,6 +71,14 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList tensors1, at::TensorList ten
 
 void _foreach_lerp_(const at::TensorList tensors1, const at::TensorList tensors2, const at::TensorList weight)
 {
+    DO_COMPATIBILITY(aclnnForeachLerpList, at::native::foreach_tensor_ternary_lerp_slow_(tensors1, tensors2, weight));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_ternary_lerp_slow_(tensors1, tensors2, weight);
+    }
+
     at::native::check_foreach_api_restrictions(tensors1, tensors2, weight);
     if (!at::native::can_use_fast_route({tensors1, tensors2, weight})) {
         return at::native::foreach_tensor_ternary_lerp_slow_(tensors1, tensors2, weight);
@@ -79,6 +88,14 @@ void _foreach_lerp_(const at::TensorList tensors1, const at::TensorList tensors2
 
 std::vector<at::Tensor> _foreach_lerp(const at::TensorList tensors1, const at::TensorList tensors2, const at::TensorList weight)
 {
+    DO_COMPATIBILITY(aclnnForeachLerpList, at::native::foreach_tensor_ternary_lerp_slow(tensors1, tensors2, weight));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_ternary_lerp_slow(tensors1, tensors2, weight);
+    }
+    
     at::native::check_foreach_api_restrictions(tensors1, tensors2, weight);
     if (!at::native::can_use_fast_route({tensors1, tensors2, weight})) {
         return at::native::foreach_tensor_ternary_lerp_slow(tensors1, tensors2, weight);

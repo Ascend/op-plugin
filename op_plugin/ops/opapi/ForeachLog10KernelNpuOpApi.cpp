@@ -15,6 +15,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include <ATen/native/ForeachUtils.h>
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -46,6 +47,14 @@ void _split_and_exec_npu_cmd_log10(at::TensorList tensors1, at::TensorList resul
 
 void _foreach_log10_(const at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachLog10, at::native::foreach_tensor_log10_slow_(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_log10_slow_(self);
+    }
+
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
         return at::native::foreach_tensor_log10_slow_(self);
@@ -63,6 +72,14 @@ void _foreach_log10_(const at::TensorList self)
 
 std::vector<at::Tensor> _foreach_log10(const at::TensorList self)
 {
+    DO_COMPATIBILITY(aclnnForeachLog10, at::native::foreach_tensor_log10_slow(self));
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
+    if (!is_support_nd_out) {
+        return at::native::foreach_tensor_log10_slow(self);
+    }
+
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
         return at::native::foreach_tensor_log10_slow(self);

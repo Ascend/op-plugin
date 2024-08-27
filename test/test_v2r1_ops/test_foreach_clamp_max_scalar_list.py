@@ -66,7 +66,6 @@ class TestForeachClampMaxScalarList(TestCase):
             sacalars.append(m)
         return tuple(sacalars)
 
-    @SupportedDevices(['Ascend910B'])
     def test_foreach_clamp_max_scalar_list_out_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -77,7 +76,6 @@ class TestForeachClampMaxScalarList(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
     
-    @SupportedDevices(['Ascend910B'])
     def test_foreach_clamp_max_scalar_list_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -98,8 +96,7 @@ class TestForeachClampMaxScalarList(TestCase):
             npu_output = torch._foreach_clamp_max(npu_tensors[0], scalars)
 
             self.assert_equal(cpu_output, npu_output)
-            
-    @SupportedDevices(['Ascend910B'])
+
     def test_foreach_clamp_max_scalar_list_out_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -109,9 +106,7 @@ class TestForeachClampMaxScalarList(TestCase):
             npu_output = torch._foreach_clamp_max(npu_tensors[0], scalars)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
 
-    @SupportedDevices(['Ascend910B'])
     def test_foreach_clamp_max_scalar_list_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -122,7 +117,6 @@ class TestForeachClampMaxScalarList(TestCase):
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
     
-    @SupportedDevices(['Ascend910B'])
     def test_foreach_clamp_max_scalar_list_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -144,7 +138,6 @@ class TestForeachClampMaxScalarList(TestCase):
 
             self.assert_equal(cpu_tensors[0], npu_tensors[0])
             
-    @SupportedDevices(['Ascend910B'])
     def test_foreach_clamp_max_scalar_list_inplace_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :

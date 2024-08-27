@@ -15,6 +15,17 @@ class TestForeachNeg(TestCase):
         "bfloat16" : torch.bfloat16,
         "int32" : torch.int32
     }
+    
+    def assert_equal_bfloat16(self, cpu_outs, npu_outs):
+        for cpu_out, npu_out in zip(cpu_outs, npu_outs):
+            if (cpu_out.shape != npu_out.shape):
+                self.fail("shape error")
+            if (cpu_out.dtype != npu_out.dtype):
+                self.fail("dtype error!")
+            result = torch.allclose(cpu_out, npu_out.cpu(), rtol=0.001, atol=0.001)
+            if not result:
+                self.fail("result error!")
+        return True
 
     def assert_equal(self, cpu_outs, npu_outs):
         for cpu_out, npu_out in zip(cpu_outs, npu_outs):
@@ -41,7 +52,7 @@ class TestForeachNeg(TestCase):
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
 
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_neg_out_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -51,7 +62,7 @@ class TestForeachNeg(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
     
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_neg_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -71,7 +82,7 @@ class TestForeachNeg(TestCase):
 
             self.assert_equal(cpu_output, npu_output)
             
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_neg_out_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -81,7 +92,7 @@ class TestForeachNeg(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
 
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_neg_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -91,7 +102,7 @@ class TestForeachNeg(TestCase):
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
     
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_neg_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -111,7 +122,7 @@ class TestForeachNeg(TestCase):
 
             self.assert_equal(cpu_tensors, npu_tensors)
     
-    @SupportedDevices(['Ascend910B'])
+    
     def test_foreach_neg_inplace_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
