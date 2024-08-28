@@ -253,3 +253,7 @@
 - name: selu(Tensor self) -> Tensor
   self: selu_backward(grad, result)
   version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+
+- name: stft(Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None) -> Tensor
+  self: stft_backward(grad, self, n_fft, hop_length, win_length, window, normalized, onesided, return_complex)
+  version: v2.1, v2.2, v2.3, v2.4, v2.5

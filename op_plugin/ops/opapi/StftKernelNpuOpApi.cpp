@@ -105,4 +105,237 @@ at::Tensor stft(at::Tensor const &self,
     EXEC_NPU_CMD(aclStft, self, window, output, n_fft, hop_length, win_length, normalized, onesided, return_complex);
     return output;
 }
+
+#if VERSION_BETWEEN(V2R1, V2R5)
+
+enum class fft_norm_mode {
+    none,       // No normalization
+    by_root_n,  // Divide by sqrt(signal_size)
+    by_n,       // Divide by signal_size
+};
+
+static inline bool _maybe_overlapping_memory(
+    c10::SymIntArrayRef sizes,
+    c10::SymIntArrayRef strides)
+{
+    if (!sizes.empty()) {
+        std::vector<std::size_t> argsort(sizes.size());
+        std::iota(argsort.begin(), argsort.end(), 0);
+        std::sort(argsort.begin(), argsort.end(), [&](std::size_t i, std::size_t j) {
+            return strides[i] < strides[j];
+        });
+
+        c10::SymInt max_index_in_slice = 0;
+        for (auto i : argsort) {
+            const auto& stride_ = strides[i];
+            if (stride_ <= max_index_in_slice) {
+                return true;
+            }
+            max_index_in_slice += stride_ * (sizes[i] - 1);
+        }
+    }
+    return false;
+}
+
+static inline c10::SymInt _min_storage_size(
+    c10::SymIntArrayRef sizes,
+    c10::SymIntArrayRef strides,
+    c10::SymInt storage_offset)
+{
+    c10::SymInt storage_size = storage_offset + 1;
+    auto dim = sizes.size();
+    for (const auto i : c10::irange(dim)) {
+        const auto& size_i = sizes[i];
+        if (size_i == 0) {
+            return storage_offset;
+        }
+        storage_size += (size_i - 1) * strides[i];
+    }
+    return storage_size;
+}
+
+at::Tensor as_strided_backward_(
+    at::Tensor grad,
+    const at::TensorGeometry& input_geometry,
+    c10::SymIntArrayRef sym_sizes,
+    c10::SymIntArrayRef sym_strides,
+    const c10::optional<c10::SymInt>& sym_storage_offset_)
+{
+    auto sym_storage_offset = sym_storage_offset_.value_or(input_geometry.sym_storage_offset());
+    auto odim = grad.dim();
+    std::vector<c10::SymInt> out_sizes_, out_strides_;
+    out_sizes_.reserve(odim);
+    out_strides_.reserve(odim);
+    for (int64_t i = odim - 1; i >= 0; i--) {
+        const auto& size_i = sym_sizes[i];
+        const auto& stride_i = sym_strides[i];
+        if (size_i == 0) {
+            return at::zeros_symint(input_geometry.sym_sizes(), grad.options());
+        } else if (size_i == 1) {
+            grad = grad.squeeze(i);
+        } else if (stride_i == 0) {
+            grad = grad.sum(i, false);
+        } else {
+            out_sizes_.insert(out_sizes_.begin(), size_i);
+            out_strides_.insert(out_strides_.begin(), stride_i);
+        }
+    }
+    auto out_maybe_overlap = _maybe_overlapping_memory(out_sizes_, out_strides_);
+
+    auto idim = input_geometry.dim();
+    auto inp_sizes = input_geometry.sym_sizes(),
+         inp_strides = input_geometry.sym_strides();
+    std::vector<c10::SymInt> inp_sizes_, inp_strides_;
+    inp_sizes_.reserve(idim);
+    inp_strides_.reserve(idim);
+    for (int64_t i = idim - 1; i >= 0; i--) {
+        const auto& size_i = inp_sizes[i];
+        const auto& stride_i = inp_strides[i];
+        if (size_i == 0) {
+            return at::zeros_symint(input_geometry.sym_sizes(), grad.options());
+        } else if (size_i != 1) {
+            inp_sizes_.insert(inp_sizes_.begin(), size_i);
+            inp_strides_.insert(inp_strides_.begin(), stride_i);
+        }
+    }
+
+    auto inp_maybe_overlap = _maybe_overlapping_memory(inp_sizes_, inp_strides_);
+
+    auto shared_offset =
+        input_geometry.sym_storage_offset().min(sym_storage_offset);
+    auto inp_effective_offset =
+        input_geometry.sym_storage_offset() - shared_offset;
+    auto out_effective_offset = sym_storage_offset - shared_offset;
+    auto base_size1 =
+        _min_storage_size(inp_sizes_, inp_strides_, inp_effective_offset);
+    auto base_size2 =
+        _min_storage_size(out_sizes_, out_strides_, out_effective_offset);
+    auto base_size = base_size1.max(base_size2);
+    auto storage = grad.new_zeros_symint(c10::SymIntArrayRef(base_size));
+
+    c10::optional<at::Tensor> flatten_full_indices;
+    if (inp_maybe_overlap || out_maybe_overlap) {
+        flatten_full_indices =
+            at::arange(
+                0,
+                base_size.guard_int(__FILE__, __LINE__),
+                grad.options().dtype(at::kLong));
+    }
+
+    if (out_maybe_overlap) {
+        auto out_indices = flatten_full_indices->as_strided_symint(
+            out_sizes_, out_strides_, out_effective_offset);
+        storage.index_add_(0, out_indices.reshape(-1), grad.reshape(-1));
+    } else {
+        storage.as_strided_symint(out_sizes_, out_strides_, out_effective_offset)
+            .copy_(grad);
+    }
+
+    if (inp_maybe_overlap) {
+        auto count = at::zeros_like(storage, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
+        auto inp_indices =
+            flatten_full_indices
+                ->as_strided_symint(inp_sizes_, inp_strides_, inp_effective_offset)
+                .reshape(-1);
+        count.index_add_(
+            0, inp_indices, at::ones({1}, grad.options()).expand_as(inp_indices));
+        storage.div_(count);
+    }
+    return storage.as_strided_symint(
+        inp_sizes, inp_strides, inp_effective_offset);
+}
+
+at::Tensor stft_backward(
+    at::Tensor const &grad_output,
+    at::Tensor const &self,
+    int64_t n_fft,
+    c10::optional<int64_t> hop_length_opt,
+    c10::optional<int64_t> win_length_opt,
+    c10::optional<at::Tensor> const &window_opt,
+    bool normalized,
+    c10::optional<bool> onesided_opt,
+    c10::optional<bool> return_complex_opt)
+{
+    c10::MaybeOwned<at::Tensor> window_maybe_owned = at::borrow_from_optional_tensor(window_opt);
+    const at::Tensor& window = *window_maybe_owned;
+    auto hop_length = hop_length_opt.value_or(n_fft >> 2);
+    TORCH_CHECK(hop_length > 0, "expected: hop_length > 0", OPS_ERROR(ErrCode::VALUE));
+    auto win_length = win_length_opt.value_or(n_fft);
+    const bool return_complex = return_complex_opt.value_or(
+        self.is_complex() || (window.defined() && window.is_complex()));
+    auto window_ = window;
+    if (win_length < n_fft) {
+        auto left = (n_fft - win_length) / 2;
+        if (window.defined()) {
+            window_ = at::zeros({n_fft}, window.options());
+            window_.narrow(0, left, win_length).copy_(window);
+        } else {
+            window_ = at::zeros({n_fft}, self.options());
+            window_.narrow(0, left, win_length).fill_(1);
+        }
+    }
+
+    at::Tensor grad_input = grad_output;
+    if (!return_complex) {
+        grad_input = at::view_as_complex(grad_output.contiguous());
+    }
+    if (self.dim() == 1) {
+        grad_input = grad_input.unsqueeze(0);
+    }
+    grad_input = grad_input.transpose(1, 2).contiguous();
+    const bool complex_fft = self.is_complex() || window_.is_complex();
+    const auto onesided = onesided_opt.value_or(!complex_fft);
+    const fft_norm_mode norm = normalized ? fft_norm_mode::by_root_n : fft_norm_mode::none;
+    if (complex_fft) {
+        grad_input = at::_fft_c2c(grad_input, grad_input.dim() - 1, static_cast<int64_t>(norm), false);
+    } else {
+        if (!onesided) {
+            grad_input = at::_fft_c2c(grad_input, grad_input.dim() - 1, static_cast<int64_t>(norm), false);
+        } else {
+            auto half_sizes = grad_input.sym_sizes();
+            std::vector<c10::SymInt> new_grad_shape(half_sizes.begin(), half_sizes.end());
+            new_grad_shape[grad_input.dim() - 1] = n_fft;
+
+            const auto zero_length = n_fft - grad_input.sym_size(grad_input.dim() - 1);
+            auto complex_full_grad = zero_length > 0 ? grad_input.new_zeros_symint(new_grad_shape) : grad_input;
+            if (zero_length > 0) {
+                complex_full_grad.slice_symint(grad_input.dim() - 1, 0, half_sizes[grad_input.dim() - 1]).copy_(grad_input);
+            }
+            grad_input = at::_fft_c2c(complex_full_grad, grad_input.dim() - 1, static_cast<int64_t>(norm), false);
+        }
+        grad_input = at::view_as_real(grad_input).select(grad_input.dim(), 0).contiguous();
+    }
+    if (window_.defined()) {
+        grad_input = grad_input * window_.conj();
+        if (!self.is_complex() && grad_input.is_complex()) {
+            grad_input = at::view_as_real(grad_input).select(grad_input.dim(), 0).contiguous();
+        }
+    }
+    auto self_ = self;
+    if (self.dim() == 1) {
+        self_ = self_.unsqueeze(0);
+    }
+    if (self.is_complex()) {
+        self_ = at::view_as_real(self_);
+        grad_input = at::view_as_real(grad_input);
+    }
+    int64_t batch = self_.size(0);
+    int64_t len = self_.size(1);
+    int64_t n_frames = 1 + (len - n_fft) / hop_length;
+    std::vector<c10::SymInt> sym_sizes = {batch, n_frames, n_fft};
+    std::vector<c10::SymInt> sym_strides = {self_.stride(0), hop_length * self_.stride(1), self_.stride(1)};
+    if (self.is_complex()) {
+        sym_sizes.push_back(2);
+        sym_strides.push_back(1);
+    }
+    grad_input = as_strided_backward_(grad_input, at::TensorGeometry(self_), sym_sizes, sym_strides, c10::nullopt);
+    if (self.is_complex()) {
+        grad_input = at::view_as_complex(grad_input);
+    }
+    if (self.dim() == 1) {
+        grad_input = grad_input.unsqueeze(0);
+    }
+    return grad_input;
+}
+#endif
 }

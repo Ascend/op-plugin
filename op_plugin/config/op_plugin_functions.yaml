@@ -206,22 +206,22 @@ official:
     op_api: v2.1, v2.2
 
   - func: _fft_c2c(Tensor self, SymInt[] dim, int normalization, bool forward) -> Tensor
-    op_api: v2.1
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: _fft_c2c.out(Tensor self, SymInt[] dim, int normalization, bool forward, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: _fft_c2r(Tensor self, int[] dim, int normalization, SymInt last_dim_size) -> Tensor
-    op_api: v2.1
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: _fft_c2r.out(Tensor self, int[] dim, int normalization, SymInt last_dim_size, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: _fft_r2c(Tensor self, int[] dim, int normalization, bool onesided) -> Tensor
-    op_api: v2.1
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: _fft_r2c.out(Tensor self, int[] dim, int normalization, bool onesided, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: _foreach_abs_(Tensor(a!)[] self) -> ()
     op_api: all_version
@@ -2273,10 +2273,10 @@ official:
     op_api: v2.1, v2.2
 
   - func: fft_fftshift(Tensor self, int[1]? dim=None) -> Tensor
-    op_api: v2.1
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: fft_ifftshift(Tensor self, int[1]? dim=None) -> Tensor
-    op_api: v2.1
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: fft_rfft(Tensor self, int? n=None, int dim=-1, str? norm=None) -> Tensor
     op_api: all_version
@@ -7119,6 +7119,9 @@ custom:
     acl_op: all_version
     op_api: all_version
 
+  - func: stft_backward(Tensor grad_output, Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None) -> Tensor
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+
 symint:
   - func: _embedding_bag_backward(Tensor grad, Tensor indices, Tensor offsets, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
     acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
@@ -7312,6 +7315,12 @@ tocpu:
     version: v1.11, v2.0
 
   - func: digamma_
+    version: v1.11, v2.0
+
+  - func: fft_fftshift
+    version: v1.11, v2.0
+
+  - func: fft_ifftshift
     version: v1.11, v2.0
 
   - func: fmax
