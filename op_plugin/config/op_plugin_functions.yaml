@@ -223,6 +223,12 @@ official:
   - func: _fft_r2c.out(Tensor self, int[] dim, int normalization, bool onesided, *, Tensor(a!) out) -> Tensor(a!)
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
+  - func: _foreach_norm.Scalar(Tensor[] tensors, Scalar ord=2) -> Tensor[]
+    op_api: v1.11, v2.1, v2.2, v2.3
+
+  - func: _foreach_norm.Scalar(Tensor[] tensors, Scalar ord=2, ScalarType? dtype=None) -> Tensor[]
+    op_api: v2.4, v2.5
+
   - func: _foreach_abs_(Tensor(a!)[] self) -> ()
     op_api: all_version
 
