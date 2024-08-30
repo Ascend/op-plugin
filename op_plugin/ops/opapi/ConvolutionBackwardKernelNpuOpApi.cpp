@@ -48,10 +48,7 @@ static tensor_list3 _calc_convolution_backward(const at::Tensor &grad_output, co
     int64_t dim = k - 2;
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
 
-    /* k == 5 currently unsupported by the binary file
-      CheckForbidInternalFormat = False: turn on private format��CheckJitDisable = False: turn on JitCompile
-    */
-    if (k == 5 || (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable())) {
+    if (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable()) {
         return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                                             transposed, output_padding, groups, output_mask);
     }
