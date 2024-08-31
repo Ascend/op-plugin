@@ -29,6 +29,20 @@ class TestDiag(TestCase):
         output = output.numpy()
         return output
 
+    def cpu_op_exec_backward(self, input1, diagonal):
+        output = torch.diag(input1, diagonal=diagonal)
+        output.retain_grad()
+        output.sum().backward()
+        grad = output.grad.numpy()
+        return grad
+    
+    def npu_op_exec_backward(self, input1, diagonal):
+        output = torch.diag(input1, diagonal=diagonal)
+        output.retain_grad()
+        output.sum().backward()
+        grad = output.grad.to("cpu").numpy()
+        return grad
+
     def cpu_op_exec_fp16(self, input1, diagonal):
         input1 = input1.to(torch.float32)
         output = torch.diag(input1, diagonal)
@@ -104,6 +118,21 @@ class TestDiag(TestCase):
             cpu_output = self.cpu_op_exec_fp16(cpu_input, item[1])
             npu_output = self.npu_op_exec(npu_input, item[1])
             self.assertRtolEqual(cpu_output, npu_output)
+    
+    def test_diag_backward(self):
+        shape_format = [
+            [[np.float32, -1, [16]], 0],    # test the condition of 1-dimension
+            [[np.float32, -1, [1024]], 0],
+            [[np.float32, -1, [5, 5]], 0],  # test the condition of 2-dimension
+            [[np.float32, -1, [256, 256]], 0],
+        ]
+        for item in shape_format:
+            cpu_input, npu_input = create_common_tensor(item[0], 1, 100)
+            cpu_input.requires_grad = True
+            npu_input.requires_grad = True
+            cpu_grad = self.cpu_op_exec_backward(cpu_input, item[1])
+            npu_grad = self.npu_op_exec_backward(npu_input, item[1])
+            self.assertRtolEqual(cpu_grad, npu_grad)
 
 
 if __name__ == "__main__":

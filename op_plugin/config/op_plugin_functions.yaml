@@ -1918,14 +1918,14 @@ official:
     op_api: v1.11
 
   - func: diag(Tensor self, int diagonal=0) -> Tensor
-    acl_op: all_version
-    op_api: all_version
+    acl_op: v1.11
+    op_api: v1.11
     gen_opapi:
       structured_inherit: diag.out
 
   - func: diag.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: all_version
-    op_api: all_version
+    acl_op: v1.11
+    op_api: v1.11
     gen_opapi:
       out:
         size: diag_output_size(self, diagonal)
