@@ -258,7 +258,7 @@ at::Tensor stft_backward(
 {
     c10::MaybeOwned<at::Tensor> window_maybe_owned = at::borrow_from_optional_tensor(window_opt);
     const at::Tensor& window = *window_maybe_owned;
-    auto hop_length = hop_length_opt.value_or(n_fft >> 2);
+    auto hop_length = hop_length_opt.has_value() ? hop_length_opt.value() : n_fft / 4;
     TORCH_CHECK(hop_length > 0, "expected: hop_length > 0", OPS_ERROR(ErrCode::VALUE));
     auto win_length = win_length_opt.value_or(n_fft);
     const bool return_complex = return_complex_opt.value_or(
