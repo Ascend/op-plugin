@@ -28,5 +28,18 @@ at::ScalarType angle_out_dtype(const at::Tensor& self)
     return out_dtype;
 }
 
+at::ScalarType polar_out_dtype(const at::Tensor& abs, const at::Tensor& angle)
+{
+    at::ScalarType high_type = at::native::result_type(abs, angle);
+    if (high_type == at::ScalarType::Float) {
+        high_type = at::ScalarType::ComplexFloat;
+    } else if (high_type == at::ScalarType::Double) {
+        high_type = at::ScalarType::ComplexDouble;
+    } else if (high_type == at::ScalarType::Half) {
+        high_type = at::ScalarType::ComplexHalf;
+    }
+    return high_type;
+}
+
 
 } // namespace op_infer

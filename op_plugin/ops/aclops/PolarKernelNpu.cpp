@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2024 Huawei Technologies Co., Ltd
 // Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
@@ -14,12 +14,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-namespace op_api {
+namespace acl_op {
 
-#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor& polar_out(const at::Tensor& abs, const at::Tensor& angle, at::Tensor& result)
 {
     TORCH_WARN_ONCE(
@@ -45,6 +44,5 @@ at::Tensor polar(const at::Tensor& abs, const at::Tensor& angle)
     at::Tensor result = result_cpu.to(abs.device());
     return result;
 }
-#endif
 
 } // namespace op_api

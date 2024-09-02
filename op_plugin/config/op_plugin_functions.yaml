@@ -4299,10 +4299,20 @@ official:
       exec: aclnnInplacePowTensorTensor
 
   - func: polar(Tensor abs, Tensor angle) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      structured_inherit: polar.out
+
 
   - func: polar.out(Tensor abs, Tensor angle, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: op_infer::broadcast_ops_npu_output_size(abs, angle)
+        dtype: polar_out_dtype(abs, angle)
+      exec: aclnnPolar
 
   - func: prelu(Tensor self, Tensor weight) -> Tensor
     acl_op: v1.11
@@ -7486,9 +7496,6 @@ tocpu:
     version: v1.11, v2.0
 
   - func: poisson
-    version: v1.11, v2.0
-
-  - func: polar.out
     version: v1.11, v2.0
 
   - func: polygamma.out
