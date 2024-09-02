@@ -6605,7 +6605,10 @@ custom:
     op_api: all_version
 
   - func: npu_dynamic_quant(Tensor input, *, Tensor? smooth_scales=None) -> (Tensor, Tensor)
-    op_api: v2.1, v2.2, v2.3
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+
+  - func: npu_dynamic_quant_asymmetric(Tensor input, *, Tensor? smooth_scales=None, Tensor? group_index=None, ScalarType? dst_type=None) -> (Tensor, Tensor, Tensor)
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
   - func: npu_fast_gelu(Tensor self) -> Tensor
     acl_op: all_version
