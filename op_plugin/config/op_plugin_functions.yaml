@@ -2284,9 +2284,6 @@ official:
   - func: fft_ifftshift(Tensor self, int[1]? dim=None) -> Tensor
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
 
-  - func: fft_rfft(Tensor self, int? n=None, int dim=-1, str? norm=None) -> Tensor
-    op_api: all_version
-
   - func: fill_.Scalar(Tensor(a!) self, Scalar value) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
