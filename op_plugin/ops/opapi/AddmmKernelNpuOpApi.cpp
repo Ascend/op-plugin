@@ -55,7 +55,9 @@ at::Tensor addmm(
 
     auto names = at::namedinference::propagate_names_for_addmm(mat1, mat2, self);
     at::namedinference::propagate_names_if_nonempty(result, names);
-
+#if VERSION_BETWEEN(V2R1, V2R4)
+    FLOP_COUNT(FlopCounter::addmm_flop, mat1, mat2);
+#endif
     return result;
 }
 

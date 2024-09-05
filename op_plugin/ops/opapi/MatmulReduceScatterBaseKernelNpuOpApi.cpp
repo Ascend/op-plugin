@@ -39,6 +39,10 @@ at::Tensor npu_mm_reduce_scatter_base(const at::Tensor &self, const at::Tensor &
     int64_t stream_mode = ACL_STOP_ON_FAILURE;
     EXEC_NPU_CMD(aclnnMatmulReduceScatter, self, x2, bias_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode,
                  result);
+
+#if VERSION_BETWEEN(V2R1, V2R4)
+    FLOP_COUNT(FlopCounter::mm_flop, self, x2);
+#endif
     return result;
 }
 }

@@ -35,6 +35,10 @@
 #include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/core/npu/register/OptionsManager.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
+#if VERSION_BETWEEN(V2R1, V2R4)
+#include "torch_npu/csrc/flopcount/FlopCount.h"
+#include "torch_npu/csrc/flopcount/FlopCounter.h"
+#endif
 
 typedef struct aclOpExecutor aclOpExecutor;
 typedef struct aclTensor aclTensor;

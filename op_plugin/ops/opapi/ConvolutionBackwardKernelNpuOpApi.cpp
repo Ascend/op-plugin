@@ -84,6 +84,10 @@ static tensor_list3 _calc_convolution_backward(const at::Tensor &grad_output, co
 
     EXEC_NPU_CMD(aclnnConvolutionBackward, grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                  transposed, output_padding, groups, output_mask, cube_math_type, gradInput, gradWeight, gradBias);
+
+#if VERSION_BETWEEN(V2R1, V2R4)
+    FLOP_COUNT(FlopCounter::conv_backward_flop, grad_output, input, weight, transposed, output_mask, gradInput, gradWeight);
+#endif
     return std::make_tuple(std::move(gradInput), std::move(gradWeight), std::move(gradBias));
 }
 

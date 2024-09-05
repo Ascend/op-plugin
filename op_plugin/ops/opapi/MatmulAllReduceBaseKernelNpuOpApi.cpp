@@ -153,6 +153,9 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c1
                      x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, antiquant_group_size, result);
     }
 
+#if VERSION_BETWEEN(V2R1, V2R4)
+    FLOP_COUNT(FlopCounter::mm_flop, x1, x2);
+#endif
     return result;
 }
 }  // namespace op_api

@@ -92,6 +92,10 @@ static at::Tensor _calc_convolution(const at::Tensor &input, const at::Tensor &w
         c10::SmallVector<int64_t, SIZE> squeeze_size_input = {input.size(1), input.size(2), input.size(3)};
         input.resize_(squeeze_size_input);
     }
+
+#if VERSION_BETWEEN(V2R1, V2R4)
+    FLOP_COUNT(FlopCounter::conv_flop, input, weight, transposed, output);
+#endif
     return output;
 }
 
