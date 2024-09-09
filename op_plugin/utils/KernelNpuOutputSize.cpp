@@ -78,6 +78,9 @@ static std::bitset<64> make_dim_mask(c10::IntArrayRef dims, int64_t ndim)
         mask.flip();
     } else {
         for (int64_t dim : dims) {
+            TORCH_CHECK(dim >= (-ndim) && dim < ndim, "Dimension out of range"
+                "(expect to be in range of [-", ndim, ", ", ndim,
+                "), but got ", dim, ".)", OPS_ERROR(ErrCode::PARAM));
             mask.set(make_wrap_dim(dim, ndim));
         }
     }

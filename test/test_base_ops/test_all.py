@@ -89,6 +89,12 @@ class TestAll(TestCase):
         nout = nout.to("cpu").numpy()
         self.assertRtolEqual(cout, nout)
 
+    def test_all_dim_out_of_size(self):
+        input_shape = [1, 1]
+        input_x_tensor = torch.ones(input_shape).npu()
+        with self.assertRaisesRegex(RuntimeError, "Dimension out of range"):
+            out = torch.sum(input_x_tensor, dim=-3)
+
 
 if __name__ == "__main__":
     run_tests()
