@@ -6940,6 +6940,9 @@ custom:
     acl_op: all_version
     exposed: all_version
 
+  - func: npu_prefetch(Tensor self, Tensor? dependency, int max_size) -> ()
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+
   - func: npu_quant_conv2d(Tensor input, Tensor weight, Tensor scale, int[2] strides=1, int[2] pads=0, int[2] dilations=1, int groups=1, int offset_x=0, str round_mode='rint', ScalarType? output_dtype=None, Tensor? bias=None, Tensor? offset=None) -> Tensor
     acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
 
