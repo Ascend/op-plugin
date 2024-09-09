@@ -4983,7 +4983,10 @@ official:
       exec: aclnnRsub
 
   - func: scaled_dot_product_attention(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4
+
+  - func: scaled_dot_product_attention(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None, bool enable_gqa=False) -> Tensor
+    op_api: v2.5
 
   - func: scatter.reduce_out(Tensor self, int dim, Tensor index, Tensor src, *, str reduce, Tensor(a!) out) -> Tensor(a!)
     op_api: v1.11
