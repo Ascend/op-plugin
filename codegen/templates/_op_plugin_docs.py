@@ -3793,6 +3793,8 @@ antiquant_offset: Device侧的Tensor类型, 可选输入, 伪量化场景对x2�
 x3: Device侧的Tensor类型, 可选输入, matmul计算后的偏移。支持float16、bfloat16。支持ND格式。数据类型需要和输出output保持一致。shape与output的shape相同。伪量化场景暂不支持处理x3。
 dequant_scale: Device侧的Tensor类型, 可选输入, matmul计算后的去量化系数。支持int64、uint64、bfloat16、float32, 支持ND格式。shape在per-tensor场景为[1], per-channel场景为[n]/[1,n], 其中n为x2最后一维的大小。
 pertoken_scale: Device侧的Tensor类型, 可选输入, matmul计算后的去量化系数。支持float32, 支持ND格式。x1为[b, s, k]时shape为[b*s]，x1为[m, k]时shape为[m]。
+comm_quant_scale_1: Device侧的Tensor类型, 可选输入, alltoall通信前后的量化、去量化系数。支持float16、bfloat16, 支持ND格式。per-channel场景，x2为[k, n]时shape为[1, n]或[n]，用户需保证每张卡上数据保持一致且正确。
+comm_quant_scale_2: Device侧的Tensor类型, 可选输入, allgather通信前后的量化、去量化系数。支持float16、bfloat16, 支持ND格式。per-channel场景，x2为[k, n]时shape为[1, n]或[n]，用户需保证每张卡上数据保持一致且正确。
 comm_turn: Host侧的int类型, 表示rank间通信切分粒度, 默认值: 0, 表示默认的切分方式。当前版本仅支持输入0。
 antiquant_group_size: Host侧的int类型, 表示伪量化pre-group算法模式下, 对输入x2进行反量化计算的groupSize输入, 描述一组反量化参数对应的待反量化数据量在k轴方向的大小。当伪量化算法模式不为pre_group时传入0; 当伪量化算法模式为pre_group时传入值的范围为[32, min(k-1, INT_NAX)]且值要求是32的倍数, 其中k为x2第一维的大小。默认值: 0, 为0则表示非per-group场景。
 输出说明Tensor类型, 数据类型非量化场景以及伪量化场景与x1保持一致, 全量化场景为float16或者bfloat16。shape第0维度和x1的0维保持一致, 若x1为2维, shape第1维度和x2的1维保持一致, 若x1为3维, shape第1维度和x1的1维保持一致, shape第2维度和x2的1维保持一致。
