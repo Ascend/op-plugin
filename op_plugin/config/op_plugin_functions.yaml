@@ -6870,14 +6870,9 @@ custom:
         dtype: sorted_expert_for_source_row
       exec: aclnnMoeComputeExpertTokens
 
-  - func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor skip1, Tensor? skip2, Tensor bias, Tensor scales, Tensor expanded_src_to_dst_row, Tensor export_for_source_row) -> Tensor
+  - func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor? skip1, Tensor? skip2, Tensor? bias, Tensor? scales, Tensor expanded_src_to_dst_row, Tensor? export_for_source_row, int? drop_pad_mode=0) -> Tensor
     op_api: all_version
-    gen_opapi:
-      out:
-        size: skip1
-        dtype: skip1
-      exec: aclnnMoeFinalizeRouting
-
+    
   - func: npu_moe_gating_top_k_softmax(Tensor x, Tensor? finished=None, int k=1) -> (Tensor, Tensor, Tensor)
     op_api: all_version
 
