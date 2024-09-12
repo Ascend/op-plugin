@@ -257,3 +257,11 @@
 - name: stft(Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None) -> Tensor
   self: stft_backward(grad, self, n_fft, hop_length, win_length, window, normalized, onesided, return_complex)
   version: v2.1, v2.2, v2.3, v2.4, v2.5
+
+- name: _fft_r2c(Tensor self, int[] dim, int normalization, bool onesided) -> Tensor
+  self: fft_r2c_backward(grad, dim, normalization, onesided, self.size(dim.back()))
+  version: v2.1, v2.2, v2.3, v2.4, v2.5
+
+- name: _fft_c2r(Tensor self, int[] dim, int normalization, SymInt last_dim_size) -> Tensor
+  self: fft_c2r_backward(grad, dim, normalization)
+  version: v2.1, v2.2, v2.3, v2.4, v2.5
