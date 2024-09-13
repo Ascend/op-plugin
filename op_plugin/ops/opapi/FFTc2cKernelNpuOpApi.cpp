@@ -357,6 +357,7 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
 at::Tensor _fft_c2c(const at::Tensor& self, at::IntArrayRef dim, int64_t normalization, bool forward)
 {
     TORCH_CHECK(self.is_complex(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.scalar_type() == at::ScalarType::ComplexFloat, "input type should be complex<float>", OPS_ERROR(ErrCode::PARAM));
     auto output_size = op_infer::input_same_output_size(self);
     auto out = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(self.scalar_type()));
     _exec_fft(out, self, self.sizes(), dim, normalization, forward, 0);
@@ -368,6 +369,8 @@ at::Tensor& _fft_c2c_out(const at::Tensor& self, at::IntArrayRef dim, int64_t no
 {
     TORCH_CHECK(self.is_complex(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(out.is_complex(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.scalar_type() == at::ScalarType::ComplexFloat, "input type should be complex<float>", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(out.scalar_type() == at::ScalarType::ComplexFloat, "output type should be complex<float>", OPS_ERROR(ErrCode::PARAM));
     _exec_fft(out, self, self.sizes(), dim, normalization, forward, 0);
     return out;
 }
@@ -375,6 +378,7 @@ at::Tensor& _fft_c2c_out(const at::Tensor& self, at::IntArrayRef dim, int64_t no
 at::Tensor _fft_r2c(const at::Tensor& self, at::IntArrayRef dim, int64_t normalization, bool onesided)
 {
     TORCH_CHECK(self.is_floating_point(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.scalar_type() == at::ScalarType::Float, "input type should be float", OPS_ERROR(ErrCode::PARAM));
     auto input_sizes = self.sizes();
     at::DimVector out_sizes(input_sizes.begin(), input_sizes.end());
     auto last_dim = dim.back();
@@ -391,6 +395,8 @@ at::Tensor& _fft_r2c_out(const at::Tensor& self, at::IntArrayRef dim, int64_t no
 {
     TORCH_CHECK(self.is_floating_point(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(out.is_complex(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.scalar_type() == at::ScalarType::Float, "input type should be float", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(out.scalar_type() == at::ScalarType::ComplexFloat, "output type should be complex<float>", OPS_ERROR(ErrCode::PARAM));
     auto input_sizes = self.sizes();
     at::DimVector out_sizes(input_sizes.begin(), input_sizes.end());
     auto last_dim = dim.back();
@@ -405,6 +411,7 @@ at::Tensor& _fft_r2c_out(const at::Tensor& self, at::IntArrayRef dim, int64_t no
 at::Tensor _fft_c2r(const at::Tensor& self, at::IntArrayRef dim, int64_t normalization, int64_t lastdim)
 {
     TORCH_CHECK(self.is_complex(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.scalar_type() == at::ScalarType::ComplexFloat, "input type should be complex<float>", OPS_ERROR(ErrCode::PARAM));
     auto in_sizes = self.sizes();
     at::DimVector out_sizes(in_sizes.begin(), in_sizes.end());
     out_sizes[dim.back()] = lastdim;
@@ -417,6 +424,8 @@ at::Tensor& _fft_c2r_out(const at::Tensor& self, at::IntArrayRef dim, int64_t no
 {
     TORCH_CHECK(self.is_complex(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(out.is_floating_point(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.scalar_type() == at::ScalarType::ComplexFloat, "input type should be complex<float>", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(out.scalar_type() == at::ScalarType::Float, "output type should be float", OPS_ERROR(ErrCode::PARAM));
     auto in_sizes = self.sizes();
     at::DimVector out_sizes(in_sizes.begin(), in_sizes.end());
     out_sizes[dim.back()] = lastdim;
