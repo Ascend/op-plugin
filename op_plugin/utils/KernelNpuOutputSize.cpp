@@ -223,6 +223,52 @@ c10::SmallVector<int64_t, SIZE> avg_pool2d_npu_output_size(const at::Tensor &sel
     return output_size;
 }
 
+c10::SmallVector<int64_t, SIZE> avg_pool3d_npu_output_size(const at::Tensor &self, c10::IntArrayRef kernel_size,
+                                                           c10::IntArrayRef stride, c10::IntArrayRef padding,
+                                                           bool ceil_mode, bool count_include_pad,
+                                                           c10::optional<int64_t> divisor_override)
+{
+    TORCH_CHECK(self.dim() == 4 || self.dim() == 5, "tensor self's dimension must be 4 or 5",
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(kernel_size.size() == 3, "kernel_size length should be 3", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() == 3, "stride length should be 3", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() == 3, "padding length should be 3", OPS_ERROR(ErrCode::PARAM));
+
+    int self_d = self.size(-3);
+    int self_h = self.size(-2);
+    int self_w = self.size(-1);
+
+    int64_t kernel_d = ceil_mode ? (CeilDiv(self_d + 2 * padding[0] - kernel_size[0], stride[0]) + 1) :
+                                   ((self_d + 2 * padding[0] - kernel_size[0]) / stride[0] + 1);
+    int64_t kernel_h = ceil_mode ? (CeilDiv(self_h + 2 * padding[1] - kernel_size[1], stride[1]) + 1) :
+                                   ((self_h + 2 * padding[1] - kernel_size[1]) / stride[1] + 1);
+    int64_t kernel_w = ceil_mode ? (CeilDiv(self_w + 2 * padding[2] - kernel_size[2], stride[2]) + 1) :
+                                   ((self_w + 2 * padding[2] - kernel_size[2]) / stride[2] + 1);
+
+    if (ceil_mode) {
+        if ((kernel_d - 1) * stride[0] >= self_d + padding[0]) {
+            --kernel_d;
+        }
+
+        if ((kernel_h - 1) * stride[1] >= self_h + padding[1]) {
+            --kernel_h;
+        }
+
+        if ((kernel_w - 1) * stride[2] >= self_w + padding[2]) {
+            --kernel_w;
+        }
+    }
+
+    c10::SmallVector<int64_t, SIZE> output_size;
+    if (self.dim() == 4) {
+        output_size = {self.size(0), kernel_d, kernel_h, kernel_w};
+    } else {
+        output_size = {self.size(0), self.size(1), kernel_d, kernel_h, kernel_w};
+    }
+
+    return output_size;
+}
+
 small_vector avg_pool2d_backward_npu_output_size(const at::Tensor &grad_output, const at::Tensor &self,
                                                  c10::IntArrayRef kernel_size, c10::IntArrayRef stride,
                                                  c10::IntArrayRef padding, bool ceil_mode, bool count_include_pad,

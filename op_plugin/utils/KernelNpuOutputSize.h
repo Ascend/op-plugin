@@ -83,6 +83,10 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> avg_pool2d_npu_output_size(
     const at::Tensor& self, c10::IntArrayRef kernel_size, c10::IntArrayRef stride, c10::IntArrayRef padding,
     bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
 
+OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> avg_pool3d_npu_output_size(
+    const at::Tensor &self, c10::IntArrayRef kernel_size, c10::IntArrayRef stride, c10::IntArrayRef padding,
+    bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> avg_pool2d_backward_npu_output_size(
     const at::Tensor& grad_output, const at::Tensor& self, c10::IntArrayRef kernel_size, c10::IntArrayRef stride,
     c10::IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
