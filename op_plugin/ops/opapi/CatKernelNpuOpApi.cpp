@@ -101,6 +101,7 @@ at::Tensor& cat_out(at::TensorList tensors, int64_t dim, at::Tensor& result) {
   }
   dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
   auto outputSize = cat_npu_output_size_opapi(inputTensors, dim);
+  npu_preparation::check_tensor({tensors[0]}, result, outputSize);
   return at::_cat_out(result, tensors, dim);
 }
 
@@ -214,6 +215,7 @@ at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& 
   if (inputTensors.size() > 0) {
     dim_post_expr = inputTensors[0].dim();
   } else {
+    npu_preparation::check_tensor({materialized[0].get()}, result, at::IntArrayRef({0}));
     return result;
   }
   dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
@@ -221,6 +223,7 @@ at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& 
   auto maybe_outnames = at::namedinference::compute_cat_outnames(materialized);
 
   auto outputSize = cat_npu_output_size_opapi(inputTensors, dim);
+  npu_preparation::check_tensor({materialized[0].get()}, result, at::IntArrayRef(outputSize));
   EXEC_NPU_CMD(aclnnCat, tensor_list, dim, result);
   at::namedinference::propagate_names_if_nonempty(result, maybe_outnames);
   return result;
