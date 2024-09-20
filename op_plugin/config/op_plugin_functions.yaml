@@ -6750,7 +6750,6 @@ custom:
 
   - func: npu_ifmr(Tensor data, Tensor data_min, Tensor data_max, Tensor cumsum, float min_percentile, float max_percentile, float search_start, float search_end, float search_step, bool with_offset) -> (Tensor, Tensor)
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_incre_flash_attention(Tensor query, Tensor key, Tensor value, *, Tensor? padding_mask=None, Tensor? atten_mask=None, Tensor? pse_shift=None, SymInt[]? actual_seq_lengths=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? block_table=None, Tensor? dequant_scale1=None, Tensor? quant_scale1=None, Tensor? dequant_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, Tensor? kv_padding_size=None, int num_heads=1, float scale_value=1.0, str input_layout="BSH", int num_key_value_heads=0, int block_size=0, int inner_precise=1) -> Tensor
     op_api: v2.1
@@ -6814,7 +6813,6 @@ custom:
 
   - func: npu_masked_fill_range(Tensor self, Tensor start, Tensor end, Tensor value, int axis=-1) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_masked_softmax_with_rel_pos_bias(Tensor x, Tensor? atten_mask, Tensor relative_pos_bias, float scale_value=1.0, int inner_precision_mode=0) -> Tensor
     op_api: all_version
@@ -6911,7 +6909,6 @@ custom:
 
   - func: npu_normalize_batch(Tensor self, Tensor seq_len, int normalize_type=0) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_one_hot(Tensor self, int num_classes=-1, int depth=1, Scalar on_value=1, Scalar off_value=0) -> Tensor
     acl_op: all_version
@@ -7003,11 +7000,9 @@ custom:
 
   - func: npu_rotated_box_decode(Tensor self, Tensor deltas, Tensor weight) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_rotated_box_encode(Tensor self, Tensor gt_bboxes, Tensor weight) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_rotated_iou(Tensor self, Tensor query_boxes, bool trans=False, int mode=0, bool is_cross=True, float v_threshold=0.0, float e_threshold=0.0) -> Tensor
     acl_op: all_version
@@ -7026,7 +7021,6 @@ custom:
 
   - func: npu_scatter(Tensor self, Tensor indices, Tensor updates, int dim) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_scatter_list(Tensor[] self, Tensor indices, Tensor updates, Tensor? mask=None, str reduce='update', int axis=-2) -> Tensor[]
     op_api: v2.1, v2.2, v2.3, v2.4, v2.5
@@ -7085,7 +7079,6 @@ custom:
 
   - func: npu_stride_add(Tensor self, Tensor other, Scalar offset1, Scalar offset2, Scalar c1_len) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_stride_copy(Tensor self, int[] shape, int[] stride, Scalar storage_offset) -> Tensor
     acl_op: all_version
