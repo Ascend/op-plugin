@@ -35,6 +35,7 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
    ```
    bash ci/build.sh --python=3.8 --pytorch=v2.1.0
    ```
+   请注意，当前1.11版本支持gcc 7.5和gcc 10.2, 2.1及以上版本仅支持gcc 10.2版本
 
    | 参数      | 取值范围                                            | 说明                  | 缺省值    | 备注                                |
    |---------|-------------------------------------------------|---------------------|--------|-----------------------------------|
@@ -46,7 +47,7 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
 3. 完成编译后，安装dist目录下生成的插件torch\_npu包，如果使用非root用户安装，需要在命令后加**--user**。
 
    ```
-   pip3 install --upgrade dist/torch_npu-1.11.0-cp37-cp37m-linux_aarch64.whl
+   pip3 install --upgrade dist/torch_npu-2.1.0-cp37-cp37m-linux_aarch64.whl
    # 若用户在x86架构下安装插件，请替换为对应的whl包。
    ```
 
@@ -55,6 +56,7 @@ op-plugin仓旨在为**torch_npu**提供运行所需要的算子适配文件，�
 | op-plugin分支 | 对应Ascend Extension for PyTorch版本 |
 | ------------- | :----------------------------------: |
 | master        |     主线版本，如v2.1.0、v2.2.0等     |
+| 6.0.rc3       |   6.0.rc3版本，如v2.1.0-6.0.rc3等    |
 | 6.0.rc2       |   6.0.rc2版本，如v2.1.0-6.0.rc2等    |
 | 6.0.rc1       |   6.0.rc1版本，如v2.1.0-6.0.rc1等    |
 | 5.0.0         |     5.0.0版本，如v2.1.0-5.0.0等      |
