@@ -23,6 +23,29 @@ constexpr size_t LAST_SECOND_DIM_INDEX = 2;
 constexpr int64_t INT4_NUMS_IN_INT32 = 8;
 using npu_preparation = at_npu::native::OpPreparation;
 
+bool static is_transpose_last_two_dims(const at::Tensor &tensor)
+{
+    if (tensor.dim() < 2 || tensor.dim() > 6) {
+        return false;
+    }
+    int64_t dim1 = tensor.dim() - 1;
+    int64_t dim2 = tensor.dim() - 2;
+    if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
+        int64_t tmpNxD = tensor.size(dim1) * tensor.size(dim2);
+        for (int64_t batchDim = tensor.dim() - 3; batchDim >= 0; batchDim--) {
+            if (tensor.stride(batchDim) != tmpNxD) {
+                return false;
+            }
+            tmpNxD *= tensor.size(batchDim);
+        }
+        if (tensor.size(dim1) == 1 && tensor.size(dim2) == 1) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
 uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::vector<uint64_t> &batch_record)
 {
     TORCH_CHECK(at_npu::native::FormatHelper::IsBaseFormatType(x2),
@@ -54,7 +77,7 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
                             const c10::optional<at::Tensor>& bias, c10::optional<at::ScalarType> output_dtype)
 {
     bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
-    bool trans_x2 = op_plugin::utils::is_transpose_last_two_dims(x2);
+    bool trans_x2 = is_transpose_last_two_dims(x2);
     auto x1_dim_num = x1.dim();
     auto x2_dim_num = x2.dim();
     auto x1_k_dim = x1.size(x1_dim_num - 1);
@@ -104,7 +127,7 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
                             c10::optional<c10::string_view> output_dtype)
 {
     bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
-    bool trans_x2 = op_plugin::utils::is_transpose_last_two_dims(x2);
+    bool trans_x2 = is_transpose_last_two_dims(x2);
     auto x1_dim_num = x1.dim();
     auto x2_dim_num = x2.dim();
     auto x1_k_dim = x1.size(x1_dim_num - 1);
