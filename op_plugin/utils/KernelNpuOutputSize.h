@@ -267,7 +267,7 @@ OP_PLUGIN_HIDDEN tuple_vector softmax_cross_entropy_with_logits_impl_npu_output_
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> sum_npu_output_size(const at::Tensor& self, c10::IntArrayRef dim,
                                                                      bool keepdim);
 
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, N> swiglu_backward_infershape(const at::Tensor &x, int64_t dim);
+OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> swiglu_backward_infershape(const at::Tensor &x, int64_t dim);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> topk_npu_output_size(const at::Tensor& self, int64_t k, int64_t dim,
                                                                       bool largest, bool sorted);

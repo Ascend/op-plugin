@@ -1216,7 +1216,7 @@ c10::SmallVector<int64_t, SIZE> sum_npu_output_size(const at::Tensor &self, c10:
     return reduce_ops_npu_output_size(self, dim, keepdim);
 }
 
-c10::SmallVector<int64_t, N> swiglu_backward_infershape(const at::Tensor &x, int64_t dim)
+c10::SmallVector<int64_t, SIZE> swiglu_backward_infershape(const at::Tensor &x, int64_t dim)
 {
     if (dim < 0) {
         dim += x.sizes().size();
