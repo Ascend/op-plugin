@@ -50,7 +50,7 @@ class TestQuantMatmul(TestCase):
         return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale, pertoken_scale=fp32_pertoken_scale, bias=bias, output_dtype=torch.float16)
 
     @SupportedDevices(['Ascend910B'])
-    def test_npu_quant_matmul(self, device="npu"):
+    def test_npu_quant_matmul_a8w8(self, device="npu"):
         torch.mannal_seed(0)
         x1 = torch.randint(-5, 5, (8192, 320), dtype=torch.int8)
         x2 = torch.randint(-5, 5, (320, 2560), dtype=torch.int8)
@@ -66,7 +66,8 @@ class TestQuantMatmul(TestCase):
         self.assertRtolEqual(x1, x1_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-        # a4w4 ut
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_quant_matmul_a4w4(self, device="npu"):
         torch.mannal_seed(0)
         x1_a4w4 = torch.randint(-5, 5, (8192, 40), dtype=torch.int32)
         x2_a4w4 = torch.randint(-5, 5, (320, 320), dtype=torch.int32)
@@ -79,6 +80,23 @@ class TestQuantMatmul(TestCase):
         supported_output = self.supported_op_exec(x1_a4w4.numpy(), x2_a4w4.numpy(), uint64_deq_scale, None, bias.numpy())
         custom_output = self.custom_op_exec(x1_a4w4_clone.npu(), x2_a4w4_clone.npu(), uint64_deq_scale.npu(), None, bias.npu())
         self.assertRtolEqual(x1_a4w4, x1_a4w4_clone, 0.001)
+        self.assertRtolEqual(supported_output, custom_output, 0.001)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_quant_matmul_continuous_x2_tensor(self, device="npu"):
+        torch.mannal_seed(0)
+        x1 = torch.randint(-5, 5, (5, 20), dtype=torch.int32)
+        x2 = torch.randint(-5, 5, (80, 20), dtype=torch.int32)
+        deq_scale_shape = (80,)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        bias = torch.randint(-1, 1, (160,), dtype=torch.int32)
+        uint64_deq_scale = self.deq_scale_generate(deq_scale_shape, 'float16')
+
+        supported_output = self.supported_op_exec(x1.numpy(), x2.t().numpy(), uint64_deq_scale, None, bias.numpy())
+        custom_output = self.custom_op_exec(x1_clone.npu(), x2_clone.t().npu(),
+                                            torch.from_numpy(uint64_deq_scale).npu(), None, bias.npu())
+        self.assertRtolEqual(x1, x1_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
     @SupportedDevices(['Ascend910B'])
