@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
@@ -99,15 +100,7 @@ at::Tensor npu_quantize(
 {
     const at::Tensor& zero_points = c10::value_or_else(zero_points_opt, [] { return at::Tensor(); });
     if (!div_mode) {
-        if (dtype == at::kQInt8) {
-            dtype = at::kChar;
-        }
-        if (dtype != at::kChar) {
-            TORCH_CHECK(false, "When div_mode is false, dtype must be Int8 " + OPS_ERROR(ErrCode::TYPE));
-        }
-        at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self, self.options().dtype(dtype));
-        npu_ascend_quant_v2(result, self, scales, zero_points, dtype);
-        return result;
+        return op_api::npu_quantize(self, scales, zero_points_opt, dtype, axis, div_mode);
     }
     axis = op_plugin::utils::make_warp_dim(axis, self.dim());
     TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1." + OPS_ERROR(ErrCode::PARAM));
