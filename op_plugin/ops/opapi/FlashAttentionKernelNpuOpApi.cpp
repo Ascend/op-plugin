@@ -241,6 +241,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_flash_attention_b
             format_softmax_sum, format_softmax, format_attention, prefixN, scale_value, keep_prob, pre_tockens,
             next_tockens, head_num, input_layout_ptr, inner_precise, sparse_mode, dq, dk, dv, dpse);
     }
+    FLOP_COUNT(FlopCounter::flash_attention_backward_flop, query, key, value, dy, head_num, input_layout, c10::OptionalIntArrayRef(actual_seq_qlen), c10::OptionalIntArrayRef(actual_seq_kvlen));
 
     if (!format_pse.defined()) {
         at::Tensor dpse_required;
@@ -470,6 +471,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise,
             sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
     }
+    FLOP_COUNT(FlopCounter::flash_attention_forward_flop, query, key, value, head_num, input_layout_str, c10::OptionalIntArrayRef(actual_seq_qlen), c10::OptionalIntArrayRef(actual_seq_kvlen));
 
     if (!sync) {
         c10_npu::NPUEvent npu_event;
@@ -587,6 +589,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
             format_softmax_sum, format_softmax, format_attention, prefixN, scale_value, keep_prob,
             pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise, sparse_mode, dq, dk, dv, dpse);
     }
+    FLOP_COUNT(FlopCounter::flash_attention_backward_flop, query, key, value, dy, head_num, input_layout, actual_seq_qlen, actual_seq_kvlen);
 
     if (!format_pse.defined()) {
         at::Tensor dpse_required;
@@ -815,6 +818,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise,
             sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
     }
+    FLOP_COUNT(FlopCounter::flash_attention_forward_flop, query, key, value, head_num, input_layout_str, actual_seq_qlen, actual_seq_kvlen);
 
     if (!sync) {
         c10_npu::NPUEvent npu_event;
@@ -932,6 +936,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
             format_softmax_sum, format_softmax, format_attention, prefixN, scale_value, keep_prob,
             pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise, sparse_mode, dq, dk, dv, dpse);
     }
+    FLOP_COUNT(FlopCounter::flash_attention_backward_flop, query, key, value, dy, head_num, input_layout, actual_seq_qlen, actual_seq_kvlen);
 
     if (!format_pse.defined()) {
         at::Tensor dpse_required;
@@ -1162,6 +1167,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr,
             inner_precise, sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
     }
+    FLOP_COUNT(FlopCounter::flash_attention_forward_flop, query, key, value, head_num, input_layout_str, actual_seq_qlen, actual_seq_kvlen);
 
     if (!sync) {
         c10_npu::NPUEvent npu_event;
@@ -1373,6 +1379,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
             format_softmax_sum, format_softmax, format_attention, prefixN, scale_value, keep_prob,
             pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise, sparse_mode, dq, dk, dv, dpse);
     }
+    FLOP_COUNT(FlopCounter::flash_attention_backward_flop, query, key, value, dy, head_num, input_layout, actual_seq_qlen, actual_seq_kvlen);
 
     if (!format_pse.defined()) {
         at::Tensor dpse_required;
@@ -1604,6 +1611,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr,
             inner_precise, sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
     }
+    FLOP_COUNT(FlopCounter::flash_attention_forward_flop, query, key, value, head_num, input_layout_str, actual_seq_qlen, actual_seq_kvlen);
 
     if (!sync) {
         c10_npu::NPUEvent npu_event;

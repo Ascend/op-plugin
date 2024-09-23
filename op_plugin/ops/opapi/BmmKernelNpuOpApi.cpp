@@ -53,9 +53,7 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2)
 
     auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
     at::namedinference::propagate_names_if_nonempty(result, outnames);
-#if VERSION_BETWEEN(V2R1, V2R4)
     FLOP_COUNT(FlopCounter::bmm_flop, self, mat2);
-#endif
     return result;
 }
 

@@ -39,9 +39,7 @@ at::Tensor baddbmm(const at::Tensor &self, const at::Tensor &batch1, const at::T
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     EXEC_NPU_CMD(aclnnBaddbmm, self, batch1, batch2, beta, alpha, result, cube_math_type);
-#if VERSION_BETWEEN(V2R1, V2R4)
     FLOP_COUNT(FlopCounter::baddbmm_flop, batch1, batch2);
-#endif
     return result;
 }
 
