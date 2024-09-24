@@ -20,6 +20,8 @@
 #include "op_plugin/utils/custom_functions/opapi/inner_compute_op_api.h"
 
 namespace op_api {
+using npu_preparation = at_npu::native::OpPreparation;
+
 const int8_t ALLOW_FP32_DOWN_PRECISION = 1;
 const int8_t KEEP_DTYPE = 0;
 
@@ -28,7 +30,7 @@ static inline void matmul_implement_npu(at::Tensor &out,
                                         const at::Tensor &mat2)
 {
     // allow dicrease precision
-    int8_t cube_math_type = ALLOW_FP32_DOWN_PRECISION;
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     EXEC_NPU_CMD(aclnnMatmul, self, mat2, out, cube_math_type);
     FLOP_COUNT(FlopCounter::mm_flop, self, mat2);
     return;
