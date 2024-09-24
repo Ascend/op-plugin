@@ -30,9 +30,7 @@ at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     EXEC_NPU_CMD(aclnnMm, self, mat2, result, cube_math_type);
     at::namedinference::propagate_names_if_nonempty(result, names);
-#if VERSION_BETWEEN(V2R1, V2R4)
     FLOP_COUNT(FlopCounter::mm_flop, self, mat2);
-#endif
     return result;
 }
 

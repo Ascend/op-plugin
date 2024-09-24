@@ -58,9 +58,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_gather_base_mm(const at::Tensor &self
     EXEC_NPU_CMD(aclnnAllGatherMatmul, self, x2, bias_real, hcom_ptr, gather_index, comm_turn, stream_mode,
                  out_gather_mm, out_gather);
 
-#if VERSION_BETWEEN(V2R1, V2R4)
     FLOP_COUNT(FlopCounter::all_gather_mm_flop, self, x2, world_size, gather_index);
-#endif
     return std::tie(out_gather_mm, out_gather);
 }
 }

@@ -82,9 +82,7 @@ static inline void matmul_implement_npu(at::Tensor &out, const at::Tensor &self,
     // allow dicrease precision
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     EXEC_NPU_CMD(aclnnMatmul, self, mat2, out, cube_math_type);
-#if VERSION_BETWEEN(V2R1, V2R4)
     FLOP_COUNT(FlopCounter::mm_flop, self, mat2);
-#endif
     return;
 }
 
