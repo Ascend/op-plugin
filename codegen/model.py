@@ -452,7 +452,6 @@ class NativeFunction:
     # # What python module to put the function in
     # python_module: Optional[str]
 
-    # # TODO: figure out what this does
     # category_override: Optional[str]
 
     # # If no variants are specified in native_functions.yaml, this is
@@ -970,7 +969,6 @@ class FunctionSchema:
 
     arguments: "Arguments"
 
-    # TODO: Need to handle collisions with argument names at some point
     returns: Tuple["Return", ...]
 
     def schema_order_arguments(self) -> Iterator["Argument"]:
@@ -1456,7 +1454,7 @@ class BaseTy(Enum):
     Storage = auto()
     Stream = auto()
     SymInt = auto()
-    ConstQuantizerPtr = auto()  # TODO: rename
+    ConstQuantizerPtr = auto()
 
 
 @dataclass(frozen=True)
