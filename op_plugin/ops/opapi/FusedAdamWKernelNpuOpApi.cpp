@@ -52,14 +52,15 @@ void _fused_adamw_(
     float eps_cast = static_cast<float>(eps);
 
     for (size_t i = 0; i < self.size(); i++) {
+        auto step = state_steps[i].sub(1);
         // max_exp_avg_sqs is optional when amsgrad is false
         if (max_exp_avg_sqs.size() == 0) {
             c10::optional<at::Tensor> null_max_exp;
             EXEC_NPU_CMD(aclnnApplyAdamWV2, self[i], exp_avgs[i], exp_avg_sqs[i], null_max_exp, grads[i],
-                state_steps[i], lr_cast, beta1_cast, beta2_cast, weight_decay_cast, eps_cast, amsgrad, maximize);
+                step, lr_cast, beta1_cast, beta2_cast, weight_decay_cast, eps_cast, amsgrad, maximize);
         } else {
             EXEC_NPU_CMD(aclnnApplyAdamWV2, self[i], exp_avgs[i], exp_avg_sqs[i], max_exp_avg_sqs[i], grads[i],
-                state_steps[i], lr_cast, beta1_cast, beta2_cast, weight_decay_cast, eps_cast, amsgrad, maximize);
+                step, lr_cast, beta1_cast, beta2_cast, weight_decay_cast, eps_cast, amsgrad, maximize);
         }
     }
 }
