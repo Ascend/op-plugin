@@ -20,6 +20,45 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
+std::vector<at::Tensor> _foreach_add_v1(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar &alpha)
+{
+    at::native::check_foreach_api_restrictions(tensors1, tensors2);
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
+        return at::native::foreach_tensor_add_list_kernel_slow(tensors1, tensors2, alpha);
+    }
+    // construct the output tensorlist of the NPU
+    auto scalar_type = tensors1[0].scalar_type();
+    std::vector<at::Tensor> result;
+    for (const at::Tensor &tensor : tensors1) {
+        auto output_size = op_infer::input_same_output_size(tensor);
+        result.push_back(
+            npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+    }
+    at::TensorList result_ = at::TensorList(result);
+
+    // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type, tensors1[0].device());
+
+    EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, result_);
+    return result;
+}
+
+void _foreach_add_v1_(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar &alpha)
+{
+    at::native::check_foreach_api_restrictions(tensors1, tensors2);
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
+        return at::native::foreach_tensor_add_list_kernel_slow_(tensors1, tensors2, alpha);
+    }
+    // convert scalar to tensor in PTA for now，wait for ascendc aclnn framwork support scalar type
+    auto scalar_type = tensors1[0].scalar_type();
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(alpha, scalar_type, tensors1[0].device());
+
+    EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, tensors1);
+    return;
+}
+
 void _split_and_exec_npu_cmd_add(at::TensorList& tensors1, at::TensorList tensors2,
                                  const at::Scalar& scalar, at::TensorList& result_list,
                                  bool is_inplace)
@@ -31,14 +70,14 @@ void _split_and_exec_npu_cmd_add(at::TensorList& tensors1, at::TensorList tensor
     at::Scalar scalar_ = op_api::adaptToDouble(scalar, tensors1);
 
     if (tensor_count <= max_tensor_count) {
-        EXEC_NPU_CMD(aclnnForeachAddList, tensors1, tensors2, scalar_, result_list);
+        EXEC_NPU_CMD(aclnnForeachAddListV2, tensors1, tensors2, scalar_, result_list);
         return;
     }
     for (size_t i = 0; i < loop_time; i++) {
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, max_tensor_count);
         at::TensorList temp_tensors2(tensors2.data() + i * max_tensor_count, max_tensor_count);
         at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
-        EXEC_NPU_CMD(aclnnForeachAddList, temp_tensors1, temp_tensors2, scalar_, temp_result);
+        EXEC_NPU_CMD(aclnnForeachAddListV2, temp_tensors1, temp_tensors2, scalar_, temp_result);
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
@@ -46,7 +85,7 @@ void _split_and_exec_npu_cmd_add(at::TensorList& tensors1, at::TensorList tensor
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_tensors2(tensors2.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
-        EXEC_NPU_CMD(aclnnForeachAddList, temp_tensors1, temp_tensors2, scalar_, temp_result);
+        EXEC_NPU_CMD(aclnnForeachAddListV2, temp_tensors1, temp_tensors2, scalar_, temp_result);
     }
 }
 
@@ -59,7 +98,7 @@ std::vector<at::Tensor> _foreach_add(at::TensorList tensors1,
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_add_list_kernel_slow(tensors1, tensors2, alpha);
     }
-
+    DO_COMPATIBILITY(aclnnForeachAddListV2, _foreach_add_v1(tensors1, tensors2, alpha));
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
     if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_add_list_kernel_slow(tensors1, tensors2, alpha);
@@ -86,7 +125,7 @@ void _foreach_add_(at::TensorList tensors1, at::TensorList tensors2, const at::S
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_add_list_kernel_slow_(tensors1, tensors2, alpha);
     }
-
+    DO_COMPATIBILITY(aclnnForeachAddListV2, _foreach_add_v1_(tensors1, tensors2, alpha));
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
     if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_add_list_kernel_slow_(tensors1, tensors2, alpha);

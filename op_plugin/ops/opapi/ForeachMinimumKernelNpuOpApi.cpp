@@ -83,6 +83,40 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors1, at::TensorList
 #endif
 
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
+std::vector<at::Tensor> _foreach_minimum_v1(at::TensorList tensors, const at::Scalar& scalar)
+{
+    at::native::check_foreach_api_restrictions(tensors);
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors, scalar, false)) {
+        return at::native::foreach_tensor_clamp_max_scalar_kernel_slow(tensors, scalar);
+    }
+    // construct the output tensorlist of the NPU
+    auto scalar_type = tensors[0].scalar_type();
+    std::vector<at::Tensor> result;
+    for (const at::Tensor &tensor : tensors) {
+        auto output_size = op_infer::input_same_output_size(tensor);
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size,
+                                                                      tensor.options().dtype(scalar_type)));
+    }
+    at::TensorList result_ = at::TensorList(result);
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type, tensors[0].device());
+    EXEC_NPU_CMD(aclnnForeachMinimumScalar, tensors, scalar_, result_);
+    return result;
+    }
+
+void _foreach_minimum_v1_(at::TensorList tensors, const at::Scalar& scalar)
+{
+    at::native::check_foreach_api_restrictions(tensors);
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(tensors, scalar, false)) {
+        return at::native::foreach_tensor_clamp_max_scalar_kernel_slow_(tensors, scalar);
+    }
+    auto scalar_type = tensors[0].scalar_type();
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type, tensors[0].device());
+    EXEC_NPU_CMD(aclnnForeachMinimumScalar, tensors, scalar_, tensors);
+    return;
+}
+
 void _split_and_exec_npu_cmd_min(at::TensorList& tensors1, at::TensorList& tensors2, at::TensorList& result_list, bool is_inplace)
 {
     size_t tensor_count = tensors1.size();
@@ -164,20 +198,20 @@ void _split_and_exec_npu_cmd_min_scalar(at::TensorList& tensors1, const at::Scal
     at::Scalar scalar_ = op_api::adaptToDouble(scalar, tensors1);
 
     if (tensor_count <= max_tensor_count) {
-        EXEC_NPU_CMD(aclnnForeachMinimumScalar, tensors1, scalar_, result_list);
+        EXEC_NPU_CMD(aclnnForeachMinimumScalarV2, tensors1, scalar_, result_list);
         return;
     }
     for (size_t i = 0; i < loop_time; i++) {
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, max_tensor_count);
         at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
-        EXEC_NPU_CMD(aclnnForeachMinimumScalar, temp_tensors1, scalar_, temp_result);
+        EXEC_NPU_CMD(aclnnForeachMinimumScalarV2, temp_tensors1, scalar_, temp_result);
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
     if (remaining_count) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
-        EXEC_NPU_CMD(aclnnForeachMinimumScalar, temp_tensors1, scalar_, temp_result);
+        EXEC_NPU_CMD(aclnnForeachMinimumScalarV2, temp_tensors1, scalar_, temp_result);
     }
 }
 
@@ -215,7 +249,7 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors, const at::Scala
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow(tensors, scalar);
     }
-
+    DO_COMPATIBILITY(aclnnForeachMinimumScalarV2, _foreach_minimum_v1(tensors, scalar));
     if (!at::native::can_use_fast_route(tensors, scalar, false)) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow(tensors, scalar);
     }
@@ -241,7 +275,7 @@ void _foreach_minimum_(at::TensorList tensors, const at::Scalar& scalar)
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow_(tensors, scalar);
     }
-
+    DO_COMPATIBILITY(aclnnForeachMinimumScalarV2, _foreach_minimum_v1_(tensors, scalar));
     if (!at::native::can_use_fast_route(tensors, scalar, false)) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow_(tensors, scalar);
     }

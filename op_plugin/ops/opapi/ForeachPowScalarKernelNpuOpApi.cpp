@@ -23,6 +23,45 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
+
+std::vector<at::Tensor> _foreach_pow_v1(const at::TensorList self, const at::Scalar& scalar)
+{
+    at::native::check_foreach_api_restrictions(self);
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, true)) {
+        return at::native::foreach_tensor_pow_scalar_kernel_slow(self, scalar);
+    }
+    auto scalar_type = self[0].scalar_type();
+    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
+        TORCH_CHECK(false, "input must be half, float or int32" + OPS_ERROR(ErrCode::TYPE));
+    }
+    std::vector<at::Tensor> result;
+    result.reserve(self.size());
+    for (const at::Tensor &tensor : self) {
+        auto output_size = op_infer::input_same_output_size(tensor);
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+    }
+    at::TensorList result_ = at::TensorList(result);
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type(), self[0].device());
+    EXEC_NPU_CMD(aclnnForeachPowScalar, self, scalar_tensor, result_);
+    return result;
+}
+
+void _foreach_pow_v1_(const at::TensorList self, const at::Scalar& scalar)
+{
+    at::native::check_foreach_api_restrictions(self);
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route(self, scalar, true)) {
+        return at::native::foreach_tensor_pow_scalar_kernel_slow_(self, scalar);
+    }
+    auto scalar_type = self[0].scalar_type();
+    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
+        TORCH_CHECK(false, "input must be half, float or int32" + OPS_ERROR(ErrCode::TYPE));
+    }
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type(), self[0].device());
+    EXEC_NPU_CMD(aclnnForeachPowScalar, self, scalar_tensor, self);
+}
+
 void checkFloat(at::ScalarType scalar_type)
 {
     TORCH_CHECK(scalar_type == at::ScalarType::Half || scalar_type == at::ScalarType::Float ||
@@ -39,20 +78,20 @@ void _split_and_exec_npu_cmd_pow_kernel(const at::TensorList self, const at::Sca
     at::Scalar scalar_ = op_api::adaptToDouble(scalar, self);
 
     if (tensor_count <= max_tensor_count) {
-        EXEC_NPU_CMD(aclnnForeachPowScalar, self, scalar_, result_list);
+        EXEC_NPU_CMD(aclnnForeachPowScalarV2, self, scalar_, result_list);
         return;
     }
     for (size_t i = 0; i < loop_time; i++) {
         at::TensorList temp_self(self.data() + i * max_tensor_count, max_tensor_count);
         at::TensorList temp_result(result_list.data() + i * max_tensor_count, max_tensor_count);
-        EXEC_NPU_CMD(aclnnForeachPowScalar, temp_self, scalar_, temp_result);
+        EXEC_NPU_CMD(aclnnForeachPowScalarV2, temp_self, scalar_, temp_result);
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
     if (remaining_count) {
         at::TensorList temp_self(self.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
-        EXEC_NPU_CMD(aclnnForeachPowScalar, temp_self, scalar_, temp_result);
+        EXEC_NPU_CMD(aclnnForeachPowScalarV2, temp_self, scalar_, temp_result);
     }
 }
 
@@ -64,7 +103,7 @@ std::vector<at::Tensor> _foreach_pow(const at::TensorList self, const at::Scalar
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_pow_scalar_kernel_slow(self, scalar);
     }
-
+    DO_COMPATIBILITY(aclnnForeachPowScalarV2, _foreach_pow_v1(self, scalar));
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_pow_scalar_kernel_slow(self, scalar);
@@ -92,7 +131,7 @@ void _foreach_pow_(const at::TensorList self, const at::Scalar& scalar)
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_pow_scalar_kernel_slow_(self, scalar);
     }
-
+    DO_COMPATIBILITY(aclnnForeachPowScalarV2, _foreach_pow_v1_(self, scalar));
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_pow_scalar_kernel_slow_(self, scalar);
