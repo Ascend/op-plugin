@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2024 Huawei Technologies Co., Ltd
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -209,6 +209,19 @@ NameVector compute_names_npu(std::vector<at::Tensor> tensor_list)
         }
     }
     return names;
+}
+
+double compute_scale(bool align_corners, int64_t input_size, int64_t output_size, double scale)
+{
+    if (align_corners) {
+        if (output_size > 1) {
+            return static_cast<double>(input_size - 1) / (output_size - 1);
+        } else {
+            return 0.0;
+        }
+    } else {
+        return scale > 0.0 ? scale : (static_cast<double>(input_size) / output_size);
+    }
 }
 
 }  // namespace utils

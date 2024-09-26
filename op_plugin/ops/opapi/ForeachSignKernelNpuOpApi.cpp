@@ -70,8 +70,9 @@ std::vector<at::Tensor> _foreach_sign(const at::TensorList self)
     DO_COMPATIBILITY(aclnnForeachSign, at::native::foreach_tensor_sign_slow(self));
     at::native::check_foreach_api_restrictions(self);
 
-    static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1;
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1)||
+                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out || !at::native::can_use_fast_route(self)) {
         return at::native::foreach_tensor_sign_slow(self);
     }
