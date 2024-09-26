@@ -1219,7 +1219,7 @@ c10::SmallVector<int64_t, SIZE> sum_npu_output_size(const at::Tensor &self, c10:
 c10::SmallVector<int64_t, SIZE> swiglu_backward_infershape(const at::Tensor &x, int64_t dim)
 {
     if (dim < 0) {
-        dim += x.sizes().size();
+        dim += static_cast<int64_t>(x.sizes().size());
     }
     TORCH_CHECK(dim < x.sizes().size(), "dim out of range", dim, OPS_ERROR(ErrCode::PARAM));
     auto output_sizes = op_infer::array_to_small_vector(x.sizes());
