@@ -71,17 +71,21 @@ int64_t make_wrap_dim(int64_t dim, int64_t dim_post_expr)
     return dim;
 }
 
-static std::bitset<64> make_dim_mask(c10::IntArrayRef dims, int64_t ndim)
+std::bitset<64> make_dim_mask(c10::IntArrayRef dims, int64_t ndim)
 {
     std::bitset<64> mask = std::bitset<64>();
+    if (ndim <= 0) {
+        ndim = 1;
+    }
     if (dims.empty()) {
         mask.flip();
     } else {
         for (int64_t dim : dims) {
-            TORCH_CHECK(dim >= (-ndim) && dim < ndim, "Dimension out of range"
+            int64_t positive_dim = make_wrap_dim(dim, ndim);
+            TORCH_CHECK(positive_dim >= 0 && positive_dim < ndim, "Dimension out of range"
                 "(expect to be in range of [-", ndim, ", ", ndim,
                 "), but got ", dim, ".)", OPS_ERROR(ErrCode::PARAM));
-            mask.set(make_wrap_dim(dim, ndim));
+            mask.set(positive_dim);
         }
     }
 

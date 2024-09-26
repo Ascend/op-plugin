@@ -94,6 +94,12 @@ class TestAll(TestCase):
         input_x_tensor = torch.ones(input_shape).npu()
         with self.assertRaisesRegex(RuntimeError, "Dimension out of range"):
             out = torch.sum(input_x_tensor, dim=-3)
+    
+    def test_all_dim_is_zero(self):
+        input_shape = []
+        input_x_tensor = torch.ones(input_shape).npu()
+        with self.assertRaisesRegex(RuntimeError, "Dimension out of range"):
+            out = torch.sum(input_x_tensor, dim=-3)
 
 
 if __name__ == "__main__":
