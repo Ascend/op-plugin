@@ -25,7 +25,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 void _split_and_exec_npu_cmd_addcmul_tensor(const at::TensorList input,
                                             const at::TensorList tensors1,
                                             const at::TensorList tensors2,
-                                            at::ArrayRef<at::Scalar> scalars,
+                                            at::Tensor scalars,
                                             at::TensorList result,
                                             bool is_inplace)
 {
@@ -49,7 +49,7 @@ void _split_and_exec_npu_cmd_addcmul_tensor(const at::TensorList input,
         at::TensorList temp_input(input.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors2(tensors2.data() + i * max_tensor_count, data_count);
-        at::ArrayRef<at::Scalar> temp_scalars(scalars.data() + i * max_tensor_count, data_count);
+        at::Tensor temp_scalars = scalars.slice(0, i * max_tensor_count, data_count);
         at::TensorList temp_result(result.data() + i * max_tensor_count, data_count);
         EXEC_NPU_CMD(aclnnForeachAddcmulScalarList, temp_input, temp_tensors1, temp_tensors2, temp_scalars, temp_result);
     }
@@ -70,20 +70,25 @@ std::vector<at::Tensor> _foreach_addcmul(const at::TensorList input,
     }
 
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2, scalars_);
-    if (!at::native::can_use_fast_route({input, tensors1, tensors2}) ||
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route({input, tensors1, tensors2}) ||
         at::native::has_integral_tensor(input, true)) {
             return at::native::foreach_tensor_addcmul_scalarlist_slow(input, tensors1, tensors2, scalars_);
     }
+
     auto scalar_type = input[0].scalar_type();
-    std::vector<at::Tensor> result(input.size());
-    auto iterRes = result.data();
-    int i = 0;
+    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
+        TORCH_CHECK(false, "input must be half, float or int32" + OPS_ERROR(ErrCode::TYPE));
+    }
+    std::vector<at::Tensor> result;
+    result.reserve(input.size());
     for (const at::Tensor &tensor : input) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        iterRes[i++] = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type));
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
-    _split_and_exec_npu_cmd_addcmul_tensor(input, tensors1, tensors2, scalars_, result_, false);
+    auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(scalars);
+    _split_and_exec_npu_cmd_addcmul_tensor(input, tensors1, tensors2, scalar_tensor, result_, false);
     return result;
 }
 
@@ -100,16 +105,22 @@ void _foreach_addcmul_(const at::TensorList input,
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_addcmul_scalarlist_slow_(input, tensors1, tensors2, scalars_);
     }
-    
+
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2, scalars_);
-    if (!at::native::can_use_fast_route({input, tensors1, tensors2}) ||
+    if (!at_npu::native::env::CheckJitDisable() ||
+        !at::native::can_use_fast_route({input, tensors1, tensors2}) ||
         at::native::has_integral_tensor(input, true)) {
             return at::native::foreach_tensor_addcmul_scalarlist_slow_(input, tensors1, tensors2, scalars_);
     }
 
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2);
+    auto scalar_type = input[0].scalar_type();
+    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int && scalar_type != at::ScalarType::BFloat16) {
+        TORCH_CHECK(false, "input must be half, float, int32 or bfloat16" + OPS_ERROR(ErrCode::TYPE));
+    }
+    auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(scalars);
 
-    _split_and_exec_npu_cmd_addcmul_tensor(input, tensors1, tensors2, scalars_, input, true);
+    _split_and_exec_npu_cmd_addcmul_tensor(input, tensors1, tensors2, scalar_tensor, input, true);
 }
 #endif
 }  // namespace op_api

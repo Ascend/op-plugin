@@ -25,7 +25,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 void _split_and_exec_npu_cmd_addcdiv_tensor(const at::TensorList input,
     const at::TensorList tensors1,
     const at::TensorList tensors2,
-    at::ArrayRef<at::Scalar> scalars,
+    const at::Tensor scalars,
     at::TensorList result,
     bool is_inplace)
 {
@@ -39,7 +39,8 @@ void _split_and_exec_npu_cmd_addcdiv_tensor(const at::TensorList input,
     }
 
     if (tensor_count <= max_tensor_count) {
-        EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, input, tensors1, tensors2, scalars, result);
+        auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(scalars);
+        EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, input, tensors1, tensors2, scalar_tensor, result);
         return;
     }
     for (size_t i = 0; i < loop_time; i++) {
@@ -47,9 +48,11 @@ void _split_and_exec_npu_cmd_addcdiv_tensor(const at::TensorList input,
         at::TensorList temp_input(input.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors2(tensors2.data() + i * max_tensor_count, data_count);
-        at::ArrayRef<at::Scalar> temp_scalars(scalars.data() + i * max_tensor_count, data_count);
+        at::Tensor temp_scalars = scalars.slice(0, i * max_tensor_count, data_count);
         at::TensorList temp_result(result.data() + i * max_tensor_count, data_count);
-        EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, temp_input, temp_tensors1, temp_tensors2, temp_scalars, temp_result);
+
+        auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(temp_scalars);
+        EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, temp_input, temp_tensors1, temp_tensors2, scalar_tensor, temp_result);
     }
 }
 
@@ -73,6 +76,7 @@ std::vector<at::Tensor> _foreach_addcdiv(const at::TensorList input,
         at::native::has_integral_tensor(input, true)) {
             return at::native::foreach_tensor_addcdiv_scalarlist_slow(input, tensors1, tensors2, scalars_);
     }
+    
     auto scalar_type = input[0].scalar_type();
     std::vector<at::Tensor> result(input.size());
     auto iterRes = result.data();
@@ -82,7 +86,7 @@ std::vector<at::Tensor> _foreach_addcdiv(const at::TensorList input,
         iterRes[i++] = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type));
     }
     at::TensorList result_ = at::TensorList(result);
-    _split_and_exec_npu_cmd_addcdiv_tensor(input, tensors1, tensors2, scalars_, result_, false);
+    _split_and_exec_npu_cmd_addcdiv_tensor(input, tensors1, tensors2, scalars, result_, false);
     return result;
 }
 
@@ -108,7 +112,7 @@ void _foreach_addcdiv_(const at::TensorList input,
     }
 
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2);
-    _split_and_exec_npu_cmd_addcdiv_tensor(input, tensors1, tensors2, scalars_, input, true);
+    _split_and_exec_npu_cmd_addcdiv_tensor(input, tensors1, tensors2, scalars, input, true);
 }
 #endif
 }
