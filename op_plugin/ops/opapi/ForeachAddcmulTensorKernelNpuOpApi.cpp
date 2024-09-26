@@ -115,8 +115,8 @@ void _foreach_addcmul_(const at::TensorList input,
 
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2);
     auto scalar_type = input[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        TORCH_CHECK(false, "input must be half, float or int32" + OPS_ERROR(ErrCode::TYPE));
+    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int && scalar_type != at::ScalarType::BFloat16) {
+        TORCH_CHECK(false, "input must be half, float, int32, or bfloat16" + OPS_ERROR(ErrCode::TYPE));
     }
     auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(scalars);
 
