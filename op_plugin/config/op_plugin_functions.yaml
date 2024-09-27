@@ -6960,6 +6960,9 @@ custom:
     acl_op: all_version
     op_api: all_version
 
+  - func: npu_group_quant(Tensor x, Tensor scale, Tensor group_index, *, Tensor? offset=None, ScalarType? dst_dtype=None) -> Tensor
+    op_api: all_version
+
   - func: npu_random_choice_with_mask(Tensor x, int count=256, int seed=0, int seed2=0) -> (Tensor, Tensor)
     acl_op: all_version
     tags: nondeterministic_seeded
