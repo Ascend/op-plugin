@@ -81,7 +81,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
         batchSize = query.size(0);
         qsSize = query.size(2);
     }
-    if (ConvertType(quant_scale2) != nullptr) {
+    if (quant_scale2.has_value()) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Char));
     } else if (query.dtype() == at::kChar) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Half));

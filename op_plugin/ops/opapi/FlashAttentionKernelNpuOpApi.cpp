@@ -1205,7 +1205,7 @@ at::Tensor npu_prompt_flash_attention(
             query.options().dtype(query.dtype()));
     }
 
-    if (ConvertType(quant_scale2) != nullptr) {
+    if (quant_scale2.has_value()) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Char));
     } else if (query.dtype() == at::kChar) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Half));
@@ -1247,7 +1247,7 @@ at::Tensor npu_incre_flash_attention_symint(
 {
     // construct the output tensor of the NPU
     at::Tensor output;
-    if (ConvertType(quant_scale2) != nullptr) {
+    if (quant_scale2.has_value()) {
         output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Char));
     } else if (query.dtype() == at::kChar) {
         output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Half));
@@ -1649,7 +1649,7 @@ at::Tensor npu_prompt_flash_attention(
             query.options().dtype(query.dtype()));
     }
 
-    if (ConvertType(quant_scale2) != nullptr) {
+    if (quant_scale2.has_value()) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Char));
     } else if (query.dtype() == at::kChar) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Half));
@@ -1690,7 +1690,7 @@ at::Tensor npu_incre_flash_attention(
 {
     // construct the output tensor of the NPU
     at::Tensor output;
-    if (ConvertType(quant_scale2) != nullptr) {
+    if (quant_scale2.has_value()) {
         output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Char));
     } else if (query.dtype() == at::kChar) {
         output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Half));
