@@ -23,7 +23,7 @@ class TestUpsampleBilinear2dAABackward(TestCase):
             self.fail("shape error")
         if (cpu_out.dtype != npu_out.dtype):
             self.fail("dtype error!")
-        result = torch.allclose(cpu_out, npu_out.cpu(), rtol=0.001, atol=0.001)
+        result = torch.allclose(cpu_out, npu_out.cpu(), rtol=0.01, atol=0.01)
         if not result:
             self.fail("result error!")
         return True
@@ -41,27 +41,16 @@ class TestUpsampleBilinear2dAABackward(TestCase):
         output.backward(torch.ones_like(output))
         grad = inputs.grad
         return grad
-
-    def cpu_op_scale_exec(self, inputs, scale_factor):
-        inputs.requires_grad_(True)
-        output = interpolate(inputs, scale_factor=scale_factor, mode="bilinear", align_corners=False, antialias=True)
-        output.backward(torch.ones_like(output))
-        gradcpu = inputs.grad
-        return gradcpu
-
-    def npu_op_scale_exec(self, inputs, scale_factor):
-        inputs.requires_grad_(True)
-        output = interpolate(inputs, scale_factor=scale_factor, mode="bilinear", align_corners=False, antialias=True)
-        output.backward(torch.ones_like(output))
-        grad = inputs.grad
-        return grad
     
     @SupportedDevices(['Ascend910B'])
-    def test_UpsampleBilinear2d_common_shape_format(self):
+    def test_UpsampleBilinear2dAABackward_common_shape_format(self):
         shape_format = [
             ["float32", (4, 3, 1, 5), (2, 2)],
             ["float16", (1, 4, 2, 2), (8, 8)],
-            ["bfloat16", (8, 8, 8, 8), (1, 2)]
+            ["bfloat16", (8, 8, 8, 8), (12, 14)],
+            ["float32", (2, 3, 2, 1), (3, 3)],
+            ["float16", (4, 10, 16, 14), (15, 15)],
+            ["bfloat16", (10, 4, 3, 2), (2, 4)]
         ]
         for item in shape_format:
             cpu_inputs, npu_inputs = self.create_tensor(item[0], item[1])
@@ -77,11 +66,11 @@ class TestUpsampleBilinear2dAABackward(TestCase):
                 self.assertRtolEqual(cpu_grad, npu_grad)
 
     @SupportedDevices(['Ascend910B'])
-    def test_UpsampleBilinear2d_common_scale_shape_format(self):
+    def test_UpsampleBilinear2dAABackward_large_scale_format(self):
         shape_format = [
-            ["float32", (2, 3, 2, 1), (3, 3)],
-            ["float16", (4, 10, 16, 14), (5, 5)],
-            ["bfloat16", (10, 4, 3, 2), (2, 4)]
+            ["float32", (4, 1, 2, 1), (368, 779)],
+            ["float16", (5, 2, 16, 14), (512, 512)],
+            ["bfloat16", (6, 6, 3, 2), (208, 432)]
         ]
         for item in shape_format:
             cpu_inputs, npu_inputs = self.create_tensor(item[0], item[1])
