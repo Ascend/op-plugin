@@ -33,6 +33,11 @@ bool checkBicubicBackwardScales(float realScale_h, float realScale_w)
     return true;
 }
 
+bool checkBicubicBackwardShapes(int outputSize_h, int outputSize_w)
+{
+    return outputSize_h <= BICUBIC_MAX_SHAPE && outputSize_w <= BICUBIC_MAX_SHAPE;
+}
+
 bool checkBicubicBackwardUseFast(
     const at::Tensor &grad_output, bool align_corners, double scales_h, double scales_w, at::Tensor &grad_input)
 {
@@ -43,7 +48,8 @@ bool checkBicubicBackwardUseFast(
         op_plugin::utils::compute_scale(align_corners, grad_input.size(H_INDEX), grad_output.size(H_INDEX), scales_h);
     double realScale_w =
         op_plugin::utils::compute_scale(align_corners, grad_input.size(W_INDEX), grad_output.size(W_INDEX), scales_w);
-    if (!is_support_nd_out || !checkBicubicBackwardScales(realScale_h, realScale_w)) {
+    if (!is_support_nd_out || !checkBicubicBackwardScales(realScale_h, realScale_w) ||
+        !checkBicubicBackwardShapes(grad_output.size(H_INDEX), grad_output.size(W_INDEX))) {
         return false;
     }
     return true;
