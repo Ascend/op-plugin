@@ -77,8 +77,8 @@ std::vector<at::Tensor> _foreach_addcmul(const at::TensorList input,
     }
 
     auto scalar_type = input[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        TORCH_CHECK(false, "input must be half, float or int32" + OPS_ERROR(ErrCode::TYPE));
+    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int && scalar_type != at::ScalarType::BFloat16) {
+        TORCH_CHECK(false, "input must be half, float, int32 or bfloat16" + OPS_ERROR(ErrCode::TYPE));
     }
     std::vector<at::Tensor> result;
     result.reserve(input.size());
