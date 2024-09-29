@@ -85,6 +85,26 @@ class TestUpsampleBicubic2dAABackward(TestCase):
             else:
                 self.assertRtolEqual(cpu_grad, npu_grad)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_UpsampleBicubic2dAABackward_large_shape_format(self):
+        shape_format = [
+            ["float32", (2, 2, 26, 3441), (38, 9234)],
+            ["float16", (7, 6, 16, 14777), (45, 12768)],
+            ["bfloat16", (1, 5, 15663, 2), (18779, 6)]
+        ]
+        for item in shape_format:
+            cpu_inputs, npu_inputs = self.create_tensor(item[0], item[1])
+            if item[0] == "float16" or item[0] == "bfloat16":
+                cpu_inputs = cpu_inputs.to(torch.float32)
+            cpu_grad = self.cpu_op_exec(cpu_inputs, item[2])
+            npu_grad = self.npu_op_exec(npu_inputs, item[2])
+            cpu_grad = cpu_grad.to(npu_grad.dtype)
+
+            if item[0] == "bfloat16":
+                self.assert_equal(cpu_grad, npu_grad)
+            else:
+                self.assertRtolEqual(cpu_grad, npu_grad)
+
 
 if __name__ == "__main__":
     run_tests()
