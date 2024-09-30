@@ -144,6 +144,7 @@ at::Tensor& avg_pool2d_out(
   if (self.dim() == 3) {
     self_copy = self_copy.unsqueeze(0);
   }
+  TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints", OPS_ERROR(ErrCode::PARAM));
   const int64_t k_h = kernel_size[0];
   const int64_t k_w = kernel_size.size() == 1 ? k_h : kernel_size[1];
 
@@ -154,12 +155,16 @@ at::Tensor& avg_pool2d_out(
   const int64_t d_w = stride.empty() ? k_w : stride.size() == 1 ? d_h : stride[1];
 
   c10::SmallVector<int64_t, SIZE> stride_sizes = {d_h, d_w};
+  TORCH_CHECK(d_h != 0 && d_w != 0, "stride should not be zero", OPS_ERROR(ErrCode::VALUE));
   at::IntArrayRef stridess = at::IntArrayRef(stride_sizes);
 
   const int64_t pad_h = padding[0];
   const int64_t pad_w = padding.size() == 1 ? pad_h : padding[1];
 
   c10::SmallVector<int64_t, SIZE> padding_sizes = {pad_h, pad_w};
+  TORCH_CHECK(pad_h >= 0 && pad_w >= 0, "pad should not be less than 0", OPS_ERROR(ErrCode::VALUE));
+  TORCH_CHECK(pad_h <= k_h / 2 && pad_w <= k_w / 2, "pad should be smaller than or equal to half of kernel size",
+      OPS_ERROR(ErrCode::VALUE));
   at::IntArrayRef paddingss = at::IntArrayRef(padding_sizes);
 
   auto output_sizes = op_infer::avg_pool2d_npu_output_size(
@@ -200,6 +205,7 @@ at::Tensor avg_pool2d(
   if (self.dim() == 3) {
     self_copy = self_copy.unsqueeze(0);
   }
+  TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints", OPS_ERROR(ErrCode::PARAM));
   const int64_t k_h = kernel_size[0];
   const int64_t k_w = kernel_size.size() == 1 ? k_h : kernel_size[1];
 
@@ -210,12 +216,16 @@ at::Tensor avg_pool2d(
   const int64_t d_w = stride.empty() ? k_w : stride.size() == 1 ? d_h : stride[1];
 
   c10::SmallVector<int64_t, SIZE> stride_sizes = {d_h, d_w};
+  TORCH_CHECK(d_h != 0 && d_w != 0, "stride should not be zero", OPS_ERROR(ErrCode::VALUE));
   at::IntArrayRef stridess = at::IntArrayRef(stride_sizes);
 
   const int64_t pad_h = padding[0];
   const int64_t pad_w = padding.size() == 1 ? pad_h : padding[1];
 
   c10::SmallVector<int64_t, SIZE> padding_sizes = {pad_h, pad_w};
+  TORCH_CHECK(pad_h >= 0 && pad_w >= 0, "pad should not be less than 0", OPS_ERROR(ErrCode::VALUE));
+  TORCH_CHECK(pad_h <= k_h / 2 && pad_w <= k_w / 2, "pad should be smaller than or equal to half of kernel size",
+      OPS_ERROR(ErrCode::VALUE));
   at::IntArrayRef paddingss = at::IntArrayRef(padding_sizes);
 
   auto output_sizes = op_infer::avg_pool2d_npu_output_size(
