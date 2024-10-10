@@ -26,28 +26,29 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
 
 2. 编译生成插件的二进制安装包。
 
-   下载对应OpPlugin版本分支代码，进入插件根目录，以master为例
+   下载对应OpPlugin版本分支代码，进入插件根目录，以v2.1.0-6.0.rc3为例
    ```
-   git clone https://gitee.com/ascend/op-plugin.git
+   git clone https://gitee.com/ascend/op-plugin.git -b 6.0.rc3
    cd op-plugin
    ```
-   执行编译构建，当前支持昇腾pytorch 1.11/2.1/2.2/2.3/2.4/master版本
+   执行编译构建，当前支持torch_npu 2.1/2.3/2.4版本
    ```
-   bash ci/build.sh --python=3.8 --pytorch=v2.1.0
+   bash ci/build.sh --python=3.8 --pytorch=v2.1.0-6.0.rc3
    ```
-   请注意，当前1.11版本支持gcc 7.5和gcc 10.2, 2.1及以上版本仅支持gcc 10.2版本
+   请注意，编译时gcc版本遵循如下约束：
+   arm架构下推荐使用gcc 10.2版本, x86架构下推荐使用gcc 9.3.1
 
    | 参数      | 取值范围                                            | 说明                  | 缺省值    | 备注                                |
    |---------|-------------------------------------------------|---------------------|--------|-----------------------------------|
-   | pytorch | v1.11.0, v2.1.0, v2.2.0, v2.3.1, v2.4.0, master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.5            |
-   | python  | 3.7, 3.8, 3.9, 3.10                             | 指定编译过程中使用的python版本  | 3.8    | 仅pytorch版本为1.11时才支持指定python版本为3.7 |
+   | pytorch | v2.1.0, v2.3.1, v2.4.0, master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.5            |
+   | python  | 3.8, 3.9, 3.10                             | 指定编译过程中使用的python版本  | 3.8    |  |
 
-   >编译过程中，会在插件根目录新建build文件夹，并下载昇腾pytorch对应版本的源码，协同编译。 若build/pytorch目录存在，则编译op-plugin时，不再重复下载昇腾pytorch源码。如需下载所依赖的最新昇腾pytorch源码，删除build/pytorch目录即可。
+   >编译过程中，会在插件根目录新建build文件夹，并下载torch_npu对应版本的源码，协同编译。 若build/pytorch目录存在，则编译op-plugin时，不再重复下载torch_npu源码。如需下载所依赖的最新torch_npu源码，删除build/pytorch目录即可。
 
 3. 完成编译后，安装dist目录下生成的插件torch\_npu包，如果使用非root用户安装，需要在命令后加**--user**。
 
    ```
-   pip3 install --upgrade dist/torch_npu-2.1.0-cp37-cp37m-linux_aarch64.whl
+   pip3 install --upgrade dist/torch_npu-2.1.0-cp38-cp38m-linux_aarch64.whl
    # 若用户在x86架构下安装插件，请替换为对应的whl包。
    ```
 
