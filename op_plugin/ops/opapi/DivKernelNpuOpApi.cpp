@@ -57,10 +57,10 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
     // calculate the output size
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType result_type = at::native::result_type(self, other);
-    if (!isFloatingType(result_type)) {
+    if (!isFloatingType(result_type) && !isComplexType(result_type)) {
         result_type = at::ScalarType::Float;
     }
-    if (isFloatingType(result.scalar_type())) {
+    if (isFloatingType(result.scalar_type()) || isComplexType(result.scalar_type())) {
         result_type = result.scalar_type();
     }
     at::Tensor self_cp = self_tensor_to_device(self, result_type, result.device());
@@ -115,7 +115,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
   at::ScalarType high_type = at::native::result_type(self, other);
   at::Tensor self_cp = self_tensor_to_device(self, high_type, outputTensor.device());
 
-  if (!isFloatingType(high_type)) {
+  if (!isFloatingType(high_type) && !isComplexType(high_type)) {
     high_type = at::ScalarType::Float;
   }
   // construct the output tensor of the NPU
@@ -152,7 +152,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<c1
     } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
         mode = MODE_TRUNC;
     } else {
-        if (!isFloatingType(high_type)) {
+        if (!isFloatingType(high_type) && !isComplexType(high_type)) {
             high_type = at::ScalarType::Float;
         }
     }
@@ -221,7 +221,7 @@ at::Tensor div(const at::Tensor& self, const at::Scalar& other) {
   DO_COMPATIBILITY(aclnnDivs, acl_op::div(self, other));
   auto outputSize = op_infer::input_same_output_size(self);
   at::ScalarType high_type = at::native::result_type(self, other);
-  if (!isFloatingType(high_type)) {
+  if (!isFloatingType(high_type) && !isComplexType(high_type)) {
     high_type = at::ScalarType::Float;
   }
   at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(high_type));
@@ -241,7 +241,7 @@ at::Tensor div(const at::Tensor& self, const at::Scalar& other, c10::optional<c1
   } else if (rounding_mode.has_value() && *rounding_mode == "trunc") {
     mode = MODE_TRUNC;
   } else {
-    if (!isFloatingType(high_type)) {
+    if (!isFloatingType(high_type) && !isComplexType(high_type)) {
       high_type = at::ScalarType::Float;
     }
   }

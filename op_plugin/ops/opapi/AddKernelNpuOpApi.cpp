@@ -24,7 +24,7 @@ inline void alpha_check_npu(const at::ScalarType dtype, at::Scalar alpha)
 {
     TORCH_CHECK(!alpha.isBoolean() || dtype == at::ScalarType::Bool,
                 "Boolean alpha only supported for Boolean results." + OPS_ERROR(ErrCode::TYPE));
-    TORCH_CHECK(isFloatingType(dtype) || alpha.isIntegral(true),
+    TORCH_CHECK(isFloatingType(dtype) || isComplexType(dtype) || alpha.isIntegral(true),
                 "For integral input tensors, argument alpha must not be a floating point number."
                 + OPS_ERROR(ErrCode::TYPE));
 }
