@@ -14,16 +14,30 @@
 // limitations under the License.
 
 
+#include <limits>
 #include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 namespace op_api {
+
 at::Tensor& exponential_(at::Tensor& self, double lambda, c10::optional<at::Generator> generator)
 {
+    if (std::isinf(lambda)) {
+        self.zero_();
+        return self;
+    }
+    
     self = op_api::uniform_(self, 0.0, 1.0, generator);
     self = op_api::sub_(self, at::Scalar(1.0), at::Scalar(1.0));
     self = op_api::mul_(self, at::Scalar(-1.0));
     self = op_api::log_(self);
-    return op_api::div_(self, at::Scalar(-lambda));
+    self = op_api::div_(self, at::Scalar(-lambda));
+
+    AT_DISPATCH_FLOATING_TYPES_AND2(at::ScalarType::Half, at::ScalarType::BFloat16, self.scalar_type(), "exponential_", [&]() {
+        auto eps = std::numeric_limits<scalar_t>::min();
+        self = self.add(eps);
+    });
+
+    return self;
 }
-}
+}  // namespace op_api
