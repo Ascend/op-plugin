@@ -38,8 +38,9 @@ void _split_and_exec_npu_cmd_addcdiv_tensor(const at::TensorList input,
         loop_time++;
     }
 
+    auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(scalars);
+
     if (tensor_count <= max_tensor_count) {
-        auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(scalars);
         EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, input, tensors1, tensors2, scalar_tensor, result);
         return;
     }
@@ -48,11 +49,10 @@ void _split_and_exec_npu_cmd_addcdiv_tensor(const at::TensorList input,
         at::TensorList temp_input(input.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors2(tensors2.data() + i * max_tensor_count, data_count);
-        at::Tensor temp_scalars = scalars.slice(0, i * max_tensor_count, data_count);
+        at::Tensor temp_scalars = scalar_tensor.slice(0, i * max_tensor_count, data_count);
         at::TensorList temp_result(result.data() + i * max_tensor_count, data_count);
 
-        auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(temp_scalars);
-        EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, temp_input, temp_tensors1, temp_tensors2, scalar_tensor, temp_result);
+        EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, temp_input, temp_tensors1, temp_tensors2, temp_scalars, temp_result);
     }
 }
 
