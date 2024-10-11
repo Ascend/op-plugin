@@ -45,6 +45,12 @@ class TestExponential(TestCase):
             return True
         else:
             return False
+    
+    @SupportedDevices(['Ascend910B'])
+    def test_exponential_no_zero(self):
+        for _ in range(100):
+            x = torch.empty(500000000, device="npu", dtype=torch.float32).exponential_()
+            self.assertTrue(x.min() > 0)
 
 
 if __name__ == "__main__":
