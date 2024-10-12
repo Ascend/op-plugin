@@ -45,6 +45,7 @@ class TestUpsampleBicubic2dAABackward(TestCase):
     @SupportedDevices(['Ascend910B'])
     def test_UpsampleBicubic2dAABackward_common_shape_format(self):
         shape_format = [
+            ["float32", (8, 2, 2, 2), (100, 100)],
             ["float32", (4, 3, 1, 5), (2, 2)],
             ["float16", (1, 4, 2, 2), (8, 8)],
             ["bfloat16", (8, 8, 8, 8), (12, 14)],

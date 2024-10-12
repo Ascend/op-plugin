@@ -220,7 +220,11 @@ double compute_scale(bool align_corners, int64_t input_size, int64_t output_size
             return 0.0;
         }
     } else {
-        return scale > 0.0 ? scale : (static_cast<double>(input_size) / output_size);
+        if (scale > 0.0) {
+            return 1.0 / scale ;
+        } else {
+            return static_cast<double>(input_size) / output_size;
+        }
     }
 }
 
