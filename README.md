@@ -63,6 +63,10 @@ op-plugin仓旨在为**torch_npu**提供运行所需要的算子适配文件，�
 | 5.0.0         |     5.0.0版本，如v2.1.0-5.0.0等      |
 | 5.0.rc3       |   5.0.rc3版本，如v2.1.0-5.0.rc3等    |
 
+## 支持的型号
+- Atlas 训练系列产品
+- Atlas A2 训练系列产品
+
 ## 生命周期
 op-plugin仓依赖**torch_npu**运行，生命周期请参考**torch_npu**中的[PyTorch版本维护策略](https://gitee.com/ascend/pytorch/blob/master/README.zh.md#pytorch%E7%89%88%E6%9C%AC%E7%BB%B4%E6%8A%A4%E7%AD%96%E7%95%A5)。
 
