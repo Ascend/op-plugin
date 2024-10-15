@@ -6997,10 +6997,12 @@ custom:
 
   - func: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2) -> Tensor
     acl_op: all_version
+    op_api: all_version
     exposed: all_version
 
   - func: npu_rotary_mul_backward(Tensor grad, Tensor self, Tensor r1, Tensor r2) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
+    op_api: all_version
 
   - func: npu_rotated_box_decode(Tensor self, Tensor deltas, Tensor weight) -> Tensor
     acl_op: all_version
