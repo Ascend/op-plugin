@@ -17,7 +17,6 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-#if VERSION_BETWEEN(V2R1, V2R2)
 void _fused_adamw_(
     at::TensorList self,
     at::TensorList grads,
@@ -64,5 +63,4 @@ void _fused_adamw_(
         }
     }
 }
-#endif
 }  // namespace op_api
