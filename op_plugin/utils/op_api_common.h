@@ -549,6 +549,7 @@ inline aclBoolArray *ConvertTypeV2(const std::vector<bool> &value)
         value_ptr[i] = value[i];
     }
     auto array = aclCreateBoolArray(value_ptr, value.size());
+    free(value_ptr);
     return array;
 }
 

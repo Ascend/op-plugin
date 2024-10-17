@@ -387,6 +387,8 @@ void add_param_to_buf_v2(const std::vector<bool> &at_array)
         value_ptr[i] = at_array[i];
     }
     MEMCPY_TO_BUF(value_ptr, static_cast<int64_t>(at_array.size() * sizeof(int64_t)));
+    free(value_ptr);
+
     auto counter = at_array.size();
     MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
