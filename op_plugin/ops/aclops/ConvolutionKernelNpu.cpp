@@ -181,6 +181,7 @@ void check_shape_forward(const at::Tensor &input, const c10::IntArrayRef &weight
     TORCH_CHECK(dilation.size() >= k - 2, "dilation must be smaller than the number of dimensions", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight_sizes[0] >= groups, "Given groups=", groups, ", expected weight to be at least ", groups,
                 " at dimension 0, but got weight of size ", weight_sizes, " instead", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(groups != 0, "groups should not be zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight_sizes[0] % groups == 0, "Given groups=", groups, ", expected weight to be divisible by ", groups,
                 " at dimension 0, but got weight of size [", weight_sizes, "] instead", OPS_ERROR(ErrCode::PARAM));
 

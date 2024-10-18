@@ -197,6 +197,7 @@ c10::SmallVector<int64_t, SIZE> avg_pool2d_npu_output_size(const at::Tensor &sel
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size.size() == 2, "kernel_size length should be 2", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() == 2, "stride length should be 2", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride[0] * stride[1] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() == 2, "padding length should be 2", OPS_ERROR(ErrCode::PARAM));
 
     int self_h = self.size(-2);
@@ -236,6 +237,7 @@ c10::SmallVector<int64_t, SIZE> avg_pool3d_npu_output_size(const at::Tensor &sel
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size.size() == 3, "kernel_size length should be 3", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() == 3, "stride length should be 3", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride[0] * stride[1] * stride[2] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() == 3, "padding length should be 3", OPS_ERROR(ErrCode::PARAM));
 
     int self_d = self.size(-3);
@@ -325,6 +327,7 @@ c10::SmallVector<int64_t, SIZE> conv1d_npu_output_size(const at::Tensor &input, 
         "but got Tensor of dimension ", weight.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() > 0, "stride length should be greater than 0, "
         "but got the stride length is ", stride.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride[0] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() > 0, "padding length should be greater than 0, "
         "but got the padding length is ", padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() > 0, "dilation length should be greater than 0, "
@@ -355,6 +358,7 @@ c10::SmallVector<int64_t, SIZE> conv2d_npu_output_size(const at::Tensor &input, 
         "but got the padding length is ", padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() > 1, "dilation length should be greater than 1, "
         "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride[0] * stride[1] != 0, "Stride cannot contain 0" + OPS_ERROR(ErrCode::PARAM));
 
     int64_t N = input.size(0);
     int64_t H = input.size(2);
@@ -762,14 +766,17 @@ c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const
     int64_t Ho = 0;
     int64_t Wo = 0;
     if (padding.size() == 1 && stride.size() == 1) {
+        TORCH_CHECK(stride[0] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
         Ho = (H + 2 * padding[0] - (kernel_size[0] - 1) - 1) / stride[0] + 1;
         Wo = (W + 2 * padding[0] - (kernel_size[1] - 1) - 1) / stride[0] + 1;
     }
     if (padding.size() != 1 && stride.size() == 1) {
+        TORCH_CHECK(stride[0] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
         Ho = (H + 2 * padding[0] - (kernel_size[0] - 1) - 1) / stride[0] + 1;
         Wo = (W + 2 * padding[1] - (kernel_size[1] - 1) - 1) / stride[0] + 1;
     }
     if (padding.size() != 1 && stride.size() != 1) {
+        TORCH_CHECK(stride[0] * stride[1] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
         Ho = (H + 2 * padding[0] - (kernel_size[0] - 1) - 1) / stride[0] + 1;
         Wo = (W + 2 * padding[1] - (kernel_size[1] - 1) - 1) / stride[1] + 1;
     }
@@ -919,6 +926,8 @@ c10::SmallVector<int64_t, SIZE> conv_depthwise2d_npu_output_size(const at::Tenso
                 "Attr length should be 2", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size == weight.sizes().slice(2), "kernel size should be equal to the last 2 dim of weight",
         OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride[0] * stride[1] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
+    
     int64_t N = self.size(0);
     int64_t Co = weight.size(0);
     int64_t H = self.size(2);
@@ -1126,6 +1135,7 @@ c10::SmallVector<int64_t, SIZE> im2col_backward_npu_output_size(const at::Tensor
                 "Expected 2D or 3D (batch mode) tensor for gradOutput with possibly 0 batch size and non-zero "
                 "dimensions for gradOutput, but got: ",
                 grad_output.sizes(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(kernel_size[0] * kernel_size[1] != 0, "kernel_size should not be zero", OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, SIZE> outputSize;
     if (grad_output.dim() == 2) {
         outputSize = {grad_output.size(0) / (kernel_size[0] * kernel_size[1]), input_size[0], input_size[1]};
