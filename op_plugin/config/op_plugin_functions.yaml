@@ -1,4 +1,4 @@
-all_version: [v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5]
+all_version: [v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6]
 official:
   - func: __ilshift__.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
     acl_op: all_version
@@ -39,8 +39,8 @@ official:
     acl_op: all_version
 
   - func: _adaptive_avg_pool2d(Tensor self, SymInt[2] output_size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _adaptive_avg_pool2d(Tensor self, int[2] output_size) -> Tensor
     acl_op: v1.11
@@ -56,8 +56,8 @@ official:
       exec: aclnnAdaptiveAvgPool2dBackward
 
   - func: _adaptive_avg_pool3d(Tensor self, SymInt[3] output_size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: adaptive_avg_pool3d_npu_output_size(self, output_size)
@@ -143,8 +143,8 @@ official:
     acl_op: all_version
 
   - func: _convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, SymInt[] padding, int[] dilation, bool transposed, SymInt[] output_padding, int groups, bool benchmark, bool deterministic, bool cudnn_enabled, bool allow_tf32) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, bool transposed, int[] output_padding, int groups, bool benchmark, bool deterministic, bool cudnn_enabled, bool allow_tf32) -> Tensor
     acl_op: v1.11
@@ -172,16 +172,16 @@ official:
     op_api: all_version
 
   - func: _conv_depthwise2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, SymInt[2] padding, int[2] dilation) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _conv_depthwise2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, int[2] dilation) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: _conv_depthwise2d.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, SymInt[2] padding, int[2] dilation, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     use_const_ref_for_mutable_tensors: true
 
   - func: _conv_depthwise2d.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, int[2] dilation, *, Tensor(a!) out) -> Tensor(a!)
@@ -197,13 +197,13 @@ official:
     op_api: all_version
 
   - func: _embedding_bag_backward(Tensor grad, Tensor indices, Tensor offsets, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _embedding_bag_backward(Tensor grad, Tensor indices, Tensor offsets, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, int num_weights, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
     acl_op: v1.11
 
   - func: _embedding_bag_dense_backward(Tensor grad, Tensor indices, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _embedding_bag_dense_backward(Tensor grad, Tensor indices, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, int num_weights, bool scale_grad_by_freq, int mode, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
     acl_op: v1.11
@@ -218,28 +218,28 @@ official:
     op_api: v2.1, v2.2
 
   - func: _fft_c2c(Tensor self, SymInt[] dim, int normalization, bool forward) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _fft_c2c.out(Tensor self, SymInt[] dim, int normalization, bool forward, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _fft_c2r(Tensor self, int[] dim, int normalization, SymInt last_dim_size) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _fft_c2r.out(Tensor self, int[] dim, int normalization, SymInt last_dim_size, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _fft_r2c(Tensor self, int[] dim, int normalization, bool onesided) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _fft_r2c.out(Tensor self, int[] dim, int normalization, bool onesided, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_norm.Scalar(Tensor[] tensors, Scalar ord=2) -> Tensor[]
     op_api: v1.11, v2.1, v2.2, v2.3
 
   - func: _foreach_norm.Scalar(Tensor[] tensors, Scalar ord=2, ScalarType? dtype=None) -> Tensor[]
-    op_api: v2.4, v2.5
+    op_api: v2.4, v2.5, v2.6
 
   - func: _foreach_abs_(Tensor(a!)[] self) -> ()
     op_api: all_version
@@ -272,7 +272,7 @@ official:
     op_api: all_version
 
   - func: _foreach_addcdiv.Tensor(Tensor[] self, Tensor[] tensor1, Tensor[] tensor2, Tensor scalars) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_addcdiv_.Scalar(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> ()
     op_api: all_version
@@ -281,7 +281,7 @@ official:
     op_api: all_version
 
   - func: _foreach_addcdiv_.Tensor(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Tensor scalars) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_addcmul.Scalar(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> Tensor[]
     op_api: all_version
@@ -290,7 +290,7 @@ official:
     op_api: all_version
 
   - func: _foreach_addcmul.Tensor(Tensor[] self, Tensor[] tensor1, Tensor[] tensor2, Tensor scalars) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_addcmul_.Scalar(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Scalar value=1) -> ()
     op_api: all_version
@@ -299,7 +299,7 @@ official:
     op_api: all_version
 
   - func: _foreach_addcmul_.Tensor(Tensor(a!)[] self, Tensor[] tensor1, Tensor[] tensor2, Tensor scalars) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_ceil(Tensor(a!)[] self) -> Tensor[]
     op_api: all_version
@@ -314,13 +314,13 @@ official:
     op_api: all_version
 
   - func: _foreach_copy_(Tensor(a!)[] self, Tensor[] src, bool non_blocking=False) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_sign(Tensor[] self) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_sign_(Tensor(a!)[] self) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_div.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
     op_api: all_version
@@ -362,37 +362,37 @@ official:
     op_api: all_version
 
   - func: _foreach_maximum.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_maximum.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_maximum_.List(Tensor(a!)[] self, Tensor[] other) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_maximum_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_maximum_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_minimum.List(Tensor[] self, Tensor[] other) -> Tensor[]
     op_api: all_version
 
   - func: _foreach_minimum.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_minimum.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_minimum_.List(Tensor(a!)[] self, Tensor[] other) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_minimum_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_minimum_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_mul.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
     op_api: all_version
@@ -419,25 +419,25 @@ official:
     op_api: all_version
 
   - func: _foreach_pow.List(Tensor[] self, Tensor[] exponent) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_pow.Scalar(Tensor[] tensors, Scalar scalar) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_pow.ScalarList(Tensor[] self, Scalar[] exponent) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_pow_.List(Tensor(a!)[] self, Tensor[] exponent) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_pow_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_pow_.ScalarList(Tensor(a!)[] self, Scalar[] exponent) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_pow.ScalarAndTensor(Scalar self, Tensor[] exponent) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_reciprocal_(Tensor(a!)[] self) -> ()
     op_api: all_version
@@ -554,52 +554,52 @@ official:
     op_api: all_version
 
   - func: _foreach_clamp_max.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_max_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_max.List(Tensor[] self, Tensor[] other) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_max_.List(Tensor(a!)[] self, Tensor[] other) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_max.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_max_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_min.ScalarList(Tensor[] self, Scalar[] scalars) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_min_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_min.List(Tensor[] self, Tensor[] other) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_min_.List(Tensor(a!)[] self, Tensor[] other) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_min.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_clamp_min_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_lerp_.Scalar(Tensor(a!)[] self, Tensor[] tensors1, Scalar weight) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_lerp.Scalar(Tensor[] self, Tensor[] tensors1, Scalar weight) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_lerp_.List(Tensor(a!)[] self, Tensor[] tensors1, Tensor[] weights) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_lerp.List(Tensor[] self, Tensor[] tensors1, Tensor[] weights) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _foreach_log1p_(Tensor(a!)[] self) -> ()
     op_api: all_version
@@ -648,13 +648,13 @@ official:
     acl_op: v1.11
 
   - func: _linalg_svd(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None) -> (Tensor U, Tensor S, Tensor Vh)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _linalg_svd.U(Tensor A, bool full_matrices=False, bool compute_uv=True, *, Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh)
     acl_op: v1.11
 
   - func: _linalg_svd.U(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None, Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _log_softmax(Tensor self, int dim, bool half_to_float) -> Tensor
     acl_op: all_version
@@ -690,10 +690,10 @@ official:
       exec: aclnnLogSoftmaxBackward, grad_output, output, dim, out
 
   - func: _native_batch_norm_legit(Tensor input, Tensor? weight, Tensor? bias, Tensor(a!) running_mean, Tensor(b!) running_var, bool training, float momentum, float eps) -> (Tensor, Tensor, Tensor)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _nnpack_spatial_convolution(Tensor input, Tensor weight, Tensor? bias, SymInt[2] padding, int[2] stride=1) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _nnpack_spatial_convolution(Tensor input, Tensor weight, Tensor? bias, int[2] padding, int[2] stride=1) -> Tensor
     acl_op: v1.11
@@ -754,8 +754,8 @@ official:
     acl_op: v1.11, v2.0
 
   - func: _prelu_kernel(Tensor self, Tensor weight) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: self
@@ -763,8 +763,8 @@ official:
       exec: aclnnPrelu
 
   - func: _prelu_kernel_backward(Tensor grad_output, Tensor self, Tensor weight) -> (Tensor, Tensor)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _slow_conv2d_backward.output_mask(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)
     acl_op: all_version
@@ -786,7 +786,7 @@ official:
     acl_op: v2.1
 
   - func: _weight_norm(Tensor v, Tensor g, int dim=0) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: abs(Tensor self) -> Tensor
     acl_op: all_version
@@ -863,24 +863,24 @@ official:
     acl_op: all_version
 
   - func: adaptive_avg_pool2d(Tensor self, SymInt[2] output_size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: adaptive_avg_pool2d(Tensor self, int[2] output_size) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: adaptive_avg_pool2d.out(Tensor self, SymInt[2] output_size, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: adaptive_avg_pool2d.out(Tensor self, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
     op_api: v1.11
 
   - func: adaptive_avg_pool3d.out(Tensor self, SymInt[3] output_size, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       exec: aclnnAdaptiveAvgPool3d
 
@@ -930,7 +930,7 @@ official:
     op_api: all_version
 
   - func: add.out(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)
-    sparse: v2.1, v2.2, v2.3, v2.4, v2.5
+    sparse: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     acl_op: all_version
     op_api: all_version
 
@@ -1024,15 +1024,15 @@ official:
       exec: aclnnInplaceAddr
 
   - func: affine_grid_generator(Tensor theta, SymInt[] size, bool align_corners) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: affine_grid_generator(Tensor theta, int[] size, bool align_corners) -> Tensor
     acl_op: v1.11, v2.0
     op_api: v1.11
 
   - func: affine_grid_generator_backward(Tensor grad, SymInt[] size, bool align_corners) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: affine_grid_generator_backward(Tensor grad, int[] size, bool align_corners) -> Tensor
     acl_op: v1.11, v2.0
@@ -1168,7 +1168,7 @@ official:
     op_api: all_version
 
   - func: argsort.stable(Tensor self, bool stable=False, int dim=-1, bool descending=False) -> Tensor
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: asin(Tensor self) -> Tensor
     acl_op: all_version
@@ -1585,7 +1585,7 @@ official:
       exec: aclnnInplaceCeil
 
   - func: _coalesce(Tensor self) -> Tensor
-    sparse: v2.1, v2.2, v2.3, v2.4, v2.5
+    sparse: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: celu(Tensor self, Scalar alpha=1.0) -> Tensor
     acl_op: all_version
@@ -1750,8 +1750,8 @@ official:
     op_api: all_version
 
   - func: constant_pad_nd(Tensor self, SymInt[] pad, Scalar value=0) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: constant_pad_nd(Tensor self, int[] pad, Scalar value=0) -> Tensor
     acl_op: v1.11
@@ -1766,28 +1766,28 @@ official:
     op_api: all_version
 
   - func: conv_transpose2d.input(Tensor input, Tensor weight, Tensor? bias=None, int[2] stride=1, SymInt[2] padding=0, SymInt[2] output_padding=0, int groups=1, int[2] dilation=1) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: conv_transpose2d.input(Tensor input, Tensor weight, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] output_padding=0, int groups=1, int[2] dilation=1) -> Tensor
     acl_op: v1.11, v2.0
 
   - func: conv_transpose3d.input(Tensor input, Tensor weight, Tensor? bias=None, int[3] stride=1, SymInt[3] padding=0, SymInt[3] output_padding=0, int groups=1, int[3] dilation=1) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: conv_transpose3d.input(Tensor input, Tensor weight, Tensor? bias=None, int[3] stride=1, int[3] padding=0, int[3] output_padding=0, int groups=1, int[3] dilation=1) -> Tensor
     acl_op: v1.11, v2.0
 
   - func: convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, SymInt[] padding, int[] dilation, bool transposed, SymInt[] output_padding, int groups) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, bool transposed, int[] output_padding, int groups) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: convolution_backward(Tensor grad_output, Tensor input, Tensor weight, SymInt[]? bias_sizes, int[] stride, SymInt[] padding, int[] dilation, bool transposed, SymInt[] output_padding, int groups, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: convolution_backward(Tensor grad_output, Tensor input, Tensor weight, int[]? bias_sizes, int[] stride, int[] padding, int[] dilation, bool transposed, int[] output_padding, int groups, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
     acl_op: v1.11
@@ -1856,8 +1856,8 @@ official:
     op_api: all_version
 
   - func: col2im(Tensor self, SymInt[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: im2col_backward_npu_output_size(self, output_size, kernel_size)
@@ -1874,8 +1874,8 @@ official:
       exec: aclnnIm2colBackward
 
   - func: col2im.out(Tensor self, SymInt[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: im2col_backward_npu_output_size(self, output_size, kernel_size)
@@ -2057,24 +2057,24 @@ official:
       exec: aclnnEluBackward
 
   - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: embedding(Tensor weight, Tensor indices, int padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: embedding_backward(Tensor grad, Tensor indices, SymInt num_weights, SymInt padding_idx, bool scale_grad_by_freq, bool sparse) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: embedding_backward(Tensor grad, Tensor indices, int num_weights, int padding_idx, bool scale_grad_by_freq, bool sparse) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: embedding_dense_backward(Tensor grad_output, Tensor indices, SymInt num_weights, SymInt padding_idx, bool scale_grad_by_freq) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: '{num_weights, grad_output.size(-1)}'
@@ -2264,32 +2264,32 @@ official:
     op_api: all_version
 
   - func: eye(SymInt n, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: eye(int n, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: v1.11, v2.0
     op_api: v1.11
 
   - func: eye.m(SymInt n, SymInt m, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: eye.m(int n, int m, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: v1.11, v2.0
     op_api: v1.11
 
   - func: eye.m_out(SymInt n, SymInt m, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: eye.m_out(int n, int m, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11, v2.0
     op_api: v1.11
 
   - func: eye.out(SymInt n, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: eye.out(int n, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11, v2.0
@@ -2299,10 +2299,10 @@ official:
     op_api: v2.1, v2.2
 
   - func: fft_fftshift(Tensor self, int[1]? dim=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: fft_ifftshift(Tensor self, int[1]? dim=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: fill_.Scalar(Tensor(a!) self, Scalar value) -> Tensor(a!)
     acl_op: all_version
@@ -2492,8 +2492,8 @@ official:
       structured_inherit: gelu.out
 
   - func: gelu(Tensor self, *, str approximate='none') -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: self
@@ -2519,8 +2519,8 @@ official:
       exec: aclnnGeluBackward
 
   - func: gelu_backward(Tensor grad_output, Tensor self, *, str approximate='none') -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: 'broadcast_ops_npu_output_size(grad_output, self)'
@@ -2597,8 +2597,8 @@ official:
     op_api: v1.11
 
   - func: grid_sampler_3d_backward(Tensor grad_output, Tensor input, Tensor grid, int interpolation_mode, int padding_mode, bool align_corners, bool[2] output_mask) -> (Tensor, Tensor)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       dinput:
         size: input
@@ -2808,8 +2808,8 @@ official:
       exec: aclnnIndexCopy
 
   - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       exec: aclnnInplaceIndexCopy
 
@@ -3151,28 +3151,28 @@ official:
       exec: aclnnLinalgCross
 
   - func: linalg_matrix_norm(Tensor self, Scalar ord, int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_matrix_norm.out(Tensor self, Scalar ord, int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_matrix_norm.str_ord(Tensor self, str ord='fro', int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_matrix_norm.str_ord_out(Tensor self, str ord='fro', int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_norm(Tensor self, Scalar? ord=None, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_norm.ord_str(Tensor self, str ord, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_norm.ord_str_out(Tensor self, str ord, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_norm.out(Tensor self, Scalar? ord=None, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_qr(Tensor self, str mode='reduced') -> (Tensor Q, Tensor R)
     acl_op: all_version
@@ -3197,10 +3197,10 @@ official:
     op_api: all_version
 
   - func: linalg_svdvals(Tensor A, *, str? driver=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_svdvals.out(Tensor A, *, str? driver=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: linalg_vector_norm(Tensor self, Scalar ord=2, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
     acl_op: all_version
@@ -3528,18 +3528,18 @@ official:
 
   - func: matmul(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: max(Tensor self) -> Tensor
-    sparse: v2.1, v2.2, v2.3, v2.4, v2.5
+    sparse: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     acl_op: all_version
     op_api: all_version
 
@@ -3560,13 +3560,13 @@ official:
     op_api: all_version
 
   - func: max.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
-    sparse: v2.1, v2.2, v2.3, v2.4, v2.5
+    sparse: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     acl_op: all_version
     op_api: all_version
 
   - func: max_unpool2d(Tensor self, Tensor indices, SymInt[2] output_size) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: max_unpool2d.out
 
@@ -3577,8 +3577,8 @@ official:
       structured_inherit: max_unpool2d.out
 
   - func: max_unpool2d.out(Tensor self, Tensor indices, SymInt[2] output_size, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: max_pool2d_out_size(self, output_size)
@@ -3610,8 +3610,8 @@ official:
       exec: aclnnMaxUnpool2dBackward
 
   - func: max_unpool3d(Tensor self, Tensor indices, SymInt[3] output_size, int[3] stride, int[3] padding) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: max_unpool3d.out
 
@@ -3622,8 +3622,8 @@ official:
       structured_inherit: max_unpool3d.out
 
   - func: max_unpool3d.out(Tensor self, Tensor indices, SymInt[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: max_pool3d_output_size(self, output_size)
@@ -3706,8 +3706,8 @@ official:
     op_api: v1.11
 
   - func: mean.dim(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: mean.names_dim(Tensor self, Dimname[1] dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
     acl_op: all_version
@@ -3722,8 +3722,8 @@ official:
     op_api: v1.11
 
   - func: mean.out(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: median(Tensor self) -> Tensor
     acl_op: all_version
@@ -3940,7 +3940,7 @@ official:
     op_api: v1.11
 
   - func: nansum(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nansum.IntList_out(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
     op_api: v1.11
@@ -3949,7 +3949,7 @@ official:
     op_api: v1.11
 
   - func: nansum.out(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: native_batch_norm(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -4004,16 +4004,16 @@ official:
     op_api: all_version
 
   - func: native_layer_norm(Tensor input, SymInt[] normalized_shape, Tensor? weight, Tensor? bias, float eps) -> (Tensor, Tensor, Tensor)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: native_layer_norm(Tensor input, int[] normalized_shape, Tensor? weight, Tensor? bias, float eps) -> (Tensor, Tensor, Tensor)
     acl_op: v1.11
     op_api: v1.11
 
   - func: native_layer_norm_backward(Tensor grad_out, Tensor input, SymInt[] normalized_shape, Tensor mean, Tensor rstd, Tensor? weight, Tensor? bias, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: native_layer_norm_backward(Tensor grad_out, Tensor input, int[] normalized_shape, Tensor mean, Tensor rstd, Tensor? weight, Tensor? bias, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
     acl_op: v1.11
@@ -4065,88 +4065,88 @@ official:
       structured_inherit: neg.out
 
   - func: nll_loss(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, SymInt ignore_index=-100) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, int ignore_index=-100) -> Tensor
     acl_op: v1.11
 
   - func: nll_loss.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, SymInt ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, int ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
 
   - func: nll_loss2d(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, SymInt ignore_index=-100) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss2d(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, int ignore_index=-100) -> Tensor
     acl_op: v1.11
 
   - func: nll_loss2d.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, SymInt ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss2d.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, int ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
 
   - func: nll_loss2d_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index, Tensor total_weight) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss2d_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, Tensor total_weight) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: nll_loss2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index, Tensor total_weight, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, Tensor total_weight, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
     op_api: v1.11
 
   - func: nll_loss2d_forward(Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index) -> (Tensor output, Tensor total_weight)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss2d_forward(Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index) -> (Tensor output, Tensor total_weight)
     acl_op: v1.11
     op_api: v1.11
 
   - func: nll_loss2d_forward.output(Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index, *, Tensor(a!) output, Tensor(b!) total_weight) -> (Tensor(a!), Tensor(b!))
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss2d_forward.output(Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, *, Tensor(a!) output, Tensor(b!) total_weight) -> (Tensor(a!), Tensor(b!))
     acl_op: v1.11
     op_api: v1.11
 
   - func: nll_loss_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index, Tensor total_weight) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, Tensor total_weight) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: nll_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index, Tensor total_weight, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, Tensor total_weight, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
     op_api: v1.11
 
   - func: nll_loss_forward(Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index) -> (Tensor output, Tensor total_weight)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss_forward(Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index) -> (Tensor output, Tensor total_weight)
     acl_op: v1.11
     op_api: v1.11
 
   - func: nll_loss_forward.output(Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index, *, Tensor(a!) output, Tensor(b!) total_weight) -> (Tensor(a!), Tensor(b!))
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: nll_loss_forward.output(Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, *, Tensor(a!) output, Tensor(b!) total_weight) -> (Tensor(a!), Tensor(b!))
     acl_op: v1.11
@@ -4209,16 +4209,16 @@ official:
     op_api: all_version
 
   - func: normal.float_float(float mean, float std, SymInt[] size, *, Generator? generator=None, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: normal.float_float(float mean, float std, int[] size, *, Generator? generator=None, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: normal.float_float_out(float mean, float std, SymInt[] size, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: normal.float_float_out(float mean, float std, int[] size, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -4233,8 +4233,8 @@ official:
     op_api: all_version
 
   - func: ones(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: ones(int[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: v1.11
@@ -4245,8 +4245,8 @@ official:
     op_api: all_version
 
   - func: ones.out(SymInt[] size, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: ones.out(int[] size, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -4393,32 +4393,32 @@ official:
     op_api: all_version
 
   - func: randperm(SymInt n, *, ScalarType? dtype=long, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: randperm(int n, *, ScalarType? dtype=long, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: v1.11, v2.0
     op_api: v1.11
 
   - func: randperm.generator(SymInt n, *, Generator? generator, ScalarType? dtype=long, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: randperm.generator(int n, *, Generator? generator, ScalarType? dtype=long, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: v1.11, v2.0
     op_api: v1.11
 
   - func: randperm.generator_out(SymInt n, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: randperm.generator_out(int n, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11, v2.0
     op_api: v1.11
 
   - func: randperm.out(SymInt n, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: randperm.out(int n, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11, v2.0
@@ -4460,8 +4460,8 @@ official:
       exec: aclnnInplaceReciprocal
 
   - func: reflection_pad1d(Tensor self, SymInt[2] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: reflection_pad1d.out
 
@@ -4472,8 +4472,8 @@ official:
       structured_inherit: reflection_pad1d.out
 
   - func: reflection_pad1d.out(Tensor self, SymInt[2] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: reflection_pad1d_npu_out_size(self, padding)
@@ -4490,8 +4490,8 @@ official:
       exec: aclnnReflectionPad1d
 
   - func: reflection_pad1d_backward(Tensor grad_output, Tensor self, SymInt[2] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: reflection_pad1d_backward.grad_input
 
@@ -4502,8 +4502,8 @@ official:
       structured_inherit: reflection_pad1d_backward.grad_input
 
   - func: reflection_pad1d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[2] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: self
@@ -4520,8 +4520,8 @@ official:
       exec: aclnnReflectionPad1dBackward
 
   - func: reflection_pad2d(Tensor self, SymInt[4] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: reflection_pad2d.out
 
@@ -4532,8 +4532,8 @@ official:
       structured_inherit: reflection_pad2d.out
 
   - func: reflection_pad2d.out(Tensor self, SymInt[4] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: reflection_pad2d_npu_out_size(self, padding)
@@ -4550,8 +4550,8 @@ official:
       exec: aclnnReflectionPad2d
 
   - func: reflection_pad2d_backward(Tensor grad_output, Tensor self, SymInt[4] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: reflection_pad2d_backward.grad_input
 
@@ -4562,8 +4562,8 @@ official:
       structured_inherit: reflection_pad2d_backward.grad_input
 
   - func: reflection_pad2d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: self
@@ -4580,8 +4580,8 @@ official:
       exec: aclnnReflectionPad2dBackward
 
   - func: reflection_pad3d(Tensor self, SymInt[6] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: reflection_pad3d.out
 
@@ -4592,8 +4592,8 @@ official:
       structured_inherit: reflection_pad3d.out
 
   - func: reflection_pad3d.out(Tensor self, SymInt[6] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: reflection_pad3d_npu_out_size(self, padding)
@@ -4610,7 +4610,7 @@ official:
       exec: aclnnReflectionPad3d
 
   - func: reflection_pad3d_backward(Tensor grad_output, Tensor self, SymInt[6] padding) -> Tensor
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: reflection_pad3d_backward.grad_input
 
@@ -4620,7 +4620,7 @@ official:
       structured_inherit: reflection_pad3d_backward.grad_input
 
   - func: reflection_pad3d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[6] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: self
@@ -4691,8 +4691,8 @@ official:
     op_api: all_version
 
   - func: repeat(Tensor self, SymInt[] repeats) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: repeat_npu_output_size(self, repeats)
@@ -4709,16 +4709,16 @@ official:
       exec: aclnnRepeat
 
   - func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
-    acl_op: v2.2, v2.3, v2.4, v2.5
-    op_api: v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, int? output_size=None) -> Tensor
     acl_op: v1.11, v2.0, v2.1
     op_api: v1.11, v2.1
 
   - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
-    acl_op: v2.2, v2.3, v2.4, v2.5
-    op_api: v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, int? output_size=None) -> Tensor
     acl_op: v2.0, v2.1
@@ -4729,8 +4729,8 @@ official:
     op_api: v1.11
 
   - func: replication_pad1d(Tensor self, SymInt[2] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: replication_pad1d.out
 
@@ -4741,8 +4741,8 @@ official:
       structured_inherit: replication_pad1d.out
 
   - func: replication_pad1d.out(Tensor self, SymInt[2] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: replication_pad1d_npu_out_size(self, padding)
@@ -4759,8 +4759,8 @@ official:
       exec: aclnnReplicationPad1d
 
   - func: replication_pad1d_backward(Tensor grad_output, Tensor self, SymInt[2] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: replication_pad1d_backward.grad_input
 
@@ -4771,8 +4771,8 @@ official:
       structured_inherit: replication_pad1d_backward.grad_input
 
   - func: replication_pad1d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[2] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: self
@@ -4789,8 +4789,8 @@ official:
       exec: aclnnReplicationPad1dBackward
 
   - func: replication_pad2d(Tensor self, SymInt[4] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: replication_pad2d.out
 
@@ -4801,8 +4801,8 @@ official:
       structured_inherit: replication_pad2d.out
 
   - func: replication_pad2d.out(Tensor self, SymInt[4] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: replication_pad2d_npu_out_size(self, padding)
@@ -4819,8 +4819,8 @@ official:
       exec: aclnnReplicationPad2d
 
   - func: replication_pad2d_backward(Tensor grad_output, Tensor self, SymInt[4] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: replication_pad2d_backward.grad_input
 
@@ -4831,8 +4831,8 @@ official:
       structured_inherit: replication_pad2d_backward.grad_input
 
   - func: replication_pad2d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: self
@@ -4849,8 +4849,8 @@ official:
       exec: aclnnReplicationPad2dBackward
 
   - func: replication_pad3d(Tensor self, SymInt[6] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: replication_pad3d.out
 
@@ -4861,8 +4861,8 @@ official:
       structured_inherit: replication_pad3d.out
 
   - func: replication_pad3d.out(Tensor self, SymInt[6] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: replication_pad3d_npu_out_size(self, padding)
@@ -4879,7 +4879,7 @@ official:
       exec: aclnnReplicationPad3d
 
   - func: replication_pad3d_backward(Tensor grad_output, Tensor self, SymInt[6] padding) -> Tensor
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: replication_pad3d_backward.grad_input
 
@@ -4889,7 +4889,7 @@ official:
       structured_inherit: replication_pad3d_backward.grad_input
 
   - func: replication_pad3d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[6] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: self
@@ -4905,8 +4905,8 @@ official:
       exec: aclnnReplicationPad3dBackward
 
   - func: roll(Tensor self, SymInt[1] shifts, int[1] dims=[]) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: self
@@ -5012,7 +5012,7 @@ official:
     op_api: v2.1, v2.2, v2.3, v2.4
 
   - func: scaled_dot_product_attention(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None, bool enable_gqa=False) -> Tensor
-    op_api: v2.5
+    op_api: v2.5, v2.6
 
   - func: scatter.reduce_out(Tensor self, int dim, Tensor index, Tensor src, *, str reduce, Tensor(a!) out) -> Tensor(a!)
     op_api: v1.11
@@ -5285,16 +5285,16 @@ official:
     op_api: all_version
 
   - func: slow_conv_transpose2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, SymInt[2] padding=0, SymInt[2] output_padding=0, int[2] dilation=1) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: slow_conv_transpose2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] output_padding=0, int[2] dilation=1) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: slow_conv_transpose2d.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, SymInt[2] padding=0, SymInt[2] output_padding=0, int[2] dilation=1, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: slow_conv_transpose2d.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] output_padding=0, int[2] dilation=1, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -5305,33 +5305,33 @@ official:
     op_api: all_version
 
   - func: slow_conv_dilated2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, SymInt[2] padding=0, int[2] dilation=1) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: slow_conv_dilated2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] dilation=1) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: slow_conv3d(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, SymInt[3] padding=0) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: slow_conv3d(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, int[3] padding=0) -> Tensor
     acl_op: v1.11
 
   - func: slow_conv3d.out(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, SymInt[3] padding=0, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: slow_conv3d.out(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, int[3] padding=0, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
 
   - func: slow_conv3d_forward(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias, int[3] stride, SymInt[3] padding) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: slow_conv3d_forward(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias, int[3] stride, int[3] padding) -> Tensor
     acl_op: v1.11
 
   - func: slow_conv3d_forward.output(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias, int[3] stride, SymInt[3] padding, *, Tensor(a!) output) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: slow_conv3d_forward.output(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias, int[3] stride, int[3] padding, *, Tensor(a!) output) -> Tensor(a!)
     acl_op: v1.11
@@ -5529,8 +5529,8 @@ official:
     op_api: v1.11
 
   - func: std.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: std.correction(Tensor self, int[1]? dim=None, *, int? correction=None, bool keepdim=False) -> Tensor
     acl_op: v2.0
@@ -5540,8 +5540,8 @@ official:
     op_api: v1.11
 
   - func: std.correction_out(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: std.correction_out(Tensor self, int[1]? dim=None, *, int? correction=None, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
     acl_op: v2.0
@@ -5551,8 +5551,8 @@ official:
     op_api: v1.11
 
   - func: std_mean.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> (Tensor, Tensor)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: std_mean.correction(Tensor self, int[1]? dim=None, *, int? correction=None, bool keepdim=False) -> (Tensor, Tensor)
     acl_op: v2.0
@@ -5593,8 +5593,8 @@ official:
     op_api: v1.11
 
   - func: sum.IntList_out(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: sum.dim_DimnameList(Tensor self, Dimname[1] dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
     acl_op: all_version
@@ -5605,8 +5605,8 @@ official:
     op_api: v1.11
 
   - func: sum.dim_IntList(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: take(Tensor self, Tensor index) -> Tensor
     acl_op: all_version
@@ -5696,8 +5696,8 @@ official:
       exec: aclnnThresholdBackward
 
   - func: topk(Tensor self, SymInt k, int dim=-1, bool largest=True, bool sorted=True) -> (Tensor values, Tensor indices)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: topk.values
 
@@ -5708,8 +5708,8 @@ official:
       structured_inherit: topk.values
 
   - func: topk.values(Tensor self, SymInt k, int dim=-1, bool largest=True, bool sorted=True, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       values:
         size: 'topk_npu_output_size(self, k, dim, largest, sorted)'
@@ -5837,16 +5837,16 @@ official:
     op_api: all_version
 
   - func: upsample_bicubic2d(Tensor self, SymInt[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_bicubic2d(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_bicubic2d.out(Tensor self, SymInt[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_bicubic2d.out(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -5857,40 +5857,40 @@ official:
     op_api: v1.11
 
   - func: _upsample_bicubic2d_aa_backward(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _upsample_bicubic2d_aa_backward(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
     op_api: v1.11
 
   - func: _upsample_bicubic2d_aa_backward.grad_input(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _upsample_bicubic2d_aa_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     op_api: v1.11
 
   - func: _upsample_bicubic2d_aa(Tensor self, SymInt[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _upsample_bicubic2d_aa(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
     op_api: v1.11
 
   - func: _upsample_bicubic2d_aa.out(Tensor self, SymInt[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _upsample_bicubic2d_aa.out(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
     op_api: v1.11
 
   - func: upsample_bicubic2d_backward(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_bicubic2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_bicubic2d_backward.grad_input(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_bicubic2d_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
@@ -5901,16 +5901,16 @@ official:
     op_api: v1.11
 
   - func: upsample_bilinear2d(Tensor self, SymInt[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_bilinear2d(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_bilinear2d.out(Tensor self, SymInt[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_bilinear2d.out(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -5921,16 +5921,16 @@ official:
     op_api: v1.11
 
   - func: upsample_bilinear2d_backward(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_bilinear2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_bilinear2d_backward.grad_input(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_bilinear2d_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
@@ -5941,40 +5941,40 @@ official:
     op_api: v1.11
 
   - func: _upsample_bilinear2d_aa(Tensor self, SymInt[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _upsample_bilinear2d_aa(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
     op_api: v1.11
 
   - func: _upsample_bilinear2d_aa.out(Tensor self, SymInt[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _upsample_bilinear2d_aa.out(Tensor self, int[2] output_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
     op_api: v1.11
 
   - func: _upsample_bilinear2d_aa_backward(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _upsample_bilinear2d_aa_backward(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor
     op_api: v1.11
 
   - func: _upsample_bilinear2d_aa_backward.grad_input(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _upsample_bilinear2d_aa_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     op_api: v1.11
 
   - func: upsample_linear1d(Tensor self, SymInt[1] output_size, bool align_corners, float? scales=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_linear1d(Tensor self, int[1] output_size, bool align_corners, float? scales=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_linear1d.out(Tensor self, SymInt[1] output_size, bool align_corners, float? scales=None, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_linear1d.out(Tensor self, int[1] output_size, bool align_corners, float? scales=None, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -5985,8 +5985,8 @@ official:
     op_api: v1.11
 
   - func: upsample_linear1d_backward(Tensor grad_output, SymInt[1] output_size, SymInt[3] input_size, bool align_corners, float? scales=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_linear1d_backward(Tensor grad_output, int[1] output_size, int[3] input_size, bool align_corners, float? scales=None) -> Tensor
     acl_op: v1.11
@@ -5997,16 +5997,16 @@ official:
     op_api: v1.11
 
   - func: upsample_nearest1d(Tensor self, SymInt[1] output_size, float? scales=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest1d(Tensor self, int[1] output_size, float? scales=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_nearest1d.out(Tensor self, SymInt[1] output_size, float? scales=None, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest1d.out(Tensor self, int[1] output_size, float? scales=None, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -6017,16 +6017,16 @@ official:
     op_api: v1.11
 
   - func: upsample_nearest1d_backward(Tensor grad_output, SymInt[1] output_size, SymInt[3] input_size, float? scales=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest1d_backward(Tensor grad_output, int[1] output_size, int[3] input_size, float? scales=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_nearest1d_backward.grad_input(Tensor grad_output, SymInt[1] output_size, SymInt[3] input_size, float? scales=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest1d_backward.grad_input(Tensor grad_output, int[1] output_size, int[3] input_size, float? scales=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
@@ -6037,16 +6037,16 @@ official:
     op_api: v1.11
 
   - func: upsample_nearest2d(Tensor self, SymInt[2] output_size, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest2d(Tensor self, int[2] output_size, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_nearest2d.out(Tensor self, SymInt[2] output_size, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest2d.out(Tensor self, int[2] output_size, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -6057,16 +6057,16 @@ official:
     op_api: v1.11
 
   - func: upsample_nearest2d_backward(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_nearest2d_backward.grad_input(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest2d_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
@@ -6077,16 +6077,16 @@ official:
     op_api: v1.11
 
   - func: upsample_nearest3d(Tensor self, SymInt[3] output_size, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest3d(Tensor self, int[3] output_size, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_nearest3d.out(Tensor self, SymInt[3] output_size, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest3d.out(Tensor self, int[3] output_size, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -6097,16 +6097,16 @@ official:
     op_api: v1.11
 
   - func: upsample_nearest3d_backward(Tensor grad_output, SymInt[3] output_size, SymInt[5] input_size, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest3d_backward(Tensor grad_output, int[3] output_size, int[5] input_size, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_nearest3d_backward.grad_input(Tensor grad_output, SymInt[3] output_size, SymInt[5] input_size, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_nearest3d_backward.grad_input(Tensor grad_output, int[3] output_size, int[5] input_size, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
@@ -6117,16 +6117,16 @@ official:
     op_api: v1.11
 
   - func: upsample_trilinear3d(Tensor self, SymInt[3] output_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_trilinear3d(Tensor self, int[3] output_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_trilinear3d.out(Tensor self, SymInt[3] output_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_trilinear3d.out(Tensor self, int[3] output_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -6137,16 +6137,16 @@ official:
     op_api: v1.11
 
   - func: upsample_trilinear3d_backward(Tensor grad_output, SymInt[3] output_size, SymInt[5] input_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_trilinear3d_backward(Tensor grad_output, int[3] output_size, int[5] input_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: v1.11
     op_api: v1.11
 
   - func: upsample_trilinear3d_backward.grad_input(Tensor grad_output, SymInt[3] output_size, SymInt[5] input_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: upsample_trilinear3d_backward.grad_input(Tensor grad_output, int[3] output_size, int[5] input_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
@@ -6161,8 +6161,8 @@ official:
     op_api: v1.11
 
   - func: var.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: var.correction(Tensor self, int[1]? dim=None, *, int? correction=None, bool keepdim=False) -> Tensor
     acl_op: v2.0
@@ -6172,8 +6172,8 @@ official:
     op_api: v1.11
 
   - func: var.correction_out(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: var.correction_out(Tensor self, int[1]? dim=None, *, int? correction=None, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
     acl_op: v2.0
@@ -6183,8 +6183,8 @@ official:
     op_api: v1.11
 
   - func: var_mean.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> (Tensor, Tensor)
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: var_mean.correction(Tensor self, int[1]? dim=None, *, int? correction=None, bool keepdim=False) -> (Tensor, Tensor)
     acl_op: v2.0
@@ -6222,8 +6222,8 @@ official:
     op_api: all_version
 
   - func: where.self_out(Tensor condition, Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: xlogy.OutScalar_Other(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
@@ -6296,8 +6296,8 @@ official:
     op_api: all_version
 
   - func: zeros(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: zeros(int[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: v1.11
@@ -6308,8 +6308,8 @@ official:
     op_api: all_version
 
   - func: zeros.out(SymInt[] size, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: zeros.out(int[] size, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: v1.11
@@ -6320,10 +6320,10 @@ official:
     op_api: all_version
 
   - func: isin.Tensor_Tensor(Tensor elements, Tensor test_elements, *, bool assume_unique=False, bool invert=False) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: isin.Tensor_Tensor_out(Tensor elements, Tensor test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 custom:
   - func: _amp_foreach_non_finite_check(Tensor[] scaled_grads) -> bool
@@ -6389,11 +6389,11 @@ custom:
     acl_op: v1.11, v2.0, v2.1
 
   - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       grad_input:
         size: 'broadcast_ops_npu_output_size(broadcast_ops_npu_output_size(self, target), grad_output.sizes())'
@@ -6408,7 +6408,7 @@ custom:
     acl_op: v1.11
 
   - func: matmul_double_backward(Tensor? grad_self, Tensor? grad_other, Tensor grad_out, Tensor self, Tensor other, bool[3] mask) -> (Tensor, Tensor, Tensor)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_add_layer_norm(Tensor x1, Tensor x2, Tensor gamma, Tensor beta, float epsilon=1e-05, bool additional_output=False) -> (Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6445,8 +6445,8 @@ custom:
     exposed: all_version
 
   - func: npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None, ScalarType? src_dtype=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
-    exposed: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    exposed: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_apply_adam(Scalar beta1_power, Scalar beta2_power, Scalar lr, Scalar beta1, Scalar beta2, Scalar epsilon, Tensor grad, bool? use_locking, bool? use_nesterov) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6487,8 +6487,8 @@ custom:
       exec: aclnnBinaryCrossEntropyWithLogitsBackward
 
   - func: npu_binary_cross_entropy_with_logits_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight_opt, Tensor? pos_weight_opt, int reduction) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       out:
         size: target
@@ -6500,13 +6500,13 @@ custom:
     exposed: all_version
 
   - func: npu_bmm_v2_mat1_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_bmm_v2_mat1_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
     acl_op: v1.11
 
   - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
     acl_op: v1.11
@@ -6543,7 +6543,7 @@ custom:
     exposed: all_version
 
   - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, SymInt[] shape, bool transpose_first) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, int[] shape, bool transpose_first) -> Tensor
     acl_op: v1.11
@@ -6655,10 +6655,10 @@ custom:
     op_api: all_version
 
   - func: npu_dynamic_quant(Tensor input, *, Tensor? smooth_scales=None) -> (Tensor, Tensor)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_dynamic_quant_asymmetric(Tensor input, *, Tensor? smooth_scales=None, Tensor? group_index=None, ScalarType? dst_type=None) -> (Tensor, Tensor, Tensor)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_fast_gelu(Tensor self) -> Tensor
     acl_op: all_version
@@ -6690,15 +6690,15 @@ custom:
     acl_op: all_version
 
   - func: npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value, *, Tensor? pse_shift=None, Tensor? atten_mask=None, SymInt[]? actual_seq_lengths=None, SymInt[]? actual_seq_lengths_kv=None, Tensor? dequant_scale1=None, Tensor? quant_scale1=None, Tensor? dequant_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? key_antiquant_scale=None, Tensor? key_antiquant_offset=None, Tensor? value_antiquant_scale=None, Tensor? value_antiquant_offset=None, Tensor? block_table=None, Tensor? query_padding_size=None, Tensor? kv_padding_size=None, Tensor? key_shared_prefix=None, Tensor? value_shared_prefix=None, SymInt[]? actual_shared_prefix_len=None, int num_heads=1, float scale=1.0, int pre_tokens=2147483647, int next_tokens=2147483647, str input_layout="BSH", int num_key_value_heads=0, int sparse_mode=0, int inner_precise=0, int block_size=0, int antiquant_mode=0, int key_antiquant_mode=0, int value_antiquant_mode=0, bool softmax_lse_flag=False) -> (Tensor, Tensor)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     exposed: v2.1
 
   - func: npu_fusion_attention(Tensor query, Tensor key, Tensor value, int head_num, str input_layout, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, float scale=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=0, int[]? prefix=None, int[]? actual_seq_qlen=None, int[]? actual_seq_kvlen=None, int sparse_mode=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    exposed: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    exposed: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_fusion_attention_grad(Tensor query, Tensor key, Tensor value, Tensor dy, int head_num, str input_layout, *, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, Tensor? softmax_max=None, Tensor? softmax_sum=None, Tensor? softmax_in=None, Tensor? attention_in=None, float scale_value=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=0, int seed=0, int offset=0, int numels=0, int[]? prefix=None, int[]? actual_seq_qlen=None, int[]? actual_seq_kvlen=None, int sparse_mode=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor)
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_fused_attention_layernorm_qkv_fwd(Tensor x, Tensor kernel_query, Tensor kernel_key, Tensor kernel_value, Tensor gamma, Tensor beta, Tensor? bias_query=None, Tensor? bias_key=None, Tensor? bias_value=None, int seq_len=128, int num_heads=12, float eps=1e-05) -> Tensor[]
     acl_op: all_version
@@ -6747,8 +6747,8 @@ custom:
     exposed: v1.11, v2.0
 
   - func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None, Tensor[]? offset=None, Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None, int[]? group_list=None, int? split_item=0, ScalarType? output_dtype=None) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
-    exposed: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    exposed: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6762,8 +6762,8 @@ custom:
     acl_op: all_version
 
   - func: npu_incre_flash_attention(Tensor query, Tensor key, Tensor value, *, Tensor? padding_mask=None, Tensor? atten_mask=None, Tensor? pse_shift=None, SymInt[]? actual_seq_lengths=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? block_table=None, Tensor? dequant_scale1=None, Tensor? quant_scale1=None, Tensor? dequant_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, Tensor? kv_padding_size=None, int num_heads=1, float scale_value=1.0, str input_layout="BSH", int num_key_value_heads=0, int block_size=0, int inner_precise=1) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
-    exposed: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    exposed: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_indexing(Tensor self, int[] begin, int[] end, int[] strides, int begin_mask=0, int end_mask=0, int ellipsis_mask=0, int new_axis_mask=0, int shrink_axis_mask=0) -> Tensor
     acl_op: all_version
@@ -6837,7 +6837,7 @@ custom:
     exposed: all_version
 
   - func: npu_max_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_max_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim) -> Tensor
     acl_op: v1.11
@@ -6851,7 +6851,7 @@ custom:
     exposed: all_version
 
   - func: npu_min_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_min_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim) -> Tensor
     acl_op: v1.11
@@ -6865,7 +6865,7 @@ custom:
 
   - func: npu_mm_all_reduce_base(Tensor x1, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? x3=None, Tensor? dequant_scale=None, Tensor? pertoken_scale=None, Tensor? comm_quant_scale_1=None, Tensor? comm_quant_scale_2=None, int antiquant_group_size=0, int comm_turn=0) -> Tensor
     op_api: all_version
-    exposed: v1.11, v2.1, v2.4, v2.5
+    exposed: v1.11, v2.1, v2.4, v2.5, v2.6
 
   - func: npu_mm_reduce_scatter_base(Tensor self, Tensor x2, str hcom, int world_size, *, str reduce_op='sum', Tensor? bias=None, int comm_turn=0) -> Tensor
     op_api: all_version
@@ -6925,15 +6925,15 @@ custom:
     exposed: all_version
 
   - func: npu_prompt_flash_attention(Tensor query, Tensor key, Tensor value, *, Tensor? padding_mask=None, Tensor? atten_mask=None, Tensor? pse_shift=None, int[]? actual_seq_lengths=None, Tensor? deq_scale1=None, Tensor? quant_scale1=None, Tensor? deq_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, int num_heads=1, float scale_value=1.0, int pre_tokens=2147473647, int next_tokens=0, str input_layout="BSH", int num_key_value_heads=0, int[]? actual_seq_lengths_kv=None, int sparse_mode=0) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
-    exposed: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    exposed: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_ps_roi_pooling(Tensor self, Tensor rois, float spatial_scale, int group_size, int output_dim) -> Tensor
     acl_op: all_version
     exposed: all_version
 
   - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, SymInt[] input_size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, int[] input_size) -> Tensor
     acl_op: v1.11
@@ -6943,10 +6943,10 @@ custom:
     exposed: all_version
 
   - func: npu_prefetch(Tensor self, Tensor? dependency, int max_size, int offset=0) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_quant_conv2d(Tensor input, Tensor weight, Tensor scale, int[2] strides=1, int[2] pads=0, int[2] dilations=1, int groups=1, int offset_x=0, str round_mode='rint', ScalarType? output_dtype=None, Tensor? bias=None, Tensor? offset=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, *, Tensor? offset=None, Tensor? pertoken_scale=None, Tensor? bias=None, ScalarType? output_dtype=None) -> Tensor
     op_api: all_version
@@ -7034,10 +7034,10 @@ custom:
     acl_op: all_version
 
   - func: npu_scatter_list(Tensor[] self, Tensor indices, Tensor updates, Tensor? mask=None, str reduce='update', int axis=-2) -> Tensor[]
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_scatter_list_(Tensor(a!)[] self, Tensor indices, Tensor updates, Tensor? mask=None, str reduce='update', int axis=-2) -> ()
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_scatter_nd_update(Tensor self, Tensor indices, Tensor updates) -> Tensor
     op_api: all_version
@@ -7119,7 +7119,7 @@ custom:
 
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
     op_api: all_version
-    exposed: v1.11, v2.0, v2.2, v2.3, v2.4, v2.5
+    exposed: v1.11, v2.0, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_transpose(Tensor self, int[] perm, bool require_contiguous=True) -> Tensor
     acl_op: all_version
@@ -7149,7 +7149,7 @@ custom:
     exposed: all_version
 
   - func: repeat_interleave_backward_int(Tensor grad, Tensor self, SymInt repeats, int? dim=None) -> Tensor
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: repeat_interleave_backward_int(Tensor grad, Tensor self, int repeats, int? dim=None) -> Tensor
     op_api: v1.11
@@ -7182,67 +7182,67 @@ custom:
     op_api: all_version
 
   - func: stft_backward(Tensor grad_output, Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: fft_r2c_backward(Tensor grad, int[] dim, int normalization, bool onesided, int last_dim_size) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: fft_c2r_backward(Tensor grad, int[] dim, int normalization) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 symint:
   - func: _embedding_bag_backward(Tensor grad, Tensor indices, Tensor offsets, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: embedding_backward(Tensor grad, Tensor indices, SymInt num_weights, SymInt padding_idx, bool scale_grad_by_freq, bool sparse) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_bmm_v2_mat1_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, SymInt[] shape, bool transpose_first) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value, *, Tensor? pse_shift=None, Tensor? atten_mask=None, SymInt[]? actual_seq_lengths=None, SymInt[]? actual_seq_lengths_kv=None, Tensor? dequant_scale1=None, Tensor? quant_scale1=None, Tensor? dequant_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? key_antiquant_scale=None, Tensor? key_antiquant_offset=None, Tensor? value_antiquant_scale=None, Tensor? value_antiquant_offset=None, Tensor? block_table=None, Tensor? query_padding_size=None, Tensor? kv_padding_size=None, Tensor? key_shared_prefix=None, Tensor? value_shared_prefix=None, SymInt[]? actual_shared_prefix_len=None, int num_heads=1, float scale=1.0, int pre_tokens=2147483647, int next_tokens=2147483647, str input_layout="BSH", int num_key_value_heads=0, int sparse_mode=0, int inner_precise=0, int block_size=0, int antiquant_mode=0, int key_antiquant_mode=0, int value_antiquant_mode=0, bool softmax_lse_flag=False) -> (Tensor, Tensor)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_incre_flash_attention(Tensor query, Tensor key, Tensor value, *, Tensor? padding_mask=None, Tensor? atten_mask=None, Tensor? pse_shift=None, SymInt[]? actual_seq_lengths=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? block_table=None, Tensor? dequant_scale1=None, Tensor? quant_scale1=None, Tensor? dequant_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, Tensor? kv_padding_size=None, int num_heads=1, float scale_value=1.0, str input_layout="BSH", int num_key_value_heads=0, int block_size=0, int inner_precise=1) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_max_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_min_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, SymInt[] input_size) -> Tensor
-    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
-    acl_op: v2.2, v2.3, v2.4, v2.5
-    op_api: v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
-    acl_op: v2.2, v2.3, v2.4, v2.5
-    op_api: v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, int? output_size=None) -> Tensor
     acl_op: v2.1
     op_api: v2.1
 
   - func: repeat_interleave_backward_int(Tensor grad, Tensor self, SymInt repeats, int? dim=None) -> Tensor
-    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: zeros(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 tocpu:
   - func: _cholesky_helper
     version: v1.11, v2.0
@@ -7785,10 +7785,10 @@ quant:
     acl_op: v2.2
 
   - func: dequantize.self(Tensor self) -> Tensor
-    acl_op: v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: int_repr(Tensor self) -> Tensor
-    acl_op: v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.2, v2.3, v2.4, v2.5, v2.6
 
   - func: _empty_affine_quantized(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, float scale=1, int zero_point=0, MemoryFormat? memory_format=contiguous_format) -> Tensor
-    acl_op: v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.2, v2.3, v2.4, v2.5, v2.6

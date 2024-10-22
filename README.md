@@ -31,17 +31,18 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
    git clone https://gitee.com/ascend/op-plugin.git
    cd op-plugin
    ```
-   执行编译构建，当前支持torch_npu 2.1/2.3/2.4/master版本
+   执行编译构建，当前支持torch_npu 2.1/2.3/2.4/2.5/master版本
    ```
    bash ci/build.sh --python=3.8 --pytorch=v2.1.0
    ```
    请注意，编译时gcc版本遵循如下约束：
    arm架构下推荐使用gcc 10.2, x86架构下推荐使用gcc 9.3.1
 
-   | 参数      | 取值范围                                            | 说明                  | 缺省值    | 备注                                |
-   |---------|-------------------------------------------------|---------------------|--------|-----------------------------------|
-   | pytorch | v2.1.0, v2.3.1, v2.4.0, master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.5            |
-   | python  | 3.8, 3.9, 3.10                             | 指定编译过程中使用的python版本  | 3.8    |  |
+   | 参数      | 取值范围                                   | 说明                  | 缺省值    | 备注                                |
+   |---------|----------------------------------------|---------------------|--------|-----------------------------------|
+   | pytorch | v2.1.0, v2.3.1, v2.4.0, v2.5.0, master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.6            |
+   | python  | 3.8, 3.9, 3.10, 3.11                   | 指定编译过程中使用的python版本  | 3.8    | 编译基于pytorch2.5及后续版本时，不支持python3.8 |
+
 
    >编译过程中，会在插件根目录新建build文件夹，并下载torch_npu对应版本的源码，协同编译。 若build/pytorch目录存在，则编译op-plugin时，不再重复下载torch_npu源码。如需下载所依赖的最新torch_npu源码，删除build/pytorch目录即可。
 

@@ -106,7 +106,7 @@ at::Tensor stft(at::Tensor const &self,
     return output;
 }
 
-#if VERSION_BETWEEN(V2R1, V2R5)
+#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 
 enum class fft_norm_mode {
     none,       // No normalization

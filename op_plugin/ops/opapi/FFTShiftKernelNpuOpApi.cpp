@@ -17,7 +17,7 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-#if VERSION_BETWEEN(V2R1, V2R5)
+#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 using npu_preparation = at_npu::native::OpPreparation;
 
 static at::DimVector default_alldims(const at::Tensor& self, at::OptionalIntArrayRef dim_opt)

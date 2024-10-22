@@ -1,45 +1,45 @@
 - name: _dropout_with_byte_mask(Tensor self, float p) -> (Tensor, Tensor)
   self: _dropout_with_byte_mask_backward(grad, result1, p)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: _npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> (Tensor, Tensor)
   self, gtboxes: npu_ciou_backward(grad, self, gtboxes, result1, trans, is_cross, mode)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: _npu_dropout(Tensor self, float p) -> (Tensor, Tensor)
   self: npu_dropout_backward(grad, result1, p)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: _npu_format_cast(Tensor self, int acl_format) -> Tensor
   self: grad
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: binary_cross_entropy_with_logits(Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
   self: npu_binary_cross_entropy_with_logits_backward(grad, self, target, weight, pos_weight, reduction)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: fast_gelu(Tensor self) -> Tensor
   self: npu_fast_gelu_backward(grad, self)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: kl_div(Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
   self: kl_div_backward(grad, self, target, reduction, log_target)
-  version: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: l1_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
   self: l1_loss_backward(grad, self, target, reduction)
   target: l1_loss_backward(grad, self, target, reduction) * -1
-  version: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: matmul_backward(Tensor grad_out, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
   output_differentiability: [true, true]
   grad_out, self, other: matmul_double_backward(grads[0], grads[1], grad_out, self, other, grad_input_mask)
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_add_layer_norm(Tensor x1, Tensor x2, Tensor gamma, Tensor beta, float epsilon=1e-05, bool additional_output=False) -> (Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [true, false, false, true]
   x1, x2, gamma, beta: npu_add_layer_norm_backward(grads[0], x1, x2, result2, result1, gamma, grads[1])
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_bmmV2(Tensor self, Tensor mat2, int[] output_sizes) -> Tensor
   self: npu_bmm_v2_mat1_backward(grad, self, mat2, self.sizes())
@@ -54,7 +54,7 @@
 - name: npu_bmmV2(Tensor self, Tensor mat2, int[] output_sizes) -> Tensor
   self: npu_bmm_v2_mat1_backward(grad, self, mat2, self.sym_sizes())
   mat2: npu_bmm_v2_mat2_backward(grad, self, mat2, mat2.sym_sizes())
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_confusion_transpose(Tensor self, int[] perm, int[] shape, bool transpose_first) -> Tensor
   self: npu_confusion_transpose_backward(grad, perm, self.sizes(), !transpose_first)
@@ -66,42 +66,42 @@
 
 - name: npu_confusion_transpose(Tensor self, int[] perm, int[] shape, bool transpose_first) -> Tensor
   self: npu_confusion_transpose_backward(grad, perm, self.sym_sizes(), !transpose_first)
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, int groups) -> Tensor
   input, weight, bias: npu_convolution_backward(input, grad, weight, stride, padding, dilation, groups, grad_input_mask)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_convolution_transpose(Tensor input, Tensor weight, Tensor? bias, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups) -> Tensor
   input, weight, bias: npu_convolution_transpose_backward(input, grad, weight, padding, output_padding, stride, dilation, groups, grad_input_mask)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_deep_norm(Tensor x, Tensor gx, Tensor beta, Tensor gamma, float alpha=0.3, float epsilon=1e-06) -> (Tensor, Tensor, Tensor)
   output_differentiability: [false, false, true]
   x, gx, beta, gamma: npu_deep_norm_backward(grad, x, gx, gamma, result0, result1, alpha)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_deformable_conv2d(Tensor input, Tensor weight, Tensor offset, Tensor? bias, int[2] kernel_size, int[] stride, int[] padding, int[] dilation=[1,1,1,1], int groups=1, int deformable_groups=1, bool modulated=True) -> (Tensor, Tensor)
   input, weight, offset, bias: npu_deformable_conv2dbk(input, grad, result1, weight, offset, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_diou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=False, int mode=0) -> Tensor
   self, gtboxes: npu_diou_backward(grad, self, gtboxes, trans, is_cross, mode)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_dropout_do_mask(Tensor self, Tensor mask, float p) -> (Tensor, Tensor)
   self: npu_dropout_backward(grad, result1, p)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_dropout_with_add_softmax(Tensor self, Tensor x1, Scalar alpha, float prob, int dim) -> (Tensor, Tensor, Tensor)
   output_differentiability: [false, false, true]
   self, x1: npu_dropout_with_add_softmax_backward(grad, result0, result1, alpha, prob, dim)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor
   self: npu_dtype_cast_backward(grad, self.scalar_type())
   output_differentiability: [isDifferentiableType(dtype)]
-  version: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor
   self: npu_dtype_cast_backward(grad, self.scalar_type())
@@ -114,46 +114,46 @@
 
 - name: npu_fused_attention_score_fwd(Tensor query_layer, Tensor key_layer, Tensor value_layer, Tensor attention_mask, Scalar scale, float keep_prob, bool query_transpose=False, bool key_transpose=False, bool bmm_score_transpose_a=False, bool bmm_score_transpose_b=False, bool value_transpose=False, bool dx_transpose=False) -> (Tensor, Tensor, Tensor)
   query_layer, key_layer, value_layer: npu_fused_attention_score_backward(grad, result1, query_layer, key_layer, value_layer, result2, scale, keep_prob, query_transpose, key_transpose, value_transpose, dx_transpose)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_fusion_attention(Tensor query, Tensor key, Tensor value, int head_num, str input_layout, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, float scale=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=0, int[]? prefix=None, int[]? actual_seq_qlen=None, int[]? actual_seq_kvlen=None, int sparse_mode=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
   output_differentiability: [true, true, true, true, false, false, false]
   query, key, value, pse: npu_fusion_attention_grad(query, key, value, grad, head_num, input_layout, pse, padding_mask, atten_mask, result1, result2, result3, result0, scale, keep_prob, pre_tockens, next_tockens, inner_precise, result4, result5, result6, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode, gen_mask_parallel, sync)
-  version: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_geglu(Tensor self, int dim=-1, int approximate=1, bool activate_left=False) -> (Tensor, Tensor)
   output_differentiability: [true, false]
   self: npu_geglu_grad(grad, self, result1, dim, approximate, activate_left)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_giou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=False, int mode=0) -> Tensor
   self, gtboxes: npu_giou_backward(grad, self, gtboxes, trans, is_cross, mode)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [true, true, false, false, false, false]
   weight_input, weight_hidden, input, bias_input, bias_hidden, hx: npu_gru_backward(grads[0], grads[1], input, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, hx, result0, result1, result2, result3, result4, result5)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_linear(Tensor input, Tensor weight, Tensor? bias=None) -> Tensor
   input, weight: npu_linear_backward(grad, input, weight)
   bias: maybe_multiply(grad, 1)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_lstm(Tensor input, Tensor weight, Tensor bias, Tensor seq_mask, Tensor h, Tensor c, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, bool flag_seq, bool direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [true, true, true, false, false, false, false, false]
   input, weight, bias, h, c: npu_lstm_backward(grads[0], grads[1], grads[2], input, weight, bias, h, c, result0, result1, result2, result3, result4, result5, result6, result7)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_lstm_cell(Tensor input, Tensor w_ih, Tensor w_hh, Tensor h, Tensor c, Tensor? b_ih=None, Tensor? b_hh=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [true, true, true, false, false, false, false, false]
   input, w_ih, w_hh, b_ih, b_hh, h, c: npu_lstm_cell_backward(grads[0], grads[1], grads[2], input, w_ih, w_hh, h, c, result0, result1, result2, result3, result4, result5, result6, result7)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_lstm_data(Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor seq_mask, Tensor h, Tensor c, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, bool flag_seq, bool direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [true, true, true, false, false, false, false, false]
   input, weight, bias, h, c: npu_lstm_data_backward(grads[0], grads[1], grads[2], input, batch_sizes, weight, bias, h, c, result0, result1, result2, result3, result4, result5, result6, result7, direction)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_max.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
   self: npu_max_backward(grad, dim, indices, self.sizes(), keepdim)
@@ -169,7 +169,7 @@
 
 - name: npu_max.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
   self: npu_max_backward(grad, dim, indices, self.sym_sizes(), keepdim)
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_min.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
   self: npu_min_backward_symint(grad, dim, indices, self.sym_sizes(), keepdim)
@@ -177,21 +177,21 @@
 
 - name: npu_min.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
   self: npu_min_backward(grad, dim, indices, self.sym_sizes(), keepdim)
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_mish(Tensor self) -> Tensor
   self: npu_mish_backward(grad, self)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_multi_head_attention(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor attn_mask, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor? dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [true, false, false, false, false, false, false, false]
   query_weight, key_weight, value_weight, out_proj_weight, query, key, value, query_bias, key_bias, value_bias, out_proj_bias: npu_multi_head_attention_backward(query, key, value, query_weight, key_weight, value_weight, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias, result2, result3, result4, result5, result6, result7, grad, result1, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_multi_head_attention_v2(Tensor query, Tensor key, Tensor value, Tensor? atten_mask=None, Tensor? alibi_mask=None, float scale=1.0, int head_num=1, str input_layout="BNSD", float keep_prob=1., int pre_tokens=2147483647, int next_tokens=1, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, int, int, int)
   output_differentiability: [true, false, false, false, false]
   query, key, value: npu_multi_head_attention_v2_grad(grad, query, key, value, result1, result0, atten_mask, alibi_mask, scale, head_num, input_layout, keep_prob, pre_tokens, next_tokens, result2, result3, result4, gen_mask_parallel, sync)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_ps_roi_pooling(Tensor self, Tensor rois, float spatial_scale, int group_size, int output_dim) -> Tensor
   self: npu_ps_roi_pooling_backward(grad, rois, spatial_scale, group_size, output_dim, {self.size(2), self.size(3)})
@@ -203,32 +203,32 @@
 
 - name: npu_ps_roi_pooling(Tensor self, Tensor rois, float spatial_scale, int group_size, int output_dim) -> Tensor
   self: npu_ps_roi_pooling_backward(grad, rois, spatial_scale, group_size, output_dim, {self.sym_size(2), self.sym_size(3)})
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor)
   output_differentiability: [true, false]
   self, gamma: npu_rms_norm_backward(grad, self, gamma, result1)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2) -> Tensor
   self, r1, r2: npu_rotary_mul_backward(grad, self, r1, r2)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_scaled_masked_softmax(Tensor x, Tensor mask, Scalar scale=1, bool fixed_triu_mask=False) -> Tensor
   x: npu_scaled_masked_softmax_backward(grad, result, mask, scale, fixed_triu_mask)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_silu(Tensor self) -> Tensor
   self: npu_silu_backward(grad, self, result)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_softmax_cross_entropy_with_logits(Tensor self, Tensor labels) -> Tensor
   self: npu_softmax_cross_entropy_with_logits_backward(grad, self, labels)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: npu_swiglu(Tensor self, int dim=-1) -> Tensor
   self: npu_swiglu_backward(grad, self, dim)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, int? output_size=None) -> Tensor
   self: repeat_interleave_backward_tensor(grad, self, repeats, dim)
@@ -244,24 +244,24 @@
 
 - name: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
   self: repeat_interleave_backward_tensor(grad, self, repeats, dim)
-  version: v2.2, v2.3, v2.4, v2.5
+  version: v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
   self: repeat_interleave_backward_int(grad, self, repeats, dim)
-  version: v2.2, v2.3, v2.4, v2.5
+  version: v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: selu(Tensor self) -> Tensor
   self: selu_backward(grad, result)
-  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: stft(Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None) -> Tensor
   self: stft_backward(grad, self, n_fft, hop_length, win_length, window, normalized, onesided, return_complex)
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: _fft_r2c(Tensor self, int[] dim, int normalization, bool onesided) -> Tensor
   self: fft_r2c_backward(grad, dim, normalization, onesided, self.size(dim.back()))
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 
 - name: _fft_c2r(Tensor self, int[] dim, int normalization, SymInt last_dim_size) -> Tensor
   self: fft_c2r_backward(grad, dim, normalization)
-  version: v2.1, v2.2, v2.3, v2.4, v2.5
+  version: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
