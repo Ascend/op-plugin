@@ -4,6 +4,8 @@ import os
 import stat
 import yaml
 
+from codegen.utils import PathManager
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -16,11 +18,10 @@ def main():
     output_dir = args.output_dir
     source_yaml = args.source_yaml
 
-    if os.path.islink(source_yaml):
-        raise RuntimeError(f'Invalid path is a soft chain: {source_yaml}')
-    if os.path.exists(source_yaml):
-        with open(source_yaml, 'r') as f:
-            old_yaml = yaml.safe_load(f)
+    source_yaml_path = os.path.realpath(source_yaml)
+    PathManager.check_directory_path_readable(source_yaml_path)
+    with open(source_yaml_path, 'r') as f:
+        old_yaml = yaml.safe_load(f)
 
     new_yaml = []
     for item in old_yaml:
@@ -33,6 +34,7 @@ def main():
     modes = stat.S_IWUSR | stat.S_IRUSR
     with os.fdopen(os.open(f'{output_dir}/derivatives.yaml', flags, modes), 'w') as f:
         yaml.dump(data=new_yaml, stream=f, width=2000, sort_keys=False)
+
 
 if __name__ == '__main__':
     main()

@@ -22,7 +22,7 @@ import yaml
 from codegen.code_template import CodeTemplate
 from codegen.gen import FileManager
 from codegen.model import (BaseTy, SchemaKind, BaseType, NativeFunction)
-from codegen.utils import concatMap
+from codegen.utils import concatMap, PathManager
 from codegen.context import native_function_manager
 from codegen.api.types import NativeSignature
 from codegen.api import cpp
@@ -100,6 +100,8 @@ def remove_empty_lines(text):
 
 
 def parse_struct_yaml(path, native_functions: Sequence[NativeFunction]) -> List[StructInfo]:
+    path = os.path.realpath(path)
+    PathManager.check_directory_path_readable(path)
     with open(path, 'r') as struct_file:
         struct_ops = yaml.safe_load(struct_file)
 

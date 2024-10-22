@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import argparse
 import yaml
 
 from codegen.gen import FileManager, parse_native_yaml_struct
 from codegen.struct.struct_codegen import parse_struct_yaml, gen_op_api
+from codegen.utils import PathManager
 
 
 def main() -> None:
@@ -38,7 +40,10 @@ def main() -> None:
     fm = FileManager(
             install_dir=options.output_dir, template_dir="codegen/struct/templates", dry_run=False
         )
-    with open(options.native_yaml, "r") as f:
+
+    native_yaml_path = os.path.realpath(options.native_yaml)
+    PathManager.check_directory_path_readable(native_yaml_path)
+    with open(native_yaml_path, "r") as f:
         es = yaml.safe_load(f)
 
     native_functions = parse_native_yaml_struct(es)

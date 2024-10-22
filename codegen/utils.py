@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import re
+import os
 from typing import Tuple, List, Dict, Iterable, Iterator, Generic, Callable, Sequence, TypeVar, NoReturn, Optional
 from enum import Enum
 import contextlib
@@ -245,3 +246,48 @@ class OrderedSet(Generic[T]):
             return self.storage == other.storage
         else:
             return set(self.storage.keys()) == other
+
+
+class PathManager:
+
+    @classmethod
+    def check_path_owner_consistent(cls, path: str):
+        """
+        Function Description:
+            check whether the path belong to process owner
+        Parameter:
+            path: the path to check
+        Exception Description:
+            when invalid path, prompt the process owner.
+        """
+
+        if not os.path.exists(path):
+            msg = f"The path does not exist: {path}"
+            raise RuntimeError(msg)
+        if os.stat(path).st_uid != os.getuid():
+            warnings.warn(f"Warning: The {path} owner does not match the current process.")
+
+    @classmethod
+    def check_directory_path_readable(cls, path):
+        """
+        Function Description:
+            check whether the path is writable
+        Parameter:
+            path: the path to check
+        Exception Description:
+            when invalid data throw exception
+        """
+        cls.check_path_owner_consistent(path)
+        if os.path.islink(path):
+            msg = f"Invalid path is a soft chain: {path}"
+            raise RuntimeError(msg)
+        if not os.access(path, os.R_OK):
+            msg = f"The path permission check failed: {path}"
+            raise RuntimeError(msg)
+
+    @classmethod
+    def remove_path_safety(cls, path: str):
+        if os.path.islink(path):
+            raise RuntimeError(f"Invalid path is a soft chain: {path}")
+        if os.path.exists(path):
+            os.remove(path)
