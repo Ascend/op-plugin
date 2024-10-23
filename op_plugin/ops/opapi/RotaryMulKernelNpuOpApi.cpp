@@ -21,6 +21,19 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
+static bool isRotaryMulMixDtypeSupport(
+    const at::Tensor& self,
+    const at::Tensor& cos,
+    const at::Tensor& sin)
+{
+    return self.dtype() == cos.dtype() && self.dtype() == sin.dtype() ? false : true;
+}
+
+static at::Tensor npu_dtype_cast_impl_op_api(const at::Tensor& self, at::ScalarType dtype)
+{
+    return self.dtype() == dtype ? self : self.to(dtype);
+}
+
 at::Tensor npu_rotary_mul(
     const at::Tensor& self,
     const at::Tensor& cos,
@@ -32,7 +45,14 @@ at::Tensor npu_rotary_mul(
     }
     at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options());
     int64_t mode = 0;
-    EXEC_NPU_CMD(aclnnRotaryPositionEmbedding, self, cos, sin, mode, result);
+    bool isMixDataType = isRotaryMulMixDtypeSupport(self, cos, sin);
+    if (isMixDataType) {
+        at::Tensor cosCast = npu_dtype_cast_impl_op_api(cos, self.scalar_type());
+        at::Tensor sinCast = npu_dtype_cast_impl_op_api(sin, self.scalar_type());
+        EXEC_NPU_CMD(aclnnRotaryPositionEmbedding, self, cosCast, sinCast, mode, result);
+    } else {
+        EXEC_NPU_CMD(aclnnRotaryPositionEmbedding, self, cos, sin, mode, result);
+    }
     return result;
 }
 }

@@ -21,6 +21,20 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
+static bool isRotaryMulBackwardMixDtypeSupport(
+    const at::Tensor& grad,
+    const at::Tensor& self,
+    const at::Tensor& cos,
+    const at::Tensor& sin)
+{
+    return self.dtype() == cos.dtype() && self.dtype() == sin.dtype() && self.dtype() == grad.dtype() ? false : true;
+}
+
+static at::Tensor npu_dtype_cast_impl_op_api(const at::Tensor& self, at::ScalarType dtype)
+{
+    return self.dtype() == dtype ? self : self.to(dtype);
+}
+
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(
     const at::Tensor& grad,
     const at::Tensor& self,
@@ -31,11 +45,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
         return acl_op::npu_rotary_mul_backward(grad, self, cos, sin);
     }
-    at::Tensor dx = npu_preparation::apply_tensor_without_format(grad.sizes(), grad.options());
-    at::Tensor dcos = npu_preparation::apply_tensor_without_format(cos.sizes(), cos.options());
-    at::Tensor dsin = npu_preparation::apply_tensor_without_format(sin.sizes(), sin.options());
+    at::Tensor dx = npu_preparation::apply_tensor_without_format(grad.sizes(), self.options());
+    at::Tensor dcos = npu_preparation::apply_tensor_without_format(cos.sizes(), self.options());
+    at::Tensor dsin = npu_preparation::apply_tensor_without_format(sin.sizes(), self.options());
     int64_t mode = 0;
-    EXEC_NPU_CMD(aclnnRotaryPositionEmbeddingGrad, grad, cos, sin, self, mode, dx, dcos, dsin);
+    bool isMixDataType = isRotaryMulBackwardMixDtypeSupport(grad, self, cos, sin);
+    if (isMixDataType) {
+        at::Tensor gradCast = npu_dtype_cast_impl_op_api(grad, self.scalar_type());
+        at::Tensor cosCast = npu_dtype_cast_impl_op_api(cos, self.scalar_type());
+        at::Tensor sinCast = npu_dtype_cast_impl_op_api(sin, self.scalar_type());
+        EXEC_NPU_CMD(aclnnRotaryPositionEmbeddingGrad, gradCast, cosCast, sinCast, self, mode, dx, dcos, dsin);
+    } else {
+        EXEC_NPU_CMD(aclnnRotaryPositionEmbeddingGrad, grad, cos, sin, self, mode, dx, dcos, dsin);
+    }
     return std::tuple<at::Tensor, at::Tensor, at::Tensor>(dx, dcos, dsin);
 }
 }
