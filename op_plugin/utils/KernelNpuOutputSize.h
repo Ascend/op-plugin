@@ -360,7 +360,8 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_si
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size_opapi(const at::Tensor& self,
                                                                                          const at::Tensor& repeats,
-                                                                                         c10::optional<int64_t> dim);
+                                                                                         c10::optional<int64_t> dim,
+                                                                                         c10::optional<int64_t> output_size);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> max_pool3d_output_size(const at::Tensor& self,
                                                                         at::IntArrayRef output_size);

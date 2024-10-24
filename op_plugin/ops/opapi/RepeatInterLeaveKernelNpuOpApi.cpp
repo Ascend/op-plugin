@@ -120,7 +120,7 @@ at::Tensor repeat_interleave(const at::Tensor& self, const at::Tensor& repeats,
     TORCH_CHECK(check_tensor_repeats(self, repeats, dim), "repeats must have the same size as input along dim", OPS_ERROR(ErrCode::PARAM));
 
     // check output_size value is valid
-    auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats, dim);
+    auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats, dim, output_size);
     int64_t cur_dim = wrap_dim(self, dim);
     int64_t output_size_expected = output_shape[cur_dim];
     at::Tensor result = apply_result_tensor(self, output_shape, dim, output_size);
@@ -185,7 +185,7 @@ at::Tensor repeat_interleave(const at::Tensor& self, const at::Tensor& repeats,
     TORCH_CHECK(check_tensor_repeats(self, repeats, dim), "repeats must have the same size as input along dim" + OPS_ERROR(ErrCode::PARAM));
 
     // check output_size value is valid
-    auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats, dim);
+    auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats, dim, output_size);
     int64_t cur_dim = wrap_dim(self, dim);
     int64_t output_size_expected = output_shape[cur_dim];
     at::Tensor result = apply_result_tensor(self, output_shape, dim, output_size);
@@ -260,7 +260,7 @@ at::Tensor repeat_interleave_symint(
         int64_t output_size_val = output_size.value().expect_int();
         _output_size = c10::optional<int64_t>(output_size_val);
     }
-    auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats, dim);
+    auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats, dim, _output_size);
     int64_t cur_dim = wrap_dim(self, dim);
     int64_t output_size_expected = output_shape[cur_dim];
     at::Tensor result = apply_result_tensor(self, output_shape, dim, _output_size);
