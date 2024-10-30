@@ -213,18 +213,10 @@ NameVector compute_names_npu(std::vector<at::Tensor> tensor_list)
 
 double compute_scale(bool align_corners, int64_t input_size, int64_t output_size, double scale)
 {
-    if (align_corners) {
-        if (output_size > 1) {
-            return static_cast<double>(input_size - 1) / (output_size - 1);
-        } else {
-            return 0.0;
-        }
+    if (scale > 0.0) {
+        return 1.0 / scale ;
     } else {
-        if (scale > 0.0) {
-            return 1.0 / scale ;
-        } else {
-            return static_cast<double>(input_size) / output_size;
-        }
+        return output_size != 0 ? static_cast<double>(input_size) / output_size : 0;
     }
 }
 

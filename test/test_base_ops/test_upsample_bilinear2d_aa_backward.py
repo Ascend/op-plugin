@@ -69,6 +69,7 @@ class TestUpsampleBilinear2dAABackward(TestCase):
     def test_UpsampleBilinear2dAABackward_large_scale_format(self):
         shape_format = [
             ["float32", (4, 1, 2, 1), (368, 779)],
+            ["float32", (1, 1, 10, 1), (365, 365)],
             ["float16", (5, 2, 16, 14), (512, 512)],
             ["bfloat16", (6, 6, 3, 2), (208, 432)]
         ]
