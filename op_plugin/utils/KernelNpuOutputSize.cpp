@@ -802,7 +802,16 @@ c10::SmallVector<int64_t, SIZE> nonzero_npu_max_output_size(const at::Tensor &se
 {
     int64_t selfNumEl = self.numel();
     int64_t selfDim = self.dim();
-    at::SmallVector<int64_t, SIZE> maxOutputSize = {selfNumEl, selfDim};
+    at::SmallVector<int64_t, SIZE> maxOutputSize;
+    if (selfNumEl == 1 && selfDim == 0) {
+        if (self.is_nonzero()) {
+            maxOutputSize = {1, 0};
+        } else {
+            maxOutputSize = {0, 0};
+        }
+    } else {
+        maxOutputSize = {selfNumEl, selfDim};
+    }
     return maxOutputSize;
 }
 

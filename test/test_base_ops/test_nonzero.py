@@ -25,6 +25,13 @@ class TestNonzero(TestCase):
         npu_output = self.npu_op_exec(npu_input)
         self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_zero_input_scalar(self):
+        cpu_input = torch.tensor(0, dtype=torch.bool)
+        npu_input = cpu_input.npu()
+        cpu_output = self.cpu_op_exec(cpu_input)
+        npu_output = self.npu_op_exec(npu_input)
+        self.assertRtolEqual(cpu_output, npu_output)
+
     def test_nonzero_shape_format(self):
         dtype_list = [np.float32, np.float16, np.int32, np.int64]
         format_list = [0]
