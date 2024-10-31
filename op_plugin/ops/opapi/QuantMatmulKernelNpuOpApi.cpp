@@ -46,10 +46,17 @@ bool static is_transpose_last_two_dims(const at::Tensor &tensor)
     return false;
 }
 
+static bool is_nz_format(const at::Tensor& x2)
+{
+    const torch_npu::NPUStorageDesc &tensor_desc =
+        torch_npu::NPUBridge::GetNpuStorageImpl(x2)->npu_desc_;
+    return tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ;
+}
+
 uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::vector<uint64_t> &batch_record)
 {
-    TORCH_CHECK(at_npu::native::FormatHelper::IsBaseFormatType(x2),
-                "x2 should be in the original image format, but it is ",
+    TORCH_CHECK(at_npu::native::FormatHelper::IsBaseFormatType(x2) || is_nz_format(x2),
+                "x2 should be in the original image format or nz format, but it is ",
                 npu_preparation::get_tensor_npu_format(x2), OPS_ERROR(ErrCode::PARAM));
     uint64_t batch_val = 1;
     auto x1_dim_num = x1.dim();
@@ -76,6 +83,15 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
                             const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& pertoken_scale,
                             const c10::optional<at::Tensor>& bias, c10::optional<at::ScalarType> output_dtype)
 {
+    if (is_nz_format(x2)) {
+        const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr("aclnnQuantMatmulWeightNzGetWorkspaceSize");
+        const auto opApiFuncAddr = GetOpApiFuncAddr("aclnnQuantMatmulWeightNz");
+        TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr,
+                    "Get aclnnQuantMatmulWeightNz or aclnnQuantMatmulWeightNzGetWorkspaceSize faild, only "
+                    "aclnnQuantMatmulWeightNz support X2's format is nz, please upgrade CANN.",
+                    OPS_ERROR(ErrCode::PARAM));
+    }
+
     bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
     bool trans_x2 = is_transpose_last_two_dims(x2);
     auto x1_dim_num = x1.dim();
@@ -111,11 +127,29 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
 
     if (scale.dtype() == at::kFloat && !pertoken_scale.has_value() && output_dtype != at::kBFloat16) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
-        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale_real, bias_real,
-                     transpose1, transpose2, result);
+        if (!is_a4w4 && is_nz_format(x2)) {
+            at::Tensor yscale = at::empty({0}, options);
+            at::Tensor x1Offset = at::empty({0}, options);
+            at::Tensor yOffset = at::empty({0}, options);
+            int64_t groupSize = 0;
+            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1, x2, pertoken_scale_real, quant_param, yscale, x1Offset,
+                         offset_real, yOffset, bias_real, transpose1, transpose2, groupSize, result);
+        } else {
+            EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale_real, bias_real,
+                         transpose1, transpose2, result);
+        }
     } else {
-        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, scale, offset_real, pertoken_scale_real, bias_real,
-                     transpose1, transpose2, result);
+        if (!is_a4w4 && is_nz_format(x2)) {
+            at::Tensor yscale = at::empty({0}, options);
+            at::Tensor x1Offset = at::empty({0}, options);
+            at::Tensor yOffset = at::empty({0}, options);
+            int64_t groupSize = 0;
+            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1, x2, pertoken_scale_real, scale, yscale, x1Offset, offset_real,
+                         yOffset, bias_real, transpose1, transpose2, groupSize, result);
+        } else {
+            EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, scale, offset_real, pertoken_scale_real, bias_real,
+                         transpose1, transpose2, result);
+        }
     }
     return result;
 }
@@ -160,9 +194,29 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
 
     if (scale.dtype() == at::kFloat) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, quant_param, offset_real, bias_real, transpose1, transpose2, result);
+        if (!is_a4w4 && is_nz_format(x2)) {
+            at::Tensor x1scale = at::empty({0}, options);
+            at::Tensor yscale = at::empty({0}, options);
+            at::Tensor x1Offset = at::empty({0}, options);
+            at::Tensor yOffset = at::empty({0}, options);
+            int64_t groupSize = 0;
+            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1, x2, x1scale, quant_param, yscale, x1Offset, offset_real, yOffset,
+                         bias_real, transpose1, transpose2, 0, result);
+        } else {
+            EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, quant_param, offset_real, bias_real, transpose1, transpose2, result);
+        }
     } else {
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, bias_real, transpose1, transpose2, result);
+        if (!is_a4w4 && is_nz_format(x2)) {
+            at::Tensor x1scale = at::empty({0}, options);
+            at::Tensor yscale = at::empty({0}, options);
+            at::Tensor x1Offset = at::empty({0}, options);
+            at::Tensor yOffset = at::empty({0}, options);
+            int64_t groupSize = 0;
+            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1, x2, x1scale, scale, yscale, x1Offset, offset_real, yOffset,
+                         bias_real, transpose1, transpose2, 0, result);
+        } else {
+            EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, bias_real, transpose1, transpose2, result);
+        }
     }
     return result;
 }
