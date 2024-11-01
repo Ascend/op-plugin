@@ -29,10 +29,10 @@ class TestNpuMoeGatingTopKSoftmax(TestCase):
         x_sub = x - x_max
         y = np.exp(x_sub)
         x_sum = y.sum(axis=-1, keepdims=True)
-        if x_sum != 0:
-            ans = y / x_sum
-        else:
+        if (x_sum == 0).any():
             ans = 0
+        else:
+            ans = y / x_sum
         if is_fp16:
             ans = ans.astype(np.float16)
             x_max = x_max.astype(np.float16)

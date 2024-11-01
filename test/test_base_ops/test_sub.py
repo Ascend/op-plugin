@@ -92,7 +92,7 @@ class TestSub(TestCase):
                     npu_input1.sub_(npu_input2)
                 except RuntimeError as e:
                     self.assertRegex(
-                        str(e), "result type Float can't be cast to the desired output type Long")
+                        str(e), "can't be cast to the desired output type")
             else:
                 cpu_input1.sub_(cpu_input2)
                 npu_input1.sub_(npu_input2)

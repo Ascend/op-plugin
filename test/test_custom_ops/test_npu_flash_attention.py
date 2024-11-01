@@ -11,7 +11,7 @@ class TestNPUFlashAttention(TestCase):
     def supported_op_exec(self, query, key, value):
         scale = 0.08838
         qk = torch.matmul(query, key.transpose(2, 3)).mul(scale)
-        softmax_res = torch.nn.functional.softmax(qk, dim=-1, dtype=torch.float32).to(torch.float16)
+        softmax_res = torch.nn.functional.softmax(qk, dim=-1, dtype=torch.float32)
         output = torch.matmul(softmax_res, value)
         output = output.transpose(1, 2)
         output = output.reshape(output.shape[0], output.shape[1], -1)
@@ -36,7 +36,7 @@ class TestNPUFlashAttention(TestCase):
         q_npu = self.trans_BNSD2BSH(query).npu()
         k_npu = self.trans_BNSD2BSH(key).npu()
         v_npu = self.trans_BNSD2BSH(value).npu()
-        output = self.supported_op_exec(query, key, value)
+        output = self.supported_op_exec(query.to(torch.float32), key.to(torch.float32), value.to(torch.float32)).to(torch.float16)
         attention_score, softmax_max, softmax_sum, softmax_out, seed, offset, numels = self.custom_op_exec(q_npu, k_npu, v_npu)
         self.assertRtolEqual(output, attention_score, prec=0.005, prec16=0.005)
 

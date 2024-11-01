@@ -29,9 +29,10 @@ class TestNpuScatterNdUpdate(TestCase):
         indices = np.array([[0, 0], [1, 1]])
         indices_tensor = torch.from_numpy(indices).to(device)
         updates = np.array([10, 20])
+        updates_tensor = torch.from_numpy(updates.astype(np.float16)).to(device)
 
         supported_output = self.supported_op_exec(var, indices_tensor, updates)
-        custom_output = self.custom_op_exec(var, indices_tensor, updates)
+        custom_output = self.custom_op_exec(var, indices_tensor, updates_tensor)
         self.assertEqual(supported_output, custom_output)
 
 

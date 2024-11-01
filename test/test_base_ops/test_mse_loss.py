@@ -51,7 +51,7 @@ class TestMseLoss(TestCase):
             self.assertRtolEqual(cpu_output, npu_output)
 
     def test_mse_mix_dtype(self):
-        npu_input1, npu_input2 = create_common_tensor([np.int32, 0, (2, 3)], 1, 100)
+        npu_input1, npu_input2 = create_common_tensor([np.float16, 0, (2, 3)], 1, 100)
         npu_input3, npu_input4 = create_common_tensor([np.float32, 0, (2, 3)], 1, 100)
         cpu_output = self.cpu_op_exec(npu_input1, npu_input3, "mean")
         npu_output = self.npu_op_exec(npu_input1, npu_input3, "mean")

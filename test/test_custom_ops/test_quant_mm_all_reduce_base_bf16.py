@@ -87,8 +87,8 @@ class TestMmAllReduceBase(TestCase):
     def test_npu_mm_all_reduce_base(self):
         world_size = 2
         dtype = torch.float16
-        dtype_quant = torch.int8
-        dtype_dequant = torch.bfloat16
+        dtype_quant = np.int8
+        dtype_dequant = np.bfloat16
         data_format = -1
         x1_shape = [dtype_quant, data_format, [1, 256]]
         x2_shape = [dtype_quant, data_format, [256, 256]]
@@ -96,6 +96,7 @@ class TestMmAllReduceBase(TestCase):
         x1_list = []
         x2_list = []
         scale, _ = create_common_tensor(scale_shape, 1, 100) # 量化场景scale的取值范围
+        scale = scale.to(torch.bfloat16) 
         for _ in range(world_size):
             x1, _ = create_common_tensor(x1_shape, -1, 1)
             x2, _ = create_common_tensor(x2_shape, -1, 1)

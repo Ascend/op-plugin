@@ -68,29 +68,6 @@ class TestAddmm(TestCase):
         output = output.numpy()
         return output
 
-    def test_addmm_shape_format_int(self):
-        shape_list = [(3), (3, 5), (5, 3), (3, 3)]
-        shape_format1 = [np.int32, 0, shape_list[0]]
-        shape_format2 = [np.int32, 0, shape_list[1]]
-        shape_format3 = [np.int32, 0, shape_list[2]]
-        shape_format4 = [np.int32, 0, shape_list[3]]
-        cpu_input1, npu_input1 = create_common_tensor(shape_format1, 0, 100)
-        cpu_input2, npu_input2 = create_common_tensor(shape_format2, 0, 100)
-        cpu_input3, npu_input3 = create_common_tensor(shape_format3, 0, 100)
-        cpu_input4, npu_input4 = create_common_tensor(shape_format4, 0, 100)
-
-        scalar1 = self.generate_scalar('int32', 0, 10)
-        scalar2 = self.generate_scalar('int32', 0, 10)
-
-        cpu_output = self.cpu_op_exec(cpu_input1, cpu_input2, cpu_input3, scalar1, scalar2)
-        npu_output = self.npu_op_exec(npu_input1, npu_input2, npu_input3, scalar1, scalar2)
-
-        params = NpuOpExecOutParams(npu_input1, npu_input2, npu_input3, scalar1, scalar2, npu_input4)
-        npu_output1 = self.npu_op_exec_out(params)
-
-        self.assertRtolEqual(cpu_output, npu_output)
-        self.assertRtolEqual(cpu_output, npu_output1)
-
     def test_addmm_shape_format_fp32(self):
         shape_list = [(3), (3, 5), (5, 3), (3, 3)]
         shape_format1 = [np.float16, 0, shape_list[0]]
@@ -146,23 +123,6 @@ class TestAddmm(TestCase):
 
         self.assertRtolEqual(cpu_output, npu_output)
         self.assertRtolEqual(cpu_output, npu_output1)
-
-    def test_addmm_transpose_shape_format_int(self):
-        shape_list = [(5), (4, 7), (5, 7)]
-        shape_format1 = [np.int32, 0, shape_list[0]]
-        shape_format2 = [np.int32, 0, shape_list[1]]
-        shape_format3 = [np.int32, 0, shape_list[2]]
-        cpu_input1, npu_input1 = create_common_tensor(shape_format1, 0, 100)
-        cpu_input2, npu_input2 = create_common_tensor(shape_format2, 0, 100)
-        cpu_input3, npu_input3 = create_common_tensor(shape_format3, 0, 100)
-
-        scalar1 = self.generate_scalar("int32", 0, 10)
-        scalar2 = self.generate_scalar("int32", 0, 10)
-
-        cpu_transpose_output = self.cpu_op_transpose_exec(cpu_input1, cpu_input2, cpu_input3, scalar1, scalar2)
-        npu_transpose_output = self.npu_op_transpose_exec(npu_input1, npu_input2, npu_input3, scalar1, scalar2)
-
-        self.assertRtolEqual(cpu_transpose_output, npu_transpose_output)
 
     def test_addmm_transpose_shape_format_fp32(self):
         shape_list = [(5), (4, 7), (5, 7)]

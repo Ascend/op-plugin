@@ -12,23 +12,23 @@ from torch_npu.testing.common_utils import SupportedDevices
 
 class TestQuantScatter(TestCase):
     def supported_op_exec(self, query, key, cos, sin):
-        x1 = query[..., :64]
-        x2 = query[..., 64:]
+        x1 = query[..., :64].cpu()
+        x2 = query[..., 64:].cpu()
         concat = np.concatenate((-x2, x1), axis=-1)
-        x2_mul = concat * sin
+        x2_mul = torch.from_numpy(concat).npu() * sin
         x1_mul = query * cos
         res0 = x2_mul + x1_mul
 
-        k1 = key[..., :64]
-        k2 = key[..., 64:]
+        k1 = key[..., :64].cpu()
+        k2 = key[..., 64:].cpu()
         concatk = np.concatenate((-k2, k1), axis=-1)
-        x1k_mul = concatk * sin
+        x1k_mul = torch.from_numpy(concatk).npu() * sin
         x2k_mul = key * cos
         res1 = x2k_mul + x1k_mul
         return [res0, res1]
 
     def custom_op_exec(self, query, key, cos, sin):
-        return torch_npu.npu_apply_rotary_pos_emb(query, key, cos, sin, 1)
+        return torch_npu.npu_apply_rotary_pos_emb(query, key, cos, sin, '1')
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_apply_rotary_pos_emb(self, device="npu"):

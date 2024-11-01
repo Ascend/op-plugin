@@ -19,7 +19,7 @@ class TestNonzero(TestCase):
         return output
 
     def test_zero_input(self):
-        cpu_input = torch.zeros(())
+        cpu_input = torch.zeros([256, 10])
         npu_input = cpu_input.npu()
         cpu_output = self.cpu_op_exec(cpu_input)
         npu_output = self.npu_op_exec(npu_input)

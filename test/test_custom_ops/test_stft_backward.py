@@ -13,7 +13,8 @@ class TestSTFTBackward(TestCase):
                      "OP `stft_backward` is not supported on torch v1.11.0, skip this ut for this torch version")
     @SupportedDevices(['Ascend910B'])
     def test_stft_backward_float32(self):
-        input_tensor = torch.randn(10, require_grad=True)
+        input_tensor = torch.randn(10)
+        input_tensor.requires_grad = True
         window_tensor = torch.randn(8)
 
         res = torch.stft(input_tensor, 8, win_length=8, window=window_tensor,
@@ -37,7 +38,8 @@ class TestSTFTBackward(TestCase):
                      "OP `stft_backward` is not supported on torch v1.11.0, skip this ut for this torch version")
     @SupportedDevices(['Ascend910B'])
     def test_stft_backward_complex64(self):
-        input_tensor = torch.randn(10, dtype=torch.complex64, require_grad=True)
+        input_tensor = torch.randn(10, dtype=torch.complex64)
+        input_tensor.requires_grad = True
         window_tensor = torch.randn(8, dtype=torch.complex64)
 
         res = torch.stft(input_tensor, 8, win_length=8, window=window_tensor,

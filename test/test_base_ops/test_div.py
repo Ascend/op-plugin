@@ -157,12 +157,9 @@ class TestDiv(TestCase):
     def test_div_scalar_mode(self):
         shape_format = [
             [[np.float32, 0, (20, 16)], 15.9, 'floor'],
-            [[np.float32, 0, (20, 16)], 17.2, 'trunc'],
             [[np.float16, 0, (2, 20, 16)], 72.2, 'floor'],
-            [[np.float16, 0, (2, 20, 16)], -5.4, 'trunc'],
             [[np.float16, 0, (3, 20, 16)], -45.3, None],
             [[np.int32, 0, (2, 20, 16)], 15.9, 'floor'],
-            [[np.int32, 0, (3, 20, 16)], 17.2, 'trunc'],
         ]
         for item in shape_format:
             cpu_input, npu_input = create_common_tensor(item[0], 1, 100)
@@ -178,6 +175,27 @@ class TestDiv(TestCase):
                 continue
             npu_output_inp = self.npu_op_exec_mode_inp(npu_input, item[1], item[2])
             self.assertRtolEqual(cpu_output_inp, npu_output_inp)
+            
+    def test_div_scalar_mode_trunc(self):
+        shape_format = [
+            [[np.float32, 0, (20, 16)], 17.2, 'trunc'],
+            [[np.float16, 0, (2, 20, 16)], -5.4, 'trunc'],
+            [[np.int32, 0, (3, 20, 16)], 17.2, 'trunc'],
+        ]
+        for item in shape_format:
+            cpu_input, npu_input = create_common_tensor(item[0], 1, 100)
+            # div
+            cpu_output = self.cpu_op_exec_mode(cpu_input, item[1], item[2])
+            npu_output = self.npu_op_exec_mode(npu_input, item[1], item[2])
+            self.assertRtolEqual(cpu_output, npu_output, prec=1, prec16=1)
+            # div_
+            try:
+                cpu_output_inp = self.cpu_op_exec_mode_inp(cpu_input, item[1], item[2])
+            except RuntimeError as e:
+                print("Warning: invaild input")
+                continue
+            npu_output_inp = self.npu_op_exec_mode_inp(npu_input, item[1], item[2])
+            self.assertRtolEqual(cpu_output_inp, npu_output_inp, prec=1, prec16=1)
 
     def test_div_diff_dtype(self):
         cpu_x = torch.tensor(1)

@@ -426,7 +426,7 @@ class TestAdd(TestCase):
                 except RuntimeError as e:
                     self.assertRegex(
                         str(e),
-                        "result type Float can't be cast to the desired output type Long",
+                        "can't be cast to the desired output type",
                     )
             else:
                 cpu_input1.add_(cpu_input2)

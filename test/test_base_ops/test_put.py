@@ -23,7 +23,7 @@ class TestPut(TestCase):
     def npu_op_exec(self, input_x, index, source, accumulate):
         input_x = input_x.to("npu")
         index = index.to("npu")
-        source = source.to("npu")
+        source = source.to(input_x.dtype).to("npu")
         output = input_x.put_(index, source, accumulate)
         output = output.to("cpu")
         output = output.numpy()

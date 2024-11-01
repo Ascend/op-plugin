@@ -4,7 +4,7 @@ import numpy as np
 
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestLerp(TestCase):
@@ -169,6 +169,20 @@ class TestLerp(TestCase):
             self.assertRtolEqual(cpu_output, npu_output)
             self.assertRtolEqual(cpu_output1, npu_output1)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_lerp_inplace_shape_format_910b(self):
+        cpu_input1, npu_input1 = create_common_tensor([np.float32, -1, [2, 1]], 10, 100)
+        cpu_input2, npu_input2 = create_common_tensor([np.float32, -1, [2, 6]], 10, 100)
+        cpu_input2.lerp_(cpu_input1, 1)
+        npu_input2.lerp_(npu_input1, 1)
+        self.assertRtolEqual(cpu_input2, npu_input2.cpu())
+
+        def lerp_inplace(npu_input1, npu_input2):
+            npu_input1.lerp_(npu_input2, 1)
+        self.assertRaisesRegex(
+            Exception, "CheckShape failed", lerp_inplace, npu_input1, npu_input2)
+        
+    @SupportedDevices(['Ascend910A'])
     def test_lerp_inplace_shape_format(self):
         cpu_input1, npu_input1 = create_common_tensor([np.float32, -1, [2, 1]], 10, 100)
         cpu_input2, npu_input2 = create_common_tensor([np.float32, -1, [2, 6]], 10, 100)

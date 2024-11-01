@@ -66,14 +66,14 @@ class TestNPUFlashAttention(TestCase):
         k_npu = self.trans_BNSD2BSH(key).npu()
         v_npu = self.trans_BNSD2BSH(value).npu()
         dy_npu = self.trans_BNSD2BSH(dy).npu()
-        out, softmax_res, x_max, x_sum, dq_cpu, dk_cpu, dv_cpu = self.supported_op_exec(query, key, value, dy)
+        out, softmax_res, x_max, x_sum, dq_cpu, dk_cpu, dv_cpu = self.supported_op_exec(query.to(torch.float32), key.to(torch.float32), value.to(torch.float32), dy.to(torch.float32))
         x_max = x_max.expand(1, 32, 128, 8).npu()
         x_sum = x_sum.expand(1, 32, 128, 8).npu()
-        out_npu = self.trans_BNSD2BSH(out).npu()
+        out_npu = self.trans_BNSD2BSH(out).to(torch.float16).npu()
         dq, dk, dv, dpse = self.custom_op_exec(q_npu, k_npu, v_npu, dy_npu, x_max, x_sum, out_npu)
         print(dq_cpu.shape)
         print(dq.shape)
-        self.assertRtolEqual(dq_cpu, dq, prec=0.005, prec16=0.005)
+        self.assertRtolEqual(dq_cpu, dq.to(torch.float32), prec=0.005, prec16=0.005)
 
 if __name__ == "__main__":
     run_tests()

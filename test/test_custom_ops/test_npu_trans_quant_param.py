@@ -23,7 +23,7 @@ class TestTransQuantParam(TestCase):
 
     def custom_op_exec(self, fp32_deq_scale):
         fp32_deq_scale = torch.from_numpy(fp32_deq_scale)
-        return torch_npu.npu_trans_quant_param(fp32_deq_scale.npu)
+        return torch_npu.npu_trans_quant_param(fp32_deq_scale.npu())
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_transquantparam(self, device="npu"):

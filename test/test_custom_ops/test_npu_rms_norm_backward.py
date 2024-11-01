@@ -12,8 +12,9 @@ class TestNPURmsNormBackward(TestCase):
         variance = np.mean(np.power(x, 2), axis=-1, keepdims=True)
         epsilon = 1e-6
         std = np.sqrt(variance + epsilon)
-        if std == 0:
-            std = epsilon
+        for _, e in enumerate(std):  
+            if e == 0:
+                e = epsilon
         rstd = 1 / std
         np.broadcast(rstd, grad_y)
         np.broadcast(gamma, grad_y)

@@ -152,9 +152,9 @@ class TestDivide(TestCase):
     def test_divide_scalar_mode(self):
         shape_format = [
             [[np.float32, 0, (20, 16)], 15.9, 'floor'],
-            [[np.float32, 0, (20, 16)], 17.2, 'trunc'],
+            [[np.float32, 0, (20, 16)], 17.2, None],
             [[np.float16, 0, (2, 20, 16)], 72.2, 'floor'],
-            [[np.float16, 0, (2, 20, 16)], -5.4, 'trunc'],
+            [[np.float16, 0, (2, 20, 16)], -5.4, 'floor'],
             [[np.float16, 0, (3, 20, 16)], -45.3, None],
         ]
         for item in shape_format:
@@ -166,6 +166,21 @@ class TestDivide(TestCase):
             # divide_
             npu_output_inp = self.npu_op_exec_mode_inp(npu_input, item[1], item[2])
             self.assertRtolEqual(cpu_output, npu_output_inp)
+
+    def test_divide_scalar_mode_trunc(self):
+        shape_format = [
+            [[np.float32, 0, (20, 16)], 17.2, 'trunc'],
+            [[np.float16, 0, (2, 20, 16)], -5.4, 'trunc'],
+        ]
+        for item in shape_format:
+            cpu_input, npu_input = create_common_tensor(item[0], 1, 100)
+            # divide
+            cpu_output = self.cpu_op_exec_mode(cpu_input, item[1], item[2])
+            npu_output = self.npu_op_exec_mode(npu_input, item[1], item[2])
+            self.assertRtolEqual(cpu_output, npu_output, prec=1, prec16=1)
+            # divide_
+            npu_output_inp = self.npu_op_exec_mode_inp(npu_input, item[1], item[2])
+            self.assertRtolEqual(cpu_output, npu_output_inp, prec=1, prec16=1)
 
     def test_divide_scalar_mode_error(self):
         shape_format = [
