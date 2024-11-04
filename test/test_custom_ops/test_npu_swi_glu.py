@@ -10,11 +10,6 @@ torch.npu.config.allow_internal_format = False
 
 class TestSwiGlu(TestCase):
     def get_golden(self, input_self_tensor, dim):
-        def swiglu_v2(x):
-            """0.2版本，Silu小算子拼接的版本，最后乘法使用BF16计算"""
-            x = torch.chunk(x, 2, dim=dim)
-            return F.silu(x[0].npu()) * x[1].npu()
-
         def swiglu_v1(x):
             """0.1版本，FP32格式运算，最后输出转成BF16"""
             x = torch.chunk(x, 2, dim=dim)
@@ -23,7 +18,7 @@ class TestSwiGlu(TestCase):
             output = F.silu(self_tensor.npu()) * other.npu()
             return output.type(torch.bfloat16)
 
-        output = swiglu_v2(input_self_tensor)
+        output = swiglu_v1(input_self_tensor)
         return output
 
     @SupportedDevices(['Ascend910B'])
