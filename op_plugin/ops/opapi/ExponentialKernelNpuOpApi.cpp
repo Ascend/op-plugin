@@ -22,6 +22,7 @@ namespace op_api {
 
 at::Tensor& exponential_(at::Tensor& self, double lambda, c10::optional<at::Generator> generator)
 {
+    TORCH_CHECK(lambda > 0.0, "exponential_ expects lambda > 0.0, but found lambda=", lambda, OPS_ERROR(ErrCode::PARAM));
     if (std::isinf(lambda)) {
         self.zero_();
         return self;

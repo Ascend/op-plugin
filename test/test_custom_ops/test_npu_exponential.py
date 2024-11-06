@@ -52,6 +52,11 @@ class TestExponential(TestCase):
             x = torch.empty(500000000, device="npu", dtype=torch.float32).exponential_()
             self.assertTrue(x.min() > 0)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_exponential_negative_lambda_fails(self):
+        with self.assertRaises(RuntimeError):
+            torch.empty((1,), device="npu", dtype=torch.float32).exponential_(-0.5)
+
 
 if __name__ == "__main__":
     run_tests()
