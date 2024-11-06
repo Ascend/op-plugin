@@ -24,7 +24,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
 struct CellParams {
-    CellParams(const at::Tensor &_w_ih, const at::Tensor &_w_hh) : w_ih(_w_ih), w_hh(_w_hh), b_ih({}), b_hh({}){};
     CellParams(const at::Tensor &_w_ih, const at::Tensor &_w_hh, const at::Tensor &_b_ih, const at::Tensor &_b_hh)
         : w_ih(_w_ih), w_hh(_w_hh), b_ih(_b_ih), b_hh(_b_hh){};
     const at::Tensor &w_ih;
@@ -207,8 +206,10 @@ std::tuple<at::Tensor, at::Tensor> apply_layer_stack(const at::Tensor &input,
         }
     } else {
         for (int64_t i = 0; i < params_size; i = i + 2) {
-            weights.emplace_back(CellParams((*(params_it + i)).first, (*(params_it + i)).second),
-                                 CellParams((*(params_it + i + 1)).first, (*(params_it + i + 1)).second));
+            at::Tensor params_it_tmp1 = {};
+            at::Tensor params_it_tmp2 = {};
+            weights.emplace_back(CellParams((*(params_it + i)).first, (*(params_it + i)).second, params_it_tmp1, params_it_tmp2),
+                                 CellParams((*(params_it + i + 1)).first, (*(params_it + i + 1)).second, params_it_tmp1, params_it_tmp2));
         }
     }
     auto weights_it = weights.begin();
@@ -240,7 +241,9 @@ std::tuple<at::Tensor, at::Tensor> apply_layer_stack(const at::Tensor &input, st
         }
     } else {
         for (int64_t i = 0; i < params_size; i = i + 2) {
-            weights.emplace_back(CellParams(*(params_it + i), *(params_it + i + 1)));
+            at::Tensor params_it_tmp1 = {};
+            at::Tensor params_it_tmp2 = {};
+            weights.emplace_back(CellParams(*(params_it + i), *(params_it + i + 1), params_it_tmp1, params_it_tmp2));
         }
     }
     auto weights_it = weights.begin();

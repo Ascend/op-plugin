@@ -39,7 +39,7 @@ void npu_prefetch(const at::Tensor &self,
         max_size = tensor_size - offset;
     }
     aclrtStream current_stream = c10_npu::getCurrentNPUStream();
-    NPU_CHECK_ERROR_WITHOUT_UCE(c10_npu::acl::AclrtCmoAsync(self.data_ptr() + offset, max_size, ACL_RT_CMO_TYPE_PREFETCH, current_stream));
+    NPU_CHECK_ERROR_WITHOUT_UCE(c10_npu::acl::AclrtCmoAsync((char*)self.data_ptr() + offset, max_size, ACL_RT_CMO_TYPE_PREFETCH, current_stream));
 }
 #endif
 } // namespace op_api

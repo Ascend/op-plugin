@@ -74,15 +74,16 @@ at::Tensor& random_out_npu(
   return result;
 }
 
-int64_t get_max(const auto dtype) {
-  if (dtype == at::kHalf) {return RANDOM_HALF_MAX + 1;}
-  if (dtype == at::kFloat) {return RANDOM_FLOAT_MAX + 1;}
-  if (dtype == at::kDouble) {return RANDOM_DOUBLE_MAX + 1;}
-  if (dtype == at::kInt) {return INT_MAX;}
-  if (dtype == at::kShort) {return SHRT_MAX + 1;}
-  if (dtype == at::kChar) {return SCHAR_MAX + 1;}
-  if (dtype == at::kByte) {return UCHAR_MAX + 1;}
-  if (dtype == at::kLong) {return LONG_MAX;}
+int64_t get_max(const caffe2::TypeMeta dtype)
+{
+  if (dtype == at::kHalf) { return RANDOM_HALF_MAX + 1; }
+  if (dtype == at::kFloat) { return RANDOM_FLOAT_MAX + 1; }
+  if (dtype == at::kDouble) { return RANDOM_DOUBLE_MAX + 1; }
+  if (dtype == at::kInt) { return INT_MAX; }
+  if (dtype == at::kShort) { return SHRT_MAX + 1; }
+  if (dtype == at::kChar) { return SCHAR_MAX + 1; }
+  if (dtype == at::kByte) { return UCHAR_MAX + 1; }
+  if (dtype == at::kLong) { return LONG_MAX; }
   return 1;
 }
 } // namespace
