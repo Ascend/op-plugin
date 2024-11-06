@@ -40,7 +40,7 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
 
    | 参数      | 取值范围                                   | 说明                  | 缺省值    | 备注                                |
    |---------|----------------------------------------|---------------------|--------|-----------------------------------|
-   | pytorch | v2.1.0, v2.3.1, v2.4.0, v2.5.0, master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.6            |
+   | pytorch | v2.1.0, v2.3.1, v2.4.0, v2.5.1, master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.6            |
    | python  | 3.8, 3.9, 3.10, 3.11                   | 指定编译过程中使用的python版本  | 3.8    | 编译基于pytorch2.5及后续版本时，不支持python3.8 |
 
 
