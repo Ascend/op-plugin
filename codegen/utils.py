@@ -1,5 +1,5 @@
 # Copyright (c) 2023 Huawei Technologies Co., Ltd
-# Copyright (c) 2019, Facebook CORPORATION. 
+# Copyright (c) 2019, Facebook CORPORATION.
 # All rights reserved.
 #
 # Licensed under the BSD 3-Clause License  (the "License");
@@ -291,3 +291,19 @@ class PathManager:
             raise RuntimeError(f"Invalid path is a soft chain: {path}")
         if os.path.exists(path):
             os.remove(path)
+
+
+def get_version(ver, all_version):
+    if ver is None:
+        return []
+
+    if isinstance(ver, list):
+        start_ver = all_version.index(ver[0])
+        end_ver = None if ver[1] == 'newest' else all_version.index(ver[1])
+        real_ver = all_version[start_ver:end_ver]
+    elif ver == 'all_version':
+        real_ver = all_version
+    else:
+        real_ver = ver.split(', ') if ', ' in ver else ver.split(',')
+
+    return real_ver

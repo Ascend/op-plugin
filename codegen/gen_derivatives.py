@@ -4,7 +4,7 @@ import os
 import stat
 import yaml
 
-from codegen.utils import PathManager
+from codegen.utils import PathManager, get_version
 
 
 def main():
@@ -23,10 +23,11 @@ def main():
     with open(source_yaml_path, 'r') as f:
         old_yaml = yaml.safe_load(f)
 
+    all_version = old_yaml['all_version']
     new_yaml = []
-    for item in old_yaml:
+    for item in old_yaml['backward']:
         new_item = item
-        if version in new_item['version']:
+        if version in get_version(new_item['version'], all_version):
             del new_item['version']
             new_yaml.append(new_item)
 
@@ -34,7 +35,6 @@ def main():
     modes = stat.S_IWUSR | stat.S_IRUSR
     with os.fdopen(os.open(f'{output_dir}/derivatives.yaml', flags, modes), 'w') as f:
         yaml.dump(data=new_yaml, stream=f, width=2000, sort_keys=False)
-
 
 if __name__ == '__main__':
     main()

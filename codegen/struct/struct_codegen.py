@@ -87,7 +87,16 @@ def filt_op_branch(struct_ops: Dict) -> Dict:
 
     def filt(op) -> bool:
         op_api_version = op.get('op_api', None)
-        return 'gen_opapi' in op.keys() and (version in op_api_version or op_api_version == 'all_version')
+        if op_api_version is None:
+            is_support_version = False
+        elif op_api_version == 'all_version':
+            is_support_version = True
+        elif isinstance(op_api_version, list):
+            is_support_version = version >= op_api_version[0]
+        else:
+            is_support_version = version in op_api_version
+
+        return 'gen_opapi' in op.keys() and is_support_version
 
     filt_ops = list(filter(lambda op: filt(op), support_ops))
     return filt_ops

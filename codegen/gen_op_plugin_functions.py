@@ -4,7 +4,7 @@ import os
 import stat
 import yaml
 
-from codegen.utils import PathManager
+from codegen.utils import PathManager, get_version
 
 
 def main():
@@ -33,9 +33,9 @@ def main():
         for item in old_yaml[key]:
             item.pop('gen_opapi', None)
 
-            acl_op_sup_ver = ', '.join(all_version) if item.get('acl_op', '') == 'all_version' else item.get('acl_op', '')
-            op_api_sup_ver = ', '.join(all_version) if item.get('op_api', '') == 'all_version' else item.get('op_api', '')
-            sparse = ', '.join(all_version) if item.get('sparse', '') == 'all_version' else item.get('sparse', '')
+            acl_op_sup_ver = get_version(item.get('acl_op', None), all_version)
+            op_api_sup_ver = get_version(item.get('op_api', None), all_version)
+            sparse = get_version(item.get('sparse', None), all_version)
             item.update({'acl_op':acl_op_sup_ver})
             item.update({'op_api':op_api_sup_ver})
             item.update({'sparse':sparse})
@@ -54,7 +54,7 @@ def main():
                     new_item['sparse'] = 'op_api'
                 else:
                     new_item.pop('sparse', None)
-                if version in item.get('exposed', '') or item.get('exposed', '') == 'all_version':
+                if version in get_version(item.get('exposed', None), all_version):
                     new_item['exposed'] = True
                 else:
                     new_item.pop('exposed', None)

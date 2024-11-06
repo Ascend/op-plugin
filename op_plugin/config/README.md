@@ -28,22 +28,22 @@
 算子的aten ir定义位于op_plugin/config/op_plugin_functions.yaml文件中，所有版本的定义都在这个文件里面，通过配置不同版本来区分。
 ```yaml
 # op_plugin_functions.yaml
-all_version: [v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5]
+all_version: [v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6]
 # 官方算子
 official:
   - func: abs(Tensor self) -> Tensor
     acl_op: all_version
-    op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     gen_opapi:
       structured_inherit: abs.out
 # 自定义算子
 custom:
   - func: my_abs(Tensor self) -> Tensor
-    acl_op: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
     op_api: all_version
 symint:
   - func: zeros(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
 ```
 
 其中：
@@ -51,8 +51,8 @@ symint:
 - `all_version`表示当前pytorch支持的所有版本
 - `official`和`custom`分别表示该字段下的算子为原生和自定义算子；`symint`字段表明该算子支持symint类型的入参，该种算子后面详细介绍。
 - `func`定义了算子的schema，主要有名称、入参和返回参数，具体规则可参考原生定义。
-- `acl_op`字段后面填版本名称，表示在该版本支持acl_op调用，，如果支持的版本与`all_version`表示的版本一致，则可以用"all_version"表示，可选字段。
-- `op_api`字段后面填版本名称，表示在该版本支持op_api调用，，如果支持的版本与`all_version`表示的版本一致，则可以用"all_version"表示，可选字段。
+- `acl_op`字段后面填版本名称，表示在该版本支持acl_op调用。如果支持的版本与`all_version`表示的版本一致，则可以用"all_version"表示；也可以用一个左闭右闭的区间表示，如`acl_op: [v2.1, newest]`或者`acl_op: [v2.1, v2.4]`，`newest`表示最新版本，具体可查看`all_version`。可选字段。
+- `op_api`字段后面填版本名称，表示在该版本支持op_api调用。使用方式参考`acl_op`字段。可选字段。
 - `gen_opapi`对于支持op_api调用的算子，如果适配代码简单，可以直接调用底层算子，不需要额外的适配，则可以考虑用结构化适配的方式自动生成适配代码，详见章节[结构化适配介绍](#结构化适配介绍)
 
 如果存在某个Aten IR有两个版本不一致，则需要两个都加上，如std.correction在1.11和2.1及以上的入参名称不同，则需要分开写成两个，通过`version`区分。
@@ -63,8 +63,8 @@ symint:
     op_api: v1.11
 
   - func: std.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> Tensor
-    acl_op: v2.1, v2.2, v2.3, v2.4, v2.5
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5
+    acl_op: [v2.1, newest]
+    op_api: [v2.1, newest]
 ```
 
 
@@ -286,7 +286,7 @@ Pytorch的算子自动反向微分依赖于算子的前反向绑定，即前向�
 - name: l1_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
   self: l1_loss_backward(grad, self, target, reduction)
   target: l1_loss_backward(grad, self, target, reduction) * -1
-  version: v2.0, v2.1, v2.2, v2.3, v2.4, v2.5
+  version: [v2.0, newest]
 ```
 
 所有版本的算子前反向绑定都在同一个derivatives.yaml里面，通过`version`字段来区分版本。
@@ -368,7 +368,7 @@ Aten IR定义：
 以`abs`为例，原函数和out类函数的out属性和`exec`相同，可通过`structured_inherit`字段继承。
 ```yaml
   - func: abs.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: [v1.11, newest]
     gen_opapi:
       out:
         size: self
@@ -376,7 +376,7 @@ Aten IR定义：
         name: self
       exec: aclnnAbs, self, out
   - func: abs(Tensor self) -> Tensor
-    op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5
+    op_api: [v1.11, newest]
     gen_opapi:
       structured_inherit: abs.out
 ```
