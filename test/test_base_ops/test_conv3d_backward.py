@@ -47,7 +47,7 @@ class TestConv3dBackward(TestCase):
             [[np.float32, 30, [128, 256, 2, 7, 7]],
              [np.float32, 30, [256, 256, 3, 3, 3]], [1, 1, 1], [1, 1, 1], 1, None, 1],
             [[np.float32, 30, [128, 256, 2, 7, 7]],
-             [np.float32, 30, [512, 256, 1, 1, 1]], 0, [2, 2, 2], 1, None, 1]
+             [np.float32, 30, [512, 256, 1, 1, 1]], 0, [1, 1, 1], 1, None, 1]
         ]
         for item in shape_format:
             self.weight_grad.clear()

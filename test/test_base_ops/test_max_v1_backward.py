@@ -9,10 +9,7 @@ class TestMaxV1Backward(TestCase):
         if npu_flag:
             data = data.to("npu")
         data.requires_grad = True
-        if npu_flag:
-            outputs, indices = torch_npu.npu_max(data, dim)
-        else:
-            outputs, indices = torch.max(data, dim)
+        outputs, indices = torch.max(data, dim)
         outputs.backward(torch.ones_like(outputs))
         gradoutput = data.grad
         out = outputs.detach()

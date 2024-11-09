@@ -4,7 +4,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor, check_operators_in_prof
+from torch_npu.testing.common_utils import create_common_tensor, check_operators_in_prof, SupportedDevices
 
 
 class TestViewCopy(TestCase):
@@ -117,6 +117,7 @@ class TestViewCopy(TestCase):
             npu_res = npu_res.cpu()
             self.assertRtolEqual(cpu_res, npu_res)
 
+    @SupportedDevices(['Ascend910A'])  
     def test_view_copy_of_slice(self):
         cpu_x = torch.rand(2, 3)
         cpu_other = torch.rand(2, 1)
@@ -130,6 +131,7 @@ class TestViewCopy(TestCase):
         self.assertEqual(check_operators_in_prof(['ViewCopy'], prof), True, "Error operators called!")
         self.assertRtolEqual(cpu_slice, npu_slice.cpu())
 
+    @SupportedDevices(['Ascend910A'])  
     def test_view_copy_of_transpose(self):
         cpu_x = torch.rand(2, 3)
         cpu_other = torch.rand(3, 2)
@@ -141,6 +143,34 @@ class TestViewCopy(TestCase):
             npu_t = npu_x.t()
             npu_t.copy_(npu_other)
         self.assertEqual(check_operators_in_prof(['ViewCopy'], prof), True, "Error operators called!")
+        self.assertRtolEqual(cpu_t, npu_t.cpu())
+      
+    @SupportedDevices(['Ascend910B'])  
+    def test_view_copy_of_slice(self):
+        cpu_x = torch.rand(2, 3)
+        cpu_other = torch.rand(2, 1)
+        npu_x = cpu_x.npu()
+        npu_other = cpu_other.npu()
+        cpu_slice = cpu_x[:, 1:2]
+        cpu_slice.copy_(cpu_other)
+        with torch.autograd.profiler.profile(use_device='npu') as prof:
+            npu_slice = npu_x[:, 1:2]
+            npu_slice.copy_(npu_other)
+        self.assertEqual(check_operators_in_prof(['aclnnInplaceCopy'], prof), True, "Error operators called!")
+        self.assertRtolEqual(cpu_slice, npu_slice.cpu())
+
+    @SupportedDevices(['Ascend910B'])  
+    def test_view_copy_of_transpose(self):
+        cpu_x = torch.rand(2, 3)
+        cpu_other = torch.rand(3, 2)
+        npu_x = cpu_x.npu()
+        npu_other = cpu_other.npu()
+        cpu_t = cpu_x.t()
+        cpu_t.copy_(cpu_other)
+        with torch.autograd.profiler.profile(use_device='npu') as prof:
+            npu_t = npu_x.t()
+            npu_t.copy_(npu_other)
+        self.assertEqual(check_operators_in_prof(['aclnnInplaceCopy'], prof), True, "Error operators called!")
         self.assertRtolEqual(cpu_t, npu_t.cpu())
 
 

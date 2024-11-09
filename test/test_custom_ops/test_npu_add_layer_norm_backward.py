@@ -14,10 +14,8 @@ class TestNPUAddLayerNormBackward(TestCase):
         mean_fp32 = np.mean(x_fp32, reduce_axis, keepdims=True)
         var_fp32 = np.var(x_fp32, reduce_axis, keepdims=True)
         var_fp32_sqrt = np.sqrt(var_fp32 + eps)
-        if (var_fp32_sqrt == 0):
-            rstd_fp32 = 1
-        else :
-            rstd_fp32 = 1 / var_fp32_sqrt
+        var_fp32_sqrt = np.where(var_fp32_sqrt == 0, 1, var_fp32_sqrt)
+        rstd_fp32 = 1 / var_fp32_sqrt
         y_fp32 = gamma_fp32 * ((x_fp32 - mean_fp32) * rstd_fp32) + beta_fp32
 
         # rstd = np.power((inputVariace + EPSLON), (-0.5))
@@ -46,7 +44,7 @@ class TestNPUAddLayerNormBackward(TestCase):
         dbeta = np.sum(grad_y, axis=(0, 1), keepdims=True)
 
         # pd_x = pd_x_first_part  #
-        return pd_x, dgamma, dbeta
+        return pd_x, dgamma.flatten(), dbeta.flatten()
 
     def custom_op_exec(self, x0, x1, gamma, beta, npu_grad_y):
         x0.requires_grad = True

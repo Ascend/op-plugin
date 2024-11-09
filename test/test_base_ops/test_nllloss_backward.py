@@ -48,7 +48,8 @@ class TestNlllossbackward(TestCase):
             for item in shape_format:
                 np_target = np.random.randint(0, item[0][2][1], (item[0][2][0])).astype(np.int64)
                 target = torch.from_numpy(np_target)
-                cpu_input, npu_input = create_common_tensor(item[0], -100, 100)
+                cpu_input, _ = create_common_tensor(item[0], -100, 100)
+                npu_input = cpu_input.detach().clone().npu()
                 cpu_output, cpu_grad = self.cpu_op_exec_new(cpu_input, target, item[1], item[2])
                 npu_output, npu_grad = self.npu_op_exec_new(npu_input, target, item[1], item[2])
                 self.assertRtolEqual(cpu_output, npu_output)

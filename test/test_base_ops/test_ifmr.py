@@ -7,6 +7,8 @@ import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
 
+torch_npu.npu.set_compile_mode(jit_compile=True)
+
 
 class TestIFMR(TestCase):
     # pylint:disable = huawei-too-many-arguments

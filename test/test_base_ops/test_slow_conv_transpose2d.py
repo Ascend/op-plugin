@@ -5,6 +5,9 @@ import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
 
+torch.npu.config.allow_internal_format = False
+torch.npu.set_compile_mode(jit_compile=False)
+
 
 class TestSlowConvTranspose2d(TestCase):
     def cpu_op_exec(self, input_1, weight, kernel_size):

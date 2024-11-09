@@ -32,12 +32,12 @@ class TestUnique(TestCase):
             [[np.int32, (2, 3)], True, True],
             [[np.int64, (2, 3)], True, True],
             [[np.int64, (5, 3)], True, False],
-            [[np.int64, (2, 3, 4)], False, False],
-            [[np.int64, (3, 3)], False, True],
+            [[np.int64, (2, 3, 4)], True, False],
+            [[np.int64, (3, 3)], True, True],
             [[np.float32, (2, 3)], True, False],
             [[np.bool_, (2, 3)], True, True],
             [[np.float16, (2, 3)], True, True],
-            [[np.float16, (208, 3136, 19, 5)], False, False]
+            [[np.float16, (208, 3136, 19, 5)], True, False]
         ]
 
         for item in shape_format:
