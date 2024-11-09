@@ -39,8 +39,8 @@ at::Tensor& random_out_npu(
     c10::optional<at::Generator> gen) {
   auto gen_val = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_val->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  const int64_t seed = static_cast<int64_t>(pair.first);
+  const int64_t offset = static_cast<int64_t>(pair.second);
   at::SmallVector<int64_t, N> key = {seed};
   at::SmallVector<int64_t, N> counter = {0, offset};
   const int32_t alg = 1;

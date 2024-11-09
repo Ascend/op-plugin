@@ -198,14 +198,14 @@ std::tuple<at::Tensor, at::Tensor> apply_layer_stack(const at::Tensor &input,
     std::vector<std::pair<CellParams, CellParams>> weights;
     std::vector<std::pair<at::Tensor, at::Tensor>>::iterator params_it = params.begin();
     if (has_biases) {
-        for (int64_t i = 0; i < params_size; i = i + 4) {
+        for (auto i = 0; i < params_size; i = i + 4) {
             weights.emplace_back(CellParams((*(params_it + i)).first, (*(params_it + i)).second,
                                             (*(params_it + i + 1)).first, (*(params_it + i + 1)).second),
                                  CellParams((*(params_it + i + 2)).first, (*(params_it + i + 2)).second,
                                             (*(params_it + i + 3)).first, (*(params_it + i + 3)).second));
         }
     } else {
-        for (int64_t i = 0; i < params_size; i = i + 2) {
+        for (auto i = 0; i < params_size; i = i + 2) {
             at::Tensor params_it_tmp1 = {};
             at::Tensor params_it_tmp2 = {};
             weights.emplace_back(CellParams((*(params_it + i)).first, (*(params_it + i)).second, params_it_tmp1, params_it_tmp2),
@@ -235,12 +235,12 @@ std::tuple<at::Tensor, at::Tensor> apply_layer_stack(const at::Tensor &input, st
     std::vector<CellParams> weights;
     std::vector<at::Tensor>::iterator params_it = params.begin();
     if (has_biases) {
-        for (int64_t i = 0; i < params_size; i = i + 4) {
+        for (auto i = 0; i < params_size; i = i + 4) {
             weights.emplace_back(
                 CellParams(*(params_it + i), *(params_it + i + 1), *(params_it + i + 2), *(params_it + i + 3)));
         }
     } else {
-        for (int64_t i = 0; i < params_size; i = i + 2) {
+        for (auto i = 0; i < params_size; i = i + 2) {
             at::Tensor params_it_tmp1 = {};
             at::Tensor params_it_tmp2 = {};
             weights.emplace_back(CellParams(*(params_it + i), *(params_it + i + 1), params_it_tmp1, params_it_tmp2));
@@ -347,13 +347,13 @@ std::tuple<at::Tensor, at::Tensor> gru(const at::Tensor &input_val, const at::Te
     auto input = batch_first ? input_val.transpose(0, 1) : input_val;
 
     auto layer_hx = hx.unbind(0);
-    int64_t total_layers = layer_hx.size();
+    auto total_layers = layer_hx.size();
     std::vector<at::Tensor> hiddens;
-    for (int64_t i = 0; i < total_layers; ++i) {
+    for (auto i = 0; i < total_layers; ++i) {
         hiddens.emplace_back(std::move(layer_hx[i]));
     }
     std::vector<at::Tensor> params_vec;
-    for (int64_t i = 0; i < params.size(); ++i) {
+    for (auto i = 0; i < params.size(); ++i) {
         params_vec.emplace_back(std::move(params[i]));
     }
     std::tuple<at::Tensor, at::Tensor> result;
