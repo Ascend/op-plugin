@@ -6341,6 +6341,12 @@ custom:
   - func: _amp_foreach_non_finite_check(Tensor[] scaled_grads) -> bool
     acl_op: all_version
 
+  - func: npu_gelu(Tensor self, *, str approximate='none') -> Tensor
+    op_api: [v2.1, newest]
+
+  - func: npu_gelu_backward(Tensor grad_output, Tensor self, *, str approximate='none') -> Tensor
+    op_api: [v2.1, newest]
+    
   - func: _conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)
     acl_op: all_version
 

@@ -43,6 +43,10 @@ backward:
   x1, x2, gamma, beta: npu_add_layer_norm_backward(grads[0], x1, x2, result2, result1, gamma, grads[1])
   version: [v1.11, newest]
 
+- name: npu_gelu(Tensor self, *, str approximate='none') -> Tensor
+  self: npu_gelu_backward(grad, self, approximate)
+  version: [v2.1, newest]
+
 - name: npu_bmmV2(Tensor self, Tensor mat2, int[] output_sizes) -> Tensor
   self: npu_bmm_v2_mat1_backward(grad, self, mat2, self.sizes())
   mat2: npu_bmm_v2_mat2_backward(grad, self, mat2, mat2.sizes())
