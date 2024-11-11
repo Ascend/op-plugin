@@ -52,6 +52,13 @@ class TestNpuPrefetch(TestCase):
         self.assertRtolEqual(original_output2, npu_output2)
         self.assertRtolEqual(original_output3, npu_output3)
 
+        # test NZ, sizes: [8, 8], storage_sizes: [1, 1, 16, 16]
+        input_shape_nz = [np.float32, 29, (8, 8)]
+        original_input, npu_input = create_common_tensor(input_shape_nz, -100, 100)
+        original_output = original_input.numpy()
+        npu_output = self.npu_op_exec(npu_input, None, 256, 512)
+        self.assertRtolEqual(original_output, npu_output)
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_prefetch_max_size_is_negative(self):
         input_shape = [np.float16, -1, (8, 8)]
