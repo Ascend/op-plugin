@@ -43,7 +43,7 @@ function parse_script_args() {
         if [[ ${args_num} -eq ${DEFAULT_SCRIPT_ARGS_NUM_MAX} ]]; then
             break
         fi
-        
+
     done
 
     while true; do
@@ -110,6 +110,11 @@ function main()
         git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
     fi
     checkout_pytorch_branch
+
+    # download third_party of torch_npu
+    cd ${PYTORCH_PATH}
+    git submodule update --init --depth=1 --recursive
+
     # copy op_plugin to torch_adapter/third_party
     PYTORCH_THIRD_PATH=${PYTORCH_PATH}/third_party/op-plugin
     if [ -d ${PYTORCH_THIRD_PATH}/op_plugin ]; then
