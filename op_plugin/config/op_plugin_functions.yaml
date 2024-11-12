@@ -6672,7 +6672,7 @@ custom:
     acl_op: all_version
     op_api: all_version
 
-  - func: npu_dynamic_quant(Tensor input, *, Tensor? smooth_scales=None) -> (Tensor, Tensor)
+  - func: npu_dynamic_quant(Tensor input, *, Tensor? smooth_scales=None, Tensor? group_index=None, ScalarType? dst_type=None) -> (Tensor, Tensor)
     op_api: [v2.1, newest]
 
   - func: npu_dynamic_quant_asymmetric(Tensor input, *, Tensor? smooth_scales=None, Tensor? group_index=None, ScalarType? dst_type=None) -> (Tensor, Tensor, Tensor)
