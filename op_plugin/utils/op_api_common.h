@@ -909,6 +909,8 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
     uint64_t *workspace_size_addr = &workspace_size;
     initPTACacheThreadLocalFunc();
     g_hash_offset = 0;
+    auto deterministic = at::globalContext().deterministicAlgorithms();
+    add_param_to_buf(deterministic);
     add_param_to_buf(std::string(aclnn_api), args...);
     uint64_t hashId = calc_hash_id();
     setPTAHashKeyFunc(hashId);
