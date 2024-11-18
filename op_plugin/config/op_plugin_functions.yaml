@@ -3150,30 +3150,6 @@ official:
         dtype: self
       exec: aclnnLinalgCross
 
-  - func: linalg_matrix_norm(Tensor self, Scalar ord, int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: [v2.1, newest]
-
-  - func: linalg_matrix_norm.out(Tensor self, Scalar ord, int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: [v2.1, newest]
-
-  - func: linalg_matrix_norm.str_ord(Tensor self, str ord='fro', int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: [v2.1, newest]
-
-  - func: linalg_matrix_norm.str_ord_out(Tensor self, str ord='fro', int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: [v2.1, newest]
-
-  - func: linalg_norm(Tensor self, Scalar? ord=None, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: [v2.1, newest]
-
-  - func: linalg_norm.ord_str(Tensor self, str ord, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
-    acl_op: [v2.1, newest]
-
-  - func: linalg_norm.ord_str_out(Tensor self, str ord, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: [v2.1, newest]
-
-  - func: linalg_norm.out(Tensor self, Scalar? ord=None, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: [v2.1, newest]
-
   - func: linalg_qr(Tensor self, str mode='reduced') -> (Tensor Q, Tensor R)
     acl_op: all_version
     op_api: all_version
@@ -3195,12 +3171,6 @@ official:
 
   - func: linalg_solve_triangular.out(Tensor self, Tensor B, *, bool upper, bool left=True, bool unitriangular=False, Tensor(a!) out) -> Tensor(a!)
     op_api: all_version
-
-  - func: linalg_svdvals(Tensor A, *, str? driver=None) -> Tensor
-    acl_op: [v2.1, newest]
-
-  - func: linalg_svdvals.out(Tensor A, *, str? driver=None, Tensor(a!) out) -> Tensor(a!)
-    acl_op: [v2.1, newest]
 
   - func: linalg_vector_norm(Tensor self, Scalar ord=2, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
     acl_op: all_version
@@ -6406,7 +6376,7 @@ custom:
 
   - func: npu_gelu_backward(Tensor grad_output, Tensor self, *, str approximate='none') -> Tensor
     op_api: [v2.1, newest]
-    
+
   - func: _conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)
     acl_op: all_version
 

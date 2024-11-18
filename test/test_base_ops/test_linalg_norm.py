@@ -11,11 +11,11 @@ class TestLinalgNorm(TestCase):
 
     def cpu_dtype_out_exec(self, data, ord_):
         cpu_output = LA.vector_norm(data, ord_)
-        return cpu_output.numpy()
+        return cpu_output
 
     def npu_dtype_out_exec(self, data, ord_):
         npu_output = LA.vector_norm(data, ord_)
-        return npu_output.cpu().numpy()
+        return npu_output
 
     def test_linalg_vector_norm(self):
         # linalg.vector_norm only support float and complex
@@ -25,9 +25,15 @@ class TestLinalgNorm(TestCase):
             for ord_ in ords:
                 cpu_input_1, npu_input_1 = create_common_tensor([item, 0, (2, 3, 4)], -100, 100)
                 cpu_input_2, npu_input_2 = create_common_tensor([item, 0, (2, 3, 4)], -100, 100)
+                cpu_input_1.requires_grad = True
+                npu_input_1.requires_grad = True
                 cpu_output_1 = self.cpu_dtype_out_exec(cpu_input_1, ord_)
                 npu_output_1 = self.npu_dtype_out_exec(npu_input_1, ord_)
+                cpu_output_1.backward(torch.ones_like(cpu_output_1))
+                npu_output_1.backward(torch.ones_like(npu_output_1))
                 self.assertRtolEqual(cpu_output_1, npu_output_1)
+                if cpu_input_1.grad is not None:
+                    self.assertRtolEqual(cpu_input_1.grad, npu_input_1.grad)
                 cpu_output_2 = self.cpu_dtype_out_exec(torch.stack([cpu_input_1, cpu_input_2]), ord_)
                 npu_output_2 = self.npu_dtype_out_exec(torch.stack([npu_input_1, npu_input_2]), ord_)
                 self.assertRtolEqual(cpu_output_2, npu_output_2)
@@ -48,9 +54,14 @@ class TestLinalgNorm(TestCase):
         for ord_ in ords:
             for keepdim in keepdim_list:
                 cpu_input_1, npu_input_1 = create_common_tensor([np.float16, 0, (6, 7)], -100, 100)
+                cpu_input_1.requires_grad_(True)
+                npu_input_1.requires_grad_(True)
                 cpu_output_1 = LA.norm(cpu_input_1, ord=ord_, keepdim=keepdim)
                 npu_output_1 = LA.norm(npu_input_1, ord=ord_, keepdim=keepdim)
+                cpu_output_1.backward(torch.ones_like(cpu_output_1))
+                npu_output_1.backward(torch.ones_like(npu_output_1))
                 self.assertRtolEqual(cpu_output_1, npu_output_1)
+                self.assertRtolEqual(cpu_input_1.grad, npu_input_1.grad)
 
     def test_linalg_matrix_norm_fp32(self):
         ords = [torch.inf, -torch.inf, -1, 1, -2, 2, "fro", "nuc"]
@@ -75,9 +86,14 @@ class TestLinalgNorm(TestCase):
         keepdim_list = [True, False]
         for ord_ in ords:
             cpu_input_1, npu_input_1 = create_common_tensor([np.float16, 0, (6, 7)], -100, 100)
+            cpu_input_1.requires_grad_(True)
+            npu_input_1.requires_grad_(True)
             cpu_output_1 = LA.matrix_norm(cpu_input_1, ord=ord_)
             npu_output_1 = LA.matrix_norm(npu_input_1, ord=ord_)
+            cpu_output_1.backward(torch.ones_like(cpu_output_1))
+            npu_output_1.backward(torch.ones_like(npu_output_1))
             self.assertRtolEqual(cpu_output_1, npu_output_1)
+            self.assertRtolEqual(cpu_input_1.grad, npu_input_1.grad)
 
 
 if __name__ == "__main__":
