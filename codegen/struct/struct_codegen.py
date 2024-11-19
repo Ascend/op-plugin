@@ -39,6 +39,7 @@ ACLNN_FUNCTIONS_DEFINITION = CodeTemplate("""\
 ${return_type} ${func_name}(${args_str})
 {
     ${do_compatibility}
+    ${new_params_def}
     ${define_size_or_dtype}
     ${check_or_apply_tensor}
     EXEC_NPU_CMD(${aclnnargs});
@@ -145,6 +146,7 @@ def compute_op_api_definition(struct: StructInfo):
 
         res_infos = struct.results
 
+        # The inplace interface inherits out interface and implements a direct call to the out interface.
         if struct.structured_inherit is not None and kind == SchemaKind.inplace:
             delegate_function = struct.structured_inherit
             delegate_name = cpp.name(delegate_function.func)
@@ -161,6 +163,17 @@ def compute_op_api_definition(struct: StructInfo):
                                                        args_exprs_str=args_exprs_str) if struct.acl_op else ""
 
         tensor_arguments = ", ".join(filt_input_tensor(f.func.arguments.flat_non_out))
+
+        new_params_def = "".join(
+            [f"auto {para_name} = {para_def};\n" for para_name, para_def in struct.new_params.items()])
+
+        valid_param_set = set(struct.new_params.keys()) | set(map(lambda arg: arg.name, args)) | \
+                          set(map(lambda res: res.name, res_infos))
+        aclnn_params_set = set(map(lambda arg: arg.strip(), struct.cmd_args.split(',')[1:]))
+
+        if not aclnn_params_set.issubset(valid_param_set):
+            raise RuntimeError(f"exec configuration field contains invalid parameters"
+                               f"{aclnn_params_set - valid_param_set}")
 
         size_map, dtype_map = gen_size_dtype_map(res_infos)
 
@@ -203,6 +216,7 @@ def compute_op_api_definition(struct: StructInfo):
             ACLNN_FUNCTIONS_DEFINITION.substitute(
                 return_type=return_type,
                 func_name=name,
+                new_params_def=new_params_def,
                 define_size_or_dtype=define_size_or_dtype,
                 args_str=args_str,
                 check_or_apply_tensor=apply_tensor,

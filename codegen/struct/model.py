@@ -105,6 +105,7 @@ class StructInfo:
     return_args: str = None
     acl_op: bool = None
     results: List[ResInfo] = None
+    new_params: Dict[str, str] = None
 
     @staticmethod
     def from_yaml(
@@ -184,6 +185,7 @@ class StructInfo:
             aclnn_arguments_list = [argument.strip()
                                for argument in aclnn_arguments.split(',')]
             aclnn_name = aclnn_arguments_list[0]
+            new_params_dict = gen_opapi_info.pop('new_params', dict())
 
             cmd_args_expand = False
             if len(aclnn_arguments_list) == 1:
@@ -232,6 +234,7 @@ class StructInfo:
                 results=results,
                 return_args=return_args,
                 acl_op=acl_op,
+                new_params=new_params_dict,
             )
             struct_infos.append(struct_info)
 

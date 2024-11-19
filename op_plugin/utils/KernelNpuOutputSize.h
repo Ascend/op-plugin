@@ -371,6 +371,9 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> diag_output_size(const at::Tens
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> stack_output_size(at::TensorList tensors,
                                                                    int64_t dim);
+                
+OP_PLUGIN_HIDDEN at::SmallVector<int64_t, SIZE> upsample_nearest_exact2d_output_size_npu(const at::Tensor &input,
+                                                                                         at::IntArrayRef output_size);
 
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE

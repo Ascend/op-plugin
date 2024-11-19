@@ -1793,4 +1793,18 @@ c10::SmallVector<int64_t, SIZE> stack_output_size(at::TensorList tensors, int64_
     return shape;
 }
 
+at::SmallVector<int64_t, SIZE> upsample_nearest_exact2d_output_size_npu(
+    const at::Tensor &input,
+    at::IntArrayRef output_size)
+{
+    TORCH_CHECK(input.dim() >= 2, "Input's dim must be at least 2.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(output_size.size() >= 2, "Output size must be at least 2.", OPS_ERROR(ErrCode::PARAM));
+    int64_t N = input.size(0);
+    int64_t C = input.size(1);
+    int64_t H = output_size[0];
+    int64_t W = output_size[1];
+    at::SmallVector<int64_t, SIZE> outputSize = {N, C, H, W};
+    return outputSize;
+}
+
 } // namespace op_infer
