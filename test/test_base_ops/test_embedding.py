@@ -5,6 +5,7 @@ import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 
 class TestEmbedding(TestCase):
@@ -78,6 +79,14 @@ class TestEmbedding(TestCase):
             cpu_out = cpu_out.astype(npu_out.dtype)
 
             self.assertEqual(cpu_out, npu_out)
+
+    @skipIfUnsupportMultiNPU(2)
+    def test_check_diff_device(self):
+        embedding_matrix = torch.randn(5, 3).to('npu:1')
+        word_indices = torch.tensor([1, 2, 3]).to('npu:0')
+        msg = "Expected all tensors to be on the same device, but found at least two devices, npu:"
+        with self.assertRaisesRegex(RuntimeError, msg):
+            torch.nn.functional.embedding(word_indices, embedding_matrix)
 
 
 if __name__ == "__main__":

@@ -36,6 +36,11 @@ at::Tensor embedding_symint(
     c10::SymInt padding_idx,
     bool scale_grad_by_freq,
     bool sparse) {
+    TORCH_CHECK(weight.device() == indices.device(),
+        "Expected all tensors to be on the same device, but "
+        "found at least two devices, ", weight.device(), " and ", indices.device(), "! "
+        "(when checking argument for argument indices in method acl_op::embedding_symint)",
+        OPS_ERROR(ErrCode::PARAM));
     return embedding_common_nocheck(weight, indices);
 }
 #endif
