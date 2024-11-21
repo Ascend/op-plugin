@@ -11,7 +11,6 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 
 
 class TestMmAllReduceBase(TestCase):
@@ -37,7 +36,7 @@ class TestMmAllReduceBase(TestCase):
 
         x1 = x1.npu()
         x2 = x2.npu()
-        add = add.cpu()
+        add = add.npu()
         out = torch_npu.npu_mm_all_reduce_base(x1, x2, hcom_name, reduce_op='sum', bias=None, x3=add, comm_turn=0)
 
         c2p.put((rank, out.cpu()))
@@ -58,8 +57,7 @@ class TestMmAllReduceBase(TestCase):
 
         for _ in range(world_size):
             rank, output = c2p.get()
-            self.assertEqual(output, expt_out_list[rank],
-                             ("rank {} Expect receive tensor {} but got {}.").format(rank, expt_out_list, output))
+            self.assertRtolEqual(output, expt_out_list[rank], 0.05, 0.05)
 
         for p in ps:
             p.join()

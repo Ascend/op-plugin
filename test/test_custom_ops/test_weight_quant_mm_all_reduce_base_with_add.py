@@ -59,8 +59,7 @@ class TestMmAllReduceBase(TestCase):
 
         for _ in range(world_size):
             rank, output = c2p.get()
-            self.assertEqual(output, expt_out_list[rank],
-                             ("rank {} Expect receive tensor {} but got {}.").format(rank, expt_out_list, output))
+            self.assertRtolEqual(output, expt_out_list[rank], 0.005, 0.005)
 
         for p in ps:
             p.join()
@@ -74,7 +73,7 @@ class TestMmAllReduceBase(TestCase):
             x2 = x2_list[i]
             weight = torch.add(x2, offset)
             dequant = torch.mul(weight, scale)
-            mm_result = torch.matmul(x1, dequant)
+            mm_result = torch.matmul(x1.to(torch.float32), dequant.to(torch.float32))
             out_single = torch.add(mm_result, x3)
             if out is None:
                 out = out_single

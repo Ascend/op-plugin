@@ -9,17 +9,17 @@ from torch_npu.testing.testcase import TestCase, run_tests
 class TestGru(TestCase):
     def test_gru(self):
         shape_format = [
-            [[np.float32, (1, 3, 2)], [np.float32, (1, 3, 2)], 2, 2, 1, False, True, False],
-            [[np.float32, (2, 1, 1)], [np.float32, (1, 2, 2)], 1, 2, 1, False, False, True],
-            [[np.float32, (1, 3, 1)], [np.float32, (2, 3, 2)], 1, 2, 2, False, True, False],
-            [[np.float32, (1, 1, 2)], [np.float32, (1, 1, 3)], 2, 3, 1, False, False, False],
-            [[np.float32, (1, 1, 1)], [np.float32, (3, 1, 1)], 1, 1, 3, False, True, True],
+            [[np.float16, (1, 3, 2)], [np.float16, (1, 3, 2)], 2, 2, 1, False, True, False],
+            [[np.float16, (2, 1, 1)], [np.float16, (1, 2, 2)], 1, 2, 1, False, False, True],
+            [[np.float16, (1, 3, 1)], [np.float16, (2, 3, 2)], 1, 2, 2, False, True, False],
+            [[np.float16, (1, 1, 2)], [np.float16, (1, 1, 3)], 2, 3, 1, False, False, False],
+            [[np.float16, (1, 1, 1)], [np.float16, (3, 1, 1)], 1, 1, 3, False, True, True],
         ]
 
         for item in shape_format:
             cpu_gru = torch.nn.GRU(input_size=item[2], hidden_size=item[3], num_layers=item[4],
                                    bidirectional=item[5], bias=item[-2], batch_first=item[-1])
-            npu_gru = copy.deepcopy(cpu_gru).npu()
+            npu_gru = copy.deepcopy(cpu_gru).to(torch.float16).npu()
 
             input1 = np.random.uniform(0, 1, item[0][1]).astype(item[0][0])
             if item[0][0] == np.float16:

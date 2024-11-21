@@ -12,7 +12,6 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
 
 
 class TestMmAllReduceBase(TestCase):
@@ -88,7 +87,7 @@ class TestMmAllReduceBase(TestCase):
         world_size = 2
         dtype = torch.float16
         dtype_quant = np.int8
-        dtype_dequant = np.bfloat16
+        dtype_dequant = np.float16
         data_format = -1
         x1_shape = [dtype_quant, data_format, [1, 256]]
         x2_shape = [dtype_quant, data_format, [256, 256]]

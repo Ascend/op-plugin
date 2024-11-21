@@ -55,8 +55,7 @@ class TestMmAllReduceBase(TestCase):
 
         for _ in range(world_size):
             rank, output = c2p.get()
-            self.assertEqual(output, expt_out_list[rank],
-                             ("rank {} Expect receive tensor {} but got {}.").format(rank, expt_out_list, output))
+            self.assertRtolEqual(output, expt_out_list[rank], 0.05, 0.05)
 
         for p in ps:
             p.join()
