@@ -37,7 +37,7 @@ void npu_prefetch(const at::Tensor &self,
     } else {
         nelements = c10::multiply_integers(torch_npu::NPUBridge::GetNpuStorageImplDesc(self).storage_sizes_);
     }
-    int64_t tensor_size = dtype.itemsize() * nelements;
+    int64_t tensor_size = static_cast<int64_t>(dtype.itemsize()) * nelements;
 
     TORCH_CHECK(tensor_size > offset, "offset out of range of tensor size, tensor size: ", tensor_size, ", offset: ", offset,
                 OPS_ERROR(ErrCode::PARAM));
