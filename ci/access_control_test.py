@@ -17,6 +17,43 @@ TEST_DIR = os.path.join(BASE_DIR, 'test')
 
 modify_file_hash = {}
 
+not_support_in_910b = [
+    "test_v2r1_ops/test_foreach_addcmul_list",
+    "test_v2r1_ops/test_foreach_pow_scalar_list",
+    "test_v2r1_ops/test_foreach_pow_list",
+    "test_custom_ops/test_incre_flash_attention",
+    "test_custom_ops/test_npu_quant_matmul",
+    "test_custom_ops/test_npu_ffn",
+    "test_custom_ops/test_mm_reduce_scatter_base",
+    "test_custom_ops/test_all_gather_base_mm",
+    "test_base_ops/test_upsample_nearest3d",
+    "test_base_ops/test_foreach_addcmul_scalar_list",
+    "test_base_ops/test_gt",
+    "test_base_ops/test_nms_with_mask",
+    "test_base_ops/test_foreach_add_list",
+    "test_base_ops/test_upsample_nearest3d_backward",
+    "test_base_ops/test_adaptive_max_pool2d_backward",
+    "test_base_ops/test_foreach_expm1",
+    "test_base_ops/test_im2col_backward",
+    "test_base_ops/test_sub_sample",
+    "test_base_ops/test_gru_backward",
+    "test_base_ops/test_random",
+    "test_base_ops/test_foreach_addcdiv_scalar",
+    "test_base_ops/test_foreach_addcdiv_tensor",
+    "test_base_ops/test_avg_pool2d",
+    "test_base_ops/test_foreach_log1p",
+    "test_base_ops/test_ne",
+    "test_base_ops/test_deformable_conv2d",
+    "test_base_ops/test_le",
+    "test_base_ops/test_foreach_sub_list",
+    "test_base_ops/test_foreach_addcdiv_scalar_list",
+    "test_base_ops/test_conv_transpose2d_backward",
+    "test_base_ops/test_gru_true",
+    "test_base_ops/test_foreach_addcmul_scalar",
+    "test_base_ops/test_greater",
+    "test_base_ops/test_lt",
+]
+
 
 class AccurateTest(metaclass=ABCMeta):
     @abstractmethod
@@ -80,7 +117,7 @@ class OpStrategy(AccurateTest):
         if filename.find('KernelNpu') >= 0: 
             feature_line = filename.split('KernelNpu')[0]
             features = re.findall('[A-Z][^A-Z]*', feature_line)
-            regex = '*' + '*'.join([f"{feature.lower()}" for feature in features]) + '.py'
+            regex = '*_' + '*'.join([f"{feature.lower()}" for feature in features]) + '.py'
             return self.get_ut_files(regex)
         return []
 
@@ -145,7 +182,17 @@ class TestMgr():
             for changed_file in unique_files
             if Path(changed_file).exists()
         ]
-        self.test_files['ut_files'] = exist_ut_file
+        
+        if "Ascend910B" in torch_npu.npu.get_device_name():
+            supported_ut_files = []
+            for ut_file in exist_ut_file:
+                if ut_file.split('test/')[-1] in not_support_in_910b:
+                    print(ut_file, "can not run in Ascend910B, skip it now.")
+                else:
+                    supported_ut_files.append(ut_file)
+            self.test_files['ut_files'] = supported_ut_files
+        else:
+            self.test_files['ut_files'] = exist_ut_file
 
     def get_test_files(self):
         return self.test_files
