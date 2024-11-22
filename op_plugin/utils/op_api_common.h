@@ -33,6 +33,7 @@
 #include "torch_npu/csrc/framework/OpCommand.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/framework/interface/EnvVariables.h"
+#include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
 #include "torch_npu/csrc/core/npu/register/OptionsManager.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/flopcount/FlopCount.h"
@@ -937,7 +938,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
 
 template <typename ...Ts>
 bool hit_cache_v2(
-    aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const std::tuple<Ts...> &args, int* api_ret)
+    aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const std::tuple<Ts...> &args, int* api_ret, bool deterministic_status)
 {
     static const auto ptaFindExecCacheAddr = GetOpApiFuncAddr("PTAFindExecCache");
     static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");
@@ -957,6 +958,7 @@ bool hit_cache_v2(
     uint64_t *workspace_size_addr = &workspace_size;
     initPTACacheThreadLocalFunc();
     g_hash_offset = 0;
+    add_param_to_buf_v2(deterministic_status);
     add_param_to_buf_v2(std::string(aclnn_api));
     add_params_to_buf_v2(args, std::make_index_sequence<sizeof...(Ts)>{});
     if (g_hash_offset == g_hash_buf_max_size) {
@@ -1100,7 +1102,8 @@ auto DecodeDevice(Ts&... args) -> at::Device
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
-        auto acl_call = [copied_params, acl_stream]()->int {                                                           \
+        auto deterministic_status = at::globalContext().deterministicAlgorithms();                                      \
+        auto acl_call = [copied_params, acl_stream, deterministic_status]()->int {                                      \
             uint64_t workspace_size = 0;                                                                               \
             uint64_t *workspace_size_addr = &workspace_size;                                                           \
             aclOpExecutor *executor = nullptr;                                                                         \
@@ -1108,10 +1111,10 @@ auto DecodeDevice(Ts&... args) -> at::Device
             InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);                \
             UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);        \
             int api_ret = 0;                                                                                           \
-            if (hit_cache_v2(acl_stream, #aclnn_api, opApiFuncAddr, copied_params, &api_ret)) {                        \
+            if (hit_cache_v2(acl_stream, #aclnn_api, opApiFuncAddr, copied_params, &api_ret, deterministic_status)) {  \
                 return api_ret;                                                                                        \
             }                                                                                                          \
-            at_npu::native::SetDeterministic();                                                                        \
+            at_npu::native::SetDeterministicOps(deterministic_status);                                                 \
             if (initMemFunc) {                                                                                         \
                 initMemFunc(nullptr, false);                                                                           \
             }                                                                                                          \
