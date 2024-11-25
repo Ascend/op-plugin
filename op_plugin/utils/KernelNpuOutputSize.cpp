@@ -862,16 +862,6 @@ c10::SmallVector<int64_t, SIZE> prod_npu_output_size(const at::Tensor &self, boo
     return reduce_ops_npu_output_size(self, dims, keepdim);
 }
 
-c10::SmallVector<int64_t, SIZE> range_npu_output_size(float start, float end, float step)
-{
-    TORCH_CHECK(step != 0, "range_npu_output_size step is zero!", OPS_ERROR(ErrCode::VALUE));
-
-    int64_t size_value = std::floor((end - start) / step);
-    c10::SmallVector<int64_t, SIZE> outputSize = {size_value + 1};
-
-    return outputSize;
-}
-
 c10::SmallVector<int64_t, SIZE> reflection_pad1d_npu_out_size(const at::Tensor &self, at::IntArrayRef padding)
 {
     uint64_t padding_num = padding.size();
@@ -1510,10 +1500,20 @@ c10::SmallVector<int64_t, SIZE> infersize_npu_anchor_response_flags(at::IntArray
     return output_size;
 }
 
-c10::SmallVector<int64_t, SIZE> infersize_arange(const at::Scalar &start, const at::Scalar &end, const at::Scalar &step)
+c10::SmallVector<int64_t, SIZE> infersize_arange(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step,
+                                                 at::ScalarType out_type)
 {
-    double size_arange = std::ceil(static_cast<double>(end.toDouble() - start.toDouble()) / step.toDouble());
-    int64_t size_value = static_cast<int64_t>(size_arange);
+    int64_t size_value = 0;
+    if (out_type == at::kLong) {
+        if (step.toLong() != 0) {
+            size_value = CeilDiv(end.toLong() - start.toLong(), step.toLong());
+        }
+    } else {
+        if (step.toDouble() != 0) {
+            double size_arange = std::ceil(static_cast<double>(end.toDouble() - start.toDouble()) / step.toDouble());
+            size_value = static_cast<int64_t>(size_arange);
+        }
+    }
     c10::SmallVector<int64_t, SIZE> output_size = {size_value};
     return output_size;
 }

@@ -192,8 +192,6 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> prod_npu_output_size(const at::
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> prod_npu_output_size(const at::Tensor& self, bool keepdim);
 
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> range_npu_output_size(float start, float end, float step);
-
 OP_PLUGIN_HIDDEN c10::IntArrayRef renorm_npu_output_size(const at::Tensor& self, c10::Scalar p, int dim,
                                                          c10::Scalar maxnorm);
 
@@ -326,7 +324,7 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> infersize_npu_anchor_response_f
                                                                                      int64_t num_base_anchors);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> infersize_arange(const at::Scalar& start, const at::Scalar& end,
-                                                                  const at::Scalar& step);
+                                                                  const at::Scalar& step, at::ScalarType out_type);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor, N>& tensors,
                                                                      int64_t dimension);
