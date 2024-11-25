@@ -25,7 +25,8 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
                                         const c10::optional<at::Tensor> &quant_scale,
                                         const c10::optional<at::Tensor> &quant_offset,
                                         const c10::optional<at::Tensor> &bias,
-                                        int64_t antiquant_group_size)
+                                        int64_t antiquant_group_size,
+                                        int64_t inner_precise)
 {
     bool trans_weight = op_plugin::utils::is_transpose_last_two_dims(weight);
     auto x_dim_num = x.dim();
@@ -72,6 +73,9 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
     TORCH_CHECK((quant_scale.has_value() || !quant_offset.has_value()),
                 "Quantization parameters are incorrectly set, quant_offset cannot exist in isolation from quant_scale",
                 OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK((inner_precise == 0 ||  inner_precise == 1),
+                "inner_precise only support 0 or 1. but is:", inner_precise,
+                OPS_ERROR(ErrCode::PARAM));
 
     c10::TensorOptions options =
         quant_scale.has_value() ? x.options().dtype(at::kChar) : x.options().dtype(x.scalar_type());
@@ -85,6 +89,9 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
         EXEC_NPU_CMD(aclnnTransQuantParamV2, quant_scale_real, quant_offset_real, quant_scale_result);
         EXEC_NPU_CMD(aclnnWeightQuantBatchMatmulV2, x, weight, antiquant_scale, antiquant_offset_real,
                      quant_scale_result, quant_offset_real, bias_real, antiquant_group_size_real, result);
+    } else if (inner_precise == 1) { // 1: high performance mode
+        EXEC_NPU_CMD(aclnnWeightQuantBatchMatmulV3, x, weight, antiquant_scale, antiquant_offset_real, quant_scale_real,
+                     quant_offset_real, bias_real, antiquant_group_size_real, inner_precise, result);
     } else {
         EXEC_NPU_CMD(aclnnWeightQuantBatchMatmulV2, x, weight, antiquant_scale, antiquant_offset_real, quant_scale_real,
                      quant_offset_real, bias_real, antiquant_group_size_real, result);
