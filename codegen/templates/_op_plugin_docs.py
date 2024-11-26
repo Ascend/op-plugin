@@ -3210,7 +3210,7 @@ _add_torch_npu_docstr(
 该接口用于实现矩阵乘计算中的weight输入和输出的量化操作，支持pertensor，perchannel，pergroup多场景量化(310P当前仅支持perchannel)。
 
 接口原型:
-npu_weight_quant_batchmatmul(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor? antiquant_offset=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? bias=None, int antiquant_group_size=0) -> Tensor
+npu_weight_quant_batchmatmul(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor? antiquant_offset=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? bias=None, int antiquant_group_size=0, int inner_precise=0) -> Tensor
 
 参数说明:
 x : Device侧Tensor类型，即矩阵乘中的x。数据格式支持ND，数据类型支持FLOAT16/BFLOAT16， 支持非连续的Tensor，支持输入维度为两维(M,K) ；310P上数据类型仅支持FLOAT16，支持输入维度为2-6维，支持batch轴但不支持broadcast。
@@ -3221,6 +3221,7 @@ quantscale：Device侧Tensor类型，量化的scale，用于输出矩阵的量�
 quantoffset: Device侧Tensor类型，量化的offset，用于输出矩阵的量化 。数据格式支持ND，数据类型支持FLOAT32，支持输入维度为两维(1, N) 或 一维(N, )、(1, )；310P暂未使用此参数。
 bias：Device侧Tensor类型， 即矩阵乘中的bias，数据格式支持ND，数据类型支持FLOAT16/FLOAT32， 支持非连续的Tensor，支持输入维度为两维(1, N) 或 一维(N, )、(1, )。
 antiquant_group_size：int类型， 用于控制pergroup场景下的group大小，当前默认为0，预留参数，暂未使用。
+inner_precise: 计算模式选择。0：高精度模式。1：高性能模式，可能会影响精度。默认为0。A16W4 perGroup场景在batchSize<=16的场景下可设置为1，并且weight参数设置为NZ格式， 提升性能。其他场景不建议使用，以免影响精度。
 
 输出说明:
 输出为Tensor类型，代表计算结果。当输入存在quantscale时输出数据类型为INT8，当输入不存quant_sclae时输出数据类型和输入x一致。
