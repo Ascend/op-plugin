@@ -24,6 +24,23 @@
 
 namespace op_plugin {
 namespace utils {
+enum ForeachTensorDtypeSupport {
+    BASE_DTYPE = 0, // support fp, fp16, bf16
+    TO_INT32 = 1    // support fp, fp16, bf16, int32
+};
+
+enum ForeachInputType {
+    TYPE_TENSOR = 0,     // only tensor type
+    TYPE_SCALARLIST = 1, // inclue scalarlist type
+    TYPE_SCALAR = 2      // inclue scalar type
+};
+
+enum ForeachMappingType {
+    MAP_SCALAR_DEFAULT = 0,        // 大多数foreach op tensor 和 scalar之间的关系
+    MAP_SCALARLIST_DEFAULT = 1,    // 大多数foreach op tensor 和 scalar_list之间的关系
+    MAP_POW_SCALAR_AND_TENSOR = 2, // foreach op PowScalarAndTensor tensor 和 scalar之间的关系
+};
+
 using NameVector = c10::SmallVector<at::Dimname, at::kDimVectorStaticSize>;
 OP_PLUGIN_HIDDEN std::string get_reduction_str(int64_t reduction);
 OP_PLUGIN_HIDDEN int64_t make_warp_dim(int64_t dim, int64_t dim_post_expr);
@@ -40,6 +57,14 @@ OP_PLUGIN_HIDDEN at::ScalarType get_divide_calculate_type(const at::Tensor& self
 OP_PLUGIN_HIDDEN at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type);
 OP_PLUGIN_HIDDEN NameVector compute_names_npu(std::vector<at::Tensor> tensor_list);
 OP_PLUGIN_HIDDEN double compute_scale(bool align_corners, int64_t input_size, int64_t output_size, double scale);
+OP_PLUGIN_HIDDEN bool check_foreach_tensor_dtype_spport_base(at::ScalarType tensorDtype);
+OP_PLUGIN_HIDDEN bool check_foreach_scalar_dtype_spport(at::ScalarType scalarDtype);
+OP_PLUGIN_HIDDEN bool check_foreach_tensor_dtype_spport(at::ScalarType tensorDtype, ForeachTensorDtypeSupport tensorDtypeCategory);
+OP_PLUGIN_HIDDEN bool check_dtype_foreach(at::ScalarType tensorDtype, ForeachTensorDtypeSupport tensorDtypeCategory,
+                                          ForeachInputType inputType, c10::optional<at::ScalarType> scalarDtype = c10::nullopt,
+                                          c10::optional<ForeachMappingType> mapping = c10::nullopt);
+OP_PLUGIN_HIDDEN bool check_mapping_between_tensor_and_scalar_list(at::ScalarType tensorDtype, at::ScalarType scalarDtype, ForeachMappingType mapping);
+OP_PLUGIN_HIDDEN bool check_mapping_between_tensor_and_scalar(at::ScalarType tensorDtype, at::ScalarType scalarDtype, ForeachMappingType mapping);
 }  // namespace utils
 }  // namespace op_plugin
 

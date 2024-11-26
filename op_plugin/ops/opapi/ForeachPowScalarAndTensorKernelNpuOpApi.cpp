@@ -14,6 +14,7 @@
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/custom_functions/opapi/scalar_op_api.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
@@ -55,6 +56,13 @@ std::vector<at::Tensor> _foreach_pow(const at::Scalar& scalar, const at::TensorL
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
+        return at::native::foreach_scalar_pow_list_kernel_slow(scalar, exponent);
+    }
+
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(exponent[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_SCALAR, scalar.type(),
+                                               op_plugin::utils::ForeachMappingType::MAP_POW_SCALAR_AND_TENSOR)) {
         return at::native::foreach_scalar_pow_list_kernel_slow(scalar, exponent);
     }
 

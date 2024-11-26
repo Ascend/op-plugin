@@ -22,7 +22,6 @@
 
 namespace op_plugin {
 namespace utils {
-
 std::string get_reduction_str(int64_t reduction)
 {
   std::string reductionStr;
@@ -217,6 +216,139 @@ double compute_scale(bool align_corners, int64_t input_size, int64_t output_size
         return 1.0 / scale ;
     } else {
         return output_size != 0 ? static_cast<double>(input_size) / output_size : 0;
+    }
+}
+
+/**
+ * @brief 校验foreach的输入数据类型。
+ * @param [in] tensorDtype: foreach算子输入的数据类型
+ * @param [in] tensorDtypeCategory: foreach算子输入tensor支持数据类型的类别
+ * @param [in] tensorDtypeCategory: foreach算子输入tensor支持数据类型的类别
+ * @param [in] scalarDtype: foreach算子输入scalar （or scalar_list）的数据类型
+ * @param [in] mapping: foreach算子输入的tensor 和 scalar (or scalar_list)t的关系对应类型
+ * @return bool: 返回true表示该算子输入的数据类型是支持的数据类型；返回false表示该算子输入的数据类型为不支持的数类型
+ */
+bool check_dtype_foreach(at::ScalarType tensorDtype, ForeachTensorDtypeSupport tensorDtypeCategory, ForeachInputType inputType,
+                         c10::optional<at::ScalarType> scalarType, c10::optional<ForeachMappingType> mapping)
+{
+    bool result = false;
+
+    // check tensor dtype
+    result = check_foreach_tensor_dtype_spport(tensorDtype, tensorDtypeCategory);
+    if (!result) {
+        return false;
+    }
+
+    // check scalr (scalarlist) parm
+    at::ScalarType dtype;
+    ForeachMappingType mappingType;
+    if (scalarType == c10::nullopt && mapping == c10::nullopt) {
+        return result;
+    } else if (scalarType != c10::nullopt && mapping != c10::nullopt) {
+        dtype = scalarType.value();
+        mappingType = mapping.value();
+    } else {
+        TORCH_CHECK(false, "Invalid  scalarType Parm or ForeachMappingType Parm!", OPS_ERROR(ErrCode::PARAM));
+    }
+
+    // checke mapping
+    switch (inputType) {
+        case ForeachInputType::TYPE_SCALAR:
+            return check_mapping_between_tensor_and_scalar(tensorDtype, dtype, mappingType);
+        case ForeachInputType::TYPE_SCALARLIST:
+            return check_mapping_between_tensor_and_scalar_list(tensorDtype, dtype, mappingType);
+        case ForeachInputType::TYPE_TENSOR:
+            return true;
+        default:
+            TORCH_CHECK(false, "Invalid inputType Parm!", OPS_ERROR(ErrCode::PARAM));
+    }
+}
+
+/**
+ * @brief 校验输入的tensor数据类型是否为foreach算子支持的数据类型。
+ * @param [in] tensorDtype: foreach算子输入的数据类型
+ * @param [in] tensorDtypeCategory: foreach算子输入tensor支持数据类型的类别
+ * @return bool: 返回true表示该算子输入的数据类型在支持的数据列表中；返回false表示该算子输入的数据类型为不支持的数类型
+ */
+bool check_foreach_tensor_dtype_spport(at::ScalarType tensorDtype, ForeachTensorDtypeSupport tensorDtypeCategory)
+{
+    // check tensor dtype
+    switch (tensorDtypeCategory) {
+        case ForeachTensorDtypeSupport::BASE_DTYPE:
+            return check_foreach_tensor_dtype_spport_base(tensorDtype);
+        case ForeachTensorDtypeSupport::TO_INT32:
+            return check_foreach_tensor_dtype_spport_base(tensorDtype) || (tensorDtype == at::ScalarType::Int);
+        default:
+            TORCH_CHECK(false, "Invalid  ForeachTensorDtypeSupport Parm", OPS_ERROR(ErrCode::PARAM));
+    }
+}
+
+
+/**
+ * @brief 校验输入的tensor数据类型是否为foreach算子支持的数据类型（half, float, bfp16）。
+ * @param [in] tensorDtype: foreach算子输入的数据类型
+ * @return bool: 返回true表示该算子输入的数据类型在支持的数据列表中；返回false表示该算子输入的数据类型为不支持的数类型
+ */
+bool check_foreach_tensor_dtype_spport_base(at::ScalarType tensorDtype)
+{
+    return (tensorDtype == at::ScalarType::Half || tensorDtype == at::ScalarType::Float ||
+            tensorDtype == at::ScalarType::BFloat16);
+}
+
+/**
+ * @brief 校验输入scalar(or scalarlist)的数据类型是否为foreach算子支持的数据类型（int, float）。
+ * @param [in] ScalarType: foreach算子输入的数据类型
+ * @return bool: 返回true表示该算子输入的数据类型在支持的数据列表中；返回false表示该算子输入的数据类型为不支持的数类型
+ */
+bool check_foreach_scalar_dtype_spport(at::ScalarType scalarDtype)
+{
+    return at::isIntegralType(scalarDtype) || at::isFloatingType(scalarDtype);
+}
+
+/**
+ * @brief 校验输入scalar_list和tensor的数据类型之间的关系(保是否持一致), scalarlist 最多支持fp 和 int。
+ * @param [in] tensorDtype: foreach算子输入tensor的数据类型
+ * @param [in] scalarDtype: foreach算子输入scalar_list的数据类型
+ * @param [in] mapping: foreach算子输入的tensor 和 scalar_list的关系对应类型
+ * @return bool: 返回true表示该算子支持输入的scalar_list和tensor的对应关系;
+ *               返回false表示该算子不支持输入的scalar_list和tensor的对应关系
+ */
+bool check_mapping_between_tensor_and_scalar_list(at::ScalarType tensorDtype, at::ScalarType scalarDtype, ForeachMappingType mapping)
+{
+    if (!check_foreach_scalar_dtype_spport(scalarDtype)) {
+        return false;
+    }
+
+    switch (mapping) {
+        case ForeachMappingType::MAP_SCALARLIST_DEFAULT:
+            return (at::isIntegralType(scalarDtype) && at::isIntegralType(tensorDtype)) ||
+                   (at::isFloatingType(scalarDtype) && at::isFloatingType(tensorDtype));
+        default:
+            TORCH_CHECK(false, "Invalid  ForeachMappingType Parm Between Tensor And ScalarList", OPS_ERROR(ErrCode::PARAM));
+    }
+}
+
+/**
+ * @brief 校验输入scalar和tensor的数据类型之间的关系; scalar 最多支持fp 和 int, 且有一定的对应的关系
+ * @param [in] tensorDtype: foreach算子输入tensor的数据类型
+ * @param [in] scalarDtype: foreach算子输入scalar的数据类型
+ * @param [in] mapping: foreach算子输入的tensor 和 scalar的关系对应类型
+ * @return bool: 返回true表示该算子支持输入的scalar和tensor的对应关系;
+ *               返回false表示该算子不支持输入的scalar和tensor的对应关系
+ */
+bool check_mapping_between_tensor_and_scalar(at::ScalarType tensorDtype, at::ScalarType scalarDtype, ForeachMappingType mapping)
+{
+    if (!check_foreach_scalar_dtype_spport(scalarDtype)) {
+        return false;
+    }
+
+    switch (mapping) {
+        case ForeachMappingType::MAP_SCALAR_DEFAULT:
+            return !at::isIntegralType(tensorDtype) && at::isFloatingType(scalarDtype);
+        case ForeachMappingType::MAP_POW_SCALAR_AND_TENSOR:
+            return true;
+        default:
+            TORCH_CHECK(false, "Invalid ForeachMappingType Parm Between Tensor And Scalar!", OPS_ERROR(ErrCode::PARAM));
     }
 }
 
