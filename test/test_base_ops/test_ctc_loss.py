@@ -27,7 +27,7 @@ class TestCtcLoss(TestCase):
         # pylint:disable=too-many-return-values
         return ctc_loss, log_probs, targets, input_lengths, target_lengths
 
-    def generate_data_1d(self, item):
+    def generate_data_targets_1d(self, item):
         T = item[0][0]
         C = item[0][1]
         N = item[0][2]
@@ -45,6 +45,27 @@ class TestCtcLoss(TestCase):
         targets = torch.randint(1, C, (target_length,), dtype=torch.long)
 
         log_probs = torch.from_numpy(log_probs)
+        ctc_loss = torch.nn.CTCLoss(zero_infinity=True, reduction=item[2], blank=item[3])
+
+        # pylint:disable=too-many-return-values
+        return ctc_loss, log_probs, targets, input_lengths, target_lengths
+    
+    def generate_data_log_probs_2d(self, item):
+        T = item[0][0]
+        C = item[0][1]
+        N = 1
+        S = item[0][3]
+        S_min = item[0][4]
+        dtype = item[1]
+
+        log_probs = np.random.uniform(-5, 0, (T, C)).astype(dtype)
+        targets = torch.randint(1, C, (N, S), dtype=torch.long)
+        input_lengths = torch.tensor(T).to(torch.long)
+        target_lengths = torch.tensor(S).to(torch.long)
+
+        # modify from numpy.ndarray to torch.tensor
+        log_probs = torch.from_numpy(log_probs)
+
         ctc_loss = torch.nn.CTCLoss(zero_infinity=True, reduction=item[2], blank=item[3])
 
         # pylint:disable=too-many-return-values
@@ -74,6 +95,31 @@ class TestCtcLoss(TestCase):
         neg_log_likelihood = neg_log_likelihood.cpu().numpy()
 
         return neg_log_likelihood
+    
+    def cpu_op_exec_2d(self, ctc_loss, log_probs, targets, input_lengths, target_lengths):
+        if log_probs.dtype == torch.float16:
+            log_probs = log_probs.to(torch.float32)
+
+        neg_log_likelihood = ctc_loss(log_probs.log_softmax(1), targets, input_lengths, target_lengths)
+
+        neg_log_likelihood = neg_log_likelihood.numpy()
+
+        return neg_log_likelihood
+
+    def npu_op_exec_2d(self, ctc_loss, log_probs, targets, input_lengths, target_lengths):
+        log_probs = log_probs.npu()
+        targets = targets.npu()
+        input_lengths = input_lengths.npu()
+        target_lengths = target_lengths.npu()
+
+        neg_log_likelihood = ctc_loss(log_probs.log_softmax(1), targets, input_lengths, target_lengths)
+
+        if neg_log_likelihood.dtype == torch.float16:
+            neg_log_likelihood = neg_log_likelihood.to(torch.float32)
+
+        neg_log_likelihood = neg_log_likelihood.cpu().numpy()
+
+        return neg_log_likelihood
 
     def test_ctc_loss(self):
         sizes_list = [[50, 20, 16, 30, 10], [26, 37, 16, 18, 10]]
@@ -93,7 +139,7 @@ class TestCtcLoss(TestCase):
 
             self.assertRtolEqual(neg_log_likelihood_cpu, neg_log_likelihood_npu, 1e-3)
 
-    def test_ctc_loss_1D_1(self):
+    def test_ctc_loss_targets_1d(self):
         sizes_list = [[50, 20, 16, 30, 10], [26, 37, 16, 18, 10]]
         para_reduction = ["sum", "mean", "none"]
         dtype_list = [np.float32]
@@ -104,10 +150,28 @@ class TestCtcLoss(TestCase):
         ]
 
         for item in shape_format:
-            ctc_loss, log_probs, targets, input_lengths, target_lengths = self.generate_data_1d(item)
+            ctc_loss, log_probs, targets, input_lengths, target_lengths = self.generate_data_targets_1d(item)
 
             neg_log_likelihood_cpu = self.cpu_op_exec(ctc_loss, log_probs, targets, input_lengths, target_lengths)
             neg_log_likelihood_npu = self.npu_op_exec(ctc_loss, log_probs, targets, input_lengths, target_lengths)
+
+            self.assertRtolEqual(neg_log_likelihood_cpu, neg_log_likelihood_npu, 1e-3)
+
+    def test_ctc_loss_log_probs_2d(self):
+        sizes_list = [[50, 20, 16, 30, 10], [26, 37, 16, 18, 10]]
+        para_reduction = ["sum", "mean", "none"]
+        dtype_list = [np.float32]
+        blank_list = [0, 9]
+        # pylint:disable=complicate-comprehension
+        shape_format = [
+            [sizes, dtype, para, blank] for sizes in sizes_list for dtype in dtype_list for para in para_reduction for blank in blank_list
+        ]
+
+        for item in shape_format:
+            ctc_loss, log_probs, targets, input_lengths, target_lengths = self.generate_data_log_probs_2d(item)
+
+            neg_log_likelihood_cpu = self.cpu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
+            neg_log_likelihood_npu = self.npu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
 
             self.assertRtolEqual(neg_log_likelihood_cpu, neg_log_likelihood_npu, 1e-3)
 
