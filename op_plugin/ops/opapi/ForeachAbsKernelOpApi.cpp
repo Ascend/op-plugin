@@ -5,6 +5,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/OpUtils.h"
 #include <ATen/native/ForeachUtils.h>
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
@@ -55,10 +56,15 @@ void _foreach_abs_(const at::TensorList self)
         return at::native::foreach_tensor_abs_slow_(self);
     }
 
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+        return at::native::foreach_tensor_abs_slow_(self);
+    }
+
     if (self.empty()) {
         return;
     }
-    
     _split_and_exec_npu_cmd_abs(self, self, true);
 }
 
@@ -70,6 +76,11 @@ std::vector<at::Tensor> _foreach_abs(const at::TensorList self)
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
+        return at::native::foreach_tensor_abs_slow(self);
+    }
+
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
         return at::native::foreach_tensor_abs_slow(self);
     }
 

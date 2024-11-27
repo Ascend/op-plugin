@@ -16,6 +16,7 @@
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/custom_functions/opapi/scalar_op_api.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
@@ -37,7 +38,14 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors1, at::TensorList
     if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
         return at::native::foreach_tensor_minimum_slow(tensors1, tensors2);
     }
-  // construct the output tensorlist of the NPU
+
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(tensors1[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+        return at::native::foreach_tensor_minimum_slow(tensors1, tensors2);
+    }
+
+    // construct the output tensorlist of the NPU
     auto scalar_type = tensors1[0].scalar_type();
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : tensors1) {
@@ -63,11 +71,17 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors1, at::TensorList
         return at::native::foreach_tensor_clamp_min_list_kernel_slow(tensors1, tensors2);
     }
 
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(tensors1[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+        return at::native::foreach_tensor_clamp_min_list_kernel_slow(tensors1, tensors2);
+    }
+
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
     if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
         return at::native::foreach_tensor_clamp_min_list_kernel_slow(tensors1, tensors2);
     }
-  // construct the output tensorlist of the NPU
+    // construct the output tensorlist of the NPU
     auto scalar_type = tensors1[0].scalar_type();
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : tensors1) {
@@ -152,11 +166,17 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors1, at::TensorList
         return at::native::foreach_tensor_clamp_max_list_kernel_slow(tensors1, tensors2);
     }
 
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(tensors1[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+        return at::native::foreach_tensor_clamp_max_list_kernel_slow(tensors1, tensors2);
+    }
+
     at::native::check_foreach_api_restrictions(tensors1, tensors2);
     if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
         return at::native::foreach_tensor_clamp_max_list_kernel_slow(tensors1, tensors2);
     }
-  // construct the output tensorlist of the NPU
+    // construct the output tensorlist of the NPU
     auto scalar_type = tensors1[0].scalar_type();
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : tensors1) {
@@ -177,6 +197,11 @@ void _foreach_minimum_(at::TensorList tensors1, at::TensorList tensors2)
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
+        return at::native::foreach_tensor_clamp_max_list_kernel_slow_(tensors1, tensors2);
+    }
+
+    if (!op_plugin::utils::check_dtype_foreach(tensors1[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
         return at::native::foreach_tensor_clamp_max_list_kernel_slow_(tensors1, tensors2);
     }
 
@@ -249,6 +274,14 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors, const at::Scala
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow(tensors, scalar);
     }
+
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(tensors[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_SCALAR, scalar.type(),
+                                               op_plugin::utils::ForeachMappingType::MAP_SCALAR_DEFAULT)) {
+        return at::native::foreach_tensor_clamp_max_scalar_kernel_slow(tensors, scalar);
+    }
+
     DO_COMPATIBILITY(aclnnForeachMinimumScalarV2, _foreach_minimum_v1(tensors, scalar));
     if (!at::native::can_use_fast_route(tensors, scalar, false)) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow(tensors, scalar);
@@ -275,6 +308,14 @@ void _foreach_minimum_(at::TensorList tensors, const at::Scalar& scalar)
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow_(tensors, scalar);
     }
+
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(tensors[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_SCALAR, scalar.type(),
+                                               op_plugin::utils::ForeachMappingType::MAP_SCALAR_DEFAULT)) {
+        return at::native::foreach_tensor_clamp_max_scalar_kernel_slow_(tensors, scalar);
+    }
+
     DO_COMPATIBILITY(aclnnForeachMinimumScalarV2, _foreach_minimum_v1_(tensors, scalar));
     if (!at::native::can_use_fast_route(tensors, scalar, false)) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow_(tensors, scalar);
@@ -291,6 +332,13 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors, at::ArrayRef<at
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
+        return at::native::foreach_tensor_clamp_max_scalarlist_kernel_slow(tensors, scalars);
+    }
+
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(tensors[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_SCALARLIST, scalars[0].type(),
+                                               op_plugin::utils::ForeachMappingType::MAP_SCALARLIST_DEFAULT)) {
         return at::native::foreach_tensor_clamp_max_scalarlist_kernel_slow(tensors, scalars);
     }
 
@@ -320,7 +368,14 @@ void _foreach_minimum_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_clamp_max_scalarlist_kernel_slow_(tensors, scalars);
     }
-    
+
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(tensors[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
+                                               op_plugin::utils::ForeachInputType::TYPE_SCALARLIST, scalars[0].type(),
+                                               op_plugin::utils::ForeachMappingType::MAP_SCALARLIST_DEFAULT)) {
+        return at::native::foreach_tensor_clamp_max_scalarlist_kernel_slow_(tensors, scalars);
+    }
+
     at::native::check_foreach_api_restrictions(tensors, scalars);
     if (!at::native::can_use_fast_route(tensors, scalars, false)) {
         return at::native::foreach_tensor_clamp_max_scalarlist_kernel_slow_(tensors, scalars);

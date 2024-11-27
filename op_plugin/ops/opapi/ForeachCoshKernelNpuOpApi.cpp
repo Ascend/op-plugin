@@ -14,6 +14,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/OpUtils.h"
 #include <ATen/native/ForeachUtils.h>
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
@@ -53,6 +54,12 @@ void _foreach_cosh_(const at::TensorList self)
         return at::native::foreach_tensor_cosh_slow_(self);
     }
 
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+        return at::native::foreach_tensor_cosh_slow_(self);
+    }
+
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
         return at::native::foreach_tensor_cosh_slow_(self);
@@ -75,6 +82,12 @@ std::vector<at::Tensor> _foreach_cosh(const at::TensorList self)
         return at::native::foreach_tensor_cosh_slow(self);
     }
     
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+        return at::native::foreach_tensor_cosh_slow(self);
+    }
+
     at::native::check_foreach_api_restrictions(self);
     if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
         return at::native::foreach_tensor_cosh_slow(self);
