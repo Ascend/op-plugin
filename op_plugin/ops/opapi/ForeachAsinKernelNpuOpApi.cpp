@@ -14,6 +14,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/OpUtils.h"
 #include <ATen/native/ForeachUtils.h>
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
@@ -55,6 +56,12 @@ void _foreach_asin_(const at::TensorList self_asin)
         return at::native::foreach_tensor_asin_slow_(self_asin);
     }
 
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(self_asin[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+        return at::native::foreach_tensor_asin_slow_(self_asin);
+    }
+
     at::native::check_foreach_api_restrictions(self_asin);
     if (!at::native::can_use_fast_route(self_asin) || at::native::has_integral_tensor(self_asin, true)) {
         return at::native::foreach_tensor_asin_slow_(self_asin);
@@ -75,6 +82,12 @@ std::vector<at::Tensor> _foreach_asin(const at::TensorList self_asin)
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
+        return at::native::foreach_tensor_asin_slow(self_asin);
+    }
+
+    // datatype check
+    if (!op_plugin::utils::check_dtype_foreach(self_asin[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
         return at::native::foreach_tensor_asin_slow(self_asin);
     }
 
