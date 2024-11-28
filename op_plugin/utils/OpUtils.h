@@ -36,9 +36,9 @@ enum ForeachInputType {
 };
 
 enum ForeachMappingType {
-    MAP_SCALAR_DEFAULT = 0,        // 大多数foreach op tensor 和 scalar之间的关系
-    MAP_SCALARLIST_DEFAULT = 1,    // 大多数foreach op tensor 和 scalar_list之间的关系
-    MAP_POW_SCALAR_AND_TENSOR = 2, // foreach op PowScalarAndTensor tensor 和 scalar之间的关系
+    MAP_SCALAR_DEFAULT = 0,        // mapping between foreach op tensor and scalar
+    MAP_SCALARLIST_DEFAULT = 1,    // mapping between foreach op tensor and scalar_list
+    MAP_POW_SCALAR_AND_TENSOR = 2, // mapping between foreach op PowScalarAndTensor tensor and scalar
 };
 
 using NameVector = c10::SmallVector<at::Dimname, at::kDimVectorStaticSize>;
