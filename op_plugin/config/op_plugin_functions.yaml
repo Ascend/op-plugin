@@ -5059,21 +5059,6 @@ official:
         dtype: 'out_int32 ? at::kInt : at::kLong'
       exec: aclnnSearchSorted, sorted_sequence, self, out_int32, right, sorter, out
 
-  - func: selu(Tensor self) -> Tensor
-    acl_op: all_version
-    op_api: all_version
-    gen_opapi:
-      out:
-        size: self
-        dtype: self
-      exec: aclnnSelu
-
-  - func: selu_(Tensor(a!) self) -> Tensor(a!)
-    acl_op: all_version
-    op_api: all_version
-    gen_opapi:
-      exec: aclnnInplaceSelu
-
   - func: sgn(Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
@@ -7246,15 +7231,6 @@ custom:
   - func: scatter_update_(Tensor(a!) self, Tensor indices, Tensor updates, int axis) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-
-  - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
-    acl_op: all_version
-    op_api: all_version
-    gen_opapi:
-      grad_input:
-        size: grad_output
-        dtype: grad_output
-      exec: aclnnSeluBackward
 
   - func: slow_conv_transpose2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] output_padding, int[2] dilation, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)
     acl_op: all_version
