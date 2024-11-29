@@ -12,6 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <ATen/native/TypeProperties.h>
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
@@ -48,7 +49,8 @@ at::Tensor addmv(const at::Tensor &self, const at::Tensor &mat, const at::Tensor
     auto names = at::namedinference::propagate_names_for_addmv(mat, vec, self);
     DO_COMPATIBILITY(aclnnAddmv, acl_op::addmv(self, mat, vec, beta, alpha));
     auto output_size = op_infer::addmv_npu_output_size(self, mat, vec, beta, alpha);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
+    at::ScalarType promote_dtype = at::native::result_type({self, mat, vec});
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(promote_dtype));
     addmv_out_op_api(self, mat, vec, beta, alpha, result);
     at::namedinference::propagate_names_if_nonempty(result, names);
     return result;
