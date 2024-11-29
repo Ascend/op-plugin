@@ -2989,6 +2989,183 @@ npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu(
 )
 
 _add_torch_npu_docstr(
+    "npu_dynamic_quant",
+    """
+功能描述:
+按最后一个维度，对输入张量进行对称动态量化。
+
+计算公式：
+假设待量化张量为x，则计算公式为
+scale = rowMax(Abs(x))  / DST_MAX
+y = round(x / scale)
+
+- rowMax分别代表按行取最大值，此处的"行"对应x的最后一个维度的数据。
+- DST_MAX对应量化后的最大值，在进行INT8量化时，对应+127，进行INT4量化时，对应+7。
+- 若使用smooth quant算法，会引入smooth_scales输入向量，在对x进行量化前，会先令x乘以smooth_scales，再按上述公式进行量化。
+- 若使用smooth quant算法，且在MOE（混合专家模型）场景下，会引入smooth_scales输入和group_index输入，此时smooth_scales中包含多组smooth向量，按group_index中的指引作用到x的不同行上。具体的，假如x有m行，smooth_scales有n行，那么smooth_scales[0]会作用到x[0:group_index[0]]上，smooth_scales[i]会作用到x[group_idnex[i-1]:group_index[i]]上，i=1,2,...,n-1。
+
+
+接口原型:
+npu_dynamic_quant(Tensor x, *, Tensor? smooth_scales=None, Tensor? group_index=None, ScalarType? dst_type=None) -> (Tensor, Tensor)
+
+
+参数说明:
+x：Device侧的Tensor类型，需要进行量化的源数据张量，必选输入，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。
+*: 代表其之前的输入是位置相关, 按照顺序输入, 必选; 之后的输入是关键字传参的, 位置无关, 可选(不输入会使用默认值)。
+smooth_scales：Device侧的Tensor类型，对x进行平滑缩放的张量，可选输入，数据类型需要与x保持一致，数据格式支持ND，支持非连续的Tensor。
+group_index：Device侧的Tensor类型，在MOE场景下，对smooth_scales进行分组的下标，可选输入，数据类型支持INT32，数据格式支持ND，支持非连续的Tensor。
+dst_type：ScalarType类型，用于选择进行INT8/INT4量化，可选输入，输入值只能是torch.int8和torch.quint4x2，默认为INT8量化。
+
+输出说明：
+该接口包含两个Tensor类型的输出，y，scale
+
+y：量化后的输出，在进行INT8量化时，y的数据类型为INT8，形状与x一致；在进行INT4量化时，y的数据类型为INT32，形状最后一维为x的最后一维除以8，其余维度与x一致。shape和输入x一致，每个INT32元素包含8个INT4结果。
+scale：对称动态量化过程中，计算出的缩放系数Tensor，数据类似为FLOAT32，形状为x的形状剔除最后一维。
+
+约束说明:
+- 该算子仅在推理场景使用。
+- 输入x的维度必须大于1。
+- 使用可选输入smooth_scales、group_index、dst_type时，必须使用关键字传参。
+- 使用smooth_scales时，
+    - 若不使用group_index，smooth_scales必须是一维Tensor，元素数量与x的最后一维大小一致。
+    - 若使用group_index，smooth_scales必须是二维Tensor，第二维大小与x最后一维大小一致，group_index必须是一维Tensor，元素数量与smooth_scales第一维一致。
+- 使用INT4量化时，要求x形状的最后一维是8的倍数。
+
+支持的PyTorch版本:
+PyTorch 2.5
+PyTorch 2.4
+PyTorch 2.3
+PyTorch 2.2
+PyTorch 2.1
+
+支持的型号:
+Atlas A2 训练系列产品
+
+调用示例:
+
+不带smooth_scales:
+import torch
+import torch_npu
+x = torch.rand((3, 8), dtype = torch.float16).to("npu")
+y, scale = torch_npu.npu_dynamic_quant(x)
+print(y, scale)
+
+带smooth_scales:
+import torch
+import torch_npu
+x = torch.rand((3, 8), dtype = torch.float16).to("npu")
+smooth_scales = torch.rand((8,), dtype = torch.float16).to("npu")
+y, scale = torch_npu.npu_dynamic_quant(x, smooth_scales=smooth_scales)
+print(y, scale)
+
+INT4量化
+import torch
+import torch_npu
+x = torch.rand((3, 8), dtype = torch.float16).to("npu")
+y, scale = torch_npu.npu_dynamic_quant(x, dst_type=torch.quint4x2)
+print(y, scale)
+
+MOE场景的smooth quant
+import torch
+import torch_npu
+x = torch.rand((3, 8), dtype = torch.float16).to("npu")
+smooth_scales = torch.rand((2,8), dtype = torch.float16).to("npu")
+group_index = torch.Tensor([1, 3]).to(torch.int32).to("npu")
+y, scale = torch_npu.npu_dynamic_quant(x, smooth_scales=smooth_scales, group_index=group_index)
+print(y, scale)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_dynamic_quant_asymmetric",
+    """
+功能描述:
+按最后一个维度，对输入张量进行非对称动态量化。
+
+计算公式：
+假设待量化张量为x，则计算公式为
+scale = (rowMax(x) - rowMin(x)) / (DST_MAX - DTS_MIN)
+offset = DST_MAX - rowMax(x) / scale
+y = round(x / scale + offset)
+
+- rowMax、rowMin分别代表按行取最大值、最小值，此处的"行"对应x的最后一个维度的数据。
+- DST_MAX、DST_MIN分别对应量化后的最大值、最小值，在进行INT8量化时，二者分别对应+127、-128，进行INT4量化时，分别对应+7、-8。
+- 若使用smooth quant算法，会引入smooth_scales输入向量，在对x进行量化前，会先令x乘以smooth_scales，再按上述公式进行量化。
+- 若使用smooth quant算法，且在MOE（混合专家模型）场景下，会引入smooth_scales输入和group_index输入，此时smooth_scales中包含多组smooth向量，按group_index中的指引作用到x的不同行上。具体的，假如x有m行，smooth_scales有n行，那么smooth_scales[0]会作用到x[0:group_index[0]]上，smooth_scales[i]会作用到x[group_idnex[i-1]:group_index[i]]上，i=1,2,...,n-1。
+
+
+接口原型:
+npu_dynamic_quant_asymmetric(Tensor x, *, Tensor? smooth_scales=None, Tensor? group_index=None, ScalarType? dst_type=None) -> (Tensor, Tensor, Tensor)
+
+
+参数说明:
+x：Device侧的Tensor类型，需要进行量化的源数据张量，必选输入，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。
+*: 代表其之前的输入是位置相关, 按照顺序输入, 必选; 之后的输入是关键字传参的, 位置无关, 可选(不输入会使用默认值)。
+smooth_scales：Device侧的Tensor类型，对x进行平滑缩放的张量，可选输入，数据类型需要与x保持一致，数据格式支持ND，支持非连续的Tensor。
+group_index：Device侧的Tensor类型，在MOE场景下，对smooth_scales进行分组的下标，可选输入，数据类型支持INT32，数据格式支持ND，支持非连续的Tensor。
+dst_type：ScalarType类型，用于选择进行INT8/INT4量化，可选输入，输入值只能是torch.int8和torch.quint4x2，默认为INT8量化。
+
+输出说明：
+该接口包含三个Tensor类型的输出，y，scale，offset，
+
+y：量化后的输出，在进行INT8量化时，y的数据类型为INT8，形状与x一致；在进行INT4量化时，y的数据类型为INT32，形状最后一维为x的最后一维除以8，其余维度与x一致。shape和输入x一致，每个INT32元素包含8个INT4结果。
+scale：非对称动态量化过程中，计算出的缩放系数Tensor，数据类似为FLOAT32，形状为x的形状剔除最后一维。
+offset：非对称动态量化过程中，计算出的偏移系数Tensor，数据类似为FLOAT32，形状为x的形状剔除最后一维。
+
+约束说明:
+- 该算子仅在推理场景使用。
+- 输入x的维度必须大于1。
+- 使用可选输入smooth_scales、group_index、dst_type时，必须使用关键字传参。
+- 使用smooth_scales时，
+    - 若不使用group_index，smooth_scales必须是一维Tensor，元素数量与x的最后一维大小一致。
+    - 若使用group_index，smooth_scales必须是二维Tensor，第二维大小与x最后一维大小一致，group_index必须是一维Tensor，元素数量与smooth_scales第一维一致。
+- 使用INT4量化时，要求x形状的最后一维是8的倍数。
+
+支持的PyTorch版本:
+PyTorch 2.5
+PyTorch 2.4
+PyTorch 2.3
+PyTorch 2.1
+
+支持的型号:
+Atlas A2 训练系列产品
+
+调用示例:
+
+不带smooth_scales:
+import torch
+import torch_npu
+x = torch.rand((3, 8), dtype = torch.float16).to("npu")
+y, scale, offset = torch_npu.npu_dynamic_quant_asymmetric(x)
+print(y, scale, offset)
+
+带smooth_scales:
+import torch
+import torch_npu
+x = torch.rand((3, 8), dtype = torch.float16).to("npu")
+smooth_scales = torch.rand((8,), dtype = torch.float16).to("npu")
+y, scale, offset = torch_npu.npu_dynamic_quant_asymmetric(x, smooth_scales=smooth_scales)
+print(y, scale, offset)
+
+INT4量化
+import torch
+import torch_npu
+x = torch.rand((3, 8), dtype = torch.float16).to("npu")
+y, scale, offset = torch_npu.npu_dynamic_quant_asymmetric(x, dst_type=torch.quint4x2)
+print(y, scale, offset)
+
+MOE场景的smooth quant
+import torch
+import torch_npu
+x = torch.rand((3, 8), dtype = torch.float16).to("npu")
+smooth_scales = torch.rand((2,8), dtype = torch.float16).to("npu")
+group_index = torch.Tensor([1, 3]).to(torch.int32).to("npu")
+y, scale, offset = torch_npu.npu_dynamic_quant_asymmetric(x, smooth_scales=smooth_scales, group_index=group_index)
+print(y, scale, offset)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_quant_matmul",
     """
 功能描述:
