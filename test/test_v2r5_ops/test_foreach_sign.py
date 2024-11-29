@@ -122,6 +122,16 @@ class TestForeachSign(TestCase):
             self.assertRtolEqual(cpu_tensors, npu_tensors)
 
     @SupportedDevices(['Ascend910B'])
+    def test_foreach_sign_inplace_float64_shpae_tensor_num(self):
+        tensor_num_list = [20, 50]
+        for tensor_num in tensor_num_list :
+            cpu_tensors, npu_tensors = self.create_tensors(tensor_num, "float64")
+            torch._foreach_sign_(cpu_tensors)
+            torch._foreach_sign_(npu_tensors)
+
+            self.assertRtolEqual(cpu_tensors, npu_tensors)
+
+    @SupportedDevices(['Ascend910B'])
     def test_foreach_sign_inplace_int32_different_xpu(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
