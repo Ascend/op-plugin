@@ -59,15 +59,29 @@ void split_and_exec_npu_cmd_copy(const at::TensorList dst, at::TensorList src, b
     }
 }
 
+bool check_tensor_dtype_spport_base(const at::TensorList src)
+{
+    if ((sizeof(src[0]) == 4 && src[0].scalar_type() != at::ScalarType::QInt32) || src[0].scalar_type() == at::ScalarType::Int) {
+        return true;
+    }
+    if (sizeof(src[0]) == 2 || src[0].scalar_type() == at::ScalarType::Short) {
+        return true;
+    }
+    if (src[0].scalar_type() == at::ScalarType::Char || src[0].scalar_type() == at::ScalarType::Byte || src[0].scalar_type() == at::ScalarType::BFloat16 ||
+        src[0].scalar_type() == at::ScalarType::Float || src[0].scalar_type() == at::ScalarType::Half) {
+        return true;
+    }
+    return false;
+}
+
 void _foreach_copy_(const at::TensorList self, const at::TensorList src, bool non_blocking)
 {
     DO_COMPATIBILITY(aclnnForeachCopy, at::native::foreach_tensor_copy_list_kernel_slow_(self, src, non_blocking));
     at::native::check_foreach_api_restrictions(self, src);
-
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1)||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
-    if (!is_support_nd_out || !at::native::can_use_fast_route(self, src)) {
+    if (!is_support_nd_out || !at::native::can_use_fast_route(self, src) || !check_tensor_dtype_spport_base(src)) {
         return at::native::foreach_tensor_copy_list_kernel_slow_(self, src, non_blocking);
     }
 
