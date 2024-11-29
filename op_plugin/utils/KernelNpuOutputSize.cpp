@@ -581,14 +581,23 @@ c10::SmallVector<int64_t, SIZE> deformable_conv2d_npu_output_size(const at::Tens
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
 ctc_loss_npu_output_size(const at::Tensor &log_probs, int64_t max_length)
 {
+    const int64_t dim_num_two = 2;
     int64_t time_size = log_probs.size(0);
     int64_t batch_size = log_probs.size(1);
 
+    if (log_probs.dim() == dim_num_two) {
+        batch_size = 1;
+    }
     c10::SmallVector<int64_t, SIZE> neg_log_likelihood_size = {batch_size};
     int64_t alpha_tail_size = 2 * max_length + 1;
     // Apply for a 32 byte aligned space to avoid address shifting in the OP.
     int64_t alpha_tail_size_align = (alpha_tail_size + 7) / 8 * 8;
     c10::SmallVector<int64_t, SIZE> log_alpha_size = {batch_size, time_size, alpha_tail_size_align};
+
+    if (log_probs.dim() == dim_num_two) {
+        return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(at::ArrayRef<int64_t>(),
+                                                                                            log_alpha_size);
+    }
 
     return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(neg_log_likelihood_size,
                                                                                         log_alpha_size);
