@@ -3764,19 +3764,10 @@ official:
   - func: minimum(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      out:
-        size: broadcast_ops_npu_output_size(self, other)
-        dtype: at::result_type(self, other)
-      exec: aclnnMinimum
 
   - func: minimum.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      out:
-        size: broadcast_ops_npu_output_size(self, other)
-      exec: aclnnMinimum
 
   - func: mish(Tensor self) -> Tensor
     acl_op: all_version

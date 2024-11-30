@@ -175,31 +175,48 @@ at::Tensor& min_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
 }
 
 at::Tensor minimum(const at::Tensor& self, const at::Tensor& other) {
-  auto result_type = at::result_type(self, other);
-  at::Tensor self_copy = (self.scalar_type() != result_type) ?
-      at_npu::native::custom_ops::npu_dtype_cast(self, result_type) : self;
-  at::Tensor other_copy = (other.scalar_type() != result_type) ?
-      at_npu::native::custom_ops::npu_dtype_cast(other, result_type) : other;
+    auto result_type = at::result_type(self, other);
+    at::Tensor self_copy = self;
+    at::Tensor other_copy = other;
+    if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+        at::Scalar scalar = other.item();
+        other_copy = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type(), self.device());
+    } else if (at_npu::native::OpPreparation::IsCPUScalar(self)) {
+        at::Scalar scalar = self.item();
+        self_copy = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, self.scalar_type(), other.device());
+    }
+    self_copy = (self.scalar_type() != result_type) ?
+        at_npu::native::custom_ops::npu_dtype_cast(self_copy, result_type) : self_copy;
+    other_copy = (other.scalar_type() != result_type) ?
+        at_npu::native::custom_ops::npu_dtype_cast(other_copy, result_type) : other_copy;
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::apply_tensor(self_copy, output_size);
-  min_out_npu_nocheck(result, self_copy, other_copy);
-  return result;
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::Tensor result = npu_preparation::apply_tensor(self_copy, output_size);
+    min_out_npu_nocheck(result, self_copy, other_copy);
+    return result;
 }
 
 at::Tensor& minimum_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  auto high_type = at::result_type(self, other);
-  auto result_type = result.scalar_type();
-  TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
-      " can't be cast to the desired output type ", result_type,
-      OPS_ERROR(ErrCode::TYPE));
+    auto high_type = at::result_type(self, other);
+    auto result_type = result.scalar_type();
+    TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
+        " can't be cast to the desired output type ", result_type,
+        OPS_ERROR(ErrCode::TYPE));
+    at::Tensor self_copy = self;
+    at::Tensor other_copy = other;
+    if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+        at::Scalar scalar = other.item();
+        other_copy = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type(), self.device());
+    } else if (at_npu::native::OpPreparation::IsCPUScalar(self)) {
+        at::Scalar scalar = self.item();
+        self_copy = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, self.scalar_type(), other.device());
+    }
+    self_copy = (self.scalar_type() != result_type) ?
+        at_npu::native::custom_ops::npu_dtype_cast(self_copy, result_type) : self_copy;
+    other_copy = (other.scalar_type() != result_type) ?
+        at_npu::native::custom_ops::npu_dtype_cast(other_copy, result_type) : other_copy;
 
-  at::Tensor self_copy = (self.scalar_type() != result_type) ?
-      at_npu::native::custom_ops::npu_dtype_cast(self, result_type) : self;
-  at::Tensor other_copy = (other.scalar_type() != result_type) ?
-      at_npu::native::custom_ops::npu_dtype_cast(other, result_type) : other;
-
-  return acl_op::min_out(self_copy, other_copy, result);
+    return acl_op::min_out(self_copy, other_copy, result);
 }
 
 at::Tensor amin(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
