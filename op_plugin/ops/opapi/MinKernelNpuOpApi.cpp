@@ -19,6 +19,33 @@
 
 namespace op_api {
 
+at::Tensor minimum(const at::Tensor& self, const at::Tensor& other) {
+    DO_COMPATIBILITY(aclnnMinimum, acl_op::minimum(self, other));
+    auto result_type = at::result_type(self, other);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::Tensor result =
+        at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
+    return op_api::minimum_out(self, other, result);
+}
+
+at::Tensor& minimum_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
+    DO_COMPATIBILITY(aclnnMinimum, acl_op::minimum_out(self, other, result));
+    at::Tensor cp_other = other;
+    at::Tensor cp_self = self;
+    if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+        at::Scalar scalar = other.item();
+        cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type(), self.device());
+    } else if (at_npu::native::OpPreparation::IsCPUScalar(self)) {
+        at::Scalar scalar = self.item();
+        cp_self = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, self.scalar_type(), other.device());
+    }
+    auto output_size = op_infer::broadcast_ops_npu_output_size(cp_self, cp_other);
+    at_npu::native::OpPreparation::check_tensor({cp_self, cp_other}, result, result.scalar_type(), output_size);
+    EXEC_NPU_CMD(aclnnMinimum, cp_self, cp_other, result);
+    return result;
+}
+
+
 at::Tensor min(const at::Tensor& self) {
   DO_COMPATIBILITY(aclnnMin, acl_op::min(self));
   at::SmallVector<int64_t, op_infer::SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
