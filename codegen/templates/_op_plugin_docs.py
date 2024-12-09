@@ -120,6 +120,35 @@ tensor([0.4403, 0.2733], device='npu:0')
 """
 )
 
+_add_torch_npu_docstr(
+    "npu_fast_gelu",
+    """
+torch_npu.npu_fast_gelu(Tensor self) -> Tensor
+
+功能描述
+快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算FastGelu；输入是具有任何有效形状的张量。
+
+参数说明
+self：Tensor类型，即输入参数中的x。数据类型支持FLOAT16、FLOAT32、BFLOAT16，数据格式支持ND，支持非连续的Tensor。输入最大支持8维。
+
+约束说明
+self这个输入中不能含有空指针。
+数据类型BFLOAT16仅如下产品型号支持
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+示例
+import os
+import torch
+import torch_npu
+import numpy as np
+data_var = np.random.uniform(0, 1, [4, 2048, 16, 128]).astype(np.float32)
+x = torch.from_numpy(data_var).to(torch.float32).npu()
+y = torch_npu.npu_fast_gelu(x).cpu().numpy()
+"""
+)
 
 _add_torch_npu_docstr(
     "npu_alloc_float_status",
@@ -1038,11 +1067,6 @@ sync：debug参数，DSA生成dropout随机数向量mask的控制开关，默认
 当pre_tokens >= Sq，同时next_tokens=0时，使能causal计算。
 在使能band sparse、causal计算时，必须输入atten_mask。
 当所有的attenmask的shape小于2048且相同的时候，建议使用default模式，即sparse_mode配置为0，来减少内存使用量；sparse_mode配置为2或3时，禁止配置preTokens、nextTokens。
-
-支持的PyTorch版本
-PyTorch 2.1
-PyTorch 2.0
-PyTorch 1.11.0
 
 支持的型号
 Atlas 训练系列产品
@@ -2934,12 +2958,6 @@ offset( 计算输入)：Device侧的Tensor类型，可选参数。数据类型�
 3.scale、offset的shape需要为1维(t,)或者2维(1, n)。其中t = 1或n，其中n与x2的n一致。
 4.当scale的shape为两维(1, n)时，scale和offset的shape需要保持一致，且输出shape也为(1, n)。
 
-支持的PyTorch版本:
-PyTorch 2.2
-PyTorch 2.1
-PyTorch 2.0
-PyTorch 1.11.0
-
 支持的型号:
 Atlas A2 训练系列产品
 
@@ -3031,13 +3049,6 @@ scale：对称动态量化过程中，计算出的缩放系数Tensor，数据类
     - 若使用group_index，smooth_scales必须是二维Tensor，第二维大小与x最后一维大小一致，group_index必须是一维Tensor，元素数量与smooth_scales第一维一致。
 - 使用INT4量化时，要求x形状的最后一维是8的倍数。
 
-支持的PyTorch版本:
-PyTorch 2.5
-PyTorch 2.4
-PyTorch 2.3
-PyTorch 2.2
-PyTorch 2.1
-
 支持的型号:
 Atlas A2 训练系列产品
 
@@ -3121,12 +3132,6 @@ offset：非对称动态量化过程中，计算出的偏移系数Tensor，数�
     - 若使用group_index，smooth_scales必须是二维Tensor，第二维大小与x最后一维大小一致，group_index必须是一维Tensor，元素数量与smooth_scales第一维一致。
 - 使用INT4量化时，要求x形状的最后一维是8的倍数。
 
-支持的PyTorch版本:
-PyTorch 2.5
-PyTorch 2.4
-PyTorch 2.3
-PyTorch 2.1
-
 支持的型号:
 Atlas A2 训练系列产品
 
@@ -3201,12 +3206,6 @@ pertoken_scale仅支持float32，目前仅在输出float16和bfloat16场景下�
 offset不为空时，output_dtype仅支持int8。
 x1与x2最后一维的shape大小不能超过65535
 310P和Atlas A2芯片下，需要调用npu_format_cast完成输入x2(weight)高性能数据排布功能。310P需要将x2转置后调用npu_format_cast，Atlas A2需要将x2非转置后调用npu_format_cast。
-
-支持的PyTorch版本:
-PyTorch 2.2
-PyTorch 2.1
-PyTorch 2.0
-PyTorch 1.11.0
 
 支持的型号:
 Atlas A2 训练系列产品
@@ -3412,11 +3411,6 @@ quantoffset不能独立于quantscale存在。
 当x输入类型为BFLOAT16类型时候，bias的输入类型为FLOAT32；当x输入类型为FLOAT16类型时候，bias的输入类型为FLOAT16。
 如需传入INT64数据类型的quantscale,  需要提前调用torch_npu.npu_trans_quant_param接口将数据类型为FLOAT32的quantscale和quantoffset转换为数据类型为INT64的quantscale输入。
 
-支持的PyTorch版本:
-PyTorch 2.0
-PyTorch 2.1
-PyTorch 1.11.0
-
 支持的芯片型号:
 Atlas A2 训练系列产品
 
@@ -3476,13 +3470,6 @@ inner_k_tiles：int类型，用于制定内部打包格式中，多少个K-tiles
 
 约束说明:
 输入weight中的元素的值需要在int4的表示范围内，即[-8, 7]。
-
-支持的PyTorch版本:
-PyTorch 2.3.1
-PyTorch 2.0
-PyTorch 2.1
-PyTorch 2.2
-PyTorch 1.11
 
 支持的芯片型号:
 Atlas A2 训练系列产品
@@ -3572,13 +3559,6 @@ Device侧的TensorList类型输出，代表GroupedMatmul的计算结果，当spl
     - x为BFLOAT16、weight为INT8、bias为FLOAT32、scale为空，offset为空，antiquant_scale为BFLOAT16、antiquant_offset为BFLOAT16、output_dtype为BFLOAT16；
 7. 对于实际无bias的场景，在PyTorch 1.11与2.0版本中，须手动指定“bias=[]”；在PyTorch 2.1及更高的版本中，可以直接不指定bias参数。scale、offset、antiquantScale、antiquantOffset四个参数在不同PyTorch版本中的约束与bias相同。
 output_dtype的数据类型当前只支持None，或者与输入x的数据类型相同。
-
-支持的PyTorch版本:
-PyTorch 2.3
-PyTorch 2.2
-PyTorch 2.1
-PyTorch 2.0
-PyTorch 1.11
 
 支持的型号:
 Atlas A2 训练系列产品
@@ -3687,12 +3667,6 @@ axis不能为updates的第1维或最后1维。
 quant_axis只能为updates的最后1维。
 reduce当前只支持‘update’，即更新操作。
 
-支持的PyTorch版本:
-PyTorch 2.3
-PyTorch 2.2
-PyTorch 2.1
-PyTorch 1.11
-
 支持的型号:
 Atlas A2 训练系列产品
 
@@ -3755,12 +3729,6 @@ axis不能为updates的第1维或最后1维。
 quant_axis只能为updates的最后1维。
 reduce当前只支持‘update’，即更新操作。
 
-支持的PyTorch版本:
-PyTorch 2.3
-PyTorch 2.2
-PyTorch 2.1
-PyTorch 1.11
-
 支持的型号:
 Atlas A2 训练系列产品
 
@@ -3810,12 +3778,6 @@ updates：Device侧的Tensor类型，必选输入，更新数据张量，数据�
 约束说明indices至少是2维，其最后1维的大小不能超过self的维度大小。
 假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上self除前a维外的shape。举例：self的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
 
-支持的PyTorch版本:
-PyTorch 2.3
-PyTorch 2.2
-PyTorch 2.1
-PyTorch 1.11
-
 支持的型号:
 Atlas A2 训练系列产品
 
@@ -3856,12 +3818,6 @@ updates：Device侧的Tensor类型，必选输入，更新数据张量，数据�
 约束说明:
 indices至少是2维，其最后1维的大小不能超过self的维度大小。
 假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上self除前a维外的shape。举例：self的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
-
-支持的PyTorch版本:
-PyTorch 2.3
-PyTorch 2.2
-PyTorch 2.1
-PyTorch 1.11
 
 支持的型号:
 Atlas A2 训练系列产品
@@ -3909,12 +3865,6 @@ src_dtype：ScalarType类型，可选参数，输入值允许为torch.quint4x2(�
 x、scale这两个输入中不能含有空指针。
 如果输入scale的shape值不为1，则输入x的最后一维shape值必须与scale的shape一致。
 
-支持的PyTorch版本:
-PyTorch 2.1
-PyTorch 2.2
-PyTorch 2.3
-PyTorch 2.4
-
 支持的型号:
 Atlas A2训练系列产品
 Atlas 推理系列产品
@@ -3954,50 +3904,65 @@ _add_torch_npu_docstr(
     "npu_mm_all_reduce_base",
     """
 功能描述:
-TP切分场景下, 实现mm和all_reduce的融合, 融合算子内部实现计算和通信流水并行。
+TP切分场景下，实现mm和all_reduce的融合，融合算子内部实现计算和通信流水并行。
 
 接口原型:
-npu_mm_all_reduce_base(Tensor x1, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? x3=None, Tensor? dequant_scale=None, Tensor? pertoken_scale=None, int comm_turn=0, int antiquant_group_size=0) -> Tensor
+npu_mm_all_reduce_base(Tensor x1, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? x3=None, Tensor? dequant_scale=None Tensor? pertoken_scale=None, Tensor? comm_quant_scale_1=None, Tensor? comm_quant_scale_2=None, int comm_turn=0, int antiquant_group_size=0) -> Tensor
 
 参数说明:
-x1: Device侧的Tensor类型, 支持float16、bfloat16、int8, 支持ND, 输入shape支持2维或者3维。
-x2: Device侧的Tensor类型, 支持float16、bfloat16、int8, 支持ND, 非量化场景, 数据类型需要和x1保持一致, 输入shape维度第0维和x1的最后一维保持一致。
-hcom: Host侧的String类型, 通信域handle名, 通过get_hccl_comm_name接口获取。
-*: 代表其之前的变量是位置相关, 按照顺序输入, 必选; 之后的变量是键值对赋值的, 位置无关, 可选(不输入会使用默认值)。
-reduce_op: Host侧的String类型, reduce操作类型, 当前版本仅支持'sum', 默认值: 'sum'。
-bias: Device侧的Tensor类型, 可选输入, 支持int32、float16、bfloat16, 支持ND格式。bias当前仅支持一维, 且维度大小与output/x2的最后一维大小相同。
-antiquant_scale: Device侧的Tensor类型, 可选输入, 伪量化场景对x2进行去量化的系数, 支持float16、bfloat16, 支持ND格式。伪量化场景数据类型需要和x1保持一致。antiquant_scale当前per-tensor场景shape为[1],per-channel场景支持shape为[1,n]或者[n]。其中n为x2最后一维的大小。per-group场景支持shape为[ceil(k, antiquant_group_size), n](具体计算逻辑见约束说明)。其中k为x2第一维的大小, n为x2最后一维的大小, antiquant_group_size为伪量化场景对输入x2进行反量化计算的groupSize输入。
-antiquant_offset: Device侧的Tensor类型, 可选输入, 伪量化场景对x2进行去量化的系数, 支持float16、bfloat16, 支持ND格式。数据类型需要和antiquant_scale保持一致。shape与antiquant_scale保持一致。
-x3: Device侧的Tensor类型, 可选输入, matmul计算后的偏移。支持float16、bfloat16。支持ND格式。数据类型需要和输出output保持一致。shape与output的shape相同。伪量化场景暂不支持处理x3。
-dequant_scale: Device侧的Tensor类型, 可选输入, matmul计算后的去量化系数。支持int64、uint64、bfloat16、float32, 支持ND格式。shape在per-tensor场景为[1], per-channel场景为[n]/[1,n], 其中n为x2最后一维的大小。
-pertoken_scale: Device侧的Tensor类型, 可选输入, matmul计算后的去量化系数。支持float32, 支持ND格式。x1为[b, s, k]时shape为[b*s]，x1为[m, k]时shape为[m]。
-comm_quant_scale_1: Device侧的Tensor类型, 可选输入, alltoall通信前后的量化、去量化系数。支持float16、bfloat16, 支持ND格式。per-channel场景，x2为[k, n]时shape为[1, n]或[n]，用户需保证每张卡上数据保持一致且正确。
-comm_quant_scale_2: Device侧的Tensor类型, 可选输入, allgather通信前后的量化、去量化系数。支持float16、bfloat16, 支持ND格式。per-channel场景，x2为[k, n]时shape为[1, n]或[n]，用户需保证每张卡上数据保持一致且正确。
-comm_turn: Host侧的int类型, 表示rank间通信切分粒度, 默认值: 0, 表示默认的切分方式。当前版本仅支持输入0。
-antiquant_group_size: Host侧的int类型, 表示伪量化pre-group算法模式下, 对输入x2进行反量化计算的groupSize输入, 描述一组反量化参数对应的待反量化数据量在k轴方向的大小。当伪量化算法模式不为pre_group时传入0; 当伪量化算法模式为pre_group时传入值的范围为[32, min(k-1, INT_NAX)]且值要求是32的倍数, 其中k为x2第一维的大小。默认值: 0, 为0则表示非per-group场景。
-输出说明Tensor类型, 数据类型非量化场景以及伪量化场景与x1保持一致, 全量化场景为float16或者bfloat16。shape第0维度和x1的0维保持一致, 若x1为2维, shape第1维度和x2的1维保持一致, 若x1为3维, shape第1维度和x1的1维保持一致, shape第2维度和x2的1维保持一致。
+x1：Device侧的Tensor类型，Atlas A2训练系列产品/Atlas 800I A2推理产品数据类型支持INT8、FLOAT16、BFLOAT16（仅Atlas A2训练系列产品/Atlas 800I A2推理产品支持）；数据格式支持ND，输入shape支持2维或者3维。
+x2：Device侧的Tensor类型，Atlas A2训练系列产品/Atlas 800I A2推理产品数据类型支持FLOAT16、BFLOAT16、INT8，数据格式支持ND/NZ。非量化场景，数据类型需要和x1保持一致，输入shape维度第0维和x1的最后一维保持一致。
+hcom：Host侧的String类型，通信域handle名，通过get_hccl_comm_name接口获取。
+*：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
+reduce_op：Host侧的String类型，reduce操作类型，当前版本仅支持'sum'，默认值：'sum'。
+bias：Device侧的Tensor类型，可选输入，数据类型支持INT32、FLOAT16、BFLOAT16（仅Atlas A2训练系列产品/Atlas 800I A2推理产品支持），数据格式支持ND格式。bias当前仅支持一维，且维度大小与output/x2的最后一维大小相同。
+antiquant_scale：Device侧的Tensor类型，可选输入，伪量化场景对x2进行去量化的系数，数据类型支持FLOAT16、BFLOAT16（仅Atlas A2训练系列产品/Atlas 800I A2推理产品支持），数据格式支持ND格式。伪量化场景数据类型需要和x1保持一致。antiquant_scale当前per-tensor场景shape为[1]，per-channel场景支持shape为[1,n]或者[n]。其中n为x2最后一维的大小。per-group场景支持shape为[ceil(k, antiquant_group_size), n]（具体计算逻辑见约束说明）。其中k为x2第一维的大小，n为x2最后一维的大小，antiquant_group_size为伪量化场景对输入x2进行反量化计算的groupSize输入。
+antiquant_offset：Device侧的Tensor类型，可选输入，伪量化场景对x2进行去量化的系数，数据类型支持FLOAT16、BFLOAT16（仅Atlas A2训练系列产品/Atlas 800I A2推理产品支持），数据格式支持ND格式。数据类型需要和antiquant_scale保持一致。shape与antiquant_scale保持一致。
+x3：Device侧的Tensor类型，可选输入，matmul计算后的偏移。数据类型支持FLOAT16、BFLOAT16（仅Atlas A2训练系列产品/Atlas 800I A2推理产品支持），数据格式支持ND格式。数据类型需要和输出output保持一致。shape与output的shape相同。
+dequant_scale：Device侧的Tensor类型，可选输入，matmul计算后的去量化系数。Atlas A2训练系列产品/Atlas 800I A2推理产品支持INT64、UINT64、BFLOAT16、FLOAT32；数据格式支持ND格式。shape在per-tensor场景为[1]，per-channel场景为[n]/[1,n]，其中n为x2最后一维的大小。
+pertoken_scale：Device侧的Tensor类型，可选输入，matmul计算后的per-token去量化系数。Atlas A2训练系列产品/Atlas 800I A2推理产品支持FLOAT32，x1为[m,k]时shape为[m]，x1为[b, s, k]时shape为[b*s]。
+comm_quant_scale_1: Device侧的Tensor类型，可选输入，alltoall通信前后的量化、去量化系数。支持FLOAT16、BFLOAT16，支持ND格式。x2为[k, n]时shape为[1, n]或[n]，用户需保证每张卡上数据保持一致且正确。
+comm_quant_scale_2: Device侧的Tensor类型，可选输入，allgather通信前后的量化、去量化系数。支持FLOAT16、BFLOAT16，支持ND格式。x2为[k, n]时shape为[1, n]或[n]，用户需保证每张卡上数据保持一致且正确。
+comm_turn：Host侧的int类型，表示rank间通信切分粒度，默认值：0，表示默认的切分方式。当前版本仅支持输入0。
+antiquant_group_size：Host侧的int类型，表示伪量化pre-group算法模式下，对输入x2进行反量化计算的groupSize输入，描述一组反量化参数对应的待反量化数据量在k轴方向的大小。当伪量化算法模式不为pre_group时传入0；当伪量化算法模式为pre_group时传入值的范围为[32, min(k-1, INT_MAX)]且值要求是32的倍数，其中k为x2第一维的大小。默认值0，为0则表示非per-group场景。
 
-约束说明:
-输入x1可为2维或者3维、x2必须是2维, 分别为(s, m, k)/(m, k), (k, n), k轴满足mm算子入参要求, k轴相等。bias当前仅支持一维, 且维度大小与output的最后一维大小相同。x3的shape与output的shape相同。antiquant_scale当前per-tensor场景shape为[1],per-channel场景支持shape为[1,n]或者[n], per-group场景支持shape为(ceil(k, antiquant_group_size), n)。antiquant_offset的shape与antiquant_scale一致。dequant_scale的shape在per-tensor场景为[1], per-channel场景为[n]/[1,n]。
-[ceil(k, antiquant_group_size), n]中的ceil(k, antiquant_group_size)计算逻辑为: (k + antiquant_group_size - 1) / antiquant_group_size, 并对计算结果取整数部分。
-x1、x2不能为空tensor。
-非量化场景, x1、x2、bias、x3、output的数据类型保持一致, 可为float16或者bfloat16, antiquant_scale、antiquant_offset、dequant_scale为None。
-伪量化场景, x1、bias、x3、antiquant_scale、antiquant_offset, output的数据类型保持一致, 可为float16或者bfloat16, x2的数据类型为int8, dequant_scale为None。
-全量化场景, x1、x2的数据类型为int8, dequant_scale的数据类型为int64、uint64、float32或者bfloat16。dequant_scale类型为int64、uint64、float32(仅pertoken场景)时, output数据类型为float16; dequant_scale类型为bfloat16时, output数据类型为bfloat16; bias数据类型为int32; antiquant_scale、antiquant_offset为None。仅输出为BF16时, 支持传入x3。另外, 若dequant_scale需要以int64类型传入, 在调用torch_npu.npu_mm_all_reduce_base()前, 需通过torch_npu.npu_trans_quant_param()接口对dequant_scale进行处理(处理方法见对应的接口使用说明)。
-antiquant_group_size中k值的范围与matmul一致, 为[1,65535], INT_MAX大于(k-1)。
-x1不支持输入转置后的tensor, x2转置后输入, 需要满足shape的第一维大小与x1的最后一维相同, 满足matmul的计算条件。
-Atlas 300I Duo 推理系列产品只支持2卡。
-Atlas A2 训练系列产品支持2、4、8卡。
-增量场景不使能MC2, 全量场景使能MC2。
+输出说明
+Tensor类型，数据类型非量化场景以及伪量化场景与x1保持一致，全量化场景Atlas A2训练系列产品/Atlas 800I A2推理产品支持输出为FLOAT16或者BFLOAT16。shape第0维度和x1的0维保持一致，若x1为2维，shape第1维度和x2的1维保持一致，若x1为3维，shape第1维度和x1的1维保持一致，shape第2维度和x2的1维保持一致。
 
-支持的PyTorch版本:
-PyTorch 2.1
-PyTorch 2.0
-PyTorch 1.11.0
+约束说明
+该融合算子仅在推理场景使用。
+BFLOAT16数据类型仅Atlas A2训练系列产品/Atlas 800I A2推理产品支持。
+输入x1可为2维或者3维、x2必须是2维，分别为(b, s, k)/(m, k), (k, n)，k轴满足mm算子入参要求，k轴相等。bias当前仅支持一维，且维度大小与output的最后一维大小相同。x3的shape与output的shape相同。
+Atlas A2训练系列产品/Atlas 800I A2推理产品x1、x2不能为空tensor。
+Atlas A2训练系列产品/Atlas 800I A2推理产品的非量化场景：m、k、n的取值范围均为[1, 2147483647]。
+全量化场景：m取值范围均为[1, 2147483647]，x1、x2的最后一维范围为[1, 65535]，即k的取值范围为[1, 65535]、仅当x2(shape=[n,k])为转置时n可以大于65535。
+伪量化场景：m取值范围均为[1, 2147483647]，k、n的取值范围为[1, 65535]。
+antiquant_scale当前per-tensor场景shape为[1]，per-channel场景支持shape为[1,n]或者[n]，per-group场景支持shape为(ceil(k, antiquant_group_size), n)。antiquant_offset的shape与antiquant_scale一致。dequant_scale的shape在per-tensor场景为[1]，per-channel场景为[n]/[1,n]。
+per-token场景下pertoken_scale的shape在x1二维时为[m]，x1三维时为[b*s]。
+[ceil(k, antiquant_group_size), n]中的ceil(k, antiquant_group_size)计算逻辑为：(k + antiquant_group_size - 1) / antiquant_group_size，并对计算结果取整数部分。
+不同场景数据类型支持情况：
+非量化场景：
+Atlas A2训练系列产品/Atlas 800I A2推理产品中x1为FLOAT16、x2为FLOAT16、bias为FLOAT16、x3为FLOAT16、output为FLOAT16，antiquant_scale、antiquant_offset、dequant_scale为None。
+Atlas A2训练系列产品/Atlas 800I A2推理产品中x1为BFLOAT16、x2为BFLOAT16、bias为BFLOAT16、x3为BFLOAT16、output为BFLOAT16，antiquant_scale、antiquant_offset、dequant_scale为None。
+伪量化场景：
+Atlas A2训练系列产品/Atlas 800I A2推理产品中x1为FLOAT16、x2为INT8、bias为FLOAT16、x3为FLOAT16、output为FLOAT16，antiquant_scale为FLOAT16、antiquant_offset为FLOAT16、dequant_scale为None。
+Atlas A2训练系列产品/Atlas 800I A2推理产品中x1为BFLOAT16、x2为INT8、bias为BFLOAT16、x3为BFLOAT16、output为BFLOAT16，antiquant_scale为BFLOAT16、antiquant_offset为BFLOAT16、dequant_scale为None。
+全量化场景：
+Atlas A2训练系列产品/Atlas 800I A2推理产品中x1为INT8、x2为INT8、bias为INT32、x3为FLOAT16、output为FLOAT16，antiquant_scale为None、antiquant_offset为None、dequant_scale为UINT64或INT64，pertoken_scale为None。
+Atlas A2训练系列产品/Atlas 800I A2推理产品中x1为INT8、x2为INT8、bias为INT32、x3为BFLOAT16、output为BFLOAT16，antiquant_scale为None、antiquant_offset为None、dequant_scale为BFLOAT16，pertoken_scale为None。
+Atlas A2训练系列产品/Atlas 800I A2推理产品中x1为INT8、x2为INT8、bias为INT32、x3为FLOAT16、output为FLOAT16，antiquant_scale为None、antiquant_offset为None、dequant_scale为FLOAT32、pertoken_scale为FLOAT32。
+Atlas A2训练系列产品/Atlas 800I A2推理产品中x1为INT8、x2为INT8、bias为INT32、x3为BFLOAT16、output为BFLOAT16，antiquant_scale为None、antiquant_offset为None、dequant_scale为BFLOAT16、pertoken_scale为FLOAT32。
+若dequant_scale需要以FP32类型传入，在调用torch_npu.npu_mm_all_reduce_base()前，需通过torch_npu.npu_trans_quant_param()接口对dequant_scale进行处理为INT64类型（处理方法见对应的接口使用说明）。
+antiquant_group_size中k值的范围与matmul一致，为[1,65535]，INT_MAX大于(k-1)。
+x1不支持输入转置后的tensor，x2转置后输入，需要满足shape的第一维大小与x1的最后一维相同，满足matmul的计算条件。
+Atlas A2训练系列产品/Atlas 800I A2推理产品支持1、2、4、8卡，并且仅支持hccs链路all mesh组网。
+增量场景不使能该融合算子，全量场景使能该融合算子。
+一个模型中的通算融合MC2算子，仅支持相同通信域。
+在长序列场景，随着b/s或者m的增大，可能出现内存不足或者计算超时。
+comm_quant_scale_1，comm_quant_scale_2的shape应保持一致，dtype与输出的dtype保持一致，且只在Atlas A2训练系列产品/Atlas 800I A2推理产品全量化场景支持。
 
-支持的型号:
-Atlas A2 训练系列产品
-Atlas 300I Duo 推理系列产品
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
 
 调用示例:
 import torch
@@ -4027,7 +3992,8 @@ if __name__ == "__main__":
     x1_shape = [128, 512]
     x2_shape = [512, 64]
     dtype = torch.float16
-    mp.spawn(run_mm_all_reduce_base, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize
+
+    mp.spawn(run_mm_all_reduce_base, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
 """
 )
 
@@ -4086,11 +4052,6 @@ output_dtype： ScalarType类型，可选参数，该参数只在量化场景生
     y为FLOAT16、x为FLOAT16、bias为FLOAT16，antiquant_scale为FLOAT16、antiquant_offset为FLOAT16，weight支持数据类型INT8。
     y为BFLOAT16、x为BFLOAT16、bias为FLOAT32，antiquant_scale为BFLOAT16、antiquant_offset为BFLOAT16，weight支持数据类型INT8。innerPrecise参数在BFLOAT16非量化场景，只能配置为0；FLOAT16非量化场景，可以配置为0或者1；量化或者伪量化场景，0和1都可配置，但是配置后不生效。
 expert_tokens和expert_tokens_index不可以同时传。
-
-支持的PyTorch版本:
-PyTorch 2.1
-PyTorch 2.0
-PyTorch 1.11.0
 
 支持的型号:
 Atlas A2训练系列产品/Atlas 800I A2推理产品中的推理产品
@@ -4190,9 +4151,6 @@ quantScale2、quantOffset2为一组参数, 其中quantOffset2可选, 传入该�
 kv左padding场景kvCache的搬运起点计算公式为: Smax - kvPaddingSize - actualSeqLengths。kvCache的搬运终点计算公式为: Smax - kvPaddingSize。其中kvCache的搬运起点或终点小于0时, 返回数据结果为全0。
 kv左padding场景kvPaddingSize小于0时将被置为0。
 kv左padding场景使能需要同时存在actualSeqLengths参数, 否则默认为kv右padding场景。
-
-支持的PyTorch版本:
-PyTorch 2.1
 
 支持的型号:
 Atlas A2 训练系列产品
@@ -4317,9 +4275,6 @@ int8量化相关入参数量与输入、输出数据格式的综合限制:
 输入为INT8, 输出为INT8的场景: 入参deqScale1、quantScale1、deqScale2、quantScale2、quantOffset2需要同时存在。
 输入为INT8, 输出为FLOAT16的场景: 入参deqScale1、quantScale1、deqScale2需要同时存在, 若存在入参quantOffset2 或quantScale2(即不为nullptr), 则报错并返回。
 输入为FLOAT16, 输出为INT8的场景: 入参quantOffset2 或 quantScale2需要同时存在, 若存在入参deqScale1 或 quantScale1 或 deqScale2(即不为nullptr), 则报错并返回。
-
-支持的PyTorch版本:
-PyTorch 2.1
 
 支持的芯片型号:
 Atlas A2 训练系列产品
@@ -4466,9 +4421,6 @@ softmaxLse（aclTensor*，计算输出）：flashdecode算法对query乘key的�
 当Q_S等于1时：请参考Incre_Flash_Attention限制
 当Q_S大于1时：请参考Prompt_Flash_Attention限制
 
-支持的PyTorch版本:
-PyTorch 2.1
-
 支持的芯片型号:
 Atlas A2 训练系列产品
 
@@ -4559,5 +4511,537 @@ graph output with mask: tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.00
         [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
         [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
         [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]],        device='npu:0', dtype=torch.float16)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_all_gather_base_mm",
+    """
+接口原型：
+npu_all_gather_base_mm(Tensor input, Tensor x2, str hcom, int world_size, *, Tensor? bias=None, int gather_index=0, bool gather_output=True, int comm_turn=0) -> (Tensor, Tensor)
+
+功能描述
+TP切分场景下，实现allgather和matmul的融合，融合算子内部实现通信和计算流水并行。
+
+参数说明
+input：Device侧的Tensor类型，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND格式，输入shape支持2维。
+x2：Device侧的Tensor类型，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND格式，数据类型需要和input保持一致，输入shape维度和input保持一致。
+hcom：Host侧的String类型，通信域handle名，通过get_hccl_comm_name接口获取。
+world_size：Host侧的int类型，通信域内的rank总数，仅支持为2、4、8。
+*：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
+bias：Device侧的Tensor类型，可选输入，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND格式。数据类型需要和input保持一致。bias仅支持一维，且维度大小与output的第1维大小相同。当前版本暂不支持bias输入为非0的场景。
+gather_index：Host侧的int类型，表示gather操作对象，0：对input做gather，1：对x2做gather。默认值0。当前版本仅支持输入0。
+gather_output：Host侧的bool类型，表示是否需要gather输出。默认值true。
+comm_turn：Host侧的int类型，表示rank间通信切分粒度，默认值：0，表示默认的切分方式。当前版本仅支持输入0。
+
+输出说明
+两个输出，均为Tensor类型：(Tensor, Tensor)
+第一个输出是allgather+matmul的结果。
+第二个输出是allgather的结果。
+
+约束说明
+使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本，否则将会引发报错，比如BUS ERROR等。
+输入input、x2必须是2维，分别为(m, k),(k, n)，轴满足matmul算子入参要求，k轴相等，且k轴取值范围为[256, 65535)。
+x1不支持输入转置后的tensor，x2转置后输入，需要满足shape的第一维大小与x1的最后一维相同，满足matmul的计算条件。
+Atlas A2 训练系列产品：支持2、4、8卡， 并且仅支持hccs链路all mesh组网。
+一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域
+
+支持的型号
+Atlas A2 训练系列产品
+
+调用示例
+import torch
+import torch_npu
+import torch.distributed as dist
+import torch.multiprocessing as mp
+def run_all_gather_base_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
+    torch_npu.npu.set_device(rank)
+    init_method = 'tcp://' + master_ip + ':' + master_port
+    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+    from torch.distributed.distributed_c10d import _get_default_group
+    default_pg = _get_default_group()
+    if torch.__version__ > '2.0.1':
+        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+    else:
+        hcomm_info = default_pg.get_hccl_comm_name(rank)
+
+    tensor_allgather_shape = x1_shape
+    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
+
+    input_ = torch.randn(single_shape, dtype=dtype).npu()
+    weight = torch.randn(x2_shape, dtype=dtype).npu()
+    output, gather_out = torch_npu.npu_all_gather_base_mm(input_, weight, hcomm_info, world_size)
+
+if __name__ == "__main__":
+    worksize = 8
+    master_ip = '127.0.0.1'
+    master_port = '50001'
+    x1_shape = [128, 512]
+    x2_shape = [512, 64]
+    dtype = torch.float16
+
+    mp.spawn(run_all_gather_base_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_group_norm_silu",
+    """
+接口原型：
+torch_npu.npu_group_norm_silu(Tensor self, Tensor weight, Tensor bias, int group, float eps) -> (Tensor, Tensor, Tensor)
+
+功能描述
+计算输入self的组归一化结果out、均值meanOut、标准差的倒数rstdOut、以及silu的输出。
+
+参数说明
+self：Device侧的Tensor类型，必选输入，源数据张量，数据类型支持FLOAT16、FLOAT、BFLOAT16，维度需大于一维，数据格式支持ND，支持非连续的Tensor。
+weight：Device侧的Tensor类型，必选输入，索引张量，数据类型支持FLOAT16、FLOAT、BFLOAT16，维度为1且元素数量需与输入self的第1维度保持相同，数据格式支持ND，支持非连续的Tensor。
+bias：Device侧的Tensor类型，必选输入，更新数据张量，数据类型支持FLOAT16、FLOAT、BFLOAT16，维度为1元素数量需与输入self的第1维度保持相同，数据格式支持ND，支持非连续的Tensor。
+group：Host侧的int类型，必选输入，表示将输入self的第1维度分为group组。
+eps：Host侧的float类型，可选参数，数值稳定性而加到分母上的值，若保持精度，则eps需大于0。
+
+输出说明
+out：Device侧的Tensor类型，计算输出，数据类型支持FLOAT16、FLOAT、BFLOAT16，数据类型和shape与self相同，支持ND，支持非连续的Tensor。
+meanOut：Device侧的Tensor类型，计算输出，数据类型支持FLOAT16、FLOAT、BFLOAT16，数据类型与self相同，shape为(N, group)支持ND，支持非连续的Tensor。
+rstdOut：Device侧的Tensor类型，计算输出，数据类型支持FLOAT16、FLOAT、BFLOAT16，数据类型与self相同，shape为(N, group)。
+
+约束说明
+BFLOAT16数据类型仅在Atlas A2训练系列产品/Atlas 800I A2推理产品支持。
+self、weight、bias、out、meanOut、rstdOut数据类型必须支持的范围之内。
+out、meanOut、rstdOut的数据类型与self相同；weight、bias与self可以不同。
+self第1维度能整除group。
+out的shape与self相同。
+meanOut与rstdOut的shape为(N, group)，其中N为self第0维度值。
+weight与bias的数据类型必须保持一致，且数据类型的精度不能低于self的数据类型。
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+Atlas 推理系列产品
+
+调用示例
+import torch
+import numpy as np
+import torch_npu
+ 
+dtype = np.float32
+shape_x = [24,320,48,48]
+num_groups = 32
+shape_c = [320]
+eps = 0.00001
+ 
+x_npu=torch.randn(shape_x,dtype=torch.float32).npu()
+gamma_npu=torch.randn(shape_c,dtype=torch.float32).npu()
+beta_npu=torch.randn(shape_c,dtype=torch.float32).npu()
+out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(x_npu, gamma_npu, beta_npu, group=num_groups, eps=eps)
+ 
+ 
+x_npu=torch.randn(shape_x,dtype=torch.bfloat16).npu()
+gamma_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
+beta_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
+out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(x_npu, gamma_npu, beta_npu, group=num_groups, eps=eps)
+ 
+x_npu=torch.randn(shape_x,dtype=torch.float16).npu()
+gamma_npu=torch.randn(shape_c,dtype=torch.float16).npu()
+beta_npu=torch.randn(shape_c,dtype=torch.float16).npu()
+out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(x_npu, gamma_npu, beta_npu, group=num_groups, eps=eps)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_mm_reduce_scatter_base",
+    """
+接口原型：
+npu_mm_reduce_scatter_base(Tensor input, Tensor x2, str hcom, int world_size, *, str reduce_op='sum', Tensor? bias=None, int comm_turn=0) -> Tensor
+
+功能描述
+TP切分场景下，实现matmul和reduce_scatter的融合，融合算子内部实现计算和通信流水并行。
+
+参数说明
+input：Device侧的Tensor类型，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，输入shape支持2维。
+x2：Device侧的Tensor类型，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND，数据类型需要和input保持一致，输入shape维度和input保持一致。
+hcom：Host侧的String类型，通信域handle名，通过get_hccl_comm_name接口获取。
+world_size：Host侧的int类型，通信域内的rank总数，仅支持为2、4、8。
+*：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
+reduce_op：Host侧的String类型，reduce操作类型，当前仅支持'sum'，默认值：'sum'。
+bias：Device侧的Tensor类型，可选输入，数据类型支持FLOAT16、BFLOAT16，数据格式支持ND格式。数据类型需要和input保持一致。bias仅支持一维，且维度大小与output的第1维大小相同。当前版本暂不支持bias输入为非0的场景。
+comm_turn：Host侧的int类型，表示rank间通信切分粒度，默认值：0，表示默认的切分方式。当前版本仅支持输入0。
+
+输出说明
+Tensor类型，数据类型和input保持一致，shape维度和self保持一致。
+
+约束说明
+使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本，否则将会引发报错，比如BUS ERROR等。
+输入input、x2必须是2维，分别为(m, k),(k, n)，轴满足matmul算子入参要求，k轴相等，且k轴取值范围为[256, 65535)，m轴约束如下：
+Atlas A2 训练系列产品 ，m轴需要整除world_size，支持2、4、8卡，且仅支持hccs链路all mesh组网。
+x1不支持输入转置后的tensor，x2转置后输入，需要满足shape的第一维大小与x1的最后一维相同，满足matmul的计算条件。
+一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域
+
+支持的型号
+Atlas A2 训练系列产品
+
+调用示例
+import torch
+import torch_npu
+import torch.distributed as dist
+import torch.multiprocessing as mp
+def run_mm_reduce_scatter_base(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
+    torch_npu.npu.set_device(rank)
+    init_method = 'tcp://' + master_ip + ':' + master_port
+    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+    from torch.distributed.distributed_c10d import _get_default_group
+    default_pg = _get_default_group()
+    if torch.__version__ > '2.0.1':
+        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+    else:
+        hcomm_info = default_pg.get_hccl_comm_name(rank)
+
+    input_ = torch.randn(x1_shape, dtype=dtype).npu()
+    weight = torch.randn(x2_shape, dtype=dtype).npu()
+    output = torch_npu.npu_mm_reduce_scatter_base(input_, weight, hcomm_info, world_size)
+
+if __name__ == "__main__":
+    worksize = 8
+    master_ip = '127.0.0.1'
+    master_port = '50001'
+    x1_shape = [128, 512]
+    x2_shape = [512, 64]
+    dtype = torch.float16
+
+    mp.spawn(run_mm_reduce_scatter_base, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_moe_compute_expert_tokens",
+    """
+接口原型：
+npu_moe_compute_expert_tokens(Tensor sorted_expert_for_source_row, int num_expert) -> Tensor
+
+功能描述
+MoE计算中，通过二分查找的方式查找每个专家处理的最后一行的位置。
+
+参数说明
+sorted_expert_for_source_row：必选参数，经过专家处理过的结果，要求是一个1D的Tensor，数据类型支持INT32，数据格式要求为ND。shape大小需要小于2147483647。
+num_expert：必选参数，总专家数。
+
+输出说明
+expertTokens：Device侧的aclTensor，公式中的输出，要求的是一个1D的Tensor，数据类型与sorted_expert_for_source_row保持一致。
+
+约束说明
+该融合算子仅在推理场景使用。
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+调用示例
+import torch
+import torch_npu
+sorted_experts = torch.tensor([3,3,4,5,6,7], dtype=torch.int32)
+num_experts = 5
+output = torch_npu.npu_moe_compute_expert_tokens(sorted_experts.npu(), num_experts)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_moe_finalize_routing",
+    """
+接口原型：
+npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor? skip1, Tensor? skip2, Tensor? bias, Tensor? scales, Tensor expanded_src_to_dst_row, Tensor? export_for_source_row, int? drop_pad_mode=0) -> Tensor
+
+功能描述
+MoE计算中，最后处理合并MoE FFN的输出结果。
+
+参数说明
+expanded_permuted_rows：必选参数，经过专家处理过的结果，要求是一个2D的Tensor，数据类型支持FLOAT16、BFLOAT16、FLOAT32，数据格式要求为ND。shape支持（NUM_ROWS * K, H），NUM_ROWS为行数，K为从总的专家E中选出K个专家，H为列数。
+skip1：可选参数，求和的输入参数1，要求是一个2D的Tensor，数据类型要求与expanded_permuted_rows一致 ，shape要求与输出out的shape一致。
+skip2：可选参数，求和的输入参数2，要求是一个2D的Tensor，数据类型要求与expanded_permuted_rows一致 ，shape要求与输出out的shape一致。skip2参数为None时，skip1参数必须也为None。
+bias：可选参数，专家的偏差，要求是一个2D的Tensor，数据类型要求与expanded_permuted_rows一致。shape支持（E，H），E为总的专家个数，H为列数。
+scales：可选参数，专家的权重，要求是一个2D的Tensor，数据类型要求与expanded_permuted_rows一致，shape支持（NUM_ROWS，K）。
+expanded_src_to_dst_row: 必选参数，保存每个专家处理结果的索引，要求是一个1D的Tensor，数据类型支持INT32。shape支持（NUM_ROWS * K），NUM_ROWS为行数，K为从总的专家E中选出K个专家，drop_pad_mode参数为0时，Tensor中的值取值范围是[0, NUM_ROWS * K-1]。
+export_for_source_row: 可选参数，每行处理的专家号，要求是一个2D的Tensor，数据类型支持INT32。shape支持（NUM_ROWS，K），NUM_ROWS为行数，K为从总的专家E中选出K个专家。
+drop_pad_mode：可选参数，表示是否支持丢弃模式，取值范围为0，默认值为0。
+
+输出说明
+out：Device侧的Tensor类型，最后处理合并MoE FFN的输出结果。
+
+约束说明
+该融合算子仅在推理场景使用。
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+调用示例
+import torch
+import torch_npu
+
+expert_num = 16
+token_len = 10
+top_k = 4
+num_rows = 50
+device =torch.device('npu')
+dtype = torch.float32
+expanded_permuted_rows = torch.randn((num_rows * top_k, token_len), device=device, dtype=dtype)
+skip1 = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
+scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
+expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device, dtype=torch.int32)
+drop_pad_mode = 0
+output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_moe_gating_top_k_softmax",
+    """
+接口原型：
+npu_moe_gating_top_k_softmax(Tensor x, Tensor? finished=None, int k=1) -> (Tensor, Tensor, Tensor)
+
+功能描述
+MoE计算中，对gating的输出做Softmax计算，取topk操作。
+
+参数说明
+x（aclTensor*，计算输入）：待计算的输入，要求是一个2D/3D的Tensor，数据类型支持FLOAT16、BFLOAT16、FLOAT32，数据格式要求为ND。
+finished（aclTensor*，计算输入） ：可选，要求是一个1D/2D的Tensor，数据类型支持BOOL，shape为gating_shape[:-1]，数据格式要求为ND。
+k（int，计算输入）：topk的k值，大小为0 <= k <= x的-1轴大小，k<=1024。
+
+输出说明
+y（aclTensor*，计算输出）：对x做softmax后取的topk值，要求是一个2D/3D的Tensor，数据类型与x需要保持一致，其非-1轴要求与x的对应轴大小一致，其-1轴要求其大小同k值。数据格式要求为ND。
+expert_idx（aclTensor*，计算输出）：对x做softmax后取topk值的索引，即专家的序号。shape要求与y一致，数据类型支持int32，数据格式要求为ND。
+row_idx（aclTensor*，计算输出）：指示每个位置对应的原始行位置，请参见调用示例，shape要求与y一致，数据类型支持int32，数据格式要求为ND。
+
+约束说明
+该融合算子仅在推理场景使用。
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+调用示例
+import torch
+import torch_npu
+x = torch.rand((3, 3), dtype=torch.float32).to("npu")
+finished = torch.randint(2, size=(3,), dtype=torch.bool).to("npu")
+y, expert_idx, row_idx = torch_npu.npu_moe_gating_top_k_softmax(x, finished, k=2)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_moe_init_routing",
+    """
+接口原型：
+npu_moe_init_routing(Tensor x, Tensor row_idx, Tensor expert_idx, int active_num) -> (Tensor, Tensor, Tensor)
+
+功能描述
+MoE的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理。
+
+参数说明
+x ：Device侧的Tensor类型，必选输入，MOE的输入即token特征输入，要求为一个2D的Tensor，shape为 (NUM_ROWS, H)。数据类型支持FLOAT16、BFLOAT16、FLOAT32，数据格式要求为ND。shape大小需要小于2^24。
+row_idx：Device侧的Tensor类型，必选输入，指示每个位置对应的原始行位置，shape要求与expert_idx一致。数据类型支持INT32，数据格式要求为ND。
+expert_idx： Device侧的Tensor类型，必选输入，torch_npu.npu_moe_gating_top_k_softmax的输出每一行特征对应的K个处理专家，要求是一个2D的shape (NUM_ROWS, K)，数据类型支持int32，数据格式要求为ND。
+active_num：Host侧的int类型，表示总的最大处理row数，输出expanded_x只有这么多行是有效的。
+
+输出说明
+expanded_x：Device侧的Tensor类型，根据expert_idx进行扩展过的特征，要求是一个2D的Tensor，shape (min(NUM_ROWS, activeNum) * k, H)。数据类型同x，数据格式要求为ND。
+expanded_row_idx：Device侧的Tensor类型，expanded_x和x的映射关系， 要求是一个1D的Tensor，Shape为(NUM_ROWS*K, )，数据类型支持INT32，数据格式要求为ND。
+expanded_expert_idx：Device侧的Tensor类型，输出expert_idx排序后的结果。
+
+约束说明
+该融合算子仅在推理场景使用。
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+调用示例
+import torch
+import torch_npu
+x = torch.tensor([[0.1, 0.1, 0.1, 0.1], [0.2, 0.2, 0.2, 0.2],[0.3, 0.3, 0.3, 0.3]], dtype=torch.float32).to("npu")
+row_idx = torch.tensor([[0, 3], [1, 4], [2, 5]], dtype=torch.int32).to("npu")
+expert_idx = torch.tensor([[1, 2], [0, 1], [0, 2]], dtype=torch.int32).to("npu")
+active_num = 3
+expanded_x, expanded_row_idx, expanded_expert_idx = torch_npu.npu_moe_init_routing(x, row_idx, expert_idx, active_num)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_prefetch",
+    """
+接口原型：
+torch_npu.npu_prefetch(Tensor self, Tensor? dependency, int max_size, int offset=0) -> ()
+
+功能描述
+提供网络weight预取功能，将需要预取的权重搬到L2 Cache中。尤其在做较大Tensor的MatMul计算且需要搬移到L2 Cache的操作时，可通过该接口提前预取权重，适当提高模型性能，具体效果基于用户对并行的处理。
+
+参数说明
+self：Tensor类型，表示需要预取的权重，不做数据处理，与数据类型和数据格式无关；输入不能含有空指针
+dependency：Tensor类型，表示开始预取的节点，单算子下不生效可为None，图模式下不可为None；不做数据处理，与数据类型和数据格式无关。
+max_size：int类型，取值需大于0，表示权重预取的最大size，超过预取权重的size时，会设置为权重的最大size。数据类型为int32、int64。
+offset: int类型，默认值0，取值大于等于0，表示权重预取内存地址偏移，不允许超过权重地址范围。数据类型为int32、int64。
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+调用示例:
+单算子多流并发调用
+import torch
+import torch_npu
+s_cmo = torch.npu.Stream()
+x = torch.randn(10000, 10000, dtype=torch.float16).npu()
+y = torch.randn(10000, 1, dtype=torch.float16).npu()
+add = torch.add(x, 1)
+with torch.npu.stream(s_cmo):
+    torch_npu.npu_prefetch(y, None, 10000000)
+abs = torch.abs(add)
+mul = torch.matmul(abs, abs)
+out = torch.matmul(mul, y)
+
+图模式调用（图模式目前仅支持PyTorch 2.1版本）
+import torch
+import torch_npu
+import torchair as tng
+from torchair.ge_concrete_graph import ge_apis as ge
+from torchair.configs.compiler_config import CompilerConfig
+
+config = CompilerConfig()
+config.debug.graph_dump.type = 'pbtxt'
+npu_backend = tng.get_npu_backend(compiler_config=config)
+x = torch.randn(10000, 10000, dtype=torch.float16).npu()
+y = torch.randn(10000, 1, dtype=torch.float16).npu()
+class Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self,x,y):
+        add = torch.add(x, 1)
+        torch_npu.npu_prefetch(y, add, 10000000)
+        abs = torch.abs(add)
+        mul = torch.matmul(abs, abs)
+        out = torch.matmul(mul, y)
+        return out
+
+npu_model = Model().npu()
+model = torch.compile(npu_model, backend=npu_backend, dynamic=False, fullgraph=True)
+output = model(x,y)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_quantize",
+    """
+接口原型：
+npu_quantize(Tensor self, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1, bool div_mode=True) -> Tensor
+
+功能描述
+对输入的张量进行量化处理。
+
+参数说明
+self：Device侧的Tensor类型，需要进行量化的源数据张量，必选输入，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。div_mode为False且dtype为torch.quint4x2时，最后一维需要能被8整除。
+scales：Device侧的Tensor类型，对self进行scales的张量，必选输入：
+div_mode为True时，数据类型支持FLOAT、BFLOAT16。
+div_mode为False时，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。支持1维或多维(1维时，对应轴的大小需要与self中第axis维相等或等于1；多维时，scales的shape需要与self的shape维度相等，除axis指定的维度，其他维度为1，axis指定的维度必须和self对应的维度相等或等于1)。
+zero_points：Device侧的Tensor类型，对self进行offset的张量，可选输入：
+div_mode为True时，数据类型支持INT8、UINT8、INT32、BFLOAT16。
+div_mode为False时，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。支持1维或多维(1维时，对应轴的大小需要与self中第axis维相等或等于1；多维时，scales的shape需要与self维度相等，除axis指定的维度，其他维度为1，axis指定的维度必须和self对应的维度相等)。zero_points的shape和dtype需要和scales一致。
+dtype：指定Device侧输出Tensor的类型：
+div_mode为True时，格式支持torch.qint8、torch.quint8、torch.int32。
+div_mode为False时，格式支持torch.qint8、torch.quint4x2。如果dtype为torch.quint4x2时，输出tensor类型为int32，由8个int4拼接。
+axis：量化的elemwise轴， 其他的轴做broadcast，默认值为1。
+div_mode为False时，axis取值范围是[-2, +∞）且指定的轴不能超过输入self的维度数。如果axis=-2，代表量化的elemwise轴是输入self的倒数第二根轴；如果axis大于-2，量化的elemwise轴是输入的最后一根轴。
+div_mode：div_mode为True时，表示用除法计算scales；div_mode为False时，表示用乘法计算scales，默认值为True。
+
+输出说明
+y：Device侧的aclTensor，公式中的输出，输出大小与self一致。如果参数dtype为torch.quint4x2，输出的dtype是torch.int32，shape的最后一维是输入shape最后一维的1/8，shape其他维度和输入一致。
+
+约束说明
+该融合算子仅在推理场景使用。
+BFLOAT16数据类型仅在Atlas A2训练系列产品/Atlas 800I A2推理产品支持。
+div_mode为False时，支持Atlas 推理系列产品，但是如下场景仅在Atlas A2训练系列产品/Atlas 800I A2推理产品支持：dtype为torch.quint4x2的场景；axis为-2的场景。
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+Atlas 推理系列产品
+
+调用示例:
+import torch
+import torch_npu
+x = torch.randn(1, 1, 12).bfloat16().npu()
+scale = torch.tensor([0.1] * 12).bfloat16().npu()
+out = torch_npu.npu_quantize(x, scale, None, torch.qint8, -1, False)
+print(out)
+"""
+)
+
+_add_torch_npu_docstr(
+    "scatter_update",
+    """
+接口原型：
+scatter_update(Tensor data, Tensor indices, Tensor updates, int axis) -> Tensor
+
+功能描述
+将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据不变。
+
+参数说明
+data：Device侧的Tensor类型，计算输入；数据类型支持INT8、FLOAT16、FLOAT32、BFLOAT16类型；data只支持2-8维，且维度大小需要与updates一致；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+indices：Device侧的Tensor类型，计算输入；数据类型支持INT32、INT64；目前仅支持一维跟二维；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+updates：Device侧的Tensor类型，计算输入，数据类型支持INT8、FLOAT16、FLOAT32、BFLOAT16类型；updates的维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+axis（int64_t，计算输入）：用来scatter的维度，数据类型为INT64。
+
+输出说明
+out：Device侧的Tensor类型，计算输出；数据类型支持INT8、FLOAT16、FLOAT32、BFLOAT16类型；out只支持2-8维，且维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+
+约束说明
+BFLOAT16数据类型仅支持如下产品型号：Atlas A2训练系列产品/Atlas 800I A2推理产品
+data与updates的秩一致。
+不支持索引越界，索引越界不校验。
+
+支持的型号
+Atlas 训练系列产品
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+调用示例:
+import torch
+import torch_npu
+import numpy as np
+data = torch.tensor([[[[1,1,1,1,1,1,1,1],[2,2,2,2,2,2,2,2]]]], dtype=torch.float32).npu()
+indices = torch.tensor ([1],dtype=torch.int64).npu()
+updates = torch.tensor([[[[3,3,3,3,3,3,3,3]]]] , dtype=torch.float32).npu()
+out = torch_npu.scatter_update(data, indices, updates, axis=-2)
+"""
+)
+
+_add_torch_npu_docstr(
+    "scatter_update_",
+    """
+接口原型：
+scatter_update_(Tensor(a!) data, Tensor indices, Tensor updates, int axis) -> Tensor(a!)
+
+功能描述
+将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据被改变。
+
+参数说明
+data：Device侧的Tensor类型，计算输入；数据类型支持INT8、FLOAT16、FLOAT32、BFLOAT16类型；data只支持2-8维，且维度大小需要与updates一致；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+indices：Device侧的Tensor类型，计算输入；数据类型支持INT32、INT64；目前仅支持一维跟二维；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+updates：Device侧的Tensor类型，计算输入；数据类型支持INT8、FLOAT16、FLOAT32、BFLOAT16类型；updates的维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+axis（int64_t，计算输入）：用来scatter的维度，数据类型为INT64。
+
+输出说明
+out：Device侧的Tensor类型，计算输出，复用输入地址；数据类型支持INT8、FLOAT16、FLOAT32、BFLOAT16类型；out只支持2-8维，且维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+
+约束说明
+BFLOAT16数据类型仅支持如下产品型号：Atlas A2训练系列产品/Atlas 800I A2推理产品
+data与updates的秩一致。
+不支持索引越界，索引越界不校验。
+
+支持的型号
+Atlas 训练系列产品
+Atlas A2训练系列产品/Atlas 800I A2推理产品
+
+调用示例:
+import torch
+import torch_npu
+import numpy as np
+data = torch.tensor([[[[1,1,1,1,1,1,1,1],[2,2,2,2,2,2,2,2]]]], dtype=torch.float32).npu()
+indices = torch.tensor ([1],dtype=torch.int64).npu()
+updates = torch.tensor([[[[3,3,3,3,3,3,3,3]]]] , dtype=torch.float32).npu()
+out = torch_npu.scatter_update_(data, indices, updates, axis=-2)
 """
 )
