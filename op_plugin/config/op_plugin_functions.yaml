@@ -6406,6 +6406,9 @@ custom:
   - func: _npu_silent_check_v2(Tensor val, Tensor(a!) input_grad, Tensor(b!) sfda, Tensor(c!) step, int c_min_steps, float c_thresh_l1, float c_coeff_l1, float c_thresh_l2, float c_coeff_l2, int npu_asd_detect) -> Tensor
     op_api: all_version
 
+  - func: _npu_silent_check_v3(Tensor val, Tensor(a!) input_grad, Tensor(b!) step, Tensor(c!) max, Tensor(d!) avg, float c_thresh_l1, float c_thresh_l2, float betal, int npu_asd_detect) -> Tensor
+    op_api: all_version
+
   - func: batch_norm_gather_stats_update(Tensor input, Tensor mean, Tensor invstd, Tensor? running_mean, Tensor? running_var, float momentum, float eps, Tensor counts) -> (Tensor, Tensor)
     acl_op: all_version
 
