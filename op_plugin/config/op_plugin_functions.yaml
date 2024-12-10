@@ -4552,19 +4552,16 @@ official:
       exec: aclnnReflectionPad2dBackward
 
   - func: reflection_pad3d(Tensor self, SymInt[6] padding) -> Tensor
-    acl_op: [v2.0, newest]
     op_api: [v2.0, newest]
     gen_opapi:
       structured_inherit: reflection_pad3d.out
 
   - func: reflection_pad3d(Tensor self, int[6] padding) -> Tensor
-    acl_op: v1.11
     op_api: v1.11
     gen_opapi:
       structured_inherit: reflection_pad3d.out
 
   - func: reflection_pad3d.out(Tensor self, SymInt[6] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: [v2.0, newest]
     op_api: [v2.0, newest]
     gen_opapi:
       out:
@@ -4573,7 +4570,6 @@ official:
       exec: aclnnReflectionPad3d
 
   - func: reflection_pad3d.out(Tensor self, int[6] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v1.11
     op_api: v1.11
     gen_opapi:
       out:
@@ -4821,19 +4817,16 @@ official:
       exec: aclnnReplicationPad2dBackward
 
   - func: replication_pad3d(Tensor self, SymInt[6] padding) -> Tensor
-    acl_op: [v2.0, newest]
     op_api: [v2.0, newest]
     gen_opapi:
       structured_inherit: replication_pad3d.out
 
   - func: replication_pad3d(Tensor self, int[6] padding) -> Tensor
-    acl_op: v1.11
     op_api: v1.11
     gen_opapi:
       structured_inherit: replication_pad3d.out
 
   - func: replication_pad3d.out(Tensor self, SymInt[6] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: [v2.0, newest]
     op_api: [v2.0, newest]
     gen_opapi:
       out:
@@ -4842,7 +4835,6 @@ official:
       exec: aclnnReplicationPad3d
 
   - func: replication_pad3d.out(Tensor self, int[6] padding, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: v1.11
     op_api: v1.11
     gen_opapi:
       out:
@@ -5414,7 +5406,7 @@ official:
       exec: aclnnSoftshrinkBackward
 
   - func: sort(Tensor self, int dim=-1, bool descending=False) -> (Tensor values, Tensor indices)
-    acl_op: all_version
+    acl_op: [v2.1, newest]
     op_api: all_version
 
   - func: sort.dimname(Tensor self, Dimname dim, bool descending=False) -> (Tensor values, Tensor indices)

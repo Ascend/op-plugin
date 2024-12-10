@@ -145,23 +145,4 @@ std::tuple<at::Tensor, at::Tensor> sort(
   return acl_op::sort(self, dimname_to_position(self, dim), descending);
 }
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-std::tuple<at::Tensor, at::Tensor> sort(
-    const at::Tensor& self,
-    c10::optional<bool> stable,
-    int64_t dim,
-    bool descending) {
-    TORCH_CHECK(false, "sort.stable is not supported." + OPS_ERROR(ErrCode::NOT_SUPPORT));
-}
-
-std::tuple<at::Tensor&, at::Tensor&> sort_out(
-    const at::Tensor& self,
-    c10::optional<bool> stable,
-    int64_t dim,
-    bool descending,
-    at::Tensor& values,
-    at::Tensor& indices) {
-    TORCH_CHECK(false, "sort.stable is not supported." + OPS_ERROR(ErrCode::NOT_SUPPORT));
-}
-#endif
 } // namespace acl_op
