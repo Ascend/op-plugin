@@ -17,6 +17,17 @@ class TestForeachPowScalarList(TestCase):
         "int32" : torch.int32,
     }
 
+    def assert_equal_bf16(self, cpu_outs, npu_outs):
+        for cpu_out, npu_out in zip(cpu_outs, npu_outs):
+            if (cpu_out.shape != npu_out.shape):
+                self.fail("shape error")
+            if (cpu_out.dtype != npu_out.dtype):
+                self.fail("dtype error!")
+            result = torch.allclose(cpu_out, npu_out.cpu(), rtol=0.004, atol=0.004)
+            if not result:
+                self.fail("result error!")
+        return True
+
     def create_tensors(self, dtype, shapes):
         cpu_tensors = []
         npu_tensors = []
@@ -85,11 +96,12 @@ class TestForeachPowScalarList(TestCase):
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "bfloat16")
             scalars = self.create_input_scalars(tensor_num, "bfloat16")
-            cpu_output = torch._foreach_pow(cpu_tensors[0], scalars)
+            cpu_tensors = [cpu_tensor.float() for cpu_tensor in cpu_tensors[0]]
+            cpu_output = torch._foreach_pow(cpu_tensors, scalars)
+            cpu_output = [cpu_tensor.bfloat16() for cpu_tensor in cpu_output]
             npu_output = torch._foreach_pow(npu_tensors[0], scalars)
 
-            self.assertRtolEqual(cpu_output, npu_output)
-            
+            self.assert_equal_bf16(cpu_output, npu_output)
 
     def test_foreach_pow_scalar_list_out_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
@@ -101,7 +113,6 @@ class TestForeachPowScalarList(TestCase):
             npu_output = torch._foreach_pow(npu_tensors[0], scalars)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
 
     def test_foreach_pow_scalar_list_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
@@ -131,11 +142,12 @@ class TestForeachPowScalarList(TestCase):
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "bfloat16")
             scalars = self.create_input_scalars(tensor_num, "bfloat16")
-            torch._foreach_pow_(cpu_tensors[0], scalars)
+            cpu_tensors = [cpu_tensor.float() for cpu_tensor in cpu_tensors[0]]
+            torch._foreach_pow_(cpu_tensors, scalars)
+            cpu_output = [cpu_tensor.bfloat16() for cpu_tensor in cpu_tensors]
             torch._foreach_pow_(npu_tensors[0], scalars)
 
-            self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-            
+            self.assert_equal_bf16(cpu_output, npu_tensors[0])
 
     def test_foreach_pow_scalar_list_inplace_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]

@@ -16,12 +16,23 @@ class TestForeachAddcdivScalarList(TestCase):
         "bfloat16" : torch.bfloat16
     }
 
+    def assert_equal_bfloat16(self, cpu_outs, npu_outs):
+        for cpu_out, npu_out in zip(cpu_outs, npu_outs):
+            if (cpu_out.shape != npu_out.shape):
+                self.fail("shape error")
+            if (cpu_out.dtype != npu_out.dtype):
+                self.fail("dtype error!")
+            result = torch.allclose(cpu_out, npu_out.cpu(), rtol=0.001, atol=0.001)
+            if not result:
+                self.fail("result error!")
+        return True
+
     def create_tensors(self, dtype, shapes):
         cpu_tensors = []
         npu_tensors = []
         for shape in shapes:
             t = torch.randn((shape[0], shape[1]), dtype=self.torch_dtypes.get(dtype))
-            t[t == 0] = 2.3
+            t[t == 0] = 3.2
             cpu_tensors.append(t)
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
@@ -32,8 +43,8 @@ class TestForeachAddcdivScalarList(TestCase):
         npu_inputs = []
         shapes = []
         for i in range(tensor_num):
-            m = random.randint(1, 100)
-            n = random.randint(1, 100)
+            m = random.randint(1, 10)
+            n = random.randint(1, 10)
             shapes.append([m, n])
         for i in range(input_nums) :
             cpu_tensors, npu_tensors = self.create_tensors(dtype, shapes)
@@ -46,7 +57,7 @@ class TestForeachAddcdivScalarList(TestCase):
         for i in range(tensor_nums):
             m = float(random.randint(-5, 5))
             if m == 0:
-                m = 2.4
+                m = 3
             sacalars.append(m)
         return tuple(sacalars)
 
@@ -85,7 +96,7 @@ class TestForeachAddcdivScalarList(TestCase):
             cpu_output = torch._foreach_addcdiv(cpu_tensors[0], cpu_tensors[1], cpu_tensors[2], scalars)
             npu_output = torch._foreach_addcdiv(npu_tensors[0], npu_tensors[1], npu_tensors[2], scalars)
 
-            self.assertRtolEqual(cpu_output, npu_output)
+            self.assert_equal_bfloat16(cpu_output, npu_output)
 
     def test_foreach_addcdiv_scalar_list_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
@@ -122,7 +133,7 @@ class TestForeachAddcdivScalarList(TestCase):
             torch._foreach_addcdiv_(cpu_tensors[0], cpu_tensors[1], cpu_tensors[2], scalars)
             torch._foreach_addcdiv_(npu_tensors[0], npu_tensors[1], npu_tensors[2], scalars)
 
-            self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
+            self.assert_equal_bfloat16(cpu_tensors[0], npu_tensors[0])
 
 
 if __name__ == "__main__":

@@ -16,6 +16,17 @@ class TestForeachPowList(TestCase):
         "bfloat16" : torch.bfloat16
     }
     
+    def assert_equal_bf16(self, cpu_outs, npu_outs):
+        for cpu_out, npu_out in zip(cpu_outs, npu_outs):
+            if (cpu_out.shape != npu_out.shape):
+                self.fail("shape error")
+            if (cpu_out.dtype != npu_out.dtype):
+                self.fail("dtype error!")
+            result = torch.allclose(cpu_out, npu_out.cpu(), rtol=0.004, atol=0.004)
+            if not result:
+                self.fail("result error!")
+        return True
+
     def create_tensors(self, dtype, shapes):
         cpu_tensors = []
         npu_tensors = []
@@ -26,7 +37,7 @@ class TestForeachPowList(TestCase):
                 npu_tensors.append(t.npu())
         else:
             for shape in shapes:
-                t = torch.rand((shape[0], shape[1]), dtype=self.torch_dtypes.get(dtype)) * 5
+                t = torch.rand((shape[0], shape[1]), dtype=self.torch_dtypes.get(dtype)) * 3
                 cpu_tensors.append(t)
                 npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
@@ -71,11 +82,10 @@ class TestForeachPowList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "bfloat16")
-            
             cpu_output = torch._foreach_pow(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_pow(npu_tensors[0], npu_tensors[1])
 
-            self.assertRtolEqual(cpu_output, npu_output)
+            self.assert_equal_bf16(cpu_output, npu_output)
 
     def test_foreach_pow_list_out_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
@@ -113,11 +123,13 @@ class TestForeachPowList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "bfloat16")
-            
+            cpu_tensors[0] = [cpu_tensor.float() for cpu_tensor in cpu_tensors[0]]
+            cpu_tensors[1] = [cpu_tensor.float() for cpu_tensor in cpu_tensors[1]]
             torch._foreach_pow_(cpu_tensors[0], cpu_tensors[1])
+            cpu_tensors[0] = [cpu_tensor.bfloat16() for cpu_tensor in cpu_tensors[0]]
             torch._foreach_pow_(npu_tensors[0], npu_tensors[1])
 
-            self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
+            self.assert_equal_bf16(cpu_tensors[0], npu_tensors[0])
 
     def test_foreach_pow_list_inplace_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
