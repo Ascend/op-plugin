@@ -84,12 +84,24 @@ official:
 
   - func: _add_relu.Tensor(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnAddRelu
 
   - func: _add_relu.out(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      exec: aclnnAddRelu
 
   - func: _add_relu_.Tensor(Tensor(a!) self, Tensor other, *, Scalar alpha=1) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+        exec: aclnnInplaceAddRelu
 
   - func: _aminmax(Tensor self) -> (Tensor, Tensor)
     acl_op: all_version
@@ -691,6 +703,7 @@ official:
 
   - func: _native_batch_norm_legit(Tensor input, Tensor? weight, Tensor? bias, Tensor(a!) running_mean, Tensor(b!) running_var, bool training, float momentum, float eps) -> (Tensor, Tensor, Tensor)
     acl_op: [v2.0, newest]
+    op_api: all_version
 
   - func: _nnpack_spatial_convolution(Tensor input, Tensor weight, Tensor? bias, SymInt[2] padding, int[2] stride=1) -> Tensor
     acl_op: [v2.0, newest]
@@ -1918,9 +1931,14 @@ official:
 
   - func: cumprod.out(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
-
-  - func: cumprod_(Tensor(a!) self, int dim, *, ScalarType? dtype=None) -> Tensor(a!)
-    acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'dtype.has_value() ? dtype.value() : out.scalar_type()'
+      new_params:
+        dim_scalar: 'at::Scalar(dim)'
+      exec: aclnnCumprod, self, dim_scalar, dtype, out
 
   - func: cumprod_.dimname(Tensor(a!) self, Dimname dim, *, ScalarType? dtype=None) -> Tensor(a!)
     acl_op: all_version
@@ -6125,25 +6143,25 @@ official:
     op_api: [v2.1, newest]
 
   - func: _upsample_nearest_exact1d_backward.grad_input(Tensor grad_output, int[1] output_size, int[3] input_size, float? scales=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    op_api: v1.11  
-  
+    op_api: v1.11
+
   - func: _upsample_nearest_exact1d_backward(Tensor grad_output, SymInt[1] output_size, SymInt[3] input_size, float? scales=None) -> Tensor
     op_api: [v2.1, newest]
 
   - func: _upsample_nearest_exact1d_backward(Tensor grad_output, int[1] output_size, int[3] input_size, float? scales=None) -> Tensor
-    op_api: v1.11  
+    op_api: v1.11
 
-  - func: _upsample_nearest_exact2d_backward.grad_input(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)  
+  - func: _upsample_nearest_exact2d_backward.grad_input(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
     op_api: [v2.1, newest]
 
   - func: _upsample_nearest_exact2d_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
-    op_api: v1.11  
-  
-  - func: _upsample_nearest_exact2d_backward(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, float? scales_h=None, float? scales_w=None) -> Tensor     
+    op_api: v1.11
+
+  - func: _upsample_nearest_exact2d_backward(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, float? scales_h=None, float? scales_w=None) -> Tensor
     op_api: [v2.1, newest]
-    
-  - func: _upsample_nearest_exact2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, float? scales_h=None, float? scales_w=None) -> Tensor     
-    op_api: v1.11    
+
+  - func: _upsample_nearest_exact2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, float? scales_h=None, float? scales_w=None) -> Tensor
+    op_api: v1.11
 
   - func: upsample_trilinear3d(Tensor self, SymInt[3] output_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
     acl_op: [v2.0, newest]
