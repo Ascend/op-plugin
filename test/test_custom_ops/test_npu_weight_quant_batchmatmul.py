@@ -18,28 +18,27 @@ class TestNPUWeightQuantBatchMatmul(TestCase):
         return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset)
 
     @SupportedDevices(['Ascend910B'])
-    def test_npu_npu_weight_quant_batchmatmul(self, device="npu"):
-        torch.mannal_seed(0)
-        x = torch.randn((96, 11264), dtype=torch.bfloat16).npu()
-        weight = torch.randn((11264, 1164), dtype=torch.int8).npu()
-        weight_t = torch.transpose(weight, 0, 1)
-        antiquant_scale = torch.randn((1, 1164), dtype=torch.bfloat16).npu()
-        antiquant_offset = torch.randn((1, 1164), dtype=torch.bfloat16).npu()
+    def test_npu_weight_quant_batchmatmul(self):
+        torch.manual_seed(0)
+        x = torch.randn((96, 11264), dtype=torch.float16).npu()
+        weight = torch.randint(low=-8, high=8, size=(11264, 1164), dtype=torch.int8).npu()
+        antiquant_scale = torch.randn((1, 1164), dtype=torch.float16).npu()
+        antiquant_offset = torch.randn((1, 1164), dtype=torch.float16).npu()
 
         x_clone = x.clone()
-        weight_t_clone = weight_t.clone()
+        weight_clone = weight.clone()
         antiquant_scale_clone = antiquant_scale.clone()
         antiquant_offset_clone = antiquant_offset.clone()
 
         supported_output = self.supported_op_exec(
-            x, weight_t, antiquant_scale, antiquant_offset)
+            x, weight, antiquant_scale, antiquant_offset)
         custom_output = self.custom_op_exec(
-            x_clone, weight_t_clone, antiquant_scale_clone, antiquant_offset_clone)
+            x_clone, weight_clone, antiquant_scale_clone, antiquant_offset_clone)
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
     @SupportedDevices(['Ascend310P'])
-    def test_npu_weight_quant_batchmatmul2(self, device="npu"):
+    def test_npu_weight_quant_batchmatmul2(self):
         torch.mannal_seed(0)
         x = torch.randn((4, 32, 1024, 128), dtype=torch.float16).npu()
         weight = torch.randn((4, 32, 128, 1024), dtype=torch.int8).npu()

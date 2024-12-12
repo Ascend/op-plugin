@@ -110,12 +110,10 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
         output_size[i] = static_cast<int64_t>(batch_record[i]);
     }
     c10::TensorOptions options;
-    if (!output_dtype.has_value() ||  output_dtype.value() == at::kChar) {
+    if (!output_dtype.has_value()) {
         options = x1.options().dtype(at::kChar);
-    } else if (output_dtype == at::kHalf) {
-        options = x1.options().dtype(at::kHalf);
-    } else if (output_dtype == at::kBFloat16) {
-        options = x1.options().dtype(at::kBFloat16);
+    } else {
+        options = x1.options().dtype(output_dtype.value());
     }
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
