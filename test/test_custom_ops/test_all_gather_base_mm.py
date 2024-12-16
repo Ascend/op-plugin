@@ -25,7 +25,9 @@ class TestAllGatherBaseMm(TestCase):
 
     @classmethod
     def _test_npu_all_gather_base_mm(cls, rank, input_list):
-        x1, x2, world_size, init_pg, c2p = input_list
+        x1_list, x2_list, world_size, init_pg, c2p = input_list
+        x1 = x1_list[rank]
+        x2 = x2_list[rank]
         pg = init_pg(rank, world_size)
         group = pg.distributed_c10d._get_default_group()
         if torch.__version__ > '2.0':
@@ -73,9 +75,9 @@ class TestAllGatherBaseMm(TestCase):
     def _construct_excepted_result(self, x1_list, x2_list, world_size):
         gather_out = torch.cat(x1_list)
         out_list = []
-        out_dype = gather_out.dtype
+        out_dtype = gather_out.dtype
         for i in range(world_size):
-            out_list.append(torch.matmul(gather_out.to(torch.float), x2_list[i].to(torch.float)).to(out_dype))
+            out_list.append(torch.matmul(gather_out.npu(), x2_list[i].npu()).to(out_dtype).cpu())
         return out_list, gather_out
 
     @skipIfUnsupportMultiNPU(8)
@@ -95,7 +97,7 @@ class TestAllGatherBaseMm(TestCase):
             x2_list.append(x2)
         expt_out_list, expt_gather = self._construct_excepted_result(x1_list, x2_list, world_size)
         self._test_multiprocess(TestAllGatherBaseMm._test_npu_all_gather_base_mm,
-                                TestAllGatherBaseMm._init_dist_hccl, [expt_out_list, expt_gather, x1, x2, world_size])
+                                TestAllGatherBaseMm._init_dist_hccl, [expt_out_list, expt_gather, x1_list, x2_list, world_size])
 
 
 if __name__ == '__main__':
