@@ -174,7 +174,7 @@ class TestMgr():
         if "Ascend910B" in torch_npu.npu.get_device_name():
             supported_ut_files = []
             for ut_file in exist_ut_file:
-                if ut_file.split('test/')[-1] in not_support_in_910b:
+                if ut_file.split('test/')[-1][:-3] in not_support_in_910b:
                     print(ut_file, "can not run in Ascend910B, skip it now.")
                 else:
                     supported_ut_files.append(ut_file)
