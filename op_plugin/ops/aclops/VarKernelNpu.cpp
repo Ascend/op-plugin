@@ -103,9 +103,9 @@ at::Tensor& var_out(
     const c10::optional<c10::Scalar>& correction,
     bool keepdim,
     at::Tensor& result) {
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  return cal_var_out(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim, result);
+    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+    return cal_var_out(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim, result);
 }
 
 at::Tensor var(
@@ -113,9 +113,9 @@ at::Tensor var(
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim);
+    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+    return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
@@ -123,9 +123,9 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, real_correction, keepdim);
+    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+    return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, real_correction, keepdim);
 }
 #endif
 } // namespace acl_op

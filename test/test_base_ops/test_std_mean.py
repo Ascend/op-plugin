@@ -126,6 +126,39 @@ class TestStdMean(TestCase):
         npu_output = torch.std_mean(npu_input, dim=dim)
         self.assertRtolEqual(cpu_output[0].to(torch.float16).numpy(), npu_output[0].cpu().numpy())
         self.assertRtolEqual(cpu_output[1].to(torch.float16).numpy(), npu_output[1].cpu().numpy())
+    
+    def cpu_op_dim_mean_correction_exec(self, input1, dim, correction):
+        output = torch.std_mean(input1, dim, correction=correction)
+        result = []
+        result.append(output[0].numpy())
+        result.append(output[1].numpy())
+        return result
+
+    def npu_op_dim_mean_correction_exec(self, input1, dim, correction):
+        output = torch.std_mean(input1, dim, correction=correction)
+        result = []
+        result.append(output[0].to("cpu").numpy())
+        result.append(output[1].to("cpu").numpy())
+        return result
+    
+    def test_std_mean_correction_fp32(self):
+        shape_list = [[1024], [32, 1024], [32, 8, 1024]]
+        correction_list = [-3, 1, 2147483647, 2147483648, -2147483647, -2147483648]
+        shape_format = [
+            [np.float32, 0, shape, 0, correction] for shape in shape_list for correction in correction_list
+        ]
+        for item in shape_format:
+            cpu_input1, npu_input1 = create_common_tensor(item, 0, 100)
+            cpu_output1 = self.cpu_op_dim_mean_correction_exec(cpu_input1, item[3], item[4])
+            npu_output1 = self.npu_op_dim_mean_correction_exec(npu_input1, item[3], item[4])
+            if np.all(cpu_output1[0] == torch.inf):
+                self.assertTrue(np.all(npu_output1[0] == torch.inf))
+            else:
+                self.assertRtolEqual(cpu_output1[0], npu_output1[0])
+            if np.all(cpu_output1[1] == torch.inf):
+                self.assertTrue(np.all(npu_output1[1] == torch.inf))
+            else:
+                self.assertRtolEqual(cpu_output1[1], npu_output1[1])
 
 
 if __name__ == "__main__":

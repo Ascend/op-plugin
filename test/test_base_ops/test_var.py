@@ -410,6 +410,68 @@ class TestVar(TestCase):
             cpu_output1 = cpu_output1.astype(np.float16)
             npu_output1 = self.npu_op_dim_exec(npu_input1, item[3], item[4], item[5])
             self.assertRtolEqual(cpu_output1, npu_output1, prec16=0.004)
+    
+    def cpu_op_var_correction_exec(self, input1, correction):
+        output = torch.var(input1, correction=correction)
+        output = output.numpy()
+        return output
+    
+    def npu_op_var_correction_exec(self, input1, correction):
+        output = torch.var(input1, correction=correction)
+        output = output.to("cpu")
+        output = output.numpy()
+        return output
+    
+    def cpu_op_mean_dim_correction_exec(self, input1, dim, correction):
+        output = torch.var_mean(input1, dim, correction=correction)
+        output1 = output[0]
+        output2 = output[1]
+        output1 = output1.numpy()
+        output2 = output2.numpy()
+        return output1, output2
+
+    def npu_op_mean_dim_correction_exec(self, input1, dim, correction):
+        output = torch.var_mean(input1, dim, correction=correction)
+        output1 = output[0].to("cpu")
+        output2 = output[1].to("cpu")
+        output1 = output1.numpy()
+        output2 = output2.numpy()
+        return output1, output2
+
+    def test_var_correction(self):
+        shape_list = [[32, 24], [32, 8, 24]]
+        correction_list = [-3, 1, 2147483647, 2147483648, -2147483647, -2147483648]
+        
+        shape_format = [
+            [np.float32, -1, shape, correction] for shape in shape_list for correction in correction_list
+        ]
+        for item in shape_format:
+            cpu_input, npu_input = create_common_tensor(item, 0, 100)
+            cpu_output = self.cpu_op_var_correction_exec(cpu_input, item[3])
+            npu_output = self.npu_op_var_correction_exec(npu_input, item[3])
+            if cpu_output == torch.inf:
+                self.assertTrue(npu_output == torch.inf)
+            else:
+                self.assertRtolEqual(cpu_output, npu_output)
+    
+    def test_var_mean_dim_correction(self):
+        shape_list = [[32, 24], [32, 8, 24]]
+        correction_list = [-3, 1, 2147483647, 2147483648, -2147483647, -2147483648]
+        shape_format = [
+            [np.float16, -1, shape, 0, correction] for shape in shape_list for correction in correction_list
+        ]
+        for item in shape_format:
+            cpu_input, npu_input = create_common_tensor(item, 0, 100)
+            cpu_output1, cpu_output2 = self.cpu_op_mean_dim_correction_exec(cpu_input, item[3], item[4])
+            npu_output1, npu_output2 = self.npu_op_mean_dim_correction_exec(npu_input, item[3], item[4])
+            if np.all(cpu_output1 == torch.inf):
+                self.assertTrue(np.all(npu_output1 == torch.inf))
+            else:
+                self.assertRtolEqual(cpu_output1, npu_output1)
+            if np.all(cpu_output2 == torch.inf):
+                self.assertTrue(np.all(npu_output2 == torch.inf))
+            else:
+                self.assertRtolEqual(cpu_output2, npu_output2)
 
 
 if __name__ == "__main__":

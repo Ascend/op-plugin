@@ -48,20 +48,20 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
     at::OptionalIntArrayRef dim,
     const c10::optional<at::Scalar>& correction,
     bool keepdim) {
-  DO_COMPATIBILITY(aclnnStdMeanCorrection, acl_op::std_mean(self, dim, correction, keepdim));
-  c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
-  if (dim.has_value()) {
-    real_dim = op_infer::array_to_small_vector(dim.value());
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
+    DO_COMPATIBILITY(aclnnStdMeanCorrection, acl_op::std_mean(self, dim, correction, keepdim));
+    c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
+    if (dim.has_value()) {
+        real_dim = op_infer::array_to_small_vector(dim.value());
+    }
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
 
-  at::Tensor std_out = npu_preparation::apply_tensor_without_format(self, output_size);
-  at::Tensor mean_out = npu_preparation::apply_tensor_without_format(self, output_size);
+    at::Tensor std_out = npu_preparation::apply_tensor_without_format(self, output_size);
+    at::Tensor mean_out = npu_preparation::apply_tensor_without_format(self, output_size);
 
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  auto real_dim_array = at::IntArrayRef(real_dim);
-  EXEC_NPU_CMD(aclnnStdMeanCorrection, self, real_dim_array, real_correction, keepdim, std_out, mean_out);
-  return std::tie(std_out, mean_out);
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+    auto real_dim_array = at::IntArrayRef(real_dim);
+    EXEC_NPU_CMD(aclnnStdMeanCorrection, self, real_dim_array, real_correction, keepdim, std_out, mean_out);
+    return std::tie(std_out, mean_out);
 }
 #endif
 

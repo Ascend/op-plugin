@@ -70,7 +70,7 @@ at::Tensor& std_out(const at::Tensor& self, at::OptionalIntArrayRef dim,
         real_dim = op_infer::array_to_small_vector(dim.value());
     }
     auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
-    int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
     auto real_dim_array = at::IntArrayRef(real_dim);
     npu_preparation::check_tensor({self}, result, self, output_size);
     EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, result);
@@ -87,7 +87,7 @@ at::Tensor std(const at::Tensor& self, at::OptionalIntArrayRef dim,
     }
     auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
     auto result = npu_preparation::apply_tensor_without_format(output_size, self.options());
-    int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
     auto real_dim_array = at::IntArrayRef(real_dim);
     EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, result);
     return result;

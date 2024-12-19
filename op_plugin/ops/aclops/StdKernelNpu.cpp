@@ -310,30 +310,30 @@ at::Tensor& std_out(
     const c10::optional<c10::Scalar>& correction,
     bool keepdim,
     at::Tensor& result) {
-  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
-  if (dim.has_value()) {
-    dims = op_infer::array_to_small_vector(dim.value());
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  at::Tensor mean_result = npu_preparation::apply_tensor(self, output_size);
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
+    c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
+    if (dim.has_value()) {
+        dims = op_infer::array_to_small_vector(dim.value());
+    }
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+    at::Tensor mean_result = npu_preparation::apply_tensor(self, output_size);
+    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
 
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      ACL_FORMAT_ND,
-      self.scalar_type(),
-      output_size);
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        ACL_FORMAT_ND,
+        self.scalar_type(),
+        output_size);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    std_mean_out_nocheck(contiguous_result, mean_result, self, dims, unbiased, keepdim, real_correction);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    std_mean_out_nocheck(result, mean_result, self, dims, unbiased, keepdim, real_correction);
-  }
-  return result;
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        std_mean_out_nocheck(contiguous_result, mean_result, self, dims, unbiased, keepdim, real_correction);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        std_mean_out_nocheck(result, mean_result, self, dims, unbiased, keepdim, real_correction);
+    }
+    return result;
 }
 
 at::Tensor std(
@@ -341,18 +341,18 @@ at::Tensor std(
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
-  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
-  if (dim.has_value()) {
-    dims = op_infer::array_to_small_vector(dim.value());
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  at::Tensor result1 = npu_preparation::apply_tensor(self, output_size);
-  at::Tensor result2 = npu_preparation::apply_tensor(self, output_size);
+    c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
+    if (dim.has_value()) {
+        dims = op_infer::array_to_small_vector(dim.value());
+    }
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+    at::Tensor result1 = npu_preparation::apply_tensor(self, output_size);
+    at::Tensor result2 = npu_preparation::apply_tensor(self, output_size);
 
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  std_mean_out_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
-  return result1;
+    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+    std_mean_out_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
+    return result1;
 }
 
 std::tuple<at::Tensor, at::Tensor> std_mean(
@@ -360,18 +360,18 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
-  c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
-  if (dim.has_value()) {
-    dims = op_infer::array_to_small_vector(dim.value());
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  at::Tensor result1 = npu_preparation::apply_tensor(self, output_size);
-  at::Tensor result2 = npu_preparation::apply_tensor(self, output_size);
+    c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
+    if (dim.has_value()) {
+        dims = op_infer::array_to_small_vector(dim.value());
+    }
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+    at::Tensor result1 = npu_preparation::apply_tensor(self, output_size);
+    at::Tensor result2 = npu_preparation::apply_tensor(self, output_size);
 
-  bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  std_mean_out_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
-  return std::tie(result1, result2);
+    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+    std_mean_out_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
+    return std::tie(result1, result2);
 }
 #endif
 } // namespace at_npu
