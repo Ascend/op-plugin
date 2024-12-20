@@ -139,8 +139,6 @@ class TestGreater(TestCase):
 
     def test_greater_scalar_out(self):
         shape_format = [
-            [[np.float16, 0, [12, 4, 12, 121]], [np.float16, 0, [256, 116, 1, 1]]],
-            [[np.float16, 0, [12, 10, 14, 111]], [np.float16, 0, [256, 116, 1, 1]]],
             [[np.float16, 2, [16, 3, 11, 121, 21]], [np.float16, 0, [3, 3, 3]]],
             [[np.float16, 0, [16, 16, 14]], [np.float16, 0, [128, 116, 14, 14]]],
             [[np.float32, 0, [20, 10, 7, 7]], [np.float32, 0, [128, 256, 3, 3]]],

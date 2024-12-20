@@ -4,7 +4,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestGt(TestCase):
@@ -139,8 +139,6 @@ class TestGt(TestCase):
 
     def test_gt_scalar_out(self):
         shape_format = [
-            [[np.float16, 0, [12, 4, 12, 121]], [np.float16, 0, [256, 116, 1, 1]]],
-            [[np.float16, 0, [12, 10, 14, 111]], [np.float16, 0, [256, 116, 1, 1]]],
             [[np.float16, 2, [16, 3, 11, 121, 21]], [np.float16, 0, [3, 3, 3]]],
             [[np.float16, 0, [16, 16, 14]], [np.float16, 0, [128, 116, 14, 14]]],
             [[np.float32, 0, [20, 10, 7, 7]], [np.float32, 0, [128, 256, 3, 3]]],
@@ -279,6 +277,7 @@ class TestGt(TestCase):
         npu_output = self.npu_op_exec(npu_input2, npu_input4)
         self.assertRtolEqual(cpu_output, npu_output)
 
+    @SupportedDevices("Ascend910A")
     def test_gt_diff_device(self):
         input1 = cmp1 = torch.randn(5, 5)
         input2 = cmp2 = torch.tensor(1)

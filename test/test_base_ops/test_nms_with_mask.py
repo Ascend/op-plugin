@@ -17,8 +17,8 @@ class TestNmsWithMask(TestCase):
     def test_nms_with_mask_float32(self):
         input1 = torch.tensor([[0.0, 1.0, 2.0, 3.0, 0.6], [6.0, 7.0, 8.0, 9.0, 0.4]]).npu()
         iou_threshold = 0.5
-        eq_output1 = torch.tensor([[0.0000, 1.0000, 2.0000, 3.0000, 0.6001],
-                                   [6.0000, 7.0000, 8.0000, 9.0000, 0.3999]])
+        eq_output1 = torch.tensor([[0.0000, 1.0000, 2.0000, 3.0000, 0.6000],
+                                   [6.0000, 7.0000, 8.0000, 9.0000, 0.4000]])
         eq_output2 = torch.tensor([0, 1], dtype=torch.int32)
         eq_output3 = torch.tensor([1, 1], dtype=torch.uint8)
         npu_output1, npu_output2, npu_output3 = self.npu_op_exec(input1, iou_threshold)

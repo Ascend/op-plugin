@@ -5,6 +5,10 @@ import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
 
+
+torch.npu.set_compile_mode(jit_compile=False)
+torch.npu.config.allow_internal_format = False
+
 # 3d need input1's dim is 5
 
 

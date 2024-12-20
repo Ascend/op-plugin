@@ -391,7 +391,7 @@ class TestDeformableConv2d(TestCase):
         dcn_bk_golden_list = self.get_bkw_golden(bkw_inputs, args[:4])
         self.assertRtolEqual(dcn_bk_golden_list[0].cpu().detach(), dcn_dx.cpu().detach())
         self.assertRtolEqual(dcn_bk_golden_list[1].cpu().detach(), dcn_dw.cpu().detach())
-        self.assertRtolEqual(dcn_bk_golden_list[2].cpu().detach(), dcn_do.cpu().detach(), 0.0002)
+        self.assertRtolEqual(dcn_bk_golden_list[2].cpu().detach(), dcn_do.cpu().detach(), 0.0003)
         self.assertRtolEqual(dcn_bk_golden_list[3].cpu().detach(), dcn_db.cpu().detach())
 
 

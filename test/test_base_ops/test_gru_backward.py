@@ -16,6 +16,13 @@ class TestGruBackward(TestCase):
             [[np.float32, (5, 32, 64)], 64, 64],
             [[np.float32, (5, 1, 64)], 64, 64],
         ]
+        
+        if torch_npu.npu.get_device_name() > "Ascend910A":
+            shape_format = [
+                [[np.float16, (16, 32, 64)], 64, 32],
+                [[np.float16, (5, 32, 64)], 64, 32],
+                [[np.float16, (5, 1, 64)], 64, 64],
+            ]       
 
         for item in shape_format:
             cpu_gru = torch.nn.GRU(input_size=item[1], hidden_size=item[2], num_layers=1, bidirectional=False)

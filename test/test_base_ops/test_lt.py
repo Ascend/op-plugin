@@ -4,7 +4,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestLt(TestCase):
@@ -263,6 +263,7 @@ class TestLt(TestCase):
         npu_output = self.npu_op_exec(npu_input2, npu_input4)
         self.assertRtolEqual(cpu_output, npu_output)
 
+    @SupportedDevices("Ascend910A")
     def test_lt_diff_device(self):
         input1 = cmp1 = torch.randn(5, 5)
         input2 = cmp2 = torch.tensor(1)
