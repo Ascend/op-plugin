@@ -256,10 +256,6 @@ backward:
   self: repeat_interleave_backward_int(grad, self, repeats, dim)
   version: [v2.2, newest]
 
-- name: selu(Tensor self) -> Tensor
-  self: selu_backward(grad, result)
-  version: [v1.11, newest]
-
 - name: stft(Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None) -> Tensor
   self: stft_backward(grad, self, n_fft, hop_length, win_length, window, normalized, onesided, return_complex)
   version: [v2.1, newest]
