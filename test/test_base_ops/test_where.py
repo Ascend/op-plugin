@@ -122,6 +122,28 @@ class TestWhere(TestCase):
                 cpuout = torch.where(condition > 0, input1, input2)
                 npuout = torch.where((condition > 0).npu(), input1.npu(), input2.npu())
                 self.assertRtolEqual(cpuout, npuout.cpu())
+    
+    def assert_equal_tuple(self, cpu_out, npu_out):
+        self.assertTrue(len(cpu_out) == len(npu_out))
+        
+        for i in range(len(cpu_out)):
+            self.assertRtolEqual(cpu_out[i], npu_out[i].cpu())
+    
+    @SupportedDevices(['Ascend910B'])
+    def test_where_condition_only(self):
+        zero_dim_tensor = torch.tensor(37)
+        cpu_out = torch.where(zero_dim_tensor)
+        npu_out = torch.where(zero_dim_tensor.npu())
+        
+        self.assert_equal_tuple(cpu_out, npu_out)
+        
+        dtype_list = [torch.float16, torch.float32, torch.float64]
+        for dtype in dtype_list:
+            input1 = torch.randn(3, 5, dtype=dtype)
+
+            cpu_out = torch.where(input1)
+            npu_out = torch.where(input1.npu())
+            self.assert_equal_tuple(cpu_out, npu_out)
 
 if __name__ == "__main__":
     run_tests()
