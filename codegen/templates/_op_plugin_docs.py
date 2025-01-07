@@ -4752,14 +4752,18 @@ npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor? skip1, Tensor? s
 MoE计算中，最后处理合并MoE FFN的输出结果。
 
 参数说明
-expanded_permuted_rows：必选参数，经过专家处理过的结果，要求是一个2D的Tensor，数据类型支持FLOAT16、BFLOAT16、FLOAT32，数据格式要求为ND。shape支持（NUM_ROWS * K, H），NUM_ROWS为行数，K为从总的专家E中选出K个专家，H为列数。
+expanded_permuted_rows：必选参数，经过专家处理过的结果，要求是一个2D或者3D的Tensor，数据类型支持FLOAT16、BFLOAT16、FLOAT32，数据格式要求为ND。drop less 场景shape为（NUM_ROWS * K, H），drop pad场景shape为（E, C, H）。NUM_ROWS为行数，K为从总的专家E中选出K个专家，H为列数，E为总的专家个数，C表示专家处理token数量的能力阈值。
 skip1：可选参数，求和的输入参数1，要求是一个2D的Tensor，数据类型要求与expanded_permuted_rows一致 ，shape要求与输出out的shape一致。
 skip2：可选参数，求和的输入参数2，要求是一个2D的Tensor，数据类型要求与expanded_permuted_rows一致 ，shape要求与输出out的shape一致。skip2参数为None时，skip1参数必须也为None。
 bias：可选参数，专家的偏差，要求是一个2D的Tensor，数据类型要求与expanded_permuted_rows一致。shape支持（E，H），E为总的专家个数，H为列数。
 scales：可选参数，专家的权重，要求是一个2D的Tensor，数据类型要求与expanded_permuted_rows一致，shape支持（NUM_ROWS，K）。
-expanded_src_to_dst_row: 必选参数，保存每个专家处理结果的索引，要求是一个1D的Tensor，数据类型支持INT32。shape支持（NUM_ROWS * K），NUM_ROWS为行数，K为从总的专家E中选出K个专家，drop_pad_mode参数为0时，Tensor中的值取值范围是[0, NUM_ROWS * K-1]。
+expanded_src_to_dst_row: 必选参数，保存每个专家处理结果的索引，要求是一个1D的Tensor，数据类型支持INT32。shape支持（NUM_ROWS * K），NUM_ROWS为行数，K为从总的专家E中选出K个专家，drop_pad_mode参数为0或者2时，Tensor中的值取值范围是[0, NUM_ROWS * K-1]；drop_pad_mode参数为1或者3时，Tensor中的值取值范围是[-1, NUM_ROWS * K-1]。
 export_for_source_row: 可选参数，每行处理的专家号，要求是一个2D的Tensor，数据类型支持INT32。shape支持（NUM_ROWS，K），NUM_ROWS为行数，K为从总的专家E中选出K个专家。
-drop_pad_mode：可选参数，表示是否支持丢弃模式，取值范围为0，默认值为0。
+drop_pad_mode：可选参数，表示是否支持丢弃模式以及export_for_source_row的排列方式，，取值范围为[0-3]，默认值为0。
+    0表示drop less 场景，export_for_source_row 纵向排列；
+    1表示drop pad 场景，export_for_source_row 纵向排列；
+    2表示drop less 场景，export_for_source_row 横向排列；
+    3表示drop pad 场景，export_for_source_row 横向排列。
 
 输出说明
 out：Device侧的Tensor类型，最后处理合并MoE FFN的输出结果。

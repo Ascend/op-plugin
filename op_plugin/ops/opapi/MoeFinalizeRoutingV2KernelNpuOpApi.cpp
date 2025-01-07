@@ -14,6 +14,9 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+const size_t INDEX_ONE = 1;
+const size_t INDEX_TWO = 2;
+const size_t DIM_TREE = 3;
 
 at::Tensor npu_moe_finalize_routing(const at::Tensor& expanded_permuted_rows, const c10::optional<at::Tensor>& skip1,
                                     const c10::optional<at::Tensor>& skip2,
@@ -35,14 +38,18 @@ at::Tensor npu_moe_finalize_routing(const at::Tensor& expanded_permuted_rows, co
     }
 
     at::Tensor result;
-    if (!scales.has_value()) {
-        result = npu_preparation::apply_tensor_without_format(expanded_permuted_rows);
-    } else {
-        at::SmallVector<int64_t, op_infer::SIZE> output_size;
-        output_size.push_back(scales.value().size(0));
-        output_size.push_back(expanded_permuted_rows.size(1));
-        result = npu_preparation::apply_tensor_without_format(output_size, expanded_permuted_rows.options());
+    size_t dim0 = expanded_src_to_dst_row.size(0);
+    if (scales.has_value()) {
+        dim0 = scales.value().size(0);
     }
+    at::SmallVector<int64_t, op_infer::SIZE> output_size;
+    output_size.push_back(dim0);
+    size_t dim1Index = INDEX_ONE;
+    if (expanded_permuted_rows.dim() == DIM_TREE) {
+        dim1Index = INDEX_TWO;
+    }
+    output_size.push_back(expanded_permuted_rows.size(dim1Index));
+    result = npu_preparation::apply_tensor_without_format(output_size, expanded_permuted_rows.options());
     int64_t mode = c10::value_or_else(drop_pad_mode, [] { return 0; });
     EXEC_NPU_CMD(aclnnMoeFinalizeRoutingV2, expanded_permuted_rows, expanded_src_to_dst_row,
                  skip1, skip2, bias, scales, expert_for_source_row, mode, result);
