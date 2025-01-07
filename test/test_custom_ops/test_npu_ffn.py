@@ -8,6 +8,10 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 
 
+def silu(x):
+    return x * (1 / (1 + torch.exp(-x)))
+
+
 class TestFFN(TestCase):
 
     def deq_scale_generate(self, deq_scale_shape):
@@ -28,13 +32,13 @@ class TestFFN(TestCase):
             weight1 = torch.from_numpy(weight1).to(torch.float16)
             antiquant_offset1 = torch.broadcast_to(antiquant_offset1, weight1.size())
             antiquant_scale1 = torch.broadcast_to(antiquant_scale1, weight1.size())
-            weight1 = (weight1 + antiquant_offset1) * antiquant_scale1
+            weight1 = (weight1.npu() + antiquant_offset1) * antiquant_scale1
             weight1 = weight1.to(torch.float32)
 
             weight2 = torch.from_numpy(weight2).to(torch.float16)
             antiquant_offset2 = torch.broadcast_to(antiquant_offset2, weight2.size())
             antiquant_scale2 = torch.broadcast_to(antiquant_scale2, weight2.size())
-            weight2 = (weight2 + antiquant_offset2) * antiquant_scale2
+            weight2 = (weight2.npu() + antiquant_offset2) * antiquant_scale2
             weight2 = weight2.to(torch.float32)
         elif scale is not None:
             x = x.to(torch.int32)
@@ -42,20 +46,19 @@ class TestFFN(TestCase):
             weight2 = torch.from_numpy(weight2).to(torch.int32)
             
         # mm1
-        mm1_res = x @ weight1.to(torch.float16)
+        mm1_res = x @ weight1
+        if scale is not None:
+            deq_scale1 = deq_scale1.reshape(1, -1)[:, :mm1_res.shape[-1]]
+            deq_scale1 = torch.from_numpy(deq_scale1)
+            mm1_res = (mm1_res * deq_scale1).to(torch.float16)
         # activation
         if activation == "relu":
             activation_res = torch.nn.functional.relu(mm1_res)
         elif activation == "gelu":
             activation_res = torch.nn.functional.gelu(mm1_res)
         elif activation == "silu":
-            activation_res = torch.nn.functional.silu(mm1_res)
-        if antiquant_scale1 is not None:
-            activation_res = activation_res.to(torch.float32)
-        elif scale is not None:
-            deq_scale1 = deq_scale1.reshape(1, -1)[:, :mm1_res.shape[-1]]
-            deq_scale1 = torch.from_numpy(deq_scale1)
-            mm1_res = (mm1_res * deq_scale1).to(torch.float16)
+            activation_res = silu(mm1_res)
+        if scale is not None:
             scale = torch.from_numpy(scale).to(torch.float16)
             offset = torch.from_numpy(offset).to(torch.float16)
             activation_res = activation_res * scale + offset
@@ -75,11 +78,11 @@ class TestFFN(TestCase):
             x = x.split(expert_tokens, dim=0)
             y = []
             for idx, x_i in enumerate(x):
-                y_i = self.calc_ffn(x_i, weight1[idx], weight2[idx], activation, kwargs)
+                y_i = self.calc_ffn(x_i, weight1[idx], weight2[idx], activation, **kwargs)
                 y.append(y_i)
             y = torch.cat(y)
         else:
-            y = self.calc_ffn(x, weight1, weight2, activation, kwargs)
+            y = self.calc_ffn(x, weight1, weight2, activation, **kwargs)
         
         return y
 
@@ -87,7 +90,8 @@ class TestFFN(TestCase):
                        antiquant_scale1=None, antiquant_scale2=None, antiquant_offset1=None, antiquant_offset2=None,
                        scale=None, offset=None, deq_scale1=None, deq_scale2=None, output_dtype=None):
         if antiquant_scale1 is not None:
-            return torch_npu.npu_ffn(x, weight1, weight2, activation, antiquant_scale1=antiquant_scale1,
+            return torch_npu.npu_ffn(x, weight1, weight2, activation, expert_tokens=expert_tokens,
+                                     expert_tokens_index=expert_tokens_index, antiquant_scale1=antiquant_scale1,
                                      antiquant_scale2=antiquant_scale2, antiquant_offset1=antiquant_offset1,
                                      antiquant_offset2=antiquant_offset2, inner_precise=1,
                                      output_dtype=output_dtype)
@@ -99,18 +103,20 @@ class TestFFN(TestCase):
             offset = offset.npu()
             deq_scale1 = torch.from_numpy(deq_scale1.astype(np.int64)).npu()
             deq_scale2 = torch.from_numpy(deq_scale2.astype(np.int64)).npu()
-            return torch_npu.npu_ffn(x, weight1, weight2, activation, scale=scale, offset=offset,
+            return torch_npu.npu_ffn(x, weight1, weight2, activation, expert_tokens=expert_tokens,
+                                     expert_tokens_index=expert_tokens_index, scale=scale, offset=offset,
                                      deq_scale1=deq_scale1, deq_scale2=deq_scale2, inner_precise=1,
                                      output_dtype=output_dtype)
         else:
-            return torch_npu.npu_ffn(x, weight1, weight2, activation, inner_precise=1)
+            return torch_npu.npu_ffn(x, weight1, weight2, activation, expert_tokens=expert_tokens,
+                                     expert_tokens_index=expert_tokens_index, inner_precise=1)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_ffn(self, device="npu"):
         torch.manual_seed(0)
         x = torch.randn(8192, 320, dtype=torch.float16).npu()
-        weight1 = torch.randn(320, 2560, dtype=torch.float16).npu()
-        weight2 = torch.randn(2560, 320, dtype=torch.float16).npu()
+        weight1 = (torch.randn(320, 2560, dtype=torch.float16) * 0.01).npu()
+        weight2 = (torch.randn(2560, 320, dtype=torch.float16) * 0.01).npu()
         x_clone = x.clone()
         weight1_clone = weight1.clone()
         weight2_clone = weight2.clone()
@@ -126,8 +132,8 @@ class TestFFN(TestCase):
         torch.manual_seed(0)
         BS, N, H, E = 340, 2560, 5120, 16
         x = torch.randn(BS, H, dtype=torch.float16).npu()
-        weight1 = torch.randn(E, H, N, dtype=torch.float16).npu()
-        weight2 = torch.randn(E, N, H, dtype=torch.float16).npu()
+        weight1 = (torch.randn(E, H, N, dtype=torch.float16) * 0.01).npu()
+        weight2 = (torch.randn(E, N, H, dtype=torch.float16) * 0.01).npu()
         expert_tokens = [50, 15, 4, 15, 20, 21, 36, 15, 25, 21, 15, 10, 19, 30, 24, 20]
         x_clone = x.clone()
         weight1_clone = weight1.clone()
@@ -145,8 +151,8 @@ class TestFFN(TestCase):
         torch.manual_seed(0)
         BS, N, H, E = 340, 2560, 5120, 16
         x = torch.randn(BS, H, dtype=torch.float16).npu()
-        weight1 = torch.randn(E, H, N, dtype=torch.float16).npu()
-        weight2 = torch.randn(E, N, H, dtype=torch.float16).npu()
+        weight1 = (torch.randn(E, H, N, dtype=torch.float16) * 0.01).npu()
+        weight2 = (torch.randn(E, N, H, dtype=torch.float16) * 0.01).npu()
         expert_tokens = [50, 15, 4, 15, 20, 21, 36, 15, 25, 21, 15, 10, 19, 30, 24, 20]
         expert_tokens_index = np.cumsum(expert_tokens).tolist()
         x_clone = x.clone()
@@ -164,13 +170,13 @@ class TestFFN(TestCase):
     def test_npu_ffn_antiquant(self, device="npu"):
         torch.manual_seed(0)
         np.random.seed(0)
-        x = torch.normal(mean=0., std=0.2, size=(8192, 320), dtype=torch.float16).npu()
+        x = torch.normal(mean=0., std=0.02, size=(8192, 320), dtype=torch.float16).npu()
         weight1 = np.random.randint(-9, 9, size=(320, 2560), dtype=np.int8)
         weight2 = np.random.randint(-9, 9, size=(2560, 320), dtype=np.int8)
-        antiquant_scale1 = torch.normal(mean=0., std=0.2, size=(1, 2560), dtype=torch.float16).npu()
-        antiquant_scale2 = torch.normal(mean=0., std=0.2, size=(1, 320), dtype=torch.float16).npu()
-        antiquant_offset1 = torch.normal(mean=0., std=0.2, size=(1, 2560), dtype=torch.float16).npu()
-        antiquant_offset2 = torch.normal(mean=0., std=0.2, size=(1, 320), dtype=torch.float16).npu()
+        antiquant_scale1 = torch.normal(mean=0., std=0.02, size=(2560,), dtype=torch.float16).npu()
+        antiquant_scale2 = torch.normal(mean=0., std=0.02, size=(320,), dtype=torch.float16).npu()
+        antiquant_offset1 = torch.normal(mean=0., std=0.02, size=(2560,), dtype=torch.float16).npu()
+        antiquant_offset2 = torch.normal(mean=0., std=0.02, size=(320,), dtype=torch.float16).npu()
         x_clone = x.clone()
         weight1_clone = torch.from_numpy(weight1).npu()
         weight2_clone = torch.from_numpy(weight2).npu()
@@ -200,10 +206,10 @@ class TestFFN(TestCase):
         x = torch.from_numpy(np.random.randint(-128, 127, size=(8192, 320), dtype=np.int8))
         weight1 = np.random.randint(-128, 127, size=(320, 2560), dtype=np.int8)
         weight2 = np.random.randint(-128, 127, size=(2560, 320), dtype=np.int8)
-        scale = np.ones(1, dtype=np.float32)
+        scale = np.ones(1, dtype=np.float32) * 0.001
         offset = np.zeros(1, dtype=np.float32)
-        deq_scale1_fp32, deq_scale1_uint64 = self.deq_scale_generate((1, 2560))
-        deq_scale2_fp32, deq_scale2_uint64 = self.deq_scale_generate((1, 320))
+        deq_scale1_fp32, deq_scale1_uint64 = self.deq_scale_generate((2560,))
+        deq_scale2_fp32, deq_scale2_uint64 = self.deq_scale_generate((320,))
 
         x_clone = x.clone().npu()
         weight1_clone = torch.from_numpy(weight1)
@@ -227,10 +233,10 @@ class TestFFN(TestCase):
         x = torch.from_numpy(np.random.randint(-128, 127, size=(8192, 320), dtype=np.int8))
         weight1 = np.random.randint(-128, 127, size=(320, 2560), dtype=np.int8)
         weight2 = np.random.randint(-128, 127, size=(2560, 320), dtype=np.int8)
-        scale = np.ones(1, dtype=np.float32)
+        scale = np.ones(1, dtype=np.float32) * 0.001
         offset = np.zeros(1, dtype=np.float32)
-        deq_scale1_fp32, deq_scale1_uint64 = self.deq_scale_generate((1, 2560))
-        deq_scale2_fp32, deq_scale2_uint64 = self.deq_scale_generate((1, 320))
+        deq_scale1_fp32, deq_scale1_uint64 = self.deq_scale_generate((2560,))
+        deq_scale2_fp32, deq_scale2_uint64 = self.deq_scale_generate((320,))
 
         x_clone = x.clone().npu()
         weight1_clone = torch.from_numpy(weight1)
