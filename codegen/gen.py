@@ -270,17 +270,28 @@ def gen_return(
         if not f.impl_name:
             impl_name = op_name
 
-        format_check = ""
+        format_check = []
+        format_display = []
+        place_holder = []
+        format_for_args = []
         for a in sig.arguments():
             argument = a.argument
             if isinstance(a.argument, SelfArgument):
                 argument = a.argument.argument
             if not isinstance(a.argument, TensorOptionsArguments) and argument.type.is_tensor_like():
-                format_check += f" && at_npu::native::FormatHelper::IsOpInputBaseFormat({a.name})"
+                format_for_args.append(
+                    f"    bool {a.name}_base_format = at_npu::native::FormatHelper::IsOpInputBaseFormat({a.name});\n")
+                format_check.append(f" && {a.name}_base_format")
+                format_display.append(f", !{a.name}_base_format")
+                place_holder.append(f", {a.name} is internal format: %d")
 
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
             ret.append(f"""{sig.defn(name=op_name)}{{
-    if (at_npu::native::env::CheckJitDisable(){format_check}) {{
+    bool is_jit_disable = at_npu::native::env::CheckJitDisable();
+{"".join(format_for_args)}
+    ASCEND_LOGI("{impl_name} exec with jit compile: %d{"".join(place_holder)}",
+                !is_jit_disable{"".join(format_display)});
+    if (is_jit_disable{"".join(format_check)}) {{
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
         return acl_op::{impl_name}({args_exprs_str});

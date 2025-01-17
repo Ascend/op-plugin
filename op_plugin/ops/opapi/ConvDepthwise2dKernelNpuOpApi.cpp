@@ -29,15 +29,19 @@ const at::Tensor& _conv_depthwise2d_out(
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
     const at::Tensor& out) {
-  DO_COMPATIBILITY(aclnnConvDepthwise2d, acl_op::_conv_depthwise2d_out(self, weight, kernel_size, bias_opt,
-                                                                       stride, padding, dilation, out));
-  if (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable()) {
-    return acl_op::_conv_depthwise2d_out(self, weight, kernel_size, bias_opt, stride, padding, dilation, out);
-  }
-  const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
-  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
-  EXEC_NPU_CMD(aclnnConvDepthwise2d, self, weight, kernel_size, bias, stride, padding, dilation, out, cube_math_type);
-  return out;
+    DO_COMPATIBILITY(aclnnConvDepthwise2d, acl_op::_conv_depthwise2d_out(self, weight, kernel_size, bias_opt,
+                                                                         stride, padding, dilation, out));
+    bool is_jit_enable = !at_npu::native::env::CheckJitDisable();
+    bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
+    ASCEND_LOGI("_conv_depthwise2d_out exec with jit compile: %d, allow internal format: %d",
+                is_jit_enable, is_allow_internel_format);
+    if (is_allow_internel_format || is_jit_enable) {
+        return acl_op::_conv_depthwise2d_out(self, weight, kernel_size, bias_opt, stride, padding, dilation, out);
+    }
+    const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
+    EXEC_NPU_CMD(aclnnConvDepthwise2d, self, weight, kernel_size, bias, stride, padding, dilation, out, cube_math_type);
+    return out;
 }
 
 at::Tensor _conv_depthwise2d(
@@ -48,17 +52,21 @@ at::Tensor _conv_depthwise2d(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef dilation) {
-  DO_COMPATIBILITY(aclnnConvDepthwise2d, acl_op::_conv_depthwise2d(self, weight, kernel_size, bias_opt,
-                                                                   stride, padding, dilation));
-  if (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable()) {
-    return acl_op::_conv_depthwise2d(self, weight, kernel_size, bias_opt, stride, padding, dilation);
-  }
-  const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
-  auto output_size = op_infer::conv_depthwise2d_npu_output_size(self, weight, kernel_size, stride, padding, dilation);
-  at::Tensor out = npu_preparation::apply_tensor_without_format(self, output_size);
-  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
-  EXEC_NPU_CMD(aclnnConvDepthwise2d, self, weight, kernel_size, bias, stride, padding, dilation, out, cube_math_type);
-  return out;
+    DO_COMPATIBILITY(aclnnConvDepthwise2d, acl_op::_conv_depthwise2d(self, weight, kernel_size, bias_opt,
+                                                                     stride, padding, dilation));
+    bool is_jit_enable = !at_npu::native::env::CheckJitDisable();
+    bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
+    ASCEND_LOGI("_conv_depthwise2d exec with jit compile: %d, allow internal format: %d",
+                is_jit_enable, is_allow_internel_format);
+    if (is_allow_internel_format || is_jit_enable) {
+        return acl_op::_conv_depthwise2d(self, weight, kernel_size, bias_opt, stride, padding, dilation);
+    }
+    const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+    auto output_size = op_infer::conv_depthwise2d_npu_output_size(self, weight, kernel_size, stride, padding, dilation);
+    at::Tensor out = npu_preparation::apply_tensor_without_format(self, output_size);
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
+    EXEC_NPU_CMD(aclnnConvDepthwise2d, self, weight, kernel_size, bias, stride, padding, dilation, out, cube_math_type);
+    return out;
 }
 
 }
