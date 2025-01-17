@@ -1,9 +1,9 @@
-import torch
 import numpy as np
+import torch
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestRshift(TestCase):
@@ -18,7 +18,8 @@ class TestRshift(TestCase):
         output = output.numpy()
         return output
 
-    def test_rshift_tensor(self, device="npu"):
+    @SupportedDevices(['Ascend910A'])
+    def test_rshift_tensor(self):
         format_list = [0]
         shape_list = [(256, 32, 56)]
         shape_format = [[np.int32, i, j] for i in format_list for j in shape_list]
@@ -31,7 +32,7 @@ class TestRshift(TestCase):
             cpu_output = cpu_output.astype(npu_output.dtype)
             self.assertRtolEqual(cpu_output, npu_output)
 
-    def test_rshift_scalar(self, device="npu"):
+    def test_rshift_scalar(self):
         format_list = [0]
         shape_list = [(256, 32, 56)]
         shape_format = [[np.int32, i, j] for i in format_list for j in shape_list]
