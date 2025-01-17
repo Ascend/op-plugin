@@ -25,8 +25,13 @@ at::Tensor& hardshrink_backward_out(
     const at::Tensor& self,
     const at::Scalar& lambd,
     at::Tensor& grad_input) {
-    TORCH_CHECK(false, "hardshrink_backward.grad_input is not supported."
-        + OPS_ERROR(ErrCode::NOT_SUPPORT));
+    at_npu::native::OpCommand cmd;
+    cmd.Name("HardShrinkGrad")
+       .Input(grad_output)
+       .Input(self)
+       .Attr("lambd", lambd)
+       .Output(grad_input)
+       .Run();
     return grad_input;
 }
 
@@ -34,15 +39,8 @@ at::Tensor hardshrink_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& lambd) {
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("HardShrinkGrad")
-      .Input(grad_output)
-      .Input(self)
-      .Attr("lambd", lambd)
-      .Output(grad_input)
-      .Run();
-
-  return grad_input;
+    at::Tensor grad_input = npu_preparation::apply_tensor(self);
+    hardshrink_backward_out(grad_output, self, lambd, grad_input);
+    return grad_input;
 }
 } // namespace acl_op
