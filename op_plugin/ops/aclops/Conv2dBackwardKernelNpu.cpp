@@ -47,10 +47,10 @@ at::Tensor &conv2d_backward_input_out_nocheck(at::Tensor &grad_input, const at::
         OPS_ERROR(ErrCode::PARAM));
     // support special scenario
     if (is_special_conv1d(input, weight, stride, padding, dilation, groups)) {
-        at::Tensor mm_input = grad.permute({0, 2, 1});
+        at::Tensor mm_input = grad.squeeze(2).permute({0, 2, 1});
         at::Tensor mm_other = weight.reshape({weight.size(0), weight.size(3)});
         at::Tensor mm_result = at::matmul(mm_input, mm_other);
-        grad_input = mm_result.reshape({grad.size(0), 1, 1, grad.size(2) * weight.size(3)});
+        grad_input = mm_result.reshape({input.size(0), input.size(1), 1, input.size(3)});
         return grad_input;
     }
 
@@ -96,13 +96,10 @@ at::Tensor &conv2d_backward_weight_out_nocheck(at::Tensor &grad_weight, const at
     TORCH_CHECK(weight.size(3) != 0, "4th dim of weight cannot be 0" + OPS_ERROR(ErrCode::PARAM));
     // support special scenario
     if (is_special_conv1d(input, weight, stride, padding, dilation, groups)) {
-        at::Tensor mm_input = grad.permute({1, 0, 2}).reshape({grad.size(1), grad.size(0) * grad.size(2)});
-        at::Tensor mm_other = input.reshape({input.size(0), grad.size(2), input.size(3) / grad.size(2)})
-                                  .permute({2, 0, 1})
-                                  .reshape({weight.size(3), input.size(0) * input.size(3) / weight.size(3)})
-                                  .permute({1, 0});
+        at::Tensor mm_input = grad.squeeze(2).permute({1, 0, 2}).reshape({grad.size(1), grad.size(0) * grad.size(3)});
+        at::Tensor mm_other = input.reshape({input.size(0) * grad.size(3), weight.size(3)});
         at::Tensor mm_result = at::matmul(mm_input, mm_other);
-        grad_weight = mm_result.reshape({grad.size(1), 1, 1, weight.size(3)});
+        grad_weight = mm_result.reshape({weight.size(0), weight.size(1), 1, weight.size(3)});
         return grad_weight;
     }
 

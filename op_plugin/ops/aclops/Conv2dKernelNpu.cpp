@@ -85,7 +85,7 @@ at::Tensor npu_conv2d(const at::Tensor &input, const at::Tensor &weight, const c
         at::Tensor mm_input = input.view({input.size(0), input.size(3) / weight.size(3), weight.size(3)});
         at::Tensor mm_other = weight.view({weight.size(0), weight.size(3)}).permute({1, 0});
         at::Tensor mm_result = at::matmul(mm_input, mm_other);
-        at::Tensor result = mm_result.permute({0, 2, 1});
+        at::Tensor result = mm_result.permute({0, 2, 1}).unsqueeze(2);
         return result;
     }
 
