@@ -55,19 +55,19 @@ class TestAddCMul(TestCase):
         output = output.numpy()
         return output
 
-    def test_addcmul_3_3_float32(self, device="npu"):
+    def test_addcmul_3_3_float32(self):
         input1, input2, input3 = self.generate_data(0, 100, (3, 3), np.float32)
         cpu_output = self.cpu_op_exec(input1, input2, input3, 0.5)
         npu_output = self.npu_op_exec(input1, input2, input3, 0.5)
         self.assertRtolEqual(cpu_output, npu_output)
 
-    def test_addcmul_10_10_float32(self, device="npu"):
+    def test_addcmul_10_10_float32(self):
         input1, input2, input3 = self.generate_data(0, 100, (10, 10), np.float32)
         cpu_output = self.cpu_op_exec(input1, input2, input3, 0.5)
         npu_output = self.npu_op_exec(input1, input2, input3, 0.5)
         self.assertRtolEqual(cpu_output, npu_output)
 
-    def test_addcmul_3_3_float16(self, device="npu"):
+    def test_addcmul_3_3_float16(self):
         input1, input2, input3 = self.generate_data(0, 100, (3, 3), np.float16)
         input1_cpu = input1.float()
         input2_cpu = input2.float()
@@ -78,7 +78,7 @@ class TestAddCMul(TestCase):
         npu_output = self.npu_op_exec(input1, input2, input3, 0.5)
         self.assertRtolEqual(cpu_output, npu_output)
 
-    def test_addcmul_10_10_float16(self, device="npu"):
+    def test_addcmul_10_10_float16(self):
         input1, input2, input3 = self.generate_data(0, 100, (10, 10), np.float16)
         input1_cpu = input1.float()
         input2_cpu = input2.float()
@@ -89,13 +89,13 @@ class TestAddCMul(TestCase):
         npu_output = self.npu_op_exec(input1, input2, input3, 0.5)
         self.assertRtolEqual(cpu_output, npu_output)
 
-    def test_addcmul_10_23_float32(self, device="npu"):
+    def test_addcmul_10_23_float32(self):
         input1, input2, input3 = self.generate_data(0, 100, (10, 23), np.float32)
         cpu_output = self.cpu_op_exec(input1, input2, input3, 0.5)
         npu_output = self.npu_op_exec(input1, input2, input3, 0.5)
         self.assertRtolEqual(cpu_output, npu_output)
 
-    def test_tensor_addcmul_3_3_float32(self, device="npu"):
+    def test_tensor_addcmul_3_3_float32(self):
         input1, input2, input3 = self.generate_data(0, 100, (3, 3), np.float32)
         input1_npu = input1.npu()
         input2_npu = input2.npu()
@@ -104,7 +104,7 @@ class TestAddCMul(TestCase):
         input1_npu.addcmul_(input2_npu, input3_npu, value=0.5)
         self.assertRtolEqual(input1, input1_npu)
 
-    def test_tensor_addcmul_10_10_float32(self, device="npu"):
+    def test_tensor_addcmul_10_10_float32(self):
         input1, input2, input3 = self.generate_data(0, 100, (10, 10), np.float32)
         input1_npu = input1.npu()
         input2_npu = input2.npu()
@@ -113,7 +113,7 @@ class TestAddCMul(TestCase):
         input1_npu.addcmul_(input2_npu, input3_npu, value=0.5)
         self.assertRtolEqual(input1, input1_npu)
 
-    def test_tensor_addcmul_3_3_float16(self, device="npu"):
+    def test_tensor_addcmul_3_3_float16(self):
         input1, input2, input3 = self.generate_data(0, 100, (3, 3), np.float16)
         input1_npu = input1.npu()
         input2_npu = input2.npu()
@@ -122,7 +122,7 @@ class TestAddCMul(TestCase):
         input1_npu.addcmul_(input2_npu, input3_npu, value=0.5)
         self.assertRtolEqual(input1, input1_npu)
 
-    def test_tensor_addcmul_10_10_float16(self, device="npu"):
+    def test_tensor_addcmul_10_10_float16(self):
         input1, input2, input3 = self.generate_data(0, 100, (10, 10), np.float16)
         input1_npu = input1.npu()
         input2_npu = input2.npu()
@@ -130,6 +130,15 @@ class TestAddCMul(TestCase):
         input1.addcmul_(input2, input3, value=0.5)
         input1_npu.addcmul_(input2_npu, input3_npu, value=0.5)
         self.assertRtolEqual(input1, input1_npu)
+
+    def test_tensor_addcmul_float32(self):
+        input1 = torch.randn(3, 5, 5).npu()
+        input2 = torch.randn(5, 5).npu()
+        input3 = torch.ones(3, 5).npu()
+        with self.assertRaises(RuntimeError) as cm:
+            npu_output = self.npu_op_exec(input1, input2, input3, 0.5)
+        exception = cm.exception
+        self.assertTrue("The size of tensor a (5) must match the size of tensor b (3) at non-singleton dimension 1" in str(exception))
 
 
 if __name__ == "__main__":

@@ -175,6 +175,15 @@ class TestAddcdiv(TestCase):
         npu_output = self.npu_op_exec(npu_input1, npu_input2, npu_input3, scalar)
         self.assertRtolEqual(cpu_output, npu_output)
 
+        input1 = torch.randn(4, 4).npu()
+        input2 = torch.randn(3, 2).npu()
+        input3 = torch.randn(2, 4).npu()
+
+        with self.assertRaises(RuntimeError) as cm:
+            npu_output = self.npu_op_exec(input1, input2, input3, scalar)
+        exception = cm.exception
+        self.assertTrue("The size of tensor a (4) must match the size of tensor b (2) at non-singleton dimension 1" in str(exception))
+
     def test_addcdiv_float32_out(self):
         npu_input1, npu_input2, npu_input3 = self.generate_data(
             1, 100, (5, 3), np.float32

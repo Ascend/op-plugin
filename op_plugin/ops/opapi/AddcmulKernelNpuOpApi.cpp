@@ -25,8 +25,8 @@ at::Tensor& addcmul_out(const at::Tensor& self, const at::Tensor& tensor1, const
     DO_COMPATIBILITY(aclnnAddcmul, acl_op::addcmul_out(self, tensor1, tensor2, value, result));
     std::vector<at::Tensor> tensor_list = {self, tensor1, tensor2};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
-    auto mul_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
-    auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), mul_output_size);
+    auto input_size = op_infer::broadcast_ops_npu_output_size(self, tensor1);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(input_size, tensor2.sizes());
     npu_preparation::check_tensor({self}, result, self, output_size);
     EXEC_NPU_CMD(aclnnAddcmul, self, tensor1, tensor2, value, result);
     at::namedinference::propagate_names_if_nonempty(result, maybe_names);
@@ -38,8 +38,8 @@ at::Tensor addcmul(const at::Tensor& self, const at::Tensor& tensor1, const at::
     DO_COMPATIBILITY(aclnnAddcmul, acl_op::addcmul(self, tensor1, tensor2, value));
     std::vector<at::Tensor> tensor_list = {self, tensor1, tensor2};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
-    auto mul_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
-    auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), mul_output_size);
+    auto input_size = op_infer::broadcast_ops_npu_output_size(self, tensor1);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(input_size, tensor2.sizes());
     at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
     EXEC_NPU_CMD(aclnnAddcmul, self, tensor1, tensor2, value, result);
     at::namedinference::propagate_names_if_nonempty(result, maybe_names);

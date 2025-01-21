@@ -82,9 +82,10 @@ std::bitset<64> make_dim_mask(c10::IntArrayRef dims, int64_t ndim)
     } else {
         for (int64_t dim : dims) {
             int64_t positive_dim = make_wrap_dim(dim, ndim);
-            TORCH_CHECK(positive_dim >= 0 && positive_dim < ndim, "Dimension out of range"
-                "(expect to be in range of [-", ndim, ", ", ndim,
-                "), but got ", dim, ".)", OPS_ERROR(ErrCode::PARAM));
+            int64_t min = ndim * -1;
+            int64_t max = ndim - 1;
+            TORCH_CHECK(min <= dim && dim <= max, "Dimension out of range (expected to be in range of [",
+                min, ", ", max, "], but got ", dim, ")", OPS_ERROR(ErrCode::PARAM));
             mask.set(positive_dim);
         }
     }
