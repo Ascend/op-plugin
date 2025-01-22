@@ -40,16 +40,20 @@ namespace op_api {
 
     class PlanKey {
     public:
-        const int64_t prb_size;
-        const bool is_forward;
-        const PlanMode plan_mode;
-
-        PlanKey(int64_t size, bool inv, PlanMode plan_mode);
+        PlanKey() {}
+        int64_t prb_size;
+        bool is_forward;
+        PlanMode plan_mode;
+        at::ScalarType scalar_dtype;
+        PlanKey(int64_t size, bool inv, PlanMode mode, at::ScalarType dtype_);
     };
 
-    
-    inline PlanKey::PlanKey(int64_t size, bool inv, PlanMode mode) : prb_size(size), is_forward(inv), plan_mode(mode) {
-    }
+
+    inline PlanKey::PlanKey(int64_t size, bool inv, PlanMode mode, at::ScalarType dtype_)
+        : prb_size(size),
+          is_forward(inv),
+          plan_mode(mode),
+          scalar_dtype(dtype_) {}
 
     inline bool operator==(const PlanKey &one, const PlanKey &other)
     {
@@ -63,6 +67,7 @@ namespace op_api {
 
     class FFTPlanItem {
     public:
+        FFTPlanItem() {}
         FFTPlanItem(std::vector<int64_t> factors_);
         void insert_rotate_matrix(int i, at::Tensor matrix);
         int get_size();
@@ -117,29 +122,8 @@ namespace op_api {
         return matrices[i];
     }
 
-    using FFTPlanPair = std::pair<PlanKey, FFTPlanItem>;
-
-
-    // LRUCache
-
-    class LRUCache {
-    public:
-        LRUCache(int c);
-        FFTPlanItem& get(PlanKey &plan_key);
-    private:
-        int capacity;
-        std::list<FFTPlanPair> list{};
-    };
-
-    inline LRUCache::LRUCache(int c) : capacity(c) {
-    }
-
-
     // utils interfaces
-
     FFTPlanItem make_plan(PlanKey &plan_key);
-
-    FFTPlanItem get_plan(int64_t prb_size, bool is_forward, PlanMode plan_mode);
 
 } // namespace op_api
 
