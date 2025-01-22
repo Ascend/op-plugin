@@ -118,7 +118,7 @@ class CoreTestStrategy(AccurateTest):
     Determine whether the core tests should be runned
     """
     block_list = ['test', 'docs']
-    core_test_cases = [str(i) for i in (BASE_DIR / 'test/test_npu').rglob('test_*.py')]
+    core_test_cases = [str(i) for i in (BASE_DIR / 'test/core_tests').rglob('test_*.py')]
 
     def identify(self, modify_file):
         modified_module = str(Path(modify_file).parts[0])
@@ -146,6 +146,7 @@ class TestMgr():
         for modify_file in self.modify_files:
             DirectoryStrategy().identify(modify_file, self.test_files['ut_files'])
             self.test_files['ut_files'] += OpStrategy().identify(modify_file)
+            self.test_files['ut_files'] += CoreTestStrategy().identify(modify_file)
         for v in modify_file_hash.values():
             self.test_files['ut_files'].append(v)
         unique_files = sorted(set(self.test_files['ut_files']))
