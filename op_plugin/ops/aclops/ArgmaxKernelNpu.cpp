@@ -35,6 +35,19 @@ at::Tensor& argmax_out_nocheck(at::Tensor& result, const at::Tensor& input, at::
 }
 }
 
+at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim)
+{
+    at::Tensor input = dim.has_value() ? self : self.reshape({-1});
+    int64_t dim_value = dim.has_value() ? dim.value() : 0;
+    bool keepdim_value = dim.has_value() ? keepdim : false;
+    auto output_size = op_infer::reduce_ops_npu_output_size(input, dim_value, keepdim_value);
+    at::Tensor result = npu_preparation::ApplyTensorWithSizes(output_size, self.options().dtype(at::kInt));
+    at::Scalar dim_scalar = dim_value;
+    argmax_out_nocheck(result, input, dim_scalar, keepdim_value);
+    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kLong);
+    return result;
+}
+
 at::Tensor& argmax_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result)
 {
     at::Tensor input = dim.has_value() ? self : self.reshape({-1});

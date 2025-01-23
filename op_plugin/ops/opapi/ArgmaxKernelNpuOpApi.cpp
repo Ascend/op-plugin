@@ -42,15 +42,25 @@ static at::Tensor& argmax_exec(const at::Tensor& self, at::optional<int64_t> dim
     return result;
 }
 
+
+at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim)
+{
+    DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax(self, dim, keepdim));
+    if (self.numel() == 0) {
+        return self;
+    }
+    at::Tensor result;
+    return argmax_exec(self, dim, keepdim, result, false);
+}
+
+
 at::Tensor& argmax_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result)
 {
-    if (dim.has_value()) {
-        TORCH_CHECK_INDEX((dim.value() >= -1 && dim.value() <= 0), "Dimension out of range (expected to be in range of [-1, 0], but got ", dim.value(), ")");
-    } else {
-        TORCH_CHECK_INDEX(self.numel() > 0, "argmax(): Expected reduction dim to be specified for input.numel() == 0.");
-    }
-    TORCH_CHECK_INDEX(self.numel() > 0, "argmax(): Expected reduction dim 0 to have non-zero size.");
     DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax_out(self, dim, keepdim, result));
+    if (self.numel() == 0) {
+        result = self;
+        return result;
+    }
     return argmax_exec(self, dim, keepdim, result, true);
 }
 }
