@@ -38,7 +38,7 @@ at::Tensor npu_moe_finalize_routing(const at::Tensor& expanded_permuted_rows, co
     }
 
     at::Tensor result;
-    size_t dim0 = expanded_src_to_dst_row.size(0);
+    int64_t dim0 = expanded_src_to_dst_row.size(0);
     if (scales.has_value()) {
         dim0 = scales.value().size(0);
     }
