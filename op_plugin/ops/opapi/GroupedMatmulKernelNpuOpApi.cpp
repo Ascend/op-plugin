@@ -210,8 +210,116 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                                            const c10::optional<at::TensorList> offset,
                                            const c10::optional<at::TensorList> antiquant_scale,
                                            const c10::optional<at::TensorList> antiquant_offset,
-                                           c10::OptionalIntArrayRef group_list,
+                                           const c10::optional<at::TensorList> per_token_scale,
+                                           const c10::optional<at::Tensor>& group_list,
+                                           const c10::optional<at::TensorList> activation_input,
+                                           const c10::optional<at::TensorList> activation_quant_scale,
+                                           const c10::optional<at::TensorList> activation_quant_offset,
                                            c10::optional<int64_t> split_item,
+                                           c10::optional<int64_t> group_type,
+                                           c10::optional<int64_t> group_list_type,
+                                           c10::optional<int64_t> act_type,
+                                           c10::optional<at::ScalarType> output_dtype)
+// func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None, Tensor[]? offset=None,
+// Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None, Tensor[]? per_token_scale=None, Tensor? group_list=None,
+// Tensor[]? activation_input, Tensor[]? activation_quant_offset, Tensor[]? activation_quant_offset, int? split_item=0,
+// int? group_type=-1, int? group_list_type=0, int? act_type=0, ScalarType? output_dtype=None) -> Tensor[]
+{
+    auto num_x = x.size();
+    auto num_weight = weight.size();
+    auto group_list_real = group_list.value_or(at::Tensor());
+    auto num_group_list = group_list_real.sizes()[0];
+    int64_t split_item_value = split_item.value_or(0);
+    check_dims(split_item_value, num_x, num_weight, num_group_list);
+
+    std::vector<at::Tensor> y;
+    c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
+
+    size_t dim_num_w = weight[0].sizes().size();
+    if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value || IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
+        if (num_group_list > 0) {
+            y.reserve(num_group_list);
+            int64_t glr_value_0 = group_list_real[0].item<int64_t>();
+            TORCH_CHECK(glr_value_0 >= 0,
+                "group_list[0] should be larger than or equal to 0, but now is ", glr_value_0, "." +
+                OPS_ERROR(ErrCode::VALUE));
+            create_new_tensor(y, glr_value_0, weight[0].sizes()[dim_num_w - 1], options);
+            int64_t glr_value_pre = glr_value_0;
+            for (size_t i = 1; i < num_group_list; i++) {
+                int64_t glr_value_cur = group_list_real[i].item<int64_t>();
+                TORCH_CHECK(glr_value_cur - glr_value_pre >= 0,
+                    "group_list[", i, "] - group_list[", i - 1, "] should be larger than or equal to 0, but now is ",
+                    glr_value_cur - glr_value_pre, "." + OPS_ERROR(ErrCode::VALUE));
+                create_new_tensor(y, glr_value_cur - glr_value_pre, weight[i].sizes()[dim_num_w - 1], options);
+                glr_value_pre = glr_value_cur;
+            }
+        } else {
+            y.reserve(num_x);
+            for (size_t i = 0; i < num_x; i++) {
+                create_new_tensor_multi_dim(y, x[i], weight[i], options);
+            }
+        }  // 校验NO_SPLIT时为特殊场景（groupList为空）或num_x > 1
+    } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value || IN_SPLIT_OUT_SPLIT == split_item_value) {
+        if (num_x > 1) {
+            size_t dim_m = 0;
+            for (size_t i = 0; i < num_x; i++) {
+                dim_m += x[i].sizes()[0];
+            }
+            create_new_tensor(y, dim_m, weight[0].sizes()[dim_num_w - 1], options);
+        } else if (num_x == 1) {
+            create_new_tensor(y, x[0].sizes()[0], weight[0].sizes()[dim_num_w - 1], options);
+        }
+    }
+    at::TensorList result = at::TensorList(y);
+
+    auto bias_real = bias.value_or(at::TensorList());
+    auto scale_real = scale.value_or(at::TensorList());
+    auto offset_real = offset.value_or(at::TensorList());
+    auto antiquant_scale_real = antiquant_scale.value_or(at::TensorList());
+    auto antiquant_offset_real = antiquant_offset.value_or(at::TensorList());
+    auto per_token_scale_real = per_token_scale.value_or(at::TensorList());
+    auto activation_input_real = activation_input.value_or(at::TensorList());
+    auto activation_quant_scale_real = activation_quant_scale.value_or(at::TensorList());
+    auto activation_quant_offset_real = activation_quant_offset.value_or(at::TensorList());
+    auto act_out = at::TensorList();
+    auto dynamic_quant_scale_out = at::TensorList();
+    int64_t group_type_value = group_type.value_or(-1);
+    int64_t group_list_type_value = group_list_type.value_or(0);
+    int64_t act_type_value = act_type.value_or(0);
+
+    EXEC_NPU_CMD(aclnnGroupedMatmulV4, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
+                 antiquant_offset_real, per_token_scale_real, group_list_real, activation_input_real, activation_quant_scale_real,
+                 activation_quant_offset_real, split_item_value, group_type_value, group_list_type_value, act_type_value,
+                 result, act_out, dynamic_quant_scale_out);
+
+    return y;
+}
+#endif
+
+#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
+// Motivation for adapting this interface for each Torch version separately:
+// 1. Optional TensorList is only supported in Torch2.1 and later versions.
+//    Thus, "Tensor[] bias" is used in Torch1.11 and Torch2.0, while
+//    "Tensor[]? bias=None" is used in Torch2.1 and later versions.
+// 2. Even if "Int[]? group_list=None" is used for all Torch versions, the
+//    auto-generated data type for optional IntList group_list in Torch2.1
+//    is different from those in Torch1.11 and Torch2.0.
+std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
+                                           const at::TensorList weight,
+                                           const c10::optional<at::TensorList> bias,
+                                           const c10::optional<at::TensorList> scale,
+                                           const c10::optional<at::TensorList> offset,
+                                           const c10::optional<at::TensorList> antiquant_scale,
+                                           const c10::optional<at::TensorList> antiquant_offset,
+                                           const c10::optional<at::TensorList> per_token_scale,
+                                           c10::OptionalIntArrayRef group_list,
+                                           const c10::optional<at::TensorList> activation_input,
+                                           const c10::optional<at::TensorList> activation_quant_scale,
+                                           const c10::optional<at::TensorList> activation_quant_offset,
+                                           c10::optional<int64_t> split_item,
+                                           c10::optional<int64_t> group_type,
+                                           c10::optional<int64_t> group_list_type,
+                                           c10::optional<int64_t> act_type,
                                            c10::optional<at::ScalarType> output_dtype)
 {
     auto num_x = x.size();
