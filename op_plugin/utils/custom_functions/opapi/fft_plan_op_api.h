@@ -40,7 +40,7 @@ namespace op_api {
 
     class PlanKey {
     public:
-        PlanKey() {}
+        PlanKey();
         int64_t prb_size;
         bool is_forward;
         PlanMode plan_mode;
@@ -48,6 +48,13 @@ namespace op_api {
         PlanKey(int64_t size, bool inv, PlanMode mode, at::ScalarType dtype_);
     };
 
+    inline PlanKey::PlanKey()
+    {
+        prb_size = 1;
+        is_forward = true;
+        plan_mode = PlanMode::c2c;
+        scalar_dtype = at::ScalarType::ComplexHalf;
+    }
 
     inline PlanKey::PlanKey(int64_t size, bool inv, PlanMode mode, at::ScalarType dtype_)
         : prb_size(size),
