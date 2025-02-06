@@ -91,6 +91,13 @@ class TestLayerNorm(TestCase):
                                     eps, torch.backends.cudnn.enabled)
         self.assertRtolEqual(cpu_out2, npu_out2.cpu())
 
+    def test_layer_norm_abnormal_input(self):
+        npu_input = torch.randn(10, 5).npu()
+        with self.assertRaises(RuntimeError) as cm:
+            output = nn.functional.layer_norm(npu_input, [2, 3, 3])
+        exception = cm.exception
+        self.assertTrue("Given normalized_shape=[2, 3, 3], expected input with shape [*, 2, 3, 3], but got input of size[10, 5]" in str(exception))
+
 
 if __name__ == "__main__":
     run_tests()

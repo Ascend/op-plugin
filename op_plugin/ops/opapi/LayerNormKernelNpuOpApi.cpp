@@ -28,6 +28,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
     DO_COMPATIBILITY(aclnnLayerNorm, acl_op::native_layer_norm(input, normalized_shape, weight_ex, bias_ex, eps));
     const at::Tensor &weight_op = c10::value_or_else(weight_ex, [] { return at::Tensor(); });
     const at::Tensor &bias_op = c10::value_or_else(bias_ex, [] { return at::Tensor(); });
+    const int normalized_ndim = static_cast<int>(normalized_shape.size());
+    TORCH_CHECK(normalized_ndim >= 1, "Expected normalized_shape to be at least 1-dimensional, i.e., ",
+        "containing at least one element, but got normalized_shape = ", normalized_shape,
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(!weight_op.defined() || weight_op.sizes().equals(normalized_shape),
+        "Expected weight to be of same shape as normalized_shape, but got ", "weight of shape ", weight_op.sizes(),
+        " and normalized_shape = ", normalized_shape,
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(!bias_op.defined() || bias_op.sizes().equals(normalized_shape),
+        "Expected bias to be of same shape as normalized_shape, but got ", "bias of shape ", bias_op.sizes(),
+        " and normalized_shape = ", normalized_shape,
+        OPS_ERROR(ErrCode::PARAM));
+
     at::Tensor weight =
         weight_op.defined() ? weight_op.resize_(normalized_shape) : at::ones(normalized_shape, input.options());
     at::Tensor bias =
@@ -43,6 +56,17 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
     const size_t begin_axis = input_ndim - norm_ndim;
 
     const auto input_shape = input.sizes();
+    if (input_ndim < normalized_ndim || !input_shape.slice(input_ndim - normalized_ndim).equals(normalized_shape)) {
+        std::stringstream ss;
+        ss << "Given normalized_shape=" << normalized_shape << ", expected input with shape [*";
+        for (auto size : normalized_shape) {
+            ss << ", " << size;
+        }
+        ss << "], but got input of size" << input_shape;
+        TORCH_CHECK(false, ss.str(),
+            OPS_ERROR(ErrCode::PARAM));
+    }
+
     const int64_t M =
         std::accumulate(input_shape.cbegin(), input_shape.cbegin() + begin_axis, 1LL, std::multiplies<int64_t>());
     auto acc_type = input.scalar_type() == at::kDouble ? at::kDouble : at::kFloat;
