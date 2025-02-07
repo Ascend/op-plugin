@@ -248,7 +248,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                 OPS_ERROR(ErrCode::VALUE));
             create_new_tensor(y, glr_value_0, n0, options);
             int64_t glr_value_pre = glr_value_0;
-            for (size_t i = 1; i < num_group_list; i++) {
+            for (int i = 1; i < num_group_list; i++) {
                 int64_t glr_value_cur = group_list_real[i].item<int64_t>();
                 TORCH_CHECK(glr_value_cur - glr_value_pre >= 0,
                     "group_list[", i, "] - group_list[", i - 1, "] should be larger than or equal to 0, but now is ",
