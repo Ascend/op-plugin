@@ -47,6 +47,23 @@ class TestArgmax(TestCase):
             cpu_output = cpu_output.astype(npu_output.dtype)
             self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_argmax_zero_size_dim(self):
+        tensor = torch.randn(2, 0, 3)
+        dim = 1
+        with self.assertRaises(IndexError) as cm:
+            torch.argmax(tensor, dim=dim)
+        exception = cm.exception
+        expected_error_msg = f"argmax(): Expected reduction dim {dim} to have non-zero size."
+        self.assertTrue(expected_error_msg in str(exception))
+
+    def test_argmax_no_dim_empty_tensor(self):
+        empty_tensor = torch.empty(0)
+        with self.assertRaises(IndexError) as cm:
+            torch.argmax(empty_tensor)
+        exception = cm.exception
+        expected_error_msg = "argmax(): Expected reduction dim to be specified for input.numel() == 0."
+        self.assertTrue(expected_error_msg in str(exception))
+
 
 if __name__ == "__main__":
     run_tests()
