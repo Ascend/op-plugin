@@ -6978,6 +6978,12 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep, str group_tp, int ep_world_size, int tp_world_size, int ep_rank_id, int tp_rank_id, int expert_shard_type, int shared_expert_rank_num, int moe_expert_num, *, Tensor? scales=None, int quant_mode=0, int global_bs=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+
+  - func: npu_moe_distribute_combine(Tensor expand_x, Tensor expert_ids, Tensor expand_idx, Tensor ep_send_counts, Tensor tp_send_counts, Tensor expert_scales, str group_ep, str group_tp, int ep_world_size, int tp_world_size, int ep_rank_id, int tp_rank_id, int expert_shard_type, int shared_expert_rank_num, int moe_expert_num, *, int global_bs=0) -> Tensor
+    op_api: all_version
+
   - func: npu_multi_head_attention(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor attn_mask, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor? dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
     tags: nondeterministic_seeded
