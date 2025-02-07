@@ -26,6 +26,7 @@ backward:
 
 - name: kl_div(Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
   self: kl_div_backward(grad, self, target, reduction, log_target)
+  target: non_differentiable
   version: [v2.0, newest]
 
 - name: l1_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor

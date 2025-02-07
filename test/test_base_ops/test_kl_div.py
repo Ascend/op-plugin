@@ -99,6 +99,15 @@ class TestKlDiv(TestCase):
             npu_output = self.npu_op_exec(npu_input, npu_target, reduction)
             self.assertRtolEqual(cpu_output.astype(np.float16), npu_output)
 
+    def test_kl_div_input_requires_grad_True(self):
+        input_cpu = torch.tensor([0.2, 0.7, 0.1], requires_grad=True)
+        target_cpu = torch.tensor([0., 1., 0.])
+        input_npu = input_cpu.npu()
+        target_npu = target_cpu.npu()
+        output_cpu = torch.nn.functional.kl_div(input_cpu, target_cpu, reduction='sum')
+        output_npu = torch.nn.functional.kl_div(input_npu, target_npu, reduction='sum')
+        self.assertEqual(output_cpu, output_npu)
+
 
 if __name__ == "__main__":
     run_tests()
