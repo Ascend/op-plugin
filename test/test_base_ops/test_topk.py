@@ -3,7 +3,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestTopK(TestCase):
@@ -145,6 +145,52 @@ class TestTopK(TestCase):
             [np.float32, i, [64, 112, 7, 7]] for i in format_list
         ]
         self.topk_result(shape_format)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_topk_zero_dim(self):
+        inputs = torch.tensor(3).npu()
+        inputs_cpu = inputs.cpu()
+        values, indices = torch.topk(inputs, 0, 0, False, True)
+        values_cpu, indices_cpu = torch.topk(inputs_cpu, 0, 0, False, True)
+        self.assertRtolEqual(values, values_cpu)
+        self.assertRtolEqual(indices, indices_cpu)
+
+        values_cpu, indices_cpu = torch.topk(inputs_cpu, 1, 0, False, True)
+        values, indices = torch.topk(inputs, 1, 0, False, True)
+        self.assertRtolEqual(values, values_cpu)
+        self.assertRtolEqual(indices, indices_cpu)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_topk_zero_dim_out(self):
+        inputs = torch.tensor(3).npu()
+        inputs_cpu = inputs.cpu()
+        values = torch.tensor(0).npu()
+        indices = torch.tensor(0).npu()
+        values_cpu = values.cpu()
+        indices_cpu = indices.cpu()
+        out = (values, indices)
+        out_cpu = (values_cpu, indices_cpu)
+        torch.topk(inputs, 0, 0, False, True, out=out)
+        torch.topk(inputs_cpu, 0, 0, False, True, out=out_cpu)
+        self.assertRtolEqual(values, values_cpu)
+        self.assertRtolEqual(indices, indices_cpu)
+
+        values = torch.tensor(0).npu()
+        indices = torch.tensor(0).npu()
+        values_cpu = values.cpu()
+        indices_cpu = indices.cpu()
+        out = (values, indices)
+        out_cpu = (values_cpu, indices_cpu)
+        torch.topk(inputs, 1, 0, False, True, out=out)
+        torch.topk(inputs_cpu, 1, 0, False, True, out=out_cpu)
+        self.assertRtolEqual(values, values_cpu)
+        self.assertRtolEqual(indices, indices_cpu)
+        
+        values = torch.tensor(0).npu().to(torch.int32)
+        indices = torch.tensor(0).npu()
+        out = (values, indices)
+        with self.assertRaisesRegex(RuntimeError, "Expected out tensor to have dtype long"):
+            torch.topk(inputs, 0, 0, False, True, out=out)
 
 
 if __name__ == "__main__":
