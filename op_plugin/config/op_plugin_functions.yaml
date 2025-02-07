@@ -713,9 +713,11 @@ official:
 
   - func: _pack_padded_sequence(Tensor input, Tensor lengths, bool batch_first) -> (Tensor, Tensor)
     acl_op: all_version
+    device_check: NoCheck
 
   - func: _pad_packed_sequence(Tensor data, Tensor batch_sizes, bool batch_first, Scalar padding_value, int total_length) -> (Tensor, Tensor)
     acl_op: all_version
+    device_check: NoCheck
 
   - func: _pdist_forward(Tensor self, float p=2) -> Tensor
     acl_op: all_version
