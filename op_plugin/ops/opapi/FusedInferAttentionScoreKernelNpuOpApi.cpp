@@ -49,6 +49,8 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
     const c10::optional<at::Tensor> &key_shared_prefix,
     const c10::optional<at::Tensor> &value_shared_prefix,
     c10::OptionalArrayRef<c10::SymInt> actual_shared_prefix_len,
+    const c10::optional<at::Tensor> &query_rope,
+    const c10::optional<at::Tensor> &key_rope,
     int64_t num_heads, double scale,
     int64_t pre_tokens, int64_t next_tokens,
     c10::string_view input_layout, int64_t num_key_value_heads,
@@ -92,8 +94,8 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
     // convert str
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
-    at::TensorList keyTensors = key;
     at::TensorList valueTensors = value;
+    at::TensorList keyTensors = key;
     auto actSeqLenMiddle = actual_seq_lengths.value_or(at::ArrayRef<c10::SymInt>{});
     auto actSeqLen = c10::asIntArrayRefUnchecked(actSeqLenMiddle);
     auto actSeqLenKvMiddle = actual_seq_lengths_kv.value_or(at::ArrayRef<c10::SymInt>{});
@@ -109,9 +111,9 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
         softmax_lse = npu_preparation::apply_tensor_without_format({1}, c10::dtype(c10::ScalarType::Float));
     }
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV2, query, keyTensors, valueTensors, pse_shift, atten_mask, actSeqLen, actSeqLenKv, dequant_scale1, quant_scale1, dequant_scale2,
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV3, query, keyTensors, valueTensors, pse_shift, atten_mask, actSeqLen, actSeqLenKv, dequant_scale1, quant_scale1, dequant_scale2,
         quant_scale2, quant_offset2, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, key_antiquant_scale, key_antiquant_offset, value_antiquant_scale,
-        value_antiquant_offset, key_shared_prefix, value_shared_prefix, actSeqLenPrefix, num_heads, scale, pre_tokens, next_tokens, input_layout_ptr,
+        value_antiquant_offset, key_shared_prefix, value_shared_prefix, actSeqLenPrefix, query_rope, key_rope, num_heads, scale, pre_tokens, next_tokens, input_layout_ptr,
         num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, softmax_lse_flag, key_antiquant_mode, value_antiquant_mode, output, softmax_lse);
     return std::tuple<at::Tensor, at::Tensor>(output, softmax_lse);
 }
