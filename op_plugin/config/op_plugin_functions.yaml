@@ -7075,10 +7075,12 @@ custom:
   - func: npu_reshape(Tensor self, int[] shape, bool can_refresh=False) -> Tensor
     acl_op: all_version
     exposed: all_version
+    device_check: NoCheck
 
   - func: npu_reshape.out(Tensor self, int[] shape, bool can_refresh=False, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     exposed: all_version
+    device_check: NoCheck
 
   - func: npu_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor)
     acl_op: all_version
