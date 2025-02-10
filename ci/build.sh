@@ -129,6 +129,7 @@ function main()
     cp -rf ${CODE_ROOT_PATH}/test ${PYTORCH_THIRD_PATH}/
 
     # compile torch_adapter
+    export BUILD_WITHOUT_SHA=1
     if [[ "${PYTORCH_VERSION}" == v1.11.0* ]] || [[ "${PYTORCH_VERSION}" == v2.0.1* ]]; then
         bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION}
     else
@@ -140,12 +141,6 @@ function main()
         rm -r ${CODE_ROOT_PATH}/dist
     fi
     cp -rf ${PYTORCH_PATH}/dist ${CODE_ROOT_PATH}
-
-    whl_file=${CODE_ROOT_PATH}/dist/torch_npu*.whl
-    file_name=$(basename $whl_file)
-    git_commit=$(echo "$file_name" | grep -o '+git[0-9,a-z]\+')
-    npu_name=${file_name/$git_commit}
-    mv ${CODE_ROOT_PATH}/dist/${file_name} ${CODE_ROOT_PATH}/dist/${npu_name}
 
     exit 0
 }
