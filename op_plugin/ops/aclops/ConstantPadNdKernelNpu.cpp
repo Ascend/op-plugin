@@ -23,7 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 static const int POSITIVE = 1;
 static const int NEGETIVE = 2;
 static const int SIZE_T_TWICE = 2;
-static const int DIM_THRESHOLD = 5;
+static const int DIM_THRESHOLD = 8;
 
 namespace {
 
