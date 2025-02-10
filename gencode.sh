@@ -21,7 +21,7 @@ CDIR="$(cd "$(dirname "$0")" ; pwd -P)"
 cd $CDIR/
 
 # Following updates only add incompatible ops files in corresponding branch folder.
-newest_minor_version=6
+newest_minor_version=7
 for minor_version in $(seq 1 ${newest_minor_version}); do
     # Merge base info and version related info (unsupported ops)
     sed -i "1r test/unsupported_ops_info_base.yaml" test/test_v2r${minor_version}_ops/unsupported_ops_info.yaml

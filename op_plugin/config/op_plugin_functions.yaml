@@ -1,4 +1,4 @@
-all_version: [v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6]
+all_version: [v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7]
 official:
   - func: __ilshift__.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
     acl_op: all_version
@@ -6135,13 +6135,13 @@ official:
       structured_inherit: _upsample_nearest_exact2d.out
 
   - func: _upsample_nearest_exact3d(Tensor self, SymInt[3] output_size, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: [v2.1, newest]
 
   - func: _upsample_nearest_exact3d(Tensor self, int[3] output_size, float? scales_d=None, float? scales_h=None, float? scales_w=None) -> Tensor
     op_api: v1.11
 
   - func: _upsample_nearest_exact3d.out(Tensor self, SymInt[3] output_size, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: v2.1, v2.2, v2.3, v2.4, v2.5, v2.6
+    op_api: [v2.1, newest]
 
   - func: _upsample_nearest_exact3d.out(Tensor self, int[3] output_size, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) out) -> Tensor(a!)
     op_api: v1.11
