@@ -65,6 +65,9 @@ OP_PLUGIN_HIDDEN bool check_dtype_foreach(at::ScalarType tensorDtype, ForeachTen
                                           c10::optional<ForeachMappingType> mapping = c10::nullopt);
 OP_PLUGIN_HIDDEN bool check_mapping_between_tensor_and_scalar_list(at::ScalarType tensorDtype, at::ScalarType scalarDtype, ForeachMappingType mapping);
 OP_PLUGIN_HIDDEN bool check_mapping_between_tensor_and_scalar(at::ScalarType tensorDtype, at::ScalarType scalarDtype, ForeachMappingType mapping);
+OP_PLUGIN_HIDDEN void check_input_same_type_as_parameters(const at::Tensor& input, const at::Tensor& weight, const at::Tensor& bias);
+OP_PLUGIN_HIDDEN void check_input_same_type_as_parameters(const at::Tensor& input, const at::Tensor& weight);
+
 }  // namespace utils
 }  // namespace op_plugin
 

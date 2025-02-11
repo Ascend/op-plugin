@@ -109,6 +109,9 @@ at::Tensor _convolution(const at::Tensor &input, const at::Tensor &weight, const
     DO_COMPATIBILITY(aclnnConvolution,
                      acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding,
                                           groups, benchmark, deterministic, cudnn_enabled, allow_tf32));
+    const at::Tensor &bias_opt = c10::value_or_else(bias, [] { return at::Tensor(); });
+    at::Tensor bias_val = bias_opt;
+    op_plugin::utils::check_input_same_type_as_parameters(input, weight, bias_val);
     return _calc_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups);
 }
 

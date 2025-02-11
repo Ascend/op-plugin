@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
 import torch_npu
@@ -73,6 +74,23 @@ class TestConvTranspose2dBackward(TestCase):
         ]
         self.conv_transpose2d_backward_result(shape_format)
         torch.npu.conv.allow_hf32 = False
+
+    def test_conv_transpose2d_abnormal_input(self):
+        npu_input = torch.randn(1, 640, 480).npu()
+        output1 = nn.AvgPool2d(kernel_size=4, stride=4)(npu_input)
+        output2 = nn.Sigmoid()((output1) + (torch.ones_like(output1) * (-0.5)))
+        with self.assertRaises(RuntimeError) as cm:
+            output3 = nn.ConvTranspose2d(in_channels=1, out_channels=1, kernel_size=2, stride=2)(output2)
+        exception = cm.exception
+        self.assertTrue("Input type (npuFloatType) and weight type (torch.FloatTensor) should be the same" in str(exception))
+
+        inputs = torch.randn(1, 4, 5, 5).npu()
+        weights = torch.randn(4, 8, 3, 3).npu()
+        bias = torch.randn(8).half()
+        with self.assertRaises(RuntimeError) as cm:
+            output = F.conv_transpose2d(inputs, weights, padding=1, bias=bias)
+        exception = cm.exception
+        self.assertTrue("Input type (npuFloatType) and bias type (torch.HalfTensor) should be the same" in str(exception))
 
 
 if __name__ == "__main__":

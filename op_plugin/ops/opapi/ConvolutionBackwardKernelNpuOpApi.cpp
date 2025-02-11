@@ -102,6 +102,7 @@ tensor_list3 convolution_backward(const at::Tensor &grad_output, const at::Tenso
     DO_COMPATIBILITY(aclnnConvolutionBackward,
                      acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                                                   transposed, output_padding, groups, output_mask));
+    op_plugin::utils::check_input_same_type_as_parameters(input, weight);
     return _calc_convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation, transposed,
                                       output_padding, groups, output_mask);
 }
