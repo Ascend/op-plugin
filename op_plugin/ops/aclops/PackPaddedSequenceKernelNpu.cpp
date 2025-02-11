@@ -36,6 +36,9 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(const at::Tensor &input
     TORCH_CHECK(lengths.size(0) == batchsize, "Expected 'len(lengths)' to be equal to batch_size, but got ",
                 lengths.size(0), " (batch_size=", batchsize, ")" + OPS_ERROR(ErrCode::PARAM));
 
+    TORCH_CHECK(lengths.device().type() == at::kCPU,
+                "'lengths' argument should be a CPU tensor, but got ",
+                lengths.device().str(), " tensor" + OPS_ERROR(ErrCode::PARAM));
     auto lengths_vec = lengths.contiguous().data_ptr<int64_t>();
     TORCH_CHECK(lengths_vec != nullptr && lengths_vec[batchsize - 1] > 0,
                 "Length of all samples has to be greater than 0, but found an element "

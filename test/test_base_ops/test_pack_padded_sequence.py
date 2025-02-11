@@ -22,6 +22,13 @@ class TestPackPaddedSequence(TestCase):
         out_dim2, batch_sizes = torch._pack_padded_sequence(data, lengths, False)
         self.assertRtolEqual(expect_dim2, out_dim2.cpu())
         self.assertRtolEqual(expect_batch_sizes, batch_sizes.cpu())
+    
+    def test_pack_padded_sequence_check_lenght_cpu(self):
+        data = torch.randn(6, 3, 2, dtype=torch.float16).npu()
+        lengths = torch.tensor([6, 5, 3], dtype=torch.int64).npu()
+
+        with self.assertRaisesRegex(RuntimeError, "'lengths' argument should be a CPU tensor, but got"):
+            out_dim2, batch_sizes = torch._pack_padded_sequence(data, lengths, False)
 
 
 if __name__ == "__main__":
