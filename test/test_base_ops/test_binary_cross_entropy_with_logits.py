@@ -192,6 +192,22 @@ class TestBinaryCrossEntropyWithLogits(TestCase):
             cpu_output = cpu_output.astype(np.float16)
             self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_binary_cross_with_logits_function_float16_requires_grad_true(self):
+        input_cpu = torch.rand((5, 5), requires_grad=True)
+        target_cpu = torch.rand((5, 5), requires_grad=True)
+        input_npu = input_cpu.npu()
+        target_npu = target_cpu.npu()
+        try:
+            loss = torch.nn.BCEWithLogitsLoss()
+            output_cpu = loss(input_cpu, target_cpu)
+            output_cpu.backward()
+            output_npu = loss(input_npu, target_npu)
+            output_npu.backward()
+        except Exception as e:
+            self.fail(f"Test failed with unexpected exception {e}")
+
+        self.assertEqual(output_cpu, output_npu)
+
 
 if __name__ == "__main__":
     run_tests()
