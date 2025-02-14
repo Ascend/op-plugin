@@ -57,21 +57,21 @@ class TestMoeDistributeCombine(TestCase):
         tp_send_counts = tp_send_counts.npu()
         expert_scales = expert_scales.npu()
         out = torch_npu.npu_moe_distribute_combine(expand_x=expand_x,
-                                                expert_ids=topk,
-                                                expand_idx=expand_idx,
-                                                ep_send_counts=ep_send_counts,
-                                                tp_send_counts=tp_send_counts,
-                                                expert_scales=expert_scales,
-                                                group_ep=ep_hcomm_name,
-                                                group_tp=tp_hcomm_name,
-                                                ep_world_size=ep_world_size,
-                                                tp_world_size=tp_world_size,
-                                                ep_rank_id=int(rank // tp_world_size),
-                                                tp_rank_id=int(rank % tp_world_size),
-                                                expert_shard_type=0,
-                                                shared_expert_rank_num=sharedExpertRankNum,
-                                                moe_expert_num=moeExpertNum,
-                                                global_bs=globalBS)
+                                                   expert_ids=topk,
+                                                   expand_idx=expand_idx,
+                                                   ep_send_counts=ep_send_counts,
+                                                   expert_scales=expert_scales,
+                                                   group_ep=ep_hcomm_name,
+                                                   ep_world_size=ep_world_size,
+                                                   ep_rank_id=int(rank // tp_world_size),
+                                                   moe_expert_num=moeExpertNum,
+                                                   tp_send_counts=tp_send_counts,
+                                                   group_tp=tp_hcomm_name,
+                                                   tp_world_size=tp_world_size,
+                                                   tp_rank_id=int(rank % tp_world_size),
+                                                   expert_shard_type=0,
+                                                   shared_expert_rank_num=sharedExpertRankNum,
+                                                   global_bs=globalBS)
         c2p.put((rank, out.cpu()))
         p2c.get()
 

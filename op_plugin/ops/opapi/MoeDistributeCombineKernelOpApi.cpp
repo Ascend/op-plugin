@@ -25,10 +25,12 @@ namespace op_api {
 
 at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tensor &expert_ids,
                                       const at::Tensor &expand_idx,
-                                      const at::Tensor &ep_send_counts, const at::Tensor &tp_send_counts, const at::Tensor &expert_scales,
-                                      c10::string_view group_ep, c10::string_view group_tp, int64_t ep_world_size, int64_t tp_world_size,
-                                      int64_t ep_rank_id, int64_t tp_rank_id, int64_t expert_shard_type,
-                                      int64_t shared_expert_rank_num, int64_t moe_expert_num,
+                                      const at::Tensor &ep_send_counts, const at::Tensor &expert_scales,
+                                      c10::string_view group_ep, int64_t ep_world_size, int64_t ep_rank_id,
+                                      int64_t moe_expert_num,
+                                      const c10::optional<at::Tensor> &tp_send_counts,
+                                      c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
+                                      int64_t expert_shard_type, int64_t shared_expert_rank_num,
                                       int64_t global_bs)
 {
     TORCH_CHECK((expand_x.dim() == 2) && (expert_ids.dim() == 2), "The x and expert_ids should be 2D", OPS_ERROR(ErrCode::PARAM));
@@ -42,10 +44,14 @@ at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tens
     int64_t global_bs_real = (global_bs == 0) ? (n * ep_world_size) : global_bs;
 
     char *group_ep_ptr = const_cast<char *>(group_ep.data());
-    char *group_tp_ptr = const_cast<char *>(group_tp.data());
+    std::string group_tp_str = std::string(group_tp);
+    char *group_tp_ptr = const_cast<char *>(group_tp_str.c_str());
     at::Tensor output = npu_preparation::apply_tensor_without_format({n, h}, expert_ids.options().dtype(expand_x.scalar_type()));
-    EXEC_NPU_CMD(aclnnMoeDistributeCombine, expand_x, expert_ids, expand_idx, ep_send_counts, tp_send_counts, expert_scales, group_ep_ptr,
-        group_tp_ptr, ep_world_size, tp_world_size, ep_rank_id, tp_rank_id, expert_shard_type, shared_expert_rank_num, moe_expert_num, global_bs_real, output);
+    EXEC_NPU_CMD(aclnnMoeDistributeCombine, expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, tp_send_counts,
+        group_ep_ptr, ep_world_size, ep_rank_id,
+        moe_expert_num,
+        group_tp_ptr, tp_world_size, tp_rank_id,
+        expert_shard_type, shared_expert_rank_num, global_bs_real, output);
     return output;
 }
 }
