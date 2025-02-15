@@ -30,3 +30,16 @@ endif()
 # Pass to parents
 set(OPS_PLUGIN_SRCS ${OPS_PLUGIN_SRCS} PARENT_SCOPE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCURRENT_VERSION=V${CMAKE_MATCH_1}R${CMAKE_MATCH_2}" PARENT_SCOPE)
+
+set(_OPPLUGIN_ATB_NAME op_plugin_atb)
+
+FILE(GLOB _OPPLUGIN_UTILS_SRCS
+    ops/atb/*.cpp
+    utils/custom_functions/atb/*.cpp)
+
+add_library(${_OPPLUGIN_ATB_NAME} SHARED
+    ${_OPPLUGIN_UTILS_SRCS}
+)
+
+target_link_libraries(${_OPPLUGIN_ATB_NAME} PUBLIC torch_npu)
+target_link_libraries(${_OPPLUGIN_ATB_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/third_party/op-plugin/op_plugin/third_party/atb/libs/libatb.so)

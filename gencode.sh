@@ -63,3 +63,5 @@ ${python_execute} -m codegen.struct.gen_struct_opapi  \
   --output_dir="$CDIR/op_plugin/ops/opapi/" \
   --native_yaml="$OUTPUT_DIR/op_plugin_functions.yaml" \
   --struct_yaml="$CDIR/op_plugin/config/op_plugin_functions.yaml"
+
+sh $CDIR/op_plugin/third_party/atb/libs/build_stub.sh
