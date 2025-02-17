@@ -3747,5 +3747,11 @@
   },
   "func: npu_gelu(Tensor self, *, str approximate='none') -> Tensor": {
     "version": ["all_version"]
+  },
+  "func: npu_group_norm_swish(Tensor input, int num_groups, Tensor weight, Tensor bias, float? eps=1e-5, float? swish_scale=1.0) -> (Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
+  "func: npu_group_norm_swish_grad(Tensor grad, Tensor input, int num_groups, Tensor weight, Tensor bias, Tensor mean, Tensor rstd, bool[3] grad_input_mask, float? swish_scale=1.0) -> (Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
   }
 }

@@ -269,3 +269,7 @@ backward:
 - name: _fft_c2r(Tensor self, int[] dim, int normalization, SymInt last_dim_size) -> Tensor
   self: fft_c2r_backward(grad, dim, normalization)
   version: [v2.1, newest]
+
+- name: npu_group_norm_swish(Tensor input, int num_groups, Tensor weight, Tensor bias, float? eps=1e-5, float? swish_scale=1.0) -> (Tensor, Tensor, Tensor)
+  input, weight, bias: npu_group_norm_swish_grad(grad, input, num_groups, weight, bias, result1, result2, grad_input_mask, swish_scale)
+  version: all_version

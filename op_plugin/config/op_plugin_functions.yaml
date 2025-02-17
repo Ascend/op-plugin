@@ -7269,6 +7269,45 @@ custom:
   - func: fft_c2r_backward(Tensor grad, int[] dim, int normalization) -> Tensor
     op_api: [v2.1, newest]
 
+  - func: npu_group_norm_swish(Tensor input, int num_groups, Tensor weight, Tensor bias, float? eps=1e-5, float? swish_scale=1.0) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+    exposed: all_version
+    gen_opapi:
+      out:
+        size: input
+        dtype: input
+      mean:
+        size: '{input.size(0), num_groups}'
+        dtype: weight
+      rstd:
+        size: '{input.size(0), num_groups}'
+        dtype: weight
+      new_params:
+        data_format: '"NCHW"'
+        eps_value: 'eps.value_or(1e-5)'
+        activate_swish: 'true'
+        swish_scale_value: 'swish_scale.value_or(1.0)'
+      exec: aclnnGroupNormSwish, input, weight, bias, num_groups, data_format, eps_value, activate_swish, swish_scale_value, out, mean, rstd
+
+  - func: npu_group_norm_swish_grad(Tensor grad, Tensor input, int num_groups, Tensor weight, Tensor bias, Tensor mean, Tensor rstd, bool[3] grad_input_mask, float? swish_scale=1.0) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+    gen_opapi:
+      grad_x:
+        size: input
+        dtype: input
+      grad_weight:
+        size: weight
+        dtype: weight
+      grad_bias:
+        size: bias
+        dtype: bias
+      new_params:
+        data_format: '"NCHW"'
+        swish_scale_value: 'swish_scale.value_or(1.0)'
+        dweight_require_grad: 'grad_input_mask[1] ? true : false'
+        dbias_require_grad: 'grad_input_mask[2] ? true : false'
+      exec: aclnnGroupNormSwishGrad, grad, mean, rstd, input, weight, bias, num_groups, data_format, swish_scale_value, dweight_require_grad, dbias_require_grad, grad_x, grad_weight, grad_bias
+
 symint:
   - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
     acl_op: [v2.0, newest]
