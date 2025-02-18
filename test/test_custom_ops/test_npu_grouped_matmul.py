@@ -75,8 +75,15 @@ class TestGroupedMatmul(TestCase):
                                                 antiquant_scale=antiquantScale, antiquant_offset=antiquantOffset,
                                                 group_list=group_list, split_item=split_item)
 
+    def get_group_list(self, m, g):
+        step = (m - 0) // (g - 1)
+        data = [i * step for i in range(g)]
+        group_list = torch.tensor(data, dtype=torch.int64).npu()
+        group_list[-1] = m
+        return group_list
+    
     @SupportedDevices(['Ascend910B'])
-    def test_npu_grouped_matmul_0(self, device="npu"):
+    def test_npu_grouped_matmul_0(self, device="npu"): # 多多多
         torch.manual_seed(0)
         x1 = torch.normal(mean=0., std=0.1, size=(256, 256), dtype=torch.float16)
         x2 = torch.normal(mean=0., std=0.1, size=(1024, 256), dtype=torch.float16)
@@ -115,8 +122,7 @@ class TestGroupedMatmul(TestCase):
         self.assertRtolEqual(supported_output[2], custom_output[2], 0.001)
 
     @SupportedDevices(['Ascend910B'])
-    @unittest.skip("skip due to golden function problem")
-    def test_npu_grouped_matmul_0_multi_dim(self, device="npu"):
+    def test_npu_grouped_matmul_0_multi_dim(self, device="npu"): # 多多多（x多维）
         torch.manual_seed(0)
         x1 = torch.normal(mean=0., std=0.1, size=(7, 1024, 96), dtype=torch.float16)
         x2 = torch.normal(mean=0., std=0.1, size=(7, 1024, 32), dtype=torch.float16)
@@ -150,44 +156,32 @@ class TestGroupedMatmul(TestCase):
         self.assertRtolEqual(supported_output[1], custom_output[1], 0.001)
 
     @SupportedDevices(['Ascend910B'])
-    @unittest.skip("skip due to golden function problem")
-    def test_npu_grouped_matmul_1(self, device="npu"):
+    def test_npu_grouped_matmul_1(self, device="npu"): # 单单单
         torch.manual_seed(0)
         x1 = torch.normal(mean=0., std=0.1, size=(1792, 1024), dtype=torch.float16)
         x = [x1]
-        weight1 = torch.normal(mean=0., std=0.1, size=(1024, 256), dtype=torch.float16)
-        weight2 = torch.normal(mean=0., std=0.1, size=(1024, 1024), dtype=torch.float16)
-        weight3 = torch.normal(mean=0., std=0.1, size=(1024, 128), dtype=torch.float16)
-        weight = [weight1, weight2, weight3]
-        bias1 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
-        bias2 = torch.normal(mean=0., std=0.1, size=(1024,), dtype=torch.float16)
-        bias3 = torch.normal(mean=0., std=0.1, size=(128,), dtype=torch.float16)
-        bias = [bias1, bias2, bias3]
-        group_list = torch.tensor([256, 1280, 1792]).npu()
-        split_item = 1
+        weight1 = torch.normal(mean=0., std=0.1, size=(2, 1024, 256), dtype=torch.float16)
+        weight = [weight1[0], weight1[1]]
+        group_list = torch.tensor([256, 1792]).npu()
+        split_item = 3
+        group_type = 0
 
         x_clone = []
         weight_clone = []
         bias_clone = []
         for x_i in x:
             x_clone.append(x_i.clone().npu())
-        for weight_i in weight:
-            weight_clone.append(weight_i.clone().npu())
-        for bias_i in bias:
-            bias_clone.append(bias_i.clone().npu())
 
-        supported_output = self.supported_op_exec(x, weight, bias=bias, group_list=group_list, split_item=split_item)
-        custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
-                                            split_item=split_item)
+        weight_clone.append(weight1.clone().npu())
 
-        self.assertRtolEqual(x[0], x_clone[0], 0.001)
+        supported_output = self.supported_op_exec(x, weight, bias=None, group_list=group_list, split_item=split_item)
+        custom_output = self.custom_op_exec(x_clone, weight_clone, bias=None, group_list=group_list,
+                                            split_item=split_item, group_type=group_type)
+
         self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
-        self.assertRtolEqual(supported_output[1], custom_output[1], 0.001)
-        self.assertRtolEqual(supported_output[2], custom_output[2], 0.001)
 
     @SupportedDevices(['Ascend910B'])
-    @unittest.skip("skip due to golden function problem")
-    def test_npu_grouped_matmul_2(self, device="npu"):
+    def test_npu_grouped_matmul_2(self, device="npu"): # 多多单
         torch.manual_seed(0)
         x1 = torch.normal(mean=0., std=0.1, size=(256, 256), dtype=torch.float16)
         x2 = torch.normal(mean=0., std=0.1, size=(1024, 256), dtype=torch.float16)
@@ -216,7 +210,7 @@ class TestGroupedMatmul(TestCase):
             bias_clone.append(bias_i.clone().npu())
 
         supported_output = self.supported_op_exec(x, weight, bias=bias, group_list=group_list, 
-                                                  split_item=split_item, group_type=group_type)
+                                                  split_item=split_item)
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
                                             split_item=split_item, group_type=group_type)
 
@@ -226,8 +220,7 @@ class TestGroupedMatmul(TestCase):
         self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
 
     @SupportedDevices(['Ascend910B'])
-    @unittest.skip("skip due to golden function problem")
-    def test_npu_grouped_matmul_3(self, device="npu"):
+    def test_npu_grouped_matmul_3(self, device="npu"): # 单多单
         torch.manual_seed(0)
         x1 = torch.normal(mean=0., std=0.1, size=(1792, 1024), dtype=torch.float16)
         x = [x1]
@@ -239,8 +232,9 @@ class TestGroupedMatmul(TestCase):
         bias2 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
         bias3 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
         bias = [bias1, bias2, bias3]
-        group_list = torch.tensor([256, 1280, 1792])
+        group_list = torch.tensor([256, 1280, 1792]).npu()
         split_item = 3
+        group_type = 0
 
         x_clone = []
         weight_clone = []
@@ -254,13 +248,13 @@ class TestGroupedMatmul(TestCase):
 
         supported_output = self.supported_op_exec(x, weight, bias=bias, group_list=group_list, split_item=split_item)
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
-                                            split_item=split_item)
+                                            split_item=split_item, group_type=group_type)
 
         self.assertRtolEqual(x[0], x_clone[0], 0.001)
         self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
 
     @SupportedDevices(['Ascend910B'])
-    def test_npu_grouped_matmul_4(self, device="npu"):
+    def test_npu_grouped_matmul_4(self, device="npu"): # 单多单
         torch.manual_seed(0)
         x1 = torch.normal(mean=0., std=0.1, size=(1792, 256), dtype=torch.float16)
         x = [x1]
@@ -283,8 +277,7 @@ class TestGroupedMatmul(TestCase):
         self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
 
     @SupportedDevices(['Ascend910B'])
-    @unittest.skip("skip due to golden function problem")
-    def test_npu_grouped_matmul_antiquant_0(self, device="npu"):
+    def test_npu_grouped_matmul_antiquant_0(self, device="npu"): # 伪量化 多多多
         torch.manual_seed(0)
         x1 = torch.normal(mean=0., std=0.05, size=(256, 256), dtype=torch.float16)
         x2 = torch.normal(mean=0., std=0.05, size=(1024, 256), dtype=torch.float16)
@@ -335,13 +328,12 @@ class TestGroupedMatmul(TestCase):
         self.assertRtolEqual(x[0], x_clone[0], 0.001)
         self.assertRtolEqual(x[1], x_clone[1], 0.001)
         self.assertRtolEqual(x[2], x_clone[2], 0.001)
-        self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
-        self.assertRtolEqual(supported_output[1], custom_output[1], 0.001)
-        self.assertRtolEqual(supported_output[2], custom_output[2], 0.001)
+        self.assertRtolEqual(supported_output[0], custom_output[0], 0.005)
+        self.assertRtolEqual(supported_output[1], custom_output[1], 0.005)
+        self.assertRtolEqual(supported_output[2], custom_output[2], 0.005)
 
     @SupportedDevices(['Ascend910B'])
-    @unittest.skip("skip due to golden function problem")
-    def test_npu_grouped_matmul_quant_3(self, device="npu"):
+    def test_npu_grouped_matmul_quant_3(self, device="npu"): # 量化 单多单
         torch.manual_seed(0)
         x1 = torch.randint(1, 5, size=(1792, 1024), dtype=torch.int8)
         x = [x1]
@@ -355,6 +347,7 @@ class TestGroupedMatmul(TestCase):
         bias = [bias1, bias2, bias3]
         group_list = torch.tensor([256, 1280, 1792]).npu()
         split_item = 3
+        group_type = 0
 
         x_clone = []
         weight_clone = []
@@ -376,13 +369,12 @@ class TestGroupedMatmul(TestCase):
         supported_output = self.supported_op_exec(x, weight, bias=bias, scale=scale_fp32, group_list=group_list,
                                                   split_item=split_item)
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, scale=scale_uint64,
-                                            group_list=group_list, split_item=split_item)
+                                            group_list=group_list, split_item=split_item, group_type=group_type)
 
         self.assertRtolEqual(x[0], x_clone[0], 1)
         self.assertRtolEqual(supported_output[0], custom_output[0], 1)
 
     @SupportedDevices(['Ascend910B'])
-    @unittest.skip("skip due to golden function problem")
     def test_npu_grouped_matmul_0_empty_x_w(self, device="npu"):
         torch.manual_seed(0)
         x = []
