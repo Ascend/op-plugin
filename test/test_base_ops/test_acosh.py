@@ -4,6 +4,7 @@ import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 
 class TestAcosh(TestCase):
@@ -68,6 +69,15 @@ class TestAcosh(TestCase):
             npu_output = self.npu_inp_op_exec(npu_input1)
             mask = ~(np.isnan(cpu_output) | np.isinf(cpu_output))
             self.assertRtolEqual(cpu_output[mask], npu_output[mask], 0.001)
+
+    @skipIfUnsupportMultiNPU(2)
+    def test_acosh_out_device_check(self):
+        npu_input = torch.randn(2, 3).to("npu:1")
+        npu_out = torch.randn(2, 3).to("npu:0")
+        msg = "Expected all tensors to be on the same device, but found at least two devices, npu:"
+        with self.assertRaisesRegex(RuntimeError, msg):
+            torch.acosh(npu_input, out=npu_out)
+
 
 
 if __name__ == "__main__":

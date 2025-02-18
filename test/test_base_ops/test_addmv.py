@@ -4,6 +4,7 @@ import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
+from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 
 class TestAddmv(TestCase):
@@ -121,6 +122,15 @@ class TestAddmv(TestCase):
             )
 
             self.assertRtolEqual(cpu_output, npu_output, prec=1.0e-3, prec16=1.0e-3)
+
+    @skipIfUnsupportMultiNPU(2)
+    def test_addmv_device_check(self):
+        npu_input_a = torch.randn(2, 3).npu()
+        npu_input_b = torch.randn(3,).npu()
+        npu_input_c = torch.randn(2,).to("npu:1")
+        msg = "Expected all tensors to be on the same device, but found at least two devices,"
+        with self.assertRaisesRegex(RuntimeError, msg):
+            torch.addmv(npu_input_a, npu_input_b, npu_input_c)
 
 
 if __name__ == "__main__":

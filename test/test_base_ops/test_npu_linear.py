@@ -4,6 +4,7 @@ import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 
 class TestNpuLinear(TestCase):
@@ -44,6 +45,15 @@ class TestNpuLinear(TestCase):
             cpu_output = self.cpu_op_exec(cpu_x.float(), cpu_w.float(), cpu_b.float()).astype(np.float16)
             npu_output = self.npu_op_exec(npu_x, npu_w, npu_b)
             self.assertRtolEqual(cpu_output, npu_output)
+    
+    @skipIfUnsupportMultiNPU(2)
+    def test_npu_linear_device_check(self):
+        x = torch.rand(2, 16).npu()
+        w = torch.rand(4, 16).npu()
+        b = torch.rand(4).to("npu:1")
+        msg = "Expected all tensors to be on the same device, but found at least two devices,"
+        with self.assertRaisesRegex(RuntimeError, msg):
+            torch_npu.npu_linear(x, w, b)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 
 torch.npu.set_compile_mode(jit_compile=False)
@@ -47,6 +48,14 @@ class TestBincount(TestCase):
             cpu_output = self.cpu_op_exec_with_weights(cpu_input, cpu_weight)
             npu_output = self.npu_op_exec_with_weights(npu_input, npu_weight)
             self.assertRtolEqual(cpu_output, npu_output)
+
+    @skipIfUnsupportMultiNPU(2)
+    def test_bincount_device_check(self):
+        input_tensor = torch.tensor([1, 2, 2, 3, 3, 3, 4, 4, 4, 4]).npu()
+        weights = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]).to("npu:1")
+        msg = "Expected all tensors to be on the same device, but found at least two devices,"
+        with self.assertRaisesRegex(RuntimeError, msg):
+            torch.bincount(input_tensor, weights=weights)
 
 
 if __name__ == '__main__':
