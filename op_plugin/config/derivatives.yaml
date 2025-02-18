@@ -273,3 +273,8 @@ backward:
 - name: npu_group_norm_swish(Tensor input, int num_groups, Tensor weight, Tensor bias, float? eps=1e-5, float? swish_scale=1.0) -> (Tensor, Tensor, Tensor)
   input, weight, bias: npu_group_norm_swish_grad(grad, input, num_groups, weight, bias, result1, result2, grad_input_mask, swish_scale)
   version: all_version
+
+- name: npu_cross_entropy_loss(Tensor input, Tensor target, Tensor? weight=None, str reduction='mean', int ignore_index=-100, float label_smoothing=0.0, float lse_square_scale_for_zloss=0.0, bool return_zloss=False) -> (Tensor, Tensor, Tensor, Tensor)
+  output_differentiability: [true, false, true, false]
+  input: npu_cross_entropy_loss_backward(grads[0], result1, target, weight, grads[1], result3, reduction, ignore_index, label_smoothing, lse_square_scale_for_zloss)
+  version: all_version

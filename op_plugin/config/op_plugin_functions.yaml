@@ -7273,6 +7273,36 @@ custom:
   - func: fft_c2r_backward(Tensor grad, int[] dim, int normalization) -> Tensor
     op_api: [v2.1, newest]
 
+  - func: npu_cross_entropy_loss(Tensor input, Tensor target, Tensor? weight=None, str reduction='mean', int ignore_index=-100, float label_smoothing=0.0, float lse_square_scale_for_zloss=0.0, bool return_zloss=False) -> (Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+    gen_opapi:
+      loss:
+        size: 'npu_cross_entropy_loss_loss_output_size(input, reduction)'
+        dtype: input
+      log_prob:
+        size: input
+        dtype: input
+      zloss:
+        size: 'npu_cross_entropy_loss_zloss_output_size(input, reduction, return_zloss)'
+        dtype: input
+      lse_for_zloss:
+        size: 'npu_cross_entropy_loss_lse_for_zloss_output_size(input, lse_square_scale_for_zloss)'
+        dtype: input
+      new_params:
+        reduction_char: 'const_cast<char *>(reduction.data())'
+      exec: aclnnCrossEntropyLoss, input, target, weight, reduction_char, ignore_index, label_smoothing, lse_square_scale_for_zloss, return_zloss, loss, log_prob, zloss, lse_for_zloss
+    exposed: all_version
+
+  - func: npu_cross_entropy_loss_backward(Tensor grad_loss, Tensor log_prob, Tensor target, Tensor? weight=None, Tensor? grad_zloss=None, Tensor? lse_for_zloss=None, str reduction='mean', int ignore_index=-100, float label_smoothing=0.0, float lse_square_scale_for_zloss=0.0) -> Tensor
+    op_api: all_version
+    gen_opapi:
+      x_grad_out:
+        size: log_prob
+        dtype: grad_loss
+      new_params:
+        reduction_char: 'const_cast<char *>(reduction.data())'
+      exec: aclnnCrossEntropyLossGrad, grad_loss, log_prob, target, weight, grad_zloss, lse_for_zloss, reduction_char, ignore_index, label_smoothing, lse_square_scale_for_zloss, x_grad_out
+
   - func: npu_group_norm_swish(Tensor input, int num_groups, Tensor weight, Tensor bias, float? eps=1e-5, float? swish_scale=1.0) -> (Tensor, Tensor, Tensor)
     op_api: all_version
     exposed: all_version

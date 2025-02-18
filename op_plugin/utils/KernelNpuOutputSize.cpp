@@ -1824,4 +1824,44 @@ at::SmallVector<int64_t, SIZE> upsample_nearest_exact2d_output_size_npu(
     return outputSize;
 }
 
+at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_loss_output_size(
+    const at::Tensor &input,
+    c10::string_view reduction)
+{
+    at::SmallVector<int64_t, SIZE> outputSize;
+    if (reduction == "none") {
+        outputSize = {input.size(0)};
+    } else {
+        outputSize = {1};
+    }
+    return outputSize;
+}
+
+at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_zloss_output_size(
+    const at::Tensor &input,
+    c10::string_view reduction,
+    bool return_zloss)
+{
+    at::SmallVector<int64_t, SIZE> outputSize;
+    if (return_zloss) {
+        outputSize = op_infer::npu_cross_entropy_loss_loss_output_size(input, reduction);
+    } else {
+        outputSize = {0};
+    }
+    return outputSize;
+}
+
+at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_lse_for_zloss_output_size(
+    const at::Tensor &input,
+    float lse_square_scale_for_zloss)
+{
+    at::SmallVector<int64_t, SIZE> outputSize;
+    if (lse_square_scale_for_zloss != 0.0) {
+        outputSize = {input.size(0)};
+    } else {
+        outputSize = {0};
+    }
+    return outputSize;
+}
+
 } // namespace op_infer
