@@ -300,7 +300,7 @@ def get_version(ver, all_version):
     if isinstance(ver, list):
         start_ver = all_version.index(ver[0])
         end_ver = None if ver[1] == 'newest' else all_version.index(ver[1])
-        real_ver = all_version[start_ver:end_ver]
+        real_ver = all_version[start_ver:end_ver + 1] if end_ver is not None else all_version[start_ver:]
     elif ver == 'all_version':
         real_ver = all_version
     else:
