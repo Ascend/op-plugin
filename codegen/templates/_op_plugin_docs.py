@@ -4975,6 +4975,47 @@ print(out)
 )
 
 _add_torch_npu_docstr(
+    "npu_kronecker_quant",
+    """
+接口原型：
+npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, ScalarType? dst_dtype=None) -> (Tensor out, Tensor quant_scale)
+
+功能描述
+为矩阵x依次进行两次小矩阵乘法，然后针对矩阵乘的结果进行量化处理。
+
+参数说明
+x: Device侧的Tensor类型，表示输入；数据类型支持FLOAT16、BFLOAT16类型；shape为[K, M, N]，其中N必须为8的整数倍。
+kronecker_p1: Device侧的Tensor类型，表示输入；数据类型支持FLOAT16、BFLOAT16类型，数据类型与x一致；shape为[M, M]，M与x第一维相同。
+kronecker_p2: Device侧的Tensor类型，表示输入；数据类型支持FLOAT16、BFLOAT16类型，数据类型与x一致；shape为[N, N]，N与x第二维相同。
+dst_dtype：ScalarType类型，可选参数，输入值允许为torch.int32，默认值为torch.int32。
+
+输出说明
+out：Device侧的Tensor类型，表示量化输出；数据类型支持INT32；shape为[K, M, N/8]，第零维和第一维与x一致，第二维是x的1/8。
+quant_scale: Device侧的Tensor类型，表示量化缩放系数；数据类型支持FLOAT32；shape为[K]，K与x第零维相同。
+
+约束说明
+输入数据类型仅支持float16和bfloat16，x、kronecker_p1和kronecker_p2数据类型要保持一致。
+
+支持的型号
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例:
+import torch
+import torch_npu
+
+K = 16
+M = 64
+N = 64
+x = torch.randn(K, M, N).npu()
+kronecker_p1 = torch.randn(M, M).half().npu()
+kronecker_p2 = torch.randn(N, N).half().npu()
+
+out, quant_scale = torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2)
+"""
+)
+
+_add_torch_npu_docstr(
     "scatter_update",
     """
 接口原型：

@@ -7049,6 +7049,17 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, ScalarType? dst_dtype=None) -> (Tensor out, Tensor quant_scale)
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: kronecker_quant_out_size(x)
+        dtype: at::kInt
+      quant_scale:
+        size: kronecker_quant_scale_size(x)
+        dtype: at::kFloat
+      exec: aclnnFlatQuant, x, kronecker_p1, kronecker_p2, out, quant_scale
+
   - func: npu_group_quant(Tensor x, Tensor scale, Tensor group_index, *, Tensor? offset=None, ScalarType? dst_dtype=None) -> Tensor
     op_api: all_version
 

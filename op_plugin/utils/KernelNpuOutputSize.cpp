@@ -1864,4 +1864,21 @@ at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_lse_for_zloss_output_size(
     return outputSize;
 }
 
+c10::SmallVector<int64_t, SIZE> kronecker_quant_out_size(const at::Tensor &self)
+{
+    auto outputSize = op_infer::array_to_small_vector(self.sizes());
+    auto self_dim_num = self.dim();
+    TORCH_CHECK(outputSize[self_dim_num - 1] % INT4_NUMS_IN_INT32_SPACE == 0,
+        "input shape last dim must be divded by 8" + OPS_ERROR(ErrCode::PARAM));
+    outputSize[self_dim_num - 1] /= INT4_NUMS_IN_INT32_SPACE;
+    return outputSize;
+}
+
+c10::SmallVector<int64_t, SIZE> kronecker_quant_scale_size(const at::Tensor &self)
+{
+    int64_t resultSize = self.size(0);
+    at::SmallVector<int64_t, SIZE> outputSize = {resultSize};
+    return outputSize;
+}
+
 } // namespace op_infer
