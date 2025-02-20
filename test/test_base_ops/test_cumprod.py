@@ -18,6 +18,11 @@ class TestCumprod(TestCase):
         output = output.to("cpu").numpy()
         return output
 
+    def cpu_op_out_exec(self, input1, input2, dim):
+        torch.cumprod(input1, dim, out=input2)
+        output = input2.numpy()
+        return output
+
     def npu_op_out_exec(self, input1, input2, dim):
         torch.cumprod(input1, dim, out=input2)
         output = input2.to("cpu").numpy()
@@ -34,7 +39,9 @@ class TestCumprod(TestCase):
     def test_cumprod_common_shape_format(self):
         shape_format = [
             [[np.float32, 0, (5, 3)], 0],
-            [[np.float32, 0, (2, 3)], 1]
+            [[np.float32, 0, (2, 3)], 1],
+            [[np.float64, 0, (5, 3)], 0],
+            [[np.float64, 0, (2, 3)], 1],
         ]
         for item in shape_format:
             cpu_input1, npu_input1 = create_common_tensor(item[0], 1, 10)
@@ -52,12 +59,15 @@ class TestCumprod(TestCase):
             [[np.float32, 0, (4, 3)], [np.float32, 0, (4, 3)]],
             [[np.float32, 0, (4, 3)], [np.float32, 0, (4, 4)]],
             [[np.float32, 0, (4, 3)], [np.float32, 0, (4, 4, 1)]],
+            [[np.float64, 0, (4, 3)], [np.float64, 0, (4, 3)]],
+            [[np.float64, 0, (4, 3)], [np.float64, 0, (4, 4)]],
+            [[np.float64, 0, (4, 3)], [np.float64, 0, (4, 4, 1)]],
         ]
         dim = 0
         for item in shape_format:
             cpu_input1, npu_input1 = create_common_tensor(item[0], 1, 10)
-            _, npu_input2 = create_common_tensor(item[1], 1, 10)
-            cpu_output = self.cpu_op_exec(cpu_input1, dim)
+            cpu_input2, npu_input2 = create_common_tensor(item[1], 1, 10)
+            cpu_output = self.cpu_op_out_exec(cpu_input1, cpu_input2, dim)
             npu_output = self.npu_op_out_exec(npu_input1, npu_input2, dim)
             self.assertEqual(cpu_output.shape, npu_output.shape)
             self.assertRtolEqual(cpu_output, npu_output)

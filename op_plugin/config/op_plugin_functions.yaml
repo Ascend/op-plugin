@@ -1957,7 +1957,8 @@ official:
         dtype: 'dtype.has_value() ? dtype.value() : out.scalar_type()'
       new_params:
         dim_scalar: 'at::Scalar(dim)'
-      exec: aclnnCumprod, self, dim_scalar, dtype, out
+        dst_type: 'dtype.has_value() ? dtype.value() : out.scalar_type()'
+      exec: aclnnCumprod, self, dim_scalar, dst_type, out
 
   - func: cumprod_.dimname(Tensor(a!) self, Dimname dim, *, ScalarType? dtype=None) -> Tensor(a!)
     acl_op: all_version
