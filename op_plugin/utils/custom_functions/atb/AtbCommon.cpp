@@ -19,8 +19,6 @@
 
 namespace atb {
 
-static atb::Context* msContext = nullptr;
-
 
 at::Tensor FormatTrans(const at::Tensor &at_tensor)
 {
@@ -37,7 +35,10 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
         {at::ScalarType::Bool, ACL_BOOL},   {at::ScalarType::Byte, ACL_UINT8},
         {at::ScalarType::Char, ACL_INT8},   {at::ScalarType::Half, ACL_FLOAT16},
         {at::ScalarType::Float, ACL_FLOAT}, {at::ScalarType::Int, ACL_INT32},
-        {at::ScalarType::Long, ACL_INT64}, {at::ScalarType::BFloat16, ACL_BF16},
+        {at::ScalarType::Long, ACL_INT64},  {at::ScalarType::BFloat16, ACL_BF16},
+        {at::ScalarType::Double, ACL_DOUBLE}, {at::ScalarType::Short, ACL_INT16},
+        {at::ScalarType::ComplexHalf, ACL_COMPLEX32}, {at::ScalarType::ComplexFloat, ACL_COMPLEX64},
+        {at::ScalarType::ComplexDouble, ACL_COMPLEX128},
     };
 
     TORCH_CHECK(atTensor.is_contiguous(), "atTensor is not contiguous");
@@ -138,18 +139,46 @@ at::Tensor GetWorkspaceTensor(uint64_t workspaceSize)
 }
 
 
-atb::Context* GetContext()
+ContextManager& ContextManager::GetInstance()
 {
-    if (msContext == nullptr) {
-        auto status = atb::CreateContext(&msContext);
+    static ContextManager instance;
+    return instance;
+}
+
+
+ContextManager::ContextManager() : atbContext(nullptr) {}
+
+
+ContextManager::~ContextManager()
+{
+    if (atbContext) {
+        auto status = atb::DestroyContext(atbContext);
+        TORCH_CHECK(status == 0, "destroy context failed!");
+        atbContext = nullptr;
+    }
+}
+
+
+atb::Context* ContextManager::GetContext()
+{
+    std::call_once(createFlag, [this]() {
+        auto status = atb::CreateContext(&atbContext);
         TORCH_CHECK(status == 0, "create context failed!");
+
         int32_t devId = 0;
         aclrtGetDevice(&devId);
         aclrtStream stream = c10_npu::getCurrentNPUStream(devId).stream(false);
         TORCH_CHECK(stream != nullptr, "get current stream failed");
-        msContext->SetExecuteStream(stream);
-    }
-    return msContext;
+
+        atbContext->SetExecuteStream(stream);
+    });
+    return atbContext;
+}
+
+
+atb::Context* GetContext()
+{
+    return ContextManager::GetInstance().GetContext();
 }
 
 } // namespace atb

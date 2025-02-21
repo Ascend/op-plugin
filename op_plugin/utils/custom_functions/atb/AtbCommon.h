@@ -33,6 +33,21 @@ public:
     atb::VariantPack variantPack;
 };
 
+class ContextManager {
+public:
+    static ContextManager& GetInstance();
+    atb::Context* GetContext();
+    ~ContextManager();
+
+    ContextManager(const ContextManager&) = delete;
+    ContextManager& operator=(const ContextManager&) = delete;
+
+private:
+    ContextManager();
+    std::once_flag createFlag;
+    atb::Context* atbContext;
+};
+
 void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name);
 
 } // namespace atb
