@@ -23,40 +23,58 @@
 
 namespace atb {
 
+constexpr int g_hash_buf_size = 8192;
+constexpr int g_hash_buf_max_size = g_hash_buf_size + 1024;
+extern thread_local char g_hash_buf[g_hash_buf_size];
+extern thread_local int g_hash_offset;
+
+#define MEMCPY_TO_BUF(data_expression, size_expression)                                                                \
+    if (g_hash_offset + (size_expression) > g_hash_buf_size) {                                                         \
+        g_hash_offset = g_hash_buf_max_size;                                                                           \
+        return;                                                                                                        \
+    }                                                                                                                  \
+    memcpy(g_hash_buf + g_hash_offset, data_expression, size_expression);                                              \
+    g_hash_offset += size_expression;
+
+uint64_t calc_hash_id();
+
+template <typename T> void add_param_to_buf(const T &value)
+{
+    MEMCPY_TO_BUF(&value, sizeof(T));
+}
+
+void add_param_to_buf(const string &);
+
+template <typename T> void add_param_to_buf(const std::string &name, const T &value)
+{
+    add_param_to_buf(name);
+    add_param_to_buf(value);
+}
+
 template <typename T>
 struct HashOpParam {
-    size_t operator()(const T& param) const;
+    void operator()(const T& param) const {};
 };
 
-
 // Each operator implements its own hash function calculation.
+// If the operator parameters do not change, implementation can be omitted.
 // It is possible to hash only the attributes that may change in the parameters of the calculation.
 // following example::
 //
 // `template <>`
 // `struct HashOpParam<atb::infer::XXXParam> {   //if XXXParam's transposeA and hasBias need hash`
-//     `size_t operator()(const atb::infer::XXXParam& param) const {`
-//         `size_t h = std::hash<std::string>{}("transposeA") ^ std::hash<int>{}(param.transposeA);`
-//         `h ^= std::hash<std::string>{}("hasBias") ^ std::hash<int>{}(param.hasBias);`
-//         `return h;`
+//     `void operator()(const atb::infer::XXXParam& param) const {`
+//         `add_param_to_buf("transposeA", param.transposeA);`
+//         `add_param_to_buf("hasBias", param.hasBias);`
 //     `}`
 // `};`
 
-
-template <>
-struct HashOpParam<atb::infer::LinearParam> {
-    size_t operator()(const atb::infer::LinearParam& param) const
-    {
-        size_t h = 0;
-        return h;
-    }
-};
-
-
 template <typename T>
-size_t computeHash(const T& obj)
+uint64_t computeHash(const T& obj)
 {
-    return HashOpParam<T>{}(obj);
+    g_hash_offset = 0;
+    HashOpParam<T>{}(obj);
+    return calc_hash_id();
 }
 
 } // namespace atb

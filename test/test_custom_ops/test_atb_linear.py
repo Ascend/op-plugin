@@ -5,15 +5,6 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 
 
-def _register_extensions():
-    import importlib
-    torch_npu_path = importlib.util.find_spec('torch_npu').submodule_search_locations[0]
-    torch.ops.load_library(os.path.join(torch_npu_path, 'lib', 'libop_plugin_atb.so'))
-
-
-_register_extensions()
-
-
 class TestAtbLinear(TestCase):
 
     @SupportedDevices(['Ascend910B'])
@@ -27,7 +18,7 @@ class TestAtbLinear(TestCase):
         product = torch.mm(x.T, weight)
         npu_res = product + c
 
-        torch.ops.atb._npu_matmul_add_fp32(x, weight, c)
+        torch_npu._npu_matmul_add_fp32(x, weight, c)
         atb_res = atb_res + c
         self.assertRtolEqual(npu_res, atb_res, 0.001, 0.001)
 

@@ -40,7 +40,7 @@ private:
 
     ~OpParamCache();
 
-    std::unordered_map<size_t, atb::Operation*> opMap_;
+    std::unordered_map<uint64_t, atb::Operation*> opMap_;
     mutable std::mutex mutex_;
 };
 
@@ -56,7 +56,7 @@ OpParamCache<ParamType>& OpParamCache<ParamType>::getInstance()
 template <typename ParamType>
 atb::Operation* OpParamCache<ParamType>::getOperation(const ParamType& param, const std::string& name)
 {
-    size_t hashValue = computeHash(param);
+    uint64_t hashValue = computeHash(param);
     {
         std::lock_guard<std::mutex> lock(mutex_);
         auto opCache = opMap_.find(hashValue);
