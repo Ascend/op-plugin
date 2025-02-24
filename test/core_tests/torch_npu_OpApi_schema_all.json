@@ -2858,7 +2858,10 @@
     "version": ["all_version"]
   },
   "func: stft(Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None) -> Tensor": {
-    "version": ["all_version"]
+    "version": ["v2.1", "v2.6"]
+  },
+  "func: stft(Tensor self, int n_fft, int? hop_length=None, int? win_length=None, Tensor? window=None, bool normalized=False, bool? onesided=None, bool? return_complex=None, bool? align_to_window=None) -> Tensor": {
+    "version": ["v2.7", "newest"]
   },
   "func: sub.Scalar(Tensor self, Scalar other, Scalar alpha=1) -> Tensor": {
     "version": ["all_version"]
