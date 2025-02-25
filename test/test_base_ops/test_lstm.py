@@ -3,7 +3,6 @@ import unittest
 import torch
 import numpy as np
 import torch_npu
-
 from torch_npu.testing.testcase import TestCase, run_tests
 
 

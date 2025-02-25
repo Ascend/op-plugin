@@ -1941,6 +1941,7 @@ official:
   - func: ctc_loss.Tensor(Tensor log_probs, Tensor targets, Tensor input_lengths, Tensor target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
     acl_op: all_version
     op_api: all_version
+    device_check: NoCheck
 
   - func: cumprod(Tensor self, int dim, *, ScalarType? dtype=None) -> Tensor
     acl_op: v2.0
@@ -3482,6 +3483,7 @@ official:
 
   - func: lstm.data(Tensor data, Tensor batch_sizes, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
+    device_check: NoCheck
 
   - func: lstm.input(Tensor input, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6590,6 +6592,7 @@ custom:
   - func: npu_broadcast.out(Tensor self, int[] size, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     exposed: all_version
+    device_check: NoCheck
 
   - func: npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> Tensor
     acl_op: all_version
@@ -6885,9 +6888,11 @@ custom:
   - func: npu_lstm_data(Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor seq_mask, Tensor h, Tensor c, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, bool flag_seq, bool direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
     tags: nondeterministic_seeded
+    device_check: NoCheck
 
   - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
+    device_check: NoCheck
 
   - func: npu_masked_fill_range(Tensor self, Tensor start, Tensor end, Tensor value, int axis=-1) -> Tensor
     acl_op: all_version

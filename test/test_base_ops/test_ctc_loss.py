@@ -175,6 +175,21 @@ class TestCtcLoss(TestCase):
 
             self.assertRtolEqual(neg_log_likelihood_cpu, neg_log_likelihood_npu, 1e-3)
 
+    def test_ctc_loss_tensor_no_device_check(self):
+        batch_size, time_steps, num_classes, target_length = 4, 50, 20, 30
+        log_probs = torch.randn(time_steps, batch_size, num_classes).npu()
+        log_probs = torch.nn.functional.log_softmax(log_probs, dim=2)
+        targets = torch.randint(1, num_classes, (batch_size, target_length),
+                                dtype=torch.long).npu()
+
+        input_lengths = torch.full((batch_size,), time_steps, dtype=torch.long)
+        target_lengths = torch.full((batch_size,), target_length, dtype=torch.long)
+
+        ctc_loss = torch.nn.CTCLoss(blank=0, reduction='mean', zero_infinity=False)
+        loss_npu = ctc_loss(log_probs, targets, input_lengths, target_lengths).cpu().numpy()
+        loss_cpu = ctc_loss(log_probs.cpu(), targets.cpu(), input_lengths, target_lengths).numpy()
+        self.assertRtolEqual(loss_cpu, loss_npu)
+
 
 if __name__ == "__main__":
     run_tests()
