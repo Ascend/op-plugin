@@ -7,6 +7,7 @@ import torch_npu
 
 API_LIST = [
     '_npu_matmul_add_fp32',
+    '_npu_group_topk',
 ]
 
 

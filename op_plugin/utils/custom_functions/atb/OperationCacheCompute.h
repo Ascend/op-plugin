@@ -69,6 +69,17 @@ struct HashOpParam {
 //     `}`
 // `};`
 
+template <>
+struct HashOpParam<atb::infer::GroupTopkParam> {
+    void operator()(const atb::infer::GroupTopkParam& param) const
+    {
+        add_param_to_buf("groupNum", param.groupNum);
+        add_param_to_buf("k", param.k);
+        add_param_to_buf("groupMultiFlag", param.groupMultiFlag);
+        add_param_to_buf("n", param.n);
+    }
+};
+
 template <typename T>
 uint64_t computeHash(const T& obj)
 {

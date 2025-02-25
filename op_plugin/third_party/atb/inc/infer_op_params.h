@@ -157,6 +157,56 @@ struct LinearParam {
     uint8_t rsv[23] = {0};
 };
 
+struct GroupTopkParam {
+    //!
+    //! \brief 每个token分组数量。注：“专家总数”为inTensor0Desc.shape.dims[1]的值。
+    //!
+    //! \note 必传，默认值为1，取值范围为[1, 专家总数]。
+    //!
+    //! \warning groupNum需要保证可以被inTensor0Desc.shape.dims[1]整除。
+    //!
+    int32_t groupNum = 1;
+    //!
+    //! \brief 选择top K组数量。
+    //!
+    //! \note 必传，默认值为0，取值范围为[1, groupNum]。
+    //!
+    //! \warning
+    //!
+    int32_t k = 0;
+    //!
+    //! \enum GroupMultiFlag
+    //!
+    //! \brief 指定GroupTopk每组中取值计算的方式。
+    //!
+    //! \warning
+    //!
+    enum GroupMultiFlag : uint16_t {
+        UNDEFINED = 0, //!< 默认方式，每组内取最大值。
+        SUM_MULTI_MAX  //!< 每组内取n个最大值求和，需要设置参数n
+    };
+    //!
+    //! \brief 指定GroupTopk每组中取值计算的方式。
+    //!
+    //! \note 默认值为UNDEFINED。
+    //!
+    //! \warning 取值为SUM_MULTI_MAX时需要传入参数n。
+    //!
+    GroupMultiFlag groupMultiFlag = UNDEFINED;
+    //!
+    //! \brief 每组内取值的个数。
+    //!
+    //! \note 默认值为1，取值范围为[1,expert_num/groupNum]。
+    //!
+    //! \warning 只有当groupMultiFlag为SUM_MULTI_MAX时有效
+    //!
+    uint16_t n = 1;
+    //!
+    //! \brief 预留参数
+    //!
+    uint8_t rsv[12] = {0};
+};
+
 } // namespace infer
 } // namespace atb
 #endif
