@@ -8,6 +8,15 @@ import torch_npu
 API_LIST = [
     '_npu_matmul_add_fp32',
     '_npu_group_topk',
+    '_npu_paged_attention',
+    '_npu_paged_attention_mla',
+    '_npu_paged_attention_quant',
+    '_npu_quantize_per_tensor',
+    '_npu_reshape_and_cache',
+    '_npu_reshape_and_cache_siso',
+    '_npu_rotary_embedding',
+    '_npu_flash_attention',
+    '_npu_flash_attention_unpad',
 ]
 
 

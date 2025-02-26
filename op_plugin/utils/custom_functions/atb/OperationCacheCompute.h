@@ -80,6 +80,29 @@ struct HashOpParam<atb::infer::GroupTopkParam> {
     }
 };
 
+template <>
+struct HashOpParam<atb::infer::PagedAttentionParam> {
+    void operator()(const atb::infer::PagedAttentionParam& param) const
+    {
+        add_param_to_buf("num_kv_heads", param.kvHeadNum);
+        add_param_to_buf("num_heads", param.headNum);
+        add_param_to_buf("scale_value", param.qkScale);
+        add_param_to_buf("quant_type", param.quantType);
+        add_param_to_buf("outdata_type", param.outDataType);
+        add_param_to_buf("mla_vheadsize", param.mlaVHeadSize);
+    }
+};
+
+template <>
+struct HashOpParam<atb::infer::SelfAttentionParam> {
+    void operator()(const atb::infer::SelfAttentionParam& param) const
+    {
+        add_param_to_buf("num_kv_heads", param.kvHeadNum);
+        add_param_to_buf("num_heads", param.headNum);
+        add_param_to_buf("scale_value", param.qkScale);
+    }
+};
+
 template <typename T>
 uint64_t computeHash(const T& obj)
 {
