@@ -55,61 +55,6 @@ if "2.1" in torch.__version__:
             return torch.empty_like(tmp_out, dtype=query.dtype)
 
 
-    @impl(m, "npu_fused_infer_attention_score")
-    def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None, atten_mask=None, actual_seq_lengths=None, actual_seq_lengths_kv=None,
-                                        dequant_scale1=None, quant_scale1=None, dequant_scale2=None, quant_scale2=None,
-                                        quant_offset2=None, antiquant_scale=None, antiquant_offset=None, block_table=None,
-                                        query_padding_size=None, kv_padding_size=None, key_antiquant_scale=None, key_antiquant_offset=None,
-                                        value_antiquant_scale=None, value_antiquant_offset=None, key_shared_prefix=None, value_shared_prefix=None,
-                                        actual_shared_prefix_len=None, query_rope=None, key_rope=None, num_heads=1, scale=1.0, pre_tokens=2147483647, next_tokens=2147483647,
-                                        input_layout="BSH", num_key_value_heads=0, sparse_mode=0, inner_precise=0, block_size=0, antiquant_mode=0,
-                                        softmax_lse_flag=False, key_antiquant_mode=0, value_antiquant_mode=0):
-        tmp_out = torch.empty_like(query, dtype=query.dtype, device='meta')
-        B = 1
-        N = 1
-        S1 = 1
-        if input_layout == "BNSD_BSND":
-            tmp_out = torch.empty([query.size(0), query.size(2), query.size(1), query.size(3)], dtype=query.dtype, device='meta')
-            B = query.size(0)
-            N = query.size(1)
-            S1 = query.size(2)
-        if input_layout == "BNSD":
-            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
-            B = query.size(0)
-            N = query.size(1)
-            S1 = query.size(2)
-        if input_layout == "BSH":
-            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
-            B = query.size(0)
-            N = num_heads
-            S1 = query.size(1)
-        if input_layout == "BSND":
-            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
-            B = query.size(0)
-            N = num_heads
-            S1 = query.size(1)
-        if input_layout == "NSD":
-            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
-            B = 1
-            N = query.size(0)
-            S1 = query.size(1)
-        if quant_scale2 is not None:
-            if (softmax_lse_flag == True):
-                return (torch.empty_like(tmp_out, dtype=torch.int8), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
-            else:
-                return (torch.empty_like(tmp_out, dtype=torch.int8), torch.empty([1], dtype=torch.float32, device='meta'))
-        elif query.dtype == torch.int8:
-            if (softmax_lse_flag == True):
-                return (torch.empty_like(tmp_out, dtype=torch.half), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
-            else:
-                return (torch.empty_like(tmp_out, dtype=torch.half), torch.empty([1], dtype=torch.float32, device='meta'))
-        else:
-            if (softmax_lse_flag == True):
-                return (torch.empty_like(tmp_out), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
-            else:
-                return (torch.empty_like(tmp_out), torch.empty([1], dtype=torch.float32, device='meta'))
-
-
     @impl(m, "npu_mm_reduce_scatter_base")
     def npu_mm_reduce_scatter_base_meta(self, x2, hcom, world_size, reduce_op='sum',
                                         bias=None, comm_turn=0):
@@ -152,25 +97,6 @@ if "2.1" in torch.__version__:
         expanded_expert_idx_dim_list = [n * k]
         return (x.new_empty(tuple(expanded_x_dim_list)), row_idx.new_empty(tuple(expanded_row_idx_dim_list)), row_idx.new_empty(tuple(expanded_row_idx_dim_list)))
 
-
-    @impl(m, "npu_moe_gating_top_k_softmax")
-    def npu_moe_gating_top_k_softmax_meta(x, finished=None, k=1):
-        x_dim = x.dim()
-        torch._check(
-            x_dim == 2 or x_dim == 3,
-            lambda: "the x shape support only 2d and 3d)" + ops_error(ErrCode.VALUE),
-        )
-        if x_dim == 3:
-            y_dim_list = [x.size(0), x.size(1), k]
-            expert_idx_dim_list = [x.size(0), x.size(1), k]
-            row_idx_dim_list = [x.size(0), x.size(1), k]
-        else:
-            y_dim_list = [x.size(0), k]
-            expert_idx_dim_list = [x.size(0), k]
-            row_idx_dim_list = [x.size(0), k]
-        return (x.new_empty(tuple(y_dim_list), dtype=x.dtype),
-                x.new_empty(tuple(expert_idx_dim_list), dtype=torch.int32),
-                x.new_empty(tuple(row_idx_dim_list), dtype=torch.int32))
 else:
     @impl(m, "npu_prompt_flash_attention")
     def npu_prompt_flash_attention_forward(query, key, value, *, padding_mask=None, atten_mask=None, pse_shift=None, actual_seq_lengths=None, deq_scale1=None, quant_scale1=None, deq_scale2=None, quant_scale2=None, quant_offset2=None, num_heads=1, scale_value=1.0, pre_tokens=2147473647, next_tokens=0, input_layout="BSH", num_key_value_heads=0, actual_seq_lengths_kv=None, sparse_mode=0):
@@ -180,6 +106,81 @@ else:
             return torch.empty_like(query, dtype=torch.half)
         else:
             return torch.empty_like(query, dtype=query.dtype)
+
+
+@impl(m, "npu_moe_gating_top_k_softmax")
+def npu_moe_gating_top_k_softmax_meta(x, finished=None, k=1):
+    x_dim = x.dim()
+    torch._check(
+        x_dim == 2 or x_dim == 3,
+        lambda: "the x shape support only 2d and 3d)" + ops_error(ErrCode.VALUE),
+    )
+    if x_dim == 3:
+        y_dim_list = [x.size(0), x.size(1), k]
+        expert_idx_dim_list = [x.size(0), x.size(1), k]
+        row_idx_dim_list = [x.size(0), x.size(1), k]
+    else:
+        y_dim_list = [x.size(0), k]
+        expert_idx_dim_list = [x.size(0), k]
+        row_idx_dim_list = [x.size(0), k]
+    return (x.new_empty(tuple(y_dim_list), dtype=x.dtype),
+            x.new_empty(tuple(expert_idx_dim_list), dtype=torch.int32),
+            x.new_empty(tuple(row_idx_dim_list), dtype=torch.int32))
+
+
+@impl(m, "npu_fused_infer_attention_score")
+def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None, atten_mask=None, actual_seq_lengths=None, actual_seq_lengths_kv=None,
+                                    dequant_scale1=None, quant_scale1=None, dequant_scale2=None, quant_scale2=None,
+                                    quant_offset2=None, antiquant_scale=None, antiquant_offset=None, block_table=None,
+                                    query_padding_size=None, kv_padding_size=None, key_antiquant_scale=None, key_antiquant_offset=None,
+                                    value_antiquant_scale=None, value_antiquant_offset=None, key_shared_prefix=None, value_shared_prefix=None,
+                                    actual_shared_prefix_len=None, query_rope=None, key_rope=None, num_heads=1, scale=1.0, pre_tokens=2147483647, next_tokens=2147483647,
+                                    input_layout="BSH", num_key_value_heads=0, sparse_mode=0, inner_precise=0, block_size=0, antiquant_mode=0,
+                                    softmax_lse_flag=False, key_antiquant_mode=0, value_antiquant_mode=0):
+    tmp_out = torch.empty_like(query, dtype=query.dtype, device='meta')
+    B = 1
+    N = 1
+    S1 = 1
+    if input_layout == "BNSD_BSND":
+        tmp_out = torch.empty([query.size(0), query.size(2), query.size(1), query.size(3)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = query.size(1)
+        S1 = query.size(2)
+    if input_layout == "BNSD":
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = query.size(1)
+        S1 = query.size(2)
+    if input_layout == "BSH":
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = num_heads
+        S1 = query.size(1)
+    if input_layout == "BSND":
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = num_heads
+        S1 = query.size(1)
+    if input_layout == "NSD":
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
+        B = 1
+        N = query.size(0)
+        S1 = query.size(1)
+    if quant_scale2 is not None:
+        if (softmax_lse_flag == True):
+            return (torch.empty_like(tmp_out, dtype=torch.int8), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
+        else:
+            return (torch.empty_like(tmp_out, dtype=torch.int8), torch.empty([1], dtype=torch.float32, device='meta'))
+    elif query.dtype == torch.int8:
+        if (softmax_lse_flag == True):
+            return (torch.empty_like(tmp_out, dtype=torch.half), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
+        else:
+            return (torch.empty_like(tmp_out, dtype=torch.half), torch.empty([1], dtype=torch.float32, device='meta'))
+    else:
+        if (softmax_lse_flag == True):
+            return (torch.empty_like(tmp_out), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
+        else:
+            return (torch.empty_like(tmp_out), torch.empty([1], dtype=torch.float32, device='meta'))
 
 
 @impl(m, "npu_fusion_attention")
