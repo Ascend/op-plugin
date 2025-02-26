@@ -666,7 +666,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: 'half_to_float? at::kFloat: self.scalar_type()'
+        dtype: 'half_to_float? at::kFloat : self.scalar_type()'
       exec: aclnnLogSoftmax, self, dim, out
 
   - func: _log_softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)
@@ -730,7 +730,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: '(half_to_float == true) ? at::ScalarType::Float : self.scalar_type()'
+        dtype: 'half_to_float ? at::ScalarType::Float : self.scalar_type()'
       exec: aclnnSoftmax, self, dim, out
 
   - func: _softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)
@@ -1208,7 +1208,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat: self.scalar_type()'
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat : self.scalar_type()'
         name: self
       exec: aclnnAsin
 
@@ -1256,7 +1256,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: 'isIntegralType(self.scalar_type(), true)? at::kFloat: self.scalar_type()'
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat : self.scalar_type()'
         name: self
       exec: aclnnAtan
 
@@ -1293,7 +1293,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: 'isIntegralType(self.scalar_type(), true)? at::kFloat: self.scalar_type()'
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat : self.scalar_type()'
       exec: aclnnAtanh
 
   - func: atanh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -1430,7 +1430,7 @@ official:
     op_api: all_version
     gen_opapi:
       out:
-        size: 'reduction == at::Reduction::None? self.sizes(): at::ArrayRef<int64_t>()'
+        size: 'reduction == at::Reduction::None ? self.sizes() : at::ArrayRef<int64_t>()'
         dtype: self
       exec: aclnnBinaryCrossEntropy
 
@@ -1846,7 +1846,7 @@ official:
     gen_opapi:
       resutl:
         size: self
-        dtype: 'isIntegralType(self.scalar_type(), true)? at::kFloat: self.scalar_type()'
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat : self.scalar_type()'
       exec: aclnnCos
 
   - func: cos.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -2235,7 +2235,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: '(self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long)? at::kFloat: self.scalar_type()'
+        dtype: '(self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long) ? at::kFloat : self.scalar_type()'
       exec: aclnnExp
 
   - func: exp.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -2252,7 +2252,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: 'isIntegralType(self.scalar_type(), true) ? at::ScalarType::Float: self.scalar_type()'
+        dtype: 'isIntegralType(self.scalar_type(), true) ? at::ScalarType::Float : self.scalar_type()'
       exec: aclnnExp2
 
   - func: exp2.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -2281,7 +2281,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: 'isFloatingType(self.scalar_type())? self.scalar_type(): at::kFloat'
+        dtype: 'isFloatingType(self.scalar_type()) ? self.scalar_type() : at::kFloat'
       exec: aclnnExpm1
 
   - func: expm1.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -2913,7 +2913,7 @@ official:
     op_api: all_version
     gen_opapi:
       out:
-        size: 'at::isFloatingType(self.scalar_type()) && equal_nan? self.sizes(): broadcast_ops_npu_output_size(self, other)'
+        size: 'at::isFloatingType(self.scalar_type()) && equal_nan ? self.sizes() : broadcast_ops_npu_output_size(self, other)'
         dtype: at::kBool
       exec: aclnnIsClose
 
@@ -3963,11 +3963,11 @@ official:
         size: input
         dtype: input
       out1:
-        size: 'training? c10::SmallVector<int64_t, op_infer::SIZE>{input.size(1)}: c10::SmallVector<int64_t, op_infer::SIZE>{0}'
-        dtype: 'training? at::kFloat: input.scalar_type()'
+        size: 'training ? c10::SmallVector<int64_t, op_infer::SIZE>{input.size(1)} : c10::SmallVector<int64_t, op_infer::SIZE>{0}'
+        dtype: 'training ? at::kFloat : input.scalar_type()'
       out2:
-        size: 'training? c10::SmallVector<int64_t, op_infer::SIZE>{input.size(1)}: c10::SmallVector<int64_t, op_infer::SIZE>{0}'
-        dtype: 'training? at::kFloat: input.scalar_type()'
+        size: 'training ? c10::SmallVector<int64_t, op_infer::SIZE>{input.size(1)} : c10::SmallVector<int64_t, op_infer::SIZE>{0}'
+        dtype: 'training ? at::kFloat : input.scalar_type()'
       exec: aclnnBatchNorm
 
   - func: native_batch_norm.out(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, *, Tensor(a!) out, Tensor(b!) save_mean, Tensor(c!) save_invstd) -> (Tensor(a!), Tensor(b!), Tensor(c!))

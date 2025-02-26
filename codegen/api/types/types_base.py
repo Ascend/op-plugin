@@ -244,7 +244,7 @@ class Binding:
     def decl(self, *, func_ptr_cast: bool = False) -> str:
         mb_default = ""
         if self.default is not None:
-            mb_default = f"={self.default}"
+            mb_default = f" = {self.default}"
 
         # casting only needs to know the type
         if func_ptr_cast:
@@ -257,7 +257,7 @@ class Binding:
         type_s = self.nctype.cpp_type_registration_declarations()
         mb_default = ""
         if self.default is not None:
-            mb_default = f"={self.default}"
+            mb_default = f" = {self.default}"
         return f"{type_s} {self.name}{mb_default}"
 
     def defn(self) -> str:
