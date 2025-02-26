@@ -72,9 +72,9 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
     at::Tensor expand_x = npu_preparation::apply_tensor_without_format({a * tp_world_size, h}, x.options().dtype(output_dtype));
     at::Tensor dynamic_scales = npu_preparation::apply_tensor_without_format({a * tp_world_size}, x.options().dtype(at::kFloat));
     at::Tensor expand_idx = npu_preparation::apply_tensor_without_format({n * k}, x.options().dtype(at::kInt));
-    TORCH_CHECK(local_moe_expert_num == 1, "local_moe_expert_num should be 1:", local_moe_expert_num);
+
     at::Tensor expert_token_nums = npu_preparation::apply_tensor_without_format({local_moe_expert_num}, x.options().dtype(at::kLong));
-    at::Tensor ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_world_size}, x.options().dtype(at::kInt));
+    at::Tensor ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_world_size * local_moe_expert_num}, x.options().dtype(at::kInt));
     at::Tensor tp_recv_counts = npu_preparation::apply_tensor_without_format({tp_world_size}, x.options().dtype(at::kInt));
     EXEC_NPU_CMD(aclnnMoeDistributeDispatch, x, expert_ids, scales,
                  group_ep_ptr, ep_world_size, ep_rank_id,
