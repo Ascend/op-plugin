@@ -35,6 +35,30 @@ def npu_incre_flash_attention_forward(query, key, value, *, padding_mask=None, a
         return torch.empty_like(query)
 
 
+@impl(m, "npu_mla_prolog")
+def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv, 
+                   rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_cq=None, 
+                   dequant_scale_qc_qr=None, dequant_scale_ckv_kr=None, quant_scale_cq=None, 
+                   rmsnorm_epsilon_cq=1e-5, rmsnorm_epsilon_ckv=1e-5, cache_mode="BNSD"):
+    query_shape = []
+    query_shape.append(token_x.size(0))
+    query_shape.append(token_x.size(1))
+    query_shape.append(weight_uk.size(0))
+    query_shape.append(weight_uk.size(2))
+
+    query_rope_shape = []
+    query_rope_shape.append(token_x.size(0))
+    query_rope_shape.append(token_x.size(1))
+    query_rope_shape.append(weight_uk.size(0))
+    query_rope_shape.append(rope_sin.size(2))
+
+    query = torch.empty(query_shape, dtype=token_x.dtype, device='meta')
+    query_rope = torch.empty(query_rope_shape, dtype=token_x.dtype, device='meta')
+    kv_cache_out = torch.empty_like(kv_cache, dtype=kv_cache.dtype, device='meta')
+    kr_cache_out = torch.empty_like(kr_cache, dtype=kr_cache.dtype, device='meta')
+
+    return (query, query_rope, kv_cache_out, kr_cache_out)
+
 if "2.1" in torch.__version__:
     @impl(m, "npu_prompt_flash_attention")
     def npu_prompt_flash_attention_forward(query, key, value, *, padding_mask=None, atten_mask=None, pse_shift=None, actual_seq_lengths=None, deq_scale1=None, quant_scale1=None, deq_scale2=None, quant_scale2=None, quant_offset2=None, num_heads=1, scale_value=1.0, pre_tokens=2147473647, next_tokens=0, input_layout="BSH", num_key_value_heads=0, actual_seq_lengths_kv=None, sparse_mode=0):

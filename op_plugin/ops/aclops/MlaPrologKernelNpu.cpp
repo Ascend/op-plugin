@@ -1,0 +1,115 @@
+// Copyright (c) 2025 Huawei Technologies Co., Ltd
+// All rights reserved.
+//
+// Licensed under the BSD 3-Clause License  (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/op_api_common.h"
+
+namespace acl_op {
+using npu_preparation = at_npu::native::OpPreparation;
+using npu_utils = at_npu::native::NpuUtils;
+namespace {
+std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> npu_mla_prolog_nocheck(
+    const at::Tensor& token_x, const at::Tensor& weight_dq, const at::Tensor& weight_uq_qr,
+    const at::Tensor& weight_uk, const at::Tensor& weight_dkv_kr, const at::Tensor& rmsnorm_gamma_cq,
+    const at::Tensor& rmsnorm_gamma_ckv, const at::Tensor& rope_sin, const at::Tensor& rope_cos,
+    const at::Tensor& cache_index, const at::Tensor& kv_cache, const at::Tensor& kr_cache,
+    const at::Tensor& dequant_scale_cq, const at::Tensor& dequant_scale_qc_qr,
+    const at::Tensor& dequant_scale_ckv_kr, const at::Tensor& quant_scale_cq,
+    double rmsnorm_epsilon_cq, double rmsnorm_epsilon_ckv, c10::string_view cache_mode, at::Tensor& query,
+    at::Tensor& query_rope, at::Tensor& kv_cache_out, at::Tensor& kr_cache_out)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("MlaProlog")
+       .Input(token_x, "token_x")
+       .Input(weight_dq, "weight_dq")
+       .Input(weight_uq_qr, "weight_uq_qr")
+       .Input(weight_uk, "weight_uk")
+       .Input(weight_dkv_kr, "weight_dkv_kr")
+       .Input(rmsnorm_gamma_cq, "rmsnorm_gamma_cq")
+       .Input(rmsnorm_gamma_ckv, "rmsnorm_gamma_ckv")
+       .Input(rope_sin, "rope_sin")
+       .Input(rope_cos, "rope_cos")
+       .Input(cache_index, "cache_index")
+       .Input(kv_cache, "kv_cache")
+       .Input(kr_cache, "kr_cache");
+    if (dequant_scale_cq.defined()) {
+        cmd.Input(dequant_scale_cq, "dequant_scale_cq")
+            .Input(dequant_scale_qc_qr, "dequant_scale_qc_qr")
+            .Input(dequant_scale_ckv_kr, "dequant_scale_ckv_kr")
+            .Input(quant_scale_cq, "quant_scale_cq");
+        }
+    cmd.Output(query, "query")
+       .Output(query_rope, "query_rope")
+       .Output(kv_cache_out, "kv_cache_out")
+       .Output(kr_cache_out, "kr_cache_out")
+       .Attr("rmsnorm_epsilon_cq", static_cast<float>(rmsnorm_epsilon_cq))
+       .Attr("rmsnorm_epsilon_ckv", static_cast<float>(rmsnorm_epsilon_ckv));
+
+    cmd.Attr("cache_mode", (string)cache_mode).Run();
+
+    return std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&>(query, query_rope, kv_cache_out, kr_cache_out);
+}
+}
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_prolog(
+    const at::Tensor& token_x, const at::Tensor& weight_dq, const at::Tensor& weight_uq_qr,
+    const at::Tensor& weight_uk, const at::Tensor& weight_dkv_kr, const at::Tensor& rmsnorm_gamma_cq,
+    const at::Tensor& rmsnorm_gamma_ckv, const at::Tensor& rope_sin, const at::Tensor& rope_cos,
+    const at::Tensor& cache_index, const at::Tensor& kv_cache, const at::Tensor& kr_cache,
+    const c10::optional<at::Tensor>& dequant_scale_cq_opt, const c10::optional<at::Tensor>& dequant_scale_qc_qr_opt,
+    const c10::optional<at::Tensor>& dequant_scale_ckv_kr_opt, const c10::optional<at::Tensor>& quant_scale_cq_opt,
+    double rmsnorm_epsilon_cq, double rmsnorm_epsilon_ckv, c10::string_view cache_mode)
+{
+    // construct the output tensor
+    at::Tensor query = npu_preparation::apply_tensor_without_format({token_x.size(0), token_x.size(1), weight_uk.size(0),
+        weight_uk.size(2)}, token_x.options().dtype(token_x.dtype()));
+    at::Tensor query_rope = npu_preparation::apply_tensor_without_format({token_x.size(0), token_x.size(1),
+        weight_uk.size(0), rope_sin.size(2)}, token_x.options().dtype(token_x.dtype()));
+    at::Tensor kv_cache_out = npu_preparation::apply_tensor_without_format(kv_cache);
+    at::Tensor kr_cache_out = npu_preparation::apply_tensor_without_format(kr_cache);
+
+    // optional inputs tensor
+    const at::Tensor& dequant_scale_cq = c10::value_or_else(dequant_scale_cq_opt, [] { return at::Tensor(); });
+    const at::Tensor& dequant_scale_qc_qr = c10::value_or_else(dequant_scale_qc_qr_opt, [] { return at::Tensor(); });
+    const at::Tensor& dequant_scale_ckv_kr = c10::value_or_else(dequant_scale_ckv_kr_opt, [] { return at::Tensor(); });
+    const at::Tensor& quant_scale_cq = c10::value_or_else(quant_scale_cq_opt, [] { return at::Tensor(); });
+
+    // check contiguous
+    if (!npu_utils::check_match(&query) || !npu_utils::check_match(&query_rope) ||
+        !npu_utils::check_match(&kv_cache_out) || !npu_utils::check_match(&kr_cache_out)) {
+        // 若输出非连续，创建连续tensor(contig_tensor)，接收ACLOP算子的输出。再将contig_tensor拷贝到原始输出。
+        at::Tensor contiguous_query = !npu_utils::check_match(&query) ? npu_utils::format_contiguous(query) : query;
+        at::Tensor contiguous_query_rope = !npu_utils::check_match(&query_rope) ? npu_utils::format_contiguous(query_rope) : query;
+        at::Tensor contiguous_kv_cache_out = !npu_utils::check_match(&kv_cache_out) ?
+            npu_utils::format_contiguous(kv_cache_out) : kv_cache_out;
+        at::Tensor contiguous_kr_cache_out = !npu_utils::check_match(&kr_cache_out) ?
+            npu_utils::format_contiguous(kr_cache_out) : kr_cache_out;
+        npu_mla_prolog_nocheck(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, dequant_scale_cq,
+            dequant_scale_qc_qr, dequant_scale_ckv_kr, quant_scale_cq, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            cache_mode, query, query_rope, kv_cache_out, kr_cache_out);
+        npu_utils::format_fresh_view(query, contiguous_query);
+        npu_utils::format_fresh_view(query_rope, contiguous_query_rope);
+        npu_utils::format_fresh_view(kv_cache_out, contiguous_kv_cache_out);
+        npu_utils::format_fresh_view(kr_cache_out, contiguous_kr_cache_out);
+    } else {
+        // 若输出连续，直接调用ACLOP算子。
+        npu_mla_prolog_nocheck(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, dequant_scale_cq,
+            dequant_scale_qc_qr, dequant_scale_ckv_kr, quant_scale_cq, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            cache_mode, query, query_rope, kv_cache_out, kr_cache_out);
+    }
+    return std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor>(query, query_rope, kv_cache_out, kr_cache_out);
+}
+} // namespace acl_op

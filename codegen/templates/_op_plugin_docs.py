@@ -4515,6 +4515,181 @@ graph output with mask: tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.00
 )
 
 _add_torch_npu_docstr(
+    "npu_mla_prolog",
+    """
+功能描述:
+推理场景，Multi-Head Latent Attention前处理的计算。主要计算过程分为四路，首先对输入x乘以WeightDq进行下采样和RmsNorm后分成两路，第一路乘以WeightUq和WeightUk经过两次上采样后得到query；第二路乘以WeightQr后经过旋转位置编码（ROPE)得到query_rope；第三路是输入x乘以WeightDkv进行下采样和RmsNorm后传入Cache中得到kvCache；第四路是输入x乘以Wkr后经过旋转位置编码后传入另一个Cache中得到krCache。
+
+接口原型:
+torch_npu.npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, Tensor weight_uk, Tensor weight_dkv_kr, Tensor rmsnorm_gamma_cq, Tensor rmsnorm_gamma_ckv, Tensor rope_sin, Tensor rope_cos, Tensor cache_index, Tensor kv_cache, Tensor kr_cache, *, Tensor? dequant_scale_cq=None, Tensor? dequant_scale_qc_qr=None, Tensor? dequant_scale_ckv_kr=None, Tensor? quant_scale_cq=None, float rmsnorm_epsilon_cq=1e-05, float rmsnorm_epsilon_ckv=1e-05, str cache_mode="BNSD") -> (Tensor, Tensor, Tensor, Tensor)
+
+参数说明:
+tokenX（aclTensor*，计算输入）：表示输入的tensor，用于计算Q和K的x，Device侧的aclTensor。shape支持3维，dtype支持INT8/BF16，数据格式支持ND格式。
+weightDq（aclTensor*，计算输入）：表示用于计算Query的下采样权重矩阵，WDQ ，Device侧的aclTensor。其shape支持2维，dtype支持INT8/BF16，数据格式支持FRACTAL_NZ格式。
+weightUqQr（aclTensor*，计算输入）：表示用于计算Query的上采样权重矩阵和Query的位置编码权重矩阵，WUQ和WQR ，Device侧的aclTensor。其shape支持2维，dtype支持INT8/BF16，数据格式支持FRACTAL_NZ格式。
+weightUk（aclTensor*，计算输入）：表示用于计算Query的第二次上采样权重，WUQ，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+weightDkvKr（aclTensor*，计算输入）：表示用于计算Key的上采样权重矩阵和Key的位置编码权重矩阵。Device侧的aclTensor。其shape支持2维，dtype支持INT8/BF16，数据格式支持FRACTAL_NZ格式。
+rmsnormGammaCq（aclTensor*，计算输入）：表示用于计算Query的rmsnorm中的gamma参数，对应计算Query的rmsNorm中的γ，Device侧的aclTensor。其shape支持1维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+rmsnormGammaCkv（aclTensor*，计算输入）：表示用于计算Key的rmsnorm中的gamma参数，对应计算Key的rmsNorm中的γ，Device侧的aclTensor。其shape支持1维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+ropeSin（aclTensor*，计算输入）：表示用于计算旋转位置编码的正弦参数矩阵，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+ropeCos（aclTensor*，计算输入）：表示用于计算旋转位置编码的余弦参数矩阵，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+cacheIndex（aclTensor*，计算输入）：表示用于计算旋转位置编码的序列索引，Device侧的aclTensor。其shape支持2维，dtype支持INT64，数据格式支持ND格式。
+kvCache（aclTensor*，计算输入）：表示用于cache索引的aclTensor。其shape支持3维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+krCache（aclTensor*，计算输入）：表示用于key位置编码的cache，Device侧的aclTensor。其shape支持3维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+dequantScaleCq（aclTensor*，计算输入）：用于输入tokenX为int8类型时，Query进行下采样后进行反量化操作时的参数，Device侧的aclTensor。其shape支持1维，dtype支持INT64，数据格式支持ND格式。
+dequantScaleQcQr（aclTensor*，计算输入）：用于输入tokenX为int8类型时，Query进行第一次上采样和位置编码矩阵乘后进行反量化操作时的参数，Device侧的aclTensor。其shape支持2维，dtype支持INT64，数据格式支持ND格式。
+dequantScaleCkvKr（aclTensor*，计算输入）：用于输入tokenX为int8类型时，Key进行下采样和位置编码矩阵乘后进行反量化操作时的参数，Device侧的aclTensor。其shape支持1维，dtype支持INT64，数据格式支持ND格式。
+quantScaleCq（aclTensor*，计算输入）：用于输入tokenX为int8类型时，Query进行RmsNorm后进行量化操作时的参数，Device侧的aclTensor。其shape支持1维，dtype支持FLOAT，数据格式支持ND格式。
+rmsnormEpsilonCq（double，计算输入）：表示用于计算Query的rmsnorm中的ϵ参数，对应计算Query的rmsNorm中的ϵ，用户不特意指定时可传入默认值1e-05。
+rmsnormEpsilonCkv（double，计算输入）：表示用于计算Key额时rmsnorm中的ϵ参数，对应计算Key的rmsNorm中的ϵ，用户不特意指定时可传入默认值1e-05。
+cacheMode（char*，计算输入）：用于表示kvCache的模式，其用户不特意指定时可传入默认值“BNSD”,还支持选项包括"PA_BSND","PA_NZ"。
+query（aclTensor*，计算输出）：表示Query的输出tensor，Device侧的aclTensor。shape支持4维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+queryRope（aclTensor*，计算输出）：表示Query位置编码的输出tensor，Device侧的aclTensor。shape支持4维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+kvCacheOut（aclTensor*，计算输出）：表示Key输出到kvcache中的tensor，Device侧的aclTensor。shape支持3维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+krCacheOut（aclTensor*，计算输出）：表示Key的位置编码输出到kvcache中的tensor，Device侧的aclTensor。shape支持3维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+
+支持的芯片型号:
+Atlas A2 训练系列产品
+
+调用示例:
+# 单算子调用方式
+import torch
+import torch_npu
+import math
+
+# 生成随机数据, 并发送到npu
+B = 8
+He = 7168
+Hcq = 1536
+Hckv = 512
+N = 32
+D = 128
+Dr = 64
+Skv = 1024
+S = 2
+Nkv = 1
+token_x = torch.rand(B, S, He, dtype=torch.bfloat16).npu()
+w_dq = torch.rand(He, Hcq, dtype=torch.bfloat16).npu()
+w_uq_qr = torch.rand(Hcq, N * (D + Dr), dtype=torch.bfloat16).npu()
+w_uk = torch.rand(N, D, Hckv, dtype=torch.bfloat16).npu()
+w_dkv_kr = torch.rand(He, Hckv + Dr, dtype=torch.bfloat16).npu()
+rmsnorm_gamma_cq = torch.rand(Hcq, dtype=torch.bfloat16).npu()
+rmsnorm_gamma_ckv = torch.rand(Hckv, dtype=torch.bfloat16).npu()
+rope_sin = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
+rope_cos = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
+cache_index = torch.rand(B, S).to(torch.int64).npu()
+kv_cache = torch.rand(B, Nkv, Skv, Hckv, dtype=torch.bfloat16).npu()
+kr_cache = torch.rand(B, Nkv, Skv, Dr, dtype=torch.bfloat16).npu()
+rmsnorm_epsilon_cq = 1.0e-5
+rmsnorm_epsilon_ckv = 1.0e-5
+cache_mode = "BNSD"
+
+# 调用MlaProlog算子
+query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla = self.mla_prolog_npu(token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, rmsnorm_gamma_cq,
+    rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode)
+
+# 执行上述代码的输出类似如下
+tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
+        [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
+        [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
+        ...,
+        [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
+        [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
+        [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]],
+        device='npu:0', dtype=torch.bfloat16)
+
+# 入图方式
+
+import torch
+import torch_npu
+import math
+
+import torchair as tng
+from torchair.ge_concrete_graph import ge_apis as ge
+from torchair.configs.compiler_config import CompilerConfig
+import torch._dynamo
+TORCHDYNAMO_VERBOSE=1
+TORCH_LOGS="+dynamo"
+
+# 支持入图的打印宏
+import logging
+from torchair.core.utils import logger
+logger.setLevel(logging.DEBUG)
+config = CompilerConfig()
+config.aoe_config.aoe_mode = "2"
+config.debug.graph_dump.type = "pbtxt"
+npu_backend = tng.get_npu_backend(compiler_config=config)
+from torch.library import Library, impl
+
+# 数据生成
+B = 8
+He = 7168
+Hcq = 1536
+Hckv = 512
+N = 32
+D = 128
+Dr = 64
+Skv = 1024
+S = 2
+Nkv = 1
+token_x = torch.rand(B, S, He, dtype=torch.bfloat16).npu()
+w_dq = torch.rand(He, Hcq, dtype=torch.bfloat16).npu()
+w_uq_qr = torch.rand(Hcq, N * (D + Dr), dtype=torch.bfloat16).npu()
+w_uk = torch.rand(N, D, Hckv, dtype=torch.bfloat16).npu()
+w_dkv_kr = torch.rand(He, Hckv + Dr, dtype=torch.bfloat16).npu()
+rmsnorm_gamma_cq = torch.rand(Hcq, dtype=torch.bfloat16).npu()
+rmsnorm_gamma_ckv = torch.rand(Hckv, dtype=torch.bfloat16).npu()
+rope_sin = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
+rope_cos = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
+cache_index = torch.rand(B, S).to(torch.int64).npu()
+kv_cache = torch.rand(B, Nkv, Skv, Hckv, dtype=torch.bfloat16).npu()
+kr_cache = torch.rand(B, Nkv, Skv, Dr, dtype=torch.bfloat16).npu()
+rmsnorm_epsilon_cq = 1.0e-5
+rmsnorm_epsilon_ckv = 1.0e-5
+cache_mode = "BNSD"
+
+class Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self):
+        return torch_npu.npu_mla_prolog(
+            token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache)
+
+def MetaInfershape():
+    with torch.no_grad():
+        model = Model()
+        model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
+        graph_output = model()
+    query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla = torch_npu.npu_mla_prolog(
+            token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache)
+    print("single op output:", query_mla, query_mla.shape)
+    print("graph output:", graph_output, graph_output.shape)
+if __name__ == "__main__":
+    MetaInfershape()
+
+# 执行上述代码的输出类似如下
+single op output: tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
+        [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
+        [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
+        ...,
+        [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
+        [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
+        [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]],
+        device='npu:0', dtype=torch.bfloat16)
+
+graph output: tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
+        [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
+        [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
+        ...,
+        [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
+        [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
+        [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]],        device='npu:0', dtype=torch.bfloat16)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_all_gather_base_mm",
     """
 接口原型：
