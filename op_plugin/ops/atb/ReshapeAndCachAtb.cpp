@@ -19,6 +19,7 @@ namespace atb {
 using ReshapeAndCacheParam = atb::infer::ReshapeAndCacheParam;
 void _npu_reshape_and_cache(const at::Tensor &key, const at::Tensor &value, at::Tensor &key_cache, at::Tensor &value_cache, const at::Tensor &slot_indices)
 {
+    const c10::OptionalDeviceGuard device_guard(device_of(key));
     OpParamCache<ReshapeAndCacheParam>& reshapeAndCacheParamCache = OpParamCache<ReshapeAndCacheParam>::getInstance();
     ReshapeAndCacheParam reshapeparam;
     reshapeparam.compressType = ReshapeAndCacheParam::COMPRESS_TYPE_UNDEFINED;

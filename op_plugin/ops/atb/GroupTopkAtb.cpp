@@ -22,6 +22,7 @@ namespace atb {
 using GroupTopkParam = atb::infer::GroupTopkParam;
 void _npu_group_topk(const at::Tensor &self, int64_t k, int64_t group_num, int64_t n)
 {
+    const c10::OptionalDeviceGuard device_guard(device_of(self));
     OpParamCache<GroupTopkParam>& GroupTopkParamCache = OpParamCache<GroupTopkParam>::getInstance();
     GroupTopkParam GroupTopkParam;
     GroupTopkParam.groupNum = static_cast<int32_t>(group_num);

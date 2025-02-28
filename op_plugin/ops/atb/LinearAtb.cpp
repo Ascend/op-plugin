@@ -22,6 +22,7 @@ namespace atb {
 using LinearParam = atb::infer::LinearParam;
 void _npu_matmul_add_fp32(const at::Tensor &x, const at::Tensor &weight, at::Tensor & C)
 {
+    const c10::OptionalDeviceGuard device_guard(device_of(x));
     OpParamCache<LinearParam>& linearParamCache = OpParamCache<LinearParam>::getInstance();
     LinearParam  linearParam;
     linearParam.transposeA = true;                    // 是否转置A矩阵

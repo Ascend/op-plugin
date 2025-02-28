@@ -18,6 +18,7 @@ namespace atb {
 using SelfAttentionParam = atb::infer::SelfAttentionParam;
 void _npu_flash_attention_unpad(const at::Tensor &query, const at::Tensor &key, const at::Tensor &value, const at::Tensor &seq_len, const double scale_value, const int64_t num_heads, const int64_t num_kv_heads, at::Tensor &out)
 {
+    const c10::OptionalDeviceGuard device_guard(device_of(query));
     OpParamCache<SelfAttentionParam>& selfAttentionParamCache = OpParamCache<SelfAttentionParam>::getInstance();
     SelfAttentionParam selfattentionparam;
 

@@ -103,6 +103,14 @@ struct HashOpParam<atb::infer::SelfAttentionParam> {
     }
 };
 
+template <>
+struct HashOpParam<atb::infer::RopeParam> {
+    void operator()(const atb::infer::RopeParam& param) const
+    {
+        add_param_to_buf("rotaryCoeff", param.rotaryCoeff);
+    }
+};
+
 template <typename T>
 uint64_t computeHash(const T& obj)
 {

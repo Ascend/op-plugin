@@ -20,6 +20,7 @@ using ElewiseParam = atb::infer::ElewiseParam;
 
 void _npu_quantize_per_tensor(const at::Tensor &x, const at::Tensor &scale, const at::Tensor &zero_point, at::Tensor &y)
 {
+    const c10::OptionalDeviceGuard device_guard(device_of(x));
     OpParamCache<ElewiseParam>& elewiseParamCache = OpParamCache<ElewiseParam>::getInstance();
     ElewiseParam elewiseparam;
 

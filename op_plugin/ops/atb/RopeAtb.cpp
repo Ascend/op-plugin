@@ -38,6 +38,7 @@ namespace atb {
 
     void _npu_rotary_embedding(const at::Tensor &positions, at::Tensor &query, at::Tensor &key, int64_t head_size, const at::Tensor &cos_sin_cache, bool is_neox_style)
     {
+        const c10::OptionalDeviceGuard device_guard(device_of(positions));
         if (!cosCache.defined() || !sinCache.defined()) {
             InitializeCosSinCache(cos_sin_cache);
         }

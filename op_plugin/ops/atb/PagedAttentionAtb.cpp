@@ -20,6 +20,7 @@ namespace atb {
 using PagedAttentionParam = atb::infer::PagedAttentionParam;
 void _npu_paged_attention(const at::Tensor &query, const at::Tensor &key_cache, const at::Tensor &value_cache, int64_t num_kv_heads, int64_t num_heads, double scale_value, const at::Tensor &block_table, const at::Tensor &context_lens, at::Tensor &out)
 {
+    const c10::OptionalDeviceGuard device_guard(device_of(query));
     OpParamCache<PagedAttentionParam>& pagedAttentionParamCache = OpParamCache<PagedAttentionParam>::getInstance();
     PagedAttentionParam pagedparam;
     pagedparam.headNum = num_heads;

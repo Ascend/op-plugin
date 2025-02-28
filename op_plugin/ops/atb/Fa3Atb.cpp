@@ -21,6 +21,7 @@ using PagedAttentionParam = atb::infer::PagedAttentionParam;
 void _npu_paged_attention_quant(const at::Tensor &query, const at::Tensor &key_cache, const at::Tensor &value_cache, const int64_t num_kv_heads, const int64_t num_heads, const double scale_value, const at::Tensor &block_table, const at::Tensor &context_lens,
     const int64_t quant_type, const int64_t outdata_type, const at::Tensor &k_descale, const at::Tensor &v_descale, at::Tensor &out)
 {
+    const c10::OptionalDeviceGuard device_guard(device_of(query));
     OpParamCache<PagedAttentionParam>& pagedAttentionParamCache = OpParamCache<PagedAttentionParam>::getInstance();
     PagedAttentionParam pagedparam;
 
