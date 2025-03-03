@@ -123,16 +123,16 @@ tensor([0.4403, 0.2733], device='npu:0')
 _add_torch_npu_docstr(
     "npu_fast_gelu",
     """
-torch_npu.npu_fast_gelu(Tensor self) -> Tensor
+torch_npu.npu_fast_gelu(Tensor input) -> Tensor
 
 功能描述
 快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算FastGelu；输入是具有任何有效形状的张量。
 
 参数说明
-self：Tensor类型，即输入参数中的x。数据类型支持FLOAT16、FLOAT32、BFLOAT16，数据格式支持ND，支持非连续的Tensor。输入最大支持8维。
+input：Tensor类型，即输入参数中的x。数据类型支持FLOAT16、FLOAT32、BFLOAT16，数据格式支持ND，支持非连续的Tensor。输入最大支持8维。
 
 约束说明
-self这个输入中不能含有空指针。
+input这个输入中不能含有空指针。
 数据类型BFLOAT16仅如下产品型号支持
 Atlas A2训练系列产品/Atlas 800I A2推理产品
 
@@ -3763,20 +3763,20 @@ _add_torch_npu_docstr(
     "npu_scatter_nd_update",
     """
 功能描述:
-将updates中的值按指定的索引indices更新self中的值，并将结果保存到输出tensor，self本身的数据不变。
+将updates中的值按指定的索引indices更新input中的值，并将结果保存到输出tensor，input本身的数据不变。
 
 接口原型:
-torch_npu.npu_scatter_nd_update(Tensor self, Tensor indices, Tensor updates) -> Tensor
+torch_npu.npu_scatter_nd_update(Tensor input, Tensor indices, Tensor updates) -> Tensor
 
 参数说明:
-self：Device侧的Tensor类型，必选输入，源数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与updates一致，维数只能是1~8维。
+input：Device侧的Tensor类型，必选输入，源数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与updates一致，维数只能是1~8维。
 indices：Device侧的Tensor类型，必选输入，索引张量，数据类型支持INT32、INT64，数据格式支持ND，支持非连续的Tensor，indices中的索引数据不支持越界。
-updates：Device侧的Tensor类型，必选输入，更新数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与self一致。
+updates：Device侧的Tensor类型，必选输入，更新数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与input一致。
 
 输出说明:
-一个Tensor类型的输出，代表self被更新后的结果。
-约束说明indices至少是2维，其最后1维的大小不能超过self的维度大小。
-假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上self除前a维外的shape。举例：self的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
+一个Tensor类型的输出，代表input被更新后的结果。
+约束说明indices至少是2维，其最后1维的大小不能超过input的维度大小。
+假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上input除前a维外的shape。举例：input的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
 
 支持的型号:
 Atlas A2 训练系列产品
@@ -3802,22 +3802,22 @@ _add_torch_npu_docstr(
     "npu_scatter_nd_update_",
     """
 功能描述:
-将updates中的值按指定的索引indices更新self中的值，并将结果保存到输出tensor，self中的数据被改变。
+将updates中的值按指定的索引indices更新input中的值，并将结果保存到输出tensor，input中的数据被改变。
 
 接口原型:
-torch_npu.npu_scatter_nd_update_(Tensor(a!) self, Tensor indices, Tensor updates) -> Tensor(a!)
+torch_npu.npu_scatter_nd_update_(Tensor(a!) input, Tensor indices, Tensor updates) -> Tensor(a!)
 
 参数说明:
-self：Device侧的Tensor类型，必选输入，源数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与updates一致，维数只能是1~8维。
+input：Device侧的Tensor类型，必选输入，源数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与updates一致，维数只能是1~8维。
 indices：Device侧的Tensor类型，必选输入，索引张量，数据类型支持INT32、INT64，数据格式支持ND，支持非连续的Tensor，indices中的索引数据不支持越界。
-updates：Device侧的Tensor类型，必选输入，更新数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与self一致。
+updates：Device侧的Tensor类型，必选输入，更新数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与input一致。
 
 输出说明:
-返回被更新后的self。
+返回被更新后的input。
 
 约束说明:
-indices至少是2维，其最后1维的大小不能超过self的维度大小。
-假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上self除前a维外的shape。举例：self的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
+indices至少是2维，其最后1维的大小不能超过input的维度大小。
+假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上input除前a维外的shape。举例：input的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
 
 支持的型号:
 Atlas A2 训练系列产品
@@ -5046,13 +5046,13 @@ _add_torch_npu_docstr(
     "npu_prefetch",
     """
 接口原型：
-torch_npu.npu_prefetch(Tensor self, Tensor? dependency, int max_size, int offset=0) -> ()
+torch_npu.npu_prefetch(Tensor input, Tensor? dependency, int max_size, int offset=0) -> ()
 
 功能描述
 提供网络weight预取功能，将需要预取的权重搬到L2 Cache中。尤其在做较大Tensor的MatMul计算且需要搬移到L2 Cache的操作时，可通过该接口提前预取权重，适当提高模型性能，具体效果基于用户对并行的处理。
 
 参数说明
-self：Tensor类型，表示需要预取的权重，不做数据处理，与数据类型和数据格式无关；输入不能含有空指针
+input：Tensor类型，表示需要预取的权重，不做数据处理，与数据类型和数据格式无关；输入不能含有空指针
 dependency：Tensor类型，表示开始预取的节点，单算子下不生效可为None，图模式下不可为None；不做数据处理，与数据类型和数据格式无关。
 max_size：int类型，取值需大于0，表示权重预取的最大size，超过预取权重的size时，会设置为权重的最大size。数据类型为int32、int64。
 offset: int类型，默认值0，取值大于等于0，表示权重预取内存地址偏移，不允许超过权重地址范围。数据类型为int32、int64。
@@ -5107,28 +5107,28 @@ _add_torch_npu_docstr(
     "npu_quantize",
     """
 接口原型：
-npu_quantize(Tensor self, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1, bool div_mode=True) -> Tensor
+npu_quantize(Tensor input, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1, bool div_mode=True) -> Tensor
 
 功能描述
 对输入的张量进行量化处理。
 
 参数说明
-self：Device侧的Tensor类型，需要进行量化的源数据张量，必选输入，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。div_mode为False且dtype为torch.quint4x2时，最后一维需要能被8整除。
-scales：Device侧的Tensor类型，对self进行scales的张量，必选输入：
+input：Device侧的Tensor类型，需要进行量化的源数据张量，必选输入，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。div_mode为False且dtype为torch.quint4x2时，最后一维需要能被8整除。
+scales：Device侧的Tensor类型，对input进行scales的张量，必选输入：
 div_mode为True时，数据类型支持FLOAT、BFLOAT16。
-div_mode为False时，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。支持1维或多维(1维时，对应轴的大小需要与self中第axis维相等或等于1；多维时，scales的shape需要与self的shape维度相等，除axis指定的维度，其他维度为1，axis指定的维度必须和self对应的维度相等或等于1)。
-zero_points：Device侧的Tensor类型，对self进行offset的张量，可选输入：
+div_mode为False时，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。支持1维或多维(1维时，对应轴的大小需要与input中第axis维相等或等于1；多维时，scales的shape需要与input的shape维度相等，除axis指定的维度，其他维度为1，axis指定的维度必须和input对应的维度相等或等于1)。
+zero_points：Device侧的Tensor类型，对input进行offset的张量，可选输入：
 div_mode为True时，数据类型支持INT8、UINT8、INT32、BFLOAT16。
-div_mode为False时，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。支持1维或多维(1维时，对应轴的大小需要与self中第axis维相等或等于1；多维时，scales的shape需要与self维度相等，除axis指定的维度，其他维度为1，axis指定的维度必须和self对应的维度相等)。zero_points的shape和dtype需要和scales一致。
+div_mode为False时，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。支持1维或多维(1维时，对应轴的大小需要与input中第axis维相等或等于1；多维时，scales的shape需要与input维度相等，除axis指定的维度，其他维度为1，axis指定的维度必须和input对应的维度相等)。zero_points的shape和dtype需要和scales一致。
 dtype：指定Device侧输出Tensor的类型：
 div_mode为True时，格式支持torch.qint8、torch.quint8、torch.int32。
 div_mode为False时，格式支持torch.qint8、torch.quint4x2。如果dtype为torch.quint4x2时，输出tensor类型为int32，由8个int4拼接。
 axis：量化的elemwise轴， 其他的轴做broadcast，默认值为1。
-div_mode为False时，axis取值范围是[-2, +∞）且指定的轴不能超过输入self的维度数。如果axis=-2，代表量化的elemwise轴是输入self的倒数第二根轴；如果axis大于-2，量化的elemwise轴是输入的最后一根轴。
+div_mode为False时，axis取值范围是[-2, +∞）且指定的轴不能超过输入input的维度数。如果axis=-2，代表量化的elemwise轴是输入input的倒数第二根轴；如果axis大于-2，量化的elemwise轴是输入的最后一根轴。
 div_mode：div_mode为True时，表示用除法计算scales；div_mode为False时，表示用乘法计算scales，默认值为True。
 
 输出说明
-y：Device侧的aclTensor，公式中的输出，输出大小与self一致。如果参数dtype为torch.quint4x2，输出的dtype是torch.int32，shape的最后一维是输入shape最后一维的1/8，shape其他维度和输入一致。
+y：Device侧的aclTensor，公式中的输出，输出大小与input一致。如果参数dtype为torch.quint4x2，输出的dtype是torch.int32，shape的最后一维是输入shape最后一维的1/8，shape其他维度和输入一致。
 
 约束说明
 该融合算子仅在推理场景使用。
