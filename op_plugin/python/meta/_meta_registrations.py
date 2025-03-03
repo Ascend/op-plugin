@@ -1219,3 +1219,13 @@ def npu_dequant_rope_quant_kvcache_meta(x, cos, sin, k_cache, v_cache, indices, 
 def npu_rope_quant_kvcache_meta(x, cos, sin, k_cache, v_cache, indices, scale_k, scale_v, size_splits, *, offset_k=None,
                                 offset_v=None, quant_mode=0, input_layout="BSND", kv_output=False, cache_mode="contiguous"):
     return rope_quant_kvcache(x, cos, k_cache, v_cache, size_splits, kv_output=kv_output)
+
+
+@impl(m, "npu_dequant_bias")
+def npu_dequant_bias_meta(x, weight_scale, activation_scale, bias, output_dtype=None):
+    if output_dtype is None:
+        output_dtype = torch.float16
+    if output_dtype != torch.float16 and output_dtype != torch.bfloat16:
+        raise RuntimeError("Only supported output_dtype is float16 and bfloat16" + ops_error(ErrCode.NOT_SUPPORT))
+    return torch.empty_like(x, dtype=output_dtype)
+
