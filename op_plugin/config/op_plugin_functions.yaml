@@ -7230,6 +7230,9 @@ custom:
 
   - func: npu_rope_quant_kvcache(Tensor x, Tensor cos, Tensor sin, Tensor k_cache, Tensor v_cache, Tensor indices, Tensor scale_k, Tensor scale_v, int[3] size_splits, *, Tensor? offset_k=None, Tensor? offset_v=None, int quant_mode=0, str input_layout="BSND", bool kv_output=False, str cache_mode="contiguous") -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
+  
+  - func: npu_dequant_bias(Tensor x, Tensor weight_scale, Tensor? activation_scale, Tensor? bias, *, ScalarType? output_dtype=None) -> Tensor
+    op_api: all_version
 
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
     op_api: all_version
