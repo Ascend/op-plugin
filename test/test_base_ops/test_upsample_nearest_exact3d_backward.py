@@ -68,9 +68,9 @@ class TestUpsampleNearestExact3dGrad(TestCase):
     @SupportedDevices(['Ascend910B'])
     def test_UpsampleNearestExact3dGrad_large_scale_format(self):
         shape_format = [
-            ["float32", (4, 1, 1, 2, 1), (1, 268, 12)],
-            ["float16", (5, 2, 16, 3, 2), (1, 578, 3)],
-            ["bfloat16", (6, 6, 3, 4, 2), (7, 6, 367)]
+            ["float32", (4, 1, 1, 20, 1), (1, 268, 12)],
+            ["float16", (5, 2, 16, 30, 2), (1, 578, 3)],
+            ["bfloat16", (6, 6, 3, 4, 20), (7, 6, 367)]
         ]
         for item in shape_format:
             cpu_inputs, npu_inputs = self.create_tensor(item[0], item[1])
