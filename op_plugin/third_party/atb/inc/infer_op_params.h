@@ -105,6 +105,126 @@ enum CommMode : int {
 };
 
 //!
+//! \struct RmsNormParam
+//!
+//! \brief RMS归一化处理。
+//!
+//! \warning 所有输入输出Tensor的最后一维大小相等。
+//! Atlas 推理系列产品中不支持bf16类型数据。
+//!
+struct RmsNormParam {
+    //!
+    //! \brief RmsNormType
+    //!
+    enum RmsNormType : int {
+        RMS_NORM_UNDEFINED = 0, //!< 默认值，未定义
+        RMS_NORM_NORM,          //!< NORM参数。
+        RMS_NORM_PRENORM,       //!< PRENORM参数。
+        RMS_NORM_POSTNORM,      //!< POSTNORM参数
+    };
+    //!
+    //! \brief PrecisionMode
+    //!
+    enum PrecisionMode : int {
+        HIGH_PRECISION_MODE = 0, //!< 中间计算使用float类型
+        HIGH_PERFORMANCE_MODE,   //!< 中间计算使用float16类型
+    };
+    //!
+    //! \brief ModelType
+    //!
+    enum ModelType : int {
+        LLAMA_MODEL = 0, //!< 默认值，使用Llama rmsnorm的公式
+        GEMMA_MODEL,     //!< 使用Gemma rmsnorm的公式
+    };
+    //!
+    //! \brief NormParam
+    //!
+    struct NormParam {
+        //! \brief 量化类型。
+        //! 当前支持以下类型。
+        //! QUANT_UNDEINFED, QUANT_INT8
+        QuantType quantType = QUANT_UNDEFINED;
+        //! \brief Epsilon，归一化时加在分母上防止除零。
+        float epsilon = 1e-5;
+        //! \brief Epsilon，默认为1e-5，暂时不使用。
+        double layerNormEps = 1e-5;
+        //! \brief 默认为False，设置为true时会使用训练的rmsnormforward算子。仅在Atlas 800I A2推理产品上支持该设置。
+        //!  不支持和“precisionMode”，“modelType”同时设置。量化场景下不支持使用“rstd”。
+        bool rstd = false;
+        //! \brief 默认为HIGH_PRECISION_MODE。
+        //! 支持参数如下：
+        //! HIGH_PRECISION_MODE：默认值，中间计算使用float类型
+        //! HIGH_PERFORMANCE_MODE： 中间计算使用float16类型
+        //! 不支持和“rstd”，“modelType”同时设置。输入类型只支持float16。
+        //! 量化场景下不支持使用“precisionMode”，该场景下配置该参数将返回报错ERROR_INVALID_PARAM。
+        PrecisionMode precisionMode = HIGH_PRECISION_MODE;
+        //! \brief 默认为LLAMA_MODEL，设置为GEMMA_MODEL时使用gemma模型的rmsnorm计算公式。
+        //! 支持参数如下：
+        //! LLAMA_MODEL：默认值， Llama的rms norm计算公式。
+        //! GEMMA_MODEL：Gemma的rms norm计算公式。
+        //! 不支持和“rstd”，“precisionMode”同时启用。
+        //! 量化场景下不支持使用“modelType”，该场景下配置该参数将返回报错ERROR_INVALID_PARAM。
+        ModelType modelType = LLAMA_MODEL;
+        //! \brief 动态量化类型。默认为DYNAMIC_QUANT_UNDEFINED非动态量化。当前版本暂不支持非对称动态量化。
+        DynamicQuantType dynamicQuantType = DYNAMIC_QUANT_UNDEFINED;
+        //!
+        //! \brief 预留参数
+        //!
+        uint8_t rsv[32] = {0};
+    };
+    //!
+    //! \brief PreNormParam
+    //!
+    struct PreNormParam {
+        //! \brief 量化类型。
+        //! 当前支持以下类型。
+        //! QUANT_UNDEINFED
+        //! QUANT_INT8
+        QuantType quantType = QUANT_UNDEFINED;
+        //! \brief Epsilon，归一化时加在分母上防止除零。
+        float epsilon = 1e-5;
+        //! \brief 是否叠加偏置。默认为False，当需要输入beta时设置为True。量化场景下不支持使用“hasBias”，该场景下配置该参数将返回报错ERROR_INVALID_PARAM。
+        bool hasBias = false;
+        //!
+        //! \brief 预留参数
+        //!
+        uint8_t rsv[23] = {0};
+    };
+    //!
+    //! \brief PostNormParam
+    //!
+    struct PostNormParam {
+        //! \brief 量化类型。
+        //! 当前仅支持QUANT_UNDEINFED。
+        QuantType quantType = QUANT_UNDEFINED;
+        //! \brief Epsilon，归一化时加在分母上防止除零。
+        float epsilon = 1e-5;
+        //! \brief 是否叠加偏置。默认为False，当需要输入beta时设置为True。
+        bool hasBias = false;
+        //!
+        //! \brief 预留参数
+        //!
+        uint8_t rsv[23] = {0};
+    };
+    //! \brief 归一化类型，参数如下：
+    //! RMS_NORM_UNDEFINED：默认值，未定义。
+    //! RMS_NORM_NORM：NORM参数。
+    //! RMS_NORM_PRENORM：PRENORM参数。
+    //! RMS_NORM_POSTNORM：POSTNORM参数。
+    RmsNormType layerType = RMS_NORM_UNDEFINED;
+    //! \brief NORM参数。
+    NormParam normParam;
+    //! \brief PRENORM参数。
+    PreNormParam preNormParam;
+    //! \brief POSTNORM参数。
+    PostNormParam postNormParam;
+    //!
+    //! \brief 预留参数
+    //!
+    uint8_t rsv[8] = {0};
+};
+
+//!
 //! \struct LinearParam
 //!
 //! \brief 将A、B两个矩阵进行矩阵乘运算，同时可以选择对矩阵乘的运算结果进行叠加偏置、InplaceAdd融合或反量化操作。

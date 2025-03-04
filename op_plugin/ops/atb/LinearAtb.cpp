@@ -42,7 +42,7 @@ void _npu_matmul_add_fp32(const at::Tensor &x, const at::Tensor &weight, at::Ten
 }
 
 namespace {
-TORCH_LIBRARY(atb, m)
+TORCH_LIBRARY_FRAGMENT(atb, m)
 {
     m.def("_npu_matmul_add_fp32(Tensor x, Tensor weight, Tensor(a!) C) -> ()");
 }
