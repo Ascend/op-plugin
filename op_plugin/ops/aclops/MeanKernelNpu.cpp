@@ -23,20 +23,23 @@ at::Tensor& mean_out(
     at::DimnameList dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
-  return acl_op::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
+    at::Tensor& result)
+{
+    return acl_op::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
 }
 
 at::Tensor mean(
     const at::Tensor& self,
     at::DimnameList dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return acl_op::mean(self, dimnames_to_positions(self, dim), keepdim, dtype);
+    c10::optional<c10::ScalarType> dtype)
+{
+    return acl_op::mean(self, dimnames_to_positions(self, dim), keepdim, dtype);
 }
 
-at::Tensor mean(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
-  return acl_op::mean(self, c10::SmallVector<int64_t, N> {}, false, dtype);
+at::Tensor mean(const at::Tensor& self, c10::optional<c10::ScalarType> dtype)
+{
+    return acl_op::mean(self, c10::SmallVector<int64_t, N> {}, false, dtype);
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)
@@ -45,7 +48,8 @@ at::Tensor& mean_out(
     at::IntArrayRef dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
+    at::Tensor& result)
+{
     return mean_out_common_nocheck(self, dim, keepdim, dtype, result);
 }
 
@@ -53,7 +57,8 @@ at::Tensor mean(
     const at::Tensor& self,
     at::IntArrayRef dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
+    c10::optional<c10::ScalarType> dtype)
+{
     return mean_common_nocheck(self, dim, keepdim, dtype);
 }
 #endif
@@ -64,7 +69,8 @@ at::Tensor& mean_out(
     at::OptionalIntArrayRef dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
+    at::Tensor& result)
+{
     return mean_out_common_nocheck(self, dim.value(), keepdim, dtype, result);
 }
 
@@ -72,7 +78,8 @@ at::Tensor mean(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
+    c10::optional<c10::ScalarType> dtype)
+{
     return mean_common_nocheck(self, dim.value(), keepdim, dtype);
 }
 #endif

@@ -26,36 +26,40 @@ namespace {
 at::Tensor& fast_gelu_backward_npu_nocheck(
     at::Tensor& grad_input,
     const at::Tensor& grad,
-    const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("FastGeluGrad")
-      .Input(grad)
-      .Input(self)
-      .Output(grad_input)
-      .Run();
-  return grad_input;
+    const at::Tensor& self)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("FastGeluGrad")
+        .Input(grad)
+        .Input(self)
+        .Output(grad_input)
+        .Run();
+    return grad_input;
 }
 } // namespace
 
-at::Tensor npu_fast_gelu(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("FastGelu")
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
+at::Tensor npu_fast_gelu(const at::Tensor& self)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("FastGelu")
+        .Input(self)
+        .Output(result)
+        .Run();
+    return result;
 }
 
 at::Tensor npu_fast_gelu_backward(
     const at::Tensor& grad,
-    const at::Tensor& self) {
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
-  fast_gelu_backward_npu_nocheck(grad_input, grad, self);
-  return grad_input;
+    const at::Tensor& self)
+{
+    at::Tensor grad_input = npu_preparation::apply_tensor(self);
+    fast_gelu_backward_npu_nocheck(grad_input, grad, self);
+    return grad_input;
 }
 
-at::Tensor fast_gelu(const at::Tensor& self) {
-  return acl_op::npu_fast_gelu(self);
+at::Tensor fast_gelu(const at::Tensor& self)
+{
+    return acl_op::npu_fast_gelu(self);
 }
 } // namespace acl_op
