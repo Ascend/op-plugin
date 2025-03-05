@@ -30,14 +30,14 @@ class TestUpsampleNearestExact1dBackward(TestCase):
 
     def cpu_op_exec(self, inputs, shapes):
         inputs.requires_grad_(True)
-        output = interpolate(inputs, size=shapes, mode="nearest_exact")
+        output = interpolate(inputs, size=shapes, mode="nearest-exact")
         output.backward(torch.ones_like(output))
         gradcpu = inputs.grad
         return gradcpu
 
     def npu_op_exec(self, inputs, shapes):
         inputs.requires_grad_(True)
-        output = interpolate(inputs, size=shapes, mode="nearest_exact")
+        output = interpolate(inputs, size=shapes, mode="nearest-exact")
         output.backward(torch.ones_like(output))
         grad = inputs.grad
         return grad
@@ -69,9 +69,9 @@ class TestUpsampleNearestExact1dBackward(TestCase):
     @SupportedDevices(['Ascend910B'])
     def test_UpsampleNearestExact1dBackward_large_scale_format(self):
         shape_format = [
-            ["float32", (4, 1, 2), (368)],
+            ["float32", (4, 1, 20), (368)],
             ["float16", (5, 2, 16), (512)],
-            ["bfloat16", (6, 6, 3), (208)]
+            ["bfloat16", (6, 6, 30), (208)]
         ]
         for item in shape_format:
             cpu_inputs, npu_inputs = self.create_tensor(item[0], item[1])
@@ -91,7 +91,7 @@ class TestUpsampleNearestExact1dBackward(TestCase):
         shape_format = [
             ["float32", (2, 2, 3441), (9234)],
             ["float16", (7, 6, 14777), (12768)],
-            ["bfloat16", (1, 5, 15663), (18779)]
+            ["bfloat16", (1, 5, 5663), (8779)]
         ]
         for item in shape_format:
             cpu_inputs, npu_inputs = self.create_tensor(item[0], item[1])

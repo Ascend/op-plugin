@@ -305,6 +305,9 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> upsample_nearest3d_npu_output_s
                                                                                     c10::optional<double> scales_h,
                                                                                     c10::optional<double> scales_w);
 
+OP_PLUGIN_HIDDEN at::SmallVector<int64_t, SIZE> upsample_nearest_exact2d_output_size_npu(const at::Tensor &input,
+                                                                                         at::IntArrayRef output_size);
+
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> var_npu_output_size(const at::Tensor& self, c10::IntArrayRef dim,
                                                                      bool keepdim);
 

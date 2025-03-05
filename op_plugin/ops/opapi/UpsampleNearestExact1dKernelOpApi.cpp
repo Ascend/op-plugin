@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Huawei Technologies Co., Ltd
+// Copyright (c) 2024-2025 Huawei Technologies Co., Ltd
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -15,14 +15,34 @@
 
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
+at::Tensor &upsample_nearest_exact1d_out_slow(const at::Tensor &self, at::IntArrayRef output_size,
+    c10::optional<double> scales, at::Tensor &result)
+{
+    at::Tensor result_slow = at::_upsample_nearest_exact1d(self.cpu(), output_size, scales);
+    result.copy_(result_slow);
+    return result;
+}
+
+at::Tensor upsample_nearest_exact1d_slow(const at::Tensor &self, at::IntArrayRef output_size,
+    c10::optional<double> scales)
+{
+    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size, false, scales);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
+
+    at::Tensor result_slow = at::_upsample_nearest_exact1d(self.cpu(), output_size, scales);
+    result.copy_(result_slow);
+    return result;
+}
+
 at::Tensor &_upsample_nearest_exact1d_out(const at::Tensor &self, at::IntArrayRef output_size,
     c10::optional<double> scales, at::Tensor &result)
 {
+    DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_out_slow(self, output_size, scales, result));
+
     auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size, false, scales);
     npu_preparation::check_tensor({self}, result, self, outputSize);
     double scalesValue = scales.value_or(0);
@@ -33,6 +53,8 @@ at::Tensor &_upsample_nearest_exact1d_out(const at::Tensor &self, at::IntArrayRe
 
 at::Tensor _upsample_nearest_exact1d(const at::Tensor &self, at::IntArrayRef output_size, c10::optional<double> scales)
 {
+    DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_slow(self, output_size, scales));
+
     double scalesValue = scales.value_or(0);
     auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size, false, scales);
     at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
