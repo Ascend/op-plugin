@@ -48,9 +48,10 @@ at::Tensor& repeat_interleave_out_nocheck(at::Tensor& result, const at::Tensor& 
     return result;
 }
 
-void check_dim_valid(int64_t real_dim, int64_t self_dim) {
-    int64_t dim_min = std::min(-self_dim, self_dim-1);
-    int64_t dim_max = std::max(-self_dim, self_dim-1);
+void check_dim_valid(int64_t real_dim, int64_t self_dim)
+{
+    int64_t dim_min = std::min(-self_dim, self_dim - 1);
+    int64_t dim_max = std::max(-self_dim, self_dim - 1);
     TORCH_CHECK(
         (real_dim >= dim_min) && (real_dim <= dim_max),
         "dim value should be in the range of [-x, x-1], x is the dimension number of input tensor.",
@@ -61,8 +62,8 @@ void check_dim_valid(int64_t real_dim, int64_t self_dim) {
 at::Tensor repeat_interleave_common_nocheck(
     const at::Tensor& self,
     int64_t repeats,
-    c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
+    c10::optional<int64_t> dim)
+{
     int64_t real_dim = dim.value_or(0);
     int64_t self_dim = self.dim();
     check_dim_valid(real_dim, self_dim);
@@ -89,8 +90,8 @@ at::Tensor repeat_interleave_common_nocheck(
 at::Tensor repeat_interleave_common_nocheck(
     const at::Tensor& self,
     const at::Tensor& repeats,
-    c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
+    c10::optional<int64_t> dim)
+{
     int64_t real_dim = dim.value_or(0);
     int64_t self_dim = self.dim();
     check_dim_valid(real_dim, self_dim);

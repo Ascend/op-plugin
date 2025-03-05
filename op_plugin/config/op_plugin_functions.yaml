@@ -666,7 +666,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: 'half_to_float? at::kFloat : self.scalar_type()'
+        dtype: 'half_to_float ? at::kFloat : self.scalar_type()'
       exec: aclnnLogSoftmax, self, dim, out
 
   - func: _log_softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)
@@ -1387,10 +1387,10 @@ official:
     gen_opapi:
       out0:
         size: '{input.size(1)}'
-        dtype: 'input.scalar_type() == mean.scalar_type() && input.scalar_type() == at::kHalf? at::kHalf: at::kFloat'
+        dtype: 'input.scalar_type() == mean.scalar_type() && input.scalar_type() == at::kHalf ? at::kHalf : at::kFloat'
       out1:
         size: '{input.size(1)}'
-        dtype: 'input.scalar_type() == mean.scalar_type() && input.scalar_type() == at::kHalf? at::kHalf: at::kFloat'
+        dtype: 'input.scalar_type() == mean.scalar_type() && input.scalar_type() == at::kHalf ? at::kHalf : at::kFloat'
       exec: aclnnBatchNormGatherStatsWithCounts
 
   - func: batch_norm_stats(Tensor input, float eps) -> (Tensor, Tensor)
@@ -2166,7 +2166,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: '(self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long || self.scalar_type() == at::ScalarType::Int)? at::kFloat : self.scalar_type()'
+        dtype: '(self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long || self.scalar_type() == at::ScalarType::Int) ? at::kFloat : self.scalar_type()'
       exec: aclnnErf
 
   - func: erf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)

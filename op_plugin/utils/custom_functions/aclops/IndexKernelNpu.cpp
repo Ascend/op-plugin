@@ -37,7 +37,7 @@ at_npu::native::DynamicInputRegFunc index_func = [](DyNumAndIndex num_and_index,
 };
 
 // Limitations of the aicore branch
-bool check_index_aicore(const at::Tensor &self, const at::TensorList &indices, const at::IntArrayRef masks)
+bool check_index_aicore(const at::TensorList &indices, const at::IntArrayRef masks)
 {
     // indices must have same shape
     for (uint64_t idx = 1; idx < indices.size(); idx++) {
@@ -105,7 +105,7 @@ at::Tensor index_high_dims(const at::Tensor &self, std::vector<at::Tensor> indic
 
     at::Tensor self_nd = at_npu::native::custom_ops::npu_format_cast(self, ACL_FORMAT_ND);
 
-    bool is_aicore = check_index_aicore(self_nd, all_defined_indices, masks);
+    bool is_aicore = check_index_aicore(all_defined_indices, masks);
     bool is_casted = false;
     at::Tensor self_data = self_nd;
 

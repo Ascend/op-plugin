@@ -53,9 +53,9 @@ at::Tensor zeros_common_nocheck(at::IntArrayRef size, c10::optional<at::ScalarTy
                                 c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
                                 c10::optional<bool> pin_memory_opt);
 at::Tensor repeat_interleave_common_nocheck(const at::Tensor& self, int64_t repeats,
-                                            c10::optional<int64_t> dim, c10::optional<int64_t> output_size);
+                                            c10::optional<int64_t> dim);
 at::Tensor repeat_interleave_common_nocheck(const at::Tensor& self, const at::Tensor& repeats,
-                                            c10::optional<int64_t> dim, c10::optional<int64_t> output_size);
+                                            c10::optional<int64_t> dim);
 at::Tensor leaky_relu_backward_out_nocheck(at::Tensor result, const at::Tensor& grad_output, const at::Tensor& self,
                                            at::Scalar negval, bool is_result);
 at::Tensor log_softmax_nocheck(at::Tensor& result, const at::Tensor& self, int64_t dim,

@@ -23,7 +23,7 @@ namespace op_api {
 
     // utils functions
 
-    void copy_quarter(at::Tensor& dst, at::Tensor& src, int64_t prev_n, int64_t factor, bool full_in, bool full_out, bool real_part, int64_t x, int64_t y)
+    void copy_quarter(at::Tensor& dst, at::Tensor& src, int64_t prev_n, int64_t factor, bool full_in, bool full_out, int64_t x, int64_t y)
     {
         if (full_in && full_out) {
             auto view = at::slice(dst, 0, 0, prev_n, 1);
@@ -89,26 +89,26 @@ namespace op_api {
         std::array<int64_t, 5> rotate_shape{prev_n, out_n, out_complex, in_complex, in_n};
         auto rotate_matrix = at::empty(rotate_shape, options);
         at::cos_outf(theta, triangle);
-        copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, true, 0, 0);
+        copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, 0, 0);
         if (in_complex == 2 && out_complex == 2) {
-            copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, false, 1, 1);
+            copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, 1, 1);
         }
         at::sin_outf(theta, triangle);
         if (plan_key.is_forward) {
             if (out_complex == 2) {
-                copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, true, 1, 0);
+                copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, 1, 0);
             }
             if (in_complex == 2) {
                 at::neg_(triangle);
-                copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, false, 0, 1);
+                copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, 0, 1);
             }
         } else {
             if (in_complex == 2) {
-                copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, false, 0, 1);
+                copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, 0, 1);
             }
             if (out_complex == 2) {
                 at::neg_(triangle);
-                copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, true, 1, 0);
+                copy_quarter(rotate_matrix, triangle, prev_n, factor, in_n == factor, out_n == factor, 1, 0);
             }
         }
         rotate_matrix = rotate_matrix.to(plan_key.scalar_dtype);
@@ -179,7 +179,7 @@ namespace op_api {
         for (size_t i = 0; i < factors.size(); i++) {
             int64_t factor = 1;
             for (size_t j = i; j < factors.size(); j++) {
-                if (is_merged[j] == true) {
+                if (is_merged[j]) {
                     continue;
                 }
                 if ((factor==1)||((factors[j]*factor) <= FACTOR_BOUND)) {

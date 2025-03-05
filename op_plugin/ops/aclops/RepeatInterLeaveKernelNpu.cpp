@@ -23,8 +23,9 @@ at::Tensor repeat_interleave(
     const at::Tensor& self,
     int64_t repeats,
     c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
-  return repeat_interleave_common_nocheck(self, repeats, dim, output_size);
+    c10::optional<int64_t> output_size)
+{
+    return repeat_interleave_common_nocheck(self, repeats, dim);
 }
 #endif
 
@@ -33,9 +34,10 @@ at::Tensor repeat_interleave_symint(
     const at::Tensor& self,
     c10::SymInt repeats,
     c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
-  int64_t repeats_val = repeats.guard_int(__FILE__, __LINE__);
-  return repeat_interleave_common_nocheck(self, repeats_val, dim, output_size);
+    c10::optional<int64_t> output_size)
+{
+    int64_t repeats_val = repeats.guard_int(__FILE__, __LINE__);
+    return repeat_interleave_common_nocheck(self, repeats_val, dim);
 }
 #endif
 
@@ -44,8 +46,9 @@ at::Tensor repeat_interleave(
     const at::Tensor& self,
     const at::Tensor& repeats,
     c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
-  return repeat_interleave_common_nocheck(self, repeats, dim, output_size);
+    c10::optional<int64_t> output_size)
+{
+    return repeat_interleave_common_nocheck(self, repeats, dim);
 }
 #endif
 
@@ -54,27 +57,29 @@ at::Tensor repeat_interleave_symint(
     const at::Tensor& self,
     c10::SymInt repeats,
     c10::optional<int64_t> dim,
-    c10::optional<c10::SymInt> output_size) {
-  int64_t repeats_val = repeats.guard_int(__FILE__, __LINE__);
-  c10::optional<int64_t> _output_size = c10::nullopt;
-  if (output_size.has_value()) {
-    int64_t output_size_val = output_size.value().guard_int(__FILE__, __LINE__);
-    _output_size = c10::optional<int64_t>(output_size_val);
-  }
-  return repeat_interleave_common_nocheck(self, repeats_val, dim, _output_size);
+    c10::optional<c10::SymInt> output_size)
+{
+    int64_t repeats_val = repeats.guard_int(__FILE__, __LINE__);
+    c10::optional<int64_t> _output_size = c10::nullopt;
+    if (output_size.has_value()) {
+        int64_t output_size_val = output_size.value().guard_int(__FILE__, __LINE__);
+        _output_size = c10::optional<int64_t>(output_size_val);
+    }
+    return repeat_interleave_common_nocheck(self, repeats_val, dim);
 }
 
 at::Tensor repeat_interleave_symint(
     const at::Tensor& self,
     const at::Tensor& repeats,
     c10::optional<int64_t> dim,
-    c10::optional<c10::SymInt> output_size) {
-  c10::optional<int64_t> _output_size = c10::nullopt;
-  if (output_size.has_value()) {
-    int64_t output_size_val = output_size.value().guard_int(__FILE__, __LINE__);
-    _output_size = c10::optional<int64_t>(output_size_val);
-  }
-  return repeat_interleave_common_nocheck(self, repeats, dim, _output_size);
+    c10::optional<c10::SymInt> output_size)
+{
+    c10::optional<int64_t> _output_size = c10::nullopt;
+    if (output_size.has_value()) {
+        int64_t output_size_val = output_size.value().guard_int(__FILE__, __LINE__);
+        _output_size = c10::optional<int64_t>(output_size_val);
+    }
+    return repeat_interleave_common_nocheck(self, repeats, dim);
 }
 #endif
 } // namespace acl_op

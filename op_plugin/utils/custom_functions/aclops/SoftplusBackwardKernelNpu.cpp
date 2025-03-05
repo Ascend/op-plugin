@@ -21,15 +21,16 @@ at::Tensor& softplus_backward_out_common_nocheck(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     at::Scalar beta,
-    at::Scalar threshold) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("SoftplusV2Grad")
-      .Input(grad_output)
-      .Input(self)
-      .Output(grad_input)
-      .Attr("beta", beta)
-      .Attr("threshold", threshold)
-      .Run();
+    at::Scalar threshold)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("SoftplusV2Grad")
+        .Input(grad_output)
+        .Input(self)
+        .Output(grad_input)
+        .Attr("beta", beta)
+        .Attr("threshold", threshold)
+        .Run();
 
     return grad_input;
 }

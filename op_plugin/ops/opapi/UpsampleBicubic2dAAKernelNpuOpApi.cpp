@@ -33,9 +33,9 @@ bool checkBicubicUseFast(
                                               c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     double realScale_h =
-        op_plugin::utils::compute_scale(align_corners, self.size(H_INDEX), result.size(H_INDEX), scales_h);
+        op_plugin::utils::compute_scale(self.size(H_INDEX), result.size(H_INDEX), scales_h);
     double realScale_w =
-        op_plugin::utils::compute_scale(align_corners, self.size(W_INDEX), result.size(W_INDEX), scales_w);
+        op_plugin::utils::compute_scale(self.size(W_INDEX), result.size(W_INDEX), scales_w);
     if (!is_support_nd_out || !checkBicubicScales(realScale_h, realScale_w)) {
         return false;
     }

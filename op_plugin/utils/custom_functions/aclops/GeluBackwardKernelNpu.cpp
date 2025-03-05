@@ -16,15 +16,16 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor gelu_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& self) {
-  at::Tensor grad_input = at_npu::native::OpPreparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("GeluGrad")
-      .Input(grad)
-      .Input(self)
-      .Input(grad)
-      .Output(grad_input)
-      .Run();
-  return grad_input;
+at::Tensor gelu_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& self)
+{
+    at::Tensor grad_input = at_npu::native::OpPreparation::apply_tensor(self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("GeluGrad")
+        .Input(grad)
+        .Input(self)
+        .Input(grad)
+        .Output(grad_input)
+        .Run();
+    return grad_input;
 }
 } // namespace acl_op

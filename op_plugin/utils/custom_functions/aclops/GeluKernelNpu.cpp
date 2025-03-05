@@ -16,13 +16,14 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor gelu_common_nocheck(const at::Tensor& self) {
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Gelu")
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
+at::Tensor gelu_common_nocheck(const at::Tensor& self)
+{
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Gelu")
+        .Input(self)
+        .Output(result)
+        .Run();
+    return result;
 }
 } // namespace acl_op

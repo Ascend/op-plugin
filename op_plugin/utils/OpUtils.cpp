@@ -115,7 +115,7 @@ float get_scalar_float_value(const c10::Scalar &scalar)
     if (scalar.isFloatingPoint()) {
         value = scalar.toFloat();
     } else {
-        value = (float)scalar.toInt();
+        value = static_cast<float>(scalar.toInt());
     }
     return value;
 }
@@ -210,7 +210,7 @@ NameVector compute_names_npu(std::vector<at::Tensor> tensor_list)
     return names;
 }
 
-double compute_scale(bool align_corners, int64_t input_size, int64_t output_size, double scale)
+double compute_scale(int64_t input_size, int64_t output_size, double scale)
 {
     if (scale > 0.0) {
         return 1.0 / scale ;

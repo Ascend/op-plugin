@@ -25,7 +25,8 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler3d_backward_common_nocheck(
     const at::Tensor& grid,
     int64_t interpolation_mode,
     int64_t padding_mode,
-    bool align_corners) {
+    bool align_corners)
+{
     TORCH_CHECK(
         (0 <= interpolation_mode && interpolation_mode <= 2),
         "interpolation_mode must be in range [0~2].", OPS_ERROR(ErrCode::VALUE))

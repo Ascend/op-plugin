@@ -36,20 +36,20 @@ struct OP_PLUGIN_HIDDEN AdvancedIndex {
 
 class OP_PLUGIN_HIDDEN AdvanceIndex {
 public:
-  static bool all_strides_match(at::TensorList tensors);
-  static at::Tensor reshape_indexer(const at::Tensor& index, int64_t dims_before, int64_t dims_after);
-  static at::Tensor restride_src(const at::Tensor& src, int64_t dims_before, int64_t dims_indexed,
-      at::IntArrayRef replacement_shape);
-  static std::string shapes_as_str(at::TensorList tensors);
-  static AdvancedIndex make_info(at::Tensor self, const torch::List<c10::optional<at::Tensor>>& orig);
-  static std::vector<at::Tensor> npu_expand_tensors(
-      const at::Tensor& self,
-      const torch::List<c10::optional<at::Tensor>>& indices,
-      bool needCast,
-      bool flag_aclnn = false);
-  static std::vector<at::Tensor> npu_broadcast_tensors(std::vector<at::Tensor> to_broadcast);
-  static bool is_expandable_to(c10::IntArrayRef shape, c10::IntArrayRef desired);
-  static bool checkIndexTensorTypes(const torch::List<c10::optional<at::Tensor>> &indices);
+    static bool all_strides_match(at::TensorList tensors);
+    static at::Tensor reshape_indexer(const at::Tensor& index, int64_t dims_before, int64_t dims_after);
+    static at::Tensor restride_src(const at::Tensor& src, int64_t dims_before, int64_t dims_indexed,
+        at::IntArrayRef replacement_shape);
+    static std::string shapes_as_str(at::TensorList tensors);
+    static AdvancedIndex make_info(at::Tensor self, const torch::List<c10::optional<at::Tensor>>& orig);
+    static std::vector<at::Tensor> npu_expand_tensors(
+        const at::Tensor& self,
+        const torch::List<c10::optional<at::Tensor>>& indices,
+        bool needCast,
+        bool flag_aclnn = false);
+    static std::vector<at::Tensor> npu_broadcast_tensors(std::vector<at::Tensor> to_broadcast);
+    static bool is_expandable_to(c10::IntArrayRef shape, c10::IntArrayRef desired);
+    static bool checkIndexTensorTypes(const torch::List<c10::optional<at::Tensor>> &indices);
 };
 
 } // namespace op_plugin

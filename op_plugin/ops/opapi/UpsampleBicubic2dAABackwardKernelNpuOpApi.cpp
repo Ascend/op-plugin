@@ -45,9 +45,9 @@ bool checkBicubicBackwardUseFast(
                                               c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     double realScale_h =
-        op_plugin::utils::compute_scale(align_corners, grad_input.size(H_INDEX), grad_output.size(H_INDEX), scales_h);
+        op_plugin::utils::compute_scale(grad_input.size(H_INDEX), grad_output.size(H_INDEX), scales_h);
     double realScale_w =
-        op_plugin::utils::compute_scale(align_corners, grad_input.size(W_INDEX), grad_output.size(W_INDEX), scales_w);
+        op_plugin::utils::compute_scale(grad_input.size(W_INDEX), grad_output.size(W_INDEX), scales_w);
     if (!is_support_nd_out || !checkBicubicBackwardScales(realScale_h, realScale_w) ||
         !checkBicubicBackwardShapes(grad_output.size(H_INDEX), grad_output.size(W_INDEX))) {
         return false;

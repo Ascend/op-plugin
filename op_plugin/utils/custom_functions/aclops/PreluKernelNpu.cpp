@@ -19,15 +19,16 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor prelu_common_nocheck(const at::Tensor& self, const at::Tensor& weight) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
+at::Tensor prelu_common_nocheck(const at::Tensor& self, const at::Tensor& weight)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("PRelu")
-      .Input(self)
-      .Input(weight)
-      .Output(result)
-      .Run();
-  return result;
+    at_npu::native::OpCommand cmd;
+    cmd.Name("PRelu")
+        .Input(self)
+        .Input(weight)
+        .Output(result)
+        .Run();
+    return result;
 }
 } // namespace acl_op

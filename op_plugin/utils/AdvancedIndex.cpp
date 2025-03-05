@@ -71,13 +71,13 @@ at::Tensor npu_nonzero_aclnn(const at::Tensor &self)
     c10::SmallVector<int64_t, SIZE> out_size = {self.dim(), self.numel()};
     at::Tensor out =
         at_npu::native::OpPreparation::apply_tensor_without_format(out_size, self.options().dtype(at::kLong));
-    static auto opApiFuncAddr = []() {
+    static auto aclGetViewShapeAddr = []() {
         auto ret = GetOpApiFuncAddr("aclGetViewShape");
         TORCH_CHECK(ret != nullptr);
         return ret;
     }();
-    using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
-    auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
+    using aclGetViewShapeFuncLocal = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
+    auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFuncLocal>(aclGetViewShapeAddr);
     auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnNonzeroV2, self, out);
     int64_t* view_dims = nullptr;
     uint64_t view_dim_num = 0;
@@ -229,7 +229,7 @@ AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::op
                           OPS_ERROR(ErrCode::VALUE));
     }
     // add missing null Tensors so that it matches self.dim().
-    while (indices.size() < (size_t)self.dim()) {
+    while (indices.size() < static_cast<size_t>(self.dim())) {
         indices.emplace_back();
     }
     // if the non-null indices are not all adjacent, transpose self

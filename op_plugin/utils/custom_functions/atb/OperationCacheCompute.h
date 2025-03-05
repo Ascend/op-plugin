@@ -43,7 +43,7 @@ template <typename T> void add_param_to_buf(const T &value)
     MEMCPY_TO_BUF(&value, sizeof(T));
 }
 
-void add_param_to_buf(const string &);
+void add_param_to_buf(const string &s);
 
 template <typename T> void add_param_to_buf(const std::string &name, const T &value)
 {
