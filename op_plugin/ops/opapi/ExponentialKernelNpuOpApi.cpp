@@ -28,17 +28,30 @@ at::Tensor& exponential_(at::Tensor& self, double lambda, c10::optional<at::Gene
         return self;
     }
     
-    self = op_api::uniform_(self, 0.0, 1.0, generator);
-    self = op_api::sub_(self, at::Scalar(1.0), at::Scalar(1.0));
-    self = op_api::mul_(self, at::Scalar(-1.0));
-    self = op_api::log_(self);
-    self = op_api::div_(self, at::Scalar(-lambda));
+    self.uniform_(0.0, 1.0, generator);
+
+    if (self.dtype() == at::kDouble) {
+        self = op_api::sub_(self, at::Scalar(1.0), at::Scalar(1.0));
+        self = op_api::mul_(self, at::Scalar(-1.0));
+        self = op_api::log_(self);
+        self = op_api::div_(self, at::Scalar(-lambda));
+
+        auto eps = std::numeric_limits<double>::min();
+        self = self.add(eps);
+        return self;
+    }
+
+    self.neg_();
+    self.add_(1.0);
 
     AT_DISPATCH_FLOATING_TYPES_AND2(at::ScalarType::Half, at::ScalarType::BFloat16, self.scalar_type(), "exponential_", [&]() {
-        auto eps = std::numeric_limits<scalar_t>::min();
-        self = self.add(eps);
+        auto eps = std::numeric_limits<scalar_t>::epsilon() / 2;
+        auto mask = self >= (1.0 - eps);
+        self.masked_fill_(mask, 1.0 - eps);
     });
 
+    self.log_();
+    self.mul_(-1.0 / lambda);
     return self;
 }
 }  // namespace op_api
