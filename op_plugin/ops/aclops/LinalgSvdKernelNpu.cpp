@@ -19,19 +19,19 @@
 
 namespace acl_op {
 #if VERSION_BETWEEN(V1R11, V1R11)
-std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> _linalg_svd_out(
-    const at::Tensor &A,
+std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
+    const at::Tensor& A,
     const bool full_matrices,
     const bool compute_uv,
-    at::Tensor &U,
-    at::Tensor &S,
-    at::Tensor &Vh)
+    at::Tensor& U,
+    at::Tensor& S,
+    at::Tensor& Vh)
 {
     return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
-    const at::Tensor &A,
+    const at::Tensor& A,
     const bool full_matrices,
     const bool compute_uv)
 {
@@ -49,7 +49,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
     at::Tensor& S,
     at::Tensor& Vh)
 {
-  return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
+    return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
@@ -58,7 +58,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
     const bool compute_uv,
     c10::optional<c10::string_view> driver)
 {
-  return _svd_helper(A, !full_matrices, compute_uv);
+    return _svd_helper(A, !full_matrices, compute_uv);
 }
 #endif
 

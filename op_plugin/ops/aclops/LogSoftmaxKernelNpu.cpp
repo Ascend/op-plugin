@@ -24,31 +24,35 @@ using npu_utils = at_npu::native::NpuUtils;
 at::Tensor log_softmax(
     const at::Tensor& self,
     int64_t dim,
-    c10::optional<c10::ScalarType> dtype) {
-  c10::ScalarType dst_type = dtype.has_value() ? dtype.value() : self.scalar_type();
-  if (dst_type == self.scalar_type()) {
-    return at::_log_softmax(self, dim, false);
-  }
+    c10::optional<c10::ScalarType> dtype)
+{
+    c10::ScalarType dst_type = dtype.has_value() ? dtype.value() : self.scalar_type();
+    if (dst_type == self.scalar_type()) {
+        return at::_log_softmax(self, dim, false);
+    }
 
-  return at::_log_softmax(self.toType(dst_type), dim, false);
+    return at::_log_softmax(self.toType(dst_type), dim, false);
 }
 
 at::Tensor log_softmax(
     const at::Tensor& self,
     at::Dimname dim,
-    c10::optional<c10::ScalarType> dtype) {
-  return acl_op::log_softmax(self, dimname_to_position(self, dim), dtype);
+    c10::optional<c10::ScalarType> dtype)
+{
+    return acl_op::log_softmax(self, dimname_to_position(self, dim), dtype);
 }
 
-at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  c10::ScalarType result_type = half_to_float ? c10::ScalarType::Float : result.scalar_type();
-  log_softmax_nocheck(result, self, dim, result_type);
-  return result;
+at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    c10::ScalarType result_type = half_to_float ? c10::ScalarType::Float : result.scalar_type();
+    log_softmax_nocheck(result, self, dim, result_type);
+    return result;
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float, at::Tensor& result) {
+at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float, at::Tensor& result)
+{
     c10::ScalarType result_type = half_to_float ? c10::ScalarType::Float : result.scalar_type();
     npu_preparation::CheckOut(
         {self},

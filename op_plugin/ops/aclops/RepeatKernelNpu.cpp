@@ -24,34 +24,36 @@ namespace {
 at::Tensor& repeat_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
-    at::IntArrayRef repeats) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Tile")
-      .Input(self)
-      .Input(repeats)
-      .Output(result)
-      .Run();
+    at::IntArrayRef repeats)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Tile")
+        .Input(self)
+        .Input(repeats)
+        .Output(result)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
-at::Tensor repeat(const at::Tensor& self, at::IntArrayRef repeats) {
-  TORCH_CHECK(repeats.size() >= self.ndimension(),
-              "Number of dimensions of repeat dims can not be smaller than number of dimensions of tensor"
-              + OPS_ERROR(ErrCode::PARAM));
-  at::Tensor self_cp = self;
-  if (static_cast<int>(repeats.size()) > self_cp.ndimension()) {
-    int diff = static_cast<int>(repeats.size()) - self_cp.ndimension();
-    for (int i = 0; i < diff; i++) {
-      self_cp = at::unsqueeze(self_cp, 0);
+at::Tensor repeat(const at::Tensor& self, at::IntArrayRef repeats)
+{
+    TORCH_CHECK(repeats.size() >= self.ndimension(),
+                "Number of dimensions of repeat dims can not be smaller than number of dimensions of tensor"
+                + OPS_ERROR(ErrCode::PARAM));
+    at::Tensor self_cp = self;
+    if (static_cast<int>(repeats.size()) > self_cp.ndimension()) {
+        int diff = static_cast<int>(repeats.size()) - self_cp.ndimension();
+        for (int i = 0; i < diff; i++) {
+            self_cp = at::unsqueeze(self_cp, 0);
+        }
     }
-  }
 
-  auto output_size = op_infer::repeat_npu_output_size(self_cp, repeats);
-  at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
+    auto output_size = op_infer::repeat_npu_output_size(self_cp, repeats);
+    at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
 
-  repeat_out_npu_nocheck(result, self_cp, repeats);
-  return result;
+    repeat_out_npu_nocheck(result, self_cp, repeats);
+    return result;
 }
 } // namespace acl_op

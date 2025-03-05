@@ -23,26 +23,27 @@ at::Tensor decode_jpeg(
     const at::Tensor& self,
     at::IntArrayRef image_shape,
     int64_t channels,
-    bool try_recover_truncated) {
-  auto output_size = op_infer::decode_jpeg_npu_output_size(image_shape, channels);
-  at::Tensor result = npu_preparation::apply_tensor_with_format(
-      output_size,
-      self.options().dtype(at::kByte),
-      ACL_FORMAT_ND);
+    bool try_recover_truncated)
+{
+    auto output_size = op_infer::decode_jpeg_npu_output_size(image_shape, channels);
+    at::Tensor result = npu_preparation::apply_tensor_with_format(
+        output_size,
+        self.options().dtype(at::kByte),
+        ACL_FORMAT_ND);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("DecodeJpeg")
-      .Input(self, "", c10::nullopt, "string")
-      .Output(result)
-      .Attr("channels", channels)
-      .Attr("ratio", (int64_t)1)
-      .Attr("fancy_upscaling", (bool)true)
-      .Attr("try_recover_truncated", try_recover_truncated)
-      .Attr("acceptable_fraction", (float)1.0)
-      .Attr("dct_method", (string)"")
-      .Attr("dst_img_format", (string)"CHW")
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("DecodeJpeg")
+        .Input(self, "", c10::nullopt, "string")
+        .Output(result)
+        .Attr("channels", channels)
+        .Attr("ratio", (int64_t) 1)
+        .Attr("fancy_upscaling", (bool) true)
+        .Attr("try_recover_truncated", try_recover_truncated)
+        .Attr("acceptable_fraction", (float) 1.0)
+        .Attr("dct_method", (string) "")
+        .Attr("dst_img_format", (string) "CHW")
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace acl_op
