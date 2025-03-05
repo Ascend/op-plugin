@@ -7348,6 +7348,11 @@ custom:
         dweight_require_grad: 'grad_input_mask[1] ? true : false'
         dbias_require_grad: 'grad_input_mask[2] ? true : false'
       exec: aclnnGroupNormSwishGrad, grad, mean, rstd, input, weight, bias, num_groups, data_format, swish_scale_value, dweight_require_grad, dbias_require_grad, grad_x, grad_weight, grad_bias
+    
+  - func: npu_advance_step_flashattn(Tensor(a!) input_tokens, Tensor sampled_token_ids, Tensor(b!) input_positions, Tensor(c!) seq_lens, Tensor(d!) slot_mapping, Tensor block_tables, int num_seqs, int num_queries, int block_size) -> ()
+    op_api: all_version
+    gen_opapi:
+      exec: aclnnAdvanceStep
 
 symint:
   - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor

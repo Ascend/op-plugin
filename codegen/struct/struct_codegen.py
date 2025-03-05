@@ -44,7 +44,7 @@ ${return_type} ${func_name}(${args_str})
     ${check_or_apply_tensor}
     EXEC_NPU_CMD(${aclnnargs});
     ${infer_name}
-    return ${result};
+    return${result};
 }
 """)
 

@@ -214,14 +214,18 @@ class StructInfo:
             else:
                 return_argument = [result.name for result in results]
 
-            if len(return_argument) == 1:
-                return_args = return_argument[0]
-            elif func_kind == SchemaKind.out:
-                return_args = f"std::forward_as_tuple({', '.join(return_argument)})"
+            if len(return_argument) == 0:
+                return_args = ''
             else:
-                move_args = ', '.join(
-                    f'std::move({arg})' for arg in return_argument)
-                return_args = f'std::make_tuple({move_args})'
+                if len(return_argument) == 1:
+                    return_args = return_argument[0]
+                elif func_kind == SchemaKind.out:
+                    return_args = f"std::forward_as_tuple({', '.join(return_argument)})"
+                else:
+                    move_args = ', '.join(
+                        f'std::move({arg})' for arg in return_argument)
+                    return_args = f'std::make_tuple({move_args})'
+                return_args = ''.join([' ', return_args])
 
             if cmd_args_expand and func_kind == SchemaKind.functional:
                 aclnn_arguments = f"{aclnn_arguments}, {', '.join(return_argument)}"
