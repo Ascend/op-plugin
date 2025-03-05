@@ -27,7 +27,7 @@ void _npu_paged_attention_mla(const at::Tensor &query, const at::Tensor &key_cac
     pagedparam.qkScale = scale_value;
     pagedparam.kvHeadNum = num_kv_heads;
     auto mlavHeadSize = static_cast<uint32_t>(mla_vheadsize);
-    pagedparam.mlaVHeadSize = mla_vheadsize;
+    pagedparam.mlaVHeadSize = mlavHeadSize;
 
     pagedparam.maskType = PagedAttentionParam::UNDEFINED;
     pagedparam.batchRunStatusEnable = false;
