@@ -1,7 +1,7 @@
-import torch
 import numpy as np
-import torch_npu
 
+import torch
+import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 
 
@@ -83,6 +83,23 @@ class TestMultilabelMarginLoss(TestCase):
             c_npu = c_out.to("npu")
             npu_output = self.npu_op_exec_out(data_npu, target_npu, c_npu, reduction)
             self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_multilabel_margin_loss_out_2(self):
+        a = np.random.uniform(-0.001, 0.0, (97, 128)).astype(np.float32)
+        b = np.random.randint(-1, 64, (97, 128)).astype(np.int32)
+        out = np.random.uniform(-0.001, 0.0, (97, 128)).astype(np.float32)
+        a1 = torch.from_numpy(a)
+        b1 = torch.from_numpy(b).to(torch.int64)
+        out1 = torch.from_numpy(out)
+
+        a2 = torch.from_numpy(a).npu()
+        b2 = torch.from_numpy(b).npu()
+        out2 = torch.from_numpy(out).npu()
+
+        reduction = 2
+        output_data = self.cpu_op_exec_out(a1, b1, out1, reduction)
+        output_data_npu = self.npu_op_exec_out(a2, b2, out2, reduction)
+        self.assertRtolEqual(output_data, output_data_npu)
 
     def test_multilabel_margin_loss_float16_1(self):
         data = torch.Tensor([[0.1, 0.2, 0.4, 0.8], [0.1, 0.2, 0.4, 0.8]]).to(torch.float32)

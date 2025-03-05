@@ -66,21 +66,8 @@ at::Tensor& multilabel_margin_loss_out(
     const at::Tensor& target,
     int64_t reduction,
     at::Tensor& output) {
-  c10::SmallVector<int64_t, SIZE> output_size;
-  const auto ndims = self.dim();
-  int64_t nframe;
-  if (ndims <= 1) {
-    nframe = 1;
-  } else {
-    nframe = self.size(0);
-  }
-
-  if (reduction == at::Reduction::None) {
-    output_size = {nframe};
-  }
-  output = npu_preparation::apply_tensor(output_size, self.options(), self);
-  at::Tensor is_target = npu_preparation::apply_tensor(target);
-  return std::get<0>(at::multilabel_margin_loss_forward_out(output, is_target, self, target, reduction));
+    at::Tensor is_target = npu_preparation::apply_tensor(target);
+    return std::get<0>(at::multilabel_margin_loss_forward_out(output, is_target, self, target, reduction));
 }
 
 at::Tensor multilabel_margin_loss(
