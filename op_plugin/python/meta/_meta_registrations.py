@@ -465,6 +465,11 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
         else:
             local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
             a = global_bs_real * local_moe_expert_num
+    ep_recv_cnt_num = 0
+    if tp_world_size == 2:
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num * tp_world_size
+    else:
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num
 
     if scales is not None or quant_mode != 0:
         outDtype = torch.int8
@@ -473,7 +478,7 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
     dynamic_scales = x.new_empty(tuple([a * tp_world_size]), dtype=torch.float32)
     expand_idx = x.new_empty(tuple([n * k]), dtype=torch.int32)
     expert_token_nums = x.new_empty(tuple([local_moe_expert_num]), dtype=torch.int64)
-    ep_recv_counts = x.new_empty(tuple([moe_expert_num + shared_expert_rank_num]), dtype=torch.int32)
+    ep_recv_counts = x.new_empty(tuple([ep_recv_cnt_num]), dtype=torch.int32)
     tp_recv_counts = x.new_empty(tuple([tp_world_size]), dtype=torch.int32)
     return (expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts)
 
