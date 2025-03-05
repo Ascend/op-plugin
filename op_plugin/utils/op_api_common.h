@@ -27,12 +27,10 @@
 #include <acl/acl_base.h>
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 #include "op_plugin/utils/KernelNpuOutputDtype.h"
-#include "op_plugin/utils/OpConstants.h"
 #include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/core/npu/NPUStream.h"
 #include "torch_npu/csrc/framework/OpCommand.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
-#include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
 #include "torch_npu/csrc/core/npu/register/OptionsManager.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
@@ -74,6 +72,13 @@ extern thread_local char g_hash_buf[g_hash_buf_size];
 extern thread_local int g_hash_offset;
 extern const std::vector<std::string> g_custom_lib_path;
 extern const std::vector<std::string> g_default_custom_lib_path;
+
+namespace {
+constexpr int64_t MAX_DIM_NUM = 5;
+constexpr int64_t NCL_DIM_NUM = 3;
+constexpr int64_t NCHW_DIM_NUM = 4;
+constexpr int64_t NCDHW_DIM_NUM = 5;
+}
 
 std::string real_path(const std::string &path);
 bool checkOwner(string cusLibPath);
@@ -201,7 +206,7 @@ inline aclTensor *ConvertType(const at::Tensor &at_tensor)
         OPS_ERROR(ErrCode::TYPE));
     at::ScalarType scalar_data_type = at_tensor.scalar_type();
     aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(scalar_data_type);
-    c10::SmallVector<int64_t, 5> storageDims;
+    c10::SmallVector<int64_t, MAX_DIM_NUM> storageDims;
     // if acl_data_type is ACL_STRING, storageDims is empty.
     if (acl_data_type != ACL_STRING) {
         TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
@@ -212,13 +217,13 @@ inline aclTensor *ConvertType(const at::Tensor &at_tensor)
     const auto dimNum = at_tensor.sizes().size();
     aclFormat format = ACL_FORMAT_ND;
     switch (dimNum) {
-        case 3:
+        case NCL_DIM_NUM:
             format = ACL_FORMAT_NCL;
             break;
-        case 4:
+        case NCHW_DIM_NUM:
             format = ACL_FORMAT_NCHW;
             break;
-        case 5:
+        case NCDHW_DIM_NUM:
             format = ACL_FORMAT_NCDHW;
             break;
         default:
@@ -415,7 +420,7 @@ inline aclTensor *ConvertTypeV2(TensorStructPtr at_tensor)
     }
     at::ScalarType scalar_data_type = (*at_tensor).scalar_type;
     aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(scalar_data_type);
-    c10::SmallVector<int64_t, 5> storageDims;
+    c10::SmallVector<int64_t, MAX_DIM_NUM> storageDims;
     // if acl_data_type is ACL_STRING, storageDims is empty.
     if (acl_data_type != ACL_STRING) {
         TORCH_CHECK((*at_tensor).itemsize > 0, "the itemsize of tensor must be greater than 0.",
@@ -426,13 +431,13 @@ inline aclTensor *ConvertTypeV2(TensorStructPtr at_tensor)
     const auto dimNum = (*at_tensor).sizes.size();
     aclFormat format = ACL_FORMAT_ND;
     switch (dimNum) {
-        case 3:
+        case NCL_DIM_NUM:
             format = ACL_FORMAT_NCL;
             break;
-        case 4:
+        case NCHW_DIM_NUM:
             format = ACL_FORMAT_NCHW;
             break;
-        case 5:
+        case NCDHW_DIM_NUM:
             format = ACL_FORMAT_NCDHW;
             break;
         default:
@@ -938,7 +943,8 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
 
 template <typename ...Ts>
 bool hit_cache_v2(
-    aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const std::tuple<Ts...> &args, int* api_ret, bool deterministic_status)
+    aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const std::tuple<Ts...> &args, int* api_ret,
+    bool deterministic_status)
 {
     static const auto ptaFindExecCacheAddr = GetOpApiFuncAddr("PTAFindExecCache");
     static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");
@@ -1102,8 +1108,8 @@ auto DecodeDevice(Ts&... args) -> at::Device
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
-        auto deterministic_status = at::globalContext().deterministicAlgorithms();                                      \
-        auto acl_call = [copied_params, acl_stream, deterministic_status]()->int {                                      \
+        auto deterministic_status = at::globalContext().deterministicAlgorithms();                                     \
+        auto acl_call = [copied_params, acl_stream, deterministic_status]()->int {                                     \
             uint64_t workspace_size = 0;                                                                               \
             uint64_t *workspace_size_addr = &workspace_size;                                                           \
             aclOpExecutor *executor = nullptr;                                                                         \
