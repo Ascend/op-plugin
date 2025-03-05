@@ -24,35 +24,37 @@ at::Tensor threshold_backward_out_npu(
     at::Tensor& result,
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    at::Scalar threshold) {
-  at_npu::native::OpCommand cmd;
-  // The performance of the ReluGrad operator is better than that of ThresholdGradV2D.
-  // However, ReluGrad does not support the scenario where threshold is not 0.
-  if (op_plugin::utils::get_scalar_float_value(threshold) != 0) {
-    cmd.Name("ThresholdGradV2D")
-        .Input(grad_output)
-        .Input(self)
-        .Output(result)
-        .Attr("threshold", threshold)
-        .Run();
-  } else {
-    cmd.Name("ReluGrad")
-        .Input(grad_output)
-        .Input(self)
-        .Output(result)
-        .Run();
-  }
+    at::Scalar threshold)
+{
+    at_npu::native::OpCommand cmd;
+    // The performance of the ReluGrad operator is better than that of ThresholdGradV2D.
+    // However, ReluGrad does not support the scenario where threshold is not 0.
+    if (op_plugin::utils::get_scalar_float_value(threshold) != 0) {
+        cmd.Name("ThresholdGradV2D")
+            .Input(grad_output)
+            .Input(self)
+            .Output(result)
+            .Attr("threshold", threshold)
+            .Run();
+    } else {
+        cmd.Name("ReluGrad")
+            .Input(grad_output)
+            .Input(self)
+            .Output(result)
+            .Run();
+    }
 
-  return result;
+    return result;
 }
 } // namespace
 
 at::Tensor threshold_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    const at::Scalar& threshold) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  threshold_backward_out_npu(result, grad_output, self, threshold);
-  return result;
+    const at::Scalar& threshold)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    threshold_backward_out_npu(result, grad_output, self, threshold);
+    return result;
 }
 } // namespace acl_op

@@ -24,31 +24,33 @@ at::Tensor& fill_diagonal_out_npu(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Scalar& value,
-    bool wrap) {
-  float fill_value = op_plugin::utils::get_scalar_float_value(value);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("FillDiagonal")
-      .Input(self)
-      .Output(result)
-      .Attr("fill_value", fill_value)
-      .Attr("wrap", wrap)
-      .Run();
+    bool wrap)
+{
+    float fill_value = op_plugin::utils::get_scalar_float_value(value);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("FillDiagonal")
+        .Input(self)
+        .Output(result)
+        .Attr("fill_value", fill_value)
+        .Attr("wrap", wrap)
+        .Run();
 
-  return result;
+    return result;
 }
 
-at::Tensor& fill_diagonal_(at::Tensor& self, const at::Scalar& value, bool wrap) {
-  npu_preparation::CastBackToOriFormat(self);
+at::Tensor& fill_diagonal_(at::Tensor& self, const at::Scalar& value, bool wrap)
+{
+    npu_preparation::CastBackToOriFormat(self);
 
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    fill_diagonal_out_npu(contiguous_self, contiguous_self, value, wrap);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    fill_diagonal_out_npu(self, self, value, wrap);
-  }
+    if (!npu_utils::check_match(&self)) {
+        at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+        fill_diagonal_out_npu(contiguous_self, contiguous_self, value, wrap);
+        npu_utils::format_fresh_view(self, contiguous_self);
+    } else {
+        fill_diagonal_out_npu(self, self, value, wrap);
+    }
 
-  return self;
+    return self;
 }
 
 } // namespace acl_op
