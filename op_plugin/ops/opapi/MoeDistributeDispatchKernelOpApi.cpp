@@ -47,6 +47,7 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
     int64_t local_moe_expert_num = 0;
     int64_t global_bs_real = (global_bs == 0) ? (n * ep_world_size) : global_bs;
     int64_t a = 0;
+    int64_t ep_recv_cnt_num = 0;
     if (shared_front) {
         if (ep_rank_id < shared_expert_rank_num) {
             local_moe_expert_num =  1;
@@ -64,6 +65,11 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
             a = global_bs_real * local_moe_expert_num;
         }
     }
+    if (tp_world_size == DIM_TWO) {
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num * tp_world_size;
+    } else {
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num;
+    }
 
     auto output_dtype = (!scales.has_value() && quant_mode == 0) ? x.scalar_type() : at::kChar;
     char *group_ep_ptr = const_cast<char *>(group_ep.data());
@@ -74,7 +80,7 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
     at::Tensor expand_idx = npu_preparation::apply_tensor_without_format({n * k}, x.options().dtype(at::kInt));
 
     at::Tensor expert_token_nums = npu_preparation::apply_tensor_without_format({local_moe_expert_num}, x.options().dtype(at::kLong));
-    at::Tensor ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_world_size * local_moe_expert_num}, x.options().dtype(at::kInt));
+    at::Tensor ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));
     at::Tensor tp_recv_counts = npu_preparation::apply_tensor_without_format({tp_world_size}, x.options().dtype(at::kInt));
     EXEC_NPU_CMD(aclnnMoeDistributeDispatch, x, expert_ids, scales,
                  group_ep_ptr, ep_world_size, ep_rank_id,

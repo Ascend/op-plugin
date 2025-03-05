@@ -85,7 +85,7 @@ class TestMoeDistributeDispatch(TestCase):
         p2c = ctx.Queue(ep_world_size * tp_world_size_2)
         ps = []
 
-        for i in range(ep_world_size * tp_wotp_world_size_2rld_size):
+        for i in range(ep_world_size * tp_world_size_2):
             p = ctx.Process(
                 target=f,
                 args=(i, [expt_token_list, x1_list, x2_list, topk1_list, topk2_list, ep_world_size, tp_world_size,
@@ -105,7 +105,7 @@ class TestMoeDistributeDispatch(TestCase):
             p.join()
 
     def _construct_excepted_result(self, x1_list, x2_list, topk1_list, topk2_list, bs, h, k, globalBS,
-                                   sharedExpertRankNum, moeExpertNum, ep_world_size):
+                                   sharedExpertRankNum, moeExpertNum, ep_world_size, tp_world_size):
         col_idx = torch.arange(0, globalBS * k, dtype=torch.int32)
         row_idx = col_idx.view(k, -1).permute(1, 0)
         row_idx = row_idx.reshape([globalBS, k]).contiguous()
@@ -189,7 +189,7 @@ class TestMoeDistributeDispatch(TestCase):
         world_size = ep_world_size * tp_world_size
         bs = 8
         h = 7168
-        k = 7
+        k = 4
         shared_expert_rank_num_1 = 1
         moe_expert_num_7 = 7
         shared_expert_rank_num_0 = 0
@@ -215,6 +215,10 @@ class TestMoeDistributeDispatch(TestCase):
                                                             global_bs, shared_expert_rank_num_1, moe_expert_num_7, ep_world_size, tp_world_size)
         expt_out_list_2, expt_token_list_2 = self._construct_excepted_result(x1_list, x2_list, topk1_list, topk2_list, bs, h, k,
                                                             global_bs, shared_expert_rank_num_0, moe_expert_num_8, ep_world_size, tp_world_size)
+        expt_out_list_3, expt_token_list_3 = self._construct_excepted_result(x1_list, x2_list, topk1_list, topk2_list, bs, h, k,
+                                                            global_bs, shared_expert_rank_num_1, moe_expert_num_7, ep_world_size, tp_world_size_1)
+        expt_out_list_4, expt_token_list_4 = self._construct_excepted_result(x1_list, x2_list, topk1_list, topk2_list, bs, h, k,
+                                                            global_bs, shared_expert_rank_num_0, moe_expert_num_8, ep_world_size, tp_world_size_1)
 
         self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch,
                 TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_1, expt_token_list_1, x1_list, x2_list, topk1_list,
@@ -222,14 +226,12 @@ class TestMoeDistributeDispatch(TestCase):
         self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch,
                 TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_2, expt_token_list_2, x1_list, x2_list, topk1_list,
                 topk2_list, ep_world_size, tp_world_size, global_bs, shared_expert_rank_num_0, moe_expert_num_8, h])
-        
-        expt_out_list_3, expt_token_list_3 = self._construct_excepted_result(x1_list, x2_list, topk1_list, topk2_list, bs, h, k,
-                                                    global_bs, shared_expert_rank_num_1, moe_expert_num_7, ep_world_size, tp_world_size_1)
         self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch,
                 TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_3, expt_token_list_3, x1_list, x2_list, topk1_list,
                 topk2_list, ep_world_size, tp_world_size_1, global_bs, shared_expert_rank_num_1, moe_expert_num_7, h])
-
-
+        self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch,
+                TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_4, expt_token_list_4, x1_list, x2_list, topk1_list,
+                topk2_list, ep_world_size, tp_world_size_1, global_bs, shared_expert_rank_num_0, moe_expert_num_8, h])
 
 if __name__ == '__main__':
     run_tests()
