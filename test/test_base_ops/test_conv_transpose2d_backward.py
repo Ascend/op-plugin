@@ -76,21 +76,34 @@ class TestConvTranspose2dBackward(TestCase):
         torch.npu.conv.allow_hf32 = False
 
     def test_conv_transpose2d_abnormal_input(self):
-        npu_input = torch.randn(1, 640, 480).npu()
-        output1 = nn.AvgPool2d(kernel_size=4, stride=4)(npu_input)
-        output2 = nn.Sigmoid()((output1) + (torch.ones_like(output1) * (-0.5)))
+        input1 = torch.randn(1, 320, 8, 8).npu().half()
+        m = torch.nn.ConvTranspose2d(in_channels=1, out_channels=1, kernel_size=2, stride=2).npu()
         with self.assertRaises(RuntimeError) as cm:
-            output3 = nn.ConvTranspose2d(in_channels=1, out_channels=1, kernel_size=2, stride=2)(output2)
+            output1 = m(input1)
         exception = cm.exception
-        self.assertTrue("Input type (npuFloatType) and weight type (torch.FloatTensor) should be the same" in str(exception))
+        self.assertTrue("Input type (npuHalfType) and weight type (npuFloatType) should be the same" in str(exception))
 
         inputs = torch.randn(1, 4, 5, 5).npu()
         weights = torch.randn(4, 8, 3, 3).npu()
-        bias = torch.randn(8).half()
+        bias = torch.randn(8).npu().half()
         with self.assertRaises(RuntimeError) as cm:
-            output = F.conv_transpose2d(inputs, weights, padding=1, bias=bias)
+            output2 = F.conv_transpose2d(inputs, weights, padding=1, bias=bias)
         exception = cm.exception
-        self.assertTrue("Input type (npuFloatType) and bias type (torch.HalfTensor) should be the same" in str(exception))
+        self.assertTrue("Input type (npuFloatType) and bias type (npuHalfType) should be the same" in str(exception))
+
+    def test_conv_transpose2d_3D_input(self):
+        torch.npu.config.allow_internal_format = True
+        device = torch.device('npu') 
+        cpu_input = torch.randn(1, 640, 480)
+        npu_input = cpu_input.to(device)
+
+        npu_input = torch.nn.AvgPool2d(kernel_size=4, stride=4).to(device)(npu_input)
+        npu_input = torch.nn.Sigmoid().to(device)((npu_input + (torch.ones_like(npu_input).to(device) * (- 0.5))))
+
+        with self.assertRaises(RuntimeError) as cm:
+            npu_output = torch.nn.ConvTranspose2d(in_channels=1, out_channels=1, kernel_size=2, stride=2).to(device)(npu_input)
+        exception = cm.exception
+        self.assertTrue("Currently the private format does not support 3D input, you can try torch.npu.config.allow_internal_format = False to resolve this functional bug" in str(exception))
 
 
 if __name__ == "__main__":

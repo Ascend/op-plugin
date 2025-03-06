@@ -210,6 +210,9 @@ at::Tensor convolution_transpose_kernel_nocheck(const at::Tensor &input, const a
                                                 at::IntArrayRef dilation, int64_t groups)
 {
     int64_t dim = input.ndimension();
+    TORCH_CHECK(dim != 3, " Currently the private format does not support 3D input,"
+        " you can try torch.npu.config.allow_internal_format = False to resolve this functional bug"
+        + OPS_ERROR(ErrCode::NOT_SUPPORT));
     at::Tensor output;
     if (dim == 4) {
         output = acl_op::npu_conv_transpose2d(input, weight, bias, padding, output_padding, stride, dilation, groups);
