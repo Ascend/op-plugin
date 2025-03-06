@@ -59,6 +59,7 @@ def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_d
 
     return (query, query_rope, kv_cache_out, kr_cache_out)
 
+
 if "2.1" in torch.__version__:
     @impl(m, "npu_prompt_flash_attention")
     def npu_prompt_flash_attention_forward(query, key, value, *, padding_mask=None, atten_mask=None, pse_shift=None, actual_seq_lengths=None, deq_scale1=None, quant_scale1=None, deq_scale2=None, quant_scale2=None, quant_offset2=None, num_heads=1, scale_value=1.0, pre_tokens=2147473647, next_tokens=0, input_layout="BSH", num_key_value_heads=0, actual_seq_lengths_kv=None, sparse_mode=0):
@@ -77,50 +78,6 @@ if "2.1" in torch.__version__:
             return torch.empty_like(tmp_out, dtype=torch.half)
         else:
             return torch.empty_like(tmp_out, dtype=query.dtype)
-
-
-    @impl(m, "npu_mm_reduce_scatter_base")
-    def npu_mm_reduce_scatter_base_meta(self, x2, hcom, world_size, reduce_op='sum',
-                                        bias=None, comm_turn=0):
-        if world_size <= 0:
-            world_size = 1
-        out_m = math.floor(self.size(0) / world_size)
-        return self.new_empty(out_m, x2.size(1))
-
-
-    @impl(m, "npu_all_gather_base_mm")
-    def npu_all_gather_base_mm_meta(self, x2, hcom, world_size, bias=None,
-                                    gather_index=0, gather_output=True, comm_turn=0):
-        if world_size <= 0:
-            world_size = 1
-        # out_gather_mm
-        out_x = self.size(0)
-        if gather_index == 0:
-            out_x = self.size(0) * world_size
-        out_y = x2.size(1)
-        # out_gather
-        out_gather_x = x2.size(0) * world_size
-        out_gather_y = x2.size(1)
-        if gather_index == 0:
-            out_gather_x = self.size(0) * world_size
-            out_gather_y = self.size(1)
-        if gather_output:
-            return (self.new_empty((out_x, out_y)), self.new_empty(out_gather_x, out_gather_y))
-        else:
-            return (self.new_empty((out_x, out_y)), self.new_empty(0))
-
-
-    @impl(m, "npu_moe_init_routing")
-    def npu_moe_init_routing_meta(x, row_idx, expert_idx, active_num=99):
-        n = x.size(0)
-        h = x.size(1)
-        k = row_idx.size(1)
-        active_num = min(n, active_num)
-        expanded_x_dim_list = [active_num * k, h]
-        expanded_row_idx_dim_list = [n * k]
-        expanded_expert_idx_dim_list = [n * k]
-        return (x.new_empty(tuple(expanded_x_dim_list)), row_idx.new_empty(tuple(expanded_row_idx_dim_list)), row_idx.new_empty(tuple(expanded_row_idx_dim_list)))
-
 else:
     @impl(m, "npu_prompt_flash_attention")
     def npu_prompt_flash_attention_forward(query, key, value, *, padding_mask=None, atten_mask=None, pse_shift=None, actual_seq_lengths=None, deq_scale1=None, quant_scale1=None, deq_scale2=None, quant_scale2=None, quant_offset2=None, num_heads=1, scale_value=1.0, pre_tokens=2147473647, next_tokens=0, input_layout="BSH", num_key_value_heads=0, actual_seq_lengths_kv=None, sparse_mode=0):
@@ -130,6 +87,49 @@ else:
             return torch.empty_like(query, dtype=torch.half)
         else:
             return torch.empty_like(query, dtype=query.dtype)
+
+
+@impl(m, "npu_mm_reduce_scatter_base")
+def npu_mm_reduce_scatter_base_meta(self, x2, hcom, world_size, reduce_op='sum',
+                                    bias=None, comm_turn=0):
+    if world_size <= 0:
+        world_size = 1
+    out_m = math.floor(self.size(0) / world_size)
+    return self.new_empty(out_m, x2.size(1))
+
+
+@impl(m, "npu_all_gather_base_mm")
+def npu_all_gather_base_mm_meta(self, x2, hcom, world_size, bias=None,
+                                gather_index=0, gather_output=True, comm_turn=0):
+    if world_size <= 0:
+        world_size = 1
+    # out_gather_mm
+    out_x = self.size(0)
+    if gather_index == 0:
+        out_x = self.size(0) * world_size
+    out_y = x2.size(1)
+    # out_gather
+    out_gather_x = x2.size(0) * world_size
+    out_gather_y = x2.size(1)
+    if gather_index == 0:
+        out_gather_x = self.size(0) * world_size
+        out_gather_y = self.size(1)
+    if gather_output:
+        return (self.new_empty((out_x, out_y)), self.new_empty(out_gather_x, out_gather_y))
+    else:
+        return (self.new_empty((out_x, out_y)), self.new_empty(0))
+
+
+@impl(m, "npu_moe_init_routing")
+def npu_moe_init_routing_meta(x, row_idx, expert_idx, active_num=99):
+    n = x.size(0)
+    h = x.size(1)
+    k = row_idx.size(1)
+    active_num = min(n, active_num)
+    expanded_x_dim_list = [active_num * k, h]
+    expanded_row_idx_dim_list = [n * k]
+    expanded_expert_idx_dim_list = [n * k]
+    return (x.new_empty(tuple(expanded_x_dim_list)), row_idx.new_empty(tuple(expanded_row_idx_dim_list)), row_idx.new_empty(tuple(expanded_row_idx_dim_list)))
 
 
 @impl(m, "npu_moe_gating_top_k_softmax")
