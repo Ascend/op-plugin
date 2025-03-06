@@ -27,7 +27,7 @@ at::Tensor &upsample_linear1d_out(const at::Tensor &self, at::IntArrayRef output
     DO_COMPATIBILITY(aclnnUpsampleLinear1d,
                      acl_op::upsample_linear1d_out(self, output_size, align_corners, scales, result));
 
-    auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size, align_corners, scales);
+    auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
     npu_preparation::check_tensor({self}, result, self, outsize);
     double scales_h_attr = scales.value_or(DEFAULT_SCALES);
 
@@ -40,7 +40,7 @@ at::Tensor upsample_linear1d(const at::Tensor &self, at::IntArrayRef output_size
 {
     DO_COMPATIBILITY(aclnnUpsampleLinear1d, acl_op::upsample_linear1d(self, output_size, align_corners, scales));
 
-    auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size, align_corners, scales);
+    auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
     double scales_h_attr = scales.value_or(DEFAULT_SCALES);
 
     at::Tensor result = npu_preparation::apply_tensor_without_format(outsize, self.options());
@@ -57,7 +57,7 @@ at::Tensor upsample_linear1d(const at::Tensor &self, c10::optional<at::IntArrayR
     auto osize = op_infer::upsample_infershape_with_scale(self.sizes(), output_size, scale_factors);
     auto scales = op_plugin::utils::get_scale_value(scale_factors, 0);
     auto outsize = at::IntArrayRef(osize);
-    auto out_size = op_infer::upsample_linear1d_npu_output_size(self, outsize, align_corners, scales);
+    auto out_size = op_infer::upsample_linear1d_npu_output_size(self, outsize);
     constexpr int DEFAULT_SCALES = -1;
     double scales_h_attr = scales.value_or(DEFAULT_SCALES);
     at::Tensor result = npu_preparation::apply_tensor_without_format(out_size, self.options());

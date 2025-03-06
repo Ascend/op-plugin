@@ -30,7 +30,7 @@ at::Tensor &upsample_nearest_exact1d_out_slow(const at::Tensor &self, at::IntArr
 at::Tensor upsample_nearest_exact1d_slow(const at::Tensor &self, at::IntArrayRef output_size,
     c10::optional<double> scales)
 {
-    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size, false, scales);
+    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
     at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
 
     at::Tensor result_slow = at::_upsample_nearest_exact1d(self.cpu(), output_size, scales);
@@ -43,7 +43,7 @@ at::Tensor &_upsample_nearest_exact1d_out(const at::Tensor &self, at::IntArrayRe
 {
     DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_out_slow(self, output_size, scales, result));
 
-    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size, false, scales);
+    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
     npu_preparation::check_tensor({self}, result, self, outputSize);
     double scalesValue = scales.value_or(0);
 
@@ -56,7 +56,7 @@ at::Tensor _upsample_nearest_exact1d(const at::Tensor &self, at::IntArrayRef out
     DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_slow(self, output_size, scales));
 
     double scalesValue = scales.value_or(0);
-    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size, false, scales);
+    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
     at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
 
     EXEC_NPU_CMD(aclnnUpsampleNearestExact1d, self, output_size, scalesValue,  result);

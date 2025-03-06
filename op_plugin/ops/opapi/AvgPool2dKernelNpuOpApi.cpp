@@ -64,8 +64,7 @@ small_vector calc_output_size_with_generalized_attrs(const at::Tensor &self, at:
         OPS_ERROR(ErrCode::VALUE));
     at::IntArrayRef paddings = at::IntArrayRef(padding_sizes);
 
-    auto output_size = op_infer::avg_pool2d_npu_output_size(self, kernels, strides, paddings, ceil_mode,
-                                                            count_include_pad, divisor_override);
+    auto output_size = op_infer::avg_pool2d_npu_output_size(self, kernels, strides, paddings, ceil_mode);
 
     return output_size;
 }

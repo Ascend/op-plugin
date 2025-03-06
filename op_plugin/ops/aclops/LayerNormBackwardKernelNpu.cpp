@@ -75,7 +75,7 @@ tensor_list3 layer_norm_backward_npu_support(const at::Tensor &d_y, const at::Te
         gamma_temp.resize_(tmp_size);
     }
 
-    auto output_sizes = op_infer::layer_norm_backward_npu_output_size(d_y, X, mean, variance, gamma_temp, M, N);
+    auto output_sizes = op_infer::layer_norm_backward_npu_output_size(X, gamma_temp);
 
     if (M <= 0) {
         d_x = at::native::empty_like(X, c10::nullopt /* dtype */, c10::nullopt /* layout */, c10::nullopt /* device */,

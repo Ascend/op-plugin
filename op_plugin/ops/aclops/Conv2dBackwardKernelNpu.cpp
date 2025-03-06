@@ -170,7 +170,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(const at::Ten
                                                                    int64_t groups, std::array<bool, 3> grad_input_mask)
 {
     auto output_sizes =
-        op_infer::conv2d_backward_npu_output_size(input, grad, weight, stride, padding, dilation, groups);
+        op_infer::conv2d_backward_npu_output_size(input, grad, weight);
 
     at::Tensor grad_input;
     at::Tensor grad_weight;

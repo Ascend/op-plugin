@@ -33,7 +33,7 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p)
         TORCH_CHECK(p <= std::numeric_limits<float>::max(), "p dose not support float64 currently.", OPS_ERROR(ErrCode::TYPE));
         p_float = static_cast<float>(p);
     }
-    auto output_size = op_infer::pdist_npu_output_size(self, p_float);
+    auto output_size = op_infer::pdist_npu_output_size(self);
     at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
     EXEC_NPU_CMD(aclnnPdist, self, p_float, result);
     return result;

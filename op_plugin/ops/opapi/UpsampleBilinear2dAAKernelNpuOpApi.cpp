@@ -58,7 +58,7 @@ at::Tensor upsample_bilinear2d_aa_slow(const at::Tensor &self, at::IntArrayRef o
 {
     auto scalar_type = self.scalar_type();
     auto outputSize =
-        op_infer::upsample_bilinear2d_npu_output_size(self, output_size, align_corners, scales_h, scales_w);
+        op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
     at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
     at::Tensor self_slow = self.cpu().to(at::ScalarType::Float);
 
@@ -74,7 +74,7 @@ at::Tensor &_upsample_bilinear2d_aa_out(const at::Tensor &self, at::IntArrayRef 
         upsample_bilinear2d_aa_out_slow(self, output_size, align_corners, scales_h, scales_w, result));
 
     auto outputSize =
-        op_infer::upsample_bilinear2d_npu_output_size(self, output_size, align_corners, scales_h, scales_w);
+        op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
     npu_preparation::check_tensor({self}, result, self, outputSize);
     double scales_h_attr = scales_h.value_or(0);
     double scales_w_attr = scales_w.value_or(0);
@@ -94,7 +94,7 @@ at::Tensor _upsample_bilinear2d_aa(const at::Tensor &self, at::IntArrayRef outpu
     double scales_h_attr = scales_h.value_or(0);
     double scales_w_attr = scales_w.value_or(0);
     auto outputSize =
-        op_infer::upsample_bilinear2d_npu_output_size(self, output_size, align_corners, scales_h, scales_w);
+        op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
     at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
     if (!checkBilinearUseFast(self, output_size, align_corners, scales_h_attr, scales_w_attr, result)) {
         return upsample_bilinear2d_aa_slow(self, output_size, align_corners, scales_h, scales_w);

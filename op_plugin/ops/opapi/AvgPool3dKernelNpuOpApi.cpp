@@ -66,8 +66,7 @@ small_vector calc_avg_pool3d_output_size(const at::Tensor &self, at::IntArrayRef
         OPS_ERROR(ErrCode::VALUE));
     at::IntArrayRef paddings = at::IntArrayRef(padding_sizes);
 
-    auto output_size = op_infer::avg_pool3d_npu_output_size(self, kernels, strides, paddings, ceil_mode,
-                                                            count_include_pad, divisor_override);
+    auto output_size = op_infer::avg_pool3d_npu_output_size(self, kernels, strides, paddings, ceil_mode);
 
     return output_size;
 }

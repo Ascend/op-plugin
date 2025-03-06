@@ -39,7 +39,7 @@ std::tuple<at::Tensor&, at::Tensor&> topk_out(
         return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
     }
     DO_COMPATIBILITY(aclnnTopk, acl_op::topk_out(self, k, dim, largest, sorted, values, indices));
-    auto output_size = op_infer::topk_npu_output_size(self, k, dim, largest, sorted);
+    auto output_size = op_infer::topk_npu_output_size(self, k, dim);
     npu_preparation::check_tensor({self}, values, self.scalar_type(), output_size);
     npu_preparation::check_tensor({self}, indices, at::ScalarType::Long, output_size);
 
@@ -55,7 +55,7 @@ std::tuple<at::Tensor, at::Tensor> topk(
     bool sorted)
 {
     DO_COMPATIBILITY(aclnnTopk, acl_op::topk(self, k, dim, largest, sorted));
-    auto output_size = op_infer::topk_npu_output_size(self, k, dim, largest, sorted);
+    auto output_size = op_infer::topk_npu_output_size(self, k, dim);
     at::Tensor values;
     at::Tensor indices;
     if (self.dim() == 0 && k == 0) {

@@ -49,8 +49,7 @@ at::Tensor upsample_bilinear2d_backward(
     DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackward,
                      acl_op::upsample_bilinear2d_backward(grad_output, output_size, input_size,
                                                           align_corners, scales_h, scales_w));
-    auto outputSize = op_infer::upsample_bilinear2d_backward_npu_output_size(
-        grad_output, output_size, input_size, align_corners, scales_h, scales_w);
+    auto outputSize = input_size;
     at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, outputSize);
     double scales_h_attr = scales_h.value_or(0);
     double scales_w_attr = scales_w.value_or(0);
@@ -77,8 +76,7 @@ at::Tensor upsample_bilinear2d_backward(
     double scales_w_attr = scales_w.value_or(0);
 
     auto outputsize = at::IntArrayRef(osize);
-    auto outputSize = op_infer::upsample_bilinear2d_backward_npu_output_size(
-        grad_output, osize, input_size, align_corners, scales_h, scales_w);
+    auto outputSize = input_size;
     at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, outputSize);
 
     EXEC_NPU_CMD(aclnnUpsampleBilinear2dBackward, grad_output, outputsize, input_size, align_corners,

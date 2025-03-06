@@ -126,7 +126,7 @@ tensor_list slow_conv_transpose2d_backward(const at::Tensor &grad_output, const 
 {
     auto flag = 2;
     auto output_sizes = op_infer::slow_conv_transpose2d_backward_npu_output_size(
-        grad_output, self, weight, kernel_size, stride, padding, output_padding, dilation);
+        grad_output, self, weight);
     at::Tensor grad_input;
     at::Tensor grad_weight;
     at::Tensor grad_bias;

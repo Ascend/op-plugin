@@ -29,7 +29,7 @@ at::Tensor& upsample_bilinear2d_out(const at::Tensor& self_ex, at::IntArrayRef o
     at::Tensor self = self_ex;
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Double, "upsample_binlinear_2d not support torch.fp64 dtypes",
                 OPS_ERROR(ErrCode::TYPE));
-    auto outputSize = op_infer::upsample_bilinear2d_npu_output_size(self, output_size, align_corners, scales_h, scales_w);
+    auto outputSize = op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
     npu_preparation::check_tensor({self}, result, self, outputSize);
     double scales_h_attr = scales_h.value_or(1);
     double scales_w_attr = scales_w.value_or(1);
@@ -49,7 +49,7 @@ at::Tensor upsample_bilinear2d(const at::Tensor& self_ex, at::IntArrayRef output
                 OPS_ERROR(ErrCode::TYPE));
     double scales_h_attr = scales_h.value_or(1);
     double scales_w_attr = scales_w.value_or(1);
-    auto outputSize = op_infer::upsample_bilinear2d_npu_output_size(self, output_size, align_corners, scales_h, scales_w);
+    auto outputSize = op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
     at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
 
     EXEC_NPU_CMD(aclnnUpsampleBilinear2d, self, output_size, align_corners, scales_h_attr, scales_w_attr, result);
@@ -73,7 +73,7 @@ at::Tensor upsample_bilinear2d(
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Double, "upsample_binlinear_2d not support torch.fp64 dtypes",
                 OPS_ERROR(ErrCode::TYPE));
 
-    auto output_osize = op_infer::upsample_bilinear2d_npu_output_size(self, osize, align_corners, scales_h, scales_w);
+    auto output_osize = op_infer::upsample_bilinear2d_npu_output_size(self, osize);
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_osize, self.options());
 
     auto output_osize2 = at::IntArrayRef(osize);

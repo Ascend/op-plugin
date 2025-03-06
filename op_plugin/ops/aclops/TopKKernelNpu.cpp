@@ -92,7 +92,7 @@ std::tuple<at::Tensor&, at::Tensor&> topk_out(
     at::Tensor& values,
     at::Tensor& indices) {
   at::Tensor self_cp = npu_preparation::CastBackToOriFormat(self);
-  auto output_size = op_infer::topk_npu_output_size(self_cp, k, dim, largest, sorted);
+  auto output_size = op_infer::topk_npu_output_size(self_cp, k, dim);
   npu_preparation::CheckOut(
       {self},
       values,
@@ -134,7 +134,7 @@ std::tuple<at::Tensor, at::Tensor> topk(
     bool largest,
     bool sorted) {
   at::Tensor self_cp = npu_preparation::CastBackToOriFormat(self);
-  auto output_size = op_infer::topk_npu_output_size(self_cp, k, dim, largest, sorted);
+  auto output_size = op_infer::topk_npu_output_size(self_cp, k, dim);
   at::Tensor values = npu_preparation::apply_tensor(self_cp, output_size);
   at::Tensor indices = npu_preparation::apply_tensor_with_format(
       output_size, self_cp.options().dtype(at::kInt), ACL_FORMAT_ND);

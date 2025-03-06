@@ -149,7 +149,7 @@ at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::
 at::Tensor addmm(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
                  const at::Scalar &alpha)
 {
-    auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
+    auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2);
     at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
 
     acl_op::addmm_out(self, mat1, mat2, beta, alpha, result);

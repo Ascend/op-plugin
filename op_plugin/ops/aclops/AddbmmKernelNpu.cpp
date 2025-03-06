@@ -86,7 +86,7 @@ at::Tensor addbmm(
     const at::Scalar& beta,
     const at::Scalar& alpha)
 {
-    auto output_size = op_infer::addbmm_npu_output_size(self, batch1, batch2, beta, alpha);
+    auto output_size = op_infer::addbmm_npu_output_size(self, batch1, batch2);
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);
     acl_op::addbmm_out(self, batch1, batch2, beta, alpha, result);
     return result;

@@ -39,8 +39,7 @@ std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(const at::Tensor &i
     at::Tensor bias_fp32 = (bias.defined() && bias.dtype() != at::kFloat) ?
                                at_npu::native::custom_ops::npu_dtype_cast(bias, at::kFloat) :
                                bias;
-    auto output_size = op_infer::deformable_conv2d_npu_output_size(
-        input, weight, offset, bias, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
+    auto output_size = op_infer::deformable_conv2d_npu_output_size(input, offset, kernel_size);
     TORCH_CHECK(output_size.size() >= 4,
         "output_size has to contain more than 4 elements, but got Tensor of dimension ", output_size.size(),
         OPS_ERROR(ErrCode::PARAM));

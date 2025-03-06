@@ -44,8 +44,7 @@ at::Tensor &avg_pool2d_backward_out(const at::Tensor &grad_output, const at::Ten
                                                                              padding, ceil_mode, count_include_pad, divisor_override, grad_input));
     TORCH_CHECK(!divisor_override.has_value() || divisor_override.value() != 0, "divisor must be not zero", OPS_ERROR(ErrCode::VALUE));
 
-    auto input_size = op_infer::avg_pool2d_backward_npu_output_size(grad_output, self, kernel_size, stride, padding, ceil_mode,
-                                                                    count_include_pad, divisor_override);
+    auto input_size = op_infer::avg_pool2d_backward_npu_output_size(self);
     npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
     avg_pool2d_backward_out_npu_nocheck_api(grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
                                             divisor_override, grad_input);
@@ -63,8 +62,7 @@ at::Tensor avg_pool2d_backward(const at::Tensor &grad_output, const at::Tensor &
     TORCH_CHECK(!divisor_override.has_value() || divisor_override.value() != 0, "divisor must be not zero", OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(self.dim() == 3 || self.dim() == 4, "tensor self's dimension must be 3 or 4", OPS_ERROR(ErrCode::VALUE));
 
-    auto input_size = op_infer::avg_pool2d_backward_npu_output_size(grad_output, self, kernel_size, stride, padding, ceil_mode,
-                                                                    count_include_pad, divisor_override);
+    auto input_size = op_infer::avg_pool2d_backward_npu_output_size(self);
     at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
     avg_pool2d_backward_out_npu_nocheck_api(grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
                                             divisor_override, grad_input);

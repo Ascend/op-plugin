@@ -90,7 +90,7 @@ at::Tensor& upsample_linear1d_out(
     c10::optional<double> scales,
     at::Tensor& result) {
   auto output_sizes = op_infer::upsample_linear1d_npu_output_size(
-      self, output_size, align_corners, scales);
+      self, output_size);
 
   npu_preparation::CheckOut(
       {self},
@@ -115,7 +115,7 @@ at::Tensor upsample_linear1d(
     bool align_corners,
     c10::optional<double> scales) {
   auto output_sizes = op_infer::upsample_linear1d_npu_output_size(
-      self, output_size, align_corners, scales);
+      self, output_size);
   at::Tensor result = npu_preparation::apply_tensor(self, output_sizes);
 
   upsample_linear1d_out_nocheck(result, self, output_size, align_corners, scales);

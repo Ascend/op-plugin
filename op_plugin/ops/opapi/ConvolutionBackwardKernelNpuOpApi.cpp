@@ -71,7 +71,7 @@ static tensor_list3 _calc_convolution_backward(const at::Tensor &grad_output, co
     output_padding = at::IntArrayRef(output_padding_expand);
 
     auto outputSizes =
-        op_infer::conv2d_backward_npu_output_size(input, grad_output, weight, stride, padding, dilation, groups);
+        op_infer::conv2d_backward_npu_output_size(input, grad_output, weight);
 
     // construct the output tensor of the NPU
     at::Tensor gradInput;
@@ -121,7 +121,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> conv_tbc_backward(const at::Tenso
     std::array<bool, 3> grad_input_mask = {1, 1, 1};
     // calculate outputSizes of every output
     auto outputSizes =
-        op_infer::conv2d_backward_tbc_output_size(input, self, weight, stride, padding, dilation, groups);
+        op_infer::conv2d_backward_tbc_output_size(input, self, weight);
 
     // construct the output tensor of the NPU
     at::Tensor gradInput = npu_preparation::apply_tensor_without_format(std::get<0>(outputSizes), input.options());
@@ -203,7 +203,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _slow_conv2d_backward(const at::T
     }
 
     auto outputSizes =
-        op_infer::conv2d_backward_npu_output_size(input, grad_output, weight, stride, padding, dilation, groups);
+        op_infer::conv2d_backward_npu_output_size(input, grad_output, weight);
 
     // construct the output tensor of the NPU
     at::Tensor gradInput;
@@ -269,8 +269,7 @@ static std::tuple<at::Tensor, at::Tensor, at::Tensor> _calc_convolution_backward
                                                                                         dim);
     output_padding = at::IntArrayRef(output_padding_expand);
 
-    auto outputSizes = op_infer::conv2d_backward_npu_output_size(input, grad_output, weight, stride, padding, dilation,
-                                                                 groups);
+    auto outputSizes = op_infer::conv2d_backward_npu_output_size(input, grad_output, weight);
 
     // construct the output tensor of the NPU
     at::Tensor gradInput;

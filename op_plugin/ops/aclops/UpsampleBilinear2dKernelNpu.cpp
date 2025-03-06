@@ -59,7 +59,7 @@ at::Tensor& upsample_bilinear2d_out(
     self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
   auto op_infer_output_size = op_infer::upsample_bilinear2d_npu_output_size(
-      self, output_size, align_corners, scales_h, scales_w);
+      self, output_size);
 
   npu_preparation::CheckOut(
       {self},
@@ -89,7 +89,7 @@ at::Tensor upsample_bilinear2d(
     self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
   }
   auto op_infer_output_size = op_infer::upsample_bilinear2d_npu_output_size(
-      self, output_size, align_corners, scales_h, scales_w);
+      self, output_size);
   at::Tensor result = npu_preparation::apply_tensor(self, op_infer_output_size);
 
   upsample_bilinear2d_out_nocheck(

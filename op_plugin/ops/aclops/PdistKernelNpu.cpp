@@ -52,7 +52,7 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p)
                 p <= std::numeric_limits<float>::max(), "npu dose not support float64" + OPS_ERROR(ErrCode::TYPE));
             p_float = static_cast<float>(p);
         }
-        auto output_size = op_infer::pdist_npu_output_size(self, p_float);
+        auto output_size = op_infer::pdist_npu_output_size(self);
         result = npu_preparation::apply_tensor(self, output_size);
         if (self.size(1) == 0) {
             acl_op::fill_(result, 0);

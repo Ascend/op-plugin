@@ -68,7 +68,7 @@ at::Tensor npu_conv_transpose2d(
     int64_t groups) {
   const at::Tensor& bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
   auto output_size = op_infer::conv_transpose2d_npu_output_size(
-      input, weight, bias, padding, output_padding, stride, dilation, groups);
+      input, weight, padding, output_padding, stride, dilation, groups);
   int64_t result_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
   at::Tensor result =
       npu_preparation::apply_tensor_with_format(output_size, input.options(), result_format);
