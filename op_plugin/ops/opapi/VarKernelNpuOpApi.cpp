@@ -87,7 +87,8 @@ at::Tensor& var_out(
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
     bool keepdim,
-    at::Tensor& result) {
+    at::Tensor& result)
+{
     DO_COMPATIBILITY(aclnnVarCorrection, acl_op::var_out(self, dim, correction, keepdim, result));
     c10::SmallVector<int64_t, op_infer::SIZE> real_dim = {};
     if (dim.has_value()) {
@@ -111,7 +112,8 @@ at::Tensor var(
     const at::Tensor & self,
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
-    bool keepdim) {
+    bool keepdim)
+{
     DO_COMPATIBILITY(aclnnVarCorrection, acl_op::var(self, dim, correction, keepdim));
     c10::SmallVector<int64_t, op_infer::SIZE> real_dim = {};
     if (dim.has_value()) {
@@ -136,7 +138,8 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
-    bool keepdim) {
+    bool keepdim)
+{
     c10::SmallVector<int64_t, N> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
     if (dim.has_value()) {
         real_dim = op_infer::array_to_small_vector(dim.value());

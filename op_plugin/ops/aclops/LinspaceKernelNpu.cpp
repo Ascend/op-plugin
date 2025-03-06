@@ -26,26 +26,28 @@ at::Tensor& linspace_npu_out_nocheck(
     at::Tensor& result,
     const at::Scalar& start,
     const at::Scalar& end,
-    int64_t steps) {
-  if (steps == 0) {
-    // skip
-  } else if (steps == 1) {
-    acl_op::fill_(result, start);
-  } else {
-    c10::SmallVector<int64_t, N> size_vec = {steps};
-    at_npu::native::OpCommand cmd;
-    cmd.Name("LinSpace")
-        .Input(start, at::ScalarType::Float)
-        .Input(end, at::ScalarType::Float)
-        .Input(size_vec, at::ScalarType::Int)
-        .Output(result)
-        .Run();
-  }
-  return result;
+    int64_t steps)
+{
+    if (steps != 0) {
+        if (steps == 1) {
+            acl_op::fill_(result, start);
+        } else {
+            c10::SmallVector<int64_t, N> size_vec = {steps};
+            at_npu::native::OpCommand cmd;
+            cmd.Name("LinSpace")
+                .Input(start, at::ScalarType::Float)
+                .Input(end, at::ScalarType::Float)
+                .Input(size_vec, at::ScalarType::Int)
+                .Output(result)
+                .Run();
+        }
+    }
+    return result;
 }
 }  // namespace
 
-at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& result) {
+at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& result)
+{
     TORCH_CHECK(steps >= 0, "number of steps must be non-negative"
         + OPS_ERROR(ErrCode::VALUE));
 
@@ -85,7 +87,8 @@ at::Tensor linspace(
     c10::optional<at::ScalarType> dtype_opt,
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
+    c10::optional<bool> pin_memory_opt)
+{
     TORCH_CHECK(steps >= 0, "number of steps must be non-negative"
         + OPS_ERROR(ErrCode::VALUE));
     auto device = c10::device_or_default(device_opt);

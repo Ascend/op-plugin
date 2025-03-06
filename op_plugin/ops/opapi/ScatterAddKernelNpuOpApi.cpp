@@ -27,11 +27,11 @@ at::Tensor scatter_add(
     const at::Tensor& index,
     const at::Tensor& src)
 {
-  DO_COMPATIBILITY(aclnnScatterAdd, acl_op::scatter_add(self, dim, index, src));
-  auto selfClone = self.clone(at::MemoryFormat::Contiguous);
-  npu_preparation::CheckMemory({selfClone, index, src}, {selfClone});
-  EXEC_NPU_CMD(aclnnScatterAdd, selfClone, dim, index, src, selfClone);
-  return selfClone;
+    DO_COMPATIBILITY(aclnnScatterAdd, acl_op::scatter_add(self, dim, index, src));
+    auto selfClone = self.clone(at::MemoryFormat::Contiguous);
+    npu_preparation::CheckMemory({selfClone, index, src}, {selfClone});
+    EXEC_NPU_CMD(aclnnScatterAdd, selfClone, dim, index, src, selfClone);
+    return selfClone;
 }
 
 at::Tensor& scatter_add_(
@@ -40,10 +40,10 @@ at::Tensor& scatter_add_(
     const at::Tensor& index,
     const at::Tensor& src)
 {
-  DO_COMPATIBILITY(aclnnScatterAdd, acl_op::scatter_add_(self, dim, index, src));
-  npu_preparation::CheckMemory({self, index, src}, {self});
-  EXEC_NPU_CMD(aclnnScatterAdd, self, dim, index, src, self);
-  return self;
+    DO_COMPATIBILITY(aclnnScatterAdd, acl_op::scatter_add_(self, dim, index, src));
+    npu_preparation::CheckMemory({self, index, src}, {self});
+    EXEC_NPU_CMD(aclnnScatterAdd, self, dim, index, src, self);
+    return self;
 }
 
 at::Tensor scatter_add(
@@ -52,8 +52,8 @@ at::Tensor scatter_add(
     const at::Tensor& index,
     const at::Tensor& src)
 {
-  DO_COMPATIBILITY(aclnnScatterAdd, acl_op::scatter_add(self, dim, index, src));
-  return op_api::scatter_add(self, dimname_to_position(self, dim), index, src);
+    DO_COMPATIBILITY(aclnnScatterAdd, acl_op::scatter_add(self, dim, index, src));
+    return op_api::scatter_add(self, dimname_to_position(self, dim), index, src);
 }
 
 }

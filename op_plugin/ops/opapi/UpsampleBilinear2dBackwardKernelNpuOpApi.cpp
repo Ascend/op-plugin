@@ -27,7 +27,8 @@ at::Tensor& upsample_bilinear2d_backward_out(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
-    at::Tensor& grad_input) {
+    at::Tensor& grad_input)
+{
     DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackward,
                      acl_op::upsample_bilinear2d_backward_out(grad_output, output_size, input_size,
                                                               align_corners, scales_h, scales_w, grad_input));
@@ -45,7 +46,8 @@ at::Tensor upsample_bilinear2d_backward(
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w) {
+    c10::optional<double> scales_w)
+{
     DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackward,
                      acl_op::upsample_bilinear2d_backward(grad_output, output_size, input_size,
                                                           align_corners, scales_h, scales_w));
@@ -65,7 +67,8 @@ at::Tensor upsample_bilinear2d_backward(
     c10::optional<at::IntArrayRef> output_size,
     at::IntArrayRef input_size,
     bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
+    c10::optional<at::ArrayRef<double>> scale_factors)
+{
     DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackward,
                      acl_op::upsample_bilinear2d_backward(grad_output, output_size, input_size,
                                                           align_corners, scale_factors));
