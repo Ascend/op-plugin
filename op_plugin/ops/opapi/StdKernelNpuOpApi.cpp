@@ -27,36 +27,38 @@ at::Tensor& std_out(
     c10::optional<at::IntArrayRef> dim,
     c10::optional<int64_t> correction,
     bool keepdim,
-    at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnStd, acl_op::std_out(self, dim, correction, keepdim, result));
-  c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
-  if (dim.has_value()) {
-    real_dim = op_infer::array_to_small_vector(dim.value());
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
-  int64_t real_correction = correction.has_value() ? correction.value() : 1;
-  auto real_dim_array = at::IntArrayRef(real_dim);
-  npu_preparation::check_tensor({self}, result, self, output_size);
-  EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, result);
-  return result;
+    at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnStd, acl_op::std_out(self, dim, correction, keepdim, result));
+    c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
+    if (dim.has_value()) {
+        real_dim = op_infer::array_to_small_vector(dim.value());
+    }
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
+    int64_t real_correction = correction.has_value() ? correction.value() : 1;
+    auto real_dim_array = at::IntArrayRef(real_dim);
+    npu_preparation::check_tensor({self}, result, self, output_size);
+    EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, result);
+    return result;
 }
 
 at::Tensor std(
-    const at::Tensor & self,
+    const at::Tensor& self,
     c10::optional<at::IntArrayRef> dim,
     c10::optional<int64_t> correction,
-    bool keepdim) {
-  DO_COMPATIBILITY(aclnnStd, acl_op::std(self, dim, correction, keepdim));
-  c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
-  if (dim.has_value()) {
-    real_dim = op_infer::array_to_small_vector(dim.value());
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
-  auto result = npu_preparation::apply_tensor_without_format(output_size, self.options());
-  int64_t real_correction = correction.has_value() ? correction.value() : 1;
-  auto real_dim_array = at::IntArrayRef(real_dim);
-  EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, result);
-  return result;
+    bool keepdim)
+{
+    DO_COMPATIBILITY(aclnnStd, acl_op::std(self, dim, correction, keepdim));
+    c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
+    if (dim.has_value()) {
+        real_dim = op_infer::array_to_small_vector(dim.value());
+    }
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
+    auto result = npu_preparation::apply_tensor_without_format(output_size, self.options());
+    int64_t real_correction = correction.has_value() ? correction.value() : 1;
+    auto real_dim_array = at::IntArrayRef(real_dim);
+    EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, result);
+    return result;
 }
 #endif
 

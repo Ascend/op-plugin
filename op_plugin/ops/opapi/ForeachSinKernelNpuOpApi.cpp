@@ -54,8 +54,9 @@ void _foreach_sin_(const at::TensorList self)
     }
 
     // datatype check
-    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
-                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
+        op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+        op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
         return at::native::foreach_tensor_sin_slow_(self);
     }
 
@@ -78,8 +79,9 @@ std::vector<at::Tensor> _foreach_sin(const at::TensorList self)
     }
 
     // datatype check
-    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
-                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
+        op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+        op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
         return at::native::foreach_tensor_sin_slow(self);
     }
 
@@ -95,7 +97,8 @@ std::vector<at::Tensor> _foreach_sin(const at::TensorList self)
     result.reserve(self.size());
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(
+            npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
     _split_and_exec_npu_cmd_sin(self, result_, false);
