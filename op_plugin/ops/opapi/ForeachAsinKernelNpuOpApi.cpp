@@ -11,12 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/OpApiInterface.h"
+#include <ATen/native/ForeachUtils.h>
+
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpUtils.h"
-#include <ATen/native/ForeachUtils.h>
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -39,74 +40,77 @@ void _split_and_exec_npu_cmd_asin(at::TensorList tensors1, at::TensorList result
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
         EXEC_NPU_CMD(aclnnForeachAsin, temp_tensors1, temp_result);
     }
 }
 
-void _foreach_asin_(const at::TensorList self_asin)
+void _foreach_asin_(const at::TensorList self)
 {
-    DO_COMPATIBILITY(aclnnForeachAsin, at::native::foreach_tensor_asin_slow_(self_asin));
+    DO_COMPATIBILITY(aclnnForeachAsin, at::native::foreach_tensor_asin_slow_(self));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_asin_slow_(self_asin);
+        return at::native::foreach_tensor_asin_slow_(self);
     }
 
     // datatype check
-    if (!op_plugin::utils::check_dtype_foreach(self_asin[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
+                                               op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
                                                op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
-        return at::native::foreach_tensor_asin_slow_(self_asin);
+        return at::native::foreach_tensor_asin_slow_(self);
     }
 
-    at::native::check_foreach_api_restrictions(self_asin);
-    if (!at::native::can_use_fast_route(self_asin) || at::native::has_integral_tensor(self_asin, true)) {
-        return at::native::foreach_tensor_asin_slow_(self_asin);
+    at::native::check_foreach_api_restrictions(self);
+    if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
+        return at::native::foreach_tensor_asin_slow_(self);
     }
 
-    if (self_asin.empty()) {
+    if (self.empty()) {
         return;
     }
     
-    _split_and_exec_npu_cmd_asin(self_asin, self_asin, true);
+    _split_and_exec_npu_cmd_asin(self, self, true);
 }
 
 
-std::vector<at::Tensor> _foreach_asin(const at::TensorList self_asin)
+std::vector<at::Tensor> _foreach_asin(const at::TensorList tensors)
 {
-    DO_COMPATIBILITY(aclnnForeachAsin, at::native::foreach_tensor_asin_slow(self_asin));
+    DO_COMPATIBILITY(aclnnForeachAsin, at::native::foreach_tensor_asin_slow(tensors));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_asin_slow(self_asin);
+        return at::native::foreach_tensor_asin_slow(tensors);
     }
 
     // datatype check
-    if (!op_plugin::utils::check_dtype_foreach(self_asin[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+    if (!op_plugin::utils::check_dtype_foreach(tensors[0].scalar_type(),
+                                               op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
                                                op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
-        return at::native::foreach_tensor_asin_slow(self_asin);
+        return at::native::foreach_tensor_asin_slow(tensors);
     }
 
-    at::native::check_foreach_api_restrictions(self_asin);
-    if (!at::native::can_use_fast_route(self_asin) || at::native::has_integral_tensor(self_asin, true)) {
-        return at::native::foreach_tensor_asin_slow(self_asin);
+    at::native::check_foreach_api_restrictions(tensors);
+    if (!at::native::can_use_fast_route(tensors) || at::native::has_integral_tensor(tensors, true)) {
+        return at::native::foreach_tensor_asin_slow(tensors);
     }
 
-    auto scalar_type = self_asin[0].scalar_type();
+    auto scalar_type = tensors[0].scalar_type();
 
     // construct output tensorlist
     std::vector<at::Tensor> result;
-    for (const at::Tensor &tensor : self_asin) {
+    for (const at::Tensor &tensor : tensors) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size,
+                                                                      tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 
-    _split_and_exec_npu_cmd_asin(self_asin, result_, false);
+    _split_and_exec_npu_cmd_asin(tensors, result_, false);
     return result;
 }
 } // namespace at_npu

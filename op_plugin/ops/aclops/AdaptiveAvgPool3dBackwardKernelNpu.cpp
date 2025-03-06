@@ -21,54 +21,58 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-int64_t adaptive_avg_pool3d_backward_safe_size(const at::Tensor& self) {
-  c10::SmallVector<int64_t, N> dims = {-3, -2, -1};
-  int64_t size = 1;
-  if (self.sizes().empty()) {
-     return size;
-  }
-  for (int64_t ndim : dims) {
-    ndim = op_plugin::utils::make_warp_dim(ndim, self.sizes().size());
-    size *= self.sizes()[ndim];
-  }
-  return size;
+int64_t adaptive_avg_pool3d_backward_safe_size(const at::Tensor& self)
+{
+    c10::SmallVector<int64_t, N> dims = {-3, -2, -1};
+    int64_t size = 1;
+    if (self.sizes().empty()) {
+        return size;
+    }
+    for (int64_t ndim : dims) {
+        ndim = op_plugin::utils::make_warp_dim(ndim, self.sizes().size());
+        size *= self.sizes()[ndim];
+    }
+    return size;
 }
 
 at::Tensor& adaptive_avg_pool3d_backward_out_nocheck(
     at::Tensor& result,
     const at::Tensor& grad_output,
-    const at::Tensor& self) {
-  TORCH_CHECK(grad_output.size(grad_output.dim() - 3) == 1 && grad_output.size(grad_output.dim() - 2) == 1 &&
-      grad_output.size(grad_output.dim() - 1) == 1,
-      "adaptive_avg_pool3d_backward only support D=1 && H=1 && W=1 current!" + OPS_ERROR(ErrCode::PARAM));
-  acl_op::fill_(result, 1.0 / adaptive_avg_pool3d_backward_safe_size(self));
-  acl_op::mul_(result, grad_output);
+    const at::Tensor& self)
+{
+    TORCH_CHECK(grad_output.size(grad_output.dim() - 3) == 1 && grad_output.size(grad_output.dim() - 2) == 1 &&
+        grad_output.size(grad_output.dim() - 1) == 1,
+        "adaptive_avg_pool3d_backward only support D=1 && H=1 && W=1 current!" + OPS_ERROR(ErrCode::PARAM));
+    acl_op::fill_(result, 1.0 / adaptive_avg_pool3d_backward_safe_size(self));
+    acl_op::mul_(result, grad_output);
 
-  return result;
+    return result;
 }
 } // namespace
 
 at::Tensor& adaptive_avg_pool3d_backward_out(
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {grad_output, self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    adaptive_avg_pool3d_backward_out_nocheck(contiguous_result, grad_output, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    adaptive_avg_pool3d_backward_out_nocheck(result, grad_output, self);
-  }
-  return result;
+    at::Tensor& grad_input)
+{
+    npu_preparation::CheckOut(
+        {grad_output, self},
+        grad_input,
+        self);
+    if (!npu_utils::check_match(&grad_input)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
+        adaptive_avg_pool3d_backward_out_nocheck(contiguous_result, grad_output, self);
+        npu_utils::format_fresh_view(grad_input, contiguous_result);
+    } else {
+        adaptive_avg_pool3d_backward_out_nocheck(grad_input, grad_output, self);
+    }
+    return grad_input;
 }
 
-at::Tensor _adaptive_avg_pool3d_backward(const at::Tensor& grad_output, const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  adaptive_avg_pool3d_backward_out_nocheck(result, grad_output, self);
-  return result;
+at::Tensor _adaptive_avg_pool3d_backward(const at::Tensor& grad_output, const at::Tensor& self)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    adaptive_avg_pool3d_backward_out_nocheck(result, grad_output, self);
+    return result;
 }
 } // namespace acl_op

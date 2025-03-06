@@ -20,41 +20,44 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& result) {
-  result.resize_(size);
-  return acl_op::one_(result);
+at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& result)
+{
+    result.resize_(size);
+    return acl_op::one_(result);
 }
 
 at::Tensor ones(
     at::IntArrayRef size,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  auto device = c10::device_or_default(device_opt);
-  at::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
-      .layout(layout_opt)
-      .device(device)
-      .pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    auto device_value = c10::device_or_default(device);
+    at::TensorOptions option = c10::TensorOptions().dtype(dtype)
+        .layout(layout)
+        .device(device_value)
+        .pinned_memory(pin_memory);
+    at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
 
-  return acl_op::one_(result);
+    return acl_op::one_(result);
 }
 
 at::Tensor ones(
     at::IntArrayRef size,
     c10::optional<at::DimnameList> names,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  auto device = c10::device_or_default(device_opt);
-  at::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
-      .layout(layout_opt)
-      .device(device)
-      .pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    auto device_value = c10::device_or_default(device);
+    at::TensorOptions option = c10::TensorOptions().dtype(dtype)
+        .layout(layout)
+        .device(device_value)
+        .pinned_memory(pin_memory);
+    at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
 
-  return acl_op::one_(result);
+    return acl_op::one_(result);
 }
 }  // namespace acl_op

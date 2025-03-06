@@ -13,12 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/OpApiInterface.h"
+#include <ATen/native/ForeachUtils.h>
+
 #include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
-#include <ATen/native/ForeachUtils.h>
 #include "op_plugin/utils/custom_functions/opapi/ForeachConstants.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
@@ -42,7 +43,7 @@ void _split_and_exec_npu_cmd_sign(const at::TensorList tensors1, at::TensorList 
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
         EXEC_NPU_CMD(aclnnForeachSign, temp_tensors1, temp_result);
@@ -55,7 +56,7 @@ void _foreach_sign_(const at::TensorList self)
     at::native::check_foreach_api_restrictions(self);
 
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1)||
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     bool is_support_type = op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
         op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32, op_plugin::utils::ForeachInputType::TYPE_TENSOR);
@@ -72,7 +73,7 @@ std::vector<at::Tensor> _foreach_sign(const at::TensorList self)
     at::native::check_foreach_api_restrictions(self);
 
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1)||
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     bool is_support_type = op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
         op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32, op_plugin::utils::ForeachInputType::TYPE_TENSOR);
@@ -85,7 +86,8 @@ std::vector<at::Tensor> _foreach_sign(const at::TensorList self)
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size,
+                                                                      tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 
