@@ -18,6 +18,8 @@ API_LIST = [
     '_npu_rotary_embedding',
     '_npu_flash_attention',
     '_npu_flash_attention_unpad',
+    '_npu_paged_attention_splitfuse',
+    '_npu_flash_attention_qlens',
 ]
 
 

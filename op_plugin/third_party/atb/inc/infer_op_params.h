@@ -528,7 +528,8 @@ struct SelfAttentionParam {
         UNDEFINED = 0, //!< decoder&encoder for flashAttention
         ENCODER,       //!< encoder for flashAttention
         DECODER,       //!< decoder for flashAttention
-        PA_ENCODER     //!< encoder for pagedAttention
+        PA_ENCODER,     //!< encoder for pagedAttention
+        PREFIX_ENCODER, //!< prefix encoder for flashAttention
     };
     //!
     //! \enum KernelType
@@ -589,10 +590,11 @@ struct SelfAttentionParam {
     //! \brief quant类型
     //!
     enum QuantType : int {
-        TYPE_QUANT_UNDEFINED = 0, //!< 默认值，不与量化融合，此时q，k，v为bf16/float16
-        TYPE_DEQUANT_FUSION,      //!< 与反量化融合, 预留类型，当前不能够取此值。
-        TYPE_QUANT_QKV_OFFLINE,   //!< 离线INT8量化, 只支持Atlas 800I A2推理产品
-        TYPE_QUANT_QKV_ONLINE     //!< 在线INT8量化, 只支持Atlas 800I A2推理产品
+        TYPE_QUANT_UNDEFINED = 0,    //!< 默认值，不与量化融合，此时q，k，v为bf16/float16
+        TYPE_QUANT_UNQUANT = 0,      //!< 默认值，不与量化融合，此时q，k，v为bf16/float16
+        TYPE_DEQUANT_FUSION = 1,     //!< 与反量化融合, 预留类型，当前不能够取此值。
+        TYPE_QUANT_QKV_OFFLINE = 2,  //!< 离线INT8量化, 只支持Atlas 800I A2推理产品
+        TYPE_QUANT_QKV_ONLINE = 3    //!< 在线INT8量化, 只支持Atlas 800I A2推理产品
     };
     //!
     //! \enum CacheType
@@ -608,9 +610,9 @@ struct SelfAttentionParam {
     //! 量化类型(只支持PA_ENCODER)：
     //! 当值为TYPE_QUANT_QKV_OFFLINE或TYPE_QUANT_QKV_ONLINE时q，k，v为int8。key,value的headsize等长，范围为（0, 256]，
     //! 且32对齐。outdatatype需要配置，只能是ACL_FLOAT16或ACL_BF16。inputLayout只支持TYPE_BSND，calcType只能为PA_ENCODER。
-    QuantType quantType = TYPE_QUANT_UNDEFINED;
+    QuantType quantType = TYPE_QUANT_UNQUANT;
 
-    //! output数据类型：只支持PA_ENCODER,且QuantType不为TYPE_QUANT_UNDEFINED（格式为aclDataType）
+    //! output数据类型：只支持PA_ENCODER,且QuantType不为TYPE_QUANT_UNQUANT（格式为aclDataType）
     aclDataType outDataType = ACL_DT_UNDEFINED;
 
     //! query头大小, 需大于0

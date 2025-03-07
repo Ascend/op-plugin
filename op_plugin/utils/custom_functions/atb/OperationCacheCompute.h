@@ -100,6 +100,8 @@ struct HashOpParam<atb::infer::PagedAttentionParam> {
         add_param_to_buf("quant_type", param.quantType);
         add_param_to_buf("outdata_type", param.outDataType);
         add_param_to_buf("mla_vheadsize", param.mlaVHeadSize);
+        add_param_to_buf("maskType", param.maskType);
+        add_param_to_buf("calcType", param.calcType);
     }
 };
 
@@ -110,6 +112,11 @@ struct HashOpParam<atb::infer::SelfAttentionParam> {
         add_param_to_buf("num_kv_heads", param.kvHeadNum);
         add_param_to_buf("num_heads", param.headNum);
         add_param_to_buf("scale_value", param.qkScale);
+        add_param_to_buf("calcType", param.calcType);
+        add_param_to_buf("kernelType", param.kernelType);
+        add_param_to_buf("maskType", param.maskType);
+        add_param_to_buf("quantType", param.quantType);
+        add_param_to_buf("isTriuMask", param.isTriuMask);
     }
 };
 
