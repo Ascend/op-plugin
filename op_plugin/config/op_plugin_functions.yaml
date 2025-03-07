@@ -7075,6 +7075,9 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_gemma_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor)
+    op_api: all_version
+
   - func: npu_rms_norm_backward(Tensor dy, Tensor self, Tensor gamma, Tensor rstd) -> (Tensor, Tensor)
     acl_op: all_version
     op_api: all_version
