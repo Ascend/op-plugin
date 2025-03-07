@@ -41,24 +41,26 @@ at::Tensor exec_aclnn_non_zero(const at::Tensor& self, at::Tensor& out)
     return out;
 }
 
-at::Tensor& nonzero_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnNonzero, acl_op::nonzero_out(self, result));
-  auto out_size = op_infer::nonzero_npu_max_output_size(self);
-  at_npu::native::OpPreparation::check_tensor({self}, result, at::ScalarType::Long, out_size);
-  auto out = result.is_contiguous() ? result : result.contiguous();
-  auto output = exec_aclnn_non_zero(self, out);
-  if (!result.is_contiguous()) {
-    result.copy_(output);
-  }
-  return result;
+at::Tensor& nonzero_out(const at::Tensor& self, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnNonzero, acl_op::nonzero_out(self, result));
+    auto out_size = op_infer::nonzero_npu_max_output_size(self);
+    at_npu::native::OpPreparation::check_tensor({self}, result, at::ScalarType::Long, out_size);
+    auto out = result.is_contiguous() ? result : result.contiguous();
+    auto output = exec_aclnn_non_zero(self, out);
+    if (!result.is_contiguous()) {
+        result.copy_(output);
+    }
+    return result;
 }
 
-at::Tensor nonzero(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnNonzero, acl_op::nonzero(self));
-  auto out_size = op_infer::nonzero_npu_max_output_size(self);
-  at::Tensor out =
-      at_npu::native::OpPreparation::apply_tensor_without_format(out_size, self.options().dtype(at::kLong));
-  return exec_aclnn_non_zero(self, out);
+at::Tensor nonzero(const at::Tensor& self)
+{
+    DO_COMPATIBILITY(aclnnNonzero, acl_op::nonzero(self));
+    auto out_size = op_infer::nonzero_npu_max_output_size(self);
+    at::Tensor out =
+        at_npu::native::OpPreparation::apply_tensor_without_format(out_size, self.options().dtype(at::kLong));
+    return exec_aclnn_non_zero(self, out);
 }
 
 }

@@ -24,47 +24,50 @@ namespace {
 at::Tensor& atan2_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
-    const at::Tensor& other) {
-  auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Atan2")
-      .Expect(unified_result)
-      .Input(self)
-      .Input(other)
-      .Output(result)
-      .Run();
-  return result;
+    const at::Tensor& other)
+{
+    auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Atan2")
+        .Expect(unified_result)
+        .Input(self)
+        .Input(other)
+        .Output(result)
+        .Run();
+    return result;
 }
 } // namespace
 
 at::Tensor& atan2_out(
     const at::Tensor& self,
     const at::Tensor& other,
-    at::Tensor& result) {
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::CheckOut(
-      {self, other},
-      result,
-      self,
-      output_size);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    atan2_out_npu_nocheck(contiguous_result, self, other);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    atan2_out_npu_nocheck(result, self, other);
-  }
-  return result;
+    at::Tensor& result)
+{
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    npu_preparation::CheckOut(
+        {self, other},
+        result,
+        self,
+        output_size);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        atan2_out_npu_nocheck(contiguous_result, self, other);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        atan2_out_npu_nocheck(result, self, other);
+    }
+    return result;
 }
 
-at::Tensor atan2(const at::Tensor& self, const at::Tensor& other) {
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  atan2_out_npu_nocheck(result, self, other);
-  return result;
+at::Tensor atan2(const at::Tensor& self, const at::Tensor& other)
+{
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+    atan2_out_npu_nocheck(result, self, other);
+    return result;
 }
 
 at::Tensor& atan2_(at::Tensor& self, const at::Tensor& other) {
-  return acl_op::atan2_out(self, other, self);
+    return acl_op::atan2_out(self, other, self);
 }
 } // namespace acl_op

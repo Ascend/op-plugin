@@ -78,10 +78,11 @@ at::Tensor max_unpool2d_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& indices,
-    at::IntArrayRef output_size) {
-  auto grad_input = at::empty_like(self, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
-  max_unpool2d_backward_out(grad_output, self, indices, output_size, grad_input);
-  return grad_input;
+    at::IntArrayRef output_size)
+{
+    auto grad_input = at::empty_like(self, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
+    max_unpool2d_backward_out(grad_output, self, indices, output_size, grad_input);
+    return grad_input;
 }
 #endif
 

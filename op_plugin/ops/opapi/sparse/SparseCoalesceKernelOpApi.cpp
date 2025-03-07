@@ -67,11 +67,13 @@ SparseTensor _coalesce_sparse(const SparseTensor& self)
         at::Tensor new_indices = new_indices_t.transpose(0, 1).to(at::kLong);
         if (values.scalar_type() == at::kHalf) {
             at::Tensor new_values = new_values_f.to(at::kHalf);
-            SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices, new_values, self.sizes())._coalesced_(true);
+            SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices,
+                new_values, self.sizes())._coalesced_(true);
             return dst;
         } else {
             at::Tensor new_values = new_values_f.to(at::kBFloat16);
-            SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices, new_values, self.sizes())._coalesced_(true);
+            SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices,
+                new_values, self.sizes())._coalesced_(true);
             return dst;
         }
     } else {
@@ -85,7 +87,8 @@ SparseTensor _coalesce_sparse(const SparseTensor& self)
             new_indices_t,
             new_values);
         at::Tensor new_indices = new_indices_t.transpose(0, 1).to(at::kLong);
-        SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices, new_values, self.sizes())._coalesced_(true);
+        SparseTensor dst = ::at::native::_sparse_coo_tensor_unsafe(new_indices,
+            new_values, self.sizes())._coalesced_(true);
         return dst;
     }
 }

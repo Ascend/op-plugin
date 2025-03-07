@@ -26,7 +26,8 @@ namespace acl_op {
     using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-    at::Tensor &bmm_out_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &mat2) {
+    at::Tensor &bmm_out_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &mat2)
+    {
         bool is_self_t = op_plugin::utils::is_transpose_last_two_dims(self);
         bool is_mat2_t = op_plugin::utils::is_transpose_last_two_dims(mat2);
         at::Tensor contiguous_self = is_self_t ? self : npu_utils::format_contiguous_add_copy_optimize(self);
@@ -44,7 +45,8 @@ namespace {
     }
 } // namespace
 
-at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result) {
+at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result)
+{
     TORCH_CHECK(self.device() == mat2.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
         (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
@@ -70,7 +72,8 @@ at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &
     return result;
 }
 
-at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2) {
+at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2)
+{
     TORCH_CHECK(self.device() == mat2.device(),
                 "Expected all tensors to be on the same device, but found at least two devices, ",
                 (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
@@ -98,12 +101,15 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2) {
         };
         static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
         static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
-        // There is a data trampling problem in non-aligned scenes. For the time being, only aligned scenes are supported.
+        // There is a data trampling problem in non-aligned scenes.
+        // For the time being, only aligned scenes are supported.
         if (npu_format_helper::IsBaseFormatType(self) && npu_format_helper::IsBaseFormatType(mat2) &&
-            mm_bmm_nd && ((is_support_nd_out && op_plugin::utils::is_nd_to_nz_on_fly(self, mat2)) || (!is_support_nd_out && is_aligin()))) {
+            mm_bmm_nd && ((is_support_nd_out && op_plugin::utils::is_nd_to_nz_on_fly(self, mat2)) ||
+            (!is_support_nd_out && is_aligin()))) {
             result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
         } else {
-            result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);
+            result = npu_preparation::apply_tensor_with_format(output_size, self.options(),
+                                                               ACL_FORMAT_FRACTAL_NZ, true);
             need_nd_out = mm_bmm_nd;
         }
     } else {
