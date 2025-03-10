@@ -102,16 +102,18 @@ tensor_list rotary_mul_backward_nocheck(at::Tensor &dx, at::Tensor &dr1, at::Ten
 }
 } // namespace
 
-at::Tensor npu_rotary_mul(const at::Tensor &self, const at::Tensor &r1, const at::Tensor &r2)
+at::Tensor npu_rotary_mul(const at::Tensor &self, const at::Tensor &r1, const at::Tensor &r2, int64_t mode)
 {
+    TORCH_CHECK(mode == 0, "npu_rotary_mul in aclop only support mode with 0" + OPS_ERROR(ErrCode::PARAM));
     at::Tensor result = npu_preparation::apply_tensor(self);
     rotary_mul_nocheck(result, self, r1, r2);
     return result;
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(const at::Tensor &grad, const at::Tensor &self,
-                                                                       const at::Tensor &r1, const at::Tensor &r2)
+                                                                       const at::Tensor &r1, const at::Tensor &r2, int64_t mode)
 {
+    TORCH_CHECK(mode == 0, "npu_rotary_mul_backward in aclop only support mode with 0" + OPS_ERROR(ErrCode::PARAM));
     at::Tensor dx = npu_preparation::apply_tensor(self);
     at::Tensor dr1 = npu_preparation::apply_tensor(r1);
     at::Tensor dr2 = npu_preparation::apply_tensor(r2);

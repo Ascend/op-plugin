@@ -255,12 +255,12 @@ def npu_fusion_attention_backward(query, key, value, dy, head_num, input_layout,
 
 
 @impl(m, "npu_rotary_mul")
-def npu_rotary_mul_meta(embedding, cosine, sine):
+def npu_rotary_mul_meta(embedding, cosine, sine, mode=0):
     return torch.empty_like(embedding)
 
 
 @impl(m, "npu_rotary_mul_backward")
-def npu_rotary_mul_backward(grad, embedding, cosine, sine):
+def npu_rotary_mul_backward(grad, embedding, cosine, sine, mode=0):
     dx = torch.empty_like(embedding, dtype=embedding.dtype, device='meta')
     dr1 = torch.empty_like(cosine, dtype=embedding.dtype, device='meta')
     dr2 = torch.empty_like(sine, dtype=embedding.dtype, device='meta')

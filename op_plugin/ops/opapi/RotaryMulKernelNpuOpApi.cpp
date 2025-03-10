@@ -20,6 +20,8 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+const static int64_t ROTATE_HALF = 0;
+const static int64_t ROTATE_INTERLEAVED = 1;
 
 static bool isRotaryMulMixDtypeSupport(
     const at::Tensor& self,
@@ -37,14 +39,17 @@ static at::Tensor npu_dtype_cast_impl_op_api(const at::Tensor& self, at::ScalarT
 at::Tensor npu_rotary_mul(
     const at::Tensor& self,
     const at::Tensor& cos,
-    const at::Tensor& sin)
+    const at::Tensor& sin,
+    int64_t mode)
 {
-    DO_COMPATIBILITY(aclnnRotaryPositionEmbedding, acl_op::npu_rotary_mul(self, cos, sin));
+    TORCH_CHECK(mode == ROTATE_HALF || mode == ROTATE_INTERLEAVED,
+        "The mode of npu_rotary_mul should be 0(rotate_half) or 1(rotate_interleaved), but got ", mode,
+        OPS_ERROR(ErrCode::PARAM));
+    DO_COMPATIBILITY(aclnnRotaryPositionEmbedding, acl_op::npu_rotary_mul(self, cos, sin, mode));
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
-        return acl_op::npu_rotary_mul(self, cos, sin);
+        return acl_op::npu_rotary_mul(self, cos, sin, mode);
     }
     at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options());
-    int64_t mode = 0;
     bool isMixDataType = isRotaryMulMixDtypeSupport(self, cos, sin);
     if (isMixDataType) {
         at::Tensor cosCast = npu_dtype_cast_impl_op_api(cos, self.scalar_type());

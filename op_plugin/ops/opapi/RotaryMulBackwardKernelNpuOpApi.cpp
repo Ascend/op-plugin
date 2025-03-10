@@ -20,6 +20,8 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+const static int64_t ROTATE_HALF = 0;
+const static int64_t ROTATE_INTERLEAVED = 1;
 
 static bool isRotaryMulBackwardMixDtypeSupport(
     const at::Tensor& grad,
@@ -39,16 +41,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(
     const at::Tensor& grad,
     const at::Tensor& self,
     const at::Tensor& cos,
-    const at::Tensor& sin)
+    const at::Tensor& sin,
+    int64_t mode)
 {
-    DO_COMPATIBILITY(aclnnRotaryPositionEmbeddingGrad, acl_op::npu_rotary_mul_backward(grad, self, cos, sin));
+    TORCH_CHECK(mode == ROTATE_HALF || mode == ROTATE_INTERLEAVED,
+        "The mode of npu_rotary_mul_backward should be 0(rotate_half) or 1(rotate_interleaved), but got ", mode,
+        OPS_ERROR(ErrCode::PARAM));
+    DO_COMPATIBILITY(aclnnRotaryPositionEmbeddingGrad, acl_op::npu_rotary_mul_backward(grad, self, cos, sin, mode));
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
-        return acl_op::npu_rotary_mul_backward(grad, self, cos, sin);
+        return acl_op::npu_rotary_mul_backward(grad, self, cos, sin, mode);
     }
     at::Tensor dx = npu_preparation::apply_tensor_without_format(grad.sizes(), self.options());
     at::Tensor dcos = npu_preparation::apply_tensor_without_format(cos.sizes(), self.options());
     at::Tensor dsin = npu_preparation::apply_tensor_without_format(sin.sizes(), self.options());
-    int64_t mode = 0;
     bool isMixDataType = isRotaryMulBackwardMixDtypeSupport(grad, self, cos, sin);
     if (isMixDataType) {
         at::Tensor gradCast = npu_dtype_cast_impl_op_api(grad, self.scalar_type());
