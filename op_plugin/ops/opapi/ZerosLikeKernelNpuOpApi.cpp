@@ -20,14 +20,15 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& zero_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zero_(self));
-  EXEC_NPU_CMD(aclnnInplaceZero, self);
-  return self;
+at::Tensor& zero_(at::Tensor& self)
+{
+    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zero_(self));
+    EXEC_NPU_CMD(aclnnInplaceZero, self);
+    return self;
 }
 
 at::Tensor zeros_like(
-    const at::Tensor &self,
+    const at::Tensor& self,
     c10::optional<c10::ScalarType> dtype_opt,
     c10::optional<c10::Layout> layout_opt,
     c10::optional<c10::Device> device_opt,
@@ -43,9 +44,9 @@ at::Tensor zeros_like(
     }
 
     auto other_options = c10::TensorOptions().dtype(dtype_opt)
-                                            .device(device_opt)
-                                            .layout(layout_opt)
-                                            .pinned_memory(pin_memory_opt);
+        .device(device_opt)
+        .layout(layout_opt)
+        .pinned_memory(pin_memory_opt);
     auto options = self.options().merge_in(other_options);
     at::Tensor result = npu_preparation::apply_tensor(self, options);
     EXEC_NPU_CMD(aclnnInplaceZero, result);

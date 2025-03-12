@@ -17,21 +17,23 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-namespace op_api{
+namespace op_api {
 
 at::Tensor count_nonzero(
-    const at::Tensor &self,
-    c10::IntArrayRef dim) {
-  return op_api::sum((self != 0), dim, false, at::ScalarType::Long);
+    const at::Tensor& self,
+    c10::IntArrayRef dim)
+{
+    return op_api::sum((self != 0), dim, false, at::ScalarType::Long);
 }
 
 at::Tensor count_nonzero(
-    const at::Tensor &self,
-    c10::optional<int64_t> dim) {
-  if (dim.has_value()) {
-    return op_api::count_nonzero(self, at::IntArrayRef{dim.value()});
-  }
-  return op_api::count_nonzero(self, at::IntArrayRef{});
+    const at::Tensor& self,
+    c10::optional<int64_t> dim)
+{
+    if (dim.has_value()) {
+        return op_api::count_nonzero(self, at::IntArrayRef{dim.value()});
+    }
+    return op_api::count_nonzero(self, at::IntArrayRef{});
 }
 
 }

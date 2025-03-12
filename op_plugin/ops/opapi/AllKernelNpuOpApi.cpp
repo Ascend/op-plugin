@@ -21,67 +21,71 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& all_out(const at::Tensor& self, int64_t dim, bool keepdim, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, dim, keepdim, result));
-  c10::SmallVector<int64_t, op_infer::N> dimList = {dim};
+at::Tensor& all_out(const at::Tensor& self, int64_t dim, bool keepdim, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, dim, keepdim, result));
+    c10::SmallVector<int64_t, op_infer::N> dimList = {dim};
 
-  // check result for return
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dimList, keepdim);
-  npu_preparation::check_tensor({self}, result, result, output_size);
-  // calculate the output result of the NPU
-  at::IntArrayRef dims(dim);
-  EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
-  return result;
+    // check result for return
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dimList, keepdim);
+    npu_preparation::check_tensor({self}, result, result, output_size);
+    // calculate the output result of the NPU
+    at::IntArrayRef dims(dim);
+    EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
+    return result;
 }
 
-at::Tensor& all_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, result));
-  at::IntArrayRef dims;
+at::Tensor& all_out(const at::Tensor& self, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, result));
+    at::IntArrayRef dims;
 
-  // check result for return
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
-  npu_preparation::check_tensor({self}, result, result, output_size);
+    // check result for return
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
+    npu_preparation::check_tensor({self}, result, result, output_size);
 
-  // calculate the output result of the NPU
-  bool keepdim = false;
-  EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
-  return result;
+    // calculate the output result of the NPU
+    bool keepdim = false;
+    EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
+    return result;
 }
 
-at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
-  DO_COMPATIBILITY(aclnnAll, acl_op::all(self, dim, keepdim));
+at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim)
+{
+    DO_COMPATIBILITY(aclnnAll, acl_op::all(self, dim, keepdim));
 
-  // calculate the output size
-  at::IntArrayRef dims(dim);
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  auto output_dtype = self.scalar_type() == at::ScalarType::Byte ? at::ScalarType::Byte : at::ScalarType::Bool;
-  auto options = self.options().dtype(output_dtype);
+    // calculate the output size
+    at::IntArrayRef dims(dim);
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+    auto output_dtype = self.scalar_type() == at::ScalarType::Byte ? at::ScalarType::Byte : at::ScalarType::Bool;
+    auto options = self.options().dtype(output_dtype);
 
-  // construct the output tensor of the NPU
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
+    // construct the output tensor of the NPU
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
-  return result;
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
+    return result;
 }
 
-at::Tensor all(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnAll, acl_op::all(self));
+at::Tensor all(const at::Tensor& self)
+{
+    DO_COMPATIBILITY(aclnnAll, acl_op::all(self));
 
-  // calculate the output size
-  at::IntArrayRef dims;
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
-  auto output_dtype = self.scalar_type() == at::ScalarType::Byte ? at::ScalarType::Byte : at::ScalarType::Bool;
-  auto options = self.options().dtype(output_dtype);
+    // calculate the output size
+    at::IntArrayRef dims;
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
+    auto output_dtype = self.scalar_type() == at::ScalarType::Byte ? at::ScalarType::Byte : at::ScalarType::Bool;
+    auto options = self.options().dtype(output_dtype);
 
-  // construct the output tensor of the NPU
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
-  c10::SmallVector<int64_t, op_infer::N> dim_vec = op_plugin::utils::get_dimlist_for_tensor(self);
-  at::IntArrayRef dimList = dim_vec;
-  bool keepdim = false;
+    // construct the output tensor of the NPU
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
+    c10::SmallVector<int64_t, op_infer::N> dim_vec = op_plugin::utils::get_dimlist_for_tensor(self);
+    at::IntArrayRef dimList = dim_vec;
+    bool keepdim = false;
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnAll, self, dimList, keepdim, result);
-  return result;
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnAll, self, dimList, keepdim, result);
+    return result;
 }
 }

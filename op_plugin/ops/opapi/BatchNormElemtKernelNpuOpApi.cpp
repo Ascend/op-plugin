@@ -22,23 +22,25 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& batch_norm_elemt_out(const at::Tensor& self, const c10::optional<at::Tensor>& weight_opt,
                                  const c10::optional<at::Tensor>& bias_opt, const at::Tensor& mean,
-                                 const at::Tensor& invstd, double eps, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnBatchNormElemt,
-                   acl_op::batch_norm_elemt_out(self, weight_opt, bias_opt, mean, invstd, eps, result));
-  const at::Tensor& bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
-  const at::Tensor& weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
-  npu_preparation::check_tensor({self, weight, bias, mean, invstd}, result, self);
-  EXEC_NPU_CMD(aclnnBatchNormElemt, self, weight, bias, mean, invstd, eps, result);
-  return result;
+                                 const at::Tensor& invstd, double eps, at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnBatchNormElemt,
+                     acl_op::batch_norm_elemt_out(self, weight_opt, bias_opt, mean, invstd, eps, result));
+    const at::Tensor& bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
+    const at::Tensor& weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
+    npu_preparation::check_tensor({self, weight, bias, mean, invstd}, result, self);
+    EXEC_NPU_CMD(aclnnBatchNormElemt, self, weight, bias, mean, invstd, eps, result);
+    return result;
 }
 
 at::Tensor batch_norm_elemt(const at::Tensor& self, const c10::optional<at::Tensor>& weight,
                             const c10::optional<at::Tensor>& bias, const at::Tensor& mean, const at::Tensor& invstd,
-                            double eps) {
-  DO_COMPATIBILITY(aclnnBatchNormElemt, acl_op::batch_norm_elemt(self, weight, bias, mean, invstd, eps));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnBatchNormElemt, self, weight, bias, mean, invstd, eps, result);
-  return result;
+                            double eps)
+{
+    DO_COMPATIBILITY(aclnnBatchNormElemt, acl_op::batch_norm_elemt(self, weight, bias, mean, invstd, eps));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnBatchNormElemt, self, weight, bias, mean, invstd, eps, result);
+    return result;
 }
 
 }
