@@ -155,10 +155,10 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out(
         at::Tensor contiguous_indices = indices_match ? indices : npu_utils::format_contiguous(indices);
         adaptive_max_pool2d_out_nocheck(contiguous_out, contiguous_indices, self, output_size);
         if (!out_match) {
-        npu_utils::format_fresh_view(out, contiguous_out);
+            npu_utils::format_fresh_view(out, contiguous_out);
         }
         if (!indices_match) {
-        npu_utils::format_fresh_view(indices, contiguous_indices);
+            npu_utils::format_fresh_view(indices, contiguous_indices);
         }
     } else {
         adaptive_max_pool2d_out_nocheck(out, indices, self, output_size);

@@ -25,7 +25,8 @@ at::Tensor& soft_margin_loss_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& target,
-    int64_t reduction) {
+    int64_t reduction)
+{
     at::Tensor target_broadcast = target;
     if (target.sizes() != self.sizes()) {
         target_broadcast = acl_op::npu_broadcast(target, self.sizes());

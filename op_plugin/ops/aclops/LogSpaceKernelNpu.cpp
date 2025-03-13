@@ -27,12 +27,13 @@ at::Tensor& logspace_out_nocheck(
     at::Scalar start,
     at::Scalar end,
     int64_t steps,
-    double base) {
+    double base)
+{
     TORCH_CHECK(steps >= 0, "logspace requires non-negative steps, given steps is ", steps,
         OPS_ERROR(ErrCode::PARAM));
     if ((base <= 0) && ((!start.isIntegral(false)) || (!end.isIntegral(false)))) {
-        std::cout << "Warning: start and end in logspace should both be int when base <= 0, "
-            << "get type " << start.type() << " and" << end.type() << std::endl;
+        TORCH_NPU_WARN("Warning: start and end in logspace should both be int when base <= 0, get type ",
+                       start.type(), " and", end.type());
     }
 
     at::Tensor inputs;
@@ -69,22 +70,23 @@ at::Tensor& logspace_out(
     const at::Scalar& end,
     int64_t steps,
     double base,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      { },
-      result,
-      ACL_FORMAT_ND,
-      result.scalar_type(),
-      {steps});
+    at::Tensor& result)
+{
+    npu_preparation::CheckOut(
+        { },
+        result,
+        ACL_FORMAT_ND,
+        result.scalar_type(),
+        {steps});
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    logspace_out_nocheck(contiguous_result, start, end, steps, base);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    logspace_out_nocheck(result, start, end, steps, base);
-  }
-  return result;
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        logspace_out_nocheck(contiguous_result, start, end, steps, base);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        logspace_out_nocheck(result, start, end, steps, base);
+    }
+    return result;
 }
 
 at::Tensor logspace(
@@ -92,14 +94,15 @@ at::Tensor logspace(
     const at::Scalar& end,
     int64_t steps,
     double base,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  auto device = c10::device_or_default(device_opt);
-  at::TensorOptions options = c10::TensorOptions()
-      .dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, options, ACL_FORMAT_ND);
-  return logspace_out_nocheck(result, start, end, steps, base);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    auto device_opt = c10::device_or_default(device);
+    at::TensorOptions options = c10::TensorOptions()
+        .dtype(dtype).layout(layout).device(device_opt).pinned_memory(pin_memory);
+    at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, options, ACL_FORMAT_ND);
+    return logspace_out_nocheck(result, start, end, steps, base);
 }
 } // namespace acl_op

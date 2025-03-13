@@ -50,14 +50,14 @@ c10::SmallVector<int64_t, N> get_paddings(
     int64_t kW = op_infer::CeilDiv(totalW, stride[1]) + 1;
     if (ceil_mode) {
         if ((kH - 1) * stride[0] >= H + padding[0]) {
-        --kH;
-        int64_t need_pad_h = (kH - 1) * stride[0] + kernel_size[0] - H;
-        pad_down = need_pad_h - padding[0];
+            --kH;
+            int64_t need_pad_h = (kH - 1) * stride[0] + kernel_size[0] - H;
+            pad_down = need_pad_h - padding[0];
         }
         if ((kW - 1) * stride[1] >= W + padding[1]) {
-        --kW;
-        int64_t need_pad_w = (kW - 1) * stride[1] + kernel_size[1] - W;
-        pad_right = need_pad_w - padding[1];
+            --kW;
+            int64_t need_pad_w = (kW - 1) * stride[1] + kernel_size[1] - W;
+            pad_right = need_pad_w - padding[1];
         }
     }
 
