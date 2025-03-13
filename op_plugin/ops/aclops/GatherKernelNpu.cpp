@@ -27,8 +27,7 @@ at::Tensor& gather_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     int64_t dim,
-    const at::Tensor& index,
-    bool sparse_grad)
+    const at::Tensor& index)
 {
     if (self.scalar_type() == at::kLong) {
         TORCH_NPU_WARN_ONCE("The oprator of gather is executed, Currently High Accuracy but Low Performance OP"
@@ -62,10 +61,10 @@ at::Tensor& gather_out(
 
     if (!npu_utils::check_match(&result)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        gather_out_npu_nocheck(contiguous_result, self, dim, index, sparse_grad);
+        gather_out_npu_nocheck(contiguous_result, self, dim, index);
         npu_utils::format_fresh_view(result, contiguous_result);
     } else {
-        gather_out_npu_nocheck(result, self, dim, index, sparse_grad);
+        gather_out_npu_nocheck(result, self, dim, index);
     }
     return result;
 }
@@ -87,7 +86,7 @@ at::Tensor gather(
     bool sparse_grad)
 {
     at::Tensor result = npu_preparation::apply_tensor(self, index.sizes());
-    gather_out_npu_nocheck(result, self, dim, index, sparse_grad);
+    gather_out_npu_nocheck(result, self, dim, index);
     return result;
 }
 

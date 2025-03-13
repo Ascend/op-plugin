@@ -55,7 +55,7 @@ class TestConvTranspose3dBackward(TestCase):
         ]
         for item in shape_format:
             cpu_bias = torch.randn(item[1][2][1])
-            npu_bias = copy.deepcopy(cpu_bias)
+            npu_bias = copy.deepcopy(cpu_bias).to(torch.float16)
             self.weight_grad.clear()
             self.input_grad.clear()
             cpu_input1, npu_input1 = create_common_tensor(item[0], -2, 2)

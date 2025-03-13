@@ -27,11 +27,11 @@ void check_dims(int64_t split_item, size_t num_x, size_t num_weight, size_t num_
 {
     TORCH_CHECK(num_x > 0 && num_weight > 0,
                 "Invalid inputs: neither x nor weight could be empty." + OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item || IN_SPLIT_OUT_NOT_SPLIT == split_item ||
-                IN_NOT_SPLIT_OUT_SPLIT == split_item || IN_SPLIT_OUT_SPLIT == split_item,
+    TORCH_CHECK(split_item == IN_NOT_SPLIT_OUT_NOT_SPLIT || split_item == IN_SPLIT_OUT_NOT_SPLIT ||
+                split_item == IN_NOT_SPLIT_OUT_SPLIT || split_item == IN_SPLIT_OUT_SPLIT,
                 "Invalid value of split_item [", split_item, "], which should only be one of 0/1/2/3."
                 + OPS_ERROR(ErrCode::PARAM));
-    if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item || IN_SPLIT_OUT_NOT_SPLIT == split_item) {
+    if (split_item == IN_NOT_SPLIT_OUT_NOT_SPLIT || split_item == IN_SPLIT_OUT_NOT_SPLIT) {
         if (num_group_list > 0) {
             TORCH_CHECK(num_x == 1 && num_weight == num_group_list, "Invalid inputs. "
                         "When split_item = 0 or 1 and input group_list is not None, "
@@ -53,7 +53,7 @@ void create_new_tensor_multi_dim(std::vector<at::Tensor> &y, const at::Tensor &x
 {
     auto x_sizes = x_i.sizes();
     std::vector<int64_t> y_sizes(x_sizes.begin(), x_sizes.end());
-    y_sizes.at(x_sizes.size() - 1) = n;
+    y_sizes.at(x_sizes.size() - 1) = static_cast<int64_t>(n);
 
     auto output_size = op_infer::array_to_small_vector(y_sizes);
     y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
@@ -220,14 +220,15 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                                            c10::optional<int64_t> group_list_type,
                                            c10::optional<int64_t> act_type,
                                            c10::optional<at::ScalarType> output_dtype)
-// func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None, Tensor[]? offset=None,
-// Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None, Tensor[]? per_token_scale=None, Tensor? group_list=None,
-// Tensor[]? activation_input, Tensor[]? activation_quant_offset, Tensor[]? activation_quant_offset, int? split_item=0,
+// func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None,
+// Tensor[]? offset=None, Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None,
+// Tensor[]? per_token_scale=None, Tensor? group_list=None, Tensor[]? activation_input,
+// Tensor[]? activation_quant_offset, Tensor[]? activation_quant_offset, int? split_item=0,
 // int? group_type=-1, int? group_list_type=0, int? act_type=0, ScalarType? output_dtype=None) -> Tensor[]
 {
     auto num_x = x.size();
     bool singleWeight = weight.size() == 1 && weight[0].sizes().size() == 3;
-    auto num_weight = singleWeight ? weight[0].size(0) : weight.size();
+    auto num_weight = singleWeight ? weight[0].size(0) : static_cast<size_t>(weight.size());
     auto group_list_real = group_list.value_or(at::Tensor());
     auto num_group_list = group_list_real.size(0);
     int64_t split_item_value = split_item.value_or(0);
@@ -237,9 +238,9 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
 
     size_t dim_num_w = weight[0].sizes().size();
-    size_t n0 = weight[0].size(dim_num_w - 1);
+    size_t n0 = static_cast<size_t>(weight[0].size(dim_num_w - 1));
 
-    if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value || IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
+    if (split_item_value == IN_NOT_SPLIT_OUT_NOT_SPLIT || split_item_value == IN_SPLIT_OUT_NOT_SPLIT) {
         if (num_group_list > 0) {
             y.reserve(num_group_list);
             int64_t glr_value_0 = group_list_real[0].item<int64_t>();
@@ -264,11 +265,11 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                 create_new_tensor_multi_dim(y, x[i], ni, options);
             }
         }  // 校验NO_SPLIT时为特殊场景（groupList为空）或num_x > 1
-    } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value || IN_SPLIT_OUT_SPLIT == split_item_value) {
+    } else if (split_item_value == IN_NOT_SPLIT_OUT_SPLIT || split_item_value == IN_SPLIT_OUT_SPLIT) {
         if (num_x > 1) {
             size_t dim_m = 0;
             for (size_t i = 0; i < num_x; i++) {
-                dim_m += x[i].size(0);
+                dim_m += static_cast<size_t>(x[i].size(0));
             }
             create_new_tensor(y, dim_m, n0, options);
         } else if (num_x == 1) {
@@ -293,9 +294,9 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     int64_t act_type_value = act_type.value_or(0);
 
     EXEC_NPU_CMD(aclnnGroupedMatmulV4, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
-                 antiquant_offset_real, per_token_scale_real, group_list_real, activation_input_real, activation_quant_scale_real,
-                 activation_quant_offset_real, split_item_value, group_type_value, group_list_type_value, act_type_value,
-                 result, act_out, dynamic_quant_scale_out);
+                 antiquant_offset_real, per_token_scale_real, group_list_real, activation_input_real,
+                 activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,
+                 group_list_type_value, act_type_value, result, act_out, dynamic_quant_scale_out);
 
     return y;
 }
@@ -356,7 +357,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                 create_new_tensor_multi_dim(y, x[i], weight[i].size(1), options);
             }
         }  // 校验NO_SPLIT时为特殊场景（groupList为空）或num_x > 1
-    } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value || IN_SPLIT_OUT_SPLIT == split_item_value) {
+    } else if (split_item_value == IN_NOT_SPLIT_OUT_SPLIT || split_item_value == IN_SPLIT_OUT_SPLIT) {
         if (num_x > 1) {
             size_t dim_m = 0;
             for (size_t i = 0; i < num_x; i++) {

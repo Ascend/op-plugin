@@ -17,14 +17,18 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
+const int DIMENSION_2D = 2;
+const int DIMENSION_3D = 3;
+const int DIMENSION_4D = 4;
+const int STRIDE_AXIS_1_LIMIT = 63;
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
 bool is_special_conv1d(const at::Tensor &input, const at::Tensor &weight, at::IntArrayRef stride,
                        at::IntArrayRef padding, at::IntArrayRef dilation, int64_t groups)
 {
-    if (stride[1] > 63 && stride[1] == weight.size(3) && padding[1] == 0 && dilation[1] == 1 && groups == 1 &&
-        input.size(1) == 1) {
+    if (stride[1] > STRIDE_AXIS_1_LIMIT && stride[1] == weight.size(3) &&
+        padding[1] == 0 && dilation[1] == 1 && groups == 1 && input.size(1) == 1) {
         return true;
     } else {
         return false;
@@ -35,15 +39,15 @@ at::Tensor &conv2d_backward_input_out_nocheck(at::Tensor &grad_input, const at::
                                               const at::Tensor &weight, at::IntArrayRef stride, at::IntArrayRef padding,
                                               at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(grad.dim() >= 3, "grad has to be more than 3D, but got Tensor of dimension ", grad.dim(),
+    TORCH_CHECK(grad.dim() >= DIMENSION_3D, "grad has to be more than 3D, but got Tensor of dimension ", grad.dim(),
         OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(weight.dim() >= 4, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(),
+    TORCH_CHECK(weight.dim() >= DIMENSION_4D, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(),
         OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size(),
+    TORCH_CHECK(stride.size() >= DIMENSION_2D, "stride has to contain more than 2 elements, but got ", stride.size(),
         OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size(),
+    TORCH_CHECK(padding.size() >= DIMENSION_2D, "padding has to contain more than 2 elements, but got ", padding.size(),
         OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size(),
+    TORCH_CHECK(dilation.size() >= DIMENSION_2D, "dilation has to contain more than 2 elements, but got ", dilation.size(),
         OPS_ERROR(ErrCode::PARAM));
     // support special scenario
     if (is_special_conv1d(input, weight, stride, padding, dilation, groups)) {
@@ -80,18 +84,18 @@ at::Tensor &conv2d_backward_weight_out_nocheck(at::Tensor &grad_weight, const at
                                                const at::Tensor &weight, at::IntArrayRef stride,
                                                at::IntArrayRef padding, at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(grad.dim() >= 3, "grad has to be more than 3D, but got Tensor of dimension ", grad.dim(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(weight.dim() >= 4, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(input.dim() >= 4, "input has to be more than 4D, but got Tensor of dimension ", input.dim(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(padding.size() >= 2, "padding has to contain more than 2 elements, but got ", padding.size(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size(),
-        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(grad.dim() >= DIMENSION_3D,
+        "grad has to be more than 3D, but got Tensor of dimension ", grad.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= DIMENSION_4D,
+        "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(input.dim() >= DIMENSION_4D,
+        "input has to be more than 4D, but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= DIMENSION_2D,
+        "stride has to contain more than 2 elements, but got ", stride.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= DIMENSION_2D,
+        "padding has to contain more than 2 elements, but got ", padding.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= DIMENSION_2D,
+        "dilation has to contain more than 2 elements, but got ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(grad.size(2) != 0, "3rd dim of grad cannot be 0" + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight.size(3) != 0, "4th dim of weight cannot be 0" + OPS_ERROR(ErrCode::PARAM));
     // support special scenario
@@ -125,11 +129,9 @@ at::Tensor &conv2d_backward_weight_out_nocheck(at::Tensor &grad_weight, const at
     return grad_weight;
 }
 
-at::Tensor &conv2d_backward_bias_out_nocheck(at::Tensor &grad_bias, const at::Tensor &input, const at::Tensor &grad,
-                                             const at::Tensor &weight, at::IntArrayRef stride, at::IntArrayRef padding,
-                                             at::IntArrayRef dilation, int64_t groups)
+at::Tensor &conv2d_backward_bias_out_nocheck(at::Tensor &grad_bias, const at::Tensor &grad)
 {
-    TORCH_CHECK(grad.dim() >= 2, "grad has to be more than 2D, but got Tensor of dimension ", grad.dim(),
+    TORCH_CHECK(grad.dim() >= DIMENSION_2D, "grad has to be more than 2D, but got Tensor of dimension ", grad.dim(),
         OPS_ERROR(ErrCode::PARAM));
     if (grad.numel() == grad.size(0) * grad.size(1)) {
         at::Tensor grad_view = grad.contiguous().view({grad.size(0), grad.size(1)});
@@ -156,7 +158,7 @@ std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> conv2d_backward_out_nocheck
     }
 
     if (grad_input_mask[2]) {
-        conv2d_backward_bias_out_nocheck(grad_bias, input, grad, weight, stride, padding, dilation, groups);
+        conv2d_backward_bias_out_nocheck(grad_bias, grad);
     }
 
     return std::tie(grad_input, grad_weight, grad_bias);
@@ -164,42 +166,44 @@ std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> conv2d_backward_out_nocheck
 } // namespace
 
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(const at::Tensor &input, const at::Tensor &grad,
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(const at::Tensor &input, const at::Tensor &grad_output,
                                                                    const at::Tensor &weight, at::IntArrayRef stride,
                                                                    at::IntArrayRef padding, at::IntArrayRef dilation,
-                                                                   int64_t groups, std::array<bool, 3> grad_input_mask)
+                                                                   int64_t groups, std::array<bool, 3> output_mask)
 {
     auto output_sizes =
-        op_infer::conv2d_backward_npu_output_size(input, grad, weight);
+        op_infer::conv2d_backward_npu_output_size(input, grad_output, weight);
 
     at::Tensor grad_input;
     at::Tensor grad_weight;
     at::Tensor grad_bias;
-    if (grad_input_mask[0]) {
+    if (output_mask[0]) {
         int64_t grad_input_format = input.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
         grad_input =
             npu_preparation::apply_tensor_with_format(std::get<0>(output_sizes), input.options(), grad_input_format);
     }
 
-    if (grad_input_mask[1]) {
+    if (output_mask[1]) {
         // For group conv2d: keep consistent with weight to avoid allreduce accuracy problem.
         if (groups > 1) {
             grad_weight = npu_preparation::apply_tensor_with_format(
                 std::get<1>(output_sizes), weight.options().dtype(at::kFloat), ACL_FORMAT_NCHW);
         } else {
             grad_weight =
-                npu_preparation::apply_tensor_with_format(std::get<1>(output_sizes), weight.options().dtype(at::kFloat),
+                npu_preparation::apply_tensor_with_format(std::get<1>(output_sizes),
+                                                          weight.options().dtype(at::kFloat),
                                                           npu_preparation::get_tensor_npu_format(weight));
         }
     }
 
-    if (grad_input_mask[2]) {
+    if (output_mask[2]) {
         grad_bias =
-            npu_preparation::apply_tensor_with_format(std::get<2>(output_sizes), grad.options(), ACL_FORMAT_NCHW);
+            npu_preparation::apply_tensor_with_format(std::get<2>(output_sizes),
+                                                      grad_output.options(), ACL_FORMAT_NCHW);
     }
 
-    conv2d_backward_out_nocheck(grad_input, grad_weight, grad_bias, input, grad, weight, stride, padding, dilation,
-                                groups, grad_input_mask);
+    conv2d_backward_out_nocheck(grad_input, grad_weight, grad_bias, input, grad_output,
+                                weight, stride, padding, dilation, groups, output_mask);
 
     return std::make_tuple(std::move(grad_input), std::move(grad_weight), std::move(grad_bias));
 }

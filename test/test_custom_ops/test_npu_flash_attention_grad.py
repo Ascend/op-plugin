@@ -29,7 +29,6 @@ class TestNPUFlashAttention(TestCase):
         scale = 0.08838
         qk = torch.matmul(query, key.transpose(2, 3)).mul(scale)
         softmax_res, x_max, x_sum = tsoftmax(qk.to(torch.float32))
-        softmax_res = softmax_res.to(torch.float16)
         y = torch.matmul(softmax_res, value)
         dv = torch.matmul(softmax_res.transpose(2, 3), dy)
         dp = torch.matmul(dy, value.transpose(2, 3))
@@ -71,8 +70,6 @@ class TestNPUFlashAttention(TestCase):
         x_sum = x_sum.expand(1, 32, 128, 8).npu()
         out_npu = self.trans_BNSD2BSH(out).to(torch.float16).npu()
         dq, dk, dv, dpse = self.custom_op_exec(q_npu, k_npu, v_npu, dy_npu, x_max, x_sum, out_npu)
-        print(dq_cpu.shape)
-        print(dq.shape)
         self.assertRtolEqual(dq_cpu, dq.to(torch.float32), prec=0.005, prec16=0.005)
 
 if __name__ == "__main__":

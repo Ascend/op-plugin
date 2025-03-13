@@ -81,7 +81,7 @@ void _split_and_exec_npu_cmd_add(at::TensorList& tensors1, at::TensorList tensor
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_tensors2(tensors2.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
@@ -117,21 +117,21 @@ std::vector<at::Tensor> _foreach_add(at::TensorList tensors1,
     return result;
 }
 
-void _foreach_add_(at::TensorList tensors1, at::TensorList tensors2, const at::Scalar& alpha)
+void _foreach_add_(at::TensorList self, at::TensorList other, const at::Scalar& alpha)
 {
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_add_list_kernel_slow_(tensors1, tensors2, alpha);
+        return at::native::foreach_tensor_add_list_kernel_slow_(self, other, alpha);
     }
-    DO_COMPATIBILITY(aclnnForeachAddListV2, _foreach_add_v1_(tensors1, tensors2, alpha));
-    at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
-        return at::native::foreach_tensor_add_list_kernel_slow_(tensors1, tensors2, alpha);
+    DO_COMPATIBILITY(aclnnForeachAddListV2, _foreach_add_v1_(self, other, alpha));
+    at::native::check_foreach_api_restrictions(self, other);
+    if (!at::native::can_use_fast_route({self, other}, alpha)) {
+        return at::native::foreach_tensor_add_list_kernel_slow_(self, other, alpha);
     }
 
-    _split_and_exec_npu_cmd_add(tensors1, tensors2, alpha, tensors1, true);
+    _split_and_exec_npu_cmd_add(self, other, alpha, self, true);
     return;
 }
 
@@ -155,7 +155,7 @@ void _split_and_exec_npu_cmd_add_scalarlist(at::TensorList& tensors1, at::ArrayR
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::ArrayRef<at::Scalar> temp_scalars(scalars.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
@@ -165,7 +165,8 @@ void _split_and_exec_npu_cmd_add_scalarlist(at::TensorList& tensors1, at::ArrayR
 
 std::vector<at::Tensor> _foreach_add(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 {
-    DO_COMPATIBILITY(aclnnForeachAddScalarList, at::native::foreach_tensor_add_scalarlist_kernel_slow(tensors, scalars));
+    DO_COMPATIBILITY(aclnnForeachAddScalarList,
+                     at::native::foreach_tensor_add_scalarlist_kernel_slow(tensors, scalars));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
@@ -191,23 +192,24 @@ std::vector<at::Tensor> _foreach_add(at::TensorList tensors, at::ArrayRef<at::Sc
     return result;
 }
 
-void _foreach_add_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
+void _foreach_add_(at::TensorList self, at::ArrayRef<at::Scalar> scalars)
 {
-    DO_COMPATIBILITY(aclnnForeachAddScalarList, at::native::foreach_tensor_add_scalarlist_kernel_slow_(tensors, scalars));
+    DO_COMPATIBILITY(aclnnForeachAddScalarList,
+                     at::native::foreach_tensor_add_scalarlist_kernel_slow_(self, scalars));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_add_scalarlist_kernel_slow_(tensors, scalars);
+        return at::native::foreach_tensor_add_scalarlist_kernel_slow_(self, scalars);
     }
     
     // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
-    at::native::check_foreach_api_restrictions(tensors, scalars);
-    if (!at::native::can_use_fast_route(tensors, scalars, true)) {
-        at::native::foreach_tensor_add_scalarlist_kernel_slow_(tensors, scalars);
+    at::native::check_foreach_api_restrictions(self, scalars);
+    if (!at::native::can_use_fast_route(self, scalars, true)) {
+        at::native::foreach_tensor_add_scalarlist_kernel_slow_(self, scalars);
         return;
     }
 
-    _split_and_exec_npu_cmd_add_scalarlist(tensors, scalars, tensors, true);
+    _split_and_exec_npu_cmd_add_scalarlist(self, scalars, self, true);
 }
 }  // namespace op_api
