@@ -22,20 +22,22 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& eye_out_npu_nocheck(at::Tensor& result, int64_t n, int64_t m) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Eye")
-      .Output(result)
-      .Attr("num_rows", n)
-      .Attr("num_columns", m)
-      .Attr("dtype", result.scalar_type())
-      .Run();
+at::Tensor& eye_out_npu_nocheck(at::Tensor& result, int64_t n, int64_t m)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Eye")
+        .Output(result)
+        .Attr("num_rows", n)
+        .Attr("num_columns", m)
+        .Attr("dtype", result.scalar_type())
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
-at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result) {
+at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result)
+{
     TORCH_CHECK(n >= 0, "n must be greater or equal to 0, got ", n,
         OPS_ERROR(ErrCode::VALUE));
 
@@ -61,7 +63,7 @@ at::Tensor& eye_out(int64_t n, int64_t m, at::Tensor& result) {
 }
 
 at::Tensor& eye_out(int64_t n, at::Tensor& result) {
-  return acl_op::eye_out(n, -1, result);
+    return acl_op::eye_out(n, -1, result);
 }
 
 at::Tensor eye(
@@ -69,22 +71,24 @@ at::Tensor eye(
     c10::optional<at::ScalarType> dtype_opt,
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  auto device = device_or_default(device_opt);
-  at::TensorOptions option = c10::TensorOptions().dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+    c10::optional<bool> pin_memory_opt)
+{
+    auto device = device_or_default(device_opt);
+    at::TensorOptions option =
+        c10::TensorOptions().dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
 
-  c10::SmallVector<int64_t, N> output_size = {n, n};
+    c10::SmallVector<int64_t, N> output_size = {n, n};
 
-  // The operator does not support the bool type and needs to be converted to an integer.
-  at::Tensor result = (option.dtype() == at::kBool) ?
-      npu_preparation::apply_tensor_with_format(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
-      npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_ND);
+    // The operator does not support the bool type and needs to be converted to an integer.
+    at::Tensor result = (option.dtype() == at::kBool) ?
+        npu_preparation::apply_tensor_with_format(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
+        npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_ND);
 
-  acl_op::eye_out(n, result);
-  if (option.dtype() == at::kBool) {
-    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
-  }
-  return result;
+    acl_op::eye_out(n, result);
+    if (option.dtype() == at::kBool) {
+        result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
+    }
+    return result;
 }
 
 at::Tensor eye(
@@ -93,23 +97,24 @@ at::Tensor eye(
     c10::optional<at::ScalarType> dtype_opt,
     c10::optional<at::Layout> layout_opt,
     c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  auto device = device_or_default(device_opt);
-  c10::TensorOptions option =
-      c10::TensorOptions().dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+    c10::optional<bool> pin_memory_opt)
+{
+    auto device = device_or_default(device_opt);
+    c10::TensorOptions option =
+        c10::TensorOptions().dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
 
-  // get the output size
-  c10::SmallVector<int64_t, N> output_size = {n, m};
+    // get the output size
+    c10::SmallVector<int64_t, N> output_size = {n, m};
 
-  // The operator does not support the bool type and needs to be converted to an integer.
-  at::Tensor result = (option.dtype() == at::kBool) ?
-      npu_preparation::apply_tensor_with_format(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
-      npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_ND);
+    // The operator does not support the bool type and needs to be converted to an integer.
+    at::Tensor result = (option.dtype() == at::kBool) ?
+        npu_preparation::apply_tensor_with_format(output_size, option.dtype(at::kInt), ACL_FORMAT_ND) :
+        npu_preparation::apply_tensor_with_format(output_size, option, ACL_FORMAT_ND);
 
-  eye_out_npu_nocheck(result, n, m);
-  if (option.dtype() == at::kBool) {
-    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
-  }
-  return result;
+    eye_out_npu_nocheck(result, n, m);
+    if (option.dtype() == at::kBool) {
+        result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
+    }
+    return result;
 }
 } // namespace acl_op

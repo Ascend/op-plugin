@@ -11,11 +11,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/ForeachUtils.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpUtils.h"
-#include <ATen/native/ForeachUtils.h>
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
@@ -54,7 +54,7 @@ void _foreach_acos_(const at::TensorList self)
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_acos_slow_(self);
     }
-    
+
     // datatype check
     if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
                                                op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
@@ -69,7 +69,7 @@ void _foreach_acos_(const at::TensorList self)
     if (self.empty()) {
         return;
     }
-    
+
     _split_and_exec_npu_cmd_acos(self, self, true);
 }
 
@@ -82,7 +82,7 @@ std::vector<at::Tensor> _foreach_acos(const at::TensorList self)
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_acos_slow(self);
     }
-    
+
     // datatype check
     if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
                                                op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
