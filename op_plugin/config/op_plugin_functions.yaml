@@ -6511,6 +6511,9 @@ custom:
   - func: npu_apply_rotary_pos_emb(Tensor query, Tensor key, Tensor cos, Tensor sin, str layout='BSH') -> (Tensor, Tensor)
     op_api: all_version
 
+  - func: npu_batch_gather_matmul(Tensor y, Tensor x, Tensor weight_b, Tensor indices, Tensor? weight_a=None, int layer_idx=0, float scale=1e-3, int y_offset=0, int y_slice_size=-1) -> Tensor
+    op_api: all_version
+
   - func: npu_batch_nms(Tensor self, Tensor scores, float score_threshold, float iou_threshold, int max_size_per_class, int max_total_size, bool change_coordinate_frame=False, bool transpose_box=False) -> (Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
     exposed: all_version

@@ -1234,3 +1234,9 @@ def npu_dequant_bias_meta(x, weight_scale, activation_scale, bias, output_dtype=
         raise RuntimeError("Only supported output_dtype is float16 and bfloat16" + ops_error(ErrCode.NOT_SUPPORT))
     return torch.empty_like(x, dtype=output_dtype)
 
+
+@impl(m, "npu_batch_gather_matmul")
+def npu_batch_gather_matmul_meta(y, x, weight_b, indices, weight_a=None,
+                                 layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1):
+    return torch.empty_like(y, dtype=y.dtype)
+
