@@ -67,8 +67,9 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
 
 void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name)
 {
+    aclrtStream stream = c10_npu::getCurrentNPUStream().stream(false);
     auto acl_call = [=]() -> int {
-        auto contextPtr = GetContext();
+        auto contextPtr = GetContext(stream);
         uint64_t workspaceSize = OperationSetup(paramsetter.variantPack, op, contextPtr);
         at::Tensor workspaceTensor;
         void *workspacePtr = nullptr;
@@ -159,26 +160,21 @@ ContextManager::~ContextManager()
 }
 
 
-atb::Context* ContextManager::GetContext()
+atb::Context* ContextManager::GetContext(aclrtStream stream)
 {
     std::call_once(createFlag, [this]() {
         auto status = atb::CreateContext(&atbContext);
         TORCH_CHECK(status == 0, "create context failed!");
-
-        int32_t devId = 0;
-        aclrtGetDevice(&devId);
-        aclrtStream stream = c10_npu::getCurrentNPUStream(devId).stream(false);
-        TORCH_CHECK(stream != nullptr, "get current stream failed");
-
-        atbContext->SetExecuteStream(stream);
     });
+
+    atbContext->SetExecuteStream(stream);
     return atbContext;
 }
 
 
-atb::Context* GetContext()
+atb::Context* GetContext(aclrtStream stream)
 {
-    return ContextManager::GetInstance().GetContext();
+    return ContextManager::GetInstance().GetContext(stream);
 }
 
 } // namespace atb

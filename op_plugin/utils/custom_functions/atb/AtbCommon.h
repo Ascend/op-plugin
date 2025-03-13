@@ -22,7 +22,7 @@
 namespace atb {
 
 atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor);
-atb::Context* GetContext();
+atb::Context* GetContext(aclrtStream stream);
 at::Tensor GetWorkspaceTensor(uint64_t workspaceSize);
 uint64_t OperationSetup(atb::VariantPack variantPack, atb::Operation *operation, atb::Context* contextPtr);
 class ParamSetter {
@@ -36,7 +36,7 @@ public:
 class ContextManager {
 public:
     static ContextManager& GetInstance();
-    atb::Context* GetContext();
+    atb::Context* GetContext(aclrtStream stream);
     ~ContextManager();
 
     ContextManager(const ContextManager&) = delete;
