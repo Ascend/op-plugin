@@ -28,7 +28,9 @@ void _foreach_add_v1_(const at::TensorList self, const at::Scalar& scalar)
         return at::native::foreach_tensor_add_scalar_kernel_slow_(self, scalar);
     }
     auto scalar_type = self[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
+    if (scalar_type != at::ScalarType::Half &&
+        scalar_type != at::ScalarType::Float &&
+        scalar_type != at::ScalarType::Int) {
         TORCH_CHECK(false, "input must be half, float or int32", OPS_ERROR(ErrCode::TYPE));
     }
     at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type(), self[0].device());
@@ -43,14 +45,17 @@ std::vector<at::Tensor> _foreach_add_v1(const at::TensorList self, const at::Sca
         return at::native::foreach_tensor_add_scalar_kernel_slow(self, scalar);
     }
     auto scalar_type = self[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
+    if (scalar_type != at::ScalarType::Half &&
+        scalar_type != at::ScalarType::Float &&
+        scalar_type != at::ScalarType::Int) {
         TORCH_CHECK(false, "input must be half, float or int32", OPS_ERROR(ErrCode::TYPE));
     }
     std::vector<at::Tensor> result;
     result.reserve(self.size());
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size,
+                                                                      tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
     at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type(), self[0].device());
@@ -79,7 +84,7 @@ void _split_and_exec_npu_cmd_add_scalar(const at::TensorList tensors1, const at:
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
         EXEC_NPU_CMD(aclnnForeachAddScalarV2, temp_tensors1, scalar_, temp_result);
@@ -105,7 +110,8 @@ std::vector<at::Tensor> _foreach_add(const at::TensorList self, const at::Scalar
     result.reserve(self.size());
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size,
+                                                                      tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
     _split_and_exec_npu_cmd_add_scalar(self, scalar, result_, false);

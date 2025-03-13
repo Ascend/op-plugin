@@ -13,15 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/OpApiInterface.h"
+#include <ATen/native/ForeachUtils.h>
+
 #include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
-#include <ATen/native/ForeachUtils.h>
 #include "op_plugin/utils/custom_functions/opapi/ForeachConstants.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
+const size_t SIZE_OF_NOT_INT = 4;
+const size_t SIZE_OF_SHORT = 2;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_calcu_util = at_npu::native::CalcuOpUtil;
 
@@ -52,22 +55,24 @@ void split_and_exec_npu_cmd_copy(const at::TensorList dst, at::TensorList src, b
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_src(src.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_dst(dst.data() + loop_time * max_tensor_count, remaining_count);
         exec_npu_cmd_copy(temp_dst, temp_src, non_blocking);
     }
 }
 
-bool check_tensor_dtype_spport_base(const at::TensorList src)
+bool check_tensor_dtype_support_base(const at::TensorList src)
 {
-    if ((sizeof(src[0]) == 4 && src[0].scalar_type() != at::ScalarType::QInt32) || src[0].scalar_type() == at::ScalarType::Int) {
+    if ((sizeof(src[0]) == SIZE_OF_NOT_INT && src[0].scalar_type() != at::ScalarType::QInt32) ||
+         src[0].scalar_type() == at::ScalarType::Int) {
         return true;
     }
-    if (sizeof(src[0]) == 2 || src[0].scalar_type() == at::ScalarType::Short) {
+    if (sizeof(src[0]) == SIZE_OF_SHORT || src[0].scalar_type() == at::ScalarType::Short) {
         return true;
     }
-    if (src[0].scalar_type() == at::ScalarType::Char || src[0].scalar_type() == at::ScalarType::Byte || src[0].scalar_type() == at::ScalarType::BFloat16 ||
+    if (src[0].scalar_type() == at::ScalarType::Char || src[0].scalar_type() == at::ScalarType::Byte ||
+        src[0].scalar_type() == at::ScalarType::BFloat16 ||
         src[0].scalar_type() == at::ScalarType::Float || src[0].scalar_type() == at::ScalarType::Half) {
         return true;
     }
@@ -79,9 +84,9 @@ void _foreach_copy_(const at::TensorList self, const at::TensorList src, bool no
     DO_COMPATIBILITY(aclnnForeachCopy, at::native::foreach_tensor_copy_list_kernel_slow_(self, src, non_blocking));
     at::native::check_foreach_api_restrictions(self, src);
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1)||
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
-    if (!is_support_nd_out || !at::native::can_use_fast_route(self, src) || !check_tensor_dtype_spport_base(src)) {
+    if (!is_support_nd_out || !at::native::can_use_fast_route(self, src) || !check_tensor_dtype_support_base(src)) {
         return at::native::foreach_tensor_copy_list_kernel_slow_(self, src, non_blocking);
     }
 

@@ -20,6 +20,8 @@
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace acl_op {
+const int DIMENSION_2D = 2;
+const int DIMENSION_3D = 3;
 using npu_preparation = at_npu::native::OpPreparation;
 using format_helper = at_npu::native::FormatHelper;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
@@ -39,7 +41,7 @@ Matmul: [1] 2-2-t(strict transpose); [2] 2-n-view+t(view transpose).
 *****************************************/
 bool is_transpose_last_two_dims_flex(const at::Tensor &tensor)
 {
-    if (tensor.dim() != 2) {
+    if (tensor.dim() != DIMENSION_2D) {
         return false;
     }
 
@@ -77,7 +79,7 @@ void mm_insert_input_transpose(at::Tensor &tensor, bool &is_tensor_trans_flex, b
     is_tensor_trans_strict = !is_tensor_trans_strict;
 }
 
-void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict)
+void mm_set_format_contiguous(at::Tensor &tensor, const bool &is_tensor_trans_flex, const bool &is_tensor_trans_strict)
 {
     if (is_tensor_trans_flex) {
         if (!is_tensor_trans_strict) {
@@ -95,7 +97,7 @@ void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bo
 
 bool is_mm_transpose(const at::Tensor &tensor)
 {
-    if (tensor.dim() < 2 || tensor.dim() > 3) {
+    if (tensor.dim() < DIMENSION_2D || tensor.dim() > DIMENSION_3D) {
         return false;
     }
     int64_t dim1 = tensor.dim() - 1;
@@ -136,7 +138,7 @@ bool is_transpose_inner_axis(const at::Tensor &self)
 {
     const static int64_t kInnerAxisMinBytes = 256;
     const static int64_t kInnerAxisMaxLimit = 65535;
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1 || self.dim() < 2 ||
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1 || self.dim() < DIMENSION_2D ||
         (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float &&
          self.scalar_type() != at::ScalarType::BFloat16)) {
         return false;
@@ -160,7 +162,7 @@ bool is_transpose_inner_axis(const at::Tensor &self)
              bool((static_cast<uint64_t>(self_inner_axis) * static_cast<uint64_t>(data_type)) & 0x1F))) &&
            ((self_outer_axis * data_type >= kInnerAxisMinBytes && self_outer_axis <= kInnerAxisMaxLimit) ||
             (self_outer_axis * data_type < kInnerAxisMinBytes &&
-             !((static_cast<uint64_t>(self_outer_axis) * static_cast<uint64_t>(data_type)) & 0x1F)));
+             ((static_cast<uint64_t>(self_outer_axis) * static_cast<uint64_t>(data_type)) & 0x1F) == 0));
 }
 
 bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2)
@@ -247,7 +249,8 @@ at::Tensor &mm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const
 
 at::Tensor &mm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result)
 {
-    TORCH_CHECK(self.dim() == 2 && mat2.dim() == 2, "both arguments to matmul need to be 2D, but they are ",
+    TORCH_CHECK(self.dim() == DIMENSION_2D && mat2.dim() == DIMENSION_2D,
+                "both arguments to matmul need to be 2D, but they are ",
                 self.dim(), "D and ", mat2.dim(), "D", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
                 "mm_out is not support int8 dtype", OPS_ERROR(ErrCode::PARAM))
@@ -263,7 +266,8 @@ at::Tensor &mm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &r
 
 at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
 {
-    TORCH_CHECK(self.dim() == 2 && mat2.dim() == 2, "both arguments to matmul need to be 2D, but they are ",
+    TORCH_CHECK(self.dim() == DIMENSION_2D && mat2.dim() == DIMENSION_2D,
+                "both arguments to matmul need to be 2D, but they are ",
                 self.dim(), "D and ", mat2.dim(), "D", OPS_ERROR(ErrCode::PARAM));
 
     // 1.cann bmm support int8(input)->int32(out)
@@ -279,15 +283,17 @@ at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
     // check format_out of mm is NCHW. Delate after definite NLP model.
     if ((self.scalar_type() == at::ScalarType::Half)) {
         // check is 16-algined with high-performance
-        auto is_aligin = [&]() {
-            return (!(static_cast<uint64_t>(self.size(0)) & 0xF)) && (!(static_cast<uint64_t>(self.size(1)) & 0xF)) &&
-                   (!(static_cast<uint64_t>(mat2.size(0)) & 0xF)) && (!(static_cast<uint64_t>(mat2.size(1)) & 0xF));
+        auto is_align = [&]() {
+            return ((static_cast<uint64_t>(self.size(0)) & 0xF) == 0) &&
+                   ((static_cast<uint64_t>(self.size(1)) & 0xF) == 0) &&
+                   ((static_cast<uint64_t>(mat2.size(0)) & 0xF) == 0) &&
+                   ((static_cast<uint64_t>(mat2.size(1)) & 0xF) == 0);
         };
         // There is a data trampling problem in non-aligned scenes. For the time
         // being, only aligned scenes are supported.
         static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
         if (format_helper::IsBaseFormatType(self) && format_helper::IsBaseFormatType(mat2) && mm_bmm_nd &&
-            ((is_support_nd_out && mm_check_nd_to_nz_on_the_fly(self, mat2)) || (!is_support_nd_out && is_aligin()))) {
+            ((is_support_nd_out && mm_check_nd_to_nz_on_the_fly(self, mat2)) || (!is_support_nd_out && is_align()))) {
             result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
         } else {
             need_nd_out = mm_bmm_nd;

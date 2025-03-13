@@ -18,72 +18,79 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& result) {
-  result.resize_(size);
-  return result.zero_();
+at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& result)
+{
+    result.resize_(size);
+    return result.zero_();
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)
 at::Tensor zeros(
     at::IntArrayRef size,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  return zeros_common_nocheck(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
 }
 
 at::Tensor zeros(
     at::IntArrayRef size,
     c10::optional<at::DimnameList> names,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  return zeros_common_nocheck(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
 }
 #endif
 
 #if VERSION_BETWEEN(V2R0, V2R0)
 at::Tensor zeros(
     at::IntArrayRef size,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  return zeros_common_nocheck(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
 }
 
 at::Tensor zeros(
     at::IntArrayRef size,
     c10::optional<at::DimnameList> names,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  return acl_op::zeros(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    return acl_op::zeros(size, dtype, layout, device, pin_memory);
 }
 #endif
 
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor zeros_symint(
     c10::SymIntArrayRef size,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  return zeros_common_nocheck(c10::asIntArrayRefUnchecked(size), dtype_opt, layout_opt, device_opt, pin_memory_opt);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    return zeros_common_nocheck(c10::asIntArrayRefUnchecked(size), dtype, layout, device, pin_memory);
 }
 
 
 at::Tensor zeros(
     at::IntArrayRef size,
     c10::optional<at::DimnameList> names,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  return zeros_common_nocheck(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
 }
 #endif
 } // namespace acl_op
