@@ -5181,7 +5181,7 @@ _add_torch_npu_docstr(
     "npu_kronecker_quant",
     """
 接口原型：
-npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, ScalarType? dst_dtype=None) -> (Tensor out, Tensor quant_scale)
+npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, float? clip_ratio=None, ScalarType? dst_dtype=None) -> (Tensor out, Tensor quant_scale)
 
 功能描述
 为矩阵x依次进行两次小矩阵乘法，然后针对矩阵乘的结果进行量化处理。
@@ -5190,6 +5190,7 @@ npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, ScalarTy
 x: Device侧的Tensor类型，表示输入；数据类型支持FLOAT16、BFLOAT16类型；shape为[K, M, N]，其中N必须为8的整数倍。
 kronecker_p1: Device侧的Tensor类型，表示输入；数据类型支持FLOAT16、BFLOAT16类型，数据类型与x一致；shape为[M, M]，M与x第一维相同。
 kronecker_p2: Device侧的Tensor类型，表示输入；数据类型支持FLOAT16、BFLOAT16类型，数据类型与x一致；shape为[N, N]，N与x第二维相同。
+clip_ratio: float类型，可选参数，数据范围为(0, 1]，默认值为1。
 dst_dtype：ScalarType类型，可选参数，输入值允许为torch.int32，默认值为torch.int32。
 
 输出说明
@@ -5213,8 +5214,10 @@ N = 64
 x = torch.randn(K, M, N).npu()
 kronecker_p1 = torch.randn(M, M).half().npu()
 kronecker_p2 = torch.randn(N, N).half().npu()
+clip_ratio = 1.0
+dst_dtype = torch.int32
 
-out, quant_scale = torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2)
+out, quant_scale = torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2, clip_ratio, dst_dtype)
 """
 )
 
