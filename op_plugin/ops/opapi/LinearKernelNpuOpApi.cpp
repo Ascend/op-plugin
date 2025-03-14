@@ -23,19 +23,19 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor npu_linear(
     const at::Tensor &input,
     const at::Tensor &weight,
-    const c10::optional<at::Tensor> &bias_opt)
+    const c10::optional<at::Tensor> &bias)
 {
-    const at::Tensor &bias = bias_opt.value_or(at::Tensor());
+    const at::Tensor &bias_opt = bias.value_or(at::Tensor());
     const at::Tensor &weight_t = weight.t();
     auto output_size = {input.size(0), weight.size(0)};
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, input.options());
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
 
-    if (bias.defined()) {
+    if (bias_opt.defined()) {
         const at::Scalar beta = 1;
         const at::Scalar alpha = 1;
-        DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm(bias, input, weight_t, beta, alpha));
-        EXEC_NPU_CMD(aclnnAddmm, bias, input, weight_t, beta, alpha, result, cube_math_type);
+        DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm(bias_opt, input, weight_t, beta, alpha));
+        EXEC_NPU_CMD(aclnnAddmm, bias_opt, input, weight_t, beta, alpha, result, cube_math_type);
         return result;
     }
     DO_COMPATIBILITY(aclnnMm, acl_op::mm(input, weight_t));
