@@ -31,7 +31,7 @@ std::tuple<at::Tensor, at::Tensor> native_dropout(
     bool dropout_train = !train.has_value() ? true : train.value();
 
     at::TensorOptions options = input.options();
-    if (p == 0 || !dropout_train) {
+    if (p == static_cast<double>(0) || !dropout_train) {
         at::Tensor mask = acl_op::ones(
             input.sizes(),
             at::kBool,
@@ -40,7 +40,7 @@ std::tuple<at::Tensor, at::Tensor> native_dropout(
             options.pinned_memory());
         return std::make_tuple(input.clone(), mask);
     }
-    if (p == 1) {
+    if (p == static_cast<double>(1)) {
         at::Tensor output = at::zeros(input.sizes(), options);
         at::Tensor mask = at::zeros(input.sizes(), options.dtype(at::kBool));
         return std::make_tuple(output, mask);
@@ -54,12 +54,12 @@ at::Tensor native_dropout_backward(
     const at::Tensor& mask,
     double scale)
 {
-    double p = (scale == 0.0) ? 1 : (1 - 1 / scale);
+    double p = (scale == static_cast<double>(0.0)) ? 1 : (1 - 1 / scale);
     at::TensorOptions options = grad_output.options();
-    if (p == 0) {
+    if (p == static_cast<double>(0)) {
         return grad_output;
     }
-    if (p == 1) {
+    if (p == static_cast<double>(1)) {
         return at::zeros(grad_output.sizes(), options);
     }
     return acl_op::npu_dropout_backward(grad_output, mask, p);

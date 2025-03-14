@@ -64,22 +64,22 @@ at::Tensor &max_unpool3d_out_nocheck(at::Tensor &result, const at::Tensor &self,
 } // namespace
 
 at::Tensor &max_unpool3d_out(const at::Tensor &self, const at::Tensor &indices, at::IntArrayRef output_size,
-                             at::IntArrayRef stride, at::IntArrayRef padding, at::Tensor &result)
+                             at::IntArrayRef stride, at::IntArrayRef padding, at::Tensor &out)
 {
     max_unpool3d_check(self, indices, output_size);
     auto out_shape = op_infer::max_pool3d_output_size(self, output_size);
     at::Tensor data = at::zeros(out_shape, self.options());
 
-    npu_preparation::CheckOut({self, indices, data}, result, data);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    npu_preparation::CheckOut({self, indices, data}, out, data);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         max_unpool3d_out_nocheck(contiguous_result, self, indices, data, output_size);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        max_unpool3d_out_nocheck(result, self, indices, data, output_size);
+        max_unpool3d_out_nocheck(out, self, indices, data, output_size);
     }
 
-    return result;
+    return out;
 }
 
 at::Tensor max_unpool3d(const at::Tensor &self, const at::Tensor &indices, at::IntArrayRef output_size,

@@ -21,25 +21,25 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> npu_nms_rotated(
-    const at::Tensor& dets,
+    const at::Tensor& self,
     const at::Tensor& scores,
-    double iouThreshold,
-    double scoreThreshold,
-    int64_t maxOutputSize,
+    double iou_threshold,
+    double scores_threshold,
+    int64_t max_output_size,
     int64_t mode)
 {
     // the Op only support fp32 currently!
-    auto origin_dtype = dets.scalar_type();
-    at::Tensor dets_cast = dets;
+    auto origin_dtype = self.scalar_type();
+    at::Tensor dets_cast = self;
     at::Tensor scores_cast = scores;
     at::Tensor labels = at::zeros({}, scores.options().dtype(at::kInt));
     if (origin_dtype != at::ScalarType::Float) {
-        dets_cast = at_npu::native::custom_ops::npu_dtype_cast(dets, at::kFloat);
+        dets_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
         scores_cast = at_npu::native::custom_ops::npu_dtype_cast(scores, at::kFloat);
     }
-    c10::SmallVector<int64_t, SIZE> selected_index_size = {dets.size(0)};
+    c10::SmallVector<int64_t, SIZE> selected_index_size = {self.size(0)};
     at::Tensor selected_box = npu_preparation::apply_tensor(dets_cast);
-    at::Tensor selected_index = npu_preparation::apply_tensor(selected_index_size, dets.options().dtype(at::kInt), dets);
+    at::Tensor selected_index = npu_preparation::apply_tensor(selected_index_size, self.options().dtype(at::kInt), self);
 
     c10::SmallVector<int64_t, N> output_sync_idx = {0, 1};
     at_npu::native::OpCommand cmd;
@@ -50,9 +50,9 @@ std::tuple<at::Tensor, at::Tensor> npu_nms_rotated(
         .Input(labels)
         .Output(selected_box)
         .Output(selected_index)
-        .Attr("iou_threshold", (float) iouThreshold)
-        .Attr("score_threshold", (float) scoreThreshold)
-        .Attr("max_output_size", maxOutputSize)
+        .Attr("iou_threshold", static_cast<float>(iou_threshold))
+        .Attr("score_threshold", static_cast<float>(scores_threshold))
+        .Attr("max_output_size", max_output_size)
         .Attr("mode", mode)
         .Run();
 

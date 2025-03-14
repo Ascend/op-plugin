@@ -26,8 +26,7 @@ at::Tensor& log_softmax_backward_data_out_nocheck(
     at::Tensor& result,
     const at::Tensor& grad_output,
     const at::Tensor& output,
-    int64_t dim,
-    at::ScalarType input_dtype)
+    int64_t dim)
 {
     c10::SmallVector<int64_t, N> dim_list = {dim};
     at_npu::native::OpCommand cmd;
@@ -46,22 +45,22 @@ at::Tensor& _log_softmax_backward_data_out(
     const at::Tensor& output,
     int64_t dim,
     c10::ScalarType input_dtype,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     auto output_size = op_infer::input_same_output_size(grad_output);
     npu_preparation::CheckOut(
         {grad_output, output},
-        result,
+        out,
         grad_output,
         output_size);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contig_result = npu_utils::format_contiguous(result);
-        log_softmax_backward_data_out_nocheck(contig_result, grad_output, output, dim, input_dtype);
-        npu_utils::format_fresh_view(result, contig_result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contig_result = npu_utils::format_contiguous(out);
+        log_softmax_backward_data_out_nocheck(contig_result, grad_output, output, dim);
+        npu_utils::format_fresh_view(out, contig_result);
     } else {
-        log_softmax_backward_data_out_nocheck(result, grad_output, output, dim, input_dtype);
+        log_softmax_backward_data_out_nocheck(out, grad_output, output, dim);
     }
-    return result;
+    return out;
 }
 
 at::Tensor _log_softmax_backward_data(
@@ -77,7 +76,7 @@ at::Tensor _log_softmax_backward_data(
         at_npu::native::custom_ops::npu_format_cast(temp_output, npu_preparation::get_tensor_npu_format(grad_output));
     }
     at::Tensor grad_input = npu_preparation::apply_tensor(temp_output, output_size);
-    log_softmax_backward_data_out_nocheck(grad_input, grad_output, temp_output, dim, input_dtype);
+    log_softmax_backward_data_out_nocheck(grad_input, grad_output, temp_output, dim);
     return grad_input;
 }
 } // namespace acl_op

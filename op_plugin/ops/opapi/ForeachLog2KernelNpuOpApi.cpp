@@ -38,14 +38,14 @@ void _split_and_exec_npu_cmd_log2(at::TensorList tensors1, at::TensorList result
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count > 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
         EXEC_NPU_CMD(aclnnForeachLog2, temp_tensors1, temp_result);
     }
 }
 
-void _foreach_log2_(const at::TensorList self)
+void _foreach_log2_(at::TensorList self)
 {
     DO_COMPATIBILITY(aclnnForeachLog2, at::native::foreach_tensor_log2_slow_(self));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
@@ -71,35 +71,35 @@ void _foreach_log2_(const at::TensorList self)
 }
 
 
-std::vector<at::Tensor> _foreach_log2(const at::TensorList self)
+std::vector<at::Tensor> _foreach_log2(const at::TensorList tensors)
 {
-    DO_COMPATIBILITY(aclnnForeachLog2, at::native::foreach_tensor_log2_slow(self));
+    DO_COMPATIBILITY(aclnnForeachLog2, at::native::foreach_tensor_log2_slow(tensors));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_log2_slow(self);
+        return at::native::foreach_tensor_log2_slow(tensors);
     }
 
-    at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
-        return at::native::foreach_tensor_log2_slow(self);
+    at::native::check_foreach_api_restrictions(tensors);
+    if (!at::native::can_use_fast_route(tensors) || at::native::has_integral_tensor(tensors, true)) {
+        return at::native::foreach_tensor_log2_slow(tensors);
     }
 
-    auto scalar_type = self[0].scalar_type();
+    auto scalar_type = tensors[0].scalar_type();
     TORCH_CHECK(scalar_type == at::ScalarType::Half || scalar_type == at::ScalarType::Float ||
                 scalar_type == at::ScalarType::BFloat16, "input must be half, float or bfloat16");
 
     // construct output tensorlist
     std::vector<at::Tensor> result;
-    for (const at::Tensor &tensor : self) {
+    for (const at::Tensor &tensor : tensors) {
         auto output_size = op_infer::input_same_output_size(tensor);
         result.push_back(
             npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 
-    _split_and_exec_npu_cmd_log2(self, result_, false);
+    _split_and_exec_npu_cmd_log2(tensors, result_, false);
     return result;
 }
 } // namespace at_npu
