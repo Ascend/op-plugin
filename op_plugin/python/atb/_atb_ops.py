@@ -32,11 +32,17 @@ def _register_atb_extensions():
         PathManager.check_directory_path_readable(atb_so_path)
         torch.ops.load_library(atb_so_path)
     except OSError as e:
+        nnal_ex = None
+        nnal_strerror = ""
         if "libatb.so" in str(e):
             nnal_strerror = "Please check that the nnal package is installed. "\
                             "Please run 'source set_env.sh' in the NNAL installation path."
-            nnal_ex = OSError(e.errno, nnal_strerror)
-            nnal_ex.__traceback__ = e.__traceback__
+        if "undefined symbol" in str(e):
+            nnal_strerror = "Please check the version of the NNAL package. "\
+                            "An undefined symbol was found, "\
+                            "which may be caused by a version mismatch between NNAL and torch_npu."
+        nnal_ex = OSError(e.errno, nnal_strerror)
+        nnal_ex.__traceback__ = e.__traceback__
         raise nnal_ex from e
     _patch_atb_ops()
 
