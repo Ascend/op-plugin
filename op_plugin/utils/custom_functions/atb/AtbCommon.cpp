@@ -73,7 +73,7 @@ void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::st
         uint64_t workspaceSize = OperationSetup(paramsetter.variantPack, op, contextPtr);
         at::Tensor workspaceTensor;
         void *workspacePtr = nullptr;
-        if (workspaceSize!=0) {
+        if (workspaceSize != 0) {
             workspaceTensor = GetWorkspaceTensor(workspaceSize);
             workspacePtr = const_cast<void *>(workspaceTensor.storage().data());
         }

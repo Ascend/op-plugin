@@ -17,11 +17,10 @@
 #ifndef __TORCH_NPU_OP_PLUGIN_UTILS_FFT_PLAN_OP_API__
 #define __TORCH_NPU_OP_PLUGIN_UTILS_FFT_PLAN_OP_API__
 
+#include <array>
+#include <vector>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include <array>
-#include <list>
-#include <vector>
 
 #define FACTOR_BOUND 32
 #define NDIM_BOUND 5

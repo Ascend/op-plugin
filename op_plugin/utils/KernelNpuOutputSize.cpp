@@ -14,10 +14,10 @@
 // limitations under the License.
 
 #include <bitset>
-#include "op_plugin/utils/KernelNpuOutputSize.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
 #include "op_plugin/utils/AdvancedIndex.h"
 #include "op_plugin/utils/OpUtils.h"
-#include "torch_npu/csrc/core/npu/NPUException.h"
+#include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_infer {
 using tuple_array_vector = std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>;
@@ -333,14 +333,14 @@ c10::SmallVector<int64_t, SIZE> conv1d_npu_output_size(const at::Tensor &input, 
     TORCH_CHECK(dilation.size() > 0, "dilation length should be greater than 0, "
         "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
 
-    int64_t _N = input.size(0);
+    int64_t N_ = input.size(0);
     int64_t L = input.size(2);
     int64_t C_out = weight.size(0);
     C_out = (weight.size(1) != 0) ? C_out : 0;
 
     auto kernel_size = weight.sizes().slice(2);
     int64_t L_out = (L + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
-    c10::SmallVector<int64_t, SIZE> output_size = {_N, C_out, L_out};
+    c10::SmallVector<int64_t, SIZE> output_size = {N_, C_out, L_out};
     return output_size;
 }
 
@@ -360,7 +360,7 @@ c10::SmallVector<int64_t, SIZE> conv2d_npu_output_size(const at::Tensor &input, 
         "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride[0] * stride[1] != 0, "Stride cannot contain 0" + OPS_ERROR(ErrCode::PARAM));
 
-    int64_t _N = input.size(0);
+    int64_t N_ = input.size(0);
     int64_t H = input.size(2);
     int64_t W = input.size(3);
     int64_t C_out = weight.size(0);
@@ -369,7 +369,7 @@ c10::SmallVector<int64_t, SIZE> conv2d_npu_output_size(const at::Tensor &input, 
 
     int64_t H_out = (H + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
     int64_t W_out = (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
-    c10::SmallVector<int64_t, SIZE> output_size = {_N, C_out, H_out, W_out};
+    c10::SmallVector<int64_t, SIZE> output_size = {N_, C_out, H_out, W_out};
     return output_size;
 }
 
@@ -390,7 +390,7 @@ c10::SmallVector<int64_t, SIZE> conv_transpose1d_npu_output_size(const at::Tenso
     TORCH_CHECK(dilation.size() > 0, "dilation length should be greater than 0, "
         "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
 
-    int64_t _N = input.size(0);
+    int64_t N_ = input.size(0);
     int64_t L = input.size(2);
     int64_t C_out = weight.size(1) * groups;
     C_out = (weight.size(0) != 0) ? C_out : 0;
@@ -398,7 +398,7 @@ c10::SmallVector<int64_t, SIZE> conv_transpose1d_npu_output_size(const at::Tenso
     auto kernel_size = weight.sizes().slice(2);
 
     int64_t L_out = (L - 1) * stride[0] - 2 * padding[0] + dilation[0] * (kernel_size[0] - 1) + output_padding[0] + 1;
-    c10::SmallVector<int64_t, SIZE> output_size = {_N, C_out, L_out};
+    c10::SmallVector<int64_t, SIZE> output_size = {N_, C_out, L_out};
     return output_size;
 }
 
@@ -417,7 +417,7 @@ c10::SmallVector<int64_t, SIZE> conv3d_npu_output_size(const at::Tensor &input, 
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() >= 3, "dilation has to contain more than 3 elements, but got ", dilation.size(),
         OPS_ERROR(ErrCode::PARAM));
-    int64_t _N = input.size(0);
+    int64_t N_ = input.size(0);
     int64_t D = input.size(2);
     int64_t H = input.size(3);
     int64_t W = input.size(4);
@@ -444,7 +444,7 @@ c10::SmallVector<int64_t, SIZE> conv3d_npu_output_size(const at::Tensor &input, 
     TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho, OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo, OPS_ERROR(ErrCode::VALUE));
 
-    c10::SmallVector<int64_t, SIZE> output_size = {_N, Co, Do, Ho, Wo};
+    c10::SmallVector<int64_t, SIZE> output_size = {N_, Co, Do, Ho, Wo};
     return output_size;
 }
 
@@ -541,7 +541,7 @@ c10::SmallVector<int64_t, SIZE> conv_transpose2d_npu_output_size(const at::Tenso
     TORCH_CHECK(dilation.size() > 1, "dilation length should be greater than 1, "
         "but got the dilation length is ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
 
-    int64_t _N = input.size(0);
+    int64_t N_ = input.size(0);
     int64_t H = input.size(2);
     int64_t W = input.size(3);
     int64_t Co = weight.size(1) * groups;
@@ -550,7 +550,7 @@ c10::SmallVector<int64_t, SIZE> conv_transpose2d_npu_output_size(const at::Tenso
     int64_t Ho = (H - 1) * stride[0] - 2 * padding[0] + dilation[0] * (kernel_size[0] - 1) + output_padding[0] + 1;
     int64_t Wo = (W - 1) * stride[1] - 2 * padding[1] + dilation[1] * (kernel_size[1] - 1) + output_padding[1] + 1;
 
-    c10::SmallVector<int64_t, SIZE> outputSize = {_N, Co, Ho, Wo};
+    c10::SmallVector<int64_t, SIZE> outputSize = {N_, Co, Ho, Wo};
 
     return outputSize;
 }
@@ -731,8 +731,9 @@ c10::SmallVector<int64_t, SIZE> index_select_npu_output_size(const at::Tensor &s
     bool dim_valid = dim >= -selfDim && dim < selfDim;
     TORCH_CHECK(dim_valid, "Dimension out of range (expected to be in range of [", -selfDim, ", ", selfDim - 1,
                 "], but got ", dim, ")", OPS_ERROR(ErrCode::PARAM));
-    if (dim < 0)
+    if (dim < 0) {
         dim += selfDim;
+    }
 
     c10::SmallVector<int64_t, SIZE> outputSize;
     for (int64_t i = 0; i < static_cast<int64_t>(self.sizes().size()); ++i) {
@@ -753,7 +754,7 @@ c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const
 {
     TORCH_CHECK(input.dim() >= 4, "The input should be at least 4D, but got: ", input.dim(), "D",
         OPS_ERROR(ErrCode::PARAM));
-    int64_t _N = input.size(0);
+    int64_t N_ = input.size(0);
     int64_t H = input.size(2);
     int64_t W = input.size(3);
     int64_t Co = weight.size(0);
@@ -776,7 +777,7 @@ c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const
         Ho = (H + 2 * padding[0] - (kernel_size[0] - 1) - 1) / stride[0] + 1;
         Wo = (W + 2 * padding[1] - (kernel_size[1] - 1) - 1) / stride[1] + 1;
     }
-    c10::SmallVector<int64_t, SIZE> outputSize = {_N, Co, Ho, Wo};
+    c10::SmallVector<int64_t, SIZE> outputSize = {N_, Co, Ho, Wo};
     return outputSize;
 }
 
@@ -874,8 +875,8 @@ c10::SmallVector<int64_t, SIZE> reflection_pad1d_npu_out_size(const at::Tensor &
     // 3 is dim
     if (self_num == 3) {
         // -3 is index
-        int64_t _N = self.size(-3);
-        output_size = {_N, C, Wo};
+        int64_t N_ = self.size(-3);
+        output_size = {N_, C, Wo};
     }
     return output_size;
 }
@@ -900,8 +901,8 @@ c10::SmallVector<int64_t, SIZE> reflection_pad2d_npu_out_size(const at::Tensor &
     // 4 is dim
     if (self_num == 4) {
         // -4 is index
-        int64_t _N = self.size(-4);
-        output_size = {_N, C, Ho, Wo};
+        int64_t N_ = self.size(-4);
+        output_size = {N_, C, Ho, Wo};
     }
     return output_size;
 }
@@ -923,13 +924,13 @@ c10::SmallVector<int64_t, SIZE> conv_depthwise2d_npu_output_size(const at::Tenso
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride[0] * stride[1] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
     
-    int64_t _N = self.size(0);
+    int64_t N_ = self.size(0);
     int64_t Co = weight.size(0);
     int64_t H = self.size(2);
     int64_t W = self.size(3);
     int64_t Ho = (H + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
     int64_t Wo = (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
-    c10::SmallVector<int64_t, SIZE> output_size = {_N, Co, Ho, Wo};
+    c10::SmallVector<int64_t, SIZE> output_size = {N_, Co, Ho, Wo};
     return output_size;
 }
 
@@ -959,8 +960,8 @@ c10::SmallVector<int64_t, SIZE> reflection_pad3d_npu_out_size(const at::Tensor &
     // 5 means self format is NCDHW
     if (self_num == 5) {
         // 0 is the first index of self
-        int64_t _N = self.size(0);
-        output_size = {_N, C, Do, Ho, Wo};
+        int64_t N_ = self.size(0);
+        output_size = {N_, C, Do, Ho, Wo};
     }
     return output_size;
 }
@@ -1018,8 +1019,8 @@ c10::SmallVector<int64_t, SIZE> replication_pad1d_npu_out_size(const at::Tensor 
     // 3 is dim
     if (self_num == 3) {
         // -3 is index
-        int64_t _N = self.size(-3);
-        output_size = {_N, C, Wo};
+        int64_t N_ = self.size(-3);
+        output_size = {N_, C, Wo};
     }
     return output_size;
 }
@@ -1028,7 +1029,7 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_output_size(const at::Tens
 {
     TORCH_CHECK(self.dim() >= 3, "The self is expected to be at least 3D, but got: ", self.dim(), "D",
         OPS_ERROR(ErrCode::PARAM));
-    int64_t _N = self.dim() == 3 ? 1 : self.size(-4);
+    int64_t N_ = self.dim() == 3 ? 1 : self.size(-4);
     int64_t C = self.size(-3);
     int64_t H = self.size(-2);
     int64_t W = self.size(-1);
@@ -1050,7 +1051,7 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_output_size(const at::Tens
     int64_t Ho = H + padding_t + padding_b;
     int64_t Wo = W + padding_l + padding_r;
 
-    c10::SmallVector<int64_t, SIZE> outputSize = {_N, C, Ho, Wo};
+    c10::SmallVector<int64_t, SIZE> outputSize = {N_, C, Ho, Wo};
     return outputSize;
 }
 
@@ -1074,8 +1075,8 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_out_size(const at::Tensor 
     // 4 is dim
     if (self_num == 4) {
         // -4 is index
-        int64_t _N = self.size(-4);
-        output_size = {_N, C, Ho, Wo};
+        int64_t N_ = self.size(-4);
+        output_size = {N_, C, Ho, Wo};
     }
     return output_size;
 }
@@ -1106,8 +1107,8 @@ c10::SmallVector<int64_t, SIZE> replication_pad3d_npu_out_size(const at::Tensor 
     // 5 means self format is NCDHW
     if (self_num == 5) {
         // 0 is the first index of self
-        int64_t _N = self.size(0);
-        output_size = {_N, C, Do, Ho, Wo};
+        int64_t N_ = self.size(0);
+        output_size = {N_, C, Do, Ho, Wo};
     }
     return output_size;
 }
@@ -1172,7 +1173,7 @@ c10::SmallVector<int64_t, SIZE> slow_conv_dilated2d_npu_output_size(const at::Te
     TORCH_CHECK(input.dim() > 3, "tensor input's dimension must be greater than 3, "
         "but got Tensor of dimension ", input.dim(), OPS_ERROR(ErrCode::PARAM));
 
-    int64_t _N = input.size(0);
+    int64_t N_ = input.size(0);
     int64_t H = input.size(2);
     int64_t W = input.size(3);
     int64_t Co = weight.size(0);
@@ -1181,7 +1182,7 @@ c10::SmallVector<int64_t, SIZE> slow_conv_dilated2d_npu_output_size(const at::Te
     int64_t Ho = (H + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
     int64_t Wo = (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
 
-    c10::SmallVector<int64_t, SIZE> outputSize = {_N, Co, Ho, Wo};
+    c10::SmallVector<int64_t, SIZE> outputSize = {N_, Co, Ho, Wo};
 
     return outputSize;
 }
@@ -1286,12 +1287,12 @@ c10::SmallVector<int64_t, SIZE> upsample_bicubic2d_npu_output_size(const at::Ten
     TORCH_CHECK(output_size.size() == 2, "It is expected output_size equals to 2, but got size ", output_size.size(),
         OPS_ERROR(ErrCode::PARAM));
 
-    int64_t _N = self.size(0);
+    int64_t N_ = self.size(0);
     int64_t C = self.size(1);
     int64_t H = output_size[0];
     int64_t W = output_size[1];
 
-    c10::SmallVector<int64_t, SIZE> outputSize = {_N, C, H, W};
+    c10::SmallVector<int64_t, SIZE> outputSize = {N_, C, H, W};
     return outputSize;
 }
 
@@ -1309,12 +1310,12 @@ c10::SmallVector<int64_t, SIZE> upsample_bilinear2d_npu_output_size(const at::Te
         "but got the output_size length is ", output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     // the input's dim of upsample_bilinear2d
-    int64_t _N = self.size(0);
+    int64_t N_ = self.size(0);
     int64_t C = self.size(1);
     int64_t H = output_size[0];
     int64_t W = output_size[1];
 
-    c10::SmallVector<int64_t, SIZE> outputSize = {_N, C, H, W};
+    c10::SmallVector<int64_t, SIZE> outputSize = {N_, C, H, W};
     return outputSize;
 }
 
@@ -1325,11 +1326,11 @@ c10::SmallVector<int64_t, SIZE> upsample_linear1d_npu_output_size(const at::Tens
     TORCH_CHECK(output_size.size() > 0, "output_size length should be greater than 0, "
         "but got the output_size length is ", output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
-    int64_t _N = self.size(0);
+    int64_t N_ = self.size(0);
     int64_t C = self.size(1);
     int64_t W = output_size[0];
 
-    c10::SmallVector<int64_t, SIZE> outputSize = {_N, C, W};
+    c10::SmallVector<int64_t, SIZE> outputSize = {N_, C, W};
     return outputSize;
 }
 
@@ -1391,12 +1392,12 @@ c10::SmallVector<int64_t, SIZE> crop_and_resize_npu_output_size(const at::Tensor
 {
     TORCH_CHECK(self.dim() == 4, "input x dim must be 4", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(crop_size.size() == 2, "crop_size size must be 2", OPS_ERROR(ErrCode::PARAM));
-    int64_t _N = static_cast<int64_t>(box_index.size());
+    int64_t N_ = static_cast<int64_t>(box_index.size());
     int64_t H = crop_size[0];
     int64_t W = crop_size[1];
     int64_t C = self.size(1);
 
-    c10::SmallVector<int64_t, SIZE> outputSize = {_N, C, H, W};
+    c10::SmallVector<int64_t, SIZE> outputSize = {N_, C, H, W};
     return outputSize;
 }
 
@@ -1673,9 +1674,7 @@ small_vector repeat_interleave_npu_output_size_opapi(const at::Tensor &self, con
                 shape.emplace_back(self.size(i));
             }
         }
-    }
-    // without dim, need flatten
-    else {
+    } else { // without dim, need flatten
         // if repeats only has one element, size will be sum(repeats) * self.numel(). Otherwise is sum(repeats)
         int64_t base = output_size_value;
         if (base == 0) {
@@ -1779,11 +1778,11 @@ at::SmallVector<int64_t, SIZE> upsample_nearest_exact2d_output_size_npu(
 {
     TORCH_CHECK(input.dim() >= 2, "Input's dim must be at least 2.", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() >= 2, "Output size must be at least 2.", OPS_ERROR(ErrCode::PARAM));
-    int64_t _N = input.size(0);
+    int64_t N_ = input.size(0);
     int64_t C = input.size(1);
     int64_t H = output_size[0];
     int64_t W = output_size[1];
-    at::SmallVector<int64_t, SIZE> outputSize = {_N, C, H, W};
+    at::SmallVector<int64_t, SIZE> outputSize = {N_, C, H, W};
     return outputSize;
 }
 

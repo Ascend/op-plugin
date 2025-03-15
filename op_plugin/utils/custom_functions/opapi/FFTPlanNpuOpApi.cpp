@@ -38,18 +38,18 @@ namespace op_api {
             view = at::slice(view, 1, 0, factor, 1);
             view = at::select(view, 2, x);
             view = at::select(view, 2, y);
-            view = at::slice(view, 2, 0, (factor/2)+1, 1);
+            view = at::slice(view, 2, 0, (factor / 2) + 1, 1);
 
-            src = at::slice(src, 2, 0, (factor/2)+1, 1);
+            src = at::slice(src, 2, 0, (factor / 2) + 1, 1);
             view.copy_(src);
         } else if (!full_out) {
             auto view = at::slice(dst, 0, 0, prev_n, 1);
-            view = at::slice(view, 1, 0, (factor/2)+1, 1);
+            view = at::slice(view, 1, 0, (factor / 2) + 1, 1);
             view = at::select(view, 2, x);
             view = at::select(view, 2, y);
             view = at::slice(view, 2, 0, factor, 1);
 
-            src = at::slice(src, 1, 0, (factor/2)+1, 1);
+            src = at::slice(src, 1, 0, (factor / 2) + 1, 1);
             view.copy_(src);
         }
         // 不能同时!full_in和!full_out
@@ -81,7 +81,7 @@ namespace op_api {
         // compute rotate
         auto triangle = at::empty_like(theta);
 
-        int64_t out_n = ((plan_key.plan_mode == PlanMode::r2c) && (index == static_cast<int64_t>(factors.size() - 1)))? (factor / 2) + 1 : factor;
+        int64_t out_n = ((plan_key.plan_mode == PlanMode::r2c) && (index == static_cast<int64_t>(factors.size() - 1))) ? (factor / 2) + 1 : factor;
         int64_t out_complex = ((plan_key.plan_mode == PlanMode::c2r) && (index == static_cast<int64_t>(factors.size() - 1))) ? static_cast<int64_t>(1) : static_cast<int64_t>(2);
         int64_t in_n = factor;
         int64_t in_complex = ((plan_key.plan_mode == PlanMode::r2c || plan_key.plan_mode == PlanMode::r2c_bothside) && (index == 0)) ? static_cast<int64_t>(1) : static_cast<int64_t>(2);
@@ -124,7 +124,7 @@ namespace op_api {
 
         rotate_matrix = rotate_matrix.reshape(split_shape).permute(permute_shape).contiguous();
 
-        std::array<int64_t, 3> reshape_shape{prev_n, out_n*out_complex, in_complex*in_n};
+        std::array<int64_t, 3> reshape_shape{prev_n, out_n*out_complex, in_complex * in_n};
         return at::reshape(rotate_matrix, reshape_shape);
     }
 
@@ -156,7 +156,7 @@ namespace op_api {
             return factors;
         }
         for (size_t i = 1; i < factors.size(); i++) {
-            if (factors[i]>=16) {
+            if (factors[i] >= 16) {
                 int64_t tmp = factors[0];
                 factors[0] = factors[i];
                 factors[i] = tmp;
@@ -182,8 +182,8 @@ namespace op_api {
                 if (is_merged[j]) {
                     continue;
                 }
-                if ((factor==1)||((factors[j]*factor) <= FACTOR_BOUND)) {
-                    factor*=factors[j];
+                if ((factor == 1) || ((factors[j] * factor) <= FACTOR_BOUND)) {
+                    factor *= factors[j];
                     is_merged[j] = true;
                 }
             }

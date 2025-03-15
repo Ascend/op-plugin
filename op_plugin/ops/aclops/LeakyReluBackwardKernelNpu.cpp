@@ -24,10 +24,11 @@ at::Tensor leaky_relu_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& negval,
-    bool is_result) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  leaky_relu_backward_out_nocheck(result, grad_output, self, negval, is_result);
-  return result;
+    bool is_result)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    leaky_relu_backward_out_nocheck(result, grad_output, self, negval);
+    return result;
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)
@@ -36,14 +37,15 @@ at::Tensor& leaky_relu_backward_out(
     const at::Tensor& self,
     const at::Scalar& negval,
     bool is_result,
-    at::Tensor& grad_input) {
-  npu_preparation::CheckOut(
-      {self, grad_output},
-      grad_input,
-      grad_input,
-      self.sizes());
-  leaky_relu_backward_out_nocheck(grad_input, grad_output, self, negval, is_result);
-  return grad_input;
+    at::Tensor& grad_input)
+{
+    npu_preparation::CheckOut(
+        {self, grad_output},
+        grad_input,
+        grad_input,
+        self.sizes());
+    leaky_relu_backward_out_nocheck(grad_input, grad_output, self, negval);
+    return grad_input;
 }
 #endif
 } // namespace acl_op

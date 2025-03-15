@@ -58,7 +58,7 @@ namespace op_api {
         using FFTPair = std::pair<FFTCacheKey, FFTCacheValue>;
         FFTMixCache(int64_t c);
         FFTCacheValue get(FFTCacheKey &cacheKey);
-        void setCapacity(int64_t c);
+        void setCapacity(int64_t maxSize);
         int64_t getCapacity();
         int64_t getSize();
         void clear();

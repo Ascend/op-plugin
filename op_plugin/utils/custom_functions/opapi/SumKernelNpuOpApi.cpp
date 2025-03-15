@@ -46,9 +46,9 @@ at::Tensor sum_common_nocheck(const at::Tensor &self,
     auto out_type = self.scalar_type();
 
     if (dtype.has_value()) {
-      out_type = dtype.value();
+        out_type = dtype.value();
     } else if (isIntegralType(out_type, true)) {
-      out_type = at::kLong;
+        out_type = at::kLong;
     }
 
     for (uint64_t i = 0; i < self_size.size(); i++) {

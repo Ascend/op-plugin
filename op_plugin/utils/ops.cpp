@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/DeviceGuard.h>
 #include "op_plugin/include/ops.h"
 #include "op_plugin/OpInterface.h"
-#include <ATen/DeviceGuard.h>
 
 namespace at_npu {
 namespace native {

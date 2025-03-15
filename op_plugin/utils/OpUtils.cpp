@@ -15,10 +15,10 @@
 
 #include <ATen/NamedTensorUtils.h>
 
-#include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/aten/mirror/NPUTypeProperties.h"
+#include "op_plugin/utils/OpUtils.h"
 
 namespace op_plugin {
 namespace utils {
@@ -46,7 +46,8 @@ int64_t make_warp_dim(int64_t dim, int64_t dim_post_expr)
     return dim;
 }
 
-bool is_transpose_last_two_dims(const at::Tensor &tensor) {
+bool is_transpose_last_two_dims(const at::Tensor &tensor)
+{
     if (tensor.dim() < 2 || tensor.dim() > 3) {
         return false;
     }
@@ -161,7 +162,8 @@ c10::optional<double> get_scale_value(c10::optional<c10::ArrayRef<double>> scale
     return scales->at(idx);
 }
 
-at::ScalarType get_divide_result_type(const at::Tensor& self, const at::Tensor& other) {
+at::ScalarType get_divide_result_type(const at::Tensor& self, const at::Tensor& other)
+{
     at::ScalarType high_type = at::native::result_type(self, other);
     if (isIntegralType(high_type, true)) {
         high_type = at::kFloat;
@@ -178,7 +180,8 @@ at::ScalarType get_divide_calculate_type(const at::Tensor &self, const at::Tenso
     return calculate_type;
 }
 
-at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type) {
+at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type)
+{
     at::Tensor self_cast = (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
     self_cast = at_npu::native::OpPreparation::CastBackToOriFormat(self_cast);
     return self_cast;

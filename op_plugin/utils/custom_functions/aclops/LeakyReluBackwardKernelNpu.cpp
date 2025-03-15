@@ -20,8 +20,7 @@ at::Tensor leaky_relu_backward_out_nocheck(
     at::Tensor result,
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    at::Scalar negval,
-    bool is_result)
+    at::Scalar negval)
 {
     at_npu::native::OpCommand cmd;
     cmd.Name("LeakyReluGrad")
