@@ -65,45 +65,45 @@ c10::SmallVector<int64_t, SIZE> get_output_size(bool return_complex, int64_t bat
 #if VERSION_BETWEEN(V2R1, V2R6)
 at::Tensor stft(at::Tensor const &self,
                 int64_t n_fft,
-                c10::optional<int64_t> hop_length_opt,
-                c10::optional<int64_t> win_length_opt,
-                c10::optional<at::Tensor> const &window_opt,
+                c10::optional<int64_t> hop_length,
+                c10::optional<int64_t> win_length,
+                c10::optional<at::Tensor> const &window,
                 bool normalized,
-                c10::optional<bool> onesided_opt,
-                c10::optional<bool> return_complex_opt)
+                c10::optional<bool> onesided,
+                c10::optional<bool> return_complex)
 {
     TORCH_CHECK(self.dim() == 1 || self.dim() == 2, "input should be a 1D or 2D tensor", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(n_fft > 0 && n_fft <= self.size(-1), "expected: 0 < n_fft < input.size(-1)", OPS_ERROR(ErrCode::PARAM));
 
-    int64_t hop_length = hop_length_opt.has_value() ? hop_length_opt.value() : n_fft / 4;
-    TORCH_CHECK(hop_length > 0, "expected: hop_length > 0", OPS_ERROR(ErrCode::VALUE));
+    int64_t hop_length_value = hop_length.has_value() ? hop_length.value() : n_fft / 4;
+    TORCH_CHECK(hop_length_value > 0, "expected: hop_length > 0", OPS_ERROR(ErrCode::VALUE));
 
-    if (window_opt.has_value() && win_length_opt.has_value()) {
-        TORCH_CHECK(window_opt.value().dim() == 1 && window_opt.value().size(0) == win_length_opt.value(),
+    if (window.has_value() && win_length.has_value()) {
+        TORCH_CHECK(window.value().dim() == 1 && window.value().size(0) == win_length.value(),
                     "expected: window size and win_length should be equal", OPS_ERROR(ErrCode::PARAM))
     }
 
-    int win_length = win_length_opt.has_value() ? win_length_opt.value() : n_fft;
-    TORCH_CHECK(win_length > 0 && win_length <= n_fft, "expected: 0 < win_length <= n_fft", OPS_ERROR(ErrCode::PARAM));
+    int win_length_value = win_length.has_value() ? win_length.value() : n_fft;
+    TORCH_CHECK(win_length_value > 0 && win_length_value <= n_fft, "expected: 0 < win_length <= n_fft", OPS_ERROR(ErrCode::PARAM));
 
-    const at::Tensor &window = c10::value_or_else(window_opt, [] { return at::Tensor(); });
-    bool onesided = onesided_opt.has_value() ? onesided_opt.value() : !self.is_complex();
-    bool return_complex = return_complex_opt.has_value() ?
-                          return_complex_opt.value() :
-                          self.is_complex() || (window_opt.has_value() && window_opt.value().is_complex());
+    const at::Tensor &window_value = c10::value_or_else(window, [] { return at::Tensor(); });
+    bool onesided_value = onesided.has_value() ? onesided.value() : !self.is_complex();
+    bool return_complex_value = return_complex.has_value() ?
+                          return_complex.value() :
+                          self.is_complex() || (window.has_value() && window.value().is_complex());
 
     int64_t batch = self.dim() == 2 ? self.size(0) : 0;
     int64_t len = self.dim() == 2 ? self.size(1) : self.size(0);
-    int64_t frames = (len - n_fft) / hop_length + 1;
-    int64_t n = onesided == true ? n_fft / 2 + 1 : n_fft;
-    at::ScalarType output_type = get_output_type(return_complex, self.scalar_type());
+    int64_t frames = (len - n_fft) / hop_length_value + 1;
+    int64_t n = onesided_value ? n_fft / 2 + 1 : n_fft;
+    at::ScalarType output_type = get_output_type(return_complex_value, self.scalar_type());
     TORCH_CHECK(output_type == at::ScalarType::Float || output_type == at::ScalarType::Double ||
                 output_type == at::ScalarType::ComplexFloat || output_type == at::ScalarType::ComplexDouble,
                 "output type should be float, double, complex<float> or complex<double>", OPS_ERROR(ErrCode::TYPE));
-    c10::SmallVector<int64_t, SIZE> output_size = get_output_size(return_complex, batch, frames, n);
+    c10::SmallVector<int64_t, SIZE> output_size = get_output_size(return_complex_value, batch, frames, n);
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_type));
 
-    EXEC_NPU_CMD(aclStft, self, window, output, n_fft, hop_length, win_length, normalized, onesided, return_complex);
+    EXEC_NPU_CMD(aclStft, self, window_value, output, n_fft, hop_length_value, win_length_value, normalized, onesided_value, return_complex_value);
     return output;
 }
 #endif
@@ -211,7 +211,8 @@ at::Tensor as_strided_backward_(
 {
     auto sym_storage_offset = sym_storage_offset_.value_or(input_geometry.sym_storage_offset());
     auto odim = grad.dim();
-    std::vector<c10::SymInt> out_sizes_, out_strides_;
+    std::vector<c10::SymInt> out_sizes_;
+    std::vector<c10::SymInt> out_strides_;
     out_sizes_.reserve(odim);
     out_strides_.reserve(odim);
     for (int64_t i = odim - 1; i >= 0; i--) {
@@ -231,9 +232,10 @@ at::Tensor as_strided_backward_(
     auto out_maybe_overlap = _maybe_overlapping_memory(out_sizes_, out_strides_);
 
     auto idim = input_geometry.dim();
-    auto inp_sizes = input_geometry.sym_sizes(),
-         inp_strides = input_geometry.sym_strides();
-    std::vector<c10::SymInt> inp_sizes_, inp_strides_;
+    auto inp_sizes = input_geometry.sym_sizes();
+    auto inp_strides = input_geometry.sym_strides();
+    std::vector<c10::SymInt> inp_sizes_;
+    std::vector<c10::SymInt> inp_strides_;
     inp_sizes_.reserve(idim);
     inp_strides_.reserve(idim);
     for (int64_t i = idim - 1; i >= 0; i--) {
@@ -297,34 +299,34 @@ at::Tensor stft_backward(
     at::Tensor const &grad_output,
     at::Tensor const &self,
     int64_t n_fft,
-    c10::optional<int64_t> hop_length_opt,
-    c10::optional<int64_t> win_length_opt,
-    c10::optional<at::Tensor> const &window_opt,
+    c10::optional<int64_t> hop_length,
+    c10::optional<int64_t> win_length,
+    c10::optional<at::Tensor> const &window,
     bool normalized,
-    c10::optional<bool> onesided_opt,
-    c10::optional<bool> return_complex_opt)
+    c10::optional<bool> onesided,
+    c10::optional<bool> return_complex)
 {
-    c10::MaybeOwned<at::Tensor> window_maybe_owned = at::borrow_from_optional_tensor(window_opt);
-    const at::Tensor& window = *window_maybe_owned;
-    auto hop_length = hop_length_opt.has_value() ? hop_length_opt.value() : n_fft / 4;
-    TORCH_CHECK(hop_length > 0, "expected: hop_length > 0", OPS_ERROR(ErrCode::VALUE));
-    auto win_length = win_length_opt.value_or(n_fft);
-    const bool return_complex = return_complex_opt.value_or(
-        self.is_complex() || (window.defined() && window.is_complex()));
-    auto window_ = window;
-    if (win_length < n_fft) {
-        auto left = (n_fft - win_length) / 2;
-        if (window.defined()) {
-            window_ = at::zeros({n_fft}, window.options());
-            window_.narrow(0, left, win_length).copy_(window);
+    c10::MaybeOwned<at::Tensor> window_maybe_owned = at::borrow_from_optional_tensor(window);
+    const at::Tensor& real_window = *window_maybe_owned;
+    auto hop_length_value = hop_length.has_value() ? hop_length.value() : n_fft / 4;
+    TORCH_CHECK(hop_length_value > 0, "expected: hop_length > 0", OPS_ERROR(ErrCode::VALUE));
+    auto win_length_value = win_length.value_or(n_fft);
+    const bool return_complex_value = return_complex.value_or(
+        self.is_complex() || (real_window.defined() && real_window.is_complex()));
+    auto window_ = real_window;
+    if (win_length_value < n_fft) {
+        auto left = (n_fft - win_length_value) / 2;
+        if (real_window.defined()) {
+            window_ = at::zeros({n_fft}, real_window.options());
+            window_.narrow(0, left, win_length_value).copy_(real_window);
         } else {
             window_ = at::zeros({n_fft}, self.options());
-            window_.narrow(0, left, win_length).fill_(1);
+            window_.narrow(0, left, win_length_value).fill_(1);
         }
     }
 
     at::Tensor grad_input = grad_output;
-    if (!return_complex) {
+    if (!return_complex_value) {
         grad_input = at::view_as_complex(grad_output.contiguous());
     }
     if (self.dim() == 1) {
@@ -332,12 +334,12 @@ at::Tensor stft_backward(
     }
     grad_input = grad_input.transpose(1, 2).contiguous();
     const bool complex_fft = self.is_complex() || window_.is_complex();
-    const auto onesided = onesided_opt.value_or(!complex_fft);
+    const auto onesided_value = onesided.value_or(!complex_fft);
     const fft_norm_mode norm = normalized ? fft_norm_mode::by_root_n : fft_norm_mode::none;
     if (complex_fft) {
         grad_input = at::_fft_c2c(grad_input, grad_input.dim() - 1, static_cast<int64_t>(norm), false);
     } else {
-        if (!onesided) {
+        if (!onesided_value) {
             grad_input = at::_fft_c2c(grad_input, grad_input.dim() - 1, static_cast<int64_t>(norm), false);
         } else {
             auto half_sizes = grad_input.sym_sizes();
@@ -369,9 +371,9 @@ at::Tensor stft_backward(
     }
     int64_t batch = self_.size(0);
     int64_t len = self_.size(1);
-    int64_t n_frames = 1 + (len - n_fft) / hop_length;
+    int64_t n_frames = 1 + (len - n_fft) / hop_length_value;
     std::vector<c10::SymInt> sym_sizes = {batch, n_frames, n_fft};
-    std::vector<c10::SymInt> sym_strides = {self_.stride(0), hop_length * self_.stride(1), self_.stride(1)};
+    std::vector<c10::SymInt> sym_strides = {self_.stride(0), hop_length_value * self_.stride(1), self_.stride(1)};
     if (self.is_complex()) {
         sym_sizes.push_back(2);
         sym_strides.push_back(1);

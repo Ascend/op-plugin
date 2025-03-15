@@ -58,19 +58,19 @@ static at::Tensor& inplace_floor_divide_out_npu_opapi(at::Tensor& self, const at
     return self;
 }
 
-at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result)
+at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnFloorDivides, acl_op::floor_divide_out(self, other, result));
-    DO_COMPATIBILITY(aclnnFloorDivide, acl_op::floor_divide_out(self, other, result));
+    DO_COMPATIBILITY(aclnnFloorDivides, acl_op::floor_divide_out(self, other, out));
+    DO_COMPATIBILITY(aclnnFloorDivide, acl_op::floor_divide_out(self, other, out));
     // calculate the output size
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType result_type = at::native::result_type(self, other);
-    at::Tensor self_cp = self_tensor_to_device(self, result_type, result.device());
-    npu_preparation::check_tensor({self, other}, result, result.scalar_type(), output_size);
+    at::Tensor self_cp = self_tensor_to_device(self, result_type, out.device());
+    npu_preparation::check_tensor({self, other}, out, out.scalar_type(), output_size);
 
     // calculate the output result of the NPU
-    floor_divide_out_npu_opapi(self_cp, other, result);
-    return result;
+    floor_divide_out_npu_opapi(self_cp, other, out);
+    return out;
 }
 
 at::Tensor floor_divide(const at::Tensor& self, const at::Tensor& other)

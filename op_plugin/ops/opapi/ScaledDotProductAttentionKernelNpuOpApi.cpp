@@ -34,10 +34,7 @@ inline void validate_sdpa_input(
     const at::Tensor &query,
     const at::Tensor &key,
     const at::Tensor &value,
-    const c10::optional<at::Tensor> &attn_mask,
-    double dropout_p,
-    bool is_causal,
-    c10::optional<double> scale)
+    const c10::optional<at::Tensor> &attn_mask)
 {
     TORCH_CHECK(query.dtype() == key.dtype() && query.dtype() == value.dtype(),
         "Expected query, key, and value to have the same dtype, but got query.dtype: ",
@@ -120,7 +117,7 @@ at::Tensor scaled_dot_product_attention(
     bool is_causal,
     c10::optional<double> scale)
 {
-    validate_sdpa_input(query, key, value, attn_mask, dropout_p, is_causal, scale);
+    validate_sdpa_input(query, key, value, attn_mask);
     if ((query.scalar_type() == at::kHalf || query.scalar_type() == at::kBFloat16 || query.scalar_type() == at::kFloat) &&
         ((attn_mask.has_value() && attn_mask->dtype() == at::kBool) || !attn_mask.has_value()) &&
         query.dim() == BNSD_DIM && key.dim() == BNSD_DIM && value.dim() == BNSD_DIM &&
@@ -152,7 +149,7 @@ at::Tensor scaled_dot_product_attention(
     } else if ((!query.requires_grad() && !key.requires_grad() && !value.requires_grad()) &&
                 (query.dim() == BNSD_DIM && key.dim() == BNSD_DIM && value.dim() == BNSD_DIM) &&
                 (query.size(0) != 0 && query.size(1) != 0 && query.size(2) != 0 && query.size(3) != 0) &&
-                (query.scalar_type() == at::kHalf || query.scalar_type() == at::kBFloat16) && query.size(3) % 16 ==0 &&
+                (query.scalar_type() == at::kHalf || query.scalar_type() == at::kBFloat16) && query.size(3) % 16 == 0 &&
                 ((attn_mask.has_value() && attn_mask->dtype() == at::kBool && attn_mask->size(-2) == query.size(2) &&
                 attn_mask->size(-1) == key.size(2)) || !attn_mask.has_value()) &&
                 (query.size(0) == key.size(0) && query.size(3) == key.size(3) && key.size(0) == value.size(0) &&
@@ -212,7 +209,7 @@ at::Tensor scaled_dot_product_attention(
     c10::optional<double> scale,
     bool enable_gqa)
 {
-    validate_sdpa_input(query, key, value, attn_mask, dropout_p, is_causal, scale);
+    validate_sdpa_input(query, key, value, attn_mask);
     if ((query.scalar_type() == at::kHalf || query.scalar_type() == at::kBFloat16 || query.scalar_type() == at::kFloat) &&
         ((attn_mask.has_value() && attn_mask->dtype() == at::kBool) || !attn_mask.has_value()) &&
         query.dim() == BNSD_DIM && key.dim() == BNSD_DIM && value.dim() == BNSD_DIM &&

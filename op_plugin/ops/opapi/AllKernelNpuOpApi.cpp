@@ -21,33 +21,33 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& all_out(const at::Tensor& self, int64_t dim, bool keepdim, at::Tensor& result)
+at::Tensor& all_out(const at::Tensor& self, int64_t dim, bool keepdim, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, dim, keepdim, result));
+    DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, dim, keepdim, out));
     c10::SmallVector<int64_t, op_infer::N> dimList = {dim};
 
-    // check result for return
+    // check out for return
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dimList, keepdim);
-    npu_preparation::check_tensor({self}, result, result, output_size);
-    // calculate the output result of the NPU
+    npu_preparation::check_tensor({self}, out, out, output_size);
+    // calculate the output out of the NPU
     at::IntArrayRef dims(dim);
-    EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
-    return result;
+    EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, out);
+    return out;
 }
 
-at::Tensor& all_out(const at::Tensor& self, at::Tensor& result)
+at::Tensor& all_out(const at::Tensor& self, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, result));
+    DO_COMPATIBILITY(aclnnAll, acl_op::all_out(self, out));
     at::IntArrayRef dims;
 
-    // check result for return
+    // check out for return
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
-    npu_preparation::check_tensor({self}, result, result, output_size);
+    npu_preparation::check_tensor({self}, out, out, output_size);
 
-    // calculate the output result of the NPU
+    // calculate the output out of the NPU
     bool keepdim = false;
-    EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, result);
-    return result;
+    EXEC_NPU_CMD(aclnnAll, self, dims, keepdim, out);
+    return out;
 }
 
 at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim)

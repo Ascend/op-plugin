@@ -54,7 +54,7 @@ at::Tensor& addr_out(
     const at::Tensor& vec2,
     const at::Scalar& beta,
     const at::Scalar& alpha,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     at::ScalarType high_dtype = at::native::result_type({self, vec1, vec2});
     check_beta_aplha(self, vec1, vec2, beta, alpha, high_dtype);
@@ -65,7 +65,7 @@ at::Tensor& addr_out(
     at::Tensor self_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat) : self;
     at::Tensor vec1_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(vec1, at::kFloat) : vec1;
     at::Tensor vec2_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(vec2, at::kFloat) : vec2;
-    at::Tensor result_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat) : result;
+    at::Tensor result_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(out, at::kFloat) : out;
     at::Scalar beta_cast = result_to_cast ? beta.toFloat() : beta;
     at::Scalar alpha_cast = result_to_cast ? alpha.toFloat() : alpha;
 
@@ -83,10 +83,10 @@ at::Tensor& addr_out(
 
     if (result_to_cast) {
         result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, at::ScalarType::Bool);
-        result.copy_(result_cast);
+        out.copy_(result_cast);
     }
 
-    return result;
+    return out;
 }
 
 at::Tensor addr(

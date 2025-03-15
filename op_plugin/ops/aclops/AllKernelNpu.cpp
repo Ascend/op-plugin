@@ -68,35 +68,35 @@ at::Tensor& all_out(
     const at::Tensor& self,
     int64_t dim,
     bool keepdim,
-    at::Tensor& result)
+    at::Tensor& out)
 {
-    TORCH_CHECK((result.scalar_type() == at::ScalarType::Bool || result.scalar_type() == at::ScalarType::Byte),
-                "all only supports bool tensor for result, got: ", result.scalar_type(), OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK((out.scalar_type() == at::ScalarType::Bool || out.scalar_type() == at::ScalarType::Byte),
+                "all only supports bool tensor for out, got: ", out.scalar_type(), OPS_ERROR(ErrCode::TYPE));
     c10::SmallVector<int64_t, N> dim_list = {dim};
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dim_list, keepdim);
     npu_preparation::CheckOut(
         {self},
-        result,
-        result,
+        out,
+        out,
         output_size);
 
-    return all_out_nocheck(result, self, dim_list, keepdim);
+    return all_out_nocheck(out, self, dim_list, keepdim);
 }
 
-at::Tensor& all_out(const at::Tensor& self, at::Tensor& result)
+at::Tensor& all_out(const at::Tensor& self, at::Tensor& out)
 {
-    TORCH_CHECK((result.scalar_type() == at::ScalarType::Bool || result.scalar_type() == at::ScalarType::Byte),
-                "all only supports bool tensor for result, got: ", result.scalar_type(), OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK((out.scalar_type() == at::ScalarType::Bool || out.scalar_type() == at::ScalarType::Byte),
+                "all only supports bool tensor for out, got: ", out.scalar_type(), OPS_ERROR(ErrCode::TYPE));
     at::IntArrayRef dims;
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
     npu_preparation::CheckOut(
         {self},
-        result,
-        result,
+        out,
+        out,
         output_size);
     auto dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
 
-    return all_out_nocheck(result, self, dim_list, false);
+    return all_out_nocheck(out, self, dim_list, false);
 }
 
 at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim)

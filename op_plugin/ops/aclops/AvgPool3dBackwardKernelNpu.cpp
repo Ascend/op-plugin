@@ -86,10 +86,10 @@ void avg_pool3d_backward_parameter_check(const at::Tensor &self, at::IntArrayRef
 }
 } // namespace
 
-at::Tensor &avg_pool3d_backward_out(const at::Tensor &grad_input, const at::Tensor &self, at::IntArrayRef kernel_size,
+at::Tensor &avg_pool3d_backward_out(const at::Tensor &grad_output, const at::Tensor &self, at::IntArrayRef kernel_size,
                                     at::IntArrayRef stride, at::IntArrayRef padding, bool ceil_mode,
                                     bool count_include_pad, c10::optional<int64_t> divisor_override,
-                                    at::Tensor &grad_output)
+                                    at::Tensor &grad_input)
 {
     avg_pool3d_backward_parameter_check(self, kernel_size, stride, padding, divisor_override);
 
@@ -119,9 +119,9 @@ at::Tensor &avg_pool3d_backward_out(const at::Tensor &grad_input, const at::Tens
     const int64_t itime = self.size(-3);
     const int64_t iheight = self.size(-2);
     const int64_t iwidth = self.size(-1);
-    const int64_t otime = grad_input.size(-3);
-    const int64_t oheight = grad_input.size(-2);
-    const int64_t owidth = grad_input.size(-1);
+    const int64_t otime = grad_output.size(-3);
+    const int64_t oheight = grad_output.size(-2);
+    const int64_t owidth = grad_output.size(-1);
 
     /* XXX shape check behavior from TH */
     const int64_t otime_for_shape_check =
@@ -132,21 +132,21 @@ at::Tensor &avg_pool3d_backward_out(const at::Tensor &grad_input, const at::Tens
         at::native::pooling_output_shape<int64_t>(iwidth, k_W, pad_W, d_W, 1, ceil_mode);
 
     at::native::avg_pool3d_backward_shape_check(
-        self, grad_input, nslices, k_T, k_H, k_W, d_T, d_H, d_W, pad_T, pad_H, pad_W, itime, iheight, iwidth,
+        self, grad_output, nslices, k_T, k_H, k_W, d_T, d_H, d_W, pad_T, pad_H, pad_W, itime, iheight, iwidth,
         otime_for_shape_check, oheight_for_shape_check, owidth_for_shape_check, "avg_pool3d_backward_out()");
 
-    npu_preparation::CheckOut({grad_input, self}, grad_output, ACL_FORMAT_NCDHW, self.scalar_type(), self.sizes());
-    if (!npu_utils::check_match(&grad_output)) {
-        at::Tensor contig_grad_output = npu_utils::format_contiguous(grad_output);
-        avg_pool3d_backward_out_nocheck(contig_grad_output, grad_input, self, kernel_sizess, stridess, paddingss,
+    npu_preparation::CheckOut({grad_output, self}, grad_input, ACL_FORMAT_NCDHW, self.scalar_type(), self.sizes());
+    if (!npu_utils::check_match(&grad_input)) {
+        at::Tensor contig_grad_output = npu_utils::format_contiguous(grad_input);
+        avg_pool3d_backward_out_nocheck(contig_grad_output, grad_output, self, kernel_sizess, stridess, paddingss,
                                         ceil_mode, count_include_pad, divisor_override);
-        npu_utils::format_fresh_view(grad_output, contig_grad_output);
+        npu_utils::format_fresh_view(grad_input, contig_grad_output);
     } else {
-        avg_pool3d_backward_out_nocheck(grad_output, grad_input, self, kernel_sizess, stridess, paddingss, ceil_mode,
+        avg_pool3d_backward_out_nocheck(grad_input, grad_output, self, kernel_sizess, stridess, paddingss, ceil_mode,
                                         count_include_pad, divisor_override);
     }
 
-    return grad_output;
+    return grad_input;
 }
 
 at::Tensor avg_pool3d_backward(const at::Tensor &grad_output, const at::Tensor &self, at::IntArrayRef kernel_size,

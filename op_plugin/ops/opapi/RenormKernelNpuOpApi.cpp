@@ -24,9 +24,9 @@ at::Tensor& renorm_out(const at::Tensor& self,
                        const at::Scalar& p,
                        int64_t dim,
                        const at::Scalar& maxnorm,
-                       at::Tensor& result)
+                       at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnRenorm, acl_op::renorm_out(self, p, dim, maxnorm, result));
+    DO_COMPATIBILITY(aclnnRenorm, acl_op::renorm_out(self, p, dim, maxnorm, out));
 
     auto dim_post_expr = self.dim();
     if (dim_post_expr <= 0) {
@@ -38,12 +38,12 @@ at::Tensor& renorm_out(const at::Tensor& self,
     auto output_size = op_infer::input_same_output_size(self);
     npu_preparation::check_tensor(
         {self},
-        result,
-        result.scalar_type(),
+        out,
+        out.scalar_type(),
         output_size);
 
-    EXEC_NPU_CMD(aclnnRenorm, self, p, dim, maxnorm, result);
-    return result;
+    EXEC_NPU_CMD(aclnnRenorm, self, p, dim, maxnorm, out);
+    return out;
 }
 
 at::Tensor renorm(const at::Tensor& self,

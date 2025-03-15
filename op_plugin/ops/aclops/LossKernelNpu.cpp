@@ -25,8 +25,9 @@ at::Tensor nll_loss(
     const at::Tensor& target,
     const c10::optional<at::Tensor>& weight,
     int64_t reduction,
-    int64_t ignore_index) {
-  return std::get<0>(at::nll_loss_forward(self, target, weight, reduction, ignore_index));
+    int64_t ignore_index)
+{
+    return std::get<0>(at::nll_loss_forward(self, target, weight, reduction, ignore_index));
 }
 
 at::Tensor& nll_loss_out(
@@ -35,9 +36,10 @@ at::Tensor& nll_loss_out(
     const c10::optional<at::Tensor>& weight,
     int64_t reduction,
     int64_t ignore_index,
-    at::Tensor& output) {
-  at::Tensor total_weight = npu_preparation::apply_tensor({}, self.options(), self);
-  return std::get<0>(at::nll_loss_forward_out(output, total_weight, self, target, weight, reduction, ignore_index));
+    at::Tensor& out)
+{
+    at::Tensor total_weight = npu_preparation::apply_tensor({}, self.options(), self);
+    return std::get<0>(at::nll_loss_forward_out(out, total_weight, self, target, weight, reduction, ignore_index));
 }
 
 at::Tensor nll_loss2d(
@@ -45,8 +47,9 @@ at::Tensor nll_loss2d(
     const at::Tensor& target,
     const c10::optional<at::Tensor>& weight,
     int64_t reduction,
-    int64_t ignore_index) {
-  return std::get<0>(at::nll_loss2d_forward(self, target, weight, reduction, ignore_index));
+    int64_t ignore_index)
+{
+    return std::get<0>(at::nll_loss2d_forward(self, target, weight, reduction, ignore_index));
 }
 
 at::Tensor& nll_loss2d_out(
@@ -55,25 +58,27 @@ at::Tensor& nll_loss2d_out(
     const c10::optional<at::Tensor>& weight,
     int64_t reduction,
     int64_t ignore_index,
-    at::Tensor& output) {
-  at::Tensor total_weight = npu_preparation::apply_tensor({}, self.options(), self);
-  return std::get<0>(at::nll_loss2d_forward_out(
-      output, total_weight, self, target, weight, reduction, ignore_index));
+    at::Tensor& out)
+{
+    at::Tensor total_weight = npu_preparation::apply_tensor({}, self.options(), self);
+    return std::get<0>(at::nll_loss2d_forward_out(out, total_weight, self, target, weight, reduction, ignore_index));
 }
 
 at::Tensor& multilabel_margin_loss_out(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
-    at::Tensor& output) {
+    at::Tensor& out)
+{
     at::Tensor is_target = npu_preparation::apply_tensor(target);
-    return std::get<0>(at::multilabel_margin_loss_forward_out(output, is_target, self, target, reduction));
+    return std::get<0>(at::multilabel_margin_loss_forward_out(out, is_target, self, target, reduction));
 }
 
 at::Tensor multilabel_margin_loss(
     const at::Tensor& self,
     const at::Tensor& target,
-    int64_t reduction) {
-  return std::get<0>(at::multilabel_margin_loss_forward(self, target, reduction));
+    int64_t reduction)
+{
+    return std::get<0>(at::multilabel_margin_loss_forward(self, target, reduction));
 }
 } // namespace acl_op

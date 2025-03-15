@@ -95,7 +95,7 @@ void _split_and_exec_npu_cmd_addcdiv_scalar(const at::TensorList input,
         EXEC_NPU_CMD(aclnnForeachAddcdivScalarV2, temp_input, temp_tensors1, temp_tensors2, scalar_, temp_result);
     }
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count > 0) {
         at::TensorList temp_input(input.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_tensors2(tensors2.data() + loop_time * max_tensor_count, remaining_count);
@@ -107,19 +107,19 @@ void _split_and_exec_npu_cmd_addcdiv_scalar(const at::TensorList input,
 std::vector<at::Tensor> _foreach_addcdiv(const at::TensorList input,
                                          const at::TensorList tensors1,
                                          const at::TensorList tensors2,
-                                         const at::Scalar &scalar)
+                                         const at::Scalar &scalars)
 {
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_addcdiv_scalar_slow(input, tensors1, tensors2, scalar);
+        return at::native::foreach_tensor_addcdiv_scalar_slow(input, tensors1, tensors2, scalars);
     }
-    DO_COMPATIBILITY(aclnnForeachAddcdivScalarV2, _foreach_addcdiv_v1(input, tensors1, tensors2, scalar));
+    DO_COMPATIBILITY(aclnnForeachAddcdivScalarV2, _foreach_addcdiv_v1(input, tensors1, tensors2, scalars));
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2);
-    if (!at::native::can_use_fast_route({input, tensors1, tensors2}, scalar) ||
+    if (!at::native::can_use_fast_route({input, tensors1, tensors2}, scalars) ||
         at::native::has_integral_tensor(input, true)) {
-        return at::native::foreach_tensor_addcdiv_scalar_slow(input, tensors1, tensors2, scalar);
+        return at::native::foreach_tensor_addcdiv_scalar_slow(input, tensors1, tensors2, scalars);
     }
     auto scalar_type = input[0].scalar_type();
 
@@ -130,29 +130,29 @@ std::vector<at::Tensor> _foreach_addcdiv(const at::TensorList input,
         result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
-    _split_and_exec_npu_cmd_addcdiv_scalar(input, tensors1, tensors2, scalar, result_, false);
+    _split_and_exec_npu_cmd_addcdiv_scalar(input, tensors1, tensors2, scalars, result_, false);
 
     return result;
 }
 
-void _foreach_addcdiv_(const at::TensorList input,
-                       const at::TensorList tensors1,
-                       const at::TensorList tensors2,
-                       const at::Scalar &scalar)
+void _foreach_addcdiv_(const at::TensorList self,
+                       const at::TensorList tensor1,
+                       const at::TensorList tensor2,
+                       const at::Scalar &scalars)
 {
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_addcdiv_scalar_slow_(input, tensors1, tensors2, scalar);
+        return at::native::foreach_tensor_addcdiv_scalar_slow_(self, tensor1, tensor2, scalars);
     }
-    DO_COMPATIBILITY(aclnnForeachAddcdivScalarV2, _foreach_addcdiv_v1_(input, tensors1, tensors2, scalar));
-    at::native::check_foreach_api_restrictions(input, tensors1, tensors2);
-    if (!at::native::can_use_fast_route({input, tensors1, tensors2}, scalar) ||
-        at::native::has_integral_tensor(input, true)) {
-        return at::native::foreach_tensor_addcdiv_scalar_slow_(input, tensors1, tensors2, scalar);
+    DO_COMPATIBILITY(aclnnForeachAddcdivScalarV2, _foreach_addcdiv_v1_(self, tensor1, tensor2, scalars));
+    at::native::check_foreach_api_restrictions(self, tensor1, tensor2);
+    if (!at::native::can_use_fast_route({self, tensor1, tensor2}, scalars) ||
+        at::native::has_integral_tensor(self, true)) {
+        return at::native::foreach_tensor_addcdiv_scalar_slow_(self, tensor1, tensor2, scalars);
     }
 
-    _split_and_exec_npu_cmd_addcdiv_scalar(input, tensors1, tensors2, scalar, input, true);
+    _split_and_exec_npu_cmd_addcdiv_scalar(self, tensor1, tensor2, scalars, self, true);
 }
 }

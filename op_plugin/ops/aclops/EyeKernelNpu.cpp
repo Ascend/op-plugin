@@ -68,14 +68,14 @@ at::Tensor& eye_out(int64_t n, at::Tensor& result) {
 
 at::Tensor eye(
     int64_t n,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt)
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
 {
-    auto device = device_or_default(device_opt);
+    auto device_value = device_or_default(device);
     at::TensorOptions option =
-        c10::TensorOptions().dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+        c10::TensorOptions().dtype(dtype).layout(layout).device(device_value).pinned_memory(pin_memory);
 
     c10::SmallVector<int64_t, N> output_size = {n, n};
 
@@ -94,14 +94,14 @@ at::Tensor eye(
 at::Tensor eye(
     int64_t n,
     int64_t m,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt)
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
 {
-    auto device = device_or_default(device_opt);
+    auto device_value = device_or_default(device);
     c10::TensorOptions option =
-        c10::TensorOptions().dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+        c10::TensorOptions().dtype(dtype).layout(layout).device(device_value).pinned_memory(pin_memory);
 
     // get the output size
     c10::SmallVector<int64_t, N> output_size = {n, m};

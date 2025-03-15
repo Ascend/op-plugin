@@ -151,17 +151,17 @@ at::Tensor& normal_out(double mean, double std, at::IntArrayRef size,
 at::Tensor normal(double mean, double std,
                   at::IntArrayRef size,
                   c10::optional<at::Generator> generator,
-                  c10::optional<at::ScalarType> dtype_opt,
-                  c10::optional<c10::Layout> layout_opt,
-                  c10::optional<c10::Device> device_opt,
-                  c10::optional<bool> pin_memory_opt)
+                  c10::optional<at::ScalarType> dtype,
+                  c10::optional<c10::Layout> layout,
+                  c10::optional<c10::Device> device,
+                  c10::optional<bool> pin_memory)
 {
-    DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal(mean, std, size, generator, dtype_opt,
-                                                           layout_opt, device_opt, pin_memory_opt));
-    c10::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
-        .device(device_opt)
-        .layout(layout_opt)
-        .pinned_memory(pin_memory_opt);
+    DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal(mean, std, size, generator, dtype,
+                                                           layout, device, pin_memory));
+    c10::TensorOptions option = c10::TensorOptions().dtype(dtype)
+        .device(device)
+        .layout(layout)
+        .pinned_memory(pin_memory);
     at::Tensor result = npu_preparation::apply_tensor_without_format(size, option);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                       at_npu::detail::getDefaultNPUGenerator());
