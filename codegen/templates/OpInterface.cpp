@@ -14,13 +14,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/OpApiInterface.h"
-#include "op_plugin/OpInterface.h"
-#include "op_plugin/SparseOpsInterface.h"
 #include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/framework/FormatHelper.h"
 #include "torch_npu/csrc/core/npu/npu_log.h"
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/SparseOpsInterface.h"
+#include "op_plugin/OpInterface.h"
 
 namespace ${namespace} {
 ${declarations}

@@ -223,7 +223,7 @@ double compute_scale(int64_t input_size, int64_t output_size, double scale)
 }
 
 bool check_dtype_foreach(at::ScalarType tensorDtype, ForeachTensorDtypeSupport tensorDtypeCategory, ForeachInputType inputType,
-                         c10::optional<at::ScalarType> scalarType, c10::optional<ForeachMappingType> mapping)
+                         c10::optional<at::ScalarType> scalarDtype, c10::optional<ForeachMappingType> mapping)
 {
     bool result = false;
 
@@ -236,10 +236,10 @@ bool check_dtype_foreach(at::ScalarType tensorDtype, ForeachTensorDtypeSupport t
     // check scalr (scalarlist) parm
     at::ScalarType dtype;
     ForeachMappingType mappingType;
-    if (scalarType == c10::nullopt && mapping == c10::nullopt) {
+    if (scalarDtype == c10::nullopt && mapping == c10::nullopt) {
         return result;
-    } else if (scalarType != c10::nullopt && mapping != c10::nullopt) {
-        dtype = scalarType.value();
+    } else if (scalarDtype != c10::nullopt && mapping != c10::nullopt) {
+        dtype = scalarDtype.value();
         mappingType = mapping.value();
     } else {
         TORCH_CHECK(false, "Invalid  scalarType Parm or ForeachMappingType Parm!", OPS_ERROR(ErrCode::PARAM));

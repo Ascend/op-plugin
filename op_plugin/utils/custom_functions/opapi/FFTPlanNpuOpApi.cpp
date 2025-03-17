@@ -124,7 +124,7 @@ namespace op_api {
 
         rotate_matrix = rotate_matrix.reshape(split_shape).permute(permute_shape).contiguous();
 
-        std::array<int64_t, 3> reshape_shape{prev_n, out_n*out_complex, in_complex * in_n};
+        std::array<int64_t, 3> reshape_shape{prev_n, out_n * out_complex, in_complex * in_n};
         return at::reshape(rotate_matrix, reshape_shape);
     }
 

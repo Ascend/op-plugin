@@ -19,10 +19,7 @@ namespace op_api {
 
     static FFTMixCache fftCache(10);
 
-    FFTMixCache::FFTMixCache(int64_t c)
-    {
-        capacity = c;
-    }
+    FFTMixCache::FFTMixCache(int64_t c) : capacity(c) {}
 
     FFTCacheValue FFTMixCache::get(FFTCacheKey &cacheKey)
     {

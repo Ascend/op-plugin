@@ -83,7 +83,7 @@ std::vector<std::string> get_custom_lib_path()
     char *ascend_custom_opppath = std::getenv("ASCEND_CUSTOM_OPP_PATH");
     std::vector<std::string> custom_lib_path_list;
 
-    if (ascend_custom_opppath == NULL) {
+    if (ascend_custom_opppath == nullptr) {
         ASCEND_LOGW("ASCEND_CUSTOM_OPP_PATH is not exists");
         return std::vector<std::string>();
     }
@@ -106,7 +106,7 @@ std::vector<std::string> get_default_custom_lib_path()
     char *ascend_opp_path = std::getenv("ASCEND_OPP_PATH");
     std::vector<std::string> default_vendors_list;
 
-    if (ascend_opp_path == NULL) {
+    if (ascend_opp_path == nullptr) {
         ASCEND_LOGW("ASCEND_OPP_PATH is not exists");
         return std::vector<std::string>();
     }

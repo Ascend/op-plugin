@@ -48,12 +48,10 @@ namespace op_api {
     };
 
     inline PlanKey::PlanKey()
-    {
-        prb_size = 1;
-        is_forward = true;
-        plan_mode = PlanMode::c2c;
-        scalar_dtype = at::ScalarType::ComplexHalf;
-    }
+        : prb_size(1),
+          is_forward(true),
+          plan_mode(PlanMode::c2c),
+          scalar_dtype(at::ScalarType::ComplexHalf) {}
 
     inline PlanKey::PlanKey(int64_t size, bool inv, PlanMode mode, at::ScalarType dtype_)
         : prb_size(size),

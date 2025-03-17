@@ -25,7 +25,7 @@
 namespace op_plugin {
 
 struct OP_PLUGIN_HIDDEN AdvancedIndex {
-    AdvancedIndex(const at::Tensor& src, at::TensorList indices);
+    AdvancedIndex(const at::Tensor& src, at::TensorList list_indices);
     at::Tensor src;
     std::vector<at::Tensor> indices;
     at::DimVector indexed_sizes;
@@ -36,9 +36,9 @@ struct OP_PLUGIN_HIDDEN AdvancedIndex {
 
 class OP_PLUGIN_HIDDEN AdvanceIndex {
 public:
-    static bool all_strides_match(at::TensorList tensors);
+    static bool all_strides_match(at::TensorList tensor_list);
     static at::Tensor reshape_indexer(const at::Tensor& index, int64_t dims_before, int64_t dims_after);
-    static at::Tensor restride_src(const at::Tensor& src, int64_t dims_before, int64_t dims_indexed,
+    static at::Tensor restride_src(const at::Tensor& src, int64_t before_dims, int64_t dims_indexed,
         at::IntArrayRef replacement_shape);
     static std::string shapes_as_str(at::TensorList tensors);
     static AdvancedIndex make_info(at::Tensor self, const torch::List<c10::optional<at::Tensor>>& orig);
