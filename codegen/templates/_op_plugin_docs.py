@@ -5386,6 +5386,43 @@ loss, log_prob, _, _ = torch_npu.npu_cross_entropy_loss(input, target)
 )
 
 _add_torch_npu_docstr(
+    "npu_gemma_rms_norm",
+    """
+接口原型：
+npu_gemma_rms_norm(Tensor input, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor)
+
+功能描述
+通过对数据的root mean square（RMS）进行归一化，避免均值的使用
+
+参数说明
+input: Device侧的Tensor类型，表示输入的需要归一化的数据。shape支持1-8维度，数据格式支持ND。数据类型支持FLOAT32、FLOAT16、BFLOAT16。
+gamma: Device侧的Tensor类型，表示数据缩放因子；shape支持1-8维度，数据格式支持ND。shape需要满足gamma_shape = input_shape\[n:\], n < input_shape.dims()。数据类型支持FLOAT32、FLOAT16、BFLOAT16，与input数据类型保持一致。
+epsilon: float数据类型，用于防止除0错误。默认值1e-06。
+
+输出说明
+y：Device侧的Tensor类型，表示归一化后的输出数据。shape支持1-8维度，数据格式支持ND。数据类型支持FLOAT32、FLOAT16、BFLOAT16，与输入input数据类型保持一致。
+rstd: Device侧的Tensor类型，输入input数据的标准差；shape支持1-8维度，数据格式支持ND。数据类型支持FLOAT32、FLOAT16、BFLOAT16，与输入input数据类型保持一致。shape与输入input的shape前几维保持一致，前几维指输入input的维度减去输入gamma的维度，表示不需要norm的维度。
+
+约束说明
+不支持空进空出
+不支持非连续tensor
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2中的推理产品
+Atlas A3训练系列产品
+
+调用示例:
+import torch
+import torch_npu
+
+input_x = torch.randn([20, 10, 64], dtype=torch.float32).npu()
+input_gamma = torch.randn([64], dtype=torch.float32).npu()
+
+y, rstd = torch_npu.npu_gemma_rms_norm(input_x, input_gamma)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_advance_step_flashattn",
     """
 接口原型：
