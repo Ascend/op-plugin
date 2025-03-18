@@ -21,36 +21,34 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
-    const at::Tensor& dY,
-    const at::Tensor& X,
+    const at::Tensor& grad_out,
+    const at::Tensor& input,
     const at::Tensor& mean,
     const at::Tensor& rstd,
-    const c10::optional<at::Tensor>& gamma_opt,
+    const c10::optional<at::Tensor>& weight,
     int64_t N,
     int64_t C,
     int64_t HxW,
     int64_t group,
-    std::array<bool, 3> grad_input_mask)
+    std::array<bool, 3> output_mask)
 {
-    DO_COMPATIBILITY(aclnnGroupNormBackward,
-                     acl_op::native_group_norm_backward(dY, X, mean, rstd, gamma_opt, N, C, HxW, group,
-                                                        grad_input_mask));
-    c10::MaybeOwned<at::Tensor> gamma_maybe_owned = at::borrow_from_optional_tensor(gamma_opt);
+    DO_COMPATIBILITY(aclnnGroupNormBackward, acl_op::native_group_norm_backward(grad_out, input, mean, rstd, weight, N, C, HxW, group, output_mask));
+    c10::MaybeOwned<at::Tensor> gamma_maybe_owned = at::borrow_from_optional_tensor(weight);
     const at::Tensor& gamma = *gamma_maybe_owned;
     at::Tensor grad_x;
     at::Tensor grad_gamma;
     at::Tensor grad_beta;
-    if (grad_input_mask[0]) {
-        grad_x = npu_preparation::apply_tensor_without_format(X);
+    if (output_mask[0]) {
+        grad_x = npu_preparation::apply_tensor_without_format(input);
     }
-    if (grad_input_mask[1]) {
+    if (output_mask[1]) {
         grad_gamma = npu_preparation::apply_tensor_without_format(gamma);
     }
-    if (grad_input_mask[2]) {
+    if (output_mask[2]) {
         grad_beta = npu_preparation::apply_tensor_without_format(gamma);
     }
 
-    EXEC_NPU_CMD(aclnnGroupNormBackward, dY, X, mean, rstd, gamma, N, C, HxW, group, grad_input_mask,
+    EXEC_NPU_CMD(aclnnGroupNormBackward, grad_out, input, mean, rstd, gamma, N, C, HxW, group, output_mask,
                  grad_x, grad_gamma, grad_beta);
     return std::make_tuple(grad_x, grad_gamma, grad_beta);
 }

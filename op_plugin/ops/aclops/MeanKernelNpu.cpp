@@ -23,9 +23,9 @@ at::Tensor& mean_out(
     at::DimnameList dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result)
+    at::Tensor& out)
 {
-    return acl_op::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
+    return acl_op::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, out);
 }
 
 at::Tensor mean(
@@ -48,9 +48,9 @@ at::Tensor& mean_out(
     at::IntArrayRef dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result)
+    at::Tensor& out)
 {
-    return mean_out_common_nocheck(self, dim, keepdim, dtype, result);
+    return mean_out_common_nocheck(self, dim, keepdim, dtype, out);
 }
 
 at::Tensor mean(
@@ -69,9 +69,9 @@ at::Tensor& mean_out(
     at::OptionalIntArrayRef dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result)
+    at::Tensor& out)
 {
-    return mean_out_common_nocheck(self, dim.value(), keepdim, dtype, result);
+    return mean_out_common_nocheck(self, dim.value(), keepdim, dtype, out);
 }
 
 at::Tensor mean(

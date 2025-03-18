@@ -58,10 +58,10 @@ at::Tensor argmin(const at::Tensor& self, at::optional<int64_t> dim, bool keepdi
     return argmin_exec(self, dim, keepdim, result, false);
 }
 
-at::Tensor& argmin_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result)
+at::Tensor& argmin_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnArgMin, acl_op::argmin_out(self, dim, keepdim, result));
+    DO_COMPATIBILITY(aclnnArgMin, acl_op::argmin_out(self, dim, keepdim, out));
 
-    return argmin_exec(self, dim, keepdim, result, true);
+    return argmin_exec(self, dim, keepdim, out, true);
 }
 }

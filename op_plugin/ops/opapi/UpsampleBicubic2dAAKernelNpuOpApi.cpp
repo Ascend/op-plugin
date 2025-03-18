@@ -27,7 +27,7 @@ bool checkBicubicScales(float realScale_h, float realScale_w)
 }
 
 bool checkBicubicUseFast(
-    const at::Tensor &self, bool align_corners, double scales_h, double scales_w, at::Tensor &result)
+    const at::Tensor &self, double scales_h, double scales_w, at::Tensor &result)
 {
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                               c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
@@ -67,20 +67,20 @@ at::Tensor upsample_bicubic2d_aa_slow(const at::Tensor &self, at::IntArrayRef ou
 }
 
 at::Tensor &_upsample_bicubic2d_aa_out(const at::Tensor &self, at::IntArrayRef output_size, bool align_corners,
-    c10::optional<double> scales_h, c10::optional<double> scales_w, at::Tensor &result)
+    c10::optional<double> scales_h, c10::optional<double> scales_w, at::Tensor &out)
 {
     DO_COMPATIBILITY(aclnnUpsampleBicubic2dAA,
-        upsample_bicubic2d_aa_out_slow(self, output_size, align_corners, scales_h, scales_w, result));
+        upsample_bicubic2d_aa_out_slow(self, output_size, align_corners, scales_h, scales_w, out));
     auto outputsize = op_infer::upsample_bicubic2d_npu_output_size(self, output_size);
-    npu_preparation::check_tensor({self}, result, self, outputsize);
+    npu_preparation::check_tensor({self}, out, self, outputsize);
 
     double scales_h_attr = scales_h.value_or(0);
     double scales_w_attr = scales_w.value_or(0);
-    if (!checkBicubicUseFast(self, align_corners, scales_h_attr, scales_w_attr, result)) {
-        return upsample_bicubic2d_aa_out_slow(self, output_size, align_corners, scales_h, scales_w, result);
+    if (!checkBicubicUseFast(self, scales_h_attr, scales_w_attr, out)) {
+        return upsample_bicubic2d_aa_out_slow(self, output_size, align_corners, scales_h, scales_w, out);
     }
-    EXEC_NPU_CMD(aclnnUpsampleBicubic2dAA, self, output_size, align_corners, scales_h_attr, scales_w_attr, result);
-    return result;
+    EXEC_NPU_CMD(aclnnUpsampleBicubic2dAA, self, output_size, align_corners, scales_h_attr, scales_w_attr, out);
+    return out;
 }
 
 at::Tensor _upsample_bicubic2d_aa(const at::Tensor &self, at::IntArrayRef output_size, bool align_corners,
@@ -93,7 +93,7 @@ at::Tensor _upsample_bicubic2d_aa(const at::Tensor &self, at::IntArrayRef output
     double scales_w_attr = scales_w.value_or(0);
     auto outputsize = op_infer::upsample_bicubic2d_npu_output_size(self, output_size);
     at::Tensor result = npu_preparation::apply_tensor_without_format(self, outputsize);
-    if (!checkBicubicUseFast(self, align_corners, scales_h_attr, scales_w_attr, result)) {
+    if (!checkBicubicUseFast(self, scales_h_attr, scales_w_attr, result)) {
         return upsample_bicubic2d_aa_slow(self, output_size, align_corners, scales_h, scales_w);
     }
     EXEC_NPU_CMD(aclnnUpsampleBicubic2dAA, self, output_size, align_corners, scales_h_attr, scales_w_attr, result);

@@ -21,19 +21,20 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
-    const at::Tensor& grad,
+    const at::Tensor& grad_output,
     const at::Tensor& input,
     const at::Tensor& grid,
     int64_t interpolation_mode,
     int64_t padding_mode,
     bool align_corners,
-    std::array<bool, 2> output_mask) {
+    std::array<bool, 2> output_mask)
+{
     TORCH_CHECK((0 <= interpolation_mode && interpolation_mode <= 2), "interpolation_mode must be in range [0~2]."
         + OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK((0 <= padding_mode && padding_mode <= 2), "padding_mode must be in range [0~2]."
         + OPS_ERROR(ErrCode::VALUE));
 
-    at::Tensor format_cast_of_grad = grad;
+    at::Tensor format_cast_of_grad = grad_output;
     at::Tensor format_cast_of_input = input;
     at::Tensor format_cast_of_grid = grid;
 

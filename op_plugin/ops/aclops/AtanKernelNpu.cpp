@@ -32,20 +32,20 @@ at::Tensor& atan_out_npu_nocheck(at::Tensor& result, const at::Tensor& self)
 }
 } // namespace
 
-at::Tensor& atan_out(const at::Tensor& self, at::Tensor& result)
+at::Tensor& atan_out(const at::Tensor& self, at::Tensor& out)
 {
     npu_preparation::CheckOut(
         {self},
-        result,
+        out,
         self);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         atan_out_npu_nocheck(contiguous_result, self);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        atan_out_npu_nocheck(result, self);
+        atan_out_npu_nocheck(out, self);
     }
-    return result;
+    return out;
 }
 
 at::Tensor atan(const at::Tensor& self)

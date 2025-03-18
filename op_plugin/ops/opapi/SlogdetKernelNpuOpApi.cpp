@@ -20,7 +20,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> slogdet(const at::Tensor& self) {
+std::tuple<at::Tensor, at::Tensor> slogdet(const at::Tensor& self)
+{
     DO_COMPATIBILITY(aclnnSlogdet, acl_op::slogdet(self));
     // input dimension at least 2
     TORCH_CHECK(self.ndimension() >= 2, "Expected nonempty least 2D tensor, but got a tensor with sizes ", self.dim(),
@@ -56,14 +57,14 @@ std::tuple<at::Tensor, at::Tensor> linalg_slogdet(const at::Tensor& self)
     return std::tie(sign, log);
 }
 
-std::tuple<at::Tensor &, at::Tensor &> linalg_slogdet_out(const at::Tensor& self,
-                                                          at::Tensor& sign,
-                                                          at::Tensor& log)
+std::tuple<at::Tensor&, at::Tensor&> linalg_slogdet_out(const at::Tensor& self,
+                                                        at::Tensor& sign,
+                                                        at::Tensor& log)
 {
-  DO_COMPATIBILITY(aclnnSlogdet, acl_op::linalg_slogdet_out(self, sign, log));
-  EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
+    DO_COMPATIBILITY(aclnnSlogdet, acl_op::linalg_slogdet_out(self, sign, log));
+    EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
 
-  return std::tie(sign, log);
+    return std::tie(sign, log);
 }
 #endif
 

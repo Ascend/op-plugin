@@ -55,7 +55,7 @@ at::Tensor &reflection_pad2d_backward_out_npu_nocheck(const at::Tensor &grad_out
         .Input(grad_output_cp)
         .Input(vector_int, at::kInt)
         .Output(grad_input)
-        .Attr("mode", (string) "reflect")
+        .Attr("mode", static_cast<string>("reflect"))
         .Attr("paddings_contiguous", true)
         .Run();
 
@@ -66,7 +66,7 @@ at::Tensor &reflection_pad2d_backward_out_npu_nocheck(const at::Tensor &grad_out
 }
 } // namespace
 
-at::Tensor &reflection_pad2d_backward_out(const at::Tensor &grad_output, const at::Tensor &input,
+at::Tensor &reflection_pad2d_backward_out(const at::Tensor &grad_output, const at::Tensor &self,
                                           at::IntArrayRef padding, at::Tensor &grad_input)
 {
     if (check_padding(padding)) {
@@ -74,26 +74,26 @@ at::Tensor &reflection_pad2d_backward_out(const at::Tensor &grad_output, const a
         return grad_input;
     }
 
-    npu_preparation::CheckOut({input, grad_output}, grad_input, input);
+    npu_preparation::CheckOut({self, grad_output}, grad_input, self);
     if (!npu_utils::check_match(&grad_input)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
-        reflection_pad2d_backward_out_npu_nocheck(grad_output, input, padding, contiguous_result);
+        reflection_pad2d_backward_out_npu_nocheck(grad_output, self, padding, contiguous_result);
         npu_utils::format_fresh_view(grad_input, contiguous_result);
     } else {
-        reflection_pad2d_backward_out_npu_nocheck(grad_output, input, padding, grad_input);
+        reflection_pad2d_backward_out_npu_nocheck(grad_output, self, padding, grad_input);
     }
     return grad_input;
 }
 
-at::Tensor reflection_pad2d_backward(const at::Tensor &grad_output, const at::Tensor &input, at::IntArrayRef padding)
+at::Tensor reflection_pad2d_backward(const at::Tensor &grad_output, const at::Tensor &self, at::IntArrayRef padding)
 {
-    at::Tensor grad_input = npu_preparation::apply_tensor(input);
+    at::Tensor grad_input = npu_preparation::apply_tensor(self);
     if (check_padding(padding)) {
         grad_input.copy_(grad_output);
         return grad_input;
     }
 
-    reflection_pad2d_backward_out_npu_nocheck(grad_output, input, padding, grad_input);
+    reflection_pad2d_backward_out_npu_nocheck(grad_output, self, padding, grad_input);
     return grad_input;
 }
 

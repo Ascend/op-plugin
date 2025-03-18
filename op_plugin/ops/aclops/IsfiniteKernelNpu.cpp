@@ -20,22 +20,22 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor isfinite(const at::Tensor& self_ex)
+at::Tensor isfinite(const at::Tensor& self)
 {
-    at::Tensor self = self_ex;
-    if (npu_preparation::get_tensor_npu_format(self) != ACL_FORMAT_ND) {
-        self = at_npu::native::custom_ops::npu_format_cast(self_ex, ACL_FORMAT_ND);
+    at::Tensor self_ex = self;
+    if (npu_preparation::get_tensor_npu_format(self_ex) != ACL_FORMAT_ND) {
+        self_ex = at_npu::native::custom_ops::npu_format_cast(self, ACL_FORMAT_ND);
     }
-    if (self.scalar_type() == at::ScalarType::Half) {
-        self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
+    if (self_ex.scalar_type() == at::ScalarType::Half) {
+        self_ex = at_npu::native::custom_ops::npu_dtype_cast(self_ex, at::ScalarType::Float);
     }
-    auto output_size = self.sizes();
+    auto output_size = self_ex.sizes();
     at::Tensor result = npu_preparation::apply_tensor_with_format(
-        output_size, self.options().dtype(at::kBool), ACL_FORMAT_ND);
+        output_size, self_ex.options().dtype(at::kBool), ACL_FORMAT_ND);
 
     at_npu::native::OpCommand cmd;
     cmd.Name("IsFinite")
-        .Input(self)
+        .Input(self_ex)
         .Output(result)
         .Run();
     return result;

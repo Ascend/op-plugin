@@ -52,10 +52,10 @@ namespace acl_op {
 
     std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_dim(
         const at::Tensor &self,
-        const int64_t dim,
-        const bool sorted,
-        const bool return_inverse,
-        const bool return_counts)
+        int64_t dim,
+        bool sorted,
+        bool return_inverse,
+        bool return_counts)
     {
         auto sizes = self.sizes().vec();
         // check how many zero dimensions exist

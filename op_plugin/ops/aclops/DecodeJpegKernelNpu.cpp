@@ -36,12 +36,12 @@ at::Tensor decode_jpeg(
         .Input(self, "", c10::nullopt, "string")
         .Output(result)
         .Attr("channels", channels)
-        .Attr("ratio", (int64_t) 1)
-        .Attr("fancy_upscaling", (bool) true)
+        .Attr("ratio", static_cast<int64_t>(1))
+        .Attr("fancy_upscaling", static_cast<bool>(true))
         .Attr("try_recover_truncated", try_recover_truncated)
-        .Attr("acceptable_fraction", (float) 1.0)
-        .Attr("dct_method", (string) "")
-        .Attr("dst_img_format", (string) "CHW")
+        .Attr("acceptable_fraction", static_cast<float>(1.0))
+        .Attr("dct_method", static_cast<string>(""))
+        .Attr("dst_img_format", static_cast<string>("CHW"))
         .Run();
 
     return result;

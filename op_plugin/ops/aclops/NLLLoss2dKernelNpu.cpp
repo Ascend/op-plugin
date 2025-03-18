@@ -24,7 +24,7 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nll_loss2d_npu_output_size(
-    const at::Tensor &self, const at::Tensor &target, int64_t reduction, int64_t ignore_index)
+    const at::Tensor &self, int64_t reduction)
 {
     c10::SmallVector<int64_t, SIZE> output_size;
     c10::SmallVector<int64_t, SIZE> total_weight_size;
@@ -77,21 +77,21 @@ std::tuple<at::Tensor &, at::Tensor &> nll_loss2d_forward_out_nocheck(at::Tensor
 std::tuple<at::Tensor &, at::Tensor &> nll_loss2d_forward_out(const at::Tensor &self, const at::Tensor &target,
                                                               const c10::optional<at::Tensor> &weight_opt,
                                                               int64_t reduction, int64_t ignore_index,
-                                                              at::Tensor &result, at::Tensor &total_weight)
+                                                              at::Tensor &output, at::Tensor &total_weight)
 {
     at::Tensor weight_tensor = check_weight_opt(self, weight_opt, ignore_index);
-    auto output_sizes = nll_loss2d_npu_output_size(self, target, reduction, ignore_index);
+    auto output_sizes = nll_loss2d_npu_output_size(self, reduction);
 
-    npu_preparation::CheckOut({self, target, weight_tensor}, result, ACL_FORMAT_ND, self.scalar_type(),
+    npu_preparation::CheckOut({self, target, weight_tensor}, output, ACL_FORMAT_ND, self.scalar_type(),
                               std::get<0>(output_sizes));
 
     npu_preparation::CheckOut({self, target, weight_tensor}, total_weight, ACL_FORMAT_ND, self.scalar_type(),
                               std::get<1>(output_sizes));
 
-    bool result_match = npu_utils::check_match(&result);
+    bool result_match = npu_utils::check_match(&output);
     bool total_weight_match = npu_utils::check_match(&total_weight);
     if (!(result_match && total_weight_match)) {
-        at::Tensor contiguous_result = result_match ? result : npu_utils::format_contiguous(result);
+        at::Tensor contiguous_result = result_match ? output : npu_utils::format_contiguous(output);
         at::Tensor contiguous_total_weight =
             total_weight_match ? total_weight : npu_utils::format_contiguous(total_weight);
 
@@ -99,20 +99,20 @@ std::tuple<at::Tensor &, at::Tensor &> nll_loss2d_forward_out(const at::Tensor &
                                        reduction, ignore_index);
 
         if (!result_match) {
-            npu_utils::format_fresh_view(result, contiguous_result);
+            npu_utils::format_fresh_view(output, contiguous_result);
         }
         if (!total_weight_match) {
             npu_utils::format_fresh_view(total_weight, contiguous_total_weight);
         }
     } else {
-        nll_loss2d_forward_out_nocheck(result, total_weight, self, target, weight_tensor, reduction, ignore_index);
+        nll_loss2d_forward_out_nocheck(output, total_weight, self, target, weight_tensor, reduction, ignore_index);
     }
 
-    return std::tuple<at::Tensor &, at::Tensor &>(result, total_weight);
+    return std::tuple<at::Tensor &, at::Tensor &>(output, total_weight);
 }
 
 std::tuple<at::Tensor, at::Tensor> nll_loss2d_forward(const at::Tensor &self, const at::Tensor &target,
-                                                      const c10::optional<at::Tensor> &weight_opt, int64_t reduction,
+                                                      const c10::optional<at::Tensor> &weight, int64_t reduction,
                                                       int64_t ignore_index)
 {
     TORCH_CHECK(self.dim() == 4, "Expected 4D input (got ", self.dim(), "D input)"
@@ -134,12 +134,12 @@ std::tuple<at::Tensor, at::Tensor> nll_loss2d_forward(const at::Tensor &self, co
     auto target_input = target_cast.contiguous();
     target_input = target_cast.reshape({-1});
 
-    auto output_sizes = nll_loss2d_npu_output_size(self_input, target, reduction, ignore_index);
+    auto output_sizes = nll_loss2d_npu_output_size(self_input, reduction);
 
     at::Tensor result = npu_preparation::apply_tensor(self_input, std::get<0>(output_sizes));
     at::Tensor total_weight = npu_preparation::apply_tensor(self_input, std::get<1>(output_sizes));
 
-    at::Tensor weight_tensor = check_weight_opt(self, weight_opt, ignore_index);
+    at::Tensor weight_tensor = check_weight_opt(self, weight, ignore_index);
     nll_loss2d_forward_out_nocheck(result, total_weight, self_input, target_input, weight_tensor, reduction,
                                    ignore_index);
     if (reduction == at::Reduction::None) {
