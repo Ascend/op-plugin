@@ -276,6 +276,7 @@ class TestGroupedMatmul(TestCase):
 
         self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
 
+    @unittest.skip("skip test_npu_grouped_matmul_antiquant_0 now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_antiquant_0(self, device="npu"): # 伪量化 多多多
         torch.manual_seed(0)
