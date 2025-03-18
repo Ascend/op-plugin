@@ -14,7 +14,6 @@
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;

@@ -24,9 +24,9 @@ at::Tensor &var_out(
     c10::optional<at::IntArrayRef> dim,
     c10::optional<int64_t> correction,
     bool keepdim,
-    at::Tensor &result)
+    at::Tensor &out)
 {
-    DO_COMPATIBILITY(aclnnVarCorrection, acl_op::var_out(self, dim, correction, keepdim, result));
+    DO_COMPATIBILITY(aclnnVarCorrection, acl_op::var_out(self, dim, correction, keepdim, out));
     c10::SmallVector<int64_t, SIZE> real_dim = {};
     if (dim.has_value()) {
         real_dim = op_infer::array_to_small_vector(dim.value());
@@ -34,10 +34,10 @@ at::Tensor &var_out(
     auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
     auto real_correction = correction.has_value() ? correction.value() : 1;
 
-    at_npu::native::OpPreparation::check_tensor({self}, result, result, output_size);
+    at_npu::native::OpPreparation::check_tensor({self}, out, out, output_size);
 
-    EXEC_NPU_CMD(aclnnVarCorrection, self, dim, real_correction, keepdim, result);
-    return result;
+    EXEC_NPU_CMD(aclnnVarCorrection, self, dim, real_correction, keepdim, out);
+    return out;
 }
 
 at::Tensor var(
@@ -87,9 +87,9 @@ at::Tensor& var_out(
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
     bool keepdim,
-    at::Tensor& result)
+    at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnVarCorrection, acl_op::var_out(self, dim, correction, keepdim, result));
+    DO_COMPATIBILITY(aclnnVarCorrection, acl_op::var_out(self, dim, correction, keepdim, out));
     c10::SmallVector<int64_t, op_infer::SIZE> real_dim = {};
     if (dim.has_value()) {
         real_dim = op_infer::array_to_small_vector(dim.value());
@@ -99,13 +99,13 @@ at::Tensor& var_out(
 
     at_npu::native::OpPreparation::check_tensor(
         {self},
-        result,
+        out,
         self,
         output_size);
 
     auto rd = at::IntArrayRef(real_dim);
-    EXEC_NPU_CMD(aclnnVarCorrection, self, rd, real_correction, keepdim, result);
-    return result;
+    EXEC_NPU_CMD(aclnnVarCorrection, self, rd, real_correction, keepdim, out);
+    return out;
 }
 
 at::Tensor var(

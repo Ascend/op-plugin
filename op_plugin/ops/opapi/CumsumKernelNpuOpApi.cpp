@@ -20,34 +20,34 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& cumsum_out(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor& result)
+at::Tensor& cumsum_out(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, result));
-    npu_preparation::check_tensor({self}, result, self.sizes());
+    DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, out));
+    npu_preparation::check_tensor({self}, out, self.sizes());
 
     aclDataType dtype_new = ACL_DT_UNDEFINED;
     if (!dtype.has_value()) {
-        dtype_new = npu_preparation::convert_to_acl_data_type(result.scalar_type());
+        dtype_new = npu_preparation::convert_to_acl_data_type(out.scalar_type());
     } else {
         dtype_new = npu_preparation::convert_to_acl_data_type(dtype.value());
     }
 
-    if (self.is_same(result)) {
+    if (self.is_same(out)) {
         auto tmp = npu_preparation::apply_tensor_without_format(self);
         EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, tmp);
-        result.copy_(tmp);
+        out.copy_(tmp);
     } else {
-        EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, result);
+        EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, out);
     }
-    at::namedinference::propagate_names(result, self);
-    return result;
+    at::namedinference::propagate_names(out, self);
+    return out;
 }
 
 at::Tensor& cumsum_out(const at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype,
-                       at::Tensor& result)
+                       at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, result));
-    return op_api::cumsum_out(self, dimname_to_position(self, dim), dtype, result);
+    DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, out));
+    return op_api::cumsum_out(self, dimname_to_position(self, dim), dtype, out);
 }
 
 at::Tensor cumsum(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype)

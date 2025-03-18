@@ -60,32 +60,32 @@ at::Tensor &batch_norm_elemt_nocheck(at::Tensor &result, const at::Tensor &self,
 }
 } // namespace
 
-at::Tensor &batch_norm_elemt_out(const at::Tensor &self, const c10::optional<at::Tensor> &weight_opt,
-                                 const c10::optional<at::Tensor> &bias_opt, const at::Tensor &mean,
-                                 const at::Tensor &invstd, double eps, at::Tensor &result)
+at::Tensor &batch_norm_elemt_out(const at::Tensor &input, const c10::optional<at::Tensor> &weight,
+                                 const c10::optional<at::Tensor> &bias, const at::Tensor &mean,
+                                 const at::Tensor &invstd, double eps, at::Tensor &out)
 {
-    const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
-    const at::Tensor &weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
+    const at::Tensor &bias_value = c10::value_or_else(bias, [] { return at::Tensor(); });
+    const at::Tensor &weight_value = c10::value_or_else(weight, [] { return at::Tensor(); });
 
-    npu_preparation::CheckOut({self, bias, weight}, result, self);
+    npu_preparation::CheckOut({input, bias_value, weight_value}, out, input);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        batch_norm_elemt_nocheck(contiguous_result, self, weight, bias, mean, invstd, eps);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        batch_norm_elemt_nocheck(contiguous_result, input, weight_value, bias_value, mean, invstd, eps);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        batch_norm_elemt_nocheck(result, self, weight, bias, mean, invstd, eps);
+        batch_norm_elemt_nocheck(out, input, weight_value, bias_value, mean, invstd, eps);
     }
 
-    return result;
+    return out;
 }
 
-at::Tensor batch_norm_elemt(const at::Tensor &self, const c10::optional<at::Tensor> &weight,
+at::Tensor batch_norm_elemt(const at::Tensor &input, const c10::optional<at::Tensor> &weight,
                             const c10::optional<at::Tensor> &bias, const at::Tensor &mean, const at::Tensor &invstd,
                             double eps)
 {
-    at::Tensor result = npu_preparation::apply_tensor(self);
-    batch_norm_elemt_nocheck(result, self, weight, bias, mean, invstd, eps);
+    at::Tensor result = npu_preparation::apply_tensor(input);
+    batch_norm_elemt_nocheck(result, input, weight, bias, mean, invstd, eps);
     return result;
 }
 } // namespace acl_op

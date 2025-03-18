@@ -29,9 +29,9 @@ at::Tensor& uniform_out_npu(
     const at::Tensor& self,
     double from,
     double to,
-    c10::optional<at::Generator> gen_)
+    c10::optional<at::Generator> generator)
 {
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen_, at_npu::detail::getDefaultNPUGenerator());
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto pair = gen->philox_engine_inputs(10);
     const int64_t seed = static_cast<int64_t>(pair.first);
     const int64_t offset = static_cast<int64_t>(pair.second);
@@ -54,14 +54,14 @@ at::Tensor& uniform_out_npu(
 }
 } // namespace
 
-at::Tensor& uniform_(at::Tensor& self, double from, double to, c10::optional<at::Generator> gen_)
+at::Tensor& uniform_(at::Tensor& self, double from, double to, c10::optional<at::Generator> generator)
 {
     if (!npu_utils::check_match(&self)) {
         at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-        uniform_out_npu(contiguous_self, contiguous_self, from, to, gen_);
+        uniform_out_npu(contiguous_self, contiguous_self, from, to, generator);
         npu_utils::format_fresh_view(self, contiguous_self);
     } else {
-        uniform_out_npu(self, self, from, to, gen_);
+        uniform_out_npu(self, self, from, to, generator);
     }
     return self;
 }

@@ -46,54 +46,54 @@ at::Tensor& linspace_npu_out_nocheck(
 }
 }  // namespace
 
-at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& result)
+at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& out)
 {
     TORCH_CHECK(steps >= 0, "number of steps must be non-negative"
         + OPS_ERROR(ErrCode::VALUE));
 
-    if (result.numel() != steps) {
-        result.resize_({steps});
+    if (out.numel() != steps) {
+        out.resize_({steps});
     }
 
-    bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;
+    bool out_is_not_float = (out.dtype() != at::kFloat) ? true : false;
 
-    at::Tensor result_cast = result;
-    if (result_is_not_float) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
+    at::Tensor out_cast = out;
+    if (out_is_not_float) {
+        out_cast = at_npu::native::custom_ops::npu_dtype_cast(out, at::kFloat);
     }
 
-    if (!npu_utils::check_match(&result_cast)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
-        linspace_npu_out_nocheck(contiguous_result, start, end, steps);
-        npu_utils::format_fresh_view(result_cast, contiguous_result);
+    if (!npu_utils::check_match(&out_cast)) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out_cast);
+        linspace_npu_out_nocheck(contiguous_out, start, end, steps);
+        npu_utils::format_fresh_view(out_cast, contiguous_out);
     } else {
-        linspace_npu_out_nocheck(result_cast, start, end, steps);
+        linspace_npu_out_nocheck(out_cast, start, end, steps);
     }
 
-    if (result_is_not_float) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result.scalar_type());
-        result.copy_(result_cast);
+    if (out_is_not_float) {
+        out_cast = at_npu::native::custom_ops::npu_dtype_cast(out_cast, out.scalar_type());
+        out.copy_(out_cast);
     } else {
-        result = result_cast;
+        out = out_cast;
     }
 
-    return result;
+    return out;
 }
 
 at::Tensor linspace(
     const at::Scalar& start,
     const at::Scalar& end,
     int64_t steps,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt)
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
 {
     TORCH_CHECK(steps >= 0, "number of steps must be non-negative"
         + OPS_ERROR(ErrCode::VALUE));
-    auto device = c10::device_or_default(device_opt);
+    auto device_value = c10::device_or_default(device);
     at::TensorOptions option = c10::TensorOptions()
-        .dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+        .dtype(dtype).layout(layout).device(device_value).pinned_memory(pin_memory);
 
     at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, option, ACL_FORMAT_ND);
     at::Tensor result_cast = result;

@@ -32,17 +32,17 @@ at::Tensor& asinh_out_npu_nocheck(at::Tensor& result, const at::Tensor& self)
 }
 } // namespace
 
-at::Tensor& asinh_out(const at::Tensor& self, at::Tensor& result)
+at::Tensor& asinh_out(const at::Tensor& self, at::Tensor& out)
 {
-    npu_preparation::CheckOut({self}, result, self);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        asinh_out_npu_nocheck(contiguous_result, self);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    npu_preparation::CheckOut({self}, out, self);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+        asinh_out_npu_nocheck(contiguous_out, self);
+        npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        asinh_out_npu_nocheck(result, self);
+        asinh_out_npu_nocheck(out, self);
     }
-    return result;
+    return out;
 }
 
 at::Tensor asinh(const at::Tensor& self)

@@ -37,17 +37,17 @@ at::Tensor& hardsigmoid_out_nocheck(
 
 at::Tensor& hardsigmoid_out(
     const at::Tensor& self,
-    at::Tensor& result)
+    at::Tensor& out)
 {
-    npu_preparation::CheckOut({self}, result, self);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    npu_preparation::CheckOut({self}, out, self);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         hardsigmoid_out_nocheck(contiguous_result, self);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        hardsigmoid_out_nocheck(result, self);
+        hardsigmoid_out_nocheck(out, self);
     }
-    return result;
+    return out;
 }
 
 at::Tensor hardsigmoid(const at::Tensor& self)

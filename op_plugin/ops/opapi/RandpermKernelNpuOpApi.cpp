@@ -29,22 +29,22 @@ at::Tensor& randperm_op_api(int64_t n, c10::optional<at::Generator> gen_, at::Te
     return result;
 }
 
-at::Tensor& randperm_out(int64_t n, c10::optional<at::Generator> generator, at::Tensor& result)
+at::Tensor& randperm_out(int64_t n, c10::optional<at::Generator> generator, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnRandperm, acl_op::randperm_out(n, generator, result));
+    DO_COMPATIBILITY(aclnnRandperm, acl_op::randperm_out(n, generator, out));
     TORCH_CHECK(n >= 0, "n must be non-negative, got", n, OPS_ERROR(ErrCode::VALUE));
-    at_npu::native::OpPreparation::check_tensor({}, result, result, {n});
-    randperm_op_api(n, generator, result);
-    return result;
+    at_npu::native::OpPreparation::check_tensor({}, out, out, {n});
+    randperm_op_api(n, generator, out);
+    return out;
 }
 
-at::Tensor& randperm_out(int64_t n, at::Tensor& result)
+at::Tensor& randperm_out(int64_t n, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnRandperm, acl_op::randperm_out(n, result));
-    at_npu::native::OpPreparation::check_tensor({}, result, result, {n});
+    DO_COMPATIBILITY(aclnnRandperm, acl_op::randperm_out(n, out));
+    at_npu::native::OpPreparation::check_tensor({}, out, out, {n});
     c10::optional<at::Generator> generator = static_cast<c10::optional<at::Generator>>(c10::nullopt);
-    randperm_op_api(n, generator, result);
-    return result;
+    randperm_op_api(n, generator, out);
+    return out;
 }
 
 at::Tensor randperm(int64_t n, c10::optional<at::Generator> generator,

@@ -23,14 +23,15 @@ namespace {
 at::Tensor& rshift_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
-    at::Scalar other) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("RightShift")
-      .Input(self)
-      .Input(other, self.scalar_type())
-      .Output(result)
-      .Run();
-  return result;
+    at::Scalar other)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("RightShift")
+        .Input(self)
+        .Input(other, self.scalar_type())
+        .Output(result)
+        .Run();
+    return result;
 }
 
 at::Tensor& rshift_out_npu_nocheck(
