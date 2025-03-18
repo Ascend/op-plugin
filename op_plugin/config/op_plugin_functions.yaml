@@ -6435,6 +6435,12 @@ custom:
 
   - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
     acl_op: [v2.0, newest]
+    op_api: [v2.0, newest]
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnKlDivBackward
 
   - func: l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
     acl_op: [v2.0, newest]
@@ -7224,7 +7230,7 @@ custom:
 
   - func: npu_rope_quant_kvcache(Tensor x, Tensor cos, Tensor sin, Tensor k_cache, Tensor v_cache, Tensor indices, Tensor scale_k, Tensor scale_v, int[3] size_splits, *, Tensor? offset_k=None, Tensor? offset_v=None, int quant_mode=0, str input_layout="BSND", bool kv_output=False, str cache_mode="contiguous") -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
-  
+
   - func: npu_dequant_bias(Tensor x, Tensor weight_scale, Tensor? activation_scale, Tensor? bias, *, ScalarType? output_dtype=None) -> Tensor
     op_api: all_version
 
@@ -7362,7 +7368,7 @@ custom:
         dweight_require_grad: 'grad_input_mask[1] ? true : false'
         dbias_require_grad: 'grad_input_mask[2] ? true : false'
       exec: aclnnGroupNormSwishGrad, grad, mean, rstd, input, weight, bias, num_groups, data_format, swish_scale_value, dweight_require_grad, dbias_require_grad, grad_x, grad_weight, grad_bias
-    
+
   - func: npu_advance_step_flashattn(Tensor(a!) input_tokens, Tensor sampled_token_ids, Tensor(b!) input_positions, Tensor(c!) seq_lens, Tensor(d!) slot_mapping, Tensor block_tables, int num_seqs, int num_queries, int block_size) -> ()
     op_api: all_version
     exposed: all_version
