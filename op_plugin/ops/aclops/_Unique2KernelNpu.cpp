@@ -67,11 +67,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     }
     at::Tensor y = npu_preparation::apply_tensor(self_cast, self_cast.numel());
     at::Tensor y_inverse = !(return_counts || return_inverse) ?
-        npu_preparation::apply_tensor_with_format({1}, self_cast.options().dtype(at::kLong), ACL_FORMAT_ND) :
-        npu_preparation::apply_tensor_with_format(self_cast.sizes(), self_cast.options().dtype(at::kLong), ACL_FORMAT_ND);
+        npu_preparation::apply_tensor_with_format({1},
+            self_cast.options().dtype(at::kLong), ACL_FORMAT_ND) :
+        npu_preparation::apply_tensor_with_format(self_cast.sizes(),
+            self_cast.options().dtype(at::kLong), ACL_FORMAT_ND);
     at::Tensor y_counts = return_counts ?
-        npu_preparation::apply_tensor_with_format(self_cast.numel(), self_cast.options().dtype(at::kLong), ACL_FORMAT_ND) :
-        npu_preparation::apply_tensor_with_format({1}, self_cast.options().dtype(at::kLong), ACL_FORMAT_ND);
+        npu_preparation::apply_tensor_with_format(self_cast.numel(),
+            self_cast.options().dtype(at::kLong), ACL_FORMAT_ND) :
+        npu_preparation::apply_tensor_with_format({1},
+            self_cast.options().dtype(at::kLong), ACL_FORMAT_ND);
 
     _unique2_out_npu(y, y_inverse, y_counts, self_cast, sorted, return_inverse, return_counts);
     if (self.scalar_type() == at::kHalf) {

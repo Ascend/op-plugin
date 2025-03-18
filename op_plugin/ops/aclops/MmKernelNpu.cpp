@@ -247,21 +247,21 @@ at::Tensor &mm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const
 }
 } // namespace
 
-at::Tensor &mm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result)
+at::Tensor &mm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &out)
 {
     TORCH_CHECK(self.dim() == DIMENSION_2D && mat2.dim() == DIMENSION_2D,
                 "both arguments to matmul need to be 2D, but they are ",
                 self.dim(), "D and ", mat2.dim(), "D", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.scalar_type() != at::ScalarType::Char && mat2.scalar_type() != at::ScalarType::Char,
                 "mm_out is not support int8 dtype", OPS_ERROR(ErrCode::PARAM))
-    if (!result.is_contiguous()) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        mm_out_npu_nocheck(contiguous_result, self, mat2);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!out.is_contiguous()) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+        mm_out_npu_nocheck(contiguous_out, self, mat2);
+        npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        mm_out_npu_nocheck(result, self, mat2);
+        mm_out_npu_nocheck(out, self, mat2);
     }
-    return result;
+    return out;
 }
 
 at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)

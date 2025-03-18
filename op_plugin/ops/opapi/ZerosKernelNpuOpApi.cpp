@@ -20,11 +20,11 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& result)
+at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_out(size, result));
-    result.resize_(size);
-    return result.zero_();
+    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_out(size, out));
+    out.resize_(size);
+    return out.zero_();
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)

@@ -50,23 +50,23 @@ at::Tensor& gather_out(
     int64_t dim,
     const at::Tensor& index,
     bool sparse_grad,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     auto output_size = index.sizes();
     npu_preparation::CheckOut(
         {self},
-        result,
+        out,
         self,
         output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        gather_out_npu_nocheck(contiguous_result, self, dim, index);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+        gather_out_npu_nocheck(contiguous_out, self, dim, index);
+        npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        gather_out_npu_nocheck(result, self, dim, index);
+        gather_out_npu_nocheck(out, self, dim, index);
     }
-    return result;
+    return out;
 }
 
 at::Tensor& gather_out(
@@ -74,9 +74,9 @@ at::Tensor& gather_out(
     at::Dimname dim,
     const at::Tensor& index,
     bool sparse_grad,
-    at::Tensor& result)
+    at::Tensor& out)
 {
-    return acl_op::gather_out(self, dimname_to_position(self, dim), index, sparse_grad, result);
+    return acl_op::gather_out(self, dimname_to_position(self, dim), index, sparse_grad, out);
 }
 
 at::Tensor gather(

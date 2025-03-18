@@ -70,23 +70,23 @@ at::Tensor& logspace_out(
     const at::Scalar& end,
     int64_t steps,
     double base,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     npu_preparation::CheckOut(
         { },
-        result,
+        out,
         ACL_FORMAT_ND,
-        result.scalar_type(),
+        out.scalar_type(),
         {steps});
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        logspace_out_nocheck(contiguous_result, start, end, steps, base);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+        logspace_out_nocheck(contiguous_out, start, end, steps, base);
+        npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        logspace_out_nocheck(result, start, end, steps, base);
+        logspace_out_nocheck(out, start, end, steps, base);
     }
-    return result;
+    return out;
 }
 
 at::Tensor logspace(

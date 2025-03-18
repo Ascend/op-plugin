@@ -18,10 +18,10 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& result)
+at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& out)
 {
-    result.resize_(size);
-    return result.zero_();
+    out.resize_(size);
+    return out.zero_();
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)

@@ -47,9 +47,10 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
     auto out_dim_num = std::max(x_dim_num, weight_dim_num);
     auto output_size = op_infer::array_to_small_vector(x.sizes());
     output_size[out_dim_num - MINIMUM_SHAPE_SIZE] = x.size(x_dim_num - MINIMUM_SHAPE_SIZE);
+    auto weight_size_base = weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE + 1);
     output_size[out_dim_num - MINIMUM_SHAPE_SIZE + 1] = (weight.dtype() == at::kInt && !trans_weight) ?
-                                                        weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE + 1) * INT4_NUMS_IN_INT32 :
-                                                        weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE + 1);
+                                                        weight_size_base * INT4_NUMS_IN_INT32 :
+                                                        weight_size_base;
     if (x_dim_num == weight_dim_num) {
         for (auto i = 0; i < out_dim_num - MINIMUM_SHAPE_SIZE; i++) {
             TORCH_CHECK(x.size(i) == weight.size(i), "batch of x is diff from batch of weight",

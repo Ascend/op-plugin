@@ -47,23 +47,23 @@ at::Tensor& soft_margin_loss_out(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     auto output_size = op_infer::soft_margin_loss_npu_output_size(self, reduction);
     npu_preparation::CheckOut(
         {self, target},
-        result,
+        out,
         self,
         output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        soft_margin_loss_out_nocheck(contiguous_result, self, target, reduction);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+        soft_margin_loss_out_nocheck(contiguous_out, self, target, reduction);
+        npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        soft_margin_loss_out_nocheck(result, self, target, reduction);
+        soft_margin_loss_out_nocheck(out, self, target, reduction);
     }
-    return result;
+    return out;
 }
 
 at::Tensor soft_margin_loss(const at::Tensor& self, const at::Tensor& target, int64_t reduction)

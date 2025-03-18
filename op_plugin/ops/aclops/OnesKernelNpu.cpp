@@ -20,10 +20,10 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& result)
+at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& out)
 {
-    result.resize_(size);
-    return acl_op::one_(result);
+    out.resize_(size);
+    return acl_op::one_(out);
 }
 
 at::Tensor ones(

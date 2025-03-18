@@ -34,24 +34,24 @@ at::Tensor& vdot_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, con
 }
 } // namespace
 
-at::Tensor& vdot_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result)
+at::Tensor& vdot_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& out)
 {
     c10::SmallVector<int64_t, N> output_size = {};
     npu_preparation::CheckOut(
         {self, other},
-        result,
+        out,
         self,
         output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        vdot_out_npu_nocheck(contiguous_result, self, other);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+        vdot_out_npu_nocheck(contiguous_out, self, other);
+        npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        vdot_out_npu_nocheck(result, self, other);
+        vdot_out_npu_nocheck(out, self, other);
     }
 
-    return result;
+    return out;
 }
 
 at::Tensor vdot(const at::Tensor& self, const at::Tensor& other)
