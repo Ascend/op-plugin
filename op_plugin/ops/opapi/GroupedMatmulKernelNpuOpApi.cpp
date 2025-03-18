@@ -228,7 +228,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
 {
     auto num_x = x.size();
     bool singleWeight = weight.size() == 1 && weight[0].sizes().size() == 3;
-    auto num_weight = singleWeight ? weight[0].size(0) : static_cast<size_t>(weight.size());
+    auto num_weight = singleWeight ? static_cast<size_t>(weight[0].size(0)) : static_cast<size_t>(weight.size());
     auto group_list_real = group_list.value_or(at::Tensor());
     auto num_group_list = group_list_real.size(0);
     int64_t split_item_value = split_item.value_or(0);
@@ -338,7 +338,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     std::vector<at::Tensor> y;
     c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
 
-    if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value || IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
+    if (split_item_value == IN_NOT_SPLIT_OUT_NOT_SPLIT || split_item_value == IN_SPLIT_OUT_NOT_SPLIT) {
         if (num_group_list > 0) {
             y.reserve(num_group_list);
             TORCH_CHECK(group_list_real[0] >= 0,

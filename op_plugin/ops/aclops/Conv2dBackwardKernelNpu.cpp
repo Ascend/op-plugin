@@ -39,16 +39,16 @@ at::Tensor &conv2d_backward_input_out_nocheck(at::Tensor &grad_input, const at::
                                               const at::Tensor &weight, at::IntArrayRef stride, at::IntArrayRef padding,
                                               at::IntArrayRef dilation, int64_t groups)
 {
-    TORCH_CHECK(grad.dim() >= DIMENSION_3D, "grad has to be more than 3D, but got Tensor of dimension ", grad.dim(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(weight.dim() >= DIMENSION_4D, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(stride.size() >= DIMENSION_2D, "stride has to contain more than 2 elements, but got ", stride.size(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(padding.size() >= DIMENSION_2D, "padding has to contain more than 2 elements, but got ", padding.size(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(dilation.size() >= DIMENSION_2D, "dilation has to contain more than 2 elements, but got ", dilation.size(),
-        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(grad.dim() >= DIMENSION_3D,
+        "grad has to be more than 3D, but got Tensor of dimension ", grad.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() >= DIMENSION_4D,
+        "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(stride.size() >= DIMENSION_2D,
+        "stride has to contain more than 2 elements, but got ", stride.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(padding.size() >= DIMENSION_2D,
+        "padding has to contain more than 2 elements, but got ", padding.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dilation.size() >= DIMENSION_2D,
+        "dilation has to contain more than 2 elements, but got ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
     // support special scenario
     if (is_special_conv1d(input, weight, stride, padding, dilation, groups)) {
         at::Tensor mm_input = grad.squeeze(2).permute({0, 2, 1});
@@ -166,10 +166,9 @@ std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> conv2d_backward_out_nocheck
 } // namespace
 
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(const at::Tensor &input, const at::Tensor &grad_output,
-                                                                   const at::Tensor &weight, at::IntArrayRef stride,
-                                                                   at::IntArrayRef padding, at::IntArrayRef dilation,
-                                                                   int64_t groups, std::array<bool, 3> output_mask)
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_conv2d_backward(
+    const at::Tensor &input, const at::Tensor &grad_output, const at::Tensor &weight, at::IntArrayRef stride,
+    at::IntArrayRef padding, at::IntArrayRef dilation, int64_t groups, std::array<bool, 3> output_mask)
 {
     auto output_sizes =
         op_infer::conv2d_backward_npu_output_size(input, grad_output, weight);

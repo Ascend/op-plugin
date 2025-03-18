@@ -25,7 +25,7 @@ const int THIRD_ELEMENT = 2;
 const int FORTH_ELEMENT = 3;
 const int DIMENSION_3D = 3;
 const int DIMENSION_4D = 4;
-const int LAYOUT_MAX_LENGHT = 20;
+const int LAYOUT_MAX_LENGTH = 20;
 const double EPSILON = 1e-9;
 const int64_t LENGTH_BIAS = 32;
 const static int FLASH_THRESHOLD = 512;
@@ -236,8 +236,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_flash_attention_b
         dpse = at::empty({0}, query.options());
     }
 
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGTH - 1);
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_CMD(
             aclnnFlashAttentionUnpaddingScoreGrad, format_query, format_key, format_value, format_dy,
@@ -496,8 +496,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             query.options().dtype(at::kFloat)); // [T, N, 8]
     }
     softmax_out = at::empty({0}, query.options());
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_CMD(
             aclnnFlashAttentionVarLenScore, format_query, format_key, format_value,
@@ -616,8 +616,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         dpse = at::empty({0}, query.options());
     }
 
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGTH - 1);
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_CMD(
             aclnnFlashAttentionUnpaddingScoreGrad, format_query, format_key, format_value, format_dy,
@@ -878,8 +878,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             query.options().dtype(at::kFloat)); // [T, N, 8]
     }
     softmax_out = at::empty({0}, query.options());
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_CMD(
             aclnnFlashAttentionVarLenScore, format_query, format_key, format_value,
@@ -998,8 +998,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         dpse = at::empty({0}, query.options());
     }
 
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGTH - 1);
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_CMD(
             aclnnFlashAttentionUnpaddingScoreGrad, format_query, format_key, format_value, format_dy,
@@ -1182,7 +1182,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         S1 = key.size(1);
         H = query.size(THIRD_ELEMENT);
         D = H / head_num;
-        D2 = (D == 0 || !key.size(THIRD_ELEMENT)) ? 0 : value.size(THIRD_ELEMENT) / (key.size(THIRD_ELEMENT) / D);
+        D2 = (D == 0 || key.size(THIRD_ELEMENT) == 0) ? 0 : value.size(THIRD_ELEMENT) / (key.size(THIRD_ELEMENT) / D);
         atten_score_shape = {B, S0, head_num * D2};
     } else if (input_layout_str == "SBH") {
         B = query.size(1);
@@ -1190,7 +1190,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         S1 = key.size(0);
         H = query.size(THIRD_ELEMENT);
         D = H / head_num;
-        D2 = (D == 0 || !key.size(THIRD_ELEMENT)) ? 0 : value.size(THIRD_ELEMENT) / (key.size(THIRD_ELEMENT) / D);
+        D2 = (D == 0 || key.size(THIRD_ELEMENT) == 0) ? 0 : value.size(THIRD_ELEMENT) / (key.size(THIRD_ELEMENT) / D);
         atten_score_shape = {S0, B, head_num * D2};
     } else if (input_layout_str == "BNSD") {
         B = query.size(0);
@@ -1257,8 +1257,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             query.options().dtype(at::kFloat)); // [T, N, 8]
     }
     softmax_out = at::empty({0}, query.options());
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_CMD(
             aclnnFlashAttentionVarLenScore, format_query, format_key, format_value,
@@ -1332,8 +1332,8 @@ at::Tensor npu_prompt_flash_attention(
         sparse_mode -= PFA_SPARSE_HIGH_PRECISION_NO_MASK;
     }
 
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV3, query, key, value, pse_shift, atten_mask, actSeqLen,
         actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2, num_heads, scale_value,
@@ -1433,8 +1433,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         dpse = at::empty({0}, query.options());
     }
 
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGTH - 1);
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_CMD(
             aclnnFlashAttentionUnpaddingScoreGrad, format_query, format_key, format_value, format_dy,
@@ -1694,8 +1694,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             query.options().dtype(at::kFloat)); // [T, N, 8]
     }
     softmax_out = at::empty({0}, query.options());
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_CMD(
             aclnnFlashAttentionVarLenScore, format_query, format_key, format_value,
@@ -1769,8 +1769,8 @@ at::Tensor npu_prompt_flash_attention(
         sparse_mode -= PFA_SPARSE_HIGH_PRECISION_NO_MASK;
     }
 
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV3, query, key, value, pse_shift, atten_mask, actSeqLen,
         actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2, num_heads, scale_value,
@@ -1810,8 +1810,8 @@ at::Tensor npu_incre_flash_attention_symint(
     auto actSeqLen = c10::asIntArrayRefUnchecked(actSeqLenMiddle);
 
     std::string input_layout_str = std::string(input_layout);
-    char input_layout_char[LAYOUT_MAX_LENGHT];
-    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGHT - 1);
+    char input_layout_char[LAYOUT_MAX_LENGTH];
+    strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV4, query, keyTensors, valueTensors, pse_shift, atten_mask,
         actSeqLen, dequant_scale1, quant_scale1, dequant_scale2, quant_scale2, quant_offset2, antiquant_scale,

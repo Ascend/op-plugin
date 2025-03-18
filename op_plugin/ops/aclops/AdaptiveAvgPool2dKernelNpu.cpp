@@ -63,7 +63,7 @@ at::Tensor& adaptive_avg_pool2d_out_nocheck(
 at::Tensor& adaptive_avg_pool2d_out(
     const at::Tensor& self,
     at::IntArrayRef output_size,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     adaptive_avg_pool2d_check(self);
     auto op_infer_output_size = op_infer::array_to_small_vector(self.sizes());
@@ -71,19 +71,19 @@ at::Tensor& adaptive_avg_pool2d_out(
     op_infer_output_size[self.dim() - 2] = output_size[0];
     npu_preparation::CheckOut(
         {self},
-        result,
-        npu_preparation::get_tensor_npu_format(result),
+        out,
+        npu_preparation::get_tensor_npu_format(out),
         self.scalar_type(),
         op_infer_output_size);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        adaptive_avg_pool2d_out_nocheck(contiguous_result, self, output_size);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+        adaptive_avg_pool2d_out_nocheck(contiguous_out, self, output_size);
+        npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        adaptive_avg_pool2d_out_nocheck(result, self, output_size);
+        adaptive_avg_pool2d_out_nocheck(out, self, output_size);
     }
 
-    return result;
+    return out;
 }
 
 at::Tensor adaptive_avg_pool2d(const at::Tensor& self, at::IntArrayRef output_size)

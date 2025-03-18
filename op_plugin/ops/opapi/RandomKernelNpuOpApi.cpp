@@ -29,18 +29,23 @@ const int64_t RANDOM_FLOAT_MAX = 1LL << 24;
 const int64_t RANDOM_BFLOAT16_MAX = 1LL << 8;
 
 }  // namespace
-static std::map<at::ScalarType, int64_t> DTYPE_MAX_VALUE_MAP = {
-    {at::kHalf, RANDOM_HALF_MAX + 1},
-    {at::kFloat, RANDOM_FLOAT_MAX + 1},
-    {at::kDouble, RANDOM_DOUBLE_MAX + 1},
-    {at::kInt, std::numeric_limits<int>::max()},
-    {at::kShort, std::numeric_limits<int16_t>::max()},
-    {at::kChar, std::numeric_limits<int8_t>::max()},
-    {at::kByte, std::numeric_limits<uint8_t>::max()},
-    {at::kLong, std::numeric_limits<long>::max()},
-    {at::kBFloat16, RANDOM_BFLOAT16_MAX + 1},
-    {at::kBool, 1}
+std::map<at::ScalarType, int64_t> initialize_dtype_max_value_map()
+{
+    return {
+        {at::kHalf, RANDOM_HALF_MAX + 1},
+        {at::kFloat, RANDOM_FLOAT_MAX + 1},
+        {at::kDouble, RANDOM_DOUBLE_MAX + 1},
+        {at::kInt, std::numeric_limits<int>::max()},
+        {at::kShort, std::numeric_limits<int16_t>::max()},
+        {at::kChar, std::numeric_limits<int8_t>::max()},
+        {at::kByte, std::numeric_limits<uint8_t>::max()},
+        {at::kLong, std::numeric_limits<long>::max()},
+        {at::kBFloat16, RANDOM_BFLOAT16_MAX + 1},
+        {at::kBool, 1}
+    };
 };
+
+static std::map<at::ScalarType, int64_t> DTYPE_MAX_VALUE_MAP = initialize_dtype_max_value_map();
 
 int64_t get_dtype_max_value(at::ScalarType dtype)
 {
