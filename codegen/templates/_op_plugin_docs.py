@@ -217,6 +217,7 @@ v (Tensor) - 变量方差。
 """
 )
 
+
 _add_torch_npu_docstr(
     "npu_batch_gather_matmul",
     """
@@ -243,6 +244,40 @@ y_slice_size (Int, 默认值为-1) - 可选值，表示y更新时的范围，数
 >>> weightB = torch.randn(2, 1, 128, 16).half().npu()
 >>> torch_npu.npu_batch_gather_matmul(y, x, weightB, indices, weightA, y_offset=0, y_slice_size=128, layer_idx=0, scale=2)
 >>> y
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_batch_gather_matmul_",
+    """
+torch_npu.npu_batch_gather_matmul_(y, x, weight_b, indices, weight_a=None,
+                                 layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1) -> Tensor(a!)
+
+功能描述
+npu_batch_gather_matmul的inplace版本. 将输入x根据输入索引indices, 分别和对应的weight_a, weight_b 相乘， 然后将结果累加到输入y并输出。
+
+参数说明
+y (Tensor) - 必填值，输入tensor，表示待进行累加更新的张量，数据类型Float16，输入示例：[batch_size, y_column]。
+x (Tensor) - 必填值，输入tensor，表示分组前的输入张量，数据类型Float16，输入示例：[batch_size, H1]。
+weight_b (Tensor) - 必填值，输入tensor，表示进行矩阵乘的第二个权重矩阵，数据类型Float16。输入示例：[W, L, H2, R]。
+indices (Tensor) - 必填值，标识输入x的分组索引，数据类型Int32。输入示例：[batch_size]。
+weight_a (Tensor) - 可选值，输入tensor，表示进行矩阵乘的第一个权重矩阵，数据类型Float16。为空时会跳过第一个矩阵乘， 输入示范：[W, L, R, H1]。
+layer_idx (Int, 默认值为0) - 可选值，表示weight的层数索引，数据类型Int。
+scale (Float, 默认值为1e-3) - 可选值，表示matmul结果的缩放系数，数据类型Float。
+y_offset (Int, 默认值为0) - 可选值，表示y更新的偏移值，数据类型Int。
+y_slice_size (Int, 默认值为-1) - 可选值，表示y更新时的范围，数据类型Int。当为-1的时候，会按照y_column的值传入；当非-1 时，以传入的值做更新范围。
+
+输出说明
+out：Device侧的Tensor类型，计算输出，复用y输入地址；数据类型和shape与self一致。
+示例
+>>> y = torch.randn(1, 128).half().npu()
+>>> x = torch.randn(1, 16).half().npu()
+>>> weightA = torch.randn(2, 1, 16, 16).half().npu()
+>>> indices = torch.randint(0, 1, (1,)).to(torch.int32).npu()
+>>> weightB = torch.randn(2, 1, 128, 16).half().npu()
+>>> out = torch_npu.npu_batch_gather_matmul_(y, x, weightB, indices, weightA, y_offset=0, y_slice_size=128, layer_idx=0, scale=2)
+>>> out
 """
 )
 

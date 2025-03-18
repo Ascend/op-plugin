@@ -1236,7 +1236,12 @@ def npu_dequant_bias_meta(x, weight_scale, activation_scale, bias, output_dtype=
 
 
 @impl(m, "npu_batch_gather_matmul")
-def npu_batch_gather_matmul_meta(y, x, weight_b, indices, weight_a=None,
+def npu_batch_gather_matmul_meta(self, x, weight_b, indices, weight_a=None,
                                  layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1):
-    return torch.empty_like(y, dtype=y.dtype)
+    return torch.empty_like(self, dtype=self.dtype)
 
+
+@impl(m, "npu_batch_gather_matmul_")
+def npu_batch_gather_matmul__meta(self, x, weight_b, indices, weight_a=None,
+                                 layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1):
+    return self

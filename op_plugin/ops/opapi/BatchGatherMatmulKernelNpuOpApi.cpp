@@ -35,7 +35,7 @@ void Infer_shape_check(const at::Tensor &y, const at::Tensor &x, const at::Tenso
 }
 
 at::Tensor npu_batch_gather_matmul(
-    const at::Tensor& y,
+    const at::Tensor& self,
     const at::Tensor& x,
     const at::Tensor& weight_b,
     const at::Tensor& indices,
@@ -45,14 +45,35 @@ at::Tensor npu_batch_gather_matmul(
     int64_t y_offset,
     int64_t y_slice_size)
 {
-    Infer_shape_check(y, x, weight_b, indices, weight_a);
+    Infer_shape_check(self, x, weight_b, indices, weight_a);
 
     if (y_slice_size == -1) {
-        y_slice_size = y.size(1);
+        y_slice_size = self.size(1);
     }
-    at::Tensor result = npu_preparation::apply_tensor_without_format(y);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
 
-    EXEC_NPU_CMD(aclnnAddLora, y, x, weight_b, indices, weight_a, layer_idx, scale,  y_offset, y_slice_size, result);
-    return y;
+    EXEC_NPU_CMD(aclnnAddLora, self, x, weight_b, indices, weight_a, layer_idx, scale,  y_offset, y_slice_size, result);
+    return self;
+}
+
+at::Tensor &npu_batch_gather_matmul_(
+    at::Tensor& self,
+    const at::Tensor& x,
+    const at::Tensor& weight_b,
+    const at::Tensor& indices,
+    const c10::optional<at::Tensor> &weight_a,
+    int64_t layer_idx,
+    double scale,
+    int64_t y_offset,
+    int64_t y_slice_size)
+{
+    Infer_shape_check(self, x, weight_b, indices, weight_a);
+
+    if (y_slice_size == -1) {
+        y_slice_size = self.size(1);
+    }
+
+    EXEC_NPU_CMD(aclnnAddLora, self, x, weight_b, indices, weight_a, layer_idx, scale,  y_offset, y_slice_size, self);
+    return self;
 }
 }

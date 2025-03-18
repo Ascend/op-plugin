@@ -37,6 +37,23 @@ class TestBatchGatherMatmul(TestCase):
 
         self.assertEqual(y.cpu(), output_npu)
 
+    @unittest.skip("skip test_batch_gather_matmul_ now")
+    @SupportedDevices(["Ascend910B"])
+    def test_batch_gather_matmul_(self):
+        torch.manual_seed(12)
+        y = torch.randn(10, 128).half().npu()
+        x = torch.randn(10, 128).half().npu()
+        weightA = torch.randn(2, 1, 16, 128).half().npu()
+        indices = torch.randint(0, 2, (10,)).to(torch.int32).npu()
+        weightB = torch.randn(2, 1, 128, 16).half().npu()
+
+        output_npu = self.npu_batch_gather_matmul(y, x, weightB, indices, weightA, y_offset=0, y_slice_size=128,
+                                                  layer_idx=0, scale=2)
+        y_out = torch_npu.npu_batch_gather_matmul_(y, x, weightB, indices, weightA,
+                                                   y_offset=0, y_slice_size=128, layer_idx=0, scale=2)
+
+        self.assertEqual(y_out.cpu(), output_npu)
+
 
 if __name__ == "__main__":
     run_tests()
