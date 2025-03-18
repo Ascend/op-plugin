@@ -67,7 +67,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     const at::Tensor& self,
     bool sorted,
     bool return_inverse,
-    bool return_counts) {
+    bool return_counts)
+{
     DO_COMPATIBILITY(aclnnUnique2, acl_op::_unique2(self, sorted, return_inverse, return_counts));
     at::Tensor y = npu_preparation::apply_tensor_without_format(self, self.numel());
     at::Tensor y_inverse = (return_inverse || return_counts)

@@ -35,7 +35,7 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
 
 #if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
-    const at::Tensor& grad,
+    const at::Tensor& grad_output,
     const at::Tensor& input,
     const at::Tensor& grid,
     int64_t interpolation_mode,
@@ -43,7 +43,7 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
     bool align_corners,
     std::array<bool, 2> output_mask)
 {
-    return grid_sampler3d_backward_common_nocheck(grad, input, grid, interpolation_mode, padding_mode, align_corners);
+    return grid_sampler3d_backward_common_nocheck(grad_output, input, grid, interpolation_mode, padding_mode, align_corners);
 }
 #endif
 

@@ -21,8 +21,8 @@ namespace acl_op {
 #if VERSION_BETWEEN(V1R11, V1R11)
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
     const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv,
+    bool full_matrices,
+    bool compute_uv,
     at::Tensor& U,
     at::Tensor& S,
     at::Tensor& Vh)
@@ -32,8 +32,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
     const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv)
+    bool full_matrices,
+    bool compute_uv)
 {
     return _svd_helper(A, !full_matrices, compute_uv);
 }
@@ -42,8 +42,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
 #if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
     const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv,
+    bool full_matrices,
+    bool compute_uv,
     c10::optional<c10::string_view> driver,
     at::Tensor& U,
     at::Tensor& S,

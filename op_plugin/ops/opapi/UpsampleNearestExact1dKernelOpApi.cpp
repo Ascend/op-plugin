@@ -39,16 +39,16 @@ at::Tensor upsample_nearest_exact1d_slow(const at::Tensor &self, at::IntArrayRef
 }
 
 at::Tensor &_upsample_nearest_exact1d_out(const at::Tensor &self, at::IntArrayRef output_size,
-    c10::optional<double> scales, at::Tensor &result)
+    c10::optional<double> scales, at::Tensor &out)
 {
-    DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_out_slow(self, output_size, scales, result));
+    DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_out_slow(self, output_size, scales, out));
 
     auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
-    npu_preparation::check_tensor({self}, result, self, outputSize);
+    npu_preparation::check_tensor({self}, out, self, outputSize);
     double scalesValue = scales.value_or(0);
 
-    EXEC_NPU_CMD(aclnnUpsampleNearestExact1d, self, output_size, scalesValue, result);
-    return result;
+    EXEC_NPU_CMD(aclnnUpsampleNearestExact1d, self, output_size, scalesValue, out);
+    return out;
 }
 
 at::Tensor _upsample_nearest_exact1d(const at::Tensor &self, at::IntArrayRef output_size, c10::optional<double> scales)

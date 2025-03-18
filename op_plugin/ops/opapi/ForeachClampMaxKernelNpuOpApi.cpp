@@ -20,36 +20,36 @@
 namespace op_api {
 
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
-std::vector<at::Tensor> _foreach_clamp_max(at::TensorList tensors1, at::TensorList tensors2)
+std::vector<at::Tensor> _foreach_clamp_max(at::TensorList self, at::TensorList other)
 {
-    return op_api::_foreach_minimum(tensors1, tensors2);
+    return op_api::_foreach_minimum(self, other);
 }
 
-void _foreach_clamp_max_(at::TensorList tensors1, at::TensorList tensors2)
+void _foreach_clamp_max_(at::TensorList self, at::TensorList other)
 {
-    op_api::_foreach_minimum_(tensors1, tensors2);
+    op_api::_foreach_minimum_(self, other);
     return;
 }
 
-std::vector<at::Tensor> _foreach_clamp_max(at::TensorList tensors, const at::Scalar& scalar)
+std::vector<at::Tensor> _foreach_clamp_max(at::TensorList self, const at::Scalar& scalar)
 {
-    return op_api::_foreach_minimum(tensors, scalar);
+    return op_api::_foreach_minimum(self, scalar);
 }
 
-void _foreach_clamp_max_(at::TensorList tensors, const at::Scalar& scalar)
+void _foreach_clamp_max_(at::TensorList self, const at::Scalar& scalar)
 {
-    op_api::_foreach_minimum_(tensors, scalar);
+    op_api::_foreach_minimum_(self, scalar);
     return;
 }
 
-std::vector<at::Tensor> _foreach_clamp_max(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
+std::vector<at::Tensor> _foreach_clamp_max(at::TensorList self, at::ArrayRef<at::Scalar> scalars)
 {
-    return op_api::_foreach_minimum(tensors, scalars);
+    return op_api::_foreach_minimum(self, scalars);
 }
 
-void _foreach_clamp_max_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
+void _foreach_clamp_max_(at::TensorList self, at::ArrayRef<at::Scalar> scalars)
 {
-    op_api::_foreach_minimum_(tensors, scalars);
+    op_api::_foreach_minimum_(self, scalars);
     return;
 }
 #endif

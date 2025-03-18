@@ -38,16 +38,16 @@ at::Tensor& fill_diagonal_out_npu(
     return result;
 }
 
-at::Tensor& fill_diagonal_(at::Tensor& self, const at::Scalar& value, bool wrap)
+at::Tensor& fill_diagonal_(at::Tensor& self, const at::Scalar& fill_value, bool wrap)
 {
     npu_preparation::CastBackToOriFormat(self);
 
     if (!npu_utils::check_match(&self)) {
         at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-        fill_diagonal_out_npu(contiguous_self, contiguous_self, value, wrap);
+        fill_diagonal_out_npu(contiguous_self, contiguous_self, fill_value, wrap);
         npu_utils::format_fresh_view(self, contiguous_self);
     } else {
-        fill_diagonal_out_npu(self, self, value, wrap);
+        fill_diagonal_out_npu(self, self, fill_value, wrap);
     }
 
     return self;

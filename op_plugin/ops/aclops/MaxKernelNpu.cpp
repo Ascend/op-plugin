@@ -60,45 +60,45 @@ at::Tensor &max_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, cons
 }
 } // namespace
 
-std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, int64_t dim, bool keepdim, at::Tensor &output,
+std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, int64_t dim, bool keepdim, at::Tensor &max,
                                                at::Tensor &indices)
 {
     at::SmallVector<int64_t, SIZE> dims = {dim};
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 
-    npu_preparation::CheckOut({self}, output, ACL_FORMAT_ND, self.scalar_type(), output_size);
+    npu_preparation::CheckOut({self}, max, ACL_FORMAT_ND, self.scalar_type(), output_size);
 
     npu_preparation::CheckOut({self}, indices, ACL_FORMAT_ND, at::ScalarType::Long, output_size);
 
     at::Tensor indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices, at::ScalarType::Int);
-    bool output_match = npu_utils::check_match(&output);
+    bool output_match = npu_utils::check_match(&max);
     bool indices_match = npu_utils::check_match(&indices_dtype_cast);
     if (!(output_match && indices_match)) {
-        at::Tensor contiguous_output = output_match ? output : npu_utils::format_contiguous(output);
+        at::Tensor contiguous_output = output_match ? max : npu_utils::format_contiguous(max);
         at::Tensor contiguous_indices =
             indices_match ? indices_dtype_cast : npu_utils::format_contiguous(indices_dtype_cast);
 
         max_out_npu_nocheck(contiguous_output, contiguous_indices, self, dim, keepdim);
 
         if (!output_match) {
-            npu_utils::format_fresh_view(output, contiguous_output);
+            npu_utils::format_fresh_view(max, contiguous_output);
         }
         if (!indices_match) {
             npu_utils::format_fresh_view(indices_dtype_cast, contiguous_indices);
         }
     } else {
-        max_out_npu_nocheck(output, indices_dtype_cast, self, dim, keepdim);
+        max_out_npu_nocheck(max, indices_dtype_cast, self, dim, keepdim);
     }
 
     indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices_dtype_cast, at::ScalarType::Long);
     indices.copy_(indices_dtype_cast);
-    return std::tie(output, indices);
+    return std::tie(max, indices);
 }
 
 std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, at::Dimname dim, bool keepdim,
-                                               at::Tensor &output, at::Tensor &indices)
+                                               at::Tensor &max, at::Tensor &max_values)
 {
-    return acl_op::max_out(self, dimname_to_position(self, dim), keepdim, output, indices);
+    return acl_op::max_out(self, dimname_to_position(self, dim), keepdim, max, max_values);
 }
 
 std::tuple<at::Tensor, at::Tensor> max(const at::Tensor &self, int64_t dim, bool keepdim)
@@ -130,7 +130,7 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor &self, at::Dimname dim, 
     return at::max(self, dimname_to_position(self, dim), keepdim);
 }
 
-at::Tensor &max_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+at::Tensor &max_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
 {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
 
@@ -142,33 +142,33 @@ at::Tensor &max_out(const at::Tensor &self, const at::Tensor &other, at::Tensor 
                                 at_npu::native::custom_ops::npu_dtype_cast(other, high_type) :
                                 other;
 
-    npu_preparation::CheckOut({self_copy, other_copy}, result, self_copy, output_size);
+    npu_preparation::CheckOut({self_copy, other_copy}, out, self_copy, output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         max_out_npu_nocheck(contiguous_result, self_copy, other_copy);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        max_out_npu_nocheck(result, self_copy, other_copy);
+        max_out_npu_nocheck(out, self_copy, other_copy);
     }
 
-    return result;
+    return out;
 }
 
-at::Tensor &maximum_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+at::Tensor &maximum_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
 {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-    npu_preparation::CheckOut({self, other}, result, self, output_size);
+    npu_preparation::CheckOut({self, other}, out, self, output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         max_out_npu_nocheck(contiguous_result, self, other);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        max_out_npu_nocheck(result, self, other);
+        max_out_npu_nocheck(out, self, other);
     }
 
-    return result;
+    return out;
 }
 
 at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
@@ -192,15 +192,15 @@ at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
     return result;
 }
 
-at::Tensor amax(const at::Tensor &self, at::IntArrayRef dims, bool keepdim)
+at::Tensor amax(const at::Tensor &self, at::IntArrayRef dim, bool keepdim)
 {
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
     int64_t npu_format = npu_preparation::get_tensor_npu_format(self);
     if (output_size.empty()) {
         npu_format = ACL_FORMAT_ND;
     }
     at::Tensor result = npu_preparation::apply_tensor_with_format(self, output_size, npu_format);
-    max_out_npu_nocheck(result, self, dims, keepdim);
+    max_out_npu_nocheck(result, self, dim, keepdim);
     return result;
 }
 
@@ -210,19 +210,19 @@ at::Tensor max(const at::Tensor &self)
     return acl_op::amax(self, dims, false);
 }
 
-at::Tensor &amax_out(const at::Tensor &self, at::IntArrayRef dims, bool keepdim, at::Tensor &result)
+at::Tensor &amax_out(const at::Tensor &self, at::IntArrayRef dim, bool keepdim, at::Tensor &out)
 {
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-    npu_preparation::CheckOut({self}, result, ACL_FORMAT_ND, self.scalar_type(), output_size);
+    auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+    npu_preparation::CheckOut({self}, out, ACL_FORMAT_ND, self.scalar_type(), output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        max_out_npu_nocheck(contiguous_result, self, dims, keepdim);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        max_out_npu_nocheck(contiguous_result, self, dim, keepdim);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        max_out_npu_nocheck(result, self, dims, keepdim);
+        max_out_npu_nocheck(out, self, dim, keepdim);
     }
 
-    return result;
+    return out;
 }
 } // namespace acl_op
