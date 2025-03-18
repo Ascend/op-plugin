@@ -36,7 +36,11 @@ c10::SmallVector<int64_t, SIZE> get_rstd_shape(const at::Tensor &self, const at:
 
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_add_rms_norm(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &gamma, double epsilon)
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_add_rms_norm(
+    const at::Tensor &x1,
+    const at::Tensor &x2,
+    const at::Tensor &gamma,
+    double epsilon)
 {
     TORCH_CHECK(x1.dim() >= gamma.dim(), "The gamma shape should not be bigger than self shape."
         + OPS_ERROR(ErrCode::PARAM));

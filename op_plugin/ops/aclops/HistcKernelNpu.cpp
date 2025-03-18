@@ -38,17 +38,17 @@ at::Tensor &histc_out_nocheck(at::Tensor &result, const at::Tensor &self, int64_
 } // namespace
 
 at::Tensor &histc_out(const at::Tensor &self, int64_t bins, const at::Scalar &min, const at::Scalar &max,
-                      at::Tensor &result)
+                      at::Tensor &out)
 {
-    npu_preparation::CheckOut({self}, result, self, {bins});
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    npu_preparation::CheckOut({self}, out, self, {bins});
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         histc_out_nocheck(contiguous_result, self, bins, min, max);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        histc_out_nocheck(result, self, bins, min, max);
+        histc_out_nocheck(out, self, bins, min, max);
     }
-    return result;
+    return out;
 }
 
 at::Tensor histc(const at::Tensor &self, int64_t bins, const at::Scalar &min, const at::Scalar &max)
