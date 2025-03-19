@@ -7041,6 +7041,28 @@ custom:
   - func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, Tensor? offset=None, Tensor? bias=None, str? output_dtype=None) -> Tensor
     op_api: v2.0
 
+  - func: npu_quant_matmul_dequant(Tensor x, Tensor quantized_weight, Tensor weight_scale, *, Tensor? bias=None, Tensor? x_scale=None, Tensor? x_offset=None, Tensor? smooth_scale=None, str? quant_mode='pertoken') -> Tensor
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: '{x.size(0), weight_scale.size(0)}'
+        dtype: x
+      new_params:
+        quant_mode_attr: 'quant_mode.has_value() ? const_cast<char *>(quant_mode.value().data()) : nullptr'
+        trans: 'true'
+      exec: aclnnQuantMatmulDequant, x, quantized_weight, weight_scale, bias, x_scale, x_offset, smooth_scale, quant_mode_attr, trans, out
+
+  - func: npu_quant_grouped_matmul_dequant(Tensor x, Tensor quantized_weight, Tensor weight_scale, Tensor group_list, *, Tensor? bias=None, Tensor? x_scale=None, Tensor? x_offset=None, Tensor? smooth_scale=None, str? quant_mode='pertoken') -> Tensor
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: '{x.size(0), weight_scale.size(1)}'
+        dtype: x
+      new_params:
+        quant_mode_attr: 'quant_mode.has_value() ? const_cast<char *>(quant_mode.value().data()) : nullptr'
+        trans: 'true'
+      exec: aclnnQuantGroupedMatmulDequant, x, quantized_weight, weight_scale, group_list, bias, x_scale, x_offset, smooth_scale, quant_mode_attr, trans, out
+
   - func: npu_quant_scatter(Tensor self, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=0, int quant_axis=1, str reduce='update') -> Tensor
     op_api: all_version
     exposed: all_version

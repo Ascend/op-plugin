@@ -860,6 +860,86 @@ def npu_quant_matmul_meta(x1, x2, scale, *, offset=None, pertoken_scale=None, bi
         raise RuntimeError("Not supportted output dtype is " + str(output_dtype))
 
 
+@impl(m, "npu_quant_matmul_dequant")
+def npu_quant_matmul_dequant_meta(x, quantized_weight, weight_scale, *,
+                                  bias=None, x_scale=None, x_offset=None, smooth_scale=None, quant_mode="pertoken"):
+    torch._check(
+        x.dim() == 2,
+        lambda: "the x dim support only 2" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x.dtype == torch.float16,
+        lambda: "the x dtype support only float16" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        quantized_weight.dim() == 2,
+        lambda: "the quantized_weight dim support only 2" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        quantized_weight.dtype == torch.int8,
+        lambda: "the quantized_weight dtype support only int8" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        weight_scale.dim() == 1,
+        lambda: "the weight_scale dim support only 1" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        weight_scale.dtype == torch.float,
+        lambda: "the weight_scale dtype support only float" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x.shape[1] == quantized_weight.shape[1],
+        lambda: "x shape[1] not equal to quantized_weight shape[1]" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        weight_scale.shape[0] == quantized_weight.shape[0],
+        lambda: "weight_scale shape[0] not equal to quantized_weight shape[0]" + ops_error(ErrCode.VALUE),
+    )
+    return torch.empty((x.shape[0], weight_scale.shape[0]), dtype=x.dtype, device='meta')
+
+
+@impl(m, "npu_quant_grouped_matmul_dequant")
+def npu_quant_grouped_matmul_dequant_meta(x, quantized_weight, weight_scale, group_list, *,
+                                          bias=None, x_scale=None, x_offset=None, smooth_scale=None, quant_mode="pertoken"):
+    torch._check(
+        x.dim() == 2,
+        lambda: "the x dim support only 2" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x.dtype == torch.float16,
+        lambda: "the x dtype support only float16" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        quantized_weight.dim() == 3,
+        lambda: "the quantized_weight dim support only 3" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        quantized_weight.dtype == torch.int8,
+        lambda: "the quantized_weight dtype support only int8" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        weight_scale.dim() == 2,
+        lambda: "the weight_scale dim support only 2" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        weight_scale.dtype == torch.float,
+        lambda: "the weight_scale dtype support only float" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x.shape[1] == quantized_weight.shape[2],
+        lambda: "x shape[1] not equal to quantized_weight shape[1]" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        weight_scale.shape[0] == quantized_weight.shape[0],
+        lambda: "weight_scale shape[0] not equal to quantized_weight shape[0]" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        weight_scale.shape[1] == quantized_weight.shape[1],
+        lambda: "weight_scale shape[1] not equal to quantized_weight shape[1]" + ops_error(ErrCode.VALUE),
+    )
+    return torch.empty((x.shape[0], weight_scale.shape[1]), dtype=x.dtype, device='meta')
+
+
 @impl(m, "npu_trans_quant_param")
 def npu_trans_quant_param_meta(scale, offset=None):
     scale_dim_num = scale.dim()
