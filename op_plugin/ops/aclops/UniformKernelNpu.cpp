@@ -31,7 +31,8 @@ at::Tensor& uniform_out_npu(
     double to,
     c10::optional<at::Generator> generator)
 {
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
+                                                                      at_npu::detail::getDefaultNPUGenerator());
     auto pair = gen->philox_engine_inputs(10);
     const int64_t seed = static_cast<int64_t>(pair.first);
     const int64_t offset = static_cast<int64_t>(pair.second);
@@ -41,8 +42,10 @@ at::Tensor& uniform_out_npu(
     at_npu::native::OpCommand cmd;
     cmd.Name("StatelessRandomUniformV2")
         .Input(self.sizes(), at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT)
-        .Input(seed_list, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, static_cast<string>("uint64"))
-        .Input(offset_list, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, static_cast<string>("uint64"))
+        .Input(seed_list,
+            at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, static_cast<string>("uint64"))
+        .Input(offset_list,
+            at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, static_cast<string>("uint64"))
         .Input(at::Scalar(alg), at::ScalarType::Int)
         .Output(result)
         .Attr("dtype", self.scalar_type())
