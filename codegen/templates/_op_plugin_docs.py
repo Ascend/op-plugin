@@ -4584,7 +4584,7 @@ _add_torch_npu_docstr(
 推理场景，Multi-Head Latent Attention前处理的计算。主要计算过程分为四路，首先对输入x乘以WeightDq进行下采样和RmsNorm后分成两路，第一路乘以WeightUq和WeightUk经过两次上采样后得到query；第二路乘以WeightQr后经过旋转位置编码（ROPE)得到query_rope；第三路是输入x乘以WeightDkv进行下采样和RmsNorm后传入Cache中得到kvCache；第四路是输入x乘以Wkr后经过旋转位置编码后传入另一个Cache中得到krCache。
 
 接口原型:
-torch_npu.npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, Tensor weight_uk, Tensor weight_dkv_kr, Tensor rmsnorm_gamma_cq, Tensor rmsnorm_gamma_ckv, Tensor rope_sin, Tensor rope_cos, Tensor cache_index, Tensor kv_cache, Tensor kr_cache, *, Tensor? dequant_scale_cq=None, Tensor? dequant_scale_qc_qr=None, Tensor? dequant_scale_ckv_kr=None, Tensor? quant_scale_cq=None, float rmsnorm_epsilon_cq=1e-05, float rmsnorm_epsilon_ckv=1e-05, str cache_mode="BNSD") -> (Tensor, Tensor, Tensor, Tensor)
+torch_npu.npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, Tensor weight_uk, Tensor weight_dkv_kr, Tensor rmsnorm_gamma_cq, Tensor rmsnorm_gamma_ckv, Tensor ropeSin, Tensor ropeCos, Tensor cache_index, Tensor kv_cache, Tensor kr_cache, *, Tensor? dequantScaleX=None, Tensor? dequantScaleWDq=None, Tensor? dequantScaleWUqQr=None, Tensor? dequantScaleWkvKr=None, Tensor? quantScaleCkv=None, Tensor? quantScaleCkr=None, Tensor? smoothScalesCq=None, float rmsnormEpsilonCq=1e-05, float rmsnormEpsilonCkv=1e-05, str cache_mode="BNSD") -> (Tensor, Tensor, Tensor, Tensor)
 
 参数说明:
 tokenX（aclTensor*，计算输入）：表示输入的tensor，用于计算Q和K的x，Device侧的aclTensor。shape支持3维，dtype支持INT8/BF16，数据格式支持ND格式。
@@ -4597,19 +4597,22 @@ rmsnormGammaCkv（aclTensor*，计算输入）：表示用于计算Key的rmsnorm
 ropeSin（aclTensor*，计算输入）：表示用于计算旋转位置编码的正弦参数矩阵，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
 ropeCos（aclTensor*，计算输入）：表示用于计算旋转位置编码的余弦参数矩阵，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
 cacheIndex（aclTensor*，计算输入）：表示用于计算旋转位置编码的序列索引，Device侧的aclTensor。其shape支持2维，dtype支持INT64，数据格式支持ND格式。
-kvCache（aclTensor*，计算输入）：表示用于cache索引的aclTensor。其shape支持3维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
-krCache（aclTensor*，计算输入）：表示用于key位置编码的cache，Device侧的aclTensor。其shape支持3维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
-dequantScaleCq（aclTensor*，计算输入）：用于输入tokenX为int8类型时，Query进行下采样后进行反量化操作时的参数，Device侧的aclTensor。其shape支持1维，dtype支持INT64，数据格式支持ND格式。
-dequantScaleQcQr（aclTensor*，计算输入）：用于输入tokenX为int8类型时，Query进行第一次上采样和位置编码矩阵乘后进行反量化操作时的参数，Device侧的aclTensor。其shape支持2维，dtype支持INT64，数据格式支持ND格式。
-dequantScaleCkvKr（aclTensor*，计算输入）：用于输入tokenX为int8类型时，Key进行下采样和位置编码矩阵乘后进行反量化操作时的参数，Device侧的aclTensor。其shape支持1维，dtype支持INT64，数据格式支持ND格式。
-quantScaleCq（aclTensor*，计算输入）：用于输入tokenX为int8类型时，Query进行RmsNorm后进行量化操作时的参数，Device侧的aclTensor。其shape支持1维，dtype支持FLOAT，数据格式支持ND格式。
+kvCache（aclTensor*，计算输入）：表示用于cache索引的aclTensor。其shape支持3维，dtype支持FLOAT16/BF16/INT8，数据格式支持ND格式。
+krCache（aclTensor*，计算输入）：表示用于key位置编码的cache，Device侧的aclTensor。其shape支持3维，dtype支持FLOAT16/BF16/INT8，数据格式支持ND格式。
+dequantScaleX（aclTensor*，计算输入）：用于输入tokenX为int8类型时，进行下采样后进行反量化操作时的参数，tokenX量化方式为per-token。其shape支持2维，dtype支持FLOAT，数据格式支持ND格式。
+dequantScaleWDq（aclTensor*，计算输入）：用于输入tokenX为int8类型时，进行下采样后进行反量化操作时的参数，tokenX量化方式为per-channel。其shape支持2维，dtype支持FLOAT，数据格式支持ND格式。
+dequantScaleWUqQr（aclTensor*，计算输入）：用于对MatnulQcQr做动态量化时，矩阵乘后进行反量化操作时的参数，量化参数为per-channel，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT，数据格式支持ND格式。
+dequantScaleWDkvKr（aclTensor*，计算输入）：用于输入tokenX为int8类型时，MatnulCkvKr后进行量化操作时的参数，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT，数据格式支持ND格式。
+quantScaleCkv（aclTensor*，计算输入）：用于对RmsNormCkv输出做量化操作时的参数，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT，数据格式支持ND格式。
+quantScaleCkr（aclTensor*，计算输入）：用于对RoPEKr输出做量化操作时的参数，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT，数据格式支持ND格式。
+smoothScalesCq（aclTensor*，计算输入）：用于对RmsNormDq输出做量化操作时的参数，Device侧的aclTensor。其shape支持2维，dtype支持FLOAT，数据格式支持ND格式。
 rmsnormEpsilonCq（double，计算输入）：表示用于计算Query的rmsnorm中的ϵ参数，对应计算Query的rmsNorm中的ϵ，用户不特意指定时可传入默认值1e-05。
 rmsnormEpsilonCkv（double，计算输入）：表示用于计算Key额时rmsnorm中的ϵ参数，对应计算Key的rmsNorm中的ϵ，用户不特意指定时可传入默认值1e-05。
 cacheMode（char*，计算输入）：用于表示kvCache的模式，其用户不特意指定时可传入默认值“BNSD”,还支持选项包括"PA_BSND","PA_NZ"。
-query（aclTensor*，计算输出）：表示Query的输出tensor，Device侧的aclTensor。shape支持4维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
-queryRope（aclTensor*，计算输出）：表示Query位置编码的输出tensor，Device侧的aclTensor。shape支持4维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
-kvCacheOut（aclTensor*，计算输出）：表示Key输出到kvcache中的tensor，Device侧的aclTensor。shape支持3维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
-krCacheOut（aclTensor*，计算输出）：表示Key的位置编码输出到kvcache中的tensor，Device侧的aclTensor。shape支持3维，dtype支持FLOAT16/BF16，数据格式支持ND格式。
+query（aclTensor*，计算输出）：表示Query的输出tensor，Device侧的aclTensor。shape支持4维，dtype支持FLOAT16/BF16/INT8，数据格式支持ND格式。
+queryRope（aclTensor*，计算输出）：表示Query位置编码的输出tensor，Device侧的aclTensor。shape支持4维，dtype支持FLOAT16/BF16/INT8，数据格式支持ND格式。
+kvCacheOut（aclTensor*，计算输出）：表示Key输出到kvcache中的tensor，Device侧的aclTensor。shape支持3维，dtype支持FLOAT16/BF16/INT8，数据格式支持ND格式。
+krCacheOut（aclTensor*，计算输出）：表示Key的位置编码输出到kvcache中的tensor，Device侧的aclTensor。shape支持3维，dtype支持FLOAT16/BF16/INT8，数据格式支持ND格式。
 
 支持的芯片型号:
 Atlas A2 训练系列产品

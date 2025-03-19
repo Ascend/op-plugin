@@ -36,24 +36,54 @@ def npu_incre_flash_attention_forward(query, key, value, *, padding_mask=None, a
 
 
 @impl(m, "npu_mla_prolog")
-def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv, 
-                   rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_cq=None, 
-                   dequant_scale_qc_qr=None, dequant_scale_ckv_kr=None, quant_scale_cq=None, 
+def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
+                   rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None,
+                   quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None,
                    rmsnorm_epsilon_cq=1e-5, rmsnorm_epsilon_ckv=1e-5, cache_mode="BNSD"):
-    query_shape = []
-    query_shape.append(token_x.size(0))
-    query_shape.append(token_x.size(1))
-    query_shape.append(weight_uk.size(0))
-    query_shape.append(weight_uk.size(2))
 
-    query_rope_shape = []
-    query_rope_shape.append(token_x.size(0))
-    query_rope_shape.append(token_x.size(1))
-    query_rope_shape.append(weight_uk.size(0))
-    query_rope_shape.append(rope_sin.size(2))
+    token_x_dim = token_x.dim()
+    torch._check(
+        token_x_dim == 2 or token_x_dim == 3,
+        lambda: "the token_x shape support only 2d and 3d)" + ops_error(ErrCode.VALUE),
+    )
 
-    query = torch.empty(query_shape, dtype=token_x.dtype, device='meta')
-    query_rope = torch.empty(query_rope_shape, dtype=token_x.dtype, device='meta')
+    weight_uk_dim = weight_uk.dim()
+    torch._check(
+        weight_uk_dim == 3,
+        lambda: "the weight_uk shape support only 3d)" + ops_error(ErrCode.VALUE),
+    )
+
+    rope_sin_dim = rope_sin.dim()
+    torch._check(
+        rope_sin_dim == 2 or rope_sin_dim == 3,
+        lambda: "the rope_sin shape support only 2d and 3d)" + ops_error(ErrCode.VALUE),
+    )
+
+    if token_x_dim == 3:    
+        query_shape = []
+        query_shape.append(token_x.size(0))
+        query_shape.append(token_x.size(1))
+        query_shape.append(weight_uk.size(0))
+        query_shape.append(weight_uk.size(2))
+
+        query_rope_shape = []
+        query_rope_shape.append(token_x.size(0))
+        query_rope_shape.append(token_x.size(1))
+        query_rope_shape.append(weight_uk.size(0))
+        query_rope_shape.append(rope_sin.size(2))
+    else:
+        query_shape = []
+        query_shape.append(token_x.size(0))
+        query_shape.append(weight_uk.size(0))
+        query_shape.append(weight_uk.size(2))
+
+        query_rope_shape = []
+        query_rope_shape.append(token_x.size(0))
+        query_rope_shape.append(weight_uk.size(0))
+        query_rope_shape.append(rope_sin.size(1))
+
+    query = torch.empty(query_shape, dtype=rope_sin.dtype, device='meta')
+    query_rope = torch.empty(query_rope_shape, dtype=rope_sin.dtype, device='meta')
     kv_cache_out = torch.empty_like(kv_cache, dtype=kv_cache.dtype, device='meta')
     kr_cache_out = torch.empty_like(kr_cache, dtype=kr_cache.dtype, device='meta')
 
