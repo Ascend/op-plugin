@@ -19,18 +19,19 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_scatter(const at::Tensor& self, const at::Tensor& indices, const at::Tensor& updates, int64_t dim) {
-  at::Tensor outputs = npu_preparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ArgMaxGrad")
-      .Input(self)
-      .Input(indices)
-      .Input(updates)
-      .Output(outputs)
-      .Attr("dimension", dim)
-      .Run();
+at::Tensor npu_scatter(const at::Tensor& self, const at::Tensor& indices, const at::Tensor& updates, int64_t dim)
+{
+    at::Tensor outputs = npu_preparation::apply_tensor(self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ArgMaxGrad")
+        .Input(self)
+        .Input(indices)
+        .Input(updates)
+        .Output(outputs)
+        .Attr("dimension", dim)
+        .Run();
 
-  return outputs;
+    return outputs;
 }
 
 } // namespace acl_op

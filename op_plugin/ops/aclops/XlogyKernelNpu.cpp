@@ -43,48 +43,48 @@ at::Tensor &xlogy_out_npu_nocheck(at::Tensor &result, const at::Scalar &self, co
 }
 } // namespace
 
-at::Tensor &xlogy_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+at::Tensor &xlogy_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
 {
     at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
     at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-    npu_preparation::CheckOut({self, other}, result, npu_preparation::get_tensor_npu_format(format_cast_of_self),
-                              result.scalar_type(), output_size);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    npu_preparation::CheckOut({self, other}, out, npu_preparation::get_tensor_npu_format(format_cast_of_self),
+                              out.scalar_type(), output_size);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         xlogy_out_npu_nocheck(contiguous_result, format_cast_of_self, format_cast_of_other);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        xlogy_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
+        xlogy_out_npu_nocheck(out, format_cast_of_self, format_cast_of_other);
     }
-    return result;
+    return out;
 }
 
-at::Tensor &xlogy_out(const at::Tensor &self, const at::Scalar &other, at::Tensor &result)
+at::Tensor &xlogy_out(const at::Tensor &self, const at::Scalar &other, at::Tensor &out)
 {
-    npu_preparation::CheckOut({self}, result, self);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    npu_preparation::CheckOut({self}, out, self);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         xlogy_out_npu_nocheck(contiguous_result, self, other);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        xlogy_out_npu_nocheck(result, self, other);
+        xlogy_out_npu_nocheck(out, self, other);
     }
-    return result;
+    return out;
 }
 
-at::Tensor &xlogy_out(const at::Scalar &self, const at::Tensor &other, at::Tensor &result)
+at::Tensor &xlogy_out(const at::Scalar &self, const at::Tensor &other, at::Tensor &out)
 {
-    npu_preparation::CheckOut({other}, result, npu_preparation::get_tensor_npu_format(other), other.scalar_type(),
+    npu_preparation::CheckOut({other}, out, npu_preparation::get_tensor_npu_format(other), other.scalar_type(),
                               other.sizes());
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         xlogy_out_npu_nocheck(contiguous_result, self, other);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        xlogy_out_npu_nocheck(result, self, other);
+        xlogy_out_npu_nocheck(out, self, other);
     }
-    return result;
+    return out;
 }
 
 at::Tensor xlogy(const at::Tensor &self, const at::Tensor &other)

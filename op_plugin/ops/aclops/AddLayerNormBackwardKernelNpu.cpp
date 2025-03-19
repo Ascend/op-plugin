@@ -19,13 +19,14 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor>npu_add_layer_norm_backward(const c10::optional<at::Tensor> &dy_opt,
-                                                                                      const at::Tensor &x1,
-                                                                                      const at::Tensor &x2,
-                                                                                      const at::Tensor &rstd,
-                                                                                      const at::Tensor &mean,
-                                                                                      const at::Tensor &gamma,
-                                                                                      const c10::optional<at::Tensor> &dsum_opt)
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor>npu_add_layer_norm_backward(
+    const c10::optional<at::Tensor> &dy_opt,
+    const at::Tensor &x1,
+    const at::Tensor &x2,
+    const at::Tensor &rstd,
+    const at::Tensor &mean,
+    const at::Tensor &gamma,
+    const c10::optional<at::Tensor> &dsum_opt)
 {
     at::SmallVector<int64_t, SIZE> shape;
     for (int64_t index = 0; index < gamma.dim(); index++) {

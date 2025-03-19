@@ -26,7 +26,8 @@ at::Tensor& addcdiv_npu_nocheck(
     const at::Tensor& self,
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
-    at::Scalar value) {
+    at::Scalar value)
+{
     at_npu::native::OpCommand cmd;
     cmd.Name("Addcdiv")
         .Input(self)
@@ -44,29 +45,31 @@ at::Tensor& addcdiv_out(
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
     const at::Scalar& value,
-    at::Tensor& result) {
+    at::Tensor& out)
+{
     auto input_size = op_infer::broadcast_ops_npu_output_size(self, tensor1);
     auto output_size = op_infer::broadcast_ops_npu_output_size(input_size, tensor2.sizes());
     npu_preparation::CheckOut(
         {self, tensor1, tensor2},
-        result,
+        out,
         self,
         output_size);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         addcdiv_npu_nocheck(contiguous_result, self, tensor1, tensor2, value);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        addcdiv_npu_nocheck(result, self, tensor1, tensor2, value);
+        addcdiv_npu_nocheck(out, self, tensor1, tensor2, value);
     }
-    return result;
+    return out;
 }
 
 at::Tensor addcdiv(
     const at::Tensor& self,
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
-    const at::Scalar& value) {
+    const at::Scalar& value)
+{
     auto input_size = op_infer::broadcast_ops_npu_output_size(self, tensor1);
     auto output_size = op_infer::broadcast_ops_npu_output_size(input_size, tensor2.sizes());
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);

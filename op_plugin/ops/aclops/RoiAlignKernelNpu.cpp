@@ -38,7 +38,7 @@ at::Tensor &roi_align_npu_nocheck(at::Tensor &result, const at::Tensor &self, co
         .Input(self, "features")
         .Input(rois)
         .Output(result, "y")
-        .Attr("spatial_scale", (float)spatial_scale)
+        .Attr("spatial_scale", static_cast<float>(spatial_scale))
         .Attr("pooled_height", pooled_height)
         .Attr("pooled_width", pooled_width)
         .Attr("sample_num", sample_num)

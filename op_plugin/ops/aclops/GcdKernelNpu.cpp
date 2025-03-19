@@ -18,14 +18,16 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& gcd_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out) {
-  // convert args to cpu in order to use at::native kernel
-  TORCH_NPU_WARN_ONCE("Warning: kernel [gcd.out] is not supported by NPU currently. Now this kernel is running on CPU.");
-  const auto self_cpu = self.cpu();
-  const auto other_cpu = other.cpu();
-  auto out_cpu = out.cpu();
-  out_cpu = at::gcd_out(out_cpu, self_cpu, other_cpu);
-  out.copy_(out_cpu);
-  return out;
+at::Tensor& gcd_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
+{
+    // convert args to cpu in order to use at::native kernel
+    TORCH_NPU_WARN_ONCE("Warning: kernel [gcd.out] is not supported by NPU currently."
+                        "Now this kernel is running on CPU.");
+    const auto self_cpu = self.cpu();
+    const auto other_cpu = other.cpu();
+    auto out_cpu = out.cpu();
+    out_cpu = at::gcd_out(out_cpu, self_cpu, other_cpu);
+    out.copy_(out_cpu);
+    return out;
 }
 }  // acl_op

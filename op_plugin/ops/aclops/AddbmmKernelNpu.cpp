@@ -49,7 +49,7 @@ at::Tensor& addbmm_out(
     const at::Tensor& batch2,
     const at::Scalar& beta,
     const at::Scalar& alpha,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     TORCH_CHECK(batch1.dim() >= 2 && batch2.dim() >= 3,
         "batch1 is expected to be at least 2D and batch2 is expected to be at least 3D, but got batch1: ",
@@ -68,15 +68,15 @@ at::Tensor& addbmm_out(
             at::Tensor bias = at::mul(self, beta);
             acl_op::addbmm_out_npu_nocheck(biasbmm_result, bias, mul_result, batch2);
         }
-        result = at::sum_to(biasbmm_result, dims);
+        out = at::sum_to(biasbmm_result, dims);
     } else {
         at::Tensor mul_result = at::mul(batch1, alpha);
         at::Tensor bmm_result = at::bmm(mul_result, batch2);
         at::Tensor sum_result = at::sum_to(bmm_result, dims);
         // sum_result + self*beta
-        at::add_out(result, sum_result, self, beta);
+        at::add_out(out, sum_result, self, beta);
     }
-    return result;
+    return out;
 }
 
 at::Tensor addbmm(

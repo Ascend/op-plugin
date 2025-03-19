@@ -19,14 +19,15 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor channel_shuffle(const at::Tensor& self, int64_t groups) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ShuffleChannel")
-      .Input(self)
-      .Output(result)
-      .Attr("group", groups)
-      .Run();
-  return result;
+at::Tensor channel_shuffle(const at::Tensor& self, int64_t groups)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ShuffleChannel")
+        .Input(self)
+        .Output(result)
+        .Attr("group", groups)
+        .Run();
+    return result;
 }
 } // namespace acl_op

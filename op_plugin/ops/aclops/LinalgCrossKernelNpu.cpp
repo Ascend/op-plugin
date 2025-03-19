@@ -38,21 +38,21 @@ at::Tensor &linalg_cross_out_nocheck(at::Tensor &result, const at::Tensor &self,
 }
 } // namespace
 
-at::Tensor &linalg_cross_out(const at::Tensor &self, const at::Tensor &other, const int64_t dim, at::Tensor &result)
+at::Tensor &linalg_cross_out(const at::Tensor &self, const at::Tensor &other, const int64_t dim, at::Tensor &out)
 {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::Tensor output_tensor = linalg_cross_dest_output(self, other);
-    npu_preparation::CheckOut({self}, result, npu_preparation::get_tensor_npu_format(output_tensor), self.scalar_type(),
+    npu_preparation::CheckOut({self}, out, npu_preparation::get_tensor_npu_format(output_tensor), self.scalar_type(),
                               output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         linalg_cross_out_nocheck(contiguous_result, self, other, dim);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        linalg_cross_out_nocheck(result, self, other, dim);
+        linalg_cross_out_nocheck(out, self, other, dim);
     }
-    return result;
+    return out;
 }
 
 at::Tensor linalg_cross(const at::Tensor &self, const at::Tensor &other, const int64_t dim)

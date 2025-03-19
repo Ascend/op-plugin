@@ -22,15 +22,16 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor npu_sub_sample(
     const at::Tensor& self,
     int64_t per_images,
-    double positive_fraction) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("SubSample")
-      .Input(self)
-      .Output(result)
-      .Attr("batch_size_per_images", per_images)
-      .Attr("positive_fraction", (float)positive_fraction)
-      .Run();
-  return result;
+    double positive_fraction)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("SubSample")
+        .Input(self)
+        .Output(result)
+        .Attr("batch_size_per_images", per_images)
+        .Attr("positive_fraction", (float)positive_fraction)
+        .Run();
+    return result;
 }
 } // namespace acl_op

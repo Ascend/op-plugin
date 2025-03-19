@@ -21,13 +21,14 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& hardshrink_backward_out(
-    const at::Tensor& grad_output,
+    const at::Tensor& grad_out,
     const at::Tensor& self,
     const at::Scalar& lambd,
-    at::Tensor& grad_input) {
+    at::Tensor& grad_input)
+{
     at_npu::native::OpCommand cmd;
     cmd.Name("HardShrinkGrad")
-       .Input(grad_output)
+       .Input(grad_out)
        .Input(self)
        .Attr("lambd", lambd)
        .Output(grad_input)
@@ -36,11 +37,12 @@ at::Tensor& hardshrink_backward_out(
 }
 
 at::Tensor hardshrink_backward(
-    const at::Tensor& grad_output,
+    const at::Tensor& grad_out,
     const at::Tensor& self,
-    const at::Scalar& lambd) {
+    const at::Scalar& lambd)
+{
     at::Tensor grad_input = npu_preparation::apply_tensor(self);
-    hardshrink_backward_out(grad_output, self, lambd, grad_input);
+    hardshrink_backward_out(grad_out, self, lambd, grad_input);
     return grad_input;
 }
 } // namespace acl_op

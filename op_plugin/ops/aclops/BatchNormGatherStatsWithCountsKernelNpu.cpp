@@ -102,23 +102,23 @@ tensor_list1 batch_norm_gather_stats_with_counts_npu_impl(at::Tensor &mean_all, 
 }
 } // namespace
 
-tensor_list2 batch_norm_gather_stats_with_counts(const at::Tensor &self, const at::Tensor &mean,
+tensor_list2 batch_norm_gather_stats_with_counts(const at::Tensor &input, const at::Tensor &mean,
                                                  const at::Tensor &invstd,
-                                                 const c10::optional<at::Tensor> &running_mean_opt,
-                                                 const c10::optional<at::Tensor> &running_var_opt, double momentum,
+                                                 const c10::optional<at::Tensor> &running_mean,
+                                                 const c10::optional<at::Tensor> &running_var, double momentum,
                                                  double eps, const at::Tensor &counts)
 {
-    const at::Tensor &running_mean = c10::value_or_else(running_mean_opt, [] { return at::Tensor(); });
-    const at::Tensor &running_var = c10::value_or_else(running_var_opt, [] { return at::Tensor(); });
+    const at::Tensor &running_mean_opt = c10::value_or_else(running_mean, [] { return at::Tensor(); });
+    const at::Tensor &running_var_opt = c10::value_or_else(running_var, [] { return at::Tensor(); });
     bool is_fully_fp16 = false;
-    if (self.scalar_type() == mean.scalar_type() && self.scalar_type() == at::kHalf) {
+    if (input.scalar_type() == mean.scalar_type() && input.scalar_type() == at::kHalf) {
         is_fully_fp16 = true;
     }
 
-    at::Tensor mean_all = npu_preparation::apply_tensor({1, self.size(1)}, self.options().dtype(at::kFloat), self);
-    at::Tensor invstd_all = npu_preparation::apply_tensor({1, self.size(1)}, self.options().dtype(at::kFloat), self);
+    at::Tensor mean_all = npu_preparation::apply_tensor({1, input.size(1)}, input.options().dtype(at::kFloat), input);
+    at::Tensor invstd_all = npu_preparation::apply_tensor({1, input.size(1)}, input.options().dtype(at::kFloat), input);
 
-    batch_norm_gather_stats_with_counts_npu_impl(mean_all, invstd_all, self, mean, invstd, running_mean, running_var,
+    batch_norm_gather_stats_with_counts_npu_impl(mean_all, invstd_all, input, mean, invstd, running_mean_opt, running_var_opt,
                                                  momentum, eps, counts);
 
     if (is_fully_fp16) {

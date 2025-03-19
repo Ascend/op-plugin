@@ -77,34 +77,35 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dropout_with_add_softmax_forw
 }
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor> npu_dropout_with_add_softmax_backward(const at::Tensor &grad_out,
+std::tuple<at::Tensor, at::Tensor> npu_dropout_with_add_softmax_backward(const at::Tensor &grad,
                                                                          const at::Tensor &mask,
                                                                          const at::Tensor &softmax_out,
-                                                                         const at::Scalar &alpha, double p, int64_t dim)
+                                                                         const at::Scalar &alpha, double prob, int64_t dim)
 {
     at::Tensor result = npu_preparation::apply_tensor(softmax_out);
     c10::SmallVector<int64_t, N> dimList = {dim};
-    double retain = 1. - p;
-    at::Scalar prob = at::Scalar(retain);
+    double retain = 1. - prob;
+    at::Scalar p = at::Scalar(retain);
 
     at_npu::native::OpCommand cmd;
     cmd.Name("DropoutWithMulsAndSoftmaxGrad")
-        .Input(grad_out)
+        .Input(grad)
         .Input(mask)
         .Input(softmax_out)
         .Output(result)
         .Attr("alpha", alpha)
-        .Attr("input_keep_prob", prob)
+        .Attr("input_keep_prob", p)
         .Attr("axes", dimList)
         .Run();
-    return std::tie(result, grad_out);
+    return std::tie(result, grad);
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dropout_with_add_softmax(const at::Tensor &self,
                                                                             const at::Tensor &x1,
-                                                                            const at::Scalar &alpha, double p,
+                                                                            const at::Scalar &alpha,
+                                                                            double prob,
                                                                             int64_t dim)
 {
-    return npu_dropout_with_add_softmax_forward(self, x1, alpha, p, dim);
+    return npu_dropout_with_add_softmax_forward(self, x1, alpha, prob, dim);
 }
 } // namespace acl_op

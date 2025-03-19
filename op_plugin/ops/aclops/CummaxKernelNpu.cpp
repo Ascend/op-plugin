@@ -23,20 +23,21 @@ void _cummax_helper(
     const at::Tensor& self,
     at::Tensor& values,
     at::Tensor& indices,
-    int64_t dim) {
-  at::Tensor values_temp = npu_preparation::apply_tensor(self);
-  at::Tensor indices_temp = npu_preparation::apply_tensor_with_format(self.sizes(), self.options().dtype(at::kLong),
-      ACL_FORMAT_ND);
+    int64_t dim)
+{
+    at::Tensor values_temp = npu_preparation::apply_tensor(self);
+    at::Tensor indices_temp = npu_preparation::apply_tensor_with_format(self.sizes(), self.options().dtype(at::kLong),
+        ACL_FORMAT_ND);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Cummax")
-      .Input(self)
-      .Output(values_temp)
-      .Output(indices_temp)
-      .Attr("dim", dim)
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Cummax")
+        .Input(self)
+        .Output(values_temp)
+        .Output(indices_temp)
+        .Attr("dim", dim)
+        .Run();
 
-  values.copy_(values_temp);
-  indices.copy_(indices_temp);
+    values.copy_(values_temp);
+    indices.copy_(indices_temp);
 }
 } // namespace acl_op

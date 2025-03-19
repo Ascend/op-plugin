@@ -13,15 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
 
 #if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor& square_out(const at::Tensor& self, at::Tensor& result) {
-  at::Scalar exp = 2;
-  return acl_op::pow_out(self, exp, result);
+at::Tensor& square_out(const at::Tensor& self, at::Tensor& result)
+{
+    at::Scalar exp = 2;
+    return acl_op::pow_out(self, exp, result);
 }
 #endif
 

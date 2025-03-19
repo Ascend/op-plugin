@@ -21,15 +21,15 @@
 
 namespace acl_op {
 std::tuple<at::Tensor &, at::Tensor &> triangular_solve_out(const at::Tensor &self, const at::Tensor &A, bool upper,
-                                                            bool transpose, bool unitriangular, at::Tensor &result,
-                                                            at::Tensor &clone_a)
+                                                            bool transpose, bool unitriangular, at::Tensor &X,
+                                                            at::Tensor &M)
 {
     at::Tensor result_tmp;
     at::Tensor clone_a_tmp;
     std::tie(result_tmp, clone_a_tmp) = triangular_solve_out_common_nocheck(self, A, upper, transpose, unitriangular);
-    result.resize_as_(result_tmp).copy_(result_tmp);
-    clone_a.resize_as_(clone_a_tmp).copy_(clone_a_tmp);
-    return std::tie(result, clone_a);
+    X.resize_as_(result_tmp).copy_(result_tmp);
+    M.resize_as_(clone_a_tmp).copy_(clone_a_tmp);
+    return std::tie(X, M);
 }
 
 #if VERSION_BETWEEN(V2R0, V2R0)

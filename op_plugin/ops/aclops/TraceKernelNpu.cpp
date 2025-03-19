@@ -22,7 +22,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 #if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor trace(const at::Tensor &self)
 {
-    TORCH_CHECK(self.dim() == 2, "trace: expected a matrix, but got tensor with dim ", self.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.dim() == 2, "trace: expected a matrix, but got tensor with dim ",
+        self.dim(), OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, N> outputSize = {};
     auto outDtype = (isIntegralType(self.scalar_type(), true)) ? at::kLong : self.scalar_type();
     at::Tensor result = npu_preparation::apply_tensor(outputSize, self.options().dtype(outDtype), self);

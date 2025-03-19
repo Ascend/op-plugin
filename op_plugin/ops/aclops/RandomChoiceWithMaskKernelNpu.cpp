@@ -21,25 +21,26 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> npu_random_choice_with_mask(
-    const at::Tensor& self,
+    const at::Tensor& x,
     int64_t count,
     int64_t seed,
-    int64_t seed2) {
+    int64_t seed2)
+{
     TORCH_CHECK(
-        self.scalar_type() == at::ScalarType::Bool,
+        x.scalar_type() == at::ScalarType::Bool,
         "The input.dtype should be bool, but get",
-        self.scalar_type(), OPS_ERROR(ErrCode::TYPE));
+        x.scalar_type(), OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(
-        self.dim() <= 5 && self.dim() >= 1,
+        x.dim() <= 5 && x.dim() >= 1,
         "The input.dim should be in [1, 5], but get",
-        self.dim(), OPS_ERROR(ErrCode::PARAM));
+        x.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(count > 0, "The count must greater than 0, but get", count, OPS_ERROR(ErrCode::VALUE));
 
-    at::Tensor result = npu_preparation::apply_tensor({count, self.dim()}, self.options().dtype(at::kInt), self);
-    at::Tensor mask = npu_preparation::apply_tensor(self, {count});
+    at::Tensor result = npu_preparation::apply_tensor({count, x.dim()}, x.options().dtype(at::kInt), x);
+    at::Tensor mask = npu_preparation::apply_tensor(x, {count});
     at_npu::native::OpCommand cmd;
     cmd.Name("RandomChoiceWithMask")
-        .Input(self)
+        .Input(x)
         .Output(result)
         .Output(mask)
         .Attr("count", count)

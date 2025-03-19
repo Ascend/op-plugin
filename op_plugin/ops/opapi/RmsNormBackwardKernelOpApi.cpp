@@ -29,7 +29,9 @@ std::tuple<at::Tensor, at::Tensor> npu_rms_norm_backward(
     DO_COMPATIBILITY(aclnnRmsNormGrad, acl_op::npu_rms_norm_backward(dy, self, rstd, gamma));
     auto output_size = op_infer::rms_norm_grad_npu_output_size(self, gamma);
     at::Tensor dx = npu_preparation::apply_tensor_with_format(output_size[0], self.options(), ACL_FORMAT_ND);
-    at::Tensor dgamma = npu_preparation::apply_tensor_with_format(output_size[1], self.options().dtype(at::kFloat), ACL_FORMAT_ND);
+    at::Tensor dgamma = npu_preparation::apply_tensor_with_format(output_size[1],
+                                                                  self.options().dtype(at::kFloat),
+                                                                  ACL_FORMAT_ND);
     EXEC_NPU_CMD(aclnnRmsNormGrad, dy, self, rstd, gamma, dx, dgamma);
     return std::tuple<at::Tensor, at::Tensor>(dx, dgamma);
 }

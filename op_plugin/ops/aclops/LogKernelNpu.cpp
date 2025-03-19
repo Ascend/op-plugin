@@ -28,27 +28,27 @@ at::Tensor &log_out_npu_nocheck(at::Tensor &result, const at::Tensor &self)
     cmd.Name("Log")
         .Input(self)
         .Output(result)
-        .Attr("base", (float)-1)
-        .Attr("scale", (float)1)
-        .Attr("shift", (float)0)
+        .Attr("base", static_cast<float>(-1))
+        .Attr("scale", static_cast<float>(1))
+        .Attr("shift", static_cast<float>(0))
         .Run();
 
     return result;
 }
 } // namespace
 
-at::Tensor &log_out(const at::Tensor &self, at::Tensor &result)
+at::Tensor &log_out(const at::Tensor &self, at::Tensor &out)
 {
-    npu_preparation::CheckOut({self}, result, ACL_FORMAT_ND, self.scalar_type(), self.sizes());
+    npu_preparation::CheckOut({self}, out, ACL_FORMAT_ND, self.scalar_type(), self.sizes());
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         log_out_npu_nocheck(contiguous_result, self);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        log_out_npu_nocheck(result, self);
+        log_out_npu_nocheck(out, self);
     }
-    return result;
+    return out;
 }
 
 at::Tensor log(const at::Tensor &self)

@@ -49,7 +49,8 @@ at::Tensor embedding_symint(
     bool scale_grad_by_freq,
     bool sparse)
 {
-    DO_COMPATIBILITY(aclnnEmbedding, acl_op::embedding_symint(weight, indices, padding_idx, scale_grad_by_freq, sparse));
+    DO_COMPATIBILITY(aclnnEmbedding, acl_op::embedding_symint(weight, indices, padding_idx,
+                                                              scale_grad_by_freq, sparse));
     TORCH_CHECK(weight.device() == indices.device(),
         "Expected all tensors to be on the same device, but "
         "found at least two devices, ", weight.device(), " and ", indices.device(), "! "

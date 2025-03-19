@@ -60,26 +60,26 @@ at::Tensor &stack_out_nocheck(at::Tensor &result, at::TensorList tensors, int64_
         string input_name = "x" + std::to_string(i);
         cmd.Input(input_tensors[i], input_name);
     }
-    cmd.Output(result).Attr("N", (int64_t)tensors.size()).Attr("axis", dim).Run();
+    cmd.Output(result).Attr("N", static_cast<int64_t>(tensors.size())).Attr("axis", dim).Run();
 
     return result;
 }
 } // namespace
 
-at::Tensor &stack_out(at::TensorList tensors, int64_t dim, at::Tensor &result)
+at::Tensor &stack_out(at::TensorList tensors, int64_t dim, at::Tensor &out)
 {
     auto output_size = stack_npu_output_size(tensors, dim);
 
-    npu_preparation::CheckOut({tensors[0]}, result, ACL_FORMAT_ND, tensors[0].scalar_type(), output_size);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    npu_preparation::CheckOut({tensors[0]}, out, ACL_FORMAT_ND, tensors[0].scalar_type(), output_size);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         stack_out_nocheck(contiguous_result, tensors, dim);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        stack_out_nocheck(result, tensors, dim);
+        stack_out_nocheck(out, tensors, dim);
     }
 
-    return result;
+    return out;
 }
 
 at::Tensor stack(at::TensorList tensors, int64_t dim)

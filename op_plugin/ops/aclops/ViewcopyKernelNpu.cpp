@@ -77,16 +77,16 @@ bool AicoreValid(at::Tensor &self, const at::Tensor &src)
 }
 } // namespace
 
-at::Tensor &npu_view_copy(at::Tensor &self, const at::Tensor &src, bool non_blocking)
+at::Tensor &npu_view_copy(at::Tensor &self, const at::Tensor &other, bool non_blocking)
 {
     auto self_size = self.sizes();
     auto self_stride = self.strides();
-    auto src_size = src.sizes();
-    auto src_stride = src.strides();
+    auto src_size = other.sizes();
+    auto src_stride = other.strides();
 
     at_npu::native::OpCommand cmd;
-    if (AicoreValid(self, src)) {
-        at::Tensor contiguous_src(src);
+    if (AicoreValid(self, other)) {
+        at::Tensor contiguous_src(other);
         if (!npu_utils::check_match(&contiguous_src)) {
             contiguous_src = npu_utils::format_contiguous(contiguous_src);
         }
@@ -109,12 +109,12 @@ at::Tensor &npu_view_copy(at::Tensor &self, const at::Tensor &src, bool non_bloc
             .Input(self_size, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT)
             .Input(self_stride, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT)
             .Input(at::Scalar(0), at::kLong)
-            .InputWithoutContiguous(src)
+            .InputWithoutContiguous(other)
             .Input(src_size, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT)
             .Input(src_stride, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT)
             .Input(at::Scalar(0), at::kLong)
             .Output(self)
-            .Attr("_exclude_engines", (string) "AiCore")
+            .Attr("_exclude_engines", static_cast<string>("AiCore"))
             .Run();
     }
 

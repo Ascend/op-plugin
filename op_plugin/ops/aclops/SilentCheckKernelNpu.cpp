@@ -48,9 +48,10 @@ at::Tensor silent_check_nocheck(at::Tensor &input_grad, const at::Tensor &val, a
 }
 } // namespace
 
-at::Tensor _npu_silent_check(at::Tensor &input_grad, const at::Tensor &val, at::Tensor &pre_val, at::Tensor &min_val,
-                             at::Tensor &max_val, const at::Tensor &val_counter, int64_t c_min_steps, double c_thresh_l1,
-                             double c_coeff_l1, double c_thresh_l2, double c_coeff_l2)
+at::Tensor _npu_silent_check(at::Tensor &input_grad, const at::Tensor &val, at::Tensor &pre_val,
+                             at::Tensor &min_val, at::Tensor &max_val, const at::Tensor &val_counter,
+                             int64_t c_min_steps, double c_thresh_l1, double c_coeff_l1, double c_thresh_l2,
+                             double c_coeff_l2)
 {
     at::Tensor result = npu_preparation::apply_tensor(val_counter);
     return silent_check_nocheck(input_grad, val, pre_val, min_val, max_val, val_counter, c_min_steps, c_thresh_l1,

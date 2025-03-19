@@ -24,11 +24,12 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor> prelu_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    const at::Tensor& weight) {
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
-  at::Tensor grad_weight = npu_preparation::apply_tensor(weight);
-  prelu_backward_commom_nocheck(grad_input, grad_weight, grad_output, self, weight);
-  return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
+    const at::Tensor& weight)
+{
+    at::Tensor grad_input = npu_preparation::apply_tensor(self);
+    at::Tensor grad_weight = npu_preparation::apply_tensor(weight);
+    prelu_backward_commom_nocheck(grad_input, grad_weight, grad_output, self, weight);
+    return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
 }
 #endif
 
@@ -36,17 +37,18 @@ std::tuple<at::Tensor, at::Tensor> prelu_backward(
 std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    const at::Tensor& weight) {
-  c10::SmallVector<int64_t, N> weight_shape = op_infer::array_to_small_vector(weight.sizes());
-  at::Tensor reshape_weight = weight.reshape({-1});
+    const at::Tensor& weight)
+{
+    c10::SmallVector<int64_t, N> weight_shape = op_infer::array_to_small_vector(weight.sizes());
+    at::Tensor reshape_weight = weight.reshape({-1});
 
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
-  at::Tensor grad_weight = npu_preparation::apply_tensor(reshape_weight);
+    at::Tensor grad_input = npu_preparation::apply_tensor(self);
+    at::Tensor grad_weight = npu_preparation::apply_tensor(reshape_weight);
 
-  prelu_backward_commom_nocheck(grad_input, grad_weight, grad_output, self, reshape_weight);
-  grad_weight = grad_weight.reshape(weight_shape);
+    prelu_backward_commom_nocheck(grad_input, grad_weight, grad_output, self, reshape_weight);
+    grad_weight = grad_weight.reshape(weight_shape);
 
-  return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
+    return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
 }
 #endif
 } // namespace acl_op
