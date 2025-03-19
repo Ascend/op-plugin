@@ -34,7 +34,7 @@ at::Tensor scatter_update(
         .Input(indices)
         .Input(updates)
         .Output(result)
-        .Attr("reduce", (string) "update")
+        .Attr("reduce", static_cast<string>("update"))
         .Attr("axis", axis)
         .Run();
 
@@ -55,7 +55,7 @@ at::Tensor &scatter_update_(
         .Input(indices)
         .Input(updates)
         .Output(self)
-        .Attr("reduce", (string) "update")
+        .Attr("reduce", static_cast<string>("update"))
         .Attr("axis", axis)
         .Run();
 

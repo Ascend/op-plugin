@@ -19,7 +19,8 @@
 
 namespace acl_op {
 #if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig) {
+at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig)
+{
     if (self.device().type() == at::kCPU) {
         return at::native::index(self, orig);
     }
@@ -28,7 +29,8 @@ at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Ten
 #endif
 
 #if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
-at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig) {
+at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig)
+{
     return index_common(self, orig);
 }
 #endif
