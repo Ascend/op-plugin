@@ -23,7 +23,7 @@ namespace atb {
 
 atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor);
 atb::Context* GetContext(aclrtStream stream);
-at::Tensor GetWorkspaceTensor(uint64_t workspaceSize);
+at::Tensor GetWorkspaceTensor(uint64_t workspaceSize, aclrtStream stream);
 uint64_t OperationSetup(atb::VariantPack variantPack, atb::Operation *operation, atb::Context* contextPtr);
 class ParamSetter {
 public:

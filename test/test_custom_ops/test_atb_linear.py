@@ -7,7 +7,7 @@ from torch_npu.testing.common_utils import SupportedDevices
 class TestAtbLinear(TestCase):
 
     @SupportedDevices(['Ascend910B'])
-    def test_atb_linear(self, device="npu"):
+    def test_atb_linear(self):
         atb_res = torch.zeros((8192, 8192), dtype=torch.float32).npu()
         x = torch.rand((4096, 8192), dtype=torch.float16).npu()
         weight = torch.rand((4096, 8192), dtype=torch.float16).npu()

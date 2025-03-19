@@ -14,6 +14,7 @@
 #include <torch_npu/csrc/core/npu/NPUStream.h>
 #include <torch_npu/csrc/core/npu/DeviceUtils.h>
 #include <torch_npu/csrc/core/npu/NPUFormat.h>
+#include <torch_npu/csrc/core/npu/NPUWorkspaceAllocator.h>
 #include "AtbCommon.h"
 
 
@@ -56,7 +57,7 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
     }
 
     auto dtypeIterator = dtypeMap.find(atTensor.scalar_type());
-    TORCH_CHECK(dtypeIterator != dtypeMap.end(), "not support dtype:");
+    TORCH_CHECK(dtypeIterator != dtypeMap.end(), "not support dtype: ", atTensor.scalar_type());
     tensor.desc.dtype = dtypeIterator->second;
 
     tensor.dataSize = atb::Utils::GetTensorSize(tensor);
@@ -74,7 +75,7 @@ void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::st
         at::Tensor workspaceTensor;
         void *workspacePtr = nullptr;
         if (workspaceSize != 0) {
-            workspaceTensor = GetWorkspaceTensor(workspaceSize);
+            workspaceTensor = GetWorkspaceTensor(workspaceSize, stream);
             workspacePtr = const_cast<void *>(workspaceTensor.storage().data());
         }
         auto st = op->Execute(paramsetter.variantPack, (uint8_t *)workspacePtr, workspaceSize, contextPtr);
@@ -132,10 +133,9 @@ uint64_t OperationSetup(atb::VariantPack variantPack, atb::Operation *operation,
 }
 
 
-at::Tensor GetWorkspaceTensor(uint64_t workspaceSize)
+at::Tensor GetWorkspaceTensor(uint64_t workspaceSize, aclrtStream stream)
 {
-    at::TensorOptions options = at::TensorOptions(torch_npu::utils::get_npu_device_type());
-    at::Tensor workspaceTensor = at::empty(at::IntArrayRef(workspaceSize), options.dtype(at::kByte));
+    at::Tensor workspaceTensor = at_npu::native::allocate_workspace(workspaceSize, stream);
     return workspaceTensor;
 }
 
