@@ -55,8 +55,8 @@ class TestForeachNorm(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float32")
-            cpu_output = torch._foreach_norm(cpu_tensors[0], ord=2)
-            npu_output = torch._foreach_norm(npu_tensors[0], ord=2)
+            cpu_output = torch._foreach_norm(cpu_tensors[0], ord=2, dtype=torch.float32)
+            npu_output = torch._foreach_norm(npu_tensors[0], ord=2, dtype=torch.float32)
 
             self.assert_equal(cpu_output, npu_output)
 
@@ -64,8 +64,8 @@ class TestForeachNorm(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float16")
-            cpu_output = tuple([out for out in torch._foreach_norm(cpu_tensors[0], ord=1)])
-            npu_output = torch._foreach_norm(npu_tensors[0], ord=1)
+            cpu_output = tuple([out for out in torch._foreach_norm(cpu_tensors[0], ord=1, dtype=torch.float32)])
+            npu_output = torch._foreach_norm(npu_tensors[0], ord=1, dtype=torch.float32)
 
             self.assert_equal(cpu_output, npu_output)
 

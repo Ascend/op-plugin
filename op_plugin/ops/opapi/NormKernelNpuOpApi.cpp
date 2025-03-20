@@ -42,6 +42,11 @@ float calculate_p(c10::optional<at::Scalar> p)
 inline bool check_use_aclop(float pfloat)
 {
     if (pfloat != 0.0 && pfloat != 1.0 && pfloat != 2.0 && pfloat != 3.0) {
+        if (op_plugin::utils::is_gte_cann_version_810rc1() &&
+            (pfloat == static_cast<float>(INT_MAX) || pfloat == static_cast<float>(INT_MIN))) {
+            // Version 8.1.RC1 of cann began to support norm operators with p being inf or -inf
+            return false;
+        }
         return true;
     }
     return false;

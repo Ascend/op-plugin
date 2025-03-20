@@ -18,6 +18,7 @@
 #include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/aten/mirror/NPUTypeProperties.h"
+#include "torch_npu/csrc/core/npu/GetCANNInfo.h"
 #include "op_plugin/utils/OpUtils.h"
 
 namespace op_plugin {
@@ -331,6 +332,14 @@ void check_input_same_type_as_parameters(
     const at::Tensor& weight)
 {
     check_input_same_type_as_parameters(input, weight, at::Tensor());
+}
+
+bool is_gte_cann_version_810rc1()
+{
+    const static bool is_support_inf_norm = []() -> bool {
+        return IsGteCANNVersion("8.1.RC1", "CANN");
+    }();
+    return is_support_inf_norm;
 }
 
 }  // namespace utils
