@@ -24,7 +24,8 @@ namespace {
 at::Tensor& tanh_backward_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& grad_output,
-    const at::Tensor& self) {
+    const at::Tensor& self)
+{
     at_npu::native::OpCommand cmd;
     cmd.Name("TanhGrad")
         .Input(self)
@@ -38,7 +39,8 @@ at::Tensor& tanh_backward_out_npu_nocheck(
 at::Tensor& tanh_backward_out(
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    at::Tensor& result) {
+    at::Tensor& result)
+{
     auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, self);
     npu_preparation::CheckOut({grad_output, self}, result, self, output_size);
     if (!npu_utils::check_match(&result)) {
@@ -52,7 +54,8 @@ at::Tensor& tanh_backward_out(
     return result;
 }
 
-at::Tensor tanh_backward(const at::Tensor& grad_output, const at::Tensor& self) {
+at::Tensor tanh_backward(const at::Tensor& grad_output, const at::Tensor& self)
+{
     auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, self);
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);
     tanh_backward_out_npu_nocheck(result, grad_output, self);

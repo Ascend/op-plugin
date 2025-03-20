@@ -24,22 +24,24 @@ namespace {
 at::Tensor& softshrink_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
-    at::Scalar lambd) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("SoftShrink")
-      .Input(self)
-      .Output(result)
-      .Attr("lambd", lambd)
-      .Run();
+    at::Scalar lambd)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("SoftShrink")
+        .Input(self)
+        .Output(result)
+        .Attr("lambd", lambd)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
 at::Tensor& softshrink_out(
     const at::Tensor& self,
     const at::Scalar& lambd,
-    at::Tensor& result) {
+    at::Tensor& result)
+{
     TORCH_CHECK(lambd.toFloat() >= 0, "lambd should be greater or equal to 0" + OPS_ERROR(ErrCode::VALUE));
     npu_preparation::CheckOut(
         {self},
@@ -57,7 +59,8 @@ at::Tensor& softshrink_out(
     return result;
 }
 
-at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd) {
+at::Tensor softshrink(const at::Tensor& self, const at::Scalar& lambd)
+{
     TORCH_CHECK(lambd.toFloat() >= 0, "lambd should be greater or equal to 0" + OPS_ERROR(ErrCode::VALUE));
     at::Tensor result = npu_preparation::apply_tensor(self);
 

@@ -21,7 +21,8 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& addcdiv_out(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
-                        const at::Scalar& value, at::Tensor& result) {
+                        const at::Scalar& value, at::Tensor& result)
+{
     DO_COMPATIBILITY(aclnnAddcdiv, acl_op::addcdiv_out(self, tensor1, tensor2, value, result));
     std::vector<at::Tensor> tensor_list = {self, tensor1, tensor2};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
@@ -31,7 +32,8 @@ at::Tensor& addcdiv_out(const at::Tensor& self, const at::Tensor& tensor1, const
 }
 
 at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
-                   const at::Scalar& value) {
+                   const at::Scalar& value)
+{
     if (isIntegralType(tensor1.scalar_type(), true) && isIntegralType(tensor2.scalar_type(), true)) {
         TORCH_CHECK(
             false,
@@ -56,7 +58,8 @@ at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::
     return result;
 }
 
-at::Tensor& addcdiv_(at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2, const at::Scalar& value) {
+at::Tensor& addcdiv_(at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2, const at::Scalar& value)
+{
     DO_COMPATIBILITY(aclnnInplaceAddcdiv, acl_op::addcdiv_(self, tensor1, tensor2, value));
     std::vector<at::Tensor> tensor_list = {self, tensor1, tensor2};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);

@@ -23,42 +23,46 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 
-at::Tensor& sigmoid_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Sigmoid")
-      .Input(self)
-      .Output(result)
-      .Run();
+at::Tensor& sigmoid_out_npu_nocheck(at::Tensor& result, const at::Tensor& self)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Sigmoid")
+        .Input(self)
+        .Output(result)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
-at::Tensor& sigmoid_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    sigmoid_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
+at::Tensor& sigmoid_out(const at::Tensor& self, at::Tensor& result)
+{
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        self);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        sigmoid_out_npu_nocheck(contiguous_result, self);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        sigmoid_out_npu_nocheck(result, self);
+    }
+    return result;
+}
+
+at::Tensor& sigmoid_(at::Tensor& self)
+{
+    acl_op::sigmoid_out(self, self);
+
+    return self;
+}
+
+at::Tensor sigmoid(const at::Tensor& self)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
     sigmoid_out_npu_nocheck(result, self);
-  }
-  return result;
-}
-
-at::Tensor& sigmoid_(at::Tensor& self) {
-  acl_op::sigmoid_out(self, self);
-
-  return self;
-}
-
-at::Tensor sigmoid(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  sigmoid_out_npu_nocheck(result, self);
-  return result;
+    return result;
 }
 
 } // namespace acl_op

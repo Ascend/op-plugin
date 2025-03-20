@@ -25,7 +25,8 @@ namespace acl_op {
 at::Tensor _weight_norm(
     const at::Tensor& v_in,
     const at::Tensor& g_in,
-    int64_t dim) {
+    int64_t dim)
+{
     TORCH_CHECK(
         v_in.device() == g_in.device(),
         "weight_norm: expected v_in and g_in to be on the same device, but v_in is "
