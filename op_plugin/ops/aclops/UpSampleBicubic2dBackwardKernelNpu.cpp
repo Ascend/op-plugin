@@ -29,7 +29,8 @@ at::Tensor& upsample_bicubic2d_backward_out_nocheck(
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w) {
+    c10::optional<double> scales_w)
+{
     TORCH_CHECK(output_size.size() == 2,
         "It is expected output_size equals to 2, but got size ",
         output_size.size(), OPS_ERROR(ErrCode::PARAM));
@@ -40,8 +41,8 @@ at::Tensor& upsample_bicubic2d_backward_out_nocheck(
 
     float temp_h = 0.0;
     float temp_w = 0.0;
-    temp_h = scales_h.has_value() ? (float)scales_h.value() : temp_h;
-    temp_w = scales_w.has_value() ? (float)scales_w.value() : temp_w;
+    temp_h = scales_h.has_value() ? static_cast<float>(scales_h.value()) : temp_h;
+    temp_w = scales_w.has_value() ? static_cast<float>(scales_w.value()) : temp_w;
     c10::SmallVector<float, N> scales = {temp_h, temp_w};
     c10::SmallVector<float, N> roi = {};
     string coordinate_transformation_mode =
@@ -81,7 +82,8 @@ at::Tensor& upsample_bicubic2d_backward_out(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
-    at::Tensor& grad_input) {
+    at::Tensor& grad_input)
+{
     auto op_infer_output_size = op_infer::upsample_bicubic2d_backward_npu_output_size(input_size);
 
     npu_preparation::CheckOut(
@@ -115,10 +117,12 @@ at::Tensor upsample_bicubic2d_backward(
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w) {
+    c10::optional<double> scales_w)
+{
     auto op_infer_output_size = op_infer::upsample_bicubic2d_backward_npu_output_size(input_size);
     at::Tensor result = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
-    upsample_bicubic2d_backward_out_nocheck(result, grad_output, output_size, input_size, align_corners, scales_h, scales_w);
+    upsample_bicubic2d_backward_out_nocheck(result, grad_output, output_size, input_size,
+        align_corners, scales_h, scales_w);
 
     int64_t N = grad_output.size(0);
     int64_t C = grad_output.size(1);
@@ -134,17 +138,18 @@ at::Tensor upsample_bicubic2d_backward(
     c10::optional<at::IntArrayRef> output_size,
     at::IntArrayRef input_size,
     bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
+    c10::optional<at::ArrayRef<double>> scale_factors)
+{
     TORCH_CHECK(
         input_size.size() == 4,
         "It is expected input_size equals to 4, but got size ",
         input_size.size(),
         OPS_ERROR(ErrCode::PARAM));
 
-  auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
-  return acl_op::upsample_bicubic2d_backward(grad_output, osize, input_size, align_corners, scales_h, scales_w);
+    auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
+    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
+    return acl_op::upsample_bicubic2d_backward(grad_output, osize, input_size, align_corners, scales_h, scales_w);
 }
 #endif
 } // namespace acl_op

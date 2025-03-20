@@ -21,27 +21,29 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 // bool inputs are considered integral
-static inline bool all_integral(std::initializer_list<std::reference_wrapper<at::Scalar>> l) {
-  for (at::Scalar& s : l) {
-    if (!s.isIntegral(true)) {
-      return false;
+static inline bool all_integral(std::initializer_list<std::reference_wrapper<at::Scalar>> l)
+{
+    for (at::Scalar& s : l) {
+        if (!s.isIntegral(true)) {
+        return false;
+        }
     }
-  }
-  return true;
+    return true;
 }
 
-static at::Tensor& arange_out_op_api(at::Scalar start, at::Scalar end, at::Scalar step, at::Tensor& result) {
-  EXEC_NPU_CMD(aclnnArange, start, end, step, result);
-  return result;
+static at::Tensor& arange_out_op_api(at::Scalar start, at::Scalar end, at::Scalar step, at::Tensor& result)
+{
+    EXEC_NPU_CMD(aclnnArange, start, end, step, result);
+    return result;
 }
 
 at::Tensor arange(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step,
-                  c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt,
-                  c10::optional<at::Device> device_opt, c10::optional<bool> pin_memory_opt)
+                  c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                  c10::optional<at::Device> device, c10::optional<bool> pin_memory)
 {
-    DO_COMPATIBILITY(aclnnArange, acl_op::arange(start, end, step, dtype_opt, layout_opt, device_opt, pin_memory_opt));
+    DO_COMPATIBILITY(aclnnArange, acl_op::arange(start, end, step, dtype, layout, device, pin_memory));
     c10::TensorOptions option =
-        c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
+        c10::TensorOptions().dtype(dtype).device(device).layout(layout).pinned_memory(pin_memory);
 
     AT_DISPATCH_ALL_TYPES_AND2(
         at::kHalf, at::kBFloat16, c10::typeMetaToScalarType(option.dtype()), "arange_npu_nn", [&]() {
@@ -71,24 +73,26 @@ at::Tensor arange(const at::Scalar& start, const at::Scalar& end, const at::Scal
     return result;
 }
 
-at::Tensor arange(const at::Scalar& start, const at::Scalar& end, c10::optional<at::ScalarType> dtype_opt,
-                  c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
-                  c10::optional<bool> pin_memory_opt) {
-  DO_COMPATIBILITY(aclnnArange, acl_op::arange(start, end, dtype_opt, layout_opt, device_opt, pin_memory_opt));
-  return op_api::arange(start, end, 1, dtype_opt, layout_opt, device_opt, pin_memory_opt);
-}
-
-at::Tensor arange(const at::Scalar& end, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt,
-                  c10::optional<at::Device> device_opt, c10::optional<bool> pin_memory_opt) {
-  DO_COMPATIBILITY(aclnnArange, acl_op::arange(end, dtype_opt, layout_opt, device_opt, pin_memory_opt));
-  return op_api::arange(0, end, dtype_opt, layout_opt, device_opt, pin_memory_opt);  // start = 0
-}
-
-at::Tensor& arange_out(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step, at::Tensor& result)
+at::Tensor arange(const at::Scalar& start, const at::Scalar& end, c10::optional<at::ScalarType> dtype,
+                  c10::optional<at::Layout> layout, c10::optional<at::Device> device,
+                  c10::optional<bool> pin_memory)
 {
-    DO_COMPATIBILITY(aclnnArange, acl_op::arange_out(start, end, step, result));
+    DO_COMPATIBILITY(aclnnArange, acl_op::arange(start, end, dtype, layout, device, pin_memory));
+    return op_api::arange(start, end, 1, dtype, layout, device, pin_memory);
+}
 
-    AT_DISPATCH_ALL_TYPES_AND2(at::kHalf, at::kBFloat16, result.scalar_type(), "arange_out_npu_nn", [&]() {
+at::Tensor arange(const at::Scalar& end, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                  c10::optional<at::Device> device, c10::optional<bool> pin_memory)
+{
+    DO_COMPATIBILITY(aclnnArange, acl_op::arange(end, dtype, layout, device, pin_memory));
+    return op_api::arange(0, end, dtype, layout, device, pin_memory);  // start = 0
+}
+
+at::Tensor& arange_out(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step, at::Tensor& out)
+{
+    DO_COMPATIBILITY(aclnnArange, acl_op::arange_out(start, end, step, out));
+
+    AT_DISPATCH_ALL_TYPES_AND2(at::kHalf, at::kBFloat16, out.scalar_type(), "arange_out_npu_nn", [&]() {
         using accscalar_type = at::acc_type<scalar_t, false>;
         auto start_value = start.to<accscalar_type>();
         auto end_value = end.to<accscalar_type>();
@@ -100,23 +104,25 @@ at::Tensor& arange_out(const at::Scalar& start, const at::Scalar& end, const at:
                     "upper bound and larger bound inconsistent with step sign", OPS_ERROR(ErrCode::VALUE));
     });
 
-    auto output_size = op_infer::infersize_arange(start, end, step, result.scalar_type());
-    if (result.numel() != output_size[0]) {
+    auto output_size = op_infer::infersize_arange(start, end, step, out.scalar_type());
+    if (out.numel() != output_size[0]) {
         TORCH_NPU_WARN("The out tensor size does not match the computed size, it will resize to computed size (",
                        output_size[0], ",).");
-        result.resize_(output_size);
+        out.resize_(output_size);
     }
-    arange_out_op_api(start, end, step, result);
-    return result;
+    arange_out_op_api(start, end, step, out);
+    return out;
 }
 
-static at::Tensor& arange_start_end_out(at::Scalar start, at::Scalar end, at::Tensor& result) {
-  at::Scalar step = 1;
-  return op_api::arange_out(start, end, step, result);
+static at::Tensor& arange_start_end_out(at::Scalar start, at::Scalar end, at::Tensor& result)
+{
+    at::Scalar step = 1;
+    return op_api::arange_out(start, end, step, result);
 }
 
-at::Tensor& arange_out(const at::Scalar& end, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnArange, acl_op::arange_out(end, result));
-  return arange_start_end_out(0, end, result);
+at::Tensor& arange_out(const at::Scalar& end, at::Tensor& out)
+{
+    DO_COMPATIBILITY(aclnnArange, acl_op::arange_out(end, out));
+    return arange_start_end_out(0, end, out);
 }
 }
