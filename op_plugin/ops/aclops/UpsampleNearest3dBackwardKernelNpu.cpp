@@ -27,27 +27,28 @@ at::SmallVector<int64_t, SIZE> upsample_nearest3d_backward_infer_size(
     at::IntArrayRef input_size,
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w) {
-  TORCH_CHECK(
-      output_size.size() == 3,
-      "It is expected output_size equals to 3, but got size ",
-      output_size.size(), OPS_ERROR(ErrCode::PARAM));
+    c10::optional<double> scales_w)
+{
+    TORCH_CHECK(
+        output_size.size() == 3,
+        "It is expected output_size equals to 3, but got size ",
+        output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
-  TORCH_CHECK(
-      input_size.size() == 5,
-      "It is expected input_size equals to 5, but got size ",
-      input_size.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(
+        input_size.size() == 5,
+        "It is expected input_size equals to 5, but got size ",
+        input_size.size(), OPS_ERROR(ErrCode::PARAM));
 
-  int64_t nbatch = input_size[0];
-  int64_t channels = input_size[1];
-  int64_t input_depth = input_size[2];
-  int64_t input_height = input_size[3];
-  int64_t input_width = input_size[4];
+    int64_t nbatch = input_size[0];
+    int64_t channels = input_size[1];
+    int64_t input_depth = input_size[2];
+    int64_t input_height = input_size[3];
+    int64_t input_width = input_size[4];
 
-  at::SmallVector<int64_t, SIZE> output_sizes =
-      {nbatch, channels, input_depth, input_height, input_width};
+    at::SmallVector<int64_t, SIZE> output_sizes =
+        {nbatch, channels, input_depth, input_height, input_width};
 
-  return output_sizes;
+    return output_sizes;
 }
 
 at::Tensor& upsample_nearest3d_backward_out_nocheck(
@@ -57,16 +58,17 @@ at::Tensor& upsample_nearest3d_backward_out_nocheck(
     at::IntArrayRef input_size,
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w) {
-  at::Tensor grad_output_copy = grad_output;
-  at_npu::native::OpCommand cmd;
-  cmd.Name("UpsampleNearest3dGrad")
-      .Input(grad_output)
-      .Output(result)
-      .Attr("input_size", input_size)
-      .Attr("output_size", output_size)
-      .Run();
-  return result;
+    c10::optional<double> scales_w)
+{
+    at::Tensor grad_output_copy = grad_output;
+    at_npu::native::OpCommand cmd;
+    cmd.Name("UpsampleNearest3dGrad")
+        .Input(grad_output)
+        .Output(result)
+        .Attr("input_size", input_size)
+        .Attr("output_size", output_size)
+        .Run();
+    return result;
 }
 } // namespace
 
@@ -77,21 +79,22 @@ at::Tensor& upsample_nearest3d_backward_out(
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
-    at::Tensor& grad_input) {
-  auto op_infer_output_size = upsample_nearest3d_backward_infer_size(
-      output_size, input_size, scales_d, scales_h, scales_w);
-  npu_preparation::CheckOut({grad_output}, grad_input, grad_output, op_infer_output_size);
+    at::Tensor& grad_input)
+{
+    auto op_infer_output_size = upsample_nearest3d_backward_infer_size(
+        output_size, input_size, scales_d, scales_h, scales_w);
+    npu_preparation::CheckOut({grad_output}, grad_input, grad_output, op_infer_output_size);
 
-  if (!npu_utils::check_match(&grad_input)) {
-    auto contiguous_out = npu_utils::format_contiguous(grad_input);
-    upsample_nearest3d_backward_out_nocheck(
-        contiguous_out, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
-    npu_utils::format_fresh_view(grad_input, contiguous_out);
-  } else {
-    upsample_nearest3d_backward_out_nocheck(
-        grad_input, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
-  }
-  return grad_input;
+    if (!npu_utils::check_match(&grad_input)) {
+        auto contiguous_out = npu_utils::format_contiguous(grad_input);
+        upsample_nearest3d_backward_out_nocheck(
+            contiguous_out, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
+        npu_utils::format_fresh_view(grad_input, contiguous_out);
+    } else {
+        upsample_nearest3d_backward_out_nocheck(
+            grad_input, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
+    }
+    return grad_input;
 }
 
 at::Tensor upsample_nearest3d_backward(
@@ -100,13 +103,14 @@ at::Tensor upsample_nearest3d_backward(
     at::IntArrayRef input_size,
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w) {
-  auto op_infer_output_size = upsample_nearest3d_backward_infer_size(
-      output_size, input_size, scales_d, scales_h, scales_w);
-  at::Tensor result = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
-  upsample_nearest3d_backward_out_nocheck(
-      result, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
-  return result;
+    c10::optional<double> scales_w)
+{
+    auto op_infer_output_size = upsample_nearest3d_backward_infer_size(
+        output_size, input_size, scales_d, scales_h, scales_w);
+    at::Tensor result = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
+    upsample_nearest3d_backward_out_nocheck(
+        result, grad_output, output_size, input_size, scales_d, scales_h, scales_w);
+    return result;
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)
@@ -114,18 +118,19 @@ at::Tensor upsample_nearest3d_backward(
     const at::Tensor& grad_output,
     c10::optional<at::IntArrayRef> output_size,
     at::IntArrayRef input_size,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
+    c10::optional<at::ArrayRef<double>> scale_factors)
+{
     TORCH_CHECK(
         input_size.size() == 5,
         "It is expected input_size equals to 5, but got size ",
         input_size.size(), OPS_ERROR(ErrCode::PARAM));
 
-  auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-  auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
+    auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
+    auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
+    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
 
-  return acl_op::upsample_nearest3d_backward(grad_output, osize, input_size, scales_d, scales_h, scales_w);
+    return acl_op::upsample_nearest3d_backward(grad_output, osize, input_size, scales_d, scales_h, scales_w);
 }
 #endif
 
