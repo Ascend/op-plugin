@@ -14,9 +14,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include <algorithm>
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
