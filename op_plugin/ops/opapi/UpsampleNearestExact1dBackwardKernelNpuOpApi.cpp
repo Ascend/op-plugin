@@ -29,7 +29,10 @@ at::Tensor &upsample_nearest_exact1d_backward_out_slow(const at::Tensor &grad_ou
 }
 
 at::Tensor upsample_nearest_exact1d_backward_slow(
-    const at::Tensor &grad_output, at::IntArrayRef output_size, at::IntArrayRef input_size, c10::optional<double> scales)
+    const at::Tensor &grad_output,
+    at::IntArrayRef output_size,
+    at::IntArrayRef input_size,
+    c10::optional<double> scales)
 {
     at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
 

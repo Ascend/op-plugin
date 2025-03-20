@@ -26,8 +26,16 @@ at::Tensor aclnnNotFoundV2(const at::Tensor &val)
     return val;
 }
 
-at::Tensor _npu_silent_check_v3(const at::Tensor &val, at::Tensor &input_grad, at::Tensor &step, at::Tensor &max, at::Tensor &avg,
-                                double c_thresh_l1, double c_thresh_l2, double beta1, int64_t npu_asd_detect)
+at::Tensor _npu_silent_check_v3(
+    const at::Tensor &val,
+    at::Tensor &input_grad,
+    at::Tensor &step,
+    at::Tensor &max,
+    at::Tensor &avg,
+    double c_thresh_l1,
+    double c_thresh_l2,
+    double beta1,
+    int64_t npu_asd_detect)
 {
     DO_COMPATIBILITY(aclnnSilentCheckV2, aclnnNotFoundV2(val));
     at::Tensor result = npu_preparation::apply_tensor_without_format(step.sizes(), step.options().dtype(at::kInt));
