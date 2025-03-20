@@ -2,11 +2,12 @@
 // Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 
+#include <ATen/native/ForeachUtils.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpUtils.h"
-#include <ATen/native/ForeachUtils.h>
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
@@ -57,7 +58,8 @@ void _foreach_abs_(const at::TensorList self)
     }
 
     // datatype check
-    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
+                                               op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
                                                op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
         return at::native::foreach_tensor_abs_slow_(self);
     }
@@ -79,7 +81,8 @@ std::vector<at::Tensor> _foreach_abs(const at::TensorList self)
         return at::native::foreach_tensor_abs_slow(self);
     }
 
-    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(), op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
+    if (!op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
+                                               op_plugin::utils::ForeachTensorDtypeSupport::BASE_DTYPE,
                                                op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
         return at::native::foreach_tensor_abs_slow(self);
     }
@@ -95,7 +98,8 @@ std::vector<at::Tensor> _foreach_abs(const at::TensorList self)
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(npu_preparation::apply_tensor_without_format(output_size,
+                                                                      tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 

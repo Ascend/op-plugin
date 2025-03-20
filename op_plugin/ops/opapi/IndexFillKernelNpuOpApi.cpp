@@ -22,24 +22,26 @@ namespace op_api {
 
 constexpr int MAX_DIM = 1;
 
-static std::vector<int64_t> get_index_vector(const at::Tensor& index) {
-  std::vector<int64_t> idx_vec;
-  if (index.dim() == 0) {
-    idx_vec.emplace_back(static_cast<int64_t>(index.item().to<int>()));
-  } else {
-    for (int64_t i = 0; i < index.sizes()[0]; i++) {
-      int64_t idx = static_cast<int64_t>(index[i].item().to<int>());
-      idx_vec.emplace_back(idx);
+static std::vector<int64_t> get_index_vector(const at::Tensor& index)
+{
+    std::vector<int64_t> idx_vec;
+    if (index.dim() == 0) {
+        idx_vec.emplace_back(static_cast<int64_t>(index.item().to<int>()));
+    } else {
+        for (int64_t i = 0; i < index.sizes()[0]; i++) {
+            int64_t idx = static_cast<int64_t>(index[i].item().to<int>());
+            idx_vec.emplace_back(idx);
+        }
     }
-  }
-  return idx_vec;
+    return idx_vec;
 }
 
 at::Tensor& index_fill_(at::Tensor& self, int64_t dim, const at::Tensor& index,
                         const at::Tensor& value)
 {
     DO_COMPATIBILITY(aclnnInplaceIndexFillTensor, acl_op::index_fill_(self, dim, index, value));
-    TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor, but got ", value.dim(), OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor, but got ",
+                value.dim(), OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(index.dim() <= MAX_DIM, "Index has to be a vector/scalar.", OPS_ERROR(ErrCode::TYPE));
 
     at::Scalar value_scalar = value.item();
@@ -54,7 +56,8 @@ at::Tensor index_fill(const at::Tensor& self, int64_t dim, const at::Tensor& ind
                       const at::Tensor& value)
 {
     DO_COMPATIBILITY(aclnnIndexFillTensor, acl_op::index_fill(self, dim, index, value));
-    TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor, but got ", value.dim(), OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor, but got ",
+                value.dim(), OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(index.dim() <= MAX_DIM, "Index has to be a vector/scalar.", OPS_ERROR(ErrCode::TYPE));
 
     at::Scalar value_scalar = value.item();

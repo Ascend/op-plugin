@@ -20,7 +20,8 @@
 namespace op_api {
 
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
-void _split_and_exec_npu_cmd_lerp(at::TensorList& tensors1, at::TensorList& tensors2, at::TensorList weight, at::TensorList& result_list, bool is_inplace)
+void _split_and_exec_npu_cmd_lerp(at::TensorList& tensors1, at::TensorList& tensors2,
+                                  at::TensorList weight, at::TensorList& result_list, bool is_inplace)
 {
     size_t tensor_count = tensors1.size();
     size_t max_tensor_count = is_inplace ? 16 : 12;
@@ -61,7 +62,8 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList tensors1, at::TensorList ten
     for (size_t i = 0; i < tensors1.size(); i++) {
         at::Tensor tensor = tensors1[i];
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(at_npu::native::OpPreparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalarType)));
+        result.push_back(at_npu::native::OpPreparation::apply_tensor_without_format(
+            output_size, tensor.options().dtype(scalarType)));
     }
 
     at::TensorList result_ = at::TensorList(result);
@@ -86,7 +88,8 @@ void _foreach_lerp_(const at::TensorList tensors1, const at::TensorList tensors2
     exec_npu_cmd_(tensors1, tensors2, weight);
 }
 
-std::vector<at::Tensor> _foreach_lerp(const at::TensorList tensors1, const at::TensorList tensors2, const at::TensorList weight)
+std::vector<at::Tensor> _foreach_lerp(const at::TensorList tensors1, const at::TensorList tensors2,
+                                      const at::TensorList weight)
 {
     DO_COMPATIBILITY(aclnnForeachLerpList, at::native::foreach_tensor_ternary_lerp_slow(tensors1, tensors2, weight));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&

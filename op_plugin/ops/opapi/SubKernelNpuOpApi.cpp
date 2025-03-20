@@ -30,7 +30,8 @@ inline void alpha_check_npu_tensor(const at::ScalarType self_dtype, const at::Sc
 
 inline void alpha_check_npu_scalar(const at::ScalarType self_dtype, at::Scalar other, at::Scalar alpha)
 {
-    TORCH_CHECK(isFloatingType(self_dtype) || isComplexType(self_dtype) || other.isFloatingPoint() || alpha.isIntegral(true),
+    TORCH_CHECK(isFloatingType(self_dtype) || isComplexType(self_dtype) ||
+                other.isFloatingPoint() || alpha.isIntegral(true),
                 "For integral input tensors, argument alpha must not be a floating point number.",
                 OPS_ERROR(ErrCode::TYPE));
 }
