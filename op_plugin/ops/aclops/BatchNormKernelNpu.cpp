@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// 版权所有 (c) 2023 华为技术有限公司
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -203,15 +204,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
     at::Tensor save_invstd;
     if (train) {
         save_mean = (self.dim() == 5) ?
-          npu_preparation::apply_tensor(
-              running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), running_mean_tensor) :
-          npu_preparation::apply_tensor(
-              running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), self);
+            npu_preparation::apply_tensor(
+                running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), running_mean_tensor) :
+            npu_preparation::apply_tensor(
+                running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), self);
         save_invstd = (self.dim() == 5) ?
-          npu_preparation::apply_tensor(
-              running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), running_var_tensor) :
-          npu_preparation::apply_tensor(
-              running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), self);
+            npu_preparation::apply_tensor(
+                running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), running_var_tensor) :
+            npu_preparation::apply_tensor(
+                running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), self);
     } else {
         save_mean = at::empty({0}, self.options());
         save_invstd = at::empty({0}, self.options());
