@@ -23,7 +23,7 @@ at::Tensor &le_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &
 {
     DO_COMPATIBILITY(aclnnLeTensor, acl_op::le_out(self, other, result));
     auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
-    at_npu::native::OpPreparation::check_tensor({self}, result, at::kBool, outputSize);
+    at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
     EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
     return result;
 }
@@ -32,7 +32,7 @@ at::Tensor &le_out(const at::Tensor &self, const at::Scalar &other, at::Tensor &
 {
     DO_COMPATIBILITY(aclnnLeScalar, acl_op::le_out(self, other, result));
     auto outputSize = self.sizes();
-    at_npu::native::OpPreparation::check_tensor({self}, result, at::kBool, outputSize);
+    at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
 
     EXEC_NPU_CMD(aclnnLeScalar, self, other, result);
     return result;
