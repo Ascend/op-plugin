@@ -473,6 +473,8 @@ argsort:
   - bool
   test_variant_consistency_eager:
   - float32
+  test_fake_autocast:
+  - float32
 atan2:
   test_compare_cpu:
   - float32
@@ -7207,6 +7209,8 @@ linalg.det:
   - float32
   test_operator:
   - float32
+  test_fake_autocast:
+  - float32
 linalg.eigh:
   test_backward:
   - float32
@@ -7365,6 +7369,8 @@ linalg.slogdet:
   test_compare_cpu:
   - float32
   test_operator:
+  - float32
+  test_fake_autocast:
   - float32
 linalg.solve_ex:
   test_backward:
