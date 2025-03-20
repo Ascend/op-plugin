@@ -32,14 +32,19 @@ std::vector<at::Tensor> _foreach_pow_v1(const at::TensorList self, const at::Sca
         return at::native::foreach_tensor_pow_scalar_kernel_slow(self, scalar);
     }
     auto scalar_type = self[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
+    if (scalar_type != at::ScalarType::Half
+        && scalar_type != at::ScalarType::Float
+        && scalar_type != at::ScalarType::Int) {
         TORCH_CHECK(false, "input must be half, float or int32" + OPS_ERROR(ErrCode::TYPE));
     }
     std::vector<at::Tensor> result;
     result.reserve(self.size());
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(
+            npu_preparation::apply_tensor_without_format(
+                output_size,
+                tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
     at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type(), self[0].device());
@@ -55,7 +60,9 @@ void _foreach_pow_v1_(const at::TensorList self, const at::Scalar& scalar)
         return at::native::foreach_tensor_pow_scalar_kernel_slow_(self, scalar);
     }
     auto scalar_type = self[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
+    if (scalar_type != at::ScalarType::Half
+        && scalar_type != at::ScalarType::Float
+        && scalar_type != at::ScalarType::Int) {
         TORCH_CHECK(false, "input must be half, float or int32" + OPS_ERROR(ErrCode::TYPE));
     }
     at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type(), self[0].device());
@@ -69,7 +76,11 @@ void checkFloat(at::ScalarType scalar_type)
                 "input must be half, float, int32 or bfloat16");
 }
 
-void _split_and_exec_npu_cmd_pow_kernel(const at::TensorList self, const at::Scalar& scalar, at::TensorList result_list, bool is_inplace)
+void _split_and_exec_npu_cmd_pow_kernel(
+    const at::TensorList self,
+    const at::Scalar& scalar,
+    at::TensorList result_list,
+    bool is_inplace)
 {
     size_t tensor_count = self.size();
     size_t max_tensor_count = is_inplace ? 48 : 24;
@@ -115,7 +126,10 @@ std::vector<at::Tensor> _foreach_pow(const at::TensorList self, const at::Scalar
     result.reserve(self.size());
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(
+            npu_preparation::apply_tensor_without_format(
+                output_size,
+                tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 

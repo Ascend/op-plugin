@@ -26,7 +26,8 @@ const int8_t KEEP_DTYPE = 0;
 
 static inline void matmul_implement_npu(at::Tensor &out,
                                         const at::Tensor &self,
-                                        const at::Tensor &mat2) {
+                                        const at::Tensor &mat2)
+{
     // allow dicrease precision
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     EXEC_NPU_CMD(aclnnMatmul, self, mat2, out, cube_math_type);
@@ -89,8 +90,8 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tenso
 
 at::Tensor matmul_mat1_backward(const at::Tensor self,
                                 const at::Tensor other,
-                                const at::Tensor grad_output) {
-    /*mat1_grad = grad * mat2^T*/
+                                const at::Tensor grad_output)
+{
     at::Tensor mat1 = self;
     at::Tensor mat2 = other;
     at::Tensor grad = grad_output;
@@ -127,8 +128,8 @@ at::Tensor matmul_mat1_backward(const at::Tensor self,
 
 at::Tensor matmul_mat2_backward(const at::Tensor self,
                                 const at::Tensor other,
-                                const at::Tensor grad_output) {
-    /*mat2_grad = mat1^T * grad*/
+                                const at::Tensor grad_output)
+{
     at::Tensor mat1 = self;
     at::Tensor mat2 = other;
     at::Tensor grad = grad_output;
@@ -165,7 +166,8 @@ at::Tensor matmul_mat2_backward(const at::Tensor self,
 std::tuple<at::Tensor, at::Tensor> matmul_backward(const at::Tensor &grad,
                                                    const at::Tensor &self,
                                                    const at::Tensor &other,
-                                                   std::array<bool, 2> grad_input_mask) {
+                                                   std::array<bool, 2> grad_input_mask)
+{
     if (!grad.defined()) {
         return std::make_tuple(at::Tensor(), at::Tensor());
     }

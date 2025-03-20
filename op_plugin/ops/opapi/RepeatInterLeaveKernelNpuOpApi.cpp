@@ -25,43 +25,43 @@ const static int INT64T_SIZE = 8;
 // convert dim to non-negative value
 int64_t wrap_dim(const at::Tensor &self, c10::optional<int64_t> dim)
 {
-  int64_t real_dim = dim.value_or(0);
-  return (real_dim < 0) ? (real_dim + self.dim()) : real_dim;
+    int64_t real_dim = dim.value_or(0);
+    return (real_dim < 0) ? (real_dim + self.dim()) : real_dim;
 }
 
 // check tensor repeats is valid
 bool check_tensor_repeats(const at::Tensor &self, const at::Tensor &repeats, c10::optional<int64_t> dim)
 {
-  if (repeats.dim() == 0) {
-    return true;
-  }
-
-  if (repeats.dim() == 1) {
-    if (dim.has_value()) {
-      // with dim��check repeats is rank 1 with 1 element / rank 1 with (self.size(dim)) elements
-      int64_t real_dim = wrap_dim(self, dim);
-      if (repeats.size(0) == self.size(real_dim) || repeats.size(0) == 1) {
+    if (repeats.dim() == 0) {
         return true;
-      }
-    } else {
-      // without dim: check repeats is rank 0/ rank 1 with 1 element / rank 1 with (self.numel()) elements
-      if (repeats.size(0) == self.numel() || repeats.size(0) == 1) {
-        return true;
-      }
     }
-}
 
-return false;
+    if (repeats.dim() == 1) {
+        if (dim.has_value()) {
+        // with dim check repeats is rank 1 with 1 element / rank 1 with (self.size(dim)) elements
+            int64_t real_dim = wrap_dim(self, dim);
+            if (repeats.size(0) == self.size(real_dim) || repeats.size(0) == 1) {
+                return true;
+            }
+        } else {
+            // without dim: check repeats is rank 0/ rank 1 with 1 element / rank 1 with (self.numel()) elements
+            if (repeats.size(0) == self.numel() || repeats.size(0) == 1) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 // check dim is in range [-self.dim(), self.dim()-1]
 bool check_dim_valid(const at::Tensor &self, c10::optional<int64_t> dim)
 {
-  int64_t real_dim = dim.value_or(0);
-  int64_t self_dim = self.dim();
-  int64_t dim_min = std::min(-self_dim, self_dim - 1);
-  int64_t dim_max = std::max(-self_dim, self_dim - 1);
-  return (dim_min <= real_dim && real_dim <= dim_max);
+    int64_t real_dim = dim.value_or(0);
+    int64_t self_dim = self.dim();
+    int64_t dim_min = std::min(-self_dim, self_dim - 1);
+    int64_t dim_max = std::max(-self_dim, self_dim - 1);
+    return (dim_min <= real_dim && real_dim <= dim_max);
 }
 
 at::Tensor apply_result_tensor(const at::Tensor &self, c10::SmallVector<int64_t, INT64T_SIZE> &output_shape,
@@ -156,11 +156,11 @@ at::Tensor repeat_interleave_symint(
     TORCH_CHECK(check_dim_valid(self, dim), "dim value is not in valid range." + OPS_ERROR(ErrCode::VALUE))
     TORCH_CHECK(repeats_int >= 0, "repeats can not be negative." + OPS_ERROR(ErrCode::VALUE));
 
-      // check output_size value is valid
-      auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats_int, dim);
-      int64_t cur_dim = wrap_dim(self, dim);
-      int64_t output_size_expected = output_shape[cur_dim];
-      at::Tensor result = apply_result_tensor(self, output_shape, dim, output_size);
+    // check output_size value is valid
+    auto output_shape = op_infer::repeat_interleave_npu_output_size_opapi(self, repeats_int, dim);
+    int64_t cur_dim = wrap_dim(self, dim);
+    int64_t output_size_expected = output_shape[cur_dim];
+    at::Tensor result = apply_result_tensor(self, output_shape, dim, output_size);
 
     if (dim.has_value()) {
         int64_t real_dim = dim.value_or(0);
@@ -205,7 +205,8 @@ at::Tensor repeat_interleave_symint(
     const at::Tensor& self,
     c10::SymInt repeats,
     c10::optional<int64_t> dim,
-    c10::optional<c10::SymInt> output_size) {
+    c10::optional<c10::SymInt> output_size)
+{
     int64_t repeats_int = repeats.expect_int();
     if (dim.has_value()) {
         DO_COMPATIBILITY(aclnnRepeatInterleaveIntWithDim,
@@ -243,7 +244,8 @@ at::Tensor repeat_interleave_symint(
     const at::Tensor& self,
     const at::Tensor& repeats,
     c10::optional<int64_t> dim,
-    c10::optional<c10::SymInt> output_size) {
+    c10::optional<c10::SymInt> output_size)
+{
     if (dim.has_value()) {
         DO_COMPATIBILITY(aclnnRepeatInterleaveWithDim, acl_op::repeat_interleave_symint(self, repeats, dim, output_size));
     } else {
