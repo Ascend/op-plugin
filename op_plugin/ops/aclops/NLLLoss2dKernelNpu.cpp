@@ -75,11 +75,11 @@ std::tuple<at::Tensor &, at::Tensor &> nll_loss2d_forward_out_nocheck(at::Tensor
 } // namespace
 
 std::tuple<at::Tensor &, at::Tensor &> nll_loss2d_forward_out(const at::Tensor &self, const at::Tensor &target,
-                                                              const c10::optional<at::Tensor> &weight_opt,
+                                                              const c10::optional<at::Tensor> &weight,
                                                               int64_t reduction, int64_t ignore_index,
                                                               at::Tensor &output, at::Tensor &total_weight)
 {
-    at::Tensor weight_tensor = check_weight_opt(self, weight_opt, ignore_index);
+    at::Tensor weight_tensor = check_weight_opt(self, weight, ignore_index);
     auto output_sizes = nll_loss2d_npu_output_size(self, reduction);
 
     npu_preparation::CheckOut({self, target, weight_tensor}, output, ACL_FORMAT_ND, self.scalar_type(),

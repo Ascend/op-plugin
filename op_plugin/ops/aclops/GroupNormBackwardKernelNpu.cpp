@@ -48,8 +48,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
     const at::Tensor& gamma = c10::value_or_else(weight, [] {return at::Tensor();});
     at::Tensor dY_b = gamma.defined() ? dY_reshaped_3.mul(gamma.view({1, C, 1})) : dY_reshaped_3;
 
-    at::Tensor X_reshaped = X_reshaped_3.view({1, N * group, N ? -1 : 1});
-    at::Tensor dY_reshaped = dY_b.view({1, N * group, N ? -1 : 1});
+    at::Tensor X_reshaped = X_reshaped_3.view({1, N * group, N > 0 ? -1 : 1});
+    at::Tensor dY_reshaped = dY_b.view({1, N * group, N > 0 ? -1 : 1});
     at::Tensor mean_reshaped = mean.view({N * group});
     double eps = 1e-5;
     at::Tensor variance = 1.0 / rstd.mul(rstd) - eps;

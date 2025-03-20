@@ -30,8 +30,7 @@ namespace acl_op {
             const at::Tensor &self,
             const int64_t dim,
             const bool sorted,
-            const bool return_inverse,
-            const bool return_counts)
+            const bool return_inverse)
         {
             c10::SmallVector<int64_t, N> output_sync_idx = {0, 2, 3};
             at_npu::native::OpCommand cmd;
@@ -83,7 +82,7 @@ namespace acl_op {
             self.size(dim), self.options().dtype(at::kLong), ACL_FORMAT_ND);
         at::Tensor counts = npu_preparation::apply_tensor_with_format(
             self.size(dim), self.options().dtype(at::kLong), ACL_FORMAT_ND);
-        unique_dim_out_nocheck(output, idx, inverse_indices, counts, self, dim, sorted, return_inverse, return_counts);
+        unique_dim_out_nocheck(output, idx, inverse_indices, counts, self, dim, sorted, return_inverse);
         return std::tie(output, inverse_indices, counts);
     }
 

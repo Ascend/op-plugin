@@ -26,18 +26,18 @@ at::Tensor &addmm_out(
     const at::Tensor &mat2,
     const at::Scalar &beta,
     const at::Scalar &alpha,
-    at::Tensor &result)
+    at::Tensor &out)
 {
-    DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm_out(self, mat1, mat2, beta, alpha, result));
+    DO_COMPATIBILITY(aclnnAddmm, acl_op::addmm_out(self, mat1, mat2, beta, alpha, out));
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2);
-    npu_preparation::check_tensor({self, mat1, mat2}, result, result.scalar_type(), output_size);
-    EXEC_NPU_CMD(aclnnAddmm, self, mat1, mat2, beta, alpha, result, cube_math_type);
+    npu_preparation::check_tensor({self, mat1, mat2}, out, out.scalar_type(), output_size);
+    EXEC_NPU_CMD(aclnnAddmm, self, mat1, mat2, beta, alpha, out, cube_math_type);
 
     auto names = at::namedinference::propagate_names_for_addmm(mat1, mat2, self);
-    at::namedinference::propagate_names_if_nonempty(result, names);
+    at::namedinference::propagate_names_if_nonempty(out, names);
 
-    return result;
+    return out;
 }
 
 at::Tensor addmm(

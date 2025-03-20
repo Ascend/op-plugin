@@ -61,16 +61,16 @@ at::Tensor &max_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, cons
 } // namespace
 
 std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, int64_t dim, bool keepdim, at::Tensor &max,
-                                               at::Tensor &indices)
+                                               at::Tensor &max_values)
 {
     at::SmallVector<int64_t, SIZE> dims = {dim};
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 
     npu_preparation::CheckOut({self}, max, ACL_FORMAT_ND, self.scalar_type(), output_size);
 
-    npu_preparation::CheckOut({self}, indices, ACL_FORMAT_ND, at::ScalarType::Long, output_size);
+    npu_preparation::CheckOut({self}, max_values, ACL_FORMAT_ND, at::ScalarType::Long, output_size);
 
-    at::Tensor indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices, at::ScalarType::Int);
+    at::Tensor indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(max_values, at::ScalarType::Int);
     bool output_match = npu_utils::check_match(&max);
     bool indices_match = npu_utils::check_match(&indices_dtype_cast);
     if (!(output_match && indices_match)) {
@@ -91,8 +91,8 @@ std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, int64_t d
     }
 
     indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices_dtype_cast, at::ScalarType::Long);
-    indices.copy_(indices_dtype_cast);
-    return std::tie(max, indices);
+    max_values.copy_(indices_dtype_cast);
+    return std::tie(max, max_values);
 }
 
 std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, at::Dimname dim, bool keepdim,
