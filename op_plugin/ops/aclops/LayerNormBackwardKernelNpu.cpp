@@ -51,7 +51,7 @@ tensor_list layer_norm_backward_nocheck(at::Tensor &d_x, at::Tensor &dgamma, at:
 
 tensor_list3 layer_norm_backward_npu_support(const at::Tensor &d_y, const at::Tensor &X, const at::Tensor &mean,
                                              const at::Tensor &variance, const c10::optional<at::Tensor> &gamma_ex,
-                                             int64_t M, int64_t N)
+                                             int64_t nums_before_axis, int64_t nums_after_axis)
 {
     const at::Tensor &gamma = c10::value_or_else(gamma_ex, [] { return at::Tensor(); });
     at::Tensor d_x;
@@ -64,7 +64,7 @@ tensor_list3 layer_norm_backward_npu_support(const at::Tensor &d_y, const at::Te
     for (int64_t i = X.dim() - 1; i >= 0; i--) {
         numels *= X.size(i);
         tmp_size.emplace_back(X.size(i));
-        if (numels == N) {
+        if (numels == nums_after_axis) {
             break;
         }
     }
@@ -77,7 +77,7 @@ tensor_list3 layer_norm_backward_npu_support(const at::Tensor &d_y, const at::Te
 
     auto output_sizes = op_infer::layer_norm_backward_npu_output_size(X, gamma_temp);
 
-    if (M <= 0) {
+    if (nums_before_axis <= 0) {
         d_x = at::native::empty_like(X, c10::nullopt /* dtype */, c10::nullopt /* layout */, c10::nullopt /* device */,
                                      c10::nullopt /* pin_memory */, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
         dgamma = at::native::zeros_like(gamma_temp, c10::nullopt /* dtype */, c10::nullopt /* layout */,
@@ -113,10 +113,10 @@ tensor_list3 native_layer_norm_backward(const at::Tensor &grad_out, const at::Te
         OPS_ERROR(ErrCode::PARAM));
 
     const int axis = input_ndim - normalized_ndim;
-    const int64_t M =
+    const int64_t nums_before_axis =
         std::accumulate(input_shape.cbegin(), input_shape.cbegin() + axis, 1LL, std::multiplies<int64_t>());
-    const int64_t N = std::accumulate(input_shape.cbegin() + axis, input_shape.cend(), 1LL, std::multiplies<int64_t>());
-    return layer_norm_backward_npu_support(grad_out, input, mean, rstd, weight, M, N);
+    const int64_t nums_after_axis = std::accumulate(input_shape.cbegin() + axis, input_shape.cend(), 1LL, std::multiplies<int64_t>());
+    return layer_norm_backward_npu_support(grad_out, input, mean, rstd, weight, nums_before_axis, nums_after_axis);
 }
 
 tensor_list3 npu_layernorm_grad(const at::Tensor &grad_out, const at::Tensor &input, at::IntArrayRef normalized_shape,

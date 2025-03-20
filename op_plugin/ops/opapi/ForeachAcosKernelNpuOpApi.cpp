@@ -45,7 +45,7 @@ void _split_and_exec_npu_cmd_acos(at::TensorList tensors1, at::TensorList result
     }
 }
 
-void _foreach_acos_(const at::TensorList self)
+void _foreach_acos_(at::TensorList self)
 {
     DO_COMPATIBILITY(aclnnForeachAcos, at::native::foreach_tensor_acos_slow_(self));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
@@ -73,7 +73,7 @@ void _foreach_acos_(const at::TensorList self)
     _split_and_exec_npu_cmd_acos(self, self, true);
 }
 
-std::vector<at::Tensor> _foreach_acos(const at::TensorList tensors)
+std::vector<at::Tensor> _foreach_acos(at::TensorList tensors)
 {
     DO_COMPATIBILITY(aclnnForeachAcos, at::native::foreach_tensor_acos_slow(tensors));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&

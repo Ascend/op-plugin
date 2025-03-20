@@ -54,24 +54,24 @@ at::Tensor& baddbmm_nocheck(
 
 at::Tensor& baddbmm_out(
     const at::Tensor& self,
-    const at::Tensor& tensor1,
-    const at::Tensor& tensor2,
+    const at::Tensor& batch1,
+    const at::Tensor& batch2,
     const at::Scalar& beta,
     const at::Scalar& alpha,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     npu_preparation::CheckOut(
-        {self, tensor1, tensor2},
-        result,
+        {self, batch1, batch2},
+        out,
         self);
-    if (!result.is_contiguous()) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        baddbmm_nocheck(contiguous_result, self, tensor1, tensor2, beta, alpha);
-        npu_utils::format_fresh_view(result, contiguous_result);
+    if (!out.is_contiguous()) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        baddbmm_nocheck(contiguous_result, self, batch1, batch2, beta, alpha);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        baddbmm_nocheck(result, self, tensor1, tensor2, beta, alpha);
+        baddbmm_nocheck(out, self, batch1, batch2, beta, alpha);
     }
-    return result;
+    return out;
 }
 
 at::Tensor baddbmm(

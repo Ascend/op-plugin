@@ -73,7 +73,7 @@ void _foreach_cosh_(at::TensorList self)
     _split_and_exec_npu_cmd_cosh(self, self, true);
 }
 
-std::vector<at::Tensor> _foreach_cosh(const at::TensorList tensors)
+std::vector<at::Tensor> _foreach_cosh(at::TensorList tensors)
 {
     DO_COMPATIBILITY(aclnnForeachCosh, at::native::foreach_tensor_cosh_slow(tensors));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&

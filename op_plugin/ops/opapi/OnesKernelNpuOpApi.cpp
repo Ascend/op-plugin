@@ -21,12 +21,12 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& result)
+at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& out)
 {
-    DO_COMPATIBILITY(aclnnInplaceOne, acl_op::ones_out(size, result));
-    result.resize_(size);
-    EXEC_NPU_CMD(aclnnInplaceOne, result);
-    return result;
+    DO_COMPATIBILITY(aclnnInplaceOne, acl_op::ones_out(size, out));
+    out.resize_(size);
+    EXEC_NPU_CMD(aclnnInplaceOne, out);
+    return out;
 }
 
 at::Tensor ones(at::IntArrayRef size,

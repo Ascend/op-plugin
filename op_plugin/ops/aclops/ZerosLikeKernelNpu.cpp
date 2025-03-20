@@ -36,20 +36,20 @@ at::Tensor& zeros_like_out_npu_nocheck(at::Tensor& result, const at::Tensor& sel
 at::Tensor zeros_like(
     const at::Tensor& self,
     c10::optional<c10::ScalarType> dtype,
-    c10::optional<c10::Layout> layout_opt,
+    c10::optional<c10::Layout> layout,
     c10::optional<c10::Device> device,
     c10::optional<bool> pin_memory,
     c10::optional<c10::MemoryFormat> memory_format)
 {
     auto real_device = device.has_value() ? device.value() : self.device();
     if (!torch_npu::utils::is_npu(real_device)) {
-        auto result = at::empty_like(self, dtype, layout_opt, device, pin_memory, memory_format);
+        auto result = at::empty_like(self, dtype, layout, device, pin_memory, memory_format);
         return result.fill_(0);
     }
 
     auto other_options = c10::TensorOptions().dtype(dtype)
                                             .device(device)
-                                            .layout(layout_opt)
+                                            .layout(layout)
                                             .pinned_memory(pin_memory);
     auto options = self.options().merge_in(other_options);
     at::Tensor result = npu_preparation::apply_tensor(self, options);

@@ -89,13 +89,13 @@ at::Tensor& _softmax_out(
     const at::Tensor& self,
     int64_t dim,
     bool half_to_float,
-    at::Tensor& result)
+    at::Tensor& out)
 {
     auto dst_type = half_to_float ? at::kFloat : self.scalar_type();
     npu_preparation::CheckOut(
         {self},
-        result,
-        npu_preparation::get_tensor_npu_format(result),
+        out,
+        npu_preparation::get_tensor_npu_format(out),
         dst_type,
         self.sizes());
 
@@ -109,13 +109,13 @@ at::Tensor& _softmax_out(
 
     at::Tensor self_cast = dst_type == self.scalar_type() ?
         self : at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         softmax_out_nocheck(contiguous_result, self_cast, dim);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        softmax_out_nocheck(result, self_cast, dim);
+        softmax_out_nocheck(out, self_cast, dim);
     }
-    return result;
+    return out;
 }
 } // namespace acl_op

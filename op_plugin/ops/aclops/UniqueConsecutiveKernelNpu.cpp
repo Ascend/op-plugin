@@ -103,8 +103,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> unique_consecutive_out_npu(
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_consecutive(
     const at::Tensor& self,
-    const bool return_inverse,
-    const bool return_counts,
+    bool return_inverse,
+    bool return_counts,
     c10::optional<int64_t> dim)
 {
     at::Tensor output = (dim.has_value()) ?

@@ -60,7 +60,7 @@ void avg_pool3d_backward_out_nocheck(at::Tensor &grad_output, const at::Tensor &
         cmd.Attr("divisor_override", divisor_override.value());
     }
 
-    cmd.Attr("data_format", (string) "NCDHW").Run();
+    cmd.Attr("data_format", static_cast<string>("NCDHW")).Run();
 
     if (self.ndimension() == 4) {
         grad_output = grad_output.squeeze(0);

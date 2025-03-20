@@ -71,7 +71,7 @@ void _foreach_log2_(at::TensorList self)
 }
 
 
-std::vector<at::Tensor> _foreach_log2(const at::TensorList tensors)
+std::vector<at::Tensor> _foreach_log2(at::TensorList tensors)
 {
     DO_COMPATIBILITY(aclnnForeachLog2, at::native::foreach_tensor_log2_slow(tensors));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&

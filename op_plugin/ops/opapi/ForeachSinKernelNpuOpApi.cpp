@@ -68,7 +68,7 @@ void _foreach_sin_(at::TensorList self)
     _split_and_exec_npu_cmd_sin(self, self, true);
 }
 
-std::vector<at::Tensor> _foreach_sin(const at::TensorList tensors)
+std::vector<at::Tensor> _foreach_sin(at::TensorList tensors)
 {
     DO_COMPATIBILITY(aclnnForeachSin, at::native::foreach_tensor_sin_slow(tensors));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
