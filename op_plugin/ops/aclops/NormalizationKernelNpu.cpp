@@ -30,28 +30,29 @@ at::Tensor batch_norm(
     bool training,
     double momentum,
     double eps,
-    bool cudnn_enabled) {
-  const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
-  const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
-  const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] {return at::Tensor();});
-  const at::Tensor& running_var = c10::value_or_else(running_var_opt, [] {return at::Tensor();});
-  if (input.numel() == 0) {
-    // don't return view of input, don't return empty tensor because it will
-    // break gradient chain
-    at::Tensor out = input.clone();
-    if (weight.defined()) {
-      out = out * weight[0];
+    bool cudnn_enabled)
+{
+    const at::Tensor& weight = c10::value_or_else(weight_opt, [] {return at::Tensor();});
+    const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+    const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] {return at::Tensor();});
+    const at::Tensor& running_var = c10::value_or_else(running_var_opt, [] {return at::Tensor();});
+    if (input.numel() == 0) {
+        // don't return view of input, don't return empty tensor because it will
+        // break gradient chain
+        at::Tensor out = input.clone();
+        if (weight.defined()) {
+            out = out * weight[0];
+        }
+
+        if (bias.defined()) {
+            out = out + bias[0];
+        }
+
+        return out;
     }
 
-    if (bias.defined()) {
-      out = out + bias[0];
-    }
-
-    return out;
-  }
-
-  return std::get<0>(at::_batch_norm_impl_index(
-      input, weight, bias, running_mean, running_var, training, momentum, eps, cudnn_enabled));
+    return std::get<0>(at::_batch_norm_impl_index(
+        input, weight, bias, running_mean, running_var, training, momentum, eps, cudnn_enabled));
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t> _batch_norm_impl_index(
@@ -63,13 +64,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t> _batch_norm_
     bool training,
     double momentum,
     double eps,
-    bool cudnn_enabled) {
-  at::Tensor reserve = at::empty({0}, input.options().dtype(at::kByte));
-  return std::tuple_cat(
-      at::native_batch_norm(
-          input, weight, bias, running_mean, running_var, training, momentum, eps),
-      std::tuple<at::Tensor>(reserve),
-      std::make_tuple(0));
+    bool cudnn_enabled)
+{
+    at::Tensor reserve = at::empty({0}, input.options().dtype(at::kByte));
+    return std::tuple_cat(
+        at::native_batch_norm(
+            input, weight, bias, running_mean, running_var, training, momentum, eps),
+        std::tuple<at::Tensor>(reserve),
+        std::make_tuple(0));
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _batch_norm_impl_index_backward(
@@ -84,9 +86,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _batch_norm_impl_index_backward(
     bool train,
     double epsilon,
     std::array<bool, 3> output_mask,
-    const at::Tensor& reserved_space) {
-  return at::native_batch_norm_backward(
-      grad_output, input, weight, running_mean, running_var,
-      save_mean, save_var_transform, train, epsilon, output_mask);
+    const at::Tensor& reserved_space)
+{
+    return at::native_batch_norm_backward(
+        grad_output, input, weight, running_mean, running_var,
+        save_mean, save_var_transform, train, epsilon, output_mask);
 }
 } // namespace acl_op
