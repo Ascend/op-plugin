@@ -47,7 +47,8 @@ double _fft_normalization_scale(int64_t normalization, at::IntArrayRef sizes, at
     return 1.0 / scale_denom;
 }
 
-const at::Tensor& _fft_apply_normalization(const at::Tensor& self, int64_t normalization, at::IntArrayRef sizes, at::IntArrayRef dims)
+const at::Tensor &_fft_apply_normalization(const at::Tensor &self, int64_t normalization,
+                                           at::IntArrayRef sizes, at::IntArrayRef dims)
 {
     auto scale = _fft_normalization_scale(normalization, sizes, dims);
     return (scale == 1.0) ? self : self.mul_(scale);
@@ -171,7 +172,7 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
     std::copy(self_begin + signal_ndim, self.sizes().end(), final_sizes.begin());
     std::copy(self_begin, self_begin + signal_ndim, final_sizes.begin() + batch_dims);
     if (mode == fft_mode::c2r) {
-        final_sizes[ndim-1] = -1;
+        final_sizes[ndim - 1] = -1;
     } else if (mode == fft_mode::r2c) {
         final_sizes[batch_dims] = -1;
     }
@@ -182,16 +183,18 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
     at::Tensor tmp_pingpong[2];
     int64_t numel_buffer = self.numel();
     if (mode != fft_mode::c2c) {
-        numel_buffer*=2;
+        numel_buffer *= 2;
     }
-    tmp_pingpong[0] = npu_preparation::apply_tensor_without_format(numel_buffer, self_.options().dtype(c10::toRealValueType(self_.scalar_type())));
-    tmp_pingpong[1] = npu_preparation::apply_tensor_without_format(numel_buffer, self_.options().dtype(c10::toRealValueType(self_.scalar_type())));
+    tmp_pingpong[0] = npu_preparation::apply_tensor_without_format(
+        numel_buffer, self_.options().dtype(c10::toRealValueType(self_.scalar_type())));
+    tmp_pingpong[1] = npu_preparation::apply_tensor_without_format(
+        numel_buffer, self_.options().dtype(c10::toRealValueType(self_.scalar_type())));
     tmp_pingpong[0].resize_(self.sizes());
     tmp_pingpong[0].copy_(self);
 
     int64_t signal_total = 1;
     for (int64_t i = 0; i < signal_ndim; i++) {
-        signal_total *= *(self_begin+i);
+        signal_total *= *(self_begin + i);
     }
 
     int64_t batch_total = 1;
@@ -205,7 +208,7 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
     uint32_t ping = 0;
     uint32_t pong = 1;
     for (int64_t i = 0; i < signal_ndim; i++) {
-        if (*(self_begin+i) == 1) {
+        if (*(self_begin + i) == 1) {
             if (mode == fft_mode::r2c && i == 0) {
                 collapsed_sizes[0] = 1;
                 collapsed_sizes[1] = -1;
@@ -228,8 +231,8 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
             continue;
         }
         // get plan
-        auto plan_mode = get_plan_mode(mode, i, signal_ndim, out_sizes[dim.back()] != *(self_begin+i));
-        int64_t radix = *(self_begin+i);
+        auto plan_mode = get_plan_mode(mode, i, signal_ndim, out_sizes[dim.back()] != *(self_begin + i));
+        int64_t radix = *(self_begin + i);
         if (plan_mode == op_api::PlanMode::c2r) {
             radix = out_sizes[dim.back()];
         }
@@ -237,13 +240,14 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
         auto coefficient_matrix_list = plan_item.get_rotate_matrices();
         auto factors_list = plan_item.get_factors();
         uint32_t factors_num = coefficient_matrix_list.size();
-        if ((plan_mode == op_api::PlanMode::c2r) && (out_sizes[dim.back()] != *(self_begin+i))) {
+        if ((plan_mode == op_api::PlanMode::c2r) && (out_sizes[dim.back()] != *(self_begin + i))) {
             // Complete the image
             collapsed_sizes[0] = 2;
-            collapsed_sizes[1] = *(self_begin+i);
+            collapsed_sizes[1] = *(self_begin + i);
             collapsed_sizes[2] = -1;
             auto buffer_0 = tmp_pingpong[ping].reshape(collapsed_sizes);
-            auto buffer_1 = at::slice(buffer_0, 1, 1, collapsed_sizes[1] - ((out_sizes[dim.back()] == 2*(collapsed_sizes[1]-1)) ? 1 : 0), 1);
+            auto buffer_1 = at::slice(buffer_0, 1, 1, collapsed_sizes[1]
+                                      - ((out_sizes[dim.back()] == 2 * (collapsed_sizes[1] - 1)) ? 1 : 0), 1);
             out.resize_(buffer_1.sizes());
             at::flip_out(out, buffer_1, 1);
             auto imag_buffer = at::select(out, 0, 1);
@@ -278,7 +282,7 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
         } else {
             reshape_sizes[factors_num] = 2;
         }
-        reshape_sizes[factors_num + 1] = signal_total / *(self_begin+i);
+        reshape_sizes[factors_num + 1] = signal_total / *(self_begin + i);
         reshape_sizes[factors_num + 2] = batch_total;
         std::copy(factors_list.cbegin(), factors_list.cend(), reshape_sizes.begin());
         if (plan_mode == op_api::PlanMode::r2c) {
@@ -308,8 +312,8 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
     if ((mode == fft_mode::r2c) && (signal_ndim > 1)) {
         if (out_sizes[dim.back()] != *(self_begin)) {
             int64_t signal_total_final = out_sizes[dim.back()];
-            for (int64_t i = 1; i < signal_ndim-1; i++) {
-                signal_total_final *= *(self_begin+i);
+            for (int64_t i = 1; i < signal_ndim - 1; i++) {
+                signal_total_final *= *(self_begin + i);
             }
             tmp_pingpong[ping] = at::slice(tmp_pingpong[ping], 1, 0, signal_total_final, 1);
         }
@@ -318,15 +322,15 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
     int out_ndim = tmp_pingpong[ping].dim();
     at::DimVector dim_permute_out(out_ndim);
     std::iota(dim_permute_out.begin(), dim_permute_out.end(), int64_t{0});
-    dim_permute_out[0] = out_ndim-1;
-    dim_permute_out[out_ndim-1] = 0;
+    dim_permute_out[0] = out_ndim - 1;
+    dim_permute_out[out_ndim - 1] = 0;
     tmp_pingpong[ping] = tmp_pingpong[ping].permute(dim_permute_out);
 
     out.resize_(tmp_pingpong[ping].sizes());
     out.copy_(tmp_pingpong[ping]);
     out = out.reshape(final_sizes);
     if ((mode == fft_mode::r2c) && (signal_ndim == 1) && (out_sizes[dim.back()] != *(self_begin))) {
-        out = at::slice(out, ndim-1, 0, out_sizes[dim.back()], 1);
+        out = at::slice(out, ndim - 1, 0, out_sizes[dim.back()], 1);
     }
 
     if (mode != fft_mode::r2c) {
@@ -419,19 +423,25 @@ static at::Tensor& _exec_fft_asdsip(at::Tensor& out, const at::Tensor& self_, at
     switch (mode) {
         case fft_mode::c2c:
             param.fftXSize = asdfft_input.size(1);
-            if (signal_ndim == 2) param.fftYSize = asdfft_input.size(2);
+            if (signal_ndim == 2) {
+                param.fftYSize = asdfft_input.size(2);
+            }
             param.fftType = asdFftType::ASCEND_FFT_C2C;
             EXEC_ASDSIP_FFT_NPU_CMD(C2C, asdfft_input, out, param);
             break;
         case fft_mode::r2c:
             param.fftXSize = asdfft_input.size(1);
-            if (signal_ndim == 2) param.fftYSize = asdfft_input.size(2);
+            if (signal_ndim == 2) {
+                param.fftYSize = asdfft_input.size(2);
+            }
             param.fftType = asdFftType::ASCEND_FFT_R2C;
             EXEC_ASDSIP_FFT_NPU_CMD(R2C, asdfft_input, out, param);
             break;
         case fft_mode::c2r:
             param.fftXSize = out.size(1);
-            if (signal_ndim == 2) param.fftYSize = out.size(2);
+            if (signal_ndim == 2) {
+                param.fftYSize = out.size(2);
+            }
             param.fftType = asdFftType::ASCEND_FFT_C2R;
             EXEC_ASDSIP_FFT_NPU_CMD(C2R, asdfft_input, out, param);
             break;
@@ -499,7 +509,8 @@ at::Tensor _fft_r2c(const at::Tensor& self, at::IntArrayRef dim, int64_t normali
     if (onesided) {
         out_sizes[last_dim] = last_dim_halfsize;
     }
-    auto out = npu_preparation::apply_tensor_without_format(out_sizes, self.options().dtype(c10::toComplexType(self.scalar_type())));
+    auto out = npu_preparation::apply_tensor_without_format(
+        out_sizes, self.options().dtype(c10::toComplexType(self.scalar_type())));
 
     DO_ASDSIP_COMPATIBILITY(R2C, _exec_fft(out, self, out_sizes, dim, normalization, true, 1));
     if (dim.size() > 1 || self.scalar_type() == at::ScalarType::Half) {
@@ -510,7 +521,8 @@ at::Tensor _fft_r2c(const at::Tensor& self, at::IntArrayRef dim, int64_t normali
     return out;
 }
 
-at::Tensor& _fft_r2c_out(const at::Tensor& self, at::IntArrayRef dim, int64_t normalization, bool onesided, at::Tensor& out)
+at::Tensor &_fft_r2c_out(const at::Tensor &self, at::IntArrayRef dim,
+                         int64_t normalization, bool onesided, at::Tensor &out)
 {
     TORCH_CHECK(self.is_floating_point(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(out.is_complex(), OPS_ERROR(ErrCode::PARAM));
@@ -536,7 +548,8 @@ at::Tensor _fft_c2r(const at::Tensor& self, at::IntArrayRef dim, int64_t normali
     auto in_sizes = self.sizes();
     at::DimVector out_sizes(in_sizes.begin(), in_sizes.end());
     out_sizes[dim.back()] = lastdim;
-    auto out = npu_preparation::apply_tensor_without_format(out_sizes, self.options().dtype(c10::toRealValueType(self.scalar_type())));
+    auto out = npu_preparation::apply_tensor_without_format(
+        out_sizes, self.options().dtype(c10::toRealValueType(self.scalar_type())));
     DO_ASDSIP_COMPATIBILITY(C2R, _exec_fft(out, self, out_sizes, dim, normalization, self.is_conj(), 2));
     if (dim.size() > 1 || self.scalar_type() == at::ScalarType::ComplexHalf) {
         _exec_fft(out, self, out_sizes, dim, normalization, self.is_conj(), 2);
@@ -546,7 +559,8 @@ at::Tensor _fft_c2r(const at::Tensor& self, at::IntArrayRef dim, int64_t normali
     return out;
 }
 
-at::Tensor& _fft_c2r_out(const at::Tensor& self, at::IntArrayRef dim, int64_t normalization, int64_t lastdim, at::Tensor& out)
+at::Tensor &_fft_c2r_out(const at::Tensor &self, at::IntArrayRef dim,
+                         int64_t normalization, int64_t lastdim, at::Tensor &out)
 {
     TORCH_CHECK(self.is_complex(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(out.is_floating_point(), OPS_ERROR(ErrCode::PARAM));
