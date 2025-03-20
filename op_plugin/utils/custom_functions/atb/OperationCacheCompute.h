@@ -128,6 +128,15 @@ struct HashOpParam<atb::infer::RopeParam> {
     }
 };
 
+template <>
+struct HashOpParam<atb::infer::ReshapeAndCacheParam> {
+    void operator()(const atb::infer::ReshapeAndCacheParam& param) const
+    {
+        add_param_to_buf("compressType", param.compressType);
+        add_param_to_buf("kvCacheCfg", param.kvCacheCfg);
+    }
+};
+
 template <typename T>
 uint64_t computeHash(const T& obj)
 {
