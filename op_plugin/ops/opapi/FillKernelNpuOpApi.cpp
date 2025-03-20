@@ -20,23 +20,25 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& fill_(at::Tensor& self, const at::Scalar& value) {
-  DO_COMPATIBILITY(aclnnInplaceFillScalar, acl_op::fill_(self, value));
-  EXEC_NPU_CMD(aclnnInplaceFillScalar, self, value);
-  return self;
+at::Tensor& fill_(at::Tensor& self, const at::Scalar& value)
+{
+    DO_COMPATIBILITY(aclnnInplaceFillScalar, acl_op::fill_(self, value));
+    EXEC_NPU_CMD(aclnnInplaceFillScalar, self, value);
+    return self;
 }
 
-at::Tensor& fill_(at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnInplaceFillScalar, acl_op::fill_(self, other));
-  DO_COMPATIBILITY(aclnnInplaceFillTensor, acl_op::fill_(self, other));
+at::Tensor& fill_(at::Tensor& self, const at::Tensor& other)
+{
+    DO_COMPATIBILITY(aclnnInplaceFillScalar, acl_op::fill_(self, other));
+    DO_COMPATIBILITY(aclnnInplaceFillTensor, acl_op::fill_(self, other));
 
-  if (npu_preparation::IsCPUScalar(other)) {
-    const at::Scalar other_value = other.item();
-    EXEC_NPU_CMD(aclnnInplaceFillScalar, self, other_value);
-  } else {
-    EXEC_NPU_CMD(aclnnInplaceFillTensor, self, other);
-  }
+    if (npu_preparation::IsCPUScalar(other)) {
+        const at::Scalar other_value = other.item();
+        EXEC_NPU_CMD(aclnnInplaceFillScalar, self, other_value);
+    } else {
+        EXEC_NPU_CMD(aclnnInplaceFillTensor, self, other);
+    }
 
-  return self;
+    return self;
 }
 }

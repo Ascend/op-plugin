@@ -11,10 +11,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/ForeachUtils.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include <ATen/native/ForeachUtils.h>
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
@@ -93,7 +94,10 @@ std::vector<at::Tensor> _foreach_log10(const at::TensorList self)
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
+        result.push_back(
+            npu_preparation::apply_tensor_without_format(
+                output_size,
+                tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 

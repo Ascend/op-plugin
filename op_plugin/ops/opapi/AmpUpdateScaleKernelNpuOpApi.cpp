@@ -28,7 +28,16 @@ at::Tensor& _amp_update_scale_(
     int64_t growth_interval
 )
 {
-    EXEC_NPU_CMD(aclnnAmpUpdateScale, current_scale, growth_tracker, found_inf, growth_factor, backoff_factor, growth_interval, current_scale, growth_tracker);
+    EXEC_NPU_CMD(
+        aclnnAmpUpdateScale,
+        current_scale,
+        growth_tracker,
+        found_inf,
+        growth_factor,
+        backoff_factor,
+        growth_interval,
+        current_scale,
+        growth_tracker);
     return current_scale;
 }
 #endif

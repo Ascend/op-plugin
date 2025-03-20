@@ -45,14 +45,20 @@ void _split_and_exec_npu_cmd_addcdiv_tensor(const at::TensorList input,
         return;
     }
     for (size_t i = 0; i < loop_time; i++) {
-        if (i == loop_time - 1 && remaining_count > 0) data_count = remaining_count;
+        if (i == loop_time - 1 && remaining_count > 0) {
+            data_count = remaining_count;
+        }
         at::TensorList temp_input(input.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors2(tensors2.data() + i * max_tensor_count, data_count);
         at::Tensor temp_scalars = scalar_tensor.slice(0, i * max_tensor_count, data_count);
         at::TensorList temp_result(result.data() + i * max_tensor_count, data_count);
 
-        EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, temp_input, temp_tensors1, temp_tensors2, temp_scalars, temp_result);
+        EXEC_NPU_CMD(
+            aclnnForeachAddcdivScalarList,
+            temp_input, temp_tensors1,
+            temp_tensors2, temp_scalars,
+            temp_result);
     }
 }
 
@@ -83,7 +89,9 @@ std::vector<at::Tensor> _foreach_addcdiv(const at::TensorList input,
     int i = 0;
     for (const at::Tensor &tensor : input) {
         auto output_size = op_infer::input_same_output_size(tensor);
-        iterRes[i++] = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type));
+        iterRes[i++] = at_npu::native::OpPreparation::apply_tensor_without_format(
+            output_size,
+            tensor.options().dtype(scalar_type));
     }
     at::TensorList result_ = at::TensorList(result);
     _split_and_exec_npu_cmd_addcdiv_tensor(input, tensors1, tensors2, scalars, result_, false);

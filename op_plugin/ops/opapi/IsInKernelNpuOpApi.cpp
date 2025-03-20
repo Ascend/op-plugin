@@ -30,7 +30,9 @@ static void isin_sorting(const at::Tensor& elements,
 {
     // 1. Concatenate unique elements with unique test elements in 1D form. If
     //    assume_unique is true, skip calls to unique().
-    at::Tensor elements_flat, test_elements_flat, unique_order;
+    at::Tensor elements_flat;
+    at::Tensor test_elements_flat;
+    at::Tensor unique_order;
     if (assume_unique) {
         elements_flat = elements.ravel();
         test_elements_flat = test_elements.ravel();
@@ -43,7 +45,8 @@ static void isin_sorting(const at::Tensor& elements,
     //    operation. Stable sort is necessary to keep elements before test
     //    elements within the sorted list.
     at::Tensor all_elements = at::cat({std::move(elements_flat), std::move(test_elements_flat)});
-    at::Tensor sorted_elements, sorted_order;
+    at::Tensor sorted_elements;
+    at::Tensor sorted_order;
     std::tie (sorted_elements, sorted_order) = all_elements.sort(true, 0, false);
 
     // 3. Create a mask for locations of adjacent duplicate values within the
@@ -116,7 +119,9 @@ at::Tensor& isin_out(const at::Tensor& elements, const at::Tensor &test_elements
 at::Tensor isin(const at::Tensor& elements, const at::Tensor &test_elements,
                 bool assume_unique, bool invert)
 {
-    at::Tensor result = npu_preparation::apply_tensor_without_format(elements.sizes(), elements.options().dtype(at::kBool));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(
+        elements.sizes(),
+        elements.options().dtype(at::kBool));
     isin_Tensor_Tensor_out_impl(elements, test_elements, assume_unique, invert, result);
     return result;
 }
