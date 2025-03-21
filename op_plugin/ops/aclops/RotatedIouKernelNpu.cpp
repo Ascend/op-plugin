@@ -28,37 +28,39 @@ at::Tensor& rotated_iou_npu_nocheck(
     int64_t mode,
     bool is_cross,
     double v_threshold,
-    double e_threshold) {
-  string mode_str = (mode == 0) ? "iou" : "iof";
+    double e_threshold)
+{
+    string mode_str = (mode == 0) ? "iou" : "iof";
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("RotatedIou")
-      .Input(boxes)
-      .Input(query_boxes)
-      .Output(iou)
-      .Attr("trans", trans)
-      .Attr("mode", mode_str)
-      .Attr("is_cross", is_cross)
-      .Attr("value", static_cast<float>(v_threshold))
-      .Attr("value", static_cast<float>(e_threshold))
-      .Run();
-  return iou;
+    at_npu::native::OpCommand cmd;
+    cmd.Name("RotatedIou")
+        .Input(boxes)
+        .Input(query_boxes)
+        .Output(iou)
+        .Attr("trans", trans)
+        .Attr("mode", mode_str)
+        .Attr("is_cross", is_cross)
+        .Attr("value", static_cast<float>(v_threshold))
+        .Attr("value", static_cast<float>(e_threshold))
+        .Run();
+    return iou;
 }
 } // namespace
 
 at::Tensor npu_rotated_iou(
-    const at::Tensor& boxes,
+    const at::Tensor& self,
     const at::Tensor& query_boxes,
     bool trans,
     int64_t mode,
     bool is_cross,
     double v_threshold,
-    double e_threshold) {
-    TORCH_CHECK(boxes.ndimension() == 3 && query_boxes.ndimension() == 3, OPS_ERROR(ErrCode::PARAM));
+    double e_threshold)
+{
+    TORCH_CHECK(self.ndimension() == 3 && query_boxes.ndimension() == 3, OPS_ERROR(ErrCode::PARAM));
 
-    auto origin_dtype = boxes.scalar_type();
+    auto origin_dtype = self.scalar_type();
 
-    at::Tensor boxes_cp = boxes.permute({0, 2, 1});
+    at::Tensor boxes_cp = self.permute({0, 2, 1});
     if (origin_dtype == at::kHalf) {
         boxes_cp = at_npu::native::custom_ops::npu_dtype_cast(boxes_cp, at::kFloat);
     }

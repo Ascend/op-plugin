@@ -22,41 +22,45 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& leaky_relu_out_nocheck(at::Tensor& result, const at::Tensor& self, at::Scalar negval) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("LeakyRelu")
-      .Input(self)
-      .Output(result)
-      .Attr("negative_slope", negval)
-      .Run();
+at::Tensor& leaky_relu_out_nocheck(at::Tensor& result, const at::Tensor& self, at::Scalar negval)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("LeakyRelu")
+        .Input(self)
+        .Output(result)
+        .Attr("negative_slope", negval)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
-at::Tensor& leaky_relu_out(const at::Tensor& self, const at::Scalar& negval, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
+at::Tensor& leaky_relu_out(const at::Tensor& self, const at::Scalar& negative_slope, at::Tensor& out)
+{
+    npu_preparation::CheckOut(
+        {self},
+        out,
+        self);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    leaky_relu_out_nocheck(contiguous_result, self, negval);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    leaky_relu_out_nocheck(result, self, negval);
-  }
-  return result;
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        leaky_relu_out_nocheck(contiguous_result, self, negative_slope);
+        npu_utils::format_fresh_view(out, contiguous_result);
+    } else {
+        leaky_relu_out_nocheck(out, self, negative_slope);
+    }
+    return out;
 }
 
-at::Tensor leaky_relu(const at::Tensor& self, const at::Scalar& negval) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  leaky_relu_out_nocheck(result, self, negval);
-  return result;
+at::Tensor leaky_relu(const at::Tensor& self, const at::Scalar& negative_slope)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    leaky_relu_out_nocheck(result, self, negative_slope);
+    return result;
 }
 
-at::Tensor& leaky_relu_(at::Tensor& self, const at::Scalar& neg_val) {
-  return acl_op::leaky_relu_out(self, neg_val, self);
+at::Tensor& leaky_relu_(at::Tensor& self, const at::Scalar& negative_slope)
+{
+    return acl_op::leaky_relu_out(self, negative_slope, self);
 }
 } // namespace acl_op

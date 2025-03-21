@@ -56,7 +56,7 @@ at::Tensor &replication_pad2d_backward_out_npu_nocheck(at::Tensor &grad_input, c
         .Input(grad_output_cp)
         .Input(vector_int, at::kInt)
         .Output(grad_input)
-        .Attr("mode", (string) "edge")
+        .Attr("mode", static_cast<std::string>("edge"))
         .Attr("paddings_contiguous", true)
         .Run();
 
@@ -67,7 +67,7 @@ at::Tensor &replication_pad2d_backward_out_npu_nocheck(at::Tensor &grad_input, c
 }
 } // namespace
 
-at::Tensor &replication_pad2d_backward_out(const at::Tensor &grad_output, const at::Tensor &input,
+at::Tensor &replication_pad2d_backward_out(const at::Tensor &grad_output, const at::Tensor &self,
                                            at::IntArrayRef padding, at::Tensor &grad_input)
 {
     if (check_padding(padding)) {
@@ -75,25 +75,25 @@ at::Tensor &replication_pad2d_backward_out(const at::Tensor &grad_output, const 
         return grad_input;
     }
 
-    npu_preparation::CheckOut({input, grad_output}, grad_input, input);
+    npu_preparation::CheckOut({self, grad_output}, grad_input, self);
     if (!npu_utils::check_match(&grad_input)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
-        replication_pad2d_backward_out_npu_nocheck(contiguous_result, grad_output, input, padding);
+        replication_pad2d_backward_out_npu_nocheck(contiguous_result, grad_output, self, padding);
         npu_utils::format_fresh_view(grad_input, contiguous_result);
     } else {
-        replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, input, padding);
+        replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, self, padding);
     }
     return grad_input;
 }
 
-at::Tensor replication_pad2d_backward(const at::Tensor &grad_output, const at::Tensor &input, at::IntArrayRef padding)
+at::Tensor replication_pad2d_backward(const at::Tensor &grad_output, const at::Tensor &self, at::IntArrayRef padding)
 {
-    at::Tensor grad_input = npu_preparation::apply_tensor(input);
+    at::Tensor grad_input = npu_preparation::apply_tensor(self);
     if (check_padding(padding)) {
         grad_input.copy_(grad_output);
         return grad_input;
     }
-    replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, input, padding);
+    replication_pad2d_backward_out_npu_nocheck(grad_input, grad_output, self, padding);
     return grad_input;
 }
 

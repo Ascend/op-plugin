@@ -17,7 +17,6 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/KernelNpuOutputSize.h"
-#include "torch_npu/csrc/core/npu/NpuVariables.h"
 
 namespace op_api {
 using small_vector = c10::SmallVector<int64_t, op_infer::SIZE>;
@@ -44,7 +43,8 @@ small_vector calc_output_size_with_generalized_attrs(const at::Tensor &self, at:
                                                      bool count_include_pad, c10::optional<int64_t> divisor_override)
 {
     // generalize kernels, strides and paddings to 2D-shape
-    TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints",
+        OPS_ERROR(ErrCode::PARAM));
     const int64_t k_h = kernel_size[0];
     const int64_t k_w = kernel_size.size() == 1 ? k_h : kernel_size[1];
     c10::SmallVector<int64_t, op_infer::SIZE> kernel_sizes = {k_h, k_w};
@@ -71,19 +71,19 @@ small_vector calc_output_size_with_generalized_attrs(const at::Tensor &self, at:
 
 at::Tensor &avg_pool2d_out(const at::Tensor &self, at::IntArrayRef kernel_size, at::IntArrayRef stride,
                            at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
-                           c10::optional<int64_t> divisor_override, at::Tensor &result)
+                           c10::optional<int64_t> divisor_override, at::Tensor &out)
 {
     c10::SmallVector<int64_t, op_infer::SIZE> output_size = calc_output_size_with_generalized_attrs(
         self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
-    at_npu::native::OpPreparation::check_tensor({self}, result, self, output_size);
+    at_npu::native::OpPreparation::check_tensor({self}, out, self, output_size);
 
     DO_COMPATIBILITY(aclnnAvgPool2d, acl_op::avg_pool2d_out(self, kernel_size, stride, padding, ceil_mode,
-                                                            count_include_pad, divisor_override, result));
+                                                            count_include_pad, divisor_override, out));
 
-    avg_pool2d_out_npu_nocheck_opapi(result, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
+    avg_pool2d_out_npu_nocheck_opapi(out, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
                                      divisor_override);
 
-    return result;
+    return out;
 }
 
 at::Tensor avg_pool2d(const at::Tensor &self, at::IntArrayRef kernel_size, at::IntArrayRef stride,

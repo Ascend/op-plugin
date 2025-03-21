@@ -18,19 +18,20 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor affine_grid_generator(const at::Tensor& theta, at::IntArrayRef size, bool align_corners) {
-  DO_COMPATIBILITY(aclnnAffineGrid, acl_op::affine_grid_generator(theta, size, align_corners));
-  TORCH_CHECK(size.size() == 4 || size.size() == 5, "AffineGridGenerator needs 4d or 5d size(input)."
-      + OPS_ERROR(ErrCode::PARAM));
-  at::SmallVector<int64_t, SIZE> outputSize = {};
-  if (size.size() == 4) {
-    outputSize = {size[0], size[2], size[3], 2};
-  } else {
-    outputSize = {size[0], size[2], size[3], size[4], 3};
-  }
+at::Tensor affine_grid_generator(const at::Tensor& theta, at::IntArrayRef size, bool align_corners)
+{
+    DO_COMPATIBILITY(aclnnAffineGrid, acl_op::affine_grid_generator(theta, size, align_corners));
+    TORCH_CHECK(size.size() == 4 || size.size() == 5, "AffineGridGenerator needs 4d or 5d size(input)."
+        + OPS_ERROR(ErrCode::PARAM));
+    at::SmallVector<int64_t, SIZE> outputSize = {};
+    if (size.size() == 4) {
+        outputSize = {size[0], size[2], size[3], 2};
+    } else {
+        outputSize = {size[0], size[2], size[3], size[4], 3};
+    }
 
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(theta, outputSize);
-  EXEC_NPU_CMD(aclnnAffineGrid, theta, size, align_corners, result);
-  return result;
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(theta, outputSize);
+    EXEC_NPU_CMD(aclnnAffineGrid, theta, size, align_corners, result);
+    return result;
 }
 }

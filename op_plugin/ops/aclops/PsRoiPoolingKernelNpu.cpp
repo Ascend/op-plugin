@@ -28,13 +28,14 @@ at::Tensor& ps_roi_pooling_npu_nocheck(
     const at::Tensor& rois,
     double spatial_scale,
     int64_t group_size,
-    int64_t output_dim) {
+    int64_t output_dim)
+{
     npu_op_command cmd;
     cmd.Name("PSROIPoolingV2")
         .Input(self, "x")
         .Input(rois)
         .Output(result, "y")
-        .Attr("spatial_scale", (float)spatial_scale)
+        .Attr("spatial_scale", static_cast<float>(spatial_scale))
         .Attr("output_dim", output_dim)
         .Attr("group_size", group_size)
         .Run();
@@ -51,7 +52,7 @@ at::Tensor &ps_roi_pooling_backward_npu_nocheck(at::Tensor &input_grad, const at
         .Input(output_grad, "x")
         .Input(rois)
         .Output(input_grad, "y")
-        .Attr("spatial_scale", (float)spatial_scale)
+        .Attr("spatial_scale", static_cast<float>(spatial_scale))
         .Attr("group_size", group_size)
         .Attr("output_dim", output_dim)
         .Attr("input_size", input_size)
@@ -80,15 +81,16 @@ at::Tensor npu_ps_roi_pooling_backward(const at::Tensor &output_grad, const at::
 #if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor npu_ps_roi_pooling_backward_symint(const at::Tensor &output_grad, const at::Tensor &rois,
                                               double spatial_scale, int64_t group_size, int64_t output_dim,
-                                              c10::SymIntArrayRef input_size_symint)
+                                              c10::SymIntArrayRef input_size)
 {
-    at::IntArrayRef input_size = c10::asIntArrayRefUnchecked(input_size_symint);
-    TORCH_CHECK(input_size.size() >= 2, "The length of param 'input_size' must be greater than or equal to 2." + OPS_ERROR(ErrCode::PARAM));
-    auto output_size = {rois.size(0), group_size * group_size * output_dim, input_size[0], input_size[1]};
+    at::IntArrayRef input_size_int = c10::asIntArrayRefUnchecked(input_size);
+    TORCH_CHECK(input_size_int.size() >= 2,
+        "The length of param 'input_size' must be greater than or equal to 2." + OPS_ERROR(ErrCode::PARAM));
+    auto output_size = {rois.size(0), group_size * group_size * output_dim, input_size_int[0], input_size_int[1]};
 
     at::Tensor input_grad = npu_preparation::apply_tensor(output_grad, output_size);
     ps_roi_pooling_backward_npu_nocheck(input_grad, output_grad, rois, spatial_scale, group_size, output_dim,
-                                        input_size);
+        input_size_int);
 
     return input_grad;
 }
@@ -99,7 +101,8 @@ at::Tensor npu_ps_roi_pooling(
     const at::Tensor& rois,
     double spatial_scale,
     int64_t group_size,
-    int64_t output_dim) {
+    int64_t output_dim)
+{
     TORCH_CHECK(rois.dim() >= 3,
         "rois only supports at least 3D tensors, rois got: ", rois.dim(), "D"
         + OPS_ERROR(ErrCode::PARAM));

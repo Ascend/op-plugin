@@ -24,10 +24,11 @@ at::Tensor slow_conv_dilated2d(
     const at::Tensor& self,
     const at::Tensor& weight,
     at::IntArrayRef kernel_size,
-    const c10::optional<at::Tensor>& bias_opt,
+    const c10::optional<at::Tensor>& bias,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
-    at::IntArrayRef dilation) {
+    at::IntArrayRef dilation)
+{
     TORCH_CHECK(dilation.size() >= 2, "slow_conv_dilated2d expected dilation greater than or equal to 2D,"
         " but input dilation has sizes ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() >= 2, "slow_conv_dilated2d expected dilation greater than or equal to 2D,"
@@ -42,7 +43,7 @@ at::Tensor slow_conv_dilated2d(
     auto output_size = op_infer::slow_conv_dilated2d_npu_output_size(self, weight, stride, padding, dilation);
     int64_t result_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
     at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), result_format);
-    const at::Tensor& bias = c10::value_or_else(bias_opt, [] {return at::Tensor();});
+    const at::Tensor& bias_value = c10::value_or_else(bias, [] {return at::Tensor();});
     int64_t groups = 1;
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
@@ -52,8 +53,8 @@ at::Tensor slow_conv_dilated2d(
     cmd.Name("Conv2D")
         .Input(self, "x")
         .Input(weight, "filter");
-    if (bias.defined()) {
-        cmd.Input(bias);
+    if (bias_value.defined()) {
+        cmd.Input(bias_value);
     }
     cmd.Output(result, "y")
         .Attr("strides", strides_size)

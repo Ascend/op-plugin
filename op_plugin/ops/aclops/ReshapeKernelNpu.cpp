@@ -23,28 +23,30 @@ using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor& npu_reshape_out(
-    const at::Tensor& src,
+    const at::Tensor& self,
     at::IntArrayRef shape,
     bool can_refresh,
-    at::Tensor& result) {
-  if (can_refresh) {
-    at_npu::native::StorageDescHelper::SetDesc(
-        result,
-        op_infer::array_to_small_vector(result.sizes()),
-        op_infer::array_to_small_vector(result.strides()));
-  } else {
-    at_npu::native::copy_d2d_by_memcpy(
-        result,
-        src,
-        at_npu::native::NPUNativeFunctions::get_storage_size(result));
-  }
-  return result;
+    at::Tensor& out)
+{
+    if (can_refresh) {
+        at_npu::native::StorageDescHelper::SetDesc(
+            out,
+            op_infer::array_to_small_vector(out.sizes()),
+            op_infer::array_to_small_vector(out.strides()));
+    } else {
+        at_npu::native::copy_d2d_by_memcpy(
+            out,
+            self,
+            at_npu::native::NPUNativeFunctions::get_storage_size(out));
+    }
+    return out;
 }
 
-at::Tensor npu_reshape(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh) {
-  at::Tensor result = npu_preparation::apply_tensor(self, shape);
-  acl_op::npu_reshape_out(self, shape, can_refresh, result);
+at::Tensor npu_reshape(const at::Tensor& self, at::IntArrayRef shape, bool can_refresh)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self, shape);
+    acl_op::npu_reshape_out(self, shape, can_refresh, result);
 
-  return result;
+    return result;
 }
 } // namespace acl_op

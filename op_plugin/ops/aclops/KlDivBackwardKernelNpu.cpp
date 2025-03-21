@@ -26,32 +26,33 @@ at::Tensor kl_div_backward(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
-    bool log_target) {
-  auto output_size = op_infer::input_same_output_size(self);
-  at::Tensor grad_input = npu_preparation::apply_tensor(output_size, self.options(), self);
-  std::string reduction_str;
-  if (reduction == at::Reduction::Mean) {
-    reduction_str = "batchmean";
-  } else if (reduction == at::Reduction::Sum) {
-    reduction_str = "sum";
-  } else if (reduction == at::Reduction::None) {
-    reduction_str = "none";
-  }
-  at_npu::native::OpCommand cmd;
-  cmd.Name("KlDivLossGrad")
-      .Input(grad_output)
-      .Input(self)
-      .Input(target)
-      .Output(grad_input)
-      .Attr("reduction", reduction_str)
-      .Attr("log_target", log_target)
-      .Run();
-  if (reduction == at::Reduction::Mean) {
-    auto input_shape = self.sizes();
-    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
-    grad_input.div_(batch_square_size);
-  }
-  return grad_input;
+    bool log_target)
+{
+    auto output_size = op_infer::input_same_output_size(self);
+    at::Tensor grad_input = npu_preparation::apply_tensor(output_size, self.options(), self);
+    std::string reduction_str;
+    if (reduction == at::Reduction::Mean) {
+        reduction_str = "batchmean";
+    } else if (reduction == at::Reduction::Sum) {
+        reduction_str = "sum";
+    } else if (reduction == at::Reduction::None) {
+        reduction_str = "none";
+    }
+    at_npu::native::OpCommand cmd;
+    cmd.Name("KlDivLossGrad")
+        .Input(grad_output)
+        .Input(self)
+        .Input(target)
+        .Output(grad_input)
+        .Attr("reduction", reduction_str)
+        .Attr("log_target", log_target)
+        .Run();
+    if (reduction == at::Reduction::Mean) {
+        auto input_shape = self.sizes();
+        int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
+        grad_input.div_(batch_square_size);
+    }
+    return grad_input;
 }
 #endif
 
@@ -61,7 +62,8 @@ at::Tensor kl_div_backward(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
-    bool log_target) {
+    bool log_target)
+{
     auto output_size = op_infer::input_same_output_size(self);
     at::Tensor grad_input = npu_preparation::apply_tensor(output_size, self.options(), self);
     std::string reduction_str = "none";

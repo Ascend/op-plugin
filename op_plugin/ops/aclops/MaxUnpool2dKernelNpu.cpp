@@ -77,19 +77,19 @@ at::Tensor &max_unpool2d_out_nocheck(at::Tensor &output, const at::Tensor &self,
 } // namespace
 
 at::Tensor &max_unpool2d_out(const at::Tensor &self, const at::Tensor &indices, at::IntArrayRef output_size,
-                             at::Tensor &output)
+                             at::Tensor &out)
 {
     max_unpool2d_check(self, indices, output_size);
-    npu_preparation::CheckOut({self, indices}, output, self, {0});
-    if (!npu_utils::check_match(&output)) {
-        at::Tensor contiguous_output = npu_utils::format_contiguous(output);
+    npu_preparation::CheckOut({self, indices}, out, self, {0});
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_output = npu_utils::format_contiguous(out);
         max_unpool2d_out_nocheck(contiguous_output, self, indices, output_size);
-        npu_utils::format_fresh_view(output, contiguous_output);
+        npu_utils::format_fresh_view(out, contiguous_output);
     } else {
-        max_unpool2d_out_nocheck(output, self, indices, output_size);
+        max_unpool2d_out_nocheck(out, self, indices, output_size);
     }
 
-    return output;
+    return out;
 }
 
 at::Tensor max_unpool2d(const at::Tensor &self, const at::Tensor &indices, at::IntArrayRef output_size)

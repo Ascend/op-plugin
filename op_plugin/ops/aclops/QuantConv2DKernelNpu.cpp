@@ -6,7 +6,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <vector>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
@@ -29,7 +28,8 @@ at::Tensor npu_quant_conv2d_out(const at::Tensor& input, const at::Tensor& weigh
 {
     TORCH_CHECK(stride.size() >= ATTRS_DIM, "stride has to contain more than 2 elements, but got ", stride.size());
     TORCH_CHECK(pad.size() >= ATTRS_DIM, "padding has to contain more than 2 elements, but got ", pad.size());
-    TORCH_CHECK(dilation.size() >= ATTRS_DIM, "dilation has to contain more than 2 elements, but got ", dilation.size());
+    TORCH_CHECK(dilation.size() >= ATTRS_DIM, "dilation has to contain more than 2 elements, but got ",
+        dilation.size());
     TORCH_CHECK(output_dtype == at::ScalarType::Half, "only support float16 as outputdtype");
 
     const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
@@ -54,9 +54,9 @@ at::Tensor npu_quant_conv2d_out(const at::Tensor& input, const at::Tensor& weigh
         .Attr("pads", paddings)
         .Attr("dilations", dilations)
         .Attr("groups", groups)
-        .Attr("data_format", (string)"NCHW")
+        .Attr("data_format", static_cast<std::string>("NCHW"))
         .Attr("offset_x", offset_x)
-        .Attr("round_mode", (string)"rint")
+        .Attr("round_mode", static_cast<std::string>("rint"))
         .Run();
 
     return output;
@@ -73,7 +73,8 @@ at::Tensor npu_quant_conv2d(const at::Tensor& input, const at::Tensor& weight, c
     TORCH_CHECK(weight.dim() >= TENSORS_DIM, "weight has to more than 4D, but got Tensor of dimension ", weight.dim());
     TORCH_CHECK(strides.size() >= ATTRS_DIM, "stride has to contain more than 2 elements, but got ", strides.size());
     TORCH_CHECK(pads.size() >= ATTRS_DIM, "padding has to contain more than 2 elements, but got ", pads.size());
-    TORCH_CHECK(dilations.size() >= ATTRS_DIM, "dilation has to contain more than 2 elements, but got ", dilations.size());
+    TORCH_CHECK(dilations.size() >= ATTRS_DIM, "dilation has to contain more than 2 elements, but got ",
+        dilations.size());
     TORCH_CHECK(weight.size(WEIGHT_W_INDEX) != 0, "4th dim of weight cannot be 0");
     TORCH_CHECK(strides[0] * strides[1] != 0, "Stride cannot contain 0")
 
@@ -93,7 +94,8 @@ at::Tensor npu_quant_conv2d(const at::Tensor& input, const at::Tensor& weight, c
     c10::TensorOptions options = input.options().dtype(at::kHalf);
     at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, options, ACL_FORMAT_NCHW);
 
-    acl_op::npu_quant_conv2d_out(input, weight, scale, strides, pads, dilations, groups, offset_x, round_mode, result, output_dtype, bias, offset);
+    acl_op::npu_quant_conv2d_out(input, weight, scale, strides, pads, dilations, groups, offset_x, round_mode,
+        result, output_dtype, bias, offset);
     return result;
 }
 #endif
