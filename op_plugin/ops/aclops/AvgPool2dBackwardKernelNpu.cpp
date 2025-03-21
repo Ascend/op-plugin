@@ -30,7 +30,8 @@ at::Tensor& avg_pool2d_backward_out_npu_nocheck(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     bool ceil_mode,
-    bool count_include_pad) {
+    bool count_include_pad)
+{
     int64_t stride_h = 1;
     int64_t stride_w = 1;
     if (!stride.empty()) {
@@ -72,7 +73,8 @@ at::Tensor& avg_pool2d_backward_out(
     bool ceil_mode,
     bool count_include_pad,
     c10::optional<int64_t> divisor_override,
-    at::Tensor& grad_input) {
+    at::Tensor& grad_input)
+{
     // check kernel_size
     TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 2,
         "avg_pool2d: kernel_size must either be a single int, or a tuple of two ints"
@@ -142,7 +144,8 @@ at::Tensor avg_pool2d_backward(
     at::IntArrayRef padding,
     bool ceil_mode,
     bool count_include_pad,
-    c10::optional<int64_t> divisor_override) {
+    c10::optional<int64_t> divisor_override)
+{
     at::Tensor grad_input = npu_preparation::apply_tensor(self);
 
     acl_op::avg_pool2d_backward_out(

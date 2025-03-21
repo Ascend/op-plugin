@@ -26,7 +26,8 @@ at::Tensor& addcmul_out_npu_nocheck(
     const at::Tensor& self,
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
-    const at::Scalar& value) {
+    const at::Scalar& value)
+{
     at_npu::native::OpCommand cmd;
     cmd.Name("Addcmul")
         .Input(self)
@@ -44,7 +45,8 @@ at::Tensor& addcmul_out(
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
     const at::Scalar& value,
-    at::Tensor& result) {
+    at::Tensor& result)
+{
     auto input_size = op_infer::broadcast_ops_npu_output_size(self, tensor1);
     auto output_size = op_infer::broadcast_ops_npu_output_size(input_size, tensor2.sizes());
 
@@ -68,7 +70,8 @@ at::Tensor addcmul(
     const at::Tensor& self,
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
-    const at::Scalar& value) {
+    const at::Scalar& value)
+{
     auto input_size = op_infer::broadcast_ops_npu_output_size(self, tensor1);
     auto output_size = op_infer::broadcast_ops_npu_output_size(input_size, tensor2.sizes());
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);
@@ -80,7 +83,8 @@ at::Tensor& addcmul_(
     at::Tensor& self,
     const at::Tensor& tensor1,
     const at::Tensor& tensor2,
-    const at::Scalar& value) {
+    const at::Scalar& value)
+{
     return acl_op::addcmul_out(self, tensor1, tensor2, value, self);
 }
 }  // namespace acl_op
