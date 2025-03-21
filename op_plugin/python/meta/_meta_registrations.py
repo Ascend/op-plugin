@@ -463,8 +463,8 @@ def npu_masked_softmax_with_rel_pos_bias_meta(x, atten_mask, relative_pos_bias, 
 
 
 @impl(m, "npu_moe_distribute_dispatch")
-def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_rank_id, moe_expert_num, scales=None, group_tp="", tp_world_size=0,
-                                     tp_rank_id=0, expert_shard_type=0, shared_expert_rank_num=0, quant_mode=0, global_bs=0):
+def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_rank_id, moe_expert_num, scales=None, x_active_mask=None, expert_scales=None, group_tp="", tp_world_size=0,
+                                     tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, quant_mode=0, global_bs=0):
     n = x.size(0)
     h = x.size(1)
     k = expert_ids.size(1)
@@ -504,23 +504,35 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
     if scales is not None or quant_mode != 0:
         outDtype = torch.int8
     local_moe_expert_num = int(local_moe_expert_num)
-    expand_x = x.new_empty(tuple([a * tp_world_size, h]), dtype=outDtype)
-    dynamic_scales = x.new_empty(tuple([a * tp_world_size]), dtype=torch.float32)
+
     expand_idx = x.new_empty(tuple([n * k]), dtype=torch.int32)
+    if tp_world_size == 0:
+        expand_x = x.new_empty(tuple([a, h]), dtype=outDtype)
+        dynamic_scales = x.new_empty(tuple([a]), dtype=torch.float32)
+    else:
+        expand_x = x.new_empty(tuple([a * tp_world_size, h]), dtype=outDtype)
+        dynamic_scales = x.new_empty(tuple([a * tp_world_size]), dtype=torch.float32)
     expert_token_nums = x.new_empty(tuple([local_moe_expert_num]), dtype=torch.int64)
     ep_recv_counts = x.new_empty(tuple([ep_recv_cnt_num]), dtype=torch.int32)
     tp_recv_counts = x.new_empty(tuple([tp_world_size]), dtype=torch.int32)
-    return (expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts)
+    expand_scales = x.new_empty(tuple([0]), dtype=torch.float32)
+    if expert_scales is not None:
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num + n * 2 * k * (ep_world_size / 8)
+        ep_recv_counts = x.new_empty(tuple([ep_recv_cnt_num]), dtype=torch.int32)
+        expand_scales = x.new_empty(tuple([a]), dtype=torch.float32)
+    return (expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales)
 
 
 @impl(m, "npu_moe_distribute_combine")
 def npu_moe_distribute_combine_meta(expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, group_ep, ep_world_size, ep_rank_id, moe_expert_num,
-                                    tp_send_counts=None, group_tp="", tp_world_size=0, tp_rank_id=0, expert_shard_type=0, shared_expert_rank_num=0, global_bs=0):
+                                    tp_send_counts=None, x_active_mask=None, activation_scale=None, weight_scale=None, group_list=None, group_tp="", tp_world_size=0,
+                                    tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, global_bs=0, out_dtype=0, comm_quant_mode=0, group_list_type=0):
     dim_list = []
     dim_list.append(expert_ids.size(0))
     dim_list.append(expand_x.size(1))
 
     return expand_x.new_empty(tuple(dim_list), dtype=expand_x.dtype)
+
 
 
 @impl(m, "npu_ffn")
