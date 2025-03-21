@@ -22,49 +22,53 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& neg_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Neg")
-      .Input(self)
-      .Output(result)
-      .Run();
+at::Tensor& neg_out_npu_nocheck(at::Tensor& result, const at::Tensor& self)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Neg")
+        .Input(self)
+        .Output(result)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
-at::Tensor& neg_out(const at::Tensor &self, at::Tensor &result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      ACL_FORMAT_ND,
-      self.scalar_type(),
-      self.sizes());
+at::Tensor& neg_out(const at::Tensor &self, at::Tensor &result)
+{
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        ACL_FORMAT_ND,
+        self.scalar_type(),
+        self.sizes());
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    neg_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        neg_out_npu_nocheck(contiguous_result, self);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        neg_out_npu_nocheck(result, self);
+    }
+    return result;
+}
+
+at::Tensor neg(const at::Tensor& self)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
     neg_out_npu_nocheck(result, self);
-  }
-  return result;
+    return result;
 }
 
-at::Tensor neg(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  neg_out_npu_nocheck(result, self);
-  return result;
-}
-
-at::Tensor& neg_(at::Tensor& self) {
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    neg_out_npu_nocheck(contiguous_self, contiguous_self);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    neg_out_npu_nocheck(self, self);
-  }
-  return self;
+at::Tensor& neg_(at::Tensor& self)
+{
+    if (!npu_utils::check_match(&self)) {
+        at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+        neg_out_npu_nocheck(contiguous_self, contiguous_self);
+        npu_utils::format_fresh_view(self, contiguous_self);
+    } else {
+        neg_out_npu_nocheck(self, self);
+    }
+    return self;
 }
 } // namespace acl_op

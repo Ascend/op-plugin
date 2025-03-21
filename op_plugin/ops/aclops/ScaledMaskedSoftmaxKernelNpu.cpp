@@ -25,35 +25,37 @@ at::Tensor npu_scaled_masked_softmax_backward(
     const at::Tensor& y,
     const at::Tensor& mask,
     const at::Scalar& scale,
-    bool fixed_triu_mask) {
-  at::Tensor result = npu_preparation::apply_tensor(y_grad);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ScaledMaskedSoftmaxGrad")
-      .Input(y_grad)
-      .Input(y)
-      .Input(mask)
-      .Output(result)
-      .Attr("scale", scale)
-      .Attr("fixed_triu_mask", fixed_triu_mask)
-      .Run();
-  return result;
+    bool fixed_triu_mask)
+{
+    at::Tensor result = npu_preparation::apply_tensor(y_grad);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ScaledMaskedSoftmaxGrad")
+        .Input(y_grad)
+        .Input(y)
+        .Input(mask)
+        .Output(result)
+        .Attr("scale", scale)
+        .Attr("fixed_triu_mask", fixed_triu_mask)
+        .Run();
+    return result;
 }
 
 at::Tensor npu_scaled_masked_softmax(
     const at::Tensor& self,
     const at::Tensor& mask,
     const at::Scalar& scale,
-    bool fixed_triu_mask) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ScaledMaskedSoftmax")
-      .Input(self)
-      .Input(mask)
-      .Output(result)
-      .Attr("scale", scale)
-      .Attr("fixed_triu_mask", fixed_triu_mask)
-      .Run();
-  return result;
+    bool fixed_triu_mask)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ScaledMaskedSoftmax")
+        .Input(self)
+        .Input(mask)
+        .Output(result)
+        .Attr("scale", scale)
+        .Attr("fixed_triu_mask", fixed_triu_mask)
+        .Run();
+    return result;
 }
 
 } // namespace acl_op

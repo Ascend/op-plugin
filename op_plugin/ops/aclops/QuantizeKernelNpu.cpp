@@ -105,11 +105,17 @@ at::Tensor npu_quantize(
     axis = op_plugin::utils::make_warp_dim(axis, self.dim());
     TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1." + OPS_ERROR(ErrCode::PARAM));
     if (zero_points.defined()) {
-        TORCH_CHECK(zero_points.dim() == 1, "Zero points' dim should be equal to 1." + OPS_ERROR(ErrCode::PARAM));
-        TORCH_CHECK(scales.sizes()[0] == zero_points.sizes()[0], "Scales' size should be equal to zero points' size." + OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(
+            zero_points.dim() == 1,
+            "Zero points' dim should be equal to 1." + OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(
+            scales.sizes()[0] == zero_points.sizes()[0],
+            "Scales' size should be equal to zero points' size." + OPS_ERROR(ErrCode::PARAM));
     }
     TORCH_CHECK(axis <= self.sizes().size() - 1, "Unexpected value of axis." + OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(scales.sizes()[0] == self.sizes()[axis], "length of scales must equal to the specified dimension." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(
+        scales.sizes()[0] == self.sizes()[axis],
+        "length of scales must equal to the specified dimension." + OPS_ERROR(ErrCode::PARAM));
     auto output_dtype = at::kInt;
     if (dtype == at::ScalarType::QInt8) {
         output_dtype = at::kChar;

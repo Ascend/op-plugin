@@ -23,24 +23,26 @@ namespace {
 at::Tensor& reverse_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
-    at::IntArrayRef axis) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ReverseV2")
-      .Input(self)
-      .Input(axis, at::kInt)
-      .Output(result)
-      .Run();
+    at::IntArrayRef axis)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ReverseV2")
+        .Input(self)
+        .Input(axis, at::kInt)
+        .Output(result)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
 at::Tensor reverse(
     const at::Tensor& self,
-    at::IntArrayRef axis) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  reverse_out_nocheck(result, self, axis);
+    at::IntArrayRef axis)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    reverse_out_nocheck(result, self, axis);
 
-  return result;
+    return result;
 }
 } // namespace acl_op
