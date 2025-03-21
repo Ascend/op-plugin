@@ -23,6 +23,17 @@
 
 namespace op_plugin {
 namespace utils {
+bool is_neox_style(std::string rotary_mode)
+{
+    TORCH_CHECK(rotary_mode != "half" || rotary_mode != "interleave",
+        "rotary_mode only support half or interleave", OPS_ERROR(ErrCode::VALUE));
+    if (rotary_mode == "half") {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 std::string get_reduction_str(int64_t reduction)
 {
     std::string reductionStr;
