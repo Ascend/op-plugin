@@ -13,9 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/NamedTensorUtils.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include <ATen/NamedTensorUtils.h>
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -92,8 +93,9 @@ at::Tensor cumsum(const at::Tensor &self, int64_t dim, const c10::optional<at::S
 at::Tensor& cumsum_(
     at::Tensor& self,
     int64_t dim,
-    c10::optional<at::ScalarType> dtype) {
-  return acl_op::cumsum_out(self, dim, dtype, self);
+    c10::optional<at::ScalarType> dtype)
+{
+    return acl_op::cumsum_out(self, dim, dtype, self);
 }
 #endif
 } // namespace acl_op

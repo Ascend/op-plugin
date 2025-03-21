@@ -24,49 +24,54 @@ using npu_utils = at_npu::native::NpuUtils;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
-at::Tensor& cast_nocheck(at::Tensor& result, const at::Tensor& self) {
-  int64_t dst_data_type = calcu_op_util::ConvertToAclDataType(result.scalar_type());
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Cast")
-      .Input(self)
-      .Output(result)
-      .Attr("dst_type", dst_data_type)
-      .Run();
-  return result;
+at::Tensor& cast_nocheck(at::Tensor& result, const at::Tensor& self)
+{
+    int64_t dst_data_type = calcu_op_util::ConvertToAclDataType(result.scalar_type());
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Cast")
+        .Input(self)
+        .Output(result)
+        .Attr("dst_type", dst_data_type)
+        .Run();
+    return result;
 }
 
-at::Tensor npu_dtype_cast_impl(const at::Tensor& self, at::ScalarType dtype) {
-  if (self.dtype() == dtype) {
-    return self.clone();
-  }
-  at::Tensor result = npu_preparation::apply_tensor(self.sizes(), self.options().dtype(dtype), self);
-  cast_nocheck(result, self);
-  return result;
+at::Tensor npu_dtype_cast_impl(const at::Tensor& self, at::ScalarType dtype)
+{
+    if (self.dtype() == dtype) {
+        return self.clone();
+    }
+    at::Tensor result = npu_preparation::apply_tensor(self.sizes(), self.options().dtype(dtype), self);
+    cast_nocheck(result, self);
+    return result;
 }
 } // namespace
 
-at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
-  if (self.dtype() == src.dtype()) {
+at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src)
+{
+    if (self.dtype() == src.dtype()) {
+        return self;
+    }
+
+    if (!npu_utils::check_match(&self)) {
+        at::Tensor contiguous_self = npu_preparation::apply_tensor(self);
+        cast_nocheck(contiguous_self, src);
+        npu_utils::format_fresh_view(self, contiguous_self);
+    } else {
+        cast_nocheck(self, src);
+    }
     return self;
-  }
-
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_preparation::apply_tensor(self);
-    cast_nocheck(contiguous_self, src);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    cast_nocheck(self, src);
-  }
-  return self;
 }
 
-at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
-  return npu_dtype_cast_impl(self, dtype);
+at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype)
+{
+    return npu_dtype_cast_impl(self, dtype);
 }
 
-at::Tensor npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype) {
-  grad.requires_grad_();
-  return at_npu::native::custom_ops::npu_dtype_cast(grad, dtype);
+at::Tensor npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype)
+{
+    grad.requires_grad_();
+    return at_npu::native::custom_ops::npu_dtype_cast(grad, dtype);
 }
 
 }  // namespace acl_op
