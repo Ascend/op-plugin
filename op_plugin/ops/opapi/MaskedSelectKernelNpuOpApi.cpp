@@ -22,22 +22,24 @@ namespace op_api {
 static constexpr int OK = 0;
 
 static inline std::tuple<at::Tensor, at::Tensor> expand_outplace_npu(const at::Tensor& to_expand1,
-                                                                     const at::Tensor& to_expand2) {
-  if (to_expand1.sizes().equals(to_expand2.sizes())) {
-    return std::make_tuple(to_expand1, to_expand2);
-  }
+                                                                     const at::Tensor& to_expand2)
+{
+    if (to_expand1.sizes().equals(to_expand2.sizes())) {
+        return std::make_tuple(to_expand1, to_expand2);
+    }
 
-  auto expanded_size = at::infer_size(to_expand1.sizes(), to_expand2.sizes());
-  return std::make_tuple(to_expand1.expand(expanded_size, true), to_expand2.expand(expanded_size, true));
+    auto expanded_size = at::infer_size(to_expand1.sizes(), to_expand2.sizes());
+    return std::make_tuple(to_expand1.expand(expanded_size, true), to_expand2.expand(expanded_size, true));
 }
 
 static inline at::SmallVector<int64_t, SIZE> masked_select_npu_output_size(const at::Tensor& self,
-                                                                           const at::Tensor& mask) {
-  at::Tensor maskCast;
-  at::Tensor selfCast;
-  std::tie(maskCast, selfCast) = expand_outplace_npu(mask, self);
-  auto outputSize = {maskCast.numel()};
-  return outputSize;
+                                                                           const at::Tensor& mask)
+{
+    at::Tensor maskCast;
+    at::Tensor selfCast;
+    std::tie(maskCast, selfCast) = expand_outplace_npu(mask, self);
+    auto outputSize = {maskCast.numel()};
+    return outputSize;
 }
 
 static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Tensor& mask, at::Tensor& out)
@@ -61,7 +63,8 @@ static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Ten
     return out;
 }
 
-at::Tensor masked_select(const at::Tensor& self, const at::Tensor& mask) {
+at::Tensor masked_select(const at::Tensor& self, const at::Tensor& mask)
+{
     at::namedinference::compute_broadcast_outnames(self, mask);
     DO_COMPATIBILITY(aclnnMaskedSelect, acl_op::masked_select(self, mask));
 
@@ -71,7 +74,8 @@ at::Tensor masked_select(const at::Tensor& self, const at::Tensor& mask) {
 }
 
 at::Tensor& masked_select_out(const at::Tensor& self, const at::Tensor& mask,
-                              at::Tensor& result) {
+                              at::Tensor& result)
+{
     at::namedinference::compute_broadcast_outnames(self, mask);
     DO_COMPATIBILITY(aclnnMaskedSelect, acl_op::masked_select_out(self, mask, result));
 

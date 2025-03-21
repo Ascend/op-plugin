@@ -39,13 +39,22 @@ void npu_prefetch(const at::Tensor &self,
     }
     int64_t tensor_size = static_cast<int64_t>(dtype.itemsize()) * nelements;
 
-    TORCH_CHECK(tensor_size > offset, "offset out of range of tensor size, tensor size: ", tensor_size, ", offset: ", offset,
-                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(
+        tensor_size > offset,
+        "offset out of range of tensor size, tensor size: ",
+        tensor_size,
+        ", offset: ",
+        offset,
+        OPS_ERROR(ErrCode::PARAM));
     if ((tensor_size - offset) < max_size) {
         max_size = tensor_size - offset;
     }
     aclrtStream current_stream = c10_npu::getCurrentNPUStream();
-    NPU_CHECK_ERROR_WITHOUT_UCE(c10_npu::acl::AclrtCmoAsync((char*)self.data_ptr() + offset, max_size, ACL_RT_CMO_TYPE_PREFETCH, current_stream));
+    NPU_CHECK_ERROR_WITHOUT_UCE(
+        c10_npu::acl::AclrtCmoAsync((char*)self.data_ptr() + offset,
+        max_size,
+        ACL_RT_CMO_TYPE_PREFETCH,
+        current_stream));
 }
 #endif
 } // namespace op_api

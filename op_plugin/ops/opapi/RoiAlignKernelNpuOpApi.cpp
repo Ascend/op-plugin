@@ -16,8 +16,17 @@ at::Tensor npu_roi_alignbk(const at::Tensor& self, const at::Tensor& rois, at::I
                            int64_t pooled_width, int64_t pooled_height, double spatial_scale, int64_t sample_num,
                            c10::optional<int64_t> roi_end_mode)
 {
-    DO_COMPATIBILITY(aclnnROIAlignBackward, acl_op::npu_roi_alignbk(self, rois, xdiff_shape, pooled_width, pooled_height,
-                                                                    spatial_scale, sample_num, roi_end_mode));
+    DO_COMPATIBILITY(
+        aclnnROIAlignBackward,
+        acl_op::npu_roi_alignbk(
+            self,
+            rois,
+            xdiff_shape,
+            pooled_width,
+            pooled_height,
+            spatial_scale,
+            sample_num,
+            roi_end_mode));
     at::Tensor result = npu_preparation::apply_tensor_without_format(self, xdiff_shape);
     int64_t roi_end_mode_value = 1; // roi_end_mode default value
     if (roi_end_mode.has_value()) {

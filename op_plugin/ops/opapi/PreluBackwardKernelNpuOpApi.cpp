@@ -24,16 +24,17 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
-    const at::Tensor& weight) {
-  DO_COMPATIBILITY(aclnnPreluBackward, acl_op::_prelu_kernel_backward(grad_output, self, weight));
-  c10::SmallVector<int64_t, N> weight_shape = op_infer::array_to_small_vector(weight.sizes());
-  at::Tensor reshape_weight = weight.reshape({-1});
+    const at::Tensor& weight)
+{
+    DO_COMPATIBILITY(aclnnPreluBackward, acl_op::_prelu_kernel_backward(grad_output, self, weight));
+    c10::SmallVector<int64_t, N> weight_shape = op_infer::array_to_small_vector(weight.sizes());
+    at::Tensor reshape_weight = weight.reshape({-1});
 
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output);
-  at::Tensor grad_weight = npu_preparation::apply_tensor_without_format(reshape_weight);
-  EXEC_NPU_CMD(aclnnPreluBackward, grad_output, self, reshape_weight, grad_input, grad_weight);
-  grad_weight = grad_weight.reshape(weight_shape);
-  return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
+    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output);
+    at::Tensor grad_weight = npu_preparation::apply_tensor_without_format(reshape_weight);
+    EXEC_NPU_CMD(aclnnPreluBackward, grad_output, self, reshape_weight, grad_input, grad_weight);
+    grad_weight = grad_weight.reshape(weight_shape);
+    return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
 }
 #endif
 }
