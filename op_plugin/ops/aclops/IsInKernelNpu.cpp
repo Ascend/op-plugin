@@ -19,14 +19,15 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& isin_out(const at::Scalar& element, const at::Tensor &test_element,
-                     bool assume_unique, bool invert, at::Tensor& result) {
-  c10::SmallVector<int64_t, SIZE> shape_small_vec;
-  npu_preparation::CheckOut({test_element}, result, npu_preparation::get_tensor_npu_format(test_element),
-                            at::ScalarType::Bool, shape_small_vec);
-  const auto test_element_cpu = test_element.cpu();
-  auto result_cpu = result.cpu();
-  at::isin_out(result_cpu, element, test_element_cpu, assume_unique, invert);
-  result.copy_(result_cpu);
-  return result;
+                     bool assume_unique, bool invert, at::Tensor& result)
+{
+    c10::SmallVector<int64_t, SIZE> shape_small_vec;
+    npu_preparation::CheckOut({test_element}, result, npu_preparation::get_tensor_npu_format(test_element),
+                              at::ScalarType::Bool, shape_small_vec);
+    const auto test_element_cpu = test_element.cpu();
+    auto result_cpu = result.cpu();
+    at::isin_out(result_cpu, element, test_element_cpu, assume_unique, invert);
+    result.copy_(result_cpu);
+    return result;
 }
 } // namespace acl_op

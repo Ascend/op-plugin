@@ -25,7 +25,8 @@ at::Tensor kl_div(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
-    bool log_target) {
+    bool log_target)
+{
     std::string reduction_str = "none";
     if (reduction == at::Reduction::Mean) {
         reduction_str = "batchmean";
@@ -34,20 +35,20 @@ at::Tensor kl_div(
     }
     at::Tensor result = reduction_str == "none" ?
         npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("KLDiv")
-      .Input(self)
-      .Input(target)
-      .Output(result)
-      .Attr("reduction", reduction_str)
-      .Attr("log_target", log_target)
-      .Run();
-  if (reduction == at::Reduction::Mean) {
-    auto input_shape = self.sizes();
-    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
-    result.div_(batch_square_size);
-  }
-  return result;
+    at_npu::native::OpCommand cmd;
+    cmd.Name("KLDiv")
+        .Input(self)
+        .Input(target)
+        .Output(result)
+        .Attr("reduction", reduction_str)
+        .Attr("log_target", log_target)
+        .Run();
+    if (reduction == at::Reduction::Mean) {
+        auto input_shape = self.sizes();
+        int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
+        result.div_(batch_square_size);
+    }
+    return result;
 }
 #endif
 
@@ -56,7 +57,8 @@ at::Tensor npu_kl_div(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
-    bool log_target) {
+    bool log_target)
+{
     std::string reduction_str = "none";
     if (reduction == at::Reduction::Mean) {
         reduction_str = "batchmean";

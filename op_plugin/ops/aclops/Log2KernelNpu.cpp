@@ -22,42 +22,46 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& log2_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Log")
-      .Input(self)
-      .Output(result)
-      .Attr("base", (float)2.0)
-      .Attr("scale", (float)1.0)
-      .Attr("shift", (float)0.0)
-      .Run();
+at::Tensor& log2_out_npu_nocheck(at::Tensor& result, const at::Tensor& self)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Log")
+        .Input(self)
+        .Output(result)
+        .Attr("base", (float)2.0)
+        .Attr("scale", (float)1.0)
+        .Attr("shift", (float)0.0)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
-at::Tensor& log2_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    log2_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
+at::Tensor& log2_out(const at::Tensor& self, at::Tensor& result)
+{
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        self);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        log2_out_npu_nocheck(contiguous_result, self);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        log2_out_npu_nocheck(result, self);
+    }
+    return result;
+}
+
+at::Tensor log2(const at::Tensor& self)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
     log2_out_npu_nocheck(result, self);
-  }
-  return result;
+    return result;
 }
 
-at::Tensor log2(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  log2_out_npu_nocheck(result, self);
-  return result;
-}
-
-at::Tensor& log2_(at::Tensor& self) {
-  return acl_op::log2_out(self, self);
+at::Tensor& log2_(at::Tensor& self)
+{
+    return acl_op::log2_out(self, self);
 }
 } // namespace acl_op
