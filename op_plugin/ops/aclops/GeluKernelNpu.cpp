@@ -40,7 +40,7 @@ at::Tensor& gelu_out(const at::Tensor& self, at::Tensor& result)
 #endif
 
 #if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
-at::Tensor gelu(const at::Tensor& self, c10::string_view approximate)
+at::Tensor gelu(const at::Tensor& self, c10::string_view gelu)
 {
     return gelu_common_nocheck(self);
 }

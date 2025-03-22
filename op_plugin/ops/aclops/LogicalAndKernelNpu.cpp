@@ -49,21 +49,21 @@ at::Tensor &logical_and_out_npu_nocheck(at::Tensor &result, const at::Tensor &se
 }
 } // namespace
 
-at::Tensor &logical_and_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+at::Tensor &logical_and_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
 {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-    npu_preparation::CheckOut({self}, result, npu_preparation::get_tensor_npu_format(self), result.scalar_type(),
+    npu_preparation::CheckOut({self}, out, npu_preparation::get_tensor_npu_format(self), out.scalar_type(),
                               output_size);
 
-    if (npu_utils::check_match(&result) && (result.dtype() == at::kBool)) {
-        logical_and_out_npu_nocheck(result, self, other);
+    if (npu_utils::check_match(&out) && (out.dtype() == at::kBool)) {
+        logical_and_out_npu_nocheck(out, self, other);
     } else {
         auto result_copy = npu_preparation::ApplyTensorWithSizes(output_size, self.options().dtype(at::kBool));
         logical_and_out_npu_nocheck(result_copy, self, other);
         result_copy = at_npu::native::custom_ops::npu_dtype_cast(result_copy, self.scalar_type());
-        npu_utils::format_fresh_view(result, result_copy);
+        npu_utils::format_fresh_view(out, result_copy);
     }
-    return result;
+    return out;
 }
 
 at::Tensor logical_and(const at::Tensor &self, const at::Tensor &other)

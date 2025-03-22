@@ -21,10 +21,10 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 void _cummin_helper(const at::Tensor& self, at::Tensor& values, at::Tensor& indices, int64_t dim) {
-  DO_COMPATIBILITY(aclnnCummin, acl_op::_cummin_helper(self, values, indices, dim));
-  npu_preparation::check_tensor({self}, values, values.scalar_type(), self.sizes());
-  npu_preparation::check_tensor({self}, indices, indices.scalar_type(), self.sizes());
-  EXEC_NPU_CMD(aclnnCummin, self, dim, values, indices);
+    DO_COMPATIBILITY(aclnnCummin, acl_op::_cummin_helper(self, values, indices, dim));
+    npu_preparation::check_tensor({self}, values, values.scalar_type(), self.sizes());
+    npu_preparation::check_tensor({self}, indices, indices.scalar_type(), self.sizes());
+    EXEC_NPU_CMD(aclnnCummin, self, dim, values, indices);
 }
 
 }

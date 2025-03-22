@@ -20,12 +20,13 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-void _cummax_helper(const at::Tensor& self, at::Tensor& values, at::Tensor& indices, int64_t dim) {
-  DO_COMPATIBILITY(aclnnCummax, acl_op::_cummax_helper(self, values, indices, dim));
-  npu_preparation::check_tensor({self}, values, values.scalar_type(), self.sizes());
-  npu_preparation::check_tensor({self}, indices, indices.scalar_type(), self.sizes());
+void _cummax_helper(const at::Tensor& self, at::Tensor& values, at::Tensor& indices, int64_t dim)
+{
+    DO_COMPATIBILITY(aclnnCummax, acl_op::_cummax_helper(self, values, indices, dim));
+    npu_preparation::check_tensor({self}, values, values.scalar_type(), self.sizes());
+    npu_preparation::check_tensor({self}, indices, indices.scalar_type(), self.sizes());
 
-  EXEC_NPU_CMD(aclnnCummax, self, dim, values, indices);
+    EXEC_NPU_CMD(aclnnCummax, self, dim, values, indices);
 }
 
 }

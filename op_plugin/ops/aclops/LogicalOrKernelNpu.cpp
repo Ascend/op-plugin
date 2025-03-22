@@ -43,20 +43,20 @@ at::Tensor &logical_or_out_npu_nocheck(at::Tensor &result, const at::Tensor &sel
 }
 } // namespace
 
-at::Tensor &logical_or_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+at::Tensor &logical_or_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
 {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-    npu_preparation::CheckOut({self, other}, result, npu_preparation::get_tensor_npu_format(self), result.scalar_type(),
+    npu_preparation::CheckOut({self, other}, out, npu_preparation::get_tensor_npu_format(self), out.scalar_type(),
                               output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         logical_or_out_npu_nocheck(contiguous_result, self, other);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        logical_or_out_npu_nocheck(result, self, other);
+        logical_or_out_npu_nocheck(out, self, other);
     }
-    return result;
+    return out;
 }
 
 at::Tensor logical_or(const at::Tensor &self, const at::Tensor &other)

@@ -41,7 +41,7 @@ at::Tensor& quantize_per_tensor_out_nocheck(
        .Input(scales)
        .Input(zero_points)
        .Output(result)
-       .Attr("axis", (int64_t)1)
+       .Attr("axis", static_cast<int64_t>(1))
        .Attr("dtype", dtype_str)
        .Run();
 

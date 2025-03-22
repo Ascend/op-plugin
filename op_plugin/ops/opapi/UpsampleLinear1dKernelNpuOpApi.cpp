@@ -22,17 +22,17 @@ using npu_preparation = at_npu::native::OpPreparation;
 constexpr int DEFAULT_SCALES = -1;
 
 at::Tensor &upsample_linear1d_out(const at::Tensor &self, at::IntArrayRef output_size, bool align_corners,
-                                  c10::optional<double> scales, at::Tensor &result)
+                                  c10::optional<double> scales, at::Tensor &out)
 {
     DO_COMPATIBILITY(aclnnUpsampleLinear1d,
-                     acl_op::upsample_linear1d_out(self, output_size, align_corners, scales, result));
+                     acl_op::upsample_linear1d_out(self, output_size, align_corners, scales, out));
 
     auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
-    npu_preparation::check_tensor({self}, result, self, outsize);
+    npu_preparation::check_tensor({self}, out, self, outsize);
     double scales_h_attr = scales.value_or(DEFAULT_SCALES);
 
-    EXEC_NPU_CMD(aclnnUpsampleLinear1d, self, output_size, align_corners, scales_h_attr, result);
-    return result;
+    EXEC_NPU_CMD(aclnnUpsampleLinear1d, self, output_size, align_corners, scales_h_attr, out);
+    return out;
 }
 
 at::Tensor upsample_linear1d(const at::Tensor &self, at::IntArrayRef output_size, bool align_corners,

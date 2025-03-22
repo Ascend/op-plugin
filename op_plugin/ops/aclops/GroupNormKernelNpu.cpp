@@ -105,8 +105,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_swish_out_npu(
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm(
     const at::Tensor& X,
-    const c10::optional<at::Tensor>& gamma_opt,
-    const c10::optional<at::Tensor>& beta_opt,
+    const c10::optional<at::Tensor>& weight,
+    const c10::optional<at::Tensor>& bias,
     int64_t N,
     int64_t C,
     int64_t HxW,
@@ -118,8 +118,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm(
     at::Tensor variance = npu_preparation::apply_tensor_with_format({N, group}, X.options(), ACL_FORMAT_ND);
     at::Tensor rstd = npu_preparation::apply_tensor_with_format({N, group}, X.options(), ACL_FORMAT_ND);
     // DO_COMPATIBILITY is used to determine whether GroupNormSwish exists
-    DO_COMPATIBILITY(aclnnGroupNormSwish, acl_op::native_group_norm_out_npu(result, mean, variance, rstd, X, gamma_opt,
-                                                                            beta_opt, group, eps, C));
-    return native_group_norm_swish_out_npu(result, mean, variance, rstd, X, gamma_opt, beta_opt, group, eps, C);
+    DO_COMPATIBILITY(aclnnGroupNormSwish, acl_op::native_group_norm_out_npu(result, mean, variance, rstd, X, weight,
+        bias, group, eps, C));
+    return native_group_norm_swish_out_npu(result, mean, variance, rstd, X, weight, bias, group, eps, C);
 }
 } // namespace acl_op

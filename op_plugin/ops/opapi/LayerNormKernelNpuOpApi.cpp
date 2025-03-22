@@ -22,12 +22,12 @@ namespace op_api {
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tensor &input,
                                                                  at::IntArrayRef normalized_shape,
-                                                                 const c10::optional<at::Tensor> &weight_ex,
-                                                                 const c10::optional<at::Tensor> &bias_ex, double eps)
+                                                                 const c10::optional<at::Tensor> &weight,
+                                                                 const c10::optional<at::Tensor> &bias, double eps)
 {
-    DO_COMPATIBILITY(aclnnLayerNorm, acl_op::native_layer_norm(input, normalized_shape, weight_ex, bias_ex, eps));
-    const at::Tensor &weight_op = c10::value_or_else(weight_ex, [] { return at::Tensor(); });
-    const at::Tensor &bias_op = c10::value_or_else(bias_ex, [] { return at::Tensor(); });
+    DO_COMPATIBILITY(aclnnLayerNorm, acl_op::native_layer_norm(input, normalized_shape, weight, bias, eps));
+    const at::Tensor &weight_op = c10::value_or_else(weight, [] { return at::Tensor(); });
+    const at::Tensor &bias_op = c10::value_or_else(bias, [] { return at::Tensor(); });
     const int normalized_ndim = static_cast<int>(normalized_shape.size());
     TORCH_CHECK(normalized_ndim >= 1, "Expected normalized_shape to be at least 1-dimensional, i.e., ",
         "containing at least one element, but got normalized_shape = ", normalized_shape,
@@ -41,9 +41,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
         " and normalized_shape = ", normalized_shape,
         OPS_ERROR(ErrCode::PARAM));
 
-    at::Tensor weight =
+    at::Tensor input_weight =
         weight_op.defined() ? weight_op.resize_(normalized_shape) : at::ones(normalized_shape, input.options());
-    at::Tensor bias =
+    at::Tensor input_bias =
         bias_op.defined() ? bias_op.resize_(normalized_shape) : at::zeros(normalized_shape, input.options());
 
     // construct output for hostapi
@@ -89,7 +89,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
             at_npu::native::OpPreparation::apply_tensor_without_format(mean_shape, input.options().dtype(acc_type));
     }
     // call HostAPI function
-    EXEC_NPU_CMD(aclnnLayerNorm, input, normalized_shape, weight, bias, eps, output, mean_out, rstd_out);
+    EXEC_NPU_CMD(aclnnLayerNorm, input, normalized_shape, input_weight, input_bias, eps, output, mean_out, rstd_out);
     return std::tie(output, mean_out, rstd_out);
 }
 

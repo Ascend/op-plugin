@@ -45,13 +45,13 @@ at::Tensor &nll_loss2d_backward_out_nocheck(at::Tensor &grad_input, const at::Te
 } // namespace
 
 at::Tensor &nll_loss2d_backward_out(const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &target,
-                                    const c10::optional<at::Tensor> &weight_opt, int64_t reduction,
+                                    const c10::optional<at::Tensor> &weight, int64_t reduction,
                                     int64_t ignore_index, const at::Tensor &total_weight, at::Tensor &grad_input)
 {
-    at::Tensor weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
+    at::Tensor weight_ = c10::value_or_else(weight, [] { return at::Tensor(); });
     at::Tensor weight_tensor = at::ones(self.size(1), self.options());
-    if (weight.defined()) {
-        weight_tensor = npu_utils::format_contiguous(weight);
+    if (weight_.defined()) {
+        weight_tensor = npu_utils::format_contiguous(weight_);
     }
 
     if (ignore_index >= 0 && ignore_index < self.size(1)) {

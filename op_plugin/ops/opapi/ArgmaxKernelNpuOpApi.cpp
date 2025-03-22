@@ -42,7 +42,7 @@ static at::Tensor& argmax_exec(const at::Tensor& self, at::optional<int64_t> dim
     return result;
 }
 
-at::Tensor& argmax_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result)
+at::Tensor& argmax_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& out)
 {
     if (dim.has_value()) {
         auto dim_ = at::maybe_wrap_dim(dim.value(), self.dim());
@@ -54,7 +54,7 @@ at::Tensor& argmax_out(const at::Tensor& self, at::optional<int64_t> dim, bool k
     } else {
         TORCH_CHECK_INDEX(self.numel() != 0, "argmax(): Expected reduction dim to be specified for input.numel() == 0.");
     }
-    DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax_out(self, dim, keepdim, result));
-    return argmax_exec(self, dim, keepdim, result, true);
+    DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax_out(self, dim, keepdim, out));
+    return argmax_exec(self, dim, keepdim, out, true);
 }
 }

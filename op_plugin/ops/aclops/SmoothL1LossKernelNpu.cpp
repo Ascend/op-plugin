@@ -44,20 +44,20 @@ at::Tensor &smooth_l1_loss_out_npu_nocheck(at::Tensor &result, const at::Tensor 
 } // namespace
 
 at::Tensor &smooth_l1_loss_out(const at::Tensor &self, const at::Tensor &target, int64_t reduction, double beta,
-                               at::Tensor &result)
+                               at::Tensor &out)
 {
     auto output_size = op_infer::smooth_l1_loss_npu_output_size(self, reduction);
-    npu_preparation::CheckOut({self, target}, result, npu_preparation::get_tensor_npu_format(self), self.scalar_type(),
+    npu_preparation::CheckOut({self, target}, out, npu_preparation::get_tensor_npu_format(self), self.scalar_type(),
                               output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         smooth_l1_loss_out_npu_nocheck(contiguous_result, self, target, reduction, beta);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        smooth_l1_loss_out_npu_nocheck(result, self, target, reduction, beta);
+        smooth_l1_loss_out_npu_nocheck(out, self, target, reduction, beta);
     }
-    return result;
+    return out;
 }
 
 at::Tensor smooth_l1_loss(const at::Tensor &self, const at::Tensor &target, int64_t reduction, double beta)

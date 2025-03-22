@@ -20,19 +20,21 @@
 
 namespace op_api {
 
-at::Tensor softmax(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype) {
-  DO_COMPATIBILITY(aclnnSoftmax, acl_op::softmax(self, dim, dtype));
-  auto result = [&]() {
-    at::NoNamesGuard guard;
-    at::Tensor converted = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
-    return at::_softmax(converted, dim, false);
-  }();
-  at::namedinference::propagate_names(result, self);
-  return result;
+at::Tensor softmax(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype)
+{
+    DO_COMPATIBILITY(aclnnSoftmax, acl_op::softmax(self, dim, dtype));
+    auto result = [&]() {
+        at::NoNamesGuard guard;
+        at::Tensor converted = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
+        return at::_softmax(converted, dim, false);
+    }();
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
-at::Tensor softmax(const at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype) {
-  return op_api::softmax(self, dimname_to_position(self, dim), dtype);
+at::Tensor softmax(const at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype)
+{
+    return op_api::softmax(self, dimname_to_position(self, dim), dtype);
 }
 
 }
