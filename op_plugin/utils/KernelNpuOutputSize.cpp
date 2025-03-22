@@ -1843,4 +1843,56 @@ c10::SmallVector<int64_t, SIZE> kronecker_quant_scale_size(const at::Tensor &sel
     return outputSize;
 }
 
+c10::SmallVector<int64_t, SIZE> matmul_output_size(const at::Tensor &tensor1, const at::Tensor &tensor2)
+{
+    c10::SmallVector<int64_t, SIZE> output_size;
+    auto dim_tensor1 = tensor1.dim();
+    auto dim_tensor2 = tensor2.dim();
+
+    TORCH_CHECK(dim_tensor1 > 0 && dim_tensor2 > 0, "matmul got error dimentions: ", "(", dim_tensor1, ", ",
+                dim_tensor2, ")", OPS_ERROR(ErrCode::PARAM));
+
+    if (dim_tensor1 == 1 && dim_tensor2 == 1) {
+        output_size = {};
+    } else if (dim_tensor1 == 2 && dim_tensor2 == 1) {
+        output_size = {tensor1.size(0)};
+    } else if (dim_tensor1 == 1 && dim_tensor2 == 2) {
+        output_size = {tensor2.size(1)};
+    } else if (dim_tensor1 == 2 && dim_tensor2 == 2) {
+        output_size = {tensor1.size(0), tensor2.size(1)};
+    } else if (dim_tensor1 >= 3 && (dim_tensor2 == 1 || dim_tensor2 == 2)) {
+        // t1:(N, n, m) * t2:(m, p)
+        auto size1 = tensor1.sizes();
+        auto tmp = c10::SmallVector<int64_t, SIZE>{tensor2.size(0), 1};
+        auto size2 = dim_tensor2 == 1 ? tmp : tensor2.sizes();
+        output_size.insert(output_size.end(), size1.begin(), size1.end() - 1);
+        if (dim_tensor2 > 1) {
+            output_size.push_back(size2[dim_tensor2 - 1]);
+        }
+    } else if ((dim_tensor1 == 1 || dim_tensor1 == 2) && dim_tensor2 >= 3) {
+        auto tmp = c10::SmallVector<int64_t, SIZE>{1, tensor1.size(0)};
+        auto size1 = dim_tensor1 == 1 ? tmp : tensor1.sizes();
+        auto size2 = tensor2.sizes();
+        output_size.insert(output_size.end(), size2.begin(), size2.end() - 2);
+        if (dim_tensor1 > 1) {
+            output_size.push_back(size1[0]);
+        }
+        output_size.push_back(size2[dim_tensor2 - 1]);
+    } else if (dim_tensor1 >= 3 && dim_tensor2 >= 3) {
+        // t1:(b1, n, m1) * t2:(x2, m2, p)
+        int64_t n = tensor1.size(-2);
+        at::IntArrayRef batch_tensor1(tensor1.sizes().data(), dim_tensor1 - 2);
+        int64_t p = tensor2.size(-1);
+        at::IntArrayRef batch_tensor2(tensor2.sizes().data(), dim_tensor2 - 2);
+        std::vector<int64_t> expand_batch_portion = at::infer_size(batch_tensor1, batch_tensor2);
+        c10::SmallVector<int64_t, SIZE> output_expand_size(expand_batch_portion);
+        output_expand_size.insert(output_expand_size.end(), {n, p});
+        output_size = output_expand_size;
+    } else {
+        TORCH_CHECK(false, "matmul got error sizes: ", "(", dim_tensor1, ", ", dim_tensor2, ")", OPS_ERROR(ErrCode::PARAM));
+    }
+
+    return output_size;
+}
+
 } // namespace op_infer
