@@ -33,6 +33,7 @@ at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tens
                                       const c10::optional<at::Tensor> &activation_scale,
                                       const c10::optional<at::Tensor> &weight_scale,
                                       const c10::optional<at::Tensor> &group_list,
+                                      const c10::optional<at::Tensor> &expand_scales,
                                       c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
                                       int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
                                       int64_t global_bs, int64_t out_dtype, int64_t comm_quant_mode, int64_t group_list_type)
@@ -59,7 +60,7 @@ at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tens
         output = npu_preparation::apply_tensor_without_format({n, h}, expert_ids.options().dtype(at::kHalf));
     }
     EXEC_NPU_CMD(aclnnMoeDistributeCombine, expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
-        activation_scale, weight_scale, group_list,
+        activation_scale, weight_scale, group_list, expand_scales,
         group_ep_ptr, ep_world_size, ep_rank_id,
         moe_expert_num,
         group_tp_ptr, tp_world_size, tp_rank_id,
