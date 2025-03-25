@@ -2556,6 +2556,46 @@ x，r1，r2的最后一维必须是64的倍数。
 
 
 _add_torch_npu_docstr(
+    "npu_mrope",
+    """
+torch_npu.npu_mrope(Tensor positions, Tensor query, Tensor key, Tensor cos_sin_cache, int head_size, *, int[]? mrope_section, str? rotary_mode='half') -> (Tensor, Tensor)
+功能描述
+实现旋转位置编码。通过传入cos和sin的cache执行旋转位置编码计算。
+
+参数说明
+positions (Tensor): 输入索引，用于选取位置编码张量。要求是一个维度为1D或2D的Tensor，shape为 (numTokens)或(3, numTokens)，1D维度输入是rope模式，2D维度输入是mrope模式。numTokens表示一个序列中的token数量。支持非连续的Tensor，支持空Tensor。数据类型支持INT32、INT64，数据格式支持ND。
+queryIn (Tensor): 要执行旋转位置编码的第一个张量，维度为2D的Tensor，shape为 (numTokens, numQHeads*headSize)。numQHeads表示query的注意力头数量。headSize表示每个注意力头维度大小。支持非连续的Tensor，支持空Tensor。数据类型支持BFLOAT16、FLOAT16、FLOAT32，数据格式支持ND。
+keyIn (Tensor): 要执行旋转位置编码的第二个张量，维度为2D的Tensor，shape为 (numTokens, numKHeads*headSize)。numKHeads表示key的注意力头数量。headSize表示每个注意力头维度大小。支持非连续的Tensor，支持空Tensor。数据类型支持BFLOAT16、FLOAT16、FLOAT32，数据格式支持ND。
+cosSinCache (Tensor): 参与计算的位置编码张量，要求shape为一个2D的(maxSeqLen, rotaryDim)。maxSeqLen表示模型处理的序列的最大长度。rotaryDim表示旋转位置嵌入的维度大小。支持非连续的Tensor，支持空Tensor。数据类型支持BFLOAT16、FLOAT16、FLOAT32，数据格式支持ND。
+headSize(int): 表示每个注意力头维度大小。数据类型int64。
+mropeSection(int[]): 可选参数，multimodal section配置，用于整合输入的位置编码张量信息，输入mropeSection属性表示使能mrope模式。默认值为不使能mrope模式(即rope模式)输入为[0, 0, 0]。
+rotary_mode(str): 可选参数，旋转模式，'half'表示rotate_half(GPT-NeoX style)计算模式，'interleave'表示rotate_interleaved(GPT-J style)计算模式。默认值为'half'。
+
+约束说明
+queryIn、keyIn、cosSinCache只支持2维shape输入。
+当输入是BFLOAT16或FLOAT16时，rotary_dim要求是32的倍数，当输入是FLOAT32时，rotary_dim要求是16的倍数。
+当输入tensor positions中值域超过cosSinCache的0维maxSeqLen，会有越界报错。
+mrope模式下，mropeSection输入mropeSection[0]+mropeSection[1]+mropeSection[2]==rotary_dim/2
+
+示例
+>>> num_tokens = 8
+>>> num_q_heads = 32
+>>> num_kv_heads = num_q_heads
+>>> head_size = 128
+>>> max_seq_len = num_tokens
+>>> rotary_dim = head_size
+>>> positions = torch.arange(num_tokens, dtype=torch.int64).repeat(3, 1).npu()
+>>> query = torch.rand(num_tokens, num_q_heads*head_size, dtype=torch.float32).npu()
+>>> key = torch.rand(num_tokens, num_kv_heads*head_size, dtype=torch.float32).npu()
+>>> cos_sin_cache = torch.rand(max_seq_len, rotary_dim, dtype=torch.float32).npu()
+>>> rotary_mode = 'half'
+>>> mrope_section = [16, 24, 24]
+>>> query_out, key_out = torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, mrope_section=mrope_section, rotary_mode=rotary_mode)
+"""
+)
+
+
+_add_torch_npu_docstr(
     "npu_rotated_box_decode",
     """
 torch_npu.npu_rotated_box_decode(anchor_boxes, deltas, weight) -> Tensor

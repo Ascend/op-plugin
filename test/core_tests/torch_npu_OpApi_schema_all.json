@@ -3768,5 +3768,8 @@
   },
   "func: npu_advance_step_flashattn(Tensor(a!) input_tokens, Tensor sampled_token_ids, Tensor(b!) input_positions, Tensor(c!) seq_lens, Tensor(d!) slot_mapping, Tensor block_tables, int num_seqs, int num_queries, int block_size) -> ()": {
     "version": ["all_version"]
+  },
+  "func: npu_mrope(Tensor positions, Tensor query, Tensor key, Tensor cos_sin_cache, int head_size, *, int[]? mrope_section=None, str? rotary_mode='half') -> (Tensor, Tensor)": {
+    "version": ["all_version"]
   }
 }
