@@ -21,134 +21,143 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_op_command = at_npu::native::OpCommand;
 
 namespace {
-at::Tensor& not_out_npu(at::Tensor& result, const at::Tensor& self) {
-  npu_op_command cmd;
-  cmd.Name("LogicalNot")
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
-}
-
-at::Tensor& not_out_npu(at::Tensor& result, const at::Scalar self) {
-  npu_op_command cmd;
-  cmd.Name("LogicalNot")
-      .Input(self, self.type())
-      .Output(result)
-      .Run();
-  return result;
-}
-
-at::Tensor& and_out_npu(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
-  npu_op_command cmd;
-  cmd.Name("LogicalAnd")
-      .Input(self)
-      .Input(other)
-      .Output(result)
-      .Run();
-  return result;
-}
-
-at::Tensor& and_out_npu(at::Tensor& result, const at::Tensor& self, const at::Scalar& other) {
-  npu_op_command cmd;
-  cmd.Name("LogicalAnd")
-      .Input(self)
-      .Input(other, self.scalar_type())
-      .Output(result)
-      .Run();
-  return result;
-}
-
-at::Tensor& or_out_npu(at::Tensor& result, const at::Tensor& self, const at::Scalar& other) {
-  npu_op_command cmd;
-  cmd.Name("LogicalOr")
-      .Input(self)
-      .Input(other, self.scalar_type())
-      .Output(result)
-      .Run();
-  return result;
-}
-
-at::Tensor& xor_out_npu(
-    at::Tensor& result,
-    const at::Tensor& self,
-    const at::Tensor& other) {
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  if (self.dtype() == at::ScalarType::Bool) {
-    auto not_self_result = npu_preparation::apply_tensor(self, output_size);
-    not_out_npu(not_self_result, self);
-
-    auto not_other_result = npu_preparation::apply_tensor(self, output_size);
-    not_out_npu(not_other_result, other);
-
-    auto not_self_and_other = npu_preparation::apply_tensor(self, output_size);
-    and_out_npu(not_self_and_other, not_self_result, other);
-
-    auto self_and_not_other = npu_preparation::apply_tensor(self, output_size);
-    and_out_npu(self_and_not_other, self, not_other_result);
-
+at::Tensor& not_out_npu(at::Tensor& result, const at::Tensor& self)
+{
     npu_op_command cmd;
-    cmd.Name("LogicalOr")
-        .Input(not_self_and_other)
-        .Input(self_and_not_other)
+    cmd.Name("LogicalNot")
+        .Input(self)
         .Output(result)
         .Run();
-  } else {
+    return result;
+}
+
+at::Tensor& not_out_npu(at::Tensor& result, const at::Scalar self)
+{
     npu_op_command cmd;
-    cmd.Name("BitwiseXor")
+    cmd.Name("LogicalNot")
+        .Input(self, self.type())
+        .Output(result)
+        .Run();
+    return result;
+}
+
+at::Tensor& and_out_npu(at::Tensor& result, const at::Tensor& self, const at::Tensor& other)
+{
+    npu_op_command cmd;
+    cmd.Name("LogicalAnd")
         .Input(self)
         .Input(other)
         .Output(result)
         .Run();
-  }
-  return result;
+    return result;
+}
+
+at::Tensor& and_out_npu(at::Tensor& result, const at::Tensor& self, const at::Scalar& other)
+{
+    npu_op_command cmd;
+    cmd.Name("LogicalAnd")
+        .Input(self)
+        .Input(other, self.scalar_type())
+        .Output(result)
+        .Run();
+    return result;
+}
+
+at::Tensor& or_out_npu(at::Tensor& result, const at::Tensor& self, const at::Scalar& other)
+{
+    npu_op_command cmd;
+    cmd.Name("LogicalOr")
+        .Input(self)
+        .Input(other, self.scalar_type())
+        .Output(result)
+        .Run();
+    return result;
 }
 
 at::Tensor& xor_out_npu(
     at::Tensor& result,
     const at::Tensor& self,
-    const at::Scalar& other) {
-  if (self.dtype() == at::ScalarType::Bool) {
-    auto not_self_result = npu_preparation::apply_tensor(self);
-    not_out_npu(not_self_result, self);
+    const at::Tensor& other)
+{
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    if (self.dtype() == at::ScalarType::Bool) {
+        auto not_self_result = npu_preparation::apply_tensor(self, output_size);
+        not_out_npu(not_self_result, self);
 
-    auto not_self_or_other = npu_preparation::apply_tensor(self);
-    or_out_npu(not_self_or_other, not_self_result, other);
+        auto not_other_result = npu_preparation::apply_tensor(self, output_size);
+        not_out_npu(not_other_result, other);
 
-    auto not_not_self_or_other = npu_preparation::apply_tensor(self);
-    not_out_npu(not_not_self_or_other, not_self_or_other);
+        auto not_self_and_other = npu_preparation::apply_tensor(self, output_size);
+        and_out_npu(not_self_and_other, not_self_result, other);
 
-    auto not_self_and_other = npu_preparation::apply_tensor(self);
-    and_out_npu(not_self_and_other, not_self_result, other);
+        auto self_and_not_other = npu_preparation::apply_tensor(self, output_size);
+        and_out_npu(self_and_not_other, self, not_other_result);
 
-    npu_op_command cmd;
-    cmd.Name("LogicalOr")
-        .Input(not_self_and_other)
-        .Input(not_not_self_or_other)
-        .Output(result)
-        .Run();
-  } else {
-    npu_op_command cmd;
-    cmd.Name("BitwiseXor")
-        .Input(self)
-        .Input(other, self.scalar_type())
-        .Output(result)
-        .Run();
-  }
-  return result;
+        npu_op_command cmd;
+        cmd.Name("LogicalOr")
+            .Input(not_self_and_other)
+            .Input(self_and_not_other)
+            .Output(result)
+            .Run();
+    } else {
+        npu_op_command cmd;
+        cmd.Name("BitwiseXor")
+            .Input(self)
+            .Input(other)
+            .Output(result)
+            .Run();
+    }
+    return result;
+}
+
+at::Tensor& xor_out_npu(
+    at::Tensor& result,
+    const at::Tensor& self,
+    const at::Scalar& other)
+{
+    if (self.dtype() == at::ScalarType::Bool) {
+        auto not_self_result = npu_preparation::apply_tensor(self);
+        not_out_npu(not_self_result, self);
+
+        auto not_self_or_other = npu_preparation::apply_tensor(self);
+        or_out_npu(not_self_or_other, not_self_result, other);
+
+        auto not_not_self_or_other = npu_preparation::apply_tensor(self);
+        not_out_npu(not_not_self_or_other, not_self_or_other);
+
+        auto not_self_and_other = npu_preparation::apply_tensor(self);
+        and_out_npu(not_self_and_other, not_self_result, other);
+
+        npu_op_command cmd;
+        cmd.Name("LogicalOr")
+            .Input(not_self_and_other)
+            .Input(not_not_self_or_other)
+            .Output(result)
+            .Run();
+    } else {
+        npu_op_command cmd;
+        cmd.Name("BitwiseXor")
+            .Input(self)
+            .Input(other, self.scalar_type())
+            .Output(result)
+            .Run();
+    }
+    return result;
 }
 } // namespace
 
-at::Tensor __xor__(const at::Tensor& self, const at::Tensor& other) {
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  xor_out_npu(result, self, other);
-  return result;
+at::Tensor __xor__(const at::Tensor& self, const at::Tensor& other)
+{
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+    xor_out_npu(result, self, other);
+    return result;
 }
 
-at::Tensor __xor__(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  xor_out_npu(result, self, other);
-  return result;
+at::Tensor __xor__(const at::Tensor& self, const at::Scalar& other)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    xor_out_npu(result, self, other);
+    return result;
 }
 }  // namespace acl_op

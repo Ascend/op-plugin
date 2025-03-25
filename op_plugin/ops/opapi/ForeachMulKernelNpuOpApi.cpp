@@ -37,7 +37,7 @@ void _split_and_exec_npu_cmd_mul(at::TensorList &tensors1, at::TensorList &tenso
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_tensors2(tensors2.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
@@ -109,7 +109,7 @@ void _split_and_exec_npu_cmd_mul_scalarlist(at::TensorList &tensors1, at::ArrayR
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::ArrayRef<at::Scalar> temp_scalars(scalars.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
@@ -147,7 +147,8 @@ std::vector<at::Tensor> _foreach_mul(at::TensorList tensors, at::ArrayRef<at::Sc
 
 void _foreach_mul_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 {
-    DO_COMPATIBILITY(aclnnForeachMulScalarList, at::native::foreach_tensor_mul_scalarlist_kernel_slow_(tensors, scalars));
+    DO_COMPATIBILITY(aclnnForeachMulScalarList,
+                     at::native::foreach_tensor_mul_scalarlist_kernel_slow_(tensors, scalars));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);

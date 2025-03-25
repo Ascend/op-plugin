@@ -22,8 +22,8 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 #if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor &max_unpool3d_backward_out_npu_nocheck(at::Tensor &grad_input, const at::Tensor &grad_output,
-                                                  const at::Tensor &indices)
+at::Tensor& max_unpool3d_backward_out_npu_nocheck(at::Tensor& grad_input, const at::Tensor& grad_output,
+                                                  const at::Tensor& indices)
 {
     int64_t N = 1;
     int64_t C = indices.size(0);
@@ -50,14 +50,14 @@ at::Tensor &max_unpool3d_backward_out_npu_nocheck(at::Tensor &grad_input, const 
 } // namespace
 
 #if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor &max_unpool3d_backward_out(
-    const at::Tensor &grad_output,
-    const at::Tensor &self,
-    const at::Tensor &indices,
+at::Tensor& max_unpool3d_backward_out(
+    const at::Tensor& grad_output,
+    const at::Tensor& self,
+    const at::Tensor& indices,
     at::IntArrayRef output_size,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
-    at::Tensor &grad_input)
+    at::Tensor& grad_input)
 {
     TORCH_CHECK(output_size.size() == 3, "There should be exactly 3 elements (depth, height, width) in output_size",
                 OPS_ERROR(ErrCode::PARAM));
@@ -76,9 +76,9 @@ at::Tensor &max_unpool3d_backward_out(
 }
 
 at::Tensor max_unpool3d_backward(
-    const at::Tensor &grad_output,
-    const at::Tensor &self,
-    const at::Tensor &indices,
+    const at::Tensor& grad_output,
+    const at::Tensor& self,
+    const at::Tensor& indices,
     at::IntArrayRef output_size,
     at::IntArrayRef stride,
     at::IntArrayRef padding)
@@ -104,19 +104,20 @@ at::Tensor& max_unpool3d_backward_out(
     at::IntArrayRef output_size,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
-    at::Tensor& grad_input) {
-  npu_preparation::CheckOut(
-      {grad_output, self, indices},
-      grad_input,
-      self);
-  if (!npu_utils::check_match(&grad_input)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
-    max_unpool3d_backward_out_npu_nocheck(contiguous_result, grad_output, indices);
-    npu_utils::format_fresh_view(grad_input, contiguous_result);
-  } else {
-    max_unpool3d_backward_out_npu_nocheck(grad_input, grad_output, indices);
-  }
-  return grad_input;
+    at::Tensor& grad_input)
+{
+    npu_preparation::CheckOut(
+        {grad_output, self, indices},
+        grad_input,
+        self);
+    if (!npu_utils::check_match(&grad_input)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
+        max_unpool3d_backward_out_npu_nocheck(contiguous_result, grad_output, indices);
+        npu_utils::format_fresh_view(grad_input, contiguous_result);
+    } else {
+        max_unpool3d_backward_out_npu_nocheck(grad_input, grad_output, indices);
+    }
+    return grad_input;
 }
 
 at::Tensor max_unpool3d_backward(
@@ -125,23 +126,24 @@ at::Tensor max_unpool3d_backward(
     const at::Tensor& indices,
     at::IntArrayRef output_size,
     at::IntArrayRef stride,
-    at::IntArrayRef padding) {
-  TORCH_CHECK(
-      output_size.size() == 3,
-      "There should be exactly 3 elements (depth, height, width) in output_size");
-  TORCH_CHECK(
-      (self.ndimension() == 4 || self.ndimension() == 5),
-      "Input to max_unpooling2d should be a 4d or 5d Tensor");
-  TORCH_CHECK(
-      self.sizes() == indices.sizes(),
-      "Shape of indices should match shape of input");
-  TORCH_CHECK(self.numel() > 0, "Input must be non-empty");
+    at::IntArrayRef padding)
+{
+    TORCH_CHECK(
+        output_size.size() == 3,
+        "There should be exactly 3 elements (depth, height, width) in output_size");
+    TORCH_CHECK(
+        (self.ndimension() == 4 || self.ndimension() == 5),
+        "Input to max_unpooling2d should be a 4d or 5d Tensor");
+    TORCH_CHECK(
+        self.sizes() == indices.sizes(),
+        "Shape of indices should match shape of input");
+    TORCH_CHECK(self.numel() > 0, "Input must be non-empty");
 
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
+    at::Tensor grad_input = npu_preparation::apply_tensor(self);
 
-  max_unpool3d_backward_out_npu_nocheck(grad_input, grad_output, indices);
+    max_unpool3d_backward_out_npu_nocheck(grad_input, grad_output, indices);
 
-  return grad_input;
+    return grad_input;
 }
 #endif
 } // namespace acl_op
