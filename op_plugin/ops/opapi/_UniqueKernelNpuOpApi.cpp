@@ -47,7 +47,8 @@ std::tuple<at::Tensor, at::Tensor> _unique(
     TORCH_CHECK(ret == 0, "aclGetViewShape failed.", OPS_ERROR(ErrCode::ACL));
     c10::SmallVector<int64_t, SIZE> output_size(view_dims, view_dims + view_dim_num);
     y.resize_(output_size);
-    delete view_dims;
+    // Need to use delete[] to release memory to avoid memory leakage!
+    delete[] view_dims;
     view_dims = nullptr;
     return std::tuple<at::Tensor, at::Tensor>(y, y_inverse);
 }
@@ -82,6 +83,7 @@ std::tuple<at::Tensor, at::Tensor> _unique(
     TORCH_CHECK(ret == 0, "aclGetViewShape failed.", OPS_ERROR(ErrCode::ACL));
     c10::SmallVector<int64_t, SIZE> output_size(view_dims, view_dims + view_dim_num);
     y.resize_(output_size);
+    // Need to use delete[] to release memory to avoid memory leakage!
     delete[] view_dims;
     view_dims = nullptr;
     return std::tuple<at::Tensor, at::Tensor>(y, y_inverse);

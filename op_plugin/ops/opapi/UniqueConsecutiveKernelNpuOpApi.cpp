@@ -63,7 +63,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_consecutive(const at::Tens
     c10::SmallVector<int64_t, SIZE> output_size_y_counts(view_dims, view_dims + view_dim_num);
     y_counts.resize_(output_size_y_counts);
 
-    delete view_dims;
+    // Need to use delete[] to release memory to avoid memory leakage!
+    delete[] view_dims;
     view_dims = nullptr;
     return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, y_inverse, y_counts);
 }
