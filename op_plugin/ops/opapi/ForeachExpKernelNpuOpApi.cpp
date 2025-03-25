@@ -11,10 +11,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/ForeachUtils.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include <ATen/native/ForeachUtils.h>
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
@@ -37,65 +37,65 @@ void _split_and_exec_npu_cmd_exp(const at::TensorList tensors1, at::TensorList r
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
         EXEC_NPU_CMD(aclnnForeachExp, temp_tensors1, temp_result);
     }
 }
 
-void _foreach_exp_(const at::TensorList self)
+void _foreach_exp_(const at::TensorList tensors)
 {
-    DO_COMPATIBILITY(aclnnForeachExp, at::native::foreach_tensor_exp_slow_(self));
+    DO_COMPATIBILITY(aclnnForeachExp, at::native::foreach_tensor_exp_slow_(tensors));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_exp_slow_(self);
+        return at::native::foreach_tensor_exp_slow_(tensors);
     }
 
-    at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
-        return at::native::foreach_tensor_exp_slow_(self);
+    at::native::check_foreach_api_restrictions(tensors);
+    if (!at::native::can_use_fast_route(tensors) || at::native::has_integral_tensor(tensors, true)) {
+        return at::native::foreach_tensor_exp_slow_(tensors);
     }
 
-    if (self.empty()) {
+    if (tensors.empty()) {
         return;
     }
-    auto scalar_type = self[0].scalar_type();
+    auto scalar_type = tensors[0].scalar_type();
     TORCH_CHECK(scalar_type == at::ScalarType::Half || scalar_type == at::ScalarType::Float ||
                 scalar_type == at::ScalarType::BFloat16, "input must be half, float, or bfloat16");
-    _split_and_exec_npu_cmd_exp(self, self, true);
+    _split_and_exec_npu_cmd_exp(tensors, tensors, true);
 }
 
-std::vector<at::Tensor> _foreach_exp(const at::TensorList self)
+std::vector<at::Tensor> _foreach_exp(const at::TensorList tensors)
 {
-    DO_COMPATIBILITY(aclnnForeachExp, at::native::foreach_tensor_exp_slow(self));
+    DO_COMPATIBILITY(aclnnForeachExp, at::native::foreach_tensor_exp_slow(tensors));
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     if (!is_support_nd_out) {
-        return at::native::foreach_tensor_exp_slow(self);
+        return at::native::foreach_tensor_exp_slow(tensors);
     }
     
-    at::native::check_foreach_api_restrictions(self);
-    if (!at::native::can_use_fast_route(self) || at::native::has_integral_tensor(self, true)) {
-        return at::native::foreach_tensor_exp_slow(self);
+    at::native::check_foreach_api_restrictions(tensors);
+    if (!at::native::can_use_fast_route(tensors) || at::native::has_integral_tensor(tensors, true)) {
+        return at::native::foreach_tensor_exp_slow(tensors);
     }
 
-    auto scalar_type = self[0].scalar_type();
+    auto scalar_type = tensors[0].scalar_type();
     TORCH_CHECK(scalar_type == at::ScalarType::Half || scalar_type == at::ScalarType::Float ||
                 scalar_type == at::ScalarType::BFloat16, "input must be half, float or bfloat16");
 
     // construct output tensorlist
     std::vector<at::Tensor> result;
-    for (const at::Tensor &tensor : self) {
+    for (const at::Tensor &tensor : tensors) {
         auto output_size = op_infer::input_same_output_size(tensor);
         result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 
-    _split_and_exec_npu_cmd_exp(self, result_, false);
+    _split_and_exec_npu_cmd_exp(tensors, result_, false);
     return result;
 }
 } // namespace at_npu

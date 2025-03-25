@@ -22,17 +22,18 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 at::Tensor& add_relu_out_nocheck(
-    at::Tensor& result,
+    at::Tensor& out,
     const at::Tensor& self,
     const at::Tensor& other,
-    at::Scalar alpha) {
-  at::Tensor add_result = acl_op::add(self, other, alpha);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Relu")
-      .Input(add_result)
-      .Output(result)
-      .Run();
-  return result;
+    at::Scalar alpha)
+{
+    at::Tensor add_result = acl_op::add(self, other, alpha);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Relu")
+        .Input(add_result)
+        .Output(out)
+        .Run();
+    return out;
 }
 } // namespace
 
@@ -40,29 +41,32 @@ at::Tensor& _add_relu_out(
     const at::Tensor& self,
     const at::Tensor& other,
     const at::Scalar& alpha,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self, other},
-      result,
-      self);
+    at::Tensor& out)
+{
+    npu_preparation::CheckOut(
+        {self, other},
+        out,
+        self);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    add_relu_out_nocheck(contiguous_result, self, other, alpha);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    add_relu_out_nocheck(result, self, other, alpha);
-  }
-  return result;
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        add_relu_out_nocheck(contiguous_result, self, other, alpha);
+        npu_utils::format_fresh_view(out, contiguous_result);
+    } else {
+        add_relu_out_nocheck(out, self, other, alpha);
+    }
+    return out;
 }
 
-at::Tensor _add_relu(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  add_relu_out_nocheck(result, self, other, alpha);
-  return result;
+at::Tensor _add_relu(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha)
+{
+    at::Tensor out = npu_preparation::apply_tensor(self);
+    add_relu_out_nocheck(out, self, other, alpha);
+    return out;
 }
 
-at::Tensor& _add_relu_(at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
-  return acl_op::_add_relu_out(self, other, alpha, self);
+at::Tensor& _add_relu_(at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha)
+{
+    return acl_op::_add_relu_out(self, other, alpha, self);
 }
 } // namespace acl_op

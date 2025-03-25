@@ -38,7 +38,7 @@ c10::SmallVector<int64_t, SIZE> upsample_nearest1d_infer_size(const at::Tensor &
     return output_sizes;
 }
 
-at::Tensor &upsample_nearest1d_out_nocheck(at::Tensor &result, const at::Tensor &self, at::IntArrayRef output_size,
+at::Tensor &upsample_nearest1d_out_nocheck(at::Tensor &out, const at::Tensor &self, at::IntArrayRef output_size,
                                            c10::optional<double> scales)
 {
     at::Tensor self_cp = self.unsqueeze(2);
@@ -48,7 +48,7 @@ at::Tensor &upsample_nearest1d_out_nocheck(at::Tensor &result, const at::Tensor 
         cmd.Name("ResizeNearestNeighborV2")
             .Input(self_cp)
             .Input(result_size, at::kInt)
-            .Output(result)
+            .Output(out)
             .Attr("align_corners", false)
             .Attr("half_pixel_centers", false)
             .Run();
@@ -57,58 +57,59 @@ at::Tensor &upsample_nearest1d_out_nocheck(at::Tensor &result, const at::Tensor 
             .Input(self_cp)
             .Input(output_size, at::kFloat)
             .Input(output_size, at::kFloat)
-            .Input(result.sizes(), at::kLong)
-            .Output(result)
-            .Attr("mode", (string) "nearest")
-            .Attr("nearest_mode", (string) "floor")
+            .Input(out.sizes(), at::kLong)
+            .Output(out)
+            .Attr("mode", static_cast<string>("nearest"))
+            .Attr("nearest_mode", static_cast<string>("floor"))
             .Attr("coordinate_transformation_mode", (string) "pytorch_half_pixel")
             .Run();
     }
-    result = result.squeeze(2);
-    return result;
+    out = out.squeeze(2);
+    return out;
 }
 } // namespace
 
 at::Tensor &upsample_nearest1d_out(const at::Tensor &self, at::IntArrayRef output_size, c10::optional<double> scales,
-                                   at::Tensor &result)
+                                   at::Tensor &out)
 {
     c10::SmallVector<int64_t, SIZE> op_infer_output_size = upsample_nearest1d_infer_size(self, output_size);
 
-    npu_preparation::CheckOut({self}, result, self, op_infer_output_size);
+    npu_preparation::CheckOut({self}, out, self, op_infer_output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         upsample_nearest1d_out_nocheck(contiguous_result, self, output_size, scales);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        upsample_nearest1d_out_nocheck(result, self, output_size, scales);
+        upsample_nearest1d_out_nocheck(out, self, output_size, scales);
     }
 
-    return result;
+    return out;
 }
 
 at::Tensor upsample_nearest1d(const at::Tensor &self, at::IntArrayRef output_size, c10::optional<double> scales)
 {
     c10::SmallVector<int64_t, SIZE> op_infer_output_size = upsample_nearest1d_infer_size(self, output_size);
-    at::Tensor result = npu_preparation::apply_tensor(self, op_infer_output_size);
+    at::Tensor out = npu_preparation::apply_tensor(self, op_infer_output_size);
 
-    upsample_nearest1d_out_nocheck(result, self, output_size, scales);
-    return result;
+    upsample_nearest1d_out_nocheck(out, self, output_size, scales);
+    return out;
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)
 at::Tensor upsample_nearest1d(
     const at::Tensor& input,
     c10::optional<at::IntArrayRef> output_size,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
+    c10::optional<at::ArrayRef<double>> scale_factors)
+{
     TORCH_CHECK(
         input.dim() == 3,
         "It is expected input_size equals to 3, but got size ",
         input.dim(), OPS_ERROR(ErrCode::PARAM));
 
-  auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
-  return acl_op::upsample_nearest1d(input, osize, scales_w);
+    auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
+    return acl_op::upsample_nearest1d(input, osize, scales_w);
 }
 #endif
 } // namespace acl_op
