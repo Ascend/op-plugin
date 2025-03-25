@@ -36,7 +36,7 @@ at::Tensor exec_aclnn_non_zero(const at::Tensor& self, at::Tensor& out)
     TORCH_CHECK(ret == 0, "aclGetViewShape failed.", OPS_ERROR(ErrCode::ACL));
     c10::SmallVector<int64_t, op_infer::SIZE> output_size(view_dims, view_dims + view_dim_num);
     out = out.resize_(output_size);
-    delete view_dims;
+    delete[] view_dims;
     view_dims = nullptr;
     return out;
 }

@@ -55,7 +55,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     if (return_counts) {
         y_counts.resize_(output_size);
     }
-    delete view_dims;
+    delete[] view_dims;
     view_dims = nullptr;
     return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, y_inverse, y_counts);
 }
@@ -96,7 +96,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     if (return_counts) {
         y_counts.resize_(output_size);
     }
-    delete view_dims;
+    delete[] view_dims;
     view_dims = nullptr;
     if (!return_inverse) {
         y_inverse = npu_preparation::apply_tensor_without_format({0}, self.options().dtype(at::kLong));
