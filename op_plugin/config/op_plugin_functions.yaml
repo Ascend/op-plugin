@@ -6362,6 +6362,9 @@ official:
     op_api: [v2.1, newest]
 
 custom:
+  - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
+    op_api: all_version
+
   - func: _amp_foreach_non_finite_check(Tensor[] scaled_grads) -> bool
     acl_op: all_version
 
@@ -7413,6 +7416,9 @@ custom:
       exec: aclnnAdvanceStep
 
 symint:
+  - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
+    op_api: all_version
+
   - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
     acl_op: [v2.0, newest]
     op_api: [v2.1, newest]

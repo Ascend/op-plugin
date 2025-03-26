@@ -59,7 +59,7 @@ def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_d
         lambda: "the rope_sin shape support only 2d and 3d)" + ops_error(ErrCode.VALUE),
     )
 
-    if token_x_dim == 3:    
+    if token_x_dim == 3:
         query_shape = []
         query_shape.append(token_x.size(0))
         query_shape.append(token_x.size(1))
@@ -556,7 +556,7 @@ def npu_ffn_meta(x, weight1, weight2, activation, *, expert_tokens=None, expert_
 @impl(m, "npu_grouped_matmul")
 @impl(m, "npu_grouped_matmul.List")
 def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, antiquant_scale=None,
-                            antiquant_offset=None, per_token_scale=None, group_list=None, 
+                            antiquant_offset=None, per_token_scale=None, group_list=None,
                             activation_input=None, activation_quant_scale=None, activation_quant_offset=None,
                             split_item=0, group_type=-1, group_list_type=0, act_type=0, output_dtype=None):
     y = []
@@ -773,7 +773,7 @@ def quant_matmul_bias_dtype_check(bias, pertoken_scale, output_dtype):
                 output_dtype == torch.bfloat16,
                 lambda: "When bias dtype is float32 and pertoken not given, output_dtype must be bfloat16, but it is " +
                         str(output_dtype) + ops_error(ErrCode.TYPE),
-            )   
+            )
 
 
 def quant_matmul_dtype_check(*args):
@@ -1332,8 +1332,8 @@ def rope_quant_kvcache(x, cos, k_cache, v_cache, size_splits, kv_output=False):
 
 @impl(m, "npu_dequant_rope_quant_kvcache")
 def npu_dequant_rope_quant_kvcache_meta(x, cos, sin, k_cache, v_cache, indices, scale_k, scale_v, size_splits, *,
-                                        offset_k=None, offset_v=None, weight_scale=None, activation_scale=None, 
-                                        bias=None, quant_mode=0, input_layout="BSND", kv_output=False, 
+                                        offset_k=None, offset_v=None, weight_scale=None, activation_scale=None,
+                                        bias=None, quant_mode=0, input_layout="BSND", kv_output=False,
                                         cache_mode="contiguous"):
     torch._check(
         x.dtype == torch.int32,
@@ -1367,3 +1367,8 @@ def npu_batch_gather_matmul_meta(self, x, weight_b, indices, weight_a=None,
 def npu_batch_gather_matmul__meta(self, x, weight_b, indices, weight_a=None,
                                  layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1):
     return self
+
+
+@impl(m, "npu_gather_backward")
+def npu_gather_backward__meta(grad, self_size, dim, index, sparse_grad):
+    return torch.empty(self_size, dtype=grad.dtype, device=grad.device)
