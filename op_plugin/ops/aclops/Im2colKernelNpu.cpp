@@ -21,31 +21,31 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-void im2col_shape_check(const at::Tensor &self, at::IntArrayRef kernel_size, at::IntArrayRef dilation,
+void im2col_shape_check(const at::Tensor& self, at::IntArrayRef kernel_size, at::IntArrayRef dilation,
                         at::IntArrayRef padding, at::IntArrayRef stride)
 {
     bool valid_dims = self.size(1) != 0 && self.size(2) != 0;
     int64_t ndim = self.dim();
-    TORCH_CHECK((ndim == 3 && self.size(0) && valid_dims) || (ndim == 4 && valid_dims && self.size(3) != 0),
-        "Expected 3D or 4D (batch mode) tensor with possibly 0 batch size and other non-zero dimensions for "
-        "input, but got: ",
-        self.sizes(),
-        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK((ndim == 3 && self.size(0) != 0 && valid_dims) || (ndim == 4 && valid_dims && self.size(3) != 0),
+                "Expected 3D or 4D (batch mode) tensor with possibly 0 batch size and other non-zero dimensions for "
+                "input, but got: ",
+                self.sizes(),
+                OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 2,
-        "im2col: kernel_size must either be a single int, or a tuple of two ints"
-        + OPS_ERROR(ErrCode::PARAM));
+                "im2col: kernel_size must either be a single int, or a tuple of two ints"
+                + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.empty() || stride.size() == 1 || stride.size() == 2,
-        "im2col: stride must either be omitted, a single int, or a tuple of two ints"
-        + OPS_ERROR(ErrCode::PARAM));
+                "im2col: stride must either be omitted, a single int, or a tuple of two ints"
+                + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.empty() || dilation.size() == 1 || dilation.size() == 2,
-        "im2col: dilation must either be omitted, a single int, or a tuple of two ints"
-        + OPS_ERROR(ErrCode::PARAM));
+                "im2col: dilation must either be omitted, a single int, or a tuple of two ints"
+                + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.empty() || padding.size() == 1 || padding.size() == 2,
-        "im2col: padding must either be omitted, a single int, or a tuple of two ints"
-        + OPS_ERROR(ErrCode::PARAM));
+                "im2col: padding must either be omitted, a single int, or a tuple of two ints"
+                + OPS_ERROR(ErrCode::PARAM));
 }
 
-at::Tensor &im2col_out_nocheck(at::Tensor &result, const at::Tensor &self, at::IntArrayRef kernel_size,
+at::Tensor& im2col_out_nocheck(at::Tensor& result, const at::Tensor& self, at::IntArrayRef kernel_size,
                                at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride)
 {
     if (kernel_size.size() == 1) {
@@ -107,30 +107,30 @@ at::Tensor &im2col_out_nocheck(at::Tensor &result, const at::Tensor &self, at::I
 }
 } // namespace
 
-at::Tensor &im2col_out(const at::Tensor &self, at::IntArrayRef kernel_size, at::IntArrayRef dilation,
-                       at::IntArrayRef padding, at::IntArrayRef stride, at::Tensor &result)
+at::Tensor& im2col_out(const at::Tensor& self, at::IntArrayRef kernel_size, at::IntArrayRef dilation,
+                       at::IntArrayRef padding, at::IntArrayRef stride, at::Tensor& out)
 {
     im2col_shape_check(self, kernel_size, dilation, padding, stride);
     at::Tensor self_cp = self.dim() == 3 ? at::unsqueeze(self, 0) : self;
     auto output_size = op_infer::image_to_col_npu_output_size(self_cp, kernel_size, stride, dilation, padding);
 
-    npu_preparation::CheckOut({self_cp}, result, self_cp, output_size);
+    npu_preparation::CheckOut({self_cp}, out, self_cp, output_size);
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         im2col_out_nocheck(contiguous_result, self_cp, kernel_size, dilation, padding, stride);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        im2col_out_nocheck(result, self_cp, kernel_size, dilation, padding, stride);
+        im2col_out_nocheck(out, self_cp, kernel_size, dilation, padding, stride);
     }
 
     if (self.dim() == 3) {
-        result = at::squeeze(result, 0);
+        out = at::squeeze(out, 0);
     }
-    return result;
+    return out;
 }
 
-at::Tensor im2col(const at::Tensor &self, at::IntArrayRef kernel_size, at::IntArrayRef dilation,
+at::Tensor im2col(const at::Tensor& self, at::IntArrayRef kernel_size, at::IntArrayRef dilation,
                   at::IntArrayRef padding, at::IntArrayRef stride)
 {
     im2col_shape_check(self, kernel_size, dilation, padding, stride);
@@ -150,8 +150,9 @@ at::Tensor col2im_backward(
     at::IntArrayRef kernel_size,
     at::IntArrayRef dilation,
     at::IntArrayRef padding,
-    at::IntArrayRef stride) {
-  return acl_op::im2col(self, kernel_size, dilation, padding, stride);
+    at::IntArrayRef stride)
+{
+    return acl_op::im2col(self, kernel_size, dilation, padding, stride);
 }
 
 at::Tensor& col2im_backward_out(
@@ -160,8 +161,9 @@ at::Tensor& col2im_backward_out(
     at::IntArrayRef dilation,
     at::IntArrayRef padding,
     at::IntArrayRef stride,
-    at::Tensor& result) {
-  return acl_op::im2col_out(self, kernel_size, dilation, padding, stride, result);
+    at::Tensor& result)
+{
+    return acl_op::im2col_out(self, kernel_size, dilation, padding, stride, result);
 }
 #endif
 } // namespace acl_op

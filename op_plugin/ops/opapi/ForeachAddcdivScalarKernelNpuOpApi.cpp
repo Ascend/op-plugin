@@ -104,7 +104,7 @@ void _split_and_exec_npu_cmd_addcdiv_scalar(const at::TensorList input,
     }
 }
 
-std::vector<at::Tensor> _foreach_addcdiv(const at::TensorList input,
+std::vector<at::Tensor> _foreach_addcdiv(at::TensorList input,
                                          at::TensorList tensor1,
                                          at::TensorList tensor2,
                                          const at::Scalar &value)

@@ -28,45 +28,47 @@ at::Tensor& range_out_nocheck(
     at::Tensor& result,
     at::Scalar start,
     at::Scalar end,
-    at::Scalar step) {
-  // generate x assistant tensor
-  int value = result.size(0);
-  c10::SmallVector<int64_t, N> tmp_vector = {};
-  for (int i = 0; i < value; i++) {
-    tmp_vector.emplace_back(i);
-  }
+    at::Scalar step)
+{
+    // generate x assistant tensor
+    int value = result.size(0);
+    c10::SmallVector<int64_t, N> tmp_vector = {};
+    for (int i = 0; i < value; i++) {
+        tmp_vector.emplace_back(i);
+    }
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("RangeD")
-      .Input(tmp_vector, result.scalar_type())
-      .Output(result)
-      .Attr("start", start)
-      .Attr("limit", end)
-      .Attr("delta", step)
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("RangeD")
+        .Input(tmp_vector, result.scalar_type())
+        .Output(result)
+        .Attr("start", start)
+        .Attr("limit", end)
+        .Attr("delta", step)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
 at::Tensor range(
     const at::Scalar& start,
     const at::Scalar& end,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  c10::TensorOptions option =
-      c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
-  return at::range(start, end, 1, option);
+    c10::optional<at::ScalarType> dtype,
+    c10::optional<at::Layout> layout,
+    c10::optional<at::Device> device,
+    c10::optional<bool> pin_memory)
+{
+    c10::TensorOptions option =
+        c10::TensorOptions().dtype(dtype).device(device).layout(layout).pinned_memory(pin_memory);
+    return at::range(start, end, 1, option);
 }
 
 at::Tensor range(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step,
-                 c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt,
-                 c10::optional<at::Device> device_opt, c10::optional<bool> pin_memory_opt)
+                 c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,
+                 c10::optional<at::Device> device, c10::optional<bool> pin_memory)
 {
     c10::TensorOptions option =
-        c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
+        c10::TensorOptions().dtype(dtype).device(device).layout(layout).pinned_memory(pin_memory);
     int64_t output_size = 0;
 
     AT_DISPATCH_ALL_TYPES_AND2(
@@ -87,10 +89,10 @@ at::Tensor range(const at::Scalar& start, const at::Scalar& end, const at::Scala
     return range_out_nocheck(result, start, end, step);
 }
 
-at::Tensor& range_out(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step, at::Tensor& result)
+at::Tensor& range_out(const at::Scalar& start, const at::Scalar& end, const at::Scalar& step, at::Tensor& out)
 {
     int64_t output_size = 0;
-    AT_DISPATCH_ALL_TYPES_AND2(at::kHalf, at::kBFloat16, result.scalar_type(), "range_out_npu_ops", [&]() {
+    AT_DISPATCH_ALL_TYPES_AND2(at::kHalf, at::kBFloat16, out.scalar_type(), "range_out_npu_ops", [&]() {
         using accscalar_type = at::acc_type<scalar_t, false>;
         auto start_value = start.to<accscalar_type>();
         auto end_value = end.to<accscalar_type>();
@@ -98,27 +100,27 @@ at::Tensor& range_out(const at::Scalar& start, const at::Scalar& end, const at::
 
         TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero" + OPS_ERROR(ErrCode::VALUE));
         TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) ||
-                        ((step_value < 0) && (end_value <= start_value)),
+                    ((step_value < 0) && (end_value <= start_value)),
                     "upper bound and larger bound inconsistent with step sign" + OPS_ERROR(ErrCode::VALUE));
-        npu_preparation::CheckOut({}, result, ACL_FORMAT_NCHW, result.scalar_type(), result.sizes());
+        npu_preparation::CheckOut({}, out, ACL_FORMAT_NCHW, out.scalar_type(), out.sizes());
 
         output_size = static_cast<int64_t>((end_value - start_value) / step_value + 1);
     });
 
-    if (result.numel() != output_size) {
+    if (out.numel() != output_size) {
         TORCH_NPU_WARN("The out tensor size does not match the computed size, it will resize to computed size (",
                        output_size, ",).");
-        result.resize_({output_size});
+        out.resize_({output_size});
     }
 
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         range_out_nocheck(contiguous_result, start, end, step);
-        npu_utils::format_fresh_view(result, contiguous_result);
+        npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        range_out_nocheck(result, start, end, step);
+        range_out_nocheck(out, start, end, step);
     }
-    return result;
+    return out;
 }
 
 } // namespace acl_op

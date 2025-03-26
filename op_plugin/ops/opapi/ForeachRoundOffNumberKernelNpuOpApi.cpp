@@ -93,7 +93,7 @@ void _split_and_exec_npu_cmd_round(at::TensorList &tensors1, const char roundMod
     }
 
     size_t remaining_count = tensor_count % max_tensor_count;
-    if (remaining_count) {
+    if (remaining_count != 0) {
         at::TensorList temp_tensors1(tensors1.data() + loop_time * max_tensor_count, remaining_count);
         at::TensorList temp_result(result_list.data() + loop_time * max_tensor_count, remaining_count);
         EXEC_NPU_CMD(aclnnForeachRoundOffNumberV2, temp_tensors1, roundModeScalar, temp_result);

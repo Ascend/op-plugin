@@ -20,22 +20,24 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& __ior__(at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnInplaceBitwiseOrScalar, acl_op::__ior__(self, other));
-  DO_COMPATIBILITY(aclnnInplaceBitwiseOrTensor, acl_op::__ior__(self, other));
+at::Tensor& __ior__(at::Tensor& self, const at::Tensor& other)
+{
+    DO_COMPATIBILITY(aclnnInplaceBitwiseOrScalar, acl_op::__ior__(self, other));
+    DO_COMPATIBILITY(aclnnInplaceBitwiseOrTensor, acl_op::__ior__(self, other));
 
-  if (!torch_npu::utils::is_npu(other)) {
-    const at::Scalar other_value = other.item();
-    EXEC_NPU_CMD(aclnnInplaceBitwiseOrScalar, self, other_value);
-  } else {
-    EXEC_NPU_CMD(aclnnInplaceBitwiseOrTensor, self, other);
-  }
-  return self;
+    if (!torch_npu::utils::is_npu(other)) {
+        const at::Scalar other_value = other.item();
+        EXEC_NPU_CMD(aclnnInplaceBitwiseOrScalar, self, other_value);
+    } else {
+        EXEC_NPU_CMD(aclnnInplaceBitwiseOrTensor, self, other);
+    }
+    return self;
 }
 
-at::Tensor& __ior__(at::Tensor& self, const at::Scalar& other) {
-  DO_COMPATIBILITY(aclnnInplaceBitwiseOrScalar, acl_op::__ior__(self, other));
-  EXEC_NPU_CMD(aclnnInplaceBitwiseOrScalar, self, other);
-  return self;
+at::Tensor& __ior__(at::Tensor& self, const at::Scalar& other)
+{
+    DO_COMPATIBILITY(aclnnInplaceBitwiseOrScalar, acl_op::__ior__(self, other));
+    EXEC_NPU_CMD(aclnnInplaceBitwiseOrScalar, self, other);
+    return self;
 }
 }
