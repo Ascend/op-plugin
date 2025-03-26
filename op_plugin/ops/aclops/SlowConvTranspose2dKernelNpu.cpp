@@ -24,7 +24,7 @@ using small_vector = c10::SmallVector<int64_t, SIZE>;
 
 namespace {
 small_vector slow_conv_transpose2d_npu_output_size(const at::Tensor &self, const at::Tensor &weight,
-                                                   at::IntArrayRef kernel_size, const at::Tensor &bias,
+                                                   at::IntArrayRef kernel_size,
                                                    at::IntArrayRef stride, at::IntArrayRef padding,
                                                    at::IntArrayRef output_padding, at::IntArrayRef dilation)
 {
@@ -55,7 +55,7 @@ small_vector slow_conv_transpose2d_npu_output_size(const at::Tensor &self, const
     return output_size;
 }
 
-inline void slow_conv_transpose2d_shape_check(const at::Tensor &self, const at::Tensor &weight,
+inline void slow_conv_transpose2d_shape_check(const at::Tensor &weight,
                                               at::IntArrayRef kernel_size, const at::Tensor &bias,
                                               at::IntArrayRef stride, at::IntArrayRef padding,
                                               at::IntArrayRef output_padding, at::IntArrayRef dilation)
@@ -107,9 +107,9 @@ at::Tensor &slow_conv_transpose2d_out_nocheck(at::Tensor &out, const at::Tensor 
                                               at::IntArrayRef output_padding, at::IntArrayRef dilation)
 {
     const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
-    slow_conv_transpose2d_shape_check(self, weight, kernel_size, bias, stride, padding, output_padding, dilation);
+    slow_conv_transpose2d_shape_check(weight, kernel_size, bias, stride, padding, output_padding, dilation);
 
-    auto output_size = slow_conv_transpose2d_npu_output_size(self, weight, kernel_size, bias, stride, padding,
+    auto output_size = slow_conv_transpose2d_npu_output_size(self, weight, kernel_size, stride, padding,
                                                              output_padding, dilation);
     if (!out.sizes().equals(output_size)) {
         out.resize_(output_size);
@@ -144,44 +144,43 @@ at::Tensor &slow_conv_transpose2d_out_nocheck(at::Tensor &out, const at::Tensor 
 } // namespace
 
 at::Tensor &slow_conv_transpose2d_out(const at::Tensor &self, const at::Tensor &weight, at::IntArrayRef kernel_size,
-                                      const c10::optional<at::Tensor> &bias_opt, at::IntArrayRef stride,
+                                      const c10::optional<at::Tensor> &bias, at::IntArrayRef stride,
                                       at::IntArrayRef padding, at::IntArrayRef output_padding, at::IntArrayRef dilation,
                                       at::Tensor &out)
 {
-    const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
-    auto output_size = slow_conv_transpose2d_npu_output_size(self, weight, kernel_size, bias, stride, padding,
+    const at::Tensor &bias_value_or = c10::value_or_else(bias, [] { return at::Tensor(); });
+    auto output_size = slow_conv_transpose2d_npu_output_size(self, weight, kernel_size, stride, padding,
                                                              output_padding, dilation);
 
     int64_t out_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
-    if (bias.defined()) {
-        npu_preparation::CheckOut({self, weight, bias}, {out}, out_format, self.scalar_type(), output_size);
+    if (bias_value_or.defined()) {
+        npu_preparation::CheckOut({self, weight, bias_value_or}, {out}, out_format, self.scalar_type(), output_size);
     } else {
         npu_preparation::CheckOut({self, weight}, {out}, out_format, self.scalar_type(), output_size);
     }
 
     if (!npu_utils::check_match(&out)) {
         at::Tensor contiguous_out = npu_utils::format_contiguous(out);
-        slow_conv_transpose2d_out_nocheck(contiguous_out, self, weight, kernel_size, bias_opt, stride, padding,
+        slow_conv_transpose2d_out_nocheck(contiguous_out, self, weight, kernel_size, bias, stride, padding,
                                           output_padding, dilation);
         npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        slow_conv_transpose2d_out_nocheck(out, self, weight, kernel_size, bias_opt, stride, padding, output_padding,
+        slow_conv_transpose2d_out_nocheck(out, self, weight, kernel_size, bias, stride, padding, output_padding,
                                           dilation);
     }
     return out;
 }
 
 at::Tensor slow_conv_transpose2d(const at::Tensor &self, const at::Tensor &weight, at::IntArrayRef kernel_size,
-                                 const c10::optional<at::Tensor> &bias_opt, at::IntArrayRef stride,
+                                 const c10::optional<at::Tensor> &bias, at::IntArrayRef stride,
                                  at::IntArrayRef padding, at::IntArrayRef output_padding, at::IntArrayRef dilation)
 {
-    const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
-    auto output_size = slow_conv_transpose2d_npu_output_size(self, weight, kernel_size, bias, stride, padding,
+    auto output_size = slow_conv_transpose2d_npu_output_size(self, weight, kernel_size, stride, padding,
                                                              output_padding, dilation);
 
     int64_t result_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
     at::Tensor result = npu_preparation::apply_tensor_with_format(self, output_size, result_format);
-    slow_conv_transpose2d_out_nocheck(result, self, weight, kernel_size, bias_opt, stride, padding, output_padding,
+    slow_conv_transpose2d_out_nocheck(result, self, weight, kernel_size, bias, stride, padding, output_padding,
                                       dilation);
 
     return result;

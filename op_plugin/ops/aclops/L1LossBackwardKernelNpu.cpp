@@ -26,22 +26,23 @@ at::Tensor& l1_loss_backward_out_nocheck(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& target,
-    const int64_t reduction) {
-  at::Tensor grad_output_broadcast =
-      grad_output.sizes() != self.sizes() ? acl_op::npu_broadcast(grad_output, self.sizes()) : grad_output;
-  at::Tensor target_broadcast =
-      target.sizes() != self.sizes() ? acl_op::npu_broadcast(target, self.sizes()) : target;
+    const int64_t reduction)
+{
+    at::Tensor grad_output_broadcast =
+        grad_output.sizes() != self.sizes() ? acl_op::npu_broadcast(grad_output, self.sizes()) : grad_output;
+    at::Tensor target_broadcast =
+        target.sizes() != self.sizes() ? acl_op::npu_broadcast(target, self.sizes()) : target;
 
-  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("L1LossGrad")
-      .Input(grad_output_broadcast)
-      .Input(self)
-      .Input(target_broadcast)
-      .Attr("reduction", reduction_str)
-      .Output(grad_input)
-      .Run();
-  return grad_input;
+    std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("L1LossGrad")
+        .Input(grad_output_broadcast)
+        .Input(self)
+        .Input(target_broadcast)
+        .Attr("reduction", reduction_str)
+        .Output(grad_input)
+        .Run();
+    return grad_input;
 }
 } // namespace
 
@@ -51,30 +52,32 @@ at::Tensor& l1_loss_backward_out(
     const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
-    at::Tensor& grad_input) {
-  npu_preparation::CheckOut(
-      {grad_output, self, target},
-      grad_input,
-      self);
+    at::Tensor& grad_input)
+{
+    npu_preparation::CheckOut(
+        {grad_output, self, target},
+        grad_input,
+        self);
 
-  if (!npu_utils::check_match(&grad_input)) {
-    at::Tensor contiguous_grad_input = npu_utils::format_contiguous(grad_input);
-    l1_loss_backward_out_nocheck(grad_input, grad_output, self, target, reduction);
-    npu_utils::format_fresh_view(grad_input, contiguous_grad_input);
-  } else {
-    l1_loss_backward_out_nocheck(grad_input, grad_output, self, target, reduction);
-  }
-  return grad_input;
+    if (!npu_utils::check_match(&grad_input)) {
+        at::Tensor contiguous_grad_input = npu_utils::format_contiguous(grad_input);
+        l1_loss_backward_out_nocheck(grad_input, grad_output, self, target, reduction);
+        npu_utils::format_fresh_view(grad_input, contiguous_grad_input);
+    } else {
+        l1_loss_backward_out_nocheck(grad_input, grad_output, self, target, reduction);
+    }
+    return grad_input;
 }
 
 at::Tensor l1_loss_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& target,
-    int64_t reduction) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  l1_loss_backward_out_nocheck(result, grad_output, self, target, reduction);
-  return result;
+    int64_t reduction)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    l1_loss_backward_out_nocheck(result, grad_output, self, target, reduction);
+    return result;
 }
 #endif
 } // namespace acl_op

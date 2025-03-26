@@ -21,39 +21,43 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& triu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, int64_t k) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Triu")
-      .Input(self)
-      .Output(result)
-      .Attr("diagonal", k)
-      .Run();
-  return result;
+at::Tensor& triu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, int64_t diagonal)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Triu")
+        .Input(self)
+        .Output(result)
+        .Attr("diagonal", diagonal)
+        .Run();
+    return result;
 }
 } // namespace
 
-at::Tensor& triu_out(const at::Tensor& self, int64_t k, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    triu_out_npu_nocheck(contiguous_result, self, k);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    triu_out_npu_nocheck(result, self, k);
-  }
-  return result;
+at::Tensor& triu_out(const at::Tensor& self, int64_t diagonal, at::Tensor& out)
+{
+    npu_preparation::CheckOut(
+        {self},
+        out,
+        self);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        triu_out_npu_nocheck(contiguous_result, self, diagonal);
+        npu_utils::format_fresh_view(out, contiguous_result);
+    } else {
+        triu_out_npu_nocheck(out, self, diagonal);
+    }
+    return out;
 }
 
-at::Tensor triu(const at::Tensor& self, int64_t k) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  triu_out_npu_nocheck(result, self, k);
-  return result;
+at::Tensor triu(const at::Tensor& self, int64_t diagonal)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    triu_out_npu_nocheck(result, self, diagonal);
+    return result;
 }
 
-at::Tensor& triu_(at::Tensor& self, int64_t k) {
-  return acl_op::triu_out(self, k, self);
+at::Tensor& triu_(at::Tensor& self, int64_t diagonal)
+{
+    return acl_op::triu_out(self, diagonal, self);
 }
 } // namespace acl_op

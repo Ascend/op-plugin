@@ -107,7 +107,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
     at::Tensor softmax_lse = npu_preparation::apply_tensor_without_format(
         {batchSize, num_heads, qsSize, 1}, c10::dtype(c10::ScalarType::Float));
 
-    if (softmax_lse_flag != true) {
+    if (!softmax_lse_flag) {
         softmax_lse = npu_preparation::apply_tensor_without_format({1}, c10::dtype(c10::ScalarType::Float));
     }
     // dispatch hostAPI

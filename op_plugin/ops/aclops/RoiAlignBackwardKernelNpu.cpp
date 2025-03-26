@@ -29,23 +29,24 @@ at::Tensor& roi_align_backward_npu_nocheck(
     int64_t pooled_height,
     double spatial_scale,
     int64_t sample_num,
-    c10::optional<int64_t> roi_end_mode) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ROIAlignGrad")
-      .Input(self, "ydiff")
-      .Input(rois)
-      .Output(result, "xdiff")
-      .Attr("xdiff_shape", xdiff_shape)
-      .Attr("spatial_scale", (float)spatial_scale)
-      .Attr("pooled_height", pooled_height)
-      .Attr("pooled_width", pooled_width)
-      .Attr("sample_num", sample_num);
-  if (roi_end_mode.has_value()) {
-    cmd.Attr("roi_end_mode", roi_end_mode.value());
-  }
-  cmd.Run();
+    c10::optional<int64_t> roi_end_mode)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ROIAlignGrad")
+        .Input(self, "ydiff")
+        .Input(rois)
+        .Output(result, "xdiff")
+        .Attr("xdiff_shape", xdiff_shape)
+        .Attr("spatial_scale", static_cast<float>(spatial_scale))
+        .Attr("pooled_height", pooled_height)
+        .Attr("pooled_width", pooled_width)
+        .Attr("sample_num", sample_num);
+    if (roi_end_mode.has_value()) {
+        cmd.Attr("roi_end_mode", roi_end_mode.value());
+    }
+    cmd.Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
@@ -57,30 +58,31 @@ at::Tensor npu_roi_alignbk(
     int64_t pooled_height,
     double spatial_scale,
     int64_t sample_num,
-    c10::optional<int64_t> roi_end_mode) {
-  at::Tensor result =
-      npu_preparation::apply_tensor_with_format(self, xdiff_shape, ACL_FORMAT_NC1HWC0);
+    c10::optional<int64_t> roi_end_mode)
+{
+    at::Tensor result =
+        npu_preparation::apply_tensor_with_format(self, xdiff_shape, ACL_FORMAT_NC1HWC0);
 
-  // Check the self empty
-  for (int i = 0; i < self.dim(); i++) {
-    if (self.size(i) == 0) {
-      acl_op::fill_(result, 0);
-      return result;
+    // Check the self empty
+    for (int i = 0; i < self.dim(); i++) {
+        if (self.size(i) == 0) {
+            acl_op::fill_(result, 0);
+            return result;
+        }
     }
-  }
 
-  roi_align_backward_npu_nocheck(
-      result,
-      self,
-      rois,
-      xdiff_shape,
-      pooled_width,
-      pooled_height,
-      spatial_scale,
-      sample_num,
-      roi_end_mode);
+    roi_align_backward_npu_nocheck(
+        result,
+        self,
+        rois,
+        xdiff_shape,
+        pooled_width,
+        pooled_height,
+        spatial_scale,
+        sample_num,
+        roi_end_mode);
 
-  return result;
+    return result;
 }
 
 } // namespace acl_op

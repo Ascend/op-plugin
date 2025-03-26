@@ -67,7 +67,7 @@ at::Tensor &upsample_linear1d_backward_out_nocheck(at::Tensor &result, const at:
         .Attr("original_size", input_size)
         .Attr("scales", sc)
         .Attr("coordinate_transformation_mode", coordinate_transformation_mode)
-        .Attr("mode", (string)"linear")
+        .Attr("mode", static_cast<string>("linear"))
         .Run();
     return result;
 }
@@ -106,16 +106,17 @@ at::Tensor upsample_linear1d_backward(
     c10::optional<at::IntArrayRef> output_size,
     at::IntArrayRef input_size,
     bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
+    c10::optional<at::ArrayRef<double>> scale_factors)
+{
     TORCH_CHECK(
         input_size.size() == 3,
         "It is expected input_size equals to 3, but got size ",
         input_size.size(), OPS_ERROR(ErrCode::PARAM));
 
-  auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
+    auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
 
-  return acl_op::upsample_linear1d_backward(grad_output, osize, input_size, align_corners, scales_w);
+    return acl_op::upsample_linear1d_backward(grad_output, osize, input_size, align_corners, scales_w);
 }
 #endif
 } // namespace acl_op

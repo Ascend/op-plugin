@@ -25,9 +25,9 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant_v0(
     const at::Tensor &input,
     const c10::optional<at::Tensor> &smooth_scales,
     const c10::optional<at::Tensor> &group_index,
-    c10::optional<at::ScalarType> dst_dtype)
+    c10::optional<at::ScalarType> dst_type)
 {
-    TORCH_CHECK(dst_dtype != at::ScalarType::QUInt4x2,
+    TORCH_CHECK(dst_type != at::ScalarType::QUInt4x2,
                 "please update your CANN to support int4 quantization" + OPS_ERROR(ErrCode::NOT_SUPPORT));
     TORCH_CHECK(!group_index.has_value(),
                 "please update your CANN to support MOE quantization" + OPS_ERROR(ErrCode::NOT_SUPPORT));
@@ -48,11 +48,11 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(
     const at::Tensor &input,
     const c10::optional<at::Tensor> &smooth_scales,
     const c10::optional<at::Tensor> &group_index,
-    c10::optional<at::ScalarType> dst_dtype)
+    c10::optional<at::ScalarType> dst_type)
 {
-    TORCH_CHECK(!dst_dtype.has_value() || dst_dtype == at::ScalarType::Char || dst_dtype == at::ScalarType::QUInt4x2,
+    TORCH_CHECK(!dst_type.has_value() || dst_type == at::ScalarType::Char || dst_type == at::ScalarType::QUInt4x2,
                 "dtype must be torch.int8 for int8 or torch.quint4x2 for int4" + OPS_ERROR(ErrCode::TYPE));
-    DO_COMPATIBILITY(aclnnDynamicQuantV2, npu_dynamic_quant_v0(input, smooth_scales, group_index, dst_dtype));
+    DO_COMPATIBILITY(aclnnDynamicQuantV2, npu_dynamic_quant_v0(input, smooth_scales, group_index, dst_type));
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
     int index = 0;
@@ -63,7 +63,7 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(
 
     int output_type;
     at::Tensor output;
-    if (dst_dtype == at::ScalarType::QUInt4x2) { // INT4
+    if (dst_type == at::ScalarType::QUInt4x2) { // INT4
         TORCH_CHECK(input.size(index) % INT4_IN_INT32_NUM == 0,
                     "input shape last dim must be divded by 8 when int4 quantization" + OPS_ERROR(ErrCode::PARAM));
         output_type = ge::DataType::DT_INT32;
@@ -83,9 +83,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant_asymmetric(
     const at::Tensor &input,
     const c10::optional<at::Tensor> &smooth_scales,
     const c10::optional<at::Tensor> &group_index,
-    c10::optional<at::ScalarType> dst_dtype)
+    c10::optional<at::ScalarType> dst_type)
 {
-    TORCH_CHECK(!dst_dtype.has_value() || dst_dtype == at::ScalarType::Char || dst_dtype == at::ScalarType::QUInt4x2,
+    TORCH_CHECK(!dst_type.has_value() || dst_type == at::ScalarType::Char || dst_type == at::ScalarType::QUInt4x2,
                 "dtype must be torch.int8 for int8 or torch.quint4x2 for int4 when int4 quantization" + OPS_ERROR(ErrCode::TYPE));
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
@@ -98,7 +98,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant_asymmetric(
     at::Tensor offset = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
     int output_type;
     at::Tensor output;
-    if (dst_dtype == at::ScalarType::QUInt4x2) { // INT4
+    if (dst_type == at::ScalarType::QUInt4x2) { // INT4
         TORCH_CHECK(input.size(index) % INT4_IN_INT32_NUM == 0,
                     "input shape last dim must be divded by 8" + OPS_ERROR(ErrCode::PARAM));
         output_type = ge::DataType::DT_INT32;

@@ -73,7 +73,8 @@ at::Tensor upsample_nearest3d_backward(
     const at::Tensor& grad_output,
     c10::optional<at::IntArrayRef> output_size,
     at::IntArrayRef input_size,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
+    c10::optional<at::ArrayRef<double>> scale_factors)
+{
     DO_COMPATIBILITY(aclnnUpsampleNearest3dBackward,
                      acl_op::upsample_nearest3d_backward(
                          grad_output,

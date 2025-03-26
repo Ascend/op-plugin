@@ -25,38 +25,40 @@ at::Tensor& affine_grid_generator_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& theta,
     at::IntArrayRef size,
-    bool align_corners) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("AffineGrid")
-      .Input(theta)
-      .Input(size, at::kInt)
-      .Output(result)
-      .Attr("align_corners", align_corners)
-      .Run();
-  return result;
+    bool align_corners)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("AffineGrid")
+        .Input(theta)
+        .Input(size, at::kInt)
+        .Output(result)
+        .Attr("align_corners", align_corners)
+        .Run();
+    return result;
 }
 } // namespace
 
 at::Tensor affine_grid_generator(
     const at::Tensor& theta,
     at::IntArrayRef size,
-    bool align_corners) {
-  TORCH_CHECK(size.size() == 4 || size.size() == 5,
-      "AffineGridGenerator needs 4d or 5d size(input)."
-      + OPS_ERROR(ErrCode::PARAM));
-  auto output_size = op_infer::infersize_affine_grid_generator(size);
-  at::Tensor result = npu_preparation::apply_tensor(theta, output_size);
-  affine_grid_generator_npu_nocheck(
-      result,
-      theta,
-      size,
-      align_corners);
+    bool align_corners)
+{
+    TORCH_CHECK(size.size() == 4 || size.size() == 5,
+                "AffineGridGenerator needs 4d or 5d size(input)."
+                + OPS_ERROR(ErrCode::PARAM));
+    auto output_size = op_infer::infersize_affine_grid_generator(size);
+    at::Tensor result = npu_preparation::apply_tensor(theta, output_size);
+    affine_grid_generator_npu_nocheck(
+        result,
+        theta,
+        size,
+        align_corners);
 
-  if (size.size() == 4) {
-    result = result.view({size[0], size[2], size[3], 2});
-  } else {
-    result = result.view({size[0], size[2], size[3], size[4], 3});
-  }
-  return result;
+    if (size.size() == 4) {
+        result = result.view({size[0], size[2], size[3], 2});
+    } else {
+        result = result.view({size[0], size[2], size[3], size[4], 3});
+    }
+    return result;
 }
 } // namespace acl_op

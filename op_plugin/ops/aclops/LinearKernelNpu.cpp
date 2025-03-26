@@ -89,7 +89,7 @@ std::tuple<at::Tensor, at::Tensor> npu_linear_backward(const at::Tensor &grad, c
     return std::tie(input_grad, weight_grad);
 }
 
-at::Tensor npu_linear(const at::Tensor &input, const at::Tensor &weight, const c10::optional<at::Tensor> &bias_opt)
+at::Tensor npu_linear(const at::Tensor &input, const at::Tensor &weight, const c10::optional<at::Tensor> &bias)
 {
     TORCH_CHECK(input.dim() >= 2, "torch.nn.functional.linear() input must be at least two-dimensional."
         + OPS_ERROR(ErrCode::PARAM));
@@ -97,10 +97,10 @@ at::Tensor npu_linear(const at::Tensor &input, const at::Tensor &weight, const c
         + OPS_ERROR(ErrCode::PARAM));
 
     auto is_aligin = [&]() {
-        return (!(static_cast<uint64_t>(input.size(0)) & 0x0000000F)) &&
-               (!(static_cast<uint64_t>(input.size(1)) & 0x0000000F)) &&
-               (!(static_cast<uint64_t>(weight.size(0)) & 0x0000000F)) &&
-               (!(static_cast<uint64_t>(weight.size(1)) & 0x0000000F));
+        return ((static_cast<uint64_t>(input.size(0)) & 0x0000000F) == 0) &&
+               ((static_cast<uint64_t>(input.size(1)) & 0x0000000F) == 0) &&
+               ((static_cast<uint64_t>(weight.size(0)) & 0x0000000F) == 0) &&
+               ((static_cast<uint64_t>(weight.size(1)) & 0x0000000F) == 0);
     };
 
     static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
@@ -110,6 +110,6 @@ at::Tensor npu_linear(const at::Tensor &input, const at::Tensor &weight, const c
                               (!is_support_nd_out && is_aligin()))) ?
                                 input :
                                 at_npu::native::custom_ops::npu_format_cast(input, ACL_FORMAT_FRACTAL_NZ);
-    return linear_npu_nocheck(input_cast, weight, bias_opt);
+    return linear_npu_nocheck(input_cast, weight, bias);
 }
 } // namespace acl_op

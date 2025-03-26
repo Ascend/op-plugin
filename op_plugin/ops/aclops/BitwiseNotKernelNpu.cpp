@@ -21,39 +21,43 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& bitwise_not_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
-  string real_op_name = (self.dtype() == at::kBool) ? "LogicalNot" : "Invert";
-  at_npu::native::OpCommand cmd;
-  cmd.Name(real_op_name)
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
+at::Tensor& bitwise_not_out_npu_nocheck(at::Tensor& out, const at::Tensor& self)
+{
+    string real_op_name = (self.dtype() == at::kBool) ? "LogicalNot" : "Invert";
+    at_npu::native::OpCommand cmd;
+    cmd.Name(real_op_name)
+        .Input(self)
+        .Output(out)
+        .Run();
+    return out;
 }
 } // namespace
 
-at::Tensor& bitwise_not_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    bitwise_not_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    bitwise_not_out_npu_nocheck(result, self);
-  }
-  return result;
+at::Tensor& bitwise_not_out(const at::Tensor& self, at::Tensor& out)
+{
+    npu_preparation::CheckOut(
+        {self},
+        out,
+        self);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        bitwise_not_out_npu_nocheck(contiguous_result, self);
+        npu_utils::format_fresh_view(out, contiguous_result);
+    } else {
+        bitwise_not_out_npu_nocheck(out, self);
+    }
+    return out;
 }
 
-at::Tensor bitwise_not(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  bitwise_not_out_npu_nocheck(result, self);
-  return result;
+at::Tensor bitwise_not(const at::Tensor& self)
+{
+    at::Tensor out = npu_preparation::apply_tensor(self);
+    bitwise_not_out_npu_nocheck(out, self);
+    return out;
 }
 
-at::Tensor& bitwise_not_(at::Tensor& self) {
-  return acl_op::bitwise_not_out(self, self);
+at::Tensor& bitwise_not_(at::Tensor& self)
+{
+    return acl_op::bitwise_not_out(self, self);
 }
 } // namespace acl_op
