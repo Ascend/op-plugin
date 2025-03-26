@@ -19,11 +19,11 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::ScalarType get_output_dtype(const at::Tensor &x1, const c10::optional<at::Tensor> &dequant_scale)
+at::ScalarType get_output_dtype(const at::Tensor& x1, const c10::optional<at::Tensor>& dequant_scale)
 {
     auto output_dtype = x1.scalar_type() == at::kChar ? at::ScalarType::Half : x1.scalar_type();
     if (dequant_scale.has_value()) {
-        const at::Tensor &dequant = dequant_scale.value();
+        const at::Tensor& dequant = dequant_scale.value();
         if (dequant.scalar_type() == at::kBFloat16) {
             output_dtype = at::kBFloat16;
         }
@@ -31,14 +31,14 @@ at::ScalarType get_output_dtype(const at::Tensor &x1, const c10::optional<at::Te
     return output_dtype;
 }
 
-void check_params(const at::Tensor &x1, const at::Tensor &x2,
-                  const c10::optional<at::Tensor> &antiquant_scale,
-                  const c10::optional<at::Tensor> &antiquant_offset,
-                  const c10::optional<at::Tensor> &x3,
-                  const c10::optional<at::Tensor> &dequant_scale,
-                  const c10::optional<at::Tensor> &pertoken_scale,
-                  const c10::optional<at::Tensor> &comm_quant_scale_1,
-                  const c10::optional<at::Tensor> &comm_quant_scale_2)
+void check_params(const at::Tensor& x1, const at::Tensor& x2,
+                  const c10::optional<at::Tensor>& antiquant_scale,
+                  const c10::optional<at::Tensor>& antiquant_offset,
+                  const c10::optional<at::Tensor>& x3,
+                  const c10::optional<at::Tensor>& dequant_scale,
+                  const c10::optional<at::Tensor>& pertoken_scale,
+                  const c10::optional<at::Tensor>& comm_quant_scale_1,
+                  const c10::optional<at::Tensor>& comm_quant_scale_2)
 {
     // check shape: shape of x1:[s,m,k], shape of x2:[k,n], k_x1 == k_x2
     TORCH_CHECK(x2.dim() == 2, "x2 needs to be 2D, but got: ", x2.dim(), "D", OPS_ERROR(ErrCode::VALUE));
@@ -76,7 +76,7 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
         output_size[x1.dim() - 1] = x2.size(1);
         // A8W8: dtype of output should be half or bfloat16.
         auto output_dtype = get_output_dtype(x1, dequant_scale);
-        const at::Tensor &x3_real = x3.value();
+        const at::Tensor& x3_real = x3.value();
         TORCH_CHECK(x3_real.sizes().equals(output_size), "x3 with shape ", x3_real.sizes(),
                     " doesn't match the output shape ", output_size, OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(x3_real.scalar_type() == output_dtype, "x3 with dtype ", x3_real.scalar_type(),
@@ -88,7 +88,7 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
         TORCH_CHECK((dequant_scale.has_value()),
                     "when has pertoken_scale, dequantScale shoulden't be null", OPS_ERROR(ErrCode::TYPE));
 
-        const at::Tensor &pertoken_scale_real = pertoken_scale.value();
+        const at::Tensor& pertoken_scale_real = pertoken_scale.value();
         TORCH_CHECK(pertoken_scale_real.dim() == 1, "pertoken_scale with shape ", pertoken_scale_real.sizes(),
                     " pertoken_scale dim should be 1.", OPS_ERROR(ErrCode::PARAM));
 
@@ -109,8 +109,8 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
                 (!comm_quant_scale_1.has_value() && !comm_quant_scale_2.has_value()),
                 "comm_quant_scale_1 and comm_quant_scale_2 should both be null or not null", OPS_ERROR(ErrCode::TYPE));
     if (comm_quant_scale_1.has_value() && comm_quant_scale_2.has_value()) {
-        const at::Tensor &comm_quant_scale_1_real = comm_quant_scale_1.value();
-        const at::Tensor &comm_quant_scale_2_real = comm_quant_scale_2.value();
+        const at::Tensor& comm_quant_scale_1_real = comm_quant_scale_1.value();
+        const at::Tensor& comm_quant_scale_2_real = comm_quant_scale_2.value();
         TORCH_CHECK((comm_quant_scale_1_real.dim() == 2 && comm_quant_scale_2_real.dim() == 2) || (comm_quant_scale_1_real.dim() == 1 &&
                     comm_quant_scale_2_real.dim() == 1), "comm_quant_scale_1 and comm_quant_scale_2 both need to be 1D or 2D, but got: comm_quant_scale_1",
                     comm_quant_scale_1_real.dim(), "D, comm_quant_scale_2", comm_quant_scale_2_real.dim(), "D", OPS_ERROR(ErrCode::VALUE));
@@ -126,14 +126,14 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
     }
 }
 
-at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c10::string_view hcom,
-                                  c10::string_view reduce_op, const c10::optional<at::Tensor> &bias,
-                                  const c10::optional<at::Tensor> &antiquant_scale,
-                                  const c10::optional<at::Tensor> &antiquant_offset,
-                                  const c10::optional<at::Tensor> &x3, const c10::optional<at::Tensor> &dequant_scale,
-                                  const c10::optional<at::Tensor> &pertoken_scale,
-                                  const c10::optional<at::Tensor> &comm_quant_scale_1,
-                                  const c10::optional<at::Tensor> &comm_quant_scale_2,
+at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c10::string_view hcom,
+                                  c10::string_view reduce_op, const c10::optional<at::Tensor>& bias,
+                                  const c10::optional<at::Tensor>& antiquant_scale,
+                                  const c10::optional<at::Tensor>& antiquant_offset,
+                                  const c10::optional<at::Tensor>& x3, const c10::optional<at::Tensor>& dequant_scale,
+                                  const c10::optional<at::Tensor>& pertoken_scale,
+                                  const c10::optional<at::Tensor>& comm_quant_scale_1,
+                                  const c10::optional<at::Tensor>& comm_quant_scale_2,
                                   int64_t antiquant_group_size, int64_t comm_turn)
 {
     check_params(x1, x2, antiquant_scale, antiquant_offset, x3, dequant_scale, pertoken_scale, comm_quant_scale_1, comm_quant_scale_2);
@@ -144,12 +144,12 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c1
     auto output_dtype = get_output_dtype(x1, dequant_scale);
     auto result = at_npu::native::OpPreparation::apply_tensor_without_format(output_size,
                                                                              x1.options().dtype(output_dtype));
-    char *reduce_op_ptr = const_cast<char *>(reduce_op.data());
-    char *hcom_ptr = const_cast<char *>(hcom.data());
-    const at::Tensor &bias_real = bias.value_or(at::Tensor());
-    const at::Tensor &x3_real = x3.value_or(at::Tensor());
-    const at::Tensor &comm_quant_scale_1_real = comm_quant_scale_1.value_or(at::Tensor());
-    const at::Tensor &comm_quant_scale_2_real = comm_quant_scale_2.value_or(at::Tensor());
+    char* reduce_op_ptr = const_cast<char*>(reduce_op.data());
+    char* hcom_ptr = const_cast<char*>(hcom.data());
+    const at::Tensor& bias_real = bias.value_or(at::Tensor());
+    const at::Tensor& x3_real = x3.value_or(at::Tensor());
+    const at::Tensor& comm_quant_scale_1_real = comm_quant_scale_1.value_or(at::Tensor());
+    const at::Tensor& comm_quant_scale_2_real = comm_quant_scale_2.value_or(at::Tensor());
     int64_t stream_mode = ACL_STOP_ON_FAILURE;
     // a8w8: x1\x2 kChar; a16w8: x2 kChar;
     if (!isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type())) {
@@ -160,14 +160,14 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c1
         }
     }
     if (isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
-        const at::Tensor &dequant_scale_real = dequant_scale.value_or(at::Tensor());
+        const at::Tensor& dequant_scale_real = dequant_scale.value_or(at::Tensor());
         if (comm_quant_scale_1.has_value() && comm_quant_scale_2.has_value()) {
-            const at::Tensor &pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
+            const at::Tensor& pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
             EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV3, x1, x2, bias_real, x3_real, dequant_scale_real,
                          pertoken_scale_real, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr,
                          reduce_op_ptr, comm_turn, stream_mode, result);
         } else if (pertoken_scale.has_value()) {
-            const at::Tensor &pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
+            const at::Tensor& pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
             EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV2, x1, x2, bias_real, x3_real, dequant_scale_real, pertoken_scale_real, hcom_ptr, reduce_op_ptr,
                          comm_turn, stream_mode, result);
         } else {
@@ -175,8 +175,8 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor &x1, const at::Tensor &x2, c1
         }
     }
     if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
-        const at::Tensor &antiquant_scale_real = antiquant_scale.value_or(at::Tensor());
-        const at::Tensor &antiquant_offset_real = antiquant_offset.value_or(at::Tensor());
+        const at::Tensor& antiquant_scale_real = antiquant_scale.value_or(at::Tensor());
+        const at::Tensor& antiquant_offset_real = antiquant_offset.value_or(at::Tensor());
         EXEC_NPU_CMD(aclnnWeightQuantMatmulAllReduce, x1, x2, bias_real, antiquant_scale_real, antiquant_offset_real,
                      x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, antiquant_group_size, result);
     }

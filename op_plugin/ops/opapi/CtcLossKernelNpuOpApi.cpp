@@ -27,29 +27,30 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(
     at::IntArrayRef input_lengths_list,
     at::IntArrayRef target_lengths_list,
     int64_t blank,
-    bool zero_infinity) {
-  DO_COMPATIBILITY(aclnnCtcLoss, acl_op::_ctc_loss(log_probs, targets, input_lengths_list, target_lengths_list, blank,
-                                                   zero_infinity));
+    bool zero_infinity)
+{
+    DO_COMPATIBILITY(aclnnCtcLoss, acl_op::_ctc_loss(log_probs, targets, input_lengths_list, target_lengths_list, blank,
+                                                     zero_infinity));
 
-  int64_t max_length = 0;
-  for (auto &i : target_lengths_list) {
-    if (i > max_length) {
-      max_length = i;
+    int64_t max_length = 0;
+    for (auto& i : target_lengths_list) {
+        if (i > max_length) {
+            max_length = i;
+        }
     }
-  }
 
-  // calculate the output size
-  auto outputSizes = op_infer::ctc_loss_npu_output_size(log_probs, max_length);
+    // calculate the output size
+    auto outputSizes = op_infer::ctc_loss_npu_output_size(log_probs, max_length);
 
-  // construct the output tensor of the NPU
-  at::Tensor neg_log_likelihood = npu_preparation::apply_tensor_without_format(log_probs, std::get<0>(outputSizes));
-  at::Tensor log_alpha = npu_preparation::apply_tensor_without_format(log_probs, std::get<1>(outputSizes));
+    // construct the output tensor of the NPU
+    at::Tensor neg_log_likelihood = npu_preparation::apply_tensor_without_format(log_probs, std::get<0>(outputSizes));
+    at::Tensor log_alpha = npu_preparation::apply_tensor_without_format(log_probs, std::get<1>(outputSizes));
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnCtcLoss, log_probs, targets, input_lengths_list, target_lengths_list,
-      blank, zero_infinity, neg_log_likelihood, log_alpha);
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnCtcLoss, log_probs, targets, input_lengths_list, target_lengths_list,
+                 blank, zero_infinity, neg_log_likelihood, log_alpha);
 
-  return std::tuple<at::Tensor, at::Tensor>(neg_log_likelihood, log_alpha);
+    return std::tuple<at::Tensor, at::Tensor>(neg_log_likelihood, log_alpha);
 }
 
 at::Tensor ctc_loss(
@@ -59,35 +60,36 @@ at::Tensor ctc_loss(
     at::IntArrayRef target_lengths_list,
     int64_t blank,
     int64_t reduction,
-    bool zero_infinity) {
-  DO_COMPATIBILITY(aclnnCtcLoss, acl_op::ctc_loss(log_probs, targets, input_lengths_list, target_lengths_list, blank,
-                                                  reduction, zero_infinity));
-  at::Tensor res = std::get<0>(at::_ctc_loss(
-      log_probs,
-      targets,
-      input_lengths_list,
-      target_lengths_list,
-      blank,
-      zero_infinity));
+    bool zero_infinity)
+{
+    DO_COMPATIBILITY(aclnnCtcLoss, acl_op::ctc_loss(log_probs, targets, input_lengths_list, target_lengths_list, blank,
+                                                    reduction, zero_infinity));
+    at::Tensor res = std::get<0>(at::_ctc_loss(
+        log_probs,
+        targets,
+        input_lengths_list,
+        target_lengths_list,
+        blank,
+        zero_infinity));
 
-  if (zero_infinity) {
-    res = at::where(
-        res == at::Scalar(std::numeric_limits<double>::infinity()),
-        at::zeros({}, res.options()),
-        res);
-  }
+    if (zero_infinity) {
+        res = at::where(
+            res == at::Scalar(std::numeric_limits<double>::infinity()),
+            at::zeros({}, res.options()),
+            res);
+    }
 
-  if (reduction == at::Reduction::Mean) {
-    std::vector<int64_t> target_lengths_vector = target_lengths_list.vec();
-    auto target_lengths_tensor = npu_preparation::copy_tensor_host_to_device(
-        at::from_blob(target_lengths_vector.data(), {target_lengths_vector.size()}, at::kLong)).clamp_min(1);
-    at::Tensor target_lengths_tensor_ = target_lengths_tensor.to(res.dtype());
-    return (res / target_lengths_tensor_).mean();
-  } else if (reduction == at::Reduction::Sum) {
-    return res.sum();
-  }
+    if (reduction == at::Reduction::Mean) {
+        std::vector<int64_t> target_lengths_vector = target_lengths_list.vec();
+        auto target_lengths_tensor = npu_preparation::copy_tensor_host_to_device(
+            at::from_blob(target_lengths_vector.data(), {target_lengths_vector.size()}, at::kLong)).clamp_min(1);
+        at::Tensor target_lengths_tensor_ = target_lengths_tensor.to(res.dtype());
+        return (res / target_lengths_tensor_).mean();
+    } else if (reduction == at::Reduction::Sum) {
+        return res.sum();
+    }
 
-  return res;
+    return res;
 }
 
 at::Tensor ctc_loss(
