@@ -21,6 +21,7 @@ const static int64_t IN_NOT_SPLIT_OUT_NOT_SPLIT = 0;
 const static int64_t IN_SPLIT_OUT_NOT_SPLIT = 1;
 const static int64_t IN_NOT_SPLIT_OUT_SPLIT = 2;
 const static int64_t IN_SPLIT_OUT_SPLIT = 3;
+const static int64_t INT4_NUMS_IN_INT32 = 8;
 using npu_preparation = at_npu::native::OpPreparation;
 
 void check_dims(int64_t split_item, size_t num_x, size_t num_weight, size_t num_group_list)
@@ -271,9 +272,13 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
             for (size_t i = 0; i < num_x; i++) {
                 dim_m += static_cast<size_t>(x[i].size(0));
             }
-            create_new_tensor(y, dim_m, n0, options);
+            weight[0].dtype() == at::ScalarType::Int ?
+                create_new_tensor(y, dim_m, n0 * INT4_NUMS_IN_INT32, options) :
+                create_new_tensor(y, dim_m, n0, options);
         } else if (num_x == 1) {
-            create_new_tensor(y, x[0].size(0), n0, options);
+            weight[0].dtype() == at::ScalarType::Int ?
+                create_new_tensor(y, x[0].size(0), n0 * INT4_NUMS_IN_INT32, options) :
+                create_new_tensor(y, x[0].size(0), n0, options);
         }
     }
     at::TensorList result = at::TensorList(y);
