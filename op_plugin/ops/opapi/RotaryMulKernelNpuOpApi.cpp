@@ -40,14 +40,15 @@ at::Tensor npu_rotary_mul(
     const at::Tensor& self,
     const at::Tensor& r1,
     const at::Tensor& r2,
-    int64_t mode)
+    c10::string_view rotary_mode)
 {
-    TORCH_CHECK(mode == ROTATE_HALF || mode == ROTATE_INTERLEAVED,
-        "The mode of npu_rotary_mul should be 0(rotate_half) or 1(rotate_interleaved), but got ", mode,
+    TORCH_CHECK(rotary_mode == "half" || rotary_mode == "interleave",
+        "The rotary_mode of npu_rotary_mul should be half or interleave, but got ", rotary_mode,
         OPS_ERROR(ErrCode::PARAM));
-    DO_COMPATIBILITY(aclnnRotaryPositionEmbedding, acl_op::npu_rotary_mul(self, r1, r2, mode));
+    DO_COMPATIBILITY(aclnnRotaryPositionEmbedding, acl_op::npu_rotary_mul(self, r1, r2, rotary_mode));
+    int64_t mode = op_plugin::utils::get_rotary_mode(rotary_mode);
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
-        return acl_op::npu_rotary_mul(self, r1, r2, mode);
+        return acl_op::npu_rotary_mul(self, r1, r2, rotary_mode);
     }
     at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options());
     bool isMixDataType = isRotaryMulMixDtypeSupport(self, r1, r2);

@@ -47,6 +47,21 @@ std::string get_reduction_str(int64_t reduction)
     return reductionStr;
 }
 
+int64_t get_rotary_mode(c10::string_view mode)
+{
+    if (mode == "half") {
+        // ROTATE_HALF模式对应输入为0
+        return 0;
+    } else if (mode == "interleave") {
+        // ROTATE_INTERLEAVED模式对应输入为1
+        return 1;
+    } else if (mode == "quarter") {
+        return 2;
+    } else if (mode == "interleave-half") {
+        return 3;
+    }
+}
+
 int64_t make_warp_dim(int64_t dim, int64_t dim_post_expr)
 {
     if (dim_post_expr <= 0) {
