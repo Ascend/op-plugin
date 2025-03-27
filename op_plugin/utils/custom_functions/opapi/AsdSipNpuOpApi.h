@@ -50,6 +50,8 @@ typedef struct {
     int dtype;
     int format;
     SVector<int64_t> dims;
+    SVector<int64_t> strides;
+    int64_t offset;
 } MkiTensorDesc;
 typedef struct {
     MkiTensorDesc desc;
