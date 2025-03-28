@@ -31,13 +31,15 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
                                         const c10::optional<at::Tensor> &expert_scales,
                                         c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
                                         int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
-                                        int64_t quant_mode, int64_t global_bs)
+                                        int64_t quant_mode, int64_t global_bs, int64_t expert_token_nums_type)
 {
     TORCH_CHECK((x.dim() == 2) && (expert_ids.dim() == 2), "The x and expert_ids should be 2D", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((x.scalar_type() == at::kBFloat16 || (x.scalar_type() == at::kHalf)) && (expert_ids.scalar_type() == at::kInt),
                 "dtype of x should be bfloat16 or half, dtype of expert_ids should be int.", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((shared_expert_rank_num >= 0) && (shared_expert_rank_num < ep_world_size),
                 "shared_expert_rank_num should be in [0, ep_world_size)", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK((expert_token_nums_type == 0) || (expert_token_nums_type == 1),
+                "The expert_token_nums_type should be 0 or 1.", OPS_ERROR(ErrCode::PARAM));
     auto x_size = x.sizes();
     auto expert_ids_size = expert_ids.sizes();
 
@@ -105,8 +107,9 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
                  moe_expert_num,
                  group_tp_ptr, tp_world_size, tp_rank_id,
                  expert_shard_type, shared_expert_num, shared_expert_rank_num,
-                 quant_mode, global_bs_real, expand_x, dynamic_scales, expand_idx,
-                 expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales);
+                 quant_mode, global_bs_real, expert_token_nums_type, expand_x,
+                 dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts,
+                 tp_recv_counts, expand_scales);
     return std::tie(expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts,
         expand_scales);
 }
