@@ -24,28 +24,32 @@ namespace {
 at::Tensor& silu_backward_out_nocheck(
     at::Tensor& grad_input,
     const at::Tensor& grad_output,
-    const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("SiluGrad")
-    .Input(grad_output)
-    .Input(self)
-    .Output(grad_input)
-    .Run();
-  return grad_input;
+    const at::Tensor& self)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("SiluGrad")
+      .Input(grad_output)
+      .Input(self)
+      .Output(grad_input)
+      .Run();
+    return grad_input;
 }
 }
 
-at::Tensor& silu_backward_out(const at::Tensor& grad_output, const at::Tensor& self,
-                              at::Tensor& grad_input) {
-  npu_preparation::CheckOut({grad_output, self}, grad_input, grad_output);
-  silu_backward_out_nocheck(grad_input, grad_output, self);
-  return grad_input;
+at::Tensor& silu_backward_out(const at::Tensor& grad_output,
+                              const at::Tensor& self,
+                              at::Tensor& grad_input)
+{
+    npu_preparation::CheckOut({grad_output, self}, grad_input, grad_output);
+    silu_backward_out_nocheck(grad_input, grad_output, self);
+    return grad_input;
 }
 
-at::Tensor silu_backward(const at::Tensor& grad_output, const at::Tensor& self) {
-  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
-  silu_backward_out_nocheck(grad_input, grad_output, self);
-  return grad_input;
+at::Tensor silu_backward(const at::Tensor& grad_output, const at::Tensor& self)
+{
+    at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
+    silu_backward_out_nocheck(grad_input, grad_output, self);
+    return grad_input;
 }
 
 } // namespace acl_op

@@ -25,40 +25,43 @@ namespace {
 at::Tensor& hardshrink_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
-    at::Scalar lambd) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("HardShrink")
-      .Input(self)
-      .Attr("lambd", lambd)
-      .Output(result)
-      .Run();
-  return result;
+    at::Scalar lambd)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("HardShrink")
+        .Input(self)
+        .Attr("lambd", lambd)
+        .Output(result)
+        .Run();
+    return result;
 }
 } // namespace
 
 at::Tensor& hardshrink_out(
     const at::Tensor& self,
     const at::Scalar& lambd,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
+    at::Tensor& out)
+{
+    npu_preparation::CheckOut(
+        {self},
+        out,
+        self);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    hardshrink_out_nocheck(contiguous_result, self, lambd);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    hardshrink_out_nocheck(result, self, lambd);
-  }
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        hardshrink_out_nocheck(contiguous_result, self, lambd);
+        npu_utils::format_fresh_view(out, contiguous_result);
+    } else {
+        hardshrink_out_nocheck(out, self, lambd);
+    }
 
-  return result;
+    return out;
 }
 
-at::Tensor hardshrink(const at::Tensor& self, const at::Scalar& lambd) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  hardshrink_out_nocheck(result, self, lambd);
-  return result;
+at::Tensor hardshrink(const at::Tensor& self, const at::Scalar& lambd)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    hardshrink_out_nocheck(result, self, lambd);
+    return result;
 }
 } // namespace acl_op

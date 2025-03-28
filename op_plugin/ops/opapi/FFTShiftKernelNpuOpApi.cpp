@@ -36,50 +36,50 @@ static at::DimVector default_alldims(const at::Tensor& self, at::OptionalIntArra
     return dim;
 }
 
-at::Tensor fft_fftshift(const at::Tensor& x, at::OptionalIntArrayRef dim_opt)
+at::Tensor fft_fftshift(const at::Tensor& self, at::OptionalIntArrayRef dim)
 {
-    auto dim = default_alldims(x, dim_opt);
+    auto dim_ = default_alldims(self, dim);
 
-    at::SymIntArrayRef x_sizes = x.sym_sizes();
-    at::SymDimVector shift(dim.size());
-    for (const auto i : c10::irange(dim.size())) {
-        shift[i] = x_sizes[dim[i]] / 2;
+    at::SymIntArrayRef x_sizes = self.sym_sizes();
+    at::SymDimVector shift(dim_.size());
+    for (const auto i : c10::irange(dim_.size())) {
+        shift[i] = x_sizes[dim_[i]] / 2;
     }
 
-    if (x.scalar_type() == at::ScalarType::ComplexFloat) {
-        auto res = x.view(x.sizes());
+    if (self.scalar_type() == at::ScalarType::ComplexFloat) {
+        auto res = self.view(self.sizes());
         auto *impl = res.unsafeGetTensorImpl();
         impl->set_storage_and_dtype(res.storage(), c10::scalarTypeToTypeMeta(at::ScalarType::Long));
-        res = at::roll_symint(res, shift, dim);
+        res = at::roll_symint(res, shift, dim_);
         impl = res.unsafeGetTensorImpl();
         impl->set_storage_and_dtype(res.storage(), c10::scalarTypeToTypeMeta(at::ScalarType::ComplexFloat));
         return res;
     }
 
-    return at::roll_symint(x, shift, dim);
+    return at::roll_symint(self, shift, dim_);
 }
 
-at::Tensor fft_ifftshift(const at::Tensor& x, at::OptionalIntArrayRef dim_opt)
+at::Tensor fft_ifftshift(const at::Tensor& self, at::OptionalIntArrayRef dim)
 {
-    auto dim = default_alldims(x, dim_opt);
+    auto dim_ = default_alldims(self, dim);
 
-    at::SymIntArrayRef x_sizes = x.sym_sizes();
-    at::SymDimVector shift(dim.size());
-    for (const auto i : c10::irange(dim.size())) {
-        shift[i] = (x_sizes[dim[i]] + 1) / 2;
+    at::SymIntArrayRef x_sizes = self.sym_sizes();
+    at::SymDimVector shift(dim_.size());
+    for (const auto i : c10::irange(dim_.size())) {
+        shift[i] = (x_sizes[dim_[i]] + 1) / 2;
     }
 
-    if (x.scalar_type() == at::ScalarType::ComplexFloat) {
-        auto res = x.view(x.sizes());
+    if (self.scalar_type() == at::ScalarType::ComplexFloat) {
+        auto res = self.view(self.sizes());
         auto *impl = res.unsafeGetTensorImpl();
         impl->set_storage_and_dtype(res.storage(), c10::scalarTypeToTypeMeta(at::ScalarType::Long));
-        res = at::roll_symint(res, shift, dim);
+        res = at::roll_symint(res, shift, dim_);
         impl = res.unsafeGetTensorImpl();
         impl->set_storage_and_dtype(res.storage(), c10::scalarTypeToTypeMeta(at::ScalarType::ComplexFloat));
         return res;
     }
 
-    return at::roll_symint(x, shift, dim);
+    return at::roll_symint(self, shift, dim_);
 }
 
 #endif

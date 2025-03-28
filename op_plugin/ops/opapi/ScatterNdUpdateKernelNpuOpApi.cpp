@@ -22,20 +22,20 @@ namespace op_api {
 
 at::Tensor npu_scatter_nd_update(
     const at::Tensor &self,
-    const at::Tensor &indice,
+    const at::Tensor &indices,
     const at::Tensor &updates)
 {
     at::Tensor result = self.clone();
-    EXEC_NPU_CMD(aclnnScatterNdUpdate, result, indice, updates);
+    EXEC_NPU_CMD(aclnnScatterNdUpdate, result, indices, updates);
     return result;
 }
 
 at::Tensor &npu_scatter_nd_update_(
     at::Tensor &self,
-    const at::Tensor &indice,
+    const at::Tensor &indices,
     const at::Tensor &updates)
 {
-    EXEC_NPU_CMD(aclnnScatterNdUpdate, self, indice, updates);
+    EXEC_NPU_CMD(aclnnScatterNdUpdate, self, indices, updates);
     return self;
 }
 

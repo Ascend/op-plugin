@@ -25,16 +25,17 @@ std::tuple<at::Tensor&, at::Tensor&> min_v1_out_npu_nocheck(
     at::Tensor& indices,
     const at::Tensor& self,
     int64_t dim,
-    bool keepdim) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ArgMinWithValue")
-      .Input(self)
-      .Output(indices)
-      .Output(output)
-      .Attr("dimension", dim)
-      .Attr("keep_dims", keepdim)
-      .Run();
-  return std::tie(output, indices);
+    bool keepdim)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ArgMinWithValue")
+        .Input(self)
+        .Output(indices)
+        .Output(output)
+        .Attr("dimension", dim)
+        .Attr("keep_dims", keepdim)
+        .Run();
+    return std::tie(output, indices);
 }
 
 #if VERSION_BETWEEN(V1R11, V1R11)
@@ -43,12 +44,13 @@ at::Tensor npu_min_backward(
     int64_t dim,
     const at::Tensor& indices,
     at::IntArrayRef sizes,
-    bool keepdim) {
+    bool keepdim)
+{
     at::Tensor new_grad = grad;
     at::Tensor new_indices = indices;
     if (keepdim && sizes.size() > 0) {
-    new_grad = grad.squeeze(dim);
-    new_indices = indices.squeeze(dim);
+        new_grad = grad.squeeze(dim);
+        new_indices = indices.squeeze(dim);
     }
     auto grad_input = acl_op::npu_scatter(
         at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
@@ -56,37 +58,39 @@ at::Tensor npu_min_backward(
 }
 #endif
 
-std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, at::Dimname dim, bool keepdim) {
-  return acl_op::npu_min(self, dimname_to_position(self, dim), keepdim);
+std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, at::Dimname dim, bool keepdim)
+{
+    return acl_op::npu_min(self, dimname_to_position(self, dim), keepdim);
 }
 
-std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, int64_t dim, bool keepdim) {
-  c10::SmallVector<int64_t, SIZE> dims = {dim};
-  c10::SmallVector<int64_t, SIZE> output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
-  c10::SmallVector<int64_t, SIZE> indices_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, int64_t dim, bool keepdim)
+{
+    c10::SmallVector<int64_t, SIZE> dims = {dim};
+    c10::SmallVector<int64_t, SIZE> output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+    c10::SmallVector<int64_t, SIZE> indices_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 
-  int64_t npu_format = output_size.empty() ? ACL_FORMAT_NCHW : npu_preparation::get_tensor_npu_format(self);
+    int64_t npu_format = output_size.empty() ? ACL_FORMAT_NCHW : npu_preparation::get_tensor_npu_format(self);
 
-  at::Tensor outputs = npu_preparation::apply_tensor_with_format(output_size, self.options(), npu_format);
-  at::Tensor indices =
-      npu_preparation::apply_tensor_with_format(indices_size, self.options().dtype(at::kInt), npu_format);
+    at::Tensor outputs = npu_preparation::apply_tensor_with_format(output_size, self.options(), npu_format);
+    at::Tensor indices =
+        npu_preparation::apply_tensor_with_format(indices_size, self.options().dtype(at::kInt), npu_format);
 
-  min_v1_out_npu_nocheck(outputs, indices, self, dim, keepdim);
-  return std::tie(outputs, indices);
+    min_v1_out_npu_nocheck(outputs, indices, self, dim, keepdim);
+    return std::tie(outputs, indices);
 }
 
 #if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor npu_min_backward_symint(const at::Tensor &grad, int64_t dim, const at::Tensor &indices,
-                                   c10::SymIntArrayRef sizes_symint, bool keepdim)
+                                   c10::SymIntArrayRef sizes, bool keepdim)
 {
-    at::IntArrayRef sizes = c10::asIntArrayRefUnchecked(sizes_symint);
+    at::IntArrayRef sizes_ = c10::asIntArrayRefUnchecked(sizes);
     at::Tensor new_grad = grad;
     at::Tensor new_indices = indices;
-    if (keepdim && sizes.size() > 0) {
+    if (keepdim && sizes_.size() > 0) {
         new_grad = grad.squeeze(dim);
         new_indices = indices.squeeze(dim);
     }
-    auto grad_input = acl_op::npu_scatter(at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
+    auto grad_input = acl_op::npu_scatter(at::zeros(sizes_, new_grad.options()), new_indices, new_grad, dim);
     return grad_input;
 }
 #endif

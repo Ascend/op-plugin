@@ -25,41 +25,44 @@ namespace {
 at::Tensor& sigmoid_backward_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& grad_output,
-    const at::Tensor& output) {
-  auto unified_result = npu_preparation::binary_op_check(result, output, grad_output, true);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("SigmoidGrad")
-      .Expect(unified_result)
-      .Input(output)
-      .Input(grad_output)
-      .Output(result)
-      .Run();
+    const at::Tensor& output)
+{
+    auto unified_result = npu_preparation::binary_op_check(result, output, grad_output, true);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("SigmoidGrad")
+        .Expect(unified_result)
+        .Input(output)
+        .Input(grad_output)
+        .Output(result)
+        .Run();
 
-  return result;
+    return result;
 }
 } // namespace
 
 at::Tensor& sigmoid_backward_out(
     const at::Tensor& grad_output,
     const at::Tensor& output,
-    at::Tensor& result) {
-  npu_preparation::CheckOut({grad_output, output}, result, grad_output);
+    at::Tensor& grad_input)
+{
+    npu_preparation::CheckOut({grad_output, output}, grad_input, grad_output);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    sigmoid_backward_out_npu_nocheck(contiguous_result, grad_output, output);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    sigmoid_backward_out_npu_nocheck(result, grad_output, output);
-  }
-  return result;
+    if (!npu_utils::check_match(&grad_input)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
+        sigmoid_backward_out_npu_nocheck(contiguous_result, grad_output, output);
+        npu_utils::format_fresh_view(grad_input, contiguous_result);
+    } else {
+        sigmoid_backward_out_npu_nocheck(grad_input, grad_output, output);
+    }
+    return grad_input;
 }
 
-at::Tensor sigmoid_backward(const at::Tensor& grad_output, const at::Tensor& output) {
-  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
-  sigmoid_backward_out_npu_nocheck(grad_input, grad_output, output);
+at::Tensor sigmoid_backward(const at::Tensor& grad_output, const at::Tensor& output)
+{
+    at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
+    sigmoid_backward_out_npu_nocheck(grad_input, grad_output, output);
 
-  return grad_input;
+    return grad_input;
 }
 
 } // namespace acl_op
