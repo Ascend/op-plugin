@@ -23,6 +23,12 @@
 
 namespace op_plugin {
 namespace utils {
+
+const static int64_t ROTATE_HALF = 0;
+const static int64_t ROTATE_INTERLEAVED = 1;
+const static int64_t ROTATE_QUARTER = 2;
+const static int64_t ROTATE_INTERLEAVED_HALF = 3;
+
 bool is_neox_style(std::string rotary_mode)
 {
     TORCH_CHECK(rotary_mode != "half" || rotary_mode != "interleave",
@@ -45,6 +51,21 @@ std::string get_reduction_str(int64_t reduction)
         reductionStr = "sum";
     }
     return reductionStr;
+}
+
+int64_t get_rotary_mode(c10::string_view mode)
+{
+    if (mode == "half") {
+        // ROTATE_HALF模式对应输入为0
+        return ROTATE_HALF;
+    } else if (mode == "interleave") {
+        // ROTATE_INTERLEAVED模式对应输入为1
+        return ROTATE_INTERLEAVED;
+    } else if (mode == "quarter") {
+        return ROTATE_QUARTER;
+    } else if (mode == "interleave-half") {
+        return ROTATE_INTERLEAVED_HALF;
+    }
 }
 
 int64_t make_warp_dim(int64_t dim, int64_t dim_post_expr)

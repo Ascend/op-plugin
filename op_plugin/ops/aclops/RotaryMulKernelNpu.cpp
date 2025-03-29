@@ -15,6 +15,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/OpUtils.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -102,18 +103,24 @@ tensor_list rotary_mul_backward_nocheck(at::Tensor &dx, at::Tensor &dr1, at::Ten
 }
 } // namespace
 
-at::Tensor npu_rotary_mul(const at::Tensor &self, const at::Tensor &r1, const at::Tensor &r2, int64_t mode)
+at::Tensor npu_rotary_mul(const at::Tensor &self, const at::Tensor &r1, const at::Tensor &r2, c10::string_view rotary_mode)
 {
-    TORCH_CHECK(mode == 0, "npu_rotary_mul in aclop only support mode with 0" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(rotary_mode == "half",
+        "npu_rotary_mul in aclop only support rotary_mode with half, but got ", rotary_mode,
+        OPS_ERROR(ErrCode::PARAM));
+    int64_t mode = op_plugin::utils::get_rotary_mode(rotary_mode);
     at::Tensor result = npu_preparation::apply_tensor(self);
     rotary_mul_nocheck(result, self, r1, r2);
     return result;
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(const at::Tensor &grad, const at::Tensor &self,
-                                                                       const at::Tensor &r1, const at::Tensor &r2, int64_t mode)
+                                                                       const at::Tensor &r1, const at::Tensor &r2, c10::string_view rotary_mode)
 {
-    TORCH_CHECK(mode == 0, "npu_rotary_mul_backward in aclop only support mode with 0" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(rotary_mode == "half",
+        "npu_rotary_mul_backward in aclop only support rotary_mode with half, but got ", rotary_mode,
+        OPS_ERROR(ErrCode::PARAM));
+    int64_t mode = op_plugin::utils::get_rotary_mode(rotary_mode);
     at::Tensor dx = npu_preparation::apply_tensor(self);
     at::Tensor dr1 = npu_preparation::apply_tensor(r1);
     at::Tensor dr2 = npu_preparation::apply_tensor(r2);

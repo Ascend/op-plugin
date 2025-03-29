@@ -13,7 +13,7 @@ class TestRotaryMul(TestCase):
         output = r1 * x + r2 * x_new
         return output
 
-    def rotary_mul_mode(self, x, r1, r2, mode):
+    def rotary_mul_mode(self, x, r1, r2):
         x1 = x[..., ::2]
         x2 = x[..., 1::2]
         x_new = torch.stack((-x2, x1), dim=-1)
@@ -26,25 +26,25 @@ class TestRotaryMul(TestCase):
         npu_input = cpu_input.npu()
         return cpu_input, npu_input
 
-    def cpu_to_exec(self, x, r1, r2, mode=0):
+    def cpu_to_exec(self, x, r1, r2, mode='half'):
         x.requires_grad = True
         r1.requires_grad = True
         r2.requires_grad = True
-        if mode == 0:
+        if mode == 'half':
             out = self.rotary_mul(x, r1, r2)
         else:
-            out = self.rotary_mul_mode(x, r1, r2, mode)
+            out = self.rotary_mul_mode(x, r1, r2)
         out.backward(torch.ones_like(out))
         x_grad = x.grad.numpy()
         r1_grad = r1.grad.numpy()
         r2_grad = r2.grad.numpy()
         return x_grad, r1_grad, r2_grad
 
-    def npu_to_exec(self, x, r1, r2, mode=0):
+    def npu_to_exec(self, x, r1, r2, mode='half'):
         x.requires_grad = True
         r1.requires_grad = True
         r2.requires_grad = True
-        if mode == 0:
+        if mode == 'half':
             out = torch_npu.npu_rotary_mul(x, r1, r2)
         else:
             out = torch_npu.npu_rotary_mul(x, r1, r2, mode)
@@ -95,8 +95,8 @@ class TestRotaryMul(TestCase):
             cpu_x, npu_x = self.gen_data(shape[0], dtype)
             cpu_r1, npu_r1 = self.gen_data(shape[1], dtype)
             cpu_r2, npu_r2 = self.gen_data(shape[2], dtype)
-            cpu_grad1, cpu_grad2, cpu_grad3 = self.cpu_to_exec(cpu_x, cpu_r1, cpu_r2, 1)
-            npu_grad1, npu_grad2, npu_grad3 = self.npu_to_exec(npu_x, npu_r1, npu_r2, 1)
+            cpu_grad1, cpu_grad2, cpu_grad3 = self.cpu_to_exec(cpu_x, cpu_r1, cpu_r2, 'interleave')
+            npu_grad1, npu_grad2, npu_grad3 = self.npu_to_exec(npu_x, npu_r1, npu_r2, 'interleave')
             self.assertRtolEqual(cpu_grad1, npu_grad1)
             self.assertRtolEqual(cpu_grad2, npu_grad2)
             self.assertRtolEqual(cpu_grad3, npu_grad3)
