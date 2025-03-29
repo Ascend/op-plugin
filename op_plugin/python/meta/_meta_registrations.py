@@ -487,14 +487,14 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
             a = global_bs_real // shared_expert_rank_num
         else:
             local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
-            a = global_bs_real * local_moe_expert_num
+            a = global_bs_real * min(local_moe_expert_num, k)
     else:
         if ep_rank_id >= ep_world_size - shared_expert_rank_num:
             local_moe_expert_num = 1
             a = global_bs_real // shared_expert_rank_num
         else:
             local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
-            a = global_bs_real * local_moe_expert_num
+            a = global_bs_real * min(local_moe_expert_num, k)
     ep_recv_cnt_num = 0
     if tp_world_size == 2:
         ep_recv_cnt_num = ep_world_size * local_moe_expert_num * tp_world_size
