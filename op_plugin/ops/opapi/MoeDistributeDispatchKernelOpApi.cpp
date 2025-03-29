@@ -59,7 +59,7 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
             a = global_bs_real / shared_expert_rank_num;
         } else {
             local_moe_expert_num = moe_expert_num / (ep_world_size - shared_expert_rank_num);
-            a = global_bs_real * local_moe_expert_num;
+            a = global_bs_real * std::min(local_moe_expert_num, k);
         }
     } else {
         if (ep_rank_id >= ep_world_size - shared_expert_rank_num) {
@@ -67,7 +67,7 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
             a = global_bs_real / shared_expert_rank_num;
         } else {
             local_moe_expert_num = moe_expert_num / (ep_world_size - shared_expert_rank_num);
-            a = global_bs_real * local_moe_expert_num;
+            a = global_bs_real * std::min(local_moe_expert_num, k);
         }
     }
     if (tp_world_size == DIM_TWO) {
