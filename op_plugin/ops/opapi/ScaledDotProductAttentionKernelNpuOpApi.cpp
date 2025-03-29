@@ -186,7 +186,7 @@ at::Tensor scaled_dot_product_attention(
                     at_npu::native::custom_ops::npu_fused_infer_attention_score(query, key, value, nulltensor, atten_mask, nulllen, nulllen, nulltensor,
                                                                                 nulltensor, nulltensor, nulltensor, nulltensor, nulltensor, nulltensor,
                                                                                 nulltensor, nulltensor, nulltensor, nulltensor, nulltensor, nulltensor,
-                                                                                nulltensor, nulltensor, nulltensor, nulllen, nulltensor, nulltensor, nulltensor, head_num, input_scale.as_float_unchecked(),
+                                                                                nulltensor, nulltensor, nulltensor, nulllen, nulltensor, nulltensor, head_num, input_scale.as_float_unchecked(),
                                                                                 TOKEN_MAX, next_tockens, input_layout, head_num_kv, sparse_mode, inner_precise, 0, 0, 0, 0, false);
 
                 return std::get<0>(output);
@@ -278,7 +278,7 @@ at::Tensor scaled_dot_product_attention(
                     at_npu::native::custom_ops::npu_fused_infer_attention_score(query, key, value, nulltensor, atten_mask, nulllen, nulllen, nulltensor,
                                                                                 nulltensor, nulltensor, nulltensor, nulltensor, nulltensor, nulltensor,
                                                                                 nulltensor, nulltensor, nulltensor, nulltensor, nulltensor, nulltensor,
-                                                                                nulltensor, nulltensor, nulltensor, nulllen, nulltensor, nulltensor, nulltensor, head_num, input_scale.as_float_unchecked(),
+                                                                                nulltensor, nulltensor, nulltensor, nulllen, nulltensor, nulltensor, head_num, input_scale.as_float_unchecked(),
                                                                                 TOKEN_MAX, next_tockens, input_layout, head_num_kv, sparse_mode, inner_precise, 0, 0, 0, 0, false);
 
                 return std::get<0>(output);
