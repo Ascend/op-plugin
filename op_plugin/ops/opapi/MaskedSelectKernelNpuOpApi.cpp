@@ -58,6 +58,7 @@ static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Ten
         outputShapeSize.push_back(view_dims[i]);
     }
     out.resize_(outputShapeSize);
+    // Need to use delete[] to release memory to avoid memory leakage!
     delete[] view_dims;
     view_dims = nullptr;
     return out;

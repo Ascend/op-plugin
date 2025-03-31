@@ -85,6 +85,7 @@ at::Tensor npu_nonzero_aclnn(const at::Tensor &self)
     TORCH_CHECK(ret == 0, "aclGetViewShape failed.");
     c10::SmallVector<int64_t, op_infer::SIZE> output_size(view_dims, view_dims + view_dim_num);
     out = out.resize_(output_size);
+    // Need to use delete[] to release memory to avoid memory leakage!
     delete[] view_dims;
     view_dims = nullptr;
     return out;
