@@ -7415,6 +7415,16 @@ custom:
     gen_opapi:
       exec: aclnnAdvanceStep
 
+  - func: npu_attn_softmax_(Tensor(a!) self) -> Tensor(a!)
+    op_api: all_version
+    gen_opapi:
+      new_params:
+        dim: '(int64_t)-1'
+      exec: aclnnSoftmax, self, dim, self
+
+  - func: npu_attn_softmax_backward_(Tensor(a!) self, Tensor grad_output, Tensor values) -> Tensor(a!)
+    op_api: all_version
+
 symint:
   - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
     op_api: all_version
