@@ -930,32 +930,15 @@ official:
 
   - func: adaptive_max_pool3d.out(Tensor self, int[3] output_size, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))
     op_api: all_version
-    gen_opapi:
-      out:
-        size: max_pool3d_output_size(self, output_size)
-        dtype: self
-      indices:
-        size: max_pool3d_output_size(self, output_size)
-        dtype: at::kInt
-      exec: aclnnAdaptiveMaxPool3d
 
   - func: adaptive_max_pool3d(Tensor self, int[3] output_size) -> (Tensor, Tensor)
     op_api: all_version
-    gen_opapi:
-      structured_inherit: adaptive_max_pool3d.out
 
   - func: adaptive_max_pool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)
     op_api: all_version
-    gen_opapi:
-      grad_input:
-        size: self
-        dtype: grad_output
-      exec: aclnnAdaptiveMaxPool3dBackward
 
   - func: adaptive_max_pool3d_backward(Tensor grad_output, Tensor self, Tensor indices) -> Tensor
     op_api: all_version
-    gen_opapi:
-      structured_inherit: adaptive_max_pool3d_backward.grad_input
 
   - func: add.Scalar(Tensor self, Scalar other, Scalar alpha=1) -> Tensor
     acl_op: all_version

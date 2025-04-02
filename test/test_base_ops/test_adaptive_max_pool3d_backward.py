@@ -71,6 +71,28 @@ class TestAdaptiveMaxPool3dBackward(TestCase):
                 self.assertRtolEqual(cpu_output[1].astype(np.float16),
                                    npu_output[1].astype(np.float16))
 
+    @SupportedDevices(['Ascend910B'])
+    def test_adaptive_max_pool3d_backward_fp64(self):
+        format_list = [-1]
+        shape_list = [
+            [2, 3, 4, 5, 6],
+            [1, 2, 6, 8, 8],
+            [4, 3, 3, 6, 6]
+        ]
+        output_size_list = [(1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3)]
+        shape_format = [
+            [np.float64, i, j]
+            for i in format_list
+            for j in shape_list
+        ]
+
+        for item in shape_format:
+            cpu_input, npu_input = create_common_tensor(item, -100, 100)
+            for output_size in output_size_list:
+                cpu_output = self.cpu_op_exec(cpu_input, output_size)
+                npu_output = self.npu_op_exec(npu_input, output_size)
+                self.assertRtolEqual(cpu_output[0], npu_output[0])
+                self.assertRtolEqual(cpu_output[1], npu_output[1])
 
 if __name__ == "__main__":
     run_tests()
