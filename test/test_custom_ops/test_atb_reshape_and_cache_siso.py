@@ -37,7 +37,6 @@ class TestReshapeAndCacheSiso(TestCase):
         key_cache = key_cache.npu()
         slot_mapping = torch.from_numpy(slot_mapping).to(torch.int32).npu()
         torch_npu._npu_reshape_and_cache_siso(key, key_cache, slot_mapping)
-
         self.assertRtolEqual(key_expect, key_cache)
 
 if __name__ == '__main__':

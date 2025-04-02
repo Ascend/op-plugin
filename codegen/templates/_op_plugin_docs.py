@@ -2404,7 +2404,7 @@ torch_npu.npu_rotary_mul(Tensor input, Tensor r1, Tensor r2, str rotary_mode='ha
     x_new = rearrange(torch.stack((-x2, x1), dim=-1), "... d two -> ...(d two)", two=2)
     output = r1 * input + r2 * x_new
 参数说明
-x：必选输入，4维Tensor，数据类型float16, bfloat16, float32
+input：必选输入，4维Tensor，数据类型float16, bfloat16, float32
 cos: 必选输入，4维Tensor，数据类型float16, bfloat16, float32
 sin: 必选输入，4维Tensor，数据类型float16, bfloat16, float32
 rotary_mode: 可选属性，数据类型string，用于选择计算模式，支持'half'、'interleave'两种模式。缺省为half。
@@ -2412,18 +2412,18 @@ rotary_mode: 可选属性，数据类型string，用于选择计算模式，支�
 jit_compile=False场景：
     half模式：
     input: layout支持: BNSD、BSND、SBND; D < 896，且为2的倍数; B, N < 1000; 当需要计算cos/sin的反向梯度时，B*N <= 1024
-    r1: 数据范围：[-1, 1]; 对应x layout的支持情况：
-                            x为BNSD: 11SD、B1SD、BNSD;
-                            x为BSND: 1S1D、BS1D、BSND;
-                            x为SBND: S11D、SB1D、SBND.
+    r1: 数据范围：[-1, 1]; 对应input layout的支持情况：
+                            input为BNSD: 11SD、B1SD、BNSD;
+                            input为BSND: 1S1D、BS1D、BSND;
+                            input为SBND: S11D、SB1D、SBND.
     r2: 同r1
     half模式下，当输入layout是BNSD，且D为非32Bytes对齐时，建议不使用该融合算子（模型启动脚本中不开启--use-fused-rotary-pos-emb选项），否则可能出现性能下降。
     interleave模式：
     input: layout支持: BNSD、BSND、SBND; B * N < 1000; D < 896, 且D为2的倍数;
-    r1: 数据范围：[-1, 1]; 对应x layout的支持情况：
-                            x为BNSD: 11SD;
-                            x为BSND: 1S1D;
-                            x为SBND: S11D.
+    r1: 数据范围：[-1, 1]; 对应input layout的支持情况：
+                            input为BNSD: 11SD;
+                            input为BSND: 1S1D;
+                            input为SBND: S11D.
     r2: 同r1
     支持Atlas A2训练系列产品，Atlas A3训练系列产品。
 jit_compile=True场景：
