@@ -182,6 +182,27 @@ def npu_moe_gating_top_k_softmax_meta(x, finished=None, k=1):
             x.new_empty(tuple(row_idx_dim_list), dtype=torch.int32))
 
 
+@impl(m, "npu_moe_gating_top_k")
+def npu_moe_gating_top_k_meta(x, k=1, bias=None, k_group=1, group_count=1, group_select_mode=0, renorm=0, norm_type=0, out_flag=False, routed_scaling_factor=1.0, eps=1e-20):
+    x_dim = x.dim()
+    torch._check(
+        x_dim == 2,
+        lambda: "the x shape support only 2d)" + ops_error(ErrCode.VALUE),
+    )
+    if bias is not None:
+        bias_dim = bias.dim()
+        torch._check(
+            bias_dim == 1,
+            lambda: "the bias shape support only 1d)" + ops_error(ErrCode.VALUE),
+        )
+    y_dim_list = [x.size(0), k]
+    expert_idx_dim_list = [x.size(0), k]
+    y2_dim_list = [x.size(0), x.size(1)]
+    return (x.new_empty(tuple(y_dim_list), dtype=x.dtype),
+            x.new_empty(tuple(expert_idx_dim_list), dtype=torch.int32),
+            x.new_empty(tuple(y2_dim_list), dtype=torch.float32))
+
+
 @impl(m, "npu_fused_infer_attention_score")
 def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None, atten_mask=None, actual_seq_lengths=None, actual_seq_lengths_kv=None,
                                     dequant_scale1=None, quant_scale1=None, dequant_scale2=None, quant_scale2=None,
