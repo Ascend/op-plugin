@@ -3625,6 +3625,136 @@ if __name__ == '__main__':
 )
 
 _add_torch_npu_docstr(
+    "npu_grouped_matmul_finalize_routing",
+    """
+功能描述：
+GroupedMatmul和MoeFinalizeRouting的融合算子，GroupedMatmul计算后的输出按照索引做combine动作。
+
+接口原型：
+torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor weight, Tensor group_list, *, Tensor? scale=None, Tensor? bias=None, Tensor? pertoken_scale=None, Tensor? shared_input=None, Tensor? logit=None, Tensor? row_index=None, ScalarType? dtype=None, float? shared_input_weight=1.0, int? shared_input_offset=0, int? output_bs=0, int? group_list_type=1) -> Tensor
+
+参数说明：
+- x(Tensor, 计算输入): 必选参数，一个2D的Device侧Tensor输入，矩阵计算的左矩阵，不支持非连续的Tensor。数据类型支持int8，数据格式支持ND。
+- weight(Tensor, 计算输入): 必选参数，一个3D的Device侧Tensor输入，矩阵计算的右矩阵，不支持非连续的Tensor。数据类型支持int8，数据格式支持NZ。
+- group_list(Tensor, 计算输入): 必选参数，一个1D的Device侧Tensor输入，GroupedMatMul的各分组大小值，不支持非连续的Tensor。数据类型支持int64，数据格式支持ND。
+- scale(Tensor, 计算输入): 可选参数，一个2D的Device侧Tensor输入，矩阵计算反量化参数，对应weight矩阵，per-channel量化方式，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND。
+- bias(Tensor, 计算输入): 可选参数，一个2D的Device侧Tensor输入，矩阵计算的bias参数，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND。
+- pertoken_scale(Tensor, 计算输入): 可选参数，一个1DD的Device侧Tensor输入，矩阵计算的反量化参数，对应x矩阵，per-token量化方式，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND。
+- shared_input(Tensor, 计算输入): 可选参数，一个2D的Device侧Tensor输入，moe计算中共享专家的输出，需要与moe专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持bfloat16、float16，数据格式支持ND。
+- logit(Tensor, 计算输入): 可选参数，一个1D的Device侧Tensor输入，moe专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND。
+- row_index(Tensor*, 计算输入): 可选参数，一个1D的Device侧Tensor输入，moe专家输出按照该rowIndex进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持int32、int64，数据格式支持ND。
+- dtype(torch.dtype, 计算输入): 可选参数，指定GroupedMatMul计算的输出类型。枚举值含义：0表示float32，1表示float16，2表示bfloat16。默认值为0。
+- shared_input_weight(float, 计算输入): 可选参数，float类型，指共享专家与moe专家进行combine的系数，shared_input先与该参数相乘，然后再和moe专家结果累加。默认为1.0。
+- shared_input_offset(int, 计算输入): 可选参数，共享专家输出在总输出中的偏移。默认值为0.
+- output_bs(int, 计算输入): 可选参数，输出的最高维大小。默认值为0。
+- group_list_type(int, 计算输入): 可选参数，GroupedMatMul的分组模式，0为cumsum模式，1为count模式，默认为1。
+- y(Tensor, 计算输出): 2D的Tensor，不支持非连续的Tensor，输出的数据类型固定为FLOAT32。
+
+支持的芯片型号：
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品
+Atlas A3 推理系列产品
+
+调用示例：
+# 单算子调用
+import numpy as np
+import torch
+import torch_npu
+import tensorflow as tf
+from scipy.special import softmax
+
+bfloat16 = tf.bfloat16.as_numpy_dtype
+m, k, n = 576, 2048, 7168
+batch = 72
+topK = 8
+group_num = 8
+
+x = np.random.randint(-10, 10, (m, k)).astype(np.int8)
+weight = np.random.randint(-10, 10, (group_num, k, n)).astype(np.int8)
+scale = np.random.normal(0, 0.01, (group_num, n)).astype(np.float32)
+pertoken_scale = np.random.normal(0, 0.01, (m, )).astype(np.float32)
+group_list = np.array([batch] * group_num, dtype=np.int64)
+shared_input = np.random.normal(0, 0.1, (batch // 4, n)).astype(np.float32)
+logit_ori = np.random.normal(0, 0.1, (batch, group_num)).astype(np.float32)
+routing = np.argsort(logit_ori, axis=1)[:, -topK:].astype(np.int32)
+logit = softmax(logit_ori[np.arange(batch).reshape(-1, 1).repeat(topK, axis=1), routing], axis=1).astype(np.float32)
+logit = logit.reshape(m)
+row_index = (np.argsort(routing.reshape(-1)) // topK).astype(np.int64)
+
+x_clone = torch.from_numpy(x).npu()
+weight_clone = torch.from_numpy(weight).npu()
+weightNz = torch_npu.npu_format_cast(weight_clone, 29)
+scale_clone = torch.from_numpy(scale).npu()
+pertoken_scale_clone = torch.from_numpy(pertoken_scale).npu()
+group_list_clone = torch.from_numpy(group_list).npu()
+shared_input_clone = torch.from_numpy(shared_input).to(torch.bfloat16).npu()
+logit_clone = torch.from_numpy(logit).npu()
+row_index_clone = torch.from_numpy(row_index).npu()
+shared_input_offset = batch // 2
+output_bs = batch
+y = torch_npu.npu_grouped_matmul_finalize_routing(x_clone, weightNz,
+            group_list_clone, scale=scale_clone, pertoken_scale=pertoken_scale_clone,
+            shared_input=shared_input_clone, logit=logit_clone, row_index=row_index_clone,
+            shared_input_offset=shared_input_offset, output_bs=output_bs)
+
+# 图模式调用
+import numpy as np
+import torch
+import torch_npu
+import torchair as tng
+import tensorflow as tf
+from scipy.special import softmax
+from torchair.configs.compiler_config import CompilerConfig
+
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+class Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x, weight, group_list, scale, pertoken_scale, shared_input, logit, row_index, shared_input_offset, output_bs):
+        output = torch_npu.npu_grouped_matmul_finalize_routing(x, weight, group_list,
+                    scale=scale, pertoken_scale=pertoken_scale, shared_input=shared_input,
+                    logit=logit, row_index=row_index, shared_input_offset=shared_input_offset, output_bs=output_bs)
+        return output
+
+bfloat16 = tf.bfloat16.as_numpy_dtype
+m, k, n = 576, 2048, 7168
+batch = 72
+topK = 8
+group_num = 8
+
+x = np.random.randint(-10, 10, (m, k)).astype(np.int8)
+weight = np.random.randint(-10, 10, (group_num, k, n)).astype(np.int8)
+scale = np.random.normal(0, 0.01, (group_num, n)).astype(np.float32)
+pertoken_scale = np.random.normal(0, 0.01, (m, )).astype(np.float32)
+group_list = np.array([batch] * group_num, dtype=np.int64)
+shared_input = np.random.normal(0, 0.1, (batch // 4, n)).astype(np.float32)
+logit_ori = np.random.normal(0, 0.1, (batch, group_num)).astype(np.float32)
+routing = np.argsort(logit_ori, axis=1)[:, -topK:].astype(np.int32)
+logit = softmax(logit_ori[np.arange(batch).reshape(-1, 1).repeat(topK, axis=1), routing], axis=1).astype(np.float32)
+logit = logit.reshape(m)
+row_index = (np.argsort(routing.reshape(-1)) // topK).astype(np.int64)
+
+x_clone = torch.from_numpy(x).npu()
+weight_clone = torch.from_numpy(weight).npu()
+weightNz = torch_npu.npu_format_cast(weight_clone, 29)
+scale_clone = torch.from_numpy(scale).npu()
+pertoken_scale_clone = torch.from_numpy(pertoken_scale).npu()
+group_list_clone = torch.from_numpy(group_list).npu()
+shared_input_clone = torch.from_numpy(shared_input).to(torch.bfloat16).npu()
+logit_clone = torch.from_numpy(logit).npu()
+row_index_clone = torch.from_numpy(row_index).npu()
+shared_input_offset = batch // 2
+output_bs = batch
+
+model = Model().npu()
+model = torch.compile(model, backend=npu_backend, dynamic=False)
+y = model(x_clone, weightNz, group_list_clone, scale_clone, pertoken_scale_clone, shared_input_clone,
+        logit_clone, row_index_clone, shared_input_offset, output_bs)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_quant_scatter",
     """
 功能描述:

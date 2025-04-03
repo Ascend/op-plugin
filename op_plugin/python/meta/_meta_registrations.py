@@ -722,6 +722,60 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
     return y
 
 
+@impl(m, "npu_grouped_matmul_finalize_routing")
+def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bias=None, pertoken_scale=None,
+                                            shared_input=None, logit=None, row_index=None, dtype=None,
+                                            shared_input_weight=1.0, shared_input_offset=0, output_bs=0,
+                                            group_list_type=1):
+    dimm = x.size(0)
+    x_dim = x.dim()
+    w_dim = w.dim()
+    dimn = w.size(w_dim - 1)
+
+    torch._check(
+        x_dim == 2 and w_dim == 3,
+        lambda: "input tensor only support shared_input and logit empty tensor" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        dimn > 0,
+        lambda: "n value must bigger than 0." + ops_error(ErrCode.VALUE),
+    )
+
+    scene1 = False
+    scene2 = False
+    scene1 = (scale is not None and pertoken_scale is not None and
+              group_list is not None and shared_input is not None and
+              logit is not None and row_index is not None)
+    scene2 = (scale is not None and pertoken_scale is not None and
+              group_list is not None and shared_input is None and
+              logit is None and row_index is not None)
+    torch._check(
+        scene1 or scene2,
+        lambda: "input tensor only support shared_input and logit empty tensor" + ops_error(ErrCode.VALUE),
+    )
+    if dtype is None:
+        dtype = torch.float32
+    if shared_input is not None and logit is not None:
+        torch._check(
+            dtype == torch.float32,
+            lambda: "When shared_input is not None, output_dtype must be float32, but it is " +
+                    str(dtype) + ops_error(ErrCode.TYPE),
+        )
+
+    y_dimm = output_bs
+    if output_bs == 0:
+        y_dimm = dimm
+
+    dim_list = []
+    dim_list.append(y_dimm)
+    dim_list[-1] = dimn
+
+    if dtype == torch.float32:
+        return x.new_empty(tuple(dim_list), dtype=torch.float32)
+    else:
+        raise RuntimeError("Not supportted output dtype is " + str(dtype))
+
+
 @impl(m, "npu_group_norm_silu")
 def group_norm_silu_meta(self, gemma, beta, group, eps=0.00001):
     N = self.size(1)
