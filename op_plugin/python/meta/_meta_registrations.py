@@ -1397,3 +1397,20 @@ def npu_batch_gather_matmul__meta(self, x, weight_b, indices, weight_a=None,
 @impl(m, "npu_gather_backward")
 def npu_gather_backward__meta(grad, self_size, dim, index, sparse_grad):
     return torch.empty(self_size, dtype=grad.dtype, device=grad.device)
+
+
+@impl(m, "npu_moe_re_routing")
+def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=None, expert_token_num_type=1, idx_type=0):
+    permute_tokens_size = []
+    permute_per_token_scales_size = []
+    permute_token_idx_size = []
+    expert_token_num_size = []
+    for i in range(tokens.dim()):
+        permute_tokens_size.append(tokens.size(i))
+    permute_per_token_scales_size.append(tokens.size(0))
+    permute_token_idx_size.append(tokens.size(0))
+    expert_token_num_size.append(expert_token_num_per_rank.size(1))
+    return (torch.empty(permute_tokens_size, dtype=tokens.dtype, device=tokens.device),
+            torch.empty(permute_per_token_scales_size, dtype=torch.float32, device=tokens.device),
+            torch.empty(permute_token_idx_size, dtype=torch.int32, device=tokens.device),
+            torch.empty(expert_token_num_size, dtype=expert_token_num_per_rank.dtype, device=tokens.device))
