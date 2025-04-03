@@ -1377,6 +1377,11 @@ def npu_dequant_bias_meta(x, weight_scale, activation_scale, bias, output_dtype=
     return torch.empty_like(x, dtype=output_dtype)
 
 
+@impl(m, "npu_interleave_rope")
+def npu_interleave_rope_meta(x, cos, sin):
+    return torch.empty_like(x)
+
+
 @impl(m, "npu_batch_gather_matmul")
 def npu_batch_gather_matmul_meta(self, x, weight_b, indices, weight_a=None,
                                  layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1):
