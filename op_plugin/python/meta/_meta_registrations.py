@@ -162,6 +162,119 @@ def npu_moe_init_routing_meta(x, row_idx, expert_idx, active_num=99):
     return (x.new_empty(tuple(expanded_x_dim_list)), row_idx.new_empty(tuple(expanded_row_idx_dim_list)), row_idx.new_empty(tuple(expanded_row_idx_dim_list)))
 
 
+@impl(m, "npu_moe_init_routing_v2")
+def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, active_num=-1, expert_capacity=-1, expert_num=-1, drop_pad_mode=0, expert_tokens_num_type=0, expert_tokens_num_flag=False, quant_mode=0, active_expert_range=[], row_idx_type=0):
+    x_dim = x.dim()
+    torch._check(
+        x_dim == 2,
+        lambda: "the x shape support only 2d" + ops_error(ErrCode.VALUE),
+    )
+    expert_idx_dim = expert_idx.dim()
+    torch._check(
+        expert_idx_dim == 2,
+        lambda: "the expert_idx shape support only 2d" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x.size(0) == expert_idx.size(0),
+        lambda: "the first dim of expert_idx and x should be the same" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        active_expert_range is not None and isinstance(active_expert_range, list) and len(active_expert_range) == 2,
+        lambda: "active_expert_range is None or invalid. must be int[2]"
+    )
+    torch._check(
+        active_expert_range[1] > active_expert_range[0],
+        lambda: "active_expert_range is invalid. must be increasing"
+    )
+    torch._check(
+        active_expert_range[0] >= 0 and active_expert_range[1] <= 10240,
+        lambda: "active_expert_range must be within [0, 10240]"
+    )
+    expert_range_length = active_expert_range[1] - active_expert_range[0]
+
+    torch._check(
+        drop_pad_mode is not None and isinstance(drop_pad_mode, int) and drop_pad_mode in [0, 1],
+        lambda: "drop_pad_mode is None or invalid. must be in [0, 1]"
+    )
+    torch._check(
+        expert_tokens_num_type is not None and isinstance(expert_tokens_num_type, int) and expert_tokens_num_type in [0, 1],
+        lambda: "expert_tokens_num_type is None or invalid. must be in [0, 1]"
+    )
+    torch._check(
+        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1],
+        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1]"
+    )
+    torch._check(
+        row_idx_type is not None and isinstance(row_idx_type, int) and row_idx_type in [0, 1],
+        lambda: "row_idx_type is None or invalid. must be in [0, 1]"
+    )
+
+    if scale is not None:
+        scale_dim = scale.dim()
+        if quant_mode == -1:
+            torch._check(
+                scale_dim == 1,
+                lambda: "the scale shape support only 1D (bs,) in no quant mode" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                x.size(0) == scale.size(0),
+                lambda: "the first dim of scale and the first dim of x should be the same" + ops_error(ErrCode.VALUE),
+            )
+        elif quant_mode == 0:
+            torch._check(
+                scale_dim == 2 or scale_dim == 1,
+                lambda: "the scale shape should be (end-start, 1) or (end-start,) in static quant mode" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                expert_range_length == scale.size(0),
+                lambda: "the first dim of scale and expert_range_length should be the same" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                scale_dim == 1 or x.size(1) == scale.size(1) or 1 == scale.size(1),
+                lambda: "the 2nd dim of scale should be 1 or the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
+            )
+            if offset is not None:
+                offset_dim = offset.dim()
+                torch._check(
+                    offset_dim == 2 or offset_dim == 1,
+                    lambda: "the offset shape should be (end-start, 1) or (end-start,)" + ops_error(ErrCode.VALUE),
+                )
+                torch._check(
+                    scale.size(0) == offset.size(0),
+                    lambda: "the 1st dim of offset and the 1st dim of scale should be the same" + ops_error(ErrCode.VALUE),
+                )
+                torch._check(
+                    offset_dim == 1 or x.size(1) == offset.size(1) or 1 == offset.size(1),
+                    lambda: "the 2nd dim of offset and the 2nd dim of scale should be the same" + ops_error(ErrCode.VALUE),
+                )
+        else:
+            torch._check(
+                scale_dim == 2,
+                lambda: "the scale shape support only 2D in dynamic quant mode" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                expert_range_length == scale.size(0),
+                lambda: "the first dim of scale and expert_range_length should be the same" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                x.size(1) == scale.size(1),
+                lambda: "the 2nd dim of scale should be the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
+            )
+
+    bs = x.size(0)
+    h = x.size(1)
+    k = expert_idx.size(1)
+    expanded_x_dim_list = [bs * k, h]
+    expanded_x_dtype = x.dtype if quant_mode == -1 else torch.int8
+    expanded_row_idx_dim_list = [bs * k]
+    expert_token_cumsum_or_count_dim_list = [expert_range_length]
+    expanded_scale_dim_list = [bs * k]
+    return (x.new_empty(tuple(expanded_x_dim_list), dtype=expanded_x_dtype),
+            x.new_empty(tuple(expanded_row_idx_dim_list), dtype=torch.int32),
+            x.new_empty(tuple(expert_token_cumsum_or_count_dim_list), dtype=torch.int64),
+            x.new_empty(tuple(expanded_scale_dim_list), dtype=torch.float32))
+
+
 @impl(m, "npu_moe_gating_top_k_softmax")
 def npu_moe_gating_top_k_softmax_meta(x, finished=None, k=1):
     x_dim = x.dim()
@@ -180,6 +293,27 @@ def npu_moe_gating_top_k_softmax_meta(x, finished=None, k=1):
     return (x.new_empty(tuple(y_dim_list), dtype=x.dtype),
             x.new_empty(tuple(expert_idx_dim_list), dtype=torch.int32),
             x.new_empty(tuple(row_idx_dim_list), dtype=torch.int32))
+
+
+@impl(m, "npu_moe_gating_top_k")
+def npu_moe_gating_top_k_meta(x, k=1, bias=None, k_group=1, group_count=1, group_select_mode=0, renorm=0, norm_type=0, out_flag=False, routed_scaling_factor=1.0, eps=1e-20):
+    x_dim = x.dim()
+    torch._check(
+        x_dim == 2,
+        lambda: "the x shape support only 2d)" + ops_error(ErrCode.VALUE),
+    )
+    if bias is not None:
+        bias_dim = bias.dim()
+        torch._check(
+            bias_dim == 1,
+            lambda: "the bias shape support only 1d)" + ops_error(ErrCode.VALUE),
+        )
+    y_dim_list = [x.size(0), k]
+    expert_idx_dim_list = [x.size(0), k]
+    y2_dim_list = [x.size(0), x.size(1)]
+    return (x.new_empty(tuple(y_dim_list), dtype=x.dtype),
+            x.new_empty(tuple(expert_idx_dim_list), dtype=torch.int32),
+            x.new_empty(tuple(y2_dim_list), dtype=torch.float32))
 
 
 @impl(m, "npu_fused_infer_attention_score")
@@ -1164,6 +1298,28 @@ def npu_anti_quant_meta(x, scale, *, offset=None, dst_dtype=None, src_dtype=None
         return torch.empty_like(x, dtype=dst_dtype)
 
 
+@impl(m, "npu_kv_rmsnorm_rope_cache")
+def npu_kv_rmsnorm_rope_cache_meta(kv, gamma, cos, sin, index, k_cache, ckv_cache, *, k_rope_scale=None,
+                                   c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, epsilon=1e-5,
+                                   cache_mode='Norm', is_output_kv=False):
+    if kv.dim() != 4:
+        raise RuntimeError("4D tensor expected for input kv" + ops_error(ErrCode.PARAM))
+    if gamma.dim() != 1:
+        raise RuntimeError("1D tensor expected for input gamma" + ops_error(ErrCode.PARAM))
+    if cos.dim() != 4:
+        raise RuntimeError("4D tensor expected for input cos" + ops_error(ErrCode.PARAM))
+    k_rope_size = []
+    c_kv_size = []
+    for i in range(kv.dim() - 1):
+        k_rope_size.append(kv.size(i))
+        c_kv_size.append(kv.size(i))
+    k_rope_size.append(cos.size(3))
+    c_kv_size.append(gamma.size(0))
+    return (torch.empty_like(k_cache), torch.empty_like(ckv_cache),
+            torch.empty(k_rope_size, dtype=kv.dtype, device=kv.device),
+            torch.empty(c_kv_size, dtype=kv.dtype, device=kv.device))
+
+
 @impl(m, "npu_apply_rotary_pos_emb")
 def npu_apply_rotary_pos_emb_meta(query, key, cos, sin, layout=1):
     return (torch.empty_like(query, dtype=query.dtype), torch.empty_like(key, dtype=key.dtype))
@@ -1411,6 +1567,11 @@ def npu_dequant_bias_meta(x, weight_scale, activation_scale, bias, output_dtype=
     return torch.empty_like(x, dtype=output_dtype)
 
 
+@impl(m, "npu_interleave_rope")
+def npu_interleave_rope_meta(x, cos, sin):
+    return torch.empty_like(x)
+
+
 @impl(m, "npu_batch_gather_matmul")
 def npu_batch_gather_matmul_meta(self, x, weight_b, indices, weight_a=None,
                                  layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1):
@@ -1426,3 +1587,20 @@ def npu_batch_gather_matmul__meta(self, x, weight_b, indices, weight_a=None,
 @impl(m, "npu_gather_backward")
 def npu_gather_backward__meta(grad, self_size, dim, index, sparse_grad):
     return torch.empty(self_size, dtype=grad.dtype, device=grad.device)
+
+
+@impl(m, "npu_moe_re_routing")
+def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=None, expert_token_num_type=1, idx_type=0):
+    permute_tokens_size = []
+    permute_per_token_scales_size = []
+    permute_token_idx_size = []
+    expert_token_num_size = []
+    for i in range(tokens.dim()):
+        permute_tokens_size.append(tokens.size(i))
+    permute_per_token_scales_size.append(tokens.size(0))
+    permute_token_idx_size.append(tokens.size(0))
+    expert_token_num_size.append(expert_token_num_per_rank.size(1))
+    return (torch.empty(permute_tokens_size, dtype=tokens.dtype, device=tokens.device),
+            torch.empty(permute_per_token_scales_size, dtype=torch.float32, device=tokens.device),
+            torch.empty(permute_token_idx_size, dtype=torch.int32, device=tokens.device),
+            torch.empty(expert_token_num_size, dtype=expert_token_num_per_rank.dtype, device=tokens.device))
