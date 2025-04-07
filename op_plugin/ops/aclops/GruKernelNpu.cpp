@@ -119,16 +119,16 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_bidirec(const at::Tensor &in
     } else {
         fw_bias_input =
             npu_preparation::apply_tensor_with_format(fw_weight_input.size(1), input.options(), ACL_FORMAT_FRACTAL_NZ)
-                .mul(0);
+                .fill_(0);
         fw_bias_hidden =
             npu_preparation::apply_tensor_with_format(fw_weight_hidden.size(1), input.options(), ACL_FORMAT_FRACTAL_NZ)
-                .mul(0);
+                .fill_(0);
         rev_bias_input =
             npu_preparation::apply_tensor_with_format(rev_weight_input.size(1), input.options(), ACL_FORMAT_FRACTAL_NZ)
-                .mul(0);
+                .fill_(0);
         rev_bias_hidden =
             npu_preparation::apply_tensor_with_format(rev_weight_hidden.size(1), input.options(), ACL_FORMAT_FRACTAL_NZ)
-                .mul(0);
+                .fill_(0);
     }
     at::Tensor seq_length = npu_preparation::apply_tensor_with_format({}, input.options(), ACL_FORMAT_ND);
 
@@ -170,10 +170,10 @@ std::tuple<at::Tensor, at::Tensor> gru_single_layer_direc_npu(const at::Tensor &
     } else {
         bias_input =
             npu_preparation::apply_tensor_with_format(weight_input.size(1), input.options(), ACL_FORMAT_FRACTAL_NZ)
-                .mul(0);
+                .fill_(0);
         bias_hidden =
             npu_preparation::apply_tensor_with_format(weight_hidden.size(1), input.options(), ACL_FORMAT_FRACTAL_NZ)
-                .mul(0);
+                .fill_(0);
     }
 
     at::Tensor seq_length = npu_preparation::apply_tensor_with_format({}, input.options(), ACL_FORMAT_ND);
@@ -270,14 +270,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     const at::Tensor &grady = c10::value_or_else(grady_opt, [] { return at::Tensor(); });
     const at::Tensor &gradh = c10::value_or_else(gradh_opt, [] { return at::Tensor(); });
 
-    auto grad_y = grady.defined() ? grady :
-                                    npu_preparation::apply_tensor_with_format(output_y.sizes(), output_y.options(),
-                                                                              ACL_FORMAT_FRACTAL_NZ)
-                                        .mul(0);
+    auto grad_y =
+        grady.defined() ?
+        grady :
+        npu_preparation::apply_tensor_with_format(output_y.sizes(), output_y.options(), ACL_FORMAT_FRACTAL_NZ).fill_(0);
     auto grad_h =
         gradh.defined() ?
-            gradh[input.size(0) - 1] :
-            npu_preparation::apply_tensor_with_format(init_h.sizes(), output_h.options(), ACL_FORMAT_FRACTAL_NZ).mul(0);
+        gradh[input.size(0) - 1] :
+        npu_preparation::apply_tensor_with_format(init_h.sizes(), output_h.options(), ACL_FORMAT_FRACTAL_NZ).fill_(0);
 
     at::Tensor mask = at::zeros({}, input.options().dtype(at::kByte));
     at::Tensor seq_lengths = at::zeros({}, input.options());
