@@ -1539,6 +1539,19 @@ def rope_quant_kvcache(x, cos, k_cache, v_cache, size_splits, kv_output=False):
             k_cache, v_cache)
 
 
+@impl(m, "npu_dequant_swiglu_quant")
+def npu_dequant_swiglu_quant_meta(x, weight_scale=None, activation_scale=None, bias=None, quant_scale=None,
+                                  quant_offset=None, group_index=None, activate_left=False, quant_mode=0):
+    y_size = []
+    scale_size = []
+    for i in range(x.dim() - 1):
+        y_size.append(x.size(i))
+        scale_size.append(x.size(i))
+    y_size.append(math.floor(x.size(x.dim() - 1) / 2))
+    return (torch.empty(y_size, dtype=torch.int8, device=x.device),
+            torch.empty(scale_size, dtype=torch.float32, device=x.device))
+
+
 @impl(m, "npu_dequant_rope_quant_kvcache")
 def npu_dequant_rope_quant_kvcache_meta(x, cos, sin, k_cache, v_cache, indices, scale_k, scale_v, size_splits, *,
                                         offset_k=None, offset_v=None, weight_scale=None, activation_scale=None,
