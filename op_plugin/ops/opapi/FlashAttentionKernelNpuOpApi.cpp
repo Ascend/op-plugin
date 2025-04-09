@@ -21,6 +21,10 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
+const int DIM_0 = 0;
+const int DIM_1 = 1;
+const int DIM_2 = 2;
+const int DIM_3 = 3;
 const int THIRD_ELEMENT = 2;
 const int FORTH_ELEMENT = 3;
 const int DIMENSION_3D = 3;
@@ -1309,7 +1313,11 @@ at::Tensor npu_prompt_flash_attention(
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "BNSD_BSND") {
         tmp_output = OpPreparation::apply_tensor_without_format(
-            {query.size(0), query.size(THIRD_ELEMENT), query.size(1), query.size(FORTH_ELEMENT)},
+            {query.size(DIM_0), query.size(DIM_2), query.size(DIM_1), query.size(DIM_3)},
+            query.options().dtype(query.dtype()));
+    } else if (input_layout_str == "TND") {
+        tmp_output = OpPreparation::apply_tensor_without_format(
+            {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2)},
             query.options().dtype(query.dtype()));
     }
 
@@ -1746,7 +1754,11 @@ at::Tensor npu_prompt_flash_attention(
     std::string input_layout_str = std::string(input_layout);
     if (input_layout_str == "BNSD_BSND") {
         tmp_output = OpPreparation::apply_tensor_without_format(
-            {query.size(0), query.size(THIRD_ELEMENT), query.size(1), query.size(FORTH_ELEMENT)},
+            {query.size(DIM_0), query.size(DIM_2), query.size(DIM_1), query.size(DIM_3)},
+            query.options().dtype(query.dtype()));
+    } else if (input_layout_str == "TND") {
+        tmp_output = OpPreparation::apply_tensor_without_format(
+            {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2)},
             query.options().dtype(query.dtype()));
     }
 
