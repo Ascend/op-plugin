@@ -98,6 +98,48 @@ class TestForeachMaximumList(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_foreach_maximum_list_out_float32_shpae_tensor_num_201(self):
+        tensor_num = 201
+        shapes = []
+        input_nums = 2
+        cpu_inputs = []
+        npu_inputs = []
+
+        for i in range(tensor_num):
+            m = random.randint(1, 4)
+            n = random.randint(1, 4)
+            shapes.append([m, n])
+        for i in range(input_nums) :
+            cpu_tensor, npu_tensor = self.create_tensors("float32", shapes)
+            cpu_inputs.append(cpu_tensor)
+            npu_inputs.append(npu_tensor)
+
+        cpu_output = torch._foreach_maximum(cpu_inputs[0], cpu_inputs[1])
+        npu_output = torch._foreach_maximum(npu_inputs[0], npu_inputs[1])
+
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_foreach_maximum_list_inplace_float32_shpae_tensor_num_201(self):
+        tensor_num = 201
+        shapes = []
+        input_nums = 2
+        cpu_inputs = []
+        npu_inputs = []
+
+        for i in range(tensor_num):
+            m = random.randint(1, 4)
+            n = random.randint(1, 4)
+            shapes.append([m, n])
+        for i in range(input_nums) :
+            cpu_tensor, npu_tensor = self.create_tensors("float32", shapes)
+            cpu_inputs.append(cpu_tensor)
+            npu_inputs.append(npu_tensor)
+
+        torch._foreach_maximum_(cpu_inputs[0], cpu_inputs[1])
+        torch._foreach_maximum_(npu_inputs[0], npu_inputs[1])
+
+        self.assertRtolEqual(cpu_inputs[0], npu_inputs[0])
+
     def test_foreach_maximum_list_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :

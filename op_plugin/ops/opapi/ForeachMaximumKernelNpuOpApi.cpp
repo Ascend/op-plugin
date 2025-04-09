@@ -219,7 +219,6 @@ void _foreach_maximum_(at::TensorList tensors1, at::TensorList tensors2)
         return at::native::foreach_tensor_clamp_min_list_kernel_slow_(tensors1, tensors2);
     }
 
-    EXEC_NPU_CMD(aclnnForeachMaximumList, tensors1, tensors2, tensors1);
     _split_and_exec_npu_cmd_max(tensors1, tensors2, tensors1, true);
     return;
 }
