@@ -49,7 +49,7 @@ void _split_and_exec_npu_cmd_addcmul_tensor(const at::TensorList input,
         at::TensorList temp_input(input.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors2(tensors2.data() + i * max_tensor_count, data_count);
-        at::Tensor temp_scalars = scalars.slice(0, i * max_tensor_count, data_count);
+        at::Tensor temp_scalars = scalars.slice(0, i * max_tensor_count, data_count + i * max_tensor_count);
         at::TensorList temp_result(result.data() + i * max_tensor_count, data_count);
         EXEC_NPU_CMD(aclnnForeachAddcmulScalarList, temp_input, temp_tensors1,
                      temp_tensors2, temp_scalars, temp_result);

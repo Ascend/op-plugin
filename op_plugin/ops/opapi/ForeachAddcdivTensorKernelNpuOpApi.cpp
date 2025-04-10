@@ -51,7 +51,7 @@ void _split_and_exec_npu_cmd_addcdiv_tensor(const at::TensorList input,
         at::TensorList temp_input(input.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors1(tensors1.data() + i * max_tensor_count, data_count);
         at::TensorList temp_tensors2(tensors2.data() + i * max_tensor_count, data_count);
-        at::Tensor temp_scalars = scalar_tensor.slice(0, i * max_tensor_count, data_count);
+        at::Tensor temp_scalars = scalar_tensor.slice(0, i * max_tensor_count, data_count + i * max_tensor_count);
         at::TensorList temp_result(result.data() + i * max_tensor_count, data_count);
 
         EXEC_NPU_CMD(
