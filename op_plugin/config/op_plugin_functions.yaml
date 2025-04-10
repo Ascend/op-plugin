@@ -6488,11 +6488,9 @@ custom:
 
   - func: npu_apply_adam(Scalar beta1_power, Scalar beta2_power, Scalar lr, Scalar beta1, Scalar beta2, Scalar epsilon, Tensor grad, bool? use_locking, bool? use_nesterov) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_apply_adam.out(Scalar beta1_power, Scalar beta2_power, Scalar lr, Scalar beta1, Scalar beta2, Scalar epsilon, Tensor grad, bool? use_locking, bool? use_nesterov, *, Tensor(a!) var, Tensor(b!) m, Tensor(c!) v) -> (Tensor(a!), Tensor(b!), Tensor(c!))
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_apply_adam_w(Scalar beta1_power, Scalar beta2_power, Scalar lr, Scalar weight_decay, Scalar beta1, Scalar beta2, Scalar epsilon, Tensor grad, Tensor? max_grad_norm, bool? amsgrad, bool? maximize) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6568,11 +6566,9 @@ custom:
 
   - func: npu_broadcast(Tensor self, int[] size) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_broadcast.out(Tensor self, int[] size, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
-    exposed: all_version
     device_check: NoCheck
 
   - func: npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> Tensor
@@ -6598,11 +6594,9 @@ custom:
 
   - func: npu_conv2d(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, int groups) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_conv2d.out(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, int groups, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_conv2d_backward(Tensor input, Tensor grad_output, Tensor weight, int[] stride, int[] padding, int[] dilation, int groups, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6620,7 +6614,6 @@ custom:
 
   - func: npu_conv_transpose2d(Tensor input, Tensor weight, Tensor? bias, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_conv_transpose2d_backward(Tensor input, Tensor grad_output, Tensor weight, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6634,14 +6627,12 @@ custom:
 
   - func: npu_convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, int groups) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_convolution_backward(Tensor input, Tensor grad_output, Tensor weight, int[] stride, int[] padding, int[] dilation, int groups, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
 
   - func: npu_convolution_transpose(Tensor input, Tensor weight, Tensor? bias, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_convolution_transpose_backward(Tensor input, Tensor grad, Tensor weight, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups, bool[3] grad_input_mask) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6693,7 +6684,6 @@ custom:
   - func: npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor
     acl_op: all_version
     op_api: all_version
-    exposed: all_version
 
   - func: npu_dtype_cast_(Tensor(a!) self, Tensor src) -> Tensor(a!)
     acl_op: all_version
@@ -6813,7 +6803,6 @@ custom:
   - func: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
     tags: nondeterministic_seeded
-    exposed: all_version
 
   - func: npu_gru_backward(Tensor? grady, Tensor? gradh, Tensor input, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, Tensor hx, Tensor y_output, Tensor h_output, Tensor output_updata, Tensor output_reset, Tensor output_new, Tensor hidden_new) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6846,7 +6835,6 @@ custom:
 
   - func: npu_layer_norm_eval(Tensor input, int[] normalized_shape, Tensor? weight=None, Tensor? bias=None, float eps=1e-05) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_layernorm_grad(Tensor grad_out, Tensor input, int[] normalized_shape, Tensor mean, Tensor rstd, Tensor? weight, Tensor? bias) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
@@ -6910,11 +6898,9 @@ custom:
 
   - func: npu_min.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_min.names_dim(Tensor self, Dimname dim, bool keepdim=False) -> (Tensor values, Tensor indices)
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_min_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
     acl_op: [v2.0, newest]
@@ -6924,13 +6910,13 @@ custom:
 
   - func: npu_mish(Tensor self) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_mish_backward(Tensor grad, Tensor input) -> Tensor
     acl_op: all_version
 
   - func: npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, Tensor weight_uk, Tensor weight_dkv_kr, Tensor rmsnorm_gamma_cq, Tensor rmsnorm_gamma_ckv, Tensor rope_sin, Tensor rope_cos, Tensor cache_index, Tensor kv_cache, Tensor kr_cache, *, Tensor? dequant_scale_x=None, Tensor? dequant_scale_w_dq=None, Tensor? dequant_scale_w_uq_qr=None, Tensor? dequant_scale_w_dkv_kr=None, Tensor? quant_scale_ckv=None, Tensor? quant_scale_ckr=None, Tensor? smooth_scales_cq=None, float rmsnorm_epsilon_cq=1e-05, float rmsnorm_epsilon_ckv=1e-05, str cache_mode="BNSD") -> (Tensor, Tensor, Tensor, Tensor)
     acl_op: [v2.1, newest]
+    exposed: [v2.1, newest]
 
   - func: npu_mm_all_reduce_base(Tensor x1, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? x3=None, Tensor? dequant_scale=None, Tensor? pertoken_scale=None, Tensor? comm_quant_scale_1=None, Tensor? comm_quant_scale_2=None, int antiquant_group_size=0, int comm_turn=0) -> Tensor
     op_api: all_version
@@ -6992,7 +6978,6 @@ custom:
 
   - func: npu_nms_rotated(Tensor self, Tensor scores, float iou_threshold, float scores_threshold=0, int max_output_size=-1, int mode=0) -> (Tensor, Tensor)
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_nms_v4(Tensor self, Tensor scores, Scalar max_output_size, Tensor iou_threshold, Tensor scores_threshold, bool pad_to_max_output_size=False) -> (Tensor, Tensor)
     acl_op: all_version
@@ -7029,7 +7014,6 @@ custom:
 
   - func: npu_ptiou(Tensor bboxes, Tensor gtboxes, int mode=0) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_prefetch(Tensor self, Tensor? dependency, int max_size, int offset=0) -> ()
     op_api: [v2.1, newest]
@@ -7104,12 +7088,10 @@ custom:
 
   - func: npu_reshape(Tensor self, int[] shape, bool can_refresh=False) -> Tensor
     acl_op: all_version
-    exposed: all_version
     device_check: NoCheck
 
   - func: npu_reshape.out(Tensor self, int[] shape, bool can_refresh=False, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
-    exposed: all_version
     device_check: NoCheck
 
   - func: npu_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor)
@@ -7205,7 +7187,6 @@ custom:
 
   - func: npu_silu(Tensor self) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_silu_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
@@ -7231,11 +7212,9 @@ custom:
 
   - func: npu_sort_v2(Tensor self, int dim=-1, bool descending=False) -> Tensor
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_sort_v2.out(Tensor self, int dim=-1, bool descending=False, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
-    exposed: all_version
 
   - func: npu_stride_add(Tensor self, Tensor other, Scalar offset1, Scalar offset2, Scalar c1_len) -> Tensor
     acl_op: all_version
@@ -7307,7 +7286,6 @@ custom:
   - func: one_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-    exposed: all_version
 
   - func: repeat_interleave_backward_int(Tensor grad, Tensor self, SymInt repeats, int? dim=None) -> Tensor
     op_api: [v2.0, newest]
