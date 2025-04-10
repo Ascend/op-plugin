@@ -783,9 +783,7 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
     if output_bs == 0:
         y_dimm = dimm
 
-    dim_list = []
-    dim_list.append(y_dimm)
-    dim_list[-1] = dimn
+    dim_list = [y_dimm, dimn]
 
     if dtype == torch.float32:
         return x.new_empty(tuple(dim_list), dtype=torch.float32)
