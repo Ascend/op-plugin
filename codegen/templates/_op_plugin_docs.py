@@ -4496,7 +4496,7 @@ _add_torch_npu_docstr(
 计算公式：atten_out = softmax(scale*(query*key)+atten_mask)*value
 
 接口原型:
-torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value, *, Tensor? pse_shift=None, Tensor? atten_mask=None, SymInt[]? actual_seq_lengths=None, SymInt[]? actual_seq_lengths_kv=None, Tensor? dequant_scale1=None, Tensor? quant_scale1=None, Tensor? dequant_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? key_antiquant_scale=None, Tensor? key_antiquant_offset=None, Tensor? value_antiquant_scale=None, Tensor? value_antiquant_offset=None, Tensor? block_table=None, Tensor? query_padding_size=None, Tensor? kv_padding_size=None, Tensor? key_shared_prefix=None, Tensor? value_shared_prefix=None, SymInt[]? actual_shared_prefix_len=None, int num_heads=1, float scale=1.0, int pre_tokens=2147483647, int next_tokens=2147483647, str input_layout="BSH", int num_key_value_heads=0, int sparse_mode=0, int inner_precise=0, int block_size=0, int antiquant_mode=0, int key_antiquant_mode=0, int value_antiquant_mode=0, bool softmax_lse_flag=False) -> (Tensor, Tensor)
+torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value, *, Tensor? pse_shift=None, Tensor? atten_mask=None, SymInt[]? actual_seq_lengths=None, SymInt[]? actual_seq_lengths_kv=None, Tensor? dequant_scale1=None, Tensor? quant_scale1=None, Tensor? dequant_scale2=None, Tensor? quant_scale2=None, Tensor? quant_offset2=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? key_antiquant_scale=None, Tensor? key_antiquant_offset=None, Tensor? value_antiquant_scale=None, Tensor? value_antiquant_offset=None, Tensor? block_table=None, Tensor? query_padding_size=None, Tensor? kv_padding_size=None, Tensor? key_shared_prefix=None, Tensor? value_shared_prefix=None, SymInt[]? actual_shared_prefix_len=None, Tensor? query_rope=None, Tensor? key_rope=None, Tensor? key_rope_antiquant_scale=None, int num_heads=1, float scale=1.0, int pre_tokens=2147483647, int next_tokens=2147483647, str input_layout="BSH", int num_key_value_heads=0, int sparse_mode=0, int inner_precise=0, int block_size=0, int antiquant_mode=0, int key_antiquant_mode=0, int value_antiquant_mode=0, bool softmax_lse_flag=False) -> (Tensor, Tensor)
 
 参数说明:
 Query: 三维或者四维Device侧的Input Tensor; 三维: shape是(B,S,H), 对应的input_layout是BSH; 四维: shape是(B,N,S,D), 其中N*D=H, 数据类型支持FLOAT16、BFLOAT16, 数据格式支持ND。
@@ -4517,6 +4517,9 @@ quantOffset2: Device侧的Input Tensor, 其shape为(1), 数据类型支持: FLOA
 blocktable：Device侧的aclTensor，数据类型支持：INT32。数据格式支持ND（参考）。表示PageAttention中KV存储使用的block映射表，如不使用该功能可传入nullptr；Q_S大于等于2时该参数无效。
 queryPaddingSize：Query中每个batch的数据是否右对齐，且右对齐的个数是多少。仅支持Q_S等于1；Q_S大于等于2时该参数无效。用户不特意指定时可传入默认值nullptr。
 kvPaddingSize：key/value中每个batch的数据是否右对齐，且右对齐的个数是多少。仅支持Q_S等于1；Q_S大于等于2时该参数无效。用户不特意指定时可传入默认值nullptr。
+query_rope: Device侧Input Tensor，用于指定Query的旋转位置编码，其shape为(B,Q_N,Q_S,R),数据类型与Query相同，数据格式支持ND；默认值为None。
+key_rope: Device侧Input Tensor，用于指定Query的旋转位置编码，其shape为(B,Q_N,Q_S,R),数据类型与Key相同，数据格式支持ND；默认值为None。
+key_rope_antiquant_scale: Device侧的aclTensor，数据类型支持FLOAT16、BFLOAT16、FLOAT32。数据格式支持ND（参考），表示keyRope对应的反量化因子，per-channel，如不使用该功能时可传入None，综合约束请见约束说明。
 num_heads: Host侧的attribute, query的头数, 即BNSD中的N, 其乘以D为H, 默认值为1; 数据类型为INT。
 scale: Host侧的attribute, 缩放系数, 用来约束梯度, 其默认值为1.0, 典型值为1/sqrt(D); 数据类型为FLOAT32。
 pre_tokens: Host侧的attribute, 用于指定参与计算的有效数据块, 其默认值为2147473647
