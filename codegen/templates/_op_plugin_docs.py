@@ -1541,6 +1541,43 @@ hidden_new (Tensor) - 数据类型：float16, float32；格式：FRACTAL_NZ。
 
 
 _add_torch_npu_docstr(
+    "npu_hans_encode",
+    """
+torch_npu.npu_hans_encode(input, statistic, reshuff, out=(pdf, mantissa, fixed, var))
+功能描述
+对输入张量基于概率密度分布（PDF）进行无损压缩
+
+参数说明
+input (Tensor) - 待压缩张量；数据类型：float32, bfloat16, float16；格式：ND；输入numel必须为64倍数且大于等于32768；
+statistic (Bool，默认值为False) - 标志是否重新统计PDF
+reshuff (Bool，默认值为False) - 标志是否将多核压缩的fixed的编码结果连续化
+pdf （Tensor） - 输入张量的概率密度分布；数据类型: int32；格式：ND； 输入shape为(1,256)。
+mantissa （Tensor） - 输入张量的尾数部分；数据类型: float32, bfloat16, float16；格式：ND。
+fixed （Tensor） - 输入张量压缩后的定长部分；数据类型: float32, bfloat16, float16；格式：ND。 
+var （Tensor） - 输入张量压缩后的变长部分；数据类型: float32, bfloat16, float16；格式：ND。 
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_hans_decode",
+    """
+torch_npu.npu_hans_decode( mantissa, fixed, var, pdf, reshuff, out=out)
+功能描述
+对压缩后的张量基于概率密度分布（PDF）进行无损解压缩
+
+参数说明
+mantissa （Tensor） - 压缩张量的尾数部分；数据类型: float32, bfloat16, float16；格式：ND。 
+fixed （Tensor） - 张量压缩后的定长部分；数据类型: float32, bfloat16, float16；格式：ND。 
+var （Tensor） - 张量压缩后的变长部分；数据类型: float32, bfloat16, float16；格式：ND。 
+pdf （Tensor） - 原张量的概率密度分布；数据类型: int32；格式：ND。输入shape为(1,256)。
+reshuff (Bool，默认值为False) - 标志是否曾将多核压缩的fixed的编码结果连续化。
+out （Tensor） - 恢复后的张量；数据类型: float32, bfloat16, float16；格式：ND。 
+"""
+)
+
+
+_add_torch_npu_docstr(
     "npu_ifmr",
     """
 torch_npu.npu_ifmr(Tensor data, Tensor data_min, Tensor data_max, Tensor cumsum, float min_percentile, float max_percentile, float search_start, float search_end, float search_step, bool with_offset) -> (Tensor, Tensor)

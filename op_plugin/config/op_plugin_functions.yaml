@@ -6807,6 +6807,16 @@ custom:
   - func: npu_gru_backward(Tensor? grady, Tensor? gradh, Tensor input, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, Tensor hx, Tensor y_output, Tensor h_output, Tensor output_updata, Tensor output_reset, Tensor output_new, Tensor hidden_new) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
 
+  - func: npu_hans_encode.out(Tensor input, bool statistic=False, bool reshuff=False, *, Tensor(a!) pdf, Tensor(b!) mantissa, Tensor(c!) fixed, Tensor(d!) var) -> (Tensor(a!), Tensor(b!), Tensor(c!), Tensor(d!))
+    op_api: all_version
+    gen_opapi:
+      exec: aclnnHansEncode, input, pdf, statistic, reshuff, mantissa, fixed, var
+
+  - func: npu_hans_decode.out(Tensor mantissa, Tensor fixed, Tensor var, Tensor pdf, bool reshuff=False, *, Tensor(a!) out) -> Tensor(a!)
+    op_api: all_version
+    gen_opapi:
+      exec: aclnnHansDecode
+
   - func: npu_ifmr(Tensor data, Tensor data_min, Tensor data_max, Tensor cumsum, float min_percentile, float max_percentile, float search_start, float search_end, float search_step, bool with_offset) -> (Tensor, Tensor)
     acl_op: all_version
 
