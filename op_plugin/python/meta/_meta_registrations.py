@@ -116,7 +116,7 @@ else:
         tmp_out = torch.empty_like(query, dtype=query.dtype, device='meta')
         if input_layout == "TND":
             tmp_out = torch.empty([query.size(0), query.size(1), value.size(2)], dtype=query.dtype, device='meta')
-        
+
         if quant_scale2 is not None:
             return torch.empty_like(tmp_out, dtype=torch.int8)
         elif query.dtype == torch.int8:
@@ -1481,11 +1481,16 @@ def npu_linear_meta(input_, weight, bias=None):
 
 @impl(m, "npu_moe_finalize_routing")
 def npu_moe_finalize_routing_meta(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row,
-                                  expert_for_source_row):
+                                  expert_for_source_row, drop_pad_mode=0):
     if scales is None:
         return torch.empty_like(expanded_permuted_rows, dtype=expanded_permuted_rows.dtype)
     dimm = scales.size(0)
-    dimn = expanded_permuted_rows.size(1)
+    if drop_pad_mode == 1 or drop_pad_mode == 3:
+        # dropPad场景, expanded_permuted_rows shape 为[E, C, H]
+        dimn = expanded_permuted_rows.size(2)
+    else:
+        # dropLess场景, expanded_permuted_rows shape 为[NUM_ROWS * K, H]
+        dimn = expanded_permuted_rows.size(1)
     return expanded_permuted_rows.new_empty((dimm, dimn))
 
 
