@@ -41,46 +41,43 @@ def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_d
                    quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None,
                    rmsnorm_epsilon_cq=1e-5, rmsnorm_epsilon_ckv=1e-5, cache_mode="PA_BSND"):
 
+    require_param = {"token_x": token_x, "weight_dq": weight_dq, "weight_uq_qr": weight_uq_qr, "weight_uk": weight_uk, "weight_dkv_kr": weight_dkv_kr, "rmsnorm_gamma_cq": rmsnorm_gamma_cq, "rmsnorm_gamma_ckv": rmsnorm_gamma_ckv, "rope_sin": rope_sin, "rope_cos": rope_cos, "cache_index": cache_index, "kv_cache": kv_cache, "kr_cache": kr_cache}
+
+    for item_name, item in require_param.items():
+        torch._check(
+            item is not None,
+            lambda: item_name + " should not be null,but the actual value is null" + ops_error(ErrCode.VALUE),
+        )
+
     token_x_dim = token_x.dim()
     torch._check(
-        token_x_dim == 2 or token_x_dim == 3,
-        lambda: "the token_x shape support only 2d and 3d)" + ops_error(ErrCode.VALUE),
+        token_x_dim == 3,
+        lambda: "token_x dim num should be 3,but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
     )
 
     weight_uk_dim = weight_uk.dim()
     torch._check(
         weight_uk_dim == 3,
-        lambda: "the weight_uk shape support only 3d)" + ops_error(ErrCode.VALUE),
+        lambda: "weight_uk dim num should be 3,but the actual value is " + str(weight_uk_dim) + ops_error(ErrCode.VALUE),
     )
 
     rope_sin_dim = rope_sin.dim()
     torch._check(
-        rope_sin_dim == 2 or rope_sin_dim == 3,
-        lambda: "the rope_sin shape support only 2d and 3d)" + ops_error(ErrCode.VALUE),
+        rope_sin_dim == 3,
+        lambda: "rope_sin dim num should be 3,but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
     )
 
-    if token_x_dim == 3:
-        query_shape = []
-        query_shape.append(token_x.size(0))
-        query_shape.append(token_x.size(1))
-        query_shape.append(weight_uk.size(0))
-        query_shape.append(weight_uk.size(2))
+    query_shape = []
+    query_shape.append(token_x.size(0))
+    query_shape.append(token_x.size(1))
+    query_shape.append(weight_uk.size(0))
+    query_shape.append(weight_uk.size(2))
 
-        query_rope_shape = []
-        query_rope_shape.append(token_x.size(0))
-        query_rope_shape.append(token_x.size(1))
-        query_rope_shape.append(weight_uk.size(0))
-        query_rope_shape.append(rope_sin.size(2))
-    else:
-        query_shape = []
-        query_shape.append(token_x.size(0))
-        query_shape.append(weight_uk.size(0))
-        query_shape.append(weight_uk.size(2))
-
-        query_rope_shape = []
-        query_rope_shape.append(token_x.size(0))
-        query_rope_shape.append(weight_uk.size(0))
-        query_rope_shape.append(rope_sin.size(1))
+    query_rope_shape = []
+    query_rope_shape.append(token_x.size(0))
+    query_rope_shape.append(token_x.size(1))
+    query_rope_shape.append(weight_uk.size(0))
+    query_rope_shape.append(rope_sin.size(2))
 
     query = torch.empty(query_shape, dtype=rope_sin.dtype, device='meta')
     query_rope = torch.empty(query_rope_shape, dtype=rope_sin.dtype, device='meta')
