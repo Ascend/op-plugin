@@ -98,7 +98,7 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
     // a2分层方案
     at::Tensor expand_scales = npu_preparation::apply_tensor_without_format({a}, x.options().dtype(at::kFloat));
     if (expert_scales.has_value() && expert_scales.value().defined()) {
-        ep_recv_cnt_num = ep_world_size * local_moe_expert_num + 2 * n * k * (ep_world_size / 8);
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num + 2 * global_bs_real * k * (ep_world_size / 8); // 2: 2 buffer, 8 ranknum per server
         ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));
     }
 
