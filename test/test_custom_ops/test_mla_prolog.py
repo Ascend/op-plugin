@@ -29,6 +29,8 @@ class TestPromptFlashAttetion(TestCase):
         He = mla_param['He']
         Hckv = mla_param['Hckv']
         Hcq = mla_param['Hcq']
+        BlockNum = mla_param['BlockNum']
+        BlockSize = mla_param['BlockSize']
         index_table = cache_index
 
         token_x = token_x.to(torch.float32)
@@ -100,7 +102,7 @@ class TestPromptFlashAttetion(TestCase):
 
         norm2_res = norm2_res.reshape(B * S1, Hckv)
 
-        kv_cache = kv_cache.reshape(B * S2, N2, Hckv)
+        kv_cache = kv_cache.reshape(BlockNum * BlockSize, N2, Hckv)
         for i in range(B * S1):
             for j in range(N2):
                 kv_cache[index_table_list[i], j, :] = norm2_res[i, :]
@@ -114,7 +116,7 @@ class TestPromptFlashAttetion(TestCase):
         kr_cache_out_mla_shape = kr_cache.shape
         rotary2_res = rotary2_res.reshape(B * S1, Dr)
 
-        kr_cache = kr_cache.reshape(B * S2, N2, Dr)
+        kr_cache = kr_cache.reshape(BlockNum * BlockSize, N2, Dr)
         for i in range(B * S1):
             for j in range(N2):
                 kr_cache[index_table_list[i], j, :] = rotary2_res[i, :]
@@ -128,7 +130,7 @@ class TestPromptFlashAttetion(TestCase):
 
         return torch_npu.npu_mla_prolog(
             token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache)
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, cache_mode=cache_mode)
 
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
@@ -143,6 +145,8 @@ class TestPromptFlashAttetion(TestCase):
         Skv = 1024
         S = 2
         Nkv = 1
+        BlockNum = 32
+        BlockSize = 128
         token_x = torch.rand(B, S, He, dtype=torch.bfloat16).npu()
         w_dq = torch.rand(He, Hcq, dtype=torch.bfloat16).npu()
         w_uq_qr = torch.rand(Hcq, N * (D + Dr), dtype=torch.bfloat16).npu()
@@ -153,11 +157,11 @@ class TestPromptFlashAttetion(TestCase):
         rope_sin = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
         rope_cos = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
         cache_index = torch.rand(B, S).to(torch.int64).npu()
-        kv_cache = torch.rand(B, Nkv, Skv, Hckv, dtype=torch.bfloat16).npu()
-        kr_cache = torch.rand(B, Nkv, Skv, Dr, dtype=torch.bfloat16).npu()
+        kv_cache = torch.rand(BlockNum, BlockSize, Nkv, Hckv, dtype=torch.bfloat16).npu()
+        kr_cache = torch.rand(BlockNum, BlockSize, Nkv, Dr, dtype=torch.bfloat16).npu()
         rmsnorm_epsilon_cq = 1.0e-5
         rmsnorm_epsilon_ckv = 1.0e-5
-        cache_mode = "BNSD"
+        cache_mode = "PA_BSND"
 
         mla_param = {
             'B': B,
@@ -169,7 +173,9 @@ class TestPromptFlashAttetion(TestCase):
             'Dr': Dr,
             'S2': Skv,
             'S1': S,
-            'N2': Nkv
+            'N2': Nkv,
+            'BlockNum': BlockNum,
+            'BlockSize': BlockSize
         }
 
         query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla = self.mla_prolog_npu(token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, rmsnorm_gamma_cq,
@@ -182,7 +188,7 @@ class TestPromptFlashAttetion(TestCase):
             cache_mode, mla_param)
         print("baseline output", query, query.shape)
 
-        self.assertRtolEqual(kv_cache_out_mla.to(torch.float32), kv_cache_out.to(torch.float32))
+        self.assertRtolEqual(kr_cache_out_mla.to(torch.float32), kr_cache_out.to(torch.float32))
 
 
 if __name__ == "__main__":
