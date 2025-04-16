@@ -234,11 +234,11 @@ def gen_function_declaration(
         has_symint = False
         op_name = str(f.func.name.name)
         global SYMINT_SET
+        if f.func.is_out_fn():
+            op_name += "_out"
         if str(f.func.name) in SYMINT_SET:
             op_name += "_symint"
             has_symint = True
-        if f.func.is_out_fn():
-            op_name += "_out"
 
         sig = NativeSignature(f.func, prefix='', symint=has_symint)
         sig_str = f"OP_PLUGIN_HIDDEN {sig.decl(name=op_name)};"
@@ -257,11 +257,11 @@ def gen_return(
         has_symint = False
         op_name = str(f.func.name.name)
         global SYMINT_SET
+        if f.func.is_out_fn():
+            op_name += "_out"
         if str(f.func.name) in SYMINT_SET:
             op_name += "_symint"
             has_symint = True
-        if f.func.is_out_fn():
-            op_name += "_out"
 
         sig = NativeSignature(f.func, prefix='', symint=has_symint)
         args_exprs_str = ', '.join(a.name for a in sig.arguments())
