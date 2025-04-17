@@ -66,6 +66,13 @@ void create_new_tensor(std::vector<at::Tensor> &y, size_t dim_m, size_t dim_n, c
     y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
 }
 
+void calculate_dim_m(size_t& dim_m, size_t num_x, const at::TensorList x)
+{
+    for (size_t i = 0; i < num_x; i++) {
+        dim_m += x[i].sizes()[0];
+    }
+}
+
 #if VERSION_BETWEEN(V1R11, V1R11)
 // Motivation for adapting this interface for each Torch version separately:
 // 1. Optional TensorList is only supported in Torch2.1 and later versions.
@@ -227,6 +234,48 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
 // Tensor[]? activation_quant_offset, Tensor[]? activation_quant_offset, int? split_item=0,
 // int? group_type=-1, int? group_list_type=0, int? act_type=0, ScalarType? output_dtype=None) -> Tensor[]
 {
+    if (!check_aclnn_kernel_available("aclnnGroupedMatmulV4")) {
+        TORCH_CHECK(!group_list.has_value(),
+                    "group_list don't support Tensor input with current cann version. "
+                    "Please update cann version to 8.0.RC3 or higher, or use List[int] as input.",
+                    OPS_ERROR(ErrCode::VALUE));
+        auto num_x = x.size();
+        auto num_weight = weight.size();
+        auto group_list_real = at::IntArrayRef{};
+        size_t num_group_list = 0;
+        int64_t split_item_value = split_item.value_or(0);
+        check_dims(split_item_value, num_x, num_weight, num_group_list);
+
+        std::vector<at::Tensor> y;
+        c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
+
+        if (split_item_value == IN_NOT_SPLIT_OUT_NOT_SPLIT || split_item_value == IN_SPLIT_OUT_NOT_SPLIT) {
+            y.reserve(num_x);
+            for (size_t i = 0; i < num_x; i++) {
+                create_new_tensor_multi_dim(y, x[i], weight[i].size(1), options);
+            }
+        } else if (split_item_value == IN_NOT_SPLIT_OUT_SPLIT || split_item_value == IN_SPLIT_OUT_SPLIT) {
+            if (num_x > 1) {
+                size_t dim_m = 0;
+                calculate_dim_m(dim_m, num_x, x);
+                create_new_tensor(y, dim_m, weight[0].sizes()[1], options);
+            } else if (num_x == 1) {
+                create_new_tensor(y, x[0].sizes()[0], weight[0].sizes()[1], options);
+            }
+        }
+        at::TensorList result = at::TensorList(y);
+
+        auto bias_real = bias.value_or(at::TensorList());
+        auto scale_real = scale.value_or(at::TensorList());
+        auto offset_real = offset.value_or(at::TensorList());
+        auto antiquant_scale_real = antiquant_scale.value_or(at::TensorList());
+        auto antiquant_offset_real = antiquant_offset.value_or(at::TensorList());
+        EXEC_NPU_CMD(aclnnGroupedMatmul, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
+                     antiquant_offset_real, group_list_real, split_item_value, result);
+
+        return y;
+    }
+
     auto num_x = x.size();
     bool singleWeight = weight.size() == 1 && weight[0].sizes().size() == 3;
     auto num_weight = singleWeight ? static_cast<size_t>(weight[0].size(0)) : static_cast<size_t>(weight.size());
@@ -305,9 +354,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
 
     return y;
 }
-#endif
 
-#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 // Motivation for adapting this interface for each Torch version separately:
 // 1. Optional TensorList is only supported in Torch2.1 and later versions.
 //    Thus, "Tensor[] bias" is used in Torch1.11 and Torch2.0, while

@@ -132,6 +132,8 @@ inline void *GetOpApiLibHandler(const char *libName)
 
 void *GetOpApiFuncAddrFromFeatureLib(const char *api_name);
 
+bool check_aclnn_kernel_available(std::string aclnn_name);
+
 inline void *GetOpApiFuncAddr(const char *apiName)
 {
     if (!g_custom_lib_path.empty()) {

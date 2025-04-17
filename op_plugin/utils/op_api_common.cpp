@@ -619,3 +619,12 @@ void *GetOpApiFuncAddrFromFeatureLib(const char *api_name)
     GET_OP_API_FUNC_FROM_FEATURE_LIB(rand_handler, "libaclnn_rand.so");
     return nullptr;
 }
+
+bool check_aclnn_kernel_available(std::string aclnn_name)
+{
+    std::string workspace_name = aclnn_name + "GetWorkspaceSize";
+    if (GetOpApiFuncAddr(aclnn_name.c_str()) == nullptr || GetOpApiFuncAddr(workspace_name.c_str()) == nullptr) {
+        return false;
+    }
+    return true;
+}
