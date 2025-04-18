@@ -2969,11 +2969,12 @@ _add_torch_npu_docstr(
 完成量化计算参数scale数据类型的转换
 
 接口原型:
-npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
+npu_trans_quant_param(Tensor scale, Tensor? offset=None, int? round_mode=0) -> Tensor
 
 参数说明:
 scale(计算输入)：Device侧的Tensor类型，数据类型支持FLOAT32。数据格式支持ND，shape是1维(t，)或者2维(1, n)。其中t=1或n, 其中n与x2的n一致。
-offset( 计算输入)：Device侧的Tensor类型，可选参数。数据类型支持FLOAT32，数据格式支持ND，shape是1维(t，)，或者2维(1, n)。其中t=1或n, 其中n与x2的n一致。
+offset(计算输入)：Device侧的Tensor类型，可选参数。数据类型支持FLOAT32，数据格式支持ND，shape是1维(t，)，或者2维(1, n)。其中t=1或n, 其中n与x2的n一致。
+round_mode(计算输入)：用于指定FP32填充到FP19的模式，Host侧的整形，可选参数。数据类型支持INT8。支持的枚举值为0和1。0表示截断填充，1表示R_INT模式。默认为0。
 
 输出说明:
 一个Tensor类型的输出，代表npu_trans_quant_param的计算结果。
@@ -2996,7 +2997,7 @@ import os
 
 scale = torch.randn(16, dtype=torch.float32)
 offset = torch.randn(16, dtype=torch.float32)
-npu_out = torch_npu.npu_trans_quant_param(scale.npu(), offset.npu())
+npu_out = torch_npu.npu_trans_quant_param(scale.npu(), offset.npu(), round_mode=0)
 
 图模式：
 说明：图模式下，npu_trans_quant_param计算出来的结果tensor为uint64数据类型。由于torch不支持该数据类型，需要搭配其他接口使用，如下面示例代码中的npu_quant_matmul。
@@ -3018,7 +3019,7 @@ class MyModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
     def forward(self, x1, x2, scale, offset, bias):
-        scale_1 = torch_npu.npu_trans_quant_param(scale, offset)
+        scale_1 = torch_npu.npu_trans_quant_param(scale, offset, round_mode=0)
         return torch_npu.npu_quant_matmul(x1, x2, scale_1, offset=offset, bias=bias)
 cpu_model = MyModel()
 model = cpu_model.npu()

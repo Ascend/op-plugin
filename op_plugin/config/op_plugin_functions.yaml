@@ -7273,7 +7273,7 @@ custom:
   - func: npu_dequant_bias(Tensor x, Tensor weight_scale, Tensor? activation_scale, Tensor? bias, *, ScalarType? output_dtype=None) -> Tensor
     op_api: all_version
 
-  - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
+  - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None, int? round_mode=0) -> Tensor
     op_api: all_version
     exposed: all_version
 

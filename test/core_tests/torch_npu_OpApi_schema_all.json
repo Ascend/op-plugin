@@ -592,7 +592,7 @@
   "func: npu_convert_weight_to_int4pack(Tensor weight, int inner_k_tiles=0) -> Tensor": {
     "version": ["all_version"]
   },
-  "func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor": {
+  "func: npu_trans_quant_param(Tensor scale, Tensor? offset=None, int? round_mode=0) -> Tensor": {
     "version": ["all_version"]
   },
   "func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, *, Tensor? offset=None, Tensor? pertoken_scale=None, Tensor? bias=None, ScalarType? output_dtype=None) -> Tensor": {

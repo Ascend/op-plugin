@@ -1182,11 +1182,15 @@ def npu_quant_grouped_matmul_dequant_meta(x, quantized_weight, weight_scale, gro
 
 
 @impl(m, "npu_trans_quant_param")
-def npu_trans_quant_param_meta(scale, offset=None):
+def npu_trans_quant_param_meta(scale, offset=None, round_mode=0):
     scale_dim_num = scale.dim()
     torch._check(
         scale_dim_num == 1 or (scale_dim_num == 2 and scale.size(0) == 1),
         lambda: "the scale shape support only (1, ) and (1, n)" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        round_mode == 0 or round_mode == 1,
+        lambda: "round_mode should be 0 or 1, but round_mode is " + int(round_mode) + ops_error(ErrCode.VALUE),
     )
     output_shape = scale.size()
     if scale_dim_num == 1:
