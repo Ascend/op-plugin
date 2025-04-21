@@ -6470,6 +6470,23 @@ custom:
         dtype: x1
       exec: aclnnAddRmsNorm
 
+  - func: npu_add_rms_norm_cast(Tensor x1, Tensor x2, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+    gen_opapi:
+      out0:
+        size: rms_norm_npu_output_size(x1, gamma)[0]
+        dtype: at::kFloat
+      out1:
+        size: rms_norm_npu_output_size(x1, gamma)[0]
+        dtype: x1
+      out2:
+        size: rms_norm_npu_output_size(x1, gamma)[1]
+        dtype: at::kFloat
+      out3:
+        size: rms_norm_npu_output_size(x1, gamma)[0]
+        dtype: x1
+      exec: aclnnAddRmsNormCast
+
   - func: npu_all_gather_base_mm(Tensor self, Tensor x2, str hcom, int world_size, *, Tensor? bias=None, int gather_index=0, bool gather_output=True, int comm_turn=0) -> (Tensor, Tensor)
     op_api: all_version
     exposed: all_version

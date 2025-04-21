@@ -7403,6 +7403,43 @@ y, rstd = torch_npu.npu_gemma_rms_norm(input_x, input_gamma)
 )
 
 _add_torch_npu_docstr(
+    "npu_add_rms_norm_cast",
+    """
+接口原型：
+npu_add_rms_norm_cast(Tensor x1, Tensor x2, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor, Tensor, Tensor)
+
+功能描述
+add_rms_norm和cast的融合算子，对add_rms_norm计算后的输出做指定类型的cast操作，减少搬入搬出。
+
+参数说明
+x1：Device侧的Tensor类型，需要归一化的原始数据输入。shape支持1-8维。数据类型支持BFLOAT16、FLOAT16，数据格式支持ND。不支持空tensor。
+x2：Device侧的Tensor类型，需要归一化的原始数据输入。shape支持1-8维，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。shape、数据格式、数据类型均需要与入参x1保持一致。不支持空tensor。
+gamma：Device侧的Tensor类型，数据缩放因子。shape支持1-8维，数据格式支持ND，数据类型支持FLOAT16、BFLOAT16。shape需要满足gamma_shape = x_shape\[n:\], n < x_shape.dims()。数据类型、数据格式需要与入参x1保持一致。不支持空tensor。
+epsilon：float数据类型，用于防止除0错误，数据类型为DOUBLE，默认值为1e-6。
+
+输出说明
+y1：Device侧的Tensor类型，归一化后经过类型转换的输出数据。shape支持1-8维，数据格式支持ND，数据类型支持FLOAT32。shape、数据格式需要与入参x1保持一致。不支持空tensor。
+y2：Device侧的Tensor类型，归一化后的输出数据。shape支持1-8维，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。shape、数据格式、数据类型均需要与入参x1保持一致。不支持空tensor。
+rstd：Device侧的Tensor类型，x的标准差。数据类型支持FLOAT32，shape支持1-8维。shape与入参x1的shape前几维保持一致，前几维指x1的维度减去gamma的维度，表示不需要norm的维度。数据格式支持ND，需要与入参x1的数据格式保持一致。不支持空tensor。
+x：Device侧的Tensor类型，归一化的数据和。shape支持1-8维，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。shape、数据格式、数据类型均需要与入参x1保持一致。不支持空tensor。
+
+支持的型号
+Atlas A2训练系列产品/Atlas 800I A2中的推理产品
+Atlas A3训练系列产品
+
+调用示例:
+import torch
+import torch_npu
+
+input_x1 = torch.randn([20, 10, 64], dtype=torch.float16).npu()
+input_x2 = torch.randn([20, 10, 64], dtype=torch.float16).npu()
+input_gamma = torch.randn([64], dtype=torch.float16).npu()
+
+y1, y2, rstd, x = torch_npu.npu_add_rms_norm_cast(input_x1, input_x2, input_gamma)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_advance_step_flashattn",
     """
 接口原型：
