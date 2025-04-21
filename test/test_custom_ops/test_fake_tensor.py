@@ -1956,20 +1956,20 @@ class TestQuantMatmul(TestCase):
             expect_ret = torch.randint(-1, 1, (1, 1, 100), dtype=torch.int8).npu()
             scale = torch.randn(1, dtype=torch.float32).npu()
             offset = torch.randn(1, dtype=torch.float32).npu()
-            bias = torch.randint(-1, -1, (1, 1, 100), dtype=torch.int32).npu()
+            bias = torch.randint(-1, 1, (1, 1, 100), dtype=torch.int32).npu()
             res = torch_npu.npu_quant_matmul(x1, x2, scale, offset=offset, bias=bias)
             self.assertTrue(expect_ret.shape == res.shape)
             self.assertTrue(expect_ret.dtype == res.dtype)
 
             expect_ret_bf16 = torch.randint(-1, 1, (1, 1, 100), dtype=torch.bfloat16).npu()
             scale_bf16 = torch.randn(1, dtype=torch.bfloat16).npu()
-            bias_bf16 = torch.randint(-1, -1, (1, 1, 100), dtype=torch.bfloat16).npu()
+            bias_bf16 = torch.randint(-1, 1, (1, 1, 100), dtype=torch.bfloat16).npu()
             res_bf16 = torch_npu.npu_quant_matmul(x1, x2, scale_bf16, offset=None, bias=bias_bf16, output_dtype=torch.bfloat16)
             self.assertTrue(expect_ret_bf16.shape == res_bf16.shape)
             self.assertTrue(expect_ret_bf16.dtype == res_bf16.dtype)
 
             expect_ret_fp16 = torch.randint(-1, 1, (1, 1, 100), dtype=torch.float16).npu()
-            bias_fp32 = torch.randint(-1, -1, (1, 1, 100), dtype=torch.float32).npu()
+            bias_fp32 = torch.randint(-1, 1, (1, 1, 100), dtype=torch.float32).npu()
             pertoken_scale = torch.randn(1, dtype=torch.float32).npu()
             res_fp16 = torch_npu.npu_quant_matmul(x1, x2, scale, offset=None, pertoken_scale=pertoken_scale, 
                                                   bias=bias_fp32, output_dtype=torch.float16)
@@ -1977,7 +1977,7 @@ class TestQuantMatmul(TestCase):
             self.assertTrue(expect_ret_fp16.dtype == res_fp16.dtype)
 
             expect_ret_int32 = torch.randint(-1, 1, (1, 1, 100), dtype=torch.int32).npu()
-            bias_int32 = torch.randint(-1, -1, (1, 1, 100), dtype=torch.int32).npu()
+            bias_int32 = torch.randint(-1, 1, (1, 1, 100), dtype=torch.int32).npu()
             res_int32 = torch_npu.npu_quant_matmul(x1, x2, scale, offset=None, pertoken_scale=None,
                                                   bias=bias_int32, output_dtype=torch.int32)
             self.assertTrue(expect_ret_int32.shape == res_int32.shape)
@@ -1987,7 +1987,7 @@ class TestQuantMatmul(TestCase):
             x2 = torch.randint(-1, 1, (64, 5), dtype=torch.int32).npu()
             expect_ret = torch.randint(-1, 1, (16, 40), dtype=torch.float16).npu()
             scale = torch.randn(1, dtype=torch.float32).npu()
-            bias = torch.randint(-1, -1, (40,), dtype=torch.int32).npu()
+            bias = torch.randint(-1, 1, (40,), dtype=torch.int32).npu()
             res = torch_npu.npu_quant_matmul(x1, x2, scale, offset=None, bias=bias, output_dtype=torch.float16)
             self.assertTrue(expect_ret.shape == res.shape)
             self.assertTrue(expect_ret.dtype == res.dtype)
@@ -2026,6 +2026,20 @@ class TestAntiQuant(TestCase):
             x = x.to(dstType)
             self.assertTrue(x.numel() * x.element_size() == res.numel() * res.element_size())
 
+class TestNpuKroneckerQuant(TestCase):
+    def test_npu_kronecker_quant_meta(self):
+        with FakeTensorMode():
+            x = torch.randn(16, 64, 64).half().npu()
+            kronecker_p1 = torch.randn(64, 64).half().npu()
+            kronecker_p2 = torch.randn(64, 64).half().npu()
+            expect_out = torch.randint(low=-128, high=127, size=(16, 64, 8), dtype=torch.int32).npu()
+            expect_quant_scale = torch.randn(16, dtype=torch.float).npu()
+            out, quant_scale = torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2)
+
+            self.assertEqual(out.dtype, torch.int32)
+            self.assertEqual(quant_scale.dtype, torch.float)
+            self.assertEqual(out.shape, expect_out.shape)
+            self.assertEqual(quant_scale.shape, expect_quant_scale.shape)
 
 class TestNpuLinear(TestCase):
     def test_npu_linear_meta(self):

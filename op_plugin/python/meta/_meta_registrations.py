@@ -1326,6 +1326,21 @@ def npu_anti_quant_meta(x, scale, *, offset=None, dst_dtype=None, src_dtype=None
         return torch.empty_like(x, dtype=dst_dtype)
 
 
+@impl(m, "npu_kronecker_quant")
+def npu_kronecker_quant_meta(x, kronecker_p1, kronecker_p2, clip_ratio=1.0, dst_dtype=None):
+    dim_num = x.dim()
+    if x.size(dim_num - 1) % 8:
+        raise RuntimeError("last dim of input x must be divisible by 8" + ops_error(ErrCode.NOT_SUPPORT))
+    output_shape = []
+    for dim in range(dim_num - 1):
+        output_shape.append(x.size(dim))
+    output_shape.append(x.size(dim_num - 1) // 8)
+
+    scale_shape = []
+    scale_shape.append(x.size(0))
+    return x.new_empty(output_shape, dtype=torch.int32), x.new_empty(scale_shape, dtype=torch.float32)
+
+
 @impl(m, "npu_kv_rmsnorm_rope_cache")
 def npu_kv_rmsnorm_rope_cache_meta(kv, gamma, cos, sin, index, k_cache, ckv_cache, *, k_rope_scale=None,
                                    c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, epsilon=1e-5,
