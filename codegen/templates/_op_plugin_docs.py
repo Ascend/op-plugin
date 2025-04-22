@@ -7502,3 +7502,43 @@ torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_posi
                                      num_queries, block_size)
 """
 )
+
+_add_torch_npu_docstr(
+    "empty_with_swapped_memory",
+    """
+接口原型：
+torch_npu.empty_with_swapped_memory(size, dtype, device) -> Tensor
+
+功能描述
+申请一个device信息为NPU、实际内存在host侧的特殊tensor。
+
+参数说明
+size (ListInt) - 定义输出张量shape的整数序列。可以是参数数量(可变值)，也可以是列表或元组等集合。
+dtype (torch.dtype, 可选，默认值为None) - 返回张量所需数据类型。如果值为None，请使用全局默认值(请参见torch.set_default_tensor_type()).
+device (torch.device, 可选，默认值为None) - 返回张量的所需设备。
+
+输出说明
+此接口将返回一个device信息为NPU、实际内存在host侧的特殊tensor。
+
+约束说明
+1. 当前申请出来的特殊tensor仅支持如下算子：
+torch.fill_
+torch.zero_
+torch_npu.npu_apply_adam_w
+torch_npu.npu_hans_encode
+torch_npu.npu_hans_decode
+2. 支持版本
+PyTorch 2.1，PyTorch 2.5及更高版本
+
+支持的型号
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例:
+import torch
+import torch_npu
+
+swapped_tensor = torch_npu.empty_with_swapped_memory([12, 12], dtype=torch.float32, device=torch.device("npu:0"))
+swapped_tensor.zero_()
+"""
+)
