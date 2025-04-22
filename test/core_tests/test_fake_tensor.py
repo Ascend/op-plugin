@@ -1189,8 +1189,6 @@ class TestIncreFlashAttention(TestCase):
             v.requires_grad = True
             res = torch.ops.npu.npu_incre_flash_attention(q, k, v)
 
-            print("q.shape: ", q.shape)
-            print("res.shape: ", res.shape)
             self.assertTrue(q.shape == res.shape)
 
     def test_incre_flash_attention_int8_in(self):
@@ -1200,8 +1198,6 @@ class TestIncreFlashAttention(TestCase):
             v = torch.randint(1, 40, (1, 128), dtype=torch.int8).npu()
             res = torch.ops.npu.npu_incre_flash_attention(q, k, v)
 
-            print("q.shape: ", q.shape)
-            print("res.shape: ", res.shape)
             self.assertTrue(q.shape == res.shape)
             self.assertTrue(res.dtype == torch.half)
 
@@ -1219,8 +1215,6 @@ class TestIncreFlashAttention(TestCase):
             res = torch.ops.npu.npu_incre_flash_attention(q, k, v, actual_seq_lengths=actual_seq,
                                                           kv_padding_size=kv_padding_size)
 
-            print("q.shape: ", q.shape)
-            print("res.shape: ", res.shape)
             self.assertTrue(q.shape == res.shape)
 
 
@@ -1333,8 +1327,6 @@ class TestPromptFlashAttention(TestCase):
             v.requires_grad = True
             res = torch.ops.npu.npu_prompt_flash_attention(q, k, v)
 
-            print("q.shape: ", q.shape)
-            print("res.shape: ", res.shape)
             self.assertTrue(q.shape == res.shape)
 
 
@@ -1427,8 +1419,6 @@ class TestMaskedSoftmaxWithRelPosBias(TestCase):
             atten_mask.requires_grad = True
             relative_pos_bias.requires_grad = True
             res = torch.ops.npu.npu_masked_softmax_with_rel_pos_bias(x, atten_mask, relative_pos_bias)
-            print("x.shape: ", x.shape)
-            print("res.shape: ", res.shape)
             self.assertTrue(x.shape == res.shape)
 
 
@@ -1971,7 +1961,7 @@ class TestQuantMatmul(TestCase):
             expect_ret_fp16 = torch.randint(-1, 1, (1, 1, 100), dtype=torch.float16).npu()
             bias_fp32 = torch.randint(-1, 1, (1, 1, 100), dtype=torch.float32).npu()
             pertoken_scale = torch.randn(1, dtype=torch.float32).npu()
-            res_fp16 = torch_npu.npu_quant_matmul(x1, x2, scale, offset=None, pertoken_scale=pertoken_scale, 
+            res_fp16 = torch_npu.npu_quant_matmul(x1, x2, scale, offset=None, pertoken_scale=pertoken_scale,
                                                   bias=bias_fp32, output_dtype=torch.float16)
             self.assertTrue(expect_ret_fp16.shape == res_fp16.shape)
             self.assertTrue(expect_ret_fp16.dtype == res_fp16.dtype)
