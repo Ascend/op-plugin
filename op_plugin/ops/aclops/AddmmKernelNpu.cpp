@@ -105,14 +105,27 @@ at::Tensor &addmm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, co
     mm_set_format_contiguous(contiguous_mat1, is_mat1_t_flex, is_mat1_t_strict);
     mm_set_format_contiguous(contiguous_mat2, is_mat2_t_flex, is_mat2_t_strict);
     at_npu::native::OpCommand cmd;
-    cmd.Name("MatMul")
-        .InputWithoutContiguous(contiguous_mat1)
-        .InputWithoutContiguous(contiguous_mat2)
-        .Input(self)
-        .Output(result)
-        .Attr("transpose_x1", is_mat1_t_flex)
-        .Attr("transpose_x2", is_mat2_t_flex)
-        .Run();
+    try {
+        cmd.Name("MatMul")
+            .InputWithoutContiguous(contiguous_mat1)
+            .InputWithoutContiguous(contiguous_mat2)
+            .Input(self)
+            .Output(result)
+            .Attr("transpose_x1", is_mat1_t_flex)
+            .Attr("transpose_x2", is_mat2_t_flex)
+            .Run();
+    } catch (...) {
+        // Recover storage desc of view-transpose tensors, i.e. the inverse process of
+        // set_transposed_npu_desc
+        if (is_mat1_t_flex && (!is_mat1_t_strict)) {
+            torch_npu::NPUBridge::GetNpuStorageImpl(mat1)->npu_desc_ = mat1_desc;
+        }
+        if (is_mat2_t_flex && (!is_mat2_t_strict)) {
+            torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_ = mat2_desc;
+        }
+        throw;
+    }
+
     // Recover storage desc of view-transpose tensors, i.e. the inverse process of
     // set_transposed_npu_desc
     if (is_mat1_t_flex && (!is_mat1_t_strict)) {
