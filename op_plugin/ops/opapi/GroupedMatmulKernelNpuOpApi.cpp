@@ -285,7 +285,12 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     check_dims(split_item_value, num_x, num_weight, num_group_list);
 
     std::vector<at::Tensor> y;
-    c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
+    c10::TensorOptions options;
+    if (x[0].scalar_type() == at::ScalarType::Char) {
+        options = x[0].options().dtype(output_dtype.value_or(at::ScalarType::Half));
+    } else {
+        options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
+    }
 
     size_t dim_num_w = weight[0].sizes().size();
     size_t n0 = static_cast<size_t>(weight[0].size(dim_num_w - 1));
