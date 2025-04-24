@@ -130,6 +130,65 @@ def npu_mm_reduce_scatter_base_meta(self, x2, hcom, world_size, reduce_op='sum',
     return self.new_empty(out_m, x2.size(1))
 
 
+@impl(m, "npu_gmm_alltoallv")
+def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
+                        recv_counts, *, send_counts_tensor=None,
+                        recv_counts_tensor=None, mm_x=None,
+                        mm_weight=None, trans_gmm_weight=False,
+                        trans_mm_weight=False):
+    if ep_world_size <= 0:
+        ep_world_size = 1
+    out_x = sum(recv_counts)
+    out_y = gmm_weight.size(2)
+    if trans_gmm_weight:
+        out_y = gmm_weight.size(1)
+    out_mm_x = 0
+    out_mm_y = 0
+    y = None
+    mm_y = None
+    if mm_x is not None:
+        out_mm_x = mm_x.size(0)
+        out_mm_y = mm_weight.size(1)
+        if trans_mm_weight:
+            out_mm_y = mm_weight.size(0)
+        mm_y = torch.empty([out_mm_x, out_mm_y], dtype=mm_x.dtype, device='meta')
+    y = torch.empty([out_x, out_y], dtype=gmm_x.dtype, device='meta')
+    return (y, mm_y)
+
+
+@impl(m, "npu_alltoallv_gmm")
+def npu_alltoallv_gmm_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
+                        recv_counts, *, send_counts_tensor=None,
+                        recv_counts_tensor=None, mm_x=None,
+                        mm_weight=None, trans_gmm_weight=False,
+                        trans_mm_weight=False, permute_out_flag=False):
+    if ep_world_size <= 0:
+        ep_world_size = 1
+    out_x = sum(recv_counts)
+    out_y = gmm_weight.size(2)
+    if trans_gmm_weight:
+        out_y = gmm_weight.size(1)
+    out_mm_x = 0
+    out_mm_y = 0
+    permute_out_x = 0
+    permute_out_y = 0
+    gmm_y = None
+    mm_y = None
+    permute_out = None
+    if mm_x is not None:
+        out_mm_x = mm_x.size(0)
+        out_mm_y = mm_weight.size(1)
+        if trans_mm_weight:
+            out_mm_y = mm_weight.size(0)
+        mm_y = torch.empty([out_mm_x, out_mm_y], dtype=mm_x.dtype, device='meta')
+    if permute_out_flag:
+        permute_out_x = out_x
+        permute_out_y = gmm_x.size(1)
+        permute_out = torch.empty([permute_out_x, permute_out_y], dtype=gmm_x.dtype, device='meta')
+    gmm_y = torch.empty([out_x, out_y], dtype=gmm_x.dtype, device='meta')
+    return (gmm_y, mm_y, permute_out)
+
+
 @impl(m, "npu_all_gather_base_mm")
 def npu_all_gather_base_mm_meta(self, x2, hcom, world_size, bias=None,
                                 gather_index=0, gather_output=True, comm_turn=0):
