@@ -53,7 +53,7 @@ class TestMoeDistributeDispatch(TestCase):
 
         x = x.npu()
         topk = topk.npu()
-        out, _, _, _, _, _ = torch_npu.npu_moe_distribute_dispatch(x=x,
+        out, _, _, _, _, _, _ = torch_npu.npu_moe_distribute_dispatch(x=x,
                                                            expert_ids=topk,
                                                            group_ep=ep_hcomm_name,
                                                            ep_world_size=ep_world_size,
