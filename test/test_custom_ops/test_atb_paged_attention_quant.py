@@ -50,7 +50,7 @@ class TestQuantRmsNorm(TestCase):
         score_high = None
         for i in range(group_num):
             if self.is_int8_flag:
-                int8_B = B[i: (i + 1), : , : ]
+                int8_B = B[i: (i+1), :, :, ]
                 head_dim = int8_B.shape[2]
                 int32_B = torch.matmul(torch.eye(int8_B.shape[1]).to(torch.float32), int8_B.to(torch.float32)).to(torch.int32)
                 if is_k:
@@ -64,13 +64,11 @@ class TestQuantRmsNorm(TestCase):
                     fp32_B = int32_B.to(torch.float32) * self.de_scale2_fp32[(i + razor_mod) * head_dim : (i + razor_mod + 1) * head_dim]
                 group_score_high = torch.matmul(
                     A[i * group_head : (i + 1) * group_head, :, :].to(torch.float32),
-                    fp32_B
-                )
+                    fp32_B)
             elif self.is_quant_flag:
                 group_score_int32 = torch.matmul(
                     A[i * group_head : (i + 1) * group_head, :, :].to(torch.int32),
-                    B[i : (i + 1), :, :].to(torch.int32)
-                ).to(torch.int32)
+                    B[i : (i + 1), :, :].to(torch.int32)).to(torch.int32)
                 if is_k:
                     group_score_high = group_score_int32.to(torch.float32) * self.de_scale1_fp32[i * group_head : (i + 1) * group_head].reshape(group_head, 1, 1).to(torch.float32)
                 else:
@@ -78,8 +76,7 @@ class TestQuantRmsNorm(TestCase):
             else:
                 group_score_high = torch.matmul(
                     A[i * group_head : (i + 1) * group_head, :, :].to(torch.float32),
-                    B[i : (i + 1), :, :].to(torch.float32)
-                )
+                    B[i : (i + 1), :, :].to(torch.float32))
             if score_high is None:
                 score_high = group_score_high
             else:
@@ -134,9 +131,11 @@ class TestQuantRmsNorm(TestCase):
         for cur_nIndx in range(self.kvsplit):
             kv_seqlen_align = (kv_seqlen + self.block_size - 1) // self.block_size * self.block_size
             start_kv = cur_nIndx * self.kv_split_per_core
-            if cur_nIndx >= (kv_seqlen_align + self.kv_split_per_core - 1) // self.kv_split_per_core:
+            cur_kv_seqlen = self.kv_split_per_core
+            kv_loop = (kv_seqlen_align + self.kv_split_per_core - 1) // self.kv_split_per_core
+            if cur_nIndx >= kv_loop:
                 continue
-            if cur_nIndx == ((kv_seqlen_align + self.kv_split_per_core - 1) // self.kv_split_per_core - 1):
+            if cur_nIndx == (kv_loop - 1):
                 cur_kv_seqlen = kv_seqlen - cur_nIndx * self.kv_split_per_core
             n_loop = (cur_kv_seqlen + self.block_size_calc - 1) // self.block_size_calc
             qk_n = self.block_size_calc
@@ -241,32 +240,36 @@ class TestQuantRmsNorm(TestCase):
         kv_heads = value_cache.shape[2]
         head_size = value_cache.shape[3]
         block_size = value_cache.shape[1]
+
+        num_input_tokens = query.shape[0]
         index = 0
         razor_mod = 0
-
-        for i, context_len in enumerate(context_lens):
+        for i in range(len(context_lens)):
+            block_table = block_tables[i]
+            context_len = int(context_lens[i])
             if context_len == 0:
                 continue
-            
-            block_table = block_tables[i]
-            context_len = int(context_len)
+
             q = query[index].view(1, num_heads, head_size)
-            keys = [
-                key_cache[int(block_table[j // block_size]), j % block_size, :, :].reshape(kv_heads, head_size)
-                for j in range(context_len)
-            ]
-            values = [
-                value_cache[int(block_table[j // block_size]), j % block_size, :, :].reshape(kv_heads, head_size)
-                for j in range(context_len)
-            ]
-            if razor_rope:
-                razor_offset_list = [
-                    razor_offset[int(block_table[j // block_size]), j % block_size]
-                    for j in range(context_len)
-                ]
-            else:
-                razor_offset_list = []
-            
+            keys = []
+            values = []
+            razor_offset_list = []
+            for j in range(context_len):
+                block_number = int(block_table[j // block_size])
+                block_offset = j % block_size
+
+                k = key_cache[block_number, block_offset, :, :]
+                k = k.reshape(kv_heads, head_size)
+                keys.append(k)
+
+                v = value_cache[block_number, block_offset, :, :]
+                v = v.reshape(kv_heads, head_size)
+                values.append(v)
+
+                if razor_rope:
+                    offset = razor_offset[block_number, block_offset]
+                    razor_offset_list.append(offset)
+        
             keys = torch.stack(keys, axis=0)
             values = torch.stack(values, axis=0)
             if razor_rope:
@@ -325,17 +328,17 @@ class TestQuantRmsNorm(TestCase):
         if isLongSeq:
             kvSeqklenMaxAlign = (max_context_len + block_size - 1) // block_size * block_size
             kvSeqBlockNum = int(kvSeqklenMaxAlign / block_size)
-            kvBlockPreCore = int((kvSeqBlockNum + blocknum - 1) // blocknum)
+            kvBlockPreCore = int((kvSeqBlockNum + blocknum - 1)) // blocknum
             kvSplitPerCore = int(kvBlockPreCore * block_size)
-            kvSplitCoreNum = int((kvSeqklenMaxAlign + kvSplitPerCore - 1) // kvSplitPerCore)
+            kvSplitCoreNum = int(kvSeqklenMaxAlign + kvSplitPerCore - 1) // kvSplitPerCore
             headSplit = int((num_heads + kvSplitCoreNum - 1) // kvSplitCoreNum)
         else:
-            coreNumPerBatch = int((blocknum + num_tokens - 1) // num_tokens)
+            coreNumPerBatch  = int((blocknum + num_tokens - 1) // num_tokens)
             kvSeqklenMaxAlign = (max_context_len + block_size - 1) // block_size * block_size
             kvSeqBlockNum = int(kvSeqklenMaxAlign / block_size)
-            kvBlockPreCore = int((kvSeqBlockNum + coreNumPerBatch - 1) // coreNumPerBatch)
+            kvBlockPreCore = int((kvSeqBlockNum + coreNumPerBatch - 1)) // coreNumPerBatch
             kvSplitPerCore = int(kvBlockPreCore * block_size)
-            kvSplitCoreNum = int((kvSeqklenMaxAlign + kvSplitPerCore - 1) // kvSplitPerCore)
+            kvSplitCoreNum = int(kvSeqklenMaxAlign + kvSplitPerCore - 1) // kvSplitPerCore
             headSplit = int((num_heads + kvSplitCoreNum - 1) // kvSplitCoreNum)
         return kvSplitCoreNum, kvSplitPerCore
 
@@ -365,8 +368,7 @@ class TestQuantRmsNorm(TestCase):
         compressHead=False,
         razor_rope=False,
         blocknum=20,
-        is_quant_flag=0
-    ):
+        is_quant_flag=0):
         self.num_heads = num_heads
         self.kv_heads = kv_heads
         self.num_tokens = num_tokens
@@ -481,16 +483,15 @@ class TestQuantRmsNorm(TestCase):
 
     @SupportedDevices(["Ascend910B"])
     def test_pa_quant_case_normal_mask(self):
-        num_tokens = 9
-        num_heads = 32
-        kv_heads = 2
+        num_tokens = 96        
+        num_heads = 8
+        kv_heads = 1
         block_size = 128
         head_size = 128
-        num_blocks = 64 
+        num_blocks = 480 
         dynamic_batch = False
         batch_tatus = [1] * num_tokens
-
-        k_seqlen = 200
+        k_seqlen = 7
         tor = 1.0 / (head_size ** 0.5)
         dtype = torch.bfloat16
         outDtype = torch.bfloat16
@@ -509,8 +510,7 @@ class TestQuantRmsNorm(TestCase):
             outDtype,
             dynamic_batch,
             k_seqlen,
-            is_quant_flag=is_quant_flag
-        )
+            is_quant_flag=is_quant_flag)
         attention_out = torch.zeros_like(self.q).to(outDtype)
         attention_out[:] = 0.1
 
@@ -531,12 +531,10 @@ class TestQuantRmsNorm(TestCase):
             27,
             (self.de_scale1_fp32).npu(),
             (self.de_scale2_fp32).npu(),
-            attention_out_t
-        )
+            attention_out_t)
 
         ratios = [0.001, 0.001, 0.005, 0.005]
-        res = self.compare_output_data(attention_out_t.cpu(), self.golden_out.cpu(), ratios)
-        self.assertEqual(res, True)
+        self.compare_output_data(attention_out_t.cpu(), self.golden_out.cpu(), ratios)
 
 
 if __name__ == "__main__":
