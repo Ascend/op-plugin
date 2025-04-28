@@ -409,7 +409,7 @@ static at::Tensor& _exec_fft_asdsip(at::Tensor& out, const at::Tensor& self_, at
 
     at::DimVector out_sizes_(out_.sizes()); // record shape
     std::copy(out_.sizes().begin() + batch_dims, out_.sizes().end(), asdsip_sizes.begin() + 1);
-    out_ = out_.reshape(asdsip_sizes);
+    out_ = out.reshape(asdsip_sizes);
     out.resize_(out_.sizes());
 
     // call asdsip
@@ -448,16 +448,16 @@ static at::Tensor& _exec_fft_asdsip(at::Tensor& out, const at::Tensor& self_, at
     }
 
     // normalize
+    auto norm_out_sizes = out_sizes;
     if (mode != fft_mode::r2c) {
-        if (mode != fft_mode::c2r) {
-            HackComplexintoFloat(out);
-        }
-        _fft_apply_normalization(out, normalization, out_sizes, dim);
-        if (mode != fft_mode::c2r) {
-            HackFloatintoComplex(out);
-        }
-    } else {
-        _fft_apply_normalization(out, normalization, self_.sizes(), dim);
+        norm_out_sizes = self_.sizes();
+    }
+    if (mode != fft_mode::c2r) {
+        HackComplexintoFloat(out);
+    }
+    _fft_apply_normalization(out, normalization, norm_out_sizes, dim);
+    if (mode != fft_mode::c2r) {
+        HackFloatintoComplex(out);
     }
 
     // restore shape
