@@ -28,6 +28,7 @@
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 #include "op_plugin/utils/KernelNpuOutputDtype.h"
 #include "op_plugin/utils/OpUtils.h"
+#include "op_plugin/utils/op_log.h"
 #include "torch_npu/csrc/core/npu/NPUStream.h"
 #include "torch_npu/csrc/framework/OpCommand.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
@@ -1054,6 +1055,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
+        OP_EXEC_LOG(#aclnn_api, "EXEC_NPU_CMD", "1", __VA_ARGS__);                                                     \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         uint64_t workspace_size = 0;                                                                                   \
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
@@ -1108,6 +1110,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
+        OP_EXEC_LOG(#aclnn_api, "EXEC_NPU_CMD", "2", __VA_ARGS__);                                                     \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         auto deterministic_status = at::globalContext().deterministicAlgorithms();                                     \
@@ -1177,6 +1180,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
+        OP_EXEC_LOG(#aclnn_api, "EXEC_NPU_NO_FORMAT_CHECK_CMD", "1", __VA_ARGS__);                                     \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         uint64_t workspace_size = 0;                                                                                   \
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
@@ -1237,6 +1241,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
+        OP_EXEC_LOG(#aclnn_api, "EXEC_NPU_NO_FORMAT_CHECK_CMD", "2", __VA_ARGS__);                                     \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         auto acl_call = [copied_params, acl_stream]()->int {                                                           \
