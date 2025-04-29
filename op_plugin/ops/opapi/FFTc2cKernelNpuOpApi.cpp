@@ -449,7 +449,7 @@ static at::Tensor& _exec_fft_asdsip(at::Tensor& out, const at::Tensor& self_, at
 
     // normalize
     auto norm_out_sizes = out_sizes;
-    if (mode != fft_mode::r2c) {
+    if (mode == fft_mode::r2c) {
         norm_out_sizes = self_.sizes();
     }
     if (mode != fft_mode::c2r) {
