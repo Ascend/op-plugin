@@ -227,6 +227,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                                            c10::optional<int64_t> group_type,
                                            c10::optional<int64_t> group_list_type,
                                            c10::optional<int64_t> act_type,
+                                           const c10::OptionalIntArrayRef tuning_config,
                                            c10::optional<at::ScalarType> output_dtype)
 // func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None,
 // Tensor[]? offset=None, Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None,
@@ -351,12 +352,20 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     int64_t group_type_value = group_type.value_or(-1);
     int64_t group_list_type_value = group_list_type.value_or(0);
     int64_t act_type_value = act_type.value_or(0);
-
-    EXEC_NPU_CMD(aclnnGroupedMatmulV4, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
-                 antiquant_offset_real, per_token_scale_real, group_list_real, activation_input_real,
-                 activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,
-                 group_list_type_value, act_type_value, result, act_out, dynamic_quant_scale_out);
-
+    auto tuning_config_real = tuning_config.value_or(at::IntArrayRef{});
+    const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr("aclnnGroupedMatmulV5GetWorkspaceSize");
+    const auto opApiFuncAddr = GetOpApiFuncAddr("aclnnGroupedMatmulV5");
+    if (getWorkspaceSizeFuncAddr == nullptr || opApiFuncAddr == nullptr) {
+        EXEC_NPU_CMD(aclnnGroupedMatmulV4, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
+            antiquant_offset_real, per_token_scale_real, group_list_real, activation_input_real,
+            activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,
+            group_list_type_value, act_type_value, result, act_out, dynamic_quant_scale_out);
+    } else {
+        EXEC_NPU_CMD(aclnnGroupedMatmulV5, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
+            antiquant_offset_real, per_token_scale_real, group_list_real, activation_input_real,
+            activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,
+            group_list_type_value, act_type_value, tuning_config_real, result, act_out, dynamic_quant_scale_out);
+    }
     return y;
 }
 

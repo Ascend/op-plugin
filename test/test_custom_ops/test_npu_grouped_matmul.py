@@ -36,7 +36,7 @@ class TestGroupedMatmul(TestCase):
         return y
 
     def supported_op_exec(self, x, weight, *, bias=None, scale=None, offset=None, antiquantScale=None,
-                          antiquantOffset=None, group_list=None, split_item=0):
+                          antiquantOffset=None, group_list=None, split_item=0, tuning_config=None):
         x_split = []
         if split_item == 0 or split_item == 2:
             x_split = x
@@ -65,7 +65,7 @@ class TestGroupedMatmul(TestCase):
         return int_value
 
     def custom_op_exec(self, x, weight, *, bias=None, scale=None, offset=None, antiquantScale=None,
-                       antiquantOffset=None, group_list=None, split_item=0, group_type=None):
+                       antiquantOffset=None, group_list=None, split_item=0, group_type=None, tuning_config=None):
         if group_type is not None:
             return torch_npu.npu_grouped_matmul(x, weight, bias=bias, scale=scale, offset=offset,
                                                 antiquant_scale=antiquantScale, antiquant_offset=antiquantOffset,
@@ -274,6 +274,28 @@ class TestGroupedMatmul(TestCase):
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list_npu,
                                             split_item=split_item, group_type=0)
 
+        self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_5(self): # 单多单
+        torch.manual_seed(0)
+        x1 = torch.normal(mean=0., std=0.1, size=(1792, 256), dtype=torch.float16)
+        x = [x1]
+        weight1 = torch.normal(mean=0., std=0.1, size=(3, 256, 128), dtype=torch.float16)
+        weight = [weight1[0], weight1[1], weight1[2]]
+        bias1 = torch.normal(mean=0., std=0.1, size=(3, 128), dtype=torch.float16)
+        bias = [bias1[0], bias1[1], bias1[2]]
+        group_list = [256, 1280, 1792]
+        split_item = 3
+
+        x_clone = [x1.clone().npu()]
+        weight_clone = [weight1.clone().npu()]
+        bias_clone = [bias1.clone().npu()]
+        group_list_npu = torch.tensor(group_list, dtype=torch.int64).npu()
+
+        supported_output = self.supported_op_exec(x, weight, bias=bias, group_list=group_list, split_item=split_item, tuning_config = [1792])
+        custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list_npu,
+                                            split_item=split_item, group_type=0, tuning_config = [1792])
         self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
 
     @unittest.skip("skip test_npu_grouped_matmul_antiquant_0 now")
