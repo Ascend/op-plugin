@@ -1895,4 +1895,18 @@ c10::SmallVector<int64_t, SIZE> matmul_output_size(const at::Tensor &tensor1, co
     return output_size;
 }
 
+c10::SmallVector<int64_t, SIZE> npu_group_quant_out_size(const at::Tensor& x, c10::optional<at::ScalarType> dst_dtype)
+{
+    at::ScalarType dst_type = c10::value_or_else(dst_dtype, [] {return at::ScalarType::Char;});
+    c10::SmallVector<int64_t, SIZE> output_shape = op_infer::array_to_small_vector(x.sizes());
+    if (dst_type == at::ScalarType::QUInt4x2) {
+        auto x_dim_num = x.dim();
+        TORCH_CHECK(output_shape[x_dim_num - 1] % INT4_NUMS_IN_INT32_SPACE == 0,
+                    "input shape last dim must be divded by 8" + OPS_ERROR(ErrCode::PARAM));
+        output_shape[x_dim_num - 1] /= INT4_NUMS_IN_INT32_SPACE;
+    }
+
+    return output_shape;
+}
+
 } // namespace op_infer

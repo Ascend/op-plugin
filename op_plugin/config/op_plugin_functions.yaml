@@ -6353,9 +6353,24 @@ custom:
 
   - func: npu_gelu(Tensor self, *, str approximate='none') -> Tensor
     op_api: [v2.1, newest]
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      new_params:
+        approximate_mode: 'npu_gelu_approximate_mode(approximate)'
+      exec: aclnnGeluV2, self, approximate_mode, out
 
   - func: npu_gelu_backward(Tensor grad_output, Tensor self, *, str approximate='none') -> Tensor
     op_api: [v2.1, newest]
+    gen_opapi:
+      out:
+        size: 'broadcast_ops_npu_output_size(grad_output, self)'
+        dtype: 'at::native::result_type(grad_output, self)'
+      new_params:
+        approximate_str: 'npu_gelu_approximate_str(approximate)'
+        approximate_ptr: 'const_cast<char *>(approximate_str.c_str())'
+      exec: aclnnGeluBackwardV2, grad_output, self, approximate_ptr, out
 
   - func: _conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)
     acl_op: all_version
@@ -7121,6 +7136,13 @@ custom:
 
   - func: npu_group_quant(Tensor x, Tensor scale, Tensor group_index, *, Tensor? offset=None, ScalarType? dst_dtype=None) -> Tensor
     op_api: all_version
+    gen_opapi:
+      out:
+        size: 'npu_group_quant_out_size(x, dst_dtype)'
+        dtype: dst_type
+      new_params:
+        dst_type: npu_group_quant_dst_type(dst_dtype)
+      exec: aclnnGroupQuant, x, scale, group_index, offset, dst_type, out
 
   - func: npu_random_choice_with_mask(Tensor x, int count=256, int seed=0, int seed2=0) -> (Tensor, Tensor)
     acl_op: all_version

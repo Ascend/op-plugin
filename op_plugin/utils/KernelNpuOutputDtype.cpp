@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "torch_npu/csrc/core/npu/NPUException.h"
 #include "op_plugin/utils/KernelNpuOutputDtype.h"
 
 namespace op_infer {
@@ -41,5 +42,18 @@ at::ScalarType polar_out_dtype(const at::Tensor& abs, const at::Tensor& angle)
     return high_type;
 }
 
+at::ScalarType npu_group_quant_dst_type(c10::optional<at::ScalarType> dst_dtype)
+{
+    at::ScalarType dst_type = c10::value_or_else(dst_dtype, [] {return at::ScalarType::Char;});
+    if (dst_type == at::kQInt8) {
+        dst_type = at::kChar;
+    }
+    TORCH_CHECK(dst_type == at::ScalarType::Char || dst_type == at::ScalarType::QUInt4x2,
+                "dst_dtype must be Int8 or Int4" + OPS_ERROR(ErrCode::TYPE));
+    if (dst_type == at::ScalarType::QUInt4x2) {
+        dst_type = at::ScalarType::Int;
+    }
+    return dst_type;
+}
 
 } // namespace op_infer

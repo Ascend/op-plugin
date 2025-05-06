@@ -27,6 +27,7 @@
 #include <acl/acl_base.h>
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 #include "op_plugin/utils/KernelNpuOutputDtype.h"
+#include "op_plugin/utils/KernelNpuNewParams.h"
 #include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/op_log.h"
 #include "torch_npu/csrc/core/npu/NPUStream.h"
