@@ -30,6 +30,7 @@
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
+        OP_EXEC_LOG(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "1", __VA_ARGS__);                              \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         aclOpExecutor *executor = nullptr;                                                                             \
         aclOpExecutor **executor_addr = &executor;                                                                     \
@@ -85,6 +86,7 @@
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
+        OP_EXEC_LOG(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "2", __VA_ARGS__);                              \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         auto acl_call = [workspace_addr, workspace_size, copied_params, acl_stream]()->int {                           \

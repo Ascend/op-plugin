@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TORCHNPU_TORCH_NPU_UTILS_OP_LOG_UTILS_H_
+#define TORCHNPU_TORCH_NPU_UTILS_OP_LOG_UTILS_H_
+
 #include <iostream>
 #include <string>
 #include <tuple>
@@ -449,3 +452,5 @@ template <typename... Ts> inline constexpr std::string generate_debug_log_infos(
 
 }  // namespace utils
 }  // namespace op_plugin
+
+#endif //  TORCHNPU_TORCH_NPU_UTILS_OP_LOG_UTILS_H_

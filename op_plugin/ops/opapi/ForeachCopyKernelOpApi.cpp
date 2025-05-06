@@ -34,6 +34,7 @@ void exec_npu_cmd_copy(const at::TensorList dst, at::TensorList src, bool non_bl
     if (non_blocking) {
         EXEC_NPU_CMD(aclnnForeachCopy, src, dst);
     } else {
+        OP_LOG(aclnnForeachCopy, "EXEC_NPU_CMD_SYNC", src, dst);
         EXEC_NPU_CMD_SYNC(aclnnForeachCopy, src, dst);
     }
 }

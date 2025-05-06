@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TORCHNPU_TORCH_NPU_UTILS_OP_LOG_H_
+#define TORCHNPU_TORCH_NPU_UTILS_OP_LOG_H_
+
 #include <iostream>
 #include <string>
 #include <tuple>
@@ -30,6 +33,7 @@ namespace logging {
 
 static std::shared_ptr<npu_logging::Logger> LOGGER = npu_logging::logging().getLogger("torch_npu.op_plugin");
 
+// Internal logging function.
 #define OP_EXEC_LOG(aclnn_api, exec_cmd, task_queue, ...)                                                                                   \
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO) {                                               \
@@ -44,5 +48,22 @@ static std::shared_ptr<npu_logging::Logger> LOGGER = npu_logging::logging().getL
         }                                                                                                                                   \
     } while (0);
 
+// Public logging function.
+#define OP_LOG(aclnn_api, exec_cmd, ...)                                                                                   \
+    do {                                                                                                                                    \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO) {                                               \
+            op_plugin::logging::LOGGER->info("%s %s with%s",                                                                \
+                #aclnn_api, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());       \
+        }                                                                                                                                   \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG) {                                              \
+            op_plugin::logging::LOGGER->info("%s %s with%s",                                                                \
+                #aclnn_api, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                \
+            op_plugin::logging::LOGGER->debug("%s %s",                                                                                      \
+                #aclnn_api, op_plugin::logging::generate_debug_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                                \
+        }                                                                                                                                   \
+    } while (0);
+
 }  // namespace utils
 }  // namespace op_plugin
+
+#endif //  TORCHNPU_TORCH_NPU_UTILS_OP_LOG_H_

@@ -48,6 +48,7 @@ static at::Tensor exec_aclnn_masked_select(const at::Tensor& self, const at::Ten
     TORCH_CHECK(opApiFuncAddr != nullptr, "GetOpApiFuncAddr failed.", OPS_ERROR(ErrCode::PTR));
     using aclGetViewShapeFunc = int (*)(const aclTensor *tensor, int64_t **view_dims, uint64_t *view_dims_num);
     auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
+    OP_LOG(aclnnMaskedSelect, "EXEC_NPU_CMD_SYNC", self, mask, out);
     auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnMaskedSelect, self, mask, out);
     int64_t *view_dims = nullptr;
     uint64_t view_dim_num = 0;
