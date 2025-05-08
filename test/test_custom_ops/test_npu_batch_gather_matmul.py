@@ -16,8 +16,7 @@ class TestBatchGatherMatmul(TestCase):
         Z2 = torch.bmm(Z1, WB).squeeze() * scale
         return y + Z2
 
-    @unittest.skip("skip test_batch_gather_matmul now")
-    @SupportedDevices(["Ascend910B"])
+    @SupportedDevices(["Ascend310P"])
     def test_batch_gather_matmul(self):
         torch.manual_seed(12)
         y = torch.randn(1, 128).half().npu()
@@ -37,8 +36,7 @@ class TestBatchGatherMatmul(TestCase):
 
         self.assertEqual(y.cpu(), output_npu)
 
-    @unittest.skip("skip test_batch_gather_matmul_ now")
-    @SupportedDevices(["Ascend910B"])
+    @SupportedDevices(["Ascend310P"])
     def test_batch_gather_matmul_(self):
         torch.manual_seed(12)
         y = torch.randn(10, 128).half().npu()
