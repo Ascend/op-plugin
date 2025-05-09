@@ -29,6 +29,9 @@ const static int64_t D_LIMIT = 512;
 const static int64_t BNSD_DIM = 4;
 const static int64_t TOKEN_MAX = 2147483647;
 const static int64_t LEFT_UP_CAUSAL = 2;
+const static int64_t ATTN_MASK_DIM_TWO = 2;
+const static int64_t ATTN_MASK_DIM_FOUR = 4;
+
 
 inline void validate_sdpa_input(
     const at::Tensor &query,
@@ -124,6 +127,13 @@ at::Tensor scaled_dot_product_attention(
         query.size(1) <= N_LIMIT && query.size(3) <= D_LIMIT && key.size(1) <= N_LIMIT &&
         query.size(1) % key.size(1) == 0 && query.size(1) / key.size(1) > 0 &&
         c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+        // attn_mask supports dim is 2 or 4
+        if (attn_mask.has_value() && (attn_mask.value().dim() != ATTN_MASK_DIM_TWO || attn_mask.value().dim() != ATTN_MASK_DIM_FOUR)) {
+            c10::optional<at::Tensor> atten_mask_math = convert_boolean_attn_mask_math(attn_mask, query.dtype());
+            auto output = at::_scaled_dot_product_attention_math(query, key, value, atten_mask_math, dropout_p, is_causal,
+                                                                 c10::nullopt, scale);
+            return std::get<0>(output);
+        }
         /* The implementation of the NPU FlashAttention fusion operator without grad constraints:
         1. The FA operator must be registered. GetSocVersion api is provisional, IsExistOp aclnn api will apply.
         2. The attn_mask supports only the bool data type.
@@ -216,6 +226,13 @@ at::Tensor scaled_dot_product_attention(
         query.size(1) <= N_LIMIT && query.size(3) <= D_LIMIT && key.size(1) <= N_LIMIT &&
         query.size(1) % key.size(1) == 0 && query.size(1) / key.size(1) > 0 &&
         c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+        // attn_mask supports dim is 2 or 4
+        if (attn_mask.has_value() && (attn_mask.value().dim() != ATTN_MASK_DIM_TWO || attn_mask.value().dim() != ATTN_MASK_DIM_FOUR)) {
+            c10::optional<at::Tensor> atten_mask_math = convert_boolean_attn_mask_math(attn_mask, query.dtype());
+            auto output = at::_scaled_dot_product_attention_math(query, key, value, atten_mask_math, dropout_p, is_causal, c10::nullopt, scale);
+            return std::get<0>(output);
+        }
+
         /* The implementation of the NPU FlashAttention fusion operator without grad constraints:
         1. The FA operator must be registered. GetSocVersion api is provisional, IsExistOp aclnn api will apply.
         2. The attn_mask supports only the bool data type.
