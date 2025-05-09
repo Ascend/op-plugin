@@ -31,6 +31,7 @@
 #include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/op_log.h"
 #include "torch_npu/csrc/core/npu/NPUStream.h"
+#include "torch_npu/csrc/core/npu/NPUFunctions.h"
 #include "torch_npu/csrc/framework/OpCommand.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/framework/interface/AclOpCompileInterface.h"
@@ -920,8 +921,10 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
     initPTACacheThreadLocalFunc();
     g_hash_offset = 0;
     auto deterministic = at::globalContext().deterministicAlgorithms();
+    auto device = c10_npu::current_device();
     add_param_to_buf(deterministic);
     add_param_to_buf(std::string(aclnn_api), args...);
+    add_param_to_buf(device);
     uint64_t hashId = calc_hash_id();
     setPTAHashKeyFunc(hashId);
     aclOpExecutor *executor = ptaGetExecCacheFunc(hashId, workspace_size_addr);
