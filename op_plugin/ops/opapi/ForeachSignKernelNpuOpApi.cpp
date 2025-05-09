@@ -60,6 +60,10 @@ void _foreach_sign_(const at::TensorList self)
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     bool is_support_type = op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
         op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32, op_plugin::utils::ForeachInputType::TYPE_TENSOR);
+    if (op_plugin::utils::is_gte_cann_version_810rc1()) {
+        is_support_type = op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
+        op_plugin::utils::ForeachTensorDtypeSupport::TO_INT, op_plugin::utils::ForeachInputType::TYPE_TENSOR);
+    }
     if (!is_support_nd_out || !is_support_type || !at::native::can_use_fast_route(self)) {
         return at::native::foreach_tensor_sign_slow_(self);
     }
@@ -77,6 +81,10 @@ std::vector<at::Tensor> _foreach_sign(const at::TensorList self)
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
     bool is_support_type = op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
         op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32, op_plugin::utils::ForeachInputType::TYPE_TENSOR);
+    if (op_plugin::utils::is_gte_cann_version_810rc1()) {
+        is_support_type = op_plugin::utils::check_dtype_foreach(self[0].scalar_type(),
+        op_plugin::utils::ForeachTensorDtypeSupport::TO_INT, op_plugin::utils::ForeachInputType::TYPE_TENSOR);
+    }
     if (!is_support_nd_out || !is_support_type || !at::native::can_use_fast_route(self)) {
         return at::native::foreach_tensor_sign_slow(self);
     }

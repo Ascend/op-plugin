@@ -26,7 +26,8 @@ namespace op_plugin {
 namespace utils {
 enum ForeachTensorDtypeSupport {
     BASE_DTYPE = 0, // support fp, fp16, bf16
-    TO_INT32 = 1    // support fp, fp16, bf16, int32
+    TO_INT32 = 1,   // support fp, fp16, bf16, int32
+    TO_INT = 2      // support fp, fp16, bf16, int32, int8, int64
 };
 
 enum ForeachInputType {
@@ -59,6 +60,7 @@ OP_PLUGIN_HIDDEN at::Tensor get_cast_input(const at::Tensor& self, at::ScalarTyp
 OP_PLUGIN_HIDDEN NameVector compute_names_npu(std::vector<at::Tensor> tensor_list);
 OP_PLUGIN_HIDDEN double compute_scale(int64_t input_size, int64_t output_size, double scale);
 OP_PLUGIN_HIDDEN bool check_foreach_tensor_dtype_spport_base(at::ScalarType tensorDtype);
+OP_PLUGIN_HIDDEN bool check_foreach_tensor_dtype_spport_base_and_int(at::ScalarType tensorDtype);
 OP_PLUGIN_HIDDEN bool check_foreach_scalar_dtype_spport(at::ScalarType scalarDtype);
 OP_PLUGIN_HIDDEN bool check_foreach_tensor_dtype_spport(at::ScalarType tensorDtype, ForeachTensorDtypeSupport tensorDtypeCategory);
 OP_PLUGIN_HIDDEN bool check_dtype_foreach(at::ScalarType tensorDtype, ForeachTensorDtypeSupport tensorDtypeCategory,

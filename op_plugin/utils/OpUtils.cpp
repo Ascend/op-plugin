@@ -293,6 +293,8 @@ bool check_foreach_tensor_dtype_spport(at::ScalarType tensorDtype, ForeachTensor
             return check_foreach_tensor_dtype_spport_base(tensorDtype);
         case ForeachTensorDtypeSupport::TO_INT32:
             return check_foreach_tensor_dtype_spport_base(tensorDtype) || (tensorDtype == at::ScalarType::Int);
+        case ForeachTensorDtypeSupport::TO_INT:
+            return check_foreach_tensor_dtype_spport_base_and_int(tensorDtype);
         default:
             TORCH_CHECK(false, "Invalid  ForeachTensorDtypeSupport Parm", OPS_ERROR(ErrCode::PARAM));
     }
@@ -302,6 +304,13 @@ bool check_foreach_tensor_dtype_spport_base(at::ScalarType tensorDtype)
 {
     return (tensorDtype == at::ScalarType::Half || tensorDtype == at::ScalarType::Float ||
             tensorDtype == at::ScalarType::BFloat16);
+}
+
+bool check_foreach_tensor_dtype_spport_base_and_int(at::ScalarType tensorDtype)
+{
+    return (tensorDtype == at::ScalarType::Half || tensorDtype == at::ScalarType::Float ||
+            tensorDtype == at::ScalarType::BFloat16 || tensorDtype == at::ScalarType::Int ||
+            tensorDtype == at::ScalarType::Char || tensorDtype == at::ScalarType::Long);
 }
 
 bool check_foreach_scalar_dtype_spport(at::ScalarType scalarDtype)

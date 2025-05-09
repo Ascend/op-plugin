@@ -13,7 +13,9 @@ class TestForeachSign(TestCase):
         "float16": torch.float16,
         "float32": torch.float32,
         "bfloat16": torch.bfloat16,
-        "int32": torch.int32
+        "int32": torch.int32,
+        "int8": torch.int8,
+        "int64": torch.int64,
     }
 
     def assert_equal(self, cpu_outs, npu_outs):
@@ -33,7 +35,7 @@ class TestForeachSign(TestCase):
         for i in range(tensor_nums):
             m = random.randint(1, 100)
             n = random.randint(1, 100)
-            if dtype == "int32":
+            if dtype == "int32" or dtype == "int8" or dtype == "int64":
                 t = torch.randint(low=-100, high=100, size=(m, n), dtype=self.torch_dtypes.get(dtype))
             else:
                 t = torch.randn((m, n), dtype=self.torch_dtypes.get(dtype))
@@ -82,7 +84,27 @@ class TestForeachSign(TestCase):
             self.assertRtolEqual(cpu_output, npu_output)
 
     @SupportedDevices(['Ascend910B'])
-    def test_foreach_sign_inplace_float32_shape_tensor_num(self):
+    def test_foreach_sign_out_int32_shape_tensor_num(self):
+        tensor_num_list = [20, 50]
+        for tensor_num in tensor_num_list:
+            cpu_tensors, npu_tensors = self.create_tensors(tensor_num, "int8")
+            cpu_output = torch._foreach_sign(cpu_tensors)
+            npu_output = torch._foreach_sign(npu_tensors)
+
+            self.assertRtolEqual(cpu_output, npu_output)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_foreach_sign_out_int32_shape_tensor_num(self):
+        tensor_num_list = [20, 50]
+        for tensor_num in tensor_num_list:
+            cpu_tensors, npu_tensors = self.create_tensors(tensor_num, "int64")
+            cpu_output = torch._foreach_sign(cpu_tensors)
+            npu_output = torch._foreach_sign(npu_tensors)
+
+            self.assertRtolEqual(cpu_output, npu_output)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_foreach_sign_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list:
             cpu_tensors, npu_tensors = self.create_tensors(tensor_num, "float32")
@@ -116,6 +138,36 @@ class TestForeachSign(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list:
             cpu_tensors, npu_tensors = self.create_tensors(tensor_num, "int32")
+            torch._foreach_sign_(cpu_tensors)
+            torch._foreach_sign_(npu_tensors)
+
+            self.assertRtolEqual(cpu_tensors, npu_tensors)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_foreach_sign_inplace_int32_shape_tensor_num(self):
+        tensor_num_list = [20, 50]
+        for tensor_num in tensor_num_list:
+            cpu_tensors, npu_tensors = self.create_tensors(tensor_num, "int8")
+            torch._foreach_sign_(cpu_tensors)
+            torch._foreach_sign_(npu_tensors)
+
+            self.assertRtolEqual(cpu_tensors, npu_tensors)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_foreach_sign_inplace_int32_shape_tensor_num(self):
+        tensor_num_list = [20, 50]
+        for tensor_num in tensor_num_list:
+            cpu_tensors, npu_tensors = self.create_tensors(tensor_num, "int64")
+            torch._foreach_sign_(cpu_tensors)
+            torch._foreach_sign_(npu_tensors)
+
+            self.assertRtolEqual(cpu_tensors, npu_tensors)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_foreach_sign_inplace_float64_shape_tensor_num(self):
+        tensor_num_list = [20, 50]
+        for tensor_num in tensor_num_list:
+            cpu_tensors, npu_tensors = self.create_tensors(tensor_num, "float64")
             torch._foreach_sign_(cpu_tensors)
             torch._foreach_sign_(npu_tensors)
 

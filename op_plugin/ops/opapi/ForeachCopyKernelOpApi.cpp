@@ -76,6 +76,9 @@ bool check_tensor_dtype_support_base(const at::TensorList src)
         src[0].scalar_type() == at::ScalarType::BFloat16 ||
         src[0].scalar_type() == at::ScalarType::Float || src[0].scalar_type() == at::ScalarType::Half) {
         return true;
+    } else if (op_plugin::utils::is_gte_cann_version_810rc1() && (src[0].scalar_type() == at::ScalarType::Long ||
+            src[0].scalar_type() == at::ScalarType::Double || src[0].scalar_type() == at::ScalarType::Bool)) {
+        return true;
     }
     return false;
 }
