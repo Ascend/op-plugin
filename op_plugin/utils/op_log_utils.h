@@ -225,10 +225,24 @@ inline std::string convert_info(const at::ScalarType scalar_type)
     return ss.str();
 }
 
-inline std::string convert_info(int64_t int_value)
+inline std::string convert_info(int64_t int64_t_value)
 {
     std::stringstream ss;
-    ss << "int64_t: " << int_value << "\n";
+    ss << "int64_t: " << int64_t_value << "\n";
+    return ss.str();
+}
+
+inline std::string convert_info(int8_t int8_t_value)
+{
+    std::stringstream ss;
+    ss << "int8_t: " << int8_t_value << "\n";
+    return ss.str();
+}
+
+inline std::string convert_info(int int_value)
+{
+    std::stringstream ss;
+    ss << "int: " << int_value << "\n";
     return ss.str();
 }
 
@@ -243,6 +257,13 @@ inline std::string convert_info(float float_value)
 {
     std::stringstream ss;
     ss << "float: " << float_value << "\n";
+    return ss.str();
+}
+
+inline std::string convert_info(double double_value)
+{
+    std::stringstream ss;
+    ss << "double: " << double_value << "\n";
     return ss.str();
 }
 
@@ -356,30 +377,6 @@ inline std::string convert_debug_info(const c10::optional<at::Scalar> &opt_scala
 }
 
 inline std::string convert_debug_info(const at::ScalarType scalar_type)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(int64_t int_value)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(bool bool_value)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(float float_value)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(char* char_value)
 {
     std::string ss("");
     return ss;
