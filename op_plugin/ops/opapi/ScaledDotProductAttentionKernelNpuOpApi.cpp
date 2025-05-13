@@ -128,7 +128,7 @@ at::Tensor scaled_dot_product_attention(
         query.size(1) % key.size(1) == 0 && query.size(1) / key.size(1) > 0 &&
         c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
         // attn_mask supports dim is 2 or 4
-        if (attn_mask.has_value() && (attn_mask.value().dim() != ATTN_MASK_DIM_TWO || attn_mask.value().dim() != ATTN_MASK_DIM_FOUR)) {
+        if (attn_mask.has_value() && attn_mask.value().dim() != ATTN_MASK_DIM_TWO && attn_mask.value().dim() != ATTN_MASK_DIM_FOUR) {
             c10::optional<at::Tensor> atten_mask_math = convert_boolean_attn_mask_math(attn_mask, query.dtype());
             auto output = at::_scaled_dot_product_attention_math(query, key, value, atten_mask_math, dropout_p, is_causal,
                                                                  c10::nullopt, scale);
@@ -227,7 +227,7 @@ at::Tensor scaled_dot_product_attention(
         query.size(1) % key.size(1) == 0 && query.size(1) / key.size(1) > 0 &&
         c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
         // attn_mask supports dim is 2 or 4
-        if (attn_mask.has_value() && (attn_mask.value().dim() != ATTN_MASK_DIM_TWO || attn_mask.value().dim() != ATTN_MASK_DIM_FOUR)) {
+        if (attn_mask.has_value() && attn_mask.value().dim() != ATTN_MASK_DIM_TWO && attn_mask.value().dim() != ATTN_MASK_DIM_FOUR) {
             c10::optional<at::Tensor> atten_mask_math = convert_boolean_attn_mask_math(attn_mask, query.dtype());
             auto output = at::_scaled_dot_product_attention_math(query, key, value, atten_mask_math, dropout_p, is_causal, c10::nullopt, scale);
             return std::get<0>(output);
