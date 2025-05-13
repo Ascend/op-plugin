@@ -274,9 +274,10 @@ inline std::string convert_info(char* char_value)
     return ss.str();
 }
 
-template <typename T> T convert_info(T value)
+template <typename T> std::string convert_info(T value)
 {
-    return value;
+    std::string ss("unknown dtype, please report an issue to op-plugin.\n");
+    return ss;
 }
 
 // Generate extra debug log info
@@ -321,70 +322,10 @@ inline std::string convert_debug_info(const at::Tensor &at_tensor)
     }
 }
 
-inline std::string convert_debug_info(const at::Scalar &at_scalar)
+template <typename T> std::string convert_debug_info(T value)
 {
-    std::string ss("");
+    std::string ss("No extra debug info for this param\n");
     return ss;
-}
-
-inline std::string convert_debug_info(const at::IntArrayRef &at_array)
-{
-    std::string ss("");
-    return ss;
-}
-
-template <std::size_t N>
-inline std::string convert_debug_info(const std::array<bool, N> &value)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(const at::ArrayRef<bool> &value)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(const at::TensorList &at_tensor_list)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(const at::ArrayRef<at::Scalar> &at_scalar_list)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(const c10::optional<at::Tensor> &opt_tensor)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(const c10::optional<at::IntArrayRef> &opt_array)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(const c10::optional<at::Scalar> &opt_scalar)
-{
-    std::string ss("");
-    return ss;
-}
-
-inline std::string convert_debug_info(const at::ScalarType scalar_type)
-{
-    std::string ss("");
-    return ss;
-}
-
-template <typename T> T convert_debug_info(T value)
-{
-    return value;
 }
 
 // convert "x, weight" -> {"x: ", "weight: "}
