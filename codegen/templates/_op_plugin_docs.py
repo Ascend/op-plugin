@@ -3911,6 +3911,73 @@ out = model(cpu_x.npu())
 )
 
 _add_torch_npu_docstr(
+    "npu_transpose_batchmatmul",
+    """
+功能描述: 
+该接口用于实现矩阵乘计算输入和输出的transpose操作。
+
+接口原型: 
+torch_npu.npu_transpose_batchmatmul(Tensor input, Tensor weight, *, Tensor? bias=None, Tensor? scale=None, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor
+
+参数说明: 
+- input(Tensor, 计算输入): 必选参数, 一个3D的Device侧Tensor输入，矩阵计算的左矩阵。数据类型支持float32、float16、bfloat16，数据格式支持ND。
+- weight(Tensor, 计算输入): 必选参数, 一个3D的Device侧Tensor输入，矩阵计算的右矩阵。数据类型支持float32、float16、bfloat16，数据格式支持ND。
+- bias(Tensor, 计算输入): 可选参数, 一个1D的Device侧Tensor输入，矩阵计算的bias参数。数据类型支持float32、float16、bfloat16，数据格式支持ND。
+- scale(Tensor, 计算输入): 可选参数, 一个1D的Device侧Tensor输入，矩阵计算量化参数。数据类型支持int64、uint64，数据格式支持ND。
+- perm_x1(ListInt, 计算输入): 可选参数, int类型列表，将input在矩阵乘之前排列成[B, M, K]。
+- perm_x2(ListInt, 计算输入): 可选参数, int类型列表，将weight在矩阵乘之前排列成[B, K, N]。
+- perm_y(ListInt, 计算输入): 可选参数, int类型列表，将y在矩阵乘后重新排列。
+- batch_split_factor(Int, 计算输入): 可选参数，声明output_batch的系数，默认是1。
+- y(Tensor, 计算输出): 一个3D的Tensor，输出数据类型支持float32、float16、int8、bfloat16。
+
+支持的芯片型号:
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品
+Atlas A3 推理系列产品
+
+调用示例:
+# 单算子调用
+import torch
+import torch_npu
+
+M, K, N, Batch = 32, 512, 128, 32
+x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+scale = torch.rand((Batch * N, ), dtype=torch.float32)
+scale = torch_npu.npu_trans_quant_param(scale.npu(), round_mode=1)
+y = torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(), scale=scale.npu(),
+                                        perm_x1=[1, 0, 2], perm_y=[1, 0, 2])
+
+# 图模式调用
+import torch
+import torch_npu
+import torchair as tng
+from torchair.configs.compiler_config import CompilerConfig
+
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+class Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x1, x2, scale):
+        scale = torch_npu.npu_trans_quant_param(scale, round_mode=1)
+        output = torch_npu.npu_transpose_batchmatmul(x1, x2, scale=scale,
+                                                     perm_x1=(1, 0, 2), perm_x2=(0, 1, 2),
+                                                     perm_y=(1, 0, 2))
+        return output
+
+M, K, N, Batch = 32, 512, 128, 32
+x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+scale = torch.rand((Batch * N, ), dtype=torch.float32)
+
+model = Model().npu()
+model = torch.compile(model, backend=npu_backend, dynamic=False)
+y = model(x1.npu(), x2.npu(), scale.npu())
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_convert_weight_to_int4pack",
     """
 功能描述:

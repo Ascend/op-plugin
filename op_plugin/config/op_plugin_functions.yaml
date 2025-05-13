@@ -7342,6 +7342,10 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_transpose_batchmatmul(Tensor input, Tensor weight, *, Tensor? bias=None, Tensor? scale=None, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor
+    op_api: all_version
+    exposed: all_version
+
   - func: npu_yolo_boxes_encode(Tensor self, Tensor gt_bboxes, Tensor stride, bool performance_mode=False) -> Tensor
     acl_op: all_version
     exposed: all_version

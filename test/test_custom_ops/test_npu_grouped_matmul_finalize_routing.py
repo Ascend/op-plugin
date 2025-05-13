@@ -32,7 +32,6 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
             out = mm_out[index].reshape(-1, topK, mm_out.shape[-1]).sum(dim=1)
         return out
     
-    @unittest.skip("skip test_npu_grouped_matmul_finalize_routing_1")
     @SupportedDevices(["Ascend910B"])
     def test_npu_grouped_matmul_finalize_routing_1(self, device="npu"):
         m, k, n, batch, topK, group_num, shared_input_scale = 576, 2048, 7168, 72, 8, 8, 1
@@ -68,7 +67,6 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
         ).to("cpu")
         self.assertRtolEqual(supported_output, custome_output, 0.001)
 
-    @unittest.skip("skip test_npu_grouped_matmul_finalize_routing_2")
     @SupportedDevices(["Ascend910B"])
     def test_npu_grouped_matmul_finalize_routing_2(self, device="npu"):
         m, k, n, batch, topK, group_num = 72, 2048, 7168, 72, 1, 1

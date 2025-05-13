@@ -1253,6 +1253,30 @@ def npu_quant_grouped_matmul_dequant_meta(x, quantized_weight, weight_scale, gro
     return torch.empty((x.shape[0], weight_scale.shape[1]), dtype=x.dtype, device='meta')
 
 
+@impl(m, "npu_transpose_batchmatmul")
+def npu_transpose_batchmatmul_meta(input_, weight, *, bias=None, scale=None,
+                                   perm_x1=None, perm_x2=None, perm_y=None,
+                                   batch_split_factor=1):
+    perm_x1 = perm_x1 or [0, 1, 2]
+    perm_x2 = perm_x2 or [0, 1, 2]
+    perm_y = perm_y or [0, 1, 2]
+    M = input_.size(perm_x1.index(1))
+    batchM = input_.size(perm_x1.index(0))
+    Ka = input_.size(perm_x1.index(2))
+    batchN = weight.size(perm_x2.index(0))
+    Kb = weight.size(perm_x2.index(1))
+    N = weight.size(perm_x2.index(2))
+    if scale is None:
+        dtype = torch.float16
+    else:
+        dtype = torch.int8
+    if batch_split_factor > 1:
+        dim_list = (batch_split_factor, M, batchM * N // batch_split_factor)
+    else:
+        dim_list = (M, batchM, N)
+    return input_.new_empty(dim_list, dtype=dtype)
+
+
 @impl(m, "npu_trans_quant_param")
 def npu_trans_quant_param_meta(scale, offset=None, round_mode=0):
     scale_dim_num = scale.dim()

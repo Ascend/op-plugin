@@ -592,6 +592,9 @@
   "func: npu_convert_weight_to_int4pack(Tensor weight, int inner_k_tiles=0) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: npu_transpose_batchmatmul(Tensor input, Tensor weight, *, Tensor? bias=None, Tensor? scale=None, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor": {
+    "version": ["all_version"]
+  },
   "func: npu_trans_quant_param(Tensor scale, Tensor? offset=None, int? round_mode=0) -> Tensor": {
     "version": ["all_version"]
   },
