@@ -398,6 +398,90 @@ class TestGroupedMatmul(TestCase):
         self.assertRtolEqual(supported_output[0], custom_output[0], 1)
 
     @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_quant_3_fp32(self): # 量化 单多单
+        torch.manual_seed(0)
+        x1 = torch.randint(1, 5, size=(1792, 1024), dtype=torch.int8)
+        x = [x1]
+        weight1 = torch.randint(1, 5, size=(1024, 256), dtype=torch.int8)
+        weight2 = torch.randint(1, 5, size=(1024, 256), dtype=torch.int8)
+        weight3 = torch.randint(1, 5, size=(1024, 256), dtype=torch.int8)
+        weight = [weight1, weight2, weight3]
+        bias1 = torch.randint(1, 5, size=(256,), dtype=torch.int32)
+        bias2 = torch.randint(1, 5, size=(256,), dtype=torch.int32)
+        bias3 = torch.randint(1, 5, size=(256,), dtype=torch.int32)
+        bias = [bias1, bias2, bias3]
+        group_list = torch.tensor([256, 1280, 1792]).npu()
+        split_item = 3
+        group_type = 0
+
+        x_clone = []
+        weight_clone = []
+        bias_clone = []
+        scale_fp32 = []
+        scale_fp32_npu = []
+
+        for x_i in x:
+            x_clone.append(x_i.clone().npu())
+        for weight_i in weight:
+            weight_clone.append(weight_i.clone().npu())
+        for bias_i in bias:
+            bias_clone.append(bias_i.clone().npu())
+        for i in range(3):
+            scale, _ = self.deq_scale_generate(256)
+            scale_fp32.append(scale)
+            scale_fp32_npu.append(torch.from_numpy(scale).npu())
+
+        supported_output = self.supported_op_exec(x, weight, bias=bias, scale=scale_fp32, group_list=group_list,
+                                                  split_item=split_item)
+        custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, scale=scale_fp32_npu,
+                                            group_list=group_list, split_item=split_item, group_type=group_type)
+
+        self.assertRtolEqual(x[0], x_clone[0], 1)
+        self.assertRtolEqual(supported_output[0], custom_output[0].to(torch.int8), 1)
+    
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_quant_3_bf16(self): # 量化 单多单
+        torch.manual_seed(0)
+        x1 = torch.randint(1, 5, size=(1792, 1024), dtype=torch.int8)
+        x = [x1]
+        weight1 = torch.randint(1, 5, size=(1024, 256), dtype=torch.int8)
+        weight2 = torch.randint(1, 5, size=(1024, 256), dtype=torch.int8)
+        weight3 = torch.randint(1, 5, size=(1024, 256), dtype=torch.int8)
+        weight = [weight1, weight2, weight3]
+        bias1 = torch.randint(1, 5, size=(256,), dtype=torch.int32)
+        bias2 = torch.randint(1, 5, size=(256,), dtype=torch.int32)
+        bias3 = torch.randint(1, 5, size=(256,), dtype=torch.int32)
+        bias = [bias1, bias2, bias3]
+        group_list = torch.tensor([256, 1280, 1792]).npu()
+        split_item = 3
+        group_type = 0
+
+        x_clone = []
+        weight_clone = []
+        bias_clone = []
+        scale_fp32 = []
+        scale_bf16_npu = []
+
+        for x_i in x:
+            x_clone.append(x_i.clone().npu())
+        for weight_i in weight:
+            weight_clone.append(weight_i.clone().npu())
+        for bias_i in bias:
+            bias_clone.append(bias_i.clone().npu())
+        for i in range(3):
+            scale, _ = self.deq_scale_generate(256)
+            scale_fp32.append(scale)
+            scale_bf16_npu.append(torch.from_numpy(scale).npu().to(torch.bfloat16))
+
+        supported_output = self.supported_op_exec(x, weight, bias=bias, scale=scale_fp32, group_list=group_list,
+                                                  split_item=split_item)
+        custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, scale=scale_bf16_npu,
+                                            group_list=group_list, split_item=split_item, group_type=group_type)
+
+        self.assertRtolEqual(x[0], x_clone[0], 1)
+        self.assertRtolEqual(supported_output[0], custom_output[0].to(torch.int8), 1)
+
+    @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_0_empty_x_w(self):
         torch.manual_seed(0)
         x = []
