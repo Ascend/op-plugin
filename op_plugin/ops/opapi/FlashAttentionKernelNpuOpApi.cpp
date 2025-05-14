@@ -36,6 +36,7 @@ const static int FLASH_THRESHOLD = 512;
 const static int64_t SOFTMAXMAX_LAST_DIMSHAPE = 8;
 const static int64_t PFA_SPARSE_HIGH_PRECISION_NO_MASK = 10;
 const static int64_t PFA_SPARSE_HIGH_PRECISION_BAND = 14;
+const static int64_t MAX_SEQUENCE_LENGTH = 1000000;
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
