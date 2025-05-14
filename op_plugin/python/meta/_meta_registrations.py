@@ -664,7 +664,7 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
     tp_recv_counts = x.new_empty(tuple([tp_world_size]), dtype=torch.int32)
     expand_scales = x.new_empty(tuple([0]), dtype=torch.float32)
     if expert_scales is not None:
-        ep_recv_cnt_num = ep_world_size * local_moe_expert_num + n * 2 * k * (ep_world_size / 8)
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num + global_bs_real * 2 * k * (ep_world_size // 8)
         ep_recv_counts = x.new_empty(tuple([ep_recv_cnt_num]), dtype=torch.int32)
         expand_scales = x.new_empty(tuple([a]), dtype=torch.float32)
     return (expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales)
