@@ -28,6 +28,11 @@ void add_param_to_buf(const string& s)
     MEMCPY_TO_BUF(s.c_str(), static_cast<int64_t>(s.size()));
 }
 
+void add_param_to_buf(const c10::optional<at::Tensor> &t) {}
+void add_param_to_buf(const at::Tensor &t) {}
+
+void add_param_to_buf() {}
+
 inline uint64_t rotating_left(uint64_t x, uint8_t n)
 {
     return (x << n) | (x >> (64 - n));

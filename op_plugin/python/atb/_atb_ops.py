@@ -1,5 +1,8 @@
 import os
+import sys
+import types
 import pathlib
+from itertools import chain
 from functools import wraps, lru_cache
 import torch
 import torch_npu
@@ -21,6 +24,21 @@ API_LIST = [
     '_npu_paged_attention_splitfuse',
     '_npu_flash_attention_qlens',
 ]
+
+
+ATB_API_LIST = []
+
+ATB_MODULE_NAME = 'atb'
+ATB_MODULE = types.ModuleType(ATB_MODULE_NAME)
+
+
+def _add_atb_module():
+    
+    setattr(torch_npu, ATB_MODULE_NAME, ATB_MODULE)
+    sys.modules[f'torch_npu.{ATB_MODULE_NAME}'] = ATB_MODULE
+
+
+_add_atb_module()
 
 
 @lru_cache(None)
@@ -65,7 +83,7 @@ def create_lazy_atb_function(api_name):
 
 
 def generate_atb_lazy_function():
-    for api_name in API_LIST:
+    for api_name in chain(API_LIST, ATB_API_LIST):
         globals()[api_name] = create_lazy_atb_function(api_name)
 
 
@@ -75,9 +93,14 @@ generate_atb_lazy_function()
 def _patch_atb_ops():
     for api_name in API_LIST:
         setattr(torch_npu, api_name, getattr(torch.ops.atb, api_name))
+    for api_name in ATB_API_LIST:
+        setattr(ATB_MODULE, api_name, getattr(torch.ops.atb, api_name))
 
 
 def _patch_atb_and_loadso():
     for api_name in API_LIST:
         func = globals().get(api_name)
         setattr(torch_npu, api_name, func)
+    for api_name in ATB_API_LIST:
+        func = globals().get(api_name)
+        setattr(ATB_MODULE, api_name, func)

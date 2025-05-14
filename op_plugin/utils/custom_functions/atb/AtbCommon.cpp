@@ -11,25 +11,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch_npu/csrc/core/npu/NPUStream.h>
-#include <torch_npu/csrc/core/npu/DeviceUtils.h>
-#include <torch_npu/csrc/core/npu/NPUFormat.h>
-#include <torch_npu/csrc/core/npu/NPUWorkspaceAllocator.h>
 #include "AtbCommon.h"
 
-
 namespace atb {
-
-
-at::Tensor FormatTrans(const at::Tensor &at_tensor)
-{
-    if (at_tensor.defined()) {
-        return at_npu::native::npu_format_cast(at_tensor, ACL_FORMAT_ND);
-    }
-    return at_tensor;
-}
-
-
 atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
 {
     static std::map<at::ScalarType, aclDataType> dtypeMap = {
@@ -93,7 +77,7 @@ ParamSetter& ParamSetter::Input(const at::Tensor &tensor)
     }
     at::Tensor newTensor = tensor;
     if (torch_npu::utils::is_npu(newTensor)) {
-        newTensor = FormatTrans(tensor);
+        newTensor = atb::utils::FormatTrans(tensor);
     }
 
     if (!newTensor.is_contiguous()) {

@@ -31,6 +31,8 @@ public:
     static OpParamCache& getInstance();
 
     atb::Operation* getOperation(const ParamType& param, const std::string& name);
+    atb::Operation* getOperation(uint64_t hashId);
+    void saveOperation(uint64_t hashId, atb::Operation* op);
 
 private:
     OpParamCache() = default;
@@ -72,6 +74,26 @@ atb::Operation* OpParamCache<ParamType>::getOperation(const ParamType& param, co
     }
 }
 
+template <typename ParamType>
+atb::Operation* OpParamCache<ParamType>::getOperation(uint64_t hashId)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto opCache = opMap_.find(hashId);
+    if (opCache != opMap_.end()) {
+        return opCache->second;
+    }
+
+    atb::Operation* op = nullptr;
+    return op;
+}
+
+template <typename ParamType>
+void OpParamCache<ParamType>::saveOperation(uint64_t hashId, atb::Operation* op)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    opMap_[hashId] = op;
+    return ;
+}
 
 template <typename ParamType>
 OpParamCache<ParamType>::~OpParamCache()

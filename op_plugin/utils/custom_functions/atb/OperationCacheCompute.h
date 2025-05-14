@@ -44,11 +44,20 @@ template <typename T> void add_param_to_buf(const T &value)
 }
 
 void add_param_to_buf(const string &s);
+void add_param_to_buf(const c10::optional<at::Tensor> &t);
+void add_param_to_buf(const at::Tensor &t);
+void add_param_to_buf();
 
 template <typename T> void add_param_to_buf(const std::string &name, const T &value)
 {
     add_param_to_buf(name);
     add_param_to_buf(value);
+}
+
+template <typename T, typename... Args> void add_param_to_buf(const T &arg, Args &...args)
+{
+    add_param_to_buf(arg);
+    add_param_to_buf(args...);
 }
 
 template <typename T>
@@ -144,6 +153,14 @@ uint64_t computeHash(const T& obj)
     HashOpParam<T>{}(obj);
     return calc_hash_id();
 }
+
+template <typename... Ts> uint64_t computeHash(const std::string &name, Ts &...args)
+{
+    g_hash_offset = 0;
+    add_param_to_buf(name, args...);
+    return calc_hash_id();
+}
+
 
 } // namespace atb
 
