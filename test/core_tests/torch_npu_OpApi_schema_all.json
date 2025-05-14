@@ -3701,25 +3701,25 @@
     "version": ["all_version"]
   },
   "func: int_repr(Tensor self) -> Tensor": {
-    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7"]
+    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7", "v2.8"]
   },
   "func: dequantize.self(Tensor self) -> Tensor": {
-    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7"]
+    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7", "v2.8"]
   },
   "func: _empty_affine_quantized(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, float scale=1, int zero_point=0, MemoryFormat? memory_format=contiguous_format) -> Tensor": {
-    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7"]
+    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7", "v2.8"]
   },
   "func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor": {
-    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7"]
+    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7", "v2.8"]
   },
   "func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor": {
-    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7"]
+    "version": ["v2.3", "v2.4", "v2.5", "v2.6", "v2.7", "v2.8"]
   },
   "func: _foreach_norm.Scalar(Tensor[] tensors, Scalar ord=2, ScalarType? dtype=None) -> Tensor[]": {
-    "version": ["v2.4", "v2.5", "v2.6", "v2.7"]
+    "version": ["v2.4", "v2.5", "v2.6", "v2.7", "v2.8"]
   },
   "func: scaled_dot_product_attention(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None, bool enable_gqa=False) -> Tensor": {
-    "version": ["v2.5", "v2.6", "v2.7"]
+    "version": ["v2.5", "v2.6", "v2.7", "v2.8"]
   },
   "func: _npu_silent_check_v3(Tensor val, Tensor(a!) input_grad, Tensor(b!) step, Tensor(c!) max, Tensor(d!) avg, float c_thresh_l1, float c_thresh_l2, float betal, int npu_asd_detect) -> Tensor": {
     "version": ["all_version"]

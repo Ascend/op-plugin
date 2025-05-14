@@ -28,18 +28,18 @@
 算子的aten ir定义位于op_plugin/config/op_plugin_functions.yaml文件中，所有版本的定义都在这个文件里面，通过配置不同版本来区分。
 ```yaml
 # op_plugin_functions.yaml
-all_version: [v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7]
+all_version: [v1.11, v2.0, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8]
 # 官方算子
 official:
   - func: abs(Tensor self) -> Tensor
     acl_op: all_version
-    op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7
+    op_api: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8
     gen_opapi:
       structured_inherit: abs.out
 # 自定义算子
 custom:
   - func: my_abs(Tensor self) -> Tensor
-    acl_op: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7
+    acl_op: v1.11, v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8
     op_api: all_version
 symint:
   - func: zeros(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
