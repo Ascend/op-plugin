@@ -269,29 +269,66 @@ v (Tensor) - 变量方差。
 _add_torch_npu_docstr(
     "npu_batch_gather_matmul",
     """
-torch_npu.npu_batch_gather_matmul(y, x, weight_b, indices, weight_a=None,
-                                 layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1) -> (Tensor)
-功能描述
-对于GPU 的Batched Gather Matrix-Vector Multiplication (BGMV). 将输入x根据输入索引indices, 分别和对应的weight_a, weight_b 相乘， 然后将结果累加到输入y并输出。
+接口原型:
+npu_batch_gather_matmul(Tensor input, Tensor x, Tensor weight_b, Tensor indices, Tensor? weight_a=None, int layer_idx=0, float scale=1e-3, int y_offset=0, int y_slice_size=-1) -> Tensor
 
-参数说明
-y (Tensor) - 必填值，输入tensor，表示待进行累加更新的张量，数据类型Float16，输入示例：[batch_size, y_column]。
-x (Tensor) - 必填值，输入tensor，表示分组前的输入张量，数据类型Float16，输入示例：[batch_size, H1]。
-weight_b (Tensor) - 必填值，输入tensor，表示进行矩阵乘的第二个权重矩阵，数据类型Float16。输入示例：[W, L, H2, R]。
-indices (Tensor) - 必填值，标识输入x的分组索引，数据类型Int32。输入示例：[batch_size]。
-weight_a (Tensor) - 可选值，输入tensor，表示进行矩阵乘的第一个权重矩阵，数据类型Float16。为空时会跳过第一个矩阵乘， 输入示范：[W, L, R, H1]。
-layer_idx (Int, 默认值为0) - 可选值，表示weight的层数索引，数据类型Int。
-scale (Float, 默认值为1e-3) - 可选值，表示matmul结果的缩放系数，数据类型Float。
-y_offset (Int, 默认值为0) - 可选值，表示y更新的偏移值，数据类型Int。
-y_slice_size (Int, 默认值为-1) - 可选值，表示y更新时的范围，数据类型Int。当为-1的时候，会按照y_column的值传入；当非-1 时，以传入的值做更新范围。
-示例
->>> y = torch.randn(1, 128).half().npu()
->>> x = torch.randn(1, 16).half().npu()
->>> weightA = torch.randn(2, 1, 16, 16).half().npu()
->>> indices = torch.randint(0, 1, (1,)).to(torch.int32).npu()
->>> weightB = torch.randn(2, 1, 128, 16).half().npu()
->>> torch_npu.npu_batch_gather_matmul(y, x, weightB, indices, weightA, y_offset=0, y_slice_size=128, layer_idx=0, scale=2)
->>> y
+功能描述:
+npu_batch_gather_matmul: 对于GPU的Batched Gather Matrix-Vector Multiplication (BGMV)。将输入x根据输入索引indices，分别和对应的weight_a，weight_b相乘， 然后将结果累加到输入y并输出。
+
+参数说明:
+input：Device侧的tensor，表示待进行累加更新的张量，数据类型Float16，shape支持2维：[batch_size, y_column]。数据格式支持ND。第一维需要和x的第一维一致。支持非连续的Tensor，不支持空Tensor。
+x：Device侧的tensor，表示分组前的输入张量，数据类型Float16，shape支持2维：[batch_size, H1]，且H1是16的整数倍。数据格式支持ND。支持非连续的Tensor，不支持空Tensor。
+weight_b：Device侧的tensor，表示进行矩阵乘的第二个权重矩阵，数据类型Float16。shape支持4维：[W, L, H2, R]，第三维需要小于y的第二维（H2<y_column），且H2是16的整数倍。当weight_a为空，weight_b 的shape 是[W, L, H2, H1]。支持非连续的Tensor，不支持空Tensor。
+indices：Device侧的tensor，标识输入x的分组索引，数据类型Int32。shape支持1维：[batch_size]。数据格式支持ND。第一维需要和x以及y的第一维保持一致。支持非连续的Tensor，不支持空Tensor。
+weight_a：Device侧的tensor，表示进行矩阵乘的第一个权重矩阵，数据类型Float16。为空指针时会跳过第一个矩阵乘。shape支持4维：[W, L, R, H1]，前两维需要和weight_b的前两维一致，用W和L表示；第三维需要和weight_b的第四维保持一致，都用R表示，R需要是16的整数倍且取值范围为[16, 128] ；第四维需要和x的第二维保持一致，都用H1表示，需要是16的整数倍。支持非连续的Tensor，不支持空Tensor。
+layer_idx：Host侧的整型，表示weight的层数索引，数据类型Int，默认值为0。默认值为0。值需要小于weight_b的第二个维度L。
+scale： Host侧的浮点型，表示matmul结果的缩放系数，数据类型Float，默认值为1e-3。
+y_offset： Host侧的整型，表示y更新的偏移值，数据类型Int，默认值为0。值需要小于y的第二个维度y_column。
+y_slice_size： Host侧的整型，表示y更新时的范围，数据类型Int，默认值为-1。当为-1时，按照y_column的值传入；当非-1 时，以传入的值做更新范围。
+
+输出说明:
+out：Device侧的Tensor类型，计算输出，复用y输入地址；数据类型和shape与y一致。
+
+约束说明:
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品：仅在推理场景下使用。
+
+支持的型号:
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品
+
+调用示例:
+单算子调用
+import numpy as np
+import torch
+import torch_npu
+
+x_data=torch.from_numpy(np.random.uniform(-1, 1, (4096, 16)).astype(np.float16)).npu() 
+y_data = torch.from_numpy(np.ones((4096, 6144)).astype(np.float16)).npu()
+wa_t_all_data =torch.from_numpy(np.random.uniform(-1, 1, (2, 1, 16, 4096)).astype(np.float16)).npu()
+wb_t_all_data =torch.from_numpy(np.random.uniform(-1, 1, (2, 1, 4096, 16)).astype(np.float16)).npu()
+indices_data =torch.from_numpy(np.random.randint(-1, 2, size=4096).reshape(4096).astype(np.int32)).npu()
+pred=torch_npu.npu_batch_gather_matmul(y_data,x_data,wb_t_all_data,indices_data,wa_t_all_data,y_slice_size=4096,scale=1e-3,y_offset=0,layer_idx=0)
+torch_npu.npu_batch_gather_matmul_(y_data,x_data,wb_t_all_data,indices_data,wa_t_all_data,y_slice_size=4096,scale=1e-3,y_offset=0,layer_idx=0)
+print(y_data)
+
+图模式调用
+import numpy as np
+import torch
+import torch_npu
+import torchair
+config = torchair.CompilerConfig()
+npu_backend_plain = torchair.get_npu_backend(compiler_config=config)
+x_data=torch.from_numpy(np.random.uniform(-1, 1, (4096, 16)).astype(np.float16)).npu() 
+y_data = torch.from_numpy(np.ones((4096, 6144)).astype(np.float16)).npu()
+wa_t_all_data =torch.from_numpy(np.random.uniform(-1, 1, (2, 1, 16, 4096)).astype(np.float16)).npu()
+wb_t_all_data =torch.from_numpy(np.random.uniform(-1, 1, (2, 1, 4096, 16)).astype(np.float16)).npu()
+indices_data=torch.from_numpy(np.random.randint(-1,2,size=4096).reshape(4096).astype(np.int32)).npu()
+def f(y_data, x_data, wb_t_all_data, indices_data, wa_t_all_data=None, y_slice_size=4096, scale=2, y_offset=0):
+    with torch.npu.amp.autocast():
+        pred = torch_npu.npu_batch_gather_matmul(y_data, x_data, wb_t_all_data, indices_data, wa_t_all_data, y_slice_size=y_slice_size, scale=scale, y_offset=y_offset, layer_idx=0)
+    return pred 
+opt =torch.compile(f, backend=npu_backend_plain, dynamic=True)
+y2 = opt(y_data, x_data, wb_t_all_data, indices_data)
+print(y2)
 """
 )
 
@@ -299,33 +336,66 @@ y_slice_size (Int, 默认值为-1) - 可选值，表示y更新时的范围，数
 _add_torch_npu_docstr(
     "npu_batch_gather_matmul_",
     """
-torch_npu.npu_batch_gather_matmul_(y, x, weight_b, indices, weight_a=None,
-                                 layer_idx=0, scale=1e-3, y_offset=0, y_slice_size=-1) -> Tensor(a!)
+接口原型:
+npu_batch_gather_matmul_(Tensor(a!) input, Tensor x, Tensor weight_b, Tensor indices, Tensor? weight_a=None, int layer_idx=0, float scale=1e-3, int y_offset=0, int y_slice_size=-1) -> Tensor(a!)
 
-功能描述
-npu_batch_gather_matmul的inplace版本. 将输入x根据输入索引indices, 分别和对应的weight_a, weight_b 相乘， 然后将结果累加到输入y并输出。
+功能描述:
+npu_batch_gather_matmul_: npu_batch_gather_matmul的inplace版本。将输入x根据输入索引indices，分别和对应的weight_a，weight_b 相乘，然后将结果累加到输入y并输出。
 
-参数说明
-y (Tensor) - 必填值，输入tensor，表示待进行累加更新的张量，数据类型Float16，输入示例：[batch_size, y_column]。
-x (Tensor) - 必填值，输入tensor，表示分组前的输入张量，数据类型Float16，输入示例：[batch_size, H1]。
-weight_b (Tensor) - 必填值，输入tensor，表示进行矩阵乘的第二个权重矩阵，数据类型Float16。输入示例：[W, L, H2, R]。
-indices (Tensor) - 必填值，标识输入x的分组索引，数据类型Int32。输入示例：[batch_size]。
-weight_a (Tensor) - 可选值，输入tensor，表示进行矩阵乘的第一个权重矩阵，数据类型Float16。为空时会跳过第一个矩阵乘， 输入示范：[W, L, R, H1]。
-layer_idx (Int, 默认值为0) - 可选值，表示weight的层数索引，数据类型Int。
-scale (Float, 默认值为1e-3) - 可选值，表示matmul结果的缩放系数，数据类型Float。
-y_offset (Int, 默认值为0) - 可选值，表示y更新的偏移值，数据类型Int。
-y_slice_size (Int, 默认值为-1) - 可选值，表示y更新时的范围，数据类型Int。当为-1的时候，会按照y_column的值传入；当非-1 时，以传入的值做更新范围。
+参数说明:
+input ：Device侧的tensor，表示待进行累加更新的张量，数据类型Float16，shape支持2维：[batch_size, y_column]。数据格式支持ND。第一维需要和x的第一维一致。支持非连续的Tensor，不支持空Tensor。
+x：Device侧的tensor，表示分组前的输入张量，数据类型Float16，shape支持2维：[batch_size, H1]，且H1是16的整数倍。数据格式支持ND。支持非连续的Tensor，不支持空Tensor。
+weight_b：Device侧的tensor，表示进行矩阵乘的第二个权重矩阵，数据类型Float16。shape支持4维：[W, L, H2, R]，第三维需要小于y的第二维（H2<y_column），且H2是16的整数倍。当weight_a为空，weight_b 的shape 是[W, L, H2, H1]。支持非连续的Tensor，不支持空Tensor。
+indices：Device侧的tensor，标识输入x的分组索引，数据类型Int32。shape支持1维：[batch_size]。数据格式支持ND。第一维需要和x以及y的第一维保持一致。支持非连续的Tensor，不支持空Tensor。
+weight_a ：Device侧的tensor，表示进行矩阵乘的第一个权重矩阵，数据类型Float16。为空指针时会跳过第一个矩阵乘。shape支持4维：[W, L, R, H1]，前两维需要和weight_b的前两维一致，用W和L表示；第三维需要和weight_b的第四维保持一致，都用R表示，R需要是16的整数倍且取值范围为[16, 128] ；第四维需要和x的第二维保持一致，都用H1表示，需要是16的整数倍。支持非连续的Tensor，不支持空Tensor。
+layer_idx：Host侧的整型，表示weight的层数索引，数据类型Int，默认值为0。默认值为0。值需要小于weight_b的第二个维度L。
+scale： Host侧的浮点型，表示matmul结果的缩放系数，数据类型Float，默认值为1e-3。
+y_offset： Host侧的整型，表示y更新的偏移值，数据类型Int，默认值为0。值需要小于y的第二个维度y_column。
+y_slice_size： Host侧的整型，表示y更新时的范围，数据类型Int，默认值为-1。当为-1时，按照y_column的值传入；当非-1 时，以传入的值做更新范围。
 
-输出说明
-out：Device侧的Tensor类型，计算输出，复用y输入地址；数据类型和shape与self一致。
-示例
->>> y = torch.randn(1, 128).half().npu()
->>> x = torch.randn(1, 16).half().npu()
->>> weightA = torch.randn(2, 1, 16, 16).half().npu()
->>> indices = torch.randint(0, 1, (1,)).to(torch.int32).npu()
->>> weightB = torch.randn(2, 1, 128, 16).half().npu()
->>> out = torch_npu.npu_batch_gather_matmul_(y, x, weightB, indices, weightA, y_offset=0, y_slice_size=128, layer_idx=0, scale=2)
->>> out
+输出说明:
+out：Device侧的Tensor类型，计算输出，复用y输入地址；数据类型和shape与y一致。
+
+约束说明:
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品：仅在推理场景下使用。
+
+支持的型号:
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品
+
+调用示例:
+单算子调用
+import numpy as np
+import torch
+import torch_npu
+
+x_data=torch.from_numpy(np.random.uniform(-1, 1, (4096, 16)).astype(np.float16)).npu() 
+y_data = torch.from_numpy(np.ones((4096, 6144)).astype(np.float16)).npu()
+wa_t_all_data =torch.from_numpy(np.random.uniform(-1, 1, (2, 1, 16, 4096)).astype(np.float16)).npu()
+wb_t_all_data =torch.from_numpy(np.random.uniform(-1, 1, (2, 1, 4096, 16)).astype(np.float16)).npu()
+indices_data =torch.from_numpy(np.random.randint(-1, 2, size=4096).reshape(4096).astype(np.int32)).npu()
+pred=torch_npu.npu_batch_gather_matmul(y_data,x_data,wb_t_all_data,indices_data,wa_t_all_data,y_slice_size=4096,scale=1e-3,y_offset=0,layer_idx=0)
+torch_npu.npu_batch_gather_matmul_(y_data,x_data,wb_t_all_data,indices_data,wa_t_all_data,y_slice_size=4096,scale=1e-3,y_offset=0,layer_idx=0)
+print(y_data)
+
+图模式调用
+import numpy as np
+import torch
+import torch_npu
+import torchair
+config = torchair.CompilerConfig()
+npu_backend_plain = torchair.get_npu_backend(compiler_config=config)
+x_data=torch.from_numpy(np.random.uniform(-1, 1, (4096, 16)).astype(np.float16)).npu() 
+y_data = torch.from_numpy(np.ones((4096, 6144)).astype(np.float16)).npu()
+wa_t_all_data =torch.from_numpy(np.random.uniform(-1, 1, (2, 1, 16, 4096)).astype(np.float16)).npu()
+wb_t_all_data =torch.from_numpy(np.random.uniform(-1, 1, (2, 1, 4096, 16)).astype(np.float16)).npu()
+indices_data=torch.from_numpy(np.random.randint(-1,2,size=4096).reshape(4096).astype(np.int32)).npu()
+def f(y_data, x_data, wb_t_all_data, indices_data, wa_t_all_data=None, y_slice_size=4096, scale=2, y_offset=0):
+    with torch.npu.amp.autocast():
+        pred = torch_npu.npu_batch_gather_matmul(y_data, x_data, wb_t_all_data, indices_data, wa_t_all_data, y_slice_size=y_slice_size, scale=scale, y_offset=y_offset, layer_idx=0)
+    return pred 
+opt =torch.compile(f, backend=npu_backend_plain, dynamic=True)
+y2 = opt(y_data, x_data, wb_t_all_data, indices_data)
+print(y2)
 """
 )
 
@@ -4885,32 +4955,95 @@ _add_torch_npu_docstr(
 torch_npu.npu_scatter_nd_update(Tensor input, Tensor indices, Tensor updates) -> Tensor
 
 参数说明:
-input：Device侧的Tensor类型，必选输入，源数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与updates一致，维数只能是1~8维。
-indices：Device侧的Tensor类型，必选输入，索引张量，数据类型支持INT32、INT64，数据格式支持ND，支持非连续的Tensor，indices中的索引数据不支持越界。
-updates：Device侧的Tensor类型，必选输入，更新数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与input一致。
+input：Tensor类型，必选输入，源数据张量，数据格式支持ND，支持非连续的Tensor，数据类型需要与updates一致，维数只能是1~8维。
+        Atlas 推理系列加速卡产品：数据类型支持float32、float16、bool。
+        Atlas 训练系列产品：数据类型支持float32、float16、bool。
+        Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：数据类型支持float32、float16、bool、bfloat16、int64、int8。
+        Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持float32、float16、bool、bfloat16、int64、int8。
+indices：Tensor类型，必选输入，索引张量，数据类型支持int32、int64，数据格式支持ND，支持非连续的Tensor，indices中的索引数据不支持越界。
+updates：Tensor类型，必选输入，更新数据张量，数据格式支持ND，支持非连续的Tensor，数据类型需要与input一致。
+        Atlas 推理系列加速卡产品：数据类型支持float32、float16、bool。
+        Atlas 训练系列产品：数据类型支持float32、float16、bool。
+        Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：数据类型支持float32、float16、bool、bfloat16、int64、int8。
+        Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持float32、float16、bool、bfloat16、int64、int8。
 
 输出说明:
 一个Tensor类型的输出，代表input被更新后的结果。
-约束说明indices至少是2维，其最后1维的大小不能超过input的维度大小。
+
+约束说明:
+该接口支持图模式（PyTorch 2.1版本）。
+indices至少是2维，其最后1维的大小不能超过input的维度大小。
 假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上input除前a维外的shape。举例：input的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
 
+支持的PyTorch版本:
+PyTorch 2.4
+PyTorch 2.3
+PyTorch 2.2
+PyTorch 2.1
+PyTorch 1.11.0
+
 支持的型号:
-Atlas A2 训练系列产品
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
+Atlas 训练系列产品
+Atlas 推理系列产品
+Atlas A3 训练系列产品/Atlas A3 推理系列产品
 
 调用示例:
+单算子模式调用
 import torch
 import torch_npu
 import numpy as np
 
-data_var = np.random.uniform(0, 1, [24, 4096, 128]).astype(np.int8)
-var = torch.from_numpy(data_var).to(torch.int8).npu()
-
-data_indices = np.random.uniform(0, 1, [24]).astype(np.int32)
+data_var = np.random.uniform(0, 1, [24, 128]).astype(np.float16)
+var = torch.from_numpy(data_var).to(torch.float16).npu()
+data_indices = np.random.uniform(0, 12, [12, 1]).astype(np.int32)
 indices = torch.from_numpy(data_indices).to(torch.int32).npu()
+data_updates = np.random.uniform(1, 2, [12, 128]).astype(np.float16)
+updates = torch.from_numpy(data_updates).to(torch.float16).npu()
 
-data_updates = np.random.uniform(1, 2, [24, 1, 128]).astype(np.float16)
-updates = torch.from_numpy(data_updates).to(torch.bfloat16).npu()
 out = torch_npu.npu_scatter_nd_update(var, indices, updates)
+
+图模式调用
+import os
+import torch_npu
+import torchair as tng
+from torchair.configs.compiler_config import CompilerConfig
+import torch.nn as nn
+import torch
+import numpy as np
+import numpy
+torch_npu.npu.set_compile_mode(jit_compile=True)
+
+os.environ["ENABLE_ACLNN"] = "false"
+class Network(nn.Module):
+    def __init__(self):
+        super(Network, self).__init__()
+
+    def forward(self, var, indices, update):
+        # 调用目标接口
+        res = torch_npu.npu_scatter_nd_update(var, indices, update)
+        return res
+        
+npu_mode = Network()
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+npu_mode = torch.compile(npu_mode, fullgraph=True, backend=npu_backend, dynamic=False)
+
+dtype = np.float32
+x = [33 ,5]
+indices = [33,25,1]
+update = [33,25,5]
+
+data_x = np.random.uniform(0, 1, x).astype(dtype)
+data_indices = np.random.uniform(0, 10, indices).astype(dtype)
+data_update = np.random.uniform(0, 1, update).astype(dtype)
+
+tensor_x = torch.from_numpy(data_x).to(torch.float16)
+tensor_indices = torch.from_numpy(data_indices).to(torch.int32)
+tensor_update = torch.from_numpy(data_update).to(torch.float16)
+
+# 传参
+print(npu_mode(tensor_x.npu(), tensor_indices.npu(), tensor_update.npu()))
 """
 )
 
@@ -4924,34 +5057,94 @@ _add_torch_npu_docstr(
 torch_npu.npu_scatter_nd_update_(Tensor(a!) input, Tensor indices, Tensor updates) -> Tensor(a!)
 
 参数说明:
-input：Device侧的Tensor类型，必选输入，源数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与updates一致，维数只能是1~8维。
-indices：Device侧的Tensor类型，必选输入，索引张量，数据类型支持INT32、INT64，数据格式支持ND，支持非连续的Tensor，indices中的索引数据不支持越界。
-updates：Device侧的Tensor类型，必选输入，更新数据张量，数据类型支持FLOAT32、FLOAT16、BOOL、BFLOAT16(仅Atlas A2 训练系列产品支持)、INT64(仅Atlas A2 训练系列产品支持)，数据格式支持ND，支持非连续的Tensor，数据类型需要与input一致。
-
+input：Tensor类型，必选输入，源数据张量，数据格式支持ND，支持非连续的Tensor，数据类型需要与updates一致，维数只能是1~8维。
+        Atlas 推理系列加速卡产品：数据类型支持float32、float16、bool。
+        Atlas 训练系列产品：数据类型支持float32、float16、bool。
+        Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：数据类型支持float32、float16、bool、bfloat16、int64、int8。
+        Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持float32、float16、bool、bfloat16、int64、int8。
+indices：Tensor类型，必选输入，索引张量，数据类型支持int32、int64，数据格式支持ND，支持非连续的Tensor，indices中的索引数据不支持越界。
+updates：Tensor类型，必选输入，更新数据张量，数据格式支持ND，支持非连续的Tensor，数据类型需要与input一致。
+        Atlas 推理系列加速卡产品：数据类型支持float32、float16、bool。
+        Atlas 训练系列产品：数据类型支持float32、float16、bool。
+        Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：数据类型支持float32、float16、bool、bfloat16、int64、int8。
+        Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持float32、float16、bool、bfloat16、int64、int8。
 输出说明:
-返回被更新后的input。
+一个Tensor类型的输出，代表input被更新后的结果。
 
 约束说明:
+该接口支持图模式（PyTorch 2.1版本）。
 indices至少是2维，其最后1维的大小不能超过input的维度大小。
 假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上input除前a维外的shape。举例：input的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
 
+支持的PyTorch版本:
+PyTorch 2.4
+PyTorch 2.3
+PyTorch 2.2
+PyTorch 2.1
+PyTorch 1.11.0
+
 支持的型号:
-Atlas A2 训练系列产品
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
+Atlas 训练系列产品
+Atlas 推理系列产品
+Atlas A3 训练系列产品/Atlas A3 推理系列产品
 
 调用示例:
+单算子模式调用
 import torch
 import torch_npu
 import numpy as np
 
-data_var = np.random.uniform(0, 1, [24, 4096, 128]).astype(np.int8)
-var = torch.from_numpy(data_var).to(torch.int8).npu()
-
-data_indices = np.random.uniform(0, 1, [24]).astype(np.int32)
+data_var = np.random.uniform(0, 1, [24, 128]).astype(np.float16)
+var = torch.from_numpy(data_var).to(torch.float16).npu()
+data_indices = np.random.uniform(0, 12, [12, 1]).astype(np.int32)
 indices = torch.from_numpy(data_indices).to(torch.int32).npu()
+data_updates = np.random.uniform(1, 2, [12, 128]).astype(np.float16)
+updates = torch.from_numpy(data_updates).to(torch.float16).npu()
 
-data_updates = np.random.uniform(1, 2, [24, 1, 128]).astype(np.float16)
-updates = torch.from_numpy(data_updates).to(torch.bfloat16).npu()
 torch_npu.npu_scatter_nd_update_(var, indices, updates)
+
+图模式调用
+import os
+import torch_npu
+import torchair as tng
+from torchair.configs.compiler_config import CompilerConfig
+import torch.nn as nn
+import torch
+import numpy as np
+import numpy
+torch_npu.npu.set_compile_mode(jit_compile=True)
+
+os.environ["ENABLE_ACLNN"] = "false"
+class Network(nn.Module):
+    def __init__(self):
+        super(Network, self).__init__()
+
+    def forward(self, var, indices, update):
+        # 调用目标接口
+        res = torch_npu.npu_scatter_nd_update_(var, indices, update)
+        return res
+        
+npu_mode = Network()
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+npu_mode = torch.compile(npu_mode, fullgraph=True, backend=npu_backend, dynamic=False)
+
+dtype = np.float32
+x = [33 ,5]
+indices = [33,25,1]
+update = [33,25,5]
+
+data_x = np.random.uniform(0, 1, x).astype(dtype)
+data_indices = np.random.uniform(0, 10, indices).astype(dtype)
+data_update = np.random.uniform(0, 1, update).astype(dtype)
+
+tensor_x = torch.from_numpy(data_x).to(torch.float16)
+tensor_indices = torch.from_numpy(data_indices).to(torch.int32)
+tensor_update = torch.from_numpy(data_update).to(torch.float16)
+
+# 传参
+print(npu_mode(tensor_x.npu(), tensor_indices.npu(), tensor_update.npu()))
 """
 )
 
@@ -7444,45 +7637,48 @@ out = torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=eps, s
 _add_torch_npu_docstr(
     "npu_cross_entropy_loss",
     """
-接口原型：
-npu_cross_entropy_loss(Tensor input, Tensor target, Tensor? weight=None, str reduction="mean", int ignore_index=-100, float label_smoothing=0.0, float lse_square_scale_for_zloss=0.0, bool return_zloss=False) -> (Tensor, Tensor, Tensor, Tensor)
+接口原型:
+torch_npu.npu_cross_entropy_loss(Tensor input, Tensor target, Tensor? weight=None, str reduction="mean", int ignore_index=-100, float label_smoothing=0.0, float lse_square_scale_for_zloss=0.0, bool return_zloss=False) -> (Tensor, Tensor, Tensor, Tensor)
 
-功能描述
+功能描述:
 将原生CrossEntropyLoss中的log_softmax和nll_loss融合，降低计算时使用的内存。接口允许计算zloss。
 
-参数说明
+参数说明:
 input: Device侧的Tensor类型，表示输入；数据类型支持FLOAT16、FLOAT32、BFLOAT16类型；shape为[N, C]，N为批处理大小，C为标签数，必须大于0。
-target: Device侧的Tensor类型，表示标签；数据类型支持INT64类型；shape为[N]，与input第零维相同，取值范围大于等于0小于C。
-weight: Device侧的Tensor类型，表示每个类别指定的缩放权重，可选；数据类型支持FLOAT32类型；shape为[C]，与input第一维相同，取值范围大于0小于等于C，不指定值时默认全一。
-reduction: str类型，表示loss的归约方式; 支持范围["mean", "none"]，默认为"mean"。
-ignore_index: int类型，指定忽略的标签; 数值必须小于C，当小于0时视为无忽略标签；默认值为-100。
-label_smoothing: float类型，表示计算loss时的平滑量; 取值范围大于等于0.0小于1.0；默认值为0.0。
-lse_square_scale_for_zloss: float类型，表示计算zloss所需要的scale; 取值范围大于等于0.0小于1.0；默认值为0.0；当前暂不支持。
-return_zloss: bool类型，控制是否返回zloss; 设置为True将返回zloss，设置为False时不返回zloss；默认值为False；当前暂不支持。
+target: Device侧的Tensor类型，表示标签；数据类型支持INT64类型；shape为[N]，与input第零维相同，取值范围[0, C)。
+weight: Device侧的Tensor类型，表示每个类别指定的缩放权重，可选；数据类型支持FLOAT32类型；shape为[C]，与input第一维相同，取值范围(0, 1]，不指定值时默认全一。
+reduction: str类型，表示loss的归约方式；支持范围["mean", "sum", "none"]，默认为"mean"。
+ignore_index: int类型，指定忽略的标签；数值必须小于C，当小于0时视为无忽略标签；默认值为-100。
+label_smoothing: float类型，表示计算loss时的平滑量；取值范围[0.0, 1.0)；默认值为0.0。
+lse_square_scale_for_zloss: float类型，表示计算zloss所需要的scale；取值范围[0.0, 1.0)；默认值为0.0；当前暂不支持。
+return_zloss: bool类型，控制是否返回zloss；设置为True将返回zloss，设置为False时不返回zloss；默认值为False；当前暂不支持。
 
-输出说明
+输出说明:
 loss：Device侧的Tensor类型，表示输出损失；数据类型与input相同；reduction为"none"时shape为[N]，与input第零维一致，否则shape为[1]。
 log_prob: Device侧的Tensor类型，输出给反向计算的输出；数据类型与input相同；shape为[N, C]，与input一致。
 zloss: Device侧的Tensor类型，表示辅助损失；数据类型与input相同；shape与loss一致；当return_zloss为True时输出zloss，否则将返回空tensor；当前暂不支持。
 lse_for_zloss: Device侧的Tensor类型，zloss场景输出给反向计算的输出；数据类型与input相同；shape为[N]，与input第零维一致；lse_square_scale_for_zloss不为0.0时将返回该输出，否则将返回空tensor；当前暂不支持。
 
-约束说明
-属性lse_square_scale_for_zloss与return_zloss暂未使能
-输出zloss与lse_for_zloss暂未使能
+约束说明:
+输入shape中N取值范围(0, 200000]。
+当input.requires_grad=True时，sum/none模式下不支持修改label_smoothing的默认值；mean模式下不支持修改所有含默认值的入参的值，包括weight，reduction，ignor_index，label_smoothing，lse_square_scale_for_zloss和return_zloss。
+属性lse_square_scale_for_zloss与return_zloss暂未使能。
+输出zloss与lse_for_zloss暂未使能。
+输出中仅loss和zloss支持梯度计算。
 
-支持的型号
-Atlas A2训练系列产品
-Atlas A3训练系列产品
+支持的型号:
+Atlas A2 训练系列产品
+Atlas A3 训练系列产品
 
 调用示例:
 import torch
 import torch_npu
-
+    
 N = 4096
 C = 8080
 input = torch.randn(N, C).npu()
-target = torch.arang(0, N).npu()
-
+target = torch.arange(0, N).npu()
+    
 loss, log_prob, _, _ = torch_npu.npu_cross_entropy_loss(input, target)
 """
 )
