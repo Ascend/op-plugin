@@ -439,6 +439,8 @@ class NativeFunction:
     impl_ns: Optional[str]
 
     sparse: Optional[str]
+
+    internal_format_opapi: Optional[str]
     # Whether or not to generate mutable tensor arguments like regular
     # ones
     use_const_ref_for_mutable_tensors: bool
@@ -568,6 +570,7 @@ class NativeFunction:
         impl_name = e.pop("impl_name", None)
         impl_ns = e.pop("impl_ns", "").split(', ')
         sparse = e.pop("sparse", None)
+        internal_format_opapi = e.pop("internal_format_opapi", None)
         use_const_ref_for_mutable_tensors = e.pop("use_const_ref_for_mutable_tensors", False)
         structured = e.pop("structured", False)
         structured_delegate = e.pop("structured_delegate", None)
@@ -578,6 +581,7 @@ class NativeFunction:
                 impl_name=impl_name,
                 impl_ns=impl_ns,
                 sparse=sparse,
+                internal_format_opapi=internal_format_opapi,
                 use_const_ref_for_mutable_tensors=use_const_ref_for_mutable_tensors,
                 structured=structured,
                 structured_delegate=structured_delegate,

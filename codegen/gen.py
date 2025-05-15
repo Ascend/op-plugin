@@ -286,7 +286,8 @@ def gen_return(
                 place_holder.append(f", {a.name} is internal format: %d")
 
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
-            ret.append(f"""{sig.defn(name=op_name)}{{
+            if not f.internal_format_opapi:
+                ret.append(f"""{sig.defn(name=op_name)}{{
     bool is_jit_disable = at_npu::native::env::CheckJitDisable();
 {"".join(format_for_args)}
     ASCEND_LOGI("{impl_name} exec with jit compile: %d{"".join(place_holder)}",
@@ -298,7 +299,36 @@ def gen_return(
     }}
 }}
 """)
-        elif "op_api" in f.impl_ns or "acl_op" in f.impl_ns:
+            else:
+                ret.append(f"""{sig.defn(name=op_name)}{{
+    bool is_jit_disable = at_npu::native::env::CheckJitDisable();
+    ASCEND_LOGI("{impl_name} exec with jit compile: %d", !is_jit_disable);
+    if (is_jit_disable) {{
+        return op_api::{impl_name}({args_exprs_str});
+    }} else {{
+        return acl_op::{impl_name}({args_exprs_str});
+    }}
+}}
+""")
+        elif "op_api" in f.impl_ns:
+            ns = f.impl_ns[0]
+            if f.internal_format_opapi:
+                ret.append(f"""{sig.defn(name=op_name)}{{
+    return {ns}::{impl_name}({args_exprs_str});
+}}
+""")
+            else:
+                ret.append(f"""{sig.defn(name=op_name)}{{
+{"".join(format_for_args)}
+    if ({("".join(format_check)).replace(" && ", " || !").replace(" || ", "", 1)}) {{
+        TORCH_CHECK(false,
+            "Current operator {impl_name} do not support internal format.",
+            PTA_ERROR(ErrCode::NOT_SUPPORT));
+    }}
+    return {ns}::{impl_name}({args_exprs_str});
+}}
+""")
+        elif "acl_op" in f.impl_ns:
             ns = f.impl_ns[0]
             ret.append(f"""{sig.defn(name=op_name)}{{
     return {ns}::{impl_name}({args_exprs_str});

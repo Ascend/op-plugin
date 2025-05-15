@@ -36,9 +36,11 @@ def main():
             acl_op_sup_ver = get_version(item.get('acl_op', None), all_version)
             op_api_sup_ver = get_version(item.get('op_api', None), all_version)
             sparse = get_version(item.get('sparse', None), all_version)
+            internal_format_opapi = get_version(item.get('internal_format_opapi', None), all_version)
             item.update({'acl_op':acl_op_sup_ver})
             item.update({'op_api':op_api_sup_ver})
             item.update({'sparse':sparse})
+            item.update({'internal_format_opapi':internal_format_opapi})
 
             if version in (acl_op_sup_ver + op_api_sup_ver + sparse):
                 new_item = item.copy()
@@ -58,6 +60,10 @@ def main():
                     new_item['exposed'] = True
                 else:
                     new_item.pop('exposed', None)
+                if version in item.get('internal_format_opapi', ''):
+                    new_item['internal_format_opapi'] = True
+                else:
+                    new_item.pop('internal_format_opapi', None)
 
                 new_yaml.get(key).append(new_item)
 
