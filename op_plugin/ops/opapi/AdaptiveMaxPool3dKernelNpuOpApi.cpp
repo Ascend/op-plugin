@@ -23,9 +23,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 namespace {
 bool is_npu_supported(at::ScalarType dtype)
 {
-    if (GetOpApiFuncAddr("aclnnAdaptiveMaxPool3dGetWorkspaceSize") == nullptr ||
-        GetOpApiFuncAddr("aclnnAdaptiveMaxPool3d") == nullptr||
-        dtype == at::kDouble) {
+    static const bool is_adaptive_max_pool_3d_available = check_aclnn_kernel_available("aclnnAdaptiveMaxPool3d");
+    if (!is_adaptive_max_pool_3d_available || dtype == at::kDouble) {
         return false;
     }
     return true;

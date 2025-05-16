@@ -35,9 +35,8 @@ at::Tensor npu_trans_quant_param(const at::Tensor &scale, const c10::optional<at
                 round_mode_value);
     c10::TensorOptions options = scale.options().dtype(at::kLong);
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
-    const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr("aclnnTransQuantParamV3GetWorkspaceSize");
-    const auto opApiFuncAddr = GetOpApiFuncAddr("aclnnTransQuantParamV3");
-    if (getWorkspaceSizeFuncAddr == nullptr || opApiFuncAddr == nullptr) {
+    static const bool is_trans_quant_param_V3_available = check_aclnn_kernel_available("aclnnTransQuantParamV3");
+    if (!is_trans_quant_param_V3_available) {
         TORCH_CHECK(round_mode_value == 0, "aclnnTransQuantParamV2 can't support round_mode, please upgrade CANN.")
         EXEC_NPU_CMD(aclnnTransQuantParamV2, scale, offset_real, result);
     } else {

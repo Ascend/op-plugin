@@ -235,7 +235,8 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
 // Tensor[]? activation_quant_offset, Tensor[]? activation_quant_offset, int? split_item=0,
 // int? group_type=-1, int? group_list_type=0, int? act_type=0, ScalarType? output_dtype=None) -> Tensor[]
 {
-    if (!check_aclnn_kernel_available("aclnnGroupedMatmulV4")) {
+    static const bool is_grouped_matmul_V4_available = check_aclnn_kernel_available("aclnnGroupedMatmulV4");
+    if (C10_UNLIKELY(!is_grouped_matmul_V4_available)) {
         TORCH_CHECK(!group_list.has_value(),
                     "group_list don't support Tensor input with current cann version. "
                     "Please update cann version to 8.0.RC3 or higher, or use List[int] as input.",
@@ -362,9 +363,8 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     int64_t group_list_type_value = group_list_type.value_or(0);
     int64_t act_type_value = act_type.value_or(0);
     auto tuning_config_real = tuning_config.value_or(at::IntArrayRef{});
-    const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr("aclnnGroupedMatmulV5GetWorkspaceSize");
-    const auto opApiFuncAddr = GetOpApiFuncAddr("aclnnGroupedMatmulV5");
-    if (getWorkspaceSizeFuncAddr == nullptr || opApiFuncAddr == nullptr) {
+    static const bool is_grouped_matmul_V5_available = check_aclnn_kernel_available("aclnnGroupedMatmulV5");
+    if (!is_grouped_matmul_V5_available) {
         EXEC_NPU_CMD(aclnnGroupedMatmulV4, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
             antiquant_offset_real, per_token_scale_real, group_list_real, activation_input_real,
             activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,

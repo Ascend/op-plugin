@@ -26,9 +26,8 @@ at::Tensor npu_moe_finalize_routing(const at::Tensor& expanded_permuted_rows, co
                                     const c10::optional<at::Tensor>& expert_for_source_row,
                                     const c10::optional<int64_t> drop_pad_mode)
 {
-    const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr("aclnnMoeFinalizeRoutingV2GetWorkspaceSize");
-    const auto opApiFuncAddr = GetOpApiFuncAddr("aclnnMoeFinalizeRoutingV2");
-    if (getWorkspaceSizeFuncAddr == nullptr || opApiFuncAddr == nullptr) {
+    static const bool is_moe_finalize_routing_V2_available = check_aclnn_kernel_available("aclnnMoeFinalizeRoutingV2");
+    if (!is_moe_finalize_routing_V2_available) {
         TORCH_CHECK(skip1.has_value(), "skip1 parameter must have value when there is no aclnnMoeFinalizeRoutingV2",
             OPS_ERROR(ErrCode::PARAM));
         at::Tensor result = npu_preparation::apply_tensor_without_format(skip1.value());

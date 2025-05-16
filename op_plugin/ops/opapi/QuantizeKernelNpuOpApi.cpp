@@ -55,9 +55,8 @@ at::Tensor npu_quantize(
 
     const bool sqrt_mode = false;
 
-    static auto opApiFuncAddr = GetOpApiFuncAddr("aclnnAscendQuantV3");
-    static auto opApiGetWorkspaceSizeFuncAddr = GetOpApiFuncAddr("aclnnAscendQuantV3GetWorkspaceSize");
-    if (opApiFuncAddr == nullptr || opApiGetWorkspaceSizeFuncAddr == nullptr) {
+    static const bool is_ascend_quant_V3_available = check_aclnn_kernel_available("aclnnAscendQuantV3");
+    if (!is_ascend_quant_V3_available) {
         EXEC_NPU_CMD(aclnnAscendQuant, self, scales, zero_points_opt, sqrt_mode, "round", dtype, result);
     } else {
         axis = axis < -1 ? axis : -1;

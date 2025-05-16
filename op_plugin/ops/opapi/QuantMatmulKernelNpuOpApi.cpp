@@ -84,9 +84,8 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
                             const c10::optional<at::Tensor>& bias, c10::optional<at::ScalarType> output_dtype)
 {
     if (is_nz_format(x2)) {
-        const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr("aclnnQuantMatmulWeightNzGetWorkspaceSize");
-        const auto opApiFuncAddr = GetOpApiFuncAddr("aclnnQuantMatmulWeightNz");
-        TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr,
+        static const bool is_quant_matmul_weight_nz_available = check_aclnn_kernel_available("aclnnQuantMatmulWeightNz");
+        TORCH_CHECK(is_quant_matmul_weight_nz_available,
                     "Get aclnnQuantMatmulWeightNz or aclnnQuantMatmulWeightNzGetWorkspaceSize faild, only "
                     "aclnnQuantMatmulWeightNz support X2's format is nz, please upgrade CANN.",
                     OPS_ERROR(ErrCode::PARAM));
