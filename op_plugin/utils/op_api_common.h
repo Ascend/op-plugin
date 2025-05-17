@@ -943,7 +943,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         TORCH_CHECK(api_ret == 0, "call failed, detail:", aclGetRecentErrMsg(), OPS_ERROR(ErrCode::INTERNAL));
         return api_ret;
     };
-    at_npu::native::OpCommand::RunOpApi(aclnn_api, acl_call);
+    at_npu::native::OpCommand::RunOpApiV2(aclnn_api, acl_call);
     UnInitCacheThreadLocal();
     return true;
 }
@@ -1097,7 +1097,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             }                                                                                                          \
             return api_ret;                                                                                            \
         };                                                                                                             \
-        at_npu::native::OpCommand::RunOpApi(#aclnn_api, acl_call);                                                     \
+        at_npu::native::OpCommand::RunOpApiV2(#aclnn_api, acl_call);                                                   \
         if (unInitMemFunc) {                                                                                           \
             unInitMemFunc(nullptr, false);                                                                             \
         }                                                                                                              \
@@ -1159,7 +1159,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             UnInitCacheThreadLocal();                                                                                  \
             return api_ret;                                                                                            \
         };                                                                                                             \
-        at_npu::native::OpCommand::RunOpApi(#aclnn_api, acl_call);                                                     \
+        at_npu::native::OpCommand::RunOpApiV2(#aclnn_api, acl_call);                                                   \
     } while (false)
 
 #define EXEC_NPU_CMD(aclnn_api, ...)                                                                                   \
@@ -1226,7 +1226,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             }                                                                                                          \
             return api_ret;                                                                                            \
         };                                                                                                             \
-        at_npu::native::OpCommand::RunOpApi(#aclnn_api, acl_call);                                                     \
+        at_npu::native::OpCommand::RunOpApiV2(#aclnn_api, acl_call);                                                   \
         if (unInitMemFunc) {                                                                                           \
             unInitMemFunc(nullptr, false);                                                                             \
         }                                                                                                              \
@@ -1292,7 +1292,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             UnInitCacheThreadLocal();                                                                                  \
             return api_ret;                                                                                            \
         };                                                                                                             \
-        at_npu::native::OpCommand::RunOpApi(#aclnn_api, acl_call);                                                     \
+        at_npu::native::OpCommand::RunOpApiV2(#aclnn_api, acl_call);                                                   \
     } while (false)
 
 #define EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnn_api, ...)                                                                   \
@@ -1418,7 +1418,7 @@ private:
                         OPS_ERROR(ErrCode::ACL));                                                                      \
             return api_ret;                                                                                            \
         };                                                                                                             \
-        at_npu::native::OpCommand::RunOpApi(apiName, acl_call, true);                                                  \
+        at_npu::native::OpCommand::RunOpApiV2(apiName, acl_call, true);                                                \
         UnInitCacheThreadLocal();                                                                                      \
         return ConvertedParams<decltype(converted_params)>(std::move(converted_params),                                \
                                                            releaseMemFunc, unInitMemFunc);                             \

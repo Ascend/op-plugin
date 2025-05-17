@@ -67,7 +67,7 @@
             }                                                                                                          \
             return api_ret;                                                                                            \
         };                                                                                                             \
-        at_npu::native::OpCommand::RunOpApi(#aclnn_api, acl_call);                                                     \
+        at_npu::native::OpCommand::RunOpApiV2(#aclnn_api, acl_call);                                                   \
         if (unInitMemFunc) {                                                                                           \
             unInitMemFunc(nullptr, false);                                                                             \
         }                                                                                                              \
@@ -127,7 +127,7 @@
             UnInitCacheThreadLocal();                                                                                  \
             return api_ret;                                                                                            \
         };                                                                                                             \
-        at_npu::native::OpCommand::RunOpApi(#aclnn_api, acl_call);                                                     \
+        at_npu::native::OpCommand::RunOpApiV2(#aclnn_api, acl_call);                                                   \
     } while (false)
 
 #define EXEC_GET_MAX_WORKSPACE_CMD(aclnn_api, ...)                                                                     \

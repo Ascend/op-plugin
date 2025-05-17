@@ -107,7 +107,7 @@ namespace op_api {
             TORCH_CHECK(api_ret == 0, "call " "asdFftExec" #fftExecApi " failed");                                     \
             return api_ret;                                                                                            \
         };                                                                                                             \
-        at_npu::native::OpCommand::RunOpApi("asdFftExec" #fftExecApi, sip_call);                                       \
+        at_npu::native::OpCommand::RunOpApiV2("asdFftExec" #fftExecApi, sip_call);                                     \
     } while (false)
 
 #endif //  __TORCH_NPU_OP_PLUGIN_UTILS_FFT_COMMON_OP_API__

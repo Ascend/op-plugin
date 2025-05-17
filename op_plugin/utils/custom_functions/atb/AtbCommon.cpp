@@ -65,7 +65,7 @@ void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::st
         auto st = op->Execute(paramsetter.variantPack, (uint8_t *)workspacePtr, workspaceSize, contextPtr);
         return 0;
     };
-    at_npu::native::OpCommand::RunOpApi(name, acl_call);
+    at_npu::native::OpCommand::RunOpApiV2(name, acl_call);
 }
 
 
