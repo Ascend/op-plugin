@@ -143,7 +143,7 @@ inline void *GetOpApiFuncAddr(const char *apiName)
         for (auto &it : g_custom_lib_path) {
             auto cust_opapi_lib = real_path(it + "/" + GetCustOpApiLibName());
             if (cust_opapi_lib.empty()) {
-                break;
+                continue;
             }
             auto custOpApiHandler = GetOpApiLibHandler(cust_opapi_lib.c_str());
             if (custOpApiHandler != nullptr) {
@@ -166,7 +166,7 @@ inline void *GetOpApiFuncAddr(const char *apiName)
         for (auto &it : g_default_custom_lib_path) {
             auto default_cust_opapi_lib = real_path(it + "/" + GetCustOpApiLibName());
             if (default_cust_opapi_lib.empty()) {
-                break;
+                continue;
             }
             auto custOpApiHandler = GetOpApiLibHandler(default_cust_opapi_lib.c_str());
             if (custOpApiHandler != nullptr) {
