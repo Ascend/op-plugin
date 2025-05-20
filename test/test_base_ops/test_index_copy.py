@@ -2,7 +2,6 @@ import torch
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
 
 
 class TestIndexCopy(TestCase):
@@ -20,12 +19,23 @@ class TestIndexCopy(TestCase):
         output = input1.numpy()
         return output
 
+    def op_out_exec(self, npuflag, input1, dim, indices, updates):
+        output = torch.empty_like(input1)
+        torch.index_copy(input1, dim, indices, updates, out=output)
+        if npuflag:
+            output = output.to("cpu")
+        output = output.numpy()
+        return output
+
     def case_exec(self, input1, dim, indices, updates):
         npu_input = input1.npu()
         npu_indices = indices.npu()
         npu_updates = updates.npu()
         cpu_output = self.op_exec(0, input1, dim, indices, updates)
         npu_output = self.op_exec(1, npu_input, dim, npu_indices, npu_updates)
+        self.assertEqual(cpu_output, npu_output)
+        cpu_output = self.op_out_exec(0, input1, dim, indices, updates)
+        npu_output = self.op_out_exec(1, npu_input, dim, npu_indices, npu_updates)
         self.assertEqual(cpu_output, npu_output)
         cpu_output = self.op_inp_exec(0, input1, dim, indices, updates)
         npu_output = self.op_inp_exec(1, npu_input, dim, npu_indices, npu_updates)

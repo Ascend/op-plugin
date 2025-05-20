@@ -2828,6 +2828,14 @@ official:
         dtype: self
       exec: aclnnIndexCopy
 
+  - func: index_copy.out(Tensor self, int dim, Tensor index, Tensor source, *, Tensor(a!) out) -> Tensor(a!)
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnIndexCopy
+
   - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
     acl_op: [v2.0, newest]
     op_api: [v2.0, newest]
