@@ -65,15 +65,17 @@ class TestGroupedMatmul(TestCase):
         return int_value
 
     def custom_op_exec(self, x, weight, *, bias=None, scale=None, offset=None, antiquantScale=None,
-                       antiquantOffset=None, group_list=None, split_item=0, group_type=None, tuning_config=None):
+                       antiquantOffset=None, group_list=None, split_item=0, group_type=None,
+                       output_dtype=None, tuning_config=None):
         if group_type is not None:
             return torch_npu.npu_grouped_matmul(x, weight, bias=bias, scale=scale, offset=offset,
                                                 antiquant_scale=antiquantScale, antiquant_offset=antiquantOffset,
-                                                group_list=group_list, split_item=split_item, group_type=group_type)
+                                                group_list=group_list, split_item=split_item,
+                                                group_type=group_type, output_dtype=output_dtype)
         else:
             return torch_npu.npu_grouped_matmul(x, weight, bias=bias, scale=scale, offset=offset,
                                                 antiquant_scale=antiquantScale, antiquant_offset=antiquantOffset,
-                                                group_list=group_list, split_item=split_item)
+                                                group_list=group_list, split_item=split_item, output_dtype=output_dtype)
 
     def get_group_list(self, m, g):
         step = (m - 0) // (g - 1)
@@ -434,7 +436,8 @@ class TestGroupedMatmul(TestCase):
         supported_output = self.supported_op_exec(x, weight, bias=bias, scale=scale_fp32, group_list=group_list,
                                                   split_item=split_item)
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, scale=scale_fp32_npu,
-                                            group_list=group_list, split_item=split_item, group_type=group_type)
+                                            group_list=group_list, split_item=split_item, group_type=group_type,
+                                            output_dtype=torch.float16)
 
         self.assertRtolEqual(x[0], x_clone[0], 1)
         self.assertRtolEqual(supported_output[0], custom_output[0].to(torch.int8), 1)
@@ -476,7 +479,8 @@ class TestGroupedMatmul(TestCase):
         supported_output = self.supported_op_exec(x, weight, bias=bias, scale=scale_fp32, group_list=group_list,
                                                   split_item=split_item)
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, scale=scale_bf16_npu,
-                                            group_list=group_list, split_item=split_item, group_type=group_type)
+                                            group_list=group_list, split_item=split_item, group_type=group_type,
+                                            output_dtype=torch.bfloat16)
 
         self.assertRtolEqual(x[0], x_clone[0], 1)
         self.assertRtolEqual(supported_output[0], custom_output[0].to(torch.int8), 1)

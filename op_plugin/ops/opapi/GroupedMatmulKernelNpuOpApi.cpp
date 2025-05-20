@@ -287,22 +287,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     check_dims(split_item_value, num_x, num_weight, num_group_list);
 
     std::vector<at::Tensor> y;
-    c10::TensorOptions options;
-    const bool is_A8W8 = x[0].scalar_type() == at::ScalarType::Char && weight[0].dtype() == at::ScalarType::Char;
-    if (is_A8W8) {
-        TORCH_CHECK(scale.has_value(), "scale must has value in npu_grouped_matmul A8W8 case."
-                    + OPS_ERROR(ErrCode::TYPE));
-    }
-    auto scale_real = scale.value_or(at::TensorList());
-    if (x[0].scalar_type() == at::ScalarType::Char && weight[0].dtype() == at::ScalarType::Int) {
-        options = x[0].options().dtype(output_dtype.value_or(at::ScalarType::Half));
-    } else if (is_A8W8 && scale_real[0].dtype() == at::ScalarType::BFloat16) {
-        options = x[0].options().dtype(output_dtype.value_or(at::ScalarType::BFloat16));
-    } else if (is_A8W8 && scale_real[0].dtype() == at::ScalarType::Float) {
-        options = x[0].options().dtype(output_dtype.value_or(at::ScalarType::Half));
-    } else {
-        options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
-    }
+    c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
 
     size_t dim_num_w = weight[0].sizes().size();
     size_t n0 = static_cast<size_t>(weight[0].size(dim_num_w - 1));
@@ -350,6 +335,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     at::TensorList result = at::TensorList(y);
 
     auto bias_real = bias.value_or(at::TensorList());
+    auto scale_real = scale.value_or(at::TensorList());
     auto offset_real = offset.value_or(at::TensorList());
     auto antiquant_scale_real = antiquant_scale.value_or(at::TensorList());
     auto antiquant_offset_real = antiquant_offset.value_or(at::TensorList());
