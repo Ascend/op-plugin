@@ -119,16 +119,24 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_prolog(
 
     // construct the output tensor
     auto token_x_dim = token_x.dim();
-    TORCH_CHECK(token_x_dim == 3, "token_x dim num should be 3,but the actual value is ", token_x_dim, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(token_x_dim == 2 || token_x_dim == 3, "token_x dim num should be 2 or 3,but the actual value is ", token_x_dim, OPS_ERROR(ErrCode::PARAM));
 
     auto weight_uk_dim = weight_uk.dim();
     TORCH_CHECK(weight_uk_dim == 3, "weight_uk dim num should be 3,but the actual value is ", weight_uk_dim, OPS_ERROR(ErrCode::PARAM));
 
     auto rope_sin_dim = rope_sin.dim();
-    TORCH_CHECK(rope_sin_dim == 3, "rope_sin dim num should be 3,but the actual value is ", rope_sin_dim, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(rope_sin_dim == 2 || rope_sin_dim == 3, "rope_sin dim num should be 2 or 3,but the actual value is ", rope_sin_dim, OPS_ERROR(ErrCode::PARAM));
 
-    at::Tensor query = npu_preparation::apply_tensor_without_format({token_x.size(0), token_x.size(1), weight_uk.size(0), weight_uk.size(2)}, token_x.options().dtype(token_x.dtype()));
-    at::Tensor query_rope = npu_preparation::apply_tensor_without_format({token_x.size(0), token_x.size(1), weight_uk.size(0), rope_sin.size(2)}, token_x.options().dtype(token_x.dtype()));
+    at::Tensor query;
+    at::Tensor query_rope;
+
+    if (token_x_dim == 3) {
+        query = npu_preparation::apply_tensor_without_format({token_x.size(0), token_x.size(1), weight_uk.size(0), weight_uk.size(2)}, token_x.options().dtype(token_x.dtype()));
+        query_rope = npu_preparation::apply_tensor_without_format({token_x.size(0), token_x.size(1), weight_uk.size(0), rope_sin.size(2)}, token_x.options().dtype(token_x.dtype()));
+    } else {
+        query = npu_preparation::apply_tensor_without_format({token_x.size(0), weight_uk.size(0), weight_uk.size(2)}, token_x.options().dtype(token_x.dtype()));
+        query_rope = npu_preparation::apply_tensor_without_format({token_x.size(0), weight_uk.size(0), rope_sin.size(1)}, token_x.options().dtype(token_x.dtype()));
+    }
     at::Tensor kv_cache_out = npu_preparation::apply_tensor_without_format(kv_cache);
     at::Tensor kr_cache_out = npu_preparation::apply_tensor_without_format(kr_cache);
 
@@ -146,7 +154,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_prolog(
         !npu_utils::check_match(&kv_cache_out) || !npu_utils::check_match(&kr_cache_out)) {
         // 若输出非连续，创建连续tensor(contig_tensor)，接收ACLOP算子的输出。再将contig_tensor拷贝到原始输出。
         at::Tensor contiguous_query = !npu_utils::check_match(&query) ? npu_utils::format_contiguous(query) : query;
-        at::Tensor contiguous_query_rope = !npu_utils::check_match(&query_rope) ? npu_utils::format_contiguous(query_rope) : query;
+        at::Tensor contiguous_query_rope = !npu_utils::check_match(&query_rope) ? npu_utils::format_contiguous(query_rope) : query_rope;
         at::Tensor contiguous_kv_cache_out = !npu_utils::check_match(&kv_cache_out) ?
             npu_utils::format_contiguous(kv_cache_out) : kv_cache_out;
         at::Tensor contiguous_kr_cache_out = !npu_utils::check_match(&kr_cache_out) ?

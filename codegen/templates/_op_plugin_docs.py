@@ -6471,28 +6471,34 @@ _add_torch_npu_docstr(
 torch_npu.npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, Tensor weight_uk, Tensor weight_dkv_kr, Tensor rmsnorm_gamma_cq, Tensor rmsnorm_gamma_ckv, Tensor rope_sin, Tensor rope_cos, Tensor cache_index, Tensor kv_cache, Tensor kr_cache, *, Tensor? dequant_scale_x=None, Tensor? dequant_scale_w_dq=None, Tensor? dequant_scale_w_uq_qr=None, Tensor? dequant_scale_w_dkv_kr=None, Tensor? quant_scale_ckv=None, Tensor? quant_scale_ckr=None, Tensor? smooth_scales_cq=None, float rmsnorm_epsilon_cq=1e-05, float rmsnorm_epsilon_ckv=1e-05, str cache_mode="PA_BSND") -> (Tensor, Tensor, Tensor, Tensor)
 
 参数说明:
-token_x：Tensor类型，表示输入的tensor，用于计算Q和K的x，Device侧的aclTensor。shape支持3维，dtype支持bfloat16，数据格式支持ND格式。
-weight_dq：Tensor类型，表示用于计算Query的下采样权重矩阵，WDQ ，Device侧的aclTensor。其shape支持2维，dtype支持bfloat16，数据格式支持FRACTAL_NZ格式。
-weight_uq_qr：Tensor类型，表示用于计算Query的上采样权重矩阵和Query的位置编码权重矩阵，WUQ和WQR ，Device侧的aclTensor。其shape支持2维，dtype支持bfloat16，数据格式支持FRACTAL_NZ格式。
-weight_uk：Tensor类型，表示用于计算Key的上采样权重，WUK，Device侧的aclTensor。其shape支持3维，dtype支持bfloat16，数据格式支持ND格式。
-weight_dkv_kr：Tensor类型，表示用于计算Key的上采样权重矩阵和Key的位置编码权重矩阵。Device侧的aclTensor。其shape支持2维，dtype支持bfloat16，数据格式支持FRACTAL_NZ格式。
-rmsnorm_gamma_cq：Tensor类型，表示用于计算Query的rmsnorm中的gamma参数，对应计算Query的rmsNorm中的γ，Device侧的aclTensor。其shape支持1维，dtype支持bfloat16，数据格式支持ND格式。
-rmsnorm_gamma_ckv：Tensor类型，表示用于计算Key的rmsnorm中的gamma参数，对应计算Key的rmsNorm中的γ，Device侧的aclTensor。其shape支持1维，dtype支持bfloat16，数据格式支持ND格式。
-rope_sin：Tensor类型，表示用于计算旋转位置编码的正弦参数矩阵，Device侧的aclTensor。其shape支持3维，dtype支持bfloat16，数据格式支持ND格式。
-rope_cos：Tensor类型，表示用于计算旋转位置编码的余弦参数矩阵，Device侧的aclTensor。其shape支持3维，dtype支持bfloat16，数据格式支持ND格式。
-cache_index：Tensor类型，表示用于存储kvCache和krCache的索引，Device侧的aclTensor。其shape支持2维，dtype支持int64，数据格式支持ND格式。
-kv_cache：Tensor类型，表示用于cache索引的aclTensor。其shape支持4维，dtype支持bfloat16，数据格式支持ND格式。
-kr_cache：Tensor类型，表示用于key位置编码的cache，Device侧的aclTensor。其shape支持4维，dtype支持bfloat16，数据格式支持ND格式。
+token_x：Tensor类型，表示输入的tensor，用于计算Q和K的x。shape支持2维和3维，dtype支持bfloat16，数据格式支持ND格式。
+weight_dq：Tensor类型，表示用于计算Query的下采样权重矩阵，WDQ 。其shape支持2维，dtype支持bfloat16，数据格式支持FRACTAL_NZ格式。
+weight_uq_qr：Tensor类型，表示用于计算Query的上采样权重矩阵和Query的位置编码权重矩阵，WUQ和WQR 。其shape支持2维，dtype支持bfloat16和int8，数据格式支持FRACTAL_NZ格式。
+weight_uk：Tensor类型，表示用于计算Key的上采样权重，WUK。其shape支持3维，dtype支持bfloat16，数据格式支持ND格式。
+weight_dkv_kr：Tensor类型，表示用于计算Key的下采样权重矩阵和Key的位置编码权重矩阵。Device侧的aclTensor。其shape支持2维，dtype支持bfloat16，数据格式支持FRACTAL_NZ格式。
+rmsnorm_gamma_cq：Tensor类型，表示用于计算Query的rmsnorm中的gamma参数，对应计算Query的rmsNorm中的γ。其shape支持1维，dtype支持bfloat16，数据格式支持ND格式。
+rmsnorm_gamma_ckv：Tensor类型，表示用于计算Key的rmsnorm中的gamma参数，对应计算Key的rmsNorm中的γ。其shape支持1维，dtype支持bfloat16，数据格式支持ND格式。
+rope_sin：Tensor类型，表示用于计算旋转位置编码的正弦参数矩阵。其shape支持2维和3维，dtype支持bfloat16，数据格式支持ND格式。
+rope_cos：Tensor类型，表示用于计算旋转位置编码的余弦参数矩阵。其shape支持2维和3维，dtype支持bfloat16，数据格式支持ND格式。
+cache_index：Tensor类型，表示用于存储kvCache和krCache的索引。其shape支持1维和2维，dtype支持int64，数据格式支持ND格式。
+kv_cache：Tensor类型，表示用于cache索引的aclTensor。其shape支持4维，dtype支持bfloat16和int8，数据格式支持ND格式。
+kr_cache：Tensor类型，表示用于key位置编码的cache。其shape支持4维，dtype支持bfloat16和int8，数据格式支持ND格式。
 dequant_scale_x：Tensor类型，预留参数，暂未使用，使用默认值即可。
 dequant_scale_w_dq：Tensor类型，预留参数，暂未使用，使用默认值即可。
-dequant_scale_w_uq_qr：Tensor类型，预留参数，暂未使用，使用默认值即可。
+dequant_scale_w_uq_qr：Tensor类型，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化算法为per-channel。其shape支持2维，dtype支持float，数据格式支持ND格式。
 dequant_scale_w_dkv_kr：Tensor类型，预留参数，暂未使用，使用默认值即可。
-quant_scale_ckv：Tensor类型，预留参数，暂未使用，使用默认值即可。
-quant_scale_ckr：Tensor类型，预留参数，暂未使用，使用默认值即可。
-smooth_scales_cq：Tensor类型，预留参数，暂未使用，使用默认值即可。
+quant_scale_ckv：Tensor类型，用于输出到KVCache中的数据做量化操作时的参数。其shape支持2维，dtype支持float，数据格式支持ND格式。
+quant_scale_ckr：Tensor类型，用于输出到KRCache中的数据做量化操作时的参数。其shape支持2维，dtype支持float，数据格式支持ND格式。
+smooth_scales_cq：Tensor类型，用于对RmsNormCq输出做动态量化操作时的参数。其shape支持2维，dtype支持float，数据格式支持ND格式。
 rmsnorm_epsilon_cq：Double类型，表示用于计算Query的rmsnorm中的ϵ参数，对应计算Query的rmsNorm中的ϵ，用户不特意指定时可传入默认值1e-05。
 rmsnorm_epsilon_ckv：Double类型，表示用于计算Key额时rmsnorm中的ϵ参数，对应计算Key的rmsNorm中的ϵ，用户不特意指定时可传入默认值1e-05。
 cache_mode：String类型，用于表示kvCache的模式，支持"PA_BSND","PA_NZ"，其用户不特意指定时可传入默认值"PA_BSND"。
+
+输出说明：
+query：Tensor类型，表示Query的输出tensor。其shape支持3维和4维，dtype支持bfloat16，数据格式支持ND格式。
+queryRope：Tensor类型，表示Query位置编码的输出tensor。其shape支持3维和4维，dtype支持bfloat16，数据格式支持ND格式。
+kv_cache：Tensor类型，表示Key输出到kvCache中的Tensor。其shape支持4维，dtype支持bfloat16和int8，数据格式支持ND格式。
+kr_cache：Tensor类型，表示Key的位置编码输出到kvCache中的Tensor。其shape支持4维，dtype支持bfloat16和int8，数据格式支持ND格式。
 
 支持的芯片型号:
 Atlas A2 训练系列产品
