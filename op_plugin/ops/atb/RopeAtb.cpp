@@ -60,11 +60,11 @@ namespace atb {
         ropeparam.rotaryCoeff = is_neox_style ? 2 : head_size;
 
         ParamSetter parametter;
-        parametter.Input(query)
-            .Input(key)
-            .Input(cos)
-            .Input(sin)
-            .Input(sequenceLength)
+        parametter.Input(query, true)
+            .Input(key, true)
+            .Input(cos, true)
+            .Input(sin, true)
+            .Input(sequenceLength, true)
             .Output(query)
             .Output(key);
 

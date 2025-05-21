@@ -26,11 +26,11 @@ void _npu_reshape_and_cache(const at::Tensor &key, const at::Tensor &value, at::
     reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_CACHE;
     
     ParamSetter parametter;
-    parametter.Input(key)
-        .Input(value)
+    parametter.Input(key, true)
+        .Input(value, true)
         .Input(key_cache)
         .Input(value_cache)
-        .Input(slot_indices)
+        .Input(slot_indices, true)
         .Output(key_cache)
         .Output(value_cache);
     auto opReshape = reshapeAndCacheParamCache.getOperation(reshapeparam, "ReshapeCacheOperation");

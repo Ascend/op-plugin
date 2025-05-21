@@ -44,13 +44,13 @@ void _npu_flash_attention_qlens(const at::Tensor &query, const at::Tensor &key_c
     selfattentionparam.windowSize = 0;
 
     ParamSetter parametter;
-    parametter.Input(query)
+    parametter.Input(query, true)
         .Input(key_cache)
         .Input(value_cache)
-        .Input(block_table)
+        .Input(block_table, true)
         .Input(mask)
-        .Input(seq_len)
-        .Input(context_lens)
+        .Input(seq_len, true)
+        .Input(context_lens, true)
         .Output(out);
 
     auto opSelfattention = selfAttentionParamCache.getOperation(selfattentionparam, "SelfAttentionOperation");

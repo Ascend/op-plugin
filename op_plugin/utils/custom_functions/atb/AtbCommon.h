@@ -19,7 +19,6 @@
 #include <torch_npu/csrc/framework/utils/OpPreparation.h>
 #include <torch_npu/csrc/core/npu/NPUWorkspaceAllocator.h>
 #include <torch_npu/csrc/core/npu/NPUStream.h>
-#include <torch_npu/csrc/core/npu/DeviceUtils.h>
 #include "op_plugin/third_party/atb/inc/atb_infer.h"
 #include "op_plugin/utils/custom_functions/atb/OperationCreate.h"
 #include "Utils.h"
@@ -28,6 +27,8 @@ namespace atb {
 
 using aclTensor = struct aclTensor;
 constexpr int64_t MAX_DIM_NUM = 5;
+// small vector max size
+const int N = 32;
 
 using _aclCreateTensor = aclTensor* (*)(const int64_t* view_dims, uint64_t view_dims_num, aclDataType data_type,
                                       const int64_t* stride, int64_t offset, aclFormat format,
@@ -81,9 +82,7 @@ inline void *GetApiFuncAddr(const char *apiName)
         if (funcAddr != nullptr) {
             return funcAddr;
         }
-        if (funcAddr == nullptr) {
-            TORCH_CHECK(false, "GetApiFuncAddr not found ", apiName);
-        }
+        TORCH_CHECK(false, "GetApiFuncAddr not found ", apiName);
     }
 }
 
@@ -97,14 +96,9 @@ inline aclTensor *ConvertType(const at::Tensor &tensor)
     if (!tensor.defined()) {
         return nullptr;
     }
+    at::Tensor at_tensor = tensor.contiguous();
+    aclFormat format = atb::utils::GetFormatForAtb(at_tensor);
 
-    at::Tensor at_tensor = tensor;
-    if (torch_npu::utils::is_npu(at_tensor)) {
-        at_tensor = atb::utils::FormatTrans(tensor);
-    }
-    if (!at_tensor.is_contiguous()) {
-        at_tensor = at_tensor.contiguous();
-    }
     at::ScalarType scalar_data_type = at_tensor.scalar_type();
     aclDataType acl_data_type = atb::utils::ConvertToAclDataType(scalar_data_type);
     c10::SmallVector<int64_t, MAX_DIM_NUM> storageDims;
@@ -115,7 +109,6 @@ inline aclTensor *ConvertType(const at::Tensor &tensor)
     }
 
     const auto dimNum = at_tensor.sizes().size();
-    aclFormat format = ACL_FORMAT_ND;
     auto acl_tensor =
         aclCreateTensor(at_tensor.sizes().data(), at_tensor.sizes().size(), acl_data_type, at_tensor.strides().data(),
                         at_tensor.storage_offset(), format, storageDims.data(), storageDims.size(),
@@ -141,12 +134,12 @@ struct TensorStruct {
     int64_t storage_offset;         // at_tensor.storage_offset()
     std::vector<int64_t> sizes;     // at_tensor.sizes()
     std::vector<int64_t> strides;   // at_tensor.strides()
-    int64_t format;                 // at_tensor format
+    aclFormat format;               // at_tensor format
 
     TensorStruct(
         void *data_ptr_, at::ScalarType scalar_type_,
         size_t nbytes_, size_t itemsize_, int64_t storage_offset_,
-        at::IntArrayRef sizes_, at::IntArrayRef strides_, int64_t format_
+        at::IntArrayRef sizes_, at::IntArrayRef strides_, aclFormat format_
     ) : data_ptr(data_ptr_), scalar_type(scalar_type_),
         nbytes(nbytes_), itemsize(itemsize_), storage_offset(storage_offset_),
         sizes(sizes_.vec()), strides(strides_.vec()), format(format_)
@@ -160,14 +153,9 @@ inline TensorStructPtr CopyTypeV2(const at::Tensor &tensor)
     if (!tensor.defined()) {
         return nullptr;
     }
-    at::Tensor at_tensor = tensor;
-    if (torch_npu::utils::is_npu(at_tensor)) {
-        at_tensor = atb::utils::FormatTrans(tensor);
-    }
-    if (!at_tensor.is_contiguous()) {
-        at_tensor = at_tensor.contiguous();
-    }
-    int64_t format = 2;
+    at::Tensor at_tensor = tensor.contiguous();
+    aclFormat format = atb::utils::GetFormatForAtb(at_tensor);
+
     return std::make_shared<TensorStruct>(
         const_cast<void *>(at_tensor.storage().data()),
         at_tensor.scalar_type(),
@@ -204,11 +192,10 @@ inline aclTensor *ConvertTypeV2(TensorStructPtr at_tensor)
     }
 
     const auto dimNum = (*at_tensor).sizes.size();
-    aclFormat format = static_cast<aclFormat>((*at_tensor).format);
 
     auto acl_tensor = aclCreateTensor(
         (*at_tensor).sizes.data(), (*at_tensor).sizes.size(), acl_data_type, (*at_tensor).strides.data(),
-        (*at_tensor).storage_offset, format, storageDims.data(), storageDims.size(), (*at_tensor).data_ptr);
+        (*at_tensor).storage_offset, (*at_tensor).format, storageDims.data(), storageDims.size(), (*at_tensor).data_ptr);
     return acl_tensor;
 }
 
@@ -333,10 +320,12 @@ at::Tensor GetWorkspaceTensor(uint64_t workspaceSize, aclrtStream stream);
 uint64_t OperationSetup(atb::VariantPack variantPack, atb::Operation *operation, atb::Context* contextPtr);
 class ParamSetter {
 public:
-    ParamSetter& Input(const at::Tensor &tensor);
-    ParamSetter& Input(const c10::optional<at::Tensor> &tensor);
+    ParamSetter& Input(const at::Tensor &tensor, const bool &formatTrans = false);
+    ParamSetter& Input(const c10::optional<at::Tensor> &tensor, const bool &formatTrans = false);
     ParamSetter& Output(at::Tensor &tensor);
     atb::VariantPack variantPack;
+private:
+    c10::SmallVector<at::Tensor, N> tensorMaintainer;   // tensor's life should maintain when uncontiguous to contiguous.
 };
 
 class ContextManager {

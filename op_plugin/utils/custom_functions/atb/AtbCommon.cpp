@@ -28,7 +28,7 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
 
     TORCH_CHECK(atTensor.is_contiguous(), "atTensor is not contiguous");
     atb::Tensor tensor;
-    tensor.desc.format = ACL_FORMAT_ND;
+    tensor.desc.format = atb::utils::GetFormatForAtb(atTensor);
     if (atTensor.device().type() == at::kCPU) {
         tensor.hostData = atTensor.data_ptr();
     } else {
@@ -53,57 +53,54 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
 void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name)
 {
     aclrtStream stream = c10_npu::getCurrentNPUStream().stream(false);
-    auto acl_call = [=]() -> int {
+    atb::VariantPack variantPack = paramsetter.variantPack;
+    auto acl_call = [op, variantPack, stream]() -> int {
         auto contextPtr = GetContext(stream);
-        uint64_t workspaceSize = OperationSetup(paramsetter.variantPack, op, contextPtr);
+        uint64_t workspaceSize = OperationSetup(variantPack, op, contextPtr);
         at::Tensor workspaceTensor;
         void *workspacePtr = nullptr;
         if (workspaceSize != 0) {
             workspaceTensor = GetWorkspaceTensor(workspaceSize, stream);
             workspacePtr = const_cast<void *>(workspaceTensor.storage().data());
         }
-        auto st = op->Execute(paramsetter.variantPack, (uint8_t *)workspacePtr, workspaceSize, contextPtr);
+        auto st = op->Execute(variantPack, (uint8_t *)workspacePtr, workspaceSize, contextPtr);
         return 0;
     };
     at_npu::native::OpCommand::RunOpApiV2(name, acl_call);
 }
 
 
-ParamSetter& ParamSetter::Input(const at::Tensor &tensor)
+ParamSetter& ParamSetter::Input(const at::Tensor &tensor, const bool &formatTrans)
 {
     if (!tensor.defined()) {
         variantPack.inTensors.push_back(atb::Tensor());
         return *this;
     }
-    at::Tensor newTensor = tensor;
-    if (torch_npu::utils::is_npu(newTensor)) {
-        newTensor = atb::utils::FormatTrans(tensor);
+    at::Tensor newTensor = tensor.contiguous();
+    if (formatTrans) {
+        newTensor = atb::utils::FormatTrans(newTensor);
     }
-
-    if (!newTensor.is_contiguous()) {
-        newTensor = newTensor.contiguous();
-    }
-    auto AtTensor = AtTensor2AtbTensor(newTensor);
-
-    variantPack.inTensors.push_back(AtTensor);
+    auto atbTensor = AtTensor2AtbTensor(newTensor);
+    variantPack.inTensors.push_back(atbTensor);
+    tensorMaintainer.emplace_back(std::move(newTensor));
     return *this;
 }
 
 
-ParamSetter& ParamSetter::Input(const c10::optional<at::Tensor> &tensor)
+ParamSetter& ParamSetter::Input(const c10::optional<at::Tensor> &tensor, const bool &formatTrans)
 {
     if (!tensor.has_value()) {
         variantPack.inTensors.push_back(atb::Tensor());
         return *this;
     }
-    return Input(tensor.value());
+    return Input(tensor.value(), formatTrans);
 }
 
 
 ParamSetter& ParamSetter::Output(at::Tensor &output)
 {
-    auto AtTensor = AtTensor2AtbTensor(output);
-    variantPack.outTensors.push_back(AtTensor);
+    auto atbTensor = AtTensor2AtbTensor(output);
+    variantPack.outTensors.push_back(atbTensor);
     return *this;
 }
 

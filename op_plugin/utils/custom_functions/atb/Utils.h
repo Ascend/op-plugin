@@ -58,6 +58,7 @@ constexpr aclDataType kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(at:
 
 aclDataType ConvertToAclDataType(const at::ScalarType &data_type);
 at::Tensor FormatTrans(const at::Tensor &at_tensor);
+aclFormat GetFormatForAtb(const at::Tensor &at_tensor);
 
 }  // namespace utils
 }  // namespace atb

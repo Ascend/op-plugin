@@ -40,10 +40,10 @@ void _npu_paged_attention_mla(const at::Tensor &query, const at::Tensor &key_cac
     pagedparam.inputLayout = atb::infer::TYPE_BSND;
 
     ParamSetter paramsetter;
-    paramsetter.Input(query)
+    paramsetter.Input(query, true)
         .Input(key_cache)
-        .Input(block_table)
-        .Input(context_lens)
+        .Input(block_table, true)
+        .Input(context_lens, true)
         .Output(out);
     auto opPaged = pagedAttentionParamCache.getOperation(pagedparam, "PagedAttentionOperation");
     RunAtbCmd(opPaged, paramsetter, "PagedAttentionOperation");

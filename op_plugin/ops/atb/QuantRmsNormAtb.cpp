@@ -35,11 +35,11 @@ void _npu_quant_rms_norm(const at::Tensor &x,
     rmsnormParam.normParam.epsilon = eps;
 
     ParamSetter paramsetter;
-    paramsetter.Input(x)
-                .Input(gamma)
-                .Input(beta)
-                .Input(scale)
-                .Input(offset)
+    paramsetter.Input(x, true)
+                .Input(gamma, true)
+                .Input(beta, true)
+                .Input(scale, true)
+                .Input(offset, true)
                 .Output(output);
 
     auto opRmsNorm = rmsnormParamCache.getOperation(rmsnormParam, "QuantRmsNormOperation");

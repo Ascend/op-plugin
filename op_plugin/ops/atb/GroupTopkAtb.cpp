@@ -37,8 +37,8 @@ void _npu_group_topk(const at::Tensor &self, int64_t k, int64_t group_num, int64
     auto idx = at::arange(1024, self.options().device(at::Device(at::kPrivateUse1)).dtype(at::kInt));
 
     ParamSetter paramsetter;
-    paramsetter.Input(self)
-                .Input(idx)
+    paramsetter.Input(self, true)
+                .Input(idx, true)
                 .Output(out);
     auto opGroupTopk = GroupTopkParamCache.getOperation(GroupTopkParam, "GroupTopkOperation");
     RunAtbCmd(opGroupTopk, paramsetter, "GroupTopkOperation");

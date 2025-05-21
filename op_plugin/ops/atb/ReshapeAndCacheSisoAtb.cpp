@@ -26,9 +26,9 @@ void _npu_reshape_and_cache_siso(const at::Tensor &key, at::Tensor &key_cache, c
     reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_BYPASS;
     
     ParamSetter parametter;
-    parametter.Input(key)
-        .Input(key_cache)
-        .Input(slot_indices)
+    parametter.Input(key, true)
+        .Input(key_cache, true)
+        .Input(slot_indices, true)
         .Output(key_cache);
 
     auto opReshape = reshapeAndCacheParamCache.getOperation(reshapeparam, "ReshapeCacheOperation");

@@ -31,9 +31,9 @@ void _npu_quantize_per_tensor(const at::Tensor &x, const at::Tensor &scale, cons
     elewiseparam.mulsParam.varAttr = 0.0;
     elewiseparam.outTensorType = ACL_DT_UNDEFINED;
     ParamSetter parametter;
-    parametter.Input(x)
-                .Input(scale)
-                .Input(zero_point)
+    parametter.Input(x, true)
+                .Input(scale, true)
+                .Input(zero_point, true)
                 .Output(y);
     auto opReshape = elewiseParamCache.getOperation(elewiseparam, "ElewiseCacheOperation");
     RunAtbCmd(opReshape, parametter, "ElewiseCacheOperation");

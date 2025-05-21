@@ -43,10 +43,10 @@ void _npu_flash_attention_unpad(const at::Tensor &query, const at::Tensor &key, 
     selfattentionparam.mlaVHeadSize = 0;
     selfattentionparam.windowSize = 0;
     ParamSetter parametter;
-    parametter.Input(query)
-        .Input(key)
-        .Input(value)
-        .Input(seq_len)
+    parametter.Input(query, true)
+        .Input(key, true)
+        .Input(value, true)
+        .Input(seq_len, true)
         .Output(out);
 
     auto opSelfattention = selfAttentionParamCache.getOperation(selfattentionparam, "SelfAttentionOperation");

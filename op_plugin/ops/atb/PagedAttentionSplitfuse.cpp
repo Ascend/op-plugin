@@ -38,13 +38,13 @@ void _npu_paged_attention_splitfuse(const at::Tensor &query, const at::Tensor &k
     pagedparam.mlaVHeadSize = 0;
 
     ParamSetter paramsetter;
-    paramsetter.Input(query)
+    paramsetter.Input(query, true)
         .Input(key_cache)
         .Input(value_cache)
-        .Input(block_table)
-        .Input(context_lens)
+        .Input(block_table, true)
+        .Input(context_lens, true)
         .Input(mask)
-        .Input(seq_len)
+        .Input(seq_len, true)
         .Output(out);
     auto opPaged = pagedAttentionParamCache.getOperation(pagedparam, "PagedAttentionOperation");
     RunAtbCmd(opPaged, paramsetter, "PagedAttentionOperation");
