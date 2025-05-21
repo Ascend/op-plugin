@@ -122,5 +122,22 @@ class TestFusedInferAttentionScore(TestCase):
         attention_output = custom_output[0]
         softmaxlse_output = custom_output[1]
 
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_fused_infer_attention_score_tnd_ntd(self, device="npu"):
+        query = torch.randn(2, 32, 512, dtype=torch.float16).npu()
+        key = torch.randn(1, 1, 2048, 512, dtype=torch.float16).npu()
+        value = torch.randn(1, 1, 2048, 512, dtype=torch.float16).npu()
+
+        head_dim = 512
+        softmax_lse_flag = True
+        scale = 1 / 0.0078125
+        custom_output = torch_npu.npu_fused_infer_attention_score(
+            query, key, value, num_heads=32, input_layout="TND_NTD", scale=scale, pre_tokens=65535,
+            next_tokens=65535, softmax_lse_flag=softmax_lse_flag)
+
+        attention_output = custom_output[0]
+        softmaxlse_output = custom_output[1]
+
 if __name__ == "__main__":
     run_tests()
