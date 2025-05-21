@@ -923,7 +923,7 @@ c10::SmallVector<int64_t, SIZE> conv_depthwise2d_npu_output_size(const at::Tenso
     TORCH_CHECK(kernel_size == weight.sizes().slice(2), "kernel size should be equal to the last 2 dim of weight",
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride[0] * stride[1] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
-    
+
     int64_t N_ = self.size(0);
     int64_t Co = weight.size(0);
     int64_t H = self.size(2);
@@ -1906,6 +1906,29 @@ c10::SmallVector<int64_t, SIZE> npu_group_quant_out_size(const at::Tensor& x, c1
         output_shape[x_dim_num - 1] /= INT4_NUMS_IN_INT32_SPACE;
     }
 
+    return output_shape;
+}
+
+c10::SmallVector<int64_t, SIZE> npu_nsa_compress_out_size(const at::Tensor& input, c10::optional<int64_t> actual_seq_len_type, at::OptionalIntArrayRef actual_seq_len, int64_t compress_block_size, int64_t compress_stride)
+{
+    int64_t compress_kv_num = 0;
+    int64_t pre_seqlen = 0;
+    c10::SmallVector<int64_t, SIZE> output_shape;
+    auto actual_seq_len_type_value = actual_seq_len_type.value_or(0);
+    if (actual_seq_len_type_value == 0) {
+        auto actual_seq_len_value = actual_seq_len.value();
+        for (size_t i = 0; i < actual_seq_len_value.size(); i++) {
+            int64_t cur_seq_len = actual_seq_len_value[i] - pre_seqlen;
+            if (cur_seq_len >= compress_block_size) {
+                TORCH_CHECK(compress_stride > 0, "compress_stride must be greater than 0." + OPS_ERROR(ErrCode::VALUE));
+                compress_kv_num += (cur_seq_len - compress_block_size + compress_stride) / compress_stride;
+            }
+            pre_seqlen += cur_seq_len;
+        }
+        output_shape.push_back(compress_kv_num);
+        output_shape.push_back(input.size(NPU_NSA_COMPRESS_INPUT_DIM_SECOND));
+        output_shape.push_back(input.size(NPU_NSA_COMPRESS_INPUT_DIM_THIRD));
+    }
     return output_shape;
 }
 
