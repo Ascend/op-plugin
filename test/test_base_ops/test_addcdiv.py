@@ -3,6 +3,7 @@ import torch
 import numpy as np
 
 from torch_npu.testing.testcase import TestCase, run_tests
+from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestAddcdiv(TestCase):
@@ -290,6 +291,59 @@ class TestAddcdiv(TestCase):
         )
         npu_output = self.npu_op_exec(cpu_input1, cpu_input2, cpu_input3, scalar)
         cpu_output = cpu_output.to(npu_output.dtype)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_addcdiv_high_type_cast(self):
+        cpu_input1, cpu_input2, cpu_input3 = self.generate_data(
+            1, 100, (5, 3), np.float32
+        )
+        cpu_input1 = cpu_input1.to(torch.float16)
+        cpu_input3 = cpu_input3.to(torch.float16)
+        scalar = self.generate_scalar(1, 10)
+
+        cpu_output = self.cpu_op_exec(
+            cpu_input1.float(), cpu_input2.float(), cpu_input3.float(), scalar
+        )
+        npu_output = self.npu_op_exec(cpu_input1, cpu_input2, cpu_input3, scalar)
+        cpu_output = cpu_output.to(npu_output.dtype)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_addcdiv_high_type_cast_out(self):
+        npu_input1, npu_input2, npu_input3 = self.generate_data(
+            1, 100, (5, 3), np.float32
+        )
+        npu_input1 = npu_input1.to(torch.float16)
+        npu_input3 = npu_input3.to(torch.float16)
+        scalar = self.generate_scalar(1, 10)
+        npu_input4 = self.generate_single_data(1, 100, (5, 3), np.float32)
+
+        cpu_output = self.cpu_op_exec_out(
+            npu_input1, npu_input2, npu_input3, scalar, npu_input4
+        )
+        npu_output = self.npu_op_exec_out(
+            npu_input1, npu_input2, npu_input3, scalar, npu_input4
+        )
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_addcdiv_high_type_cast_inp(self):
+        npu_input1, npu_input2, npu_input3 = self.generate_data(
+            1, 100, (5, 3), np.float32
+        )
+        npu_input3 = npu_input3.to(torch.float16)
+        cpu_input1 = copy.deepcopy(npu_input1)
+        cpu_input2 = copy.deepcopy(npu_input2)
+        cpu_input3 = copy.deepcopy(npu_input3)
+        scalar = self.generate_int_scalar(1, 10)
+
+        cpu_output = self.cpu_op_inp_contiguous_exec(
+            cpu_input1, cpu_input2, cpu_input3, scalar
+        )
+        npu_output = self.npu_op_inp_contiguous_exec(
+            npu_input1, npu_input2, npu_input3, scalar
+        )
         self.assertRtolEqual(cpu_output, npu_output)
 
 

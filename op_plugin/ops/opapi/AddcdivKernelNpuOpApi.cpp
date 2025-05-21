@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/TypeProperties.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -23,6 +25,13 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor& addcdiv_out(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
                         const at::Scalar& value, at::Tensor& result)
 {
+    at::TensorList tensors = {self, tensor1, tensor2};
+    auto high_type = at::native::result_type(tensors);
+    at::ScalarType result_type = result.scalar_type();
+
+    TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
+        " can't be cast to the desired output type ", result_type, OPS_ERROR(ErrCode::TYPE));
+
     DO_COMPATIBILITY(aclnnAddcdiv, acl_op::addcdiv_out(self, tensor1, tensor2, value, result));
     std::vector<at::Tensor> tensor_list = {self, tensor1, tensor2};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
@@ -46,12 +55,16 @@ at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::
             "The future addcdiv behavior is just the latter implementation: ",
             "(input + value * tensor1 / tensor2), for all dtypes.");
     }
+
+    at::TensorList tensors = {self, tensor1, tensor2};
+    auto high_type = at::native::result_type(tensors);
+
     DO_COMPATIBILITY(aclnnAddcdiv, acl_op::addcdiv(self, tensor1, tensor2, value));
     std::vector<at::Tensor> tensor_list = {self, tensor1, tensor2};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
     auto input_size = op_infer::broadcast_ops_npu_output_size(self, tensor1);
     auto output_size = op_infer::broadcast_ops_npu_output_size(input_size, tensor2.sizes());
-    at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(high_type));
 
     EXEC_NPU_CMD(aclnnAddcdiv, self, tensor1, tensor2, value, result);
     at::namedinference::propagate_names_if_nonempty(result, maybe_names);
@@ -60,6 +73,13 @@ at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::
 
 at::Tensor& addcdiv_(at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2, const at::Scalar& value)
 {
+    at::TensorList tensors = {self, tensor1, tensor2};
+    auto high_type = at::native::result_type(tensors);
+    at::ScalarType self_type = self.scalar_type();
+
+    TORCH_CHECK(canCast(high_type, self_type), "result type ", high_type,
+        " can't be cast to the desired output type ", self_type, OPS_ERROR(ErrCode::TYPE));
+
     DO_COMPATIBILITY(aclnnInplaceAddcdiv, acl_op::addcdiv_(self, tensor1, tensor2, value));
     std::vector<at::Tensor> tensor_list = {self, tensor1, tensor2};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
