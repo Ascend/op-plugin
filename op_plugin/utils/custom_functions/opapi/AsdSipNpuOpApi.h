@@ -22,6 +22,7 @@
 #include <vector>
 #include <list>
 #include <ATen/Tensor.h>
+#include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/core/npu/NPUStream.h"
 #include "torch_npu/csrc/framework/OpCommand.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
@@ -93,7 +94,7 @@ typedef int (*_asdFftMakePlan1D)(asdFftHandle handle, int64_t fftSize, asdFftTyp
 typedef int (*_asdFftMakePlan2D)(asdFftHandle handle, int64_t fftSizeX, int64_t fftSizeY, asdFftType fftType,
                                  asdFftDirection direction, int32_t batchSize);
 
-using FftExecApiFunc = int (*)(asdFftHandle handle, const MkiTensor &inData, MkiTensor &outData);
+using FftExecApiFunc = int (*)(asdFftHandle handle, const aclTensor *inData, const aclTensor *outData);
 
 #define GET_SIP_API_FUNC(apiName) reinterpret_cast<_##apiName>(GetAsdSipApiFuncAddr(#apiName))
 

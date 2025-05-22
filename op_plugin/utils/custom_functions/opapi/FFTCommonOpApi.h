@@ -18,6 +18,7 @@
 #define __TORCH_NPU_OP_PLUGIN_UTILS_FFT_COMMON_OP_API__
 
 #include <mutex>
+#include "op_plugin/utils/op_api_common.h"
 #include "fft_plan_op_api.h"
 #include "AsdSipNpuOpApi.h"
 
@@ -98,8 +99,8 @@ namespace op_api {
         }                                                                                                              \
         asdSipFftSetWorkspace(handle, workspace_addr);                                                                 \
         asdSipFftSetStream(handle, sip_stream);                                                                        \
-        auto input = ConvertMkiTensor(inData);                                                                         \
-        auto output = ConvertMkiTensor(outData);                                                                       \
+        auto input = ConvertType(inData);                                                                         \
+        auto output = ConvertType(outData);                                                                       \
         static const auto asdFftExec = GetAsdSipApiFuncAddr("asdFftExec" #fftExecApi);                                 \
         auto sip_call = [handle, input, output]() mutable -> int {                                                     \
             FftExecApiFunc fftExecApiFunc = reinterpret_cast<FftExecApiFunc>(asdFftExec);                              \
