@@ -126,6 +126,11 @@ template <typename... Ts> constexpr auto ConvertTypes(Ts &...args)
     return std::make_tuple(ConvertType(args)...);
 }
 
+struct TensorMaintainer {
+    c10::SmallVector<at::Tensor, N> contiguous_tensors;  // npu tensor's life should maintain when uncontiguous to contiguous.
+    c10::SmallVector<at::Tensor, N> cpu_tensors;         // cpu tensor's life should maintain in taskqueue.
+};
+
 struct TensorStruct {
     void *data_ptr = nullptr;       // at_tensor.storage().data()
     at::ScalarType scalar_type;     // at_tensor.scalar_type()
@@ -148,26 +153,31 @@ struct TensorStruct {
 };
 using TensorStructPtr = std::shared_ptr<TensorStruct>;
 
-inline TensorStructPtr CopyTypeV2(const at::Tensor &tensor)
+inline TensorStructPtr CopyTypeV2(TensorMaintainer& maintainer, const at::Tensor &tensor)
 {
     if (!tensor.defined()) {
         return nullptr;
     }
     at::Tensor at_tensor = tensor.contiguous();
     aclFormat format = atb::utils::GetFormatForAtb(at_tensor);
-
-    return std::make_shared<TensorStruct>(
-        const_cast<void *>(at_tensor.storage().data()),
-        at_tensor.scalar_type(),
-        at_tensor.storage().nbytes(),
-        at_tensor.itemsize(),
-        at_tensor.storage_offset(),
-        at_tensor.sizes(),
-        at_tensor.strides(),
-        format);
+    std::shared_ptr<TensorStruct> tensor_structptr =  std::make_shared<TensorStruct>(
+                                                        const_cast<void *>(at_tensor.storage().data()),
+                                                        at_tensor.scalar_type(),
+                                                        at_tensor.storage().nbytes(),
+                                                        at_tensor.itemsize(),
+                                                        at_tensor.storage_offset(),
+                                                        at_tensor.sizes(),
+                                                        at_tensor.strides(),
+                                                        format);
+    if (at_tensor.device().type() == at::kCPU) {
+        maintainer.cpu_tensors.emplace_back(std::move(at_tensor));
+    } else {
+        maintainer.contiguous_tensors.emplace_back(std::move(at_tensor));
+    }
+    return tensor_structptr;
 }
 
-template <typename T> T CopyTypeV2(T value)
+template <typename T> T CopyTypeV2(TensorMaintainer& maintainer, T value)
 {
     return value;
 }
@@ -211,16 +221,16 @@ template <typename Tuple, std::size_t... I> auto convert_types_impl_v2(const Tup
 
 template <typename... Ts> constexpr auto ConvertTypesV2(
     const std::tuple<Ts...> &args,
-    uint64_t *workspace_size_addr, atb::Operation **op_addr, atb::Context *contextPtr)
+    uint64_t *workspace_size_addr, atb::Operation **op_addr, atb::Context *context_ptr)
 {
     auto convert_args = convert_types_impl_v2(args, std::make_index_sequence<sizeof...(Ts)>{});
-    auto appends = std::make_tuple(workspace_size_addr, op_addr, contextPtr);
+    auto appends = std::make_tuple(workspace_size_addr, op_addr, context_ptr);
     return std::tuple_cat(convert_args, appends);
 }
 
-template <typename... Ts> constexpr auto CopyTypesV2(Ts &...args)
+template <typename... Ts> constexpr auto CopyTypesV2(TensorMaintainer& maintainer, Ts &...args)
 {
-    return std::make_tuple(CopyTypeV2(args)...);
+    return std::make_tuple(CopyTypeV2(maintainer, args)...);
 }
 
 template <typename Function, typename Tuple, size_t... I> auto call(Function f, Tuple t, std::index_sequence<I...>)
@@ -283,17 +293,19 @@ template <typename Tuple> void ReleaseConvertTypes(Tuple &t)
                     #atb_api "GetWorkspaceSize", " not in ", GetAtbApiLibName(), ", or ", GetAtbApiLibName(),     \
                     "not found.");                                                                                \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                           \
-        auto copied_params = CopyTypesV2(__VA_ARGS__);                                                            \
+        TensorMaintainer tensor_maintainer;                                                                       \
+        auto copied_params = CopyTypesV2(tensor_maintainer, __VA_ARGS__);                                         \
         auto hash_id = computeHash(std::string(#atb_api), __VA_ARGS__);                                           \
-        auto atb_call = [copied_params, acl_stream, hash_id]()->int {                                             \
-            auto contextPtr = GetContext(acl_stream);                                                             \
+        const c10::SmallVector<at::Tensor, N>& cpu_tensors = tensor_maintainer.cpu_tensors;                       \
+        auto atb_call = [copied_params, acl_stream, hash_id, cpu_tensors]()->int {                                \
+            auto context_ptr = GetContext(acl_stream);                                                            \
             uint64_t workspace_size = 0;                                                                          \
             uint64_t *workspace_size_addr = &workspace_size;                                                      \
             OpParamCache<uint64_t>& opParamCache = OpParamCache<uint64_t>::getInstance();                         \
             atb::Operation *op = opParamCache.getOperation(hash_id);                                              \
             atb::Operation **op_addr = &op;                                                                       \
             int api_ret = 0;                                                                                      \
-            auto converted_params = ConvertTypesV2(copied_params, workspace_size_addr, op_addr, contextPtr);      \
+            auto converted_params = ConvertTypesV2(copied_params, workspace_size_addr, op_addr, context_ptr);     \
             auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);           \
             auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                 \
             opParamCache.saveOperation(hash_id, op);                                                              \
@@ -305,27 +317,25 @@ template <typename Tuple> void ReleaseConvertTypes(Tuple &t)
                 workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                           \
             }                                                                                                     \
             AtbApiFunc atbApiFunc = reinterpret_cast<AtbApiFunc>(AtbApiFuncAddr);                                 \
-            api_ret = atbApiFunc(workspace_addr, workspace_size, op, contextPtr);                                 \
+            api_ret = atbApiFunc(workspace_addr, workspace_size, op, context_ptr);                                \
             TORCH_CHECK(api_ret == 0, "call " #atb_api " failed");                                                \
             ReleaseConvertTypes(converted_params);                                                                \
             return api_ret;                                                                                       \
         };                                                                                                        \
-        at_npu::native::OpCommand::RunOpApi(#atb_api, atb_call);                                                  \
+        at_npu::native::OpCommand::RunOpApiV2(#atb_api, atb_call);                                                \
     } while (false)
 
 
 atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor);
 atb::Context* GetContext(aclrtStream stream);
-at::Tensor GetWorkspaceTensor(uint64_t workspaceSize, aclrtStream stream);
-uint64_t OperationSetup(atb::VariantPack variantPack, atb::Operation *operation, atb::Context* contextPtr);
+uint64_t OperationSetup(atb::VariantPack variant_pack, atb::Operation *operation, atb::Context* context_ptr);
 class ParamSetter {
 public:
-    ParamSetter& Input(const at::Tensor &tensor, const bool &formatTrans = false);
-    ParamSetter& Input(const c10::optional<at::Tensor> &tensor, const bool &formatTrans = false);
+    ParamSetter& Input(const at::Tensor &tensor, const bool &format_trans = false);
+    ParamSetter& Input(const c10::optional<at::Tensor> &tensor, const bool &format_trans = false);
     ParamSetter& Output(at::Tensor &tensor);
-    atb::VariantPack variantPack;
-private:
-    c10::SmallVector<at::Tensor, N> tensorMaintainer;   // tensor's life should maintain when uncontiguous to contiguous.
+    atb::VariantPack variant_pack_;
+    TensorMaintainer tensor_maintainer_;
 };
 
 class ContextManager {
@@ -339,8 +349,8 @@ public:
 
 private:
     ContextManager();
-    std::once_flag createFlag;
-    atb::Context* atbContext;
+    std::once_flag create_flag_;
+    atb::Context* atb_context_;
 };
 
 void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name);

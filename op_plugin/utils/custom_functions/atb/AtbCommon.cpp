@@ -14,9 +14,9 @@
 #include "AtbCommon.h"
 
 namespace atb {
-atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
+atb::Tensor AtTensor2AtbTensor(const at::Tensor at_tensor)
 {
-    static std::map<at::ScalarType, aclDataType> dtypeMap = {
+    static std::map<at::ScalarType, aclDataType> dtype_map = {
         {at::ScalarType::Bool, ACL_BOOL},   {at::ScalarType::Byte, ACL_UINT8},
         {at::ScalarType::Char, ACL_INT8},   {at::ScalarType::Half, ACL_FLOAT16},
         {at::ScalarType::Float, ACL_FLOAT}, {at::ScalarType::Int, ACL_INT32},
@@ -26,23 +26,23 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
         {at::ScalarType::ComplexDouble, ACL_COMPLEX128},
     };
 
-    TORCH_CHECK(atTensor.is_contiguous(), "atTensor is not contiguous");
+    TORCH_CHECK(at_tensor.is_contiguous(), "at_tensor is not contiguous");
     atb::Tensor tensor;
-    tensor.desc.format = atb::utils::GetFormatForAtb(atTensor);
-    if (atTensor.device().type() == at::kCPU) {
-        tensor.hostData = atTensor.data_ptr();
+    tensor.desc.format = atb::utils::GetFormatForAtb(at_tensor);
+    if (at_tensor.device().type() == at::kCPU) {
+        tensor.hostData = at_tensor.data_ptr();
     } else {
-        tensor.deviceData = atTensor.data_ptr();
+        tensor.deviceData = at_tensor.data_ptr();
     }
 
-    tensor.desc.shape.dimNum = atTensor.sizes().size();
-    for (uint64_t i = 0; i < atTensor.sizes().size(); i++) {
-        tensor.desc.shape.dims[i] = atTensor.sizes()[i];
+    tensor.desc.shape.dimNum = at_tensor.sizes().size();
+    for (uint64_t i = 0; i < at_tensor.sizes().size(); i++) {
+        tensor.desc.shape.dims[i] = at_tensor.sizes()[i];
     }
 
-    auto dtypeIterator = dtypeMap.find(atTensor.scalar_type());
-    TORCH_CHECK(dtypeIterator != dtypeMap.end(), "not support dtype: ", atTensor.scalar_type());
-    tensor.desc.dtype = dtypeIterator->second;
+    auto dtype_iterator = dtype_map.find(at_tensor.scalar_type());
+    TORCH_CHECK(dtype_iterator != dtype_map.end(), "not support dtype: ", at_tensor.scalar_type());
+    tensor.desc.dtype = dtype_iterator->second;
 
     tensor.dataSize = atb::Utils::GetTensorSize(tensor);
 
@@ -53,71 +53,69 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor)
 void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name)
 {
     aclrtStream stream = c10_npu::getCurrentNPUStream().stream(false);
-    atb::VariantPack variantPack = paramsetter.variantPack;
-    auto acl_call = [op, variantPack, stream]() -> int {
-        auto contextPtr = GetContext(stream);
-        uint64_t workspaceSize = OperationSetup(variantPack, op, contextPtr);
-        at::Tensor workspaceTensor;
-        void *workspacePtr = nullptr;
-        if (workspaceSize != 0) {
-            workspaceTensor = GetWorkspaceTensor(workspaceSize, stream);
-            workspacePtr = const_cast<void *>(workspaceTensor.storage().data());
+    atb::VariantPack variant_pack = paramsetter.variant_pack_;
+    const c10::SmallVector<at::Tensor, N>& cpu_tensors = paramsetter.tensor_maintainer_.cpu_tensors;
+    auto acl_call = [op, variant_pack, stream, cpu_tensors]() -> int {
+        auto context_ptr = GetContext(stream);
+        uint64_t workspace_size = OperationSetup(variant_pack, op, context_ptr);
+        at::Tensor workspace_tensor;
+        void *workspace_ptr = nullptr;
+        if (workspace_size != 0) {
+            workspace_tensor = at_npu::native::allocate_workspace(workspace_size, stream);
+            workspace_ptr = const_cast<void *>(workspace_tensor.storage().data());
         }
-        auto st = op->Execute(variantPack, (uint8_t *)workspacePtr, workspaceSize, contextPtr);
+        auto st = op->Execute(variant_pack, (uint8_t *)workspace_ptr, workspace_size, context_ptr);
         return 0;
     };
     at_npu::native::OpCommand::RunOpApiV2(name, acl_call);
 }
 
 
-ParamSetter& ParamSetter::Input(const at::Tensor &tensor, const bool &formatTrans)
+ParamSetter& ParamSetter::Input(const at::Tensor &tensor, const bool &format_trans)
 {
     if (!tensor.defined()) {
-        variantPack.inTensors.push_back(atb::Tensor());
+        variant_pack_.inTensors.push_back(atb::Tensor());
         return *this;
     }
-    at::Tensor newTensor = tensor.contiguous();
-    if (formatTrans) {
-        newTensor = atb::utils::FormatTrans(newTensor);
+    at::Tensor new_tensor = tensor.contiguous();
+    if (format_trans) {
+        new_tensor = atb::utils::FormatTrans(new_tensor);
     }
-    auto atbTensor = AtTensor2AtbTensor(newTensor);
-    variantPack.inTensors.push_back(atbTensor);
-    tensorMaintainer.emplace_back(std::move(newTensor));
+    auto atb_tensor = AtTensor2AtbTensor(new_tensor);
+    variant_pack_.inTensors.push_back(atb_tensor);
+    if (new_tensor.device().type() == at::kCPU) {
+        tensor_maintainer_.cpu_tensors.emplace_back(std::move(new_tensor));
+    } else {
+        tensor_maintainer_.contiguous_tensors.emplace_back(std::move(new_tensor));
+    }
     return *this;
 }
 
 
-ParamSetter& ParamSetter::Input(const c10::optional<at::Tensor> &tensor, const bool &formatTrans)
+ParamSetter& ParamSetter::Input(const c10::optional<at::Tensor> &tensor, const bool &format_trans)
 {
     if (!tensor.has_value()) {
-        variantPack.inTensors.push_back(atb::Tensor());
+        variant_pack_.inTensors.push_back(atb::Tensor());
         return *this;
     }
-    return Input(tensor.value(), formatTrans);
+    return Input(tensor.value(), format_trans);
 }
 
 
 ParamSetter& ParamSetter::Output(at::Tensor &output)
 {
-    auto atbTensor = AtTensor2AtbTensor(output);
-    variantPack.outTensors.push_back(atbTensor);
+    auto atb_tensor = AtTensor2AtbTensor(output);
+    variant_pack_.outTensors.push_back(atb_tensor);
     return *this;
 }
 
 
-uint64_t OperationSetup(atb::VariantPack variantPack, atb::Operation *operation, atb::Context* contextPtr)
+uint64_t OperationSetup(atb::VariantPack variant_pack, atb::Operation *operation, atb::Context* context_ptr)
 {
-    uint64_t workspaceSize = 0;
-    atb::Status status = operation->Setup(variantPack, workspaceSize, contextPtr);
-    TORCH_CHECK(status == 0, "setup failed!");
-    return workspaceSize;
-}
-
-
-at::Tensor GetWorkspaceTensor(uint64_t workspaceSize, aclrtStream stream)
-{
-    at::Tensor workspaceTensor = at_npu::native::allocate_workspace(workspaceSize, stream);
-    return workspaceTensor;
+    uint64_t workspace_size = 0;
+    atb::Status status = operation->Setup(variant_pack, workspace_size, context_ptr);
+    TORCH_CHECK(status == 0, operation -> GetName(), " setup failed!");
+    return workspace_size;
 }
 
 
@@ -128,28 +126,28 @@ ContextManager& ContextManager::GetInstance()
 }
 
 
-ContextManager::ContextManager() : atbContext(nullptr) {}
+ContextManager::ContextManager() : atb_context_(nullptr) {}
 
 
 ContextManager::~ContextManager()
 {
-    if (atbContext) {
-        auto status = atb::DestroyContext(atbContext);
-        TORCH_CHECK(status == 0, "destroy context failed!");
-        atbContext = nullptr;
+    if (atb_context_) {
+        auto status = atb::DestroyContext(atb_context_);
+        TORCH_CHECK(status == 0, "Destroy context failed!");
+        atb_context_ = nullptr;
     }
 }
 
 
 atb::Context* ContextManager::GetContext(aclrtStream stream)
 {
-    std::call_once(createFlag, [this]() {
-        auto status = atb::CreateContext(&atbContext);
-        TORCH_CHECK(status == 0, "create context failed!");
+    std::call_once(create_flag_, [this]() {
+        auto status = atb::CreateContext(&atb_context_);
+        TORCH_CHECK(status == 0, "Create context failed!");
     });
 
-    atbContext->SetExecuteStream(stream);
-    return atbContext;
+    atb_context_->SetExecuteStream(stream);
+    return atb_context_;
 }
 
 
