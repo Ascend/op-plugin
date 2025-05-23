@@ -417,7 +417,7 @@ def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None
         N = query.size(2)
         S1 = query.size(1)
     if input_layout == "BSH_NBSD":
-        tmp_out = torch.empty([num_heads, query.size(0), query.size(1), int(query.size(2) / num_heads)], dtype=query.dtype, device='meta')
+        tmp_out = torch.empty([num_heads, query.size(0), query.size(1), query.size(2) // num_heads], dtype=query.dtype, device='meta')
         B = query.size(0)
         N = num_heads
         S1 = query.size(1)
