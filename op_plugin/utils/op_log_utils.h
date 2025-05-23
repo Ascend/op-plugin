@@ -368,7 +368,7 @@ inline std::string concat_element_info(const std::vector<std::string>& vec, cons
     return result;
 }
 
-template <typename... Ts> inline constexpr std::string generate_log_infos(const char* arg_names, Ts &...args)
+template <typename... Ts> inline std::string generate_log_infos(const char* arg_names, Ts &...args)
 {
     std::vector<std::string> split_result = split_and_processing_args(arg_names);
     auto converted_info = std::make_tuple(convert_info(args)...);
@@ -378,7 +378,7 @@ template <typename... Ts> inline constexpr std::string generate_log_infos(const 
     return log_info;
 }
 
-template <typename... Ts> inline constexpr std::string generate_debug_log_infos(const char* arg_names, Ts &...args)
+template <typename... Ts> inline std::string generate_debug_log_infos(const char* arg_names, Ts &...args)
 {
     std::vector<std::string> split_result = split_and_processing_args(arg_names);
     auto converted_info = std::make_tuple(convert_debug_info(args)...);
