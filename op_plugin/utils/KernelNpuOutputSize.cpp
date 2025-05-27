@@ -1932,4 +1932,21 @@ c10::SmallVector<int64_t, SIZE> npu_nsa_compress_out_size(const at::Tensor& inpu
     return output_shape;
 }
 
+c10::SmallVector<int64_t, SIZE> npu_nsa_select_attention_infer_out_size(const at::Tensor& query, const at::Tensor& value, int64_t head_num, int64_t key_value_head_num, c10::string_view layout)
+{
+    std::string input_layout = std::string(layout);
+    TORCH_CHECK(input_layout == "BSH" || input_layout == "BSND", "layout only support BSH or BSND now.", OPS_ERROR(ErrCode::PARAM));
+
+    at::SmallVector<int64_t, SIZE> output_size;
+    if (input_layout == "BSH") {
+        TORCH_CHECK(key_value_head_num >0, "key_value_head_num must be greater than 0." + OPS_ERROR(ErrCode::VALUE));
+        auto key_head_dim = value.size(DIM_2) / key_value_head_num;
+        output_size = {query.size(DIM_0), query.size(DIM_1), head_num * key_head_dim};
+    } else {
+        output_size = {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2), value.size(DIM_3)};
+    }
+
+    return output_size;
+}
+
 } // namespace op_infer

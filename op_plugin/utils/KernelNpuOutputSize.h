@@ -31,6 +31,10 @@ const int SIZE = 8;
 const int INT4_NUMS_IN_INT32_SPACE = 8;
 const int NPU_NSA_COMPRESS_INPUT_DIM_SECOND = 1;
 const int NPU_NSA_COMPRESS_INPUT_DIM_THIRD = 2;
+const int DIM_0 = 0;
+const int DIM_1 = 1;
+const int DIM_2 = 2;
+const int DIM_3 = 3;
 
 using tuple_array_vector = std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>;
 using tuple_vector = std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>;
@@ -356,5 +360,6 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> kronecker_quant_scale_size(cons
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> matmul_output_size(const at::Tensor &tensor1, const at::Tensor &tensor2);
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> npu_group_quant_out_size(const at::Tensor& x, c10::optional<at::ScalarType> dst_dtype);
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> npu_nsa_compress_out_size(const at::Tensor& input, c10::optional<int64_t> actual_seq_len_type, at::OptionalIntArrayRef actual_seq_len, int64_t compress_block_size, int64_t compress_stride);
+OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> npu_nsa_select_attention_infer_out_size(const at::Tensor& query, const at::Tensor& value, int64_t head_num, int64_t key_value_head_num, c10::string_view layout);
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE
