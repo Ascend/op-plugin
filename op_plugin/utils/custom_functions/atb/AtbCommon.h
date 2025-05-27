@@ -298,7 +298,7 @@ template <typename Tuple> void ReleaseConvertTypes(Tuple &t)
         auto hash_id = computeHash(std::string(#atb_api), __VA_ARGS__);                                           \
         const c10::SmallVector<at::Tensor, N>& cpu_tensors = tensor_maintainer.cpu_tensors;                       \
         auto atb_call = [copied_params, acl_stream, hash_id, cpu_tensors]()->int {                                \
-            auto context_ptr = GetContext(acl_stream);                                                            \
+            auto context_ptr = atb::utils::GetContext(acl_stream);                                                \
             uint64_t workspace_size = 0;                                                                          \
             uint64_t *workspace_size_addr = &workspace_size;                                                      \
             OpParamCache<uint64_t>& opParamCache = OpParamCache<uint64_t>::getInstance();                         \
@@ -336,21 +336,6 @@ public:
     ParamSetter& Output(at::Tensor &tensor);
     atb::VariantPack variant_pack_;
     TensorMaintainer tensor_maintainer_;
-};
-
-class ContextManager {
-public:
-    static ContextManager& GetInstance();
-    atb::Context* GetContext(aclrtStream stream);
-    ~ContextManager();
-
-    ContextManager(const ContextManager&) = delete;
-    ContextManager& operator=(const ContextManager&) = delete;
-
-private:
-    ContextManager();
-    std::once_flag create_flag_;
-    atb::Context* atb_context_;
 };
 
 void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name);

@@ -18,6 +18,39 @@
 namespace atb {
 namespace utils {
 
+ContextManager& ContextManager::GetInstance()
+{
+    static ContextManager instance;
+    return instance;
+}
+
+ContextManager::ContextManager() : atb_context_(nullptr) {}
+
+ContextManager::~ContextManager()
+{
+    if (atb_context_) {
+        auto status = atb::DestroyContext(atb_context_);
+        TORCH_CHECK(status == 0, "Destroy context failed!");
+        atb_context_ = nullptr;
+    }
+}
+
+atb::Context* ContextManager::GetContext(aclrtStream stream)
+{
+    std::call_once(create_flag_, [this]() {
+        auto status = atb::CreateContext(&atb_context_);
+        TORCH_CHECK(status == 0, "Create context failed!");
+    });
+
+    atb_context_->SetExecuteStream(stream);
+    return atb_context_;
+}
+
+atb::Context* GetContext(aclrtStream stream)
+{
+    return ContextManager::GetInstance().GetContext(stream);
+}
+
 aclDataType ConvertToAclDataType(const at::ScalarType &data_type)
 {
     auto acl_dtype = kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(data_type)];
@@ -48,6 +81,5 @@ aclFormat GetFormatForAtb(const at::Tensor &at_tensor)
     }
     return ACL_FORMAT_ND;
 }
-
 }  // namespace utils
 }  // namespace atb

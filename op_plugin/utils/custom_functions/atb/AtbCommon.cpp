@@ -56,7 +56,7 @@ void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::st
     atb::VariantPack variant_pack = paramsetter.variant_pack_;
     const c10::SmallVector<at::Tensor, N>& cpu_tensors = paramsetter.tensor_maintainer_.cpu_tensors;
     auto acl_call = [op, variant_pack, stream, cpu_tensors]() -> int {
-        auto context_ptr = GetContext(stream);
+        auto context_ptr = atb::utils::GetContext(stream);
         uint64_t workspace_size = OperationSetup(variant_pack, op, context_ptr);
         at::Tensor workspace_tensor;
         void *workspace_ptr = nullptr;
@@ -116,44 +116,6 @@ uint64_t OperationSetup(atb::VariantPack variant_pack, atb::Operation *operation
     atb::Status status = operation->Setup(variant_pack, workspace_size, context_ptr);
     TORCH_CHECK(status == 0, operation -> GetName(), " setup failed!");
     return workspace_size;
-}
-
-
-ContextManager& ContextManager::GetInstance()
-{
-    static ContextManager instance;
-    return instance;
-}
-
-
-ContextManager::ContextManager() : atb_context_(nullptr) {}
-
-
-ContextManager::~ContextManager()
-{
-    if (atb_context_) {
-        auto status = atb::DestroyContext(atb_context_);
-        TORCH_CHECK(status == 0, "Destroy context failed!");
-        atb_context_ = nullptr;
-    }
-}
-
-
-atb::Context* ContextManager::GetContext(aclrtStream stream)
-{
-    std::call_once(create_flag_, [this]() {
-        auto status = atb::CreateContext(&atb_context_);
-        TORCH_CHECK(status == 0, "Create context failed!");
-    });
-
-    atb_context_->SetExecuteStream(stream);
-    return atb_context_;
-}
-
-
-atb::Context* GetContext(aclrtStream stream)
-{
-    return ContextManager::GetInstance().GetContext(stream);
 }
 
 } // namespace atb

@@ -20,6 +20,7 @@
 #include <torch_npu/csrc/framework/OpCommand.h>
 #include "op_plugin/third_party/atb/inc/atb_infer.h"
 #include "OperationCacheCompute.h"
+#include "Utils.h"
 
 
 namespace atb {
@@ -35,7 +36,7 @@ public:
     void saveOperation(uint64_t hash_id, atb::Operation* op);
 
 private:
-    OpParamCache() = default;
+    OpParamCache();
 
     OpParamCache(const OpParamCache&) = delete;
     OpParamCache& operator=(const OpParamCache&) = delete;
@@ -93,6 +94,13 @@ void OpParamCache<ParamType>::saveOperation(uint64_t hash_id, atb::Operation* op
     std::lock_guard<std::mutex> lock(mutex_);
     op_map_[hash_id] = op;
     return ;
+}
+
+template <typename ParamType>
+OpParamCache<ParamType>::OpParamCache()
+{
+    // To satisfy the destructuring order, ContextManager should be instantiated before OpParamCache.
+    atb::utils::ContextManager::GetInstance();
 }
 
 template <typename ParamType>

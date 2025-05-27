@@ -17,9 +17,27 @@
 #include <ATen/ATen.h>
 #include <acl/acl.h>
 #include <torch_npu/csrc/core/npu/NPUFormat.h>
+#include "op_plugin/third_party/atb/inc/atb_infer.h"
 
 namespace atb {
 namespace utils {
+
+class ContextManager {
+public:
+    static ContextManager& GetInstance();
+    atb::Context* GetContext(aclrtStream stream);
+    ~ContextManager();
+
+    ContextManager(const ContextManager&) = delete;
+    ContextManager& operator=(const ContextManager&) = delete;
+
+private:
+    ContextManager();
+    std::once_flag create_flag_;
+    atb::Context* atb_context_;
+};
+
+atb::Context* GetContext(aclrtStream stream);
 
 #define AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(_)                                                                    \
     _(at::ScalarType::Byte, ACL_UINT8)                                                                                 \
@@ -59,7 +77,6 @@ constexpr aclDataType kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(at:
 aclDataType ConvertToAclDataType(const at::ScalarType &data_type);
 at::Tensor FormatTrans(const at::Tensor &at_tensor);
 aclFormat GetFormatForAtb(const at::Tensor &at_tensor);
-
 }  // namespace utils
 }  // namespace atb
 
