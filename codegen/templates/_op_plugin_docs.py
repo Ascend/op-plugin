@@ -586,7 +586,7 @@ size (ListInt) - 对应扩展尺寸。
 >>> x = torch.tensor([[1], [2], [3]]).npu()
 >>> x.shape
 torch.Size([3, 1])
->>> x.npu_broadcast(3, 4)
+>>> torch_npu.npu_broadcast(x, [3, 4])
 tensor([[1, 1, 1, 1],
         [2, 2, 2, 2],
         [3, 3, 3, 3]], device='npu:0')
@@ -2638,7 +2638,7 @@ import torch_npu
 x = torch.randn(24, 1, 128).bfloat16().npu()
 w = torch.randn(128).bfloat16().npu()
 ​
-out1 = torch.npu_rms_norm(x, w, epsilon=1e-5)[0]
+out1 = torch_npu.npu_rms_norm(x, w, epsilon=1e-5)[0]
 print(out1)
 tensor([[[-0.1123,  0.3398,  0.0986,  ..., -2.1250, -0.8477, -0.3418]],
 ​
@@ -2937,6 +2937,10 @@ self (Tensor) - 输入张量。
 indices (Tensor) - 待scatter的元素index，可以为空，也可以与src有相同的维数。当为空时，操作返回“self unchanged”。
 updates (Tensor) - 待scatter的源元素。
 dim (Int) - 要进行index的轴。
+
+支持的型号:
+Atlas 训练系列产品
+
 示例
 >>> input    = torch.tensor([[1.6279, 0.1226], [0.9041, 1.0980]]).npu()
 >>> input
@@ -2972,10 +2976,9 @@ Size可被float打包的输出整除。如果x的size可被8整除，则输出�
 
 示例
     >>>a = torch.tensor([5,4,3,2,0,-1,-2, 4,3,2,1,0,-1,-2],dtype=torch.float32).npu()
-    >>>b = torch_npu.sign_bits_pack(a, 2)
+    >>>b = torch_npu.npu_sign_bits_pack(a, 2)
     >>>b
     >>>tensor([[159],[15]], device='npu:0')
-    >>>(binary form of 159 is ob10011111, corresponds to 4, -2, -1, 0, 2, 3, 4, 5 respectively)
 """
 )
 
@@ -2983,20 +2986,20 @@ Size可被float打包的输出整除。如果x的size可被8整除，则输出�
 _add_torch_npu_docstr(
     "npu_sign_bits_unpack",
     """
-torch_npu.npu_sign_bits_unpack(x, dtype, size) -> Tensor
+torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 功能描述
 将uint8类型1位Adam拆包为float。
 
 参数说明
 x(Tensor) - 1D uint8张量。
-dtype(torch.dtype) - 值为1设置输出类型为float16，值为0设置输出类型为float32。
 size(Int) - reshape时输出张量的第一个维度。
+dtype(torch.dtype) - 值为1设置输出类型为float16，值为0设置输出类型为float32。
 约束说明
 Size可被uint8s拆包的输出整除。输出大小为(size of x) * 8。
 
 示例
     >>>a = torch.tensor([159, 15], dtype=torch.uint8).npu()
-    >>>b = torch_npu.npu_sign_bits_unpack(a, 0, 2)
+    >>>b = torch_npu.npu_sign_bits_unpack(a, 2, torch.float32)
     >>>b
     >>>tensor([[1., 1., 1., 1., 1., -1., -1., 1.],
     >>>[1., 1., 1., 1., -1., -1., -1., -1.]], device='npu:0')
