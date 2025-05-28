@@ -29,6 +29,17 @@ inline void alpha_check_npu(const at::ScalarType dtype, at::Scalar alpha)
                 + OPS_ERROR(ErrCode::TYPE));
 }
 
+static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::ScalarType result_type,
+                                        const c10::Device device)
+{
+    if (npu_preparation::is_scalar_wrapped_to_tensor(tensor) ||
+        (tensor.dim() == 0 && !torch_npu::utils::is_npu(tensor))) {
+        at::Scalar scalar = tensor.item();
+        return npu_preparation::copy_scalar_to_device(scalar, result_type, device);
+    }
+    return tensor;
+}
+
 static at::Tensor &add_out_npu_nocheck(
     const at::Tensor &self,
     const at::Tensor &other,
@@ -40,7 +51,20 @@ static at::Tensor &add_out_npu_nocheck(
         c10::Scalar others = other.item();
         EXEC_NPU_CMD(aclnnAdds, self, others, alpha, result);
     } else {
-        EXEC_NPU_CMD(aclnnAdd, self, other, alpha, result);
+        if (self.dim() == 0 && !torch_npu::utils::is_npu(self)) {
+            // self is a scalar.
+            static const bool is_aclnn_available = check_aclnn_kernel_available("aclnnAddV3");
+            if (is_aclnn_available) {
+                c10::Scalar selfs = self.item();
+                EXEC_NPU_CMD(aclnnAddV3, selfs, other, alpha, result);
+            } else {
+                at::Tensor self_cp = self_tensor_to_device(self, result.scalar_type(), result.device());
+                EXEC_NPU_CMD(aclnnAdd, self_cp, other, alpha, result);
+            }
+        } else {
+            // self and other are all npu tensors.
+            EXEC_NPU_CMD(aclnnAdd, self, other, alpha, result);
+        }
     }
     return result;
 }
@@ -55,17 +79,6 @@ static at::Tensor &inplace_add_out_npu_no_check(at::Tensor &self, const at::Tens
         EXEC_NPU_CMD(aclnnInplaceAdd, self, other, alpha);
     }
     return self;
-}
-
-static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::ScalarType result_type,
-                                        const c10::Device device)
-{
-    if (npu_preparation::is_scalar_wrapped_to_tensor(tensor) ||
-        (tensor.dim() == 0 && !torch_npu::utils::is_npu(tensor))) {
-        at::Scalar scalar = tensor.item();
-        return npu_preparation::copy_scalar_to_device(scalar, result_type, device);
-    }
-    return tensor;
 }
 
 static at::Tensor add_dest_output(const at::Tensor &self, const at::Tensor &other)
@@ -83,12 +96,11 @@ at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar
     at::Tensor output_tensor = add_dest_output(self, other);
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType result_type = at::native::result_type(self, other);
-    at::Tensor self_cp = self_tensor_to_device(self, result_type, output_tensor.device());
     // construct the output tensor of the NPU
     at::Tensor result =
         npu_preparation::apply_tensor_without_format(output_size, output_tensor.options().dtype(result_type));
     // calculate the output result of the NPU
-    add_out_npu_nocheck(self_cp, other, alpha, result);
+    add_out_npu_nocheck(self, other, alpha, result);
     return result;
 }
 
@@ -114,11 +126,10 @@ at::Tensor &add_out(const at::Tensor &self, const at::Tensor &other, const at::S
     at::Tensor output_tensor = isSelfWrapped ? other : self;
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType result_type = at::native::result_type(self, other);
-    at::Tensor self_cp = self_tensor_to_device(self, result_type, result.device());
 
     npu_preparation::check_tensor({self}, result, result, output_size);
     npu_preparation::check_memory({self, other}, {result});
-    add_out_npu_nocheck(self_cp, other, alpha, result);
+    add_out_npu_nocheck(self, other, alpha, result);
     return result;
 }
 
