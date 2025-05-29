@@ -229,6 +229,14 @@ void add_param_to_buf(const at::IntArrayRef &at_array)
     MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
+void add_param_to_buf(const at::ArrayRef<c10::SymInt> &int_array)
+{
+    auto at_array = c10::asIntArrayRefUnchecked(int_array);
+    MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(int64_t)));
+    auto counter = at_array.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+}
+
 void add_param_to_buf(const at::ArrayRef<bool> &at_array)
 {
     MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(bool)));
@@ -265,6 +273,15 @@ void add_param_to_buf(const c10::optional<at::Tensor> &opt_tensor)
 }
 
 void add_param_to_buf(const c10::optional<at::IntArrayRef> &opt_array)
+{
+    if (opt_array.has_value()) {
+        add_param_to_buf(opt_array.value());
+    } else {
+        MEMCPY_TO_BUF(",", 1);
+    }
+}
+
+void add_param_to_buf(const c10::OptionalArrayRef<c10::SymInt> &opt_array)
 {
     if (opt_array.has_value()) {
         add_param_to_buf(opt_array.value());

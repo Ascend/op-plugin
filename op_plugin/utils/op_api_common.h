@@ -314,6 +314,17 @@ inline aclIntArray *ConvertType(const at::IntArrayRef &at_array)
     return array;
 }
 
+inline aclIntArray *ConvertType(const at::ArrayRef<c10::SymInt> &at_array)
+{
+    static const auto aclCreateIntArray = GET_OP_API_FUNC(aclCreateIntArray);
+    if (aclCreateIntArray == nullptr) {
+        return nullptr;
+    }
+    auto int_array = c10::asIntArrayRefUnchecked(at_array);
+    auto array = aclCreateIntArray(int_array.data(), int_array.size());
+    return array;
+}
+
 template <std::size_t N> inline aclBoolArray *ConvertType(const std::array<bool, N> &value)
 {
     static const auto aclCreateBoolArray = GET_OP_API_FUNC(aclCreateBoolArray);
@@ -376,6 +387,15 @@ inline aclTensor *ConvertType(const c10::optional<at::Tensor> &opt_tensor)
 }
 
 inline aclIntArray *ConvertType(const c10::optional<at::IntArrayRef> &opt_array)
+{
+    if (opt_array.has_value()) {
+        return ConvertType(opt_array.value());
+    }
+
+    return nullptr;
+}
+
+inline aclIntArray *ConvertType(const c10::OptionalArrayRef<c10::SymInt> &opt_array)
 {
     if (opt_array.has_value()) {
         return ConvertType(opt_array.value());
@@ -557,6 +577,12 @@ inline std::vector<int64_t> CopyTypeV2(const at::IntArrayRef &at_array)
     return at_array.vec();
 }
 
+inline std::vector<int64_t> CopyTypeV2(const at::ArrayRef<c10::SymInt> &at_array)
+{
+    auto int_array = c10::asIntArrayRefUnchecked(at_array);
+    return int_array.vec();
+}
+
 template <std::size_t N> inline aclBoolArray *ConvertTypeV2(const std::array<bool, N> &value)
 {
     static const auto aclCreateBoolArray = GET_OP_API_FUNC(aclCreateBoolArray);
@@ -657,6 +683,15 @@ inline aclIntArray *ConvertTypeV2(const c10::optional<std::vector<int64_t>> &opt
 }
 
 inline c10::optional<std::vector<int64_t>> CopyTypeV2(const c10::optional<at::IntArrayRef> &opt_array)
+{
+    if (opt_array.has_value()) {
+        return CopyTypeV2(opt_array.value());
+    }
+
+    return c10::nullopt;
+}
+
+inline c10::optional<std::vector<int64_t>> CopyTypeV2(const c10::OptionalArrayRef<c10::SymInt> &opt_array)
 {
     if (opt_array.has_value()) {
         return CopyTypeV2(opt_array.value());
@@ -837,11 +872,13 @@ template <typename T> void add_param_to_buf(const T &value)
 void add_param_to_buf(const at::Tensor &);
 void add_param_to_buf(const at::Scalar &);
 void add_param_to_buf(const at::IntArrayRef &);
+void add_param_to_buf(const at::ArrayRef<c10::SymInt> &);
 void add_param_to_buf(const at::ArrayRef<bool> &);
 void add_param_to_buf(const at::TensorList &);
 void add_param_to_buf(const at::ArrayRef<at::Scalar> &);
 void add_param_to_buf(const c10::optional<at::Tensor> &);
 void add_param_to_buf(const c10::optional<at::IntArrayRef> &);
+void add_param_to_buf(const c10::OptionalArrayRef<c10::SymInt> &);
 void add_param_to_buf(const c10::optional<at::Scalar> &);
 void add_param_to_buf(const at::ScalarType);
 void add_param_to_buf(const string &);

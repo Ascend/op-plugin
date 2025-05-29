@@ -113,6 +113,16 @@ inline std::string convert_info(const at::IntArrayRef &at_array)
     return ss.str();
 }
 
+inline std::string convert_info(const at::ArrayRef<c10::SymInt> &int_array)
+{
+    std::stringstream ss;
+    ss << "ArrayRef<c10::SymInt>";
+    auto at_array = c10::asIntArrayRefUnchecked(int_array);
+    append_size_and_elements(ss, at_array.size(), at_array);
+    ss << "\n";
+    return ss.str();
+}
+
 // std::array<bool, N> cannot be print derectly using operator<<.
 template <std::size_t N>
 inline void print_std_array(const std::array<bool, N> &value, std::stringstream& ss)
@@ -204,6 +214,17 @@ inline std::string convert_info(const c10::optional<at::IntArrayRef> &opt_array)
 
     std::stringstream ss;
     ss << "Optional None IntArrayRef" << "\n";
+    return ss.str();
+}
+
+inline std::string convert_info(const c10::OptionalArrayRef<c10::SymInt> &opt_array)
+{
+    if (opt_array.has_value()) {
+        return convert_info(opt_array.value());
+    }
+
+    std::stringstream ss;
+    ss << "Optional None ArrayRef<c10::SymInt>" << "\n";
     return ss.str();
 }
 

@@ -1819,15 +1819,12 @@ at::Tensor npu_incre_flash_attention_symint(
     at::TensorList keyTensors = key;
     at::TensorList valueTensors = value;
 
-    auto actSeqLenMiddle = actual_seq_lengths.value_or(at::ArrayRef<c10::SymInt>{});
-    auto actSeqLen = c10::asIntArrayRefUnchecked(actSeqLenMiddle);
-
     std::string input_layout_str = std::string(input_layout);
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV4, query, keyTensors, valueTensors, pse_shift, atten_mask,
-        actSeqLen, dequant_scale1, quant_scale1, dequant_scale2, quant_scale2, quant_offset2, antiquant_scale,
+        actual_seq_lengths, dequant_scale1, quant_scale1, dequant_scale2, quant_scale2, quant_offset2, antiquant_scale,
         antiquant_offset, block_table, kv_padding_size, num_heads, scale_value, input_layout_char,
         num_key_value_heads, block_size, inner_precise, output);
     return output;
