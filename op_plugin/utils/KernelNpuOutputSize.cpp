@@ -1909,6 +1909,25 @@ c10::SmallVector<int64_t, SIZE> npu_group_quant_out_size(const at::Tensor& x, c1
     return output_shape;
 }
 
+c10::SmallVector<int64_t, SIZE> npu_gather_sparse_index_out_size(const at::Tensor& input, const at::Tensor& index)
+{
+    c10::SmallVector<int64_t, SIZE> output_shape;
+    if (input.dim() == 0) {
+        output_shape = op_infer::array_to_small_vector(input.sizes());
+        return output_shape;
+    }
+
+    int64_t npu_tensor_dim_limit = 8;
+    TORCH_CHECK((input.dim() + index.dim() - 1 <= npu_tensor_dim_limit),
+                "input.dim() + index.dim() - 1 must not greater than 8." + OPS_ERROR(ErrCode::PARAM));
+    auto size_input = input.sizes();
+    auto size_index = index.sizes();
+    output_shape.insert(output_shape.end(), size_index.begin(), size_index.end());
+    output_shape.insert(output_shape.end(), size_input.begin() + 1, size_input.end());
+
+    return output_shape;
+}
+
 c10::SmallVector<int64_t, SIZE> npu_nsa_compress_out_size(const at::Tensor& input, c10::optional<int64_t> actual_seq_len_type, at::OptionalIntArrayRef actual_seq_len, int64_t compress_block_size, int64_t compress_stride)
 {
     int64_t compress_kv_num = 0;

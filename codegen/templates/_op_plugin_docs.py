@@ -8289,3 +8289,44 @@ if __name__ == "__main__":
     mp.spawn(run_npu_gmm_alltoallv, args=(worksize, master_ip, master_port, gmm_x, gmm_weight, send_counts, recv_counts, dtype), nprocs=worksize)
 """
 )
+
+_add_torch_npu_docstr(
+    "npu_gather_sparse_index",
+    """
+接口原型: 
+torch_npu.npu_gather_sparse_index(input, index) -> torch.Tensor
+
+功能描述: 
+从输入Tensor的指定维度dim，按照index中的下标序号提取元素，保存到out Tensor中。
+
+参数说明: 
+input(torch.Tensor): 输入张量，数据维度仅支持2维。
+    在Atlas A2/Atlas A3上数据类型支持torch.float32, torch.float16, torch.bfloat16, torch.int64, torch.int32, torch.int16,
+    torch.int8, torch.uint8, torch.bool, torch.float64, torch.complex64, torch.complex128
+index(torch.Tensor): 包含目标元素下标序号的张量。数据维度不超过8维。数据类型支持torch.int64, torch.int32。取值范围[0, input.shape[0] - 1], 不支持负数索引。
+
+输出说明: 
+out(torch.Tensor): 接口计算获得的结果，包含按照index中的下标序号提取的元素。数据类型与input一致，输出维度为index.dim + input.dim - 1。
+    例如input.shape = [16, 32], index.shape = [2, 3]，则输出张量 out.shape = [2, 3, 32]
+
+约束说明: 
+1. input 的维度与 index 的维度之和减1不能超过8，即index.dim + input.dim - 1<=8。
+
+支持版本: 
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号: 
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例: 
+import torch
+import torch_npu
+
+inputs = torch.randn(16, 32).npu()
+index = torch.randint(0, 16, [2, 3]).npu()
+out = torch_npu.npu_gather_sparse_index(inputs, index)
+"""
+)
+

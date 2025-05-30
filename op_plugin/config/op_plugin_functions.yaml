@@ -7518,6 +7518,19 @@ custom:
 
   - func: npu_attn_softmax_backward_(Tensor(a!) self, Tensor grad_output, Tensor values) -> Tensor(a!)
     op_api: all_version
+  
+  - func: npu_gather_sparse_index(Tensor input, Tensor index) -> Tensor
+    op_api: all_version
+    exposed: all_version
+    gen_opapi:
+      out:
+        size: 'npu_gather_sparse_index_out_size(input, index)'
+        dtype: input
+      new_params:
+        dim: '(int64_t)0'
+        batch_dims: '(int64_t)0'
+        mode: '(int64_t)1'
+      exec: aclnnGatherV3, input, dim, index, batch_dims, mode, out
 
   - func: npu_nsa_compress(Tensor input, Tensor weight, int compress_block_size, int compress_stride, *, int[]? actual_seq_len=None) -> Tensor
     op_api: all_version
