@@ -61,9 +61,8 @@ at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tens
         output = npu_preparation::apply_tensor_without_format({n, h}, expert_ids.options().dtype(at::kHalf));
     }
     
-    static const bool is_aclnn_v1_available = !check_aclnn_kernel_available("aclnnMoeDistributeCombineV2") ||
-                                              !check_aclnn_kernel_available("aclnnMoeDistributeCombineV2GetWorkspaceSize");
-    if (is_aclnn_v1_available) {
+    static const bool is_aclnn_v2_available = check_aclnn_kernel_available("aclnnMoeDistributeCombineV2");
+    if (!is_aclnn_v2_available) {
         EXEC_NPU_CMD(aclnnMoeDistributeCombine, expand_x, expert_ids, assist_info, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
                      activation_scale, weight_scale, group_list, expand_scales,
                      group_ep_ptr, ep_world_size, ep_rank_id,

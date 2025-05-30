@@ -102,9 +102,8 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
         ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));
     }
 
-    static const bool is_aclnn_v1_available = !check_aclnn_kernel_available("aclnnMoeDistributeDispatchV2") ||
-                                              !check_aclnn_kernel_available("aclnnMoeDistributeDispatchV2GetWorkspaceSize");
-    if (is_aclnn_v1_available) {
+    static const bool is_aclnn_v2_available = check_aclnn_kernel_available("aclnnMoeDistributeDispatchV2");
+    if (!is_aclnn_v2_available) {
         assist_info_forcombine = npu_preparation::apply_tensor_without_format({n * k}, x.options().dtype(at::kInt));
         EXEC_NPU_CMD(aclnnMoeDistributeDispatch, x, expert_ids, scales, x_active_mask, expert_scales,
                      group_ep_ptr, ep_world_size, ep_rank_id,
