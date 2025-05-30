@@ -90,10 +90,10 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
         dynamic_scales = npu_preparation::apply_tensor_without_format({a * tp_world_size}, x.options().dtype(at::kFloat));
     }
     
-    at::Tensor expand_idx = npu_preparation::apply_tensor_without_format({n * k}, x.options().dtype(at::kInt));
     at::Tensor expert_token_nums = npu_preparation::apply_tensor_without_format({local_moe_expert_num}, x.options().dtype(at::kLong));
     at::Tensor ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));
     at::Tensor tp_recv_counts = npu_preparation::apply_tensor_without_format({tp_world_size}, x.options().dtype(at::kInt));
+    at::Tensor assist_info_forcombine{nullptr};
 
     // a2分层方案
     at::Tensor expand_scales = npu_preparation::apply_tensor_without_format({a}, x.options().dtype(at::kFloat));
@@ -102,15 +102,32 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
         ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));
     }
 
-    EXEC_NPU_CMD(aclnnMoeDistributeDispatch, x, expert_ids, scales, x_active_mask, expert_scales,
-                 group_ep_ptr, ep_world_size, ep_rank_id,
-                 moe_expert_num,
-                 group_tp_ptr, tp_world_size, tp_rank_id,
-                 expert_shard_type, shared_expert_num, shared_expert_rank_num,
-                 quant_mode, global_bs_real, expert_token_nums_type, expand_x,
-                 dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts,
-                 tp_recv_counts, expand_scales);
-    return std::tie(expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts,
+    static const bool is_aclnn_v1_available = !check_aclnn_kernel_available("aclnnMoeDistributeDispatchV2") ||
+                                              !check_aclnn_kernel_available("aclnnMoeDistributeDispatchV2GetWorkspaceSize");
+    if (is_aclnn_v1_available) {
+        assist_info_forcombine = npu_preparation::apply_tensor_without_format({n * k}, x.options().dtype(at::kInt));
+        EXEC_NPU_CMD(aclnnMoeDistributeDispatch, x, expert_ids, scales, x_active_mask, expert_scales,
+                     group_ep_ptr, ep_world_size, ep_rank_id,
+                     moe_expert_num,
+                     group_tp_ptr, tp_world_size, tp_rank_id,
+                     expert_shard_type, shared_expert_num, shared_expert_rank_num,
+                     quant_mode, global_bs_real, expert_token_nums_type, expand_x,
+                     dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts,
+                     tp_recv_counts, expand_scales);
+    } else {
+        std::string comm_log = "0";
+        char *comm_log_ptr = const_cast<char *>(comm_log.c_str());
+        assist_info_forcombine = npu_preparation::apply_tensor_without_format({std::max(n * k, a * 128)}, x.options().dtype(at::kInt));
+        EXEC_NPU_CMD(aclnnMoeDistributeDispatchV2, x, expert_ids, scales, x_active_mask, expert_scales,
+                     group_ep_ptr, ep_world_size, ep_rank_id,
+                     moe_expert_num,
+                     group_tp_ptr, tp_world_size, tp_rank_id,
+                     expert_shard_type, shared_expert_num, shared_expert_rank_num,
+                     quant_mode, global_bs_real, expert_token_nums_type, comm_log_ptr, expand_x,
+                     dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts,
+                     tp_recv_counts, expand_scales);
+    }
+    return std::tie(expand_x, dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts, tp_recv_counts,
         expand_scales);
 }
 }

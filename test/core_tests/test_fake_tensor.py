@@ -2160,7 +2160,7 @@ class TestMoeDistributeDispatch(TestCase):
             self.assertEqual(result[1].shape[0], a)
             self.assertEqual(result[1].dtype, torch.float32)
 
-            self.assertEqual(result[2].shape[0], bs * k)
+            self.assertTrue(result[2].shape[0] >= (bs * k))
             self.assertEqual(result[2].dtype, torch.int32)
 
             self.assertEqual(result[3].shape[0], local_moe_expert_num)

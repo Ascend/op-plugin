@@ -876,7 +876,7 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
         outDtype = torch.int8
     local_moe_expert_num = int(local_moe_expert_num)
 
-    expand_idx = x.new_empty(tuple([n * k]), dtype=torch.int32)
+    expand_idx = x.new_empty(tuple([max(n * k, a * 128)]), dtype=torch.int32)
     if tp_world_size == 0:
         expand_x = x.new_empty(tuple([a, h]), dtype=outDtype)
         dynamic_scales = x.new_empty(tuple([a]), dtype=torch.float32)
@@ -896,7 +896,7 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
 
 @impl(m, "npu_moe_distribute_combine")
 def npu_moe_distribute_combine_meta(expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, group_ep, ep_world_size, ep_rank_id, moe_expert_num,
-                                    tp_send_counts=None, x_active_mask=None, activation_scale=None, weight_scale=None, group_list=None, expand_scales=None, group_tp="", tp_world_size=0,
+                                    tp_send_counts=None, x_active_mask=None, activation_scale=None, weight_scale=None, group_list=None, expand_scales=None, shared_expert_x=None, group_tp="", tp_world_size=0,
                                     tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, global_bs=0, out_dtype=0, comm_quant_mode=0, group_list_type=0):
     dim_list = []
     dim_list.append(expert_ids.size(0))
