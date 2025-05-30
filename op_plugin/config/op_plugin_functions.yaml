@@ -3528,6 +3528,9 @@ official:
     acl_op: all_version
     op_api: all_version
 
+  - func: _masked_softmax(Tensor self, Tensor mask, int? dim=None, int? mask_type=None) -> Tensor
+    op_api: all_version
+
   - func: matmul(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
     op_api: [v2.1, newest]
@@ -4015,6 +4018,9 @@ official:
   - func: native_layer_norm_backward(Tensor grad_out, Tensor input, int[] normalized_shape, Tensor mean, Tensor rstd, Tensor? weight, Tensor? bias, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
     acl_op: v1.11
     op_api: v1.11
+
+  - func: _native_multi_head_attention(Tensor query, Tensor key, Tensor value, int embed_dim, int num_head, Tensor qkv_weight, Tensor qkv_bias, Tensor proj_weight, Tensor proj_bias, Tensor? mask=None, bool need_weights=True, bool average_attn_weights=True, int? mask_type=None) -> (Tensor, Tensor)
+    op_api: all_version
 
   - func: ne.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
@@ -5780,6 +5786,9 @@ official:
     op_api: all_version
     gen_opapi:
       exec: aclnnInplaceTrunc
+
+  - func: _transform_bias_rescale_qkv(Tensor qkv, Tensor qkv_bias, int num_heads) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
 
   - func: uniform_(Tensor(a!) self, float from=0, float to=1, *, Generator? generator=None) -> Tensor(a!)
     acl_op: all_version
