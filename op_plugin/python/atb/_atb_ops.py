@@ -26,7 +26,9 @@ API_LIST = [
 ]
 
 
-ATB_API_LIST = []
+ATB_API_LIST = [
+    'npu_multi_head_latent_attention'
+]
 
 ATB_MODULE_NAME = 'atb'
 ATB_MODULE = types.ModuleType(ATB_MODULE_NAME)

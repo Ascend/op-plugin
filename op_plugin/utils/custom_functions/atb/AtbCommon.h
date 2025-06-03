@@ -127,6 +127,15 @@ inline aclTensor *ConvertType(TensorMaintainer& maintainer, const at::Tensor &te
     return acl_tensor;
 }
 
+inline aclTensor *ConvertType(TensorMaintainer& maintainer, const c10::optional<at::Tensor> &opt_tensor)
+{
+    if (opt_tensor.has_value() && opt_tensor.value().defined()) {
+        return ConvertType(maintainer, opt_tensor.value());
+    }
+
+    return nullptr;
+}
+
 template <typename T> T ConvertType(TensorMaintainer& maintainer, T value)
 {
     return value;
@@ -181,6 +190,15 @@ inline TensorStructPtr CopyTypeV2(TensorMaintainer& maintainer, const at::Tensor
         maintainer.contiguous_tensors.emplace_back(std::move(at_tensor));
     }
     return tensor_structptr;
+}
+
+inline TensorStructPtr CopyTypeV2(TensorMaintainer& maintainer, const c10::optional<at::Tensor> &opt_tensor)
+{
+    if (opt_tensor.has_value() && opt_tensor.value().defined()) {
+        return CopyTypeV2(maintainer, opt_tensor.value());
+    }
+
+    return nullptr;
 }
 
 template <typename T> T CopyTypeV2(TensorMaintainer& maintainer, T value)
