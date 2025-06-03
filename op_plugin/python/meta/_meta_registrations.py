@@ -905,6 +905,21 @@ def npu_moe_distribute_combine_meta(expand_x, expert_ids, expand_idx, ep_send_co
     return expand_x.new_empty(tuple(dim_list), dtype=expand_x.dtype)
 
 
+@impl(m, "npu_moe_distribute_combine_add_rms_norm")
+def npu_moe_distribute_combine_add_rms_norm_meta(expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, residual_x, gamma, group_ep, ep_world_size, ep_rank_id, moe_expert_num,
+                                    tp_send_counts=None, x_active_mask=None, activation_scale=None, weight_scale=None, group_list=None, expand_scales=None, shared_expert_x=None, group_tp="", tp_world_size=0,
+                                    tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, global_bs=0, out_dtype=0, comm_quant_mode=0, group_list_type=0, commAlg="", norm_eps=0):
+    dim_list = []
+    dim_list.append(expert_ids.size(0))
+    dim_list.append(expand_x.size(1))
+    dim_list2 = []
+    dim_list2.append(expert_ids.size(0))
+    dim_list2.append(1)
+    dim_list2.append(1)
+
+    return (expand_x.new_empty(tuple(dim_list), dtype=expand_x.dtype), expand_x.new_empty(tuple(dim_list2), dtype=expand_x.dtype), expand_x.new_empty(tuple(dim_list), dtype=expand_x.dtype))
+
+
 @impl(m, "npu_ffn")
 def npu_ffn_meta(x, weight1, weight2, activation, *, expert_tokens=None, expert_tokens_index=None, bias1=None,
                  bias2=None, scale=None, offset=None, deq_scale1=None, deq_scale2=None, antiquant_scale1=None,
