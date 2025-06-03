@@ -349,6 +349,22 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     int64_t group_list_type_value = group_list_type.value_or(0);
     int64_t act_type_value = act_type.value_or(0);
     auto tuning_config_real = tuning_config.value_or(at::IntArrayRef{});
+
+    const bool is_weight_nz = at_npu::native::custom_ops::get_npu_format(weight[0]) == ACL_FORMAT_FRACTAL_NZ;
+    if (is_weight_nz) {
+        static const bool is_weight_nz_available = check_aclnn_kernel_available("aclnnGroupedMatmulWeightNz");
+        TORCH_CHECK(is_weight_nz_available,
+                    "Format of weight in npu_grouped_matmul is FRACTAL_NZ, current CANN version "
+                    "do not support with this format. Please try to update the version of CANN."
+                    + OPS_ERROR(ErrCode::PARAM));
+        int64_t quant_per_group_size = 0;
+        EXEC_NPU_CMD(aclnnGroupedMatmulWeightNz, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
+            antiquant_offset_real, per_token_scale_real, group_list_real, activation_input_real,
+            activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,
+            group_list_type_value, act_type_value, tuning_config_real, quant_per_group_size,
+            result, act_out, dynamic_quant_scale_out);
+        return y;
+    }
     static const bool is_grouped_matmul_V5_available = check_aclnn_kernel_available("aclnnGroupedMatmulV5");
     if (!is_grouped_matmul_V5_available) {
         EXEC_NPU_CMD(aclnnGroupedMatmulV4, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
