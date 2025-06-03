@@ -86,7 +86,13 @@ inline void *GetApiFuncAddr(const char *apiName)
     }
 }
 
-inline aclTensor *ConvertType(const at::Tensor &tensor)
+
+struct TensorMaintainer {
+    c10::SmallVector<at::Tensor, N> contiguous_tensors;  // npu tensor's life should maintain when uncontiguous to contiguous.
+    c10::SmallVector<at::Tensor, N> cpu_tensors;         // cpu tensor's life should maintain in taskqueue.
+};
+
+inline aclTensor *ConvertType(TensorMaintainer& maintainer, const at::Tensor &tensor)
 {
     static const auto aclCreateTensor = reinterpret_cast<_aclCreateTensor>(GetApiFuncAddr("aclCreateTensor"));
     if (aclCreateTensor == nullptr) {
@@ -113,23 +119,23 @@ inline aclTensor *ConvertType(const at::Tensor &tensor)
         aclCreateTensor(at_tensor.sizes().data(), at_tensor.sizes().size(), acl_data_type, at_tensor.strides().data(),
                         at_tensor.storage_offset(), format, storageDims.data(), storageDims.size(),
                         const_cast<void *>(at_tensor.storage().data()));
+    if (at_tensor.device().type() == at::kCPU) {
+        maintainer.cpu_tensors.emplace_back(std::move(at_tensor));
+    } else {
+        maintainer.contiguous_tensors.emplace_back(std::move(at_tensor));
+    }
     return acl_tensor;
 }
 
-template <typename T> T ConvertType(T value)
+template <typename T> T ConvertType(TensorMaintainer& maintainer, T value)
 {
     return value;
 }
 
-template <typename... Ts> constexpr auto ConvertTypes(Ts &...args)
+template <typename... Ts> constexpr auto ConvertTypes(TensorMaintainer& maintainer, Ts &...args)
 {
-    return std::make_tuple(ConvertType(args)...);
+    return std::make_tuple(ConvertType(maintainer, args)...);
 }
-
-struct TensorMaintainer {
-    c10::SmallVector<at::Tensor, N> contiguous_tensors;  // npu tensor's life should maintain when uncontiguous to contiguous.
-    c10::SmallVector<at::Tensor, N> cpu_tensors;         // cpu tensor's life should maintain in taskqueue.
-};
 
 struct TensorStruct {
     void *data_ptr = nullptr;       // at_tensor.storage().data()
@@ -285,7 +291,45 @@ template <typename Tuple> void ReleaseConvertTypes(Tuple &t)
     CallRelease(t, std::make_index_sequence<size>{});
 }
 
-#define EXEC_ATB_CMD(atb_api, ...)                                                                                \
+#define EXEC_ATB_CMD_V1(atb_api, ...)                                                                             \
+    do {                                                                                                          \
+        static const auto getWorkspaceSizeFuncAddr = GetApiFuncAddr(#atb_api "GetWorkspaceSize");                 \
+        static const auto atbApiFuncAddr = GetApiFuncAddr(#atb_api);                                              \
+        TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && atbApiFuncAddr != nullptr, #atb_api, " or ",           \
+                    #atb_api "GetWorkspaceSize", " not in ", GetAtbApiLibName(), ", or ", GetAtbApiLibName(),     \
+                    "not found.");                                                                                \
+        auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                           \
+        auto context_ptr = atb::utils::GetContext(acl_stream);                                                    \
+        uint64_t workspace_size = 0;                                                                              \
+        uint64_t *workspace_size_addr = &workspace_size;                                                          \
+        atb::Operation *op = nullptr;                                                                             \
+        atb::Operation **op_addr = &op;                                                                           \
+        TensorMaintainer tensor_maintainer;                                                                       \
+        auto converted_params = ConvertTypes(tensor_maintainer, __VA_ARGS__,                                      \
+                                                workspace_size_addr, op_addr, context_ptr);                       \
+        static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);        \
+        auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                     \
+        TORCH_CHECK(workspace_status == 0, "call " #atb_api " failed, detail:");                                  \
+        void *workspace_addr = nullptr;                                                                           \
+        at::Tensor workspace_tensor;                                                                              \
+        if (workspace_size != 0) {                                                                                \
+            at::TensorOptions options = at::TensorOptions(c10::DeviceType::PrivateUse1);                          \
+            workspace_tensor = at::empty({workspace_size}, options.dtype(at::kByte));                             \
+            workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                               \
+        }                                                                                                         \
+        const c10::SmallVector<at::Tensor, N>& cpu_tensors = tensor_maintainer.cpu_tensors;                       \
+        auto atb_call = [converted_params, workspace_addr, workspace_size, context_ptr, op, cpu_tensors]()->int { \
+            AtbApiFunc atbApiFunc = reinterpret_cast<AtbApiFunc>(atbApiFuncAddr);                                 \
+            auto api_ret = atbApiFunc(workspace_addr, workspace_size, op, context_ptr);                           \
+            TORCH_CHECK(api_ret == 0, "call " #atb_api " failed, detail:");                                       \
+            DestroyOperation(op);                                                                                 \
+            ReleaseConvertTypes(converted_params);                                                                \
+            return api_ret;                                                                                       \
+        };                                                                                                        \
+        at_npu::native::OpCommand::RunOpApiV2(#atb_api, atb_call);                                                \
+    } while (false)
+
+#define EXEC_ATB_CMD_V2(atb_api, ...)                                                                             \
     do {                                                                                                          \
         static const auto getWorkspaceSizeFuncAddr = GetApiFuncAddr(#atb_api "GetWorkspaceSize");                 \
         static const auto AtbApiFuncAddr = GetApiFuncAddr(#atb_api);                                              \
@@ -325,6 +369,15 @@ template <typename Tuple> void ReleaseConvertTypes(Tuple &t)
         at_npu::native::OpCommand::RunOpApiV2(#atb_api, atb_call);                                                \
     } while (false)
 
+#define EXEC_ATB_CMD(atb_api, ...)                                                                                \
+    do {                                                                                                          \
+        const auto is_capturing = static_cast<int>(c10_npu::currentStreamCaptureStatusMayInitCtx());              \
+        if (is_capturing) {                                                                                       \
+            EXEC_ATB_CMD_V1(atb_api, __VA_ARGS__);                                                                \
+        } else {                                                                                                  \
+            EXEC_ATB_CMD_V2(atb_api, __VA_ARGS__);                                                                \
+        }                                                                                                         \
+    } while (false)
 
 atb::Tensor AtTensor2AtbTensor(const at::Tensor atTensor);
 atb::Context* GetContext(aclrtStream stream);

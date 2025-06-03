@@ -18,6 +18,7 @@
 #include <mutex>
 #include <memory>
 #include <torch_npu/csrc/framework/OpCommand.h>
+#include <torch_npu/csrc/core/npu/NPUGraphsUtils.h>
 #include "op_plugin/third_party/atb/inc/atb_infer.h"
 #include "OperationCacheCompute.h"
 #include "Utils.h"
@@ -47,6 +48,14 @@ private:
     mutable std::mutex mutex_;
 };
 
+template <typename ParamType>
+atb::Operation* CreateAtbOperation(const ParamType& param, const std::string& name)
+{
+    atb::Operation* op = nullptr;
+    atb::CreateOperation(param, &op);
+    TORCH_CHECK(op != nullptr, name, " CreateOperation failed!");
+    return op;
+}
 
 template <typename ParamType>
 OpParamCache<ParamType>& OpParamCache<ParamType>::getInstance()
@@ -59,19 +68,22 @@ OpParamCache<ParamType>& OpParamCache<ParamType>::getInstance()
 template <typename ParamType>
 atb::Operation* OpParamCache<ParamType>::getOperation(const ParamType& param, const std::string& name)
 {
-    uint64_t hashValue = computeHash(param);
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        auto op_cache = op_map_.find(hashValue);
-        if (op_cache != op_map_.end()) {
-            return op_cache->second;
+    const auto is_capturing = static_cast<int>(c10_npu::currentStreamCaptureStatusMayInitCtx());
+    if (is_capturing) {
+        // The atb operator does not support operator reuse, when operator creation and execution in separate threads.
+        return CreateAtbOperation(param, name);
+    } else {
+        uint64_t hashValue = computeHash(param);
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto op_cache = op_map_.find(hashValue);
+            if (op_cache != op_map_.end()) {
+                return op_cache->second;
+            }
+            atb::Operation* op = CreateAtbOperation(param, name);
+            op_map_[hashValue] = op;
+            return op;
         }
-        
-        atb::Operation* op = nullptr;
-        atb::CreateOperation(param, &op);
-        TORCH_CHECK(op != nullptr, name, " CreateOperation failed!");
-        op_map_[hashValue] = op;
-        return op;
     }
 }
 

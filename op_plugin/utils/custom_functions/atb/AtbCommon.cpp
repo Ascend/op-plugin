@@ -49,8 +49,29 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor at_tensor)
     return tensor;
 }
 
+void RunAtbCmdV1(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name)
+{
+    aclrtStream stream = c10_npu::getCurrentNPUStream().stream(false);
+    auto context_ptr = atb::utils::GetContext(stream);
+    atb::VariantPack variant_pack = paramsetter.variant_pack_;
+    uint64_t workspace_size = OperationSetup(variant_pack, op, context_ptr);
+    at::Tensor workspace_tensor;
+    void *workspace_ptr = nullptr;
+    if (workspace_size != 0) {
+        at::TensorOptions options = at::TensorOptions(c10::DeviceType::PrivateUse1);
+        workspace_tensor = at::empty({workspace_size}, options.dtype(at::kByte));
+        workspace_ptr = const_cast<void *>(workspace_tensor.storage().data());
+    }
+    const c10::SmallVector<at::Tensor, N>& cpu_tensors = paramsetter.tensor_maintainer_.cpu_tensors;
+    auto acl_call = [variant_pack, workspace_ptr, workspace_size, context_ptr, op, cpu_tensors]() -> int {
+        auto st = op->Execute(variant_pack, (uint8_t *)workspace_ptr, workspace_size, context_ptr);
+        DestroyOperation(op);
+        return st;
+    };
+    at_npu::native::OpCommand::RunOpApiV2(name, acl_call);
+}
 
-void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name)
+void RunAtbCmdV2(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name)
 {
     aclrtStream stream = c10_npu::getCurrentNPUStream().stream(false);
     atb::VariantPack variant_pack = paramsetter.variant_pack_;
@@ -68,6 +89,16 @@ void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::st
         return 0;
     };
     at_npu::native::OpCommand::RunOpApiV2(name, acl_call);
+}
+
+void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name)
+{
+    const auto is_capturing = static_cast<int>(c10_npu::currentStreamCaptureStatusMayInitCtx());
+    if (is_capturing) {
+        RunAtbCmdV1(op, paramsetter, name);
+    } else {
+        RunAtbCmdV2(op, paramsetter, name);
+    }
 }
 
 

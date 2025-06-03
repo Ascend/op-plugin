@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 import torch_npu
@@ -6,6 +7,10 @@ from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestElewiseQuantOperation(TestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        os.environ["ASCEND_LAUNCH_BLOCKING"] = "0"
+
     def calculate_benchmark(self, input_x, input_scale, input_offset):
         input_x_np = input_x.cpu().numpy()
         input_scale_np = input_scale.cpu().numpy()
@@ -32,6 +37,27 @@ class TestElewiseQuantOperation(TestCase):
         input_offset = input_offset.npu()
         torch_npu._npu_quantize_per_tensor(input_x, input_scale, input_offset, y)
         self.assertEqual(out, y)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_quantpertensor_aclgraph(self):
+        input_x = torch.ones(1, 16, 16, dtype=torch.float16).npu()
+        input_scale = torch.ones(16, 16, dtype=torch.float16).npu()
+        input_offset = torch.ones(16, 16, dtype=torch.int8).npu()
+        y = torch.zeros(size=(1, 16, 16), dtype=torch.int8).npu()
+        y1 = torch.zeros(size=(1, 16, 16), dtype=torch.int8).npu()
+
+        torch_npu._npu_quantize_per_tensor(input_x, input_scale, input_offset, y)
+
+        s = torch_npu.npu.Stream()
+        with torch_npu.npu.stream(s):
+            g = torch_npu.npu.NPUGraph()
+            g.capture_begin()
+            torch_npu._npu_quantize_per_tensor(input_x, input_scale, input_offset, y1)
+            g.capture_end()
+
+        g.replay()
+        self.assertEqual(y1, y)
+
 
 if __name__ == "__main__":
     run_tests()
