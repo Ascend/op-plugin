@@ -67,6 +67,13 @@ class TestMoeDistributeDispatch(TestCase):
                                                            shared_expert_rank_num=sharedExpertRankNum,
                                                            quant_mode=0,
                                                            global_bs=globalBS)
+
+        if tp_world_size == 1:
+            _ = torch_npu._npu_distribute_barrier(
+                x_ref=x,
+                group=ep_hcomm_name,
+                world_size=ep_world_size)
+
         if rank // tp_world_size_2 < sharedExpertRankNum:
             A = int(globalBS // sharedExpertRankNum)
         else:
