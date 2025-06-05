@@ -7666,6 +7666,14 @@ custom:
         actual_seq_kvlen_value: 'actual_seq_kvlen.value_or(at::IntArrayRef{})'
       exec: aclnnNsaSelectAttentionInfer, query, key, value, topk_indices, atten_mask, block_table, actual_seq_qlen_value, actual_seq_kvlen_value, layout_ptr, head_num, key_value_head_num, select_block_size, select_block_count, page_block_size, scale_value, sparse_mode, out
 
+  - func: npu_top_k_top_p(Tensor logits, Tensor p, Tensor k) -> Tensor
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: logits
+        dtype: logits
+      exec: aclnnApplyTopKTopP
+
 symint:
   - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
     op_api: all_version
