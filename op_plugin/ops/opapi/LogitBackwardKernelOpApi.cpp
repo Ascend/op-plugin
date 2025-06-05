@@ -37,7 +37,7 @@ at::Tensor &logit_backward_out(const at::Tensor &grad_output, const at::Tensor &
     auto output_size_0 = self.sizes();
     auto output_dtype_0 = self.scalar_type();
     npu_preparation::check_tensor({grad_output, self}, grad_input, output_dtype_0, output_size_0);
-    EXEC_NPU_CMD(aclnnLogitGrad, grad_output, self, eps_value, grad_input);
+    EXEC_NPU_CMD(aclnnLogitGrad, self, grad_output, eps_value, grad_input);
     return grad_input;
 }
 
@@ -54,7 +54,7 @@ at::Tensor logit_backward(const at::Tensor &grad_output, const at::Tensor &self,
     auto output_dtype_0 = self.scalar_type();
     at::Tensor grad_input = npu_preparation::apply_tensor_without_format(output_size_0,
                                                                          grad_output.options().dtype(output_dtype_0));
-    EXEC_NPU_CMD(aclnnLogitGrad, grad_output, self, eps_value, grad_input);
+    EXEC_NPU_CMD(aclnnLogitGrad, self, grad_output, eps_value, grad_input);
     return grad_input;
 }
 

@@ -63,5 +63,25 @@ class TestLogit(TestCase):
             self.assertEqual(cpu_output, npu_output_inplace)
 
 
+    def test_logit_backward(self):
+        shape_format = [
+            [[np.float32, 0, [3, 4]], 1e-5],
+            [[np.float32, 0, [3, 128, 256]], 3e-5],
+            [[np.float32, 0, [3, 256, 128, 8]], None],
+        ]
+        for item in shape_format:
+            cpu_input1, npu_input1 = create_common_tensor(item[0], 0.1, 0.9)
+            cpu_out, npu_out = create_common_tensor(item[0], 0.1, 0.9)
+            eps = item[1]
+            if eps is None:
+                cpu_output = self.cpu_op_exec(cpu_input1)
+                npu_output = self.npu_op_exec(npu_input1)
+            else:
+                cpu_output = self.cpu_op_exec(cpu_input1, eps)
+                npu_output = self.npu_op_exec(npu_input1, eps)
+
+            self.assertEqual(cpu_output, npu_output)
+
+
 if __name__ == "__main__":
     run_tests()
