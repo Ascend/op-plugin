@@ -7693,6 +7693,31 @@ custom:
         dtype: logits
       exec: aclnnApplyTopKTopP
 
+  - func: npu_moe_token_permute(Tensor tokens, Tensor indices, int? num_out_tokens=None, bool padded_mode=False) -> (Tensor, Tensor)
+    op_api: [v2.1, newest]
+    gen_opapi:
+      permuted_tokens:
+        size: 'npu_moe_token_permute_out_size(tokens, indices, num_out_tokens)'
+        dtype: tokens
+      sorted_indices:
+        size: '{indices.numel()}'
+        dtype: at::kInt
+      new_params:
+        num_out_tokens_value: 'num_out_tokens.value_or(0)'
+        flatten_size: 'indices.numel()'
+        actual_num_out_tokens: '(num_out_tokens_value > 0) ? std::min(num_out_tokens_value, flatten_size) : num_out_tokens_value + flatten_size'
+      exec: aclnnMoeTokenPermute, tokens, indices, actual_num_out_tokens, padded_mode, permuted_tokens, sorted_indices
+
+  - func: npu_moe_token_unpermute(Tensor permuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> Tensor
+    op_api: [v2.1, newest]
+    gen_opapi:
+      unpermuted_tokens:
+        size: 'npu_moe_token_unpermute_out_size(permuted_tokens, sorted_indices, probs)'
+        dtype: permuted_tokens
+      new_params:
+        restore_shape_value: 'restore_shape.value_or(at::IntArrayRef{1})'
+      exec: aclnnMoeTokenUnpermute, permuted_tokens, sorted_indices, probs, padded_mode, restore_shape_value, unpermuted_tokens
+
 symint:
   - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
     op_api: all_version
