@@ -6363,6 +6363,21 @@ official:
   - func: isin.Tensor_Tensor_out(Tensor elements, Tensor test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
     op_api: [v2.1, newest]
 
+  - func: logit(Tensor self, float? eps=None) -> Tensor
+    op_api: [v2.1, newest]
+
+  - func: logit_(Tensor(a!) self, float? eps=None) -> Tensor(a!)
+    op_api: [v2.1, newest]
+
+  - func: logit.out(Tensor self, float? eps=None, *, Tensor(a!) out) -> Tensor(a!)
+    op_api: [v2.1, newest]
+
+  - func: logit_backward.grad_input(Tensor grad_output, Tensor self, float? eps=None, *, Tensor(a!) grad_input) -> Tensor(a!)
+    op_api: [v2.1, newest]
+
+  - func: logit_backward(Tensor grad_output, Tensor self, float? eps=None) -> Tensor
+    op_api: [v2.1, newest]
+
 custom:
   - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
     op_api: all_version
