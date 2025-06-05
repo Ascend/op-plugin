@@ -27,6 +27,7 @@ API_LIST = [
 
 
 ATB_API_LIST = [
+    'npu_paged_cache_load',
     'npu_multi_head_latent_attention',
     '_npu_paged_attention_v2',
     '_npu_flash_attention_v2',
