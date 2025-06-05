@@ -43,28 +43,24 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
     auto x_size = x.sizes();
     auto expert_ids_size = expert_ids.sizes();
 
-    int64_t n = x_size[0];
+    int64_t bs = x_size[0];
     int64_t h = x_size[1];
     int64_t k = expert_ids_size[1];
 
     // a2 expert_shard_type、shared_expert_rank_num 应为0
-    bool shared_front = (expert_shard_type == 0) ? true : false;
+    bool shared_front = (expert_shard_type == 0);
     int64_t local_moe_expert_num = 0;
-    int64_t global_bs_real = (global_bs == 0) ? (n * ep_world_size) : global_bs;
+    int64_t global_bs_real = (global_bs == 0) ? (bs * ep_world_size) : global_bs;
     int64_t a = 0;
     int64_t ep_recv_cnt_num = 0;
+    int rank_num_per_shared_expert = -1;
+    if ((shared_expert_num != 0) && ((shared_expert_rank_num / shared_expert_num) != 0)) {
+        rank_num_per_shared_expert = shared_expert_rank_num / shared_expert_num;
+    }
     if (shared_front) {
         if (ep_rank_id < shared_expert_rank_num) {
             local_moe_expert_num =  1;
-            a = global_bs_real / shared_expert_rank_num;
-        } else {
-            local_moe_expert_num = moe_expert_num / (ep_world_size - shared_expert_rank_num);
-            a = global_bs_real * std::min(local_moe_expert_num, k);
-        }
-    } else {
-        if (ep_rank_id >= ep_world_size - shared_expert_rank_num) {
-            local_moe_expert_num = 1;
-            a = global_bs_real / shared_expert_rank_num;
+            a = global_bs_real / rank_num_per_shared_expert;
         } else {
             local_moe_expert_num = moe_expert_num / (ep_world_size - shared_expert_rank_num);
             a = global_bs_real * std::min(local_moe_expert_num, k);
@@ -104,7 +100,7 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
 
     static const bool is_aclnn_v2_available = check_aclnn_kernel_available("aclnnMoeDistributeDispatchV2");
     if (!is_aclnn_v2_available) {
-        assist_info_forcombine = npu_preparation::apply_tensor_without_format({n * k}, x.options().dtype(at::kInt));
+        assist_info_forcombine = npu_preparation::apply_tensor_without_format({bs * k}, x.options().dtype(at::kInt));
         EXEC_NPU_CMD(aclnnMoeDistributeDispatch, x, expert_ids, scales, x_active_mask, expert_scales,
                      group_ep_ptr, ep_world_size, ep_rank_id,
                      moe_expert_num,
@@ -116,7 +112,7 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
     } else {
         std::string comm_log = "0";
         char *comm_log_ptr = const_cast<char *>(comm_log.c_str());
-        assist_info_forcombine = npu_preparation::apply_tensor_without_format({std::max(n * k, a * 128)}, x.options().dtype(at::kInt));
+        assist_info_forcombine = npu_preparation::apply_tensor_without_format({std::max(bs * k, a * 128)}, x.options().dtype(at::kInt));
         EXEC_NPU_CMD(aclnnMoeDistributeDispatchV2, x, expert_ids, scales, x_active_mask, expert_scales,
                      group_ep_ptr, ep_world_size, ep_rank_id,
                      moe_expert_num,
