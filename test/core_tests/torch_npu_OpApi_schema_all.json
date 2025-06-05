@@ -3789,5 +3789,8 @@
   },
   "func: npu_gather_sparse_index(Tensor input, Tensor index) -> Tensor": {
     "version": ["all_version"]
+  },
+  "func: npu_grouped_matmul_swiglu_quant(Tensor x, Tensor weight, Tensor group_list, Tensor weight_scale, Tensor x_scale, *, Tensor? bias=None, Tensor? offset=None) -> (Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
   }
 }

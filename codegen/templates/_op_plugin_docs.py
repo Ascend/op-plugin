@@ -8196,6 +8196,74 @@ if __name__ == "__main__":
 )
 
 _add_torch_npu_docstr(
+    "npu_grouped_matmul_swiglu_quant",
+    """
+torch_npu.npu_grouped_matmul_swiglu_quant(Tensor x, Tensor weight, Tensor group_list, Tensor weight_scale, Tensor x_scale, *, Tensor? bias=None, Tensor? offset=None) -> (Tensor, Tensor, Tensor)
+功能描述
+aclnnGroupedMatmulV4、aclnnDynamicDequant、aclnnSwigluQuant融合, deepseek模型使用，对比小算子做性能优化。
+
+参数说明
+x（Tensor）：输入，左矩阵，公式中的X，Device侧的aclTensor。shape支持2维，数据类型支持INT8，数据格式支持ND，支持非连续的Tensor。
+weight（Tensor）：输入，权重矩阵，公式中的W，Device侧的aclTensor。shape支持5维，数据类型支持INT8，数据格式支持FRACTAL_NZ，支持非连续的Tensor，需注意该接口会将weight的数据格式强制视为FRACTAL_NZ格式。
+group_list （Tensor）：输入，指示每个分组参与计算的Token个数，公式中的grouplist，Device侧的aclTensor。shape支持1维，长度需与weight的首轴维度相等，数据类型支持INT64，数据格式支持ND，支持非连续的Tensor。
+weight_scale （Tensor）：输入，右矩阵的量化因子，公式中的w_scale，Device侧的aclTensor。shape支持2维，首轴长度需与weight的首轴维度相等，尾轴长度需要与weight还原为ND格式的尾轴相同，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。
+x_scale （Tensor）：输入，左矩阵的量化因子，公式中的x_scale，Device侧的aclTensor。shape支持1维，长度需与x的首轴维度相等，数据类型支持FLOAT，数据格式支持ND，支持非连续的Tensor。
+bias（可选，Tensor）：输入，矩阵乘计算的偏移值，公式中的bias，shape支持2维，数据类型支持INT32，预留输入，暂不支持，需要传空指针。
+offset（可选，Tensor）：输入，per-channel非对称反量化的偏移，公式中的offset，shape支持2维，数据类型支持Float，预留输入，暂不支持，需要传空指针。
+
+输出说明
+output（Tensor）：输出的量化结果，公式中的Q，Device侧的aclTensor。数据类型支持INT8，shape支持2维，Device侧的aclTensor。数据格式支持ND，支持非连续的Tensor。
+output_scale（Tensor）：输出的量化因子，公式中的Q_scale，Device侧的aclTensor。数据类型支持FLOAT，shape支持1维，Device侧的aclTensor。数据格式支持ND，支持非连续的Tensor。
+output_offset（Tensor）：输出的非对称量化的偏移，公式中的Q_offset，Device侧的aclTensor，shape支持1维，数据类型支持FLOAT，预留输出，暂不支持，需要传空指针
+
+支持的型号
+A2训练、推理系列产品
+A3训练、推理系列产品
+
+调用示例
+import torch
+import torch_npu
+import numpy as np
+
+def generate_non_decreasing_sequence(length, upper_limit):
+    # 生成随机增量
+    random_increments = torch.randint(1, 128, (length,), dtype=torch.int64)  # 避免零增量
+    # 累加生成非递减序列
+    sequence = torch.cumsum(random_increments, dim=0)
+    # 确保最后一个元素不超过上限
+    if sequence[-1] > upper_limit:
+        # 线性缩放以确保总和不超过上限
+        scale_factor = upper_limit / sequence[-1].item()
+        sequence = (sequence * scale_factor).to(torch.int64)
+        for i in range(1, length):
+            if sequence[i] <= sequence[i-1]:
+                sequence[i] = sequence[i-1] + 1
+    return sequence
+
+def gen_input_data(E=16, M=512, K=7168, N=4096):
+    x = torch.randint(-128, 127, (M, K), dtype=torch.int8).npu()
+    weight = torch.randint(-128, 127, (E, K, N), dtype=torch.int8).npu()
+    weight_npu = torch_npu.npu_format_cast(weight.npu(), 29)
+    weight_scale = torch.randn(E, N, dtype=torch.float32).npu()
+    x_scale = torch.randn(M, dtype=torch.float32).npu()
+    group_list = generate_non_decreasing_sequence(E, M).npu()
+    output, output_scale, output_offset = torch_npu.npu_grouped_matmul_swiglu_quant(
+        x, weight_npu, group_list, weight_scale, x_scale,
+        bias=None,
+        offset=None
+    )
+    return output, output_scale, output_offset
+
+def main():
+    output, output_scale, output_offset = gen_input_data()
+
+if __name__ == "__main__":
+    main()
+
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_gmm_alltoallv",
     """
 接口原型：
