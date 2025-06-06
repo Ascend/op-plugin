@@ -520,6 +520,8 @@ def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None
             tmp_out = torch.empty([query.size(0), query.size(1), value.size(2)], dtype=query.dtype, device='meta')           
     if input_layout == "TND_NTD":
         tmp_out = torch.empty([query.size(1), query.size(0), query.size(2)], dtype=query.dtype, device='meta')
+    if input_layout == "NTD_TND":
+        tmp_out = torch.empty([query.size(1), query.size(0), value.size(2)], dtype=query.dtype, device='meta')
     if quant_scale2 is not None:
         if (softmax_lse_flag == True):
             if input_layout == "TND" or input_layout == "TND_NTD":
@@ -540,6 +542,8 @@ def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None
         if (softmax_lse_flag == True):
             if input_layout == "TND" or input_layout == "TND_NTD":
                 return (torch.empty_like(tmp_out), torch.empty([query.size(0), num_heads, 1], dtype=torch.float32, device='meta'))
+            elif input_layout == "NTD_TND":
+                return (torch.empty_like(tmp_out), torch.empty([query.size(1), num_heads, 1], dtype=torch.float32, device='meta'))
             else:
                 return (torch.empty_like(tmp_out), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
         else:
