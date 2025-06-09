@@ -24,6 +24,10 @@ namespace op_infer {
 
 OP_PLUGIN_HIDDEN int64_t npu_gelu_approximate_mode(c10::string_view approximate);
 OP_PLUGIN_HIDDEN std::string npu_gelu_approximate_str(c10::string_view approximate);
+OP_PLUGIN_HIDDEN bool npu_add_rms_norm_quant_param_check(c10::optional<at::Tensor> scales2,
+                                                         c10::optional<at::Tensor> zero_points2,
+                                                         int64_t axis,
+                                                         bool div_mode);
 
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_NEW_PARAMS

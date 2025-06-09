@@ -31,4 +31,17 @@ std::string npu_gelu_approximate_str(c10::string_view approximate)
     return approximate_str;
 }
 
+bool npu_add_rms_norm_quant_param_check(
+    c10::optional<at::Tensor> scales2,
+    c10::optional<at::Tensor> zero_points2,
+    int64_t axis,
+    bool div_mode)
+{
+    TORCH_CHECK(!scales2.has_value(), "scales2 only support None.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(!zero_points2.has_value(), "zero_points2 only support None.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(axis == -1, "axis only support -1.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(div_mode == true, "div_mode only support True.", OPS_ERROR(ErrCode::PARAM));
+    return true;
+}
+
 } // namespace op_infer
