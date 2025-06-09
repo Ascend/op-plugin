@@ -2176,6 +2176,40 @@ class TestMoeDistributeDispatch(TestCase):
             self.assertEqual(result[6].dtype, torch.float32)
 
 
+class TestMoeDistributeCombineAddRmsNorm(TestCase):
+    def test_moe_distribute_combine_add_rms_norm(self):
+        with FakeTensorMode():
+            expand_x = torch.randn(32, 7168).to(torch.bfloat16)
+            expert_ids = torch.randn(32, 8).to(torch.int32)
+            expand_idx = torch.randn(32, 8).to(torch.int32)
+            ep_send_counts = torch.randn(8).to(torch.int32)
+            expert_scales = torch.randn(32, 8).to(torch.float32)
+            residual_x = torch.randn(32, 1, 7168).to(torch.bfloat16)
+            gamma = torch.randn(7168).to(torch.bfloat16)
+            ep_world_size = 16
+            ep_rank_id = 0
+            moe_expert_num = 16
+
+            result = torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x=expand_x, expert_ids=expert_ids, 
+            expand_idx=expand_idx, ep_send_counts=ep_send_counts, expert_scales=expert_scales, 
+            residual_x=residual_x, gamma=gamma, group_ep="groupe_ep", ep_world_size=ep_world_size, 
+            ep_rank_id=ep_rank_id, moe_expert_num=moe_expert_num)
+
+            self.assertEqual(result[0].shape[0], 32)
+            self.assertEqual(result[0].shape[1], 1)
+            self.assertEqual(result[0].shape[2], 7168)
+            self.assertEqual(result[0].dtype, torch.bfloat16)
+
+            self.assertEqual(result[1].shape[0], 32)
+            self.assertEqual(result[1].shape[1], 1)
+            self.assertEqual(result[1].shape[2], 1)
+            self.assertEqual(result[1].dtype, torch.float32)
+
+            self.assertEqual(result[2].shape[0], 32)
+            self.assertEqual(result[2].shape[1], 1)
+            self.assertEqual(result[2].shape[2], 7168)
+            self.assertEqual(result[2].dtype, torch.bfloat16)
+
 
 instantiate_parametrized_tests(FakeTensorTest)
 instantiate_device_type_tests(FakeTensorOpInfoTest, globals(), only_for="cpu")
