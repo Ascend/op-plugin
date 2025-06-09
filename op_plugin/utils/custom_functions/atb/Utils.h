@@ -77,6 +77,18 @@ constexpr aclDataType kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(at:
 aclDataType ConvertToAclDataType(const at::ScalarType &data_type);
 at::Tensor FormatTrans(const at::Tensor &at_tensor);
 aclFormat GetFormatForAtb(const at::Tensor &at_tensor);
+
+template<typename MapType>
+inline int get_op_mode(const MapType& mode_map,
+                       c10::optional<c10::string_view> mode_opt,
+                       c10::string_view default_mode,
+                       const char* mode_name)
+{
+    c10::string_view mode_str = mode_opt.value_or(default_mode);
+    auto it = mode_map.find(mode_str);
+    TORCH_CHECK(it != mode_map.end(), "Unsupported ", mode_name, " value: '", mode_str, "'");
+    return it->second;
+}
 }  // namespace utils
 }  // namespace atb
 

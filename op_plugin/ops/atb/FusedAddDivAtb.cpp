@@ -11,31 +11,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <acl/acl.h>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/custom_functions/atb/AtbCommon.h"
+#include "op_plugin/utils/custom_functions/atb/Utils.h"
 
 namespace atb {
 namespace {
 std::unordered_map<c10::string_view, int> activation_type_map = {
-    {"activation_undefined", 0},
-    {"activation_relu", 1},
-    {"activation_gelu", 2},
-    {"activation_fast_gelu", 3},
-    {"activation_swish", 4},
-    {"activation_log", 5},
-    {"activation_swiglu_forward", 6},
-    {"activation_swiglu_backward", 7},
-    {"activation_sigmoid", 8},
-    {"activation_faster_gelu_forward", 9},
-    {"activation_max", 10}
+    {"activation_sigmoid", 8}
 };
 
-std::tuple<int> get_fused_add_div_mode(c10::optional<c10::string_view> activation_type_opt)
+int get_fused_add_div_mode(c10::optional<c10::string_view> activation_type_opt)
 {
-    c10::string_view activation_type_str = activation_type_opt.value_or("activation_sigmoid");
-    return std::make_tuple(activation_type_map[activation_type_str]);
+    int activation_type = atb::utils::get_op_mode(
+        activation_type_map, activation_type_opt, "activation_sigmoid", "activation_type");
+    return activation_type;
 }
+}
+
+std::tuple<at::Tensor&, at::Tensor&> npu_fused_add_topk_div(const at::Tensor &x, const at::Tensor &add_num, const c10::optional<at::Tensor> &mapping_num, const c10::optional<at::Tensor> &mapping_table,
+    c10::optional<c10::string_view> activation_type_opt, int64_t group_num, int64_t group_topk, int64_t n, int64_t k, bool is_norm, double scale, bool enable_expert_mapping)
+{
+    const c10::OptionalDeviceGuard device_guard(device_of(x));
+    int64_t a = x.size(0);
+    at::Tensor y = at::empty({a, k}, c10::dtype(c10::ScalarType::Float));
+    at::Tensor indices = at::empty({a, k}, c10::dtype(c10::ScalarType::Int));
+    float scale_float = static_cast<float>(scale);
+    auto activation_type = get_fused_add_div_mode(activation_type_opt);
+    EXEC_ATB_CMD(AtbFusedAddTopkDiv, x, add_num, mapping_num, mapping_table, group_num, group_topk, n, k, activation_type, is_norm, scale_float, enable_expert_mapping, y, indices);
+    return std::forward_as_tuple(y, indices);
 }
 
 std::tuple<at::Tensor&, at::Tensor&> npu_fused_add_topk_div_out(const at::Tensor &x, const at::Tensor &add_num, const c10::optional<at::Tensor> &mapping_num, const c10::optional<at::Tensor> &mapping_table,
@@ -45,8 +49,7 @@ std::tuple<at::Tensor&, at::Tensor&> npu_fused_add_topk_div_out(const at::Tensor
 {
     const c10::OptionalDeviceGuard device_guard(device_of(x));
     float scale_float = static_cast<float>(scale);
-    auto mode = get_fused_add_div_mode(activation_type_opt);
-    int activation_type = std::get<0>(mode);
+    auto activation_type = get_fused_add_div_mode(activation_type_opt);
     EXEC_ATB_CMD(AtbFusedAddTopkDiv, x, add_num, mapping_num, mapping_table, group_num, group_topk, n, k, activation_type, is_norm, scale_float, enable_expert_mapping, y, indices);
     return std::forward_as_tuple(y, indices);
 }
@@ -54,6 +57,7 @@ std::tuple<at::Tensor&, at::Tensor&> npu_fused_add_topk_div_out(const at::Tensor
 namespace {
 TORCH_LIBRARY_FRAGMENT(atb, m)
 {
+    m.def("npu_fused_add_topk_div(Tensor x, Tensor add_num, *, Tensor? mapping_num=None, Tensor? mapping_table=None, str? activation_type=None, int group_num=1, int group_topk=1, int n=1, int k=1,  bool is_norm=True, float scale=1, bool enable_expert_mapping=False) -> (Tensor, Tensor)");
     m.def("npu_fused_add_topk_div.out(Tensor x, Tensor add_num, *, Tensor? mapping_num=None, Tensor? mapping_table=None, str? activation_type=None, int group_num=1, int group_topk=1, int n=1, int k=1,  bool is_norm=True, float scale=1, bool enable_expert_mapping=False, Tensor(a!) y, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
 }
 }
@@ -61,8 +65,8 @@ TORCH_LIBRARY_FRAGMENT(atb, m)
 namespace {
 TORCH_LIBRARY_IMPL(atb, PrivateUse1, m)
 {
+    m.impl("npu_fused_add_topk_div", TORCH_FN(atb::npu_fused_add_topk_div));
     m.impl("npu_fused_add_topk_div.out", TORCH_FN(atb::npu_fused_add_topk_div_out));
 }
 }
-
-} // namespace
+}
