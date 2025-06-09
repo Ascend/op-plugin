@@ -7544,7 +7544,7 @@ custom:
 
   - func: npu_attn_softmax_backward_(Tensor(a!) self, Tensor grad_output, Tensor values) -> Tensor(a!)
     op_api: all_version
-  
+
   - func: npu_gather_sparse_index(Tensor input, Tensor index) -> Tensor
     op_api: all_version
     exposed: all_version
@@ -7676,7 +7676,7 @@ custom:
     op_api: all_version
     gen_opapi:
       out:
-        size: '{query.size(0), query.size(1), query.size(2), value.size(3)}'
+        size: 'npu_nsa_select_attention_infer_out_size(query, value, head_num, key_value_head_num, layout)'
         dtype: query
       new_params:
         layout_ptr: 'const_cast<char *>(layout.data())'
