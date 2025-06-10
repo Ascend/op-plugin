@@ -4479,7 +4479,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor weight, Tensor gr
 - scale(Tensor, 计算输入): 可选参数，一个2D的Device侧Tensor输入，矩阵计算反量化参数，对应weight矩阵，per-channel量化方式，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度为(e,n)，n支持2048、7168、7680。
 - bias(Tensor, 计算输入): 可选参数，一个2D的Device侧Tensor输入，矩阵计算的bias参数，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND。
 - pertoken_scale(Tensor, 计算输入): 可选参数，一个1DD的Device侧Tensor输入，矩阵计算的反量化参数，对应x矩阵，per-token量化方式，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度为(m,)。
-- shared_input(Tensor, 计算输入): 可选参数，一个2D的Device侧Tensor输入，moe计算中共享专家的输出，需要与moe专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持bfloat16、float16，数据格式支持ND，维度为(batch/dp,n)，batch/dp取值范围[1, 2*1024]，batch取值范围[1, 16*1024]。
+- shared_input(Tensor, 计算输入): 可选参数，一个2D的Device侧Tensor输入，moe计算中共享专家的输出，需要与moe专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持bfloat16，数据格式支持ND，维度为(batch/dp,n)，batch/dp取值范围[1, 2*1024]，batch取值范围[1, 16*1024]。
 - logit(Tensor, 计算输入): 可选参数，一个1D的Device侧Tensor输入，moe专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度为(m,)。
 - row_index(Tensor*, 计算输入): 可选参数，一个1D的Device侧Tensor输入，moe专家输出按照该rowIndex进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持int32、int64，数据格式支持ND，维度为(m,)。
 - dtype(torch.dtype, 计算输入): 可选参数，指定GroupedMatMul计算的输出类型。枚举值含义：0表示float32，1表示float16，2表示bfloat16。默认值为0。
@@ -4487,7 +4487,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor weight, Tensor gr
 - shared_input_offset(int, 计算输入): 可选参数，共享专家输出在总输出中的偏移。默认值为0.
 - output_bs(int, 计算输入): 可选参数，输出的最高维大小。默认值为0。
 - group_list_type(int, 计算输入): 可选参数，GroupedMatMul的分组模式，0为cumsum模式，1为count模式，默认为1。
-- y(Tensor, 计算输出): 2D的Tensor，不支持非连续的Tensor，输出的数据类型固定为FLOAT32。
+- y(Tensor, 计算输出): 2D的Tensor，不支持非连续的Tensor，输出的数据类型固定为float32，维度为(batch, n)。
 
 支持的芯片型号：
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品
@@ -4498,10 +4498,8 @@ Atlas A3 推理系列产品
 import numpy as np
 import torch
 import torch_npu
-import tensorflow as tf
 from scipy.special import softmax
 
-bfloat16 = tf.bfloat16.as_numpy_dtype
 m, k, n = 576, 2048, 7168
 batch = 72
 topK = 8
@@ -4540,7 +4538,6 @@ import numpy as np
 import torch
 import torch_npu
 import torchair as tng
-import tensorflow as tf
 from scipy.special import softmax
 from torchair.configs.compiler_config import CompilerConfig
 
@@ -4556,7 +4553,6 @@ class Model(torch.nn.Module):
                     logit=logit, row_index=row_index, shared_input_offset=shared_input_offset, output_bs=output_bs)
         return output
 
-bfloat16 = tf.bfloat16.as_numpy_dtype
 m, k, n = 576, 2048, 7168
 batch = 72
 topK = 8
