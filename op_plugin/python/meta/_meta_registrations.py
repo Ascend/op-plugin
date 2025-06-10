@@ -341,8 +341,8 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         lambda: "drop_pad_mode is None or invalid. must be in [0, 1]"
     )
     torch._check(
-        expert_tokens_num_type is not None and isinstance(expert_tokens_num_type, int) and expert_tokens_num_type in [0, 1],
-        lambda: "expert_tokens_num_type is None or invalid. must be in [0, 1]"
+        expert_tokens_num_type is not None and isinstance(expert_tokens_num_type, int) and expert_tokens_num_type in [0, 1, 2],
+        lambda: "expert_tokens_num_type is None or invalid. must be in [0, 1, 2]"
     )
     torch._check(
         quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1],
@@ -411,8 +411,13 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     expanded_x_dim_list = [bs * k, h]
     expanded_x_dtype = x.dtype if quant_mode == -1 else torch.int8
     expanded_row_idx_dim_list = [bs * k]
-    expert_token_cumsum_or_count_dim_list = [expert_range_length]
     expanded_scale_dim_list = [bs * k]
+    
+    if (expert_tokens_num_type in range(0, 2)):   # [0, 1]
+        expert_token_cumsum_or_count_dim_list = [expert_range_length] 
+    elif (expert_tokens_num_type == 2): # 2: key_value
+        expert_token_cumsum_or_count_dim_list = [expert_num, 2]
+    
     return (x.new_empty(tuple(expanded_x_dim_list), dtype=expanded_x_dtype),
             x.new_empty(tuple(expanded_row_idx_dim_list), dtype=torch.int32),
             x.new_empty(tuple(expert_token_cumsum_or_count_dim_list), dtype=torch.int64),
