@@ -70,8 +70,15 @@ class CPPLibBuild(build_clib, object):
         self.build_temp = os.path.relpath(build_type_dir)
 
         cmake_args = [
-            '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + os.path.realpath(output_lib_path)
+            '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + os.path.realpath(output_lib_path),
+            '-DTORCH_PATH=' + os.path.realpath(os.path.dirname(torch.__file__)),
+            '-DTORCH_NPU_PATH=' + os.path.realpath(os.path.dirname(torch_npu.__file__)),
             ]
+
+        if torch.compiled_with_cxx11_abi():
+            cmake_args.append('-DGLIBCXX_USE_CXX11_ABI=1')
+        else:
+            cmake_args.append('-DGLIBCXX_USE_CXX11_ABI=0')
 
         max_jobs = os.getenv("MAX_JOBS", str(multiprocessing.cpu_count()))
         build_args = ['-j', max_jobs]

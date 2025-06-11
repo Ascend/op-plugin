@@ -4,6 +4,9 @@ set(LINUX TRUE)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
+message(STATUS "Determined _GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}")
+set(_GLIBCXX_USE_CXX11_ABI ${GLIBCXX_USE_CXX11_ABI})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}")
 
 
 # user-defined configuration
@@ -63,17 +66,6 @@ target_link_libraries(${_OPPLUGIN_PYBIND_NAME} PRIVATE
   dl
 )
 
-execute_process(COMMAND python3 -c "import os; import torch; print(os.path.dirname(torch.__file__))"
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  OUTPUT_VARIABLE TORCH_PATH
-)
-message("TORCH_PATH is ${TORCH_PATH}")
-set(ENV{ASCEND_HOME_PATH} ${ASCEND_CANN_PACKAGE_PATH})
-execute_process(COMMAND python3 -c "import os; import torch_npu; print(os.path.dirname(torch_npu.__file__))"
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  OUTPUT_VARIABLE TORCH_NPU_PATH
-)
-message("TORCH_NPU_PATH is ${TORCH_NPU_PATH}")
 target_link_directories(${_OPPLUGIN_PYBIND_NAME} PRIVATE
   ${TORCH_PATH}/lib
   ${TORCH_NPU_PATH}/lib
