@@ -2211,6 +2211,36 @@ class TestMoeDistributeCombineAddRmsNorm(TestCase):
             self.assertEqual(result[2].dtype, torch.bfloat16)
 
 
+class TestAddRmsNormQuant(TestCase):
+    def test_npu_add_rms_norm_quant(self):
+        with FakeTensorMode():
+            x1 = torch.randn([2, 16], dtype=torch.float16).npu()
+            x2 = torch.randn([2, 16], dtype=torch.float16).npu()
+            gamma = torch.randn([16, ], dtype=torch.float16).npu()
+            scales1 = torch.randn([16, ], dtype=torch.float32).npu()
+            zero_points1 = torch.randint(-10, 10, [16, ], dtype=torch.int32).npu()
+            y1, y2, x_out = torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1)
+            self.assertTrue(y1.shape == x1.shape)
+            self.assertTrue(y1.dtype == torch.int8)
+            self.assertTrue(y2.shape == x1.shape)
+            self.assertTrue(y2.dtype == torch.int8)
+            self.assertTrue(x_out.shape == x1.shape)
+            self.assertTrue(x_out.dtype == x1.dtype)
+
+            x1 = torch.randn([2, 16], dtype=torch.bfloat16).npu()
+            x2 = torch.randn([2, 16], dtype=torch.bfloat16).npu()
+            gamma = torch.randn([16, ], dtype=torch.bfloat16).npu()
+            scales1 = torch.randn([16, ], dtype=torch.bfloat16).npu()
+            zero_points1 = torch.randn([16, ], dtype=torch.bfloat16).npu()
+            y1, y2, x_out = torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1)
+            self.assertTrue(y1.shape == x1.shape)
+            self.assertTrue(y1.dtype == torch.int8)
+            self.assertTrue(y2.shape == x1.shape)
+            self.assertTrue(y2.dtype == torch.int8)
+            self.assertTrue(x_out.shape == x1.shape)
+            self.assertTrue(x_out.dtype == x1.dtype)
+
+
 instantiate_parametrized_tests(FakeTensorTest)
 instantiate_device_type_tests(FakeTensorOpInfoTest, globals(), only_for="cpu")
 

@@ -1922,3 +1922,27 @@ def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=
             torch.empty(permute_per_token_scales_size, dtype=torch.float32, device=tokens.device),
             torch.empty(permute_token_idx_size, dtype=torch.int32, device=tokens.device),
             torch.empty(expert_token_num_size, dtype=expert_token_num_per_rank.dtype, device=tokens.device))
+
+
+
+@impl(m, "npu_add_rms_norm_quant")
+def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, scales2=None, zero_points2=None, axis=-1, epsilon=1e-06, div_mode=True):
+    torch._check(
+        scales2 is None,
+        lambda: f"scales2 should be None, but got {scales2}.",
+        )
+    torch._check(
+        zero_points2 is None,
+        lambda: f"zero_points2 should be None, but got {zero_points2}.",
+        )
+    torch._check(
+        axis == -1,
+        lambda: f"axis should be -1, but got {axis}.",
+        )
+    torch._check(
+        div_mode is True,
+        lambda: f"div_mode should be True, but got {div_mode}.",
+        )
+    return (torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
+            torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
+            torch.empty(x1.size(), dtype=x1.dtype, device=x1.device))
