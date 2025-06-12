@@ -8521,3 +8521,124 @@ out = torch_npu.npu_gather_sparse_index(inputs, index)
 """
 )
 
+_add_torch_npu_docstr(
+    "npu_moe_eplb_update_expert",
+    """
+torch_npu.npu_moe_eplb_update_expert(Tensor expert_ids, Tensor eplb_table, int local_rank_id, int world_size, *, int balance_mode=0) -> Tensor
+
+功能描述
+完成冗余专家部署场景下每个token的topK个专家逻辑卡号到物理卡号的映射。
+
+参数说明
+    expertIds：Device侧的Tensor，表示输入，每个token的topK个专家索引，要求为一个2D的Tensor，shape为 (Bs, K)。数据格式支持ND,数据类型支持INT32。
+    eplbTable：Device侧的Tensor，表示输入，逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行[1, count]列为对应实例的卡号，取值范围[0, moe_expert_num)，Device侧的Tensor，要求是一个2D的Tensor。数据类型支持INT32，数据格式支持ND。shape为 (moeExperNum, F)。
+    localRankId：int类型，计算输入，本卡Id，数据类型支持INT64。取值支持[0, worldSize)。同一个通信域中各卡的localRankId不重复。
+    worldSize：int类型，计算输入，通信域Size，数据类型支持INT64，取值区间[2, 384]。
+    balanceMode: int类型，计算输入，均衡规则，传入0时按照rank进行分发，数据类型支持INT64，当前只支持传入0。
+
+输出说明
+    balancedExpertIds：Device侧的Tensor，表示输出，映射后每个token的topK个专家所在物理卡的卡号，要求是一个2D的Tensor，shape为（Bs，K），数据类型、数据格式与expertIds保持一致。
+
+支持的型号
+Atlas A3训练系列产品
+
+调用示例
+import os
+import math
+import numpy as np
+import torch
+import torch.distributed as dist
+import torch.multiprocessing as mp
+import torch_npu
+
+from torch_npu.testing.testcase import TestCase, run_tests
+from torch_npu.testing.common_utils import SupportedDevices
+
+
+class TestMoeEPLBUpdateExpert(TestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bs = 128
+        self.k = 8
+        self.log_ep_size = 256
+        self.pyh_ep_size = 8
+        self.F = 5
+        self.world_size = 8
+        self.expert_ids = []
+        self.eplb_table = []
+        self.balanced_expert_ids = []
+        self.gen_exp_result()
+
+    @classmethod
+    def _init_dist_hccl(cls, rank, world_size):
+        os.environ['MASTER_ADDR'] = '127.0.0.1'
+        os.environ['MASTER_PORT'] = '50000'
+        os.environ['HCCL_WHITELIST_DISABLE'] = '1'
+        torch_npu.npu.set_device(rank)
+        dist.init_process_group(backend='hccl', world_size=world_size, rank=rank)
+        return dist
+
+    @classmethod
+    def _test_npu_moe_eplb_update_expert(cls, rank_id, input_list):
+        expert_ids, eplb_table, world_size, init_pg, c2p, p2c = input_list
+        _ = init_pg(rank_id, world_size)
+        out = torch_npu.npu_moe_eplb_update_expert(expert_ids=expert_ids.npu(),
+                                                   eplb_table=eplb_table.npu(),
+                                                   local_rank_id=rank_id,
+                                                   world_size=world_size,
+                                                   balance_mode=0)
+        c2p.put((rank_id, out.cpu()))
+        p2c.get()
+    
+    def gen_exp_result(self):
+        for rank_id in range(self.world_size):
+            eplb_table = np.zeros((self.log_ep_size, self.F - 1))
+            count_cloumn = np.random.randint(1, self.F, size=(self.log_ep_size, 1))
+            all_ranks = np.arange(self.pyh_ep_size)
+            for i in range(self.log_ep_size):
+                np.random.shuffle(all_ranks)
+                for j in range(count_cloumn[i][0]):
+                    eplb_table[i][j] = all_ranks[j]
+            _expert_ids = torch.from_numpy(np.random.randint(low=0, high=self.log_ep_size, size=(self.bs, self.k))).to(torch.int64)
+            _eplb_table = torch.from_numpy(np.hstack((count_cloumn, eplb_table))).to(torch.int32)
+            self.expert_ids.append(_expert_ids)
+            self.eplb_table.append(_eplb_table)
+            _balanced_expert_ids = np.zeros((self.bs, self.k))
+            for i in range(self.bs):
+                for j in range(self.k):
+                    log_ep_id = _expert_ids[i][j]
+                    mod_val = math.ceil(self.world_size / _eplb_table[log_ep_id][0])
+                    phy_ep_id = _eplb_table[log_ep_id][(rank_id // mod_val) + 1]
+                    _balanced_expert_ids[i][j] = phy_ep_id
+            self.balanced_expert_ids.append(torch.from_numpy(_balanced_expert_ids).to(torch.int64))
+
+    @SupportedDevices(['Ascend910_'])
+    def test_npu_moe_eplb_update_expert(self):
+        ctx = mp.get_context('spawn')
+        c2p = ctx.Queue(self.world_size)
+        p2c = ctx.Queue(self.world_size)
+        ps = []
+
+        for rank_id in range(self.world_size):
+            p = ctx.Process(
+                target=self._test_npu_moe_eplb_update_expert,
+                args=(rank_id, [self.expert_ids[rank_id], self.eplb_table[rank_id], self.world_size, self._init_dist_hccl, c2p, p2c]))
+            p.start()
+            ps.append(p)
+
+        for _ in range(self.world_size):
+            rank_id, output = c2p.get()
+            self.assertEqual(output, self.balanced_expert_ids[rank_id],
+                             ("rank {} Expect receive tensor {} but got {}.").format(rank_id, self.balanced_expert_ids[rank_id], output))
+
+        for _ in range(self.world_size):
+            p2c.put(0)
+
+        for p in ps:
+            p.join()
+
+
+if __name__ == '__main__':
+    run_tests()
+"""
+)

@@ -928,6 +928,15 @@ def _npu_distribute_barrier(x_ref, group, world_size):
     return torch.empty_like(x_ref)
 
 
+@impl(m, "npu_moe_eplb_update_expert")
+def npu_moe_eplb_update_expert_meta(expert_ids, eplb_table, local_ranke_id, world_size, balance_mode=0):
+    dim_list = []
+    dim_list.append(expert_ids.size(0))
+    dim_list.append(expert_ids.size(1))
+
+    return expert_ids.new_empty(tuple(dim_list), dtype=expert_ids.dtype)
+
+
 @impl(m, "npu_ffn")
 def npu_ffn_meta(x, weight1, weight2, activation, *, expert_tokens=None, expert_tokens_index=None, bias1=None,
                  bias2=None, scale=None, offset=None, deq_scale1=None, deq_scale2=None, antiquant_scale1=None,

@@ -7090,6 +7090,15 @@ custom:
   - func: _npu_distribute_barrier(Tensor x_ref, str group, int world_size) -> Tensor
     op_api: all_version
 
+  - func: npu_moe_eplb_update_expert(Tensor expert_ids, Tensor eplb_table, int local_rank_id, int world_size, *, int balance_mode=0) -> Tensor
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: expert_ids
+        dtype: expert_ids
+      exec: aclnnMoeEPLBUpdateExpert
+
+
   - func: npu_moe_re_routing(Tensor tokens, Tensor expert_token_num_per_rank, *, Tensor? per_token_scales=None, int expert_token_num_type=1, int idx_type=0) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
 

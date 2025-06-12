@@ -2241,6 +2241,24 @@ class TestAddRmsNormQuant(TestCase):
             self.assertTrue(x_out.dtype == x1.dtype)
 
 
+class TestMoeEPLBUpdateExpert(TestCase):
+    def test_moe_eplb_update_expert(self):
+        with FakeTensorMode():
+            world_size = 8
+            local_rank_id = 0
+            bs = 32
+            k = 8
+            f = 4
+            moe_expert_num = 256
+            expert_ids = torch.randn(bs, k).to(torch.int32)
+            eplb_table = torch.randn(moe_expert_num, f).to(torch.int32)
+            result = torch_npu.npu_moe_eplb_update_expert(expert_ids=expert_ids, eplb_table=eplb_table,
+            local_rank_id=local_rank_id, world_size=world_size, balance_mode=0)
+
+            self.assertEqual(result.shape[0], 32)
+            self.assertEqual(result.shape[1], 8)
+            self.assertEqual(result.dtype, torch.int32)
+
 instantiate_parametrized_tests(FakeTensorTest)
 instantiate_device_type_tests(FakeTensorOpInfoTest, globals(), only_for="cpu")
 
