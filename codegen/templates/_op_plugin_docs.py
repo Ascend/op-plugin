@@ -8481,6 +8481,326 @@ if __name__ == "__main__":
 """
 )
 
+
+_add_torch_npu_docstr(
+    "npu_nsa_compress",
+    """
+torch_npu.npu_nsa_compress(input, weight, compress_block_size, compress_stride, actual_seq_len=None)
+功能描述
+实现Native Sparse Attention算法中训练场景下的压缩功能。
+
+参数说明
+input(Tensor)：必选参数，待压缩张量，shape支持[T,N,D]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+weight(Tensor)：必选参数，压缩的权重，shape支持[compress_block_size, N]，weight和input的shape满足broadcast关系，数据类型支持bfloat16、float16，数据类型与input保持一致，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+compress_block_size(int)：必选参数，压缩滑窗的大小。
+compress_stride(int)：必选参数，两次压缩滑窗间隔大小。
+actual_seq_len(list[int])：必选参数，长度表示query有多少个batch，值表示各batch的token长度的前缀和，例如，actual_seq_len[0]=s0,actual_seq_len[1]=s0+s1，...，actual_seq_len[-1]=T。
+
+输出说明
+代表压缩后的结果。
+
+约束说明
+compress_block_size和compress_stride必须是16的整数倍，并且compress_block_size大于等于compress_stride。
+input的第2维（D）必须是16的整数倍。
+
+支持的型号
+Atlas A2训练系列产品
+
+调用示例
+>>> import torch
+>>> import torch_npu
+>>> import numpy as np
+>>> actual_seq_len = np.random.randint(0, 100, [48])
+>>> actual_seq_len = np.cumsum(actual_seq_len).astype(np.int64)
+>>> head_num = 4
+>>> head_dim = 128
+>>> compress_block_size = 16
+>>> compress_stride = 16
+>>> input = torch.randn(actual_seq_len[-1], head_num, head_dim, dtype=torch.float16).npu()
+>>> weight = torch.randn(compress_block_size, head_num, dtype=torch.float16).npu()
+>>> torch_npu.npu_nsa_compress(input, weight, compress_block_size, compress_stride, actual_seq_len=actual_seq_len)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_nsa_compress_infer",
+    """
+torch_npu.npu_nsa_compress_infer(input, weight, slot_mapping, compress_block_size, compress_stride, page_block_size, block_table=None, actual_seq_len=None, cache)
+功能描述
+Native Sparse Attention算法中推理场景下，实现对KV压缩的计算。
+
+参数说明
+input(Tensor)：必选输入，待压缩张量，shape支持[block_num,page_block_size,head_num,head_dim]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+weight(Tensor)：必选输入，压缩的权重，shape支持[compress_block_size, head_num]，weight和input的shape满足broadcast关系，数据类型支持bfloat16、float16，数据类型与input保持一致，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+slot_mapping(Tensor)：必选输入，表示每个batch尾部压缩数据存储的位置的索引，shape支持[batch_num]，数据类型支持int32，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor。
+compress_block_size(int)：必选输入，压缩滑窗的大小。
+compress_stride(int)：必选输入，两次压缩滑窗间隔大小。
+page_block_size(int)：必选输入，page_attention场景下page的block_size大小。
+block_table(Tensor)：可选输入，page_attention场景下kv缓存使用的block映射表，不支持非连续的Tensor。
+actual_seq_len(list[int])：必选输入，表示每个batch对应的token的长度。
+cache(Tensor)：必选输入，推理场景下的kv缓存，支持非连续的Tensor，不支持空Tensor。
+
+输出说明
+代表对KV压缩计算后的结果。
+
+约束说明
+compress_block_size和compress_stride必须是16的整数倍，并且compress_block_size>=compress_stride，且compress_block_size小于128。
+page_block_size只支持64和128。
+head_dim必须是16的整数倍，head_num小于64。
+slot_mapping里的值无重复，否则会导致计算结果不稳定。
+block_table里的值小于block_num。
+
+支持的型号
+Atlas A2训练系列产品
+
+调用示例
+>>> import torch
+>>> import torch_npu
+>>> input = torch.randn(1, 128, 1, 192, dtype=torch.float16).npu()
+>>> weight = torch.randn(32, 1, dtype=torch.float16).npu()
+>>> slot_mapping = torch.randn([1]).int().npu()
+>>> compress_block_size = 32
+>>> compress_stride = 16
+>>> page_block_size = 128
+>>> act_seq_lens = [43]
+>>> block_table = torch.randn([1, 1]).int().npu()
+>>> cache = torch.zeros([1, 1, 192],dtype=torch.float16).npu()
+>>> torch_npu.npu_nsa_compress_infer(input, weight,slot_mapping,compress_block_size,compress_stride,page_block_size,actual_seq_len=act_seq_lens,block_table=block_table,cache=cache)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_nsa_compress_attention",
+    """
+torch_npu.npu_nsa_compress_attention(query, key, value, scale_value, head_num, compress_block_size, compress_stride, select_block_size, select_block_count, topk_mask=None, atten_mask=None, actual_seq_qlen=None, actual_cmp_seq_kvlen=None, actual_sel_seq_kvlen=None)
+功能描述
+实现Native Sparse Attention算法中训练场景下的压缩注意力功能。
+
+参数说明
+query(Tensor)：必选参数，shape支持[T,N,D]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+key(Tensor)：必选参数，shape支持[T,N2,D]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+value(Tensor)：必选参数，shape支持[T,N2,D2]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+scale_value(double)：必选参数，表示缩放系数。
+head_num(int)：必选参数，表示query的head个数。
+compress_block_size(int)：必选参数，压缩滑窗的大小。
+compress_stride(int)：必选参数，两次压缩滑窗间隔大小。
+select_block_size(int)：必选参数，表示select窗口的大小。
+select_block_count(int)：必选参数，表示select窗口的数量。
+topk_mask(Tensor)：可选参数，shape支持[S,S]，SS分别是max_sq和max_skv，数据类型支持bool。
+atten_mask(Tensor)：可选参数，取值为1代表该位不参与计算（不生效），为0代表该位参与计算，数据类型支持bool，数据格式支持ND，输入shape类型支持[S,S]格式，SS分别是maxSq和maxSkv。
+actual_seq_qlen(list[int])：必选参数，长度表示query有多少个batch，值表示各batch的token长度的前缀和，例如，actual_seq_qlen[0]=s0,actual_seq_qlen[1]=s0+s1，...，actual_seq_qlen[-1]=T。
+actual_cmp_seq_kvlen(list[int])：必选参数，长度表示compress attention的key或value有多少个batch，值表示各batch的token长度的前缀和，例如，actual_cmp_seq_kvlen[0]=s0,actual_cmp_seq_kvlen[1]=s0+s1，...，actual_cmp_seq_kvlen[-1]=T。
+actual_sel_seq_kvlen(list[int])：必选参数，长度表示select attention的key/value有多少个batch，值表示各batch的token长度的前缀和，例如，actual_sel_seq_kvlen[0]=s0,actual_sel_seq_kvlen[1]=s0+s1，...，actual_sel_seq_kvlen[-1]=T。
+
+输出说明
+Tensor：代表压缩注意力attention的结果。
+Tensor：代表选择出的topk。
+Tensor：代表softmax计算的max中间结果，用于反向计算。
+Tensor：代表softmax计算的sum中间结果，用于反向计算。
+
+约束说明
+compress_block_size、compress_stride和select_block_size必须是16的整数倍，并且compress_block_size大于等于compress_stride。
+query、key、value的数据类型必须一致，同时layout必须一致。
+query的第2维必须等于key的第2维，并且key的第2维必须大于等于value的第2维。
+query、key、value的batchsize必须相等。
+
+支持的型号
+Atlas A2训练系列产品
+
+调用示例
+>>> import torch
+>>> import torch_npu
+>>> query = torch.randn(65536, 64, 192, dtype=torch.bfloat16).npu()
+>>> key = torch.randn(4096, 4, 192, dtype=torch.bfloat16).npu()
+>>> value = torch.randn(4096, 4, 128, dtype=torch.bfloat16).npu()
+>>> scale_value = 1 / (192 0.5)
+>>> head_num = 64
+>>> compress_block_size = 32
+>>> compress_stride = 16
+>>> select_block_size = 64
+>>> select_block_count = 16
+>>> actual_seq_qlen = [65536]
+>>> actual_cmp_seq_kvlen = [4096]
+>>> actual_sel_seq_kvlen = [1024]
+>>> torch_npu.npu_nsa_compress_attention(query, key, value, scale_value, head_num, compress_block_size, compress_stride, select_block_size, select_block_count, actual_seq_qlen=actual_seq_qlen, actual_cmp_seq_kvlen=actual_cmp_seq_kvlen, actual_sel_seq_kvlen=actual_sel_seq_kvlen)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_nsa_compress_attention_infer",
+    """
+torch_npu.npu_nsa_compress_attention_infer(query, key, value, scale_value, head_num, key_value_head_num, select_block_size, select_block_count, page_block_size, compress_block_size, compress_stride, atten_mask=None, block_table=None, topk_mask=None, actual_seq_qlen=None, actual_cmp_seq_kvlen=None, actual_sel_seq_kvlen=None)
+功能描述
+Native Sparse Attention算法中推理场景下，实现对KV压缩的计算。
+
+参数说明
+input(Tensor)：必选输入，待压缩张量，shape支持[block_num,page_block_size,head_num,head_dim]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+weight(Tensor)：必选输入，压缩的权重，shape支持[compress_block_size, head_num],weight和input的shape满足broadcast关系，数据类型支持bfloat16、float16，数据类型与input保持一致，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+slot_mapping(Tensor)：必选输入，表示每个batch尾部压缩数据存储的位置的索引，shape支持[batch_num]，数据类型支持int32，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor。
+compress_block_size(int)：必选输入，压缩滑窗的大小。
+compress_stride(int)：必选输入，两次压缩滑窗间隔大小。
+page_block_size(int)：必选输入，page_attention场景下page的block_size大小。
+block_table(Tensor)：可选输入，page_attention场景下kv缓存使用的block映射表，不支持非连续的Tensor。
+actual_seq_len(list[int])：必选输入，表示每个batch对应的token的长度。
+cache(Tensor)：必选输入，推理场景下的kv缓存，支持非连续的Tensor，不支持空Tensor。
+
+输出说明
+代表对KV压缩计算后的结果。
+
+约束说明
+compress_block_size和compress_stride必须是16的整数倍，并且compress_block_size>=compress_stride，且compress_block_size小于128。
+page_block_size只支持64和128。
+head_dim必须是16的整数倍，head_num小于64。
+slot_mapping里的值无重复，否则会导致计算结果不稳定。
+block_table里的值小于block_num。
+
+支持的型号
+Atlas A2训练系列产品
+
+调用示例
+>>> import torch
+>>> import torch_npu
+>>> input = torch.randn(1, 128, 1, 192, dtype=torch.float16).npu()
+>>> weight = torch.randn(32, 1, dtype=torch.float16).npu()
+>>> slot_mapping = torch.randn([1]).int().npu()
+>>> compress_block_size = 32
+>>> compress_stride = 16
+>>> page_block_size = 128
+>>> act_seq_lens = [43]
+>>> block_table = torch.randn([1, 1]).int().npu()
+>>> cache = torch.zeros([1, 1, 192],dtype=torch.float16).npu()
+>>> torch_npu.npu_nsa_compress_infer(input, weight,slot_mapping,compress_block_size,compress_stride,page_block_size,actual_seq_len=act_seq_lens,block_table=block_table,cache=cache)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_nsa_select_attention",
+    """
+torch_npu.npu_nsa_select_attention(query, key, value, topk_indices, scale_value, head_num, select_block_size, select_block_count, atten_mask=None, actual_seq_qlen=None, actual_seq_kvlen=None)
+功能描述
+实现Native Sparse Attention算法中训练场景下选择注意力的计算。
+
+参数说明
+query(Tensor)：必选参数，shape支持[T1,N1,D1]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+key(Tensor)：必选参数，shape支持[T2,N2,D1]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+value(Tensor)：必选参数，shape支持[T2,N2,D2]，数据类型支持bfloat16、float16，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+topk_indices(Tensor)：必选参数，shape为[T1, N2, select_block_count]，数据类型支持int32，数据格式支持ND，支持非连续的Tensor，不支持空Tensor。
+scale_value(double)：必选参数，表示缩放系数。
+head_num(int)：必选参数，表示单卡的head个数，即query的N1轴长度。
+select_block_size(int)：必选参数，表示select窗口的大小。
+select_block_count(int)：必选参数，表示select窗口的数量。
+atten_mask(Tensor)：可选参数，当前暂不支持。
+actual_seq_qlen(list[int])：必选参数，长度表示query有多少个batch，值表示各batch的token长度的前缀和，例如，actual_seq_qlen[0]=s0,actual_seq_qlen[1]=s0+s1，...，actual_seq_qlen[-1]=T1。
+actual_seq_kvlen(list[int])：必选参数，，长度表示key或value有多少个batch，值表示各batch的token长度的前缀和，例如，actual_seq_kvlen[0]=s0,actual_seq_kvlen[1]=s0+s1，...，actual_seq_kvlen[-1]=T2。
+
+输出说明
+Tensor：代表经过选择后的注意力attention结果。
+Tensor：代表softmax计算的max中间结果，用于反向计算。
+Tensor：代表softmax计算的sum中间结果，用于反向计算。
+
+约束说明
+query、key、value的数据类型必须一致，同时layout必须一致。
+query的第2维（D1）必须等于key的第2维，并且key的第2维（D1）必须大于等于value的第2维（D2）。
+query和key第2维（D1）只支持192，value的第2维（D2）只支持128。
+select_block_size目前仅支持64，select_block_count仅支持16。
+
+支持的型号
+Atlas A2训练系列产品
+
+调用示例
+>>> import torch
+>>> import torch_npu
+>>> import numpy as np
+>>> query = torch.randn(256, 16, 192, dtype=torch.float16).npu()
+>>> key = torch.randn(3072, 4, 192, dtype=torch.float16).npu()
+>>> value = torch.randn(3072, 4, 128, dtype=torch.float16).int().npu()
+>>> topk_indices = torch.randn(256, 4, 16).int().npu()
+>>> scale_value = 1.0
+>>> head_num = 16
+>>> select_block_size = 64
+>>> select_block_count = 16
+>>> atten_mask = torch.randn(512, 2048).bool().npu()
+>>> actual_seq_qlen = [128, 256]
+>>> actual_seq_kvlen = [2048, 3072]
+>>> torch_npu.npu_nsa_select_attention(query, key, value, topk_indices, scale_value, head_num, select_block_size, select_block_count, atten_mask=atten_mask, actual_seq_qlen=actual_seq_qlen, actual_seq_kvlen=actual_seq_kvlen)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_nsa_select_attention_infer",
+    """
+torch_npu.npu_nsa_select_attention_infer(query, key, value, topk_indices, scale_value, head_num, key_value_head_num, select_block_size, select_block_count, page_block_size, layout='BSND', atten_mask=None, block_table=None, actual_seq_qlen=None, actual_seq_kvlen=None)
+功能描述
+Native Sparse Attention算法中推理场景下，实现选择注意力的计算。
+
+参数说明
+query (Tensor)：必选输入，shape支持3维或者4维，数据类型支持bfloat16、float16，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor。
+key (Tensor)：必选输入，shape支持3维或者4维，数据类型支持bfloat16、float16，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor。
+value (Tensor)：必选输入，shape支持3维或者4维，数据类型支持bfloat16、float16，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor。
+topk_indices (Tensor)：必选输入，shape为[batch_size, key_value_head_num, select_block_count]，数据类型支持int32，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor。
+scale_value (double)：必选输入，表示缩放系数。
+head_num (int)：必选输入，表示query的head个数。
+key_value_head_num (int)：必选输入，表示key或者value的head个数。
+select_block_size (int)：必选输入，表示选择窗口的大小。
+select_block_count (int)：必选输入，表示选择窗口的数量。
+page_block_size(int)：必选输入，page_attention场景下page的block_size大小。
+atten_mask (Tensor)：可选输入，当前暂不支持。
+block_table(Tensor)：可选输入，page_attention场景下kv缓存使用的block映射表，数据类型支持int32，不支持非连续的Tensor，不支持空tensor。
+layout(str)：可选输入，表示输入的数据排布格式，支持BSH、BSND，默认为BSND。
+actual_seq_qlen(list[int])：可选输入，当前暂不支持。
+actual_seq_kvlen(list[int])：必选输入，表示key或value每个S的长度。
+
+输出说明
+代表经过选择后的注意力结果。
+
+约束说明
+query的数据排布格式中，B即Batch，S即Seq-Length，N（Head-Num）表示多头数、D（Head-Dim）表示隐藏层最小的单元尺寸，且满足D=H/N。key和value的数据排布格式当前（paged attention场景）支持(block_num, block_size, H)或(block_num, block_size, N, D)，H（Head-Size）表示隐藏层的大小，H = N * D。
+
+参数query中的N和head_num值相等，key、value的N和key_value_head_num值相等，并且head_num是key_value_head_num的倍数关系。
+参数query中的D和key的D(H/key_value_head_num)值相等。
+query，key，value输入，功能使用限制如下：
+  支持B轴小于等于3072；
+  支持query的N轴与key/value的N轴（H/D）小于等于128；
+  支持query的N轴与key/value的N轴（H/D）的比值小于等于128，且能够被128整除；
+  支持query与key的D轴小于等于192；
+  支持value的D轴小于等于128；
+  支持query与key的D轴大于等于value的D轴；
+  支持query与key的block_size小于等于128且被16整除；
+  仅支持query的S轴等于1。
+  仅支持key/value的S轴小于等于8192。
+  仅支持select_block_size、page_block_size取值为16的整数倍。
+  selectBlockCount上限满足select_block_count * select_block_size <= MaxKvSeqlen，MaxKvSeqlen = Max(actual_seq_kvlen)。
+
+支持的型号
+Atlas A2训练系列产品
+
+调用示例
+>>> import torch
+>>> import torch_npu
+>>> query = torch.randn(17, 1, 126, 192, dtype=torch.float16).npu()
+>>> key = torch.randn(187, 128, 9, 192, dtype=torch.float16).npu()
+>>> value = torch.randn(187, 128, 9, 128, dtype=torch.float16).npu()
+>>> topk_indices = torch.randn(17, 9, 21).int().npu()
+>>> scale_value = 2.0
+>>> head_num = 126
+>>> key_value_head_num = 9
+>>> select_block_size = 64
+>>> select_block_count = 21
+>>> page_block_size = 128
+>>> block_table = torch.randn(17, 11).int().npu()
+>>> actual_seq_qlen = [1]
+>>> actual_kv_seqlen = [1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328, 1328]
+>>> layout = 'BSND'
+>>> torch_npu.npu_nsa_select_attention_infer(query, key, value, topk_indices, scale_value, head_num, select_block_size, select_block_count, atten_mask=atten_mask, actual_seq_qlen=actual_seq_qlen, actual_seq_kvlen=actual_seq_kvlen)
+"""
+)
+
+
 _add_torch_npu_docstr(
     "npu_gather_sparse_index",
     """
