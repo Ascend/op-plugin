@@ -132,7 +132,7 @@ at::Tensor abs(const at::Tensor& self) {
 // abs_ api实现函数，参数与torch api一致。该接口为inplace操作，即输出结果存放在输入tensor中。
 at::Tensor& abs_(at::Tensor& self) {
     // 调用out接口，避免因self作为输出时，非连续场景下，直调ACLOP算子结果出错。
-    return acl_op::abs_out(self, self);
+    acl_op::abs_out(self, self);
     return self;
 }
 } // namespace acl_op
@@ -356,7 +356,7 @@ Aten IR定义：
       arg0: func(arg1)
 ```
 
-- `exec`: 配置`EXEC_NPU_CMD`对应的参数，如果除aclnnname（原函数可排除out参数），其它参数顺序和Aten IR的顺序相同，可只配置aclnnname。以`abs`为例，`exec`字段可以配置成下面两种方式
+- `exec`: 配置`EXEC_NPU_CMD`对应的参数。如果除aclnnname（原函数可排除out参数），其它参数顺序和Aten IR的顺序相同，可只配置aclnnname。以`abs`为例，`exec`字段可以配置成下面两种方式
 ```yaml
     - func: abs.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
       方式一：
