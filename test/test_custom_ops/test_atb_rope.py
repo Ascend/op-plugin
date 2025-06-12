@@ -1,5 +1,7 @@
+import unittest
 import numpy as np
 import torch
+import torch.nn as nn
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
@@ -68,6 +70,34 @@ class TestRope(TestCase):
 
         self.assertRtolEqual(expected_query, query)
         self.assertRtolEqual(expected_key, key)
+
+    @unittest.skipIf(torch.__version__ < '2.5.1', "This compile ut needs torch version >=2.5.1")
+    @SupportedDevices(['Ascend910B'])
+    def test_rope_compile(self):
+        class RopeModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+
+            def forward(self, positions, query, key, head_dim, cos_sin_cache, is_neox):
+                torch_npu._npu_rotary_embedding(positions, query, key, head_dim, cos_sin_cache, is_neox)
+                return query, key
+        cos_sin_cache = self.compute_cos_sin_cache()
+        positions = torch.arange(self.seq_length).repeat(self.batch_size).npu()
+        query = torch.rand(self.batch_size * self.seq_length, self.num_heads * self.head_dim, dtype=torch.float16).npu()
+        key = torch.rand(self.batch_size * self.seq_length, self.num_heads * self.head_dim, dtype=torch.float16).npu()
+        query1, key1 = query.clone(), key.clone()
+        is_neox = False
+        model = RopeModel()
+        compiled_model = torch.compile(
+            model,
+            backend="aot_eager",
+            fullgraph=True,
+        )
+        compiled_output = compiled_model(positions, query, key, self.head_dim, cos_sin_cache, is_neox)
+        torch_npu._npu_rotary_embedding(positions, query1, key1, self.head_dim, cos_sin_cache, is_neox)
+        self.assertRtolEqual(compiled_output[0], query1)
+        self.assertRtolEqual(compiled_output[1], key1)
+
 
 if __name__ == '__main__':
     run_tests()

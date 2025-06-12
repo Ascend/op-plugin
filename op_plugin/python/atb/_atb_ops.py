@@ -51,27 +51,32 @@ def _add_atb_module():
 _add_atb_module()
 
 
-@lru_cache(None)
-def _register_atb_extensions():
+NNAL_EX = None
+GLOBAL_E = None
+try:
     npu_path = pathlib.Path(__file__).parents[2]
     atb_so_path = os.path.join(npu_path, 'lib', 'libop_plugin_atb.so')
-    try:
-        from torch_npu.utils._path_manager import PathManager
-        PathManager.check_directory_path_readable(atb_so_path)
-        torch.ops.load_library(atb_so_path)
-    except OSError as e:
-        nnal_ex = None
-        nnal_strerror = ""
-        if "libatb.so" in str(e):
-            nnal_strerror = "Please check that the nnal package is installed. "\
-                            "Please run 'source set_env.sh' in the NNAL installation path."
-        if "undefined symbol" in str(e):
-            nnal_strerror = "Please check the version of the NNAL package. "\
-                            "An undefined symbol was found, "\
-                            "which may be caused by a version mismatch between NNAL and torch_npu."
-        nnal_ex = OSError(e.errno, nnal_strerror)
-        nnal_ex.__traceback__ = e.__traceback__
-        raise nnal_ex from e
+    from torch_npu.utils._path_manager import PathManager
+    PathManager.check_directory_path_readable(atb_so_path)
+    torch.ops.load_library(atb_so_path)
+except OSError as e:
+    if "libatb.so" in str(e):
+        nnal_strerror = "Please check that the nnal package is installed. "\
+                        "Please run 'source set_env.sh' in the NNAL installation path."
+    if "undefined symbol" in str(e):
+        nnal_strerror = "Please check the version of the NNAL package. "\
+                        "An undefined symbol was found, "\
+                        "which may be caused by a version mismatch between NNAL and torch_npu."
+    NNAL_EX = OSError(e.errno, nnal_strerror)
+    NNAL_EX.__traceback__ = e.__traceback__
+    GLOBAL_E = e
+
+
+@lru_cache(None)
+def _register_atb_extensions():
+    global NNAL_EX, GLOBAL_E
+    if NNAL_EX is not None:
+        raise NNAL_EX from GLOBAL_E
     _patch_atb_ops()
 
 
