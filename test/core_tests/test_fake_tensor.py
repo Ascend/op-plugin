@@ -2197,7 +2197,7 @@ class TestGMMFinalizeRouting(TestCase):
 
 class TestTransposeBatchMatmul(TestCase):
     @unittest.skip("skip test_npu_transpose_batchmatmul")
-    def test_npu_transpose_batchmatmul_meta(self):
+    def test_npu_transpose_batchmatmul_meta_1(self):
         with FakeTensorMode():
             M, K, N, Batch = 32, 512, 128, 16
             x1 = torch.randn((M, Batch, K), dtype=torch.float16)
@@ -2205,7 +2205,33 @@ class TestTransposeBatchMatmul(TestCase):
             scale = torch.randint(1, 10, (Batch * N, ), dtype=torch.int64)
             result = torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(), scale=scale.npu(),
                                                         perm_x1=[1, 0, 2], perm_y=[1, 0, 2])
+            expect_ret = torch.randint(-2, 2, (M, 1, Batch * N), dtype=torch.int8)
+            self.assertTrue(result.shape == expect_ret.shape)
+            self.assertTrue(result.dtype == expect_ret.dtype)
+
+    @unittest.skip("skip test_npu_transpose_batchmatmul")
+    def test_npu_transpose_batchmatmul_meta_2(self):
+        with FakeTensorMode():
+            M, K, N, Batch = 32, 512, 128, 16
+            x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+            x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+            result = torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(),
+                                                        perm_x1=[1, 0, 2], perm_y=[1, 0, 2])
             expect_ret = torch.randn((M, Batch, N), dtype=torch.float16)
+            self.assertTrue(result.shape == expect_ret.shape)
+            self.assertTrue(result.dtype == expect_ret.dtype)
+
+    @unittest.skip("skip test_npu_transpose_batchmatmul")
+    def test_npu_transpose_batchmatmul_meta_3(self):
+        with FakeTensorMode():
+            M, K, N, Batch = 32, 512, 128, 16
+            batch_split_factor = 4
+            x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+            x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+            result = torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(), scale=None,
+                                                        perm_x1=[1, 0, 2], perm_y=[1, 0, 2],
+                                                        batch_split_factor=batch_split_factor)
+            expect_ret = torch.randn((batch_split_factor, M, Batch * N // batch_split_factor), dtype=torch.float16)
             self.assertTrue(result.shape == expect_ret.shape)
             self.assertTrue(result.dtype == expect_ret.dtype)
 

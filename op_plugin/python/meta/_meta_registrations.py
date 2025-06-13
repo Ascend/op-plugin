@@ -1452,18 +1452,14 @@ def npu_transpose_batchmatmul_meta(input_, weight, *, bias=None, scale=None,
     perm_y = perm_y or [0, 1, 2]
     M = input_.size(perm_x1.index(1))
     batchM = input_.size(perm_x1.index(0))
-    Ka = input_.size(perm_x1.index(2))
-    batchN = weight.size(perm_x2.index(0))
-    Kb = weight.size(perm_x2.index(1))
     N = weight.size(perm_x2.index(2))
-    if scale is None:
-        dtype = torch.float16
-    else:
+    dim_list = (M, batchM, N)
+    dtype = torch.float16
+    if scale is not None:
         dtype = torch.int8
+        dim_list = (M, 1, batchM * N)
     if batch_split_factor > 1:
         dim_list = (batch_split_factor, M, batchM * N // batch_split_factor)
-    else:
-        dim_list = (M, batchM, N)
     return input_.new_empty(dim_list, dtype=dtype)
 
 
