@@ -29,7 +29,7 @@ at::Tensor exec_aclnn_non_zero(const at::Tensor& self, at::Tensor& out)
     }();
     using aclGetViewShapeFunc = int (*)(const aclTensor *tensor, int64_t **view_dims, uint64_t *view_dims_num);
     auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
-    OP_LOG(aclnnNonzero, "EXEC_NPU_CMD_SYNC", self, out);
+    OP_EXEC_LOG(aclnnNonzero, "EXEC_NPU_CMD_SYNC", self, out);
     auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnNonzero, self, out);
     int64_t *view_dims = nullptr;
     uint64_t view_dim_num = 0;

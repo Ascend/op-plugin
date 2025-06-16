@@ -52,7 +52,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_dim(const at::Tensor &self
     }();
     using aclGetViewShapeFunc = int (*)(const aclTensor *tensor, int64_t **view_dims, uint64_t *view_dims_num);
     auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
-    OP_LOG(aclnnUniqueDim, "EXEC_NPU_CMD_SYNC", self, sorted, return_inverse, dim, y, y_inverse, y_counts);
+    OP_EXEC_LOG(aclnnUniqueDim, "EXEC_NPU_CMD_SYNC", self, sorted, return_inverse, dim, y, y_inverse, y_counts);
     auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnUniqueDim, self, sorted, return_inverse, dim, y,
                                           y_inverse, y_counts);
 

@@ -47,8 +47,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> unique_consecutive(const at::Tens
     auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
     constexpr int64_t NoneN = 1000;
     int64_t dim_value = dim.has_value() ? dim.value() : NoneN;
-    OP_LOG(aclnnUniqueConsecutive, "EXEC_NPU_CMD_SYNC",
-           self, return_inverse, return_counts, dim_value, y, y_inverse, y_counts);
+    OP_EXEC_LOG(aclnnUniqueConsecutive, "EXEC_NPU_CMD_SYNC",
+                self, return_inverse, return_counts, dim_value, y, y_inverse, y_counts);
     auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnUniqueConsecutive, self, return_inverse, return_counts, dim_value, y,
                                           y_inverse, y_counts);
     int64_t *view_dims = nullptr;

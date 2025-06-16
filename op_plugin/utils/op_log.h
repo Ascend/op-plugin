@@ -33,8 +33,8 @@ namespace logging {
 
 static std::shared_ptr<npu_logging::Logger> LOGGER = npu_logging::logging().getLogger("torch_npu.op_plugin");
 
-// Internal logging function.
-#define OP_EXEC_LOG(aclnn_api, exec_cmd, task_queue, ...)                                                                                   \
+// aclnn exec logging function with task queue.
+#define OP_EXEC_LOG_WITH_TASK_QUEUE(aclnn_api, exec_cmd, task_queue, ...)                                                                   \
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO) {                                               \
             op_plugin::logging::LOGGER->info("%s %s with task_queue = %s%s",                                                                \
@@ -48,18 +48,54 @@ static std::shared_ptr<npu_logging::Logger> LOGGER = npu_logging::logging().getL
         }                                                                                                                                   \
     } while (0);
 
-// Public logging function.
-#define OP_LOG(aclnn_api, exec_cmd, ...)                                                                                   \
+// aclnn exec logging function.
+#define OP_EXEC_LOG(aclnn_api, exec_cmd, ...)                                                                                               \
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO) {                                               \
-            op_plugin::logging::LOGGER->info("%s %s with%s",                                                                \
-                #aclnn_api, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());       \
+            op_plugin::logging::LOGGER->info("%s %s with%s",                                                                                \
+                #aclnn_api, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                           \
         }                                                                                                                                   \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG) {                                              \
-            op_plugin::logging::LOGGER->info("%s %s with%s",                                                                \
-                #aclnn_api, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                \
+            op_plugin::logging::LOGGER->info("%s %s with%s",                                                                                \
+                #aclnn_api, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                           \
             op_plugin::logging::LOGGER->debug("%s %s",                                                                                      \
-                #aclnn_api, op_plugin::logging::generate_debug_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                                \
+                #aclnn_api, op_plugin::logging::generate_debug_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                               \
+        }                                                                                                                                   \
+    } while (0);
+
+// Common op_plugin logging function.
+#define OP_LOG_DEBUG(fmt, ...)                                                                                                              \
+    do {                                                                                                                                    \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG) {                                              \
+            op_plugin::logging::LOGGER->debug("%s", #fmt);                                                                                  \
+        }                                                                                                                                   \
+    } while (0);
+
+#define OP_LOG_INFO(fmt, ...)                                                                                                               \
+    do {                                                                                                                                    \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO) {                                               \
+            op_plugin::logging::LOGGER->info("%s", #fmt);                                                                                   \
+        }                                                                                                                                   \
+    } while (0);
+
+#define OP_LOG_WARNING(fmt, ...)                                                                                                            \
+    do {                                                                                                                                    \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::WARNING) {                                            \
+            op_plugin::logging::LOGGER->warn("%s", #fmt);                                                                                   \
+        }                                                                                                                                   \
+    } while (0);
+
+#define OP_LOG_ERROR(fmt, ...)                                                                                                              \
+    do {                                                                                                                                    \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::ERROR) {                                              \
+            op_plugin::logging::LOGGER->error("%s", #fmt);                                                                                  \
+        }                                                                                                                                   \
+    } while (0);
+
+#define OP_LOG_CRITICAL(fmt, ...)                                                                                                           \
+    do {                                                                                                                                    \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::CRITICAL) {                                           \
+            op_plugin::logging::LOGGER->critical("%s", #fmt);                                                                               \
         }                                                                                                                                   \
     } while (0);
 

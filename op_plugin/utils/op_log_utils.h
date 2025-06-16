@@ -206,6 +206,17 @@ inline std::string convert_info(const c10::optional<at::Tensor> &opt_tensor)
     return ss.str();
 }
 
+inline std::string convert_info(const c10::optional<at::TensorList> &opt_at_tensor_list)
+{
+    if (opt_at_tensor_list.has_value()) {
+        return convert_info(opt_at_tensor_list.value());
+    }
+
+    std::stringstream ss;
+    ss << "Optional None TensorList" << "\n";
+    return ss.str();
+}
+
 inline std::string convert_info(const c10::optional<at::IntArrayRef> &opt_array)
 {
     if (opt_array.has_value()) {
@@ -311,9 +322,18 @@ inline std::string convert_debug_info(const at::Tensor &at_tensor)
     }
 
     if (torch_npu::utils::is_npu(at_tensor)) {
-        int64_t tensor_format = at_npu::native::custom_ops::get_npu_format(at_tensor);
+        auto at_tensor_sizes = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->get_npu_desc();
         if (at_tensor.dim() == 0) {
-            ss << "NPU scalar Tensor: " << at_tensor << ", npu_format: " << tensor_format;
+            ss << "NPU scalar Tensor: "
+               << at_tensor
+               << ", npu_format: "
+               << at_tensor_sizes.npu_format_
+               << ", base_sizes: "
+               << at_tensor_sizes.base_sizes_
+               << ", base_strides: "
+               << at_tensor_sizes.base_strides_
+               << ", storage_sizes: "
+               << at_tensor_sizes.storage_sizes_;
         } else {
             // To cpu to avoid using aclnnMin/aclnnMax/aclnnMean.
             // To float to avoid problems caused by non-floating-point types, such as int.
@@ -330,7 +350,13 @@ inline std::string convert_debug_info(const at::Tensor &at_tensor)
                << ", mean: "
                << cpu_tensor.mean()
                << ", npu_format: "
-               << tensor_format;
+               << at_tensor_sizes.npu_format_
+               << ", base_sizes: "
+               << at_tensor_sizes.base_sizes_
+               << ", base_strides: "
+               << at_tensor_sizes.base_strides_
+               << ", storage_sizes: "
+               << at_tensor_sizes.storage_sizes_;
         }
         std::string res = ss.str();
         replace_and_append_newline(res);
@@ -341,6 +367,40 @@ inline std::string convert_debug_info(const at::Tensor &at_tensor)
         replace_and_append_newline(res);
         return res;
     }
+}
+
+inline std::string convert_debug_info(const at::TensorList &at_tensor_list)
+{
+    std::stringstream ss;
+    if (at_tensor_list.size() == 0) {
+        ss << "No extra debug info for this param" << "\n";
+        return ss.str();
+    } else {
+        ss << "Debug info for first tensor of tensorlist: " << convert_debug_info(at_tensor_list[0]);
+        return ss.str();
+    }
+}
+
+inline std::string convert_debug_info(const c10::optional<at::Tensor> &opt_tensor)
+{
+    if (opt_tensor.has_value() && opt_tensor.value().defined()) {
+        return convert_debug_info(opt_tensor.value());
+    }
+
+    std::stringstream ss;
+    ss << "No extra debug info for this param" << "\n";
+    return ss.str();
+}
+
+inline std::string convert_debug_info(const c10::optional<at::TensorList> &opt_at_tensor_list)
+{
+    if (opt_at_tensor_list.has_value()) {
+        return convert_debug_info(opt_at_tensor_list.value());
+    }
+
+    std::stringstream ss;
+    ss << "No extra debug info for this param" << "\n";
+    return ss.str();
 }
 
 template <typename T> std::string convert_debug_info(T value)
