@@ -14,7 +14,7 @@ OpPlugin算子插件的编译、使用依赖Ascend Extension for PyTorch。因�
 
 **安装依赖**
 
-安装时需要安装系统依赖及官方PyTorch框架。安装指导可参考[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md#%E4%BD%BF%E7%94%A8%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85pytorch%E6%A1%86%E6%9E%B6)。
+安装时需要安装系统依赖及官方PyTorch框架，建议使用torch_npu提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md#%E4%BD%BF%E7%94%A8%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85pytorch%E6%A1%86%E6%9E%B6)。
 
 1. 配置CANN环境变量脚本。
 
@@ -49,8 +49,9 @@ OpPlugin算子插件的编译、使用依赖Ascend Extension for PyTorch。因�
 3. 完成编译后，安装dist目录下生成的插件torch\_npu包，如果使用非root用户安装，需要在命令后加**--user**。
 
    ```
-   pip3 install --upgrade dist/torch_npu-{pytorch版本号}-cp38-cp38m-linux_aarch64.whl
-   # 若用户在x86架构下安装插件，请替换为对应的whl包。
+   pip3 install --upgrade dist/torch_npu-{torch_npu_version}-{pytohon_version}-{arch}.whl
+   # 实际执行时需要根据生成的whl名称替换上述whl包名称，其中{version}表示编译的torch_npu版本，{python_version} 为所使用的 Python 版本，{arch} 则代表目标架构
+   # 典型的whl包名类似：torch_npu-2.1.0.post13+gitb32f3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
    ```
 
 ## 版本配套表
