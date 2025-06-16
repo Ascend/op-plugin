@@ -156,5 +156,32 @@ class TestFusedInferAttentionScore(TestCase):
         attention_output = custom_output[0]
         softmaxlse_output = custom_output[1]
 
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_fused_infer_attention_score_v3_fullquant(self, device="npu"):
+        query = torch.randint(1, 2, (1, 32, 2, 128), dtype=torch.int8).npu()
+        key = torch.randint(1, 2, (1, 32, 2048, 128), dtype=torch.int8).npu()
+        value = torch.randint(1, 2, (1, 32, 2048, 128), dtype=torch.int8).npu()
+        dequant_scale1 = torch.ones(1).npu()
+        dequant_scale2 = torch.ones(1).npu()
+        quant_scale1 = torch.ones(1).npu()
+        quant_scale2 = torch.ones(1).npu()
+
+        head_dim = 128
+        softmax_lse_flag = False
+        scale = 1 / 0.0078125
+        custom_output = torch_npu.npu_fused_infer_attention_score(
+            query, key, value, dequant_scale1=dequant_scale1, dequant_scale2=dequant_scale2, quant_scale1=quant_scale1,
+            quant_scale2=quant_scale2, num_heads=32, input_layout="BNSD", scale=scale, pre_tokens=65535, next_tokens=65535,
+            softmax_lse_flag=softmax_lse_flag)
+
+        query_t = torch.ones(1, 32, 2, 128).npu()
+        key_t = torch.ones(1, 32, 2048, 128).npu()
+        value_t = torch.ones(1, 32, 2048, 128).npu()
+        
+        golden_output = self.supported_op_exec(query_t, key_t, value_t, head_dim, 1, 32, 1, softmax_lse_flag)
+        res = custom_output[0].equal(golden_output[0])
+        self.assertRtolEqual(res, True)
+
 if __name__ == "__main__":
     run_tests()
