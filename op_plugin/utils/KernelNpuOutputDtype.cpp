@@ -13,7 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/TypeProperties.h>
 #include "torch_npu/csrc/core/npu/NPUException.h"
+#include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "op_plugin/utils/KernelNpuOutputDtype.h"
 
 namespace op_infer {
@@ -54,6 +56,44 @@ at::ScalarType npu_group_quant_dst_type(c10::optional<at::ScalarType> dst_dtype)
         dst_type = at::ScalarType::Int;
     }
     return dst_type;
+}
+
+at::ScalarType clamp_out_dtype(const at::Tensor& self, const c10::optional<at::Tensor>& min, const c10::optional<at::Tensor>& max)
+{
+    TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp:At least one of 'min' or 'max' must be not None!");
+
+    at::native::ResultTypeState state = {};
+    state = at::native::update_result_type_state(self, state);
+
+    if (!min.has_value()) {
+        state = at::native::update_result_type_state(max.value(), state);
+    } else if (!max.has_value()) {
+        state = at::native::update_result_type_state(min.value(), state);
+    } else {
+        state = at::native::update_result_type_state(max.value(), state);
+        state = at::native::update_result_type_state(min.value(), state);
+    }
+
+    return at::native::result_type(state);
+}
+
+at::ScalarType clamp_scalar_out_dtype(const at::Tensor& self, const c10::optional<at::Scalar>& min, const c10::optional<at::Scalar>& max)
+{
+    TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp:At least one of 'min' or 'max' must be not None!");
+
+    at::native::ResultTypeState state = {};
+    state = at::native::update_result_type_state(self, state);
+
+    if (!min.has_value()) {
+        state = at::native::update_result_type_state(max.value(), state);
+    } else if (!max.has_value()) {
+        state = at::native::update_result_type_state(min.value(), state);
+    } else {
+        state = at::native::update_result_type_state(max.value(), state);
+        state = at::native::update_result_type_state(min.value(), state);
+    }
+
+    return at::native::result_type(state);
 }
 
 } // namespace op_infer

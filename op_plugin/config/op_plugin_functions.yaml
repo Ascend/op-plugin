@@ -1630,7 +1630,10 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      structured_inherit: clamp.out
+      out:
+        size: self
+        dtype: clamp_scalar_out_dtype(self, min, max)
+      exec: aclnnClamp
 
   - func: clamp.Tensor(Tensor self, Tensor? min=None, Tensor? max=None) -> Tensor
     acl_op: all_version
@@ -1638,7 +1641,7 @@ official:
     gen_opapi:
       out:
         size: clamp_npu_output_size(self, min, max)
-        dtype: self
+        dtype: clamp_out_dtype(self, min, max)
       exec: aclnnClampTensor
 
   - func: clamp.Tensor_out(Tensor self, Tensor? min=None, Tensor? max=None, *, Tensor(a!) out) -> Tensor(a!)
@@ -1655,7 +1658,6 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: self
       exec: aclnnClamp
 
   - func: clamp_(Tensor(a!) self, Scalar? min=None, Scalar? max=None) -> Tensor(a!)
@@ -1674,7 +1676,10 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      structured_inherit: clamp_max.out
+      out:
+        size: self
+        dtype: at::native::result_type(self, max)
+      exec: aclnnClampMax
 
   - func: clamp_max.Tensor(Tensor self, Tensor max) -> Tensor
     acl_op: all_version
@@ -1682,7 +1687,7 @@ official:
     gen_opapi:
       out:
         size: op_infer::broadcast_ops_npu_output_size(self, max)
-        dtype: self
+        dtype: at::native::result_type(self, max)
       exec: aclnnClampMaxTensor
 
   - func: clamp_max.Tensor_out(Tensor self, Tensor max, *, Tensor(a!) out) -> Tensor(a!)
@@ -1699,7 +1704,6 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: self
       exec: aclnnClampMax
 
   - func: clamp_max_(Tensor(a!) self, Scalar max) -> Tensor(a!)
@@ -1718,21 +1722,26 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      structured_inherit: clamp_min.out
+      out:
+        size: self
+        dtype: at::native::result_type(self, min)
+      exec: aclnnClampMin
 
   - func: clamp_min.Tensor(Tensor self, Tensor min) -> Tensor
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      structured_inherit: clamp_min.Tensor_out
+      out:
+        size: op_infer::broadcast_ops_npu_output_size(self, min)
+        dtype: at::native::result_type(self, min)
+      exec: aclnnClampMinTensor
 
   - func: clamp_min.Tensor_out(Tensor self, Tensor min, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
     gen_opapi:
       out:
-        size: self
-        dtype: self
+        size: op_infer::broadcast_ops_npu_output_size(self, min)
       exec: aclnnClampMinTensor
 
   - func: clamp_min.out(Tensor self, Scalar min, *, Tensor(a!) out) -> Tensor(a!)
@@ -1741,7 +1750,6 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: self
       exec: aclnnClampMin
 
   - func: clamp_min_(Tensor(a!) self, Scalar min) -> Tensor(a!)
