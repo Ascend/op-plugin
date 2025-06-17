@@ -10,6 +10,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/custom_functions/atb/AtbCommon.h"
 #include <acl/acl.h>
@@ -23,7 +24,17 @@ void _npu_reshape_and_cache(const at::Tensor &key, const at::Tensor &value, at::
     OpParamCache<ReshapeAndCacheParam>& reshapeAndCacheParamCache = OpParamCache<ReshapeAndCacheParam>::getInstance();
     ReshapeAndCacheParam reshapeparam;
     reshapeparam.compressType = ReshapeAndCacheParam::COMPRESS_TYPE_UNDEFINED;
-    reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_CACHE;
+
+    auto key_cache_format = at_npu::native::get_npu_format(key_cache);
+    auto value_cache_format = at_npu::native::get_npu_format(value_cache);
+    bool is_key_cache_nz = (key_cache_format == ACL_FORMAT_FRACTAL_NZ);
+    bool is_value_cache_nz = (value_cache_format == ACL_FORMAT_FRACTAL_NZ);
+
+    if (is_key_cache_nz && is_value_cache_nz) {
+        reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_CACHE_NZ;
+    } else {
+        reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_CACHE;
+    }
     
     ParamSetter parametter;
     parametter.Input(key, true)

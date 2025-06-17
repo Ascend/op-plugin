@@ -477,6 +477,7 @@ struct ReshapeAndCacheParam {
     enum KvCacheCfg : int {
         K_CACHE_V_CACHE = 0, //!< 默认值,传入key_cache和value_cache
         K_CACHE_V_BYPASS,    //!< 只传入key_cache
+        K_CACHE_V_CACHE_NZ   //!< 传入key_cache和value_cache,且为NZ格式
     };
 
     //! 压缩方式

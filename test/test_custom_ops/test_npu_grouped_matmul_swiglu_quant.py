@@ -126,10 +126,14 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         x, weight, weightScale, xScale, groupList = self.gen_input_data(E, M, K, N)
         output0, output1 = self.process_groups(x, weight, weightScale, xScale, groupList)
         # 注：有效数据截至到groupList[-1] 即output0[:groupList[-1],:],output0[:groupList[-1]]
+        output0_valid = output0[:groupList[-1], :]
+        output1_valid = output1[:groupList[-1]]
         weight_npu = torch_npu.npu_format_cast(weight.npu(), 29)
         output0_npu, output1_npu, output_offset = torch_npu.npu_grouped_matmul_swiglu_quant(x.npu(), weight_npu, groupList.npu(), weightScale.npu(), xScale.npu())
-        self.assertEqual(output0, output0_npu.cpu(), 1)
-        self.assertRtolEqual(output1, output1_npu.cpu())
+        output0_npu_valid = output0_npu[:groupList[-1], :]
+        output1_npu_valid = output1_npu[:groupList[-1]]
+        self.assertEqual(output0_valid, output0_npu_valid.cpu(), 1)
+        self.assertRtolEqual(output1_valid, output1_npu_valid.cpu())
 
 if __name__ == "__main__":
     run_tests()
