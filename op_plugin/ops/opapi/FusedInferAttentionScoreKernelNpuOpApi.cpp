@@ -38,7 +38,8 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
     const c10::optional<at::Tensor> &quant_scale2,
     const c10::optional<at::Tensor> &block_table,
     int64_t num_heads,
-    bool softmax_lse_flag)
+    bool softmax_lse_flag,
+    const c10::optional<at::Tensor> &query_rope)
 {
     at::Tensor output;
     int64_t batchSize = 1;
@@ -101,7 +102,12 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
     if (quant_scale2.has_value()) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Char));
     } else if (query.dtype() == at::kChar) {
-        output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Half));
+        if (query_rope.has_value()) {
+            const at::Tensor &query_rope_tensor = c10::value_or_else(query_rope, [] { return at::Tensor(); });
+            output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(query_rope_tensor.dtype()));
+        } else {
+            output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Half));
+        }
     } else {
         output = npu_preparation::apply_tensor_without_format(tmp_output);
     }
@@ -164,7 +170,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
     // construct the output tensor
     std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor(query, value, input_layout_str,
                                                                                         quant_scale2, block_table, num_heads,
-                                                                                        softmax_lse_flag);
+                                                                                        softmax_lse_flag, query_rope);
     at::Tensor output = std::get<0>(fia_output);
     at::Tensor softmax_lse = std::get<1>(fia_output);
 
@@ -312,7 +318,7 @@ at::Tensor _npu_fused_infer_attention_score_get_max_workspace_symint(
     // construct the output tensor
     std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor(query, value, input_layout_str,
                                                                                         quant_scale2, block_table, num_heads,
-                                                                                        softmax_lse_flag);
+                                                                                        softmax_lse_flag, query_rope);
     at::Tensor output = std::get<0>(fia_output);
     at::Tensor softmax_lse = std::get<1>(fia_output);
 
