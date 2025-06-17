@@ -924,9 +924,18 @@ official:
 
   - func: adaptive_max_pool2d_backward(Tensor grad_output, Tensor self, Tensor indices) -> Tensor
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnAdaptiveMaxPool2dBackward
 
   - func: adaptive_max_pool2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      exec: aclnnAdaptiveMaxPool2dBackward
 
   - func: adaptive_max_pool3d.out(Tensor self, int[3] output_size, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))
     op_api: all_version
