@@ -119,13 +119,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_prolog(
 
     // construct the output tensor
     auto token_x_dim = token_x.dim();
-    TORCH_CHECK(token_x_dim == 2 || token_x_dim == 3, "token_x dim num should be 2 or 3,but the actual value is ", token_x_dim, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(token_x_dim == 2 || token_x_dim == 3, "token_x dim num should be 2 or 3, but the actual value is ", token_x_dim, ".\n", OPS_ERROR(ErrCode::PARAM));
 
     auto weight_uk_dim = weight_uk.dim();
-    TORCH_CHECK(weight_uk_dim == 3, "weight_uk dim num should be 3,but the actual value is ", weight_uk_dim, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight_uk_dim == 3, "weight_uk dim num should be 3, but the actual value is ", weight_uk_dim, ".\n", OPS_ERROR(ErrCode::PARAM));
 
     auto rope_sin_dim = rope_sin.dim();
-    TORCH_CHECK(rope_sin_dim == 2 || rope_sin_dim == 3, "rope_sin dim num should be 2 or 3,but the actual value is ", rope_sin_dim, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(rope_sin_dim == 2 || rope_sin_dim == 3, "rope_sin dim num should be 2 or 3, but the actual value is ", rope_sin_dim, ".\n", OPS_ERROR(ErrCode::PARAM));
 
     at::Tensor query;
     at::Tensor query_rope;
