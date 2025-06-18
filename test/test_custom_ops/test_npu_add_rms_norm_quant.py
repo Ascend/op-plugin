@@ -177,6 +177,43 @@ class TestNPUAddRmsNormQuant(TestCase):
             x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
             x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
             self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
+    
+    @unittest.skip("Skip test_npu_add_rms_norm_quant due to low version of cann")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_add_rms_norm_quant_bf16(self):
+        shape_list = [[[16, ], [16, ]],
+                      [[2, 16], [16, ]],
+                      [[2, 16], [2, 16]],
+                      [[16, 32], [16, 32]],
+                      [[16, 32], [32, ]]]
+        for item in shape_list:
+            x_shape = item[0]
+            quant_shape = item[1]
+            x1 = torch.randn(x_shape, dtype=torch.bfloat16)
+            x2 = torch.randn(x_shape, dtype=torch.bfloat16)
+            gamma = torch.randn(quant_shape, dtype=torch.bfloat16)
+            # Don't support scales with 0.
+            scales1 = torch.randn(quant_shape, dtype=torch.bfloat16).uniform_(0.1, 1)
+            zero_points1 = torch.randn(quant_shape, dtype=torch.bfloat16)
+
+            x1_npu = x1.npu()
+            x2_npu = x2.npu()
+            gamma_npu = gamma.npu()
+            scales1_npu = scales1.npu()
+            zero_points1_npu = zero_points1.npu()
+
+            y1, _, x_out = torch_npu.npu_add_rms_norm_quant(x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu)
+            y1_cpu, _, x_out_cpu = self.npu_add_rms_norm_quant_golden(x1, x2, gamma, scales1, zero_points1)
+
+            benchmark = math.pow(2, -7)
+            benchmark_int8 = 1
+            y1_cpu_data = y1_cpu.reshape(1, y1_cpu.numel())[0].cpu()
+            y1_npu_data = y1.reshape(1, y1.numel())[0].cpu()
+            self.assertTrue(self.compare(y1_cpu_data, y1_npu_data, benchmark_int8))
+
+            x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
+            x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
+            self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
 
 
 if __name__ == "__main__":
