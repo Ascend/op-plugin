@@ -1941,7 +1941,6 @@ def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=
             torch.empty(expert_token_num_size, dtype=expert_token_num_per_rank.dtype, device=tokens.device))
 
 
-
 @impl(m, "npu_add_rms_norm_quant")
 def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, scales2=None, zero_points2=None, axis=-1, epsilon=1e-06, div_mode=True):
     torch._check(
@@ -1963,3 +1962,13 @@ def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, scales2=No
     return (torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
             torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
             torch.empty(x1.size(), dtype=x1.dtype, device=x1.device))
+
+
+@impl(m, "npu_mrope")
+def npu_mrope_meta(positions, query, key, cos_sin_cache, head_size, *, mrope_section=None, rotary_mode='half'):
+    return (torch.empty_like(query), torch.empty_like(key))
+
+
+@impl(m, "npu_format_cast")
+def npu_format_cast_meta(self, dst):
+    return torch.empty_like(self)
