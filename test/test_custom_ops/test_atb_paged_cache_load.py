@@ -18,6 +18,27 @@ class GatherCacheParams:
     seq_starts: Optional[torch.Tensor] = None  # Optional: [BATCH]
 
 
+@dataclass
+class TestPagedCacheLoadParams:
+    kv_lora_rank: int
+    qk_rope_head_dim: int
+    block_size: int
+    num_blocks: int
+    max_seq_len: int
+    batch_size: int
+    device: str
+
+
+@dataclass
+class PreparedData:
+    expected: torch.Tensor
+    seq_len_tensor: torch.Tensor
+    block_table: torch.Tensor
+    seq_starts: Optional[torch.Tensor]
+    cached_kv_c: torch.Tensor
+    cached_k_pe: torch.Tensor
+
+
 class TestPagedCacheLoadSeqStarts(TestCase):
 
     def _create_mla_cache(
@@ -100,16 +121,14 @@ class TestPagedCacheLoadSeqStarts(TestCase):
                     block_id, :partial_block_size
                 ].squeeze(1)
 
-    @SupportedDevices(["Ascend910B"])
-    @unittest.skip("skip case")
-    def test_atb_paged_cache_load(self):
-        kv_lora_rank = 512
-        qk_rope_head_dim = 64
-        block_size = 16
-        num_blocks = 1024
-        max_seq_len = 512
-        batch_size = 8
-        device = "npu"
+    def _prepare_data(self, test_params: TestPagedCacheLoadParams) -> None:
+        kv_lora_rank = test_params.kv_lora_rank
+        qk_rope_head_dim = test_params.qk_rope_head_dim
+        block_size = test_params.block_size
+        num_blocks = test_params.num_blocks
+        max_seq_len = test_params.max_seq_len
+        batch_size = test_params.batch_size
+        device = test_params.device
         entry_size = kv_lora_rank + qk_rope_head_dim
 
         src_cache = self._create_mla_cache(num_blocks, block_size, entry_size, device)
@@ -145,12 +164,7 @@ class TestPagedCacheLoadSeqStarts(TestCase):
             seq_starts=seq_starts,
         )
         self._gather_cache_torch(gather_cache_params)
-        kv_c = torch.empty(
-            (total_tokens, 1, kv_lora_rank), dtype=torch.float16, device=device
-        )
-        k_pe = torch.empty(
-            (total_tokens, 1, qk_rope_head_dim), dtype=torch.float16, device=device
-        )
+
         cached_kv_c, cached_k_pe = src_cache.split(
             [kv_lora_rank, qk_rope_head_dim], dim=2
         )
@@ -161,6 +175,60 @@ class TestPagedCacheLoadSeqStarts(TestCase):
             torch.float16
         )
 
+        return PreparedData(
+            expected,
+            seq_len_tensor,
+            block_table,
+            seq_starts,
+            cached_kv_c,
+            cached_k_pe,
+        )
+
+    @SupportedDevices(["Ascend910B"])
+    @unittest.skip("skip case")
+    def test_atb_paged_cache_load_out(self):
+        kv_lora_rank = 512
+        qk_rope_head_dim = 64
+        block_size = 16
+        num_blocks = 1024
+        max_seq_len = 512
+        batch_size = 8
+        device = "npu"
+        test_params = TestPagedCacheLoadParams(
+            kv_lora_rank=kv_lora_rank,
+            qk_rope_head_dim=qk_rope_head_dim,
+            block_size=block_size,
+            num_blocks=num_blocks,
+            max_seq_len=max_seq_len,
+            batch_size=batch_size,
+            device=device,
+        )
+        prepared_data = self._prepare_data(test_params)
+        (
+            expected,
+            seq_len_tensor,
+            block_table,
+            seq_starts,
+            cached_kv_c,
+            cached_k_pe,
+        ) = (
+            prepared_data.expected,
+            prepared_data.seq_len_tensor,
+            prepared_data.block_table,
+            prepared_data.seq_starts,
+            prepared_data.cached_kv_c,
+            prepared_data.cached_k_pe,
+        )
+
+        total_tokens = seq_len_tensor.sum()
+
+        kv_c = torch.empty(
+            (total_tokens, 1, kv_lora_rank), dtype=torch.float16, device=device
+        )
+        k_pe = torch.empty(
+            (total_tokens, 1, qk_rope_head_dim), dtype=torch.float16, device=device
+        )
+
         torch_npu.atb.npu_paged_cache_load(
             cached_kv_c,
             cached_k_pe,
@@ -169,6 +237,55 @@ class TestPagedCacheLoadSeqStarts(TestCase):
             seq_starts=seq_starts,
             key=kv_c,
             value=k_pe,
+        )
+
+        torch_npu_result = torch.cat([kv_c, k_pe], dim=2).view(total_tokens, -1)
+        self.assertRtolEqual(expected, torch_npu_result)
+
+    @SupportedDevices(["Ascend910B"])
+    @unittest.skip("skip case")
+    def test_atb_paged_cache_load(self):
+        kv_lora_rank = 512
+        qk_rope_head_dim = 64
+        block_size = 16
+        num_blocks = 1024
+        max_seq_len = 512
+        batch_size = 8
+        device = "npu"
+        test_params = TestPagedCacheLoadParams(
+            kv_lora_rank=kv_lora_rank,
+            qk_rope_head_dim=qk_rope_head_dim,
+            block_size=block_size,
+            num_blocks=num_blocks,
+            max_seq_len=max_seq_len,
+            batch_size=batch_size,
+            device=device,
+        )
+        prepared_data = self._prepare_data(test_params)
+        (
+            expected,
+            seq_len_tensor,
+            block_table,
+            seq_starts,
+            cached_kv_c,
+            cached_k_pe,
+        ) = (
+            prepared_data.expected,
+            prepared_data.seq_len_tensor,
+            prepared_data.block_table,
+            prepared_data.seq_starts,
+            prepared_data.cached_kv_c,
+            prepared_data.cached_k_pe,
+        )
+
+        total_tokens = seq_len_tensor.sum()
+
+        kv_c, k_pe = torch_npu.atb.npu_paged_cache_load(
+            cached_kv_c,
+            cached_k_pe,
+            block_table,
+            seq_len_tensor.int(),
+            seq_starts=seq_starts,
         )
 
         torch_npu_result = torch.cat([kv_c, k_pe], dim=2).view(total_tokens, -1)
