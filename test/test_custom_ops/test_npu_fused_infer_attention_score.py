@@ -31,6 +31,15 @@ class TestFusedInferAttentionScore(TestCase):
 
         attn_output1 = torch.matmul(attn_weights1, past_value)
         return attn_output1, lse
+    
+    def supported_op_exec_ntd(self, query_states1, past_key, past_value, head_dim, T, N):
+        attn_weights1 = torch.matmul(query_states1, past_key.transpose(1, 2)) / 0.0078125
+
+        attn_weights1 = torch.nn.functional.softmax(attn_weights1, dim=-1, dtype=torch.float32).to(query_states1.dtype)
+
+        attn_output1 = torch.matmul(attn_weights1, past_value)
+        attn_output1 = attn_output1.transpose(0, 1)
+        return attn_output1
 
     def custom_op_exec(self, query, key, value, head_dim, softmax_lse_flag):
         scale = 1 / 0.0078125
@@ -41,6 +50,12 @@ class TestFusedInferAttentionScore(TestCase):
         scale = 1 / 0.0078125
         return torch_npu.npu_fused_infer_attention_score(
             query, key, value, num_heads=32, input_layout="TND", scale=scale, pre_tokens=65535, next_tokens=65535, softmax_lse_flag=softmax_lse_flag)
+
+    def custom_op_exec_ntd_tnd(self, query, key, value, head_dim, actseqlen, actseqlenkv, softmax_lse_flag):
+        scale = 1 / 0.0078125
+        return torch_npu.npu_fused_infer_attention_score(
+            query, key, value, num_heads=2, input_layout="NTD_TND", scale=scale, pre_tokens=65535, next_tokens=65535, actual_seq_lengths=actseqlen, 
+            actual_seq_lengths_kv=actseqlenkv, softmax_lse_flag=softmax_lse_flag)
     
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
@@ -142,19 +157,20 @@ class TestFusedInferAttentionScore(TestCase):
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
     def test_npu_fused_infer_attention_score_ntd_tnd(self, device="npu"):
-        query = torch.randn(2, 32, 128, dtype=torch.float16).npu()
-        key = torch.randn(2, 32, 128, dtype=torch.float16).npu()
-        value = torch.randn(2, 32, 128, dtype=torch.float16).npu()
+        query = torch.full((2, 32, 192), 1, dtype=torch.bfloat16).npu()
+        key = torch.full((2, 32, 192), 1, dtype=torch.bfloat16).npu()
+        value = torch.full((2, 32, 128), 1, dtype=torch.bfloat16).npu()
 
         head_dim = 128
-        softmax_lse_flag = True
-        scale = 1 / 0.0078125
-        custom_output = torch_npu.npu_fused_infer_attention_score(
-            query, key, value, num_heads=32, input_layout="NTD_TND", scale=scale, pre_tokens=65535,
-            next_tokens=65535, softmax_lse_flag=softmax_lse_flag)
+        softmax_lse_flag = False
 
-        attention_output = custom_output[0]
-        softmaxlse_output = custom_output[1]
+        actseqlen = [32]
+        actseqlenkv = [32]
+
+        golden_output = self.supported_op_exec_ntd(query, key, value, head_dim, 32, 2)
+        custom_output = self.custom_op_exec_ntd_tnd(query, key, value, head_dim, actseqlen, actseqlenkv, softmax_lse_flag)
+        attention_out = custom_output[0]
+        self.assertRtolEqual(golden_output, attention_out, prec=0.000001, prec16=0.000001)
 
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
