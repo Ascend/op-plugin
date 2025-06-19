@@ -44,7 +44,19 @@ at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype)
     return npu_dtype_cast_impl_op_api(self, dtype);
 }
 
+at::Tensor _npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype)
+{
+    DO_COMPATIBILITY(aclnnCast, acl_op::npu_dtype_cast(self, dtype));
+    return npu_dtype_cast_impl_op_api(self, dtype);
+}
+
 at::Tensor npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype)
+{
+    grad.requires_grad_();
+    return at_npu::native::custom_ops::npu_dtype_cast(grad, dtype);
+}
+
+at::Tensor _npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype)
 {
     grad.requires_grad_();
     return at_npu::native::custom_ops::npu_dtype_cast(grad, dtype);

@@ -117,6 +117,11 @@ backward:
   output_differentiability: [isDifferentiableType(dtype)]
   version: [v1.11, newest]
 
+- name: _npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor
+  self: _npu_dtype_cast_backward(grad, self.scalar_type())
+  output_differentiability: [isDifferentiableType(dtype)]
+  version: [v2.1, newest]
+
 - name: npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor
   self: npu_dtype_cast_backward(grad, self.scalar_type())
   version: v2.0

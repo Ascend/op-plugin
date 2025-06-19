@@ -323,6 +323,60 @@ void add_param_to_buf(const char *c)
     MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
+void add_param_to_buf(const TensorWrapper &tensor_r)
+{
+    static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");
+    TORCH_CHECK(addTensorAddrToCachedListAddr != nullptr, "GetOpApiFuncAddr failed.", OPS_ERROR(ErrCode::PTR));
+    AddTensorAddrToCachedList addTensorAddrToCachedListFunc =
+        reinterpret_cast<AddTensorAddrToCachedList>(addTensorAddrToCachedListAddr);
+    const at::Tensor &at_tensor = tensor_r.tensor_;
+    if (!at_tensor.defined()) {
+        MEMCPY_TO_BUF(",", 1);
+        return;
+    }
+    TORCH_CHECK(torch_npu::utils::is_npu(at_tensor),
+        "Expected all tensors to be on the same device. "
+        "Expected NPU tensor, please check whether the input tensor device is correct.",
+        OPS_ERROR(ErrCode::TYPE));
+    if (at_npu::native::OpPreparation::is_scalar_wrapped_to_tensor(at_tensor)) {
+        g_hash_offset = g_hash_buf_max_size;
+        return;
+    }
+    aclDataType acl_data_type = tensor_r.dtype;
+    // view shape
+    MEMCPY_TO_BUF(at_tensor.sizes().data(), static_cast<int64_t>(at_tensor.sizes().size() * sizeof(int64_t)));
+    // data type
+    MEMCPY_TO_BUF(&acl_data_type, sizeof(acl_data_type));
+    // seperator
+    MEMCPY_TO_BUF(",", 1);
+    // strides
+    MEMCPY_TO_BUF(at_tensor.strides().data(), static_cast<int64_t>(at_tensor.sizes().size() * sizeof(int64_t)));
+    // offset
+    auto so = at_tensor.storage_offset();
+    MEMCPY_TO_BUF(&so, sizeof(so));
+    // storage shape
+    c10::SmallVector<int64_t, 5> storageDims;
+    if (acl_data_type != ACL_STRING) {
+        TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
+            OPS_ERROR(ErrCode::PARAM));
+        storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
+    }
+    MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
+
+    addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
+}
+
+void add_param_to_buf(const TensorListWrapper &tensor_list_wrapper)
+{
+    const at::TensorList &at_tensor_list = tensor_list_wrapper.tensor_list_;
+    for (size_t i = 0; i < at_tensor_list.size(); i++) {
+        add_param_to_buf(TensorWrapper{
+            tensor_list_wrapper.tensor_list_[i], tensor_list_wrapper.dtype});
+    }
+    auto counter = at_tensor_list.size();
+    MEMCPY_TO_BUF(&counter, sizeof(counter));
+}
+
 void add_param_to_buf() {}
 
 void add_param_to_buf_v2(TensorStructPtr at_tensor)
@@ -338,8 +392,8 @@ void add_param_to_buf_v2(TensorStructPtr at_tensor)
     // view shape
     MEMCPY_TO_BUF((*at_tensor).sizes.data(), static_cast<int64_t>((*at_tensor).sizes.size() * sizeof(int64_t)));
     // data type
-    auto st = (*at_tensor).scalar_type;
-    MEMCPY_TO_BUF(&st, sizeof(st));
+    auto acl_data_type = (*at_tensor).acl_type;
+    MEMCPY_TO_BUF(&acl_data_type, sizeof(acl_data_type));
     // seperator
     MEMCPY_TO_BUF(",", 1);
     // strides
@@ -348,7 +402,6 @@ void add_param_to_buf_v2(TensorStructPtr at_tensor)
     auto so = (*at_tensor).storage_offset;
     MEMCPY_TO_BUF(&so, sizeof(so));
     // storage shape
-    aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(st);
     c10::SmallVector<int64_t, 5> storageDims;
     if (acl_data_type != ACL_STRING) {
         TORCH_CHECK((*at_tensor).itemsize > 0, "the itemsize of tensor must be greater than 0.",
