@@ -2435,15 +2435,6 @@ class TestNpuMropeMeta(TestCase):
             self.assertEqual(key_out.dtype, key_npu.dtype)
 
 
-class TestNpuFormatCastMeta(TestCase):
-    def test_npu_format_cast_meta(self):
-        with FakeTensorMode():
-            x = torch.rand(2, 3, 4, 5).npu()
-            x1 = torch_npu.npu_format_cast(x, 29)
-            self.assertEqual(x.shape, x1.shape)
-            self.assertEqual(x.dtype, x1.dtype)
-
-
 class TestGatherSparseIndex(TestCase):
     def test_npu_gather_sparse_index(self):
         with FakeTensorMode():

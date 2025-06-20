@@ -2132,11 +2132,6 @@ def npu_mrope_meta(positions, query, key, cos_sin_cache, head_size, *, mrope_sec
     return (torch.empty_like(query), torch.empty_like(key))
 
 
-@impl(m, "npu_format_cast")
-def npu_format_cast_meta(self, dst):
-    return torch.empty_like(self)
-
-
 @impl(m, "npu_gather_sparse_index")
 def npu_gather_sparse_index(inputs, index):
     output_dim = inputs.dim() + index.dim() - 1
