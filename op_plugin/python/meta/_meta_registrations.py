@@ -479,54 +479,99 @@ def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None
     B = 1
     N = 1
     S1 = 1
+    token_x_dim = query.dim()
     if input_layout == "BNSD_BSND":
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BNSD_BSND, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(0), query.size(2), query.size(1), query.size(3)], dtype=query.dtype, device='meta')
         B = query.size(0)
         N = query.size(1)
         S1 = query.size(2)
     if input_layout == "BNSD_NBSD":
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BNSD_NBSD, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(1), query.size(0), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
         B = query.size(0)
         N = query.size(1)
         S1 = query.size(2)
     if input_layout == "BSND_NBSD":
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BSND_NBSD, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(2), query.size(0), query.size(1), query.size(3)], dtype=query.dtype, device='meta')
         B = query.size(0)
         N = query.size(2)
         S1 = query.size(1)
     if input_layout == "BSH_NBSD":
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout BSH_NBSD, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([num_heads, query.size(0), query.size(1), query.size(2) // num_heads], dtype=query.dtype, device='meta')
         B = query.size(0)
         N = num_heads
         S1 = query.size(1)
     if input_layout == "BNSD":
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BNSD, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
         B = query.size(0)
         N = query.size(1)
         S1 = query.size(2)
     if input_layout == "BSH":
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout BSH, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
         B = query.size(0)
         N = num_heads
         S1 = query.size(1)
     if input_layout == "BSND":
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BSND, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
         B = query.size(0)
         N = num_heads
         S1 = query.size(1)
     if input_layout == "NSD":
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout NSD, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
         B = 1
         N = query.size(0)
         S1 = query.size(1)
     if input_layout == "TND":
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout TND, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         if block_table is not None: # IFA目前TND只支持PA场景，PFA目前TND只支持非PA场景
             tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
         else:
             tmp_out = torch.empty([query.size(0), query.size(1), value.size(2)], dtype=query.dtype, device='meta')           
     if input_layout == "TND_NTD":
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout TND_NTD, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(1), query.size(0), query.size(2)], dtype=query.dtype, device='meta')
     if input_layout == "NTD_TND":
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout NTD_TND, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
         tmp_out = torch.empty([query.size(1), query.size(0), value.size(2)], dtype=query.dtype, device='meta')
     if quant_scale2 is not None:
         if (softmax_lse_flag == True):
