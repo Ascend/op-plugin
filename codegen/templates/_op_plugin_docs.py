@@ -621,7 +621,7 @@ torch.Tensor：mask操作的结果。
     >>> box1.requires_grad = True
     >>> box2 = torch.randn(4, 32).npu()
     >>> box2.requires_grad = True
-    >>> diou = torch_npu.contrib.function.npu_ciou(box1, box2)
+    >>> ciou = torch_npu.npu_ciou(box1, box2, trans=True, is_cross=False, mode=0)
     >>> l = ciou.sum()
     >>> l.backward()
 """
@@ -1122,7 +1122,7 @@ acl_format (Int) - 目标格式。
 >>> x = torch.rand(2, 3, 4, 5).npu()
 >>> torch_npu.get_npu_format(x)
 0
->>> x1 = x.npu_format_cast(29)
+>>> x1 = torch_npu.npu_format_cast(x, 29)
 >>> torch_npu.get_npu_format(x1)
 29
 """
@@ -1143,7 +1143,7 @@ src (Tensor，int) - 目标格式。
 >>> x = torch.rand(2, 3, 4, 5).npu()
 >>> torch_npu.get_npu_format(x)
 0
->>> torch_npu.get_npu_format(x.npu_format_cast_(29))
+>>> torch_npu.get_npu_format(torch_npu.npu_format_cast_(x, 29))
 29
 """
 )
@@ -1172,10 +1172,12 @@ dx_transpose：反向计算时dx是否做转置，bool类型，默认为False。
 约束说明
 输入tensor的格式编号必须均为29，数据类型为FP16。
 
+支持的型号:
+Atlas 训练系列产品
+
 示例
 >>> import torch
 >>> import torch_npu
->>> query_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu() , 29).half()
 >>> query_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
 >>> key_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
 >>> value_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
@@ -1184,12 +1186,14 @@ dx_transpose：反向计算时dx是否做转置，bool类型，默认为False。
 >>> keep_prob = 0.5
 >>> context_layer = torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attention_mask, scale, keep_prob)
 >>> print(context_layer)
-        tensor([[0.5063, 0.4900, 0.4951,  ..., 0.5493, 0.5249, 0.5400],
-               [0.4844, 0.4724, 0.4927,  ..., 0.5176, 0.4702, 0.4790],
-               [0.4683, 0.4771, 0.5054,  ..., 0.4917, 0.4614, 0.4739],
-               ...,
-               [0.5137, 0.5010, 0.5078,  ..., 0.4656, 0.4592, 0.5034],
-               [0.5425, 0.5732, 0.5347,  ..., 0.5054, 0.5024, 0.4924],
+tensor([[0.5010, 0.4709, 0.4841,  ..., 0.4321, 0.4448, 0.4834],
+        [0.5107, 0.5049, 0.5239,  ..., 0.4436, 0.4375, 0.4651],
+        [0.5308, 0.4944, 0.5005,  ..., 0.5010, 0.5103, 0.5303],
+        ...,
+        [0.5142, 0.5068, 0.5176,  ..., 0.5498, 0.4868, 0.4805],
+        [0.4941, 0.4731, 0.4863,  ..., 0.5161, 0.5239, 0.5190],
+        [0.5459, 0.5107, 0.5415,  ..., 0.4641, 0.4688, 0.4531]],
+       device='npu:0', dtype=torch.float16)
 """
 )
 
@@ -1310,73 +1314,89 @@ import numpy as np
 import torch
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import SupportedDevicesclass
-TestNPUFlashAttention(TestCase):
+from torch_npu.testing.common_utils import SupportedDevices
+
+
+class TestNPUFlashAttention(TestCase):
     def supported_op_exec(self, query, key, value, atten_mask):
-        scale = 0.08838       
-        qk = torch.matmul(query, key.transpose(2, 3)).mul(scale)        
-        qk = qk + atten_mask * (-10000.0)        
-        softmax_res = torch.nn.functional.softmax(qk, dim=-1)       
-        attention_out = torch.matmul(softmax_res, value)        
+        scale = 0.08838
+        qk = torch.matmul(query, key.transpose(2, 3)).mul(scale)
+        qk = qk + atten_mask * (-10000.0)
+        softmax_res = torch.nn.functional.softmax(qk, dim=-1)
+        attention_out = torch.matmul(softmax_res, value)
         return attention_out
-    def custom_op_exec(self, query, key, value, sparse_params):        
-        scale = 0.08838        
-        atten_mask = None        
-        if sparse_params[0] == 0:            
-            shape = [1, 8, 256, 256]            
-            atten_mask_u = np.triu(np.ones(shape), k=sparse_params[1] + 1)            
-            atten_mask_l = np.tril(np.ones(shape), k=-sparse_params[2] - 1)            
-            atten_masks = atten_mask_u + atten_mask_l            
-            atten_mask = torch.tensor(atten_masks).to(torch.float16).bool().npu()        
-        if sparse_params[0] == 2 or sparse_params[0] == 3 or sparse_params[0] == 4:            
-            atten_masks = torch.from_numpy(np.triu(np.ones([2048, 2048]), k=1))            
-            atten_mask = torch.tensor(atten_masks).to(torch.float16).bool().npu()        
-            return torch_npu.npu_fusion_attention(query, key, value, head_num=8, input_layout="BNSD", scale=scale, sparse_mode=sparse_params[0], atten_mask=atten_mask, pre_tockens=sparse_params[1], next_tockens=sparse_params[2])   
-        
-    def get_atten_mask(self, sparse_mode=0, pre_tokens=65536, next_tokens=65536):        
-        atten_masks = []        
-        shape = [1, 8, 256, 256]        
-        if sparse_mode == 0:            
-            atten_mask_u = np.triu(np.ones(shape), k=next_tokens + 1)            
-            atten_mask_l = np.tril(np.ones(shape), k=-pre_tokens - 1)            
-            atten_masks = atten_mask_u + atten_mask_l        
-        elif sparse_mode == 1:            
-            atten_masks = np.zeros(shape)            
-            pre_tokens = 65536            
-            next_tokens = 65536        
-        elif sparse_mode == 2:            
-            atten_masks = np.triu(np.ones(shape), k=1)        
-        elif sparse_mode == 3:            
-            atten_masks = np.triu(np.ones(shape), k=1)        
-        elif sparse_mode == 4:            
-            atten_mask_u = np.triu(np.ones(shape), k=next_tokens + 1)            
-            atten_mask_l = np.tril(np.ones(shape), k=-pre_tokens - 1)            
-            atten_masks = atten_mask_u + atten_mask_l        
-        atten_mask = torch.tensor(atten_masks).to(torch.float16)        
-        return atten_mask    
-    # sparse_params = [sparse_mode, pre_tokens, next_tokens]    
-    # Prec and prec16 indicate the precision comparison standards for float32 and float16 respectively.    
-    # In this example, 0.01 is used as the standard. You can change the value as required.     
-    def check_result(self, query, key, value, sparse_params):        
-        atten_mask = self.get_atten_mask(sparse_params[0], sparse_params[1], sparse_params[2])        
-        output = self.supported_op_exec(query.float(), key.float(), value.float(), atten_mask)        
-        fa_result = self.custom_op_exec(query.npu(), key.npu(), value.npu(), sparse_params)        
-        self.assertRtolEqual(output.half(), fa_result[0], prec=0.01, prec16=0.01)    
-    def test_npu_flash_attention(self, device="npu"):        
-        query = torch.randn(1, 8, 256, 256, dtype=torch.float16)        
-        key = torch.randn(1, 8, 256, 256, dtype=torch.float16)        
-        value = torch.randn(1, 8, 256, 256, dtype=torch.float16)        
-        # sparse_params: [sparse_mode, pre_tokens, next_tokens]        
-        sparse_params_list = [            
-            [0, 128, 128],            
-            [1, 65536, 65536],            
-            [2, 65536, 0],            
-            [3, 65536, 0],            
-            [4, 128, 128]        
-            ]        
-        for sparse_params in sparse_params_list:            
+
+    def custom_op_exec(self, query, key, value, sparse_params):
+        scale = 0.08838
+        atten_mask = None
+        if sparse_params[0] == 0:
+            shape = [1, 8, 256, 256]
+            atten_mask_u = np.triu(np.ones(shape), k=sparse_params[1] + 1)
+            atten_mask_l = np.tril(np.ones(shape), k=-sparse_params[2] - 1)
+            atten_masks = atten_mask_u + atten_mask_l
+            atten_mask = torch.tensor(atten_masks).to(torch.float16).bool().npu()
+        if sparse_params[0] == 2 or sparse_params[0] == 3 or sparse_params[0] == 4:
+            atten_masks = torch.from_numpy(np.triu(np.ones([2048, 2048]), k=1))
+            atten_mask = torch.tensor(atten_masks).to(torch.float16).bool().npu()
+        return torch_npu.npu_fusion_attention(
+            query, key, value, head_num=8, input_layout="BNSD", scale=scale, sparse_mode=sparse_params[0],
+            atten_mask=atten_mask, pre_tockens=sparse_params[1], next_tockens=sparse_params[2])
+
+    def get_atten_mask(self, sparse_mode=0, pre_tokens=65536, next_tokens=65536):
+        atten_masks = []
+        shape = [1, 8, 256, 256]
+        if sparse_mode == 0:
+            atten_mask_u = np.triu(np.ones(shape), k=next_tokens + 1)
+            atten_mask_l = np.tril(np.ones(shape), k=-pre_tokens - 1)
+            atten_masks = atten_mask_u + atten_mask_l
+
+        elif sparse_mode == 1:
+            atten_masks = np.zeros(shape)
+            pre_tokens = 65536
+            next_tokens = 65536
+
+        elif sparse_mode == 2:
+            atten_masks = np.triu(np.ones(shape), k=1)
+
+        elif sparse_mode == 3:
+            atten_masks = np.triu(np.ones(shape), k=1)
+
+        elif sparse_mode == 4:
+            atten_mask_u = np.triu(np.ones(shape), k=next_tokens + 1)
+            atten_mask_l = np.tril(np.ones(shape), k=-pre_tokens - 1)
+            atten_masks = atten_mask_u + atten_mask_l
+
+        atten_mask = torch.tensor(atten_masks).to(torch.float16)
+        return atten_mask
+
+    # sparse_params = [sparse_mode, pre_tokens, next_tokens]
+    # Prec and prec16 indicate the precision comparison standards for float32 and float16 respectively.
+    # In this example, 0.01 is used as the standard. You can change the value as required. 
+    def check_result(self, query, key, value, sparse_params):
+        atten_mask = self.get_atten_mask(sparse_params[0], sparse_params[1], sparse_params[2])
+        output = self.supported_op_exec(query.float(), key.float(), value.float(), atten_mask)
+        fa_result = self.custom_op_exec(query.npu(), key.npu(), value.npu(), sparse_params)
+        self.assertRtolEqual(output.half(), fa_result[0], prec=0.01, prec16=0.01)
+
+
+    def test_npu_flash_attention(self, device="npu"):
+        query = torch.randn(1, 8, 256, 256, dtype=torch.float16)
+        key = torch.randn(1, 8, 256, 256, dtype=torch.float16)
+        value = torch.randn(1, 8, 256, 256, dtype=torch.float16)
+
+        # sparse_params: [sparse_mode, pre_tokens, next_tokens]
+        sparse_params_list = [
+            [0, 128, 128],
+            [1, 65536, 65536],
+            [2, 65536, 0],
+            [3, 65536, 0],
+            [4, 128, 128]
+        ]
+
+        for sparse_params in sparse_params_list:
             self.check_result(query, key, value, sparse_params)
-if __name__ == "__main__":    
+
+if __name__ == "__main__":
     run_tests()
 """
 )
@@ -1868,6 +1888,9 @@ with_offset (Bool) - 是否使用offset。
 scale (Tensor) - 最优尺度。
 offset (Tensor) - 最优offset。
 示例
+>>> import torch
+>>> import torch_npu
+>>> torch.npu.set_compile_mode(jit_compile=True)
 >>> input = torch.rand((2,2,3,4),dtype=torch.float32).npu()
 >>> input
 tensor([[[[0.4508, 0.6513, 0.4734, 0.1924],
@@ -1948,7 +1971,7 @@ shrink_axis_mask (Int，默认值为0) - 位掩码，其中位“i”意味着�
 >>> input
 tensor([[1, 2, 3, 4],
       [5, 6, 7, 8]], device='npu:0', dtype=torch.int32)
->>> output = torch_npu.npu_indexing(input1, [0, 0], [2, 2], [1, 1])
+>>> output = torch_npu.npu_indexing(input, [0, 0], [2, 2], [1, 1])
 >>> output
 tensor([[1, 2],
       [5, 6]], device='npu:0', dtype=torch.int32)
@@ -2354,7 +2377,8 @@ tensor([76, 48, 15, 65, 91, 82, 21, 96, 62, 90, 13, 59,  0, 18, 47, 23,  8, 56,
         55, 63, 72, 39, 97, 81, 16, 38, 17, 25, 74, 33, 79, 44, 36, 88, 83, 37,
         64, 45, 54, 41, 22, 28, 98, 40, 30, 20,  1, 86, 69, 57, 43,  9, 42, 27,
         71, 46, 19, 26, 78, 66,  3, 52], device='npu:0', dtype=torch.int32)
->>> output2tensor([62], device='npu:0', dtype=torch.int32)
+>>> output2
+tensor([62], device='npu:0', dtype=torch.int32)
 """
 )
 
@@ -3046,7 +3070,8 @@ offsets (ListInt) - 数据类型：int32，int64。
 size (ListInt) - 数据类型：int32，int64。
 示例
 >>> input = torch.tensor([[1,2,3,4,5], [6,7,8,9,10]], dtype=torch.float16).to("npu")
->>> offsets = [0, 0]>>> size = [2, 2]
+>>> offsets = [0, 0]
+>>> size = [2, 2]
 >>> output = torch_npu.npu_slice(input, offsets, size)
 >>> output
 tensor([[1., 2.],
@@ -3153,9 +3178,6 @@ torch.Size([2, 3, 5])
 >>> x1 = torch_npu.npu_transpose(x, (2, 0, 1))
 >>> x1.shape
 torch.Size([5, 2, 3])
->>> x2 = x.npu_transpose(2, 0, 1)
->>> x2.shape
-torch.Size([5, 2, 3])
 """
 )
 
@@ -3199,9 +3221,11 @@ self (Tensor) - 输入张量。
 
 示例：
 >>> x = torch.rand(2, 3).npu()
->>> xtensor([[0.6072, 0.9726, 0.3475],
+>>> x
+tensor([[0.6072, 0.9726, 0.3475],
         [0.3717, 0.6135, 0.6788]], device='npu:0')
->>> x.one_()tensor([[1., 1., 1.],
+>>> torch_npu.one_(x)
+tensor([[1., 1., 1.],
         [1., 1., 1.]], device='npu:0')
 """
 )
@@ -3231,9 +3255,10 @@ outputs = swiglu\(x, dim = -1) = swish(A) * B = A * sigmoid(A) * B
 Atlas A2 训练系列产品
 
 调用示例：
+import torch
 import torch_npu
 input_tensor = torch.randn(2, 32, 6, 6)
-output = torch_npu.npu_swiglu(input_tensor, dim = -1)
+output = torch_npu.npu_swiglu(input_tensor.npu(), dim = -1)
 """
 )
 
@@ -6442,15 +6467,14 @@ q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
 k = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
 v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
 workspace = torch.randn(2000000, dtype=torch.float16).npu()
-output = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
-softmax_lse = torch.randn(1 dtype=torch.float16).npu()
+output = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
+softmax_lse = torch.randn(1, dtype=torch.float16).npu()
 scale = 1/math.sqrt(128.0)
 
-# 调用FIA算子, workspace可以不传，此时就是FIA算子的out实现
-out = torch_npu.npu_fused_infer_attention_score.out(q, k, v, out=[output, softmax_lse], num_heads = 8, input_layout = "BNSD", scale = scale, pre_tokens=65535, next_tokens=65535)
+# 调用FIA算子
 out = torch_npu.npu_fused_infer_attention_score.out(q, k, v, workspace=workspace, out=[output, softmax_lse], num_heads = 8, input_layout = "BNSD", scale = scale, pre_tokens=65535, next_tokens=65535)
 
-# 执行上述代码的输出类似如下
+# 执行上述代码的输出output类似如下
 tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
         [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
         [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
@@ -6510,9 +6534,9 @@ Atlas A3 训练系列产品
 
 调用示例:
 # 单算子调用方式
+import math
 import torch
 import torch_npu
-import math
 
 # 生成随机数据, 并发送到npu
 B = 8
@@ -6523,29 +6547,48 @@ N = 32
 D = 128
 Dr = 64
 Skv = 1024
-S = 2
+S = 1
 Nkv = 1
-BlockNum = 32
 BlockSize = 128
+BlockNum = math.ceil(B * Skv / BlockSize)
+T = 8
+
 token_x = torch.rand(B, S, He, dtype=torch.bfloat16).npu()
 w_dq = torch.rand(He, Hcq, dtype=torch.bfloat16).npu()
+w_dq_cast = torch_npu.npu_format_cast(w_dq.contiguous(), 29)
+
 w_uq_qr = torch.rand(Hcq, N * (D + Dr), dtype=torch.bfloat16).npu()
+w_uq_qr_cast = torch_npu.npu_format_cast(w_uq_qr.contiguous(), 29)
+
 w_uk = torch.rand(N, D, Hckv, dtype=torch.bfloat16).npu()
 w_dkv_kr = torch.rand(He, Hckv + Dr, dtype=torch.bfloat16).npu()
+w_dkv_kr_cast = torch_npu.npu_format_cast(w_dkv_kr.contiguous(), 29)
+
 rmsnorm_gamma_cq = torch.rand(Hcq, dtype=torch.bfloat16).npu()
 rmsnorm_gamma_ckv = torch.rand(Hckv, dtype=torch.bfloat16).npu()
 rope_sin = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
 rope_cos = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
+
 cache_index = torch.rand(B, S).to(torch.int64).npu()
-kv_cache = torch.rand(BlockNum, BlockSize, Nkv, Hckv, dtype=torch.bfloat16).npu()
-kr_cache = torch.rand(BlockNum, BlockSize, Nkv, Dr, dtype=torch.bfloat16).npu()
+
+kv_cache = torch.rand(1, BlockNum * BlockSize * Nkv * Hckv, dtype=torch.bfloat16).npu()
+kv_cache = kv_cache.view(BlockNum, BlockSize, Nkv, Hckv)
+
+kr_cache = torch.rand(1, BlockNum * BlockSize * Nkv * Dr, dtype=torch.bfloat16).npu()
+kr_cache = kr_cache.view(BlockNum, BlockSize, Nkv, Dr)
+
 rmsnorm_epsilon_cq = 1.0e-5
 rmsnorm_epsilon_ckv = 1.0e-5
 cache_mode = "PA_BSND"
 
-# 调用MlaProlog算子
-query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla = self.mla_prolog_npu(token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, rmsnorm_gamma_cq,
-    rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode)
+query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla = torch_npu.npu_mla_prolog(
+    token_x, w_dq_cast, w_uq_qr_cast, w_uk, w_dkv_kr_cast,
+    rmsnorm_gamma_cq, rmsnorm_gamma_ckv, rope_sin, rope_cos,
+    cache_index, kv_cache, kr_cache,
+    rmsnorm_epsilon_cq=rmsnorm_epsilon_cq,
+    rmsnorm_epsilon_ckv=rmsnorm_epsilon_ckv, cache_mode=cache_mode
+)
+
 
 # 执行上述代码的输出类似如下
 tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
@@ -6614,7 +6657,7 @@ class Model(torch.nn.Module):
         super().__init__()
     def forward(self):
         return torch_npu.npu_mla_prolog(
-            token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+            token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, rmsnorm_gamma_cq,
             rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache)
 
 def MetaInfershape():
@@ -6622,11 +6665,7 @@ def MetaInfershape():
         model = Model()
         model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
         graph_output = model()
-    query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla = torch_npu.npu_mla_prolog(
-            token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache)
-    print("single op output:", query_mla, query_mla.shape)
-    print("graph output:", graph_output, graph_output.shape)
+
 if __name__ == "__main__":
     MetaInfershape()
 
@@ -7847,17 +7886,10 @@ Atlas A3训练系列产品
 调用示例:
 import torch
 import torch_npu
-
-K = 16
-M = 64
-N = 64
-x = torch.randn(K, M, N).npu()
-kronecker_p1 = torch.randn(M, M).half().npu()
-kronecker_p2 = torch.randn(N, N).half().npu()
-clip_ratio = 1.0
-dst_dtype = torch.int32
-
-out, quant_scale = torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2, clip_ratio, dst_dtype)
+x = torch.rand((16, 3, 64), dtype=torch.bfloat16).npu()
+p1 = torch.rand((3, 3), dtype=torch.bfloat16).npu()
+p2 = torch.rand((64, 64), dtype=torch.bfloat16).npu()
+out, quant_scale = torch_npu.npu_kronecker_quant(x, p1, p2, 0.7848)
 """
 )
 
