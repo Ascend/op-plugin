@@ -1896,7 +1896,8 @@ c10::SmallVector<int64_t, SIZE> matmul_output_size(const at::Tensor &tensor1, co
 }
 
 c10::SmallVector<int64_t, SIZE> npu_transpose_batchmatmul_output_size(const at::Tensor &input, const at::Tensor &weight, const at::Tensor &scale_real,
-                                                                      at::IntArrayRef perm_x1_real, at::IntArrayRef perm_x2_real, int32_t batch_split_factor_value)
+                                                                      at::IntArrayRef perm_x1_real, at::IntArrayRef perm_x2_real, at::IntArrayRef perm_y_real,
+                                                                      int32_t batch_split_factor_value)
 {
     c10::SmallVector<int64_t, SIZE> output_size;
     auto input_dim_num = input.dim();
@@ -1906,7 +1907,20 @@ c10::SmallVector<int64_t, SIZE> npu_transpose_batchmatmul_output_size(const at::
     TORCH_CHECK(input_dim_num == EXPECTED_DIM && weight_dim_num == EXPECTED_DIM,
                 "input dim is ", input_dim_num, "but expected is ", EXPECTED_DIM,
                 "weight dim is ", weight_dim_num, "but expected is ", EXPECTED_DIM, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(((input.scalar_type() == at::ScalarType::Half) || (input.scalar_type() == at::ScalarType::BFloat16) ||
+                 (input.scalar_type() == at::ScalarType::Float)),
+                "input's type supported for float16, float32 and bfloat16." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(((weight.scalar_type() == at::ScalarType::Half) || (weight.scalar_type() == at::ScalarType::BFloat16) ||
+                 (weight.scalar_type() == at::ScalarType::Float)),
+                "weight's type supported for float16, float32 and bfloat16." + OPS_ERROR(ErrCode::PARAM));
 
+    auto check_perm_x1 = (perm_x1_real[0] == 0 && perm_x1_real[1] == 1 && perm_x1_real[2] == 2) ||
+                         (perm_x1_real[0] == 1 && perm_x1_real[1] == 0 && perm_x1_real[2] == 2);
+    TORCH_CHECK(check_perm_x1, "perm_x1 should be [0, 1, 2] or [1, 0, 2]" + OPS_ERROR(ErrCode::PARAM));
+    auto check_perm_x2 = perm_x2_real[0] == 0 && perm_x2_real[1] == 1 && perm_x2_real[2] == 2;
+    TORCH_CHECK(check_perm_x2, "perm_x2 should be [0, 1, 2]" + OPS_ERROR(ErrCode::PARAM));
+    auto check_perm_y = perm_y_real[0] == 1 && perm_y_real[1] == 0 && perm_y_real[2] == 2;
+    TORCH_CHECK(check_perm_y, "perm_y should be [1, 0, 2]" + OPS_ERROR(ErrCode::PARAM));
     auto m_dim = input.size(perm_x1_real[1]);
     auto batch_dim = input.size(perm_x1_real[0]);
     auto n_dim = weight.size(perm_x2_real[2]);

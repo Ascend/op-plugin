@@ -1531,12 +1531,42 @@ def npu_transpose_batchmatmul_meta(input_, weight, *, bias=None, scale=None,
                                    batch_split_factor=1):
     perm_x1 = perm_x1 or [0, 1, 2]
     perm_x2 = perm_x2 or [0, 1, 2]
-    perm_y = perm_y or [0, 1, 2]
+    perm_y = perm_y or [1, 0, 2]
+    check_perm_x1 = ((perm_x1[0] == 0 and perm_x1[1] == 1 and perm_x1[2] == 2) or
+                     (perm_x1[0] == 1 and perm_x1[1] == 0 and perm_x1[2] == 2))
+    torch._check(
+        check_perm_x1,
+        lambda: "perm_x1 should be [0, 1, 2] or [1, 0, 2]" + ops_error(ErrCode.VALUE),
+    )
+    check_perm_x2 = perm_x2[0] == 0 and perm_x2[1] == 1 and perm_x2[2] == 2
+    torch._check(
+        check_perm_x2,
+        lambda: "perm_x2 should be [0, 1, 2]" + ops_error(ErrCode.VALUE),
+    )
+    check_perm_y = perm_y[0] == 1 and perm_y[1] == 0 and perm_y[2] == 2
+    torch._check(
+        check_perm_y,
+        lambda: "perm_y should be [1, 0, 2]" + ops_error(ErrCode.VALUE),
+    )
+    input_dtype_supported_list = [torch.float16, torch.float32, torch.bfloat16]
+    torch._check(
+        input_.dtype in input_dtype_supported_list,
+        lambda: "input's type supported for float16, float32 and bfloat16, but now is " + str(input_.dtype) + ops_error(ErrCode.TYPE),
+    )
+    torch._check(
+        weight.dtype in input_dtype_supported_list,
+        lambda: "weight's type supported for float16, float32 and bfloat16, but now is " + str(weight.dtype) + ops_error(ErrCode.TYPE),
+    )
+    torch._check(
+        bias is None,
+        lambda: "The bias is not supported in TranpsposeBatchMatMul" + str(weight.dtype) + ops_error(ErrCode.TYPE),
+    )
     M = input_.size(perm_x1.index(1))
     batchM = input_.size(perm_x1.index(0))
     N = weight.size(perm_x2.index(2))
     dim_list = (M, batchM, N)
-    dtype = torch.float16
+
+    dtype = input_.dtype
     if scale is not None:
         dtype = torch.int8
         dim_list = (M, 1, batchM * N)

@@ -7457,13 +7457,15 @@ custom:
     exposed: all_version
     gen_opapi:
       out:
-        size: 'npu_transpose_batchmatmul_output_size(input, weight, scale_real, perm_x1_real, perm_x2_real, batch_split_factor_value)'
-        dtype: 'scale_real.defined() ? at::ScalarType::Char : at::ScalarType::Half'
+        size: 'npu_transpose_batchmatmul_output_size(input, weight, scale_real, perm_x1_real, perm_x2_real, perm_y_real, batch_split_factor_value)'
+        dtype: 'scale_real.defined() ? at::ScalarType::Char : input.scalar_type()'
       new_params:
+        default_perm_x: 'std::vector<int64_t>{0, 1, 2}'
+        default_perm_y: 'std::vector<int64_t>{1, 0, 2}'
         scale_real: 'scale.value_or(at::Tensor())'
-        perm_x1_real: 'perm_x1.value_or(at::IntArrayRef{0, 1, 2})'
-        perm_x2_real: 'perm_x2.value_or(at::IntArrayRef{0, 1, 2})'
-        perm_y_real: 'perm_y.value_or(at::IntArrayRef{0, 1, 2})'
+        perm_x1_real: 'perm_x1.value_or(at::IntArrayRef(default_perm_x))'
+        perm_x2_real: 'perm_x2.value_or(at::IntArrayRef(default_perm_x))'
+        perm_y_real: 'perm_y.value_or(at::IntArrayRef(default_perm_y))'
         batch_split_factor_value: 'static_cast<int32_t>(batch_split_factor.value_or(1))'
         cubeMathType: 'npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32())'
       exec: aclnnTransposeBatchMatMul, input, weight, bias, scale_real, perm_x1_real, perm_x2_real, perm_y_real, cubeMathType, batch_split_factor_value, out

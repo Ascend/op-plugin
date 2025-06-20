@@ -68,6 +68,61 @@ class TestTransposeBatchMatmul(TestCase):
                                                             batch_split_factor=batch_split_factor).to("cpu")
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
+    @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
+    @SupportedDevices(["Ascend910B"])
+    def test_npu_transpose_batchmatmul_4(self, device="npu"):
+        M, K, N, Batch = 32, 512, 128, 32
+        x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+        x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+        with self.assertRaisesRegex(RuntimeError, "perm_x1 should be"):
+            torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(), scale=None,
+                                            perm_x1=[1, 1, 2], perm_x2=[0, 1, 2],
+                                            perm_y=[1, 0, 2]).to("cpu")
+
+    @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
+    @SupportedDevices(["Ascend910B"])
+    def test_npu_transpose_batchmatmul_5(self, device="npu"):
+        M, K, N, Batch = 32, 512, 128, 32
+        x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+        x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+        with self.assertRaisesRegex(RuntimeError, "perm_x2 should be"):
+            torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(), scale=None,
+                                            perm_x1=[1, 0, 2], perm_x2=[1, 1, 2],
+                                            perm_y=[1, 0, 2]).to("cpu")
+
+    @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
+    @SupportedDevices(["Ascend910B"])
+    def test_npu_transpose_batchmatmul_6(self, device="npu"):
+        M, K, N, Batch = 32, 512, 128, 32
+        x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+        x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+        with self.assertRaisesRegex(RuntimeError, "perm_y should be"):
+            torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(), scale=None,
+                                            perm_x1=[1, 0, 2], perm_x2=[0, 1, 2],
+                                            perm_y=[1, 1, 2]).to("cpu")
+
+    @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
+    @SupportedDevices(["Ascend910B"])
+    def test_npu_transpose_batchmatmul_7(self, device="npu"):
+        M, K, N, Batch = 32, 512, 128, 32
+        x1 = torch.randint(-10, 10, (M, Batch, K), dtype=torch.int64)
+        x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+        with self.assertRaisesRegex(RuntimeError, "input's type supported for float16, float32 and bfloat16"):
+            torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(), scale=None,
+                                            perm_x1=[1, 0, 2], perm_x2=[0, 1, 2],
+                                            perm_y=[1, 0, 2]).to("cpu")
+
+    @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
+    @SupportedDevices(["Ascend910B"])
+    def test_npu_transpose_batchmatmul_8(self, device="npu"):
+        M, K, N, Batch = 32, 512, 128, 32
+        x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+        x2 = torch.randint(-10, 10, (Batch, K, N), dtype=torch.int64)
+        with self.assertRaisesRegex(RuntimeError, "weight's type supported for float16, float32 and bfloat16"):
+            torch_npu.npu_transpose_batchmatmul(x1.npu(), x2.npu(), scale=None,
+                                            perm_x1=[1, 0, 2], perm_x2=[0, 1, 2],
+                                            perm_y=[1, 0, 2]).to("cpu")
+
 
 if __name__ == "__main__":
     run_tests()
