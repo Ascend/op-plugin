@@ -2340,9 +2340,11 @@ official:
 
   - func: fft_fftshift(Tensor self, int[1]? dim=None) -> Tensor
     op_api: [v2.1, newest]
+    internal_format_opapi: all_version
 
   - func: fft_ifftshift(Tensor self, int[1]? dim=None) -> Tensor
     op_api: [v2.1, newest]
+    internal_format_opapi: all_version
 
   - func: fill_.Scalar(Tensor(a!) self, Scalar value) -> Tensor(a!)
     acl_op: all_version
