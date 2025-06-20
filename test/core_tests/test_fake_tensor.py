@@ -2444,7 +2444,6 @@ class TestNpuFormatCastMeta(TestCase):
             self.assertEqual(x.dtype, x1.dtype)
 
 
-
 class TestGatherSparseIndex(TestCase):
     def test_npu_gather_sparse_index(self):
         with FakeTensorMode():
@@ -2455,6 +2454,51 @@ class TestGatherSparseIndex(TestCase):
 
             self.assertTrue(result.shape == expect_ret.shape)
             self.assertTrue(result.dtype == expect_ret.dtype)
+
+
+class TestNpuTopKTopP(TestCase):
+    def test_npu_top_k_top_p_meta(self):
+        vocab_size = 152064
+        batch_size = 128
+        dtype = torch.float32
+        with FakeTensorMode():
+            k_max = min(1024, vocab_size)
+            logits = torch.randn(batch_size, vocab_size).to(dtype)
+            p = torch.rand(batch_size).to(dtype)
+            k = torch.randint(10, k_max, (batch_size,)).to(torch.int32)
+            out_npu = torch_npu.npu_top_k_top_p(logits.npu(), p.npu(), k.npu())
+            self.assertEqual(out_npu.dtype, dtype)
+            self.assertEqual(out_npu.shape, logits.shape)
+
+
+class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
+    def test_npu_moe_token_permute_unpermute_meta(self):
+        dtype = torch.bfloat16
+        num_tokens = 1000
+        num_output_tokens = None
+        hidden_size = 6144
+        num_experts = 128
+        with FakeTensorMode():
+            tokens = torch.randn(num_tokens, hidden_size).npu().to(dtype)
+            probs = None
+            num_output_tokens = 0 if num_output_tokens is None else num_output_tokens
+
+            for topk in [1, 4]:
+                flatten_size = num_tokens * topk
+                indices = torch.randint(0, num_experts, (num_tokens, topk)).npu()
+                indices = torch.randint(0, num_experts, (num_tokens, topk)).npu()
+                permuted_tokens, sorted_indices = torch_npu.npu_moe_token_permute(tokens, indices)
+                permuted_output_shape_0 = min(num_output_tokens, flatten_size) if num_output_tokens > 0 else flatten_size + num_output_tokens
+                self.assertEqual(permuted_tokens.dtype, dtype)
+                self.assertEqual(permuted_tokens.shape[0], permuted_output_shape_0)
+                self.assertEqual(permuted_tokens.shape[1], hidden_size)
+                self.assertEqual(sorted_indices.dtype, torch.int32)
+                self.assertEqual(sorted_indices.shape[0], indices.numel())
+
+                probs = (torch.ones_like(indices) / topk).npu().to(dtype)
+                unpermuted_tokens = torch_npu.npu_moe_token_unpermute(permuted_tokens, sorted_indices, probs=probs)
+                self.assertEqual(unpermuted_tokens.dtype, dtype)
+                self.assertEqual(unpermuted_tokens.shape, (sorted_indices.size(0) / topk, hidden_size))
 
 
 instantiate_parametrized_tests(FakeTensorTest)

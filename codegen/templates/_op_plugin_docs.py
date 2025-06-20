@@ -8980,3 +8980,176 @@ if __name__ == '__main__':
     run_tests()
 """
 )
+
+
+_add_torch_npu_docstr(
+    "npu_top_k_top_p",
+    """
+接口原型: 
+torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
+
+功能描述: 
+对原始输入logits进行top-k和top-p采样过滤
+
+计算公式：
+    1. 对输入logits按最后一轴进行升序排序，得到对应的排序结果sortedValue和sortedIndices。
+    sortedValue, sortedIndices = sort(logits, dim=-1, descend=false, stable=true)
+
+    2. 计算保留的阈值（第k大的值）。
+    topKValue[b][v] = sortedValue[b][sortedValue.size(1) - k[b]]
+
+    3. 生成top-k需要过滤的mask。
+    topKMask = sortedValue < topKValue
+
+    4. 通过topKMask将小于阈值的部分置为-inf。
+    sortedValue[b][v] = 
+        -inf if topKMask[b][v] == true else sortedValue[b][v]
+
+    5. 通过softmax将经过top-k过滤后的数据按最后一轴转换为概率分布。
+    probsValue = softmax(sortedValue, dim=-1)
+
+    6. 按最后一轴计算累计概率（从最小的概率开始累加）。
+    probsSum = cumsum(probsValue, dim=-1)
+
+    7. 生成top-p的mask，累计概率小于等于1-p的位置需要过滤掉，并保证每个batch至少保留一个元素。
+    topPMask[b][v] = probsSum[b][v] <= 1-p[b]
+    topPMask[b][-1] = false
+
+    8. 通过topPMask将小于阈值的部分置为-inf。
+    sortedValue[b][v] = 
+        -inf if topPMask[b][v] == true else sortedValue[b][v]
+
+    9. 将过滤后的结果按sortedIndices还原到原始顺序。
+    out[b][v] = sortedValue[b][sortedIndices[b][v]]
+
+    其中 0 <= b < logits.size(0), 0 <= v < logits.size(1)。
+
+参数说明: 
+logits(torch.Tensor): 输入张量，支持2维，数据类型支持torch.bfloat16, torch.float16, torch.float32。
+p(torch.Tensor): 表示top-p的阈值，值域为[0, 1]，数据类型支持torch.bfloat16, torch.float16, torch.float32，数据类型需要与logits一致，shape支持1维且需要与logits的首轴相同，支持非连续Tensor，支持空tensor，支持ND
+k(torch.Tensor): 表示top-k的阈值，值域为[1, 1024]，且最大值需要小于等于logits.size(1)，数据类型支持torch.int32，shape支持1维且需要与logits的首轴相同，支持非连续Tensor，支持空tensor，支持ND
+
+输出说明: 
+out(torch.Tensor): 表示过滤后的数据。数据类型支持torch.bfloat16, torch.float16, torch.float32，数据类型需要与logits一致，shape支持2维且需要与logits一致，支持非连续Tensor，数据格式支持ND
+
+约束说明: 
+无
+
+支持版本: 
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号: 
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例: 
+import torch
+import torch_npu
+
+logits = torch.randn(16, 2048).npu()
+p = torch.rand(16).npu()
+k = torch.randint(10, 1024, (16,)).npu().to(torch.int32)
+out = torch_npu.npu_top_k_top_p(logits, p, k)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_moe_token_permute",
+    """
+接口原型: 
+torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mode=False) -> (Tensor, Tensor)
+
+功能描述
+MoE的permute计算，根据索引indices将tokens广播并排序。
+
+
+参数说明: 
+tokens(torch.Tensor)：必选输入，2维Tensor, shape为(num_tokens，hidden_size），数据类型torch.bfloat16，支持非连续Tensor，支持ND
+indices(torch.Tensor): 必选输入，2维Tensor，shape为（num_tokens，topK），数据类型torch.int64，支持非连续Tensor，支持ND
+num_out_tokens(int, optional)：可选输入，默认为None，数据类型int64，表示有效输出token数。设置为0时，表示不会删除任何token。不为0时，会按照num_tokens进行切片丢弃按照indices排序好的token中超过num_tokens的部分，为负数时按照切片索引为负数时处理。
+padded_mode(bool, optional): 可选输入，默认为False，如果为True，表示indices已被填充为代表每个专家选中的token索引，此时不对indices进行排序，目前仅支持为False
+
+输出说明: 
+permuted_tokens(torch.Tensor)：2维Tensor，数据类型torch.bfloat16(当前版本permuted_tokens仅支持bfloat16)
+sorted_indices(torch.Tensor)：1维Tensor，数据类型torch.int32(当前版本sorted_indices仅支持int32)
+
+约束说明: 
+indices 要求元素个数小于16777215，值大于等于0小于16777215(单点支持int32或int64的最大或最小值，其余值不在范围内排序结果不正确)
+topK小于等于512
+
+支持版本: 
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号: 
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例: 
+import torch
+import torch_npu
+
+dtype = torch.bfloat16
+tokens = torch.tensor([[1, 1, 1], [2, 2, 2], [3, 3, 3], [0, 0, 0]]).npu().to(dtype)
+indices = torch.tensor([[0, 4], [4, 3], [4, 2], [1, 1]]).npu()
+num_out_tokens = indices.numel()
+probs = torch.ones_like(indices) / 2
+probs = probs.npu().to(dtype)
+permuted_tokens, sorted_indices = torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_moe_token_unpermute",
+    """
+接口原型: 
+torch_npu.npu_moe_token_unpermute(permuted_tokens, sorted_indices, probs=None, padded_mode=False, restore_shape=None) -> Tensor
+
+
+功能描述
+根据sorted_indices存储的下标，获取permuted_tokens中存储的输入数据；如果存在probs数据，permuted_tokens会与probs相乘；最后进行累加求和，并输出计算结果
+
+参数说明: 
+permuted_tokens(torch.Tensor)：必选输入，2维Tensor, shape为(num_tokens*topK，hidden_size），数据类型torch.bfloat16，支持非连续Tensor，支持ND
+sorted_indices(torch.Tensor): 必选输入，1维Tensor，shape为（num_tokens*topK），数据类型torch.int64，支持非连续Tensor，支持ND
+probs(torch.Tensor, optional)：可选输入，默认为None，当probs传时，topK等于probs的第二维；当probs不传时，topK=1。shape为（num_tokens，topK），支持的数据类型BFLOAT16。数据格式支持ND，支持非连续输入
+padded_mode(bool, optional): 可选输入，默认为False，数据类型int64，目前仅支持为False
+restore_shape(torch.size, optional): 可选输入，默认为None，表示permute前输入的shape，只在padded_mode为True时生效。数据类型torch.size
+
+输出说明: 
+unpermuted_tokens(torch.Tensor)：2维Tensor，数据类型torch.bfloat16，padded_mode=False时，shape为(num_tokens，hidden_size)
+
+约束说明:
+目前仅支持padded_mode为False
+
+支持版本: 
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号: 
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例: 
+import torch
+import torch_npu
+
+dtype = torch.bfloat16
+permuted_tokens = torch.tensor([[1., 1., 1.],
+                                    [0., 0., 0.],
+                                    [0., 0., 0.],
+                                    [3., 3., 3.],
+                                    [2., 2., 2.],
+                                    [1., 1., 1.],
+                                    [2., 2., 2.],
+                                    [3., 3., 3.]]).npu().to(dtype)
+sorted_indices = torch.tensor([0, 6, 7, 5, 3, 1, 2, 4], dtype=torch.int32).npu()
+indices = torch.tensor([[0, 4], [4, 3], [4, 2], [1, 1]]).npu()
+probs = torch.ones_like(indices) / 2
+
+unpermuted_tokens = torch_npu.npu_moe_token_unpermute(permuted_tokens, sorted_indices, probs=probs)
+"""
+)
