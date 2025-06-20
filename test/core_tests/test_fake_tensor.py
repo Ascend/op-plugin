@@ -2080,6 +2080,18 @@ class TestQuantMatmul(TestCase):
             res = torch_npu.npu_quant_matmul(x1, x2, scale, offset=None, bias=bias, output_dtype=torch.float16)
             self.assertTrue(expect_ret.shape == res.shape)
             self.assertTrue(expect_ret.dtype == res.dtype)
+            
+            x1 = torch.randint(-8, 8, (1, 8192), dtype=torch.int8).npu()
+            x2 = torch.randint(-8, 8, (8192, 128), dtype=torch.int32).npu()
+            expect_ret = torch.randn([1, 128 * 8], dtype=torch.float16).npu()
+            y_offset = torch.randn([128 * 8, ], dtype=torch.float32).npu()
+            x1_scale = torch.randn([1, 1], dtype=torch.float32).npu()
+            x2_scale = torch.randint(1, 3, [8192 // 256, 128 * 8], dtype=torch.int64).npu()
+            group_size_list = [0, 0, 256]
+            res = torch_npu.npu_quant_matmul(x1, x2, x2_scale, offset=y_offset, pertoken_scale=x1_scale,
+                                             bias=None, output_dtype=torch.float16, group_sizes=group_size_list)
+            self.assertTrue(expect_ret.shape == res.shape)
+            self.assertTrue(expect_ret.dtype == res.dtype)
 
 
 class TestTranQuantParam(TestCase):
