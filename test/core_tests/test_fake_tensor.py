@@ -2396,6 +2396,19 @@ class TestMoeEPLBUpdateExpert(TestCase):
             self.assertEqual(result.shape[1], 8)
             self.assertEqual(result.dtype, torch.int32)
 
+
+class TestGatherSparseIndex(TestCase):
+    def test_npu_gather_sparse_index(self):
+        with FakeTensorMode():
+            inputs = torch.randn([16, 32], dtype=torch.float32).npu()
+            index = torch.randint(0, 16, [4, 8]).npu()
+            expect_ret = torch.randn([4, 8, 32], dtype=torch.float32).npu()
+            result = torch_npu.npu_gather_sparse_index(inputs, index)
+
+            self.assertTrue(result.shape == expect_ret.shape)
+            self.assertTrue(result.dtype == expect_ret.dtype)
+
+
 instantiate_parametrized_tests(FakeTensorTest)
 instantiate_device_type_tests(FakeTensorOpInfoTest, globals(), only_for="cpu")
 

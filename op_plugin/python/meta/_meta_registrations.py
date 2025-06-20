@@ -9,6 +9,7 @@ Registering Meta implementations for custom ops
 '''
 BIT_NUMBER = 128
 UINT8_BIT_NUMBER = 8
+NPU_TENSOR_DIM_LIMIT = 8
 INPUTS_DIM_LIMIT_QUANTCONV2D = 4
 ATTR_DIM_LIMIT_QUANTCONV2D = 2
 #meta register implementation
@@ -2070,3 +2071,30 @@ def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, scales2=No
     return (torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
             torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
             torch.empty(x1.size(), dtype=x1.dtype, device=x1.device))
+
+
+@impl(m, "npu_gather_sparse_index")
+def npu_gather_sparse_index(inputs, index):
+    output_dim = inputs.dim() + index.dim() - 1
+    torch._check(
+        output_dim <= NPU_TENSOR_DIM_LIMIT,
+        lambda: f"input.dim() + index.dim() - 1 must not greater than 8, but got {output_dim}.",
+        )
+
+    output_size = []
+    input_dim = inputs.dim()
+    input_size = inputs.size()
+    if input_dim == 0:
+        output_size = input_size
+
+        return torch.empty(output_size, dtype=inputs.dtype, device=inputs.device)
+
+    index_dim = index.dim()
+    index_size = index.size()
+    for i in range(index_dim):
+        output_size.append(index_size[i])
+
+    for i in range(1, input_dim):
+        output_size.append(input_size[i])
+    
+    return torch.empty(output_size, dtype=inputs.dtype, device=inputs.device)
