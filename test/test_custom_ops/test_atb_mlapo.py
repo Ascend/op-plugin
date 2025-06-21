@@ -191,7 +191,25 @@ class TestAtbMLAPO(TestCase):
             q_out1=q_out1,
             kv_cache_out1=kv_cache_out1,
         )
-        torch.npu.synchronize()
+        out = torch_npu.atb.npu_mla_preprocess(
+            input1, gamma0, beta0, wdqkv, de_scale0,
+            gamma1, beta1, wuq, de_scale1,
+            gamma2, cos, sin, wuk, kv_cache, kv_cache_rope, slotmapping,
+            quant_scale0=quant_scale0,
+            quant_offset0=quant_offset0,
+            bias0=bias0,
+            quant_scale1=quant_scale0,
+            quant_offset1=quant_offset1,
+            bias1=bias1,
+            ctkv_scale=ctkv_scale,
+            q_nope_scale=qnope_scale,
+            cache_mode="int8_nzcache",
+            quant_mode="per_tensor_quant_asymm"
+        )
+        self.assertEqual(out[0], q_out0)
+        self.assertEqual(out[1], kv_cache_out0)
+        self.assertEqual(out[2], q_out1)
+        self.assertEqual(out[3], kv_cache_out1)
 
 
 if __name__ == "__main__":
