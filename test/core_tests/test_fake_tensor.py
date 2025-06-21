@@ -2409,6 +2409,44 @@ class TestGatherSparseIndex(TestCase):
             self.assertTrue(result.dtype == expect_ret.dtype)
 
 
+class TestNpuMropeMeta(TestCase):
+    def test_npu_mrope_meta(self):
+        with FakeTensorMode():
+            dtype = torch.bfloat16
+            rotary_mode = 'half'
+            num_tokens = 8
+            num_q_heads = 8
+            head_size = 128
+            mrope_section = [0, 0, 0]
+            num_kv_heads = num_q_heads
+            max_seq_len = num_tokens
+            rotary_dim = head_size
+            positions = torch.arange(num_tokens, dtype=torch.int64)
+            query = torch.randn(num_tokens, num_q_heads * head_size, dtype=dtype)
+            key = torch.rand(num_tokens, num_kv_heads * head_size, dtype=dtype)
+            cos_sin_cache = torch.rand(max_seq_len, rotary_dim, dtype=dtype)
+
+            positions_npu = positions.npu()
+            query_npu = query.npu()
+            key_npu = key.npu()
+            cos_sin_cache_npu = cos_sin_cache.npu()
+
+            query_out, key_out = torch_npu.npu_mrope(
+                positions_npu,
+                query_npu,
+                key_npu,
+                cos_sin_cache_npu,
+                head_size,
+                mrope_section=mrope_section,
+                rotary_mode=rotary_mode,
+            )
+
+            self.assertEqual(query_out.shape, query_npu.shape)
+            self.assertEqual(query_out.dtype, query_npu.dtype)
+            self.assertEqual(key_out.shape, key_npu.shape)
+            self.assertEqual(key_out.dtype, key_npu.dtype)
+
+
 instantiate_parametrized_tests(FakeTensorTest)
 instantiate_device_type_tests(FakeTensorOpInfoTest, globals(), only_for="cpu")
 

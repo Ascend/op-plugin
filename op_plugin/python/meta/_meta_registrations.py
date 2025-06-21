@@ -2094,7 +2094,6 @@ def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=
             torch.empty(expert_token_num_size, dtype=expert_token_num_per_rank.dtype, device=tokens.device))
 
 
-
 @impl(m, "npu_add_rms_norm_quant")
 def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, scales2=None, zero_points2=None, axis=-1, epsilon=1e-06, div_mode=True):
     torch._check(
@@ -2141,5 +2140,10 @@ def npu_gather_sparse_index(inputs, index):
 
     for i in range(1, input_dim):
         output_size.append(input_size[i])
-    
+
     return torch.empty(output_size, dtype=inputs.dtype, device=inputs.device)
+
+
+@impl(m, "npu_mrope")
+def npu_mrope_meta(positions, query, key, cos_sin_cache, head_size, *, mrope_section=None, rotary_mode='half'):
+    return (torch.empty_like(query), torch.empty_like(key))

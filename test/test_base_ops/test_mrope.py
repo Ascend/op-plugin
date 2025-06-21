@@ -136,6 +136,7 @@ class TestMRope(TestCase):
             query = query.to(golden_dtype)
             key = key.to(golden_dtype)
             cos_sin_cache = cos_sin_cache.to(golden_dtype)
+            mrope_section = [0, 0, 0]
 
             query_out, key_out = torch_npu.npu_mrope(
                 positions_npu,
@@ -143,13 +144,14 @@ class TestMRope(TestCase):
                 key_npu,
                 cos_sin_cache_npu,
                 head_size,
+                mrope_section=mrope_section,
                 rotary_mode=rotary_mode,
             )
             if rotary_mode == 'half':
                 is_neox_style = True
             else:
                 is_neox_style = False
-            mrope_section = [0, 0, 0]
+
             expected_query_out, expected_key_out = self.golden_mrope(
                 positions,
                 query,
