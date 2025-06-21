@@ -2147,3 +2147,43 @@ def npu_gather_sparse_index(inputs, index):
 @impl(m, "npu_mrope")
 def npu_mrope_meta(positions, query, key, cos_sin_cache, head_size, *, mrope_section=None, rotary_mode='half'):
     return (torch.empty_like(query), torch.empty_like(key))
+
+
+@impl(m, "npu_top_k_top_p")
+def npu_top_k_top_p_meta(logits, p, k):
+    return torch.empty_like(logits, dtype=logits.dtype)
+
+
+@impl(m, "npu_moe_token_permute")
+def npu_moe_token_permute_meta(tokens, indices, num_out_tokens=None, padded_mode=False):
+    torch._check(tokens.dim() == 2, lambda: f"The dims of input tokens should be 2 dimensional, but got {tokens.dim()}-dimensional.")
+    torch._check(indices.dim() == 1 or indices.dim() == 2, lambda: f"The dims of input indices should be 2 or 1 dimensional, but got {indices.dim()}-dimensional.")
+
+    num_out_tokens_value = 0 if num_out_tokens is None else num_out_tokens
+    flatten_size = indices.numel()
+
+    if num_out_tokens_value > 0:
+        actual_num_out_tokens = min(num_out_tokens_value, flatten_size)
+    else:
+        actual_num_out_tokens = num_out_tokens_value + flatten_size
+    output_shape = (actual_num_out_tokens, tokens.size(1))
+
+    return torch.empty(output_shape, dtype=tokens.dtype, device=tokens.device), torch.empty(indices.numel(), dtype=torch.int32, device=tokens.device)
+
+
+@impl(m, "npu_moe_token_unpermute")
+def npu_moe_token_unpermute_meta(permuted_tokens, sorted_indices, probs=None, padded_mode=False, restore_shape=None):
+    DEFAULT_TOPK = 1
+
+    if probs is not None:
+        torch._check(probs.dim() == 2, lambda: f"The dims of input probs should be 2 dimensional, but got {probs.value().dim()}-dimensional.")
+
+    torch._check(permuted_tokens.dim() == 2, lambda: f"The dims of input permuted_tokens should be 2 dimensional, but got {permuted_tokens.dim()}-dimensional.")
+    torch._check(sorted_indices.dim() == 1, lambda: f"The dims of input sorted_indices should be 1 dimensional, but got {sorted_indices.dim()}-dimensional.")
+    
+    topk = DEFAULT_TOPK if probs is None else probs.size(1)
+    
+    output_shape = (sorted_indices.size(0) // topk, permuted_tokens.size(-1))
+    
+    return torch.empty(output_shape, dtype=permuted_tokens.dtype, device=permuted_tokens.device)
+
