@@ -53,13 +53,17 @@ _add_atb_module()
 
 NNAL_EX = None
 GLOBAL_E = None
+
+
 try:
     npu_path = pathlib.Path(__file__).parents[2]
     atb_so_path = os.path.join(npu_path, 'lib', 'libop_plugin_atb.so')
     from torch_npu.utils._path_manager import PathManager
     PathManager.check_directory_path_readable(atb_so_path)
     torch.ops.load_library(atb_so_path)
+    import torch_npu.op_plugin.atb._atb_meta_registrations
 except OSError as e:
+    nnal_strerror = ""
     if "libatb.so" in str(e):
         nnal_strerror = "Please check that the nnal package is installed. "\
                         "Please run 'source set_env.sh' in the NNAL installation path."
@@ -78,6 +82,8 @@ def _register_atb_extensions():
     if NNAL_EX is not None:
         raise NNAL_EX from GLOBAL_E
     _patch_atb_ops()
+    from torch_npu.op_plugin.atb._atb_api_docs import _add_torch_npu_atb_api_docstr
+    _add_torch_npu_atb_api_docstr()
 
 
 def lazy_load_atb_so(api_func):

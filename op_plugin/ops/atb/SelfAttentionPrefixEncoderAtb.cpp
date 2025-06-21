@@ -25,32 +25,36 @@ std::unordered_map<c10::string_view, int> mask_type_map = {
 };
 }
 
-at::Tensor npu_self_attention_prefix_encoder(const at::Tensor & query, const at::Tensor & key, const at::Tensor & value, const at::Tensor & block_tables, const at::Tensor & seqlen,
-    const at::Tensor & kv_seqlen, int64_t q_headnum, double qk_scale, int64_t kv_headnum, const c10::optional<at::Tensor> & mask, const c10::optional<at::Tensor> & slopes, c10::optional<c10::string_view> mask_type_opt)
+at::Tensor npu_self_attention_prefix_encoder(const at::Tensor & query, const at::Tensor & key, const at::Tensor & value, const at::Tensor & block_tables, c10::SymIntArrayRef seqlen,
+    c10::SymIntArrayRef kv_seqlen, int64_t q_headnum, double qk_scale, int64_t kv_headnum, const c10::optional<at::Tensor> & mask, const c10::optional<at::Tensor> & slopes, c10::optional<c10::string_view> mask_type_opt)
 {
     const c10::OptionalDeviceGuard device_guard(device_of(query));
     at::Tensor output = at::empty(query.sizes(), query.options());
     auto mask_type = atb::utils::get_op_mode(mask_type_map, mask_type_opt, "mask_type_causal_mask", "mask_type");
     float qkScale_float = static_cast<float>(qk_scale);
-    EXEC_ATB_CMD(AtbSelfAttentionPrefixEncoder, query, key, value, block_tables, mask, seqlen, kv_seqlen, slopes, mask_type, q_headnum, kv_headnum, qkScale_float, output);
+    at::Tensor kv_seqlen_tensor = at::tensor(c10::asIntArrayRefUnchecked(kv_seqlen), at::kInt);
+    at::Tensor seqlen_tensor = at::tensor(c10::asIntArrayRefUnchecked(seqlen), at::kInt);
+    EXEC_ATB_CMD(AtbSelfAttentionPrefixEncoder, query, key, value, block_tables, mask, seqlen_tensor, kv_seqlen_tensor, slopes, mask_type, q_headnum, kv_headnum, qkScale_float, output);
     return output;
 }
 
-at::Tensor& npu_self_attention_prefix_encoder_out(const at::Tensor & query, const at::Tensor & key, const at::Tensor & value, const at::Tensor & block_tables, const at::Tensor & seqlen,
-    const at::Tensor & kv_seqlen, int64_t q_headnum, double qk_scale, int64_t kv_headnum, const c10::optional<at::Tensor> & mask, const c10::optional<at::Tensor> & slopes, c10::optional<c10::string_view> mask_type_opt, at::Tensor & output)
+at::Tensor& npu_self_attention_prefix_encoder_out(const at::Tensor & query, const at::Tensor & key, const at::Tensor & value, const at::Tensor & block_tables, c10::SymIntArrayRef seqlen,
+    c10::SymIntArrayRef kv_seqlen, int64_t q_headnum, double qk_scale, int64_t kv_headnum, const c10::optional<at::Tensor> & mask, const c10::optional<at::Tensor> & slopes, c10::optional<c10::string_view> mask_type_opt, at::Tensor & output)
 {
     const c10::OptionalDeviceGuard device_guard(device_of(query));
     auto mask_type = atb::utils::get_op_mode(mask_type_map, mask_type_opt, "mask_type_causal_mask", "mask_type");
     float qkScale_float = static_cast<float>(qk_scale);
-    EXEC_ATB_CMD(AtbSelfAttentionPrefixEncoder, query, key, value, block_tables, mask, seqlen, kv_seqlen, slopes, mask_type, q_headnum, kv_headnum, qkScale_float, output);
+    at::Tensor kv_seqlen_tensor = at::tensor(c10::asIntArrayRefUnchecked(kv_seqlen), at::kInt);
+    at::Tensor seqlen_tensor = at::tensor(c10::asIntArrayRefUnchecked(seqlen), at::kInt);
+    EXEC_ATB_CMD(AtbSelfAttentionPrefixEncoder, query, key, value, block_tables, mask, seqlen_tensor, kv_seqlen_tensor, slopes, mask_type, q_headnum, kv_headnum, qkScale_float, output);
     return output;
 }
 
 namespace {
 TORCH_LIBRARY_FRAGMENT(atb, m)
 {
-    m.def("npu_self_attention_prefix_encoder(Tensor query, Tensor key, Tensor value, Tensor block_tables, Tensor seqlen, Tensor kv_seqlen, int q_headnum, float qk_scale, int kv_headnum,*, Tensor? mask=None, Tensor? slopes=None, str? mask_type=None) -> Tensor");
-    m.def("npu_self_attention_prefix_encoder.out(Tensor query, Tensor key, Tensor value, Tensor block_tables, Tensor seqlen, Tensor kv_seqlen, int q_headnum, float qk_scale, int kv_headnum,*, Tensor? mask=None, Tensor? slopes=None, str? mask_type=None, Tensor(a!) output) -> Tensor(a!)");
+    m.def("npu_self_attention_prefix_encoder(Tensor query, Tensor key, Tensor value, Tensor block_tables, SymInt[] seqlen, SymInt[] kv_seqlen, int q_headnum, float qk_scale, int kv_headnum,*, Tensor? mask=None, Tensor? slopes=None, str? mask_type=None) -> Tensor");
+    m.def("npu_self_attention_prefix_encoder.out(Tensor query, Tensor key, Tensor value, Tensor block_tables, SymInt[] seqlen, SymInt[] kv_seqlen, int q_headnum, float qk_scale, int kv_headnum,*, Tensor? mask=None, Tensor? slopes=None, str? mask_type=None, Tensor(a!) output) -> Tensor(a!)");
 }
 }
 namespace {
