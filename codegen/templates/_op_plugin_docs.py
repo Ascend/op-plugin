@@ -7594,11 +7594,15 @@ torch_npu.npu_moe_init_routing_v2(Tensor x, Tensor expert_idx, *, Tensor? scale=
     进入低时延性能模板需要同时满足以下条件：
         x、expert_idx、scale输入Shape要求分别为：(1, 7168)、(1, 8)、(256, 7168)
         x数据类型要求：bfloat16
-        属性要求：active_expert_range=[0,256]、 quant_mode=1、expert_tokens_num_type=2
+        属性要求：active_expert_range=[0,256]、 quant_mode=1、expert_tokens_num_type=2、expert_num=256
     进入大batch性能模板需要同时满足以下条件：
         NUM_ROWS范围为[1920, 4608]
         K=8
-        expert_end-expert_start<=256
+        expert_num=256
+        expert_end-expert_start<=32
+        quant_mode=-1
+        row_idx_type=1
+        expert_tokens_num_type=1
 
 支持的PyTorch版本
 PyTorch 2.6
