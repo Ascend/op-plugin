@@ -166,6 +166,7 @@ at::Tensor& clamp_max_out(
     } else {
         clamp_max_out_npu_nocheck(result, self, max);
     }
+    at::namedinference::propagate_names(result, self);
     return result;
 }
 

@@ -45,29 +45,30 @@ at::Tensor& cumprod_out(
     int64_t dim,
     c10::optional<at::ScalarType> dtype,
     at::Tensor& result) {
-  at::ScalarType dst_type = self.scalar_type();
-  if (dtype.has_value()) {
-    dst_type = dtype.value();
-  } else if (result.defined()) {
-    dst_type = result.scalar_type();
-  }
+    at::ScalarType dst_type = self.scalar_type();
+    if (dtype.has_value()) {
+        dst_type = dtype.value();
+    } else if (result.defined()) {
+        dst_type = result.scalar_type();
+    }
 
-  at::Tensor self_cp = self.scalar_type() == dst_type ? self :
-      at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);
-  npu_preparation::CheckOut(
-      {self_cp},
-      result,
-      npu_preparation::get_tensor_npu_format(result),
-      dst_type,
-      self_cp.sizes());
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    cumprod_out_nocheck(contiguous_result, self_cp, dim);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    cumprod_out_nocheck(result, self_cp, dim);
-  }
-  return result;
+    at::Tensor self_cp = self.scalar_type() == dst_type ? self :
+        at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);
+    npu_preparation::CheckOut(
+        {self_cp},
+        result,
+        npu_preparation::get_tensor_npu_format(result),
+        dst_type,
+        self_cp.sizes());
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        cumprod_out_nocheck(contiguous_result, self_cp, dim);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        cumprod_out_nocheck(result, self_cp, dim);
+    }
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 at::Tensor& cumprod_out(

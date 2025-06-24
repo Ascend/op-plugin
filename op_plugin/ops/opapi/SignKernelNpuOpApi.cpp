@@ -30,11 +30,12 @@ at::Tensor &sgn_out(const at::Tensor &self, at::Tensor &result)
 
 at::Tensor sgn(const at::Tensor &self)
 {
-  DO_COMPATIBILITY(aclnnSign, acl_op::sgn(self));
-  auto outputSize = op_infer::input_same_output_size(self);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
-  EXEC_NPU_CMD(aclnnSign, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnSign, acl_op::sgn(self));
+    auto outputSize = op_infer::input_same_output_size(self);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
+    EXEC_NPU_CMD(aclnnSign, self, result);
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 }
