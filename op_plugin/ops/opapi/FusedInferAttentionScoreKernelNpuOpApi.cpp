@@ -28,6 +28,7 @@ const static int64_t DIM_0 = 0;
 const static int64_t DIM_1 = 1;
 const static int64_t DIM_2 = 2;
 const static int64_t DIM_3 = 3;
+
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -82,6 +83,13 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
         batchSize = query.size(DIM_0);
         qsSize = query.size(DIM_1);
     } else if (input_layout_str == "BNSD") {
+        if (block_table.has_value()) {
+            tmp_output = OpPreparation::apply_tensor_without_format({query.size(DIM_0), query.size(DIM_1),
+                query.size(DIM_2), query.size(DIM_3)}, query.options().dtype(query.dtype()));
+        } else {
+            tmp_output = OpPreparation::apply_tensor_without_format({query.size(DIM_0), query.size(DIM_1),
+                query.size(DIM_2), value.size(DIM_3)}, query.options().dtype(query.dtype()));
+        }
         batchSize = query.size(DIM_0);
         qsSize = query.size(DIM_2);
     } else if (input_layout_str == "TND") {
