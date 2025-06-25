@@ -182,8 +182,17 @@ if "2.1" in torch.__version__:
             tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
         elif input_layout == "TND":
             tmp_out = torch.empty([query.size(0), query.size(1), value.size(2)], dtype=query.dtype, device='meta')
+        elif input_layout == "BNSD":
+            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)],
+                dtype=query.dtype, device='meta')
+        elif input_layout == "BSND":
+            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)],
+                dtype=query.dtype, device='meta')
         else:
-            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
+            torch._check(
+                False,
+                lambda: "not support layout: " + str(input_layout) + ops_error(ErrCode.VALUE),
+            )
         if quant_scale2 is not None:
             return torch.empty_like(tmp_out, dtype=torch.int8)
         elif query.dtype == torch.int8:
@@ -521,7 +530,12 @@ def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None
             token_x_dim == 4,
             lambda: "Layout BNSD, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
         )
-        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
+        if block_table is not None: # PA场景
+            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)],
+                dtype=query.dtype, device='meta')
+        else:
+            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), value.size(3)],
+                dtype=query.dtype, device='meta')
         B = query.size(0)
         N = query.size(1)
         S1 = query.size(2)
