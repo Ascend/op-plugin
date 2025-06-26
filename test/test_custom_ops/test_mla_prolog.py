@@ -34,19 +34,20 @@ class TestPromptFlashAttetion(TestCase):
         T = mla_param['T']
         index_table = cache_index
 
-        cos = rope_cos
-        sin = rope_sin
+        cos = rope_cos.to(torch.float32)
+        sin = rope_sin.to(torch.float32)
 
         if not mla_param["t_flag"]:
             T = B * S1
-            token_x = token_x.reshape(T, He)
+            token_x = token_x.reshape(T, He).to(torch.float32)
             cos = cos.reshape(T, Dr)
             sin = sin.reshape(T, Dr)
             index_table = index_table.reshape(T)
 
         # matmul1 : token_x(B*S1,He) * w_dq (He,Hcq) -> matmul1_res(B*S1,Hcq)
-        w_dq = weight_dq
+        w_dq = weight_dq.to(torch.float32)
         matmul1_res = torch.matmul(token_x, w_dq).to(torch.float32)
+        matmul1_res = matmul1_res.to(torch.bfloat16).to(torch.float32)
 
         # rmsnorm1 : matmul1_res(B*S1,Hcq) * gamma_cq(Hcq) -> norm1_res(B*S1,Hcq)
         ep1 = float(rmsnorm_epsilon_cq)
@@ -55,9 +56,11 @@ class TestPromptFlashAttetion(TestCase):
         norm1_res *= gamma1
 
         # matmul2 : norm1_res(B*S1,Hcq) * w_uq_qr(Hcq,N*(D+Dr)) -> matmul2_res(B*S1,N,(D+Dr))
-        w_uq_qr = weight_uq_qr
+        norm1_res = norm1_res.to(torch.bfloat16).to(torch.float32)
+        w_uq_qr = weight_uq_qr.to(torch.float32)
         matmul2_res = torch.matmul(norm1_res, w_uq_qr).to(torch.float32)
         matmul2_res = matmul2_res.reshape(T, N1, D + Dr)
+        matmul2_res = matmul2_res.to(torch.bfloat16).to(torch.float32)
 
         # splitD1 : matmul2_res(B*S1,N,D+Dr) -> splitd1_res1(B*S1,N,D) & splitd1_res2(B*S1,N,Dr)
         splitd1_res1 = matmul2_res[:, :, :D]  # 取前 D 维度
@@ -66,11 +69,13 @@ class TestPromptFlashAttetion(TestCase):
         # matmul3 : -> splitd1_res1(B*S1,N,D) * w_uk(N,D,Hckv) -> query_mla(B,S1,N,Hckv)
         w_uk = weight_uk.to(torch.float32)
         splitd1_res1 = splitd1_res1.transpose(0, 1)
+        splitd1_res1 = splitd1_res1.to(torch.bfloat16).to(torch.float32)
         query_mla = torch.zeros((N1, T, Hckv))
         for n1_index in range(N1):
             query_mla[n1_index, :, :] = torch.matmul(splitd1_res1[n1_index, :, :], w_uk[n1_index, :, :]).to(torch.float32)
         query_mla = query_mla.transpose(0, 1)
         query_mla = query_mla if mla_param["t_flag"] else query_mla.reshape(B, S1, N1, Hckv)
+        query_mla = query_mla.to(torch.bfloat16).to(torch.float32)
 
         # rotary1 : -> splitd1_res2(B*S1,N,Dr) * cos(B*S1,Dr) * sin(B*S1,Dr) -> query_rope_mla(B,S1,N,Dr)
         expanded_cos = cos.unsqueeze(1).repeat(1, N1, 1)
@@ -78,9 +83,10 @@ class TestPromptFlashAttetion(TestCase):
         q = splitd1_res2.reshape(T, N1, int(Dr / 2), 2).transpose(3, 2).reshape(T, N1, Dr)
         query_rope_mla = (q * expanded_cos) + (rotate_half(q) * expanded_sin)
         query_rope_mla = query_rope_mla if mla_param["t_flag"] else query_rope_mla.reshape(B, S1, N1, Dr)
+        query_rope_mla = query_rope_mla.to(torch.bfloat16).to(torch.float32)
 
         # matmul4 : token_x(B*S1,He) * w_kv_kr(He,Hckv+Dr) -> matmul4_res(B*S1,Hckv+Dr)
-        w_kv_kr = weight_dkv_kr
+        w_kv_kr = weight_dkv_kr.to(torch.float32)
         matmul4_res = torch.matmul(token_x, w_kv_kr).to(torch.float32)
 
         # splitD2 : matmul4_res(B*S1,Hckv+Dr) -> splitd2_res1(B*S1,Hckv) & splitd2_res2(B*S1,Dr)
@@ -190,6 +196,8 @@ class TestPromptFlashAttetion(TestCase):
             cache_mode, mla_param)
         print("baseline output", query, query.shape)
 
+        self.assertRtolEqual(query_mla.to(torch.float32), query.to(torch.float32), prec=0.005, prec16=0.005)
+        self.assertRtolEqual(query_rope_mla.to(torch.float32), query_rope.to(torch.float32), prec=0.005, prec16=0.005)
         self.assertRtolEqual(kv_cache_out_mla.to(torch.float32), kv_cache_out.to(torch.float32), prec=0.005, prec16=0.005)
         self.assertRtolEqual(kr_cache_out_mla.to(torch.float32), kr_cache_out.to(torch.float32), prec=0.005, prec16=0.005)
 
@@ -257,6 +265,8 @@ class TestPromptFlashAttetion(TestCase):
             cache_mode, mla_param)
         print("baseline output", query, query.shape)
 
+        self.assertRtolEqual(query_mla.to(torch.float32), query.to(torch.float32), prec=0.005, prec16=0.005)
+        self.assertRtolEqual(query_rope_mla.to(torch.float32), query_rope.to(torch.float32), prec=0.005, prec16=0.005)
         self.assertRtolEqual(kv_cache_out_mla.to(torch.float32), kv_cache_out.to(torch.float32), prec=0.005, prec16=0.005)
         self.assertRtolEqual(kr_cache_out_mla.to(torch.float32), kr_cache_out.to(torch.float32), prec=0.005, prec16=0.005)
 

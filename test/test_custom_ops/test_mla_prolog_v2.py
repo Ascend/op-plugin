@@ -62,13 +62,14 @@ def dynamic_quant_without_smooth_scale(inputdata, out_deqq_shape_shape):
     max_values, _ = torch.max(torch.abs(inputdata), dim=-1, keepdim=True)
     scale = max_values / 127
     y = torch.round(inputdata / scale)
+    y = s8_saturation(y)
 
     if len(out_deqq_shape_shape) == 2:  # [BS, 1], per_token
         print(f"[INFO]dynamic_quant_without_smooth_scale in per_token mode")
-        return y.reshape(T, N, H), scale.reshape(quant_loops, 1)
+        return y.reshape(T, N, H), scale.reshape(quant_loops, 1).to(torch.float64)
     else:
         print(f"[INFO]dynamic_quant_without_smooth_scale in per_head mode")
-        return y.reshape(T, N, H), scale.reshape(T, N, 1)
+        return y.reshape(T, N, H), scale.reshape(T, N, 1).to(torch.float64)
 
 
 def dequant(inputdata, deq_scale_q_nope, quant_scale_ckv):
@@ -146,7 +147,7 @@ class TestPromptFlashAttetion(TestCase):
 
         # rmsnorm1 : matmul1_res(B*S1,Hcq) * gamma_cq(Hcq) -> norm1_res(B*S1,Hcq)
         ep1 = float(rmsnorm_epsilon_cq)
-        gamma1 = rmsnorm_gamma_cq.to(torch.float32)
+        gamma1 = rmsnorm_gamma_cq
         norm1_res = matmul1_res / torch.sqrt(torch.mean(matmul1_res ** 2, dim=-1, keepdim=True) + ep1)
         norm1_res *= gamma1
 
@@ -173,8 +174,8 @@ class TestPromptFlashAttetion(TestCase):
 
         # matmul3 : -> splitd1_res1(B*S1,N,D) * w_uk(N,D,Hckv) -> query_mla(B,S1,N,Hckv)
         w_uk = weight_uk.to(torch.float32)
-        splitd1_res1 = splitd1_res1.to(torch.bfloat16).to(torch.float32)
         splitd1_res1 = splitd1_res1.transpose(0, 1)
+        splitd1_res1 = splitd1_res1.to(torch.bfloat16).to(torch.float32)
         query_mla = torch.zeros((N1, T, Hckv))
         for n1_index in range(N1):
             query_mla[n1_index, :, :] = torch.matmul(splitd1_res1[n1_index, :, :], w_uk[n1_index, :, :]).to(torch.float32)
@@ -288,7 +289,7 @@ class TestPromptFlashAttetion(TestCase):
         cache_index = torch.randint(0, B * S, (B, S), dtype=torch.int64).npu()
         kv_cache = torch.randint(-100, 100, (1, BlockNum * BlockSize * Nkv * Hckv), dtype=torch.int8).npu()
         kv_cache = kv_cache.view(BlockNum, BlockSize, Nkv, Hckv)
-        kr_cache = torch.rand(1, BlockNum * BlockSize * Nkv * Dr, dtype=torch.bfloat16).npu() * 100
+        kr_cache = torch.rand(1, BlockNum * BlockSize * Nkv * Dr, dtype=torch.bfloat16).npu()
         kr_cache = kr_cache.view(BlockNum, BlockSize, Nkv, Dr)
         rmsnorm_epsilon_cq = 1.0e-5
         rmsnorm_epsilon_ckv = 1.0e-5
@@ -353,6 +354,8 @@ class TestPromptFlashAttetion(TestCase):
             cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr,
             quant_scale_ckv, smooth_scale_cq, mla_param)
 
+        # query为int8类型，允许误差为1
+        self.assertRtolEqual(query_mla, query, prec=1, prec16=1)
         self.assertRtolEqual(query_rope_mla.to(torch.float32), query_rope.to(torch.float32), prec=0.005, prec16=0.005)
         self.assertRtolEqual(kv_cache_out_mla.to(torch.float32), kv_cache_out.to(torch.float32), prec=0.005, prec16=0.005)
         self.assertRtolEqual(kr_cache_out_mla.to(torch.float32), kr_cache_out.to(torch.float32), prec=0.005, prec16=0.005)
