@@ -41,7 +41,7 @@ quant_conv2d_input（计算输入）：Tensor类型，数据类型支持int8，�
 ## 变量说明
 
 - weight：Tensor类型，数据格式支持int8。数据格式支持NCHW，shape为4维。
-- scale：Tensor类型，数据类型支持int64。数据格式支持ND，shape是1维(n,)，其中n与weight的out_channels一致。
+- scale：Tensor类型，数据类型支持float32和int64。数据格式支持ND，shape是1维(n,)，其中n与weight的out_channels一致。
 - bias：Tensor类型，可选参数。数据类型支持int32，数据格式支持ND，shape支持1维(n,)，n与weight的out_channels一致。
 
 ## 输出说明
@@ -82,7 +82,7 @@ npu_backend = tng.get_npu_backend(compiler_config=config)
 
 fmap = torch.randint(-1, 1, (1, 1, 64, 64), dtype=torch.int8).npu()
 weight = torch.randint(-1, 1, (1, 1, 3, 3), dtype=torch.int8).npu()
-scale = torch.randint(-1, 1, (1,), dtype=torch.int64).npu()
+scale = torch.rand((1,), dtype=torch.float32).npu()
 bias = torch.randint(-1, 1, (1,), dtype=torch.int32).npu()
 
 model = QuantConv2d(in_channels=1, out_channels=1, kernel_size=(3, 3), output_dtype=torch.float16).npu()
