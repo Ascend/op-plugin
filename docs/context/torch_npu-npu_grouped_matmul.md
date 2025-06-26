@@ -663,7 +663,7 @@
         </td>
         <td class="cellrowborder" valign="top" width="24.71247124712471%" headers="mcps1.1.4.1.2 "><p id="zh-cn_topic_0000002262888689_p127892451588"><a name="zh-cn_topic_0000002262888689_p127892451588"></a><a name="zh-cn_topic_0000002262888689_p127892451588"></a>x和weight为多张量，y为多张量。每组数据的张量是独立的。</p>
         </td>
-        <td class="cellrowborder" valign="top" width="64.77647764776478%" headers="mcps1.1.4.1.3 "><a name="zh-cn_topic_0000002262888689_ol17899133811579"></a><a name="zh-cn_topic_0000002262888689_ol17899133811579"></a><ol id="zh-cn_topic_0000002262888689_ol17899133811579"><li>仅支持split_item为0或1。</li><li>x中tensor支持2-6维，weight中tensor需为2维，y中tensor维度和x保持一致。</li><li>x中tensor大于2维，group_list必须传空。</li><li>x中tensor为2维且传入group_list，group_list的差值需与x中tensor的第一维一一对应。</li></ol>
+        <td class="cellrowborder" valign="top" width="64.77647764776478%" headers="mcps1.1.4.1.3 "><a name="zh-cn_topic_0000002262888689_ol17899133811579"></a><a name="zh-cn_topic_0000002262888689_ol17899133811579"></a><ol id="zh-cn_topic_0000002262888689_ol17899133811579"><li>仅支持split_item为0或1。</li><li>x中tensor要求维度一致，支持2-6维，weight中tensor需为2维，y中tensor维度和x保持一致。</li><li>x中tensor大于2维，group_list必须传空。</li><li>x中tensor为2维且传入group_list，group_list的差值需与x中tensor的第一维一一对应。</li></ol>
         </td>
         </tr>
         <tr id="zh-cn_topic_0000002262888689_row1389933815577"><td class="cellrowborder" valign="top" width="10.51105110511051%" headers="mcps1.1.4.1.1 "><p id="zh-cn_topic_0000002262888689_p1899938135717"><a name="zh-cn_topic_0000002262888689_p1899938135717"></a><a name="zh-cn_topic_0000002262888689_p1899938135717"></a>单多单</p>
@@ -693,7 +693,7 @@
     -   **group\_list输入类型为torch.Tensor时**，各场景的限制。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
-            >![](./public_sys-resources/icon-note.gif) **说明：** 
+            >**说明：**<br>
             >-   量化、伪量化仅支持group\_type为-1和0场景。
             >-   仅pertoken量化场景支持激活函数计算。
 

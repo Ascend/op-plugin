@@ -1,4 +1,4 @@
-# torch.npu.npu.NPUPluggableAllocator
+# torch_npu.npu.NPUPluggableAllocator
 
 ## 定义文件
 

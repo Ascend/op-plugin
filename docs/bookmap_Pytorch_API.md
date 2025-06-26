@@ -219,8 +219,8 @@
         -   [NPU Device](./context/NPU-Device.md)
         -   [Memory management](./context/Memory-management.md)
             -   [Memory management API](./context/Memory-management-API.md)
-            -   [torch.npu.npu.NPUPluggableAllocator](./context/torch-npu-npu-NPUPluggableAllocator.md)
-            -   [torch.npu.npu.change_current_allocator](./context/torch-npu-npu-change_current_allocator.md)
+            -   [torch_npu.npu.NPUPluggableAllocator](./context/torch-npu-npu-NPUPluggableAllocator.md)
+            -   [torch_npu.npu.change_current_allocator](./context/torch-npu-npu-change_current_allocator.md)
 
         -   [aoe](./context/aoe.md)
             -   [（beta）torch_npu.npu.set_aoe](./context/（beta）torch_npu-npu-set_aoe.md)

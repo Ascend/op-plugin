@@ -1,4 +1,4 @@
-# torch.npu.npu.change_current_allocator
+# torch_npu.npu.change_current_allocator
 
 ## 定义文件
 
