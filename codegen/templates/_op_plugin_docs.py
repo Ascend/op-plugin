@@ -4278,8 +4278,8 @@ split_item (int): 用于指定切分模式. 数据类型支持torch.int32.
 2/3: 输出为单个张量. 
 group_type (int): 代表需要分组的轴. 数据类型支持torch.int32. 
 group_list输入类型为List[int]时仅支持传入None. 
-group_list输入类型为torch.Tensor时, 若矩阵乘为C[m,n]=A[m,k]xB[k,n], group_type支持的枚举值为: -1代表不分组; 0代表m轴分组; 1代表n轴分组, 2代表k轴分组. 
-Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 当前支持取-1、0、2. 
+group_list输入类型为torch.Tensor时, 若矩阵乘为C[m,n]=A[m,k]xB[k,n], group_type支持的枚举值为: -1代表不分组; 0代表m轴分组; 1代表n轴分组.
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 当前支持取-1、0. 
 Atlas 推理系列产品: 当前只支持取0. 
 group_list_type (int): 代表group_list的表达形式. 数据类型支持torch.int32. 
 group_list输入类型为List[int]时仅支持传入None. 
@@ -4409,7 +4409,6 @@ group_type
 0: 单单单, x、weight与y均为单张量. 
 0: 单多单, x为单张量, weight为多张量, y为单张量. 
 0: 多多单, x和weight为多张量, y为单张量. 每组矩阵乘法的结果连续存放在同一个张量中. 
-2: 单单单, x、weight与y均为单张量
 场景限制
 -1: 仅支持split_item为0或1. x中tensor支持2-6维, weight中tensor需为2维, y中tensor维度和x保持一致. group_list必须传空. 支持weight转置, 但weight中每个tensor是否转置需保持统一. x不支持转置. 
 0: 仅支持split_item为2或3. weight中tensor需为3维, x、y中tensor需为2维. 必须传group_list, 且当group_list_type为0时, 最后一个值与x中tensor的第一维相等, 当group_list_type为1时, 数值的总和与x中tensor的第一维相等. group_list第1维最大支持1024, 即最多支持1024个group. 支持weight转置. x不支持转置. 
