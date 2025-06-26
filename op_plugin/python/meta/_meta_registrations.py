@@ -52,19 +52,19 @@ def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_d
     token_x_dim = token_x.dim()
     torch._check(
         token_x_dim == 2 or token_x_dim == 3,
-        lambda: "token_x dim num should be 2 or 3,but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        lambda: "token_x dim num should be 2 or 3, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
     )
 
     weight_uk_dim = weight_uk.dim()
     torch._check(
         weight_uk_dim == 3,
-        lambda: "weight_uk dim num should be 3,but the actual value is " + str(weight_uk_dim) + ops_error(ErrCode.VALUE),
+        lambda: "weight_uk dim num should be 3, but the actual value is " + str(weight_uk_dim) + ops_error(ErrCode.VALUE),
     )
 
     rope_sin_dim = rope_sin.dim()
     torch._check(
         rope_sin_dim == 2 or rope_sin_dim == 3,
-        lambda: "rope_sin dim num should be 2 or 3,but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
+        lambda: "rope_sin dim num should be 2 or 3, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
     )
 
     if token_x_dim == 3:
@@ -107,19 +107,19 @@ def npu_mla_prolog_v2_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weigh
     token_x_dim = token_x.dim()
     torch._check(
         token_x_dim == 2 or token_x_dim == 3,
-        lambda: "token_x dim num should be 2 or 3,but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        lambda: "token_x dim num should be 2 or 3, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
     )
 
     weight_uk_dim = weight_uk.dim()
     torch._check(
         weight_uk_dim == 3,
-        lambda: "weight_uk dim num should be 3,but the actual value is " + str(weight_uk_dim) + ops_error(ErrCode.VALUE),
+        lambda: "weight_uk dim num should be 3, but the actual value is " + str(weight_uk_dim) + ops_error(ErrCode.VALUE),
     )
 
     rope_sin_dim = rope_sin.dim()
     torch._check(
         rope_sin_dim == 2 or rope_sin_dim == 3,
-        lambda: "rope_sin dim num should be 2 or 3,but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
+        lambda: "rope_sin dim num should be 2 or 3, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
     )
 
     if token_x_dim == 3:
