@@ -40,6 +40,7 @@ ${return_type} ${func_name}(${args_str})
 {
     ${do_compatibility}
     ${new_params_def}
+    ${compute_names}
     ${define_size_or_dtype}
     ${check_or_apply_tensor}
     EXEC_NPU_CMD(${aclnnargs});
@@ -76,6 +77,15 @@ npu_preparation::check_tensor({${input}}, ${result_name}, ${dtype}, ${size});
 
 INFER_NAME = CodeTemplate("""\
 at::namedinference::propagate_names(${result_name}, ${infer_func});
+""")
+
+INFER_NAME_GROUP = CodeTemplate("""\
+at::namedinference::propagate_names_if_nonempty(${result_name}, maybe_names);
+""")
+
+COMPUTE_NAME_GROUP = CodeTemplate("""\
+std::vector<at::Tensor> tensor_list = {${tensor_list}};
+auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
 """)
 
 
@@ -181,7 +191,7 @@ def compute_op_api_definition(struct: StructInfo):
             [f"auto {name} = {size};\n" for size, name in size_map.items()])
         define_dtype = "".join(
             [f"auto {name} = {dtype};\n" for dtype, name in dtype_map.items()])
-        define_size_or_dtype = "".join([define_size, define_dtype])
+        define_size_or_dtype = "" if kind == SchemaKind.inplace else "".join([define_size, define_dtype])
 
         if kind == SchemaKind.out:
             apply_tensor_list = list(concatMap(
@@ -200,14 +210,28 @@ def compute_op_api_definition(struct: StructInfo):
                                          size=size_map[res_info.size],
                                          dtype=f'{res_info.option}.options().dtype({dtype_map[res_info.dtype]})')],
                 res_infos))
+        
+        compute_name_list = []
+        infer_name_list = []
+        for res_info in res_infos:
+            if res_info.infer_name is not None:
+                tensor_list = res_info.infer_name.split(", ")
+                if len(tensor_list) == 1:
+                    names = INFER_NAME.substitute(result_name=res_info.name,
+                                                  infer_func=res_info.infer_name) 
+                    infer_name_list.append(names)
+                    compute_name_list.append("")
+                else:
+                    name_list = COMPUTE_NAME_GROUP.substitute(tensor_list=res_info.infer_name)
+                    names = INFER_NAME_GROUP.substitute(result_name=res_info.name)
+                    infer_name_list.append(names)
+                    compute_name_list.append(name_list)
+            else:
+                infer_name_list.append("")
+                compute_name_list.append("")
 
-        infer_name_list = list(concatMap(
-            lambda res_info:
-            INFER_NAME.substitute(result_name=res_info.name,
-                                  infer_func=res_info.infer_name)
-            if res_info.infer_name else "",
-            res_infos))
-
+        compute_names = "".join(compute_name_list)
+        
         infer_name = "".join(infer_name_list)
 
         apply_tensor = "".join(apply_tensor_list)
@@ -221,6 +245,7 @@ def compute_op_api_definition(struct: StructInfo):
                 args_str=args_str,
                 check_or_apply_tensor=apply_tensor,
                 do_compatibility=do_compatibility,
+                compute_names=compute_names,
                 aclnnargs=struct.cmd_args,
                 result=struct.return_args,
                 infer_name=infer_name))]

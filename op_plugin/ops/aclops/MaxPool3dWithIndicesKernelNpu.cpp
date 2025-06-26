@@ -178,6 +178,7 @@ std::tuple<at::Tensor, at::Tensor> max_pool3d_with_indices(const at::Tensor &sel
 
     max_pool3d_with_indices_out_nocheck(result, self, kernel_size, stride, pads, dilation, ceil_mode, result);
     result = self.ndimension() == 4 ? result.squeeze(0) : result;
+    at::namedinference::propagate_names(result, self);
     return std::tie(result, result);
 }
 

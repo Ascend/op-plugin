@@ -24,15 +24,20 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor& atan2_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
 {
     DO_COMPATIBILITY(aclnnAtan2, acl_op::atan2_out(self, other, out));
+    std::vector<at::Tensor> tensor_list = {self, other};
+    auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     npu_preparation::check_tensor({self, other}, out, out.scalar_type(), output_size);
     EXEC_NPU_CMD(aclnnAtan2, self, other, out);
+    at::namedinference::propagate_names_if_nonempty(out, maybe_names);
     return out;
 }
 
 at::Tensor atan2(const at::Tensor &self, const at::Tensor &other)
 {
     DO_COMPATIBILITY(aclnnAtan2, acl_op::atan2(self, other));
+    std::vector<at::Tensor> tensor_list = {self, other};
+    auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     c10::ScalarType infer_dtype = at::native::result_type(self, other);
     auto out_dtype = infer_dtype;
@@ -41,13 +46,17 @@ at::Tensor atan2(const at::Tensor &self, const at::Tensor &other)
     }
     at::Tensor out = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(out_dtype));
     EXEC_NPU_CMD(aclnnAtan2, self, other, out);
+    at::namedinference::propagate_names_if_nonempty(out, maybe_names);
     return out;
 }
 
 at::Tensor& atan2_(at::Tensor &self, const at::Tensor &other)
 {
     DO_COMPATIBILITY(aclnnInplaceAtan2, acl_op::atan2_(self, other));
+    std::vector<at::Tensor> tensor_list = {self, other};
+    auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
     EXEC_NPU_CMD(aclnnInplaceAtan2, self, other);
+    at::namedinference::propagate_names_if_nonempty(self, maybe_names);
     return self;
 }
 

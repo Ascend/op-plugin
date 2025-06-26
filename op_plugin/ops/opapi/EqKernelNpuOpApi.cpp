@@ -21,44 +21,51 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& eq_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq_out(self, other, result));
+    DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq_out(self, other, result));
+    std::vector<at::Tensor> tensor_list = {self, other};
+    auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
 
-  if (npu_preparation::IsCPUScalar(other)) {
-    return op_api::eq_out(self, other.item(), result);
-  } else if (npu_preparation::IsCPUScalar(self)) {
-    return op_api::eq_out(other, self.item(), result);
-  }
+    if (npu_preparation::IsCPUScalar(other)) {
+        return op_api::eq_out(self, other.item(), result);
+    } else if (npu_preparation::IsCPUScalar(self)) {
+        return op_api::eq_out(other, self.item(), result);
+    }
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::check_tensor({self, other}, result, at::IntArrayRef(output_size));
-  EXEC_NPU_CMD(aclnnEqTensor, self, other, result);
-  return result;
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    npu_preparation::check_tensor({self, other}, result, at::IntArrayRef(output_size));
+    EXEC_NPU_CMD(aclnnEqTensor, self, other, result);
+    at::namedinference::propagate_names_if_nonempty(result, maybe_names);
+    return result;
 }
 
 at::Tensor eq(const at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq(self, other));
+    DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq(self, other));
+    std::vector<at::Tensor> tensor_list = {self, other};
+    auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
 
-  if (npu_preparation::IsCPUScalar(other)) {
-    return op_api::eq(self, other.item());
-  } else if (npu_preparation::IsCPUScalar(self)) {
-    return op_api::eq(other, self.item());
-  }
+    if (npu_preparation::IsCPUScalar(other)) {
+        return op_api::eq(self, other.item());
+    } else if (npu_preparation::IsCPUScalar(self)) {
+        return op_api::eq(other, self.item());
+    }
 
-  // calculate the output size
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    // calculate the output size
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
 
-  // construct the output tensor of the NPU
-  at::Tensor result =
-      npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
+    // construct the output tensor of the NPU
+    at::Tensor result =
+        npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnEqTensor, self, other, result);
-  return result;
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnEqTensor, self, other, result);
+    at::namedinference::propagate_names_if_nonempty(result, maybe_names);
+    return result;
 }
 
 at::Tensor& eq_out_npu_scalar(at::Tensor& result, const at::Tensor& self, at::Scalar other) {
-  EXEC_NPU_CMD(aclnnEqScalar, self, other, result);
-  return result;
+    EXEC_NPU_CMD(aclnnEqScalar, self, other, result);
+    at::namedinference::propagate_names(result, self);
+    return result;
 }
 
 at::Tensor eq(const at::Tensor& self, const at::Scalar& other) {

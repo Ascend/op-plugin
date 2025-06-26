@@ -23,6 +23,10 @@ using npu_preparation = at_npu::native::OpPreparation;
 bool equal(const at::Tensor& self, const at::Tensor& other)
 {
     DO_COMPATIBILITY(aclnnEqual, acl_op::equal(self, other));
+    if (!at::namedinference::are_names_equal(
+        self.unsafeGetTensorImpl(), other.unsafeGetTensorImpl())) {
+        return false;
+    }
     at::Tensor result = npu_preparation::apply_tensor_without_format({1}, self.options().dtype(at::kBool));
     EXEC_NPU_CMD(aclnnEqual, self, other, result);
     return result.item().to<bool>();

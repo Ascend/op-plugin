@@ -91,6 +91,8 @@ at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar
 {
     DO_COMPATIBILITY(aclnnAdd, acl_op::add(self, other, alpha));
     DO_COMPATIBILITY(aclnnAdds, acl_op::add(self, other, alpha));
+    std::vector<at::Tensor> tensor_list = {self, other};
+    auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
     alpha_check_npu(self.scalar_type(), alpha);
     // calculate the output size
     at::Tensor output_tensor = add_dest_output(self, other);
@@ -101,6 +103,7 @@ at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar
         npu_preparation::apply_tensor_without_format(output_size, output_tensor.options().dtype(result_type));
     // calculate the output result of the NPU
     add_out_npu_nocheck(self, other, alpha, result);
+    at::namedinference::propagate_names_if_nonempty(result, maybe_names);
     return result;
 }
 
@@ -115,6 +118,7 @@ at::Tensor add(const at::Tensor &self, const at::Scalar &other, const at::Scalar
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
     // calculate the output result of the NPU
     EXEC_NPU_CMD(aclnnAdds, self, other, alpha, result);
+    at::namedinference::propagate_names(result, self);
     return result;
 }
 
@@ -122,6 +126,8 @@ at::Tensor &add_out(const at::Tensor &self, const at::Tensor &other, const at::S
 {
     DO_COMPATIBILITY(aclnnAdd, acl_op::add_out(self, other, alpha, result));
     DO_COMPATIBILITY(aclnnAdds, acl_op::add_out(self, other, alpha, result));
+    std::vector<at::Tensor> tensor_list = {self, other};
+    auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
     bool isSelfWrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
     at::Tensor output_tensor = isSelfWrapped ? other : self;
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -130,6 +136,7 @@ at::Tensor &add_out(const at::Tensor &self, const at::Tensor &other, const at::S
     npu_preparation::check_tensor({self}, result, result, output_size);
     npu_preparation::check_memory({self, other}, {result});
     add_out_npu_nocheck(self, other, alpha, result);
+    at::namedinference::propagate_names_if_nonempty(result, maybe_names);
     return result;
 }
 
@@ -137,8 +144,11 @@ at::Tensor &add_(at::Tensor &self, const at::Tensor &other, const at::Scalar &al
 {
     DO_COMPATIBILITY(aclnnInplaceAdd, acl_op::add_(self, other, alpha));
     DO_COMPATIBILITY(aclnnInplaceAdds, acl_op::add_(self, other, alpha));
+    std::vector<at::Tensor> tensor_list = {self, other};
+    auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
     npu_preparation::check_memory({self, other}, {self});
     inplace_add_out_npu_no_check(self, other, alpha);
+    at::namedinference::propagate_names_if_nonempty(self, maybe_names);
     return self;
 }
 

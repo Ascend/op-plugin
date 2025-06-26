@@ -67,6 +67,10 @@ class ResInfo:
             if kind == SchemaKind.out and info is None:
                 size, dtype = name, name
                 infer_name = None
+            elif kind == SchemaKind.inplace and info is not None:
+                size = info.pop('size', None)
+                dtype = info.pop('dtype', None)
+                infer_name = info.pop('name', None)
             else:
                 size = info.pop('size', None)
                 dtype = info.pop('dtype', None)

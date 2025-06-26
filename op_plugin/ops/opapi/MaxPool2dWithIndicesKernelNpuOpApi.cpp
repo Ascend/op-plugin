@@ -47,6 +47,7 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
     bool ceil_mode)
 {
     max_pool2d_with_indices_parameter_check(self, kernel_size, stride, padding, dilation);
+    at::DimnameList maybe_names = self.has_names() ? self.names() : at::DimnameList{};
 
     const int k_H = at::native::safe_downcast<int, int64_t>(kernel_size[0]);
     const int k_W = kernel_size.size() == 1 ? k_H : at::native::safe_downcast<int, int64_t>(kernel_size[1]);
@@ -105,7 +106,8 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
 
     EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_sizes,
                  strides, paddings, dilations, ceil_mode, output, indices);
-
+    at::namedinference::propagate_names_if_nonempty(output, maybe_names);
+    at::namedinference::propagate_names_if_nonempty(indices, maybe_names);
     return std::tuple<at::Tensor, at::Tensor>(output, indices);
 }
 
