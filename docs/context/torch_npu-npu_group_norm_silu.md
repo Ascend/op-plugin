@@ -12,7 +12,7 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps) -> (Tensor, Tenso
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选输入，源数据张量，维度需大于一维，数据格式支持$ND$，支持非连续的Tensor。
+- **input** (`Tensor`)：必选输入，源数据张量，维度需大于一维且小于等于八维，数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float`、`bfloat16`。
 
@@ -24,8 +24,8 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps) -> (Tensor, Tenso
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float`、`bfloat16`。
 
-- **group** (`int`)：必选输入，表示将输入`input`的第1维度分为`group`组。
-- **eps** (`float`)：可选参数，数值稳定性而加到分母上的值，若保持精度，则`eps`需大于0。
+- **group** (`int`)：必选输入，表示将输入`input`的第1维度分为`group`组，`group`需大于0。
+- **eps** (`float`)：可选参数，为保证数值稳定性而加到分母上的值，`eps`需大于0。
 
 ## 返回值
 
@@ -45,10 +45,14 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps) -> (Tensor, Tenso
 
 - `input`、`weight`、`bias`、`out`、`meanOut`、`rstdOut`数据类型必须支持的范围之内。
 - `out`、`meanOut`、`rstdOut`的数据类型与`input`相同；`weight`、`bias`与`input`可以不同。
-- `input`第1维度能整除`group`。
+- `weight`与`bias`的数据类型必须保持一致，且数据类型的精度不能低于`input`的数据类型。
+- `weight`与`bias`的维度需为1且元素数量需与输入`input`的第1维度保持相同。
+- `input`维度需大于一维且小于等于八维，且`input`第1维度能整除`group`。
+- `input`任意维都需大于0。
 - `out`的shape与`input`相同。
 - `meanOut`与`rstdOut`的shape为$(N, group)$，其中$N$为`input`第0维度值。
-- `weight`与`bias`的数据类型必须保持一致，且数据类型的精度不能低于`input`的数据类型。
+- `eps`需大于0。
+- `group`需大于0。
 
 ## 支持的型号
 
@@ -71,30 +75,30 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps) -> (Tensor, Tenso
 >>> eps = 0.00001
 >>>
 >>> #输入tensor为torch.float32类型
->>> x_npu=torch.randn(shape_x,dtype=torch.float32).npu()          #input
->>> gamma_npu=torch.randn(shape_c,dtype=torch.float32).npu()      #weight
->>> beta_npu=torch.randn(shape_c,dtype=torch.float32).npu()       #bias
->>> out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(x_npu, gamma_npu, beta_npu, group=num_groups, eps=eps)
+>>> input_npu=torch.randn(shape_x,dtype=torch.float32).npu()          #input
+>>> weight_npu=torch.randn(shape_c,dtype=torch.float32).npu()      #weight
+>>> bias_npu=torch.randn(shape_c,dtype=torch.float32).npu()       #bias
+>>> out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
 >>> out_npu.shape, mean_npu.shape, rstd_out.shape
 (torch.Size([24, 320, 48, 48]), torch.Size([24, 32]), torch.Size([24, 32]))
 >>> out_npu.dtype, mean_npu.dtype, rstd_out.dtype
 (torch.float32, torch.float32, torch.float32)
 >>>
 >>> #输入tensor为torch.bfloat16类型
->>> x_npu=torch.randn(shape_x,dtype=torch.bfloat16).npu()
->>> gamma_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
->>> beta_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
->>> out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(x_npu, gamma_npu, beta_npu, group=num_groups, eps=eps)
+>>> input_npu=torch.randn(shape_x,dtype=torch.bfloat16).npu()
+>>> weight_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
+>>> bias_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
+>>> out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
 >>> out_npu.shape, mean_npu.shape, rstd_out.shape
 (torch.Size([24, 320, 48, 48]), torch.Size([24, 32]), torch.Size([24, 32]))
 >>> out_npu.dtype, mean_npu.dtype, rstd_out.dtype
 (torch.bfloat16, torch.bfloat16, torch.bfloat16)
 >>>
 >>> #输入tensor为torch.float16类型
->>> x_npu=torch.randn(shape_x,dtype=torch.float16).npu()
->>> gamma_npu=torch.randn(shape_c,dtype=torch.float16).npu()
->>> beta_npu=torch.randn(shape_c,dtype=torch.float16).npu()
->>> out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(x_npu, gamma_npu, beta_npu, group=num_groups, eps=eps)
+>>> input_npu=torch.randn(shape_x,dtype=torch.float16).npu()
+>>> weight_npu=torch.randn(shape_c,dtype=torch.float16).npu()
+>>> bias_npu=torch.randn(shape_c,dtype=torch.float16).npu()
+>>> out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
 >>> out_npu.shape, mean_npu.shape, rstd_out.shape
 (torch.Size([24, 320, 48, 48]), torch.Size([24, 32]), torch.Size([24, 32]))
 >>> out_npu.dtype, mean_npu.dtype, rstd_out.dtype
