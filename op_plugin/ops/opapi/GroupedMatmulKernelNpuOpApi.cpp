@@ -235,6 +235,10 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
 // Tensor[]? activation_quant_offset, Tensor[]? activation_quant_offset, int? split_item=0,
 // int? group_type=-1, int? group_list_type=0, int? act_type=0, ScalarType? output_dtype=None) -> Tensor[]
 {
+    int64_t group_type_value = group_type.value_or(-1);
+    TORCH_CHECK(group_type_value == -1 || group_type_value == 0,
+                "group_type currently only support -1 and 0, current value is ",
+                group_type_value, OPS_ERROR(ErrCode::VALUE));
     static const bool is_grouped_matmul_V4_available = check_aclnn_kernel_available("aclnnGroupedMatmulV4");
     if (C10_UNLIKELY(!is_grouped_matmul_V4_available)) {
         TORCH_CHECK(!group_list.has_value(),
@@ -345,7 +349,6 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     auto activation_quant_offset_real = activation_quant_offset.value_or(at::TensorList());
     auto act_out = at::TensorList();
     auto dynamic_quant_scale_out = at::TensorList();
-    int64_t group_type_value = group_type.value_or(-1);
     int64_t group_list_type_value = group_list_type.value_or(0);
     int64_t act_type_value = act_type.value_or(0);
     auto tuning_config_real = tuning_config.value_or(at::IntArrayRef{});
