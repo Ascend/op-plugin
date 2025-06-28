@@ -1345,6 +1345,21 @@ class TestFusedInferAttentionScore(TestCase):
             self.assertTrue(q.shape == atten_out.shape)
 
 
+class TestFusedInferAttentionV2(TestCase):
+    @unittest.skipIf("2.1" not in torch.__version__, "skip this test for torch version other than 2.1")
+    def testFusedInferAttentionV2(self):
+        with FakeTensorMode():
+            q = torch.randn(1, 1024, 1024, dtype=torch.float16).npu()
+            k = torch.randn(1, 1024, 1024, dtype=torch.float16).npu()
+            v = torch.randn(1, 1024, 1024, dtype=torch.float16).npu()
+            q.requires_grad = True
+            k.requires_grad = True
+            v.requires_grad = True
+            atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_v2(q, k, v)
+
+            self.assertTrue(q.shape == atten_out.shape)
+
+
 class TestFlashAttentionScore(TestCase):
     def testFlashAttentionScore(self):
         with FakeTensorMode():

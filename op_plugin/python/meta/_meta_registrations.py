@@ -634,6 +634,159 @@ def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None
             return (torch.empty_like(tmp_out), torch.empty([1], dtype=torch.float32, device='meta'))
 
 
+@impl(m, "npu_fused_infer_attention_v2")
+def npu_fused_infer_attention_v2_forward(query, key, value, *, query_rope=None, key_rope=None, pse_shift=None, atten_mask=None, actual_seq_qlen=None, actual_seq_kvlen=None,
+                                         block_table=None, dequant_scale_query=None, dequant_scale_key=None, dequant_offset_key=None, dequant_scale_value=None,
+                                         dequant_offset_value=None, dequant_scale_key_rope=None, quant_scale_out=None, quant_offset_out=None,
+                                         num_query_heads=1, num_key_value_heads=0, softmax_scale=1.0, pre_tokens=2147483647, next_tokens=2147483647,
+                                         input_layout="BSH", sparse_mode=0, block_size=0, query_quant_mode=0, key_quant_mode=0, value_quant_mode=0, inner_precise=0,
+                                         return_softmax_lse=False, query_dtype=None, key_dtype=None, value_dtype=None, query_rope_dtype=None, key_rope_dtype=None,
+                                         key_shared_prefix_dtype=None, value_shared_prefix_dtype=None, dequant_scale_query_dtype=None,
+                                         dequant_scale_key_dtype=None, dequant_scale_value_dtype=None, dequant_scale_key_rope_dtype=None):
+    tmp_out = torch.empty_like(query, dtype=query.dtype, device='meta')
+    B = 1
+    N = 1
+    S1 = 1
+    if input_layout == "BNSD_BSND":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BNSD_BSND, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(0), query.size(2), query.size(1), query.size(3)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = query.size(1)
+        S1 = query.size(2)
+    if input_layout == "BNSD_NBSD":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BNSD_NBSD, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(1), query.size(0), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = query.size(1)
+        S1 = query.size(2)
+    if input_layout == "BSND_NBSD":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BSND_NBSD, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(2), query.size(0), query.size(1), query.size(3)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = query.size(2)
+        S1 = query.size(1)
+    if input_layout == "BSH_NBSD":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout BSH_NBSD, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([num_query_heads, query.size(0), query.size(1), query.size(2) // num_query_heads], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = num_query_heads
+        S1 = query.size(1)
+    if input_layout == "BNSD":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BNSD, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = query.size(1)
+        S1 = query.size(2)
+    if input_layout == "BSH":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout BSH, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = num_query_heads
+        S1 = query.size(1)
+    if input_layout == "BSND":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 4,
+            lambda: "Layout BSND, queryDims must be 4!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), query.size(3)], dtype=query.dtype, device='meta')
+        B = query.size(0)
+        N = num_query_heads
+        S1 = query.size(1)
+    if input_layout == "NSD":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout NSD, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
+        B = 1
+        N = query.size(0)
+        S1 = query.size(1)
+    if input_layout == "TND":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout TND, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        if block_table is not None: # IFA目前TND只支持PA场景，PFA目前TND只支持非PA场景
+            tmp_out = torch.empty([query.size(0), query.size(1), query.size(2)], dtype=query.dtype, device='meta')
+        else:
+            tmp_out = torch.empty([query.size(0), query.size(1), value.size(2)], dtype=query.dtype, device='meta')
+    if input_layout == "TND_NTD":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout TND_NTD, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(1), query.size(0), query.size(2)], dtype=query.dtype, device='meta')
+    if input_layout == "NTD_TND":
+        token_x_dim = query.dim()
+        torch._check(
+            token_x_dim == 3,
+            lambda: "Layout NTD_TND, queryDims must be 3!, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+        )
+        tmp_out = torch.empty([query.size(1), query.size(0), value.size(2)], dtype=query.dtype, device='meta')
+    if quant_scale_out is not None:
+        if return_softmax_lse:
+            if input_layout == "TND" or input_layout == "TND_NTD":
+                return (torch.empty_like(tmp_out, dtype=torch.int8), torch.empty([query.size(0), num_query_heads, 1], dtype=torch.float32, device='meta'))
+            else:
+                return (torch.empty_like(tmp_out, dtype=torch.int8), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
+        else:
+            return (torch.empty_like(tmp_out, dtype=torch.int8), torch.empty([1], dtype=torch.float32, device='meta'))
+    elif query.dtype == torch.int8:
+        out_dtype = torch.half
+        if query_rope is not None:
+            out_dtype = query_rope.dtype
+        if return_softmax_lse:
+            if input_layout == "TND" or input_layout == "TND_NTD":
+                return (torch.empty_like(tmp_out, dtype=out_dtype), torch.empty([query.size(0), num_query_heads, 1], \
+                    dtype=torch.float32, device='meta'))
+            else:
+                return (torch.empty_like(tmp_out, dtype=out_dtype), torch.empty([B, N, S1, 1], dtype=torch.float32, \
+                    device='meta'))
+        else:
+            return (torch.empty_like(tmp_out, dtype=out_dtype), torch.empty([1], dtype=torch.float32, device='meta'))
+    else:
+        if return_softmax_lse:
+            if input_layout == "TND" or input_layout == "TND_NTD":
+                if block_table is not None: # IFA目前TND只支持PA场景，PFA目前TND只支持非PA场景
+                    return (torch.empty_like(tmp_out), torch.empty([query.size(0), num_query_heads, 1], dtype=torch.float32, device='meta'))
+                else:
+                    return (torch.empty_like(tmp_out), torch.empty([query.size(0), query.size(1), 1], dtype=torch.float32, device='meta'))
+            elif input_layout == "NTD_TND":
+                return (torch.empty_like(tmp_out), torch.empty([query.size(1), query.size(0), 1], dtype=torch.float32, device='meta'))
+            else:
+                return (torch.empty_like(tmp_out), torch.empty([B, N, S1, 1], dtype=torch.float32, device='meta'))
+        else:
+            return (torch.empty_like(tmp_out), torch.empty([1], dtype=torch.float32, device='meta'))
+
+
 @impl(m, "npu_fusion_attention")
 def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=None, padding_mask=None,
                                 atten_mask=None, scale=1.0, keep_prob=1.0, pre_tockens=2147483647, next_tockens=2147483647,
