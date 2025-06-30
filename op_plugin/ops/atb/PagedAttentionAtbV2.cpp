@@ -23,7 +23,7 @@ at::Tensor& _npu_paged_attention_v2(
     const at::Tensor &query,
     const at::Tensor &key_cache,
     const at::Tensor &block_table,
-    const at::Tensor &context_lens,
+    c10::SymIntArrayRef context_lens,
     const c10::optional<at::Tensor> &value_cache,
     const c10::optional<at::Tensor> &mask,
     int64_t num_kv_heads,
@@ -51,19 +51,20 @@ at::Tensor& _npu_paged_attention_v2(
     pagedparam.mlaVHeadSize = 0;
 
     ParamSetter paramsetter;
+    at::Tensor context_lens_tensor = at::tensor(c10::asIntArrayRefUnchecked(context_lens), at::kInt);
     if (pagedparam.maskType == PagedAttentionParam::UNDEFINED) {
         paramsetter.Input(query)
             .Input(key_cache)
             .Input(value_cache)
             .Input(block_table)
-            .Input(context_lens)
+            .Input(context_lens_tensor)
             .Output(out);
     } else if (pagedparam.maskType == PagedAttentionParam::MASK_TYPE_ALIBI) {
         paramsetter.Input(query)
             .Input(key_cache)
             .Input(value_cache)
             .Input(block_table)
-            .Input(context_lens)
+            .Input(context_lens_tensor)
             .Input(mask)
             .Output(out);
     }
@@ -77,7 +78,7 @@ at::Tensor& _npu_paged_attention_v2(
 namespace {
 TORCH_LIBRARY_FRAGMENT(atb, m)
 {
-    m.def("_npu_paged_attention_v2.out(Tensor query, Tensor key_cache, Tensor block_table, Tensor context_lens, *, Tensor? value_cache=None, Tensor? mask=None, int num_kv_heads=0, int num_heads=0, float scale_value=1.0, int mask_type=0, Tensor(a!) out) -> Tensor(a!)");
+    m.def("_npu_paged_attention_v2.out(Tensor query, Tensor key_cache, Tensor block_table, SymInt[] context_lens, *, Tensor? value_cache=None, Tensor? mask=None, int num_kv_heads=0, int num_heads=0, float scale_value=1.0, int mask_type=0, Tensor(a!) out) -> Tensor(a!)");
 }
 }
 

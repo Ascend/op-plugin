@@ -22,7 +22,7 @@ at::Tensor& _npu_flash_attention_v2(
     const at::Tensor &query,
     const at::Tensor &key,
     const at::Tensor &value,
-    const at::Tensor &seq_len,
+    c10::SymIntArrayRef seq_len,
     const c10::optional<at::Tensor> &mask,
     const c10::optional<at::Tensor> &slopes,
     int64_t kernel_type,
@@ -68,6 +68,7 @@ at::Tensor& _npu_flash_attention_v2(
     }
 
     ParamSetter parametter;
+    at::Tensor seq_len_tensor = at::tensor(c10::asIntArrayRefUnchecked(seq_len), at::kInt);
     if (selfattentionparam.maskType == SelfAttentionParam::MASK_TYPE_ALIBI_COMPRESS ||
         selfattentionparam.maskType == SelfAttentionParam::MASK_TYPE_ALIBI_COMPRESS_SQRT ||
         selfattentionparam.maskType == SelfAttentionParam::MASK_TYPE_ALIBI_COMPRESS_LEFT_ALIGN) {
@@ -75,7 +76,7 @@ at::Tensor& _npu_flash_attention_v2(
             .Input(key)
             .Input(value)
             .Input(mask)
-            .Input(seq_len)
+            .Input(seq_len_tensor)
             .Input(slopes)
             .Output(out);
     } else if (selfattentionparam.maskType == SelfAttentionParam::MASK_TYPE_ALIBI || selfattentionparam.maskType == SelfAttentionParam::MASK_TYPE_NORM) {
@@ -83,7 +84,7 @@ at::Tensor& _npu_flash_attention_v2(
             .Input(key)
             .Input(value)
             .Input(mask)
-            .Input(seq_len)
+            .Input(seq_len_tensor)
             .Output(out);
     }
     auto opSelfattention = selfAttentionParamCache.getOperation(selfattentionparam, "SelfAttentionOperation");
@@ -94,7 +95,7 @@ at::Tensor& _npu_flash_attention_v2(
 namespace {
 TORCH_LIBRARY_FRAGMENT(atb, m)
 {
-    m.def("_npu_flash_attention_v2.out(Tensor query, Tensor key, Tensor value, Tensor seq_len, *, Tensor? mask=None, Tensor? slopes=None, int kernel_type=0, int mask_type=2, float scale_value=1, int num_heads=0, int num_kv_heads=0, Tensor(a!) out) -> Tensor(a!)");
+    m.def("_npu_flash_attention_v2.out(Tensor query, Tensor key, Tensor value, SymInt[] seq_len, *, Tensor? mask=None, Tensor? slopes=None, int kernel_type=0, int mask_type=2, float scale_value=1, int num_heads=0, int num_kv_heads=0, Tensor(a!) out) -> Tensor(a!)");
 }
 }
 

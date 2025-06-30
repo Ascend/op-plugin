@@ -24,8 +24,8 @@ at::Tensor& _npu_flash_attention_prefix_v2(
     const at::Tensor &value_cache,
     const at::Tensor &block_table,
     const at::Tensor &mask,
-    const at::Tensor &seq_len,
-    const at::Tensor &context_lens,
+    c10::SymIntArrayRef seq_len,
+    c10::SymIntArrayRef context_lens,
     const c10::optional<at::Tensor> &slopes,
     const int64_t kernel_type,
     const int64_t mask_type,
@@ -61,14 +61,16 @@ at::Tensor& _npu_flash_attention_prefix_v2(
     selfattentionparam.windowSize = 0;
 
     ParamSetter parametter;
+    at::Tensor seq_len_tensor = at::tensor(c10::asIntArrayRefUnchecked(seq_len), at::kInt);
+    at::Tensor context_lens_tensor = at::tensor(c10::asIntArrayRefUnchecked(context_lens), at::kInt);
     if (selfattentionparam.maskType == SelfAttentionParam::MASK_TYPE_NORM_COMPRESS) {
         parametter.Input(query)
             .Input(key_cache)
             .Input(value_cache)
             .Input(block_table)
             .Input(mask)
-            .Input(seq_len)
-            .Input(context_lens)
+            .Input(seq_len_tensor)
+            .Input(context_lens_tensor)
             .Output(out);
     } else if (selfattentionparam.maskType == SelfAttentionParam::MASK_TYPE_ALIBI_COMPRESS ||
               selfattentionparam.maskType == SelfAttentionParam::MASK_TYPE_ALIBI_COMPRESS_SQRT) {
@@ -77,8 +79,8 @@ at::Tensor& _npu_flash_attention_prefix_v2(
             .Input(value_cache)
             .Input(block_table)
             .Input(mask)
-            .Input(seq_len)
-            .Input(context_lens)
+            .Input(seq_len_tensor)
+            .Input(context_lens_tensor)
             .Input(slopes)
             .Output(out);
     }
@@ -91,7 +93,7 @@ at::Tensor& _npu_flash_attention_prefix_v2(
 namespace {
 TORCH_LIBRARY_FRAGMENT(atb, m)
 {
-    m.def("_npu_flash_attention_prefix_v2.out(Tensor query, Tensor key_cache, Tensor value_cache, Tensor block_table, Tensor mask, Tensor seq_len, Tensor context_lens, *, Tensor? slopes=None, int kernel_type=1, int mask_type=3, int num_kv_heads=0, int num_heads=0, float scale_value=1, Tensor(a!) out) -> Tensor(a!)");
+    m.def("_npu_flash_attention_prefix_v2.out(Tensor query, Tensor key_cache, Tensor value_cache, Tensor block_table, Tensor mask, SymInt[] seq_len, SymInt[] context_lens, *, Tensor? slopes=None, int kernel_type=1, int mask_type=3, int num_kv_heads=0, int num_heads=0, float scale_value=1, Tensor(a!) out) -> Tensor(a!)");
 }
 }
 
