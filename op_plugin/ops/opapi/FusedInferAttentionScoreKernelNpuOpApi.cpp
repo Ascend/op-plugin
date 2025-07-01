@@ -28,6 +28,7 @@ const static int64_t DIM_0 = 0;
 const static int64_t DIM_1 = 1;
 const static int64_t DIM_2 = 2;
 const static int64_t DIM_3 = 3;
+const static int64_t INT4_IN_INT32 = 8;
 
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
@@ -45,6 +46,11 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
     at::Tensor output;
     int64_t batchSize = 1;
     int64_t qsSize = 1;
+    int64_t changeDScale = 1;
+    // int4 伪装成 int32
+    if (value.scalar_type() == at::kInt) {
+        changeDScale = INT4_IN_INT32;
+    }
     at::Tensor tmp_output = npu_preparation::apply_tensor_without_format(query);
     if (input_layout_str == "BNSD_BSND") {
         tmp_output = OpPreparation::apply_tensor_without_format({query.size(DIM_0), query.size(DIM_2), query.size(DIM_1), query.size(DIM_3)},
@@ -88,7 +94,7 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
                 query.size(DIM_2), query.size(DIM_3)}, query.options().dtype(query.dtype()));
         } else {
             tmp_output = OpPreparation::apply_tensor_without_format({query.size(DIM_0), query.size(DIM_1),
-                query.size(DIM_2), value.size(DIM_3)}, query.options().dtype(query.dtype()));
+                query.size(DIM_2), value.size(DIM_3) * changeDScale}, query.options().dtype(query.dtype()));
         }
         batchSize = query.size(DIM_0);
         qsSize = query.size(DIM_2);
