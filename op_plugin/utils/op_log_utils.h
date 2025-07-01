@@ -335,6 +335,20 @@ inline std::string convert_debug_info(const at::Tensor &at_tensor)
                << ", storage_sizes: "
                << at_tensor_sizes.storage_sizes_;
         } else {
+            // Min/Max for discontiguous tensor leads to infinite recursion of aclnnInpalceCopy
+            if (!at_tensor.is_contiguous()) {
+                ss << "Discontiguous tensor npu_format: "
+                   << at_tensor_sizes.npu_format_
+                   << ", base_sizes: "
+                   << at_tensor_sizes.base_sizes_
+                   << ", base_strides: "
+                   << at_tensor_sizes.base_strides_
+                   << ", storage_sizes: "
+                   << at_tensor_sizes.storage_sizes_;
+                std::string res = ss.str();
+                replace_and_append_newline(res);
+                return res;
+            }
             // To cpu to avoid using aclnnMin/aclnnMax/aclnnMean.
             // To float to avoid problems caused by non-floating-point types, such as int.
             at::Tensor cpu_tensor;
