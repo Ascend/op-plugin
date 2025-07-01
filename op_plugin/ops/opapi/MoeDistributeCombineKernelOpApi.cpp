@@ -45,20 +45,20 @@ at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tens
     auto expand_x_size = expand_x.sizes();
     auto expert_ids_size = expert_ids.sizes();
 
-    int64_t n = expert_ids_size[0];
+    int64_t bs = expert_ids_size[0];
     int64_t h = expand_x_size[1];
-    int64_t global_bs_real = (global_bs == 0) ? (n * ep_world_size) : global_bs;
+    int64_t global_bs_real = (global_bs == 0) ? (bs * ep_world_size) : global_bs;
 
     char *group_ep_ptr = const_cast<char *>(group_ep.data());
     std::string group_tp_str = std::string(group_tp);
     char *group_tp_ptr = const_cast<char *>(group_tp_str.c_str());
     at::Tensor output;
     if (expand_x.scalar_type() != at::kInt) {
-        output = npu_preparation::apply_tensor_without_format({n, h}, expert_ids.options().dtype(expand_x.scalar_type()));
+        output = npu_preparation::apply_tensor_without_format({bs, h}, expert_ids.options().dtype(expand_x.scalar_type()));
     } else if (out_dtype == 0) {
-        output = npu_preparation::apply_tensor_without_format({n, h}, expert_ids.options().dtype(at::kBFloat16));
+        output = npu_preparation::apply_tensor_without_format({bs, h}, expert_ids.options().dtype(at::kBFloat16));
     } else {
-        output = npu_preparation::apply_tensor_without_format({n, h}, expert_ids.options().dtype(at::kHalf));
+        output = npu_preparation::apply_tensor_without_format({bs, h}, expert_ids.options().dtype(at::kHalf));
     }
     
     static const bool is_aclnn_v2_available = check_aclnn_kernel_available("aclnnMoeDistributeCombineV2");

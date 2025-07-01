@@ -1095,6 +1095,38 @@ def npu_masked_softmax_with_rel_pos_bias_meta(x, atten_mask, relative_pos_bias, 
 @impl(m, "npu_moe_distribute_dispatch")
 def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_rank_id, moe_expert_num, scales=None, x_active_mask=None, expert_scales=None, group_tp="", tp_world_size=0,
                                      tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, quant_mode=0, global_bs=0, expert_token_nums_type=1):
+    torch._check(
+        (ep_rank_id >= 0) and (ep_rank_id < ep_world_size),
+        lambda: (
+            f"ep_rank_id should be in [0, ep_world_size), "
+            f"but got {ep_world_size=}, {ep_rank_id=}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    torch._check(
+        (shared_expert_rank_num >= 0) and (shared_expert_rank_num < ep_world_size),
+        lambda: (
+            f"shared_expert_rank_num should be in [0, ep_world_size), "
+            f"but got {ep_world_size=}, {shared_expert_rank_num=}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    is_shared_default = ((shared_expert_num == 1) and (shared_expert_rank_num == 0))
+    is_no_shared = ((shared_expert_num == 0) and (shared_expert_rank_num == 0))
+    is_valid_shared = (
+        (shared_expert_num > 0)
+        and ((shared_expert_rank_num // shared_expert_num) > 0)
+        and ((shared_expert_rank_num % shared_expert_num) == 0)
+    )
+    torch._check(
+        is_shared_default or is_no_shared or is_valid_shared,
+        lambda: (
+            f"shared expert setting invalid, "
+            f"got {shared_expert_num=}, {shared_expert_rank_num=}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    
     bs = x.size(0)
     h = x.size(1)
     k = expert_ids.size(1)
@@ -1109,13 +1141,13 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
     else:
         global_bs_real = global_bs
     a = 0
-    rank_num_per_shared_expert = -1
-    if ((shared_expert_num != 0) and ((shared_expert_rank_num // shared_expert_num) != 0)):
-        rank_num_per_shared_expert = shared_expert_rank_num // shared_expert_num
     if shared_front:
         if ep_rank_id < shared_expert_rank_num:
             local_moe_expert_num = 1
-            a = global_bs_real // rank_num_per_shared_expert
+            max_bs = global_bs_real // ep_world_size
+            rank_num_per_shared_expert = shared_expert_rank_num // shared_expert_num
+            max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) // rank_num_per_shared_expert
+            a = max_bs * max_shared_group_num
         else:
             local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
             a = global_bs_real * min(local_moe_expert_num, k)
@@ -1128,7 +1160,6 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
 
     if scales is not None or quant_mode != 0:
         outDtype = torch.int8
-    local_moe_expert_num = int(local_moe_expert_num)
 
     expand_idx = x.new_empty((max(bs * k, a * 128)), dtype=torch.int32)
     if tp_world_size == 0:
