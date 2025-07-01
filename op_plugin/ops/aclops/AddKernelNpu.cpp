@@ -41,7 +41,7 @@ at::Tensor add_dest_output(const at::Tensor &self, const at::Tensor &other)
 at::Tensor &adds_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Scalar other,
                                  const at::Scalar alpha)
 {
-    alpha_check_npu(self.scalar_type(), alpha);
+    alpha_check_npu(result.scalar_type(), alpha);
     float other_value = op_plugin::utils::get_scalar_float_value(other);
     float alpha_value = op_plugin::utils::get_scalar_float_value(alpha);
     float value = other_value * alpha_value;
@@ -73,7 +73,7 @@ at::Tensor &add_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, cons
     } else if (npu_preparation::IsCPUScalar(self)) {
         adds_out_npu_nocheck(result, other, self.item(), alpha);
     } else {
-        alpha_check_npu(self.scalar_type(), alpha);
+        alpha_check_npu(result.scalar_type(), alpha);
         at_npu::native::OpCommand cmd;
         cmd.Expect(unified_result);
 
@@ -128,7 +128,7 @@ at::Tensor stride_add_tensor_get(const at::Tensor &src)
 
 at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha)
 {
-    alpha_check_npu(self.scalar_type(), alpha);
+    alpha_check_npu(at::native::result_type(self, other), alpha);
     if ((!(self.is_contiguous() && other.is_contiguous())) &&
         (npu_utils::check_5d_5d_match(self) || npu_utils::check_5d_5d_match(other)) && check_size(self, other)) {
         int64_t c0_len = 16;
@@ -160,7 +160,7 @@ at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar
 
 at::Tensor add(const at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha)
 {
-    alpha_check_npu(self.scalar_type(), alpha);
+    alpha_check_npu(at::native::result_type(self, other), alpha);
     at::Tensor result = npu_preparation::apply_tensor(self);
     adds_out_npu_nocheck(result, self, other, alpha);
     return result;

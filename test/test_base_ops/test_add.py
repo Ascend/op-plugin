@@ -465,6 +465,23 @@ class TestAdd(TestCase):
             cpu_output = cpu_output.astype(npu_output.dtype)
 
             self.assertRtolEqual(cpu_output, npu_output)
+    
+    def test_add_dtype_check(self):
+        tensor_cpu = torch.tensor([1.0, 2.0, 3.0, 4.0])
+        result_ge = tensor_cpu.ge(tensor_cpu)
+
+        result_add = result_ge.add(tensor_cpu, alpha=2.0)
+        result_mul = result_add.mul(tensor_cpu)
+        result_cpu = result_mul.sub(tensor_cpu)
+
+        tensor_npu = torch.tensor([1.0, 2.0, 3.0, 4.0]).npu()
+        result_ge = tensor_npu.ge(tensor_npu)
+
+        result_add = result_ge.add(tensor_npu, alpha=2.0)
+        result_mul = result_add.mul(tensor_npu)
+        result_npu = result_mul.sub(tensor_npu)
+
+        self.assertRtolEqual(result_cpu, result_npu)
 
 
 if __name__ == "__main__":

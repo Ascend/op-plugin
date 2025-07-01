@@ -93,11 +93,11 @@ at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar
     DO_COMPATIBILITY(aclnnAdds, acl_op::add(self, other, alpha));
     std::vector<at::Tensor> tensor_list = {self, other};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
-    alpha_check_npu(self.scalar_type(), alpha);
     // calculate the output size
     at::Tensor output_tensor = add_dest_output(self, other);
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType result_type = at::native::result_type(self, other);
+    alpha_check_npu(result_type, alpha);
     // construct the output tensor of the NPU
     at::Tensor result =
         npu_preparation::apply_tensor_without_format(output_size, output_tensor.options().dtype(result_type));
@@ -110,10 +110,10 @@ at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar
 at::Tensor add(const at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha)
 {
     DO_COMPATIBILITY(aclnnAdds, acl_op::add(self, other, alpha));
-    alpha_check_npu(self.scalar_type(), alpha);
     // calculate the output size
     auto output_size = op_infer::input_same_output_size(self);
     at::ScalarType result_type = at::native::result_type(self, other);
+    alpha_check_npu(result_type, alpha);
     // construct the output tensor of the NPU
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
     // calculate the output result of the NPU
