@@ -42,10 +42,12 @@ at::Tensor npu_rotary_mul(
     const at::Tensor& r2,
     c10::string_view rotary_mode)
 {
-    TORCH_CHECK(rotary_mode == "half" || rotary_mode == "interleave",
+    static bool notNeedCheck = (c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend910_95);
+    TORCH_CHECK((notNeedCheck || (rotary_mode == "half" || rotary_mode == "interleave")),
         "The rotary_mode of npu_rotary_mul should be half or interleave, but got ", rotary_mode,
         OPS_ERROR(ErrCode::PARAM));
     DO_COMPATIBILITY(aclnnRotaryPositionEmbedding, acl_op::npu_rotary_mul(self, r1, r2, rotary_mode));
+
     int64_t mode = op_plugin::utils::get_rotary_mode(rotary_mode);
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
         return acl_op::npu_rotary_mul(self, r1, r2, rotary_mode);

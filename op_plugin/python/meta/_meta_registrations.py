@@ -1997,7 +1997,7 @@ def npu_kv_rmsnorm_rope_cache_meta(kv, gamma, cos, sin, index, k_cache, ckv_cach
 
 
 @impl(m, "npu_apply_rotary_pos_emb")
-def npu_apply_rotary_pos_emb_meta(query, key, cos, sin, layout=1):
+def npu_apply_rotary_pos_emb_meta(query, key, cos, sin, layout=1, rotary_mode='half'):
     return (torch.empty_like(query, dtype=query.dtype), torch.empty_like(key, dtype=key.dtype))
 
 
@@ -2291,11 +2291,17 @@ def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=
     expert_token_num_size = []
     for i in range(tokens.dim()):
         permute_tokens_size.append(tokens.size(i))
-    permute_per_token_scales_size.append(tokens.size(0))
+    if per_token_scales is None:
+        permute_per_token_scales_size.append(tokens.size(0))
+        permute_per_token_scales_dtype = torch.float32
+    else:
+        for i in range(per_token_scales.dim()):
+            permute_per_token_scales_size.append(per_token_scales.size(i))
+        permute_per_token_scales_dtype = per_token_scales.dtype
     permute_token_idx_size.append(tokens.size(0))
     expert_token_num_size.append(expert_token_num_per_rank.size(1))
     return (torch.empty(permute_tokens_size, dtype=tokens.dtype, device=tokens.device),
-            torch.empty(permute_per_token_scales_size, dtype=torch.float32, device=tokens.device),
+            torch.empty(permute_per_token_scales_size, dtype=permute_per_token_scales_dtype, device=tokens.device),
             torch.empty(permute_token_idx_size, dtype=torch.int32, device=tokens.device),
             torch.empty(expert_token_num_size, dtype=expert_token_num_per_rank.dtype, device=tokens.device))
 

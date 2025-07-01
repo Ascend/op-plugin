@@ -22,23 +22,50 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 constexpr int FOREACH_NORM_MAX_TENSOR_COUNT = 24;
+constexpr int L1_NORM = 1;
+constexpr int L2_NORM = 2;
+bool scalarProcess(const at::Scalar& scalar, double *p)
+{
+    if (scalar.isIntegral(false)) {
+        *p = scalar.to<int64_t>();
+    } else if (scalar.isFloatingPoint()) {
+        *p = scalar.to<double>();
+    } else {
+        TORCH_CHECK(false, "foreach_tensor_norm_npu expects scalar to be integer or float", OPS_ERROR(ErrCode::TYPE));
+    }
+    return true;
+}
 
 bool checkData(const at::TensorList self, const at::Scalar& scalar)
 {
     double p = 0.0;
-    if (scalar.isIntegral(false)) {
-        p = scalar.to<int64_t>();
-    } else if (scalar.isFloatingPoint()) {
-        p = scalar.to<double>();
-    } else {
-        TORCH_CHECK(false, "foreach_tensor_norm_npu expects scalar to be integer or float", OPS_ERROR(ErrCode::TYPE));
-    }
+    scalarProcess(scalar, &p);
+
     const bool has_int_or_complex = std::any_of(self.begin(), self.end(), [](const auto &t) {
         const auto scalar_type = t.scalar_type();
         return at::isIntegralType(scalar_type, true) || at::isComplexType(scalar_type);
     });
     return !at::native::can_use_fast_route(self) || has_int_or_complex ||
-           !(p == static_cast<double>(1) || p == static_cast<double>(2));
+           !(p == static_cast<double>(L1_NORM) || p == static_cast<double>(L2_NORM));
+}
+
+bool checkDataWithInfinit(const at::TensorList self, const at::Scalar& scalar)
+{
+    double p = 0.0;
+    scalarProcess(scalar, &p);
+
+    const bool has_int_or_complex = std::any_of(self.begin(), self.end(), [](const auto &t) {
+        const auto scalar_type = t.scalar_type();
+        return at::isIntegralType(scalar_type, true) || at::isComplexType(scalar_type);
+    });
+    if (c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend910_95) {
+        return !at::native::can_use_fast_route(self) || has_int_or_complex ||
+               !(p == static_cast<double>(L1_NORM) || p == static_cast<double>(L2_NORM) ||
+                    p == std::numeric_limits<double>::infinity());
+    } else {
+        return !at::native::can_use_fast_route(self) || has_int_or_complex ||
+               !(p == static_cast<double>(L1_NORM) || p == static_cast<double>(L2_NORM));
+    }
 }
 
 void _split_and_exec_npu_cmd_norm(at::TensorList tensors, const at::Scalar& scalar, at::TensorList result_list)
@@ -71,8 +98,9 @@ std::vector<at::Tensor> _foreach_norm(const at::TensorList self, const at::Scala
 {
     at::native::check_foreach_api_restrictions(self);
 
-    static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1;
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend910_95;
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_norm_slow(self, scalar);
     }
@@ -99,15 +127,16 @@ std::vector<at::Tensor> _foreach_norm(const at::TensorList self, const at::Scala
 {
     at::native::check_foreach_api_restrictions(self);
 
-    static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1;
+    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
+                                          c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend910_95;
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_norm_slow(self, scalar, opt_dtype);
     }
 
     DO_COMPATIBILITY(aclnnForeachNorm, at::native::foreach_tensor_norm_slow(self, scalar, opt_dtype));
 
-    if (checkData(self, scalar)) {
+    if (checkDataWithInfinit(self, scalar)) {
         return at::native::foreach_tensor_norm_slow(self, scalar, opt_dtype);
     }
     auto scalar_type = self[0].scalar_type();

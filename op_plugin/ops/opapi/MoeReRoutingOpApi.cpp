@@ -28,6 +28,7 @@ namespace op_api {
         int64_t idx_type)
     {
         TORCH_CHECK(tokens.dim() > 1, "tokens dim should larger than 1", OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(expert_token_num_per_rank.dim() > 1, "expert_token_num_per_rank dim should larger than 1", OPS_ERROR(ErrCode::PARAM));
 
         at::SmallVector <int64_t, op_infer::SIZE> permute_tokens_size;
         at::SmallVector <int64_t, op_infer::SIZE> permute_per_token_scales_size;
@@ -36,17 +37,25 @@ namespace op_api {
         for (int i = 0; i < tokens.dim(); i++) {
             permute_tokens_size.push_back(tokens.size(i));
         }
-
-        permute_per_token_scales_size.push_back(tokens.size(0));
+        const at::Tensor &per_token_scales = c10::value_or_else(per_token_scales_opt, [] { return at::Tensor(); });
+        if (per_token_scales.defined()) {
+            for (int i = 0; i < per_token_scales.dim(); i++) {
+                permute_per_token_scales_size.push_back(per_token_scales.size(i));
+            }
+        } else {
+            permute_per_token_scales_size.push_back(tokens.size(0));
+        }
         permute_token_idx_size.push_back(tokens.size(0));
         expert_token_num_size.push_back(expert_token_num_per_rank.size(1));
 
         at::Tensor permute_tokens = npu_preparation::apply_tensor_without_format(permute_tokens_size, tokens.options());
-        at::Tensor permute_per_token_scales = npu_preparation::apply_tensor_without_format(permute_per_token_scales_size, c10::dtype(c10::ScalarType::Float));
+        at::Tensor permute_per_token_scales =
+            per_token_scales.defined()
+                ? npu_preparation::apply_tensor_without_format(permute_per_token_scales_size, per_token_scales.options())
+                : npu_preparation::apply_tensor_without_format(permute_per_token_scales_size, c10::dtype(c10::ScalarType::Float));
         at::Tensor permute_token_idx = npu_preparation::apply_tensor_without_format(permute_token_idx_size, c10::dtype(c10::ScalarType::Int));
         at::Tensor expert_token_num = npu_preparation::apply_tensor_without_format(expert_token_num_size, expert_token_num_per_rank.options());
 
-        const at::Tensor &per_token_scales = c10::value_or_else(per_token_scales_opt, [] { return at::Tensor(); });
         EXEC_NPU_CMD(aclnnMoeReRouting, tokens, expert_token_num_per_rank, per_token_scales,
             expert_token_num_type, idx_type,
             permute_tokens, permute_per_token_scales, permute_token_idx, expert_token_num);
