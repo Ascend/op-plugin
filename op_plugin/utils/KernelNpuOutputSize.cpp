@@ -15,6 +15,7 @@
 
 #include <bitset>
 #include "torch_npu/csrc/core/npu/NPUException.h"
+#include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "op_plugin/utils/AdvancedIndex.h"
 #include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/KernelNpuOutputSize.h"
@@ -580,8 +581,9 @@ ctc_loss_npu_output_size(const at::Tensor &log_probs, int64_t max_length)
     }
     c10::SmallVector<int64_t, SIZE> neg_log_likelihood_size = {batch_size};
     int64_t alpha_tail_size = 2 * max_length + 1;
+    static bool isRegBaseSoc = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95;
     // Apply for a 32 byte aligned space to avoid address shifting in the OP.
-    int64_t alpha_tail_size_align = (alpha_tail_size + 7) / 8 * 8;
+    int64_t alpha_tail_size_align = isRegBaseSoc ? alpha_tail_size : (alpha_tail_size + 7) / 8 * 8;
     c10::SmallVector<int64_t, SIZE> log_alpha_size = {batch_size, time_size, alpha_tail_size_align};
 
     if (log_probs.dim() == dim_num_two) {
