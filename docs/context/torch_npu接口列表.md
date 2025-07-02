@@ -601,7 +601,7 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE（Mixture of Expert）的routing计算，根据<a href="torch_npu-npu_moe_gating_top_k_softmax.md">torch_npu.npu_moe_gating_top_k_softmax</a>的计算结果做routing处理，支持不量化和动态量化模式。</p>
 </td>
 </tr>
-<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-dequant_swiglu_quant.md">torch_npu.dequant_swiglu_quant</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_dequant_swiglu_quant.md">torch_npu.npu_dequant_swiglu_quant</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>对张量x做dequant反量化+swiglu+quant量化操作，同时支持分组。</p>
 </td>
