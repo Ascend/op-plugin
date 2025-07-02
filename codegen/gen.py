@@ -328,7 +328,7 @@ def gen_return(
 {"".join(format_for_args)}
     if ({("".join(format_check)).replace(" && ", " || !").replace(" || ", "", 1)}) {{
         TORCH_CHECK(false,
-            "Current operator {impl_name} do not support internal format.",
+            "Current operator {impl_name} do not support internal format. ",
             PTA_ERROR(ErrCode::NOT_SUPPORT));
     }}
     return {ns}::{impl_name}({args_exprs_str});
