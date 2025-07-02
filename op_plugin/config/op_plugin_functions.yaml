@@ -6460,6 +6460,13 @@ official:
   - func: logit_backward(Tensor grad_output, Tensor self, float? eps=None) -> Tensor
     op_api: [v2.1, newest]
 
+  - func: _thnn_fused_gru_cell(Tensor input_gates, Tensor hidden_gates, Tensor hx, Tensor? input_bias=None, Tensor? hidden_bias=None) -> (Tensor, Tensor)
+    op_api: [v2.5, newest]
+
+autograd:
+  - func: _thnn_fused_gru_cell(Tensor input_gates, Tensor hidden_gates, Tensor hx, Tensor? input_bias=None, Tensor? hidden_bias=None) -> (Tensor, Tensor)
+    op_api: [v2.5, newest]
+
 custom:
   - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
     op_api: all_version
