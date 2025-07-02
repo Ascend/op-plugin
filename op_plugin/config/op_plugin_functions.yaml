@@ -1350,6 +1350,7 @@ official:
 
   - func: batch_norm(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, bool cudnn_enabled) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: batch_norm_backward_elemt(Tensor grad_out, Tensor input, Tensor mean, Tensor invstd, Tensor? weight, Tensor mean_dy, Tensor mean_dy_xmu, Tensor count) -> Tensor
     acl_op: v2.0
@@ -3385,12 +3386,6 @@ official:
   - func: log_sigmoid_forward.output(Tensor self, *, Tensor(a!) output, Tensor(b!) buffer) -> (Tensor(a!), Tensor(b!))
     acl_op: all_version
     op_api: all_version
-
-  - func: log_softmax.Dimname(Tensor self, Dimname dim, *, ScalarType? dtype=None) -> Tensor
-    acl_op: all_version
-
-  - func: log_softmax.int(Tensor self, int dim, ScalarType? dtype=None) -> Tensor
-    acl_op: all_version
 
   - func: logaddexp(Tensor self, Tensor other) -> Tensor
     acl_op: all_version

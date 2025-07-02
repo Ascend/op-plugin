@@ -1963,12 +1963,6 @@
   "func: log_sigmoid_forward.output(Tensor self, *, Tensor(a!) output, Tensor(b!) buffer) -> (Tensor(a!), Tensor(b!))": {
     "version": ["all_version"]
   },
-  "func: log_softmax.Dimname(Tensor self, Dimname dim, *, ScalarType? dtype=None) -> Tensor": {
-    "version": ["all_version"]
-  },
-  "func: log_softmax.int(Tensor self, int dim, ScalarType? dtype=None) -> Tensor": {
-    "version": ["all_version"]
-  },
   "func: logaddexp(Tensor self, Tensor other) -> Tensor": {
     "version": ["all_version"]
   },

@@ -21,27 +21,6 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor log_softmax(
-    const at::Tensor& self,
-    int64_t dim,
-    c10::optional<c10::ScalarType> dtype)
-{
-    c10::ScalarType dst_type = dtype.has_value() ? dtype.value() : self.scalar_type();
-    if (dst_type == self.scalar_type()) {
-        return at::_log_softmax(self, dim, false);
-    }
-
-    return at::_log_softmax(self.toType(dst_type), dim, false);
-}
-
-at::Tensor log_softmax(
-    const at::Tensor& self,
-    at::Dimname dim,
-    c10::optional<c10::ScalarType> dtype)
-{
-    return acl_op::log_softmax(self, dimname_to_position(self, dim), dtype);
-}
-
 at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float)
 {
     at::Tensor result = npu_preparation::apply_tensor(self);
