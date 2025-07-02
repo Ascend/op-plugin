@@ -1043,6 +1043,8 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      out:
+        size: addr_npu_output_size(self, vec1, vec2)
       exec: aclnnAddr
 
   - func: addr_(Tensor(a!) self, Tensor vec1, Tensor vec2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)
