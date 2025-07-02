@@ -274,6 +274,7 @@ def gen_return(
         format_display = []
         place_holder = []
         format_for_args = []
+        is_aclnn_only = "c10_npu::IsAclnnOnly()"
         for a in sig.arguments():
             argument = a.argument
             if isinstance(a.argument, SelfArgument):
@@ -295,6 +296,11 @@ def gen_return(
     if (is_jit_disable{"".join(format_check)}) {{
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
+        if ({is_aclnn_only}) {{
+            TORCH_CHECK(false,
+                "Current device only support aclnn operator, and current operator {impl_name} do not support internal format.",
+                PTA_ERROR(ErrCode::NOT_SUPPORT));
+        }}
         return acl_op::{impl_name}({args_exprs_str});
     }}
 }}
@@ -331,6 +337,12 @@ def gen_return(
         elif "acl_op" in f.impl_ns:
             ns = f.impl_ns[0]
             ret.append(f"""{sig.defn(name=op_name)}{{
+    if ({is_aclnn_only}) {{
+        TORCH_CHECK(false,
+            "Current device only support aclnn operator, "
+            "but current operator {impl_name} do not have aclnn implementation",
+            PTA_ERROR(ErrCode::NOT_SUPPORT));
+    }}
     return {ns}::{impl_name}({args_exprs_str});
 }}
 """)

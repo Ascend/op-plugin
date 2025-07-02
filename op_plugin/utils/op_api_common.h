@@ -39,6 +39,7 @@
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"
 #include "torch_npu/csrc/flopcount/FlopCount.h"
 #include "torch_npu/csrc/flopcount/FlopCounter.h"
+#include "torch_npu/csrc/custom_dtype/Init.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
 
 typedef struct aclOpExecutor aclOpExecutor;
@@ -1045,7 +1046,12 @@ uint64_t calc_hash_id();
     do {                                                                                                               \
         static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(#aclnn_api "GetWorkspaceSize");                  \
         static const auto opApiFuncAddr = GetOpApiFuncAddr(#aclnn_api);                                                \
+        static const auto isAclnnOnly = c10_npu::IsAclnnOnly();                                                        \
         if (getWorkspaceSizeFuncAddr == nullptr || opApiFuncAddr == nullptr) {                                         \
+            if (isAclnnOnly) {                                                                                         \
+                TORCH_CHECK(false, "Current device only support aclnn operators, but ",                                \
+                    #aclnn_api, " or ", #aclnn_api, "GetWorkspaceSize not found", OPS_ERROR(ErrCode::NOT_SUPPORT));    \
+            }                                                                                                          \
             ASCEND_LOGW("%s or %sGetWorkspaceSize not in %s, or %s not found. Will call %s", #aclnn_api, #aclnn_api,   \
                         GetOpApiLibName(), GetOpApiLibName(), #originCallExpression);                                  \
             return originCallExpression;                                                                               \
