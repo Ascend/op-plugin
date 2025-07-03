@@ -1,14 +1,14 @@
-# torch\_npu.npu\_moe\_distribute\_dispatch
+# torch\_npu.npu\_moe\_distribute\_dispatch<a name="ZH-CN_TOPIC_0000002343094193"></a>
 
-## 功能说明
+## 功能说明<a name="zh-cn_topic_0000002203575833_section14441124184110"></a>
 
-- 算子功能：需与[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)配套使用，完成MoE的并行部署下的token dispatch与combine。对Token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）。
-- 计算公式：
-     - 如果quant\_mode !=2（非动态量化）
+-   算子功能：需与[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)配套使用，完成MoE的并行部署下的token dispatch与combine。对Token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）。
+-   计算公式：
+    -   如果quant\_mode !=2（非动态量化）
 
         ![](./figures/zh-cn_formulaimage_0000002244554688.png)
 
-     - 如果quant\_mode=2（动态量化）
+    -   如果quant\_mode=2（动态量化）
 
         ![](./figures/zh-cn_formulaimage_0000002244394892.png)
 
@@ -28,7 +28,7 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持\[2, 384\]。
 
 -   ep\_rank\_id：int类型，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的ep\_rank\_id不重复。
--   moe\_expert\_num：int类型，MoE专家数量，取值范围\[1, 512\]，并且满足moe\_expert\_num%\(ep\_world\_size-shared\_expert\_rank\_num\)=0。
+-   moe\_expert\_num：int类型，MoE专家数量，取值范围\[1, 512\]，并且满足以下两个条件：moeExpertNum % \(epWorldSize - sharedExpertRankNum\) = 0；moeExpertNum / \(epWorldSize - sharedExpertRankNum\) \* epWorldSize <= 1280。
 -   scales：Tensor类型，可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为2D的Tensor，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，数据类型支持float，数据格式为ND，不支持非连续的Tensor。
 -   x\_active\_mask：Tensor类型，
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：预留参数，暂未使用，使用默认值即可。
@@ -68,12 +68,12 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
 
 -   expert\_token\_nums\_type：int类型，可选参数，表示输出expert\_token\_nums的值类型，取值范围\[0, 1\]，0表示每个专家收到token数量的前缀和，1表示每个专家收到的token数量（默认）。
 
-## 输出说明
+## 输出说明<a name="zh-cn_topic_0000002203575833_section22231435517"></a>
 
 -   expand\_x：Tensor类型，表示本卡收到的token数据，要求为2D的Tensor，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持bfloat16、float16、int8。量化时类型为int8，非量化时与x数据类型保持一致。数据格式为ND，支持非连续的Tensor。
 -   dynamic\_scales：Tensor类型，表示计算得到的动态量化参数。当quant\_mode非0时才有该输出，要求为1D的Tensor，shape为\(A,\)，数据类型支持float，数据格式支持ND，支持非连续的Tensor。
 -   expand\_idx ：Tensor类型，表示给同一专家发送的token个数，要求是一个1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)的expand\_idx输入。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：shape为\(BS \* K, \)。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：shape为 \(BS \* K, \)。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：shape为\(A \* 128, \)。
 
 -   expert\_token\_nums：Tensor类型，本卡每个专家实际收到的token数量，要求为1D的Tensor，shape为\(local\_expert\_num,\)，数据类型int64，数据格式支持ND，支持非连续的Tensor。
@@ -89,7 +89,7 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求是一个1D的Tensor，shape为\(A, \)，数据类型支持float，数据格式要求为ND，支持非连续的Tensor。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该输出，返回None。
 
-## 约束说明
+## 约束说明<a name="zh-cn_topic_0000002203575833_section12345537164214"></a>
 
 -   该接口支持推理场景下使用。
 -   该接口支持静态图模式（PyTorch 2.1版本），并且Dispatch和Combine必须配套使用。
@@ -125,9 +125,9 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
     >CANN环境变量HCCL\_BUFFSIZE：表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。
 
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(unit16\)+2MB\)。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求\>= 2且满足\>= 2 \* \(local\_expert\_num \* max\_bs \* e\_world\_size \* Align512\(Align32\(2 \* h\) + 64\) + \(k + shared\_expert\_num\) \* BS \* Align512\(2 \* h\)\)，local\_expert\_num需使用MoE专家卡的本卡专家数。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求 \>= 2且满足\>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)，local\_expert\_num需使用MoE专家卡的本卡专家数。
 
--   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：配置环境变量HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0可以减少跨机通信数据量，提升算子性能。此时要求HCCL\_BUFFSIZE\>=moe\_expert\_num\*BS\*\(H\*sizeof\(dtypeX\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB。公式中的/表示整除。
+-   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：配置环境变量HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0可以减少跨机通信数据量，提升算子性能。此时要求HCCL\_BUFFSIZE\>=moe\_expert\_num\*BS\*\(H\*sizeof\(dtypeX\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB。公式中的 / 表示整除。
 
 -   通信域使用约束：
 
@@ -137,15 +137,15 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
 
 -   版本配套约束：
 
-    静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，PTA框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《Ascend Extension for PyTorch 版本说明》《Ascend Extension for PyTorch 版本说明》中“相关产品版本配套说明”。
+     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，PTA框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《Ascend Extension for PyTorch 版本说明》中“相关产品版本配套说明”。
 
-## 支持的型号
+## 支持的型号<a name="zh-cn_topic_0000002203575833_section145818934611"></a>
 
 -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
 
 -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
 
-## 调用示例
+## 调用示例<a name="zh-cn_topic_0000002203575833_section14459801435"></a>
 
 -   单算子模式调用
 
