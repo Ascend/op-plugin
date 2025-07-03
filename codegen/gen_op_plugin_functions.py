@@ -23,12 +23,12 @@ def main():
     with open(source_yaml_path, 'r') as f:
         old_yaml = yaml.safe_load(f)
 
-    new_yaml = {'official':[], 'custom':[], 'symint':[], 'tocpu':[], 'unsupported':[], 'quant':[]}
+    new_yaml = {'official': [], 'custom': [], 'symint': [], 'tocpu': [], 'unsupported': [], 'quant': [], 'autograd': []}
 
-    string = ['official', 'custom', 'symint', 'quant']
+    string = ['official', 'custom', 'symint', 'quant', 'autograd']
     all_version = old_yaml['all_version']
 
-    # parse 'official', 'custom', 'symint', 'quant'
+    # parse 'official', 'custom', 'symint', 'quant', 'autograd'
     for key in string:
         for item in old_yaml[key]:
             item.pop('gen_opapi', None)
