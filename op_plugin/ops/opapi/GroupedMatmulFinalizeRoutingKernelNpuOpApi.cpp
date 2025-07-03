@@ -35,8 +35,6 @@ at::Tensor npu_grouped_matmul_finalize_routing(
     const c10::optional<at::Tensor>& scale,
     const c10::optional<at::Tensor>& bias,
     const c10::optional<at::Tensor>& offset,
-    const c10::optional<at::Tensor>& antiquant_scale,
-    const c10::optional<at::Tensor>& antiquant_offset,
     const c10::optional<at::Tensor>& pertoken_scale,
     const c10::optional<at::Tensor>& shared_input,
     const c10::optional<at::Tensor>& logit,
@@ -92,11 +90,11 @@ at::Tensor npu_grouped_matmul_finalize_routing(
     const at::Tensor &logit_real = logit.value_or(at::Tensor());
     const at::Tensor &row_index_real = row_index.value_or(at::Tensor());
     const at::Tensor &offset_real = offset.value_or(at::Tensor());
-    const at::Tensor &antiquant_scale_real = antiquant_scale.value_or(at::Tensor());
-    const at::Tensor &antiquant_offset_real = antiquant_offset.value_or(at::Tensor());
     float shared_input_weight_real = static_cast<float>(shared_input_weight.value_or(1.0));
     int64_t shared_input_offset_real = shared_input_offset.value_or(0);
     int64_t group_list_type_real = group_list_type.value_or(1);
+    auto antiquant_scale_real = at::Tensor();
+    auto antiquant_offset_real = at::Tensor();
 
     auto scene_has_share = false;
     auto scene_no_share = false;
