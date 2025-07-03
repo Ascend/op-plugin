@@ -1083,14 +1083,23 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
 
 
 @impl(m, "npu_grouped_matmul_finalize_routing")
-def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bias=None, pertoken_scale=None,
-                                            shared_input=None, logit=None, row_index=None, dtype=None,
-                                            shared_input_weight=1.0, shared_input_offset=0, output_bs=0,
-                                            group_list_type=1):
+def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bias=None, offset=None,
+                                            pertoken_scale=None, shared_input=None, logit=None,
+                                            row_index=None, dtype=None, shared_input_weight=1.0,
+                                            shared_input_offset=0, output_bs=0, group_list_type=1):
+    torch._check(
+        torch.is_tensor(x),
+        lambda: "x must be tensor." + ops_error(ErrCode.VALUE)
+    )
+    torch._check(
+        torch.is_tensor(w),
+        lambda: "w must be tensor." + ops_error(ErrCode.VALUE)
+    )
     dimm = x.size(0)
     x_dim = x.dim()
     w_dim = w.dim()
     dimn = w.size(w_dim - 1)
+    INT4_IN_INT32 = 8
 
     torch._check(
         x_dim == 2 and w_dim == 3,
@@ -1126,7 +1135,8 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
     if output_bs == 0:
         y_dimm = dimm
 
-    dim_list = [y_dimm, dimn]
+    dim_n = dimn * INT4_IN_INT32 if w.dtype == torch.int32 else dimn
+    dim_list = [y_dimm, dim_n]
 
     if dtype == torch.float32:
         return x.new_empty(tuple(dim_list), dtype=torch.float32)

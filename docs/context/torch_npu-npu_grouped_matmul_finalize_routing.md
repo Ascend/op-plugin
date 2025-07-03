@@ -21,8 +21,6 @@ torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor w, Tensor group_l
 -   scale：Device侧Tensor输入，矩阵计算反量化参数，对应weight矩阵。A8W8场景下支持per-channel量化方式，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(e, n\)，这里的n=n1\*n0，A8W4量化场景下，数据类型支持int64，维度为\(e, 1, n\)。
 -   bias：一个2D的Device侧Tensor输入，矩阵计算的bias参数，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度为\(e, n\)，只支持A8W4场景。
 -   offset: 一个3D的Device侧Tensor输入，矩阵计算量化参数的偏移量，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，只支持A8W4量化场景。
--   antiquant\_scale: Device侧Tensor输入，矩阵计算伪量化参数中的缩放因子，数据类型支持float32，数据格式支持ND。此参数当前版本暂不支持。
--   antiquant\_offset: Device侧的Tensor，矩阵计算伪量化参数中的偏移量，数据类型支持float32，数据格式支持ND。此参数当前版本暂不支持。
 -   pertoken\_scale：一个1D的Device侧Tensor输入，矩阵计算的反量化参数，对应x矩阵，per-token量化方式，不支持非连续的Tensor。维度为\(m,\)，m与x的m一致。数据类型支持float32，数据格式支持ND。
 -   shared\_input：一个2D的Device侧Tensor输入，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持bfloat16，数据格式支持ND，维度\(batch/dp, n\)，n与scale的n一致，batch/dp取值范围\[1, 2\*1024\]，batch取值范围\[1, 16\*1024\]。
 -   logit：一个1D的Device侧Tensor输入，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(m,\)，m与x的m一致。
