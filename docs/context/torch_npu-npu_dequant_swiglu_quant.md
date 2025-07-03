@@ -1,4 +1,4 @@
-# torch\_npu.dequant\_swiglu\_quant
+# torch\_npu.npu_dequant\_swiglu\_quant
 
 ## 功能说明
 
@@ -106,7 +106,7 @@ torch_npu.npu_dequant_swiglu_quant(Tensor x, *, Tensor? weight_scale=None, Tenso
             y_npu, scale_npu = torch_npu.npu_dequant_swiglu_quant(
                 x,
                 weight_scale=weight_scale,
-                activation_scale=activatition_scale,
+                activation_scale=activation_scale,
                 bias=bias,
                 quant_scale=quant_scale,
                 quant_offset=quant_offset,
@@ -149,10 +149,10 @@ torch_npu.npu_dequant_swiglu_quant(Tensor x, *, Tensor? weight_scale=None, Tenso
             group_index = None
             graph_model = torch.compile(torch_npu.npu_dequant_swiglu_quant,
                           backend=npu_backend, dynamic=True, fullgraph=True)
-            y_npu, scale_npu = grapg_model(
+            y_npu, scale_npu = graph_model(
                 x,
                 weight_scale=weight_scale,
-                activation_scale=activatition_scale,
+                activation_scale=activation_scale,
                 bias=bias,
                 quant_scale=quant_scale,
                 quant_offset=quant_offset,
