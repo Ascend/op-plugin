@@ -114,7 +114,7 @@ class TestGroupedMatmul(TestCase):
 
         supported_output = self.supported_op_exec(x, weight, bias=bias, group_list=group_list, split_item=split_item)
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
-                                            split_item=split_item)
+                                            split_item=split_item, group_type=-1)
 
         self.assertRtolEqual(x[0], x_clone[0], 0.001)
         self.assertRtolEqual(x[1], x_clone[1], 0.001)
@@ -150,7 +150,7 @@ class TestGroupedMatmul(TestCase):
 
         supported_output = self.supported_op_exec(x, weight, bias=bias, group_list=group_list, split_item=split_item)
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
-                                            split_item=split_item)
+                                            split_item=split_item, group_type=-1)
 
         self.assertRtolEqual(x[0], x_clone[0], 0.001)
         self.assertRtolEqual(x[1], x_clone[1], 0.001)

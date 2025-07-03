@@ -235,7 +235,9 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
 // Tensor[]? activation_quant_offset, Tensor[]? activation_quant_offset, int? split_item=0,
 // int? group_type=-1, int? group_list_type=0, int? act_type=0, ScalarType? output_dtype=None) -> Tensor[]
 {
-    int64_t group_type_value = group_type.value_or(-1);
+    TORCH_CHECK(group_type.has_value(),
+                "Requires manual passing group_type, current is None.", OPS_ERROR(ErrCode::VALUE));
+    int64_t group_type_value = group_type.value();
     TORCH_CHECK(group_type_value == -1 || group_type_value == 0,
                 "group_type currently only support -1 and 0, current value is ",
                 group_type_value, OPS_ERROR(ErrCode::VALUE));
