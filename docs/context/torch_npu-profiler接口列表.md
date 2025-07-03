@@ -48,7 +48,7 @@
 </tr>
 <tr id="row49606141276"><td class="cellrowborder" valign="top" width="40.69%" headers="mcps1.2.3.1.1 "><p id="p179611614777"><a name="p179611614777"></a><a name="p179611614777"></a><a href="torch_npu-profiler-ExportType.md">torch_npu.profiler.ExportType</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="59.309999999999995%" headers="mcps1.2.3.1.2 "><p id="p119611814176"><a name="p119611814176"></a><a name="p119611814176"></a>设置导出的性能数据结果文件格式，作为 _ExperimentalConfig类的export_type参数。</p>
+<td class="cellrowborder" valign="top" width="59.309999999999995%" headers="mcps1.2.3.1.2 "><p id="p119611814176"><a name="p119611814176"></a><a name="p119611814176"></a>设置导出的性能数据结果文件格式，作为_ExperimentalConfig类的export_type参数。</p>
 </td>
 </tr>
 <tr id="row17322317713"><td class="cellrowborder" valign="top" width="40.69%" headers="mcps1.2.3.1.1 "><p id="p9662554587"><a name="p9662554587"></a><a name="p9662554587"></a><a href="torch_npu-profiler-ProfilerLevel.md">torch_npu.profiler.ProfilerLevel</a></p>
