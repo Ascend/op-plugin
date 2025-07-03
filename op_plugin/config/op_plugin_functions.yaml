@@ -1643,7 +1643,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: clamp_scalar_out_dtype(self, min, max)
+        dtype: is_gte_cann_version_820rc1()?clamp_scalar_out_dtype(self, min, max):c10::typeMetaToScalarType(self.dtype())
       exec: aclnnClamp
 
   - func: clamp.Tensor(Tensor self, Tensor? min=None, Tensor? max=None) -> Tensor
@@ -1652,7 +1652,7 @@ official:
     gen_opapi:
       out:
         size: clamp_npu_output_size(self, min, max)
-        dtype: clamp_out_dtype(self, min, max)
+        dtype: is_gte_cann_version_820rc1()?clamp_out_dtype(self, min, max):c10::typeMetaToScalarType(self.dtype())
       exec: aclnnClampTensor
 
   - func: clamp.Tensor_out(Tensor self, Tensor? min=None, Tensor? max=None, *, Tensor(a!) out) -> Tensor(a!)
@@ -1689,7 +1689,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: at::native::result_type(self, max)
+        dtype: is_gte_cann_version_820rc1()?at::native::result_type(self, max):c10::typeMetaToScalarType(self.dtype())
       exec: aclnnClampMax
 
   - func: clamp_max.Tensor(Tensor self, Tensor max) -> Tensor
@@ -1698,7 +1698,7 @@ official:
     gen_opapi:
       out:
         size: op_infer::broadcast_ops_npu_output_size(self, max)
-        dtype: at::native::result_type(self, max)
+        dtype: is_gte_cann_version_820rc1()?at::native::result_type(self, max):c10::typeMetaToScalarType(self.dtype())
       exec: aclnnClampMaxTensor
 
   - func: clamp_max.Tensor_out(Tensor self, Tensor max, *, Tensor(a!) out) -> Tensor(a!)
@@ -1735,7 +1735,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: at::native::result_type(self, min)
+        dtype: is_gte_cann_version_820rc1()?at::native::result_type(self, min):c10::typeMetaToScalarType(self.dtype())
       exec: aclnnClampMin
 
   - func: clamp_min.Tensor(Tensor self, Tensor min) -> Tensor
@@ -1744,7 +1744,7 @@ official:
     gen_opapi:
       out:
         size: op_infer::broadcast_ops_npu_output_size(self, min)
-        dtype: at::native::result_type(self, min)
+        dtype: is_gte_cann_version_820rc1()?at::native::result_type(self, min):c10::typeMetaToScalarType(self.dtype())
       exec: aclnnClampMinTensor
 
   - func: clamp_min.Tensor_out(Tensor self, Tensor min, *, Tensor(a!) out) -> Tensor(a!)
