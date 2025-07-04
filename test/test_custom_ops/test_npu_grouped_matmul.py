@@ -326,6 +326,7 @@ class TestGroupedMatmul(TestCase):
         antiquantOffset = [antiquantOffset1, antiquantOffset2, antiquantOffset3]
         group_list = None
         split_item = 0
+        group_type = -1
 
         x_clone = []
         weight_clone = []
@@ -348,7 +349,7 @@ class TestGroupedMatmul(TestCase):
                                                   split_item=split_item)
         custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone,
                                             antiquantScale=antiquantScale_clone, antiquantOffset=antiquantOffset_clone,
-                                            group_list=group_list, split_item=split_item)
+                                            group_list=group_list, split_item=split_item, group_type=group_type)
 
         self.assertRtolEqual(x[0], x_clone[0], 0.001)
         self.assertRtolEqual(x[1], x_clone[1], 0.001)
@@ -662,6 +663,38 @@ class TestGroupedMatmul(TestCase):
         
         self.assertEqual(out_dim1, golden_dim1)
         self.assertEqual(out[0][:golden_dim0, :], out_golden.npu())
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_group_list_none(self):
+        torch.manual_seed(0)
+        x1 = torch.normal(mean=0., std=0.1, size=(256, 256), dtype=torch.float16)
+        x2 = torch.normal(mean=0., std=0.1, size=(1024, 256), dtype=torch.float16)
+        x3 = torch.normal(mean=0., std=0.1, size=(512, 1024), dtype=torch.float16)
+        x = [x1, x2, x3]
+        weight1 = torch.normal(mean=0., std=0.1, size=(256, 256), dtype=torch.float16)
+        weight2 = torch.normal(mean=0., std=0.1, size=(256, 1024), dtype=torch.float16)
+        weight3 = torch.normal(mean=0., std=0.1, size=(1024, 128), dtype=torch.float16)
+        weight = [weight1, weight2, weight3]
+        bias1 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias2 = torch.normal(mean=0., std=0.1, size=(1024,), dtype=torch.float16)
+        bias3 = torch.normal(mean=0., std=0.1, size=(128,), dtype=torch.float16)
+        bias = [bias1, bias2, bias3]
+        group_list = None
+        split_item = 0
+
+        x_clone = []
+        weight_clone = []
+        bias_clone = []
+        for x_i in x:
+            x_clone.append(x_i.clone().npu())
+        for weight_i in weight:
+            weight_clone.append(weight_i.clone().npu())
+        for bias_i in bias:
+            bias_clone.append(bias_i.clone().npu())
+
+        with self.assertRaisesRegex(RuntimeError, "Requires manual passing group_type"):
+            _ = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
+                                    split_item=split_item)
 
 
 if __name__ == "__main__":
