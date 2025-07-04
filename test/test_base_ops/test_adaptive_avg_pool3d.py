@@ -4,7 +4,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestAdaptiveAvgPool3d(TestCase):
@@ -49,6 +49,36 @@ class TestAdaptiveAvgPool3d(TestCase):
                 cpu_output = self.cpu_op_exec(cpu_input, output_size)
                 npu_output = self.npu_op_exec(npu_input, output_size)
                 self.assertRtolEqual(cpu_output, npu_output)
+
+    @SupportedDevices(["Ascend910B"])
+    def test_adaptive_avg_pool3d_input_dim_err(self, device="npu"):
+        cpu_input = torch.ones(0)
+        npu_input = cpu_input.npu()
+        output_size = 3
+
+        with self.assertRaises(RuntimeError) as cpu_err:
+            self.cpu_op_exec(cpu_input, output_size)
+        self.assertTrue("adaptive_avg_pool3d(): Expected 4D or 5D tensor, but got [0]" in str(cpu_err.exception))
+
+        with self.assertRaises(RuntimeError) as npu_err:
+            self.npu_op_exec(npu_input, output_size)
+        self.assertTrue("adaptive_avg_pool3d(): Expected 4D or 5D tensor, but got [0]" in str(npu_err.exception))
+
+    @SupportedDevices(["Ascend910B"])
+    def test_adaptive_avg_pool3d_input_dim_zero_err(self, device="npu"):
+        cpu_input = torch.randn(2, 3, 0, 4, 4)
+        npu_input = cpu_input.npu()
+        output_size = 3
+
+        with self.assertRaises(RuntimeError) as cpu_err:
+            self.cpu_op_exec(cpu_input, output_size)
+        self.assertTrue("adaptive_avg_pool3d(): Expected input to have non-zero size for non-batch dimensions"
+                        in str(cpu_err.exception))
+
+        with self.assertRaises(RuntimeError) as npu_err:
+            self.npu_op_exec(npu_input, output_size)
+        self.assertTrue("adaptive_avg_pool3d(): Expected input to have non-zero size for non-batch dimensions"
+                        in str(npu_err.exception))
 
 
 if __name__ == "__main__":
