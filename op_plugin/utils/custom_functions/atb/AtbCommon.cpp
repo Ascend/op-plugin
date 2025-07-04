@@ -112,13 +112,16 @@ ParamSetter& ParamSetter::Input(const at::Tensor &tensor, const bool &format_tra
     if (format_trans) {
         new_tensor = atb::utils::FormatTrans(new_tensor);
     }
-    auto atb_tensor = AtTensor2AtbTensor(new_tensor);
-    variant_pack_.inTensors.push_back(atb_tensor);
+    atb::Tensor atb_tensor;
     if (new_tensor.device().type() == at::kCPU) {
-        tensor_maintainer_.cpu_tensors.emplace_back(std::move(new_tensor));
+        auto tensor_clone = new_tensor.clone();
+        atb_tensor = AtTensor2AtbTensor(tensor_clone);
+        tensor_maintainer_.cpu_tensors.emplace_back(std::move(tensor_clone));
     } else {
+        atb_tensor = AtTensor2AtbTensor(new_tensor);
         tensor_maintainer_.contiguous_tensors.emplace_back(std::move(new_tensor));
     }
+    variant_pack_.inTensors.push_back(atb_tensor);
     return *this;
 }
 
