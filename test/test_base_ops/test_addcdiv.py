@@ -346,6 +346,21 @@ class TestAddcdiv(TestCase):
         )
         self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_addcdiv_out_resize(self):
+        npu_input1, npu_input2, npu_input3 = self.generate_data(
+            1, 100, (3, 3), np.float32
+        )
+        scalar = self.generate_scalar(1, 10)
+        # the shape is different from input1
+        npu_input4 = self.generate_single_data(1, 100, (4, 4), np.float32)
+        cpu_output = self.cpu_op_exec_out(
+            npu_input1, npu_input2, npu_input3, scalar, npu_input4
+        )
+        npu_output = self.npu_op_exec_out(
+            npu_input1, npu_input2, npu_input3, scalar, npu_input4
+        )
+        self.assertRtolEqual(cpu_output, npu_output)
+
 
 if __name__ == "__main__":
     run_tests()
