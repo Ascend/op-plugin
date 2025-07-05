@@ -128,11 +128,12 @@ static op_api::PlanMode get_plan_mode(fft_mode mode, int idx, int signal_ndim, b
     }
 }
 
-static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntArrayRef out_sizes,
+static at::Tensor& _exec_fft(at::Tensor& out_, const at::Tensor& self_, at::IntArrayRef out_sizes,
     at::IntArrayRef dim, int64_t normalization, bool forward, int64_t mode_code = 0)
 {
     auto mode = static_cast<fft_mode>(mode_code);
     auto self = self_.view(self_.sizes());
+    auto out = out_.view(out_.sizes());
     const auto ndim = self.dim();
     const auto signal_ndim = dim.size();
     const auto batch_dims = ndim - signal_ndim;
@@ -354,15 +355,16 @@ static at::Tensor& _exec_fft(at::Tensor& out, const at::Tensor& self_, at::IntAr
     for (const auto i : c10::irange(signal_ndim, ndim)) {
         out_strides[dim_permute[i]] = now_strides_[i - signal_ndim];
     }
-    out.as_strided_(out_sizes, out_strides, out.storage_offset());
-    return out;
+    out_.as_strided_(out_sizes, out_strides, out.storage_offset());
+    return out_;
 }
 
-static at::Tensor& _exec_fft_asdsip(at::Tensor& out, const at::Tensor& self_, at::IntArrayRef out_sizes,
+static at::Tensor& _exec_fft_asdsip(at::Tensor& out_, const at::Tensor& self_, at::IntArrayRef out_sizes,
     at::IntArrayRef dim, int64_t normalization, bool forward, int64_t mode_code = 0)
 {
     auto mode = static_cast<fft_mode>(mode_code);
     auto self = self_.view(self_.sizes());
+    auto out = out_.view(out_.sizes());
     const auto ndim = self.dim();
     const auto signal_ndim = dim.size();
     const auto batch_dims = ndim - signal_ndim;
@@ -399,7 +401,7 @@ static at::Tensor& _exec_fft_asdsip(at::Tensor& out, const at::Tensor& self_, at
         asdfft_input = self.permute(dim_permute).contiguous();
     }
 
-    auto out_ = out.permute(dim_permute);
+    auto out_ori = out.permute(dim_permute);
 
     // squeeze batch_dims
     at::DimVector asdsip_sizes(signal_ndim + 1);
@@ -407,10 +409,10 @@ static at::Tensor& _exec_fft_asdsip(at::Tensor& out, const at::Tensor& self_, at
     std::copy(asdfft_input.sizes().begin() + batch_dims, asdfft_input.sizes().end(), asdsip_sizes.begin() + 1);
     asdfft_input = asdfft_input.reshape(asdsip_sizes);
 
-    at::DimVector out_sizes_(out_.sizes()); // record shape
-    std::copy(out_.sizes().begin() + batch_dims, out_.sizes().end(), asdsip_sizes.begin() + 1);
-    out_ = out.reshape(asdsip_sizes);
-    out.resize_(out_.sizes());
+    at::DimVector out_sizes_(out_ori.sizes()); // record shape
+    std::copy(out_ori.sizes().begin() + batch_dims, out_ori.sizes().end(), asdsip_sizes.begin() + 1);
+    out_ori = out_ori.reshape(asdsip_sizes);
+    out.resize_(out_ori.sizes());
 
     // call asdsip
     FFTParam param;
@@ -467,8 +469,8 @@ static at::Tensor& _exec_fft_asdsip(at::Tensor& out, const at::Tensor& self_, at
     for (const auto i : c10::irange(0, ndim)) {
         out_strides[dim_permute[i]] = now_strides_[i];
     }
-    out.as_strided_(out_sizes, out_strides, out.storage_offset());
-    return out;
+    out_.as_strided_(out_sizes, out_strides, out.storage_offset());
+    return out_;
 }
 
 at::Tensor _fft_c2c(const at::Tensor& self, at::IntArrayRef dim, int64_t normalization, bool forward)
