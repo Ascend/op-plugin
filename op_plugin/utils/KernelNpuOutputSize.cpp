@@ -27,6 +27,9 @@ using tuple_vectors =
 using small_vector = c10::SmallVector<int64_t, SIZE>;
 using int_array_ref_list = std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef>;
 
+const int DIM_4D = 4;
+const int DIM_5D = 5;
+
 // Integer division rounding to -Infinity
 template <typename T>
 static inline T div_rtn(T x, T y)
@@ -154,6 +157,24 @@ c10::SmallVector<int64_t, SIZE> mse_loss_npu_output_size(const at::Tensor &self,
 c10::SmallVector<int64_t, SIZE> adaptive_avg_pool3d_npu_output_size(const at::Tensor &self,
                                                                     c10::IntArrayRef output_size)
 {
+    for (const auto i : c10::irange(1, self.ndimension())) {
+        TORCH_CHECK(
+            self.size(i) > 0,
+            "adaptive_avg_pool3d(): Expected input to have non-zero size for non-batch dimensions, "
+            "but input has sizes ",
+            self.sizes(),
+            " with dimension ",
+            i,
+            " being "
+            "empty",
+            OPS_ERROR(ErrCode::PARAM));
+    }
+
+    TORCH_CHECK(
+        (self.ndimension() == DIM_4D || self.ndimension() == DIM_5D),
+        "adaptive_avg_pool3d(): Expected 4D or 5D tensor, but got ",
+        self.sizes(), OPS_ERROR(ErrCode::PARAM));
+
     TORCH_CHECK(output_size.size() > 2, "output_size length should greater than 2, "
         "but got the output_size length is ", output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
