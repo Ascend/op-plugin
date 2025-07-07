@@ -1842,7 +1842,7 @@ class TestGroupedMatmul(TestCase):
             group_list = None
             split_item = 0
 
-            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item)
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=-1)
             self.assertTrue(x[0].shape[0] == res[0].shape[0])
             self.assertTrue(x[1].shape[0] == res[1].shape[0])
             self.assertTrue(x[2].shape[0] == res[2].shape[0])
@@ -1866,7 +1866,7 @@ class TestGroupedMatmul(TestCase):
             group_list = [256, 1280, 1792]
             split_item = 1
 
-            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item)
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=-1)
             self.assertTrue(group_list[0] == res[0].shape[0])
             self.assertTrue(group_list[1] - group_list[0] == res[1].shape[0])
             self.assertTrue(group_list[2] - group_list[1] == res[2].shape[0])
@@ -1892,7 +1892,7 @@ class TestGroupedMatmul(TestCase):
             group_list = None
             split_item = 2
 
-            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item)
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=0)
             dim0 = 0
             for xi in x:
                 dim0 += xi.shape[0]
@@ -1915,7 +1915,7 @@ class TestGroupedMatmul(TestCase):
             group_list = [256, 1280, 1792]
             split_item = 3
 
-            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item)
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=0)
             self.assertTrue(x[0].shape[0] == res[0].shape[0])
             self.assertTrue(w[0].shape[1] == res[0].shape[1])
 
@@ -1955,7 +1955,7 @@ class TestGroupedMatmul(TestCase):
             group_list = None
             split_item = 0
 
-            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item)
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=-1)
             self.assertTrue(x[0].shape[0] == res[0].shape[0])
             self.assertTrue(x[1].shape[0] == res[1].shape[0])
             self.assertTrue(x[2].shape[0] == res[2].shape[0])
@@ -1979,7 +1979,7 @@ class TestGroupedMatmul(TestCase):
             group_list = [256, 1280, 1792]
             split_item = 1
 
-            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item)
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=0)
             self.assertTrue(group_list[0] == res[0].shape[0])
             self.assertTrue(group_list[1] - group_list[0] == res[1].shape[0])
             self.assertTrue(group_list[2] - group_list[1] == res[2].shape[0])
@@ -2007,7 +2007,7 @@ class TestGroupedMatmul(TestCase):
             group_list = None
             split_item = 2
 
-            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item)
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=0)
             dim0 = 0
             for xi in x:
                 dim0 += xi.shape[0]
@@ -2032,7 +2032,7 @@ class TestGroupedMatmul(TestCase):
             group_list = [256, 1280, 1792]
             split_item = 3
 
-            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item)
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=0)
             self.assertTrue(x[0].shape[0] == res[0].shape[0])
             self.assertTrue((w[0].shape[1] * 8) == res[0].shape[1])
 
