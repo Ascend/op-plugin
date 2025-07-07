@@ -52,13 +52,14 @@ bool checkData(const at::TensorList self, const at::Scalar& scalar)
 bool checkDataWithInfinit(const at::TensorList self, const at::Scalar& scalar)
 {
     double p = 0.0;
+    static bool isRegBaseSoc = false;
     scalarProcess(scalar, &p);
 
     const bool has_int_or_complex = std::any_of(self.begin(), self.end(), [](const auto &t) {
         const auto scalar_type = t.scalar_type();
         return at::isIntegralType(scalar_type, true) || at::isComplexType(scalar_type);
     });
-    if (c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend910_95) {
+    if (isRegBaseSoc) {
         return !at::native::can_use_fast_route(self) || has_int_or_complex ||
                !(p == static_cast<double>(L1_NORM) || p == static_cast<double>(L2_NORM) ||
                     p == std::numeric_limits<double>::infinity());
@@ -99,8 +100,7 @@ std::vector<at::Tensor> _foreach_norm(const at::TensorList self, const at::Scala
     at::native::check_foreach_api_restrictions(self);
 
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
-                                          c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend910_95;
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1);
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_norm_slow(self, scalar);
     }
@@ -128,8 +128,7 @@ std::vector<at::Tensor> _foreach_norm(const at::TensorList self, const at::Scala
     at::native::check_foreach_api_restrictions(self);
 
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
-                                          c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend910_95;
+                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1);
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_norm_slow(self, scalar, opt_dtype);
     }
