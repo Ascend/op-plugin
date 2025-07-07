@@ -45,8 +45,8 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 - **deq_scale2** (`Tensor`)：数据类型支持`uint64`、`float32`。数据格式支持$ND$，表示BMM2后面的反量化因子，支持per-tensor。如不使用该功能时可传入`nullptr`。<term>Atlas 推理系列加速卡产品</term>仅支持`nullptr`。
 - **quant_scale2** (`Tensor`)：数据格式支持$ND$，表示输出的量化因子，支持per-tensor、per-channel。如不使用该功能时可传入`nullptr`。
     - <term>Atlas 推理系列加速卡产品</term>：仅支持传入`nullptr`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16` ，否则仅支持`float32` 。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$（建议输出layout为$BSH$时，`quant_scale2` `shape`传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16` ，否则仅支持`float32` 。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$（建议输出layout为$BSH$时，`quant_scale2` `shape`传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16` ，否则仅支持`float32` 。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$（建议输出layout为$BSH$时，`quant_scale2` `shape`传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$）。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16` ，否则仅支持`float32` 。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$（建议输出layout为$BSH$时，`quant_scale2` `shape`传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$）。
 
 - **quant_offset2** (`Tensor`)：数据格式支持$ND$，表示输出的量化偏移，支持per-tensor、per-channel。若传入 `quant_offset2`，需保证其类型和`shape`信息与 `quant_scale2`一致。如不使用该功能时可传入`nullptr`。
     - <term>Atlas 推理系列加速卡产品</term>：仅支持传入`nullptr`。

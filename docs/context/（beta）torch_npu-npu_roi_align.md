@@ -12,7 +12,7 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
 
 ## 参数说明
 
-- features (Tensor) - 5HD张量。
+- features (Tensor) - 5D张量。
 - rois (Tensor) - ROI位置，shape为(N, 5)的2D张量。“N”表示ROI的数量，“5”表示ROI所在图像的index，分别为“x0”、“y0”、“x1”和“y1”。
 - spatial_scale (Float32) - 指定“features”与原始图像的缩放比率。
 - pooled_height (Int32) - 指定H维度。

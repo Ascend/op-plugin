@@ -2,7 +2,7 @@
 
 ## 功能说明
 
--   算子功能：MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家序重新排列。
+-   算子功能：MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列。
 -   计算公式：
 
     ![](./figures/zh-cn_formulaimage_0000002277237821.png)

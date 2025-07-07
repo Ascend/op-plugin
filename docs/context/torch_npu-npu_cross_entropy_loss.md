@@ -31,7 +31,7 @@ torch_npu.npu_cross_entropy_loss(Tensor input, Tensor target, Tensor? weight=Non
 ## 约束说明
 
 - 输入shape中N取值范围(0, 200000]。
-- 当input.requires_grad=True时，sum/none模式下不支持修改label_smoothing的默认值；mean模式下不支持修改所有含默认值的入参的值，包括weight，reduction，ignor_index，label_smoothing，lse_square_scale_for_zloss和return_zloss。
+- 当input.requires_grad=True时，sum/none模式下不支持修改label_smoothing的默认值；mean模式下不支持修改所有含默认值的入参的值，包括weight，reduction，ignore_index，label_smoothing，lse_square_scale_for_zloss和return_zloss。
 - 属性lse_square_scale_for_zloss与return_zloss暂未使能。
 - 输出zloss与lse_for_zloss暂未使能。
 - 输出中仅loss和zloss支持梯度计算。

@@ -17,7 +17,7 @@ torch_npu.scatter_update(Tensor data, Tensor indices, Tensor updates, int axis) 
     - <term>Atlas A3 训练系列产品</term>：数据类型支持int8、float16、float32、bfloat16、int32。
     - <term>Atlas 训练系列产品</term>：数据类型支持int8、float16、float32、int32。
 
-- indices：Tensor类型，数据类型支持int32、int64；目前仅支持一维跟二维；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
+- indices：Tensor类型，数据类型支持int32、int64；目前仅支持一维和二维；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
 - updates：Tensor类型，updates的维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空Tensor。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int8、float16、float32、bfloat16、int32。
     - <term>Atlas A3 训练系列产品</term>：数据类型支持int8、float16、float32、bfloat16、int32。

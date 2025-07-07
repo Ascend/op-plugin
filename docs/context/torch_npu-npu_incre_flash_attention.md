@@ -46,7 +46,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 - **dequant_scale1** (`Tensor`)：数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
 - **quant_scale1** (`Tensor`)：数据类型支持`float32`，数据格式支持$ND$，表示BMM2前面量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
 - **dequant_scale2** (`Tensor`)：数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **quant_scale2** (`Tensor`)：数据格式支持$ND$，表示输出量化的量化因子，支持per-tensor（scalar）和per-channel（`list`） 如不使用该功能时可不传或传入`None`。
+- **quant_scale2** (`Tensor`)：数据格式支持$ND$，表示输出量化的量化因子，支持per-tensor（scalar）和per-channel（`list`）。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
 

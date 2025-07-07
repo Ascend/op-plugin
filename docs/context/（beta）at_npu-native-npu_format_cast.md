@@ -18,7 +18,7 @@ NPU tensor格式转换，返回值类型Tensor，表示转换后的tensor。
 
 self：Tensor类型，待转换格式的tensor。
 
-acl_format：int64_型，待转换的格式。
+acl_format：int64_t型，待转换的格式。
 
 ## 支持的型号
 

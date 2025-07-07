@@ -28,6 +28,6 @@ jit_compile：jit_compile=True时是非二进制模式，jit_compile=False时是
 ## 调用示例
 
 ```python
->>>torch.npu.set_compile_mode(jit_compile=False)
+>>>torch_npu.npu.set_compile_mode(jit_compile=False)
 ```
 

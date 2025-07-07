@@ -27,7 +27,7 @@ torch_npu.npu_moe_init_routing(Tensor x, Tensor row_idx, Tensor expert_idx, int 
 
 ## 输出说明
 
-- expanded_x：tensor类型，根据expert_idx进行扩展过的特征，要求是一个2D的tensor，shape (min(NUM_ROWS, activeNum) \* k, H)。数据类型同x，数据格式要求为ND。
+- expanded_x：tensor类型，根据expert_idx进行扩展过的特征，要求是一个2D的tensor，shape (min(NUM_ROWS, active_num) \* k, H)。数据类型同x，数据格式要求为ND。
 - expanded_row_idx：tensor类型，expanded_x和x的映射关系，要求是一个1D的tensor，shape为(NUM_ROWS\*K, )，数据类型支持int32，数据格式要求为ND。
 - expanded_expert_idx：tensor类型，输出expert_idx排序后的结果。
 

@@ -149,7 +149,7 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
             [  -4, -127,   13,  -40,  -21,  -11]]], device='npu:0',
         dtype=torch.int8)
     [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now,
-    dtype cast repalce with float. (function operator())
+    dtype cast replace with float. (function operator())
     tensor([[0.0080, 0.0422, 0.0219, 0.0132],
             [0.0176, 0.0069, 0.0093, 0.0368]], device='npu:0')
     ```

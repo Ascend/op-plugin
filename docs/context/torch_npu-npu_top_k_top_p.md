@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-对原始输入`logits`进行`top-k`和`top-p`采样过滤
+对原始输入`logits`进行`top-k`和`top-p`采样过滤。
 
 - 计算公式：
   - 对输入logits按最后一轴进行升序排序，得到对应的排序结果sortedValue和sortedIndices。
@@ -55,18 +55,18 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 
 ## 参数说明
 
-- **logits** (`Tensor`)：必选参数，张量，数据类型支持`flot32`、`float16`和`bfloat16`，数据格式支持ND，支持非连续的Tensor，维数支持2维。
-- **p** (`Tensor`)：必选参数，表示`top-k`张量，值域为`[0, 1]`，数据类型支持`flot32`、`float16`和`bfloat16`，数据类型需要与logits一致，shape支持1维且需要与logits的第一维相同，数据格式支持ND，支持非连续的Tensor。
+- **logits** (`Tensor`)：必选参数，张量，数据类型支持`float32`、`float16`和`bfloat16`，数据格式支持ND，支持非连续的Tensor，维数支持2维。
+- **p** (`Tensor`)：必选参数，表示`top-k`张量，值域为`[0, 1]`，数据类型支持`float32`、`float16`和`bfloat16`，数据类型需要与logits一致，shape支持1维且需要与logits的第一维相同，数据格式支持ND，支持非连续的Tensor。
 - **k** (`Tensor`)：必选参数，表示`top-k`的阈值张量，值域为`[1, 1024]`，且最大值需要小于等于logits.size(1)，数据类型支持`int32`，shape支持1维且需要与logits的第一维相同，数据格式支持ND，支持非连续的Tensor。
 
 ## 返回值说明
 `Tensor`
 
-表示过滤后的数据。数据类型支持`flot32`、`float16`和`bfloat16`，数据类型与logits一致，shape支持2维且需要与logits一致，支持非连续Tensor，数据格式支持ND
+表示过滤后的数据。数据类型支持`float32`、`float16`和`bfloat16`，数据类型与`logits`一致，shape支持2维且需要与`logits`一致，支持非连续Tensor，数据格式支持ND。
 
 ## 约束说明
 
-- 在输入`logits`第二维大于1024场景下平均性能优于小算子实现，建议在`logits`第二维大于1024场景下使用该接口
+在输入`logits`第二维大于1024场景下平均性能优于小算子实现，建议在`logits`第二维大于1024场景下使用该接口。
 
 
 ## 调用示例
