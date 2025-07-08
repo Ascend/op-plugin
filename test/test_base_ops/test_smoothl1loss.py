@@ -3,7 +3,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestSmoothL1loss(TestCase):
@@ -22,7 +22,7 @@ class TestSmoothL1loss(TestCase):
                       [64, 10, 10], [64, 100, 100], [64, 200, 200],
                       [32, 3, 10, 10], [32, 3, 100, 100], [32, 3, 200, 200]]
         reduction_list = ['none', 'mean', 'sum']
-        
+
         shape_format = [
             [[np.float32, i, j], [np.float32, 0, j], k] for i in format_list
             for j in shape_list for k in reduction_list
@@ -41,7 +41,7 @@ class TestSmoothL1loss(TestCase):
                       [64, 10, 10], [64, 100, 100], [64, 200, 200],
                       [32, 3, 10, 10], [32, 3, 100, 100], [32, 3, 200, 200]]
         reduction_list = ['none', 'mean']
-        
+
         shape_format = [
             [[np.float16, i, j], [np.float16, 0, j], k] for i in format_list
             for j in shape_list for k in reduction_list
@@ -56,6 +56,22 @@ class TestSmoothL1loss(TestCase):
             npu_output = self.npu_op_exec_new(npu_input1, target, item[2])
             cpu_output = cpu_output.astype(np.float16)
             self.assertRtolEqual(cpu_output, npu_output)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_nllloss_shape_format_high_type_cast(self):
+        format_item = 0
+        shape_item = [256, 1000]
+        reduction_item = 'mean'
+        input_format = [np.float16, format_item, shape_item]
+        target_format = [np.float32, 0, shape_item]
+        np_target = np.random.uniform(0, 10, shape_item).astype(target_format[0])
+        target = torch.from_numpy(np_target)
+        cpu_input1, npu_input1 = create_common_tensor(input_format, 0, 100)
+        cpu_input1 = cpu_input1.to(torch.float32)
+
+        cpu_output = self.cpu_op_exec_new(cpu_input1, target, reduction_item)
+        npu_output = self.npu_op_exec_new(npu_input1, target, reduction_item)
+        self.assertRtolEqual(cpu_output, npu_output)
 
 
 if __name__ == "__main__":
