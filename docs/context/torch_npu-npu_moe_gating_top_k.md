@@ -5,11 +5,11 @@
 -   算子功能：MoE计算中，对输入x做Sigmoid计算，对计算结果分组进行排序，最后根据分组排序的结果选取前k个专家。
 -   计算公式：
 
-    当normType=1时，对输入做sigmoid（bias可选）：
+    当norm_type=1时，对输入做sigmoid（bias可选）：
 
     ![](./figures/zh-cn_formulaimage_0000002258672873.png)
 
-    当normType=0时，对输入做Softmax（bias可选）：
+    当norm_type=0时，对输入做Softmax（bias可选）：
 
     ![](./figures/zh-cn_formulaimage_0000002313785750.png)
 
@@ -61,10 +61,10 @@ npu_moe_gating_top_k(Tensor x, int k, *, Tensor? bias=None, int k_group=1, int g
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：group\_select\_mode支持0和1。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：group\_select\_mode支持0和1。
 
--   renorm：整型，renorm标记，当前仅只支持0，表示先进行norm再进行topk计算。
+-   renorm：整型，renorm标记，当前仅支持0，表示先进行norm再进行topk计算。
 -   norm\_type：整型，表示norm函数类型，1表示使用Sigmoid函数，0表示Softmax函数。默认值为0。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：当group\_select\_mode=0时，normType只支持0。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当group\_select\_mode=0时，normType只支持0。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：当group\_select\_mode=0时，norm_type只支持0。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当group\_select\_mode=0时，norm_type只支持0。
 
 -   out\_flag：布尔型，是否输出norm函数中间结果。当前仅支持False，表示不输出。
 -   routed\_scaling\_factor：float类型，公式中的routed\_scaling\_factor系数，默认值1.0。

@@ -19,8 +19,8 @@ torch_npu.npu_mm_reduce_scatter_base(Tensor input, Tensor x2, str hcom, int worl
 -   x2：Tensor类型，数据类型与input一致，数据格式支持ND，输入shape支持2维，形如\(k, n\)。轴满足matmul算子入参要求，k轴相等，且k轴取值范围为\[256, 65535\)，m轴需要整除world\_size。
 -   hcom：String类型，通信域handle名，通过get\_hccl\_comm\_name接口获取。
 -   world\_size：int类型，通信域内的rank总数，支持范围见约束说明。
-    -   <term>Atlas A2 训练系列产品</term>支持2、4、8卡， 支持hccs链路all mesh组网（每张卡和其它卡两两相连）。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>支持2、4、8、16、32卡， 支持hccs链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
+    -   <term>Atlas A2 训练系列产品</term>支持2、4、8卡，支持hccs链路all mesh组网（每张卡和其它卡两两相连）。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>支持2、4、8、16、32卡，支持hccs链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
 
 -   \*：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
 -   reduce\_op：String类型，reduce操作类型，当前仅支持'sum'，默认值：'sum'。

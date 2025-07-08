@@ -19,8 +19,8 @@ torch_npu.npu_all_gather_base_mm(Tensor input, Tensor x2, str hcom, int world_si
 -   x2：Tensor类型，数据类型、输入shape维度需要和input保持一致，数据格式支持ND。
 -   hcom：String类型，通信域handle名，通过get\_hccl\_comm\_name接口获取。
 -   world\_size：int类型，通信域内的rank总数。
-    -   <term>Atlas A2 训练系列产品</term>：支持2、4、8卡， 支持hccs链路all mesh组网（每张卡和其它卡两两相连）。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持2、4、8、16、32卡， 支持hccs链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
+    -   <term>Atlas A2 训练系列产品</term>：支持2、4、8卡，支持hccs链路all mesh组网（每张卡和其它卡两两相连）。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持2、4、8、16、32卡，支持hccs链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
 
 -   \*：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
 -   bias：Tensor类型，可选参数，数据类型支持float16、bfloat16，数据格式支持ND格式。数据类型需要和input保持一致。bias仅支持一维，且维度大小与output的第1维大小相同。**当前版本暂不支持bias输入为非0的场景。**
