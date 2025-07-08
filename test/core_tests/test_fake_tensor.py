@@ -2551,5 +2551,29 @@ instantiate_parametrized_tests(FakeTensorTest)
 instantiate_device_type_tests(FakeTensorOpInfoTest, globals(), only_for="cpu")
 
 
+class TestGroupedMatmulSwigluQuant(TestCase):
+    def test_npu_grouped_matmul_swiglu_quant(self):
+        with FakeTensorMode():
+            E = 16
+            M = 512
+            K = 7168
+            N = 4096
+            x = torch.randint(-128, 127, (M, K), dtype=torch.int8)
+            weight = torch.randint(-128, 127, (E, K, N), dtype=torch.int8)
+            weightScale = torch.randn(E, N)
+            xScale = torch.randn(M)
+            groupList = torch.randn(E)
+            output0 = torch.empty([M, N // 2], dtype=torch.int8, device=x.device)
+            output1 = torch.empty([M], dtype=torch.float32, device=x.device)
+            output2 = torch.empty([], dtype=torch.float32, device=x.device)
+            output0_npu, output1_npu, output2_npu = torch_npu.npu_grouped_matmul_swiglu_quant(x.npu(), weight.npu(), groupList.npu(), weightScale.npu(), xScale.npu(), bias=None, offset=None)
+            self.assertTrue(output0_npu.shape == output0.shape)
+            self.assertTrue(output0_npu.dtype == output0.dtype)
+            self.assertTrue(output1_npu.shape == output1.shape)
+            self.assertTrue(output1_npu.dtype == output1.dtype)
+            self.assertTrue(output2_npu.shape == output2.shape)
+            self.assertTrue(output2_npu.dtype == output2.dtype)
+
+
 if __name__ == "__main__":
     run_tests()

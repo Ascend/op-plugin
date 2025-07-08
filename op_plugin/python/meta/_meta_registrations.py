@@ -2440,3 +2440,13 @@ def npu_moe_token_unpermute_meta(permuted_tokens, sorted_indices, probs=None, pa
     output_shape = (sorted_indices.size(0) // topk, permuted_tokens.size(-1))
     
     return torch.empty(output_shape, dtype=permuted_tokens.dtype, device=permuted_tokens.device)
+
+
+@impl(m, "npu_grouped_matmul_swiglu_quant")
+def npu_grouped_matmul_swiglu_quant_meta(x, weight, group_list, weight_scale, x_scale, *, bias=None, offset=None):
+    batch_size = x.size(0)
+    n = weight.size(2)
+    output_shape = torch.empty([batch_size, n // 2], dtype=torch.int8, device=x.device)
+    output_scale_shape = torch.empty([batch_size], dtype=torch.float32, device=x.device)
+    output_offset_shape = torch.empty([], dtype=torch.float32, device=x.device)
+    return output_shape, output_scale_shape, output_offset_shape

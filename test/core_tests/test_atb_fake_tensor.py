@@ -121,7 +121,26 @@ class TestAtbFakeTensor(TestCase):
 
             output = torch_npu.atb.npu_self_attention_prefix_encoder(query, key, value, block_tables, q_seqlens, kv_seqLen, 28, 0.0883, 4)
             self.assertTrue(output.shape == query.shape)
-            self.assertEqual(output.dtype, query.dtype)           
+            self.assertEqual(output.dtype, query.dtype)
+
+    def test_npu_fused_add_topk_div_meta(self):
+        with FakeTensorMode():
+            a = 16
+            b = 256
+            k = 8
+            c = 64
+
+            x = torch.randn(a, b, dtype=torch.float16).npu()
+            add_num = torch.randn(b, dtype=torch.float16).npu()
+            mapping_num = torch.randint(1, c + 1, (b,), dtype=torch.int32).npu()
+            mapping_table = torch.randint(0, 10, (b, c), dtype=torch.int32).npu()
+            y = torch.empty(a, k, dtype=torch.float32).npu()
+            indices = torch.empty(a, k, dtype=torch.int32).npu()
+            output = torch_npu.atb.npu_fused_add_topk_div(x, add_num, mapping_num=mapping_num, mapping_table=mapping_table, activation_type='activation_sigmoid', group_num=8, group_topk=4, n=2, k=k, is_norm=True, scale=1, enable_expert_mapping=True)
+            self.assertTrue(output[0].shape == y.shape)
+            self.assertTrue(output[1].shape == indices.shape)
+            self.assertEqual(output[0].dtype, torch.float32)
+            self.assertEqual(output[1].dtype, torch.int32)
 
 
 if __name__ == "__main__":

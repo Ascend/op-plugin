@@ -34,3 +34,11 @@ def npu_mla_preprocess_meta(input, gamma0, beta0, wdqkv, descale0, gamma1, beta1
     kv_cache_out0 = torch.empty_like(kv_cache)
     kv_cache_out1 = torch.empty_like(kv_cache_rope)
     return q_out0, kv_cache_out0, q_out1, kv_cache_out1
+
+
+@impl(m, "npu_fused_add_topk_div")
+def npu_fused_add_topk_div_meta(x, add_num, *, mapping_num=None, mapping_table=None, activation_type=None, group_num=1, group_topk=1, n=1, k=1, is_norm=True, scale=1, enable_expert_mapping=False):
+    a = x.size(0)
+    y = torch.empty([a, k], dtype=torch.float32, device=x.device)
+    indices = torch.empty([a, k], dtype=torch.int32, device=x.device)
+    return y, indices
