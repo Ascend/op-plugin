@@ -207,7 +207,7 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 
         -   当query的d不等于512时：
             -   当query\_rope和keyRope为空时：要求Q\_D、K\_D等于192；TND场景，V\_D等于128/192；NTD\_TND场景，V\_D等于128。当query\_rope和keyRope不为空时，要求Q\_D、K\_D、V\_D等于128；
-            -   N等于2/4/8/16/32/64/128，且Q\_N、K\_N、V\_N相等；
+            -   Q\_N、K\_N、V\_N相等；
             -   支持TND、NTD\_TND；
             -   数据类型仅支持BFLOAT16；
             -   当sparse=3时，要求每个batch单独的actualSeqLengths<actualSeqLengthsKv；
