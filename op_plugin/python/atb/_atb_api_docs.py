@@ -521,6 +521,7 @@ Atlas 训练系列产品:不支持
 import torch,torch_npu
 a = 16
 b = 256
+c = 64
 k = 8
 x = torch.randn(a, b, dtype=torch.float16).npu()
 add_num = torch.randn(b,dtype=torch.float16).npu()
