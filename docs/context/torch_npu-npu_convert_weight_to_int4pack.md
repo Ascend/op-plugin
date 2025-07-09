@@ -12,7 +12,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
 
 ## 参数说明
 
-- **weight** (`Tensor`) ：输入的weight，数据格式支持$ND$、$FRACTAL\_NZ$，数据类型支持`int32`，不支持非连续的`Tensor`；维度支持2维，shape支持$（k, n）$、 $(n, k)$，最后一维度需要8个元素对齐，元素的值需要在`int4`的表示范围内，即[-8, 7]。
+- **weight** (`Tensor`)：输入的weight，数据格式支持$ND$、$FRACTAL\_NZ$，数据类型支持`int32`，不支持非连续的`Tensor`；维度支持2维，shape支持$（k, n）$、 $(n, k)$，最后一维度需要8个元素对齐，元素的值需要在`int4`的表示范围内，即[-8, 7]。
 - **inner_k_tiles** (`int`)：用于制定内部打包格式中，多少个K-tiles被打包在一起，默认值为`0`。**预留参数，暂未使用**。
 
 ## 返回值

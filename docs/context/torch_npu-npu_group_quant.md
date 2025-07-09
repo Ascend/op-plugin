@@ -96,25 +96,23 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
     scale = torch.randn(4, 4).to(torch.float32).npu()
     group_index = torch.tensor([1, 4, 6, 6], dtype=torch.int32).npu()
     offset = torch.randn(1).to(torch.float32).npu()
-
-
+    
     class Network(torch.nn.Module):
         def __init__(self):
             super(Network, self).__init__()
-
+    
         def forward(self, x, scale, group_index, offset, dst_type):
             return torch_npu.npu_group_quant(x, scale, group_index, offset=offset, dst_dtype=dst_type)
-
 
     model = Network()
     config = CompilerConfig()
     npu_backend = tng.get_npu_backend(compiler_config=config)
     config.debug.graph_dump.type = 'pbtxt'
     model = torch.compile(model, fullgraph=True, backend=npu_backend, dynamic=True)
-
+    
     output_data = model(x, scale, group_index, offset=offset, dst_type=attr_dst_type_torch)
     print(output_data)
-
+    
     # 执行上述代码的输出类似如下
     tensor([[ 2,  0,  0,  1],
             [-1,  1,  1,  0],

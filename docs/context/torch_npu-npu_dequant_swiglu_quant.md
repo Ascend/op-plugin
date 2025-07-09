@@ -8,7 +8,7 @@
 
         对输入x进行分组计算，group\_index表示每个group分组的Tokens数，每组使用不同的量化scale（如scale activation\_scale、quant\_scale）。当group\_index=1或None时，表示共享一个scale。
 
-        举例说明：假设x.shape=\[128, 2H\]，group\_index=\[2, 0, 3\] ，表示有3个group，对应的scale维度为\[3, 2H\]。每个group数据使用不同的scale分别做dequant反量化+swiglu+quant量化操作。
+        举例说明：假设x.shape=\[128, 2H\]，group\_index=\[2, 0, 3\]，表示有3个group，对应的scale维度为\[3, 2H\]。每个group数据使用不同的scale分别做dequant反量化+swiglu+quant量化操作。
 
         -   group0=x\[0:2, :\]，scale0=scale\[0, :\]
         -   group1=x\[2:2, :\]，scale1=scale\[1, :\]
@@ -61,7 +61,7 @@ torch_npu.npu_dequant_swiglu_quant(Tensor x, *, Tensor? weight_scale=None, Tenso
 ## 输出说明
 
 -   y：Tensor类型，表示量化后的输出tensor。要求是2D的Tensor，shape=\[TokensNum, H\]，数据类型支持int8，数据格式为ND。
--   scale： Tensor类型，表示量化的scale参数。要求是1D的Tensor，shape=\[TokensNum\]，数据类型支持float32，数据格式为ND。
+-   scale：Tensor类型，表示量化的scale参数。要求是1D的Tensor，shape=\[TokensNum\]，数据类型支持float32，数据格式为ND。
 
 ## 约束说明
 

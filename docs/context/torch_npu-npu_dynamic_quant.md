@@ -118,16 +118,14 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
 
     device = torch.device(f'npu:0')
     torch_npu.npu.set_device(device)
-
-
+    
     class DynamicQuantModel(torch.nn.Module):
         def __init__(self):
             super().__init__()
-
+    
         def forward(self, input_tensor, smooth_scales=None, group_index=None, dst_type=None):
             out, scale = torch_npu.npu_dynamic_quant(input_tensor, smooth_scales=smooth_scales, group_index=group_index,dst_type=dst_type)
             return out, scale
-
 
     x = torch.randn((2, 4, 6), device='npu', dtype=torch.float16).npu()
     smooth_scales = torch.randn((6), device='npu', dtype=torch.float16).npu()
@@ -136,13 +134,13 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
     out, scale = dynamic_quant_model(x, smooth_scales=smooth_scales)
     print(out)
     print(scale)
-
+    
     # 执行上述代码的输出类似如下
     tensor([[[-116,  127,   14, -105,   12,  -44],
             [   7, -127,  -49,  -27,   -4,   -7],
             [ -49,   18,  127,   39,   14,   13],
             [  12,  -47,  127,   73,   28,    1]],
-
+    
             [[  62,  127,  -61,  -15,   -9,   -8],
             [ 127,  -74,  -66,  117,   27,   27],
             [   3,   65,   29,  127,  -27,   20],

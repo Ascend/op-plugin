@@ -9,31 +9,31 @@
 
         ![](./figures/zh-cn_formulaimage_0000002262918025.png)
 
-    -   perchannel、pertensor量化场景 \(公式2\)：
+    -   perchannel、pertensor量化场景（公式2）：
 
         ![](./figures/zh-cn_formulaimage_0000002331514405.png)
 
-        -   x为torch.int8输入，bias为torch.int32输入 \(公式2-1\)：
+        -   x为torch.int8输入，bias为torch.int32输入（公式2-1）：
 
             ![](./figures/zh-cn_formulaimage_0000002330304749.png)
 
-        -   x为torch.int8输入，bias为torch.bfloat16、torch.float16、torch.float32输入，无offset \(公式2-2\)：
+        -   x为torch.int8输入，bias为torch.bfloat16、torch.float16、torch.float32输入，无offset（公式2-2）：
 
             ![](./figures/zh-cn_formulaimage_0000002296388208.png)
 
-    -   pertoken、pertensor+pertensor、pertensor+perchannel量化场景 \(公式3\)：
+    -   pertoken、pertensor+pertensor、pertensor+perchannel量化场景（公式3）：
 
         ![](./figures/zh-cn_formulaimage_0000002228564948.png)
 
-        -   x为torch.int8输入，bias为torch.int32输入 \(公式3-1\)：
+        -   x为torch.int8输入，bias为torch.int32输入（公式3-1）：
 
             ![](./figures/zh-cn_formulaimage_0000002330394453.png)
 
-        -   x为torch.int8输入，bias为torch.bfloat16，torch.float16，torch.float32输入\(公式3-2\)：
+        -   x为torch.int8输入，bias为torch.bfloat16，torch.float16，torch.float32输入（公式3-2）：
 
             ![](./figures/zh-cn_formulaimage_0000002296235560.png)
 
-    -   伪量化场景 \(公式4\)：
+    -   伪量化场景（公式4）：
 
         ![](./figures/zh-cn_formulaimage_0000002262918029.png)
 
@@ -55,7 +55,7 @@
     -   列表最大长度为128。
     -   当split\_item=0时，张量支持2至6维输入；其他情况下，张量仅支持2维输入。
 
--   **weight \(List\[torch.Tensor\]\)：**权重矩阵列表，表示矩阵乘法中的右矩阵。
+-   **weight \(List\[torch.Tensor\]\)**：权重矩阵列表，表示矩阵乘法中的右矩阵。
     -   支持的数据类型如下：
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
             -   当group\_list输入类型为List\[int\]时，支持torch.float16、torch.float32、torch.bfloat16和torch.int8。
@@ -74,7 +74,7 @@
     -   列表长度与weight列表长度相同。
     -   每个张量仅支持1维输入。
 
--   **scale \(List\[torch.Tensor\]\)：**用于缩放原数值以匹配量化后的范围值，代表量化参数中的缩放因子，对应公式（2）、公式（3）和公式（5）。
+-   **scale \(List\[torch.Tensor\]\)**：用于缩放原数值以匹配量化后的范围值，代表量化参数中的缩放因子，对应公式（2）、公式（3）和公式（5）。
     -   支持的数据类型如下：
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
             -   当group\_list输入类型为List\[int\]时，支持torch.int64。
@@ -85,8 +85,8 @@
     -   列表长度与weight列表长度相同。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：每个张量仅支持1维输入。
 
--   **offset \(List\[torch.Tensor\]\)：**用于调整量化后的数值偏移量，从而更准确地表示原始浮点数值，对应公式（2）。当前仅支持传入None。
--   **antiquant\_scale \(List\[torch.Tensor\]\)：**用于缩放原数值以匹配伪量化后的范围值，代表伪量化参数中的缩放因子，对应公式（4）。
+-   **offset \(List\[torch.Tensor\]\)**：用于调整量化后的数值偏移量，从而更准确地表示原始浮点数值，对应公式（2）。当前仅支持传入None。
+-   **antiquant\_scale \(List\[torch.Tensor\]\)**：用于缩放原数值以匹配伪量化后的范围值，代表伪量化参数中的缩放因子，对应公式（4）。
     -   支持的数据类型如下：
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：torch.float16、torch.bfloat16。
         -   <term>Atlas 推理系列产品</term>：仅支持传入None。
@@ -96,7 +96,7 @@
         -   伪量化per-channel场景，weight为单tensor时，shape限制为\[g, n\]；weight为多tensor时，shape限制为\[n<sub>i</sub>\]。
         -   伪量化per-group场景，weight为单tensor时，shape限制为\[g, G, n\]; weight为多tensor时，shape限制为\[G<sub>i</sub>, n<sub>i</sub>\]。
 
--   **antiquant\_offset \(List\[torch.Tensor\]\)：**用于调整伪量化后的数值偏移量，从而更准确地表示原始浮点数值，对应公式（4）。
+-   **antiquant\_offset \(List\[torch.Tensor\]\)**：用于调整伪量化后的数值偏移量，从而更准确地表示原始浮点数值，对应公式（4）。
     -   支持的数据类型如下：
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：torch.float16、torch.bfloat16。
         -   <term>Atlas 推理系列产品</term>：仅支持传入None。
@@ -104,14 +104,14 @@
     -   列表长度与weight列表长度相同。
     -   每个张量输入维度和antiquant\_scale输入维度一致。
 
--   **per\_token\_scale \(List\[torch.Tensor\]\)：**用于缩放原数值以匹配量化后的范围值，代表per-token量化参数中由x量化引入的缩放因子，对应公式（3）和公式（5）。
+-   **per\_token\_scale \(List\[torch.Tensor\]\)**：用于缩放原数值以匹配量化后的范围值，代表per-token量化参数中由x量化引入的缩放因子，对应公式（3）和公式（5）。
     -   group\_list输入类型为List\[int\]时，当前只支持传入None。
     -   group\_list输入类型为torch.Tensor时：
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持torch.float32。
         -   列表长度与x列表长度相同。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：每个张量仅支持1维输入。
 
--   **group\_list \(List\[int\]/torch.Tensor\)：**用于指定分组的索引，表示x的第0维矩阵乘法的索引情况。数据类型支持torch.int64。
+-   **group\_list \(List\[int\]/torch.Tensor\)**：用于指定分组的索引，表示x的第0维矩阵乘法的索引情况。数据类型支持torch.int64。
     -   <term>Atlas 推理系列产品</term>：仅支持**torch.Tensor**类型。仅支持1维输入，长度与weight列表长度相同。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持**List\[int\]**或**torch.Tensor**类型。若为**torch.Tensor**类型，仅支持1维输入，长度与weight列表长度相同。
     -   配置值要求如下：
@@ -121,21 +121,21 @@
             -   当group\_list\_type为1时，group\_list必须为非负数列，且长度不能为1。
             -   当group\_list\_type为2时，group\_list shape为\[E, 2\]，E表示Group大小，数据排布为\[\[groupIdx0, groupSize0\], \[groupIdx1, groupSize1\]...\]，其中groupSize为分组轴上每组大小，必须为非负数。
 
--   **activation\_input \(List\[torch.Tensor\]\)：**代表激活函数的反向输入，当前仅支持传入None。
--   **activation\_quant\_scale \(List\[torch.Tensor\]\)：**预留参数，当前只支持传入None。
--   **activation\_quant\_offset \(List\[torch.Tensor\]\)：**预留参数，当前只支持传入None。
--   **split\_item \(int\)：**用于指定切分模式。数据类型支持torch.int32。
+-   **activation\_input \(List\[torch.Tensor\]\)**：代表激活函数的反向输入，当前仅支持传入None。
+-   **activation\_quant\_scale \(List\[torch.Tensor\]\)**：预留参数，当前只支持传入None。
+-   **activation\_quant\_offset \(List\[torch.Tensor\]\)**：预留参数，当前只支持传入None。
+-   **split\_item \(int\)**：用于指定切分模式。数据类型支持torch.int32。
     -   0、1：输出为多个张量，数量与weight相同。
     -   2、3：输出为单个张量。
 
--   **group\_type \(int\)：**代表需要分组的轴。数据类型支持torch.int32。
+-   **group\_type \(int\)**：代表需要分组的轴。数据类型支持torch.int32。
     -   group\_list输入类型为List\[int\]时仅支持传入None。
 
     -   group\_list输入类型为torch.Tensor时，若矩阵乘为C\[m,n\]=A\[m,k\]xB\[k,n\]，group\_type支持的枚举值为：-1代表不分组；0代表m轴分组；1代表n轴分组。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前支持取-1、0。
         -   <term>Atlas 推理系列产品</term>：当前只支持取0。
 
--   **group\_list\_type \(int\)：**代表group\_list的表达形式。数据类型支持torch.int32。
+-   **group\_list\_type \(int\)**：代表group\_list的表达形式。数据类型支持torch.int32。
     -   group\_list输入类型为List\[int\]时仅支持传入None。
 
     -   group\_list输入类型为torch.Tensor时可取值0、1或2：
@@ -146,18 +146,18 @@
         -   <term>Atlas 推理系列产品</term>：不支持取2。
         -   昇腾910\_95 AI处理器：不支持取2。
 
--   **act\_type \(int\)：**代表激活函数类型。数据类型支持torch.int32。
+-   **act\_type \(int\)**：代表激活函数类型。数据类型支持torch.int32。
     -   group\_list输入类型为List\[int\]时仅支持传入None。
 
     -   group\_list输入类型为torch.Tensor时，支持的枚举值包括：0代表不激活；1代表RELU激活；2代表GELU\_TANH激活；3代表暂不支持；4代表FAST\_GELU激活；5代表SILU激活。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0-5。
         -   <term>Atlas 推理系列产品</term>：当前只支持传入0。
 
--   **output\_dtype \(torch.dtype\)：**输出数据类型。支持的配置包括：
+-   **output\_dtype \(torch.dtype\)**：输出数据类型。支持的配置包括：
     -   None：默认值，表示输出数据类型与输入x的数据类型相同。
     -   与输出y数据类型一致的类型，具体参考[约束说明](#zh-cn_topic_0000002262888689_section618392112366)。
 
--   **tuning\_config \(List\[int\]\)：**可选参数，数组中的第一个元素表示各个专家处理的token数的预期值，算子tiling时会按照数组中的第一个元素进行最优tiling，性能更优（使用场景参见[约束说明](#zh-cn_topic_0000002262888689_section618392112366)）；从第二个元素开始预留，用户无须填写，未来会进行扩展。如不使用该参数不传即可。
+-   **tuning\_config \(List\[int\]\)**：可选参数，数组中的第一个元素表示各个专家处理的token数的预期值，算子tiling时会按照数组中的第一个元素进行最优tiling，性能更优（使用场景参见[约束说明](#zh-cn_topic_0000002262888689_section618392112366)）；从第二个元素开始预留，用户无须填写，未来会进行扩展。如不使用该参数不传即可。
     -   <term>Atlas 推理系列产品</term>：当前暂不支持该参数。
 
 ## 返回值<a name="zh-cn_topic_0000002262888689_section1558311519405"></a>
@@ -758,7 +758,7 @@
             </td>
             <td class="cellrowborder" valign="top" width="18.34%" headers="mcps1.1.5.1.3 "><p id="zh-cn_topic_0000002262888689_p144441648197"><a name="zh-cn_topic_0000002262888689_p144441648197"></a><a name="zh-cn_topic_0000002262888689_p144441648197"></a>x、weight与y均为单张量</p>
             </td>
-            <td class="cellrowborder" valign="top" width="62.64999999999999%" headers="mcps1.1.5.1.4 "><a name="zh-cn_topic_0000002262888689_ol044416401911"></a><a name="zh-cn_topic_0000002262888689_ol044416401911"></a><ol id="zh-cn_topic_0000002262888689_ol044416401911"><li>仅支持split_item为2或3。</li><li>x、weight中tensor需为2维，y中tensor需为3维。</li><li>必须传group_list，且当group_list_type为0时，最后一个值与x中tensor的第二维相等，当group_list_type为1时，数值的总和与x中tensor的第二维相等，当group_list_type为2时，第二列数值的总和与x中tensor的第二维相等。</li><li>group_list第1维最大支持1024， 即最多支持1024个group。</li><li>x必须转置，weight不能转置。</li></ol>
+            <td class="cellrowborder" valign="top" width="62.64999999999999%" headers="mcps1.1.5.1.4 "><a name="zh-cn_topic_0000002262888689_ol044416401911"></a><a name="zh-cn_topic_0000002262888689_ol044416401911"></a><ol id="zh-cn_topic_0000002262888689_ol044416401911"><li>仅支持split_item为2或3。</li><li>x、weight中tensor需为2维，y中tensor需为3维。</li><li>必须传group_list，且当group_list_type为0时，最后一个值与x中tensor的第二维相等，当group_list_type为1时，数值的总和与x中tensor的第二维相等，当group_list_type为2时，第二列数值的总和与x中tensor的第二维相等。</li><li>group_list第1维最大支持1024，即最多支持1024个group。</li><li>x必须转置，weight不能转置。</li></ol>
             </td>
             </tr>
             </tbody>

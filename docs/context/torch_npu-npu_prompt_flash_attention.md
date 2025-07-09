@@ -45,10 +45,10 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 - **deq_scale2** (`Tensor`)：数据类型支持`uint64`、`float32`。数据格式支持$ND$，表示BMM2后面的反量化因子，支持per-tensor。如不使用该功能时可传入`nullptr`。<term>Atlas 推理系列加速卡产品</term>仅支持`nullptr`。
 - **quant_scale2** (`Tensor`)：数据格式支持$ND$，表示输出的量化因子，支持per-tensor、per-channel。如不使用该功能时可传入`nullptr`。
     - <term>Atlas 推理系列加速卡产品</term>：仅支持传入`nullptr`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16` ，否则仅支持`float32` 。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$（建议输出layout为$BSH$时，`quant_scale2` `shape`传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16` ，否则仅支持`float32` 。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$（建议输出layout为$BSH$时，`quant_scale2` `shape`传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
 
-- **quant_offset2** (`Tensor`)：数据格式支持$ND$，表示输出的量化偏移，支持per-tensor、per-channel。若传入 `quant_offset2`，需保证其类型和`shape`信息与 `quant_scale2`一致。如不使用该功能时可传入`nullptr`。
+- **quant_offset2** (`Tensor`)：数据格式支持$ND$，表示输出的量化偏移，支持per-tensor、per-channel。若传入 `quant_offset2`，需保证其类型和`shape`信息与`quant_scale2`一致。如不使用该功能时可传入`nullptr`。
     - <term>Atlas 推理系列加速卡产品</term>：仅支持传入`nullptr`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
@@ -113,9 +113,9 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 
 - `int8`量化相关入参数量与输入、输出数据格式的综合限制：
     - 输入为`int8`，输出为`int8`的场景：入参`deq_scale1`、`quant_scale1`、`deq_scale2`、`quant_scale2`需要同时存在，`quant_offset2`可选，不传时默认为`0`。
-    - 输入为`int8`，输出为`float16`的场景：入参`deq_scale1`、`quant_scale1`、`deq_scale2`需要同时存在，若存在入参`quant_offset2`或 `quant_scale2`（即不为`nullptr`），则报错并返回。
-    - 输入为`float16`或`bfloat16`，输出为`int8`的场景：入参`quant_scale2`需存在，`quant_offset2`可选，不传时默认为`0`，若存在入参`deq_scale1`或 `quant_scale1`或 `deq_scale2`（即不为`nullptr`），则报错并返回。
-    - 入参 `quant_offset2`和 `quant_scale2`支持per-tensor/per-channel两种格式和`float32`/`bfloat16`两种数据类型。若传入`quant_offset2`，需保证其类型和`shape`信息与`quant_scale2`一致。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。建议输出layout为$BSH$时，`quant_scale2` `shape`传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。per-tensor格式，建议$D$轴对齐到32Byte。
+    - 输入为`int8`，输出为`float16`的场景：入参`deq_scale1`、`quant_scale1`、`deq_scale2`需要同时存在，若存在入参`quant_offset2`或`quant_scale2`（即不为`nullptr`），则报错并返回。
+    - 输入为`float16`或`bfloat16`，输出为`int8`的场景：入参`quant_scale2`需存在，`quant_offset2`可选，不传时默认为`0`，若存在入参`deq_scale1`或`quant_scale1`或`deq_scale2`（即不为`nullptr`），则报错并返回。
+    - 入参 `quant_offset2`和`quant_scale2`支持per-tensor/per-channel两种格式和`float32`/`bfloat16`两种数据类型。若传入`quant_offset2`，需保证其类型和`shape`信息与`quant_scale2`一致。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。per-channel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。per-tensor格式，建议$D$轴对齐到32Byte。
     - per-channel格式，入参`quant_scale2`和`quant_offset2`暂不支持左padding、Ring Attention或者$D$非32Byte对齐的场景。
     - 输出为`int8`时，暂不支持sparse为`band`且`pre_tokens`/`next_tokens`为负数。
 
@@ -125,7 +125,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - $Q_S$需大于等于`query`的$S$长度，$KV_S$需大于等于`key`的$S$长度。
 
 - 输出为`int8`，入参`quant_offset2`传入非空指针和非空`Tensor`值，并且`sparse_mode`、`pre_tokens`和`next_tokens`满足以下条件，矩阵会存在某几行不参与计算的情况，导致计算结果误差，该场景会拦截：
-    - `sparse_mode=0`，`atten_mask`如果非空指针，每个batch `actual_seq_lengths-actual_seq_lengths_kv-pre_tokens>0`或 `next_tokens<0`时，满足拦截条件。
+    - `sparse_mode=0`，`atten_mask`如果非空指针，每个batch `actual_seq_lengths-actual_seq_lengths_kv-pre_tokens>0`或`next_tokens<0`时，满足拦截条件。
     - `sparse_mode=1`或`2`，不会出现满足拦截条件的情况。
     - `sparse_mode=3`，每个batch `actual_seq_lengths_kv-actual_seq_lengths<0`，满足拦截条件。
     - `sparse_mode=4`，`pre_tokens<0`或每个batch `next_tokens+actual_seq_lengths_kv-actual_seq_lengths<0`时，满足拦截条件。

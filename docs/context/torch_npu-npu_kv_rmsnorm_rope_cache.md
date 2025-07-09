@@ -50,17 +50,17 @@ torch_npu.npu_kv_rmsnorm_rope_cache(Tensor kv, Tensor gamma, Tensor cos, Tensor 
 >-   block\_num：PagedAttention模式下有效，表示Block的个数。
 >-   block\_size：PagedAttention模式下有效，表示Block的大小。
 
--   kv：Tensor类型，表示输入的特征张量。数据类型支持bfloat16、float16，数据格式为BNSD，要求为4D的Tensor，形状为\[batch\_size, 1, seq\_len, hidden\_size\] ，其中hidden\_size=rms\_size\(RMS\)+rope\_size\(RoPE\)。
+-   kv：Tensor类型，表示输入的特征张量。数据类型支持bfloat16、float16，数据格式为BNSD，要求为4D的Tensor，形状为\[batch\_size, 1, seq\_len, hidden\_size\]，其中hidden\_size=rms\_size\(RMS\)+rope\_size\(RoPE\)。
 -   gamma：Tensor类型，表示RMS归一化的缩放参数。数据类型支持bfloat16、float16，数据格式为ND，要求为1D的Tensor，形状为\[rms\_size\]。
 -   cos：Tensor类型，表示RoPE旋转位置编码的余弦分量。数据类型支持bfloat16、float16，数据格式为ND，要求为4D的Tensor，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
 -   sin：Tensor类型，表示RoPE旋转位置编码的正弦分量。数据类型支持bfloat16、float16，数据格式为ND，要求为4D的Tensor，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
 -   index：Tensor类型，表示缓存索引张量，用于定位k\_cache和ckv\_cache的写入位置。数据类型支持int64，数据格式为ND。shape取决于cache\_mode。
--   k\_cache：Tensor类型，用于存储量化/非量化的键向量。数据类型支持bfloat16、float16、int8,  数据格式为ND。shape取决于cache\_mode。
--   ckv\_cache：Tensor类型，用于存储量化/非量化的压缩后的kv向。数据类型支持bfloat16、float16、int8, 数据格式为ND。shape取决于cache\_mode。
+-   k\_cache：Tensor类型，用于存储量化/非量化的键向量。数据类型支持bfloat16、float16、int8，数据格式为ND。shape取决于cache\_mode。
+-   ckv\_cache：Tensor类型，用于存储量化/非量化的压缩后的kv向。数据类型支持bfloat16、float16、int8，数据格式为ND。shape取决于cache\_mode。
 
 -   k\_rope\_scale：Tensor类型，可选，默认值None，表示k旋转位置编码的量化缩放因子。数据类型支持float32，数据格式为ND，要求为1D的Tensor，形状为\[rope\_size\]。量化模式下必填。
--   c\_kv\_scale：Tensor类型，可选， 默认值None，表示压缩后kv的量化缩放因子。数据类型支持float32，数据格式为ND，要求为1D的Tensor，形状为\[rms\_size\]。量化模式下必填。
--   k\_rope\_offset：Tensor类型，可选，默认值None， 表示k旋转位置编码量化偏移量。数据类型支持float32，数据格式为ND，要求为1D的Tensor，形状为\[rope\_size\]。量化模式下必填。
+-   c\_kv\_scale：Tensor类型，可选，默认值None，表示压缩后kv的量化缩放因子。数据类型支持float32，数据格式为ND，要求为1D的Tensor，形状为\[rms\_size\]。量化模式下必填。
+-   k\_rope\_offset：Tensor类型，可选，默认值None，表示k旋转位置编码量化偏移量。数据类型支持float32，数据格式为ND，要求为1D的Tensor，形状为\[rope\_size\]。量化模式下必填。
 -   c\_kv\_offset：Tensor类型，可选，默认值None，表示压缩后kv的量化偏移量。数据类型支持float32，数据格式为ND，要求为1D的Tensor，形状为\[rms\_size\]。量化模式下必填。
 -   epsilon：float类型，可选，默认值1e-5，表示RMS归一化中的极小值，防止除以零。
 -   cache\_mode：string类型，可选，默认值'Norm'，表示缓存模式，支持的模式如下：

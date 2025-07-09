@@ -315,7 +315,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
             dtype=torch.int8)
         ```
 
-- 图模式调用（$ND$数据格式）
+- 图模式调用（ND数据格式）
     - 输出`float16`
 
         ```python
@@ -335,17 +335,15 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         os.environ["ENABLE_ACLNN"] = "true"
         config = CompilerConfig()
         npu_backend = tng.get_npu_backend(compiler_config=config)
-
-
+        
         class MyModel(torch.nn.Module):
             def __init__(self):
                 super().__init__()
-
+    
             def forward(self, x1, x2, scale, offset, bias):
                 return torch_npu.npu_quant_matmul(
                     x1, x2, scale, offset=offset, bias=bias, output_dtype=torch.float16
                 )
-
 
         cpu_model = MyModel()
         model = cpu_model.npu()
@@ -360,36 +358,36 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale_1, None, bias.npu())
         print(npu_out.shape)
         print(npu_out)
-
+    
         # 执行上述代码的输出类似如下
         torch.Size([15, 1, 128])
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
         tensor([[[-103.6875, -104.5000, -113.6250,  ..., -108.6875,  -99.5625,
                 -101.1875]],
-
+    
                 [[ -92.9375,  -90.4375, -110.3125,  ..., -106.1875, -105.3750,
                 -98.7500]],
-
+    
                 [[-102.8750,  -98.7500, -104.5000,  ..., -106.1875, -117.8125,
                 -111.1875]],
-
+    
                 ...,
-
+    
                 [[-107.0000,  -92.9375, -113.6250,  ..., -107.8750,  -99.5625,
                 -103.6875]],
-
+    
                 [[-117.0000, -115.3125, -120.3125,  ..., -126.1250, -109.5000,
                 -103.6875]],
-
+    
                 [[-122.7500, -107.8750, -129.3750,  ..., -115.3125, -106.1875,
                 -112.8125]]], device='npu:0', dtype=torch.float16)
         ```
-
+    
     - 输出`bfloat16`，示例代码如下，仅支持如下产品：
-
+    
         - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
-
+    
         ```python
         import torch
         import torch_npu
@@ -398,20 +396,19 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         from torchair.configs.compiler_config import CompilerConfig
         import logging
         from torchair.core.utils import logger
-
+    
         logger.setLevel(logging.DEBUG)
         import os
         import numpy as np
-
+    
         os.environ["ENABLE_ACLNN"] = "true"
         config = CompilerConfig()
         npu_backend = tng.get_npu_backend(compiler_config=config)
 
-
         class MyModel(torch.nn.Module):
             def __init__(self):
                 super().__init__()
-
+    
             def forward(self, x1, x2, scale, offset, bias, pertoken_scale):
                 return torch_npu.npu_quant_matmul(
                     x1,
@@ -423,7 +420,6 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
                     output_dtype=torch.bfloat16,
                 )
 
-
         cpu_model = MyModel()
         model = cpu_model.npu()
         m = 15
@@ -434,7 +430,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         cpu_x2 = torch.randint(-1, 1, (n, k), dtype=torch.int8)
         scale = torch.randint(-1, 1, (n,), dtype=torch.bfloat16)
         pertoken_scale = torch.randint(-1, 1, (m,), dtype=torch.float32)
-
+    
         bias = torch.randint(-1, 1, (n,), dtype=torch.bfloat16)
         model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
         if bias_flag:
@@ -447,7 +443,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
             )
         print(npu_out.shape)
         print(npu_out)
-
+    
         # 执行上述代码的输出类似如下
         torch.Size([15, 6912])
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
@@ -485,17 +481,15 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         os.environ["ENABLE_ACLNN"] = "true"
         config = CompilerConfig()
         npu_backend = tng.get_npu_backend(compiler_config=config)
-
-
+        
         class MyModel(torch.nn.Module):
             def __init__(self):
                 super().__init__()
-
+    
             def forward(self, x1, x2, scale, offset, bias):
                 return torch_npu.npu_quant_matmul(
                     x1, x2.transpose(2, 1), scale, offset=offset, bias=bias
                 )
-
 
         cpu_model = MyModel()
         model = cpu_model.npu()
@@ -512,30 +506,30 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         npu_out = model(cpu_x1, cpu_x2_t_29, scale_1, offset, bias)
         print(npu_out.shape)
         print(npu_out)
-
+    
         # 执行上述代码的输出类似如下
         torch.Size([15, 1, 128])
         tensor([[[110, 105,  96,  ...,  99, 108, 112]],
-
+    
                 [[103, 106, 103,  ..., 102,  99,  97]],
-
+    
                 [[107, 110, 100,  ..., 112, 116, 110]],
-
+    
                 ...,
-
+    
                 [[110, 101, 108,  ..., 101, 110, 105]],
-
+    
                 [[ 96,  95, 102,  ...,  99,  95,  99]],
-
+    
                 [[ 89, 113, 103,  ..., 101,  95, 102]]], device='npu:0',
             dtype=torch.int8)
         ```
-
+    
     - 将x2非转置$(batch,** k, n**)$后转format，示例代码如下，仅支持如下产品：
-
+    
         - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
-
+    
         ```python
         import torch
         import torch_npu
@@ -549,7 +543,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         import numpy as np
         config = CompilerConfig()
         npu_backend = tng.get_npu_backend(compiler_config=config)
-
+    
         class MyModel(torch.nn.Module):
             def __init__(self):
                 super().__init__()
@@ -567,7 +561,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         x2_notranspose_29 = torch_npu.npu_format_cast(cpu_x2.npu().transpose(1,0).contiguous(), 29)
         scale = torch.randint(-1,1, (n,), dtype=torch.bfloat16)
         pertoken_scale = torch.randint(-1,1, (m,), dtype=torch.float32)
-
+    
         bias = torch.randint(-1,1, (n,), dtype=torch.bfloat16)
         model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
         if bias_flag:
@@ -576,7 +570,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
             npu_out = model(cpu_x1.npu(), x2_notranspose_29, scale.npu(), None, None, pertoken_scale.npu())
         print(npu_out.shape)
         print(npu_out)
-
+    
         # 执行上述代码的输出类似如下
         torch.Size([15, 6912])
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
@@ -594,4 +588,3 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
                 [ 0.0000e+00, -1.0000e+00, -1.0000e+00,  ..., -1.0000e+00,
                 0.0000e+00, -1.0000e+00]], device='npu:0', dtype=torch.bfloat16)
         ```
-
