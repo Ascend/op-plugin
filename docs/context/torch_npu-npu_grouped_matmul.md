@@ -124,7 +124,7 @@
 -   **activation\_input \(List\[torch.Tensor\]\)**：代表激活函数的反向输入，当前仅支持传入None。
 -   **activation\_quant\_scale \(List\[torch.Tensor\]\)**：预留参数，当前只支持传入None。
 -   **activation\_quant\_offset \(List\[torch.Tensor\]\)**：预留参数，当前只支持传入None。
--   **split\_item \(int\)：**用于指定切分模式。数据类型支持torch.int32。
+-   **split\_item \(int\)**：用于指定切分模式。数据类型支持torch.int32。
     -   0、1：输出为多个张量，数量与weight相同。
     -   2、3：输出为单个张量。
 
@@ -144,8 +144,7 @@
         -   2：group\_list shape为\[E, 2\]，E表示Group大小，数据排布为\[\[groupIdx0, groupSize0\], \[groupIdx1, groupSize1\]...\]，其中groupSize为分组轴上每组大小。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅当x和weight参数输入类型为INT8，并且group\_type取0（m轴分组）时，支持取2。
         -   <term>Atlas 推理系列产品</term>：不支持取2。
-        -   昇腾910\_95 AI处理器：不支持取2。
-
+    
 -   **act\_type \(int\)**：代表激活函数类型。数据类型支持torch.int32。
     -   group\_list输入类型为List\[int\]时仅支持传入None。
 
