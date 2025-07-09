@@ -4208,7 +4208,7 @@ y_{i}=(x_{i}×weight_{i}+bias_{i})×scale_{i}+pertokenscale_{i}
 y_{i}=x_{i}×(weight_{i}+antiquant_offset_{i})×antiquantscale_{i}+bias_{i}
 
 接口原型:
-npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_scale=None, antiquant_offset=None, per_token_scale=None, group_list=None, activation_input=None, activation_quant_scale=None, activation_quant_offset=None, split_item=0, group_type=-1, group_list_type=0, act_type=0, output_dtype=None, int[]? tuning_config) -> List[torch.Tensor]
+npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_scale=None, antiquant_offset=None, per_token_scale=None, group_list=None, activation_input=None, activation_quant_scale=None, activation_quant_offset=None, split_item=0, group_type=None, group_list_type=0, act_type=0, output_dtype=None, int[]? tuning_config) -> List[torch.Tensor]
 
 参数说明:
 x (List[torch.Tensor]): 输入矩阵列表, 表示矩阵乘法中的左矩阵. 
@@ -4396,7 +4396,7 @@ group_list输入类型为List[int]时, Atlas A2 训练系列产品/Atlas 800I A2
 单多多: x为单张量, weight为多张量, y为多张量. 
 多多单: x和weight为多张量, y为单张量. 每组矩阵乘法的结果连续存放在同一个张量中. 
 场景限制
-多多多: 仅支持split_item为0或1. x中tensor支持2-6维, weight中tensor需为2维, y中tensor维度和x保持一致. x中tensor大于2维, group_list必须传空. x中tensor为2维且传入group_list, group_list的差值需与x中tensor的第一维一一对应. 
+多多多: 仅支持split_item为0或1. x中tensor要求维度一致, 支持2-6维, weight中tensor需为2维, y中tensor维度和x保持一致. x中tensor大于2维, group_list必须传空. x中tensor为2维且传入group_list, group_list的差值需与x中tensor的第一维一一对应. 
 单多单: 仅支持split_item为2或3. 必须传group_list, 且最后一个值与x中tensor的第一维相等. x、weight、y中tensor需为2维. weight中每个tensor的N轴必须相等. 
 单多多: 仅支持split_item为0或1. 必须传group_list, group_list的差值需与y中tensor的第一维一一对应. x、weight、y中tensor需为2维. 
 多多单: 仅支持split_item为2或3. x、weight、y中tensor需为2维. weight中每个tensor的N轴必须相等. 若传入group_list, group_list的差值需与x中tensor的第一维一一对应. 
@@ -4410,11 +4410,10 @@ group_type
 0: 单多单, x为单张量, weight为多张量, y为单张量. 
 0: 多多单, x和weight为多张量, y为单张量. 每组矩阵乘法的结果连续存放在同一个张量中. 
 场景限制
--1: 仅支持split_item为0或1. x中tensor支持2-6维, weight中tensor需为2维, y中tensor维度和x保持一致. group_list必须传空. 支持weight转置, 但weight中每个tensor是否转置需保持统一. x不支持转置. 
+-1: 仅支持split_item为0或1. x中tensor要求维度一致, 支持2-6维, weight中tensor需为2维, y中tensor维度和x保持一致. group_list必须传空. 支持weight转置, 但weight中每个tensor是否转置需保持统一. x不支持转置. 
 0: 仅支持split_item为2或3. weight中tensor需为3维, x、y中tensor需为2维. 必须传group_list, 且当group_list_type为0时, 最后一个值与x中tensor的第一维相等, 当group_list_type为1时, 数值的总和与x中tensor的第一维相等. group_list第1维最大支持1024, 即最多支持1024个group. 支持weight转置. x不支持转置. 
 0: 仅支持split_item为2或3. 必须传group_list, 且当group_list_type为0时, 最后一个值与x中tensor的第一维相等, 当group_list_type为1时, 数值的总和与x中tensor的第一维相等, 长度最大为128. x、weight、y中tensor需为2维. weight中每个tensor的N轴必须相等. 支持weight转置, 但weight中每个tensor是否转置需保持统一. x不支持转置. 
 0:  仅支持split_item为2或3. x、weight、y中tensor需为2维. weight中每个tensor的N轴必须相等. 若传入group_list, 当group_list_type为0时, group_list的差值需与x中tensor的第一维一一对应, 当group_list_type为1时, group_list的数值需与x中tensor的第一维一一对应, 且长度最大为128. 支持weight转置, 但weight中每个tensor是否转置需保持统一. x不支持转置. 
-2: 仅支持split_item为2或3. x、weight中tensor需为2维, y中tensor需为3维. 必须传group_list, 且当group_list_type为0时, 最后一个值与x中tensor的第二维相等, 当group_list_type为1时, 数值的总和与x中tensor的第二维相等. group_list第1维最大支持1024,  即最多支持1024个group. x必须转置, weight不能转置. 
 Atlas 推理系列产品: 
 输入输出只支持float16的数据类型, 输出y的n轴大小需要是16的倍数. 
 group_type
