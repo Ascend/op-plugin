@@ -1183,10 +1183,106 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
     return (expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales)
 
 
+@impl(m, "npu_moe_distribute_dispatch_v2")
+def npu_moe_distribute_dispatch_v2_meta(x, expert_ids, group_ep, ep_world_size, ep_rank_id, moe_expert_num, scales=None, x_active_mask=None, expert_scales=None, group_tp="", tp_world_size=0,
+                                        tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, quant_mode=0, global_bs=0, expert_token_nums_type=1):
+    torch._check(
+        (ep_rank_id >= 0) and (ep_rank_id < ep_world_size),
+        lambda: (
+            f"ep_rank_id should be in [0, ep_world_size), "
+            f"but got {ep_world_size=}, {ep_rank_id=}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    torch._check(
+        (shared_expert_rank_num >= 0) and (shared_expert_rank_num < ep_world_size),
+        lambda: (
+            f"shared_expert_rank_num should be in [0, ep_world_size), "
+            f"but got {ep_world_size=}, {shared_expert_rank_num=}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    is_shared_default = ((shared_expert_num == 1) and (shared_expert_rank_num == 0))
+    is_no_shared = ((shared_expert_num == 0) and (shared_expert_rank_num == 0))
+    is_valid_shared = (
+        (shared_expert_num > 0)
+        and ((shared_expert_rank_num // shared_expert_num) > 0)
+        and ((shared_expert_rank_num % shared_expert_num) == 0)
+    )
+    torch._check(
+        is_shared_default or is_no_shared or is_valid_shared,
+        lambda: (
+            f"shared expert setting invalid, "
+            f"got {shared_expert_num=}, {shared_expert_rank_num=}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    
+    bs = x.size(0)
+    h = x.size(1)
+    k = expert_ids.size(1)
+
+    shared_front = (expert_shard_type == 0)
+    outDtype = x.dtype
+
+    local_moe_expert_num = 0
+    global_bs_real = 0
+    if global_bs == 0:
+        global_bs_real = bs * ep_world_size
+    else:
+        global_bs_real = global_bs
+    a = 0
+    if shared_front:
+        if ep_rank_id < shared_expert_rank_num:
+            local_moe_expert_num = 1
+            max_bs = global_bs_real // ep_world_size
+            rank_num_per_shared_expert = shared_expert_rank_num // shared_expert_num
+            max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) // rank_num_per_shared_expert
+            a = max_bs * max_shared_group_num
+        else:
+            local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
+            a = global_bs_real * min(local_moe_expert_num, k)
+
+    ep_recv_cnt_num = 0
+    if tp_world_size == 2:
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num * tp_world_size
+    else:
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num
+
+    if scales is not None or quant_mode != 0:
+        outDtype = torch.int8
+
+    expand_idx = x.new_empty((max(bs * k, a * 128)), dtype=torch.int32)
+    if tp_world_size == 0:
+        expand_x = x.new_empty((a, h), dtype=outDtype)
+        dynamic_scales = x.new_empty((a), dtype=torch.float32)
+    else:
+        expand_x = x.new_empty((a * tp_world_size, h), dtype=outDtype)
+        dynamic_scales = x.new_empty((a * tp_world_size), dtype=torch.float32)
+    expert_token_nums = x.new_empty((local_moe_expert_num), dtype=torch.int64)
+    ep_recv_counts = x.new_empty((ep_recv_cnt_num), dtype=torch.int32)
+    tp_recv_counts = x.new_empty((tp_world_size), dtype=torch.int32)
+    expand_scales = x.new_empty((0), dtype=torch.float32)
+    if expert_scales is not None:
+        ep_recv_cnt_num = ep_world_size * local_moe_expert_num + global_bs_real * 2 * k * (ep_world_size // 8)
+        ep_recv_counts = x.new_empty((ep_recv_cnt_num), dtype=torch.int32)
+        expand_scales = x.new_empty((a), dtype=torch.float32)
+    return (expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales)
+
+
 @impl(m, "npu_moe_distribute_combine")
 def npu_moe_distribute_combine_meta(expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, group_ep, ep_world_size, ep_rank_id, moe_expert_num,
                                     tp_send_counts=None, x_active_mask=None, activation_scale=None, weight_scale=None, group_list=None, expand_scales=None, shared_expert_x=None, group_tp="", tp_world_size=0,
                                     tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, global_bs=0, out_dtype=0, comm_quant_mode=0, group_list_type=0):
+    dim_tuple = (expert_ids.size(0), expand_x.size(1))
+
+    return expand_x.new_empty(dim_tuple)
+
+
+@impl(m, "npu_moe_distribute_combine_v2")
+def npu_moe_distribute_combine_v2_meta(expand_x, expert_ids, assist_info_for_combine, ep_send_counts, expert_scales, group_ep, ep_world_size, ep_rank_id, moe_expert_num, 
+                                       tp_send_counts=None, x_active_mask=None, expand_scales=None, shared_expert_x=None, group_tp="", tp_world_size=0, 
+                                       tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, global_bs=0, comm_quant_mode=0):
     dim_tuple = (expert_ids.size(0), expand_x.size(1))
 
     return expand_x.new_empty(dim_tuple)

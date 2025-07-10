@@ -120,6 +120,8 @@
         -   [torch_npu.npu_gather_sparse_index](./context/torch_npu-npu_gather_sparse_index.md)
         -   [torch_npu.npu_moe_distribute_combine](./context/torch_npu-npu_moe_distribute_combine.md)
         -   [torch_npu.npu_moe_distribute_dispatch](./context/torch_npu-npu_moe_distribute_dispatch.md)
+        -   [torch_npu.npu_moe_distribute_combine_v2](./context/torch_npu-npu_moe_distribute_combine_v2.md)
+        -   [torch_npu.npu_moe_distribute_dispatch_v2](./context/torch_npu-npu_moe_distribute_dispatch_v2.md)
         -   [torch_npu.npu_moe_gating_top_k](./context/torch_npu-npu_moe_gating_top_k.md)
         -   [torch_npu.npu_moe_init_routing_v2](./context/torch_npu-npu_moe_init_routing_v2.md)
         -   [torch_npu.npu_dequant_swiglu_quant](./context/torch_npu-npu_dequant_swiglu_quant.md)
