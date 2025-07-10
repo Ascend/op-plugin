@@ -7710,7 +7710,6 @@ custom:
 
   - func: npu_nsa_compress(Tensor input, Tensor weight, int compress_block_size, int compress_stride, *, int[]? actual_seq_len=None) -> Tensor
     op_api: all_version
-    exposed: all_version
     gen_opapi:
       out:
         size: npu_nsa_compress_out_size(input, actual_seq_len_type, actual_seq_len, compress_block_size, compress_stride)
@@ -7738,7 +7737,6 @@ custom:
 
   - func: npu_nsa_compress_infer.cache(Tensor input, Tensor weight, Tensor slot_mapping, int compress_block_size, int compress_stride, int page_block_size, *, Tensor? block_table=None, int[]? actual_seq_len=None, Tensor(a!) cache) -> Tensor(a!)
     op_api: all_version
-    exposed: all_version
     gen_opapi:
       new_params:
         layout: '"TND"'
@@ -7748,7 +7746,6 @@ custom:
 
   - func: npu_nsa_compress_attention(Tensor query, Tensor key, Tensor value, float scale_value, int head_num, int compress_block_size, int compress_stride, int select_block_size, int select_block_count, *, Tensor? topk_mask=None, Tensor? atten_mask=None, int[]? actual_seq_qlen=None, int[]? actual_cmp_seq_kvlen=None, int[]? actual_sel_seq_kvlen=None) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
-    exposed: all_version
     gen_opapi:
       attention_out:
         size: '{query.size(0), query.size(1), value.size(2)}'
@@ -7772,7 +7769,6 @@ custom:
 
   - func: npu_nsa_compress_attention_infer(Tensor query, Tensor key, Tensor value, float scale_value, int head_num, int key_value_head_num, int select_block_size, int select_block_count, int page_block_size, int compress_block_size, int compress_stride, *, Tensor? atten_mask=None, Tensor? block_table=None, Tensor? topk_mask=None, int[]? actual_seq_qlen=None, int[]? actual_cmp_seq_kvlen=None, int[]? actual_sel_seq_kvlen=None) -> (Tensor, Tensor)
     op_api: all_version
-    exposed: all_version
     gen_opapi:
       out:
         size: '{query.size(0), query.size(1), value.size(2) / key_value_head_num}'
@@ -7789,7 +7785,6 @@ custom:
       exec: aclnnNsaCompressAttentionInfer, query, key, value, atten_mask, block_table, actual_seq_qlen_value, actual_cmp_seq_kvlen_value, actual_sel_seq_kvlen_value, topk_mask, head_num, key_value_head_num, select_block_size, select_block_count, compress_block_size, compress_stride, scale_value, layout, page_block_size, sparse_mode, out, topk_indices_out
 
   - func: npu_nsa_select_attention(Tensor query, Tensor key, Tensor value, Tensor topk_indices, float scale_value, int head_num, int select_block_size, int select_block_count, *, Tensor? atten_mask=None, int[]? actual_seq_qlen=None, int[]? actual_seq_kvlen=None) -> (Tensor, Tensor, Tensor)
-    exposed: all_version
     op_api: all_version
     gen_opapi:
       attention_out:
@@ -7829,7 +7824,6 @@ custom:
 
   - func: npu_nsa_select_attention_infer(Tensor query, Tensor key, Tensor value, Tensor topk_indices, float scale_value, int head_num, int key_value_head_num, int select_block_size, int select_block_count, int page_block_size, *, str layout='BSND', Tensor? atten_mask=None, Tensor? block_table=None, int[]? actual_seq_qlen=None, int[]? actual_seq_kvlen=None) -> Tensor
     op_api: all_version
-    exposed: all_version
     gen_opapi:
       out:
         size: 'npu_nsa_select_attention_infer_out_size(query, value, head_num, key_value_head_num, layout)'
