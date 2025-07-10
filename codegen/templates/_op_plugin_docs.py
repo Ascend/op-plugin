@@ -4453,7 +4453,7 @@ bias3 = torch.randn(128, device='npu', dtype=torch.float16)
 bias = [bias1, bias2, bias3]
 group_list = None
 split_item = 0
-npu_out = torch_npu.npu_grouped_matmul(x, weight, bias=bias, group_list=group_list, split_item=split_item)
+npu_out = torch_npu.npu_grouped_matmul(x, weight, bias=bias, group_list=group_list, split_item=split_item, group_type=-1)
 图模式调用
 import torch
 import torch.nn as nn
@@ -4469,7 +4469,7 @@ class GMMModel(nn.Module):
         super().__init__()
     
     def forward(self, x, weight):
-        return torch_npu.npu_grouped_matmul(x, weight)
+        return torch_npu.npu_grouped_matmul(x, weight, group_type=-1)
 
 def main():
     x1 = torch.randn(256, 256, device='npu', dtype=torch.float16)
