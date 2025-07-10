@@ -282,6 +282,7 @@
         -   [（beta）torch_npu.utils.is_combined_tensor_valid](./context/（beta）torch_npu-utils-is_combined_tensor_valid.md)
         -   [（beta）torch_npu.utils.FlopsCounter](./context/（beta）torch_npu-utils-FlopsCounter.md)
         -   [torch_npu.utils.set_thread_affinity](./context/torch_npu-utils.set_thread_affinity.md)
+        -   [torch_npu.utils.reset_thread_affinity](./context/torch_npu-utils.reset_thread_affinity.md)
 
     -   [Distributed](./context/Distributed.md)
         -   [Distributed接口列表](./context/Distributed接口列表.md)
