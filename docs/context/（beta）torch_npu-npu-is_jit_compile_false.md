@@ -25,7 +25,7 @@ bool型。
 ## 调用示例
 
 ```python
->>>torch.npu.set_compile_mode(jit_compile=False)
+>>>torch_npu.npu.set_compile_mode(jit_compile=False)
 >>>torch_npu.npu.is_jit_compile_false()
 True
 ```

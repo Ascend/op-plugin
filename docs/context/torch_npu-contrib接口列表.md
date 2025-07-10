@@ -24,7 +24,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p143412710527"><a name="p143412710527"></a><a name="p143412710527"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1549443765519"><a name="p1549443765519"></a><a name="p1549443765519"></a>bert自我注意的融合实现。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1549443765519"><a name="p1549443765519"></a><a name="p1549443765519"></a>bert自注意力的融合实现。</p>
 </td>
 </tr>
 <tr id="row52986599558"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p19298185917556"><a name="p19298185917556"></a><a name="p19298185917556"></a><a href="（beta）torch_npu-contrib-Prefetcher.md">（beta）torch_npu.contrib.Prefetcher</a></p>

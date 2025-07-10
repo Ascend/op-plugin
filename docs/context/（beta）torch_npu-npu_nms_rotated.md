@@ -25,7 +25,7 @@ torch_npu.npu_nms_rotated(dets, scores, iou_threshold, scores_threshold=0, max_o
 ## 输出说明
 
 - selected_index (Tensor) - shape为[M]的1D整数张量，表示从dets张量中选定的index，其中M <= max_output_size。
-- selected_num (Tensor) - 0D整数张量，表示selected_indices中有效元素的数量。
+- selected_num (Tensor) - 0D整数张量，表示selected_index中有效元素的数量。
 
 ## 约束说明
 

@@ -13,7 +13,7 @@ torch_npu.contrib.function.npu_batched_multiclass_nms(multi_bboxes,multi_scores,
 ## 参数说明
 
 - multi_bboxes (Tensor) - shape(bs, n, \#class, 4)或(bs, n, 4)。
-- multi_scores (Tensor) - shape(bs, n, \#class+1)，其中最后一列包含background class分数，可忽略。在NPU上，为保持语义畅通，我们将统一维度。
+- multi_scores (Tensor) - shape(bs, n, \#class+1)，其中最后一列包含background class分数，可忽略。在NPU上，为保持语义顺畅，我们将统一维度。
 - score_thr (Float，默认值为0.05) - bbox阈值，分数低于它的bbox将不被考虑。
 - nms_thr (Float，默认值为0.45) - NMS IoU阈值。最初的实现是传递\{"iouthreshold": 0.45\}字典，这里做了简化。
 - max_num (Int，默认值为50) - 如果NMS后的bbox数超过max_num值，则只保留最大max_num；如果NMS后的bbox数小于max_num值，则输出将零填充到max_num值。在NPU上需提前申请内存，因此目前不能将max_num值设置为-1。

@@ -8,7 +8,7 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 
 ## 功能说明
 
-使用预期输入计算变形卷积输出（deformed convolution output）。
+使用预期输入计算变形卷积输出（deformable convolution output）。
 
 ## 参数说明
 

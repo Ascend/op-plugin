@@ -8,7 +8,7 @@ torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kerne
 
 ## 功能说明
 
-bert自我注意的融合实现。
+bert自注意力的融合实现。
 
 ## 参数说明
 

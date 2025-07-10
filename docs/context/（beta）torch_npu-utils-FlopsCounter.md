@@ -19,7 +19,7 @@ Flops统计类，用于统计各个常见cube类算子的浮点计算Flops，采
 以下参数说明为初始化时此类的参数说明，用户可通过成员函数对参数进行修改。
 
 - 开关标志位（isEnabled_）：默认值false。
-- 暂停标志位（isPaused _）：默认值false。
+- 暂停标志位（isPaused_）：默认值false。
 - 含重计算的Flops（traversedCount）：默认不统计含重计算的Flops，且值为0。含重计算的Flops一般用于计算硬件算力利用率(Hardware FLOPs Utilization, HFU)。
 - 不含重计算的Flops（recordedCount）：默认不统计不含重计算的Flops，且值为0。不含重计算的Flops一般用于计算模型算力利用率(Model FLOPs Utilization, MFU)。
 

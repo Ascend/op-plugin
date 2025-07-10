@@ -66,7 +66,7 @@ torch_npu.npu_nsa_compress_attention_infer(query, key, value, scale_value, head_
   -   仅支持`compress_stride`取值16、32、64。
   -   仅支持`select_block_size`取值16、32、64。
   -   仅支持`compress_block_size`大于等于`compress_stride` , `select_block_size`大于等于`compress_block_size` , `select_block_size`是`compress_stride`的整数倍。
-  -   压缩前的kvSeqlen的上限可以表示为：$NoCmpKvSeqlenCeil =（cmpKvSeqlen - 1）* compress_block_stride + compress_block_siz$e，需要满足$NoCmpKvSeqlenCeil / select_block_size <= 4096$，且需要满足$select_block_count <= NoCmpKvSeqlenCeil / select_block_size$。
+  -   压缩前的kvSeqlen的上限可以表示为：$NoCmpKvSeqlenCeil =（cmpKvSeqlen - 1）* compress\_block\_stride + compress\_block\_size$，需要满足$NoCmpKvSeqlenCeil / select\_block\_size <= 4096$，且需要满足$select\_block\_count <= NoCmpKvSeqlenCeil / select\_block\_size$。
 
 
 ## 调用示例
