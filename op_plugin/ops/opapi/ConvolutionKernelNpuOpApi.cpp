@@ -57,7 +57,7 @@ static at::Tensor _calc_convolution(const at::Tensor &input, const at::Tensor &w
     // CheckForbidInternalFormat = False: turn on private format；CheckJitDisable = False: turn on JitCompile
     ASCEND_LOGI("_calc_convolution exec with jit compile: %d, allow internal format: %d",
                 is_jit_enable, is_allow_internel_format);
-    if ((is_allow_internel_format || is_jit_enable)) {
+    if ((is_allow_internel_format || is_jit_enable) && (dim != 3)) {
         return acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups,
                                     false, false, false, false);
     }
