@@ -16,7 +16,7 @@ from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 # ------------------------ 环境配置部分 --------------------------
 # 1. 基础环境准备
-#    1.1 加载CANN环境：source {CANN安装路径}/set_env.sh  
+#    1.1 加载CANN环境：source {CANN安装路径}/set_env.sh
 #
 #    1.2 conda环境：conda环境安装torch，torch_npu及相关依赖numpy等
 #
@@ -28,7 +28,7 @@ from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 # ------------------------ 代码修改部分 --------------------------
 # 2. 代码调整部分
 #    2.1 装饰器参数修改
-#        将 @skipIfUnsupportMultiNPU(16) 修改为 @skipIfUnsupportMultiNPU(8)
+#        将 @skipIfUnsupportMultiNPU(16) 修改为 @skipIfUnsupportMultiNPU(8)，因为1个机器8张卡
 #
 #    2.2 初始化进程组配置
 #        init_process_group() 中填写统一的主节点IP（例如ip_a）
@@ -39,25 +39,31 @@ from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 #
 # ------------------------ 数据准备部分 --------------------------
 # 3. 数据同步方案
-#    3.1 生成并保存数据：在主机ip_a中将gen_x()，gen_expert_ids，gen_scale()三个函数输出的数据都用torch.save()保存      
+#    3.1 生成并保存数据：在主机ip_a中将gen_x()，gen_expert_ids，gen_scale()三个函数后面，加入torch.save()函数，用于保存生成的数据。然后用python3执行当前脚本。
 #           例如：torch.save(x_input, "x_input.pt")
 #
 #    3.2 两机数据同步：在ip_b机器执行 scp user@ip_a:/target/file/path/*.pt /current/script/path
 #
-#    3.3 双机加载数据：双机注释掉相关生成数据部分代码，并用torch.load()函数加载pt文件            
+#    3.3 双机加载数据：双机注释掉相关生成数据部分代码，并用torch.load()函数加载pt文件
 #           例如：x_input = torch.load("x_input.pt")
 #
 # ------------------------ 执行验证部分 --------------------------
 # 4. 双机同时执行脚本即可
 
 class TestMoeDistributeDispatch(TestCase):
-    def chunk_tensor(self, tensor, num_chunks):
-        chunk_size = tensor.size(0) // num_chunks
-        chunks = []
-        for i in range(num_chunks):
-            chunk = tensor[i * chunk_size : (i + 1) * chunk_size]
-            chunks.append(chunk)
-        return chunks
+    def chunk_tensor(self, tensor, num_chunks, chunk_size=None):
+        dim0_size = tensor.size(0)
+        if chunk_size:
+            if dim0_size % sum(chunk_size) != 0:
+                raise ValueError(f"最高维的大小({dim0_size})必须能被sum(chunk_size)({sum(chunk_size)})整除")
+            chunk_scale = dim0_size // sum(chunk_size)
+            chunks = torch.split(tensor, [chunk * chunk_scale for chunk in chunk_size], dim=0)
+            return chunks
+        else:
+            if dim0_size % num_chunks != 0:
+                raise ValueError(f"最高维的大小({dim0_size})必须能被num_chunks({num_chunks})整除")
+            chunks = torch.chunk(tensor, num_chunks, dim=0)
+            return chunks
 
     def gen_x(self, shape, dtype):
         tmp = []
@@ -80,7 +86,7 @@ class TestMoeDistributeDispatch(TestCase):
         else:
             return None
 
-    def gen_dispatch_golden(self, x, expert_ids, scales, has_scale, k, quant_mode, global_bs, ep_world_size, bs, total_expert_num, expert_num_per_rank):
+    def gen_dispatch_golden(self, x, expert_ids, scales, has_scale, k, quant_mode, global_bs, ep_world_size, bs, total_expert_num, expert_num_per_rank, bs_list=None):
         expand_x = torch.repeat_interleave(x, k, dim=0)
         if has_scale:
             expand_x = expand_x.to(torch.float32)
@@ -99,25 +105,27 @@ class TestMoeDistributeDispatch(TestCase):
 
         expert_ids = expert_ids.view(global_bs * k)
         expert_ids_sorted, sorted_idx = torch.sort(expert_ids, stable=True)
-        torch.sort(sorted_idx)
         expand_x_sorted = expand_x[sorted_idx]
 
         dynamic_scales_sorted = None
         if quant_mode == 2:
             dynamic_scales_sorted = dynamic_scales[sorted_idx].view(-1)
 
-        expert_ids_input = self.chunk_tensor(expert_ids, ep_world_size)
+        expert_ids_input = self.chunk_tensor(expert_ids, ep_world_size, bs_list)
         expand_idx = torch.zeros(size=(global_bs, k)).to(torch.int32)
+        bs_cumsum = 0
         for rank_id in range(ep_world_size):
+            curr_rank_bs = bs_list[rank_id] if bs_list else bs
             expert_ids_per_rank = expert_ids_input[rank_id].view(-1)
             unique_expert, inverse_indices = torch.unique(expert_ids_per_rank, sorted=True, return_inverse=True)
             valid_expert_token_num_per_rank = torch.bincount(inverse_indices)
-            expand_idx_per_rank = torch.zeros(size=(bs, k)).to(torch.int32).view(-1)
+            expand_idx_per_rank = torch.zeros(size=(curr_rank_bs, k)).to(torch.int32).view(-1)
             # 遍历每个唯一值，计算其在原张量中的出现顺序
             for i, value in enumerate(unique_expert):
                 indices = (expert_ids_per_rank == value).nonzero(as_tuple=True)[0]
                 expand_idx_per_rank[indices] = torch.arange(0, valid_expert_token_num_per_rank[i]).to(torch.int32)
-                expand_idx[rank_id * bs : (rank_id + 1) * bs, :] = expand_idx_per_rank.view(bs, k)
+                expand_idx[bs_cumsum:(bs_cumsum + curr_rank_bs), :] = expand_idx_per_rank.view(curr_rank_bs, k)
+            bs_cumsum = bs_cumsum + curr_rank_bs
 
         vaild_expert_token_nums = torch.bincount(expert_ids).to(torch.int32)
         expert_token_nums = F.pad(vaild_expert_token_nums, (0, total_expert_num - vaild_expert_token_nums.size(0)), 'constant', 0)
@@ -146,7 +154,7 @@ class TestMoeDistributeDispatch(TestCase):
 
         return [expand_x_sorted, dynamic_scales_sorted, expand_idx, expert_tokens_num_cumsum, ep_recv_counts_cumsum, None], actual_tokens
 
-    def golden_compare(self, rank_id, golden_tensor_list, golden_actual_tokens_cumsum, npu_result, quant_mode, bs, k):
+    def golden_compare(self, rank_id, golden_tensor_list, golden_actual_tokens_cumsum, npu_result, quant_mode, bs, k, bs_list=None):
         result = []
         start_offset_in_golden = golden_actual_tokens_cumsum[rank_id - 1].item() if rank_id > 0 else 0
         end_offset_in_golden = golden_actual_tokens_cumsum[rank_id].item()
@@ -165,8 +173,18 @@ class TestMoeDistributeDispatch(TestCase):
             dynamic_scales_npu = npu_result[1][0 : golden_actual_tokens.item()]
             self.assertRtolEqual(dynamic_scales_golden, dynamic_scales_npu, 0.001)
 
-        expand_idx_golden = golden_tensor_list[2][bs * rank_id : bs * (rank_id + 1), :]
-        expand_idx_npu = npu_result[2][0: bs * k].view(bs, k)
+        # 不同 bs
+        if bs_list:
+            curr_rank_bs = bs_list[rank_id]
+            bs_cumsum = 0
+            for i in range(rank_id):
+                bs_cumsum = bs_cumsum + bs_list[i]
+            expand_idx_golden = golden_tensor_list[2][bs_cumsum:(bs_cumsum + curr_rank_bs), :]
+            expand_idx_npu = npu_result[2][0: curr_rank_bs * k].view(curr_rank_bs, k)
+        else:
+            expand_idx_golden = golden_tensor_list[2][bs * rank_id:bs * (rank_id + 1), :]
+            expand_idx_npu = npu_result[2][0: bs * k].view(bs, k)
+
         self.assertEqual(expand_idx_golden, expand_idx_npu,
                              ("rank {} Expect receive tensor {} but got {}.").format(rank_id, expand_idx_golden, expand_idx_npu))
 
@@ -182,7 +200,7 @@ class TestMoeDistributeDispatch(TestCase):
 
     @classmethod
     def run_dispatch_npu(cls, queue, rank, x, expert_ids, scales, ep_world_size, has_scale, total_expert_num, quant_mode, global_bs):
-        torch_npu.npu.set_device(rank)
+        torch_npu.npu.set_device(rank % 8)
 
         dist.init_process_group(backend="hccl", rank=rank, world_size=ep_world_size, init_method='tcp://' + "127.0.0.1" + ':' + "50000")
         # 初始化EP域
@@ -220,9 +238,9 @@ class TestMoeDistributeDispatch(TestCase):
         k = 8
         sharedExpertRankNum = 0
         moeExpertNum = 16
-        global_bs = bs * ep_world_size
-        expert_num_per_rank = 1
-        total_expert_num = world_size * expert_num_per_rank
+        global_bs = int(bs * ep_world_size)
+        expert_num_per_rank = int(moeExpertNum / world_size)
+        total_expert_num = int(world_size * expert_num_per_rank)
 
         input_dtype = torch.bfloat16
         x_shape = (global_bs, h)
@@ -247,7 +265,7 @@ class TestMoeDistributeDispatch(TestCase):
         result_queue = manager.Queue()
         mp.set_start_method("forkserver", force=True)
         for rank_id in rank_list:
-            p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input, 
+            p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input,
                                                                                     ep_world_size, has_scale, total_expert_num, quant_mode, global_bs))
             p.start()
             p_list.append(p)
@@ -260,6 +278,61 @@ class TestMoeDistributeDispatch(TestCase):
 
         for rank_id in rank_list:
             self.golden_compare(rank_id, golden_tensor_list, golden_actual_tokens, results[rank_id], quant_mode, bs, k)
+
+    @skipIfUnsupportMultiNPU(16)
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_moe_distribute_dispatch_different_bs(self):
+        has_scale = False
+        quant_mode = 0
+        ep_world_size = 16
+        tp_world_size = 0
+        world_size = ep_world_size
+        bs = 8
+        bs_list = [random.randint(1, 16) for _ in range(ep_world_size)] # 每张卡生成一个随机长度bs，范围在1~16
+        h = 7168
+        k = 8
+        sharedExpertRankNum = 0
+        moeExpertNum = 16
+        global_bs = int(sum(bs_list))
+        expert_num_per_rank = int(moeExpertNum / world_size)
+        total_expert_num = int(world_size * expert_num_per_rank)
+
+        input_dtype = torch.bfloat16
+        x_shape = (global_bs, h)
+        expert_ids_shape = (global_bs, k)
+        scales_shape = (total_expert_num, h)
+
+        x = self.gen_x(x_shape, input_dtype)
+        expert_ids = self.gen_expert_ids(expert_ids_shape, total_expert_num)
+        scales = self.gen_scale(scales_shape, has_scale)
+
+        x_input = self.chunk_tensor(x, ep_world_size, bs_list)
+        expert_ids_input = self.chunk_tensor(expert_ids, ep_world_size, bs_list)
+        scales_input = scales
+
+        golden_tensor_list, golden_actual_tokens = self.gen_dispatch_golden(x, expert_ids, scales, has_scale, k, quant_mode, global_bs, ep_world_size, bs, total_expert_num, expert_num_per_rank, bs_list)
+
+        p_list = []
+        rank_list = list(range(0, ep_world_size))
+
+        from torch.multiprocessing import Manager
+        manager = Manager()
+        result_queue = manager.Queue()
+        mp.set_start_method("forkserver", force=True)
+        for rank_id in rank_list:
+            p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input,
+                                                                                    ep_world_size, has_scale, total_expert_num, quant_mode, global_bs))
+            p.start()
+            p_list.append(p)
+
+        results = {}
+        for p in p_list:
+            p.join()
+            rank_id, rank_result = result_queue.get()
+            results[rank_id] = rank_result
+
+        for rank_id in rank_list:
+            self.golden_compare(rank_id, golden_tensor_list, golden_actual_tokens, results[rank_id], quant_mode, bs, k, bs_list)
 
 if __name__ == '__main__':
     run_tests()
