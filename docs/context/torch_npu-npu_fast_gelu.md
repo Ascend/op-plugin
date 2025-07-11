@@ -93,7 +93,7 @@ torch_npu.npu_fast_gelu(input) -> Tensor
     npu_backend = tng.get_npu_backend(compiler_config=config)
     npu_mode = torch.compile(npu_mode, fullgraph=True, backend=npu_backend, dynamic=False)
     data_var = np.random.uniform(0, 1, [4, 2048, 16, 128]).astype(np.float32)
-    x = torch.from_numpy(data_var).to(torch.float32)
+    x = torch.from_numpy(data_var).to(torch.float32).npu()
     y =npu_mode(x).cpu().numpy()
     print("shape of y:",y.shape)
     print("dtype of y:",y.dtype)

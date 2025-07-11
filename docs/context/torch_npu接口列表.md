@@ -428,7 +428,12 @@
 </tr>
 <tr id="row1457134215217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p258365124912"><a name="p258365124912"></a><a name="p258365124912"></a><a href="torch_npu-npu_mla_prolog.md">torch_npu.npu_mla_prolog</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>推理场景下，Multi-Head Latent Attention前处理的计算</span>。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>推理场景下，Multi-Head Latent Attention前处理计算接口</span>。</p>
+</td>
+</tr>
+<tr id="row1457134215217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p258365124912"><a name="p258365124912"></a><a name="p258365124912"></a><a href="torch_npu-npu_mla_prolog_v2.md">torch_npu.npu_mla_prolog_v2</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>推理场景下，Multi-Head Latent Attention前处理计算的增强接口</span>。</p>
 </td>
 </tr>
 <tr id="row125419366217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18998182119294"><a name="p18998182119294"></a><a name="p18998182119294"></a><a href="torch_npu-npu_mm_all_reduce_base.md">torch_npu.npu_mm_all_reduce_base</a></p>
@@ -605,6 +610,33 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>提供基于原生torch.matmul和Tensor.matmul接口的aicore错误硬件故障接口，内部执行矩阵计算结果校验过程，并对校验误差和实时计算的校验门限进行对比，判断校验误差是否超越门限，若超越则认为发生了aicore错误。</p>
 </td>
 </tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_alltoallv_gmm.md">torch_npu.npu_alltoallv_gmm</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE网络中，完成路由专家AlltoAllv、Permute、GroupedMatMul融合并实现与共享专家MatMul并行融合，先通信后计算。</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_gmm_alltoallv.md">torch_npu.npu_gmm_alltoallv</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE网络中，完成路由专家GroupedMatMul、AlltoAllv融合并实现与共享专家MatMul并行融合，先计算后通信。</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_combine_add_rms_norm.md">torch_npu.npu_moe_distribute_combine_add_rms_norm</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>完成moe_distribute_combine+add+rms_norm融合。需与torch_npu.npu_moe_distribute_dispatch配套使用，相当于按npu_moe_distribute_dispatch算子收集数据的路径原路返回后对数据进行add_rms_norm操作。</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_transpose_batchmatmul.md">torch_npu.npu_transpose_batchmatmul</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>完成张量input与张量weight的矩阵乘计算。</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_eplb_update_expert.md">torch_npu.npu_moe_eplb_update_expert</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>提供MoE网络中常用的EPLB（Expert Parallelism Load Balancer）算法进行冗余专家部署，解决负载不均衡问题。MoeEPLBUpdateExpert算子可以完成每个token的topK个专家逻辑专家号到物理专家实例号的映射。</p>
+</td>
 </tbody>
 </table>
+
+
+
 
