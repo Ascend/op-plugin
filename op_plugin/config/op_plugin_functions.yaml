@@ -3590,10 +3590,12 @@ official:
   - func: matmul(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
     op_api: [v2.1, newest]
+    internal_format_opapi: all_version
 
   - func: matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: [v2.1, newest]
+    internal_format_opapi: all_version
 
   - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
     acl_op: [v2.0, newest]
@@ -3877,11 +3879,13 @@ official:
   - func: mm(Tensor self, Tensor mat2) -> Tensor
     acl_op: all_version
     op_api: all_version
+    internal_format_opapi: all_version
 
   - func: mm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-
+    internal_format_opapi: all_version
+    
   - func: mse_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
     acl_op: all_version
     op_api: all_version

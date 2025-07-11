@@ -47,6 +47,9 @@ OP_PLUGIN_HIDDEN std::string get_reduction_str(int64_t reduction);
 OP_PLUGIN_HIDDEN int64_t make_warp_dim(int64_t dim, int64_t dim_post_expr);
 OP_PLUGIN_HIDDEN bool is_neox_style(std::string rotary_mode);
 OP_PLUGIN_HIDDEN bool is_transpose_last_two_dims(const at::Tensor &tensor);
+OP_PLUGIN_HIDDEN bool is_two_tensor_base_format(const at::Tensor &self, const at::Tensor &mat2);
+OP_PLUGIN_HIDDEN bool is_nz_format(const at::Tensor &mat2);
+OP_PLUGIN_HIDDEN bool is_nd_nz_format(const at::Tensor &self, const at::Tensor &mat2);
 OP_PLUGIN_HIDDEN bool is_nd_to_nz_on_fly(const at::Tensor &self, const at::Tensor &mat2);
 OP_PLUGIN_HIDDEN bool is_scalar_one(const c10::Scalar &scalar);
 OP_PLUGIN_HIDDEN float get_scalar_float_value(const c10::Scalar &scalar);
@@ -76,5 +79,4 @@ OP_PLUGIN_HIDDEN int64_t get_rotary_mode(c10::string_view mode);
 
 }  // namespace utils
 }  // namespace op_plugin
-
 #endif  // OP_PULGIN_UTILS_CALCULATE_OP_UTILS

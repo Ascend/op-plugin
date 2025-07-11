@@ -94,6 +94,23 @@ bool is_transpose_last_two_dims(const at::Tensor &tensor)
     }
 }
 
+bool is_nz_format(const at::Tensor &mat2)
+{
+    const torch_npu::NPUStorageDesc &tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_;
+    return tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ;
+}
+
+bool is_two_tensor_base_format(const at::Tensor &self, const at::Tensor &mat2)
+{
+    return at_npu::native::FormatHelper::IsOpInputBaseFormat(self) &&
+           at_npu::native::FormatHelper::IsOpInputBaseFormat(mat2);
+}
+
+bool is_nd_nz_format(const at::Tensor &self, const at::Tensor &mat2)
+{
+    return is_nz_format(mat2) && !is_nz_format(self);
+}
+
 bool is_nd_to_nz_on_fly(const at::Tensor &self, const at::Tensor &mat2)
 {
     const static int64_t kInnerAxisMinLimit = 128;

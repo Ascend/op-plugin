@@ -1484,6 +1484,33 @@ auto DecodeDevice(Ts&... args) -> at::Device
         }                                                                                                              \
     } while (false)
 
+#define DO_MATMUL_COMPATIBILITY(aclnn_nz_api, aclnn_nd_api, input1, input2, aclop_func_call) \
+    do {                                                                                    \
+        if (op_plugin::utils::is_two_tensor_base_format(input1, input2)) {                  \
+            DO_COMPATIBILITY(aclnn_nd_api, aclop_func_call);        \
+        } else {                                                                            \
+            if (op_plugin::utils::is_nd_nz_format(input1, input2)) {                        \
+                DO_COMPATIBILITY(aclnn_nz_api, aclop_func_call);    \
+            } else {                                                                        \
+                if (!c10_npu::IsAclnnOnly()) {                                              \
+                    return aclop_func_call;                        \
+                }                                                                           \
+                const torch_npu::NPUStorageDesc &tensor_desc1 =                             \
+                    torch_npu::NPUBridge::GetNpuStorageImpl(input1)->npu_desc_;             \
+                const torch_npu::NPUStorageDesc &tensor_desc2 =                             \
+                    torch_npu::NPUBridge::GetNpuStorageImpl(input2)->npu_desc_;             \
+                TORCH_CHECK(false,                                                          \
+                    "matmul got not support format in current device: ",                    \
+                    "(",                                                                    \
+                    tensor_desc1.npu_format_,                                               \
+                    ", ",                                                                   \
+                    tensor_desc2.npu_format_,                                               \
+                    ")",                                                                    \
+                    OPS_ERROR(ErrCode::PARAM));                                             \
+            }                                                                               \
+        }                                                                                   \
+    } while (0)
+
 template <typename Tuple> class ConvertedParams {
 public:
     explicit ConvertedParams(Tuple &&convertedParams, ReleaseHugeMem releaseMemFunc,

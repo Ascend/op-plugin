@@ -17,6 +17,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_api {
@@ -84,7 +85,12 @@ static inline void matmul_implement_npu(at::Tensor &out, const at::Tensor &self,
 {
     // allow dicrease precision
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-    EXEC_NPU_CMD(aclnnMatmul, self, mat2, out, cube_math_type);
+    // matmul & matmul_out have processed the aclop scenario
+    if (op_plugin::utils::is_nd_nz_format(self, mat2)) {
+        EXEC_NPU_CMD(aclnnMatmulWeightNz, self, mat2, out, cube_math_type);
+    } else {
+        EXEC_NPU_CMD(aclnnMatmul, self, mat2, out, cube_math_type);
+    }
     FLOP_COUNT(FlopCounter::mm_flop, self, mat2);
     return;
 }
@@ -100,7 +106,8 @@ at::Tensor matmul_forward(const at::Tensor &self, const at::Tensor &mat2)
 
 at::Tensor matmul(const at::Tensor &tensor1, const at::Tensor &tensor2)
 {
-    DO_COMPATIBILITY(aclnnMatmul, acl_op::matmul(tensor1, tensor2));
+    DO_MATMUL_COMPATIBILITY(aclnnMatmulWeightNz, aclnnMatmul, tensor1, tensor2, acl_op::matmul(tensor1, tensor2));
+    // aclnn
     auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
     auto result = matmul_forward(tensor1, tensor2);
     at::namedinference::propagate_names_if_nonempty(result, maybe_outnames);
@@ -109,7 +116,9 @@ at::Tensor matmul(const at::Tensor &tensor1, const at::Tensor &tensor2)
 
 at::Tensor &matmul_out(const at::Tensor &tensor1, const at::Tensor &tensor2, at::Tensor &result)
 {
-    DO_COMPATIBILITY(aclnnMatmul, acl_op::matmul_out(tensor1, tensor2, result));
+    DO_MATMUL_COMPATIBILITY(
+        aclnnMatmulWeightNz, aclnnMatmul, tensor1, tensor2, acl_op::matmul_out(tensor1, tensor2, result));
+    // aclnn
     auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
     // matmul_out don't support backward
     auto output_size = get_output_size(tensor1, tensor2);
@@ -119,4 +128,4 @@ at::Tensor &matmul_out(const at::Tensor &tensor1, const at::Tensor &tensor2, at:
     return result;
 }
 
-}
+}  // namespace op_api
