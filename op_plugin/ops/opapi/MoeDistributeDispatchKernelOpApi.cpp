@@ -36,48 +36,35 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
     TORCH_CHECK((x.dim() == 2) && (expert_ids.dim() == 2), "The x and expert_ids should be 2D", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((x.scalar_type() == at::kBFloat16 || (x.scalar_type() == at::kHalf)) && (expert_ids.scalar_type() == at::kInt),
                 "dtype of x should be bfloat16 or half, dtype of expert_ids should be int.", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK((ep_rank_id >= 0) && (ep_rank_id < ep_world_size),
-                "ep_rank_id should be in [0, ep_world_size), but got",
-                " ep_world_size: ", ep_world_size,
-                ", ep_rank_id: ", ep_rank_id,
-                ". " + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((shared_expert_rank_num >= 0) && (shared_expert_rank_num < ep_world_size),
-                "shared_expert_rank_num should be in [0, ep_world_size), but got",
-                " ep_world_size: ", ep_world_size,
-                ", shared_expert_rank_num: ", shared_expert_rank_num,
-                ". " + OPS_ERROR(ErrCode::PARAM));
-    bool is_shared_default = ((shared_expert_num == 1) && (shared_expert_rank_num == 0));
-    bool is_no_shared = ((shared_expert_num == 0) && (shared_expert_rank_num == 0));
-    bool is_valid_shared = ((shared_expert_num > 0)
-        && ((shared_expert_rank_num / shared_expert_num) > 0)
-        && ((shared_expert_rank_num % shared_expert_num) == 0));
-    TORCH_CHECK(is_shared_default || is_no_shared || is_valid_shared,
-                "shared expert setting invalid, got",
-                " shared_expert_num: ", shared_expert_num,
-                ", shared_expert_rank_num: ", shared_expert_rank_num,
-                ". " + OPS_ERROR(ErrCode::PARAM));
+                "shared_expert_rank_num should be in [0, ep_world_size)", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((expert_token_nums_type == 0) || (expert_token_nums_type == 1),
                 "The expert_token_nums_type should be 0 or 1.", OPS_ERROR(ErrCode::PARAM));
     auto x_size = x.sizes();
     auto expert_ids_size = expert_ids.sizes();
 
-    int64_t bs = x_size[0];
+    int64_t n = x_size[0];
     int64_t h = x_size[1];
     int64_t k = expert_ids_size[1];
 
     // a2 expert_shard_type、shared_expert_rank_num 应为0
-    bool shared_front = (expert_shard_type == 0);
+    bool shared_front = (expert_shard_type == 0) ? true : false;
     int64_t local_moe_expert_num = 0;
-    int64_t global_bs_real = (global_bs == 0) ? (bs * ep_world_size) : global_bs;
+    int64_t global_bs_real = (global_bs == 0) ? (n * ep_world_size) : global_bs;
     int64_t a = 0;
     int64_t ep_recv_cnt_num = 0;
     if (shared_front) {
         if (ep_rank_id < shared_expert_rank_num) {
             local_moe_expert_num =  1;
-            int64_t max_bs = global_bs_real / ep_world_size;  // 前面已有拦截，保证ep_world_size > 0
-            int64_t rank_num_per_shared_expert = shared_expert_rank_num / shared_expert_num;  // 前面已有拦截, 保证进入该分支时shared_expert_num > 0
-            int64_t max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) / rank_num_per_shared_expert;
-            a = max_bs * max_shared_group_num;
+            a = global_bs_real / shared_expert_rank_num;
+        } else {
+            local_moe_expert_num = moe_expert_num / (ep_world_size - shared_expert_rank_num);
+            a = global_bs_real * std::min(local_moe_expert_num, k);
+        }
+    } else {
+        if (ep_rank_id >= ep_world_size - shared_expert_rank_num) {
+            local_moe_expert_num = 1;
+            a = global_bs_real / shared_expert_rank_num;
         } else {
             local_moe_expert_num = moe_expert_num / (ep_world_size - shared_expert_rank_num);
             a = global_bs_real * std::min(local_moe_expert_num, k);
@@ -103,10 +90,10 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
         dynamic_scales = npu_preparation::apply_tensor_without_format({a * tp_world_size}, x.options().dtype(at::kFloat));
     }
     
+    at::Tensor expand_idx = npu_preparation::apply_tensor_without_format({n * k}, x.options().dtype(at::kInt));
     at::Tensor expert_token_nums = npu_preparation::apply_tensor_without_format({local_moe_expert_num}, x.options().dtype(at::kLong));
     at::Tensor ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));
     at::Tensor tp_recv_counts = npu_preparation::apply_tensor_without_format({tp_world_size}, x.options().dtype(at::kInt));
-    at::Tensor assist_info_forcombine{nullptr};
 
     // a2分层方案
     at::Tensor expand_scales = npu_preparation::apply_tensor_without_format({a}, x.options().dtype(at::kFloat));
@@ -115,31 +102,15 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
         ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));
     }
 
-    static const bool is_aclnn_v2_available = check_aclnn_kernel_available("aclnnMoeDistributeDispatchV2");
-    if (!is_aclnn_v2_available) {
-        assist_info_forcombine = npu_preparation::apply_tensor_without_format({bs * k}, x.options().dtype(at::kInt));
-        EXEC_NPU_CMD(aclnnMoeDistributeDispatch, x, expert_ids, scales, x_active_mask, expert_scales,
-                     group_ep_ptr, ep_world_size, ep_rank_id,
-                     moe_expert_num,
-                     group_tp_ptr, tp_world_size, tp_rank_id,
-                     expert_shard_type, shared_expert_num, shared_expert_rank_num,
-                     quant_mode, global_bs_real, expert_token_nums_type, expand_x,
-                     dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts,
-                     tp_recv_counts, expand_scales);
-    } else {
-        std::string comm_log = "0";
-        char *comm_log_ptr = const_cast<char *>(comm_log.c_str());
-        assist_info_forcombine = npu_preparation::apply_tensor_without_format({std::max(bs * k, a * 128)}, x.options().dtype(at::kInt));
-        EXEC_NPU_CMD(aclnnMoeDistributeDispatchV2, x, expert_ids, scales, x_active_mask, expert_scales,
-                     group_ep_ptr, ep_world_size, ep_rank_id,
-                     moe_expert_num,
-                     group_tp_ptr, tp_world_size, tp_rank_id,
-                     expert_shard_type, shared_expert_num, shared_expert_rank_num,
-                     quant_mode, global_bs_real, expert_token_nums_type, comm_log_ptr, expand_x,
-                     dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts,
-                     tp_recv_counts, expand_scales);
-    }
-    return std::tie(expand_x, dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts, tp_recv_counts,
+    EXEC_NPU_CMD(aclnnMoeDistributeDispatch, x, expert_ids, scales, x_active_mask, expert_scales,
+                 group_ep_ptr, ep_world_size, ep_rank_id,
+                 moe_expert_num,
+                 group_tp_ptr, tp_world_size, tp_rank_id,
+                 expert_shard_type, shared_expert_num, shared_expert_rank_num,
+                 quant_mode, global_bs_real, expert_token_nums_type, expand_x,
+                 dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts,
+                 tp_recv_counts, expand_scales);
+    return std::tie(expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts,
         expand_scales);
 }
 }
