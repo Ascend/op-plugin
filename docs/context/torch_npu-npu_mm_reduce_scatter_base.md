@@ -37,7 +37,7 @@ Tensor类型，数据类型和input保持一致，shape维度和input保持一�
 -   该接口支持图模式（PyTorch 2.1版本）。
 
 -   input不支持输入转置后的tensor，x2转置后输入，需要满足shape的第一维大小与input的最后一维相同，满足matmul的计算条件。
--   一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
+-   Atlas A2 训练系列产品：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
 
 ## 支持的型号<a name="zh-cn_topic_0000001753997573_section1414151813182"></a>
 
