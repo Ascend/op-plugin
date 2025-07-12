@@ -166,7 +166,7 @@ class TestMoeDistributeDispatch(TestCase):
             self.assertRtolEqual(dynamic_scales_golden, dynamic_scales_npu, 0.001)
 
         expand_idx_golden = golden_tensor_list[2][bs * rank_id : bs * (rank_id + 1), :]
-        expand_idx_npu = npu_result[2][0: bs * k].view(bs, k)
+        expand_idx_npu = npu_result[2].view(bs, k)
         self.assertEqual(expand_idx_golden, expand_idx_npu,
                              ("rank {} Expect receive tensor {} but got {}.").format(rank_id, expand_idx_golden, expand_idx_npu))
 

@@ -70,7 +70,6 @@ class TestMoeDistributeCombine(TestCase):
                                                    tp_world_size=tp_world_size,
                                                    tp_rank_id=int(rank % tp_world_size),
                                                    expert_shard_type=0,
-                                                   shared_expert_num=int(sharedExpertRankNum > 0),
                                                    shared_expert_rank_num=sharedExpertRankNum,
                                                    global_bs=globalBS)
         c2p.put((rank, out.cpu()))

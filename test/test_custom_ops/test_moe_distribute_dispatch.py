@@ -64,7 +64,6 @@ class TestMoeDistributeDispatch(TestCase):
                                                            tp_world_size=tp_world_size,
                                                            tp_rank_id=int(rank % tp_world_size) if tp_world_size != 1 else 0,
                                                            expert_shard_type=0,
-                                                           shared_expert_num=int(sharedExpertRankNum > 0),
                                                            shared_expert_rank_num=sharedExpertRankNum,
                                                            quant_mode=0,
                                                            global_bs=globalBS)

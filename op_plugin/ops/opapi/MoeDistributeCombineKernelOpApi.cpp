@@ -24,7 +24,7 @@ namespace op_api {
     const int DIM_TWO = 2;
 
 at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tensor &expert_ids,
-                                      const at::Tensor &assist_info,
+                                      const at::Tensor &expand_idx,
                                       const at::Tensor &ep_send_counts, const at::Tensor &expert_scales,
                                       c10::string_view group_ep, int64_t ep_world_size, int64_t ep_rank_id,
                                       int64_t moe_expert_num,
@@ -60,28 +60,12 @@ at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tens
     } else {
         output = npu_preparation::apply_tensor_without_format({n, h}, expert_ids.options().dtype(at::kHalf));
     }
-    
-    static const bool is_aclnn_v2_available = check_aclnn_kernel_available("aclnnMoeDistributeCombineV2");
-    if (!is_aclnn_v2_available) {
-        EXEC_NPU_CMD(aclnnMoeDistributeCombine, expand_x, expert_ids, assist_info, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
-                     activation_scale, weight_scale, group_list, expand_scales,
-                     group_ep_ptr, ep_world_size, ep_rank_id,
-                     moe_expert_num,
-                     group_tp_ptr, tp_world_size, tp_rank_id,
-                     expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type, output);
-    } else {
-        std::string comm_log = "0";
-        char *comm_log_ptr = const_cast<char *>(comm_log.c_str());
-        EXEC_NPU_CMD(aclnnMoeDistributeCombineV2, expand_x, expert_ids, assist_info, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
-                     activation_scale, weight_scale, group_list, expand_scales,
-                     shared_expert_x,
-                     group_ep_ptr, ep_world_size, ep_rank_id,
-                     moe_expert_num,
-                     group_tp_ptr, tp_world_size, tp_rank_id,
-                     expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type,
-                     comm_log_ptr,
-                     output);
-    }
+    EXEC_NPU_CMD(aclnnMoeDistributeCombine, expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
+        activation_scale, weight_scale, group_list, expand_scales,
+        group_ep_ptr, ep_world_size, ep_rank_id,
+        moe_expert_num,
+        group_tp_ptr, tp_world_size, tp_rank_id,
+        expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type, output);
     return output;
 }
 }
