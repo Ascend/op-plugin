@@ -847,7 +847,7 @@ def npu_fusion_attention_backward(query, key, value, dy, head_num, input_layout,
 
 
 @impl(m, "npu_fusion_attention_v2")
-def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, pse=None, padding_mask=None,
+def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *, pse=None, padding_mask=None,
                                 atten_mask=None, query_rope=None, key_rope=None, scale=1.0, keep_prob=1.0, pre_tokens=2147483647, next_tokens=2147483647,
                                 inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False):
     B = query.size(0)
