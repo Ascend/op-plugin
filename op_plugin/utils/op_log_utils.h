@@ -397,34 +397,12 @@ inline std::string convert_debug_info(const at::Tensor &at_tensor)
                << ", storage_sizes: "
                << at_tensor_sizes.storage_sizes_;
         } else {
-            // Min/Max for discontiguous tensor leads to infinite recursion of aclnnInpalceCopy
-            if (!at_tensor.is_contiguous()) {
-                ss << "Discontiguous tensor npu_format: "
-                   << at_tensor_sizes.npu_format_
-                   << ", base_sizes: "
-                   << at_tensor_sizes.base_sizes_
-                   << ", base_strides: "
-                   << at_tensor_sizes.base_strides_
-                   << ", storage_sizes: "
-                   << at_tensor_sizes.storage_sizes_;
-                std::string res = ss.str();
-                replace_and_append_newline(res);
-                return res;
-            }
-            // To cpu to avoid using aclnnMin/aclnnMax/aclnnMean.
-            // To float to avoid problems caused by non-floating-point types, such as int.
-            at::Tensor cpu_tensor;
-            if (at_tensor.is_floating_point() || at_tensor.is_complex()) {
-                cpu_tensor = at_tensor.cpu();
-            } else {
-                cpu_tensor = at_tensor.cpu().to(at::kFloat);
-            }
             ss << "Tensor min: "
-               << cpu_tensor.min()
+               << at_tensor.min()
                << ", max: "
-               << cpu_tensor.max()
+               << at_tensor.max()
                << ", mean: "
-               << cpu_tensor.mean()
+               << at_tensor.mean()
                << ", npu_format: "
                << at_tensor_sizes.npu_format_
                << ", base_sizes: "
@@ -502,20 +480,12 @@ inline std::string convert_debug_info(const TensorWrapper &tensor_r)
                << ", storage_sizes: "
                << at_tensor_sizes.storage_sizes_;
         } else {
-            // To cpu to avoid using aclnnMin/aclnnMax/aclnnMean.
-            // To float to avoid problems caused by non-floating-point types, such as int.
-            at::Tensor cpu_tensor;
-            if (at_tensor.is_floating_point() || at_tensor.is_complex()) {
-                cpu_tensor = at_tensor.cpu();
-            } else {
-                cpu_tensor = at_tensor.cpu().to(at::kFloat);
-            }
             ss << "Tensor min: "
-               << cpu_tensor.min()
+               << at_tensor.min()
                << ", max: "
-               << cpu_tensor.max()
+               << at_tensor.max()
                << ", mean: "
-               << cpu_tensor.mean()
+               << at_tensor.mean()
                << ", npu_format: "
                << at_tensor_sizes.npu_format_
                << ", base_sizes: "

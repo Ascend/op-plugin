@@ -21,6 +21,7 @@
 #include <tuple>
 #include <vector>
 #include <algorithm>
+#include <thread>
 
 #include "torch_npu/csrc/logging/LogContext.h"
 
@@ -31,35 +32,45 @@
 namespace op_plugin {
 namespace logging {
 
-static std::shared_ptr<npu_logging::Logger> LOGGER = npu_logging::logging().getLogger("torch_npu.op_plugin");
+extern std::shared_ptr<npu_logging::Logger> LOGGER;
+extern thread_local int log_depth;
 
 // aclnn exec logging function with task queue.
 #define OP_EXEC_LOG_WITH_TASK_QUEUE(aclnn_api, exec_cmd, task_queue, ...)                                                                   \
     do {                                                                                                                                    \
-        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO) {                                               \
-            op_plugin::logging::LOGGER->info("%s %s with task_queue = %s%s",                                                                \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO && op_plugin::logging::log_depth == 0) {         \
+            op_plugin::logging::log_depth += 1;                                                                                             \
+            op_plugin::logging::LOGGER->long_info("%s %s with task_queue = %s%s",                                                           \
                          aclnn_api, exec_cmd, task_queue, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());       \
+            op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
-        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG) {                                              \
-            op_plugin::logging::LOGGER->info("%s %s with task_queue = %s%s",                                                                \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG && op_plugin::logging::log_depth == 0) {        \
+            op_plugin::logging::log_depth += 1;                                                                                             \
+            at_npu::native::OpCommand cmd;                                                                                                  \
+            op_plugin::logging::LOGGER->long_info("%s %s with task_queue = %s%s",                                                           \
                 aclnn_api, exec_cmd, task_queue, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                \
-            op_plugin::logging::LOGGER->debug("%s %s",                                                                                      \
+            op_plugin::logging::LOGGER->long_debug("%s %s",                                                                                 \
                 aclnn_api, op_plugin::logging::generate_debug_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                                \
+            op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
     } while (0);
 
 // aclnn exec logging function.
 #define OP_EXEC_LOG(aclnn_api, exec_cmd, ...)                                                                                               \
     do {                                                                                                                                    \
-        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO) {                                               \
-            op_plugin::logging::LOGGER->info("%s %s with%s",                                                                                \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO && op_plugin::logging::log_depth == 0) {         \
+            op_plugin::logging::log_depth += 1;                                                                                             \
+            op_plugin::logging::LOGGER->long_info("%s %s with%s",                                                                           \
                 #aclnn_api, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                           \
+            op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
-        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG) {                                              \
-            op_plugin::logging::LOGGER->info("%s %s with%s",                                                                                \
+        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG && op_plugin::logging::log_depth == 0) {        \
+            op_plugin::logging::log_depth += 1;                                                                                             \
+            op_plugin::logging::LOGGER->long_info("%s %s with%s",                                                                           \
                 #aclnn_api, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                           \
-            op_plugin::logging::LOGGER->debug("%s %s",                                                                                      \
+            op_plugin::logging::LOGGER->long_debug("%s %s",                                                                                 \
                 #aclnn_api, op_plugin::logging::generate_debug_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                               \
+            op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
     } while (0);
 
