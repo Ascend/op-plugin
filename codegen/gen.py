@@ -251,12 +251,10 @@ def gen_function_declaration(
 
 def gen_return(
     f: NativeFunction,
-    deprecated_dict: Dict,
 ) -> List[Optional[str]]:
     ret = []
     with native_function_manager(f):
         has_symint = False
-        op_name_with_overload = str(f.func.name)
         op_name = str(f.func.name.name)
         global SYMINT_SET
         if f.func.is_out_fn():
@@ -271,16 +269,6 @@ def gen_return(
         impl_name = f.impl_name
         if not f.impl_name:
             impl_name = op_name
-        
-        deprecated_warn = ""
-        if op_name_with_overload in deprecated_dict.keys():
-            deprecated_func = f'torch_npu.{str(f.func.name.name)}'
-            deprecated_replace = deprecated_dict[op_name_with_overload]
-            if deprecated_replace is not None:
-                deprecated_warn += f'TORCH_WARN_ONCE("{deprecated_func} is deprecated and will be removed in future version. \
-Use {deprecated_replace} instead.");'
-            else:
-                deprecated_warn += f'TORCH_WARN_ONCE("{deprecated_func} is deprecated and will be removed in future version.");'
 
         format_check = []
         format_display = []
@@ -301,7 +289,6 @@ Use {deprecated_replace} instead.");'
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
             if not f.internal_format_opapi:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
     bool is_jit_disable = at_npu::native::env::CheckJitDisable();
 {"".join(format_for_args)}
     ASCEND_LOGI("{impl_name} exec with jit compile: %d{"".join(place_holder)}",
@@ -320,7 +307,6 @@ Use {deprecated_replace} instead.");'
 """)
             else:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
     bool is_jit_disable = at_npu::native::env::CheckJitDisable();
     ASCEND_LOGI("{impl_name} exec with jit compile: %d", !is_jit_disable);
     if (is_jit_disable) {{
@@ -334,13 +320,11 @@ Use {deprecated_replace} instead.");'
             ns = f.impl_ns[0]
             if f.internal_format_opapi:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
     return {ns}::{impl_name}({args_exprs_str});
 }}
 """)
             else:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
 {"".join(format_for_args)}
     if ({("".join(format_check)).replace(" && ", " || !").replace(" || ", "", 1)}) {{
         TORCH_CHECK(false,
@@ -353,7 +337,6 @@ Use {deprecated_replace} instead.");'
         elif "acl_op" in f.impl_ns:
             ns = f.impl_ns[0]
             ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
     if ({is_aclnn_only}) {{
         TORCH_CHECK(false,
             "Current device only support aclnn operator, "
@@ -365,7 +348,6 @@ Use {deprecated_replace} instead.");'
 """)
         if f.sparse is not None:
             ret.append(f"""{sig.defn(name=op_name + "_sparse")}{{
-    {deprecated_warn}
     return sparse::{impl_name}_sparse({args_exprs_str});
 }}
 """)
@@ -374,23 +356,15 @@ Use {deprecated_replace} instead.");'
 
 def parse_native_yaml(
     path: str,
-    deprecate_path: str,
 ) -> Tuple[Dict[str, list], List[Optional[str]]]:
 
     with open(path, "r") as f:
         es = yaml.safe_load(f)
-    
-    with open(deprecate_path, "r") as f:
-        dp = yaml.safe_load(f)
 
     res = parse_native_yaml_struct(es)
     backend_declarations = defaultdict(list)
     for f in res:
         gen_function_declaration(f, backend_declarations)
-    deprecated = dp["deprecated"]
-    deprecated_dict = {}
-    for item in deprecated:
-        deprecated_dict[item.get("name")] = item.get("replace", None)
-    dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f, deprecated_dict), res)))
+    dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f), res)))
 
     return backend_declarations, dispatch_registrations_body
