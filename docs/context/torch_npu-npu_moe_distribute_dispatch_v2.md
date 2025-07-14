@@ -1,8 +1,8 @@
-# torch\_npu.npu\_moe\_distribute\_dispatch<a name="ZH-CN_TOPIC_0000002343094193"></a>
+# torch\_npu.npu\_moe\_distribute\_dispatch\_v2<a name="ZH-CN_TOPIC_0000002343094193"></a>
 
 ## 功能说明<a name="zh-cn_topic_0000002203575833_section14441124184110"></a>
 
--   算子功能：需与[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine_v2.md)配套使用，完成MoE的并行部署下的token dispatch与combine。对Token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）。
+-   算子功能：需与[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)配套使用，完成MoE的并行部署下的token dispatch\_v2与combine\_v2。对Token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）。
 -   计算公式：
     -   如果quant\_mode !=2（非动态量化）
 
@@ -21,7 +21,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 ## 参数说明<a name="zh-cn_topic_0000002203575833_section112637109429"></a>
 
 -   x：Tensor类型，表示计算使用的token数据，需根据expert\_ids来发送给其他卡。要求为2D的Tensor，shape为\(BS, H\)，表示有BS个token，数据类型支持bfloat16、float16，数据格式为ND，支持非连续的Tensor。
--   expert\_ids：Tensor类型，表示每个token的topK个专家索引，决定每个token要发给哪些专家。要求为2D的Tensor，shape为\(BS, K\)，数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine_v2.md)的expert\_ids输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
+-   expert\_ids：Tensor类型，表示每个token的topK个专家索引，决定每个token要发给哪些专家。要求为2D的Tensor，shape为\(BS, K\)，数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的expert\_ids输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
 -   group\_ep：string类型，EP通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)，不能和group\_tp相同。
 -   ep\_world\_size：int类型，EP通信域size。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值支持16、32、64。
@@ -32,7 +32,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 -   scales：Tensor类型，可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为2D的Tensor，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，数据类型支持float，数据格式为ND，不支持非连续的Tensor。
 -   x\_active\_mask：Tensor类型，
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：预留参数，暂未使用，使用默认值即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求是一个1D Tensor，shape为\(BS, \)，数据类型支持bool，数据格式要求为ND，支持非连续的Tensor。默认值为所有token全部有效；当每张卡的BS数量不一致时，所有token必须全部有效。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求是一个1D Tensor，shape为\(BS, \)，数据类型支持bool，数据格式要求为ND，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入；默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
 
 -   expert\_scales：Tensor类型，可选参数，表示每个token的topK个专家权重。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求为2D的Tensor，shape为\(BS, K\)，数据类型支持float，数据格式为ND，支持非连续的Tensor。
@@ -55,11 +55,11 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前仅支持0，表示共享专家卡排在MoE专家卡前面。
     -   shared\_expert\_num：int类型，表示共享专家数量，一个共享专家可以复制部署到多个卡上。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：暂不支持该参数，使用默认值即可。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, 4\]，0表示无共享专家，默认值为0。
+        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, 4\]，0表示无共享专家，默认值为1。
 
 -   shared\_expert\_rank\_num：int类型，可选参数，表示共享专家卡数量。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持共享专家，传0即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, ep\_world\_size-1\)。取0表示无共享专家，不取0需满足ep\_world\_size%shared\_expert\_rank\_num=0。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持共享专家，使用默认值即可。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, ep\_world\_size\)。取0表示无共享专家，不取0需满足shared\_expert\_rank\_num%shared\_expert\_num=0。
 
 -   quant\_mode：int类型，可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。当quant\_mode=2，dynamic\_scales不为None；当quant\_mode=0，dynamic\_scales为None。
 -   global\_bs：int类型，可选参数，表示EP域全局的batch size大小。
@@ -72,16 +72,16 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 
 -   expand\_x：Tensor类型，表示本卡收到的token数据，要求为2D的Tensor，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持bfloat16、float16、int8。量化时类型为int8，非量化时与x数据类型保持一致。数据格式为ND，支持非连续的Tensor。
 -   dynamic\_scales：Tensor类型，表示计算得到的动态量化参数。当quant\_mode非0时才有该输出，要求为1D的Tensor，shape为\(A,\)，数据类型支持float，数据格式支持ND，支持非连续的Tensor。
--   expand\_idx ：Tensor类型，表示给同一专家发送的token个数，要求是一个1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine_v2.md)的expand\_idx输入。
+-   expand\_idx ：Tensor类型，表示给同一专家发送的token个数，要求是一个1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的expand\_idx输入。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：shape为\(BS \* K, \)。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：shape为\(A \* 128, \)。
 
 -   expert\_token\_nums：Tensor类型，本卡每个专家实际收到的token数量，要求为1D的Tensor，shape为\(local\_expert\_num,\)，数据类型int64，数据格式支持ND，支持非连续的Tensor。
--   ep\_recv\_counts：Tensor类型，表示EP通信域各卡收到的token数量，要求为1D的Tensor，数据类型int32，数据格式支持ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine_v2.md)的ep\_send\_counts输入。
+-   ep\_recv\_counts：Tensor类型，表示EP通信域各卡收到的token数量，要求为1D的Tensor，数据类型int32，数据格式支持ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的ep\_send\_counts输入。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
 
--   tp\_recv\_counts：Tensor类型，表示TP通信域各卡收到的token数量。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine_v2.md)的tp\_send\_counts输入。
+-   tp\_recv\_counts：Tensor类型，表示TP通信域各卡收到的token数量。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的tp\_send\_counts输入。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持TP通信域，暂无该输出，
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1D Tensor，shape为\(tp\_world\_size, \)，数据类型支持int32，数据格式为ND，支持非连续的Tensor。
 
@@ -92,25 +92,25 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 ## 约束说明<a name="zh-cn_topic_0000002203575833_section12345537164214"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持静态图模式（PyTorch 2.1版本），并且Dispatch和Combine必须配套使用。
--   调用接口过程中使用的group\_ep、ep\_world\_size、moe\_expert\_num、group\_tp、tp\_world\_size、expert\_shard\_type、shared\_expert\_num、shared\_expert\_rank\_num、global\_bs参数取值所有卡需保持一致，group\_ep、ep\_world\_size、group\_tp、tp\_world\_size、expert\_shard\_type、global\_bs网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine_v2.md)对应参数也保持一致。
+-   该接口支持静态图模式（PyTorch 2.1版本），并且Dispatch\_v2和Combine\_v2必须配套使用。
+-   调用接口过程中使用的group\_ep、ep\_world\_size、moe\_expert\_num、group\_tp、tp\_world\_size、expert\_shard\_type、shared\_expert\_num、shared\_expert\_rank\_num、global\_bs参数取值所有卡需保持一致，group\_ep、ep\_world\_size、group\_tp、tp\_world\_size、expert\_shard\_type、global\_bs网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)对应参数也保持一致。
 -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 -   参数里Shape使用的变量如下：
     -   A：表示本卡接收的最大token数量，取值范围如下
-        -   对于共享专家，要满足A=global\_bs\*shared\_expert\_num/shared\_expert\_rank\_num。
+        -   对于共享专家，当global\_bs为0时，要满足A=BS\*shared\_expert\_num/shared\_expert\_rank\_num；当global\_bs非0时，要满足A=global\_bs\*shared\_expert\_num/shared\_expert\_rank\_num。
         -   对于MoE专家，当global\_bs为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当global\_bs非0时，要满足A\>=global\_bs\* min\(local\_expert\_num, K\)。
 
     -   H：表示hidden size隐藏层大小。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值范围\(0,7168\]，且保证是32的整数倍。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值为\[1024, 7168\]**。**
+        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值为\[1024, 8192\]。
 
     -   BS：表示待发送的token数量。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值范围为0<BS≤256。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512**。**
+        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
 
     -   K：表示选取topK个专家，需满足0<K≤moe\_expert\_num。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：保证取值范围为0<K≤16。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：保证取值范围为0<K≤16**。**
+        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：保证取值范围为0<K≤16。
 
     -   server\_num：表示服务器的节点数，取值只支持2、4、8。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：仅该场景的shape使用了该变量。
@@ -131,13 +131,13 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 
 -   通信域使用约束：
 
-    -   一个模型中的npu\_moe\_distribute\_dispatch和npu\_moe\_distribute\_combine算子仅支持相同EP通信域，且该通信域中不允许有其他算子。
+    -   一个模型中的npu\_moe\_distribute\_dispatch\_v2和npu\_moe\_distribute\_combine\_v2算子仅支持相同EP通信域，且该通信域中不允许有其他算子。
 
-    -   一个模型中的npu\_moe\_distribute\_dispatch和npu\_moe\_distribute\_combine算子仅支持相同TP通信域或都不支持TP通信域，有TP通信域时该通信域中不允许有其他算子。
+    -   一个模型中的npu\_moe\_distribute\_dispatch\_v2和npu\_moe\_distribute\_combine\_v2算子仅支持相同TP通信域或都不支持TP通信域，有TP通信域时该通信域中不允许有其他算子。
 
 -   版本配套约束：
 
-     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，PTA框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《Ascend Extension for PyTorch 版本说明》中“相关产品版本配套说明”。
+     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，PTA框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch\_v2算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《Ascend Extension for PyTorch 版本说明》中“相关产品版本配套说明”。
 
 ## 支持的型号<a name="zh-cn_topic_0000002203575833_section145818934611"></a>
 
