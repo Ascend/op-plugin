@@ -24,7 +24,7 @@ std::tuple<at::Tensor &, at::Tensor &> npu_paged_cache_load_out(
     auto key_cache_format = at_npu::native::get_npu_format(key_cache);
     bool has_seq_starts =
         seq_starts.has_value() && seq_starts.value().defined();
-    int8_t kv_cache_cfg = key_cache_format == aclFormat::ACL_FORMAT_ND ? 1 : 0;
+    int8_t kv_cache_cfg = key_cache_format == aclFormat::ACL_FORMAT_FRACTAL_NZ ? 0 : 1;
 
     const c10::OptionalDeviceGuard device_guard(device_of(key_cache));
 
@@ -59,7 +59,7 @@ std::tuple<at::Tensor, at::Tensor> npu_paged_cache_load(
     auto key_cache_format = at_npu::native::get_npu_format(key_cache);
     bool has_seq_starts =
         seq_starts.has_value() && seq_starts.value().defined();
-    int8_t kv_cache_cfg = key_cache_format == aclFormat::ACL_FORMAT_ND ? 1 : 0;
+    int8_t kv_cache_cfg = key_cache_format == aclFormat::ACL_FORMAT_FRACTAL_NZ ? 0 : 1;
 
     const c10::OptionalDeviceGuard device_guard(device_of(key_cache));
 
