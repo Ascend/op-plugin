@@ -611,3 +611,55 @@ torch_npu.atb.npu_ring_mla(
     output=output, softmax_lse=softmaxLse)
     """
     )
+    _add_torch_npu_atb_docstr(
+        "npu_paged_cache_load",
+        """
+torch_npu.atb.npu_paged_cache_load(key_cache, value_cache, block_table, context_lens, *, seq_starts=None, cumsum=False, key=None, value=None) -> (Tensor, Tensor)
+功能描述：
+vllm在v1 engine上默认开启chunked prefill，deepseekV3/R1 chunked prefill依赖pagedcacheload算子功能：DeepSeek长序列场景，支撑模型prefix cache特性，优化显存。
+根据blockTable中的blockId值、contextLens中key/value的seqLen从keyCache/valueCache中将内存不连续的token搬运、拼接成连续的key/value序列。
+提供SeqStarts以为每个batch提供在blockTable中的初始位置（类似于offset）功能。
+场景分支：chunked-prefill 场景与 prefix caching场景，ringMLA算子不支持读取cache，需要先调用pagedcacheload算子读取kvcache，乘以升维矩阵后再传给ringMLA算子。
+
+参数说明
+位置参数：
+key_cache: Device Tensor, cache好的key, 支持float16/bf16/int8数据类型，shape为[num_blocks, block_size, num_heads, head_size_k]，支持ND格式，其中num_heads*head_size_k 需要是32B对齐。
+value_cache: Device Tensor, cache好的value, 支持float16/bf16/int8数据类型，shape为[num_blocks, block_size, num_heads, head_size_v]，支持ND格式，其中num_heads*head_size_v 需要是32B对齐。
+block_table: Device Tensor, 记录每个batch的sequence在kvcache中的blockId，支持int32数据类型,shape为[batch, block_indices]，支持ND格式。
+context_lens: Device Tensor, 支持shape为[batch]/[batch+1]，每个batch序列长度或每个batch序列长度的累加和，支持int32数据类型,支持ND格式。
+
+关键字参数：
+seq_starts: 可选Device Tensor，每个batch在blocktable中对应的起始位置, shape为[batch],支持int32，支持ND格式。
+cumsum: bool类型，表示传入的seqLens是否是每个batch序列长度的累加和，默认为False。
+key: 可选Device Tensor，计算key输出，shape为[num_tokens, num_heads, head_size_k]，支持float16/bf16/int8数据类型，支持ND格式。
+value: 可选Device Tensor，计算value输出，shape为[num_tokens, num_heads, head_size_k]，支持float16/bf16/int8数据类型，支持ND格式。
+
+约束：
+key_cache的shape信息中num_heads*head_size_k 需要是32B对齐。
+value_cache的shape信息中num_heads*head_size_v 需要是32B对齐。
+
+
+参考样例：
+import torch,torch_npu
+batch = 8
+num_blocks = 1024
+block_size = 16
+num_heads = 1
+head_size_k = 512
+head_size_v = 64
+block_indices = 1024
+max_seq_len = 512
+max_start = max_seq_len // 2
+cumsum = False
+
+key_cache = torch.randn(num_blocks, block_size, num_heads, head_size_k, dtype=torch.float16).npu()
+value_cache = torch.randn(num_blocks, block_size, num_heads, head_size_v, dtype=torch.float16).npu()
+block_table = torch.empty((batch, num_blocks), dtype=torch.int32).npu()
+for b in range(batch):
+    perm = torch.randperm(num_blocks).npu()
+    block_table[b, :] = perm
+context_lens = torch.randint(0, max_seq_len + 1, (batch,), dtype=torch.int32).npu()
+seq_starts = torch.randint(0, max_start + 1, (batch,), dtype=torch.int32).npu()
+output = torch_npu.atb.npu_paged_cache_load(key_cache, value_cache, block_table, context_lens, seq_starts=seq_starts, cumsum=cumsum)
+    """
+    )

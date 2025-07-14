@@ -24,7 +24,7 @@ std::tuple<at::Tensor &, at::Tensor &> npu_paged_cache_load_out(
     auto key_cache_format = at_npu::native::get_npu_format(key_cache);
     bool has_seq_starts =
         seq_starts.has_value() && seq_starts.value().defined();
-    int8_t kv_cache_cfg = key_cache_format == aclFormat::ACL_FORMAT_ND ? 1 : 0;
+    int8_t kv_cache_cfg = key_cache_format == aclFormat::ACL_FORMAT_FRACTAL_NZ ? 0 : 1;
 
     const c10::OptionalDeviceGuard device_guard(device_of(key_cache));
 
@@ -33,6 +33,41 @@ std::tuple<at::Tensor &, at::Tensor &> npu_paged_cache_load_out(
                  has_seq_starts);
 
     return std::forward_as_tuple(key, value);
+}
+
+std::tuple<at::Tensor, at::Tensor> npu_paged_cache_load(
+    const at::Tensor &key_cache, const at::Tensor &value_cache,
+    const at::Tensor &block_table, const at::Tensor &context_lens,
+    const c10::optional<at::Tensor> &seq_starts, bool cumsum)
+{
+    int32_t num_tokens = 0;
+    if (cumsum) {
+        num_tokens =
+            context_lens.numel() > 0 ? context_lens[-1].item<int32_t>() : 0;
+    } else {
+        for (int i = 0; i < context_lens.numel(); i++) {
+            num_tokens += context_lens[i].item<int32_t>();
+        }
+    }
+    at::Tensor key =
+        at::empty({num_tokens, key_cache.size(2), key_cache.size(3)},
+                  key_cache.options());
+    at::Tensor value =
+        at::empty({num_tokens, value_cache.size(2), value_cache.size(3)},
+                  value_cache.options());
+
+    auto key_cache_format = at_npu::native::get_npu_format(key_cache);
+    bool has_seq_starts =
+        seq_starts.has_value() && seq_starts.value().defined();
+    int8_t kv_cache_cfg = key_cache_format == aclFormat::ACL_FORMAT_FRACTAL_NZ ? 0 : 1;
+
+    const c10::OptionalDeviceGuard device_guard(device_of(key_cache));
+
+    EXEC_ATB_CMD(AtbPagedCacheLoad, key_cache, value_cache, block_table,
+                 context_lens, key, value, seq_starts, kv_cache_cfg, cumsum,
+                 has_seq_starts);
+
+    return std::make_tuple(std::move(key), std::move(value));
 }
 
 namespace {
@@ -52,6 +87,7 @@ TORCH_LIBRARY_FRAGMENT(atb, m) {
 namespace {
 TORCH_LIBRARY_IMPL(atb, PrivateUse1, m) {
     m.impl("npu_paged_cache_load.out", TORCH_FN(atb::npu_paged_cache_load_out));
+    m.impl("npu_paged_cache_load", TORCH_FN(atb::npu_paged_cache_load));
 }
 }  // namespace
 }  // namespace atb
