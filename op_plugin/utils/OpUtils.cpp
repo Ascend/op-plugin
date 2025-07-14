@@ -108,7 +108,10 @@ bool is_two_tensor_base_format(const at::Tensor &self, const at::Tensor &mat2)
 
 bool is_nd_nz_format(const at::Tensor &self, const at::Tensor &mat2)
 {
-    return is_nz_format(mat2) && !is_nz_format(self);
+    auto dim_tensor1 = self.dim();
+    auto dim_tensor2 = mat2.dim();
+    // only support 2D ND * 2D NZ
+    return dim_tensor1 == 2 && dim_tensor2 == 2 && is_nz_format(mat2) && !is_nz_format(self);
 }
 
 bool is_nd_to_nz_on_fly(const at::Tensor &self, const at::Tensor &mat2)
