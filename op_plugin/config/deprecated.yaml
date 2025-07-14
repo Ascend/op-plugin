@@ -3,10 +3,6 @@ deprecated:
     replace: 'torch.optim.Adam or torch.optim.adam'
   - name: npu_apply_adam.out
     replace: 'torch.optim.Adam or torch.optim.adam'
-  - name: npu_broadcast
-    replace: 'torch.broadcast_to'
-  - name: npu_broadcast.out
-    replace: 'torch.broadcast_to'
   - name: npu_conv_transpose2d
     replace: 'torch.nn.functional.conv_transpose2d'
   - name: npu_conv2d
@@ -30,10 +26,6 @@ deprecated:
   - name: npu_nms_rotated
   - name: npu_ptiou
     replace: 'torch_npu.npu_iou'
-  - name: npu_reshape
-    replace: 'torch.reshape'
-  - name: npu_reshape.out
-    replace: 'torch.reshape'
   - name: npu_silu
     replace: 'torch.nn.functional.silu'
   - name: npu_sort_v2
