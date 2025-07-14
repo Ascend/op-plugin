@@ -1,8 +1,8 @@
-
+import os
 import argparse
 
 from codegen.gen import parse_native_yaml, FileManager
-from codegen.utils import concatMap
+from codegen.utils import concatMap, PathManager
 
 
 def main() -> None:
@@ -15,6 +15,9 @@ def main() -> None:
         '--source_yaml',
         help='path to source yaml file containing operator external definitions')
     parser.add_argument(
+        '--deprecate_yaml',
+        help='path to yaml file containing functions which is deprecated.')
+    parser.add_argument(
         '-o', '--output_dir', help='output directory')
     parser.add_argument(
         '--dry_run', type=bool, default=False, help='output directory')
@@ -24,7 +27,11 @@ def main() -> None:
         '--impl_path', type=str, default=None, help='path to the source C++ file containing kernel definitions')
     options = parser.parse_args()
 
-    backend_declarations, dispatch_registrations_body = parse_native_yaml(options.source_yaml)
+    source_yaml_path = os.path.realpath(options.source_yaml)
+    deprecate_yaml_path = os.path.realpath(options.deprecate_yaml)
+    PathManager.check_directory_path_readable(source_yaml_path)
+    PathManager.check_directory_path_readable(deprecate_yaml_path)
+    backend_declarations, dispatch_registrations_body = parse_native_yaml(source_yaml_path, deprecate_yaml_path)
 
     def make_file_manager(install_dir: str) -> FileManager:
         return FileManager(
@@ -33,7 +40,6 @@ def main() -> None:
 
     fm = make_file_manager(options.output_dir)
 
-    import os
     pytorch_version = os.environ.get('PYTORCH_VERSION').split('.')
     torch_dir = f"v{pytorch_version[0]}r{pytorch_version[1]}"
 

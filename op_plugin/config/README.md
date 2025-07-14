@@ -5,6 +5,7 @@
 ```
 ├── op_plugin
 │   ├── config  # 算子配置文件目录
+│   │   ├── deprecated.yaml # 生成废弃接口告警配置文件
 │   │   ├── derivatives.yaml # 算子前反向绑定配置文件
 │   │   └── op_plugin_functions.yaml # 算子对外接口配置文件
 │   ├── ops # 算子适配文件目录
@@ -387,4 +388,42 @@ Aten IR定义：
     op_api: [v1.11, newest]
     gen_opapi:
       structured_inherit: abs.out
+```
+
+## NPU自定义接口添加废弃告警
+
+### Yaml配置说明
+
+当自定义接口的aten需要废弃时，可以通过位于op_plugin/config/deprecated.yaml文件自动添加废弃告警。
+```yaml
+deprecated:
+  # 废弃且无替换
+  - name: npu_nms_rotated
+  # 废弃且有替换
+  - name: npu_broadcast
+    replace: 'torch.broadcast_to'
+  - name: npu_broadcast.out
+    replace: 'torch.broadcast_to'
+```
+
+其中：
+- `name`表示当前将要废弃的aten名称，需要注意的是该名称需要包括重载名，例如样例中`npu_broadcast.out`即为`npu_broadcast`的out重载变体
+- `replace`表示对应aten的替换方案，例如`torch.broadcast_to`是`npu_broadcast`的替换方案。
+
+当存在`replace`时，生成告警信息格式为：
+```python
+f'TORCH_WARN_ONCE("{name} is deprecated and will be removed in future version. Use {replace} instead.");'
+```
+其中`name`不会包含重载名。以`npu_broadcast.out`为例，生成告警为：
+```python
+'TORCH_WARN_ONCE("npu_broadcast is deprecated and will be removed in future version. Use torch.broadcast_to instead.");'
+```
+
+当不存在`replace`时，生成告警信息格式为：
+```python
+f'TORCH_WARN_ONCE("{name} is deprecated and will be removed in future version.");'
+```
+该场景下`name`同样不会包含重载名。以`npu_nms_rotated`为例，生成告警为：
+```python
+'TORCH_WARN_ONCE("npu_nms_rotated is deprecated and will be removed in future version.");'
 ```

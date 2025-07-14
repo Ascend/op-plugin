@@ -1,0 +1,44 @@
+deprecated:
+  - name: npu_apply_adam
+    replace: 'torch.optim.Adam or torch.optim.adam'
+  - name: npu_apply_adam.out
+    replace: 'torch.optim.Adam or torch.optim.adam'
+  - name: npu_broadcast
+    replace: 'torch.broadcast_to'
+  - name: npu_broadcast.out
+    replace: 'torch.broadcast_to'
+  - name: npu_conv_transpose2d
+    replace: 'torch.nn.functional.conv_transpose2d'
+  - name: npu_conv2d
+    replace: 'torch.nn.functional.conv2d'
+  - name: npu_conv2d.out
+    replace: 'torch.nn.functional.conv2d'
+  - name: npu_convolution
+    replace: 'torch.nn.functional.conv2d or torch.nn.functional.conv3d'
+  - name: npu_convolution_transpose
+    replace: 'torch.nn.functional.conv_transpose2d or torch.nn.functional.conv_transpose3d'
+  - name: npu_gru
+    replace: 'torch.nn.GRU'
+  - name: npu_layer_norm_eval
+    replace: 'torch.nn.functional.layer_norm or torch.optim.adam'
+  - name: npu_min.dim
+    replace: 'torch.min'
+  - name: npu_min.names_dim
+    replace: 'torch.min'
+  - name: npu_mish
+    replace: 'torch.nn.functional.mish'
+  - name: npu_nms_rotated
+  - name: npu_ptiou
+    replace: 'torch_npu.npu_iou'
+  - name: npu_reshape
+    replace: 'torch.reshape'
+  - name: npu_reshape.out
+    replace: 'torch.reshape'
+  - name: npu_silu
+    replace: 'torch.nn.functional.silu'
+  - name: npu_sort_v2
+    replace: 'torch.sort'
+  - name: npu_sort_v2.out
+    replace: 'torch.sort'
+  - name: one_
+    replace: 'torch.fill_ or torch.ones_like'

@@ -57,6 +57,7 @@ ${python_execute} -m codegen.gen_backend_stubs  \
   --version="$PYTORCH_VERSION" \
   --output_dir="$CDIR/op_plugin/" \
   --source_yaml="$OUTPUT_DIR/op_plugin_functions.yaml" \
+  --deprecate_yaml="$CDIR/op_plugin/config/deprecated.yaml" \
   --impl_path="$CDIR/torch_npu/csrc/aten"  # Used to double-check the yaml file definitions.
 
 ${python_execute} -m codegen.struct.gen_struct_opapi  \
