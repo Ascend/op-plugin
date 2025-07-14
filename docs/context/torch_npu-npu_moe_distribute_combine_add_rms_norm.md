@@ -19,7 +19,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002322738573_section1470016430218"></a>
 
--   算子功能：完成moe\_distribute\_combine+add+rms\_norm融合。需与[torch\_npu.npu\_moe\_distribute\_dispatch](toctopics/torch_npu-npu_moe_distribute_dispatch.md#ZH-CN_TOPIC_0000002343094193)配套使用，相当于按npu\_moe\_distribute\_dispatch算子收集数据的路径原路返回后对数据进行add\_rms\_norm操作。
+-   算子功能：完成moe\_distribute\_combine+add+rms\_norm融合。需与[torch_npu.npu_moe_distribute_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按npu\_moe\_distribute\_dispatch算子收集数据的路径原路返回后对数据进行add\_rms\_norm操作。
 -   计算公式：
 
     ![](figures/zh-cn_formulaimage_0000002340454445.png)
@@ -33,9 +33,9 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(Tensor expand_x, Tensor expert
 ## 参数说明<a name="zh-cn_topic_0000002322738573_section187018431529"></a>
 
 -   **expand\_x**（Tensor）：必选参数，根据expert\_ids进行扩展过的token特征，要求为2D的Tensor，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，数据类型支持bfloat16，数据格式为ND，支持非连续的Tensor。
--   **expert\_ids**（Tensor）：必选参数，每个token的topK个专家索引，要求为2D的Tensor，shape为\(BS, K\)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](toctopics/torch_npu-npu_moe_distribute_dispatch.md#ZH-CN_TOPIC_0000002343094193)的expert\_ids输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
--   **expand\_idx**（Tensor）：必选参数，表示给同一专家发送的token个数，要求是1D的Tensor，shape为\(A\*128, \)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](toctopics/torch_npu-npu_moe_distribute_dispatch.md#ZH-CN_TOPIC_0000002343094193)的expand\_idx输出。
--   **ep\_send\_counts**（Tensor）：必选参数，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1D的Tensor 。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](toctopics/torch_npu-npu_moe_distribute_dispatch.md#ZH-CN_TOPIC_0000002343094193)的ep\_recv\_counts输出。
+-   **expert\_ids**（Tensor）：必选参数，每个token的topK个专家索引，要求为2D的Tensor，shape为\(BS, K\)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应torch\_npu.npu\_moe\_distribute\_dispatch的expert\_ids输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
+-   **expand\_idx**（Tensor）：必选参数，表示给同一专家发送的token个数，要求是1D的Tensor，shape为\(A\*128, \)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应torch\_npu.npu\_moe\_distribute\_dispatch的expand\_idx输出。
+-   **ep\_send\_counts**（Tensor）：必选参数，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1D的Tensor 。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应torch\_npu.npu\_moe\_distribute\_dispatch的ep\_recv\_counts输出。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
 
 -   **expert\_scales**（Tensor）：必选参数，表示每个Token的topK个专家的权重，要求是2D的Tensor，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持float，数据格式为ND，支持非连续的Tensor。
@@ -47,15 +47,15 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(Tensor expand_x, Tensor expert
 
 -   **ep\_rank\_id**（int）：必选参数，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的ep\_rank\_id不重复。
 -   **moe\_expert\_num**（int）：必选参数，MoE专家数量，取值范围\[1, 512\]，并且满足moe\_expert\_num%\(ep\_world\_size-shared\_expert\_rank\_num\)=0。
--   **tp\_send\_counts**（Tensor）：可选参数，表示本卡每个专家发给TP（Tensor  Parallelism）通信域每个卡的数据量。对应[torch\_npu.npu\_moe\_distribute\_dispatch](toctopics/torch_npu-npu_moe_distribute_dispatch.md#ZH-CN_TOPIC_0000002343094193)的tp\_recv\_counts输出。
+-   **tp\_send\_counts**（Tensor）：可选参数，表示本卡每个专家发给TP（Tensor  Parallelism）通信域每个卡的数据量。对应torch\_npu.npu\_moe\_distribute\_dispatch的tp\_recv\_counts输出。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1D Tensor，shape为\(tp\_world\_size, \)，数据类型支持int32，数据格式要求为ND，支持非连续的Tensor。
 
 -   **x\_active\_mask**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
 -   **activation\_scale**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
--   **weight\_scale（Tensor）**：**预留参数，暂未使用，使用默认值即可。**
+-   **weight\_scale**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
 -   **group\_list**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
--   **expand\_scales（Tensor）**：可选参数，对应[torch\_npu.npu\_moe\_distribute\_dispatch](toctopics/torch_npu-npu_moe_distribute_dispatch.md#ZH-CN_TOPIC_0000002343094193)的expand\_scales输出。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可**。**
+-   **expand\_scales**（Tensor）：可选参数，对应torch\_npu.npu\_moe\_distribute\_dispatch的expand\_scales输出。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可。
 
 -   **shared\_expert\_x**（Tensor）：可选参数，数据类型需与expand\_x保持一致。仅在共享专家卡数量shared\_expert\_rank\_num为0的场景下使用，表示共享专家token，在combine时需要加上。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型需与expand\_x保持一致，shape为\[BS, H\]。
@@ -72,7 +72,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(Tensor expand_x, Tensor expert
 -   **expert\_shard\_type**（int）：可选参数，表示共享专家卡排布类型。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前仅支持0，表示共享专家卡排在MoE专家卡前面。
 
--   **shared\_expert\_num（int）**：可选参数，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数，暂未使用，仅支持默认值0。**
+-   **shared\_expert\_num**（int）：可选参数，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数，暂未使用，仅支持默认值0。**
 -   **shared\_expert\_rank\_num**（int）：可选参数，表示共享专家卡数量。**预留参数，暂未使用，仅支持默认值0。**
 -   **global\_bs**（int）：可选参数，表示EP域全局的batch size大小。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
@@ -101,7 +101,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(Tensor expand_x, Tensor expert
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[1024, 7168\]，且保证是32的整数倍。
 
     -   BS：表示待发送的token数量。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512**。**
+        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
 
     -   K：表示选取topK个专家，取值范围为0<K≤8同时满足0<K≤moe\_expert\_num。
     -   local\_expert\_num：表示本卡专家数量。
