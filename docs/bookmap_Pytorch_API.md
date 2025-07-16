@@ -286,7 +286,7 @@
         -   [torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("npu")).get_hccl_comm_name](./context/torch-distributed-distributed_c10d.md)
         -   [（beta）torch.distributed.ProcessGroupHCCL](./context/（beta）torch-distributed-ProcessGroupHCCL.md)
         -   [（beta）torch_npu.distributed.reinit_process_group](./context/（beta）torch_npu-distributed-reinit_process_group.md)
-        -   [torch_npu.distributed.reduce_scatter_tensor_uneven](./context/torch_npu-distributed-reduce_scatter_tensor_uneven.md)
+        -   [（beta）torch_npu.distributed.reduce_scatter_tensor_uneven](./context/torch_npu-distributed-reduce_scatter_tensor_uneven.md)
         -   [（beta）torch_npu.distributed.all_gather_into_tensor_uneven](./context/（beta）torch_npu-distributed-all_gather_into_tensor_uneven.md)
 -   [C++接口](./context/C接口.md)
     -   [C++接口列表](./context/C接口列表.md)

@@ -2,7 +2,7 @@
 
 ## 功能说明
 
-将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`中的数据被改变。。
+将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`中的数据被改变。
 
 ## 函数原型
 

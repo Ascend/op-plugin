@@ -44,7 +44,7 @@ torch_npu.npu_group_norm_silu(Tensor input, Tensor? weight, Tensor? bias, int gr
 ## 约束说明<a name="zh-cn_topic_0000001935845653_section12345537164214"></a>
 
 -   该接口支持推理、训练场景下使用。
--   input、weight、bias、out、meanOut、rstdOut数据类型必须支持的范围之内。
+-   input、weight、bias、out、meanOut、rstdOut数据类型必须在支持的范围之内。
 -   out、meanOut、rstdOut的数据类型与input相同；weight、bias与input可以不同。
 -   weight与bias的数据类型必须保持一致，且数据类型的精度不能低于input的数据类型。
 -   weight与bias的维度需为1且元素数量需与输入input的第1维度保持相同。

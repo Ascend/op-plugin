@@ -8,7 +8,7 @@ torch_npu.contrib.module.MultiheadAttention(nn.Module):
 
 ## 功能说明
 
-Multi-headed attention。
+Multi-head attention。
 
 ## 参数说明
 

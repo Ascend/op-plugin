@@ -220,7 +220,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p197913362018"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p197913362018"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p197913362018"></a><a href="https://gitee.com/link?target=https://github.com/RebornL/RFCN-pytorch.1.0/blob/master/lib/model/roi_layers/ps_roi_pool.py" target="_blank" rel="noopener noreferrer">class PSROIPool()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p48133355616"><a name="p48133355616"></a><a name="p48133355616"></a>使用NPU API进行ROIAlign。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p48133355616"><a name="p48133355616"></a><a name="p48133355616"></a>使用NPU API进行PSROIPool。</p>
 </td>
 </tr>
 <tr id="row92991059205517"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p429945917558"><a name="p429945917558"></a><a name="p429945917558"></a><a href="（beta）torch_npu-contrib-module-ROIAlign.md">（beta）torch_npu.contrib.module.ROIAlign</a></p>

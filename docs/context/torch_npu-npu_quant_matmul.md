@@ -51,7 +51,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
 
 ## 返回值
 
-`Tensor`:
+`Tensor`
 
 代表量化matmul的计算结果。
 - 如果`output_dtype`为`float16`，输出的数据类型为`float16`。

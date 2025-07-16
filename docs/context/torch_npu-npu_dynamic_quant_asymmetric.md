@@ -41,8 +41,7 @@ torch_npu.npu_dynamic_quant_asymmetric(Tensor x, *, Tensor? smooth_scales=None, 
 ## 输出说明<a name="zh-cn_topic_0000002057983185_section22231435517"></a>
 
 -   y：量化后的输出Tensor，数据类型由dst\_type指定。当dst\_type是torch.quint4x2时，y的数据类型为int32，形状最后一维为x最后一维除以8，其余维度与x一致，每个int32元素包含8个int4结果。其他场景下y形状与输入x一致，数据类型由dst\_type指定。
--   scale：Tensor类型，非对称动态量化过程中计算出的缩放系数，数据类型为float32，。
-    -   如果quant\_mode是"pertoken"，shape为x的形状剔除最后一维。如果quant\_mode是"pertensor"，shape为\(1,\)。
+-   scale：Tensor类型，非对称动态量化过程中计算出的缩放系数，数据类型为float32。如果quant\_mode是"pertoken"，shape为x的形状剔除最后一维。如果quant\_mode是"pertensor"，shape为\(1,\)。
 
 -   offset：Tensor类型，非对称动态量化过程中计算出的偏移系数，数据类型为float32，shape和scale一致。
 

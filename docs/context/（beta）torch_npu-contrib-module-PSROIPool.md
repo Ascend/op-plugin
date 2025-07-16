@@ -8,7 +8,7 @@ torch_npu.contrib.module.PSROIPool(nn.Module):
 
 ## 功能说明
 
-使用NPU API进行ROIAlign。
+使用NPU API进行PSROIPool。
 
 ## 参数说明
 

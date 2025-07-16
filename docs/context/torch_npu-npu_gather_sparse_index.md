@@ -45,13 +45,13 @@ $$
 
 ## 参数说明
 
-**input**(`torch.Tensor`):输入张量，数据维度仅支持2维。数据类型支持`torch.float32`, `torch.float16`, `torch.bfloat16`, `torch.int64`, `torch.int32`, `torch.int16`，`torch.int8`, `torch.uint8`, `torch.bool`, `torch.float64`, `torch.complex64`, `torch.complex128`。
+**input**(`Tensor`)：输入张量，数据维度仅支持2维。数据类型支持`float32`, `float16`, `bfloat16`, `int64`, `int32`, `int16`，`int8`, `uint8`, `bool`, `float64`, `complex64`, `complex128`。
 
-**index**(`torch.Tensor`):包含目标元素下标序号的张量。数据维度不超过7维。数据类型支持`torch.int64`, `torch.int32`。取值范围$[0, input.shape[0] - 1]$, 不支持负数索引。
+**index**(`Tensor`)：包含目标元素下标序号的张量。数据维度不超过7维。数据类型支持`int64`, `int32`。取值范围$[0, input.shape[0] - 1]$, 不支持负数索引。
 
 ## 输出说明
 
-`torch.Tensor`
+`Tensor`
 接口计算获得的结果，包含按照`index`中的下标序号提取的元素。数据类型与`input`一致，输出维度为$index.dim + input.dim - 1$。例如`input.shape = [16, 32]`, `index.shape = [2, 3]`，则输出张量 `out.shape = [2, 3, 32]`。
 
 ## 约束说明
