@@ -103,7 +103,7 @@ class DirectoryStrategy(AccurateTest):
         is_test_file = str(Path(modify_file).parts[0]) == "test" \
             and re.match("test_(.+).py", Path(modify_file).name)
         version_path = get_test_torch_version_path()
-        if is_test_file and str(Path(modify_file).parts[1]) in [version_path, "test_custom_ops", "test_base_ops"]:
+        if is_test_file and str(Path(modify_file).parts[1]) in [version_path, "test_custom_ops", "test_base_ops", "core_tests"]:
             modify_file_path = os.path.join(BASE_DIR, modify_file)
             modify_file_name = Path(modify_file).name
             if modify_file_name in modify_file_hash:
