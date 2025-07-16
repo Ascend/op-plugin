@@ -32,6 +32,8 @@ torch_npu.npu.SyncLaunchStream(device)
 ## 调用示例
 
 ```python
+import torch
+import torch_npu
 s = torch_npu.npu.SyncLaunchStream()
 with torch.npu.stream(s):
     tensor1 =torch.randn(4).npu()

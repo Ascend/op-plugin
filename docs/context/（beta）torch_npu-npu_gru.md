@@ -22,7 +22,7 @@ torch_npu.npu_gru(input, hx, weight_input, weight_hidden, bias_input, bias_hidde
 - bias_input (Tensor) - 数据类型：float16，float32；格式：ND。
 - bias_hidden (Tensor) - 数据类型：float16，float32；格式：ND。
 - seq_length (Tensor) - 数据类型：int32；格式：ND。
-- has_biases (Bool，默认值为True)
+- has_biases (Bool，默认值为True)。
 - num_layers (Int)。
 - dropout (Float)。
 - train (Bool，默认值为True) - 标识训练是否在op进行的bool参数。

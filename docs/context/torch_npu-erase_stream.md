@@ -13,7 +13,7 @@ Tensor通过`record_stream`在内存池上添加的已被stream使用的标记�
 
 多流之间的内存可以复用，默认通过`record_stream`标记内存池，防止复用的内存被提前还给内存池而出现踩踏行为。内存池在每次内存申请时，通过query device上的event来确定是否算子已经被执行完，可以安全释放了。但是这种host和device结合的机制会出现副作用：当host下发比device执行快很多时，可能导致峰值内存被推高，原因是host在query时device还没执行完。
 
-当前接口提供了一种`erase_stream`的能力，通过主动的在event wait之后擦除并free内存实现内存地提前归还。由于后续算子一定是在event wait后才执行，因此这块被提前释放回内存池的内存不会被后续的算子踩踏。
+当前接口提供了一种`erase_stream`的能力，通过主动的在event wait之后擦除并free内存实现内存池提前归还。由于后续算子一定是在event wait后才执行，因此这块被提前释放回内存池的内存不会被后续的算子踩踏。
 
 ## 函数原型
 

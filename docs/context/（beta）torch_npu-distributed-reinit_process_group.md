@@ -12,8 +12,8 @@ torch_npu.distributed.reinit_process_group(group: Optional[ProcessGroup] = None,
 
 ## 参数说明
 
-- “group”(Optional[ProcessGroup]) ：默认值为None，使用默认值是reinit default process group。
-- “rebuild_link”(bool)：默认值为True，当传入参数为True时会将当前的process group hccl建立的通信链接销毁掉，然后进行重建；如果传入参数为False，表示继续使用原有的通信链接。
+- **group**(`Optional[ProcessGroup]`) ：默认值为None，使用默认值是reinit default process group。
+- **rebuild_link**(`bool`)：默认值为True，当传入参数为True时会将当前的process group hccl建立的通信链接销毁掉，然后进行重建；如果传入参数为False，表示继续使用原有的通信链接。
 
 ## 输入说明
 

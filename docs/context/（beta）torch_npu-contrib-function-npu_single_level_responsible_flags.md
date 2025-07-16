@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size,gt_bboxes,stride,num_base_anchors):
+torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_bboxes, stride, num_base_anchors):
 ```
 
 ## 功能说明
@@ -12,10 +12,10 @@ torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size,gt_bb
 
 ## 参数说明
 
-- featmap_size (Tuple(Int)) - 模型总维度。
-- gt_bboxes (Tensor) - 并行attention heads。
-- stride (Tuple(Int)，默认值为None) - key的特性总数。
-- num_base_anchors (Int，默认值为None) - values的特性总数。
+- **featmap_size** (`Tuple(Int)`) - 模型总维度。
+- **gt_bboxes** (`Tensor`) - 并行attention heads。
+- **stride** (`Tuple(Int)`，默认值为None) - key的特性总数。
+- **num_base_anchors** (`Int`，默认值为None) - values的特性总数。
 
 ## 输出说明
 

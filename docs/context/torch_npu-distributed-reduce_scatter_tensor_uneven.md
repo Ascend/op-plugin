@@ -12,31 +12,31 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_si
 
 ## 参数说明
 
-- “output”(torch.Tensor)：输出Tensor，用于接收计算数据。
-- “input”(torch.Tensor)：输入Tensor，用于提供计算数据。
-- “input_split_sizes”(ListInt)：输入tensor的0维分割数组，默认值None；元素个数需要与当前调用的group的size一致；元素之和需要与input的0维大小一致。
-- “op”（torch._C._distributed_c10d.ReduceOp.ReduceOpType）：reduce算子，用于控制计算逻辑，默认值dist.ReduceOp.SUM。
-- “group”（torch.distributed.distributed_c10d.ProcessGroup）：分布式进程组，默认值None。
-- “async_op”（bool）：是否异步调用，默认值False。
+- **output**(`torch.Tensor`)：输出Tensor，用于接收计算数据。
+- **input**(`torch.Tensor`)：输入Tensor，用于提供计算数据。
+- **input_split_sizes**(`ListInt`)：输入tensor的0维分割数组，默认值None；元素个数需要与当前调用的group的size一致；元素之和需要与input的0维大小一致。
+- **op**(`torch._C._distributed_c10d.ReduceOp.ReduceOpType`)：reduce算子，用于控制计算逻辑，默认值dist.ReduceOp.SUM。
+- **group**(`torch.distributed.distributed_c10d.ProcessGroup`)：分布式进程组，默认值None。
+- **async_op**(`bool`)：是否异步调用，默认值False。
 
 ## 输入说明
 
-input的shape为所有卡上output的shape拼接大小。
+`input`的shape为所有卡上`output`的shape拼接大小。
 
 ## 输出说明
 
-output的shape无特殊约束。
+`output`的shape无特殊约束。
 
 ## 异常说明
 
-- input_split_sizes元素之和与input的0维不一致时报错：RuntimeError: Split sizes doesn't match total dim 0 size。
-- input_split_sizes元素个数与group的size不一致时报错：RuntimeError: Number of tensor splits not equal to group size。
+- `input_split_sizes`元素之和与`input`的0维不一致时报错：RuntimeError: Split sizes doesn't match total dim 0 size。
+- `input_split_sizes`元素个数与`group`的size不一致时报错：RuntimeError: Number of tensor splits not equal to group size。
 
 ## 约束说明
 
 此接口仅可在单机场景下使用。
 
-input_split_sizes元素之和等于input的0维；input_split_sizes元素个数等于group的size。
+`input_split_sizes`元素之和等于`input`的0维；`input_split_sizes`元素个数等于`group`的size。
 
 ## 支持的型号
 

@@ -8,7 +8,7 @@ at::Device(const std::string &device_string)
 
 ## 功能说明
 
-在安装torch_pu后，Device类型新增支持NPU字段，可以从字符串描述中指示设备。
+在安装torch_npu后，Device类型新增支持NPU字段，可以从字符串描述中指示设备。
 
 ## 参数说明
 

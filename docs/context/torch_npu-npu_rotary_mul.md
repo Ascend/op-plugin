@@ -68,7 +68,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
         - x为$BSND: 1S1D$;
         - x为$SBND: S11D$
 
-- `jit_compile=True`场景（适用<term>Atlas 训练系列产品</term>，<term>Atlas A2 训练系列产品</term>，<term>Atlas 推理系列产品</term>）：
+- **`jit_compile=True`场景**（适用<term>Atlas 训练系列产品</term>，<term>Atlas A2 训练系列产品</term>，<term>Atlas 推理系列产品</term>）：
 
      仅支持`rotary_mode`为half模式，且`r1/r2` layout一般为$11SD、1S1D、S11D$。
 

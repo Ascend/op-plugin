@@ -58,7 +58,7 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 -   antiquant\_offset：Tensor类型，数据类型支持float16、bfloat16。数据格式支持ND，表示伪量化偏移，支持per-tensor、per-channel，Q\_S为1时只支持per-channel，Q\_S大于等于2时只支持float16，如不使用该功能时可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 -   block\_table：Tensor类型，数据类型支持int32。数据格式支持ND。表示PageAttention中KV存储使用的block映射表，如不使用该功能可传入None。
 -   query\_padding\_size：Tensor类型，数据类型支持int64。数据格式支持ND。表示Query中每个batch的数据是否右对齐，且右对齐的个数是多少。仅支持Q\_S大于1，其余场景该参数无效。用户不特意指定时可传入默认值None。
--   kv\_padding\_size：Tensor类型，数据类型支持int64。数据格式支持ND。表示key、value中每个batch的数据是否右对齐，且右对齐的个数是多少。表示key、value中每个batch的数据是否右对齐，且右对齐的个数是多少。用户不特意指定时可传入默认值None。
+-   kv\_padding\_size：Tensor类型，数据类型支持int64。数据格式支持ND。表示key、value中每个batch的数据是否右对齐，且右对齐的个数是多少。用户不特意指定时可传入默认值None。
 -   key\_antiquant\_scale：Tensor类型。数据格式支持ND，kv伪量化参数分离时表示key的反量化因子。如不使用该功能时可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。通常支持per-channel、per-tensor、per-token、per-tensor叠加per-head、per-token叠加per-head、per-token叠加使用page attention模式管理scale、per-token叠加per head并使用page attention模式管理scale。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、bfloat16、float32。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持float16、bfloat16、float32。
