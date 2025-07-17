@@ -71,9 +71,9 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 
 ## 调用示例
 
-- 单算子模式调用
+单算子模式调用
 
-    ```python
+  ```python
    >>> import torch
    >>> import torch_npu
    >>>
@@ -92,4 +92,4 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
         [0.0000, 0.0000, 0.0000,  ...,   -inf,   -inf,   -inf],
         [1.5425, 0.0000, 0.0000,  ...,   -inf, 1.5491,   -inf]],
        device='npu:0')
-    ```
+  ```

@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.npu_fast_condition_index_put(x, condition, value):
+torch_npu.contrib.function.npu_fast_condition_index_put(x, condition, value)
 ```
 
 ## 功能说明

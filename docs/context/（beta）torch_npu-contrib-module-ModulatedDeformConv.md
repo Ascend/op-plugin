@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.module.ModulatedDeformConv(nn.Module):
+torch_npu.contrib.module.ModulatedDeformConv(nn.Module)
 ```
 
 ## 功能说明

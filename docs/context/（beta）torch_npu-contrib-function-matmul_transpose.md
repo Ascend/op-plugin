@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.matmul_transpose(tensor1, tensor2):
+torch_npu.contrib.function.matmul_transpose(tensor1, tensor2)
 ```
 
 ## 功能说明

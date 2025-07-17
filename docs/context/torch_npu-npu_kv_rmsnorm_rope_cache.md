@@ -132,7 +132,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(Tensor kv, Tensor gamma, Tensor cos, Tensor 
 -   量化模式：当k\_rope\_scale和c\_kv\_scale非空时，k\_cache和ckv\_cache的dtype为int8，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），k\_rope\_scale和c\_kv\_scale必须同时非空，k\_rope\_offset和c\_kv\_offset必须同时为None为非空。
 -   非量化模式：当k\_rope\_scale和c\_kv\_scale为空时，k\_cache和ckv\_cache的dtype为bfloat16或float16。
 -   索引映射：所有cache\_mode缓存模式下，index的值不可以重复，如果传入的index值存在重复，算子的行为是未定义的且不可预知的。
-    -   Norm：index的值表示每个Batch下的偏移
+    -   Norm：index的值表示每个Batch下的偏移。
     -   PA/PA\_BNSD/PA\_NZ：index的值表示全局的偏移。
     -   PA\_BLK\_BNSD/PA\_BLK\_NZ：index的值表示每个页的全局偏移；这个场景假设cache更新是连续的，不支持非连续更新的cache。
 

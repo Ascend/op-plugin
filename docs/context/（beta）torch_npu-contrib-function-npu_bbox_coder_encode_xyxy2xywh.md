@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes, gt_bboxes, means=None, stds=None, is_normalized=False, normalized_scale=10000.):
+torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes, gt_bboxes, means=None, stds=None, is_normalized=False, normalized_scale=10000.)
 ```
 
 ## 功能说明

@@ -14,14 +14,14 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 
 - anchor_box (Tensor) - 输入张量。锚点框。shape为（N,4）数据类型为float32的2D张量。“N”表示标注框的数量，“4”表示“x0”、“x1”、“y0”和“y1”。
 - ground_truth_box (Tensor) - 输入张量。真值框。shape为（N,4）数据类型为float32的2D张量。“N”表示标注框的数量，“4”表示“x0”、“x1”、“y0”和“y1”。
-- means0 (Float) - index。
-- means1 (Float) - index。
-- means2 (Float) - index。
-- means3 (Float，默认值为[0,0,0,0]) - index。 "deltas" = "deltas" x "stds" + "means"。
-- stds0 (Float) - index。
-- stds1 (Float) - index。
-- stds2 (Float) - index。
-- stds3 (Float，默认值：[1.0,1.0,1.0,1.0]) -index。 "deltas" = "deltas" x "stds" + "means"。
+- means0 (Float，默认值为0) - “x0”的偏差值。
+- means1 (Float，默认值为0) - “y0”的偏差值。
+- means2 (Float，默认值为0) - “x1”的偏差值。
+- means3 (Float，默认值为0) - “y1”的偏差值。
+- stds0 (Float，默认值为1.0) - “x0”的缩放值。
+- stds1 (Float，默认值为1.0) - “y0”的缩放值。
+- stds2 (Float，默认值为1.0) - “x1”的缩放值。
+- stds3 (Float，默认值为1.0) - “y1”的缩放值。
 
 ## 支持的型号
 

@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.roll(input1, shifts, dims):
+torch_npu.contrib.function.roll(input1, shifts, dims)
 ```
 
 ## 功能说明
