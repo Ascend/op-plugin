@@ -115,7 +115,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p19759312016"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p19759312016"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p19759312016"></a><a href="https://gitee.com/link?target=https://github.com/facebookresearch/fairseq/blob/e0884db9a7ce83670e21af39bf785b616ce5e3e3/fairseq/modules/multihead_attention.py#L64" target="_blank" rel="noopener noreferrer">class MultiheadAttention()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1981213335616"><a name="p1981213335616"></a><a name="p1981213335616"></a>Multi-headed attention。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1981213335616"><a name="p1981213335616"></a><a name="p1981213335616"></a>Multi-head attention。</p>
 </td>
 </tr>
 <tr id="row178121437561"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p18127335610"><a name="p18127335610"></a><a name="p18127335610"></a><a href="（beta）torch_npu-contrib-function-npu_single_level_responsible_flags.md">（beta）torch_npu.contrib.function.npu_single_level_responsible_flags</a></p>
