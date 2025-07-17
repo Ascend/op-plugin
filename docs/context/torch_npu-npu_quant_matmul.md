@@ -28,7 +28,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
 
 - **offset** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(t,)$，$t=1$或$n$，其中$n$与`x2`的$n$一致。
-- **pertoken_scale** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致。**<term>Atlas 推理系列加速卡产品</term>当前不支持`pertoken_scale`。**
+- **pertoken_scale** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致。<term>Atlas 推理系列加速卡产品</term>当前不支持`pertoken_scale`。
 - **bias** (`Tensor`)：可选参数，数据格式支持$ND$，shape支持1维$(n,)$或3维$（batch, 1, n）$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是2、4、5、6维情况下，`bias`的shape必须为1维。当输出是3维情况下，`bias`的shape可以为1维或3维。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int32`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。

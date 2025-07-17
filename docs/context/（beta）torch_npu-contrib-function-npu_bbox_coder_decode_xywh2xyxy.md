@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, means=None, stds=None, max_shape=[9999, 9999], wh_ratio_clip=16 / 1000):
+torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, means=None, stds=None, max_shape=[9999, 9999], wh_ratio_clip=16 / 1000)
 ```
 
 ## 功能说明

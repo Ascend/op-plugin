@@ -18,8 +18,8 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **x1** (`Tensor`)：数据类型支持`int8`、`float16`、`bfloat16`。数据格式支持$ND$，输入shape支持2维或者3维。
 - **x2** (`Tensor`)：数据类型支持`float16`、`int8`、`bfloat16`，数据格式支持$NZ$（昇腾亲和排布格式）、$ND$。非量化场景，数据类型需要和`x1`保持一致，输入shape维度第0维和`x1`的最后一维保持一致。
 - **hcom** (`str`)：通信域handle名，通过`get_hccl_comm_name`接口获取。
-- **\***：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
-- **reduce_op** (`str`)：reduce操作类型，**当前版本仅支持**`'sum'`，默认值：`'sum'`。
+- **\***: 代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
+- **reduce_op** (`str`)：reduce操作类型，**当前版本仅支持**`sum`，默认值：`sum`。
 - **bias** (`Tensor`)：可选输入，数据类型支持`int32`、`float16`、`bfloat16`，数据格式支持$ND$。`bias`当前仅支持一维，且维度大小与`output/x2`的最后一维大小相同。
 - **antiquant_scale** (`Tensor`)：可选输入，伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
     - per-tensor场景：shape为$[1]$。
@@ -44,7 +44,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
   
 - **comm_quant_scale_1** (`Tensor`)：可选输入，alltoall通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为$[k, n]$时shape为$[1, n]$或$[n]$，用户需保证每张卡上数据保持一致且正确。
 - **comm_quant_scale_2** (`Tensor`)：可选输入，allgather通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为$[k, n]$时shape为$[1, n]$或$[n]$，用户需保证每张卡上数据保持一致且正确。
-- **comm_turn** (`int`)：表示rank间通信切分粒度，默认值：`0`，表示默认的切分方式。**当前版本仅支持输入`0`**。
+- **comm_turn** (`int`)：表示rank间通信切分粒度，默认值：`0`，表示默认的切分方式。当前版本仅支持输入`0`。
 - **antiquant_group_size** (`int`)：表示伪量化per-group算法模式下，对输入`x2`进行反量化计算的groupSize输入，描述一组反量化参数对应的待反量化数据量在$k$轴方向的大小。当伪量化算法模式不为per-group时传入`0`；当伪量化算法模式为per-group时传入值的范围为`[32, min(k-1, INT_MAX)]`且值要求是32的倍数，其中$k$为`x2`第一维的大小。默认值`0`，为`0`则表示非per-group场景。
 
 ## 返回值

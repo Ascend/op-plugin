@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.module.MultiheadAttention(nn.Module):
+torch_npu.contrib.module.MultiheadAttention(nn.Module)
 ```
 
 ## 功能说明

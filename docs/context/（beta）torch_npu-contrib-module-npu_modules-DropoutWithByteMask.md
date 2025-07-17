@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.module.npu_modules.DropoutWithByteMask(Module):
+torch_npu.contrib.module.npu_modules.DropoutWithByteMask(Module)
 ```
 
 ## 功能说明

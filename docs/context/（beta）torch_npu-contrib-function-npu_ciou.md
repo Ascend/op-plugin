@@ -6,7 +6,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.npu_ciou(boxes1, boxes2, trans=True, is_cross=False, mode=0):
+torch_npu.contrib.function.npu_ciou(boxes1, boxes2, trans=True, is_cross=False, mode=0)
 ```
 
 ## 功能说明

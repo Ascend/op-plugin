@@ -55,7 +55,7 @@ quant_conv2d_input（计算输入）：Tensor类型，数据类型支持int8，�
 
 - 该接口支持推理场景下使用。
 - 该接口仅支持PyTorch静态图模式在线推理（目前仅支持PyTorch 2.1版本）。
-- <term>Atlas 推理系列产品</term>：不支持output w为1的场景。
+- <term>Atlas 推理系列产品</term>：不支持output中w轴为1的场景。
 
 ## 支持的型号
 

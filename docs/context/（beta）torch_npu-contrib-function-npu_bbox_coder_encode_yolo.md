@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride):
+torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 ```
 
 ## 功能说明

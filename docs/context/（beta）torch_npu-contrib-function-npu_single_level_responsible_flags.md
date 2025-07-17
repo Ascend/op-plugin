@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_bboxes, stride, num_base_anchors):
+torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_bboxes, stride, num_base_anchors)
 ```
 
 ## 功能说明
