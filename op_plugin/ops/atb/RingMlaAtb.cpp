@@ -71,6 +71,8 @@ std::tuple<at::Tensor, at::Tensor> npu_ring_mla(const at::Tensor &q_nope, const 
     int input_layout = std::get<2>(mode);
     int calc_type = std::get<3>(mode);
     auto seqlen_clone = seqlen.clone();
+    TORCH_CHECK(seqlen_clone.device().type() == at::kCPU,
+                "Expected CPU tensor, please check whether the input seqlen tensor device is correct.");
     EXEC_ATB_CMD(AtbRingMLA, q_nope, q_rope, k_nope, k_rope, value, mask, seqlen_clone, pre_out, prev_lse, head_num, kv_head_num, qkScale_float, kernel_type, mask_type, input_layout, calc_type, output, softmax_lse);
     return std::make_tuple(output, softmax_lse);
 }
@@ -90,6 +92,8 @@ std::tuple<at::Tensor&, at::Tensor&> npu_ring_mla_out(const at::Tensor &q_nope, 
     int input_layout = std::get<2>(mode);
     int calc_type = std::get<3>(mode);
     auto seqlen_clone = seqlen.clone();
+    TORCH_CHECK(seqlen_clone.device().type() == at::kCPU,
+                "Expected CPU tensor, please check whether the input seqlen tensor device is correct.");
     EXEC_ATB_CMD(AtbRingMLA, q_nope, q_rope, k_nope, k_rope, value, mask, seqlen_clone, pre_out, prev_lse, head_num, kv_head_num, qkScale_float, kernel_type, mask_type, input_layout, calc_type, output, softmax_lse);
     return std::forward_as_tuple(output, softmax_lse);
 }
