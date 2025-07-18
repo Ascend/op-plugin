@@ -40,8 +40,6 @@ std::tuple<at::Tensor, at::Tensor> npu_apply_rotary_pos_emb(
     c10::string_view rotary_mode)
 {
     std::string layout_str = std::string(layout);
-    TORCH_CHECK(layout_str == "BSND" || layout_str == "BNSD" || layout_str == "SBND" || layout_str == "BSH",
-        "The layout should be BSND/BSH/BNSD/SBND, but got ", layout_str, OPS_ERROR(ErrCode::PARAM));
     std::string rotary_mode_str = std::string(rotary_mode);
     TORCH_CHECK(rotary_mode_str == "half" || rotary_mode_str == "quarter" || rotary_mode_str == "interleave",
         "The layout should be half/quarter/interleave, but got ", rotary_mode_str, OPS_ERROR(ErrCode::PARAM));
