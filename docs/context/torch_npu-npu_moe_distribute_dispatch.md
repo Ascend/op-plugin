@@ -91,7 +91,7 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
 ## 约束说明<a name="zh-cn_topic_0000002203575833_section12345537164214"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持静态图模式（PyTorch 2.1版本），并且Dispatch和Combine必须配套使用。
+-   该接口支持静态图模式（不低于PyTorch 2.1版本），并且Dispatch和Combine必须配套使用。
 -   在不同产品型号、不同通信算法或不同版本中，Dispatch的Tensor输出expand\_idx、ep\_recv\_counts、tp\_recv\_counts、expand\_scales中的元素值可能不同，使用时直接将上述Tensor传给Combine对应参数即可，模型其他业务逻辑不应对其存在依赖。
 -   调用接口过程中使用的group\_ep、ep\_world\_size、moe\_expert\_num、group\_tp、tp\_world\_size、expert\_shard\_type、shared\_expert\_num、shared\_expert\_rank\_num、global\_bs参数取值所有卡需保持一致，group\_ep、ep\_world\_size、moe\_expert\_num、group\_tp、tp\_world\_size、expert\_shard\_type、global\_bs网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)对应参数也保持一致。
 -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
