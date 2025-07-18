@@ -52,7 +52,7 @@ static tensor_list3 _calc_convolution_backward(const at::Tensor &grad_output, co
     bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
     ASCEND_LOGI("_calc_convolution_backward exec with jit compile: %d, allow internal format: %d",
                 is_jit_enable, is_allow_internel_format);
-    if (is_allow_internel_format || is_jit_enable) {
+    if ((is_allow_internel_format || is_jit_enable) && (dim != 3)) {
         return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                                             transposed, output_padding, groups, output_mask);
     }
