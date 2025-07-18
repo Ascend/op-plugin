@@ -1,4 +1,4 @@
-# （beta）torch\_npu.npu\_group\_norm\_swish
+# torch\_npu.npu\_group\_norm\_swish
 
 ## 函数原型
 
