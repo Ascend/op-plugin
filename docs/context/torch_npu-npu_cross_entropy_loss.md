@@ -1,4 +1,4 @@
-# （beta）torch_npu.npu_cross_entropy_loss
+# torch_npu.npu_cross_entropy_loss
 
 ## 函数原型
 

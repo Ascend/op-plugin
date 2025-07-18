@@ -1,4 +1,4 @@
-# （beta）torch_npu.npu_advance_step_flashattn
+# torch_npu.npu_advance_step_flashattn
 
 ## 函数原型
 
