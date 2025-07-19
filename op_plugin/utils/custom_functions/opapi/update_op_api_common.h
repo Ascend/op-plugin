@@ -53,13 +53,11 @@
         auto converted_params = ConvertTypesV2(copied_params, workspace_size_addr, executor_addr);                     \
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
-        TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                \
-                    OPS_ERROR(ErrCode::ACL));                                                                          \
+        NPU_CHECK_ERROR(workspace_status, "call " #aclnn_api " failed");                                               \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()->int {              \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
-            TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
-                        OPS_ERROR(ErrCode::ACL));                                                                      \
+            NPU_CHECK_ERROR(api_ret, "call " #aclnn_api " failed");                                                    \
             ReleaseConvertTypes(converted_params);                                                                     \
             ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                          \
             if (releaseMemFunc) {                                                                                      \
@@ -110,12 +108,10 @@
             auto converted_params = ConvertTypesV2(copied_params, workspace_size_addr, executor_addr);                 \
             auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);                \
             auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                      \
-            TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),            \
-                        OPS_ERROR(ErrCode::ACL));                                                                      \
+            NPU_CHECK_ERROR(workspace_status, "call " #aclnn_api " failed");                                           \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
-            TORCH_CHECK(api_ret == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                     \
-                        OPS_ERROR(ErrCode::ACL));                                                                      \
+            NPU_CHECK_ERROR(api_ret, "call " #aclnn_api " failed");                                                    \
             ReleaseConvertTypes(converted_params);                                                                     \
             ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                          \
             if (releaseMemFunc) {                                                                                      \
@@ -161,8 +157,7 @@
         auto converted_params = ConvertTypes(args..., workspace_size_addr, executor_addr);                             \
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
-        TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                \
-                    OPS_ERROR(ErrCode::ACL));                                                                          \
+        NPU_CHECK_ERROR(workspace_status, "call " #aclnn_api " failed");                                               \
         ReleaseConvertTypes(converted_params);                                                                         \
         ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                              \
         if (releaseMemFunc) {                                                                                          \
