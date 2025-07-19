@@ -7313,7 +7313,6 @@ custom:
 
   - func: npu_mrope(Tensor positions, Tensor query, Tensor key, Tensor cos_sin_cache, int head_size, *, int[]? mrope_section=None, str? rotary_mode='half') -> (Tensor, Tensor)
     op_api: all_version
-    exposed: all_version
     gen_opapi:
       query_out:
         size: query
@@ -7760,6 +7759,7 @@ custom:
 
   - func: npu_top_k_top_p(Tensor logits, Tensor p, Tensor k) -> Tensor
     op_api: all_version
+    exposed: all_version
     gen_opapi:
       out:
         size: logits
