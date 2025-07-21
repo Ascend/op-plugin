@@ -63,7 +63,8 @@ namespace op_api {
     {
         return one.prb_size == other.prb_size
             && one.is_forward == other.is_forward
-            && one.plan_mode == other.plan_mode;
+            && one.plan_mode == other.plan_mode
+            && one.scalar_dtype == other.scalar_dtype;
     }
 
 

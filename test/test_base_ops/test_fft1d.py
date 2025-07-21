@@ -24,6 +24,19 @@ class TestFFT1d(TestCase):
 
         self.assertRtolEqual(cpu_output_real, npu_output_real)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_rfft_1d_dtype(self):
+        tensor = torch.tensor([1.0, 2.0, 3.0, 4.0]).bool()
+        tensor_npu = tensor.npu()
+
+        cpu_output = torch.fft.rfft(tensor)
+        npu_output = torch.fft.rfft(tensor_npu)
+
+        cpu_output_real = torch.view_as_real(cpu_output)
+        npu_output_real = torch.view_as_real(npu_output)
+
+        self.assertRtolEqual(cpu_output_real, npu_output_real)
+
 
 if __name__ == "__main__":
     run_tests()
