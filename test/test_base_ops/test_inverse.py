@@ -45,6 +45,24 @@ class TestInverse(TestCase):
         torch.inverse(npu_x, out=npu_out)
         self.assertRtolEqual(cpu_out.half(), npu_out.cpu())
 
+    def test_inverse_backward(self):
+        dtype_list = [np.float16, np.float32]
+        format_list = [0, 3]
+        shape_list = [(4, 4), (0, 3, 29, 29), (1, 2, 4, 4)]
+        # pylint:disable = complicate-comprehension
+        shape_format = [[i, j, k] for i in dtype_list for j in format_list for k in shape_list]
+        for item in shape_format:
+            cpu_input1, npu_input1 = create_common_tensor(item, -100, 100)
+            if cpu_input1.dtype == torch.float16:
+                cpu_input1 = cpu_input1.to(torch.float32)
+            cpu_input1.requires_grad = True
+            npu_input1.requires_grad = True
+            cpu_output = torch.inverse(cpu_input1)
+            npu_output = torch.inverse(npu_input1)
+            cpu_output.backward(torch.ones_like(cpu_output))
+            npu_output.backward(torch.ones_like(npu_output))
+            self.assertRtolEqual(npu_input1.grad, cpu_input1.grad.to(npu_input1.dtype))
+
 
 if __name__ == "__main__":
     run_tests()
