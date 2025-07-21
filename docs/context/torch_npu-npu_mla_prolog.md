@@ -78,11 +78,11 @@ torch_npu.npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, 
 -   **kr\_cache**（Tensor）：必选参数，表示用于key位置编码的cache。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持bfloat16和int8，数据格式支持ND。
 -   **dequant\_scale\_x**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
 -   **dequant\_scale\_w\_dq**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
--   **dequant\_scale\_w\_uq\_qr**（Tensor）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化参数维per-channel。shape支持2维，格式为\(1, N\*\(D+Dr\)\)，dtype支持float，数据格式支持ND**。**
+-   **dequant\_scale\_w\_uq\_qr**（Tensor）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化参数维per-channel。shape支持2维，格式为\(1, N\*\(D+Dr\)\)，dtype支持float，数据格式支持ND。
 -   **dequant\_scale\_w\_dkv\_kr**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
--   **quant\_scale\_ckv**（Tensor）：可选参数，用于对输出到kv\_cache\_out中的数据做量化操作时的参数。shape支持2维，格式为\(1, Hckv\)，dtype支持float，数据格式支持ND**。**
--   **quant\_scale\_ckr**（Tensor）：可选参数，用于对输出到kr\_cache\_out中的数据做量化操作时的参数。shape支持2维，格式为\(1, Dr\)，dtype支持float，数据格式支持ND**。**
--   **smooth\_scales\_cq**（Tensor）：可选参数，用于对RmsNormCq输出做动态量化操作时的参数。shape支持2维，格式为\(1, Hcq\)，dtype支持float，数据格式支持ND**。**
+-   **quant\_scale\_ckv**（Tensor）：可选参数，用于对输出到kv\_cache\_out中的数据做量化操作时的参数。shape支持2维，格式为\(1, Hckv\)，dtype支持float，数据格式支持ND。
+-   **quant\_scale\_ckr**（Tensor）：可选参数，用于对输出到kr\_cache\_out中的数据做量化操作时的参数。shape支持2维，格式为\(1, Dr\)，dtype支持float，数据格式支持ND。
+-   **smooth\_scales\_cq**（Tensor）：可选参数，用于对RmsNormCq输出做动态量化操作时的参数。shape支持2维，格式为\(1, Hcq\)，dtype支持float，数据格式支持ND。
 -   **rmsnorm\_epsilon\_cq**（float）：可选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
 -   **rmsnorm\_epsilon\_ckv**（float）：可选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
 -   **cache\_mode**（str）：可选参数，表示kvCache的模式，支持"PA\_BSND"、"PA\_NZ"，其用户不特意指定时可传入默认值“PA\_BSND”。
@@ -99,20 +99,24 @@ torch_npu.npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, 
 -   该接口支持推理场景下使用。
 -   该接口支持图模式（PyTorch 2.1版本）。
 -   接口参数中shape格式字段含义：
-    -   B：Batch表示输入样本批量大小，取值范围为1\~65536。
-    -   S：Seq-Length表示输入样本序列长度，取值范围为1\~16。
+    -   B：Batch表示输入样本批量大小，取值范围为0\~65536。
+    -   S：Seq-Length表示输入样本序列长度，取值范围为0\~16。
     -   He：Head-Size表示隐藏层的大小，取值为7168。
 
     -   Hcq：q低秩矩阵维度，取值为1536。
-    -   N：Head-Num表示多头数，取值范围为8、16、32、64、128。
+    -   N：Head-Num表示多头数，取值范围为1、2、4、8、16、32、64、128。
 
     -   Hckv：kv低秩矩阵维度，取值为512。
     -   D：qk不含位置编码维度，取值为128。
     -   Dr：qk位置编码维度，取值为64。
     -   Nkv：kv的head数，取值为1。
-    -   BlockNum：PagedAttention场景下的块数，取值为计算B\*Skv/BlockSize的值后再向上取整，其中Skv表示kv的序列长度。
+    -   BlockNum：PagedAttention场景下的块数，取值为计算B\*Skv/BlockSize的值后再向上取整，其中Skv表示kv的序列长度，该值允许取0。
     -   BlockSize：PagedAttention场景下的块大小，取值范围为16、128。
-    -   T：BS合轴后的大小，取值范围：1\~1048576。注：若采用BS合轴，此时token\_x、rope\_sin、rope\_cos均为2维，cache\_index为1维，query、query\_rope为3维。
+    -   T：BS合轴后的大小，取值范围：0\~1048576。注：若采用BS合轴，此时token\_x、rope\_sin、rope\_cos均为2维，cache\_index为1维，query、query\_rope为3维。
+-   shape约束
+    -   B、S、T、Skv值允许一个或多个取0，即Shape与B、S、T、Skv值相关的入参允许传入空Tensor，其余入参不支持传入空Tensor。
+        -   如果B、S、T取值为0，则query、query_rope输出空Tensor，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新。
+        -   如果Skv取值为0，则query、query_rope正常计算，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新，即输出空Tensor。
 
 ## 调用示例<a name="zh-cn_topic_0000002191987496_section14459801435"></a>
 
