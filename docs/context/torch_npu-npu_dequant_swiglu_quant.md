@@ -45,12 +45,12 @@ torch_npu.npu_dequant_swiglu_quant(Tensor x, *, Tensor? weight_scale=None, Tenso
 >-   H：表示嵌入向量的长度，取值\>0。
 >-   groupNum：表示group\_index输入的长度，取值\>0。
 
--   x：Tensor类型，表示目标张量。要求是2D的Tensor，shape为\[TokensNum, 2H\]，尾轴为偶数。数据类型支持int32，数据格式为ND。
+-   x：Tensor类型，表示目标张量。要求是2D的Tensor，shape为\[TokensNum, 2H\]，尾轴为偶数。数据类型支持int32和bfloat16，数据格式为ND。
 -   weight\_scale：Tensor类型，可选参数，表示权重量化对应的反量化系数。要求是2D的Tensor，shape为\[groupNum, 2H\]，数据类型支持float32，数据格式为ND。当x为int32时，要求该参数非None，表示需要做反量化。
 -   activation\_scale：Tensor类型，可选参数，表示per-token权重量化对应的反量化系数。要求是1D的Tensor，shape为\[TokensNum\]，数据类型支持float32，数据格式为ND。当x为int32时，要求该参数非None，表示需要做反量化。
 -   bias：Tensor类型，可选参数，表示x的偏置变量。数据类型支持int32，数据格式为ND。group\_index场景下（非None），该参数不生效为None。
--   quant\_scale：Tensor类型，可选参数，表示smooth量化系数。要求是2D的Tensor，shape为\[groupNum, H\]，数据类型支持float32，数据格式为ND。
--   quant\_offset：Tensor类型，可选参数，表示量化中的偏移项。数据类型支持float32，数据格式为ND。group\_index场景下（非None），该参数不生效为None。
+-   quant\_scale：Tensor类型，可选参数，表示smooth量化系数。要求是2D的Tensor，shape为\[groupNum, H\]，数据类型支持float32、float16和bfloat16，数据格式为ND。
+-   quant\_offset：Tensor类型，可选参数，表示量化中的偏移项。数据类型支持float32、float16和bfloat16，数据格式为ND。group\_index场景下（非None），该参数不生效为None。
 -   group\_index：Tensor类型，可选参数，当前只支持count模式，表示该模式下指定分组的Tokens数（要求非负整数）。要求是1D的Tensor，数据类型支持int64，数据格式ND。
 -   activate\_left：bool类型，可选参数，Swiglu流程中是否进行左激活，默认False。
     -   取True时，out=swish\(split\[x, -1, 2\]\[0\]\)\*split\[x, -1, 2\]\[1\]

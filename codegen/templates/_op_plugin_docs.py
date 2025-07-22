@@ -8011,7 +8011,7 @@ torch_npu.npu_moe_init_routing_v2(Tensor x, Tensor expert_idx, *, Tensor? scale=
     expanded_row_idx：Tensor类型，expanded_x和x的映射关系， 要求是1D的Tensor，shape为(NUM_ROWS*K, )，数据类型支持int32，数据格式要求为ND。前available_idx_num个元素为有效数据，其余无效数据由row_idx_type决定，其中available_idx_num为expert_idx中active_expert_range范围的元素的个数。row_idx_type为0时，无效数据由-1填充；row_idx_type为1时，无效数据未初始化。
     expert_token_cumsum_or_count：Tensor类型。在expert_tokens_num_type为1的场景下，要求是1D的Tensor，表示active_expert_range范围内expert对应的处理token的总数。shape为(expert_end-expert_start, )；在expert_tokens_num_type为2的场景下，要求是2D的Tensor，shape为(expert_num, 2)，表示active_expert_range范围内token总数为非0的expert，以及对应expert处理token的总数；expert id在active_expert_range范围且剔除对应expert处理token为0的元素对为有效元素对，存放于Tensor头部并保持原序。数据类型支持int64，数据格式要求为ND。
     expanded_scale：Tensor类型，数据类型支持float32，数据格式要求为ND。令available_idx_num为active_expert_range范围的元素的个数。
-        非量化场景下，即quant_mode为-1，shape为(NUM_ROWS*H*K, )。当scale未输入时，输出值未定义；当scale输入时，输出表示一个1D的Tensor，前available_idx_num*H个元素为有效数据，其余为无效数据。
+        非量化场景下，即quant_mode为-1，shape为(NUM_ROWS*K, )。当scale未输入时，输出值未定义；当scale输入时，输出表示一个1D的Tensor，前available_idx_num*H个元素为有效数据，其余为无效数据。
         动态quant场景下，即quant_mode为1，输出量化计算过程中scale的中间值，shape为(NUM_ROWS*K)。当scale未输入时，输出值未定义；当scale输入时，输出表示一个1D的Tensor，前available_idx_num个元素为有效数据，其余为无效数据，若x的输入类型为int8，输出值未定义。
 约束说明
     该接口支持推理场景下使用。
@@ -8023,7 +8023,7 @@ torch_npu.npu_moe_init_routing_v2(Tensor x, Tensor expert_idx, *, Tensor? scale=
         x数据类型要求：bfloat16
         属性要求：active_expert_range=[0,256]、 quant_mode=1、expert_tokens_num_type=2、expert_num=256
     进入大batch性能模板需要同时满足以下条件：
-        NUM_ROWS范围为[1920, 4608]
+        NUM_ROWS范围为[384, 8192]
         K=8
         expert_num=256
         expert_end-expert_start<=32
