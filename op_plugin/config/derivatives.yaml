@@ -294,6 +294,12 @@ backward:
   self: fft_c2r_backward(grad, dim, normalization)
   version: [v2.1, newest]
 
+- name: npu_moe_token_permute_with_routing_map(Tensor tokens, Tensor routing_map, *, Tensor? probs=None, int? num_out_tokens=None, bool drop_and_pad=False) -> (Tensor, Tensor, Tensor)
+  output_differentiability: [true, true, false]
+  tokens, probs: npu_moe_token_permute_with_routing_map_grad(grads[0], grads[1], result2, routing_map, routing_map.sym_size(1), tokens.sym_size(0), drop_and_pad)
+  routing_map: non_differentiable
+  version: all_version
+
 - name: npu_group_norm_swish(Tensor input, int num_groups, Tensor weight, Tensor bias, float? eps=1e-5, float? swish_scale=1.0) -> (Tensor, Tensor, Tensor)
   input, weight, bias: npu_group_norm_swish_grad(grad, input, num_groups, weight, bias, result1, result2, grad_input_mask, swish_scale)
   version: all_version

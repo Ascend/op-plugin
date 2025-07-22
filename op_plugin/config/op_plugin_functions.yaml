@@ -6851,6 +6851,12 @@ custom:
     acl_op: all_version
     tags: nondeterministic_seeded
 
+  - func: npu_moe_token_permute_with_routing_map(Tensor tokens, Tensor routing_map, *, Tensor? probs=None, int? num_out_tokens=None, bool drop_and_pad=False) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+
+  - func: npu_moe_token_permute_with_routing_map_grad(Tensor permuted_token_out_grad, Tensor? probs_grad, Tensor sorted_indices, Tensor routing_map, SymInt experts_num, SymInt tokens_num, bool drop_and_pad) -> (Tensor, Tensor)
+    op_api: all_version
+
   - func: npu_dropout_gen_mask(int[] size, float p, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: all_version
     tags: nondeterministic_seeded
@@ -7938,6 +7944,9 @@ symint:
   - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
     acl_op: [v2.2, newest]
     op_api: [v2.2, newest]
+
+  - func: npu_moe_token_permute_with_routing_map_grad(Tensor permuted_token_out_grad, Tensor? probs_grad, Tensor sorted_indices, Tensor routing_map, SymInt experts_num, SymInt tokens_num, bool drop_and_pad) -> (Tensor, Tensor)
+    op_api: all_version
 
   - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, int? output_size=None) -> Tensor
     acl_op: v2.1
