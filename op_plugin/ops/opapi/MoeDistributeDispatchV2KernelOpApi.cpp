@@ -34,8 +34,12 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
                                            int64_t quant_mode, int64_t global_bs, int64_t expert_token_nums_type)
 {
     TORCH_CHECK((x.dim() == DIM_TWO) && (expert_ids.dim() == DIM_TWO), "The x and expert_ids should be 2D", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK((x.scalar_type() == at::kBFloat16 || (x.scalar_type() == at::kHalf)) && (expert_ids.scalar_type() == at::kInt),
-                "dtype of x should be bfloat16 or half, dtype of expert_ids should be int.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x.scalar_type() == at::kBFloat16 || x.scalar_type() == at::kHalf,
+                "dtype of x should be BFloat16 or Half, but got " + std::string(c10::toString(x.scalar_type())),
+                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(expert_ids.scalar_type() == at::kInt,
+                "dtype of expert_ids should be Int, but got " + std::string(c10::toString(expert_ids.scalar_type())),
+                OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((ep_rank_id >= 0) && (ep_rank_id < ep_world_size),
                 "ep_rank_id should be in [0, ep_world_size), but got",
                 " ep_world_size: ", ep_world_size,
@@ -52,7 +56,10 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
         && ((shared_expert_rank_num / shared_expert_num) > 0)
         && ((shared_expert_rank_num % shared_expert_num) == 0));
     TORCH_CHECK(is_shared_default || is_no_shared || is_valid_shared,
-                "shared expert setting invalid, got",
+                "shared_expert_num and shared_expertrank_num have obvious value situations: "
+                "1. shared_expert_num is 1, shared_expert_rank_num is 0; 2. shared_expert num is 0, "
+                "shared_expert_rank_num is 0; 3. shared_expert_num in (0, shared_expert_rank_num] and "
+                "shared_expert_rank_num % shared_expert_num = 0. but the current input value is ",
                 " shared_expert_num: ", shared_expert_num,
                 ", shared_expert_rank_num: ", shared_expert_rank_num,
                 ". " + OPS_ERROR(ErrCode::PARAM));
