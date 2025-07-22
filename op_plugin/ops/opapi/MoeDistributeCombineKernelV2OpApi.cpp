@@ -37,8 +37,12 @@ at::Tensor npu_moe_distribute_combine_v2(const at::Tensor &expand_x, const at::T
                                          int64_t global_bs, int64_t comm_quant_mode)
 {
     TORCH_CHECK((expand_x.dim() == DIM_TWO) && (expert_ids.dim() == DIM_TWO), "The x and expert_ids should be 2D", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(((expand_x.scalar_type() == at::kBFloat16) || (expand_x.scalar_type() == at::kHalf) || (expand_x.scalar_type() == at::kInt)) && (expert_ids.scalar_type() == at::kInt),
-                "dtype of x should be bfloat16, float16 or int, dtype of expert_ids should be int.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK((expand_x.scalar_type() == at::kBFloat16) || (expand_x.scalar_type() == at::kHalf) || (expand_x.scalar_type() == at::kInt),
+                "dtype of expand_x should be BFloat16, Float16 or Int, but got " + std::string(c10::toString(expand_x.scalar_type())),
+                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(expert_ids.scalar_type() == at::kInt,
+                "dtype of expert_ids should be Int, but got " + std::string(c10::toString(expert_ids.scalar_type())),
+                OPS_ERROR(ErrCode::PARAM));
     auto expand_x_size = expand_x.sizes();
     auto expert_ids_size = expert_ids.sizes();
 
