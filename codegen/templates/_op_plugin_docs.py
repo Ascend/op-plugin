@@ -4498,7 +4498,7 @@ _add_torch_npu_docstr(
 GroupedMatmul和MoeFinalizeRouting的融合算子，GroupedMatmul计算后的输出按照索引做combine动作。
 
 接口原型：
-torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor weight, Tensor group_list, *, Tensor? scale=None, Tensor? bias=None, Tensor? pertoken_scale=None, Tensor? shared_input=None, Tensor? logit=None, Tensor? row_index=None, ScalarType? dtype=None, float? shared_input_weight=1.0, int? shared_input_offset=0, int? output_bs=0, int? group_list_type=1) -> Tensor
+torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor weight, Tensor group_list, *, Tensor? scale=None, Tensor? bias=None, Tensor? pertoken_scale=None, Tensor? shared_input=None, Tensor? logit=None, Tensor? row_index=None, ScalarType? dtype=None, float? shared_input_weight=1.0, int? shared_input_offset=0, int? output_bs=0, int? group_list_type=1, int[]? tuning_config) -> Tensor
 
 参数说明：
 - x(Tensor, 计算输入): 必选参数，一个2D的Device侧Tensor输入，矩阵计算的左矩阵，不支持非连续的Tensor。数据类型支持int8，数据格式支持ND，维度为(m,k)。m取值范围为[1, 16*1024*8]，K取值为16整倍数。
@@ -4516,6 +4516,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor weight, Tensor gr
 - shared_input_offset(int, 计算输入): 可选参数，共享专家输出在总输出中的偏移。默认值为0.
 - output_bs(int, 计算输入): 可选参数，输出的最高维大小。默认值为0。
 - group_list_type(int, 计算输入): 可选参数，GroupedMatMul的分组模式，0为cumsum模式，1为count模式，默认为1。
+- tuning_config:(ListInt, 计算输入): 可选参数，数组中第一个值表示各个专家处理的token数的预期值，算子tiling时会按照该预期值进行最优tiling。
 - y(Tensor, 计算输出): 2D的Tensor，不支持非连续的Tensor，输出的数据类型固定为float32，维度为(batch, n)。
 
 支持的芯片型号：

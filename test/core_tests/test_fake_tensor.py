@@ -2261,6 +2261,46 @@ class TestGMMFinalizeRouting(TestCase):
             self.assertTrue(result.shape == expect_ret.shape)
             self.assertTrue(result.dtype == expect_ret.dtype)
 
+    def test_npu_grouped_matmul_finalise_routing_a8w4_with_tuningconfig_meta(self):
+        with FakeTensorMode():
+            m, k, n, batch, topK, group_num = 8, 2048, 7168, 1, 8, 8
+            quantGroupSize = k
+            x = torch.randint(-10, 10, (m, k), dtype=torch.int8)
+            weight = torch.randint(-10, 10, (group_num, k, n // 8), dtype=torch.int32)
+            scale_np = np.random.normal(0, 0.01, (group_num, 1, n)).astype(np.float32)
+            perGroupScale = np.ones([group_num, k // quantGroupSize, n]).astype(np.float32)
+            scaleUint32 = (scale_np * perGroupScale).astype(np.float16).astype(np.float32)
+            scaleUint32.dtype = np.uint32
+            scaleUint64 = np.zeros((group_num, k // quantGroupSize, n * 2), dtype=np.uint32)
+            scaleUint64[..., ::2] = scaleUint32
+            scaleUint64.dtype = np.int64
+            scale = torch.from_numpy(scaleUint64)
+            bias = torch.normal(0, 0.01, (group_num, n), dtype=torch.float32)
+            offset = torch.randint(-5, 5, (group_num, k // quantGroupSize, n), dtype=torch.float32)
+            pertoken_scale = torch.normal(0, 0.01, (m, ), dtype=torch.float32)
+            group_list = torch.tensor([batch] * group_num, dtype=torch.float32)
+            logit_ori = torch.normal(0, 0.1, (batch, group_num), dtype=torch.float32)
+            routing = torch.argsort(logit_ori, 1)[:, -topK:]
+            shared_input = torch.normal(0, 0.1, (batch // 4, n), dtype=torch.bfloat16)
+            logit = torch.nn.functional.softmax(
+                logit_ori[torch.arange(batch).reshape(-1, 1).repeat(1, topK), routing],
+                dim=1,
+                dtype=torch.float32
+            ).reshape(m)
+            row_index = (torch.argsort(routing.reshape(-1)) // topK).to(torch.int64)
+            shared_input_offset = batch // 2
+            output_bs = batch
+            result = torch_npu.npu_grouped_matmul_finalize_routing(
+                x.npu(), weight.npu(), group_list.npu(), scale=scale.npu(),
+                bias=bias.npu(), offset=offset.npu(),
+                pertoken_scale=pertoken_scale.npu(), shared_input=shared_input.npu(),
+                logit=logit.npu(), row_index=row_index.npu(),
+                shared_input_offset=shared_input_offset, output_bs=output_bs
+            ).to("cpu")
+            expect_ret = torch.normal(0, 0.1, (output_bs, n), dtype=torch.float32)
+            self.assertTrue(result.shape == expect_ret.shape)
+            self.assertTrue(result.dtype == expect_ret.dtype)
+
 
 class TestTransposeBatchMatmul(TestCase):
     @unittest.skip("skip test_npu_transpose_batchmatmul")

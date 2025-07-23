@@ -1363,7 +1363,7 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
 def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bias=None, offset=None,
                                             pertoken_scale=None, shared_input=None, logit=None,
                                             row_index=None, dtype=None, shared_input_weight=1.0,
-                                            shared_input_offset=0, output_bs=0, group_list_type=1):
+                                            shared_input_offset=0, output_bs=0, group_list_type=1, tuning_config=None):
     torch._check(
         torch.is_tensor(x),
         lambda: "x must be tensor." + ops_error(ErrCode.VALUE)
