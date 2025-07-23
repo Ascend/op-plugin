@@ -4,7 +4,6 @@
 
 ```
 torch_npu.npu_iou(bboxes, gtboxes, mode=0) -> Tensor 
-torch_npu.npu_ptiou(bboxes, gtboxes, mode=0) -> Tensor
 ```
 
 ## 功能说明
