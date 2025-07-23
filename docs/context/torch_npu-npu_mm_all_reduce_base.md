@@ -18,7 +18,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **x1** (`Tensor`)：数据类型支持`int8`、`float16`、`bfloat16`。数据格式支持$ND$，输入shape支持2维或者3维。
 - **x2** (`Tensor`)：数据类型支持`float16`、`int8`、`bfloat16`，数据格式支持$NZ$（昇腾亲和排布格式）、$ND$。非量化场景，数据类型需要和`x1`保持一致，输入shape维度第0维和`x1`的最后一维保持一致。
 - **hcom** (`str`)：通信域handle名，通过`get_hccl_comm_name`接口获取。
-- **\***: 代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
+- <strong>*</strong>：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
 - **reduce_op** (`str`)：reduce操作类型，**当前版本仅支持**`sum`，默认值：`sum`。
 - **bias** (`Tensor`)：可选输入，数据类型支持`int32`、`float16`、`bfloat16`，数据格式支持$ND$。`bias`当前仅支持一维，且维度大小与`output/x2`的最后一维大小相同。
 - **antiquant_scale** (`Tensor`)：可选输入，伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。

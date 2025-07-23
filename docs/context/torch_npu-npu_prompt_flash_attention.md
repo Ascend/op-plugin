@@ -29,7 +29,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int8`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
 
-- **\***: 代表其之前的变量是位置相关，需要按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
+- <strong>*</strong>：代表其之前的变量是位置相关，需要按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
 
 - **padding_mask**：预留参数，暂未使用，默认值为`None`。
 - **atten_mask** (`Tensor`)：代表下三角全为0上三角全为负无穷的倒三角mask矩阵，数据类型支持`bool`、`int8`和`uint8`。数据格式支持$ND$，不支持非连续的`Tensor`。如果不使用该功能可传入`nullptr`。通常建议`shape`输入$(Q_S, KV_S)$、$(B, Q_S, KV_S)$、$(1, Q_S, KV_S)$、$(B, 1, Q_S, KV_S)$、$(1, 1, Q_S, KV_S)$，其中$Q_S$为`query`的`shape`中的$S$，$KV_S$为`key`和`value`的`shape`中的$S$，对于`atten_mask`的$KV_S$为非32字节对齐的场景，建议padding到32字节对齐来提高性能，多余部分填充成1。综合约束请见[约束说明](#section12345537164214)。
