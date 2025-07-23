@@ -2522,3 +2522,20 @@ def npu_grouped_matmul_swiglu_quant_meta(x, weight, group_list, weight_scale, x_
     output_scale_shape = torch.empty([batch_size], dtype=torch.float32, device=x.device)
     output_offset_shape = torch.empty([], dtype=torch.float32, device=x.device)
     return output_shape, output_scale_shape, output_offset_shape
+
+
+@impl(m, "npu_moe_token_unpermute_with_routing_map")
+def npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indices, restore_shape, *, probs=None, routing_map=None, drop_and_pad=False):
+    unpermuted_tokens = torch.empty([restore_shape[0], restore_shape[1]], dtype=permuted_tokens.dtype, device=permuted_tokens.device)
+    return unpermuted_tokens
+
+
+@impl(m, "npu_moe_token_unpermute_with_routing_map_grad")
+# pylint:disable = huawei-too-many-arguments
+def npu_moe_token_unpermute_with_routing_map_grad(unpermuted_tokens_grad, out_index, permuted_token_id, routing_map, permuted_tokens, probs, drop_and_pad, restore_shape):
+    permuted_tokens_grad_out = torch.empty([out_index.shape[0], unpermuted_tokens_grad.shape[1]], dtype=unpermuted_tokens_grad.dtype, device=unpermuted_tokens_grad.device)
+    if probs is not None:
+        probs_grad_out = torch.empty(probs.shape, dtype=unpermuted_tokens_grad.dtype, device=unpermuted_tokens_grad.device)
+        return permuted_tokens_grad_out, probs_grad_out
+    else:
+        return permuted_tokens_grad_out, None

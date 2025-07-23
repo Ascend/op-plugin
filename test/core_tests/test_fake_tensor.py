@@ -2587,6 +2587,61 @@ class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
                 self.assertEqual(unpermuted_tokens.shape, (sorted_indices.size(0) / topk, hidden_size))
 
 
+class TestNpuMoeUnpermuteWithRoutingMap(TestCase):
+    def test_npu_moe_token_unpermute_with_routing_map_meta(self):
+        token_num = 40
+        hidden_size = 20
+        expert_num = 20
+        top_k = 20
+        capacity = 20
+        out_token_num = token_num * top_k
+        out_token_num_pad = expert_num * capacity
+
+        def generate_bool_matrix(m, n, k):
+            matrix = torch.zeros((m, n), dtype=torch.bool)
+
+            for i in range(m):
+                indices = torch.randperm(n)[:k]
+                matrix[i, indices] = True
+
+            return matrix.to(torch.int8)
+
+        with FakeTensorMode():
+            for need_probs in [True, False]:
+                routing_map = generate_bool_matrix(token_num, expert_num, top_k)
+                routing_map_npu = routing_map.npu()
+
+                permuted_tokens = torch.randn([out_token_num_pad, hidden_size])
+                permuted_tokens_npu = permuted_tokens.npu()
+                permuted_tokens.requires_grad_(True)
+                permuted_tokens_npu.requires_grad_(True)
+
+                routing_map_tmp = routing_map.T.contiguous()
+                sorted_indices = routing_map_tmp.argsort(dim=-1, descending=True, stable=True)[:, :capacity].contiguous().to(torch.int32).view(-1)
+                sorted_indices_npu = sorted_indices.npu()
+
+                sorted_indices_npu = sorted_indices.npu()
+
+                porbs = torch.randn([token_num, expert_num])
+                porbs_npu = porbs.npu()
+                porbs.requires_grad_(True)
+                porbs_npu.requires_grad_(True)
+
+                restore_shape = [token_num, hidden_size]
+                drop_and_pad = True
+
+                if need_probs:
+                    unpermuted_tokens = torch_npu.npu_moe_token_unpermute_with_routing_map(
+                        permuted_tokens_npu, sorted_indices_npu, restore_shape, probs=porbs_npu, routing_map=routing_map_npu, drop_and_pad=drop_and_pad)
+                else:
+                    unpermuted_tokens = torch_npu.npu_moe_token_unpermute_with_routing_map(
+                        permuted_tokens_npu, sorted_indices_npu, restore_shape, probs=None, routing_map=routing_map_npu, drop_and_pad=drop_and_pad)
+
+                self.assertEqual(unpermuted_tokens.dtype, permuted_tokens_npu.dtype)
+                self.assertEqual(unpermuted_tokens.shape[0], restore_shape[0])
+                self.assertEqual(unpermuted_tokens.shape[1], restore_shape[1])
+
+
 instantiate_parametrized_tests(FakeTensorTest)
 instantiate_device_type_tests(FakeTensorOpInfoTest, globals(), only_for="cpu")
 
