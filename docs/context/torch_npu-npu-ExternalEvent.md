@@ -35,7 +35,7 @@ import torch_npu
 
 torch.npu.set_device(0)
 
-event = torch.npu.ExternalEvent()
+event = torch_npu.npu.ExternalEvent()
 default_stream = torch_npu.npu.current_stream()
 stream = torch.npu.Stream()
 

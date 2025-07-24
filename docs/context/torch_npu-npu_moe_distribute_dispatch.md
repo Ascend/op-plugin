@@ -62,8 +62,8 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
 
 -   quant\_mode：int类型，可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。当quant\_mode=2，dynamic\_scales不为None；当quant\_mode=0，dynamic\_scales为None。
 -   global\_bs：int类型，可选参数，表示EP域全局的batch size大小。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size或者256\*ep\_world\_size，其中max\_bs表示表示单rank BS最大值，建议按max\_bs\*ep\_world\_size传入，固定按256\*ep\_world\_size传入在后续版本bs支持大于256的场景下会无法支持；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size或者256\*ep\_world\_size，其中max\_bs表示单rank BS最大值，建议按max\_bs\*ep\_world\_size传入，固定按256\*ep\_world\_size传入在后续版本bs支持大于256的场景下会无法支持；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 
 -   expert\_token\_nums\_type：int类型，可选参数，表示输出expert\_token\_nums的值类型，取值范围\[0, 1\]，0表示每个专家收到token数量的前缀和，1表示每个专家收到的token数量（默认）。
 

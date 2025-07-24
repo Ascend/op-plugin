@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.utils.npu_combine_tensors (list_of_tensor, require_copy_value=True) -> Tensor
+torch_npu.utils.npu_combine_tensors(list_of_tensor, require_copy_value=True) -> Tensor
 ```
 
 ## 功能说明

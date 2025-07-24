@@ -84,7 +84,7 @@ torch_npu.npu_mla_prolog_v2(Tensor token_x, Tensor weight_dq, Tensor weight_uq_q
 -   **kr\_cache**（Tensor）：必选参数，表示用于key位置编码的cache。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持bfloat16和int8，数据格式支持ND。
 -   **dequant\_scale\_x**（Tensor）：预留可选参数，暂未使用，不传或传入None即可。
 -   **dequant\_scale\_w\_dq**（Tensor）：预留可选参数，暂未使用，不传或传入None即可。
--   **dequant\_scale\_w\_uq\_qr**（Tensor）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化参数维perchannel。shape支持2维，格式为\(1, N\*\(D+Dr\)\)，dtype支持float，数据格式支持ND。
+-   **dequant\_scale\_w\_uq\_qr**（Tensor）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化参数为perchannel。shape支持2维，格式为\(1, N\*\(D+Dr\)\)，dtype支持float，数据格式支持ND。
 -   **dequant\_scale\_w\_dkv\_kr**（Tensor）：预留可选参数，暂未使用，不传或传入None即可。
 -   **quant\_scale\_ckv**（Tensor）：可选参数，用于对输出到kv\_cache\_out中的数据做量化操作时的参数。shape支持2维，格式为\(1, Hckv\)，dtype支持float，数据格式支持ND。
 -   **quant\_scale\_ckr**（Tensor）：可选参数，用于对输出到kr\_cache\_out中的数据做量化操作时的参数。shape支持2维，格式为\(1, Dr\)，dtype支持float，数据格式支持ND。

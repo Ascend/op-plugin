@@ -1,6 +1,6 @@
 # torch_npu.npu接口列表
 
-本章节包含各种子模块接口，如随机数、内存管理等。
+本章节包含各种子模块接口，如随机数、内存管理等。npu模块支持torch.npu和torch_npu.npu两种调用方式，功能一致。
 
 **表1** torch_npu.npu API
 
@@ -76,7 +76,7 @@
 <td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p47368401662"><a name="p47368401662"></a><a name="p47368401662"></a>检测梯度是否溢出，INF_NAN模式下检测输入Tensor是否溢出；饱和模式检查硬件溢出标志位判断。</p>
 </td>
 </tr>
-<tr id="row7615177121914"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p961514711913"><a name="p961514711913"></a><a name="p961514711913"></a><a href="torch_npu-npu-Event()-recorded_time-().md">torch_npu.npu.Event().recorded_time ()</a></p>
+<tr id="row7615177121914"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p961514711913"><a name="p961514711913"></a><a name="p961514711913"></a><a href="torch_npu-npu-Event()-recorded_time-().md">（beta）torch_npu.npu.Event().recorded_time()</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1619614018512"><a name="p1619614018512"></a><a name="p1619614018512"></a>获取NPU Event对象在设备上被记录的时间。</p>
 </td>

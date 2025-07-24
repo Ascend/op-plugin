@@ -11,7 +11,7 @@ torch_npu.npu.restart_device(device_id: int, rebuild_all_resource: bool = False)
 
 ## 功能说明
 
-恢复对应device上的状态，后续在此device上进行计算可以继续进行计算执行。
+恢复对应device上的状态，后续在此device上可以继续进行计算执行。
 
 ## 参数说明
 

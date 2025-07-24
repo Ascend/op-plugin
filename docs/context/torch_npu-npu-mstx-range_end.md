@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu.mstx.range_end(range_id: int, domain: str = 'default') -> int:
+torch_npu.npu.mstx.range_end(range_id: int, domain: str='default') -> int:
 ```
 
 ## 功能说明

@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.utils.is_combined_tensor_valid (combined_tensor, list_of_tensor) -> Bool
+torch_npu.utils.is_combined_tensor_valid(combined_tensor, list_of_tensor) -> Bool
 ```
 
 ## 功能说明

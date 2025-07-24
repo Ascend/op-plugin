@@ -30,15 +30,15 @@ bool类型，开启和关闭hf32属性的支持。
 ```python
 >>> import torch
 >>>import torch_npu
->>> res = torch.npu.aclnn.allow_hf32
+>>> res = torch_npu.npu.aclnn.allow_hf32
 >>> res
 True
->>> torch.npu.aclnn.allow_hf32 = False
->>> res = torch.npu.aclnn.allow_hf32
+>>> torch_npu.npu.aclnn.allow_hf32 = False
+>>> res = torch_npu.npu.aclnn.allow_hf32
 >>> res
 False
->>> torch.npu.aclnn.allow_hf32 = True
->>> res = torch.npu.aclnn.allow_hf32
+>>> torch_npu.npu.aclnn.allow_hf32 = True
+>>> res = torch_npu.npu.aclnn.allow_hf32
 >>> res
 True
 ```

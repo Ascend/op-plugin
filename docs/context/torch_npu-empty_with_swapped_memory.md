@@ -19,7 +19,7 @@ torch_npu.empty_with_swapped_memory(size, *, dtype=None, device=None) -> Tensor
 
 ## 参数说明
 
-- **size** (`ListInt`)：必选参数，定义输出张量shape的整数序列，可以是参数数量(可变值)，也可以是列表或元组等集合。
+- **size** (`ListInt`)：必选参数，定义输出张量shape的整数序列，可以是参数数量（可变值），也可以是列表或元组等集合。
 - **dtype** (`torch.dtype`)：可选参数，必须使用关键字传参，表示生成Tensor的数据类型，默认值为`None`，表示使用dtype全局默认值。
 - **device** (`torch.device`)：可选参数，必须使用关键字传参，表示生成Tensor的设备信息，默认值为`None`，表示使用当前默认device。
 

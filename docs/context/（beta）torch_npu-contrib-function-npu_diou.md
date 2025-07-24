@@ -27,7 +27,7 @@ Tensor - IoU，size为[1,n]。
 
 ## 约束说明
 
-到目前为止，DIoU向后只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
+到目前为止，DIoU反向只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
 
 ## 支持的型号
 

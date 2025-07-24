@@ -36,15 +36,15 @@ Flops统计类，用于统计各个常见cube类算子的浮点计算Flops，采
 
 - **torch_npu.utils.FlopsCounter.stop()**
 
-    关闭Flops统计。`FlopsCounter.stop()`设置开关标志位（isEnabled_）和暂停标志位（isPaused _）为false，不进行Flops计算，含重计算的Flops（traversedCount）和不含重计算的Flops（recordedCount）均不统计。且重置含重计算的Flops和不含重计算的Flops为0。
+    关闭Flops统计。`FlopsCounter.stop()`设置开关标志位（isEnabled_）和暂停标志位（isPaused_）为false，不进行Flops计算，含重计算的Flops（traversedCount）和不含重计算的Flops（recordedCount）均不统计。且重置含重计算的Flops和不含重计算的Flops为0。
 
 - **torch_npu.utils.FlopsCounter.pause()**
 
-    暂停Flops不含重计算的统计。`FlopsCounter.pause()`设置暂停标志位（isPaused _）为true，不含重计算的Flops（recordedCount）将不会被统计。
+    暂停Flops不含重计算的统计。`FlopsCounter.pause()`设置暂停标志位（isPaused_）为true，不含重计算的Flops（recordedCount）将不会被统计。
 
 - **torch_npu.utils.FlopsCounter.resume()**
 
-    恢复Flops不含重计算的统计。设置暂停标志位（isPaused _）为false。暂停标志位（isPaused _）为false且开关标志位（isEnabled_）为true时，不含重计算的Flops（recordedCount）将会被统计。
+    恢复Flops不含重计算的统计。设置暂停标志位（isPaused_）为false。暂停标志位（isPaused_）为false且开关标志位（isEnabled_）为true时，不含重计算的Flops（recordedCount）将会被统计。
 
 - **torch_npu.utils.FlopsCounter.get_flops()**
 

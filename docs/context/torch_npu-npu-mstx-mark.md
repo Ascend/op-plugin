@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu.mstx.mark(message: str, stream = None, domain: str = 'default') -> none:
+torch_npu.npu.mstx.mark(message: str, stream=None, domain: str='default') -> none:
 ```
 
 ## 功能说明
