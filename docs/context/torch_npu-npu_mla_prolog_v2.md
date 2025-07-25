@@ -74,6 +74,7 @@ torch_npu.npu_mla_prolog_v2(Tensor token_x, Tensor weight_dq, Tensor weight_uq_q
 -   **rope\_sin**（Tensor）：必选参数，表示用于计算旋转位置编码的正弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持bfloat16，数据格式支持ND。
 -   **rope\_cos**（Tensor）：必选参数，表示用于计算旋转位置编码的余弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持bfloat16，数据格式支持ND。
 -   **cache\_index**（Tensor）：必选参数，表示用于存储kv\_cache和kr\_cache的索引。shape支持1维和2维，格式为\(T\)和\(B, S\)，dtype支持int64，数据格式支持ND。
+    - cache_index的取值范围为[0,BlockNum*BlockSize)，当前不会对cache_index传入值的合法性进行校验，需用户自行保证。
 -   **kv\_cache**（Tensor）：必选参数，表示用于cache索引的aclTensor。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Hckv\)，dtype支持bfloat16和int8，数据格式支持ND。
 -   **kr\_cache**（Tensor）：必选参数，表示用于key位置编码的cache。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持bfloat16和int8，数据格式支持ND。
 -   **dequant\_scale\_x**（Tensor）：可选参数，用于输入token\_x为int8类型时，下采样后进行反量化操作时的参数，token\_x量化方式为pertoken。其shape支持2维，格式为\(T, 1\)和\(BS, 1\)，dtype支持float，数据格式支持ND。
