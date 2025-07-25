@@ -217,6 +217,17 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
             -   **不支持图模式配置Tiling调度优化**（tiling\_schedule\_optimize=True）、**reduce-overhead执行模式**（config.mode="reduce-overhead"）。
             -   actual\_seq\_lengths和actual\_seq\_lengths\_kv的元素个数不大于4096。
 
+-   伪量化场景下KV为NZ格式时的参数约束如下：
+    - 仅支持per-channel模式，query数据类型固定为BFLOAT16，key&value固定为INT8；query&key&value的d仅支持128；query Sequence Length仅支持1-16；
+    - inputLayout仅支持BSH、BSND、BNSD；
+    - key&value仅支持NZ输入，输入格式为[blockNum, N, D/32, blockSize, 32]；
+    - layout为BSH时，antiquantShape必须传入[H]；layout为BNSD时，antiquantShape必须传入[N,1,D]；输出为BSND时，antiquantShape必须传入[N,D]；
+    - 仅支持KV分离；
+    - 仅支持高性能模式；
+    - 当MTP等于0时，支持sparseMode=0且不传mask；当MTP大于0、小于16时，支持sparseMode=3且传入优化后的attenmask矩阵，attenmask矩阵shape必须传入（2048\*2048）；
+    - 不支持配置queryRope和keyRope；
+    - 不支持左padding、tensorlist、pse、page attention、prefix、后量化。
+
 -   **当Q\_S大于1时：**
     -   query、key、value输入，功能使用限制如下：
         -   支持B轴小于等于65536，D轴32byte不对齐时仅支持到128。
