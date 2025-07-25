@@ -14,7 +14,7 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
 
 **安装依赖**
 
-安装时需要安装系统依赖及官方PyTorch框架，建议使用torch_npu提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md#%E4%BD%BF%E7%94%A8%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85pytorch%E6%A1%86%E6%9E%B6)。
+安装时需要安装系统依赖及官方PyTorch框架，建议使用torch_npu提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md#%E4%BD%BF%E7%94%A8%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85pytorch%E6%A1%86%E6%9E%B6)。当前从op-plugin直接编译时不携带torch_npu中三方库如torchair、tensorpipe。
 
 1. 配置CANN环境变量脚本。
 
@@ -31,16 +31,16 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
    git clone --branch master https://gitee.com/ascend/op-plugin.git
    cd op-plugin
    ```
-   执行编译构建，当前支持torch_npu 2.1/2.3/2.4/2.5/2.6/2.7/master版本
+   执行编译构建，当前支持torch_npu 2.1/2.5/2.6/版本
    ```
-   bash ci/build.sh --python=3.8 --pytorch=v2.1.0
+   bash ci/build.sh --python=3.8 --pytorch=v2.1.0-7.1.0
    ```
    请注意，编译时gcc版本遵循如下约束：
    arm架构下推荐使用gcc 10.2, x86架构下推荐使用gcc 9.3.1; 2.6及之后版本的编译推荐使用gcc 11.2.1
 
    | 参数      | 取值范围                                                   | 说明                  | 缺省值    | 备注                                |
    |---------|--------------------------------------------------------|---------------------|--------|-----------------------------------|
-   | pytorch | v2.1.0, v2.3.1, v2.4.0, v2.5.1, v2.6.0, v2.7.0, master | 指定编译过程中使用的pytorch版本 | master | master对应的pytorch版本为2.8            |
+   | pytorch | v2.1.0-7.1.0, v2.5.1-7.1.0, v2.6.0-7.1.0 | 指定编译过程中使用的pytorch版本 | master | 需要显示指定pytorch版本，避免使用缺省值master  |
    | python  | 3.8, 3.9, 3.10, 3.11                                   | 指定编译过程中使用的python版本  | 3.8    | 编译基于pytorch2.5及后续版本时，不支持python3.8 |
 
 
@@ -58,7 +58,7 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
 op-plugin仓旨在为**torch_npu**提供运行所需要的算子适配文件，两个仓的对应关系如下：
 | op-plugin分支 | 对应Ascend Extension for PyTorch版本 |
 | ------------- | :----------------------------------: |
-| master        |     主线版本，如v2.1.0等             |
+| 7.1.0        |     7.1.0版本，如v2.1.0-7.1.0等             |
 | 7.0.0        |     7.0.0版本，如v2.1.0-7.0.0等       |
 | 6.0.0        |     6.0.0版本，如v2.1.0-6.0.0等       |
 | 6.0.rc3       |   6.0.rc3版本，如v2.1.0-6.0.rc3等    |
