@@ -6,6 +6,7 @@ import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 
 class TestDtypeCast(TestCase):
@@ -59,6 +60,18 @@ class TestDtypeCast(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
             self.assertRtolEqual(cpu_input_grad, npu_input_grad)
+
+    @skipIfUnsupportMultiNPU(2)
+    def test_dtype_cast_multidevice(self):
+        d0 = 'npu:0'
+        d1 = 'npu:1'
+
+        x = torch.tensor([1.5, 2.5, 3.5, 4.5, 5.5, 6.5], device=d0)
+        y = torch.tensor([0, 0, 0, 0, 0, 0], device=d1)
+        self.assertNotEqual(x.dtype, y.dtype)
+
+        y[::2].copy_(x[::2])
+        self.assertEqual(y, [1, 0, 3, 0, 5, 0])
 
 
 if __name__ == "__main__":

@@ -6881,6 +6881,7 @@ custom:
 
   - func: npu_dtype_cast_(Tensor(a!) self, Tensor src) -> Tensor(a!)
     acl_op: all_version
+    device_check: NoCheck
 
   - func: npu_dtype_cast_backward(Tensor grad, ScalarType dtype) -> Tensor
     acl_op: all_version
