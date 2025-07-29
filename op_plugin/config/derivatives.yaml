@@ -329,3 +329,11 @@ backward:
   output_differentiability: [true, false, false, false]
   permuted_tokens, probs: "drop_and_pad ? npu_moe_token_unpermute_with_routing_map_grad(grad, result1, result2, routing_map, permuted_tokens, probs, drop_and_pad, restore_shape) : npu_moe_token_unpermute_with_routing_map_grad(grad, sorted_indices, sorted_indices, routing_map, permuted_tokens, probs, drop_and_pad, restore_shape)"
   version: [v2.1, newest]
+  
+- name: npu_moe_token_permute(Tensor tokens, Tensor indices, int? num_out_tokens=None, bool padded_mode=False) -> (Tensor, Tensor)
+  tokens: npu_moe_token_permute_grad(tokens, grad, indices, result1, padded_mode)
+  version: [v2.1, newest]
+
+- name: npu_moe_token_unpermute(Tensor permuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> Tensor
+  permuted_tokens, probs: npu_moe_token_unpermute_grad(permuted_tokens, grad, sorted_indices, probs, padded_mode, restore_shape)
+  version: [v2.1, newest]

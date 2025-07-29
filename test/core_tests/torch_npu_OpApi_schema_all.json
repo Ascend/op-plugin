@@ -461,6 +461,9 @@
   "func: npu_moe_token_unpermute(Tensor permuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: npu_moe_token_unpermute_grad(Tensor permuted_tokens, Tensor grad_unpermuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> (Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
   "func: index_copy.out(Tensor self, int dim, Tensor index, Tensor source, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
@@ -504,6 +507,9 @@
     "version": ["all_version"]
   },
   "func: npu_moe_token_permute(Tensor tokens, Tensor indices, int? num_out_tokens=None, bool padded_mode=False) -> (Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
+  "func: npu_moe_token_permute_grad(Tensor tokens, Tensor grad_permuted_tokens, Tensor indices, Tensor sorted_indices, bool padded_mode=False) -> Tensor": {
     "version": ["all_version"]
   },
   "func: npu_attn_softmax_(Tensor(a!) self) -> Tensor(a!)": {
