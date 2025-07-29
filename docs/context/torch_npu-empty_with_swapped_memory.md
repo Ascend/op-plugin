@@ -34,13 +34,13 @@ torch_npu.empty_with_swapped_memory(size, *, dtype=None, device=None) -> Tensor
 
 - 该接口暂不支持图模式。
 
-- 该接口申请的特殊Tensor当前仅支持如下算子：
-`torch.fill_`
-`torch.zero_`
-`torch.mul_`
-`torch_npu.npu_apply_adam_w`
-`torch_npu.npu_hans_encode`
-`torch_npu.npu_hans_decode`
+- 该接口申请的特殊Tensor当前仅支持如下算子：<br>
+`torch.fill_`<br>
+`torch.zero_`<br>
+`torch.mul_`<br>
+`torch_npu.npu_apply_adam_w`<br>
+`torch_npu.npu_hans_encode`<br>
+`torch_npu.npu_hans_decode`<br>
 
 - 该接口申请的特殊Tensor不支持直接打印，需要查看值时要先通过`mul_`转为普通Tensor再打印，详情请参考调用示例。
 

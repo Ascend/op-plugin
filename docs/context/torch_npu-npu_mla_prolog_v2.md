@@ -91,7 +91,7 @@ torch_npu.npu_mla_prolog_v2(Tensor token_x, Tensor weight_dq, Tensor weight_uq_q
 -   **smooth\_scales\_cq**（Tensor）：可选参数，用于对RmsNormCq输出做动态量化操作时的参数。shape支持2维，格式为\(1, Hcq\)，dtype支持float，数据格式支持ND。
 -   **rmsnorm\_epsilon\_cq**（float）：可选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
 -   **rmsnorm\_epsilon\_ckv**（float）：可选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
--   **cache\_mode**（str）：可选参数，表示kvCache的模式，支持"PA\_BSND"、"PA\_NZ"，其用户不特意指定时可传入默认值“PA\_BSND”。
+-   **cache\_mode**（str）：可选参数，表示kvCache的模式，支持"PA\_BSND"、"PA\_NZ"，用户不特意指定时可传入默认值“PA\_BSND”。
 
 ## 返回值说明<a name="zh-cn_topic_0000002313328922_section22231435517"></a>
 

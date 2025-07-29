@@ -2,7 +2,7 @@
 
 ## 定义文件
 
-torch_pu\csrc\core\npu\NPUFormat.h
+torch_npu\csrc\core\npu\NPUFormat.h
 
 ## 函数原型
 

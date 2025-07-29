@@ -13,7 +13,7 @@ torch_npu.npu_format_cast(self, acl_format) -> Tensor
 ## 参数说明
 
 - self (Tensor) - 输入张量。
-- acl_format (Int) - 目标格式。数据格式具体可参考《CANN  AscendCL应用软件开发指南 (Python)》中“aclFormat”章节。此处需输入数字，例如2，即代表ACL_FORMAT_ND格式。
+- acl_format (Int) - 目标格式。数据格式具体可参考《CANN  AscendCL应用软件开发指南 (Python)》中“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/API/appdevgapi/aclpythondevg_01_0914.html">aclFormat</a>”章节。此处需输入数字，例如2，即代表ACL_FORMAT_ND格式。
 
 ## 支持的型号
 

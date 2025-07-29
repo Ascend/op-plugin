@@ -11,7 +11,7 @@
 </thead>
 <tbody><tr id="row1616454104711"><td class="cellrowborder" valign="top" width="38.76%" headers="mcps1.2.3.1.1 "><p id="p16616105411477"><a name="p16616105411477"></a><a name="p16616105411477"></a>（<span id="ph168289415199"><a name="ph168289415199"></a><a name="ph168289415199"></a>beta</span>）torch_npu.npu.get_rng_state</p>
 </td>
-<td class="cellrowborder" rowspan="9" valign="top" width="61.24000000000001%" headers="mcps1.2.3.1.2 "><p id="p45278137545"><a name="p45278137545"></a><a name="p45278137545"></a>torch_npu提供随机数相关的部分接口，具体可参考<a href="https://www.hiascend.com/document/detail/zh/Pytorch/700/apiref/apilist/ptaoplist_001097.html">torch.cuda</a>。</p>
+<td class="cellrowborder" rowspan="9" valign="top" width="61.24000000000001%" headers="mcps1.2.3.1.2 "><p id="p45278137545"><a name="p45278137545"></a><a name="p45278137545"></a>torch_npu提供随机数相关的部分接口，具体可参考<a href="https://www.hiascend.com/document/detail/zh/Pytorch/710/apiref/PyTorchNativeapi/ptaoplist_000158.html">torch.cuda</a>。</p>
 </td>
 </tr>
 <tr id="row1661655484720"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="p116160540479"><a name="p116160540479"></a><a name="p116160540479"></a>（<span id="ph81516268336"><a name="ph81516268336"></a><a name="ph81516268336"></a>beta</span>）torch_npu.npu.set_rng_state</p>
