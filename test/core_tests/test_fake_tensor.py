@@ -1355,7 +1355,7 @@ class TestFusedInferAttentionV2(TestCase):
             q.requires_grad = True
             k.requires_grad = True
             v.requires_grad = True
-            atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_v2(q, k, v)
+            atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(q, k, v)
 
             self.assertTrue(q.shape == atten_out.shape)
 

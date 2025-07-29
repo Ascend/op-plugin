@@ -135,7 +135,7 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
     return std::tuple<at::Tensor, at::Tensor>(output, softmax_lse);
 }
 
-std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_v2_symint(
+std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const c10::optional<at::Tensor> &query_rope,
     const c10::optional<at::Tensor> &key_rope,
@@ -198,7 +198,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_v2_symint(
     return std::tuple<at::Tensor, at::Tensor>(output, softmax_lse);
 }
 
-std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_v2_out_symint(
+std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_score_v2_out_symint(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const c10::optional<at::Tensor> &query_rope,
     const c10::optional<at::Tensor> &key_rope,
@@ -264,7 +264,7 @@ std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_v2_out_symint(
     return std::tuple<at::Tensor&, at::Tensor&>(attention_out, softmax_lse);
 }
 
-at::Tensor _npu_fused_infer_attention_v2_get_max_workspace_symint(
+at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const c10::optional<at::Tensor> &query_rope,
     const c10::optional<at::Tensor> &key_rope,

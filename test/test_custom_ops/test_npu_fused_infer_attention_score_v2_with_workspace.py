@@ -34,7 +34,7 @@ class TestFusedInferAttentionV2WithWorkspace(TestCase):
 
     def custom_op_exec_with_workspace(self, query, key, value, head_dim, return_softmax_lse):
         softmax_scale = 1 / 0.0078125
-        workspace = torch_npu._npu_fused_infer_attention_v2_get_max_workspace(
+        workspace = torch_npu._npu_fused_infer_attention_score_v2_get_max_workspace(
             query, key, value, num_query_heads=32, input_layout="BNSD", softmax_scale=softmax_scale,
             pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
 
@@ -44,14 +44,14 @@ class TestFusedInferAttentionV2WithWorkspace(TestCase):
         else:
             softmax_lse = torch.randn(1, dtype=torch.float32).npu()
 
-        return torch_npu.npu_fused_infer_attention_v2.out(
+        return torch_npu.npu_fused_infer_attention_score_v2.out(
             query, key, value, workspace=workspace, num_query_heads=32, input_layout="BNSD",
             softmax_scale=softmax_scale, pre_tokens=65535,
             next_tokens=65535, return_softmax_lse=return_softmax_lse, out=[attention_out, softmax_lse])
 
     def custom_op_exec(self, query, key, value, head_dim, return_softmax_lse):
         softmax_scale = 1 / 0.0078125
-        workspace = torch_npu._npu_fused_infer_attention_v2_get_max_workspace(
+        workspace = torch_npu._npu_fused_infer_attention_score_v2_get_max_workspace(
             query, key, value, num_query_heads=32, input_layout="BNSD", softmax_scale=softmax_scale,
             pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
 
@@ -61,14 +61,14 @@ class TestFusedInferAttentionV2WithWorkspace(TestCase):
         else:
             softmax_lse = torch.randn(1, dtype=torch.float32).npu()
 
-        return torch_npu.npu_fused_infer_attention_v2.out(
+        return torch_npu.npu_fused_infer_attention_score_v2.out(
             query, key, value, num_query_heads=32, input_layout="BNSD", softmax_scale=softmax_scale, pre_tokens=65535,
             next_tokens=65535, return_softmax_lse=return_softmax_lse, out=[attention_out, softmax_lse])
 
     @unittest.skip(
         "Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
-    def test_npu_fused_infer_attention_v2_ifa_return_lse_return_softmax_lse_true(self, device="npu"):
+    def test_npu_fused_infer_attention_score_v2_ifa_return_lse_return_softmax_lse_true(self, device="npu"):
         query = torch.randn(1, 32, 1, 128, dtype=torch.float16).npu()
         key = torch.randn(1, 32, 2048, 128, dtype=torch.float16).npu()
         value = torch.randn(1, 32, 2048, 128, dtype=torch.float16).npu()
@@ -84,7 +84,7 @@ class TestFusedInferAttentionV2WithWorkspace(TestCase):
     @unittest.skip(
         "Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
-    def test_npu_fused_infer_attention_v2_ifa_return_lse_return_softmax_lse_false(self, device="npu"):
+    def test_npu_fused_infer_attention_score_v2_ifa_return_lse_return_softmax_lse_false(self, device="npu"):
         query = torch.randn(1, 32, 1, 128, dtype=torch.float16).npu()
         key = torch.randn(1, 32, 2048, 128, dtype=torch.float16).npu()
         value = torch.randn(1, 32, 2048, 128, dtype=torch.float16).npu()
@@ -100,7 +100,7 @@ class TestFusedInferAttentionV2WithWorkspace(TestCase):
     @unittest.skip(
         "Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
-    def test_npu_fused_infer_attention_v2_ifa_return_lse_return_softmax_lse_true_with_workspace(self, device="npu"):
+    def test_npu_fused_infer_attention_score_v2_ifa_return_lse_return_softmax_lse_true_with_workspace(self, device="npu"):
         query = torch.randn(1, 32, 1, 128, dtype=torch.float16).npu()
         key = torch.randn(1, 32, 2048, 128, dtype=torch.float16).npu()
         value = torch.randn(1, 32, 2048, 128, dtype=torch.float16).npu()
