@@ -9263,9 +9263,9 @@ actual_sel_seq_kvlen(list[int])：可选输入，当前不支持。
   -  仅支持query的S轴等于1。
   -  仅支持paged attention。
   -  仅支持key/value的S轴小于等于8192。
-  -  仅支持compress_block_size取值16、32、64。
-  -  仅支持compress_stride取值16、32、64。
-  -  仅支持select_block_size取值16、32、64。
+  -  仅支持compress_block_size取值16、32、48、64、80、96、112、118。
+  -  仅支持compress_stride取值16、32、48、64。
+  -  仅支持select_block_size取值16、32、48、64、80、96、112、118。
   -  仅支持compress_block_size大于等于compress_stride , select_block_size大于等于compress_block_size , select_block_size是compress_stride的整数倍。
   -  压缩前的kv_seq_len的上限可以表示为：no_cmp_kv_seq_len_ceil = (cmp_kv_seq_len − 1) ∗ compress_block_stride + compress_block_size，需要满足no_cmp_kv_seq_len_ceil / select_block_size <= 4096，且需要满足select_block_count <= no_cmp_kv_seq_len_ceil / select_block_size。
   -  block_size第2维的取值需满足公式(max(cmp_kv_seq_len) + page_block_size - 1) // page_block_size。
