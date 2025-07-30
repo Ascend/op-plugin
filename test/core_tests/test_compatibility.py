@@ -188,13 +188,19 @@ class TestOpApiCompatibility(TestCase):
     def test_op_api_compatibility(self):
         failure_list = []
 
+        version_tag = _get_test_torch_version()
+
         with open(get_file_path_2(os.path.dirname(os.path.dirname(__file__)),
                                   'allowlist_for_publicAPI.json')) as json_file:
-            allow_dict = json.load(json_file)
+            allow_dict_info = json.load(json_file)
+            allow_dict = {}
+            if "torch_npu" in allow_dict_info and "all_version" in allow_dict_info["torch_npu"]:
+                allow_dict["torch_npu"] = allow_dict_info["torch_npu"]["all_version"]
+                if version_tag in allow_dict_info["torch_npu"] and allow_dict_info["torch_npu"][version_tag]:
+                    allow_dict["torch_npu"].extend(allow_dict_info["torch_npu"][version_tag])
 
         # load torch_npu_OpApi_schema_all.json
-        base_schema = {}
-        version_tag = _get_test_torch_version()
+        base_schema = {}        
         with open(get_file_path_2(os.path.dirname(__file__), "torch_npu_OpApi_schema_all.json")) as fp:
             base_schema0 = json.load(fp)
             for key, value in base_schema0.items():
