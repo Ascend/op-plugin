@@ -98,7 +98,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(Tensor expand_x, Tensor expert
         -   对于MoE专家，当global\_bs为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当global\_bs非0时，要满足A\>=global\_bs\* min\(local\_expert\_num, K\)。
 
     -   H：表示hidden size隐藏层大小。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[1024, 7168\]，且保证是32的整数倍。
+        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[1024, 8192\]，且保证是32的整数倍。
 
     -   BS：表示待发送的token数量。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
