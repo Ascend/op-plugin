@@ -9380,7 +9380,7 @@ select_block_count (int)：必选输入，表示选择窗口的数量。
 page_block_size(int)：必选输入，page_attention场景下page的block_size大小。
 atten_mask (Tensor)：可选输入，当前暂不支持。
 block_table(Tensor)：可选输入，page_attention场景下kv缓存使用的block映射表，数据类型支持int32，不支持非连续的Tensor，不支持空tensor。
-layout(str)：可选输入，表示输入的数据排布格式，支持BSH、BSND，默认为BSND。
+layout(str)：可选输入，表示输入的数据排布格式，支持BSH、BSND、TND，默认为BSND。
 actual_seq_qlen(list[int])：可选输入，当前暂不支持。
 actual_seq_kvlen(list[int])：必选输入，表示key或value每个S的长度。
 

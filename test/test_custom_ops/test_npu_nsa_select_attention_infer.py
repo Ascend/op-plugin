@@ -147,6 +147,12 @@ class TestNpuCompress(TestCase):
             q = q.reshape([batch, 1, num_heads, headDim])
             k = k.reshape([k.shape[0], block_size, num_key_value_heads, headDim])
             v = v.reshape([v.shape[0], block_size, num_key_value_heads, headDimV])
+        elif layout == 'TND':
+            headDim = q.shape[1]
+            headDimV = v.shape[1] 
+            q = q.reshape([batch, 1, num_heads, headDim])
+            k = k.reshape([k.shape[0], block_size, num_key_value_heads, headDim])
+            v = v.reshape([v.shape[0], block_size, num_key_value_heads, headDimV])
         q = q.numpy()
         k = k.numpy()
         v = v.numpy()
@@ -230,6 +236,8 @@ class TestNpuCompress(TestCase):
         attention_out = y.reshape(batch, 1, numHeads, v.shape[-1])
         if layout == 'BSH':
             attention_out = attention_out.reshape([batch, 1, numHeads * headDimV])
+        elif layout == 'TND':
+            attention_out = attention_out.reshape([batch, numHeads, headDimV])
         if (q_dtype == np.float16):
             attention_out = attention_out.astype(np.float16)
         else:
@@ -263,6 +271,35 @@ class TestNpuCompress(TestCase):
         select_block_count = 2
         page_block_size = 64
         layout = 'BSH'
+        actual_seq_qlen = None
+        actual_seq_kvlen = [82] * query.size(0)
+        atten_mask = None
+
+        topk_indices, block_table, act_seqlen_topk_list = self.generate_topk_indices_and_block_table(query, head_num, key_value_head_num, select_block_size, select_block_count, page_block_size, actual_seq_kvlen)
+
+        npuout = self.npu_op_exec(query.npu(), key.npu(), value.npu(), torch.from_numpy(topk_indices).npu(), scale_value, head_num, key_value_head_num, select_block_size, select_block_count, page_block_size, layout, atten_mask, torch.from_numpy(block_table).npu(), actual_seq_qlen, actual_seq_kvlen)
+
+        gloden_out = self.cpu_op_exec(query, key, value, topk_indices, scale_value, head_num, key_value_head_num,
+                                          select_block_size, select_block_count, page_block_size, layout, atten_mask,
+                                          block_table, None, actual_seq_kvlen, act_seqlen_topk_list)
+
+        self.assertRtolEqual(gloden_out.to(torch.float16).numpy(), npuout.to(torch.float16).cpu().numpy())
+
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_nsa_compress(self):
+        query = torch.randn([123, 4, 192], dtype=torch.float16)
+        key = torch.randn([246, 64, 384], dtype=torch.float16)
+        value = torch.randn([246, 64, 256], dtype=torch.float16)
+        topk_indices = torch.randn([123, 2, 2], dtype=torch.float16)
+        block_table = torch.randn([123, 2], dtype=torch.float16)
+        scale_value = 2.0
+        head_num = 4
+        key_value_head_num = 2
+        select_block_size = 64
+        select_block_count = 2
+        page_block_size = 64
+        layout = 'TND'
         actual_seq_qlen = None
         actual_seq_kvlen = [82] * query.size(0)
         atten_mask = None
