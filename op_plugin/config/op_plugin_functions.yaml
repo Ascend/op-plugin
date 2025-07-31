@@ -7230,6 +7230,7 @@ custom:
 
   - func: npu_moe_distribute_dispatch_setup(Tensor x, Tensor expert_ids, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? scales=None, Tensor? x_active_mask=None, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int quant_mode=0, int global_bs=0, int comm_type=0, str comm_alg="") -> (Tensor, Tensor, Tensor)
     op_api: all_version
+    exposed: all_version
     gen_opapi:
       out_y:
         size: 'out_sizes[0]'
@@ -7248,6 +7249,7 @@ custom:
 
   - func: npu_moe_distribute_dispatch_teardown(Tensor x, Tensor y, Tensor expert_ids, Tensor comm_cmd_info, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int quant_mode=0, int global_bs=0, int expert_token_nums_type=1, int comm_type=0, str comm_alg="") -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
+    exposed: all_version
     gen_opapi:
       out_expand_x:
         size: 'out_sizes[0]'
@@ -7269,6 +7271,7 @@ custom:
 
   - func: npu_moe_distribute_combine_setup(Tensor expand_x, Tensor expert_ids, Tensor assist_info_for_combine, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int global_bs=0, int comm_quant_mode=0, int comm_type=0, str comm_alg="") -> (Tensor, Tensor)
     op_api: all_version
+    exposed: all_version
     gen_opapi:
       out_quant_expand_x:
         size: 'out_sizes[0]'
@@ -7284,6 +7287,7 @@ custom:
 
   - func: npu_moe_distribute_combine_teardown(Tensor expand_x, Tensor quant_expand_x, Tensor expert_ids, Tensor expand_idx, Tensor expert_scales, Tensor comm_cmd_info, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? x_active_mask=None, Tensor? shared_expert_x=None, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int global_bs=0, int comm_quant_mode=0, int comm_type=0, str comm_alg="") -> Tensor
     op_api: all_version
+    exposed: all_version
     gen_opapi:
       out_x:
         size: '{expert_ids.size(0), expand_x.size(1)}'

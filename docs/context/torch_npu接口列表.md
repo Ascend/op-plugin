@@ -575,6 +575,22 @@
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>先进行reduce_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。</p>
 </td>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_combine_setup.md">torch_npu.npu_moe_distribute_combine_setup</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>进行AlltoAllV通信，将数据写入对端GM。</p>
+</td>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_combine_teardown.md">torch_npu.npu_moe_distribute_combine_teardown</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>接受torch_npu.npu_moe_distribute_combine_setup发送过来的数据并整合数据（乘权重再相加）。</p>
+</td>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_dispatch_setup.md">torch_npu.npu_moe_distribute_dispatch_setup</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>对token数据进行量化（可选），进行EP（Expert Parallelism）域的AllToAllV通信，只进行数据发送。</p>
+</td>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_dispatch_teardown.md">torch_npu.npu_moe_distribute_dispatch_teardown</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>对token数据进行量化（可选），进行EP（Expert Parallelism）域的AllToAllV通信，只进行数据发送。</p>
+</td>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_dispatch_v2.md">torch_npu.npu_moe_distribute_dispatch_v2</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>对Token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor Parallelism）域的allgatherv通信（可选）。</p>
