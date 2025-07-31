@@ -211,8 +211,8 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
             -   不支持开启SoftMaxLse、tensorlist、pse、伪量化、全量化、后量化。
 
         -   当query的d不等于512时：
-            -   当query\_rope和keyRope为空时：要求Q\_D、K\_D等于192；TND场景，V\_D等于128/192；NTD\_TND场景，V\_D等于128。当query\_rope和keyRope不为空时，要求Q\_D、K\_D、V\_D等于128；
-            -   Q\_N、K\_N、V\_N相等；
+            -   当query\_rope和keyRope为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当query\_rope和keyRope不为空时，要求Q\_D、K\_D、V\_D等于128；
+            -   Q\_N、K\_N、V\_N：需要满足K\_N、V\_N相等，Q\_N整除K\_N，Q\_N与K\_N的比值不能大于64；
             -   支持TND、NTD\_TND；
             -   数据类型仅支持BFLOAT16；
             -   当sparse=3时，要求每个batch单独的actualSeqLengths<actualSeqLengthsKv；
