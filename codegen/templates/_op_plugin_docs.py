@@ -10057,12 +10057,12 @@ torch_npu.npu_moe_distribute_combine_setup
 _add_torch_npu_docstr(
     "npu_nsa_compress_attention_infer",
     """
-torch_npu.npu_nsa_compress_attention_infer(query, key, value, scale_value, head_num, key_value_head_num, select_block_size, select_block_count, page_block_size, compress_block_size, compress_stride, atten_mask=None, block_table=None, topk_mask=None, actual_seq_qlen=None, actual_cmp_seq_kvlen=None, actual_sel_seq_kvlen=None)
+torch_npu.npu_nsa_compress_attention_infer(query, key, value, scale_value, head_num, key_value_head_num, select_block_size, select_block_count, page_block_size, compress_block_size, compress_stride, layout='TND', atten_mask=None, block_table=None, topk_mask=None, actual_seq_qlen=None, actual_cmp_seq_kvlen=None, actual_sel_seq_kvlen=None)
 功能描述
 Native Sparse Attention算法中推理场景下，实现对KV压缩的计算。
 
 参数说明
-query(Tensor)：必选输入，shape支持3维输入，为[batch, key_value_head_num * group_size, head_size_qk]，数据排布格式支持TND，数据类型支持bfloat16、float16，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor，不支持inf，nan。
+query(Tensor)：必选输入，layout为TND时，shape支持3维输入，为[batch, key_value_head_num * group_size, head_size_qk]，layout为BSND时，shape支持4维输入，为[batch, query_seq_len, key_value_head_num * group_size, head_size_qk]，数据类型支持bfloat16、float16，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor，不支持inf，nan。
 key(Tensor)：必选输入，shape支持3维输入，为[block_num, page_block_size, head_size_qk * key_value_head_num]，数据类型支持bfloat16、float16，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor，不支持inf，nan。
 value(Tensor)：必选输入，shape支持3维输入，为[block_num, page_block_size, head_size_v * key_value_head_num]，数据类型支持bfloat16、float16，数据格式支持ND，不支持非连续的Tensor，不支持空Tensor，不支持inf，nan。
 scale_value(double)：必选输入，表示缩放系数。
@@ -10073,6 +10073,7 @@ select_block_count(int)：必选输入，表示选择窗口的数量。
 page_block_size**(int)：必选输入，page_attention场景下page的block_size大小。
 compress_block_size**(int)：必选输入，压缩滑窗的大小。
 compress_stride**(int)：必选输入，两次压缩滑窗间隔大小。
+layout(str)：可选输入，表示输入的数据排布格式，支持TND、BSND，默认为TND。
 atten_mask(Tensor)：可选输入，当前不支持。
 block_table**(Tensor)：可选输入，shape支持2维输入，数据类型支持‘int32’，page_attention场景下kv缓存使用的block映射表，不支持非连续的Tensor，不支持空tensor，不支持inf，nan。
 topk_mask**(Tensor)：可选输入，当前不支持。
