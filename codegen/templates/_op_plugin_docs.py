@@ -6522,7 +6522,7 @@ Q_S为1时建议shape输入(B, KV_S)、(B, 1, KV_S)、(B, 1, 1, KV_S).
 actual_seq_qlen: int类型数组, 代表不同Batch中query的有效seqlen, 数据类型支持int64. 如果不指定seqlen可以传入None, 表示和query的shape的s长度相同. 限制: 该入参中每个batch的有效seqlen应该不大于query中对应batch的seqlen, Q_S为1时该参数无效. seqlen的传入长度为1时, 每个Batch使用相同seqlen; 传入长度大于等于Batch时取seqlen的前Batch个数. 其他长度不支持. 当query的input_layout为TND时, 该入参必须传入, 且以该入参元素的数量作为Batch值. 该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和, 因此后一个元素的值必须大于等于前一个元素的值, 且不能出现负值. 
 actual_seq_kvlen: int类型数组, 代表不同Batch中key/value的有效seqlenKv, 数据类型支持int64. 如果不指定None, 表示和key/value的shape的S长度相同. 不同O_S值有不同的约束, 具体参见约束说明. 
 block_table: Tensor类型, 数据类型支持int32. 数据格式支持ND. 表示PageAttention中KV存储使用的block映射表, 如不使用该功能可传入None. 
-dequant_scale_query: Tensor类型. 数据格式支持ND, query的反量化参数. 如不使用该功能时可传入None, 综合约束请见约束说明. 仅支持per-token叠加per-head.
+dequant_scale_query: Tensor类型. 数据格式支持ND, query的反量化参数. 仅支持per-token叠加per-head. 如不使用该功能时可传入None, 综合约束请见约束说明.
 dequant_scale_key: Tensor类型. 数据格式支持ND, kv伪量化参数分离时表示key的反量化因子. 如不使用该功能时可传入None, 综合约束请见约束说明. 通常支持per-channel、per-tensor、per-token、per-tensor叠加per-head、per-token叠加per-head、per-token叠加使用page attention模式管理scale、per-token叠加per head并使用page attention模式管理scale. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持float16、bfloat16、float32. 
 Atlas A3 训练系列产品: 数据类型支持float16、bfloat16、float32. 
@@ -6571,20 +6571,20 @@ inner_precise为2时, 代表开启高精度模式, 且做行无效修正.
 inner_precise为3时, 代表高性能模式, 且做行无效修正. 
 bfloat16和int8不区分高精度和高性能, 行无效修正对float16、bfloat16和int8均生效. 当前0、1为保留配置值, 当计算过程中“参与计算的mask部分”存在某整行全为1的情况时, 精度可能会有损失. 此时可以尝试将该参数配置为2或3来使能行无效功能以提升精度, 但是该配置会导致性能下降.
 return_softmax_lse: 布尔型, 表示是否输出softmax_lse, 支持S轴外切(增加输出). true表示输出softmax_lse, false表示不输出; 用户不特意指定时可传入默认值false. 
-query_dtype: 整型, 表示query的数据类型，当前版本不生效.
-key_dtype: 整型, 表示key的数据类型，当前版本不生效.
-value_dtype: 整型, 表示value的数据类型，当前版本不生效.
-query_rope_dtyp: 整型, 表示query_repo的数据类型，当前版本不生效.
-key_rope_dtype: 整型, 表示key_rope的数据类型，当前版本不生效.
-key_shared_prefix_dtype: 整型, 表示key_shared_prefix的数据类型，当前版本不生效.
-value_shared_prefix_dtype: 整型, 表示value_shared_prefix的数据类型，当前版本不生效.
-dequant_scale_query_dtype: 整型, 表示dequant_scale_query的数据类型，当前版本不生效.
-dequant_scale_key_dtype: 整型, 表示dequant_scale_key的数据类型，当前版本不生效.
-dequant_scale_value_dtype: 整型, 表示dequant_scale_value的数据类型，当前版本不生效.
-dequant_scale_key_rope_dtype: 整型, 表示dequant_scale_key_rope的数据类型，当前版本不生效.
+query_dtype: 整型, 表示query的数据类型，预留参数，暂未使用，使用默认值即可.
+key_dtype: 整型, 表示key的数据类型，预留参数，暂未使用，使用默认值即可.
+value_dtype: 整型, 表示value的数据类型，预留参数，暂未使用，使用默认值即可.
+query_rope_dtyp: 整型, 表示query_repo的数据类型，预留参数，暂未使用，使用默认值即可.
+key_rope_dtype: 整型, 表示key_rope的数据类型，预留参数，暂未使用，使用默认值即可.
+key_shared_prefix_dtype: 整型, 表示key_shared_prefix的数据类型，预留参数，暂未使用，使用默认值即可.
+value_shared_prefix_dtype: 整型, 表示value_shared_prefix的数据类型，预留参数，暂未使用，使用默认值即可.
+dequant_scale_query_dtype: 整型, 表示dequant_scale_query的数据类型，预留参数，暂未使用，使用默认值即可.
+dequant_scale_key_dtype: 整型, 表示dequant_scale_key的数据类型，预留参数，暂未使用，使用默认值即可.
+dequant_scale_value_dtype: 整型, 表示dequant_scale_value的数据类型，预留参数，暂未使用，使用默认值即可.
+dequant_scale_key_rope_dtype: 整型, 表示dequant_scale_key_rope的数据类型，预留参数，暂未使用，使用默认值即可.
 
 输出说明
-attention_out: Tensor类型, 公式中的输出, 数据类型支持float16、bfloat16、int8. 数据格式支持ND. 限制: 当input_layout为BNSD_BSND时, 输入query的shape是BNSD, 输出shape为BSND; 其余情况该参数的shape需要与入参query的shape保持一致. 
+attention_out: Tensor类型, 公式中的输出, 数据类型支持float16、bfloat16、int8. 数据格式支持ND. 限制：该入参的D维度与value的D保持一致，其余维度需要与入参query的shape保持一致. 
 softmaxLse: Tensor类型, ring attention算法对query乘key的结果, 先取max得到softmax_max. query乘key的结果减去softmax_max, 再取exp, 最后取sum, 得到softmax_sum, 最后对softmax_sum取log, 再加上softmax_max得到的结果. 数据类型支持float32, return_softmax_lse为True时, 一般情况下, 输出shape为(B, N, Q_S, 1)的Tensor, 当input_layout为TND时, 输出shape为(T,N,1)的Tensor; return_softmax_lse为False时, 则输出shape为[1]的值为0的Tensor. 
 
 约束说明:
@@ -6593,12 +6593,11 @@ softmaxLse: Tensor类型, ring attention算法对query乘key的结果, 先取max
 该接口与PyTorch配合使用时, 需要保证CANN相关包与PyTorch相关包的版本匹配. 
 入参为空的处理: 算子内部需要判断参数query是否为空, 如果是空则直接返回. 参数query不为空Tensor, 参数key、value为空tensor(即S2为0), 则填充全零的对应shape的输出(填充attention_out). attention_out为空Tensor时, 框架会处理. 
 参数key、value中对应tensor的shape需要完全一致; 非连续场景下key、value的tensorlist中的batch只能为1, 个数等于query的B, N和D需要相等. 
-int8量化相关入参数量与输入、输出数据格式的综合限制: 
-输入为int8, 输出为int8的场景: 入参quant_scale_out需要存在, quant_offset_out可选, 不传时默认为0. 
-输入为int8, 输出为float16的场景: 若存在入参quant_offset_out或quant_scale_out(即不为None), 则报错并返回. 
-输入全为float16或bfloat16, 输出为int8的场景: 入参quant_scale_out需存在, quant_offset_out可选, 不传时默认为0. 
+int8量化相关入参数量与输出数据格式的综合限制: 
+输出为int8的场景: 入参quant_scale_out需要存在, quant_offset_out可选, 不传时默认为0. 
+输出为float16的场景: 若存在入参quant_offset_out或quant_scale_out(即不为None), 则报错并返回. 
 入参quant_offset_out和quant_scale_out支持per-tensor或per-channel格式, 数据类型支持float32、bfloat16. 
-query_rope和key_rope参数约束: 
+query_rope和key_rope输入时即为MLA场景，参数约束如下：
 query_rope的数据类型、数据格式与query一致。
 key_rope的数据类型、数据格式与key一致。
 query_rope和key_rope要求同时配置或同时不配置，不支持只配置其中一个。
@@ -6628,24 +6627,37 @@ keyRope配置时要求keyRope的shape中d为64，其余维度与key一致。
 TND、TND_NTD、NTD_TND场景下query、key、value输入的综合限制：
 T小于等于1M;
 sparse模式仅支持sparse=0且不传mask，或sparse=3且传入mask；
-actualSeqLengths和actualSeqLengthsKv必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的Sequence Length和，因此后一个元素的值必须大于等于前一个元素的值；
+actual_seq_qlen和actual_seq_kvlen必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的Sequence Length和，因此后一个元素的值必须大于等于前一个元素的值；
 当query的d等于512时：
 支持TND、TND_NTD;
-必须开启page attention，此时actualSeqLengthsKv长度等于key/value的batch值，代表每个batch的实际长度，值不大于KV_S；
+必须开启page attention，此时actual_seq_kvlen长度等于key/value的batch值，代表每个batch的实际长度，值不大于KV_S；
 支持query每个batch的s为1-16；
 要求query的n为32/64/128，key、value的n为1；
 要求query_rope和keyRope不等于空，query_rope和keyRope的d为64；
 不支持开启SoftMaxLse、tensorlist、pse、伪量化、全量化、后量化。
 
 当query的d不等于512时：
-当query_rope和keyRope为空时：要求Q_D、K_D等于192；TND场景，V_D等于128/192；NTD_TND场景，V_D等于128。当query_rope和keyRope不为空时，要求Q_D、K_D、V_D等于128；
-Q_N、K_N、V_N相等；
+当query_rope和key_rope为空时：TND场景，要求Q_D、K_D、V_D等于128，或者Q_D、K_D等于192，V_D等于128/192；NTD_TND场景，要求Q_D、K_D等于128/192，V_D等于128。当query_rope和key_rope不为空时，要求Q_D、K_D、V_D等于128；
+Q_N、K_N、V_N：需要满足K_N、V_N相等，Q_N整除K_N，Q_N与K_N的比值不能大于64；
 支持TND、NTD_TND；
 数据类型仅支持BFLOAT16；
-当sparse=3时，要求每个batch单独的actualSeqLengths<actualSeqLengthsKv；
+当sparse=3时，要求每个batch单独的actual_seq_qlen<actual_seq_kvlen；
 不支持tensorlist、pse、page attention、伪量化、全量化、后量化；
 不支持图模式配置Tiling调度优化（tiling_schedule_optimize=True）、reduce-overhead执行模式（config.mode="reduce-overhead"）。
 actual_seq_qlen和actual_seq_kvlen的元素个数不大于4096。
+
+GQA伪量化场景下KV为NZ格式时的参数约束如下：
+仅支持per-channel模式，query数据类型固定为BFLOAT16，key&value固定为INT8；query&key&value的d仅支持128；query Sequence Length仅支持1-16；
+input_layout仅支持BSH、BSND、BNSD；
+key&value仅支持NZ输入，输入格式为[blockNum, N, D/32, blockSize, 32]；
+dequant_scale_key和dequant_scale_value的shape：当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[N,1,D]；输出为BSND时，必须传入[N,D]；
+仅支持KV分离；
+仅支持高性能模式；
+当MTP等于0时，支持sparse_mode=0且不传mask；当MTP大于0、小于16时，支持sparse_mode=3且传入优化后的atten_mask矩阵，atten_mask矩阵shape必须传入（2048*2048）；
+不支持配置query_rope和key_rope；
+不支持tensorlist、pse、page attention、后量化;
+num_query_heads与num_key_value_heads支持组合有(10,1)、(64,8)、(80,8)、(128,16)。
+
 当Q_S大于1时: 
 query、key、value输入, 功能使用限制如下: 
 支持B轴小于等于65536, D轴32byte不对齐时仅支持到128. 
@@ -6661,7 +6673,6 @@ actual_seq_kvlen: 该参数传入时应为非负数, 在input_layout不同时, �
 sparse_mode=0时, atten_mask如果为None, 则忽略入参pre_tokens、next_tokens(内部赋值为INT_MAX). 
 sparse_mode=2、3、4时, atten_mask的shape需要为(S, S)或(1, S, S)或(1, 1, S, S), 其中S的值需要固定为2048, 且需要用户保证传入的atten_mask为下三角, 不传入atten_mask或者传入的shape不正确报错. 
 sparse_mode=1、2、3的场景忽略入参pre_tokens、next_tokens并按照相关规则赋值. 
-kvCache反量化的合成参数场景仅支持int8反量化到float16. 入参key、value的data range的data range乘积范围在(-1, 1)内, 高性能模式可以保证精度, 否则需要开启高精度模式来保证精度. 
 page attention场景:
 page attention的使能必要条件是block_table存在且有效, 同时key、value是按照block_table中的索引在一片连续内存中排布, 支持key、value数据类型为float16、bfloat16、int8. 在该场景下key、value的input_layout参数无效. block_table中填充的是blockid, 当前不会对blockid的合法性进行校验, 需用户自行保证. 
 block_size是用户自定义的参数, 该参数的取值会影响page attention的性能, 在使能page attention场景下, block_size最小为128, 最大为512, 且要求是128的倍数. 通常情况下, page attention可以提高吞吐量, 但会带来性能上的下降. 
@@ -6669,7 +6680,7 @@ page attention场景下, 当输入kv cache排布格式为(blocknum, blocksize, H
 page attention不支持伪量化场景, 不支持tensorlist场景. 
 page attention场景下, 必须传入actual_seq_kvlen. 
 page attention场景下, block_table必须为二维, 第一维长度需等于B, 第二维长度不能小于maxBlockNumPerSeq(maxBlockNumPerSeq为不同batch中最大actual_seq_kvlen对应的block数量). 
-page atte两种格式和float32/bfloat1ntion场景下, 不支持输入query为int8的场景. 
+page attention场景下，支持两种格式和float32/bfloat16，不支持输入query为int8的场景。
 page attention使能场景下, 以下场景输入需满足KV_S>=maxBlockNumPerSeq*blockSize: 
 传入attenMask时, 如mask shape为 (B, 1, Q_S, KV_S). 
 传入pseShift时, 如pseShift shape为(B, N, Q_S, KV_S). 
@@ -6687,13 +6698,13 @@ sparse_mode=3, 每个batch actual_seq_kvlen-actual_seq_qlen<0, 满足拦截条�
 sparse_mode=4, pre_tokens<0或每个batch next_tokens+actual_seq_kvlen-actual_seq_qlen<0时, 满足拦截条件. 
 kv伪量化参数分离: 
 key_quant_mode和value_quant_mode需要保持一致. 
-key_antiquant_scale和value_antiquant_scale要么都为空, 要么都不为空; key_antiquant_offset和value_antiquant_offset要么都为空, 要么都不为空. 
-key_antiquant_scale和value_antiquant_scale都不为空时, 其shape需要保持一致; key_antiquant_offset和value_antiquant_offset都不为空时, 其shape需要保持一致. 
+dequant_scale_key和dequant_scale_value要么都为空, 要么都不为空; dequant_offset_key和dequant_offset_value要么都为空, 要么都不为空. 
+dequant_scale_key和dequant_scale_value都不为空时, 其shape需要保持一致; dequant_offset_key和dequant_offset_value都不为空时, 其shape需要保持一致. 
 仅支持per-token模式, 且该模式下要求两个参数的shape均为(B, S), 数据类型固定为float32. 
 当伪量化参数和KV分离量化参数同时传入时, 以KV分离量化参数为准. 
-key_antiquant_scale与value_antiquant_scale非空场景, 要求query的s小于等于16. 
-key_antiquant_scale与value_antiquant_scale非空场景, 要求query的dtype为bfloat16, key、value的dtype为int8, 输出的dtype为bfloat16. 
-key_antiquant_scale与value_antiquant_scale非空场景, 不支持tensorlist、page attention特性. 
+dequant_scale_key与dequant_scale_value非空场景, 要求query的s小于等于16. 
+dequant_scale_key与dequant_scale_value非空场景, 要求query的dtype为bfloat16, key、value的dtype为int8, 输出的dtype为bfloat16. 
+dequant_scale_key与dequant_scale_value非空场景, 不支持tensorlist、page attention特性. 
 当Q_S等于1时: 
 query、key、value输入, 功能使用限制如下: 
 支持B轴小于等于65536, 支持N轴小于等于256, 支持S轴小于等于262144, 支持D轴小于等于512. 
@@ -6718,11 +6729,11 @@ Atlas A3 训练系列产品: 不支持Q为BF16/FP16且KV为INT4(INT32)的场景.
 page attention场景的参数key、value各自对应tensor的shape所有维度相乘不能超过int32的表示范围. 
 kv伪量化参数分离: 
 除了key_quant_mode为0并且value_quant_mode为1的场景外, key_quant_mode和value_quant_mode取值需要保持一致. 
-key_antiquant_scale和value_antiquant_scale要么都为空, 要么都不为空; key_antiquant_offset和value_antiquant_offset要么都为空, 要么都不为空. 
-key_antiquant_scale和value_antiquant_scale都不为空时, 除了key_quant_mode为0并且value_quant_mode为1的场景外, 其shape需要保持一致; key_antiquant_offset和value_antiquant_offset都不为空时, 除了key_quant_mode为0并且value_quant_mode为1的场景外, 其shape需要保持一致. 
+dequant_scale_key和dequant_scale_value要么都为空, 要么都不为空; dequant_offset_key和dequant_offset_value要么都为空, 要么都不为空. 
+dequant_scale_key和dequant_scale_value都不为空时, 除了key_quant_mode为0并且value_quant_mode为1的场景外, 其shape需要保持一致; dequant_offset_key和dequant_offset_value都不为空时, 除了key_quant_mode为0并且value_quant_mode为1的场景外, 其shape需要保持一致. 
 int4(int32)伪量化场景不支持后量化. 
 管理scale/offset的量化模式如下: 
-注意scale、offset两个参数指key_antiquant_scale、key_antiquant_scale、value_antiquant_offset、value_antiquant_offset. 
+注意scale、offset两个参数指dequant_scale_key、dequant_scale_key、dequant_offset_value、dequant_offset_value. 
 场景下scale和offset条件
 per-channel模式: 两个参数shape支持(1, N, 1, D), (1, N, D), (1, H), 数据类型和query数据类型相同. 
 per-tensor模式: 两个参数的shape均为(1,), 数据类型和query数据类型相同. 

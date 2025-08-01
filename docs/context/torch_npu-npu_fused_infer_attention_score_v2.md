@@ -10,7 +10,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000001832267082_section14441124184110"></a>
 
--   算子功能：适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当Query矩阵的S为1，进入IncreFlashAttention分支，其余场景进入PromptFlashAttention分支。当不涉及system prefix、左padding、kv量化参数合一、per-tensor全量化的场景，推荐使用本接口，否则使用老接口npu_fused_infer_attention_score。
+-   算子功能：适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当不涉及system prefix、左padding、kv量化参数合一、per-tensor全量化的场景，推荐使用本接口，否则使用老接口npu_fused_infer_attention_score。
 -   计算公式：
 
     $$
@@ -95,7 +95,7 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
 
 -   sparse\_mode：整型，表示sparse的模式。数据类型支持int64。Q\_S为1且不带rope输入时该参数无效。input\_layout为TND、TND\_NTD、NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
     -   sparse\_mode为0时，代表defaultMask模式，如果atten\_mask未传入则不做mask操作，忽略pre\_tokens和next\_tokens（内部赋值为INT\_MAX）；如果传入，则需要传入完整的atten\_mask矩阵（S1\*S2），表示pre\_tokens和next\_tokens之间的部分需要计算。
-    -   sparse\_mode为1时，代表allMask，必须传入完整的attenmask矩阵（S1\*S2）。
+    -   sparse\_mode为1时，代表allMask，必须传入完整的atten\_mask矩阵（S1\*S2）。
     -   sparse\_mode为2时，代表leftUpCausal模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
     -   sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景，需要传入优化后的atten\_mask矩阵（2048\*2048）。
     -   sparse\_mode为4时，代表band模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
@@ -153,16 +153,15 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
 -   该接口与PyTorch配合使用时，需要保证CANN相关包与PyTorch相关包的版本匹配。
 -   入参为空的处理：算子内部需要判断参数query是否为空，如果是空则直接返回。参数query不为空Tensor，参数key、value为空tensor（即S2为0），则填充全零的对应shape的输出（填充attention\_out）。attention\_out为空Tensor时，框架会处理。
 -   参数key、value中对应tensor的shape需要完全一致；非连续场景下key、value的tensorlist中的batch只能为1，个数等于query的B，N和D需要相等。
--   int8量化相关入参数量与输入、输出数据格式的综合限制：
-    -   输出为int8的场景：入参dequant\_scale1、quant\_scale1、dequant\_scale\_out、quant\_scale\_out需要同时存在，quant\_offset\_out可选，不传时默认为0。
+-   int8量化相关入参数量与输出数据格式的综合限制：
+    -   输出为int8的场景：入参quant\_scale\_out需要存在，quant\_offset\_out可选，不传时默认为0。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：输入为int8。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：输入为int8。
 
-    -   输出为float16的场景：入参dequant\_scale1、quant\_scale1、dequant\_scale\_out需要同时存在，若存在入参quant\_offset\_out或quant\_scale\_out（即不为None），则报错并返回。
+    -   输出为float16的场景：若存在入参quant\_offset\_out或quant\_scale\_out（即不为None），则报错并返回。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：输入为int8。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：输入为int8。
 
-    -   输入全为float16或bfloat16，输出为int8的场景：入参quant\_scale\_out需存在，quant\_offset\_out可选，不传时默认为0，若存在入参dequant\_scale1或quant\_scale1或dequant\_scale\_out（即不为None），则报错并返回。
     -   入参quant\_offset\_out和quant\_scale\_out支持per-tensor或per-channel格式，数据类型支持float32、bfloat16。
 
 -   query\_rope和key\_rope输入时即为MLA场景，参数约束如下：
@@ -175,8 +174,8 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
             -   sparse：Q\_S等于1时只支持sparse=0且不传mask，Q\_S大于1时只支持sparse=3且传入mask；
             -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>约束如下：
                 - query\_rope配置时要求query的s为1-16、n为32、64、128，query\_rope的shape中d为64，其余维度与query一致；
-                - key\_rope配置时要求key的n为1，d为512，keyRope的shape中d为64，其余维度与key一致；
-                - 支持key、value、keyRope的input\_layout格式为ND或NZ。当input\_layout为NZ时，数据类型为float16或bfloat16时，输入参数key和value的格式为\[blockNum, N, D/16, blockSize, 16\]，数据类型为int8时，输入参数key和value的格式为\[blockNum, N, D/32, blockSize, 32\]；
+                - key\_rope配置时要求key的n为1，d为512，key\_rope的shape中d为64，其余维度与key一致；
+                - 支持key、value、key\_rope的input\_layout格式为ND或NZ。当input\_layout为NZ时，数据类型为float16或bfloat16时，输入参数key和value的格式为\[blockNum, N, D/16, blockSize, 16\]，数据类型为int8时，输入参数key和value的格式为\[blockNum, N, D/32, blockSize, 32\]；
                 - input\_layout形状支持BSH、BSND、BNSD、BNSD\_NBSD、BSND\_NBSD、BSH\_NBSD、TND、TND\_NTD，当数据格式为NZ时input\_layout不支持BNSD、BNSD\_NBSD。
                 - 该场景下，必须开启PageAttention，此时block\_size支持16、128，其中数据格式为NZ时block\_size不支持配置16。
                 - 不支持开启SoftMaxLse、tensorlist、pse、伪量化、后量化。
@@ -184,15 +183,15 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
                     - 入参dequant\_scale\_query、dequant\_scale\_key、dequant\_scale\_value需要同时存在，且其数据类型仅支持FP32。
                     - 不支持传入quant\_scale\_out、quant\_offset\_out、dequant\_offset\_key、dequant\_offset\_value（即不为nullptr），否则报错并返回。
                     - query\_quant\_mode仅支持per-token叠加per-head模式，key\_quant\_mode和value\_quant\_mode仅支持per-tensor模式。
-                    - 支持key、value、keyRope的input\_layout格式为NZ。
+                    - 支持key、value、key\_rope的input\_layout格式为NZ。
         -   当query的d等于128时：
             -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>约束如下：
 
-                - inputLayout：TND、NTD\_TND。  
+                - input\_layout：TND、NTD\_TND。  
                 
                 - query\_rope配置时要求query\_rope的shape中d为64，其余维度与query一致。  
                 
-                - keyRope配置时要求keyRope的shape中d为64，其余维度与key一致。  
+                - key\_rope配置时要求key\_rope的shape中d为64，其余维度与key一致。  
                 
                 - 不支持tensorlist、pse、page attention、伪量化、全量化、后量化。
 
@@ -200,35 +199,35 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
 
     -   TND、TND\_NTD、NTD\_TND场景下query、key、value输入的综合限制：
         -   T小于等于1M;
-        -   sparse模式仅支持sparse=0且不传mask，或sparse=3且传入mask；
-        -   actualSeqLengths和actualSeqLengthsKv必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的Sequence Length和，因此后一个元素的值必须大于等于前一个元素的值；
+        -   sparse模式仅支持sparse\_mode=0且不传mask，或sparse\_mode=3且传入mask；
+        -   actual\_seq\_qlen和actual\_seq\_kvlen必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的Sequence Length和，因此后一个元素的值必须大于等于前一个元素的值；
         -   当query的d等于512时：
             -   支持TND、TND\_NTD;
-            -   必须开启page attention，此时actualSeqLengthsKv长度等于key/value的batch值，代表每个batch的实际长度，值不大于KV\_S；
+            -   必须开启page attention，此时actual\_seq\_kvlen长度等于key/value的batch值，代表每个batch的实际长度，值不大于KV\_S；
             -   支持query每个batch的s为1-16；
             -   要求query的n为32/64/128，key、value的n为1；
-            -   要求query\_rope和keyRope不等于空，query\_rope和keyRope的d为64；
+            -   要求query\_rope和key\_rope不等于空，query\_rope和key\_rope的d为64；
             -   不支持开启SoftMaxLse、tensorlist、pse、伪量化、全量化、后量化。
 
         -   当query的d不等于512时：
-            -   当query\_rope和keyRope为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当query\_rope和keyRope不为空时，要求Q\_D、K\_D、V\_D等于128；
+            -   当query\_rope和key\_rope为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当query\_rope和key\_rope不为空时，要求Q\_D、K\_D、V\_D等于128；
             -   Q\_N、K\_N、V\_N：需要满足K\_N、V\_N相等，Q\_N整除K\_N，Q\_N与K\_N的比值不能大于64；
             -   支持TND、NTD\_TND；
             -   数据类型仅支持BFLOAT16；
-            -   当sparse=3时，要求每个batch单独的actualSeqLengths<actualSeqLengthsKv；
+            -   当sparse\_mode=3时，要求每个batch单独的actual\_seq\_qlen<actual\_seq\_kvlen；
             -   不支持tensorlist、pse、page attention、伪量化、全量化、后量化；
             -   **不支持图模式配置Tiling调度优化**（tiling\_schedule\_optimize=True）、**reduce-overhead执行模式**（config.mode="reduce-overhead"）。
             -   actual\_seq\_qlen和actual\_seq\_kvlen的元素个数不大于4096。
 -   GQA伪量化场景下KV为NZ格式时的参数约束如下：
     - 仅支持per-channel模式，query数据类型固定为BFLOAT16，key&value固定为INT8；query&key&value的d仅支持128；query Sequence Length仅支持1-16；
-    - inputLayout仅支持BSH、BSND、BNSD；
+    - input\_layout仅支持BSH、BSND、BNSD；
     - key&value仅支持NZ输入，输入格式为[blockNum, N, D/32, blockSize, 32]；
-    - layout为BSH时，antiquantShape必须传入[H]；layout为BNSD时，antiquantShape必须传入[N,1,D]；输出为BSND时，antiquantShape必须传入[N,D]；
+    - dequant\_scale\_key和dequant\_scale\_value的shape：当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[N,1,D]；输出为BSND时，必须传入[N,D]；
     - 仅支持KV分离；
     - 仅支持高性能模式；
-    - 当MTP等于0时，支持sparseMode=0且不传mask；当MTP大于0、小于16时，支持sparseMode=3且传入优化后的attenmask矩阵，attenmask矩阵shape必须传入（2048\*2048）；
-    - 不支持配置queryRope和keyRope；
-    - 不支持左padding、tensorlist、pse、page attention、prefix、后量化;
+    - 当MTP等于0时，支持sparse\_mode=0且不传mask；当MTP大于0、小于16时，支持sparse\_mode=3且传入优化后的atten\_mask矩阵，atten\_mask矩阵shape必须传入（2048\*2048）；
+    - 不支持配置query\_rope和key\_rope；
+    - 不支持tensorlist、pse、page attention、后量化;
     - num\_query\_heads与num\_key\_value\_heads支持组合有(10,1)、(64,8)、(80,8)、(128,16)。
 -   **当Q\_S大于1时：**
     -   query、key、value输入，功能使用限制如下：
@@ -246,19 +245,18 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
 
     -   actual\_seq\_qlen：
     
-        <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于query中对应batch的Sequence Length。seqlen的传入长度为1时，每个Batch使用相同seqlen；传入长度大于等于Batch时取seqlen的前Batch个数。其他长度不支持。当query的inputLayout为TND/NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于query中对应batch的Sequence Length。seqlen的传入长度为1时，每个Batch使用相同seqlen；传入长度大于等于Batch时取seqlen的前Batch个数。其他长度不支持。当query的input\_layout为TND/NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
         
     -   actual\_seq\_kvlen：
     
-        <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的inputLayout为TND/NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的input\_layout为TND/NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
         
     -   参数sparse\_mode当前仅支持值为0、1、2、3、4的场景，取其它值时会报错。
         
         -   sparse\_mode=0时，atten\_mask如果为None，则忽略入参pre\_tokens、next\_tokens（内部赋值为INT\_MAX）。
         -   sparse\_mode=2、3、4时，atten\_mask的shape需要为\(S, S\)或\(1, S, S\)或\(1, 1, S, S\)，其中S的值需要固定为2048，且需要用户保证传入的atten\_mask为下三角，不传入atten\_mask或者传入的shape不正确报错。        
         -   sparse\_mode=1、2、3的场景忽略入参pre\_tokens、next\_tokens并按照相关规则赋值。
-        
-    -   kvCache反量化的合成参数场景仅支持int8反量化到float16。入参key、value的data range与入参antiquant\_scale的data range乘积范围在（-1, 1）内，高性能模式可以保证精度，否则需要开启高精度模式来保证精度。
+
     -   page attention场景：
         -   page attention的使能必要条件是block\_table存在且有效，同时key、value是按照block\_table中的索引在一片连续内存中排布，支持key、value数据类型为float16、bfloat16。在该场景下key、value的input\_layout参数无效。block\_table中填充的是blockid，当前不会对blockid的合法性进行校验，需用户自行保证。
         -   block\_size是用户自定义的参数，该参数的取值会影响page attention的性能，在使能page attention场景下，block\_size最小为128，最大为512，且要求是128的倍数。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
@@ -269,8 +267,8 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
         -   page attention场景下，block\_table必须为二维，第一维长度需等于B，第二维长度不能小于maxBlockNumPerSeq（maxBlockNumPerSeq为不同batch中最大actual\_seq\_kvlen对应的block数量）。
         -   page attention场景下，支持两种格式和float32/bfloat16，不支持输入query为int8的场景。
         -   page attention使能场景下，以下场景输入需满足KV\_S\>=maxBlockNumPerSeq\*blockSize：
-            -   传入attenMask时，如mask shape为（B, 1, Q\_S, KV\_S）。
-            -   传入pseShift时，如pseShift shape为（B, N, Q\_S, KV\_S）。
+            -   传入atten\_mask时，如mask shape为（B, 1, Q\_S, KV\_S）。
+            -   传入pse\_shift时，如pse\_shift shape为（B, N, Q\_S, KV\_S）。
 
     -   入参quant\_scale\_out和quant\_offset\_out支持per-tensor、per-channel量化，支持float32、bfloat16类型。若传入quant\_offset\_out，需保证其类型和shape信息与quant\_scale\_out一致。当输入为bfloat16时，同时支持float32和bfloat16，否则仅支持float32。per-channel场景下，当输出layout为BSH时，要求quant\_scale\_out所有维度的乘积等于H；其他layout要求乘积等于N\*D。当输出layout为BSH时，quant\_scale\_out shape建议传入\(1, 1, H\)或\(H,\)；当输出layout为BNSD时，建议传入\(1, N, 1, D\)或\(N, D\)；当输出为BSND时，建议传入\(1, 1, N, D\)或\(N, D)。
     -   输出为int8，quant\_scale\_out和quant\_offset\_out为per-channel时，暂不支持Ring Attention或者D非32Byte对齐的场景。
@@ -340,11 +338,11 @@ torch_npu.npu_fused_infer_attention_score_v2(Tensor query, Tensor key, Tensor va
 
     -   actual\_seq\_qlen：
     
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当query的inputLayout不为TND时，Q\_S为1时该参数无效。当query的inputLayout为TND/TND\_NTD时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当query的input\_layout不为TND时，Q\_S为1时该参数无效。当query的input\_layout为TND/TND\_NTD时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
         
     -   actual\_seq\_kvlen：
     
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的inputLayout为TND/TND\_NTD时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的input\_layout为TND/TND\_NTD时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
         
     -   page attention场景：
         -   使能必要条件是block\_table存在且有效，同时key、value是按照block\_table中的索引在一片连续内存中排布，在该场景下key、value的input\_layout参数无效。
