@@ -350,42 +350,6 @@
   "func: npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? scales=None, Tensor? x_active_mask=None, Tensor? expert_scales=None, str group_tp=\"\", int tp_world_size=0, int tp_rank_id=0, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int quant_mode=0, int global_bs=0, int expert_token_nums_type=1) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
-  "op_api: torch_npu.npu_moe_distribute_dispatch_setup(*args, **kwargs)": {
-    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
-  },
-  "op_api: torch_npu.npu_moe_distribute_dispatch_setup(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
-    "version": ["v2.8", "newest"]
-  },
-  "func: npu_moe_distribute_dispatch_setup(Tensor x, Tensor expert_ids, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? scales=None, Tensor? x_active_mask=None, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int quant_mode=0, int global_bs=0, int comm_type=0, str comm_alg=\"\") -> (Tensor, Tensor, Tensor)": {
-    "version": ["all_version"]
-  },
-  "op_api: torch_npu.npu_moe_distribute_dispatch_teardown(*args, **kwargs)": {
-    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
-  },
-  "op_api: torch_npu.npu_moe_distribute_dispatch_teardown(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
-    "version": ["v2.8", "newest"]
-  },
-  "func: npu_moe_distribute_dispatch_teardown(Tensor x, Tensor y, Tensor expert_ids, Tensor comm_cmd_info, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int quant_mode=0, int global_bs=0, int expert_token_nums_type=1, int comm_type=0, str comm_alg=\"\") -> (Tensor, Tensor, Tensor, Tensor) -> (Tensor, Tensor, Tensor)": {
-    "version": ["all_version"]
-  },
-  "op_api: torch_npu.npu_moe_distribute_combine_setup(*args, **kwargs)": {
-    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
-  },
-  "op_api: torch_npu.npu_moe_distribute_combine_setup(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
-    "version": ["v2.8", "newest"]
-  },
-  "func: npu_moe_distribute_combine_setup(Tensor expand_x, Tensor expert_ids, Tensor assist_info_for_combine, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int global_bs=0, int comm_quant_mode=0, int comm_type=0, str comm_alg=\"\") -> (Tensor, Tensor)": {
-    "version": ["all_version"]
-  },
-  "op_api: torch_npu.npu_moe_distribute_combine_teardown(*args, **kwargs)": {
-    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
-  },
-  "op_api: torch_npu.npu_moe_distribute_combine_teardown(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
-    "version": ["v2.8", "newest"]
-  },
-  "func: npu_moe_distribute_combine_teardown(Tensor expand_x, Tensor quant_expand_x, Tensor expert_ids, Tensor expand_idx, Tensor expert_scales, Tensor comm_cmd_info, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? x_active_mask=None, Tensor? shared_expert_x=None, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int global_bs=0, int comm_quant_mode=0, int comm_type=0, str comm_alg=\"\") -> Tensor": {
-    "version": ["all_version"]
-  },
   "func: npu_gmm_alltoallv(Tensor gmm_x, Tensor gmm_weight, str hcom, int ep_world_size, int[] send_counts, int[] recv_counts, *, Tensor? send_counts_tensor=None, Tensor? recv_counts_tensor=None, Tensor? mm_x=None, Tensor? mm_weight=None, bool trans_gmm_weight=False, bool trans_mm_weight=False) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
