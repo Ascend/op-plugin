@@ -31,7 +31,7 @@ torch_npu.utils.reset_thread_affinity()
 
 ## 约束说明
 
-该接口需要环境变量`CPU_AFFINITY_CONF`的mode设置为1或2时才生效，一般在拉起子线程的位置后使用，恢复当前线程的绑核区间为主线程区间。推荐和torch_npu.utils.set_thread_affinity配套使用。
+该接口需要环境变量`CPU_AFFINITY_CONF`的mode设置为1或2时才生效，一般在拉起子线程的位置后使用，恢复当前线程的绑核区间为主线程区间。推荐和[torch_npu.utils.set_thread_affinity](torch_npu-utils.set_thread_affinity.md)配套使用。
 
 
 ## 调用示例

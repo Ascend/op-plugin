@@ -16,7 +16,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - out_features（计算参数）：int类型，matmul计算中n轴的值。
 - bias（计算参数）：bool类型，代表是否需要bias计算参数。如果设置成False，则bias不会加入量化matmul的计算。
 - offset（计算参数）：bool类型，代表是否需要offset计算参数。如果设置成False，则offset不会加入量化matmul的计算。
-- pertoken_scale（计算参数）：bool类型，可选参数代表是否需要pertoken_scale计算参数。如果设置成False，则pertoken_scale不会加入量化matmul的计算。**<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。**
+- pertoken_scale（计算参数）：bool类型，可选参数代表是否需要pertoken_scale计算参数。如果设置成False，则pertoken_scale不会加入量化matmul的计算。<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
 - output_dtype（计算参数）：ScalarType类型，表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为int8。
     - <term>Atlas 推理系列产品</term>：支持输入torch.int8、torch.float16。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持输入torch.int8、torch.float16、torch.bfloat16、torch.int32。
@@ -43,7 +43,7 @@ x1（计算输入）：Tensor类型，数据格式支持ND，shape最少是2维�
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持float32、int64、bfloat16。
 
 - offset（变量）：Tensor类型，量化计算的offset。可选参数。数据类型支持float32，数据格式支持ND，shape需要是1维(t,)，t=1或n，其中n与weight的n一致。
-- pertoken_scale（变量）：Tensor类型，可选参数，量化计算的pertoken。数据类型支持float32，数据格式支持ND，shape需要是1维(m,)，其中m与x1的m一致。**Atlas 推理系列产品当前不支持pertoken_scale。**
+- pertoken_scale（变量）：Tensor类型，可选参数，量化计算的pertoken。数据类型支持float32，数据格式支持ND，shape需要是1维(m,)，其中m与x1的m一致。<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
 - bias（变量）：Tensor类型，可选参数。矩阵乘中的bias。数据格式支持ND，shape支持1维(n,)或3维(batch, 1, n)，n与weight的n一致，同时batch值需要等于x1，weight broadcast后推导出的batch值。当输出为2、4、5、6维情况下，bias shape为1维；当输出为3维情况下，bias shape为1维或3维。
     - <term>Atlas 推理系列产品</term>：数据类型支持int32。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int32、bfloat16、float16、float32。

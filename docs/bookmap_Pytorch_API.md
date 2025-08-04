@@ -194,7 +194,7 @@
             -   [torch_npu.npu.SyncLaunchStream](./context/torch_npu-npu-SyncLaunchStream.md)
             -   [（beta）torch_npu.npu.utils.is_support_inf_nan](./context/（beta）torch_npu-npu-utils-is_support_inf_nan.md)
             -   [（beta）torch_npu.npu.utils.npu_check_overflow](./context/（beta）torch_npu-npu-utils-npu_check_overflow.md)
-            -   [torch_npu.npu.Event().recorded_time ()](./context/torch_npu-npu-Event()-recorded_time-().md)
+            -   [（beta）torch_npu.npu.Event().recorded_time()](./context/torch_npu-npu-Event()-recorded_time-().md)
             -   [（beta）torch_npu.npu.set_dump](./context/（beta）torch_npu-npu-set_dump.md)
             -   [（beta）torch_npu.npu.init_dump](./context/（beta）torch_npu-npu-init_dump.md)
             -   [（beta）torch_npu.npu.finalize_dump](./context/（beta）torch_npu-npu-finalize_dump.md)

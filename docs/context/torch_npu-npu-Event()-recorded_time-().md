@@ -1,9 +1,9 @@
-# （beta）torch_npu.npu.Event().recorded_time ()
+# （beta）torch_npu.npu.Event().recorded_time()
 
 ## 函数原型
 
 ```
-torch_npu.npu.Event().recorded_time () -> int
+torch_npu.npu.Event().recorded_time() -> int
 ```
 
 ## 功能说明
@@ -37,7 +37,7 @@ Event对象在创建的时候，需要传入参数enable_timing=True。
 import torch
 import torch_npu
  
-event = torch.npu.Event(enable_timing=True)
+event = torch_npu.npu.Event(enable_timing=True)
 event.record()
 res = event.recorded_time()
 ```

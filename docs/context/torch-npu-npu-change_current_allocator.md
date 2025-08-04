@@ -33,7 +33,7 @@ torch_npu.npu.change_current_allocator(allocator) -> None
 
 完整调用示例可参考[LINK](https://gitee.com/ascend/pytorch/blob/v2.1.0-7.1.0/test/allocator/test_pluggable_allocator_extensions.py)。
 
-**Python代码示例：**
+**Python代码示例**：
 
 ```python
 import torch

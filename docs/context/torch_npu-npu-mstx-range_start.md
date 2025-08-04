@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu.mstx.range_start(message: str, stream = None, domain: str = 'default') -> int:
+torch_npu.npu.mstx.range_start(message: str, stream=None, domain: str='default') -> int:
 ```
 
 ## 功能说明

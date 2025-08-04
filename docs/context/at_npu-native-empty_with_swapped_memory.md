@@ -38,12 +38,12 @@ at::Tensor empty_with_swapped_memory(c10::IntArrayRef size, c10::optional<at::Sc
 
 - 该接口暂不支持图模式。
 
-- 该接口申请的特殊Tensor当前仅支持如下算子：
-`aten::fill_`
-`aten::zero_`
-`aten::mul_`
-`npu_apply_adam_w`
-`npu_hans_encode`
-`npu_hans_decode`
+- 该接口申请的特殊Tensor当前仅支持如下算子：<br>
+`aten::fill_`<br>
+`aten::zero_`<br>
+`aten::mul_`<br>
+`npu_apply_adam_w`<br>
+`npu_hans_encode`<br>
+`npu_hans_decode`<br>
 
 - 该接口申请的特殊Tensor不支持直接打印，需要查看值时要先通过`mul_`转为普通Tensor再打印。

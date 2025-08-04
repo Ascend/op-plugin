@@ -19,7 +19,7 @@ torch_npu.empty_with_swapped_memory(size, *, dtype=None, device=None) -> Tensor
 
 ## 参数说明
 
-- **size** (`ListInt`)：必选参数，定义输出张量shape的整数序列，可以是参数数量(可变值)，也可以是列表或元组等集合。
+- **size** (`ListInt`)：必选参数，定义输出张量shape的整数序列，可以是参数数量（可变值），也可以是列表或元组等集合。
 - **dtype** (`torch.dtype`)：可选参数，必须使用关键字传参，表示生成Tensor的数据类型，默认值为`None`，表示使用dtype全局默认值。
 - **device** (`torch.device`)：可选参数，必须使用关键字传参，表示生成Tensor的设备信息，默认值为`None`，表示使用当前默认device。
 
@@ -34,13 +34,13 @@ torch_npu.empty_with_swapped_memory(size, *, dtype=None, device=None) -> Tensor
 
 - 该接口暂不支持图模式。
 
-- 该接口申请的特殊Tensor当前仅支持如下算子：
-`torch.fill_`
-`torch.zero_`
-`torch.mul_`
-`torch_npu.npu_apply_adam_w`
-`torch_npu.npu_hans_encode`
-`torch_npu.npu_hans_decode`
+- 该接口申请的特殊Tensor当前仅支持如下算子：<br>
+`torch.fill_`<br>
+`torch.zero_`<br>
+`torch.mul_`<br>
+`torch_npu.npu_apply_adam_w`<br>
+`torch_npu.npu_hans_encode`<br>
+`torch_npu.npu_hans_decode`<br>
 
 - 该接口申请的特殊Tensor不支持直接打印，需要查看值时要先通过`mul_`转为普通Tensor再打印，详情请参考调用示例。
 

@@ -14,9 +14,9 @@ torch_npu.profiler.schedule (wait, active, warmup = 0, repeat = 0, skip_first = 
 
 - wait：每次重复执行采集跳过的step轮数，int类型。必选。
 - active：采集的step轮数，int类型。必选。
-- warmup：预热的step轮数，int类型。默认为值0。建议设置1轮预热。可选。
-- repeat：重复执行wait+warmup+active的次数，int类型。默认为值0，表示重复执行repeat不停止，建议配置为大于0的整数。可选。
-- skip_first：采集前先跳过的step轮数，int类型。默认为值0。动态Shape场景建议跳过前10轮保证性能数据稳定；对于其他场景，可以根据实际情况自行配置。可选。
+- warmup：预热的step轮数，int类型。默认值为0。建议设置1轮预热。可选。
+- repeat：重复执行wait+warmup+active的次数，int类型。默认值为0，表示重复执行repeat不停止，建议配置为大于0的整数。可选。
+- skip_first：采集前先跳过的step轮数，int类型。默认值为0。动态Shape场景建议跳过前10轮保证性能数据稳定；对于其他场景，可以根据实际情况自行配置。可选。
 
 默认不执行schedule操作。
 

@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu.set_aoe (dump_path)
+torch_npu.npu.set_aoe(dump_path)
 ```
 
 ## 功能说明

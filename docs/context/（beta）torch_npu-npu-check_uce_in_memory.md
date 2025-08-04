@@ -41,6 +41,6 @@ device_id(int) ：需要处理的device id。
 ```python
 import torch,torch_npu
 torch.npu.set_device(0)
-torch_npu.npu.check_uce_in_memory (0)
+torch_npu.npu.check_uce_in_memory(0)
 ```
 

@@ -3,7 +3,7 @@
 ## 函数原型
 
 ```
-torch_npu.utils.get_part_combined_tensor (combined_tensor, index, size) -> Tensor
+torch_npu.utils.get_part_combined_tensor(combined_tensor, index, size) -> Tensor
 ```
 
 ## 功能说明

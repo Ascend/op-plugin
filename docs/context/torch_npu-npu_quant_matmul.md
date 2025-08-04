@@ -7,7 +7,7 @@
 ## 函数原型
 
 ```
-npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, x1_dtype=None,  x2_dtype=None, pertoken_scale_dtype=None, scale_dtype=None, group_sizes=None) -> Tensor
+npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, x1_dtype=None, x2_dtype=None, pertoken_scale_dtype=None, scale_dtype=None, group_sizes=None) -> Tensor
 ```
 
 ## 参数说明

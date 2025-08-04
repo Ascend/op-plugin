@@ -31,9 +31,9 @@ torch_npu.npu_trans_quant_param(Tensor scale, Tensor? offset=None, int round_mod
   - <term>Atlas 推理系列产品</term>
 - 当不传入`offset`时，输出shape与`scale` shape一致。
   - 若该输出作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵(`weight`，对应参数x2)的shape $n$一致。
-  - 若输出作为`grouped matmul`类算子输入(如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md))，仅在分组模式为m轴分组时使用（对应参数`group_type`为0），shape支持1维$(g,)$或2维$(g, 1)$、$(g, n)$，其中$n$与`grouped matmul`计算中右矩阵(对应参数weight)的shape $n$一致，$g$与`grouped matmul`计算中分组数（对应参数`group_list`的shape大小）一致。
+  - 若输出作为`grouped matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），仅在分组模式为m轴分组时使用（对应参数`group_type`为0），shape支持1维$(g,)$或2维$(g, 1)$、$(g, n)$，其中$n$与`grouped matmul`计算中右矩阵（对应参数weight）的shape $n$一致，$g$与`grouped matmul`计算中分组数（对应参数`group_list`的shape大小）一致。
 - 当传入`offset`时，仅作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）:
-  - `scale`、`offset`输出的shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵(`weight`，对应参数x2)的shape $n$一致。
+  - `scale`、`offset`输出的shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵（`weight`，对应参数x2）的shape $n$一致。
   - 当输入`scale`的shape为1维，输出的shape也为1维，且shape大小为`scale`与`offset`单维shape大小的最大值。
   - 当输入scale的shape为2维，`scale`和`offset`的shape需要保持一致，且输出shape也为$(1, n)$。
 
