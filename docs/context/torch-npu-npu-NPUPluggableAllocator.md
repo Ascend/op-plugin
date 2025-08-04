@@ -37,7 +37,7 @@ free_fn_name内存释放函数名必须与c/c++文件中函数名一致。
 
 完整调用示例可参考[LINK](https://gitee.com/ascend/pytorch/blob/v2.1.0-7.1.0/test/allocator/test_pluggable_allocator_extensions.py)。
 
-**Python代码示例：**
+**Python代码示例**：
 
 ```python
 import torch
@@ -54,7 +54,7 @@ npu_tensor = torch.zeros(10, device='npu')
 
 建议处理方式：用户可在内存申请，释放等内存相关操作函数中，增加日志记录内存行为，方便后续定位问题。
 
-**c++安全代码示例：**
+**c++安全代码示例**：
 
 ```cpp
 #include <sys/types.h>
@@ -85,7 +85,7 @@ void my_free(void* ptr, ssize_t size, int device, aclrtStream stream)
  
 ```
 
-**日志记录示例：**可使用Ascend Extension for PyTorch自带的debug级别日志打印。日志需注意存放至安全路径。
+**日志记录示例**：可使用Ascend Extension for PyTorch自带的debug级别日志打印。日志需注意存放至安全路径。
 
 ```cpp
 #include "torch_npu/csrc/core/npu/npu_log.h"
