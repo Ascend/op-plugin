@@ -2397,6 +2397,39 @@ def npu_gather_backward__meta(grad, self_size, dim, index, sparse_grad):
     return torch.empty(self_size, dtype=grad.dtype, device=grad.device)
 
 
+@impl(m, "npu_moe_token_permute_with_routing_map")
+def npu_moe_token_permute_with_routing_map_meta(tokens, routing_map, *, probs=None, num_out_tokens=None, drop_and_pad=False):
+    if num_out_tokens is None:
+        num_out_tokens = tokens.size(0)
+    dim = 1 if drop_and_pad else 0
+    out_token = num_out_tokens // routing_map.size(dim) * routing_map.size(dim)
+
+    output_size_0 = (out_token, tokens.size(1))
+    output_size_1 = (out_token,)
+    output_dtype_0 = tokens.dtype
+    output_dtype_1 = torch.int32
+    out1 = torch.empty(output_size_0, dtype=output_dtype_0, device=tokens.device)
+    out3 = torch.empty(output_size_1, dtype=output_dtype_1, device=tokens.device)
+    out2 = None
+    if probs is not None:
+        out2 = torch.empty(output_size_1, dtype=probs.dtype, device=tokens.device)
+    
+    return out1, out2, out3
+
+
+@impl(m, "npu_moe_token_permute_with_routing_map_grad")
+def npu_moe_token_permute_with_routing_map_grad_meta(permuted_token_out_grad, probs_grad, sorted_indices, routing_map, experts_num, tokens_num, drop_and_pad):
+
+    output_size_0 = (tokens_num, permuted_token_out_grad.size(1))
+    output_size_1 = (tokens_num, experts_num)
+    output_dtype_0 = permuted_token_out_grad.dtype
+    out1 = torch.empty(output_size_0, dtype=output_dtype_0, device=permuted_token_out_grad.device)
+    out2 = None
+    if probs_grad is not None:
+        out2 = torch.empty(output_size_1, dtype=probs_grad.dtype, device=permuted_token_out_grad.device)
+    return out1, out2
+
+
 @impl(m, "npu_moe_re_routing")
 def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=None, expert_token_num_type=1, idx_type=0):
     permute_tokens_size = []

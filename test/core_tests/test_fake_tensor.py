@@ -2642,6 +2642,43 @@ class TestNpuMoeUnpermuteWithRoutingMap(TestCase):
                 self.assertEqual(unpermuted_tokens.shape[1], restore_shape[1])
 
 
+class TestNpuMoeTokenPermuteWithRoutingMap(TestCase):
+    def test_npu_moe_token_permute_with_routing_map_meta(self):
+        with FakeTensorMode():
+            x = torch.randn((3, 4), dtype=torch.float)
+            x.requires_grad = True
+            routing_map = torch.tensor([[True, True], [True, True], [True, True]], dtype=torch.bool)
+            numtoken = 6
+            padMode = True
+            probs = torch.randn([3, 2], dtype=torch.float)
+            probs.requires_grad = True
+            x_npu = x.npu().detach()
+            x_npu.requires_grad = True
+            routing_map_npu = routing_map.npu()
+            probs_npu = probs.npu().detach()
+            probs_npu.requires_grad = True
+
+            out_token = numtoken // routing_map.size(1) * routing_map.size(1)
+            output0 = torch.empty(out_token, x_npu.size(1), dtype=x_npu.dtype, device=x_npu.device)
+            output1 = torch.empty(out_token, dtype=probs_npu.dtype, device=probs_npu.device)
+            output2 = torch.empty(out_token, dtype=torch.int32, device=x_npu.device)
+
+            x1, x2, x3 = torch_npu.npu_moe_token_permute_with_routing_map(x_npu, routing_map_npu, probs=probs_npu, num_out_tokens=numtoken, drop_and_pad=padMode)
+            self.assertEqual(x1.dtype, output0.dtype)
+            self.assertEqual(x2.dtype, output1.dtype)
+            self.assertEqual(x3.dtype, output2.dtype)
+            self.assertEqual(x1.shape, output0.shape)
+            self.assertEqual(x2.shape, output1.shape)
+            self.assertEqual(x3.shape, output2.shape)
+            (x1.sum() + x2.sum()).backward()
+            output0 = torch.empty_like(x_npu)
+            output1 = torch.empty_like(probs)
+            self.assertEqual(x_npu.grad.dtype, output0.dtype)
+            self.assertEqual(probs_npu.grad.dtype, output1.dtype)
+            self.assertEqual(x_npu.grad.shape, x_npu.shape)
+            self.assertEqual(probs_npu.grad.shape, probs_npu.shape)
+
+
 instantiate_parametrized_tests(FakeTensorTest)
 instantiate_device_type_tests(FakeTensorOpInfoTest, globals(), only_for="cpu")
 
