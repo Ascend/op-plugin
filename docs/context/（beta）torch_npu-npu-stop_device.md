@@ -6,7 +6,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu.stop_device(device_id: int) -> None 
+torch_npu.npu.stop_device(device_id: int) -> int 
 ```
 
 ## 功能说明
@@ -20,6 +20,10 @@ torch_npu.npu.stop_device(device_id: int) -> None
 ## 输入说明
 
 要确保是一个有效的device。
+
+## 输出说明
+
+返回值为int，代表执行结果，0表示执行成功，1表示执行失败。
 
 ## 支持的型号
 
