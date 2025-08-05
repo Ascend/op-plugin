@@ -19,7 +19,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002322738573_section1470016430218"></a>
 
--   算子功能：完成moe\_distribute\_combine+add+rms\_norm融合。需与[torch_npu.npu_moe_distribute_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按npu\_moe\_distribute\_dispatch算子收集数据的路径原路返回后对数据进行add\_rms\_norm操作。
+-   算子功能：完成`moe_distribute_combine`+`add`+`rms_norm`融合。需与[torch_npu.npu_moe_distribute_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按`npu_moe_distribute_dispatch`算子收集数据的路径原路返回后对数据进行`add_rms_norm`操作。
 -   计算公式：
 
     ![](figures/zh-cn_formulaimage_0000002340454445.png)
@@ -27,66 +27,66 @@
 ## 函数原型<a name="zh-cn_topic_0000002322738573_section470115437220"></a>
 
 ```
-torch_npu.npu_moe_distribute_combine_add_rms_norm(Tensor expand_x, Tensor expert_ids, Tensor expand_idx, Tensor ep_send_counts, Tensor expert_scales, Tensor residual_x, Tensor gamma, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? tp_send_counts=None, Tensor? x_active_mask=None, Tensor? activation_scale=None, Tensor? weight_scale=None, Tensor? group_list=None, Tensor? expand_scales=None, Tensor? shared_expert_x=None, str group_tp="", int tp_world_size=0, int tp_rank_id=0, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int global_bs=0, int out_dtype=0, int comm_quant_mode=0, int group_list_type=0, float norm_eps=1e-06) -> (Tensor, Tensor, Tensor)
+torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, residual_x, gamma, group_ep, ep_world_size, ep_rank_id, moe_expert_num, *, tp_send_counts=None, x_active_mask=None, activation_scale=None, weight_scale=None, group_list=None, expand_scales=None, shared_expert_x=None, group_tp="", tp_world_size=0, tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, global_bs=0, out_dtype=0, comm_quant_mode=0, group_list_type=0, norm_eps=1e-06) -> (Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000002322738573_section187018431529"></a>
 
--   **expand\_x**（Tensor）：必选参数，根据expert\_ids进行扩展过的token特征，要求为2D的Tensor，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，数据类型支持bfloat16，数据格式为ND，支持非连续的Tensor。
--   **expert\_ids**（Tensor）：必选参数，每个token的topK个专家索引，要求为2D的Tensor，shape为\(BS, K\)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应torch\_npu.npu\_moe\_distribute\_dispatch的expert\_ids输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
--   **expand\_idx**（Tensor）：必选参数，表示给同一专家发送的token个数，要求是1D的Tensor，shape为\(A\*128, \)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应torch\_npu.npu\_moe\_distribute\_dispatch的expand\_idx输出。
--   **ep\_send\_counts**（Tensor）：必选参数，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1D的Tensor 。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应torch\_npu.npu\_moe\_distribute\_dispatch的ep\_recv\_counts输出。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
+-   **expand\_x**（`Tensor`）：必选参数，根据`expert_ids`进行扩展过的token特征，要求为2D的Tensor，shape为\(max\(`tp_world_size`, 1\) \*A, H\)，数据类型支持`bfloat16`，数据格式为ND，支持非连续的Tensor。
+-   **expert\_ids**（`Tensor`）：必选参数，每个token的topK个专家索引，要求为2D的Tensor，shape为\(BS, K\)。数据类型支持`int32`，数据格式为ND，支持非连续的Tensor。对应`torch_npu.npu_moe_distribute_dispatch`的`expert_ids`输入，张量里value取值范围为\[0, `moe_expert_num`\)，且同一行中的K个value不能重复。
+-   **expand\_idx**（`Tensor`）：必选参数，表示给同一专家发送的token个数，要求是1D的Tensor，shape为\(A\*128, \)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应`torch_npu.npu_moe_distribute_dispatch`的`expand_idx`输出。
+-   **ep\_send\_counts**（`Tensor`）：必选参数，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1D的Tensor 。数据类型支持`int32`，数据格式为ND，支持非连续的Tensor。对应`torch_npu.npu_moe_distribute_dispatch`的`ep_recv_counts`输出。
+    <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(`ep_world_size`\*max\(`tp_world_size`, 1\)\*local\_expert\_num, \)。
 
--   **expert\_scales**（Tensor）：必选参数，表示每个Token的topK个专家的权重，要求是2D的Tensor，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持float，数据格式为ND，支持非连续的Tensor。
--   **residual\_x**（Tensor）：必选参数，表示处理后的token需要add的参数，要求是3D的Tensor，shape为\(BS, 1, H\)。数据类型支持bfloat16，数据格式为ND，支持非连续的Tensor。
--   **gamma**（Tensor）：必选参数，表示rms\_norm的权重，要求是1D的Tensor，shape为\(H, \)。数据类型支持bfloat16，数据格式为ND，支持非连续的Tensor。
--   **group\_ep**（str）：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)，不能和group\_tp相同。
--   **ep\_world\_size**（int）：必选参数，EP通信域size。
+-   **expert\_scales**（`Tensor`）：必选参数，表示每个Token的topK个专家的权重，要求是2D的Tensor，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为ND，支持非连续的Tensor。
+-   **residual\_x**（`Tensor`）：必选参数，表示处理后的token需要add的参数，要求是3D的Tensor，shape为\(BS, 1, H\)。数据类型支持`bfloat16`，数据格式为ND，支持非连续的Tensor。
+-   **gamma**（`Tensor`）：必选参数，表示rms\_norm的权重，要求是1D的Tensor，shape为\(H, \)。数据类型支持`bfloat16`，数据格式为ND，支持非连续的Tensor。
+-   **group\_ep**（`str`）：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)，不能和`group_tp`相同。
+-   **ep\_world\_size**（`int`）：必选参数，EP通信域size。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持\[2, 384\]。
 
--   **ep\_rank\_id**（int）：必选参数，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的ep\_rank\_id不重复。
--   **moe\_expert\_num**（int）：必选参数，MoE专家数量，取值范围\[1, 512\]，并且满足moe\_expert\_num%\(ep\_world\_size-shared\_expert\_rank\_num\)=0。
--   **tp\_send\_counts**（Tensor）：可选参数，表示本卡每个专家发给TP（Tensor  Parallelism）通信域每个卡的数据量。对应torch\_npu.npu\_moe\_distribute\_dispatch的tp\_recv\_counts输出。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1D Tensor，shape为\(tp\_world\_size, \)，数据类型支持int32，数据格式要求为ND，支持非连续的Tensor。
+-   **ep\_rank\_id**（`int`）：必选参数，EP通信域本卡ID，取值范围\[0, `ep_world_size`\)，同一个EP通信域中各卡的ep\_rank\_id不重复。
+-   **moe\_expert\_num**（`int`）：必选参数，MoE专家数量，取值范围\[1, 512\]，并且满足`moe_expert_num`%\(`ep_world_size`-`shared_expert_rank_num`\)=0。
+-   **tp\_send\_counts**（`Tensor`）：可选参数，表示本卡每个专家发给TP（Tensor  Parallelism）通信域每个卡的数据量。对应`torch_npu.npu_moe_distribute_dispatch`的`tp_recv_counts`输出。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1D Tensor，shape为\(`tp_world_size`, \)，数据类型支持`int32`，数据格式要求为ND，支持非连续的Tensor。
 
--   **x\_active\_mask**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
--   **activation\_scale**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
--   **weight\_scale**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
--   **group\_list**（Tensor）：**预留参数，暂未使用，使用默认值即可。**
--   **expand\_scales**（Tensor）：可选参数，对应torch\_npu.npu\_moe\_distribute\_dispatch的expand\_scales输出。
+-   **x\_active\_mask**（`Tensor`）：可选参数，**预留参数暂未使用，使用默认值即可。**
+-   **activation\_scale**（`Tensor`）：可选参数，**预留参数暂未使用，使用默认值即可。**
+-   **weight\_scale**（`Tensor`）：可选参数，**预留参数暂未使用，使用默认值即可。**
+-   **group\_list**（`Tensor`）：可选参数，**预留参数暂未使用，使用默认值即可。**
+-   **expand\_scales**（`Tensor`）：可选参数，对应`torch_npu.npu_moe_distribute_dispatch`的`expand_scales`输出。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可。
 
--   **shared\_expert\_x**（Tensor）：可选参数，数据类型需与expand\_x保持一致。仅在共享专家卡数量shared\_expert\_rank\_num为0的场景下使用，表示共享专家token，在combine时需要加上。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型需与expand\_x保持一致，shape为\[BS, H\]。
+-   **shared\_expert\_x**（`Tensor`）：可选参数，数据类型需与`expand_x`保持一致。仅在共享专家卡数量`shared_expert_rank_num`为0的场景下使用，表示共享专家token，在combine时需要加上。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型需与`expand_x`保持一致，shape为\[BS, H\]。
 
--   **group\_tp**（str）：可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，字符串长度范围为\[1, 128\)，不能和group\_ep相同。
+-   **group\_tp**（`str`）：可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，字符串长度范围为\[1, 128\)，不能和`group_ep`相同。
 
--   **tp\_world\_size**（int）：可选参数，TP通信域size。有TP域通信才需要传参。
+-   **tp\_world\_size**（`int`）：可选参数，TP通信域size。有TP域通信才需要传参。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 2\]，0和1表示无TP域通信，2表示有TP域通信。
 
--   **tp\_rank\_id**（int）：可选参数，TP通信域本卡ID。有TP域通信才需要传参。
+-   **tp\_rank\_id**（`int`）：可选参数，TP通信域本卡ID。有TP域通信才需要传参。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 1\]，同一个TP通信域中各卡的tp\_rank\_id不重复。无TP域通信时，传0即可。
 
--   **expert\_shard\_type**（int）：可选参数，表示共享专家卡排布类型。
+-   **expert\_shard\_type**（`int`）：可选参数，表示共享专家卡排布类型。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前仅支持0，表示共享专家卡排在MoE专家卡前面。
 
--   **shared\_expert\_num**（int）：可选参数，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数，暂未使用，仅支持默认值0。**
--   **shared\_expert\_rank\_num**（int）：可选参数，表示共享专家卡数量。**预留参数，暂未使用，仅支持默认值0。**
--   **global\_bs**（int）：可选参数，表示EP域全局的batch size大小。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
+-   **shared\_expert\_num**（`int`）：可选参数，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数暂未使用，仅支持默认值0。**
+-   **shared\_expert\_rank\_num**（`int`）：可选参数，表示共享专家卡数量。**预留参数暂未使用，仅支持默认值0。**
+-   **global\_bs**（`int`）：可选参数，表示EP域全局的batch size大小。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*`ep_world_size`，其中max\_bs表示表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*`ep_world_size`。
 
--   **out\_dtype**（int）：**预留参数，暂未使用，使用默认值即可**。
--   **comm\_quant\_mode**（int）：表示通信量化类型。**预留参数，暂未使用，使用默认值即可**。
--   **group\_list\_type**（int）：**预留参数，暂未使用，使用默认值即可**。
--   **norm\_eps**（float）：可选参数，用于防止add\_rms\_norm除0错误，默认值为1e-6。
+-   **out\_dtype**（`int`）：可选参数，**预留参数暂未使用，使用默认值即可**。
+-   **comm\_quant\_mode**（`int`）：可选参数，表示通信量化类型。**预留参数暂未使用，使用默认值即可**。
+-   **group\_list\_type**（`int`）：可选参数，**预留参数暂未使用，使用默认值即可**。
+-   **norm\_eps**（`float`）：可选参数，用于防止add\_rms\_norm除0错误，默认值为1e-6。
 
 ## 返回值说明<a name="zh-cn_topic_0000002322738573_section1370204314220"></a>
 
--   **y**（Tensor）：表示combine处理后的token进行add\_rms\_norm计算后的结果，要求是3D的Tensor，shape为\(BS, 1, H\)，数据类型与输入residual\_x保持一致，数据格式为ND，不支持非连续的Tensor。
--   **rstd\_out**（Tensor）：表示add\_rms\_norm的输出结果，要求是3D的Tensor，shape为\(BS, 1, 1\)，数据类型支持float，数据格式为ND，不支持非连续的Tensor。
--   **x**（Tensor）：表示combine处理后的token进行add计算后的结果，要求是3D的Tensor，shape为\(BS, 1, H\)，数据类型与输入residual\_x保持一致，数据格式为ND，不支持非连续的Tensor。
+-   **y**（`Tensor`）：表示combine处理后的token进行add\_rms\_norm计算后的结果，要求是3D的Tensor，shape为\(BS, 1, H\)，数据类型与输入`residual_x`保持一致，数据格式为ND，不支持非连续的Tensor。
+-   **rstd\_out**（`Tensor`）：表示add\_rms\_norm的输出结果，要求是3D的Tensor，shape为\(BS, 1, 1\)，数据类型支持`float`，数据格式为ND，不支持非连续的Tensor。
+-   **x**（`Tensor`）：表示combine处理后的token进行add计算后的结果，要求是3D的Tensor，shape为\(BS, 1, H\)，数据类型与输入`residual_x`保持一致，数据格式为ND，不支持非连续的Tensor。
 
 ## 约束说明<a name="zh-cn_topic_0000002322738573_section470214314214"></a>
 

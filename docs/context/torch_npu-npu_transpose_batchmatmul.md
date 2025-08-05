@@ -24,36 +24,36 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002319693140_section14441124184110"></a>
 
--   算子功能：完成张量input与张量weight的矩阵乘计算。仅支持三维的Tensor传入。Tensor支持转置，转置序列根据传入的数列进行变更。perm\_x1代表张量input的转置序列，perm\_x2代表张量weight的转置序列，序列值为0的是batch维度，其余两个维度做矩阵乘法。
+-   算子功能：完成张量`input`与张量`weight`的矩阵乘计算。仅支持三维的Tensor传入。Tensor支持转置，转置序列根据传入的数列进行变更。`perm_x1`代表张量input的转置序列，`perm_x2`代表张量weight的转置序列，序列值为0的是batch维度，其余两个维度做矩阵乘法。
 -   计算公式：
 
-    T1、T2、Ty分别通过参数perm\_x1、perm\_x2、perm\_y描述转置序列。
+    T1、T2、Ty分别通过参数`perm_x1`、`perm_x2`、`perm_y`描述转置序列。
 
     ![](figures/zh-cn_formulaimage_0000002328618340.png)
 
 ## 函数原型<a name="zh-cn_topic_0000002319693140_section45077510411"></a>
 
 ```
-torch_npu.npu_transpose_batchmatmul(Tensor input, Tensor weight, *, Tensor? bias=None, Tensor? scale=None, int[]? perm_x1=[0,1,2], int[]? perm_x2=[0,1,2], int[]? perm_y=[1,0,2], int? batch_split_factor=1) -> Tensor
+torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, perm_x1=[0,1,2], perm_x2=[0,1,2], perm_y=[1,0,2], batch_split_factor=1) -> Tensor
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000002319693140_section112637109429"></a>
 
--   **input**（Tensor）：必选参数，表示矩阵乘的第一个矩阵。数据类型支持float16、bfloat16、float32。同时-1轴（末轴）<=65535。数据格式支持ND，shape维度支持3维（B, M, K）或者（M, B, K），B的取值范围为\[1, 65536\)。支持非连续的Tensor。
--   **weight**（Tensor）：必选参数，表示矩阵乘的第二个矩阵。数据类型支持float16、bfloat16、float32。同时-1轴（末轴）<=65535。数据格式支持ND，shape维度支持3维（B, K, N），N的取值范围为\[1, 65536\)。支持非连续的Tensor。weight的Reduce维度需要与input的Reduce维度大小相等。
--   **bias**（Tensor）：可选参数，表示矩阵乘的偏置矩阵，当前版本暂不支持该参数，使用默认值即可。
--   **scale**（Tensor）：可选参数，表示量化输入，数据类型支持int64、uint64。数据格式支持ND，shape维度支持1维\(B \* N\)，B\*N的取值范围为\[1, 65536\)。支持非连续的Tensor。
--   **perm\_x1**（List\[int\]）：可选参数，表示矩阵乘的第一个矩阵的转置序列，size大小为3，数据类型为int64，数据格式支持ND，支持\[0, 1, 2\]、\[1, 0, 2\]。
--   **perm\_x2**（List\[int\]）：可选参数，表示矩阵乘的第二个矩阵的转置序列，size大小为3，数据类型为int64，数据格式支持ND，只支持\[0, 1, 2\]。
--   **perm\_y**（List\[int\]）：可选参数，表示矩阵乘输出矩阵的转置序列，size大小为3，数据类型为int64，数据格式支持ND，只支持\[1, 0, 2\]。
--   **batch\_split\_factor**（int）：可选参数，用于指定矩阵乘输出矩阵中N维的切分大小。数据类型支持int32。取值范围为\[1, N\]且能被N整除，默认值为1。注：当scale有值时，batch\_split\_factor只能为1。
+-   **input**（`Tensor`）：必选参数，表示矩阵乘的第一个矩阵。数据类型支持`float16`、`bfloat16`、`float32`。同时-1轴（末轴）<=65535。数据格式支持ND，shape维度支持3维（B, M, K）或者（M, B, K），B的取值范围为\[1, 65536\)。支持非连续的Tensor。
+-   **weight**（`Tensor`）：必选参数，表示矩阵乘的第二个矩阵。数据类型支持`float16`、`bfloat16`、`float32`。同时-1轴（末轴）<=65535。数据格式支持ND，shape维度支持3维（B, K, N），N的取值范围为\[1, 65536\)。支持非连续的Tensor。`weight`的Reduce维度需要与`input`的Reduce维度大小相等。
+-   **bias**（`Tensor`）：可选参数，表示矩阵乘的偏置矩阵，当前版本暂不支持该参数，使用默认值即可。
+-   **scale**（`Tensor`）：可选参数，表示量化输入，数据类型支持`int64`、`uint64`。数据格式支持ND，shape维度支持1维\(B \* N\)，B\*N的取值范围为\[1, 65536\)。支持非连续的Tensor。
+-   **perm\_x1**（`List[int]`）：可选参数，表示矩阵乘的第一个矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，支持\[0, 1, 2\]、\[1, 0, 2\]。
+-   **perm\_x2**（`List[int]`）：可选参数，表示矩阵乘的第二个矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，只支持\[0, 1, 2\]。
+-   **perm\_y**（`List[int]`）：可选参数，表示矩阵乘输出矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，只支持\[1, 0, 2\]。
+-   **batch\_split\_factor**（`int`）：可选参数，用于指定矩阵乘输出矩阵中N维的切分大小。数据类型支持`int32`。取值范围为\[1, N\]且能被N整除，默认值为1。注：当scale有值时，batch\_split\_factor只能为1。
 
 ## 返回值说明<a name="zh-cn_topic_0000002319693140_section22231435517"></a>
 
-**y**（Tensor）：表示最终计算结果，数据格式支持ND，shape维度支持3维。
+**y**（`Tensor`）：表示最终计算结果，数据格式支持ND，shape维度支持3维。
 
--   当输入scale有值时，数据类型仅为int8类型，shape为\(M, 1, B\*N\)；否则数据类型支持float16、bfloat16、float32。
--   当batch\_split\_factor\>1时，shape大小计算公式为\[batch\_split\_factor, M, B\*N/batch\_split\_factor\]。
+-   当输入scale有值时，数据类型仅为`int8`类型，shape为\(M, 1, B\*N\)；否则数据类型支持`float16`、`bfloat16`、`float32`。
+-   当`batch_split_factor`\>1时，shape大小计算公式为\[`batch_split_factor`, M, B\*N/`batch_split_factor`\]。
 
 ## 约束说明<a name="zh-cn_topic_0000002319693140_section12345537164214"></a>
 
