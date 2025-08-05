@@ -20,8 +20,8 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 - stride (ListInt) - 4个整数的列表，表示每个输入维度的滑动窗口步长。维度顺序根据self的数据格式解释。N维和C维必须设置为1。
 - padding (ListInt) - 4个整数的列表，表示要添加到输入每侧（顶部、底部、左侧、右侧）的像素数。
 - dilations (ListInt，默认值为[1, 1, 1, 1]) - 4个整数的列表，表示输入每个维度的膨胀系数（dilation factor）。维度顺序根据self的数据格式解释。N维和C维必须设置为1。
-- groups (Int，默认值为1) - int32类型单整数，表示从输入通道到输出通道的分组数。in_channels和out_channels需都可被“groups”数整除。
-- deformable_groups (Int，默认值为1) - int32类型单整数，表示可变形组分区的数量。in_channels需可被“deformable_groups”数整除。
+- groups (Int，默认值为1) - int32类型，表示从输入通道到输出通道的分组数。in_channels和out_channels需都可被“groups”数整除。
+- deformable_groups (Int，默认值为1) - int32类型，表示可变形组分区的数量。in_channels需可被“deformable_groups”数整除。
 - modulated (Bool，可选，默认值为True) - 指定DeformableConv2D版本。True表示v2版本，False表示v1版本，目前仅支持v2。
 
 ## 支持的型号

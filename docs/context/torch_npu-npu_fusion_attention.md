@@ -363,7 +363,7 @@ QK<sup>T</sup>矩阵在atten\_mask为True的位置会被遮蔽，效果如下：
     >-   基于sparse\_mode=3进行外切产生的band模式的sparse的参数应符合以下条件：
     >    -   pre\_tockens \>= last\_Skv。
     >    -   next\_tockens <= 0。
-    >    -   当前模可选参数持可选输入pse。
+    >    -   当前模式下不支持可选输入pse。
 
 -   当sparse\_mode为8时，表示varlen且为长序列外切场景；用户需要确保外切前为使用sparse\_mode 2的场景；当前mode下用户需要设置pre\_tockens和next\_tockens（起点为右下顶点），且需要保证参数正确，否则会存在精度问题。
 
@@ -378,6 +378,6 @@ QK<sup>T</sup>矩阵在atten\_mask为True的位置会被遮蔽，效果如下：
     >-   如果配置sparse\_mode=8，但实际只存在一个batch，用户需按照band模式的要求来配置参数；sparse\_mode=8时，用户需要输入2048x2048的下三角mask作为该融合算子的输入。
     >-   基于sparse\_mode=2进行外切产生的band模式的sparse的参数应符合以下条件：
     >    -   pre\_tockens \>= first\_Skv。
-    >    -   next\_tockens范围无约束，根据实际情况进行配可选参数
-    >    -   模式下不支持可选输入pse。
+    >    -   next\_tockens范围无约束，根据实际情况进行配置。
+    >    -   当前模式下不支持可选输入pse。
 

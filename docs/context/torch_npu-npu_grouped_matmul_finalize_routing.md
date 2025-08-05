@@ -24,7 +24,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor w, Tensor group_l
 -   pertoken\_scale：一个1D的Device侧Tensor输入，矩阵计算的反量化参数，对应x矩阵，per-token量化方式，不支持非连续的Tensor。维度为\(m,\)，m与x的m一致。数据类型支持float32，数据格式支持ND。
 -   shared\_input：一个2D的Device侧Tensor输入，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持bfloat16，数据格式支持ND，维度\(batch/dp, n\)，n与scale的n一致，batch/dp取值范围\[1, 2\*1024\]，batch取值范围\[1, 16\*1024\]。
 -   logit：一个1D的Device侧Tensor输入，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(m,\)，m与x的m一致。
--   row\_index：一个1D的Device侧Tensor输入，MoE专家输出按照该rowIndex进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持int32、int64，数据格式支持ND，维度为\(m,\)，m与x的m一致。
+-   row\_index：一个1D的Device侧Tensor输入，MoE专家输出按照该row_index进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持int32、int64，数据格式支持ND，维度为\(m,\)，m与x的m一致。
 -   dtype：ScalarType类型，指定GroupedMatMul计算的输出类型。0表示float32，1表示float16，2表示bfloat16。默认值为0。
 -   shared\_input\_weight：float类型，指共享专家与MoE专家进行combine的系数，shared\_input先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
 -   shared\_input\_offset：int类型，共享专家输出的在总输出中的偏移。默认值为0。
