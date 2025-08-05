@@ -174,6 +174,16 @@ class TestCtcLoss(TestCase):
             neg_log_likelihood_npu = self.npu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
 
             self.assertRtolEqual(neg_log_likelihood_cpu, neg_log_likelihood_npu, 1e-3)
+    
+    def test_ctc_loss_log_probs_2d_aclop(self):
+        torch_npu.npu.set_compile_mode(jit_compile=True)
+        item = [[50, 20, 1, 30, 10], np.float32, "none", 0]
+        ctc_loss, log_probs, targets, input_lengths, target_lengths = self.generate_data_log_probs_2d(item)
+
+        neg_log_likelihood_cpu = self.cpu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
+        neg_log_likelihood_npu = self.npu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
+
+        self.assertRtolEqual(neg_log_likelihood_cpu, neg_log_likelihood_npu, 1e-4)
 
     def test_ctc_loss_tensor_no_device_check(self):
         batch_size, time_steps, num_classes, target_length = 4, 50, 20, 30

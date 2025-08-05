@@ -32,9 +32,6 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(const at::Tensor &log_probs, const 
         log_probs_cast = at_npu::native::custom_ops::npu_dtype_cast(log_probs_cast, at::kFloat);
     }
 
-    auto input_lengths_tensor = at::tensor(input_lengths_list, targets.options());
-    auto target_lengths_tensor = at::tensor(target_lengths_list, targets.options());
-
     int64_t max_length = 0;
     for (auto &i : target_lengths_list) {
         if (i > max_length) {
@@ -61,8 +58,8 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(const at::Tensor &log_probs, const 
     cmd.Name("CTCLossV2")
         .Input(log_probs_cast)
         .Input(targets)
-        .Input(input_lengths_tensor)
-        .Input(target_lengths_tensor)
+        .Input(input_lengths_list)
+        .Input(target_lengths_list)
         .Output(neg_log_likelihood)
         .Output(log_alpha)
         .Attr("blank", blank)
