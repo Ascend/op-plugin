@@ -75,7 +75,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(Tensor expand_x, Tensor expert
 -   **shared\_expert\_num**（int）：可选参数，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数，暂未使用，仅支持默认值0。**
 -   **shared\_expert\_rank\_num**（int）：可选参数，表示共享专家卡数量。**预留参数，暂未使用，仅支持默认值0。**
 -   **global\_bs**（int）：可选参数，表示EP域全局的batch size大小。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 
 -   **out\_dtype**（int）：**预留参数，暂未使用，使用默认值即可**。
 -   **comm\_quant\_mode**（int）：表示通信量化类型。**预留参数，暂未使用，使用默认值即可**。

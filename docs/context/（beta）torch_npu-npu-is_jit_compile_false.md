@@ -8,7 +8,7 @@ torch_npu.npu.is_jit_compile_false()
 
 ## 功能说明
 
-确认算子计算是否采用的二进制，如果是二进制计算，返回True，否则返回False。
+确认算子计算是否采用二进制，如果是二进制计算，返回True，否则返回False。
 
 ## 输出说明
 
