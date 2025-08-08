@@ -137,14 +137,22 @@ class TestNpuFusedPermuteAndUnpermute():
         token_fused = token_ori.clone().detach().requires_grad_(True)
         indices_fused = indices_ori.clone().detach()
 
+        # test the outputs for permute
         permuted_tokens_ori, sorted_indices_ori = permute(token_ori, indices_ori)
         permuted_tokens_fused, sorted_indices_fused = npu_moe_token_permute(token_fused, indices_fused)
-        permuted_tokens_fused.backward(torch.ones(permuted_tokens_fused.shape).to(torch.bfloat16).npu())
 
         assert torch.allclose(permuted_tokens_ori, permuted_tokens_fused, **tols)
         # The fusion operator will perform two torch.argsort operations internally
         sorted_indices_ori = torch.argsort(sorted_indices_ori, stable=True).to(sorted_indices_fused.dtype)
         assert torch.equal(sorted_indices_ori, sorted_indices_fused)
+
+        # test the grad output for permute backward 
+        grad_output = torch.ones_like(permuted_tokens_fused).to(dtype)
+
+        permuted_tokens_ori.backward(grad_output)
+        permuted_tokens_fused.backward(grad_output)
+
+        assert torch.allclose(token_ori.grad, token_fused.grad, **tols), "Gradient mismatch for token input!"
 
     @pytest.mark.parametrize('num_tokens', [1024, 2048, 8192])
     @pytest.mark.parametrize('hidden_size', [6144, 8192, 12288])
@@ -153,7 +161,7 @@ class TestNpuFusedPermuteAndUnpermute():
     @pytest.mark.parametrize('dtype', [torch.bfloat16])
     def test_unpermute(self, num_tokens, hidden_size, topk, num_experts, dtype):
         tols = dtype_tols(dtype)
-        permuted_tokens_ori = torch.randn(num_tokens * topk, hidden_size).npu().to(dtype)
+        permuted_tokens_ori = torch.randn(num_tokens * topk, hidden_size).npu().to(dtype).requires_grad_(True)
         indices = torch.randint(0, num_experts, (num_tokens, topk)).npu()
         sorted_indices_ori = torch.argsort(indices.view(-1), stable=True).npu().to(dtype=torch.int32)
         probs_ori = None
@@ -166,14 +174,26 @@ class TestNpuFusedPermuteAndUnpermute():
 
         # The fusion operator will perform two torch.argsort operations internally
         sorted_indices_ori = torch.argsort(sorted_indices_ori, stable=True)
+
+        # test the outputs for unpermute
         unpermuted_tokens_ori = unpermute(
             permuted_tokens_ori, sorted_indices_ori, probs=probs_ori)
 
         unpermuted_tokens_fused = npu_moe_token_unpermute(
             permuted_tokens_fused, sorted_indices_fused, probs=probs_fused)
 
-        unpermuted_tokens_fused.backward(torch.ones(unpermuted_tokens_fused.shape).to(torch.bfloat16).npu())
         assert torch.allclose(unpermuted_tokens_ori, unpermuted_tokens_fused, **tols)
+       
+        # test the grad output for unpermute backward       
+        grad_output = torch.ones_like(unpermuted_tokens_fused).to(dtype)
+        
+        unpermuted_tokens_ori.backward(grad_output)
+        unpermuted_tokens_fused.backward(grad_output)
+        
+        assert torch.allclose(permuted_tokens_ori.grad, permuted_tokens_fused.grad, **tols), "Gradient mismatch for permuted_tokens!"
+
+        if topk > 1:
+            assert torch.allclose(probs_ori.grad, probs_fused.grad, **tols), "Gradient mismatch for probs (topk > 1)!"
 
     @pytest.mark.parametrize('num_tokens', [1024, 2048, 8192])
     @pytest.mark.parametrize('hidden_size', [6144, 8192, 12288])

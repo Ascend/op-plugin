@@ -2084,7 +2084,7 @@ c10::SmallVector<int64_t, SIZE> npu_moe_token_permute_out_size(const at::Tensor 
 c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_out_size(const at::Tensor& permuted_tokens, const at::Tensor &sorted_indices, const c10::optional<at::Tensor>& probs)
 {
     const static int64_t DEFAULT_TOPK = 1;
-    if (probs.has_value()) {
+    if (probs.has_value() && probs.value().defined()) {
             TORCH_CHECK(probs.value().dim() == DIM_2,
                         "The dims of input probs should be 2 dimensional, but got ", probs.value().dim(), "-dimensional." + OPS_ERROR(ErrCode::PARAM));
     }
@@ -2128,7 +2128,7 @@ c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_grad_permuted_tokens_out
 
 c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_grad_probs_out_size(const at::Tensor &permuted_tokens, const at::Tensor &grad_unpermuted_tokens, const at::Tensor &sorted_indices, const c10::optional<at::Tensor> &probs)
 {
-    if (probs.has_value()) {
+    if (probs.has_value() && probs.value().defined()) {
         TORCH_CHECK(probs.value().dim() == DIM_2,
                     "The dims of input probs should be 2 dimensional, but got ", probs.value().dim(), "-dimensional." + OPS_ERROR(ErrCode::PARAM));
         auto& probs_tensor = probs.value();
