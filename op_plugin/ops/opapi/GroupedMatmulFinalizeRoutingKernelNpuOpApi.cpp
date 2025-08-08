@@ -130,10 +130,19 @@ at::Tensor npu_grouped_matmul_finalize_routing(
     bool transposeX = false;
     bool transposeW = false;
     int64_t dtype_real = 0;
-
     if (is_weight_nz) {
-        EXEC_NPU_CMD(aclnnGroupedMatmulFinalizeRoutingWeightNz, x, w, scale_real, bias_real, pertoken_scale_real, group_list, shared_input_real, logit_real,
-                     row_index_real, dtype_real, shared_input_weight_real, shared_input_offset_real, transposeX, transposeW, group_list_type_real, result);
+        static const bool is_v2_available = check_aclnn_kernel_available("aclnnGroupedMatmulFinalizeRoutingWeightNzV2");
+        if (is_v2_available) {
+            EXEC_NPU_CMD(aclnnGroupedMatmulFinalizeRoutingWeightNzV2, x, w, scale_real, bias_real, offset_real, antiquant_scale_real, antiquant_offset_real, pertoken_scale_real, group_list, shared_input_real, logit_real,
+                         row_index_real, dtype_real, shared_input_weight_real, shared_input_offset_real, transposeX, transposeW, group_list_type_real, tuning_config_real, result);
+        } else {
+            if (tuning_config.has_value()) {
+                TORCH_NPU_WARN_ONCE("CAUTION: The operator aten::npu_grouped_matmul_finalize_routing is "
+                    "not support tuning_config, Please try to update your CANN version.");
+            }
+            EXEC_NPU_CMD(aclnnGroupedMatmulFinalizeRoutingWeightNz, x, w, scale_real, bias_real, pertoken_scale_real, group_list, shared_input_real, logit_real,
+                         row_index_real, dtype_real, shared_input_weight_real, shared_input_offset_real, transposeX, transposeW, group_list_type_real, result);
+        }
         return result;
     }
 
@@ -145,7 +154,7 @@ at::Tensor npu_grouped_matmul_finalize_routing(
     } else {
         if (tuning_config.has_value()) {
             TORCH_NPU_WARN_ONCE("CAUTION: The operator aten::npu_grouped_matmul_finalize_routing is "
-                "not suppoert tuning_config, Please try to update your CANN version.");
+                "not support tuning_config, Please try to update your CANN version.");
         }
         EXEC_NPU_CMD(aclnnGroupedMatmulFinalizeRoutingV2, x, w, scale_real, bias_real, offset_real, antiquant_scale_real, antiquant_offset_real, pertoken_scale_real,
                      group_list, shared_input_real, logit_real, row_index_real, dtype_real, shared_input_weight_real, shared_input_offset_real, transposeX, transposeW,
