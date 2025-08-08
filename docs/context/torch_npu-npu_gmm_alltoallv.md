@@ -46,23 +46,23 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 
 ## 参数说明<a name="zh-cn_topic_0000002317314449_section112637109429"></a>
 
--   **gmm\_x**（`Tensor`）：必选参数，GroupedMatMul计算的左矩阵。数据类型支持`float16`、`bfloat16`，支持2维，shape为\(A, H1\)，数据格式支持ND。
--   **gmm\_weight**（`Tensor`）：必选参数，GroupedMatMul计算的右矩阵。数据类型与`gmm_x`保持一致，支持3维，shape为\(e, H1, N1\)，数据格式支持ND。
+-   **gmm\_x**（`Tensor`）：必选参数，GroupedMatMul计算的左矩阵。数据类型支持`float16`、`bfloat16`，支持2维，shape为$(A, H1)$，数据格式支持ND。
+-   **gmm\_weight**（`Tensor`）：必选参数，GroupedMatMul计算的右矩阵。数据类型与`gmm_x`保持一致，支持3维，shape为$(e, H1, N1)$，数据格式支持ND。
 -   **hcom**（`str`）：必选参数，专家并行的通信域名，字符串长度要求\(0, 128\)。
 -   **ep\_world\_size**（`int`）：必选参数，EP通信域size，取值支持8、16、32、64。
--   **send\_counts**（`int[]`）：必选参数，表示发送给其他卡的token数，数据类型支持`int`，取值大小为e\*`ep_world_size`，最大为256。
--   **recv\_counts**（`int[]`）：必选参数，表示接收其他卡的token数，数据类型支持`int`，取值大小为e\*`ep_world_size`，最大为256。
--   **send\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为\(e\*`ep_world_size`,\)，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
--   **recv\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为\(e\*`ep_world_size`,\)，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
--   **mm\_x**（`Tensor`）：可选参数，共享专家MatMul计算中的左矩阵。当需要融合共享专家矩阵计算时，该参数必选，支持2维，shape为\(BS, H2\)。
--   **mm\_weight**（`Tensor`）：可选参数，共享专家MatMul计算中的右矩阵。当需要融合共享专家矩阵计算时，该参数必选，支持2维，shape为\(H2, N2\)。
+-   **send\_counts**（`List[int]`）：必选参数，表示发送给其他卡的token数，数据类型支持`int`，取值大小为e\*`ep_world_size`，最大为256。
+-   **recv\_counts**（`List[int]`）：必选参数，表示接收其他卡的token数，数据类型支持`int`，取值大小为e\*`ep_world_size`，最大为256。
+-   **send\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
+-   **recv\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
+-   **mm\_x**（`Tensor`）：可选参数，共享专家MatMul计算中的左矩阵。当需要融合共享专家矩阵计算时，该参数必选，支持2维，shape为$(BS, H2)$。
+-   **mm\_weight**（`Tensor`）：可选参数，共享专家MatMul计算中的右矩阵。当需要融合共享专家矩阵计算时，该参数必选，支持2维，shape为$(H2, N2)$。
 -   **trans\_gmm\_weight**（`bool`）：可选参数，GroupedMatMul的右矩阵是否需要转置，true表示需要转置，false表示不转置。
 -   **trans\_mm\_weight**（`bool`）：可选参数，共享专家MatMul的右矩阵是否需要转置，true表示需要转置，false表示不转置。
 
 ## 返回值说明<a name="zh-cn_topic_0000002317314449_section22231435517"></a>
 
--   **y**（`Tensor`）：表示最终计算结果，数据类型与输入`gmm_x`保持一致，支持2维，shape为\(BSK, N1\)。
--   **mm\_y**（`Tensor`）：共享专家MatMul的输出，数据类型与`mm_x`保持一致，支持2维，shape为\(BS, N2\)。仅当传入`mm_x`与`mm_weight`才输出。
+-   **y**（`Tensor`）：表示最终计算结果，数据类型与输入`gmm_x`保持一致，支持2维，shape为$(BSK, N1)$。
+-   **mm\_y**（`Tensor`）：共享专家MatMul的输出，数据类型与`mm_x`保持一致，支持2维，shape为$(BS, N2)$。仅当传入`mm_x`与`mm_weight`才输出。
 
 ## 约束说明<a name="zh-cn_topic_0000002317314449_section12345537164214"></a>
 

@@ -19,7 +19,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002322738573_section1470016430218"></a>
 
--   算子功能：完成`moe_distribute_combine`+`add`+`rms_norm`融合。需与[torch_npu.npu_moe_distribute_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按`npu_moe_distribute_dispatch`算子收集数据的路径原路返回后对数据进行`add_rms_norm`操作。
+-   算子功能：完成moe_distribute_combine+add+rms_norm融合。需与[torch_npu.npu_moe_distribute_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按`npu_moe_distribute_dispatch`算子收集数据的路径原路返回后对数据进行`add_rms_norm`操作。
 -   计算公式：
 
     ![](figures/zh-cn_formulaimage_0000002340454445.png)

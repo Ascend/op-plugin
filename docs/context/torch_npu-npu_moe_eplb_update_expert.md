@@ -42,15 +42,15 @@ torch_npu.npu_moe_eplb_update_expert(Tensor expert_ids, Tensor eplb_table, int l
 
 ## 参数说明<a name="zh-cn_topic_0000002366611733_section112637109429"></a>
 
--   **expert_ids**（`Tensor`）：必选参数，表示每个token的topK个专家索引，数据类型支持int32、int64。数据格式支持ND。维度支持2维，shape为\(BS, K\)，支持非连续的Tensor。
--   **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家实例的映射表，请保证输入Tensor的值正确。`world_size`张卡，每张卡部署`place_per_rank`个路由专家实例，一共有`world_size` \* `place_per_rank`个实例。`eplb_table`的每行对应一个逻辑moe专家的部署策略，第一列为该逻辑专家部署的实例数count，值需大于等于1；每行第\[1, count\]列为对应的实例编号，取值范围为\[0, `world_size`\ * `place_per_rank`\)，有效的实例编号不可以重复。数据类型支持int32。数据格式支持ND。维度支持2维，shape为\(`moe_expert_num`, `F`\)，支持非连续的Tensor。
+-   **expert_ids**（`Tensor`）：必选参数，表示每个token的topK个专家索引，数据类型支持`int32`、`int64`。数据格式支持ND。维度支持2维，shape为$(BS, K)$，支持非连续的Tensor。
+-   **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家实例的映射表，请保证输入Tensor的值正确。`world_size`张卡，每张卡部署`place_per_rank`个路由专家实例，一共有`world_size` \* `place_per_rank`个实例。`eplb_table`的每行对应一个逻辑moe专家的部署策略，第一列为该逻辑专家部署的实例数count，值需大于等于1；每行第\[1, count\]列为对应的实例编号，取值范围为\[0, `world_size` * `place_per_rank`\)，有效的实例编号不可以重复。数据类型支持`int32`。数据格式支持ND。维度支持2维，shape为$(moe\_expert\_num, F)$，支持非连续的Tensor。
 -   **local_rank_id**（`int`）：必选参数，表示本卡Id。数据类型支持int64。取值范围为\[0, `world_size`\)。同一个通信域中各卡的`local_rank_id`不重复。
 -   **world_size**（`int`）：必选参数，表示通信域Size。取值范围为\[2, 384\]。
 -   **balance_mode**（`int`）：**预留参数，暂未使用，使用默认值即可，默认值为0**。
 
 ## 返回值说明<a name="zh-cn_topic_0000002366611733_section22231435517"></a>
 
-**balanced_expert_ids**（`Tensor`）：表示映射后每个token的topK个专家物理专家的实例编号，要求是一个2D的Tensor，shape为\(BS, K\)，数据类型、数据格式与`expert_ids`保持一致，不支持非连续的Tensor。
+**balanced_expert_ids**（`Tensor`）：表示映射后每个token的topK个专家物理专家的实例编号，要求是一个2D的Tensor，shape为$(BS, K)$，数据类型、数据格式与`expert_ids`保持一致，不支持非连续的Tensor。
 
 ## 约束说明<a name="zh-cn_topic_0000002366611733_section12345537164214"></a>
 
