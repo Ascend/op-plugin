@@ -67,6 +67,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - `sparse_mode`为3时，代表`rightDownCausal`模式的mask，均对应以左顶点为划分的下三角场景，需要传入优化后的`atten_mask`矩阵（2048*2048）。
     - `sparse_mode`为4时，代表`band`模式的mask，需要传入优化后的`atten_mask`矩阵（2048*2048）。
     - `sparse_mode`为5、6、7、8时，分别代表`prefix、global、dilated、block_local`，均暂不支持。用户不特意指定时可传入默认值`0`。综合约束请见[约束说明](#section12345537164214)。
+    - `sparse_mode`为0、1时，不支持传入的mask矩阵中参与计算的部分整行为1的情况。
 
 ## 返回值
 
