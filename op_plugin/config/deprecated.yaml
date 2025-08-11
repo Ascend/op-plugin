@@ -34,3 +34,13 @@ deprecated:
     replace: 'torch.sort'
   - name: one_
     replace: 'torch.fill_ or torch.ones_like'
+  - name: npu_conv3d
+    replace: 'torch.nn.functional.conv3d'
+  - name: npu_conv3d.out
+    replace: 'torch.nn.functional.conv3d'
+  - name: npu_transpose_trans_contiguous.out
+    replace: 'npu_transpose'
+  - name: npu_indexing_trans_contiguous.out
+    replace: 'npu_indexing'
+  - name: npu_bmmV2
+    replace: 'torch.bmm and torch.view'
