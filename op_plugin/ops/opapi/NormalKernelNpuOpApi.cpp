@@ -18,6 +18,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
+#include "torch_npu/csrc/core/npu/NPUGraphsUtils.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -28,13 +29,16 @@ at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at:
     TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
     npu_preparation::check_tensor({}, self, self, self.sizes());
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    float mean_cast = static_cast<float>(mean);
-    float rstd_cast = static_cast<float>(std);
-    EXEC_NPU_CMD(aclnnInplaceNormal, self, mean_cast, rstd_cast, seed, offset);
+                                                                        at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        float mean_cast = static_cast<float>(mean);
+        float rstd_cast = static_cast<float>(std);
+        EXEC_NPU_CMD(aclnnInplaceNormal, self, mean_cast, rstd_cast, seed, offset);
+    }
     return self;
 }
 

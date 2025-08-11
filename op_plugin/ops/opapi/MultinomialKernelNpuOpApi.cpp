@@ -18,6 +18,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/core/npu/NPUGraphsUtils.h"
 
 namespace op_api {
 
@@ -27,13 +28,15 @@ at::Tensor& multinomial_op_api(
     int64_t num_samples,
     bool replacement,
     c10::optional<at::Generator> gen) {
-  auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen_->philox_engine_inputs(10);
-  const uint64_t seed = pair.first;
-  const uint64_t offset = pair.second;
-
-  EXEC_NPU_CMD(aclnnMultinomial, self, num_samples, replacement, seed, offset, result);
-  return result;
+    auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen_->philox_engine_inputs(10);
+        const uint64_t seed = pair.first;
+        const uint64_t offset = pair.second;
+        EXEC_NPU_CMD(aclnnMultinomial, self, num_samples, replacement, seed, offset, result);
+    }
+    return result;
 }
 
 at::Tensor& multinomial_out(

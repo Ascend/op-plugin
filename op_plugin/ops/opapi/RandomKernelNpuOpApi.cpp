@@ -18,6 +18,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/core/npu/NPUGraphsUtils.h"
 
 namespace op_api {
 
@@ -59,8 +60,11 @@ at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::opti
 {
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
                                                                       at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    EXEC_NPU_CMD(aclnnInplaceRandom, self, from, to, pair.first, pair.second);
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        EXEC_NPU_CMD(aclnnInplaceRandom, self, from, to, pair.first, pair.second);
+    }
     return self;
 }
 
