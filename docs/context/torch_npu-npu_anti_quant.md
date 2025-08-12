@@ -2,10 +2,12 @@
 
 ## 功能说明
 
-- 算子功能：对张量`x`进行反量化操作，即将整数恢复为浮点数。
-- 计算公式为：
+- API功能：对张量`x`进行反量化操作，即将整数恢复为浮点数。
+- 计算表达式：假设$x$是输入，$out$是输出，$quant$对应输出类型dst_dtype，则
 
-    ![](figures/zh-cn_formulaimage_0000001929459030.png)
+$$
+out = \text{quant}((x + \text{offset}) * \text{scale}) 
+$$
 
 ## 函数原型
 
@@ -37,9 +39,7 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`quint4x2`或`int8`。
 
 ## 返回值
-`Tensor`
-
-代表`npu_anti_quant`的计算结果。
+- **out** (`Tensor`)：代表`npu_anti_quant`的计算结果。
 
 ## 约束说明
 

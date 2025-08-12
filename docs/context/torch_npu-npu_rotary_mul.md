@@ -11,33 +11,55 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
 
 ## 功能说明
 
-实现RotaryEmbedding旋转位置编码。支持FakeTensor模式。
+实现Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息。通用形式为：
+$$
+output = x * cos + ratote(x) * sin
+$$
+其中*x*是输入`input`，*cos*和*sin*分别是旋转系数输入`r1`和`r2`，输入ratote支持两种计算模式：
 
-- half模式：
+- 当rotary_mode='half'时，将输入向量沿最后一个维度分为两半，然后应用旋转：
+ $$
+ x_1, x_2 = chunk(x,2,dim=-1)\\
+ ratote(x) = concat(-x_2,x_1)
+ $$
 
-    ```python
-    x1, x2 = torch.chunk(input, 2, -1)
-    x_new = torch.cat((-x2, x1), dim=-1)
-    output = r1 * input + r2 * x_new
-    ```
+- 当rotary_mode='interleave'时，将输入向量按交错顺序处理，然后应用旋转：
+ $$
+ x_1 = x[..., ::2], x_2 = x[..., 1::2]\\
+ratote(x) = rearrange(torch.stack((-x_2, x_1), dim=-1), “... d two -> ...(d two)", two=2)\\
+ $$
 
-- interleave模式：
+小算子等价计算逻辑：
+```python
+import torch
+from einops import rearrange
 
-    ```python
-    x1 = input[..., ::2]
-    x2 = input[..., 1::2]
-    x_new = rearrange(torch.stack((-x2, x1), dim=-1), "... d two -> ...(d two)", two=2)
-    output = r1 * input + r2 * x_new
-    ```
+# mode = 0
+def rotate_half(x):
+    x1, x2 = torch.chunk(x, 2, dim=-1)
+    return torch.cat((-x2, x1), dim=-1)
+
+# mode = 1
+def rotate_interleaved(x):
+    x1 = x[..., ::2]
+    x2 = x[..., 1::2]
+    return rearrange(torch.stack((-x2, x1), dim=-1), "... d two -> ...(d two)", two=2)
+
+def fused_rotary_position_embedding(x, cos, sin, interleaved=False):
+    if not interleaved:
+        return x * cos + rotate_half(x) * sin
+    else:
+        return x * cos + rotate_interleaved(x) * sin
+```
 
 ## 参数说明
 
-- **input** (`torch.Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
-- **r1** (`torch.Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
-- **r2** (`torch.Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
+- **input** (`Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
+- **r1** (`Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
+- **r2** (`Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
 - **rotary_mode** (`str`)：可选属性，数据类型`str`，用于选择计算模式，支持`half`、`interleave`两种模式。缺省为`half`。
 
-## 返回值
+## 返回值说明
 `Tensor`
 
 输出为`Tensor`，shape和dtype同输入`input`。

@@ -2,7 +2,22 @@
 
 ## 功能说明
 
-完成量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维。
+- API功能：完成量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维。
+
+- 计算公式：
+    $x1$、$x2$、$\text{scale}$、$\text{offset}$、$\text{bias}$均为输入。
+    - 无bias：
+    $$
+    out = x1 \mathbin{@} x2 * \text{scale} + \text{offset}
+    $$
+    - bias INT32：
+    $$
+    out = (x1 \mathbin{@} x2 + \text{bias}) * \text{scale} + \text{offset}
+    $$
+    - bias BFLOAT16/FLOAT32（无offset）：
+    $$
+    out = x1 \mathbin{@} x2 * \text{scale} + \text{bias}
+    $$
 
 ## 函数原型
 
@@ -49,11 +64,9 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
 
 - **group_sizes** (`list[int]`)：可选参数。
 
-## 返回值
+## 返回值说明
 
-`Tensor`
-
-代表量化matmul的计算结果。
+`Tensor`：代表量化matmul的计算结果。
 - 如果`output_dtype`为`float16`，输出的数据类型为`float16`。
 - 如果`output_dtype`为`int8`或者`None`，输出的数据类型为`int8`。
 - 如果`output_dtype`为`bfloat16`，输出的数据类型为`bfloat16`。

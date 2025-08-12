@@ -6,12 +6,15 @@
 - 计算公式：
 
     Gaussian Error Linear Unit(GELU)的表达式为：
+    $$
+    \text{GELU}(x) = x \cdot \Phi(x)
+    $$
 
-    ![](figures/zh-cn_formulaimage_0000002153584017.png)
-
-    Φ(x)是Gaussian Distribution的CDF(Cumulative Distribution Function), 表达式为：
-
-    ![](figures/zh-cn_formulaimage_0000002117988712.png)
+    $\Phi(x)$是Gaussian Distribution的CDF(Cumulative Distribution Function)，表达式为：
+    $$
+    \Phi(x) = P(X \leq x) = \frac{1}{2} \left[ 1 + \text{erf}\left(\frac{x}{\sqrt{2}}\right) \right]
+    $$
+    此时对应`approximate="none"`，若采用`approximate="tanh"`，则将 $\text{erf}(\cdot)$ 替换为 $\tanh(\cdot)$ 的近似形式。
 
 ## 函数原型
 
@@ -29,9 +32,7 @@ torch_npu.npu_gelu(input, approximate='none') -> Tensor
 - **approximate** (`Tensor`)：字符串类型，可选参数，计算使用的激活函数模式，可配置为`"none"`或者`"tanh"`。其中`"none"`代表使用erf模式，`"tanh"`代表使用tanh模式。
 
 ## 返回值
-`Tensor`
-
-数据类型必须和`input`一样，数据格式支持$ND$，shape必须和`input`一样，支持非连续的Tensor。输入最大支持8维。
+`Tensor`，数据类型必须和`input`一样，数据格式支持$ND$，shape必须和`input`一样，支持非连续的Tensor。输入最大支持8维。
 
 - <term>Atlas 训练系列产品</term>：数据类型支持`float16`、`float32`。
 - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`float16`、`bfloat16`。

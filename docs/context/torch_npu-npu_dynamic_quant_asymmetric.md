@@ -6,9 +6,13 @@
 
     对输入的张量进行动态非对称量化。支持pertoken、pertensor和MoE（Mixture of Experts，混合专家模型）场景。
 
--   计算公式：假设待量化张量为x，
+-   计算公式：假设待量化张量为$x$，
 
-    ![](./figures/zh-cn_formulaimage_0000002128390261.png)
+    $$
+    \text{scale} = \frac{\text{rowMax}(\mathbf{x}) - \text{rowMin}(\mathbf{x})}{DST\_MAX - DST\_MIN}\\
+    \text{offset} = DST\_MAX - \frac{\text{rowMax}(\mathbf{x})}{\text{scale}}\\
+    y = \text{round}(\frac{\mathbf{x}}{\text{scale}} + \text{offset})
+    $$
 
     -   rowMax、rowMin代表按行取最大值、按行取最小值，此处的“行”对应x最后一个维度的数据，即一个token。
     -   DST\_MAX、DST\_MIN分别对应量化后dtype的最大值和最小值。
@@ -24,26 +28,23 @@ torch_npu.npu_dynamic_quant_asymmetric(Tensor x, *, Tensor? smooth_scales=None, 
 
 ## 参数说明<a name="zh-cn_topic_0000002057983185_section112637109429"></a>
 
--   x：Tensor类型，需要进行量化的源数据张量，必选输入，数据类型支持torch.float16、torch.bfloat16，数据格式支持ND，支持非连续的Tensor。输入x的维度必须大于1。进行int4量化时，要求x形状的最后一维是8的整数倍。
--   smooth\_scales：Tensor类型，对x进行scales的张量，可选参数，数据类型支持torch.float16、torch.bfloat16，数据格式支持ND，支持非连续的Tensor。
+- **x** (`Tensor`)：需要进行量化的源数据张量，必选输入，数据类型支持torch.float16、torch.bfloat16，数据格式支持ND，支持非连续的Tensor。输入x的维度必须大于1。进行int4量化时，要求x形状的最后一维是8的整数倍。
+- **smooth\_scales** (`Tensor`)：对x进行scales的张量，可选参数，数据类型支持torch.float16、torch.bfloat16，数据格式支持ND，支持非连续的Tensor。
     -   在非MoE场景shape必须是1维，和x的最后一维相等。
     -   在MoE场景shape是2维\[E, H\]。其中E是专家数，取值范围在\[1, 1024\]且与group\_index的第一维相同；H是x的最后一维。
     -   单算子模式下smooth\_scales的dtype必须和x保持一致，图模式下可以不一致。
-
--   group\_index：Tensor类型，对smooth\_scales进行分组下标（代表x的行数索引），可选参数，仅在MoE场景下生效。数据类型支持int32，数据格式支持ND，支持非连续的Tensor。group\_index的shape为\[E,\]，E的取值范围在\[1, 1024\]且与smooth\_scales第一维相同。tensor的取值必须递增且范围为\[1, S\]，最后一个值必须等于S（S代表输入x的行数，是x的shape除最后一维度外的乘积）。
--   dst\_type：ScalarType类型，指定量化输出的类型，可选参数，传None时当作torch.int8处理。
+- **group\_index** (`Tensor`)：对smooth\_scales进行分组下标（代表x的行数索引），可选参数，仅在MoE场景下生效。数据类型支持int32，数据格式支持ND，支持非连续的Tensor。group\_index的shape为\[E,\]，E的取值范围在\[1, 1024\]且与smooth\_scales第一维相同。tensor的取值必须递增且范围为\[1, S\]，最后一个值必须等于S（S代表输入x的行数，是x的shape除最后一维度外的乘积）。
+- **dst\_type** (`ScalarType`)：指定量化输出的类型，可选参数，传None时当作torch.int8处理。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持取值torch.int8、torch.quint4x2。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取值torch.int8、torch.quint4x2。
-
--   quant\_mode：str类型，量化模式，支持"pertoken"、"pertensor"。默认值为"pertoken"。
+- **quant\_mode** (`str`)：量化模式，支持"pertoken"、"pertensor"。默认值为"pertoken"。
     -   如果group\_index不为None，只支持"pertoken"。
 
-## 输出说明<a name="zh-cn_topic_0000002057983185_section22231435517"></a>
+## 返回值说明<a name="zh-cn_topic_0000002057983185_section22231435517"></a>
 
--   y：量化后的输出Tensor，数据类型由dst\_type指定。当dst\_type是torch.quint4x2时，y的数据类型为int32，形状最后一维为x最后一维除以8，其余维度与x一致，每个int32元素包含8个int4结果。其他场景下y形状与输入x一致，数据类型由dst\_type指定。
--   scale：Tensor类型，非对称动态量化过程中计算出的缩放系数，数据类型为float32。如果quant\_mode是"pertoken"，shape为x的形状剔除最后一维。如果quant\_mode是"pertensor"，shape为\(1,\)。
-
--   offset：Tensor类型，非对称动态量化过程中计算出的偏移系数，数据类型为float32，shape和scale一致。
+- **y** (`Tensor`)：量化后的输出，数据类型由dst\_type指定。当dst\_type是torch.quint4x2时，y的数据类型为int32，形状最后一维为x最后一维除以8，其余维度与x一致，每个int32元素包含8个int4结果。其他场景下y形状与输入x一致，数据类型由dst\_type指定。
+- **scale** (`Tensor`)：非对称动态量化过程中计算出的缩放系数，数据类型为float32。如果quant\_mode是"pertoken"，shape为x的形状剔除最后一维。如果quant\_mode是"pertensor"，shape为\(1,\)。
+- **offset** (`Tensor`)：非对称动态量化过程中计算出的偏移系数，数据类型为float32，shape和scale一致。
 
 ## 约束说明<a name="zh-cn_topic_0000002057983185_section12345537164214"></a>
 

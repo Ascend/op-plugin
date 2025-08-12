@@ -8,7 +8,23 @@ torch_npu.npu_group_norm_swish(Tensor input, int num_groups, Tensor weight, Tens
 
 ## 功能说明
 
-对输入input进行组归一化计算，并计算Swish。
+- API功能：计算输入$x$的组归一化结果out，均值meanOut，标准差的倒数rstdOut，以及swish的输出。
+- 计算表达式：
+  - GroupNorm: 假设 $ E[x] = \bar{x} $ 代表 $\bar{x}$ 的均值，$ Var[x] = \frac{1}{n} * \sum_{i=1}^{n} (x_i - E[x])^2 $ 代表$\bar{x}$的方差，$\gamma$代表weight，$\beta$代表bias，则
+  $$
+  \begin{cases}
+  yOut & = \frac{x - E[x]}{\sqrt{Var[x]} + eps} * \gamma + \beta \\ 
+  meanOut & = E[x] \\ 
+  rstdOut & = \frac{1}{\sqrt{Var[x]} + eps}
+  \end{cases}
+  $$
+
+  - Swish：
+  $$
+  yOut = \frac{x}{1 + e^{-scale \cdot x}}
+  $$
+  此时swish计算公式的$x$为GroupNorm公式得到的$yOut$。
+
 > **说明：**<br>
 > 需要计算反向梯度场景时，若需要输出结果排除随机性，则需要[设置确定性计算开关](确定性计算API支持清单.md)。
 
@@ -21,7 +37,7 @@ torch_npu.npu_group_norm_swish(Tensor input, int num_groups, Tensor weight, Tens
 -   **eps**(`Float`) - 计算组归一化时加到分母上的值，以保证数值的稳定性。默认值为1e-5。
 -   **swish_scale**(`Float`) - 用于进行swish计算的值。默认值为1.0。
 
-## 输出说明
+## 返回值说明
 
 **out**(`Tensor`) - 表示组归一化和swish计算的结果。
 

@@ -8,14 +8,16 @@
 
 - 计算公式：
     - 如果`smooth_scales`不存在：
-
-        ![](figures/zh-cn_formulaimage_0000002224834166.png)
+    $$
+    \text{scale} = \frac{\text{rowMax}(\text{abs}(\mathbf{x}))}{DTYPE\_MAX} \\y = \text{round}\left(\frac{\mathbf{x}}{\text{scale}}\right)
+    $$
 
     - 如果`smooth_scales`存在：
+    $$\text{scale} = \frac{\text{rowMax}(\text{abs}(\mathbf{x} * smooth\_scales))}{DTYPE\_MAX}  \\
+    y = \text{round}\left(\frac{\mathbf{x} * smooth\_scales}{\text{scale}}\right)
+    $$
 
-        ![](figures/zh-cn_formulaimage_0000002224834302.png)
-
-        rowMax表示求一行的最大值，DTYPE_MAX表示常量，是y输出对应的数据类型的最大值。
+    rowMax表示求一行的最大值，DTYPE_MAX表示常量，是y输出对应的数据类型的最大值。
 
 ## 函数原型
 
