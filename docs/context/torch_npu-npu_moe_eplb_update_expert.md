@@ -61,7 +61,7 @@ torch_npu.npu_moe_eplb_update_expert(Tensor expert_ids, Tensor eplb_table, int l
     -   `BS`：表示batch sequence size，即本卡最终输出的token数量，取值范围为0<BS≤512。
     -   `K`：表示选取topK个专家，取值范围为0< K ≤16同时满足0 < K ≤ `moe_expert_num`。
     -   `moe_expert_num`：表示MoE专家数，取值范围\(0, 512\]。
-    -   `F`：表示输入映射表的列数，第一列为各行号对应MoE专家部署的实例个数（取值\> 0），后F-1列为该MoE专家部署的实例编号，取值范围\[0, `world_size` \* `moe_expert_per_rank`\)。
+    -   `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, `world_size` + 1\]。
     -   所有卡部署的moe专家实例总数最多1024，即`place_per_rank` \* `world_size` ≤ 1024。
     -   每张卡部署的实例数需相同。
 
