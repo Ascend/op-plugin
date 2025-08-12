@@ -74,8 +74,8 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 -   key\_shared\_prefix：Tensor类型，attention结构中Key前缀部分的参数，数据类型支持float16、bfloat16、int8，不支持非连续的Tensor，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 -   value\_shared\_prefix：Tensor类型，attention结构中Value前缀部分的输入，数据类型支持float16、bfloat16、int8，不支持非连续的Tensor，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 -   actual\_shared\_prefix\_len：int型数组，代表key\_shared\_prefix/value\_shared\_prefix的有效Sequence Length。数据类型支持：int64。如果不指定seqlen可以传入None，表示和key\_shared\_prefix/value\_shared\_prefix的s长度相同。限制：该入参中的有效Sequence Length应该不大于key\_shared\_prefix/value\_shared\_prefix中的Sequence Length。
--   query\_rope：Tensor类型，表示MLA（Multi-head Latent Attention）结构中的query的rope信息，数据类型支持float16、bfloat16，不支持非连续的Tensor，数据格式支持ND。仅支持Q\_S等于1-16，其余场景该参数无效。
--   key\_rope：Tensor类型，表示MLA（Multi-head Latent Attention）结构中的key的rope信息，数据类型支持float16、bfloat16，不支持非连续的Tensor，数据格式支持ND。仅支持Q\_S等于1-16，其余场景该参数无效。
+-   query\_rope：Tensor类型，表示MLA（Multi-head Latent Attention）结构中的query的rope信息，数据类型支持float16、bfloat16，不支持非连续的Tensor，数据格式支持ND。
+-   key\_rope：Tensor类型，表示MLA（Multi-head Latent Attention）结构中的key的rope信息，数据类型支持float16、bfloat16，不支持非连续的Tensor，数据格式支持ND。
 -   key\_rope\_antiquant\_scale：Tensor类型，**预留参数，暂未使用，使用默认值即可。**
 -   num\_heads：整型，代表query的head个数，数据类型支持int64，在BNSD场景下，需要与shape中的query的N轴shape值相同，否则执行异常。
 -   scale：浮点型，公式中d开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持float。数据类型与query的数据类型需满足数据类型推导规则。用户不特意指定时可传入默认值1.0。
