@@ -47,14 +47,17 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int8`、`int4（int32）`。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`、`int4（int32）`。
     
--   <strong>*</strong>：代表其之前的参数是位置相关的，必须按照顺序输入，属于必选参数；其之后的参数是键值对赋值，与位置无关，属于可选参数（不传入会使用默认值）。
+- <strong>*</strong>：代表其之前的参数是位置相关的，必须按照顺序输入，属于必选参数；其之后的参数是键值对赋值，与位置无关，属于可选参数（不传入会使用默认值）。
+-   **query\_rope**（`Tensor`）：可选参数，表示MLA（Multi-head Latent Attention）结构中`query`的rope信息，数据类型支持`float16`、`bfloat16`，不支持非连续的Tensor，数据格式支持ND。仅支持Q\_S取值范围为[1, 16]，其余场景该参数无效。
+-   **key\_rope**（`Tensor`）：可选参数，表示MLA（Multi-head Latent Attention）结构中的`key`的rope信息，数据类型支持`float16`、`bfloat16`，不支持非连续的Tensor，数据格式支持ND。仅支持Q\_S取值范围为[1, 16]，其余场景该参数无效。
+
 -   **query\_rope**（`Tensor`）：可选参数，表示MLA（Multi-head Latent Attention）结构中`query`的rope信息，数据类型支持`float16`、`bfloat16`，不支持非连续的Tensor，数据格式支持ND。
 -   **key\_rope**（`Tensor`）：可选参数，表示MLA（Multi-head Latent Attention）结构中的`key`的rope信息，数据类型支持`float16`、`bfloat16`，不支持非连续的Tensor，数据格式支持ND。
 -   **pse\_shift**（`Tensor`）：可选参数，表示attention结构内部的位置编码参数，数据类型支持`float16`、`bfloat16`，数据类型与`query`数据类型需满足类型推导规则。不支持非连续的Tensor，数据格式支持ND。如不使用该功能可传入None。
-    
+
     -   Q\_S不为1，当`pse_shift`为`float16`类型时，要求`query`为float16或int8类型；当`pse_shift`为`bfloat16`类型时，要求`query`为`bfloat16`类型。输入shape类型需为\(B, N, Q\_S, KV\_S\)或\(1, N, Q\_S, KV\_S\)。对于`pse_shift`的KV\_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
     -   Q\_S为1，当pse\_shift为`float16`类型时，要求`query`为`float16`类型；当`pse_shift`为`bfloat16`类型时，要求`query`为`bfloat16`类型。输入shape类型需为\(B, N, 1, KV\_S\)或\(1, N, 1, KV\_S\)。对于`pse_shift`的KV\_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
-    
+
 -   **atten\_mask**（`Tensor`）：可选参数，对QK结果进行mask，用来指示是否计算Token间的相关性。数据类型支持`bool`、`int8`和`uint8`。不支持非连续的Tensor，数据格式支持ND。如不使用该功能可传入None。
 
     -   Q\_S不为1时，建议shape输入\(Q\_S, KV\_S\)、\(B, Q\_S, KV\_S\)、\(1, Q\_S, KV\_S\)、\(B, 1, Q\_S, KV\_S\)、\(1, 1, Q\_S, KV\_S\)。
@@ -147,8 +150,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
 ## 返回值说明<a name="zh-cn_topic_0000001832267082_section22231435517"></a>
 
--   attention\_out（`Tensor`）：公式中的输出，数据类型支持`float16`、`bfloat16`、`int8`。数据格式支持ND。限制：该入参的D维度与`value`的D保持一致，其余维度需要与入参`query`的shape保持一致。
--   softmax\_lse（`Tensor`）：ring attention算法对query乘key的结果先取max得到softmax\_max，query乘key的结果减去softmax\_max，再取exp，最后取sum，得到softmax\_sum，最后对softmax\_sum取log，再加上softmax\_max得到的结果。数据类型支持`float32`，当`return_softmax_lse`为True时，一般情况下输出shape为\(B, N, Q\_S, 1\)，若input\_layout为TND/NTD\_TND时，输出shape为\(T,N,1\)；当`return_softmax_lse`为False时，输出shape为\[1\]的值为0的Tensor。
+-   **attention\_out**（`Tensor`）：公式中的输出，数据类型支持`float16`、`bfloat16`、`int8`。数据格式支持ND。限制：该入参的D维度与`value`的D保持一致，其余维度需要与入参`query`的shape保持一致。
+-   **softmax\_lse**（`Tensor`）：ring attention算法对query乘key的结果先取max得到softmax\_max，query乘key的结果减去softmax\_max，再取exp，最后取sum，得到softmax\_sum，最后对softmax\_sum取log，再加上softmax\_max得到的结果。数据类型支持`float32`，当`return_softmax_lse`为True时，一般情况下输出shape为\(B, N, Q\_S, 1\)，若input\_layout为TND/NTD\_TND时，输出shape为\(T,N,1\)；当`return_softmax_lse`为False时，输出shape为\[1\]的值为0的Tensor。
 
 ## 约束说明<a name="zh-cn_topic_0000001832267082_section12345537164214"></a>
 
@@ -204,7 +207,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     -   TND、TND\_NTD、NTD\_TND场景下query、key、value输入的综合限制：
         -   T小于等于1M；
         -   sparse模式仅支持sparse\_mode=0且不传mask，或sparse\_mode=3且传入mask；
-        -   actual\_seq\_qlen和actual\_seq\_kvlen必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的Sequence Length和，因此后一个元素的值必须大于等于前一个元素的值；
+        -   actual\_seq\_qlen和actual\_seq\_kvlen必须传入，且以该入参元素数量作为Batch值（注意入参元素数量要小于等于4096）。该入参中每个元素的值表示当前Batch与之前所有Batch的Sequence Length和，因此后一个元素的值必须大于等于前一个元素的值；
         -   当query的D等于512时：
             -   支持TND、TND\_NTD；
             -   必须开启page attention，此时actual\_seq\_kvlen长度等于key/value的batch值，代表每个batch的实际长度，值不大于KV\_S；
@@ -294,45 +297,44 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         -   key\_quant\_mode和value\_quant\_mode取值需要保持一致。
         -   dequant\_scale\_key和dequant\_scale\_value要么都为空，要么都不为空；dequant\_offset\_key和dequant\_offset\_value要么都为空，要么都不为空。
         -   dequant\_scale\_key和dequant\_scale\_value都不为空时，其shape需要保持一致；dequant\_offset\_key和dequant\_offset\_value都不为空时，其shape需要保持一致。  
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
-            
+        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：   
             -   仅支持per-token和per-channel模式，per-token模式下要求两个参数的shape均为\(B, S\)，数据类型固定为float32；per-channel模式下要求两个参数的shape为（N, D），\(N, D\)，\(H\)，数据类型固定为bfloat16。
-    -   dequant\_scale\_key与dequant\_scale\_value非空场景，要求query的s小于等于16；要求query的dtype为bfloat16，key、value的dtype为int8，输出的dtype为bfloat16；不支持tensorlist、page attention特性。
+            -   dequant\_scale\_key与dequant\_scale\_value非空场景，要求query的s小于等于16；要求query的dtype为bfloat16，key、value的dtype为int8，输出的dtype为bfloat16；不支持tensorlist、page attention特性。
         
-    -   管理scale/offset的量化模式如下：
+        -   管理scale/offset的量化模式如下：
         
-        >**说明：**<br> 
-        >注意scale、offset具体指dequant\_scale\_key、dequant\_scale\_key、dequant\_offset\_value、dequant\_offset\_value参数。
-    
-        <a name="zh-cn_topic_0000001832267082_table3276159203213"></a>
-        <table><thead align="left"><tr id="zh-cn_topic_0000001832267082_row192767598320"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="zh-cn_topic_0000001832267082_p19276135910323"><a name="zh-cn_topic_0000001832267082_p19276135910323"></a><a name="zh-cn_topic_0000001832267082_p19276135910323"></a>量化模式</p>
-        </th>
-        <th class="cellrowborder" valign="top" width="23.09%" id="mcps1.1.5.1.2"><p id="zh-cn_topic_0000001832267082_p1627615594327"><a name="zh-cn_topic_0000001832267082_p1627615594327"></a><a name="zh-cn_topic_0000001832267082_p1627615594327"></a>该场景下scale和offset条件</p>
-        </th>
-        <th class="cellrowborder" valign="top" width="46.660000000000004%" id="mcps1.1.5.1.3"><p id="zh-cn_topic_0000001832267082_p17276195963213"><a name="zh-cn_topic_0000001832267082_p17276195963213"></a><a name="zh-cn_topic_0000001832267082_p17276195963213"></a>该场景下key和value条件</p>
-        </th>
-        <th class="cellrowborder" valign="top" width="13.3%" id="mcps1.1.5.1.4"><p id="zh-cn_topic_0000001832267082_p227695933219"><a name="zh-cn_topic_0000001832267082_p227695933219"></a><a name="zh-cn_topic_0000001832267082_p227695933219"></a>支持的产品</p>
-        </th>
-        </tr>
-        </thead>
-        <tbody><tr id="zh-cn_topic_0000001832267082_row172761159123213"><td class="cellrowborder" valign="top" width="16.950000000000003%" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p14277165915327"><a name="zh-cn_topic_0000001832267082_p14277165915327"></a><a name="zh-cn_topic_0000001832267082_p14277165915327"></a>per-channel模式</p>
-        </td>
-        <td class="cellrowborder" valign="top" width="23.09%" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p113847501392"><a name="zh-cn_topic_0000001832267082_p113847501392"></a><a name="zh-cn_topic_0000001832267082_p113847501392"></a>两个参数shape支持(N, 1, D)，(N, D)，(H)，(1, N, 1, D)，(1, N, D)，(1, H)数据类型和query数据类型相同。</p>
-        </td>
-        <td class="cellrowborder" valign="top" width="46.660000000000004%" headers="mcps1.1.5.1.3 "><a name="zh-cn_topic_0000001832267082_ul2277759183216"></a><a name="zh-cn_topic_0000001832267082_ul2277759183216"></a><ul id="zh-cn_topic_0000001832267082_ul2277759183216"><li><span id="zh-cn_topic_0000001832267082_ph112776597327"><a name="zh-cn_topic_0000001832267082_ph112776597327"></a><a name="zh-cn_topic_0000001832267082_ph112776597327"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_19"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_19"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_19"></a>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span>：仅支持key、value数据类型为int8。</li><li><span id="zh-cn_topic_0000001832267082_ph327717592325"><a name="zh-cn_topic_0000001832267082_ph327717592325"></a><a name="zh-cn_topic_0000001832267082_ph327717592325"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_19"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_19"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_19"></a>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span>：仅支持key、value数据类型为int8。</li></ul>
-        </td>
-        <td class="cellrowborder" rowspan="2" valign="top" width="13.3%" headers="mcps1.1.5.1.4 "><a name="zh-cn_topic_0000001832267082_ul7277159143219"></a><a name="zh-cn_topic_0000001832267082_ul7277159143219"></a><ul id="zh-cn_topic_0000001832267082_ul7277159143219"><li><span id="zh-cn_topic_0000001832267082_ph527775920323"><a name="zh-cn_topic_0000001832267082_ph527775920323"></a><a name="zh-cn_topic_0000001832267082_ph527775920323"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_20"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_20"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_20"></a>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></li><li><span id="zh-cn_topic_0000001832267082_ph22772059103210"><a name="zh-cn_topic_0000001832267082_ph22772059103210"></a><a name="zh-cn_topic_0000001832267082_ph22772059103210"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_20"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_20"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_20"></a>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span></li></ul>
-        </td>
-        </tr>
-        <tr id="zh-cn_topic_0000001832267082_row027816595321"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p19936325114616"><a name="zh-cn_topic_0000001832267082_p19936325114616"></a><a name="zh-cn_topic_0000001832267082_p19936325114616"></a>per-token模式</p>
-        </td>
-        <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p39361225144616"><a name="zh-cn_topic_0000001832267082_p39361225144616"></a><a name="zh-cn_topic_0000001832267082_p39361225144616"></a>两个参数的shape均为(B, S)，数据类型固定为`float32`。</p>
-        </td>
-        <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><a name="zh-cn_topic_0000001832267082_ul7475108135214"></a><a name="zh-cn_topic_0000001832267082_ul7475108135214"></a><ul id="zh-cn_topic_0000001832267082_ul7475108135214"><li><span id="zh-cn_topic_0000001832267082_ph1947698135214"><a name="zh-cn_topic_0000001832267082_ph1947698135214"></a><a name="zh-cn_topic_0000001832267082_ph1947698135214"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_21"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_21"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_21"></a>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span>：仅支持key、value数据类型为int8。</li><li><span id="zh-cn_topic_0000001832267082_ph12476287523"><a name="zh-cn_topic_0000001832267082_ph12476287523"></a><a name="zh-cn_topic_0000001832267082_ph12476287523"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_21"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_21"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_21"></a>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span>：仅支持key、value数据类型为int8。</li></ul>
-        </td>
-        </tr>
-        </tbody>
-        </table>
+            >**说明：**<br> 
+            >注意scale、offset具体指dequant\_scale\_key、dequant\_scale\_key、dequant\_offset\_value、dequant\_offset\_value参数。
+
+            <a name="zh-cn_topic_0000001832267082_table3276159203213"></a>
+            <table><thead align="left"><tr id="zh-cn_topic_0000001832267082_row192767598320"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="zh-cn_topic_0000001832267082_p19276135910323"><a name="zh-cn_topic_0000001832267082_p19276135910323"></a><a name="zh-cn_topic_0000001832267082_p19276135910323"></a>量化模式</p>
+            </th>
+            <th class="cellrowborder" valign="top" width="23.09%" id="mcps1.1.5.1.2"><p id="zh-cn_topic_0000001832267082_p1627615594327"><a name="zh-cn_topic_0000001832267082_p1627615594327"></a><a name="zh-cn_topic_0000001832267082_p1627615594327"></a>该场景下scale和offset条件</p>
+            </th>
+            <th class="cellrowborder" valign="top" width="46.660000000000004%" id="mcps1.1.5.1.3"><p id="zh-cn_topic_0000001832267082_p17276195963213"><a name="zh-cn_topic_0000001832267082_p17276195963213"></a><a name="zh-cn_topic_0000001832267082_p17276195963213"></a>该场景下key和value条件</p>
+            </th>
+            <th class="cellrowborder" valign="top" width="13.3%" id="mcps1.1.5.1.4"><p id="zh-cn_topic_0000001832267082_p227695933219"><a name="zh-cn_topic_0000001832267082_p227695933219"></a><a name="zh-cn_topic_0000001832267082_p227695933219"></a>支持的产品</p>
+            </th>
+            </tr>
+            </thead>
+            <tbody><tr id="zh-cn_topic_0000001832267082_row172761159123213"><td class="cellrowborder" valign="top" width="16.950000000000003%" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p14277165915327"><a name="zh-cn_topic_0000001832267082_p14277165915327"></a><a name="zh-cn_topic_0000001832267082_p14277165915327"></a>per-channel模式</p>
+            </td>
+            <td class="cellrowborder" valign="top" width="23.09%" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p113847501392"><a name="zh-cn_topic_0000001832267082_p113847501392"></a><a name="zh-cn_topic_0000001832267082_p113847501392"></a>两个参数shape支持(N, 1, D)，(N, D)，(H)，(1, N, 1, D)，(1, N, D)，(1, H)数据类型和query数据类型相同。</p>
+            </td>
+            <td class="cellrowborder" valign="top" width="46.660000000000004%" headers="mcps1.1.5.1.3 "><a name="zh-cn_topic_0000001832267082_ul2277759183216"></a><a name="zh-cn_topic_0000001832267082_ul2277759183216"></a><ul id="zh-cn_topic_0000001832267082_ul2277759183216"><li><span id="zh-cn_topic_0000001832267082_ph112776597327"><a name="zh-cn_topic_0000001832267082_ph112776597327"></a><a name="zh-cn_topic_0000001832267082_ph112776597327"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_19"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_19"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_19"></a>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span>：仅支持key、value数据类型为int8。</li><li><span id="zh-cn_topic_0000001832267082_ph327717592325"><a name="zh-cn_topic_0000001832267082_ph327717592325"></a><a name="zh-cn_topic_0000001832267082_ph327717592325"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_19"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_19"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_19"></a>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span>：仅支持key、value数据类型为int8。</li></ul>
+            </td>
+            <td class="cellrowborder" rowspan="2" valign="top" width="13.3%" headers="mcps1.1.5.1.4 "><a name="zh-cn_topic_0000001832267082_ul7277159143219"></a><a name="zh-cn_topic_0000001832267082_ul7277159143219"></a><ul id="zh-cn_topic_0000001832267082_ul7277159143219"><li><span id="zh-cn_topic_0000001832267082_ph527775920323"><a name="zh-cn_topic_0000001832267082_ph527775920323"></a><a name="zh-cn_topic_0000001832267082_ph527775920323"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_20"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_20"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_20"></a>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></li><li><span id="zh-cn_topic_0000001832267082_ph22772059103210"><a name="zh-cn_topic_0000001832267082_ph22772059103210"></a><a name="zh-cn_topic_0000001832267082_ph22772059103210"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_20"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_20"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_20"></a>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span></li></ul>
+            </td>
+            </tr>
+            <tr id="zh-cn_topic_0000001832267082_row027816595321"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p19936325114616"><a name="zh-cn_topic_0000001832267082_p19936325114616"></a><a name="zh-cn_topic_0000001832267082_p19936325114616"></a>per-token模式</p>
+            </td>
+            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p39361225144616"><a name="zh-cn_topic_0000001832267082_p39361225144616"></a><a name="zh-cn_topic_0000001832267082_p39361225144616"></a>两个参数的shape均为(B, S)，数据类型固定为float32。</p>
+            </td>
+            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><a name="zh-cn_topic_0000001832267082_ul7475108135214"></a><a name="zh-cn_topic_0000001832267082_ul7475108135214"></a><ul id="zh-cn_topic_0000001832267082_ul7475108135214"><li><span id="zh-cn_topic_0000001832267082_ph1947698135214"><a name="zh-cn_topic_0000001832267082_ph1947698135214"></a><a name="zh-cn_topic_0000001832267082_ph1947698135214"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_21"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_21"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_21"></a>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span>：仅支持key、value数据类型为int8。</li><li><span id="zh-cn_topic_0000001832267082_ph12476287523"><a name="zh-cn_topic_0000001832267082_ph12476287523"></a><a name="zh-cn_topic_0000001832267082_ph12476287523"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_21"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_21"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_21"></a>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span>：仅支持key、value数据类型为int8。</li></ul>
+            </td>
+            </tr>
+            </tbody>
+            </table>
     
 -   **当Q\_S等于1时：**
     -   query、key、value输入，功能使用限制如下：
@@ -423,7 +425,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             </tr>
             <tr id="zh-cn_topic_0000001832267082_row1341138172312"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p134114862314"><a name="zh-cn_topic_0000001832267082_p134114862314"></a><a name="zh-cn_topic_0000001832267082_p134114862314"></a>per-token模式</p>
             </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p1037135185914"><a name="zh-cn_topic_0000001832267082_p1037135185914"></a><a name="zh-cn_topic_0000001832267082_p1037135185914"></a>两个参数的shape均为(1, B, S)，数据类型固定为`float32`。</p>
+            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p1037135185914"><a name="zh-cn_topic_0000001832267082_p1037135185914"></a><a name="zh-cn_topic_0000001832267082_p1037135185914"></a>两个参数的shape均为(1, B, S)，数据类型固定为float32。</p>
             </td>
             <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="zh-cn_topic_0000001832267082_p174417474211"><a name="zh-cn_topic_0000001832267082_p174417474211"></a><a name="zh-cn_topic_0000001832267082_p174417474211"></a>key、value数据类型为int4（int32）或int8时支持。</p>
             </td>
@@ -437,21 +439,21 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             </tr>
             <tr id="zh-cn_topic_0000001832267082_row136211336192318"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p22659468119"><a name="zh-cn_topic_0000001832267082_p22659468119"></a><a name="zh-cn_topic_0000001832267082_p22659468119"></a>per-token叠加per-head模式</p>
             </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p116212367239"><a name="zh-cn_topic_0000001832267082_p116212367239"></a><a name="zh-cn_topic_0000001832267082_p116212367239"></a>两个参数的shape均为(B, N, S)，数据类型固定为`float32`。</p>
+            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p116212367239"><a name="zh-cn_topic_0000001832267082_p116212367239"></a><a name="zh-cn_topic_0000001832267082_p116212367239"></a>两个参数的shape均为(B, N, S)，数据类型固定为float32。</p>
             </td>
             <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="zh-cn_topic_0000001832267082_p162285131891"><a name="zh-cn_topic_0000001832267082_p162285131891"></a><a name="zh-cn_topic_0000001832267082_p162285131891"></a>key、value数据类型为int4（int32）或int8时支持。</p>
             </td>
             </tr>
             <tr id="zh-cn_topic_0000001832267082_row1037716581001"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p1757135414112"><a name="zh-cn_topic_0000001832267082_p1757135414112"></a><a name="zh-cn_topic_0000001832267082_p1757135414112"></a>per-token叠加使用page attention模式</p>
             </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p1025316567221"><a name="zh-cn_topic_0000001832267082_p1025316567221"></a><a name="zh-cn_topic_0000001832267082_p1025316567221"></a>两个参数的shape均为(blocknum, blocksize)，数据类型固定为`float32`。</p>
+            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p1025316567221"><a name="zh-cn_topic_0000001832267082_p1025316567221"></a><a name="zh-cn_topic_0000001832267082_p1025316567221"></a>两个参数的shape均为(blocknum, blocksize)，数据类型固定为float32。</p>
             </td>
             <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="zh-cn_topic_0000001832267082_p04417476217"><a name="zh-cn_topic_0000001832267082_p04417476217"></a><a name="zh-cn_topic_0000001832267082_p04417476217"></a>key、value数据类型为int8时支持。</p>
             </td>
             </tr>
             <tr id="zh-cn_topic_0000001832267082_row15621736192312"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p1986911315215"><a name="zh-cn_topic_0000001832267082_p1986911315215"></a><a name="zh-cn_topic_0000001832267082_p1986911315215"></a>per-token叠加per head并使用page attention模式</p>
             </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p2621173692313"><a name="zh-cn_topic_0000001832267082_p2621173692313"></a><a name="zh-cn_topic_0000001832267082_p2621173692313"></a>两个参数的shape均为(blocknum, N, blocksize)，数据类型固定为`float32`。</p>
+            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="zh-cn_topic_0000001832267082_p2621173692313"><a name="zh-cn_topic_0000001832267082_p2621173692313"></a><a name="zh-cn_topic_0000001832267082_p2621173692313"></a>两个参数的shape均为(blocknum, N, blocksize)，数据类型固定为float32。</p>
             </td>
             <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="zh-cn_topic_0000001832267082_p551893313915"><a name="zh-cn_topic_0000001832267082_p551893313915"></a><a name="zh-cn_topic_0000001832267082_p551893313915"></a>key、value数据类型为int8时支持。</p>
             </td>
@@ -464,7 +466,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             <td class="cellrowborder" rowspan="2" valign="top" headers="mcps1.1.5.1.3 "><a name="zh-cn_topic_0000001832267082_ul1037202951112"></a><a name="zh-cn_topic_0000001832267082_ul1037202951112"></a><ul id="zh-cn_topic_0000001832267082_ul1037202951112"><li><span id="zh-cn_topic_0000001832267082_ph10271547141214"><a name="zh-cn_topic_0000001832267082_ph10271547141214"></a><a name="zh-cn_topic_0000001832267082_ph10271547141214"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_30"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_30"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term11962195213215_30"></a>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span>：当key、value数据类型为int4（int32）或int8时支持；当key和value的数据类型为int8时，仅支持query和输出的dtype为float16。</li><li><span id="zh-cn_topic_0000001832267082_ph427116472125"><a name="zh-cn_topic_0000001832267082_ph427116472125"></a><a name="zh-cn_topic_0000001832267082_ph427116472125"></a><term id="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_30"><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_30"></a><a name="zh-cn_topic_0000001832267082_zh-cn_topic_0000001312391781_term1253731311225_30"></a>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span>：当key、value数据类型为int4（int32）或int8时支持；当key和value的数据类型为int8时，仅支持query和输出的dtype为float16。</li></ul>
             </td>
             </tr>
-            <tr id="zh-cn_topic_0000001832267082_row194748261012"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p1154111491113"><a name="zh-cn_topic_0000001832267082_p1154111491113"></a><a name="zh-cn_topic_0000001832267082_p1154111491113"></a>对于value支持per-token，两个参数的shape均为(1, B, S)并且数据类型固定为`float32`。</p>
+            <tr id="zh-cn_topic_0000001832267082_row194748261012"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="zh-cn_topic_0000001832267082_p1154111491113"><a name="zh-cn_topic_0000001832267082_p1154111491113"></a><a name="zh-cn_topic_0000001832267082_p1154111491113"></a>对于value支持per-token，两个参数的shape均为(1, B, S)并且数据类型固定为float32。</p>
             </td>
             </tr>
         </tbody>
