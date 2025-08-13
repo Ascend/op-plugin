@@ -22,6 +22,9 @@ const static int64_t IN_SPLIT_OUT_NOT_SPLIT = 1;
 const static int64_t IN_NOT_SPLIT_OUT_SPLIT = 2;
 const static int64_t IN_SPLIT_OUT_SPLIT = 3;
 const static int64_t INT4_NUMS_IN_INT32 = 8;
+const static int64_t DEFAULT_SPLIT = -1;
+const static int64_t M_SPLIT = 0;
+const static int64_t K_SPLIT = 2;
 using npu_preparation = at_npu::native::OpPreparation;
 
 void check_dims(int64_t split_item, size_t num_x, size_t num_weight, size_t num_group_list)
@@ -63,6 +66,13 @@ void create_new_tensor_multi_dim(std::vector<at::Tensor> &y, const at::Tensor &x
 void create_new_tensor(std::vector<at::Tensor> &y, size_t dim_m, size_t dim_n, c10::TensorOptions options)
 {
     auto output_size = op_infer::array_to_small_vector({dim_m, dim_n});
+    y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
+}
+
+void create_new_tensor_batch(std::vector<at::Tensor> &y, size_t batch, size_t dim_m, size_t dim_n,
+                             c10::TensorOptions options)
+{
+    auto output_size = op_infer::array_to_small_vector({batch, dim_m, dim_n});
     y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
 }
 
@@ -238,9 +248,10 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     TORCH_CHECK(group_type.has_value(),
                 "Requires manual passing group_type, current is None.", OPS_ERROR(ErrCode::VALUE));
     int64_t group_type_value = group_type.value();
-    TORCH_CHECK(group_type_value == -1 || group_type_value == 0,
-                "group_type currently only support -1 and 0, current value is ",
-                group_type_value, OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(group_type_value == DEFAULT_SPLIT || group_type_value == M_SPLIT || group_type_value == K_SPLIT,
+                "Use Tensor input with current cann version, "
+                "The group type must be -1, 0 or 2, but now is [", group_type_value, "]",
+                OPS_ERROR(ErrCode::VALUE));
     static const bool is_grouped_matmul_V4_available = check_aclnn_kernel_available("aclnnGroupedMatmulV4");
     if (C10_UNLIKELY(!is_grouped_matmul_V4_available)) {
         TORCH_CHECK(!group_list.has_value(),
@@ -333,9 +344,15 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                 create_new_tensor(y, dim_m, n0 * INT4_NUMS_IN_INT32, options) :
                 create_new_tensor(y, dim_m, n0, options);
         } else if (num_x == 1) {
+            if (group_type_value == K_SPLIT) {
+                    TORCH_CHECK(num_weight == 1,
+                        "When group_list is 2(K_SPLIT) and split_item is 2/3, the length of weight must equal x.");
+                    create_new_tensor_batch(y, num_group_list, x[0].size(0), n0, options);
+            } else {
             weight[0].dtype() == at::ScalarType::Int ?
                 create_new_tensor(y, x[0].size(0), n0 * INT4_NUMS_IN_INT32, options) :
                 create_new_tensor(y, x[0].size(0), n0, options);
+            }
         }
     }
     at::TensorList result = at::TensorList(y);
