@@ -200,7 +200,7 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
     -   TND、TND\_NTD、NTD\_TND场景下query、key、value输入的综合限制：
         -   T小于等于1M;
         -   sparse模式仅支持sparse=0且不传mask，或sparse=3且传入mask；
-        -   actualSeqLengths和actualSeqLengthsKv必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的Sequence Length和，因此后一个元素的值必须大于等于前一个元素的值；
+        -   actualSeqLengths和actualSeqLengthsKv必须传入，且以该入参元素数量作为Batch值（注意入参元素数量要小于等于4096）。该入参中每个元素的值表示当前Batch与之前所有Batch的Sequence Length和，因此后一个元素的值必须大于等于前一个元素的值；
         -   当query的d等于512时：
             -   支持TND、TND\_NTD;
             -   必须开启page attention，此时actualSeqLengthsKv长度等于key/value的batch值，代表每个batch的实际长度，值不大于KV\_S；
@@ -211,7 +211,6 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 
         -   当query的d不等于512时：
             -   当query\_rope和keyRope为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当query\_rope和keyRope不为空时，要求Q\_D、K\_D、V\_D等于128；
-            -   Q\_N、K\_N、V\_N：需要满足K\_N、V\_N相等，Q\_N整除K\_N，Q\_N与K\_N的比值不能大于64；
             -   支持TND、NTD\_TND；
             -   数据类型仅支持BFLOAT16；
             -   当sparse=3时，要求每个batch单独的actualSeqLengths<actualSeqLengthsKv；
