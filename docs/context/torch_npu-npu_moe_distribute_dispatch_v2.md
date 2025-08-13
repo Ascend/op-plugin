@@ -55,9 +55,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 -   expert\_shard\_type：int类型，表示共享专家卡排布类型。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：暂不支持该参数，使用默认值即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前仅支持0，表示共享专家卡排在MoE专家卡前面。
-    -   shared\_expert\_num：int类型，表示共享专家数量，一个共享专家可以复制部署到多个卡上。
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：暂不支持该参数，使用默认值即可。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, 4\]，0表示无共享专家，默认值为1。
+
+-   shared\_expert\_num：int类型，表示共享专家数量，一个共享专家可以复制部署到多个卡上。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：暂不支持该参数，使用默认值即可。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, 4\]，0表示无共享专家，默认值为1。
 
 -   shared\_expert\_rank\_num：int类型，可选参数，表示共享专家卡数量。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持共享专家，使用默认值即可。

@@ -58,7 +58,7 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
 
 -   shared\_expert\_rank\_num：int类型，可选参数，表示共享专家卡数量。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持共享专家，传0即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, ep\_world\_size\)。取0表示无共享专家，不取0时需满足不取0时需满足ep\_world\_size%shared\_expert\_rank\_num=0。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, ep\_world\_size\)。取0表示无共享专家，不取0时需满足ep\_world\_size%shared\_expert\_rank\_num=0。
 
 -   quant\_mode：int类型，可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。当quant\_mode=2，dynamic\_scales不为None；当quant\_mode=0，dynamic\_scales为None。
 -   global\_bs：int类型，可选参数，表示EP域全局的batch size大小。
@@ -71,9 +71,7 @@ torch_npu.npu_moe_distribute_dispatch(Tensor x, Tensor expert_ids, str group_ep,
 
 -   expand\_x：Tensor类型，表示本卡收到的token数据，要求为2D的Tensor，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持bfloat16、float16、int8。量化时类型为int8，非量化时与x数据类型保持一致。数据格式为ND，支持非连续的Tensor。
 -   dynamic\_scales：Tensor类型，表示计算得到的动态量化参数。当quant\_mode非0时才有该输出，要求为1D的Tensor，shape为\(A,\)，数据类型支持float，数据格式支持ND，支持非连续的Tensor。
--   expand\_idx：Tensor类型，表示给同一专家发送的token个数，要求是一个1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)的expand\_idx输入。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：shape为\(BS \* K, \)。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：shape为\(BS \* K, \)。
+-   expand\_idx：Tensor类型，表示给同一专家发送的token个数，要求是一个1D的Tensor，shape为\(BS \* K, \)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)的expand\_idx输入。
 
 -   expert\_token\_nums：Tensor类型，本卡每个专家实际收到的token数量，要求为1D的Tensor，shape为\(local\_expert\_num,\)，数据类型int64，数据格式支持ND，支持非连续的Tensor。
 -   ep\_recv\_counts：Tensor类型，表示EP通信域各卡收到的token数量，要求为1D的Tensor，数据类型int32，数据格式支持ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)的ep\_send\_counts输入。
