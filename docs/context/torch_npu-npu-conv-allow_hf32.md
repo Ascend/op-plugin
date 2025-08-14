@@ -1,8 +1,20 @@
 # torch_npu.npu.conv.allow_hf32
+## 产品支持情况
 
-torch_npu.npu.conv.allow_hf32功能和调用方式与torch.backends.cudnn.allow_tf32类似，torch.backends.cudnn.allow_tf32的功能具体请参考[https://pytorch.org/docs/stable/backends.html\#torch.backends.cudnn.allow_tf32](https://pytorch.org/docs/stable/backends.html#torch.backends.cudnn.allow_tf32)。
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
 
-torch_npu.npu.conv.allow_hf32的调用方式如下所示：
+
+
+## 功能说明
+
+conv类算子开启支持hf32类型能力。
+
+`torch_npu.npu.conv.allow_hf32`功能和调用方式与`torch.backends.cudnn.allow_tf32`类似，`torch.backends.cudnn.allow_tf32`的功能具体请参考[https://pytorch.org/docs/stable/backends.html\#torch.backends.cudnn.allow_tf32](https://pytorch.org/docs/stable/backends.html#torch.backends.cudnn.allow_tf32)。
 
 ## 函数原型
 
@@ -10,9 +22,6 @@ torch_npu.npu.conv.allow_hf32的调用方式如下所示：
 torch_npu.npu.conv.allow_hf32 = bool
 ```
 
-## 功能说明
-
-conv类算子开启支持hf32类型能力。
 
 ## 参数说明
 
@@ -20,14 +29,8 @@ conv类算子开启支持hf32类型能力。
 
 ## 输出说明
 
-bool类型。
+`bool`
 
-## 支持的型号
-
-- <term> Atlas 训练系列产品</term> 
-- <term> Atlas A2 训练系列产品</term> 
-- <term> Atlas A3 训练系列产品</term> 
-- <term> Atlas 推理系列产品</term> 
 
 ## 调用示例
 

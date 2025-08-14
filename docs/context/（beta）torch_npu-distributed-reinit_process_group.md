@@ -1,4 +1,14 @@
 # （beta）torch_npu.distributed.reinit_process_group
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+
+## 功能说明
+
+重新构建processgroup集合通信域。
 
 ## 函数原型
 
@@ -6,23 +16,18 @@
 torch_npu.distributed.reinit_process_group(group: Optional[ProcessGroup] = None, rebuild_link: bool = True) -> None
 ```
 
-## 功能说明
-
-重新构建processgroup集合通信域。
-
 ## 参数说明
 
-- **group**(`Optional[ProcessGroup]`) ：默认值为None，使用默认值是reinit default process group。
-- **rebuild_link**(`bool`)：默认值为True，当传入参数为True时会将当前的process group hccl建立的通信链接销毁掉，然后进行重建；如果传入参数为False，表示继续使用原有的通信链接。
+- **group** (`Optional[ProcessGroup]`)：默认值为None，使用默认值是reinit default process group。
+- **rebuild_link** (`bool`)：当传入参数为True时，会销毁当前的process group hccl建立的通信链接，然后进行重建；如果传入参数为False，则表示继续使用原有的通信链接，默认值为True。
 
-## 输入说明
+## 返回值说明
+`None`
 
-要确保是一个有效的device。
+## 约束说明
 
-## 支持的型号
+输入要确保是一个有效的device。
 
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
 
 ## 调用示例
 

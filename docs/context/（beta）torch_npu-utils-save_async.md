@@ -1,4 +1,17 @@
 # （beta）torch\_npu.utils.save\_async
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
+
+## 功能说明
+
+异步保存一个对象到一个硬盘文件上。
 
 ## 函数原型
 
@@ -6,26 +19,16 @@
 torch_npu.utils.save_async(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL, _use_new_zipfile_serialization=True, _disable_byteorder_record=False, model=None)
 ```
 
-## 功能说明
-
-异步保存一个对象到一个硬盘文件上。
-
 ## 参数说明
 
--   obj \(object\) – 要保存的对象。
--   f \(Union\[str, PathLike, BinaryIO, IO\[bytes\]\]\) – 保存的目标文件路径或文件句柄。
--   pickle\_module \(Any，默认值为pickle\) – 用于Pickle序列化的模块。
--   pickle\_protocol \(int，默认值为DEFAULT\_PROTOCOL\) – Pickle协议版本。
--   \_use\_new\_zipfile\_serialization \(Bool，默认值为True\) - 是否使用新的Zip文件序列化。
--   \_disable\_byteorder\_record \(Bool，默认值为False\) - 是否禁用字节顺序记录。
--   model \(torch.nn.Module，默认值为None\) - 模型对象，需要对模型反向注册hook。
+- **obj** (`object`)：要保存的对象。
+- **f** \(Union\[str, PathLike, BinaryIO, IO\[bytes\]\]\)：保存的目标文件路径或文件句柄。
+- **pickle_module**(Any)：用于Pickle序列化的模块，默认值为pickle。
+- **pickle_protocol**(`int`)：Pickle协议版本，默认值为DEFAULT\_PROTOCOL。
+- **_use_new_zipfile_serialization**(`Bool`)：是否使用新的Zip文件序列化，默认值为True。
+- **_disable_byteorder_record**(`Bool`)：是否禁用字节顺序记录，默认值为False。
+- **model**：模型对象，需要对模型反向注册hook，torch.nn.Module，默认值为None。
 
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
 
 ## 约束说明
 该接口仅支持PyTorch 2.1.0版本。
