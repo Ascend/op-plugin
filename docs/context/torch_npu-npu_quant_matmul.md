@@ -1,20 +1,27 @@
 # torch_npu.npu_quant_matmul
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>           |    √     |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> | √   |
+|<term>Atlas 推理系列加速卡产品</term> | √   |
+
 ## 功能说明
 
 - API功能：完成量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维。
 
 - 计算公式：
-    $x1$、$x2$、$\text{scale}$、$\text{offset}$、$\text{bias}$均为输入。
-    - 无bias：
+    - 无`bias`：
     $$
     out = x1 \mathbin{@} x2 * \text{scale} + \text{offset}
     $$
-    - bias INT32：
+    - `bias`为`int32`：
     $$
     out = (x1 \mathbin{@} x2 + \text{bias}) * \text{scale} + \text{offset}
     $$
-    - bias BFLOAT16/FLOAT32（无offset）：
+    - `bias`为`bfloat16`或`float32`（无`offset`）：
     $$
     out = x1 \mathbin{@} x2 * \text{scale} + \text{bias}
     $$
@@ -27,46 +34,49 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
 
 ## 参数说明
 
-- **x1** (`Tensor`)：数据格式支持$ND$，shape需要在2-6维范围。
+- **x1** (`Tensor`)：必选参数，输入张量，表示矩阵乘法中的左矩阵，数据格式支持$ND$，shape需要在2-6维范围。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int8`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int8`和`int32`。其中`int32`表示`int4`类型矩阵乘计算，每个`int32`数据存放8个`int4`数据。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`和`int32`。其中`int32`表示`int4`类型矩阵乘计算，每个`int32`数据存放8个`int4`数据。
 
-- **x2** (`Tensor`)：weight，其与`x1`的数据类型须保持一致。数据格式支持$ND$，shape需要在2-6维范围。
+- **x2** (`Tensor`)：必选参数，输入张量，表示矩阵乘法中的右矩阵，其与`x1`的数据类型须保持一致。数据格式支持$ND$，shape需要在2-6维范围。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int8`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int8`和`int32`（`int32`含义同`x1`，表示`int4`类型计算）。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`和`int32`（`int32`含义同`x1`，表示`int4`类型计算）。
 
-- **scale** (`Tensor`)：数据格式支持$ND$，shape需要是1维$(t, )$，$t=1$或$n$，其中$n$与`x2`的$n$一致。如需传入`int64`数据类型的`scale`，需要提前调用`torch_npu.npu_trans_quant_param`来获取`int64`数据类型的`scale`。
+- **scale** (`Tensor`)：必选参数，量化缩放因子，数据格式支持$ND$，shape需要是1维$(t, )$，$t=1$或$n$，其中$n$与`x2`的$n$一致。如需传入`int64`数据类型的`scale`，需要提前调用`torch_npu.npu_trans_quant_param`来获取`int64`数据类型的`scale`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float32`、`int64`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`int64`、`bfloat16`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
 
-- **offset** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(t,)$，$t=1$或$n$，其中$n$与`x2`的$n$一致。
-- **pertoken_scale** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致。<term>Atlas 推理系列加速卡产品</term>当前不支持`pertoken_scale`。
-- **bias** (`Tensor`)：可选参数，数据格式支持$ND$，shape支持1维$(n,)$或3维$（batch, 1, n）$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是2、4、5、6维情况下，`bias`的shape必须为1维。当输出是3维情况下，`bias`的shape可以为1维或3维。
+- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- **offset** (`Tensor`)：可选参数，用于调整量化后的数值偏移量。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(t,)$，$t=1$或$n$，其中$n$与`x2`的$n$一致。
+- **pertoken_scale** (`Tensor`)：可选参数，用于缩放原数值以匹配量化后的范围值。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致。<term>Atlas 推理系列加速卡产品</term>当前不支持`pertoken_scale`。
+- **bias** (`Tensor`)：可选参数，偏置项，数据格式支持$ND$，shape支持1维$(n,)$或3维$（batch, 1, n）$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是2、4、5、6维情况下，`bias`的shape必须为1维。当输出是3维情况下，`bias`的shape可以为1维或3维。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int32`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。
 
-- **output_dtype** (`int`)：，可选参数。表示输出Tensor的数据类型。默认值为`None`，代表输出Tensor数据类型为`int8`。
-    - <term>Atlas 推理系列加速卡产品</term>：支持输入`int8`、`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
+- **output_dtype** (`int`)：可选参数，表示输出Tensor的数据类型。默认值为`None`，代表输出Tensor数据类型为`int8`。
+    - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int8`、`float16`。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int8`、`float16`、`bfloat16`、`int32`。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`float16`、`bfloat16`、`int32`。
 
-- **x1_dtype** (`int`)：可选参数。
+- **x1_dtype** (`int`)：可选参数，指定输入`x1` 的数据类型。
 
-- **x2_dtype** (`int`)：可选参数。
+- **x2_dtype** (`int`)：可选参数，指定输入`x2`的数据类型。
 
-- **pertoken_scale_dtype** (`int`)：可选参数。
+- **pertoken_scale_dtype** (`int`)：可选参数，指定输入`pertoken_scale`的数据类型。
 
-- **scale_dtype** (`int`)：可选参数。
+- **scale_dtype** (`int`)：可选参数，指定输入`scale`的数据类型。
 
-- **group_sizes** (`list[int]`)：可选参数。
+- **group_sizes** (`list[int]`)：可选参数，表示分组量化粒度。
 
 ## 返回值说明
 
-`Tensor`：代表量化matmul的计算结果。
+`Tensor`
+
+代表量化matmul的计算结果。
 - 如果`output_dtype`为`float16`，输出的数据类型为`float16`。
 - 如果`output_dtype`为`int8`或者`None`，输出的数据类型为`int8`。
 - 如果`output_dtype`为`bfloat16`，输出的数据类型为`bfloat16`。
@@ -86,7 +96,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：推荐`x2`不转置直接转亲和format。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：推荐`x2`不转置直接转亲和format。
 
-- **`int4`** 类型计算的额外约束：
+- **int4** 类型计算的额外约束：
 
     当`x1`、`x2`的数据类型均为`int32`，每个`int32`类型的数据存放8个`int4`数据。输入的`int32` shape需要将数据原本`int4`类型时shape的最后一维缩小8倍。`int4`数据的shape最后一维应为8的倍数，例如：进行$(m, k)$乘$(k, n)$的`int4`类型矩阵乘计算时，需要输入`int32`类型、shape为$(m, k//8)$、$(k, n//8)$的数据，其中$k$与$n$都应是8的倍数。`x1`只能接受shape为$(m, k//8)$且数据排布连续的数据，`x2`可以接受$(k, n[g1] //8)$且数据排布连续的数据或shape为$(k//8, n)$且是由数据连续排布的$(n, k//8)$转置而来的数据。
 
@@ -96,174 +106,22 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
 - 输入参数间支持的数据类型组合情况如下：
 
     **表 1** <term>Atlas 推理系列加速卡产品</term>
-
-    <a name="zh-cn_topic_0000001814195101_table137979611411"></a>
-    <table><thead align="left"><tr id="zh-cn_topic_0000001814195101_row4797206151415"><th class="cellrowborder" valign="top" width="11.32113211321132%" id="mcps1.2.8.1.1"><p id="zh-cn_topic_0000001814195101_p679746181416"><a name="zh-cn_topic_0000001814195101_p679746181416"></a><a name="zh-cn_topic_0000001814195101_p679746181416"></a>x1</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11.871187118711871%" id="mcps1.2.8.1.2"><p id="zh-cn_topic_0000001814195101_p17797196131414"><a name="zh-cn_topic_0000001814195101_p17797196131414"></a><a name="zh-cn_topic_0000001814195101_p17797196131414"></a>x2</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="15.071507150715071%" id="mcps1.2.8.1.3"><p id="zh-cn_topic_0000001814195101_p9798146151411"><a name="zh-cn_topic_0000001814195101_p9798146151411"></a><a name="zh-cn_topic_0000001814195101_p9798146151411"></a>scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="15.541554155415543%" id="mcps1.2.8.1.4"><p id="zh-cn_topic_0000001814195101_p279876171414"><a name="zh-cn_topic_0000001814195101_p279876171414"></a><a name="zh-cn_topic_0000001814195101_p279876171414"></a>offset</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="16.63166316631663%" id="mcps1.2.8.1.5"><p id="zh-cn_topic_0000001814195101_p279819691415"><a name="zh-cn_topic_0000001814195101_p279819691415"></a><a name="zh-cn_topic_0000001814195101_p279819691415"></a>bias</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="15.761576157615762%" id="mcps1.2.8.1.6"><p id="zh-cn_topic_0000001814195101_p87981068143"><a name="zh-cn_topic_0000001814195101_p87981068143"></a><a name="zh-cn_topic_0000001814195101_p87981068143"></a>pertoken_scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="13.801380138013803%" id="mcps1.2.8.1.7"><p id="zh-cn_topic_0000001814195101_p9798146151412"><a name="zh-cn_topic_0000001814195101_p9798146151412"></a><a name="zh-cn_topic_0000001814195101_p9798146151412"></a>output_dtype</p>
-    </th>
-    </tr>
-    </thead>
-    <tbody><tr id="zh-cn_topic_0000001814195101_row579856191414"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000001814195101_p979819671414"><a name="zh-cn_topic_0000001814195101_p979819671414"></a><a name="zh-cn_topic_0000001814195101_p979819671414"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000001814195101_p2079811615146"><a name="zh-cn_topic_0000001814195101_p2079811615146"></a><a name="zh-cn_topic_0000001814195101_p2079811615146"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.071507150715071%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000001814195101_p1979826161418"><a name="zh-cn_topic_0000001814195101_p1979826161418"></a><a name="zh-cn_topic_0000001814195101_p1979826161418"></a><code>int64/float32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.541554155415543%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000001814195101_p1679818613147"><a name="zh-cn_topic_0000001814195101_p1679818613147"></a><a name="zh-cn_topic_0000001814195101_p1679818613147"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="16.63166316631663%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000001814195101_p1979814616149"><a name="zh-cn_topic_0000001814195101_p1979814616149"></a><a name="zh-cn_topic_0000001814195101_p1979814616149"></a><code>int32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.761576157615762%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000001814195101_p1079810614143"><a name="zh-cn_topic_0000001814195101_p1079810614143"></a><a name="zh-cn_topic_0000001814195101_p1079810614143"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="13.801380138013803%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000001814195101_p17982619144"><a name="zh-cn_topic_0000001814195101_p17982619144"></a><a name="zh-cn_topic_0000001814195101_p17982619144"></a><code>float16</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001814195101_row67983631410"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000001814195101_p57988641416"><a name="zh-cn_topic_0000001814195101_p57988641416"></a><a name="zh-cn_topic_0000001814195101_p57988641416"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000001814195101_p157981268148"><a name="zh-cn_topic_0000001814195101_p157981268148"></a><a name="zh-cn_topic_0000001814195101_p157981268148"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.071507150715071%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000001814195101_p15798176151420"><a name="zh-cn_topic_0000001814195101_p15798176151420"></a><a name="zh-cn_topic_0000001814195101_p15798176151420"></a><code>int64/float32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.541554155415543%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000001814195101_p47981763141"><a name="zh-cn_topic_0000001814195101_p47981763141"></a><a name="zh-cn_topic_0000001814195101_p47981763141"></a><code>float32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="16.63166316631663%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000001814195101_p207985618146"><a name="zh-cn_topic_0000001814195101_p207985618146"></a><a name="zh-cn_topic_0000001814195101_p207985618146"></a><code>int32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.761576157615762%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000001814195101_p17798206121415"><a name="zh-cn_topic_0000001814195101_p17798206121415"></a><a name="zh-cn_topic_0000001814195101_p17798206121415"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="13.801380138013803%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000001814195101_p13798176111417"><a name="zh-cn_topic_0000001814195101_p13798176111417"></a><a name="zh-cn_topic_0000001814195101_p13798176111417"></a><code>int8</code></p>
-    </td>
-    </tr>
-    </tbody>
-    </table>
+    |x1|x2|scale|offset|bias|pertoken_scale|output_dtype|
+    |---------|--------|--------|--------|--------|--------|--------|
+    |int8|int8|int64/float32|None|int32/None|None|float16|
+    |int8|int8|int64/float32|float32/None|int32/None|None|int8|
 
     **表 2**  <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
 
-    <a name="zh-cn_topic_0000001814195101_table1679886201417"></a>
-    <table><thead align="left"><tr id="zh-cn_topic_0000001814195101_row137981167148"><th class="cellrowborder" valign="top" width="11.32113211321132%" id="mcps1.2.8.1.1"><p id="zh-cn_topic_0000001814195101_p07983661414"><a name="zh-cn_topic_0000001814195101_p07983661414"></a><a name="zh-cn_topic_0000001814195101_p07983661414"></a><code>x1</code></p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11.871187118711871%" id="mcps1.2.8.1.2"><p id="zh-cn_topic_0000001814195101_p1079926121412"><a name="zh-cn_topic_0000001814195101_p1079926121412"></a><a name="zh-cn_topic_0000001814195101_p1079926121412"></a>x2</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="14.931493149314932%" id="mcps1.2.8.1.3"><p id="zh-cn_topic_0000001814195101_p127997651418"><a name="zh-cn_topic_0000001814195101_p127997651418"></a><a name="zh-cn_topic_0000001814195101_p127997651418"></a>scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="15.68156815681568%" id="mcps1.2.8.1.4"><p id="zh-cn_topic_0000001814195101_p67991061149"><a name="zh-cn_topic_0000001814195101_p67991061149"></a><a name="zh-cn_topic_0000001814195101_p67991061149"></a>offset</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="16.79167916791679%" id="mcps1.2.8.1.5"><p id="zh-cn_topic_0000001814195101_p979917691414"><a name="zh-cn_topic_0000001814195101_p979917691414"></a><a name="zh-cn_topic_0000001814195101_p979917691414"></a>bias</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="15.51155115511551%" id="mcps1.2.8.1.6"><p id="zh-cn_topic_0000001814195101_p147992613142"><a name="zh-cn_topic_0000001814195101_p147992613142"></a><a name="zh-cn_topic_0000001814195101_p147992613142"></a>pertoken_scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="13.89138913891389%" id="mcps1.2.8.1.7"><p id="zh-cn_topic_0000001814195101_p1979946171411"><a name="zh-cn_topic_0000001814195101_p1979946171411"></a><a name="zh-cn_topic_0000001814195101_p1979946171411"></a>output_dtype</p>
-    </th>
-    </tr>
-    </thead>
-    <tbody><tr id="zh-cn_topic_0000001814195101_row57991960143"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000001814195101_p1679926111413"><a name="zh-cn_topic_0000001814195101_p1679926111413"></a><a name="zh-cn_topic_0000001814195101_p1679926111413"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000001814195101_p57992615148"><a name="zh-cn_topic_0000001814195101_p57992615148"></a><a name="zh-cn_topic_0000001814195101_p57992615148"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="14.931493149314932%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000001814195101_p16799186141416"><a name="zh-cn_topic_0000001814195101_p16799186141416"></a><a name="zh-cn_topic_0000001814195101_p16799186141416"></a><code>int64/float32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.68156815681568%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000001814195101_p157992066147"><a name="zh-cn_topic_0000001814195101_p157992066147"></a><a name="zh-cn_topic_0000001814195101_p157992066147"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="16.79167916791679%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000001814195101_p379936121416"><a name="zh-cn_topic_0000001814195101_p379936121416"></a><a name="zh-cn_topic_0000001814195101_p379936121416"></a><code>int32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.51155115511551%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000001814195101_p1279946101418"><a name="zh-cn_topic_0000001814195101_p1279946101418"></a><a name="zh-cn_topic_0000001814195101_p1279946101418"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="13.89138913891389%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000001814195101_p1179986141417"><a name="zh-cn_topic_0000001814195101_p1179986141417"></a><a name="zh-cn_topic_0000001814195101_p1179986141417"></a><code>float16</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001814195101_row1079918612143"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000001814195101_p1079915631414"><a name="zh-cn_topic_0000001814195101_p1079915631414"></a><a name="zh-cn_topic_0000001814195101_p1079915631414"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000001814195101_p7799166151410"><a name="zh-cn_topic_0000001814195101_p7799166151410"></a><a name="zh-cn_topic_0000001814195101_p7799166151410"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="14.931493149314932%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000001814195101_p1579920621412"><a name="zh-cn_topic_0000001814195101_p1579920621412"></a><a name="zh-cn_topic_0000001814195101_p1579920621412"></a><code>int64/float32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.68156815681568%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000001814195101_p137991667141"><a name="zh-cn_topic_0000001814195101_p137991667141"></a><a name="zh-cn_topic_0000001814195101_p137991667141"></a><code>float32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="16.79167916791679%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000001814195101_p879912671419"><a name="zh-cn_topic_0000001814195101_p879912671419"></a><a name="zh-cn_topic_0000001814195101_p879912671419"></a><code>int32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.51155115511551%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000001814195101_p18799961147"><a name="zh-cn_topic_0000001814195101_p18799961147"></a><a name="zh-cn_topic_0000001814195101_p18799961147"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="13.89138913891389%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000001814195101_p18799768142"><a name="zh-cn_topic_0000001814195101_p18799768142"></a><a name="zh-cn_topic_0000001814195101_p18799768142"></a><code>int8</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001814195101_row1879917611417"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000001814195101_p17999641415"><a name="zh-cn_topic_0000001814195101_p17999641415"></a><a name="zh-cn_topic_0000001814195101_p17999641415"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000001814195101_p17996641420"><a name="zh-cn_topic_0000001814195101_p17996641420"></a><a name="zh-cn_topic_0000001814195101_p17996641420"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="14.931493149314932%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000001814195101_p17999613143"><a name="zh-cn_topic_0000001814195101_p17999613143"></a><a name="zh-cn_topic_0000001814195101_p17999613143"></a><code>float32/bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.68156815681568%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000001814195101_p1679917617146"><a name="zh-cn_topic_0000001814195101_p1679917617146"></a><a name="zh-cn_topic_0000001814195101_p1679917617146"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="16.79167916791679%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000001814195101_p1579917610143"><a name="zh-cn_topic_0000001814195101_p1579917610143"></a><a name="zh-cn_topic_0000001814195101_p1579917610143"></a><code>int32/bfloat16/float32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.51155115511551%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000001814195101_p127999610146"><a name="zh-cn_topic_0000001814195101_p127999610146"></a><a name="zh-cn_topic_0000001814195101_p127999610146"></a><code>float32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="13.89138913891389%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000001814195101_p37991769148"><a name="zh-cn_topic_0000001814195101_p37991769148"></a><a name="zh-cn_topic_0000001814195101_p37991769148"></a><code>bfloat16</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001814195101_row48002613140"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000001814195101_p28008651413"><a name="zh-cn_topic_0000001814195101_p28008651413"></a><a name="zh-cn_topic_0000001814195101_p28008651413"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000001814195101_p12800862141"><a name="zh-cn_topic_0000001814195101_p12800862141"></a><a name="zh-cn_topic_0000001814195101_p12800862141"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="14.931493149314932%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000001814195101_p168001162144"><a name="zh-cn_topic_0000001814195101_p168001162144"></a><a name="zh-cn_topic_0000001814195101_p168001162144"></a><code>float32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.68156815681568%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000001814195101_p38001168147"><a name="zh-cn_topic_0000001814195101_p38001168147"></a><a name="zh-cn_topic_0000001814195101_p38001168147"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="16.79167916791679%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000001814195101_p138001616147"><a name="zh-cn_topic_0000001814195101_p138001616147"></a><a name="zh-cn_topic_0000001814195101_p138001616147"></a><code>int32/float16/float32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.51155115511551%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000001814195101_p280018610149"><a name="zh-cn_topic_0000001814195101_p280018610149"></a><a name="zh-cn_topic_0000001814195101_p280018610149"></a><code>float32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="13.89138913891389%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000001814195101_p1080046101413"><a name="zh-cn_topic_0000001814195101_p1080046101413"></a><a name="zh-cn_topic_0000001814195101_p1080046101413"></a><code>float16</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001814195101_row1180010631415"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000001814195101_p580086181417"><a name="zh-cn_topic_0000001814195101_p580086181417"></a><a name="zh-cn_topic_0000001814195101_p580086181417"></a><code>int32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000001814195101_p38001619148"><a name="zh-cn_topic_0000001814195101_p38001619148"></a><a name="zh-cn_topic_0000001814195101_p38001619148"></a><code>int32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="14.931493149314932%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000001814195101_p9800169148"><a name="zh-cn_topic_0000001814195101_p9800169148"></a><a name="zh-cn_topic_0000001814195101_p9800169148"></a><code>int64/float32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.68156815681568%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000001814195101_p68001261146"><a name="zh-cn_topic_0000001814195101_p68001261146"></a><a name="zh-cn_topic_0000001814195101_p68001261146"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="16.79167916791679%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000001814195101_p1180046111415"><a name="zh-cn_topic_0000001814195101_p1180046111415"></a><a name="zh-cn_topic_0000001814195101_p1180046111415"></a><code>int32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.51155115511551%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000001814195101_p78001611417"><a name="zh-cn_topic_0000001814195101_p78001611417"></a><a name="zh-cn_topic_0000001814195101_p78001611417"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="13.89138913891389%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000001814195101_p208001063147"><a name="zh-cn_topic_0000001814195101_p208001063147"></a><a name="zh-cn_topic_0000001814195101_p208001063147"></a><code>float16</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001814195101_row780012631416"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000001814195101_p1480015681411"><a name="zh-cn_topic_0000001814195101_p1480015681411"></a><a name="zh-cn_topic_0000001814195101_p1480015681411"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000001814195101_p1280015614143"><a name="zh-cn_topic_0000001814195101_p1280015614143"></a><a name="zh-cn_topic_0000001814195101_p1280015614143"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="14.931493149314932%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000001814195101_p1580036101417"><a name="zh-cn_topic_0000001814195101_p1580036101417"></a><a name="zh-cn_topic_0000001814195101_p1580036101417"></a><code>float32/bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.68156815681568%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000001814195101_p1680013671414"><a name="zh-cn_topic_0000001814195101_p1680013671414"></a><a name="zh-cn_topic_0000001814195101_p1680013671414"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="16.79167916791679%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000001814195101_p2800136111410"><a name="zh-cn_topic_0000001814195101_p2800136111410"></a><a name="zh-cn_topic_0000001814195101_p2800136111410"></a><code>int32/None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="15.51155115511551%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000001814195101_p9800116131416"><a name="zh-cn_topic_0000001814195101_p9800116131416"></a><a name="zh-cn_topic_0000001814195101_p9800116131416"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="13.89138913891389%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000001814195101_p980016681416"><a name="zh-cn_topic_0000001814195101_p980016681416"></a><a name="zh-cn_topic_0000001814195101_p980016681416"></a><code>int32</code></p>
-    </td>
-    </tr>
-    </tbody>
-    </table>
+    |x1|x2|scale|offset|bias|pertoken_scale|output_dtype|
+    |---------|--------|--------|--------|--------|--------|--------|
+    |int8|int8|int64/float32|None|int32/None|None|float16|
+    |int8|int8|int64/float32|float32/None|int32/None|None|int8|
+    |int8|int8|float32/bfloat16|None|int32/bfloat16/float32/None|float32/None|bfloat16|
+    |int8|int8|float32|None|int32/bfloat16/float32/None|float32|float16|
+    |int32|int32|int64/float32|None|int32/None|None|float16|
+    |int8|int8|float32/bfloat16|None|int32/None|None|int32|
 
-## 支持的型号
-
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
-- <term>Atlas 推理系列加速卡产品</term>
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> 
 
 ## 调用示例
 

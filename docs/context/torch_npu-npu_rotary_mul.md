@@ -1,5 +1,61 @@
 # torch_npu.npu_rotary_mul
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>           |    √     |
+|<term>Atlas A2 训练系列产品</term> | √   |
+|<term>Atlas 训练系列产品</term> | √   |
+|<term>Atlas 推理系列产品</term> | √   |
+
+## 功能说明
+
+-   API功能：实现Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息。
+-   计算公式：
+     $$
+    output = x * cos + ratote(x) * sin
+     $$
+     其中$x$是输入`input`，$cos$和$sin$分别是旋转系数输入`r1`和`r2`，输入ratote支持两种计算模式：
+
+     - 当rotary_mode='half'时，将输入向量沿最后一个维度分为两半，然后应用旋转：
+         $$
+         x_1, x_2 = chunk(x,2,dim=-1)\\
+         ratote(x) = concat(-x_2,x_1)
+         $$
+
+     - 当rotary_mode='interleave'时，将输入向量按交错顺序处理，然后应用旋转：
+         $$
+         x_1 = x[..., ::2], x_2 = x[..., 1::2]\\
+         ratote(x) = rearrange(torch.stack((-x_2, x_1), dim=-1), “... d two -> ...(d two)", two=2)\\
+         $$
+
+-   小算子等价计算逻辑：
+    
+     可使用`fused_rotary_position_embedding`等价替换`torch_npu.npu_rotary_mul`，两者计算逻辑一致。
+     
+     ```python
+     import torch
+     from einops import rearrange
+     
+     # mode = 0
+     def rotate_half(x):
+         x1, x2 = torch.chunk(x, 2, dim=-1)
+         return torch.cat((-x2, x1), dim=-1)
+     
+     # mode = 1
+     def rotate_interleaved(x):
+        x1 = x[..., ::2]
+        x2 = x[..., 1::2]
+        return rearrange(torch.stack((-x2, x1), dim=-1), "... d two -> ...(d two)", two=2)
+     
+     def fused_rotary_position_embedding(x, cos, sin, interleaved=False):
+         if not interleaved:
+             return x * cos + rotate_half(x) * sin
+         else:
+             return x * cos + rotate_interleaved(x) * sin
+     ```     
+
 ## 函数原型
 
 ```
@@ -9,60 +65,17 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
 >**说明：**<br>
 >在模型训练场景中，正向算子的输入`input`将被保留以供反向计算时使用。在`r1`，`r2`不需要计算反向梯度场景下（`requires_grad=False`），使用该接口相较融合前小算子使用的设备内存占用会有所增加。
 
-## 功能说明
-
-实现Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息。通用形式为：
-$$
-output = x * cos + ratote(x) * sin
-$$
-其中*x*是输入`input`，*cos*和*sin*分别是旋转系数输入`r1`和`r2`，输入ratote支持两种计算模式：
-
-- 当rotary_mode='half'时，将输入向量沿最后一个维度分为两半，然后应用旋转：
- $$
- x_1, x_2 = chunk(x,2,dim=-1)\\
- ratote(x) = concat(-x_2,x_1)
- $$
-
-- 当rotary_mode='interleave'时，将输入向量按交错顺序处理，然后应用旋转：
- $$
- x_1 = x[..., ::2], x_2 = x[..., 1::2]\\
-ratote(x) = rearrange(torch.stack((-x_2, x_1), dim=-1), “... d two -> ...(d two)", two=2)\\
- $$
-
-小算子等价计算逻辑：
-```python
-import torch
-from einops import rearrange
-
-# mode = 0
-def rotate_half(x):
-    x1, x2 = torch.chunk(x, 2, dim=-1)
-    return torch.cat((-x2, x1), dim=-1)
-
-# mode = 1
-def rotate_interleaved(x):
-    x1 = x[..., ::2]
-    x2 = x[..., 1::2]
-    return rearrange(torch.stack((-x2, x1), dim=-1), "... d two -> ...(d two)", two=2)
-
-def fused_rotary_position_embedding(x, cos, sin, interleaved=False):
-    if not interleaved:
-        return x * cos + rotate_half(x) * sin
-    else:
-        return x * cos + rotate_interleaved(x) * sin
-```
-
 ## 参数说明
 
-- **input** (`Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
-- **r1** (`Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
-- **r2** (`Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
-- **rotary_mode** (`str`)：可选属性，数据类型`str`，用于选择计算模式，支持`half`、`interleave`两种模式。缺省为`half`。
+- **input** (`Tensor`)：必选参数，输入维度必须为4维，数据类型支持`float16`，`bfloat16`，`float32`。
+- **r1** (`Tensor`)：必选参数，表示$cos$旋转系数，输入维度必须为4维，数据类型支持`float16`，`bfloat16`，`float32`。
+- **r2** (`Tensor`)：必选参数，表示$sin$旋转系数，输入维度必须为4维，数据类型支持`float16`，`bfloat16`，`float32`。
+- **rotary_mode** (`str`)：可选参数，数据类型支持`str`，用于选择计算模式，支持`half`、`interleave`两种模式。默认值为`half`。
 
 ## 返回值说明
 `Tensor`
 
-输出为`Tensor`，shape和dtype同输入`input`。
+输出计算结果，shape和dtype需与`input`一致。
 
 ## 约束说明
 
@@ -98,12 +111,6 @@ def fused_rotary_position_embedding(x, cos, sin, interleaved=False):
 
      广播场景下，广播轴的总数据量不能超过1024。
 
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term> 
-- <term>Atlas A2 训练系列产品</term> 
-- <term>Atlas A3 训练系列产品</term> 
-- <term>Atlas 推理系列产品</term> 
 
 ## 调用示例
 
