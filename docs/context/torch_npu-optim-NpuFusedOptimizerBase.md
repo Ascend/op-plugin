@@ -25,7 +25,7 @@ params为参数的可迭代对象或参数组的dict类型。
 
 ## 约束说明
 
-NpuFusedOptimizerBase为基类，无法单独使用，需通过继承实现子类实现特定功能的融合优化器。
+NpuFusedOptimizerBase为基类，无法单独使用，需通过继承子类实现特定功能的融合优化器。
 
 ## 支持的型号
 

@@ -38,6 +38,8 @@ Multi-head attention。
 >>> from torch_npu.testing.common_utils import create_common_tensor
 >>> from torch_npu.contrib.module import MultiheadAttention
 >>> import numpy as np
+>>> from torch_npu.contrib.module.multihead_attention import _MHAConfig
+>>> _MHAConfig.set_fussion()
 >>> model = MultiheadAttention(embed_dim=1024,num_heads=16,dropout=0.1,kdim=1024,vdim=1024,self_attention=True,encoder_decoder_attention=True)
 >>> _, query = create_common_tensor([np.float16, 29, (1024,1024)], -1, 1)
 >>> _, key = create_common_tensor([np.float16, 29, (1024,1024)], -1, 1)

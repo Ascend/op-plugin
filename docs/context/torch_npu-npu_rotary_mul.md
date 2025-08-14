@@ -35,7 +35,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
 - **input** (`torch.Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
 - **r1** (`torch.Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
 - **r2** (`torch.Tensor`)：必选输入，4维Tensor，数据类型`float16`，`bfloat16`，`float32`。
-- **rotary_mode** (`str`)：可选属性，数据类型`str`，用于选择计算模式，支持`half`、`interleave`两种模式。缺省为`half`。
+- **rotary_mode** (`str`)：可选参数，数据类型`str`，用于选择计算模式，支持`half`、`interleave`两种模式。缺省为`half`。
 
 ## 返回值
 `Tensor`
