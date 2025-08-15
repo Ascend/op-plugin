@@ -25,16 +25,16 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 -   group\_ep：string类型，EP通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)，不能和group\_tp相同。
 -   ep\_world\_size：int类型，EP通信域size。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值支持16、32、64。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持\[2, 384\]。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持\[2, 768\]。
 
 -   ep\_rank\_id：int类型，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的ep\_rank\_id不重复。
--   moe\_expert\_num：int类型，MoE专家数量，取值范围\[1, 512\]，并且满足以下条件：moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0。
+-   moe\_expert\_num：int类型，MoE专家数量，取值范围\[1, 1024\]，并且满足以下条件：moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：还需满足moe\_expert\_num\/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：还需满足moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)\*ep\_world\_size<=1280。
 -   scales：Tensor类型，可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为2D的Tensor，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)，数据类型支持float，数据格式为ND，不支持非连续的Tensor。
 -   x\_active\_mask：Tensor类型，
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：预留参数，暂未使用，使用默认值即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求是一个1D Tensor，shape为\(BS, \)，数据类型支持bool，数据格式要求为ND，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入；默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求是一个1D或者2D Tensor。当输入为1D时，shape为\(BS, \); 当输入为2D时，shape为\(BS, K\)。数据类型支持bool，数据格式要求为ND，支持非连续的Tensor。当输入为1D时，参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入；当输入为2D时，参数为true表示当前token对应的expert\_x参与通信，全false的token之后不能出现true，例：{{false, false, false}, {true, false, false}} 为非法输入。 默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
 
 -   expert\_scales：Tensor类型，可选参数，表示每个token的topK个专家权重。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求为2D的Tensor，shape为\(BS, K\)，数据类型支持float，数据格式为ND，支持非连续的Tensor。
