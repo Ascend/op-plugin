@@ -102,6 +102,8 @@ inline std::string convert_info(const at::Tensor &at_tensor)
        << at_tensor.dtype()
        << ", device ID: "
        << static_cast<int>(at_tensor.device().index())
+       << ", data_ptr: "
+       << at_tensor.data_ptr()
        << "\n";
 
     return ss.str();
@@ -349,6 +351,8 @@ inline std::string convert_info(const TensorWrapper &tensor_r)
        << at_tensor.dtype()
        << ", device ID: "
        << static_cast<int>(at_tensor.device().index())
+       << ", data_ptr: "
+       << at_tensor.data_ptr()
        << "\n";
 
     return ss.str();

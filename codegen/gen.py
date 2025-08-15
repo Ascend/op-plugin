@@ -286,6 +286,7 @@ Use {deprecated_replace} instead.");'
         format_display = []
         place_holder = []
         format_for_args = []
+        inputs_list = ""
         is_aclnn_only = "c10_npu::IsAclnnOnly()"
         for a in sig.arguments():
             argument = a.argument
@@ -297,6 +298,9 @@ Use {deprecated_replace} instead.");'
                 format_check.append(f" && {a.name}_base_format")
                 format_display.append(f", !{a.name}_base_format")
                 place_holder.append(f", {a.name} is internal format: %d")
+            inputs_list += f"{a.name}, "
+        inputs_list = inputs_list[:-2]
+            
 
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
             if not f.internal_format_opapi:
@@ -304,6 +308,7 @@ Use {deprecated_replace} instead.");'
     {deprecated_warn}
     bool is_jit_disable = at_npu::native::env::CheckJitDisable();
 {"".join(format_for_args)}
+    OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     ASCEND_LOGI("{impl_name} exec with jit compile: %d{"".join(place_holder)}",
                 !is_jit_disable{"".join(format_display)});
     if (is_jit_disable{"".join(format_check)}) {{
@@ -322,6 +327,7 @@ Use {deprecated_replace} instead.");'
                 ret.append(f"""{sig.defn(name=op_name)}{{
     {deprecated_warn}
     bool is_jit_disable = at_npu::native::env::CheckJitDisable();
+    OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     ASCEND_LOGI("{impl_name} exec with jit compile: %d", !is_jit_disable);
     if (is_jit_disable) {{
         return op_api::{impl_name}({args_exprs_str});
@@ -335,6 +341,7 @@ Use {deprecated_replace} instead.");'
             if f.internal_format_opapi:
                 ret.append(f"""{sig.defn(name=op_name)}{{
     {deprecated_warn}
+    OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     return {ns}::{impl_name}({args_exprs_str});
 }}
 """)
@@ -342,6 +349,7 @@ Use {deprecated_replace} instead.");'
                 ret.append(f"""{sig.defn(name=op_name)}{{
     {deprecated_warn}
 {"".join(format_for_args)}
+    OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     if ({("".join(format_check)).replace(" && ", " || !").replace(" || ", "", 1)}) {{
         TORCH_CHECK(false,
             "Current operator {impl_name} do not support internal format. ",
@@ -354,6 +362,7 @@ Use {deprecated_replace} instead.");'
             ns = f.impl_ns[0]
             ret.append(f"""{sig.defn(name=op_name)}{{
     {deprecated_warn}
+    OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     if ({is_aclnn_only}) {{
         TORCH_CHECK(false,
             "Current device only support aclnn operator, "
@@ -366,6 +375,7 @@ Use {deprecated_replace} instead.");'
         if f.sparse is not None:
             ret.append(f"""{sig.defn(name=op_name + "_sparse")}{{
     {deprecated_warn}
+    OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     return sparse::{impl_name}_sparse({args_exprs_str});
 }}
 """)
