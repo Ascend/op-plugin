@@ -7294,6 +7294,11 @@ custom:
     exposed: [v2.1, newest]
     internal_format_opapi: all_version
 
+  - func: npu_quant_matmul_reduce_sum(Tensor x1, Tensor x2, *, Tensor? x1_scale=None, Tensor? x2_scale=None) -> Tensor
+    op_api: all_version
+    exposed: all_version
+    internal_format_opapi: all_version
+
   - func: npu_quant_conv2d(Tensor input, Tensor weight, Tensor scale, int[2] strides=1, int[2] pads=0, int[2] dilations=1, int groups=1, int offset_x=0, str round_mode='rint', ScalarType? output_dtype=None, Tensor? bias=None, Tensor? offset=None) -> Tensor
     acl_op: [v2.1, newest]
 

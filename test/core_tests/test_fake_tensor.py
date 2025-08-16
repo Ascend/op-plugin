@@ -2109,6 +2109,20 @@ class TestQuantMatmul(TestCase):
             self.assertTrue(expect_ret.dtype == res.dtype)
 
 
+class TestQuantMatmulReduceSum(TestCase):
+    def test_quant_matmul_reduce_sum(self):
+        with FakeTensorMode():
+            b, m, n, k = (2, 3, 4, 5)
+            x1 = torch.randint(-1, 1, (b, m, k), dtype=torch.int8).npu()
+            x2 = torch.randint(-1, 1, (b, k, n), dtype=torch.int8).npu()
+            x1_scale = torch.ones((b, m), dtype=torch.float32).npu()
+            x2_scale = torch.ones((n,), dtype=torch.bfloat16).npu()
+            y = torch_npu.npu_quant_matmul_reduce_sum(x1, x2, x1_scale=x1_scale, x2_scale=x2_scale)
+            self.assertTrue(y.shape[0] == m)
+            self.assertTrue(y.shape[1] == n)
+            self.assertTrue(y.dtype == torch.bfloat16)
+
+
 class TestTranQuantParam(TestCase):
     def test_npu_trans_quant_param_meta(self):
         with FakeTensorMode():

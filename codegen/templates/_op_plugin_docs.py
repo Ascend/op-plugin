@@ -3553,6 +3553,96 @@ print(offset)
 )
 
 _add_torch_npu_docstr(
+    "npu_quant_matmul_reduce_sum",
+    """
+功能描述：完成量化的分组矩阵计算，然后所有组的矩阵计算结果相加后输出
+
+计算公式：
+  out = torch.zeros(m, n)
+  for i in range(batch):
+    out += (x1[i, ...] @ x2[i, ...]) * x1Scale[i, :, None] * x2Scale[None, :]
+
+函数原型:
+  npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -> Tensor
+
+参数说明:
+- x1: Tensor类型，必选参数，对应公式中的x1。数据类型支持`int8`，数据格式支持ND，shape支持3维，形状为（batch, m, k）。
+- x2: Tensor类型，必选参数，对应公式中的x2。数据类型支持`int8`，数据格式支持NZ，shape支持3维，形状为（batch, k, n）。
+- x1_scale: Tensor类型，必选关键字参数。对应公式中的x1Scale。数据类型支持`float32`，数据格式支持ND，shape支持2维，形状为（batch, m）。
+- x2_scale: Tensor类型，必选关键字参数。数据类型支持`bfloat16`，数据格式支持ND，shape支持1维，形状为（n,）。
+
+输出说明:
+out: Tensor类型，算子的计算结果。输出的数据类型为`bfloat16`，数据格式为ND，shape为2维，形状为(m, n)。
+
+约束说明:
+- 该接口支持推理场景下使用。
+- 该接口支持静态图模式（PyTorch 2.1版本及以上）。
+- 传入的x1、x2、x1_scale、x2_scale不能是空。
+- 输入和输出支持以下数据类型组合：
+  | x1   | w2   | x1Scale | x2Scale  | out      |
+  |------|------|---------|----------|----------|
+  | int8 | int8 | float32 | bfloat16 | bfloat16 |
+
+支持的PyTorch版本:
+PyTorch2.1及以上
+
+支持的型号:
+- Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+
+调用示例:
+- 单算子调用
+    import torch
+    import torch_npu
+
+    b,m,k,n = (2,3,4,5)
+    x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
+    x2_nd = torch.ones((b, k, n), dtype=torch.int8).npu()
+    x2 = torch_npu.npu_format_cast(x2_nd.contiguous(), 29)
+    x1_scale = torch.ones((b, m), dtype=torch.float32).npu()
+    x2_scale = torch.ones((n,), dtype=torch.bfloat16).npu()
+    y = torch_npu.npu_quant_matmul_reduce_sum(x1, x2, x1_scale=x1_scale, x2_scale=x2_scale)
+- 图模式调用
+    import torch
+    import torch_npu
+    import torchair as tng
+    from torchair.ge_concrete_graph import ge_apis as ge
+    from torchair.configs.compiler_config import CompilerConfig
+    import logging
+    from torchair.core.utils import logger
+
+    logger.setLevel(logging.DEBUG)
+    import os
+    import numpy as np
+
+    # "ENABLE_ACLNN"是否使能走aclnn, true: 回调走aclnn, false: 在线编译
+    os.environ["ENABLE_ACLNN"] = "false"
+    config = CompilerConfig()
+    npu_backend = tng.get_npu_backend(compiler_config=config)
+
+    class MyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+ 
+        def forward(self, x1, x2, scale, pertoken_scale):
+            return torch_npu.npu_quant_matmul_reduce_sum(x1, x2, x1_scale=pertoken_scale, x2_scale=scale)
+
+    cpu_model = MyModel()
+    model = cpu_model.npu()
+    model = torch.compile(cpu_model, backend=npu_backend, dynamic=False)
+
+    b,m,k,n = (2,3,4,5)
+    x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
+    x2_nd = torch.ones((b, k, n), dtype=torch.int8).npu()
+    x2 = torch_npu.npu_format_cast(x2_nd.contiguous(), 29)
+    pertoken_scale = torch.ones((b, m), dtype=torch.float32).npu()
+    scale = torch.ones((n,), dtype=torch.bfloat16).npu()
+    npu_out = model(x1, x2, scale, pertoken_scale)
+    print(npu_out)
+    """
+)
+
+_add_torch_npu_docstr(
     "npu_quant_matmul",
     """
 功能描述:

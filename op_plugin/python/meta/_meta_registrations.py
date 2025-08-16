@@ -1849,6 +1849,20 @@ def npu_quant_matmul_dequant_meta(x, quantized_weight, weight_scale, *,
     return torch.empty((x.shape[0], weight_scale.shape[0]), dtype=x.dtype, device='meta')
 
 
+@impl(m, "npu_quant_matmul_reduce_sum")
+def npu_quant_matmul_reduce_sum_meta(x1, x2, *, x1_scale=None, x2_scale=None):
+    torch._check(x1.dim() == 3, lambda: f"x1 dim must be 3, but got {x.dim()}.")
+    torch._check(x2.dim() == 3, lambda: f"x2 dim must be 3, but got {w.dim()}.")
+    torch._check(x1.size(2) == x2.size(1), lambda: f"K dim of x1 must be same as x2.")
+    torch._check(x1_scale is not None, lambda: f"x1_scale should not be None.")
+    torch._check(x1_scale.dim() == 2, lambda: f"x1_scale dim must be 2, but got {x1_scale.dim()}.")
+    torch._check(x2_scale is not None, lambda: f"x2_scale should not be None.")
+    torch._check(x2_scale.dim() == 1, lambda: f"x2_scale dim must be 1, but got {x2_scale.dim()}.")
+
+    dst_shape = (x1.size(1), x2.size(2))
+    return torch.empty(dst_shape, dtype=torch.bfloat16, device=x1.device)
+
+
 @impl(m, "npu_quant_grouped_matmul_dequant")
 def npu_quant_grouped_matmul_dequant_meta(x, quantized_weight, weight_scale, group_list, *,
                                           bias=None, x_scale=None, x_offset=None, smooth_scale=None, quant_mode="pertoken"):

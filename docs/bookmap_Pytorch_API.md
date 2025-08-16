@@ -99,6 +99,7 @@
         -   [torch_npu.npu_prefetch](./context/torch_npu-npu_prefetch.md)
         -   [torch_npu.npu_prompt_flash_attention](./context/torch_npu-npu_prompt_flash_attention.md)
         -   [torch_npu.npu_quant_matmul](./context/torch_npu-npu_quant_matmul.md)
+        -   [torch_npu.npu_quant_matmul_reduce_sum](./context/torch_npu-npu_quant_matmul_reduce_sum.md)
         -   [torch_npu.npu_quant_scatter](./context/torch_npu-npu_quant_scatter.md)
         -   [torch_npu.npu_quant_scatter_](./context/torch_npu-npu_quant_scatter_.md)
         -   [torch_npu.npu_quantize](./context/torch_npu-npu_quantize.md)

@@ -35,6 +35,7 @@
       "npu_grouped_matmul",
       "npu_moe_finalize_routing",
       "npu_quant_matmul",
+      "npu_quant_matmul_reduce_sum",
       "npu_quant_scatter",
       "npu_quantize",
       "npu_dequant_bias",
