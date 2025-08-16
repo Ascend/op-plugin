@@ -69,7 +69,7 @@
       "npu_transpose_batchmatmul",
       "npu_gather_sparse_index",
       "npu_moe_distribute_combine_add_rms_norm",
-      "npu_moe_eplb_update_expert"
+      "npu_moe_update_expert"
     ]
   }
   

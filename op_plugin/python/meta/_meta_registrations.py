@@ -1285,13 +1285,13 @@ def _npu_distribute_barrier(x_ref, group, world_size):
     return torch.empty_like(x_ref)
 
 
-@impl(m, "npu_moe_eplb_update_expert")
-def npu_moe_eplb_update_expert_meta(expert_ids, eplb_table, local_ranke_id, world_size, balance_mode=0):
+@impl(m, "npu_moe_update_expert")
+def npu_moe_update_expert_meta(expert_ids, eplb_table, expert_scales=None, pruning_threshold=None, active_mask=None, local_rank_id=-1, world_size=-1, balance_mode=0):
     dim_list = []
     dim_list.append(expert_ids.size(0))
     dim_list.append(expert_ids.size(1))
 
-    return expert_ids.new_empty(tuple(dim_list), dtype=expert_ids.dtype)
+    return (expert_ids.new_empty(tuple(dim_list), dtype=expert_ids.dtype), expert_ids.new_empty(tuple(dim_list), dtype=torch.bool))
 
 
 @impl(m, "npu_ffn")

@@ -9482,23 +9482,29 @@ out = torch_npu.npu_gather_sparse_index(inputs, index)
 """
 )
 
+
 _add_torch_npu_docstr(
-    "npu_moe_eplb_update_expert",
+    "npu_moe_update_expert",
     """
-torch_npu.npu_moe_eplb_update_expert(Tensor expert_ids, Tensor eplb_table, int local_rank_id, int world_size, *, int balance_mode=0) -> Tensor
+torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor? expert_scales=None, Tensor? pruning_threshold=None, Tensor? active_mask=None, int local_rank_id=-1, int world_size=-1, int balance_mode=0) -> (Tensor, Tensor)
 
 功能描述
 完成冗余专家部署场景下每个token的topK个专家逻辑卡号到物理卡号的映射。
+支持根据阈值对token发送的topK个专家进行剪枝
 
 参数说明
-    expertIds：Device侧的Tensor，表示输入，每个token的topK个专家索引，要求为一个2D的Tensor，shape为 (Bs, K)。数据格式支持ND,数据类型支持INT32。
-    eplbTable：Device侧的Tensor，表示输入，逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行[1, count]列为对应实例的卡号，取值范围[0, moe_expert_num)，Device侧的Tensor，要求是一个2D的Tensor。数据类型支持INT32，数据格式支持ND。shape为 (moeExperNum, F)。
-    localRankId：int类型，计算输入，本卡Id，数据类型支持INT64。取值支持[0, worldSize)。同一个通信域中各卡的localRankId不重复。
-    worldSize：int类型，计算输入，通信域Size，数据类型支持INT64，取值区间[2, 384]。
-    balanceMode: int类型，计算输入，均衡规则，传入0时按照rank进行分发，数据类型支持INT64，当前只支持传入0。
-
+    expert_ids：每个token的topK个专家索引，Device侧的Tensor，要求为一个2D的Tensor，shape为 (BS, K)。数据类型支持INT32，INT64，数据格式要求为ND，支持非连续的Tensor。
+    eplb_table：逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行[1, count]列为对应实例的卡号，取值范围[0, moe_expert_num)，Device侧的Tensor，要求是一个2D的Tensor，shape为(moe_expert_num, F)。数据类型支持INT32，数据格式要求为ND，支持非连续的Tensor。其中F表示输入映射表的列数，第一列为各行号对应Moe专家部署的实例个数（值>0），后F-1列为该Moe专家部署的物理卡号，取值范围[2, world_size+1]。
+    expert_scales：每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或空指针，该参数传入有效数据时，pruning_threshold也需要传入有效数据。Device侧的Tensor，要求是一个2D的Tensor，shape为 (BS, K)。数据类型支持FP16、BF16、FLOAT，数据格式要求为ND，支持非连续的Tensor。
+    pruning_threshold：专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或空指针，该参数传入有效数据时，expert_scales也需要传入有效数据。Device侧的Tensor，要求是一个1D或2D的Tensor，shape为(K,)或(1, K)。数据类型支持FLOAT，数据格式要求为ND，支持非连续的Tensor。
+    active_mask:表示token是否参与通信，可选择传入有效数据或空指针。传入有效数据时，expert_scales、pruning_threshold也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true}为非法输入；传入空指针时是表示所有token都会参与通信。Device侧的Tensor，要求是一个1D的Tensor，shape为(BS,)。数据类型支持bool，数据格式要求为ND，支持非连续的Tensor。
+    local_rank_id：本卡ID，数据类型支持INT64，当balance_mode设置0时，本属性取值范围为[0, world_ize)。
+    world_size：通信域size，数据类型支持INT64，当balance_mode设置0时，本属性取值范围为[2, 768]
+    balance_mode：均衡规则，数据类型支持INT64，取值支持0和1，0表示用local_rank_id进行负载均衡，1表示使用token_id进行负载均衡。当本属性取值为0时，local_rank_id和world_size必须传入有效值。
+    
 输出说明
-    balancedExpertIds：Device侧的Tensor，表示输出，映射后每个token的topK个专家所在物理卡的卡号，要求是一个2D的Tensor，shape为（Bs，K），数据类型、数据格式与expertIds保持一致。
+    balanced_expert_ids：映射后每个token的topK个专家所在物理卡的卡号，Device侧的Tensor，要求是一个2D的Tensor，shape为(BS, K)，数据类型、数据格式与expert_ids保持一致。
+    balanced_active_mask：剪枝后的active_mask，当expert_scales、pruning_threshold传入有效数据时该输出有效。Device侧的Tensor，要求是一个2的Tensor，shape为(BS, K)，数据类型支持BOOL，数据格式要求为ND，支持非连续的Tensor。
 
 支持的型号
 Atlas A3训练系列产品
@@ -9516,7 +9522,7 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 
 
-class TestMoeEPLBUpdateExpert(TestCase):
+class TestMoeUpdateExpert(TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.bs = 128
@@ -9524,10 +9530,16 @@ class TestMoeEPLBUpdateExpert(TestCase):
         self.log_ep_size = 256
         self.pyh_ep_size = 8
         self.F = 5
+        self.is_pruning = True
         self.world_size = 8
+        self.balance_mode = 0
         self.expert_ids = []
         self.eplb_table = []
+        self.expert_scales = []
+        self.pruning_threshold = []
+        self.active_mask = []
         self.balanced_expert_ids = []
+        self.balanced_active_mask = []
         self.gen_exp_result()
 
     @classmethod
@@ -9540,41 +9552,77 @@ class TestMoeEPLBUpdateExpert(TestCase):
         return dist
 
     @classmethod
-    def _test_npu_moe_eplb_update_expert(cls, rank_id, input_list):
-        expert_ids, eplb_table, world_size, init_pg, c2p, p2c = input_list
+    def _test_npu_moe_update_expert(cls, rank_id, input_list):
+        expert_ids, eplb_table, world_size, expert_scales, pruning_threshold, active_mask, balance_mode, init_pg, c2p, p2c = input_list
         _ = init_pg(rank_id, world_size)
-        out = torch_npu.npu_moe_eplb_update_expert(expert_ids=expert_ids.npu(),
+        out_expert_idx, out_mask = torch_npu.npu_moe_update_expert(expert_ids=expert_ids.npu(),
                                                    eplb_table=eplb_table.npu(),
                                                    local_rank_id=rank_id,
                                                    world_size=world_size,
-                                                   balance_mode=0)
-        c2p.put((rank_id, out.cpu()))
+                                                   expert_scales=expert_scales.npu(),
+                                                   pruning_threshold=pruning_threshold.npu(),
+                                                   active_mask=active_mask.npu(),
+                                                   balance_mode=balance_mode)
+        c2p.put((rank_id, out_expert_idx.cpu(), out_mask.cpu()))
         p2c.get()
     
     def gen_exp_result(self):
         for rank_id in range(self.world_size):
             eplb_table = np.zeros((self.log_ep_size, self.F - 1))
-            count_cloumn = np.random.randint(1, self.F, size=(self.log_ep_size, 1))
+            count_column = np.random.randint(1, self.F, size=(self.log_ep_size, 1))
             all_ranks = np.arange(self.pyh_ep_size)
             for i in range(self.log_ep_size):
                 np.random.shuffle(all_ranks)
-                for j in range(count_cloumn[i][0]):
+                for j in range(count_column[i][0]):
                     eplb_table[i][j] = all_ranks[j]
-            _expert_ids = torch.from_numpy(np.random.randint(low=0, high=self.log_ep_size, size=(self.bs, self.k))).to(torch.int64)
-            _eplb_table = torch.from_numpy(np.hstack((count_cloumn, eplb_table))).to(torch.int32)
-            self.expert_ids.append(_expert_ids)
-            self.eplb_table.append(_eplb_table)
-            _balanced_expert_ids = np.zeros((self.bs, self.k))
+            eplb_table = np.hstack((count_column, eplb_table))
+
+            expert_ids = np.random.randint(low=0, high=self.log_ep_size, size=(self.bs, self.k))
+            if self.is_pruning:
+                expert_scales = -np.sort(-np.random.uniform(low=0, high=0.25, size=(self.bs, self.k)), axis=1)
+                pruning_threshold = np.random.uniform(low=0, high=0.15, size=(1, self.k))
+                num_true = np.random.randint(0, self.bs + 1)
+                active_mask = np.concatenate([np.ones(num_true, dtype=bool), np.zeros(self.bs - num_true, dtype=bool)])
+            eplb_table_tensor = torch.from_numpy(eplb_table).to(torch.int32)
+            self.eplb_table.append(eplb_table_tensor)
+            expert_ids_tensor = torch.from_numpy(expert_ids).to(torch.int32)
+            self.expert_ids.append(expert_ids_tensor)
+            if self.is_pruning:
+                expert_scales_tensor = torch.from_numpy(expert_scales).to(torch.float32)
+                self.expert_scales.append(expert_scales_tensor)
+                pruning_threshold_tensor = torch.from_numpy(pruning_threshold).to(torch.float32)
+                self.pruning_threshold.append(pruning_threshold_tensor)
+                active_mask_tensor = torch.from_numpy(active_mask).to(torch.bool)
+                self.active_mask.append(active_mask_tensor)
+
+            balanced_expert_ids = np.zeros((self.bs, self.k))
+            if self.is_pruning:
+                balanced_active_mask = np.zeros((self.bs, self.k))
+
             for i in range(self.bs):
                 for j in range(self.k):
-                    log_ep_id = _expert_ids[i][j]
-                    mod_val = math.ceil(self.world_size / _eplb_table[log_ep_id][0])
-                    phy_ep_id = _eplb_table[log_ep_id][(rank_id // mod_val) + 1]
-                    _balanced_expert_ids[i][j] = phy_ep_id
-            self.balanced_expert_ids.append(torch.from_numpy(_balanced_expert_ids).to(torch.int64))
+                    log_ep_id = expert_ids_tensor[i][j]
+                    if self.balance_mode == 0:
+                        mod_val = math.ceil(self.world_size / eplb_table_tensor[log_ep_id][0].item())
+                        phy_ep_id = eplb_table_tensor[log_ep_id][(rank_id // mod_val) + 1]
+                        balanced_expert_ids[i][j] = phy_ep_id
+                    if self.balance_mode == 1:
+                        phy_ep_id = eplb_table_tensor[log_ep_id][(i % eplb_table_tensor[log_ep_id][0].item()) + 1]
+                        balanced_expert_ids[i][j] = phy_ep_id
+                    if self.is_pruning:
+                        if not active_mask_tensor[i]:
+                            balanced_active_mask[i][j] = 0
+                        else:
+                            if expert_scales_tensor[i][j] < pruning_threshold_tensor[0][j] * sum(expert_scales_tensor[i]):
+                                balanced_active_mask[i][j] = 0
+                            else:
+                                balanced_active_mask[i][j] = 1
+            self.balanced_expert_ids.append(torch.from_numpy(balanced_expert_ids).to(torch.int64))
+            self.balanced_active_mask.append(torch.from_numpy(balanced_active_mask).to(torch.bool))        
+
 
     @SupportedDevices(['Ascend910_'])
-    def test_npu_moe_eplb_update_expert(self):
+    def test_npu_moe_update_expert(self):
         ctx = mp.get_context('spawn')
         c2p = ctx.Queue(self.world_size)
         p2c = ctx.Queue(self.world_size)
@@ -9582,15 +9630,19 @@ class TestMoeEPLBUpdateExpert(TestCase):
 
         for rank_id in range(self.world_size):
             p = ctx.Process(
-                target=self._test_npu_moe_eplb_update_expert,
-                args=(rank_id, [self.expert_ids[rank_id], self.eplb_table[rank_id], self.world_size, self._init_dist_hccl, c2p, p2c]))
+                target=self._test_npu_moe_update_expert,
+                args=(rank_id, [self.expert_ids[rank_id], self.eplb_table[rank_id], self.world_size, 
+                                self.expert_scales[rank_id], self.pruning_threshold[rank_id], self.active_mask[rank_id],
+                                self.balance_mode, self._init_dist_hccl, c2p, p2c]))
             p.start()
             ps.append(p)
 
         for _ in range(self.world_size):
-            rank_id, output = c2p.get()
-            self.assertEqual(output, self.balanced_expert_ids[rank_id],
-                             ("rank {} Expect receive tensor {} but got {}.").format(rank_id, self.balanced_expert_ids[rank_id], output))
+            rank_id, output_0, output_1 = c2p.get()
+            self.assertEqual(output_0, self.balanced_expert_ids[rank_id],
+                             ("rank {} Expect receive tensor {} but got {}.").format(rank_id, self.balanced_expert_ids[rank_id], output_0))
+            self.assertEqual(output_1, self.balanced_active_mask[rank_id],
+                             ("rank {} Expect receive tensor {} but got {}.").format(rank_id, self.balanced_active_mask[rank_id], output_1))
 
         for _ in range(self.world_size):
             p2c.put(0)

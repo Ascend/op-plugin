@@ -2473,23 +2473,35 @@ class TestAddRmsNormQuant(TestCase):
             self.assertTrue(x_out.dtype == x1.dtype)
 
 
-class TestMoeEPLBUpdateExpert(TestCase):
-    def test_moe_eplb_update_expert(self):
+class TestMoeUpdateExpert(TestCase):
+    def test_moe_update_expert(self):
         with FakeTensorMode():
+            dtype = torch.bfloat16
             world_size = 8
             local_rank_id = 0
+            balance_mode = 0
             bs = 32
             k = 8
             f = 4
             moe_expert_num = 256
             expert_ids = torch.randn(bs, k).to(torch.int32)
             eplb_table = torch.randn(moe_expert_num, f).to(torch.int32)
-            result = torch_npu.npu_moe_eplb_update_expert(expert_ids=expert_ids, eplb_table=eplb_table,
-            local_rank_id=local_rank_id, world_size=world_size, balance_mode=0)
+            expert_scales = torch.sort(torch.rand(bs, k, dtype=dtype), dim=-1, descending=True).values
+            pruning_threshold = torch.rand(k, dtype=dtype)
+            num_true = np.random.randint(0, bs + 1)
+            active_mask_arr = np.concatenate([np.ones(num_true, dtype=bool), np.zeros(bs - num_true, dtype=bool)])
+            active_mask = torch.from_numpy(active_mask_arr).to(torch.bool)
+            result = torch_npu.npu_moe_update_expert(expert_ids=expert_ids, eplb_table=eplb_table,
+            expert_scales=expert_scales, pruning_threshold=pruning_threshold, active_mask=active_mask,
+            local_rank_id=local_rank_id, world_size=world_size, balance_mode=balance_mode)
 
-            self.assertEqual(result.shape[0], 32)
-            self.assertEqual(result.shape[1], 8)
-            self.assertEqual(result.dtype, torch.int32)
+            self.assertEqual(result[0].shape[0], 32)
+            self.assertEqual(result[0].shape[1], 8)
+            self.assertEqual(result[0].dtype, torch.int32)
+
+            self.assertEqual(result[1].shape[0], 32)
+            self.assertEqual(result[1].shape[1], 8)
+            self.assertEqual(result[1].dtype, torch.bool)
 
 
 class TestNpuMropeMeta(TestCase):
