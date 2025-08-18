@@ -31,27 +31,24 @@
   - 首先对输入x乘以W<sup>DQ</sup>进行下采样和RmsNorm后分成两路：第一路乘以W<sup>UQ</sup>和W<sup>UK</sup>经过两次上采样后得到q<sup>N</sup>；第二路乘以W<sup>QR</sup>后经过旋转位置编码（ROPE）得到q<sup>R</sup>。
   - 第三路是输入x乘以W<sup>DKV</sup>进行下采样和RmsNorm后传入Cache中得到k<sup>C</sup>；
   - 第四路是输入x乘以W<sup>KR</sup>后经过旋转位置编码后传入另一个Cache中得到k<sup>R</sup>。
-
+  
 -   计算公式：
     -   RmsNorm公式:
-
-        ![](./figures/zh-cn_formulaimage_0000002272054857.png)
+        $$RmsNorm(x) = \gamma \cdot \frac{x} {\sqrt{\frac{1}{N} \sum_{i=1}^{N} x_i^2 + \epsilon}}$$
 
     -   Query计算公式：
-
-        ![](./figures/zh-cn_formulaimage_0000002192009612.png)
+        $$c^Q = RmsNorm(x \cdot W^{DQ})$$
+        $$q^C = c^Q \cdot W^{UQ}$$
+        $$q^N = q^C \cdot W^{UK}$$
 
     -   Query ROPE旋转位置编码:
-
-        ![](./figures/zh-cn_formulaimage_0000002233805994.png)
+        $$q^R = ROPE(c^Q \cdot W^{QR})$$
 
     -   Key计算公式:
-
-        ![](./figures/zh-cn_formulaimage_0000002227250097.png)
+        $$k^C = Cache(RmsNorm(x \cdot W^{DKV}))$$
 
     -   Key ROPE旋转位置编码:
-
-        ![](./figures/zh-cn_formulaimage_0000002227371765.png)
+        $$k^R = Cache(ROPE(x \cdot W^{KR}))$$
 
 ## 函数原型<a name="zh-cn_topic_0000002191987496_section45077510411"></a>
 

@@ -2,42 +2,55 @@
 
 ## 功能说明<a name="zh-cn_topic_0000001935845653_section14441124184110"></a>
 
-计算输入张量input按组归一化的结果，包括张量out、均值meanOut、标准差的倒数rstdOut以及silu的输出。
+-   API功能：计算输入张量input按组归一化的结果，包括张量out、均值meanOut、标准差的倒数rstdOut以及silu的输出。
+-   计算公式：
+    -   GroupNorm：记$x$为输入input，$\gamma$和$\beta$分别代表输入weight和bias，$E[x] = \bar{x}$代表$x$的均值，$ Var[x]=\frac{1}{n}\sum_{i=1}^{n} (x_i - E[x])^2 $ 代表$x$的方差，则
+    $$
+    \begin{cases}
+    \text{groupnormOut} = \frac{x - E[x]}{\sqrt{Var[x] + eps}} * \gamma + \beta \\
+    \text{meanOut}  = E[x] \\
+    \text{rstdOut}  = \frac{1}{\sqrt{Var[x] + eps}}
+    \end{cases}
+    $$
+    -   Silu：
+    $$
+    \text{out} = \frac{\text{groupnormOut}}{1 + e^{-\text{groupnormOut}}}
+    $$
 
 ## 函数原型<a name="zh-cn_topic_0000001935845653_section45077510411"></a>
 
 ```
-torch_npu.npu_group_norm_silu(Tensor input, Tensor? weight, Tensor? bias, int group, float eps=0.00001) -> (Tensor, Tensor, Tensor)
+torch_npu.npu_group_norm_silu(input, weight, bias, int group, float eps=0.00001) -> (Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000001935845653_section112637109429"></a>
 
--   input：Tensor类型，必选输入，源数据张量，维度需要为2\~8维且第1维度能整除group。数据格式支持ND，支持非连续的Tensor。
+-   **input** (`Tensor`)：必选输入，源数据张量，维度需要为2\~8维且第1维度能整除group。数据格式支持ND，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持float16、float32。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32、bfloat16。
 
--   weight：Tensor类型，可选输入，索引张量，维度为1且元素数量需与输入input的第1维度保持相同，数据格式支持ND，支持非连续的Tensor。
+-   **weight** (`Tensor`)：可选输入，索引张量，维度为1且元素数量需与输入input的第1维度保持相同，数据格式支持ND，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持float16、float32。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32、bfloat16。
 
--   bias：Tensor类型，可选输入，更新数据张量，维度为1元素数量需与输入input的第1维度保持相同，数据格式支持ND，支持非连续的Tensor。
+-   **bias** (`Tensor`)：可选输入，更新数据张量，维度为1元素数量需与输入input的第1维度保持相同，数据格式支持ND，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持float16、float32。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32、bfloat16。
 
--   group：int类型，必选输入，表示将输入input的第1维度分为group组，group需大于0。
--   eps：float类型，可选参数，数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。
+-   **group** (`int`)：必选输入，表示将输入input的第1维度分为group组，group需大于0。
+-   **eps** (`float`)：可选参数，数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。
 
-## 输出说明<a name="zh-cn_topic_0000001935845653_section22231435517"></a>
+## 返回值说明<a name="zh-cn_topic_0000001935845653_section22231435517"></a>
 
--   out：Tensor类型，数据类型和shape与input相同，支持ND，支持非连续的Tensor。
+-   **out** (`Tensor`)：数据类型和shape与input相同，支持ND，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持float16、float32。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32、bfloat16。
 
--   meanOut：Tensor类型，数据类型与input相同，shape为\(N, group\)，其中N为input第0维度值。数据格式支持ND，支持非连续的Tensor。
+-   **meanOut** (`Tensor`)：数据类型与input相同，shape为\(N, group\)，其中N为input第0维度值。数据格式支持ND，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持float16、float32。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32、bfloat16。
 
--   rstdOut：Tensor类型，数据类型与input相同，shape为\(N, group\)，其中N为input第0维度值。数据格式支持ND，支持非连续的Tensor。
+-   **rstdOut** (`Tensor`)：数据类型与input相同，shape为\(N, group\)，其中N为input第0维度值。数据格式支持ND，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持float16、float32。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32、bfloat16。
 

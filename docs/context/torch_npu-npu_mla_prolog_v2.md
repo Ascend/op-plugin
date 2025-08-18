@@ -33,28 +33,28 @@
 
 -   计算公式：
     -   RmsNorm公式
-
-        ![](figures/zh-cn_formulaimage_0000002347254869.png)
+        $$RmsNorm(x) = \gamma \cdot \frac{x} {\sqrt{\frac{1}{N} \sum_{i=1}^{N} x_i^2 + \epsilon}}$$
 
     -   Query计算公式
-
-        ![](figures/zh-cn_formulaimage_0000002313175960.png)
+        $$c^Q = RmsNorm(x \cdot W^{DQ})$$
+        $$q^C = c^Q \cdot W^{UQ}$$
+        $$q^N = q^C \cdot W^{UK}$$
 
     -   Query ROPE旋转位置编码
 
-        ![](figures/zh-cn_formulaimage_0000002347254877.png)
+        $$q^R = ROPE(c^Q \cdot W^{QR})$$
 
     -   Key计算公式
 
-        ![](figures/zh-cn_formulaimage_0000002313175972.png)
+        $$k^C = Cache(RmsNorm(x \cdot W^{DKV}))$$
 
     -   Key ROPE旋转位置编码
 
-        ![](figures/zh-cn_formulaimage_0000002347254897.png)
+        $$k^R = Cache(ROPE(x \cdot W^{KR}))$$
 
     -   Dequant Scale Query Nope计算公式
-
-        ![](figures/zh-cn_formulaimage_0000002314348982.png)
+        $$\text{dequantScaleQNope} = \frac{\text{RowMax}(\text{abs}(q^N))}{127}$$
+        $$q^N = \text{round}(\frac{q^N}{\text{dequantScaleQNope}})$$
 
 ## 函数原型<a name="zh-cn_topic_0000002313328922_section11217581501"></a>
 

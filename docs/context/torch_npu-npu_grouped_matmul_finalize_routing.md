@@ -2,38 +2,40 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002259406069_section14441124184110"></a>
 
-GroupedMatMul和MoeFinalizeRouting的融合算子，GroupedMatMul计算后的输出按照索引做combine动作。
+API功能：GroupedMatMul和MoeFinalizeRouting的融合算子，GroupedMatMul计算后的输出按照索引做combine动作。
 
 ## 函数原型<a name="zh-cn_topic_0000002259406069_section45077510411"></a>
 
 ```
-torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor w, Tensor group_list, *, Tensor? scale=None, Tensor? bias=None, Tensor? offset=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? pertoken_scale=None, Tensor? shared_input=None, Tensor? logit=None, Tensor? row_index=None, ScalarType? dtype=None, float? shared_input_weight=1.0, int shared_input_offset=0, int? output_bs=0, int? group_list_type=1) -> Tensor
+torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor w, Tensor group_list, *, scale=None, bias=None, offset=None, antiquant_scale=None, antiquant_offset=None, pertoken_scale=None, shared_input=None, logit=None, row_index=None, dtype=None, shared_input_weight=1.0, int shared_input_offset=0, output_bs=0, group_list_type=1) -> Tensor
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000002259406069_section112637109429"></a>
 
--   x：一个2D的Device侧Tensor输入，矩阵计算的左矩阵，不支持非连续的Tensor。数据类型支持int8，数据格式支持ND，维度为\(m, k\)。m取值范围为\[1, 16\*1024\*8\]。
--   w：Device侧Tensor输入，矩阵计算的右矩阵，不支持非连续的Tensor。数据类型支持int8、int4。
+-   **x** (`Tensor`)：必选参数。一个2D的Device侧输入，矩阵计算的左矩阵，不支持非连续的Tensor。数据类型支持int8，数据格式支持ND，维度为\(m, k\)。m取值范围为\[1, 16\*1024\*8\]。
+-   **w** (`Tensor`)：必选参数。Device侧输入，矩阵计算的右矩阵，不支持非连续的Tensor。数据类型支持int8、int4。
     -   A8W8量化场景下，数据格式支持NZ，维度为\(e, n1, k1, k0, n0\)，其中k0=16、n0=32，x shape中的k和w shape中的k1需要满足以下关系：ceilDiv\(k, 16\) = k1，e取值范围\[1, 256\]，k取值为16整倍数，n取值为32整倍数，且n大于等于256。
     -   A8W4场景下数据格式支持ND，维度为\(e, k, n\)，k支持2048，n只支持7168。
 
--   group\_list：一个1D的Device侧Tensor输入，GroupedMatMul的各分组大小。不支持非连续的Tensor。数据类型支持int64，数据格式支持ND，维度为\(e,\)，e与w的e一致。group\_list的值总和要求≤m。
--   scale：Device侧Tensor输入，矩阵计算反量化参数，对应weight矩阵。A8W8场景下支持per-channel量化方式，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(e, n\)，这里的n=n1\*n0，A8W4量化场景下，数据类型支持int64，维度为\(e, 1, n\)。
--   bias：一个2D的Device侧Tensor输入，矩阵计算的bias参数，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度为\(e, n\)，只支持A8W4场景。
--   offset：一个3D的Device侧Tensor输入，矩阵计算量化参数的偏移量，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，只支持A8W4量化场景。
--   pertoken\_scale：一个1D的Device侧Tensor输入，矩阵计算的反量化参数，对应x矩阵，per-token量化方式，不支持非连续的Tensor。维度为\(m,\)，m与x的m一致。数据类型支持float32，数据格式支持ND。
--   shared\_input：一个2D的Device侧Tensor输入，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持bfloat16，数据格式支持ND，维度\(batch/dp, n\)，n与scale的n一致，batch/dp取值范围\[1, 2\*1024\]，batch取值范围\[1, 16\*1024\]。
--   logit：一个1D的Device侧Tensor输入，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(m,\)，m与x的m一致。
--   row\_index：一个1D的Device侧Tensor输入，MoE专家输出按照该row_index进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持int32、int64，数据格式支持ND，维度为\(m,\)，m与x的m一致。
--   dtype：ScalarType类型，指定GroupedMatMul计算的输出类型。0表示float32，1表示float16，2表示bfloat16。默认值为0。
--   shared\_input\_weight：float类型，指共享专家与MoE专家进行combine的系数，shared\_input先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
--   shared\_input\_offset：int类型，共享专家输出的在总输出中的偏移。默认值为0。
--   output\_bs：int类型，输出的最高维大小。默认值为0。
--   group\_list\_type：int类型数组，GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
+-   **group\_list** (`Tensor`)：必选参数。一个1D的Device侧输入，GroupedMatMul的各分组大小。不支持非连续的Tensor。数据类型支持int64，数据格式支持ND，维度为\(e,\)，e与w的e一致。group\_list的值总和要求≤m。
+-   **scale** (`Tensor`)：可选参数。Device侧输入，矩阵计算反量化参数，对应weight矩阵。A8W8场景下支持per-channel量化方式，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(e, n\)，这里的n=n1\*n0，A8W4量化场景下，数据类型支持int64，维度为\(e, 1, n\)。
+-   **bias** (`Tensor`)：可选参数。一个2D的Device侧输入，矩阵计算的bias参数，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度为\(e, n\)，只支持A8W4场景。
+-   **offset** (`Tensor`)：可选参数。一个3D的Device侧输入，矩阵计算量化参数的偏移量，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，只支持A8W4量化场景。
+-   **pertoken\_scale** (`Tensor`)：可选参数。一个1D的Device侧输入，矩阵计算的反量化参数，对应x矩阵，per-token量化方式，不支持非连续的Tensor。维度为\(m,\)，m与x的m一致。数据类型支持float32，数据格式支持ND。
+-   **shared\_input** (`Tensor`)：可选参数。一个2D的Device侧输入，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持bfloat16，数据格式支持ND，维度\(batch/dp, n\)，n与scale的n一致，batch/dp取值范围\[1, 2\*1024\]，batch取值范围\[1, 16\*1024\]。
+-   **logit** (`Tensor`)：可选参数。一个1D的Device侧输入，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(m,\)，m与x的m一致。
+-   **row\_index** (`Tensor`)：可选参数。一个1D的Device侧输入，MoE专家输出按照该row_index进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持int32、int64，数据格式支持ND，维度为\(m,\)，m与x的m一致。
+-   **dtype** (`ScalarType`)：可选参数。指定GroupedMatMul计算的输出类型。0表示float32，1表示float16，2表示bfloat16。默认值为0。
+-   **shared\_input\_weight** (`float`)：可选参数。指共享专家与MoE专家进行combine的系数，shared\_input先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
+-   **shared\_input\_offset** (`int`)：可选参数。共享专家输出的在总输出中的偏移。默认值为0。
+-   **output\_bs** (`int`)：可选参数。输出的最高维大小。默认值为0。
+-   **group\_list\_type** (`List[int]`)：可选参数。GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
 
-## 输出说明<a name="zh-cn_topic_0000002259406069_section22231435517"></a>
+## 返回值说明<a name="zh-cn_topic_0000002259406069_section22231435517"></a>
 
-y：一个2D的Tensor，不支持非连续的Tensor，输出的数据类型固定为float32，维度为\(batch, n\)。
+`Tensor`
+
+2D返回值，不支持非连续的Tensor，输出的数据类型固定为float32，维度为\(batch, n\)。
 
 ## 约束说明<a name="zh-cn_topic_0000002259406069_section12345537164214"></a>
 

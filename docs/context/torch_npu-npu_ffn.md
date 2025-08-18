@@ -3,9 +3,11 @@
 ## 功能说明
 
 - 算子功能：该FFN算子提供MoeFFN和FFN的计算功能。在没有专家分组（`expert_tokens`为空）时是FFN，有专家分组时是MoeFFN。
-- 计算公式：
+- 计算公式：activation表示使用的激活函数，$W_1$和$W_2$对应输入参数的weight1和weight2，$b_1$和$b_2$对应输入参数的bias1和bias2
 
-    ![](figures/zh-cn_formulaimage_0000001850668725.png)
+    $$
+    \text{out} = \text{activation}(x * W_1 + b_1) * W_2 + b_2
+    $$
 
 >**说明：**<br>
 >激活层为geglu/swiglu/reglu时，性能使能需要满足门槛要求，即整网中FFN结构所对应的小算子中vector耗时30us且占比10%以上的用例方可尝试FFN融合算子；或在不知道小算子性能的情况下，尝试使能FFN，若性能劣化则不使能FFN。
@@ -18,7 +20,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 
 ## 参数说明
 
-- **x** (`Tensor`)：输入参数，公式中的$x$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，支持输入的维度最少是2维$[M, K1]$，最多是8维。
+- **x** (`Tensor`)：输入张量，公式中的$x$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，支持输入的维度最少是2维$[M, K1]$，最多是8维。
 
 - **weight1** (`Tensor`)：专家的权重数据，公式中的$W1$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K1, N1]/[K1, N1]$。
 
@@ -52,7 +54,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 
 - **output_dtype** (`ScalarType`)：可选参数，该参数只在量化场景生效，其他场景不生效。表示输出Tensor的数据类型，支持输入`float16`、`bfloat16`。默认值为`None`，代表输出Tensor数据类型为`float16`。
 
-## 返回值
+## 返回值说明
 `Tensor`
 
 一个Tensor类型的输出，公式中的输出$y$，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，输出维度与`x`一致。

@@ -12,22 +12,22 @@ torch_npu.scatter_update_(Tensor(a!) data, Tensor indices, Tensor updates, int a
 
 ## 参数说明
 
-- data：tensor类型，data只支持2-8维，且维度大小需要与updates一致；支持非连续的tensor；数据格式支持ND；不支持空tensor。
+- **data** (`Tensor`)：必选参数。代表更新前的原数据，data只支持2-8维，且维度大小需要与updates一致；支持非连续的tensor；数据格式支持ND；不支持空tensor。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int8、float16、float32、bfloat16、int32。
     - <term>Atlas A3 训练系列产品</term>：数据类型支持int8、float16、float32、bfloat16、int32。
     - <term>Atlas 训练系列产品</term>：数据类型支持int8、float16、float32、int32。
 
-- indices：tensor类型，数据类型支持int32、int64；目前仅支持一维和二维；支持非连续的tensor；数据格式支持ND；不支持空tensor。
-- updates：tensor类型，updates的维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空tensor。
+- **indices** (`Tensor`)：必选参数。代表索引，数据类型支持int32、int64；目前仅支持一维和二维；支持非连续的tensor；数据格式支持ND；不支持空tensor。
+- **updates** (`Tensor`)：必选参数。代表更新的数据，updates的维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空tensor。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int8、float16、float32、bfloat16、int32。
     - <term>Atlas A3 训练系列产品</term>：数据类型支持int8、float16、float32、bfloat16、int32。
     - <term>Atlas 训练系列产品</term>：数据类型支持int8、float16、float32、int32。
 
-- axis：整型，用来scatter的维度，数据类型为int64。
+- **axis** (`int`)：必选参数。代表轴，用来scatter的维度，数据类型为int64。
 
-## 输出说明
+## 返回值说明
 
-out：Tensor类型，计算输出，复用输入地址；out只支持2-8维，且维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空tensor。
+**out** (`Tensor`)：计算输出，复用输入地址；out只支持2-8维，且维度大小需要与data一致；支持非连续的tensor；数据格式支持ND；不支持空tensor。
 
 - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int8、float16、float32、bfloat16、int32。
 - <term>Atlas A3 训练系列产品</term>：数据类型支持int8、float16、float32、bfloat16、int32。
