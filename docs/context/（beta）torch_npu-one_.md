@@ -3,26 +3,28 @@
 >**须知：**<br>
 >该接口计划废弃，可以使用torch.fill_或torch.ones_like接口进行替换。
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>           |    √     |
+|<term>Atlas A2 训练系列产品</term> | √   |
+|<term>Atlas 训练系列产品</term> | √   |
+|<term>Atlas 推理系列产品</term>| √   |
+
+## 功能说明
+
+用1填充self张量。
+
 ## 函数原型
 
 ```
 torch_npu.one_(self) -> Tensor
 ```
 
-## 功能说明
-
-用1填充self张量。
-
 ## 参数说明
 
-“self“  (Tensor)：输入张量。
-
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
+**self**（`Tensor`）：输入张量。
 
 ## 调用示例
 

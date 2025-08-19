@@ -1,28 +1,33 @@
 # （beta）torch_npu.npu_confusion_transpose
 
+>**须知：**<br>
+>该接口计划废弃，可以使用`torch.view`和`torch.permute`接口进行替换。
+
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>           |    √     |
+|<term>Atlas A2 训练系列产品</term> | √   |
+|<term>Atlas 训练系列产品</term> | √   |
+|<term>Atlas 推理系列产品</term>| √   |
+
+## 功能说明
+
+混淆reshape和transpose运算。
+
 ## 函数原型
 
 ```
 torch_npu.npu_confusion_transpose(self, perm, shape, transpose_first) -> Tensor
 ```
 
-## 功能说明
-
-混淆reshape和transpose运算。
-
 ## 参数说明
 
-- self (Tensor) - 数据类型：float16、float32、int8、int16、int32、int64、uint8、uint16、uint32、uint64。
-- perm (ListInt) - self张量的维度排列。
-- shape (ListInt) - 输入shape。
-- transpose_first (Bool) - 如果值为True，首先执行transpose，否则先执行reshape。
-
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
+- **self**（`Tensor`）：数据类型支持`float16`、`float32`、`int8`、`int16`、`int32`、`int64`、`uint8`、`uint16`、`uint32`、`uint64`。
+- **perm**（`List[int]`）：`self`张量的维度排列。
+- **shape**（`List[int]`）：输入shape。
+- **transpose_first**（`bool`）：如果值为`True`，首先执行transpose，否则先执行reshape。
 
 ## 调用示例
 

@@ -1,7 +1,20 @@
 # （beta）torch_npu.npu_layer_norm_eval
 
 >**须知：**<br>
->该接口计划废弃，可以使用torch.nn.functional.layer_norm接口进行替换。
+>该接口计划废弃，可以使用`torch.nn.functional.layer_norm`接口进行替换。
+
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>           |    √     |
+|<term>Atlas A2 训练系列产品</term> | √   |
+|<term>Atlas 训练系列产品</term> | √   |
+|<term>Atlas 推理系列产品</term>| √   |
+
+## 功能说明
+
+对层归一化结果进行计算。与`torch.nn.functional.layer_norm`相同，优化NPU设备实现。
 
 ## 函数原型
 
@@ -9,24 +22,13 @@
 torch_npu.npu_layer_norm_eval(input, normalized_shape, weight=None, bias=None, eps=1e-05) -> Tensor
 ```
 
-## 功能说明
-
-对层归一化结果进行计算。与torch.nn.functional.layer_norm相同，优化NPU设备实现。
-
 ## 参数说明
 
-- input (Tensor) - 输入张量。
-- normalized_shape (ListInt) - size为预期输入的shape。
-- weight (Tensor，可选，默认值为None) - gamma张量。
-- bias (Tensor，可选默认值为None) - beta张量。
-- eps (Float，默认值为1e-5) - 为保证数值稳定性添加到分母中的ε值。
-
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
+- **input**（`Tensor`）：输入张量。
+- **normalized_shape**（`List[int]`）：size为预期输入的shape。
+- **weight**（`Tensor`）：可选参数，gamma张量，默认值为None。
+- **bias**（`Tensor`）：，可选参数，beta张量，默认值为None。
+- **eps**（`float`）：为保证数值稳定性添加到分母中的ε值，默认值为1e-5。
 
 ## 调用示例
 

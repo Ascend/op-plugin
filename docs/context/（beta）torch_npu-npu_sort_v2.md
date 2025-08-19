@@ -1,7 +1,20 @@
 # （beta）torch_npu.npu_sort_v2
 
 >**须知：**<br>
->该接口计划废弃，可以使用torch.sort接口进行替换。
+>该接口计划废弃，可以使用`torch.sort`接口进行替换。
+
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>           |    √     |
+|<term>Atlas A2 训练系列产品</term> | √   |
+|<term>Atlas 训练系列产品</term> | √   |
+|<term>Atlas 推理系列产品</term>| √   |
+
+## 功能说明
+
+沿给定维度，按无index值对输入张量元素进行升序排序。若dim未设置，则选择输入的最后一个维度。如果descending为True，则元素将按值降序排序。
 
 ## 函数原型
 
@@ -9,26 +22,16 @@
 torch_npu.npu_sort_v2(self, dim=-1, descending=False, out=None) -> Tensor
 ```
 
-## 功能说明
-
-沿给定维度，按无index值对输入张量元素进行升序排序。若dim未设置，则选择输入的最后一个维度。如果descending为True，则元素将按值降序排序。
-
 ## 参数说明
 
-- self (Tensor) - 输入张量。
-- dim (Int，可选，默认值为-1) - 进行排序的维度。
-- descending (Bool，可选，默认值为None) - 排序顺序控制（升序或降序）。
+- **self**（`Tensor`）：输入张量。
+- **dim**（`(int`）：可选参数，进行排序的维度，默认值为-1。
+- **descending**（`bool`）：可选参数，排序顺序控制（升序或降序），默认值为None。
 
 ## 约束说明
 
 目前仅支持输入的最后一个维度（dim=-1）。
 
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
 ## 调用示例
 
 ```python
