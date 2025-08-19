@@ -52,6 +52,12 @@ class TestFusedInferAttentionV2(TestCase):
         return torch_npu.npu_fused_infer_attention_score_v2(
             query, key, value, num_query_heads=32, input_layout="TND", softmax_scale=softmax_scale,
             pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
+    
+    def custom_op_exec_tnd_pa(self, query, key, value, return_softmax_lse, block_table):
+        softmax_scale = 1 / 0.0078125
+        return torch_npu.npu_fused_infer_attention_score_v2(
+            query, key, value, num_query_heads=1, input_layout="TND", softmax_scale=softmax_scale,
+            pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse, block_table=block_table)
 
     def custom_op_exec_ntd_tnd(self, query, key, value, head_dim, actseqlen, actseqlenkv, return_softmax_lse):
         softmax_scale = 1 / 0.0078125
@@ -120,6 +126,26 @@ class TestFusedInferAttentionV2(TestCase):
         golden_output = self.supported_op_exec_ntd(query, key, value, head_dim, 32, 2)
         custom_output = self.custom_op_exec_ntd_tnd(query, key, value, head_dim, actseqlen, actseqlenkv, return_softmax_lse)
         attention_out = custom_output[0]
+        self.assertRtolEqual(golden_output, attention_out, prec=0.000001, prec16=0.000001)
+    
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_fused_infer_attention_score_v2(self, device="npu"):
+        query = torch.full((128, 1, 128), 1, dtype=torch.bfloat16).npu()
+        key = torch.full((128, 1, 128), 1, dtype=torch.bfloat16).npu()
+        value = torch.full((128, 1, 128), 1, dtype=torch.bfloat16).npu()
+        block_table = torch.randint(0, 10, (1, 1), dtype=torch.int32).npu()
+
+        head_dim = 128
+        return_softmax_lse = True
+
+        supported_output = self.supported_op_exec(query, key, value, head_dim, 1, 1, 128, return_softmax_lse)
+        key_cache = key.reshape(1, 1, 128, 8, 16).transpose(0, 1, 3, 2, 4)
+        value_cache = value.reshape(1, 1, 128, 8, 16).transpose(0, 1, 3, 2, 4)
+
+        custom_output = self.custom_op_exec_tnd_pa(query, key_cache, value_cache, return_softmax_lse, block_table)
+        golden_output = supported_output[0]
+        attention_output = custom_output[0]
         self.assertRtolEqual(golden_output, attention_out, prec=0.000001, prec16=0.000001)
 
 if __name__ == "__main__":

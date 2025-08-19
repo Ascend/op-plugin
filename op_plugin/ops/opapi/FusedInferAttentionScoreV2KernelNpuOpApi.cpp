@@ -28,6 +28,10 @@ const static int64_t DIM_0 = 0;
 const static int64_t DIM_1 = 1;
 const static int64_t DIM_2 = 2;
 const static int64_t DIM_3 = 3;
+const static int64_t DIM_4 = 4;
+const static int64_t PA_BBH_DIMS = 3;
+const static int64_t PA_BNBD_DIMS = 4;
+const static int64_t PA_NZ_DIMS = 5;
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -38,6 +42,7 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
     const c10::optional<at::Tensor> &quant_scale_out,
     const c10::optional<at::Tensor> &block_table,
     int64_t num_query_heads,
+    int64_t num_key_value_heads, // 增加kvhead用于计算BBH情况下的D
     bool return_softmax_lse,
     const c10::optional<at::Tensor> &query_rope)
 {
@@ -85,19 +90,58 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
         batchSize = query.size(DIM_0);
         qsSize = query.size(DIM_2);
     } else if (input_layout_str == "TND") {
+        int64_t kv_dim = value.dim();
         if (block_table.has_value()) { // IFA目前TND只支持PA场景，PFA目前TND只支持非PA场景
-            tmp_output = OpPreparation::apply_tensor_without_format(
-                {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2)},
-                query.options().dtype(query.dtype()));
+            if (kv_dim == PA_BBH_DIMS) { // BBH的情况下，D = H / N
+                tmp_output = OpPreparation::apply_tensor_without_format(
+                    {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2) / num_key_value_heads},
+                    query.options().dtype(query.dtype()));
+            } else if (kv_dim == PA_BNBD_DIMS) { // BNBD情况下取D
+                tmp_output = OpPreparation::apply_tensor_without_format(
+                    {query.size(DIM_0), query.size(DIM_1), value.size(DIM_3)},
+                    query.options().dtype(query.dtype()));
+            } else if (kv_dim == PA_NZ_DIMS) { // blockNum, N, D / 16, blockSize, 16取DIM2*DIM4
+                tmp_output = OpPreparation::apply_tensor_without_format(
+                    {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2) * value.size(DIM_4)},
+                    query.options().dtype(query.dtype()));
+            } else {
+                tmp_output = OpPreparation::apply_tensor_without_format(
+                    {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2)},
+                    query.options().dtype(query.dtype()));
+            }
         } else {
             tmp_output = OpPreparation::apply_tensor_without_format(
                 {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2)},
                 query.options().dtype(query.dtype()));
         }
     } else if (input_layout_str == "NTD_TND") {
-        tmp_output = OpPreparation::apply_tensor_without_format(
-            {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2)},
-            query.options().dtype(query.dtype()));
+        int64_t kv_dim = value.dim();
+        if (kv_dim == 0) {
+            kv_dim = query.dim();
+        }
+        if (block_table.has_value()) { // pa场景
+            if (kv_dim == PA_BBH_DIMS) { // BBH的情况下，D = H / N
+                tmp_output = OpPreparation::apply_tensor_without_format(
+                    {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2) / num_key_value_heads},
+                    query.options().dtype(query.dtype()));
+            } else if (kv_dim == PA_BNBD_DIMS) { // BNBD情况下取D
+                tmp_output = OpPreparation::apply_tensor_without_format(
+                    {query.size(DIM_1), query.size(DIM_0), value.size(DIM_3)},
+                    query.options().dtype(query.dtype()));
+            } else if (kv_dim == PA_NZ_DIMS) { // blockNum, N, D / 16, blockSize, 16取DIM2*DIM4
+                tmp_output = OpPreparation::apply_tensor_without_format(
+                    {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2) * value.size(DIM_4)},
+                    query.options().dtype(query.dtype()));
+            } else {
+                tmp_output = OpPreparation::apply_tensor_without_format(
+                    {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2)},
+                    query.options().dtype(query.dtype()));
+            }
+        } else {
+            tmp_output = OpPreparation::apply_tensor_without_format(
+                {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2)},
+                query.options().dtype(query.dtype()));
+        }
     }
     if (quant_scale_out.has_value()) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Char));
@@ -115,15 +159,30 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
     at::Tensor softmax_lse;
     if (input_layout_str == "TND") {
         if (block_table.has_value()) { // IFA目前TND只支持PA场景，PFA目前TND只支持非PA场景
-            softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_0), num_query_heads, 1},
-            c10::dtype(c10::ScalarType::Float));
+            if (query.size(DIM_2) == 0) { // 增加softmax lse的情况下，可能存在空tensor的分支
+                softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_0), num_query_heads, 0},
+                    c10::dtype(c10::ScalarType::Float));
+            } else {
+                softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_0), num_query_heads, 1},
+                    c10::dtype(c10::ScalarType::Float));
+            }
         } else {
             softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_0), query.size(DIM_1), 1},
-            c10::dtype(c10::ScalarType::Float));
+                c10::dtype(c10::ScalarType::Float));
         }
     } else if (input_layout_str == "NTD_TND") {
-        softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_1), query.size(DIM_0), 1},
-            c10::dtype(c10::ScalarType::Float));
+        if (block_table.has_value()) { // pa场景
+            if (query.size(DIM_2) == 0) { // 增加softmax lse的情况下，可能存在空tensor的分支
+                softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_1), query.size(DIM_0), 0},
+                    c10::dtype(c10::ScalarType::Float));
+            } else {
+                softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_1), query.size(DIM_0), 1},
+                    c10::dtype(c10::ScalarType::Float));
+            }
+        } else {
+            softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_1), query.size(DIM_0), 1},
+                c10::dtype(c10::ScalarType::Float));
+        }
     } else {
         softmax_lse = npu_preparation::apply_tensor_without_format({batchSize, num_query_heads, qsSize, 1},
             c10::dtype(c10::ScalarType::Float));
@@ -169,6 +228,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
     // construct the output tensor
     std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, input_layout_str,
                                                                                            quant_scale_out, block_table, num_query_heads,
+                                                                                           num_key_value_heads,
                                                                                            return_softmax_lse, query_rope);
     at::Tensor output = std::get<0>(fia_output);
     at::Tensor softmax_lse = std::get<1>(fia_output);
@@ -297,6 +357,7 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     // construct the output tensor
     std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, input_layout_str,
                                                                                            quant_scale_out, block_table, num_query_heads,
+                                                                                           num_key_value_heads,
                                                                                            return_softmax_lse, query_rope);
     at::Tensor output = std::get<0>(fia_output);
     at::Tensor softmax_lse = std::get<1>(fia_output);
