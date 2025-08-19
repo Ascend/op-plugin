@@ -100,12 +100,12 @@ at::Tensor npu_grouped_matmul_finalize_routing(
 
     auto scene_has_share = false;
     auto scene_no_share = false;
-    if (scale.has_value() &&  pertoken_scale.has_value() && shared_input.has_value()
+    if (scale.has_value() && shared_input.has_value()
         && logit.has_value() && row_index.has_value()) {
         scene_has_share = true;
     }
 
-    if (scale.has_value() &&  pertoken_scale.has_value() && !shared_input.has_value()
+    if (scale.has_value() && !shared_input.has_value()
         && !logit.has_value() && row_index.has_value()) {
         scene_no_share = true;
     }

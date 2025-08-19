@@ -1434,10 +1434,10 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
 
     scene1 = False
     scene2 = False
-    scene1 = (scale is not None and pertoken_scale is not None and
+    scene1 = (scale is not None and
               group_list is not None and shared_input is not None and
               logit is not None and row_index is not None)
-    scene2 = (scale is not None and pertoken_scale is not None and
+    scene2 = (scale is not None and
               group_list is not None and shared_input is None and
               logit is None and row_index is not None)
     torch._check(
