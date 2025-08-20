@@ -34,7 +34,8 @@ at::Tensor npu_moe_distribute_combine_v2(const at::Tensor &expand_x, const at::T
                                          const c10::optional<at::Tensor> &shared_expert_x,
                                          c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
                                          int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
-                                         int64_t global_bs, int64_t comm_quant_mode)
+                                         int64_t global_bs, int64_t comm_quant_mode,
+                                         c10::string_view comm_alg)
 {
     TORCH_CHECK((expand_x.dim() == DIM_TWO) && (expert_ids.dim() == DIM_TWO), "The x and expert_ids should be 2D", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((expand_x.scalar_type() == at::kBFloat16) || (expand_x.scalar_type() == at::kHalf) || (expand_x.scalar_type() == at::kInt),
@@ -63,13 +64,15 @@ at::Tensor npu_moe_distribute_combine_v2(const at::Tensor &expand_x, const at::T
     c10::optional<at::Tensor> nulltensor = c10::nullopt;
     int64_t out_dtype = 0;
     int64_t group_list_type = 0;
-    std::string comm_log = "0";
-    char *comm_log_ptr = const_cast<char *>(comm_log.c_str());
+
+    std::string comm_alg_str = std::string(comm_alg);
+    char *comm_alg_ptr = const_cast<char *>(comm_alg_str.c_str());
+
     EXEC_NPU_CMD(aclnnMoeDistributeCombineV2, expand_x, expert_ids, assist_info_for_combine, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
                  nulltensor, nulltensor, nulltensor, expand_scales, shared_expert_x, group_ep_ptr, ep_world_size, ep_rank_id,
                  moe_expert_num, group_tp_ptr, tp_world_size, tp_rank_id,
                  expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type,
-                 comm_log_ptr, output);
+                 comm_alg_ptr, output);
     return output;
 }
 }

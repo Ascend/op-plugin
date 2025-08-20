@@ -31,7 +31,8 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
                                            const c10::optional<at::Tensor> &expert_scales,
                                            c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
                                            int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
-                                           int64_t quant_mode, int64_t global_bs, int64_t expert_token_nums_type)
+                                           int64_t quant_mode, int64_t global_bs, int64_t expert_token_nums_type,
+                                           c10::string_view comm_alg)
 {
     TORCH_CHECK((x.dim() == DIM_TWO) && (expert_ids.dim() == DIM_TWO), "The x and expert_ids should be 2D", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(x.scalar_type() == at::kBFloat16 || x.scalar_type() == at::kHalf,
@@ -122,14 +123,15 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
         ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));
     }
 
-    std::string comm_log = "0";
-    char *comm_log_ptr = const_cast<char *>(comm_log.c_str());
+    std::string comm_alg_str = std::string(comm_alg);
+    char *comm_alg_ptr = const_cast<char *>(comm_alg_str.c_str());
+    
     assist_info_forcombine = npu_preparation::apply_tensor_without_format({std::max(bs * k, a * 128)}, x.options().dtype(at::kInt));
     EXEC_NPU_CMD(aclnnMoeDistributeDispatchV2, x, expert_ids, scales, x_active_mask, expert_scales,
                  group_ep_ptr, ep_world_size, ep_rank_id, moe_expert_num,
                  group_tp_ptr, tp_world_size, tp_rank_id,
                  expert_shard_type, shared_expert_num, shared_expert_rank_num,
-                 quant_mode, global_bs_real, expert_token_nums_type, comm_log_ptr, expand_x,
+                 quant_mode, global_bs_real, expert_token_nums_type, comm_alg_ptr, expand_x,
                  dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts,
                  tp_recv_counts, expand_scales);
     return std::tie(expand_x, dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts, tp_recv_counts,
