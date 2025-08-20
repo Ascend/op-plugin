@@ -235,7 +235,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
 
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
-    at::ArrayRef<c10::SymInt> actual_shared_prefix_len;
+    at::Tensor actual_shared_prefix_len {nullptr};
     at::Tensor dequant_scale1;
     at::Tensor quant_scale1;
     at::Tensor dequant_scale2;
@@ -293,7 +293,7 @@ std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_score_v2_out_sy
     std::string input_layout_str = std::string(input_layout);
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
-    at::ArrayRef<c10::SymInt> actual_shared_prefix_len;
+    at::Tensor actual_shared_prefix_len {nullptr};
     at::Tensor dequant_scale1;
     at::Tensor quant_scale1;
     at::Tensor dequant_scale2;
@@ -365,7 +365,7 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     // convert str
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
-    at::ArrayRef<c10::SymInt> actual_shared_prefix_len;
+    at::Tensor actual_shared_prefix_len {nullptr};
     at::Tensor dequant_scale1;
     at::Tensor quant_scale1;
     at::Tensor dequant_scale2;
