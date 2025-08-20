@@ -134,12 +134,6 @@ official:
   - func: _amp_update_scale_(Tensor(a!) self, Tensor(b!) growth_tracker, Tensor found_inf, float growth_factor, float backoff_factor, int growth_interval) -> Tensor(a!)
     op_api: all_version
 
-  - func: _batch_norm_impl_index(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, bool cudnn_enabled) -> (Tensor, Tensor, Tensor, Tensor, int)
-    acl_op: all_version
-
-  - func: _batch_norm_impl_index_backward(int impl_index, Tensor input, Tensor grad_output, Tensor? weight, Tensor? running_mean, Tensor? running_var, Tensor? save_mean, Tensor? save_var_transform, bool train, float eps, bool[3] output_mask, Tensor reservedSpace) -> (Tensor, Tensor, Tensor)
-    acl_op: all_version
-
   - func: _cat(Tensor[] tensors, int dim=0) -> Tensor
     acl_op: v1.11
     op_api: v1.11
@@ -1347,10 +1341,6 @@ official:
     op_api: all_version
 
   - func: baddbmm_(Tensor(a!) self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)
-    acl_op: all_version
-    op_api: all_version
-
-  - func: batch_norm(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, bool cudnn_enabled) -> Tensor
     acl_op: all_version
     op_api: all_version
 
