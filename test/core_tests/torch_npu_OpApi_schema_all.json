@@ -2903,6 +2903,15 @@
   "func: normal_(Tensor(a!) self, float mean=0, float std=1, *, Generator? generator=None) -> Tensor(a!)": {
     "version": ["all_version"]
   },
+  "func: obfuscation_initialize(int hidden_size, int tp_rank, int cmd, *, ScalarType? data_type=None, int? model_obf_seed_id=0, int? data_obf_seed_id=0, int? thread_num=0, float? obf_coefficient=1.0) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: obfuscation_finalize(Tensor fd_to_close) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: obfuscation_calculate(Tensor fd, Tensor x, Tensor param, *, float? obf_coefficient=1.0) -> Tensor": {
+    "version": ["all_version"]
+  },
   "func: one_hot(Tensor self, int num_classes=-1) -> Tensor": {
     "version": ["all_version"]
   },

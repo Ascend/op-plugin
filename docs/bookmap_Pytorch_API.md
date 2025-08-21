@@ -211,6 +211,9 @@
             -   [torch_npu.npu.graph_task_group_end](./context/torch_npu-npu-graph_task_group_end.md)
             -   [torch_npu.npu.graph_task_update_begin](./context/torch_npu-npu-graph_task_update_begin.md)
             -   [torch_npu.npu.graph_task_update_end](./context/torch_npu-npu-graph_task_update_end.md)
+            -   [torch_npu.obfuscation_initialize](./context/torch_npu-obfuscation_initialize.md)
+            -   [torch_npu.obfuscation_finalize](./context/torch_npu-obfuscation_finalize.md)
+            -   [torch_npu.obfuscation_calculate](./context/torch_npu-obfuscation_calculate.md)
     
         -   [amp](./context/amp.md)
             -   [（beta）torch_npu.npu.get_amp_supported_dtype](./context/（beta）torch_npu-npu-get_amp_supported_dtype.md)

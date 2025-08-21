@@ -7581,6 +7581,18 @@ custom:
     acl_op: all_version
     exposed: all_version
 
+  - func: obfuscation_initialize(int hidden_size, int tp_rank, int cmd, *, ScalarType? data_type=None, int? model_obf_seed_id=0, int? data_obf_seed_id=0, int? thread_num=0, float? obf_coefficient=1.0) -> Tensor
+    op_api: all_version
+    internal_format_opapi: all_version
+    dispatch:
+      CompositeExplicitAutograd: obfuscation_initialize
+
+  - func: obfuscation_finalize(Tensor fd_to_close) -> Tensor
+    op_api: all_version
+
+  - func: obfuscation_calculate(Tensor fd, Tensor x, Tensor param, *, float? obf_coefficient=1.0) -> Tensor
+    op_api: all_version
+
   - func: one_(Tensor(a!) self) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version

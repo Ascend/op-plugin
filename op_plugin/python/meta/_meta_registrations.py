@@ -1801,6 +1801,16 @@ def quant_matmul_scale_offset_out_check(scale, offset, pertoken_scale, output_dt
         )
 
 
+@impl(m, "obfuscation_calculate")
+def obfuscation_calculate_meta(fd, x, param, cmd):
+    return torch.empty_like(x)
+
+
+@impl(m, "obfuscation_finalize")
+def obfuscation_finalize_meta(fd_to_close):
+    return torch.empty_like(fd_to_close)
+
+
 @impl(m, "npu_quant_matmul")
 def npu_quant_matmul_meta(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, group_sizes=None):
     INT4_IN_INT32 = 8
