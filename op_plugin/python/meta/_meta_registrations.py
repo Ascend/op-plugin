@@ -1120,6 +1120,18 @@ def scatter_nd_update__meta(self, indices, updates):
     return self
 
 
+@impl(m, "npu_scatter_pa_kv_cache_functional")
+def npu_scatter_pa_kv_cache_functional_meta(key, value, key_cache, value_cache, slot_mapping, *, compress_lens=None,
+    compress_seq_offsets=None, seq_lens=None):
+    return (torch.empty_like(key_cache, dtype=key_cache.dtype), torch.empty_like(value_cache, dtype=value_cache.dtype))
+
+
+@impl(m, "npu_scatter_pa_kv_cache")
+def npu_scatter_pa_kv_cache_meta(key, value, key_cache, value_cache, slot_mapping, *, compress_lens=None,
+    compress_seq_offsets=None, seq_lens=None):
+    return
+
+
 if torch.__version__ >= '2.3.1':
     @impl(m, "npu_geglu")
     def npu_geglu_meta(self, dim, approximate, activate_left=False):

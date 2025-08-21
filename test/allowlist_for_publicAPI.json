@@ -43,6 +43,7 @@
       "npu_dynamic_quant",
       "npu_dynamic_quant_asymmetric",
       "npu_scatter_nd_update_",
+      "npu_scatter_pa_kv_cache",
       "npu_stride_copy",
       "npu_gemma_rms_norm",
       "npu_swiglu",

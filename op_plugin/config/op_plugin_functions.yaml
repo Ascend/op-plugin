@@ -7456,6 +7456,15 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_scatter_pa_kv_cache_functional(Tensor key, Tensor value, Tensor key_cache, Tensor value_cache, Tensor slot_mapping, *, Tensor? compress_lens=None, Tensor? compress_seq_offsets=None, Tensor? seq_lens=None) -> (Tensor, Tensor)
+    op_api: all_version
+    internal_format_opapi: all_version
+
+  - func: npu_scatter_pa_kv_cache(Tensor key, Tensor value, Tensor(a!) key_cache, Tensor(b!) value_cache, Tensor slot_mapping, *, Tensor? compress_lens=None, Tensor? compress_seq_offsets=None, Tensor? seq_lens=None) -> ()
+    op_api: all_version
+    internal_format_opapi: all_version
+    exposed: all_version
+
   - func: npu_sign_bits_pack(Tensor self, int size) -> Tensor
     acl_op: all_version
     exposed: all_version
