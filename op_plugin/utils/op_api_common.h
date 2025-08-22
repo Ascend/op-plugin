@@ -126,7 +126,7 @@ inline void *GetOpApiLibHandler(const char *libName)
     return handler;
 }
 
-#define GET_OP_API_FUNC_FROM_FEATURE_LIB(lib_handler, lib_name)                                                        \
+#define GET_OP_API_FUNC_FROM_FEATURE_LIB(lib_handler, lib_name, api_name)                                              \
     static auto lib_handler = GetOpApiLibHandler(lib_name);                                                            \
     if ((lib_handler) != nullptr) {                                                                                    \
         auto funcAddr = GetOpApiFuncAddrInLib(lib_handler, lib_name, api_name);                                        \
@@ -186,6 +186,12 @@ inline void *GetOpApiFuncAddr(const char *apiName)
         }
         ASCEND_LOGI("%s is not in default custom lib.", apiName);
     }
+
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiMathHandler, "libopapi_math.so", apiName);
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiNnHandler, "libopapi_nn.so", apiName);
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiCvHandler, "libopapi_cv.so", apiName);
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiTransformerHandler, "libopapi_transformer.so", apiName);
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiLegacyHandler, "libopapi_legacy.so", apiName);
 
     static auto opApiHandler = GetOpApiLibHandler(GetOpApiLibName());
     if (opApiHandler != nullptr) {
