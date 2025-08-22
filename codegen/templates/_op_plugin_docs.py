@@ -6364,8 +6364,8 @@ Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持float1
 Atlas A3 训练系列产品: 数据类型支持float16、bfloat16、int8、int4(int32). 
 *: 代表其之前的变量是位置相关, 需要按照顺序输入, 必选; 之后的变量是键值对赋值的, 位置无关, 可选(不输入会使用默认值). 
 pse_shift: Tensor类型, 在attention结构内部的位置编码参数, 数据类型支持float16、bfloat16, 数据类型与query的数据类型需满足数据类型推导规则. 不支持非连续的Tensor, 数据格式支持ND. 如不使用该功能时可传入None. 
-Q_S不为1, 要求在pse_shift为float16类型时, 此时的query为float16或int8类型; 而在pse_shift为bfloat16类型时, 要求此时的query为bfloat16类型. 输入shape类型需为(B, N, Q_S, KV_S)或(1, N, Q_S, KV_S), 其中Q_S为query的shape中的S, KV_S为key和value的shape中的S. 对于pse_shift的KV_S为非32对齐的场景, 建议padding到32字节来提高性能, 多余部分的填充值不做要求. 
-Q_S为1, 要求在pse_shift为float16类型时, 此时的query为float16类型; 而在pse_shift为bfloat16类型时, 要求此时的query为bfloat16类型. 输入shape类型需为(B, N, 1, KV_S)或(1, N, 1, KV_S), 其中N为num_heads, KV_S为key和value的shape中的S. 对于pse_shift的KV_S为非32对齐的场景, 建议padding到32字节来提高性能, 多余部分的填充值不做要求. 
+Q_S不为1, 要求在pse_shift为float16类型时, 此时的query为float16或int8类型; 而在pse_shift为bfloat16类型时, 要求此时的query为bfloat16类型. 输入shape类型需为(B, Q_N, Q_S, KV_S)或(1, Q_N, Q_S, KV_S), 其中Q_S为query的shape中的S, KV_S为key和value的shape中的S. 对于pse_shift的KV_S为非32对齐的场景, 建议padding到32字节来提高性能, 多余部分的填充值不做要求. 
+Q_S为1, 要求在pse_shift为float16类型时, 此时的query为float16类型; 而在pse_shift为bfloat16类型时, 要求此时的query为bfloat16类型. 输入shape类型需为(B, Q_N, 1, KV_S)或(1, Q_N, 1, KV_S), KV_S为key和value的shape中的S. 对于pse_shift的KV_S为非32对齐的场景, 建议padding到32字节来提高性能, 多余部分的填充值不做要求. 
 atten_mask: Tensor类型, 对QK的结果进行mask, 用于指示是否计算Token间的相关性, 数据类型支持bool、int8和uint8. 不支持非连续的Tensor, 数据格式支持ND. 如果不使用该功能可传入None. 
 Q_S不为1时建议shape输入(Q_S, KV_S)、(B, Q_S, KV_S)、(1, Q_S, KV_S)、(B, 1, Q_S, KV_S)、(1, 1, Q_S, KV_S). 
 Q_S为1时建议shape输入(B, KV_S)、(B, 1, KV_S)、(B, 1, 1, KV_S). 
@@ -6375,7 +6375,7 @@ actual_seq_lengths_kv: int类型数组, 代表不同Batch中key/value的有效se
 dequant_scale1: Tensor类型, 数据类型支持uint64、float32. 数据格式支持ND, 表示BMM1后面的反量化因子, 支持per-tensor. 如不使用该功能时传入None. 
 quant_scale1: Tensor类型, 数据类型支持float32. 数据格式支持ND, 表示BMM2前面的量化因子, 支持per-tensor. 如不使用该功能时可传入None, 综合约束请见约束说明. 
 dequant_scale2: Tensor类型, 数据类型支持uint64、float32. 数据格式支持ND, 表示BMM2后面的反量化因子, 支持per-tensor. 如不使用该功能时传入None. 
-quant_scale2: Tensor类型, 数据类型支持float32、bfloat16. 数据格式支持ND, 表示输出的量化因子, 支持per-tensor、per-channel. 当输入为bfloat16时, 同时支持float32和bfloat16 , 否则仅支持float32 . per-channel格式, 当输出layout为BSH时, 要求quant_scale2所有维度的乘积等于H; 其他layout要求乘积等于N*D(建议输出layout为BSH时, quant_scale2shape传入(1, 1, H)或(H,); 输出为BNSD时, 建议传入(1, N, 1, D)或(N, D); 输出为BSND时, 建议传入(1, 1, N, D)或(N, D)). 如不使用该功能时可传入None, 综合约束请见约束说明. 
+quant_scale2: Tensor类型, 数据类型支持float32、bfloat16. 数据格式支持ND, 表示输出的量化因子, 支持per-tensor、per-channel. 当输入为bfloat16时, 同时支持float32和bfloat16 , 否则仅支持float32 . per-channel格式, 当输出layout为BSH时, 要求quant_scale2所有维度的乘积等于H; 其他layout要求乘积等于Q_N*D(建议输出layout为BSH时, quant_scale2shape传入(1, 1, H)或(H,); 输出为BNSD时, 建议传入(1, Q_N, 1, D)或(Q_N, D); 输出为BSND时, 建议传入(1, 1, Q_N, D)或(Q_N, D)). 如不使用该功能时可传入None, 综合约束请见约束说明. 
 quant_offset2: Tensor类型, 数据类型支持float32、bfloat16. 数据格式支持ND, 表示输出的量化偏移, 支持per-tensor、per-channel. 若传入quant_offset2, 需保证其类型和shape信息与quantScale2 一致. 如不使用该功能时可传入None, 综合约束请见约束说明. 
 antiquant_scale: Tensor类型, 数据类型支持float16、bfloat16. 数据格式支持ND, 表示伪量化因子, 支持per-tensor、per-channel, Q_S为1时只支持per-channel, Q_S大于等于2时只支持float16, 如不使用该功能时可传入None, 综合约束请见约束说明. 
 antiquant_offset: Tensor类型, 数据类型支持float16、bfloat16. 数据格式支持ND, 表示伪量化偏移, 支持per-tensor、per-channel, Q_S为1时只支持per-channel, Q_S大于等于2时只支持float16, 如不使用该功能时可传入None, 综合约束请见约束说明. 
@@ -6436,7 +6436,7 @@ Atlas A3 训练系列产品: 支持取值0、1、2、3、4、5.
 
 输出说明
 attention_out: Tensor类型, 公式中的输出, 数据类型支持float16、bfloat16、int8. 数据格式支持ND. 限制: 当input_layout为BNSD_BSND时, 输入query的shape是BNSD, 输出shape为BSND; 其余情况该参数的shape需要与入参query的shape保持一致. 
-softmaxLse: Tensor类型, ring attention算法对query乘key的结果, 先取max得到softmax_max. query乘key的结果减去softmax_max, 再取exp, 最后取sum, 得到softmax_sum, 最后对softmax_sum取log, 再加上softmax_max得到的结果. 数据类型支持float32, softmax_lse_flag为True时, 一般情况下, 输出shape为(B, N, Q_S, 1)的Tensor, 当input_layout为TND时, 输出shape为(T,N,1)的Tensor; softmax_lse_flag为False时, 则输出shape为[1]的值为0的Tensor. 
+softmaxLse: Tensor类型, ring attention算法对query乘key的结果, 先取max得到softmax_max. query乘key的结果减去softmax_max, 再取exp, 最后取sum, 得到softmax_sum, 最后对softmax_sum取log, 再加上softmax_max得到的结果. 数据类型支持float32, softmax_lse_flag为True时, 一般情况下, 输出shape为(B, Q_N, Q_S, 1)的Tensor, 当input_layout为TND时, 输出shape为(T,Q_N,1)的Tensor; softmax_lse_flag为False时, 则输出shape为[1]的值为0的Tensor. 
 
 约束说明:
 该接口支持推理场景下使用. 
@@ -6451,9 +6451,9 @@ int8量化相关入参数量与输入、输出数据格式的综合限制:
 入参quant_offset2和quant_scale2支持per-tensor或per-channel格式, 数据类型支持float32、bfloat16. 
 antiquant_scale和antiquant_offset参数约束: 
 支持per-channel、per-tensor和per-token三种模式: 
-per-channel模式: 两个参数BNSD场景下shape为(2, N, 1, D), BSND场景下shape为(2, N, D), BSH场景下shape为(2, H), N为num_key_value_heads. 参数数据类型和query数据类型相同, antiquant_mode置0, 当key、value数据类型为int8时支持. 
+per-channel模式: 两个参数BNSD场景下shape为(2, KV_N, 1, D), BSND场景下shape为(2, KV_N, D), BSH场景下shape为(2, H). 参数数据类型和query数据类型相同, antiquant_mode置0, 当key、value数据类型为int8时支持. 
 per-tensor模式: 两个参数的shape均为(2,), 数据类型和query数据类型相同, antiquant_mode置0, 当key、value数据类型为int8时支持. 
-per-token模式: 两个参数的shape均为(2, B, S), 数据类型固定为float32, antiquant_mode置1, 当key、value数据类型为int8时支持. 
+per-token模式: 两个参数的shape均为(2, B, KV_S), 数据类型固定为float32, antiquant_mode置1, 当key、value数据类型为int8时支持. 
 算子运行在何种模式根据参数的shape进行判断, dim为1时运行per-tensor模式, 否则运行per-channel模式. 
 支持对称量化和非对称量化: 
 非对称量化模式下, antiquant_scale和antiquant_offset参数需同时存在. 
@@ -6464,8 +6464,8 @@ key_rope的数据类型、数据格式与key一致, 配置时要求key的N为1, 
 query_rope和key_rope要求同时配置或同时不配置, 不支持只配置其中一个. 
 当query_rope和key_rope非空时, 支持如下特性: 
 sparse: Q_S等于1时只支持sparse=0且不传mask, Q_S大于1时只支持sparse=3且传入mask; 
-Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 支持key、value的input_layout格式为ND或NZ. 当input_layout为NZ时, 输入参数key和value的格式为[blockNum, N, D/16, blockSize, 16]. 
-Atlas A3 训练系列产品: 支持key、value的input_layout格式为ND或NZ. 当input_layout为NZ时, 输入参数key和value的格式为[blockNum, N, D/16, blockSize, 16]. 
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 支持key、value的input_layout格式为ND或NZ. 当input_layout为NZ时, 输入参数key和value的格式为[blockNum, KV_N, D/16, blockSize, 16]. 
+Atlas A3 训练系列产品: 支持key、value的input_layout格式为ND或NZ. 当input_layout为NZ时, 输入参数key和value的格式为[blockNum, KV_N, D/16, blockSize, 16]. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: input_layout形状支持BSH、BSND、BNSD, 当数据格式为NZ时input_layout不支持BNSD. 
 Atlas A3 训练系列产品: input_layout形状支持BSH、BSND、BNSD, 当数据格式为NZ时input_layout不支持BNSD. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 该场景下, 必须开启PageAttention, 此时block_size支持16、128, 其中数据格式为NZ时block_size不支持配置16. 
@@ -6503,7 +6503,7 @@ page attention场景下, block_table必须为二维, 第一维长度需等于B, 
 page atte两种格式和float32/bfloat1ntion场景下, 不支持输入query为int8的场景. 
 page attention使能场景下, 以下场景输入需满足KV_S>=maxBlockNumPerSeq*blockSize: 
 传入attenMask时, 如mask shape为 (B, 1, Q_S, KV_S). 
-传入pseShift时, 如pseShift shape为(B, N, Q_S, KV_S). 
+传入pseShift时, 如pseShift shape为(B, Q_N, Q_S, KV_S). 
 query左padding场景: 
 query左padding场景query的搬运起点计算公式为: Q_S-query_padding_size-actual_seq_lengths. query的搬运终点计算公式为: Q_S-query_padding_size. 其中query的搬运起点不能小于0, 终点不能大于Q_S, 否则结果将不符合预期. 
 query左padding场景kv_padding_size小于0时将被置为0. 
@@ -6514,7 +6514,7 @@ kv左padding场景key和value的搬运起点计算公式为: KV_S-kv_padding_siz
 kv左padding场景kv_padding_size小于0时将被置为0. 
 kv左padding场景需要与actual_seq_lengths_kv参数一起使能, 否则默认为kv右padding场景. 
 kv左padding场景不支持PageAttention, 不能与block_table参数一起使能. 
-入参quant_scale2和quant_offset2支持per-tensor、per-channel量化, 支持float32、bfloat16类型. 若传入quant_offset2, 需保证其类型和shape信息与quant_scale2一致. 当输入为bfloat16时, 同时支持float32和bfloat16 , 否则仅支持float32. per-channel场景下, 当输出layout为BSH时, 要求quant_scale2所有维度的乘积等于H; 其他layout要求乘积等于N*D. 当输出layout为BSH时, quant_scale2 shape建议传入(1, 1, H)或(H,); 当输出layout为BNSD时, 建议传入(1, N, 1, D)或(N, D); 当输出为BSND时, 建议传入(1, 1, N, D)或(N, D). 
+入参quant_scale2和quant_offset2支持per-tensor、per-channel量化, 支持float32、bfloat16类型. 若传入quant_offset2, 需保证其类型和shape信息与quant_scale2一致. 当输入为bfloat16时, 同时支持float32和bfloat16 , 否则仅支持float32. per-channel场景下, 当输出layout为BSH时, 要求quant_scale2所有维度的乘积等于H; 其他layout要求乘积等于N*D. 当输出layout为BSH时, quant_scale2 shape建议传入(1, 1, H)或(H,); 当输出layout为BNSD时, 建议传入(1, Q_N, 1, D)或(Q_N, D); 当输出为BSND时, 建议传入(1, 1, Q_N, D)或(Q_N, D). 
 输出为int8, quant_scale2和quant_offset2为per-channel时, 暂不支持左padding、Ring Attention或者D非32Byte对齐的场景. 
 输出为int8时, 暂不支持sparse为band且preTokens/nextTokens为负数. 
 pse_shift功能使用限制如下: 
@@ -6540,7 +6540,7 @@ kv伪量化参数分离:
 key_antiquant_mode和value_antiquant_mode需要保持一致. 
 key_antiquant_scale和value_antiquant_scale要么都为空, 要么都不为空; key_antiquant_offset和value_antiquant_offset要么都为空, 要么都不为空. 
 key_antiquant_scale和value_antiquant_scale都不为空时, 其shape需要保持一致; key_antiquant_offset和value_antiquant_offset都不为空时, 其shape需要保持一致. 
-仅支持per-token模式, 且该模式下要求两个参数的shape均为(B, S), 数据类型固定为float32. 
+仅支持per-token模式, 且该模式下要求两个参数的shape均为(B, KV_S), 数据类型固定为float32. 
 当伪量化参数和KV分离量化参数同时传入时, 以KV分离量化参数为准. 
 key_antiquant_scale与value_antiquant_scale非空场景, 要求query的s小于等于16. 
 key_antiquant_scale与value_antiquant_scale非空场景, 要求query的dtype为bfloat16, key、value的dtype为int8, 输出的dtype为bfloat16. 
@@ -6582,14 +6582,14 @@ int4(int32)伪量化场景不支持后量化.
 管理scale/offset的量化模式如下: 
 注意scale、offset两个参数指key_antiquant_scale、key_antiquant_scale、value_antiquant_offset、value_antiquant_offset. 
 场景下scale和offset条件
-per-channel模式: 两个参数shape支持(1, N, 1, D), (1, N, D), (1, H), 数据类型和query数据类型相同. 
+per-channel模式: 两个参数shape支持(1, KV_N, 1, D), (1, KV_N, D), (1, H), 数据类型和query数据类型相同. 
 per-tensor模式: 两个参数的shape均为(1,), 数据类型和query数据类型相同. 
-per-token模式: 两个参数的shape均为(1, B, S), 数据类型固定为float32. 
-per-tensor叠加per-head模式: 两个参数的shape均为(N,), 数据类型和query数据类型相同. 
-per-token叠加per-head模式: 两个参数的shape均为(B, N, S), 数据类型固定为float32. 
+per-token模式: 两个参数的shape均为(1, B, KV_S), 数据类型固定为float32. 
+per-tensor叠加per-head模式: 两个参数的shape均为(KV_N,), 数据类型和query数据类型相同. 
+per-token叠加per-head模式: 两个参数的shape均为(B, KV_N, KV_S), 数据类型固定为float32. 
 per-token叠加使用page attention模式: 两个参数的shape均为(blocknum, blocksize), 数据类型固定为float32. 
-per-token叠加per head并使用page attention模式: 两个参数的shape均为(blocknum, N, blocksize), 数据类型固定为float32. 
-key支持per-channel叠加value支持per-token模式: 对于key支持per-channel, 两个参数的shape可支持(1, N, 1, D)、(1, N, D)、(1, H), 且参数数据类型和query数据类型相同. 对于value支持per-token, 两个参数的shape均为(1, B, S)并且数据类型固定为float32. 
+per-token叠加per head并使用page attention模式: 两个参数的shape均为(blocknum, KV_N, blocksize), 数据类型固定为float32. 
+key支持per-channel叠加value支持per-token模式: 对于key支持per-channel, 两个参数的shape可支持(1, KV_N, 1, D)、(1, KV_N, D)、(1, H), 且参数数据类型和query数据类型相同. 对于value支持per-token, 两个参数的shape均为(1, B, KV_S)并且数据类型固定为float32. 
 场景下key和value条件
 per-channel模式: Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 当key、value数据类型为int4(int32)或int8时支持. Atlas A3 训练系列产品: 当key、value数据类型为int4(int32)或int8时支持. 
 per-tensor模式: Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 当key、value数据类型为int8时支持. Atlas A3 训练系列产品: 当key、value数据类型为int8时支持. 
@@ -6827,8 +6827,8 @@ Atlas A3 训练系列产品: 数据类型支持float16、bfloat16、int8、int4(
 query_rope: Tensor类型, 表示MLA(Multi-head Latent Attention)结构中的query的rope信息, 数据类型支持float16、bfloat16, 不支持非连续的Tensor, 数据格式支持ND. 
 key_rope: Tensor类型, 表示MLA(Multi-head Latent Attention)结构中的key的rope信息, 数据类型支持float16、bfloat16, 不支持非连续的Tensor, 数据格式支持ND. 
 pse_shift: Tensor类型, 在attention结构内部的位置编码参数, 数据类型支持float16、bfloat16, 数据类型与query的数据类型需满足数据类型推导规则. 不支持非连续的Tensor, 数据格式支持ND. 如不使用该功能时可传入None. 
-Q_S不为1, 要求在pse_shift为float16类型时, 此时的query为float16或int8类型; 而在pse_shift为bfloat16类型时, 要求此时的query为bfloat16类型. 输入shape类型需为(B, N, Q_S, KV_S)或(1, N, Q_S, KV_S), 其中Q_S为query的shape中的S, KV_S为key和value的shape中的S. 对于pse_shift的KV_S为非32对齐的场景, 建议padding到32字节来提高性能, 多余部分的填充值不做要求. 
-Q_S为1, 要求在pse_shift为float16类型时, 此时的query为float16类型; 而在pse_shift为bfloat16类型时, 要求此时的query为bfloat16类型. 输入shape类型需为(B, N, 1, KV_S)或(1, N, 1, KV_S), 其中N为num_query_heads, KV_S为key和value的shape中的S. 对于pse_shift的KV_S为非32对齐的场景, 建议padding到32字节来提高性能, 多余部分的填充值不做要求. 
+Q_S不为1, 要求在pse_shift为float16类型时, 此时的query为float16或int8类型; 而在pse_shift为bfloat16类型时, 要求此时的query为bfloat16类型. 输入shape类型需为(B, Q_N, Q_S, KV_S)或(1, Q_N, Q_S, KV_S), 其中Q_S为query的shape中的S, KV_S为key和value的shape中的S. 对于pse_shift的KV_S为非32对齐的场景, 建议padding到32字节来提高性能, 多余部分的填充值不做要求. 
+Q_S为1, 要求在pse_shift为float16类型时, 此时的query为float16类型; 而在pse_shift为bfloat16类型时, 要求此时的query为bfloat16类型. 输入shape类型需为(B, Q_N, 1, KV_S)或(1, Q_N, 1, KV_S), KV_S为key和value的shape中的S. 对于pse_shift的KV_S为非32对齐的场景, 建议padding到32字节来提高性能, 多余部分的填充值不做要求. 
 atten_mask: Tensor类型, 对QK的结果进行mask, 用于指示是否计算Token间的相关性, 数据类型支持bool、int8和uint8. 不支持非连续的Tensor, 数据格式支持ND. 如果不使用该功能可传入None. 
 Q_S不为1时建议shape输入(Q_S, KV_S)、(B, Q_S, KV_S)、(1, Q_S, KV_S)、(B, 1, Q_S, KV_S)、(1, 1, Q_S, KV_S). 
 Q_S为1时建议shape输入(B, KV_S)、(B, 1, KV_S)、(B, 1, 1, KV_S). 
@@ -6846,7 +6846,7 @@ Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持float1
 Atlas A3 训练系列产品: 数据类型支持float16、bfloat16、float32. 
 dequant_offset_value: Tensor类型, 数据类型支持float16、bfloat16、float32. 数据格式支持ND, kv伪量化参数分离时表示value的反量化偏移, 支持per-channel、per-tensor、per-token、per-tensor叠加per-head、per-token叠加per-head、per-token叠加使用page attention模式管理offset、per-token叠加per head并使用page attention模式管理offset. Q_S大于等于2时仅支持per-token模式, 如不使用该功能时可传入None, 综合约束请见约束说明. 
 dequant_scale_key_rope: Tensor类型, 预留参数, 暂未使用, 使用默认值即可. 表示MLA(Multi-head Latent Attention)结构中的key Rope对应的反量化因子, 支持per-channel, 数据类型支持float16、bfloat16, 不支持非连续的Tensor, 数据格式支持ND, D维度与key_rope的D维度保持一致. 仅支持Q_S等于1-16, 其余场景该参数无效. 
-quant_scale_out: Tensor类型, 数据类型支持float32、bfloat16. 数据格式支持ND, 表示输出的量化因子, 支持per-tensor、per-channel. 当输入为bfloat16时, 同时支持float32和bfloat16 , 否则仅支持float32 . per-channel格式, 当输出layout为BSH时, 要求quant_scale2所有维度的乘积等于H; 其他layout要求乘积等于N*D(建议输出layout为BSH时, quant_scale2shape传入(1, 1, H)或(H,); 输出为BNSD时, 建议传入(1, N, 1, D)或(N, D); 输出为BSND时, 建议传入(1, 1, N, D)或(N, D)). 如不使用该功能时可传入None, 综合约束请见约束说明. 
+quant_scale_out: Tensor类型, 数据类型支持float32、bfloat16. 数据格式支持ND, 表示输出的量化因子, 支持per-tensor、per-channel. 当输入为bfloat16时, 同时支持float32和bfloat16 , 否则仅支持float32 . per-channel格式, 当输出layout为BSH时, 要求quant_scale2所有维度的乘积等于H; 其他layout要求乘积等于Q_N*D(建议输出layout为BSH时, quant_scale2shape传入(1, 1, H)或(H,); 输出为BNSD时, 建议传入(1, Q_N, 1, D)或(Q_N, D); 输出为BSND时, 建议传入(1, 1, Q_N, D)或(Q_N, D)). 如不使用该功能时可传入None, 综合约束请见约束说明. 
 quant_offset_out: Tensor类型, 数据类型支持float32、bfloat16. 数据格式支持ND, 表示输出的量化偏移, 支持per-tensor、per-channel. 若传入quant_offset_out, 需保证其类型和shape信息与quant_scale_out 一致. 如不使用该功能时可传入None, 综合约束请见约束说明. 
 num_query_heads: 整型, 代表query的head个数, 数据类型支持int64, 在BNSD场景下, 需要与shape中的query的N轴shape值相同, 否则执行异常. 
 num_key_value_heads: 整型, 代表key、value中head个数, 用于支持GQA(Grouped-Query Attention, 分组查询注意力)场景, 数据类型支持int64. 用户不特意指定时可传入默认值0, 表示key/value和query的head个数相等, 需要满足num_query_heads整除num_key_value_heads, num_query_heads与num_key_value_heads的比值不能大于64. 在BSND、BNSD、BNSD_BSND(仅支持Q_S大于1)场景下, 还需要与shape中的key/value的N轴shape值相同, 否则执行异常. 
@@ -6899,7 +6899,7 @@ dequant_scale_key_rope_dtype: 整型, 表示dequant_scale_key_rope的数据类�
 
 输出说明
 attention_out: Tensor类型, 公式中的输出, 数据类型支持float16、bfloat16、int8. 数据格式支持ND. 限制：该入参的D维度与value的D保持一致，其余维度需要与入参query的shape保持一致. 
-softmaxLse: Tensor类型, ring attention算法对query乘key的结果, 先取max得到softmax_max. query乘key的结果减去softmax_max, 再取exp, 最后取sum, 得到softmax_sum, 最后对softmax_sum取log, 再加上softmax_max得到的结果. 数据类型支持float32, return_softmax_lse为True时, 一般情况下, 输出shape为(B, N, Q_S, 1)的Tensor, 当input_layout为TND时, 输出shape为(T,N,1)的Tensor; return_softmax_lse为False时, 则输出shape为[1]的值为0的Tensor. 
+softmaxLse: Tensor类型, ring attention算法对query乘key的结果, 先取max得到softmax_max. query乘key的结果减去softmax_max, 再取exp, 最后取sum, 得到softmax_sum, 最后对softmax_sum取log, 再加上softmax_max得到的结果. 数据类型支持float32, return_softmax_lse为True时, 一般情况下, 输出shape为(B, Q_N, Q_S, 1)的Tensor, 当input_layout为TND时, 输出shape为(T,Q_N,1)的Tensor; return_softmax_lse为False时, 则输出shape为[1]的值为0的Tensor. 
 
 约束说明:
 该接口支持推理场景下使用. 
@@ -6922,7 +6922,7 @@ sparse：Q_S等于1时只支持sparse=0且不传mask，Q_S大于1时只支持spa
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品/Atlas A3 推理系列产品约束如下：
 query_rope配置时要求query的s为1-16、n为32、64、128，query_rope的shape中d为64，其余维度与query一致；
 key_rope配置时要求key的n为1，d为512，keyRope的shape中d为64，其余维度与key一致；
-支持key、value、keyRope的input_layout格式为ND或NZ。当input_layout为NZ时，数据类型为float16或bfloat16时，输入参数key和value的格式为[blockNum, N, D/16, blockSize, 16]，数据类型为int8时，输入参数key和value的格式为[blockNum, N, D/32, blockSize, 32]；
+支持key、value、keyRope的input_layout格式为ND或NZ。当input_layout为NZ时，数据类型为float16或bfloat16时，输入参数key和value的格式为[blockNum, KV_N, D/16, blockSize, 16]，数据类型为int8时，输入参数key和value的格式为[blockNum, KV_N, D/32, blockSize, 32]；
 input_layout形状支持BSH、BSND、BNSD、BNSD_NBSD、BSND_NBSD、BSH_NBSD、TND、TND_NTD，当数据格式为NZ时input_layout不支持BNSD、BNSD_NBSD。
 该场景下，必须开启PageAttention，此时block_size支持16、128，其中数据格式为NZ时block_size不支持配置16。
 不支持开启SoftMaxLse、tensorlist、pse、伪量化、后量化。
@@ -6961,15 +6961,18 @@ Q_N、K_N、V_N：需要满足K_N、V_N相等，Q_N整除K_N，Q_N与K_N的比�
 actual_seq_qlen和actual_seq_kvlen的元素个数不大于4096。
 
 GQA伪量化场景下KV为NZ格式时的参数约束如下：
-仅支持per-channel模式，query数据类型固定为BFLOAT16，key&value固定为INT8；query&key&value的d仅支持128；query Sequence Length仅支持1-16；
+支持per-channel和per-token模式，query数据类型固定为bfloat16，key&value固定为int8；query&key&value的D仅支持128；query Sequence Length仅支持1-16；
 input_layout仅支持BSH、BSND、BNSD；
-key&value仅支持NZ输入，输入格式为[blockNum, N, D/32, blockSize, 32]；
-dequant_scale_key和dequant_scale_value的shape：当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[N,1,D]；输出为BSND时，必须传入[N,D]；
+仅支持page_attention场景，blockSize仅支持128或512；
+key&value仅支持NZ输入，输入格式为[blockNum, KV_N, D/32, blockSize, 32]；
+dequant_scale_key和dequant_scale_value的dtype：per-channel模式下，仅支持bfloat16类型；per-token模式下，仅支持float32类型；
+dequant_scale_key和dequant_scale_value的shape：per-channel模式下，当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[KV_N,1,D]；输出为BSND时，必须传入[KV_N, D]；per-token模式下，必须传入[B,KV_S]，S需要大于等于blockTable的第二维*blockSize；
 仅支持KV分离；
 仅支持高性能模式；
 当MTP等于0时，支持sparse_mode=0且不传mask；当MTP大于0、小于16时，支持sparse_mode=3且传入优化后的atten_mask矩阵，atten_mask矩阵shape必须传入（2048*2048）；
+不支持配置dequant_offset_key和dequant_offset_value;
 不支持配置query_rope和key_rope；
-不支持tensorlist、pse、page attention、后量化;
+不支持左padding、tensorlist、pse、prefix、后量化；
 num_query_heads与num_key_value_heads支持组合有(10,1)、(64,8)、(80,8)、(128,16)。
 
 当Q_S大于1时: 
@@ -6997,8 +7000,8 @@ page attention场景下, block_table必须为二维, 第一维长度需等于B, 
 page attention场景下，支持两种格式和float32/bfloat16，不支持输入query为int8的场景。
 page attention使能场景下, 以下场景输入需满足KV_S>=maxBlockNumPerSeq*blockSize: 
 传入attenMask时, 如mask shape为 (B, 1, Q_S, KV_S). 
-传入pseShift时, 如pseShift shape为(B, N, Q_S, KV_S). 
-入参quant_scale_out和quant_offset_out支持per-tensor、per-channel量化, 支持float32、bfloat16类型. 若传入quant_offset_out, 需保证其类型和shape信息与quant_scale_out一致. 当输入为bfloat16时, 同时支持float32和bfloat16 , 否则仅支持float32. per-channel场景下, 当输出layout为BSH时, 要求quant_scale_out所有维度的乘积等于H; 其他layout要求乘积等于N*D. 当输出layout为BSH时, quant_scale_out shape建议传入(1, 1, H)或(H,); 当输出layout为BNSD时, 建议传入(1, N, 1, D)或(N, D); 当输出为BSND时, 建议传入(1, 1, N, D)或(N, D). 
+传入pseShift时, 如pseShift shape为(B, Q_N, Q_S, KV_S). 
+入参quant_scale_out和quant_offset_out支持per-tensor、per-channel量化, 支持float32、bfloat16类型. 若传入quant_offset_out, 需保证其类型和shape信息与quant_scale_out一致. 当输入为bfloat16时, 同时支持float32和bfloat16 , 否则仅支持float32. per-channel场景下, 当输出layout为BSH时, 要求quant_scale_out所有维度的乘积等于H; 其他layout要求乘积等于Q_N*D. 当输出layout为BSH时, quant_scale_out shape建议传入(1, 1, H)或(H,); 当输出layout为BNSD时, 建议传入(1, Q_N, 1, D)或(Q_N, D); 当输出为BSND时, 建议传入(1, 1, Q_N, D)或(Q_N, D). 
 输出为int8, quant_scale_out和quant_offset_out为per-channel时, 暂不支持Ring Attention或者D非32Byte对齐的场景. 
 输出为int8时, 暂不支持sparse为band且preTokens/nextTokens为负数. 
 pse_shift功能使用限制如下: 
@@ -7014,7 +7017,7 @@ kv伪量化参数分离:
 key_quant_mode和value_quant_mode需要保持一致. 
 dequant_scale_key和dequant_scale_value要么都为空, 要么都不为空; dequant_offset_key和dequant_offset_value要么都为空, 要么都不为空. 
 dequant_scale_key和dequant_scale_value都不为空时, 其shape需要保持一致; dequant_offset_key和dequant_offset_value都不为空时, 其shape需要保持一致. 
-仅支持per-token模式, 且该模式下要求两个参数的shape均为(B, S), 数据类型固定为float32. 
+仅支持per-token和per-channel模式，per-token模式下要求两个参数的shape均为(B, KV_S)，数据类型固定为float32；per-channel模式下要求两个参数的shape为（KV_N, D），(KV_N, D)，(H)，数据类型固定为bfloat16,H为KV_N*D.
 当伪量化参数和KV分离量化参数同时传入时, 以KV分离量化参数为准. 
 dequant_scale_key与dequant_scale_value非空场景, 要求query的s小于等于16. 
 dequant_scale_key与dequant_scale_value非空场景, 要求query的dtype为bfloat16, key、value的dtype为int8, 输出的dtype为bfloat16. 
@@ -7049,14 +7052,14 @@ int4(int32)伪量化场景不支持后量化.
 管理scale/offset的量化模式如下: 
 注意scale、offset两个参数指dequant_scale_key、dequant_scale_key、dequant_offset_value、dequant_offset_value. 
 场景下scale和offset条件
-per-channel模式: 两个参数shape支持(1, N, 1, D), (1, N, D), (1, H), 数据类型和query数据类型相同. 
+per-channel模式: 两个参数shape支持(1, KV_N, 1, D), (1, KV_N, D), (1, H), 数据类型和query数据类型相同. 
 per-tensor模式: 两个参数的shape均为(1,), 数据类型和query数据类型相同. 
-per-token模式: 两个参数的shape均为(1, B, S), 数据类型固定为float32. 
-per-tensor叠加per-head模式: 两个参数的shape均为(N,), 数据类型和query数据类型相同. 
-per-token叠加per-head模式: 两个参数的shape均为(B, N, S), 数据类型固定为float32. 
+per-token模式: 两个参数的shape均为(1, B, KV_S), 数据类型固定为float32. 
+per-tensor叠加per-head模式: 两个参数的shape均为(KV_N,), 数据类型和query数据类型相同. 
+per-token叠加per-head模式: 两个参数的shape均为(B, KV_N, KV_S), 数据类型固定为float32. 
 per-token叠加使用page attention模式: 两个参数的shape均为(blocknum, blocksize), 数据类型固定为float32. 
-per-token叠加per head并使用page attention模式: 两个参数的shape均为(blocknum, N, blocksize), 数据类型固定为float32. 
-key支持per-channel叠加value支持per-token模式: 对于key支持per-channel, 两个参数的shape可支持(1, N, 1, D)、(1, N, D)、(1, H), 且参数数据类型和query数据类型相同. 对于value支持per-token, 两个参数的shape均为(1, B, S)并且数据类型固定为float32. 
+per-token叠加per head并使用page attention模式: 两个参数的shape均为(blocknum, KV_N, blocksize), 数据类型固定为float32. 
+key支持per-channel叠加value支持per-token模式: 对于key支持per-channel, 两个参数的shape可支持(1, KV_N, 1, D)、(1, KV_N, D)、(1, H), 且参数数据类型和query数据类型相同. 对于value支持per-token, 两个参数的shape均为(1, B, KV_S)并且数据类型固定为float32. 
 场景下key和value条件
 per-channel模式: Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 当key、value数据类型为int4(int32)或int8时支持. Atlas A3 训练系列产品: 当key、value数据类型为int4(int32)或int8时支持. 
 per-tensor模式: Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 当key、value数据类型为int8时支持. Atlas A3 训练系列产品: 当key、value数据类型为int8时支持. 
