@@ -2,10 +2,16 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002168254826_section14441124184110"></a>
 
--   算子功能：先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。需与[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按npu\_moe\_distribute\_dispatch算子收集数据的路径原路返回。
--   计算公式：
+-   API功能：先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。需与[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按npu\_moe\_distribute\_dispatch算子收集数据的路径原路返回。
 
-    ![](./figures/zh-cn_formulaimage_0000002308687254.png)
+-   计算公式：公式中参数的详细说明在下面的参数说明中
+
+    $$
+    rs\_out = ReduceScatterV(expend\_x)\\
+    ata\_out = AlltoAllv(rs\_out)\\
+    x = Sum(expert\_scales * ata\_out + expert\_scales * shared\_expert\_x)
+
+    $$
 
 ## 函数原型<a name="zh-cn_topic_0000002168254826_section45077510411"></a>
 
@@ -15,79 +21,79 @@ torch_npu.npu_moe_distribute_combine(Tensor expand_x, Tensor expert_ids, Tensor 
 
 ## 参数说明<a name="zh-cn_topic_0000002168254826_section112637109429"></a>
 
--   expand\_x：Tensor类型，根据expertIds进行扩展过的token特征，要求为2D的Tensor，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，数据类型支持bfloat16、float16，数据格式为ND，支持非连续的Tensor。
+-   **expand\_x** (`Tensor`)：必选参数。根据expertIds进行扩展过的token特征，要求为2D的Tensor，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，数据类型支持bfloat16、float16，数据格式为ND，支持非连续的Tensor。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持共享专家场景。
 
--   expert\_ids：Tensor类型，每个token的topK个专家索引，要求为2D的Tensor，shape为\(BS, K\)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的expert\_ids输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
--   expand\_idx：Tensor类型，表示给同一专家发送的token个数，要求是1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的expand\_idx输出。
+-   **expert\_ids** (`Tensor`)：必选参数。每个token的topK个专家索引，要求为2D的Tensor，shape为\(BS, K\)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的expert\_ids输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
+-   **expand\_idx** (`Tensor`)：必选参数。表示给同一专家发送的token个数，要求是1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的expand\_idx输出。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求shape为\(BS \* K,\)。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(BS \* K,\)。
 
--   ep\_send\_counts：Tensor类型，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的ep\_recv\_counts输出。
+-   **ep\_send\_counts** (`Tensor`)：必选参数。表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的ep\_recv\_counts输出。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num,\)，global\_bs传入0时此处应当将其按照bs\*ep\_world\_size计算。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num,\)。
 
--   expert\_scales：Tensor类型，表示每个token的topK个专家的权重，要求是2D的Tensor，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持float，数据格式为ND，支持非连续的Tensor。
--   group\_ep：string类型，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)，不能和group\_tp相同。
--   ep\_world\_size：int类型，必选参数，EP通信域size。
+-   **expert\_scales** (`Tensor`)：必选参数。表示每个token的topK个专家的权重，要求是2D的Tensor，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持float，数据格式为ND，支持非连续的Tensor。
+-   **group\_ep** (`string`)：必选参数。EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)，不能和group\_tp相同。
+-   **ep\_world\_size** (`int`)：必选参数，EP通信域size。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值支持16、32、64。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持8、16、32、64、128、144、256、288。
 
--   ep\_rank\_id：int类型，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的ep\_rank\_id不重复。
--   moe\_expert\_num：int类型，MoE专家数量，取值范围\[1, 512\]，并且满足以下条件：moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0。
+-   **ep\_rank\_id** (`int`)：必选参数，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的ep\_rank\_id不重复。
+-   **moe\_expert\_num** (`int`)：必选参数，MoE专家数量，取值范围\[1, 512\]，并且满足以下条件：moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：还需满足moe\_expert\_num\/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
--   tp\_send\_counts：Tensor类型，可选参数，表示本卡每个专家发给TP（Tensor  Parallelism）通信域每个卡的数据量。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的tp\_recv\_counts输出。
+-   **tp\_send\_counts** (`Tensor`)：可选参数，表示本卡每个专家发给TP（Tensor  Parallelism）通信域每个卡的数据量。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的tp\_recv\_counts输出。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持TP通信域，使用默认输入。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1D Tensor，shape为\(tp\_world\_size,\)，数据类型支持int32，数据格式要求为ND，支持非连续的Tensor。
 
--   x\_active\_mask：Tensor类型，**预留参数，暂未使用，使用默认值即可。**
--   activation\_scale：Tensor类型，**预留参数，暂未使用，使用默认值即可。**
--   weight\_scale：Tensor类型，**预留参数，暂未使用，使用默认值即可。**
--   group\_list：Tensor类型，**预留参数，暂未使用，使用默认值即可。**
--   expand\_scales：Tensor类型，对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的expand\_scales输出。
+-   **x\_active\_mask** (`Tensor`)：**预留参数，暂未使用，使用默认值即可。**
+-   **activation\_scale** (`Tensor`)：**预留参数，暂未使用，使用默认值即可。**
+-   **weight\_scale** (`Tensor`)：**预留参数，暂未使用，使用默认值即可。**
+-   **group\_list** (`Tensor`)：**预留参数，暂未使用，使用默认值即可。**
+-   **expand\_scales** (`Tensor`)：对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的expand\_scales输出。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：必选参数，要求是1D的Tensor，shape为\(A,\)，数据类型支持float，数据格式为ND，支持非连续的Tensor。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可。
 
--   shared\_expert\_x：Tensor类型，**预留参数，暂未使用，使用默认值即可。**
+-   **shared\_expert\_x** (`Tensor`)：**预留参数，暂未使用，使用默认值即可。**
 
--   group\_tp：string类型，可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。
+-   **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持TP域通信，使用默认值即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：字符串长度范围为\[1, 128\)，不能和group\_ep相同。
 
--   tp\_world\_size：int类型，可选参数，TP通信域size。有TP域通信才需要传参。
+-   **tp\_world\_size** (`int`)：可选参数，TP通信域size。有TP域通信才需要传参。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持TP域通信，使用默认值0即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 2\]，0和1表示无TP域通信，2表示有TP域通信。
 
--   tp\_rank\_id：int类型，可选参数，TP通信域本卡ID。有TP域通信才需要传参。
+-   **tp\_rank\_id** (`int`)：可选参数，TP通信域本卡ID。有TP域通信才需要传参。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持TP域通信，使用默认值0即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 1\]，同一个TP通信域中各卡的tp\_rank\_id不重复。无TP域通信时，传0即可。
 
--   expert\_shard\_type：int类型，表示共享专家卡排布类型。
+-   **expert\_shard\_type** (`int`)：表示共享专家卡排布类型。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：暂不支持该参数，使用默认值即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前仅支持0，表示共享专家卡排在MoE专家卡前面。
 
--   shared\_expert\_num：int类型，表示共享专家数量，一个共享专家可以复制部署到多个卡上。
+-   **shared\_expert\_num** (`int`)：表示共享专家数量，一个共享专家可以复制部署到多个卡上。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：暂不支持该参数，使用默认值即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅支持1，默认值为1。
 
--   shared\_expert\_rank\_num：int类型，可选参数，表示共享专家卡数量。
+-   **shared\_expert\_rank\_num** (`int`)：可选参数，表示共享专家卡数量。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持共享专家，传0即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, ep\_world\_size\)。取0表示无共享专家，不取0时需满足ep\_world\_size%shared\_expert\_rank\_num=0。
 
--   global\_bs：int类型，可选参数，表示EP域全局的batch size大小。
+-   **global\_bs** (`int`)：可选参数，表示EP域全局的batch size大小。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size或者256\*ep\_world\_size，其中max\_bs表示单rank BS最大值，建议按max\_bs\*ep\_world\_size传入，固定按256\*ep\_world\_size传入在后续版本bs支持大于256的场景下会无法支持；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 
--   out\_dtype：int类型，**预留参数，暂未使用，使用默认值即可**。
--   comm\_quant\_mode：int类型，表示通信量化类型。
+-   **out\_dtype** (`int`)：**预留参数，暂未使用，使用默认值即可**。
+-   **comm\_quant\_mode** (`int`)：表示通信量化类型。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持取0和2。0表示通信时不量化，2表示通信时进行int8量化。仅当HCCL\_INTRA\_PCIE\_ENABLE=1且HCCL\_INTRA\_ROCE\_ENABLE=0且驱动版本不低于25.0.RC1.1时才支持取2。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行int8量化。当且仅当tp\_world\_size不等于2时，可以使能int8量化。
 
--   group\_list\_type：int类型，**预留参数，暂未使用，使用默认值即可**。
+-   **group\_list\_type** (`int`)：**预留参数，暂未使用，使用默认值即可**。
 
-## 输出说明<a name="zh-cn_topic_0000002168254826_section22231435517"></a>
+## 返回值说明<a name="zh-cn_topic_0000002168254826_section22231435517"></a>
 
-x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS, H\)，数据类型支持bfloat16、float16，类型与输入expand\_x保持一致，数据格式为ND，不支持非连续的Tensor。
+**x** (`Tensor`)：表示处理后的token，要求是2D的Tensor，shape为\(BS, H\)，数据类型支持bfloat16、float16，类型与输入expand\_x保持一致，数据格式为ND，不支持非连续的Tensor。
 
 ## 约束说明<a name="zh-cn_topic_0000002168254826_section12345537164214"></a>
 

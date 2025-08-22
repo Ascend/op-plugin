@@ -2,7 +2,25 @@
 
 ## 功能说明<a name="zh-cn_topic_0000001771071862_section14441124184110"></a>
 
-该接口用于实现矩阵乘计算中weight输入和输出的量化操作，支持per-tensor、per-channel、per-group多场景量化。
+- API功能：该接口用于实现矩阵乘计算中weight输入和输出的量化操作，支持per-tensor、per-channel、per-group多场景量化。
+- 计算公式：
+    $$
+    y = x @ ANTIQUANT(weight) + bias 
+    $$
+    公式中的 $weight$ 为伪量化场景的输入，其反量化公式 $ANTIQUANT(weight)$ 为
+    $$
+    ANTIQUANT(weight) = (weight + antiquantOffset) * antiquantScale
+    $$
+    当客户配置 $\text{quantScaleOptional}$ 输入时，会对输出进行量化处理，其量化公式为
+    $$
+    y = QUANT(x @ ANTIQUANT(weight) + bias) \\
+    = (x @ ANTIQUANT(weight) + bias) * quantScale + quantOffset
+    $$
+    当客户配置 $\text{quantScaleOptional}$ 输入为 $\text{nullptr}$，则直接输出：
+    $$
+    y = x @ \text{ANTIQUANT}(weight) + bias
+    $$
+
 
 不同产品支持的量化算法不同，如[表1](#zh-cn_topic_0000001771071862_table178313019319)所示。
 
@@ -43,17 +61,17 @@
 
 ## 参数说明<a name="zh-cn_topic_0000001771071862_section112637109429"></a>
 
--   x : Tensor类型，即矩阵乘中的x。数据格式支持ND，支持带transpose的非连续的Tensor，支持输入维度为两维\(M, K\)。
+-   **x** (`Tensor`)：必选参数。即矩阵乘中的x。数据格式支持ND，支持带transpose的非连续的Tensor，支持输入维度为两维\(M, K\)。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持float16。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、bfloat16。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持float16、bfloat16。
 
--   weight：Tensor类型，即矩阵乘中的weight。支持带transpose的非连续的Tensor，支持输入维度为两维\(K, N\)，维度需与x保持一致。当数据格式为ND时，per-channel场景下为提高性能推荐使用transpose后的weight输入。
+-   **weight** (`Tensor`)：必选参数。即矩阵乘中的weight。支持带transpose的非连续的Tensor，支持输入维度为两维\(K, N\)，维度需与x保持一致。当数据格式为ND时，per-channel场景下为提高性能推荐使用transpose后的weight输入。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持int8。数据格式支持ND、FRACTAL\_NZ，其中FRACTAL\_NZ格式只在“图模式”有效，需依赖接口torch\_npu.npu\_format\_cast完成ND到FRACTAL\_NZ的转换，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int8、int32（通过int32承载int4的输入，可参考[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。数据格式支持ND、FRACTAL\_NZ。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持int8、int32（通过int32承载int4的输入，可参考[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。数据格式支持ND、FRACTAL\_NZ。
 
--   antiquant\_scale：Tensor类型，反量化的scale，用于weight矩阵反量化，数据格式支持ND。支持带transpose的非连续的Tensor。antiquant\_scale支持的shape与量化方式相关：
+-   **antiquant\_scale** (`Tensor`)：必选参数。反量化的scale，用于weight矩阵反量化，数据格式支持ND。支持带transpose的非连续的Tensor。antiquant\_scale支持的shape与量化方式相关：
 
     -   per\_tensor模式：输入shape为\(1,\)或\(1, 1\)。
     -   per\_channel模式：输入shape为\(1, N\)或\(N,\)。
@@ -70,7 +88,7 @@
         -   若输入为float16、bfloat16，其数据类型需与x保持一致。
         -   若输入为int64，x数据类型必须为float16且不带transpose输入，同时weight数据类型必须为int8、数据格式为ND、带transpose输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。此时只支持per-channel场景，M范围为\[1, 96\]，且K和N要求64对齐。
 
--   antiquant\_offset：Tensor类型，反量化的offset，用于weight矩阵反量化。可选参数，默认值为None，数据格式支持ND，支持带transpose的非连续的Tensor，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。
+-   **antiquant\_offset** (`Tensor`)：可选参数。反量化的offset，用于weight矩阵反量化。默认值为None，数据格式支持ND，支持带transpose的非连续的Tensor，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持float16，其数据类型需与antiquant\_scale保持一致。per-group场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、bfloat16、int32。per-group场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
         -   若输入为float16、bfloat16，其数据类型需与antiquant\_scale保持一致。
@@ -80,23 +98,24 @@
         -   若输入为float16、bfloat16，其数据类型需与antiquant\_scale保持一致。
         -   若输入为int32，antiquant\_scale的数据类型必须为int64。
 
--   quant\_scale：Tensor类型，量化的scale，用于输出矩阵的量化，可选参数，默认值为None，仅在weight格式为ND时支持。数据类型支持float32、int64，数据格式支持ND，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。当antiquant\_scale的数据类型为int64时，此参数必须为空。
+-   **quant\_scale** (`Tensor`)：可选参数。量化的scale，用于输出矩阵的量化，默认值为None，仅在weight格式为ND时支持。数据类型支持float32、int64，数据格式支持ND，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。当antiquant\_scale的数据类型为int64时，此参数必须为空。
     -   <term>Atlas 推理系列加速卡产品</term>：暂不支持此参数。
 
--   quant\_offset：Tensor类型，量化的offset，用于输出矩阵的量化，可选参数，默认值为None，仅在weight格式为ND时支持。数据类型支持float32，数据格式支持ND，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。当antiquant\_scale的数据类型为int64时，此参数必须为空。
+-   **quant\_offset** (`Tensor`)：可选参数。量化的offset，用于输出矩阵的量化，默认值为None，仅在weight格式为ND时支持。数据类型支持float32，数据格式支持ND，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。当antiquant\_scale的数据类型为int64时，此参数必须为空。
     -   <term>Atlas 推理系列加速卡产品</term>：暂不支持此参数。
 
--   bias：Tensor类型，即矩阵乘中的bias，可选参数，默认值为None，数据格式支持ND，不支持非连续的Tensor，支持输入维度为两维\(1, N\)或一维\(N, \)。
+-   **bias** (`Tensor`)：可选参数。即矩阵乘中的bias，默认值为None，数据格式支持ND，不支持非连续的Tensor，支持输入维度为两维\(1, N\)或一维\(N, \)。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持float16。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32。当x数据类型为bfloat16，bias需为float32；当x数据类型为float16，bias需为float16。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持float16、float32。当x数据类型为bfloat16，bias需为float32；当x数据类型为float16，bias需为float16。
 
--   antiquant\_group\_size：int类型，用于控制per-group场景下group大小，其他量化场景不生效。可选参数。默认值为0，per-group场景下要求传入值的范围为\[32, K-1\]且必须是32的倍数。
--   inner\_precise: int类型，计算模式选择，默认为0。0表示高精度模式，1表示高性能模式，可能会影响精度。当weight以int32类型且以FRACTAL\_NZ格式输入，M不大于16的per-group场景下可以设置为1，提升性能。其他场景不建议使用高性能模式。
+-   **antiquant\_group\_size** (`int`)：可选参数。用于控制per-group场景下group大小，其他量化场景不生效。默认值为0，per-group场景下要求传入值的范围为\[32, K-1\]且必须是32的倍数。
+-   **inner\_precise** (`int`)：可选参数。计算模式选择，默认为0。0表示高精度模式，1表示高性能模式，可能会影响精度。当weight以int32类型且以FRACTAL\_NZ格式输入，M不大于16的per-group场景下可以设置为1，提升性能。其他场景不建议使用高性能模式。
 
-## 输出说明<a name="zh-cn_topic_0000001771071862_section22231435517"></a>
+## 返回值说明<a name="zh-cn_topic_0000001771071862_section22231435517"></a>
+`Tensor`
 
-输出为Tensor类型，代表计算结果。当输入存在quant\_scale时输出数据类型为int8，当输入不存在quant\_scale时输出数据类型和输入x一致。
+当输入存在quant\_scale时输出数据类型为int8，当输入不存在quant\_scale时输出数据类型和输入x一致。
 
 ## 约束说明<a name="zh-cn_topic_0000001771071862_section12345537164214"></a>
 

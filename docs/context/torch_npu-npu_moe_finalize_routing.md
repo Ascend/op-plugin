@@ -2,11 +2,14 @@
 
 ## 功能说明
 
-- 算子功能：MoE计算中，最后处理合并MoE FFN的输出结果。
+- API功能：MoE计算中，最后处理合并MoE FFN的输出结果。
 
 - 计算公式：
 
-    ![](figures/zh-cn_formulaimage_0000002113883014.png)
+    $$
+    expertid = exportForSourceRow[i,k] \\
+    out(i,j) = skip1_{i,j} + skip2_{i,j} + \sum^K_{k=0}(scales_{i,k} * (expandPermutedROWs_{expandedSrcRowToDstRow\_i+k*num\_rows, j}+ bias_{expertid,j}))
+    $$
 
 ## 函数原型
 
@@ -16,17 +19,17 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 
 ## 参数说明
 
-- **expanded_permuted_rows** (`Tensor`)：必选参数，经过专家处理过的结果，要求是一个2D的Tensor，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。shape支持$（NUM\_ROWS * K, H）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，$H$为列数。
+- **expanded_permuted_rows** (`Tensor`)：必选参数，公式中的$expandPermutedROWs$，经过专家处理过的结果，要求是一个2D的Tensor，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。shape支持$（NUM\_ROWS * K, H）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，$H$为列数。
 
-- **skip1** (`Tensor`)：必选参数允许为None，求和的输入参数1，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。
-- **skip2** (`Tensor`)：必选参数允许为None，求和的输入参数2，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。`skip2`参数为`None`时，`skip1`参数必须也为`None`。
-- **bias** (`Tensor`)：必选参数允许为None，专家的偏差，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致。shape支持$（E，H）$，$E$为总的专家个数，$H$为列数。
-- **scales** (`Tensor`)：必选参数允许为None，专家的权重，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape支持（$NUM\_ROWS，K）$。
-- **expanded_src_to_dst_row** (`Tensor`)：必选参数，保存每个专家处理结果的索引，要求是一个1D的Tensor，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，`drop_pad_mode`参数为0时，Tensor中的值取值范围是$[0, NUM\_ROWS * K-1]$。
-- **export_for_source_row** (`Tensor`)：必选参数允许为None，每行处理的专家号，要求是一个2D的Tensor，数据类型支持`int32`。shape支持$（NUM\_ROWS，K）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，Tensor中的取值范围是[0,E-1]。
+- **skip1** (`Tensor`)：必选参数允许为None，公式中的$skip1$，求和的输入参数1，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。
+- **skip2** (`Tensor`)：必选参数允许为None，公式中的$skip2$，求和的输入参数2，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。`skip2`参数为`None`时，`skip1`参数必须也为`None`。
+- **bias** (`Tensor`)：必选参数允许为None，公式中的$bias$，专家的偏差，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致。shape支持$（E，H）$，$E$为总的专家个数，$H$为列数。
+- **scales** (`Tensor`)：必选参数允许为None，公式中的$scales$，专家的权重，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape支持（$NUM\_ROWS，K）$。
+- **expanded_src_to_dst_row** (`Tensor`)：必选参数，公式中的$expandedSrcRowToDstRow$，保存每个专家处理结果的索引，要求是一个1D的Tensor，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，`drop_pad_mode`参数为0时，Tensor中的值取值范围是$[0, NUM\_ROWS * K-1]$。
+- **export_for_source_row** (`Tensor`)：必选参数允许为None，公式中的$exportForSourceRow$，每行处理的专家号，要求是一个2D的Tensor，数据类型支持`int32`。shape支持$（NUM\_ROWS，K）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，Tensor中的取值范围是[0,E-1]。
 - **drop_pad_mode** (`int`)：可选参数，表示是否支持丢弃模式，取值范围为0，默认值为`0`。
 
-## 返回值
+## 返回值说明
 **out** (`Tensor`)：最后处理合并MoE FFN的输出结果。
 
 ## 约束说明

@@ -2,7 +2,14 @@
 
 ## 功能说明
 
-MoE计算中，对输入x做Softmax计算，再做topk操作。
+- API功能：MoE计算中，对输入x做Softmax计算，再做topk操作。
+- 计算公式：
+$$
+softmaxOut = softmax(x, axis = -1) \\
+yOut, expertIdxOut = topK(softmaxOut, k = k) \\
+rowIdxRange = orange(expertIdxOut.shape[0] * expertIdxOut.shape[1])\\
+rowIdxOut = rowIdxRange.reshape([expertIdxOut.shape[1], expertIdxOut.shape[0]]).transpose(1, 0)
+$$
 
 ## 函数原型
 
@@ -12,16 +19,15 @@ torch_npu.npu_moe_gating_top_k_softmax(Tensor x, Tensor? finished=None, int k=1)
 
 ## 参数说明
 
-- x：Tensor类型，必选输入，表示待计算的输入要求是一个2D/3D的Tensor，数据类型支持float16、bfloat16、float32，数据格式要求为ND。
-- finished：Tensor类型，可选输入，表示输入中需要参与计算的行，要求是一个1D/2D的Tensor，数据类型支持bool，shape为gating_shape[:-1]，数据格式要求为ND。
-- k：Host侧的int类型，表示topk的k值，大小为0<k<=x的-1轴大小，k<=1024。
+- **x** (`Tensor`)：必选参数，公式中的$x$，表示待计算的输入要求是一个2D/3D的Tensor，数据类型支持float16、bfloat16、float32，数据格式要求为ND。
+- **finished** (`Tensor`)：可选参数，表示输入中需要参与计算的行，要求是一个1D/2D的Tensor，数据类型支持bool，shape为gating_shape[:-1]，数据格式要求为ND。
+- **k** (`int`)：可选参数，Host侧，公式中的$k$，表示topk的k值，大小为0<k<=x的-1轴大小，k<=1024。
 
-## 输出说明
+## 返回值说明
 
-- y：Tensor类型，对x做softmax后取的topk值，要求是一个2D/3D的Tensor，数据类型与x需要保持一致，其非-1轴要求与x的对应轴大小一致，其-1轴要求其大小同k值。数据格式要求为ND。
-- expert_idx：Tensor类型，对x做softmax后取topk值的索引，即专家的序号。shape要求与y一致，数据类型支持int32，数据格式要求为ND。
-
-- row_idx：Tensor类型，指示每个位置对应的原始行位置，shape要求与y一致，数据类型支持int32，数据格式要求为ND。
+- **y** (`Tensor`)：对x做softmax后取的topk值，要求是一个2D/3D的Tensor，数据类型与x需要保持一致，其非-1轴要求与x的对应轴大小一致，其-1轴要求其大小同k值。数据格式要求为ND。
+- **expert_idx** (`Tensor`)：对x做softmax后取topk值的索引，即专家的序号。shape要求与y一致，数据类型支持int32，数据格式要求为ND。
+- **row_idx** (`Tensor`)：指示每个位置对应的原始行位置，shape要求与y一致，数据类型支持int32，数据格式要求为ND。
 
 ## 约束说明
 

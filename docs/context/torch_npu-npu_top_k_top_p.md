@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-对原始输入`logits`进行`top-k`和`top-p`采样过滤。
+- API功能：对原始输入`logits`进行`top-k`和`top-p`采样过滤。
 
 - 计算公式：
   - 对输入logits按最后一轴进行升序排序，得到对应的排序结果sortedValue和sortedIndices。

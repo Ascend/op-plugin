@@ -12,11 +12,11 @@ torch_npu.npu_trans_quant_param(Tensor scale, Tensor? offset=None, int round_mod
 
 ## 参数说明
 
-- **scale**：`Tensor`类型，数据类型支持`float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#zh-cn_topic_0001_section0001)。
-- **offset**：`Tensor`类型，可选参数。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](#zh-cn_topic_0001_section0001)。
-- **round_mode**：`int`类型，量化计算中数据类型的转换模式选择，默认为0。0表示截断填充模式（取高19位），1表示R_INT模式（可提升计算精度）。
+- **scale** (`Tensor`)：必选参数。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#zh-cn_topic_0001_section0001)。
+- **offset** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](#zh-cn_topic_0001_section0001)。
+- **round_mode** (`int`)：可选参数。量化计算中数据类型的转换模式选择，默认为0。0表示截断填充模式（取高19位），1表示R_INT模式（可提升计算精度）。
 
-## 返回值
+## 返回值说明
 `Tensor`
 
 代表`trans_quant_param`的计算结果，数据类型支持`int64`。
