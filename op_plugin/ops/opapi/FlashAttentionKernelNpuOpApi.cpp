@@ -1011,7 +1011,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         static const bool is_fa_grad_V4_available =
             check_aclnn_kernel_available("aclnnFlashAttentionUnpaddingScoreGradV4");
         if (softmax_layout_str == "TND" && is_fa_grad_V4_available) {
-            softmax_layout_str = (softmax_layout_str == "TND") ? "same_as_input" : softmax_layout_str;
+            softmax_layout_str = "same_as_input";
             char softmax_layout_char[LAYOUT_MAX_LENGTH];
             strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
             EXEC_NPU_CMD(
@@ -1300,7 +1300,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     static const bool is_fa_V4_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV4");
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         if (softmax_layout_str == "TND" && is_fa_V4_available) {
-            softmax_layout_str = (softmax_layout_str == "TND") ? "same_as_input" : softmax_layout_str;
+            softmax_layout_str = "same_as_input";
             char softmax_layout_char[LAYOUT_MAX_LENGTH];
             strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
             EXEC_NPU_CMD(
@@ -1498,7 +1498,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         static const bool is_fa_grad_V4_available =
             check_aclnn_kernel_available("aclnnFlashAttentionUnpaddingScoreGradV4");
         if (softmax_layout_str == "TND" && is_fa_grad_V4_available) {
-            softmax_layout_str = (softmax_layout_str == "TND") ? "same_as_input" : softmax_layout_str;
+            softmax_layout_str = "same_as_input";
             char softmax_layout_char[LAYOUT_MAX_LENGTH];
             strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
             EXEC_NPU_CMD(
@@ -1788,7 +1788,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     static const bool is_fa_V4_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV4");
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         if (softmax_layout_str == "TND" && is_fa_V4_available) {
-            softmax_layout_str = (softmax_layout_str == "TND") ? "same_as_input" : softmax_layout_str;
+            softmax_layout_str = "same_as_input";
             char softmax_layout_char[LAYOUT_MAX_LENGTH];
             strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
             EXEC_NPU_CMD(
