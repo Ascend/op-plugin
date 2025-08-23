@@ -91,6 +91,15 @@ class TestConvTranspose2dBackward(TestCase):
         exception = cm.exception
         self.assertTrue("Input type (npuFloatType) and bias type (npuHalfType) should be the same" in str(exception))
 
+    def test_conv_transpose2d_abnormal_3d_input(self):
+        npu_input = torch.randn(1, 3, 256).npu()
+        m = torch.nn.ConvTranspose2d(in_channels=1, out_channels=6, kernel_size=3, stride=1, padding=1).npu()
+        with self.assertRaises(RuntimeError) as cm:
+            npu_output = m(npu_input)
+        exception = cm.exception
+        self.assertTrue("Currently the private format does not support 3D input,"
+        " you can try torch.npu.config.allow_internal_format = False to resolve this functional bug" in str(exception))
+
     def test_conv_transpose2d_3D_input(self):
         torch.npu.config.allow_internal_format = True
         device = torch.device('npu') 
