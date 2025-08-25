@@ -119,6 +119,51 @@ class TestCtcLossBackward(TestCase):
 
             self.assertRtolEqual(grad_cpu, grad_npu, 1e-3)
 
+    def cpu_op_exec_2d(self, ctc_loss, log_probs, targets, input_lengths, target_lengths):
+        if log_probs.dtype == torch.float16:
+            log_probs = log_probs.to(torch.float32)
+
+        log_probs.requires_grad_(True)
+        log_probs.retain_grad()
+
+        neg_log_likelihood = ctc_loss(log_probs.log_softmax(1), targets, input_lengths, target_lengths)
+        neg_log_likelihood.backward()
+        grad = log_probs.grad
+
+        grad = grad.numpy()
+
+        return grad
+
+    def npu_op_exec_2d(self, ctc_loss, log_probs, targets, input_lengths, target_lengths):
+        log_probs = copy.deepcopy(log_probs).npu()
+        targets = targets.npu()
+        log_probs.requires_grad_(True)
+        log_probs.retain_grad()
+
+        neg_log_likelihood = ctc_loss(log_probs.log_softmax(1), targets, input_lengths.npu(), target_lengths.npu())
+        neg_log_likelihood.backward()
+        grad = log_probs.grad
+
+        if grad.dtype == torch.float16:
+            grad = grad.to(torch.float32)
+
+        grad = grad.cpu().numpy()
+
+        return grad
+
+    def test_ctc_loss_backward_2d(self):
+        T = 50
+        C = 20
+        log_probs = torch.randn(T, C)
+        target_lengths = torch.randint(1, T, ()).to(torch.long)
+        targets = torch.randint(1, C, size=(target_lengths,), dtype=torch.long)
+        input_lengths = torch.tensor(T).to(torch.long)
+        ctc_loss = torch.nn.CTCLoss()
+        grad_cpu = self.cpu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
+        grad_npu = self.npu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
+
+        self.assertRtolEqual(grad_cpu, grad_npu, 1e-3)
+
 
 if __name__ == "__main__":
     run_tests()

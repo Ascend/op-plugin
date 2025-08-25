@@ -1942,15 +1942,6 @@ official:
   - func: col2im_backward.grad_input(Tensor grad_output, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: v1.11
 
-  - func: ctc_loss.IntList(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
-    acl_op: all_version
-    op_api: all_version
-
-  - func: ctc_loss.Tensor(Tensor log_probs, Tensor targets, Tensor input_lengths, Tensor target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
-    acl_op: all_version
-    op_api: all_version
-    device_check: NoCheck
-
   - func: cumprod(Tensor self, int dim, *, ScalarType? dtype=None) -> Tensor
     acl_op: v2.0
 

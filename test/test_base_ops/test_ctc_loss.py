@@ -49,7 +49,7 @@ class TestCtcLoss(TestCase):
 
         # pylint:disable=too-many-return-values
         return ctc_loss, log_probs, targets, input_lengths, target_lengths
-    
+
     def generate_data_log_probs_2d(self, item):
         T = item[0][0]
         C = item[0][1]
@@ -95,7 +95,7 @@ class TestCtcLoss(TestCase):
         neg_log_likelihood = neg_log_likelihood.cpu().numpy()
 
         return neg_log_likelihood
-    
+
     def cpu_op_exec_2d(self, ctc_loss, log_probs, targets, input_lengths, target_lengths):
         if log_probs.dtype == torch.float16:
             log_probs = log_probs.to(torch.float32)
@@ -200,6 +200,18 @@ class TestCtcLoss(TestCase):
         loss_cpu = ctc_loss(log_probs.cpu(), targets.cpu(), input_lengths, target_lengths).numpy()
         self.assertRtolEqual(loss_cpu, loss_npu)
 
+    def test_ctc_loss_2d(self):
+        T = 50
+        C = 20
+        log_probs = torch.randn(T, C)
+        target_lengths = torch.randint(1, T, ()).to(torch.long)
+        targets = torch.randint(1, C, size=(target_lengths,), dtype=torch.long)
+        input_lengths = torch.tensor(T).to(torch.long)
+        ctc_loss = torch.nn.CTCLoss()
+        neg_log_likelihood_cpu = self.cpu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
+        neg_log_likelihood_npu = self.npu_op_exec_2d(ctc_loss, log_probs, targets, input_lengths, target_lengths)
+
+        self.assertRtolEqual(neg_log_likelihood_cpu, neg_log_likelihood_npu, 1e-3)
 
 if __name__ == "__main__":
     run_tests()
