@@ -1,172 +1,61 @@
-# torch\_npu.npu\_grouped\_matmul\_finalize\_routing<a name="ZH-CN_TOPIC_0000002229640858"></a>
+# torch_npu.npu_grouped_matmul_finalize_routing
+
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    | √  |
 
 ## 功能说明<a name="zh-cn_topic_0000002259406069_section14441124184110"></a>
 
-API功能：GroupedMatMul和MoeFinalizeRouting的融合算子，GroupedMatMul计算后的输出按照索引做combine动作。
+GroupedMatMul和MoeFinalizeRouting的融合算子，GroupedMatMul计算后的输出按照索引做combine动作。
 
 ## 函数原型<a name="zh-cn_topic_0000002259406069_section45077510411"></a>
 
 ```
-torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor w, Tensor group_list, *, scale=None, bias=None, offset=None, antiquant_scale=None, antiquant_offset=None, pertoken_scale=None, shared_input=None, logit=None, row_index=None, dtype=None, shared_input_weight=1.0, int shared_input_offset=0, output_bs=0, group_list_type=1) -> Tensor
+torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, bias=None, offset=None, pertoken_scale=None, shared_input=None, logit=None, row_index=None, dtype=None, shared_input_weight=1.0, shared_input_offset=0, output_bs=0, group_list_type=1) -> Tensor
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000002259406069_section112637109429"></a>
 
--   **x** (`Tensor`)：必选参数。一个2D的Device侧输入，矩阵计算的左矩阵，不支持非连续的Tensor。数据类型支持int8，数据格式支持ND，维度为\(m, k\)。m取值范围为\[1, 16\*1024\*8\]。
--   **w** (`Tensor`)：必选参数。Device侧输入，矩阵计算的右矩阵，不支持非连续的Tensor。数据类型支持int8、int4。
-    -   A8W8量化场景下，数据格式支持NZ，维度为\(e, n1, k1, k0, n0\)，其中k0=16、n0=32，x shape中的k和w shape中的k1需要满足以下关系：ceilDiv\(k, 16\) = k1，e取值范围\[1, 256\]，k取值为16整倍数，n取值为32整倍数，且n大于等于256。
-    -   A8W4场景下数据格式支持ND，维度为\(e, k, n\)，k支持2048，n只支持7168。
+- **x** (`Tensor`)：必选参数。矩阵计算的左矩阵，不支持非连续的Tensor。数据类型支持`int8`，数据格式支持$ND$，维度为\(m, k\)。m取值范围为\[1, 16\*1024\*8\]。
+- **w** (`Tensor`)：必选参数。矩阵计算的右矩阵，不支持非连续的Tensor。数据类型支持`int8`、`int4`。
+    -   A8W8量化场景下，数据格式支持$NZ$，维度为\(e, n1, k1, k0, n0\)，其中k0=16、n0=32，`x` shape中的k和`w` shape中的k1需要满足以下关系：ceilDiv\(k, 16\) = k1，e取值范围\[1, 256\]，k取值为16整倍数，n取值为32整倍数，且n大于等于256。
+    -   A8W4量化场景下数据格式支持$ND$，维度为\(e, k, n\)，k支持2048，n只支持7168。
 
--   **group\_list** (`Tensor`)：必选参数。一个1D的Device侧输入，GroupedMatMul的各分组大小。不支持非连续的Tensor。数据类型支持int64，数据格式支持ND，维度为\(e,\)，e与w的e一致。group\_list的值总和要求≤m。
--   **scale** (`Tensor`)：可选参数。Device侧输入，矩阵计算反量化参数，对应weight矩阵。A8W8场景下支持per-channel量化方式，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(e, n\)，这里的n=n1\*n0，A8W4量化场景下，数据类型支持int64，维度为\(e, 1, n\)。
--   **bias** (`Tensor`)：可选参数。一个2D的Device侧输入，矩阵计算的bias参数，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度为\(e, n\)，只支持A8W4场景。
--   **offset** (`Tensor`)：可选参数。一个3D的Device侧输入，矩阵计算量化参数的偏移量，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，只支持A8W4量化场景。
--   **pertoken\_scale** (`Tensor`)：可选参数。一个1D的Device侧输入，矩阵计算的反量化参数，对应x矩阵，per-token量化方式，不支持非连续的Tensor。维度为\(m,\)，m与x的m一致。数据类型支持float32，数据格式支持ND。
--   **shared\_input** (`Tensor`)：可选参数。一个2D的Device侧输入，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持bfloat16，数据格式支持ND，维度\(batch/dp, n\)，n与scale的n一致，batch/dp取值范围\[1, 2\*1024\]，batch取值范围\[1, 16\*1024\]。
--   **logit** (`Tensor`)：可选参数。一个1D的Device侧输入，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持float32，数据格式支持ND，维度\(m,\)，m与x的m一致。
--   **row\_index** (`Tensor`)：可选参数。一个1D的Device侧输入，MoE专家输出按照该row_index进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持int32、int64，数据格式支持ND，维度为\(m,\)，m与x的m一致。
--   **dtype** (`ScalarType`)：可选参数。指定GroupedMatMul计算的输出类型。0表示float32，1表示float16，2表示bfloat16。默认值为0。
--   **shared\_input\_weight** (`float`)：可选参数。指共享专家与MoE专家进行combine的系数，shared\_input先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
--   **shared\_input\_offset** (`int`)：可选参数。共享专家输出的在总输出中的偏移。默认值为0。
--   **output\_bs** (`int`)：可选参数。输出的最高维大小。默认值为0。
--   **group\_list\_type** (`List[int]`)：可选参数。GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
+- **group\_list** (`Tensor`)：必选参数。GroupedMatMul的各分组大小。不支持非连续的Tensor。数据类型支持`int64`，数据格式支持$ND$，维度为\(e,\)，e与`w`的e一致。`group_list`的值总和要求≤m。
+- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- **scale** (`Tensor`)：可选参数。矩阵计算反量化参数，对应weight矩阵。A8W8场景下支持per-channel量化方式，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度\(e, n\)，这里的n=n1\*n0，A8W4量化场景下，数据类型支持`int64`，维度为\(e, 1, n\)。
+- **bias** (`Tensor`)：可选参数。矩阵计算的bias参数，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度为\(e, n\)，只支持A8W4量化场景。
+- **offset** (`Tensor`)：可选参数。矩阵计算量化参数的偏移量，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，输入维度只支持3维。只支持A8W4量化场景。
+- **pertoken\_scale** (`Tensor`)：可选参数。矩阵计算的反量化参数，对应`x`矩阵，per-token量化方式，不支持非连续的Tensor。维度为\(m,\)，m与`x`的m一致。数据类型支持`float32`，数据格式支持$ND$。
+- **shared\_input** (`Tensor`)：可选参数。MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持`bfloat16`，数据格式支持$ND$，维度\(batch/dp, n\)，n与`scale`的n一致，batch/dp取值范围\[1, 2\*1024\]，batch取值范围\[1, 16\*1024\]。
+- **logit** (`Tensor`)：可选参数。MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度\(m,\)，m与`x`的m一致。
+- **row\_index** (`Tensor`)：可选参数。MoE专家输出按照该row_index进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持`int32`、`int64`，数据格式支持$ND$，维度为\(m,\)，m与`x`的m一致。
+- **dtype** (`ScalarType`)：可选参数。指定GroupedMatMul计算的输出类型。0表示`float32`，1表示`float16`，2表示`bfloat16`。默认值为0。
+- **shared\_input\_weight** (`float`)：可选参数。指共享专家与MoE专家进行combine的系数，`shared_input`先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
+- **shared\_input\_offset** (`int`)：可选参数。共享专家输出的在总输出中的偏移。默认值为0。
+- **output\_bs** (`int`)：可选参数。输出的最高维大小。默认值为0。
+- **group\_list\_type** (`List[int]`)：可选参数。GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
 
 ## 返回值说明<a name="zh-cn_topic_0000002259406069_section22231435517"></a>
 
 `Tensor`
 
-2D返回值，不支持非连续的Tensor，输出的数据类型固定为float32，维度为\(batch, n\)。
+返回值，不支持非连续的Tensor，输出的数据类型固定为`float32`，维度为\(batch, n\)。
 
 ## 约束说明<a name="zh-cn_topic_0000002259406069_section12345537164214"></a>
 
 -   该接口支持推理和训练场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式（PyTorch 2.1.0版本）。
 -   输入和输出Tensor支持的数据类型组合如下：
-
-    <a name="zh-cn_topic_0000002259406069_table334073018273"></a>
-    <table><thead align="left"><tr id="zh-cn_topic_0000002259406069_row13340430162711"><th class="cellrowborder" valign="top" width="6.09%" id="mcps1.1.12.1.1"><p id="zh-cn_topic_0000002259406069_p13340173011275"><a name="zh-cn_topic_0000002259406069_p13340173011275"></a><a name="zh-cn_topic_0000002259406069_p13340173011275"></a>x</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="7.57%" id="mcps1.1.12.1.2"><p id="zh-cn_topic_0000002259406069_p634110308278"><a name="zh-cn_topic_0000002259406069_p634110308278"></a><a name="zh-cn_topic_0000002259406069_p634110308278"></a>w</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="8.66%" id="mcps1.1.12.1.3"><p id="zh-cn_topic_0000002259406069_p78611055143112"><a name="zh-cn_topic_0000002259406069_p78611055143112"></a><a name="zh-cn_topic_0000002259406069_p78611055143112"></a>group_list</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="7.82%" id="mcps1.1.12.1.4"><p id="zh-cn_topic_0000002259406069_p534163092719"><a name="zh-cn_topic_0000002259406069_p534163092719"></a><a name="zh-cn_topic_0000002259406069_p534163092719"></a>scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="9.569999999999999%" id="mcps1.1.12.1.5"><p id="zh-cn_topic_0000002259406069_p734113016272"><a name="zh-cn_topic_0000002259406069_p734113016272"></a><a name="zh-cn_topic_0000002259406069_p734113016272"></a>bias</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.440000000000001%" id="mcps1.1.12.1.6"><p id="zh-cn_topic_0000002259406069_p1098713113813"><a name="zh-cn_topic_0000002259406069_p1098713113813"></a><a name="zh-cn_topic_0000002259406069_p1098713113813"></a>offset</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.97%" id="mcps1.1.12.1.7"><p id="zh-cn_topic_0000002259406069_p1534119307276"><a name="zh-cn_topic_0000002259406069_p1534119307276"></a><a name="zh-cn_topic_0000002259406069_p1534119307276"></a>pertoken_scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.91%" id="mcps1.1.12.1.8"><p id="zh-cn_topic_0000002259406069_p12341153019274"><a name="zh-cn_topic_0000002259406069_p12341153019274"></a><a name="zh-cn_topic_0000002259406069_p12341153019274"></a>shared_input</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="9.33%" id="mcps1.1.12.1.9"><p id="zh-cn_topic_0000002259406069_p1934123012719"><a name="zh-cn_topic_0000002259406069_p1934123012719"></a><a name="zh-cn_topic_0000002259406069_p1934123012719"></a>logit</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="9.11%" id="mcps1.1.12.1.10"><p id="zh-cn_topic_0000002259406069_p193411530182716"><a name="zh-cn_topic_0000002259406069_p193411530182716"></a><a name="zh-cn_topic_0000002259406069_p193411530182716"></a>row_index</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="9.53%" id="mcps1.1.12.1.11"><p id="zh-cn_topic_0000002259406069_p4341930152710"><a name="zh-cn_topic_0000002259406069_p4341930152710"></a><a name="zh-cn_topic_0000002259406069_p4341930152710"></a>y</p>
-    </th>
-    </tr>
-    </thead>
-    <tbody><tr id="zh-cn_topic_0000002259406069_row19341133042719"><td class="cellrowborder" valign="top" width="6.09%" headers="mcps1.1.12.1.1 "><p id="zh-cn_topic_0000002259406069_p6341113020274"><a name="zh-cn_topic_0000002259406069_p6341113020274"></a><a name="zh-cn_topic_0000002259406069_p6341113020274"></a>int8</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="7.57%" headers="mcps1.1.12.1.2 "><p id="zh-cn_topic_0000002259406069_p6341630172715"><a name="zh-cn_topic_0000002259406069_p6341630172715"></a><a name="zh-cn_topic_0000002259406069_p6341630172715"></a>int8</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.66%" headers="mcps1.1.12.1.3 "><p id="zh-cn_topic_0000002259406069_p78617552312"><a name="zh-cn_topic_0000002259406069_p78617552312"></a><a name="zh-cn_topic_0000002259406069_p78617552312"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="7.82%" headers="mcps1.1.12.1.4 "><p id="zh-cn_topic_0000002259406069_p1234163013273"><a name="zh-cn_topic_0000002259406069_p1234163013273"></a><a name="zh-cn_topic_0000002259406069_p1234163013273"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.569999999999999%" headers="mcps1.1.12.1.5 "><p id="zh-cn_topic_0000002259406069_p1341163002713"><a name="zh-cn_topic_0000002259406069_p1341163002713"></a><a name="zh-cn_topic_0000002259406069_p1341163002713"></a>None</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.440000000000001%" headers="mcps1.1.12.1.6 "><p id="zh-cn_topic_0000002259406069_p1987181183812"><a name="zh-cn_topic_0000002259406069_p1987181183812"></a><a name="zh-cn_topic_0000002259406069_p1987181183812"></a>None</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.97%" headers="mcps1.1.12.1.7 "><p id="zh-cn_topic_0000002259406069_p133411130172713"><a name="zh-cn_topic_0000002259406069_p133411130172713"></a><a name="zh-cn_topic_0000002259406069_p133411130172713"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.91%" headers="mcps1.1.12.1.8 "><p id="zh-cn_topic_0000002259406069_p12341930142712"><a name="zh-cn_topic_0000002259406069_p12341930142712"></a><a name="zh-cn_topic_0000002259406069_p12341930142712"></a>bfloat16</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.33%" headers="mcps1.1.12.1.9 "><p id="zh-cn_topic_0000002259406069_p1341183013277"><a name="zh-cn_topic_0000002259406069_p1341183013277"></a><a name="zh-cn_topic_0000002259406069_p1341183013277"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.11%" headers="mcps1.1.12.1.10 "><p id="zh-cn_topic_0000002259406069_p434112308271"><a name="zh-cn_topic_0000002259406069_p434112308271"></a><a name="zh-cn_topic_0000002259406069_p434112308271"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.53%" headers="mcps1.1.12.1.11 "><p id="zh-cn_topic_0000002259406069_p113411230182710"><a name="zh-cn_topic_0000002259406069_p113411230182710"></a><a name="zh-cn_topic_0000002259406069_p113411230182710"></a>float32</p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000002259406069_row10341133020278"><td class="cellrowborder" valign="top" width="6.09%" headers="mcps1.1.12.1.1 "><p id="zh-cn_topic_0000002259406069_p1234143017274"><a name="zh-cn_topic_0000002259406069_p1234143017274"></a><a name="zh-cn_topic_0000002259406069_p1234143017274"></a>int8</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="7.57%" headers="mcps1.1.12.1.2 "><p id="zh-cn_topic_0000002259406069_p434193010273"><a name="zh-cn_topic_0000002259406069_p434193010273"></a><a name="zh-cn_topic_0000002259406069_p434193010273"></a>int8</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.66%" headers="mcps1.1.12.1.3 "><p id="zh-cn_topic_0000002259406069_p148611355113119"><a name="zh-cn_topic_0000002259406069_p148611355113119"></a><a name="zh-cn_topic_0000002259406069_p148611355113119"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="7.82%" headers="mcps1.1.12.1.4 "><p id="zh-cn_topic_0000002259406069_p934123015274"><a name="zh-cn_topic_0000002259406069_p934123015274"></a><a name="zh-cn_topic_0000002259406069_p934123015274"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.569999999999999%" headers="mcps1.1.12.1.5 "><p id="zh-cn_topic_0000002259406069_p11341030102719"><a name="zh-cn_topic_0000002259406069_p11341030102719"></a><a name="zh-cn_topic_0000002259406069_p11341030102719"></a>None</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.440000000000001%" headers="mcps1.1.12.1.6 "><p id="zh-cn_topic_0000002259406069_p19875183820"><a name="zh-cn_topic_0000002259406069_p19875183820"></a><a name="zh-cn_topic_0000002259406069_p19875183820"></a>None</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.97%" headers="mcps1.1.12.1.7 "><p id="zh-cn_topic_0000002259406069_p1034183032717"><a name="zh-cn_topic_0000002259406069_p1034183032717"></a><a name="zh-cn_topic_0000002259406069_p1034183032717"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.91%" headers="mcps1.1.12.1.8 "><p id="zh-cn_topic_0000002259406069_p183411230112713"><a name="zh-cn_topic_0000002259406069_p183411230112713"></a><a name="zh-cn_topic_0000002259406069_p183411230112713"></a>None</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.33%" headers="mcps1.1.12.1.9 "><p id="zh-cn_topic_0000002259406069_p17341330182711"><a name="zh-cn_topic_0000002259406069_p17341330182711"></a><a name="zh-cn_topic_0000002259406069_p17341330182711"></a>None</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.11%" headers="mcps1.1.12.1.10 "><p id="zh-cn_topic_0000002259406069_p1634103092711"><a name="zh-cn_topic_0000002259406069_p1634103092711"></a><a name="zh-cn_topic_0000002259406069_p1634103092711"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.53%" headers="mcps1.1.12.1.11 "><p id="zh-cn_topic_0000002259406069_p11342153022712"><a name="zh-cn_topic_0000002259406069_p11342153022712"></a><a name="zh-cn_topic_0000002259406069_p11342153022712"></a>float32</p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000002259406069_row18421194011365"><td class="cellrowborder" valign="top" width="6.09%" headers="mcps1.1.12.1.1 "><p id="zh-cn_topic_0000002259406069_p44220405368"><a name="zh-cn_topic_0000002259406069_p44220405368"></a><a name="zh-cn_topic_0000002259406069_p44220405368"></a>int8</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="7.57%" headers="mcps1.1.12.1.2 "><p id="zh-cn_topic_0000002259406069_p54221404360"><a name="zh-cn_topic_0000002259406069_p54221404360"></a><a name="zh-cn_topic_0000002259406069_p54221404360"></a>int4</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.66%" headers="mcps1.1.12.1.3 "><p id="zh-cn_topic_0000002259406069_p1642284013614"><a name="zh-cn_topic_0000002259406069_p1642284013614"></a><a name="zh-cn_topic_0000002259406069_p1642284013614"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="7.82%" headers="mcps1.1.12.1.4 "><p id="zh-cn_topic_0000002259406069_p9422184023614"><a name="zh-cn_topic_0000002259406069_p9422184023614"></a><a name="zh-cn_topic_0000002259406069_p9422184023614"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.569999999999999%" headers="mcps1.1.12.1.5 "><p id="zh-cn_topic_0000002259406069_p174221940173612"><a name="zh-cn_topic_0000002259406069_p174221940173612"></a><a name="zh-cn_topic_0000002259406069_p174221940173612"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.440000000000001%" headers="mcps1.1.12.1.6 "><p id="zh-cn_topic_0000002259406069_p598701143818"><a name="zh-cn_topic_0000002259406069_p598701143818"></a><a name="zh-cn_topic_0000002259406069_p598701143818"></a>None</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.97%" headers="mcps1.1.12.1.7 "><p id="zh-cn_topic_0000002259406069_p1142254083610"><a name="zh-cn_topic_0000002259406069_p1142254083610"></a><a name="zh-cn_topic_0000002259406069_p1142254083610"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.91%" headers="mcps1.1.12.1.8 "><p id="zh-cn_topic_0000002259406069_p242217402364"><a name="zh-cn_topic_0000002259406069_p242217402364"></a><a name="zh-cn_topic_0000002259406069_p242217402364"></a>bfloat16</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.33%" headers="mcps1.1.12.1.9 "><p id="zh-cn_topic_0000002259406069_p1042234013364"><a name="zh-cn_topic_0000002259406069_p1042234013364"></a><a name="zh-cn_topic_0000002259406069_p1042234013364"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.11%" headers="mcps1.1.12.1.10 "><p id="zh-cn_topic_0000002259406069_p11422134093616"><a name="zh-cn_topic_0000002259406069_p11422134093616"></a><a name="zh-cn_topic_0000002259406069_p11422134093616"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.53%" headers="mcps1.1.12.1.11 "><p id="zh-cn_topic_0000002259406069_p54221240113610"><a name="zh-cn_topic_0000002259406069_p54221240113610"></a><a name="zh-cn_topic_0000002259406069_p54221240113610"></a>float32</p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000002259406069_row192728406349"><td class="cellrowborder" valign="top" width="6.09%" headers="mcps1.1.12.1.1 "><p id="zh-cn_topic_0000002259406069_p766514478347"><a name="zh-cn_topic_0000002259406069_p766514478347"></a><a name="zh-cn_topic_0000002259406069_p766514478347"></a>int8</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="7.57%" headers="mcps1.1.12.1.2 "><p id="zh-cn_topic_0000002259406069_p266544711340"><a name="zh-cn_topic_0000002259406069_p266544711340"></a><a name="zh-cn_topic_0000002259406069_p266544711340"></a>int4</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.66%" headers="mcps1.1.12.1.3 "><p id="zh-cn_topic_0000002259406069_p7665747163412"><a name="zh-cn_topic_0000002259406069_p7665747163412"></a><a name="zh-cn_topic_0000002259406069_p7665747163412"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="7.82%" headers="mcps1.1.12.1.4 "><p id="zh-cn_topic_0000002259406069_p466594719348"><a name="zh-cn_topic_0000002259406069_p466594719348"></a><a name="zh-cn_topic_0000002259406069_p466594719348"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.569999999999999%" headers="mcps1.1.12.1.5 "><p id="zh-cn_topic_0000002259406069_p16665154710347"><a name="zh-cn_topic_0000002259406069_p16665154710347"></a><a name="zh-cn_topic_0000002259406069_p16665154710347"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.440000000000001%" headers="mcps1.1.12.1.6 "><p id="zh-cn_topic_0000002259406069_p18665204713343"><a name="zh-cn_topic_0000002259406069_p18665204713343"></a><a name="zh-cn_topic_0000002259406069_p18665204713343"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.97%" headers="mcps1.1.12.1.7 "><p id="zh-cn_topic_0000002259406069_p06656478343"><a name="zh-cn_topic_0000002259406069_p06656478343"></a><a name="zh-cn_topic_0000002259406069_p06656478343"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.91%" headers="mcps1.1.12.1.8 "><p id="zh-cn_topic_0000002259406069_p11665124716347"><a name="zh-cn_topic_0000002259406069_p11665124716347"></a><a name="zh-cn_topic_0000002259406069_p11665124716347"></a>bfloat16</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.33%" headers="mcps1.1.12.1.9 "><p id="zh-cn_topic_0000002259406069_p5665134713344"><a name="zh-cn_topic_0000002259406069_p5665134713344"></a><a name="zh-cn_topic_0000002259406069_p5665134713344"></a>float32</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.11%" headers="mcps1.1.12.1.10 "><p id="zh-cn_topic_0000002259406069_p1666554715342"><a name="zh-cn_topic_0000002259406069_p1666554715342"></a><a name="zh-cn_topic_0000002259406069_p1666554715342"></a>int64</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.53%" headers="mcps1.1.12.1.11 "><p id="zh-cn_topic_0000002259406069_p106657473342"><a name="zh-cn_topic_0000002259406069_p106657473342"></a><a name="zh-cn_topic_0000002259406069_p106657473342"></a>float32</p>
-    </td>
-    </tr>
-    </tbody>
-    </table>
-
-## 支持的型号<a name="zh-cn_topic_0000002259406069_section1192213322317"></a>
-
--   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
--   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
+    |x|w|group_list|scale|bias|offset|pertoken_scale|shared_input|logit|row_index|y|
+    |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+    |`int8`|`int8`|`int64`|`float32`|None|None|`float32`|`bfloat16`|`float32`|`int64`|`float32`|
+    |`int8`|`int8`|`int64`|`float32`|None|None|`float32`|None|None|`int64`|`float32`|
+    |`int8`|`int4`|`int64`|`int64`|`float32`|None|`float32`|`bfloat16`|`float32`|`int64`|`float32`|
+    |`int8`|`int4`|`int64`|`int64`|`float32`|`float32`|`float32`|`bfloat16`|`float32`|`int64`|`float32`|
 
 ## 调用示例<a name="zh-cn_topic_0000002259406069_section14459801435"></a>
 

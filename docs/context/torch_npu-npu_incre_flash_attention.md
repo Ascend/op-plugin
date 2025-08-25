@@ -1,5 +1,12 @@
 # torch_npu.npu_incre_flash_attention
 
+# 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>            |    √     |
+|<term>Atlas 推理系列加速卡产品</term>   | √  |
+
 ## 功能说明
 
 - API功能：增量FA实现。
@@ -30,12 +37,20 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 
 - <strong>*</strong>：代表其之前的变量是位置相关，需要按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
 - **padding_mask** (`Tensor`)：预留参数，暂未使用，默认值为`None`。
-- **atten_mask** (`Tensor`)：可选参数。取值为`1`代表该位不参与计算（不生效），为`0`代表该位参与计算，默认值为`None`，即全部参与计算；数据类型支持`bool`、`int8`、`uint8`，数据格式支持$ND$。
-
 - **pse_shift** (`Tensor`)：可选参数。表示在attention结构内部的位置编码参数，数据格式支持$ND$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：仅支持`None`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
+- **atten_mask** (`Tensor`)：可选参数。取值为`1`代表该位不参与计算（不生效），为`0`代表该位参与计算，默认值为`None`，即全部参与计算；数据类型支持`bool`、`int8`、`uint8`，数据格式支持$ND$。
 - **actual_seq_lengths** (`List[int]`)：可选参数。其`shape`为$(B,)$或$(1,)$，形如$[1, 2, 3]$，代表`key`、`value`中有效的$S$序列长度，默认值为`None`，即全部有效，类型为`List int`；数据类型为`int64`，数据格式支持$ND$。
+- **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
+- **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2前面量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
+- **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
+- **quant_scale2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化因子，支持per-tensor（scalar）和per-channel（`list`）。如不使用该功能时可不传或传入`None`。
+    - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
+- **quant_offset2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化偏移，支持per-tensor（`scalar`）和per-channel（`list`）。如不使用该功能时可不传或传入`None`。
+    - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
 - **antiquant_scale** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化因子，支持per-channel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
@@ -43,35 +58,23 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 - **antiquant_offset** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化偏移，支持per-channel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
-- **block_table** (`Tensor`)：可选参数。数据类型支持`int32`，数据格式支持$ND$。`block_table`为2维`Tensor`，表示PageAttention中KV存储使用的block映射表，具体约束和使用方法可见[约束说明](#zh-cn_topic_0000001711274864_section12345537164214)。如不使用该功能时可不传或传入`None`。
-
-- **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2前面量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **quant_scale2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化因子，支持per-tensor（scalar）和per-channel（`list`）。如不使用该功能时可不传或传入`None`。
-    - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
-
-- **quant_offset2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化偏移，支持per-tensor（scalar）和per-channel（`list`）。如不使用该功能时可不传或传入`None`。
-    - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
-
+- **block_table** (`Tensor`)：可选参数。数据类型支持`int32`，数据格式支持$ND$。`block_table`为2维`Tensor`，表示page attention中KV存储使用的block映射表，具体约束和使用方法可见[约束说明](#zh-cn_topic_0000001711274864_section12345537164214)。如不使用该功能时可不传或传入`None`。
 - **kv_padding_size** (`Tensor`)：可选参数。数据类型支持`int64`，数据格式支持$ND$，表示KV左`padding`场景使能时，最后一个有效`token`到$S$的距离。如不使用该功能时可传入`None`。
 - **num_heads** (`int`)：可选参数。代表`query`的头数，即`query`的$N$，默认值为`1`；数据类型为`int64`。
-- **scale_value** (`float`)：可选参数。代表缩放系数，用来约束梯度，其默认值为`1.0`，典型值为$\frac{1}{\sqrt{D}}$；数据类型为`float32`。
+- **scale_value** (`float`)：可选参数。代表缩放系数，用来约束梯度，默认值为`1.0`，典型值为$\frac{1}{\sqrt{D}}$；数据类型为`float32`。
 - **input_layout** (`str`)：可选参数。代表`query`、`key`、`value`的布局，根据输入的`query`、`key`、`value`的`shape`确定，三维`Tensor`是$BSH$，四维`Tensor`是$BNSD$或$BSND$，默认值为$BSH$，不支持其他值；数据类型为`str`。
 
     >**说明：**<br>
     >`query`、`key`、`value`数据排布格式支持从多种维度解读，其中$B$（Batch）表示输入样本批量大小、$S$（Seq-Length）表示输入样本序列长度、$H$（Head-Size）表示隐藏层的大小、$N$（Head-Num）表示多头数、$D$（Head-Dim）表示隐藏层最小的单元尺寸，且满足$D=H/N$。
 
 - **num_key_value_heads** (`int`)：可选参数。代表`key`、`value`的头数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，默认值为`0`，表示与`query`的头数相同，否则表示`key`、`value`的头数，需要能被`query`的头数（`num_heads`）整除；`num_heads`与`num_key_value_heads`的比值不能大于64。数据类型为`int64`。
-- **block_size** (`int`)：可选参数。PageAttention中KV存储每个block中最大的token个数，默认为`0`，通常为128、256等值，数据类型支持`int64`。
+- **block_size** (`int`)：可选参数。page attention中KV存储每个block中最大的token个数，默认值为`0`，通常为128、256等值，数据类型支持`int64`。
 - **inner_precise** (`int`)：可选参数。代表高精度/高性能选择，`0`代表高精度，`1`代表高性能，默认值为`1`（高性能），数据类型支持`int64`。
 
 ## 返回值说明
+`Tensor`
 
-**atten_out** (`Tensor`)：计算的最终结果，`shape`与`query`保持一致。
-
+计算的最终结果，对应公式中的$atten\_out$，`shape`与`query`保持一致。
 - 非量化场景下，输出数据类型与`query`的数据类型保持一致。
 - 量化场景下，若传入`quant_scale2`，则输出数据类型为`int8`。
 
@@ -97,24 +100,19 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - 仅支持$D$轴对齐，即$D$轴可以被16整除。
 
 - page attention使用限制：
-    - page attention使能必要条件是`block_table`存在且有效，且传入每个batch对应的`actual_seq_lengths`。page attention使能场景下，`key`、`value`是按照`block_table`中的索引在一片连续内存中排布，支持`key、value`数据类型为`float16`、`bfloat16`、`int8`。
+    - page attention使能必要条件是`block_table`存在且有效，且传入每个batch对应的`actual_seq_lengths`。page attention使能场景下，`key`、`value`是按照`block_table`中的索引在一片连续内存中排布，支持`key`、`value`数据类型为`float16`、`bfloat16`、`int8`。
     - page attention使能场景下，输入kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$或$（blocknum, blocksize, H）$，$blocknum$不应小于每个batch所需block个数的总和。通常情况下，kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$时，性能比kv cache排布格式为$（blocknum, blocksize, H）$时更好。
     - page attention使能场景下，支持kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$，但此时`query layout`仅支持$BNSD$。
     - page attention使能场景下，当输入kv cache排布格式为$（blocknum, blocksize, H）$，且$H（H=numKvHeads * headDims）$超过64k时，受硬件指令约束，会被拦截报错。
     - page attention场景下，必须传入输入`actual_seq_lengths`，每个batch的`actualSeqLength`表示每个batch对`sequence`真实长度，该值除以属性输入`blocksize`即表示每个batch所需block数量。
     - page attention场景下，`block_table`必须为二维`Tensor`，第一维长度需等于batch数，第二维长度不能小于`maxBlockNumPerSeq`（`maxBlockNumPerSeq`为每个batch中最大`actual_seq_lengths`对应的block数量）。例如，batch数为2，属性`blocksize=128`，当每个batch的`actualSeqLength`为512时，表明每个batch至少需要4个block，因此`block_table`的排布可以为(2, 4)。
-    - page attention使能场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能，通常为128或256。`key`、`value`输入类型为`float16`、`bfloat16`时`block_size`需要16对齐；`key`、`value`输入类型为`int8`时`block_size`需要32对齐。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
+    - page attention使能场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能，通常为128或256。`key`、`value`输入类型为`float16`、`bfloat16`时，`block_size`需要16对齐；`key`、`value`输入类型为`int8`时，`block_size`需要32对齐。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
 
 - `quant_scale2`、`quant_offset2`为一组参数，其中`quant_offset2`可选，传入该组参数后算子输出数据类型会推导为`int8`，若不期望`int8`输出，请勿传入该组参数。
 - KV左`padding`场景使用限制：
     - `kvCache`的搬运起点计算公式为：`Smax-kv_padding_size-actual_seq_lengths`。`kvCache`的搬运终点计算公式为：`Smax-kv_padding_size`。其中`kvCache`的搬运起点或终点小于0时，返回数据结果为全0。
     - KV左`padding`场景`kv_padding_size`小于0时将被置为0。
     - KV左`padding`场景使能需要同时存在`kv_padding_size`和`actual_seq_lengths`参数，否则默认为KV右`padding`场景。
-
-## 支持的型号
-
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
-- <term>Atlas 推理系列加速卡产品</term>
 
 ## 调用示例
 

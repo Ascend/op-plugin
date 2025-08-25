@@ -1,16 +1,25 @@
 # torch_npu.npu_ffn
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    | √  |
+
 ## 功能说明
 
-- 算子功能：该FFN算子提供MoeFFN和FFN的计算功能。在没有专家分组（`expert_tokens`为空）时是FFN，有专家分组时是MoeFFN。
-- 计算公式：activation表示使用的激活函数，$W_1$和$W_2$对应输入参数的weight1和weight2，$b_1$和$b_2$对应输入参数的bias1和bias2
+- API功能：FFN算子提供MoeFFN和FFN的计算功能。在没有专家分组（`expert_tokens`为空）时是FFN，有专家分组（`expert_tokens`不为空）时是MoeFFN。
+- 计算公式：
+
+     activation表示使用的激活函数，$W_1$和$W_2$对应输入参数的`weight1`和`weight2`，$b_1$和$b_2$对应输入参数的`bias1`和`bias2`。
 
     $$
     \text{out} = \text{activation}(x * W_1 + b_1) * W_2 + b_2
     $$
 
 >**说明：**<br>
->激活层为geglu/swiglu/reglu时，性能使能需要满足门槛要求，即整网中FFN结构所对应的小算子中vector耗时30us且占比10%以上的用例方可尝试FFN融合算子；或在不知道小算子性能的情况下，尝试使能FFN，若性能劣化则不使能FFN。
+>激活层为geglu/swiglu/reglu时，性能使能需要满足门槛要求，即整网中FFN结构所对应的小算子里，vector耗时30us且占比10%以上的用例，方可尝试FFN融合算子；或在不知道小算子性能的情况下，尝试使能FFN，若性能劣化则不使能FFN。
 
 ## 函数原型
 
@@ -20,30 +29,31 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 
 ## 参数说明
 
-- **x** (`Tensor`)：输入张量，公式中的$x$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，支持输入的维度最少是2维$[M, K1]$，最多是8维。
+- **x** (`Tensor`)：必选参数，输入张量，对应公式中的$x$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，支持输入的维度最少是2维$[M, K1]$，最多是8维。
 
-- **weight1** (`Tensor`)：专家的权重数据，公式中的$W1$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K1, N1]/[K1, N1]$。
+- **weight1** (`Tensor`)：必选参数，专家的权重数据，对应公式中的$W1$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K1, N1]$/$[K1, N1]$。
 
-- **weight2** (`Tensor`)：专家的权重数据，公式中的$W2$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K2, N2]/[K2, N2]$。
+- **weight2** (`Tensor`)：必选参数，专家的权重数据，对应公式中的$W2$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K2, N2]$/$[K2, N2]$。
 
     >**说明：**<br>
     >$M$表示token个数，对应transform中的BS（$B$：Batch，表示输入样本批量大小，$S$：Seq-Length，表示输入样本序列长度）；$K1$表示第一个matmul的输入通道数，对应transform中的$H$（Head-Size，表示隐藏层的大小）；$N1$表示第一个matmul的输出通道数；$K2$表示第二个matmul的输入通道数；$N2$表示第二个matmul的输出通道数，对应transform中的$H$；$E$表示有专家场景的专家数。
 
-- **activation** (`str`)：代表使用的激活函数，即输入参数中的`activation`。当前仅支持`fastgelu、gelu、relu、silu、geglu、swiglu、reglu`。
-- **expert_tokens** (`list`)：可选参数。代表各专家的token数，数据类型支持`int32`，数据格式支持$ND$，若不为空时可支持的最大长度为256个。
-- **expert_tokens_index** (`list`)：可选参数。代表各专家计算token的索引值，数据类型支持`int32`，数据格式支持$ND$，若不为空时可支持的最大长度为256个。
+- **activation** (`str`)：必选参数，代表使用的激活函数。当前仅支持`fastgelu、gelu、relu、silu、geglu、swiglu、reglu`。
+- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- **expert_tokens** (`list`)：可选参数，代表各专家的token数，数据类型支持`int32`，数据格式支持$ND$，若不为空时可支持的最大长度为256个。
+- **expert_tokens_index** (`list`)：可选参数，代表各专家计算token的索引值，数据类型支持`int32`，数据格式支持$ND$，若不为空时可支持的最大长度为256个。
 
-- **bias1** (`Tensor`)：可选参数。权重数据修正值，公式中的$b1$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N1]/[N1]$。
-- **bias2** (`Tensor`)：可选参数。权重数据修正值，公式中的$b2$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N2]/[N2]$。
+- **bias1** (`Tensor`)：可选参数，权重数据修正值，对应公式中的$b1$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **bias2** (`Tensor`)：可选参数，权重数据修正值，对应公式中的$b2$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N2]$/$[N2]$。
 
-- **scale** (`Tensor`)：可选参数，量化参数，量化缩放系数，数据类型支持`float32`，数据格式支持$ND$。per-tensor下输入在有/无专家时均为一维向量，输入元素个数在有/无专家时分别为$[E]/[1]$；per-channel下输入在有/无专家时为二维向量/一维向量，输入元素个数在有/无专家时分别为$[E, N1]/[N1]$。
-- **offset** (`Tensor`)：可选参数，量化参数，量化偏移量，数据类型支持`float32`，数据格式支持$ND$，一维向量，输入元素个数在有/无专家时分别为$[E]/[1]$。
-- **deq_scale1** (`Tensor`)：可选参数，量化参数，第一组matmul的反量化缩放系数，数据类型支持`int64`、`float32`、`bfloat16`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N1]/[N1]$。
-- **deq_scale2** (`Tensor`)：可选参数，量化参数，第二组matmul的反量化缩放系数，数据类型支持`int64`、`float32`、`bfloat16`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N2]/[N2]$。
-- **antiquant_scale1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的缩放系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N1]/[N1]$。
-- **antiquant_scale2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的缩放系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N2]/[N2]$。
-- **antiquant_offset1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的偏移量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N1]/[N1]$。
-- **antiquant_offset2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的偏移量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N2]/[N2]$。
+- **scale** (`Tensor`)：可选参数，量化参数，量化缩放系数，数据类型支持`float32`，数据格式支持$ND$。per-tensor下输入在有/无专家时均为一维向量，输入元素个数在有/无专家时分别为$[E]$/$[1]$；per-channel下输入在有/无专家时为二维向量/一维向量，输入元素个数在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **offset** (`Tensor`)：可选参数，量化参数，量化偏移量，数据类型支持`float32`，数据格式支持$ND$，一维向量，输入元素个数在有/无专家时分别为$[E]$/$[1]$。
+- **deq_scale1** (`Tensor`)：可选参数，量化参数，第一组matmul的反量化缩放系数，数据类型支持`int64`、`float32`、`bfloat16`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **deq_scale2** (`Tensor`)：可选参数，量化参数，第二组matmul的反量化缩放系数，数据类型支持`int64`、`float32`、`bfloat16`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N2]$/$[N2]$。
+- **antiquant_scale1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的缩放系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **antiquant_scale2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的缩放系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N2]$/$[N2]$。
+- **antiquant_offset1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的偏移量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **antiquant_offset2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的偏移量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N2]$/$[N2]$。
 
 - **inner_precise** (`int`)：可选参数，表示高精度或者高性能选择。数据类型支持`int64`。该参数仅对`float16`生效，`bfloat16`和`int8`不区分高精度和高性能。
 
@@ -57,12 +67,12 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 ## 返回值说明
 `Tensor`
 
-一个Tensor类型的输出，公式中的输出$y$，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，输出维度与`x`一致。
+一个Tensor类型的输出，对应公式中的输出$y$，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，输出维度与`x`一致。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式（PyTorch 2.1.0版本）。
 - 有专家时，专家数据的总数需要与`x`的$M$保持一致。
 - 激活层为`geglu/swiglu/reglu`时，仅支持无专家分组时的`float16`高性能场景（`float16`场景指类型为Tensor的必选参数数据类型都为`float16`的场景），且$N1=2*K2$。
 - 激活层为`gelu/fastgelu/relu/silu`时，支持有专家或无专家分组的`float16`高精度及高性能场景，`bfloat16`场景，量化场景及伪量化场景，且$N1=K2$。
@@ -81,11 +91,6 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 - 伪量化场景支持两种不同参数类型：
     - `y`为`float16`、`x`为`float16`、`bias`为`float16`、`antiquant_scale`为`float16`、`antiquant_offset`为`float16`、`weight`支持数据类型`int8`。
     - `y`为`bfloat16`、`x`为`bfloat16`、`bias`为`float32`、`antiquant_scale`为`bfloat16`、`antiquant_offset`为`bfloat16`、`weight`支持数据类型`int8`。
-
-## 支持的型号
-
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> 
 
 ## 调用示例
 

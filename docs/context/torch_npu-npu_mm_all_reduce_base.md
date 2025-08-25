@@ -1,5 +1,11 @@
 # torch_npu.npu_mm_all_reduce_base
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    | √  |
+
 ## 功能说明
 
 - API功能：TP切分场景下，实现mm和all_reduce的融合，融合算子内部实现计算和通信流水并行。
@@ -23,8 +29,8 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **x1** (`Tensor`)：必选参数。数据类型支持`int8`、`float16`、`bfloat16`。数据格式支持$ND$，输入shape支持2维或者3维。
 - **x2** (`Tensor`)：必选参数。数据类型支持`float16`、`int8`、`bfloat16`，数据格式支持$NZ$（昇腾亲和排布格式）、$ND$。非量化场景，数据类型需要和`x1`保持一致，输入shape维度第0维和`x1`的最后一维保持一致。
 - **hcom** (`str`)：必选参数。通信域handle名，通过`get_hccl_comm_name`接口获取。
-- <strong>*</strong>：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
-- **reduce_op** (`str`)：可选参数。reduce操作类型，**当前版本仅支持**`sum`，默认值：`sum`。
+- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- **reduce_op** (`str`)：可选参数。reduce操作类型，当前版本仅支持`sum`，默认值：`sum`。
 - **bias** (`Tensor`)：可选参数。数据类型支持`int32`、`float16`、`bfloat16`，数据格式支持$ND$。`bias`当前仅支持一维，且维度大小与`output/x2`的最后一维大小相同。
 - **antiquant_scale** (`Tensor`)：可选参数。伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
     - per-tensor场景：shape为$[1]$。
@@ -35,17 +41,13 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
         >$ceil(k, antiquant\_group\_size)$的计算逻辑为：$(k + antiquant\_group\_size - 1) / antiquant\_group\_size$，并对计算结果取整数部分。
 
 - **antiquant_offset** (`Tensor`)：可选参数。伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和`antiquant_scale`保持一致。
-- **x3** (`Tensor`)：可选参数。matmul计算后的偏移。
-  
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和输出`output`保持一致。
+- **x3** (`Tensor`)：可选参数。matmul计算后的偏移。数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和输出`output`保持一致。
   
 - **dequant_scale** (`Tensor`)：可选参数。matmul计算后的去量化系数。数据类型支持`int64`、`uint64`、`bfloat16`、`float32`；数据格式支持$ND$。
     - per-tensor场景：shape为$[1]$。
     - per-channel场景：shape为$[n]/[1,n]$，$n$为`x2`最后一维的大小。
 
-- **pertoken_scale** (`Tensor`)：可选参数。matmul计算后的per-token去量化系数。
-  
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`。当`x1`为$[m,k]$时`pertoken_scale` shape为$[m]$；当`x1`为$[b, s, k]$时`pertoken_scale` shape为$[b*s]$。
+- **pertoken_scale** (`Tensor`)：可选参数。matmul计算后的per-token去量化系数。数据类型支持`float32`。当`x1`为$[m,k]$时`pertoken_scale` shape为$[m]$；当`x1`为$[b, s, k]$时`pertoken_scale` shape为$[b*s]$。
   
 - **comm_quant_scale_1** (`Tensor`)：可选参数。alltoall通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为$[k, n]$时shape为$[1, n]$或$[n]$，用户需保证每张卡上数据保持一致且正确。
 - **comm_quant_scale_2** (`Tensor`)：可选参数。allgather通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为$[k, n]$时shape为$[1, n]$或$[n]$，用户需保证每张卡上数据保持一致且正确。
@@ -79,251 +81,27 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - 不同场景下数据类型支持情况：
 
     **表1** 非量化场景
-
-    <a name="zh-cn_topic_0000001721582972_table487481610422"></a>
-    <table><thead align="left"><tr id="zh-cn_topic_0000001721582972_row287481618427"><th class="cellrowborder" valign="top" width="13.450000000000001%" id="mcps1.2.10.1.1"><p id="zh-cn_topic_0000001721582972_p1117215415458"><a name="zh-cn_topic_0000001721582972_p1117215415458"></a><a name="zh-cn_topic_0000001721582972_p1117215415458"></a>产品型号</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.39%" id="mcps1.2.10.1.2"><p id="zh-cn_topic_0000001721582972_p087501664213"><a name="zh-cn_topic_0000001721582972_p087501664213"></a><a name="zh-cn_topic_0000001721582972_p087501664213"></a>x1</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.41%" id="mcps1.2.10.1.3"><p id="zh-cn_topic_0000001721582972_p687571612423"><a name="zh-cn_topic_0000001721582972_p687571612423"></a><a name="zh-cn_topic_0000001721582972_p687571612423"></a>x2</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.23%" id="mcps1.2.10.1.4"><p id="zh-cn_topic_0000001721582972_p6875101674217"><a name="zh-cn_topic_0000001721582972_p6875101674217"></a><a name="zh-cn_topic_0000001721582972_p6875101674217"></a>bias</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.79%" id="mcps1.2.10.1.5"><p id="zh-cn_topic_0000001721582972_p9875101612424"><a name="zh-cn_topic_0000001721582972_p9875101612424"></a><a name="zh-cn_topic_0000001721582972_p9875101612424"></a>x3</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.77%" id="mcps1.2.10.1.6"><p id="zh-cn_topic_0000001721582972_p13875171674217"><a name="zh-cn_topic_0000001721582972_p13875171674217"></a><a name="zh-cn_topic_0000001721582972_p13875171674217"></a>output（输出）</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11%" id="mcps1.2.10.1.7"><p id="zh-cn_topic_0000001721582972_p178759160422"><a name="zh-cn_topic_0000001721582972_p178759160422"></a><a name="zh-cn_topic_0000001721582972_p178759160422"></a>antiquant_scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11.37%" id="mcps1.2.10.1.8"><p id="zh-cn_topic_0000001721582972_p188751168423"><a name="zh-cn_topic_0000001721582972_p188751168423"></a><a name="zh-cn_topic_0000001721582972_p188751168423"></a>antiquant_offset</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11.59%" id="mcps1.2.10.1.9"><p id="zh-cn_topic_0000001721582972_p118751216104210"><a name="zh-cn_topic_0000001721582972_p118751216104210"></a><a name="zh-cn_topic_0000001721582972_p118751216104210"></a>dequant_scale</p>
-    </th>
-    </tr>
-    </thead>
-    <tbody><tr id="zh-cn_topic_0000001721582972_row1587511620421"><td class="cellrowborder" valign="top" width="13.450000000000001%" headers="mcps1.2.10.1.1 "><p id="zh-cn_topic_0000001721582972_p171731544459"><a name="zh-cn_topic_0000001721582972_p171731544459"></a><a name="zh-cn_topic_0000001721582972_p171731544459"></a><span id="zh-cn_topic_0000001721582972_ph7270121464516"><a name="zh-cn_topic_0000001721582972_ph7270121464516"></a><a name="zh-cn_topic_0000001721582972_ph7270121464516"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_3"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_3"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.39%" headers="mcps1.2.10.1.2 "><p id="zh-cn_topic_0000001721582972_p18875171624214"><a name="zh-cn_topic_0000001721582972_p18875171624214"></a><a name="zh-cn_topic_0000001721582972_p18875171624214"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.41%" headers="mcps1.2.10.1.3 "><p id="zh-cn_topic_0000001721582972_p18751116164210"><a name="zh-cn_topic_0000001721582972_p18751116164210"></a><a name="zh-cn_topic_0000001721582972_p18751116164210"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.23%" headers="mcps1.2.10.1.4 "><p id="zh-cn_topic_0000001721582972_p1187521614421"><a name="zh-cn_topic_0000001721582972_p1187521614421"></a><a name="zh-cn_topic_0000001721582972_p1187521614421"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.79%" headers="mcps1.2.10.1.5 "><p id="zh-cn_topic_0000001721582972_p118758167427"><a name="zh-cn_topic_0000001721582972_p118758167427"></a><a name="zh-cn_topic_0000001721582972_p118758167427"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.77%" headers="mcps1.2.10.1.6 "><p id="zh-cn_topic_0000001721582972_p1687531610424"><a name="zh-cn_topic_0000001721582972_p1687531610424"></a><a name="zh-cn_topic_0000001721582972_p1687531610424"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11%" headers="mcps1.2.10.1.7 "><p id="zh-cn_topic_0000001721582972_p18875616114215"><a name="zh-cn_topic_0000001721582972_p18875616114215"></a><a name="zh-cn_topic_0000001721582972_p18875616114215"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.37%" headers="mcps1.2.10.1.8 "><p id="zh-cn_topic_0000001721582972_p158711699440"><a name="zh-cn_topic_0000001721582972_p158711699440"></a><a name="zh-cn_topic_0000001721582972_p158711699440"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.59%" headers="mcps1.2.10.1.9 "><p id="zh-cn_topic_0000001721582972_p1641110107441"><a name="zh-cn_topic_0000001721582972_p1641110107441"></a><a name="zh-cn_topic_0000001721582972_p1641110107441"></a><code>None</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001721582972_row1887561616429"><td class="cellrowborder" valign="top" width="13.450000000000001%" headers="mcps1.2.10.1.1 "><p id="zh-cn_topic_0000001721582972_p1917317410451"><a name="zh-cn_topic_0000001721582972_p1917317410451"></a><a name="zh-cn_topic_0000001721582972_p1917317410451"></a><span id="zh-cn_topic_0000001721582972_ph650661584516"><a name="zh-cn_topic_0000001721582972_ph650661584516"></a><a name="zh-cn_topic_0000001721582972_ph650661584516"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_4"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_4"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.39%" headers="mcps1.2.10.1.2 "><p id="zh-cn_topic_0000001721582972_p158756160422"><a name="zh-cn_topic_0000001721582972_p158756160422"></a><a name="zh-cn_topic_0000001721582972_p158756160422"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.41%" headers="mcps1.2.10.1.3 "><p id="zh-cn_topic_0000001721582972_p4875111694213"><a name="zh-cn_topic_0000001721582972_p4875111694213"></a><a name="zh-cn_topic_0000001721582972_p4875111694213"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.23%" headers="mcps1.2.10.1.4 "><p id="zh-cn_topic_0000001721582972_p1587541618424"><a name="zh-cn_topic_0000001721582972_p1587541618424"></a><a name="zh-cn_topic_0000001721582972_p1587541618424"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.79%" headers="mcps1.2.10.1.5 "><p id="zh-cn_topic_0000001721582972_p687621634212"><a name="zh-cn_topic_0000001721582972_p687621634212"></a><a name="zh-cn_topic_0000001721582972_p687621634212"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.77%" headers="mcps1.2.10.1.6 "><p id="zh-cn_topic_0000001721582972_p1087671674216"><a name="zh-cn_topic_0000001721582972_p1087671674216"></a><a name="zh-cn_topic_0000001721582972_p1087671674216"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11%" headers="mcps1.2.10.1.7 "><p id="zh-cn_topic_0000001721582972_p028911224418"><a name="zh-cn_topic_0000001721582972_p028911224418"></a><a name="zh-cn_topic_0000001721582972_p028911224418"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.37%" headers="mcps1.2.10.1.8 "><p id="zh-cn_topic_0000001721582972_p126912112445"><a name="zh-cn_topic_0000001721582972_p126912112445"></a><a name="zh-cn_topic_0000001721582972_p126912112445"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.59%" headers="mcps1.2.10.1.9 "><p id="zh-cn_topic_0000001721582972_p11153131116449"><a name="zh-cn_topic_0000001721582972_p11153131116449"></a><a name="zh-cn_topic_0000001721582972_p11153131116449"></a><code>None</code></p>
-    </td>
-    </tr>
-    </tbody>
-    </table>
-
+    |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|
+    |--------|--------|--------|--------|--------|--------|--------|--------|--------|
+    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`float16`|`float16`|`float16`|`float16`|`float16`|None|None|None|
+    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|None|None|
+    
     **表2** 伪量化场景
-
-    <a name="zh-cn_topic_0000001721582972_table931191613475"></a>
-    <table><thead align="left"><tr id="zh-cn_topic_0000001721582972_row183111684715"><th class="cellrowborder" valign="top" width="13.36%" id="mcps1.2.10.1.1"><p id="zh-cn_topic_0000001721582972_p431161634715"><a name="zh-cn_topic_0000001721582972_p431161634715"></a><a name="zh-cn_topic_0000001721582972_p431161634715"></a>产品型号</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.280000000000001%" id="mcps1.2.10.1.2"><p id="zh-cn_topic_0000001721582972_p1431416104714"><a name="zh-cn_topic_0000001721582972_p1431416104714"></a><a name="zh-cn_topic_0000001721582972_p1431416104714"></a>x1</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.43%" id="mcps1.2.10.1.3"><p id="zh-cn_topic_0000001721582972_p231416124714"><a name="zh-cn_topic_0000001721582972_p231416124714"></a><a name="zh-cn_topic_0000001721582972_p231416124714"></a>x2</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.4%" id="mcps1.2.10.1.4"><p id="zh-cn_topic_0000001721582972_p831131694712"><a name="zh-cn_topic_0000001721582972_p831131694712"></a><a name="zh-cn_topic_0000001721582972_p831131694712"></a>bias</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.51%" id="mcps1.2.10.1.5"><p id="zh-cn_topic_0000001721582972_p143114164470"><a name="zh-cn_topic_0000001721582972_p143114164470"></a><a name="zh-cn_topic_0000001721582972_p143114164470"></a>x3</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11.06%" id="mcps1.2.10.1.6"><p id="zh-cn_topic_0000001721582972_p1531111604713"><a name="zh-cn_topic_0000001721582972_p1531111604713"></a><a name="zh-cn_topic_0000001721582972_p1531111604713"></a>output（输出）</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11%" id="mcps1.2.10.1.7"><p id="zh-cn_topic_0000001721582972_p103117161470"><a name="zh-cn_topic_0000001721582972_p103117161470"></a><a name="zh-cn_topic_0000001721582972_p103117161470"></a>antiquant_scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11.27%" id="mcps1.2.10.1.8"><p id="zh-cn_topic_0000001721582972_p123171624712"><a name="zh-cn_topic_0000001721582972_p123171624712"></a><a name="zh-cn_topic_0000001721582972_p123171624712"></a>antiquant_offset</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="11.690000000000001%" id="mcps1.2.10.1.9"><p id="zh-cn_topic_0000001721582972_p6314166474"><a name="zh-cn_topic_0000001721582972_p6314166474"></a><a name="zh-cn_topic_0000001721582972_p6314166474"></a>dequant_scale</p>
-    </th>
-    </tr>
-    </thead>
-    <tbody><tr id="zh-cn_topic_0000001721582972_row5311716184711"><td class="cellrowborder" valign="top" width="13.36%" headers="mcps1.2.10.1.1 "><p id="zh-cn_topic_0000001721582972_p153113164472"><a name="zh-cn_topic_0000001721582972_p153113164472"></a><a name="zh-cn_topic_0000001721582972_p153113164472"></a><span id="zh-cn_topic_0000001721582972_ph113215165479"><a name="zh-cn_topic_0000001721582972_ph113215165479"></a><a name="zh-cn_topic_0000001721582972_ph113215165479"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_5"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_5"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.280000000000001%" headers="mcps1.2.10.1.2 "><p id="zh-cn_topic_0000001721582972_p83241610472"><a name="zh-cn_topic_0000001721582972_p83241610472"></a><a name="zh-cn_topic_0000001721582972_p83241610472"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.43%" headers="mcps1.2.10.1.3 "><p id="zh-cn_topic_0000001721582972_p232121615476"><a name="zh-cn_topic_0000001721582972_p232121615476"></a><a name="zh-cn_topic_0000001721582972_p232121615476"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.4%" headers="mcps1.2.10.1.4 "><p id="zh-cn_topic_0000001721582972_p3329162478"><a name="zh-cn_topic_0000001721582972_p3329162478"></a><a name="zh-cn_topic_0000001721582972_p3329162478"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.51%" headers="mcps1.2.10.1.5 "><p id="zh-cn_topic_0000001721582972_p15328161479"><a name="zh-cn_topic_0000001721582972_p15328161479"></a><a name="zh-cn_topic_0000001721582972_p15328161479"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.06%" headers="mcps1.2.10.1.6 "><p id="zh-cn_topic_0000001721582972_p113261611474"><a name="zh-cn_topic_0000001721582972_p113261611474"></a><a name="zh-cn_topic_0000001721582972_p113261611474"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11%" headers="mcps1.2.10.1.7 "><p id="zh-cn_topic_0000001721582972_p16738125012479"><a name="zh-cn_topic_0000001721582972_p16738125012479"></a><a name="zh-cn_topic_0000001721582972_p16738125012479"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.27%" headers="mcps1.2.10.1.8 "><p id="zh-cn_topic_0000001721582972_p133251613477"><a name="zh-cn_topic_0000001721582972_p133251613477"></a><a name="zh-cn_topic_0000001721582972_p133251613477"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.690000000000001%" headers="mcps1.2.10.1.9 "><p id="zh-cn_topic_0000001721582972_p183231615478"><a name="zh-cn_topic_0000001721582972_p183231615478"></a><a name="zh-cn_topic_0000001721582972_p183231615478"></a><code>None</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001721582972_row1232416104714"><td class="cellrowborder" valign="top" width="13.36%" headers="mcps1.2.10.1.1 "><p id="zh-cn_topic_0000001721582972_p12321516194716"><a name="zh-cn_topic_0000001721582972_p12321516194716"></a><a name="zh-cn_topic_0000001721582972_p12321516194716"></a><span id="zh-cn_topic_0000001721582972_ph632201611474"><a name="zh-cn_topic_0000001721582972_ph632201611474"></a><a name="zh-cn_topic_0000001721582972_ph632201611474"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_6"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_6"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.280000000000001%" headers="mcps1.2.10.1.2 "><p id="zh-cn_topic_0000001721582972_p03281614717"><a name="zh-cn_topic_0000001721582972_p03281614717"></a><a name="zh-cn_topic_0000001721582972_p03281614717"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.43%" headers="mcps1.2.10.1.3 "><p id="zh-cn_topic_0000001721582972_p114918524815"><a name="zh-cn_topic_0000001721582972_p114918524815"></a><a name="zh-cn_topic_0000001721582972_p114918524815"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.4%" headers="mcps1.2.10.1.4 "><p id="zh-cn_topic_0000001721582972_p163215165478"><a name="zh-cn_topic_0000001721582972_p163215165478"></a><a name="zh-cn_topic_0000001721582972_p163215165478"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.51%" headers="mcps1.2.10.1.5 "><p id="zh-cn_topic_0000001721582972_p2032131617475"><a name="zh-cn_topic_0000001721582972_p2032131617475"></a><a name="zh-cn_topic_0000001721582972_p2032131617475"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.06%" headers="mcps1.2.10.1.6 "><p id="zh-cn_topic_0000001721582972_p63216169474"><a name="zh-cn_topic_0000001721582972_p63216169474"></a><a name="zh-cn_topic_0000001721582972_p63216169474"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11%" headers="mcps1.2.10.1.7 "><p id="zh-cn_topic_0000001721582972_p1332141613478"><a name="zh-cn_topic_0000001721582972_p1332141613478"></a><a name="zh-cn_topic_0000001721582972_p1332141613478"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.27%" headers="mcps1.2.10.1.8 "><p id="zh-cn_topic_0000001721582972_p111021821144811"><a name="zh-cn_topic_0000001721582972_p111021821144811"></a><a name="zh-cn_topic_0000001721582972_p111021821144811"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="11.690000000000001%" headers="mcps1.2.10.1.9 "><p id="zh-cn_topic_0000001721582972_p6325161475"><a name="zh-cn_topic_0000001721582972_p6325161475"></a><a name="zh-cn_topic_0000001721582972_p6325161475"></a><code>None</code></p>
-    </td>
-    </tr>
-    </tbody>
-    </table>
-
+    |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|
+    |--------|--------|--------|--------|--------|--------|--------|--------|--------|
+    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`float16`|`int8`|`float16`|`float16`|`float16`|`float16`|`float16`|None|
+    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`bfloat16`|`int8`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|
+    
     **表3** 全量化场景
-
-    <a name="zh-cn_topic_0000001721582972_table18830115614816"></a>
-    <table><thead align="left"><tr id="zh-cn_topic_0000001721582972_row148319564487"><th class="cellrowborder" valign="top" width="13.528647135286473%" id="mcps1.2.11.1.1"><p id="zh-cn_topic_0000001721582972_p1831185615482"><a name="zh-cn_topic_0000001721582972_p1831185615482"></a><a name="zh-cn_topic_0000001721582972_p1831185615482"></a>产品型号</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="8.439156084391561%" id="mcps1.2.11.1.2"><p id="zh-cn_topic_0000001721582972_p19831155618488"><a name="zh-cn_topic_0000001721582972_p19831155618488"></a><a name="zh-cn_topic_0000001721582972_p19831155618488"></a>x1</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="8.76912308769123%" id="mcps1.2.11.1.3"><p id="zh-cn_topic_0000001721582972_p148311256174817"><a name="zh-cn_topic_0000001721582972_p148311256174817"></a><a name="zh-cn_topic_0000001721582972_p148311256174817"></a>x2</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="9.529047095290471%" id="mcps1.2.11.1.4"><p id="zh-cn_topic_0000001721582972_p0831125610485"><a name="zh-cn_topic_0000001721582972_p0831125610485"></a><a name="zh-cn_topic_0000001721582972_p0831125610485"></a>bias</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="8.899110088991101%" id="mcps1.2.11.1.5"><p id="zh-cn_topic_0000001721582972_p1583145634814"><a name="zh-cn_topic_0000001721582972_p1583145634814"></a><a name="zh-cn_topic_0000001721582972_p1583145634814"></a>x3</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="9.90900909909009%" id="mcps1.2.11.1.6"><p id="zh-cn_topic_0000001721582972_p13831135614486"><a name="zh-cn_topic_0000001721582972_p13831135614486"></a><a name="zh-cn_topic_0000001721582972_p13831135614486"></a>output（输出）</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.338966103389662%" id="mcps1.2.11.1.7"><p id="zh-cn_topic_0000001721582972_p583112564482"><a name="zh-cn_topic_0000001721582972_p583112564482"></a><a name="zh-cn_topic_0000001721582972_p583112564482"></a>antiquant_scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.64893510648935%" id="mcps1.2.11.1.8"><p id="zh-cn_topic_0000001721582972_p1831195624814"><a name="zh-cn_topic_0000001721582972_p1831195624814"></a><a name="zh-cn_topic_0000001721582972_p1831195624814"></a>antiquant_offset</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="10.068993100689932%" id="mcps1.2.11.1.9"><p id="zh-cn_topic_0000001721582972_p11831185612485"><a name="zh-cn_topic_0000001721582972_p11831185612485"></a><a name="zh-cn_topic_0000001721582972_p11831185612485"></a>dequant_scale</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="9.86901309869013%" id="mcps1.2.11.1.10"><p id="zh-cn_topic_0000001721582972_p43549175020"><a name="zh-cn_topic_0000001721582972_p43549175020"></a><a name="zh-cn_topic_0000001721582972_p43549175020"></a>pertoken_scale</p>
-    </th>
-    </tr>
-    </thead>
-    <tbody><tr id="zh-cn_topic_0000001721582972_row1183135624817"><td class="cellrowborder" valign="top" width="13.528647135286473%" headers="mcps1.2.11.1.1 "><p id="zh-cn_topic_0000001721582972_p38312056194810"><a name="zh-cn_topic_0000001721582972_p38312056194810"></a><a name="zh-cn_topic_0000001721582972_p38312056194810"></a><span id="zh-cn_topic_0000001721582972_ph1683165618489"><a name="zh-cn_topic_0000001721582972_ph1683165618489"></a><a name="zh-cn_topic_0000001721582972_ph1683165618489"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_7"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_7"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.439156084391561%" headers="mcps1.2.11.1.2 "><p id="zh-cn_topic_0000001721582972_p17831115614818"><a name="zh-cn_topic_0000001721582972_p17831115614818"></a><a name="zh-cn_topic_0000001721582972_p17831115614818"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.76912308769123%" headers="mcps1.2.11.1.3 "><p id="zh-cn_topic_0000001721582972_p168317567489"><a name="zh-cn_topic_0000001721582972_p168317567489"></a><a name="zh-cn_topic_0000001721582972_p168317567489"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.529047095290471%" headers="mcps1.2.11.1.4 "><p id="zh-cn_topic_0000001721582972_p11831175634812"><a name="zh-cn_topic_0000001721582972_p11831175634812"></a><a name="zh-cn_topic_0000001721582972_p11831175634812"></a><code>int32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.899110088991101%" headers="mcps1.2.11.1.5 "><p id="zh-cn_topic_0000001721582972_p583185614483"><a name="zh-cn_topic_0000001721582972_p583185614483"></a><a name="zh-cn_topic_0000001721582972_p583185614483"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.90900909909009%" headers="mcps1.2.11.1.6 "><p id="zh-cn_topic_0000001721582972_p10831856134814"><a name="zh-cn_topic_0000001721582972_p10831856134814"></a><a name="zh-cn_topic_0000001721582972_p10831856134814"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.338966103389662%" headers="mcps1.2.11.1.7 "><p id="zh-cn_topic_0000001721582972_p1883118567482"><a name="zh-cn_topic_0000001721582972_p1883118567482"></a><a name="zh-cn_topic_0000001721582972_p1883118567482"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.64893510648935%" headers="mcps1.2.11.1.8 "><p id="zh-cn_topic_0000001721582972_p530094404910"><a name="zh-cn_topic_0000001721582972_p530094404910"></a><a name="zh-cn_topic_0000001721582972_p530094404910"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.068993100689932%" headers="mcps1.2.11.1.9 "><p id="zh-cn_topic_0000001721582972_p458310539498"><a name="zh-cn_topic_0000001721582972_p458310539498"></a><a name="zh-cn_topic_0000001721582972_p458310539498"></a><code>uint64</code>或<code>int64</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.86901309869013%" headers="mcps1.2.11.1.10 "><p id="zh-cn_topic_0000001721582972_p33541210508"><a name="zh-cn_topic_0000001721582972_p33541210508"></a><a name="zh-cn_topic_0000001721582972_p33541210508"></a><code>None</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001721582972_row1483115618483"><td class="cellrowborder" valign="top" width="13.528647135286473%" headers="mcps1.2.11.1.1 "><p id="zh-cn_topic_0000001721582972_p14831115612481"><a name="zh-cn_topic_0000001721582972_p14831115612481"></a><a name="zh-cn_topic_0000001721582972_p14831115612481"></a><span id="zh-cn_topic_0000001721582972_ph583195654817"><a name="zh-cn_topic_0000001721582972_ph583195654817"></a><a name="zh-cn_topic_0000001721582972_ph583195654817"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_8"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_8"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.439156084391561%" headers="mcps1.2.11.1.2 "><p id="zh-cn_topic_0000001721582972_p1299345055219"><a name="zh-cn_topic_0000001721582972_p1299345055219"></a><a name="zh-cn_topic_0000001721582972_p1299345055219"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.76912308769123%" headers="mcps1.2.11.1.3 "><p id="zh-cn_topic_0000001721582972_p1899315005215"><a name="zh-cn_topic_0000001721582972_p1899315005215"></a><a name="zh-cn_topic_0000001721582972_p1899315005215"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.529047095290471%" headers="mcps1.2.11.1.4 "><p id="zh-cn_topic_0000001721582972_p16993450125215"><a name="zh-cn_topic_0000001721582972_p16993450125215"></a><a name="zh-cn_topic_0000001721582972_p16993450125215"></a><code>int32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.899110088991101%" headers="mcps1.2.11.1.5 "><p id="zh-cn_topic_0000001721582972_p2075012525314"><a name="zh-cn_topic_0000001721582972_p2075012525314"></a><a name="zh-cn_topic_0000001721582972_p2075012525314"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.90900909909009%" headers="mcps1.2.11.1.6 "><p id="zh-cn_topic_0000001721582972_p2993165014524"><a name="zh-cn_topic_0000001721582972_p2993165014524"></a><a name="zh-cn_topic_0000001721582972_p2993165014524"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.338966103389662%" headers="mcps1.2.11.1.7 "><p id="zh-cn_topic_0000001721582972_p1399335011520"><a name="zh-cn_topic_0000001721582972_p1399335011520"></a><a name="zh-cn_topic_0000001721582972_p1399335011520"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.64893510648935%" headers="mcps1.2.11.1.8 "><p id="zh-cn_topic_0000001721582972_p09931750165215"><a name="zh-cn_topic_0000001721582972_p09931750165215"></a><a name="zh-cn_topic_0000001721582972_p09931750165215"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.068993100689932%" headers="mcps1.2.11.1.9 "><p id="zh-cn_topic_0000001721582972_p7993250135220"><a name="zh-cn_topic_0000001721582972_p7993250135220"></a><a name="zh-cn_topic_0000001721582972_p7993250135220"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.86901309869013%" headers="mcps1.2.11.1.10 "><p id="zh-cn_topic_0000001721582972_p1299335045210"><a name="zh-cn_topic_0000001721582972_p1299335045210"></a><a name="zh-cn_topic_0000001721582972_p1299335045210"></a><code>None</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001721582972_row10521123219533"><td class="cellrowborder" valign="top" width="13.528647135286473%" headers="mcps1.2.11.1.1 "><p id="zh-cn_topic_0000001721582972_p105521753165311"><a name="zh-cn_topic_0000001721582972_p105521753165311"></a><a name="zh-cn_topic_0000001721582972_p105521753165311"></a><span id="zh-cn_topic_0000001721582972_ph8552953145316"><a name="zh-cn_topic_0000001721582972_ph8552953145316"></a><a name="zh-cn_topic_0000001721582972_ph8552953145316"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_9"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_9"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.439156084391561%" headers="mcps1.2.11.1.2 "><p id="zh-cn_topic_0000001721582972_p355275325317"><a name="zh-cn_topic_0000001721582972_p355275325317"></a><a name="zh-cn_topic_0000001721582972_p355275325317"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.76912308769123%" headers="mcps1.2.11.1.3 "><p id="zh-cn_topic_0000001721582972_p1255265315316"><a name="zh-cn_topic_0000001721582972_p1255265315316"></a><a name="zh-cn_topic_0000001721582972_p1255265315316"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.529047095290471%" headers="mcps1.2.11.1.4 "><p id="zh-cn_topic_0000001721582972_p18552195312537"><a name="zh-cn_topic_0000001721582972_p18552195312537"></a><a name="zh-cn_topic_0000001721582972_p18552195312537"></a><code>int32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.899110088991101%" headers="mcps1.2.11.1.5 "><p id="zh-cn_topic_0000001721582972_p1955212532537"><a name="zh-cn_topic_0000001721582972_p1955212532537"></a><a name="zh-cn_topic_0000001721582972_p1955212532537"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.90900909909009%" headers="mcps1.2.11.1.6 "><p id="zh-cn_topic_0000001721582972_p6553145311533"><a name="zh-cn_topic_0000001721582972_p6553145311533"></a><a name="zh-cn_topic_0000001721582972_p6553145311533"></a><code>float16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.338966103389662%" headers="mcps1.2.11.1.7 "><p id="zh-cn_topic_0000001721582972_p155531253115310"><a name="zh-cn_topic_0000001721582972_p155531253115310"></a><a name="zh-cn_topic_0000001721582972_p155531253115310"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.64893510648935%" headers="mcps1.2.11.1.8 "><p id="zh-cn_topic_0000001721582972_p155531553195310"><a name="zh-cn_topic_0000001721582972_p155531553195310"></a><a name="zh-cn_topic_0000001721582972_p155531553195310"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.068993100689932%" headers="mcps1.2.11.1.9 "><p id="zh-cn_topic_0000001721582972_p7191710155411"><a name="zh-cn_topic_0000001721582972_p7191710155411"></a><a name="zh-cn_topic_0000001721582972_p7191710155411"></a><code>float32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.86901309869013%" headers="mcps1.2.11.1.10 "><p id="zh-cn_topic_0000001721582972_p85531353165311"><a name="zh-cn_topic_0000001721582972_p85531353165311"></a><a name="zh-cn_topic_0000001721582972_p85531353165311"></a><code>float32</code></p>
-    </td>
-    </tr>
-    <tr id="zh-cn_topic_0000001721582972_row1636253975315"><td class="cellrowborder" valign="top" width="13.528647135286473%" headers="mcps1.2.11.1.1 "><p id="zh-cn_topic_0000001721582972_p1086716244545"><a name="zh-cn_topic_0000001721582972_p1086716244545"></a><a name="zh-cn_topic_0000001721582972_p1086716244545"></a><span id="zh-cn_topic_0000001721582972_ph14867162418546"><a name="zh-cn_topic_0000001721582972_ph14867162418546"></a><a name="zh-cn_topic_0000001721582972_ph14867162418546"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_10"></a><a name="zh-cn_topic_0000001721582972_zh-cn_topic_0000001312391781_term11962195213215_10"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.439156084391561%" headers="mcps1.2.11.1.2 "><p id="zh-cn_topic_0000001721582972_p1886752417545"><a name="zh-cn_topic_0000001721582972_p1886752417545"></a><a name="zh-cn_topic_0000001721582972_p1886752417545"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.76912308769123%" headers="mcps1.2.11.1.3 "><p id="zh-cn_topic_0000001721582972_p1086722417540"><a name="zh-cn_topic_0000001721582972_p1086722417540"></a><a name="zh-cn_topic_0000001721582972_p1086722417540"></a><code>int8</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.529047095290471%" headers="mcps1.2.11.1.4 "><p id="zh-cn_topic_0000001721582972_p15867142410548"><a name="zh-cn_topic_0000001721582972_p15867142410548"></a><a name="zh-cn_topic_0000001721582972_p15867142410548"></a><code>int32</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="8.899110088991101%" headers="mcps1.2.11.1.5 "><p id="zh-cn_topic_0000001721582972_p198678245540"><a name="zh-cn_topic_0000001721582972_p198678245540"></a><a name="zh-cn_topic_0000001721582972_p198678245540"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.90900909909009%" headers="mcps1.2.11.1.6 "><p id="zh-cn_topic_0000001721582972_p1461012314556"><a name="zh-cn_topic_0000001721582972_p1461012314556"></a><a name="zh-cn_topic_0000001721582972_p1461012314556"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.338966103389662%" headers="mcps1.2.11.1.7 "><p id="zh-cn_topic_0000001721582972_p5867192412546"><a name="zh-cn_topic_0000001721582972_p5867192412546"></a><a name="zh-cn_topic_0000001721582972_p5867192412546"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.64893510648935%" headers="mcps1.2.11.1.8 "><p id="zh-cn_topic_0000001721582972_p10867224105410"><a name="zh-cn_topic_0000001721582972_p10867224105410"></a><a name="zh-cn_topic_0000001721582972_p10867224105410"></a><code>None</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="10.068993100689932%" headers="mcps1.2.11.1.9 "><p id="zh-cn_topic_0000001721582972_p18224124195515"><a name="zh-cn_topic_0000001721582972_p18224124195515"></a><a name="zh-cn_topic_0000001721582972_p18224124195515"></a><code>bfloat16</code></p>
-    </td>
-    <td class="cellrowborder" valign="top" width="9.86901309869013%" headers="mcps1.2.11.1.10 "><p id="zh-cn_topic_0000001721582972_p5867162410543"><a name="zh-cn_topic_0000001721582972_p5867162410543"></a><a name="zh-cn_topic_0000001721582972_p5867162410543"></a><code>float32</code></p>
-    </td>
-    </tr>
-    </tbody>
-    </table>
+    |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|pertoken_scale|
+    |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`uint64`或`int64`|None|
+    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|None|
+    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`float32`|`float32`|
+    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|`float32`|
 
     >**说明：**<br>
     >全量化场景：若`dequant_scale`需要以`float32`类型传入，在调用`torch_npu.npu_mm_all_reduce_base`前，需通过`torch_npu.npu_trans_quant_param`接口对`dequant_scale`进行处理为`int64`类型（处理方法见对应的接口使用说明）。
-
-## 支持的型号
-
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
 
 ## 调用示例
 

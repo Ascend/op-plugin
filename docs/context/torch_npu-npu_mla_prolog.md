@@ -1,30 +1,16 @@
-# torch\_npu.npu\_mla\_prolog<a name="ZH-CN_TOPIC_0000002234763745"></a>
+# torch_npu.npu_mla_prolog
 
-## 产品支持情况<a name="zh-cn_topic_0000002191987496_section1369303644412"></a>
+## 产品支持情况
 
-<a name="zh-cn_topic_0000002191987496_table38301303189"></a>
-<table><thead align="left"><tr id="zh-cn_topic_0000002191987496_row20831180131817"><th class="cellrowborder" valign="top" width="57.99999999999999%" id="mcps1.1.3.1.1"><p id="zh-cn_topic_0000002191987496_p1883113061818"><a name="zh-cn_topic_0000002191987496_p1883113061818"></a><a name="zh-cn_topic_0000002191987496_p1883113061818"></a><span id="zh-cn_topic_0000002191987496_ph24751558184613"><a name="zh-cn_topic_0000002191987496_ph24751558184613"></a><a name="zh-cn_topic_0000002191987496_ph24751558184613"></a>产品</span></p>
-</th>
-<th class="cellrowborder" align="center" valign="top" width="42%" id="mcps1.1.3.1.2"><p id="zh-cn_topic_0000002191987496_p783113012187"><a name="zh-cn_topic_0000002191987496_p783113012187"></a><a name="zh-cn_topic_0000002191987496_p783113012187"></a>是否支持</p>
-</th>
-</tr>
-</thead>
-<tbody><tr id="zh-cn_topic_0000002191987496_row220181016240"><td class="cellrowborder" valign="top" width="57.99999999999999%" headers="mcps1.1.3.1.1 "><p id="zh-cn_topic_0000002191987496_p2098311377352"><a name="zh-cn_topic_0000002191987496_p2098311377352"></a><a name="zh-cn_topic_0000002191987496_p2098311377352"></a><span id="zh-cn_topic_0000002191987496_ph6756134210183"><a name="zh-cn_topic_0000002191987496_ph6756134210183"></a><a name="zh-cn_topic_0000002191987496_ph6756134210183"></a><term id="zh-cn_topic_0000002191987496_zh-cn_topic_0000001312391781_term11962195213215"><a name="zh-cn_topic_0000002191987496_zh-cn_topic_0000001312391781_term11962195213215"></a><a name="zh-cn_topic_0000002191987496_zh-cn_topic_0000001312391781_term11962195213215"></a>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
-</td>
-<td class="cellrowborder" align="center" valign="top" width="42%" headers="mcps1.1.3.1.2 "><p id="zh-cn_topic_0000002191987496_p7948163910184"><a name="zh-cn_topic_0000002191987496_p7948163910184"></a><a name="zh-cn_topic_0000002191987496_p7948163910184"></a>√</p>
-</td>
-</tr>
-<tr id="zh-cn_topic_0000002191987496_row294304412306"><td class="cellrowborder" valign="top" width="57.99999999999999%" headers="mcps1.1.3.1.1 "><p id="zh-cn_topic_0000002191987496_p49437440302"><a name="zh-cn_topic_0000002191987496_p49437440302"></a><a name="zh-cn_topic_0000002191987496_p49437440302"></a><span id="zh-cn_topic_0000002191987496_ph19280164145411"><a name="zh-cn_topic_0000002191987496_ph19280164145411"></a><a name="zh-cn_topic_0000002191987496_ph19280164145411"></a><term id="zh-cn_topic_0000002191987496_zh-cn_topic_0000001312391781_term1253731311225"><a name="zh-cn_topic_0000002191987496_zh-cn_topic_0000001312391781_term1253731311225"></a><a name="zh-cn_topic_0000002191987496_zh-cn_topic_0000001312391781_term1253731311225"></a>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span></p>
-</td>
-<td class="cellrowborder" align="center" valign="top" width="42%" headers="mcps1.1.3.1.2 "><p id="zh-cn_topic_0000002191987496_p8877121915317"><a name="zh-cn_topic_0000002191987496_p8877121915317"></a><a name="zh-cn_topic_0000002191987496_p8877121915317"></a>√</p>
-</td>
-</tr>
-</tbody>
-</table>
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    | √  |
 
-## 功能说明<a name="zh-cn_topic_0000002191987496_section14441124184110"></a>
 
-- 算子功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。
+## 功能说明
+
+- API功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。
 
   主要计算过程分为四路：
 
@@ -50,56 +36,55 @@
     -   Key ROPE旋转位置编码:
         $$k^R = Cache(ROPE(x \cdot W^{KR}))$$
 
-## 函数原型<a name="zh-cn_topic_0000002191987496_section45077510411"></a>
+## 函数原型
 
 ```
 torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None, quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, rmsnorm_epsilon_cq=1e-05, rmsnorm_epsilon_ckv=1e-05, cache_mode="PA_BSND") -> (Tensor, Tensor, Tensor, Tensor)
 ```
 
-## 参数说明<a name="zh-cn_topic_0000002191987496_section18982182416164"></a>
+## 参数说明
 
--   **token\_x**（`Tensor`）：必选参数，对应公式中x。shape支持2维和3维，格式为\(T, He\)和\(B, S, He\)，dtype支持`bfloat16`，数据格式支持ND。
--   **weight\_dq**（`Tensor`）：必选参数，表示计算Query的下采样权重矩阵，即公式中W<sup>DQ</sup>。shape支持2维，格式为\(He, Hcq\)，dtype支持`bfloat16`，数据格式支持FRACTAL\_NZ（可通过`torch_npu.npu_format_cast`将ND格式转为FRACTAL\_NZ格式）。
--   **weight\_uq\_qr**（`Tensor`）：必选参数，表示计算Query的上采样权重矩阵和Query的位置编码权重矩阵，即公式中W<sup>UQ</sup>和W<sup>QR</sup>。shape支持2维，格式为\(Hcq, N\*\(D+Dr\)\)，dtype支持`bfloat16`和`int8`，数据格式支持FRACTAL\_NZ。   
-    -   当`weight_uq_qr`为`int8`类型时，weight\_uq\_qr是一个per-tensor的量化后的输入，表示当前为部分量化场景。  
+- **token\_x**（`Tensor`）：必选参数，对应公式中x。shape支持2维和3维，格式为\(T, He\)和\(B, S, He\)，dtype支持`bfloat16`，数据格式支持ND。
+- **weight\_dq**（`Tensor`）：必选参数，表示计算Query的下采样权重矩阵，即公式中W<sup>DQ</sup>。shape支持2维，格式为\(He, Hcq\)，dtype支持`bfloat16`，数据格式支持FRACTAL\_NZ（可通过`torch_npu.npu_format_cast`将ND格式转为FRACTAL\_NZ格式）。
+- **weight\_uq\_qr**（`Tensor`）：必选参数，表示计算Query的上采样权重矩阵和Query的位置编码权重矩阵，即公式中W<sup>UQ</sup>和W<sup>QR</sup>。shape支持2维，格式为\(Hcq, N\*\(D+Dr\)\)，dtype支持`bfloat16`和`int8`，数据格式支持FRACTAL\_NZ。   
+    -   当`weight_uq_qr`为`int8`类型时，`weight_uq_qr`是一个per-tensor的量化后的输入，表示当前为部分量化场景。  
         - 若`kv_cache`、`kr_cache`为`bfloat16`类型，对应`kv_cache_out`、`kr_cache_out`为非量化输出，此时`dequant_scale_w_uq_qr`字段必须传入，`smooth_scales_cq`字段可选传入。  
         - 若`kv_cache`、`kr_cache`为`int8`类型，对应`kv_cache_out`、`kr_cache_out`为量化输出，此时`dequant_scale_w_uq_qr`、`quant_scale_ckv`、`quant_scale_ckr`字段必须传入，`smooth_scales_cq`字段可选传入。    
     -   当`weight_uq_qr`为`bfloat16`类型时，表示当前为非量化场景。   
         此时`dequant_scale_w_uq_qr`、`quant_scale_ckv`、`quant_scale_ckr`、`smooth_scales_cq`字段不能传入（即为none）。
   
--   **weight\_uk**（`Tensor`）：必选参数，表示计算Key的上采样权重，即公式中W<sup>UK</sup>。shape支持3维，格式为\(N, D, Hckv\)，dtype支持`bfloat16`，数据格式支持ND。
--   **weight\_dkv\_kr**（`Tensor`）：必选参数，表示计算Key的下采样权重矩阵和Key的位置编码权重矩阵，即公式中W<sup>DKV</sup>和W<sup>KR</sup>。shape支持2维，格式为\(He, Hckv+Dr\)，dtype支持`bfloat16`，数据格式支持FRACTAL\_NZ。
--   **rmsnorm\_gamma\_cq**（`Tensor`）：必选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hcq,\)，dtype支持`bfloat16`，数据格式支持ND。
--   **rmsnorm\_gamma\_ckv**（`Tensor`）：必选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hckv,\)，dtype支持`bfloat16`，数据格式支持ND。
--   **rope\_sin**（`Tensor`）：必选参数，表示用于计算旋转位置编码的正弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
--   **rope\_cos**（`Tensor`）：必选参数，表示用于计算旋转位置编码的余弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
--   **cache\_index**（`Tensor`）：必选参数，表示用于存储`kv_cache`和`kr_cache`的索引。shape支持1维和2维，格式为\(T,\)和\(B, S\)，dtype支持`int64`，数据格式支持ND。
-    
-    - cache_index的取值范围为[0,BlockNum*BlockSize)，当前不会对`cache_index`传入值的合法性进行校验，需用户自行保证。
--   **kv\_cache**（`Tensor`）：必选参数，表示用于cache索引的aclTensor。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Hckv\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
--   **kr\_cache**（`Tensor`）：必选参数，表示用于key位置编码的cache。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
--   **dequant\_scale\_x**（`Tensor`）：**预留参数，暂未使用，使用默认值即可。**
--   **dequant\_scale\_w\_dq**（`Tensor`）：**预留参数，暂未使用，使用默认值即可。**
--   **dequant\_scale\_w\_uq\_qr**（`Tensor`）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化方式为per-channel。shape支持2维，格式为\(1, N\*\(D+Dr\)\)，dtype支持`float`，数据格式支持ND。
--   **dequant\_scale\_w\_dkv\_kr**（`Tensor`）：**预留参数，暂未使用，使用默认值即可。**
--   **quant\_scale\_ckv**（`Tensor`）：可选参数，用于对输出到`kv_cache_out`中的数据做量化操作时的参数。shape支持2维，格式为\(1, Hckv\)，dtype支持`float`，数据格式支持ND。
--   **quant\_scale\_ckr**（`Tensor`）：可选参数，用于对输出到`kr_cache_out`中的数据做量化操作时的参数。shape支持2维，格式为\(1, Dr\)，dtype支持`float`，数据格式支持ND。
--   **smooth\_scales\_cq**（`Tensor`）：可选参数，用于对RmsNormCq输出做动态量化操作时的参数。shape支持2维，格式为\(1, Hcq\)，dtype支持`float`，数据格式支持ND。
--   **rmsnorm\_epsilon\_cq**（`float`）：可选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
--   **rmsnorm\_epsilon\_ckv**（`float`）：可选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
--   **cache\_mode**（`str`）：可选参数，表示`kv_cache`的模式，支持"PA\_BSND"、"PA\_NZ"，用户不特意指定时可传入默认值“PA\_BSND”。
+- **weight\_uk**（`Tensor`）：必选参数，表示计算Key的上采样权重，即公式中W<sup>UK</sup>。shape支持3维，格式为\(N, D, Hckv\)，dtype支持`bfloat16`，数据格式支持ND。
+- **weight\_dkv\_kr**（`Tensor`）：必选参数，表示计算Key的下采样权重矩阵和Key的位置编码权重矩阵，即公式中W<sup>DKV</sup>和W<sup>KR</sup>。shape支持2维，格式为\(He, Hckv+Dr\)，dtype支持`bfloat16`，数据格式支持FRACTAL\_NZ。
+- **rmsnorm\_gamma\_cq**（`Tensor`）：必选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hcq,\)，dtype支持`bfloat16`，数据格式支持ND。
+- **rmsnorm\_gamma\_ckv**（`Tensor`）：必选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hckv,\)，dtype支持`bfloat16`，数据格式支持ND。
+- **rope\_sin**（`Tensor`）：必选参数，表示用于计算旋转位置编码的正弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
+- **rope\_cos**（`Tensor`）：必选参数，表示用于计算旋转位置编码的余弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
+- **cache\_index**（`Tensor`）：必选参数，表示用于存储`kv_cache`和`kr_cache`的索引。shape支持1维和2维，格式为\(T,\)和\(B, S\)，dtype支持`int64`，数据格式支持ND。`cache_index`的取值范围为[0,BlockNum*BlockSize)，当前不会对`cache_index`传入值的合法性进行校验，需用户自行保证。
+- **kv\_cache**（`Tensor`）：必选参数，表示用于cache索引的aclTensor。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Hckv\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
+- **kr\_cache**（`Tensor`）：必选参数，表示用于key位置编码的cache。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
+- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- **dequant\_scale\_x**（`Tensor`）：预留参数，暂未使用，使用默认值即可。
+- **dequant\_scale\_w\_dq**（`Tensor`）：预留参数，暂未使用，使用默认值即可。
+- **dequant\_scale\_w\_uq\_qr**（`Tensor`）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化方式为per-channel。shape支持2维，格式为\(1, N\*\(D+Dr\)\)，dtype支持`float`，数据格式支持ND。
+- **dequant\_scale\_w\_dkv\_kr**（`Tensor`）：预留参数，暂未使用，使用默认值即可。
+- **quant\_scale\_ckv**（`Tensor`）：可选参数，用于对输出到`kv_cache_out`中的数据做量化操作时的参数。shape支持2维，格式为\(1, Hckv\)，dtype支持`float`，数据格式支持ND。
+- **quant\_scale\_ckr**（`Tensor`）：可选参数，用于对输出到`kr_cache_out`中的数据做量化操作时的参数。shape支持2维，格式为\(1, Dr\)，dtype支持`float`，数据格式支持ND。
+- **smooth\_scales\_cq**（`Tensor`）：可选参数，用于对RmsNormCq输出做动态量化操作时的参数。shape支持2维，格式为\(1, Hcq\)，dtype支持`float`，数据格式支持ND。
+- **rmsnorm\_epsilon\_cq**（`float`）：可选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
+- **rmsnorm\_epsilon\_ckv**（`float`）：可选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
+- **cache\_mode**（`str`）：可选参数，表示`kv_cache`的模式，支持"PA\_BSND"、"PA\_NZ"，用户不特意指定时可传入默认值“PA\_BSND”。
 
-## 返回值说明<a name="zh-cn_topic_0000002191987496_section22231435517"></a>
+## 返回值说明
 
 -   **query**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。shape支持3维和4维，格式为\(T, N, Hckv\)和\(B, S, N, Hckv\)，dtype支持`bfloat16`，数据格式支持ND。
 -   **query\_rope**（`Tensor`）：表示Query位置编码的输出Tensor，即公式中q<sup>R</sup>。shape支持3维和4维，格式为\(T, N, Dr\)和\(B, S, N, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
 -   **kv\_cache\_out**（`Tensor`）：表示Key输出到`kv_cache`中的Tensor（本质in-place更新），即公式中k<sup>C</sup>。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Hckv\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
 -   **kr\_cache\_out**（`Tensor`）：表示Key的位置编码输出到`kr_cache`中的Tensor（本质in-place更新），即公式中k<sup>R</sup>。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
 
-## 约束说明<a name="zh-cn_topic_0000002191987496_section12345537164214"></a>
+## 约束说明
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式（PyTorch 2.1.0版本）。
 -   接口参数中shape格式字段含义：
     -   B：Batch表示输入样本批量大小，取值范围为0\~65536。
     -   S：Seq-Length表示输入样本序列长度，取值范围为0\~16。
@@ -120,7 +105,7 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
         -   如果B、S、T取值为0，则query、query_rope输出空Tensor，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新。
         -   如果Skv取值为0，则query、query_rope正常计算，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新，即输出空Tensor。
 
-## 调用示例<a name="zh-cn_topic_0000002191987496_section14459801435"></a>
+## 调用示例
 
 -   单算子模式调用
 
