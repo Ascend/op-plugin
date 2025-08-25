@@ -22,7 +22,8 @@ torch_npu.distributed.reinit_process_group(group: Optional[ProcessGroup] = None,
 - **rebuild_link** (`bool`)：当传入参数为True时，会销毁当前的process group hccl建立的通信链接，然后进行重建；如果传入参数为False，则表示继续使用原有的通信链接，默认值为True。
 
 ## 返回值说明
-`None`
+
+无
 
 ## 约束说明
 

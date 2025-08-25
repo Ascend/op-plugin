@@ -1,26 +1,29 @@
 # （beta）torch_npu.contrib.module.NpuDropPath
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
+## 功能说明
+
+使用NPU亲和写法替换swin_transformer.py中的原生Drop路径。丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。
+
 ## 函数原型
 
 ```
 torch_npu.contrib.module.NpuDropPath(nn.Module)
 ```
 
-## 功能说明
-
-使用NPU亲和写法替换swin_transformer.py中的原生Drop路径。丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。
-
 ## 参数说明
 
-- drop_prob (Float) - dropout概率。
-- x (Tensor) - 应用dropout的输入张量。
+- **drop_prob** (`Float`)：dropout概率。
+- **x** (`Tensor`)：应用dropout的输入张量。
 
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
 
 ## 调用示例
 

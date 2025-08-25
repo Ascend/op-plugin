@@ -1,32 +1,37 @@
 # （beta）torch_npu.contrib.function.npu_single_level_responsible_flags
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
+## 功能说明
+
+使用NPU OP在单个特征图中生成锚点的responsible flags。
+
 ## 函数原型
 
 ```
 torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_bboxes, stride, num_base_anchors)
 ```
 
-## 功能说明
-
-使用NPU OP在单个特征图中生成锚点的responsible flags。
-
 ## 参数说明
 
-- **featmap_size** (`Tuple(Int)`) - 模型总维度。
-- **gt_bboxes** (`Tensor`) - 并行attention heads。
-- **stride** (`Tuple(Int)`，默认值为None) - key的特性总数。
-- **num_base_anchors** (`Int`，默认值为None) - values的特性总数。
+- **featmap_size** (`Tuple(Int)`)：模型总维度。
+- **gt_bboxes** (`Tensor`)：并行attention heads。
+- **stride** (`Tuple(Int)`)：key的特性总数，默认值为None。
+- **num_base_anchors** (`Int`)：values的特性总数，默认值为None。
 
-## 输出说明
+## 返回值说明
 
-torch.Tensor - 单层特征图中每个锚点的有效标志。输出大小为[featmap_size[0] \* featmap_size[1] \* num_base_anchors]。
+`Tensor` 
 
-## 支持的型号
+代表单层特征图中每个锚点的有效标志。输出大小为[featmap_size[0] \* featmap_size[1] \* num_base_anchors]。
 
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
 
 ## 调用示例
 
