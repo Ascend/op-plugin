@@ -2623,6 +2623,52 @@ class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
                 self.assertEqual(unpermuted_tokens.dtype, dtype)
                 self.assertEqual(unpermuted_tokens.shape, (sorted_indices.size(0) / topk, hidden_size))
 
+    def test_npu_moe_token_permute_unpermute_grad_meta(self):
+        """Meta test for backward functions with topk=1 and topk=4"""
+        dtype = torch.bfloat16
+        num_tokens = 1000
+        hidden_size = 6144
+        num_experts = 128
+
+        with FakeTensorMode():
+            for topk in [1, 4]:
+                tokens = torch.randn(num_tokens, hidden_size).npu().to(dtype)
+                indices = torch.randint(0, num_experts, (num_tokens, topk)).npu()
+                probs = (torch.ones(num_tokens, topk) / topk).npu().to(dtype)
+                permuted_tokens, sorted_indices = torch_npu.npu_moe_token_permute(tokens, indices)
+                expected_permuted_shape = (num_tokens * topk, hidden_size)
+                self.assertEqual(permuted_tokens.shape, expected_permuted_shape)
+
+                grad_unpermuted_tokens = torch.randn(num_tokens, hidden_size).npu().to(dtype)
+
+                grad_permuted_tokens, grad_probs = torch_npu.npu_moe_token_unpermute_grad(
+                    permuted_tokens=permuted_tokens,
+                    grad_unpermuted_tokens=grad_unpermuted_tokens,
+                    sorted_indices=sorted_indices,
+                    probs=probs,
+                    padded_mode=False,
+                    restore_shape=None,
+                )
+
+                self.assertEqual(grad_permuted_tokens.dtype, permuted_tokens.dtype)
+                self.assertEqual(grad_permuted_tokens.shape, permuted_tokens.shape)
+
+                self.assertIsNotNone(grad_probs)
+                self.assertEqual(grad_probs.dtype, probs.dtype)
+                self.assertEqual(grad_probs.shape, probs.shape)
+
+                grad_permuted_tokens_for_permute = torch.randn_like(permuted_tokens)
+                grad_tokens = torch_npu.npu_moe_token_permute_grad(
+                    tokens=tokens,
+                    grad_permuted_tokens=grad_permuted_tokens_for_permute,
+                    indices=indices,
+                    sorted_indices=sorted_indices,
+                    padded_mode=False,
+                )
+
+                self.assertEqual(grad_tokens.dtype, tokens.dtype)
+                self.assertEqual(grad_tokens.shape, tokens.shape) 
+
 
 class TestNpuMoeUnpermuteWithRoutingMap(TestCase):
     def test_npu_moe_token_unpermute_with_routing_map_meta(self):
