@@ -164,7 +164,7 @@ torch_npu.npu_fusion_attention(Tensor query, Tensor key, Tensor value, int head_
     -   sparse\_mode=7或者8时，不支持可选参数pse。
 
 -   prefix稀疏计算场景B不大于32，varlen场景不支持非压缩prefix，即不支持sparse\_mode=5；当Sq\>Skv时，prefix的N值取值范围\[0, Skv\]，当Sq<=Skv时，prefix的N值取值范围\[Skv-Sq, Skv\]。
--   支持actual\_seq\_qlen中某个Batch上的S长度为0；如果存在S为0的情况，不支持pse输入，假设真实的S长度为\[2, 2, 0, 2, 2\]，则传入的actual\_seq\_qlen为\[2, 4, 4, 6, 8\]。
+-   支持actual\_seq\_qlen中某个Batch上的S长度为0；如果存在S为0的情况，不支持pse输入，假设真实的S长度为\[2, 2, 0, 2, 2\]，则传入的actual\_seq\_qlen为\[2, 4, 4, 6, 8\]。actual\_seq\_qlen的长度取值范围为1\~2K，varlen场景下长度最大支持1K。
 -   TND格式下，支持尾部部分Batch不参与计算，此时actual\_seq\_q\_len和actual\_seq\_kv\_len尾部传入对应个数个0即可。假设真实的S长度为\[2, 3, 4, 5, 6\]，此时后两个Batch不参与计算，则传入的actual\_seq\_qlen为\[2, 5, 9, 0, 0\]。
 -   部分场景下，如果计算量过大可能会导致算子执行超时\(aicore error类型报错，errorStr为：timeout or trap error\)，此时建议做轴切分处理，注：这里的计算量会受B、S、N、D等参数的影响，值越大计算量越大。
 

@@ -1219,7 +1219,7 @@ pse: Tensor类型, 可选参数, 表示位置编码. 数据类型支持float16�
 padding_mask: Tensor类型, 暂不支持该传参. 
 atten_mask: Tensor类型, 可选参数, 取值为1代表该位不参与计算(不生效), 为0代表该位参与计算, 数据类型支持bool、uint8, 数据格式支持ND, 输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式. varlen场景只支持SS格式, SS分别是maxSq和maxSkv. 综合约束请见约束说明. 
 scale: 浮点型, 可选参数, 代表缩放系数, 作为计算流中Muls的scalar值, 数据类型支持float, 默认值为1. 
-keep_prob: 浮点型, 可选参数, 代表Dropout中1的比例, 数据类型支持float, 默认值为1, 表示全部保留. 
+keep_prob: 浮点型, 可选参数, 代表Dropout中1的比例, 取值范围为(0, 1]. 数据类型支持float, 默认值为1, 表示全部保留. 
 pre_tockens: 整型, 用于稀疏计算的参数, 可选参数, 数据类型支持int64, 默认值为2147483647. 综合约束请见约束说明. 
 next_tockens: 整型, 用于稀疏计算的参数, 可选参数, 数据类型支持int64, 默认值为2147483647. next_tockens和pre_tockens取值与atten_mask的关系请参见sparse_mode参数, 参数取值与atten_mask分布不一致会导致精度问题. 综合约束请见约束说明. 
 inner_precise: 整型, 用于提升精度, 数据类型支持int64, 默认值为0. 
@@ -1282,19 +1282,28 @@ sync: 布尔型, DSA生成dropout随机数向量mask的控制开关. 默认值�
 
 约束说明
 该接口仅在训练场景下使用. 
-输入query、key、value的B: batchsize必须相等; 非varlen场景B取值范围1~2M; varlen场景B取值范围1~2K. 
+该接口暂不支持图模式(PyTorch 2.1版本). 
 输入query、key、value、pse的数据类型必须一致. 
 输入query、key、value的input_layout必须一致. 
-支持输入query的N和key/value的N不相等, 但必须成比例关系, 即Nq/Nkv必须是非0整数, Nq取值范围1~256. 当Nq/Nkv > 1时, 即为GQA(grouped-query attention); 当Nq/Nkv=1时, 即为MHA(multi-head attention). 本文如无特殊说明, N表示的是Nq. 
+输入query、key、value的shape说明:
+1. 输入key和value的shape必须一致. 
+2. B: batchsize必须相等; 非varlen场景B取值范围1~2M; varlen场景B取值范围1~2K. 
+3. D: Head Dim必须满足Dq=Dk和Dk≥Dv，取值范围1~768. 
+4. S: sequence length, 取值范围1~1M. 
+varlen场景下:
+1. 要求T(B*S)取值范围1~1M. 
+2. atten_mask输入不支持补pad，即atten_mask中不能存在某一行全1的场景.
+支持输入query的N和key/value的N不相等, 但必须成比例关系, 即Nq/Nkv必须是非0整数, Nq取值范围1~256. 当Nq/Nkv > 1时, 即为GQA\(grouped-query attention); 当Nq/Nkv=1时，即为MHA(multi-head attention). 本文如无特殊说明, N表示的是Nq. 
 输入key/value的shape必须一致. 
-输入query、key、value的S: sequence length, 取值范围1~1M. 
-部分场景下, 如果计算量过大可能会导致算子执行超时(aicore error类型报错, errorStr为: timeout or trap error), 此时建议做轴切分处理, 注: 这里的计算量会受B、S、N、D等参数的影响, 值越大计算量越大. 
-输入query、key、value的D: Head Dim必须满足Dq=Dk和Dk≥Dv, 取值范围1~768. 
-varlen场景T(B*S)取值范围1~1M. 
-keep_prob的取值范围为(0, 1] . 
-sparse_mode为1、2、3、4、5、6、7、8时, 应传入对应正确的atten_mask, 否则将导致计算结果错误. 当atten_mask输入为None时, sparse_mode, pre_tockens, next_tockens参数不生效, 固定为全计算. 
-sparse_mode配置为1、2、3、5、6时, 用户配置的pre_tockens、next_tockens不会生效. 
-sparse_mode配置为0、4时, 需保证atten_mask与pre_tockens、next_tockens的范围一致. 
+sparse_mode取值说明:
+1. sparse_mode为1、2、3、4、5、6、7、8时, 应传入对应正确的atten_mask, 否则将导致计算结果错误. 当atten_mask输入为None时, sparse_mode, pre_tockens, next_tockens参数不生效, 固定为全计算. 
+2. sparse_mode配置为1、2、3、5、6时, 用户配置的pre_tockens、next_tockens不会生效. 
+3. sparse_mode配置为0、4时, 需保证atten_mask与pre_tockens、next_tockens的范围一致.
+4. sparse_mode配置为7、8时，不支持可选参数pse. 
+prefix稀疏计算场景B不大于32, varlen场景不支持非压缩prefix, 即不支持sparse_mode=5; 当Sq>Skv时, prefix的N值取值范围[0, Skv], 当Sq<=Skv时, prefix的N值取值范围[Skv-Sq, Skv]. 
+支持actual_seq_qlen中某个Batch上的S长度为0; 如果存在S为0的情况, 不支持pse输入, 假设真实的S长度为[2, 2, 0, 2, 2], 则传入的actual_seq_qlen为[2, 4, 4, 6, 8]. actual_seq_qlen的长度取值范围为1~2K, varlen场景下长度最大支持1K. 
+TND格式下, 支持尾部部分Batch不参与计算, 此时actual_seq_qlen和actual_seq_kvlen尾部传入对应个数个0即可. 假设真实的S长度为[2, 3, 4, 5, 6], 此时后两个Batch不参与计算, 则传入的actual_seq_qlen为[2, 5, 9, 0, 0]. 
+部分场景下, 如果计算量过大可能会导致算子执行超时(aicore error类型报错, errorStr为: timeout or trap error), 此时建议做轴切分处理, 注: 这里的计算量会受B、S、N、D等参数的影响, 值越大计算量越大.
 
 支持的PyTorch版本
 PyTorch 2.4
