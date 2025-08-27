@@ -2,14 +2,13 @@
 
 ## 功能说明
 
-- 算子功能：MoE的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理。
+- API功能：MoE的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理。
 - 计算公式为：
-
-    ![](figures/zh-cn_formulaimage_0000001855915460.png)
-
-    ![](figures/zh-cn_formulaimage_0000001902036405.png)
-
-    ![](figures/zh-cn_formulaimage_0000001855916732.png)
+    $$
+    expanded\_expert\_idx, sorted\_row\_idx = keyValueSort(expert\_idx, row\_idx)\\
+    expanded\_row\_idx[sorted\_row\_idx[i]] = i\\
+    expanded\_x[i] = x[sorted\_row\_idx[i] \% num\_rows]
+    $$
 
 ## 函数原型
 
@@ -19,17 +18,16 @@ torch_npu.npu_moe_init_routing(Tensor x, Tensor row_idx, Tensor expert_idx, int 
 
 ## 参数说明
 
-- x：tensor类型，必选输入，MOE的输入即token特征输入，要求为一个2D的tensor，shape为(NUM_ROWS, H)。数据类型支持float16、bfloat16、float32，数据格式要求为ND。shape大小需要小于2^24。
-- row_idx：tensor类型，必选输入，指示每个位置对应的原始行位置，shape要求与expert_idx一致。数据类型支持int32，数据格式要求为ND。
-- expert_idx：tensor类型，必选输入，[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的输出每一行特征对应的K个处理专家，要求是2D，shape为(NUM_ROWS, K)，数据类型支持int32，数据格式要求为ND。
+- **x** (`Tensor`)：必选输入，MOE的输入即token特征输入，要求为一个2D的tensor，shape为(NUM_ROWS, H)。数据类型支持float16、bfloat16、float32，数据格式要求为ND。shape大小需要小于2^24。
+- **row_idx** (`Tensor`)：必选输入，指示每个位置对应的原始行位置，shape要求与expert_idx一致。数据类型支持int32，数据格式要求为ND。
+- **expert_idx** (`Tensor`)：必选输入，[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的输出每一行特征对应的K个处理专家，要求是2D，shape为(NUM_ROWS, K)，数据类型支持int32，数据格式要求为ND。
+- **active_num** (`int`)：必选输入，表示总的最大处理row数，输出expanded_x只有这么多行是有效的。
 
-- active_num：int类型，表示总的最大处理row数，输出expanded_x只有这么多行是有效的。
+## 返回值说明
 
-## 输出说明
-
-- expanded_x：tensor类型，根据expert_idx进行扩展过的特征，要求是一个2D的tensor，shape为(min(NUM_ROWS, active_num) \* k, H)。数据类型同x，数据格式要求为ND。
-- expanded_row_idx：tensor类型，expanded_x和x的映射关系，要求是一个1D的tensor，shape为(NUM_ROWS\*K, )，数据类型支持int32，数据格式要求为ND。
-- expanded_expert_idx：tensor类型，输出expert_idx排序后的结果。
+- **expanded_x** (`Tensor`)：根据expert_idx进行扩展过的特征，要求是一个2D的tensor，shape为(min(NUM_ROWS, active_num) \* k, H)。数据类型同x，数据格式要求为ND。
+- **expanded_row_idx** (`Tensor`)：expanded_x和x的映射关系，要求是一个1D的tensor，shape为(NUM_ROWS\*K, )，数据类型支持int32，数据格式要求为ND。
+- **expanded_expert_idx** (`Tensor`)：输出expert_idx排序后的结果。
 
 ## 约束说明
 

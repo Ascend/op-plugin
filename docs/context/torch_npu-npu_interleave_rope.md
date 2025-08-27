@@ -19,13 +19,15 @@ torch_npu.npu_interleave_rope(Tensor x, Tensor cos, Tensor sin) -> Tensor
 
 ## 参数说明
 
--   x：Tensor类型，表示目标张量。要求为4D的Tensor，shape为\(B, N, S, D\)，数据类型支持bfloat16、float16，数据格式为ND，不支持非连续的Tensor。
--   cos：Tensor类型，表示RoPE旋转位置编码的余弦分量。要求为4D的Tensor，shape为\(B, N, S, D\)，S可以为1或与x的S相同，数据类型、数据格式与x一致，不支持非连续的Tensor。
--   sin：Tensor类型，表示RoPE旋转位置编码的正弦分量。shape、数据类型、数据格式需要与cos保持一致，不支持非连续的Tensor。
+-   **x** (`Tensor`)：表示目标张量。要求为4D的Tensor，shape为\(B, N, S, D\)，数据类型支持bfloat16、float16，数据格式为ND，不支持非连续的Tensor。
+-   **cos** (`Tensor`)：表示RoPE旋转位置编码的余弦分量。要求为4D的Tensor，shape为\(B, N, S, D\)，S可以为1或与x的S相同，数据类型、数据格式与x一致，不支持非连续的Tensor。
+-   **sin** (`Tensor`)：表示RoPE旋转位置编码的正弦分量。shape、数据类型、数据格式需要与cos保持一致，不支持非连续的Tensor。
 
-## 输出说明
+## 返回值说明
 
-y：Tensor类型，表示旋转编码后的结果。shape、数据类型、数据格式与输入x保持一致，不支持非连续的Tensor。
+`Tensor`
+
+表示旋转编码后的结果。shape、数据类型、数据格式与输入x保持一致，不支持非连续的Tensor。
 
 ## 约束说明
 

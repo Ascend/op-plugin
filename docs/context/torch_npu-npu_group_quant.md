@@ -2,10 +2,11 @@
 
 ## 功能说明
 
-- 算子功能：对输入的张量进行分组量化操作。
-- 计算公式为：
-
-    ![](figures/zh-cn_formulaimage_0000002077236353.png)
+- API功能：对输入的张量进行分组量化操作。
+- 计算公式：公式中$offsetOptional$对应于可选参数offset。
+    $$
+    y=round((x*scale)+offsetOptional)
+    $$
 
 ## 函数原型
 
@@ -21,7 +22,7 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
 - **offset** (`Tensor`)：量化中的offset值，可选输入。数据类型支持`float32`、`float16`、`bfloat16`，且数据类型与`scale`的数据类型一致。数据格式支持$ND$。`offset`为一个数。
 - **dst_dtype** (`ScalarType`)：可选参数，输入值允许为`int8`或`quint4x2`，默认值为`int8`。
 
-## 返回值
+## 返回值说明
 `Tensor`
 
 一个`Tensor`类型的输出，代表`npu_group_quant`的计算结果。如果参数`dst_dtype`为`int8`，输出大小与输入`x`的大小一致。如果参数`dst_dtype`为`quint4x2`，输出的数据类型是`int32`，shape的第0维大小与输入`x`的第0维大小一致，最后一维是输入`x`的最后一维的1/8。

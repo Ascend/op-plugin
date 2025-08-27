@@ -2,15 +2,18 @@
 
 ## 功能说明
 
-- 算子功能：对输入的张量进行量化处理。
+- API功能：对输入的张量进行量化处理。
 - 计算公式：
     - 如果**div_mode**为`True`：
-
-        ![](figures/zh-cn_formulaimage_0000001888362410.png)
+        $$
+        result=(input/scales)+zero\_points
+        $$
 
     - 如果**div_mode**为`False`：
 
-        ![](figures/zh-cn_formulaimage_0000001888362854.png)
+        $$
+        result=(input*scales)+zero\_points
+        $$
 
 ## 函数原型
 
@@ -55,7 +58,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 - **div_mode** (`bool`)：布尔类型，表示计算`scales`模式。当`div_mode`为`True`时，表示用除法计算`scales`；`div_mode`为`False`时，表示用乘法计算`scales`，默认值为`True`。
 
-## 返回值
+## 返回值说明
 `Tensor`
 
 公式中的输出，输出大小与`input`一致。数据类型由参数`dtype`指定，如果参数`dtype`为`quint4x2`，输出的`dtype`是`int32`，shape的最后一维是输入shape最后一维的1/8，shape其他维度和输入一致。

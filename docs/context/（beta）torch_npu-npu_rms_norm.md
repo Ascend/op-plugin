@@ -8,19 +8,25 @@ torch_npu.npu_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tenso
 
 ## 功能说明
 
-RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。其计算公式为
+- API功能：RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。
 
-![](figures/zh-cn_image_0000001788458744.png)
+- 计算公式：
+  $$
+  RmsNorm(x_i) = \frac{x_i}{Rms(x)}g_i \\
+  Rms(x)=\sqrt{\frac{1}{n} \sum^n_{i=1}{x^2_i}+eps}
+  $$
+
+
 
 ## 参数说明
 
-- self：Tensor类型，支持float16、bfloat16、float32，输入shape支持2-8维，对应计算公式中的"x"。
-- gamma：Tensor类型，数据类型需要和self保持一致，输入shape支持2-8维，通常为self的最后一维，对应计算公式中的"g"。
-- epsilon：float数据类型，用于防止除0错误，对应计算公式中的"eps"。
+- **self** (`Tensor`)：必选参数。支持float16、bfloat16、float32，输入shape支持2-8维，对应计算公式中的 $x_i$。
+- **gamma** (`Tensor`)：必选参数。数据类型需要和self保持一致，输入shape支持2-8维，通常为self的最后一维，对应计算公式中的 $g_i$。
+- **epsilon** (`float`)：可选参数。用于防止除0错误，对应计算公式中的 $eps$。
 
-## 输出说明
+## 返回值说明
 
-共两个输出，格式为(Tensor, Tensor)。
+共两个输出，格式为(`Tensor`, `Tensor`)。
 
 第1个输出为Tensor，计算公式的最终输出"RmsNorm(x)"。
 

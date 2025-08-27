@@ -2,10 +2,12 @@
 
 ## 功能说明
 
-- 算子功能：MoE（Mixture of Experts，混合专家模型）计算中，通过二分查找的方式查找每个专家处理的最后一行的位置。
-- 计算公式：
+- API功能：MoE（Mixture of Experts，混合专家模型）计算中，通过二分查找的方式查找每个专家处理的最后一行的位置。
+- 计算公式：公式中$sortedExpertForSourceRow$代表参数sorted_expert_for_source_row，$numExpert$代表参数num_expert。
 
-    ![](figures/zh-cn_formulaimage_0000001915130445.png)
+    $$
+    expertTokens_i = BinarySearch(sortedExpertForSourceRow,numExpert)
+    $$
 
 ## 函数原型
 
@@ -15,13 +17,13 @@ torch_npu.npu_moe_compute_expert_tokens(Tensor sorted_expert_for_source_row, int
 
 ## 参数说明
 
-- sorted_expert_for_source_row：Tensor类型，必选参数，经过专家处理过的结果，要求是一个1D的Tensor，数据类型支持int32，数据格式要求为ND。shape大小需要小于2147483647。
+- **sorted_expert_for_source_row** (`Tensor`)：必选参数，经过专家处理过的结果，要求是一个1D的Tensor，数据类型支持int32，数据格式要求为ND。shape大小需要小于2147483647。
 
-- num_expert：int类型，必选参数，总专家数。
+- **num_expert** (`int`)：必选参数，表示总专家数。
 
-## 输出说明
+## 返回值说明
 
-expertTokens：Tensor类型，公式中的输出，要求的是一个1D的Tensor，数据类型与sorted_expert_for_source_row保持一致。
+**expertTokens** (`Tensor`)：公式中的输出，要求的是一个1D的Tensor，数据类型与sorted_expert_for_source_row保持一致。
 
 ## 约束说明
 

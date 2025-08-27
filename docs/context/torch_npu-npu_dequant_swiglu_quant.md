@@ -2,7 +2,7 @@
 
 ## 功能说明
 
--   **算子功能**：对张量x做dequant反量化+swiglu+quant量化操作，同时支持分组。
+-   **API功能**：对张量x做dequant反量化+swiglu+quant量化操作，同时支持分组。
 -   **计算公式**：
     -   group分组（目前仅支持count模式）：
 
@@ -15,21 +15,26 @@
         -   group2=x\[2:5, :\]，scale2=scale\[2, :\]
 
     -   dequant反量化：分别进行权重量化的反量化、激活量化的反量化。
-
-        ![](./figures/zh-cn_formulaimage_0000002274610093.png)
+        $$
+        x=x*weight\_scale\\
+        x=x*activation\_scale
+        $$
 
     -   swiglu激活：对反量化后的x做swiglu（通过attr activate\_left控制左右激活），以左激活为例。
-
-        ![](./figures/zh-cn_formulaimage_0000002242076304.png)
+        $$
+        swiglu(x)=swish(x[:,0:H])*x[:,H:2H]
+        $$
 
     -   量化：
         1.  （可选）先进行smooth量化
-
-            ![](./figures/zh-cn_formulaimage_0000002277072165.png)
+            $$
+            out=out*quant\_scale
+            $$
 
         2.  动态/静态量化操作：对激活后的结果进行量化，以动态量化为例
-
-            ![](./figures/zh-cn_formulaimage_0000002277152281.png)
+            $$
+            out,scale=dynamicquant(out)
+            $$
 
 ## 函数原型
 
@@ -45,23 +50,23 @@ torch_npu.npu_dequant_swiglu_quant(Tensor x, *, Tensor? weight_scale=None, Tenso
 >-   H：表示嵌入向量的长度，取值\>0。
 >-   groupNum：表示group\_index输入的长度，取值\>0。
 
--   x：Tensor类型，表示目标张量。要求是2D的Tensor，shape为\[TokensNum, 2H\]，尾轴为偶数。数据类型支持int32和bfloat16，数据格式为ND。
+-   **x** (`Tensor`)：表示目标张量。要求是2D的Tensor，shape为\[TokensNum, 2H\]，尾轴为偶数。数据类型支持int32和bfloat16，数据格式为ND。
 -   weight\_scale：Tensor类型，可选参数，表示权重量化对应的反量化系数。要求是2D的Tensor，shape为\[groupNum, 2H\]，数据类型支持float32，数据格式为ND。当x为int32时，要求该参数非None，表示需要做反量化。
--   activation\_scale：Tensor类型，可选参数，表示per-token权重量化对应的反量化系数。要求是1D的Tensor，shape为\[TokensNum\]，数据类型支持float32，数据格式为ND。当x为int32时，要求该参数非None，表示需要做反量化。
--   bias：Tensor类型，可选参数，表示x的偏置变量。数据类型支持int32，数据格式为ND。group\_index场景下（非None），该参数不生效为None。
--   quant\_scale：Tensor类型，可选参数，表示smooth量化系数。要求是2D的Tensor，shape为\[groupNum, H\]，数据类型支持float32、float16和bfloat16，数据格式为ND。
--   quant\_offset：Tensor类型，可选参数，表示量化中的偏移项。数据类型支持float32、float16和bfloat16，数据格式为ND。group\_index场景下（非None），该参数不生效为None。
--   group\_index：Tensor类型，可选参数，当前只支持count模式，表示该模式下指定分组的Tokens数（要求非负整数）。要求是1D的Tensor，数据类型支持int64，数据格式ND。
--   activate\_left：bool类型，可选参数，Swiglu流程中是否进行左激活，默认False。
+-   **activation\_scale** (`Tensor`)：可选参数，表示per-token权重量化对应的反量化系数。要求是1D的Tensor，shape为\[TokensNum\]，数据类型支持float32，数据格式为ND。当x为int32时，要求该参数非None，表示需要做反量化。
+-   **bias** (`Tensor`)：可选参数，表示x的偏置变量。数据类型支持int32，数据格式为ND。group\_index场景下（非None），该参数不生效为None。
+-   **quant\_scale** (`Tensor`)：可选参数，表示smooth量化系数。要求是2D的Tensor，shape为\[groupNum, H\]，数据类型支持float32、float16和bfloat16，数据格式为ND。
+-   **quant\_offset** (`Tensor`)：可选参数，表示量化中的偏移项。数据类型支持float32、float16和bfloat16，数据格式为ND。group\_index场景下（非None），该参数不生效为None。
+-   **group\_index** (`Tensor`)：可选参数，当前只支持count模式，表示该模式下指定分组的Tokens数（要求非负整数）。要求是1D的Tensor，数据类型支持int64，数据格式ND。
+-   **activate\_left** (`bool`)：可选参数，Swiglu流程中是否进行左激活，默认False。
     -   取True时，out=swish\(split\[x, -1, 2\]\[0\]\)\*split\[x, -1, 2\]\[1\]
     -   取False时，out=swish\(split\[x, -1, 2\]\[1\]\)\*split\[x, -1, 2\]\[0\]
 
--   quant\_mode：int类型，可选参数，默认0，表示量化类型。0表示静态量化，1表示动态量化。group\_index场景下（非None），只支持动态量化即quant\_mode=1。
+-   **quant\_mode** (`int`)：可选参数，默认0，表示量化类型。0表示静态量化，1表示动态量化。group\_index场景下（非None），只支持动态量化即quant\_mode=1。
 
-## 输出说明
+## 返回值说明
 
--   y：Tensor类型，表示量化后的输出tensor。要求是2D的Tensor，shape=\[TokensNum, H\]，数据类型支持int8，数据格式为ND。
--   scale：Tensor类型，表示量化的scale参数。要求是1D的Tensor，shape=\[TokensNum\]，数据类型支持float32，数据格式为ND。
+-   **out** (`Tensor`)：表示量化后的输出tensor。要求是2D的Tensor，shape=\[TokensNum, H\]，数据类型支持int8，数据格式为ND。
+-   **scale** (`Tensor`)：表示量化的scale参数。要求是1D的Tensor，shape=\[TokensNum\]，数据类型支持float32，数据格式为ND。
 
 ## 约束说明
 
