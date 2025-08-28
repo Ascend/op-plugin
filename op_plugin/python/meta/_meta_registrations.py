@@ -2191,6 +2191,50 @@ def npu_kv_rmsnorm_rope_cache_meta(kv, gamma, cos, sin, index, k_cache, ckv_cach
             torch.empty(c_kv_size, dtype=kv.dtype, device=kv.device))
 
 
+@impl(m, "npu_kv_rmsnorm_rope_cache_v2")
+def npu_kv_rmsnorm_rope_cache_v2_meta(kv, gamma, cos, sin, index, k_cache, ckv_cache, *, k_rope_scale=None,
+                                           c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, epsilon=1e-5,
+                                           cache_mode='Norm', is_output_kv=False):
+    if kv.dim() != 4:
+        raise RuntimeError("4D tensor expected for input kv" + ops_error(ErrCode.PARAM))
+    if gamma.dim() != 1:
+        raise RuntimeError("1D tensor expected for input gamma" + ops_error(ErrCode.PARAM))
+    if cos.dim() != 4:
+        raise RuntimeError("4D tensor expected for input cos" + ops_error(ErrCode.PARAM))
+    k_rope_size = []
+    c_kv_size = []
+    for i in range(kv.dim() - 1):
+        k_rope_size.append(kv.size(i))
+        c_kv_size.append(kv.size(i))
+    k_rope_size.append(cos.size(3))
+    c_kv_size.append(gamma.size(0))
+    return (torch.empty(k_rope_size, dtype=kv.dtype, device=kv.device),
+            torch.empty(c_kv_size, dtype=kv.dtype, device=kv.device))
+
+
+@impl(m, "npu_kv_rmsnorm_rope_cache_v2_functional")
+def npu_kv_rmsnorm_rope_cache_v2_functional_meta(kv, gamma, cos, sin, index, k_cache, ckv_cache, *,
+                                                      k_rope_scale=None, c_kv_scale=None, k_rope_offset=None,
+                                                      c_kv_offset=None, epsilon=1e-5, cache_mode='Norm',
+                                                      is_output_kv=False):
+    if kv.dim() != 4:
+        raise RuntimeError("4D tensor expected for input kv" + ops_error(ErrCode.PARAM))
+    if gamma.dim() != 1:
+        raise RuntimeError("1D tensor expected for input gamma" + ops_error(ErrCode.PARAM))
+    if cos.dim() != 4:
+        raise RuntimeError("4D tensor expected for input cos" + ops_error(ErrCode.PARAM))
+    k_rope_size = []
+    c_kv_size = []
+    for i in range(kv.dim() - 1):
+        k_rope_size.append(kv.size(i))
+        c_kv_size.append(kv.size(i))
+    k_rope_size.append(cos.size(3))
+    c_kv_size.append(gamma.size(0))
+    return (torch.empty(k_rope_size, dtype=kv.dtype, device=kv.device),
+            torch.empty(c_kv_size, dtype=kv.dtype, device=kv.device),
+            torch.empty_like(k_cache), torch.empty_like(ckv_cache))
+
+
 @impl(m, "npu_apply_rotary_pos_emb")
 def npu_apply_rotary_pos_emb_meta(query, key, cos, sin, layout=1, rotary_mode='half'):
     return (torch.empty_like(query, dtype=query.dtype), torch.empty_like(key, dtype=key.dtype))

@@ -4354,5 +4354,11 @@
   },
   "func: npu_moe_token_unpermute_with_routing_map_grad(Tensor unpermuted_tokens_grad, Tensor out_index, Tensor permuted_token_id, Tensor? routing_map, Tensor? permuted_tokens, Tensor? probs, bool drop_and_pad, int[] restore_shape) -> (Tensor, Tensor)": {
     "version": ["all_version"]
+  },
+  "func: npu_kv_rmsnorm_rope_cache_v2(Tensor kv, Tensor gamma, Tensor cos, Tensor sin, Tensor index, Tensor(a!) k_cache, Tensor(b!) ckv_cache, *, Tensor? k_rope_scale=None, Tensor? c_kv_scale=None, Tensor? k_rope_offset=None, Tensor? c_kv_offset=None, float epsilon=1e-5, str cache_mode='Norm', bool is_output_kv=False) -> (Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
+  "func: npu_kv_rmsnorm_rope_cache_v2_functional(Tensor kv, Tensor gamma, Tensor cos, Tensor sin, Tensor index, Tensor k_cache, Tensor ckv_cache, *, Tensor? k_rope_scale=None, Tensor? c_kv_scale=None, Tensor? k_rope_offset=None, Tensor? c_kv_offset=None, float epsilon=1e-5, str cache_mode='Norm', bool is_output_kv=False) -> (Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
   }
 }
