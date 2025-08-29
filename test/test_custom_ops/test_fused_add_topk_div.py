@@ -55,21 +55,16 @@ class TestAtbFusedAddTopkDiv(TestCase):
             y = gather_res
 
         out_indices = sort_output.indices.to(torch.int32)
-        enableExpertMapping = enable_expert_mapping
-        if enableExpertMapping is True:
-            offset = OFFSET
-            prime = PRIME
+        if mapping_num is not None and mapping_table is not None:
             mapping_num = mapping_num.cpu()
             mapping_table = mapping_table.cpu()
-            out_indices_clone = out_indices.clone().detach()
-            for bs in range(token_num):
-                indices_offset = torch.tensor(sort_output.indices[bs][group_topk * group_eles - 1] + offset, dtype=torch.int32)
-                rand_value = torch.remainder(prime, indices_offset) / indices_offset.to(torch.float32)
-                mapping_indices = torch.floor(mapping_num.to(torch.float32) * rand_value).to(torch.int32)
-                count_mapping[mapping_table.shape[1]][mapping_indices[0]] = count_mapping[mapping_table.shape[1]][mapping_indices[0]] + 1
-                for ki in range(k):
-                    expert_id = out_indices_clone[bs][ki]
-                    out_indices[bs][ki] = mapping_table[expert_id][mapping_indices[expert_id]]
+            if (mapping_num.numel() != 0) and (mapping_table.numel() != 0):
+                out_indices_clone = out_indices.clone().detach()
+                for bs in range(token_num):
+                    for ki in range(k):
+                        expert_id = out_indices_clone[bs][ki]
+                        redundant_offset = bs % max(1, mapping_num[expert_id])
+                        out_indices[bs][ki] = mapping_table[expert_id][redundant_offset]
         return y, out_indices[:, 0:k]
 
     def golden_compare(self, out_tensors, golden_out_tensors):
