@@ -6468,18 +6468,29 @@ per-token模式: 两个参数的shape均为(2, B, KV_S), 数据类型固定为fl
 支持对称量化和非对称量化: 
 非对称量化模式下, antiquant_scale和antiquant_offset参数需同时存在. 
 对称量化模式下, antiquant_offset可以为空(即None); 当antiquant_offset参数为空时, 执行对称量化, 否则执行非对称量化. 
-query_rope和key_rope参数约束: 
-query_rope的数据类型、数据格式与query一致, 配置时要求query的S为1-16、N为32、64、128, D为512, shape中B、N、S与query一致, D为64. 
-key_rope的数据类型、数据格式与key一致, 配置时要求key的N为1, D为512, key_rope的shape中B、N、S与key一致, D为64. 
-query_rope和key_rope要求同时配置或同时不配置, 不支持只配置其中一个. 
-当query_rope和key_rope非空时, 支持如下特性: 
-sparse: Q_S等于1时只支持sparse=0且不传mask, Q_S大于1时只支持sparse=3且传入mask; 
+query_rope和key_rope参数约束及支持特性: 
+query_rope和key_rope要求同时配置或同时不配置, 不支持只配置其中一个.
+query_rope的数据类型、数据格式与query一致.
+key_rope的数据类型、数据格式与key一致.
+sparse: Q_S等于1时支持sparse=0且不传mask或sparse=4且传入mask, Q_S大于1时支持sparse=3或sparse=4且传入mask;
+sparse不为4时:
+query_rope配置时要求query的S为1-16、N为32、64、128, D为512, shape中B、N、S与query一致, D为64. 
+key_rope配置时要求key的N为1, D为512, key_rope的shape中B、N、S与key一致, D为64. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 支持key、value的input_layout格式为ND或NZ. 当input_layout为NZ时, 输入参数key和value的格式为[blockNum, KV_N, D/16, blockSize, 16]. 
 Atlas A3 训练系列产品: 支持key、value的input_layout格式为ND或NZ. 当input_layout为NZ时, 输入参数key和value的格式为[blockNum, KV_N, D/16, blockSize, 16]. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: input_layout形状支持BSH、BSND、BNSD, 当数据格式为NZ时input_layout不支持BNSD. 
 Atlas A3 训练系列产品: input_layout形状支持BSH、BSND、BNSD, 当数据格式为NZ时input_layout不支持BNSD. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 该场景下, 必须开启PageAttention, 此时block_size支持16、128, 其中数据格式为NZ时block_size不支持配置16. 
 Atlas A3 训练系列产品: 该场景下, 必须开启PageAttention, 此时block_size支持16、128, 其中数据格式为NZ时block_size不支持配置16. 
+sparse为4时:
+query_rope配置时要求query的每batch的S不大于key的每batch的S、N为128, D为512, query_rope的shape中B、N、S与query一致, D为64. 
+key_rope配置时要求key的S不大于131088, N为1, D为512, key_rope的shape中B、N、S与key一致, D为64.
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 仅支持key、value的input_layout格式为ND.
+Atlas A3 训练系列产品: 仅支持key、value的input_layout格式为ND. 
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品: input_layout形状仅支持BSND. 
+Atlas A3 训练系列产品: input_layout形状仅支持BSND. 
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 支持开启PageAttention, 此时block_size支持64、128. 
+Atlas A3 训练系列产品: 支持开启PageAttention, 此时block_size支持64、128. 
 TND场景下query、key、value输入的综合限制: 
 T小于等于65536;
 N等于8/16/32/64/128, 且Q_N、K_N、V_N相等;

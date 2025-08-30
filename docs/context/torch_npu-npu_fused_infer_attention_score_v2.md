@@ -178,8 +178,9 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     -   当query\_rope和key\_rope非空时，支持如下特性：
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：query的D只支持512、128；
         -   当query的D等于512时：
-            -   sparse：Q\_S等于1时只支持sparse=0且不传mask，Q\_S大于1时只支持sparse=3且传入mask；
+            -   sparse：Q\_S等于1时支持sparse=0且不传mask或sparse=4且传入mask，Q\_S大于1时支持sparse=3或sparse=4且传入mask；
             -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>约束如下：
+            - sparse不为4时：
                 - query\_rope配置时要求query的S为1-16、N为32/64/128，query\_rope shape中D为64，其余维度与query一致；
                 - key\_rope配置时要求key的N为1、D为512，key\_rope shape中D为64，其余维度与key一致；
                 - 支持key、value、key\_rope的input\_layout格式为ND或NZ。当input\_layout为NZ时，数据类型为float16或bfloat16时，输入参数key和value的格式为\[blockNum, KV\_N, D/16, blockSize, 16\]；当数据类型为int8时，输入参数key和value的格式为\[blockNum, KV\_N, D/32, blockSize, 32\]；
@@ -191,6 +192,13 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
                     - 不支持传入quant\_scale\_out、quant\_offset\_out、dequant\_offset\_key、dequant\_offset\_value（即不为nullptr），否则报错并返回。
                     - query\_quant\_mode仅支持per-token叠加per-head模式，key\_quant\_mode和value\_quant\_mode仅支持per-tensor模式。
                     - 支持key、value、key\_rope的input\_layout格式为NZ。
+            - sparse为4时：
+                - query的每batch的S不大于key的每batch的S、N为128，query\_rope shape中D为64，其余维度与query一致；
+                - key的S不大于131088，N为1、D为512，key\_rope shape中D为64，其余维度与key一致；
+                - key、value、key\_rope支持ND输入；
+                - input\_layout形状仅支持BSND。
+                - 该场景下，必须开启PageAttention，此时block\_size支持64、128。
+                - 不支持开启SoftMaxLse、tensorlist、pse、伪量化、后量化、全量化场景。
         -   当query的D等于128时：
             -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>约束如下：
 
