@@ -54,6 +54,7 @@ class TestMoeDistributeCombineAddRmsNorm(TestCase):
         expert_scales = expert_scales.npu()
         residual_x = torch.tensor(np.random.uniform(0, 1, size=[topk.shape[0], 1, expand_x.shape[1]])).to(torch.bfloat16).npu()
         gamma = torch.tensor(np.random.uniform(0, 1, size=[expand_x.shape[1]])).to(torch.bfloat16).npu()
+        elastic_info = torch.tensor(np.random.uniform(0, 1, size=[4 + 2 * ep_world_size])).to(torch.int32).npu()
         out = torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x=expand_x,
                                                    expert_ids=topk,
                                                    expand_idx=expand_idx,
@@ -61,6 +62,7 @@ class TestMoeDistributeCombineAddRmsNorm(TestCase):
                                                    expert_scales=expert_scales,
                                                    residual_x=residual_x,
                                                    gamma=gamma,
+                                                   elastic_info=elastic_info,
                                                    group_ep=ep_hcomm_name,
                                                    ep_world_size=ep_world_size,
                                                    ep_rank_id=int(rank // tp_world_size),

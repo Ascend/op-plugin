@@ -38,8 +38,9 @@ class TestMoeDistributeCombine(TestCase):
 
     @classmethod
     def _test_npu_moe_distribute_combine_v2(cls, rank, input_list):
-        expand_x, scales1_list, scales2_list, topk1_list, topk2_list, assist_info_for_combine, ep_send_counts, tp_send_counts,\
-            ep_world_size, tp_world_size, globalBS, sharedExpertRankNum, moeExpertNum, init_pg, c2p, p2c = input_list
+        expand_x, scales1_list, scales2_list, topk1_list, topk2_list, elastic_info, assist_info_for_combine,\
+            ep_send_counts, tp_send_counts, ep_world_size, tp_world_size, globalBS, sharedExpertRankNum, moeExpertNum,\
+            init_pg, c2p, p2c = input_list
         if rank % tp_world_size == 0:
             topk = topk1_list[rank // tp_world_size]
             expert_scales = scales1_list[rank // tp_world_size]
@@ -56,11 +57,13 @@ class TestMoeDistributeCombine(TestCase):
         ep_send_counts = ep_send_counts.npu()
         tp_send_counts = tp_send_counts.npu()
         expert_scales = expert_scales.npu()
+        elastic_info = elastic_info.npu()
         out = torch_npu.npu_moe_distribute_combine_v2(expand_x=expand_x,
                                                    expert_ids=topk,
                                                    assist_info_for_combine=assist_info_for_combine,
                                                    ep_send_counts=ep_send_counts,
                                                    expert_scales=expert_scales,
+                                                   elastic_info=elastic_info,
                                                    group_ep=ep_hcomm_name,
                                                    ep_world_size=ep_world_size,
                                                    ep_rank_id=int(rank // tp_world_size),
@@ -346,6 +349,8 @@ class TestMoeDistributeCombine(TestCase):
         scales2_shape = [np.float32, data_format, [bs, k]]
         scales1_list = []
         scales2_list = []
+        elastic_info_shape = [np.int32, data_format, [4 + ep_world_size]]
+        elastic_info = []
         for _ in range(ep_world_size):
             x1, _ = create_common_tensor(x1_shape, -1, 1)
             x2, _ = create_common_tensor(x2_shape, -1, 1)
@@ -357,12 +362,14 @@ class TestMoeDistributeCombine(TestCase):
             scales2, _ = create_common_tensor(scales2_shape, -1, 1)
             scales1_list.append(scales1)
             scales2_list.append(scales2)
+            temp_elastic_info, _ = create_common_tensor(elastic_info_shape, -1, 1)
+            elastic_info.append(temp_elastic_info)
         expand_x_list, expt_out_list, idx_list, ep_recvCount_list, tp_recvCount_list = self._construct_excepted_result(x1_list,
             x2_list, topk1_list, topk2_list, bs, h, k, globalBS, sharedExpertRankNum, moeExpertNum, ep_world_size, tp_world_size,
             torch.cat(scales1_list), torch.cat(scales2_list))
         self._test_multiprocess(TestMoeDistributeCombine._test_npu_moe_distribute_combine_v2,
                 TestMoeDistributeCombine._init_dist_hccl, [expt_out_list, expand_x_list, scales1_list, scales2_list, topk1_list,
-                topk2_list, idx_list, ep_recvCount_list, tp_recvCount_list, ep_world_size, tp_world_size, globalBS,
+                topk2_list, elastic_info, idx_list, ep_recvCount_list, tp_recvCount_list, ep_world_size, tp_world_size, globalBS,
                 sharedExpertRankNum, moeExpertNum])
 
 

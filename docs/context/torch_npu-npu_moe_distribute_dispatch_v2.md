@@ -2,7 +2,9 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002203575833_section14441124184110"></a>
 
--   API功能：需与[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)配套使用，完成MoE的并行部署下的token dispatch\_v2与combine\_v2。对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）。
+-   算子功能：需与[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)配套使用，完成MoE的并行部署下的token dispatch\_v2与combine\_v2。对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）。
+-   支持动态缩容场景，支持在创建通信域后，出现故障卡，将故障卡从通信域中剔除，算子可正常执行，无需重新编译；
+-   支持零计算专家场景————zeroExpert:Moe(x)=0, copyExpert:Moe(x)=x, constExpert:Moe(x)=alpha1\*x+alpha2\*v。
 -   计算公式：
     -   如果quant\_mode !=2（非动态量化）
 
@@ -15,7 +17,7 @@
 ## 函数原型<a name="zh-cn_topic_0000002203575833_section45077510411"></a>
 
 ```
-torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? scales=None, Tensor? x_active_mask=None, Tensor? expert_scales=None, str group_tp="", int tp_world_size=0, int tp_rank_id=0, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int quant_mode=0, int global_bs=0, int expert_token_nums_type=1, str comm_alg="") -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? scales=None, Tensor? x_active_mask=None, Tensor? expert_scales=None, Tensor? elastic_info=None, str group_tp="", int tp_world_size=0, int tp_rank_id=0, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int quant_mode=0, int global_bs=0, int expert_token_nums_type=1, str comm_alg="", int zero_expert_num=0, int copy_expert_num=0, int const_expert_num=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000002203575833_section112637109429"></a>
@@ -39,6 +41,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 -   **expert\_scales** (`Tensor`)：可选参数，表示每个token的topK个专家权重。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求为2D的Tensor，shape为\(BS, K\)，数据类型支持float，数据格式为ND，支持非连续的Tensor。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可。
+
+-   **elastic\_info** (`Tensor`)：可选参数，表示EP通信域的动态缩容信息。当某些通信卡因异常被从通信域中剔除，实际参与通信的卡数与创建通信域时不一致，可从本参数中获取当前部署信息。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：预留参数，当前版本不支持，传空指针即可。</term>
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品：可选择传入有效数据或填空指针，传入空指针时表示不使能动态缩容功能；当传入有效数据时，要求是一个1D的Tensor，shape为(4 + 2\*ep\_world\_size,)，数据类型支持int32；数据格式要求为ND，支持非连续的Tensor。Tensor中的前四个数字分别表示(是否缩容，缩容后实际rnak数，共享专家使用rank数，moe专家个数)，后2*ep\_world\_size表示两个rank映射表，缩容后本卡在新EP通信域中的rank index使用local\_ep\_rank\_id表示，第一个Table的映射关系为Table1[ep\_rank\_id]=local\_ep\_rank\_id或-1，-1表示ep\_rank\_id这张卡从通信域中被剔除，第二个Table映射关系为Table2[local\_ep\_rank\_id]=ep\_rank\_id。</term>
 
 -   **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。若有TP域通信需要传参，若无TP域通信，使用默认值即可。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：不支持TP域通信，使用默认值即可。
@@ -76,6 +82,18 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
         - "hierarchy": token数据经过跨机、机内两次发送，仅不同server同号卡之间使用RDMA通信，server内使用HCCS通信。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可。
 
+-   zero\_expert\_num：int类型，可选参数，表示零专家的数量。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：当前版本不支持，传0即可。</term>
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品：取值范围\[0, MAX_INT32\]，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num\)。</term>
+
+-   copy\_expert\_num：int类型，可选参数，表示copy专家的数量。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：当前版本不支持，传0即可。</term>
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品：取值范围\[0, MAX_INT32\]，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。</term>
+
+-   const\_expert\_num：int类型，可选参数，表示常量专家的数量。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：当前版本不支持，传0即可。</term>
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品：取值范围\[0, MAX_INT32\]，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num\)。</term>
+
 ## 输出说明<a name="zh-cn_topic_0000002203575833_section22231435517"></a>
 
 -   **expand\_x** (`Tensor`)：表示本卡收到的token数据，要求为2D的Tensor，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持bfloat16、float16、int8。量化时类型为int8，非量化时与x数据类型保持一致。数据格式为ND，支持非连续的Tensor。
@@ -101,23 +119,26 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
 -   该接口支持静态图模式（不低于PyTorch 2.1版本），并且Dispatch\_v2和Combine\_v2必须配套使用。
 -   在不同产品型号、不同通信算法或不同版本中，Dispatch\_v2的Tensor输出assist\_info\_for\_combine、ep\_recv\_counts、tp\_recv\_counts、expand\_scales中的元素值可能不同，使用时直接将上述Tensor传给Combine\_v2对应参数即可，模型其他业务逻辑不应对其存在依赖。
 -   调用接口过程中使用的group\_ep、ep\_world\_size、moe\_expert\_num、group\_tp、tp\_world\_size、expert\_shard\_type、shared\_expert\_num、shared\_expert\_rank\_num、global\_bs参数取值所有卡需保持一致，group\_ep、ep\_world\_size、group\_tp、tp\_world\_size、expert\_shard\_type、global\_bs网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)对应参数也保持一致。
+-   动态缩容后的部署信息通过elastic_info参数传递给算子，无需修改其他参数。动态缩容后，MOE专家卡上的本卡部署MOE专家数需与缩容前保持一致。
 -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+-   moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32
 -   参数里Shape使用的变量如下：
     -   A：表示本卡接收的最大token数量，取值范围如下
-        -   对于共享专家，当global\_bs为0时，要满足A=BS\*shared\_expert\_num/shared\_expert\_rank\_num；当global\_bs非0时，要满足A=global\_bs\*shared\_expert\_num/shared\_expert\_rank\_num。
-        -   对于MoE专家，当global\_bs为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当global\_bs非0时，要满足A\>=global\_bs\* min\(local\_expert\_num, K\)。
+        -   不使能动态缩容场景时：
+            -   对于共享专家，要满足A=BS\*shared\_expert\_num/shared\_expert\_rank\_num。
+            -   对于MoE专家，当global\_bs为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当global\_bs非0时，要满足A\>=global\_bs\* min\(local\_expert\_num, K\)。
+        -   使能动态缩容场景时：
+            -   当global_bs为0时，A>=max(BS\*ep_world_size\*shared_expert_num/shared_expert_rank_num, BS\*ep_world_size\*min(local_expert_num,K))；当gobal_bs非0时，A>=max(BS\*ep_world_size\*shared_expert_num/shared_expert_rank_num, global_bs*min(local_expert_num,K))
 
     -   H：表示hidden size隐藏层大小。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值范围\(0,7168\]，且保证是32的整数倍。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值为\[1024, 8192\]。
 
-    -   BS：表示待发送的token数量。
+    -   BS：表示batch sequence size，即本卡最终输出的token数量。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值范围为0<BS≤256。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
 
-    -   K：表示选取topK个专家，需满足0<K≤moe\_expert\_num。
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：保证取值范围为0<K≤16。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：保证取值范围为0<K≤16。
+    -   K：表示选取topK个专家，取值范围为0<K≤16，同时满足0<K≤moe\_expert\_num。
 
     -   server\_num：表示服务器的节点数，取值只支持2、4、8。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：仅该场景的shape使用了该变量。
@@ -126,19 +147,17 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
         -   对于共享专家卡，local\_expert\_num=1
         -   对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num)，当local\_expert\_num\>1时，不支持TP域通信。
 
--   调用本接口前需检查HCCL\_BUFFSIZE环境变量取值是否合理：
-
-    >**说明：**<br> 
-    >CANN环境变量HCCL\_BUFFSIZE：表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。
-
+-   HCCL_BUFFSIZE:
+    调用本接口前需检查HCCL\_BUFFSIZE环境变量取值是否合理该环境变量表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：
-        - comm\_alg配置为"": 仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
+        - comm\_alg配置为""或nullptr: 依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
         - comm\_alg配置为"fullmesh": 要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(unit16\)+2MB\)。
         - comm\_alg配置为"hierarchy": 要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB，不要求moe\_expert\_num\/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
         
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求 \>= 2且满足\>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)，local\_expert\_num需使用MoE专家卡的本卡专家数。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求 \>= 2且满足\>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)，local\_expert\_num需使用MoE专家卡的本卡专家数，其中Align512(x) = ((x+512-1)/512)\*512,Align32(x) = ((x+32-1)/32)\*32。
 
--   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：该环境变量不再推荐使用，建议comm\_alg配置"hierarchy"。
+-   HCCL_INTRA_PCIE_ENABLE和HCCL_INTRA_ROCE_ENABLE:
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：该环境变量不再推荐使用，建议comm\_alg配置"hierarchy"。
 
 -   本文公式中的”/“表示整除。
 
@@ -183,8 +202,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
     dev_num = 16
     world_size = server_num * dev_num
     rank_per_dev = int(world_size / server_num)  # 每个host有几个die
-    sharedExpertRankNum = 2                      # 共享专家数
-    moeExpertNum = 14                            # moe专家数
+    shared_expert_rank_num = 2                      # 共享专家数
+    moe_expert_num = 14                            # moe专家数
     bs = 8                                       # token数量
     h = 7168                                     # 每个token的长度
     k = 8
@@ -196,6 +215,47 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
     globalBS = bs * ep_world_size
     is_shared = (sharedExpertRankNum > 0)
     is_quant = (quant_mode > 0)
+
+    zero_expert_num = 0
+    copy_expert_num = 0
+    const_expert_num = 0
+
+    elastic_ranks = [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    def gen_elastic_info(elastic_ranks, is_elastic=1, actual_rank_num=14, elastic_shared_rank=4, elastic_moe_num=10, ep_world_size=16):
+        if not is_elastic: return None
+        elastic_info = torch.zeros(4 + 2 * ep_world_size, dtype=torch.int32)
+        elastic_info[0] = is_elastic
+        elastic_info[1] = actual_rank_num
+        elastic_info[2] = shared_expert_rank_num
+        elastic_info[3] = moe_expert_num
+        table1 = [-1] * ep_world_size
+        table2 = [-1] * ep_world_size
+
+        for local_rank_id, ep_rank_id in enumerate(lastic_ranks):
+            if ep_rank_id < ep_world_size:
+                table1[ep_rank_id] = local_rank_id
+                table2[local_rank_id] = ep_rank_id
+        for i in range(ep_world_size):
+            elastic_info[4 + i] = table1[i]
+        for i in range(ep_world_size):
+            elastic_info[4 + ep_world_size + i] = table2[i]
+        assert elastic_info.shape[0] == 4 + 2 * ep_world_size
+        if is_elastic:
+            table1 = elastic_info[4:4+ep_world_size]
+            table2 = elastic_info[4+ep_world_size:4+2*ep_world_size]
+        return elastic_info
+
+    def gen_const_expert_alpha_1():
+        const_expert_alpha_1 = torch.empty(size=[const_expert_num], dtype=input_dtype).uniform_(-1, 1)
+        return const_expert_alpha_1
+
+    def gen_const_expert_alpha_2():
+        const_expert_alpha_2 = torch.empty(size=[const_expert_num], dtype=input_dtype).uniform_(-1, 1)
+        return const_expert_alpha_2
+
+    def gen_const_expert_v():
+        const_expert_v = torch.empty(size=[const_expert_num], dtype=input_dtype).uniform_(-1, 1)
+        return const_expert_v
     
     def gen_unique_topk_array(low, high, bs, k):
         array = []
@@ -239,8 +299,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
     
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
-        expert_ids = gen_unique_topk_array(0, moeExpertNum, bs, k).astype(np.int32)
+        expert_ids = gen_unique_topk_array(0, moeExpertNum+zero_expert_num+copy_expert_num+const_expert_num, bs, k).astype(np.int32)
         expert_ids = torch.from_numpy(expert_ids).npu()
+
+        elastic_info= gen_elastic_info(elastic_ranks)
     
         expert_scales = torch.randn(bs, k, dtype=torch.float32).npu()
         scales_shape = (1 + moeExpertNum, h) if sharedExpertRankNum else (moeExpertNum, h)
@@ -263,7 +325,11 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
             moe_expert_num=moeExpertNum,
             scales=scales,
             quant_mode=quant_mode,
-            global_bs=globalBS)
+            global_bs=globalBS,
+            elastic_info=elastic_info,
+            zero_expert_num=zero_expert_num,
+            copy_expert_num=copy_expert_num,
+            const_expert_num=const_expert_num)
         if is_quant:
             expand_x = expand_x.to(input_dtype)
         x = torch_npu.npu_moe_distribute_combine_v2(expand_x=expand_x,
@@ -281,7 +347,15 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
                                                  expert_shard_type=0,
                                                  shared_expert_rank_num=sharedExpertRankNum,
                                                  moe_expert_num=moeExpertNum,
-                                                 global_bs=globalBS)
+                                                 global_bs=globalBS,
+                                                 elastic_info=elastic_info,
+                                                 ori_x=x,
+                                                 const_expert_alpha_1=const_expert_alpha_1,
+                                                 const_expert_alpha_2=const_expert_alpha_2,
+                                                 const_expert_v=const_expert_v,
+                                                 zero_expert_num=zero_expert_num,
+                                                 copy_expert_num=copy_expert_num,
+                                                 const_expert_num=const_expert_num)
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
     
     if __name__ == "__main__":
@@ -361,6 +435,47 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
     globalBS = bs * ep_world_size
     is_shared = (sharedExpertRankNum > 0)
     is_quant = (quant_mode > 0)
+
+    zero_expert_num = 0
+    copy_expert_num = 0
+    const_expert_num = 0
+
+    elastic_ranks = [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    def gen_elastic_info(elastic_ranks, is_elastic=1, actual_rank_num=14, elastic_shared_rank=4, elastic_moe_num=10, ep_world_size=16):
+        if not is_elastic: return None
+        elastic_info = torch.zeros(4 + 2 * ep_world_size, dtype=torch.int32)
+        elastic_info[0] = is_elastic
+        elastic_info[1] = actual_rank_num
+        elastic_info[2] = shared_expert_rank_num
+        elastic_info[3] = moe_expert_num
+        table1 = [-1] * ep_world_size
+        table2 = [-1] * ep_world_size
+
+        for local_rank_id, ep_rank_id in enumerate(lastic_ranks):
+            if ep_rank_id < ep_world_size:
+                table1[ep_rank_id] = local_rank_id
+                table2[local_rank_id] = ep_rank_id
+        for i in range(ep_world_size):
+            elastic_info[4 + i] = table1[i]
+        for i in range(ep_world_size):
+            elastic_info[4 + ep_world_size + i] = table2[i]
+        assert elastic_info.shape[0] == 4 + 2 * ep_world_size
+        if is_elastic:
+            table1 = elastic_info[4:4+ep_world_size]
+            table2 = elastic_info[4+ep_world_size:4+2*ep_world_size]
+        return elastic_info
+
+    def gen_const_expert_alpha_1():
+        const_expert_alpha_1 = torch.empty(size=[const_expert_num], dtype=input_dtype).uniform_(-1, 1)
+        return const_expert_alpha_1
+
+    def gen_const_expert_alpha_2():
+        const_expert_alpha_2 = torch.empty(size=[const_expert_num], dtype=input_dtype).uniform_(-1, 1)
+        return const_expert_alpha_2
+
+    def gen_const_expert_v():
+        const_expert_v = torch.empty(size=[const_expert_num], dtype=input_dtype).uniform_(-1, 1)
+        return const_expert_v
     
     class MOE_DISTRIBUTE_GRAPH_Model(torch.nn.Module):
         def __init__(self):
@@ -368,7 +483,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
     
         def forward(self, x, expert_ids, group_ep, group_tp, ep_world_size, tp_world_size,
                     ep_rank_id, tp_rank_id, expert_shard_type, shared_expert_rank_num, moe_expert_num,
-                    scales, quant_mode, global_bs, expert_scales):
+                    scales, quant_mode, global_bs, expert_scales, elastic_info, x, const_expert_alpha_1, const_expert_alpha_2, const_expert_v, zero_expert_num, copy_expert_num, const_expert_num):
             output_dispatch_npu = torch_npu.npu_moe_distribute_dispatch_v2(x=x,
                                                                         expert_ids=expert_ids,
                                                                         group_ep=group_ep,
@@ -382,7 +497,11 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
                                                                         moe_expert_num=moe_expert_num,
                                                                         scales=scales,
                                                                         quant_mode=quant_mode,
-                                                                        global_bs=global_bs)
+                                                                        global_bs=global_bs,
+                                                                        elastic_info=elastic_info,
+                                                                        zero_expert_num=zero_expert_num,
+                                                                        copy_expert_num=copy_expert_num,
+                                                                        const_expert_num=const_expert_num)
     
             expand_x_npu, _, assist_info_for_combine_npu, _, ep_recv_counts_npu, tp_recv_counts_npu, expand_scales = output_dispatch_npu
             if expand_x_npu.dtype == torch.int8:
@@ -402,7 +521,15 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
                                                                       expert_shard_type=expert_shard_type,
                                                                       shared_expert_rank_num=shared_expert_rank_num,
                                                                       moe_expert_num=moe_expert_num,
-                                                                      global_bs=global_bs)
+                                                                      global_bs=global_bs,
+                                                                      elastic_info=elastic_info,
+                                                                      ori_x=x,
+                                                                      const_expert_alpha_1=const_expert_alpha_1,
+                                                                      const_expert_alpha_2=const_expert_alpha_2,
+                                                                      const_expert_v=const_expert_v,
+                                                                      zero_expert_num=zero_expert_num,
+                                                                      copy_expert_num=copy_expert_num,
+                                                                      const_expert_num=const_expert_num)
             x = output_combine_npu
             x_combine_res = output_combine_npu
             return [x_combine_res, output_combine_npu]
@@ -448,7 +575,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
     
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
-        expert_ids = gen_unique_topk_array(0, moeExpertNum, bs, k).astype(np.int32)
+        expert_ids = gen_unique_topk_array(0, moeExpertNum+zero_expert_num+copy_expert_num+const_expert_num, bs, k).astype(np.int32)
         expert_ids = torch.from_numpy(expert_ids).npu()
     
         expert_scales = torch.randn(bs, k, dtype=torch.float32).npu()
@@ -464,7 +591,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(Tensor x, Tensor expert_ids, str group_
         model = torch.compile(model, backend=npu_backend, dynamic=False)
         output = model.forward(x, expert_ids, ep_hcomm_info, tp_hcomm_info, ep_world_size, tp_world_size,
                                rank // tp_world_size,rank % tp_world_size, 0, sharedExpertRankNum, moeExpertNum, scales,
-                               quant_mode, globalBS, expert_scales)
+                               quant_mode, globalBS, expert_scales, elastic_info, x, const_expert_alpha_1, const_expert_alpha_2, const_expert_v, zero_expert_num, copy_expert_num, const_expert_num)
         torch.npu.synchronize()
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
     

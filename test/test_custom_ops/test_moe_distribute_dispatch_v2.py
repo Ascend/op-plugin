@@ -38,7 +38,7 @@ class TestMoeDistributeDispatch(TestCase):
 
     @classmethod
     def _test_npu_moe_distribute_dispatch_v2(cls, rank, input_list):
-        expt_token_list, x1_list, x2_list, topk1_list, topk2_list, ep_world_size, tp_world_size, globalBS,\
+        expt_token_list, x1_list, x2_list, topk1_list, topk2_list, elastic_info, ep_world_size, tp_world_size, globalBS,\
             sharedExpertRankNum, moeExpertNum, h, init_pg, c2p, p2c = input_list
         tp_world_size_2 = 2
         if rank % tp_world_size_2 == 0:
@@ -53,8 +53,10 @@ class TestMoeDistributeDispatch(TestCase):
 
         x = x.npu()
         topk = topk.npu()
+        elastic_info = elastic_info.npu()
         out, _, _, _, _, _, _ = torch_npu.npu_moe_distribute_dispatch_v2(x=x,
                                                            expert_ids=topk,
+                                                           elastic_info=elastic_info,
                                                            group_ep=ep_hcomm_name,
                                                            ep_world_size=ep_world_size,
                                                            ep_rank_id=int(rank // tp_world_size_2),
@@ -212,6 +214,8 @@ class TestMoeDistributeDispatch(TestCase):
         x2_shape = [dtype, data_format, [bs, h]]
         x1_list = []
         x2_list = []
+        elastic_info_shape = [np.int32, data_format, [4 + ep_world_size]]
+        elastic_info = []
         for _ in range(ep_world_size):
             x1, _ = create_common_tensor(x1_shape, -1, 1)
             x2, _ = create_common_tensor(x2_shape, -1, 1)
@@ -219,6 +223,8 @@ class TestMoeDistributeDispatch(TestCase):
             x2_list.append(x2)
             topk1_list.append(topk)
             topk2_list.append(topk)
+            temp_elastic_info, _ = create_common_tensor(elastic_info_shape, -1, 1)
+            elastic_info.append(temp_elastic_info)
         expt_out_list_1, expt_token_list_1 = self._construct_excepted_result(x1_list, x2_list, topk1_list, topk2_list, bs, h, k,
                                                             global_bs, shared_expert_rank_num_1, moe_expert_num_7, ep_world_size, tp_world_size)
         expt_out_list_2, expt_token_list_2 = self._construct_excepted_result(x1_list, x2_list, topk1_list, topk2_list, bs, h, k,
