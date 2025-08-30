@@ -194,6 +194,53 @@ class TestNpuMoeGatingTopK(TestCase):
 
         self.assertRtolEqual(y, y_npu.cpu())
         self.assertRtolEqual(expert_idx, expert_idx_npu.cpu().numpy())
+    
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_moe_gating_topk_4(self):
+        x = numpy.random.uniform(-2, 2, (128, 256)).astype(numpy.float32)
+        bias = numpy.random.uniform(-2, 2, (256,)).astype(numpy.float32)
+
+        x_tensor = torch.tensor(x, dtype=torch.bfloat16)
+        bias_tensor = torch.tensor(bias, dtype=torch.bfloat16)
+
+        k = 16
+        k_group = 4
+        group_count = 8
+        group_select_mode = 1
+        renorm = 0
+        norm_type = 1
+        out_flag = False
+        routed_scaling_factor = 0.0
+        eps = 1e-20
+
+        y, expert_idx, out = self.moe_gating_top_k_numpy(
+            x_tensor,
+            k,
+            bias=bias_tensor,
+            k_group=k_group,
+            group_count=group_count,
+            group_select_mode=group_select_mode,
+            renorm=renorm,
+            norm_type=norm_type,
+            out_flag=out_flag,
+            routed_scaling_factor=routed_scaling_factor,
+            eps=eps)
+
+        y_npu, expert_idx_npu, out_npu = torch_npu.npu_moe_gating_top_k(
+            x_tensor.npu(),
+            k,
+            bias=bias_tensor.npu(),
+            k_group=k_group,
+            group_count=group_count,
+            group_select_mode=group_select_mode,
+            renorm=renorm,
+            norm_type=norm_type,
+            out_flag=out_flag,
+            routed_scaling_factor=routed_scaling_factor,
+            eps=eps)
+
+        self.assertRtolEqual(y, y_npu.cpu())
+        self.assertRtolEqual(expert_idx, expert_idx_npu.cpu().numpy())
 
 if __name__ == "__main__":
     run_tests()

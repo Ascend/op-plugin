@@ -47,24 +47,24 @@ npu_moe_gating_top_k(x, k, *, bias=None, k_group=1, group_count=1, group_select_
 
 ## 参数说明
 
--   **x**（`Tensor`）：必选参数，表示待计算的输入。要求是一个2D的Tensor，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为ND。支持非连续Tensor。最后一维的大小（即专家数）当前仅支持取`256`。
+-   **x**（`Tensor`）：必选参数，表示待计算的输入。要求是一个2D的Tensor，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为ND。支持非连续Tensor。最后一维的大小（即专家数）要求不大于`2048`。
 
--   **k**（`int`）：必选参数，表示每个token最终筛选得到的专家个数，数据类型为`int64`。取值范围为[1, 32]。
+-   **k**（`int`）：必选参数，表示每个token最终筛选得到的专家个数，数据类型为`int64`。要求`1 <= k <= x_shape[-1] / group_count * k_group`。
 
 -   <strong>*</strong>：代表其之前的变量是位置相关，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
  
--   **bias**（`Tensor`）：可选参数，表示与输入`x`进行计算的bias值。要求是1D的Tensor，要求shape值与`x`的最后一维相等。数据类型支持`float16`、`bfloat16`、`float32`，数据类型需要与`x`保持一致，数据格式要求为ND。支持非连续`Tensor`。必须不为`None`。
+-   **bias**（`Tensor`）：可选参数，表示与输入`x`进行计算的bias值。要求是1D的Tensor，要求shape值与`x`的最后一维相等。数据类型支持`float16`、`bfloat16`、`float32`，数据类型需要与`x`保持一致，数据格式要求为ND。支持非连续`Tensor`。
 
--   **k_group**（`int`）：可选参数，表示每个token组筛选过程中，选出的专家组个数，数据类型为`int64`，默认值为`1`。当前仅支持取`4`。
+-   **k_group**（`int`）：可选参数，表示每个token组筛选过程中，选出的专家组个数，数据类型为`int64`，默认值为`1`。要求`1 <= k_group <= group_count`，并且`k_group * x_shape[-1] / group_count`的值要大于等于`k`。
 
--   **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。当前仅支持取`8`。
+-   **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。要求`group_count > 0，x_shape[-1]`能够被`group_count`整除且整除后的结果大于`2`，并且整除的结果按照`32`个数对齐后乘`group_count`的结果不大于`2048`。
 
--   **group_select_mode**（`int`）：可选参数，表示一个专家组的总得分计算方式。默认值为`0`，`0`表示组内取最大值，作为专家组得分；`1`表示取组内Top2的专家进行得分累加，作为专家组得分。当前仅支持`1`。
+-   **group_select_mode**（`int`）：可选参数，表示一个专家组的总得分计算方式。默认值为`0`，`0`表示组内取最大值，作为专家组得分；`1`表示取组内Top2的专家进行得分累加，作为专家组得分。
 
 -   **renorm**（`int`）：可选参数，表示renorm标记，默认值为`0`，表示先进行norm再进行topk计算。当前仅支持`0`。
--   **norm_type**（`int`）：可选参数，表示norm函数类型，`1`表示使用Sigmoid函数，`0`表示Softmax函数。默认值为`0`。当前仅支持`1`。
+-   **norm_type**（`int`）：可选参数，表示norm函数类型，`1`表示使用Sigmoid函数，`0`表示Softmax函数。默认值为`0`。
 
--   **out_flag**（`bool`）：可选参数，是否输出norm函数中间结果。默认值为`False` ，当前仅支持`False` ，表示不输出。
+-   **out_flag**（`bool`）：可选参数，是否输出norm函数中间结果。默认值为`False`。
 -   **routed_scaling_factor**（`float`）：可选参数，表示计算`yOut`使用的`routed_scaling_factor`系数，默认值为`1.0`。
 -   **eps**（`float`）：可选参数，表示计算`yOut`使用的`eps`系数，默认值为`1e-20`。
 
