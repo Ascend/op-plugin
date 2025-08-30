@@ -195,9 +195,9 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             - sparse为4时：
                 - query的每batch的S不大于key的每batch的S、N为128，query\_rope shape中D为64，其余维度与query一致；
                 - key的S不大于131088，N为1、D为512，key\_rope shape中D为64，其余维度与key一致；
-                - key、value、key\_rope支持ND输入；
+                - key、value、key\_rope仅支持ND输入；
                 - input\_layout形状仅支持BSND。
-                - 该场景下，必须开启PageAttention，此时block\_size支持64、128。
+                - 该场景下，支持开启PageAttention，此时block\_size支持64、128。
                 - 不支持开启SoftMaxLse、tensorlist、pse、伪量化、后量化、全量化场景。
         -   当query的D等于128时：
             -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>约束如下：
