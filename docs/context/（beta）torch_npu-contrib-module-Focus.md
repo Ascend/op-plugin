@@ -28,7 +28,7 @@ torch_npu.contrib.module.Focus(nn.Module)
 - **s** (`int`)：卷积步长，默认值为1。
 - **p** (`int`)：填充。
 - **g** (`int`)：从输入通道到输出通道的分组数，默认值为1。
-- **act** (`Bool`)：是否使用激活函数，默认值为True。
+- **act** (`bool`)：是否使用激活函数，默认值为True。
 
 
 ## 调用示例

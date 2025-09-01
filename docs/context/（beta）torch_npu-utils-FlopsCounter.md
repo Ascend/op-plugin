@@ -1,5 +1,15 @@
 # （beta）torch_npu.utils.FlopsCounter
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+
+## 功能说明
+
+Flops统计类，用于统计各个常见cube类算子的浮点计算Flops，采用单例模式。当前支持可统计Flops的算子：MM、BMM、AllgatherMM、ReduceScatterMM、FA。
+
 ## 定义文件
 
 torch_npu\utils\flops_count.py
@@ -10,13 +20,9 @@ torch_npu\utils\flops_count.py
 torch_npu.utils.FlopsCounter()
 ```
 
-## 功能说明
-
-Flops统计类，用于统计各个常见cube类算子的浮点计算Flops，采用单例模式。当前支持可统计Flops的算子：MM、BMM、AllgatherMM、ReduceScatterMM、FA。
-
 ## 参数说明
 
-以下参数说明为初始化时此类的参数说明，用户可通过成员函数对参数进行修改。
+以下为初始化时此类的参数说明，用户可通过成员函数对参数进行修改。
 
 - 开关标志位（isEnabled_）：默认值false。
 - 暂停标志位（isPaused_）：默认值false。
@@ -50,9 +56,6 @@ Flops统计类，用于统计各个常见cube类算子的浮点计算Flops，采
 
     获取统计结果。返回列表，包括不含重计算的Flops（recordedCount）和含重计算的Flops（traversedCount），例如[_100, 200_]，_100_为不含重计算的Flops（recordedCount），_200_为含重计算的Flops（traversedCount）。
 
-## 支持的型号
-
-<term>Atlas A2 训练系列产品</term>
 
 ## 调用示例
 

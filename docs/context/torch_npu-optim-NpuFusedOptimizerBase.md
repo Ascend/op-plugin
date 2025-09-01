@@ -1,37 +1,37 @@
 # torch_npu.optim.NpuFusedOptimizerBase
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
+## 功能说明
+
+张量融合优化器的基类，实现梯度清零、梯度更新等优化器基本功能，用户可进行继承实现自定义融合优化器。
+
 ## 函数原型
 
 ```
 class torch_npu.optim.NpuFusedOptimizerBase(params, default)
 ```
 
-## 功能说明
-
-张量融合优化器的基类，实现梯度清零、梯度更新等优化器基本功能，用户可进行继承实现自定义融合优化器。
-
 ## 参数说明
 
-- params：模型参数或模型参数组。
-- default：包含其他所有参数的字典，dict类型。
+- **params** (`dict`)：模型参数或模型参数组，`params`为参数的可迭代对象或参数组的dict类型。
+- **default** (`dict`)：包含其他所有参数的字典。
 
-## 输入说明
 
-params为参数的可迭代对象或参数组的dict类型。
+## 返回值说明
 
-## 输出说明
-
-类型为“NpuFusedOptimizerBase”的对象。
+类型为`NpuFusedOptimizerBase`的对象。
 
 ## 约束说明
 
-NpuFusedOptimizerBase为基类，无法单独使用，需通过继承子类实现特定功能的融合优化器。
+`NpuFusedOptimizerBase`为基类，无法单独使用，需通过继承子类实现特定功能的融合优化器。
 
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
 
 ## 调用示例
 
