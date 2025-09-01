@@ -1,31 +1,34 @@
 # （beta）torch_npu.npu.is_autocast_enabled
 
-## 函数原型
+## 产品支持情况
 
-```
-torch_npu.npu.is_autocast_enabled()
-```
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √    |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
 
 ## 功能说明
 
 确认autocast是否可用。
 
-## 输出说明
+## 函数原型
 
-bool。
+```
+torch_npu.npu.is_autocast_enabled()
+```
+## 返回值说明
 
-## 支持的型号
+`bool`
 
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
 
 
 ## 调用示例
 
-```python
->>>torch_npu.npu.is_autocast_enabled()
+``` python
+>>> torch_npu.npu.is_autocast_enabled()
 False
 ```
 

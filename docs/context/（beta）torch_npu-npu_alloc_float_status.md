@@ -1,25 +1,30 @@
 # （beta）torch_npu.npu_alloc_float_status
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √    |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+## 功能说明
+
+为溢出检测模式申请`tensor`作为入参。
+
+
 ## 函数原型
 
 ```
 torch_npu.npu_alloc_float_status(self) -> Tensor
 ```
 
-## 功能说明
-
-为溢出检测模式申请tensor作为入参。
 
 ## 参数说明
 
-self (Tensor) - 任何张量。
+**self** (`Tensor`)：任何张量。
 
-## 支持的型号
 
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
 
 ## 调用示例
 

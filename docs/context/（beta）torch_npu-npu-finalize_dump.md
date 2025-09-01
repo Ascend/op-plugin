@@ -1,19 +1,23 @@
 # （beta）torch_npu.npu.finalize_dump
 
-## 函数原型
+## 产品支持情况
 
-```
-torch_npu.npu.finalize_dump()
-```
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √    |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
+
 
 ## 功能说明
 
 结束dump。
 
-## 支持的型号
+## 函数原型
 
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
+```
+torch_npu.npu.finalize_dump()
+```
 

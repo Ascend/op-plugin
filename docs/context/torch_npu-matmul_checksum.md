@@ -18,9 +18,9 @@ torch_npu.matmul_checksum(a, b, c) -> Tensor
 
 ## 参数说明
 
-- **a** (`Tensor`)：必选输入，进行原生matmul计算的输入`input`。
-- **b** (`Tensor`)：必选输入，进行原生matmul计算的输入`other`。
-- **c** (`Tensor`)：必选输入，原生matmul计算的输出`out`。
+- **a** (`Tensor`)：必选输入，进行原生matmul计算的输入input。
+- **b** (`Tensor`)：必选输入，进行原生matmul计算的输入other。
+- **c** (`Tensor`)：必选输入，原生matmul计算的输出out。
 
 ## 返回值说明
 `Tensor`

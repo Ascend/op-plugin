@@ -1,8 +1,19 @@
 # torch\_npu.npu\_all\_gather\_base\_mm<a name="ZH-CN_TOPIC_0000001979420567"></a>
 
+
+
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √    |
+|<term>Atlas A3 推理系列产品</term>                                       |    √     |
+|
+
 ## 功能说明<a name="zh-cn_topic_0000001694916914_section14441124184110"></a>
 
-TP切分场景下，实现allgather和matmul的融合，实现通信和计算流水并行。
+TP切分场景下，实现`allgather`和`matmul`的融合，实现通信和计算流水并行。
 
 >**说明：**<br>  
 >使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本，否则将会引发报错，比如BUS ERROR等。
@@ -10,40 +21,36 @@ TP切分场景下，实现allgather和matmul的融合，实现通信和计算流
 ## 函数原型<a name="zh-cn_topic_0000001694916914_section776431568"></a>
 
 ```
-torch_npu.npu_all_gather_base_mm(Tensor input, Tensor x2, str hcom, int world_size, *, Tensor? bias=None, int gather_index=0, bool gather_output=True, int comm_turn=0) -> (Tensor, Tensor)
+torch_npu.npu_all_gather_base_mm( input, x2,  hcom, world_size, *,  bias=None,  gather_index=0, bool gather_output=True, comm_turn=0) -> (Tensor, Tensor)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000001694916914_section112637109429"></a>
 
--   input：Tensor类型，数据类型支持float16、bfloat16，数据格式支持ND，输入shape支持2维，形如\(m, k\)、\(k, n\)，轴满足matmul算子入参要求，k轴相等，且k轴取值范围为\[256, 65535\)。
--   x2：Tensor类型，数据类型、输入shape维度需要和input保持一致，数据格式支持ND。
--   hcom：String类型，通信域handle名，通过get\_hccl\_comm\_name接口获取。
--   world\_size：int类型，通信域内的rank总数。
+-   **input**：(`Tensor`)类型，数据类型支持float16、bfloat16，数据格式支持ND，输入shape支持2维，形如\(m, k\)、\(k, n\)，轴满足matmul算子入参要求，k轴相等，且k轴取值范围为\[256, 65535\)。
+-   **x2**：(`Tensor`)类型，数据类型、输入shape维度需要和input保持一致，数据格式支持ND。
+-   **hcom**：(`String`)类型，通信域handle名，通过get\_hccl\_comm\_name接口获取。
+-   **world\_size**：(`int`)类型，通信域内的rank总数。
     -   <term>Atlas A2 训练系列产品</term>：支持2、4、8卡，支持hccs链路all mesh组网（每张卡和其它卡两两相连）。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持2、4、8、16、32卡，支持hccs链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
 
 -   \*：代表其之前的变量是位置相关，按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
--   bias：Tensor类型，可选参数，数据类型支持float16、bfloat16，数据格式支持ND格式。数据类型需要和input保持一致。bias仅支持一维，且维度大小与output的第1维大小相同。**当前版本暂不支持bias输入为非0的场景。**
--   gather\_index：int类型，表示gather操作对象，0：对input做gather，1：对x2做gather。默认值0。**当前版本仅支持输入0。**
--   gather\_output：bool类型，表示是否需要gather输出。默认值true。
--   comm\_turn：int类型，表示rank间通信切分粒度，默认值：0，表示默认的切分方式。**当前版本仅支持输入0。**
+-   **bias**：(`Tensor`)类型，可选参数，数据类型支持float16、bfloat16，数据格式支持ND格式。数据类型需要和input保持一致。bias仅支持一维，且维度大小与output的第1维大小相同。**当前版本暂不支持bias输入为非0的场景。**
+-  **gather\_index**：(`int`)类型，表示gather操作对象，0：对input做gather，1：对x2做gather。默认值0。**当前版本仅支持输入0。**
+-   **gather\_output**：(`bool`)类型，表示是否需要gather输出。默认值true。
+-   **comm\_turn**：(`int`)类型，表示rank间通信切分粒度，默认值：0，表示默认的切分方式。**当前版本仅支持输入0。**
 
 ## 返回值说明<a name="zh-cn_topic_0000001694916914_section15236153161410"></a>
--   Tensor：第一个输出Tensor是allgather+matmul的结果。
--   Tensor：第二个输出Tensor是allgather的结果。
+-   `Tensor`：第一个输出Tensor是allgather+matmul的结果。
+-   `Tensor`：第二个输出Tensor是allgather的结果。
 
 ## 约束说明<a name="zh-cn_topic_0000001694916914_section19106152201519"></a>
 
 -   该接口支持训练场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式（PyTorch 2.0 版本）。
 -   input不支持输入转置后的tensor，x2转置后输入，需要满足shape的第一维大小与x1的最后一维相同，满足matmul的计算条件。
 -   <term>Atlas A2 训练系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
 
-## 支持的型号<a name="zh-cn_topic_0000001694916914_section1414151813182"></a>
 
-<term>Atlas A2 训练系列产品</term>
-
-<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
 
 ## 调用示例<a name="zh-cn_topic_0000001694916914_section14459801435"></a>
 

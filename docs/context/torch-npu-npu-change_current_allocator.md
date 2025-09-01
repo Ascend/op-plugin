@@ -1,5 +1,21 @@
 # torch_npu.npu.change_current_allocator
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √    |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
+
+
+
+## 功能说明
+
+更改使用的内存分配器。
+
 ## 定义文件
 
 torch_npu/npu/memory.py
@@ -10,24 +26,17 @@ torch_npu/npu/memory.py
 torch_npu.npu.change_current_allocator(allocator) -> None
 ```
 
-## 功能说明
 
-更改使用的内存分配器。
 
 ## 参数说明
 
-“allocator”(torch_npu.npu.memory._NPUAllocator) - 要设置为使用的内存分配器。
+ **allocator** (`torch_npu.npu.memory._NPUAllocator`)：要设置为使用的内存分配器。
 
-## 异常说明
+## 约束说明
 
 如果内存分配器已被初始化，函数调用失败。
 
-## 支持的型号
 
-- <term> Atlas 训练系列产品</term> 
-- <term> Atlas A2 训练系列产品</term> 
-- <term> Atlas A3 训练系列产品</term> 
-- <term> Atlas 推理系列产品</term>
 
 ## 调用示例
 
@@ -36,14 +45,14 @@ torch_npu.npu.change_current_allocator(allocator) -> None
 **Python代码示例**：
 
 ```python
-import torch
-import torch_npu
+>>> import torch
+>>> import torch_npu
 # Load the allocator
-new_alloc = torch_npu.npu.memory.NPUPluggableAllocator('pluggable_allocator_extensions.so', 'my_malloc', 'my_free')
+>>> new_alloc = torch_npu.npu.memory.NPUPluggableAllocator('pluggable_allocator_extensions.so', 'my_malloc', 'my_free')
 # Swap the current allocator
-torch.npu.change_current_allocator(new_alloc)
-# This will allocate memory in the device using the new allocator
-npu_tensor = torch.zeros(10, device='npu')
+>>> torch.npu.change_current_allocator(new_alloc)
+#This will allocate memory in the device using the new allocator
+>>> npu_tensor = torch.zeros(10, device='npu')
 ```
 
 风险提示：自定义的so建议严格参照安全代码示例，内存申请，释放函数必须正确实现。错误的so文件可能出现内存申请失败，内存泄漏等问题。
@@ -56,11 +65,9 @@ npu_tensor = torch.zeros(10, device='npu')
 #include <sys/types.h>
 #include <iostream>
 #include <torch/extension.h>
- 
 #include "third_party/acl/inc/acl/acl_base.h"
 #include "third_party/acl/inc/acl/acl_rt.h"
 #include "torch_npu/csrc/core/npu/NPUCachingAllocator.h"
- 
 extern "C" {
  
 void* my_malloc(ssize_t size, int device, aclrtStream stream)

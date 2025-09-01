@@ -1,8 +1,17 @@
 # torch_npu.npu_convert_weight_to_int4pack
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √    |
+|<term>Atlas A3 推理系列产品</term>                                       |    √     |
+|
+
 ## 功能说明
 
-将`int32`类型的输入tensor打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
+将`int32`类型的输入`tensor`打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
 
 ## 函数原型
 
@@ -15,7 +24,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
 - **weight** (`Tensor`)：输入的weight，数据格式支持$ND$、$FRACTAL\_NZ$，数据类型支持`int32`，不支持非连续的`Tensor`；维度支持2维，shape支持$（k, n）$、 $(n, k)$，最后一维度需要8个元素对齐，元素的值需要在`int4`的表示范围内，即[-8, 7]。
 - **inner_k_tiles** (`int`)：用于指定内部打包格式中，多少个K-tiles被打包在一起，默认值为`0`。**预留参数，暂未使用**。
 
-## 返回值
+## 返回值说明
 `Tensor`
 
 代表`int4`打包后的输出，数据类型为`int32`，shape为$（k, n/8）$, $(n, k/8)$，数据格式支持$ND$。
@@ -23,12 +32,8 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式（PyTorch 2.0 版本）。
 
-## 支持的型号
-
-- <term> Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
-- <term> Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> 
 
 ## 调用示例
 
@@ -60,7 +65,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
         weight_int4 = weight_int4.transpose(-1, -2)
         cpu_antiquantscale = cpu_antiquantscale.transpose(-1, -2)
         cpu_antiquantoffset = cpu_antiquantoffset.transpose(-1, -2)
-    
+
     npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), weight_int4.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu())
     print(npu_out)
     # 执行上述代码的输出类似如下    
@@ -127,7 +132,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
     cpu_model = MyModel()
     model = cpu_model.npu()
     model = torch.compile(cpu_model, backend=npu_backend, dynamic=True, fullgraph=True)
-    
+
     npu_out = model(cpu_x.npu(), weight_int4pack, cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
     print(npu_out)
 

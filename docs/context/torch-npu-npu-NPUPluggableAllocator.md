@@ -1,5 +1,19 @@
 # torch_npu.npu.NPUPluggableAllocator
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √    |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
+
+
+## 功能说明
+
+从so文件加载的NPU内存分配器。
 ## 定义文件
 
 torch_npu/npu/memory.py
@@ -10,28 +24,19 @@ torch_npu/npu/memory.py
 torch_npu.npu.NPUPluggableAllocator(path_to_so_file, alloc_fn_name, free_fn_name)
 ```
 
-## 功能说明
-
-从so文件加载的NPU内存分配器。
 
 ## 参数说明
 
-- path_to_so_file：(str) so文件路径。
-- alloc_fn_name：(str)内存申请函数名（与c/c++文件中函数名一致）。
-- free_fn_name：(str)内存释放函数名（与c/c++文件中函数名一致）。
+- **path_to_so_file**（`str`）：so文件路径。
+- **alloc_fn_name**（`str`）：内存申请函数名（与c/c++文件中函数名一致）。
+- **free_fn_name**（`str`）：内存释放函数名（与c/c++文件中函数名一致）。
 
 ## 约束说明
 
-alloc_fn_name内存申请函数名必须与c/c++文件中函数名一致。
+`alloc_fn_name`内存申请函数名必须与c/c++文件中函数名一致。
 
-free_fn_name内存释放函数名必须与c/c++文件中函数名一致。
+`free_fn_name`内存释放函数名必须与c/c++文件中函数名一致。
 
-## 支持的型号
-
-- <term> Atlas 训练系列产品</term> 
-- <term> Atlas A2 训练系列产品</term> 
-- <term> Atlas A3 训练系列产品</term> 
-- <term> Atlas 推理系列产品</term>
 
 ## 调用示例
 
@@ -40,14 +45,14 @@ free_fn_name内存释放函数名必须与c/c++文件中函数名一致。
 **Python代码示例**：
 
 ```python
-import torch
-import torch_npu
+>>> import torch
+>>> import torch_npu
 # Load the allocator
-new_alloc = torch_npu.npu.memory.NPUPluggableAllocator('pluggable_allocator_extensions.so', 'my_malloc', 'my_free')
+>>> new_alloc = torch_npu.npu.memory.NPUPluggableAllocator('pluggable_allocator_extensions.so', 'my_malloc', 'my_free')
 # Swap the current allocator
-torch_npu.npu.memory.change_current_allocator(new_alloc)
+>>> torch_npu.npu.memory.change_current_allocator(new_alloc)
 # This will allocate memory in the device using the new allocator
-npu_tensor = torch.zeros(10, device='npu')
+>>> npu_tensor = torch.zeros(10, device='npu')
 ```
 
 风险提示：自定义的so建议严格参照安全代码示例，内存申请，释放函数必须正确实现。错误的so文件可能出现内存申请失败，内存泄漏等问题。
