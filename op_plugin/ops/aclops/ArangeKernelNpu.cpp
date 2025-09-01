@@ -146,14 +146,4 @@ at::Tensor &arange_out(const at::Scalar &end, at::Tensor &out)
     return acl_op::arange_out(start, end, step, out);
 }
 
-at::Tensor _dim_arange(const at::Tensor &like, int64_t dim)
-{
-    c10::optional<at::ScalarType> dtype_opt(at::kInt);
-    c10::optional<at::Layout> layout_opt(like.options().layout());
-    c10::optional<at::Device> device_opt(like.options().device());
-    c10::optional<bool> pin_memory_opt(like.options().pinned_memory());
-
-    at::Tensor result = acl_op::arange(like.size(dim), dtype_opt, layout_opt, device_opt, pin_memory_opt);
-    return result;
-}
 } // namespace acl_op

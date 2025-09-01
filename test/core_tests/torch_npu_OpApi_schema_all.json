@@ -1256,9 +1256,6 @@
   "func: _cummin_helper(Tensor self, Tensor(a!) values, Tensor(b!) indices, int dim) -> ()": {
     "version": ["all_version"]
   },
-  "func: _dim_arange(Tensor like, int dim) -> Tensor": {
-    "version": ["all_version"]
-  },
   "func: _embedding_bag(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False, int padding_idx=-1) -> (Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
@@ -1356,9 +1353,6 @@
     "version": ["all_version"]
   },
   "func: acosh_(Tensor(a!) self) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
-  "func: adaptive_avg_pool1d(Tensor self, int[1] output_size) -> Tensor": {
     "version": ["all_version"]
   },
   "func: adaptive_avg_pool2d(Tensor self, SymInt[2] output_size) -> Tensor": {

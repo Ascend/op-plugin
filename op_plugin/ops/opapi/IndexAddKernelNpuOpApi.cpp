@@ -50,4 +50,14 @@ at::Tensor index_add(
     return result;
 }
 
+at::Tensor index_add(
+    const at::Tensor& self,
+    at::Dimname dim,
+    const at::Tensor& index,
+    const at::Tensor& source,
+    const at::Scalar& alpha)
+{
+    return op_api::index_add(self, dimname_to_position(self, dim), index, source, alpha);
+}
+
 }
