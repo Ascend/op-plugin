@@ -1,4 +1,16 @@
 # （beta）torch_npu.npu_pad
+## 产品支持情况
+
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √    |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+## 功能说明
+
+填充张量。
 
 ## 函数原型
 
@@ -6,21 +18,12 @@
 torch_npu.npu_pad(input, paddings) -> Tensor
 ```
 
-## 功能说明
-
-填充张量。
 
 ## 参数说明
 
-- input (Tensor) - 输入张量。
-- paddings (ListInt) - 数据类型：int32、int64。
+- **input** (`Tensor`) - 输入张量。
+- **paddings** (`List[int]`) - 数据类型：int32、int64。
 
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
 
 ## 调用示例
 
