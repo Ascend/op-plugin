@@ -1,10 +1,13 @@
 # （beta）torch_npu.npu_rms_norm
 
-## 函数原型
+# 产品支持情况
 
-```
-torch_npu.npu_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor) 
-```
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term          |    √     |
+|<term>Atlas A2 训练系列产品</term> | √   |
+|<term>Atlas 推理系列产品</term>  | √   |
+|<term>Atlas 训练系列产品</term>  | √   |
 
 ## 功能说明
 
@@ -16,32 +19,27 @@ torch_npu.npu_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tenso
   Rms(x)=\sqrt{\frac{1}{n} \sum^n_{i=1}{x^2_i}+eps}
   $$
 
+## 函数原型
 
+```
+torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor) 
+```
 
 ## 参数说明
 
-- **self** (`Tensor`)：必选参数。支持float16、bfloat16、float32，输入shape支持2-8维，对应计算公式中的 $x_i$。
-- **gamma** (`Tensor`)：必选参数。数据类型需要和self保持一致，输入shape支持2-8维，通常为self的最后一维，对应计算公式中的 $g_i$。
-- **epsilon** (`float`)：可选参数。用于防止除0错误，对应计算公式中的 $eps$。
+- **self** (`Tensor`)：必选参数。数据类型支持支持`float16`、`bfloat16`、`float32`，输入shape支持2-8维，对应计算公式中$x_i$。
+- **gamma** (`Tensor`)：必选参数。数据类型需要和`self`保持一致，输入shape支持2-8维，通常为`self`的最后一维，对应计算公式中的$g_i$。
+- **epsilon** (`float`)：可选参数。用于防止除0错误，对应计算公式中的$eps$。
 
 ## 返回值说明
 
-共两个输出，格式为(`Tensor`, `Tensor`)。
+**RmsNorm** (`Tensor`)：计算公式的最终输出，代表公式中的$RmsNorm(x_i)$。
 
-第1个输出为Tensor，计算公式的最终输出"RmsNorm(x)"。
-
-第2个输出为Tensor，rms_norm的中间结果为"Rms(x)"的倒数，用于反向计算。
+**Rms** (`Tensor`)：rms_norm的中间结果为$Rms(x)$的倒数，用于反向计算。
 
 ## 约束说明
 
-输入数据类型仅支持float16、bfloat16和float32。
-
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
+输入数据类型仅支持`float16`、`bfloat16`和`float32`。
 
 ## 调用示例
 

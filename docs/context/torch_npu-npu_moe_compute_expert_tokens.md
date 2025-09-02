@@ -1,9 +1,15 @@
 # torch_npu.npu_moe_compute_expert_tokens
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
+
 ## 功能说明
 
 - API功能：MoE（Mixture of Experts，混合专家模型）计算中，通过二分查找的方式查找每个专家处理的最后一行的位置。
-- 计算公式：公式中$sortedExpertForSourceRow$代表参数sorted_expert_for_source_row，$numExpert$代表参数num_expert。
+- 计算公式：
 
     $$
     expertTokens_i = BinarySearch(sortedExpertForSourceRow,numExpert)
@@ -12,27 +18,24 @@
 ## 函数原型
 
 ```
-torch_npu.npu_moe_compute_expert_tokens(Tensor sorted_expert_for_source_row, int num_expert) -> Tensor
+torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert) -> Tensor
 ```
 
 ## 参数说明
 
-- **sorted_expert_for_source_row** (`Tensor`)：必选参数，经过专家处理过的结果，要求是一个1D的Tensor，数据类型支持int32，数据格式要求为ND。shape大小需要小于2147483647。
+- **sorted_expert_for_source_row** (`Tensor`)：必选参数，经过专家处理过的结果，对应公式中的$sortedExpertForSourceRow$，要求是一个1维变量，数据类型支持int32，数据格式要求为$ND$。shape需小于2147483647。
 
-- **num_expert** (`int`)：必选参数，表示总专家数。
+- **num_expert** (`int`)：必选参数，表示总专家数。对应公式中的$numExpert$。
 
 ## 返回值说明
+`Tensor`
 
-**expertTokens** (`Tensor`)：公式中的输出，要求的是一个1D的Tensor，数据类型与sorted_expert_for_source_row保持一致。
+ 对用公式中的$expertTokens$，要求的是一个1维张量，数据类型与`sorted_expert_for_source_row`保持一致。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
-
-## 支持的型号
-
-<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
+- 该接口支持图模式（PyTorch 2.1.0版本）。
 
 ## 调用示例
 

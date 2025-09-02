@@ -1,15 +1,22 @@
 # torch_npu.npu_quantize
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>|    √     |
+|<term>Atlas 推理系列产品</term>| √   |
+
 ## 功能说明
 
 - API功能：对输入的张量进行量化处理。
 - 计算公式：
-    - 如果**div_mode**为`True`：
+    - 若`div_mode`为`True`：
         $$
         result=(input/scales)+zero\_points
         $$
 
-    - 如果**div_mode**为`False`：
+    - 若`div_mode`为`False`：
 
         $$
         result=(input*scales)+zero\_points
@@ -23,58 +30,53 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 ## 参数说明
 
-- **input** (`Tensor`)：需要进行量化的源数据张量，必选输入，数据格式支持$ND$，支持非连续的Tensor。`div_mode`为`False`且`dtype`为`quint4x2`时，最后一维需要能被8整除。
+- **input** (`Tensor`)：必选参数，需要进行量化的源数据张量，数据格式支持$ND$，支持非连续的Tensor。`div_mode`为`False`且`dtype`为`quint4x2`时，最后一维需要能被8整除。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float`、`float16`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float`、`float16`、`bfloat16`。
 
-- **scales** (`Tensor`)：对`input`进行scales的张量，必选输入：
-    - **`div_mode`** 为`True`时
+- **scales** (`Tensor`)：必选参数，对`input`进行缩放的张量：
+    - `div_mode`为`True`时：
         - <term>Atlas 推理系列产品</term>：数据类型支持`float`。
         - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float`、`bfloat16`。
 
-    - **`div_mode`** 为`False`时，数据格式支持$ND$，支持非连续的Tensor。支持1维或多维（1维时，对应轴的大小需要与`input`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`input`的shape维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`input`对应的维度相等或等于1）。
+    - `div_mode`为`False`时，数据格式支持$ND$，支持非连续的Tensor。支持1维或多维（1维时，对应轴的大小需要与`input`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`input`的shape维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`input`对应的维度相等或等于1）。
         - <term>Atlas 推理系列产品</term>：数据类型支持`float`、`float16`。
         - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float`、`float16`、`bfloat16`。
 
-- **zero_points** (`Tensor`)：对`input`进行offset的张量，可选输入。
-    - **`div_mode`** 为`True`时
+- **zero_points** (`Tensor`)：必选参数，对`input`进行偏移的张量。
+    - `div_mode`为`True`时
         - <term>Atlas 推理系列产品</term>：数据类型支持`int8`、`uint8`、`int32`。
         - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int8`、`uint8`、`int32`、`bfloat16`。
 
-    - **`div_mode`** 为`False`时，数据格式支持$ND$，支持非连续的Tensor。支持1维或多维（1维时，对应轴的大小需要与`input`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`input`维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`input`对应的维度相等）。`zero_points`的shape和`dtype`需要和`scales`一致。
+    - `div_mode`为`False`时，数据格式支持$ND$，支持非连续的Tensor。支持1维或多维（1维时，对应轴的大小需要与`input`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`input`维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`input`对应的维度相等）。`zero_points`的shape和dtype需要和`scales`一致。
         - <term>Atlas 推理系列产品</term>：数据类型支持`float`、`float16`。
         - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float`、`float16`、`bfloat16`。
 
-- **dtype** (`int`)：`int`类型，指定输出参数的类型。
-    - **`div_mode`** 为`True`时，
+- **dtype** (`int`)：必选参数，指定输出参数的类型。
+    - `div_mode`为`True`时，
         - <term>Atlas 推理系列产品</term>：类型支持`qint8`、`quint8`、`int32`。
         - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：类型支持`qint8`、`quint8`、`int32`。
 
-    - **`div_mode`** 为`False`时，类型支持`qint8`、`quint4x2`。如果`dtype`为`quint4x2`时，输出tensor类型为`int32`，由8个`int4`拼接。
+    - `div_mode`为`False`时，类型支持`qint8`、`quint4x2`。如果`dtype`为`quint4x2`时，输出tensor类型为`int32`，由8个`int4`拼接。
 
-- **axis** (`int`)：`int`类型，量化的element-wise轴，其他的轴做broadcast，默认值为`1`。
+- **axis** (`int`)：可选参数，量化的element-wise轴，其他的轴做broadcast，默认值为`1`。
 
-    **`div_mode`** 为`False`时，`axis`取值范围是[-2, +∞）且指定的轴不能超过输入`input`的维度数。如果`axis=-2`，代表量化的element-wise轴是输入`input`的倒数第二根轴；如果`axis`大于-2，量化的element-wise轴是输入的最后一根轴。
+    `div_mode` 为`False`时，`axis`取值范围是[-2, +∞）且指定的轴不能超过输入`input`的维度数。如果`axis`为-2，代表量化的element-wise轴是输入`input`的倒数第二根轴；如果`axis`大于-2，量化的element-wise轴是输入的最后一根轴。
 
-- **div_mode** (`bool`)：布尔类型，表示计算`scales`模式。当`div_mode`为`True`时，表示用除法计算`scales`；`div_mode`为`False`时，表示用乘法计算`scales`，默认值为`True`。
+- **div_mode** (`bool`)：可选参数，表示计算`scales`模式。当`div_mode`为`True`时，表示用除法计算`scales`；`div_mode`为`False`时，表示用乘法计算`scales`，默认值为`True`。
 
 ## 返回值说明
 `Tensor`
 
-公式中的输出，输出大小与`input`一致。数据类型由参数`dtype`指定，如果参数`dtype`为`quint4x2`，输出的`dtype`是`int32`，shape的最后一维是输入shape最后一维的1/8，shape其他维度和输入一致。
+对应公式中的$result$，输出大小与`input`一致。数据类型由参数`dtype`指定，如果参数`dtype`为`quint4x2`，输出的`dtype`是`int32`，shape的最后一维是输入shape最后一维的1/8，shape其他维度和输入一致。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式（PyTorch 2.1.0版本）。
 - `div_mode`为`False`时：
     - 支持<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>。
     - 当`dtype`为`quint4x2`或者`axis`为-2时，不支持<term>Atlas 推理系列产品</term>。
-
-## 支持的型号
-
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
-- <term>Atlas 推理系列产品</term> 
 
 ## 调用示例
 

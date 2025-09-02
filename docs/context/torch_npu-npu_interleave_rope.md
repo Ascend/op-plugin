@@ -1,8 +1,15 @@
 # torch\_npu.npu\_interleave\_rope
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
+
 ## 功能说明
 
--   算子功能：针对单输入x进行旋转位置编码。
+-   API功能：针对单输入`x`进行旋转位置编码。
 -   计算公式：
 
     ![](./figures/zh-cn_formulaimage_0000002238091144.png)
@@ -14,33 +21,27 @@
 ## 函数原型
 
 ```
-torch_npu.npu_interleave_rope(Tensor x, Tensor cos, Tensor sin) -> Tensor
+torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 ```
 
 ## 参数说明
 
--   **x** (`Tensor`)：表示目标张量。要求为4D的Tensor，shape为\(B, N, S, D\)，数据类型支持bfloat16、float16，数据格式为ND，不支持非连续的Tensor。
--   **cos** (`Tensor`)：表示RoPE旋转位置编码的余弦分量。要求为4D的Tensor，shape为\(B, N, S, D\)，S可以为1或与x的S相同，数据类型、数据格式与x一致，不支持非连续的Tensor。
--   **sin** (`Tensor`)：表示RoPE旋转位置编码的正弦分量。shape、数据类型、数据格式需要与cos保持一致，不支持非连续的Tensor。
+-   **x** (`Tensor`)：表示待处理张量。要求为4维张量，shape为\(B, N, S, D\)，数据类型支持`bfloat16`、`float16`，数据格式为$ND$，不支持非连续的Tensor。
+-   **cos** (`Tensor`)：表示RoPE旋转位置编码的余弦分量。要求为4维张量，shape为\(B, N, S, D\)，S可以为1或与`x`的S相同，数据类型、数据格式与`x`一致，不支持非连续的Tensor。
+-   **sin** (`Tensor`)：表示RoPE旋转位置编码的正弦分量。shape、数据类型、数据格式需要与`cos`保持一致，不支持非连续的Tensor。
 
 ## 返回值说明
 
 `Tensor`
 
-表示旋转编码后的结果。shape、数据类型、数据格式与输入x保持一致，不支持非连续的Tensor。
+表示旋转编码后的结果。shape、数据类型、数据格式与输入`x`保持一致，不支持非连续的Tensor。
 
 ## 约束说明
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
--   输入x、cos、sin的D维度均必须等于64。
--   cos、sin的N维度必须等于1。
-
-## 支持的型号
-
--   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
-
--   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
+-   该接口支持图模式（PyTorch 2.1.0版本）。
+-   输入`x`、`cos`、`sin`的D维度均必须等于64。
+-   `cos`、`sin`的N维度必须等于1。
 
 ## 调用示例
 
