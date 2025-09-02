@@ -1,8 +1,14 @@
 # torch_npu.npu_moe_finalize_routing
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
+
 ## 功能说明
 
-- API功能：MoE计算中，最后处理合并MoE FFN的输出结果。
+- API功能：在MoE计算的最后，合并MoE FFN(Feedforward Neural Network)的输出结果。
 
 - 计算公式：
 
@@ -18,28 +24,30 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 ```
 
 ## 参数说明
+>**说明：**<br>
+>shape中的符号说明：
+>-   $NUM\_ROWS$：为行数。
+>-   $K$：表示从总的专家$E$中选出$K$个专家。$E$表示专家数，$E$需要大于等于$K$。
+>-   $H$：表示每个token序列长度，为列数。
 
-- **expanded_permuted_rows** (`Tensor`)：必选参数，公式中的$expandPermutedROWs$，经过专家处理过的结果，要求是一个2D的Tensor，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。shape支持$（NUM\_ROWS * K, H）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，$H$为列数。
-
-- **skip1** (`Tensor`)：必选参数允许为None，公式中的$skip1$，求和的输入参数1，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。
-- **skip2** (`Tensor`)：必选参数允许为None，公式中的$skip2$，求和的输入参数2，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。`skip2`参数为`None`时，`skip1`参数必须也为`None`。
-- **bias** (`Tensor`)：必选参数允许为None，公式中的$bias$，专家的偏差，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致。shape支持$（E，H）$，$E$为总的专家个数，$H$为列数。
-- **scales** (`Tensor`)：必选参数允许为None，公式中的$scales$，专家的权重，要求是一个2D的Tensor，数据类型要求与`expanded_permuted_rows`一致，shape支持（$NUM\_ROWS，K）$。
-- **expanded_src_to_dst_row** (`Tensor`)：必选参数，公式中的$expandedSrcRowToDstRow$，保存每个专家处理结果的索引，要求是一个1D的Tensor，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，`drop_pad_mode`参数为0时，Tensor中的值取值范围是$[0, NUM\_ROWS * K-1]$。
-- **export_for_source_row** (`Tensor`)：必选参数允许为None，公式中的$exportForSourceRow$，每行处理的专家号，要求是一个2D的Tensor，数据类型支持`int32`。shape支持$（NUM\_ROWS，K）$，$NUM\_ROWS$为行数，$K$为从总的专家$E$中选出$K$个专家，Tensor中的取值范围是[0,E-1]。
+- **expanded_permuted_rows** (`Tensor`)：必选参数，对应公式中的$expandPermutedROWs$，经过专家处理过的结果，要求为一个2维张量，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。shape支持$（NUM\_ROWS * K, H）$。
+- **skip1** (`Tensor`)：必选参数，允许为None，对应公式中的$skip1$，求和的输入参数1，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。
+- **skip2** (`Tensor`)：必选参数，允许为None，对应公式中的$skip2$，求和的输入参数2，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。`skip2`参数为`None`时，`skip1`参数必须也为`None`。
+- **bias** (`Tensor`)：必选参数，允许为None，对应公式中的$bias$，专家的偏差，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致。shape支持$（E，H）$。
+- **scales** (`Tensor`)：必选参数，允许为None，对应公式中的$scales$，专家的权重，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape支持（$NUM\_ROWS，K）$。
+- **expanded_src_to_dst_row** (`Tensor`)：必选参数，对应公式中的$expandedSrcRowToDstRow$，保存每个专家处理结果的索引，要求为一个1维为张量，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，`drop_pad_mode`参数为0时，Tensor的取值范围是$[0, NUM\_ROWS * K-1]$。
+- **export_for_source_row** (`Tensor`)：必选参数，允许为None，公式中的$exportForSourceRow$，每行处理的专家号，要求为一个2维张量，数据类型支持`int32`。shape支持$（NUM\_ROWS，K）$，Tensor的取值范围是[0,E-1]。
 - **drop_pad_mode** (`int`)：可选参数，表示是否支持丢弃模式，取值范围为0，默认值为`0`。
 
+
 ## 返回值说明
-**out** (`Tensor`)：最后处理合并MoE FFN的输出结果。
+`Tensor`
+输出参数`out`,代表最后MoE FFN合并的输出结果。数据维度支持2维，shape支持$（NUM_ROWS, H）$。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
-
-## 支持的型号
-
-<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
+- 该接口支持图模式（PyTorch 2.1.0版本）。
 
 ## 调用示例
 

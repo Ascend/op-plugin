@@ -14,7 +14,7 @@
 - API功能：对原始输入`logits`进行`top-k`和`top-p`采样过滤。
 
 - 计算公式：
-  - 对输入logits按最后一轴进行升序排序，得到对应的排序结果sortedValue和sortedIndices。
+  - 对输入`logits`按最后一轴进行升序排序，得到对应的排序结果sortedValue和sortedIndices。
   $$sortedValue, sortedIndices = sort(logits, dim=-1, descend=false, stable=true)$$
   - 计算保留的阈值（第k大的值）。
   $$topKValue[b][v] = sortedValue[b][sortedValue.size(1) - k[b]]$$
@@ -30,7 +30,7 @@
   $$
   - 通过softmax将经过top-k过滤后的数据按最后一轴转换为概率分布。
   $$probsValue = softmax(sortedValue, dim=-1)$$
-  - 按最后一轴计算累计概率（从最小的概率开始累加）
+  - 按最后一轴计算累计概率（从最小的概率开始累加）。
   $$probsSum = cumsum(probsValue, dim=-1)$$
   - 生成top-p的mask，累计概率小于等于1-p的位置需要过滤掉，并保证每个batch至少保留一个元素。
   $$topPMask[b][v] = probsSum[b][v] <= 1-p[b]$$
@@ -55,14 +55,14 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 
 ## 参数说明
 
-- **logits** (`Tensor`)：必选参数，张量，数据类型支持`float32`、`float16`和`bfloat16`，数据格式支持ND，支持非连续的Tensor，维数支持2维。
-- **p** (`Tensor`)：必选参数，表示`top-k`张量，值域为`[0, 1]`，数据类型支持`float32`、`float16`和`bfloat16`，数据类型需要与logits一致，shape支持1维且需要与logits的第一维相同，数据格式支持ND，支持非连续的Tensor。
-- **k** (`Tensor`)：必选参数，表示`top-k`的阈值张量，值域为`[1, 1024]`，且最大值需要小于等于logits.size(1)，数据类型支持`int32`，shape支持1维且需要与logits的第一维相同，数据格式支持ND，支持非连续的Tensor。
+- **logits** (`Tensor`)：必选参数，表示要处理的数据，数据类型支持`float32`、`float16`和`bfloat16`，数据格式支持$ND$，支持非连续的Tensor，维数支持2维。
+- **p** (`Tensor`)：必选参数，表示`top-k`张量，值域为`[0, 1]`，数据类型支持`float32`、`float16`和`bfloat16`，数据类型需要与`logits`一致，shape支持1维且需要与`logits`的第一维相同，数据格式支持$ND$，支持非连续的Tensor。
+- **k** (`Tensor`)：必选参数，表示`top-k`的阈值张量，值域为`[1, 1024]`，且最大值需要小于等于logits.size(1)，数据类型支持`int32`，shape支持1维且需要与`logits`的第一维相同，数据格式支持$ND$，支持非连续的Tensor。
 
 ## 返回值说明
 `Tensor`
 
-表示过滤后的数据。数据类型支持`float32`、`float16`和`bfloat16`，数据类型与`logits`一致，shape支持2维且需要与`logits`一致，支持非连续Tensor，数据格式支持ND。
+表示过滤后的数据。数据类型支持`float32`、`float16`和`bfloat16`，数据类型与`logits`一致，shape支持2维且需要与`logits`一致，支持非连续Tensor，数据格式支持$ND$。
 
 ## 约束说明
 
