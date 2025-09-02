@@ -685,6 +685,7 @@ official:
 
   - func: _nnpack_spatial_convolution(Tensor input, Tensor weight, Tensor? bias, SymInt[2] padding, int[2] stride=1) -> Tensor
     acl_op: [v2.0, newest]
+    op_api: [v2.0, newest]
 
   - func: _nnpack_spatial_convolution(Tensor input, Tensor weight, Tensor? bias, int[2] padding, int[2] stride=1) -> Tensor
     acl_op: v1.11
