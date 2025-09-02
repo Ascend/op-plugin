@@ -18,7 +18,7 @@ AdamW的功能和原理可参考[https://pytorch.org/docs/2.1/generated/torch.op
 - lr：学习率，float类型（默认值：1e-3）。
 - betas：用于计算梯度及其平方的运行平均值的系数，类型为Tuple[float, float]（默认值：（0.9，0.999））。
 - eps：防止除0，提高数值稳定性，float类型（默认值：1e-8）。
-- weight_decay：权重衰减，bool类型（默认值：0）。
+- weight_decay：权重衰减，float类型（默认值：0）。
 - amsgrad：是否使用参考《[On the Convergence of Adam and Beyond](https://arxiv.org/pdf/1904.09237)》的AMSGrad变种实现，bool类型（默认值：False）。
 
 ## 输入说明

@@ -8,7 +8,7 @@ torch_npu.npu.aclnn.version(): -> None
 
 ## 功能说明
 
-查询aclnn版本信息。
+查询aclnn算子版本信息。aclnn算子详情可参考《CANN AOL算子加速库接口》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/API/aolapi/operatorlist_00001.html">接口简介</a>”章节。
 
 ## 约束说明
 

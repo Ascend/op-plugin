@@ -208,6 +208,8 @@
             -   [torch_npu.npu.graph_task_group_end](./context/torch_npu-npu-graph_task_group_end.md)
             -   [torch_npu.npu.graph_task_update_begin](./context/torch_npu-npu-graph_task_update_begin.md)
             -   [torch_npu.npu.graph_task_update_end](./context/torch_npu-npu-graph_task_update_end.md)
+            -   [（beta）torch_npu.npu.aclnn.version](./context/（beta）torch_npu-npu-aclnn-version.md)
+            -   [torch_npu.npu.aclnn.allow_hf32](./context/torch_npu-npu-aclnn-allow_hf32.md)
     
         -   [amp](./context/amp.md)
             -   [（beta）torch_npu.npu.get_amp_supported_dtype](./context/（beta）torch_npu-npu-get_amp_supported_dtype.md)
@@ -234,9 +236,6 @@
             -   [torch_npu.npu.mstx.mstx_range](./context/torch_npu-npu-mstx-mstx_range.md)
     
         -   [torch_npu Storage](./context/torch_npu-Storage.md)
-        -   [aclnn](./context/aclnn.md)
-            -   [（beta）torch_npu.npu.aclnn.version](./context/（beta）torch_npu-npu-aclnn-version.md)
-            -   [torch_npu.npu.aclnn.allow_hf32](./context/torch_npu-npu-aclnn-allow_hf32.md)
     
         -   [（beta）NPU Tensor](./context/（beta）NPU-Tensor.md)
     

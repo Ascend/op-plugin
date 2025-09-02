@@ -34,7 +34,6 @@ params为参数的可迭代对象或参数组的dict类型。
 - “ValueError”- “lr”不提供或值小于0。
 - “ValueError”- “momentum”小于0。
 - “ValueError”- “weight_decay”小于0。
-- “ValueError”- “weight_decay”小于0。
 - “TypeError ”- “nesterov”为True，同时momentum小于0或者dampening不等于0。
 
 ## 约束说明
