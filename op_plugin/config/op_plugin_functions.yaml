@@ -205,6 +205,7 @@ official:
 
   - func: _embedding_bag_forward_only(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False, int padding_idx=-1) -> (Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
+    op_api: all_version
 
   - func: _embedding_bag_per_sample_weights_backward(Tensor grad, Tensor weight, Tensor indices, Tensor offsets, Tensor offset2bag, int mode, int padding_idx=-1) -> Tensor
     acl_op: all_version
@@ -4415,9 +4416,11 @@ official:
 
   - func: quantize_per_channel(Tensor self, Tensor scales, Tensor zero_points, int axis, ScalarType dtype) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: quantize_per_tensor(Tensor self, float scale, int zero_point, ScalarType dtype) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: random_(Tensor(a!) self, *, Generator? generator=None) -> Tensor(a!)
     acl_op: all_version
@@ -7925,6 +7928,14 @@ custom:
 
   - func: npu_moe_token_unpermute_with_routing_map_grad(Tensor unpermuted_tokens_grad, Tensor out_index, Tensor permuted_token_id, Tensor? routing_map, Tensor? permuted_tokens, Tensor? probs, bool drop_and_pad, int[] restore_shape) -> (Tensor, Tensor)
     op_api: [v2.1, newest]
+
+  - func: _quantize_per_tensor_impl.out(Tensor inputs, Tensor scales, Tensor zero_points, ScalarType dtype, *, Tensor(a!) result) -> Tensor(a!)
+    acl_op: all_version
+    op_api: all_version
+
+  - func: _quantize_per_channel_impl.out(Tensor inputs, Tensor scales, Tensor zero_points, int axis, ScalarType dtype, *, Tensor(a!) result) -> Tensor(a!)
+    acl_op: all_version
+    op_api: all_version
 
 symint:
   - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor

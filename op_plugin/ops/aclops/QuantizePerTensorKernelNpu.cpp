@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2025 Huawei Technologies Co., Ltd
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -20,14 +20,12 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace {
-
-at::Tensor& quantize_per_tensor_out_nocheck(
-    at::Tensor& result,
+at::Tensor& _quantize_per_tensor_impl_out(
     const at::Tensor& self,
     const at::Tensor& scales,
     const at::Tensor& zero_points,
-    at::ScalarType dtype)
+    at::ScalarType dtype,
+    at::Tensor& result)
 {
     string dtype_str = "torch.qint8";
     if (dtype == at::ScalarType::QUInt8) {
@@ -47,7 +45,6 @@ at::Tensor& quantize_per_tensor_out_nocheck(
 
     return result;
 }
-} // namespace
 
 at::Tensor quantize_per_tensor(
     const at::Tensor& self,
@@ -79,7 +76,7 @@ at::Tensor quantize_per_tensor(
         output_size,
         self.options().dtype(output_dtype),
         npu_preparation::get_tensor_npu_format(self));
-    quantize_per_tensor_out_nocheck(result, self, scale_tensor, zp_tensor, dtype);
+    acl_op::_quantize_per_tensor_impl_out(self, scale_tensor, zp_tensor, dtype, result);
 
     return result;
 }
@@ -94,13 +91,13 @@ at::Tensor quantize_per_tensor(
 #include <torch/library.h>
 
 namespace acl_op {
-namespace {
-at::Tensor& quantize_per_tensor_out_nocheck(
-    at::Tensor& result,
+
+at::Tensor& _quantize_per_tensor_impl_out(
     const at::Tensor& self,
     const at::Tensor& scales,
     const at::Tensor& zero_points,
-    at::ScalarType dtype)
+    at::ScalarType dtype,
+    at::Tensor& result)
 {
     string dtype_str = "torch.qint8";
     if (dtype == at::ScalarType::QUInt8) {
@@ -120,7 +117,6 @@ at::Tensor& quantize_per_tensor_out_nocheck(
 
     return result;
 }
-} // namespace
 
 at::Tensor quantize_per_tensor(
     const at::Tensor& self,
@@ -131,71 +127,4 @@ at::Tensor quantize_per_tensor(
     return at::native::quantize_per_tensor(self, scale, zero_point, dtype);
 }
 } // namespace acl_op
-
-namespace at {
-namespace native {
-using npu_preparation = at_npu::native::OpPreparation;
-
-void quantize_tensor_per_tensor_affine_npu(
-    const at::Tensor& rtensor,
-    at::Tensor& qtensor,
-    double scale,
-    int64_t zero_point)
-{
-    float scale_float = static_cast<float>(scale);
-    auto dtype = qtensor.options().dtype().toScalarType();
-    auto output_size = op_infer::input_same_output_size(rtensor);
-    auto output_dtype = at::kInt;
-    if (dtype == at::ScalarType::QInt8) {
-        output_dtype = at::kChar;
-    } else if (dtype == at::ScalarType::QUInt8) {
-        output_dtype = at::kByte;
-    } else if (dtype == at::ScalarType::QInt32) {
-        output_dtype = at::kInt;
-    }
-    at::Tensor scale_tensor = npu_preparation::apply_tensor_with_format(
-        {1},
-        rtensor.options().dtype(at::kFloat),
-        npu_preparation::get_tensor_npu_format(rtensor));
-    scale_tensor[0] = scale_float;
-    at::Tensor zero_point_tensor = npu_preparation::apply_tensor_with_format(
-        {1},
-        rtensor.options().dtype(at::kInt),
-        npu_preparation::get_tensor_npu_format(rtensor));
-    zero_point_tensor[0] = zero_point;
-    at::Tensor result = npu_preparation::apply_tensor_with_format(
-        output_size,
-        rtensor.options().dtype(output_dtype),
-        npu_preparation::get_tensor_npu_format(rtensor));
-    acl_op::quantize_per_tensor_out_nocheck(result, rtensor, scale_tensor, zero_point_tensor, dtype);
-    at_npu::native::NPUNativeFunctions::set_(qtensor, result);
-}
-
-void dequantize_tensor_per_tensor_affine_npu(
-    const at::Tensor& qtensor,
-    at::Tensor& rtensor,
-    double scale,
-    int64_t zero_point)
-{
-    auto dtype = qtensor.scalar_type();
-    auto output_dtype = at::kInt;
-    if (dtype == at::ScalarType::QInt8) {
-        output_dtype = at::kChar;
-    } else if (dtype == at::ScalarType::QUInt8) {
-        output_dtype = at::kByte;
-    }
-    at::Tensor result = at::empty(
-        qtensor.sizes(),
-        qtensor.options().dtype(output_dtype).memory_format(qtensor.suggest_memory_format()));
-
-    at_npu::native::NPUNativeFunctions::set_(result, qtensor);
-    rtensor = at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Float);
-    rtensor = (rtensor - zero_point) * scale;
-}
-
-REGISTER_PRIVATEUSE1_DISPATCH(quantize_tensor_per_tensor_affine_stub, &quantize_tensor_per_tensor_affine_npu);
-REGISTER_PRIVATEUSE1_DISPATCH(dequantize_tensor_per_tensor_affine_stub, &dequantize_tensor_per_tensor_affine_npu);
-
-} // namespace native
-} // namespace at
 #endif
