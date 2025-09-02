@@ -1,30 +1,18 @@
-// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2025 Huawei Technologies Co., Ltd
 // Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
-//
-// Licensed under the BSD 3-Clause License  (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// https://opensource.org/licenses/BSD-3-Clause
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
-#include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/OpInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/OpInterface.h"
 
-namespace acl_op {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-
+const int DIMENSION_2D = 2;
 std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(const at::Tensor &input, const at::Tensor &lengths,
                                                          bool batch_first)
 {
-    TORCH_CHECK(input.dim() >= 2, "Input must have two dims.", input.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(input.dim() >= DIMENSION_2D, "Input must have two dims.", input.dim(), OPS_ERROR(ErrCode::PARAM));
     // get the size of B and T, the input size is [T, B, *] or [B, T, *]
     auto batchsize = batch_first ? input.size(0) : input.size(1);
     auto timesize = batch_first ? input.size(1) : input.size(0);
@@ -84,4 +72,4 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(const at::Tensor &input
     }
     return std::tie(output, batchsizes);
 }
-} // namespace acl_op
+} // namespace op_api

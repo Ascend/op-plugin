@@ -20,50 +20,6 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor nll_loss(
-    const at::Tensor& self,
-    const at::Tensor& target,
-    const c10::optional<at::Tensor>& weight,
-    int64_t reduction,
-    int64_t ignore_index)
-{
-    return std::get<0>(at::nll_loss_forward(self, target, weight, reduction, ignore_index));
-}
-
-at::Tensor& nll_loss_out(
-    const at::Tensor& self,
-    const at::Tensor& target,
-    const c10::optional<at::Tensor>& weight,
-    int64_t reduction,
-    int64_t ignore_index,
-    at::Tensor& out)
-{
-    at::Tensor total_weight = npu_preparation::apply_tensor({}, self.options(), self);
-    return std::get<0>(at::nll_loss_forward_out(out, total_weight, self, target, weight, reduction, ignore_index));
-}
-
-at::Tensor nll_loss2d(
-    const at::Tensor& self,
-    const at::Tensor& target,
-    const c10::optional<at::Tensor>& weight,
-    int64_t reduction,
-    int64_t ignore_index)
-{
-    return std::get<0>(at::nll_loss2d_forward(self, target, weight, reduction, ignore_index));
-}
-
-at::Tensor& nll_loss2d_out(
-    const at::Tensor& self,
-    const at::Tensor& target,
-    const c10::optional<at::Tensor>& weight,
-    int64_t reduction,
-    int64_t ignore_index,
-    at::Tensor& out)
-{
-    at::Tensor total_weight = npu_preparation::apply_tensor({}, self.options(), self);
-    return std::get<0>(at::nll_loss2d_forward_out(out, total_weight, self, target, weight, reduction, ignore_index));
-}
-
 at::Tensor& multilabel_margin_loss_out(
     const at::Tensor& self,
     const at::Tensor& target,

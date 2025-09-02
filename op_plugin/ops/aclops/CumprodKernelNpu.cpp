@@ -71,31 +71,6 @@ at::Tensor& cumprod_out(
     return result;
 }
 
-at::Tensor& cumprod_out(
-    const at::Tensor& self,
-    at::Dimname dim,
-    c10::optional<at::ScalarType> dtype,
-    at::Tensor& result) {
-  return acl_op::cumprod_out(self, dimname_to_position(self, dim), dtype, result);
-}
-
-at::Tensor& cumprod_(
-    at::Tensor& self,
-    int64_t dim,
-    c10::optional<at::ScalarType> dtype) {
-  TORCH_CHECK(
-      !dtype.has_value() || (self.scalar_type() == dtype.value()),
-      "provided dtype must match the dtype of self tensor in cumprod. Got ",
-      toString(self.scalar_type()),
-      " and ",
-      toString(dtype.value()),
-      "." + OPS_ERROR(ErrCode::TYPE));
-  return acl_op::cumprod_out(self, dim, dtype, self);
-}
-
-at::Tensor& cumprod_(at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype) {
-  return acl_op::cumprod_(self, dimname_to_position(self, dim), dtype);
-}
 
 #if VERSION_BETWEEN(V2R0, V2R0)
 at::Tensor cumprod(

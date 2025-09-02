@@ -1184,12 +1184,6 @@
   "func: __rshift__.Tensor(Tensor self, Tensor other) -> Tensor": {
     "version": ["all_version"]
   },
-  "func: __xor__.Scalar(Tensor self, Scalar other) -> Tensor": {
-    "version": ["all_version"]
-  },
-  "func: __xor__.Tensor(Tensor self, Tensor other) -> Tensor": {
-    "version": ["all_version"]
-  },
   "func: _adaptive_avg_pool2d(Tensor self, SymInt[2] output_size) -> Tensor": {
     "version": ["all_version"]
   },
@@ -1865,13 +1859,7 @@
   "func: cosh_(Tensor(a!) self) -> Tensor(a!)": {
     "version": ["all_version"]
   },
-  "func: cumprod.dimname_out(Tensor self, Dimname dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
   "func: cumprod.out(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
-  "func: cumprod_.dimname(Tensor(a!) self, Dimname dim, *, ScalarType? dtype=None) -> Tensor(a!)": {
     "version": ["all_version"]
   },
   "func: cumsum(Tensor self, int dim, *, ScalarType? dtype=None) -> Tensor": {
@@ -2808,18 +2796,6 @@
     "version": ["all_version"]
   },
   "func: neg_(Tensor(a!) self) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
-  "func: nll_loss(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, SymInt ignore_index=-100) -> Tensor": {
-    "version": ["all_version"]
-  },
-  "func: nll_loss.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, SymInt ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
-  "func: nll_loss2d(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, SymInt ignore_index=-100) -> Tensor": {
-    "version": ["all_version"]
-  },
-  "func: nll_loss2d.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, SymInt ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
   "func: nll_loss2d_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, SymInt ignore_index, Tensor total_weight) -> Tensor": {
