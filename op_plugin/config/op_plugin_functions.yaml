@@ -1054,6 +1054,7 @@ official:
 
   - func: affine_grid_generator_backward(Tensor grad, SymInt[] size, bool align_corners) -> Tensor
     acl_op: [v2.1, newest]
+    op_api: [v2.1, newest]
 
   - func: affine_grid_generator_backward(Tensor grad, int[] size, bool align_corners) -> Tensor
     acl_op: v1.11, v2.0
