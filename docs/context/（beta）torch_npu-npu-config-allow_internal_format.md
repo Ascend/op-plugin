@@ -20,7 +20,9 @@ torch_npu.npu.config.allow_internal_format = bool
 
 ## 参数说明
 
-输入bool值，默认值为True。
+输入`bool`值。
+- <term>Atlas A2 训练系列产品</term>/<term>Atlas 推理系列产品</term>/<term>Atlas 训练系列产品</term>默认值为`True`。
+- <term>Atlas A3 训练系列产品</term>默认值为`False`。
 
 ## 调用示例
 
