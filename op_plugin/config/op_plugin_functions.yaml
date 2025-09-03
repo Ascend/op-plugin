@@ -7707,6 +7707,28 @@ custom:
         mode: '(int64_t)1'
       exec: aclnnGatherV3, input, dim, index, batch_dims, mode, out
 
+  - func: npu_gather_sparse_index_backward(Tensor grad, SymInt[] self_sizes, Tensor index) -> Tensor
+    op_api: all_version
+
+  - func: _npu_index_add(Tensor self, Tensor index, Tensor source, *, Scalar alpha=1) -> Tensor
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      new_params:
+        dim: '(int64_t)0'
+        mode: '(int64_t)0'
+      exec: aclnnIndexAddV2, self, dim, index, source, alpha, mode, out
+
+  - func: _npu_index_add_(Tensor(a!) self, Tensor index, Tensor source, *, Scalar alpha=1) -> Tensor(a!)
+    op_api: all_version
+    gen_opapi:
+      new_params:
+        dim: '(int64_t)0'
+        mode: '(int64_t)0'
+      exec: aclnnIndexAddV2, self, dim, index, source, alpha, mode, self
+
   - func: npu_nsa_compress(Tensor input, Tensor weight, int compress_block_size, int compress_stride, *, int[]? actual_seq_len=None) -> Tensor
     op_api: all_version
     gen_opapi:
@@ -7911,6 +7933,9 @@ custom:
     op_api: all_version
 
 symint:
+  - func: npu_gather_sparse_index_backward(Tensor grad, SymInt[] self_sizes, Tensor index) -> Tensor
+    op_api: all_version
+
   - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
     op_api: all_version
 

@@ -4286,6 +4286,15 @@
   "func: npu_gather_sparse_index(Tensor input, Tensor index) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: npu_gather_sparse_index_backward(Tensor grad, SymInt[] self_sizes, Tensor index) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: _npu_index_add(Tensor self, Tensor index, Tensor source, *, Scalar alpha=1) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: _npu_index_add_(Tensor(a!) self, Tensor index, Tensor source, *, Scalar alpha=1) -> Tensor(a!)": {
+    "version": ["all_version"]
+  },
   "func: npu_nsa_compress(Tensor input, Tensor weight, int compress_block_size, int compress_stride, *, int[]? actual_seq_len=None) -> Tensor": {
     "version": ["all_version"]
   },
