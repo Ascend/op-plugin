@@ -58,12 +58,19 @@ int64_t get_dtype_max_value(at::ScalarType dtype)
 
 at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::optional<at::Generator> generator)
 {
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
     if (is_capture == c10_npu::CaptureStatus::None) {
         auto pair = gen->philox_engine_inputs(10);
         EXEC_NPU_CMD(aclnnInplaceRandom, self, from, to, pair.first, pair.second);
+    } else {
+#if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
+        auto gen_state_ = gen->philox_npu_state(10);
+        const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
+        const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
+        const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
+        EXEC_NPU_CMD(aclnnInplaceRandomTensor, self, from, to, *seed_ptr, *offset_ptr, offset_intragraph);
+#endif
     }
     return self;
 }

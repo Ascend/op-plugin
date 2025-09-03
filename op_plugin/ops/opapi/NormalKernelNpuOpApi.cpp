@@ -28,8 +28,7 @@ at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at:
     DO_COMPATIBILITY(aclnnInplaceNormal, acl_op::normal_(self, mean, std, generator));
     TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
     npu_preparation::check_tensor({}, self, self, self.sizes());
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                        at_npu::detail::getDefaultNPUGenerator());
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
     if (is_capture == c10_npu::CaptureStatus::None) {
         auto pair = gen->philox_engine_inputs(10);
@@ -38,6 +37,16 @@ at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at:
         float mean_cast = static_cast<float>(mean);
         float rstd_cast = static_cast<float>(std);
         EXEC_NPU_CMD(aclnnInplaceNormal, self, mean_cast, rstd_cast, seed, offset);
+    } else {
+#if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
+        auto gen_state_ = gen->philox_npu_state(10);
+        const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
+        const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
+        const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
+        float mean_cast = static_cast<float>(mean);
+        float rstd_cast = static_cast<float>(std);
+        EXEC_NPU_CMD(aclnnInplaceNormalTensor, self, mean_cast, rstd_cast, *seed_ptr, *offset_ptr, offset_intragraph);
+#endif
     }
     return self;
 }
@@ -49,12 +58,14 @@ at::Tensor& normal_out(const at::Tensor& mean, const at::Tensor& std, c10::optio
     DO_COMPATIBILITY(aclnnNormalTensorTensor, acl_op::normal_out(mean, std, generator, out));
     at::SmallVector<int64_t, SIZE> output_size = op_infer::broadcast_ops_npu_output_size(mean, std);
     npu_preparation::check_tensor({mean, std}, out, out, output_size);
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    EXEC_NPU_CMD(aclnnNormalTensorTensor, mean, std, seed, offset, out);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        EXEC_NPU_CMD(aclnnNormalTensorTensor, mean, std, seed, offset, out);
+    }
     return out;
 }
 
@@ -63,12 +74,14 @@ at::Tensor normal(const at::Tensor& mean, const at::Tensor& std, c10::optional<a
     DO_COMPATIBILITY(aclnnNormalTensorTensor, acl_op::normal(mean, std, generator));
     at::SmallVector<int64_t, SIZE> output_size = op_infer::broadcast_ops_npu_output_size(mean, std);
     at::Tensor result = npu_preparation::apply_tensor_without_format(mean, output_size);
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    EXEC_NPU_CMD(aclnnNormalTensorTensor, mean, std, seed, offset, result);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        EXEC_NPU_CMD(aclnnNormalTensorTensor, mean, std, seed, offset, result);
+    }
     return result;
 }
 
@@ -79,13 +92,15 @@ at::Tensor& normal_out(const at::Tensor& mean, double std, c10::optional<at::Gen
     DO_COMPATIBILITY(aclnnNormalTensorFloat, acl_op::normal_out(mean, std, generator, out));
     TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
     npu_preparation::check_tensor({mean}, out, out);
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    float rstd_cast = static_cast<float>(std);
-    EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, out);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        float rstd_cast = static_cast<float>(std);
+        EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, out);
+    }
     return out;
 }
 
@@ -94,13 +109,15 @@ at::Tensor normal(const at::Tensor& mean, double std, c10::optional<at::Generato
     DO_COMPATIBILITY(aclnnNormalTensorFloat, acl_op::normal(mean, std, generator));
     TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
     at::Tensor result = npu_preparation::apply_tensor_without_format(mean);
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    float rstd_cast = static_cast<float>(std);
-    EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, result);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        float rstd_cast = static_cast<float>(std);
+        EXEC_NPU_CMD(aclnnNormalTensorFloat, mean, rstd_cast, seed, offset, result);
+    }
     return result;
 }
 
@@ -110,13 +127,15 @@ at::Tensor& normal_out(double mean, const at::Tensor& std, c10::optional<at::Gen
 {
     DO_COMPATIBILITY(aclnnNormalFloatTensor, acl_op::normal_out(mean, std, generator, out));
     npu_preparation::check_tensor({std}, out, out);
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    float mean_cast = static_cast<float>(mean);
-    EXEC_NPU_CMD(aclnnNormalFloatTensor, mean_cast, std, seed, offset, out);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        float mean_cast = static_cast<float>(mean);
+        EXEC_NPU_CMD(aclnnNormalFloatTensor, mean_cast, std, seed, offset, out);
+    }
     return out;
 }
 
@@ -124,13 +143,15 @@ at::Tensor normal(double mean, const at::Tensor& std, c10::optional<at::Generato
 {
     DO_COMPATIBILITY(aclnnNormalFloatTensor, acl_op::normal(mean, std, generator));
     at::Tensor result = npu_preparation::apply_tensor_without_format(std);
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    float mean_cast = static_cast<float>(mean);
-    EXEC_NPU_CMD(aclnnNormalFloatTensor, mean_cast, std, seed, offset, result);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        float mean_cast = static_cast<float>(mean);
+        EXEC_NPU_CMD(aclnnNormalFloatTensor, mean_cast, std, seed, offset, result);
+    }
     return result;
 }
 
@@ -141,14 +162,16 @@ at::Tensor& normal_out(double mean, double std, at::IntArrayRef size,
     DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal_out(mean, std, size, generator, out));
     TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
     npu_preparation::check_tensor({}, out, out, size);
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    float mean_cast = static_cast<float>(mean);
-    float rstd_cast = static_cast<float>(std);
-    EXEC_NPU_CMD(aclnnNormalFloatFloat, mean_cast, rstd_cast, seed, offset, out);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        float mean_cast = static_cast<float>(mean);
+        float rstd_cast = static_cast<float>(std);
+        EXEC_NPU_CMD(aclnnNormalFloatFloat, mean_cast, rstd_cast, seed, offset, out);
+    }
     return out;
 }
 
@@ -167,14 +190,16 @@ at::Tensor normal(double mean, double std,
         .layout(layout)
         .pinned_memory(pin_memory);
     at::Tensor result = npu_preparation::apply_tensor_without_format(size, option);
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator,
-                                                                      at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(10);
-    const int64_t seed = static_cast<int64_t>(pair.first);
-    const int64_t offset = static_cast<int64_t>(pair.second);
-    float mean_cast = static_cast<float>(mean);
-    float rstd_cast = static_cast<float>(std);
-    EXEC_NPU_CMD(aclnnNormalFloatFloat, mean_cast, rstd_cast, seed, offset, result);
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(10);
+        const int64_t seed = static_cast<int64_t>(pair.first);
+        const int64_t offset = static_cast<int64_t>(pair.second);
+        float mean_cast = static_cast<float>(mean);
+        float rstd_cast = static_cast<float>(std);
+        EXEC_NPU_CMD(aclnnNormalFloatFloat, mean_cast, rstd_cast, seed, offset, result);
+    }
     return result;
 }
 

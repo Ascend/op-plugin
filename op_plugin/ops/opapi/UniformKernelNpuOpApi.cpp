@@ -22,17 +22,24 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& uniform_(at::Tensor& self, double from, double to,
-                     c10::optional<at::Generator> gen_)
+at::Tensor& uniform_(at::Tensor& self, double from, double to, c10::optional<at::Generator> generator)
 {
-    DO_COMPATIBILITY(aclnnInplaceUniform, acl_op::uniform_(self, from, to, gen_));
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen_, at_npu::detail::getDefaultNPUGenerator());
+    DO_COMPATIBILITY(aclnnInplaceUniform, acl_op::uniform_(self, from, to, generator));
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
     if (is_capture == c10_npu::CaptureStatus::None) {
         auto pair = gen->philox_engine_inputs(10);
         int64_t seed = static_cast<int64_t>(pair.first);
         int64_t offset = static_cast<int64_t>(pair.second);
         EXEC_NPU_CMD(aclnnInplaceUniform, self, from, to, seed, offset);
+    } else {
+#if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
+        auto gen_state_ = gen->philox_npu_state(10);
+        const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
+        const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
+        const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
+        EXEC_NPU_CMD(aclnnInplaceUniformTensor, self, from, to, *seed_ptr, *offset_ptr, offset_intragraph);
+#endif
     }
     return self;
 }
