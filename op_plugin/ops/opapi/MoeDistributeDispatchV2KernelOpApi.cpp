@@ -98,23 +98,22 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
     int64_t a = 0;
     int64_t ep_recv_cnt_num = 0;
     if (shared_front) {
-        int64_t shared_rank_a = 0;
-        int64_t moe_rank_a = 0;
         if (ep_rank_id < shared_expert_rank_num) {
+            local_moe_expert_num = 1;
             int64_t max_bs = global_bs_real / ep_world_size;  // 前面已有拦截，保证ep_world_size > 0
             int64_t rank_num_per_shared_expert = shared_expert_rank_num / shared_expert_num;  // 前面已有拦截, 保证进入该分支时shared_expert_num > 0
             int64_t max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) / rank_num_per_shared_expert;
-            local_moe_expert_num = 1;
             a = max_bs * max_shared_group_num;
-            shared_rank_a = a;
         } else {
             local_moe_expert_num = moe_expert_num / (ep_world_size - shared_expert_rank_num);
             a = global_bs_real * std::min(local_moe_expert_num, k);
-            moe_rank_a = a;
         }
         if (elastic_info.has_value()) {
+            int64_t max_bs = global_bs_real / ep_world_size;
+            int64_t rank_num_per_shared_expert = shared_expert_rank_num / shared_expert_num;
+            int64_t max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) / rank_num_per_shared_expert;
+            a = std::max(max_bs * max_shared_group_num, global_bs_real * std::min(moe_expert_num / (ep_world_size - shared_expert_rank_num), k));
             local_moe_expert_num = std::max(local_moe_expert_num, moe_expert_num / (ep_world_size - shared_expert_rank_num));
-            a = std::max(shared_rank_a, moe_rank_a);
         }
     }
     if (tp_world_size == DIM_TWO) {
