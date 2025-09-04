@@ -7145,6 +7145,9 @@ custom:
   - func: npu_moe_init_routing_v2(Tensor x, Tensor expert_idx, *, Tensor? scale=None, Tensor? offset=None, int active_num=-1, int expert_capacity=-1, int expert_num=-1, int drop_pad_mode=0, int expert_tokens_num_type=0, bool expert_tokens_num_flag=False, int quant_mode=0, int[2] active_expert_range=[], int row_idx_type=0) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
 
+  - func: npu_moe_init_routing_quant(Tensor x, Tensor expert_idx, *, Tensor? scale=None, Tensor? offset=None, int active_num=1024, int expert_capacity=0, int expert_num=256, int drop_pad_mode=0, int expert_tokens_num_mode=0, bool expert_tokens_before_capacity_flag=False, int quant_mode=1) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+
   - func: npu_grouped_matmul_swiglu_quant(Tensor x, Tensor weight, Tensor group_list, Tensor weight_scale, Tensor x_scale, *, Tensor? bias=None, Tensor? offset=None) -> (Tensor, Tensor, Tensor)
     op_api: all_version
     internal_format_opapi: all_version
