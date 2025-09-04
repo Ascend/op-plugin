@@ -1,38 +1,43 @@
 # （beta）torch_npu.npu_fused_attention_score
 
-## 函数原型
+## 产品支持情况
 
-```
-torch_npu.npu_fused_attention_score(Tensor query_layer, Tensor key_layer, Tensor value_layer, Tensor attention_mask, Scalar scale, float keep_prob, bool query_transpose=False, bool key_transpose=False, bool bmm_score_transpose_a=False, bool bmm_score_transpose_b=False, bool value_transpose=False, bool dx_transpose=False) -> Tensor
-```
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
 
 ## 功能说明
 
 实现“Transformer attention score”的融合计算逻辑，主要将matmul、transpose、add、softmax、dropout、batchmatmul、permute等计算进行了融合。
 
+## 函数原型
+
+```
+torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attention_mask, scale, keep_prob, query_transpose=False, key_transpose=False, bmm_score_transpose_a=False, bmm_score_transpose_b=False, value_transpose=False, dx_transpose=False) -> Tensor
+```
+
 ## 参数说明
 
-- query_layer：Tensor类型，仅支持float16。
-- key_layer：Tensor类型，仅支持float16。
-- value_layer：Tensor类型，仅支持float16。
-- attention_mask：Tensor类型，仅支持float16。
-- scale：缩放系数，浮点数标量。
-- keep_prob：不做dropout的概率，0-1之间，浮点数。
-- query_transpose：query是否做转置，bool类型，默认为False。
-- key_transpose：key是否做转置，bool类型，默认为False。
-- bmm_score_transpose_a：bmm计算中左矩阵是否做转置，bool类型，默认为False。
-- bmm_score_transpose_b：bmm计算中右矩阵是否做转置，bool类型，默认为False。
-- value_transpose：value是否做转置，bool类型，默认为False。
-- dx_transpose：反向计算时dx是否做转置，bool类型，默认为False。
+- **query_layer**（`Tensor`）：必选参数，仅支持`float16`。
+- **key_layer**（`Tensor`）：必选参数，仅支持`float16`。
+- **value_layer**（`Tensor`）：必选参数，仅支持`float16`。
+- **attention_mask**（`Tensor`）：必选参数，仅支持`float16`。
+- **scale**（`Scalar`）：必选参数，缩放系数，浮点数标量。
+- **keep_prob**（`float`）：必选参数，不做dropout的概率，0-1之间，浮点数。
+- **query_transpose**（`bool`）：可选参数，query是否做转置，默认值为False。
+- **key_transpose**（`bool`）：可选参数，key是否做转置，默认值为False。
+- **bmm_score_transpose_a**（`bool`）：可选参数，bmm计算中左矩阵是否做转置，默认值为False。
+- **bmm_score_transpose_b**（`bool`）：可选参数，bmm计算中右矩阵是否做转置，默认值为False。
+- **value_transpose**（`bool`）：可选参数，value是否做转置，默认值为False。
+- **dx_transpose**（`bool`）：可选参数，反向计算时dx是否做转置，默认值为False。
+
+## 返回值说明
+`Tensor`
 
 ## 约束说明
 
-输入tensor的格式编号必须均为29，数据类型为FP16。
-
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
+输入tensor的格式编号必须均为29，数据类型为`float16`。
 
 ## 调用示例
 

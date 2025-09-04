@@ -232,15 +232,15 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     - `input_layout`仅支持BSH、BSND、BNSD；
     - 仅支持page_attention场景，blockSize仅支持128或512；
     - `key`&`value`仅支持$NZ$输入，输入格式为[blockNum, KV\_N, D/32, blockSize, 32]；
-    - `dequant_scale_key`和`dequant_scale_value`的dtype：per-channel模式下，仅支持`bfloat16`类型；per-token模式下，仅支持`float32`类型；
-    - `dequant_scale_key`和`dequant_scale_value`的shape：per-channel模式下，当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[KV\_N,1,D]；输出为BSND时，必须传入[KV\_N, D]；per-token模式下，必须传入[B,KV_S]，S需要大于等于block_table的第二维*block_size；
+    - `key_antiquant_scale`和`value_antiquant_scale`的dtype：per-channel模式下，仅支持`bfloat16`类型；per-token模式下，仅支持`float32`类型；
+    - `key_antiquant_scale`和`value_antiquant_scale`的shape：per-channel模式下，当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[KV\_N,1,D]；输出为BSND时，必须传入[KV\_N, D]；per-token模式下，必须传入[B,KV_S]，S需要大于等于block_table的第二维*block_size；
     - 仅支持KV分离；
     - 仅支持高性能模式；
     - 当MTP等于0时，支持`sparse_mode`为0且不传mask；当MTP大于0、小于16时，支持`sparse_mode`w为3且传入优化后的`atten_mask`矩阵，`atten_mask`矩阵shape必须传入（2048\*2048）；
-    - 不支持配置`dequant_offset_key`和`dequant_offset_value`;
+    - 不支持配置`key_antiquant_offset`和`value_antiquant_offset`;
     - 不支持配置`query_rope`和`key_rope`；
     - 不支持左padding、tensorlist、pse、prefix、后量化；
-    - `num_query_heads`与`num_key_value_heads`支持组合有(10, 1)、(64, 8)、(80, 8)、(128, 16)。
+    - num_query_heads与`num_key_value_heads`支持组合有(10, 1)、(64, 8)、(80, 8)、(128, 16)。
 -   **当Q\_S大于1时：**
     -   `query`、`key`、`value`输入，功能使用限制如下：
         -   支持B轴小于等于65536，D轴32byte不对齐时仅支持到128。

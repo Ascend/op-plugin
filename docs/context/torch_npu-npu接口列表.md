@@ -156,6 +156,31 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>NPUGraph场景下，用于标记待更新任务的结束。</p>
 </td>
 </tr>
+<tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="torch_npu-npu-obfuscation_initialize.md">torch_npu.npu.obfuscation_initialize</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p1218213753310"><a name="p1218213753310"></a><a name="p1218213753310"></a>该接口用于完成PMCC模型混淆引擎的资源初始化。</p>
+</td>
+</tr>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-obfuscation_finalize.md">torch_npu.npu.obfuscation_finalize</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>该接口用于完成PMCC模型混淆引擎的资源释放。</p>
+</td>
+</tr>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-obfuscation_calculate.md">torch_npu.npu.obfuscation_calculate</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>该接口用于实现矩阵乘计算输入和输出的transpose操作。</p>
+</td>
+</tr>
+<tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="（beta）torch_npu-npu-aclnn-version.md">（beta）torch_npu.npu.aclnn.version</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p1218213753310"><a name="p1218213753310"></a><a name="p1218213753310"></a>查询aclnn算子版本信息。</p>
+</td>
+</tr>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-aclnn-allow_hf32.md">torch_npu.npu.aclnn.allow_hf32</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>设置conv算子是否支持hf32，一个属性值，对aclnn的allow_hf32属性的设置和查询。</p>
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -462,29 +487,7 @@
 </tbody>
 </table>
 
-**表9** alnn API
-
-<a name="table985112337387"></a>
-<table><thead align="left"><tr id="row128511333103812"><th class="cellrowborder" valign="top" width="38.22%" id="mcps1.2.3.1.1"><p id="p518819371385"><a name="p518819371385"></a><a name="p518819371385"></a>API名称</p>
-</th>
-<th class="cellrowborder" valign="top" width="61.78%" id="mcps1.2.3.1.2"><p id="p6188153743816"><a name="p6188153743816"></a><a name="p6188153743816"></a>说明</p>
-</th>
-</tr>
-</thead>
-<tbody><tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="（beta）torch_npu-npu-aclnn-version.md">（beta）torch_npu.npu.aclnn.version</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p1218213753310"><a name="p1218213753310"></a><a name="p1218213753310"></a>查询aclnn版本信息。</p>
-</td>
-</tr>
-<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-aclnn-allow_hf32.md">torch_npu.npu.aclnn.allow_hf32</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>设置conv算子是否支持hf32，一个属性值，对aclnn的allow_hf32属性的设置和查询。</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-**表10** NPU Tensor API(beta)
+**表9** NPU Tensor API(beta)
 
 <a name="table1576442216332"></a>
 <table><thead align="left"><tr id="zh-cn_topic_0000001835257345_row74720376177"><th class="cellrowborder" valign="top" width="26.75%" id="mcps1.2.5.1.1"><p id="zh-cn_topic_0000001835257345_p18161141918211"><a name="zh-cn_topic_0000001835257345_p18161141918211"></a><a name="zh-cn_topic_0000001835257345_p18161141918211"></a>PyTorch原生API名称</p>

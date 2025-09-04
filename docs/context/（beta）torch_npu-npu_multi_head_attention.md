@@ -1,64 +1,65 @@
 # （beta）torch_npu.npu_multi_head_attention
 
-## 函数原型
+## 产品支持情况
 
-```
-torch_npu.npu_multi_head_attention(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor attn_mask, Tensor out_proj_weight, Tensor query_bias, Tensor key_bias, Tensor value_bias, Tensor out_proj_bias, Tensor dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
-```
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
 
 ## 功能说明
 
 实现Transformer模块中的MultiHeadAttention计算逻辑。
 
+## 函数原型
+
+```
+torch_npu.npu_multi_head_attention(query, key, value, query_weight, key_weight, value_weight, attn_mask, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias, dropout_mask, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+```
+
+
 ## 参数说明
 
-- query: Tensor类型，仅支持float16。
-- key: Tensor类型，仅支持float16。
-- value: Tensor类型，仅支持float16。
-- query_weight: Tensor类型，仅支持float16。
-- key_weight: Tensor类型，仅支持float16。
-- value_weight: Tensor类型，仅支持float16。
-- attn_mask: Tensor类型，仅支持float16。
-- out_proj_weight: Tensor类型，仅支持float16。
-- query_bias: Tensor类型，仅支持float16。
-- key_bias: Tensor类型，仅支持float16。
-- value_bias: Tensor类型，仅支持float16。
-- out_proj_bias: Tensor类型，仅支持float16。
-- dropout_mask_input: Tensor类型，仅支持float16。
-- attn_head_num： Attention Head numbers，Int型。
-- attn_dim_per_head：Attention dim of a Head，Int型。
-- src_len：source length，Int型。
-- tgt_len：target length，Int型。
-- keep_prob：dropout keep probability，Float型。
-- softmax_use_float：SoftMax Use Float32 to keep precision，Bool型。
+- **query**（`Tensor`）：仅支持`float16`。
+- **key**（`Tensor`）：仅支持`float16`。
+- **value**（`Tensor`）：仅支持`float16`。
+- **query_weight**（`Tensor`）：仅支持`float16`。
+- **key_weight**（`Tensor`）：仅支持`float16`。
+- **value_weight**（`Tensor`）：仅支持`float16`。
+- **attn_mask**（`Tensor`）：仅支持`float16`。
+- **out_proj_weight**（`Tensor`）：仅支持`float16`。
+- **query_bias**（`Tensor`）：仅支持`float16`。
+- **key_bias**（`Tensor`）：仅支持`float16`。
+- **value_bias**（`Tensor`）：仅支持`float16`。
+- **out_proj_bias**（`Tensor`）：仅支持`float16`。
+- **dropout_mask_input**（`Tensor`）：仅支持`float16`。
+- **attn_head_num**（`int`）： Attention Head numbers。
+- **attn_dim_per_head**（`int`）：Attention dim of a Head。
+- **src_len**（`int`）：source length。
+- **tgt_len**（`int`）：target length。
+- **keep_prob**（`float`）：dropout keep probability。
+- **softmax_use_float**（`bool`）：SoftMax Use Float32 to keep precision。
 
-## 输出说明
+## 返回值说明
 
-- y: Tensor类型，仅支持float16。
-- dropout_mask: Tensor类型，仅支持float16。
-- query_res: Tensor类型，仅支持float16。
-- key_res: Tensor类型，仅支持float16。
-- value_res: Tensor类型，仅支持float16。
-- attn_scores: Tensor类型，仅支持float16。
-- attn_res: Tensor类型，仅支持float16。
-- context: Tensor类型，仅支持float16。
+- **y**（`Tensor`）：仅支持`float16`。
+- **dropout_mask**（`Tensor`）：仅支持`float16`。
+- **query_res**（`Tensor`）：仅支持`float16`。
+- **key_res**（`Tensor`）：仅支持`float16`。
+- **value_res**（`Tensor`）：仅支持`float16`。
+- **attn_scores**（`Tensor`）：仅支持`float16`。
+- **attn_res**（`Tensor`）：仅支持`float16`。
+- **context**（`Tensor`）：仅支持`float16`。
 
 ## 约束说明
 
-Attr attn_head_num：需16整数倍对齐。
+`attn_head_num`：需16整数倍对齐。
+`attn_dim_per_head`：需16整数倍对齐。
+`src_len`：需16整数倍对齐。
+`tgt_len`：需16整数倍对齐。
 
-Attr attn_dim_per_head：需16整数倍对齐。
-
-Attr src_len：需16整数倍对齐。
-
-Attr tgt_len：需16整数倍对齐。
-
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
 
 ## 调用示例
 

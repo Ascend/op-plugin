@@ -1,10 +1,13 @@
 # （beta）torch_npu.npu_dropout_with_add_softmax
 
-## 函数原型
+## 产品支持情况
 
-```
-torch_npu.npu_dropout_with_add_softmax(Tensor self, Tensor x1, Scalar alpha, float prob, int dim) -> (Tensor, Tensor, Tensor)
-```
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
 
 ## 功能说明
 
@@ -16,24 +19,23 @@ Softmax(xi)= exp(xi)/∑jexp(xj)
 
 output = 根据mask舍弃x中的元素，留下来的元素乘(1/prob)
 
+## 函数原型
+
+```
+torch_npu.npu_dropout_with_add_softmax(self, x1, alpha, prob, dim) -> (Tensor, Tensor, Tensor)
+```
+
 ## 参数说明
 
-- Tensor self：4维张量，shape为(N, C, H, W)。
-- Tensor x1：4维张量，shape为(N, C, H, W)。
+- **self**（`Tensor`）：4维张量，shape为(N, C, H, W)。
+- **x1**（`Tensor`）：4维张量，shape为(N, C, H, W)。
 
 ## 约束说明
 
-- self和x1的shape相同。
+- `self`和`x1`的shape相同。
 - H和W是[128, 256, 384, 512]其中之一。
 - (N \* C)%32结果为0。
-- dim为-1。
-
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
+- `dim`为-1。
 
 ## 调用示例
 

@@ -1,8 +1,17 @@
 # torch_npu.npu_fast_gelu
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
+
 ## 功能说明
 
-- 算子功能：快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果。
+- API功能：快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果。
 
 - 计算公式
 
@@ -27,14 +36,14 @@ torch_npu.npu_fast_gelu(input) -> Tensor
 
 ## 参数说明
 
-**input** (`Tensor`)：即公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持8维。
+**input** (`Tensor`)：对应公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持8维。
 
 - <term>Atlas 训练系列产品</term>：数据类型支持`float16`、`float32`。
 - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 - <term>Atlas 推理系列产品</term>：数据类型仅支持`float16`、`float32`。
 
-## 返回值
+## 返回值说明
 `Tensor`
 
 代表`fast_gelu`的计算结果。
@@ -42,15 +51,8 @@ torch_npu.npu_fast_gelu(input) -> Tensor
 ## 约束说明
 
 - 该接口支持推理、训练场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式（PyTorch 2.1.0版本）。
 - `input`输入不能为None。
-
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term> 
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> 
-- <term>Atlas 推理系列产品</term> 
 
 ## 调用示例
 

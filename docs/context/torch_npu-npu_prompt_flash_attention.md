@@ -81,7 +81,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 ## 返回值说明
 `Tensor`
 
-公式中的$atten_out$，表示计算的最终结果。当`input_layout`为$BNSD\_BSND$时，输入`query`的shape是$BNSD$，输出shape为$BSND$，其余情况shape与`query`的shape保持一致。
+公式中的$atten\_out$，表示计算的最终结果。当`input_layout`为$BNSD\_BSND$时，输入`query`的shape是$BNSD$，输出shape为$BSND$，其余情况shape与`query`的shape保持一致。
 
 ## 约束说明<a name="section12345537164214"></a>
 
