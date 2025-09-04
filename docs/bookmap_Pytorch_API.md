@@ -130,7 +130,7 @@
         -   [torch_npu.npu_gmm_alltoallv](./context/torch_npu-npu_gmm_alltoallv.md)
         -   [torch_npu.npu_moe_distribute_combine_add_rms_norm](./context/torch_npu-npu_moe_distribute_combine_add_rms_norm.md)
         -   [torch_npu.npu_transpose_batchmatmul](./context/torch_npu-npu_transpose_batchmatmul.md)
-        -   [torch_npu.npu_moe_eplb_update_expert](./context/torch_npu-npu_moe_eplb_update_expert.md)
+        -   [torch_npu.npu_moe_update_expert](./context/torch_npu-npu_moe_update_expert.md)
         
     -   [torch_npu.contrib](./context/torch_npu-contrib.md)
         -   [torch_npu.contrib接口列表](./context/torch_npu-contrib接口列表.md)

@@ -55,15 +55,15 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
 
 ## 参数说明<a name="zh-cn_topic_0000002366611733_section112637109429"></a>
 
--   **expert_ids**（`Tensor`）：必选参数，表示每个token的topK个专家索引，Device侧的Tensor，要求为一个2D的Tensor，shape为$(BS, K)$。数据类型支持'INT32'、'INT64'，数据格式要求为ND，支持非连续的Tensor。
--   **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行\[1, count\]列为对应实例的卡号，取值范围\[0, `moe_expert_num`\)，Device侧的Tensor，要求是一个2D的Tensor，shape为$(moe\_expert\_num, F)$。数据类型支持'INT32'，数据格式要求为ND，支持非连续的Tensor。其中F表示输入映射表的列数，第一列为各行号对应Moe专家部署的实例个数（值>0），后F-1列为该Moe专家部署的物理卡号，取值范围\[2, `world_size`+1\]。
--   **expert_scales**（`Tensor`）：可选参数，每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或空指针，该参数传入有效数据时，`pruning_threshold`也需要传入有效数据。Device侧的Tensor，要求是一个2D的Tensor，shape为$(BS, K)$。数据类型支持'FP16'、'BF16'、'FLOAT'，数据格式要求为ND，支持非连续的Tensor。
--   **pruning_threshold**（`Tensor`）：可选参数，专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或空指针，该参数传入有效数据时，`expert_scales`也需要传入有效数据。Device侧的Tensor，要求是一个1D或2D的Tensor，shape为$(K,)$或$(1, K)$。数据类型支持'FLOAT'，数据格式要求为ND，支持非连续的Tensor。
+-   **expert_ids**（`Tensor`）：必选参数，表示每个token的topK个专家索引，Device侧的Tensor，要求为一个2D的Tensor，shape为$(BS, K)$。数据类型支持int32、int64，数据格式要求为ND，支持非连续的Tensor。
+-   **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行\[1, count\]列为对应实例的卡号，取值范围\[0, `moe_expert_num`\)，Device侧的Tensor，要求是一个2D的Tensor，shape为$(moe\_expert\_num, F)$。数据类型支持int32，数据格式要求为ND，支持非连续的Tensor。其中F表示输入映射表的列数，取值范围\[2, `world_size`+1\]，第一列为各行号对应Moe专家部署的实例个数（值>0），后F-1列为该Moe专家部署的物理卡号。
+-   **expert_scales**（`Tensor`）：可选参数，每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或空指针，该参数传入有效数据时，`pruning_threshold`也需要传入有效数据。Device侧的Tensor，要求是一个2D的Tensor，shape为$(BS, K)$。数据类型支持fp16、bf16、float，数据格式要求为ND，支持非连续的Tensor。
+-   **pruning_threshold**（`Tensor`）：可选参数，专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或空指针，该参数传入有效数据时，`expert_scales`也需要传入有效数据。Device侧的Tensor，要求是一个1D或2D的Tensor，shape为$(K,)$或$(1, K)$。数据类型支持float，数据格式要求为ND，支持非连续的Tensor。
 -   **active_mask**（`Tensor`）：可选参数，表示token是否参与通信，可选择传入有效数据或空指针。传入有效数据时，`expert_scales`、`pruning_threshold`也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；传入空指针时是表示所有token都会参与通信。Device侧的Tensor，要求是一个1D的Tensor，shape为$(BS,)$。数据类型支持bool，数据格式要求为ND，支持非连续的Tensor。
 
--   **local_rank_id**（`int`）：本卡ID，数据类型支持INT64，当`balance_mode`设置0时，本属性取值范围为\[0, `world_ize`\)。
--   **world_size**（`int`）：通信域size，数据类型支持INT64，当`balance_mode`设置0时，本属性取值范围为\[2, 768\]
--   **balance_mode**（`int`）：均衡规则，数据类型支持INT64，取值支持0和1，0表示用`local_rank_id`进行负载均衡，1表示使用`token_id`进行负载均衡。当本属性取值为0时，`local_rank_id`和`world_size`必须传入有效值。
+-   **local_rank_id**（`int`）：本卡ID，数据类型支持int64，当`balance_mode`设置0时，本属性取值范围为\[0, `world_ize`\)。
+-   **world_size**（`int`）：通信域size，数据类型支持int64，当`balance_mode`设置0时，本属性取值范围为\[2, 768\]
+-   **balance_mode**（`int`）：均衡规则，数据类型支持int64，取值支持0和1，0表示用`local_rank_id`进行负载均衡，1表示使用`token_id`进行负载均衡。当本属性取值为0时，`local_rank_id`和`world_size`必须传入有效值。
 
 ## 返回值说明<a name="zh-cn_topic_0000002366611733_section22231435517"></a>
 
@@ -85,10 +85,10 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
 -   参数说明里Shape格式说明：
     -   `BS`：表示batch sequence size，即本卡最终输出的token数量，昇腾910_93 AI处理器：取值范围为0<BS≤512。
     -   `K`：表示选取topK个专家，取值范围为0< K ≤16同时满足0 < K ≤ `moe_expert_num`。
-    -   `moe_expert_num`：表示MoE专家数，取值范围\(0, 512\]。
+    -   `moe_expert_num`：表示MoE专家数，取值范围\(0, 1024\]。
     -   `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, `world_size` + 1\]。
     -   每个专家部署副本个数值（即count），最小为1，最大为`world_size`。
-    -   所有专家部署的副本个数和（即第一列count和）需小于等于1024，且整除`world_size`。
+    -   所有专家部署的副本个数和（即eplb_table第一列count和）需小于等于1024，且整除`world_size`。
 
 ## 调用示例<a name="zh-cn_topic_0000002366611733_section14459801435"></a>
 
@@ -106,7 +106,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     
     # 控制模式
     dtype = torch.int32
-    moe_expert_per_rank = 4
+    local_moe_expert_num = 4
     is_pruning = 1
     balance_mode = 1
     quant_mode = 2                       # 2为动态量化
@@ -120,7 +120,6 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     world_size = server_num * dev_num
     rank_per_dev = int(world_size / server_num)  # 每个host有几个die
     sharedExpertRankNum = 2                      # 共享专家数
-    moeExpertNum = 14                            # moe专家数
     BS = 8                                       # token数量
     h = 7168                                     # 每个token的长度
     K = 8
@@ -128,12 +127,12 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     tp_world_size = 1
     ep_world_size = int(world_size / tp_world_size)
     moe_rank_num = ep_world_size - sharedExpertRankNum
-    local_moe_expert_num = moeExpertNum // moe_rank_num
+    moeExpertNum = moe_rank_num * local_moe_expert_num
     globalBS = BS * ep_world_size
     is_shared = (sharedExpertRankNum > 0)
     is_quant = (quant_mode > 0)
-    log_ep_size = moeExpertNum
-    phy_ep_size = world_size * moe_expert_per_rank
+    phy_ep_size = (ep_world_size - sharedExpertRankNum) * local_moe_expert_num
+    log_ep_size = phy_ep_size // local_moe_expert_num
     F = random.randint(2, world_size + 1)
     
     def get_new_group(rank):
@@ -177,35 +176,32 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
                 eplb_table[i][j] = all_ranks[j]
         eplb_table = np.hstack((count_column, eplb_table))
         expert_ids = np.random.randint(low=0, high=log_ep_size, size=(BS, K))
+        expert_scales = torch.randn(BS, K, dtype=torch.float32).npu()
+        pruning_threshold = None
+        active_mask = None
         if is_pruning:
-            expert_scales = -np.sort(-np.random.uniform(low=0, high=0.25, size=(BS, K)), axis=1)
-            pruning_threshold = np.random.uniform(low=0, high=0.15, size=(1, K))
+            expert_scales_temp = -np.sort(-np.random.uniform(low=0, high=0.25, size=(BS, K)), axis=1)
+            pruning_threshold_temp = np.random.uniform(low=0, high=0.15, size=(1, K))
             num_true = np.random.randint(0, BS + 1)
-            active_mask = np.concatenate([np.ones(num_true, dtype=bool), np.zeros(BS - num_true, dtype=bool)])
+            active_mask_temp = np.concatenate([np.ones(num_true, dtype=bool), np.zeros(BS - num_true, dtype=bool)])
+            expert_scales = torch.from_numpy(expert_scales_temp).to(torch.float32).npu()
+            pruning_threshold = torch.from_numpy(pruning_threshold_temp).to(torch.float32).npu()
+            active_mask = torch.from_numpy(active_mask_temp).to(torch.bool).npu()
         scales_shape = (1 + moeExpertNum, h) if sharedExpertRankNum else (moeExpertNum, h)
         if is_dispatch_scales:
             scales = torch.randn(scales_shape, dtype=torch.float32).npu()
         else:
             scales = None
-    
         
         eplb_table_tensor = torch.from_numpy(eplb_table).to(torch.int32)
         expert_ids_tensor = torch.from_numpy(expert_ids).to(dtype)
-        if is_pruning:
-            expert_scales_tensor = torch.from_numpy(expert_scales).to(torch.float32)
-            pruning_threshold_tensor = torch.from_numpy(pruning_threshold).to(torch.float32)
-            active_mask_tensor = torch.from_numpy(active_mask).to(torch.bool)
-        if is_dispatch_scales:
-            scales = torch.randn(scales_shape, dtype=torch.float32).npu()
-        else:
-            scales = None
 
         npu_balanced_expert_ids, npu_balanced_active_mask = torch_npu.npu_moe_update_expert(
             expert_ids=expert_ids_tensor.npu(),
             eplb_table=eplb_table_tensor.npu(),
-            expert_scales=expert_scales_tensor.npu() if is_pruning else None,
-            pruning_threshold=pruning_threshold_tensor.npu() if is_pruning else None,
-            active_mask=active_mask_tensor.npu() if is_pruning else None,
+            expert_scales=expert_scales if is_pruning else None,
+            pruning_threshold=pruning_threshold if is_pruning else None,
+            active_mask=active_mask if is_pruning else None,
             local_rank_id=rank,
             world_size=world_size,
             balance_mode=balance_mode)
@@ -214,6 +210,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
             x=x,
             expert_ids=npu_balanced_expert_ids,
             x_active_mask=npu_balanced_active_mask,
+            expert_scales=expert_scales,
             group_ep=ep_hcomm_info,
             group_tp=tp_hcomm_info,
             ep_world_size=ep_world_size,
@@ -222,7 +219,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
             tp_rank_id=rank % tp_world_size,
             expert_shard_type=0,
             shared_expert_rank_num=sharedExpertRankNum,
-            moe_expert_num=moeExpertNum,
+            moe_expert_num=phy_ep_size,
             scales=scales,
             quant_mode=quant_mode,
             global_bs=globalBS)
@@ -290,7 +287,6 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     ```python
     # 修改graph_type支持静态图、动态图
     import os
-    import time
     import torch
     import random
     import torch_npu
@@ -299,110 +295,197 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     from torch.multiprocessing import Process
     import torch.distributed as dist
     from torch.distributed import ReduceOp
+    import torch._dynamo
+    torch._dynamo.config.suppress_errors = True
 
-    BS = 32
-    K = 5
-    moe_expert_num = 5
-    world_size = 5
-    expert_ids_dtype = torch.int64
-    is_graph = 1
-    #graph_type为1运行静态图，为2运行动态图
-    graph_type = 1
-    case_name = "test_case"
-    is_performance = 1
-    seed = 1
-    is_full_core = 1
-    aic_core_num = 24
-    moe_expert_per_rank = 4
+    # 控制模式
+    quant_mode = 2
+    is_dispatch_scales = True
+    input_dtype = torch.bfloat16
+    server_num = 1
+    server_index = 0
+    port = 50001
+    master_ip = '127.0.0.1'
+    dev_num = 16
+    world_size = server_num * dev_num
+    rank_per_dev = int(world_size / server_num)
+    sharedExpertRankNum = 2
+    moeExpertNum = 14
+    bs = 8
+    h = 7168
+    k = 8
+    random_seed = 0
+    tp_world_size = 1
+    ep_world_size = int(world_size / tp_world_size)
+    moe_rank_num = ep_world_size - sharedExpertRankNum
+    local_moe_expert_num = moeExpertNum // moe_rank_num
+    globalBS = bs * ep_world_size
+    is_shared = (sharedExpertRankNum > 0)
+    is_quant = (quant_mode > 0)
     is_pruning = 1
-    expert_scales_dtype = torch.bfloat16
     balance_mode = 1
-    random.seed(seed)
-    log_ep_size = moe_expert_num
-    phy_ep_size = world_size * moe_expert_per_rank
-    F = random.randint(2, world_size + 1)
 
-    TORCH_DTYPE_MAP = {
-        "fp16":torch.float16,
-        "bf16":torch.bfloat16,
-        "fp32":torch.float32,
-        "int8":torch.int8,
-        "int32":torch.int32,
-        "int64":torch.int64,
-    }
-
-    class MoeUpdateExpertModel(torch.nn.Module):
+    class MOE_DISTRIBUTE_GRAPH_Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
         
-        def forward(self, expert_ids, eplb_table, expert_scales, pruning_threshold, active_mask, local_rank_id, world_size, balance_mode):
-            return torch_npu.npu_moe_update_expert(expert_ids=expert_ids,
-                                                    eplb_table=eplb_table,
-                                                    expert_scales=expert_scales,
-                                                    pruning_threshold=pruning_threshold,
-                                                    active_mask=active_mask,
-                                                    local_rank_id=local_rank_id,
-                                                    world_size=world_size,
-                                                    balance_mode=balance_mode)
-        
-    def define_model(model, graph_type):
-        torch._dynamo.reset()
-        print("-------------------graph_type", graph_type)
-        import torchair
-        from torchair.configs.compiler_config import CompilerConfig
-        if is_full_core:
-            compiler_config = None
+        def forward(self, x, expert_ids, group_ep, group_tp, ep_world_size, tp_world_size, ep_rank_id, tp_rank_id,
+                    expert_shard_type, shared_expert_rank_num, moe_expert_num, scales, quant_mode, global_bs, expert_scales, eplb_table, pruning_threshold, active_mask, balance_mode):
+            balanced_expert_ids, balanced_active_mask = torch_npu.npu_moe_update_expert(expert_ids=expert_ids,
+                                                                                        eplb_table=eplb_table,
+                                                                                        expert_scales=expert_scales if is_pruning else None,
+                                                                                        pruning_threshold=pruning_threshold,
+                                                                                        active_mask=active_mask,
+                                                                                        local_rank_id=ep_rank_id,
+                                                                                        world_size=ep_world_size,
+                                                                                        balance_mode=balance_mode)
+            output_dispatch_npu = torch_npu.npu_moe_distribute_dispatch_v2(x=x,
+                                                    expert_ids=balanced_expert_ids,
+                                                    group_ep=group_ep,
+                                                    group_tp=group_tp,
+                                                    ep_world_size=ep_world_size,
+                                                    tp_world_size=tp_world_size,
+                                                    ep_rank_id=ep_rank_id,
+                                                    tp_rank_id=tp_rank_id,
+                                                    expert_shard_type=expert_shard_type,
+                                                    shared_expert_rank_num=shared_expert_rank_num,
+                                                    moe_expert_num=moe_expert_num,
+                                                    scales=scales,
+                                                    quant_mode=quant_mode,
+                                                    global_bs=global_bs)
+            expand_x_npu, _, assist_info_for_combine_npu, _, ep_recv_counts_npu, tp_recv_counts_npu, expand_scales = output_dispatch_npu
+            if expand_x_npu.dtype == torch.int8:
+                expand_x_npu = expand_x_npu.to(input_dtype)
+            output_combine_npu = torch_npu.npu_moe_distribute_combine_v2(expand_x=expand_x_npu,
+                                                                        expert_ids=expert_ids,
+                                                                        assist_info_for_combine=assist_info_for_combine_npu,
+                                                                        ep_send_counts=ep_recv_counts_npu,
+                                                                        tp_send_counts=tp_recv_counts_npu,
+                                                                        expert_scales=expert_scales,
+                                                                        group_ep=group_ep,
+                                                                        group_tp=group_tp,
+                                                                        ep_world_size=ep_world_size,
+                                                                        tp_world_size=tp_world_size,
+                                                                        ep_rank_id=ep_rank_id,
+                                                                        tp_rank_id=tp_rank_id,
+                                                                        expert_shard_type=expert_shard_type,
+                                                                        shared_expert_rank_num=shared_expert_rank_num,
+                                                                        moe_expert_num=moe_expert_num,
+                                                                        global_bs=global_bs)
+            x = output_combine_npu
+            x_combine_res = output_combine_npu
+            return [x_combine_res, output_combine_npu]
+
+    def gen_unique_topk_array(low, high, bs, k):
+        array = []
+        for i in range(bs):
+            top_idx = list(np.arange(low, high, dtype=np.int32))
+            random.shuffle(top_idx)
+            array.append(top_idx[0:k])
+        return np.array(array)
+
+    def get_new_group(rank):
+        for i in range(tp_world_size):
+            ep_ranks = [x * tp_world_size + i for x in range(ep_world_size)]
+            ep_group = dist.new_group(backend="hccl", ranks=ep_ranks)
+            if rank in ep_ranks:
+                ep_group_t = ep_group
+                print(f"rank:{rank} ep_ranks:{ep_ranks}")
+        for i in range(ep_world_size):
+            tp_ranks = [x + tp_world_size * i for x in range(tp_world_size)]
+            tp_group = dist.new_group(backend="hccl", ranks=tp_ranks)
+            if rank in tp_ranks:
+                tp_group_t = tp_group
+                print(f"rank:{rank} tp_ranks:{tp_ranks}")
+        return ep_group_t, tp_group_t
+
+    def get_hcomm_info(rank, comm_group):
+        if torch.__version__ > '2.0.1':
+            hcomm_info = comm_group._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
-            compiler_config = CompilerConfig()
-            compiler_config.ge_config.aicore_num = f"{aic_core_num}|{aic_core_num * 2}"
-            print(f"当前图模式仅使用：{aic_core_num}aic核，{aic_core_num * 2}aiv核")
-        npu_backend = torchair.get_npu_backend(compiler_config=compiler_config)
-        if graph_type == 1:
-            print('graph_type=1，测试场景：传统入图模式，静态shape+二进制场景')
-            npu_backend = torchair.get_npu_backend(compiler_config=None)
-            model = torch.compile(model, backend=npu_backend, dynamic=False)
-        elif graph_type == 2:
-            print('graph_type=2，测试场景：ACLNN入图模式，动态shape+二进制场景')
-            npu_backend = torchair.get_npu_backend(compiler_config=None)
-            model = torch.compile(model, backend=npu_backend, dynamic=True)
-        else:
-            print('用例未设置graph_type，测试场景：单算子模式')
-        return model
+            hcomm_info = comm_group.get_hccl_comm_name(rank)
+        return hcomm_info
+
+    def run_npu_process(rank):
+        torch_npu.npu.set_device(rank)
+        rank = rank + 16 * server_index
+        dist.init_process_group(backend='hccl', rank=rank, world_size=world_size, init_method=f'tcp://{master_ip}:{port}')
+        ep_group, tp_group = get_new_group(rank)
+        ep_hcomm_info = get_hcomm_info(rank, ep_group)
+        tp_hcomm_info = get_hcomm_info(rank, tp_group)
     
-    def exec_graph(rank):
-        np.random.seed(seed)
-        print("start gen input in rank{}".format(rank))
-        eplb_table = np.zeros((log_ep_size, F - 1))
-        count_column = np.random.randint(1, F, size=(log_ep_size, 1))
-        all_ranks = np.arange(phy_ep_size)
-        for i in range(log_ep_size):
-            np.random.shuffle(all_ranks)
-            for j in range(count_column[i][0]):
-                eplb_table[i][j] = all_ranks[j]
-        eplb_table = np.hstack((count_column, eplb_table))
-        expert_ids = np.random.randint(low=0, high=log_ep_size, size=(BS, K))
+        # 创建输入tensor
+        x = torch.randn(bs, h, dtype=input_dtype).npu()
+        expert_ids = gen_unique_topk_array(0, moeExpertNum, bs, k).astype(np.int32)
+        expert_ids = torch.from_numpy(expert_ids).npu()
+        eplb_table = np.array([[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [1, 12], [1, 13]]).astype(np.int32)
+        eplb_table = torch.from_numpy(eplb_table).npu()
+        expert_scales = torch.randn(bs, k, dtype=torch.float32).npu()
+
+        pruning_threshold = None
+        active_mask = None
         if is_pruning:
-            expert_scales = -np.sort(-np.random.uniform(low=0, high=0.25, size=(BS, K)), axis=1)
-            pruning_threshold = np.random.uniform(low=0, high=0.15, size=(1, K))
-            num_true = np.random.randint(0, BS + 1)
-            active_mask = np.concatenate([np.ones(num_true, dtype=bool), np.zeros(BS - num_true, dtype=bool)])
-        eplb_table_tensor = torch.from_numpy(eplb_table).to(torch.int32)
-        expert_ids_tensor = torch.from_numpy(expert_ids).to(expert_ids_dtype)
-        if is_pruning:
-            expert_scales_tensor = torch.from_numpy(expert_scales).to(expert_scales_dtype)
-            pruning_threshold_tensor = torch.from_numpy(pruning_threshold).to(torch.float32)
-            active_mask_tensor = torch.from_numpy(active_mask).to(torch.bool)
-        model = MoeUpdateExpertModel()
-        model = define_model(model, graph_type)
-        balanced_expert_ids = None
-        balanced_active_mask = None
-        balanced_expert_ids, balanced_active_mask = model(expert_ids_tensor, eplb_table_tensor,
-                                                            expert_scales_tensor, pruning_threshold_tensor,
-                                                            active_mask_tensor, rank,
-                                                            world_size, balance_mode)
+            expert_scales_temp = -np.sort(-np.random.uniform(low=0, high=0.25, size=(bs, k)), axis=1)
+            pruning_threshold_temp = np.random.uniform(low=0, high=0.15, size=(1, k))
+            num_true = np.random.randint(0, bs + 1)
+            active_mask_temp = np.concatenate([np.ones(num_true, dtype=bool), np.zeros(bs - num_true, dtype=bool)])
+            expert_scales_tensor = torch.from_numpy(expert_scales_temp).to(torch.float32)
+            pruning_threshold_tensor = torch.from_numpy(pruning_threshold_temp).to(torch.float32)
+            active_mask_tensor = torch.from_numpy(active_mask_temp).to(torch.bool)
+            expert_scales = expert_scales_tensor.npu()
+            pruning_threshold = pruning_threshold_tensor.npu()
+            active_mask = active_mask_tensor.npu()
+        
+        scales_shape = (1 + moeExpertNum, h) if sharedExpertRankNum else (moeExpertNum, h)
+        if is_dispatch_scales:
+            scales = torch.randn(scales_shape, dtype=torch.float32).npu()
+        else:
+            scales = None
+    
+        model = MOE_DISTRIBUTE_GRAPH_Model()
+        model = model.npu()
+        npu_backend = torchair.get_npu_backend()
+        model = torch.compile(model, backend=npu_backend, dynamic=False)
+        output = model.forward(x, expert_ids, ep_hcomm_info, tp_hcomm_info, ep_world_size, tp_world_size,
+                            rank // tp_world_size, rank % tp_world_size, 0, sharedExpertRankNum, moeExpertNum, scales,
+                            quant_mode, globalBS, expert_scales, eplb_table, pruning_threshold, active_mask, balance_mode)
+        torch.npu.synchronize()
+        print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
+
     if __name__ == "__main__":
-        for i in range(world_size):
-            torch_npu.npu.set_device(0)
-            exec_graph(i)
-        print("run npu success.")
+        print(f"bs={bs}")
+        print(f"global_bs={globalBS}")
+        print(f"shared_expert_rank_num={sharedExpertRankNum}")
+        print(f"moe_expert_num={moeExpertNum}")
+        print(f"k={k}")
+        print(f"quant_mode={quant_mode}", flush=True)
+        print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
+        print(f"tp_world_size={tp_world_size}", flush=True)
+        print(f"ep_world_size={ep_world_size}", flush=True)
+    
+        if tp_world_size != 1 and local_moe_expert_num > 1:
+            print("unSupported tp = 2 and local moe > 1")
+            exit(0)
+    
+        if sharedExpertRankNum > ep_world_size:
+            print("sharedExpertRankNum 不能大于 ep_world_size")
+            exit(0)
+    
+        if sharedExpertRankNum > 0 and ep_world_size % sharedExpertRankNum != 0:
+            print("ep_world_size 必须是 sharedExpertRankNum的整数倍")
+            exit(0)
+    
+        if moeExpertNum % moe_rank_num != 0:
+            print("moeExpertNum 必须是 moe_rank_num 的整数倍")
+            exit(0)
+    
+        p_list = []
+        for rank in range(rank_per_dev):
+            p = Process(target=run_npu_process, args=(rank,))
+            p_list.append(p)
+        for p in p_list:
+            p.start()
+        for p in p_list:
+            p.join()
+        print("run npu success")
     ```

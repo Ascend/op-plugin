@@ -640,9 +640,9 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>完成张量input与张量weight的矩阵乘计算。</p>
 </td>
 </tr>
-<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_eplb_update_expert.md">torch_npu.npu_moe_eplb_update_expert</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_update_expert.md">torch_npu.npu_moe_update_expert</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>提供MoE网络中常用的EPLB（Expert Parallelism Load Balancer）算法进行冗余专家部署，解决负载不均衡问题。MoeEPLBUpdateExpert算子可以完成每个token的topK个专家逻辑专家号到物理专家实例号的映射。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>提供MoE网络中常用的EPLB（Expert Parallelism Load Balancer）算法进行冗余专家部署，解决负载不均衡问题。MoeUpdateExpert算子可以完成每个token的topK个专家逻辑专家号到物理专家实例号的映射，支持根据阈值对token发送的topK个专家进行剪枝。</p>
 </td>
 </tbody>
 </table>
