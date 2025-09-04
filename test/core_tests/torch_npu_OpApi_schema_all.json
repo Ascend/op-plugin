@@ -4348,5 +4348,14 @@
   },
   "func: npu_dynamic_block_quant(Tensor x, *, float min_scale=0.0, str round_mode=\"rint\", int dst_type=23, int row_block_size=1, int col_block_size=128) -> (Tensor y, Tensor scale)": {
     "version": ["all_version"]
+  },
+  "func: fused_linear_online_max_sum(Tensor input, Tensor weight, Tensor target, int vocab_start_index, int vocab_end_index, bool return_logits=False) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
+  "func: fused_cross_entropy_loss_with_max_sum(Tensor logits_max, Tensor sum_exp_logits, Tensor predicted_logits, *, float? label_smoothing=0.0, Tensor? input=None, Tensor? weight=None, Tensor? vocab_parallel_logits=None) -> (Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
+  "func: fused_linear_cross_entropy_loss_with_max_sum_grad(Tensor grad, Tensor input, Tensor weight, Tensor target_mask, Tensor masked_target, float label_smoothing=0.0, Tensor? logits_max=None, Tensor? sum_exp_logits=None, Tensor? softmax=None) -> (Tensor, Tensor)": {
+    "version": ["all_version"]
   }
 }
