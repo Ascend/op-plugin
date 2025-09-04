@@ -3242,12 +3242,6 @@
   "func: slogdet(Tensor self) -> (Tensor sign, Tensor logabsdet)": {
     "version": ["all_version"]
   },
-  "func: slow_conv3d(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, SymInt[3] padding=0) -> Tensor": {
-    "version": ["all_version"]
-  },
-  "func: slow_conv3d.out(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, SymInt[3] padding=0, *, Tensor(a!) out) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
   "func: slow_conv3d_forward(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias, int[3] stride, SymInt[3] padding) -> Tensor": {
     "version": ["all_version"]
   },

@@ -215,12 +215,6 @@ at::Tensor slow_conv3d_forward(const at::Tensor &self, const at::Tensor &weight,
     return result;
 }
 
-at::Tensor slow_conv3d(const at::Tensor &self, const at::Tensor &weight, at::IntArrayRef kernel_size,
-                       const c10::optional<at::Tensor> &bias, at::IntArrayRef stride, at::IntArrayRef padding)
-{
-    return acl_op::slow_conv3d_forward(self, weight, kernel_size, bias, stride, padding);
-}
-
 at::Tensor &slow_conv3d_out(const at::Tensor &self, const at::Tensor &weight, at::IntArrayRef kernel_size,
                             const c10::optional<at::Tensor> &bias, at::IntArrayRef stride, at::IntArrayRef padding,
                             at::Tensor &result)

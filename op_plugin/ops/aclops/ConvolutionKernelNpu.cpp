@@ -400,7 +400,7 @@ at::Tensor npu_convolution(const at::Tensor &input, const at::Tensor &weight, co
             is_dilated |= (d != 1);
         }
         output = (groups == 1 && !is_dilated) ?
-                     at::slow_conv3d(input, weight, kernel_size, bias, stride, padding) :
+                     at::slow_conv3d_forward(input, weight, kernel_size, bias, stride, padding) :
                      acl_op::npu_conv3d(input, weight, bias, stride, padding, dilation, groups);
     }
     return output;
@@ -425,7 +425,7 @@ at::Tensor convolution_overrideable(const at::Tensor &input, const at::Tensor &w
             is_dilated |= (d != 1);
         }
         output = (groups == 1 && !is_dilated) ?
-                     at::slow_conv3d(input, weight, kernel_size, bias_opt, stride, padding) :
+                     at::slow_conv3d_forward(input, weight, kernel_size, bias_opt, stride, padding) :
                      acl_op::npu_conv3d(input, weight, bias_opt, stride, padding, dilation, groups);
     }
     return output;
@@ -895,7 +895,7 @@ at::Tensor npu_convolution(
     for (int d : dilation) {
       is_dilated |= (d != 1);
     }
-    output = (groups == 1 && !is_dilated) ? at::slow_conv3d(input, weight, kernel_size, bias, stride, padding) :
+    output = (groups == 1 && !is_dilated) ? at::slow_conv3d_forward(input, weight, kernel_size, bias, stride, padding) :
         acl_op::npu_conv3d(input, weight, bias, stride, padding, dilation, groups);
   }
   return output;
@@ -924,7 +924,7 @@ at::Tensor convolution_overrideable(
     for (int d : dilation) {
       is_dilated |= (d != 1);
     }
-    output = (groups == 1 && !is_dilated) ? at::slow_conv3d(input, weight, kernel_size, bias_opt, stride, padding) :
+    output = (groups == 1 && !is_dilated) ? at::slow_conv3d_forward(input, weight, kernel_size, bias_opt, stride, padding) :
        acl_op::npu_conv3d(input, weight, bias_opt, stride, padding, dilation, groups);
   }
   return output;
@@ -1361,7 +1361,7 @@ at::Tensor npu_convolution(
     for (int d : dilation) {
       is_dilated |= (d != 1);
     }
-    output = (groups == 1 && !is_dilated) ? at::slow_conv3d(input, weight, kernel_size, bias, stride, padding) :
+    output = (groups == 1 && !is_dilated) ? at::slow_conv3d_forward(input, weight, kernel_size, bias, stride, padding) :
         acl_op::npu_conv3d(input, weight, bias, stride, padding, dilation, groups);
   }
   return output;
@@ -1390,7 +1390,7 @@ at::Tensor convolution_overrideable(
     for (int d : dilation) {
       is_dilated |= (d != 1);
     }
-    output = (groups == 1 && !is_dilated) ? at::slow_conv3d(input, weight, kernel_size, bias_opt, stride, padding) :
+    output = (groups == 1 && !is_dilated) ? at::slow_conv3d_forward(input, weight, kernel_size, bias_opt, stride, padding) :
        acl_op::npu_conv3d(input, weight, bias_opt, stride, padding, dilation, groups);
   }
   return output;
@@ -1870,7 +1870,7 @@ at::Tensor npu_convolution(
         for (int d : dilation) {
             is_dilated |= (d != 1);
         }
-        output = (groups == 1 && !is_dilated) ? at::slow_conv3d(input, weight, kernel_size, bias, stride, padding) :
+        output = (groups == 1 && !is_dilated) ? at::slow_conv3d_forward(input, weight, kernel_size, bias, stride, padding) :
             acl_op::npu_conv3d(input, weight, bias, stride, padding, dilation, groups);
     }
     return output;
@@ -1899,7 +1899,7 @@ at::Tensor convolution_overrideable(
         for (int d : dilation) {
             is_dilated |= (d != 1);
         }
-        output = (groups == 1 && !is_dilated) ? at::slow_conv3d(input, weight, kernel_size, bias_opt, stride, padding) :
+        output = (groups == 1 && !is_dilated) ? at::slow_conv3d_forward(input, weight, kernel_size, bias_opt, stride, padding) :
           acl_op::npu_conv3d(input, weight, bias_opt, stride, padding, dilation, groups);
     }
     return output;

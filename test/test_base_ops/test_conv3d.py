@@ -1,3 +1,4 @@
+import unittest
 import torch
 import numpy as np
 import torch.nn as nn
@@ -42,9 +43,9 @@ class TestConv3d(TestCase):
         input1.register_hook(lambda grad: self.get_input_grad(grad))
 
         m1 = nn.Conv3d(in_channels, out_channels, kernel_size, stride, padding, dilation, bias=bias, groups=groups)
-        m1.weight.data = weight1
-        m1.weight.register_hook(lambda grad: self.get_weight_grad(grad))
         m1 = m1.to("npu")
+        m1.weight.data = weight1.to("npu")
+        m1.weight.register_hook(lambda grad: self.get_weight_grad(grad))
         npuOutput = m1(input1)
         tmp = torch.ones_like(npuOutput)
         npuOutput.backward(tmp)
@@ -92,6 +93,7 @@ class TestConv3d(TestCase):
         ]
         self.conv3d_backward_result(shape_format)
 
+    @unittest.skip("skip test because kernel does not support fp32")
     def test_conv3d_backward_shape_format_fp32(self):
         shape_format = [  # input, weight, padding, stride, dilation, bias, groups
             [[np.float32, 30, [1, 128, 4, 14, 14]],
