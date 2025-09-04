@@ -91,7 +91,7 @@ x：Tensor类型，即矩阵乘中的x。数据格式支持ND，支持输入维�
 - 不支持空Tensor输入。
 - antiquant_scale和antiquant_offset的输入shape要保持一致。
 - quant_scale和quant_offset的输入shape要保持一致，且quant_offset不能独立于quant_scale存在。
-- 当x输入类型为bfloat16类型时候，bias的输入类型为float32；当x输入类型为float16类型时候，bias的输入类型为float16。
+- 当x输入类型为bfloat16类型时，bias的输入类型为float32；当x输入类型为float16类型时，bias的输入类型为float16。
 - 如需传入int64数据类型的quant_scale，需要提前调用torch_npu.npu_trans_quant_param接口将数据类型为float32的quant_scale和quant_offset转换为数据类型为int64的quant_scale输入，可参考[调用示例](#section00001)。
 - 当输入weight为FRACTAL_NZ格式且类型为int32时，per-channel场景需满足weight为转置输入；per-group场景需满足x为转置输入，weight为非转置输入，antiquant_group_size为64或128，K为antiquant_group_size对齐，N为64对齐。
 

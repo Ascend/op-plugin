@@ -20,7 +20,7 @@ torch_npu.npu_group_norm_silu(Tensor input, Tensor? weight, Tensor? bias, int gr
     -   <term>Atlas 推理系列产品</term>：数据类型支持float16、float32。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32、bfloat16。
 
--   bias：Tensor类型，可选输入，更新数据张量，维度为1元素数量需与输入input的第1维度保持相同，数据格式支持ND，支持非连续的Tensor。
+-   bias：Tensor类型，可选输入，更新数据张量，维度为1且元素数量需与输入input的第1维度保持相同，数据格式支持ND，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持float16、float32。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、float32、bfloat16。
 

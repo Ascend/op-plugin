@@ -58,11 +58,11 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
     >>> skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
     >>> bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
     >>> scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
-    >>> expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+    >>> export_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
     >>> expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device,dtype=torch.int32)
     >>>drop_pad_mode = 0
     >>> 
-    >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+    >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
     >>> 
     >>> output.shape
     torch.Size([50, 10])
@@ -86,8 +86,8 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
         def __init__(self):
             super().__init__()
         
-        def forward(self, expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode):
-            return torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+        def forward(self, expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, export_for_source_row, drop_pad_mode):
+            return torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
 
     def main():
         expert_num = 16
@@ -102,14 +102,14 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
         skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
         bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
         scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
-        expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+        export_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
         expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device, dtype=torch.int32)
         drop_pad_mode = 0
 
         model = GMMModel().npu()
         model = torch.compile(model, backend=npu_backend, dynamic=False)
 
-        custom_output = model(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+        custom_output = model(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
         print(custom_output.shape, custom_output.dtype)
 
     if __name__ == '__main__':

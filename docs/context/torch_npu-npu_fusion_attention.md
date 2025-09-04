@@ -18,7 +18,7 @@ torch_npu.npu_fusion_attention(Tensor query, Tensor key, Tensor value, int head_
 -   key：Tensor类型，数据类型支持float16、bfloat16、float32，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 -   value：Tensor类型，数据类型支持float16、bfloat16、float32，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 -   head\_num：int类型，代表head个数，数据类型支持int64。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   input\_layout：string类型，代表输入query、key、value的数据排布格式，支持BSH、SBH、BSND、BNSD、TND（actual\_seq\_qlen/actual\_seq\_kvlen需传值）；后续章节如无特殊说明，S表示query或key、value的sequence length，Sq表示query的sequence length，Skv表示key、value的sequence length，SS表示Sq\*Skv。
+-   input\_layout：string类型，代表输入query、key、value的数据排布格式，支持BSH、SBH、BSND、BNSD、TND（actual\_seq\_qlen/actual\_seq\_kvlen需传值，input_layout为TND时即为varlen场景）；后续章节如无特殊说明，S表示query或key、value的sequence length，Sq表示query的sequence length，Skv表示key、value的sequence length，SS表示Sq\*Skv。
 -   pse：Tensor类型，可选参数，表示位置编码。数据类型支持float16、bfloat16、float32，数据格式支持ND。非varlen场景支持四维输入，包含BNSS格式、BN1Skv格式、1NSS格式。如果非varlen场景Sq大于1024或varlen场景、每个batch的Sq与Skv等长且是sparse\_mode为0、2、3的下三角掩码场景，可使能alibi位置编码压缩，此时只需要输入原始PSE最后1024行进行内存优化，即alibi\_compress = ori\_pse\[:, :, -1024:, :\]，参数每个batch不相同时，输入BNHSkv\(H=1024\)，每个batch相同时，输入1NHSkv\(H=1024\)。
 -   padding\_mask：Tensor类型，**暂不支持该传参**。
 -   atten\_mask：Tensor类型，可选参数，取值为1代表该位不参与计算（不生效），为0代表该位参与计算，数据类型支持bool、uint8，数据格式支持ND，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。

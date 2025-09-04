@@ -2,7 +2,7 @@
 
 ## 功能说明
 
-全量FA实现，实现对应公式：
+全量FA实现，对应公式如下：
 
 ![](figures/zh-cn_formulaimage_0000002223791230.png)
 
@@ -70,7 +70,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 
 ## 返回值
 
-**atten_out** (`Tensor`)：计算的最终结果，`shape`与`query`保持一致。
+**atten_out** (`Tensor`)：计算的最终结果。当`input_layout`为BNSD\_BSND时，输入`query`的shape为BNSD，输出shape为BSND，其余情况shape与`query`的shape保持一致。
 
 - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
 - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int8`。

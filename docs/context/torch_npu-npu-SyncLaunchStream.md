@@ -8,7 +8,7 @@ torch_npu.npu.SyncLaunchStream(device)
 
 ## 功能说明
 
-创建一条同步下发NPUStream，在该流上下发的任务不再使用taskqueue异步下发。在集群场景其中某一设备出现故障，其他设备保存checkpoint时，可使用此同步下发流保存。
+创建一条同步下发NPUStream，在该流上下发的任务不再使用taskqueue异步下发。在集群场景某一设备出现故障，其他设备保存checkpoint时，可使用此同步下发流保存。
 
 ## 参数说明
 
