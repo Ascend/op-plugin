@@ -6,6 +6,7 @@ import torch
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
+from einops import rearrange
 
 
 class TestFusedInferAttentionV2(TestCase):
@@ -17,6 +18,23 @@ class TestFusedInferAttentionV2(TestCase):
         x_sum = y.sum(axis=-1, keepdims=True)
         ans = y
         return ans, x_sum, x_max
+
+    def npSoftmax_new(self, x, sinks=None):
+        if sinks is not None:
+            sinks = sinks.view(1, -1, 1, 1)
+            sinks = sinks.broadcast_to(1, sinks.shape[1], x.shape[2], 1)
+            x = torch.cat([x, sinks], dim=-1)
+        x_max = torch.max(x, dim=-1, keepdims=True)[0]
+        x_sub = x.sub(x_max)
+        y = torch.exp(x_sub)
+        del x
+        del x_sub
+        x_max = x_max.cpu()
+        x_sum = y.sum(dim=-1, keepdims=True)
+        ans = y.div(x_sum)
+        if sinks is not None:
+            ans = ans[..., :-1]
+        return ans, x_max, x_sum
 
     def supported_op_exec(self, query_states1, past_key, past_value, head_dim, B, N, S, return_softmax_lse):
         attn_weights1 = torch.matmul(query_states1, past_key.transpose(2, 3)) / 0.0078125
@@ -41,6 +59,16 @@ class TestFusedInferAttentionV2(TestCase):
         attn_output1 = attn_output1.transpose(0, 1)
         return attn_output1
 
+    def supported_op_exec_sink(self, query_states1, past_key, past_value, learnable_sink):
+        q_tensor = rearrange(query_states1, 's n d -> 1 n s d').to(torch.float64)
+        k_tensor = rearrange(past_key, 's n d -> 1 n s d').to(torch.float64)
+        v_tensor = rearrange(past_value, 's n d -> 1 n s d').to(torch.float64)
+    
+        qkEleRes = torch.matmul(q_tensor, k_tensor.transpose(3, 2)) / 0.0078125
+        softmax_res, x_max, x_sum = self.npSoftmax_new(qkEleRes, learnable_sink)
+        y = torch.matmul(softmax_res, v_tensor)
+        return rearrange(y, '1 n s d -> s n d')
+
     def custom_op_exec(self, query, key, value, head_dim, return_softmax_lse):
         softmax_scale = 1 / 0.0078125
         return torch_npu.npu_fused_infer_attention_score_v2(
@@ -64,6 +92,13 @@ class TestFusedInferAttentionV2(TestCase):
         return torch_npu.npu_fused_infer_attention_score_v2(
             query, key, value, num_query_heads=2, input_layout="NTD_TND", softmax_scale=softmax_scale,
             pre_tokens=65535, next_tokens=65535, actual_seq_qlen=actseqlen,
+            actual_seq_kvlen=actseqlenkv, return_softmax_lse=return_softmax_lse)
+
+    def custom_op_exec_sinks(self, query, key, value, head_dim, actseqlen, actseqlenkv, return_softmax_lse, learnable_sink):
+        softmax_scale = 1 / 0.0078125
+        return torch_npu.npu_fused_infer_attention_score_v2(
+            query, key, value, learnable_sink=learnable_sink, num_query_heads=8, input_layout="TND",
+            softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535, actual_seq_qlen=actseqlen,
             actual_seq_kvlen=actseqlenkv, return_softmax_lse=return_softmax_lse)
     
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
@@ -147,6 +182,26 @@ class TestFusedInferAttentionV2(TestCase):
         golden_output = supported_output[0]
         attention_output = custom_output[0]
         self.assertRtolEqual(golden_output, attention_out, prec=0.000001, prec16=0.000001)
+
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_fused_infer_attention_score_v2_sink(self, device="npu"):
+        query = torch.full((128, 8, 128), 1, dtype=torch.bfloat16).npu()
+        key = torch.full((128, 8, 128), 1, dtype=torch.bfloat16).npu()
+        value = torch.full((128, 8, 128), 1, dtype=torch.bfloat16).npu()
+        learnable_sink = torch.full((8,), 1, dtype=torch.bfloat16).npu()
+
+        head_dim = 128
+        return_softmax_lse = True
+
+        actseqlen = [128]
+        actseqlenkv = [128]
+
+        supported_output = self.supported_op_exec_sink(query, key, value, learnable_sink).to(torch.float64)
+        custom_output = self.custom_op_exec_sinks(query, key, value, head_dim, actseqlen, actseqlenkv, return_softmax_lse, learnable_sink)
+
+        attention_output = custom_output[0].to(torch.float64)
+        self.assertRtolEqual(supported_output, attention_output, prec=0.000001, prec16=0.000001)
 
 if __name__ == "__main__":
     run_tests()

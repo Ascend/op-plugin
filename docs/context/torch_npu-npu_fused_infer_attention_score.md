@@ -223,6 +223,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
             -   支持TND、NTD\_TND；
             -   数据类型仅支持`bfloat16`；
             -   当sparse=3时，要求每个batch单独的actualSeqLengths<actualSeqLengthsKv；
+            -   sparse模式支持sparse\_mode=4且传入mask；当sparse\_mode=4时，要求preTokens >= -actual\_seq\_qlen、nextTokens >= -actual\_seq\_kvlen、preTokens + nextTokens >= 0；
             -   不支持左padding、tensorlist、pse、page attention、prefix、伪量化、全量化、后量化；
             -   **不支持图模式配置Tiling调度优化**（tiling\_schedule\_optimize=True）、**reduce-overhead执行模式**（config.mode="reduce-overhead"）。
             -   `actual_seq_lengths`和`actual_seq_lengths_kv`的元素个数不大于4096。
