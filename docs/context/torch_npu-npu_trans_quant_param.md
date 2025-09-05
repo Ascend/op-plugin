@@ -2,15 +2,43 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>      |    √     |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
-|<term>Atlas 推理系列产品</term>  | √   |
+|产品             |  是否支持  |
+|:-------------------------|:----------:|
+|  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |     √    |
+|  <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>     |     √    |
+|  <term>Atlas 推理系列产品</term>   |     √    |
 
 ## 功能说明
 
-完成量化计算参数`scale`数据类型的转换，将`float32`数据按照bit位存储进一个`int64`数据里。
+- API功能：完成量化计算参数`scale`数据类型的转换，将`float32`数据按照bit位存储进一个`int64`数据里。
+- 计算公式：
+
+  1. `out`为64位格式，初始为0。
+
+  2. 若`round_mode`为1，`scale`按bit位round到高19位，`round_mode`为0不做处理。
+     $$
+     scale = Round(scale)
+     $$
+
+  3. `scale`按bit位取高19位截断，存储于`out`的bit位32位处，并将46位修改为1。
+     
+     $$
+     out = out\ |\ (scale\ \&\ 0XFFFFE000)\ |\ (1\ll46)
+     $$
+
+  4. 根据`offset`取值进行后续计算：
+     - 若`offset`不存在，不再后续计算。
+     - 若`offset`存在：
+       1. 将`offset`值处理为int，范围为[-256, 255]。
+     
+          $$
+          offset = Max(Min(INT(Round(offset)),255),-256)
+          $$
+
+       2. 再将`offset`按bit位保留9位并存储于out的37到45位。
+          $$
+          out = (out\ \&\ 0x4000FFFFFFFF)\ |\ ((offset\ \&\ 0X1FF)\ll37)
+          $$
 
 ## 函数原型
 
@@ -20,27 +48,27 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 ## 参数说明
 
-- **scale** (`Tensor`)：必选参数。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#zh-cn_topic_0001_section0001)。
-- **offset** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](#zh-cn_topic_0001_section0001)。
-- **round_mode** (`int`)：可选参数。量化计算中数据类型的转换模式选择，默认为0。0表示截断填充模式（取高19位），1表示R_INT模式（可提升计算精度）。
+- **scale** (`Tensor`)：必选参数。对应公式中的`scale`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](##约束说明)。不支持非连续的Tensor，不支持空Tensor。
+- **offset** (`Tensor`)：可选参数。对应公式中的`offset`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](##约束说明)。不支持非连续的Tensor，不支持空Tensor。
+- **round_mode** (`int`)：可选参数。量化计算中数据类型的转换模式选择，默认值为0。0表示截断填充模式（取高19位），1表示R_INT模式（可提升计算精度）。
 
 ## 返回值说明
 `Tensor`
 
-代表`trans_quant_param`的计算结果，数据类型支持`int64`。
+代表`trans_quant_param`的计算结果，对应公式中的`out`。数据类型支持`int64`，数据格式支持$ND$。
 
-## 约束说明<a name="zh-cn_topic_0001_section0001"></a>
+## 约束说明
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式（PyTorch 2.1.0版本）。
-- 该接口在当前支持的产品中，支持与matmul类接口（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）配套使用。
+- 该接口在当前支持的产品中，支持与`matmul`类接口（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）配套使用。
 - 当不传入`offset`时，输出shape与`scale` shape一致。
-  - 若该输出作为matmul类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与matmul计算中右矩阵(`weight`，对应参数x2)的shape $n$一致。
-  - 若输出作为grouped matmul类算子输入（如[torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)），仅在分组模式为m轴分组时使用（对应参数`group_type`为0），shape支持1维$(g,)$或2维$(g, 1)$、$(g, n)$，其中$n$与grouped matmul计算中右矩阵（对应参数weight）的shape $n$一致，$g$与grouped matmul计算中分组数（对应参数`group_list`的shape大小）一致。
-- 当传入`offset`时，仅作为matmul类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）:
-  - `scale`、`offset`输出的shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵（`weight`，对应参数x2）的shape $n$一致。
-  - 当输入`scale`的shape为1维，输出的shape也为1维，且shape大小为`scale`与`offset`单维shape大小的最大值。
-  - 当输入`scale`的shape为2维，`scale`和`offset`的shape需要保持一致，且输出shape也为$(1, n)$。
+  - 若该输出作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵(`weight`，对应参数x2)的shape $n$一致。
+  - 若输出作为`grouped matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），仅在分组模式为m轴分组时使用（对应参数`group_type`为0），shape支持1维$(g,)$或2维$(g, 1)$、$(g, n)$，其中$n$与`grouped matmul`计算中右矩阵（对应参数weight）的shape $n$一致，$g$与`grouped matmul`计算中分组数（对应参数`group_list`的shape大小）一致。
+- 当传入`offset`时，仅作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）:
+  - `scale`、`offset`、`out`的shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵（`weight`，对应参数x2）的shape $n$一致。
+  - 当输入`scale`的shape为1维，`out`的shape也为1维，且shape大小为`scale`与`offset`单维shape大小的最大值。
+  - 当输入`scale`的shape为2维，`out`的shape与输入`scale`的shape维度和大小完全一致。
 
 ## 调用示例
 
@@ -65,7 +93,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
     torch.int64
     >>> npu_out.shape
     torch.Size([16])
-    ```~~
+    ```
 
 - 图模式调用
 
@@ -125,4 +153,3 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
             [[68, 62, 63,  ..., 61, 65, 69]]], device='npu:0', dtype=torch.int8)
     ```
-
