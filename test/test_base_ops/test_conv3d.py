@@ -93,17 +93,24 @@ class TestConv3d(TestCase):
         ]
         self.conv3d_backward_result(shape_format)
 
-    @unittest.skip("skip test because kernel does not support fp32")
     def test_conv3d_backward_shape_format_fp32(self):
         shape_format = [  # input, weight, padding, stride, dilation, bias, groups
             [[np.float32, 30, [1, 128, 4, 14, 14]],
              [np.float32, 30, [1, 128, 3, 3, 3]], [1, 1, 1], [1, 1, 1], 1, None, 1],
             [[np.float32, 30, [1, 64, 4, 14, 14]],
-             [np.float32, 30, [1, 64, 3, 3, 3]], [1, 1, 1], [2, 2, 2], 1, None, 1],
+             [np.float32, 30, [1, 64, 3, 3, 3]], [1, 1, 1], [2, 2, 2], 1, None, 1]
+        ]
+        self.conv3d_backward_result(shape_format)
+
+    def test_conv3d_backward_shape_format_fp32_internal_format(self):
+        ori_allow_internal_format = torch_npu._C._npu_getOption("ALLOW_INTERNAL_FORMAT")
+        torch.npu.config.allow_internal_format = False
+        shape_format = [  # input, weight, padding, stride, dilation, bias, groups
             [[np.float32, 32, [1, 64, 8, 28, 28]],
              [np.float32, 33, [1, 64, 3, 3, 3]], [1, 1, 1], [1, 1, 1], [1, 1, 1], None, 1]
         ]
         self.conv3d_backward_result(shape_format)
+        torch.npu.config.allow_internal_format = ori_allow_internal_format
 
 
 if __name__ == "__main__":
