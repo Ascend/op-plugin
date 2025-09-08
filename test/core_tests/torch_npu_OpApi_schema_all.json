@@ -1277,9 +1277,6 @@
   "func: _log_softmax(Tensor self, int dim, bool half_to_float) -> Tensor": {
     "version": ["all_version"]
   },
-  "func: _log_softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
   "func: _log_softmax_backward_data(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype) -> Tensor": {
     "version": ["all_version"]
   },
