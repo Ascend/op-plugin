@@ -132,6 +132,7 @@
         -   [torch_npu.npu_moe_distribute_combine_add_rms_norm](./context/torch_npu-npu_moe_distribute_combine_add_rms_norm.md)
         -   [torch_npu.npu_transpose_batchmatmul](./context/torch_npu-npu_transpose_batchmatmul.md)
         -   [torch_npu.npu_moe_update_expert](./context/torch_npu-npu_moe_update_expert.md)
+        -   [torch_npu.npu_dynamic_block_quant](./context/torch_npu-npu_dynamic_block_quant.md)
         
     -   [torch_npu.contrib](./context/torch_npu-contrib.md)
         -   [torch_npu.contrib接口列表](./context/torch_npu-contrib接口列表.md)

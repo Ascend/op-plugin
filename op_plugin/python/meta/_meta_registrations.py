@@ -2730,3 +2730,25 @@ def npu_moe_token_unpermute_with_routing_map_grad(unpermuted_tokens_grad, out_in
         return permuted_tokens_grad_out, probs_grad_out
     else:
         return permuted_tokens_grad_out, None
+
+
+@impl(m, "npu_dynamic_block_quant")
+# pylint:disable = huawei-too-many-arguments
+def npu_dynamic_block_quant_meta(x, *, min_scale=0.0, round_mode="rint", dst_type=1, row_block_size=1, col_block_size=128):
+    # dst_type only support torch.int8 in 910B/C
+    y = torch.empty(x.shape, dtype=torch.int8, device=x.device)
+    scale_shape = list(x.shape)
+
+    if len(scale_shape) == 2:
+        scale_shape[0] = math.ceil(scale_shape[0] / row_block_size)
+        scale_shape[1] = math.ceil(scale_shape[1] / col_block_size)
+    elif len(scale_shape) == 3:
+        scale_shape[1] = math.ceil(scale_shape[1] / row_block_size)
+        scale_shape[2] = math.ceil(scale_shape[2] / col_block_size)
+    else:
+        raise RuntimeError(f"Expected x to have 2 or 3 dimensions, but got {x.dim()}.")
+
+    scale_shape = torch.Size(scale_shape)
+
+    scale = torch.empty(scale_shape, dtype=torch.float32, device=x.device)
+    return y, scale

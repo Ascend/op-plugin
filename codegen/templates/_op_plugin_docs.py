@@ -10518,6 +10518,59 @@ unpermuted_tokens = torch_npu.npu_moe_token_unpermute(permuted_tokens, sorted_in
 
 
 _add_torch_npu_docstr(
+    "npu_dynamic_block_quant",
+    """
+接口原型: 
+torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_type=1, row_block_size=1, col_block_size=128) -> (Tensor, Tensor)
+
+
+功能描述
+对输入张量，通过给定的`row_block_size`和`col_block_size`将输入划分成多个数据块，以数据块为基本粒度进行量化。在每个块中，先计算出当前块对应的量化参数`scale`，并根据`scale`对输入进行量化。输出最终的量化结果，以及每个块的量化参数`scale`。
+
+参数说明: 
+x (Tensor)：必选参数，输入张量，数据类型支持float16、bfloat16，支持非连续的Tensor，数据格式支持ND。当前shape支持2维和3维。
+min_scale (float)：可选参数，参与scale计算的最小scale值。当前仅支持取值0。
+round_mode (str)：可选参数，指定cast到输出的转换方式。当前仅支持取值rint。
+dst_type (int)：可选参数，指定输出y的数据类型。当前仅支持取值1，表示代码输出y的数据类型为int8。
+row_block_size (int)：可选参数，指定一个block的行大小。当前仅支持取值1。
+col_block_size (int)：可选参数，指定一个block的列大小，当前仅支持取值128。
+
+输出说明: 
+y (Tensor)：量化结果。
+scale (Tensor)：量化时使用的量化参数。
+
+支持版本: 
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号: 
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例: 
+>>> import torch
+>>> import torch_npu
+
+>>> x = torch.rand(3, 4).to("npu").to(torch.float16)
+>>> min_scale = 0
+>>> dst_type = 1
+>>> row_block_size = 1
+>>> col_block_size = 128
+
+>>> y, scale = torch_npu.npu_dynamic_block_quant(x, min_scale=min_scale, dst_type=dst_type, row_block_size=row_block_size, col_block_size=col_block_size)
+>>> y
+tensor([[ 92,  65,  15, 127],
+      [100, 127, 116,  64],
+      [ 95,  15,  87, 127]], device='npu:0', dtype=torch.int8)
+>>> scale
+tensor([[0.0063],
+      [0.0076],
+      [0.0073]], device='npu:0')
+"""
+)
+
+
+_add_torch_npu_docstr(
     "obfuscation_initialize",
     """
 功能描述: 

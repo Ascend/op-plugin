@@ -2790,5 +2790,27 @@ class TestGroupedMatmulSwigluQuant(TestCase):
             self.assertTrue(output2_npu.dtype == output2.dtype)
 
 
+@unittest.skip("skip until CANN is updated to support aclnnDynamicBlockQuant")
+class TestNpuDynamicBlockQuant(TestCase):
+    def test_npu_dynamic_block_quant_meta(self):
+        # 2 dim
+        x = torch.rand(3, 4).to("npu").to(torch.float16)
+        actual_y, actual_scale = torch_npu.npu_dynamic_block_quant(x, dst_type=1)
+        with FakeTensorMode():
+            fake_x = torch.rand(3, 4).to("npu").to(torch.float16)
+            fake_y, fake_scale = torch_npu.npu_dynamic_block_quant(fake_x, dst_type=1)
+        self.assertEqual(actual_y.shape, fake_y.shape)
+        self.assertEqual(actual_scale.shape, fake_scale.shape)
+
+        # 3 dim
+        x = torch.rand(3, 4, 5).to("npu").to(torch.float16)
+        actual_y, actual_scale = torch_npu.npu_dynamic_block_quant(x, dst_type=1)
+        with FakeTensorMode():
+            fake_x = torch.rand(3, 4, 5).to("npu").to(torch.float16)
+            fake_y, fake_scale = torch_npu.npu_dynamic_block_quant(fake_x, dst_type=1)
+        self.assertEqual(actual_y.shape, fake_y.shape)
+        self.assertEqual(actual_scale.shape, fake_scale.shape)
+
+
 if __name__ == "__main__":
     run_tests()
