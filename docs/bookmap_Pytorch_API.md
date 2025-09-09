@@ -106,6 +106,7 @@
         -   [torch_npu.npu_scatter_nd_update](./context/torch_npu-npu_scatter_nd_update.md)
         -   [torch_npu.npu_scatter_nd_update_](./context/torch_npu-npu_scatter_nd_update_.md)
         -   [torch_npu.npu_top_k_top_p](./context/torch_npu-npu_top_k_top_p.md)
+        -   [torch_npu.npu_top_k_top_p_sample](./context/torch_npu-npu_top_k_top_p_sample.md)
         -   [torch_npu.npu_trans_quant_param](./context/torch_npu-npu_trans_quant_param.md)
         -   [torch_npu.npu_weight_quant_batchmatmul](./context/torch_npu-npu_weight_quant_batchmatmul.md)
         -   [torch_npu.scatter_update](./context/torch_npu-scatter_update.md)

@@ -516,6 +516,11 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863744477_p15682749165813"><a name="zh-cn_topic_0000001863744477_p15682749165813"></a><a name="zh-cn_topic_0000001863744477_p15682749165813"></a>对原始输入<code>logits</code>进行<code>top-k</code>和<code>top-p</code>采样过滤。</p>
 </td>
 </tr>
+<tr id="row16875125182712"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p77002833617"><a name="p77002833617"></a><a name="p77002833617"></a><a href="torch_npu-npu_top_k_top_p_sample.md">torch_npu.npu_top_k_top_p_sample</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863744477_p15682749165813"><a name="zh-cn_topic_0000001863744477_p15682749165813"></a><a name="zh-cn_topic_0000001863744477_p15682749165813"></a>基于融合算子实现，对原始输入<code>logits</code>进行<code>top-k</code>、<code>top-p</code>、<code>qSample</code>采样过滤，允许自由组合三个模块使能。</p>
+</td>
+</tr>
 <tr id="row9470191314519"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p83781723143618"><a name="p83781723143618"></a><a name="p83781723143618"></a><a href="torch_npu-npu_scatter_nd_update_.md">torch_npu.npu_scatter_nd_update_</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001816704932_p12276121818501"><a name="zh-cn_topic_0000001816704932_p12276121818501"></a><a name="zh-cn_topic_0000001816704932_p12276121818501"></a>将updates中的值按指定的索引indices更新self中的值，并将结果保存到输出tensor，self中的数据被改变。</p>
