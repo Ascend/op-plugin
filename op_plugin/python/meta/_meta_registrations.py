@@ -2472,7 +2472,8 @@ def rope_quant_kvcache(x, cos, k_cache, v_cache, size_splits, kv_output=False):
 
 @impl(m, "npu_dequant_swiglu_quant")
 def npu_dequant_swiglu_quant_meta(x, weight_scale=None, activation_scale=None, bias=None, quant_scale=None,
-                                  quant_offset=None, group_index=None, activate_left=False, quant_mode=0):
+                                  quant_offset=None, group_index=None, activate_left=False, quant_mode=0, 
+                                  swiglu_mode=0, clamp_limit=7.0, glu_alpha=1.702, glu_bias=1.0):
     y_size = []
     scale_size = []
     for i in range(x.dim() - 1):

@@ -209,6 +209,9 @@
   "op_api: torch_npu.npu_mm_reduce_scatter_base(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
+  "op_api: torch_npu.npu_dequant_swiglu_quant(*args, **kwargs)": {
+    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
+  },
   "op_api: torch_npu.npu_convert_weight_to_int4pack(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
@@ -348,6 +351,9 @@
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_trans_quant_param(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "op_api: torch_npu.npu_dequant_swiglu_quant(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_transpose_batchmatmul(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
@@ -491,7 +497,7 @@
   "func: npu_attn_softmax_backward_(Tensor(a!) self, Tensor grad_output, Tensor values) -> Tensor(a!)": {
     "version": ["all_version"]
   },
-  "func: npu_dequant_swiglu_quant(Tensor x, *, Tensor? weight_scale=None, Tensor? activation_scale=None, Tensor? bias=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? group_index=None, bool activate_left=False, int quant_mode=0) -> (Tensor, Tensor)": {
+  "func: npu_dequant_swiglu_quant(Tensor x, *, Tensor? weight_scale=None, Tensor? activation_scale=None, Tensor? bias=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? group_index=None, bool activate_left=False, int quant_mode=0, int swiglu_mode=0, float clamp_limit=7.0, float glu_alpha=1.702, float glu_bias=1.0) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
   "func: adaptive_max_pool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)": {
