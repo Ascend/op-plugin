@@ -20,13 +20,12 @@
 ## 功能说明<a name="zh-cn_topic_0000002366611733_section14441124184110"></a>
 
 -   算子功能：
-
-        完成冗余专家部署场景下每个token的topK个专家逻辑卡号到物理卡号的映射
-        
-        支持根据阈值对token发送的topK个专家进行剪枝
--   经过本算子映射后的专家表和mask可传入MOE层进行数据分发、处理
+    - 完成冗余专家部署场景下每个token的topK个专家逻辑卡号到物理卡号的映射
+    - 支持根据阈值对token发送的topK个专家进行剪枝
+    
+    经过本算子映射后的专家表和mask可传入MOE层进行数据分发、处理
 -   计算公式：
-    负载均衡对于`expert_ids`中的第i个值，即第i个token：
+    - 负载均衡对于`expert_ids`中的第i个值，即第i个token：
     ```python
     new_expert_id = eplb_table[table_offset + 1]
     expert_id = expert_ids[i]
@@ -42,10 +41,11 @@
             place_idx = i % plance_num
     new_expert_id = eplb_table[table_offset + place_idx]
     ```
--   专家剪枝功能：将shape为$(BS,)$的active_mask进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中BS对应为False的专家会直接被剪枝。对于active_mask_tensor为True的expert_scales的元素，满足以下条件也将被剪枝
+    - 专家剪枝功能：将shape为$(BS,)$的active_mask进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中BS对应为False的专家会直接被剪枝。对于active_mask_tensor为True的expert_scales的元素，满足以下条件也将被剪枝
     ```python
     (expert_scales[i] < sum(expert_scales[i]) * threshold) && broadcast(active_mask[i])
     ```
+    ![专家剪枝流程](figures/moe_update_expert-broadcast.png)
 
 ## 函数原型<a name="zh-cn_topic_0000002366611733_section45077510411"></a>
 
@@ -87,7 +87,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     -   `K`：表示选取topK个专家，取值范围为0< K ≤16同时满足0 < K ≤ `moe_expert_num`。
     -   `moe_expert_num`：表示MoE专家数，取值范围\(0, 1024\]。
     -   `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, `world_size` + 1\]。
-    -   每个专家部署副本个数值（即count），最小为1，最大为`world_size`。
+    -   每个专家部署副本个数值（即eplb_table第一列的count），最小为1，最大为`world_size`。
     -   所有专家部署的副本个数和（即eplb_table第一列count和）需小于等于1024，且整除`world_size`。
 
 ## 调用示例<a name="zh-cn_topic_0000002366611733_section14459801435"></a>
@@ -119,19 +119,19 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     dev_num = 16
     world_size = server_num * dev_num
     rank_per_dev = int(world_size / server_num)  # 每个host有几个die
-    sharedExpertRankNum = 2                      # 共享专家数
+    shared_expert_rank_num = 2                      # 共享专家数
     BS = 8                                       # token数量
     h = 7168                                     # 每个token的长度
     K = 8
     random_seed = 0
     tp_world_size = 1
     ep_world_size = int(world_size / tp_world_size)
-    moe_rank_num = ep_world_size - sharedExpertRankNum
-    moeExpertNum = moe_rank_num * local_moe_expert_num
+    moe_rank_num = ep_world_size - shared_expert_rank_num
+    moe_expert_num = moe_rank_num * local_moe_expert_num
     globalBS = BS * ep_world_size
-    is_shared = (sharedExpertRankNum > 0)
+    is_shared = (shared_expert_rank_num > 0)
     is_quant = (quant_mode > 0)
-    phy_ep_size = (ep_world_size - sharedExpertRankNum) * local_moe_expert_num
+    phy_ep_size = (ep_world_size - shared_expert_rank_num) * local_moe_expert_num
     log_ep_size = phy_ep_size // local_moe_expert_num
     F = random.randint(2, world_size + 1)
     
@@ -187,7 +187,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
             expert_scales = torch.from_numpy(expert_scales_temp).to(torch.float32).npu()
             pruning_threshold = torch.from_numpy(pruning_threshold_temp).to(torch.float32).npu()
             active_mask = torch.from_numpy(active_mask_temp).to(torch.bool).npu()
-        scales_shape = (1 + moeExpertNum, h) if sharedExpertRankNum else (moeExpertNum, h)
+        scales_shape = (1 + moe_expert_num, h) if shared_expert_rank_num else (moe_expert_num, h)
         if is_dispatch_scales:
             scales = torch.randn(scales_shape, dtype=torch.float32).npu()
         else:
@@ -218,7 +218,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
             ep_rank_id=rank // tp_world_size,
             tp_rank_id=rank % tp_world_size,
             expert_shard_type=0,
-            shared_expert_rank_num=sharedExpertRankNum,
+            shared_expert_rank_num=shared_expert_rank_num,
             moe_expert_num=phy_ep_size,
             scales=scales,
             quant_mode=quant_mode,
@@ -239,16 +239,16 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
                                                  ep_rank_id=rank // tp_world_size,
                                                  tp_rank_id=rank % tp_world_size,
                                                  expert_shard_type=0,
-                                                 shared_expert_rank_num=sharedExpertRankNum,
-                                                 moe_expert_num=moeExpertNum,
+                                                 shared_expert_rank_num=shared_expert_rank_num,
+                                                 moe_expert_num=moe_expert_num,
                                                  global_bs=globalBS)
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
     
     if __name__ == "__main__":
         print(f"BS={BS}")
         print(f"global_bs={globalBS}")
-        print(f"shared_expert_rank_num={sharedExpertRankNum}")
-        print(f"moe_expert_num={moeExpertNum}")
+        print(f"shared_expert_rank_num={shared_expert_rank_num}")
+        print(f"moe_expert_num={moe_expert_num}")
         print(f"K={K}")
         print(f"quant_mode={quant_mode}", flush=True)
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
@@ -259,16 +259,16 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
             print("unSupported tp = 2 and local moe > 1")
             exit(0)
     
-        if sharedExpertRankNum > ep_world_size:
-            print("sharedExpertRankNum 不能大于 ep_world_size")
+        if shared_expert_rank_num > ep_world_size:
+            print("shared_expert_rank_num 不能大于 ep_world_size")
             exit(0)
     
-        if sharedExpertRankNum > 0 and ep_world_size % sharedExpertRankNum != 0:
-            print("ep_world_size 必须是 sharedExpertRankNum的整数倍")
+        if shared_expert_rank_num > 0 and ep_world_size % shared_expert_rank_num != 0:
+            print("ep_world_size 必须是 shared_expert_rank_num的整数倍")
             exit(0)
     
-        if moeExpertNum % moe_rank_num != 0:
-            print("moeExpertNum 必须是 moe_rank_num 的整数倍")
+        if moe_expert_num % moe_rank_num != 0:
+            print("moe_expert_num 必须是 moe_rank_num 的整数倍")
             exit(0)
     
         p_list = []
@@ -309,18 +309,18 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     dev_num = 16
     world_size = server_num * dev_num
     rank_per_dev = int(world_size / server_num)
-    sharedExpertRankNum = 2
-    moeExpertNum = 14
+    shared_expert_rank_num = 2
+    moe_expert_num = 14
     bs = 8
     h = 7168
     k = 8
     random_seed = 0
     tp_world_size = 1
     ep_world_size = int(world_size / tp_world_size)
-    moe_rank_num = ep_world_size - sharedExpertRankNum
-    local_moe_expert_num = moeExpertNum // moe_rank_num
+    moe_rank_num = ep_world_size - shared_expert_rank_num
+    local_moe_expert_num = moe_expert_num // moe_rank_num
     globalBS = bs * ep_world_size
-    is_shared = (sharedExpertRankNum > 0)
+    is_shared = (shared_expert_rank_num > 0)
     is_quant = (quant_mode > 0)
     is_pruning = 1
     balance_mode = 1
@@ -416,7 +416,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
-        expert_ids = gen_unique_topk_array(0, moeExpertNum, bs, k).astype(np.int32)
+        expert_ids = gen_unique_topk_array(0, moe_expert_num, bs, k).astype(np.int32)
         expert_ids = torch.from_numpy(expert_ids).npu()
         eplb_table = np.array([[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [1, 12], [1, 13]]).astype(np.int32)
         eplb_table = torch.from_numpy(eplb_table).npu()
@@ -436,7 +436,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
             pruning_threshold = pruning_threshold_tensor.npu()
             active_mask = active_mask_tensor.npu()
         
-        scales_shape = (1 + moeExpertNum, h) if sharedExpertRankNum else (moeExpertNum, h)
+        scales_shape = (1 + moe_expert_num, h) if shared_expert_rank_num else (moe_expert_num, h)
         if is_dispatch_scales:
             scales = torch.randn(scales_shape, dtype=torch.float32).npu()
         else:
@@ -447,7 +447,7 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
         npu_backend = torchair.get_npu_backend()
         model = torch.compile(model, backend=npu_backend, dynamic=False)
         output = model.forward(x, expert_ids, ep_hcomm_info, tp_hcomm_info, ep_world_size, tp_world_size,
-                            rank // tp_world_size, rank % tp_world_size, 0, sharedExpertRankNum, moeExpertNum, scales,
+                            rank // tp_world_size, rank % tp_world_size, 0, shared_expert_rank_num, moe_expert_num, scales,
                             quant_mode, globalBS, expert_scales, eplb_table, pruning_threshold, active_mask, balance_mode)
         torch.npu.synchronize()
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
@@ -455,8 +455,8 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     if __name__ == "__main__":
         print(f"bs={bs}")
         print(f"global_bs={globalBS}")
-        print(f"shared_expert_rank_num={sharedExpertRankNum}")
-        print(f"moe_expert_num={moeExpertNum}")
+        print(f"shared_expert_rank_num={shared_expert_rank_num}")
+        print(f"moe_expert_num={moe_expert_num}")
         print(f"k={k}")
         print(f"quant_mode={quant_mode}", flush=True)
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
@@ -467,16 +467,16 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
             print("unSupported tp = 2 and local moe > 1")
             exit(0)
     
-        if sharedExpertRankNum > ep_world_size:
-            print("sharedExpertRankNum 不能大于 ep_world_size")
+        if shared_expert_rank_num > ep_world_size:
+            print("shared_expert_rank_num 不能大于 ep_world_size")
             exit(0)
     
-        if sharedExpertRankNum > 0 and ep_world_size % sharedExpertRankNum != 0:
-            print("ep_world_size 必须是 sharedExpertRankNum的整数倍")
+        if shared_expert_rank_num > 0 and ep_world_size % shared_expert_rank_num != 0:
+            print("ep_world_size 必须是 shared_expert_rank_num的整数倍")
             exit(0)
     
-        if moeExpertNum % moe_rank_num != 0:
-            print("moeExpertNum 必须是 moe_rank_num 的整数倍")
+        if moe_expert_num % moe_rank_num != 0:
+            print("moe_expert_num 必须是 moe_rank_num 的整数倍")
             exit(0)
     
         p_list = []

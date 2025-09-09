@@ -93,7 +93,7 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
 
     // a2 expert_shard_type、shared_expert_rank_num 应为0
     bool shared_front = (expert_shard_type == 0);
-    int64_t local_moe_expert_num = 0;
+    int64_t local_moe_expert_num = 1;
     int64_t global_bs_real = (global_bs == 0) ? (bs * ep_world_size) : global_bs;
     int64_t a = 0;
     int64_t ep_recv_cnt_num = 0;
@@ -109,11 +109,16 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
             a = global_bs_real * std::min(local_moe_expert_num, k);
         }
         if (elastic_info.has_value()) {
-            int64_t max_bs = global_bs_real / ep_world_size;
-            int64_t rank_num_per_shared_expert = shared_expert_rank_num / shared_expert_num;
-            int64_t max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) / rank_num_per_shared_expert;
-            a = std::max(max_bs * max_shared_group_num, global_bs_real * std::min(moe_expert_num / (ep_world_size - shared_expert_rank_num), k));
-            local_moe_expert_num = std::max(local_moe_expert_num, moe_expert_num / (ep_world_size - shared_expert_rank_num));
+            if ((is_shared_default) || (is_no_shared)) {
+                local_moe_expert_num = std::max(local_moe_expert_num, moe_expert_num / (ep_world_size - shared_expert_rank_num));
+                a = global_bs_real * std::min(local_moe_expert_num, k);
+            } else {
+                int64_t max_bs = global_bs_real / ep_world_size;
+                int64_t rank_num_per_shared_expert = shared_expert_rank_num / shared_expert_num;
+                int64_t max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) / rank_num_per_shared_expert;
+                a = std::max(max_bs * max_shared_group_num, global_bs_real * std::min(moe_expert_num / (ep_world_size - shared_expert_rank_num), k));
+                local_moe_expert_num = std::max(local_moe_expert_num, moe_expert_num / (ep_world_size - shared_expert_rank_num));
+            }
         }
     }
     if (tp_world_size == DIM_TWO) {

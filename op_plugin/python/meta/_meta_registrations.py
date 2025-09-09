@@ -1256,7 +1256,7 @@ def npu_moe_distribute_dispatch_v2_meta(x, expert_ids, group_ep, ep_world_size, 
     shared_front = (expert_shard_type == 0)
     outDtype = x.dtype
 
-    local_moe_expert_num = 0
+    local_moe_expert_num = 1
     global_bs_real = 0
     if global_bs == 0:
         global_bs_real = bs * ep_world_size
@@ -1274,11 +1274,15 @@ def npu_moe_distribute_dispatch_v2_meta(x, expert_ids, group_ep, ep_world_size, 
             local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
             a = global_bs_real * min(local_moe_expert_num, k)
         if elastic_info is not None:
-            max_bs = global_bs_real // ep_world_size
-            rank_num_per_shared_expert = shared_expert_rank_num // shared_expert_num
-            max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) // rank_num_per_shared_expert
-            a = max(max_bs * max_shared_group_num, global_bs_real * min(moe_expert_num // (ep_world_size - shared_expert_rank_num), k))
-            local_moe_expert_num = max(local_moe_expert_num, moe_expert_num // (ep_world_size - shared_expert_rank_num))
+            if ((is_shared_default) or (is_no_shared)):
+                local_moe_expert_num = max(local_moe_expert_num, moe_expert_num // (ep_world_size - shared_expert_rank_num))
+                a = global_bs_real * min(local_moe_expert_num, k)
+            else:
+                max_bs = global_bs_real // ep_world_size
+                rank_num_per_shared_expert = shared_expert_rank_num // shared_expert_num
+                max_shared_group_num = (ep_world_size + rank_num_per_shared_expert - 1) // rank_num_per_shared_expert
+                a = max(max_bs * max_shared_group_num, global_bs_real * min(moe_expert_num // (ep_world_size - shared_expert_rank_num), k))
+                local_moe_expert_num = max(local_moe_expert_num, moe_expert_num // (ep_world_size - shared_expert_rank_num))
 
     ep_recv_cnt_num = 0
     if tp_world_size == 2:
