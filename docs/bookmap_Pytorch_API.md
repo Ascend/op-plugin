@@ -231,6 +231,7 @@
         -   [NPU Device](./context/NPU-Device.md)
         -   [Memory management](./context/Memory-management.md)
             -   [Memory management API](./context/Memory-management-API.md)
+            -   [torch_npu.npu.empty_virt_addr_cache](./context/torch_npu-npu-empty_virt_addr_cache.md)
             -   [torch_npu.npu.NPUPluggableAllocator](./context/torch-npu-npu-NPUPluggableAllocator.md)
             -   [torch_npu.npu.change_current_allocator](./context/torch-npu-npu-change_current_allocator.md)
     

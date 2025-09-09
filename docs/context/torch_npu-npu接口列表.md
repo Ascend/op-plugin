@@ -384,6 +384,11 @@
 <tr id="zh-cn_topic_0000001863035964_row10860101635512"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p1486012165555"><a name="zh-cn_topic_0000001863035964_p1486012165555"></a><a name="zh-cn_topic_0000001863035964_p1486012165555"></a>（<span id="zh-cn_topic_0000001863035964_ph34464179352"><a name="zh-cn_topic_0000001863035964_ph34464179352"></a><a name="zh-cn_topic_0000001863035964_ph34464179352"></a>beta</span>）torch_npu.npu.memory_summary</p>
 </td>
 </tr>
+<tr id="zh-cn_topic_0000001863035964_row10860101635518"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p1486012165556"><a name="zh-cn_topic_0000001863035964_p1486012165556"></a><a name="zh-cn_topic_0000001863035964_p1486012165556"></a><a href="torch_npu-npu-empty_virt_addr_cache.md">torch_npu.npu.empty_virt_addr_cache</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>轻量化empty_cache，只释放虚拟内存，调用方式与torch_npu.npu.empty_cache类似。</p>
+</td>
+</tr>
 <tr id="zh-cn_topic_0000001863035964_row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p7819165411224"><a name="zh-cn_topic_0000001863035964_p7819165411224"></a><a name="zh-cn_topic_0000001863035964_p7819165411224"></a>torch.npu.npu.NPUPluggableAllocator</p>
 </td>
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863035964_p172891387259"><a name="zh-cn_topic_0000001863035964_p172891387259"></a><a name="zh-cn_topic_0000001863035964_p172891387259"></a>该接口涉及高危操作，使用请参考<a href="torch-npu-npu-NPUPluggableAllocator.md">torch.npu.npu.NPUPluggableAllocator</a>。</p>

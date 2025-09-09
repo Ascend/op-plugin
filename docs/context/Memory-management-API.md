@@ -65,6 +65,11 @@
 <tr id="row10860101635512"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="p1486012165555"><a name="p1486012165555"></a><a name="p1486012165555"></a>（<span id="ph34464179352"><a name="ph34464179352"></a><a name="ph34464179352"></a>beta</span>）torch_npu.npu.memory_summary</p>
 </td>
 </tr>
+<tr id="row10860101635513"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="p7819165411223"><a name="p7819165411223"></a><a name="p7819165411223"></a><a href="torch_npu-npu-empty_virt_addr_cache.md">torch_npu.npu.empty_virt_addr_cache</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p172891387258"><a name="p172891387258"></a><a name="p172891387258"></a>轻量化empty_cache，只释放虚拟内存，调用方式与torch_npu.npu.empty_cache类似。</p>
+</td>
+</tr>
 <tr id="row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="p7819165411224"><a name="p7819165411224"></a><a name="p7819165411224"></a>torch_npu.npu.NPUPluggableAllocator</p>
 </td>
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p172891387259"><a name="p172891387259"></a><a name="p172891387259"></a>该接口涉及高危操作，使用请参考<a href="torch-npu-npu-NPUPluggableAllocator.md">torch_npu.npu.NPUPluggableAllocator</a>。</p>
