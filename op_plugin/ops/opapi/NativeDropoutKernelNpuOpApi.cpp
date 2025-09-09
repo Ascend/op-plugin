@@ -65,19 +65,21 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
             const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
             const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
             const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
-            c10_npu::NPUEvent capture_event_begin = c10_npu::NPUEvent();
-            capture_event_begin.record(original_stream);
-            capture_event_begin.block(secondary_stream);
-            ASCEND_LOGI("Event: record and block in dropout op capture begin is successfully executed, event=%p", capture_event_begin.event());
+            if (!gen_state_.secondary_stream_capture_state_) {
+                c10_npu::NPUEvent capture_event_begin = c10_npu::NPUEvent();
+                capture_event_begin.record(original_stream);
+                capture_event_begin.block(secondary_stream);
+                ASCEND_LOGI("Event: record and block in dropout op capture begin is successfully executed, event=%p", capture_event_begin.event());
+            }
             c10_npu::SecondaryStreamGuard guard(secondary_stream);
             mask = at_npu::native::OpPreparation::apply_tensor_without_format({length}, self.options().dtype(at::kByte));
             at::IntArrayRef shapeArray(self.sizes());
             aclDataType dataType = at_npu::native::OpPreparation::convert_to_acl_data_type(self.scalar_type());
             EXEC_NPU_CMD(aclnnDropoutGenMaskV2Tensor, shapeArray, p, *seed_ptr, *offset_ptr, offset_intragraph, dataType, mask);
-            c10_npu::NPUEvent capture_event_end = c10_npu::NPUEvent();
-            capture_event_end.record(secondary_stream);
-            capture_event_end.block(original_stream);
-            ASCEND_LOGI("Event: record and block in dropout op capture end is successfully executed, event=%p", capture_event_end.event());
+            if (!gen_state_.secondary_stream_capture_state_) {
+                ASCEND_LOGI("Event: record and block in dropout op capture end is successfully executed");
+                at::check_generator<at_npu::NPUGeneratorImpl>(gen)->set_secondary_stream_capture_state(true);
+            }
 #endif
         }
     }
