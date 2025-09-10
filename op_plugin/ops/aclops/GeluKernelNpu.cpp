@@ -20,29 +20,9 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor gelu(const at::Tensor& self)
-{
-    return gelu_common_nocheck(self);
-}
-
-at::Tensor& gelu_out(const at::Tensor& self, at::Tensor& result)
-{
-    npu_preparation::CheckOut({self}, result, self);
-
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Gelu")
-        .Input(self)
-        .Output(result)
-        .Run();
-    return result;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor gelu(const at::Tensor& self, c10::string_view gelu)
 {
     return gelu_common_nocheck(self);
 }
-#endif
+
 } // namespace acl_op

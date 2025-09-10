@@ -18,17 +18,10 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor gelu_backward(const at::Tensor& grad_output, const at::Tensor& self)
-{
-    return gelu_backward_common_nocheck(grad_output, self);
-}
-#endif
 
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor gelu_backward(const at::Tensor& grad_output, const at::Tensor& self, c10::string_view approximate)
 {
     return gelu_backward_common_nocheck(grad_output, self);
 }
-#endif
+
 } // namespace acl_op

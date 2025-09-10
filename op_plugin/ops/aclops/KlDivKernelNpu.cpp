@@ -20,39 +20,6 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor kl_div(
-    const at::Tensor& self,
-    const at::Tensor& target,
-    int64_t reduction,
-    bool log_target)
-{
-    std::string reduction_str = "none";
-    if (reduction == at::Reduction::Mean) {
-        reduction_str = "batchmean";
-    } else if (reduction == at::Reduction::Sum) {
-        reduction_str = "sum";
-    }
-    at::Tensor result = reduction_str == "none" ?
-        npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
-    at_npu::native::OpCommand cmd;
-    cmd.Name("KLDiv")
-        .Input(self)
-        .Input(target)
-        .Output(result)
-        .Attr("reduction", reduction_str)
-        .Attr("log_target", log_target)
-        .Run();
-    if (reduction == at::Reduction::Mean) {
-        auto input_shape = self.sizes();
-        int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
-        result.div_(batch_square_size);
-    }
-    return result;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor npu_kl_div(
     const at::Tensor& self,
     const at::Tensor& target,
@@ -91,6 +58,5 @@ at::Tensor kl_div(
 {
     return npu_kl_div(self, target, reduction, log_target);
 }
-#endif
 
 } // namespace acl_op

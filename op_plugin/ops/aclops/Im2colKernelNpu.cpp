@@ -143,27 +143,4 @@ at::Tensor im2col(const at::Tensor& self, at::IntArrayRef kernel_size, at::IntAr
     }
     return result;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor col2im_backward(
-    const at::Tensor& self,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding,
-    at::IntArrayRef stride)
-{
-    return acl_op::im2col(self, kernel_size, dilation, padding, stride);
-}
-
-at::Tensor& col2im_backward_out(
-    const at::Tensor& self,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding,
-    at::IntArrayRef stride,
-    at::Tensor& result)
-{
-    return acl_op::im2col_out(self, kernel_size, dilation, padding, stride, result);
-}
-#endif
 } // namespace acl_op

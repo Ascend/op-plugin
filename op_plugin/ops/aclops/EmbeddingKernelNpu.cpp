@@ -18,18 +18,7 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor embedding(
-    const at::Tensor& weight,
-    const at::Tensor& indices,
-    int64_t padding_idx,
-    bool scale_grad_by_freq,
-    bool sparse) {
-    return embedding_common_nocheck(weight, indices);
-}
-#endif
 
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor embedding_symint(
     const at::Tensor& weight,
     const at::Tensor& indices,
@@ -43,6 +32,5 @@ at::Tensor embedding_symint(
         OPS_ERROR(ErrCode::PARAM));
     return embedding_common_nocheck(weight, indices);
 }
-#endif
 
 } // namespace acl_op

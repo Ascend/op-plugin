@@ -98,16 +98,4 @@ at::Tensor index_add(
 {
     return acl_op::index_add(self, dimname_to_position(self, dim), index, source, alpha);
 }
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor& index_add_(
-    at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& source,
-    const at::Scalar& alpha)
-{
-    return acl_op::index_add_out(self, dim, index, source, alpha, self);
-}
-#endif
 } // namespace acl_op

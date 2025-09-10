@@ -14,98 +14,16 @@
 // limitations under the License.
 
 #include <ATen/NamedTensorUtils.h>
+#include <ATen/native/NonSymbolicBC.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
-#include <ATen/native/NonSymbolicBC.h>
-#endif
+
 
 namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor &index_copy_npu_impl(const int64_t dim, const at::Tensor &index, const at::Tensor &source,
-                                at::Tensor &result)
-{
-    index_copy_npu_par_check(dim, index, source, result);
-    int64_t num_indices = index.numel();
-    int64_t i;
-    if (result.dim() > 1) {
-        at::Tensor des;
-        at::Tensor src;
-        for (i = 0; i < num_indices; i++) {
-            des = at::native::select(result, dim, index[i].item<int64_t>());
-            src = at::native::select(source, dim, i);
-            at_npu::native::NPUNativeFunctions::copy_(des, src, false);
-        }
-    } else {
-        for (i = 0; i < num_indices; i++) {
-            auto idx = index[i].item<int64_t>();
-            result[idx] = source[i];
-        }
-    }
-    return result;
-}
-
-
-at::Tensor index_copy_npu(const at::Tensor &self, const int64_t dim, const at::Tensor &index, const at::Tensor &source)
-{
-    at::Tensor result(self.clone());
-    return index_copy_npu_impl(dim, index, source, result);
-}
-
-at::Tensor index_copy_npu(const at::Tensor &self, const at::Dimname dim, const at::Tensor &index,
-                          const at::Tensor &source)
-{
-    at::Tensor result(self.clone());
-    return index_copy_npu_impl(dimname_to_position(self, dim), index, source, result);
-}
-
-at::Tensor &index_copy_npu_(at::Tensor &self, const at::Dimname dim, const at::Tensor &index, const at::Tensor &source)
-{
-    at::Tensor contiguous_self(self);
-    if (!npu_utils::check_match(&self)) {
-        contiguous_self = npu_utils::format_contiguous(self);
-    }
-    at::Tensor result = index_copy_npu_impl(dimname_to_position(self, dim), index, source, contiguous_self);
-    npu_utils::format_fresh_view(self, result);
-
-    return self;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor& index_copy_npu_impl(
-    const int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& source,
-    at::Tensor& result)
-{
-    index_copy_npu_par_check(dim, index, source, result);
-    int64_t num_indices = index.numel();
-    int64_t i;
-    if (result.dim() > 1) {
-        at::Tensor des;
-        at::Tensor src;
-        for (i = 0; i < num_indices; i++) {
-            des = at::native::select(result, dim, index[i].item<int64_t>());
-            src = at::native::select(source, dim, i);
-            at_npu::native::NPUNativeFunctions::copy_(des, src, false);
-        }
-    } else if (index.dim() == 0) {
-        result[index.item<int64_t>()] = source[0];
-    } else {
-        for (i = 0; i < num_indices; i++) {
-            result[index[i].item<int64_t>()] = source[i];
-        }
-    }
-    return result;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor& index_copy_npu_impl(
     const int64_t dim,
     const at::Tensor& index,
@@ -140,49 +58,8 @@ at::Tensor& index_copy_npu_impl(
 
     return result;
 }
-#endif
 } // namespace
 
-#if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor index_copy(const at::Tensor& self, const int64_t dim, const at::Tensor& index, const at::Tensor& source)
-{
-    at::Tensor contiguous_self(self.clone());
-    if (!npu_utils::check_match(&self)) {
-        contiguous_self = npu_utils::format_contiguous(contiguous_self);
-    }
-    return index_copy_npu_impl(dim, index, source, contiguous_self);
-}
-#endif
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor &_index_copy_(at::Tensor &self, const int64_t dim, const at::Tensor &index, const at::Tensor &source)
-{
-    at::Tensor contiguous_self(self);
-    if (!npu_utils::check_match(&self)) {
-        contiguous_self = npu_utils::format_contiguous(self);
-    }
-    at::Tensor result = index_copy_npu_impl(dim, index, source, contiguous_self);
-    npu_utils::format_fresh_view(self, result);
-
-    return self;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor& index_copy_(at::Tensor& self, const int64_t dim, const at::Tensor& index, const at::Tensor& source)
-{
-    at::Tensor contiguous_self(self);
-    if (!npu_utils::check_match(&self)) {
-        contiguous_self = npu_utils::format_contiguous(self);
-    }
-    at::Tensor result = index_copy_npu_impl(dim, index, source, contiguous_self);
-    npu_utils::format_fresh_view(self, result);
-
-    return self;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor index_copy(const at::Tensor& self, const int64_t dim, const at::Tensor& index, const at::Tensor& source)
 {
     at::Tensor contiguous_self(self.clone());
@@ -203,5 +80,4 @@ at::Tensor& index_copy_(at::Tensor& self, const int64_t dim, const at::Tensor& i
 
     return self;
 }
-#endif
 } // namespace acl_op

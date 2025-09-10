@@ -18,28 +18,7 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-#if VERSION_BETWEEN(V1R11, V1R11)
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
-    const at::Tensor& A,
-    bool full_matrices,
-    bool compute_uv,
-    at::Tensor& U,
-    at::Tensor& S,
-    at::Tensor& Vh)
-{
-    return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
-}
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
-    const at::Tensor& A,
-    bool full_matrices,
-    bool compute_uv)
-{
-    return _svd_helper(A, !full_matrices, compute_uv);
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
     const at::Tensor& A,
     bool full_matrices,
@@ -60,6 +39,5 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
 {
     return _svd_helper(A, !full_matrices, compute_uv);
 }
-#endif
 
 } // namespace acl_op

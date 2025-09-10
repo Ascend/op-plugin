@@ -28,26 +28,4 @@ at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float)
     log_softmax_nocheck(result, self, dim, result_type);
     return result;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float, at::Tensor& result)
-{
-    c10::ScalarType result_type = half_to_float ? c10::ScalarType::Float : result.scalar_type();
-    npu_preparation::CheckOut(
-        {self},
-        result,
-        npu_preparation::get_tensor_npu_format(result),
-        result_type,
-        self.sizes());
-
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        log_softmax_nocheck(contiguous_result, self, dim, result_type);
-        npu_utils::format_fresh_view(result, contiguous_result);
-    } else {
-        log_softmax_nocheck(result, self, dim, result_type);
-    }
-    return result;
-}
-#endif
 } // namespace acl_op

@@ -56,8 +56,6 @@ at::Tensor repeat_interleave_common_nocheck(const at::Tensor& self, int64_t repe
                                             c10::optional<int64_t> dim);
 at::Tensor repeat_interleave_common_nocheck(const at::Tensor& self, const at::Tensor& repeats,
                                             c10::optional<int64_t> dim);
-at::Tensor leaky_relu_backward_out_nocheck(at::Tensor result, const at::Tensor& grad_output, const at::Tensor& self,
-                                           at::Scalar negval);
 at::Tensor log_softmax_nocheck(at::Tensor& result, const at::Tensor& self, int64_t dim,
                                c10::optional<c10::ScalarType> dtype);
 at::Tensor& cal_var_out(const at::Tensor& self, at::IntArrayRef dim, const int64_t correction, const bool unbiased,

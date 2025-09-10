@@ -20,20 +20,6 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
-    const at::Tensor& grad,
-    const at::Tensor& input,
-    const at::Tensor& grid,
-    int64_t interpolation_mode,
-    int64_t padding_mode,
-    bool align_corners)
-{
-    return grid_sampler3d_backward_common_nocheck(grad, input, grid, interpolation_mode, padding_mode, align_corners);
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
     const at::Tensor& grad_output,
     const at::Tensor& input,
@@ -45,6 +31,5 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
 {
     return grid_sampler3d_backward_common_nocheck(grad_output, input, grid, interpolation_mode, padding_mode, align_corners);
 }
-#endif
 
 } // namespace acl_op
