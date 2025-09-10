@@ -55,8 +55,8 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 -   **recv\_counts**（`List[int]`）：必选参数，表示接收其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。
 -   **send\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持int，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
 -   **recv\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持int，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
--   **mm\_x**（`Tensor`）：可选参数，共享专家MatMul计算中的左矩阵。当需要融合共享专家矩阵计算时，该参数必选，支持2维，shape为$(BS, H2)$。
--   **mm\_weight**（`Tensor`）：可选参数，共享专家MatMul计算中的右矩阵。当需要融合共享专家矩阵计算时，该参数必选，支持2维，shape为$(H2, N2)$。
+-   **mm\_x**（`Tensor`）：可选参数，共享专家MatMul计算中的左矩阵。当需要融合共享专家矩阵计算时，该参数必选，数据类型支持`float16`、`bfloat16`，支持2维，shape为$(BS, H2)$。
+-   **mm\_weight**（`Tensor`）：可选参数，共享专家MatMul计算中的右矩阵。当需要融合共享专家矩阵计算时，该参数必选，数据类型与`mm_x`保持一致，支持2维，shape为$(H2, N2)$。
 -   **trans\_gmm\_weight**（`bool`）：可选参数，GroupedMatMul的右矩阵是否需要转置，true表示需要转置，false表示不转置。
 -   **trans\_mm\_weight**（`bool`）：可选参数，共享专家MatMul的右矩阵是否需要转置，true表示需要转置，false表示不转置。
 -   **permute\_out\_flag**（`bool`）：可选参数，Permute结果是否需要输出，true表明需要输出，false表明不需要输出。
@@ -71,7 +71,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 
 -   该接口支持推理场景下使用。
 -   该接口支持图模式（PyTorch 2.1版本）。
--   单卡通信量要求在2MB到100MB范围内。
+-   单卡通信量范围：\[2MB, 100MB\]。
 -   输入参数Tensor中shape使用的变量说明：
     -   BSK：本卡发送的token数（BS\*K=BSK），是send\_counts参数累加之和，取值范围\(0, 52428800\)。
     -   H1：表示路由专家hidden size隐藏层大小，取值范围\(0, 65536\)。
