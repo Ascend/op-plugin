@@ -1106,6 +1106,12 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
     initPTACacheThreadLocalFunc();
     g_hash_offset = 0;
     auto deterministic = at::globalContext().deterministicAlgorithms();
+    if (c10_npu::is_core_control_enabled()) {
+        auto aic_num = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_CUBE_CORE);
+        auto aiv_num = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_VECTOR_CORE);
+        add_param_to_buf(aic_num);
+        add_param_to_buf(aiv_num);
+    }
     auto device = c10_npu::current_device();
     add_param_to_buf(deterministic);
     add_param_to_buf(std::string(aclnn_api), args...);
@@ -1136,7 +1142,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
 template <typename ...Ts>
 bool hit_cache_v2(
     aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const std::tuple<Ts...> &args, int* api_ret,
-    bool deterministic_status)
+    bool deterministic_status, uint32_t aic_num, uint32_t aiv_num)
 {
     static const auto ptaFindExecCacheAddr = GetOpApiFuncAddr("PTAFindExecCache");
     static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");
@@ -1157,6 +1163,10 @@ bool hit_cache_v2(
     initPTACacheThreadLocalFunc();
     g_hash_offset = 0;
     add_param_to_buf_v2(deterministic_status);
+    if (aic_num != UINT32_MAX && aiv_num != UINT32_MAX) {
+        add_param_to_buf_v2(aic_num);
+        add_param_to_buf_v2(aiv_num);
+    }
     add_param_to_buf_v2(std::string(aclnn_api));
     add_params_to_buf_v2(args, std::make_index_sequence<sizeof...(Ts)>{});
     if (g_hash_offset == g_hash_buf_max_size) {
@@ -1246,6 +1256,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_NPU_CMD", "1", __VA_ARGS__);                                     \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
+        if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
+            c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
+        }                                                                                                              \
         uint64_t workspace_size = 0;                                                                                   \
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
         aclOpExecutor *executor = nullptr;                                                                             \
@@ -1270,6 +1283,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()->int {              \
+            if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
+                c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
+            }                                                                                                          \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             NPU_CHECK_ERROR(api_ret, "call " #aclnn_api " failed");                                                    \
@@ -1299,9 +1315,21 @@ auto DecodeDevice(Ts&... args) -> at::Device
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_NPU_CMD", "2", __VA_ARGS__);                                     \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
+        if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
+            c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
+        }                                                                                                              \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         auto deterministic_status = at::globalContext().deterministicAlgorithms();                                     \
-        auto acl_call = [copied_params, acl_stream, deterministic_status]()->int {                                     \
+        uint32_t aic_num = UINT32_MAX;                                                                                  \
+        uint32_t aiv_num = UINT32_MAX;                                                                                  \
+        if (c10_npu::is_core_control_enabled()) {                                                            \
+            aic_num = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_CUBE_CORE);                           \
+            aiv_num = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_VECTOR_CORE);                         \
+        }                                                                                                              \
+        auto acl_call = [copied_params, acl_stream, deterministic_status, aic_num, aiv_num]()->int {                     \
+            if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
+                c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
+            }                                                                                                          \
             uint64_t workspace_size = 0;                                                                               \
             uint64_t *workspace_size_addr = &workspace_size;                                                           \
             aclOpExecutor *executor = nullptr;                                                                         \
@@ -1309,7 +1337,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
             InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);                \
             UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);        \
             int api_ret = 0;                                                                                           \
-            if (hit_cache_v2(acl_stream, #aclnn_api, opApiFuncAddr, copied_params, &api_ret, deterministic_status)) {  \
+            if (hit_cache_v2(                                                                                          \
+               acl_stream, #aclnn_api, opApiFuncAddr, copied_params, &api_ret, deterministic_status, aic_num, aiv_num))  \
+            {                                                                                                          \
                 return api_ret;                                                                                        \
             }                                                                                                          \
             at_npu::native::SetDeterministicOps(deterministic_status);                                                 \
