@@ -148,21 +148,4 @@ at::Tensor &scatter_(at::Tensor &self, int64_t dim, const at::Tensor &index_ex, 
     }
     return self;
 }
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor scatter(const at::Tensor &self, int64_t dim, const at::Tensor &index, const at::Tensor &src)
-{
-    at::Tensor result = npu_preparation::apply_tensor(self);
-    acl_op::scatter_out(self, dim, index, src, result);
-    return result;
-}
-
-at::Tensor scatter(const at::Tensor &self, int64_t dim, const at::Tensor &index, const at::Scalar &value)
-{
-    at::Tensor result = npu_preparation::apply_tensor(self);
-    acl_op::scatter_out(self, dim, index, value, result);
-    return result;
-}
-#endif
-
 } // namespace acl_op

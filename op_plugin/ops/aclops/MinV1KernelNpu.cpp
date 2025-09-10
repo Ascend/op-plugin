@@ -38,26 +38,6 @@ std::tuple<at::Tensor&, at::Tensor&> min_v1_out_npu_nocheck(
     return std::tie(output, indices);
 }
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor npu_min_backward(
-    const at::Tensor& grad,
-    int64_t dim,
-    const at::Tensor& indices,
-    at::IntArrayRef sizes,
-    bool keepdim)
-{
-    at::Tensor new_grad = grad;
-    at::Tensor new_indices = indices;
-    if (keepdim && sizes.size() > 0) {
-        new_grad = grad.squeeze(dim);
-        new_indices = indices.squeeze(dim);
-    }
-    auto grad_input = acl_op::npu_scatter(
-        at::zeros(sizes, new_grad.options()), new_indices, new_grad, dim);
-    return grad_input;
-}
-#endif
-
 std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, at::Dimname dim, bool keepdim)
 {
     return acl_op::npu_min(self, dimname_to_position(self, dim), keepdim);
@@ -79,7 +59,6 @@ std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, int64_t dim, 
     return std::tie(outputs, indices);
 }
 
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor npu_min_backward_symint(const at::Tensor &grad, int64_t dim, const at::Tensor &indices,
                                    c10::SymIntArrayRef sizes, bool keepdim)
 {
@@ -93,5 +72,4 @@ at::Tensor npu_min_backward_symint(const at::Tensor &grad, int64_t dim, const at
     auto grad_input = acl_op::npu_scatter(at::zeros(sizes_, new_grad.options()), new_indices, new_grad, dim);
     return grad_input;
 }
-#endif
 } // namespace acl_op

@@ -42,28 +42,6 @@ at::Tensor mean(const at::Tensor& self, c10::optional<c10::ScalarType> dtype)
     return acl_op::mean(self, c10::SmallVector<int64_t, N> {}, false, dtype);
 }
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor& mean_out(
-    const at::Tensor& self,
-    at::IntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
-    at::Tensor& out)
-{
-    return mean_out_common_nocheck(self, dim, keepdim, dtype, out);
-}
-
-at::Tensor mean(
-    const at::Tensor& self,
-    at::IntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype)
-{
-    return mean_common_nocheck(self, dim, keepdim, dtype);
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor& mean_out(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
@@ -82,5 +60,4 @@ at::Tensor mean(
 {
     return mean_common_nocheck(self, dim.value(), keepdim, dtype);
 }
-#endif
 } // namespace acl_op

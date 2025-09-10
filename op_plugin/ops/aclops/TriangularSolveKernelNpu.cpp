@@ -31,15 +31,4 @@ std::tuple<at::Tensor &, at::Tensor &> triangular_solve_out(const at::Tensor &se
     M.resize_as_(clone_a_tmp).copy_(clone_a_tmp);
     return std::tie(X, M);
 }
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-std::tuple<at::Tensor, at::Tensor> triangular_solve(const at::Tensor &self, const at::Tensor &A, bool upper,
-                                                    bool transpose, bool unitriangular)
-{
-    at::Tensor result_tmp;
-    at::Tensor clone_a_tmp;
-    std::tie(result_tmp, clone_a_tmp) = triangular_solve_out_common_nocheck(self, A, upper, transpose, unitriangular);
-    return std::tuple<at::Tensor, at::Tensor>(result_tmp, clone_a_tmp);
-}
-#endif
 } // namespace acl_op

@@ -126,7 +126,6 @@ std::tuple<at::Tensor, at::Tensor> median(const at::Tensor &self, int64_t dim, b
     return std::tuple<at::Tensor &, at::Tensor &>(values, indices);
 }
 
-#if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor nanmedian(const at::Tensor &self)
 {
     TORCH_NPU_WARN_ONCE(
@@ -155,5 +154,4 @@ std::tuple<at::Tensor, at::Tensor> nanmedian(const at::Tensor &self, int64_t dim
     at::Tensor indices_out = indices_cpu.to(self.device());
     return std::tuple<at::Tensor &, at::Tensor &>(values_out, indices_out);
 }
-#endif
 } // namespace acl_op

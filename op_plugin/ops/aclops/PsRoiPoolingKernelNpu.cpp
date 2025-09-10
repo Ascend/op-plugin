@@ -62,23 +62,6 @@ at::Tensor &ps_roi_pooling_backward_npu_nocheck(at::Tensor &input_grad, const at
 }
 } // namespace
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor npu_ps_roi_pooling_backward(const at::Tensor &output_grad, const at::Tensor &rois, double spatial_scale,
-                                       int64_t group_size, int64_t output_dim, at::IntArrayRef input_size)
-{
-    TORCH_CHECK(rois.dim() > 0, "rois must has dim > 0", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(input_size.size() >= 2, "input_size must has dim >= 2", OPS_ERROR(ErrCode::PARAM));
-    auto output_size = {rois.size(0), group_size * group_size * output_dim, input_size[0], input_size[1]};
-
-    at::Tensor input_grad = npu_preparation::apply_tensor(output_grad, output_size);
-    ps_roi_pooling_backward_npu_nocheck(input_grad, output_grad, rois, spatial_scale, group_size, output_dim,
-                                        input_size);
-
-    return input_grad;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor npu_ps_roi_pooling_backward_symint(const at::Tensor &output_grad, const at::Tensor &rois,
                                               double spatial_scale, int64_t group_size, int64_t output_dim,
                                               c10::SymIntArrayRef input_size)
@@ -94,7 +77,6 @@ at::Tensor npu_ps_roi_pooling_backward_symint(const at::Tensor &output_grad, con
 
     return input_grad;
 }
-#endif
 
 at::Tensor npu_ps_roi_pooling(
     const at::Tensor& self,

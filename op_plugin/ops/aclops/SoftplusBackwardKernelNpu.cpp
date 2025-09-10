@@ -41,17 +41,4 @@ at::Tensor& softplus_backward_out(
     }
     return grad_input;
 }
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor softplus_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Scalar& beta,
-    const at::Scalar& threshold)
-{
-    at::Tensor result = npu_preparation::apply_tensor(self);
-    softplus_backward_out_common_nocheck(result, grad_output, self, beta, threshold);
-    return result;
-}
-#endif
 } // namespace acl_op

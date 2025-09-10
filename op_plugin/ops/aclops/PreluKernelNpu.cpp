@@ -20,16 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
-    return prelu_common_nocheck(self, weight);
-}
-#endif
-
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor _prelu_kernel(const at::Tensor& self, const at::Tensor& weight) {
     return prelu_common_nocheck(self, weight);
 }
-#endif
 } // namespace acl_op

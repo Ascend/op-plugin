@@ -19,7 +19,6 @@ namespace acl_op {
 
 using npu_preparation = at_npu::native::OpPreparation;
 
-#if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor trace(const at::Tensor &self)
 {
     TORCH_CHECK(self.dim() == 2, "trace: expected a matrix, but got tensor with dim ",
@@ -34,6 +33,5 @@ at::Tensor trace(const at::Tensor &self)
         .Run();
     return result;
 }
-#endif
 
 } // namespace op_plugin

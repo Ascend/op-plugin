@@ -14,7 +14,7 @@
 // limitations under the License.
 
 #include "op_plugin/utils/OpAdapter.h"
-#if VERSION_BETWEEN(V1R11, V2R1)
+#if VERSION_BETWEEN(V2R1, V2R1)
 #include "op_plugin/AclOpsInterface.h"
 
 namespace acl_op {

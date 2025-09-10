@@ -18,17 +18,6 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-#if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor repeat_interleave(
-    const at::Tensor& self,
-    int64_t repeats,
-    c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size)
-{
-    return repeat_interleave_common_nocheck(self, repeats, dim);
-}
-#endif
-
 #if VERSION_BETWEEN(V2R1, V2R1)
 at::Tensor repeat_interleave_symint(
     const at::Tensor& self,
@@ -39,9 +28,7 @@ at::Tensor repeat_interleave_symint(
     int64_t repeats_val = repeats.guard_int(__FILE__, __LINE__);
     return repeat_interleave_common_nocheck(self, repeats_val, dim);
 }
-#endif
 
-#if VERSION_BETWEEN(V1R11, V2R1)
 at::Tensor repeat_interleave(
     const at::Tensor& self,
     const at::Tensor& repeats,
