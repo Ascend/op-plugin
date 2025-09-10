@@ -68,6 +68,7 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
         batchSize = query.size(DIM_0);
         qsSize = query.size(DIM_1);
     } else if (input_layout_str == "BSH_NBSD") {
+        TORCH_CHECK(num_query_heads > 0, "The num_query_heads should be greater than zero, but got ", num_query_heads, OPS_ERROR(ErrCode::PARAM));
         tmp_output = OpPreparation::apply_tensor_without_format(
             {num_query_heads, query.size(DIM_0), query.size(DIM_1), query.size(DIM_2) / num_query_heads},
             query.options().dtype(query.dtype()));

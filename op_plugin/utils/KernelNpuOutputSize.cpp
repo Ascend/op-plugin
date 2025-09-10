@@ -2095,6 +2095,7 @@ c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_out_size(const at::Tenso
                 "The dims of input sorted_indices should be 1 dimensional, but got ", sorted_indices.dim(), "-dimensional." + OPS_ERROR(ErrCode::PARAM));
     
     int64_t topk = probs.has_value() ? probs.value().size(1) : DEFAULT_TOPK;
+    TORCH_CHECK(topk > 0, "The topk should be greater than zero in npu_moe_token_unpermute_out_size, but got ", topk, OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, SIZE> output_shape;
     output_shape = {sorted_indices.size(0) / topk, permuted_tokens.size(-1)};
     return output_shape;
