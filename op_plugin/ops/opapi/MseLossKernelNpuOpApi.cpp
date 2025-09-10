@@ -18,21 +18,6 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor& mse_loss_out(
-    const at::Tensor& self,
-    const at::Tensor& target,
-    int64_t reduction,
-    at::Tensor& result) {
-    DO_COMPATIBILITY(aclnnMseLossOut, acl_op::mse_loss_out(self, target, reduction, result));
-    auto output_size = op_infer::mse_loss_npu_output_size(self, target, reduction);
-    at_npu::native::OpPreparation::check_tensor({self, target}, result, result.scalar_type(), output_size);
-    EXEC_NPU_CMD(aclnnMseLossOut, self, target, reduction, result);
-    return result;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor& mse_loss_out(
     const at::Tensor& self,
     const at::Tensor& target,
@@ -47,7 +32,6 @@ at::Tensor& mse_loss_out(
     EXEC_NPU_CMD(aclnnMseLoss, self, target, reduction, result);
     return result;
 }
-#endif
 
 at::Tensor mse_loss(
     const at::Tensor& self,

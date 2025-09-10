@@ -107,7 +107,6 @@ int64_t check_and_get_groups(
     return groups;
 }
 
-#if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor npu_quant_matmul_symint(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& scale,
                                    const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& pertoken_scale,
                                    const c10::optional<at::Tensor>& bias, c10::optional<at::ScalarType> output_dtype,
@@ -210,82 +209,4 @@ at::Tensor npu_quant_matmul_symint(const at::Tensor& x1, const at::Tensor& x2, c
     }
     return result;
 }
-#endif
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& scale,
-                            const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& bias,
-                            c10::optional<c10::string_view> output_dtype)
-{
-    bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
-    bool trans_x2 = is_transpose_last_two_dims(x2);
-    auto x1_dim_num = x1.dim();
-    auto x2_dim_num = x2.dim();
-    auto x1_k_dim = x1.size(x1_dim_num - 1);
-    auto x2_n_dim = (is_a4w4 && !trans_x2) ? x2.size(x2_dim_num - 1) * INT4_NUMS_IN_INT32 : x2.size(x2_dim_num - 1);
-    auto x2_k_dim = x2.size(x2_dim_num - 2);
-
-    std::vector<uint64_t> batch_record;
-    uint64_t batch_val = infer_out_batch_shape(x1, x2, batch_record);
-    const at::Tensor long_tensor = x1_dim_num > x2_dim_num ? x1 : x2;
-    auto output_size = op_infer::array_to_small_vector(long_tensor.sizes());
-    output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX);
-    output_size[long_tensor.dim() - 1] = x2_n_dim;
-    for (size_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
-        output_size[i] = batch_record[i];
-    }
-    c10::TensorOptions options;
-    if (!output_dtype.has_value() ||  *output_dtype == "int8") {
-        options = x1.options().dtype(at::kChar);
-    } else if (*output_dtype == "float16") {
-        options = x1.options().dtype(at::kHalf);
-    } else if (*output_dtype == "bfloat16") {
-        options = x1.options().dtype(at::kBFloat16);
-    }
-    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
-
-    const at::Tensor &offset_real = offset.value_or(at::Tensor());
-    const at::Tensor &bias_real = bias.value_or(at::Tensor());
-    bool transpose1 = false;
-    bool transpose2 = false;
-
-    if (scale.dtype() == at::kFloat) {
-        const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
-        if (!is_a4w4 && is_nz_format(x2)) {
-            at::Tensor x1scale = at::empty({0}, options);
-            at::Tensor yscale = at::empty({0}, options);
-            at::Tensor x1Offset = at::empty({0}, options);
-            at::Tensor yOffset = at::empty({0}, options);
-            int64_t groupSize = 0;
-            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1, x2, x1scale, quant_param, yscale, x1Offset, offset_real, yOffset,
-                         bias_real, transpose1, transpose2, 0, result);
-        } else {
-            EXEC_NPU_CMD(
-                aclnnQuantMatmulV3,
-                x1,
-                x2,
-                quant_param,
-                offset_real,
-                bias_real,
-                transpose1,
-                transpose2,
-                result);
-        }
-    } else {
-        if (!is_a4w4 && is_nz_format(x2)) {
-            at::Tensor x1scale = at::empty({0}, options);
-            at::Tensor yscale = at::empty({0}, options);
-            at::Tensor x1Offset = at::empty({0}, options);
-            at::Tensor yOffset = at::empty({0}, options);
-            int64_t groupSize = 0;
-            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1, x2, x1scale, scale, yscale, x1Offset, offset_real, yOffset,
-                         bias_real, transpose1, transpose2, 0, result);
-        } else {
-            EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, bias_real, transpose1, transpose2, result);
-        }
-    }
-    return result;
-}
-#endif
-
 }

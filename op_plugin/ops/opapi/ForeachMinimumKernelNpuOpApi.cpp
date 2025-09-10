@@ -23,83 +23,6 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors1, at::TensorList tensors2)
-{
-    DO_COMPATIBILITY(aclnnForeachMinimumList, at::native::foreach_tensor_minimum_slow(tensors1, tensors2));
-    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
-                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
-    if (!is_support_nd_out) {
-        return at::native::foreach_tensor_minimum_slow(tensors1, tensors2);
-    }
-
-    at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
-        return at::native::foreach_tensor_minimum_slow(tensors1, tensors2);
-    }
-
-    // datatype check
-    if (!op_plugin::utils::check_dtype_foreach(tensors1[0].scalar_type(),
-                                               op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
-                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
-        return at::native::foreach_tensor_minimum_slow(tensors1, tensors2);
-    }
-
-    // construct the output tensorlist of the NPU
-    auto scalar_type = tensors1[0].scalar_type();
-    std::vector<at::Tensor> result;
-    for (const at::Tensor &tensor : tensors1) {
-    auto output_size = op_infer::input_same_output_size(tensor);
-    result.push_back(npu_preparation::apply_tensor_without_format(output_size,
-                                                                  tensor.options().dtype(scalar_type)));
-    }
-    at::TensorList result_ = at::TensorList(result);
-
-    EXEC_NPU_CMD(aclnnForeachMinimumList, tensors1, tensors2, result_);
-    return result;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors1, at::TensorList tensors2)
-{
-    DO_COMPATIBILITY(aclnnForeachMinimumList,
-                     at::native::foreach_tensor_clamp_min_list_kernel_slow(tensors1, tensors2));
-    static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-                                          c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
-                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);
-    if (!is_support_nd_out) {
-        return at::native::foreach_tensor_clamp_min_list_kernel_slow(tensors1, tensors2);
-    }
-
-    // datatype check
-    if (!op_plugin::utils::check_dtype_foreach(tensors1[0].scalar_type(),
-                                               op_plugin::utils::ForeachTensorDtypeSupport::TO_INT32,
-                                               op_plugin::utils::ForeachInputType::TYPE_TENSOR)) {
-        return at::native::foreach_tensor_clamp_min_list_kernel_slow(tensors1, tensors2);
-    }
-
-    at::native::check_foreach_api_restrictions(tensors1, tensors2);
-    if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
-        return at::native::foreach_tensor_clamp_min_list_kernel_slow(tensors1, tensors2);
-    }
-    // construct the output tensorlist of the NPU
-    auto scalar_type = tensors1[0].scalar_type();
-    std::vector<at::Tensor> result;
-    for (const at::Tensor &tensor : tensors1) {
-    auto output_size = op_infer::input_same_output_size(tensor);
-    result.push_back(npu_preparation::apply_tensor_without_format(output_size,
-                                                                  tensor.options().dtype(scalar_type)));
-    }
-    at::TensorList result_ = at::TensorList(result);
-
-    EXEC_NPU_CMD(aclnnForeachMinimumList, tensors1, tensors2, result_);
-    return result;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 std::vector<at::Tensor> _foreach_minimum_v1(at::TensorList tensors, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(tensors);
@@ -400,5 +323,4 @@ void _foreach_minimum_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
     _split_and_exec_npu_cmd_min_scalar_list(tensors, scalars, tensors, true);
     return;
 }
-#endif
 } // namespace op_api

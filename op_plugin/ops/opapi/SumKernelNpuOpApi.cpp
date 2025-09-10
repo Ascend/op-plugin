@@ -45,26 +45,6 @@ at::Tensor sum(const at::Tensor &self, c10::optional<c10::ScalarType> dtype)
     return op_api::sum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
 }
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor& sum_out(const at::Tensor &self,
-                    at::IntArrayRef dim,
-                    bool keepdim,
-                    c10::optional<c10::ScalarType> dtype,
-                    at::Tensor &result)
-{
-    return op_api::sum_out_common_nocheck(self, dim, keepdim, dtype, result);
-}
-
-at::Tensor sum(const at::Tensor &self,
-               at::IntArrayRef dim,
-               bool keepdim,
-               c10::optional<c10::ScalarType> dtype)
-{
-    return op_api::sum_common_nocheck(self, dim, keepdim, dtype);
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 at::Tensor& sum_out(const at::Tensor &self,
                     at::OptionalIntArrayRef dim,
                     bool keepdim,
@@ -81,5 +61,4 @@ at::Tensor sum(const at::Tensor &self,
 {
     return op_api::sum_common_nocheck(self, dim.value_or(at::IntArrayRef{}), keepdim, dtype);
 }
-#endif
 }

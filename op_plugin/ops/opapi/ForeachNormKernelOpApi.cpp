@@ -94,7 +94,7 @@ void _split_and_exec_npu_cmd_norm(at::TensorList tensors, const at::Scalar& scal
     }
 }
 
-#if VERSION_BETWEEN(V1R11, V2R3)
+#if VERSION_BETWEEN(V2R1, V2R3)
 std::vector<at::Tensor> _foreach_norm(const at::TensorList self, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(self);
