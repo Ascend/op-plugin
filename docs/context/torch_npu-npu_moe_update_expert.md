@@ -41,11 +41,13 @@
             place_idx = i % plance_num
     new_expert_id = eplb_table[table_offset + place_idx]
     ```
-    - 专家剪枝功能：将shape为$(BS,)$的active_mask进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中BS对应为False的专家会直接被剪枝。对于active_mask_tensor为True的expert_scales的元素，满足以下条件也将被剪枝
+    - 专家剪枝功能：将shape为$(BS,)$的active_mask进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中BS对应为False的专家会直接被剪枝。对于active_mask_tensor为True的expert_scales的元素，满足条件也将被剪枝
     ```python
-    (expert_scales[i] < sum(expert_scales[i]) * threshold) && broadcast(active_mask[i])
+    active_mask_tensor = broadcast(active_mask, (BS, K))
+    for i in range(BS):
+        expert_scales[:] = sum(expert[i, :]) * pruning_threshold[:]
+        balanced_active_mask[i, :] = (expert_scales[i, :] < expert_scales[:]) && active_mask_tensor[i, :]
     ```
-    ![专家剪枝流程](figures/moe_update_expert-broadcast.png)
 
 ## 函数原型<a name="zh-cn_topic_0000002366611733_section45077510411"></a>
 
