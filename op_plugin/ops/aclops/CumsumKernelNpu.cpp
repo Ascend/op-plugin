@@ -88,14 +88,4 @@ at::Tensor cumsum(const at::Tensor &self, int64_t dim, const c10::optional<at::S
     }
     return acl_op::cumsum_out(self, dim, dtype, result);
 }
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor& cumsum_(
-    at::Tensor& self,
-    int64_t dim,
-    c10::optional<at::ScalarType> dtype)
-{
-    return acl_op::cumsum_out(self, dim, dtype, self);
-}
-#endif
 } // namespace acl_op

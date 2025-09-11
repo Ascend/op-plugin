@@ -312,7 +312,6 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
     return std::tie(result, save_mean, save_invstd);
 }
 
-#if VERSION_BETWEEN(V2R0, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
     const at::Tensor& input,
     const c10::optional<at::Tensor>& weight,
@@ -326,5 +325,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
     return acl_op::native_batch_norm(
         input, weight, bias, running_mean, running_var, training, momentum, eps);
 }
-#endif
 } // namespace acl_op

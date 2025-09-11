@@ -70,18 +70,4 @@ at::Tensor& cumprod_out(
     at::namedinference::propagate_names(result, self);
     return result;
 }
-
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor cumprod(
-    const at::Tensor& self,
-    int64_t dim,
-    c10::optional<at::ScalarType> dtype) {
-  at::Tensor self_cast = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
-  at::Tensor result = npu_preparation::apply_tensor(self_cast);
-  cumprod_out_nocheck(result, self_cast, dim);
-  return result;
-}
-#endif
-
 } // namespace acl_op
