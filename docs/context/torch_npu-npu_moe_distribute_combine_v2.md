@@ -9,16 +9,34 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002168254826_section14441124184110"></a>
 
--   算子功能：先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。需与[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)配套使用，相当于按npu\_moe\_distribute\_dispatch\_v2算子收集数据的路径原路返回。
--   支持动态缩容场景，支持在创建通信域后，出现故障卡，将故障卡从通信域中剔除，算子可正常执行，无需重新编译；
--   支持零计算专家场景————zeroExpert:Moe(x)=0, copyExpert:Moe(x)=x, constExpert:Moe(x)=alpha1\*x+alpha2\*v。
--   计算公式：
+-   API功能：
 
-    $$
-    rs\_out = ReduceScatterV(expend\_x)\\
-    ata\_out = AlltoAllv(rs\_out)\\
-    x = Sum(expert\_scales * ata\_out + expert\_scales * shared\_expert\_x)
-    $$
+    需与[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)配套使用，相当于按npu\_moe\_distribute\_dispatch\_v2算子收集数据的路径原路返回。
+     - 支持数据整合功能，先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）；
+     - 支持动态缩容场景，在创建通信域后，出现故障卡，将故障卡从通信域中剔除，算子可正常执行，无需重新编译；
+     - 支持多计算专家场景。
+-   计算公式：
+    - 数据整合功能：
+
+      $rs\_out = ReduceScatterV(expend\_x)$
+
+      $ata\_out = AlltoAllv(rs\_out)$
+
+      $x = Sum(expert\_scales * ata\_out + expert\_scales * shared\_expert\_x)$
+
+    - 多计算专家场景：
+
+      零专家场景（zero_expert）：
+
+      $Moe(x)=0$
+
+      拷贝专家场景（copy_expert）：
+
+      $Moe(x)=x$
+      
+      常量专家场景（const_expert）：
+
+      $Moe(x)=const\_expert\_alpha\_1*x+const\_expert\_alpha\_2*const\_expert\_v$
 
 ## 函数原型<a name="zh-cn_topic_0000002168254826_section45077510411"></a>
 
@@ -161,7 +179,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值范围为0<BS≤256。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
 
-    -   K：表示选取topK个专家，取值范围为0<K≤16，同时满足0<K≤moe\_expert\_num。
+    -   K：表示选取topK个专家，取值范围为0<K≤16，同时满足0 < K ≤ moe\_expert\_num + zero_expert_num + copy_expert_num + const_expert_num。
 
     -   server\_num：表示服务器的节点数，取值只支持2、4、8。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：仅该场景的shape使用了该变量。

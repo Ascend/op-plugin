@@ -9,17 +9,38 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002203575833_section14441124184110"></a>
 
--   算子功能：需与[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)配套使用，完成MoE的并行部署下的token dispatch\_v2与combine\_v2。对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）。
--   支持动态缩容场景，支持在创建通信域后，出现故障卡，将故障卡从通信域中剔除，算子可正常执行，无需重新编译；
--   支持零计算专家场景————zeroExpert:Moe(x)=0, copyExpert:Moe(x)=x, constExpert:Moe(x)=alpha1\*x+alpha2\*v。
+-   API功能：
+
+    需与[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)配套使用，完成MoE的并行部署下的token dispatch\_v2与combine\_v2。
+     - 支持动态量化场景，对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）；
+     - 支持动态缩容场景，支持在创建通信域后，出现故障卡，将故障卡从通信域中剔除，算子可正常执行，无需重新编译；
+     - 支持多计算专家场景。
 -   计算公式：
-    -   若`quant_mode`不为`2`，即非动态量化场景：
+    - 动态量化场景：
 
-        ![](./figures/zh-cn_formulaimage_0000002244554688.png)
+      若`quant_mode`不为`2`，即非动态量化场景：
 
-    -   若`quant_mode`为`2`，即动态量化场景：
+      ![](./figures/zh-cn_formulaimage_0000002244554688.png)
 
-        ![](./figures/zh-cn_formulaimage_0000002244394892.png)
+      若`quant_mode`为`2`，即动态量化场景：
+
+      ![](./figures/zh-cn_formulaimage_0000002244394892.png)
+
+    - 多计算专家场景：
+
+      零专家场景（zero_expert）：
+
+      $Moe(x)=0$
+
+      拷贝专家场景（copy_expert）：
+
+      $Moe(x)=x$
+      
+      常量专家场景（const_expert）：
+
+      $Moe(x)=const\_expert\_alpha\_1*x+const\_expert\_alpha\_2*const\_expert\_v$
+
+      参数const_expert_alpha_1、const_expert_alpha_2、const_expert_v见[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)文档。
 
 ## 函数原型<a name="zh-cn_topic_0000002203575833_section45077510411"></a>
 
@@ -89,15 +110,15 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - "hierarchy": token数据经过跨机、机内两次发送，仅不同server同号卡之间使用RDMA通信，server内使用HCCS通信。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可。
 
--   zero\_expert\_num：int类型，可选参数，表示零专家的数量。
+-   **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：当前版本不支持，传0即可。</term>
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品：取值范围\[0, MAX_INT32\]，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num\)。</term>
 
--   copy\_expert\_num：int类型，可选参数，表示copy专家的数量。
+-   **copy\_expert\_num** (`int`)：可选参数，表示copy专家的数量。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：当前版本不支持，传0即可。</term>
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品：取值范围\[0, MAX_INT32\]，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。</term>
 
--   const\_expert\_num：int类型，可选参数，表示常量专家的数量。
+-   **const\_expert\_num** (`int`)：可选参数，表示常量专家的数量。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件：当前版本不支持，传0即可。</term>
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品：取值范围\[0, MAX_INT32\]，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num\)。</term>
 
@@ -145,7 +166,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：取值范围为0<BS≤256。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
 
-    -   K：表示选取topK个专家，取值范围为0<K≤16，同时满足0<K≤moe\_expert\_num。
+    -   K：表示选取topK个专家，取值范围为0<K≤16，同时满足0 < K ≤ moe\_expert\_num + zero_expert_num + copy_expert_num + const_expert_num。
 
     -   server\_num：表示服务器的节点数，取值只支持2、4、8。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：仅该场景的shape使用了该变量。

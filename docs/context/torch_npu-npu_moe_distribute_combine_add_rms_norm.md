@@ -19,12 +19,30 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002322738573_section1470016430218"></a>
 
--   算子功能：完成moe_distribute_combine+add+rms_norm融合。需与[torch_npu.npu_moe_distribute_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按`npu_moe_distribute_dispatch`算子收集数据的路径原路返回后对数据进行`add_rms_norm`操作。
--   支持动态缩容场景，支持在创建通信域后，出现故障卡，将故障卡从通信域中剔除，算子可正常执行，无需重新编译；
--   支持零计算专家场景————zeroExpert:Moe(x)=0, copyExpert:Moe(x)=x, constExpert:Moe(x)=alpha1\*x+alpha2\*v。
+-   API功能：
+
+    需与[torch_npu.npu_moe_distribute_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按`npu_moe_distribute_dispatch`算子收集数据的路径原路返回后对数据进行`add_rms_norm`操作。
+     - 支持数据整合功能，即对moe_distribute_combine、add及rms_norm进行功能融合；
+     - 支持动态缩容场景，在创建通信域后，出现故障卡，将故障卡从通信域中剔除，算子可正常执行，无需重新编译；
+     - 支持多计算专家场景。
 -   计算公式：
+    - 数据整合功能：
 
     ![](figures/zh-cn_formulaimage_0000002340454445.png)
+
+    - 多计算专家场景：
+
+      零专家场景（zero_expert）：
+
+      $Moe(x)=0$
+
+      拷贝专家场景（copy_expert）：
+
+      $Moe(x)=x$
+      
+      常量专家场景（const_expert）：
+
+      $Moe(x)=const\_expert\_alpha\_1*x+const\_expert\_alpha\_2*const\_expert\_v$
 
 ## 函数原型<a name="zh-cn_topic_0000002322738573_section470115437220"></a>
 
@@ -129,7 +147,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     -   BS：表示待发送的token数量。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
 
-    -   K：表示选取topK个专家，取值范围为0<K≤8同时满足0<K≤moe\_expert\_num。
+    -   K：表示选取topK个专家，取值范围为0<K≤8同时满足0 < K ≤ moe\_expert\_num + zero_expert_num + copy_expert_num + const_expert_num。
     -   local\_expert\_num：表示本卡专家数量。
         -   对于共享专家卡，local\_expert\_num=1
         -   对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)，当local\_expert\_num\>1时，不支持TP域通信。
