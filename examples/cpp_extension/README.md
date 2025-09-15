@@ -93,7 +93,7 @@ TORCH_LIBRARY_IMPL(npu, PrivateUse1, m)
 
 
 ## 运行自定义的算子
-  运行依赖torch、torch_npu和CANN。具体安装步骤参考[torch_npu文档](https://gitee.com/ascend/pytorch#%E5%AE%89%E8%A3%85)
+  运行依赖torch、torch_npu和CANN。具体安装步骤参考[torch_npu文档](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85)
   运行流程：
   1. 设置编译的AI处理器型号
   

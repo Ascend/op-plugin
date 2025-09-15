@@ -107,7 +107,7 @@ function main()
         if [ -d ${BUILD_PATH} ]; then
             rm -r ${BUILD_PATH}
         fi
-        git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
+        git clone -b ${PYTORCH_VERSION} https://gitcode.com/ascend/pytorch.git ${PYTORCH_PATH}
     fi
     checkout_pytorch_branch
 
