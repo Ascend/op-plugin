@@ -133,6 +133,8 @@
         -   [torch_npu.npu_transpose_batchmatmul](./context/torch_npu-npu_transpose_batchmatmul.md)
         -   [torch_npu.npu_moe_update_expert](./context/torch_npu-npu_moe_update_expert.md)
         -   [torch_npu.npu_dynamic_block_quant](./context/torch_npu-npu_dynamic_block_quant.md)
+        -   [torch_npu.set_device_limit](./context/torch_npu-set_device_limit.md)
+        -   [torch_npu.get_device_limit](./context/torch_npu-get_device_limit.md)
         -   [torch_npu.set_stream_limit](./context/torch_npu-set_stream_limit.md)
         -   [torch_npu.reset_stream_limit](./context/torch_npu-reset_stream_limit.md)
         -   [torch_npu.get_stream_limit](./context/torch_npu-get_stream_limit.md)
