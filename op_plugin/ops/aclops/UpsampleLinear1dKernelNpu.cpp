@@ -126,23 +126,4 @@ at::Tensor upsample_linear1d(
 
     return result;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor upsample_linear1d(
-    const at::Tensor& self,
-    c10::optional<at::IntArrayRef> output_size,
-    bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors)
-{
-    TORCH_CHECK(
-        self.dim() == 3,
-        "It is expected input_size equals to 3, but got size ",
-        self.dim(), OPS_ERROR(ErrCode::PARAM));
-
-    auto osize = op_infer::upsample_infershape_with_scale(self.sizes(), output_size, scale_factors);
-    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
-
-    return acl_op::upsample_linear1d(self, osize, align_corners, scales_w);
-}
-#endif
 } // namespace acl_op

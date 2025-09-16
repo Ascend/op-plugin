@@ -18,91 +18,6 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor& var_out(
-    const at::Tensor& self,
-    c10::optional<at::IntArrayRef> dims,
-    c10::optional<int64_t> correction,
-    bool keepdim,
-    at::Tensor& result)
-{
-    c10::SmallVector<int64_t, N> dim = op_plugin::utils::get_dimlist_for_tensor(self);
-    if (dims.has_value()) {
-        dim = op_infer::array_to_small_vector(dims.value());
-    }
-    bool unbiased = !(correction.has_value() && correction.value() == 0);
-    int64_t real_correction = correction.has_value() ? correction.value() : 1;
-    return cal_var_out(self, dim, real_correction, unbiased, keepdim, result);
-}
-
-at::Tensor var(
-    const at::Tensor& self,
-    c10::optional<at::IntArrayRef> dims,
-    c10::optional<int64_t> correction,
-    bool keepdim)
-{
-    c10::SmallVector<int64_t, N> dim = op_plugin::utils::get_dimlist_for_tensor(self);
-    if (dims.has_value()) {
-        dim = op_infer::array_to_small_vector(dims.value());
-    }
-    int64_t real_correction = correction.has_value() ? correction.value() : 1;
-    bool unbiased = !(correction.has_value() && correction.value() == 0);
-    return cal_var(self, dim, real_correction, unbiased, keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> var_mean(
-    const at::Tensor& self,
-    c10::optional<at::IntArrayRef> dims,
-    c10::optional<int64_t> correction,
-    bool keepdim)
-{
-    c10::SmallVector<int64_t, N> dim = op_plugin::utils::get_dimlist_for_tensor(self);
-    if (dims.has_value()) {
-        dim = op_infer::array_to_small_vector(dims.value());
-    }
-    bool unbiased = !(correction.has_value() && correction.value() == 0);
-    int64_t real_correction = correction.has_value() ? correction.value() : 1;
-    return cal_var_mean(self, dim, unbiased, real_correction, keepdim);
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor& var_out(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    c10::optional<int64_t> correction,
-    bool keepdim,
-    at::Tensor& result)
-{
-    bool unbiased = !(correction.has_value() && correction.value() == 0);
-    int64_t real_correction = correction.has_value() ? correction.value() : 1;
-    return cal_var_out(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim, result);
-}
-
-at::Tensor var(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    c10::optional<int64_t> correction,
-    bool keepdim)
-{
-    bool unbiased = !(correction.has_value() && correction.value() == 0);
-    int64_t real_correction = correction.has_value() ? correction.value() : 1;
-    return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> var_mean(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    c10::optional<int64_t> correction,
-    bool keepdim)
-{
-    bool unbiased = !(correction.has_value() && correction.value() == 0);
-    int64_t real_correction = correction.has_value() ? correction.value() : 1;
-    return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, real_correction, keepdim);
-}
-#endif
-
-#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor& var_out(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
@@ -136,5 +51,4 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
     return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, real_correction, keepdim);
 }
-#endif
 } // namespace acl_op

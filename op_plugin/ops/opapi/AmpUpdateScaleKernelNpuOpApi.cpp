@@ -18,7 +18,6 @@
 
 namespace op_api {
 
-#if VERSION_BETWEEN(V1R11, V1R11) || VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor& _amp_update_scale_(
     at::Tensor& current_scale,
     at::Tensor& growth_tracker,
@@ -40,6 +39,4 @@ at::Tensor& _amp_update_scale_(
         growth_tracker);
     return current_scale;
 }
-#endif
-
 }  // namespace op_api

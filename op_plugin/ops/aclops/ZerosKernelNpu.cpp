@@ -24,53 +24,6 @@ at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& out)
     return out.zero_();
 }
 
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor zeros(
-    at::IntArrayRef size,
-    c10::optional<at::ScalarType> dtype,
-    c10::optional<at::Layout> layout,
-    c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
-}
-
-at::Tensor zeros(
-    at::IntArrayRef size,
-    c10::optional<at::DimnameList> names,
-    c10::optional<at::ScalarType> dtype,
-    c10::optional<at::Layout> layout,
-    c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
-}
-#endif
-
-#if VERSION_BETWEEN(V2R0, V2R0)
-at::Tensor zeros(
-    at::IntArrayRef size,
-    c10::optional<at::ScalarType> dtype,
-    c10::optional<at::Layout> layout,
-    c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
-}
-
-at::Tensor zeros(
-    at::IntArrayRef size,
-    c10::optional<at::DimnameList> names,
-    c10::optional<at::ScalarType> dtype,
-    c10::optional<at::Layout> layout,
-    c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    return acl_op::zeros(size, dtype, layout, device, pin_memory);
-}
-#endif
-
-#if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 at::Tensor zeros_symint(
     c10::SymIntArrayRef size,
     c10::optional<at::ScalarType> dtype,
@@ -92,5 +45,4 @@ at::Tensor zeros(
 {
     return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
 }
-#endif
 } // namespace acl_op

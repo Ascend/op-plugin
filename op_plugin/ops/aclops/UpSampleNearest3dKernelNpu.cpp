@@ -78,23 +78,4 @@ at::Tensor upsample_nearest3d(const at::Tensor &input, at::IntArrayRef output_si
     upsample_nearest3d_out_nocheck(result, input, output_size, scales_d, scales_h, scales_w);
     return result;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor upsample_nearest3d(
-    const at::Tensor& input,
-    c10::optional<at::IntArrayRef> output_size,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-    TORCH_CHECK(
-        input.dim() == 5,
-        "It is expected input_size equals to 5, but got size ",
-        input.dim(), OPS_ERROR(ErrCode::PARAM));
-
-  auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-  auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
-
-  return acl_op::upsample_nearest3d(input, osize, scales_d, scales_h, scales_w);
-}
-#endif
 } // namespace acl_op

@@ -83,24 +83,4 @@ at::Tensor upsample_bilinear2d_backward(
         grad_input, grad_output, output_size, input_size, align_corners, scales_h, scales_w);
     return grad_input;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor upsample_bilinear2d_backward(
-    const at::Tensor& grad_output,
-    c10::optional<at::IntArrayRef> output_size,
-    at::IntArrayRef input_size,
-    bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-    TORCH_CHECK(
-        input_size.size() == 4,
-        "It is expected input_size equals to 4, but got size ",
-        input_size.size(), OPS_ERROR(ErrCode::PARAM));
-
-    auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
-    return acl_op::upsample_bilinear2d_backward(grad_output, osize, input_size, align_corners, scales_h, scales_w);
-}
-#endif
-
 } // namespace acl_op

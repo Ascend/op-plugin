@@ -82,23 +82,4 @@ at::Tensor upsample_nearest2d(const at::Tensor &self, at::IntArrayRef output_siz
 
     return result;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor upsample_nearest2d(
-    const at::Tensor& input,
-    c10::optional<at::IntArrayRef> output_size,
-    c10::optional<at::ArrayRef<double>> scale_factors)
-{
-    TORCH_CHECK(
-        input.dim() == 4,
-        "It is expected size equals to 4, but got size ",
-        input.dim(), OPS_ERROR(ErrCode::PARAM));
-
-    auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-    auto scale_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-    auto scale_w = op_plugin::utils::get_scale_value(scale_factors, 1);
-    return acl_op::upsample_nearest2d(input, osize, scale_h, scale_w);
-}
-#endif
-
 } // namespace acl_op
