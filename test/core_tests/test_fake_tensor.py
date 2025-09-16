@@ -2725,6 +2725,21 @@ class TestNpuMoeUnpermuteWithRoutingMap(TestCase):
                 self.assertEqual(unpermuted_tokens.shape[1], restore_shape[1])
 
 
+class TestNpuAttentionWorkerCombine(TestCase):
+    def test_npu_attention_worker_combine(self):
+        with FakeTensorMode():
+            schedule_context = torch.randn((1024,)).npu().to(torch.int8)
+            BS = 16
+            expert_scales = torch.rand(BS, 8, dtype=torch.float32).npu()
+            layer_id = torch.randint(1, 20, (1,), dtype=torch.int32).npu()
+            H = 7168
+            y_npu, next_layer_id_npu = \
+            torch_npu.npu_attention_worker_combine(schedule_context, expert_scales, layer_id, H, token_dtype=0, need_schedule=0)
+            self.assertTrue(y_npu.shape[0] == BS)
+            self.assertTrue(y_npu.shape[1] == H)
+            self.assertTrue(next_layer_id_npu.shape[0] == 1)
+
+
 class TestNpuMoeTokenPermuteWithRoutingMap(TestCase):
     def test_npu_moe_token_permute_with_routing_map_meta(self):
         with FakeTensorMode():

@@ -395,6 +395,9 @@
   "func: npu_moe_re_routing(Tensor tokens, Tensor expert_token_num_per_rank, *, Tensor? per_token_scales=None, int expert_token_num_type=1, int idx_type=0) -> (Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
+  "func: npu_attention_worker_combine(Tensor schedule_context, Tensor expert_scales, Tensor layer_id, int hidden_size, *, int token_dtype=0, int need_schedule=0) -> (Tensor, Tensor)":{
+    "version": ["all_version"]
+  },
   "func: adaptive_max_pool3d.out(Tensor self, int[3] output_size, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))": {
     "version": ["all_version"]
   },

@@ -2589,6 +2589,20 @@ def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=
             torch.empty(expert_token_num_size, dtype=expert_token_num_per_rank.dtype, device=tokens.device))
 
 
+@impl(m, "npu_attention_worker_combine")
+def npu_attention_worker_combine(schedule_context, expert_scales, layer_id, hidden_size, token_dtype=0, need_schedule=0):
+    y_size = []
+    next_layer_id_size = []
+    y_size.append(expert_scales.size(0))
+    y_size.append(hidden_size)
+    next_layer_id_size.append(layer_id.size(0))
+    y_dtype = torch.half
+    if token_dtype == 1:
+        y_dtype = torch.bfloat16
+    return (torch.empty(y_size, dtype=y_dtype, device=schedule_context.device),
+            torch.empty(next_layer_id_size, dtype=torch.int32, device=schedule_context.device))
+
+
 @impl(m, "npu_add_rms_norm_quant")
 def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, scales2=None, zero_points2=None, axis=-1, epsilon=1e-06, div_mode=True):
     torch._check(
