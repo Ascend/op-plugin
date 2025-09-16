@@ -66,27 +66,4 @@ at::Tensor upsample_nearest1d(const at::Tensor& self,
     EXEC_NPU_CMD(aclnnUpsampleNearest1dV2, self, output_size, scale_l, result);
     return result;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor upsample_nearest1d(const at::Tensor& input,
-                              c10::optional<at::IntArrayRef> output_size,
-                              c10::optional<at::ArrayRef<double>> scale_factors)
-{
-    // 兼容性处理,没有v2回调原先版本
-    DO_COMPATIBILITY(aclnnUpsampleNearest1dV2, op_api::upsample_nearest1d_old(input, output_size, scale_factors));
-    auto compute_size = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
-    return op_api::upsample_nearest1d(input, compute_size, scales_w);
-}
-
-at::Tensor upsample_nearest1d_old(const at::Tensor& input,
-                                  c10::optional<at::IntArrayRef> output_size,
-                                  c10::optional<at::ArrayRef<double>> scale_factors)
-{
-    DO_COMPATIBILITY(aclnnUpsampleNearest1d, acl_op::upsample_nearest1d(input, output_size, scale_factors));
-    auto compute_size = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
-    return op_api::upsample_nearest1d_old(input, compute_size, scales_w);
-}
-#endif
 }

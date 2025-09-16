@@ -50,19 +50,4 @@ at::Tensor upsample_bicubic2d(const at::Tensor& self, at::IntArrayRef output_siz
     upsample_bicubic2d_opapi(self, output_size, align_corners, scales_h, scales_w, result);
     return result;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor upsample_bicubic2d(const at::Tensor& self, c10::optional<at::IntArrayRef> output_size,
-                              bool align_corners, c10::optional<at::ArrayRef<double>> scale_factors)
-{
-    DO_COMPATIBILITY(aclnnUpsampleBicubic2d,
-                     acl_op::upsample_bicubic2d(self, output_size, align_corners, scale_factors));
-    auto osize = op_infer::upsample_infershape_with_scale(self.sizes(), output_size, scale_factors);
-    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
-    at::Tensor result = op_api::upsample_bicubic2d(self, osize, align_corners, scales_h, scales_w);
-    return result;
-}
-#endif
-
 } // namespace op_api

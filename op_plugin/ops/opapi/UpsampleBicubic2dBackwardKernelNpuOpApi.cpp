@@ -60,30 +60,4 @@ at::Tensor upsample_bicubic2d_backward(
                  scales_h_attr, scales_w_attr, grad_input);
     return grad_input;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor upsample_bicubic2d_backward(
-    const at::Tensor& grad_output,
-    c10::optional<at::IntArrayRef> output_size,
-    at::IntArrayRef input_size,
-    bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors)
-{
-    DO_COMPATIBILITY(aclnnUpsampleBicubic2dBackward, acl_op::upsample_bicubic2d_backward(grad_output, output_size,
-                                                                                         input_size, align_corners,
-                                                                                         scale_factors));
-    auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
-
-    auto outputsize = at::IntArrayRef(osize);
-    at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, input_size);
-
-    EXEC_NPU_CMD(aclnnUpsampleBicubic2dBackward, grad_output, outputsize, input_size, align_corners,
-                 scales_h_attr, scales_w_attr, grad_input);
-    return grad_input;
-}
-#endif
 }

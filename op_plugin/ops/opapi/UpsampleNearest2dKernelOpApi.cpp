@@ -93,19 +93,4 @@ at::Tensor upsample_nearest2d(
     EXEC_NPU_CMD(aclnnUpsampleNearest2dV2, self, output_size, scale_h, scale_w, out);
     return out;
 }
-
-#if VERSION_BETWEEN(V1R11, V1R11)
-at::Tensor upsample_nearest2d(
-    const at::Tensor& input,
-    c10::optional<at::IntArrayRef> output_size,
-    c10::optional<at::ArrayRef<double>> scale_factors)
-{
-    auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-    auto scale_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-    auto scale_w = op_plugin::utils::get_scale_value(scale_factors, 1);
-
-    return op_api::upsample_nearest2d(input, osize, scale_h, scale_w);
-}
-#endif
-
 }
