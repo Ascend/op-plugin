@@ -392,6 +392,9 @@
   "func: npu_dequant_rope_quant_kvcache(Tensor x, Tensor cos, Tensor sin, Tensor k_cache, Tensor v_cache, Tensor indices, Tensor scale_k, Tensor scale_v, int[3] size_splits, *, Tensor? offset_k=None, Tensor? offset_v=None, Tensor? weight_scale=None, Tensor? activation_scale=None, Tensor? bias=None, int quant_mode=0, str input_layout=\"BSND\", bool kv_output=False, str cache_mode=\"contiguous\") -> (Tensor, Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
+  "func: npu_ffn_worker_batching(Tensor schedule_context, int expert_num, int[4] max_out_shape, *, int token_dtype=0, int need_schedule=0, int layer_num=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
   "func: npu_moe_re_routing(Tensor tokens, Tensor expert_token_num_per_rank, *, Tensor? per_token_scales=None, int expert_token_num_type=1, int idx_type=0) -> (Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },

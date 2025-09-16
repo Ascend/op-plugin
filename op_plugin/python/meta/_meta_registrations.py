@@ -442,6 +442,26 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
             x.new_empty(tuple(expanded_scale_dim_list), dtype=torch.float32))
 
 
+@impl(m, "npu_ffn_worker_batching")
+def npu_ffn_worker_batching(schedule_context, expert_num, max_out_shape, *, token_dtype=0, need_schedule=0, layer_num=0):
+    Y_size = max_out_shape[0] * max_out_shape[1] * max_out_shape[2]
+    H_size = max_out_shape[3]
+    H_dtype = torch.float16
+    if token_dtype == 1:
+        H_dtype = torch.bfloat16
+    if token_dtype == 2:
+        H_dtype = torch.int8
+    return (torch.empty(Y_size, H_size, dtype=H_dtype, device=schedule_context.device),
+            torch.empty(expert_num, 2, dtype=torch.int64, device=schedule_context.device),
+            torch.empty(Y_size, dtype=torch.int32, device=schedule_context.device),
+            torch.empty(Y_size, dtype=torch.int32, device=schedule_context.device),
+            torch.empty(Y_size, dtype=torch.int32, device=schedule_context.device),
+            torch.empty(Y_size, dtype=torch.int32, device=schedule_context.device),
+            torch.empty(Y_size, dtype=torch.float32, device=schedule_context.device),
+            torch.empty(1, dtype=torch.int64, device=schedule_context.device)
+            )
+
+
 @impl(m, "npu_moe_gating_top_k_softmax")
 def npu_moe_gating_top_k_softmax_meta(x, finished=None, k=1):
     x_dim = x.dim()

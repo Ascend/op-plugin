@@ -1796,6 +1796,27 @@ class TestNpuAddRmsNorm(TestCase):
             self.assertEqual(result_x.device, npu_x1.device)
 
 
+class TestNpuFfnWorkerBatching(TestCase):
+    def test_npu_ffn_worker_batching(self):
+        with FakeTensorMode():
+            x = torch.randn((1024,)).npu().to(torch.int8)
+            expert_num = 2
+            max_out_shape = [16, 8, 9, 7168]
+            Y = max_out_shape[0] * max_out_shape[1] * max_out_shape[2]
+            y, group_list, session_ids, micro_batch_ids, token_ids, expert_offsets, dynamic_scale, actual_token_num = torch_npu.npu_ffn_worker_batching(x,
+                expert_num, max_out_shape, token_dtype=2, need_schedule=1, layer_num=1)
+            self.assertTrue(y.shape[0] == Y)
+            self.assertTrue(y.shape[1] == max_out_shape[3])
+            self.assertTrue(group_list.shape[0] == expert_num)
+            self.assertTrue(group_list.shape[1] == 2)
+            self.assertTrue(session_ids.shape[0] == Y)
+            self.assertTrue(micro_batch_ids.shape[0] == Y)
+            self.assertTrue(token_ids.shape[0] == Y)
+            self.assertTrue(expert_offsets.shape[0] == Y)
+            self.assertTrue(dynamic_scale.shape[0] == Y)
+            self.assertTrue(actual_token_num.shape[0] == 1)
+
+
 class TestFFN(TestCase):
     def test_npu_ffn_meta(self):
         with FakeTensorMode():
