@@ -11,17 +11,22 @@
 
 ## 功能说明
 
-该接口用于完成PMCC模型混淆引擎的资源释放。
+该接口用于完成PMCC（Privacy&Model Confidential Computing）模型混淆引擎的资源释放，即与PMCC混淆引擎CA（普通OS中的Client Application）断开socket连接。
 
 ## 函数原型
 
 ```
-torch_npu.obfuscation_finalize(Tensor fd_to_close) -> Tensor
+torch_npu.npu.obfuscation_finalize(fd_to_close) -> Tensor
 ```
 
 ## 参数说明
 
-- **fd_to_close**（`Tensor`）：填写调用obfuscation_initialize返回的fd。数据类型为int32。
+**fd_to_close**（`Tensor`）：填写调用[obfuscation_initialize](./torch_npu-npu-obfuscation_initialize.md)接口的返回值，数据类型为`int32`。
+
+## 返回值说明
+`Tensor`
+
+代表关闭socket连接符内存数据，1D，shape为(1)，数据类型为`int32`。
 
 ## 调用示例
 
@@ -40,6 +45,6 @@ tp_rank = 0
 i = 0
 hidden_states = torch.randn((1024,3584), dtype=torch.bfloat16, device=device)
 obf_cft = 1.0
-fd = torch_npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type=data_type, thread_num= thread_num, obf_coefficient=obf_cft)
-torch_npu.obfuscation_finalize(fd)
+fd = torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type=data_type, thread_num= thread_num, obf_coefficient=obf_cft)
+torch_npu.npu.obfuscation_finalize(fd)
 ```

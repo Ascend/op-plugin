@@ -10734,30 +10734,35 @@ _add_torch_npu_docstr(
     "obfuscation_initialize",
     """
 功能描述: 
-该接口用于完成PMCC模型混淆引擎的资源初始化。
+该接口用于完成PMCC（Privacy&Model Confidential Computing）模型混淆引擎的资源初始化，即与PMCC混淆引擎CA（普通OS中的Client Application）建立socket连接、对CA、TA（TEE OS中的Trusted Application）进行初始化，并返回socket连接符。
 
 接口原型: 
-torch_npu.obfuscation_initialize(int hidden_size, int tp_rank, int cmd, int data_type, int model_obf_seed_id, int data_obf_seed_id, int thread_num, float obf_coefficient) -> Tensor
+torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model_obf_seed_id, data_obf_seed_id, thread_num, obf_coefficient) -> Tensor
 
-参数说明: 
-- hidden_size(Int, 计算输入): 必选参数,隐藏层的维度,数据类型为int32,支持输入范围为1-10000,仅在cmd设置为1或2时需要填写有效值,否则填0。
-- tp_rank(Int, 计算输入): 必选参数, 张量并行TP Rank,数据类型为int32,支持输入范围为0-1024,仅在cmd设置为1或2时需要填写有效值,否则填0。
-- cmd(Int, 计算输入): 必选参数, setup指令编号,在{1, 2, 3}中选择,设置为1时进行浮点推理模式资源初始化、为2时进行量化推理模式资源初始化,设置为3时进行资源释放。数据类型为int32。
-- data_type(Int, 计算输入): 可选参数, 代表Tensor数据类型的编号,数据类型为INT32,仅在cmd设置为1或2时需要填写有效值,否则填0。
-    昇腾310P AI处理器:在{0, 1}中选择,0表示ACL_FLOAT、1表示ACL_FLOAT16
-    昇腾910B AI处理器:在{0, 1, 27}中选择,0表示ACL_FLOAT、1表示ACL_FLOAT16、27表示ACL_BF16
-- model_obf_seed_id(Int, 计算输入): 可选参数, 模型混淆因子id,用于TA从TEE KMC查询模型混淆因子,数据类型为int32,仅在cmd设置为1或2时需要填写有效值,否则填0。
-- data_obf_seed_id(Int, 计算输入): 必选参数, 数据混淆因子id,用于TA从TEE KMC查询数据混淆因子,数据类型为int32,仅在cmd设置为1或2时需要填写有效值,否则填0。
-- thread_num(Int, 计算输入): 可选参数, CA/TA进行混淆处理使用的线程数。在{1, 2, 3, 4, 5, 6}中选择,数据类型为int32,仅在cmd设置为1或2时需要填写有效值,否则填0。
-- obf_coefficient(Float, 计算输入): 可选参数,混淆系数,数据类型为float,支持输入范围为0-1,默认值1.0。
-- fd(Tensor, 计算输出): socket连接符,1D,shape为(1),int32。
+参数说明
+- hidden_size（`int`）：必选参数，隐藏层的维度，数据类型为`int32`，支持输入范围为1-10000，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+- tp_rank（`int`）：必选参数， 张量并行TP Rank，数据类型为`int32`，支持输入范围为0-1024，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+- cmd（`int`）：必选参数，资源初始化的指令编号，数据类型为`int32`，取值范围为{1, 2, 3}。
+    * 1：进行浮点推理模式资源初始化。
+    * 2：进行量化推理模式资源初始化。
+    * 3：进行资源释放。
+- data_type（`int`）：可选参数， 代表Tensor数据类型的编号，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+    * <term>Atlas 推理系列产品</term>: Tensor数据类型支持`float16` 、`float32`、`int8`。
+    * <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>: Tensor数据类型支持`float16`、`float32`、`bfloat16`、`int8`。
+- model_obf_seed_id（`int`）：可选参数， 模型混淆因子id，用于`TA`从`TEE KMC`查询模型混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
+- data_obf_seed_id（`int`）：必选参数， 数据混淆因子id，用于`TA`从`TEE KMC`查询数据混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
+- thread_num（`int`）：可选参数， `CA`/`TA`进行混淆处理使用的线程数，数据类型为`int32`，取值范围为{1, 2, 3, 4, 5, 6}，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+- obf_coefficient（`float`）：可选参数，混淆系数，支持输入范围为0-1，默认值1.0。
+
+输出说明:
+`Tensor`
+代表socket连接符，1D，shape为(1)，数据类型为`int32`。
 
 支持的芯片型号:
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
 Atlas 推理系列产品
 
 调用示例:
-# 单算子调用
 import torch
 import torch_npu
 
@@ -10772,7 +10777,7 @@ tp_rank = 0
 i = 0
 hidden_states = torch.randn((1024,3584), dtype=torch.bfloat16, device=device)
 obf_cft = 1.0
-fd = torch_npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type=data_type, thread_num= thread_num, obf_coefficient=obf_cft)
+fd = torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type=data_type, thread_num= thread_num, obf_coefficient=obf_cft)
 """
 )
 
@@ -10781,20 +10786,23 @@ _add_torch_npu_docstr(
     "obfuscation_finalize",
     """
 功能描述: 
-该接口用于完成PMCC模型混淆引擎的资源释放。
+该接口用于完成PMCC（Privacy&Model Confidential Computing）模型混淆引擎的资源释放，即与PMCC混淆引擎CA（普通OS中的Client Application）断开socket连接。
 
 接口原型: 
-torch_npu.obfuscation_finalize(Tensor fd_to_close) -> Tensor
+torch_npu.npu.obfuscation_finalize(fd_to_close) -> Tensor
 
 参数说明: 
-- fd_to_close(Tensor, 计算输入): 填写本算子初始化时返回的fd。数据类型为int32。
+fd_to_close（`Tensor`）：填写调用[obfuscation_initialize](./torch_npu-npu-obfuscation_initialize.md)接口的返回值，数据类型为`int32`。
+
+输出说明:
+`Tensor`
+代表socket连接符，1D，shape为(1)，数据类型为`int32`。
 
 支持的芯片型号:
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
 Atlas 推理系列产品
 
 调用示例:
-# 单算子调用
 import torch
 import torch_npu
 
@@ -10809,8 +10817,8 @@ tp_rank = 0
 i = 0
 hidden_states = torch.randn((1024,3584), dtype=torch.bfloat16, device=device)
 obf_cft = 1.0
-fd = torch_npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type=data_type, thread_num= thread_num, obf_coefficient=obf_cft)
-torch_npu.obfuscation_finalize(fd)
+fd = torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type=data_type, thread_num= thread_num, obf_coefficient=obf_cft)
+torch_npu.npu.obfuscation_finalize(fd)
 """
 )
 
@@ -10819,27 +10827,28 @@ _add_torch_npu_docstr(
     "obfuscation_calculate",
     """
 功能描述: 
-该接口用于实现矩阵乘计算输入和输出的transpose操作。
+该接口用于将张量x和配置参数（如param）发送至PMCC（Privacy&Model Confidential Computing）混淆引擎。引擎的CA（普通OS中的Client Application）模块调用TA（TEE OS中的Trusted Application）模块，进行张量混淆处理，最终返回混淆结果。
 
 接口原型: 
-torch_npu.obfuscation_calculate(Tensor fd, Tensor x, Tensor param, float obf_coefficient) -> Tensor
+torch_npu.npu.obfuscation_calculate(fd, x, param, obf_coefficient) -> Tensor
 
 参数说明: 
-- fd(Tensor, 计算输入): 必选参数,待关闭的socket连接符,cmd为3时,填写本算子在cmd为1时返回的fd,否则填0,数据类型为int32。
-- x(Tensor, 计算输入): 必选参数,待混淆处理的Tensor输入,数据类型如下,对Tensor维度不作限制,Shape为( , *, ... , hiddenSize),即最后一维的size是hiddenSize。数据格式支持ND。
-    昇腾310P AI处理器: Tensor数据类型支持ACL_FLOAT、 ACL_FLOAT16            torch.float16 / torch.float32 / torch.bfloat16
-    昇腾910B AI处理器: Tensor数据类型支持ACL_FLOAT、 ACL_FLOAT16、ACL_BF16
-- param(Tensor, 计算输入): 必选参数,预留的参数字段,Tensor数据类型为int32。
-- obf_coefficient(Float, 计算输入): 可选参数,混淆系数,数据类型为float,支持输入范围为0-1,默认值1.0。
-- y(Tensor, 计算输出): 混淆处理后的张量,输出数据类型及Shape与x相同。
+- fd（`Tensor`）：必选参数，socket连接符，数据类型为`int32`，填写调用[obfuscation_initialize](./torch_npu-npu-obfuscation_initialize.md)接口的返回值。
+- x（`Tensor`）：必选参数，待混淆处理的`Tensor`输入，对`Tensor`维度不作限制，shape为( , *, ... , hiddenSize)，即最后一维的size是[obfuscation_initialize](./torch_npu-npu-obfuscation_initialize.md)的入参`hiddenSize`。数据格式支持ND。
+    * <term>Atlas 推理系列产品</term>: `Tensor`数据类型支持`float16` 、`float32`、`int8`。
+    * <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>: `Tensor`数据类型支持`float16`、`float32`、`bfloat16`、`int8`。
+- param（`Tensor`）：必选参数，张量`x`的最后一维的维度，数据类型为`int32`。
+- obf_coefficient（`float`）：可选参数，混淆系数，支持输入范围为(0.0，1.0]，默认值1.0。
 
+输出说明:
+`Tensor`
+代表`obfuscation_calculate`的计算结果，输出数据类型及shape与`x`相同。
 
 支持的芯片型号:
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
 Atlas 推理系列产品
 
 调用示例:
-# 单算子调用
 import torch
 import torch_npu
 
@@ -10854,9 +10863,8 @@ tp_rank = 0
 i = 0
 hidden_states = torch.randn((1024,3584), dtype=torch.bfloat16, device=device)
 obf_cft = 1.0
-fd = torch_npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type=data_type, thread_num= thread_num, obf_coefficient=obf_cft)
+fd = torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type=data_type, thread_num= thread_num, obf_coefficient=obf_cft)
 param = torch.tensor([3584], device=device)
-x_obf_out = torch_npu.obfuscation_calculate(fd, hidden_states, param, obf_coefficient=obf_cft)
-
+x_obf_out = torch_npu.npu.obfuscation_calculate(fd, hidden_states, param, obf_coefficient=obf_cft)
 """
 )

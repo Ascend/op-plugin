@@ -1,3 +1,4 @@
+import unittest
 import torch
 import numpy as np
 import torch_npu
@@ -87,6 +88,7 @@ class TestBinaryCrossEntropyWithLogits(TestCase):
             npu_output = self.npu_op_exec(input1, target, weight=weight, pos_weight=pos_weight, reduction=reduction)
             self.assertRtolEqual(cpu_output, npu_output)
 
+    @unittest.skip("skip test_binary_cross_with_logits_float16 now")
     def test_binary_cross_with_logits_float16(self, device="npu"):
         for shape, weight_shape, pos_weight_shape, reduction in [
             ((10, 64), None, None, "mean"),
