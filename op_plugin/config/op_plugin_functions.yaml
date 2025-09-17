@@ -4996,6 +4996,17 @@ official:
 
   - func: triangular_solve.X(Tensor self, Tensor A, bool upper=True, bool transpose=False, bool unitriangular=False, *, Tensor(a!) X, Tensor(b!) M) -> (Tensor(a!) solution, Tensor(b!) cloned_coefficient)
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      X:
+        size: 'std::get<0>(output_sizes)'
+        dtype: X
+      M:
+        size: 'std::get<1>(output_sizes)'
+        dtype: M
+      new_params:
+        output_sizes: 'op_infer::triangular_solve_output_size(self, A)'
+      exec: aclnnTriangularSolve
 
   - func: tril(Tensor self, int diagonal=0) -> Tensor
     acl_op: all_version
