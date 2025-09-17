@@ -80,6 +80,31 @@ bool check_tensor_dtype_support_base(const at::TensorList src)
     return false;
 }
 
+bool check_tensor_device_dtype_base(const at::TensorList dsts, const at::TensorList srcs)
+{
+    if (dsts.size() != srcs.size() || dsts.size() == 0 || srcs.size() == 0) {
+        return false;
+    }
+    // 方向一致校验
+    const auto expected_dst_dtype =  dsts[0].device().type();
+    const auto expected_src_dtype =  srcs[0].device().type();
+    for (const auto &dst: dsts) {
+        if (dst.device().type() != expected_dst_dtype) {
+            return false;
+        }
+    }
+    for (const auto &src: srcs) {
+        if (src.device().type() != expected_src_dtype) {
+            return false;
+        }
+    }
+    // 排除d2d场景
+    if (expected_dst_dtype == expected_src_dtype) {
+        return false;
+    }
+    return true;
+}
+
 void memcpyBatch(const at::TensorList dst, at::TensorList src, bool non_blocking)
 {
     TORCH_CHECK(dst.size() == src.size(), "dst and src size,must be equal but in realiry, the dst size is", dst.size(),
@@ -164,9 +189,15 @@ void _foreach_copy_(const at::TensorList self, const at::TensorList src, bool no
 
     if (!is_support_nd_out || !at::native::can_use_fast_route(self, src) || !check_tensor_dtype_support_base(src)) {
         if (is_support_batch && ((non_blocking && c10_npu::acl::IsExistMemcpyBatchAsync()) ||
-                                 (!non_blocking && c10_npu::acl::IsExistMemcpyBatch()))) {
+                (!non_blocking && c10_npu::acl::IsExistMemcpyBatch())) && check_tensor_device_dtype_base(self, src)) {
             return memcpyBatch(self, src, non_blocking);
         }
+        ASCEND_LOGW(
+            "The current situation does not support the use of the memcpyBatch interface in the foreach copy interface."
+            "There may be the following reasons:1.SOC version is not supported; 2.CANN version is not supported;"
+            "3.The direction of the tensor devices for srcs and dsts is inconsistent,"
+            "and mixed H2D and D2H scenarios are not supported."
+            "For example, all tensors on the srcList must be on the host or device side");
         return at::native::foreach_tensor_copy_list_kernel_slow_(self, src, non_blocking);
     }
 
