@@ -14,16 +14,14 @@
 // limitations under the License.
 #pragma once
 
-#define V1R11 0
-#define V2R0 1
-#define V2R1 2
-#define V2R2 3
-#define V2R3 4
-#define V2R4 5
-#define V2R5 6
-#define V2R6 7
-#define V2R7 8
-#define V2R8 9
-#define V2R9 10
+#define V2R1 0
+#define V2R2 1
+#define V2R3 2
+#define V2R4 3
+#define V2R5 4
+#define V2R6 5
+#define V2R7 6
+#define V2R8 7
+#define V2R9 8
 #define VERSION_NEWEST V2R9
 #define VERSION_BETWEEN(start, end) ((CURRENT_VERSION) >= (start) && (CURRENT_VERSION) <= (end))
