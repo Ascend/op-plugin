@@ -30,6 +30,31 @@ class TestAtbFakeTensor(TestCase):
             
             self.assertTrue(atten_out.shape == q_nope.shape)
             self.assertEqual(atten_out.dtype, q_rope.dtype)
+    
+    def test_npu_multi_head_latent_attentionn_lse(self):
+        with FakeTensorMode():
+            block_size = 128
+            num_tokens = 32
+            num_heads = 32
+            kv_heads = 1
+            head_size_qk = 576
+            head_size_vo = 512
+            batch = num_tokens
+            num_blocks = 64
+            max_num_blocks_per_query = 16
+            q_nope = torch.randn((num_tokens, num_heads, head_size_vo), dtype=torch.float16).npu()
+            q_rope = torch.randn((num_tokens, num_heads, head_size_qk - head_size_vo), dtype=torch.float16).npu()
+            ctkv = torch.randn((num_blocks, block_size, kv_heads, 512), dtype=torch.float16).npu()
+            k_rope = torch.randn((num_blocks, block_size, kv_heads, 64), dtype=torch.float16).npu()
+            block_tables = torch.randint(0, 10, (batch, max_num_blocks_per_query), dtype=torch.int32).npu()
+            context_lens = [2] * batch
+            return_lse = True
+            atten_out, lse_out = torch_npu.atb.npu_multi_head_latent_attention(q_nope, q_rope, ctkv, k_rope, block_tables, context_lens, 32, 1.0, 1, return_lse)
+            
+            self.assertTrue(atten_out.shape == q_nope.shape)
+            self.assertEqual(atten_out.dtype, q_rope.dtype)
+            self.assertTrue(lse_out.shape == torch.Size([num_tokens, num_heads, 1]))
+            self.assertEqual(lse_out.dtype, q_rope.dtype)
 
     def test_npu_mla_preprocess(self):
         with FakeTensorMode():

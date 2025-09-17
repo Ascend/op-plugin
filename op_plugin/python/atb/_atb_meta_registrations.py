@@ -17,6 +17,17 @@ def npu_multi_head_latent_attention_meta(q_nope, q_rope, ctkv, k_rope, block_tab
     return torch.empty_like(q_nope, dtype=q_rope.dtype)
 
 
+@impl(m, "npu_multi_head_latent_attention.lse")
+def npu_multi_head_latent_attention_lse_meta(q_nope, q_rope, ctkv, k_rope, block_tables, context_lens, q_headnum, qk_scale, kv_headnum, return_lse,
+                                            *, mask=None, qseqlen=None, qk_descale=None, pv_descale=None, mask_type=None, calc_type=None,
+                                            cache_mode=None):
+    token_num = q_nope.size(0)
+    head_num = q_nope.size(1)
+    atten_out = torch.empty_like(q_nope, dtype=q_rope.dtype)
+    lse_out = torch.empty([token_num, head_num, 1], dtype=q_nope.dtype, device=q_nope.device)
+    return atten_out, lse_out
+
+
 @impl(m, "npu_self_attention_prefix_encoder")
 def npu_self_attention_prefix_encoder_meta(query, key, value, block_tables, seqlen, kv_seqlen, q_headnum, qk_scale, kv_headnum, *,
                                             mask=None, slopes=None, mask_type=None):

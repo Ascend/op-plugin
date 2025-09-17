@@ -15,8 +15,9 @@ def _add_torch_npu_atb_api_docstr():
         "npu_multi_head_latent_attention",
         """
 torch_npu.atb.npu_multi_head_latent_attention(q_nope, q_rope, ctkv, k_rope, block_tables, context_lens, q_headnum, qk_scale, kv_headnum, *, mask=None, qseqlen=None, qk_descale=None, pv_descale=None, mask_type=None, calc_type=None, cache_mode=None, output=None) -> Tensor
+torch_npu.atb.npu_multi_head_latent_attention(q_nope, q_rope, ctkv, k_rope, block_tables, context_lens, q_headnum, qk_scale, kv_headnum, return_lse, *, mask=None, qseqlen=None, qk_descale=None, pv_descale=None, mask_type=None, calc_type=None, cache_mode=None, output=None, lse=None) -> (Tensor, Tensor)
 功能描述
-MLA场景，使用分页管理的kvcache计算attention score，额外支持分离qnope/qrope、ctkv/krope的输入。
+MLA场景，使用分页管理的kvcache计算attention score，额外支持分离qnope/qrope、ctkv/krope的输入。第一个接口不支持返回lse输出，第二个接口支持根据return_lse值判断是否返回lse输出。
 
 参数说明
 位置参数：
@@ -29,6 +30,7 @@ context_lens：int类型数组，每个query对应的上下文长度，kseqlen�
 q_headnum：int类型，query头数量。
 qk_scale: float类型，Q*K^T后乘以的缩放系数
 kv_headnum：int类型，kv头数量。
+return_lse：bool类型，是否返回lse输出。
 关键字参数：
 mask: 可选Device Tensor,  mask_type为默认场景时，可不传。
 qseqlen: 可选Device Tensor, cache_mode为默认场景时不传，cache_mode为'int8_nzcache'时需要传入，shape为[num_heads]，数据类型为float。  
@@ -38,6 +40,7 @@ mask_type：可选字符串，设置mask类型，缺省值为'undefined', 当前
 calc_type：可选字符串，设置mask类型，缺省值为'calc_type_undefined', 当前支持'calc_type_undefined'（默认的decoder场景。）.
 cache_mode: 可选字符串，输入query和kcache的类型, 缺省值为'krope_ctkv'(输入的q拆分为qNope和qRope，输入的kcache拆分为ctKV和kRope), 当前支持'krope_ctkv', 'int8_nzcache'(性能cache，在KROPE_CTKV的基础上：krope和ctkv转为NZ格式输出，ctkv和qnope经过per_head静态对称量化为int8类型。)。
 output: 可选Device Tensor，attention输出，shape为[num_tokens, num_heads, head_size_vo]，数据类型为float16/bf16。
+lse: 可选Device Tensor，lse输出，shape为[num_tokens, num_heads, 1]，数据类型为float16/bf16/float。
 规格约束
 block_size ＜= 128，建议为128。
 batch <= 8192
