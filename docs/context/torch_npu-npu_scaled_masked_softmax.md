@@ -41,13 +41,11 @@ torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -
 ```python
 >>> import torch
 >>> import torch_npu
->>> 
 >>> shape = [4, 4, 2048, 2048]
 >>> x = torch.rand(shape).npu()
 >>> mask = torch.zeros_like(x).bool()
 >>> scale = 1.0
 >>> fixed_triu_mask = False
->>> 
 >>> output = torch_npu.npu_scaled_masked_softmax(x, mask, scale, fixed_triu_mask)
 >>> output.shape
 torch.size([4, 4, 2048, 2048])

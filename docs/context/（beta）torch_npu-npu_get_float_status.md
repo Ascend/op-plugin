@@ -24,6 +24,7 @@ self (Tensor) - 数据内存地址张量，数据类型为float32。
 ## 调用示例
 
 ```python
+>>> import torch, torch_npu
 >>> x = torch.rand(2).npu()
 >>> torch_npu.npu_get_float_status(x)
 tensor([0, 0, 0, 0, 0, 0, 0, 0], device='npu:0', dtype=torch.int32)
