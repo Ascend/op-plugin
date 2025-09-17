@@ -8010,26 +8010,33 @@ _add_torch_npu_docstr(
     "npu_mm_reduce_scatter_base",
     """
 接口原型：
-torch_npu.npu_mm_reduce_scatter_base(Tensor input, Tensor x2, str hcom, int world_size, *, str reduce_op='sum', Tensor? bias=None, int comm_turn=0) -> Tensor
+torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='sum', bias=None, x1_scale=None, x2_scale=None, comm_turn=0, output_dtype=None, comm_mode=None) -> Tensor
 
 功能描述
-TP切分场景下, 实现matmul和reduce_scatter的融合, 融合算子内部实现计算和通信流水并行. 
+TP切分场景下, 实现matmul和reduce_scatter的融合, 融合算子内部实现计算和通信流水并行. 支持perchanel, pertoken量化。
 使用该接口时, 请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本, 否则将会引发报错, 比如BUS ERROR等. 
 
 参数说明
-input: Tensor类型, 数据类型支持float16、bfloat16, 数据格式支持ND, 输入shape支持2维. 
-x2: Tensor类型, 数据类型支持float16、bfloat16, 数据格式支持ND, 数据类型需要和input保持一致, 输入shape维度和input保持一致. 
+input: Tensor类型, 数据类型支持float16、bfloat16、int8, 数据格式支持ND, 输入shape支持2维. 
+x2: Tensor类型, 数据类型支持float16、bfloat16、int8, 数据格式支持ND、NZ。NZ仅在comm_mode为`aiv`时支持。数据类型需要和input保持一致, 输入shape维度和input保持一致. 
 hcom: String类型, 通信域handle名, 通过get_hccl_comm_name接口获取. 
 world_size: int类型, 通信域内的rank总数, 仅支持为2、4、8. 
 *: 代表其之前的变量是位置相关, 按照顺序输入, 必选; 之后的变量是键值对赋值的, 位置无关, 可选(不输入会使用默认值). 
 reduce_op: String类型, reduce操作类型, 当前仅支持'sum', 默认值: 'sum'. 
 bias: Tensor类型, 可选输入, 数据类型支持float16、bfloat16, 数据格式支持ND格式. 数据类型需要和input保持一致. bias仅支持一维, 且维度大小与output的第1维大小相同. 当前版本暂不支持bias输入为非0的场景. 
-comm_turn: int类型, 表示rank间通信切分粒度, 默认值: 0, 表示默认的切分方式. 当前版本仅支持输入0. 
+x1_scale: Tensor类型，可选参数。mm左矩阵反量化参数。数据类型支持`float32`，数据格式支持$ND$格式。数据维度为\(m, 1\), 支持pertoken量化。
+x2_scale： Tensor类型，可选参数。mm左矩阵反量化参数。数据类型支持`float32`、`int64`，数据格式支持$ND$格式。数据维度为\(1, n\), 支持perchannel量化。
+comm_turn：int类型, 可选参数。表示rank间通信切分粒度，默认值为0，表示默认的切分方式。当前版本仅支持输入0。
+output_dtype: ScalarType, 可选参数。表示输出数据类型。仅支持在量化场景且x1_scale和x2_scale均为float32时，可指定输出数据类型为bfloat16或float16，默认值为bfloat16。
+comm_mode：str类型，可选参数。表示通信模式，支持`ai_cpu`、`aiv`两种模式。`ai_cpu`模式仅支持基础场景。`aiv`模式支持基础场景和量化场景。
 
 输出说明
-Tensor类型, 数据类型和input保持一致, shape维度和input保持一致. 
+shape维度和input保持一致。
+基础场景时数据类型和input保持一致。
+量化场景下，x2_scale为int64数据类型时，输出数据类型为float16。x1_scale和x2_scale均为float32时, 输出数据类型由output_dtype指定，默认为torch.bfloat16。
 
 约束说明
+comm_mode为ai_cpu时：
 该接口仅在训练场景下使用. 
 该接口支持图模式(PyTorch 2.1版本). 
 输入input、x2必须是2维, 分别为(m, k)、(k, n), 轴满足matmul算子入参要求, k轴相等, 且k轴取值范围为[256, 65535), m轴约束如下: 
@@ -8038,6 +8045,9 @@ Atlas A2 训练系列产品支持2、4、8卡,  支持hccs链路all mesh组网(�
 Atlas A3 训练系列产品支持2、4、8、16卡,  支持hccs链路double ring组网(多张卡按顺序组成一个圈, 每张卡只和左右卡相连). 
 input不支持输入转置后的tensor, x2转置后输入, 需要满足shape的第一维大小与input的最后一维相同, 满足matmul的计算条件. 
 Atlas A2 训练系列产品: 一个模型中的通算融合算子(AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce), 仅支持相同通信域. 
+comm_mode为aiv时：
+- 支持Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
+- 支持Atlas A3 训练系列产品/Atlas A3 推理系列产品
 
 支持的PyTorch版本
 PyTorch 2.1

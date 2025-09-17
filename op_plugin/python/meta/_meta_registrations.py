@@ -224,11 +224,22 @@ else:
 
 @impl(m, "npu_mm_reduce_scatter_base")
 def npu_mm_reduce_scatter_base_meta(self, x2, hcom, world_size, reduce_op='sum',
-                                    bias=None, comm_turn=0):
+                                    bias=None, x1_scale=None, x2_scale=None, comm_turn=0,
+                                    output_dtype=None, comm_mode=None):
     if world_size <= 0:
         world_size = 1
     out_m = math.floor(self.size(0) / world_size)
-    return self.new_empty(out_m, x2.size(1))
+    dtype = self.dtype
+    size = [out_m, x2.size(1)]
+    if x2_scale is not None:
+        if x2_scale.dtype == torch.int64:
+            dtype = torch.float16
+        elif output_dtype is not None:
+            dtype = output_dtype
+        else:
+            dtype = torch.bfloat16
+
+    return torch.empty(size, dtype=dtype, device='meta')
 
 
 @impl(m, "npu_gmm_alltoallv")

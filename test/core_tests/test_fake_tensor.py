@@ -1725,6 +1725,35 @@ class TestMmAllReduce(TestCase):
             self.assertEqual(output.dtype, dst_dtype)
 
 
+class TestMmReduceScatter(TestCase):
+    def test_mm_reduce_scatter(self):
+        with FakeTensorMode():
+            dst_dtype = torch.float16
+            m, k, n = 128, 512, 256
+            x1 = torch.randn(m, k, dtype=torch.float16).npu()
+            x2 = torch.randn(k, n, dtype=torch.float16).npu()
+            hcom = "fake group info"
+            world_size = 8
+            output = torch_npu.npu_mm_reduce_scatter_base(x1, x2, hcom, world_size, reduce_op="sum")
+            self.assertEqual(output.shape, (m // world_size, n))
+            self.assertEqual(output.dtype, dst_dtype)
+
+    def test_mm_all_reduce_quant(self):
+        with FakeTensorMode():
+            world_size = 8
+            m, k, n = 128, 512, 256
+            dst_dtype = torch.bfloat16
+            x1 = torch.randint(-10, 10, size=(m, k), dtype=torch.int8).npu()
+            x2 = torch.randint(-10, 10, size=(k, n), dtype=torch.int8).npu()
+            x1_scale = torch.randn((m, 1), dtype=torch.float32).npu()
+            x2_scale = torch.randn((1, n), dtype=torch.float32).npu()
+            hcom = "fake group info"
+            output = torch_npu.npu_mm_reduce_scatter_base(x1, x2, hcom, world_size, x1_scale=x1_scale,
+                                                          x2_scale=x2_scale, reduce_op="sum")
+            self.assertEqual(output.shape, (m // world_size, n))
+            self.assertEqual(output.dtype, dst_dtype)
+
+
 class TestNpuDeepNorm(TestCase):
     def test_npu_deep_norm(self):
         with FakeTensorMode():
