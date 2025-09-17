@@ -19,6 +19,8 @@ class TestForeachNorm(TestCase):
         for cpu_out, npu_out in zip(cpu_outs, npu_outs):
             if (cpu_out.dtype != npu_out.dtype):
                 self.fail("dtype error!")
+            if (cpu_out.shape != npu_out.shape):
+                self.fail("shape error!")
             result = torch.allclose(cpu_out, npu_out.cpu(), rtol=0.001, atol=0.001)
             if not result:              
                 self.fail("result error!")
