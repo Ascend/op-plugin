@@ -9321,6 +9321,55 @@ y1, y2, rstd, x = torch_npu.npu_add_rms_norm_cast(input_x1, input_x2, input_gamm
 )
 
 _add_torch_npu_docstr(
+    "npu_add_rms_norm_quant",
+    """
+接口原型：
+func: npu_add_rms_norm_quant(Tensor x1, Tensor x2, Tensor gamma, Tensor scales1, 
+Tensor? zero_points1, Tensor? beta, Tensor? scales2=None, Tensor? zero_points2=None, *, int axis=-1, 
+float epsilon=1e-06, bool div_mode=True) -> (Tensor, Tensor, Tensor)
+
+功能描述
+add_rms_norm_quant算子将rms_norm前的add算子以及之后的quantize算子融合，减少搬入搬出。新增偏置项beta参数
+
+参数说明
+x1：Device侧的Tensor类型，表示标准化过程中的源数据张量。shape支持1-8维。数据类型支持BFLOAT16、FLOAT16，数据格式支持ND，支持非连续的Tensor。不支持空tensor。
+x2：Device侧的Tensor类型，表示标准化过程中的源数据张量。shape支持1-8维。数据类型支持BFLOAT16、FLOAT16，数据格式支持ND，支持非连续的Tensor。数据格式、数据类型均需要与入参x1保持一致。不支持空tensor。
+gamma：Device侧的Tensor类型，表示标准化过程中的权重张量。shape支持1-8维，shape需要与x1需要Norm的维度一致。数据类型支持BFLOAT16、FLOAT16，数据格式支持ND，支持非连续的Tensor。数据类型需要与入参x1保持一致。不支持空tensor。
+scales1：Device侧的Tensor类型，表示量化过程中得到y1进行的scales张量。shape需要与gamma保持一致。数据类型支持FLOAT32、BFLOAT16，数据格式支持ND，支持非连续的Tensor。当参数divMode的值为True时，该参数的值不能为0。
+zero_points1：Device侧的Tensor类型，表示量化过程中得到y1进行的offset张量。可选参数。shape需要与gamma保持一致。数据类型支持INT32、BFLOAT16，数据格式支持ND，支持非连续的Tensor。
+beta：Device侧的Tensor类型，表示标准化过程中的偏置项。可选参数。shape支持1-8维，shape需要与gamma的shape保持一致。数据类型支持BFLOAT16、FLOAT16，数据类型需要与gamma保持一致，数据格式支持ND，支持非连续的Tensor。
+scales2：Device侧的Tensor类型，表示量化过程中得到y2进行的scales张量。可选参数。shape需要与gamma保持一致。数据类型支持FLOAT32、BFLOAT16，数据类型需要与scales1保持一致。数据格式支持ND，支持非连续的Tensor。当参数divMode的值为True时，该参数的值不能为0。
+zero_points2：Device侧的Tensor类型，表示量化过程中得到y2进行的offset张量。可选参数。shape需要与gamma保持一致。数据类型支持INT32、BFLOAT16，数据类型需要与zero_points1保持一致。数据格式支持ND，支持非连续的Tensor。
+axis：Host侧的整型，表示需要进行量化的elewise轴，其他的轴做broadcast，指定的轴不能超过输入x的维度数。数据类型为int64_t，当前仅支持-1，传其他值均不生效。
+epsilon：用于防止除0错误，数据类型为double。建议传较小的正数。默认值为1e-6。
+
+输出说明
+y1：Device侧的Tensor类型，表示量化后的输出数据。shape支持1-8维度，shape需要与输入x1/x2一致。数据类型支持INT8，数据格式支持ND，支持非连续的Tensor。
+y2：Device侧的Tensor类型，表示量化后的输出数据。shape支持1-8维度，shape需要与输入x1/x2一致，数据类型支持INT8，数据格式支持ND，支持非连续的Tensor。
+x_out：Device侧的Tensor类型，表示x1和x2的和。shape支持1-8维度，shape需要与输入x1/x2一致。数据类型支持BFLOAT16、FLOAT16，需要与输入x1、x2一致。数据格式支持ND，支持非连续的Tensor。
+
+支持的型号
+Atlas 推理系列产品
+Atlas A2训练系列产品/Atlas 800I A2中的推理产品/A200I A2 Box异构组件/Atlas A3训练系列产品/Atlas A3推理系列产品
+
+调用示例:
+import torch
+import torch_npu
+
+x_shape = [16, 32]
+quant_shape = [32, ]
+x1 = torch.randn(x_shape, dtype=torch.float16).npu()
+x2 = torch.randn(x_shape, dtype=torch.float16).npu()
+gamma = torch.randn(quant_shape, dtype=torch.float16).npu()
+beta = torch.randn(quant_shape, dtype=torch.float16).npu()
+scales1 = torch.randn(quant_shape, dtype=torch.float32).npu()
+zero_points1 = torch.randint(-10, 10, quant_shape, dtype=torch.int32).npu()
+
+y1, _, x_out = torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_advance_step_flashattn",
     """
 接口原型：

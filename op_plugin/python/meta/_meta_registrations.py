@@ -2648,7 +2648,7 @@ def npu_attention_worker_combine(schedule_context, expert_scales, layer_id, hidd
 
 
 @impl(m, "npu_add_rms_norm_quant")
-def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, scales2=None, zero_points2=None, axis=-1, epsilon=1e-06, div_mode=True):
+def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, beta=None, scales2=None, zero_points2=None, axis=-1, epsilon=1e-06, div_mode=True):
     torch._check(
         scales2 is None,
         lambda: f"scales2 should be None, but got {scales2}.",
