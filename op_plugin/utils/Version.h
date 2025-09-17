@@ -23,5 +23,6 @@
 #define V2R7 6
 #define V2R8 7
 #define V2R9 8
-#define VERSION_NEWEST V2R9
+#define V2R10 9
+#define VERSION_NEWEST V2R10
 #define VERSION_BETWEEN(start, end) ((CURRENT_VERSION) >= (start) && (CURRENT_VERSION) <= (end))
