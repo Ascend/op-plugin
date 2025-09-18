@@ -286,6 +286,102 @@ at::Tensor &_slow_conv2d_forward_out(const at::Tensor &input, const at::Tensor &
     return output;
 }
 
+at::Tensor slow_conv3d_forward(const at::Tensor &input, const at::Tensor &weight, at::IntArrayRef kernel_size,
+                               const c10::optional<at::Tensor> &bias_opt, at::IntArrayRef stride,
+                               at::IntArrayRef padding)
+{
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend310P1 &&
+        c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
+        return acl_op::slow_conv3d_forward(input, weight, kernel_size, bias_opt, stride, padding);
+    }
+    c10::MaybeOwned<at::Tensor> bias_maybe_owned = at::borrow_from_optional_tensor(bias_opt);
+    const at::Tensor &bias = *bias_maybe_owned;
+    std::vector<int64_t> dilation_vec = {1, 1, 1};
+    at::IntArrayRef dilation(dilation_vec);
+    int64_t groups = 1;
+    bool transposed = false;
+    std::vector<int64_t> output_padding_vec = {0, 0, 0};
+    at::IntArrayRef output_padding(output_padding_vec);
+    auto w_sizes = weight.sizes();
+    int64_t s1 = w_sizes[0];
+    // get the product of w_sizes from the 1 index to the last
+    int64_t s2 = c10::multiply_integers(w_sizes.slice(1));
+    const int64_t kernel_depth = kernel_size[0];
+    const int64_t kernel_height = kernel_size[1];
+    const int64_t kernel_width = kernel_size[2];
+    TORCH_CHECK(
+        kernel_depth > 0 && kernel_height > 0 && kernel_width > 0,
+        "kernel size should be greater than zero, but got: ",
+        kernel_depth,
+        " x ",
+        kernel_height,
+        " x ",
+        kernel_width,
+        " (TxHxW)", OPS_ERROR(ErrCode::PARAM));
+    s2 = s2 / (kernel_depth * kernel_height * kernel_width);
+    c10::SmallVector<int64_t, SIZE> slow_weight_size = {s1, s2, kernel_depth, kernel_height, kernel_width};
+    weight.resize_(slow_weight_size);
+    DO_COMPATIBILITY(aclnnConvolution, acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed,
+                                                            output_padding, groups, false, false, false, false));
+    return _calc_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups);
+}
+
+at::Tensor &slow_conv3d_forward_out(const at::Tensor &input, const at::Tensor &weight, at::IntArrayRef kernel_size,
+                                    const c10::optional<at::Tensor> &bias_opt, at::IntArrayRef stride,
+                                    at::IntArrayRef padding, at::Tensor &output)
+{
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend310P1 &&
+        c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
+        return acl_op::slow_conv3d_forward_out(input, weight, kernel_size, bias_opt, stride, padding, output);
+    }
+    c10::MaybeOwned<at::Tensor> bias_maybe_owned = at::borrow_from_optional_tensor(bias_opt);
+    const at::Tensor &bias = *bias_maybe_owned;
+    std::vector<int64_t> dilation_vec = {1, 1, 1};
+    at::IntArrayRef dilation(dilation_vec);
+    int64_t groups = 1;
+    bool transposed = false;
+    std::vector<int64_t> output_padding_vec = {0, 0, 0};
+    at::IntArrayRef output_padding(output_padding_vec);
+    auto w_sizes = weight.sizes();
+    int64_t s1 = w_sizes[0];
+    // get the product of w_sizes from the 1 index to the last
+    int64_t s2 = c10::multiply_integers(w_sizes.slice(1));
+    const int64_t kernel_depth = kernel_size[0];
+    const int64_t kernel_height = kernel_size[1];
+    const int64_t kernel_width = kernel_size[2];
+    TORCH_CHECK(
+        kernel_depth > 0 && kernel_height > 0 && kernel_width > 0,
+        "kernel size should be greater than zero, but got: ",
+        kernel_depth,
+        " x ",
+        kernel_height,
+        " x ",
+        kernel_width,
+        " (TxHxW)", OPS_ERROR(ErrCode::PARAM));
+    s2 = s2 / (kernel_depth * kernel_height * kernel_width);
+    c10::SmallVector<int64_t, SIZE> slow_weight_size = {s1, s2, kernel_depth, kernel_height, kernel_width};
+    weight.resize_(slow_weight_size);
+
+    DO_COMPATIBILITY(aclnnConvolution,
+                     acl_op::slow_conv3d_forward_out(input, weight, kernel_size, bias, stride, padding, output));
+
+    c10::SmallVector<int64_t, SIZE> out_size;
+    out_size = op_infer::conv_npu_output_size(input, weight, bias, padding, output_padding, stride, dilation, groups,
+                                              transposed);
+
+    if (bias.defined()) {
+        npu_preparation::check_tensor({input, weight, bias}, {output}, input.scalar_type(), out_size);
+    } else {
+        npu_preparation::check_tensor({input, weight}, {output}, input.scalar_type(), out_size);
+    }
+
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
+    EXEC_NPU_CMD(aclnnConvolution, input, weight, bias, stride, padding, dilation, transposed, output_padding, groups,
+                 output, cube_math_type);
+
+    return output;
+}
+
 at::Tensor convolution_overrideable(const at::Tensor &input, const at::Tensor &weight,
                                     const c10::optional<at::Tensor> &bias, c10::IntArrayRef stride,
                                     c10::IntArrayRef padding, c10::IntArrayRef dilation, bool transposed,
