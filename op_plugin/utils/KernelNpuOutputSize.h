@@ -61,6 +61,8 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> broadcast_ops_npu_output_size(c
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> reduce_ops_npu_output_size(const at::Tensor& self,
                                                                             c10::IntArrayRef dim, bool keepdim);
+                                                                            
+OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> reduce_lastdim_output_size(const at::Tensor& self);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> mse_loss_npu_output_size(const at::Tensor& self,
                                                                           const at::Tensor& target, int64_t reduction);

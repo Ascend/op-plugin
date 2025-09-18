@@ -9338,6 +9338,66 @@ y, rstd = torch_npu.npu_gemma_rms_norm(input_x, input_gamma)
 )
 
 _add_torch_npu_docstr(
+    "npu_add_rms_norm_dynamic_quant",
+    """
+接口原型：
+npu_add_rms_norm_dynamic_quant(Tensor x1, Tensor x2, Tensor gamma, *, Tensor? smooth_scale1=None, Tensor? smooth_scale2=None, Tensor? beta=None, float epsilon=1e-6, bool[2] output_mask=[]) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+
+功能描述
+将RmsNorm前的Add操作、RmsNorm归一化和最多两路DynamicQuant量化进行融合，减少数据搬入搬出操作。
+
+参数说明
+x1: Tensor类型，标准化输入张量。shape支持2-8维，数据类型支持FLOAT16、BFLOAT16，格式支持ND。不支持空Tensor。
+x2: Tensor类型，标准化输入张量。shape支持2-8维，数据类型支持FLOAT16、BFLOAT16，格式支持ND。不支持空Tensor。
+gamma: Tensor类型，归一化权重张量。shape为1维，需与x1最后一维一致，数据类型与x1一致。不支持空Tensor。
+smooth_scale1: Tensor类型，第一路量化的smooth_scale张量。可选，shape和数据类型与gamma一致。不支持空Tensor。
+smooth_scale2: Tensor类型，第二路量化的smooth_scale张量。可选，shape和数据类型与gamma一致，需与smooth_scale1配合使用。不支持空Tensor。
+beta: Tensor类型，归一化偏置项。可选，shape和数据类型与gamma一致。不支持空Tensor
+epsilon: double类型，防止除0错误，默认值为1e-6.
+output_mask: 数组，表示输出的掩码，数据类型支持BOOL，支持空指针，或长度为2的数组
+
+输出说明
+y1: Tensor类型，第一路量化输出。数据类型支持INT8。shape、数据格式需要与入参x1保持一致。支持非连续的Tensor，不支持空Tensor。
+y2: Tensor类型，第二路量化输出。数据类型支持INT8。shape、数据格式需要与入参x1保持一致。支持非连续的Tensor，不支持空Tensor。若未输入smooth_scale2，此输出无实际意义。
+x_out: Tensor类型，x1与x2之和。shape、数据类型与x1一致。
+scale1: Tensor类型，第一路量化scale输出。shape为x1除最后一维后的shape，数据类型为float32，数据格式支持ND，支持非连续的Tensor，不支持空Tensor
+scale2: Tensor类型，第二路量化scale输出，shape同scale1，数据类型为float32， 数据类型支持ND，支持非连续的Tensor，不支持空Tensor。若未输入smooth_scale2，此输出无实际意义。
+
+约束说明
+所有输入输出Tensor的数据格式推荐使用ND格式，其他数据格式会由框架默认转换成ND格式进行处理。
+当outputMaskOptional不为空时，参数smoothScale1Optional有值时，则outputMaskOptional[0]必须为True。参数smoothScale2Optional有值时，则outputMaskOptional[1]必须为True。
+当outputMaskOptional不为空时，outputMaskOptional[0]与outputMaskOptional[1]不能同时为False。
+当outputMaskOptional为空时，参数smoothScale2Optional有值时，参数smoothScale1Optional也必须有值。
+
+支持的型号
+Atlas A3训练系列产品/Atlas A3推理系列产品
+Atlas A2训练系列产品/Atlas 800I A2推理产品/A200I A2 Box异构组件
+
+调用示例:
+import torch
+import torch_npu
+
+x1 = torch.randn(3, 4, 8, dtype=torch.float16, device='npu')
+x2 = torch.randn(3, 4, 8, dtype=torch.float16, device='npu')
+gamma = torch.ones(8, dtype=torch.float16, device='npu')
+beta = torch.zeros(8, dtype=torch.float16, device='npu')
+smooth_scale1 = torch.ones(8, dtype=torch.float16, device='npu')
+smooth_scale2 = torch.ones(8, dtype=torch.float16, device='npu')
+epsilon = 1e-6
+output_mask = [True, True]
+
+y1_npu, y2_npu, x_out_npu, s1_npu, s2_npu = torch_npu.npu_add_rms_norm_dynamic_quant(
+    x1_n, x2_n, gamma_n,
+    smooth_scale1=s1_n,
+    smooth_scale2=s2_n,
+    beta=beta_n,
+    epsilon=eps_f,
+    output_mask=output_mask,
+)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_add_rms_norm_cast",
     """
 接口原型：

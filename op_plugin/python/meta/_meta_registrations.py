@@ -1095,6 +1095,15 @@ def npu_add_rms_norm_cast_meta(x1, x2, gamma, epsilon=1e-6):
     return (torch.empty_like(x1, dtype=torch.float32), torch.empty_like(x1, dtype=x1.dtype), torch.empty_like(rstd), torch.empty_like(x1, dtype=x1.dtype))
 
 
+@impl(m, "npu_add_rms_norm_dynamic_quant")
+def npu_add_rms_norm_dynamic_quant_meta(x1, x2, gamma, *, smooth_scale1=None, smooth_scale2=None, beta=None, epsilon=1e-6, output_mask=None):
+    return (torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
+            torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
+            torch.empty(x1.size(), dtype=x1.dtype, device=x1.device),
+            torch.empty(x1.size()[:-1], dtype=torch.float32, device=x1.device),
+            torch.empty(x1.size()[:-1], dtype=torch.float32, device=x1.device))
+
+            
 @impl(m, "npu_rms_norm_backward")
 def npu_rms_norm_backward_meta(dy, self, gamma, rstd):
     return (torch.empty_like(self, dtype=self.dtype), torch.empty_like(gamma, dtype=gamma.dtype))

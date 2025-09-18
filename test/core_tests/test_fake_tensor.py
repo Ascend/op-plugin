@@ -2561,6 +2561,50 @@ class TestAddRmsNormQuant(TestCase):
             self.assertTrue(x_out.dtype == x1.dtype)
 
 
+class TestAddRmsNormDynamicQuant(TestCase):
+    def test_npu_add_rms_norm_dynamic_quant_meta(self):
+        with FakeTensorMode():
+            x1 = torch.randn([2, 16], dtype=torch.float16, device='npu')
+            x2 = torch.randn([2, 16], dtype=torch.float16, device='npu')
+            gamma = torch.ones([16, ], dtype=torch.float16, device='npu')
+            beta = torch.zeros([16, ], dtype=torch.float16, device='npu')
+            smooth_scale1 = torch.ones([16, ], dtype=torch.float16, device='npu')
+            smooth_scale2 = torch.ones([16, ], dtype=torch.float16, device='npu')
+            y1_npu, y2_npu, x_out_npu, s1_npu, s2_npu = torch_npu.npu_add_rms_norm_dynamic_quant(
+                x1, x2, gamma, smooth_scale1=smooth_scale1, smooth_scale2=smooth_scale2, beta=beta
+            )
+            self.assertEqual(y1_npu.shape, x1.shape)
+            self.assertEqual(y1_npu.dtype, torch.int8)
+            self.assertEqual(y2_npu.shape, x1.shape)
+            self.assertEqual(y2_npu.dtype, torch.int8)
+            self.assertEqual(x_out_npu.shape, x1.shape)
+            self.assertEqual(x_out_npu.dtype, x1.dtype)
+            self.assertEqual(s1_npu.shape, x1.shape[:-1])
+            self.assertEqual(s1_npu.dtype, torch.float32)
+            self.assertEqual(s2_npu.shape, x1.shape[:-1])
+            self.assertEqual(s2_npu.dtype, torch.float32)
+
+            x1 = torch.randn([2, 16], dtype=torch.bfloat16, device='npu')
+            x2 = torch.randn([2, 16], dtype=torch.bfloat16, device='npu')
+            gamma = torch.ones([16, ], dtype=torch.bfloat16, device='npu')
+            beta = torch.zeros([16, ], dtype=torch.bfloat16, device='npu')
+            smooth_scale1 = torch.ones([16, ], dtype=torch.bfloat16, device='npu')
+            smooth_scale2 = torch.ones([16, ], dtype=torch.bfloat16, device='npu')
+            y1_npu, y2_npu, x_out_npu, s1_npu, s2_npu = torch_npu.npu_add_rms_norm_dynamic_quant(
+                x1, x2, gamma, smooth_scale1=smooth_scale1, smooth_scale2=smooth_scale2, beta=beta
+            )
+            self.assertEqual(y1_npu.shape, x1.shape)
+            self.assertEqual(y1_npu.dtype, torch.int8)
+            self.assertEqual(y2_npu.shape, x1.shape)
+            self.assertEqual(y2_npu.dtype, torch.int8)
+            self.assertEqual(x_out_npu.shape, x1.shape)
+            self.assertEqual(x_out_npu.dtype, x1.dtype)
+            self.assertEqual(s1_npu.shape, x1.shape[:-1])
+            self.assertEqual(s1_npu.dtype, torch.float32)
+            self.assertEqual(s2_npu.shape, x1.shape[:-1])
+            self.assertEqual(s2_npu.dtype, torch.float32)
+
+            
 class TestMoeUpdateExpert(TestCase):
     def test_moe_update_expert(self):
         with FakeTensorMode():

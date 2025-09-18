@@ -141,6 +141,17 @@ c10::SmallVector<int64_t, SIZE> reduce_ops_npu_output_size(const at::Tensor &sel
     return shape;
 }
 
+c10::SmallVector<int64_t, SIZE> reduce_lastdim_output_size(const at::Tensor& self)
+{
+    auto shape = array_to_small_vector(self.sizes());
+    int64_t ndim = static_cast<int64_t>(shape.size());
+    TORCH_CHECK(ndim >= 1, "Expected input to have at least 1 dimension, but got a tensor with ", ndim, "dimensions.", OPS_ERROR(ErrCode::PARAM));
+
+    int64_t last = ndim - 1;
+    shape.erase(shape.begin() + last);
+    return shape;
+}
+
 c10::SmallVector<int64_t, SIZE> mse_loss_npu_output_size(const at::Tensor &self, const at::Tensor &target,
                                                          int64_t reduction)
 {
