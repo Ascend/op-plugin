@@ -2202,6 +2202,19 @@ class TestTranQuantParam(TestCase):
             self.assertTrue(res.dtype == test_2_expect_ret.dtype)
 
 
+class TestAddRmsNormQuant(TestCase):
+    def test_npu_attention_update_meta(self):
+        with FakeTensorMode():
+            N, H, K = 8, 64, 2
+            update_type = 0
+            dtype = torch.float32
+            lse_list = [torch.randn([N], dtype=dtype).npu() for _ in range(K)]
+            local_out_list = [torch.randn([N, H], dtype=dtype).npu() for _ in range(K)]
+            out = torch_npu.npu_attention_update(lse_list, local_out_list, update_type)
+            self.assertTrue(out.shape == torch.Size([N, H]))
+            self.assertTrue(out.dtype == dtype)
+
+            
 class TestAntiQuant(TestCase):
     @unittest.skipIf("2.1" not in torch.__version__,
                      "OP `AntiQuant` is only supported on torch v2.1, skip this test for torch version other than 2.1")

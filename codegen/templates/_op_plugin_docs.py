@@ -2061,6 +2061,60 @@ tensor([[        nan,  6.7474e-41,  8.3182e-20,  2.0687e-40],
 
 
 _add_torch_npu_docstr(
+    "npu_attention_update",
+    """
+接口原型：
+npu_attention_update(Tensor[] lse, Tensor[] local_out, int update_type, Tensor? lse_out=None) -> Tensor
+
+功能描述
+将各SP域PA算子的输出的中间结果lse, attention out 两个局部结果更新成全局结果。
+
+计算公式：
+lsemax = max(lsei)
+lse = Σexp(lsei - lsemax)
+lsem = lsemax + log(lse)
+O = ΣOi * exp(lsei - lsem)
+
+参数说明
+lse：Device侧的TensorList，每个Tensor形状为 (batch * seqLen * headNum)，各sp域计算的lse。数据类型支持 FLOAT，格式支持 ND。
+localOut：Device侧的TensorList，TensorList长度为sp，每个Tensor形状为 (batch * seqLen * headNum, head_dim)，各sp域计算的output。数据类型支持 FLOAT，格式支持 ND。
+updateType：int64_t 类型，指定执行的操作类型。目前仅支持 0（DECODE_UPDATE）。
+
+输出说明
+out：Device侧的Tensor，形状为 (batch * seqLen * headNum, head_dim)，数据类型为 FLOAT，格式为 ND。
+lse_out: Tensor类型，预留参数，暂未使用
+
+支持的型号
+----------------
+Atlas A3训练系列产品/Atlas A3推理系列产品
+Atlas A2训练系列产品/Atlas 800I A2推理产品/A200I A2 Box异构组件
+
+调用示例
+----------------
+import torch
+import torch_npu
+
+dtype = torch.float32
+N = 4
+head_dim = 32  
+
+lse = [
+    torch.randn(N, dtype=dtype, device='npu'),  # 1D: [N]
+    torch.randn(N, dtype=dtype, device='npu'),  # 1D: [N]
+]
+
+local_out = [
+    torch.randn(N, head_dim, dtype=dtype, device='npu'),  # 2D: [N, head_dim]
+    torch.randn(N, head_dim, dtype=dtype, device='npu'),  # 2D: [N, head_dim]
+]
+
+update_type = 0  
+output, lse_out = torch_npu.npu_attention_update(lse, local_out, update_type)
+"""
+)
+
+
+_add_torch_npu_docstr(
     "npu_linear",
     """
 torch_npu.npu_linear(input, weight, bias=None) -> Tensor
