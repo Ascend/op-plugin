@@ -223,8 +223,7 @@
             -   [torch_npu.npu.obfuscation_finalize](./context/torch_npu-npu-obfuscation_finalize.md)
             -   [torch_npu.npu.obfuscation_calculate](./context/torch_npu-npu-obfuscation_calculate.md)
             -   [（beta）torch_npu.npu.aclnn.version](./context/（beta）torch_npu-npu-aclnn-version.md)
-            -   [torch_npu.npu.aclnn.allow_hf32](./context/torch_npu-npu-aclnn-allow_hf32.md)    
-            -   [torch_npu.npu.utils.get_cann_version](./context/torch_npu-npu-utils-get_cann_version.md)        
+            -   [torch_npu.npu.aclnn.allow_hf32](./context/torch_npu-npu-aclnn-allow_hf32.md)              
     
         -   [amp](./context/amp.md)
             -   [（beta）torch_npu.npu.get_amp_supported_dtype](./context/（beta）torch_npu-npu-get_amp_supported_dtype.md)
@@ -299,6 +298,7 @@
         -   [（beta）torch_npu.utils.FlopsCounter](./context/（beta）torch_npu-utils-FlopsCounter.md)
         -   [torch_npu.utils.set_thread_affinity](./context/torch_npu-utils.set_thread_affinity.md)
         -   [torch_npu.utils.reset_thread_affinity](./context/torch_npu-utils.reset_thread_affinity.md)
+        -   [torch_npu.utils.get_cann_version](./context/torch_npu-utils-get_cann_version.md)
     
     -   [Distributed](./context/Distributed.md)
         -   [Distributed接口列表](./context/Distributed接口列表.md)
