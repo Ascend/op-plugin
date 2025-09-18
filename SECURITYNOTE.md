@@ -55,7 +55,7 @@ OpPlugin的运行依赖torch_npu，本章内容请参考[torch_npu仓运行安�
 |   类型   |   开源代码地址   |   文件名   | 公网IP地址/公网URL地址/域名/邮箱地址                                                                                     |   用途说明   |
 |------------------------|-------------------------|-------------------------|------------------------------------------------------------------------------------------------------------|-------------------------|
 |   开发引入  |   不涉及   |   ci\build.sh   | https://gitcode.com/ascend/pytorch.git                                                                     |   编译脚本根据torch_npu仓库地址拉取代码进行编译   |
-|   开发引入  |   不涉及   |   ci\exec_ut.sh   | https://gitcode.com/ascend/pytorch.git                                                                     |   UT脚本根据torch_npu仓库地址下拉取代码进行UT测试   |
+|   开发引入  |   不涉及   |   ci\exec_ut.sh   | https://gitcode.com/ascend/pytorch.git                                                                     |   UT脚本根据torch_npu仓库地址拉取代码进行UT测试   |
 | 开源代码引入 |pytorch\aten\src\ATen\native\TensorCompare.cpp  | op_plugin\ops\opapi\IsInKernelNpuOpApi.cpp | https://github.com/numpy/numpy/blob/fb215c76967739268de71aa4bda55dd1b062bc2e/numpy/lib/arraysetops.py#L575 | 算法实现借鉴numpy的源码地址|
 
 ## 公开接口声明
