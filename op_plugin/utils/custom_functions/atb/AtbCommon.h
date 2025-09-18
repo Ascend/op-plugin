@@ -410,6 +410,8 @@ public:
 };
 
 void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name);
+uint64_t GetAtbWorkspaceSizeCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name);
+void RunAtbCmdWithWorkspace(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name, const at::Tensor &workspace_tensor);
 
 } // namespace atb
 

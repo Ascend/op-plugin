@@ -1,5 +1,5 @@
 import random
-
+import os
 import numpy as np
 import torch
 import torch_npu
@@ -24,6 +24,10 @@ class PagedInputData:
 
 
 class TestPagedAttentionAlibi(TestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        os.environ["ASCEND_LAUNCH_BLOCKING"] = "0"
+
     def group_mm_torch(self, heads, group_num, A, B):
         group_head = heads // group_num
         score = None
@@ -281,6 +285,68 @@ class TestPagedAttentionAlibi(TestCase):
         self.assertRtolEqual(self.golden_out, self.attnOut)
         ratios = [0.001, 0.001, 0.005, 0.005]
         self.compare_output_data(self.attnOut.cpu(), self.golden_out, ratios)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_paged_attention_v2_aclgraph_update(self):
+        self.num_tokens = 1
+        self.num_heads = 32
+        self.kv_heads = 32
+        self.block_size = 128
+        self.head_size = 288
+        self.num_blocks = 64
+        self.k_seqlen = 128
+        self.tor = 1.0 / (self.head_size ** 0.5)
+        self.dtype = "float16"
+        self.mask_dim = 4
+        self.data_type = torch.float16
+        self.is_int8_flag = False
+        self.max_context_len = self.k_seqlen
+        self.q, self.key_cache, self.value_cache, self.block_tables, self.contex_lens, self.alib_mask, self.golden_out = self.calc_data(
+            self.num_tokens, self.num_heads, self.kv_heads, self.head_size, self.block_size, self.num_blocks,
+            self.k_seqlen, self.dtype, self.mask_dim, self.data_type)
+        self.data = self.q, self.key_cache, self.value_cache, torch.from_numpy(self.block_tables), torch.from_numpy(
+            self.contex_lens), self.alib_mask, self.golden_out
+        self.in_tensors = [tensor.npu() for tensor in self.data]
+        self.query = self.in_tensors[0]
+        self.keyCache = self.in_tensors[1]
+        self.valueCache = self.in_tensors[2]
+        self.blockTables = self.in_tensors[3]
+        self.contextLens = torch.tensor([128], dtype=torch.int32)
+        context_lens_new = torch.tensor([64], dtype=torch.int32)
+        self.mask = self.in_tensors[5]
+        self.attnOut = torch.empty_like(self.golden_out).npu()
+        attnOut_Graph = torch.empty_like(self.golden_out).npu()
+        torch_npu.atb._npu_paged_attention_v2(self.query, self.keyCache, self.blockTables, context_lens_new, value_cache=self.valueCache,
+                                              mask=self.mask, num_kv_heads=self.kv_heads, num_heads=self.num_heads, scale_value=self.tor, mask_type=2, out=self.attnOut)
+
+        g = torch.npu.NPUGraph()
+        event = torch.npu.ExternalEvent()
+        update_stream = torch.npu.Stream()
+        handle = None
+        workspace = torch_npu.atb._npu_paged_attention_v2_get_workspace(self.query, self.keyCache, self.blockTables, context_lens_new,
+                                                                        value_cache=self.valueCache, mask=self.mask, num_kv_heads=self.kv_heads,
+                                                                        num_heads=self.num_heads, scale_value=self.tor, mask_type=2, out=attnOut_Graph)
+        with torch.npu.graph(g):
+            stream = torch.npu.current_stream()
+            event.wait(stream)
+            event.reset(stream)
+            torch.npu.graph_task_group_begin(stream)
+            torch_npu.atb._npu_paged_attention_v2(self.query, self.keyCache, self.blockTables, self.contextLens,
+                                                  value_cache=self.valueCache, mask=self.mask, num_kv_heads=self.kv_heads,
+                                                  num_heads=self.num_heads, scale_value=self.tor, mask_type=2,
+                                                  workspace=workspace, out=attnOut_Graph)
+            handle = torch.npu.graph_task_group_end(stream)
+        
+        with torch.npu.stream(update_stream):
+            torch.npu.graph_task_update_begin(update_stream, handle)
+            torch_npu.atb._npu_paged_attention_v2(self.query, self.keyCache, self.blockTables, context_lens_new,
+                                                  value_cache=self.valueCache, mask=self.mask, num_kv_heads=self.kv_heads,
+                                                  num_heads=self.num_heads, scale_value=self.tor, mask_type=2,
+                                                  workspace=workspace, out=attnOut_Graph)
+            torch.npu.graph_task_update_end(update_stream)
+            event.record(update_stream)
+        g.replay()
+        self.assertEqual(attnOut_Graph.cpu(), self.attnOut.cpu())
 
 if __name__ == '__main__':
     run_tests()

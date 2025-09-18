@@ -101,6 +101,58 @@ void RunAtbCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::st
     }
 }
 
+uint64_t GetAtbWorkspaceSizeCmd(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name)
+{
+    aclrtStream stream = c10_npu::getCurrentNPUStream().stream(false);
+    auto context_ptr = atb::utils::GetContext(stream);
+    atb::VariantPack variant_pack = paramsetter.variant_pack_;
+    uint64_t workspace_size = OperationSetup(variant_pack, op, context_ptr);
+    return workspace_size;
+}
+
+
+void RunAtbCmdWithWorkspaceV1(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name, const at::Tensor &workspace_tensor)
+{
+    aclrtStream stream = c10_npu::getCurrentNPUStream().stream(false);
+    auto context_ptr = atb::utils::GetContext(stream);
+    atb::VariantPack variant_pack = paramsetter.variant_pack_;
+    uint64_t fake_workspace_size = OperationSetup(variant_pack, op, context_ptr);
+    uint64_t workspace_size = static_cast<uint64_t>(workspace_tensor.numel() * workspace_tensor.element_size());
+    void *workspace_ptr = const_cast<void *>(workspace_tensor.storage().data());
+    const c10::SmallVector<at::Tensor, N>& cpu_tensors = paramsetter.tensor_maintainer_.cpu_tensors;
+    auto acl_call = [variant_pack, workspace_ptr, workspace_size, context_ptr, op, cpu_tensors]() -> int {
+        auto st = op->Execute(variant_pack, (uint8_t *)workspace_ptr, workspace_size, context_ptr);
+        DestroyOperation(op);
+        return st;
+    };
+    at_npu::native::OpCommand::RunOpApiV2(name, acl_call);
+}
+
+void RunAtbCmdWithWorkspaceV2(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name, const at::Tensor &workspace_tensor)
+{
+    aclrtStream stream = c10_npu::getCurrentNPUStream().stream(false);
+    atb::VariantPack variant_pack = paramsetter.variant_pack_;
+    const c10::SmallVector<at::Tensor, N>& cpu_tensors = paramsetter.tensor_maintainer_.cpu_tensors;
+    uint64_t workspace_size = static_cast<uint64_t>(workspace_tensor.numel() * workspace_tensor.element_size());
+    void *workspace_ptr = const_cast<void *>(workspace_tensor.storage().data());
+    auto acl_call = [op, workspace_ptr, workspace_size, variant_pack, stream, cpu_tensors]() -> int {
+        auto context_ptr = atb::utils::GetContext(stream);
+        uint64_t fake_workspace_size = OperationSetup(variant_pack, op, context_ptr);
+        auto st = op->Execute(variant_pack, (uint8_t *)workspace_ptr, workspace_size, context_ptr);
+        return 0;
+    };
+    at_npu::native::OpCommand::RunOpApiV2(name, acl_call);
+}
+
+void RunAtbCmdWithWorkspace(atb::Operation *op, const ParamSetter &paramsetter, const std::string &name, const at::Tensor &workspace_tensor)
+{
+    const auto is_capturing = static_cast<int>(c10_npu::currentStreamCaptureStatusMayInitCtx());
+    if (is_capturing) {
+        RunAtbCmdWithWorkspaceV1(op, paramsetter, name, workspace_tensor);
+    } else {
+        RunAtbCmdWithWorkspaceV2(op, paramsetter, name, workspace_tensor);
+    }
+}
 
 ParamSetter& ParamSetter::Input(const at::Tensor &tensor, const bool &format_trans)
 {

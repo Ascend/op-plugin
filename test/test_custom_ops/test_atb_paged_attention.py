@@ -1,4 +1,5 @@
 import random
+import os
 import numpy as np
 import torch
 import torch_npu
@@ -21,6 +22,10 @@ head_size_v = 96
 
 
 class TestPagedAttention(TestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        os.environ["ASCEND_LAUNCH_BLOCKING"] = "0"
+
     def group_matmul(self, head, kv_head, A, B):
         group_num = head // kv_head
         score = []
@@ -141,6 +146,53 @@ class TestPagedAttention(TestCase):
         
         ref_output = torch.from_numpy(ref_output)
         self.assertRtolEqual(output_t, ref_output)
+
+    @SupportedDevices(["Ascend910B"])
+    def test_paged_attention_aclgraph_update(self):
+        query_np, key_cache_np, value_cache_np, block_tables_np, context_lens_np = self.prepare_inputs()
+        ref_output = self.ref_attention_impl(query_np, key_cache_np, value_cache_np, block_tables_np, context_lens_np)
+        context_lens_np = torch.tensor([1024, 1024], dtype=torch.int32)
+        context_lens_np_new = torch.tensor([256, 256], dtype=torch.int32)
+        query_t = torch.from_numpy(query_np).npu()
+        key_cache_t = torch.from_numpy(key_cache_np).npu()
+        value_cache_t = torch.from_numpy(value_cache_np).npu()
+        block_tables_t = torch.from_numpy(block_tables_np).npu()
+        output_t = torch.zeros_like(query_t[:, :, :head_size_v])
+        output_graph = output_t.clone()
+
+        torch_npu._npu_paged_attention(
+            query_t, key_cache_t, value_cache_t,
+            kv_heads, num_heads, 1.0 / np.sqrt(head_size),
+            block_tables_t, context_lens_np_new, output_t
+        )
+        g = torch.npu.NPUGraph()
+        event = torch.npu.ExternalEvent()
+        update_stream = torch.npu.Stream()
+        handle = None
+        workspace = torch_npu._npu_paged_attention_get_workspace(query_t, key_cache_t, value_cache_t, kv_heads, num_heads, head_size, block_tables_t, context_lens_np_new, output_graph)
+
+
+        with torch.npu.graph(g):
+            stream = torch.npu.current_stream()
+            event.wait(stream)
+            event.reset(stream)
+            torch.npu.graph_task_group_begin(stream)
+            torch_npu._npu_paged_attention(
+                            query_t, key_cache_t, value_cache_t,
+                            kv_heads, num_heads, 1.0 / np.sqrt(head_size),
+                            block_tables_t, context_lens_np, output_graph, workspace=workspace)
+            handle = torch.npu.graph_task_group_end(stream)
+        
+        with torch.npu.stream(update_stream):
+            torch.npu.graph_task_update_begin(update_stream, handle)
+            torch_npu._npu_paged_attention(
+                            query_t, key_cache_t, value_cache_t,
+                            kv_heads, num_heads, 1.0 / np.sqrt(head_size),
+                            block_tables_t, context_lens_np_new, output_graph, workspace=workspace)
+            torch.npu.graph_task_update_end(update_stream)
+            event.record(update_stream)
+        g.replay()
+        self.assertEqual(output_graph.cpu(), output_t.cpu())
 
 if __name__ == "__main__":
     run_tests()

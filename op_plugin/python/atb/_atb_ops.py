@@ -23,6 +23,7 @@ API_LIST = [
     '_npu_flash_attention_unpad',
     '_npu_paged_attention_splitfuse',
     '_npu_flash_attention_qlens',
+    '_npu_paged_attention_get_workspace',
 ]
 
 
@@ -30,6 +31,7 @@ ATB_API_LIST = [
     'npu_paged_cache_load',
     'npu_multi_head_latent_attention',
     '_npu_paged_attention_v2',
+    '_npu_paged_attention_v2_get_workspace',
     '_npu_flash_attention_v2',
     '_npu_flash_attention_prefix_v2',
     'npu_fused_add_topk_div',
