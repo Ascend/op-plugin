@@ -4646,6 +4646,49 @@ if __name__ == '__main__':
 )
 
 _add_torch_npu_docstr(
+    "npu_rms_norm_quant",
+    """
+接口原型
+npu_rms_norm_quant(Tensor x, Tensor gamma, Tensor beta, Tensor scale, Tensor offset, float epsilon=1e-06) -> Tensor
+
+功能描述
+RmsNormQuant算子将RmsNorm算子以及RmsNorm后的Quantize算子融合起来,减少搬入搬出的操作。
+
+参数说明
+x: Device侧的Tensor类型，标准化输入张量。shape支持1-8维，数据类型支持FLOAT16、BFLOAT16，格式支持ND。不支持空Tensor。
+gamma: Device侧的Tensor类型，归一化权重张量。shape为1-2维，需与x最后一维一致，数据类型与x一致。格式支持ND。不支持空Tensor。
+beta: Device侧的Tensor类型，归一化偏置项。shape和数据类型与x一致。格式支持ND。不支持空Tensor。
+scale: Device侧的Tensor类型，量化过程中得到y进行的scale张量,shape为1,维度为1.格式支持ND。不支持空Tensor。
+offset: Device侧的Tensor类型，量化过程中得到y进行的offset张量.shape与scale保持一致,格式支持ND。不支持空Tensor。
+epsilon: double类型，防止除0错误，默认值为1e-6.
+
+输出说明
+y: Device侧的Tensor类型。数据类型支持INT8。shape、数据格式需要与入参x保持一致。支持非连续的Tensor，不支持空Tensor。
+
+约束说明
+x、y的尾轴长度,以及gamma的尾轴长度必大于等于32Bytes.
+
+支持的型号
+Atlas A3训练系列产品/Atlas A3推理系列产品
+Atlas A2训练系列产品/Atlas 800I A2推理产品/A200I A2 Box异构组件
+
+调用示例
+import torch
+import torch_npu
+
+eps = 1e-6
+x = torch.randn(16, dtype = torch.float16).npu()
+gamma = torch.randn(16, dtype = torch.float16).npu()
+beta = torch.zeros(16, dtype = torch.float16).npu()
+scale = torch.ones(1, dtype = torch.float16).npu()
+offset = torch.zeros(1, dtype = torch.int8).npu()
+
+y = torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, eps)
+_ = y.cpu().numpy()
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_grouped_matmul_finalize_routing",
     """
 功能描述：
