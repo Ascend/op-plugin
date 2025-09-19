@@ -518,7 +518,7 @@
 </tr>
 <tr id="row16875125182712"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p77002833617"><a name="p77002833617"></a><a name="p77002833617"></a><a href="torch_npu-npu_top_k_top_p_sample.md">torch_npu.npu_top_k_top_p_sample</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863744477_p15682749165813"><a name="zh-cn_topic_0000001863744477_p15682749165813"></a><a name="zh-cn_topic_0000001863744477_p15682749165813"></a>基于融合算子实现，对原始输入<code>logits</code>进行<code>top-k</code>、<code>top-p</code>、<code>qSample</code>采样过滤，允许自由组合三个模块使能。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863744477_p15682749165813"><a name="zh-cn_topic_0000001863744477_p15682749165813"></a><a name="zh-cn_topic_0000001863744477_p15682749165813"></a>根据输入词频<code>logits</code>、<code>top_k</code>/<code>top_p</code>采样参数、随机采样权重分布<code>q</code>，进行topK-topP-Sample采样计算，输出每个batch的最大词频<code>logits_select_idx</code>，以及topK-topP采样后的词频分布<code>logits_top_kp_select</code>。</p>
 </td>
 </tr>
 <tr id="row9470191314519"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p83781723143618"><a name="p83781723143618"></a><a name="p83781723143618"></a><a href="torch_npu-npu_scatter_nd_update_.md">torch_npu.npu_scatter_nd_update_</a></p>

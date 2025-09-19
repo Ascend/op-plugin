@@ -176,7 +176,7 @@ def top_k_top_p_sample(data, run_attr: additionAttr):
             top_p_mask = (probs_sum - sorted_probs) > p
             false_count = torch.sum(~top_p_mask)
             selected_indices = sorted_indices[~top_p_mask]
-            selected_logits = sorted_logits[~top_p_mask]
+            selected_logits = sorted_probs[~top_p_mask]
             selected_probs = onlySoftmax(selected_logits, dim=-1)
 
             if use_q:
@@ -278,10 +278,10 @@ class TestTopKTopPSample(TestCase):
     @SupportedDevices(['Ascend910B'])
     def test_top_k_top_p_sample_major(self, device="npu"):
         bs_rng_list = [(1, 128)]
-        voc_size = 2 ^ 14
-        topK_flags = [1]
-        topP_flags = [1]
-        q_flags = [1]
+        voc_size = 2 ** 14
+        topK_flags = [0, 1] # topK and topP can not be 0 at the same time 
+        topP_flags = [0, 1]
+        q_flags = [0, 1]
         need_logits_flags = [0, 1]
 
         case_no = 0
