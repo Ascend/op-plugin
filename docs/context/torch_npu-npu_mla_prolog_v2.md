@@ -73,7 +73,7 @@ torch_npu.npu_mla_prolog_v2(Tensor token_x, Tensor weight_dq, Tensor weight_uq_q
 
         此时dequant\_scale\_w\_uq\_qr、quant\_scale\_ckv、quant\_scale\_ckr、smooth\_scales\_cq字段不能传入（即为none）。
 
--   **weight\_uk**（Tensor）：必选参数**，**表示计算Key的上采样权重，即公式中W<sup>UK</sup>。shape支持3维，格式为\(N, D, Hckv\)，dtype支持bfloat16，数据格式支持ND。
+-   **weight\_uk**（Tensor）：必选参数，表示计算Key的上采样权重，即公式中W<sup>UK</sup>。shape支持3维，格式为\(N, D, Hckv\)，dtype支持bfloat16，数据格式支持ND。
 -   **weight\_dkv\_kr**（Tensor）：必选参数，表示计算Key的下采样权重矩阵和Key的位置编码权重矩阵，即公式中W<sup>DKV</sup>和W<sup>KR</sup>。shape支持2维，格式为\(He, Hckv+Dr\)，dtype支持bfloat16，数据格式支持FRACTAL\_NZ。
 -   **rmsnorm\_gamma\_cq**（Tensor）：必选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hcq,\)，dtype支持bfloat16，数据格式支持ND。
 -   **rmsnorm\_gamma\_ckv**（Tensor）：必选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hckv,\)，dtype支持bfloat16，数据格式支持ND。

@@ -67,9 +67,9 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 
 - block\_table：Tensor类型，数据类型支持int32。数据格式支持ND。表示PageAttention中KV存储使用的block映射表，如不使用该功能可传入None。
 
-- query\_padding\_size：Tensor类型，数据类型支持int64。数据格式支持ND。表示Query中每个batch的数据是否右对齐，且右对齐的个数是多少。仅支持Q\_S大于1，其余场景该参数无效。用户不特意指定时可传入默认值None。
+- query\_padding\_size：Tensor类型，数据类型支持int64。数据格式支持ND。表示Query中每个batch的数据是否右对齐，且右对齐的个数是多少。仅支持Q\_S大于1，其余场景该参数无效。默认值为None。
 
-- kv\_padding\_size：Tensor类型，数据类型支持int64。数据格式支持ND。表示key、value中每个batch的数据是否右对齐，且右对齐的个数是多少。用户不特意指定时可传入默认值None。
+- kv\_padding\_size：Tensor类型，数据类型支持int64。数据格式支持ND。表示key、value中每个batch的数据是否右对齐，且右对齐的个数是多少。默认值为None。
 
 -   key\_antiquant\_scale：Tensor类型。数据格式支持ND，kv伪量化参数分离时表示key的反量化因子。如不使用该功能时可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。通常支持per-channel、per-tensor、per-token、per-tensor叠加per-head、per-token叠加per-head、per-token叠加使用page attention模式管理scale、per-token叠加per head并使用page attention模式管理scale。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float16、bfloat16、float32。
@@ -97,13 +97,13 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 
 - num\_heads：整型，代表query的head个数，数据类型支持int64，在BNSD场景下，需要与shape中的query的N轴shape值相同，否则执行异常。
 
-- scale：浮点型，公式中d开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持float。数据类型与query的数据类型需满足数据类型推导规则。用户不特意指定时可传入默认值1.0。
+- scale：浮点型，公式中d开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持float。数据类型与query的数据类型需满足数据类型推导规则。默认值为1.0。
 
-- pre\_tokens：整型，用于稀疏计算，表示attention需要和前几个Token计算关联，数据类型支持int64。用户不特意指定时可传入默认值2147483647，Q\_S为1时该参数无效。
+- pre\_tokens：整型，用于稀疏计算，表示attention需要和前几个Token计算关联，数据类型支持int64。默认值为2147483647，Q\_S为1时该参数无效。
 
-- next\_tokens：整型，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持int64。用户不特意指定时可传入默认值2147483647，Q\_S为1时该参数无效。
+- next\_tokens：整型，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持int64。默认值为2147483647，Q\_S为1时该参数无效。
 
-- input\_layout：字符串类型，用于标识输入query、key、value的数据排布格式，用户不特意指定时可传入默认值"BSH"。
+- input\_layout：字符串类型，用于标识输入query、key、value的数据排布格式，默认值为"BSH"。
 
   >**说明：**<br> 
   >注意排布格式带下划线时，下划线左边表示输入query的layout，下划线右边表示输出output的格式，算子内部会进行layout转换。
@@ -112,7 +112,7 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 
   其中BNSD\_BSND含义指当输入为BNSD，输出格式为BSND，仅支持Q\_S大于1。
 
-- num\_key\_value\_heads：整型，代表key、value中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，数据类型支持int64。用户不特意指定时可传入默认值0，表示key/value和query的head个数相等，需要满足num\_heads整除num\_key\_value\_heads，num\_heads与num\_key\_value\_heads的比值不能大于64。在BSND、BNSD、BNSD\_BSND（仅支持Q\_S大于1）场景下，还需要与shape中的key/value的N轴shape值相同，否则执行异常。
+- num\_key\_value\_heads：整型，代表key、value中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，数据类型支持int64。默认值为0，表示key/value和query的head个数相等，需要满足num\_heads整除num\_key\_value\_heads，num\_heads与num\_key\_value\_heads的比值不能大于64。在BSND、BNSD、BNSD\_BSND（仅支持Q\_S大于1）场景下，还需要与shape中的key/value的N轴shape值相同，否则执行异常。
 
 -   sparse\_mode：整型，表示sparse的模式。数据类型支持int64。Q\_S为1且不带rope输入时该参数无效。input\_layout为TND、TND\_NTD、NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
     -   sparse\_mode为0时，代表defaultMask模式，如果atten\_mask未传入则不做mask操作，忽略pre\_tokens和next\_tokens（内部赋值为INT\_MAX）；如果传入，则需要传入完整的atten\_mask矩阵（S1\*S2），表示pre\_tokens和next\_tokens之间的部分需要计算。
@@ -120,7 +120,7 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
     -   sparse\_mode为2时，代表leftUpCausal模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
     -   sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景，需要传入优化后的atten\_mask矩阵（2048\*2048）。
     -   sparse\_mode为4时，代表band模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
-    -   sparse\_mode为5、6、7、8时，分别代表prefix、global、dilated、block\_local，均暂不支持。用户不特意指定时可传入默认值0。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+    -   sparse\_mode为5、6、7、8时，分别代表prefix、global、dilated、block\_local，均暂不支持。默认值为0。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
 -   inner\_precise：整型，一共4种模式：0、1、2、3。一共两位bit位，第0位（bit0）表示高精度或者高性能选择，第1位（bit1）表示是否做行无效修正。数据类型支持int64。Q\_S\>1时，sparse\_mode为0或1，并传入用户自定义mask的情况下，建议开启行无效；Q\_S为1时该参数仅支持inner\_precise为0和1。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
@@ -134,13 +134,13 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 
 - block\_size：整型，PageAttention中KV存储每个block中最大的token个数，默认为0，数据类型支持int64。
 
-- antiquant\_mode：整型，表示伪量化方式，传入0时表示为per-channel（per-channel包含per-tensor），传入1时表示per-token。用户不特意指定时可传入默认值0。
+- antiquant\_mode：整型，表示伪量化方式，传入0时表示为per-channel（per-channel包含per-tensor），传入1时表示per-token。默认值为0。
 
   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：Q\_S大于等于2时该参数无效；Q\_S等于1时传入0和1之外的其他值会执行异常。
 
-- softmax\_lse\_flag：布尔型，表示是否输出softmax\_lse，支持S轴外切（增加输出）。true表示输出softmax\_lse，false表示不输出；用户不特意指定时可传入默认值false。
+- softmax\_lse\_flag：布尔型，表示是否输出softmax\_lse，支持S轴外切（增加输出）。True表示输出softmax\_lse，False表示不输出；默认值为False。
 
--   key\_antiquant\_mode：整型，表示key的伪量化方式。用户不特意指定时可传入默认值0，取值除了key\_antiquant\_mode为0并且value\_antiquant\_mode为1的场景外，需要与value\_antiquant\_mode一致。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+-   key\_antiquant\_mode：整型，表示key的伪量化方式。默认值为0，取值除了key\_antiquant\_mode为0并且value\_antiquant\_mode为1的场景外，需要与value\_antiquant\_mode一致。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
     <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：Q\_S大于等于2时仅支持传入值为0、1，Q\_S等于1时支持取值0、1、2、3、4、5。
 
@@ -151,7 +151,7 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
     -   key\_antiquant\_mode为4时，代表per-token叠加使用page attention模式管理scale/offset模式。
     -   key\_antiquant\_mode为5时，代表per-token叠加per head并使用page attention模式管理scale/offset模式。
 
-- value\_antiquant\_mode：整型，表示value的伪量化方式，模式编号与key\_antiquant\_mode一致。用户不特意指定时可传入默认值0，取值除了key\_antiquant\_mode为0并且value\_antiquant\_mode为1的场景外，需要与key\_antiquant\_mode一致。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- value\_antiquant\_mode：整型，表示value的伪量化方式，模式编号与key\_antiquant\_mode一致。默认值为0，取值除了key\_antiquant\_mode为0并且value\_antiquant\_mode为1的场景外，需要与key\_antiquant\_mode一致。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：Q\_S大于等于2时仅支持传入值为0、1；Q\_S等于1时支持取值0、1、2、3、4、5。
 
