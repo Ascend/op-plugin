@@ -1,16 +1,19 @@
 # （beta）torch_npu.npu_anchor_response_flags
 
-## 函数原型
+## 产品支持情况
 
-```
-torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors) -> Tensor
-```
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品</term>            |    √     |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+|<term>Atlas 推理系列产品</term>                                       |    √     |
+|<term>Atlas 训练系列产品</term>                                       |    √     |
 
 ## 功能说明
 
 * API功能：在单个特征图中生成锚点的响应标志，即标识哪些锚点需要参与训练或推理。
 
-* 小算子等价计算逻辑：
+* 等价计算逻辑：
 
     可使用`anchor_response_flags_golden`等价替换`torch_npu.npu_anchor_response_flags`，两者计算逻辑一致。
     ```python
@@ -39,19 +42,22 @@ torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors
     
     ```
 
+## 函数原型
+
+```
+torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors) -> Tensor
+```
+
 ## 参数说明
 
-- self (Tensor) - 真值框，shape为`[batch, 4]`的2D张量。
-- featmap_size (ListInt of length 2) - 特征图大小。
-- stride (ListInt of length 2) - 当前轴的步长。
-- num_base_anchors (Int) - base anchors的数量。
+- **self** (`Tensor`)：真值框，shape为`[batch, 4]`的2D张量。
+- **featmap_size** (`List[int]`)：特征图大小，长度为2。
+- **stride** (`List[int]`)：当前轴的步长，长度为2。
+- **num_base_anchors** (`int`)：base anchors的数量。
 
-## 支持的型号
-
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
-- <term>Atlas 推理系列产品</term>
+## 返回值说明
+`Tensor`
+返回响应标志结果。
 
 ## 调用示例
 

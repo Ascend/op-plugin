@@ -30,7 +30,7 @@
          ratote(x) = rearrange(torch.stack((-x_2, x_1), dim=-1), “... d two -> ...(d two)", two=2)\\
          $$
 
--   小算子等价计算逻辑：
+-   等价计算逻辑：
     
      可使用`fused_rotary_position_embedding`等价替换`torch_npu.npu_rotary_mul`，两者计算逻辑一致。
      

@@ -1,8 +1,5 @@
 # （beta）torch\_npu.npu.stress\_detect
 
->**须知：**<br>
->此接口为beta接口，属于实验性接口，部分场景下可能出现异常，请谨慎使用此接口。
-
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -30,18 +27,19 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
 
 ## 返回值说明
-`int`
 
-代表错误类型，含义如下所示：
+- 接口返回值为`int`，代表错误类型，含义如下所示：
 
-- 0：在线精度检测通过。
+    - 0：在线精度检测通过。
 
-- 1：在线精度检测用例执行失败。
+    - 1：在线精度检测用例执行失败。
 
-- 2：在线精度检测不通过，硬件故障。
+    - 2：在线精度检测不通过，硬件故障。
 
-- runtime error：电压恢复失败。
-
+- 若报如下异常，则表示电压恢复失败，需参见[LINK](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/maintenref/troubleshooting/troubleshooting_0097.html)手动恢复电压或reboot。
+    ```
+    Stress detect error. Error code is 574007. Error message is Voltage recovery failed.
+    ```
 ## 约束说明
 
 - 精度在线检测的使用需要修改用户的模型训练脚本，建议在训练开始前、结束后以及两个step之间调用，同时需要预留10G大小的内存供压测接口使用。

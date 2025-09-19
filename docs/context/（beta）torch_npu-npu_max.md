@@ -21,14 +21,14 @@ torch_npu.npu_max(self, dim, keepdim=False) -> (Tensor, Tensor)
 
 ## 参数说明
 
-- **self** (`Tensor`) - 输入张量。
-- **dim** (`int`) - 待降低维度。
-- **keepdim** (`bool`，默认值为False) - 输出张量是否保留dim。
+- **self** (`Tensor`)：必选参数，输入张量。
+- **dim** (`int`)：必选参数，待降低维度。
+- **keepdim** (`bool`)：可选参数，输出张量是否保留dim。默认值为False。
 
 ## 返回值说明
 
-- **values** (`Tensor`) - 输入张量中的最大值。
-- **indices** (`Tensor`) - 输入张量中最大值的index。
+- **values** (`Tensor`)：输入张量中的最大值。
+- **indices** (`Tensor`)：输入张量中最大值的index。
 
 
 

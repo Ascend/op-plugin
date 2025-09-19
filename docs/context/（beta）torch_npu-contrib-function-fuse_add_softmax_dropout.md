@@ -11,9 +11,9 @@
 
 ## 功能说明
 
-* API功能：融合了add、softmax和dropout的计算逻辑，以提高在npu上计算的性能。
+* API功能：融合了add、softmax和dropout的计算逻辑，以提高在NPU上计算的性能。
 
-* 小算子等价计算逻辑：
+* 等价计算逻辑：
 
     可使用`npu_fuse_add_softmax_dropout`等价替换`torch_npu.contrib.function.fuse_add_softmax_dropout`，两者计算逻辑一致。
     ```python
@@ -29,7 +29,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask, attn_scores, attn_head_size, p=0.5, dim=-1)
+torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask, attn_scores, attn_head_size, p=0.5, dim=-1) -> Tensor
 ```
 
 ## 参数说明
@@ -45,7 +45,7 @@ torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask
 ## 返回值说明
 `Tensor`
 
-mask操作的结果。
+返回计算结果。
 
 ## 调用示例
 

@@ -19,15 +19,15 @@ torch_npu.npu_indexing(self, begin, end, strides, begin_mask=0, end_mask=0, elli
 ```
 ## 参数说明
 
-- **self** (`Tensor`) - 输入张量。
-- **begin** (`List[int]`) - 待选择的第一个值的index。
-- **end** (`List[int]`) - 待选择的最后一个值的index。
-- **strides** (`List[int]`) - index增量。
-- **begin_mask** (`int`，默认值为0) - 位掩码（bitmask），其中位“i”为“1”意味着忽略开始值，尽可能使用最大间隔。
-- **end_mask** (`int`，默认值为0) - 类似于“begin_mask”。
-- **ellipsis_mask** (`int`，默认值为0) - 位掩码，其中位“i”为“1”意味着第“i”个位置实际上是省略号。
-- **new_axis_mask** (`int`，默认值为0) - 位掩码，其中位“i”为“1”意味着在第“i”位创建新的1D shape。
-- **shrink_axis_mask** (`int`，默认值为0) - 位掩码，其中位“i”意味着第“i”位应缩小维数。
+- **self** (`Tensor`)：必选参数，输入张量。
+- **begin** (`List[int]`)：必选参数，待选择的第一个值的index。
+- **end** (`List[int]`)：必选参数，待选择的最后一个值的index。
+- **strides** (`List[int]`)：必选参数，index增量。
+- **begin_mask** (`int`)：可选参数，位掩码（bitmask），其中位“i”为“1”意味着忽略开始值，尽可能使用最大间隔。默认值为0。
+- **end_mask** (`int`)：可选参数，类似于“begin_mask”。默认值为0。
+- **ellipsis_mask** (`int`)：可选参数，位掩码，其中位“i”为“1”意味着第“i”个位置实际上是省略号。默认值为0。
+- **new_axis_mask** (`int`)：可选参数，位掩码，其中位“i”为“1”意味着在第“i”位创建新的1D shape。默认值为0。
+- **shrink_axis_mask** (`int`)：可选参数，位掩码，其中位“i”意味着第“i”位应缩小维数。默认值为0。
 
 
 ## 调用示例

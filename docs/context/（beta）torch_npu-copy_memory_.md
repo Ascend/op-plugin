@@ -26,7 +26,7 @@ torch_npu.copy_memory_(dst, src, non_blocking=False) -> Tensor
 
 - **dst**（`Tensor`）：必选参数，拷贝源张量。
 - **src**（`Tensor`）：必选参数，返回张量所需数据类型。
-- **non_blocking**（`Bool`）：可选参数，默认值为`False`。如果设置为`True`且此拷贝位于CPU和NPU之间，则拷贝可能相对于主机异步发生。在其他情况下，此参数没有效果。
+- **non_blocking**（`bool`）：可选参数，默认值为`False`。如果设置为`True`且此拷贝位于CPU和NPU之间，则拷贝可能相对于主机异步发生。在其他情况下，此参数没有效果。
 
 ## 约束说明
 
