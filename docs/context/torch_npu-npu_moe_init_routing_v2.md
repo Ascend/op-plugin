@@ -60,7 +60,7 @@ torch_npu.npu_moe_init_routing_v2(Tensor x, Tensor expert_idx, *, Tensor? scale=
 -   expert\_tokens\_num\_flag：bool类型，表示是否输出expert\_token\_cumsum\_or\_count，默认False表示不输出。当前仅支持True。
 -   quant\_mode：int类型，表示量化模式，支持取值为0、1、-1。0表示静态量化（默认值，但当前版本暂不支持），-1表示不量化场景；1表示动态quant场景。当前仅支持-1和1。
 -   active\_expert\_range：int类型数组，表示活跃expert的范围。数组内值的范围为\[expert\_start, expert\_end\]，表示活跃的expert范围在expert\_start到expert\_end之间。要求值大于等于0，并且expert\_end不大于expert\_num。
--   row\_idx\_type：int类型，表示输出expanded\_row\_idx使用的索引类型，支持取值0和1，默认值0。0表示gather类型的索引；1表示scatter类型的索引。当前仅支持-1和1。
+-   row\_idx\_type：int类型，表示输出expanded\_row\_idx使用的索引类型，支持取值0和1，默认值0。0表示gather类型的索引；1表示scatter类型的索引。
 
 ## 输出说明<a name="zh-cn_topic_0000002271534921_section18510124618368"></a>
 
