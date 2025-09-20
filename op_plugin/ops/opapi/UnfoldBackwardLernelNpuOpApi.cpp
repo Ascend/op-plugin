@@ -14,7 +14,8 @@ inline bool _unfold_backward_fallback_condition()
     static const bool is_support_soc = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                        c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                        (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_9391);
-    if (!is_aclnn_kernel_available || !is_support_soc) {
+    static const bool is_cann_ready = op_plugin::utils::is_gte_cann_version_830rc1();
+    if (!is_aclnn_kernel_available || !is_support_soc || !is_cann_ready) {
         TORCH_NPU_WARN_ONCE("CAUTION: The operator aten::unfold_backward is currently "
             "not supported on the NPU backend. Now this operator will fallback to run on the CPU "
             "and may have performance implications.");
