@@ -2845,13 +2845,28 @@ class TestNpuMoeUnpermuteWithRoutingMap(TestCase):
                 if need_probs:
                     unpermuted_tokens = torch_npu.npu_moe_token_unpermute_with_routing_map(
                         permuted_tokens_npu, sorted_indices_npu, restore_shape, probs=porbs_npu, routing_map=routing_map_npu, drop_and_pad=drop_and_pad)
+                    permuted_tokens_, out_index, permuted_token_id, permute_probs = torch_npu._npu_moe_token_unpermute_with_routing_map(
+                        permuted_tokens_npu, sorted_indices_npu, restore_shape, probs=porbs_npu, routing_map=routing_map_npu, drop_and_pad=drop_and_pad)
                 else:
                     unpermuted_tokens = torch_npu.npu_moe_token_unpermute_with_routing_map(
                         permuted_tokens_npu, sorted_indices_npu, restore_shape, probs=None, routing_map=routing_map_npu, drop_and_pad=drop_and_pad)
-
+                    permuted_tokens_, out_index, permuted_token_id, permute_probs = torch_npu._npu_moe_token_unpermute_with_routing_map(
+                        permuted_tokens_npu, sorted_indices_npu, restore_shape, probs=None, routing_map=routing_map_npu, drop_and_pad=drop_and_pad)
                 self.assertEqual(unpermuted_tokens.dtype, permuted_tokens_npu.dtype)
                 self.assertEqual(unpermuted_tokens.shape[0], restore_shape[0])
                 self.assertEqual(unpermuted_tokens.shape[1], restore_shape[1])
+
+                self.assertEqual(permuted_tokens_.dtype, permuted_tokens_npu.dtype)
+                self.assertEqual(permuted_tokens_.shape[0], restore_shape[0])
+                self.assertEqual(permuted_tokens_.shape[1], restore_shape[1])
+
+                self.assertEqual(permuted_token_id.dtype, sorted_indices_npu.dtype)
+                self.assertEqual(permuted_token_id.shape, sorted_indices_npu.shape)
+
+                if need_probs:
+                    self.assertEqual(permute_probs.dtype, porbs_npu.dtype)
+                    self.assertEqual(permute_probs.shape, sorted_indices.shape)
+
 
 
 class TestNpuAttentionWorkerCombine(TestCase):

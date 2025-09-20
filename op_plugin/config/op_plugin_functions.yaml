@@ -6913,6 +6913,9 @@ custom:
 
   - func: npu_moe_token_unpermute_with_routing_map(Tensor permuted_tokens, Tensor sorted_indices, int[] restore_shape, *, Tensor? probs=None, Tensor? routing_map=None, bool drop_and_pad=False) -> Tensor
     op_api: [v2.1, newest]
+    internal_format_opapi: [v2.1, newest]
+    dispatch:
+      AutogradPrivateUse1: npu_moe_token_unpermute_with_routing_map
 
   - func: _npu_moe_token_unpermute_with_routing_map(Tensor permuted_tokens, Tensor sorted_indices, int[] restore_shape, *, Tensor? probs=None, Tensor? routing_map=None, bool drop_and_pad=False) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: [v2.1, newest]
