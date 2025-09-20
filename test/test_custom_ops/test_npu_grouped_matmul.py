@@ -655,7 +655,9 @@ class TestGroupedMatmul(TestCase):
         # A8W4 will inplace change the value of x.
         x_copy = x.clone()
         weight = torch.randint(-5, 5, (E, K, N), dtype=torch.int32, device="npu")
+        weight_nz = torch_npu.npu_format_cast(weight.to(torch.float32), 29)
         weight_quant = torch_npu.npu_quantize(weight.to(torch.float32), torch.tensor([1.]).npu(), None, torch.quint4x2, -1, False)
+        weight_quant_nz = torch_npu.npu_quantize(weight_nz, torch.tensor([1.]).npu(), None, torch.quint4x2, -1, False)
         bias = torch.zeros((E, N), dtype=torch.float32, device="npu").uniform_(-5, 5)
         scale_np = np.random.normal(0, 0.01, (E, 1, N)).astype(np.float32)
         perGroupScale = np.ones([E, K//quantGroupSize, N]).astype(np.float32)
@@ -668,10 +670,15 @@ class TestGroupedMatmul(TestCase):
         groupList = torch.zeros((E,), dtype=torch.int64, device="npu").fill_(1)
         perTokenScale = torch.zeros((M,1), dtype=torch.float32, device="npu").uniform_()
 
-        out = torch_npu.npu_grouped_matmul([x], [weight_quant], bias=[bias], scale=[scale], offset=None, antiquant_scale=None,
-                                           antiquant_offset=None, per_token_scale=[perTokenScale], group_list=groupList,
+        out = torch_npu.npu_grouped_matmul([x.clone()], [weight_quant.clone()], bias=[bias.clone()], scale=[scale.clone()], offset=None, antiquant_scale=None,
+                                           antiquant_offset=None, per_token_scale=[perTokenScale.clone()], group_list=groupList.clone(),
                                            activation_input=None, activation_quant_scale=None, activation_quant_offset=None,
                                            split_item=3, group_type=0, group_list_type=1, act_type=0, output_dtype=torch.float16)
+
+        out_nz = torch_npu.npu_grouped_matmul([x], [weight_quant_nz], bias=[bias], scale=[scale], offset=None, antiquant_scale=None,
+                                              antiquant_offset=None, per_token_scale=[perTokenScale], group_list=groupList,
+                                              activation_input=None, activation_quant_scale=None, activation_quant_offset=None,
+                                              split_item=3, group_type=0, group_list_type=1, act_type=0, output_dtype=torch.float16)
 
         x_in = x_copy.cpu().numpy()
         weight_in = weight.cpu().numpy()
@@ -693,6 +700,11 @@ class TestGroupedMatmul(TestCase):
         
         self.assertEqual(out_dim1, golden_dim1)
         self.assertEqual(out[0][:golden_dim0, :], out_golden.npu())
+
+        out_nz_shape = out_nz[0].shape
+        out_nz_dim1 = out_nz_shape[1]
+        self.assertEqual(out_nz_dim1, golden_dim1)
+        self.assertEqual(out_nz[0][:golden_dim0, :], out_golden.npu())
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_group_list_none(self):

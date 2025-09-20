@@ -8867,7 +8867,7 @@ torch_npu.npu_quantize(Tensor input, Tensor scales, Tensor? zero_points, ScalarT
 如果div_mode为False: result=(input*scales)+zero_points
 
 参数说明
-input: Tensor类型, 需要进行量化的源数据张量, 数据格式支持ND, 支持非连续的Tensor. div_mode为False且dtype为torch.quint4x2时, 最后一维需要能被8整除. 
+input: Tensor类型, 需要进行量化的源数据张量, 数据格式支持ND、NZ, 支持非连续的Tensor. div_mode为False且dtype为torch.quint4x2时, 最后一维需要能被8整除. 
 Atlas 推理系列产品: 数据类型支持float、float16. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持float、float16、bfloat16. 
 scales: Tensor类型, 对input进行scales的张量, 必选输入: 
@@ -8899,6 +8899,7 @@ y: Tensor类型, 公式中的输出, 输出大小与input一致. 数据类型由
 约束说明
 该接口支持推理场景下使用. 
 该接口支持图模式(PyTorch 2.1版本). 
+input数据格式为NZ时, input输入shape支持3维, 形如(e, k, n), scales输入shape支持1维, zero_points输入为None, dtype为quint4x2. 
 div_mode为False时: 
 支持Atlas A2 训练系列产品/Atlas 800I A2 推理产品. 
 当dtype为torch.quint4x2或者axis为-2时, 不支持Atlas 推理系列产品. 

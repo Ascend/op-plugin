@@ -48,7 +48,13 @@ at::Tensor npu_quantize(
                     "input shape last dim must be divded by 8" + OPS_ERROR(ErrCode::PARAM));
         output_shape[x_dim_num - 1] /= INT4_NUMS_IN_INT32_SPACE;
         dtype = at::ScalarType::Int;
-        result = npu_preparation::apply_tensor_without_format(output_shape, self.options().dtype(dtype));
+        int64_t npu_format = at_npu::native::custom_ops::get_npu_format(self);
+        if (npu_format == ACL_FORMAT_FRACTAL_NZ) {
+            result = npu_preparation::apply_tensor_with_format(
+                output_shape, self.options().dtype(dtype), ACL_FORMAT_FRACTAL_NZ, true);
+        } else {
+            result = npu_preparation::apply_tensor_without_format(output_shape, self.options().dtype(dtype));
+        }
     } else {
         result = at_npu::native::OpPreparation::apply_tensor(self, self.options().dtype(dtype));
     }

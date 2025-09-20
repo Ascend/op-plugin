@@ -30,7 +30,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，需要进行量化的源数据张量，数据格式支持$ND$，支持非连续的Tensor。`div_mode`为`False`且`dtype`为`quint4x2`时，最后一维需要能被8整除。
+- **input** (`Tensor`)：必选参数，需要进行量化的源数据张量，数据格式支持$ND$、$NZ$，支持非连续的Tensor。`div_mode`为`False`且`dtype`为`quint4x2`时，最后一维需要能被8整除。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float`、`float16`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float`、`float16`、`bfloat16`。
 
@@ -74,6 +74,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式（PyTorch 2.1.0版本）。
+- `input`数据格式为NZ时，`input`输入shape支持3维，形如\(e, k, n\)，`scales`输入shape支持1维，`zero_points`输入为None，`dtype`为`quint4x2`。
 - `div_mode`为`False`时：
     - 支持<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>。
     - 当`dtype`为`quint4x2`或者`axis`为-2时，不支持<term>Atlas 推理系列产品</term>。
