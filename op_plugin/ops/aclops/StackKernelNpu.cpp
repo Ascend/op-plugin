@@ -15,21 +15,13 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
 
 namespace acl_op {
-using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at_npu::native::DynamicInputRegFunc stack_func = [](DyNumAndIndex num_and_index,
-                                                    std::string op_name) -> ge::OperatorPtr {
-    auto ge_op = std::make_shared<ge::op::Pack>(op_name.c_str());
-    ge_op->create_dynamic_input_byindex_x(num_and_index.front().first, num_and_index.front().second);
-    return ge_op;
-};
 
 at::SmallVector<int64_t, SIZE> stack_npu_output_size(at::TensorList tensors, int64_t dim)
 {
@@ -55,7 +47,7 @@ at::Tensor &stack_out_nocheck(at::Tensor &result, at::TensorList tensors, int64_
 
     auto dynamic_num = input_tensors.size();
     at_npu::native::OpCommand cmd;
-    cmd.Name("Pack").DynamicInputReg(stack_func, {{dynamic_num, 0}});
+    cmd.Name("Pack");
     for (uint i = 0; i < dynamic_num; i++) {
         string input_name = "x" + std::to_string(i);
         cmd.Input(input_tensors[i], input_name);

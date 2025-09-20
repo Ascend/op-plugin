@@ -16,10 +16,8 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
-#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
 namespace acl_op {
-using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 
@@ -28,13 +26,6 @@ const std::string x_str = "x";
 const std::string indexed_sizes_str = "indexed_sizes";
 const std::string indexed_strides_str = "indexed_strides";
 const std::string aicore_str = "AiCore";
-
-at_npu::native::DynamicInputRegFunc index_func = [](DyNumAndIndex num_and_index,
-                                                    std::string op_name) -> ge::OperatorPtr {
-    auto ge_op = std::make_shared<ge::op::Index>(op_name.c_str());
-    ge_op->create_dynamic_input_byindex_indices(num_and_index.front().first, num_and_index.front().second);
-    return ge_op;
-};
 
 // Limitations of the aicore branch
 bool check_index_aicore(const at::TensorList &indices, const at::IntArrayRef masks)
@@ -68,7 +59,6 @@ at::Tensor &index_out_nocheck(const at::Tensor &self, const at::IntArrayRef mask
         std::string name = "indices" + std::to_string(i);
         cmd.Input(indices[i], name);
     }
-    cmd.DynamicInputReg(index_func, {{indices.size(), 3}});
     cmd.Output(result);
     if (!is_aicore) {
         cmd.Attr("_exclude_engines", aicore_str);

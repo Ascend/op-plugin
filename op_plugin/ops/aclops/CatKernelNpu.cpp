@@ -16,23 +16,14 @@
 #include <ATen/native/TypeProperties.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-template <typename ge_op_type>
-at_npu::native::DynamicInputRegFunc concat_func =
-    [](DyNumAndIndex num_and_index, std::string op_name) -> ge::OperatorPtr {
-    auto ge_op = std::make_shared<ge_op_type>(op_name.c_str());
-    ge_op->create_dynamic_input_byindex_x(num_and_index.front().first, num_and_index.front().second);
-    return ge_op;
-};
 
 c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(const at::MaterializedITensorListRef& tensors)
 {
@@ -77,11 +68,10 @@ at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensor
         }
     }
 
-    cmd.DynamicInputReg(concat_func<ge::op::ConcatD>, {{input_number, 0}})
-        .Output(result)
-        .Attr("N", input_number)
-        .Attr("concat_dim", dim)
-        .Run();
+    cmd.Output(result)
+       .Attr("N", input_number)
+       .Attr("concat_dim", dim)
+       .Run();
     return result;
 }
 } // namespace

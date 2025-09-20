@@ -20,7 +20,6 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
-#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace acl_op {
@@ -29,13 +28,6 @@ using npu_utils = at_npu::native::NpuUtils;
 using npu_compile_type = at_npu::native::CompileType;
 
 namespace {
-template <typename ge_op_type>
-at_npu::native::DynamicInputRegFunc indexput_func =
-    [](std::vector<std::pair<uint32_t, uint32_t>> num_and_index, std::string op_name) -> ge::OperatorPtr {
-    auto ge_op = std::make_shared<ge_op_type>(op_name.c_str());
-    ge_op->create_dynamic_input_byindex_indices(num_and_index.front().first, num_and_index.front().second);
-    return ge_op;
-};
 const std::string x_str = "x";
 const std::string value_str = "value";
 const std::string indexed_sizes_str = "indexed_sizes";
@@ -117,10 +109,9 @@ at::Tensor &index_put_aicore_nocheck(at::Tensor &self, const std::vector<at::Ten
         string input_name = "indices" + std::to_string(i);
         cmd.Input(all_defined_indices[i], input_name);
     }
-    cmd.DynamicInputReg(indexput_func<ge::op::IndexPutV2>, {{all_defined_indices.size(), 4}})
-        .Output(temp_self, x_str)
-        .Attr("accumulate", accumulate)
-        .Run();
+    cmd.Output(temp_self, x_str)
+       .Attr("accumulate", accumulate)
+       .Run();
     if (self.scalar_type() == at::ScalarType::Half) {
         temp_self = at_npu::native::custom_ops::npu_dtype_cast(temp_self, at::ScalarType::Half);
         self.copy_(temp_self);
@@ -177,11 +168,10 @@ at::Tensor &index_put_aicpu_nocheck(at::Tensor &result, const at::Tensor &self,
         string input_name = "indices" + std::to_string(i);
         cmd.Input(all_defined_indices[i], input_name);
     }
-    cmd.DynamicInputReg(indexput_func<ge::op::IndexPutV2>, {{all_defined_indices.size(), 4}})
-        .Output(result, x_str)
-        .Attr("_exclude_engines", aicore_str)
-        .Attr("accumulate", accumulate)
-        .Run();
+    cmd.Output(result, x_str)
+       .Attr("_exclude_engines", aicore_str)
+       .Attr("accumulate", accumulate)
+       .Run();
 
     if (self.scalar_type() == at::ScalarType::Half) {
         result = at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Half);
