@@ -2544,11 +2544,6 @@ official:
   - func: hardswish_backward(Tensor grad_output, Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      out:
-        size: self
-        dtype: self
-      exec: aclnnHardswishBackward
 
   - func: hardtanh(Tensor self, Scalar min_val=-1, Scalar max_val=1) -> Tensor
     acl_op: all_version
