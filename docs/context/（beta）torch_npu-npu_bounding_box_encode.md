@@ -22,16 +22,16 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 
 ## 参数说明
 
-- **anchor_box** (`Tensor`) - 输入张量。锚点框。shape为（N,4）数据类型为float32的2D张量。“N”表示标注框的数量，“4”表示“x0”、“x1”、“y0”和“y1”。
-- **ground_truth_box** (`Tensor`) - 输入张量。真值框。shape为（N,4）数据类型为float32的2D张量。“N”表示标注框的数量，“4”表示“x0”、“x1”、“y0”和“y1”。
-- **means0** (`float`，默认值为0) - “x0”的偏差值。
-- **means1** (`float`，默认值为0) - “y0”的偏差值。
-- **means2** (`float`，默认值为0) - “x1”的偏差值。
-- **means3** (`float`，默认值为0) - “y1”的偏差值。
-- **stds0** (`float`，默认值为1.0) - “x0”的缩放值。
-- **stds1** (`float`，默认值为1.0) - “y0”的缩放值。
-- **stds2** (`float`，默认值为1.0) - “x1”的缩放值。
-- **stds3** (`float`，默认值为1.0) - “y1”的缩放值。
+- **anchor_box** (`Tensor`)：输入张量。锚点框。shape为（N,4）数据类型为float32的2D张量。“N”表示标注框的数量，“4”表示“x0”、“x1”、“y0”和“y1”。
+- **ground_truth_box** (`Tensor`)：输入张量。真值框。shape为（N,4）数据类型为float32的2D张量。“N”表示标注框的数量，“4”表示“x0”、“x1”、“y0”和“y1”。
+- **means0** (`float`)：“x0”的偏差值。默认值为0。
+- **means1** (`float`)：“y0”的偏差值。默认值为0。
+- **means2** (`float`)：“x1”的偏差值。默认值为0。
+- **means3** (`float`)：“y1”的偏差值。默认值为0。
+- **stds0** (`float`)：“x0”的缩放值。默认值为1.0。
+- **stds1** (`float`)：“y0”的缩放值。默认值为1.0。
+- **stds2** (`float`)：“x1”的缩放值。默认值为1.0。
+- **stds3** (`float`)：“y1”的缩放值。默认值为1.0。
 
 
 ## 调用示例

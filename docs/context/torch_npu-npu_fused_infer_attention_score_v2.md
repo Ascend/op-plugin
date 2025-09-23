@@ -10,7 +10,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000001832267082_section14441124184110"></a>
 
--   算子功能：适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当不涉及system prefix、左padding、kv量化参数合一、per-tensor全量化的场景，推荐使用本接口，否则使用老接口`npu_fused_infer_attention_score`。
+-   API功能：适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当不涉及system prefix、左padding、kv量化参数合一、per-tensor全量化的场景，推荐使用本接口，否则使用老接口`npu_fused_infer_attention_score`。
 -   计算公式：
 
     $$

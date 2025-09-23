@@ -18,17 +18,17 @@
 torch_npu.contrib.module.npu_modules.DropoutWithByteMask(Module)
 ```
 
-
-
 ## 参数说明
 
-- **Input** (`Tensor`) - 输入张量，可为任何shape。
-- **p** (`float`，默认值为0.5) - 元素归零的概率。
-- **inplace** (`bool`，默认值为False) - 如果设置为True，原地执行此操作。
+- **Input** (`Tensor`)：输入张量，可为任何shape。
+- **p** (`float`)：元素归零的概率。默认值为0.5。
+- **inplace** (`bool`)：如果设置为True，原地执行此操作。默认值为False。
 
 ## 返回值说明
 
-**Output** (`Tensor`) - 输出张量与输入张量的shape相同。
+`Tensor`
+
+输出张量与输入张量的shape相同。
 
 ## 约束说明
 

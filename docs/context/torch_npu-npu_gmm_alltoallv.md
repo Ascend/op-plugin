@@ -19,7 +19,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002317314449_section14441124184110"></a>
 
--   算子功能：MoE网络中，完成路由专家GroupedMatMul、AlltoAllv融合并实现与共享专家MatMul并行融合，先计算后通信。
+-   API功能：MoE网络中，完成路由专家GroupedMatMul、AlltoAllv融合并实现与共享专家MatMul并行融合，先计算后通信。
 -   路由专家计算公式：
 
     ![](figures/zh-cn_formulaimage_0000002323688460.png)

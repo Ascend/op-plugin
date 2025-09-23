@@ -19,21 +19,20 @@
 torch_npu.contrib.module.ChannelShuffle(nn.Module)
 ```
 
-
 ## 参数说明
 
-- **Input** (`Tensor`) - 输入张量。 (N, C_\{in\}, L_\{in\}), (N, C_\{in\}, L_\{in\})。
-- **in_channels** (`int`) - 输入张量中的通道总数。
-- **groups** (`int`，默认值为2) - shuffle组数。
-- **split_shuffle** (`bool`，默认值为True) - shuffle后是否执行chunk操作。默认值：True。
+- **Input** (`Tensor`)：输入张量。 (N, C_\{in\}, L_\{in\}), (N, C_\{in\}, L_\{in\})。
+- **in_channels** (`int`)：输入张量中的通道总数。
+- **groups** (`int`)：shuffle组数。默认值为2。
+- **split_shuffle** (`bool`)：shuffle后是否执行chunk操作。默认值为True。
 
 ## 返回值说明
 
-**Output** (`Tensor`) - 输出张量(N, C_\{out\}, L_\{out\})。
+**Output** (`Tensor`)：输出张量(N, C_\{out\}, L_\{out\})。
 
 ## 约束说明
 
-只实现了groups=2，请自行修改其他groups场景。
+只实现了groups为2场景，请自行修改其他groups场景。
 
 
 ## 调用示例

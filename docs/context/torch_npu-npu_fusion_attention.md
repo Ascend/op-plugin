@@ -1,5 +1,11 @@
 # torch\_npu.npu\_fusion\_attention<a name="ZH-CN_TOPIC_0000002266361349"></a>
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A2 训练系列产品</term>  | √   |
+
 ## 功能说明<a name="zh-cn_topic_0000001742717129_section14441124184110"></a>
 
 实现“Transformer Attention Score”的融合计算，实现的计算公式如下：
@@ -9,39 +15,39 @@
 ## 函数原型<a name="zh-cn_topic_0000001742717129_section45077510411"></a>
 
 ```
-torch_npu.npu_fusion_attention(Tensor query, Tensor key, Tensor value, int head_num, str input_layout, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, float scale=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=0, int[]? prefix=None, int[]? actual_seq_qlen=None, int[]? actual_seq_kvlen=None, int sparse_mode=0, bool gen_mask_parallel=True, bool sync=False, str softmax_layout="") -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
+torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=None, padding_mask=None, atten_mask=None, scale=1., keep_prob=1., pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout="") -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000001742717129_section112637109429"></a>
 
--   query：Tensor类型，数据类型支持float16、bfloat16、float32，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   key：Tensor类型，数据类型支持float16、bfloat16、float32，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   value：Tensor类型，数据类型支持float16、bfloat16、float32，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   head\_num：int类型，代表head个数，数据类型支持int64。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   input\_layout：string类型，代表输入query、key、value的数据排布格式，支持BSH、SBH、BSND、BNSD、TND（actual\_seq\_qlen/actual\_seq\_kvlen需传值，input\_layout为TND时即为varlen场景）；后续章节如无特殊说明，S表示query或key、value的sequence length，Sq表示query的sequence length，Skv表示key、value的sequence length，SS表示Sq\*Skv。
--   pse：Tensor类型，可选参数，表示位置编码。数据类型支持float16、bfloat16、float32，数据格式支持ND。非varlen场景支持四维输入，包含BNSS格式、BN1Skv格式、1NSS格式。如果非varlen场景Sq大于1024或varlen场景、每个batch的Sq与Skv等长且是sparse\_mode为0、2、3的下三角掩码场景，可使能alibi位置编码压缩，此时只需要输入原始PSE最后1024行进行内存优化，即alibi\_compress = ori\_pse\[:, :, -1024:, :\]，参数每个batch不相同时，输入BNHSkv\(H=1024\)，每个batch相同时，输入1NHSkv\(H=1024\)。
--   padding\_mask：Tensor类型，**暂不支持该传参**。
--   atten\_mask：Tensor类型，可选参数，取值为1代表该位不参与计算（不生效），为0代表该位参与计算，数据类型支持bool、uint8，数据格式支持ND，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   scale：浮点型，可选参数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持float，默认值为1。
--   keep\_prob：浮点型，可选参数，代表Dropout中1的比例，取值范围为\(0, 1\] 。数据类型支持float，默认值为1，表示全部保留。
--   pre\_tockens：整型，用于稀疏计算的参数，可选参数，数据类型支持int64，默认值为2147483647。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   next\_tockens：整型，用于稀疏计算的参数，可选参数，数据类型支持int64，默认值为2147483647。next\_tockens和pre\_tockens取值与atten\_mask的关系请参见sparse\_mode参数，参数取值与atten\_mask分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   inner\_precise：整型，用于提升精度，数据类型支持int64，默认值为0。
+-   **query**（`Tensor`）：数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **key**（`Tensor`）：数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **value**（`Tensor`）：数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **head\_num**（`int`）：代表head个数，数据类型支持`int64`。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **input\_layout**（`string`）：代表输入`query`、`key`、`value`的数据排布格式，支持BSH、SBH、BSND、BNSD、TND（`actual_seq_qlen`/`actual_seq_kvlen`需传值，`input_layou`t为TND时即为varlen场景）；后续章节如无特殊说明，S表示`query`或`key`、`value`的sequence length，Sq表示query的sequence length，Skv表示`key`、`value`的sequence length，SS表示Sq\*Skv。
+-   **pse**（`Tensor`）：可选参数，表示位置编码。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。非varlen场景支持四维输入，包含BNSS格式、BN1Skv格式、1NSS格式。如果非varlen场景Sq大于1024或varlen场景、每个batch的Sq与Skv等长且是sparse\_mode为0、2、3的下三角掩码场景，可使能alibi位置编码压缩，此时只需要输入原始PSE最后1024行进行内存优化，即alibi\_compress = ori\_pse\[:, :, -1024:, :\]，参数每个batch不相同时，输入BNHSkv\(H=1024\)，每个batch相同时，输入1NHSkv\(H=1024\)。
+-   **padding\_mask**（`Tensor`）：暂不支持该传参。
+-   **atten\_mask**（`Tensor`）：可选参数，取值为1代表该位不参与计算（不生效），为0代表该位参与计算，数据类型支持`bool`、`uint8`，数据格式支持$ND$，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **scale**（`float`）：可选参数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float`，默认值为1。
+-   **keep\_prob**（`float`）：可选参数，代表Dropout中1的比例，取值范围为\(0, 1\] 。数据类型支持`float`，默认值为1，表示全部保留。
+-   **pre\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **next\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。`next_tockens`和`pre_tockens`取值与`atten_mask`的关系请参见`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **inner\_precise**（`int`）：用于提升精度，数据类型支持`int64`，默认值为0。
 
     >**说明：**<br>
     >当前0、1为保留配置值，2为使能无效行计算，其功能是避免在计算过程中存在整行mask进而导致精度有损失，但是该配置会导致性能下降。
-    >如果算子可判断出存在无效行场景，会自动使能无效行计算，例如sparse\_mode为3，Sq \> Skv场景。
+    >如果算子可判断出存在无效行场景，会自动使能无效行计算，例如`sparse_mode`为3，Sq \> Skv场景。
 
--   prefix：int类型数组，可选参数，代表prefix稀疏计算场景每个Batch的N值。数据类型支持int64，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   actual\_seq\_qlen：int类型数组，可选参数，varlen场景时需要传入此参数。表示query每个S的累加和长度，数据类型支持int64，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **prefix**（`List[int]`）：可选参数，代表prefix稀疏计算场景每个Batch的N值。数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **actual\_seq\_qlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`query`每个S的累加和长度，数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 
-    比如真正的S长度列表为：2 2 2 2 2，则actual\_seq\_qlen传：2 4 6 8 10。
+    比如真正的S长度列表为：2 2 2 2 2，则`actual_seq_qlen`传：2 4 6 8 10。
 
--   actual\_seq\_kvlen：int类型数组，可选参数，varlen场景时需要传入此参数。表示key/value每个S的累加和长度。数据类型支持int64，数据格式支持ND。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **actual\_seq\_kvlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`key`/`value`每个S的累加和长度。数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 
     比如真正的S长度列表为：2 2 2 2 2，则actual\_seq\_kvlen传：2 4 6 8 10。
 
--   sparse\_mode：整型，表示sparse的模式，可选参数，默认值为0。取值如[表1](#zh-cn_topic_0000001742717129_table1946917414436)所示，不同模式的原理参见[参考资源](#zh-cn_topic_0000001742717129_section28169228374)。当整网的atten\_mask都相同且shape小于2048\*2048时，建议使用defaultMask模式，来减少内存使用量。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **sparse\_mode**（`int`）：表示sparse的模式，可选参数，默认值为0。取值如[表1](#zh-cn_topic_0000001742717129_table1946917414436)所示，不同模式的原理参见[参考资源](#zh-cn_topic_0000001742717129_section28169228374)。当整网的`atten_mask`都相同且shape小于2048\*2048时，建议使用defaultMask模式，来减少内存使用量。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 
     **表1** sparse\_mode不同取值场景说明
 
@@ -120,57 +126,53 @@ torch_npu.npu_fusion_attention(Tensor query, Tensor key, Tensor value, int head_
     </tbody>
     </table>
 
--   gen\_mask\_parallel：布尔型，DSA生成dropout随机数向量mask的控制开关。默认值为True：同AI Core计算并行；设为False：同AI Core计算串行。
--   sync：布尔型，DSA生成dropout随机数向量mask的控制开关。默认值为False：dropout mask异步生成；设为True：dropout mask同步生成。
--   softmax_layout: string类型，可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input\_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。
+-   **gen\_mask\_parallel**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为True：同AI Core并行计算；设为False：同AI Core串行计算。
+-   **sync**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为False：dropout mask异步生成；设为True：dropout mask同步生成。
+-   **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。
 
 ## 输出说明<a name="zh-cn_topic_0000001742717129_section22231435517"></a>
 
 共7个输出，类型依次为**Tensor、Tensor、Tensor、Tensor、int、int、int。**
 
--   第1个输出为Tensor，计算公式的最终输出attention\_out，数据类型支持float16、bfloat16、float32。
--   第2个输出为Tensor，Softmax计算的Max中间结果，用于反向计算，数据类型支持float。
--   第3个输出为Tensor，Softmax计算的Sum中间结果，用于反向计算，数据类型支持float。
--   第4个输出为Tensor，预留参数，暂未使用。
--   第5个输出为int，DSA生成dropoutmask中，Philox算法的seed。
--   第6个输出为int，DSA生成dropoutmask中，Philox算法的offset。
--   第7个输出为int，DSA生成dropoutmask的长度。
+-   第1个输出为`Tensor`，计算公式的最终输出$attention\_out$，数据类型支持`float16`、`bfloat16`、`float32`。
+-   第2个输出为`Tensor`，Softmax计算的Max中间结果，用于反向计算，数据类型支持`float`。
+-   第3个输出为`Tensor`，Softmax计算的Sum中间结果，用于反向计算，数据类型支持`float`。
+-   第4个输出为`Tensor`，预留参数，暂未使用。
+-   第5个输出为`int`，DSA生成dropout mask中，Philox算法的seed。
+-   第6个输出为`int`，DSA生成dropout mask中，Philox算法的offset。
+-   第7个输出为`int`，DSA生成dropout mask的长度。
 
 ## 约束说明<a name="zh-cn_topic_0000001742717129_section12345537164214"></a>
 
 -   该接口仅在训练场景下使用。
--   该接口**暂不支持**图模式（PyTorch 2.1版本）。
--   输入query、key、value、pse的数据类型必须一致。
--   输入query、key、value的input\_layout必须一致。
--   输入query、key、value的shape说明：
-    -   输入key和value的shape必须一致。
+-   该接口暂不支持图模式（PyTorch 2.1.0版本）。
+-   输入`query`、`key`、`value`、`pse`的数据类型必须一致。
+-   输入`query`、`key`、`value`的`input_layout`必须一致。
+-   输入`query`、`key`、`value`的shape说明：
+    -   输入`key`和`value`的shape必须一致。
     -   B：batchsize必须相等；非varlen场景B取值范围1\~2M；varlen场景B取值范围1\~2K。
     -   D：Head Dim必须满足Dq=Dk和Dk≥Dv，取值范围1\~768。
     -   S：sequence length，取值范围1\~1M。
 
 -   varlen场景下：
     -   要求T（B\*S）取值范围1\~1M。
-    -   atten\_mask输入不支持补pad，即atten\_mask中不能存在某一行全1的场景。
+    -   `atten_mask`输入不支持补pad，即`atten_mask`中不能存在某一行全1的场景。
 
--   支持输入query的N和key/value的N不相等，但必须成比例关系，即Nq/Nkv必须是非0整数，Nq取值范围1\~256。当Nq/Nkv \> 1时，即为GQA\(grouped-query attention\)；当Nq/Nkv=1时，即为MHA\(multi-head attention\)。
+-   支持输入`query`的N和`key`/`value`的N不相等，但必须成比例关系，即Nq/Nkv必须是非0整数，Nq取值范围1\~256。当Nq/Nkv \> 1时，即为GQA\(grouped-query attention\)；当Nq/Nkv=1时，即为MHA\(multi-head attention\)。
 
     >**说明：**<br>
     >本文如无特殊说明，N表示的是Nq。
 
--   sparse\_mode取值说明：
-    -   sparse\_mode为1、2、3、4、5、6、7、8时，应传入对应正确的atten\_mask，否则将导致计算结果错误。当atten\_mask输入为None时，sparse\_mode，pre\_tockens，next\_tockens参数不生效，固定为全计算。
-    -   sparse\_mode配置为1、2、3、5、6时，用户配置的pre\_tockens、next\_tockens不会生效。
-    -   sparse\_mode配置为0、4时，需保证atten\_mask与pre\_tockens、next\_tockens的范围一致。
-    -   sparse\_mode=7或者8时，不支持可选参数pse。
+-   `sparse_mode`取值说明：
+    -   `sparse_mode`为1、2、3、4、5、6、7、8时，应传入对应正确的`atten_mask`，否则将导致计算结果错误。当`atten_mask`输入为None时，`sparse_mode`，`pre_tockens`，`next_tockens`参数不生效，固定为全计算。
+    -   `sparse_mode`配置为1、2、3、5、6时，用户配置的`pre_tockens`、`next_tockens`不会生效。
+    -   `sparse_mode`配置为0、4时，需保证`atten_mask`与`pre_tockens`、`next_tockens`的范围一致。
+    -   `sparse_mode`配置为7或者8时，不支持可选参数`pse`。
 
--   prefix稀疏计算场景B不大于32，varlen场景不支持非压缩prefix，即不支持sparse\_mode=5；当Sq\>Skv时，prefix的N值取值范围\[0, Skv\]，当Sq<=Skv时，prefix的N值取值范围\[Skv-Sq, Skv\]。
--   支持actual\_seq\_qlen中某个Batch上的S长度为0；如果存在S为0的情况，不支持pse输入，假设真实的S长度为\[2, 2, 0, 2, 2\]，则传入的actual\_seq\_qlen为\[2, 4, 4, 6, 8\]。actual\_seq\_qlen的长度取值范围为1\~2K，varlen场景下长度最大支持1K。
--   TND格式下，支持尾部部分Batch不参与计算，此时actual\_seq\_q\_len和actual\_seq\_kv\_len尾部传入对应个数个0即可。假设真实的S长度为\[2, 3, 4, 5, 6\]，此时后两个Batch不参与计算，则传入的actual\_seq\_qlen为\[2, 5, 9, 0, 0\]。
+-   `prefix`稀疏计算场景B不大于32，varlen场景不支持非压缩prefix，即不支持sparse\_mode=5；当Sq\>Skv时，`prefix`的N值取值范围\[0, Skv\]，当Sq<=Skv时，`prefix`的N值取值范围\[Skv-Sq, Skv\]。
+-   支持`actual_seq_qlen`中某个Batch上的S长度为0；如果存在S为0的情况，不支持`pse`输入，假设真实的S长度为\[2, 2, 0, 2, 2\]，则传入的`actual_seq_qlen`为\[2, 4, 4, 6, 8\]。`actual_seq_qlen`的长度取值范围为1\~2K，varlen场景下长度最大支持1K。
+-   TND格式下，支持尾部部分Batch不参与计算，此时`actual_seq_q_len`和`actual_seq_kv_len`尾部传入对应个数个0即可。假设真实的S长度为\[2, 3, 4, 5, 6\]，此时后两个Batch不参与计算，则传入的`actual_seq_qlen`为\[2, 5, 9, 0, 0\]。
 -   部分场景下，如果计算量过大可能会导致算子执行超时\(aicore error类型报错，errorStr为：timeout or trap error\)，此时建议做轴切分处理，注：这里的计算量会受B、S、N、D等参数的影响，值越大计算量越大。
-
-## 支持的型号<a name="zh-cn_topic_0000001742717129_section1414151813182"></a>
-
-<term>Atlas A2 训练系列产品</term>
 
 ## 调用示例<a name="zh-cn_topic_0000001742717129_section14459801435"></a>
 
@@ -271,56 +273,56 @@ if __name__ == "__main__":
 
 ## 参考资源<a name="zh-cn_topic_0000001742717129_section28169228374"></a>
 
-atten\_mask的工作原理为，在Mask为True的位置遮蔽query\(Q\)与key\(K\)的转置矩阵乘积的值，示意如下：
+`atten_mask`的工作原理为，在Mask为True的位置遮蔽`query`\(Q\)与`key`\(K\)的转置矩阵乘积的值，示意如下：
 
 ![](./figures/绘图10.png)
 
-QK<sup>T</sup>矩阵在atten\_mask为True的位置会被遮蔽，效果如下：
+QK<sup>T</sup>矩阵在`atten_mask`为True的位置会被遮蔽，效果如下：
 
 ![](./figures/绘图10-0.png)
 
-**说明：下图中的蓝色表示保留该值，atten\_mask中，应该配置为False；阴影表示遮蔽该值，atten\_mask中应配置为True。**
+**说明：下图中的蓝色表示保留该值，`atten_mask`中，应该配置为False；阴影表示遮蔽该值，`atten_mask`中应配置为True。**
 
--   当sparse\_mode为0时，代表defaultMask模式。
-    -   不传mask：如果atten\_mask未传入则不做mask操作，**atten\_mask取值为None**，忽略pre\_tockens和next\_tockens取值。Masked QK<sup>T</sup>矩阵示意如下：
+-   当`sparse_mode`为0时，代表defaultMask模式。
+    -   不传mask：如果`atten_mask`未传入则不做mask操作，`atten_mask`取值为None，忽略`pre_tockens`和`next_tockens`取值。Masked QK<sup>T</sup>矩阵示意如下：
 
         ![](./figures/mode0.png)
 
-    -   next\_tockens取值为0，pre\_tockens大于等于Sq，表示causal场景sparse，atten\_mask应传入下三角矩阵，此时pre\_tockens和next\_tockens之间的部分需要计算，Masked QK<sup>T</sup>矩阵示意如下：
+    -   `next_tockens`取值为0，`pre_tockens`大于等于Sq，表示causal场景sparse，`atten_mask`应传入下三角矩阵，此时`pre_tockens`和`next_tockens`之间的部分需要计算，Masked QK<sup>T</sup>矩阵示意如下：
 
         ![](./figures/1.png)
 
-        atten\_mask应传入下三角矩阵，示意如下：
+        `atten_mask`应传入下三角矩阵，示意如下：
 
         ![](./figures/1-1.png)
 
-    -   pre\_tockens小于Sq，next\_tockens小于Skv，且都大于等于0，表示band场景，此时pre\_tockens和next\_tockens之间的部分需要计算。Masked QK<sup>T</sup>矩阵示意如下：
+    -   `pre_tockens`小于Sq，`next_tockens`小于Skv，且都大于等于0，表示band场景，此时`pre_tockens`和`next_tockens`之间的部分需要计算。Masked QK<sup>T</sup>矩阵示意如下：
 
         ![](./figures/1-2.png)
 
-        atten\_mask应传入band形状矩阵，示意如下：
+        `atten_mask`应传入band形状矩阵，示意如下：
 
         ![](./figures/1-3.png)
 
-    -   next\_tockens为负数，以pre\_tockens=9，next\_tockens=-3为例，pre\_tockens和next\_tockens之间的部分需要计算。Masked QK<sup>T</sup>示意如下：
+    -   `next_tockens`为负数，以pre\_tockens=9，next\_tockens=-3为例，`pre_tockens`和`next_tockens`之间的部分需要计算。Masked QK<sup>T</sup>示意如下：
 
-        **说明：next\_tockens为负数时，pre\_tockens取值必须大于等于next\_tockens的绝对值，且next\_tockens的绝对值小于Skv。**
+        **说明：`next_tockens`为负数时，`pre_tockens`取值必须大于等于`next_tockens`的绝对值，且`next_tockens`的绝对值小于Skv。**
 
         ![](./figures/1-4.png)
 
-    -   pre\_tockens为负数，以next\_tockens=7，pre\_tockens=-3为例，pre\_tockens和next\_tockens之间的部分需要计算。Masked QK<sup>T</sup>示意如下：
+    -   `pre_tockens`为负数，以next\_tockens=7，pre\_tockens=-3为例，`pre_tockens`和`next_tockens`之间的部分需要计算。Masked QK<sup>T</sup>示意如下：
 
-        **说明：pre\_tockens为负数时，next\_tockens取值必须大于等于pre\_tockens的绝对值，且pre\_tockens的绝对值小于Sq。**
+        **说明：`pre_tockens`为负数时，`next_tockens`取值必须大于等于`pre_tockens`的绝对值，且`pre_tockens`的绝对值小于Sq。**
 
         ![](./figures/1-5.png)
 
--   当sparse\_mode为1时，代表allMask，即传入完整的atten\_mask矩阵。
+-   当`sparse_mode`为1时，代表allMask，即传入完整的`atten_mask`矩阵。
 
-    该场景下忽略next\_tockens、pre\_tockens取值，Masked QK<sup>T</sup>矩阵示意如下：
+    该场景下忽略`next_tockens`、`pre_tockens`取值，Masked QK<sup>T</sup>矩阵示意如下：
 
     ![](./figures/1-6.png)
 
--   当sparse\_mode为2时，代表leftUpCausal模式的mask，对应以左上顶点划分的下三角场景（参数起点为左上角）。该场景下忽略pre\_tockens、next\_tockens取值，Masked QK<sup>T</sup>矩阵示意如下：
+-   当`sparse_mode`为2时，代表leftUpCausal模式的mask，对应以左上顶点划分的下三角场景（参数起点为左上角）。该场景下忽略`pre_tockens`、`next_tockens`取值，Masked QK<sup>T</sup>矩阵示意如下：
 
     ![](./figures/1-7.png)
 
@@ -328,34 +330,34 @@ QK<sup>T</sup>矩阵在atten\_mask为True的位置会被遮蔽，效果如下：
 
     ![](./figures/1-8.png)
 
--   当sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右下顶点划分的下三角场景（参数起点为右下角）。该场景下忽略pre\_tockens、next\_tockens取值。atten\_mask为优化后的压缩下三角矩阵（2048\*2048），Masked QK<sup>T</sup>矩阵示意如下：
+-   当`sparse_mode`为3时，代表rightDownCausal模式的mask，对应以右下顶点划分的下三角场景（参数起点为右下角）。该场景下忽略`pre_tockens`、`next_tockens`取值。`atten_mask`为优化后的压缩下三角矩阵（2048\*2048），Masked QK<sup>T</sup>矩阵示意如下：
 
     ![](./figures/1-9.png)
 
--   当sparse\_mode为4时，代表band场景，即计算pre\_tockens和next\_tockens之间的部分，参数起点为右下角，pre\_tockens和next\_tockens之间需要有交集。atten\_mask为优化后的压缩下三角矩阵（2048\*2048）。Masked QK<sup>T</sup>矩阵示意如下：
+-   当`sparse_mode`为4时，代表band场景，即计算`pre_tockens`和`next_tockens`之间的部分，参数起点为右下角，`pre_tockens`和`next_tockens`之间需要有交集。`atten_mask`为优化后的压缩下三角矩阵（2048\*2048）。Masked QK<sup>T</sup>矩阵示意如下：
 
     ![](./figures/1-10.png)
 
--   当sparse\_mode为5时，代表prefix非压缩场景，即在rightDownCasual的基础上，左侧加上一个长为Sq，宽为N的矩阵，N的值由可选参数prefix获取，例如下图中表示batch=2场景下prefix传入数组\[4,5\]，每个batch轴的N值可以不一样，参数起点为左上角。
+-   当`sparse_mode`为5时，代表prefix非压缩场景，即在rightDownCasual的基础上，左侧加上一个长为Sq，宽为N的矩阵，N的值由可选参数prefix获取，例如下图中表示batch=2场景下prefix传入数组\[4,5\]，每个batch轴的N值可以不一样，参数起点为左上角。
 
-    该场景下忽略pre\_tockens、next\_tockens取值，atten\_mask矩阵数据格式须为BNSS或B1SS，Masked QK<sup>T</sup>矩阵示意如下：
+    该场景下忽略`pre_tockens`、`next_tockens`取值，`atten_mask`矩阵数据格式须为BNSS或B1SS，Masked QK<sup>T</sup>矩阵示意如下：
 
     ![](./figures/1-11.png)
 
-    atten\_mask应传入矩阵示意如下：
+    `atten_mask`应传入矩阵示意如下：
 
     ![](./figures/1-12.png)
 
--   当sparse\_mode为6时，代表prefix压缩场景，即prefix场景时，attenMask为优化后的压缩下三角+矩形的矩阵（3072\*2048）：其中上半部分\[2048，2048\]的下三角矩阵，下半部分为\[1024,2048\]的矩形矩阵，矩形矩阵左半部分全0，右半部分全1，atten\_mask应传入矩阵示意如下。该场景下忽略pre\_tockens、next\_tockens取值。
+-   当`sparse_mode`为6时，代表prefix压缩场景，即prefix场景时，attenMask为优化后的压缩下三角+矩形的矩阵（3072\*2048）：其中上半部分\[2048，2048\]的下三角矩阵，下半部分为\[1024,2048\]的矩形矩阵，矩形矩阵左半部分全0，右半部分全1，`atten_mask`应传入矩阵示意如下。该场景下忽略`pre_tockens`、`next_tockens`取值。
 
     ![](./figures/1-13.png)
 
--   当sparse\_mode为7时，表示varlen且为长序列外切场景（即长序列在模型脚本中进行多卡切query的sequence length）；用户需要确保外切前为使用sparse\_mode 3的场景；当前mode下用户需要设置pre\_tockens和next\_tockens（起点为右下顶点），且需要保证参数正确，否则会存在精度问题。
+-   当`sparse_mode`为7时，表示varlen且为长序列外切场景（即长序列在模型脚本中进行多卡切query的sequence length）；用户需要确保外切前为使用sparse\_mode=3的场景；当前mode下用户需要设置`pre_tockens`和`next_tockens`（起点为右下顶点），且需要保证参数正确，否则会存在精度问题。
 
-    Masked QK<sup>T</sup>矩阵示意如下，在第二个batch对query进行切分，key和value不切分，4x6的mask矩阵被切分成2x6和2x6的mask，分别在卡1和卡2上计算：
+    Masked QK<sup>T</sup>矩阵示意如下，在第二个batch对`query`进行切分，`key`和`value`不切分，4x6的mask矩阵被切分成2x6和2x6的mask，分别在卡1和卡2上计算：
 
-    -   卡1的最后一块mask为band类型的mask，配置pre\_tockens=6（保证大于等于最后一个Skv），next\_tockens=-2，actual\_seq\_qlen应传入\{3,5\}，actual\_seq\_kvlen应传入\{3,9\}。
-    -   卡2的mask类型切分后不变，sparse\_mode为3，actual\_seq\_qlen应传入\{2,7,11\}，actual\_seq\_kvlen应传入\{6,11,15\}。
+    -   卡1的最后一块mask为band类型的mask，配置pre\_tockens=6（保证大于等于最后一个Skv），next\_tockens=-2，`actual_seq_qlen`应传入\{3,5\}，`actual_seq_kvlen`应传入\{3,9\}。
+    -   卡2的mask类型切分后不变，`sparse_mode`为3，`actual_seq_qlen`应传入\{2,7,11\}，`actual_seq_kvlen`应传入\{6,11,15\}。
 
     ![](./figures/1-14.png)
 
@@ -366,12 +368,12 @@ QK<sup>T</sup>矩阵在atten\_mask为True的位置会被遮蔽，效果如下：
     >    -   next\_tockens <= 0。
     >    -   当前模式下不支持可选输入pse。
 
--   当sparse\_mode为8时，表示varlen且为长序列外切场景；用户需要确保外切前为使用sparse\_mode 2的场景；当前mode下用户需要设置pre\_tockens和next\_tockens（起点为右下顶点），且需要保证参数正确，否则会存在精度问题。
+-   当`sparse_mode`为8时，表示varlen且为长序列外切场景；用户需要确保外切前为使用sparse\_mode=2的场景；当前mode下用户需要设置`pre_tockens`和`next_tockens`（起点为右下顶点），且需要保证参数正确，否则会存在精度问题。
 
-    Masked QK<sup>T</sup>矩阵示意如下，在第二个batch对query进行切分，key和value不切分，5x4的mask矩阵被切分成2x4和3x4的mask，分别在卡1和卡2上计算：
+    Masked QK<sup>T</sup>矩阵示意如下，在第二个batch对`query`进行切分，`key`和`value`不切分，5x4的mask矩阵被切分成2x4和3x4的mask，分别在卡1和卡2上计算：
 
-    -   卡1的mask类型切分后不变，sparse\_mode为2，actual\_seq\_qlen应传入\{3,5\}，actual\_seq\_kvlen应传入\{3,7\}。
-    -   卡2的第一块mask为band类型的mask，配置pre\_tockens=4（保证大于等于第一个Skv），next\_tockens=1，actual\_seq\_qlen应传入\{3,8,12\}，actual\_seq\_kvlen应传入\{4,9,13\}。
+    -   卡1的mask类型切分后不变，`sparse_mode`为2，`actual_seq_qlen`应传入\{3,5\}，`actual_seq_kvlen`应传入\{3,7\}。
+    -   卡2的第一块mask为band类型的mask，配置pre\_tockens=4（保证大于等于第一个Skv），next\_tockens=1，`actual_seq_qlen`应传入\{3,8,12\}，`actual_seq_kvlen`应传入\{4,9,13\}。
 
     ![](./figures/1-15.png)
 

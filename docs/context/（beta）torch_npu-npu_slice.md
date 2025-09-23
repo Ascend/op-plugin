@@ -17,16 +17,14 @@
 torch_npu.npu_slice(self, offsets, size) -> Tensor
 ```
 
-
-
 >**注意：**<br>
 >该接口不支持反向计算。
 
 ## 参数说明
 
-- **self** (`Tensor`) - 输入张量。
-- **offsets** (`List[int]`) - 数据类型：int32，int64。
-- **size** (`List[int]`) - 数据类型：int32，int64。
+- **self** (`Tensor`)：输入张量。
+- **offsets** (`List[int]`)：支持的数据类型为`int32`，`int64`。
+- **size** (`List[int]`)：支持的数据类型为`int32`，`int64`。
 
 
 ## 调用示例

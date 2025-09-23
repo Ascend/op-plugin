@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-- 设置一个进程上指定device，执行算子时所使用的cube和vector核数。
+设置一个进程上指定device，执行算子时所使用的cube和vector核数。
 
 
 ## 函数原型

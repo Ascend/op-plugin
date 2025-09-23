@@ -21,7 +21,7 @@ torch_npu.contrib.module.NpuDropPath(nn.Module)
 
 ## 参数说明
 
-- **drop_prob** (`Float`)：dropout概率。
+- **drop_prob** (`float`)：dropout概率。
 - **x** (`Tensor`)：应用dropout的输入张量。
 
 

@@ -24,7 +24,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002319693140_section14441124184110"></a>
 
--   算子功能：完成张量`input`与张量`weight`的矩阵乘计算。仅支持三维的Tensor传入。Tensor支持转置，转置序列根据传入的数列进行变更。`perm_x1`代表张量input的转置序列，`perm_x2`代表张量weight的转置序列，序列值为0的是batch维度，其余两个维度做矩阵乘法。
+-   API功能：完成张量`input`与张量`weight`的矩阵乘计算。仅支持三维的Tensor传入。Tensor支持转置，转置序列根据传入的数列进行变更。`perm_x1`代表张量input的转置序列，`perm_x2`代表张量weight的转置序列，序列值为0的是batch维度，其余两个维度做矩阵乘法。
 -   计算公式：
 
     T1、T2、Ty分别通过参数`perm_x1`、`perm_x2`、`perm_y`描述转置序列。
@@ -49,8 +49,9 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 -   **batch\_split\_factor**（`int`）：可选参数，用于指定矩阵乘输出矩阵中N维的切分大小。数据类型支持`int32`。取值范围为\[1, N\]且能被N整除，默认值为1。注：当scale有值时，batch\_split\_factor只能为1。
 
 ## 返回值说明<a name="zh-cn_topic_0000002319693140_section22231435517"></a>
+`Tensor`
 
-**y**（`Tensor`）：表示最终计算结果，数据格式支持ND，shape维度支持3维。
+表示最终计算结果，对应公式中的$y$。数据格式支持ND，shape维度支持3维。
 
 -   当输入scale有值时，数据类型仅为`int8`类型，shape为\(M, 1, B\*N\)；否则数据类型支持`float16`、`bfloat16`、`float32`。
 -   当`batch_split_factor`\>1时，shape大小计算公式为\[`batch_split_factor`, M, B\*N/`batch_split_factor`\]。
