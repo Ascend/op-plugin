@@ -2727,8 +2727,8 @@ epsilon：float数据类型，用于防止除0错误。
 示例
 import torch
 import torch_npu
-x = torch.randn(24, 1, 128).bfloat16().npu()
-w = torch.randn(128).bfloat16().npu()
+x = torch.randn(24, 1, 128).npu()
+w = torch.randn(128).npu()
 ​
 out1 = torch_npu.npu_rms_norm(x, w, epsilon=1e-5)[0]
 print(out1)
@@ -2745,7 +2745,7 @@ tensor([[[-0.1123,  0.3398,  0.0986,  ..., -2.1250, -0.8477, -0.3418]],
         [[-0.1387,  0.0815,  0.0967,  ...,  1.7109,  0.1455, -0.1406]],
 ​
         [[ 0.0698,  1.3438, -0.0127,  ..., -2.2656, -0.4473,  0.3281]]],
-       device='npu:0', dtype=torch.bfloat16)
+       device='npu:0')
 
 """
 )

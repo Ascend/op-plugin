@@ -61,8 +61,8 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 ## 调用示例
 
 ```python
->>> x = torch.randn(24, 1, 128).bfloat16().npu()
->>> w = torch.randn(128).bfloat16().npu()
+>>> x = torch.randn(24, 1, 128).npu()
+>>> w = torch.randn(128).npu()
 >>> out1 = torch_npu.npu_rms_norm(x, w, epsilon=1e-5)[0]
 >>> out1
 tensor([[[-0.1875,  0.2383,  0.2334,  ...,  0.8555, -0.0908, -0.3574]],
@@ -72,6 +72,6 @@ tensor([[[-0.1875,  0.2383,  0.2334,  ...,  0.8555, -0.0908, -0.3574]],
         [[ 0.0503,  1.9453,  2.6094,  ..., -0.1357,  0.0869, -2.8906]],
         [[ 0.0195,  0.6680, -0.9336,  ..., -0.6641, -0.1904,  0.4336]],
         [[ 0.0972, -1.2344, -1.0078,  ..., -0.5195,  0.3145, -3.7656]]],
-       device='npu:0', dtype=torch.bfloat16)
+       device='npu:0')
 ```
 
