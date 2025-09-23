@@ -303,7 +303,9 @@ def npu_alltoallv_gmm_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 
 @impl(m, "npu_all_gather_base_mm")
 def npu_all_gather_base_mm_meta(self, x2, hcom, world_size, bias=None,
-                                gather_index=0, gather_output=True, comm_turn=0):
+                                x1_scale=None, x2_scale=None, 
+                                gather_index=0, gather_output=True, comm_turn=0,
+                                output_dtype=None, comm_mode=None):
     if world_size <= 0:
         world_size = 1
     # out_gather_mm
@@ -317,10 +319,20 @@ def npu_all_gather_base_mm_meta(self, x2, hcom, world_size, bias=None,
     if gather_index == 0:
         out_gather_x = self.size(0) * world_size
         out_gather_y = self.size(1)
+    out_size = (out_x, out_y)
     if gather_output:
-        return (self.new_empty((out_x, out_y)), self.new_empty(out_gather_x, out_gather_y))
-    else:
-        return (self.new_empty((out_x, out_y)), self.new_empty(0))
+        gather_output_size = (out_gather_x, out_gather_y)
+    dtype = self.dtype
+    if x2_scale is not None:
+        if x2_scale.dtype == torch.int64:
+            dtype = torch.float16
+        elif output_dtype is not None:
+            dtype = output_dtype
+        else:
+            dtype = torch.bfloat16
+
+    return (torch.empty(out_size, dtype=dtype, device='meta'),
+            torch.empty(gather_output_size, dtype=self.dtype, device='meta'))
 
 
 @impl(m, "npu_moe_init_routing")

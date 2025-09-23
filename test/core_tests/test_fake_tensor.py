@@ -1753,6 +1753,37 @@ class TestMmReduceScatter(TestCase):
             self.assertEqual(output.shape, (m // world_size, n))
             self.assertEqual(output.dtype, dst_dtype)
 
+class TestAllGatherBaseMm(TestCase):
+    def test_all_gather_base_mm(self):
+        with FakeTensorMode():
+            dst_dtype = torch.float16
+            m, k, n = 128, 512, 256
+            x1 = torch.randn(m, k, dtype=torch.float16).npu()
+            x2 = torch.randn(k, n, dtype=torch.float16).npu()
+            hcom = "fake group info"
+            world_size = 8
+            output, gather_out = torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size)
+            self.assertEqual(output.shape, (m * world_size, n))
+            self.assertEqual(output.dtype, dst_dtype)
+            self.assertEqual(gather_out.shape, (m * world_size, k))
+            self.assertEqual(gather_out.dtype, dst_dtype)
+
+    def test_all_gather_base_mm_quant(self):
+        with FakeTensorMode():
+            world_size = 8
+            m, k, n = 128, 512, 256
+            dst_dtype = torch.bfloat16
+            x1 = torch.randint(-10, 10, size=(m, k), dtype=torch.int8).npu()
+            x2 = torch.randint(-10, 10, size=(k, n), dtype=torch.int8).npu()
+            x1_scale = torch.randn((m, 1), dtype=torch.float32).npu()
+            x2_scale = torch.randn((1, n), dtype=torch.float32).npu()
+            hcom = "fake group info"
+            output, gather_out = torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, x1_scale=x1_scale,
+                                                      x2_scale=x2_scale)
+            self.assertEqual(output.shape, (m * world_size, n))
+            self.assertEqual(output.dtype, dst_dtype)
+            self.assertEqual(gather_out.shape, (m * world_size, k))
+            self.assertEqual(gather_out.dtype, x1.dtype)
 
 class TestNpuDeepNorm(TestCase):
     def test_npu_deep_norm(self):

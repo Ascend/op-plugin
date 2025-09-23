@@ -5615,9 +5615,10 @@ custom:
     op_api: all_version
     exposed: all_version
 
-  - func: npu_all_gather_base_mm(Tensor self, Tensor x2, str hcom, int world_size, *, Tensor? bias=None, int gather_index=0, bool gather_output=True, int comm_turn=0) -> (Tensor, Tensor)
+  - func: npu_all_gather_base_mm(Tensor self, Tensor x2, str hcom, int world_size, *, Tensor? bias=None, Tensor? x1_scale=None, Tensor? x2_scale=None, int gather_index=0, bool gather_output=True, int comm_turn=0, ScalarType? output_dtype=None, str? comm_mode=None) -> (Tensor, Tensor)
     op_api: all_version
     exposed: all_version
+    internal_format_opapi: all_version
 
   - func: npu_alloc_float_status(Tensor self) -> Tensor
     acl_op: all_version
