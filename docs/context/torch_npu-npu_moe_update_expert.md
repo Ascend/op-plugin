@@ -83,9 +83,9 @@ torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor?
     |`eplb_table`第一列的count和 |`moe_expert_num`                                           |
     |`BS`                       |`BS`                                                       |
     |`K`                        |`K`                                                        |
--   昇腾910_93 AI处理器：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+-   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 -   参数说明里Shape格式说明：
-    -   `BS`：表示batch sequence size，即本卡最终输出的token数量，昇腾910_93 AI处理器：取值范围为0<BS≤512。
+    -   `BS`：表示batch sequence size，即本卡最终输出的token数量，<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
     -   `K`：表示选取topK个专家，取值范围为0< K ≤16同时满足0 < K ≤ `moe_expert_num`。
     -   `moe_expert_num`：表示MoE专家数，取值范围\(0, 1024\]。
     -   `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, `world_size` + 1\]。
