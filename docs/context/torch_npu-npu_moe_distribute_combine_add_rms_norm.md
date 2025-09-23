@@ -120,11 +120,11 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 -   **group\_list\_type**（`int`）：可选参数，**预留参数暂未使用，使用默认值即可**。
 -   **norm\_eps**（`float`）：可选参数，用于防止add\_rms\_norm除0错误，默认值为1e-6。
 
--   **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。取值范围\[0, MAX_INT32\)，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num\)。</term>
+-   **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。取值范围\[0, MAX_INT32\)，其中MAX_INT32值为2147483647，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num\)。
 
--   **copy\_expert\_num** (`int`)：可选参数，表示copy专家的数量。取值范围\[0, MAX_INT32\)，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。</term>
+-   **copy\_expert\_num** (`int`)：可选参数，表示copy专家的数量。取值范围\[0, MAX_INT32\)，其中MAX_INT32值为2147483647，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。
 
--   **const\_expert\_num** (`int`)：可选参数，表示常量专家的数量。取值范围\[0, MAX_INT32\)，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num\)。</term>
+-   **const\_expert\_num** (`int`)：可选参数，表示常量专家的数量。取值范围\[0, MAX_INT32\)，其中MAX_INT32值为2147483647，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num\)。
 
 ## 返回值说明<a name="zh-cn_topic_0000002322738573_section1370204314220"></a>
 
@@ -138,9 +138,9 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 -   该接口支持图模式（PyTorch 2.1版本）。
 -   动态缩容后的部署信息通过elastic_info参数传递给算子，无需修改其他参数。动态缩容后，MOE专家卡上的本卡部署MOE专家数需与缩容前保持一致。
 - 动态缩容功能不支持在TP并行场景下使能。
-- 调用接口过程中使用的expertIds、xActiveMaskOptional、elasticInfoOptional、groupEp、epWorldSize、moeExpertNum、groupTp、tpWorldSize、expertShardType、sharedExpertNum、sharedExpertRankNum、globalBs、commAlg、zeroExpertNum、copyExpertNum、constExpertNum参数、HCCL_BUFFSIZE取值所有卡需保持一致，网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
+- 调用接口过程中使用的expert_ids、x_active_mask、elastic_info、group_ep、ep_world_size、moe_expert_num、group_tp、tp_world_size、expert_shard_type、shared_expert_num、shared_expert_rank_num、global_bs、comm_alg、zero_expert_num、copy_expert_num、const_expert_num参数、HCCL_BUFFSIZE取值所有卡需保持一致，网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
 -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
--   moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32
+-   moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32，其中MAX_INT32值为2147483647。
 -   参数里Shape使用的变量如下：
     - A：表示本卡需要分发的最大token数量，取值范围如下：
         - 当globalBs为0时，要满足A >= Bs * epWorldSize * min(localExpertNum, K)；
@@ -539,30 +539,6 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                                                                                const_expert_num=const_expert_num)
     
             return [y, rstd_out, x]
-    
-    def gen_elastic_info(elastic_ranks, is_elastic=1, actual_rank_num=14, elastic_shared_rank=4, elastic_moe_num=10, ep_world_size=16):
-        if not is_elastic: return None
-        elastic_info = torch.zeros(4 + 2 * ep_world_size, dtype=torch.int32)
-        elastic_info[0] = is_elastic
-        elastic_info[1] = actual_rank_num
-        elastic_info[2] = shared_expert_rank_num
-        elastic_info[3] = moe_expert_num
-        table1 = [-1] * ep_world_size
-        table2 = [-1] * ep_world_size
-
-        for local_rank_id, ep_rank_id in enumerate(elastic_ranks):
-            if ep_rank_id < ep_world_size:
-                table1[ep_rank_id] = local_rank_id
-                table2[local_rank_id] = ep_rank_id
-        for i in range(ep_world_size):
-            elastic_info[4 + i] = table1[i]
-        for i in range(ep_world_size):
-            elastic_info[4 + ep_world_size + i] = table2[i]
-        assert elastic_info.shape[0] == 4 + 2 * ep_world_size
-        if is_elastic:
-            table1 = elastic_info[4:4+ep_world_size]
-            table2 = elastic_info[4+ep_world_size:4+2*ep_world_size]
-        return elastic_info
 
     def gen_const_expert_alpha_1():
         const_expert_alpha_1 = torch.empty(size=[const_expert_num], dtype=input_dtype).uniform_(-1, 1)
