@@ -17,7 +17,7 @@
 
       ![](./figures/zh-cn_formulaimage_0000002258672873.png)
 
-    - 当`norm_type`为0时（暂不支持）：
+    - 当`norm_type`为0时：
 
       ![](./figures/zh-cn_formulaimage_0000002313785750.png)
 
@@ -27,7 +27,7 @@
 
       ![](./figures/zh-cn_formulaimage_0000002219010398.png)
 
-    - 如果`group_select_mode`为0（暂不支持），每组按照组内的最大值对group进行排序，取前kGroup个组：
+    - 如果`group_select_mode`为0，每组按照组内的最大值对group进行排序，取前kGroup个组：
 
       ![](./figures/zh-cn_formulaimage_0000002347834049.png)
 
