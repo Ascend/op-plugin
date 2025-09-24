@@ -22,13 +22,15 @@ torch_npu.contrib.function.roll(input1, shifts, dims)
 
 ## 参数说明
 
-- **input1** (`Tensor`) - 输入张量。
-- **shifts** (`int`或`Tuple` of python:ints) - 张量元素移动的位置数。如果该shift组成的是tuple，则dims必须是大小相同的tuple，每个维度都将按相应的值roll。
-- **dims** (`int`或`Tuple` of python:ints) - 沿着roll的轴。
+- **input1** (`Tensor`)：输入张量。
+- **shifts** (`int`或Tuple of python:ints)：张量元素移动的位置数。如果该shift组成的是tuple，则dims必须是大小相同的tuple，每个维度都将按相应的值roll。
+- **dims** (`int`或Tuple of python:ints)：沿着roll的轴。
 
 ## 返回值说明
 
-`Tensor` - shifted input。
+`Tensor`
+
+shifted input。
 
 
 ## 调用示例

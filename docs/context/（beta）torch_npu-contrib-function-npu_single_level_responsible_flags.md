@@ -24,7 +24,7 @@ torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_b
 - **featmap_size** (`Tuple(Int)`)：模型总维度。
 - **gt_bboxes** (`Tensor`)：并行attention heads。
 - **stride** (`Tuple(Int)`)：key的特性总数，默认值为None。
-- **num_base_anchors** (`Int`)：values的特性总数，默认值为None。
+- **num_base_anchors** (`int`)：values的特性总数，默认值为None。
 
 ## 返回值说明
 

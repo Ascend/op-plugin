@@ -20,7 +20,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002282815538_section14441124184110"></a>
 
-- 算子功能：MoE（Mixture of Experts，混合专家模型）网络中，完成路由专家AlltoAllv、Permute、GroupedMatMul融合并实现与共享专家MatMul并行融合，先通信后计算。
+- API功能：MoE（Mixture of Experts，混合专家模型）网络中，完成路由专家AlltoAllv、Permute、GroupedMatMul融合并实现与共享专家MatMul并行融合，先通信后计算。
 
 -   路由专家计算公式：
 

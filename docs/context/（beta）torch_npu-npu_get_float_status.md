@@ -25,6 +25,7 @@ torch_npu.npu_get_float_status(self) -> Tensor
 
 ## 返回值说明
 `Tensor`
+
 返回检测结果。
 
 ## 调用示例

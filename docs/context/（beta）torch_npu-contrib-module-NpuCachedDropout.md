@@ -18,10 +18,8 @@
 torch_npu.contrib.module.NpuCachedDropout(torch.nn.Dropout)
 ```
 
-
-
 ## 参数说明
 
-- **p** (`Float`) - 元素归零的概率。
-- **module_name** (`String`) - 模型名称。
+- **p** (`float`)：元素归零的概率。
+- **module_name** (`string`)：模型名称。
 

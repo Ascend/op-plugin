@@ -20,12 +20,14 @@ torch_npu.contrib.module.LabelSmoothingCrossEntropy(nn.Module)
 
 ## 参数说明
 
-- **smooth_factor** (`float`，默认值为0) -如果正在使用LabelSmoothing，请改为0.1([0, 1])。
-- **num_classes** (`float`) - 用于onehot的class数量。
+- **smooth_factor** (`float`)：如果正在使用LabelSmoothing，请改为0.1([0, 1])。默认值为0。
+- **num_classes** (`float`)：用于onehot的class数量。
 
 ## 返回值说明
 
-`float` - shape为(k, 5)和(k, 1)的张量。标签以0为基础。
+`float`
+
+shape为(k, 5)和(k, 1)的张量。标签以0为基础。
 
 
 ## 调用示例

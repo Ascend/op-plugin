@@ -22,15 +22,12 @@ torch_npu.npu.utils.npu_check_overflow(grad) -> bool
 ```
 ## 参数说明
 
-- 输入为**torch.Tensor**或**float**，在**INF_NAN**模式下判断输入中是否有`inf`或`nan`
-- 饱和模式忽略输入检查硬件溢出标志位
+**grad**（`Tensor`或`float`）：在INF_NAN模式下判断输入中是否有`inf`或`nan`；饱和模式忽略输入检查硬件溢出标志位。
 
 ## 返回值说明
-
+`bool`
 
 True溢出，False未溢出。
-
-
 
 ## 调用示例
 
