@@ -320,6 +320,7 @@ def npu_all_gather_base_mm_meta(self, x2, hcom, world_size, bias=None,
         out_gather_x = self.size(0) * world_size
         out_gather_y = self.size(1)
     out_size = (out_x, out_y)
+    gather_output_size = 0
     if gather_output:
         gather_output_size = (out_gather_x, out_gather_y)
     dtype = self.dtype
