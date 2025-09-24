@@ -521,6 +521,11 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863744477_p15682749165813"><a name="zh-cn_topic_0000001863744477_p15682749165813"></a><a name="zh-cn_topic_0000001863744477_p15682749165813"></a>根据输入词频<code>logits</code>、<code>top_k</code>/<code>top_p</code>采样参数、随机采样权重分布<code>q</code>，进行topK-topP-Sample采样计算，输出每个batch的最大词频<code>logits_select_idx</code>，以及topK-topP采样后的词频分布<code>logits_top_kp_select</code>。</p>
 </td>
 </tr>
+<tr id="row16875125182713"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p77002833617"><a name="p77002833617"></a><a name="p77002833617"></a><a href="torch_npu-npu_scatter_pa_kv_cache.md">torch_npu.npu_scatter_pa_kv_cache</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863744477_p15682749165813"><a name="zh-cn_topic_0000001863744477_p15682749165813"></a><a name="zh-cn_topic_0000001863744477_p15682749165813"></a>更新KvCache中指定位置的<code>key</code>和<code>value</code>。</p>
+</td>
+</tr>
 <tr id="row9470191314519"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p83781723143618"><a name="p83781723143618"></a><a name="p83781723143618"></a><a href="torch_npu-npu_scatter_nd_update_.md">torch_npu.npu_scatter_nd_update_</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001816704932_p12276121818501"><a name="zh-cn_topic_0000001816704932_p12276121818501"></a><a name="zh-cn_topic_0000001816704932_p12276121818501"></a>将updates中的值按指定的索引indices更新self中的值，并将结果保存到输出tensor，self中的数据被改变。</p>

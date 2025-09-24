@@ -1,57 +1,65 @@
 # torch_npu.npu_scatter_pa_kv_cache
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| :----------------------------------------------------------- | :------: |
+| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |    √     |
+| <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> |    √     |
+
 ## 功能说明
 
-更新KvCache中指定位置的key和value。
+- API功能：
+    更新KvCache中指定位置的`key`和`value`。
 
-输入输出支持以下场景：
+    输入输出支持以下场景：
 
-    - 场景一：
-        key:[batch, num_head, k_head_size]
-        value:[batch, num_head, v_head_size]
-        key_cache:[num_blocks, num_head * k_head_size // last_dim_k, block_size, last_dim_k]
-        value_cache:[num_blocks, num_head * v_head_size // last_dim_k, block_size, last_dim_k]
-        slot_mapping:[batch]
+        - 场景一：
+            key:[batch, num_head, k_head_size]
+            value:[batch, num_head, v_head_size]
+            key_cache:[num_blocks, num_head * k_head_size // last_dim_k, block_size, last_dim_k]
+            value_cache:[num_blocks, num_head * v_head_size // last_dim_k, block_size, last_dim_k]
+            slot_mapping:[batch]
 
-    - 场景二：
-        key:[batch*seq_len, num_head, k_head_size]
-        value:[batch*seq_len, num_head, v_head_size]
-        keyCache:[num_blocks, block_size, num_head, k_head_size]
-        valueCache:[num_blocks, block_size, num_head, v_head_size]
-        slotMapping:[batch * seq_len]
+        - 场景二：
+            key:[batch*seq_len, num_head, k_head_size]
+            value:[batch*seq_len, num_head, v_head_size]
+            keyCache:[num_blocks, block_size, num_head, k_head_size]
+            valueCache:[num_blocks, block_size, num_head, v_head_size]
+            slotMapping:[batch * seq_len]
 
-        其中k_head_size与v_head_size 可以不同，也可以相同。
+            其中k_head_size与v_head_size 可以不同，也可以相同。
 
-    - 场景三：
-        key:[batch, seq_len, num_head, k_head_size]
-        value:[batch, seq_len, num_head, v_head_size]
-        key_cache:[num_blocks, block_size, 1, k_head_size]
-        value_cache:[num_blocks, block_size, 1, k_head_size]
-        slot_mapping:[batch, num_head]
-        compress_lens:[batch, num_head]
-        seq_lens:[batch]
-        compress_seq_offsets:[batch * num_head]
+        - 场景三：
+            key:[batch, seq_len, num_head, k_head_size]
+            value:[batch, seq_len, num_head, v_head_size]
+            key_cache:[num_blocks, block_size, 1, k_head_size]
+            value_cache:[num_blocks, block_size, 1, k_head_size]
+            slot_mapping:[batch, num_head]
+            compress_lens:[batch, num_head]
+            seq_lens:[batch]
+            compress_seq_offsets:[batch * num_head]
 
-    - 上述场景根据构造的参数来区别，符合第一种入参构造走场景一，符合第二种构造走场景二，符合第三种构造走场景三。场景一、场景二没有compress_lens、seq_lens、compress_seq_offsets这三个可选参数。
+        - 上述场景根据构造的参数来区别，符合第一种入参构造走场景一，符合第二种构造走场景二，符合第三种构造走场景三。场景一、场景二没有compress_lens、seq_lens、compress_seq_offsets这三个可选参数。
 
 ## 函数原型
 
 ```
-torch_npu.npu_scatter_pa_kv_cache(Tensor key, Tensor value, Tensor key_cache, Tensor value_cache, Tensor slot_mapping, *, Tensor? compress_lens=None, Tensor? compress_seq_offsets=None, Tensor? seq_lens=None) -> ()
+torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mapping, *, compress_lens=None, compress_seq_offsets=None, seq_lens=None) -> ()
 ```
 
 ## 参数说明
 
-- **key**（`Tensor`）：必选参数。表示待更新的key值，当前step多个token的key，支持3维或4维。数据类型支持`float16`、`float`、`bfloat16`、`int8`、`uint8`、`int16`、`uint16`、`int32`、`uint32`、`hifloat8`、`float8_e5m2`、`float8_e4m3fn`，数据格式支持$ND$。
-- **value**（`Tensor`）：必选参数，表示待更新的value值，当前step多个token的value，支持3维或4维，数据类型和数据格式与`key`保持一致。
+- **key**（`Tensor`）：必选参数。表示待更新的key值，当前step多个token的`key`，支持3维或4维。数据类型支持`float16`、`float`、`bfloat16`、`int8`、`uint8`、`int16`、`uint16`、`int32`、`uint32`、`hifloat8`、`float8_e5m2`、`float8_e4m3fn`，数据格式支持$ND$。
+- **value**（`Tensor`）：必选参数，表示待更新的value值，当前step多个token的`value`，支持3维或4维，数据类型和数据格式与`key`保持一致。
 - **key_cache**（`Tensor`）：必选参数，表示需要更新的key cache，当前layer的key cache，只支持4维，数据类型和数据格式与`key`保持一致。
 - **value_cache**（`Tensor`）：必选参数，表示需要更新的value cache，当前layer的value cache。只支持4维，数据类型和数据格式与`key`保持一致。
 - **slot_mapping**（`Tensor`）：必选参数，表示每个token key或value在cache中的存储偏移，数据类型支持`int32`和`int64`，数据格式支持$ND$。
-- **compress_lens**（`Tensor`）：可选参数，表示压缩量，数据类型与`slot_mapping`一致，数据格式支持$ND$。
-- **compress_seq_offsets**（`Tensor`）：可选参数，表示每个batch每个head的压缩起点，数据类型与`slot_mapping`一致，数据格式支持$ND$。
-- **seq_lens**（`Tensor`）：可选参数，表示每个batch的实际seqLens，数据类型与`slot_mapping`一致，数据格式支持$ND$。
+- **compress_lens**（`Tensor`）：可选参数，表示压缩量，数据类型与`slot_mapping`一致，数据格式支持$ND$，默认值为None。
+- **compress_seq_offsets**（`Tensor`）：可选参数，表示每个batch每个head的压缩起点，数据类型与`slot_mapping`一致，数据格式支持$ND$，默认值为None。
+- **seq_lens**（`Tensor`）：可选参数，表示每个batch的实际seqLens，数据类型与`slot_mapping`一致，数据格式支持$ND$，默认值为None。
 
-## 返回值
+## 返回值说明
 无
 
 `key_cache`和`value_cache`会被原地更新。
@@ -68,12 +76,6 @@ torch_npu.npu_scatter_pa_kv_cache(Tensor key, Tensor value, Tensor key_cache, Te
 - 当`key`和`value`都是4维时，`slot_mapping`是二维，且`slot_mapping`的第一维值等于`key`的第一维为`batch`，`slot_mapping`的第二维值等于`key`的第三维为num_head(对应场景三)；
 - 当`key`和`value`都是4维时，`seq_lens`是一维，且`seq_lens`的值等于`key`的第一维为batch(对应场景三)；
 - `seq_lens`和`compress_lens`里面的每个元素值必须满足公式：reduceSum(seq_lens[i] - compress_lens[i]) <= num_blocks * block_size(对应场景三);
-
-## 支持的型号
-
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：仅支持场景一。
-- <term>昇腾910_95 AI处理器</term>：仅支持场景二、三。
 
 ## 调用示例
 
