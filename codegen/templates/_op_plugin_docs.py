@@ -5439,9 +5439,9 @@ torch_npu.npu_scatter_pa_kv_cache(Tensor key, Tensor value, Tensor(a!) key_cache
 -   当key和value都是4维时，seq_lens是一维，且seq_lens的值等于key的第一维为batch(对应场景三)；
 -   seq_lens和compress_lens里面的每个元素值必须满足公式：reduceSum(seq_lens[i] - compress_lens[i]) <= num_blocks * block_size (对应场景三);
 
-支持的芯片型号:
+支持的型号:
 Atlas A3 训练系列产品/Atlas A3 推理系列产品
-Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件: 仅支持场景一
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
 
 调用示例:
 # 单算子调用方式
