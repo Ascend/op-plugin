@@ -53,7 +53,8 @@ at::Tensor threshold_backward(
     const at::Tensor& self,
     const at::Scalar& threshold)
 {
-    at::Tensor result = npu_preparation::apply_tensor(self);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, self);
+    at::Tensor result = npu_preparation::apply_tensor(self, output_size);
     threshold_backward_out_npu(result, grad_output, self, threshold);
     return result;
 }
