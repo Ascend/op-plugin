@@ -1397,6 +1397,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_NPU_NO_FORMAT_CHECK_CMD", "1", __VA_ARGS__);                     \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
+        if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
+            c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
+        }                                                                                                              \
         uint64_t workspace_size = 0;                                                                                   \
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
         aclOpExecutor *executor = nullptr;                                                                             \
@@ -1425,6 +1428,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()->int {              \
+            if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
+                c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
+            }                                                                                                          \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             NPU_CHECK_ERROR(api_ret, "call " #aclnn_api " failed");                                                    \
@@ -1456,8 +1462,14 @@ auto DecodeDevice(Ts&... args) -> at::Device
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_NPU_NO_FORMAT_CHECK_CMD", "2", __VA_ARGS__);                     \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
+        if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
+            c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
+        }                                                                                                              \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         auto acl_call = [copied_params, acl_stream]()->int {                                                           \
+            if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
+                c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
+            }                                                                                                          \
             uint64_t workspace_size = 0;                                                                               \
             uint64_t *workspace_size_addr = &workspace_size;                                                           \
             aclOpExecutor *executor = nullptr;                                                                         \
@@ -1615,6 +1627,9 @@ private:
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
+        if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
+            c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
+        }                                                                                                              \
         uint64_t workspace_size = 0;                                                                                   \
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
         aclOpExecutor *executor = nullptr;                                                                             \

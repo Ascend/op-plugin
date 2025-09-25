@@ -32,6 +32,9 @@
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "1", __VA_ARGS__);              \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
+        if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
+            c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
+        }                                                                                                              \
         aclOpExecutor *executor = nullptr;                                                                             \
         aclOpExecutor **executor_addr = &executor;                                                                     \
         InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);                    \
@@ -55,6 +58,9 @@
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
         NPU_CHECK_ERROR(workspace_status, "call " #aclnn_api " failed");                                               \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()->int {              \
+            if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
+                c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
+            }                                                                                                          \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             NPU_CHECK_ERROR(api_ret, "call " #aclnn_api " failed");                                                    \
@@ -86,8 +92,14 @@
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "2", __VA_ARGS__);              \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
+        if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
+            c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
+        }                                                                                                              \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         auto acl_call = [workspace_addr, workspace_size, copied_params, acl_stream]()->int {                           \
+            if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
+                c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
+            }                                                                                                          \
             uint64_t fake_workspace_size = 0;                                                                          \
             uint64_t *workspace_size_addr = &fake_workspace_size;                                                      \
             aclOpExecutor *executor = nullptr;                                                                         \
