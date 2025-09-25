@@ -1768,6 +1768,18 @@ class TestAllGatherBaseMm(TestCase):
             self.assertEqual(gather_out.shape, (m * world_size, k))
             self.assertEqual(gather_out.dtype, dst_dtype)
 
+    def test_all_gather_base_mm_gather_out_false(self):
+        with FakeTensorMode():
+            dst_dtype = torch.float16
+            m, k, n = 128, 512, 256
+            x1 = torch.randn(m, k, dtype=torch.float16).npu()
+            x2 = torch.randn(k, n, dtype=torch.float16).npu()
+            hcom = "fake group info"
+            world_size = 8
+            output, gather_out = torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, gather_output=False)
+            self.assertEqual(output.shape, (m * world_size, n))
+            self.assertEqual(output.dtype, dst_dtype)
+
     def test_all_gather_base_mm_quant(self):
         with FakeTensorMode():
             world_size = 8
