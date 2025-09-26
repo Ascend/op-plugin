@@ -4970,7 +4970,7 @@ official:
     op_api: all_version
     gen_opapi:
       out:
-        size: self
+        size: 'broadcast_ops_npu_output_size(grad_output, self)'
         dtype: self
       exec: aclnnThresholdBackward
 
