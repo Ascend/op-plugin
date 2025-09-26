@@ -135,7 +135,7 @@ class TestNpuMoeInitRoutingV2(TestCase):
         k = expert_idx.shape[1]
         active_num = bs * k
         expert_capacity = 8
-        expert_num = 8
+        expert_num = active_expert_range[1] - active_expert_range[0]
         drop_pad_mode = 0
         expert_tokens_num_type = 1
         expert_tokens_num_flag = True
@@ -286,6 +286,35 @@ class TestNpuMoeInitRoutingV2(TestCase):
                 return
             self.assertRtolEqual(expanded_scale, local_expanded_scale_npu.numpy())
 
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_moe_init_routing_to_v2(self):
+        bs_list = [4, 23, 188]
+        h_list = [2048]
+        k_list = [5, 128]
+        expert_range_list = [[0, 128]]
+        quant_mode_list = [-1]
+        drop_mode_list = [0]
+        dtype_list = [np.float32]
+        none_scales = [True]
+        none_offsets = [True]
+        for bs, h, k, expert_range, quant_mode, drop_mode, dtype, none_scale, none_offset in itertools.product(
+                bs_list, h_list, k_list, expert_range_list, quant_mode_list, drop_mode_list,
+                dtype_list, none_scales, none_offsets):
+            scale_shape = (bs,)
+            x, expert_idx, scale, offset, x_npu, expert_idx_npu, scale_npu, offset_npu = self.generate_inputs(
+                bs, h, k, dtype, scale_shape, none_scale, none_offset)
+
+            expanded_x, local_expanded_x_npu, expanded_row_idx, local_expanded_row_idx_npu, \
+                expert_tokens_count, local_expert_tokens_count_npu, expanded_scale, local_expanded_scale_npu \
+                = self.calc_npu_vs_golden(x, expert_idx, scale, offset,
+                                          x_npu, expert_idx_npu, scale_npu, offset_npu,
+                                          expert_range, quant_mode, drop_mode)
+
+            self.assertExpandedXRtolEqual(expanded_x, local_expanded_x_npu, dtype)
+            self.assertRtolEqual(expanded_row_idx, local_expanded_row_idx_npu.numpy())
+            self.assertRtolEqual(expert_tokens_count.astype(np.int32), local_expert_tokens_count_npu.numpy())
+            if none_scale:
+                return
 
 if __name__ == "__main__":
     run_tests()
