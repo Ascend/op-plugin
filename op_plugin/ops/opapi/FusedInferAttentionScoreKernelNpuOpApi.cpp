@@ -144,7 +144,7 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
     }
 
     if (!softmax_lse_flag) {
-        softmax_lse = npu_preparation::apply_tensor_without_format({1}, c10::dtype(c10::ScalarType::Float));
+        softmax_lse = npu_preparation::apply_tensor_without_format({0}, c10::dtype(c10::ScalarType::Float));
     }
     return std::tuple<at::Tensor, at::Tensor>(output, softmax_lse);
 }
