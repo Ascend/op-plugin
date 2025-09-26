@@ -30,7 +30,7 @@ from .model import StructInfo, ResInfo, filt_input_tensor
 
 
 USED_KEYS = ['official', 'custom', 'autograd']
-
+SYMINT_OPS = set()
 
 PYTORCH_VERSION = os.environ.get('PYTORCH_VERSION').split('.')
 
@@ -89,27 +89,33 @@ auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
 """)
 
 
+def is_support_version(op):
+    op_api_version = op.get('op_api', None)
+    version = f"v{PYTORCH_VERSION[0]}.{PYTORCH_VERSION[1]}"
+    if op_api_version is None:
+        is_support = False
+    elif op_api_version == 'all_version':
+        is_support = True
+    elif isinstance(op_api_version, list):
+        is_support = version >= op_api_version[0]
+    else:
+        is_support = version in op_api_version
+    return is_support
+
+
 def filt_op_branch(struct_ops: Dict) -> Dict:
     support_ops = []
     for key in USED_KEYS:
         support_ops += struct_ops[key]
 
-    version = f"v{PYTORCH_VERSION[0]}.{PYTORCH_VERSION[1]}"
+    def filt_gen_opapi(op) -> bool:
+        return 'gen_opapi' in op.keys() and is_support_version(op)
 
-    def filt(op) -> bool:
-        op_api_version = op.get('op_api', None)
-        if op_api_version is None:
-            is_support_version = False
-        elif op_api_version == 'all_version':
-            is_support_version = True
-        elif isinstance(op_api_version, list):
-            is_support_version = version >= op_api_version[0]
-        else:
-            is_support_version = version in op_api_version
+    for op in struct_ops['symint']:
+        if is_support_version(op):
+            SYMINT_OPS.add(op['func'].split("(")[0])
 
-        return 'gen_opapi' in op.keys() and is_support_version
-
-    filt_ops = list(filter(lambda op: filt(op), support_ops))
+    filt_ops = list(filter(lambda op: filt_gen_opapi(op), support_ops))
     return filt_ops
 
 
@@ -144,11 +150,12 @@ def gen_size_dtype_map(resinfos: List['ResInfo']) -> Tuple[Dict[str, str], Dict[
 
 def compute_op_api_definition(struct: StructInfo):
     f = struct.func
-
+    is_symint = struct.name in SYMINT_OPS
     with native_function_manager(f):
         kind = f.func.kind()
-        sig = NativeSignature(f.func, prefix='', symint=False)
+        sig = NativeSignature(f.func, prefix='', symint=is_symint)
         name = cpp.name(f.func)
+        name = name + '_symint' if is_symint else name
         args = sig.arguments()
         args_str = ', '.join(a.defn() for a in args)
         args_exprs_str = ', '.join(a.name for a in args)
@@ -160,6 +167,7 @@ def compute_op_api_definition(struct: StructInfo):
         if struct.structured_inherit is not None and kind == SchemaKind.inplace:
             delegate_function = struct.structured_inherit
             delegate_name = cpp.name(delegate_function.func)
+            delegate_name = delegate_name + '_symint' if is_symint else delegate_name
             delegate_args_exprs_str = f'{args_exprs_str}, {f.func.arguments.self_arg.argument.name}'
             return [ACLNN_FUNCTIONS_DELEGATE.substitute(
                     return_type=return_type,
