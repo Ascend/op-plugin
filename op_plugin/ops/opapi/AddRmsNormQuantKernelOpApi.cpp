@@ -38,8 +38,9 @@ namespace op_api {
         at::Tensor y1 = npu_preparation::apply_tensor_without_format(output_size_0, x1.options().dtype(output_dtype_0));
         at::Tensor y2 = npu_preparation::apply_tensor_without_format(output_size_0, x1.options().dtype(output_dtype_0));
         at::Tensor x_out = npu_preparation::apply_tensor_without_format(output_size_0, x1.options().dtype(output_dtype_1));
+        at::Tensor rmsnorm_out{nullptr};
         if (check_aclnn_kernel_available("aclnnAddRmsNormQuantV2")) {
-            EXEC_NPU_CMD(aclnnAddRmsNormQuantV2, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, beta, axis, epsilon, div_mode, y1, y2, x_out);
+            EXEC_NPU_CMD(aclnnAddRmsNormQuantV2, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, beta, axis, epsilon, div_mode, y1, y2, x_out, rmsnorm_out);
         } else {
             TORCH_CHECK(!beta.has_value(), "In the current CANN version, aclnnAddRmsNormQuant does not support the parameter beta input. It is recommended to upgrade the CANN package. Or please remove the beta input parameter.", OPS_ERROR(ErrCode::PARAM));
             EXEC_NPU_CMD(aclnnAddRmsNormQuant, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, axis, epsilon, div_mode, y1, y2, x_out);
