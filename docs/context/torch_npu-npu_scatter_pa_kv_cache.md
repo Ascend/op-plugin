@@ -9,38 +9,43 @@
 
 ## 功能说明
 
-- API功能：
-    更新KvCache中指定位置的`key`和`value`。
+更新KvCache中指定位置的`key`和`value`。
 
-    输入输出支持以下场景：
+输入输出支持以下场景：
 
-        - 场景一：
-            key:[batch, num_head, k_head_size]
-            value:[batch, num_head, v_head_size]
-            key_cache:[num_blocks, num_head * k_head_size // last_dim_k, block_size, last_dim_k]
-            value_cache:[num_blocks, num_head * v_head_size // last_dim_k, block_size, last_dim_k]
-            slot_mapping:[batch]
+- 场景一：
+    ```python
+    key:[batch, num_head, k_head_size]
+    value:[batch, num_head, v_head_size]
+    key_cache:[num_blocks, num_head * k_head_size /last_dim_k, block_size, last_dim_k]
+    value_cache:[num_blocks, num_head * v_head_size // last_dim_k, block_size, last_dim_k]
+    slot_mapping:[batch]
+    ```    
 
-        - 场景二：
-            key:[batch*seq_len, num_head, k_head_size]
-            value:[batch*seq_len, num_head, v_head_size]
-            keyCache:[num_blocks, block_size, num_head, k_head_size]
-            valueCache:[num_blocks, block_size, num_head, v_head_size]
-            slotMapping:[batch * seq_len]
+- 场景二：
+    ```python    
+    key:[batch*seq_len, num_head, k_head_size]
+    value:[batch*seq_len, num_head, v_head_size]
+    keyCache:[num_blocks, block_size, num_head, k_head_size]
+    valueCache:[num_blocks, block_size, num_head, v_head_size]
+    slotMapping:[batch * seq_len]
+    ```    
 
-            其中k_head_size与v_head_size 可以不同，也可以相同。
+    其中`k_head_size`与`v_head_size`可以不同，也可以相同。
 
-        - 场景三：
-            key:[batch, seq_len, num_head, k_head_size]
-            value:[batch, seq_len, num_head, v_head_size]
-            key_cache:[num_blocks, block_size, 1, k_head_size]
-            value_cache:[num_blocks, block_size, 1, k_head_size]
-            slot_mapping:[batch, num_head]
-            compress_lens:[batch, num_head]
-            seq_lens:[batch]
-            compress_seq_offsets:[batch * num_head]
+- 场景三：
+    ```python    
+    key:[batch, seq_len, num_head, k_head_size]
+    value:[batch, seq_len, num_head, v_head_size]
+    key_cache:[num_blocks, block_size, 1, k_head_size]
+    value_cache:[num_blocks, block_size, 1, k_head_size]
+    slot_mapping:[batch, num_head]
+    compress_lens:[batch, num_head]
+    seq_lens:[batch]
+    compress_seq_offsets:[batch * num_head]
+    ```    
 
-        - 上述场景根据构造的参数来区别，符合第一种入参构造走场景一，符合第二种构造走场景二，符合第三种构造走场景三。场景一、场景二没有compress_lens、seq_lens、compress_seq_offsets这三个可选参数。
+上述场景根据构造的参数来区别，符合第一种入参构造走场景一，符合第二种构造走场景二，符合第三种构造走场景三。场景一、场景二没有`compress_lens`、`seq_lens`、`compress_seq_offsets`这三个可选参数。
 
 ## 函数原型
 
@@ -60,16 +65,15 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
 - **seq_lens**（`Tensor`）：可选参数，表示每个batch的实际seqLens，数据类型与`slot_mapping`一致，数据格式支持$ND$，默认值为None。
 
 ## 返回值说明
-无
 
-`key_cache`和`value_cache`会被原地更新。
+无返回值，`key_cache`和`value_cache`会被原地更新。
 
 ## 约束说明
 
 - 输入参数不支持非连续；
 - `key`、`value`、`key_cache`、`value_cache`的数据类型必须一致；
 - `slot_mapping`、`compress_lens`、`compress_seq_offset`、`seq_lens`的数据类型必须一致；
-- slot_mapping的值范围[0, num_blocks * block_size-1]，且`slot_mapping`内的元素值保证不重复，重复时不保证正确性；
+- `slot_mapping`的值范围[0, num_blocks * block_size-1]，且`slot_mapping`内的元素值保证不重复，重复时不保证正确性；
 - 当`key`和`value`都是3维，则`key`和`value`的前两维`shape`必须相同；
 - 当`key`和`value`都是4维，则`key`和`value`的前三维`shape`必须相同，且`key_cache`和`value_cache`的第三维必须是1；
 - 当`key`和`value`是4维时，`compress_lens`、`seq_lens`为必选参数；当`key`和`value`是3维时，`compress_lens`、`compress_seq_offsets`、`seq_lens`为可选参数；

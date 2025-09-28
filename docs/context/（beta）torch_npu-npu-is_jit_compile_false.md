@@ -21,10 +21,7 @@ torch_npu.npu.is_jit_compile_false()
 ```
 ## 返回值说明
 
-**bool型**。
-
-
-
+bool型。
 
 ## 调用示例
 
