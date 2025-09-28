@@ -27,7 +27,7 @@
         \end{cases}$
 
         $\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$
-        
+
         $\ enpand\_x=
         \begin{cases}
         \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
@@ -68,11 +68,11 @@
       拷贝专家场景,即`copy_Expert_Num`不为0：
 
       $$Moe(ori\_x)=ori\_x$$
-      
+
       常量专家场景,即`const_expert_num`不为0：
 
       $$Moe(ori\_x)=const\_expert\_alpha\_1*ori\_x+const\_expert\_alpha\_2*const\_expert\_v$$
-      
+
       参数ori\_x、const\_expert\_alpha\_1、const\_expert\_alpha\_2、const\_expert\_v见[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)文档。
 
 ## 函数原型<a name="zh-cn_topic_0000002203575833_section45077510411"></a>
@@ -197,7 +197,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     -   H：表示hidden size隐藏层大小。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：`H`的取值范围如下所示。
             - `comm_alg`设置为"fullmesh"时，`H`的取值范围\(0, 7168\]，且保证是32的整数倍。
-            - `comm_alg`设置为"hierarchy"时，`H`的取值范围\(0, 10 * 1024\]，且保证是32的整数倍。
+            - `comm_alg`设置为"hierarchy"且驱动版本不低于25.0.RC1.1时，`H`的取值范围\(0, 10 * 1024\]，且保证是32的整数倍。
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值为\[1024, 8192\]。
 
     -   BS：表示batch sequence size，即本卡最终输出的token数量。
@@ -564,7 +564,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             expand_x_npu, _, assist_info_for_combine_npu, _, ep_recv_counts_npu, tp_recv_counts_npu, expand_scales = output_dispatch_npu
             if expand_x_npu.dtype == torch.int8:
                 expand_x_npu = expand_x_npu.to(input_dtype)
-            
+
             output_combine_npu = torch_npu.npu_moe_distribute_combine_v2(
                 expand_x=expand_x_npu,
                 expert_ids=expert_ids,
@@ -660,7 +660,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     ):
         x_warm_up = x_warm_up.to(input_dtype).npu()
         expert_ids_warm_up = expert_ids_warm_up.to(torch.int32).npu()
-        
+
         return {
             'x': x_warm_up,
             'expert_ids': expert_ids_warm_up,
@@ -738,7 +738,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             )
             torch.npu.synchronize()
             print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
-        
+
         time.sleep(10)
 
 
@@ -773,11 +773,11 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         for rank in range(rank_per_dev):
             p = Process(target=run_npu_process, args=(rank,))
             p_list.append(p)
-        
+
         for p in p_list:
             p.start()
         for p in p_list:
             p.join()
-        
+
         print("run npu success.")
     ```
