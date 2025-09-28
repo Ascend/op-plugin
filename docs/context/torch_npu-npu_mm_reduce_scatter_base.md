@@ -45,9 +45,9 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - **reduce\_op** (`str`)：可选参数。reduce操作类型，当前仅支持'sum'，默认值为'sum'。
 - **bias** (`Tensor`)：可选参数。数据类型支持`float16`、`bfloat16`，数据格式支持$ND$格式。数据类型需要和`input`保持一致。`bias`仅支持一维，且维度大小与output的第1维大小相同。当前版本暂不支持`bias`输入为非0的场景。
 - **x1\_scale** (`Tensor`)：可选参数。mm左矩阵反量化参数。数据类型支持`float32`，数据格式支持$ND$格式。数据维度为\(m, 1\), 支持pertoken量化。
-- **x2\_scale** (`Tensor`)：可选参数。mm左矩阵反量化参数。数据类型支持`float32`、`int64`，数据格式支持$ND$格式。数据维度为\(1, n\), 支持perchannel量化。
+- **x2\_scale** (`Tensor`)：可选参数。mm左矩阵反量化参数。数据类型支持`float32`、`int64`，数据格式支持$ND$格式。数据维度为\(1, n\), 支持perchannel量化。如需传入`int64`数据类型的，需要提前调用torch_npu.npu_trans_quant_param来获取`int64`数据类型的`x2_scale`。
 - **comm\_turn** (`int`)：可选参数。表示rank间通信切分粒度，默认值为0，表示默认的切分方式。当前版本仅支持输入0。
-- **output_dtype** (`ScalarType`)：可选参数。表示输出数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`float32`时，可指定输出数据类型为`bfloat16`或`float16`，默认值为bfloat16。
+- **output_dtype** (`ScalarType`)：可选参数。表示输出数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`float32`时，可指定输出数据类型为`bfloat16`或`float16`，默认值为`bfloat16`。
 - **comm\_mode** (`str`)：可选参数。表示通信模式，支持`ai_cpu`、`aiv`两种模式。`ai_cpu`模式仅支持基础场景。`aiv`模式支持基础场景和量化场景。
 
 ## 返回值说明
