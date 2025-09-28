@@ -1,22 +1,34 @@
 # torch_npu.profiler.dynamic_profile.step
 
+## 产品支持情况
+
+| 产品                               | 是否支持 |
+| ---------------------------------- | :------: |
+| <term>Atlas A3 训练系列产品</term> |    √     |
+| <term>Atlas A2 训练系列产品</term> |    √     |
+| <term>Atlas 训练系列产品</term>    |    √     |
+
+## 功能说明
+
+dynamic_profile动态采集划分step。
+
 ## 函数原型
 
 ```
 torch_npu.profiler.dynamic_profile.step()
 ```
 
-## 功能说明
+## 参数说明
 
-dynamic_profile动态采集划分step。
+无
 
-## 支持的型号
+## 返回值说明
 
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
+无
 
 ## 调用示例
+
+以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
 
 ```python
 # 加载dynamic_profile模块
@@ -29,4 +41,3 @@ for step in steps:
 	# 划分step
 	dp.step()
 ```
-

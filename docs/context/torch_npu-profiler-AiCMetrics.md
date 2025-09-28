@@ -1,36 +1,46 @@
 # torch_npu.profiler.AiCMetrics
 
+## 产品支持情况
+
+| 产品                               | 是否支持 |
+| ---------------------------------- | :------: |
+| <term>Atlas A3 训练系列产品</term> |    √     |
+| <term>Atlas A2 训练系列产品</term> |    √     |
+| <term>Atlas 训练系列产品</term>    |    √     |
+
+## 功能说明
+
+AI Core的性能指标采集项，Enum类型。用于作为_ExperimentalConfig类的aic_metrics参数。
+
 ## 函数原型
 
 ```
 torch_npu.profiler.AiCMetrics
 ```
 
-## 功能说明
-
-AI Core的性能指标采集项，Enum类型。用于作为_ExperimentalConfig类的aic_metrics参数。
-
 ## 参数说明
 
-- AiCoreNone：关闭AI Core的性能指标采集。
+以下采集项的结果数据含义可参见《CANN 性能调优工具用户指南》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/devaids/Profiling/atlasprofiling_16_0067.html">op_summary（算子详细信息）</a>”章节，但具体采集结果请以实际情况为准。
 
-- PipeUtilization：计算单元和搬运单元耗时占比，包括采集项vec_ratio、mac_ratio、scalar_ratio、mte1_ratio、mte2_ratio、mte3_ratio、icache_miss_rate、fixpipe_ratio。
-- ArithmeticUtilization：各种计算类指标占比统计，包括采集项mac_fp16_ratio、mac_int8_ratio、vec_fp32_ratio、vec_fp16_ratio、vec_int32_ratio、vec_misc_ratio。
-- Memory：外部内存读写类指令占比，包括采集项ub_read_bw、ub_write_bw、l1_read_bw、l1_write_bw、l2_read_bw、l2_write_bw、main_mem_read_bw、main_mem_write_bw。
-- MemoryL0：内部内存读写类指令占比，包括采集项scalar_ld_ratio、scalar_st_ratio、l0a_read_bw、l0a_write_bw、l0b_read_bw、l0b_write_bw、l0c_read_bw、l0c_write_bw、l0c_read_bw_cube、l0c_write_bw_cube。
-- ResourceConflictRatio：流水线队列类指令占比，包括采集项vec_bankgroup_cflt_ratio、vec_bank_cflt_ratio、vec_resc_cflt_ratio、mte1_iq_full_ratio、mte2_iq_full_ratio、mte3_iq_full_ratio、cube_iq_full_ratio、vec_iq_full_ratio、iq_full_ratio。
-- MemoryUB：内部内存读写指令占比，包括采集项vec_bankgroup_cflt_ratio、vec_bank_cflt_ratio、vec_resc_cflt_ratio、mte1_iq_full_ratio、mte2_iq_full_ratio、mte3_iq_full_ratio、cube_iq_full_ratio、vec_iq_full_ratio、iq_full_ratio。
-- L2Cache：读写cache命中次数和缺失后重新分配次数，包括采集项ai\*_write_cache_hit、ai\*_write_cache_miss_allocate、ai\*_r\*_read_cache_hit、ai\*_r\*_read_cache_miss_allocate。
+- **torch_npu.profiler.AiCMetrics.AiCoreNone**：可选参数，关闭AI Core的性能指标采集。
+- **torch_npu.profiler.AiCMetrics.PipeUtilization**：可选参数，计算单元和搬运单元耗时占比。
+- **torch_npu.profiler.AiCMetrics.ArithmeticUtilization**：可选参数，各种计算类指标占比统计。
+- **torch_npu.profiler.AiCMetrics.Memory**：可选参数，外部内存读写类指令占比。
+- **torch_npu.profiler.AiCMetrics.MemoryL0**：可选参数，内部内存读写类指令占比。
+- **torch_npu.profiler.AiCMetrics.ResourceConflictRatio**：可选参数，流水线队列类指令占比。
+- **torch_npu.profiler.AiCMetrics.MemoryUB**：可选参数，内部内存读写指令占比。
+- **torch_npu.profiler.AiCMetrics.L2Cache**：可选参数，读写cache命中次数和缺失后重新分配次数。
+- **torch_npu.profiler.AiCMetrics.MemoryAccess**：可选参数，算子在核上访存的带宽数据量。
 
-默认值为AiCoreNone。
+默认值为torch_npu.profiler.AiCMetrics.AiCoreNone。
 
-## 支持的型号
+## 返回值说明
 
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
+无
 
 ## 调用示例
+
+以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
 
 ```python
 import torch
@@ -48,4 +58,3 @@ with torch_npu.profiler.profile(
                  train_one_step() # 训练函数
                  prof.step()
 ```
-
