@@ -11,7 +11,6 @@ torch.npu.config.allow_internal_format = False
 
 class TestUnique2(TestCase):
 
-    @unittest.skip("skip test_unique2 due to cann issue")
     def test_unique2(self):
         shape_format = [
             [[np.uint8, (2, 3)], True, True, True],
