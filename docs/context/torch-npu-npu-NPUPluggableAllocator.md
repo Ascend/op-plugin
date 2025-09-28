@@ -35,7 +35,7 @@ free_fn_name内存释放函数名必须与c/c++文件中函数名一致。
 
 ## 调用示例
 
-完整调用示例可参考[LINK](https://gitee.com/ascend/pytorch/blob/v2.1.0-7.1.0/test/allocator/test_pluggable_allocator_extensions.py)。
+完整调用示例可参考[LINK](https://gitcode.com/ascend/pytorch/blob/v2.1.0-7.1.0/test/allocator/test_pluggable_allocator_extensions.py)。
 
 **Python代码示例**：
 
