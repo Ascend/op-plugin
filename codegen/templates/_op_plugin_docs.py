@@ -7044,7 +7044,7 @@ key_rope配置时要求key的n为1，d为512，keyRope的shape中d为64，其余
 支持key、value、keyRope的input_layout格式为ND或NZ。当input_layout为NZ时，数据类型为float16或bfloat16时，输入参数key和value的格式为[blockNum, KV_N, D/16, blockSize, 16]，数据类型为int8时，输入参数key和value的格式为[blockNum, KV_N, D/32, blockSize, 32]；
 input_layout形状支持BSH、BSND、BNSD、BNSD_NBSD、BSND_NBSD、BSH_NBSD、TND、TND_NTD，当数据格式为NZ时input_layout不支持BNSD、BNSD_NBSD。
 该场景下，必须开启PageAttention，此时block_size支持16、128，其中数据格式为NZ时block_size不支持配置16。
-不支持开启SoftMaxLse、tensorlist、pse、伪量化、后量化。
+不支持开启softmax_lse、左padding、tensorlist、pse、prefix、伪量化、后量化、空Tensor。
 支持全量化场景，即输入query/key/value全为int8，query_rope和key_rope为bfloat16，输出为bfloat16的场景：
 入参dequant_scale_query、dequant_scale_key、dequant_scale_value需要同时存在，且其数据类型仅支持FP32。
 不支持传入quant_scale_out、quant_offset_out、dequant_offset_key、dequant_offset_value（即不为nullptr），否则报错并返回。
@@ -7055,7 +7055,7 @@ Atlas A2 训练系列产品/Atlas 800I A2 推理产品/Atlas A3 推理系列产�
 inputLayout：TND、NTD_TND。  
 query_rope配置时要求query_rope的shape中d为64，其余维度与query一致。  
 keyRope配置时要求keyRope的shape中d为64，其余维度与key一致。  
-不支持tensorlist、pse、page attention、伪量化、全量化、后量化。
+不支持左padding、tensorlist、pse、page attention、prefix、伪量化、全量化、后量化、空Tensor。
 其余约束同TND、NTD_TND场景下的综合限制保持一致。
 TND、TND_NTD、NTD_TND场景下query、key、value输入的综合限制：
 T小于等于1M;
@@ -7065,9 +7065,9 @@ actual_seq_qlen和actual_seq_kvlen必须传入，且以该入参元素的数量�
 支持TND、TND_NTD;
 必须开启page attention，此时actual_seq_kvlen长度等于key/value的batch值，代表每个batch的实际长度，值不大于KV_S；
 支持query每个batch的s为1-16；
-要求query的n为32/64/128，key、value的n为1；
+要求query的n为1/2/4/8/16/32/64/128，key、value的n为1；
 要求query_rope和keyRope不等于空，query_rope和keyRope的d为64；
-不支持开启SoftMaxLse、tensorlist、pse、伪量化、全量化、后量化。
+不支持开启softmax_lse、左padding、tensorlist、pse、prefix、伪量化、全量化、后量化、空Tensor。
 
 当query的d不等于512时：
 当query_rope和key_rope为空时：TND场景，要求Q_D、K_D、V_D等于128，或者Q_D、K_D等于192，V_D等于128/192；NTD_TND场景，要求Q_D、K_D等于128/192，V_D等于128。当query_rope和key_rope不为空时，要求Q_D、K_D、V_D等于128；
@@ -7076,7 +7076,7 @@ Q_N、K_N、V_N：需要满足K_N、V_N相等，Q_N整除K_N，Q_N与K_N的比�
 数据类型仅支持BFLOAT16；
 当sparse=3时，要求每个batch单独的actual_seq_qlen<actual_seq_kvlen；
 sparse模式支持sparse\_mode=4且传入mask；当sparse\_mode=4时，要求preTokens >= -actual\_seq\_qlen、nextTokens >= -actual\_seq\_kvlen、preTokens + nextTokens >= 0；
-不支持tensorlist、pse、page attention、伪量化、全量化、后量化；
+不支持左padding、tensorlist、pse、prefix、伪量化、全量化、后量化、空Tensor；
 不支持图模式配置Tiling调度优化（tiling_schedule_optimize=True）、reduce-overhead执行模式（config.mode="reduce-overhead"）。
 actual_seq_qlen和actual_seq_kvlen的元素个数不大于4096。
 
