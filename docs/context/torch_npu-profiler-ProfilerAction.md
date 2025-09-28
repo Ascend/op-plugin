@@ -1,29 +1,37 @@
 # torch_npu.profiler.ProfilerAction
 
+## 产品支持情况
+
+| 产品                               | 是否支持 |
+| ---------------------------------- | :------: |
+| <term>Atlas A3 训练系列产品</term> |    √     |
+| <term>Atlas A2 训练系列产品</term> |    √     |
+| <term>Atlas 训练系列产品</term>    |    √     |
+
+## 功能说明
+
+Profiler状态，Enum类型。
+
 ## 函数原型
 
 ```
 torch_npu.profiler.ProfilerAction
 ```
 
-## 功能说明
-
-Profiler状态，Enum类型。
-
 ## 参数说明
 
-- NONE：无任何行为。
-- WARMUP：性能数据采集预热。
-- RECORD：性能数据采集。
-- RECORD_AND_SAVE：性能数据采集并保存。
+- **torch_npu.profiler.ProfilerAction.NONE**：可选参数，无任何行为。
+- **torch_npu.profiler.ProfilerAction.WARMUP**：可选参数，性能数据采集预热。
+- **torch_npu.profiler.ProfilerAction.RECORD**：可选参数，性能数据采集。
+- **torch_npu.profiler.ProfilerAction.RECORD_AND_SAVE**：可选参数，性能数据采集并保存。
 
-## 支持的型号
+## 返回值说明
 
-- <term>Atlas 训练系列产品</term>
-- <term>Atlas A2 训练系列产品</term>
-- <term>Atlas A3 训练系列产品</term>
+无
 
 ## 调用示例
+
+以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
 
 ```python
 import torch
@@ -39,4 +47,3 @@ with torch_npu.profiler.profile(
                 train_one_step() # 训练函数
                 prof.step()
 ```
-
