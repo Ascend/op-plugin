@@ -1,31 +1,17 @@
-# torch_npu.npu_moe_update_expert<a name="ZH-CN_TOPIC_0000002350725100"></a>
+# torch_npu.npu_moe_update_expert
 
-## 产品支持情况<a name="zh-cn_topic_0000002366611733_section8593133131718"></a>
+## 产品支持情况
 
-<a name="zh-cn_topic_0000002366611733_table1659316316174"></a>
-<table><thead align="left"><tr id="zh-cn_topic_0000002366611733_row2059343171716"><th class="cellrowborder" valign="top" width="57.99999999999999%" id="mcps1.1.3.1.1"><p id="zh-cn_topic_0000002366611733_p125930301711"><a name="zh-cn_topic_0000002366611733_p125930301711"></a><a name="zh-cn_topic_0000002366611733_p125930301711"></a><span id="zh-cn_topic_0000002366611733_ph12593183191719"><a name="zh-cn_topic_0000002366611733_ph12593183191719"></a><a name="zh-cn_topic_0000002366611733_ph12593183191719"></a>产品</span></p>
-</th>
-<th class="cellrowborder" align="center" valign="top" width="42%" id="mcps1.1.3.1.2"><p id="zh-cn_topic_0000002366611733_p18593639173"><a name="zh-cn_topic_0000002366611733_p18593639173"></a><a name="zh-cn_topic_0000002366611733_p18593639173"></a>是否支持</p>
-</th>
-</tr>
-</thead>
-<tbody><tr id="zh-cn_topic_0000002366611733_row294304412306"><td class="cellrowborder" valign="top" width="57.99999999999999%" headers="mcps1.1.3.1.1 "><p id="zh-cn_topic_0000002366611733_p49437440302"><a name="zh-cn_topic_0000002366611733_p49437440302"></a><a name="zh-cn_topic_0000002366611733_p49437440302"></a><span id="zh-cn_topic_0000002366611733_ph19280164145411"><a name="zh-cn_topic_0000002366611733_ph19280164145411"></a><a name="zh-cn_topic_0000002366611733_ph19280164145411"></a><term id="zh-cn_topic_0000002366611733_zh-cn_topic_0000001312391781_term1253731311225"><a name="zh-cn_topic_0000002366611733_zh-cn_topic_0000001312391781_term1253731311225"></a><a name="zh-cn_topic_0000002366611733_zh-cn_topic_0000001312391781_term1253731311225"></a><term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></term></span></p>
-</td>
-<td class="cellrowborder" align="center" valign="top" width="42%" headers="mcps1.1.3.1.2 "><p id="zh-cn_topic_0000002366611733_p8877121915317"><a name="zh-cn_topic_0000002366611733_p8877121915317"></a><a name="zh-cn_topic_0000002366611733_p8877121915317"></a>√</p>
-</td>
-</tr>
-</tbody>
-</table>
+| 产品                                                         | 是否支持 |
+| :----------------------------------------------------------- | :------: |
+| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |    √     |
 
-## 功能说明<a name="zh-cn_topic_0000002366611733_section14441124184110"></a>
 
--  API功能：
-    - 完成冗余专家部署场景下每个token的topK个专家逻辑卡号到物理卡号的映射
-    - 支持根据阈值对token发送的topK个专家进行剪枝
-    
-    经过本算子映射后的专家表和mask可传入MOE层进行数据分发、处理
--   计算公式：
-    - 负载均衡对于`expert_ids`中的第i个值，即第i个token：
+## 功能说明
+本API支持负载均衡和专家剪枝功能。经过映射后的专家表和mask可传入Moe层进行数据分发和处理。
+- 负载均衡：完成冗余专家部署场景下每个token的topK个专家逻辑卡号到物理卡号的映射。计算方法如下所示：
+
+   负载均衡对于`expert_ids`中的第i个值，即第i个token：
     ```python
     new_expert_id = eplb_table[table_offset + 1]
     expert_id = expert_ids[i]
@@ -41,7 +27,9 @@
             place_idx = i % plance_num
     new_expert_id = eplb_table[table_offset + place_idx]
     ```
-    - 专家剪枝功能：将shape为$(BS,)$的active_mask进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中BS对应为False的专家会直接被剪枝。对于active_mask_tensor为True的expert_scales的元素，满足条件也将被剪枝
+- 专家剪枝：支持根据阈值对token发送的topK个专家进行剪枝。计算方法如下所示：
+   
+   将shape为$(BS,)$的`active_mask`进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中BS对应为False的专家会直接被剪枝。对于active_mask_tensor为True的`expert_scales`的元素，满足条件也将被剪枝。
     ```python
     active_mask_tensor = broadcast(active_mask, (BS, K))
     for i in range(BS):
@@ -49,50 +37,50 @@
         balanced_active_mask[i, :] = (expert_scales[i, :] < expert_scales[:]) && active_mask_tensor[i, :]
     ```
 
-## 函数原型<a name="zh-cn_topic_0000002366611733_section45077510411"></a>
+## 函数原型
 
 ```
-torch_npu.npu_moe_update_expert(Tensor expert_ids, Tensor eplb_table, *, Tensor? expert_scales=None, Tensor? pruning_threshold=None, Tensor? active_mask=None, int local_rank_id=-1, int world_size=-1, int balance_mode=0) -> (Tensor, Tensor)
+torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, pruning_threshold=None, active_mask=None, local_rank_id=-1, world_size=-1, balance_mode=0) -> (Tensor, Tensor)
 ```
 
-## 参数说明<a name="zh-cn_topic_0000002366611733_section112637109429"></a>
+## 参数说明
 
--   **expert_ids**（`Tensor`）：必选参数，表示每个token的topK个专家索引，Device侧的Tensor，要求为一个2D的Tensor，shape为$(BS, K)$。数据类型支持int32、int64，数据格式要求为ND，支持非连续的Tensor。
--   **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行\[1, count\]列为对应实例的卡号，取值范围\[0, `moe_expert_num`\)，Device侧的Tensor，要求是一个2D的Tensor，shape为$(moe\_expert\_num, F)$。数据类型支持int32，数据格式要求为ND，支持非连续的Tensor。其中F表示输入映射表的列数，取值范围\[2, `world_size`+1\]，第一列为各行号对应Moe专家部署的实例个数（值>0），后F-1列为该Moe专家部署的物理卡号。
--   **expert_scales**（`Tensor`）：可选参数，每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或空指针，该参数传入有效数据时，`pruning_threshold`也需要传入有效数据。Device侧的Tensor，要求是一个2D的Tensor，shape为$(BS, K)$。数据类型支持fp16、bf16、float，数据格式要求为ND，支持非连续的Tensor。
--   **pruning_threshold**（`Tensor`）：可选参数，专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或空指针，该参数传入有效数据时，`expert_scales`也需要传入有效数据。Device侧的Tensor，要求是一个1D或2D的Tensor，shape为$(K,)$或$(1, K)$。数据类型支持float，数据格式要求为ND，支持非连续的Tensor。
--   **active_mask**（`Tensor`）：可选参数，表示token是否参与通信，可选择传入有效数据或空指针。传入有效数据时，`expert_scales`、`pruning_threshold`也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；传入空指针时是表示所有token都会参与通信。Device侧的Tensor，要求是一个1D的Tensor，shape为$(BS,)$。数据类型支持bool，数据格式要求为ND，支持非连续的Tensor。
+-   **expert_ids**（`Tensor`）：必选参数，表示每个token的topK个专家索引，shape为$(BS, K)$。数据类型支持`int32`、`int64`，数据格式要求为$ND$，支持非连续的Tensor。
+-   **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行\[1, count\]列为对应实例的卡号，取值范围\[0, `moe_expert_num`\)，shape为$(moe\_expert\_num, F)$。数据类型支持`int32`，数据格式要求为$ND$，支持非连续的Tensor。其中F表示输入映射表的列数，取值范围\[2, `world_size`+1\]，第一列为各行号对应Moe专家部署的实例个数（值>0），后F-1列为该Moe专家部署的物理卡号。
+-   **expert_scales**（`Tensor`）：可选参数，每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或空指针，该参数传入有效数据时，`pruning_threshold`也需要传入有效数据。shape为$(BS, K)$。数据类型支持`fp16`、`bf16`、`float`，数据格式要求为$ND$，支持非连续的Tensor。
+-   **pruning_threshold**（`Tensor`）：可选参数，专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或空指针，该参数传入有效数据时，`expert_scales`也需要传入有效数据。shape为$(K,)$或$(1, K)$。数据类型支持`float`，数据格式要求为$ND$，支持非连续的Tensor。
+-   **active_mask**（`Tensor`）：可选参数，表示token是否参与通信，可选择传入有效数据或空指针。传入有效数据时，`expert_scales`、`pruning_threshold`也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；传入空指针时是表示所有token都会参与通信。shape为$(BS,)$。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。
 
--   **local_rank_id**（`int`）：本卡ID，数据类型支持int64，当`balance_mode`设置0时，本属性取值范围为\[0, `world_ize`\)。
--   **world_size**（`int`）：通信域size，数据类型支持int64，当`balance_mode`设置0时，本属性取值范围为\[2, 768\]
--   **balance_mode**（`int`）：均衡规则，数据类型支持int64，取值支持0和1，0表示用`local_rank_id`进行负载均衡，1表示使用`token_id`进行负载均衡。当本属性取值为0时，`local_rank_id`和`world_size`必须传入有效值。
+-   **local_rank_id**（`int`）：本卡ID，数据类型支持`int64`，当`balance_mode`设置0时，本属性取值范围为\[0, `world_ize`\)。
+-   **world_size**（`int`）：通信域size，数据类型支持`int64`，当`balance_mode`设置0时，本属性取值范围为\[2, 768\]
+-   **balance_mode**（`int`）：均衡规则，数据类型支持`int64`，取值支持0和1，0表示用`local_rank_id`进行负载均衡，1表示使用`token_id`进行负载均衡。当本属性取值为0时，`local_rank_id`和`world_size`必须传入有效值。
 
-## 返回值说明<a name="zh-cn_topic_0000002366611733_section22231435517"></a>
+## 返回值说明
 
--   **balanced_expert_ids**（`Tensor`）：映射后每个token的topK个专家所在物理卡的卡号，Device侧的Tensor，要求是一个2D的Tensor，shape为(BS, K)，数据类型、数据格式与`expert_ids`保持一致。
--   **balanced_active_mask**（`Tensor`）：剪枝后的`active_mask`，当`expert_scales`、`pruning_threshold`传入有效数据时该输出有效。Device侧的Tensor，要求是一个2的Tensor，shape为\(BS, K\)，数据类型支持BOOL，数据格式要求为ND，支持非连续的Tensor。
+-   **balanced_expert_ids**（`Tensor`）：映射后每个token的topK个专家所在物理卡的卡号，shape为(BS, K)，数据类型、数据格式与`expert_ids`保持一致。
+-   **balanced_active_mask**（`Tensor`）：剪枝后的`active_mask`，当`expert_scales`、`pruning_threshold`传入有效数据时该输出有效。shape为\(BS, K\)，数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。
 
-## 约束说明<a name="zh-cn_topic_0000002366611733_section12345537164214"></a>
+## 约束说明
 
--   该接口必须与`aclnnMoeDistributeDispatch`或`aclnnMoeDistributeDispatchV2`接口配合使用。
--   调用接口过程中使用的worldSize、MoeExpertNum参数取值所有卡须保持一致，网络中不同层中也需保持一致，本接口中参数和`aclnnMoeDistributeDispatch`或`aclnnMoeDistributeDispatchV2`有如下对应关系：
-    |`aclnnMoeUpdateExpert`     |`aclnnMoeDistributeDispatch`/`aclnnMoeDistributeDispatchV2`|
+-   该接口必须与`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`接口配合使用。
+-   调用接口过程中使用的`world_size` 、`moe_expert_num` 参数取值所有卡须保持一致，网络中不同层中也需保持一致，本接口中参数和`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`有如下对应关系：
+    |`torch_npu.npu_moe_update_expert`     |`torch_npu.npu_moe_distribute_dispatch`/`torch_npu.npu_moe_distribute_dispatch_v2`|
     |---------------------------|-----------------------------------------------------------|
     |`local_rank_id`            |`ep_rank_id`                                               |
     |`world_size`               |`ep_world_size`                                            |
-    |`eplb_table`第一列的count和 |`moe_expert_num`                                           |
+    |`eplb_table`第一列的count之和 |`moe_expert_num`                                           |
     |`BS`                       |`BS`                                                       |
     |`K`                        |`K`                                                        |
 -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
--   参数说明里Shape格式说明：
+-   参数说明里shape格式说明：
     -   `BS`：表示batch sequence size，即本卡最终输出的token数量，<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
-    -   `K`：表示选取topK个专家，取值范围为0< K ≤16同时满足0 < K ≤ `moe_expert_num`。
-    -   `moe_expert_num`：表示MoE专家数，取值范围\(0, 1024\]。
-    -   `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, `world_size` + 1\]。
+    -   `K`：表示选取topK个专家，取值范围为0< K ≤16同时满足0 < K ≤ moe_expert_num。
+    -   `moe_expert_num`：表示Moe专家数，取值范围\(0, 1024\]。
+    -   `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, world_size + 1\]。
     -   每个专家部署副本个数值（即eplb_table第一列的count），最小为1，最大为`world_size`。
-    -   所有专家部署的副本个数和（即eplb_table第一列count和）需小于等于1024，且整除`world_size`。
+    -   所有专家部署的副本个数和（即eplb_table第一列count之和）需小于等于1024，且整除`world_size`。
 
-## 调用示例<a name="zh-cn_topic_0000002366611733_section14459801435"></a>
+## 调用示例
 
 -   单算子模式调用
 

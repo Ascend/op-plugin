@@ -1,5 +1,13 @@
 # torch_npu.contrib.module.LinearQuant
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| :----------------------------------------------------------- | :------: |
+| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |    √     |
+| <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    |    √     |
+| <term>Atlas 推理系列产品</term>     |    √     |
+
 ## 功能说明
 
 LinearQuant是对torch_npu.npu_quant_matmul接口的封装类，完成A8W8、A4W4量化算子的矩阵乘计算。
@@ -12,66 +20,63 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 
 ## 参数说明
 
-- in_features（计算参数）：int类型，matmul计算中k轴的值。
-- out_features（计算参数）：int类型，matmul计算中n轴的值。
-- bias（计算参数）：bool类型，代表是否需要bias计算参数。如果设置成False，则bias不会加入量化matmul的计算。
-- offset（计算参数）：bool类型，代表是否需要offset计算参数。如果设置成False，则offset不会加入量化matmul的计算。
-- pertoken_scale（计算参数）：bool类型，可选参数代表是否需要pertoken_scale计算参数。如果设置成False，则pertoken_scale不会加入量化matmul的计算。<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
-- output_dtype（计算参数）：ScalarType类型，表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为int8。
-    - <term>Atlas 推理系列产品</term>：支持输入torch.int8、torch.float16。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持输入torch.int8、torch.float16、torch.bfloat16、torch.int32。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入torch.int8、torch.float16、torch.bfloat16、torch.int32。
+### 计算参数
+- **in_features**（`int`）：matmul计算中k轴的值。
+- **out_features**（`int`）：matmul计算中n轴的值。
+- **bias**（`bool`）：代表是否需要bias计算参数。如果设置成False，则bias不会加入量化matmul的计算。
+- **offset**（`bool`）：代表是否需要offset计算参数。如果设置成False，则offset不会加入量化matmul的计算。
+- **pertoken_scale**（`bool`）：可选参数，代表是否需要pertoken_scale计算参数。如果设置成False，则pertoken_scale不会加入量化matmul的计算。<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
+- **output_dtype**（`ScalarType`）：表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为`int8`。
+    - <term>Atlas 推理系列产品</term>：支持输入`int8`、`float16`。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
 
-## 输入说明
+### 计算输入
 
-x1（计算输入）：Tensor类型，数据格式支持ND，shape最少是2维，最多是6维。
+**x1**（`Tensor`）：数据格式支持$ND$，shape最少是2维，最多是6维。
 
-- <term>Atlas 推理系列产品</term>：数据类型支持int8。
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int8和int32，其中int32表示使用本接口进行int4类型矩阵乘计算，int32类型承载的是int4数据，每个int32数据存放8个int4数据。
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持int8和int32，其中int32表示使用本接口进行int4类型矩阵乘计算，int32类型承载的是int4数据，每个int32数据存放8个int4数据。
+- <term>Atlas 推理系列产品</term>：数据类型支持`int8`。
+- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`和`int32`，其中`int32`表示使用本接口进行`int4`类型矩阵乘计算，`int32`类型承载的是`int4`数据，每个`int32`数据存放8个`int4`数据。
 
 ## 变量说明
 
-- weight（变量）：Tensor类型，与x1的数据类型须保持一致。数据格式支持ND，shape需要在2-6维范围。当数据类型为int32时，shape必须为2维。
-    - <term>Atlas 推理系列产品</term>：数据类型支持int8，需要调用torchair.experimental.inference.use_internal_format_weight或torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int8和int32（同x1，表示int4的数据计算），需要调用torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能，但不推荐使用该module方式，推荐torch_npu.npu_quant_matmul。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持int8和int32（同x1，表示int4的数据计算），需要调用npu_format_cast完成weight（batch, n, k）高性能数据排布功能，但不推荐使用该module方式，推荐torch_npu.npu_quant_matmul。
+- weight（`Tensor`）：与`x1`的数据类型须保持一致。数据格式支持$ND$，shape需要在2-6维范围。当数据类型为`int32`时，shape必须为2维。
+    - <term>Atlas 推理系列产品</term>：数据类型支持`int8`，需要调用torchair.experimental.inference.use_internal_format_weight或torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`和`int32`（同`x1`，表示`int4`的数据计算），需要调用torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能，但不推荐使用该module方式，推荐torch_npu.npu_quant_matmul。
 
-- scale（变量）：Tensor类型，量化计算的scale。数据格式支持ND，shape需要是1维(t,)，t=1或n，其中n与weight的n一致。如需传入int64数据类型的scale，需要提前调用torch_npu.npu_trans_quant_param接口来获取int64数据类型的scale。
-    - <term>Atlas 推理系列产品</term>：数据类型支持float32、int64。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持float32、int64、bfloat16。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持float32、int64、bfloat16。
+- scale（`Tensor`）：量化计算的scale。数据格式支持$ND$，shape需要是1维(t,)，t=1或n，其中n与`weight`的n一致。如需传入`int64`数据类型的scale，需要提前调用torch_npu.npu_trans_quant_param接口来获取`int64`数据类型的scale。
+    - <term>Atlas 推理系列产品</term>：数据类型支持`float32`、`int64`。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
 
-- offset（变量）：Tensor类型，量化计算的offset。可选参数。数据类型支持float32，数据格式支持ND，shape需要是1维(t,)，t=1或n，其中n与weight的n一致。
-- pertoken_scale（变量）：Tensor类型，可选参数，量化计算的pertoken。数据类型支持float32，数据格式支持ND，shape需要是1维(m,)，其中m与x1的m一致。<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
-- bias（变量）：Tensor类型，可选参数。矩阵乘中的bias。数据格式支持ND，shape支持1维(n,)或3维(batch, 1, n)，n与weight的n一致，同时batch值需要等于x1，weight broadcast后推导出的batch值。当输出为2、4、5、6维情况下，bias shape为1维；当输出为3维情况下，bias shape为1维或3维。
-    - <term>Atlas 推理系列产品</term>：数据类型支持int32。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持int32、bfloat16、float16、float32。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持int32、bfloat16、float16、float32。
+- offset（`Tensor`）：量化计算的offset。可选参数。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维(t,)，t=1或n，其中n与`weight`的n一致。
+- pertoken_scale（`Tensor`）：可选参数，量化计算的pertoken。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维(m,)，其中m与`x1`的m一致。<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
+- bias（`Tensor`）：可选参数。矩阵乘中的bias。数据格式支持$ND$，shape支持1维(n,)或3维(batch, 1, n)，n与`weight`的n一致，同时batch值需要等于x1，weight broadcast后推导出的batch值。当输出为2、4、5、6维情况下，bias shape为1维；当输出为3维情况下，bias shape为1维或3维。
+    - <term>Atlas 推理系列产品</term>：数据类型支持`int32`。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。
 
-- output_dtype（变量）：ScalarType类型，可选参数。表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为int8。
-    - <term>Atlas 推理系列产品</term>：支持输入torch.int8、torch.float16。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持输入torch.int8、torch.float16、torch.bfloat16、torch.int32。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入torch.int8、torch.float16、torch.bfloat16、torch.int32。
+- output_dtype（`ScalarType`）：可选参数。表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为`int8`。
+    - <term>Atlas 推理系列产品</term>：支持输入`int8`、`float16`。
+    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
 
-## 输出说明
+## 返回值说明
 
-一个Tensor类型的输出，代表量化matmul的计算结果：
+`Tensor`
 
-- 如果output_dtype为torch.int8或者None，输出的数据类型为int8。
-- 如果output_dtype为torch.float16，输出的数据类型为float16。
-- 如果output_dtype为torch.bfloat16，输出的数据类型为bfloat16。
-- 如果output_dtype为torch.int32，输出的数据类型为int32。
+代表量化matmul的计算结果：
+
+- 如果output_dtype为`int8`或者None，输出的数据类型为`int8`。
+- 如果output_dtype为`float16`，输出的数据类型为`float16`。
+- 如果output_dtype为`bfloat16`，输出的数据类型为`bfloat16`。
+- 如果output_dtype为`int32`，输出的数据类型为`int32`。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
-- x1、weight、scale不能是空。
-- x1与x2最后一维的shape大小不能超过65535。
+- 该接口支持图模式（PyTorch 2.1.0版本）。
+- `x1`、`weight`、`scale`不能是空。
+- `x1`与`x2`最后一维的shape大小不能超过65535。
 - **int4**类型计算的额外约束：
 
-    当x1、weight的数据类型均为int32，每个int32类型的数据存放8个int4数据。输入shape需要将数据原本int4类型时的最后一维shape缩小8倍。int4数据的最后一维shape应为8的倍数，例如：进行(m, k)乘(k, n)的int4类型矩阵乘计算时，需要输入int32类型，shape为(m, k//8)、(k, n//8)的数据，其中k与n都应是8的倍数。x1只能接受shape为(m, k//8)且数据排布连续的数据，weight只能接受shape为(n, k//8)且数据排布连续的数据。
+    当`x1`、`weight`的数据类型均为`int32`，每个`int32`类型的数据存放8个`int4`数据。输入shape需要将数据原本`int4`类型时的最后一维shape缩小8倍。`int4`数据的最后一维shape应为8的倍数，例如：进行(m, k)乘(k, n)的`int4`类型矩阵乘计算时，需要输入`int32`类型，shape为(m, k//8)、(k, n//8)的数据，其中k与n都应是8的倍数。`x1`只能接受shape为(m, k//8)且数据排布连续的数据，`weight`只能接受shape为(n, k//8)且数据排布连续的数据。
 
     >**说明：**<br>
     >数据排布连续是指数组中所有相邻的数，包括换行时内存地址连续，使用Tensor.is_contiguous返回值为true则表明tensor数据排布连续。
@@ -247,12 +252,6 @@ x1（计算输入）：Tensor类型，数据格式支持ND，shape最少是2维�
     </tr>
     </tbody>
     </table>
-
-## 支持的型号
-
-- <term>Atlas 推理系列产品</term>
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
 
 ## 调用示例
 
