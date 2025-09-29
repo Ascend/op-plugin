@@ -182,7 +182,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             -   sparse：Q\_S等于1时支持sparse=0且不传mask或sparse=4且传入mask，Q\_S大于1时支持sparse=3或sparse=4且传入mask；
             -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>约束如下：
             - sparse不为4时：
-                - query\_rope配置时要求query的S为1-16、N为32/64/128，query\_rope shape中D为64，其余维度与query一致；
+                - query\_rope配置时要求query的S为1-16、N为1/2/4/8/16/32/64/128，query\_rope shape中D为64，其余维度与query一致；
                 - key\_rope配置时要求key的N为1、D为512，key\_rope shape中D为64，其余维度与key一致；
                 - 支持key、value、key\_rope的input\_layout格式为ND或NZ。当input\_layout为NZ时，数据类型为float16或bfloat16时，输入参数key和value的格式为\[blockNum, KV\_N, D/16, blockSize, 16\]；当数据类型为int8时，输入参数key和value的格式为\[blockNum, KV\_N, D/32, blockSize, 32\]；
                 - input\_layout形状支持BSH、BSND、BNSD、BNSD\_NBSD、BSND\_NBSD、BSH\_NBSD、TND、TND\_NTD，当数据格式为NZ时input\_layout不支持BNSD、BNSD\_NBSD。
