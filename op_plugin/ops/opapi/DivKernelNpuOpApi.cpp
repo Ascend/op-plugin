@@ -121,11 +121,12 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
     at::Tensor outputTensor = isSelfWrapped ? other : self;
     auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType high_type = at::native::result_type(self, other);
-    at::Tensor self_cp = self_tensor_to_device(self, high_type, outputTensor.device());
-
     if (!isFloatingType(high_type) && !isComplexType(high_type)) {
         high_type = at::ScalarType::Float;
     }
+
+    at::Tensor self_cp = self_tensor_to_device(self, high_type, outputTensor.device());
+
     // construct the output tensor of the NPU
     at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, outputTensor.options().dtype(high_type));
 
