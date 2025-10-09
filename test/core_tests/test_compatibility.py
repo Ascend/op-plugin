@@ -210,7 +210,7 @@ class TestOpApiCompatibility(TestCase):
                             continue
                         else:
                             idx = value['version'].index("newest") - 1
-                            if version_tag < value['version'][idx]:
+                            if int(version_tag.replace(".", "")[1:]) < int(value['version'][idx].replace(".", "")[1:]):
                                 continue
                     key = key.replace("op_api: ", "").strip()
                     func_name, signature = parse_func_str(key)
@@ -298,7 +298,7 @@ class TestOpApiCompatibility(TestCase):
                     continue
                 else:
                     idx = value['version'].index("newest") - 1
-                    if version_tag < value['version'][idx]:
+                    if int(version_tag.replace(".", "")[1:]) < int(value['version'][idx].replace(".", "")[1:]):
                         continue
             func_name, signature = parse_func_str(key)
             if func_name not in base_schema:
