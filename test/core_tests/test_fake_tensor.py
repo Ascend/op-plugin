@@ -112,7 +112,7 @@ class FakeTensorTest(TestCase):
 
     @unittest.skipIf(not dist.is_available(), "requires distributed")
     def test_fsdp_flat_param(self):
-        if "2.1" in torch.__version__:
+        if "2.1." in torch.__version__:
             from torch.distributed.fsdp.flat_param import FlatParameter
         else:
             from torch.distributed.fsdp._flat_param import FlatParameter
@@ -707,7 +707,7 @@ def contains_type(type_tmp: torch._C.Type, maybe_contained_type: torch._C.Type):
 class FakeTensorOpInfoTest(TestCase):
     @ops(custom_op_db, dtypes=OpDTypes.any_one)
     def test_fake(self, device, dtype, op):
-        if "2.1" in torch.__version__:
+        if "2.1." in torch.__version__:
             data_dependent_outputs = {
             'NumpyNMSCustomOp',
             'NumpyNonzeroCustomOp',
@@ -716,7 +716,7 @@ class FakeTensorOpInfoTest(TestCase):
         for sample_input in sample_inputs_itr:
             args = (sample_input.input,) + sample_input.args
             kwargs = sample_input.kwargs
-            if "2.1" in torch.__version__:
+            if "2.1." in torch.__version__:
                 optests.fake_check(op, args, kwargs, op.name in data_dependent_outputs)
             else:
                 optests.fake_check(op, args, kwargs)
@@ -1314,7 +1314,7 @@ class TestNpuTranspose(TestCase):
 class TestPromptFlashAttention(TestCase):
     def testPromptFlashAttention(self):
         with FakeTensorMode():
-            if "2.1" in torch.__version__:
+            if "2.1." in torch.__version__:
                 q = torch.randn(1, 1024, 1024, dtype=torch.float16).npu()
                 k = torch.randn(1, 1024, 1024, dtype=torch.float16).npu()
                 v = torch.randn(1, 1024, 1024, dtype=torch.float16).npu()
@@ -1331,7 +1331,7 @@ class TestPromptFlashAttention(TestCase):
 
 
 class TestFusedInferAttentionScore(TestCase):
-    @unittest.skipIf("2.1" not in torch.__version__, "skip this test for torch version other than 2.1")
+    @unittest.skipIf("2.1." not in torch.__version__, "skip this test for torch version other than 2.1")
     def testFusedInferAttentionScore(self):
         with FakeTensorMode():
             q = torch.randn(1, 1024, 1024, dtype=torch.float16).npu()
@@ -1346,7 +1346,7 @@ class TestFusedInferAttentionScore(TestCase):
 
 
 class TestFusedInferAttentionV2(TestCase):
-    @unittest.skipIf("2.1" not in torch.__version__, "skip this test for torch version other than 2.1")
+    @unittest.skipIf("2.1." not in torch.__version__, "skip this test for torch version other than 2.1")
     def testFusedInferAttentionV2(self):
         with FakeTensorMode():
             q = torch.randn(1, 1024, 1024, dtype=torch.float16).npu()
@@ -1359,7 +1359,7 @@ class TestFusedInferAttentionV2(TestCase):
 
             self.assertTrue(q.shape == atten_out.shape)
 
-    @unittest.skipIf("2.1" not in torch.__version__, "skip this test for torch version other than 2.1")
+    @unittest.skipIf("2.1." not in torch.__version__, "skip this test for torch version other than 2.1")
     def testFusedInferAttentionV2Pa(self):
         with FakeTensorMode():
             q = torch.randn(128, 1, 128, dtype=torch.bfloat16).npu()
@@ -1435,7 +1435,7 @@ class TestNpuMoeComputeExpertTokens(TestCase):
 
 class TestMaskedSoftmaxWithRelPosBias(TestCase):
     # meta shape推导
-    @unittest.skipIf("2.1" not in torch.__version__, "skip this test for torch version other than 2.1")
+    @unittest.skipIf("2.1." not in torch.__version__, "skip this test for torch version other than 2.1")
     def testMaskedSoftmaxWithRelPosBias(self):
         with FakeTensorMode():
             x = torch.randn(96, 2, 2, 32, 32, dtype=torch.float)
@@ -1450,7 +1450,7 @@ class TestMaskedSoftmaxWithRelPosBias(TestCase):
 
 class TestNpuMoeInitRouting(TestCase):
     # meta shape推导
-    @unittest.skipIf("2.1" not in torch.__version__, "skip this test for torch version other than 2.1")
+    @unittest.skipIf("2.1." not in torch.__version__, "skip this test for torch version other than 2.1")
     def testNpuMoeInitRouting(self):
         with FakeTensorMode():
             x = torch.randn(3, 4, dtype=torch.float).npu()
@@ -1472,7 +1472,7 @@ class TestNpuMoeInitRouting(TestCase):
 
 class TestNpuMoeGatingTopKSoftmax(TestCase):
     # meta shape推导
-    @unittest.skipIf("2.1" not in torch.__version__, "skip this test for torch version other than 2.1")
+    @unittest.skipIf("2.1." not in torch.__version__, "skip this test for torch version other than 2.1")
     def testNpuMoeGatingTopKSoftmax(self):
         with FakeTensorMode():
             x = torch.randn(3, 4, dtype=torch.float).npu()
@@ -1545,7 +1545,7 @@ class TestNpuRopeQuantKVCache(TestCase):
 
 class TestGeGlu(TestCase):
     # meta shape infer
-    @unittest.skipIf("2.1" in torch.__version__, "skip this test for PyTorch version 2.1")
+    @unittest.skipIf("2.1." in torch.__version__, "skip this test for PyTorch version 2.1")
     def TestGeGlu(self):
         with FakeTensorMode():
             x = torch.randn(2, 10, 1024, dtype=torch.float)
@@ -2281,7 +2281,7 @@ class TestAddRmsNormQuant(TestCase):
 
             
 class TestAntiQuant(TestCase):
-    @unittest.skipIf("2.1" not in torch.__version__,
+    @unittest.skipIf("2.1." not in torch.__version__,
                      "OP `AntiQuant` is only supported on torch v2.1, skip this test for torch version other than 2.1")
     def test_npu_anti_quant_meta(self):
         with FakeTensorMode():
