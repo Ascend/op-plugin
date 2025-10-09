@@ -8793,6 +8793,47 @@ if __name__ == '__main__':
 """
 )
 
+
+_add_torch_npu_docstr(
+    "npu_moe_token_permute_with_routing_map",
+    """
+接口原型：
+torch_npu.npu_moe_token_permute_with_routing_map(Tensor tokens, Tensor routing_map, *, Tensor? probs=None, int? num_out_tokens=None, bool drop_and_pad=False) -> (Tensor, Tensor, Tensor)
+
+算子功能：
+MoE的permute计算，将token和expert的标签作为routingMap传入，根据routing_map将tokens和可选probs广播后排序
+
+接口说明：
+输入：
+tokens（Tensor，计算输入）：输入toke，要求为一个维度为2D的Tensor，shape为 (tokens_num, hidden_size)，数据类型支持BFLOAT16，FLOAT16，FLOAT，数据格式要求为ND。支持非连续的Tensor。
+routing_map（Tensor ，计算输入）：表token到expert的映射关系，要求shape为一个2D的（tokens_num，experts_num），数据类型支持INT8、BOOL。当数据类型为INT8，取值支持0、1，当数据类型为bool，取值支持true、false，数据格式要求为ND。支持非连续的Tensor。非droppad模式要求每行中包含topK个true 或 1。
+probs（Tensor，计算输入）：可选输入probs，关键字参数，默认值为None，要求元素个数与routing_map相同,当probs为None时，可选输出permute_probs_out_optional为空，数据类型同tokens。数据格式要求为ND。支持非连续的Tensor。
+num_out_tokens（int64_t，计算输入）：可选输入，默认值为token_num, 用于计算topK 和capacity 的有效输出token数。
+drop_and_pad（bool，计算输入）：可选输入，默认值为False，表示是否开启drop_and_pad模式。
+输出：
+permuted_tokens_out（Tensor，第一个输出）：根据indices进行扩展并排序筛选过的tokens，要求是一个2D的Tensor，shape为(outToken , hidden_size)。数据类型同tokens，数据格式要求为ND。支持非连续的Tensor。
+permute_probs_out_optional（Tensor，第二个输出）：根据indices进行排序并筛选过的probs，Shape为(outToken)，数据类型同probsOptional，数据格式要求为ND。支持非连续的Tensor。
+sorted_indices_out（Tensor，第三个输出）：permute_tokens和tokens的映射关系， 要求是一个1D的Tensor，Shape为(outToken)，数据类型支持INT32，数据格式要求为ND。支持非连续的Tensor。
+
+输入约束：
+1. 由于float无损转int限制，tokens_num和experts_num要求小于16777215。
+2. 由于UB限制，routing_map 中 每行为1或true的个数固定且小于512，num_out_tokens/num_tokens小于512。
+3. drop_and_pad为False场景，num_out_tokens / num_tokens需和routing_map中每行1或True的个数一致。
+
+调用示例：
+import torch,torch_npu
+
+x = torch.randn((3, 4), dtype=torch.float).npu()
+rounting_map = torch.tensor(
+    [[True, True], [True, True], [True, True]], dtype=torch.bool).npu()
+numtoken = 6
+pad_mode = False
+
+permuted_tokens_out, _, sorted_indices_out = torch_npu.npu_moe_token_permute_with_routing_map(x, rounting_map, num_out_tokens=numtoken, drop_and_pad=pad_mode)
+    """
+)
+
+
 _add_torch_npu_docstr(
     "npu_prefetch",
     """
