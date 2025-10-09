@@ -80,7 +80,7 @@ bool check_tensor_dtype_support_base(const at::TensorList src)
     return false;
 }
 
-bool check_tensor_device_dtype_base(const at::TensorList dsts, const at::TensorList srcs)
+bool check_tensor_device_dtype_base(const at::TensorList dsts, const at::TensorList srcs, bool non_blocking)
 {
     if (dsts.size() != srcs.size() || dsts.size() == 0 || srcs.size() == 0) {
         return false;
@@ -88,13 +88,38 @@ bool check_tensor_device_dtype_base(const at::TensorList dsts, const at::TensorL
     // 方向一致校验
     const auto expected_dst_dtype =  dsts[0].device().type();
     const auto expected_src_dtype =  srcs[0].device().type();
+    int expected_dst_device_index =  -1;
+    int expected_src_device_index =  -1;
+    // 如果是异步，需要做流校验，不支持跨卡集合copy
+    int current_device_index = -1;
+    if (non_blocking) {
+        c10_npu::GetDevice(&current_device_index);
+    }
+    if (c10::DeviceType::PrivateUse1 == expected_dst_dtype) {
+        expected_dst_device_index = dsts[0].device().index();
+        if (non_blocking && current_device_index != expected_dst_device_index) {
+            return false;
+        }
+    }
+    if (c10::DeviceType::PrivateUse1 == expected_src_dtype) {
+        expected_src_device_index = srcs[0].device().index();
+        if (non_blocking && current_device_index != expected_src_device_index) {
+            return false;
+        }
+    }
     for (const auto &dst: dsts) {
         if (dst.device().type() != expected_dst_dtype) {
+            return false;
+        }
+        if (expected_dst_device_index != -1 && dst.device().index() != expected_dst_device_index) {
             return false;
         }
     }
     for (const auto &src: srcs) {
         if (src.device().type() != expected_src_dtype) {
+            return false;
+        }
+        if (expected_src_device_index != -1 && src.device().index() != expected_src_device_index) {
             return false;
         }
     }
@@ -189,7 +214,7 @@ void _foreach_copy_(const at::TensorList self, const at::TensorList src, bool no
 
     if (!is_support_nd_out || !at::native::can_use_fast_route(self, src) || !check_tensor_dtype_support_base(src)) {
         if (is_support_batch && ((non_blocking && c10_npu::acl::IsExistMemcpyBatchAsync()) ||
-                (!non_blocking && c10_npu::acl::IsExistMemcpyBatch())) && check_tensor_device_dtype_base(self, src)) {
+                (!non_blocking && c10_npu::acl::IsExistMemcpyBatch())) && check_tensor_device_dtype_base(self, src, non_blocking)) {
             return memcpyBatch(self, src, non_blocking);
         }
         ASCEND_LOGW(
