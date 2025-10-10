@@ -11,7 +11,8 @@
 
 ## 功能说明
 
-使用NPU API的批量多类bbox NMS。
+执行批量多类别的非极大抑制值（NMS）计算。
+
 ## 函数原型
 
 ```
@@ -22,28 +23,34 @@ torch_npu.contrib.function.npu_batched_multiclass_nms(multi_bboxes, multi_scores
 
 ## 参数说明
 
-- **multi_bboxes** (`Tensor`) - shape(bs, n, \#class, 4)或(bs, n, 4)。
-- **multi_scores** (`Tensor`) - shape(bs, n, \#class+1)，其中最后一列包含background class分数，可忽略。在NPU上，为保持语义顺畅，我们将统一维度。
-- **score_thr** (`float`，默认值为0.05) - bbox阈值，分数低于它的bbox将不被考虑。
-- **nms_thr** (`float`，默认值为0.45) - NMS IoU阈值。最初的实现是传递\{"iouthreshold": 0.45\}字典，这里做了简化。
-- **max_num** (`int`，默认值为50) - 如果NMS后的bbox数超过max_num值，则只保留最大max_num；如果NMS后的bbox数小于max_num值，则输出将零填充到max_num值。在NPU上需提前申请内存，因此目前不能将max_num值设置为-1。
-- **score_factors** (`Tensor`，默认值为None) - NMS应用前用来乘分数的因子。
+- **multi_bboxes** (`Tensor`): 必选参数。候选框（bbox）张量，shape为(bs, n, class, 4)或(bs, n, 4)。
+- **multi_scores** (`Tensor`): 必选参数。每个候选框的类别得分，shape为(bs, n, class+1)，其中最后一列包含background class分数，可忽略。
+- **score_thr** (`float`): 可选参数，默认值为0.05。候选框分数阈值，分数低于它的候选框将不被考虑。
+- **nms_thr** (`float`): 可选参数，默认值为0.45。NMS IoU阈值。
+- **max_num** (`int`): 可选参数，默认值为50。如果NMS后的bbox数超过max_num值，则只保留最大max_num；如果NMS后的bbox数小于max_num值，则输出将零填充到max_num值。
+- **score_factors** (`Tensor`): 可选参数，默认值为None。NMS应用前用来乘分数的因子。
 
 ## 返回值说明
 
-**Tuple** - (bboxes, labels)，shape为(bs, k, 5)和(bs, k, 1)的张量。标签以0为基础。
+`Tuple`
+(bboxes, labels)，表示候选框和标签，shape为(bs, k, 5)和(bs, k, 1)的张量。标签以0为基础。
 
 ## 约束说明
 
-在动态shape条件下，由于NPU op的限制，最多支持20个类别（nmsed_classes）和10000个框（nmsed_boxes）。
+在动态shape条件下，最多支持20个类别（nmsed_classes）和10000个框（nmsed_boxes）。
 
 
 ## 调用示例
 
 ```python
+>>> import torch, torch_npu
 >>> from torch_npu.contrib.function import npu_batched_multiclass_nms
 >>> boxes = torch.randint(1, 255, size=(4, 200, 80, 4)).npu().half()
 >>> scores = torch.randn(4, 200, 81).npu().half()
 >>> det_bboxes, det_labels = npu_batched_multiclass_nms(boxes, scores, score_thr=0.3, nms_thr=0.5, max_num=3)
+>>> det_bboxes.shape
+torch.Size([4, 3, 5])
+>>> det_labels.shape
+torch.Size([4, 3])
 ```
 

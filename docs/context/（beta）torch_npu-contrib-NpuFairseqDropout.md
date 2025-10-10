@@ -21,8 +21,8 @@ torch_npu.contrib.NpuFairseqDropout(p, module_name=None)
 
 ## 参数说明
 
-- **input_size**：对输入期望的特征数量。
-- **hidden_size**：hidden state中的特征数量。
+- **p** (`float`) - 元素归零的概率。
+- **module_name** (`string`) - 模型名称。
 
 ## 约束说明
 

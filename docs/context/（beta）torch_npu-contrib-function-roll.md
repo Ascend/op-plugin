@@ -23,22 +23,28 @@ torch_npu.contrib.function.roll(input1, shifts, dims)
 ## 参数说明
 
 - **input1** (`Tensor`)：输入张量。
-- **shifts** (`int`或Tuple of python:ints)：张量元素移动的位置数。如果该shift组成的是tuple，则dims必须是大小相同的tuple，每个维度都将按相应的值roll。
-- **dims** (`int`或Tuple of python:ints)：沿着roll的轴。
+- **shifts** (`Tuple` of `ints`)：每个维度张量滚动（roll）的位移量。
+- **dims** (`Tuple` of `ints`)：要滚动的维度。
 
 ## 返回值说明
 
 `Tensor`
 
-shifted input。
+滚动之后的结果。
 
+## 约束说明
+
+input1是4维张量，shift和dims的长度为2。
 
 ## 调用示例
 
 ```python
+>>> import torch, torch_npu
 >>> from torch_npu.contrib.function import roll
 >>> input1 = torch.randn(32, 56, 56, 16).npu()
 >>> shift_size = 3
 >>> shifted_x_npu = roll(input1, shifts=(-shift_size, -shift_size), dims=(1, 2))
+>>> shifted_x_npu.shape
+torch.Size([32, 56, 56, 16])
 ```
 

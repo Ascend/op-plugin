@@ -15,7 +15,7 @@ LinearQuant是对torch_npu.npu_quant_matmul接口的封装类，完成A8W8、A4W
 ## 函数原型
 
 ```
-torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, offset=False, pertoken_scale=False, output_dtype=None, x1_dtype=None, x2_dtype=None, group_size=None)
+torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, offset=False, pertoken_scale=False, device=None, dtype=None, output_dtype=None)
 ```
 
 ## 参数说明
@@ -26,6 +26,8 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - **bias**（`bool`）：代表是否需要bias计算参数。如果设置成False，则bias不会加入量化matmul的计算。
 - **offset**（`bool`）：代表是否需要offset计算参数。如果设置成False，则offset不会加入量化matmul的计算。
 - **pertoken_scale**（`bool`）：可选参数，代表是否需要pertoken_scale计算参数。如果设置成False，则pertoken_scale不会加入量化matmul的计算。<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
+- **device**：默认值为None。**预留参数，暂未使用**。
+- **dtype**：默认值为None。**预留参数，暂未使用**。
 - **output_dtype**（`ScalarType`）：表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为`int8`。
     - <term>Atlas 推理系列产品</term>：支持输入`int8`、`float16`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。

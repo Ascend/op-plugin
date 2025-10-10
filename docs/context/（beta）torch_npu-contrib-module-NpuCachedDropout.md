@@ -23,3 +23,6 @@ torch_npu.contrib.module.NpuCachedDropout(torch.nn.Dropout)
 - **p** (`float`)：元素归零的概率。
 - **module_name** (`string`)：模型名称。
 
+## 约束说明
+
+不支持动态shape。

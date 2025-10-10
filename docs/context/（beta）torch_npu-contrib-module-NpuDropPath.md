@@ -16,18 +16,26 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.module.NpuDropPath(nn.Module)
+torch_npu.contrib.module.NpuDropPath(drop_prob=None)
 ```
 
 ## 参数说明
 
+### 计算参数
 - **drop_prob** (`float`)：dropout概率。
+
+### 计算输入
 - **x** (`Tensor`)：应用dropout的输入张量。
 
+## 返回值说明
+`Tensor`
+
+dropout的计算结果
 
 ## 调用示例
 
 ```python
+>>> import torch, torch_npu
 >>> from torch_npu.contrib.module import NpuDropPath
 >>> input1 = torch.randn(68, 5).npu()
 >>> input1.requires_grad_(True)
