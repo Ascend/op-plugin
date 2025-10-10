@@ -37,6 +37,7 @@ torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, 
 ## 调用示例
 
 ```python
+>>> import troch, torch_npu
 >>> from torch_npu.contrib.function import npu_bbox_coder_decode_xywh2xyxy
 >>> A = 1024
 >>> max_shape = 512
@@ -45,5 +46,6 @@ torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, 
 >>> out = npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, max_shape=(max_shape, max_shape))
 >>> torch.npu.synchronize()
 >>> print('npu_bbox_coder_decode_xywh2xyxy done. output shape is ', out.shape)
+npu_bbox_coder_decode_xywh2xyxy done. output shape is torch.Size([1024, 4])
 ```
 

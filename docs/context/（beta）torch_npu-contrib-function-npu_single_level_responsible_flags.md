@@ -36,6 +36,7 @@ torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_b
 ## 调用示例
 
 ```python
+>>> import torch
 >>> from torch_npu.contrib.function import npu_single_level_responsible_flags
 >>> featmap_sizes = [[10, 10], [20, 20], [40, 40]]
 >>> stride = [[32, 32], [16, 16], [8, 8]]
@@ -44,7 +45,11 @@ torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_b
 >>> featmap_level = len(featmap_sizes)
 >>> for i in range(featmap_level):
 ...     gt_bboxes = gt_bboxes.npu()
->>> out = npu_single_level_responsible_flags(featmap_sizes[i],gt_bboxes,stride[i],num_base_anchors)
->>> print(out.shape, out.max(), out.min())
+...     out = npu_single_level_responsible_flags(featmap_sizes[i],gt_bboxes,stride[i],num_base_anchors)
+...     print(out.shape, out.max(), out.min())
+torch.Size([300]) tensor(1, device='npu:0', dtype=torch.uint8) tensor(0, device='npu:0', dtype=torch.uint8)
+torch.Size([1200]) tensor(1, device='npu:0', dtype=torch.uint8) tensor(0, device='npu:0', dtype=torch.uint8)
+torch.Size([4800]) tensor(1, device='npu:0', dtype=torch.uint8) tensor(0, device='npu:0', dtype=torch.uint8)
+
 ```
 

@@ -38,6 +38,7 @@ torch_npu.contrib.function.matmul_transpose(tensor1, tensor2)
 ## 调用示例
 
 ```python
+>>> import torch
 >>> from torch_npu.contrib.function import matmul_transpose
 >>> tensor1 = torch.randn(68, 5, 75, 16).npu()
 >>> tensor1.requires_grad = True
@@ -45,5 +46,7 @@ torch_npu.contrib.function.matmul_transpose(tensor1, tensor2)
 >>> tensor2.requires_grad = True
 >>> output = matmul_transpose(tensor1, tensor2)
 >>> output.sum().backward()
+>>> output.shape
+torch.Size([68, 5, 75, 75])
 ```
 
