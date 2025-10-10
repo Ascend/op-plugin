@@ -27,17 +27,19 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 >**说明：**<br>
 >shape中的符号说明：
 >-   $NUM\_ROWS$：为行数。
->-   $K$：表示从总的专家$E$中选出$K$个专家。$E$表示专家数，$E$需要大于等于$K$。
+>-   $K$：表示从总的专家$E$中选出$K$个专家。
 >-   $H$：表示每个token序列长度，为列数。
+>-   $E$: 表示专家数，$E$需要大于等于$K$。
+>-   $C$: 表示专家处理token数量的能力阈值
 
-- **expanded_permuted_rows** (`Tensor`)：必选参数，对应公式中的$expandPermutedROWs$，经过专家处理过的结果，要求为一个2维张量，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。shape支持$（NUM\_ROWS * K, H）$。
+- **expanded_permuted_rows** (`Tensor`)：必选参数，对应公式中的$expandPermutedROWs$，经过专家处理过的结果，要求为一个2维张量，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。`drop_pad_mode`参数为0或2时，shape为$（NUM\_ROWS * K, H）$，`drop_pad_mode`参数为1或3时，shape为$（E, C, H）$。
 - **skip1** (`Tensor`)：必选参数，允许为None，对应公式中的$skip1$，求和的输入参数1，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。
 - **skip2** (`Tensor`)：必选参数，允许为None，对应公式中的$skip2$，求和的输入参数2，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。`skip1`参数为`None`时，`skip2`参数必须也为`None`。
 - **bias** (`Tensor`)：必选参数，允许为None，对应公式中的$bias$，专家的偏差，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致。shape支持$（E，H）$。
 - **scales** (`Tensor`)：必选参数，允许为None，对应公式中的$scales$，专家的权重，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape支持（$NUM\_ROWS，K）$。
-- **expanded_src_to_dst_row** (`Tensor`)：必选参数，对应公式中的$expandedSrcRowToDstRow$，保存每个专家处理结果的索引，要求为一个1维为张量，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，`drop_pad_mode`参数为0时，Tensor的取值范围是$[0, NUM\_ROWS * K-1]$。
+- **expanded_src_to_dst_row** (`Tensor`)：必选参数，对应公式中的$expandedSrcRowToDstRow$，保存每个专家处理结果的索引，要求为一个1维为张量，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，`drop_pad_mode`参数为0或2时，Tensor的取值范围是$[0, NUM\_ROWS * K-1]$，`drop_pad_mode`参数为1或3时，Tensor的取值范围是$[-1, E*C - 1]$。
 - **export_for_source_row** (`Tensor`)：必选参数，允许为None，公式中的$exportForSourceRow$，每行处理的专家号，要求为一个2维张量，数据类型支持`int32`。shape支持$（NUM\_ROWS，K）$，Tensor的取值范围是[0,E-1]。
-- **drop_pad_mode** (`int`)：可选参数，表示是否支持丢弃模式，取值范围为0，默认值为`0`。
+- **drop_pad_mode** (`int`)：可选参数，表示是否为丢弃模式（丢弃模式即drop pad模式，非丢弃模式即drop less模式）和`expanded_src_to_dst_row`的排列方式（行排列或列排列），取值范围为[0, 3]，默认值为`0`。0表示非丢弃模式，`expanded_src_to_dst_row`按列排列，1表示丢弃模式，`expanded_src_to_dst_row`按列排列， 2表示非丢弃模式场景，`expanded_src_to_dst_row`按行排列，3表示丢弃场景，`expanded_src_to_dst_row`按行排列。
 
 
 ## 返回值说明
@@ -52,34 +54,57 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 ## 调用示例
 
 - 单算子模式调用
+    - drop pad模式调用示例
+        ```python
+        >>> import torch
+        >>> import torch_npu
+        >>> expert_num = 16
+        >>> token_len = 10
+        >>> top_k = 4
+        >>> num_rows = 50
+        >>> device = torch.device('npu')
+        >>> dtype = torch.float32
+        >>> expanded_permuted_rows = torch.randn((num_rows * top_k, token_len), device=device, dtype=dtype)
+        >>> skip1 = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+        >>> skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+        >>> bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
+        >>> scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
+        >>> export_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+        >>> expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device,dtype=torch.int32)
+        >>> drop_pad_mode = 0
+        >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
+        >>> output.shape
+        torch.Size([50, 10])
+        >>> output.dtype
+        torch.float32
+        ```
+      
+    - drop less模式调用示例
+      ```python
+        >>> import torch
+        >>> import torch_npu
+        >>> expert_num = 16
+        >>> token_len = 10
+        >>> top_k = 4
+        >>> num_rows = 50
+        >>> expert_capacity = 8
+        >>> device = torch.device('npu')
+        >>> dtype = torch.float32
+        >>> expanded_permuted_rows = torch.randn((expert_num, expert_capacity, token_len), device=device, dtype=dtype)
+        >>> skip1 = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+        >>> skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+        >>> bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
+        >>> scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
+        >>> export_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+        >>> expanded_src_to_dst_row = torch.randint(low=-1, high=expert_num * expert_capacity - 1, size=(num_rows * top_k,), device=device,dtype=torch.int32)
+        >>> drop_pad_mode = 1
+        >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
+        >>> output.shape
+      torch.Siz[e([50, 10])
+        >>> output.dtype
+      torch.float32
+      ```
 
-    ```python
-    >>> import torch
-    >>> import torch_npu
-    >>>
-    >>> expert_num = 16
-    >>> token_len = 10
-    >>> top_k = 4
-    >>> num_rows = 50
-    >>> device = torch.device('npu')
-    >>> dtype = torch.float32
-    >>>
-    >>> expanded_permuted_rows = torch.randn((num_rows * top_k, token_len), device=device, dtype=dtype)
-    >>> skip1 = torch.randn((num_rows, token_len), device=device, dtype=dtype)
-    >>> skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
-    >>> bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
-    >>> scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
-    >>> export_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
-    >>> expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device,dtype=torch.int32)
-    >>>drop_pad_mode = 0
-    >>> 
-    >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
-    >>> 
-    >>> output.shape
-    torch.Size([50, 10])
-    >>> output.dtype
-    torch.float32
-    ```
 
 - 图模式调用
 
