@@ -20,6 +20,7 @@
 
 namespace op_api {
 constexpr size_t LAST_SECOND_DIM_INDEX = 2;
+constexpr int64_t PERGROUP_DIM_NUM = 2;
 constexpr int64_t INT4_NUMS_IN_INT32 = 8;
 static const uint64_t GROUP_MAX = 65535UL;
 static const size_t A8W4_GROUP_DIM = 3;
@@ -194,6 +195,13 @@ at::Tensor npu_quant_matmul_symint(const at::Tensor& x1, const at::Tensor& x2, c
             EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale_real, bias_real,
                          transpose1, transpose2, result);
         }
+    } else if (is_a4w4 && scale.dtype() == at::kFloat && scale.dim() == PERGROUP_DIM_NUM && pertoken_scale.has_value() &&
+        offset.has_value() && output_dtype != at::kInt) {  // W4A4 Per Group
+        at::Tensor x1_offset;
+        at::Tensor y_offset;
+        at::Tensor y_scale;
+        EXEC_NPU_CMD(aclnnQuantMatmulV5, x1, x2, pertoken_scale_real, scale, y_scale, x1_offset,
+                     offset_real, y_offset, bias_real, transpose1, transpose2, group_size, result);
     } else {
         if (!is_a4w4 && is_nz_format(x2)) {
             at::Tensor yscale = at::empty({0}, options);
