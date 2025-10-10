@@ -34,10 +34,14 @@ def tsoftmax(x):
     return y.div(x_sum), x_max, x_sum
 
 
-def tforward(q, k, v, scale):
+def tforward(q, k, v, scale, drop_mask, keep_prob):
     qk = torch.matmul(q, k.permute(0, 1, 3, 2)).mul(scale)
     softmax_res, x_max, x_sum = tsoftmax(qk)
-    y = torch.matmul(softmax_res, v)
+    if drop_mask == None or len(drop_mask.shape) == 0:
+        drop_res = softmax_res
+    else:
+        drop_res = softmax_res * drop_mask * (1.0 / keep_prob)
+    y = torch.matmul(drop_res, v)
     return y, softmax_res, x_max, x_sum
 
 
@@ -50,27 +54,47 @@ def tsoftmax_grad(dp, softmax_res):
 
 
 # pylint:disable = huawei-too-many-arguments
-def tbackward(dx, q, k, v, softmax_res, scale):
-    drop_res = softmax_res.permute(0, 1, 3, 2)
-    dv = torch.matmul(drop_res, dx)
+def tbackward(dx, q, k, v, softmax_res, scale, drop_mask=None, keep_prob=1.0):
     dp = torch.matmul(dx, v.permute(0, 1, 3, 2))
-    softmax_grad_res = (tsoftmax_grad(dp, softmax_res) * scale)
+    if drop_mask == None or len(drop_mask.shape) == 0:
+        drop_res = softmax_res.permute(0, 1, 3, 2)
+        dp_drop = dp
+    else:
+        drop_res = softmax_res.mul(drop_mask).mul(1.0 / keep_prob).permute(0, 1, 3, 2)
+        dp_drop = dp * drop_mask * (1.0 / keep_prob)
+    dv = torch.matmul(drop_res, dx)
+    softmax_grad_res = (tsoftmax_grad(dp_drop, softmax_res) * scale)
     dq = torch.matmul(softmax_grad_res, k)
     dk = torch.matmul(softmax_grad_res.permute(0, 1, 3, 2), q)
     return dq, dk, dv
 
 
+def get_drop_mask(q, length, seed=2, gen_p=0.2):
+    torch.npu.set_compile_mode(jit_compile=False)
+    torch.npu.manual_seed(seed)
+    drop_mask_uint8 = torch_npu._npu_dropout_gen_mask(q.npu(), [length], p=gen_p, seed=seed, offset=0, parallel=True,
+                                                      sync=False)
+    drop_mask_bit_np = np.unpackbits(drop_mask_uint8.cpu().numpy(), count=length, bitorder='little')
+    drop_mask_bit = torch.from_numpy(drop_mask_bit_np)
+    drop_mask_bit = drop_mask_bit.detach().clone().to(torch.uint8)
+    return drop_mask_bit.cpu()
+
+
 class TestNPUFlashAttention(TestCase):
-    def supported_op_exec(self, query, key, value, scale):
+    def supported_op_exec(self, query, key, value, scale, drop_mask=None, keep_prob=1.0):
         qk = torch.matmul(query, key.transpose(2, 3)).mul(scale)
         softmax_res = torch.nn.functional.softmax(qk, dim=-1, dtype=torch.float32)
-        output = torch.matmul(softmax_res, value)
+        if drop_mask == None or len(drop_mask.shape) == 0:
+            drop_res = softmax_res
+        else:
+            drop_res = softmax_res * drop_mask * (1.0 / keep_prob)
+        output = torch.matmul(drop_res, value)
         output = output.transpose(1, 2)
         output = output.reshape(output.shape[0], output.shape[1], -1)
         return output
 
     # pylint:disable = huawei-too-many-arguments
-    def supported_op_exec_with_softmax_out_tnd(self, q, k, v, dx, seqlens_list_q, seqlens_list_k):
+    def supported_op_exec_with_softmax_out_tnd(self, q, k, v, dx, seqlens_list_q, seqlens_list_k, keep_prob=1.0):
         gtype = torch.float32
 
         # 从输入推导维度
@@ -81,6 +105,14 @@ class TestNPUFlashAttention(TestCase):
 
         cu_seqlens_q = get_cu_seqlens(seqlens_list_q)
         cu_seqlens_k = get_cu_seqlens(seqlens_list_k)
+
+        # 设置drop_mask
+        qk_size = seqlens_list_q * seqlens_list_k
+        qk_pointer = get_cu_seqlens(qk_size)
+        if keep_prob == 1.0:
+            drop_mask = torch.tensor(1)
+        else:
+            drop_mask = get_drop_mask(q, qk_pointer[-1]*N1, seed=2, gen_p=1-keep_prob)
 
         # 运算golden
         out_golden = torch.zeros_like(q)
@@ -101,9 +133,16 @@ class TestNPUFlashAttention(TestCase):
                 if not (N1 == N2):
                     ki = broadcastKV_sigle(N1, N2, ki, ki.dtype)
                     vi = broadcastKV_sigle(N1, N2, vi, vi.dtype)
+                
+                if drop_mask.numel() > 1:
+                    drop_maski = drop_mask[(qk_pointer[i]*N1):(qk_pointer[i+1]*N1)].reshape(N1, seqlens_list_q[i],
+                                                                                            seqlens_list_k[i])
+                else:
+                    drop_maski = drop_mask
 
                 # 正向golden运算
-                outi_golden, softmax_resi, x_maxi, x_sumi = tforward(qi.to(gtype), ki.to(gtype), vi.to(gtype), scale)
+                outi_golden, softmax_resi, x_maxi, x_sumi = tforward(qi.to(gtype), ki.to(gtype), vi.to(gtype), scale,
+                                                                     drop_maski, keep_prob)
                 out_golden[cu_seqlens_q[i]:cu_seqlens_q[i + 1]] = rearrange(outi_golden, '1 n s d -> s n d')
 
                 # 记录max,sum
@@ -125,8 +164,8 @@ class TestNPUFlashAttention(TestCase):
                 dxi = rearrange(dxi, 's n d -> 1 n s d')
 
                 # 反向golden运算
-                dqi_golden, dki_golden, dvi_golden = tbackward(dxi.to(gtype), qi.to(gtype), ki.to(gtype),
-                                                               vi.to(gtype), softmax_resi.to(gtype), scale)
+                dqi_golden, dki_golden, dvi_golden = tbackward(dxi.to(gtype), qi.to(gtype), ki.to(gtype), vi.to(gtype),
+                                                                softmax_resi.to(gtype), scale, drop_maski, keep_prob)
 
                 # N不等长适配by cdy
                 if not (N1 == N2):
@@ -147,10 +186,11 @@ class TestNPUFlashAttention(TestCase):
 
     # pylint:disable = huawei-too-many-arguments
     def custom_op_exec(self, query, key, value, head_num, scale, input_layout, actual_seq_qlen=None,
-                       actual_seq_kvlen=None, softmax_layout=""):
+                       actual_seq_kvlen=None, softmax_layout="", keep_prob=1.0):
         return torch_npu.npu_fusion_attention(
             query, key, value, head_num=head_num, input_layout=input_layout, scale=scale,
-            actual_seq_qlen=actual_seq_qlen, actual_seq_kvlen=actual_seq_kvlen, softmax_layout=softmax_layout)
+            actual_seq_qlen=actual_seq_qlen, actual_seq_kvlen=actual_seq_kvlen, softmax_layout=softmax_layout,
+            keep_prob=keep_prob)
 
     def trans_BNSD2BSH(self, tensor: torch.Tensor):
         tensor = torch.transpose(tensor, 1, 2)
@@ -172,10 +212,9 @@ class TestNPUFlashAttention(TestCase):
                                         scale=0.08838).to(torch.float16)
         result = self.custom_op_exec(q_npu, k_npu, v_npu, head_num=32, scale=0.08838, input_layout="BSH")
         attention_score = result[0]
-        self.assertRtolEqual(output, attention_score, prec=0.005, prec16=0.005)
+        self.assertRtolEqual(output, attention_score)
 
     @SupportedDevices(['Ascend910B'])
-    @unittest.skip("skip test_npu_flash_attention_tnd now")
     def test_npu_flash_attention_tnd(self, device="npu"):
         B, N1, N2, D = 3, 8, 2, 128
         scale = 1 / (D ** 0.5)
@@ -212,9 +251,9 @@ class TestNPUFlashAttention(TestCase):
         attention_score_npu = result[0]
         softmax_max_npu = result[1]
         softmax_sum_npu = result[2]
-        self.assertRtolEqual(attention_score_golden, attention_score_npu, prec=0.005, prec16=0.005)
-        self.assertRtolEqual(softmax_max_golden, softmax_max_npu, prec=0.005, prec16=0.005)
-        self.assertRtolEqual(softmax_sum_golden, softmax_sum_npu, prec=0.005, prec16=0.005)
+        self.assertRtolEqual(attention_score_golden, attention_score_npu)
+        self.assertRtolEqual(softmax_max_golden, softmax_max_npu)
+        self.assertRtolEqual(softmax_sum_golden, softmax_sum_npu)
 
         # 反向精度比对
         attention_score_npu.backward(dx)
@@ -222,9 +261,84 @@ class TestNPUFlashAttention(TestCase):
         dk_npu = k.grad
         dv_npu = v.grad
 
-        self.assertRtolEqual(dq_golden, dq_npu, prec=0.005, prec16=0.005)
-        self.assertRtolEqual(dk_golden, dk_npu, prec=0.005, prec16=0.005)
-        self.assertRtolEqual(dv_golden, dv_npu, prec=0.005, prec16=0.005)
+        self.assertRtolEqual(dq_golden, dq_npu)
+        self.assertRtolEqual(dk_golden, dk_npu)
+        self.assertRtolEqual(dv_golden, dv_npu)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_flash_attention_with_dropmask(self, device="npu"):
+        query = torch.randn(1, 32, 256, 128, dtype=torch.float16)
+        key = torch.randn(1, 32, 256, 128, dtype=torch.float16)
+        value = torch.randn(1, 32, 256, 128, dtype=torch.float16)
+        keep_prob = 0.9
+        drop_mask = get_drop_mask(query, 1*32*256*256, seed=2, gen_p=1-keep_prob).reshape(1, 32, 256, 256)
+
+        q_npu = self.trans_BNSD2BSH(query).npu()
+        k_npu = self.trans_BNSD2BSH(key).npu()
+        v_npu = self.trans_BNSD2BSH(value).npu()
+        output = self.supported_op_exec(query.to(torch.float32),
+                                        key.to(torch.float32),
+                                        value.to(torch.float32),
+                                        scale=0.08838,
+                                        drop_mask=drop_mask,
+                                        keep_prob=keep_prob).to(torch.float16)
+        result = self.custom_op_exec(q_npu, k_npu, v_npu, head_num=32, scale=0.08838, input_layout="BSH",
+                                     keep_prob=keep_prob)
+        attention_score = result[0]
+        self.assertRtolEqual(output, attention_score)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_flash_attention_tnd_with_dropmask(self, device="npu"):
+        B, N1, N2, D = 3, 8, 2, 128
+        scale = 1 / (D ** 0.5)
+        seqlens_list_q = np.array([1, 2, 3])
+        seqlens_list_k = np.array([3, 4, 5])
+        cu_seqlens_q = get_cu_seqlens(seqlens_list_q)
+        cu_seqlens_k = get_cu_seqlens(seqlens_list_k)
+        S1 = seqlens_list_q.sum()
+        S2 = seqlens_list_k.sum()
+        pttype = torch.float16
+        keep_prob = 0.9
+        q = 2 * (torch.rand([S1, N1, D]) - 0.5).to(pttype)
+        k = 2 * (torch.rand([S2, N2, D]) - 0.5).to(pttype)
+        v = 2 * (torch.rand([S2, N2, D]) - 0.5).to(pttype)
+        dy = 2 * (torch.rand([S1, N1, D]) - 0.5).to(pttype)
+
+        attention_score_golden, softmax_max_golden, softmax_sum_golden, dx, dq_golden, dk_golden, dv_golden = (
+            self.supported_op_exec_with_softmax_out_tnd(q, k, v, dy, seqlens_list_q, seqlens_list_k, keep_prob))
+
+        q = q.to(device)
+        k = k.to(device)
+        v = v.to(device)
+        dx = dx.to(device)
+        q.requires_grad = True
+        k.requires_grad = True
+        v.requires_grad = True
+        result = self.custom_op_exec(
+            q, k, v, N1,
+            scale=scale,
+            input_layout="TND",
+            actual_seq_qlen=tuple(cu_seqlens_q[1:].cpu().numpy().tolist()),
+            actual_seq_kvlen=tuple(cu_seqlens_k[1:].cpu().numpy().tolist()),
+            softmax_layout="TND",
+            keep_prob=keep_prob)
+
+        attention_score_npu = result[0]
+        softmax_max_npu = result[1]
+        softmax_sum_npu = result[2]
+        self.assertRtolEqual(attention_score_golden, attention_score_npu)
+        self.assertRtolEqual(softmax_max_golden, softmax_max_npu)
+        self.assertRtolEqual(softmax_sum_golden, softmax_sum_npu)
+
+        # 反向精度比对
+        attention_score_npu.backward(dx)
+        dq_npu = q.grad
+        dk_npu = k.grad
+        dv_npu = v.grad
+
+        self.assertRtolEqual(dq_golden, dq_npu)
+        self.assertRtolEqual(dk_golden, dk_npu)
+        self.assertRtolEqual(dv_golden, dv_npu)
 
 
 if __name__ == "__main__":
