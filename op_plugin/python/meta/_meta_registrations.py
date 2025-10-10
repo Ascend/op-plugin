@@ -247,10 +247,16 @@ def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                         recv_counts, *, send_counts_tensor=None,
                         recv_counts_tensor=None, mm_x=None,
                         mm_weight=None, trans_gmm_weight=False,
-                        trans_mm_weight=False):
+                        trans_mm_weight=False, global_token_per_expert=None, gmm_weight_scale=None, gmm_x_scale=None, comm_mode="aicpu", y_dtype=0, output_token_num=-1):
     if ep_world_size <= 0:
         ep_world_size = 1
-    out_x = sum(recv_counts)
+    if comm_mode == "aiv": 
+        if output_token_num != -1: 
+            out_x = output_token_num 
+        else: 
+            out_x = 2 * gmm_x.size(0) 
+    else: 
+        out_x = sum(recv_counts)
     out_y = gmm_weight.size(2)
     if trans_gmm_weight:
         out_y = gmm_weight.size(1)
@@ -264,7 +270,13 @@ def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
         if trans_mm_weight:
             out_mm_y = mm_weight.size(0)
         mm_y = torch.empty([out_mm_x, out_mm_y], dtype=mm_x.dtype, device='meta')
-    y = torch.empty([out_x, out_y], dtype=gmm_x.dtype, device='meta')
+    if y_dtype == 0 and gmm_x.dtype == torch.int8:
+        y_dtype_torch = torch.half 
+    elif y_dtype == 1 and gmm_x.dtype == torch.int8: 
+        y_dtype_torch = torch.bfloat16 
+    else: 
+        y_dtype_torch = gmm_x.dtype
+    y = torch.empty([out_x, out_y], dtype=y_dtype_torch, device='meta')
     return (y, mm_y)
 
 
@@ -299,6 +311,56 @@ def npu_alltoallv_gmm_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
         permute_out = torch.empty([permute_out_x, permute_out_y], dtype=gmm_x.dtype, device='meta')
     gmm_y = torch.empty([out_x, out_y], dtype=gmm_x.dtype, device='meta')
     return (gmm_y, mm_y, permute_out)
+
+
+@impl(m, "npu_alltoallv_gmm_v2")
+def npu_alltoallv_gmm_v2_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
+                        recv_counts, *, send_counts_tensor=None,
+                        recv_counts_tensor=None, mm_x=None,
+                        mm_weight=None, trans_gmm_weight=False,
+                        trans_mm_weight=False, permute_out_flag=False,
+                        gmm_x_scale=None, gmm_weight_scale=None, comm_mode="aicpu",
+                        y_dtype=0, max_output_token_num=-1):
+    if ep_world_size <= 0:
+        ep_world_size = 1
+    if comm_mode == "aiv":
+        if max_output_token_num != -1:
+            out_x = max_output_token_num
+        else:
+            out_x = 2 * gmm_x.size(0)
+    else:
+        out_x = sum(recv_counts)
+    out_y = gmm_weight.size(2)
+    if trans_gmm_weight:
+        out_y = gmm_weight.size(1)
+    out_mm_x = 0
+    out_mm_y = 0
+    permute_out_x = 0
+    permute_out_y = 0
+    gmm_y = None
+    mm_y = None
+    permute_out = None
+    global_token_per_expert = None
+    if mm_x is not None:
+        out_mm_x = mm_x.size(0)
+        out_mm_y = mm_weight.size(1)
+        if trans_mm_weight:
+            out_mm_y = mm_weight.size(0)
+        mm_y = torch.empty([out_mm_x, out_mm_y], dtype=mm_x.dtype, device='meta')
+    if permute_out_flag:
+        permute_out_x = out_x
+        permute_out_y = gmm_x.size(1)
+        permute_out = torch.empty([permute_out_x, permute_out_y], dtype=gmm_x.dtype, device='meta')
+    if y_dtype == 0 and gmm_x.dtype == torch.int8:
+        gmmy_dtype = torch.half
+    elif y_dtype == 1 and gmm_x.dtype == torch.int8:
+        gmmy_dtype = torch.bfloat16
+    else:
+        gmmy_dtype = gmm_x.dtype
+    gmm_y = torch.empty([out_x, out_y], dtype=gmmy_dtype, device='meta')
+    global_token_per_expert_dtype = torch.int32
+    global_token_per_expert = torch.empty([ep_world_size, gmm_weight.size(0) * ep_world_size], dtype=global_token_per_expert_dtype, device='meta')
+    return (gmm_y, mm_y, permute_out, global_token_per_expert)
 
 
 @impl(m, "npu_all_gather_base_mm")

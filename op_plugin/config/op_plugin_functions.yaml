@@ -5611,9 +5611,14 @@ custom:
     op_api: all_version
     exposed: all_version
 
-  - func: npu_gmm_alltoallv(Tensor gmm_x, Tensor gmm_weight, str hcom, int ep_world_size, int[] send_counts, int[] recv_counts, *, Tensor? send_counts_tensor=None, Tensor? recv_counts_tensor=None, Tensor? mm_x=None, Tensor? mm_weight=None, bool trans_gmm_weight=False, bool trans_mm_weight=False) -> (Tensor, Tensor)
+  - func: npu_gmm_alltoallv(Tensor gmm_x, Tensor gmm_weight, str hcom, int ep_world_size, int[] send_counts=[], int[] recv_counts=[], *, Tensor? send_counts_tensor=None, Tensor? recv_counts_tensor=None, Tensor? mm_x=None, Tensor? mm_weight=None, bool trans_gmm_weight=False, bool trans_mm_weight=False, Tensor? global_token_per_expert=None, Tensor? gmm_weight_scale=None, Tensor? gmm_x_scale=None, str comm_mode="aicpu", int y_dtype=0, int output_token_num=-1) -> (Tensor, Tensor)
     op_api: all_version
     exposed: all_version
+    internal_format_opapi: all_version
+
+  - func: npu_alltoallv_gmm_v2(Tensor gmm_x, Tensor gmm_weight, str hcom, int ep_world_size, int[] send_counts=[], int[] recv_counts=[], *, Tensor? send_counts_tensor=None, Tensor? recv_counts_tensor=None, Tensor? mm_x=None, Tensor? mm_weight=None, bool trans_gmm_weight=False, bool trans_mm_weight=False, bool permute_out_flag=False, Tensor? gmm_x_scale=None, Tensor? gmm_weight_scale=None, str comm_mode="aicpu", int y_dtype=0, int max_output_token_num=-1) -> (Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+    internal_format_opapi: all_version
 
   - func: npu_all_gather_base_mm(Tensor self, Tensor x2, str hcom, int world_size, *, Tensor? bias=None, Tensor? x1_scale=None, Tensor? x2_scale=None, int gather_index=0, bool gather_output=True, int comm_turn=0, ScalarType? output_dtype=None, str? comm_mode=None) -> (Tensor, Tensor)
     op_api: all_version
