@@ -10,6 +10,50 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 
 
+def quantize_w_per_group_asymmetric(w_fp32: torch.Tensor, group_size: int = 256):
+    K, N = w_fp32.shape
+    q_min, q_max = -7, 7  # int4
+    w_fp32_grouped = w_fp32.view(-1, group_size, N)
+    min_vals = torch.min(w_fp32_grouped, dim=1, keepdim=True)[0]
+    max_vals = torch.max(w_fp32_grouped, dim=1, keepdim=True)[0]
+    range_vals = max_vals - min_vals
+    range_vals[range_vals == 0] = 1e-5
+    w_scales = range_vals / (q_max - q_min)
+    w_zeros_fp = torch.round(q_min - min_vals / w_scales)
+    w_quant_fp = torch.round(w_fp32_grouped / w_scales) + w_zeros_fp
+    w_quant_grouped = torch.clamp(w_quant_fp, q_min, q_max).to(torch.int8)
+    w_quant = w_quant_grouped.view(K, N)
+    w_scales = w_scales.squeeze(1) / 15.0
+    w_zeros = w_zeros_fp.squeeze(1).to(torch.int8)
+    return w_quant, w_scales, w_zeros
+
+def unpack_int4_lsb_first_signed(w_packed: torch.Tensor) -> torch.Tensor:
+    assert w_packed.dtype == torch.int32, "Input tensor must be of dtype torch.int32"
+    N, M = w_packed.shape
+    shifts = torch.arange(0, 32, 4, device=w_packed.device).view(1, 1, 8)
+    unpacked = (w_packed.unsqueeze(-1).cpu() >> shifts.cpu()) & 0xF
+    unpacked = unpacked.to(torch.int8)
+    unpacked_unsigned = unpacked.view(N, -1).to(w_packed.device)
+    unpacked_signed = torch.where(unpacked_unsigned > 7, unpacked_unsigned - 16, unpacked_unsigned)
+    return unpacked_signed.to(torch.int8)
+
+def cpu_quant_matmul_a4w4_pergroup(x, weight, x1scale, x2scale, x2offset, groupsize=256):
+    x = unpack_int4_lsb_first_signed(x).to(torch.int32)
+    weight = unpack_int4_lsb_first_signed(weight).T.to(torch.int32)
+    m, k = x.shape
+    k, n = weight.shape
+    golden_tensor = torch.zeros((m, n), dtype=torch.float32, device=x.device)
+    for kstart in range(0, k, groupsize):
+        # y = x1_scale[m, 1] * x2_scale[1, n] * (x1[m, groupsize] @ x2[groupsize, n]  +  rowsum(x1)[m, 1] * x2offset[1, n])
+        kend = kstart + groupsize if kstart + groupsize < k else k
+        subBlockX = x[:, kstart:kend]
+        subBlockWeight = weight[kstart:kend, :]
+        subBlockWeight = subBlockWeight - x2offset[int(kstart//groupsize)].int()
+        mm_result = torch.matmul(subBlockX.cpu(), subBlockWeight.cpu()).float().npu()
+        mm_result *= x2scale[int(kstart//groupsize)]
+        golden_tensor += mm_result
+    return golden_tensor.float() * x1scale
+
 class TestQuantMatmul(TestCase):
 
     @SupportedDevices(['Ascend910B'])
@@ -69,6 +113,28 @@ class TestQuantMatmul(TestCase):
         custom_output_fp16 = torch_npu.npu_quant_matmul(x1_clone, x2_clone, scale_clone, pertoken_scale=pertoken_scale_clone, output_dtype=torch.float16)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output_bf16.float().cpu().numpy(), 0.01)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output_fp16.float().cpu().numpy(), 0.01)
+
+    def gen_inputs_for_npu_quant_matmul_a4w4_pergroup(self, dtype):
+        x1 = torch.randint(-5, 5, (256, 2048), dtype=dtype, device="npu")
+        x2 = torch.randint(-5, 5, (5120, 2048), dtype=dtype, device="npu")
+        x1, x1_scale = torch_npu.npu_dynamic_quant(x1, dst_type=torch.quint4x2)
+        x2, x2_scale, x2_offset = quantize_w_per_group_asymmetric(x2.transpose(-1, -2))
+        x2_offset = x2_offset.to(torch.float16)
+        x2_scale = x2_scale.to(torch.float32)
+        x2 = torch_npu.npu_convert_weight_to_int4pack(x2.to(torch.int32).transpose(-1, -2).contiguous()).transpose(-1, -2)
+        return x1, x2, x1_scale.reshape(-1, 1), x2_scale, x2_offset
+
+    @unittest.skip("skip test_npu_quant_matmul_a4w4_pergroup")
+    def test_npu_quant_matmul_a4w4_pergroup(self):
+        torch.manual_seed(0)
+        x1, x2, x1_scale, x2_scale, x2_offset = self.gen_inputs_for_npu_quant_matmul_a4w4_pergroup(torch.bfloat16)
+        supported_output_bf16 = cpu_quant_matmul_a4w4_pergroup(x1, x2.T, x1_scale, x2_scale, x2_offset)
+        custom_output_bf16 = torch_npu.npu_quant_matmul(x1, x2, scale=x2_scale, offset=x2_offset, pertoken_scale=x1_scale, bias=None, output_dtype=torch.bfloat16, group_sizes=[1, 1, 256])
+        self.assertRtolEqual(custom_output_bf16.float().cpu().numpy(), supported_output_bf16.float().cpu().numpy(), 0.01)
+        x1, x2, x1_scale, x2_scale, x2_offset = self.gen_inputs_for_npu_quant_matmul_a4w4_pergroup(torch.float16)
+        supported_output_fp16 = cpu_quant_matmul_a4w4_pergroup(x1, x2.T, x1_scale, x2_scale, x2_offset)
+        custom_output_fp16 = torch_npu.npu_quant_matmul(x1, x2, scale=x2_scale, offset=x2_offset, pertoken_scale=x1_scale, bias=None, output_dtype=torch.float16, group_sizes=[1, 1, 256])
+        self.assertRtolEqual(custom_output_fp16.float().cpu().numpy(), supported_output_fp16.float().cpu().numpy(), 0.01)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul_continuous_x2_tensor(self):
