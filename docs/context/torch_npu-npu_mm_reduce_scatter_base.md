@@ -48,7 +48,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - **x2\_scale** (`Tensor`)：可选参数。mm左矩阵反量化参数。数据类型支持`float32`、`int64`，数据格式支持$ND$格式。数据维度为\(1, n\), 支持perchannel量化。如需传入`int64`数据类型的，需要提前调用torch_npu.npu_trans_quant_param来获取`int64`数据类型的`x2_scale`。
 - **comm\_turn** (`int`)：可选参数。表示rank间通信切分粒度，默认值为0，表示默认的切分方式。当前版本仅支持输入0。
 - **output_dtype** (`ScalarType`)：可选参数。表示输出数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`float32`时，可指定输出数据类型为`bfloat16`或`float16`，默认值为`bfloat16`。
-- **comm\_mode** (`str`)：可选参数。表示通信模式，支持`ai_cpu`、`aiv`两种模式。`ai_cpu`模式仅支持基础场景。`aiv`模式支持基础场景和量化场景。
+- **comm\_mode** (`str`)：可选参数。表示通信模式，支持`ai_cpu`、`aiv`两种模式。`ai_cpu`模式仅支持基础场景。`aiv`模式支持基础场景和量化场景。默认值为`ai_cpu`。
 
 ## 返回值说明
 
@@ -59,16 +59,13 @@ shape维度和`input`保持一致。
 量化场景下，`x2_scale`为`int64`数据类型时，输出数据类型为`float16`。`x1_scale`和`x2_scale`均为`float32`时, 输出数据类型由`output_dtype`指定，默认为`bfloat16`。
 
 ## 约束说明
-`comm_mode`为`ai_cpu`时：
--   该接口仅在训练场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
--   `input`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`input`的最后一维相同，满足matmul的计算条件。
--   <term>Atlas A2 训练系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
-
-`comm_mode`为`aiv`时：
-- 支持<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
-- 支持<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>   
-
+-    `input`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`input`的最后一维相同，满足matmul的计算条件。
+-    `comm_mode`为`ai_cpu`时：
+     -   该接口仅在训练场景下使用。
+     -   该接口支持图模式。
+     -   <term>Atlas A2 训练系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
+-    `comm_mode`为`aiv`时，训练和推理场景均可使用。
+  
 ## 调用示例
 
 -   单算子模式调用

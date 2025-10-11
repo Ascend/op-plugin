@@ -39,17 +39,22 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 - **scales** (`Tensor`)：必选参数，允许为None，对应公式中的$scales$，专家的权重，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape支持（$NUM\_ROWS，K）$。
 - **expanded_src_to_dst_row** (`Tensor`)：必选参数，对应公式中的$expandedSrcRowToDstRow$，保存每个专家处理结果的索引，要求为一个1维为张量，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，`drop_pad_mode`参数为0或2时，Tensor的取值范围是$[0, NUM\_ROWS * K-1]$，`drop_pad_mode`参数为1或3时，Tensor的取值范围是$[-1, E*C - 1]$。
 - **export_for_source_row** (`Tensor`)：必选参数，允许为None，公式中的$exportForSourceRow$，每行处理的专家号，要求为一个2维张量，数据类型支持`int32`。shape支持$（NUM\_ROWS，K）$，Tensor的取值范围是[0,E-1]。
-- **drop_pad_mode** (`int`)：可选参数，表示是否为丢弃模式（丢弃模式即drop pad模式，非丢弃模式即drop less模式）和`expanded_src_to_dst_row`的排列方式（行排列或列排列），取值范围为[0, 3]，默认值为`0`。0表示非丢弃模式，`expanded_src_to_dst_row`按列排列，1表示丢弃模式，`expanded_src_to_dst_row`按列排列， 2表示非丢弃模式场景，`expanded_src_to_dst_row`按行排列，3表示丢弃场景，`expanded_src_to_dst_row`按行排列。
+- **drop_pad_mode** (`int`)：可选参数，表示是否为丢弃模式（丢弃模式即drop pad模式，非丢弃模式即drop less模式）和`expanded_src_to_dst_row`的排列方式（行排列或列排列），取值范围为[0, 3]，默认值为`0`。
+     -    0表示非丢弃模式，`expanded_src_to_dst_row`按列排列。
+     -    1表示丢弃模式，`expanded_src_to_dst_row`按列排列。
+     -    2表示非丢弃模式场景，`expanded_src_to_dst_row`按行排列。
+     -    3表示丢弃场景，`expanded_src_to_dst_row`按行排列。
 
 
 ## 返回值说明
 `Tensor`
-输出参数`out`,代表最后MoE FFN合并的输出结果。数据维度支持2维，shape支持$（NUM_ROWS, H）$。
+
+输出参数`out`,代表最后MoE FFN合并的输出结果。数据维度支持2维，shape支持$（NUM\_ROWS, H）$。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1.0版本）。
+- 该接口支持图模式。
 
 ## 调用示例
 
