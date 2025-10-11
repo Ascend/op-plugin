@@ -30,7 +30,7 @@ torch_npu.contrib.module.NpuDropPath(drop_prob=None)
 ## 返回值说明
 `Tensor`
 
-dropout的计算结果
+dropout的计算结果。
 
 ## 调用示例
 
