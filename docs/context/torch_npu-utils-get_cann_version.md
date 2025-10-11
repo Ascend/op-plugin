@@ -45,9 +45,12 @@ torch_npu.utils.get_cann_version(module="CANN")
 
 代表具体组件的版本号。
 
+当传入的module无效时，会返回空字符串。
+
 ## 约束说明
 
-DRIVER的版本号获取是根据/etc/ascend_install.info; /usr/local/Ascend/driver/version.info中的信息获取的。在容器中获取该版本号时，需要保证容器里映射了这两个文件。
+1. DRIVER的版本号获取是根据/etc/ascend_install.info; /usr/local/Ascend/driver/version.info中的信息获取的。在容器中获取该版本号时，需要保证容器里映射了这两个文件。
+2. CANN版本号小于8.1.RC1时，该功能不支持，会返回空字符串。
 
 ## 调用示例
 
