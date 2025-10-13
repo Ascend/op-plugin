@@ -25,5 +25,14 @@ torch_npu.npu.get_amp_supported_dtype()
 
 **List**（`torch.dtype`)
 
+## 调用示例
 
+```python
+import torch
+import torch_npu
+
+supported_dtypes = torch_npu.npu.get_amp_supported_dtype()
+print(f"NPU支持的AMP数据类型：{supported_dtypes}")
+
+```
 

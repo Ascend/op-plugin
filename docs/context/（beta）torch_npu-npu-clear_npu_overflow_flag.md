@@ -13,5 +13,3 @@
 ```
 torch_npu.npu.clear_npu_overflow_flag()
 ```
-
-

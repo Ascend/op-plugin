@@ -25,4 +25,13 @@ torch_npu.npu.get_autocast_dtype()
 
 `torch.dtype`
 
+## 调用示例
+
+```python
+import torch
+import torch_npu
+
+current_dtype = torch_npu.npu.get_autocast_dtype()
+
+```
 
