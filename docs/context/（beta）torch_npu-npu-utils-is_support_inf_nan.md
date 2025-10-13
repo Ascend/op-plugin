@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-判断当前使用的溢出检测模式，True为INF_NAN模式，False为饱和模式。
+判断当前使用的溢出检测模式。
 
 ## 函数原型
 
@@ -22,7 +22,9 @@ torch_npu.npu.utils.is_support_inf_nan() -> bool
 ## 返回值说明
 `bool`
 
-True为INF_NAN模式，False为饱和模式。
+返回值为True时，代表是INF_NAN模式。
+
+返回值为False时，代表为饱和模式。
 
 
 ## 调用示例

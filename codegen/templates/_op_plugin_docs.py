@@ -7912,7 +7912,7 @@ world_size: int类型, 通信域内的rank总数, 仅支持为2、4、8.
 *: 代表其之前的变量是位置相关, 按照顺序输入, 必选; 之后的变量是键值对赋值的, 位置无关, 可选(不输入会使用默认值). 
 bias: Tensor类型, 可选输入, 数据类型支持float16、bfloat16, 数据格式支持ND格式. 数据类型需要和input保持一致. bias仅支持一维, 且维度大小与output的第1维大小相同. 当前版本暂不支持bias输入为非0的场景. 
 x1_scale: 可选Tensor类型，mm左矩阵反量化参数。数据类型支持float32，数据格式支持ND格式。数据维度为(m, 1), 支持pertoken量化。
-x2_scale: 可选Tensor类型。mm左矩阵反量化参数。数据类型支持float32、int64，数据格式支持ND格式。数据维度为(1, n), 支持perchannel量化。如需传入int64数据类型的，需要提前调用torch_npu.npu_trans_quant_param来获取int64数据类型的x2_scale。
+x2_scale: 可选Tensor类型。mm右矩阵反量化参数。数据类型支持float32、int64，数据格式支持ND格式。数据维度为(1, n), 支持perchannel量化。如需传入int64数据类型的，需要提前调用torch_npu.npu_trans_quant_param来获取int64数据类型的x2_scale。
 gather_index: int类型, 表示gather操作对象, 0: 对input做gather, 1: 对x2做gather. 默认值0. 当前版本仅支持输入0. 
 gather_output: bool类型, 表示是否需要gather输出， 默认值true。
 comm_turn: int类型, 表示rank间通信切分粒度, 默认值: 0, 表示默认的切分方式. 当前版本仅支持输入0. 

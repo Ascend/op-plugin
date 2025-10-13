@@ -21,6 +21,16 @@
 <td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p466412710151"><a name="p466412710151"></a><a name="p466412710151"></a>对npu芯片溢出检测为进行清零。</p>
 </td>
 </tr>
+<tr id="row2074316127585"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7858135417578"><a name="p7858135417578"></a><a name="p7858135417578"></a><a href="torch_npu-npu-enable_deterministic_with_backward.md">torch_npu.npu.enable_deterministic_with_backward</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1285825435710"><a name="p1285825435710"></a><a name="p1285825435710"></a>开启“确定性”功能。确定性算法是指在模型的前向传播过程中，每次输入相同，输出也相同。确定性算法可以避免模型在每次前向传播时产生的小随机误差累积，在需要重复测试或比较模型性能时非常有用。</p>
+</td>
+</tr>
+<tr id="row16743712125815"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16134251175720"><a name="p16134251175720"></a><a name="p16134251175720"></a><a href="torch_npu-npu-disable_deterministic_with_backward.md">torch_npu.npu.disable_deterministic_with_backward</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p7134205145719"><a name="p7134205145719"></a><a name="p7134205145719"></a>关闭“确定性”功能。确定性算法是指在模型的前向传播过程中，每次输入相同，输出也相同。确定性算法可以避免模型在每次前向传播时产生的小随机误差累积，在需要重复测试或比较模型性能时非常有用。</p>
+</td>
+</tr>
 <tr id="row11664117121512"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p116643710154"><a name="p116643710154"></a><a name="p116643710154"></a><a href="torch_npu-npu-matmul-allow_hf32.md">torch_npu.npu.matmul.allow_hf32</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p26648741510"><a name="p26648741510"></a><a name="p26648741510"></a>功能和调用方式与torch.backends.cuda.matmul.allow_tf32类似。</p>

@@ -22,3 +22,13 @@ dump_path：dump算子图保存路径。
 - <term>Atlas 推理系列产品</term>
 
 
+## 调用示例
+
+```python
+import torch
+import torch_npu
+
+dump_path = "./aoe_dump"
+torch_npu.npu.set_aoe(dump_path)
+
+```
