@@ -290,6 +290,15 @@ void add_param_to_buf(const c10::OptionalArrayRef<c10::SymInt> &opt_array)
     }
 }
 
+void add_param_to_buf(const c10::OptionalIntArrayRef &opt_array)
+{
+    if (opt_array.has_value()) {
+        add_param_to_buf(opt_array.value());
+    } else {
+        MEMCPY_TO_BUF(",", 1);
+    }
+}
+
 void add_param_to_buf(const c10::optional<at::Scalar> &opt_scalar)
 {
     if (opt_scalar.has_value()) {

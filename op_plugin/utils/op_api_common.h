@@ -411,6 +411,15 @@ inline aclIntArray *ConvertType(const c10::OptionalArrayRef<c10::SymInt> &opt_ar
     return nullptr;
 }
 
+inline aclIntArray *ConvertType(const c10::OptionalIntArrayRef &opt_array)
+{
+    if (opt_array.has_value()) {
+        return ConvertType(opt_array.value());
+    }
+
+    return nullptr;
+}
+
 inline aclScalar *ConvertType(const c10::optional<at::Scalar> &opt_scalar)
 {
     if (opt_scalar.has_value()) {
@@ -816,6 +825,15 @@ inline c10::optional<std::vector<int64_t>> CopyTypeV2(const c10::OptionalArrayRe
     return c10::nullopt;
 }
 
+inline c10::optional<std::vector<int64_t>> CopyTypeV2(const c10::OptionalIntArrayRef &opt_array)
+{
+    if (opt_array.has_value()) {
+        return CopyTypeV2(opt_array.value());
+    }
+
+    return c10::nullopt;
+}
+
 inline aclScalar *ConvertTypeV2(const c10::optional<at::Scalar> &opt_scalar)
 {
     if (opt_scalar.has_value()) {
@@ -995,6 +1013,7 @@ void add_param_to_buf(const at::ArrayRef<at::Scalar> &);
 void add_param_to_buf(const c10::optional<at::Tensor> &);
 void add_param_to_buf(const c10::optional<at::IntArrayRef> &);
 void add_param_to_buf(const c10::OptionalArrayRef<c10::SymInt> &);
+void add_param_to_buf(const c10::OptionalIntArrayRef &);
 void add_param_to_buf(const c10::optional<at::Scalar> &);
 void add_param_to_buf(const at::ScalarType);
 void add_param_to_buf(const string &);
