@@ -157,7 +157,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 ## 约束说明<a name="zh-cn_topic_0000001832267082_section12345537164214"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 -   该接口与PyTorch配合使用时，需要保证CANN相关包与PyTorch相关包的版本匹配。
 -   入参为空的处理：算子内部需要判断参数query是否为空，如果是空则直接返回。参数query不为空Tensor，参数key、value为空tensor（即S2为0），则填充全零的对应shape的输出（填充attention\_out）。attention\_out为空Tensor时，框架会处理。
 -   参数key、value中对应tensor的shape需要完全一致；非连续场景下key、value的tensorlist中的batch只能为1，个数等于query的B，N和D需要相等。

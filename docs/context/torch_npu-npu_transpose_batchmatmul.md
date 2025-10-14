@@ -59,7 +59,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 ## 约束说明<a name="zh-cn_topic_0000002319693140_section12345537164214"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持单算子模式和图模式（PyTorch 2.1版本）。
+-   该接口支持单算子模式和图模式。
 -   输入参数Tensor中shape使用的变量说明：
     -   当perm\_x1为\[1, 0, 2\]时，即input矩阵需要转置时，K\*B的取值范围\[1, 65536\)；当perm\_x1为\[0, 1, 2\]时，K需要小于65536。
     -   K和N需要能被128整除。

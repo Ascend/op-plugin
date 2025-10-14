@@ -37,7 +37,7 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
 
 ## 约束说明
 
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式。
 
 - `indices`的维数只能是1维或者2维；如果是2维，其第2维的大小必须是2；不支持索引越界，索引越界不校验；`indices`映射的`input`数据段不能重合，若重合则会因为多核并发原因导致多次执行结果不一样。
 - `updates`的维数需要与`input`的维数一样；其第1维的大小等于`indices`的第1维的大小，且不大于`input`的第1维的大小；其`axis`轴的大小不大于`input`的`axis`轴的大小；其余维度的大小要跟`input`对应维度的大小相等；其最后一维的大小必须32B对齐。

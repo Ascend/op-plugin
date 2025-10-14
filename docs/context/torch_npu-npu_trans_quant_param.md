@@ -60,7 +60,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1.0版本）。
+- 该接口支持图模式。
 - 该接口在当前支持的产品中，支持与`matmul`类接口（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）配套使用。
 - 当不传入`offset`时，输出shape与`scale` shape一致。
   - 若该输出作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵(`weight`，对应参数x2)的shape $n$一致。

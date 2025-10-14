@@ -135,7 +135,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 ## 约束说明<a name="zh-cn_topic_0000002322738573_section470214314214"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式。
 -   动态缩容后的部署信息通过elastic_info参数传递给算子，无需修改其他参数。动态缩容后，MOE专家卡上的本卡部署MOE专家数需与缩容前保持一致。
 - 动态缩容功能不支持在TP并行场景下使能。
 - 调用接口过程中使用的expert_ids、x_active_mask、elastic_info、group_ep、ep_world_size、moe_expert_num、group_tp、tp_world_size、expert_shard_type、shared_expert_num、shared_expert_rank_num、global_bs、comm_alg、zero_expert_num、copy_expert_num、const_expert_num参数、HCCL_BUFFSIZE取值所有卡需保持一致，网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。

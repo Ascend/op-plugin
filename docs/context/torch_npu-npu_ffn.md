@@ -72,7 +72,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1.0版本）。
+- 该接口支持图模式。
 - 有专家时，专家数据的总数需要与`x`的$M$保持一致。
 - 激活层为`geglu/swiglu/reglu`时，仅支持无专家分组时的`float16`高性能场景（`float16`场景指类型为Tensor的必选参数数据类型都为`float16`的场景），且$N1=2*K2$。
 - 激活层为`gelu/fastgelu/relu/silu`时，支持有专家或无专家分组的`float16`高精度及高性能场景，`bfloat16`场景，量化场景及伪量化场景，且$N1=K2$。

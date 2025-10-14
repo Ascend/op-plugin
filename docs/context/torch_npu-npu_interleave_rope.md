@@ -39,7 +39,7 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 ## 约束说明
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 -   输入`x`、`cos`、`sin`的D维度均必须等于64。
 -   `cos`、`sin`的N维度必须等于1。
 

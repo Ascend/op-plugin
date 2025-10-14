@@ -85,7 +85,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式。
 - 传入的`x1`、`x2`、`scale`不能是空。
 - `x1`、`x2`、`bias`、`scale`、`offset`、`pertoken_scale`、`output_dtype`的数据类型和数据格式需要在支持的范围之内。
 - `x1`与`x2`最后一维的shape大小不能超过65535。

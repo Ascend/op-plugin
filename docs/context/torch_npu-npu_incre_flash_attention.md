@@ -81,7 +81,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 ## 约束说明<a name="zh-cn_topic_0000001711274864_section12345537164214"></a>
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式。
 - `query`、`key`、`value`的维度必须保持一致，`key`、`value`的`shape`必须保持一致。
 - `num_heads`的值要等于`query`的$N$。
 - `input_layout`的值与`query`的`shape`相关，三维是$BSH$，四维是$BNSD$或$BSND$。

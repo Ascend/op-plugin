@@ -178,7 +178,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 ## 约束说明<a name="zh-cn_topic_0000002262888689_section618392112366"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：内轴限制InnerLimit为65536。
 -   `x`和`weight`中每一组tensor的最后一维大小都应小于InnerLimit。x<sub>i</sub>的最后一维指当x不转置时<code>x<sub>i</sub></code>的K轴或当`x`转置时<code>x<sub>i</sub></code>的$M$轴。<code>weight<sub>i</sub></code>的最后一维指当`weight`不转置时<code>weight<sub>i</sub></code>的$N$轴或当`weight`转置时<code>weight<sub>i</sub></code>的$K$轴。
 

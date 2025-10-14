@@ -147,7 +147,7 @@ Atlas 推理系列产品: 数据类型仅支持float16、float32.
 
 约束说明
 该接口支持推理、训练场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 input输入不能含有None. 
 
 支持的PyTorch版本
@@ -1282,7 +1282,7 @@ sync: 布尔型, DSA生成dropout随机数向量mask的控制开关. 默认值�
 
 约束说明
 该接口仅在训练场景下使用. 
-该接口暂不支持图模式(PyTorch 2.1版本). 
+该接口暂不支持图模式. 
 输入query、key、value、pse的数据类型必须一致. 
 输入query、key、value的input_layout必须一致. 
 输入query、key、value的shape说明:
@@ -3345,7 +3345,7 @@ round_mode: torch.int8类型，用于指定FP32填充到FP19的模式，可选�
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 传入的scale或out不能为空. 
 scale、offset或out的数据类型和数据格式需要在支持的范围之内. 
 scale、offset的shape需要为1维(t,)或者2维(1, n). 其中t=1或n, 其中n与matmul计算中的右矩阵中的n一致. 
@@ -3441,7 +3441,7 @@ scale: Tensor类型, 非对称动态量化过程中计算出的缩放系数, 数
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 该接口仅在如下产品支持MoE场景. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品
 Atlas A3 训练系列产品
@@ -3539,7 +3539,7 @@ offset: Tensor类型, 非对称动态量化过程中计算出的偏移系数, �
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 使用可选输入smooth_scales、group_index、dst_type时, 必须使用关键字传参. 
 使用smooth_scales时: 
 若不使用group_index, smooth_scales必须是一维Tensor, 元素数量与x的最后一维大小一致. 
@@ -3640,7 +3640,7 @@ out: Tensor类型，算子的计算结果。输出的数据类型为`bfloat16`�
 
 约束说明:
 - 该接口支持推理场景下使用。
-- 该接口支持静态图模式（PyTorch 2.1版本及以上）。
+- 该接口支持静态图模式。
 - 传入的x1、x2、x1_scale、x2_scale不能是空。
 - 输入和输出支持以下数据类型组合：
   | x1   | w2   | x1Scale | x2Scale  | out      |
@@ -3752,7 +3752,7 @@ result: Tensor类型, 代表量化matmul的计算结果.
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 传入的x1、x2、scale不能是空. 
 x1、x2、bias、scale、offset、pertoken_scale、output_dtype的数据类型和数据格式需要在支持的范围之内. 
 x1与x2最后一维的shape大小不能超过65535. 
@@ -4018,7 +4018,7 @@ inner_precise:  int类型, 计算模式选择,  默认为0. 0表示高精度模�
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 当输入weight为FRACTAL_NZ格式时暂不支持单算子调用, 只支持图模式调用. 
+该接口支持图模式. 当输入weight为FRACTAL_NZ格式时暂不支持单算子调用, 只支持图模式调用. 
 x和weight后两维必须为(M, K)和(K, N)格式, K、N的范围为[1, 65535]; 在x为非转置时, M的范围为[1, 2^31-1], 在x为转置时, M的范围为[1, 65535]. 
 不支持空Tensor输入. 
 antiquant_scale和antiquant_offset的输入shape要保持一致. 
@@ -4252,7 +4252,7 @@ inner_k_tiles: int类型, 用于制定内部打包格式中, 多少个K-tiles被
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 
 支持的PyTorch版本
 PyTorch 2.4
@@ -4453,7 +4453,7 @@ List[torch.Tensor]: 当split_item为0或1时, 返回的张量数量与weight相�
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品的内轴限制InnerLimit为65536. x和weight中每一组tensor的最后一维大小都应小于InnerLimit. xi的最后一维指当x不转置时xi的K轴或当x转置时xi的M轴. weighti的最后一维指当weight不转置时weighti的N轴或当weight转置时weighti的K轴. 
 各场景输入与输出数据类型使用约束: 
 group_list输入类型为List[int]时, Atlas A2 训练系列产品/Atlas 800I A2 推理产品数据类型使用约束:
@@ -4845,7 +4845,7 @@ reduce: 字符串类型, 可选参数, 表示数据操作方式; 当前只支持
 一个Tensor类型的输出, 代表input被更新后的结果. 
 
 约束说明:
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 indices的维数只能是1维或者2维; 如果是2维, 其第2维的大小必须是2; 不支持索引越界, 索引越界不校验; indices映射的input数据段不能重合, 若重合则会因为多核并发原因导致多次执行结果不一样. 
 updates的维数需要与input的维数一样; 其第1维的大小等于indices的第1维的大小, 且不大于input的第1维的大小; 其axis轴的大小不大于input的axis轴的大小; 其余维度的大小要跟input对应维度的大小相等; 其最后一维的大小必须32B对齐. 
 quant_scales的元素个数需要等于updates在quant_axis轴的大小. 
@@ -5025,7 +5025,7 @@ reduce: 字符串类型, 可选参数, 表示数据操作方式; 当前只支持
 一个Tensor类型的输出, 代表input被更新后的结果. 
 
 约束说明:
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 indices的维数只能是1维或者2维; 如果是2维, 其第2维的大小必须是2; 不支持索引越界, 索引越界不校验; indices映射的input数据段不能重合, 若重合则会因为多核并发原因导致多次执行结果不一样. 
 updates的维数需要与input的维数一样; 其第1维的大小等于indices的第1维的大小, 且不大于input的第1维的大小; 其axis轴的大小不大于input的axis轴的大小; 其余维度的大小要跟input对应维度大小相等; 其最后一维的大小必须32B对齐. 
 quant_scales的元素个数需要等于updates在quant_axis轴的大小. 
@@ -5197,7 +5197,7 @@ updates：Tensor类型，必选输入，更新数据张量，数据格式支持N
 一个Tensor类型的输出，代表input被更新后的结果。
 
 约束说明:
-该接口支持图模式（PyTorch 2.1版本）。
+该接口支持图模式。
 indices至少是2维，其最后1维的大小不能超过input的维度大小。
 假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上input除前a维外的shape。举例：input的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
 
@@ -5298,7 +5298,7 @@ updates：Tensor类型，必选输入，更新数据张量，数据格式支持N
 一个Tensor类型的输出，代表input被更新后的结果。
 
 约束说明:
-该接口支持图模式（PyTorch 2.1版本）。
+该接口支持图模式。
 indices至少是2维，其最后1维的大小不能超过input的维度大小。
 假设indices最后1维的大小是a，则updates的shape等于indices除最后1维外的shape加上input除前a维外的shape。举例：input的shape是(4, 5, 6)，indices的shape是(3, 2)，则updates的shape必须是(3, 6)。
 
@@ -5631,7 +5631,7 @@ Atlas A3 训练系列产品: 数据类型支持quint4x2或int8.
 
 约束说明:
 该接口支持推理、训练场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 x、scale这两个输入中不能含有None. 
 
 支持的PyTorch版本
@@ -5718,7 +5718,7 @@ Tensor类型, 数据类型非量化场景以及伪量化场景与x1保持一致,
 约束说明
 增量场景不使能该融合算子, 全量场景使能该融合算子. 
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 输入x1可为2维或者3维、x2必须是2维, 分别为(b, s, k)/(m, k), (k, n), k轴满足mm算子入参要求, k轴相等. bias当前仅支持一维, 且维度大小与output的最后一维大小相同. x3的shape与output的shape相同. 
 x1不支持输入转置后的tensor, x2转置后输入, 需要满足shape的第一维大小与x1的最后一维相同, 满足matmul的计算条件. 
 antiquant_group_size中k值的范围与matmul一致, 为[1,65535], INT_MAX大于(k-1). 
@@ -5984,7 +5984,7 @@ output_dtype: ScalarType类型, 可选参数, 该参数只在量化场景生效,
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 有专家时, 专家数据的总数需要与x的M保持一致. 
 激活层为geglu/swiglu/reglu时, 仅支持无专家分组时的float16高性能场景(float16场景指类型为Tensor的必选参数数据类型都为float16的场景), 且N1=2*K2. 
 激活层为gelu/fastgelu/relu/silu时, 支持有专家或无专家分组的float16高精度及高性能场景, bfloat16场景, 量化场景及伪量化场景, 且N1=K2. 
@@ -6115,7 +6115,7 @@ atten_out: Tensor类型, 计算的最终结果, shape与query保持一致.
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 query、key、value的维度必须保持一致, key、value的shape必须保持一致. 
 num_heads的值要等于query的N. 
 input_layout的值与query的shape相关, 三维是BSH, 四维是BNSD或BSND. 
@@ -6299,7 +6299,7 @@ Atlas A3 训练系列产品: 数据类型支持float16、bfloat16、int8.
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 该接口与PyTorch配合使用时, 需要保证CANN相关包与PyTorch相关包的版本匹配. 
 入参为空的处理: 算子内部需要判断参数query是否为空, 如果是空则直接返回. 参数query不为空Tensor, 参数key、value为空tensor(即S2为0), 则填充全零的对应shape的输出(填充attention_out). attention_out为空Tensor时, AscendCLNN框架会处理. 
 query、key、value输入, 功能使用限制如下: 
@@ -6546,7 +6546,7 @@ softmaxLse: Tensor类型, ring attention算法对query乘key的结果, 先取max
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 该接口与PyTorch配合使用时, 需要保证CANN相关包与PyTorch相关包的版本匹配. 
 入参为空的处理: 算子内部需要判断参数query是否为空, 如果是空则直接返回. 参数query不为空Tensor, 参数key、value为空tensor(即S2为0), 则填充全零的对应shape的输出(填充attention_out). attention_out为空Tensor时, 框架会处理. 
 参数key、value中对应tensor的shape需要完全一致; 非连续场景下key、value的tensorlist中的batch只能为1, 个数等于query的B, N和D需要相等. 
@@ -7027,7 +7027,7 @@ softmaxLse: Tensor类型, ring attention算法对query乘key的结果, 先取max
 
 约束说明:
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 该接口与PyTorch配合使用时, 需要保证CANN相关包与PyTorch相关包的版本匹配. 
 入参为空的处理: 算子内部需要判断参数query是否为空, 如果是空则直接返回. 参数query不为空Tensor, 参数key、value为空tensor(即S2为0), 则填充全零的对应shape的输出(填充attention_out). attention_out为空Tensor时, 框架会处理. 
 参数key、value中对应tensor的shape需要完全一致; 非连续场景下key、value的tensorlist中的batch只能为1, 个数等于query的B, N和D需要相等. 
@@ -7455,7 +7455,7 @@ torch_npu.npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, 
 
 约束说明:
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式。
 -   接口参数中shape格式字段含义：
     -   B：Batch表示输入样本批量大小，取值范围为0~65536。
     -   S：Seq-Length表示输入样本序列长度，取值范围为0~16。
@@ -7681,7 +7681,7 @@ torch_npu.npu_mla_prolog_v2(Tensor token_x, Tensor weight_dq, Tensor weight_uq_q
 
 约束说明:
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式。
 -   接口参数中shape格式字段含义：
     -   B：Batch表示输入样本批量大小，取值范围为0~65536。
     -   S：Seq-Length表示输入样本序列长度，取值范围为0~16。
@@ -7929,7 +7929,7 @@ comm_mode：可选str参数。表示通信模式，支持ai_cpu、aiv两种模�
 
 约束说明
 该接口支持训练场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 Atlas A2 训练系列产品支持2、4、8卡,  支持hccs链路all mesh组网(每张卡和其它卡两两相连). 
 Atlas A3 训练系列产品支持2、4、8、16卡,  支持hccs链路double ring组网(多张卡按顺序组成一个圈, 每张卡只和左右卡相连). 
 input不支持输入转置后的tensor, x2转置后输入, 需要满足shape的第一维大小与x1的最后一维相同, 满足matmul的计算条件. 
@@ -8068,7 +8068,7 @@ Atlas 推理系列产品: 数据类型支持float16、float.
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持float16、float、bfloat16. 
 
 约束说明
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 input、weight、bias、out、meanOut、rstdOut数据类型必须支持的范围之内. 
 out、meanOut、rstdOut的数据类型与input相同; weight、bias与input可以不同. 
 input第1维度能整除group. 
@@ -8147,7 +8147,7 @@ shape维度和input保持一致。
 约束说明
 comm_mode为ai_cpu时：
 该接口仅在训练场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 输入input、x2必须是2维, 分别为(m, k)、(k, n), 轴满足matmul算子入参要求, k轴相等, 且k轴取值范围为[256, 65535), m轴约束如下: 
 m轴需要整除world_size. 
 Atlas A2 训练系列产品支持2、4、8卡,  支持hccs链路all mesh组网(每张卡和其它卡两两相连). 
@@ -8270,7 +8270,7 @@ expertTokens: Tensor类型, 公式中的输出, 要求的是一个1D的Tensor, �
 
 约束说明
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 
 支持的PyTorch版本
 PyTorch 2.3
@@ -8341,7 +8341,7 @@ out: Tensor类型, 最后处理合并MoE FFN的输出结果.
 
 约束说明
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 
 支持的PyTorch版本
 PyTorch 2.4
@@ -8430,7 +8430,7 @@ row_idx: Tensor类型, 指示每个位置对应的原始行位置, shape要求�
 
 约束说明
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 
 支持的PyTorch版本
 PyTorch 2.1
@@ -8506,7 +8506,7 @@ norm_out（Tensor）：表示norm计算的输出结果。shape与`x`一致，数
 约束说明
 
 该接口支持推理场景下使用。
-该接口支持图模式（PyTorch 2.1版本）。
+该接口支持图模式。
 
 调用示例
 单算子模式调用
@@ -8600,7 +8600,7 @@ expanded_expert_idx: Tensor类型, 输出expert_idx排序后的结果.
 
 约束说明
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 
 支持的PyTorch版本
 PyTorch 2.1
@@ -8686,7 +8686,7 @@ torch_npu.npu_moe_init_routing_v2(Tensor x, Tensor expert_idx, *, Tensor? scale=
         动态quant场景下，即quant_mode为1，输出量化计算过程中scale的中间值，shape为(NUM_ROWS*K)。当scale未输入时，输出值未定义；当scale输入时，输出表示一个1D的Tensor，前available_idx_num个元素为有效数据，其余为无效数据，若x的输入类型为int8，输出值未定义。
 约束说明
     该接口支持推理场景下使用。
-    该接口支持图模式（PyTorch 2.1版本）。
+    该接口支持图模式。
     不支持静态量化模式。
     该算子支持两种性能模板，进入两种性能模板需要分别额外满足以下条件，不满足条件则进入通用模板：
     进入低时延性能模板需要同时满足以下条件：
@@ -8853,7 +8853,7 @@ offset: int类型, 默认值0, 取值大于等于0, 表示权重预取内存地�
 无
 
 约束说明
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 
 支持的PyTorch版本
 Pytorch 2.5
@@ -8951,7 +8951,7 @@ y: Tensor类型, 公式中的输出, 输出大小与input一致. 数据类型由
 
 约束说明
 该接口支持推理场景下使用. 
-该接口支持图模式(PyTorch 2.1版本). 
+该接口支持图模式. 
 input数据格式为NZ时, input输入shape支持3维, 形如(e, k, n), scales输入shape支持1维, zero_points输入为None, dtype为quint4x2. 
 div_mode为False时: 
 支持Atlas A2 训练系列产品/Atlas 800I A2 推理产品. 
@@ -9240,7 +9240,7 @@ torch_npu.npu_dequant_swiglu_quant(
 
 约束说明:
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式。
 -   group\_index场景下（非None）约束说明：
     -   group\_index只支持count模式，需要网络保证group\_index输入的求和不超过x的TokensNum维度，否则会出现越界访问。
     -   H轴有维度大小限制：H≤10496同时64对齐场景；规格不满足场景会进行校验。

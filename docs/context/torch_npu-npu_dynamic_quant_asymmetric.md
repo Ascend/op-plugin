@@ -56,7 +56,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
 ## 约束说明
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式。
 -   使用可选参数`smooth_scales`、`group_index`、`dst_type`时，必须使用关键字传参。
 
 ## 调用示例

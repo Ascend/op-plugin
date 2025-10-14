@@ -145,7 +145,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 ## 约束说明<a name="zh-cn_topic_0000001742717129_section12345537164214"></a>
 
 -   该接口仅在训练场景下使用。
--   该接口暂不支持图模式（PyTorch 2.1.0版本）。
+-   该接口暂不支持图模式。
 -   输入`query`、`key`、`value`、`pse`的数据类型必须一致。
 -   输入`query`、`key`、`value`的`input_layout`必须一致。
 -   输入`query`、`key`、`value`的shape说明：

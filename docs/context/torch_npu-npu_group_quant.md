@@ -39,7 +39,7 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
 
 - 如果`dst_dtype`为`quint4x2`，则输入`x`的shape的最后一维需要能被8整除。
 - 输入`group_index`必须是非递减序列，最小值不能小于0，最大值必须与输入`x`的shape的第0维大小相等。
-- 该接口支持图模式（PyTorch 2.1.0版本）。
+- 该接口支持图模式。
 
 ## 调用示例
 

@@ -48,7 +48,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 ## 约束说明<a name="zh-cn_topic_0000002259406069_section12345537164214"></a>
 
 -   该接口支持推理和训练场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 -   输入和输出Tensor支持的数据类型组合如下：
     |x|w|group_list|scale|bias|offset|pertoken_scale|shared_input|logit|row_index|y|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
