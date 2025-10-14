@@ -99,7 +99,7 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 ## 约束说明
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 -   `group_index`场景下（非None）约束说明：
     -   `group_index`只支持count模式，需要网络保证`group_index`输入的求和不超过`x`的TokensNum维度，否则会出现越界访问。
     -   H轴有维度大小限制：H≤10496同时64对齐场景；规格不满足场景会进行校验。

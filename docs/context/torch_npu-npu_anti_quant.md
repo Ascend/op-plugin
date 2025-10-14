@@ -59,7 +59,7 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
 ## 约束说明
 
 - 该接口支持推理、训练场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式。
 - `x`、`scale`这两个输入中不能为None。
 
 ## 调用示例

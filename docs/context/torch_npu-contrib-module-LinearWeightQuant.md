@@ -76,7 +76,7 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1.0版本）。当输入`weight`为FRACTAL_NZ格式时暂不支持单算子调用，只支持图模式调用。
+- 该接口支持图模式。当输入`weight`为FRACTAL_NZ格式时暂不支持单算子调用，只支持图模式调用。
 - `x`和`weight`后两维必须为(M, K)和(N, K)格式，K、N的范围为[1, 65535]；在`x`为非转置时，M的范围为[1, 2^31-1]；在`x`为转置时，M的范围为[1, 65535]。
 - 不支持空Tensor输入。
 - `antiquant_scale`和`antiquant_offset`的输入shape要保持一致。

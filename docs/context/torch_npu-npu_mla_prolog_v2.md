@@ -84,7 +84,7 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 ## 约束说明
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 -   接口参数中shape格式字段含义：
     -   B：Batch表示输入样本批量大小，取值范围为0\~65536。
     -   S：Seq-Length表示输入样本序列长度，取值范围为0\~16。

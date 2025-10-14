@@ -77,7 +77,7 @@ npu_moe_gating_top_k(x, k, *, bias=None, k_group=1, group_count=1, group_select_
 ## 约束说明
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1版本）。
+-   该接口支持图模式。
 
 ## 调用示例
 

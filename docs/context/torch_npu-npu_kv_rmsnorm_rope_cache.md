@@ -135,7 +135,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 ## 约束说明<a name="zh-cn_topic_0000002236535552_section1523425283618"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 -   量化模式：当`k_rope_scale`和`c_kv_scale`非空时，`k_cache`和`ckv_cache`的dtype为`int8`，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），`k_rope_scale`和`c_kv_scale`必须同时非空，`k_rope_offset`和`c_kv_offset`必须同时为None为非空。
 -   非量化模式：当`k_rope_scale`和`c_kv_scale`为空时，`k_cache`和`ckv_cache`的dtype为`bfloat16`或`float16`。
 -   索引映射：所有`cache_mode`缓存模式下，index的值不可以重复，如果传入的index值存在重复，算子的行为是未定义的且不可预知的。

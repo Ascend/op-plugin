@@ -35,7 +35,7 @@ torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1.0版本）。
+- 该接口支持图模式。
 
 ## 调用示例
 

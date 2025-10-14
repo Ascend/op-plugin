@@ -51,7 +51,7 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1版本）。
+- 该接口支持图模式。
 - 该接口仅在如下产品支持MoE场景。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>

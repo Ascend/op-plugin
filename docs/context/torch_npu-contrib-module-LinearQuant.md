@@ -73,7 +73,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1.0版本）。
+- 该接口支持图模式。
 - `x1`、`weight`、`scale`不能是空。
 - `x1`与`x2`最后一维的shape大小不能超过65535。
 - **int4**类型计算的额外约束：

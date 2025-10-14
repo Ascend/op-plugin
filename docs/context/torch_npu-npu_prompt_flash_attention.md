@@ -86,7 +86,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 ## 约束说明<a name="section12345537164214"></a>
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1.0版本）。
+- 该接口支持图模式。
 - 该接口与PyTorch配合使用时，需要保证CANN相关包与PyTorch相关包的版本匹配。
 - 入参为空的处理：算子内部需要判断参数`query`是否为空，如果是空则直接返回。参数`query`不为空Tensor，参数`key`、`value`为空Tensor(即$S2$为0)，则填充全零的对应shape的输出（填充`atten_out`）。`atten_out`为空Tensor时，AscendCLNN框架会处理。其余在上述参数说明中标注了"可传入`nullptr`"的入参为空指针时，不进行处理。
 - `query`、`key`、`value`输入，功能使用限制如下：

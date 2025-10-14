@@ -82,7 +82,7 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 ## 约束说明<a name="zh-cn_topic_0000002271534921_section75102046193618"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 -   不支持静态量化模式。
 -   进入低时延性能模板需要同时满足以下条件：
     -   `x`、`expert_idx`、`scale`输入Shape要求分别为：(1, 7168)、(1, 8)、(256, 7168)

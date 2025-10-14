@@ -50,7 +50,7 @@ torch_npu.npu_gelu(input, approximate='none') -> Tensor
 
 ## 约束说明
 
-- 该接口支持图模式（PyTorch 2.1.0版本）。
+- 该接口支持图模式。
 - `input`输入不能为None。
 
 ## 调用示例

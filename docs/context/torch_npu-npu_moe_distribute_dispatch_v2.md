@@ -179,7 +179,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 ## 约束说明<a name="zh-cn_topic_0000002203575833_section12345537164214"></a>
 
 -   该接口支持推理场景下使用。
--   该接口支持静态图模式（不低于PyTorch 2.1.0版本），并且`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`必须配套使用。
+-   该接口支持静态图模式，`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`必须配套使用。
 -   在不同产品型号、不同通信算法或不同版本中，`npu_moe_distribute_dispatch_v2`的Tensor输出`assist_info_for_combine`、`ep_recv_counts`、`tp_recv_counts`、`expand_scales`中的元素值可能不同，使用时直接将上述Tensor传给`npu_moe_distribute_combine_v2`对应参数即可，模型其他业务逻辑不应对其存在依赖。
 -   调用接口过程中使用的`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`参数取值所有卡需保持一致，`group_ep`、`ep_world_size`、`group_tp`、`tp_world_size`、`expert_shard_type`、`global_bs`网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)对应参数也保持一致。
 -   动态缩容后的部署信息通过elastic_info参数传递给算子，无需修改其他参数，缩容参数仅在`tp_world_size`取值为1时生效。动态缩容后，MOE专家卡上的本卡部署MOE专家数需与缩容前保持一致。

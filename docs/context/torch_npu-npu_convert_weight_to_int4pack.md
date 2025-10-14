@@ -30,7 +30,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式（PyTorch 2.1.0 版本）。
+- 该接口支持图模式，。
 
 
 ## 调用示例

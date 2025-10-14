@@ -51,7 +51,7 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 ## 约束说明
 
 -   该接口支持推理场景下使用。
--   该接口支持图模式（PyTorch 2.1.0版本）。
+-   该接口支持图模式。
 
 ## 调用示例
 
