@@ -229,7 +229,7 @@ at::Tensor scaled_dot_product_attention(
         // attn_mask supports dim is 2 or 4
         if (attn_mask.has_value() && attn_mask.value().dim() != ATTN_MASK_DIM_TWO && attn_mask.value().dim() != ATTN_MASK_DIM_FOUR) {
             c10::optional<at::Tensor> atten_mask_math = convert_boolean_attn_mask_math(attn_mask, query.dtype());
-            auto output = at::_scaled_dot_product_attention_math(query, key, value, atten_mask_math, dropout_p, is_causal, c10::nullopt, scale);
+            auto output = at::_scaled_dot_product_attention_math(query, key, value, atten_mask_math, dropout_p, is_causal, c10::nullopt, scale, enable_gqa);
             return std::get<0>(output);
         }
 
@@ -302,7 +302,7 @@ at::Tensor scaled_dot_product_attention(
     }
     c10::optional<at::Tensor> atten_mask_math = convert_boolean_attn_mask_math(attn_mask, query.dtype());
     auto output = at::_scaled_dot_product_attention_math(query, key, value, atten_mask_math, dropout_p, is_causal,
-                                                         c10::nullopt, scale);
+                                                         c10::nullopt, scale, enable_gqa);
     return std::get<0>(output);
 }
 #endif
