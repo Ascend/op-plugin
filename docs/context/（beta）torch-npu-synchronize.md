@@ -12,7 +12,7 @@ void torch::npu::synchronize(int64_t device_index = -1)
 
 ## 功能说明
 
-NPU设备同步接口，与void torch::cuda::synchronize(int64_t device_index = -1)相同。
+NPU设备同步接口，该接口会阻塞当前线程，直到所有已提交给NPU设备的计算任务执行完毕，与void torch::cuda::synchronize(int64_t device_index = -1)相同。
 
 ## 参数说明
 

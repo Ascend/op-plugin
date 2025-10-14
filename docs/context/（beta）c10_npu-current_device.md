@@ -12,7 +12,7 @@ c10::DeviceIndex c10_npu::current_device()
 
 ## 功能说明
 
-NPU设备id获取，返回值类型DeviceIndex，表示获取到的设备id，与c10::DeviceIndex c10::cuda::current_device()相同，与c10_npu::GetDevice主要区别是增加了错误检查。
+NPU设备id获取，返回值类型DeviceIndex，表示获取到的设备id，与Pytorch的1.11.0版本中c10::DeviceIndex c10::cuda::current_device()相同，与c10_npu::GetDevice主要区别是增加了错误检查。
 
 ## 支持的型号
 

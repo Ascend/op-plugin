@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-提供对Ascend PyTorch Profiler采集的性能数据进行离线解析。
+提供对Ascend PyTorch Profiler采集的性能数据进行离线解析的功能。
 
 ## 函数原型
 

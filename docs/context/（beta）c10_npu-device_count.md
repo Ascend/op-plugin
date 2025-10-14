@@ -12,7 +12,7 @@ c10::DeviceIndex c10_npu::device_count()
 
 ## 功能说明
 
-NPU设备数量获取，返回值类型DeviceIndex，与c10::DeviceIndex c10::cuda::device_count()相同。
+获取可使用的NPU数量，返回值类型DeviceIndex，与c10::DeviceIndex c10::cuda::device_count()相同。
 
 ## 支持的型号
 
