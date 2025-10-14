@@ -9,6 +9,18 @@ from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestFusedInferAttentionScore(TestCase):
+
+    def generate_int_tensor_with_sum(self, B, T):
+        if B <= 0 or T < 0:
+            raise ValueError("B 必须大于 0, T 必须是非负整数")
+        if B > T:
+            raise ValueError(f"无法生成 B={B} 个非负整数且总和为 T={T}, 每个数至少为 1, 所以 B <= T")
+        
+        partition_points = np.sort(np.random.choice(range(1, T), B - 1, replace = False))
+        partition_points = np.concatenate([[0], partition_points, [T]])
+        tensor = torch.tensor(np.diff(partition_points), dtype = torch.int)
+        return tensor
+
     def softmax(self, x):
         x = x.cpu().numpy().astype(np.float32)
         x_max = x.max(axis=-1, keepdims=True)
@@ -18,6 +30,48 @@ class TestFusedInferAttentionScore(TestCase):
         ans = y
         return ans, x_sum, x_max
 
+    def compute_golden_output_cpu(self, query, key_cache, value_cache, num_heads, num_key_value_heads, head_dim, block_size, block_table, seq_lens, scale, input_layout = "TND"):
+        B, H, D = query.shape
+        assert H == num_heads, f"Query heads {H} != num_heads {num_heads}"
+        assert D == head_dim, f"Query dim {D} != head_dim {head_dim}"
+
+        Block_num, Block_size, total_dim = value_cache.shape
+        value_head_dim = total_dim // num_key_value_heads
+
+        block_num, block_size, _ = key_cache.shape
+        T_kv = block_num * block_size
+
+        key_cache_reshaped = key_cache.view(block_num, block_size, num_key_value_heads, head_dim)
+        key_cache_reshaped = key_cache_reshaped.permute(2, 0, 1, 3)
+        key_cache_reshaped = key_cache_reshaped.reshape(num_key_value_heads, T_kv, head_dim)
+
+        value_cache_reshaped = value_cache.view(block_num, block_size, num_key_value_heads, value_head_dim)
+        value_cache_reshaped = value_cache_reshaped.permute(2, 0, 1, 3)
+        value_cache_reshaped = value_cache_reshaped.reshape(num_key_value_heads, T_kv, value_head_dim)
+
+        if num_key_value_heads == 1 and num_heads > 1:
+            key_cache_reshaped = key_cache_reshaped.expand(num_heads, T_kv, head_dim)
+            value_cache_reshaped = value_cache_reshaped.expand(num_heads, T_kv, value_head_dim)
+        elif num_key_value_heads == num_heads:
+            pass
+        else:
+            raise NotImplementedError("不支持的 num_key_value_heads != num_heads 且 != 1 的情况")
+        
+        query_expanded = query.unsqueeze(-2)
+        key_expanded = key_cache_reshaped.unsqueeze(0).expand(B, -1, -1, -1)
+        value_expanded = value_cache_reshaped.unsqueeze(0).expand(B, -1, -1, -1)
+
+        attn_scores = torch.matmul(query_expanded, key_expanded.transpose(-1, -2)) * scale
+        mask = torch.arange(T_kv, device = query.device).unsqueeze(0) < seq_lens.unsqueeze(1)
+        mask = mask.unsqueeze(1).unsqueeze(1)
+
+        attn_scores = attn_scores.masked_fill(~mask, float("-inf"))
+        attn_weights = torch.nn.functional.softmax(attn_scores, dim=-1)
+        attention_out = torch.matmul(attn_weights, value_expanded)
+
+        return attention_out
+
+    
     def supported_op_exec(self, query_states1, past_key, past_value, head_dim, B, N, S, softmax_lse_flag):
         attn_weights1 = torch.matmul(query_states1, past_key.transpose(2, 3)) / 0.0078125
         if (softmax_lse_flag == True):
@@ -220,6 +274,44 @@ class TestFusedInferAttentionScore(TestCase):
         golden_output = torch.ones(32, 8, 1, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
+
+
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_infer_attention_score_PA(self, DEVICE = "npu"):
+        B = 1
+        T = 69
+        head_dim = 192
+        num_heads = 16
+        num_kv_heads = 1
+        block_num = 1
+        block_size = 128
+        block_table = torch.randint(0, 10, [B, 32], dtype = torch.int32).npu()
+        query = torch.rand([B * 1, num_heads, head_dim], dtype=torch.float16).npu()
+        key_cache = torch.rand([block_num, block_size, num_kv_heads * head_dim], dtype=torch.float16).npu()
+        value_cache = torch.rand([block_num, block_size, num_kv_heads * 128], dtype=torch.float16).npu()
+        scale = head_dim**-0.5
+
+        seq_lens = self.generate_int_tensor_with_sum(B, T).to(torch.int32)
+        query_lens = torch.ones(B, dtype = torch.int32).npu()
+
+        attention_output = torch_npu.npu_fused_infer_attention_score(query, key_cache, value_cache, num_heads = num_heads, num_key_value_heads = num_kv_heads, input_layout = "TND",
+                            scale = scale, block_table = block_table, block_size = block_size, actual_seq_lengths = query_lens, actual_seq_lengths_kv = seq_lens)[0]
+        
+        query_cpu = query.detach().cpu().to(torch.float32)
+        key_cache_cpu = key_cache.detach().cpu().to(torch.float32)
+        value_cache_cpu = value_cache.detach().cpu().to(torch.float32)
+        block_table_cpu = block_table.detach().cpu()
+        seq_lens_cpu = seq_lens.detach().cpu()
+
+        golden_output = self.compute_golden_output_cpu(query = query_cpu, key_cache = key_cache_cpu, value_cache = value_cache_cpu, num_heads = num_heads, num_key_value_heads = num_kv_heads,
+            head_dim = head_dim, block_size = block_size, block_table = block_table_cpu, seq_lens = seq_lens_cpu, scale = scale)
+
+        golden_output_reshaped = golden_output.reshape(attention_output.shape)
+        golden_output_reshaped = golden_output_reshaped.to(torch.float16)
+        attention_out_cpu = attention_output.detach().cpu()
+
+        self.assertRtolEqual(golden_output_reshaped, attention_out_cpu)
 
 if __name__ == "__main__":
     run_tests()
