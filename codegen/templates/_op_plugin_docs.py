@@ -9846,7 +9846,7 @@ alltoallv和grouped matmul的融合算子，对alltoallv通信后的输出做gro
     permute_out_flag：为True：表明permute结果输出，为False时表明permute结果不输出，默认为false
     gmm_x_scale：device侧Tensor，计算输入，左矩阵反量化参数，仅当comm_mode为"aiv"时支持
     gmm_weight_scale：device侧Tensor，计算输入，右矩阵反量化参数，数据类型支持int64，仅在comm_mode为"aiv"时支持
-    comm_mode：str类型，计算输入，表示通信模式，当前Atlas A2上仅支持"aiv"，Atlas A3上支持"aicpu"和"aiv"，昇腾910_95上支持"ccu",不受环境变量的影响
+    comm_mode：str类型，计算输入，表示通信模式，当前Atlas A2上仅支持"aiv"，Atlas A3上支持"aicpu"和"aiv"，不受环境变量的影响
     y_dtype：int类型，计算输入，支持取值0和1，分别代表量化场景下，gmm_y的输出类型，0为float16,1为bfloat16
     max_output_token_num：int类型，表示gmm_y第一维的shape，仅在comm_mode为"aiv"时支持
     
@@ -9860,7 +9860,7 @@ alltoallv和grouped matmul的融合算子，对alltoallv通信后的输出做gro
 支持的型号
 Atlas A3训练系列产品
 Atlas A2训练系列产品
-昇腾910_95 AI处理器
+
 
 调用示例:
 import torch
@@ -10101,7 +10101,7 @@ grouped matmul和alltoallv的融合算子，对grouped matmul计算后的结果�
     global_token_per_expert：device侧Tensor，表示输入，通信矩阵，包含所有卡向专家发送的token数。数据类型支持INT32
     gmm_x_scale：device侧Tensor，计算输入，左矩阵反量化参数，仅当comm_mode为"aiv"时支持
     gmm_weight_scale：device侧Tensor，计算输入，右矩阵反量化参数，数据类型支持int64，仅在comm_mode为"aiv"时支持
-    comm_mode：str类型，计算输入，表示通信模式，当前Atlas A2上仅支持"aiv"，Atlas A3上支持"aicpu"和"aiv"，昇腾910_95上支持"ccu"，不受环境变量的影响
+    comm_mode：str类型，计算输入，表示通信模式，当前Atlas A2上仅支持"aiv"，Atlas A3上支持"aicpu"和"aiv"，不受环境变量的影响。
     y_dtype：int类型，计算输入，支持取值0和1，分别代表量化场景下，gmm_y的输出类型，0为float16,1为bfloat16
     output_token_num：int类型，表示gmm_y第一维的shape，仅在comm_mode为"aiv"时支持
 
@@ -10113,7 +10113,7 @@ grouped matmul和alltoallv的融合算子，对grouped matmul计算后的结果�
 支持的型号
 Atlas A3训练系列产品
 Atlas A2训练系列产品
-昇腾910_95 AI处理器
+
 
 调用示例:
 import torch
