@@ -178,10 +178,10 @@ void memcpyBatch(const at::TensorList dst, at::TensorList src, bool non_blocking
         attrs[i] = attr;
     }
     size_t failIdx = SIZE_MAX;
-    auto acl_stream = c10_npu::getCurrentNPUStream().stream();
+    auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);
     if (non_blocking) {
-        auto ret = c10_npu::acl::AclrtMemcpyBatchAsync(dsts, dstLens, srcs, srcLens, count, attrs, attrsIndexes, count,
-                                                       &failIdx, acl_stream);
+        auto ret = c10_npu::queue::LaunchBatchAsyncCopyTask(dsts, dstLens, srcs, srcLens, count, attrs, attrsIndexes,
+                                                            count, acl_stream);
         NPU_CHECK_ERROR(ret, "aclrtMemcpyBatchAsync");
     } else {
         aclError error = c10_npu::acl::AclrtSynchronizeStreamWithTimeout(acl_stream);
