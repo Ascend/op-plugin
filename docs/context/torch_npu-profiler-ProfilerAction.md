@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-Profiler状态，Enum类型。
+用于控制Profiler行为状态，如性能数据采集、性能数据采集预热、性能数据采集并保存，Enum类型。
 
 ## 函数原型
 
@@ -38,9 +38,8 @@ import torch
 import torch_npu
 
 ...
-
-torch_npu.profiler.ProfilerAction.WARMUP
 with torch_npu.profiler.profile(
+    schedule=torch_npu.profiler.ProfilerAction.RECORD,
     on_trace_ready=torch_npu.profiler.tensorboard_trace_handler("./result")
     ) as prof:
             for step in range(steps): # 训练函数

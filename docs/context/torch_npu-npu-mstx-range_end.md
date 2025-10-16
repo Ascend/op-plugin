@@ -29,3 +29,13 @@ torch_npu.npu.mstx.range_end(range_id: int, domain: str='default') -> int:
 ## 返回值说明
 
 无
+
+## 调用示例
+
+以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
+
+```python
+id = torch_npu.npu.mstx.range_start("dataloader", None)    # 第二个入参设置None或者不设置，只记录Host侧range耗时
+dataloader()
+torch_npu.npu.mstx.range_end(id)
+```
