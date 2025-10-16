@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-将采集到的性能数据导出为TensorBoard工具支持的格式。作为torch_npu.profiler.profile on_trace_ready参数的执行操作。
+采集完成后的回调函数，用于控制导出性能数据。
 
 ## 函数原型
 

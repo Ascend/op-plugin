@@ -35,3 +35,28 @@ torch_npu.npu.mstx.mark(message: str, stream=None, domain: str='default') -> non
 ## 返回值说明
 
 无
+
+## 调用示例
+
+以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
+
+
+```python
+import torch
+import torch_npu
+
+experimental_config = torch_npu.profiler._ExperimentalConfig(
+    profiler_level=torch_npu.profiler.ProfilerLevel.Level_none,
+    mstx=True,
+    export_type=[
+        torch_npu.profiler.ExportType.Db
+        ])
+with torch_npu.profiler.profile(
+    schedule=torch_npu.profiler.schedule(wait=1, warmup=1, active=2, repeat=1, skip_first=1),
+    on_trace_ready=torch_npu.profiler.tensorboard_trace_handler("./result"),
+    experimental_config=experimental_config) as prof:
+       
+    for step in range(steps):
+        train_one_step()    # 用户代码，包含调用mstx接口
+        prof.step()
+```
