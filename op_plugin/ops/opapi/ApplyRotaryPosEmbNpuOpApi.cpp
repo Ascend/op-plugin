@@ -20,6 +20,7 @@ namespace op_api {
 constexpr int64_t LAYOUT_BSND_BSH = 1;
 constexpr int64_t LAYOUT_SBND = 2;
 constexpr int64_t LAYOUT_BNSD = 3;
+constexpr int64_t LAYOUT_TND = 4;
 std::tuple<at::Tensor, at::Tensor> _apply_rotary_pos_emb_v1(
     const at::Tensor &query,
     const at::Tensor &key,
@@ -48,6 +49,8 @@ std::tuple<at::Tensor, at::Tensor> npu_apply_rotary_pos_emb(
         lay_out = LAYOUT_BNSD;
     } else if (layout_str == "SBND") {
         lay_out = LAYOUT_SBND;
+    } else if (layout_str == "TND") {
+        lay_out = LAYOUT_TND;
     }
     DO_COMPATIBILITY(aclnnApplyRotaryPosEmbV2, _apply_rotary_pos_emb_v1(query, key, cos, sin, lay_out));
 
