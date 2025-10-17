@@ -10695,8 +10695,8 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 
 参数说明: 
 logits(torch.Tensor): 输入张量，支持2维，数据类型支持torch.bfloat16, torch.float16, torch.float32。
-p(torch.Tensor): 表示top-p的阈值，值域为[0, 1]，数据类型支持torch.bfloat16, torch.float16, torch.float32，数据类型需要与logits一致，shape支持1维且需要与logits的首轴相同，支持非连续Tensor，支持空tensor，支持ND
-k(torch.Tensor): 表示top-k的阈值，值域为[1, 1024]，且最大值需要小于等于logits.size(1)，数据类型支持torch.int32，shape支持1维且需要与logits的首轴相同，支持非连续Tensor，支持空tensor，支持ND
+p(torch.Tensor): 可选张量，默认值为None，不支持p和k同时传None。表示top-p的阈值，值域为[0, 1]，数据类型支持torch.bfloat16, torch.float16, torch.float32，数据类型需要与logits一致，shape支持1维且需要与logits的首轴相同，支持非连续Tensor，支持空tensor，支持ND
+k(torch.Tensor): 可选张量，默认值为None，不支持p和k同时传None。表示top-k的阈值，值域为[1, 1024]，且最大值需要小于等于logits.size(1)，数据类型支持torch.int32，shape支持1维且需要与logits的首轴相同，支持非连续Tensor，支持空tensor，支持ND
 
 输出说明: 
 out(torch.Tensor): 表示过滤后的数据。数据类型支持torch.bfloat16, torch.float16, torch.float32，数据类型需要与logits一致，shape支持2维且需要与logits一致，支持非连续Tensor，数据格式支持ND

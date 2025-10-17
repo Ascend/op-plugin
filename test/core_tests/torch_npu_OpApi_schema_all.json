@@ -431,7 +431,7 @@
   "func: adaptive_max_pool3d_backward(Tensor grad_output, Tensor self, Tensor indices) -> Tensor": {
     "version": ["all_version"]
   },
-  "func: npu_top_k_top_p(Tensor logits, Tensor p, Tensor k) -> Tensor": {
+  "func: npu_top_k_top_p(Tensor logits, Tensor? p=None, Tensor? k=None) -> Tensor": {
     "version": ["all_version"]
   },
     "func: npu_top_k_top_p_sample(Tensor logits, Tensor top_k, Tensor top_p, Tensor? q=None, float eps=1e-8, bool is_need_logits=False, int top_k_guess=32) -> (Tensor, Tensor)": {
