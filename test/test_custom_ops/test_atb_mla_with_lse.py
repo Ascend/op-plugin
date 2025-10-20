@@ -491,5 +491,118 @@ class TestAtbAttention(TestCase):
         self.assertRtolEqual(go_output, self.golden_out)
         self.assertRtolEqual(lse_output, self.lse)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_atb_attention_with_lse_out_aclgraph(self):
+        num_tokens = 32
+        num_heads = 32
+        kv_heads = 1
+        block_size = 128
+        head_size_qk = 576
+        head_size_vo = 512
+        num_blocks = 64
+        k_seqlen = 256
+        tor = 1.0 / (head_size_qk ** 0.5)
+        mask_dim = 0
+        dtype = torch.float16
+        is_kv_combined = True
+        self.is_ring = 0
+        is_nz_in = False
+
+        self.calc_data(num_tokens, num_heads, kv_heads, head_size_qk, head_size_vo, block_size, num_blocks, k_seqlen,
+                       dtype, mask_dim, dtype,
+                       is_kv_combined=is_kv_combined, is_nz_in=is_nz_in)
+        go_output = torch.empty(
+            [num_tokens, num_heads, 512],
+            dtype=torch.float16,
+        ).npu()
+
+        lse_output = torch.empty(
+            [num_tokens, num_heads, 1],
+            dtype=torch.float16,
+        ).npu()
+        go_output_graph = torch.empty([num_tokens, num_heads, 512], dtype=torch.float16).npu()
+        lse_output_graph = torch.empty([num_tokens, num_heads, 1], dtype=torch.float16).npu()
+        context_lens_new = [1024] * len(self.contex_lens)
+        context_lens_new_tensor = torch.tensor(context_lens_new).int()
+        q_nope, q_rope, ctkv, k_rope, block_tables, context_lens = self.q_split1.npu(), self.q_split2.npu(), self.key_cache_split1.npu(), self.key_cache_split2.npu(), torch.tensor(self.block_tables).int().npu(), torch.tensor(self.contex_lens).int()
+        torch_npu.atb.npu_multi_head_latent_attention(
+            q_nope,
+            q_rope,
+            ctkv,
+            k_rope,
+            block_tables,
+            context_lens_new_tensor,
+            num_heads,
+            tor,
+            kv_heads,
+            True,
+            calc_type="calc_type_ring",
+            output=go_output,
+            lse=lse_output
+        )
+        g = torch.npu.NPUGraph()
+        event = torch.npu.ExternalEvent()
+        update_stream = torch.npu.Stream()
+        handle = None
+        workspace = torch_npu.atb._npu_multi_head_latent_attention_get_workspace(
+            q_nope,
+            q_rope,
+            ctkv,
+            k_rope,
+            block_tables,
+            context_lens_new_tensor,
+            num_heads,
+            tor,
+            kv_heads,
+            True,
+            calc_type="calc_type_ring")
+
+        with torch.npu.graph(g):
+            stream = torch.npu.current_stream()
+            event.wait(stream)
+            event.reset(stream)
+            torch.npu.graph_task_group_begin(stream)
+            torch_npu.atb.npu_multi_head_latent_attention(
+                q_nope,
+                q_rope,
+                ctkv,
+                k_rope,
+                block_tables,
+                context_lens,
+                num_heads,
+                tor,
+                kv_heads,
+                True,
+                calc_type="calc_type_ring",
+                workspace=workspace,
+                output=go_output_graph,
+                lse=lse_output_graph
+            )
+            handle = torch.npu.graph_task_group_end(stream)
+        
+        with torch.npu.stream(update_stream):
+            torch.npu.graph_task_update_begin(update_stream, handle)
+            torch_npu.atb.npu_multi_head_latent_attention(
+                q_nope,
+                q_rope,
+                ctkv,
+                k_rope,
+                block_tables,
+                context_lens_new_tensor,
+                num_heads,
+                tor,
+                kv_heads,
+                True,
+                calc_type="calc_type_ring",
+                workspace=workspace,
+                output=go_output_graph,
+                lse=lse_output_graph
+            )
+            torch.npu.graph_task_update_end(update_stream)
+            event.record(update_stream)
+        g.replay()
+        self.assertEqual(go_output.cpu(), go_output_graph.cpu())
+        self.assertEqual(lse_output.cpu(), lse_output_graph.cpu())
+
 if __name__ == "__main__":
     run_tests()
