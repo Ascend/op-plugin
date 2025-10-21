@@ -20,7 +20,7 @@ Multi-head attention。
 - bias (Bool，默认值为True) - 如果指定此参数，则向输入/输出投影层添加偏置。
 - add_bias_kv (Bool，默认值为False) - 如果指定此参数，则在dim=0处向键值序列添加偏置。
 - add_zero_attn (Bool，默认值为False) - 如果指定此参数，则在dim=1处向键值序列新加一批零。
-- self_attention (Bool，默认值为False) - 计算你自己的attention score。
+- self_attention (Bool) - 表示是否为自注意力层，若取值为True，要求embed_dim、kdim、vdim取值相等。默认值为False。
 - encoder_decoder_attention (Bool，默认值为False) - 输入为编码器输出和解码器self-attention输出，其中编码器self-attention用作key和value，解码器self-attention用作查询。
 - q_noise(Float) - 量化噪声量。
 - qn_block_size(Int) - 用于后续iPQ量化的块大小。

@@ -30,8 +30,8 @@ torch_npu.npu_moe_re_routing(Tensor tokens, Tensor expert_token_num_per_rank, *,
 -   tokens：Tensor类型，表示待重新排布的token。要求为2D，shape为\[A, H\]，数据类型支持float16、bfloat16、int8，数据格式为ND。
 -   expert\_token\_num\_per\_rank：Tensor类型，表示每张卡上各个专家处理的token数。要求为2D，shape为\[N, E\]，数据类型支持int32、int64，数据格式为ND。取值必须大于0。
 -   per\_token\_scales：Tensor类型，可选，表示每个token对应的scale，需要随token同样进行重新排布。要求为1D，shape为\[A\]，数据类型支持float32，数据格式为ND。
--   expert\_token\_num\_type：int类型，可选，表示输出expert\_token\_num的模式。0为cumsum模式，1为count模式，默认值为1。当前只支持为1。
--   idx\_type：int类型，可选，表示输出permute\_token\_idx的索引类型。0为gather索引，1为scatter索引，默认值为0。当前只支持为0。
+-   expert\_token\_num\_type：int类型，可选，表示输出expert\_token\_num的模式。0为cumsum模式，1为count模式，默认值为1。当前只支持1。
+-   idx\_type：int类型，可选，表示输出permute\_token\_idx的索引类型。0为gather索引，1为scatter索引，默认值为0。当前只支持0。
 
 ## 输出说明
 

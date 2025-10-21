@@ -34,7 +34,7 @@ torch_npu.npu.mstx.mark(message: str, stream=None, domain: str='default') -> non
 <td class="cellrowborder" valign="top" width="26.782678267826782%" headers="mcps1.2.4.1.2 "><p id="p1920117129516"><a name="p1920117129516"></a><a name="p1920117129516"></a>输入</p>
 </td>
 <td class="cellrowborder" valign="top" width="44.56445644564456%" headers="mcps1.2.4.1.3 "><p id="p175061539114317"><a name="p175061539114317"></a><a name="p175061539114317"></a>用于执行打点任务的stream。</p>
-<a name="ul9122114715433"></a><a name="ul9122114715433"></a><ul id="ul9122114715433"><li>配置为nullptr时，只标记Host侧的瞬时事件。</li><li>配置为有效的stream时，标记Host侧和对应Device侧的瞬时事件。</li></ul>
+<a name="ul9122114715433"></a><a name="ul9122114715433"></a><ul id="ul9122114715433"><li>配置为None时，只标记Host侧的瞬时事件。</li><li>配置为有效的stream时，标记Host侧和对应Device侧的瞬时事件。</li></ul>
 </td>
 </tr><tr id="row18212822311"><td class="cellrowborder" valign="top" width="28.65286528652865%" headers="mcps1.2.4.1.1 "><p id="p211549516">domain</p>
 </td>

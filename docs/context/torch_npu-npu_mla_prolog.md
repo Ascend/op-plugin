@@ -83,9 +83,9 @@ torch_npu.npu_mla_prolog(Tensor token_x, Tensor weight_dq, Tensor weight_uq_qr, 
 -   **quant\_scale\_ckv**（Tensor）：可选参数，用于对输出到kv\_cache\_out中的数据做量化操作时的参数。shape支持2维，格式为\(1, Hckv\)，dtype支持float，数据格式支持ND。
 -   **quant\_scale\_ckr**（Tensor）：可选参数，用于对输出到kr\_cache\_out中的数据做量化操作时的参数。shape支持2维，格式为\(1, Dr\)，dtype支持float，数据格式支持ND。
 -   **smooth\_scales\_cq**（Tensor）：可选参数，用于对RmsNormCq输出做动态量化操作时的参数。shape支持2维，格式为\(1, Hcq\)，dtype支持float，数据格式支持ND。
--   **rmsnorm\_epsilon\_cq**（float）：可选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
--   **rmsnorm\_epsilon\_ckv**（float）：可选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的ε参数，用户不特意指定时可传入默认值1e-05。
--   **cache\_mode**（str）：可选参数，表示kvCache的模式，支持"PA\_BSND"、"PA\_NZ"，用户不特意指定时可传入默认值“PA\_BSND”。
+-   **rmsnorm\_epsilon\_cq**（float）：可选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的ε参数，默认值为1e-05。
+-   **rmsnorm\_epsilon\_ckv**（float）：可选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的ε参数，默认值为1e-05。
+-   **cache\_mode**（str）：可选参数，表示kvCache的模式，支持"PA\_BSND"、"PA\_NZ"，默认值为“PA\_BSND”。
 
 ## 返回值说明<a name="zh-cn_topic_0000002191987496_section22231435517"></a>
 
