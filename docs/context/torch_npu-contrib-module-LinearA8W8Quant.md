@@ -43,12 +43,12 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
     - <term>Atlas 推理系列产品</term>：需要调用torchair.experimental.inference.use_internal_format_weight或torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：需要调用torch_npu.npu_format_cast完成weight（batch,n,k）高性能数据排布功能，但不推荐使用该module方式，推荐torch_npu.npu_quant_matmul。
 
-- **scale**（`Tensor`）：量化计算的scale。数据格式支持$ND$，shape是1维(t,)，t=1或n，其中n与`weight`的n一致。如需传入`int64`数据类型的scale，需要提前调用torch_npu.npu_trans_quant_param接口来获取`int64`数据类型的scale。
+- **scale**（`Tensor`）：量化计算的scale。数据格式支持$ND$，shape为1维(t,)，t=1或n，其中n与`weight`的n一致。如需传入`int64`数据类型的scale，需要提前调用torch_npu.npu_trans_quant_param接口来获取`int64`数据类型的scale。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float32`、`int64`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
 
-- **offset**（`Tensor`）：量化计算的offset。可选参数。数据类型支持`float32`，数据格式支持$ND$，shape是1维(t,)，t=1或n，其中n与`weight`的n一致。
-- **pertoken_scale**（`Tensor`）：可选参数。量化计算的pertoken。数据类型支持`float32`，数据格式支持$ND$，shape是1维(m,)，其中m与`x1`的m一致。目前仅在输出为`float16`和`bfloat16`场景下可不为空。<term>Atlas 推理系列产品</term>当前不支持`pertoken_scale`。
+- **offset**（`Tensor`）：量化计算的offset。可选参数。数据类型支持`float32`，数据格式支持$ND$，shape为1维(t,)，t=1或n，其中n与`weight`的n一致。
+- **pertoken_scale**（`Tensor`）：可选参数。量化计算的pertoken。数据类型支持`float32`，数据格式支持$ND$，shape为1维(m,)，其中m与`x1`的m一致。目前仅在输出为`float16`和`bfloat16`场景下可不为空。<term>Atlas 推理系列产品</term>当前不支持`pertoken_scale`。
 - **bias**（`Tensor`）：可选参数。矩阵乘中的bias。数据格式支持$ND$，shape支持1维(n,)或3维(batch, 1, n)，n与`weight`的n一致，同时batch值需要等于x1，weight broadcast后推导出的batch值。当输出为2、4、5、6维情况下，bias shape为1维；当输出为3维情况下，bias shape为1维或3维。
     - <term>Atlas 推理系列产品</term>：数据类型支持`int32`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。

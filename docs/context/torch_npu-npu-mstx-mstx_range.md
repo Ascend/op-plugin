@@ -25,7 +25,7 @@ torch_npu.npu.mstx.mstx_range(msg: str, stream=None, domain: str='default')
 
 - **msg** (`str`)：可选参数，打点携带信息字符串指针。
 - **stream** (`int`)：可选参数，用于执行打点任务的stream。
-  - 配置为nullptr时，只标记Host侧的瞬时事件。
+  - 配置为None时，只标记Host侧的瞬时事件。
   - 配置为有效的stream时，标记Host侧和对应Device侧的瞬时事件。
 - **domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内，标识时间段事件。默认为default，表示默认domain，不设置也为默认domain。
 
