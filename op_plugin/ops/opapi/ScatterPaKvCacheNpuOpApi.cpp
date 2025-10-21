@@ -31,10 +31,15 @@ std::tuple<at::Tensor, at::Tensor> npu_scatter_pa_kv_cache_functional(
     const c10::optional<at::Tensor>& seq_lens)
 {
     char* cache_mode = "PA_NZ";
+    char* scatter_mode = "None";
+    c10::SmallVector<int64_t, op_infer::SIZE> strides_size = {1, 1};
+    at::IntArrayRef strides = at::IntArrayRef(strides_size);
+    c10::SmallVector<int64_t, op_infer::SIZE> offsets_size = {0, 0};
+    at::IntArrayRef offsets = at::IntArrayRef(offsets_size);
     auto keyCacheClone = key_cache.clone(at::MemoryFormat::Contiguous);
     auto valueCacheClone = value_cache.clone(at::MemoryFormat::Contiguous);
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnScatterPaKvCache, key, keyCacheClone, slot_mapping, value,
-        valueCacheClone, compress_lens, compress_seq_offsets, seq_lens, cache_mode);
+        valueCacheClone, compress_lens, compress_seq_offsets, seq_lens, cache_mode, scatter_mode, strides, offsets);
     return std::make_tuple(keyCacheClone, valueCacheClone);
 }
 
@@ -49,8 +54,14 @@ void npu_scatter_pa_kv_cache(
     const c10::optional<at::Tensor>& seq_lens)
 {
     char* cache_mode = "PA_NZ";
+    char* scatter_mode = "None";
+    c10::SmallVector<int64_t, op_infer::SIZE> strides_size = {1, 1};
+    at::IntArrayRef strides = at::IntArrayRef(strides_size);
+    c10::SmallVector<int64_t, op_infer::SIZE> offsets_size = {0, 0};
+    at::IntArrayRef offsets = at::IntArrayRef(offsets_size);
+
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnScatterPaKvCache, key, key_cache, slot_mapping, value, value_cache,
-                                 compress_lens, compress_seq_offsets, seq_lens, cache_mode);
+        compress_lens, compress_seq_offsets, seq_lens, cache_mode, scatter_mode, strides, offsets);
 }
 
 }
