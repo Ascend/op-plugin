@@ -28,7 +28,7 @@ torch_npu.contrib.module.MultiheadAttention(embed_dim, num_heads, kdim=None, vdi
 - **bias** (`bool`)：如果指定此参数，则向输入/输出投影层添加偏置。默认值为True。
 - **add_bias_kv** (`bool`)：如果指定此参数，则在dim=0处向键值序列添加偏置。默认值为False。
 - **add_zero_attn** (`bool`)：如果指定此参数，则在dim=1处向键值序列新加一批零。默认值为False。
-- **self_attention**(`bool`)：计算你自己的attention score。默认值为False。
+- **self_attention**(`bool`)：表示是否为自注意力层，若取值为True，要求`embed_dim`、`kdim`、`vdim`取值相等。默认值为False。
 - **encoder_decoder_attention** (`bool`)：输入为编码器输出和解码器self-attention输出，其中编码器self-attention用作key和value，解码器self-attention用作查询。默认值为False。
 - **q_noise**(`float`)：量化噪声量。
 - **qn_block_size**(`int`)：用于后续iPQ量化的块大小。

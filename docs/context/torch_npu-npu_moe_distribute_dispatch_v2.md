@@ -216,7 +216,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 -   HCCL_BUFFSIZE:
     调用本接口前需检查HCCL\_BUFFSIZE环境变量取值是否合理该环境变量表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：
-        - comm\_alg配置为""或nullptr: 依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
+        - comm\_alg配置为"": 依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
         - comm\_alg配置为"fullmesh": 要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(unit16\)+2MB\)。
         - comm\_alg配置为"hierarchy": 要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB，不要求moe\_expert\_num\/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
 

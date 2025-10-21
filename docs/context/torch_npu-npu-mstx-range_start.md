@@ -27,7 +27,7 @@ torch_npu.npu.mstx.range_start(message: str, stream=None, domain: str='default')
   - MSPTI场景：不能超过255字节。
   - 非MSPTI场景：不能超过156字节。
 - **stream** (`int`)：可选参数，用于执行打点任务的stream。
-  - 配置为nullptr时，只标记Host侧的瞬时事件。
+  - 配置为None时，只标记Host侧的瞬时事件。
   - 配置为有效的stream时，标记Host侧和对应Device侧的瞬时事件。
 - **domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内标记瞬时事件。默认为default，表示默认domain，不设置也为默认domain。
 

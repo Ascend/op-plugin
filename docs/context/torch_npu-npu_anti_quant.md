@@ -32,7 +32,7 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
   - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
 
-- **scale** (`Tensor`)：必选参数，反量化中的`scale`值，仅支持1维Tensor，shape为$(n,)$。其中n可以为1，如果n不为1，当`x`为`int8`类型，必须与输入`x`的尾轴维度大小相同；当`x`为`int32`类型时，必须为输入`x`的尾轴维度大小的8倍。数据格式支持$ND$，支持非连续的Tensor，支持空Tensor。
+- **scale** (`Tensor`)：必选参数，反量化中的`scale`值，仅支持1维Tensor，shape为$(n,)$。其中n可以为1，如果n不为1，当`x`为`int8`类型时，必须与输入`x`的尾轴维度大小相同；当`x`为`int32`类型时，必须为输入`x`的尾轴维度大小的8倍。数据格式支持$ND$，支持非连续的Tensor，支持空Tensor。
   - <term>Atlas 推理系列产品</term>：数据类型支持`float32`。
   - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
