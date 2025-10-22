@@ -2992,6 +2992,32 @@ class TestGroupedMatmulSwigluQuant(TestCase):
             self.assertTrue(output2_npu.dtype == output2.dtype)
 
 
+@unittest.skip("skip until CANN is updated to support aclnnGroupedMatmulSwigluQuantWeightNzV2")
+class TestGroupedMatmulSwigluQuantV2(TestCase):
+    def test_npu_grouped_matmul_swiglu_quant_v2(self):
+        with FakeTensorMode():
+            E = 16
+            M = 512
+            K = 7168
+            N = 4096
+            x = torch.randint(-128, 127, (M, K), dtype=torch.int8)
+            weight = torch.randint(-128, 127, (E, K, N), dtype=torch.int8)
+            weight_npu = torch_npu.npu_format_cast(weight.npu(), 29)
+            weight_npu = [weight_npu]
+            weightScale = torch.randn(E, N)
+            xScale = torch.randn(M)
+            groupList = torch.randn(E)
+            output0 = torch.empty([M, N // 2], dtype=torch.int8, device=x.device)
+            output1 = torch.empty([M], dtype=torch.float32, device=x.device)
+            output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), weight_npu, [weightScale.npu()], xScale.npu(), groupList.npu(), smooth_scale=None, 
+                                                                                    weight_assist_matrix=None, bias=None, dequant_mode=0, dequant_dtype=0, quant_mode=0,
+                                                                                    quant_dtype=0, group_list_type=0,  tuning_config=None)
+            self.assertTrue(output0_npu.shape == output0.shape)
+            self.assertTrue(output0_npu.dtype == output0.dtype)
+            self.assertTrue(output1_npu.shape == output1.shape)
+            self.assertTrue(output1_npu.dtype == output1.dtype)
+
+
 @unittest.skip("skip until CANN is updated to support aclnnDynamicBlockQuant")
 class TestNpuDynamicBlockQuant(TestCase):
     def test_npu_dynamic_block_quant_meta(self):

@@ -64,6 +64,7 @@
       "npu_group_norm_swish",
       "npu_mrope",
       "npu_grouped_matmul_finalize_routing",
+      "npu_grouped_matmul_swiglu_quant_v2",
       "npu_alltoallv_gmm",
       "npu_gmm_alltoallv",
       "npu_nsa_compress",

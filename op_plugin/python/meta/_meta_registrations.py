@@ -3041,6 +3041,15 @@ def npu_grouped_matmul_swiglu_quant_meta(x, weight, group_list, weight_scale, x_
     return output_shape, output_scale_shape, output_offset_shape
 
 
+@impl(m, "npu_grouped_matmul_swiglu_quant_v2")
+def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, group_list, *, smooth_scale=None, weight_assist_matrix=None, bias=None, dequant_mode=0, dequant_dtype=0, quant_mode=0, quant_dtype=0, group_list_type=0, tuning_config=None):
+    batch_size = x.size(0)
+    n = weight[0].size(2)
+    output_shape = torch.empty([batch_size, n // 2], dtype=torch.int8, device=x.device)
+    output_scale_shape = torch.empty([batch_size], dtype=torch.float32, device=x.device)
+    return output_shape, output_scale_shape
+
+
 @impl(m, "npu_moe_token_unpermute_with_routing_map")
 def npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indices, restore_shape, *, probs=None, routing_map=None, drop_and_pad=False):
     unpermuted_tokens = torch.empty([restore_shape[0], restore_shape[1]], dtype=permuted_tokens.dtype, device=permuted_tokens.device)
