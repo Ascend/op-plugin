@@ -31,7 +31,7 @@ torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> ()
 
 ## 约束说明
 
-该接口支持图模式，。
+该接口支持图模式。
 
 
 

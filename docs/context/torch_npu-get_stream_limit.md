@@ -26,7 +26,7 @@ torch.npu.get_stream_limit(stream) ->Dict
 ## 返回值说明
 `Dict`
 
-代表`stream`的cube和vector核数。
+代表`stream`的Cube和Vector核数。
 
 ## 约束说明
 

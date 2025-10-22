@@ -23,11 +23,11 @@ class torch_npu.optim.NpuFusedAdamP(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-
 - **params** (`dict`)：必选参数，模型参数或模型参数组，`params`为参数的可迭代对象或参数组的dict类型。
 - **lr** (`float`)：可选参数，学习率，默认值为1e-3。
 - **betas** (`Tuple[float, float]`)：可选参数，用于计算梯度及其平方的运行平均值的系数，`betas`为包含两个值的tuple类型，默认值为（0.9，0.999）。
-- **eps** (`float`)：可选参数，分母防止除0项，提高数值稳定性，默认值为1e-8。
+- **eps** (`float`)：可选参数，分母防止除零项，提高数值稳定性，默认值为1e-8。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。
 - **delta** (`float`)：余弦相似度阈值，默认值为0.1。
 - **wd_ratio** (`float`)：权重衰减动态调整速率，默认值为0.1。
-- **nesterov** (`bool`)：使用nesterov动量，默认值为False。
+- **nesterov** (`bool`)：使用Nesterov动量，默认值为False。
 
 
 ## 返回值说明

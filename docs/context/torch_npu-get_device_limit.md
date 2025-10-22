@@ -25,7 +25,7 @@ torch.npu.get_device_limit(device) ->Dict
 ## 返回值说明
 `Dict`
 
-代表`Device`的cube和vector核数。
+代表`Device`的Cube和Vector核数。
 
 ## 约束说明
 

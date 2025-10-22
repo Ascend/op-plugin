@@ -25,7 +25,7 @@ torch_npu.npu_sort_v2(self, dim=-1, descending=False, out=None) -> Tensor
 ## 参数说明
 
 - **self**（`Tensor`）：输入张量。
-- **dim**（`(int`）：可选参数，进行排序的维度，默认值为-1。
+- **dim**（`int`）：可选参数，进行排序的维度，默认值为-1。
 - **descending**（`bool`）：可选参数，排序顺序控制（升序或降序），默认值为None。
 
 ## 约束说明

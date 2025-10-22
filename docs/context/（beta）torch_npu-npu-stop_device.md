@@ -22,7 +22,7 @@ torch_npu.npu.stop_device(device_id: int) -> int
 
 ## 参数说明
 
-**device_id**（`int`）：需要处理的device id，确保是一个有效地device。
+**device_id**（`int`）：需要处理的device id，确保是一个有效的device。
 
 ## 返回值说明
 `int`

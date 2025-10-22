@@ -2,25 +2,12 @@
 
 ## 产品支持情况<a name="zh-cn_topic_0000002319693140_section8593133131718"></a>
 
-<a name="zh-cn_topic_0000002319693140_table1659316316174"></a>
-<table><thead align="left"><tr id="zh-cn_topic_0000002319693140_row2059343171716"><th class="cellrowborder" valign="top" width="57.99999999999999%" id="mcps1.1.3.1.1"><p id="zh-cn_topic_0000002319693140_p125930301711"><a name="zh-cn_topic_0000002319693140_p125930301711"></a><a name="zh-cn_topic_0000002319693140_p125930301711"></a><span id="zh-cn_topic_0000002319693140_ph12593183191719"><a name="zh-cn_topic_0000002319693140_ph12593183191719"></a><a name="zh-cn_topic_0000002319693140_ph12593183191719"></a>产品</span></p>
-</th>
-<th class="cellrowborder" align="center" valign="top" width="42%" id="mcps1.1.3.1.2"><p id="zh-cn_topic_0000002319693140_p18593639173"><a name="zh-cn_topic_0000002319693140_p18593639173"></a><a name="zh-cn_topic_0000002319693140_p18593639173"></a>是否支持</p>
-</th>
-</tr>
-</thead>
-<tbody><tr id="zh-cn_topic_0000002319693140_row859317311178"><td class="cellrowborder" valign="top" width="57.99999999999999%" headers="mcps1.1.3.1.1 "><p id="zh-cn_topic_0000002319693140_p1559312351715"><a name="zh-cn_topic_0000002319693140_p1559312351715"></a><a name="zh-cn_topic_0000002319693140_p1559312351715"></a><span id="zh-cn_topic_0000002319693140_ph6756134210183"><a name="zh-cn_topic_0000002319693140_ph6756134210183"></a><a name="zh-cn_topic_0000002319693140_ph6756134210183"></a><term id="zh-cn_topic_0000002319693140_zh-cn_topic_0000001312391781_term11962195213215"><a name="zh-cn_topic_0000002319693140_zh-cn_topic_0000001312391781_term11962195213215"></a><a name="zh-cn_topic_0000002319693140_zh-cn_topic_0000001312391781_term11962195213215"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></term></span></p>
-</td>
-<td class="cellrowborder" align="center" valign="top" width="42%" headers="mcps1.1.3.1.2 "><p id="zh-cn_topic_0000002319693140_p1559313317178"><a name="zh-cn_topic_0000002319693140_p1559313317178"></a><a name="zh-cn_topic_0000002319693140_p1559313317178"></a>√</p>
-</td>
-</tr>
-<tr id="zh-cn_topic_0000002319693140_row294304412306"><td class="cellrowborder" valign="top" width="57.99999999999999%" headers="mcps1.1.3.1.1 "><p id="zh-cn_topic_0000002319693140_p49437440302"><a name="zh-cn_topic_0000002319693140_p49437440302"></a><a name="zh-cn_topic_0000002319693140_p49437440302"></a><span id="zh-cn_topic_0000002319693140_ph19280164145411"><a name="zh-cn_topic_0000002319693140_ph19280164145411"></a><a name="zh-cn_topic_0000002319693140_ph19280164145411"></a><term id="zh-cn_topic_0000002319693140_zh-cn_topic_0000001312391781_term1253731311225"><a name="zh-cn_topic_0000002319693140_zh-cn_topic_0000001312391781_term1253731311225"></a><a name="zh-cn_topic_0000002319693140_zh-cn_topic_0000001312391781_term1253731311225"></a><term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></term></span></p>
-</td>
-<td class="cellrowborder" align="center" valign="top" width="42%" headers="mcps1.1.3.1.2 "><p id="zh-cn_topic_0000002319693140_p8877121915317"><a name="zh-cn_topic_0000002319693140_p8877121915317"></a><a name="zh-cn_topic_0000002319693140_p8877121915317"></a>√</p>
-</td>
-</tr>
-</tbody>
-</table>
+## 产品支持情况
+
+| 产品                               | 是否支持 |
+| ---------------------------------- | :------: |
+| <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> |    √     |
+| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> |    √     |
 
 ## 功能说明<a name="zh-cn_topic_0000002319693140_section14441124184110"></a>
 

@@ -14,20 +14,20 @@
 -   API功能：实现Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息。
 -   计算公式：
      $$
-    output = x * cos + ratote(x) * sin
+    output = x * cos + rotate(x) * sin
      $$
-     其中$x$是输入`input`，$cos$和$sin$分别是旋转系数输入`r1`和`r2`，输入ratote支持两种计算模式：
+     其中$x$是输入`input`，$cos$和$sin$分别是旋转系数输入`r1`和`r2`，输入rotate支持两种计算模式：
 
      - 当rotary_mode='half'时，将输入向量沿最后一个维度分为两半，然后应用旋转：
          $$
          x_1, x_2 = chunk(x,2,dim=-1)\\
-         ratote(x) = concat(-x_2,x_1)
+         rotate(x) = concat(-x_2,x_1)
          $$
 
      - 当rotary_mode='interleave'时，将输入向量按交错顺序处理，然后应用旋转：
          $$
          x_1 = x[..., ::2], x_2 = x[..., 1::2]\\
-         ratote(x) = rearrange(torch.stack((-x_2, x_1), dim=-1), “... d two -> ...(d two)", two=2)\\
+         rotate(x) = rearrange(torch.stack((-x_2, x_1), dim=-1), “... d two -> ...(d two)", two=2)\\
          $$
 
 -   等价计算逻辑：

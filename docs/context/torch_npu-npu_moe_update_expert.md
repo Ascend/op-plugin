@@ -21,10 +21,10 @@
         new_expert_id = eplb_table[table_offset + 1]
     else:
         if (balance_mode == 0):
-            mode_value = ceil(world_size, plance_num)
+            mode_value = ceil(world_size, place_num)
             place_idx = local_rank_id / mode_value + 1
         else:
-            place_idx = i % plance_num
+            place_idx = i % place_num
     new_expert_id = eplb_table[table_offset + place_idx]
     ```
 - 专家剪枝：支持根据阈值对token发送的topK个专家进行剪枝。计算方法如下所示：

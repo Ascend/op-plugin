@@ -23,7 +23,7 @@ torch_npu.npu.get_amp_supported_dtype()
 
 ## 返回值说明
 
-**List**（`torch.dtype`)
+**List**(`torch.dtype`)
 
 ## 调用示例
 

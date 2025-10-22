@@ -42,20 +42,20 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
 - **atten_mask** (`Tensor`)：可选参数。取值为`1`代表该位不参与计算（不生效），为`0`代表该位参与计算，默认值为`None`，即全部参与计算；数据类型支持`bool`、`int8`、`uint8`，数据格式支持$ND$。
 - **actual_seq_lengths** (`List[int]`)：可选参数。其`shape`为$(B,)$或$(1,)$，形如$[1, 2, 3]$，代表`key`、`value`中有效的$S$序列长度，默认值为`None`，即全部有效，类型为`List int`；数据类型为`int64`，数据格式支持$ND$。
-- **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2前面量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持per-tensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **quant_scale2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化因子，支持per-tensor（scalar）和per-channel（`list`）。如不使用该功能时可不传或传入`None`。
+- **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持pertensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
+- **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2前面量化的量化因子，支持pertensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
+- **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持pertensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
+- **quant_scale2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化因子，支持pertensor（scalar）和perchannel（`list`）。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
-- **quant_offset2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化偏移，支持per-tensor（`scalar`）和per-channel（`list`）。如不使用该功能时可不传或传入`None`。
+- **quant_offset2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化偏移，支持pertensor（`scalar`）和perchannel（`list`）。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
-- **antiquant_scale** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化因子，支持per-channel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。如不使用该功能时可不传或传入`None`。
+- **antiquant_scale** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化因子，支持perchannel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
 
-- **antiquant_offset** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化偏移，支持per-channel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。如不使用该功能时可不传或传入`None`。
+- **antiquant_offset** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化偏移，支持perchannel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
 - **block_table** (`Tensor`)：可选参数。数据类型支持`int32`，数据格式支持$ND$。`block_table`为2维`Tensor`，表示page attention中KV存储使用的block映射表，具体约束和使用方法可见[约束说明](#zh-cn_topic_0000001711274864_section12345537164214)。如不使用该功能时可不传或传入`None`。

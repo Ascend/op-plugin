@@ -105,7 +105,7 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
         >>> drop_pad_mode = 1
         >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
         >>> output.shape
-      torch.Siz[e([50, 10])
+      torch.Size([50, 10])
         >>> output.dtype
       torch.float32
       ```

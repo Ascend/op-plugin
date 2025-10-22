@@ -30,7 +30,7 @@ torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert
 ## 返回值说明
 `Tensor`
 
- 对用公式中的$expertTokens$，要求的是一个1维张量，数据类型与`sorted_expert_for_source_row`保持一致。
+ 对应公式中的$expertTokens$，要求的是一个1维张量，数据类型与`sorted_expert_for_source_row`保持一致。
 
 ## 约束说明
 

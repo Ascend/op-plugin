@@ -46,14 +46,14 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 - **bias1** (`Tensor`)：可选参数，权重数据修正值，对应公式中的$b1$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N1]$/$[N1]$。
 - **bias2** (`Tensor`)：可选参数，权重数据修正值，对应公式中的$b2$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N2]$/$[N2]$。
 
-- **scale** (`Tensor`)：可选参数，量化参数，量化缩放系数，数据类型支持`float32`，数据格式支持$ND$。per-tensor下输入在有/无专家时均为一维向量，输入元素个数在有/无专家时分别为$[E]$/$[1]$；per-channel下输入在有/无专家时为二维向量/一维向量，输入元素个数在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **scale** (`Tensor`)：可选参数，量化参数，量化缩放系数，数据类型支持`float32`，数据格式支持$ND$。pertensor下输入在有/无专家时均为一维向量，输入元素个数在有/无专家时分别为$[E]$/$[1]$；perchannel下输入在有/无专家时为二维向量/一维向量，输入元素个数在有/无专家时分别为$[E, N1]$/$[N1]$。
 - **offset** (`Tensor`)：可选参数，量化参数，量化偏移量，数据类型支持`float32`，数据格式支持$ND$，一维向量，输入元素个数在有/无专家时分别为$[E]$/$[1]$。
 - **deq_scale1** (`Tensor`)：可选参数，量化参数，第一组matmul的反量化缩放系数，数据类型支持`int64`、`float32`、`bfloat16`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N1]$/$[N1]$。
 - **deq_scale2** (`Tensor`)：可选参数，量化参数，第二组matmul的反量化缩放系数，数据类型支持`int64`、`float32`、`bfloat16`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N2]$/$[N2]$。
-- **antiquant_scale1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的缩放系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N1]$/$[N1]$。
-- **antiquant_scale2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的缩放系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N2]$/$[N2]$。
-- **antiquant_offset1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的偏移量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N1]$/$[N1]$。
-- **antiquant_offset2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的偏移量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，per-channel下输入在有/无专家时分别为$[E, N2]$/$[N2]$。
+- **antiquant_scale1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的缩放系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，perchannel下输入在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **antiquant_scale2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的缩放系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，perchannel下输入在有/无专家时分别为$[E, N2]$/$[N2]$。
+- **antiquant_offset1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的偏移量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，perchannel下输入在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **antiquant_offset2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的偏移量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，perchannel下输入在有/无专家时分别为$[E, N2]$/$[N2]$。
 
 - **inner_precise** (`int`)：可选参数，表示高精度或者高性能选择。数据类型支持`int64`。该参数仅对`float16`生效，`bfloat16`和`int8`不区分高精度和高性能。
 
@@ -83,7 +83,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
     - `y`为`bfloat16`，`deq_scale`支持数据类型`bfloat16`。
     - 要求`deq_scale1`与`deq_scale2`的数据类型保持一致。
 
-- 量化场景支持`scale`的per-channel模式参数类型：`x`为`int8`、`weight`为`int8`、`bias`为`int32`、`scale`为`float32`、`offset`为`float32`，其余参数类型根据`y`不同分两种情况：
+- 量化场景支持`scale`的perchannel模式参数类型：`x`为`int8`、`weight`为`int8`、`bias`为`int32`、`scale`为`float32`、`offset`为`float32`，其余参数类型根据`y`不同分两种情况：
     - `y`为`float16`，`deq_scale`支持数据类型`uint64`、`int64`。
     - `y`为`bfloat16`，`deq_scale`支持数据类型`bfloat16`。
     - 要求`deq_scale1`与`deq_scale2`的数据类型保持一致。

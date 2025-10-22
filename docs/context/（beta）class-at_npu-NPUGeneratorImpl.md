@@ -101,7 +101,7 @@ Pytorch2.5.1及以上版本，新增以下成员函数：
     state：随机数生成器状态。
 - **c10::intrusive_ptrc10::GeneratorImpl graphsafe_get_state()**
 
-    在capture状态下为aclgraph查询随机数数生成对象，与c10::intrusive_ptrc10::GeneratorImpl at::CUDAGeneratorImpl::graphsafe_get_state()功能相同。
+    在capture状态下为aclgraph查询随机数生成对象，与c10::intrusive_ptrc10::GeneratorImpl at::CUDAGeneratorImpl::graphsafe_get_state()功能相同。
     
     返回值为c10::GeneratorImpl对象。
 - **void register_graph(c10_npu::NPUGraph* graph)**

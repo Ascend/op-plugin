@@ -20,7 +20,7 @@ torch_npu.contrib.function.dropout_with_byte_mask(input1, p=0.5, training=True, 
 ```
 
 ## 参数说明
-- **imput1** (`Tensor`): 必选参数，输入张量。
+- **input1** (`Tensor`): 必选参数，输入张量。
 - **p** (`int`)：可选参数，dropout概率，默认值为0.5。
 - **training** (`bool`)：可选参数，是否启动dropout，当设置为True时启动，False时不启动。默认值为True。
 - **inplace** (`bool`)：可选参数，是否原地生效，当设置为True时将原地修改入参包含的值。默认值为False。

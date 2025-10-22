@@ -42,7 +42,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu_swiglu_quant(x, *, smooth_scales=None, offsets=None, group_index=None, activate_left=False, quant_mode=0， group_list_type=0, dst_type=None) -> (Tensor, Tensor)
+torch_npu.npu_swiglu_quant(x, *, smooth_scales=None, offsets=None, group_index=None, activate_left=False, quant_mode=0, group_list_type=0, dst_type=None) -> (Tensor, Tensor)
 ```
 
 ## 参数说明

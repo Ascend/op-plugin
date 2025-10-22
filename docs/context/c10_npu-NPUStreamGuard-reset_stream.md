@@ -23,7 +23,7 @@ void c10_npu::NPUStreamGuard::reset_stream(c10::Stream stream)
 
 ## 参数说明
 
-**stream** (`c10::Stream`)：必选参数，表示guard准备保障的流。
+**stream** (`c10::Stream`)：必选参数，表示Guard准备保障的流。
 
 ## 返回值说明
 
