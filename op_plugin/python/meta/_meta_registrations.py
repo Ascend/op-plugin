@@ -178,6 +178,227 @@ def npu_mla_prolog_v2_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weigh
 
     return (query, query_rope, kv_cache_out, kr_cache_out, dequant_scale_q_nope)
 
+
+@impl(m, "npu_mla_prolog_v3")
+def npu_mla_prolog_v3_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
+                    rope_sin, rope_cos, kv_cache, kr_cache, *, cache_index=None, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None,
+                    quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, rmsnorm_epsilon_cq=1e-5, rmsnorm_epsilon_ckv=1e-5, 
+                    cache_mode="PA_BSND", qc_qr_scale=1.0, kc_scale=1.0):
+
+    require_param = {"token_x": token_x, "weight_dq": weight_dq, "weight_uq_qr": weight_uq_qr, "weight_uk": weight_uk, "weight_dkv_kr": weight_dkv_kr, "rmsnorm_gamma_cq": rmsnorm_gamma_cq, "rmsnorm_gamma_ckv": rmsnorm_gamma_ckv, "rope_sin": rope_sin, "rope_cos": rope_cos, "kv_cache": kv_cache, "kr_cache": kr_cache}
+
+    for item_name, item in require_param.items():
+        torch._check(
+            item is not None,
+            lambda: item_name + " should not be None, but the actual value is None" + ops_error(ErrCode.VALUE),
+        )
+
+    token_x_dim = token_x.dim()
+    torch._check(
+        token_x_dim == 2 or token_x_dim == 3,
+        lambda: "token_x dim num should be 2 or 3, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+    )
+
+    weight_uk_dim = weight_uk.dim()
+    torch._check(
+        weight_uk_dim == 3,
+        lambda: "weight_uk dim num should be 3, but the actual value is " + str(weight_uk_dim) + ops_error(ErrCode.VALUE),
+    )
+
+    rope_sin_dim = rope_sin.dim()
+    torch._check(
+        rope_sin_dim == 2 or rope_sin_dim == 3,
+        lambda: "rope_sin dim num should be 2 or 3, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
+    )
+
+    if token_x_dim == 3:
+        query_shape = []
+        query_shape.append(token_x.size(0))
+        query_shape.append(token_x.size(1))
+        query_shape.append(weight_uk.size(0))
+        query_shape.append(weight_uk.size(2))
+
+        query_rope_shape = []
+        query_rope_shape.append(token_x.size(0))
+        query_rope_shape.append(token_x.size(1))
+        query_rope_shape.append(weight_uk.size(0))
+        query_rope_shape.append(rope_sin.size(2))
+
+        dequant_scale_q_nope_shape = []
+        dequant_scale_q_nope_shape.append(token_x.size(0) * token_x.size(1))
+        dequant_scale_q_nope_shape.append(weight_uk.size(0)) # support pertoken-head dynamic antiquant
+        dequant_scale_q_nope_shape.append(1)
+
+        query_norm_shape = []
+        query_norm_shape.append(token_x.size(0))
+        query_norm_shape.append(token_x.size(1))
+        query_norm_shape.append(weight_dq.size(1))
+
+        dequant_scale_q_norm_shape = []
+        dequant_scale_q_norm_shape.append(token_x.size(0) * token_x.size(1))
+        dequant_scale_q_norm_shape.append(1)
+
+    else:
+        query_shape = []
+        query_shape.append(token_x.size(0))
+        query_shape.append(weight_uk.size(0))
+        query_shape.append(weight_uk.size(2))
+
+        query_rope_shape = []
+        query_rope_shape.append(token_x.size(0))
+        query_rope_shape.append(weight_uk.size(0))
+        query_rope_shape.append(rope_sin.size(1))
+
+        dequant_scale_q_nope_shape = []
+        dequant_scale_q_nope_shape.append(token_x.size(0))
+        dequant_scale_q_nope_shape.append(weight_uk.size(0)) # support pertoken-head dynamic antiquant
+        dequant_scale_q_nope_shape.append(1)
+
+        query_norm_shape = []
+        query_norm_shape.append(token_x.size(0))
+        query_norm_shape.append(weight_dq.size(1))
+
+        dequant_scale_q_norm_shape = []
+        dequant_scale_q_norm_shape.append(token_x.size(0))
+        dequant_scale_q_norm_shape.append(1)
+
+    # kvcache量化
+    if token_x.dtype == torch.int8 and quant_scale_ckv is not None:
+        query = torch.empty(query_shape, dtype=torch.int8, device='meta')
+        dequant_scale_q_nope = torch.empty(dequant_scale_q_nope_shape, dtype=torch.float32, device='meta')
+    else:
+        query = torch.empty(query_shape, dtype=rope_sin.dtype, device='meta')
+        dequant_scale_q_nope = torch.empty([1], dtype=torch.float32, device='meta')
+
+    # 输出query_norm
+    query_norm_flag = False
+    if query_norm_flag:
+        query_norm = torch.empty(query_norm_shape, dtype=weight_uq_qr.dtype, device='meta')
+        if weight_uq_qr.dtype == torch.int8:
+            dequant_scale_q_norm = torch.empty(dequant_scale_q_norm_shape, dtype=torch.float32, device='meta')
+        else:
+            dequant_scale_q_norm = torch.empty([1], dtype=torch.float32, device='meta')
+    else:
+        query_norm = torch.empty([1], dtype=weight_uq_qr.dtype, device='meta')
+        dequant_scale_q_norm = torch.empty([1], dtype=torch.float32, device='meta')
+
+    query_rope = torch.empty(query_rope_shape, dtype=torch.bfloat16, device='meta') # default dtype bfloat16
+
+    return (query, query_rope, dequant_scale_q_nope, query_norm, dequant_scale_q_norm)
+
+
+@impl(m, "npu_mla_prolog_v3_functional")
+def npu_mla_prolog_v3_functional_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
+                    rope_sin, rope_cos, kv_cache, kr_cache, *, cache_index=None, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None,
+                    quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, rmsnorm_epsilon_cq=1e-5, rmsnorm_epsilon_ckv=1e-5, 
+                    cache_mode="PA_BSND", qc_qr_scale=1.0, kc_scale=1.0):
+
+
+    require_param = {"token_x": token_x, "weight_dq": weight_dq, "weight_uq_qr": weight_uq_qr, "weight_uk": weight_uk, "weight_dkv_kr": weight_dkv_kr, "rmsnorm_gamma_cq": rmsnorm_gamma_cq, "rmsnorm_gamma_ckv": rmsnorm_gamma_ckv, "rope_sin": rope_sin, "rope_cos": rope_cos, "kv_cache": kv_cache, "kr_cache": kr_cache}
+
+    for item_name, item in require_param.items():
+        torch._check(
+            item is not None,
+            lambda: item_name + " should not be None, but the actual value is None" + ops_error(ErrCode.VALUE),
+        )
+
+    token_x_dim = token_x.dim()
+    torch._check(
+        token_x_dim == 2 or token_x_dim == 3,
+        lambda: "token_x dim num should be 2 or 3, but the actual value is " + str(token_x_dim) + ops_error(ErrCode.VALUE),
+    )
+
+    weight_uk_dim = weight_uk.dim()
+    torch._check(
+        weight_uk_dim == 3,
+        lambda: "weight_uk dim num should be 3, but the actual value is " + str(weight_uk_dim) + ops_error(ErrCode.VALUE),
+    )
+
+    rope_sin_dim = rope_sin.dim()
+    torch._check(
+        rope_sin_dim == 2 or rope_sin_dim == 3,
+        lambda: "rope_sin dim num should be 2 or 3, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
+    )
+
+    if token_x_dim == 3:
+        query_shape = []
+        query_shape.append(token_x.size(0))
+        query_shape.append(token_x.size(1))
+        query_shape.append(weight_uk.size(0))
+        query_shape.append(weight_uk.size(2))
+
+        query_rope_shape = []
+        query_rope_shape.append(token_x.size(0))
+        query_rope_shape.append(token_x.size(1))
+        query_rope_shape.append(weight_uk.size(0))
+        query_rope_shape.append(rope_sin.size(2))
+
+        dequant_scale_q_nope_shape = []
+        dequant_scale_q_nope_shape.append(token_x.size(0) * token_x.size(1))
+        dequant_scale_q_nope_shape.append(weight_uk.size(0)) # support pertoken-head dynamic antiquant
+        dequant_scale_q_nope_shape.append(1)
+
+        query_norm_shape = []
+        query_norm_shape.append(token_x.size(0))
+        query_norm_shape.append(token_x.size(1))
+        query_norm_shape.append(weight_dq.size(1))
+
+        dequant_scale_q_norm_shape = []
+        dequant_scale_q_norm_shape.append(token_x.size(0) * token_x.size(1))
+        dequant_scale_q_norm_shape.append(1)
+
+    else:
+        query_shape = []
+        query_shape.append(token_x.size(0))
+        query_shape.append(weight_uk.size(0))
+        query_shape.append(weight_uk.size(2))
+
+        query_rope_shape = []
+        query_rope_shape.append(token_x.size(0))
+        query_rope_shape.append(weight_uk.size(0))
+        query_rope_shape.append(rope_sin.size(1))
+
+        dequant_scale_q_nope_shape = []
+        dequant_scale_q_nope_shape.append(token_x.size(0))
+        dequant_scale_q_nope_shape.append(weight_uk.size(0)) # support pertoken-head dynamic antiquant
+        dequant_scale_q_nope_shape.append(1)
+
+        query_norm_shape = []
+        query_norm_shape.append(token_x.size(0))
+        query_norm_shape.append(weight_dq.size(1))
+
+        dequant_scale_q_norm_shape = []
+        dequant_scale_q_norm_shape.append(token_x.size(0))
+        dequant_scale_q_norm_shape.append(1)
+
+    # kvcache量化
+    if token_x.dtype == torch.int8 and quant_scale_ckv is not None:
+        query = torch.empty(query_shape, dtype=torch.int8, device='meta')
+        dequant_scale_q_nope = torch.empty(dequant_scale_q_nope_shape, dtype=torch.float32, device='meta')
+    else:
+        query = torch.empty(query_shape, dtype=rope_sin.dtype, device='meta')
+        dequant_scale_q_nope = torch.empty([1], dtype=torch.float32, device='meta')
+
+    query_rope = torch.empty(query_rope_shape, dtype=torch.bfloat16, device='meta') # default dtype bfloat16
+
+    # 输出query_norm
+    query_norm_flag = False
+    if query_norm_flag:
+        query_norm = torch.empty(query_norm_shape, dtype=weight_uq_qr.dtype, device='meta')
+        # 动态量化
+        if weight_uq_qr.dtype == torch.int8:
+            dequant_scale_q_norm = torch.empty(dequant_scale_q_norm_shape, dtype=torch.float32, device='meta')
+        else:
+            dequant_scale_q_norm = torch.empty([1], dtype=torch.float32, device='meta')
+    else:
+        query_norm = torch.empty([1], dtype=weight_uq_qr.dtype, device='meta')
+        dequant_scale_q_norm = torch.empty([1], dtype=torch.float32, device='meta')
+
+    kv_cache_out = torch.empty_like(kv_cache, dtype=kv_cache.dtype, device='meta')
+    kr_cache_out = torch.empty_like(kr_cache, dtype=kr_cache.dtype, device='meta')
+
+    return (query, query_rope, dequant_scale_q_nope, query_norm, dequant_scale_q_norm, kv_cache_out, kr_cache_out)
+
 if "2.1." in torch.__version__:
     @impl(m, "npu_prompt_flash_attention")
     def npu_prompt_flash_attention_forward(query, key, value, *, padding_mask=None, atten_mask=None, pse_shift=None, actual_seq_lengths=None, deq_scale1=None, quant_scale1=None, deq_scale2=None, quant_scale2=None, quant_offset2=None, num_heads=1, scale_value=1.0, pre_tokens=2147473647, next_tokens=0, input_layout="BSH", num_key_value_heads=0, actual_seq_lengths_kv=None, sparse_mode=0):

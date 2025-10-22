@@ -29,6 +29,8 @@
       "npu_fused_infer_attention_score",
       "npu_mla_prolog",
       "npu_mla_prolog_v2",
+      "npu_mla_prolog_v3",
+      "npu_mla_prolog_v3_functional",
       "npu_convert_weight_to_int4pack",
       "npu_ffn",
       "npu_geglu",
