@@ -8,7 +8,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> fused_linear_online_max_sum(
+::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fused_linear_online_max_sum(
     const at::Tensor & input,
     const at::Tensor & weight,
     const at::Tensor & target,
@@ -41,7 +41,7 @@ using npu_preparation = at_npu::native::OpPreparation;
     return std::make_tuple(std::move(logits_max), std::move(sum_exp_logits), std::move(predicted_logits), std::move(target_mask), std::move(masked_target), std::move(vocab_parallel_logits));
 }
 
-::std::tuple<at::Tensor, at::Tensor> fused_cross_entropy_loss_with_max_sum(
+::std::tuple<at::Tensor, at::Tensor> npu_fused_cross_entropy_loss_with_max_sum(
     const at::Tensor & logits_max,
     const at::Tensor & sum_exp_logits,
     const at::Tensor & predicted_logits,
@@ -68,7 +68,7 @@ using npu_preparation = at_npu::native::OpPreparation;
     return std::make_tuple(std::move(loss), std::move(softmax));
 }
 
-::std::tuple<at::Tensor, at::Tensor> fused_linear_cross_entropy_loss_with_max_sum_grad(
+::std::tuple<at::Tensor, at::Tensor> npu_fused_linear_cross_entropy_loss_with_max_sum_grad(
     const at::Tensor & grad,
     const at::Tensor & input,
     const at::Tensor & weight,

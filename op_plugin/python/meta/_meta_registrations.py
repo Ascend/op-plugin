@@ -2855,3 +2855,53 @@ def npu_dynamic_block_quant_meta(x, *, min_scale=0.0, round_mode="rint", dst_typ
 
     scale = torch.empty(scale_shape, dtype=torch.float32, device=x.device)
     return y, scale
+
+
+@impl(m, "npu_fused_linear_online_max_sum")
+def npu_fused_linear_online_max_sum_meta(input, weight, target, vocab_start_index, vocab_end_index, return_logits=False):
+    output_size_0 = [input.size(0)]
+    output_size_1 = [(input.size(0) + 7) // 8]
+    output_dtype_0 = torch.float32
+    output_dtype_1 = torch.uint8
+    output_dtype_2 = target.dtype
+    output_dtype_3 = input.dtype
+
+    vocab_parallel_logits = None
+    if return_logits:
+        output_size_2 = [input.size(0), weight.size(0)]
+        vocab_parallel_logits = torch.empty(output_size_2, dtype=output_dtype_3, device='meta')
+
+    logits_max = torch.empty(output_size_0, dtype=output_dtype_0, device='meta')
+    sum_exp_logits = torch.empty(output_size_0, dtype=output_dtype_0, device='meta')
+    predicted_logits = torch.empty(output_size_0, dtype=output_dtype_0, device='meta')
+    target_mask = torch.empty(output_size_1, dtype=output_dtype_1, device='meta')
+    masked_target = torch.empty(output_size_0, dtype=output_dtype_2, device='meta')
+
+    return (logits_max, sum_exp_logits, predicted_logits, target_mask, masked_target, vocab_parallel_logits)
+
+
+@impl(m, "npu_fused_cross_entropy_loss_with_max_sum")
+def npu_fused_cross_entropy_loss_with_max_sum_meta(logits_max, sum_exp_logits, predicted_logits, *, label_smoothing=0.0, input=None, weight=None, vocab_parallel_logits=None):
+    output_size_0 = logits_max.size()
+    output_dtype_0 = torch.float32
+
+    softmax = None
+    if vocab_parallel_logits is not None:
+        output_size_1 = vocab_parallel_logits.size()
+        softmax = torch.empty(output_size_1, dtype=output_dtype_0, device='meta')
+
+    loss = torch.empty(output_size_0, dtype=output_dtype_0, device='meta')
+
+    return (loss, softmax)
+
+
+@impl(m, "npu_fused_linear_cross_entropy_loss_with_max_sum_grad")
+def npu_fused_linear_cross_entropy_loss_with_max_sum_grad_meta(grad, input, weight, target_mask, masked_target, label_smoothing=0.0, logits_max=None, sum_exp_logits=None, softmax=None):
+    output_size_0 = [input.size(0), input.size(1)]
+    output_size_1 = [weight.size(0), weight.size(1)]
+    output_dtype_0 = input.dtype
+
+    input_grad = torch.empty(output_size_0, dtype=output_dtype_0, device='meta')
+    weight_grad = torch.empty(output_size_1, dtype=output_dtype_0, device='meta')
+
+    return (input_grad, weight_grad)

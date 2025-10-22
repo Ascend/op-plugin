@@ -3014,5 +3014,64 @@ class TestNpuDynamicBlockQuant(TestCase):
         self.assertEqual(actual_scale.shape, fake_scale.shape)
 
 
+class TestFusedLinearCrossEntropyLossMeta(TestCase):
+    def compare_tensor_lists(self, list1, list2):
+        for i, (t1, t2) in enumerate(zip(list1, list2)):
+            if t1 is None or t2 is None:
+                self.assertTrue(t1 is None)
+                self.assertTrue(t2 is None)
+            else:
+                self.assertEqual(t1.shape, t2.shape)
+                self.assertEqual(t1.dtype, t2.dtype)
+
+    def cumpute_fused_linear(self, need_logits=False):
+        BT = 4  # batch size * sequence length
+        H = 2  # hidden size
+        V = 4  # 词汇表分片大小
+
+        BT = 4096  # batch size * sequence length
+        H = 128  # hidden size
+        V = 250  # 词汇表分片大小
+        device = torch.float16
+
+        input = torch.randn(BT, H, dtype=torch.float16).npu()
+        weight = torch.randn(V, H, dtype=torch.float16).npu()
+        target = torch.randint(0, 12, (BT,)).npu()  # 目标值范围 [0, 499]
+
+        vocab_start_index = 4
+        vocab_end_index = 8  # 确保 vocab_end_index > vocab_start_index
+
+        results_1 = torch_npu.npu_fused_linear_online_max_sum(input, weight, target, vocab_start_index, vocab_end_index, need_logits)
+        logits_max_local, sum_exp_logits_local, predicted_logits_local, target_mask, masked_target, vocab_parallel_logits = results_1
+
+        results_2 = torch_npu.npu_fused_cross_entropy_loss_with_max_sum(logits_max_local, sum_exp_logits_local, predicted_logits_local, vocab_parallel_logits=vocab_parallel_logits)
+        loss, softmax = results_2
+
+        grad_output = torch.randn(BT, device=input.device)
+        results_3 = torch_npu.npu_fused_linear_cross_entropy_loss_with_max_sum_grad(grad_output, input, weight, target_mask, masked_target, 0, logits_max_local, sum_exp_logits_local, softmax)
+
+        return results_1, results_2, results_3
+
+    @unittest.skip("skip until CANN is updated to support fused_cross_entropy")
+    def test_npu_fused_linear_without_logits(self):
+        npu_results_1, npu_results_2, npu_results_3 = self.cumpute_fused_linear()
+
+        with FakeTensorMode():
+            results_1, results_2, results_3 = self.cumpute_fused_linear()
+            self.compare_tensor_lists(results_1, npu_results_1)
+            self.compare_tensor_lists(results_2, npu_results_2)
+            self.compare_tensor_lists(results_3, npu_results_3)
+
+    @unittest.skip("skip until CANN is updated to support fused_cross_entropy")
+    def test_npu_fused_linear_with_logits(self):
+        npu_results_1, npu_results_2, npu_results_3 = self.cumpute_fused_linear(True)
+
+        with FakeTensorMode():
+            results_1, results_2, results_3 = self.cumpute_fused_linear(True)
+            self.compare_tensor_lists(results_1, npu_results_1)
+            self.compare_tensor_lists(results_2, npu_results_2)
+            self.compare_tensor_lists(results_3, npu_results_3)
+
+
 if __name__ == "__main__":
     run_tests()
