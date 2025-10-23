@@ -25,6 +25,7 @@ torch_npu.npu_clear_float_status(self) -> Tensor
 
 ## 返回值说明
 `Tensor`
+
 返回清除结果。
 
 ## 调用示例

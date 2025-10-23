@@ -57,6 +57,7 @@ torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors
 
 ## 返回值说明
 `Tensor`
+
 返回响应标志结果。
 
 ## 调用示例

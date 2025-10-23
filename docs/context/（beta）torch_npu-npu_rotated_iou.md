@@ -27,7 +27,7 @@ torch_npu.npu_rotated_iou(self, query_boxes, trans=False, mode=0, is_cross=True,
 - **is_cross** (`bool`)：可选参数，值为True时表示交叉计算，为False时表示一对一计算。默认值为True。
 - **mode** (`int`)：可选参数，计算模式，取值为0或1。0表示IoU，1表示IoF。默认值为0。
 - **v_threshold** (`float`)：可选参数，旋转框的高度阈值。默认值为0.0。
-- **e_threshold** (`float`)：可选参数，旋转框的角度阈值。默认值为0.0
+- **e_threshold** (`float`)：可选参数，旋转框的角度阈值。默认值为0.0。
 
 ## 调用示例
 

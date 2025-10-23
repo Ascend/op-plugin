@@ -22,7 +22,8 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 
 ## 参数说明
 
-### 计算参数
+**计算参数**
+
 - **in_features**（`int`）：伪量化matmul计算中的k轴的值。
 - **out_features**（`int`）：伪量化matmul计算中的n轴的值。
 - **bias**（`bool`）：可选参数，默认为True，代表是否需要bias计算参数。如果设置成False，则bias不会加入伪量化matmul的计算。
@@ -34,7 +35,7 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 - **antiquant_group_size**（`int`）：可选参数，用于控制pergroup场景下的group大小，当前默认为0。传入值的范围为[32,K-1]且值要求是32的倍数。<term>Atlas 推理系列产品</term>：暂不支持此参数。
 - **inner_precise**（`int`）：计算模式选择，默认为0。0表示高精度模式，1表示高性能模式，可能会影响精度。当`weight`以`int32`类型且以FRACTAL_NZ格式输入，M不大于16的pergroup场景下可以设置为1，提升性能。其他场景不建议使用高性能模式。
 
-###  计算输入
+**计算输入**
 
 **x**（`Tensor`）：Tensor类型，即矩阵乘中的x。数据格式支持$ND$，支持输入维度为两维(M, K) 。
 

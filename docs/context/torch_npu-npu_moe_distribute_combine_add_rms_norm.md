@@ -1,7 +1,5 @@
 # torch\_npu.npu\_moe\_distribute\_combine\_add\_rms\_norm<a name="ZH-CN_TOPIC_0000002384325441"></a>
 
-## 产品支持情况<a name="zh-cn_topic_0000002322738573_section1369303644412"></a>
-
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |

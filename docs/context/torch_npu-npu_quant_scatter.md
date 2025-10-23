@@ -1,5 +1,12 @@
 # torch_npu.npu_quant_scatter
 
+## 产品支持情况
+
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>            |    √     |
+|<term>Atlas 推理系列产品</term>  | √   |
+
 ## 功能说明
 
 先将`updates`进行量化，然后将`updates`中的值按指定的轴`axis`和索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`本身的数据不变。
@@ -30,7 +37,7 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
 - **quant_axis** (`int`)：可选参数，`updates`上用来量化的轴，默认值为`1`。
 - **reduce** (`str`)：可选参数，表示数据操作方式；当前只支持`'update'`，即更新操作。
 
-## 返回值
+## 返回值说明
 `Tensor`
 
 代表`input`被更新后的结果。
@@ -45,11 +52,6 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
 - `quant_zero_points`的元素个数需要等于`updates`在`quant_axis`轴的大小。
 - `axis`不能为`updates`的第1维或最后1维。
 - `quant_axis`只能为`updates`的最后1维。
-
-## 支持的型号
-
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
-- <term>Atlas 推理系列产品</term>
 
 ## 调用示例
 

@@ -29,7 +29,9 @@ torch_npu.contrib.module.PSROIPool(nn.Module)
 
 ## 返回值说明
 
-`float` - shape为(k, 5)和(k, 1)的张量。标签以0为基础。
+`float` 
+
+shape为(k, 5)和(k, 1)的张量。标签以0为基础。
 
 ## 约束说明
 

@@ -37,7 +37,7 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 - **skip2** (`Tensor`)：必选参数，允许为None，对应公式中的$skip2$，求和的输入参数2，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。`skip1`参数为`None`时，`skip2`参数必须也为`None`。
 - **bias** (`Tensor`)：必选参数，允许为None，对应公式中的$bias$，专家的偏差，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致。shape支持$（E，H）$。
 - **scales** (`Tensor`)：必选参数，允许为None，对应公式中的$scales$，专家的权重，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape支持（$NUM\_ROWS，K）$。
-- **expanded_src_to_dst_row** (`Tensor`)：必选参数，对应公式中的$expandedSrcRowToDstRow$，保存每个专家处理结果的索引，要求为一个1维为张量，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，`drop_pad_mode`参数为0或2时，Tensor的取值范围是$[0, NUM\_ROWS * K-1]$，`drop_pad_mode`参数为1或3时，Tensor的取值范围是$[-1, E*C - 1]$。
+- **expanded_src_to_dst_row** (`Tensor`)：必选参数，对应公式中的$expandedSrcRowToDstRow$，保存每个专家处理结果的索引，要求为一个1维张量，数据类型支持`int32`。shape支持$（NUM\_ROWS * K）$，`drop_pad_mode`参数为0或2时，Tensor的取值范围是$[0, NUM\_ROWS * K-1]$，`drop_pad_mode`参数为1或3时，Tensor的取值范围是$[-1, E*C - 1]$。
 - **export_for_source_row** (`Tensor`)：必选参数，允许为None，公式中的$exportForSourceRow$，每行处理的专家号，要求为一个2维张量，数据类型支持`int32`。shape支持$（NUM\_ROWS，K）$，Tensor的取值范围是[0,E-1]。
 - **drop_pad_mode** (`int`)：可选参数，表示是否为丢弃模式（丢弃模式即drop pad模式，非丢弃模式即drop less模式）和`expanded_src_to_dst_row`的排列方式（行排列或列排列），取值范围为[0, 3]，默认值为`0`。
      -    0表示非丢弃模式，`expanded_src_to_dst_row`按列排列。

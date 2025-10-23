@@ -52,10 +52,7 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-- 该接口仅在如下产品支持MoE场景。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> 
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
-
+- 该接口支持MoE场景。
 - 使用`smooth_scales`时：
     - 若不使用`group_index`，`smooth_scales`必须是一维Tensor，元素数量与`x`的最后一维大小一致。
     - 若使用`group_index`，`smooth_scales`必须是二维Tensor，第二维元素数量与`x`的最后一维大小一致，`group_index`必须是一维数组，元素数量与`smooth_scales`第一维一致。`group_index`中的元素必须是单调递增的，其最后一个元素的值，应等于`x`的元素数量除以`x`的最后一个维度。

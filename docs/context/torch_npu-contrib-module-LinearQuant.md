@@ -20,7 +20,8 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 
 ## 参数说明
 
-### 计算参数
+**计算参数**
+
 - **in_features**（`int`）：matmul计算中k轴的值。
 - **out_features**（`int`）：matmul计算中n轴的值。
 - **bias**（`bool`）：代表是否需要bias计算参数。如果设置成False，则bias不会加入量化matmul的计算。
@@ -32,7 +33,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
     - <term>Atlas 推理系列产品</term>：支持输入`int8`、`float16`。
     - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
 
-### 计算输入
+**计算输入**
 
 **x1**（`Tensor`）：数据格式支持$ND$，shape最少是2维，最多是6维。
 

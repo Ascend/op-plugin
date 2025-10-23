@@ -60,7 +60,7 @@ torch_npu.npu_swiglu_quant(x, *, smooth_scales=None, offsets=None, group_index=N
 -   **activate\_left** (`bool`)：可选参数，swiglu流程中是否进行左激活，默认值为`False`。
 -   **quant\_mode** (`int`)：可选参数，表示量化类型，默认值为`0`。`0`表示静态量化，`1`表示动态量化。
 -   **group\_list\_type** (`int`)：可选参数，表示`group_index`类型，默认值为`0`。`0`表示`cumsum`模式，`1`表示`count`模式。
--   **dst\_type** (`ScalarType`)：可选参数，表示输出量化类型，支持`int8`和`int4`，传`None`时当做`int8`处理，默认值为`None`。
+-   **dst\_type** (`ScalarType`)：可选参数，表示输出量化类型，支持`int8`和`int4`，传`None`时视为`int8`处理，默认值为`None`。
 
 
 ## 返回值说明

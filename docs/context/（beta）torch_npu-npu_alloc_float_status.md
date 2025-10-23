@@ -22,7 +22,7 @@ torch_npu.npu_alloc_float_status(input) -> Tensor
 
 ## 参数说明
 
-**input** (`Tensor`)：必选参数，任意构建的一个NPU张量（主要用于确定device信息）
+**input** (`Tensor`)：必选参数，任意构建的一个NPU张量（主要用于确定device信息）。
 
 ## 返回值说明
 

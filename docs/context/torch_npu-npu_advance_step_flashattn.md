@@ -11,24 +11,24 @@
 
 - API功能：在NPU上实现vLLM库中advance_step_flashattn的功能，在每个生成步骤中原地更新`input_tokens`，`input_positions`，`seq_lens`和`slot_mapping`。
 - 非投机场景计算公式：$blockIdx$是当前代码被执行的核的索引。
-$$
-blockTablesStride = blockTables.stride(0) \\
-inputTokens[blockIdx] = sampledTokenIds[blockIdx]  \\
-inputPositions[blockIdx] = seqLens[blockIdx] \\
-seqLens[blockIdx] = seqLens[blockIdx] + 1 \\
-
-slotMapping[blockIdx] = ({blockTables}[blockIdx] + blockTablesStride * blockIdx) * blockSize + (seqLens[blockIdx]\%blockSize)
-$$
+     $$
+     blockTablesStride = blockTables.stride(0) \\
+     inputTokens[blockIdx] = sampledTokenIds[blockIdx]  \\
+     inputPositions[blockIdx] = seqLens[blockIdx] \\
+     seqLens[blockIdx] = seqLens[blockIdx] + 1 \\
+     
+     slotMapping[blockIdx] = ({blockTables}[blockIdx] + blockTablesStride * blockIdx) * blockSize + (seqLens[blockIdx]\%blockSize)
+     $$
 - 投机场景计算公式：$i$是当前代码被执行的请求的索引。
-$$
-lastToken = \text{last valid token of each request in }sampledTokenIds \\
-blockTablesStride = blockTables.stride(0) \\
-inputTokens[:numSeqs, 0] = lastToken  \\
-inputTokens[:numSeqs, 1:] = specToken  \\
-inputPositions[i] = inputPositions[i] + 1 + acceptedNum[i] \\
-seqLens[i] = inputPositions[i] + 1 \\
-slotMapping[i] = ({blockTables}[i] + blockTablesStride * i) * blockSize + (inputPositions[i]\%blockSize)
-$$
+     $$
+     lastToken = \text{last valid token of each request in }sampledTokenIds \\
+     blockTablesStride = blockTables.stride(0) \\
+     inputTokens[:numSeqs, 0] = lastToken  \\
+     inputTokens[:numSeqs, 1:] = specToken  \\
+     inputPositions[i] = inputPositions[i] + 1 + acceptedNum[i] \\
+     seqLens[i] = inputPositions[i] + 1 \\
+     slotMapping[i] = ({blockTables}[i] + blockTablesStride * i) * blockSize + (inputPositions[i]\%blockSize)
+     $$
 ## 函数原型
 
 ```

@@ -20,7 +20,7 @@ torch_npu.npu.SyncLaunchStream(device)
 
 ## 参数说明
 
-**device**(Any)：可以为设备数字id或者字符串“npu:0”，默认值为none（即当前线程对应的设备id）。
+**device**(Any)：可以为设备数字id或者字符串“npu:0”，默认值为None（即当前线程对应的设备id）。
 
 ## 返回值说明
 

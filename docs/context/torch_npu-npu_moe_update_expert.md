@@ -49,7 +49,7 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
 -   **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行\[1, count\]列为对应实例的卡号，取值范围\[0, `moe_expert_num`\)，shape为$(moe\_expert\_num, F)$。数据类型支持`int32`，数据格式要求为$ND$，支持非连续的Tensor。其中F表示输入映射表的列数，取值范围\[2, `world_size`+1\]，第一列为各行号对应Moe专家部署的实例个数（值>0），后F-1列为该Moe专家部署的物理卡号。
 -   **expert_scales**（`Tensor`）：可选参数，每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或空指针，该参数传入有效数据时，`pruning_threshold`也需要传入有效数据。shape为$(BS, K)$。数据类型支持`fp16`、`bf16`、`float`，数据格式要求为$ND$，支持非连续的Tensor。
 -   **pruning_threshold**（`Tensor`）：可选参数，专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或空指针，该参数传入有效数据时，`expert_scales`也需要传入有效数据。shape为$(K,)$或$(1, K)$。数据类型支持`float`，数据格式要求为$ND$，支持非连续的Tensor。
--   **active_mask**（`Tensor`）：可选参数，表示token是否参与通信，可选择传入有效数据或空指针。传入有效数据时，`expert_scales`、`pruning_threshold`也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；传入空指针时是表示所有token都会参与通信。shape为$(BS,)$。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。
+-   **active_mask**（`Tensor`）：可选参数，表示token是否参与通信，可选择传入有效数据或空指针。传入有效数据时，`expert_scales`、`pruning_threshold`也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；传入空指针时表示所有token都会参与通信。shape为$(BS,)$。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。
 
 -   **local_rank_id**（`int`）：本卡ID，数据类型支持`int64`，当`balance_mode`设置0时，本属性取值范围为\[0, `world_ize`\)。
 -   **world_size**（`int`）：通信域size，数据类型支持`int64`，当`balance_mode`设置0时，本属性取值范围为\[2, 768\]

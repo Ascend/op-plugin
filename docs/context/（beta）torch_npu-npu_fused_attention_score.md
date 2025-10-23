@@ -32,9 +32,6 @@ torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attenti
 - **value_transpose**（`bool`）：可选参数，value是否做转置，默认值为False。
 - **dx_transpose**（`bool`）：可选参数，反向计算时dx是否做转置，默认值为False。
 
-## 返回值说明
-`Tensor`
-
 ## 约束说明
 
 输入tensor的格式编号必须均为29，数据类型为`float16`。

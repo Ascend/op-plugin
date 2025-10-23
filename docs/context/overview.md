@@ -1,0 +1,16 @@
+# 概述
+
+基于PyTorch2.8.0/2.7.1/2.6.0/2.1.0版本，提供Ascend Extension for PyTorch自定义API的功能说明、函数原型、参数说明与调用示例等。
+
+Ascend Extension for PyTorch提供的接口均遵循PyTorch社区公开接口规范，具体规范可参考[Public API definition and documentation](https://github.com/pytorch/pytorch/wiki/Public-API-definition-and-documentation)。本文档展示的接口为Ascend Extension for PyTorch的对外公开接口，其他内部接口后续版本可能会被修改或删除，请尽量不要使用，若必须使用，请在[昇腾社区](https://gitcode.com/ascend/pytorch/issues)提交issue获取帮助。
+
+Ascend Extension for PyTorch使用monkey-patch方式与PyTorch接口进行对接，即将Ascend Extension for PyTorch部分接口动态替换至PyTorch接口中，使用户在昇腾NPU上可以继续使用熟悉的PyTorch接口。
+
+Ascend Extension for PyTorch项目采用C++和Python联合开发，当前正式对外接口仅包括Python接口。C++接口为内部使用接口，不建议用户使用。
+
+当前有部分接口会被标记为beta类接口。beta类接口属于实验性接口，部分场景下可能出现异常，请谨慎使用此类接口。我们致力于将beta类接口纳入稳定接口中，但完成之前仍有可能会根据需要进行改动，包括但不限于参数变更、名称变更和移除。
+
+所有自定义API接口默认支持Ascend Extension for PyTorch版本匹配的全量PyTorch版本，若非全量支持会在各API的约束说明进行标注。
+
+>**说明：**<br>
+Ascend Extension for PyTorch部分功能可以通过环境变量实现，具体可参考[《环境变量参考》](https://www.hiascend.com/document/detail/zh/Pytorch/710/comref/Envvariables/Envir_001.html)。

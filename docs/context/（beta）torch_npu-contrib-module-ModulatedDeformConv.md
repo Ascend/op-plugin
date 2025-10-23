@@ -20,7 +20,8 @@ torch_npu.contrib.module.ModulatedDeformConv(in_channels, out_channels, kernel_s
 ```
 
 ## 参数说明
-### 计算参数
+**计算参数**
+
 - **in_channels** (`int`)：输入图像中的通道数。
 - **out_channels** (`int`)：卷积产生的通道数。
 - **kernel_size**(`int`或`Tuple`)：卷积核大小。
@@ -32,7 +33,8 @@ torch_npu.contrib.module.ModulatedDeformConv(in_channels, out_channels, kernel_s
 - **bias** (`bool`)：如果值为True，则向输出添加可学习偏差。默认值为False。
 - **pack** (`bool`)：如果值为True，此模块将包括conv_offset和掩码。默认值为True。
 
-### 计算输入
+**计算输入**
+
 - **x**(`Tensor`): 输入张量。
 
 ## 返回值说明

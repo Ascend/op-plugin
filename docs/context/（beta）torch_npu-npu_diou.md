@@ -23,8 +23,8 @@ torch_npu.npu_diou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 
 ## 参数说明
 
-- **boxes1** (`Tensor`)：格式为xywh，shape为(4, n)的预测检测框。
-- **boxes2** (`Tensor`)：相应的gt检测框，shape为(4, n)。
+- **self** (`Tensor`)：格式为xywh，shape为(4, n)的预测检测框。
+- **gtboxes** (`Tensor`)：相应的gt检测框，shape为(4, n)。
 - **trans** (`bool`)：是否有偏移，默认值为False。
 - **is_cross** (`bool`)：box1和box2之间是否有交叉操作，默认值为False。
 - **mode** (`int`)：选择DIoU的计算方式。0表示IoU，1表示IoF。默认值为0。
