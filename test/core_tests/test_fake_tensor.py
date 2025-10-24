@@ -3040,5 +3040,105 @@ class TestNpuDynamicBlockQuant(TestCase):
         self.assertEqual(actual_scale.shape, fake_scale.shape)
 
 
+@unittest.skip("skip until CANN is updated to support aclnnMlaPrologV3WeightNz")
+class TestMlaProLogV3(TestCase):
+    def testMlaProLogV3(self):
+        with FakeTensorMode():
+            import math
+            BlockNum = math.ceil(2 * 6144 / 128)
+            token_x = torch.randint(-100, 100, (2, 1, 7168), dtype=torch.int8).npu()
+            w_dq = torch.randint(-100, 100, (7168, 1536), dtype=torch.int8).npu()
+            w_uq_qr = torch.randint(-100, 100, (1536, 32 * (128 + 64)), dtype=torch.int8).npu()
+            w_uk = torch.rand(32, 128, 512, dtype=torch.bfloat16).npu()
+            w_dkv_kr = torch.randint(-100, 100, (7168, 512 + 64), dtype=torch.int8).npu()
+            rmsnorm_gamma_cq = torch.rand(1536, dtype=torch.bfloat16).npu()
+            rmsnorm_gamma_ckv = torch.rand(512, dtype=torch.bfloat16).npu()
+            rope_sin = torch.rand(2, 1, 64, dtype=torch.bfloat16).npu()
+            rope_cos = torch.rand(2, 1, 64, dtype=torch.bfloat16).npu()
+            kv_cache = torch.randint(-100, 100, (1, BlockNum * 128 * 1 * 512), dtype=torch.int8).npu()
+            kr_cache = torch.rand(1, BlockNum * 128 * 1 * 64, dtype=torch.bfloat16).npu()
+
+            query_shape = []
+            query_shape.append(token_x.size(0))
+            query_shape.append(token_x.size(1))
+            query_shape.append(w_uk.size(0))
+            query_shape.append(w_uk.size(2))
+
+            query_rope_shape = []
+            query_rope_shape.append(token_x.size(0))
+            query_rope_shape.append(token_x.size(1))
+            query_rope_shape.append(w_uk.size(0))
+            query_rope_shape.append(rope_sin.size(2))
+
+            dequant_scale_q_norm_shape = []
+            dequant_scale_q_norm_shape.append(token_x.size(0) * token_x.size(1))
+            dequant_scale_q_norm_shape.append(1)
+            
+            query = torch.empty(query_shape, dtype=rope_sin.dtype, device='meta')
+            dequant_scale_q_nope = torch.empty([1], dtype=torch.float32, device='meta')
+            query_norm = torch.empty([1], dtype=w_uq_qr.dtype, device='meta')
+            dequant_scale_q_norm = torch.empty([1], dtype=torch.float32, device='meta')
+            query_rope = torch.empty(query_rope_shape, dtype=torch.bfloat16, device='meta')
+            
+            query_mla, query_rope_mla, dequant_scale_q_nope_mla, query_norm_mla, dequant_scale_q_norm_mla = torch_npu.npu_mla_prolog_v3(token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, rmsnorm_gamma_cq,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache)
+            
+            self.assertTrue(query_mla.shape == query.shape)
+            self.assertTrue(query_rope_mla.shape == query_rope.shape)
+            self.assertTrue(dequant_scale_q_nope_mla.shape == dequant_scale_q_nope.shape)
+            self.assertTrue(query_norm_mla.shape == query_norm.shape)
+            self.assertTrue(dequant_scale_q_norm_mla.shape == dequant_scale_q_norm.shape)
+       
+
+@unittest.skip("skip until CANN is updated to support aclnnMlaPrologV3WeightNz")       
+class TestMlaProLogV3Functional(TestCase):
+    def testMlaProLogV3Functional(self):
+        with FakeTensorMode():
+            import math
+            BlockNum = math.ceil(2 * 6144 / 128)
+            token_x = torch.randint(-100, 100, (2, 1, 7168), dtype=torch.int8).npu()
+            w_dq = torch.randint(-100, 100, (7168, 1536), dtype=torch.int8).npu()
+            w_uq_qr = torch.randint(-100, 100, (1536, 32 * (128 + 64)), dtype=torch.int8).npu()
+            w_uk = torch.rand(32, 128, 512, dtype=torch.bfloat16).npu()
+            w_dkv_kr = torch.randint(-100, 100, (7168, 512 + 64), dtype=torch.int8).npu()
+            rmsnorm_gamma_cq = torch.rand(1536, dtype=torch.bfloat16).npu()
+            rmsnorm_gamma_ckv = torch.rand(512, dtype=torch.bfloat16).npu()
+            rope_sin = torch.rand(2, 1, 64, dtype=torch.bfloat16).npu()
+            rope_cos = torch.rand(2, 1, 64, dtype=torch.bfloat16).npu()
+            kv_cache = torch.randint(-100, 100, (1, BlockNum * 128 * 1 * 512), dtype=torch.int8).npu()
+            kr_cache = torch.rand(1, BlockNum * 128 * 1 * 64, dtype=torch.bfloat16).npu()
+
+            query_shape = []
+            query_shape.append(token_x.size(0))
+            query_shape.append(token_x.size(1))
+            query_shape.append(w_uk.size(0))
+            query_shape.append(w_uk.size(2))
+
+            query_rope_shape = []
+            query_rope_shape.append(token_x.size(0))
+            query_rope_shape.append(token_x.size(1))
+            query_rope_shape.append(w_uk.size(0))
+            query_rope_shape.append(rope_sin.size(2))
+
+            dequant_scale_q_norm_shape = []
+            dequant_scale_q_norm_shape.append(token_x.size(0) * token_x.size(1))
+            dequant_scale_q_norm_shape.append(1)
+            
+            query = torch.empty(query_shape, dtype=rope_sin.dtype, device='meta')
+            dequant_scale_q_nope = torch.empty([1], dtype=torch.float32, device='meta')
+            query_norm = torch.empty([1], dtype=w_uq_qr.dtype, device='meta')
+            dequant_scale_q_norm = torch.empty([1], dtype=torch.float32, device='meta')
+            query_rope = torch.empty(query_rope_shape, dtype=torch.bfloat16, device='meta')
+            
+            query_mla, query_rope_mla, dequant_scale_q_nope_mla, _, _, kv_cache_mla, kr_cache_mla = torch_npu.npu_mla_prolog_v3_functional(token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, rmsnorm_gamma_cq,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache)
+            
+            self.assertTrue(query_mla.shape == query.shape)
+            self.assertTrue(query_rope_mla.shape == query_rope.shape)
+            self.assertTrue(dequant_scale_q_nope_mla.shape == dequant_scale_q_nope.shape)
+            self.assertTrue(kv_cache_mla.shape == kv_cache.shape)
+            self.assertTrue(kr_cache_mla.shape == kr_cache.shape)
+
+
 if __name__ == "__main__":
     run_tests()
