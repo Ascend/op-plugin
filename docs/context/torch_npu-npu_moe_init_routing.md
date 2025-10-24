@@ -9,7 +9,7 @@
 ## 功能说明
 
 - API功能：MoE的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理。
-- 计算公式为：
+- 计算公式：
     $$
     expanded\_expert\_idx, sorted\_row\_idx = keyValueSort(expert\_idx, row\_idx)\\
     expanded\_row\_idx[sorted\_row\_idx[i]] = i\\

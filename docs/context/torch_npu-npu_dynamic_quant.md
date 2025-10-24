@@ -20,7 +20,8 @@
     $$
 
     - 若`smooth_scales`存在：
-    $$\text{scale} = \frac{\text{rowMax}(\text{abs}(\mathbf{x} * smooth\_scales))}{DTYPE\_MAX}  \\
+    $$
+    \text{scale} = \frac{\text{rowMax}(\text{abs}(\mathbf{x} * smooth\_scales))}{DTYPE\_MAX}  \\
     y = \text{round}\left(\frac{\mathbf{x} * smooth\_scales}{\text{scale}}\right)
     $$
 

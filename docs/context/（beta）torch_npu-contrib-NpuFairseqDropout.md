@@ -21,8 +21,8 @@ torch_npu.contrib.NpuFairseqDropout(p, module_name=None)
 
 ## 参数说明
 
-- **p** (`float`) - 元素归零的概率。
-- **module_name** (`string`) - 模块名称。
+- **p** (`float`)：元素归零的概率。
+- **module_name** (`string`)：模块名称。
 
 ## 约束说明
 

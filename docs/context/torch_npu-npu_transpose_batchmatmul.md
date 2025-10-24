@@ -1,7 +1,5 @@
 # torch\_npu.npu\_transpose\_batchmatmul<a name="ZH-CN_TOPIC_0000002350565344"></a>
 
-## 产品支持情况<a name="zh-cn_topic_0000002319693140_section8593133131718"></a>
-
 ## 产品支持情况
 
 | 产品                               | 是否支持 |

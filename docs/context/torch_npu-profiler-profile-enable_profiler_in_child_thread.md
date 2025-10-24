@@ -16,7 +16,7 @@
 
 注册Profiler采集回调函数，采集用户子线程下发的torch算子等框架侧数据。该参数中可另外配置[torch_npu.profiler.profile](./torch_npu-profiler-profile.md)的参数（包括record_shapes、profile_memory、with_stack、with_flops、with_modules），作为Profiler子线程的采集配置。
 
-与[torch_npu.profiler.profile.disable_profiler_in_child_thread](./torch_npu.profiler.profile.disable_profiler_in_child_thread.md)配对使用。
+与[torch_npu.profiler.profile.disable_profiler_in_child_thread](./torch_npu-profiler-profile-disable_profiler_in_child_thread.md)配对使用。
 
 ## 函数原型
 

@@ -16,7 +16,7 @@
 
 注销Profiler采集回调函数。
 
-与[torch_npu.profiler.profile.enable_profiler_in_child_thread](./torch_npu.profiler.profile.enable_profiler_in_child_thread.md)配对使用。
+与[torch_npu.profiler.profile.enable_profiler_in_child_thread](./torch_npu-profiler-profile-enable_profiler_in_child_thread.md)配对使用。
 
 ## 函数原型
 
@@ -34,4 +34,4 @@ torch_npu.profiler.profile.disable_profiler_in_child_thread()
 
 ## 调用示例
 
-见[torch_npu.profiler.profile.enable_profiler_in_child_thread](./torch_npu.profiler.profile.enable_profiler_in_child_thread.md)。
+见[torch_npu.profiler.profile.enable_profiler_in_child_thread](./torch_npu-profiler-profile-enable_profiler_in_child_thread.md)。

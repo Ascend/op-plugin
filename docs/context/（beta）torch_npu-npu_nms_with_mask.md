@@ -21,14 +21,14 @@ torch_npu.npu_nms_with_mask(input, iou_threshold) -> (Tensor, Tensor, Tensor)
 
 ## 参数说明
 
--   **input** \(`Tensor`\) - 输入张量。
--   **iou\_threshold** \(`Scalar`\) - 阈值。如果超过此阈值，则值为1，否则值为0。
+-   **input** \(`Tensor`\)：输入张量。
+-   **iou\_threshold** \(`Scalar`\)：阈值。如果超过此阈值，则值为1，否则值为0。
 
 ## 返回值说明
 
--   **selected\_boxes**\(`Tensor`\) - shape为\[N,5\]的2D张量，表示filtered box，包括proposal box和相应的置信度分数。
--  **selected\_idx** \(`Tensor`\) - shape为\[N\]的1D张量，表示输入建议框的index。
--   **selected\_mask** \(`Tensor`\) - shape为\[N\]的1D张量，判断输出建议框是否有效。
+-   **selected\_boxes**\(`Tensor`\)：shape为\[N,5\]的2D张量，表示filtered box，包括proposal box和相应的置信度分数。
+-  **selected\_idx** \(`Tensor`\)：shape为\[N\]的1D张量，表示输入建议框的index。
+-   **selected\_mask** \(`Tensor`\)：shape为\[N\]的1D张量，判断输出建议框是否有效。
 
 ## 约束说明
 

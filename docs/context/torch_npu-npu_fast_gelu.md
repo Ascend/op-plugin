@@ -13,7 +13,7 @@
 
 - API功能：快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果。
 
-- 计算公式
+- 计算公式：
 
   - <term>Atlas 训练系列产品</term>、<term>Atlas 推理系列产品</term>上，计算公式如下：
   $$
