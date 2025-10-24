@@ -1870,6 +1870,17 @@ class TestNpuRmsNorm(TestCase):
             self.assertEqual(dw.shape, npu_gamma.shape)
             self.assertEqual(dw.device, npu_gamma.device)
 
+class TestDistributeBarrier(TestCase):
+    def test_npu_distribute_barrier(self):
+        with FakeTensorMode():
+            ep_world_size = 16
+            x_ref = torch.randn(1).to(torch.int32)
+            time_out = torch.randn(1).to(torch.int32)
+            elastic_info = torch.randn(1,4+2*ep_world_size).to(torch.int32)            
+            result = torch_npu._npu_distribute_barrier(x_ref = x_ref, group = "group_ep",
+            world_size = ep_world_size, time_out = time_out, elastic_info = elastic_info)
+            self.assertEqual(result.shape, x_ref.shape)
+
 
 class TestNpuAddRmsNorm(TestCase):
     def test_npu_add_rms_norm(self):
