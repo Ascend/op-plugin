@@ -165,7 +165,8 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 -   该接口支持静态图模式，`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`必须配套使用。
 -   在不同产品型号、不同通信算法或不同版本中，`npu_moe_distribute_dispatch_v2`的Tensor输出`assist_info_for_combine`、`ep_recv_counts`、`tp_recv_counts`、`expand_scales`中的元素值可能不同，使用时直接将上述Tensor传给`npu_moe_distribute_combine_v2`对应参数即可，模型其他业务逻辑不应对其存在依赖。
 -   调用接口过程中使用的`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`参数取值所有卡需保持一致，`group_ep`、`ep_world_size`、`group_tp`、`tp_world_size`、`expert_shard_type`、`global_bs`网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
--   动态缩容后的部署信息通过`elastic_info`参数传递给算子，无需修改其他参数，缩容参数仅在`tp_world_size`取值为1时生效。动态缩容后，MOE专家卡上的本卡部署MOE专家数需与缩容前保持一致。<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+-   动态缩容后的部署信息通过`elastic_info`参数传递给算子，无需修改其他参数，缩容参数仅在`tp_world_size`取值为1时生效。动态缩容后，MOE专家卡上的本卡部署MOE专家数需与缩容前保持一致，不支持缩容后无MOE专家卡。
+-   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 -   moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32。
 -   参数里Shape使用的变量如下：
     -   A：表示本卡接收的最大token数量，取值范围如下
