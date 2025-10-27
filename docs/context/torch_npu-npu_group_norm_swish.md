@@ -38,20 +38,20 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
 
 ## 参数说明
 
--   **input**(`Tensor`) - 必选参数，表示需要进行组归一化的数据，支持2-8D张量，数据类型支持`float16`，`float32`，`bfloat16`。
--   **num_groups**(`int`) - 必选参数，表示将`input`的第1维分为`num_groups`组，`input`的第1维必须能被`num_groups`整除。
--   **weight**(`Tensor`) - 必选参数，表示权重，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`float16`，`float32`，`bfloat16`，并且需要与`input`一致。
--   **bias**(`Tensor`) - 必选参数，表示偏置，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`float16`，`float32`，`bfloat16`，并且需要与`input`一致。
--   **eps**(`float`) - 可选参数，计算组归一化时加到分母上的值，以保证数值的稳定性。默认值为1e-5。
--   **swish_scale**(`float`) - 可选参数，用于进行swish计算的值。默认值为1.0。
+-   **input**(`Tensor`)：必选参数，表示需要进行组归一化的数据，支持2-8D张量，数据类型支持`float16`，`float32`，`bfloat16`。
+-   **num_groups**(`int`)：必选参数，表示将`input`的第1维分为`num_groups`组，`input`的第1维必须能被`num_groups`整除。
+-   **weight**(`Tensor`)：必选参数，表示权重，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`float16`，`float32`，`bfloat16`，并且需要与`input`一致。
+-   **bias**(`Tensor`)：必选参数，表示偏置，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`float16`，`float32`，`bfloat16`，并且需要与`input`一致。
+-   **eps**(`float`)：可选参数，计算组归一化时加到分母上的值，以保证数值的稳定性。默认值为1e-5。
+-   **swish_scale**(`float`)：可选参数，用于进行swish计算的值。默认值为1.0。
 
 ## 返回值说明
 
-**y**(`Tensor`) - 表示组归一化和swish计算的结果。
+**y**(`Tensor`)：表示组归一化和swish计算的结果。
 
-**mean**(`Tensor`) - 表示分组后的均值。
+**mean**(`Tensor`)：表示分组后的均值。
 
-**rstd**(`Tensor`) - 表示分组后的标准差的倒数。
+**rstd**(`Tensor`)：表示分组后的标准差的倒数。
 
 ## 约束说明
 

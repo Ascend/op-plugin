@@ -1,11 +1,11 @@
 # （beta）torch_npu.npu_rms_norm
 
-# 产品支持情况
+## 产品支持情况
 
 |产品             |  是否支持  |
 |:-------------------------|:----------:|
 |  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |     √    |
-|  <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>     |     √    |
+|  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
 |  <term>Atlas 推理系列产品</term>   |     √    |
 |  <term>Atlas 训练系列产品</term>   |     √    |
 
@@ -44,7 +44,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 
 - <term>Atlas 推理系列产品</term>：`self`、`gamma`输入的尾轴长度必须大于等于32 Bytes。
 - 各产品支持数据类型及对应关系说明：
-  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：
+  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
     | `self`数据类型 | `gamma`数据类型 |
     | -------- | -------- |
     | `float16` | `float32` |

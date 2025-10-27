@@ -22,7 +22,7 @@ torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportTyp
 
 - **export_type** (`list`)：可选参数，设置导出的性能数据结果文件格式。可取值以及含义详见[torch_npu.profiler.ExportType](torch_npu-profiler-ExportType.md)。
 
-- **profiler_level** (`enum`)：可选参数，采集的Level等级。可取值以及含义详见[torch_npu.profiler.ProfilerLevel](torch_npu-profiler-ProfilerLevel.md)。
+- **profiler_level** (`Enum`)：可选参数，采集的Level等级。可取值以及含义详见[torch_npu.profiler.ProfilerLevel](torch_npu-profiler-ProfilerLevel.md)。
 
 - **mstx或msprof_tx** (`bool`)：可选参数，打点控制开关，通过开关开启自定义打点功能。取值为：
 
@@ -49,7 +49,7 @@ torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportTyp
 
     须配置mstx=True。
 
-- **aic_metrics** (`enum`)：可选参数，AI Core的性能指标采集项，采集的结果数据将在Kernel View呈现。可取值以及含义详见[torch_npu.profiler.AiCMetrics](torch_npu-profiler-AiCMetrics.md)。
+- **aic_metrics** (`Enum`)：可选参数，AI Core的性能指标采集项，采集的结果数据将在Kernel View呈现。可取值以及含义详见[torch_npu.profiler.AiCMetrics](torch_npu-profiler-AiCMetrics.md)。
 
 - **l2_cache** (`bool`)：可选参数，控制l2_cache数据采集开关。该采集项在ASCEND_PROFILER_OUTPUT生成l2_cache.csv文件。取值为：
 

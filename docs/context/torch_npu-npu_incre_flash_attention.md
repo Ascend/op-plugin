@@ -1,10 +1,10 @@
 # torch_npu.npu_incre_flash_attention
 
-# 产品支持情况
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>            |    √     |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>            |    √     |
 |<term>Atlas 推理系列加速卡产品</term>   | √  |
 
 ## 功能说明
@@ -25,21 +25,21 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 
 - **query** (`Tensor`)：必选参数。attention结构的Query输入，数据格式支持$ND$。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 
 - **key** (`Tensor`)：必选参数。attention结构的Key输入，数据格式支持$ND$。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
 
 - **value** (`Tensor`)：必选参数。attention结构的Value输入，数据格式支持$ND$。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`、`int8`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
 
 - <strong>*</strong>：代表其之前的变量是位置相关，需要按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
 - **padding_mask** (`Tensor`)：预留参数，暂未使用，默认值为`None`。
 - **pse_shift** (`Tensor`)：可选参数。表示在attention结构内部的位置编码参数，数据格式支持$ND$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：仅支持`None`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 - **atten_mask** (`Tensor`)：可选参数。取值为`1`代表该位不参与计算（不生效），为`0`代表该位参与计算，默认值为`None`，即全部参与计算；数据类型支持`bool`、`int8`、`uint8`，数据格式支持$ND$。
 - **actual_seq_lengths** (`List[int]`)：可选参数。其`shape`为$(B,)$或$(1,)$，形如$[1, 2, 3]$，代表`key`、`value`中有效的$S$序列长度，默认值为`None`，即全部有效，类型为`List int`；数据类型为`int64`，数据格式支持$ND$。
 - **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持pertensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
@@ -47,17 +47,17 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 - **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持pertensor（scalar）。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
 - **quant_scale2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化因子，支持pertensor（scalar）和perchannel（`list`）。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
 - **quant_offset2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化偏移，支持pertensor（`scalar`）和perchannel（`list`）。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
 - **antiquant_scale** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化因子，支持perchannel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 
 - **antiquant_offset** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化偏移，支持perchannel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 - **block_table** (`Tensor`)：可选参数。数据类型支持`int32`，数据格式支持$ND$。`block_table`为2维`Tensor`，表示page attention中KV存储使用的block映射表，具体约束和使用方法可见[约束说明](#zh-cn_topic_0000001711274864_section12345537164214)。如不使用该功能时可不传或传入`None`。
 - **kv_padding_size** (`Tensor`)：可选参数。数据类型支持`int64`，数据格式支持$ND$，表示KV左`padding`场景使能时，最后一个有效`token`到$S$的距离。如不使用该功能时可传入`None`。
 - **num_heads** (`int`)：可选参数。代表`query`的头数，即`query`的$N$，默认值为`1`；数据类型为`int64`。
@@ -87,7 +87,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 - `input_layout`的值与`query`的`shape`相关，三维是$BSH$，四维是$BNSD$或$BSND$。
 - `num_key_value_heads`的值要等于`key`、`value`的$N$，需要能被`query`的头数（`num_heads`）整除。
 - `query`，`key`，`value`输入，功能使用限制如下：
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>支持$B$轴小于等于65535，支持$N$轴小于等于256，支持$S$轴小于等于262144，支持$D$轴小于等于512。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>支持$B$轴小于等于65535，支持$N$轴小于等于256，支持$S$轴小于等于262144，支持$D$轴小于等于512。
     - <term>Atlas 推理系列加速卡产品</term>支持$B$轴小于等于256，支持$N$轴小于等于256，支持$S$轴小于等于65536，支持$D$轴小于等于512。
     - `query`、`key`、`value`输入均为`int8`的场景暂不支持。
 

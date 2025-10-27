@@ -5,7 +5,7 @@
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>      |    √     |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
 |<term>Atlas 推理系列加速卡产品</term>  | √   |
 
 ## 功能说明
@@ -41,12 +41,12 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 
 -   **x** (`Tensor`)：必选参数。即矩阵乘中的左矩阵。对应公式中的$x$。数据格式支持$ND$，支持带transpose的非连续的Tensor，支持输入维度为两维\(M, K\)。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 
 -   **weight** (`Tensor`)：必选参数。即矩阵乘中的右矩阵。对应公式中的$weight$。支持带transpose的非连续的Tensor，支持输入维度为两维\(K, N\)，维度需与`x`保持一致。当数据格式为$ND$时，perchannel场景下为提高性能推荐使用transpose后的`weight`输入。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int8`。数据格式支持$ND$、$FRACTAL\_NZ$，其中$FRACTAL\_NZ$格式只在“图模式”有效，需依赖接口torch\_npu.npu\_format\_cast完成$ND$到$FRACTAL\_NZ$的转换，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int8`、`int32`（通过`int32`承载`int4`的输入，可参考[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。数据格式支持$ND$、$FRACTAL\_NZ$。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`int32`（通过`int32`承载`int4`的输入，可参考[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。数据格式支持$ND$、$FRACTAL\_NZ$。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`int32`（通过`int32`承载`int4`的输入，可参考[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。数据格式支持$ND$、$FRACTAL\_NZ$。
 
 -   **antiquant\_scale** (`Tensor`)：必选参数。反量化的缩放因子，用于weight矩阵反量化，对应反量化公式中的$antiquantScale$，数据格式支持$ND$。支持带transpose的非连续的Tensor。`antiquant_scale`支持的shape与量化方式相关：
@@ -58,7 +58,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
     `antiquant_scale`支持的dtype如下：
 
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`，其数据类型需与`x`保持一致。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int64`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int64`。
         -   若输入为`float16`、`bfloat16`，其数据类型需与`x`保持一致。
         -   若输入为`int64`，`x`数据类型必须为`float16`且不带transpose输入，同时`weight`数据类型必须为`int8`、数据格式为$ND$、带transpose输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。此时只支持perchannel场景，M范围为\[1, 96\]，且K和N要求64对齐。
 
@@ -68,7 +68,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 
 -   **antiquant\_offset** (`Tensor`)：可选参数。反量化的偏移量，用于weight矩阵反量化。对应反量化公式中的$antiquantOffset$，默认值为None，数据格式支持$ND$，支持带transpose的非连续的Tensor，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`，其数据类型需与`antiquant_scale`保持一致。pergroup场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int32`。pergroup场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int32`。pergroup场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
         -   若输入为`float16`、`bfloat16`，其数据类型需与`antiquant_scale`保持一致。
         -   若输入为`int32`，`antiquant_scale`的数据类型必须为`int64`。
 
@@ -84,7 +84,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 
 -   **bias** (`Tensor`)：可选参数。即矩阵乘中的偏置项，对应公式中的$bias$。默认值为None，数据格式支持$ND$，不支持非连续的Tensor，支持输入维度为两维\(1, N\)或一维\(N, \)。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`。当`x`数据类型为`bfloat16`，`bias`需为`float32`；当`x`数据类型为`float16`，`bias`需为`float16`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`。当`x`数据类型为`bfloat16`，`bias`需为`float32`；当`x`数据类型为`float16`，`bias`需为`float16`。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`float32`。当`x`数据类型为`bfloat16`，`bias`需为`float32`；当`x`数据类型为`float16`，`bias`需为`float16`。
 
 -   **antiquant\_group\_size** (`int`)：可选参数。用于控制pergroup场景下group大小，其他量化场景不生效。默认值为0，pergroup场景下要求传入值的范围为\[32, K-1\]且必须是32的倍数。
@@ -113,7 +113,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 -   单算子模式调用
     -   weight非transpose+quant\_scale场景，仅支持如下产品：
 
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
 
             ```python
@@ -132,7 +132,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 
     -   weight transpose+antiquant\_scale场景，仅支持如下产品：
 
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
         -   <term>Atlas 推理系列加速卡产品</term>
 
@@ -150,7 +150,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 
     -   weight transpose+antiquant\_scale场景，仅支持如下产品：
 
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
 
             ```python

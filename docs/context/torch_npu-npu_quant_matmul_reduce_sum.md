@@ -5,7 +5,7 @@
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √   |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
 
 ## 功能说明
 
@@ -38,7 +38,7 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, dims, *, x1_scale=None, x2_scale=N
   - 在实际计算时，`x2_scale`会被广播到(batch，m，n)。
 
 
-## 返回值
+## 返回值说明
 
 `Tensor`
 

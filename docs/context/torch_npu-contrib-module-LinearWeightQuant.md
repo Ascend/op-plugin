@@ -5,7 +5,7 @@
 | 产品                                                         | 是否支持 |
 | :----------------------------------------------------------- | :------: |
 | <term>Atlas A3 训练系列产品</term>     |    √     |
-| <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    |    √     |
+| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    |    √     |
 | <term>Atlas 推理系列产品</term>     |    √     |
 
 ## 功能说明
@@ -39,24 +39,24 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 
 **x**（`Tensor`）：Tensor类型，即矩阵乘中的x。数据格式支持$ND$，支持输入维度为两维(M, K) 。
 
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品</term>  ：数据类型支持`float16`、`bfloat16`。
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品</term>  ：数据类型支持`float16`、`bfloat16`。
 - <term>Atlas 推理系列产品</term> ：数据类型仅支持`float16`。
 
 ## 变量说明
 
 - **weight**（`Tensor`）：即矩阵乘中的weight。数据格式支持$ND$、FRACTAL_NZ，支持非连续的Tensor，支持输入维度为两维(N, K)。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品</term>：数据类型支持`int8`、`int32`（通过`int32`承载`int4`的输入，可以参考[torch_npu.npu_convert_weight_to_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品</term>：数据类型支持`int8`、`int32`（通过`int32`承载`int4`的输入，可以参考[torch_npu.npu_convert_weight_to_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。
     - <term>Atlas 推理系列产品</term>：数据类型支持`int8`。weight FRACTAL_NZ格式只在图模式有效，依赖接口torchair.experimental.inference.use_internal_format_weight完成数据格式从ND到FRACTAL_NZ转换，可参考[调用示例](#section00001)。
 
 - **antiquant_scale**（`Tensor`）：反量化的scale，用于weight矩阵反量化。数据格式支持$ND$。支持非连续的Tensor，支持输入维度为两维(N, 1)或一维(N,)、(1,)。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品</term>  ：数据类型支持`float16`、`bfloat16`、`int64`。pergroup场景shape要求为(N, ceil_div(K, antiquant_group_size))。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品</term>  ：数据类型支持`float16`、`bfloat16`、`int64`。pergroup场景shape要求为(N, ceil_div(K, antiquant_group_size))。
          - 若数据类型为`float16`、`bfloat16`，其数据类型需要和`x`保持一致。
          - 若数据类型为`int64`，则`x`的数据类型必须为`float16`且不带transpose输入，同时`weight`的数据类型必须为`int8`、数据格式为$ND$、带transpose输入，可参考[调用示例](#section00001)。此时只支持perchannel场景，M范围为[1, 96]，且K和N要求64对齐。
 
      - <term>Atlas 推理系列产品</term> ：数据类型支持`float16`，其数据类型需要和`x`保持一致。
 
 - **antiquant_offset**（`Tensor`）：反量化的offset，用于weight矩阵反量化。数据格式支持$ND$。支持非连续的Tensor，支持输入维度为两维(N, 1)或一维(N,)、(1,)。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品</term>  ：数据类型支持`float16`、`bfloat16`、`int32`。pergroup场景shape要求为(N, ceil_div(K, antiquant_group_size))。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品</term>  ：数据类型支持`float16`、`bfloat16`、`int32`。pergroup场景shape要求为(N, ceil_div(K, antiquant_group_size))。
         - 若数据类型为`float16`、`bfloat16`，其数据类型需要和`antiquant_scale`保持一致。
         - 若数据类型为`int32`，则`antiquant_scale`的数据类型必须为`int64`。
 

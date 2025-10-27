@@ -1,10 +1,10 @@
 # torch_npu.npu_group_norm_silu
 
-# 产品支持情况
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    | √  |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    | √  |
 |<term>Atlas 推理系列产品</term>    | √  |
 
 ## 功能说明
@@ -34,15 +34,15 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 
 -   **input** (`Tensor`)：必选参数，源数据张量，维度需要为2~8维且第1维度能整除`group`。数据格式支持$ND$，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
 -   **weight** (`Tensor`)：可选参数，索引张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
 -   **bias** (`Tensor`)：可选参数，更新数据张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
 -   **group** (`int`)：必选参数，表示将输入`input`的第1维度分为group组，group需大于0。
 -   **eps** (`float`)：可选参数，数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。
@@ -51,15 +51,15 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 
 -   **out** (`Tensor`)：数据类型和shape与`input`相同，支持$ND$，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
 -   **meanOut** (`Tensor`)：数据类型与`input`相同，shape为\(N, group\)，其中N为`input`第0维度值。数据格式支持$ND$，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
 -   **rstdOut** (`Tensor`)：数据类型与`input`相同，shape为\(N, group\)，其中N为`input`第0维度值。数据格式支持$ND$，支持非连续的Tensor。
     -   <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
 ## 约束说明
 

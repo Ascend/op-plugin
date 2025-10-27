@@ -5,7 +5,7 @@
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
 
 ## 功能说明
 
@@ -41,7 +41,7 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
 - **group_index** (`Tensor`)：可选参数，对`smooth_scales`进行分组的下标，仅在MoE场景下生效。数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。
 
 - **dst_type** (`ScalarType`)：可选参数，指定量化输出的类型，传`None`时当作`int8`处理。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持取值`int8`、`quint4x2`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持取值`int8`、`quint4x2`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取值`int8`、`quint4x2`。
 
 ## 返回值说明
