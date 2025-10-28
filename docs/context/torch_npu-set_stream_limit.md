@@ -32,7 +32,7 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
 
 ## 约束说明
 
-- 该接口仅支持对Ascend C开发的算子控核；对于非Ascend C开发的算子，该接口不支持控核，不影响算子正常功能使用。如遇到算子不支持控核，建议通过Issue联系技术支持。
+- 该接口仅支持对Ascend C开发的算子控核；对于非Ascend C开发的算子暂不支持控核，并且micro batch多流并行场景下存在卡死可能或其他影响，不推荐使用本接口。对于非Ascend C算子，您可参考[《Ascend C算子开发》](https://hiascend.com/document/redirect/CannCommercialOpdevAscendC)增加算子实现，再使用本接口实现算子控核。
 - 该接口主要适用于micro batch多流并行，如果存在不支持控核的算子，可能会影响多流并行效果。
 - 该接口需要配合torch_npu.npu.config.allow_internal_format = False来使用（不允许私有格式）。
 - 该接口不支持多线程并发设置同一条流上的控核数，无法保证算子执行时的控核生效值。
