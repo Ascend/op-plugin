@@ -22,7 +22,7 @@ torch_npu.npu.set_dump(path_to_json)
 
 ## 参数说明
 
- **path_to_json**：配置文件所在的路径，包含文件名，用户需根据实际情况配置。具体配置请参考《CANN AscendCL应用软件开发指南 (Python)》中“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/API/appdevgapi/aclpythondevg_01_0155.html">函数：set_dump</a>”章节。
+ **path_to_json**：配置文件所在的路径，包含文件名，用户需根据实际情况配置。具体配置请参考《CANN AscendCL应用软件开发指南 (Python)》中“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/83RC1/API/appdevgapi/aclpythondevg_01_0155.html">函数：set_dump</a>”章节。
 
 
 ## 调用示例

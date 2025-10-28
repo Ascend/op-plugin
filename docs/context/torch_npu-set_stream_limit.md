@@ -49,7 +49,7 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
 
 ## 控核生效示例
 1. 使用Ascend PyTorch Profiler接口采集性能数据，主要包括PyTorch层算子信息、CANN层算子信息、底层NPU算子信息以及算子内存占用信息等。
-    > **说明**：Ascend PyTorch Profiler是CANN针对PyTorch框架开发的性能分析工具，通过在PyTorch脚本中添加Ascend PyTorch Profiler接口（推荐torch_npu.profiler.profile接口）采集指定指标数据，模型执行时同步采集性能数据，详细的使用方法和结果文件介绍请参考[《CANN 性能调优工具用户指南》](https://hiascend.com/document/redirect/CanncommercialToolProfiling)中的“Ascend PyTorch Profiler”章节。
+    > **说明**：Ascend PyTorch Profiler是CANN针对PyTorch框架开发的性能分析工具，通过在PyTorch脚本中添加Ascend PyTorch Profiler接口（推荐torch_npu.profiler.profile接口）采集指定指标数据，模型执行时同步采集性能数据，详细的使用方法和结果文件介绍请参考[《CANN 性能调优工具用户指南》](https://www.hiascend.com/document/detail/zh/canncommercial/83RC1/devaids/Profiling/atlasprofiling_16_0001.html)中的“Ascend PyTorch Profiler”章节。
      ```python
      >>> import torch
      >>> import torch_npu

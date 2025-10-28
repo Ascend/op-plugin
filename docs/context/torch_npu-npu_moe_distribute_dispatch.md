@@ -144,7 +144,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
 
 -   版本配套约束：
 
-     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，Ascend Extension for PyTorch框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《Ascend Extension for PyTorch 版本说明》中“<a href="https://www.hiascend.com/document/detail/zh/Pytorch/710/releasenote/releasenote_0003.html">相关产品版本配套说明</a>”。
+     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，Ascend Extension for PyTorch框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《Ascend Extension for PyTorch 版本说明》中“<a href="https://www.hiascend.com/document/detail/zh/Pytorch/720/releasenote/releasenote_0003.html">相关产品版本配套说明</a>”。
 
 ## 调用示例<a name="zh-cn_topic_0000002203575833_section14459801435"></a>
 
