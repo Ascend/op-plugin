@@ -28,7 +28,7 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 - **kernel_size** (`List[int]`): 必选参数，内核大小，2个整数的元组/列表。
 - **stride** (`List[int]`): 必选参数，4个整数的列表，表示每个输入维度的滑动窗口步长。维度顺序根据`self`的数据格式解释。N维和C维必须设置为1。
 - **padding** (`List[int]`): 必选参数，4个整数的列表，表示要添加到输入每侧（顶部、底部、左侧、右侧）的像素数。
-- **dilations** (`List[int]`): 可选参数，4个整数的列表，表示输入每个维度的膨胀系数（dilation factor）。维度顺序根据`self`的数据格式解释。N维和C维必须设置为1。默认值为`[1, 1, 1, 1]`.
+- **dilations** (`List[int]`): 可选参数，4个整数的列表，表示输入每个维度的膨胀系数（dilation factor）。维度顺序根据`self`的数据格式解释。N维和C维必须设置为1。默认值为`[1, 1, 1, 1]`。
 - **groups** (`Int`): 可选参数，`int32`类型，表示从输入通道到输出通道的分组数。`in_channels`和`out_channels`需都可被`groups`数整除。默认值为1。
 - **deformable_groups** (`Int`): 可选参数，`int32`类型，表示可变形组分区的数量。`in_channels`需可被`deformable_groups`数整除。默认值为1。
 - **modulated** (`Bool`): 可选参数，指定DeformableConv2D版本。True表示v2版本，False表示v1版本，目前仅支持v2。默认值为True。

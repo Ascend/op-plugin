@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-- 通过该接口，获取指定Device上的的Device资源限制。
+- 通过该接口，获取指定Device上的Device资源限制。
 - 当前支持资源类型为Cube Core、Vector Core。
 
 ## 函数原型

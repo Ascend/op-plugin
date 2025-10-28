@@ -19,11 +19,13 @@ torch_npu.contrib.module.LabelSmoothingCrossEntropy(num_classes=1000, smooth_fac
 ```
 
 ## 参数说明
-### 计算参数
+**计算参数**
+
 - **num_classes** (`float`)：用于onehot的class数量。
 - **smooth_factor** (`float`)：如果正在使用LabelSmoothing，请改为0.1([0, 1])。默认值为0。
 
-### 计算输入
+**计算输入**
+
 - **pred**(`Tensor`)：模型预测结果。
 - **target**(`Tensor`)：真实标签。
 

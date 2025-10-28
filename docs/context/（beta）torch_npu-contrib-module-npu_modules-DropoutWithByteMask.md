@@ -20,12 +20,14 @@ torch_npu.contrib.module.npu_modules.DropoutWithByteMask(p=0.5, inplace=False, m
 
 ## 参数说明
 
-### 计算参数
+**计算参数**
+
 - **p** (`float`)：元素归零的概率。默认值为0.5。
 - **inplace** (`bool`)：如果设置为True，原地执行此操作。默认值为False。
 - **max_seed**：预留参数，暂未使用。
 
-### 计算输入
+**计算输入**
+
 - **Input** (`Tensor`)：输入张量，可为任何shape。
 
 ## 返回值说明

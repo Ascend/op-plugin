@@ -37,7 +37,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 
 ## 返回值说明
 
-- **RmsNorm(x)**（`Tensor`）：表示进行归一化后的最终输出，对应计算公式的最终输出`RmsNorm(x)`。数据类型和shape与输入`self`的数据类型和shape一致。支持非连续Tensor，支持空Tensor。
+- <strong>RmsNorm(x)</strong>（`Tensor`）：表示进行归一化后的最终输出，对应计算公式的最终输出`RmsNorm(x)`。数据类型和shape与输入`self`的数据类型和shape一致。支持非连续Tensor，支持空Tensor。
 - **rstd**（`Tensor`）：表示归一化后的标准差的倒数，rms_norm的中间结果，对应计算公式中的`Rms(x)`的倒数，用于反向计算。数据类型为`float32`。shape与入参`self`的shape前几维一致，前几维指x的维度减去gamma的维度，表示不需要norm的维度。支持非连续Tensor，支持空Tensor。
 
 ## 约束说明

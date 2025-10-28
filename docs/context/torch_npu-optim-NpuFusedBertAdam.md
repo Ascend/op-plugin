@@ -30,7 +30,7 @@ class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, betas=(0.9, 0.999), eps=
 - **b2** (`float`)：Adam b2，默认值为0.99。`b2`的值小于0或大于1时，打印“ValueError”异常信息。
 - **e** (`float`)：Adam epsilon，默认值为1e-6。`e`的值小于0时，打印“ValueError”异常信息。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0.01。
-- **max_grad_norm** (`float`)：最大梯度正则，默认值为1.0，-1表示不做裁剪。
+- **max_grad_norm** (`float`)：最大梯度范围，默认值为1.0，-1表示不做裁剪。
 
 
 ## 返回值说明

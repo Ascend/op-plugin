@@ -21,7 +21,8 @@ torch_npu.contrib.module.Focus(c1, c2, k=1, s=1, p=None, g=1, act=True)
 
 
 ## 参数说明
-### 计算参数
+**计算参数**
+
 - **c1** (`int`)：输入图像中的通道数。
 - **c2** (`int`)：卷积产生的通道数。
 - **k** (`int`)：卷积核大小，默认值为1。
@@ -30,7 +31,8 @@ torch_npu.contrib.module.Focus(c1, c2, k=1, s=1, p=None, g=1, act=True)
 - **g** (`int`)：从输入通道到输出通道的分组数，默认值为1。
 - **act** (`bool`)：是否使用激活函数，默认值为True。
 
-### 计算输入
+**计算输入**
+
 - **x**(`Tensor`): 输入张量。
 
 ## 返回值说明

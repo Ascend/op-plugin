@@ -27,7 +27,7 @@ torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("
 
 - **rankid** (`int`)：必选参数，集合通信对应device的rankid。传入的rankid为全局的rankid，多机间device具有唯一的rankid。
 
-- **init_comm** (`int`)：可选参数，默认值为True。值为True时，表示调用`get_hccl_comm_name`时，若hccl还未完成初始化时，则完成初始化，并返回group name。值为False时，表示调用`get_hccl_comm_name`时，若hccl还未完成初始化，申请内存资源等操作时，则不进行初始化，并返回空字符串。
+- **init_comm** (`int`)：可选参数，默认值为True。值为True时，表示调用`get_hccl_comm_name`时，若hccl还未完成初始化，则完成初始化，并返回group name。值为False时，表示调用`get_hccl_comm_name`时，若hccl还未完成初始化，申请内存资源等操作时，则不进行初始化，并返回空字符串。
 
 >**说明：** <br>
 >hccl初始化会申请内存资源，造成内存升高，默认申请内存大小为Send buffer与Recv buffer各200M，共400M。buffer大小受环境变量HCCL_BUFFSIZE控制。

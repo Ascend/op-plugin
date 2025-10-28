@@ -70,9 +70,9 @@ npu_moe_gating_top_k(x, k, *, bias=None, k_group=1, group_count=1, group_select_
 
 ## 返回值说明
 
--   yOut（`Tensor`）：表示对`x`做norm操作和分组排序topk后计算的结果。要求是一个2D的Tensor，数据类型支持`float16`、`bfloat16`、`float32`，数据类型与`x`需要保持一致，数据格式要求为ND，第一维的大小要求与`x`的第一维相同，最后一维的大小与`k`相同。不支持非连续Tensor。
--   expertIdxOut（`Tensor`）：表示对`x`做norm操作和分组排序topk后的索引，即专家的序号。shape要求与yOut一致，数据类型支持`int32`，数据格式要求为ND。不支持非连续Tensor。
--   normOut（`Tensor`）：表示norm计算的输出结果。shape要求与`x`保持一致，数据类型为`float32`，数据格式要求为ND。不支持非连续Tensor。
+-   **yOut**（`Tensor`）：表示对`x`做norm操作和分组排序topk后计算的结果。要求是一个2D的Tensor，数据类型支持`float16`、`bfloat16`、`float32`，数据类型与`x`需要保持一致，数据格式要求为ND，第一维的大小要求与`x`的第一维相同，最后一维的大小与`k`相同。不支持非连续Tensor。
+-   **expertIdxOut**（`Tensor`）：表示对`x`做norm操作和分组排序topk后的索引，即专家的序号。shape要求与yOut一致，数据类型支持`int32`，数据格式要求为ND。不支持非连续Tensor。
+-   **normOut**（`Tensor`）：表示norm计算的输出结果。shape要求与`x`保持一致，数据类型为`float32`，数据格式要求为ND。不支持非连续Tensor。
 
 ## 约束说明
 

@@ -21,57 +21,57 @@
       若`quant_mode`不为`2`，即非动态量化场景：
 
          $\ quant\_out=
-        \begin{cases}
-        \ x, & \quad \text{if}\ quant\_mode = 0 \\
-        \ CaseToInt8(\ CaseToFp32(x) \times \ scales ), & \quad \text{if } quant\_mode ≠ 0 \\
-        \end{cases}$
+         \begin{cases}
+         \ x, & \quad \text{if}\ quant\_mode = 0 \\
+         \ CaseToInt8(\ CaseToFp32(x) \times \ scales ), & \quad \text{if } quant\_mode ≠ 0 \\
+         \end{cases}$
 
-        $\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$
+         $\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$
 
-        $\ enpand\_x=
-        \begin{cases}
-        \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
-        \ alltoall\_x\_out & \quad \ 无TP通信域 \\
-        \end{cases}$
+         $\ enpand\_x=
+         \begin{cases}
+         \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
+         \ alltoall\_x\_out & \quad \ 无TP通信域 \\
+         \end{cases}$
 
       若`quant_mode`为`2`，即动态量化场景：
 
-      $\ x\_fp32= \ CastToFp32(x) \times \ scales$
+         $\ x\_fp32= \ CastToFp32(x) \times \ scales$
 
-      $\ dynamic\_scales\_value = 127.0/Max(Abs(x\_fp32))$
+         $\ dynamic\_scales\_value = 127.0/Max(Abs(x\_fp32))$
 
-      $\ quant\_out=CaseToInt8(\ x\_fp32 \times \ dynamic\_scales\_value )$
+         $\ quant\_out=CaseToInt8(\ x\_fp32 \times \ dynamic\_scales\_value )$
 
-      $\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$
+         $\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$
 
-      $\ alltoall\_dynamic\_scales\_out = alltoall(1.0/dynamic\_scales)$
+         $\ alltoall\_dynamic\_scales\_out = alltoall(1.0/dynamic\_scales)$
 
-      $\ enpand\_x=
-      \begin{cases}
-      \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
-      \ alltoall\_x\_out & \quad \ 无TP通信域 \\
-      \end{cases}$
+         $\ enpand\_x=
+         \begin{cases}
+         \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
+         \ alltoall\_x\_out & \quad \ 无TP通信域 \\
+         \end{cases}$
 
-      $\ dynamic\_scales=
-      \begin{cases}
-      \ allgatherv(alltoall\_dynamic\_scales\_out), & \quad \ 有TP通信域 \\
-    \ \ alltoall\_dynamic\_scales\_out & \quad \ 无TP通信域 \\
-      \end{cases}$
+         $\ dynamic\_scales=
+         \begin{cases}
+         \ allgatherv(alltoall\_dynamic\_scales\_out), & \quad \ 有TP通信域 \\
+         \ \ alltoall\_dynamic\_scales\_out & \quad \ 无TP通信域 \\
+         \end{cases}$
 
 
     - 特殊专家场景：
 
       零专家场景，即`zero_Expert_Num`不为0：
 
-      $$Moe(ori\_x)=0$$
+         $$Moe(ori\_x)=0$$
 
       拷贝专家场景，即`copy_Expert_Num`不为0：
 
-      $$Moe(ori\_x)=ori\_x$$
+         $$Moe(ori\_x)=ori\_x$$
 
       常量专家场景，即`const_expert_num`不为0：
 
-      $$Moe(ori\_x)=const\_expert\_alpha\_1*ori\_x+const\_expert\_alpha\_2*const\_expert\_v$$
+         $$Moe(ori\_x)=const\_expert\_alpha\_1*ori\_x+const\_expert\_alpha\_2*const\_expert\_v$$
 
       参数ori\_x、const\_expert\_alpha\_1、const\_expert\_alpha\_2、const\_expert\_v见[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)文档。
 

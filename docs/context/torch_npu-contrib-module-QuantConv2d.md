@@ -24,7 +24,8 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 ## 参数说明
 
-### 计算参数
+**计算参数**
+
 - **in_channels**（`int`）：必选参数，Conv2d的输入的channel值。
 - **out_channels**（`int`）：必选参数，Conv2d的输出的channel值。
 - **kernel_size**（`int`/`tuple`）：必选参数，卷积核大小，支持单个数字输入或者2维tuple输入。当前仅支持kernel_size范围为[1, 255]。
@@ -45,7 +46,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 - **device**：可选参数，默认值为None。**预留参数，暂未使用**。
 - **dtype**：可选参数，默认值为None。**预留参数，暂未使用**。
 
-### 计算输入
+**计算输入**
 
 **quant_conv2d_input**（`Tensor`）：数据类型支持`int8`，数据格式支持$NCHW$，shape为4维。
 

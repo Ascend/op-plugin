@@ -49,4 +49,4 @@ torch_npu.npu_gru(input, hx, weight_input, weight_hidden, bias_input, bias_hidde
 
 ## 约束说明
 
-接口暂不支持jit_compile=False，需要在该模式下使用时请将"DynamicGRUV2"添加至"NPU_FUZZY_COMPILE_BLACKLIST"选项内，具体操作可参考[添加二进制黑名单示例](添加二进制黑名单示例.md)。
+接口暂不支持jit_compile=False，需要在该模式下使用时请将"DynamicGRUV2"添加至"NPU_FUZZY_COMPILE_BLACKLIST"选项内，具体操作可参考[添加二进制黑名单示例](blacklist.md)。

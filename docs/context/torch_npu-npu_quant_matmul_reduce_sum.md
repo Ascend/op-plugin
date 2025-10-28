@@ -40,7 +40,7 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, dims, *, x1_scale=None, x2_scale=N
 
 ## 返回值
 
-`Tensor`:
+`Tensor`
 
 公式中的$out$，算子的计算结果。输出的数据类型为`bfloat16`，数据格式为ND，shape为2维，形状为(m, n)。
 

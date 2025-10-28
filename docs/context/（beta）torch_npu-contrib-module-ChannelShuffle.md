@@ -41,14 +41,14 @@ torch_npu.contrib.module.ChannelShuffle(in_channels, groups=2, split_shuffle=Tru
 ```
 
 ## 参数说明
-### 计算参数
+**计算参数**
 
 - **in_channels** (`int`)：必选参数。输入张量中的通道总数。
 - **groups** (`int`)：可选参数。shuffle组数。默认值为2。
 - **split_shuffle** (`bool`)：可选参数。shuffle后是否执行chunk操作。默认值为True。
 
 
-### 计算输入
+**计算输入**
 - **x1** (`Tensor`)：输入张量。 shape为$(N, C_{in}, L_{in})$。
 - **x2** (`Tensor`)：输入张量。 shape为$(N, C_{in}, L_{in})$。
 
