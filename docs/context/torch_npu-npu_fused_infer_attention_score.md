@@ -49,7 +49,7 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
 
   该入参中每个batch的有效seqlen应该不大于query中对应batch的seqlen。seqlen的传入长度为1时，每个Batch使用相同seqlen；传入长度大于等于Batch时取seqlen的前Batch个数。其他长度不支持。当query的input\_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
 
-- actual\_seq\_lengths\_kv：int类型数组，代表不同Batch中key/value的有效seqlenKv，数据类型支持int64。如果不指定None，表示和key/value的shape的S长度相同。不同O\_S值有不同的约束，具体参见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- actual\_seq\_lengths\_kv：int类型数组，代表不同Batch中key/value的有效seqlenKv，数据类型支持int64。如果不指定None，表示和key/value的shape的S长度相同。不同Q\_S值有不同的约束，具体参见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
 - dequant\_scale1：Tensor类型，数据类型支持uint64、float32。数据格式支持ND，表示BMM1后面的反量化因子，支持per-tensor。如不使用该功能时传入None。
 
