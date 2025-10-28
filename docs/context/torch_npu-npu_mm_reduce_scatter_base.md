@@ -38,8 +38,8 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - **x2** (`Tensor`)：必选参数。数据类型与`input`一致，数据格式支持$ND$、$NZ$。$NZ$仅在`comm_mode`为`aiv`时支持。输入shape支持2维，形如\(k, n\)。轴满足matmul算子入参要求，k轴相等，且k轴取值范围为\[256, 65535\)，m轴需要整除`world_size`。
 - **hcom** (`str`)：必选参数。通信域handle名，通过get\_hccl\_comm\_name接口获取。
 - **world\_size** (`int`)：必选参数。通信域内的rank总数。
-    -   <term>Atlas A2 训练系列产品</term>支持2、4、8卡，支持hccs链路all mesh组网（每张卡和其它卡两两相连）。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>支持2、4、8、16、32卡，支持hccs链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
+    -   <term>Atlas A2 训练系列产品</term>支持2、4、8卡，支持HCCS链路all mesh组网（每张卡和其它卡两两相连）。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>支持2、4、8、16、32卡，支持HCCS链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
 
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **reduce\_op** (`str`)：可选参数。reduce操作类型，当前仅支持'sum'，默认值为'sum'。

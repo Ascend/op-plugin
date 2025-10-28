@@ -34,7 +34,7 @@ torch_npu.contrib.function.roll(input1, shifts, dims)
 
 ## 约束说明
 
-input1是4维张量，shift和dims的长度为2。
+`input1`是4维张量，`shifts`和`dims`的长度为2。
 
 ## 调用示例
 

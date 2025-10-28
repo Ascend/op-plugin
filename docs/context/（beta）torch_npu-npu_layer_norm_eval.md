@@ -27,7 +27,7 @@ torch_npu.npu_layer_norm_eval(input, normalized_shape, weight=None, bias=None, e
 - **input**（`Tensor`）：输入张量。
 - **normalized_shape**（`List[int]`）：size为预期输入的shape。
 - **weight**（`Tensor`）：可选参数，gamma张量，默认值为None。
-- **bias**（`Tensor`）：，可选参数，beta张量，默认值为None。
+- **bias**（`Tensor`）：可选参数，beta张量，默认值为None。
 - **eps**（`float`）：为保证数值稳定性添加到分母中的ε值，默认值为1e-5。
 
 ## 调用示例

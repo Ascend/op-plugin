@@ -1,21 +1,10 @@
 # torch\_npu.npu\_moe\_distribute\_combine\_add\_rms\_norm<a name="ZH-CN_TOPIC_0000002384325441"></a>
 
-## 产品支持情况<a name="zh-cn_topic_0000002322738573_section1369303644412"></a>
+## 产品支持情况
 
-<a name="zh-cn_topic_0000002322738573_table38301303189"></a>
-<table><thead align="left"><tr id="zh-cn_topic_0000002322738573_row20831180131817"><th class="cellrowborder" valign="top" width="57.99999999999999%" id="mcps1.1.3.1.1"><p id="zh-cn_topic_0000002322738573_p1883113061818"><a name="zh-cn_topic_0000002322738573_p1883113061818"></a><a name="zh-cn_topic_0000002322738573_p1883113061818"></a><span id="zh-cn_topic_0000002322738573_ph24751558184613"><a name="zh-cn_topic_0000002322738573_ph24751558184613"></a><a name="zh-cn_topic_0000002322738573_ph24751558184613"></a>产品</span></p>
-</th>
-<th class="cellrowborder" align="center" valign="top" width="42%" id="mcps1.1.3.1.2"><p id="zh-cn_topic_0000002322738573_p783113012187"><a name="zh-cn_topic_0000002322738573_p783113012187"></a><a name="zh-cn_topic_0000002322738573_p783113012187"></a>是否支持</p>
-</th>
-</tr>
-</thead>
-<tbody><tr id="zh-cn_topic_0000002322738573_row220181016240"><td class="cellrowborder" valign="top" width="57.99999999999999%" headers="mcps1.1.3.1.1 "><p id="zh-cn_topic_0000002322738573_p2098311377352"><a name="zh-cn_topic_0000002322738573_p2098311377352"></a><a name="zh-cn_topic_0000002322738573_p2098311377352"></a><span id="zh-cn_topic_0000002322738573_ph1719614396352"><a name="zh-cn_topic_0000002322738573_ph1719614396352"></a><a name="zh-cn_topic_0000002322738573_ph1719614396352"></a><term id="zh-cn_topic_0000002322738573_zh-cn_topic_0000001312391781_term1253731311225"><a name="zh-cn_topic_0000002322738573_zh-cn_topic_0000001312391781_term1253731311225"></a><a name="zh-cn_topic_0000002322738573_zh-cn_topic_0000001312391781_term1253731311225"></a><term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></term></span></p>
-</td>
-<td class="cellrowborder" align="center" valign="top" width="42%" headers="mcps1.1.3.1.2 "><p id="zh-cn_topic_0000002322738573_p7948163910184"><a name="zh-cn_topic_0000002322738573_p7948163910184"></a><a name="zh-cn_topic_0000002322738573_p7948163910184"></a>√</p>
-</td>
-</tr>
-</tbody>
-</table>
+| 产品                                                         | 是否支持 |
+| ------------------------------------------------------------ | :------: |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √   |
 
 ## 功能说明<a name="zh-cn_topic_0000002322738573_section1470016430218"></a>
 
@@ -88,7 +77,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 -   **shared\_expert\_x**（`Tensor`）：可选参数，数据类型需与`expand_x`保持一致。仅在共享专家卡数量`shared_expert_rank_num`为0的场景下使用，表示共享专家token，在combine时需要加上。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型需与`expand_x`保持一致，shape为\[BS, H\]。
 
--   **elastic\_info** (`Tensor`)：可选参数，表示EP通信域的动态缩容信息。当某些通信卡因异常从通信域中被剔除，实际参与通信的卡数与创建通信域时不一致，可从本参数中获取当前部署信息。可选择传入有效数据或填空指针，传入空指针时表示不使能动态缩容功能；当传入有效数据时，要求是一个1D的Tensor，shape为(4 + 2\*ep\_world\_size,)，数据类型支持int32；数据格式要求为ND，支持非连续的Tensor。Tensor中的前四个数字分别表示(是否缩容，缩容后实际rnak数，缩容后共享专家使用rank数，缩容后moe专家个数)，后2\*ep\_world\_size表示两个rank映射表，第一个Table的映射关系为Table1[ep\_rank\_id]=local\_ep\_rank\_id或-1，-1表示epRankId这张卡从通信域中剔除，localEpRankId表示缩容后本卡在新EP通信域中的rankIndex，第二个Table映射关系为Table2[local\_ep\_rank\_id]=ep\_rank\_id。</term>
+-   **elastic\_info** (`Tensor`)：可选参数，表示EP通信域的动态缩容信息。当某些通信卡因异常从通信域中被剔除，实际参与通信的卡数与创建通信域时不一致，可从本参数中获取当前部署信息。可选择传入有效数据或填空指针，传入空指针时表示不使能动态缩容功能；当传入有效数据时，要求是一个1D的Tensor，shape为(4 + 2\*ep\_world\_size,)，数据类型支持int32；数据格式要求为ND，支持非连续的Tensor。Tensor中的前四个数字分别表示（是否缩容，缩容后实际rnak数，缩容后共享专家使用rank数，缩容后moe专家个数），后2\*ep\_world\_size表示两个rank映射表，第一个Table的映射关系为Table1[ep\_rank\_id]=local\_ep\_rank\_id或-1，-1表示epRankId这张卡从通信域中剔除，localEpRankId表示缩容后本卡在新EP通信域中的rankIndex，第二个Table映射关系为Table2[local\_ep\_rank\_id]=ep\_rank\_id。</term>
 
 -   **ori\_x** (`Tensor`)：可选参数，表示未经过FFN的token数据，在使能copy_expert或使能const_expert的场景下需要本输入数据。可选择传入有效数据或填空指针，当copy_expert_num不为零或const_expert_num不为零时必须传入有效输入；当传入有效数据时，要求是一个2D的Tensor，shape为(BS,H)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
 

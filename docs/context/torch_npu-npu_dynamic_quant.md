@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-- API功能：对输入的张量进行per-token对称动态量化。
+- API功能：对输入的张量进行pertoken对称动态量化。
 
     如果是MoE（Mixture of Experts，混合专家模型）场景，会引入`group_index`，`smooth_scales`中包含多组smooth向量，按`group_index`中的数值作用到`x`的不同行上。具体地，假如`x`包含m个token，`smooth_scales`有n行，`smooth_scales[0]`会作用到`x[0:group_index[0]]`上，`smooth_scales[i]`会作用到`x[group_index[i-1]: group_index[i]]`上，`i=1, 2, ..., n-1`。
 

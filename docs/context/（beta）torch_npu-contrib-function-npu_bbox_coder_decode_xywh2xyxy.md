@@ -37,7 +37,7 @@ torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, 
 ## 调用示例
 
 ```python
->>> import troch, torch_npu
+>>> import torch, torch_npu
 >>> from torch_npu.contrib.function import npu_bbox_coder_decode_xywh2xyxy
 >>> A = 1024
 >>> max_shape = 512

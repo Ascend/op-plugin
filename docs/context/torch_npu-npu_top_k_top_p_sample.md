@@ -26,7 +26,7 @@
 
 - 计算公式：
   输入`logits`为大小是[batch, voc_size]的词频表，其中每个batch对应一条输入序列，而voc_size则是约定每个batch的统一长度。<br>
-  `logtis`中的每一行logtis[batch][:]根据相应的top_k[batch]、top_p[batch]、q[batch, :]，执行不同的计算场景。<br> 
+  `logits`中的每一行logits[batch][:]根据相应的top_k[batch]、top_p[batch]、q[batch, :]，执行不同的计算场景。<br> 
   下述公式中使用b和v来分别表示batch和voc_size方向上的索引。
 
   topK采样
@@ -68,7 +68,7 @@
   $$
   * 按最后一轴计算累积概率（从最小的概率开始累加）：
   $$
-  probs\_sum[b]=probs\_value[b].cumcum (dim=-1)
+  probs\_sum[b]=probs\_value[b].cumsum (dim=-1)
   $$
   topP采样
   * 如果前序topK采样已有排序输出结果，则根据topK采样输出计算累积词频，并根据topP截断采样：
@@ -91,7 +91,7 @@
   * 如果`top_k_guess`失败，则对当前序logits_value[b]进行全排序和cumsum，按top_p[b]截断采样：
   $$
   sorted\_logits[b] = sort(logits\_value[b], descendant) \\
-  probs\_sum[b]=sorted\_logits[b].cumcum (dim=-1) \\
+  probs\_sum[b]=sorted\_logits[b].cumsum (dim=-1) \\
   top\_p\_mask[b] = (probs\_sum[b] - sorted\_logits[b])>top\_p[b] 
   $$
   * 将需要过滤的位置设置为-inf，得到sorted_value[b][v]：
@@ -135,7 +135,7 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
 
 ## 返回值说明
 -   **logits_select_idx**（`Tensor`）：表示经过topK-topP-sample计算流程后，每个batch中词频最大元素max(probs_opt[batch, :])在输入`logits`中的位置索引。数据类型支持`int64`，数据格式支持$ND$。
--   **logits_top_kp_select**（`Tensor`）：表示经过topK-topP计算流程后，输入`logtis`中剩余未被过滤的`logits`。数据类型支持`float32`，数据格式支持$ND$。
+-   **logits_top_kp_select**（`Tensor`）：表示经过topK-topP计算流程后，输入`logits`中剩余未被过滤的`logits`。数据类型支持`float32`，数据格式支持$ND$。
 
 ## 约束说明
 -   该接口支持推理场景下使用。

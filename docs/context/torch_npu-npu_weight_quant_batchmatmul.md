@@ -10,7 +10,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000001771071862_section14441124184110"></a>
 
-- API功能：该接口用于实现矩阵乘计算中`weight`输入和输出的量化操作，支持per-tensor、per-channel、per-group多场景量化。
+- API功能：该接口用于实现矩阵乘计算中`weight`输入和输出的量化操作，支持pertensor、perchannel、pergroup多场景量化。
 - 计算公式：
 
     $$
@@ -42,7 +42,7 @@
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 
--   **weight** (`Tensor`)：必选参数。即矩阵乘中的右矩阵。对应公式中的$weight$。支持带transpose的非连续的Tensor，支持输入维度为两维\(K, N\)，维度需与`x`保持一致。当数据格式为$ND$时，per-channel场景下为提高性能推荐使用transpose后的`weight`输入。
+-   **weight** (`Tensor`)：必选参数。即矩阵乘中的右矩阵。对应公式中的$weight$。支持带transpose的非连续的Tensor，支持输入维度为两维\(K, N\)，维度需与`x`保持一致。当数据格式为$ND$时，perchannel场景下为提高性能推荐使用transpose后的`weight`输入。
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int8`。数据格式支持$ND$、$FRACTAL\_NZ$，其中$FRACTAL\_NZ$格式只在“图模式”有效，需依赖接口torch\_npu.npu\_format\_cast完成$ND$到$FRACTAL\_NZ$的转换，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int8`、`int32`（通过`int32`承载`int4`的输入，可参考[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。数据格式支持$ND$、$FRACTAL\_NZ$。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`int32`（通过`int32`承载`int4`的输入，可参考[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)的调用示例）。数据格式支持$ND$、$FRACTAL\_NZ$。
@@ -58,19 +58,19 @@
     -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`，其数据类型需与`x`保持一致。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int64`。
         -   若输入为`float16`、`bfloat16`，其数据类型需与`x`保持一致。
-        -   若输入为`int64`，`x`数据类型必须为`float16`且不带transpose输入，同时`weight`数据类型必须为`int8`、数据格式为$ND$、带transpose输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。此时只支持per-channel场景，M范围为\[1, 96\]，且K和N要求64对齐。
+        -   若输入为`int64`，`x`数据类型必须为`float16`且不带transpose输入，同时`weight`数据类型必须为`int8`、数据格式为$ND$、带transpose输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。此时只支持perchannel场景，M范围为\[1, 96\]，且K和N要求64对齐。
 
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int64`。
         -   若输入为`float16`、`bfloat16`，其数据类型需与`x`保持一致。
-        -   若输入为`int64`，`x`数据类型必须为`float16`且不带transpose输入，同时`weight`数据类型必须为`int8`、数据格式为$ND$、带transpose输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。此时只支持per-channel场景，M范围为\[1, 96\]，且K和N要求64对齐。
+        -   若输入为`int64`，`x`数据类型必须为`float16`且不带transpose输入，同时`weight`数据类型必须为`int8`、数据格式为$ND$、带transpose输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。此时只支持perchannel场景，M范围为\[1, 96\]，且K和N要求64对齐。
 
 -   **antiquant\_offset** (`Tensor`)：可选参数。反量化的偏移量，用于weight矩阵反量化。对应反量化公式中的$antiquantOffset$，默认值为None，数据格式支持$ND$，支持带transpose的非连续的Tensor，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。
-    -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`，其数据类型需与`antiquant_scale`保持一致。per-group场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int32`。per-group场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
+    -   <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`，其数据类型需与`antiquant_scale`保持一致。pergroup场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int32`。pergroup场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
         -   若输入为`float16`、`bfloat16`，其数据类型需与`antiquant_scale`保持一致。
         -   若输入为`int32`，`antiquant_scale`的数据类型必须为`int64`。
 
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int32`。per-group场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int32`。pergroup场景shape要求为\(ceil\_div\(K, antiquant\_group\_size\), N\)。
         -   若输入为`float16`、`bfloat16`，其数据类型需与`antiquant_scale`保持一致。
         -   若输入为`int32`，`antiquant_scale`的数据类型必须为`int64`。
 
@@ -85,8 +85,8 @@
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`float32`。当`x`数据类型为`bfloat16`，`bias`需为`float32`；当`x`数据类型为`float16`，`bias`需为`float16`。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`float32`。当`x`数据类型为`bfloat16`，`bias`需为`float32`；当`x`数据类型为`float16`，`bias`需为`float16`。
 
--   **antiquant\_group\_size** (`int`)：可选参数。用于控制per-group场景下group大小，其他量化场景不生效。默认值为0，per-group场景下要求传入值的范围为\[32, K-1\]且必须是32的倍数。
--   **inner\_precise** (`int`)：可选参数。计算模式选择，默认为0。0表示高精度模式，1表示高性能模式，可能会影响精度。当`weight`以`int32`类型且以$FRACTAL\_NZ$格式输入，M不大于16的per-group场景下可以设置为1，提升性能。其他场景不建议使用高性能模式。
+-   **antiquant\_group\_size** (`int`)：可选参数。用于控制pergroup场景下group大小，其他量化场景不生效。默认值为0，pergroup场景下要求传入值的范围为\[32, K-1\]且必须是32的倍数。
+-   **inner\_precise** (`int`)：可选参数。计算模式选择，默认为0。0表示高精度模式，1表示高性能模式，可能会影响精度。当`weight`以`int32`类型且以$FRACTAL\_NZ$格式输入，M不大于16的pergroup场景下可以设置为1，提升性能。其他场景不建议使用高性能模式。
 
 ## 返回值说明<a name="zh-cn_topic_0000001771071862_section22231435517"></a>
 `Tensor`
@@ -102,7 +102,7 @@
 -   `antiquant_scale`和`antiquant_offset`的输入shape要保持一致。
 -   `quant_scale`和`quant_offset`的输入shape要保持一致，且`quant_offset`不能独立于`quant_scale`存在。
 -   如需传入`int64`数据类型的`quant_scale`，需要提前调用`torch_npu.npu_trans_quant_param`接口将数据类型为`float32`的`quant_scale`和`quant_offset`转换为数据类型为`int64`的`quant_scale`输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。
--   当输入`weight`为$FRACTAL\_NZ$格式且类型为`int32`时，per-channel场景需满足`weight`为转置输入；per-group场景需满足`x`为转置输入，`weight`为非转置输入，`antiquant_group_size`为64或128，K为`antiquant_group_size`对齐，N为64对齐。
+-   当输入`weight`为$FRACTAL\_NZ$格式且类型为`int32`时，perchannel场景需满足`weight`为转置输入；pergroup场景需满足`x`为转置输入，`weight`为非转置输入，`antiquant_group_size`为64或128，K为`antiquant_group_size`对齐，N为64对齐。
 -   不支持输入`weight`` shape为\(1, 8\)且类型为`int4`，同时`weight`带有transpose的场景，否则会报错`x`矩阵和`weight`矩阵K轴不匹配，该场景建议走非量化算子获取更高精度和性能。
 -   当`antiquant_scale`为`float16`、`bfloat16`，单算子模式要求`x`和`antiquant_scale`数据类型一致，图模式允许不一致，如果出现不一致，接口内部会自行判断是否转换成一致的数据类型。用户可dump图信息查看实际参与计算的数据类型。
 

@@ -101,9 +101,9 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         -   <term>Atlas 推理系列产品</term>：仅支持传入`None`。
 
     -   列表长度与weight列表长度相同。
-    -   每个张量支持输入维度如下（其中$g$为matmul组数，$G$为per-group数，$G_i$为第i个tensor的per-group数）：
-        -   伪量化per-channel场景，`weight`为单tensor时，shape限制为$[g, n]$；`weight`为多tensor时，shape限制为$[n_i]$。
-        -   伪量化per-group场景，weight为单tensor时，shape限制为$[g, G, n]$; weight为多tensor时，shape限制为$[G_i, n_i]$。
+    -   每个张量支持输入维度如下（其中$g$为matmul组数，$G$为pergroup数，$G_i$为第i个tensor的pergroup数）：
+        -   伪量化perchannel场景，`weight`为单tensor时，shape限制为$[g, n]$；`weight`为多tensor时，shape限制为$[n_i]$。
+        -   伪量化pergroup场景，weight为单tensor时，shape限制为$[g, G, n]$; weight为多tensor时，shape限制为$[G_i, n_i]$。
 
 - **antiquant_offset** (`List[Tensor]`)：可选参数。用于调整伪量化后的数值偏移量，从而更准确地表示原始浮点数值，对应公式（4）。
     -   支持的数据类型如下：
@@ -113,7 +113,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     -   列表长度与`weight`列表长度相同。
     -   每个张量输入维度和`antiquant_scale`输入维度一致。
 
-- **per_token_scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配量化后的范围值，代表per-token量化参数中由`x`量化引入的缩放因子，对应公式（3）和公式（5）。
+- **per_token_scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配量化后的范围值，代表pertoken量化参数中由`x`量化引入的缩放因子，对应公式（3）和公式（5）。
     -   `group_list`输入类型为`List[int]`时，当前只支持传入`None`。
     -   `group_list`输入类型为`Tensor`时：
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`。
@@ -201,7 +201,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         |非量化|`float16`|`float16`|`float16`|无需赋值|无需赋值|无需赋值|`float16`|`float16`|
         |非量化|`bfloat16`|`bfloat16`|`float32`|无需赋值|无需赋值|无需赋值|`bfloat16`|`bfloat16`|
         |非量化|`float32`|`float32`|`float32`|无需赋值|无需赋值|无需赋值|`float32`|`float32`|
-        |per-channel全量化|`int8`|`int8`|`int32`|`int64`|无需赋值|无需赋值|`int8`|`int8`|
+        |perchannel全量化|`int8`|`int8`|`int32`|`int64`|无需赋值|无需赋值|`int8`|`int8`|
         |伪量化|`float16`|`int8`|`float16`|无需赋值|`float16`|`float16`|`float16`|`float16`|
         |伪量化|`bfloat16`|`int8`|`float32`|无需赋值|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|
 
@@ -214,17 +214,17 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
             |非量化|`float16`|`float16`|`float16`|无需赋值|无需赋值|无需赋值|无需赋值|None/`float16`|`float16`|
             |非量化|`bfloat16`|`bfloat16`|`float32`|无需赋值|无需赋值|无需赋值|无需赋值|None/`bfloat16`|`bfloat16`|
             |非量化|`float32`|`float32`|`float32`|无需赋值|无需赋值|无需赋值|无需赋值|None/`float32`（仅`x`/`weight`/`y`均为单张量）|`float32`|
-            |per-channel全量化|`int8`|`int8`|`int32`|`int64`|无需赋值|无需赋值|无需赋值|None/`int8`|`int8`|
-            |per-channel全量化|`int8`|`int8`|`int32`|`bfloat16`|无需赋值|无需赋值|无需赋值|`bfloat16`|`bfloat16`|
-            |per-channel全量化|`int8`|`int8`|`int32`|`float32`|无需赋值|无需赋值|无需赋值|`float16`|`float16`|
-            |per-token全量化|`int8`|`int8`|`int32`|`bfloat16`|无需赋值|无需赋值|`float32`|`bfloat16`|`bfloat16`|
-            |per-token全量化|`int8`|`int8`|`int32`|`float32`|无需赋值|无需赋值|`float32`|`float16`|`float16`|
+            |perchannel全量化|`int8`|`int8`|`int32`|`int64`|无需赋值|无需赋值|无需赋值|None/`int8`|`int8`|
+            |perchannel全量化|`int8`|`int8`|`int32`|`bfloat16`|无需赋值|无需赋值|无需赋值|`bfloat16`|`bfloat16`|
+            |perchannel全量化|`int8`|`int8`|`int32`|`float32`|无需赋值|无需赋值|无需赋值|`float16`|`float16`|
+            |pertoken全量化|`int8`|`int8`|`int32`|`bfloat16`|无需赋值|无需赋值|`float32`|`bfloat16`|`bfloat16`|
+            |pertoken全量化|`int8`|`int8`|`int32`|`float32`|无需赋值|无需赋值|`float32`|`float16`|`float16`|
             |伪量化|`float16`|`int8`/`int4`|`float16`|无需赋值|`float16`|`float16`|无需赋值|None/`float16`|`float16`|
             |伪量化|`bfloat16`|`int8`/`int4`|`float32`|无需赋值|`bfloat16`|`bfloat16`|无需赋值|None/`bfloat16`|`bfloat16`|
 
             >**说明：**<br> 
-            >-   伪量化场景，若`weight`的类型为`int8`，仅支持per-channel模式；若`weight`的类型为`int4`，支持per-channel和per-group两种模式。若为per-group，per-group数$G$或$G_i$必须要能整除对应的$k_i$。若`weight`为多tensor，定义per-group长度$s_i= k_i/G_i$，要求所有$s_i(i=1,2,...g)$都相等。
-            >-   伪量化场景，若`weight`的类型为`int4`，则`weight`中每一组tensor的最后一维大小都应是偶数。<code>weight<sub>i</sub></code>的最后一维指`weight`不转置时<code>weight<sub>i</sub></code>的N轴或当weight转置时weight<sub>i</sub>的$K$轴。并且在per-group场景下，当`weight`转置时，要求per-group长度$s_i$是偶数。tensor转置：指若tensor shape为$[M,K]$时，则stride为$[1,M]$,数据排布为$[K,M]$的场景，即非连续tensor。
+            >-   伪量化场景，若`weight`的类型为`int8`，仅支持perchannel模式；若`weight`的类型为`int4`，支持perchannel和pergroup两种模式。若为pergroup，pergroup数$G$或$G_i$必须要能整除对应的$k_i$。若`weight`为多tensor，定义pergroup长度$s_i= k_i/G_i$，要求所有$s_i(i=1,2,...g)$都相等。
+            >-   伪量化场景，若`weight`的类型为`int4`，则`weight`中每一组tensor的最后一维大小都应是偶数。<code>weight<sub>i</sub></code>的最后一维指`weight`不转置时<code>weight<sub>i</sub></code>的N轴或当weight转置时weight<sub>i</sub>的$K$轴。并且在pergroup场景下，当`weight`转置时，要求pergroup长度$s_i$是偶数。tensor转置：指若tensor shape为$[M,K]$时，则stride为$[1,M]$,数据排布为$[K,M]$的场景，即非连续tensor。
             >-   当前PyTorch不支持`int4`类型数据，需要使用时可以通过[torch\_npu.npu\_quantize](torch_npu-npu_quantize.md)接口使用`int32`数据表示`int4`。
 
         -   <term>Atlas 推理系列产品</term>：
