@@ -23,8 +23,8 @@ torch_npu.npu_moe_distribute_combine(Tensor expand_x, Tensor expert_ids, Tensor 
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求shape为\(BS \* K,\)。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(BS \* K,\)。
 
--   ep\_send\_counts：Tensor类型，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的ep\_recv\_counts输出。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num,\)，global\_bs传入0时此处应当将其按照bs\*ep\_world\_size计算。
+-   ep\_send\_counts：Tensor类型，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的token数（token数以前缀和的形式表示），要求是1D的Tensor。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的ep\_recv\_counts输出。
+    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num,\)，前`moe_expert_num`个数表示在EP通信域下该卡上每个专家收到来自各卡的token数（token数以前缀和的形式表示），2\*global\_bs\*K\*server\_num存储机间机内通信前combine可提前做reduce的token个数和通信区偏移，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num,\)。
 
 -   expert\_scales：Tensor类型，表示每个token的topK个专家的权重，要求是2D的Tensor，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持float，数据格式为ND，支持非连续的Tensor。
@@ -122,7 +122,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
 
 -   调用本接口前需检查HCCL\_BUFFSIZE环境变量取值是否合理：
 
-    >**说明：**<br> 
+    >**说明：**<br>
     >CANN环境变量HCCL\_BUFFSIZE：表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。
 
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
@@ -156,7 +156,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
     from torch.multiprocessing import Process
     import torch.distributed as dist
     from torch.distributed import ReduceOp
-    
+
     # 控制模式
     quant_mode = 2                       # 2为动态量化
     is_dispatch_scales = True            # 动态量化可选择是否传scales
@@ -181,7 +181,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
     globalBS = bs * ep_world_size
     is_shared = (sharedExpertRankNum > 0)
     is_quant = (quant_mode > 0)
-    
+
     def gen_unique_topk_array(low, high, bs, k):
         array = []
         for i in range(bs):
@@ -189,7 +189,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
             random.shuffle(top_idx)
             array.append(top_idx[0:k])
         return np.array(array)
-    
+
     def get_new_group(rank):
         for i in range(tp_world_size):
             # 如果tp_world_size = 2，ep_world_size = 8，则为[[0, 2, 4, 6, 8, 10, 12, 14], [1, 3, 5, 7, 9, 11, 13, 15]]
@@ -206,14 +206,14 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
                 tp_group_t = tp_group
                 print(f"rank:{rank} tp_ranks:{tp_ranks}")
         return ep_group_t, tp_group_t
-    
+
     def get_hcomm_info(rank, comm_group):
         if torch.__version__ > '2.0.1':
             hcomm_info = comm_group._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcomm_info = comm_group.get_hccl_comm_name(rank)
         return hcomm_info
-    
+
     def run_npu_process(rank):
         torch_npu.npu.set_device(rank)
         rank = rank + 16 * server_index
@@ -221,19 +221,19 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
         ep_group, tp_group = get_new_group(rank)
         ep_hcomm_info = get_hcomm_info(rank, ep_group)
         tp_hcomm_info = get_hcomm_info(rank, tp_group)
-    
+
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
         expert_ids = gen_unique_topk_array(0, moeExpertNum, bs, k).astype(np.int32)
         expert_ids = torch.from_numpy(expert_ids).npu()
-    
+
         expert_scales = torch.randn(bs, k, dtype=torch.float32).npu()
         scales_shape = (1 + moeExpertNum, h) if sharedExpertRankNum else (moeExpertNum, h)
         if is_dispatch_scales:
             scales = torch.randn(scales_shape, dtype=torch.float32).npu()
         else:
             scales = None
-    
+
         expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales = torch_npu.npu_moe_distribute_dispatch(
             x=x,
             expert_ids=expert_ids,
@@ -268,7 +268,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
                                                  moe_expert_num=moeExpertNum,
                                                  global_bs=globalBS)
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
-    
+
     if __name__ == "__main__":
         print(f"bs={bs}")
         print(f"global_bs={globalBS}")
@@ -279,23 +279,23 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
         print(f"tp_world_size={tp_world_size}", flush=True)
         print(f"ep_world_size={ep_world_size}", flush=True)
-    
+
         if tp_world_size != 1 and local_moe_expert_num > 1:
             print("unSupported tp = 2 and local moe > 1")
             exit(0)
-    
+
         if sharedExpertRankNum > ep_world_size:
             print("sharedExpertRankNum 不能大于 ep_world_size")
             exit(0)
-    
+
         if sharedExpertRankNum > 0 and ep_world_size % sharedExpertRankNum != 0:
             print("ep_world_size 必须是 sharedExpertRankNum的整数倍")
             exit(0)
-    
+
         if moeExpertNum % moe_rank_num != 0:
             print("moeExpertNum 必须是 moe_rank_num 的整数倍")
             exit(0)
-    
+
         p_list = []
         for rank in range(rank_per_dev):
             p = Process(target=run_npu_process, args=(rank,))
@@ -305,7 +305,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
         for p in p_list:
             p.join()
         print("run npu success.")
-    
+
     ```
 
 -   图模式调用
@@ -321,7 +321,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
     from torch.multiprocessing import Process
     import torch.distributed as dist
     from torch.distributed import ReduceOp
-    
+
     # 控制模式
     quant_mode = 2                         # 2为动态量化
     is_dispatch_scales = True              # 动态量化可选择是否传scales
@@ -346,11 +346,11 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
     globalBS = bs * ep_world_size
     is_shared = (sharedExpertRankNum > 0)
     is_quant = (quant_mode > 0)
-    
+
     class MOE_DISTRIBUTE_GRAPH_Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
-    
+
         def forward(self, x, expert_ids, group_ep, group_tp, ep_world_size, tp_world_size,
                     ep_rank_id, tp_rank_id, expert_shard_type, shared_expert_rank_num, moe_expert_num,
                     scales, quant_mode, global_bs, expert_scales):
@@ -368,7 +368,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
                                                                         scales=scales,
                                                                         quant_mode=quant_mode,
                                                                         global_bs=global_bs)
-    
+
             expand_x_npu, _, expand_idx_npu, _, ep_recv_counts_npu, tp_recv_counts_npu, expand_scales = output_dispatch_npu
             if expand_x_npu.dtype == torch.int8:
                 expand_x_npu = expand_x_npu.to(input_dtype)
@@ -391,7 +391,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
             x = output_combine_npu
             x_combine_res = output_combine_npu
             return [x_combine_res, output_combine_npu]
-    
+
     def gen_unique_topk_array(low, high, bs, k):
         array = []
         for i in range(bs):
@@ -399,8 +399,8 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
             random.shuffle(top_idx)
             array.append(top_idx[0:k])
         return np.array(array)
-    
-    
+
+
     def get_new_group(rank):
         for i in range(tp_world_size):
             ep_ranks = [x * tp_world_size + i for x in range(ep_world_size)]
@@ -415,14 +415,14 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
                 tp_group_t = tp_group
                 print(f"rank:{rank} tp_ranks:{tp_ranks}")
         return ep_group_t, tp_group_t
-    
+
     def get_hcomm_info(rank, comm_group):
         if torch.__version__ > '2.0.1':
             hcomm_info = comm_group._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcomm_info = comm_group.get_hccl_comm_name(rank)
         return hcomm_info
-    
+
     def run_npu_process(rank):
         torch_npu.npu.set_device(rank)
         rank = rank + 16 * server_index
@@ -430,19 +430,19 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
         ep_group, tp_group = get_new_group(rank)
         ep_hcomm_info = get_hcomm_info(rank, ep_group)
         tp_hcomm_info = get_hcomm_info(rank, tp_group)
-    
+
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
         expert_ids = gen_unique_topk_array(0, moeExpertNum, bs, k).astype(np.int32)
         expert_ids = torch.from_numpy(expert_ids).npu()
-    
+
         expert_scales = torch.randn(bs, k, dtype=torch.float32).npu()
         scales_shape = (1 + moeExpertNum, h) if sharedExpertRankNum else (moeExpertNum, h)
         if is_dispatch_scales:
             scales = torch.randn(scales_shape, dtype=torch.float32).npu()
         else:
             scales = None
-    
+
         model = MOE_DISTRIBUTE_GRAPH_Model()
         model = model.npu()
         npu_backend = torchair.get_npu_backend()
@@ -452,7 +452,7 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
                                quant_mode, globalBS, expert_scales)
         torch.npu.synchronize()
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
-    
+
     if __name__ == "__main__":
         print(f"bs={bs}")
         print(f"global_bs={globalBS}")
@@ -463,23 +463,23 @@ x：Tensor类型，表示处理后的token，要求是2D的Tensor，shape为\(BS
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
         print(f"tp_world_size={tp_world_size}", flush=True)
         print(f"ep_world_size={ep_world_size}", flush=True)
-    
+
         if tp_world_size != 1 and local_moe_expert_num > 1:
             print("unSupported tp = 2 and local moe > 1")
             exit(0)
-    
+
         if sharedExpertRankNum > ep_world_size:
             print("sharedExpertRankNum 不能大于 ep_world_size")
             exit(0)
-    
+
         if sharedExpertRankNum > 0 and ep_world_size % sharedExpertRankNum != 0:
             print("ep_world_size 必须是 sharedExpertRankNum的整数倍")
             exit(0)
-    
+
         if moeExpertNum % moe_rank_num != 0:
             print("moeExpertNum 必须是 moe_rank_num 的整数倍")
             exit(0)
-    
+
         p_list = []
         for rank in range(rank_per_dev):
             p = Process(target=run_npu_process, args=(rank,))
