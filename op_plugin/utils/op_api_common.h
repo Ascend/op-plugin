@@ -128,7 +128,7 @@ inline void *GetOpApiLibHandler(const char *libName)
 
 #define GET_OP_API_FUNC_FROM_FEATURE_LIB(lib_handler, lib_name, api_name)                                              \
     do {                                                                                                               \
-        static auto (lib_handler) = GetOpApiLibHandler((lib_name));                                                    \
+        static auto lib_handler = GetOpApiLibHandler((lib_name));                                                      \
         if ((lib_handler) != nullptr) {                                                                                \
             auto funcAddr = GetOpApiFuncAddrInLib((lib_handler), (lib_name), (api_name));                              \
             if (funcAddr != nullptr) {                                                                                 \
