@@ -687,6 +687,26 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
             x.new_empty(tuple(expanded_scale_dim_list), dtype=torch.float32))
 
 
+@impl(m, "ffn_worker_scheduler_")
+def ffn_worker_scheduler__meta(self, *, sync_group_size=1, execute_mode=0):
+    return self
+
+
+@impl(m, "attention_worker_scheduler_")
+def attention_worker_scheduler__meta(self):
+    return self
+
+
+@impl(m, "ffn_worker_scheduler")
+def ffn_worker_scheduler_meta(self, *, sync_group_size=1, execute_mode=0):
+    return torch.empty_like(self)
+
+
+@impl(m, "attention_worker_scheduler")
+def attention_worker_scheduler_meta(self):
+    return torch.empty_like(self)
+
+
 @impl(m, "npu_ffn_worker_batching")
 def npu_ffn_worker_batching(schedule_context, expert_num, max_out_shape, *, token_dtype=0, need_schedule=0, layer_num=0):
     Y_size = max_out_shape[0] * max_out_shape[1] * max_out_shape[2]

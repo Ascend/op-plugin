@@ -77,7 +77,11 @@
       "npu_gather_sparse_index",
       "npu_moe_distribute_combine_add_rms_norm",
       "npu_moe_update_expert",
-      "npu_dynamic_block_quant"
+      "npu_dynamic_block_quant",
+      "attention_worker_scheduler_",
+      "attention_worker_scheduler",
+      "ffn_worker_scheduler_",
+      "ffn_worker_scheduler"
     ]
   }
   

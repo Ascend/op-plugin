@@ -11317,6 +11317,262 @@ out = torch_npu.npu_top_k_top_p(logits, p, k)
 
 
 _add_torch_npu_docstr(
+    "ffn_worker_scheduler_",
+    """
+接口原型: 
+ffn_worker_scheduler_(Tensor(a!) self, *, int sync_group_size=1, int execute_mode=0) -> Tensor(a!)
+
+功能描述: 
+Attention和Ffn分离部署场景下，Ffn侧数据扫描功能，扫描并原地完成数据整理。
+
+参数说明: 
+scheduler_context(torch.Tensor): 输入张量, scheduler_context的定义与生成可参照torch_npu._afd包；
+sync_group_size(int): 可选，默认值为1；
+execute_mode(int): 可选，默认值为0。
+
+约束说明: 
+无
+
+支持版本: 
+PyTorch 2.1及更高版本
+
+支持的型号: 
+Atlas A3训练系列产品
+Atlas A3推理系列产品
+
+调用示例: 
+import torch
+import torch_npu
+import os
+
+window_size = 209715200
+ffn_window_tensor = torch.zeros([window_size], dtype=torch.int8).npu()
+
+attn_workers = 2
+micro_batch_number = 3
+batch_size = 6
+top_k = 8
+hidden_size = 7168
+expert_num = 288
+attn_to_ffn_token_size = (7168 + 4 + 511) // 512 * 512
+ffn_to_attn_token_size = 7168 * 2
+ffn_window = ffn_window_tensor.data_ptr()
+
+context_holder = torch_npu._afd.create_schedule_context_holder(schedule_mode = 0, session_num = attn_workers,
+    micro_batch_num = micro_batch_number, micro_batch_size = batch_size, selected_expert_num = top_k + 1,
+    expert_num = expert_num, attn_to_ffn_token_size = attn_to_ffn_token_size, ffn_to_attn_token_size = ffn_to_attn_token_size, 
+    ffn_window = ffn_window, ffn_window_size = window_size)
+    
+schedule_context = context_holder.get_schedule_context_tensor()
+
+
+def _set_all_flags():
+    num_int8 = attn_workers * micro_batch_number * (8 + batch_size * top_k * 4)
+    per_session_num = micro_batch_number * (8 + batch_size * top_k * 4)
+    int32_view = ffn_window_tensor[:num_int8].view(torch.int32)
+    int32_view[:] = 1
+
+
+_set_all_flags()
+torch_npu.ffn_worker_scheduler_(schedule_context, sync_group_size = 2)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "ffn_worker_scheduler",
+    """
+接口原型: 
+ffn_worker_scheduler(Tensor self, *, int sync_group_size=1, int execute_mode=0) -> Tensor
+
+功能描述: 
+Attention和Ffn分离部署场景下，Ffn侧数据扫描功能，扫描并完成数据整理输出。
+
+参数说明: 
+scheduler_context(torch.Tensor): 输入张量, scheduler_context的定义与生成可参照torch_npu._afd包；
+sync_group_size(int): 可选，默认值为1；
+execute_mode(int): 可选，默认值为0。
+
+输出说明: 
+scheduler_context(torch.Tensor): 输出结果张量
+
+约束说明: 
+无
+
+支持版本: 
+PyTorch 2.1及更高版本
+
+支持的型号: 
+Atlas A3训练系列产品
+Atlas A3推理系列产品
+
+调用示例: 
+import torch
+import torch_npu
+import os
+
+window_size = 209715200
+ffn_window_tensor = torch.zeros([window_size], dtype=torch.int8).npu()
+
+attn_workers = 2
+micro_batch_number = 3
+batch_size = 6
+top_k = 8
+hidden_size = 7168
+expert_num = 288
+attn_to_ffn_token_size = (7168 + 4 + 511) // 512 * 512
+ffn_to_attn_token_size = 7168 * 2
+ffn_window = ffn_window_tensor.data_ptr()
+
+context_holder = torch_npu._afd.create_schedule_context_holder(schedule_mode = 0, session_num = attn_workers,
+    micro_batch_num = micro_batch_number, micro_batch_size = batch_size, selected_expert_num = top_k + 1,
+    expert_num = expert_num, attn_to_ffn_token_size = attn_to_ffn_token_size, ffn_to_attn_token_size = ffn_to_attn_token_size, 
+    ffn_window = ffn_window, ffn_window_size = window_size)
+    
+schedule_context = context_holder.get_schedule_context_tensor()
+
+
+def _set_all_flags():
+    num_int8 = attn_workers * micro_batch_number * (8 + batch_size * top_k * 4)
+    per_session_num = micro_batch_number * (8 + batch_size * top_k * 4)
+    int32_view = ffn_window_tensor[:num_int8].view(torch.int32)
+    int32_view[:] = 1
+
+
+_set_all_flags()
+schedule_context_out = torch_npu.ffn_worker_scheduler(schedule_context, sync_group_size = 2)
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "attention_worker_scheduler_",
+    """
+接口原型: 
+attention_worker_scheduler_(Tensor(a!) self) -> Tensor(a!)
+
+功能描述: 
+Attention和Ffn分离部署场景下，Attention侧数据扫描功能，扫描并原地确保数据就绪。
+
+参数说明: 
+scheduler_context(torch.Tensor): 输入张量, scheduler_context的定义与生成可参照torch_npu._afd包。
+
+约束说明: 
+无
+
+支持版本: 
+PyTorch 2.1及更高版本
+
+支持的型号: 
+Atlas A3训练系列产品
+Atlas A3推理系列产品
+
+调用示例: 
+import torch
+import torch_npu
+import os
+
+window_size = 209715200
+attn_window_tensor = torch.zeros([window_size], dtype=torch.int8).npu()
+
+attn_workers = 144
+micro_batch_number = 3
+batch_size = 30
+top_k = 8
+hidden_size = 7168
+expert_num = 288
+attn_to_ffn_token_size = (7168 + 4 + 511) // 512 * 512
+ffn_to_attn_token_size = 7168 * 2
+attn_window = attn_window_tensor.data_ptr()
+
+context_holder = torch_npu._afd.create_schedule_context_holder(schedule_mode = 1, session_num = attn_workers,
+    micro_batch_num = micro_batch_number, micro_batch_size = batch_size, selected_expert_num = top_k + 1,
+    expert_num = expert_num, attn_to_ffn_token_size = attn_to_ffn_token_size, ffn_to_attn_token_size = ffn_to_attn_token_size, 
+    attention_window = attn_window, attention_window_size = window_size)
+    
+schedule_context = context_holder.get_schedule_context_tensor()
+
+def _set_all_flags():
+    num_int8 = batch_size * (top_k + 1) * 4 * micro_batch_number
+
+    int32_view = attn_window_tensor[:num_int8].view(torch.int32)
+
+    int32_view[:] = 1
+
+
+_set_all_flags()
+torch_npu.attention_worker_scheduler_(schedule_context)
+
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "attention_worker_scheduler",
+    """
+接口原型: 
+attention_worker_scheduler(Tensor self) -> Tensor
+
+功能描述: 
+Attention和Ffn分离部署场景下，Attention侧数据扫描功能，扫描并确保数据就绪。
+
+参数说明: 
+scheduler_context(torch.Tensor): 输入张量, scheduler_context的定义与生成可参照torch_npu._afd包。
+
+输出说明: 
+scheduler_context(torch.Tensor): 输出结果张量
+
+约束说明: 
+无
+
+支持版本: 
+PyTorch 2.1及更高版本
+
+支持的型号: 
+Atlas A3训练系列产品
+Atlas A3推理系列产品
+
+调用示例: 
+import torch
+import torch_npu
+import os
+
+window_size = 209715200
+attn_window_tensor = torch.zeros([window_size], dtype=torch.int8).npu()
+
+attn_workers = 144
+micro_batch_number = 3
+batch_size = 30
+top_k = 8
+hidden_size = 7168
+expert_num = 288
+attn_to_ffn_token_size = (7168 + 4 + 511) // 512 * 512
+ffn_to_attn_token_size = 7168 * 2
+attn_window = attn_window_tensor.data_ptr()
+
+context_holder = torch_npu._afd.create_schedule_context_holder(schedule_mode = 1, session_num = attn_workers,
+    micro_batch_num = micro_batch_number, micro_batch_size = batch_size, selected_expert_num = top_k + 1,
+    expert_num = expert_num, attn_to_ffn_token_size = attn_to_ffn_token_size, ffn_to_attn_token_size = ffn_to_attn_token_size, 
+    attention_window = attn_window, attention_window_size = window_size)
+    
+schedule_context = context_holder.get_schedule_context_tensor()
+
+def _set_all_flags():
+    num_int8 = batch_size * (top_k + 1) * 4 * micro_batch_number
+
+    int32_view = attn_window_tensor[:num_int8].view(torch.int32)
+
+    int32_view[:] = 1
+
+
+_set_all_flags()
+schedule_context_out = torch_npu.attention_worker_scheduler(schedule_context)
+
+"""
+)
+
+
+_add_torch_npu_docstr(
     "npu_top_k_top_p_sample",
     """
 接口原型: 
