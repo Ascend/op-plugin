@@ -2152,40 +2152,6 @@ c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_grad_probs_out_size(cons
     }
 }
 
-c10::SmallVector<c10::SmallVector<int64_t, SIZE>, SIZE> split_with_sizes_copy_output_size(
-    const c10::SmallVector<int64_t, SIZE>& input_shape,
-    const c10::IntArrayRef split_sizes,
-    int64_t dim)
-{
-    const int64_t ndim = static_cast<int64_t>(input_shape.size());
-
-    // Wrap negative dim
-    if (dim < 0) {
-        dim += ndim;
-    }
-
-    TORCH_CHECK(dim >= 0 && dim < ndim, "Invalid dimension: ", dim, OPS_ERROR(ErrCode::PARAM));
-
-    // Check total size
-    int64_t total = 0;
-    for (int64_t size : split_sizes) {
-        TORCH_CHECK(size >= 0, "split_sizes must be non-negative", OPS_ERROR(ErrCode::PARAM));
-        total += size;
-    }
-    TORCH_CHECK(total == input_shape[dim],
-        "Sum of split_sizes (", total, ") must equal input_shape[dim] (", input_shape[dim], ")", OPS_ERROR(ErrCode::PARAM));
-
-    // Construct output shapes
-    c10::SmallVector<c10::SmallVector<int64_t, SIZE>, SIZE> output_shapes;
-    for (int64_t size : split_sizes) {
-        c10::SmallVector<int64_t, SIZE> shape = input_shape;
-        shape[dim] = size;
-        output_shapes.emplace_back(std::move(shape));
-    }
-
-    return output_shapes;
-}
-
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> triangular_solve_output_size(const at::Tensor& self, const at::Tensor& A)
 {
     auto result = at::native::_linalg_broadcast_batch_dims(self, A, "triangular_solve");
