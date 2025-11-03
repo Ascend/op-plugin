@@ -46,7 +46,11 @@ std::tuple<at::Tensor, at::Tensor> npu_paged_cache_load(
             context_lens.numel() > 0 ? context_lens[-1].item<int32_t>() : 0;
     } else {
         for (int i = 0; i < context_lens.numel(); i++) {
-            num_tokens += context_lens[i].item<int32_t>();
+            int32_t context_val = context_lens[i].item<int32_t>();
+            TORCH_CHECK(context_val >= 0, "Invalid context_lens: negative value encountered");
+            TORCH_CHECK(num_tokens <= INT32_MAX - context_val,
+                        "Integer overflow in accumulation: sum exceeds int32_t max in npu_paged_cache_load");
+            num_tokens += context_val;
         }
     }
     at::Tensor key =

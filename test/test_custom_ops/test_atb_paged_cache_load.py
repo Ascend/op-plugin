@@ -185,7 +185,6 @@ class TestPagedCacheLoadSeqStarts(TestCase):
         )
 
     @SupportedDevices(["Ascend910B"])
-    @unittest.skip("skip case")
     def test_atb_paged_cache_load_out(self):
         kv_lora_rank = 512
         qk_rope_head_dim = 64
@@ -243,7 +242,6 @@ class TestPagedCacheLoadSeqStarts(TestCase):
         self.assertRtolEqual(expected, torch_npu_result)
 
     @SupportedDevices(["Ascend910B"])
-    @unittest.skip("skip case")
     def test_atb_paged_cache_load(self):
         kv_lora_rank = 512
         qk_rope_head_dim = 64
