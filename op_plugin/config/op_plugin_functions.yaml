@@ -5533,7 +5533,13 @@ custom:
 
   - func: fast_gelu(Tensor self) -> Tensor
     acl_op: all_version
+    op_api: all_version
     exposed: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnFastGelu
 
   - func: image_normalize(Tensor self, float[]? mean, float[]? variance, int dtype=0) -> Tensor
     acl_op: v2.1
@@ -5868,10 +5874,22 @@ custom:
 
   - func: npu_fast_gelu(Tensor self) -> Tensor
     acl_op: all_version
+    op_api: all_version
     exposed: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnFastGelu
 
   - func: npu_fast_gelu_backward(Tensor grad, Tensor self) -> Tensor
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnFastGeluBackward
 
   - func: npu_ffn(Tensor x, Tensor weight1, Tensor weight2, str activation, *, int[]? expert_tokens=None, int[]? expert_tokens_index=None, Tensor? bias1=None, Tensor? bias2=None, Tensor? scale=None, Tensor? offset=None, Tensor? deq_scale1=None, Tensor? deq_scale2=None, Tensor? antiquant_scale1=None, Tensor? antiquant_scale2=None, Tensor? antiquant_offset1=None, Tensor? antiquant_offset2=None, int? inner_precise=None, ScalarType? output_dtype=None) -> Tensor
     op_api: all_version

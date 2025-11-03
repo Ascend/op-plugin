@@ -1159,6 +1159,14 @@ class TestFastGelu(TestCase):
 
             self.assertEqual(a.shape, result.shape)
 
+    def test_npu_fast_gelu_backward(self):
+        with FakeTensorMode():
+            a = torch.randn(2, 3).npu()
+            a.requires_grad = True
+            result = torch_npu.npu_fast_gelu(a)
+            result.sum().backward()
+            self.assertTrue(a.shape == a.grad.shape)
+
 
 class TestGelu(TestCase):
 

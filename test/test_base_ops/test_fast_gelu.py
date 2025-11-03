@@ -19,5 +19,19 @@ class TestFastGelu(TestCase):
         self.assertRtolEqual(exoutput.numpy(), output)
 
 
+class TestNpuFastGelu(TestCase):
+    def npu_op_exec(self, input1):
+        output = torch_npu.npu_fast_gelu(input1)
+        output = output.to("cpu")
+        output = output.numpy()
+        return output
+
+    def test_npu_fast_gelu(self):
+        input1 = torch.tensor([1., 2., 3., 4.]).npu()
+        exoutput = torch.tensor([0.8458, 1.9357, 2.9819, 3.9956])
+        output = self.npu_op_exec(input1)
+        self.assertRtolEqual(exoutput.numpy(), output)
+
+
 if __name__ == "__main__":
     run_tests()

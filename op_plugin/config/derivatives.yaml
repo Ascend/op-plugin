@@ -39,6 +39,10 @@ backward:
   self: npu_fast_gelu_backward(grad, self)
   version: [v2.1, newest]
 
+- name: npu_fast_gelu(Tensor self) -> Tensor
+  self: npu_fast_gelu_backward(grad, self)
+  version: [v2.1, newest]
+
 - name: kl_div(Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
   self: kl_div_backward(grad, self, target, reduction, log_target)
   target: non_differentiable
