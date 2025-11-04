@@ -1164,17 +1164,11 @@ def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=
     seed = 0
     offset = 0
     numels = 0
-    attention_score = torch.empty_like(query, dtype=query.dtype, device='meta')
+    attention_score = query.new_empty(query.shape, dtype=query.dtype, device='meta')
     softmax_max = torch.empty([B, head_num, S1, 8], dtype=torch.float32, device='meta')
     softmax_sum = torch.empty([B, head_num, S1, 8], dtype=torch.float32, device='meta')
     softmax_out = torch.empty([0], dtype=query.dtype, device='meta')
-    return (torch.empty_like(attention_score),
-            torch.empty_like(softmax_max),
-            torch.empty_like(softmax_sum),
-            torch.empty_like(softmax_out),
-            seed,
-            offset,
-            numels)
+    return (attention_score, softmax_max, softmax_sum, softmax_out, seed, offset, numels)
 
 
 @impl(m, "npu_fusion_attention_grad")
@@ -1182,11 +1176,11 @@ def npu_fusion_attention_backward(query, key, value, dy, head_num, input_layout,
                                   softmax_max=None, softmax_sum=None, softmax_in=None, attention_in=None, scale_value=1.0,
                                   keep_prob=1.0, pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, seed=0, offset=0,
                                   numels=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout=""):
-    dq = torch.empty_like(query, dtype=query.dtype, device='meta')
-    dk = torch.empty_like(key, dtype=query.dtype, device='meta')
-    dv = torch.empty_like(value, dtype=query.dtype, device='meta')
+    dq = query.new_empty(query.shape, dtype=query.dtype, device='meta')
+    dk = key.new_empty(key.shape, dtype=query.dtype, device='meta')
+    dv = value.new_empty(value.shape, dtype=query.dtype, device='meta')
     dpse = torch.empty([0], dtype=query.dtype, device='meta')
-    return (torch.empty_like(dq), torch.empty_like(dk), torch.empty_like(dv), torch.empty_like(dpse))
+    return (dq, dk, dv, dpse)
 
 
 @impl(m, "npu_fusion_attention_v2")

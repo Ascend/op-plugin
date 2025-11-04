@@ -91,11 +91,11 @@ c10::optional<at::Tensor> convert_boolean_attn_mask(
             "The attn_mask should be none when is_causal is true, but got ",
             attn_mask.has_value(), "-value");
         at::Tensor atten_mask_shape = at::ones({ATTENMASK_LIMIT, ATTENMASK_LIMIT}, query.options().dtype(at::kBool));
-        auto new_attn_mask = op_api::triu(atten_mask_shape, 1);
+        auto new_attn_mask = at::triu(atten_mask_shape, 1);
         return new_attn_mask;
     }
     const at::Tensor &atten_mask_in = attn_mask.value_or(at::Tensor());
-    at::Tensor atten_mask = op_api::logical_not(atten_mask_in);
+    at::Tensor atten_mask = at::logical_not(atten_mask_in);
     return atten_mask;
 }
 
