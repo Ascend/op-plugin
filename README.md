@@ -3,13 +3,13 @@
 ## 简介
 
 本项目开发了Ascend Extension for Pytorch（torch_npu）算子插件，为使用PyTorch框架的开发者提供便捷的NPU算子库调用能力。
-OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch。因此，在编译OpPlugin之前，需要了解、安装昇腾PyTorch。使用手册可参考昇腾社区[Ascend Extension for Pytorch](https://gitcode.com/ascend/pytorch/blob/master/README.zh.md)。
+OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch。因此，在编译OpPlugin之前，需要了解、安装torch_npu。使用手册可参考torch_npu[Ascend Extension for Pytorch](https://gitcode.com/ascend/pytorch/blob/master/README.zh.md)。
 
 ## 版本配套表
 op-plugin仓旨在为**torch_npu**提供运行所需要的算子适配文件，两个仓的对应关系如下：
-| op-plugin分支 | 对应Ascend Extension for PyTorch版本 |
+| op-plugin分支 | 对应Ascend Extension for PyTorch版本（分支） |
 | ------------- | :----------------------------------: |
-| master        |     主线版本，如v2.1.0等             |
+| 7.2.0        |     7.2.0版本，如v2.1.0-7.2.0等       |
 | 7.1.0        |     7.1.0版本，如v2.1.0-7.1.0等       |
 | 7.0.0        |     7.0.0版本，如v2.1.0-7.0.0等       |
 | 6.0.0        |     6.0.0版本，如v2.1.0-6.0.0等       |
@@ -28,7 +28,7 @@ op-plugin仓旨在为**torch_npu**提供运行所需要的算子适配文件，�
 
 #### 安装依赖
 
-安装时需要安装系统依赖及官方PyTorch框架，建议使用torch_npu提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[Ascend Extension for Pytorch](https://gitcode.com/ascend/pytorch/blob/master/README.zh.md#%E4%BD%BF%E7%94%A8%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85pytorch%E6%A1%86%E6%9E%B6)。
+安装时需要安装系统依赖及官方PyTorch框架，建议使用torch_npu提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[Ascend Extension for Pytorch](https://gitcode.com/Ascend/pytorch/tree/v2.7.1-7.2.0#%E4%BD%BF%E7%94%A8%E6%BA%90%E4%BB%A3%E7%A0%81%E8%BF%9B%E8%A1%8C%E5%AE%89%E8%A3%85)。
 
 #### 操作步骤
 
@@ -44,12 +44,12 @@ op-plugin仓旨在为**torch_npu**提供运行所需要的算子适配文件，�
 
    下载对应OpPlugin版本分支代码，进入插件根目录，以v2.1为例。
    ```
-   git clone --branch master https://gitcode.com/ascend/op-plugin.git
+   git clone --branch 7.2.0 https://gitcode.com/ascend/op-plugin.git
    cd op-plugin
    ```
-   执行编译构建，当前支持torch_npu 2.1/2.3/2.4/2.5/2.6/2.7/2.8/master版本。
+   执行编译构建，当前支持torch_npu 2.1.0/2.6.0/2.7.1/2.8.0版本，下述命令中`v2.1.0-7.2.0`表示匹配OpPlugin仓7.2.0版本的PyTorchv2.1.0的分支名。
    ```
-   bash ci/build.sh --python=3.8 --pytorch=v2.1.0
+   bash ci/build.sh --python=3.8 --pytorch=v2.1.0-7.2.0
    ```
    >**须知：**<br>
    >请注意，编译时gcc版本遵循如下约束：
@@ -59,8 +59,8 @@ op-plugin仓旨在为**torch_npu**提供运行所需要的算子适配文件，�
 
    | 参数      | 取值范围                                                           | 说明                  | 缺省值    | 备注                                |
    |---------|----------------------------------------------------------------|---------------------|--------|-----------------------------------|
-   | PyTorch | v2.1.0, v2.3.1, v2.4.0, v2.5.1, v2.6.0, v2.7.1, v2.8.0, master | 指定编译过程中使用的PyTorch版本 | master | master对应的PyTorch版本为2.9            |
-   | Python  | 3.8, 3.9, 3.10, 3.11                                           | 指定编译过程中使用的Python版本  | 3.8    | 编译基于PyTorch2.5及后续版本时，不支持Python3.8 |
+   | PyTorch | v2.1.0-7.2.0, v2.6.0-7.2.0, v2.7.1-7.2.0, v2.8.0-7.2.0 | 指定编译过程中使用的PyTorch版本对应的分支名 | master | 需要显示指定分支名，避免使用缺省值master      |
+   | Python  | 3.8, 3.9, 3.10, 3.11                                           | 指定编译过程中使用的Python版本  | 3.8    | 编译基于PyTorch2.6及后续版本时，不支持Python3.8 |
 
    | PyTorch      | Python               | GCC                |
    |--------------|----------------------|--------------------|
@@ -68,8 +68,7 @@ op-plugin仓旨在为**torch_npu**提供运行所需要的算子适配文件，�
    | v2.6.0       | 3.9, 3.10, 3.11      | ARM: 11.2 x86: 9.3 |
    | v2.7.1       | 3.9, 3.10, 3.11      | 11.2               |
    | v2.8.0       | 3.9, 3.10, 3.11      | 13.3               |
-   | v2.9.0       | 3.10, 3.11           | 13.3               |
-   | master(2.10) | 3.10, 3.11           | 13.3               |
+
 
    >编译过程中，会在插件根目录新建build文件夹，并下载torch_npu对应版本的源码，协同编译。 若build/pytorch目录存在，则编译op-plugin时，不再重复下载torch_npu源码。如需下载所依赖的最新torch_npu源码，删除build/pytorch目录即可。
 
