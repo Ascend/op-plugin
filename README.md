@@ -3,7 +3,7 @@
 ## 简介
 
 本项目开发了Ascend Extension for Pytorch（torch_npu）算子插件，为使用PyTorch框架的开发者提供便捷的NPU算子库调用能力。
-OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch。因此，在编译OpPlugin之前，需要了解、安装昇腾PyTorch。使用手册可参考昇腾社区[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md)。
+OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch。因此，在编译OpPlugin之前，需要了解、安装torch_npu。使用手册可参考torch_npu[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md)。
 
 ## 编译、安装OpPlugin
 
@@ -14,7 +14,7 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
 
 **安装依赖**
 
-安装时需要安装系统依赖及官方PyTorch框架，建议使用torch_npu提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[Ascend Extension for Pytorch](https://gitee.com/ascend/pytorch/blob/master/README.zh.md#%E4%BD%BF%E7%94%A8%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85pytorch%E6%A1%86%E6%9E%B6)。当前从op-plugin直接编译时不携带torch_npu中三方库如torchair、tensorpipe。
+安装时需要安装系统依赖及官方PyTorch框架，建议使用torch_npu提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[Ascend Extension for Pytorch](https://gitcode.com/Ascend/pytorch/tree/v2.1.0-7.1.0#%E4%BD%BF%E7%94%A8%E6%BA%90%E4%BB%A3%E7%A0%81%E8%BF%9B%E8%A1%8C%E5%AE%89%E8%A3%85)。当前从op-plugin直接编译时不携带torch_npu中三方库如torchair、tensorpipe。
 
 1. 配置CANN环境变量脚本。
 
@@ -28,7 +28,7 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
 
    下载对应OpPlugin版本分支代码，进入插件根目录，以v2.1为例
    ```
-   git clone --branch master https://gitee.com/ascend/op-plugin.git
+   git clone --branch 7.1.0 https://gitee.com/ascend/op-plugin.git
    cd op-plugin
    ```
    执行编译构建，当前支持torch_npu 2.1/2.5/2.6/版本
@@ -49,7 +49,7 @@ OpPlugin算子插件的编译、使用依赖昇腾Ascend Extension for PyTorch�
 3. 完成编译后，安装dist目录下生成的插件torch\_npu包，如果使用非root用户安装，需要在命令后加**--user**。
 
    ```
-   pip3 install --upgrade dist/torch_npu-{torch_npu_version}-{pytohon_version}-{arch}.whl
+   pip3 install --upgrade dist/torch_npu-{torch_npu_version}-{python_version}-{arch}.whl
    # 实际执行时需要根据生成的whl名称替换上述whl包名称，其中{version}表示编译的torch_npu版本，{python_version} 为所使用的 Python 版本，{arch} 则代表目标架构
    # 典型的whl包名类似：torch_npu-2.1.0.post13+gitb32f3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
    ```
