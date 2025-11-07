@@ -146,9 +146,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - "fullmesh": token数据直接通过RDMA方式发往topk个目标专家所在的卡。
         - "hierarchy": token数据经过跨机、机内两次发送，仅不同server同号卡之间使用RDMA通信，server内使用HCCS通信。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前版本仅支持""，"fullmesh_v1"，"fullmesh_v2"三种输入方式。
-        - ""：默认值，不使能性能优化模板；
-        - "fullmesh_v1"：不使能性能优化模板；
-        - "fullmesh_v2"：使能性能优化模板，其中commAlg仅在tp\_world\_size取值为1时生效，且不支持在各卡Bs不一致、输入xActiveMask和特殊专家场景下使能。
+        - ""：默认值，不使能fullmesh_v2模板；
+        - "fullmesh_v1"：不使能fullmesh_v2模板；
+        - "fullmesh_v2"：使能fullmesh_v2模板，其中commAlg仅在tp\_world\_size取值为1时生效，且不支持在各卡Bs不一致、输入xActiveMask和特殊专家场景下使能。
 
 -   **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：当前版本不支持，传0即可。
@@ -225,7 +225,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - comm\_alg配置为"fullmesh": 要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(unit16\)+2MB\)。
         - comm\_alg配置为"hierarchy": 要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB，不要求moe\_expert\_num\/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
 
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求 \>= 2且满足\>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)，local\_expert\_num需使用MoE专家卡的本卡专家数，其中Align512(x) = ((x+512-1)/512)\*512,Align32(x) = ((x+32-1)/32)\*32。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
+        - comm\_alg配置为"fullmesh_v1"或"": 要求 \>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)。
+        - comm\_alg配置为"fullmesh_v2": 要求 \>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* 480Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)。
+        - 其中 480Align512(x) = ((x+480-1)/480)\*512,Align512(x) = ((x+512-1)/512)\*512,Align32(x) = ((x+32-1)/32)\*32。
 
 -   HCCL_INTRA_PCIE_ENABLE和HCCL_INTRA_ROCE_ENABLE:
     -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：该环境变量不再推荐使用，建议comm\_alg配置"hierarchy"。
