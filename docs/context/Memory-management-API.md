@@ -11,7 +11,7 @@
 </thead>
 <tbody><tr id="row12860101605513"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="p486019163553"><a name="p486019163553"></a><a name="p486019163553"></a>（<span id="ph168289415199"><a name="ph168289415199"></a><a name="ph168289415199"></a>beta</span>）torch_npu.npu.caching_allocator_alloc</p>
 </td>
-<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p6146131084320"><a name="p6146131084320"></a><a name="p6146131084320"></a>Torch_npu提供内存管理相关的部分接口，具体可参考<a href="https://www.hiascend.com/document/detail/zh/Pytorch/710/apiref/PyTorchNativeapi/ptaoplist_000158.html">torch.cuda</a>。</p>
+<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p6146131084320"><a name="p6146131084320"></a><a name="p6146131084320"></a>Torch_npu提供内存管理相关的部分接口，具体可参考<a href="https://www.hiascend.com/document/detail/zh/Pytorch/720/apiref/PyTorchNativeapi/ptaoplist_000237.html">torch.cuda</a>。</p>
 </td>
 </tr>
 <tr id="row0860131635519"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="p19860111610554"><a name="p19860111610554"></a><a name="p19860111610554"></a>（<span id="ph1545853943420"><a name="ph1545853943420"></a><a name="ph1545853943420"></a>beta</span>）torch_npu.npu.caching_allocator_delete</p>

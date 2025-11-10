@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-设置不同step的行为。用于构造torch_npu.profiler.profile的schedule参数。
+设置不同step的行为。用于构造torch_npu.profiler.profile的schedule参数。默认不执行schedule操作。
 
 ## 函数原型
 
@@ -34,8 +34,6 @@ torch_npu.profiler.schedule (wait, active, warmup = 0, repeat = 0, skip_first = 
   - repeat = 0表示重复执行的具体次数由总训练步数确定，例如总训练步数为100，wait + active + warmup = 10，skip_first = 10，则repeat = ( 100 - 10 ) / 10 = 9，表示重复执行9次，生成9份性能数据。
 
 - **skip_first** (`int`)：可选参数，采集前先跳过的step轮数。默认值为0。动态Shape场景建议跳过前10轮保证性能数据稳定；对于其他场景，可以根据实际情况自行配置。
-
-默认不执行schedule操作。
 
 ## 返回值说明
 

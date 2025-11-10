@@ -5,7 +5,7 @@
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    | √  |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    | √  |
 |<term>Atlas 推理系列产品</term>    | √  |
 
 ## 功能说明<a name="zh-cn_topic_0000002262888689_section1290611593405"></a>
@@ -57,7 +57,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **x** (`List[Tensor]`)：必选参数。输入矩阵列表，表示矩阵乘法中的左矩阵。
     -   支持的数据类型如下：
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`float32`、`bfloat16`和`int8`。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`float32`、`bfloat16`和`int8`。
         -   <term>Atlas 推理系列产品</term>：`float16`。
 
     -   列表最大长度为128。
@@ -65,7 +65,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **weight** (`List[Tensor]`)：必选参数。权重矩阵列表，表示矩阵乘法中的右矩阵。
     -   支持的数据类型如下：
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
             -   当`group_list`输入类型为`List[int]`时，支持`float16`、`float32`、`bfloat16`和`int8`。
             -   当`group_list`输入类型为`Tensor`时，支持`float16`、`float32`、`bfloat16`、`int4`和`int8`。
 
@@ -77,7 +77,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **bias** (`List[Tensor]`)：可选参数。每个分组的矩阵乘法输出的独立偏置项。
     -   支持的数据类型如下：
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`float32`和`int32`。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`float32`和`int32`。
         -   <term>Atlas 推理系列产品</term>：`float16`。
 
     -   列表长度与weight列表长度相同。
@@ -85,19 +85,19 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配量化后的范围值，代表量化参数中的缩放因子，对应公式（2）、公式（3）和公式（5）。
     -   支持的数据类型如下：
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
             -   当`group_list`输入类型为`List[int]`时，支持`int64`。
             -   当`group_list`输入类型为`Tensor`时，支持`float32`、`bfloat16`和`int64`。
 
         -   <term>Atlas 推理系列产品</term>：仅支持传入`None`。
 
     -   列表长度与weight列表长度相同。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：每个张量仅支持1维输入。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：每个张量仅支持1维输入。
 
 - **offset** (`List[Tensor]`)：可选参数。用于调整量化后的数值偏移量，从而更准确地表示原始浮点数值，对应公式（2）。当前仅支持传入`None`。
 - **antiquant_scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配伪量化后的范围值，代表伪量化参数中的缩放因子，对应公式（4）。
     -   支持的数据类型如下：
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`bfloat16`。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`bfloat16`。
         -   <term>Atlas 推理系列产品</term>：仅支持传入`None`。
 
     -   列表长度与weight列表长度相同。
@@ -107,7 +107,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **antiquant_offset** (`List[Tensor]`)：可选参数。用于调整伪量化后的数值偏移量，从而更准确地表示原始浮点数值，对应公式（4）。
     -   支持的数据类型如下：
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`bfloat16`。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`bfloat16`。
         -   <term>Atlas 推理系列产品</term>：仅支持传入`None`。
 
     -   列表长度与`weight`列表长度相同。
@@ -116,13 +116,13 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **per_token_scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配量化后的范围值，代表pertoken量化参数中由`x`量化引入的缩放因子，对应公式（3）和公式（5）。
     -   `group_list`输入类型为`List[int]`时，当前只支持传入`None`。
     -   `group_list`输入类型为`Tensor`时：
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`。
         -   列表长度与`x`列表长度相同。
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：每个张量仅支持1维输入。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：每个张量仅支持1维输入。
 
 - **group_list** (`List[int]`/`Tensor`)：可选参数。用于指定分组的索引，表示x的第0维矩阵乘法的索引情况。数据类型支持`int64`。
     -   <term>Atlas 推理系列产品</term>：仅支持<code>**Tensor**</code>类型。仅支持1维输入，长度与<code>weight</code>列表长度相同。
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持<code>**List[int]**</code>或<code>**Tensor**</code>类型。若为<code>**Tensor**</code>类型，仅支持1维输入，长度与<code>weight</code>列表长度相同。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持<code>**List[int]**</code>或<code>**Tensor**</code>类型。若为<code>**Tensor**</code>类型，仅支持1维输入，长度与<code>weight</code>列表长度相同。
     -   配置值要求如下：
         -   `group_list`输入类型为`List[int]`时，配置值必须为非负递增数列，且长度不能为1。
         -   `group_list`输入类型为`Tensor`时：
@@ -141,7 +141,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     -   `group_list`输入类型为`List[int]`时仅支持传入`None`。
 
     -   `group_list`输入类型为`Tensor`时，若矩阵乘为$C[m,n]=A[m,k]*B[k,n]$，`group_type`支持的枚举值为：-1代表不分组；0代表m轴分组；1代表n轴分组。
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前支持取-1、0。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前支持取-1、0。
         -   <term>Atlas 推理系列产品</term>：当前只支持取0。
 
 - **group_list_type** (`int`)：可选参数。代表`group_list`的表达形式。数据类型支持`int32`。
@@ -151,14 +151,14 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         -   0：默认值，`group_list`中数值为分组轴大小的cumsum结果（累积和）。
         -   1：`group_list`中数值为分组轴上每组大小。
         -   2：`group_list` shape为$[E, 2]$，E表示Group大小，数据排布为$[[groupIdx0, groupSize0], [groupIdx1, groupSize1]...]$，其中groupSize为分组轴上每组大小。
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅当`x`和`weight`参数输入类型为`INT8`，并且`group_type`取0（m轴分组）时，支持取2。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅当`x`和`weight`参数输入类型为`INT8`，并且`group_type`取0（m轴分组）时，支持取2。
         -   <term>Atlas 推理系列产品</term>：不支持取2。
     
 - **act_type** (`int`)：可选参数。代表激活函数类型。数据类型支持`int32`。
     -   `group_list`输入类型为`List[int]`时仅支持传入`None`。
 
     -   `group_list`输入类型为`Tensor`时，支持的枚举值包括：0代表不激活；1代表`RELU`激活；2代表`GELU_TANH`激活；3代表暂不支持；4代表`FAST_GELU`激活；5代表`SILU`激活。
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0-5。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0-5。
         -   <term>Atlas 推理系列产品</term>：当前只支持传入0。
 
 - **output_dtype** (`torch.dtype`)：可选参数。输出数据类型。支持的配置包括：
@@ -179,7 +179,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 -   该接口支持推理场景下使用。
 -   该接口支持图模式。
--   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：内轴限制InnerLimit为65536。
+-   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：内轴限制InnerLimit为65536。
 -   `x`和`weight`中每一组tensor的最后一维大小都应小于InnerLimit。x<sub>i</sub>的最后一维指当x不转置时<code>x<sub>i</sub></code>的K轴或当`x`转置时<code>x<sub>i</sub></code>的$M$轴。<code>weight<sub>i</sub></code>的最后一维指当`weight`不转置时<code>weight<sub>i</sub></code>的$N$轴或当`weight`转置时<code>weight<sub>i</sub></code>的$K$轴。
 
 -   `tuning_config`使用场景限制：
@@ -193,7 +193,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     |`int8`|`int8`|`int32`|`int32`|
 
 -   各场景输入与输出数据类型使用约束：
-    -   **`group_list`输入类型为`List[int]`时**，<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>数据类型使用约束。
+    -   **`group_list`输入类型为`List[int]`时**，<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>数据类型使用约束。
 
         **表 1**  数据类型约束
         |场景|x|weight|bias|scale|antiquant_scale|antiquant_offset|output_dtype|y|
@@ -206,7 +206,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         |伪量化|`bfloat16`|`int8`|`float32`|无需赋值|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|
 
     -   **`group_list`输入类型为`Tensor`时**，数据类型使用约束。
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
             **表 2**  数据类型约束
             |场景|x|weight|bias|scale|antiquant_scale|antiquant_offset|per_token_scale|output_dtype|y|
@@ -235,7 +235,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
             |`float16`|`float16`|`float16`|无需赋值|无需赋值|无需赋值|`float32`|`float16`|`float16`|
             
 -   根据输入`x`、输入`weight`与输出`y`的Tensor数量不同，支持以下几种场景。场景中的“单”表示单个张量，“多”表示多个张量。场景顺序为`x`、`weight`、`y`，例如“单多单”表示`x`为单张量，`weight`为多张量，`y`为单张量。
-    -   **`group_list`输入类型为`List[int]`时**，<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>各场景的限制。
+    -   **`group_list`输入类型为`List[int]`时**，<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>各场景的限制。
 
         |支持场景|场景说明|场景限制|
         |--------|--------|--------|
@@ -245,7 +245,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         |多多单|`x`和`weight`为多张量，`y`为单张量。每组矩阵乘法的结果连续存放在同一个张量中。|1.仅支持`split_item`为2或3。<br>2.`x`、`weight`、`y`中tensor需为2维。<br>3.`weight`中每个tensor的N轴必须相等。<br>4.若传入`group_list`，`group_list`的差值需与`x`中tensor的第一维一一对应。|
         
     -   **`group_list`输入类型为`Tensor`时**，各场景的限制。
-        -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
             >**说明：**<br> 
             >-   量化、伪量化仅支持`group_type`为-1和0场景。
@@ -297,7 +297,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     ```
 
 -   图模式调用
-    -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>/<term>Atlas 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
         ```python
         import torch

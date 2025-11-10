@@ -4,7 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>    | √  |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    | √  |
 
 ## 功能说明
 
@@ -67,7 +67,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - 输入`x1`可为2维或者3维、`x2`必须是2维，分别为$(b, s, k)/(m, k)$, $(k, n)$，$k$轴满足mm算子入参要求，$k$轴相等。`bias`当前仅支持一维，且维度大小与`output`的最后一维大小相同。`x3`的shape与`output`的shape相同。
 - `x1`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`x1`的最后一维相同，满足matmul的计算条件。
 - `antiquant_group_size`中$k$值的范围与matmul一致，为`[1,65535]`，`INT_MAX`大于$(k-1)$。
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
     - 数据类型支持`bfloat16`。
     - `x1`、`x2`不支持为空tensor。
     - 支持1、2、4、8卡，并且仅支持hccs链路all mesh组网。
@@ -83,22 +83,22 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     **表1** 非量化场景
     |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|
-    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`float16`|`float16`|`float16`|`float16`|`float16`|None|None|None|
-    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|None|None|
+    |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`float16`|`float16`|`float16`|`float16`|`float16`|None|None|None|
+    |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|None|None|
     
     **表2** 伪量化场景
     |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|
-    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`float16`|`int8`|`float16`|`float16`|`float16`|`float16`|`float16`|None|
-    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`bfloat16`|`int8`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|
+    |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`float16`|`int8`|`float16`|`float16`|`float16`|`float16`|`float16`|None|
+    |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`bfloat16`|`int8`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|
     
     **表3** 全量化场景
     |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|pertoken_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`uint64`或`int64`|None|
-    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|None|
-    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`float32`|`float32`|
-    |Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|`float32`|
+    |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`uint64`或`int64`|None|
+    |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|None|
+    |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`float32`|`float32`|
+    |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|`float32`|
 
     >**说明：**<br>
     >全量化场景：若`dequant_scale`需要以`float32`类型传入，在调用`torch_npu.npu_mm_all_reduce_base`前，需通过`torch_npu.npu_trans_quant_param`接口对`dequant_scale`进行处理为`int64`类型（处理方法见对应的接口使用说明）。

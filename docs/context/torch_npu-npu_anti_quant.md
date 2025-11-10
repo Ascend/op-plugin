@@ -5,7 +5,7 @@
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>           |    √     |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> | √   |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √   |
 |<term>Atlas 推理系列产品</term>| √   |
 
 ## 功能说明
@@ -29,12 +29,12 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
 
 - **x** (`Tensor`)：必选参数，需要做反量化的输入，数据格式支持$ND$，支持非连续的Tensor，支持空Tensor。最大支持8维。
   - <term>Atlas 推理系列产品</term>：数据类型支持`int8`。
-  - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
 
 - **scale** (`Tensor`)：必选参数，反量化中的`scale`值，仅支持1维Tensor，shape为$(n,)$。其中n可以为1，如果n不为1，当`x`为`int8`类型时，必须与输入`x`的尾轴维度大小相同；当`x`为`int32`类型时，必须为输入`x`的尾轴维度大小的8倍。数据格式支持$ND$，支持非连续的Tensor，支持空Tensor。
   - <term>Atlas 推理系列产品</term>：数据类型支持`float32`。
-  - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
 
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -43,12 +43,12 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
 
 - **dst_dtype** (`ScalarType`)：可选参数，指定输出的数据类型，默认值为`float16`。
   - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。
-  - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 
 - **src_dtype** (`ScalarType`)：可选参数，指定源输入的数据类型，默认值为`int8`。
   - <term>Atlas 推理系列产品</term>：数据类型支持`int8`。
-  - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`quint4x2`或`int8`。
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`quint4x2`或`int8`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`quint4x2`或`int8`。
 
 ## 返回值说明

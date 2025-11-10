@@ -5,7 +5,7 @@
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>      |    √     |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>  | √   |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
 |<term>Atlas 推理系列加速卡产品</term>  | √   |
 
 ## 功能说明
@@ -27,42 +27,42 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 
 - **query** (`Tensor`)：必选参数，对应公式中的输入$Q$，数据类型与`key`的数据类型需满足数据类型推导规则，即保持与`key`、`value`的数据类型一致。不支持非连续的`Tensor`，数据格式支持$ND$。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
 
 - **key** (`Tensor`)：必选参数，对应公式中的输入$K$，数据类型与`query`的数据类型需满足数据类型推导规则，即保持与`query`、`value`的数据类型一致。不支持非连续的`Tensor`，数据格式支持$ND$。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
 
 - **value** (`Tensor`)：必选参数，对应公式中的输入$V$，数据类型与`query`的数据类型需满足数据类型推导规则，即保持与`query`、`key`的数据类型一致。不支持非连续的`Tensor`，数据格式支持$ND$。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
 
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
 - **pse_shift** (`Tensor`)：可选参数。不支持非连续的`Tensor`，数据格式支持$ND$。输入shape类型需为$（B, N, Q_S, KV_S）$或$（1, N, Q_S, KV_S）$，其中$Q_S$为`query`的shape中的$S$，$KV_S$为`key`和`value`的shape中的$S$。对于`pse_shift`的$KV_S$为非32字节对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。如不使用该功能时可传入`None`。综合约束请见[约束说明](#section12345537164214)。
     - <term>Atlas 推理系列加速卡产品</term>：暂不支持该参数。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float16`、`bfloat16`。当`pse_shift`为`float16`时，要求`query`为`float16`或`int8`；当`pse_shift`为`bfloat16`时，要求`query`为`bfloat16`。在`query`、`key`、`value`为`float16`且`pse_shift`存在的情况下，默认走高精度模式。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。当`pse_shift`为`float16`时，要求`query`为`float16`或`int8`；当`pse_shift`为`bfloat16`时，要求`query`为`bfloat16`。在`query`、`key`、`value`为`float16`且`pse_shift`存在的情况下，默认走高精度模式。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。当`pse_shift`为`float16`时，要求`query`为`float16`或`int8`；当`pse_shift`为`bfloat16`时，要求`query`为`bfloat16`。在`query`、`key`、`value`为`float16`且`pse_shift`存在的情况下，默认走高精度模式。
 - **padding_mask**：预留参数，暂未使用，默认值为`None`。
 - **atten_mask** (`Tensor`)：可选参数，对应公式中$atten\_mask$，代表下三角全为0上三角全为负无穷的倒三角mask矩阵，数据类型支持`bool`、`int8`和`uint8`。数据格式支持$ND$，不支持非连续的`Tensor`。如果不使用该功能可传入`None`。通常建议shape输入$(Q_S, KV_S)$、$(B, Q_S, KV_S)$、$(1, Q_S, KV_S)$、$(B, 1, Q_S, KV_S)$、$(1, 1, Q_S, KV_S)$，其中$Q_S$为`query`的shape中的$S$，$KV_S$为`key`和`value`的shape中的$S$，对于`atten_mask`的$KV_S$为非32字节对齐的场景，建议padding到32字节对齐来提高性能，多余部分填充成1。综合约束请见[约束说明](#section12345537164214)。
 - **actual_seq_lengths** (`List[int]`)：可选参数，代表不同Batch中`query`的有效Sequence Length，数据类型支持`int64`。如果不指定`seqlen`可以传入`None`，表示和`query`的shape的s长度相同。限制：该入参中每个batch的有效Sequence Length应该不大于`query`中对应batch的Sequence Length。`seqlen`的传入长度为1时，每个Batch使用相同`seqlen`；传入长度大于等于Batch数时取`seqlen`的前Batch个数。其它长度不支持。
     - <term>Atlas 推理系列加速卡产品</term>：暂不支持该参数。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持TND格式。当`query`的`input_layout`为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持TND格式。当`query`的`input_layout`为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TND格式。当`query`的`input_layout`为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
 - **deq_scale1** (`Tensor`)：可选参数，表示BMM1后面的反量化因子，支持pertensor。数据类型支持`uint64`、`float32`，数据格式支持$ND$。如不使用该功能时可传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不支持该参数。
 - **quant_scale1** (`Tensor`)：可选参数，数据类型支持`float32`。数据格式支持$ND$，表示BMM2前面的量化因子，支持pertensor。如不使用该功能时可传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不支持该参数。
 - **deq_scale2** (`Tensor`)：可选参数，数据类型支持`uint64`、`float32`。数据格式支持$ND$，表示BMM2后面的反量化因子，支持pertensor。如不使用该功能时可传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不支持该参数。
 - **quant_scale2** (`Tensor`)：可选参数，数据格式支持$ND$，表示输出的量化因子，支持pertensor、perchannel。如不使用该功能时可传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：暂不支持该参数。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
 
 - **quant_offset2** (`Tensor`)：可选参数，数据格式支持$ND$，表示输出的量化偏移，支持pertensor、perchannel。若传入 `quant_offset2`，需保证其类型和`shape`信息与`quant_scale2`一致。如不使用该功能时可传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：暂不支持该参数。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`float32`、`bfloat16`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
 
 - **num_heads** (`List[int]`)：可选参数，代表`query`的head个数，数据类型支持`int64`。
@@ -73,7 +73,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 - **num_key_value_heads**：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，数据类型支持`int64`。默认值为`0`，表示`key`/`value`和`query`的head个数相等。限制：需要满足`num_heads`整除`num_key_value_heads`，`num_heads`与`num_key_value_heads`的比值不能大于64，且在$BSND$、$BNSD$、$BNSD\_BSND$场景下，需要与shape中的`key`/`value`的$N$轴shape值相同，否则报错。<term>Atlas 推理系列加速卡产品</term>仅支持默认值`0`。
 - **actual_seq_lengths_kv** (`int`)：可选参数，代表不同batch中`key`/`value`的有效seqlenKV。数据类型支持`int64`。限制：该入参中每个batch的有效seqlenKV应该不大于`key`/`value`中对应batch的seqlenKV。seqlenKV的传入长度为1时，每个Batch使用相同seqlenKV；传入长度大于等于Batch数时取seqlenKV的前Batch个数，其它长度不支持。
     - <term>Atlas 推理系列加速卡产品</term>：暂不支持该参数。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：支持TND格式。当key/value的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlenKV和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持TND格式。当key/value的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlenKV和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TND格式。当key/value的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlenKV和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
 - **sparse_mode** (`int`)：可选参数，表示sparse的模式，数据类型支持`int64`。默认值为`0`，综合约束请见[约束说明](#section12345537164214)。<term>Atlas 推理系列加速卡产品</term>仅支持默认值`0`。
     - `sparse_mode`为0时，代表`defaultMask`模式，如果`atten_mask`未传入则不做mask操作，忽略`pre_tokens`和`next_tokens`（内部赋值为`INT_MAX`）；如果传入，则需要传入完整的`atten_mask`矩阵$（S1 * S2）$，表示`pre_tokens`和`next_tokens`之间的部分需要计算。不支持传入的mask矩阵中参与计算的部分整行为1的情况。
@@ -108,7 +108,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     <td class="cellrowborder" valign="top" width="69.43%" headers="mcps1.1.3.1.2 "><a name="zh-cn_topic_0000001798619409_ul849244711561"></a><a name="zh-cn_topic_0000001798619409_ul849244711561"></a><ul id="zh-cn_topic_0000001798619409_ul849244711561"><li>支持B轴小于等于128。</li><li>支持N轴小于等于256。</li><li>支持S轴小于等于65535(64k)。</li><li>支持D轴小于等于512。</li></ul>
     </td>
     </tr>
-    <tr id="zh-cn_topic_0000001798619409_row1782312260569"><td class="cellrowborder" valign="top" width="30.570000000000004%" headers="mcps1.1.3.1.1 "><p id="zh-cn_topic_0000001798619409_p128231426175620"><a name="zh-cn_topic_0000001798619409_p128231426175620"></a><a name="zh-cn_topic_0000001798619409_p128231426175620"></a><span id="zh-cn_topic_0000001798619409_ph12807852115620"><a name="zh-cn_topic_0000001798619409_ph12807852115620"></a><a name="zh-cn_topic_0000001798619409_ph12807852115620"></a><a name="zh-cn_topic_0000001798619409_zh-cn_topic_0000001312391781_term11962195213215_7"></a><a name="zh-cn_topic_0000001798619409_zh-cn_topic_0000001312391781_term11962195213215_7"></a><term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term></span></p>
+    <tr id="zh-cn_topic_0000001798619409_row1782312260569"><td class="cellrowborder" valign="top" width="30.570000000000004%" headers="mcps1.1.3.1.1 "><p id="zh-cn_topic_0000001798619409_p128231426175620"><a name="zh-cn_topic_0000001798619409_p128231426175620"></a><a name="zh-cn_topic_0000001798619409_p128231426175620"></a><span id="zh-cn_topic_0000001798619409_ph12807852115620"><a name="zh-cn_topic_0000001798619409_ph12807852115620"></a><a name="zh-cn_topic_0000001798619409_ph12807852115620"></a><a name="zh-cn_topic_0000001798619409_zh-cn_topic_0000001312391781_term11962195213215_7"></a><a name="zh-cn_topic_0000001798619409_zh-cn_topic_0000001312391781_term11962195213215_7"></a><term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term></span></p>
     <p id="zh-cn_topic_0000001798619409_p16629103195810"><a name="zh-cn_topic_0000001798619409_p16629103195810"></a><a name="zh-cn_topic_0000001798619409_p16629103195810"></a><span id="zh-cn_topic_0000001798619409_ph1464135665612"><a name="zh-cn_topic_0000001798619409_ph1464135665612"></a><a name="zh-cn_topic_0000001798619409_ph1464135665612"></a><a name="zh-cn_topic_0000001798619409_zh-cn_topic_0000001312391781_term1253731311225_7"></a><a name="zh-cn_topic_0000001798619409_zh-cn_topic_0000001312391781_term1253731311225_7"></a><term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term></span></p>
     </td>
     <td class="cellrowborder" valign="top" width="69.43%" headers="mcps1.1.3.1.2 "><a name="zh-cn_topic_0000001798619409_ul103175710575"></a><a name="zh-cn_topic_0000001798619409_ul103175710575"></a><ul id="zh-cn_topic_0000001798619409_ul103175710575"><li>支持B轴小于等于65536(64k)，D轴32byte不对齐时仅支持到128。</li><li>支持N轴小于等于256。</li><li>S支持小于等于20971520（20M）。长序列场景下，如果计算量过大可能会导致PFA算子执行超时（aicore error类型报错，errorStr为timeout or trap error），此场景下建议做S切分处理，注：这里计算量会受B、S、N、D等的影响，值越大计算量越大。典型的会超时的长序列（即B、S、N、D的乘积较大）场景包括但不限于：<a name="zh-cn_topic_0000001798619409_ul103175718575"></a><a name="zh-cn_topic_0000001798619409_ul103175718575"></a><ul id="zh-cn_topic_0000001798619409_ul103175718575"><li>B=1，Q<sub>N</sub>=20，Q<sub>S</sub>=1048576，D = 256，KV<sub>N</sub>=1，KV<sub>S</sub>=1048576。</li><li>B=1，Q<sub>N</sub>=2，Q<sub>S</sub>=10485760，D = 256，KV<sub>N</sub>=2，KV<sub>S</sub>=10485760。</li><li>B=20，Q<sub>N</sub>=1，Q<sub>S</sub>=1048576，D = 256，KV<sub>N</sub>=1，KV<sub>S</sub>=1048576。</li><li>B=1，Q<sub>N</sub>=10，Q<sub>S</sub>=1048576，D = 512，KV<sub>N</sub>=1，KV<sub>S</sub>=1048576。</li></ul>

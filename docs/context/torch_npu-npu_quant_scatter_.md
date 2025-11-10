@@ -4,7 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> | √   |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √   |
 |<term>Atlas 推理系列产品</term> | √   |
 
 ## 功能说明
@@ -23,15 +23,15 @@ torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_p
 - **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。
 - **updates** (`Tensor`)：必选输入，更新数据张量，数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`bfloat16`、`float16`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`bfloat16`、`float16`。
 
 - **quant_scales** (`Tensor`)：必选输入，量化缩放张量，数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float32`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`bfloat16`、`float32`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`bfloat16`、`float32`。
 
 - **quant_zero_points** (`Tensor`)：可选输入，量化偏移张量，数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`int32`。
-    - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>：数据类型支持`bfloat16`、`int32`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`bfloat16`、`int32`。
 
 - **axis** (`int`)：可选参数，`updates`上用来更新的轴，默认值为`0`。
 - **quant_axis** (`int`)：可选参数，`updates`上用来量化的轴，默认值为`1`。

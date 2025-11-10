@@ -20,11 +20,11 @@ torch_npu.npu_one_hot(input, num_classes=-1, depth=1, on_value=1, off_value=0) -
 
 ## 参数说明
 
-- **input** (`Tensor`) - 任何shape的class值。
-- **num_classes** (`int`，默认值为-1) - 待填充的轴。
-- **depth** (`int`，默认值为1) - one_hot维度的深度。
-- **on_value** (`Scalar`，默认值为1) - 当indices[j] == i时输出中的填充值。
-- **off_value** (`Scalar`，默认值为0) - 当indices[j] != i时输出中的填充值。
+- **input** (`Tensor`)：任何shape的class值。
+- **num_classes** (`int`)：待填充的轴，默认值为-1。
+- **depth** (`int`)：one_hot维度的深度，默认值为1。
+- **on_value** (`Scalar`)：当indices[j] == i时输出中的填充值，默认值为1。
+- **off_value** (`Scalar`)：当indices[j] != i时输出中的填充值，默认值为0。
 
 
 ## 调用示例
