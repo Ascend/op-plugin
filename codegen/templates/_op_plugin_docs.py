@@ -11993,3 +11993,52 @@ param = torch.tensor([3584], device=device)
 x_obf_out = torch_npu.npu.obfuscation_calculate(fd, hidden_states, param, obf_coefficient=obf_cft)
 """
 )
+
+
+_add_torch_npu_docstr(
+    "npu_gelu_mul",
+    """
+接口原型: 
+torch_npu.npu_gelu_mul(input, *, approximate='none') -> Tensor
+
+
+功能描述:
+将输入Tensor按照最后一个维度分为左右两个Tensor：x1和x2，对左边的x1进行Gelu计算，将计算结果与x2相乘。
+
+计算公式：
+给定输入张量 input，最后一维的长度为 2d，函数 GeluMul 进行以下计算：
+(1)将 input 分割为两部分：x₁ = input[...,:d], x₂ = input[...,d:]
+(2)对 x1 应用 GELU 激活函数，"tanh"模式公式如下：GELU(x) = 0.5 * x * [1 + tanh( √(2/π) * (x + 0.044715 * x³) )]
+                            “none”对应的erf模式公式如下：GELU(x)= 0.5 * x * [1 + erf( x / √2 )]
+                            因此，计算：x₁ = GELU(x₁)
+(3)最终输出是 x₁ 和 x₂ 的逐元素乘积：out = x₁ * x₂
+
+参数说明: 
+input (Tensor类型)：必选参数，输入张量，数据类型支持BFLOAT16、FLOAT16、FLOAT。支持非连续的Tensor，数据格式支持ND，shape维度2至8维，
+                    且shape满足如下要求：(1)最后一维值为偶数且小于等于1024。(2)其他维度的乘积小于等于200000。
+approximate(String类型)：可选参数，计算输入, Gelu计算的模式，只支持“none”和“tanh”，分别对应Gelu的erf模式和tanh模式，默认值为“none”。
+
+输出说明: 
+out (Tensor)：输出张量，数据类型支持BFLOAT16、FLOAT16、FLOAT。shape维度2至8维。支持非连续的Tensor，数据格式支持ND，输出的数据类型与输入保持一致，输出shape和输入shape其他维度一致，最后一维的值为输入shape最后一维值的二分之一。
+
+约束说明
+典型场景尾轴为16的倍数，当尾轴为非32B对齐时，建议走小算子拼接逻辑。
+
+支持版本: 
+PyTorch 2.6及更高版本
+
+支持的型号: 
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例: 
+import torch
+import torch_npu
+
+shape = [100, 400]
+mode = "none"
+input = torch.rand(shape, dtype=torch.float16).npu()
+output = torch_npu.npu_gelu_mul(input, approximate=mode)
+
+"""
+)

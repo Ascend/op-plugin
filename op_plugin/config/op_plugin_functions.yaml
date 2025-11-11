@@ -5482,6 +5482,18 @@ custom:
         approximate_ptr: 'const_cast<char *>(approximate_str.c_str())'
       exec: aclnnGeluBackwardV2, grad_output, self, approximate_ptr, out
 
+  - func: npu_gelu_mul(Tensor input, *, str approximate='none') -> Tensor
+    op_api: [v2.6, newest]
+    exposed: [v2.6, newest]
+    gen_opapi:
+      out:
+        size: npu_gelu_mul_output_size(input)
+        dtype: input
+      new_params:
+        approximate_str: 'npu_gelu_approximate_str(approximate)'
+        approximate_ptr: 'const_cast<char*>(approximate_str.c_str())'
+      exec: aclnnGeluMul, input, approximate_ptr, out
+
   - func: _conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)
     acl_op: all_version
 

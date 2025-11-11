@@ -3,8 +3,11 @@
   {
     "v2.1": [],
     "v2.5": [],
-    "v2.6": [],
-    "v2.7": [],
+    "v2.6": ["npu_gelu_mul"],
+    "v2.7": ["npu_gelu_mul"],
+    "v2.8": ["npu_gelu_mul"],
+    "v2.9": ["npu_gelu_mul"],
+    "v2.10": ["npu_gelu_mul"],
     "all_version": [
       "_npu_dropout",
       "copy_memory_",
