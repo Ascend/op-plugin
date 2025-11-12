@@ -56,7 +56,7 @@ bool is_fused_op_optim(const at::Tensor& self, at::IntArrayRef split_sizes)
 
 void split_with_sizes_copy_out(const at::Tensor & self, at::IntArrayRef split_sizes, int64_t dim, at::TensorList out)
 {
-    if (is_fused_op_optim) {
+    if (is_fused_op_optim(self, split_sizes)) {
         EXEC_NPU_CMD(aclnnSplitWithSize, self, split_sizes, dim, out);
     } else {
         at::native::split_with_sizes_copy_out(self, split_sizes, dim, out);
