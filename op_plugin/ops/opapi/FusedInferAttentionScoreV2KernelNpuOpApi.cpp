@@ -29,11 +29,266 @@ const static int64_t DIM_1 = 1;
 const static int64_t DIM_2 = 2;
 const static int64_t DIM_3 = 3;
 const static int64_t DIM_4 = 4;
+const static int64_t DIM_NUMS_3 = 3;
+const static int64_t DIM_NUMS_4 = 4;
 const static int64_t PA_BBH_DIMS = 3;
 const static int64_t PA_BNBD_DIMS = 4;
 const static int64_t PA_NZ_DIMS = 5;
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
+
+static std::pair<std::string, std::string> get_query_and_attention_out_layout(
+    const at::Tensor query,
+    std::string input_layout_str)
+{
+    struct parserLayout {
+        std::string qLayout;
+        std::string outLayout;
+        int32_t qDim;
+    };
+
+    const std::map<std::string, parserLayout> LAYOUT_MAP = {
+        {"BSH",              {"BSH", "BSH", DIM_NUMS_3}},
+        {"BSND",             {"BSND", "BSND", DIM_NUMS_4}},
+        {"BNSD",             {"BNSD", "BNSD", DIM_NUMS_4}},
+        {"TND",              {"TND", "TND", DIM_NUMS_3}},
+        {"NTD",              {"NTD", "NTD", DIM_NUMS_3}},
+        {"BNSD_BSND",        {"BNSD", "BSND", DIM_NUMS_4}},
+        {"BSH_BNSD",         {"BSH", "BNSD", DIM_NUMS_3}},
+        {"BSND_BNSD",        {"BSND", "BNSD", DIM_NUMS_4}},
+        {"NTD_TND",          {"NTD", "TND", DIM_NUMS_3}},
+        {"BSH_NBSD",         {"BSH", "NBSD", DIM_NUMS_3}},
+        {"BSND_NBSD",        {"BSND", "NBSD", DIM_NUMS_4}},
+        {"BNSD_NBSD",        {"BNSD", "NBSD", DIM_NUMS_4}},
+        {"TND_NTD",          {"TND", "NTD", DIM_NUMS_3}},
+        {"NSD",              {"NSD", "NSD", DIM_NUMS_3}}
+    };
+
+    std::string query_layout = "BSH";
+    std::string attention_out_layout = "BSH";
+    int32_t query_dim;
+    auto it = LAYOUT_MAP.find(input_layout_str);
+    if (it != LAYOUT_MAP.end()) {
+        query_layout = it->second.qLayout;
+        attention_out_layout = it->second.outLayout;
+        query_dim = it->second.qDim;
+        
+        TORCH_CHECK(query.dim() == query_dim,
+            "query's dim should be consistent with that of Layout", OPS_ERROR(ErrCode::VALUE));
+    } else {
+        TORCH_CHECK(
+            false,
+            "layout only support BSH, BSND, TND, NTD, BNSD_BSND, BSH_BNSD, BSND_BNSD, NTD_TND, ",
+            "BSH_NBSD, BSND_NBSD, BNSD_NBSD, TND_NTD, but got ",
+            query_layout,
+            OPS_ERROR(ErrCode::VALUE)
+        );
+    }
+    return {query_layout, attention_out_layout};
+}
+
+static std::tuple<int64_t, int64_t, int64_t, int64_t> get_query_b_n_s_d(
+    const at::Tensor &query,
+    std::string query_layout,
+    int64_t num_heads)
+{
+    int64_t b = 0;
+    int64_t n1 = 0;
+    int64_t s1 = 0;
+    int64_t d1 = 0;
+    if (query_layout == "BSH") {
+        b = query.size(DIM_0);
+        s1 = query.size(DIM_1);
+        n1 = num_heads;
+        d1 = query.size(DIM_2) / num_heads;
+    } else if (query_layout == "BSND") {
+        b = query.size(DIM_0);
+        s1 = query.size(DIM_1);
+        n1 = query.size(DIM_2);
+        d1 = query.size(DIM_3);
+    } else if (query_layout == "BNSD") {
+        b = query.size(DIM_0);
+        s1 = query.size(DIM_2);
+        n1 = query.size(DIM_1);
+        d1 = query.size(DIM_3);
+    } else if (query_layout == "NSD") {
+        b = 1;
+        s1 = query.size(DIM_1);
+        n1 = query.size(DIM_0);
+        d1 = query.size(DIM_2);
+    } else {
+        TORCH_CHECK(
+            false,
+            "It is not supported in get_query_b_n_s_d function, layout ",
+            query_layout,
+            OPS_ERROR(ErrCode::VALUE)
+        );
+    }
+    return {b, n1, s1, d1};
+}
+
+static std::tuple<int64_t, int64_t, int64_t> get_query_t_n_d(
+    const at::Tensor &query,
+    std::string query_layout)
+{
+    int64_t t = 0;
+    int64_t n1 = 0;
+    int64_t d1 = 0;
+    if (query_layout == "TND") {
+        t = query.size(DIM_0);
+        n1 = query.size(DIM_1);
+        d1 = query.size(DIM_2);
+    } else if (query_layout == "NTD") {
+        t = query.size(DIM_1);
+        n1 = query.size(DIM_0);
+        d1 = query.size(DIM_2);
+    } else {
+        TORCH_CHECK(
+            false,
+            "It is not supported in get_query_t_n_d function, layout ",
+            query_layout,
+            OPS_ERROR(ErrCode::VALUE)
+        );
+    }
+    return {t, n1, d1};
+}
+
+static int64_t get_value_d(
+    const c10::optional<at::Tensor> &block_table,
+    const at::Tensor &query,
+    const at::Tensor &value,
+    std::string query_layout,
+    int64_t kv_num_heads)
+{
+    int64_t valueD = 0;
+    if (block_table.has_value()) { // PA场景
+        if (value.dim() == PA_BBH_DIMS) {
+            valueD = value.size(DIM_2) / kv_num_heads;
+        } else if (value.dim() == PA_BNBD_DIMS) {
+            valueD = value.size(DIM_3);
+        } else if (value.dim() == PA_NZ_DIMS) {
+            valueD = value.size(DIM_2) * value.size(DIM_4);
+    } else {
+        TORCH_CHECK(
+            false,
+            "when Page Attention enabled, value's dim should be 3/4/5, but got ",
+            value.dim(),
+            OPS_ERROR(ErrCode::VALUE)
+        );
+    }
+    } else { // 非PA场景
+        TORCH_CHECK(
+            value.dim() == query.dim(),
+            "when Page Attention not enabled, value'dim should equal to query's dim!",
+            OPS_ERROR(ErrCode::VALUE)
+        );
+        if (query_layout == "BSH") {
+            valueD = value.size(DIM_2) / kv_num_heads;
+        } else if (query_layout == "BSND" || query_layout == "BNSD") {
+            valueD = value.size(DIM_3);
+        } else if (query_layout == "TND" || query_layout == "NTD" || query_layout == "NSD") {
+            valueD = value.size(DIM_2);
+        }
+    }
+    return valueD;
+}
+
+static at::Tensor infer_attention_out_shape(
+    std::string attention_out_layout,
+    const at::Tensor &query,
+    std::string query_layout,
+    int64_t num_heads,
+    int64_t valueD)
+{
+    int64_t b = 0;
+    int64_t n1 = 0;
+    int64_t s1 = 0;
+    int64_t d1 = 0;
+    int64_t t = 0;
+    at::Tensor attention_out = npu_preparation::apply_tensor_without_format(query);
+    if (attention_out_layout == "BSH") {
+        auto [b, n1, s1, d1] = get_query_b_n_s_d(query, query_layout, num_heads);
+        int outH = num_heads * valueD;
+        int h1 = d1 * num_heads;
+        outH = (outH == 0 || h1 == 0) ? h1 : outH;
+        attention_out = OpPreparation::apply_tensor_without_format(
+            {b, s1, outH},
+            query.options().dtype(query.dtype())
+        );
+    } else if (attention_out_layout == "BSND") {
+        auto [b, n1, s1, d1] = get_query_b_n_s_d(query, query_layout, num_heads);
+        int outD = valueD;
+        outD = (outD == 0 || d1 == 0) ? d1 : outD;
+        attention_out = OpPreparation::apply_tensor_without_format(
+            {b, s1, n1, outD},
+            query.options().dtype(query.dtype())
+        );
+    } else if (attention_out_layout == "BNSD") {
+        auto [b, n1, s1, d1] = get_query_b_n_s_d(query, query_layout, num_heads);
+        int outD = valueD;
+        outD = (outD == 0 || d1 == 0) ? d1 : outD;
+        attention_out = OpPreparation::apply_tensor_without_format(
+            {b, n1, s1, outD},
+            query.options().dtype(query.dtype())
+        );
+    } else if (attention_out_layout == "NBSD") {
+        auto [b, n1, s1, d1] = get_query_b_n_s_d(query, query_layout, num_heads);
+        int outD = valueD;
+        outD = (outD == 0 || d1 == 0) ? d1 : outD;
+        attention_out = OpPreparation::apply_tensor_without_format(
+            {n1, b, s1, outD},
+            query.options().dtype(query.dtype())
+        );
+    } else if (attention_out_layout == "TND") {
+        auto [t, n1, d1] = get_query_t_n_d(query, query_layout);
+        int outD = valueD;
+        outD = (outD == 0 || d1 == 0) ? d1 : outD;
+        attention_out = OpPreparation::apply_tensor_without_format(
+            {t, n1, outD},
+            query.options().dtype(query.dtype())
+        );
+    } else if (attention_out_layout == "NTD") {
+        auto [t, n1, d1] = get_query_t_n_d(query, query_layout);
+        int outD = valueD;
+        outD = (outD == 0 || d1 == 0) ? d1 : outD;
+        attention_out = OpPreparation::apply_tensor_without_format(
+            {n1, t, outD},
+            query.options().dtype(query.dtype())
+        );
+    } else if (attention_out_layout == "NSD") {
+        auto [b, n1, s1, d1] = get_query_b_n_s_d(query, query_layout, num_heads);
+        int outD = valueD;
+        outD = (outD == 0 || d1 == 0) ? d1 : outD;
+        attention_out = OpPreparation::apply_tensor_without_format(
+            {n1, s1, outD},
+            query.options().dtype(query.dtype())
+        );
+    }
+    return attention_out;
+}
+
+static at::Tensor infer_lse_out_shape(
+    std::string input_layout_str,
+    const at::Tensor &query,
+    std::string query_layout,
+    int64_t num_heads)
+{
+    int64_t b = 0;
+    int64_t n1 = 0;
+    int64_t s1 = 0;
+    int64_t d1 = 0;
+    int64_t t = 0;
+    at::Tensor lse_out;
+    if (input_layout_str == "TND" || input_layout_str == "NTD" ||
+        input_layout_str == "TND_NTD" || input_layout_str == "NTD_TND") {
+        auto [t, n1, d1] = get_query_t_n_d(query, query_layout);
+        lse_out = npu_preparation::apply_tensor_without_format({t, n1, 1}, c10::dtype(c10::ScalarType::Float));
+    } else {
+        auto [b, n1, s1, d1] = get_query_b_n_s_d(query, query_layout, num_heads);
+        lse_out = npu_preparation::apply_tensor_without_format({b, n1, s1, 1}, c10::dtype(c10::ScalarType::Float));
+    }
+    return lse_out;
+}
 
 std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
     const at::Tensor &query,
@@ -46,104 +301,16 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
     bool return_softmax_lse,
     const c10::optional<at::Tensor> &query_rope)
 {
+    // 获取query_layout, attention_out_layout
+    auto [query_layout, attention_out_layout] = get_query_and_attention_out_layout(query, input_layout_str);
+
+    // 计算valueD
+    int64_t valueD = get_value_d(block_table, query, value, query_layout, num_key_value_heads);
+
+    // 推导attenout shape
+    at::Tensor tmp_output = infer_attention_out_shape(attention_out_layout, query, query_layout, num_query_heads, valueD);
+
     at::Tensor output;
-    int64_t batchSize = 1;
-    int64_t qsSize = 1;
-    at::Tensor tmp_output = npu_preparation::apply_tensor_without_format(query);
-    if (input_layout_str == "BNSD_BSND") {
-        tmp_output = OpPreparation::apply_tensor_without_format({query.size(DIM_0), query.size(DIM_2), query.size(DIM_1), query.size(DIM_3)},
-            query.options().dtype(query.dtype()));
-        batchSize = query.size(DIM_0);
-        qsSize = query.size(DIM_2);
-    } else if (input_layout_str == "BNSD_NBSD") {
-        tmp_output = OpPreparation::apply_tensor_without_format(
-            {query.size(DIM_1), query.size(DIM_0), query.size(DIM_2), query.size(DIM_3)},
-            query.options().dtype(query.dtype()));
-        batchSize = query.size(DIM_0);
-        qsSize = query.size(DIM_2);
-    } else if (input_layout_str == "BSND_NBSD") {
-        tmp_output = OpPreparation::apply_tensor_without_format(
-            {query.size(DIM_2), query.size(DIM_0), query.size(DIM_1), query.size(DIM_3)},
-            query.options().dtype(query.dtype()));
-        batchSize = query.size(DIM_0);
-        qsSize = query.size(DIM_1);
-    } else if (input_layout_str == "BSH_NBSD") {
-        TORCH_CHECK(num_query_heads > 0, "The num_query_heads should be greater than zero, but got ", num_query_heads, OPS_ERROR(ErrCode::PARAM));
-        tmp_output = OpPreparation::apply_tensor_without_format(
-            {num_query_heads, query.size(DIM_0), query.size(DIM_1), query.size(DIM_2) / num_query_heads},
-            query.options().dtype(query.dtype()));
-        batchSize = query.size(DIM_0);
-        qsSize = query.size(DIM_1);
-    } else if (input_layout_str == "TND_NTD") {
-        tmp_output = OpPreparation::apply_tensor_without_format(
-            {query.size(DIM_1), query.size(DIM_0), query.size(DIM_2)},
-            query.options().dtype(query.dtype()));
-    } else if (input_layout_str == "NSD") {
-        batchSize = 1;
-        qsSize = query.size(DIM_1);
-    } else if (input_layout_str == "BSH") {
-        batchSize = query.size(DIM_0);
-        qsSize = query.size(DIM_1);
-    } else if (input_layout_str == "BSND") {
-        batchSize = query.size(DIM_0);
-        qsSize = query.size(DIM_1);
-    } else if (input_layout_str == "BNSD") {
-        batchSize = query.size(DIM_0);
-        qsSize = query.size(DIM_2);
-    } else if (input_layout_str == "TND") {
-        int64_t kv_dim = value.dim();
-        if (block_table.has_value()) { // IFA目前TND只支持PA场景，PFA目前TND只支持非PA场景
-            if (kv_dim == PA_BBH_DIMS) { // BBH的情况下，D = H / N
-                tmp_output = OpPreparation::apply_tensor_without_format(
-                    {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2) / num_key_value_heads},
-                    query.options().dtype(query.dtype()));
-            } else if (kv_dim == PA_BNBD_DIMS) { // BNBD情况下取D
-                tmp_output = OpPreparation::apply_tensor_without_format(
-                    {query.size(DIM_0), query.size(DIM_1), value.size(DIM_3)},
-                    query.options().dtype(query.dtype()));
-            } else if (kv_dim == PA_NZ_DIMS) { // blockNum, N, D / 16, blockSize, 16取DIM2*DIM4
-                tmp_output = OpPreparation::apply_tensor_without_format(
-                    {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2) * value.size(DIM_4)},
-                    query.options().dtype(query.dtype()));
-            } else {
-                tmp_output = OpPreparation::apply_tensor_without_format(
-                    {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2)},
-                    query.options().dtype(query.dtype()));
-            }
-        } else {
-            tmp_output = OpPreparation::apply_tensor_without_format(
-                {query.size(DIM_0), query.size(DIM_1), value.size(DIM_2)},
-                query.options().dtype(query.dtype()));
-        }
-    } else if (input_layout_str == "NTD_TND") {
-        int64_t kv_dim = value.dim();
-        if (kv_dim == 0) {
-            kv_dim = query.dim();
-        }
-        if (block_table.has_value()) { // pa场景
-            if (kv_dim == PA_BBH_DIMS) { // BBH的情况下，D = H / N
-                tmp_output = OpPreparation::apply_tensor_without_format(
-                    {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2) / num_key_value_heads},
-                    query.options().dtype(query.dtype()));
-            } else if (kv_dim == PA_BNBD_DIMS) { // BNBD情况下取D
-                tmp_output = OpPreparation::apply_tensor_without_format(
-                    {query.size(DIM_1), query.size(DIM_0), value.size(DIM_3)},
-                    query.options().dtype(query.dtype()));
-            } else if (kv_dim == PA_NZ_DIMS) { // blockNum, N, D / 16, blockSize, 16取DIM2*DIM4
-                tmp_output = OpPreparation::apply_tensor_without_format(
-                    {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2) * value.size(DIM_4)},
-                    query.options().dtype(query.dtype()));
-            } else {
-                tmp_output = OpPreparation::apply_tensor_without_format(
-                    {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2)},
-                    query.options().dtype(query.dtype()));
-            }
-        } else {
-            tmp_output = OpPreparation::apply_tensor_without_format(
-                {query.size(DIM_1), query.size(DIM_0), value.size(DIM_2)},
-                query.options().dtype(query.dtype()));
-        }
-    }
     if (quant_scale_out.has_value()) {
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(c10::ScalarType::Char));
     } else if (query.dtype() == at::kChar) {
@@ -157,41 +324,14 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
         output = npu_preparation::apply_tensor_without_format(tmp_output);
     }
 
+    // 推导lseout shape
     at::Tensor softmax_lse;
-    if (input_layout_str == "TND") {
-        if (block_table.has_value()) { // IFA目前TND只支持PA场景，PFA目前TND只支持非PA场景
-            if (query.size(DIM_2) == 0) { // 增加softmax lse的情况下，可能存在空tensor的分支
-                softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_0), num_query_heads, 0},
-                    c10::dtype(c10::ScalarType::Float));
-            } else {
-                softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_0), num_query_heads, 1},
-                    c10::dtype(c10::ScalarType::Float));
-            }
-        } else {
-            softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_0), query.size(DIM_1), 1},
-                c10::dtype(c10::ScalarType::Float));
-        }
-    } else if (input_layout_str == "NTD_TND") {
-        if (block_table.has_value()) { // pa场景
-            if (query.size(DIM_2) == 0) { // 增加softmax lse的情况下，可能存在空tensor的分支
-                softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_1), query.size(DIM_0), 0},
-                    c10::dtype(c10::ScalarType::Float));
-            } else {
-                softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_1), query.size(DIM_0), 1},
-                    c10::dtype(c10::ScalarType::Float));
-            }
-        } else {
-            softmax_lse = npu_preparation::apply_tensor_without_format({query.size(DIM_1), query.size(DIM_0), 1},
-                c10::dtype(c10::ScalarType::Float));
-        }
+    if (return_softmax_lse) {
+        softmax_lse = infer_lse_out_shape(input_layout_str, query, query_layout, num_query_heads);
     } else {
-        softmax_lse = npu_preparation::apply_tensor_without_format({batchSize, num_query_heads, qsSize, 1},
-            c10::dtype(c10::ScalarType::Float));
-    }
-
-    if (!return_softmax_lse) {
         softmax_lse = npu_preparation::apply_tensor_without_format({0}, c10::dtype(c10::ScalarType::Float));
     }
+
     return std::tuple<at::Tensor, at::Tensor>(output, softmax_lse);
 }
 
