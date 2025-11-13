@@ -97,9 +97,10 @@ def quant(x, qscale):
 
 class TestPromptFlashAttetion(TestCase):
     def baseline(self, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
             cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr, quant_scale_ckv,
-            smooth_scale_cq, mla_param, qc_qr_scale=1.0, kc_scale=1.0):
+            smooth_scale_cq, query_norm_flag, weight_quant_mode, kv_cache_quant_mode,
+            query_quant_mode, ckvkr_repo_mode, quant_scale_repo_mode, tile_size, k_nope_clip_alpha, mla_param, qc_qr_scale=1.0, kc_scale=1.0):
 
         B = mla_param['B']
         S1 = mla_param['S1']
@@ -122,7 +123,6 @@ class TestPromptFlashAttetion(TestCase):
 
         dequant_scale_qcqr = None
         dequant_scale_q_nope = None
-        quant_scale_ckv = quant_scale_ckv[:, :1]
 
         if not mla_param["t_flag"]:
             T = B * S1
@@ -249,28 +249,34 @@ class TestPromptFlashAttetion(TestCase):
         return query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla, dequant_scale_q_nope
 
     def mla_prolog_npu_v3(self, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
             cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr,
-            quant_scale_ckv, smooth_scale_cq, qc_qr_scale=1.0, kc_scale=1.0):
+            quant_scale_ckv, smooth_scale_cq, query_norm_flag, weight_quant_mode, kv_cache_quant_mode,
+            query_quant_mode, ckvkr_repo_mode, quant_scale_repo_mode, tile_size, k_nope_clip_alpha, qc_qr_scale=1.0, kc_scale=1.0):
 
         return torch_npu.npu_mla_prolog_v3(
             token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
-            rope_sin, rope_cos, kv_cache, kr_cache, rmsnorm_epsilon_cq=rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv=rmsnorm_epsilon_ckv,
-            cache_mode=cache_mode, qc_qr_scale=qc_qr_scale, kc_scale=kc_scale, cache_index=cache_index, dequant_scale_x=dequant_scale_x, dequant_scale_w_dq=dequant_scale_w_dq,
+            rope_sin, rope_cos, kv_cache, kr_cache, cache_index=cache_index, rmsnorm_epsilon_cq=rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv=rmsnorm_epsilon_ckv,
+            cache_mode=cache_mode, dequant_scale_x=dequant_scale_x, dequant_scale_w_dq=dequant_scale_w_dq,
             dequant_scale_w_uq_qr=dequant_scale_w_uqqr, dequant_scale_w_dkv_kr=dequant_scale_w_dkvkr,
-            quant_scale_ckv=quant_scale_ckv, smooth_scales_cq=smooth_scale_cq)
+            quant_scale_ckv=quant_scale_ckv, smooth_scales_cq=smooth_scale_cq, k_nope_clip_alpha=k_nope_clip_alpha, query_norm_flag=query_norm_flag,
+            weight_quant_mode=weight_quant_mode, kv_cache_quant_mode=kv_cache_quant_mode, query_quant_mode=query_quant_mode, ckvkr_repo_mode=ckvkr_repo_mode,
+            quant_scale_repo_mode=quant_scale_repo_mode, tile_size=tile_size, qc_qr_scale=qc_qr_scale, kc_scale=kc_scale)
 
     def npu_mla_prolog_v3_functional(self, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
             cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr,
-            quant_scale_ckv, smooth_scale_cq, qc_qr_scale=1.0, kc_scale=1.0):
+            quant_scale_ckv, smooth_scale_cq, query_norm_flag, weight_quant_mode, kv_cache_quant_mode,
+            query_quant_mode, ckvkr_repo_mode, quant_scale_repo_mode, tile_size, k_nope_clip_alpha, qc_qr_scale=1.0, kc_scale=1.0):
 
         return torch_npu.npu_mla_prolog_v3_functional(
             token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
-            rope_sin, rope_cos, kv_cache, kr_cache, rmsnorm_epsilon_cq=rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv=rmsnorm_epsilon_ckv,
-            cache_mode=cache_mode, qc_qr_scale=qc_qr_scale, kc_scale=kc_scale, cache_index=cache_index, dequant_scale_x=dequant_scale_x, dequant_scale_w_dq=dequant_scale_w_dq,
+            rope_sin, rope_cos, kv_cache, kr_cache, cache_index=cache_index, rmsnorm_epsilon_cq=rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv=rmsnorm_epsilon_ckv,
+            cache_mode=cache_mode, dequant_scale_x=dequant_scale_x, dequant_scale_w_dq=dequant_scale_w_dq,
             dequant_scale_w_uq_qr=dequant_scale_w_uqqr, dequant_scale_w_dkv_kr=dequant_scale_w_dkvkr,
-            quant_scale_ckv=quant_scale_ckv, smooth_scales_cq=smooth_scale_cq)
+            quant_scale_ckv=quant_scale_ckv, smooth_scales_cq=smooth_scale_cq, k_nope_clip_alpha=k_nope_clip_alpha, query_norm_flag=query_norm_flag,
+            weight_quant_mode=weight_quant_mode, kv_cache_quant_mode=kv_cache_quant_mode, query_quant_mode=query_quant_mode, ckvkr_repo_mode=ckvkr_repo_mode,
+            quant_scale_repo_mode=quant_scale_repo_mode, tile_size=tile_size, qc_qr_scale=qc_qr_scale, kc_scale=kc_scale)
 
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
@@ -314,7 +320,7 @@ class TestPromptFlashAttetion(TestCase):
         dequant_scale_w_dq = torch.rand(1, Hcq, dtype=torch.float32).npu()
         dequant_scale_w_uqqr = torch.rand(1, N * (D + Dr), dtype=torch.float32).npu()
         dequant_scale_w_dkvkr = torch.rand(1, Hckv + Dr, dtype=torch.float32).npu()
-        quant_scale_ckv = torch.rand(1, Hckv, dtype=torch.float32).npu()
+        quant_scale_ckv = torch.rand(1, dtype=torch.float32).npu()
         smooth_scale_cq = torch.ones(1, Hcq, dtype=torch.float32).npu()
 
         mla_param = {
@@ -338,9 +344,9 @@ class TestPromptFlashAttetion(TestCase):
         kv_cache_copy = kv_cache.clone()
         kr_cache_copy = kr_cache.clone()
         query_mla, query_rope_mla, dequant_scale_q_nope_mla, query_norm_mla, dequant_scale_q_norm_mla = self.mla_prolog_npu_v3(token_x, w_dq_cast, w_uq_qr_cast, w_uk, w_dkv_kr_cast, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache_copy, kr_cache_copy, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
-            cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr,
-            quant_scale_ckv, smooth_scale_cq, qc_qr_scale, kc_scale)
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache_copy, kr_cache_copy, cache_index, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr, quant_scale_ckv, smooth_scale_cq, query_norm_flag=True, weight_quant_mode=2, kv_cache_quant_mode=1,
+            query_quant_mode=1, ckvkr_repo_mode=0, quant_scale_repo_mode=0, tile_size=128, k_nope_clip_alpha=None, qc_qr_scale=qc_qr_scale, kc_scale=kc_scale)
         query_mla = query_mla.cpu()
         query_rope_mla = query_rope_mla.cpu()
         kv_cache_copy = kv_cache_copy.cpu()
@@ -368,9 +374,10 @@ class TestPromptFlashAttetion(TestCase):
         smooth_scale_cq = smooth_scale_cq.cpu()
 
         query, query_rope, kv_cache_out, kr_cache_out, dequant_scale_q_nope = self.baseline(token_x, w_dq_cast, w_uq_qr_cast, w_uk, w_dkv_kr_cast, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
             cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr,
-            quant_scale_ckv, smooth_scale_cq, mla_param, qc_qr_scale, kc_scale)
+            quant_scale_ckv, smooth_scale_cq, query_norm_flag=True, weight_quant_mode=2, kv_cache_quant_mode=1,
+            query_quant_mode=1, ckvkr_repo_mode=0, quant_scale_repo_mode=0, tile_size=128, k_nope_clip_alpha=None, mla_param=mla_param, qc_qr_scale=qc_qr_scale, kc_scale=kc_scale)
 
         # query为int8类型，允许误差为1
         self.assertRtolEqual(query_mla, query, prec=1, prec16=1)
@@ -421,7 +428,7 @@ class TestPromptFlashAttetion(TestCase):
         dequant_scale_w_dq = torch.rand(1, Hcq, dtype=torch.float32).npu()
         dequant_scale_w_uqqr = torch.rand(1, N * (D + Dr), dtype=torch.float32).npu()
         dequant_scale_w_dkvkr = torch.rand(1, Hckv + Dr, dtype=torch.float32).npu()
-        quant_scale_ckv = torch.rand(1, Hckv, dtype=torch.float32).npu()
+        quant_scale_ckv = torch.rand(1, dtype=torch.float32).npu()
         smooth_scale_cq = torch.ones(1, Hcq, dtype=torch.float32).npu()
 
         mla_param = {
@@ -443,9 +450,9 @@ class TestPromptFlashAttetion(TestCase):
         }
 
         query_mla, query_rope_mla, dequant_scale_q_nope_mla, _, _, kv_cache_mla, kr_cache_mla = self.npu_mla_prolog_v3_functional(token_x, w_dq_cast, w_uq_qr_cast, w_uk, w_dkv_kr_cast, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
-            cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr,
-            quant_scale_ckv, smooth_scale_cq, qc_qr_scale, kc_scale)
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr, quant_scale_ckv, smooth_scale_cq, query_norm_flag=True, weight_quant_mode=2, kv_cache_quant_mode=1,
+            query_quant_mode=1, ckvkr_repo_mode=0, quant_scale_repo_mode=0, tile_size=128, k_nope_clip_alpha=None, qc_qr_scale=qc_qr_scale, kc_scale=kc_scale)
         query_mla = query_mla.cpu()
         query_rope_mla = query_rope_mla.cpu()
         kv_cache_mla = kv_cache_mla.cpu()
@@ -473,9 +480,10 @@ class TestPromptFlashAttetion(TestCase):
         smooth_scale_cq = smooth_scale_cq.cpu()
 
         query, query_rope, kv_cache_out, kr_cache_out, dequant_scale_q_nope = self.baseline(token_x, w_dq_cast, w_uq_qr_cast, w_uk, w_dkv_kr_cast, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
+            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
             cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr,
-            quant_scale_ckv, smooth_scale_cq, mla_param, qc_qr_scale, kc_scale)
+            quant_scale_ckv, smooth_scale_cq, query_norm_flag=True, weight_quant_mode=2, kv_cache_quant_mode=1,
+            query_quant_mode=1, ckvkr_repo_mode=0, quant_scale_repo_mode=0, tile_size=128, k_nope_clip_alpha=None, mla_param=mla_param, qc_qr_scale=qc_qr_scale, kc_scale=kc_scale)
 
         # query为int8类型，允许误差为1
         self.assertRtolEqual(query_mla, query, prec=1, prec16=1)
