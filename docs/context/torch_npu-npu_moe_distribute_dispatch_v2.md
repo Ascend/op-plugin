@@ -24,7 +24,7 @@
          \ quant\_out=
          \begin{cases}
          \ x, & \quad \text{if}\ quant\_mode = 0 \\
-         \ CaseToInt8(\ CaseToFp32(x) \times \ scales ), & \quad \text{if } quant\_mode ≠ 0 \\
+         \ CastToInt8(\ CastToFp32(x) \times \ scales ), & \quad \text{if } quant\_mode ≠ 0 \\
          \end{cases}
          $$
 
@@ -44,7 +44,7 @@
 
          $$\ dynamic\_scales\_value = 127.0/Max(Abs(x\_fp32))$$
 
-         $$\ quant\_out=CaseToInt8(\ x\_fp32 \times \ dynamic\_scales\_value )$$
+         $$\ quant\_out=CastToInt8(\ x\_fp32 \times \ dynamic\_scales\_value )$$
 
          $$\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$$
 
