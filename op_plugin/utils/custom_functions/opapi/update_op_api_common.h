@@ -153,32 +153,13 @@
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
         aclOpExecutor *executor = nullptr;                                                                             \
         aclOpExecutor **executor_addr = &executor;                                                                     \
-        InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);                    \
-        UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);            \
-        InitPTACacheThreadLocal initPTACacheThreadLocalFunc =                                                          \
-            reinterpret_cast<InitPTACacheThreadLocal>(initPTACacheThreadLocalAddr);                                    \
-        SetPTAHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTAHashKey>(setPTAHashKeyAddr);                          \
-        if (initPTACacheThreadLocalFunc && setPTAHashKeyFunc) {                                                        \
-            initPTACacheThreadLocalFunc();                                                                             \
-            setPTAHashKeyFunc(0);                                                                                      \
-        }                                                                                                              \
         at_npu::native::SetDeterministic();                                                                            \
-        if (initMemFunc) {                                                                                             \
-            initMemFunc(nullptr, false);                                                                               \
-        }                                                                                                              \
         auto converted_params = ConvertTypes(args..., workspace_size_addr, executor_addr);                             \
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
         NPU_CHECK_ERROR(workspace_status, "call " #aclnn_api " failed");                                               \
         ReleaseConvertTypes(converted_params);                                                                         \
-        ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);                              \
-        if (releaseMemFunc) {                                                                                          \
-            releaseMemFunc(nullptr, false);                                                                            \
-        }                                                                                                              \
-        if (unInitMemFunc) {                                                                                           \
-            unInitMemFunc(nullptr, false);                                                                             \
-        }                                                                                                              \
-        UnInitCacheThreadLocal();                                                                                      \
+        NPU_CHECK_ERROR(at_npu::native::AclDestroyAclOpExecutor(executor));                                            \
         return workspace_size;                                                                                         \
     }(#aclnn_api, __VA_ARGS__)
 
