@@ -9931,6 +9931,72 @@ torch_npu.npu_dequant_swiglu_quant(
 )
 
 _add_torch_npu_docstr(
+    "npu_clipped_swiglu",
+    """
+接口原型:
+torch_npu.npu_clipped_swiglu(x, *, group_index=None, dim=-1, alpha=1.702, limit=7.0, bias=1.0, interleaved=True) -> Tensor
+
+功能描述:
+新增带截断的Swish门控线性单元激活函数，实现x的变体SwiGlu计算。
+
+计算公式:
+(1)将x基于输入参数dim进行合轴，合轴后维度为[pre, cut, after]。其中cut轴为合轴之后需要切分为两个张量的轴，切分方式分为前后切分或者奇偶切分；pre，after 可以等于1。此外，由于after轴的元素为连续存放，且计算操作为逐元素的，因此将cut轴与after轴合并，得到x的维度为[pre, cut * after]。
+(2)根据输入参数group_index, 对x的pre轴进行过滤处理，公式如下：sum = Sum(group_index), x = x[ : sum, : ]。其中sum表示group_index的所有元素之和。当不输入 group_index 时，跳过该步骤。
+(3)根据输入参数interleaved，对x进行切分，公式如下：当 interleaved 为 true 时，表示奇偶切分：A = x[ : , : : 2], B = x[ : , 1 : : 2]
+                                                  当 interleaved 为 false 时，表示前后切分：h = x.shape[1] // 2, A = x[ : , : h], B = x[ : , h : ]
+(4)根据输入参数 alpha、limit、bias 进行变体SwiGlu计算，公式如下：A = A.clamp(min=None, max=limit), B = B.clamp(min=-limit, max=limit)
+                                                                y_glu = A * sigmoid(alpha * A)
+                                                                y = y_glu * (B + bias)
+(5)重塑输出张量y的维度数量与合轴前的x的维度数量一致，dim轴上的大小为x的一半，其他维度与x相同。
+
+参数说明:
+x：Tensor类型，必选参数，表示目标张量。数据类型支持float16、bfloat16、float32，不支持非连续的Tensor，数据格式为ND，x的维数必须大于1维，dim轴为偶数。
+group_index：Tensor类型，可选参数，表示对x进行分组的情况。要求为1维张量，第i个元素代表第i组需要处理的x合轴后的token数量，数据类型支持int64，数据格式ND。
+dim： int类型，可选参数，表示需要对x进行切分的维度序号，取值范围为[-x.dim(), x.dim()-1]，默认 -1。
+alpha：float类型，可选参数，表示glu激活函数系数，默认 1.702。
+limit：float类型，可选参数，表示变体swiglu输入门限，默认 7.0。
+bias：float类型，可选参数，表示变体swiglu计算中的偏差，默认 1.0。
+interleaved： bool类型，可选参数，表示输入x是否按奇偶方式切分，true表示为奇偶方式切分，false表示为前后方式切分，默认为true。
+
+输出说明:
+y：Tensor类型，表示激活函数的输出，数据类型同输入x，在维度上，第dim维是输入x的1/2，其余维度与输入x相同，数据格式为ND。
+
+约束说明:
+无
+
+支持的型号:
+Atlas A2 推理系列产品
+Atlas A3 推理系列产品
+
+调用示例:
+import torch
+import torch_npu
+from torch_npu.testing.testcase import TestCase, run_tests
+from torch_npu.testing.common_utils import SupportedDevices
+
+class TestNPUClippedSwiglu(TestCase):
+    def test_npu_clipped_swiglu(self, device="npu"):
+        tokens_num = 4608
+        hidden_size = 2048
+        x = torch.randint(-10, 10, (tokens_num, hidden_size), dtype=torch.float32)
+        group_index = torch.randint(1, 101, (4, ), dtype=torch.int64)
+        y = torch_npu.npu_clipped_swiglu(
+            x.npu(),
+            group_index=group_index.npu(),
+            dim=-1,
+            alpha=1.702,
+            limit=7.0,
+            bias=1.0,
+            interleaved=True
+        )
+
+if __name__ == "__main__":
+    run_tests()
+
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_cross_entropy_loss",
     """
 接口原型:
