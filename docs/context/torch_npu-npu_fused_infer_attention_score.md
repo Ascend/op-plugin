@@ -382,7 +382,7 @@ torch_npu.npu_fused_infer_attention_score(Tensor query, Tensor key, Tensor value
         -   使能必要条件是block\_table存在且有效，同时key、value是按照block\_table中的索引在一片连续内存中排布，在该场景下key、value的input\_layout参数无效。
         -   <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
             -   支持key、value数据类型为float16、bfloat16、int8。
-            -   不支持Q为bfloat16、float16、key、value为int4（int32）的场景。
+            -   不支持query为bfloat16、float16，且key和value为int4（int32）的场景。
     
         -   该场景下，block\_size是用户自定义的参数，该参数的取值会影响page attention的性能。key、value输入类型为float16、bfloat16时需要16对齐，key、value输入类型为int8时需要32对齐，推荐使用128。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
         -   参数key、value各自对应tensor的shape所有维度相乘不能超过int32的表示范围。

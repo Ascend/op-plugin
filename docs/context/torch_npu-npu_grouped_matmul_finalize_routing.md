@@ -27,7 +27,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(Tensor x, Tensor w, Tensor group_l
 -   row\_index：一个1D的Device侧Tensor输入，MoE专家输出按照该row_index进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持int32、int64，数据格式支持ND，维度为\(m,\)，m与x的m一致。
 -   dtype：ScalarType类型，指定GroupedMatMul计算的输出类型。0表示float32，1表示float16，2表示bfloat16。默认值为0。
 -   shared\_input\_weight：float类型，指共享专家与MoE专家进行combine的系数，shared\_input先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
--   shared\_input\_offset：int类型，共享专家输出的在总输出中的偏移。默认值为0。
+-   shared\_input\_offset：int类型，共享专家与MoE专家累加的行偏移量。默认值为0，表示没有偏移。
 -   output\_bs：int类型，输出的最高维大小。默认值为0。
 -   group\_list\_type：int类型数组，GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
 
