@@ -385,7 +385,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         -   使能必要条件是`block_table`存在且有效，同时`key`、`value`是按照`block_table`中的索引在一片连续内存中排布，在该场景下`key`、`value`的`input_layout`参数无效。
         -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
             -   支持`key`、`value`数据类型为`float16`、`bfloat16`、`int8`。
-            -   不支持Q为`bfloat16`、`float16`、`key`、`value`为`int4`（`int32`）的场景。
+            -   不支持`query`为`bfloat16`、`float16`，且`key`和`value`为`int4`（`int32`）的场景。
     
         -   该场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能，`block_size`需要传入非0值，且最大不超过512，`key`、`value`输入类型为`float16`、`bfloat16`时需要16对齐，`key`、`value`输入类型为`int8`时需要32对齐，推荐使用128。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
         -   参数`key`、`value`各自对应tensor的shape所有维度相乘不能超过`int32`的表示范围。

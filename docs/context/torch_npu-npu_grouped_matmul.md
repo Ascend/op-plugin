@@ -239,7 +239,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
         |支持场景|场景说明|场景限制|
         |--------|--------|--------|
-        |多多多|`x`和`weigh`t为多张量，`y`为多张量。每组数据的张量是独立的。|1.仅支持`split_item`为0或1。<br>2.`x`中tensor要求维度一致且支持2-6维，`weight`中tensor需为2维，`y`中tensor维度和x保持一致。<br>3.`x`中tensor大于2维，`group_list`必须传空。<br>4.`x`中tensor为2维且传入`group_list`，`group_list`的差值需与`x`中tensor的第一维一一对应。|
+        |多多多|`x`和`weight`为多张量，`y`为多张量。每组数据的张量是独立的。|1.仅支持`split_item`为0或1。<br>2.`x`中tensor要求维度一致且支持2-6维，`weight`中tensor需为2维，`y`中tensor维度和x保持一致。<br>3.`x`中tensor大于2维，`group_list`必须传空。<br>4.`x`中tensor为2维且传入`group_list`，`group_list`的差值需与`x`中tensor的第一维一一对应。|
         |单多单|`x`为单张量，`weight`为多张量，`y`为单张量。|1.仅支持`split_item`为2或3。<br>2.必须传`group_list`，且最后一个值与`x`中tensor的第一维相等。<br>3.`x`、`weight`、`y`中tensor需为2维。<br>4.`weight`中每个tensor的N轴必须相等。|
         |单多多|`x`为单张量，`weight`为多张量，`y`为多张量。|1.仅支持`split_item`为0或1。<br>2.必须传`group_list`，`group_list`的差值需与`y`中tensor的第一维一一对应。<br>3.`x`、`weight`、`y`中tensor需为2维。|
         |多多单|`x`和`weight`为多张量，`y`为单张量。每组矩阵乘法的结果连续存放在同一个张量中。|1.仅支持`split_item`为2或3。<br>2.`x`、`weight`、`y`中tensor需为2维。<br>3.`weight`中每个tensor的N轴必须相等。<br>4.若传入`group_list`，`group_list`的差值需与`x`中tensor的第一维一一对应。|
