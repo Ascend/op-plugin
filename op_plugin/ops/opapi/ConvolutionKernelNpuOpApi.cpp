@@ -18,7 +18,151 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
+namespace {
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct ConvParams {
+    std::vector<int64_t> stride;
+    std::vector<int64_t> padding;
+    std::vector<int64_t> dilation;
+    bool transposed;
+    std::vector<int64_t> output_padding;
+    int groups;
+
+    bool is_output_padding_neg() const;
+    bool is_padding_neg() const;
+    bool is_stride_nonpos() const;
+};
+
+auto ConvParams::is_output_padding_neg() const -> bool
+{
+    bool is_non_neg = false;
+    for (auto p : output_padding) {
+        is_non_neg |= (p < 0);
+    }
+    return is_non_neg;
+}
+
+auto ConvParams::is_padding_neg() const -> bool
+{
+    bool is_non_neg = false;
+    for (auto p : padding) {
+        is_non_neg |= (p < 0);
+    }
+    return is_non_neg;
+}
+
+auto ConvParams::is_stride_nonpos() const -> bool
+{
+    bool is_nonpos = false;
+    for (auto s : stride) {
+        is_nonpos |= (s <= 0);
+    }
+    return is_nonpos;
+}
+
+inline std::vector<int64_t> expand_param_if_needed(at::IntArrayRef list_param, const char* param_name, int64_t expected_dim)
+{
+    if (list_param.size() == 1) {
+        return std::vector<int64_t>(expected_dim, list_param[0]);
+    } else if ((int64_t)list_param.size() != expected_dim) {
+        TORCH_CHECK(false, "expected ", param_name, " to be a single integer value or a list of ", expected_dim,
+            " values to match the convolution dimensions, but got ", param_name, "=", list_param, OPS_ERROR(ErrCode::PARAM));
+    } else {
+        return list_param.vec();
+    }
+}
+
+} // namespace
+
 using npu_preparation = at_npu::native::OpPreparation;
+
+void check_shape_forward(
+    const at::Tensor& input,
+    const c10::IntArrayRef& weight_sizes,
+    const at::Tensor& bias,
+    const ConvParams& params)
+{
+    int64_t k = input.ndimension();
+    int64_t weight_dim = static_cast<int64_t>(weight_sizes.size());
+    int64_t groups = params.groups;
+    const auto& padding = params.padding;
+    const auto& dilation = params.dilation;
+    bool transposed = params.transposed;
+
+    TORCH_CHECK(!params.is_padding_neg(), "negative padding is not supported" + OPS_ERROR(ErrCode::NOT_SUPPORT));
+    TORCH_CHECK(!params.is_output_padding_neg(), "negative output_padding is not supported" + OPS_ERROR(ErrCode::NOT_SUPPORT));
+    TORCH_CHECK(!params.is_stride_nonpos(), "non-positive stride is not supported" + OPS_ERROR(ErrCode::NOT_SUPPORT));
+
+    TORCH_CHECK(weight_dim == k,
+        "Expected ", weight_dim, "-dimensional input for ", weight_dim,
+        "-dimensional weight ", weight_sizes, ", but got ", k, "-dimensional input of size ",
+        input.sizes(), " instead", OPS_ERROR(ErrCode::PARAM));
+
+    TORCH_CHECK(weight_sizes[0] >= groups,
+        "Given groups=", groups, ", expected weight to be at least ", groups,
+        " at dimension 0, but got weight of size ", weight_sizes, " instead", OPS_ERROR(ErrCode::PARAM));
+
+    TORCH_CHECK(weight_sizes[0] % groups == 0,
+        "Given groups=", groups, ", expected weight to be divisible by ",
+        groups, " at dimension 0, but got weight of size [", weight_sizes,
+        "] instead", OPS_ERROR(ErrCode::PARAM));
+
+    if (!transposed) {
+        std::vector<int64_t> input_shape;
+        std::vector<int64_t> kernel_shape;
+        bool kernel_size_correct = true;
+
+        TORCH_CHECK(input.size(1) == (weight_sizes[1] * groups),
+            "Given groups=", groups, ", weight of size ", weight_sizes,
+            ", expected input", input.sizes(), " to have ",
+            (weight_sizes[1] * groups), " channels, but got ", input.size(1),
+            " channels instead", OPS_ERROR(ErrCode::PARAM));
+
+        TORCH_CHECK(!bias.defined() || (bias.ndimension() == 1 && bias.size(0) == weight_sizes[0]),
+            "Given weight of size ", weight_sizes,
+            ", expected bias to be 1-dimensional with ", weight_sizes[0], " elements",
+            ", but got bias of size ", bias.sizes(), " instead", OPS_ERROR(ErrCode::PARAM));
+
+        for (const auto i : c10::irange(2, k)) {
+            input_shape.push_back(input.size(i) + 2 * padding[i-2]);
+            // log new kernel size considering dilation
+            kernel_shape.push_back(dilation[i-2] * (weight_sizes[i]-1) + 1);
+            if (input_shape.back() < kernel_shape.back()) {
+                kernel_size_correct = false;
+            }
+        }
+
+        TORCH_CHECK(input_shape.size() == kernel_shape.size(), "Inconsistent shape between Input and Kernel", OPS_ERROR(ErrCode::PARAM));
+
+        if (!kernel_size_correct) {
+            // If kernel size is incorrect
+            std::ostringstream input_ss;
+            std::ostringstream kernel_ss;
+            std::string separator = "";
+
+            for (uint64_t i = 0, len = input_shape.size(); i < len; ++i) {
+                input_ss << separator << input_shape[i];
+                kernel_ss << separator << kernel_shape[i];
+                separator = " x ";
+            }
+
+            TORCH_CHECK(false, "Calculated padded input size per channel: (", input_ss.str(), "). Kernel size: (",
+                kernel_ss.str(), "). Kernel size can't be greater than actual input size", OPS_ERROR(ErrCode::PARAM));
+        }
+    } else {
+        // transposed
+        TORCH_CHECK(input.size(1) == weight_sizes[0],
+            "Given transposed=", transposed, ", weight of size ", weight_sizes,
+            ", expected input", input.sizes(), " to have ", weight_sizes[0],
+            " channels, but got ", input.size(1), " channels instead", OPS_ERROR(ErrCode::PARAM));
+
+        TORCH_CHECK(!bias.defined() || (bias.ndimension() == 1 && bias.size(0) == weight_sizes[1] * groups),
+            "Given transposed=", transposed, ", weight of size ", weight_sizes,
+            ", expected bias to be 1-dimensional with ", weight_sizes[1] * groups, " elements",
+            ", but got bias of size ", bias.sizes(), " instead", OPS_ERROR(ErrCode::PARAM));
+    }
+}
 
 static inline c10::SmallVector<int64_t, op_infer::N> expand_dim(at::IntArrayRef list_param, const char *param_name,
                                                                 int64_t expected_dim)
@@ -106,6 +250,17 @@ at::Tensor _convolution(const at::Tensor &input, const at::Tensor &weight, const
                         at::IntArrayRef output_padding, int64_t groups, bool benchmark, bool deterministic,
                         bool cudnn_enabled, bool allow_tf32)
 {
+    auto k = weight.ndimension();
+    int64_t dim = k - 2;
+    ConvParams params;
+    params.stride = expand_param_if_needed(stride, "stride", dim);
+    params.padding = expand_param_if_needed(padding, "padding", dim);
+    params.dilation = expand_param_if_needed(dilation, "dilation", dim);
+    params.transposed = transposed;
+    params.output_padding = expand_param_if_needed(output_padding, "output_padding", dim);
+    params.groups = groups;
+    check_shape_forward(input, weight.sizes(), bias.value(), params);
+
     DO_COMPATIBILITY(aclnnConvolution,
                      acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding,
                                           groups, benchmark, deterministic, cudnn_enabled, allow_tf32));
