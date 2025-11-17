@@ -96,17 +96,11 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传空指针即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填空指针，当`copy_expert_num`不为0或`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2D的Tensor，shape为(BS,H)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
 
--   **const\_expert\_alpha\_1** (`Tensor`)：可选参数，在`const_expert_num`不为0的场景下需要输入的计算系数。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传空指针即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填空指针，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个1D的Tensor，shape为(const_expert_num,)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
+-   **const\_expert\_alpha\_1** (`Tensor`)：可选参数，在`const_expert_num`不为0的场景下需要输入的计算系数, 当前版本不支持，传None即可。
 
--   **const\_expert\_alpha\_2** (`Tensor`)：可选参数，在`const_expert_num`不为0的场景下需要输入的计算系数。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传空指针即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填空指针，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个1D的Tensor，shape为(const_expert_num,)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
+-   **const\_expert\_alpha\_2** (`Tensor`)：可选参数，在`const_expert_num`不为0的场景下需要输入的计算系数, 当前版本不支持，传None即可。
 
--   **const\_expert\_v** (`Tensor`)：可选参数，在`const_expert_num`不为0的场景下需要输入的计算系数。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传空指针即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填空指针，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2D的Tensor，shape为(const_expert_num,H)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
+-   **const\_expert\_v** (`Tensor`)：可选参数，在`const_expert_num`不为0的场景下需要输入的计算系数, 当前版本不支持，传None即可。
 
 -   **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值即可。
@@ -153,9 +147,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。
 
--   **const\_expert\_num** (`int`)：可选参数，表示常量专家的数量。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的常量专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num\)。
+-   **const\_expert\_num** (`int`)：可选参数，表示常量专家的数量, 当前版本不支持，传0即可。
 
 ## 返回值说明<a name="zh-cn_topic_0000002168254826_section22231435517"></a>
 `Tensor`
@@ -258,7 +250,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     is_quant = (quant_mode > 0)
     zero_expert_num = 1
     copy_expert_num = 1
-    const_expert_num = 1
+    const_expert_num = 0
 
 
     def gen_const_expert_alpha_1():
@@ -376,9 +368,9 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
                                     1, 2, 3, 5, 7, 9, 10, 11, 13, 14, -1, -1, -1, -1, -1, -1], dtype=torch.int32).npu()
         available_ranks = [1, 2, 3, 5, 7, 9, 10, 11, 13, 14]
 
-        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
-        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
-        const_expert_v = gen_const_expert_v().npu()
+        const_expert_alpha_1 = None
+        const_expert_alpha_2 = None
+        const_expert_v = None
 
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
 
@@ -512,7 +504,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
     zero_expert_num = 1
     copy_expert_num = 1
-    const_expert_num = 1
+    const_expert_num = 0
 
     class MOE_DISTRIBUTE_GRAPH_Model(torch.nn.Module):
         def __init__(self):
@@ -700,9 +692,9 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
             1, 2, 3, 5, 7, 9, 10, 11, 13, 14, -1, -1, -1, -1, -1, -1
         ], dtype=torch.int32).npu()
         available_ranks = [1, 2, 3, 5, 7, 9, 10, 11, 13, 14]
-        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
-        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
-        const_expert_v = gen_const_expert_v().npu()
+        const_expert_alpha_1 = None
+        const_expert_alpha_2 = None
+        const_expert_v = None
 
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
 

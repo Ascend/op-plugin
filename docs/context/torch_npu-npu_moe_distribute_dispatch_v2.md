@@ -163,9 +163,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。
 
--   **const\_expert\_num** (`int`)：可选参数，表示常量专家的数量。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的常量专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num\)。
+-   **const\_expert\_num** (`int`)：可选参数，表示常量专家的数量, 当前版本不支持，传0即可。
 
 ## 输出说明<a name="zh-cn_topic_0000002203575833_section22231435517"></a>
 
@@ -287,7 +285,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     is_quant = (quant_mode > 0)
     zero_expert_num = 1
     copy_expert_num = 1
-    const_expert_num = 1
+    const_expert_num = 0
 
 
     def gen_const_expert_alpha_1():
@@ -405,9 +403,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
                                     1, 2, 3, 5, 7, 9, 10, 11, 13, 14, -1, -1, -1, -1, -1, -1], dtype=torch.int32).npu()
         available_ranks = [1, 2, 3, 5, 7, 9, 10, 11, 13, 14]
 
-        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
-        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
-        const_expert_v = gen_const_expert_v().npu()
+        const_expert_alpha_1 = None
+        const_expert_alpha_2 = None
+        const_expert_v = None
 
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
 
@@ -541,7 +539,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
     zero_expert_num = 1
     copy_expert_num = 1
-    const_expert_num = 1
+    const_expert_num = 0
 
 
     class MOE_DISTRIBUTE_GRAPH_Model(torch.nn.Module):
@@ -730,9 +728,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             1, 2, 3, 5, 7, 9, 10, 11, 13, 14, -1, -1, -1, -1, -1, -1
         ], dtype=torch.int32).npu()
         available_ranks = [1, 2, 3, 5, 7, 9, 10, 11, 13, 14]
-        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
-        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
-        const_expert_v = gen_const_expert_v().npu()
+        const_expert_alpha_1 = None
+        const_expert_alpha_2 = None
+        const_expert_v = None
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
 
         model = MOE_DISTRIBUTE_GRAPH_Model()
