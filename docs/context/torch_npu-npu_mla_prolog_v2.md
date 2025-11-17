@@ -757,6 +757,7 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     import torch
     import torch_npu
     import math
+    torch.npu.config.allow_internal_format = True
     # 生成随机数据, 并发送到npu
     B = 8
     He = 7168
@@ -791,6 +792,7 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     
     # 调用MlaProlog算子
     query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla, dequant_scale_q_nope_mla = torch_npu.npu_mla_prolog_v2(token_x, w_dq_cast, w_uq_qr_cast, w_uk, w_dkv_kr_cast, rmsnorm_gamma_cq, rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, rmsnorm_epsilon_cq=rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv=rmsnorm_epsilon_ckv, cache_mode=cache_mode)
+    print(query_mla)
     # 执行上述代码的输出out类似如下
     tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
             [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
@@ -824,6 +826,7 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     config.debug.graph_dump.type = "pbtxt"
     npu_backend = tng.get_npu_backend(compiler_config=config)
     from torch.library import Library, impl
+    torch.npu.config.allow_internal_format = True
     
     # 数据生成
     B = 8

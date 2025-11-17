@@ -4,31 +4,37 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>            |    √     |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>            |    √     |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>               | √   |
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
 ## 功能说明
 
-- API功能：对输入Tensor进行高斯误差线性单元（GELU）与MUL乘法结合的复合计算操作。
+- API功能：当输入Tensor的尾轴为32B对齐场景时，使用该API可对输入Tensor进行GELU与MUL结合的复合计算操作以提高算子性能，若尾轴为非32B对齐场景时，建议走小算子拼接逻辑，即按照下述公式分步拼接计算。
 - 计算公式：
 
     给定输入张量`input`（最后一维长度为$2d$，$d$为正整数），函数$\text{GELUMUL}$计算流程如下：
 
-    1. 拆分输入张量：沿最后一维将`input`拆分为两个形状相同的张量$x1$和$x2$：
+    1. 拆分输入张量：
+    
+       沿最后一维将`input`拆分为两个形状相同的张量$x1$和$x2$。
          $$x_1 = \text{input}[..., :d], \quad x_2 = \text{input}[..., d:]$$
                  
          其中$x_1$、$x_2$形状与$\text{input}$除最后一维外一致，最后一维长度均为$d$。
 
-    2. 应用GELU激活函数：对$x_1$应用GELU激活函数（模式由`approximate`控制），即$x_1 = \text{GELU}(x_1)$：
+    2. 应用GELU激活函数：
+
+       对$x_1$应用GELU激活函数（模式由`approximate`控制），即$x_1 = \text{GELU}(x_1)$。
         - 若`approximate`为"tanh"（近似模式，计算效率高）：
         $$\text{GELU}(x) = 0.5 \cdot x \cdot \left[ 1 + \tanh\left( \sqrt{\frac{2}{\pi}} \cdot \left( x + 0.044715 \cdot x^3 \right) \right) \right]$$
         
         - 若`approximate`为"none"（高精度模式）：
         $$\text{GELU}(x) = 0.5 \cdot x \cdot \left[ 1 + \text{erf}\left( \frac{x}{\sqrt{2}} \right) \right]$$
 
-    3. 逐元素乘积输出：将激活后的$x_1$与$x_2$逐元素相乘，得到最终输出张量：
+    3. 逐元素乘积输出：
+
+       将激活后的$x_1$与$x_2$逐元素相乘，得到最终输出张量。
         $$\text{out} = x_1 \cdot x_2$$
                  
         其中$\text{out}$形状与原始输入`input`完全一致。
@@ -51,10 +57,6 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 `Tensor`
 
 输出张量，对应公式中的$out$，数据类型支持bfloat16、float16、float。shape维度2至8维。支持非连续的Tensor，数据格式支持$ND$，输出的数据类型与输入`input`保持一致，输出shape和输入shape其他维度一致，最后一维的值为输入shape最后一维值的二分之一。
-
-## 约束说明
-
-典型场景尾轴为16的倍数，当尾轴为非32B对齐场景时，建议走小算子拼接逻辑，即按照上述公式分步拼接计算。
 
 ## 调用示例
 
