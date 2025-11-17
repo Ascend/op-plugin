@@ -4319,9 +4319,6 @@
   "func: unfold_backward(Tensor grad_in, SymInt[] input_sizes, int dim, int size, int step) -> Tensor": {
     "version": ["all_version"]
   },
-  "func: split_with_sizes_copy(Tensor self, SymInt[] split_sizes, int dim=0) -> Tensor[]": {
-    "version": ["all_version"]
-  },
   "func: split_with_sizes_copy.out(Tensor self, SymInt[] split_sizes, int dim=0, *, Tensor(a!)[] out) -> ()": {
     "version": ["all_version"]
   },
