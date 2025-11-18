@@ -33,7 +33,7 @@ torch_npu.npu_fast_gelu(input) -> Tensor
 
 ## 参数说明
 
-**input** (`Tensor`)：对应公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持8维。
+**input** (`Tensor`)：对应公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持8维。支持空Tensor。
 
 - <term>Atlas 训练系列产品</term>：数据类型支持`float16`、`float32`。
 - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
