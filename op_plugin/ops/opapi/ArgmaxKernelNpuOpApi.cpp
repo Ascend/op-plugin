@@ -25,11 +25,10 @@ static at::Tensor& argmax_exec(const at::Tensor& self, at::optional<int64_t> dim
 {
     at::Tensor input = self.reshape({-1});
     int64_t realDim = 0;
-    bool realKeepDim = false;
+    bool realKeepDim = keepdim;
     if (dim.has_value()) {
         input = self;
         realDim = dim.value();
-        realKeepDim = keepdim;
     }
     auto output_size = op_infer::reduce_ops_npu_output_size(input, realDim, realKeepDim);
     if (out_mode) {
