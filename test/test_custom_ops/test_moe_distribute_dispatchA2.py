@@ -166,7 +166,7 @@ class TestMoeDistributeDispatch(TestCase):
             self.assertRtolEqual(dynamic_scales_golden, dynamic_scales_npu, 0.001)
 
         expand_idx_golden = golden_tensor_list[2][bs * rank_id: bs * (rank_id + 1), :]
-        expand_idx_npu = npu_result[2].view(bs, k)
+        expand_idx_npu = npu_result[2][:bs * k].view(bs, k)
         self.assertEqual(expand_idx_golden, expand_idx_npu,
                              ("rank {} Expect receive tensor {} but got {}.").format(rank_id, expand_idx_golden, expand_idx_npu))
 
@@ -181,8 +181,8 @@ class TestMoeDistributeDispatch(TestCase):
                              ("rank {} Expect receive tensor {} but got {}.").format(rank_id, ep_recv_counts_golden, ep_recv_counts_npu))
 
     @classmethod
-    def run_dispatch_npu(cls, queue, rank, x, expert_ids, scales, ep_world_size, has_scale, total_expert_num, quant_mode, global_bs):
-        torch_npu.npu.set_device(rank)
+    def run_dispatch_npu(cls, queue, rank, x, expert_ids, scales, ep_world_size, has_scale, total_expert_num, quant_mode, global_bs, use_comm_alg=False, comm_alg=None):
+        torch_npu.npu.set_device(rank % 8)
 
         dist.init_process_group(backend="hccl", rank=rank, world_size=ep_world_size, init_method='tcp://' + "127.0.0.1" + ':' + "50000")
         # 初始化EP域
@@ -194,7 +194,21 @@ class TestMoeDistributeDispatch(TestCase):
         expert_ids_npu = expert_ids.npu()
         scales_npu = scales.npu() if has_scale else None
 
-        expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, _ = torch_npu.npu_moe_distribute_dispatch(
+        if use_comm_alg:
+            expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, _ = torch_npu.npu_moe_distribute_dispatch_v2(
+                    x=x_npu,
+                    expert_ids=expert_ids_npu,
+                    group_ep=ep_hcomm_info,
+                    ep_world_size=ep_world_size,
+                    ep_rank_id=rank,
+                    moe_expert_num=total_expert_num,
+                    scales=scales_npu,
+                    quant_mode=quant_mode,
+                    global_bs = global_bs,
+                    comm_alg = comm_alg,
+                )
+        else:
+            expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, _ = torch_npu.npu_moe_distribute_dispatch(
                 x=x_npu,
                 expert_ids=expert_ids_npu,
                 group_ep=ep_hcomm_info,
@@ -251,6 +265,62 @@ class TestMoeDistributeDispatch(TestCase):
                                                                                     ep_world_size, has_scale, total_expert_num, quant_mode, global_bs))
             p.start()
             p_list.append(p)
+
+        results = {}
+        for p in p_list:
+            p.join()
+            rank_id, rank_result = result_queue.get()
+            results[rank_id] = rank_result
+
+        for rank_id in rank_list:
+            self.golden_compare(rank_id, golden_tensor_list, golden_actual_tokens, results[rank_id], quant_mode, bs, k)
+
+    @skipIfUnsupportMultiNPU(16)
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_moe_distribute_dispatch_v2(self):
+        has_scale = False
+        quant_mode = 0
+        ep_world_size = 16
+        tp_world_size = 0
+        world_size = ep_world_size
+        bs = 8
+        h = 7168
+        k = 8
+        sharedExpertRankNum = 0
+        moeExpertNum = 16
+        global_bs = bs * ep_world_size
+        expert_num_per_rank = 1
+        total_expert_num = world_size * expert_num_per_rank
+        comm_alg = "fullmesh"
+
+        input_dtype = torch.bfloat16
+        x_shape = (global_bs, h)
+        expert_ids_shape = (global_bs, k)
+        scales_shape = (total_expert_num, h)
+
+        x = self.gen_x(x_shape, input_dtype)
+        expert_ids = self.gen_expert_ids(expert_ids_shape, total_expert_num)
+        scales = self.gen_scale(scales_shape, has_scale)
+
+        x_input = self.chunk_tensor(x, ep_world_size)
+        expert_ids_input = self.chunk_tensor(expert_ids, ep_world_size)
+        scales_input = scales
+
+        golden_tensor_list, golden_actual_tokens = self.gen_dispatch_golden(x, expert_ids, scales, has_scale, k, quant_mode, global_bs, ep_world_size, bs, total_expert_num, expert_num_per_rank)
+
+        p_list = []
+        rank_list = list(range(0, ep_world_size))
+
+        from torch.multiprocessing import Manager
+        manager = Manager()
+        result_queue = manager.Queue()
+        mp.set_start_method("forkserver", force=True)
+        for rank_id in rank_list:
+            p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input, 
+                                                                                    ep_world_size, has_scale, total_expert_num, quant_mode, global_bs, True, comm_alg))
+            p.start()
+            p_list.append(p)
+
 
         results = {}
         for p in p_list:
