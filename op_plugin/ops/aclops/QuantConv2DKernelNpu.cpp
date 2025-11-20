@@ -23,23 +23,24 @@ at::Tensor npu_quant_conv2d_out(const at::Tensor& input, const at::Tensor& weigh
                                 c10::IntArrayRef stride, c10::IntArrayRef pad,
                                 c10::IntArrayRef dilation, int64_t groups,
                                 int64_t offset_x, c10::string_view round_mode, at::Tensor& output,
-                                c10::optional<at::ScalarType> output_dtype,
-                                const c10::optional<at::Tensor>& bias_opt, const c10::optional<at::Tensor>& offset)
+                                c10::optional<int64_t> input_dtype, c10::optional<int64_t> weight_dtype,
+                                c10::optional<int64_t> output_dtype, const c10::optional<at::Tensor>& bias_opt,
+                                const c10::optional<at::Tensor>& offset)
 {
     TORCH_CHECK(stride.size() >= ATTRS_DIM, "stride has to contain more than 2 elements, but got ", stride.size());
     TORCH_CHECK(pad.size() >= ATTRS_DIM, "padding has to contain more than 2 elements, but got ", pad.size());
     TORCH_CHECK(dilation.size() >= ATTRS_DIM, "dilation has to contain more than 2 elements, but got ",
         dilation.size());
-    TORCH_CHECK(output_dtype == at::ScalarType::Half, "only support float16 as outputdtype");
+    TORCH_CHECK(output_dtype.has_value(), "output_dtype can not be None");
+    TORCH_CHECK(output_dtype.value() == static_cast<int64_t>(at::ScalarType::Half), "only support float16 as outputdtype");
 
     const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
     c10::SmallVector<int64_t, N> strides = {1, 1, stride[0], stride[1]};
     c10::SmallVector<int64_t, N> paddings = {pad[0], pad[0], pad[1], pad[1]};
     c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1]};
-    at::ScalarType dtype = c10::value_or_else(output_dtype, [] {return at::ScalarType::Half;});
 
     int64_t dtype_enum = 0;
-    if (dtype == at::ScalarType::Half) {
+    if (output_dtype.value() == static_cast<int64_t>(at::ScalarType::Half)) {
         dtype_enum = 1;
     }
 
@@ -64,10 +65,11 @@ at::Tensor npu_quant_conv2d_out(const at::Tensor& input, const at::Tensor& weigh
 
 
 at::Tensor npu_quant_conv2d(const at::Tensor& input, const at::Tensor& weight, const at::Tensor& scale,
-                            c10::IntArrayRef strides, c10::IntArrayRef pads,
-                            c10::IntArrayRef dilations, int64_t groups,
-                            int64_t offset_x, c10::string_view round_mode, c10::optional<at::ScalarType> output_dtype,
-                            const c10::optional<at::Tensor>& bias, const c10::optional<at::Tensor>& offset)
+                            c10::IntArrayRef strides, c10::IntArrayRef pads, c10::IntArrayRef dilations,
+                            int64_t groups, int64_t offset_x, c10::string_view round_mode,
+                            c10::optional<int64_t> output_dtype, const c10::optional<at::Tensor>& bias,
+                            const c10::optional<at::Tensor>& offset, c10::optional<int64_t> input_dtype,
+                            c10::optional<int64_t> weight_dtype)
 {
     TORCH_CHECK(input.dim() >= TENSORS_DIM, "input has to be more than 4D, but got Tensor of dimension ", input.dim());
     TORCH_CHECK(weight.dim() >= TENSORS_DIM, "weight has to more than 4D, but got Tensor of dimension ", weight.dim());
@@ -95,7 +97,7 @@ at::Tensor npu_quant_conv2d(const at::Tensor& input, const at::Tensor& weight, c
     at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, options, ACL_FORMAT_NCHW);
 
     acl_op::npu_quant_conv2d_out(input, weight, scale, strides, pads, dilations, groups, offset_x, round_mode,
-        result, output_dtype, bias, offset);
+        result, input_dtype, weight_dtype, output_dtype, bias, offset);
     return result;
 }
 #endif
