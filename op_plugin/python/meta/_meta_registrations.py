@@ -1058,7 +1058,8 @@ def npu_fusion_attention_backward(query, key, value, dy, head_num, input_layout,
 @impl(m, "npu_fusion_attention_v2")
 def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *, pse=None, padding_mask=None,
                                 atten_mask=None, query_rope=None, key_rope=None, scale=1.0, keep_prob=1.0, pre_tokens=2147483647, next_tokens=2147483647,
-                                inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False):
+                                inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False,
+                                pse_type=1, q_start_idx=None, kv_start_idx=None, softmax_layout="", sink=None):
     B = query.size(0)
     N = head_num
     S1 = query.size(2)
@@ -1094,14 +1095,16 @@ def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *
 def npu_fusion_attention_backward_v2(query, key, value, dy, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None,
                                   softmax_max=None, softmax_sum=None, softmax_in=None, attention_in=None, query_rope=None, key_rope=None, scale_value=1.0,
                                   keep_prob=1.0, pre_tokens=2147483647, next_tokens=2147483647, inner_precise=0, seed=0, offset=0,
-                                  numels=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False):
+                                  numels=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False,
+                                  pse_type=1, q_start_idx=None, kv_start_idx=None, softmax_layout="", sink=None):
     dq = torch.empty_like(query, dtype=query.dtype, device='meta')
     dq_rope = torch.empty_like([0], dtype=query.dtype, device='meta')
     dk = torch.empty_like(key, dtype=query.dtype, device='meta')
     dk_rope = torch.empty_like([0], dtype=query.dtype, device='meta')
     dv = torch.empty_like(value, dtype=query.dtype, device='meta')
-    dpse = torch.empty([0], dtype=query.dtype, device='meta')
-    return (torch.empty_like(dq), torch.empty_like(dk), torch.empty_like(dv), torch.empty_like(dpse), torch.empty_like(dq_rope), torch.empty_like(dk_rope))
+    dpse = torch.empty_like([0], dtype=query.dtype, device='meta')
+    dsink = None if sink is None else torch.empty_like(sink, dtype=sink.dtype, device='meta')
+    return (dq, dk, dv, dpse, dq_rope, dk_rope, dsink)
 
 
 @impl(m, "npu_rotary_mul")
