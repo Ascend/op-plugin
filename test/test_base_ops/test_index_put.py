@@ -179,6 +179,24 @@ class TestIndexPut(TestCase):
         cpu_output2 = self.cpu_op_exec(input1, (cpu_indices,), values)
         npu_output2 = self.npu_op_exec(input1, (npu_indices,), values)
         self.assertRtolEqual(cpu_output2, npu_output2)
+        
+    def test_index_put_shape_mismatch(self):
+        torch.set_default_device('npu')
+        data_tensor = torch.zeros(3, 3)
+        indices = (torch.tensor([0, 2]), torch.tensor([1, 0]))
+        values = torch.tensor([[[[5.0]]], [[[10.0]]]])
+        torch.set_default_device('cpu')
+        with self.assertRaises(RuntimeError):
+            data_tensor.index_put_(indices, values)
+
+    def test_index_put_shape_mismatch_broadcast_together(self):
+        torch.set_default_device('npu')
+        data = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=torch.int64)
+        indices = (torch.tensor([True, False, True]), torch.tensor([0, 1, 2]))
+        values = torch.tensor([10, 20], dtype=torch.int64)
+        torch.set_default_device('cpu')
+        with self.assertRaises(IndexError):
+            result = data.index_put(indices, values, accumulate=False)
 
 
 if __name__ == "__main__":
