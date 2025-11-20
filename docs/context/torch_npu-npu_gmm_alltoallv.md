@@ -49,7 +49,7 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 -   **gmm\_x**（`Tensor`）：必选参数，GroupedMatMul计算的左矩阵。数据类型支持`float16`、`bfloat16`，支持2维，shape为$(A, H1)$，数据格式支持ND。
 -   **gmm\_weight**（`Tensor`）：必选参数，GroupedMatMul计算的右矩阵。数据类型与`gmm_x`保持一致，支持3维，shape为$(e, H1, N1)$，数据格式支持ND。
 -   **hcom**（`str`）：必选参数，专家并行的通信域名，字符串长度要求\(0, 128\)。
--   **ep\_world\_size**（`int`）：必选参数，EP通信域size，取值支持8、16、32、64。
+-   **ep\_world\_size**（`int`）：必选参数，EP通信域size，取值支持8、16、32、64、128。
 -   **send\_counts**（`List[int]`）：必选参数，表示发送给其他卡的token数，数据类型支持`int`，取值大小为e\*`ep_world_size`，最大为256。
 -   **recv\_counts**（`List[int]`）：必选参数，表示接收其他卡的token数，数据类型支持`int`，取值大小为e\*`ep_world_size`，最大为256。
 -   **send\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
@@ -68,7 +68,7 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 
 -   该接口支持推理场景下使用。
 -   该接口支持图模式。
--   单卡通信量范围：\[2MB, 100MB\]。
+-   单卡通信量取值大于等于2MB。
 -   输入参数Tensor中shape使用的变量说明：
     -   BSK：本卡接收的token数（BS\*K=BSK），是recv\_counts参数累加之和，取值范围\(0, 52428800\)。
 
