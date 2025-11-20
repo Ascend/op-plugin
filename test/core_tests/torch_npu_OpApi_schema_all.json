@@ -254,6 +254,15 @@
   "op_api: torch_npu.npu_dequant_swiglu_quant(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
+  "op_api: torch_npu.npu_clipped_swiglu(*args, **kwargs)": {
+    "version": ["v2.6", "v2.7"]
+  },
+  "op_api: torch_npu.npu_clipped_swiglu(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "func: npu_clipped_swiglu(Tensor x, *, Tensor? group_index=None, int dim=-1, float alpha=1.702, float limit=7.0, float bias=1.0, bool interleaved=True) -> Tensor": {
+    "version": ["v2.6", "newest"]
+  },
   "op_api: torch_npu.npu_convert_weight_to_int4pack(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },

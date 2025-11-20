@@ -6554,6 +6554,15 @@ custom:
   - func: npu_swiglu_quant(Tensor x, *, Tensor? smooth_scales=None, Tensor? offsets=None, Tensor? group_index=None, bool activate_left=False, int quant_mode=0, int group_list_type=0, ScalarType? dst_type=None) -> (Tensor, Tensor)
     op_api: all_version
 
+  - func: npu_clipped_swiglu(Tensor x, *, Tensor? group_index=None, int dim=-1, float alpha=1.702, float limit=7.0, float bias=1.0, bool interleaved=True) -> Tensor
+    op_api: [v2.6, newest]
+    exposed: [v2.6, newest]
+    gen_opapi:
+      out:
+        size: 'swiglu_backward_infershape(x, dim)'
+        dtype: x
+      exec: aclnnClippedSwiglu
+
   - func: npu_dequant_swiglu_quant(Tensor x, *, Tensor? weight_scale=None, Tensor? activation_scale=None, Tensor? bias=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? group_index=None, bool activate_left=False, int quant_mode=0, int swiglu_mode=0, float clamp_limit=7.0, float glu_alpha=1.702, float glu_bias=1.0) -> (Tensor, Tensor)
     op_api: all_version
 
