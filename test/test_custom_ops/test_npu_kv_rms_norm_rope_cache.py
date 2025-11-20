@@ -7,10 +7,15 @@ import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import get_npu_device, SupportedDevices
 
+dim_kv = [512, 192]
+dim_v = [None, 128]
+k_cache_len = [64, 192]
+ckv_cache_len = [512, 128]
 
 class TestNPUKvRmsNormRopeCache(TestCase):
 
     def generate_inputs(self,
+                        method_mode,
                         batch_size,
                         seq_len,
                         page_num,
@@ -20,15 +25,16 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                         output_mode,
                         input_dtype):
         # generate inputs
-        kv = torch.randn(batch_size, 1, seq_len, 576, dtype=input_dtype)
-        gamma = torch.randn(512, dtype=input_dtype)
+        kv = torch.randn(batch_size, 1, seq_len, 576, dtype=input_dtype) if method_mode == 0 else torch.randn(batch_size, 1, seq_len, 192, dtype=input_dtype) 
+        gamma = torch.randn(dim_kv[method_mode], dtype=input_dtype)
         cos = torch.randn(batch_size, 1, seq_len, 64, dtype=input_dtype)
         sin = torch.randn(batch_size, 1, seq_len, 64, dtype=input_dtype)
+        v = None if method_mode == 0 else torch.randn(batch_size, 1, seq_len, dim_v[method_mode], dtype=input_dtype)
         if cache_mode != "Norm":
             k_cache = torch.ones(page_num, page_size, 1,
-                                 64, dtype=input_dtype) * 9
+                                k_cache_len[method_mode], dtype=input_dtype) * 9
             ckv_cache = torch.ones(page_num, page_size,
-                                   1, 512, dtype=input_dtype) * 9
+                                1, ckv_cache_len[method_mode], dtype=input_dtype) * 9
             if "BLK" in cache_mode:
                 index_shape = (
                     batch_size * ((seq_len + page_size - 1) // (page_size)),)
@@ -43,8 +49,8 @@ class TestNPUKvRmsNormRopeCache(TestCase):
         if quant_mode == 1:
             k_cache = k_cache.to(torch.int8)
             ckv_cache = ckv_cache.to(torch.int8)
-            k_rope_scale = torch.randn(64, dtype=torch.float32)
-            c_kv_scale = torch.randn(512, dtype=torch.float32)
+            k_rope_scale = torch.randn(k_cache_len[method_mode], dtype=torch.float32)
+            c_kv_scale = torch.randn(ckv_cache_len[method_mode], dtype=torch.float32)
         else:
             k_rope_scale = None
             c_kv_scale = None
@@ -53,10 +59,12 @@ class TestNPUKvRmsNormRopeCache(TestCase):
         kv = (-2 + 10) * kv - 10
         gamma = (-10 + 1000) * gamma - 1000
         sin = (0.01 + 0.01) * sin - 0.01
+        v = None if method_mode == 0 else (-2 + 10) * v - 10
 
-        return kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, cache_mode, output_mode, input_dtype
+        return kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype
 
     def supported_op_exec(self,
+                          method_mode,
                           kv,
                           gamma,
                           cos,
@@ -68,6 +76,7 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                           c_kv_scale=None,
                           k_rope_offset=None,
                           c_kv_offset=None,
+                          v = None,
                           epsilon=1e-05,
                           cache_mode="Norm",
                           is_output_kv=False):
@@ -97,34 +106,63 @@ class TestNPUKvRmsNormRopeCache(TestCase):
             quantMode = 1
             d0 = 32
 
-        # split input
-        rms_in, rope_in = kv.split([512, 64], dim=-1)
-        rms_in = rms_in.to(torch.float32)
-        rope_in = rope_in.to(torch.float32)
-        # calc rmsnorm
-        y = rms_in / torch.sqrt(torch.mean(rms_in ** 2,
-                                dim=-1, keepdim=True) + epsilon)
-        y = y * gamma.to(torch.float32)
-        # calc rope
-        k = rope_in.view(batch_size, 1, seq_len, 32, 2).transpose(
-            4, 3).reshape(batch_size, 1, seq_len, 64)
-        k_embed = (k * cos.to(torch.float32)) + \
-            (rotate_half(k) * sin.to(torch.float32))
+        if method_mode == 0 :
+            # split input
+            rms_in, rope_in = kv.split([512, 64], dim=-1)
+            rms_in = rms_in.to(torch.float32)
+            rope_in = rope_in.to(torch.float32)
+            # calc rmsnorm
+            y = rms_in / torch.sqrt(torch.mean(rms_in ** 2,
+                                    dim=-1, keepdim=True) + epsilon)
+            y = y * gamma.to(torch.float32)
+            # calc rope
+            k = rope_in.view(batch_size, 1, seq_len, 32, 2).transpose(
+                4, 3).reshape(batch_size, 1, seq_len, 64)
+            k_embed = (k * cos.to(torch.float32)) + \
+                (rotate_half(k) * sin.to(torch.float32))
 
-        # copy outputs
-        k_embed_out = copy.deepcopy(k_embed)
-        k_embed_out = k_embed_out.to(kv.dtype)
-        y_out = copy.deepcopy(y)
-        y_out = y_out.to(kv.dtype)
-        # prepare cache
-        if quantMode == 1:
-            k_embed = k_embed * k_rope_scale
-            k_embed = round_float_to_int8(k_embed)
-            y = y * c_kv_scale
-            y = round_float_to_int8(y)
-        else:
-            k_embed = k_embed.to(k_cache.dtype)
-            y = y.to(k_cache.dtype)
+            # copy outputs
+            k_embed_out = copy.deepcopy(k_embed)
+            k_embed_out = k_embed_out.to(kv.dtype)
+            y_out = copy.deepcopy(y)
+            y_out = y_out.to(kv.dtype)
+
+            # prepare cache
+            if quantMode == 1:
+                k_embed = k_embed * k_rope_scale
+                k_embed = round_float_to_int8(k_embed)
+                y = y * c_kv_scale
+                y = round_float_to_int8(y)
+            else:
+                k_embed = k_embed.to(k_cache.dtype)
+                y = y.to(k_cache.dtype)
+
+        else :
+            # calc rmsnorm and rope
+            rms_in = kv.to(torch.float32)
+            v_in = v.to(torch.float32)
+            y = rms_in / torch.sqrt(torch.mean(rms_in ** 2,
+                                    dim=-1, keepdim=True) + epsilon)
+            y = y * gamma.to(torch.float32) 
+            k = y[..., :64].view(batch_size, 1, seq_len, 32, 2).transpose(
+                4, 3).reshape(batch_size, 1, seq_len, 64)
+            k_embed = (k * cos.to(torch.float32)) + \
+                (rotate_half(k) * sin.to(torch.float32))
+            y = torch.cat([k_embed, y[..., 64:]], dim=-1)
+
+            # copy outputs
+            k_embed_out = copy.deepcopy(y).to(kv.dtype)
+            y_out = copy.deepcopy(v_in).to(v.dtype)
+
+            # perpare cache
+            if quantMode == 1:
+                k_embed = y * k_rope_scale
+                k_embed = round_float_to_int8(k_embed)
+                y_out_quant = v_in * c_kv_scale
+                y = round_float_to_int8(y_out_quant)
+            else:
+                k_embed = y.to(k_cache.dtype)
+                y = v_in.to(k_cache.dtype)
 
         # scatter update
         if cache_mode == "Norm":
@@ -132,16 +170,16 @@ class TestNPUKvRmsNormRopeCache(TestCase):
             pass
 
         elif cache_mode in ("PA", "PA_BNSD"):
-            k_cache = k_cache.reshape(-1, 64)
-            ckv_cache = ckv_cache.reshape(-1, 512)
+            k_cache = k_cache.reshape(-1, k_cache_len[method_mode])
+            ckv_cache = ckv_cache.reshape(-1, ckv_cache_len[method_mode])
             for batch_id in range(batch_size):
                 for token_id in range(seq_len):
                     offset = index[batch_id * seq_len + token_id]
                     if offset >= 0:
                         k_cache[offset, :] = k_embed[batch_id, 0, token_id, :]
                         ckv_cache[offset, :] = y[batch_id, 0, token_id, :]
-            k_cache = k_cache.reshape(block_num, block_size, 1, 64)
-            ckv_cache = ckv_cache.reshape(block_num, block_size, 1, 512)
+            k_cache = k_cache.reshape(block_num, block_size, 1, k_cache_len[method_mode])
+            ckv_cache = ckv_cache.reshape(block_num, block_size, 1, ckv_cache_len[method_mode])
 
         elif cache_mode == "PA_BLK_NZ":
             """ PA_BLK_NZ mode """
@@ -152,7 +190,7 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                     tokenId = batch_id * seq_len + tokenInCurrentBatch
                     indexPageId = tokenInCurrentBatch // block_size
                     pageOffset = index[batch_id *
-                                       index_page_id_length + indexPageId]
+                                    index_page_id_length + indexPageId]
                     if pageOffset < 0:
                         continue
                     pageId = pageOffset // block_size
@@ -160,9 +198,9 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                     k_cache[pageId, 0, :, tokenOffsetInCurrentPage,
                             :] = k_embed[batch_id, 0, tokenInCurrentBatch, :].reshape(-1, d0)
                     ckv_cache[pageId, 0, :, tokenOffsetInCurrentPage,
-                              :] = y[batch_id, 0, tokenInCurrentBatch, :].reshape(-1, d0)
-            k_cache = k_cache.reshape(block_num, block_size, 1, 64)
-            ckv_cache = ckv_cache.reshape(block_num, block_size, 1, 512)
+                            :] = y[batch_id, 0, tokenInCurrentBatch, :].reshape(-1, d0)
+            k_cache = k_cache.reshape(block_num, block_size, 1, k_cache_len[method_mode])
+            ckv_cache = ckv_cache.reshape(block_num, block_size, 1, ckv_cache_len[method_mode])
 
         elif cache_mode == "PA_BLK_BNSD":
             """ PA_BLK_BNSD mode """
@@ -173,7 +211,7 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                     tokenId = batch_id * seq_len + tokenInCurrentBatch
                     indexPageId = tokenInCurrentBatch // block_size
                     pageOffset = index[batch_id *
-                                       index_page_id_length + indexPageId]
+                                    index_page_id_length + indexPageId]
                     if pageOffset < 0:
                         continue
                     pageId = pageOffset // block_size
@@ -181,9 +219,9 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                     k_cache[pageId, tokenOffsetInCurrentPage, 0,
                             :] = k_embed[batch_id, 0, tokenInCurrentBatch, :]
                     ckv_cache[pageId, tokenOffsetInCurrentPage, 0,
-                              :] = y[batch_id, 0, tokenInCurrentBatch, :]
-            k_cache = k_cache.reshape(block_num, block_size, 1, 64)
-            ckv_cache = ckv_cache.reshape(block_num, block_size, 1, 512)
+                            :] = y[batch_id, 0, tokenInCurrentBatch, :]
+            k_cache = k_cache.reshape(block_num, block_size, 1, k_cache_len[method_mode])
+            ckv_cache = ckv_cache.reshape(block_num, block_size, 1, ckv_cache_len[method_mode])
 
         elif cache_mode == "PA_NZ":
             """ PA_NZ """
@@ -196,21 +234,21 @@ class TestNPUKvRmsNormRopeCache(TestCase):
             for batch_id in range(batch_size):
                 for tokenInCurrentBatch in range(seq_len):
                     pageOffset = index[batch_id *
-                                       seq_len + tokenInCurrentBatch]
+                                    seq_len + tokenInCurrentBatch]
                     if pageOffset >= 0:
                         pageId = pageOffset // block_size
                         tokenOffsetInCurrentPage = pageOffset % block_size
                         k_cache[pageId, 0, :, tokenOffsetInCurrentPage,
                                 :] = k_embed[batch_id, 0, tokenInCurrentBatch, :].reshape(-1, d0)
                         ckv_cache[pageId, 0, :, tokenOffsetInCurrentPage,
-                                  :] = y[batch_id, 0, tokenInCurrentBatch, :].reshape(-1, d0)
-            k_cache = k_cache.reshape(block_num, block_size, 1, 64)
-            ckv_cache = ckv_cache.reshape(block_num, block_size, 1, 512)
+                                :] = y[batch_id, 0, tokenInCurrentBatch, :].reshape(-1, d0)
+            k_cache = k_cache.reshape(block_num, block_size, 1, k_cache_len[method_mode])
+            ckv_cache = ckv_cache.reshape(block_num, block_size, 1, ckv_cache_len[method_mode])
 
         return k_cache, ckv_cache, k_embed_out, y_out
 
     def custom_op_exec(self, kv, gamma, cos, sin, index, k_cache, ckv_cache,
-                       k_rope_scale=None, c_kv_scale=None, k_rope_offset=None, c_kv_offset=None,
+                       k_rope_scale=None, c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, v=None,
                        epsilon=1e-05, cache_mode="Norm", is_output_kv=False):
         kv = kv.npu()
         gamma = gamma.npu()
@@ -222,12 +260,15 @@ class TestNPUKvRmsNormRopeCache(TestCase):
         if k_rope_scale is not None:
             k_rope_scale = k_rope_scale.npu()
             c_kv_scale = c_kv_scale.npu()
+        if v is not None:
+            v = v.npu()
         k_cache_npu, ckv_cache_npu, k_rope_npu, c_kv_npu = torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index,
                                                                                                k_cache, ckv_cache,
                                                                                                k_rope_scale=k_rope_scale,
                                                                                                c_kv_scale=c_kv_scale,
                                                                                                k_rope_offset=k_rope_offset,
                                                                                                c_kv_offset=c_kv_offset,
+                                                                                               v=v,
                                                                                                epsilon=epsilon,
                                                                                                cache_mode=cache_mode,
                                                                                                is_output_kv=is_output_kv)
@@ -240,9 +281,9 @@ class TestNPUKvRmsNormRopeCache(TestCase):
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_kv_rmsnorm_rope_cache_PA_BNSD(self, device="npu"):
-        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, cache_mode, output_mode, input_dtype = self.generate_inputs(
-            64, 1, 576, 128, 0, "PA_BNSD", False, torch.bfloat16)
-        golden_out = self.supported_op_exec(kv, gamma, cos, sin, index, k_cache, ckv_cache,
+        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype = self.generate_inputs(
+            0, 64, 1, 576, 128, 0, "PA_BNSD", False, torch.bfloat16)
+        golden_out = self.supported_op_exec(0, kv, gamma, cos, sin, index, k_cache, ckv_cache,
                                             k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
                                             k_rope_offset=None, c_kv_offset=None,
                                             epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
@@ -292,9 +333,9 @@ class TestNPUKvRmsNormRopeCache(TestCase):
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_kv_rmsnorm_rope_cache_PA_BLK_NZ(self, device="npu"):
-        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, cache_mode, output_mode, input_dtype = self.generate_inputs(
-            64, 1, 576, 128, 0, "PA_BLK_NZ", False, torch.bfloat16)
-        golden_out = self.supported_op_exec(kv, gamma, cos, sin, index, k_cache, ckv_cache,
+        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype = self.generate_inputs(
+            0, 64, 1, 576, 128, 0, "PA_BLK_NZ", False, torch.bfloat16)
+        golden_out = self.supported_op_exec(0, kv, gamma, cos, sin, index, k_cache, ckv_cache,
                                             k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
                                             k_rope_offset=None, c_kv_offset=None,
                                             epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
@@ -344,9 +385,9 @@ class TestNPUKvRmsNormRopeCache(TestCase):
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_kv_rmsnorm_rope_cache_PA_BLK_BNSD(self, device="npu"):
-        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, cache_mode, output_mode, input_dtype = self.generate_inputs(
-            64, 1, 576, 128, 0, "PA_BLK_BNSD", False, torch.bfloat16)
-        golden_out = self.supported_op_exec(kv, gamma, cos, sin, index, k_cache, ckv_cache,
+        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype = self.generate_inputs(
+            0, 64, 1, 576, 128, 0, "PA_BLK_BNSD", False, torch.bfloat16)
+        golden_out = self.supported_op_exec(0, kv, gamma, cos, sin, index, k_cache, ckv_cache,
                                             k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
                                             k_rope_offset=None, c_kv_offset=None,
                                             epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
@@ -396,9 +437,9 @@ class TestNPUKvRmsNormRopeCache(TestCase):
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_kv_rmsnorm_rope_cache_PA_NZ(self, device="npu"):
-        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, cache_mode, output_mode, input_dtype = self.generate_inputs(
-            64, 1, 576, 128, 0, "PA_NZ", False, torch.bfloat16)
-        golden_out = self.supported_op_exec(kv, gamma, cos, sin, index, k_cache, ckv_cache,
+        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype = self.generate_inputs(
+            0, 64, 1, 576, 128, 0, "PA_NZ", False, torch.bfloat16)
+        golden_out = self.supported_op_exec(0, kv, gamma, cos, sin, index, k_cache, ckv_cache,
                                             k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
                                             k_rope_offset=None, c_kv_offset=None,
                                             epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
@@ -446,6 +487,218 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                 self.assertLessEqual(
                     max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
 
+    # v2 kvrmsnomropecache
+    @unittest.skip("skip test_kv_rms_norm_rope_cache_v2 now")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_kv_rmsnorm_rope_cache_PA_BNSD(self, device="npu"):
+        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype = self.generate_inputs(
+            1, 64, 1, 576, 128, 0, "PA_BNSD", False, torch.bfloat16)
+        golden_out = self.supported_op_exec(1, kv, gamma, cos, sin, index, k_cache, ckv_cache,
+                                            k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
+                                            k_rope_offset=None, c_kv_offset=None, v=v,
+                                            epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
+
+        # call npu api
+        npu_out = self.custom_op_exec(kv, gamma, cos, sin, index, k_cache, ckv_cache,
+                                        k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
+                                        k_rope_offset=None, c_kv_offset=None, v=v,
+                                        epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
+
+        k_cache_npu, ckv_cache_npu, k_rope_npu, c_kv_npu = npu_out
+        k_cache_cpu, ckv_cache_cpu, k_rope_cpu, c_kv_cpu = golden_out
+
+        # comparison
+        if input_dtype == torch.float16:
+            atol = 0.01
+            rtol = 0.01
+        elif input_dtype == torch.bfloat16:
+            atol = 0.04
+            rtol = 0.04
+        else:
+            atol = 1e-5
+            rtol = 1e-5
+
+        self.assertRtolEqual(k_cache_npu.cpu(), k_cache_cpu, prec=rtol)
+        self.assertRtolEqual(ckv_cache_npu.cpu(), ckv_cache_cpu, prec=rtol)
+
+        if output_mode:
+            self.assertEqual(k_rope_npu.shape, k_rope_cpu.shape)
+            self.assertEqual(c_kv_npu.shape, c_kv_cpu.shape)
+            self.assertEqual(k_rope_npu.dtype, k_rope_cpu.dtype)
+            self.assertEqual(c_kv_npu.dtype, c_kv_cpu.dtype)
+
+            try:
+                self.assertRtolEqual(k_rope_npu.cpu(), k_rope_cpu, prec=rtol)
+            except AssertionError:
+                max_diff = torch.max(torch.abs(k_rope_npu.cpu() - k_rope_cpu))
+                self.assertLessEqual(
+                    max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
+
+            try:
+                self.assertRtolEqual(c_kv_npu.cpu(), c_kv_cpu, prec=rtol)
+            except AssertionError:
+                max_diff = torch.max(torch.abs(c_kv_npu.cpu() - c_kv_cpu))
+                self.assertLessEqual(
+                    max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
+
+    @unittest.skip("skip test_kv_rms_norm_rope_cache_v2 now")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_kv_rmsnorm_rope_cache_PA_BLK_NZ(self, device="npu"):
+        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype = self.generate_inputs(
+            1, 64, 1, 576, 128, 0, "PA_BLK_NZ", False, torch.bfloat16)
+        golden_out = self.supported_op_exec(1, kv, gamma, cos, sin, index, k_cache, ckv_cache,
+                                            k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
+                                            k_rope_offset=None, c_kv_offset=None, v=v,
+                                            epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
+
+        # call npu api
+        npu_out = self.custom_op_exec(kv, gamma, cos, sin, index, k_cache, ckv_cache,
+                                      k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
+                                      k_rope_offset=None, c_kv_offset=None, v=v,
+                                      epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
+
+        k_cache_npu, ckv_cache_npu, k_rope_npu, c_kv_npu = npu_out
+        k_cache_cpu, ckv_cache_cpu, k_rope_cpu, c_kv_cpu = golden_out
+
+        # comparison
+        if input_dtype == torch.float16:
+            atol = 0.01
+            rtol = 0.01
+        elif input_dtype == torch.bfloat16:
+            atol = 0.04
+            rtol = 0.04
+        else:
+            atol = 1e-5
+            rtol = 1e-5
+
+        self.assertRtolEqual(k_cache_npu.cpu(), k_cache_cpu, prec=rtol)
+        self.assertRtolEqual(ckv_cache_npu.cpu(), ckv_cache_cpu, prec=rtol)
+
+        if output_mode:
+            self.assertEqual(k_rope_npu.shape, k_rope_cpu.shape)
+            self.assertEqual(c_kv_npu.shape, c_kv_cpu.shape)
+            self.assertEqual(k_rope_npu.dtype, k_rope_cpu.dtype)
+            self.assertEqual(c_kv_npu.dtype, c_kv_cpu.dtype)
+
+            try:
+                self.assertRtolEqual(k_rope_npu.cpu(), k_rope_cpu, prec=rtol)
+            except AssertionError:
+                max_diff = torch.max(torch.abs(k_rope_npu.cpu() - k_rope_cpu))
+                self.assertLessEqual(
+                    max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
+
+            try:
+                self.assertRtolEqual(c_kv_npu.cpu(), c_kv_cpu, prec=rtol)
+            except AssertionError:
+                max_diff = torch.max(torch.abs(c_kv_npu.cpu() - c_kv_cpu))
+                self.assertLessEqual(
+                    max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
+    
+    @unittest.skip("skip test_kv_rms_norm_rope_cache_v2 now")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_kv_rmsnorm_rope_cache_PA_BLK_BNSD(self, device="npu"):
+        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype = self.generate_inputs(
+            1, 64, 1, 576, 128, 0, "PA_BLK_BNSD", False, torch.bfloat16)
+        golden_out = self.supported_op_exec(1, kv, gamma, cos, sin, index, k_cache, ckv_cache,
+                                            k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
+                                            k_rope_offset=None, c_kv_offset=None, v=v,
+                                            epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
+
+        # call npu api
+        npu_out = self.custom_op_exec(kv, gamma, cos, sin, index, k_cache, ckv_cache,
+                                      k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
+                                      k_rope_offset=None, c_kv_offset=None, v=v,
+                                      epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
+
+        k_cache_npu, ckv_cache_npu, k_rope_npu, c_kv_npu = npu_out
+        k_cache_cpu, ckv_cache_cpu, k_rope_cpu, c_kv_cpu = golden_out
+
+        # comparison
+        if input_dtype == torch.float16:
+            atol = 0.01
+            rtol = 0.01
+        elif input_dtype == torch.bfloat16:
+            atol = 0.04
+            rtol = 0.04
+        else:
+            atol = 1e-5
+            rtol = 1e-5
+
+        self.assertRtolEqual(k_cache_npu.cpu(), k_cache_cpu, prec=rtol)
+        self.assertRtolEqual(ckv_cache_npu.cpu(), ckv_cache_cpu, prec=rtol)
+
+        if output_mode:
+            self.assertEqual(k_rope_npu.shape, k_rope_cpu.shape)
+            self.assertEqual(c_kv_npu.shape, c_kv_cpu.shape)
+            self.assertEqual(k_rope_npu.dtype, k_rope_cpu.dtype)
+            self.assertEqual(c_kv_npu.dtype, c_kv_cpu.dtype)
+
+            try:
+                self.assertRtolEqual(k_rope_npu.cpu(), k_rope_cpu, prec=rtol)
+            except AssertionError:
+                max_diff = torch.max(torch.abs(k_rope_npu.cpu() - k_rope_cpu))
+                self.assertLessEqual(
+                    max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
+
+            try:
+                self.assertRtolEqual(c_kv_npu.cpu(), c_kv_cpu, prec=rtol)
+            except AssertionError:
+                max_diff = torch.max(torch.abs(c_kv_npu.cpu() - c_kv_cpu))
+                self.assertLessEqual(
+                    max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
+        
+    @unittest.skip("skip test_kv_rms_norm_rope_cache_v2 now")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_kv_rmsnorm_rope_cache_PA_NZ(self, device="npu"):
+        kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, v, cache_mode, output_mode, input_dtype = self.generate_inputs(
+            1, 64, 1, 576, 128, 0, "PA_NZ", False, torch.bfloat16)
+        golden_out = self.supported_op_exec(1, kv, gamma, cos, sin, index, k_cache, ckv_cache,
+                                            k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
+                                            k_rope_offset=None, c_kv_offset=None, v=v,
+                                            epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
+
+        # call npu api
+        npu_out = self.custom_op_exec(kv, gamma, cos, sin, index, k_cache, ckv_cache,
+                                      k_rope_scale=k_rope_scale, c_kv_scale=c_kv_scale,
+                                      k_rope_offset=None, c_kv_offset=None, v=v,
+                                      epsilon=1e-05, cache_mode=cache_mode, is_output_kv=output_mode)
+
+        k_cache_npu, ckv_cache_npu, k_rope_npu, c_kv_npu = npu_out
+        k_cache_cpu, ckv_cache_cpu, k_rope_cpu, c_kv_cpu = golden_out
+
+        # comparison
+        if input_dtype == torch.float16:
+            atol = 0.01
+            rtol = 0.01
+        elif input_dtype == torch.bfloat16:
+            atol = 0.04
+            rtol = 0.04
+        else:
+            atol = 1e-5
+            rtol = 1e-5
+
+        self.assertRtolEqual(k_cache_npu.cpu(), k_cache_cpu, prec=rtol)
+        self.assertRtolEqual(ckv_cache_npu.cpu(), ckv_cache_cpu, prec=rtol)
+
+        if output_mode:
+            self.assertEqual(k_rope_npu.shape, k_rope_cpu.shape)
+            self.assertEqual(c_kv_npu.shape, c_kv_cpu.shape)
+            self.assertEqual(k_rope_npu.dtype, k_rope_cpu.dtype)
+            self.assertEqual(c_kv_npu.dtype, c_kv_cpu.dtype)
+
+            try:
+                self.assertRtolEqual(k_rope_npu.cpu(), k_rope_cpu, prec=rtol)
+            except AssertionError:
+                max_diff = torch.max(torch.abs(k_rope_npu.cpu() - k_rope_cpu))
+                self.assertLessEqual(
+                    max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
+
+            try:
+                self.assertRtolEqual(c_kv_npu.cpu(), c_kv_cpu, prec=rtol)
+            except AssertionError:
+                max_diff = torch.max(torch.abs(c_kv_npu.cpu() - c_kv_cpu))
+                self.assertLessEqual(
+                    max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
 
 if __name__ == "__main__":
     run_tests()

@@ -2360,10 +2360,17 @@ def npu_kronecker_quant_meta(x, kronecker_p1, kronecker_p2, clip_ratio=1.0, dst_
 
 @impl(m, "npu_kv_rmsnorm_rope_cache")
 def npu_kv_rmsnorm_rope_cache_meta(kv, gamma, cos, sin, index, k_cache, ckv_cache, *, k_rope_scale=None,
-                                   c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, epsilon=1e-5,
+                                   c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, v=None, epsilon=1e-5,
                                    cache_mode='Norm', is_output_kv=False):
     if kv.dim() != 4:
         raise RuntimeError("4D tensor expected for input kv" + ops_error(ErrCode.PARAM))
+    if v is not None and v.dim() > 0:
+        if v.dtype != kv.dtype:
+            raise RuntimeError("v MUST have same data type as kv!" + ops_error(ErrCode.PARAM))
+        if v.dim() != 4:
+            raise RuntimeError("4D tensor expected for input v" + ops_error(ErrCode.PARAM))
+        if v.size(0) != kv.size(0) or v.size(1) != kv.size(1) or v.size(2) != kv.size(2):
+            raise RuntimeError("v MUST have same token shape as kv!" + ops_error(ErrCode.PARAM))
     if gamma.dim() != 1:
         raise RuntimeError("1D tensor expected for input gamma" + ops_error(ErrCode.PARAM))
     if cos.dim() != 4:
@@ -2373,8 +2380,12 @@ def npu_kv_rmsnorm_rope_cache_meta(kv, gamma, cos, sin, index, k_cache, ckv_cach
     for i in range(kv.dim() - 1):
         k_rope_size.append(kv.size(i))
         c_kv_size.append(kv.size(i))
-    k_rope_size.append(cos.size(3))
-    c_kv_size.append(gamma.size(0))
+    if v is None:
+        k_rope_size.append(cos.size(3))
+        c_kv_size.append(gamma.size(0))
+    else:
+        k_rope_size.append(kv.size(3))
+        c_kv_size.append(v.size(3))
     return (torch.empty_like(k_cache), torch.empty_like(ckv_cache),
             torch.empty(k_rope_size, dtype=kv.dtype, device=kv.device),
             torch.empty(c_kv_size, dtype=kv.dtype, device=kv.device))
@@ -2382,10 +2393,17 @@ def npu_kv_rmsnorm_rope_cache_meta(kv, gamma, cos, sin, index, k_cache, ckv_cach
 
 @impl(m, "npu_kv_rmsnorm_rope_cache_v2")
 def npu_kv_rmsnorm_rope_cache_v2_meta(kv, gamma, cos, sin, index, k_cache, ckv_cache, *, k_rope_scale=None,
-                                           c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, epsilon=1e-5,
+                                           c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, v=None, epsilon=1e-5,
                                            cache_mode='Norm', is_output_kv=False):
     if kv.dim() != 4:
         raise RuntimeError("4D tensor expected for input kv" + ops_error(ErrCode.PARAM))
+    if v is not None and v.dim() > 0:
+        if v.dtype != kv.dtype:
+            raise RuntimeError("v MUST have same data type as kv!" + ops_error(ErrCode.PARAM))
+        if v.dim() != 4:
+            raise RuntimeError("4D tensor expected for input v" + ops_error(ErrCode.PARAM))
+        if v.size(0) != kv.size(0) or v.size(1) != kv.size(1) or v.size(2) != kv.size(2):
+            raise RuntimeError("v MUST have same token shape [B,N,S] as kv!" + ops_error(ErrCode.PARAM))
     if gamma.dim() != 1:
         raise RuntimeError("1D tensor expected for input gamma" + ops_error(ErrCode.PARAM))
     if cos.dim() != 4:
@@ -2395,8 +2413,12 @@ def npu_kv_rmsnorm_rope_cache_v2_meta(kv, gamma, cos, sin, index, k_cache, ckv_c
     for i in range(kv.dim() - 1):
         k_rope_size.append(kv.size(i))
         c_kv_size.append(kv.size(i))
-    k_rope_size.append(cos.size(3))
-    c_kv_size.append(gamma.size(0))
+    if v is None:
+        k_rope_size.append(cos.size(3))
+        c_kv_size.append(gamma.size(0))
+    else:
+        k_rope_size.append(kv.size(3))
+        c_kv_size.append(v.size(3))
     return (torch.empty(k_rope_size, dtype=kv.dtype, device=kv.device),
             torch.empty(c_kv_size, dtype=kv.dtype, device=kv.device))
 
@@ -2404,10 +2426,17 @@ def npu_kv_rmsnorm_rope_cache_v2_meta(kv, gamma, cos, sin, index, k_cache, ckv_c
 @impl(m, "npu_kv_rmsnorm_rope_cache_v2_functional")
 def npu_kv_rmsnorm_rope_cache_v2_functional_meta(kv, gamma, cos, sin, index, k_cache, ckv_cache, *,
                                                       k_rope_scale=None, c_kv_scale=None, k_rope_offset=None,
-                                                      c_kv_offset=None, epsilon=1e-5, cache_mode='Norm',
+                                                      c_kv_offset=None, v=None, epsilon=1e-5, cache_mode='Norm',
                                                       is_output_kv=False):
     if kv.dim() != 4:
         raise RuntimeError("4D tensor expected for input kv" + ops_error(ErrCode.PARAM))
+    if v is not None and v.dim() > 0:
+        if v.dtype != kv.dtype:
+            raise RuntimeError("v MUST have same data type as kv!" + ops_error(ErrCode.PARAM))
+        if v.dim() != 4:
+            raise RuntimeError("4D tensor expected for input v" + ops_error(ErrCode.PARAM))
+        if v.size(0) != kv.size(0) or v.size(1) != kv.size(1) or v.size(2) != kv.size(2):
+            raise RuntimeError("v MUST have same token shape as kv!" + ops_error(ErrCode.PARAM))
     if gamma.dim() != 1:
         raise RuntimeError("1D tensor expected for input gamma" + ops_error(ErrCode.PARAM))
     if cos.dim() != 4:
@@ -2417,8 +2446,12 @@ def npu_kv_rmsnorm_rope_cache_v2_functional_meta(kv, gamma, cos, sin, index, k_c
     for i in range(kv.dim() - 1):
         k_rope_size.append(kv.size(i))
         c_kv_size.append(kv.size(i))
-    k_rope_size.append(cos.size(3))
-    c_kv_size.append(gamma.size(0))
+    if v is None:
+        k_rope_size.append(cos.size(3))
+        c_kv_size.append(gamma.size(0))
+    else:
+        k_rope_size.append(kv.size(3))
+        c_kv_size.append(v.size(3))
     return (torch.empty(k_rope_size, dtype=kv.dtype, device=kv.device),
             torch.empty(c_kv_size, dtype=kv.dtype, device=kv.device),
             torch.empty_like(k_cache), torch.empty_like(ckv_cache))
