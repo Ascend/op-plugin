@@ -195,10 +195,11 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     -   server\_num：表示服务器的节点数，取值只支持2、4、8。
         -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：仅该场景的shape使用了该变量。
 
-    -   local\_expert\_num：表示本卡专家数量，取值范围为0 ＜ localExpertNum ≤128。
+    -   local\_expert\_num：表示本卡专家数量。
         -   对于共享专家卡，local\_expert\_num=1。
         -   对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num)，当local\_expert\_num\>1时，不支持TP域通信。
-
+        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：应满足0 < local\_expert\_num * ep\_world\_size ≤ 2048。
+        
 -   HCCL_BUFFSIZE:
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
         - comm\_alg配置为"": 仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
