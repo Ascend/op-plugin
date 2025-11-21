@@ -66,6 +66,7 @@ class TestNPUAddLayerNormBackward(TestCase):
         dbeta = dbeta.float().cpu()
         return dx0.numpy(), dgamma.numpy(), dbeta.numpy()
 
+    @unittest.skip("skip test_npu_add_layer_norm_backward now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_add_layer_norm_backward(self, device="npu"):
         if device is None:

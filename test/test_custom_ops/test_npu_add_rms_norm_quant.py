@@ -9,7 +9,37 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 
 
+QUANT_TYPE_MIN_MAP = {1: -128, 291: -57345, 292: -449, 290: -32769}
+QUANT_TYPE_MAX_MAP = {1: 127, 291: 57344, 292: 448, 290: 32768}
+
+
 class TestNPUAddRmsNormQuant(TestCase):
+    def numpy_float8_e4m3fn(self):
+        try:
+            from ml_dtypes import float8_e4m3fn
+            return float8_e4m3fn
+        except ModuleNotFoundError:
+            raise RuntimeError("ml_dtypes is needed to support float8_e4m3fn dtype!!! "
+                               "Please install with `pip3 install ml-dtypes`")
+
+    def numpy_hifloat8(self):
+        try:
+            from en_dtypes import hifloat8
+            return hifloat8
+        except ModuleNotFoundError:
+            raise RuntimeError("en_dtypes is needed to support hifloat8 dtype!!! "
+                               "Please install with `pip3 install en-dtypes`")
+        except ImportError:
+            raise RuntimeError("Please upgrade en_dtypes to v0.0.3 at least to support hifloat8 dtype!!! "
+                               "Command is `pip3 install --upgrade en-dtypes`")
+
+    def numpy_float8_e5m2(self):
+        try:
+            from ml_dtypes import float8_e5m2
+            return float8_e5m2
+        except ModuleNotFoundError:
+            raise RuntimeError("ml_dtypes is needed to support float8_e5m2 dtype!!! "
+                               "Please install with `pip3 install ml-dtypes`")
 
     def compare(self, a, b, benchmark):
         diff_abs = torch.abs(a - b)
@@ -43,7 +73,8 @@ class TestNPUAddRmsNormQuant(TestCase):
 
     # pylint:disable = huawei-too-many-arguments
     def npu_add_rms_norm_quant_golden(self, input_x1, input_x2, input_gamma, input_scales1,
-                                      input_zero_points1, input_scales2=None, input_zero_points2=None, epsilon=1e-06):
+                                      input_zero_points1, input_scales2=None, input_zero_points2=None,
+                                      dst_type=1, epsilon=1e-06):
         torchType32 = torch.float32
         len_shape_x = len(input_x1.shape)
         len_shape_gamma = len(input_gamma.shape)
@@ -132,15 +163,26 @@ class TestNPUAddRmsNormQuant(TestCase):
             if input_scales2 is not None:
                 tensor_scales2 = 1.0 / tensor_scales2
 
-        y = y_array.type(torch.float32)
-        y1 = torch.quantize_per_channel(y, tensor_scales1, tensor_zero_points1, axis, torch.qint8)
-        y1_np = y1.int_repr().detach().clone().cpu().numpy()
+        dst_type_map = {1: np.int8, 291: self.numpy_float8_e5m2(),
+                        292: self.numpy_float8_e4m3fn(), 290: self.numpy_hifloat8()}
+        y = y_array.to(torch.float32)
+        y1 = (y / tensor_scales1) + tensor_zero_points1
+        y1_np = y1.detach().clone().cpu().numpy()
+        y1_np = np.clip(y1_np, QUANT_TYPE_MIN_MAP[dst_type], QUANT_TYPE_MAX_MAP[dst_type]).astype(
+            dst_type_map[dst_type], copy=False)
+        y2 = (y / tensor_scales2) + tensor_zero_points2
+        y2_np = y2.detach().clone().cpu().numpy()
+        y2_np = np.clip(y2_np, QUANT_TYPE_MIN_MAP[dst_type], QUANT_TYPE_MAX_MAP[dst_type]).astype(
+            dst_type_map[dst_type], copy=False)
 
-        y2 = torch.quantize_per_channel(y, tensor_scales2, tensor_zero_points2, axis, torch.qint8)
-        y2_np = y2.int_repr().detach().clone().cpu().numpy()
+        if dst_type == 1:
+            return torch.tensor(y1_np.reshape(input_x1.shape)), torch.tensor(y2_np.reshape(input_x1.shape)), \
+                   add_x.type(input_x_dtype).reshape(input_x1.shape)
+        else:
+            return torch.tensor(y1_np.reshape(input_x1.shape).astype("float32")), \
+                   torch.tensor(y2_np.reshape(input_x1.shape).astype("float32")), \
+                   add_x.type(input_x_dtype).reshape(input_x1.shape)
 
-        return torch.tensor(y1_np).type(torch.int8), torch.tensor(y2_np).type(torch.int8), \
-            add_x.type(input_x_dtype).reshape(input_x1.shape)
 
     # pylint:disable = huawei-too-many-arguments
     def npu_add_rms_norm_quant_v2_golden(self, input_x1, input_x2, input_gamma, input_scales1,
@@ -364,6 +406,36 @@ class TestNPUAddRmsNormQuant(TestCase):
             x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
             x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
             self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_add_rms_norm_quant_float8_e5m2(self):
+        x_shape = [2, 16]
+        x1 = torch.randn(x_shape, dtype=torch.float32)
+        x2 = torch.randn(x_shape, dtype=torch.float32)
+        gamma = torch.randn([x_shape[1]], dtype=torch.float32)
+        scales1 = torch.randn([x_shape[1]], dtype=torch.float32)
+        zero_points1 = torch.randn([x_shape[1]], dtype=torch.float32)
+
+        x1_npu = x1.npu()
+        x2_npu = x2.npu()
+        gamma_npu = gamma.npu()
+        scales1_npu = scales1.npu()
+        zero_points1_npu = zero_points1.npu()
+
+        dst_type = 291
+
+        y1_v1, _, x_out = torch_npu.npu_add_rms_norm_quant(x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu, dst_type=dst_type)
+        y1_v1_cpu, _, x_out_cpu = self.npu_add_rms_norm_quant_golden(x1, x2, gamma, scales1, zero_points1, dst_type=dst_type)
+
+        benchmark = math.pow(2, -7)
+        benchmark_float32 = 1e-8
+        y1_v1_cpu_data = y1_v1_cpu.reshape(1, y1_v1_cpu.numel())[0].cpu()
+        y1_v1_npu_data = y1_v1.to(torch.float32).reshape(1, y1_v1.numel())[0].cpu()
+        self.assertTrue(self.compare(y1_v1_cpu_data, y1_v1_npu_data, benchmark_float32))
+
+        x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
+        x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
+        self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
 
 
 if __name__ == "__main__":

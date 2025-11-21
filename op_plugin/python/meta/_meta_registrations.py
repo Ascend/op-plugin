@@ -2830,15 +2830,34 @@ def npu_swiglu_quant_meta(x, smooth_scales=None, offsets=None, group_index=None,
 
 @impl(m, "npu_dequant_swiglu_quant")
 def npu_dequant_swiglu_quant_meta(x, weight_scale=None, activation_scale=None, bias=None, quant_scale=None,
-                                  quant_offset=None, group_index=None, activate_left=False, quant_mode=0, 
-                                  swiglu_mode=0, clamp_limit=7.0, glu_alpha=1.702, glu_bias=1.0):
+                                  quant_offset=None, group_index=None, activate_left=False, quant_mode=0,
+                                  dst_type=None, round_mode=None, activate_dim=None, swiglu_mode=0, clamp_limit=7.0,
+                                  glu_alpha=1.702, glu_bias=1.0):
     y_size = []
     scale_size = []
+    dst_type = dst_type if dst_type is not None else 1
+    round_mode = round_mode if round_mode is not None else 0
+    activate_dim = activate_dim if activate_dim is not None else -1
+    select_dim = activate_dim if activate_dim >= 0 else activate_dim + x.dim()
+    for i in range(x.dim()):
+        if i == select_dim:
+            y_size.append(x.size(i) // 2)
+        else:
+            y_size.append(x.size(i))
+
     for i in range(x.dim() - 1):
-        y_size.append(x.size(i))
-        scale_size.append(x.size(i))
-    y_size.append(math.floor(x.size(x.dim() - 1) / 2))
-    return (torch.empty(y_size, dtype=torch.int8, device=x.device),
+        if i == select_dim:
+            scale_size.append(x.size(i) // 2)
+        else:
+            scale_size.append(x.size(i))
+
+    dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+
+    # fp4
+    if dst_torch_dtype == torch.uint8:
+        y_size[-1] = y_size[-1] // 2
+
+    return (torch.empty(y_size, dtype=dst_torch_dtype, device=x.device),
             torch.empty(scale_size, dtype=torch.float32, device=x.device))
 
 
@@ -2971,7 +2990,7 @@ def npu_attention_worker_combine(schedule_context, expert_scales, layer_id, hidd
 
 
 @impl(m, "npu_add_rms_norm_quant")
-def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, beta=None, scales2=None, zero_points2=None, axis=-1, epsilon=1e-06, div_mode=True):
+def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, beta=None, scales2=None, zero_points2=None, axis=-1, epsilon=1e-06, div_mode=True, dst_type=None):
     torch._check(
         scales2 is None,
         lambda: f"scales2 should be None, but got {scales2}.",
@@ -2988,8 +3007,10 @@ def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, beta=None,
         div_mode is True,
         lambda: f"div_mode should be True, but got {div_mode}.",
         )
-    return (torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
-            torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
+    dst_type = dst_type if dst_type is not None else 1
+    dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    return (torch.empty(x1.size(), dtype=dst_torch_dtype, device=x1.device),
+            torch.empty(x1.size(), dtype=dst_torch_dtype, device=x1.device),
             torch.empty(x1.size(), dtype=x1.dtype, device=x1.device))
 
 
