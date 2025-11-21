@@ -5513,6 +5513,11 @@ custom:
     op_api: all_version
     tags: nondeterministic_seeded
 
+  - func: npu_quant_lightning_indexer(Tensor query, Tensor key, Tensor weights, Tensor query_dequant_scale, Tensor key_dequant_scale, int query_quant_mode, int key_quant_mode, *, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_key=None, Tensor? block_table=None, str layout_query="BSND", str layout_key="BSND", int sparse_count=2048, int sparse_mode=3, int pre_tokens=9223372036854775807, int next_tokens=9223372036854775807) -> Tensor
+    op_api: all_version
+    exposed: all_version
+    internal_format_opapi: all_version
+
   - func: _npu_silent_check(Tensor(a!) input_grad, Tensor val, Tensor(b!) pre_val, Tensor(c!) min_val, Tensor(d!) max_val, Tensor val_counter, int c_min_steps, float c_thresh_l1, float c_coeff_l1, float c_thresh_l2, float c_coeff_l2) -> Tensor
     acl_op: all_version
 
@@ -6055,11 +6060,21 @@ custom:
     acl_op: all_version
     exposed: all_version
 
+  - func: npu_kv_quant_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, int key_quant_mode, int value_quant_mode, *, Tensor? key_dequant_scale=None, Tensor? value_dequant_scale=None, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, int sparse_block_size=1, str layout_query="BSND", str layout_kv="BSND", int sparse_mode=3, int pre_tokens=9223372036854775807, int next_tokens=9223372036854775807, int attention_mode=0, int quant_scale_repo_mode=1, int tile_size=128, int rope_head_dim=64) -> Tensor
+    op_api: all_version
+    exposed: all_version
+    internal_format_opapi: all_version
+
   - func: npu_layer_norm_eval(Tensor input, int[] normalized_shape, Tensor? weight=None, Tensor? bias=None, float eps=1e-05) -> Tensor
     acl_op: all_version
 
   - func: npu_layernorm_grad(Tensor grad_out, Tensor input, int[] normalized_shape, Tensor mean, Tensor rstd, Tensor? weight, Tensor? bias) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
+
+  - func: npu_lightning_indexer(Tensor query, Tensor key, Tensor weights, *, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_key=None, Tensor? block_table=None, str layout_query="BSND", str layout_key="BSND", int sparse_count=2048, int sparse_mode=3, int pre_tokens=9223372036854775807, int next_tokens=9223372036854775807, bool return_value=False) -> (Tensor, Tensor)
+    op_api: all_version
+    exposed: all_version
+    internal_format_opapi: all_version
 
   - func: npu_linear(Tensor input, Tensor weight, Tensor? bias=None) -> Tensor
     acl_op: all_version
@@ -6967,6 +6982,11 @@ custom:
       new_params:
         restore_shape_value: 'restore_shape.value_or(at::IntArrayRef{1})'
       exec: aclnnMoeTokenUnpermute, permuted_tokens, sorted_indices, probs, padded_mode, restore_shape_value, unpermuted_tokens
+
+  - func: npu_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, *, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, Tensor? query_rope=None, Tensor? key_rope=None, int sparse_block_size=1, str layout_query="BSND", str layout_kv="BSND", int sparse_mode=3, int pre_tokens=9223372036854775807, int next_tokens=9223372036854775807, int attention_mode=0, bool return_softmax_lse=False) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+    exposed: all_version
+    internal_format_opapi: all_version
 
   - func: npu_moe_token_unpermute_grad(Tensor permuted_tokens, Tensor grad_unpermuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> (Tensor, Tensor)
     op_api: [v2.1, newest]

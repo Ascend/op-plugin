@@ -1199,6 +1199,231 @@ tensor([[0.5010, 0.4709, 0.4841,  ..., 0.4321, 0.4448, 0.4834],
 
 
 _add_torch_npu_docstr(
+    "npu_lightning_indexer",
+    """
+功能实现描述
+LightningIndexer基于一系列操作得到每一个 token 对应的 Top-k 个位置。
+
+函数原型
+custom.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3) -> Tensor
+
+参数说明
+
+key（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16和float16，layout_key为PA_BSND时shape为[block_count, block_size, N2, D]，其中block_count为PageAttention时block总数，block_size为一个block的token数。
+
+weights（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16和float16，支持输入shape[B,S1,N1]、[T,N1]。
+
+*：代表其之前的参数是位置相关的，必须按照顺序输入，属于必选参数；其之后的参数是键值对赋值，与位置无关，属于可选参数（不传入会使用默认值）。
+
+actual_seq_lengths_query（Tensor）：可选参数，表示不同Batch中query的有效token数，数据类型支持int32。如果不指定seqlen可传入None，表示和query的shape的S长度相同。
+
+该入参中每个Batch的有效token数不超过query中的维度S大小。支持长度为B的一维tensor。当query的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须>=前一个元素的值。不能出现负值。
+actual_seq_lengths_key（Tensor）：可选参数，表示不同Batch中key的有效token数，数据类型支持int32。如果不指定seqlen可传入None，表示和key的shape的S长度相同。支持长度为B的一维tensor。
+
+block_table（Tensor）：可选参数，表示PageAttention中KV存储使用的block映射表，数据格式支持ND，数据类型支持int32。
+
+PageAttention场景下，block_table必须为二维，第一维长度需要等于B，第二维长度不能小于maxBlockNumPerSeq(maxBlockNumPerSeq为每个batch中最大actual_seq_lengths_key对应的block数量)
+layout_query（str）：可选参数，用于标识输入query的数据排布格式，当前支持BSND、TND，默认值"BSND"。
+
+layout_key（str）：可选参数，用于标识输入key的数据排布格式，当前支持PA_BSND、BSND、TND，默认值"BSND"，在非PageAttention场景下，该参数值应与layout_query值保持一致。
+
+sparse_count（int）：可选参数，代表topK阶段需要保留的block数量，支持1-2048，数据类型支持int32。
+
+sparse_mode（int）：可选参数，表示sparse的模式，支持0/3，数据类型支持int32。
+
+sparse_mode为0时，代表defaultMask模式。
+
+sparse_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景。
+
+out（Tensor）：公式中的输出，数据类型支持int32。数据格式支持ND。
+
+说明：
+query、key、weights参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
+S1表示query shape中的S，S2表示key shape中的S，N1表示query shape中的N，N2表示key shape中的N。
+query（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16和float16。
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_quant_lightning_indexer",
+    """
+功能实现描述
+QuantLightningIndexer在LightningIndexer的基础上支持了Per-Token-Head量化输入。
+
+接口原型
+custom.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, query_quant_mode=0, key_quant_mode=0, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3) -> Tensor
+
+参数说明
+
+key（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持int8，layout_key为PA_BSND时shape为[block_count, block_size, N2, D]，其中block_count为PageAttention时block总数，block_size为一个block的token数。
+
+weights（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持float16，支持输入shape[B,S1,N1]、[T,N1]。
+
+query_dequant_scale（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持float16，支持输入shape[B,S1,N1]、[T,N1]。
+
+key_dequant_scale（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持float16，layout_key为PA_BSND时shape为[block_count, block_size, N2]，其中block_count为PageAttention时block总数，block_size为一个block的token数。
+
+*：代表其之前的参数是位置相关的，必须按照顺序输入，属于必选参数；其之后的参数是键值对赋值，与位置无关，属于可选参数（不传入会使用默认值）。
+
+actual_seq_lengths_query（Tensor）：可选参数，表示不同Batch中query的有效token数，数据类型支持int32。如果不指定seqlen可传入None，表示和query的shape的S长度相同。
+
+该入参中每个Batch的有效token数不超过query中的维度S大小。支持长度为B的一维tensor。当query的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须>=前一个元素的值。不能出现负值。
+actual_seq_lengths_key（Tensor）：可选参数，表示不同Batch中key的有效token数，数据类型支持int32。如果不指定seqlen可传入None，表示和key的shape的S长度相同。支持长度为B的一维tensor。
+
+block_table（Tensor）：可选参数，表示PageAttention中KV存储使用的block映射表，数据格式支持ND，数据类型支持int32。
+
+PageAttention场景下，block_table必须为二维，第一维长度需要等于B，第二维长度不能小于maxBlockNumPerSeq(maxBlockNumPerSeq为每个batch中最大actual_seq_lengths_key对应的block数量)
+query_quant_mode（int）：可选参数，用于标识输入query的量化模式，当前支持Per-Token-Head量化模式，默认值0。
+
+key_quant_mode（int）：可选参数，用于标识输入key的量化模式，当前支持Per-Token-Head量化模式，默认值0。
+
+layout_query（str）：可选参数，用于标识输入query的数据排布格式，当前支持BSND、TND，默认值"BSND"。
+
+layout_key（str）：可选参数，用于标识输入key的数据排布格式，当前支持PA_BSND、BSND、TND，默认值"BSND"。在非PageAttention场景下，layout_key应与layout_query保持一致。
+
+sparse_count（int）：可选参数，代表topK阶段需要保留的block数量，支持1-2048，数据类型支持int32。
+
+sparse_mode（int）：可选参数，表示sparse的模式，支持0/3，数据类型支持int32。
+
+sparse_mode为0时，代表defaultMask模式。
+
+sparse_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景。
+
+out（Tensor）：公式中的输出，数据类型支持int32。数据格式支持ND。
+
+说明：
+query、key、weights、query_dequant_scale、key_dequant_scale参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
+S1表示query shape中的S，S2表示key shape中的S，N1表示query shape中的N，N2表示key shape中的N。
+query（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持int8。
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_sparse_flash_attention",
+    """
+功能实现描述
+随着大模型上下文长度的增加，Sparse Attention的重要性与日俱增，这一技术通过“只计算关键部分”大幅减少计算量，然而会引入大量的离散访存，造成数据搬运时间增加，进而影响整体性能。
+
+接口原型
+custom.npu_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, int sparse_block_size, *, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, Tensor? query_rope=None, Tensor? key_rope=None, str layout_query='BSND', str layout_kv='BSND', int sparse_mode=3) -> Tensor    
+
+参数说明
+key（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16和float16，layout_kv为PA_BSND时shape为[block_num, block_size, KV_N, D]，其中block_num为PageAttention时block总数，block_size为一个block的token数。
+
+value（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16和float16。
+
+sparse_indices（Tensor）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持ND,数据类型支持int32。当query的layout为BSND时，shape需要传入[B, Q_S, KV_N, sparse_size]，当query的layout为TND时，shape需要传入[Q_T, KV_N, sparse_size]，其中sparse_size为一次离散选取的token数，需要保证每行有效值均在前半部分，无效值均在后半部分。
+
+scale_value（double）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持float。
+
+sparse_block_size（int）：必选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持int64。
+
+*：代表其之前的参数是位置相关的，必须按照顺序输入，属于必选参数；其之后的参数是键值对赋值，与位置无关，属于可选参数（不传入会使用默认值）。
+
+block_table（Tensor）：可选参数，表示PageAttention中kvCache存储使用的block映射表。数据格式支持ND，数据类型支持int32，shape为2维，其中第一维长度为B，第二维长度不小于所有batch中最大的s2对应的block数量，即s2_max / block_size向上取整。
+
+actual_seq_lengths_query（Tensor）：可选参数，表示不同Batch中query的有效token数，数据类型支持int32。如果不指定seqlen可传入None，表示和query的shape的S长度相同。
+
+该入参中每个Batch的有效token数不超过query中的维度S大小。支持长度为B的一维tensor。当query的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须>=前一个元素的值。不能出现负值。
+
+actual_seq_lengths_kv（Tensor）：可选参数，表示不同Batch中key和value的有效token数，数据类型支持int32。如果不指定None，表示和key的shape的S长度相同。
+
+该入参中每个Batch的有效token数不超过key/value中的维度S大小且不小于0。支持长度为B的一维tensor。
+
+query_rope（Tensor）：可选参数，表示MLA结构中的query的rope信息，不支持非连续，数据格式支持ND,数据类型支持bfloat16和float16。
+
+key_rope（Tensor）：可选参数，表示MLA结构中的key的rope信息，不支持非连续，数据格式支持ND,数据类型支持bfloat16和float16。
+
+layout_query（str）：可选参数，用于标识输入query的数据排布格式，用户不特意指定时可传入默认值"BSND"，支持传入BSND和TND。
+
+说明： 1、query数据排布格式支持从多种维度解读，其中B（Batch）表示输入样本批量大小、S（Seq-Length）表示输入样本序列长度、H（Head-Size）表示hidden层的大小、N（Head-Num）表示多头数、D（Head-Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
+
+layout_kv（str）：可选参数，用于标识输入key的数据排布格式，用户不特意指定时可传入默认值"BSND"，支持传入TND、BSND和PA_BSND，其中PA_BSND在使能PageAttention时使用。
+
+sparse_mode（int）：可选参数，表示sparse的模式。数据类型支持int64。
+
+sparse_mode为0时，代表全部计算。
+sparse_mode为3时，代表rightDownCausal模式的mask，对应以右下顶点往左上为划分线的下三角场景。
+
+说明：
+query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
+Q_S和S1表示query shape中的S，KV_S和S2表示key shape中的S，Q_N表示num_query_heads，KV_N表示num_key_value_heads。
+query（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16和float16。
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "npu_kv_quant_sparse_flash_attention",
+    """
+功能实现描述
+QuantSparseFlashAttentionAnti在SparseFlashAttention的基础上支持了Per-Token-Head-Tile-128量化输入。
+
+接口原型
+custom.npu_kv_quant_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, int sparse_block_size, int key_quant_mode, int value_quant_mode, *, Tensor? key_dequant_scale=None, Tensor? value_dequant_scale=None, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, str layout_query='BSND', str layout_kv='BSND', int sparse_mode=3, int attention_mode=0, int quant_scale_repo_mode=0, int tile_size=0, int rope_head_dim=0) -> Tensor
+
+query（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16，query相同dtype的q_nope和q_rope按D维度拼接得到。
+
+key（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持int8，int8的k_nope、query相同dtype的k_rope和float32的量化参数按D维度拼接得到，layout_kv为PA_BSND时shape为[block_num, block_size, KV_N, D]，其中block_num为PageAttention时block总数，block_size为一个block的token数。
+
+value（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持int8。
+
+sparse_indices（Tensor）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持ND,数据类型支持int32，shape需要传入[B, Q_S, KV_N, sparse_size]，其中sparse_size为一次离散选取的token数，需要保证每行有效值均在前半部分，无效值均在后半部分。
+
+scale_value（double）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持float。
+
+sparse_block_size（int）：必选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持int64。
+
+key_quant_mode（int）：必选参数，代表key的量化模式，数据类型支持int64，支持传入2，代表per_tile量化模式。
+
+value_quant_mode（int）：必选参数，代表value的量化模式，数据类型支持int64，支持传入2，代表per_tile量化模式。
+
+*：代表其之前的参数是位置相关的，必须按照顺序输入，属于必选参数；其之后的参数是键值对赋值，与位置无关，属于可选参数（不传入会使用默认值）。
+
+key_dequant_scale（Tensor）：可选参数，预留参数，当前不支持。
+
+value_dequant_scale（Tensor）：可选参数，预留参数，当前不支持。
+
+block_table（Tensor）：可选参数，表示PageAttention中kvCache存储使用的block映射表。数据格式支持ND，数据类型支持int32，shape为2维，其中第一维长度为B，第二维长度不小于所有batch中最大的s2对应的block数量，即s2_max / block_size向上取整。
+
+actual_seq_lengths_query（Tensor）：可选参数，表示不同Batch中query的有效token数，数据类型支持int32。如果不指定seqlen可传入None，表示和query的shape的S长度相同。
+
+该入参中每个Batch的有效token数不超过query中的维度S大小。支持长度为B的一维tensor。当query的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须>=前一个元素的值。不能出现负值。
+
+actual_seq_lengths_kv（Tensor）：可选参数，表示不同Batch中key和value的有效token数，数据类型支持int32。如果不指定None，表示和key的shape的S长度相同。
+
+该入参中每个Batch的有效token数不超过key/value中的维度S大小且不小于0。支持长度为B的一维tensor。
+
+layout_query（str）：可选参数，用于标识输入query的数据排布格式，用户不特意指定时可传入默认值"BSND"，支持传入BSND和TND。
+
+说明： 1、query数据排布格式支持从多种维度解读，其中B（Batch）表示输入样本批量大小、S（Seq-Length）表示输入样本序列长度、H（Head-Size）表示hidden层的大小、N（Head-Num）表示多头数、D（Head-Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
+
+layout_kv（str）：可选参数，用于标识输入key的数据排布格式，用户不特意指定时可传入默认值"BSND"，支持传入PA_BSND，PA_BSND在使能PageAttention时使用。
+
+sparse_mode（int）：可选参数，表示sparse的模式。数据类型支持int64。
+
+sparse_mode为0时，代表全部计算。
+sparse_mode为3时，代表rightDownCausal模式的mask，对应以右下顶点往左上为划分线的下三角场景。
+attention_mode（int）：可选参数，表示attention的模式。数据类型支持int64，支持传入2，表示MLA-absorb模式，即QK的D包含rope和nope两部分，且KV是同一份，默认值为0。
+
+quant_scale_repo_mode（int）：可选参数，表示量化参数的存放模式。数据类型支持int64，支持传入1，表示combine模式，即量化参数和数据混合存放，默认值为0。
+
+tile_size（int）：可选参数，表示per_tile时每个参数对应的数据块大小，仅在per_tile时有效。数据类型支持int64，默认值为0。
+
+rope_head_dim（int）：可选参数，表示MLA架构下的rope head dim大小，仅在attention_mode为2时有效。数据类型支持int64，默认值为0。
+
+out（Tensor）：公式中的输出。数据格式支持ND，数据类型支持bfloat16。
+
+说明：
+query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
+Q_S和S1表示query shape中的S，KV_S和S2表示key shape中的S，Q_N表示num_query_heads，KV_N表示num_key_value_heads。
+
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_fusion_attention",
     """
 功能描述实现
