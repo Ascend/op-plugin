@@ -1254,6 +1254,18 @@ class TestNpuBmmV2(TestCase):
             self.assertEqual(result.shape, torch.matmul(npu_input1, npu_input2).shape)
 
 
+class TestNpuWeightQuantBatchMatmul2(TestCase):
+    def test_npu_wqbmmV2(self):
+        with FakeTensorMode():
+            x = torch.randint(-3, 3, (2, 64), dtype=torch.float16).npu()
+            weight = torch.randint(-3, 3, (64, 128), dtype=torch.int8).npu()
+            antiquant_scale = torch.randint(-3, 3, (1, 128), dtype=torch.float16).npu()
+            expect_ret = torch.randint(-1, 1, (2, 128), dtype=torch.float16).npu()
+            res = torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, weight_dtype=torch_npu.hifloat8)
+            self.assertTrue(expect_ret.shape == res.shape)
+            self.assertTrue(expect_ret.dtype == res.dtype)
+
+
 class TestNpuDropout(TestCase):
 
     def test_npu_dropout(self):

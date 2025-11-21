@@ -47,6 +47,20 @@ std::string get_reduction_str(int64_t reduction)
     return reductionStr;
 }
 
+std::string get_vector_str(const std::vector<int64_t> &vec)
+{
+    std::string shape_str = "[";
+    size_t vec_num = vec.size();
+    for (size_t i = 0; i < vec_num; i++) {
+        shape_str += std::to_string(vec[i]);
+        if (i != vec_num - 1) {
+            shape_str += ", ";
+        }
+    }
+    shape_str += "]";
+    return shape_str;
+}
+
 int64_t get_rotary_mode(c10::string_view mode)
 {
     if (mode == "half") {
