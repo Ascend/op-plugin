@@ -6475,6 +6475,13 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_scatter_pa_cache.value(Tensor key, Tensor slot_mapping, *, Tensor? compress_lens=None, Tensor? compress_seq_offsets=None, Tensor? seq_lens=None, Tensor(a!) key_cache) -> Tensor(a!)
+    op_api: all_version
+    gen_opapi:
+      new_params:
+        cache_mode: '"Norm"'
+      exec: aclnnScatterPaCache, key, key_cache, slot_mapping, compress_lens, compress_seq_offsets, seq_lens, cache_mode
+
   - func: npu_scatter_pa_kv_cache_functional(Tensor key, Tensor value, Tensor key_cache, Tensor value_cache, Tensor slot_mapping, *, Tensor? compress_lens=None, Tensor? compress_seq_offsets=None, Tensor? seq_lens=None) -> (Tensor, Tensor)
     op_api: all_version
     internal_format_opapi: all_version
