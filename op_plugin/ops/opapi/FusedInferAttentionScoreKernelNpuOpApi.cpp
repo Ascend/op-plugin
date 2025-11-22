@@ -211,8 +211,7 @@ static at::Tensor infer_attention_out_shape(
     if (attention_out_layout == "BSH") {
         auto [b, n1, s1, d1] = get_query_b_n_s_d(query, query_layout, num_heads);
         int outH = num_heads * valueD;
-        int h1 = d1 * num_heads;
-        outH = (outH == 0 || h1 == 0) ? h1 : outH;
+        outH = (outH == 0 || query.size(DIM_2) == 0) ? query.size(DIM_2) : outH;
         attention_out = OpPreparation::apply_tensor_without_format(
             {b, s1, outH},
             query.options().dtype(query.dtype())
@@ -309,9 +308,7 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
         num_heads,
         OPS_ERROR(ErrCode::VALUE)
     );
-    if (kv_num_heads == 0) {
-        kv_num_heads = num_heads;
-    }
+    kv_num_heads = (kv_num_heads == 0) ? num_heads : kv_num_heads;
     
     // 获取query_layout, attention_out_layout
     auto [query_layout, attention_out_layout] = get_query_and_attention_out_layout(query, input_layout_str);
