@@ -116,12 +116,6 @@
   "op_api: torch_npu.npu_dynamic_block_quant(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
-  "op_api: torch_npu.npu_dynamic_mx_quant(*args, **kwargs)": {
-    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
-  },
-  "op_api: torch_npu.npu_grouped_dynamic_mx_quant(*args, **kwargs)": {
-    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
-  },
   "op_api: torch_npu.npu_gelu_mul(*args, **kwargs)": {
     "version": ["v2.6", "v2.7"]
   },
@@ -459,12 +453,6 @@
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_dynamic_block_quant(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
-    "version": ["v2.8", "newest"]
-  },
-  "op_api: torch_npu.npu_dynamic_mx_quant(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
-    "version": ["v2.8", "newest"]
-  },
-  "op_api: torch_npu.npu_grouped_dynamic_mx_quant(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
   "func: npu_scatter_pa_cache.value(Tensor key, Tensor slot_mapping, *, Tensor? compress_lens=None, Tensor? compress_seq_offsets=None, Tensor? seq_lens=None, Tensor(a!) key_cache) -> Tensor(a!)": {
