@@ -6519,6 +6519,14 @@ custom:
     internal_format_opapi: all_version
     exposed: all_version
 
+  - func: npu_gather_pa_kv_cache(Tensor key_cache, Tensor value_cache, Tensor block_tables, Tensor seq_lens, Tensor(a!) key, Tensor(b!) value, *, Tensor? seq_offset=None, bool is_seq_lens_cumsum=False) -> ()
+    op_api: all_version
+    internal_format_opapi: all_version
+  
+  - func: npu_gather_pa_kv_cache_functional(Tensor key_cache, Tensor value_cache, Tensor block_tables, Tensor seq_lens, Tensor key, Tensor value, *, Tensor? seq_offset=None, bool is_seq_lens_cumsum=False) -> (Tensor, Tensor)
+    op_api: all_version
+    internal_format_opapi: all_version
+
   - func: npu_sign_bits_pack(Tensor self, int size) -> Tensor
     acl_op: all_version
     exposed: all_version

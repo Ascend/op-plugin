@@ -3231,6 +3231,58 @@ class TestMlaProLogV3Functional(TestCase):
             self.assertTrue(kv_cache_mla.shape == kv_cache.shape)
             self.assertTrue(kr_cache_mla.shape == kr_cache.shape)
 
+class TestGatherPAKVCacheFunctional(TestCase):
+    def test_npu_gather_pa_kv_cache_functional_meta(self):
+        with FakeTensorMode():
+
+            batch_size = 2
+            num_blocks = 8
+            head_num = 4
+            block_size = 64
+            head_dim = 64
+            max_blocks_per_sequence = 5
+
+            seq_lens_list = [5, 8]
+            total_tokens = sum(seq_lens_list)
+
+            key_cache = torch.empty(
+                (num_blocks, block_size, head_num, head_dim),
+                dtype=torch.float16
+            )
+            value_cache = torch.empty_like(key_cache)
+
+            block_tables = torch.empty(
+                (batch_size, max_blocks_per_sequence),
+                dtype=torch.int32
+            )
+
+            seq_lens = torch.empty(
+                (batch_size,),
+                dtype=torch.int32
+            )
+
+            key_out = torch.empty(
+                (total_tokens, head_num, head_dim),
+                dtype=torch.float16
+            )
+            value_out = torch.empty_like(key_out)
+
+            seq_offset = torch.empty(
+                (batch_size,),
+                dtype=torch.int32
+            )
+
+            key_result, value_result = torch_npu.npu_gather_pa_kv_cache_functional(
+                key_cache, value_cache,
+                block_tables, seq_lens,
+                key_out, value_out,
+                seq_offset=seq_offset,
+                is_seq_lens_cumsum=False
+            )
+
+            self.assertEqual(key_result.shape, key_out.shape)
+            self.assertEqual(value_result.shape, value_out.shape)
+
 
 if __name__ == "__main__":
     run_tests()
