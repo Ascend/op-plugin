@@ -124,7 +124,7 @@ std::tuple<at::Tensor, at::Tensor> nll_loss2d_forward(const at::Tensor &self, co
         " for argument 'target' in call to nll_loss2d_forward"
         + OPS_ERROR(ErrCode::TYPE));
     at::Tensor target_cast =
-        (scalar_type == at::kLong) ? at_npu::native::custom_ops::npu_dtype_cast(target, at::kInt) : target;
+        (scalar_type == at::kLong) ? at_npu::native::custom_ops::_npu_dtype_cast(target, at::kInt) : target;
 
     auto self_input = self.contiguous();
     self_input = at_npu::native::custom_ops::npu_format_cast(self_input, ACL_FORMAT_ND);

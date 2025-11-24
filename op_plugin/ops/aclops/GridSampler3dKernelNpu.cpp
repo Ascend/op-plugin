@@ -68,10 +68,10 @@ at::Tensor grid_sampler_3d(const at::Tensor &input, const at::Tensor &grid, int6
     at::Tensor format_cast_of_self = input;
     at::Tensor format_cast_of_grid = grid;
     if (format_cast_of_self.scalar_type() == at::ScalarType::Half) {
-        format_cast_of_self = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_self, at::ScalarType::Float);
+        format_cast_of_self = at_npu::native::custom_ops::_npu_dtype_cast(format_cast_of_self, at::ScalarType::Float);
     }
     if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
-        format_cast_of_grid = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
+        format_cast_of_grid = at_npu::native::custom_ops::_npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
     }
 
     c10::SmallVector<int64_t, SIZE> output_size = {format_cast_of_self.size(0), format_cast_of_self.size(1),
@@ -88,7 +88,7 @@ at::Tensor grid_sampler_3d(const at::Tensor &input, const at::Tensor &grid, int6
 
     at::ScalarType self_scalar_type(input.scalar_type());
     if (result.scalar_type() != self_scalar_type) {
-        result = at_npu::native::custom_ops::npu_dtype_cast(result, self_scalar_type);
+        result = at_npu::native::custom_ops::_npu_dtype_cast(result, self_scalar_type);
     }
     return result;
 }

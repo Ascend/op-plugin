@@ -51,14 +51,14 @@ at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size)
     at::Tensor result;
     at::Tensor self_cp;
     if (self.dtype() == at::kBool) {
-        self_cp = at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt);
+        self_cp = at_npu::native::custom_ops::_npu_dtype_cast(self, at::kInt);
         if (!npu_format_helper::IsBaseFormatType(self_cp)) {
             auto format = npu_format_helper::GetBaseFormat(self_cp);
             at_npu::native::custom_ops::npu_format_cast_(self_cp, format);
         }
         result = npu_preparation::apply_tensor(self_cp, size);
         npu_broadcast_out_nocheck(result, self_cp, size);
-        result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
+        result = at_npu::native::custom_ops::_npu_dtype_cast(result, at::kBool);
     } else {
         if (!npu_format_helper::IsBaseFormatType(self)) {
             auto format = npu_format_helper::GetBaseFormat(self);

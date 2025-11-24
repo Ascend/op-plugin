@@ -55,7 +55,7 @@ at::Tensor& reciprocal_out(const at::Tensor& self, at::Tensor& result)
 at::Tensor reciprocal(const at::Tensor& self)
 {
     at::Tensor self_cp = isIntegralType(self.scalar_type(), true) ?
-        at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat) : self;
+        at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat) : self;
     at::Tensor result = npu_preparation::apply_tensor(self_cp);
     reciprocal_out_npu_nocheck(result, self_cp);
 

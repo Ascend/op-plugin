@@ -35,7 +35,7 @@ at::Tensor int_repr_quantized_nocheck(const at::Tensor& self)
         self.options().dtype(output_dtype).memory_format(self.suggest_memory_format()));
 
     at_npu::native::NPUNativeFunctions::set_(tmp, self);
-    result = at_npu::native::custom_ops::npu_dtype_cast(tmp, output_dtype);
+    result = at_npu::native::custom_ops::_npu_dtype_cast(tmp, output_dtype);
 
     return result;
 }

@@ -36,7 +36,7 @@ c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(const at::MaterializedITens
             continue;
         }
         if (tensor.scalar_type() != high_type) {
-            tensor = at_npu::native::custom_ops::npu_dtype_cast(tensor, high_type);
+            tensor = at_npu::native::custom_ops::_npu_dtype_cast(tensor, high_type);
         }
         dst_tensor_list.emplace_back(tensor);
     }

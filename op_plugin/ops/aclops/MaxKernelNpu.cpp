@@ -70,7 +70,7 @@ std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, int64_t d
 
     npu_preparation::CheckOut({self}, max_values, ACL_FORMAT_ND, at::ScalarType::Long, output_size);
 
-    at::Tensor indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(max_values, at::ScalarType::Int);
+    at::Tensor indices_dtype_cast = at_npu::native::custom_ops::_npu_dtype_cast(max_values, at::ScalarType::Int);
     bool output_match = npu_utils::check_match(&max);
     bool indices_match = npu_utils::check_match(&indices_dtype_cast);
     if (!(output_match && indices_match)) {
@@ -90,7 +90,7 @@ std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, int64_t d
         max_out_npu_nocheck(max, indices_dtype_cast, self, dim, keepdim);
     }
 
-    indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices_dtype_cast, at::ScalarType::Long);
+    indices_dtype_cast = at_npu::native::custom_ops::_npu_dtype_cast(indices_dtype_cast, at::ScalarType::Long);
     max_values.copy_(indices_dtype_cast);
     return std::tie(max, max_values);
 }
@@ -105,7 +105,7 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor &self, int64_t dim, bool
 {
     at::Tensor self_cast = self;
     if (self.dtype() == at::ScalarType::Bool || self.dtype() == at::ScalarType::Int) {
-        self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
+        self_cast = at_npu::native::custom_ops::_npu_dtype_cast(self, at::ScalarType::Float);
     }
 
     at::SmallVector<int64_t, SIZE> dims = {dim};
@@ -116,10 +116,10 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor &self, int64_t dim, bool
         output_size, self_cast.options().dtype(at::ScalarType::Int), ACL_FORMAT_ND);
 
     max_out_npu_nocheck(outputs, indices, self_cast, dim, keepdim);
-    indices = at_npu::native::custom_ops::npu_dtype_cast(indices, at::ScalarType::Long);
+    indices = at_npu::native::custom_ops::_npu_dtype_cast(indices, at::ScalarType::Long);
 
     if (self.dtype() == at::ScalarType::Bool || self.dtype() == at::ScalarType::Int) {
-        outputs = at_npu::native::custom_ops::npu_dtype_cast(outputs, self.scalar_type());
+        outputs = at_npu::native::custom_ops::_npu_dtype_cast(outputs, self.scalar_type());
     }
 
     return std::tie(outputs, indices);
@@ -136,10 +136,10 @@ at::Tensor &max_out(const at::Tensor &self, const at::Tensor &other, at::Tensor 
 
     at::ScalarType high_type = at::native::result_type(self, other);
     at::Tensor self_copy = (self.scalar_type() != high_type && !npu_preparation::is_scalar_wrapped_to_tensor(self)) ?
-                               at_npu::native::custom_ops::npu_dtype_cast(self, high_type) :
+                               at_npu::native::custom_ops::_npu_dtype_cast(self, high_type) :
                                self;
     at::Tensor other_copy = (other.scalar_type() != high_type && !npu_preparation::is_scalar_wrapped_to_tensor(other)) ?
-                                at_npu::native::custom_ops::npu_dtype_cast(other, high_type) :
+                                at_npu::native::custom_ops::_npu_dtype_cast(other, high_type) :
                                 other;
 
     npu_preparation::CheckOut({self_copy, other_copy}, out, self_copy, output_size);
@@ -182,10 +182,10 @@ at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType high_type = at::native::result_type(self, other);
     at::Tensor self_copy = (self.scalar_type() != high_type && !npu_preparation::is_scalar_wrapped_to_tensor(self)) ?
-                               at_npu::native::custom_ops::npu_dtype_cast(self, high_type) :
+                               at_npu::native::custom_ops::_npu_dtype_cast(self, high_type) :
                                self;
     at::Tensor other_copy = (other.scalar_type() != high_type && !npu_preparation::is_scalar_wrapped_to_tensor(other)) ?
-                                at_npu::native::custom_ops::npu_dtype_cast(other, high_type) :
+                                at_npu::native::custom_ops::_npu_dtype_cast(other, high_type) :
                                 other;
     at::Tensor result = npu_preparation::apply_tensor(self_copy, output_size);
     max_out_npu_nocheck(result, self_copy, other_copy);

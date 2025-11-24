@@ -26,7 +26,7 @@ at::Tensor &smooth_l1_loss_out_npu_nocheck(at::Tensor &result, const at::Tensor 
 {
     if (self.numel() == 0) {
         // In this scenario, needs to return nan. And the nan of the NPU can only be fp32.
-        result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat).fill_(NAN);
+        result = at_npu::native::custom_ops::_npu_dtype_cast(result, at::kFloat).fill_(NAN);
         return result;
     }
 

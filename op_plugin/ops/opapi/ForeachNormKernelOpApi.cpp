@@ -146,7 +146,7 @@ std::vector<at::Tensor> _foreach_norm(const at::TensorList self, const at::Scala
     std::vector<at::Tensor> inputs;
     if (scalar_type != dtype) {
         for (const at::Tensor& tensor :self) {
-            inputs.push_back(acl_op::npu_dtype_cast(tensor, dtype));
+            inputs.push_back(acl_op::_npu_dtype_cast(tensor, dtype));
         }
     }
 

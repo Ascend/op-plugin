@@ -114,10 +114,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag(
     at::Tensor indices_cast = const_cast<at::Tensor &>(indices);
     at::Tensor offsets_cast = const_cast<at::Tensor &>(offsets);
     if (indices.dtype() == at::kLong) {
-        indices_cast = at_npu::native::custom_ops::npu_dtype_cast(indices_cast, at::kInt);
+        indices_cast = at_npu::native::custom_ops::_npu_dtype_cast(indices_cast, at::kInt);
     }
     if (offsets.dtype() == at::kLong) {
-        offsets_cast = at_npu::native::custom_ops::npu_dtype_cast(offsets_cast, at::kInt);
+        offsets_cast = at_npu::native::custom_ops::_npu_dtype_cast(offsets_cast, at::kInt);
     }
 
     const at::Tensor &per_sample_weights_core = c10::value_or_else(per_sample_weights, [] { return at::Tensor(); });
@@ -167,10 +167,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_forwar
     at::Tensor indices_cast = const_cast<at::Tensor &>(indices);
     at::Tensor offsets_cast = const_cast<at::Tensor &>(offsets);
     if (indices.dtype() == at::kLong) {
-        indices_cast = at_npu::native::custom_ops::npu_dtype_cast(indices_cast, at::kInt);
+        indices_cast = at_npu::native::custom_ops::_npu_dtype_cast(indices_cast, at::kInt);
     }
     if (offsets.dtype() == at::kLong) {
-        offsets_cast = at_npu::native::custom_ops::npu_dtype_cast(offsets_cast, at::kInt);
+        offsets_cast = at_npu::native::custom_ops::_npu_dtype_cast(offsets_cast, at::kInt);
     }
 
     const at::Tensor &per_sample_weights_core = c10::value_or_else(per_sample_weights, [] { return at::Tensor(); });

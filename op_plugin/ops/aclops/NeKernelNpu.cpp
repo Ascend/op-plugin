@@ -79,7 +79,7 @@ at::Tensor& ne_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 
         auto out_type = out.scalar_type();
         at::Tensor out_cast = (out_type != at::kBool) ?
-            at_npu::native::custom_ops::npu_dtype_cast(out, at::kBool) : out;
+            at_npu::native::custom_ops::_npu_dtype_cast(out, at::kBool) : out;
         if (!npu_utils::check_match(&out_cast)) {
             at::Tensor contiguous_out = npu_utils::format_contiguous(out_cast);
             ne_out_npu_nocheck(contiguous_out, self_cast, other_cast);
@@ -89,7 +89,7 @@ at::Tensor& ne_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
         }
 
         if (out_type != at::kBool) {
-            out_cast = at_npu::native::custom_ops::npu_dtype_cast(out_cast, out_type);
+            out_cast = at_npu::native::custom_ops::_npu_dtype_cast(out_cast, out_type);
             out.copy_(out_cast);
         }
         return out;
@@ -104,7 +104,7 @@ at::Tensor& ne_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 
     auto out_type = out.scalar_type();
     at::Tensor out_cast = (out_type != at::kBool) ?
-        at_npu::native::custom_ops::npu_dtype_cast(out, at::kBool) : out;
+        at_npu::native::custom_ops::_npu_dtype_cast(out, at::kBool) : out;
     if (!npu_utils::check_match(&out_cast)) {
         at::Tensor contiguous_out = npu_utils::format_contiguous(out_cast);
         ne_out_npu_nocheck(contiguous_out, self_cast, other);
@@ -114,7 +114,7 @@ at::Tensor& ne_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
     }
 
     if (out_type != at::kBool) {
-        out_cast = at_npu::native::custom_ops::npu_dtype_cast(out_cast, out_type);
+        out_cast = at_npu::native::custom_ops::_npu_dtype_cast(out_cast, out_type);
         out.copy_(out_cast);
     }
     return out;

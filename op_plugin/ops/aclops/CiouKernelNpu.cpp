@@ -102,15 +102,15 @@ std::tuple<at::Tensor, at::Tensor> _npu_ciou(
     bool atan_sub_flag) {
   bool self_is_half = self.scalar_type() == at::kHalf;
   bool gtboxes_is_half = gtboxes.scalar_type() == at::kHalf;
-  at::Tensor self_cp = self_is_half ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat) : self;
-  at::Tensor gtboxes_cp = gtboxes_is_half ? at_npu::native::custom_ops::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
+  at::Tensor self_cp = self_is_half ? at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat) : self;
+  at::Tensor gtboxes_cp = gtboxes_is_half ? at_npu::native::custom_ops::_npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
 
   auto output_size = ciou_output_size(self_cp, gtboxes_cp, is_cross);
   at::Tensor overlap = npu_preparation::apply_tensor(self_cp, output_size);
   at::Tensor atan_sub = npu_preparation::apply_tensor(self_cp, output_size);
   ciou_inner_out_npu(overlap, atan_sub, self_cp, gtboxes_cp, trans, is_cross, mode, atan_sub_flag);
   if (self_is_half || gtboxes_is_half) {
-    overlap = at_npu::native::custom_ops::npu_dtype_cast(overlap, at::kHalf);
+    overlap = at_npu::native::custom_ops::_npu_dtype_cast(overlap, at::kHalf);
   }
   return std::tie(overlap, atan_sub);
 }
@@ -126,19 +126,19 @@ std::tuple<at::Tensor, at::Tensor> npu_ciou_backward(
   const at::Tensor& atan_sub = c10::value_or_else(atan_sub_opt, [] {return at::Tensor();});
   at::Tensor grad_cp = at::squeeze(grad, 0);
   if (grad_cp.scalar_type() == at::kHalf) {
-    grad_cp = at_npu::native::custom_ops::npu_dtype_cast(grad_cp, at::kFloat);
+    grad_cp = at_npu::native::custom_ops::_npu_dtype_cast(grad_cp, at::kFloat);
   }
   bool bboxes_is_half = bboxes.scalar_type() == at::kHalf;
   bool gtboxes_is_half = gtboxes.scalar_type() == at::kHalf;
-  at::Tensor bboxes_cp = bboxes_is_half ? at_npu::native::custom_ops::npu_dtype_cast(bboxes, at::kFloat) : bboxes;
-  at::Tensor gtboxes_cp = gtboxes_is_half ? at_npu::native::custom_ops::npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
+  at::Tensor bboxes_cp = bboxes_is_half ? at_npu::native::custom_ops::_npu_dtype_cast(bboxes, at::kFloat) : bboxes;
+  at::Tensor gtboxes_cp = gtboxes_is_half ? at_npu::native::custom_ops::_npu_dtype_cast(gtboxes, at::kFloat) : gtboxes;
 
   at::Tensor dbboxes = npu_preparation::apply_tensor(bboxes_cp);
   at::Tensor dgtboxes = npu_preparation::apply_tensor(gtboxes_cp);
   ciou_backward_inner_out_npu(dbboxes, dgtboxes, grad_cp, bboxes_cp, gtboxes_cp, atan_sub, trans, is_cross, mode);
   if (bboxes_is_half || gtboxes_is_half) {
-    dbboxes = at_npu::native::custom_ops::npu_dtype_cast(dbboxes, at::kHalf);
-    dgtboxes = at_npu::native::custom_ops::npu_dtype_cast(dgtboxes, at::kHalf);
+    dbboxes = at_npu::native::custom_ops::_npu_dtype_cast(dbboxes, at::kHalf);
+    dgtboxes = at_npu::native::custom_ops::_npu_dtype_cast(dgtboxes, at::kHalf);
   }
   return std::tie(dbboxes, dgtboxes);
 }

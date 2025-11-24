@@ -109,7 +109,7 @@ at::Tensor repeat_interleave_common_nocheck(
         (repeats.size(0) == self_tensor.size(real_dim)) || (repeats.size(0) == 1),
         "repeats must have the same size as input along dim.", OPS_ERROR(ErrCode::VALUE));
 
-    repeats_tensor = acl_op::npu_dtype_cast(repeats_tensor, at::ScalarType::Float);
+    repeats_tensor = acl_op::_npu_dtype_cast(repeats_tensor, at::ScalarType::Float);
     auto op_infer_output_size = op_infer::repeat_interleave_npu_output_size(self_tensor, repeats_tensor, real_dim);
 
     at::Tensor result = npu_preparation::apply_tensor_with_format(self_tensor, op_infer_output_size, ACL_FORMAT_ND);

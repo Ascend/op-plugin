@@ -211,7 +211,7 @@ void dequantize_tensor_per_channel_affine_npu(
         qtensor.options().dtype(output_dtype).memory_format(qtensor.suggest_memory_format()));
 
     at_npu::native::NPUNativeFunctions::set_(result, qtensor);
-    rtensor = at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Float);
+    rtensor = at_npu::native::custom_ops::_npu_dtype_cast(result, at::ScalarType::Float);
 
     auto reshape_size = op_api::quantize_reshape_size(qtensor, axis);
     at::Tensor scales_reshape = scales.reshape(reshape_size);
@@ -346,7 +346,7 @@ void dequantize_tensor_per_channel_affine_npu(
         qtensor.options().dtype(output_dtype).memory_format(qtensor.suggest_memory_format()));
 
     at_npu::native::NPUNativeFunctions::set_(result, qtensor);
-    rtensor = at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Float);
+    rtensor = at_npu::native::custom_ops::_npu_dtype_cast(result, at::ScalarType::Float);
 
     auto reshape_size = op_api::quantize_reshape_size(qtensor, axis);
     at::Tensor scales_reshape = scales.reshape(reshape_size);

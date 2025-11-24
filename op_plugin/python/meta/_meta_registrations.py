@@ -1288,9 +1288,63 @@ if _is_pytorch_version_ge("2.6.0"):
         return torch.empty(size=output_shape, dtype=output_dtype, device=torch.device("meta"))
 
 
+@impl(m, "npu_gelu_quant")
+def npu_gelu_quant_meta(self, *, input_scale=None, input_offset=None, 
+                        approximate="none", quant_mode="dynamic", dst_type=1, round_mode='rint'):
+    if not (quant_mode == "dynamic" or quant_mode == "static"):
+        raise RuntimeError("Parameter(quant_mode) must be 'dynamic' or 'static', got " + quant_mode + ops_error(ErrCode.VALUE))
+
+    out_scale = None
+    if quant_mode == "static":
+        if input_scale is None:
+            raise RuntimeError("input_scale cannot be None when quant_mode is 'static'.")
+    else:
+        # infer out_scale shape
+        out_scale_shape = self.shape[:-1]
+        out_scale = self.new_empty(out_scale_shape, dtype=torch.float32)
+
+    y_dst_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type)
+    if dst_type is not None:
+        y = torch.empty_like(self, dtype=y_dst_dtype)
+    else:
+        raise RuntimeError("Parameter(dst_type) enum value:{} not found in " \
+                            "TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP, please check.".format(dst_type) +
+                            ops_error(ErrCode.PARAM))
+    return (y, out_scale)
+
+
 @impl(m, "npu_dtype_cast")
-def npu_dtype_cast_meta(self, dtype):
-    return torch.empty_like(self, dtype=dtype)
+def npu_dtype_cast_meta(self, dtype, input_dtype=None):
+    dim_num = self.dim()
+    input_shape = []
+    for dim in range(dim_num):
+        input_shape.append(self.size(dim))
+
+    if input_dtype == 296 or input_dtype == 297:
+        if dim_num != 0:
+            input_shape[-1] *= 2
+        else:
+            raise RuntimeError("Scalar input cannot be float4_e2m1 or float4_e1m2" +
+                               ops_error(ErrCode.PARAM))
+    
+    if dtype == 296 or dtype == 297:
+        if dim_num == 0 or input_shape[-1] % 2:
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+                                "the last dim of input must be divisible by 2" +
+                               ops_error(ErrCode.PARAM))
+        input_shape[-1] //= 2
+    # torch_npu.hifloat8, torch_npu.float4_e2m1, torch_npu.float4_e1m2
+    if dtype in [290, 296, 297]:
+        output = self.new_empty(input_shape, dtype=torch.uint8)
+    else:
+        output_dst_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dtype)
+        if output_dst_dtype is not None:
+            output = self.new_empty(input_shape, dtype=output_dst_dtype)
+        else:
+            raise RuntimeError("Parameter(dtype) enum value:{} not found in " \
+                "TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP, please check.".format(dtype) + 
+                ops_error(ErrCode.PARAM))
+    return output
 
 
 @impl(m, "_npu_dtype_cast")
@@ -1304,8 +1358,31 @@ def _npu_dtype_cast_backward_meta(self, dtype):
 
 
 @impl(m, "npu_dtype_cast_backward")
-def npu_dtype_cast_backward_meta(self, dtype):
-    return torch.empty_like(self, dtype=dtype)
+def npu_dtype_cast_backward_meta(self, dtype, grad_dtype=None, input_dtype=None):
+    dim_num = self.dim()
+    input_shape = []
+    for dim in range(dim_num):
+        input_shape.append(self.size(dim))
+
+    if grad_dtype == 296 or grad_dtype == 297:
+        if dim_num != 0:
+            input_shape[-1] *= 2
+        else:
+            raise RuntimeError("Scalar input cannot be float4_e2m1 or float4_e1m2" +
+                               ops_error(ErrCode.PARAM))
+        
+    if input_dtype == 296 or input_dtype == 297:
+        if dim_num == 0 or input_shape[-1] % 2:
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+                                "the last dim of input must be divisible by 2" +
+                               ops_error(ErrCode.PARAM))
+        input_shape[-1] //= 2
+    # torch_npu.hifloat8, torch_npu.float4_e2m1, torch_npu.float4_e1m2
+    if input_dtype in [290, 296, 297]:
+        output = self.new_empty(input_shape, dtype=torch.uint8)
+    else:
+        output = self.new_empty(input_shape, dtype=dtype)
+    return output
 
 
 @impl(m, "npu_bmmV2")
@@ -1410,14 +1487,14 @@ def _npu_dropout_meta(self, p):
 
 
 @impl(m, "npu_quant_scatter")
-def npu_quant_scatter_meta(self, indices, updates, quant_scales, quant_zero_points=None, axis=0, quant_axis=1,
-                           reduce='update'):
+def npu_quant_scatter_meta(self, indices, updates, quant_scales, quant_zero_points=None, axis=-2, quant_axis=-1,
+                           reduce='update', dst_type=1, round_mode='rint'):
     return torch.empty_like(self)
 
 
 @impl(m, "npu_quant_scatter_")
-def npu_quant_scatter__meta(self, indices, updates, quant_scales, quant_zero_points=None, axis=0, quant_axis=1,
-                            reduce='update'):
+def npu_quant_scatter__meta(self, indices, updates, quant_scales, quant_zero_points=None, axis=-2, quant_axis=-1,
+                            reduce='update', dst_type=1, round_mode='rint'):
     return self
 
 
@@ -1456,15 +1533,27 @@ def npu_scatter_pa_kv_cache_meta(key, value, key_cache, value_cache, slot_mappin
     return
 
 
-if torch.__version__ >= '2.3.1':
-    @impl(m, "npu_geglu")
-    def npu_geglu_meta(self, dim, approximate, activate_left=False):
-        return (torch.empty_like(self, dtype=self.dtype), torch.empty_like(self, dtype=self.dtype))
+@impl(m, "npu_geglu")
+def npu_geglu_meta(self, dim=-1, approximate=1, activate_left=False):
+    dim_num = self.dim()
+    input_shape = list(self.shape)
+
+    if dim_num < 1 or dim_num > 8:
+        raise RuntimeError("dim num out of range [1, 8]" + ops_error(ErrCode.PARAM))
+
+    if dim >= dim_num or dim < -dim_num:
+        raise RuntimeError("attribute [dim] out of range [-" + str(dim_num) + ", " + str(dim_num - 1) + "]" + ops_error(ErrCode.VALUE))
+
+    if input_shape[dim] % 2 == 1:
+        raise RuntimeError("x shape: " + str(input_shape) + ". Dim [" + str(dim) + "] of x should be divisible by 2, but get [" + str(input_shape[dim]) + "]" + ops_error(ErrCode.PARAM))
+    
+    input_shape[dim] //= 2
+    return (self.new_empty(input_shape, dtype=self.dtype), self.new_empty(input_shape, dtype=self.dtype))
 
 
-    @impl(m, "npu_geglu_grad")
-    def npu_geglu_backward_meta(grad_output, self, gelu, dim, approximate, activate_left=False):
-        return (torch.empty_like(self, dtype=self.dtype), torch.empty_like(self, dtype=self.dtype))
+@impl(m, "npu_geglu_grad")
+def npu_geglu_backward_meta(grad_output, self, gelu, dim, approximate, activate_left=False):
+    return (torch.empty_like(self, dtype=self.dtype), torch.empty_like(self, dtype=self.dtype))
 
 
 @impl(m, "npu_dropout_backward")
@@ -2392,16 +2481,23 @@ def npu_trans_quant_param_meta(scale, offset=None, round_mode=0):
 
 @impl(m, "npu_quantize")
 def npu_quantize_meta(self, scales, zero_points, dtype, axis=1, div_mode=True):
-    if dtype == torch.quint8:
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dtype, torch.int8)
+    if torch_dtype == torch.quint8 or torch_dtype == torch.uint8:
         return torch.empty_like(self, dtype=torch.uint8)
-    elif dtype == torch.qint8:
-        return torch.empty_like(self, dtype=torch.int8)
-    elif dtype == torch.qint32:
+    elif torch_dtype == torch.qint32 or torch_dtype == torch.int32:
         return torch.empty_like(self, dtype=torch.int32)
-    elif dtype == torch.quint4x2:
+    elif torch_dtype == torch.int8:
+        return torch.empty_like(self, dtype=torch.int8)
+    elif torch_dtype == torch.float8_e4m3fn:
+        return torch.empty_like(self, dtype=torch.float8_e4m3fn)
+    elif torch_dtype == torch.float8_e5m2:
+        return torch.empty_like(self, dtype=torch.float8_e5m2)
+    elif dtype == 290:          # torch_npu.hifloat8
+        return torch.empty_like(self, dtype=torch.bits8)
+    elif torch_dtype == torch.quint4x2:
         dim_num = self.dim()
         if self.size(dim_num - 1) % 8:
-            raise RuntimeError("If dtype is quint4x2, last dim must be divided by 8" +
+            raise RuntimeError("If dtype is quint4x2, the last dim of input must be divided by 8" +
                                ops_error(ErrCode.NOT_SUPPORT))
         output_shape = []
         for dim in range(dim_num - 1):
@@ -2431,40 +2527,126 @@ def npu_group_quant_meta(x, scale, group_index, *, offset=None, dst_dtype=None):
 
 
 @impl(m, "npu_dynamic_quant")
-def npu_dynamic_quant(input_dummy, *, smooth_scales=None, group_index=None, dst_type=torch.int8):
+def npu_dynamic_quant(input_dummy, *, smooth_scales=None, group_index=None, dst_type=1, quant_mode="pertoken"):
+    # default dst_type 1 is the enum of torch.int8
     dim_num = input_dummy.dim()
     scale_shape = []
     for dim in range(dim_num - 1):
         scale_shape.append(input_dummy.size(dim))
     scale = input_dummy.new_empty(scale_shape, dtype=torch.float32)
-    if dst_type == torch.quint4x2:
+    if quant_mode == "pertensor":
+        scale = input_dummy.new_empty([1], dtype=torch.float32)
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    if torch_dtype == torch.quint4x2:
         if input_dummy.size(dim_num - 1) % 8:
-            raise RuntimeError("If dst_dtype is quint4x2, last dim must be divisible by 8" +
+            raise RuntimeError("If dst_dtype is quint4x2, the last dim of input must be divisible by 8" +
                                ops_error(ErrCode.PARAM))
         scale_shape.append(input_dummy.size(dim_num - 1) // 8)
         output = input_dummy.new_empty(scale_shape, dtype=torch.int32)
+    elif dst_type == 290:           # torch_npu.hifloat8
+        output = torch.empty_like(input_dummy, dtype=torch.uint8)
+    elif torch_dtype == torch.float8_e5m2:
+        output = torch.empty_like(input_dummy, dtype=torch.float8_e5m2)
+    elif torch_dtype == torch.float8_e4m3fn:
+        output = torch.empty_like(input_dummy, dtype=torch.float8_e4m3fn)
     else:
         output = torch.empty_like(input_dummy, dtype=torch.int8)
     return (output, scale)
 
 
 @impl(m, "npu_dynamic_quant_asymmetric")
-def npu_dynamic_quant_asymmetric(input_dummy, *, smooth_scales=None, group_index=None, dst_type=torch.int8):
+def npu_dynamic_quant_asymmetric(input_dummy, *, smooth_scales=None, group_index=None, dst_type=1, quant_mode="pertoken"):
+    # default dst_type 1 is the enum of torch.int8
     dim_num = input_dummy.dim()
     scale_offset_shape = []
     for dim in range(dim_num - 1):
         scale_offset_shape.append(input_dummy.size(dim))
     scale = input_dummy.new_empty(scale_offset_shape, dtype=torch.float32)
     offset = input_dummy.new_empty(scale_offset_shape, dtype=torch.float32)
-    if dst_type == torch.quint4x2:
+    if quant_mode == "pertensor":
+        scale = input_dummy.new_empty([1], dtype=torch.float32)
+        offset = input_dummy.new_empty([1], dtype=torch.float32)
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    if torch_dtype == torch.quint4x2:
         if input_dummy.size(dim_num - 1) % 8:
-            raise RuntimeError("If dst_dtype is quint4x2, last dim must be divisible by 8" +
+            raise RuntimeError("If dst_dtype is quint4x2, the last dim of input must be divisible by 8" +
                                ops_error(ErrCode.PARAM))
         scale_offset_shape.append(input_dummy.size(dim_num - 1) // 8)
         output = input_dummy.new_empty(scale_offset_shape, dtype=torch.int32)
+    elif dst_type == 290:           # torch_npu.hifloat8
+        output = torch.empty_like(input_dummy, dtype=torch.uint8)
+    elif torch_dtype == torch.float8_e5m2:
+        output = torch.empty_like(input_dummy, dtype=torch.float8_e5m2)
+    elif torch_dtype == torch.float8_e4m3fn:
+        output = torch.empty_like(input_dummy, dtype=torch.float8_e4m3fn)
     else:
         output = torch.empty_like(input_dummy, dtype=torch.int8)
     return (output, scale, offset)
+
+
+@impl(m, "npu_dynamic_mx_quant")
+def npu_dynamic_mx_quant(input_dummy, *, axis=-1, round_mode="rint", dst_type=296, block_size=32):
+    dim_num = input_dummy.dim()
+    mxscale_shape = []
+    if axis < -dim_num or axis >= dim_num:
+        raise RuntimeError("Parameter axis is out of input dimension range [{0}, {1}]".format(-dim_num, dim_num - 1) +
+                           ops_error(ErrCode.PARAM))
+    if not (block_size % 32 == 0 and block_size > 0 and block_size <= 1024):
+        raise RuntimeError("Parameter block_size must be divisible by 32 and no greater than 1024, greater than 0" +
+                           ops_error(ErrCode.PARAM))
+    axis_change = axis if axis >= 0 else axis + dim_num
+    for dim in range(dim_num):
+        mxscale_shape.append(input_dummy.size(dim))
+    mxscale_shape.append(2)
+
+    dim_size = int(math.ceil(mxscale_shape[axis_change] / block_size))
+    dim_size = (dim_size + 2 - 1) // 2
+    mxscale_shape[axis_change] = dim_size
+
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    if torch_dtype == torch.float8_e5m2 or dst_type == 291:
+        output = torch.empty_like(input_dummy, dtype=torch.float8_e5m2)
+    elif torch_dtype == torch.float8_e4m3fn or dst_type == 292:
+        output = torch.empty_like(input_dummy, dtype=torch.float8_e4m3fn)
+    else: # float4_e2m1, float4_e1m2
+        if input_dummy.size(dim_num - 1) % 2:
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+                                "the last dim of input must be divisible by 2, " +
+                               ops_error(ErrCode.PARAM))
+        output_shape = []
+        for dim in range(dim_num - 1):
+            output_shape.append(input_dummy.size(dim))
+        output_shape.append(input_dummy.size(dim_num - 1) // 2)
+        output = input_dummy.new_empty(output_shape, dtype=torch.uint8)
+    mxscale = input_dummy.new_empty(mxscale_shape, dtype=torch.uint8)
+    return (output, mxscale)
+
+
+@impl(m, "npu_grouped_dynamic_mx_quant")
+def npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst_type=23, blocksize=32):
+    if x is None or group_index is None:
+        raise RuntimeError("Input x and group_index should must not be None" + ops_error(ErrCode.VALUE))
+    if x.dim() != 2:
+        raise RuntimeError("Input x must be 2-dimensional, got dimNum " + 
+                            str(x.dim()) + ops_error(ErrCode.VALUE))
+    if group_index.dim() != 1:
+        raise RuntimeError("Input group_index must be 1-dimensional, got dimNum " + 
+                            str(group_index.dim()) + ops_error(ErrCode.VALUE))
+    # zero division protection
+    if blocksize != 32:
+        raise RuntimeError("Parameter blocksize only supports 32,  got " + 
+                            str(blocksize) + ops_error(ErrCode.PARAM))
+    mxscale_shape = [x.shape[0] // 2 // blocksize + group_index.shape[0], x.shape[-1], 2]
+
+    if TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type) == torch.float8_e5m2:
+        output = torch.empty_like(x, dtype=torch.float8_e5m2)
+    elif TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type) == torch.float8_e4m3fn:
+        output = torch.empty_like(x, dtype=torch.float8_e4m3fn)
+    else:
+        raise RuntimeError("Parameter dst_type only supports torch.float8_e5m2(23), torch.float8_e4m3fn(24), "
+                           "got " + str(dst_type) + ops_error(ErrCode.PARAM))
+    mxscale = x.new_empty(mxscale_shape, dtype=torch.uint8)
+    return (output, mxscale)
 
 
 @impl(m, "npu_moe_compute_expert_tokens")
@@ -3258,7 +3440,8 @@ def npu_moe_token_unpermute_with_routing_map_grad(unpermuted_tokens_grad, out_in
 # pylint:disable = huawei-too-many-arguments
 def npu_dynamic_block_quant_meta(x, *, min_scale=0.0, round_mode="rint", dst_type=1, row_block_size=1, col_block_size=128):
     # dst_type only support torch.int8 in 910B/C
-    y = torch.empty(x.shape, dtype=torch.int8, device=x.device)
+    dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.float8_e5m2)
+    y = torch.empty(x.shape, dtype=dtype, device=x.device)
     scale_shape = list(x.shape)
 
     if len(scale_shape) == 2:

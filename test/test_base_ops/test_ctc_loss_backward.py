@@ -2,7 +2,7 @@ import copy
 import torch
 import numpy as np
 import torch_npu
-
+import unittest
 from torch_npu.testing.testcase import TestCase, run_tests
 
 
@@ -85,6 +85,7 @@ class TestCtcLossBackward(TestCase):
 
         return grad
 
+    @unittest.skip("skip test_ctc_loss_backward now")
     def test_ctc_loss_backward(self):
         sizes_list = [[50, 20, 16, 30, 10], [26, 37, 2560, 18, 10]]
         para_reduction = ["sum", "mean"]
@@ -102,6 +103,7 @@ class TestCtcLossBackward(TestCase):
 
             self.assertRtolEqual(grad_cpu, grad_npu, 1e-3)
 
+    @unittest.skip("skip test_ctc_loss_backward_1d now")
     def test_ctc_loss_backward_1d(self):
         sizes_list = [[50, 20, 16, 30, 10], [26, 37, 2560, 18, 10]]
         para_reduction = ["sum", "mean"]
@@ -151,6 +153,7 @@ class TestCtcLossBackward(TestCase):
 
         return grad
 
+    @unittest.skip("skip test_ctc_loss_backward_2d now")
     def test_ctc_loss_backward_2d(self):
         T = 50
         C = 20

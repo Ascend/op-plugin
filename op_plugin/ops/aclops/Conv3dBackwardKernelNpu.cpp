@@ -35,7 +35,7 @@ at::Tensor &conv3d_backward_input_nocheck(at::Tensor &grad_input, const at::Tens
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1], padding[2], padding[2]};
     c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1], dilation[2]};
     at::IntArrayRef input_size = input.sizes();
-    at::Tensor weight_cast = at_npu::native::custom_ops::npu_dtype_cast(weight, grad.scalar_type());
+    at::Tensor weight_cast = at_npu::native::custom_ops::_npu_dtype_cast(weight, grad.scalar_type());
 
     at_npu::native::OpCommand cmd;
     cmd.Name("Conv3DBackpropInput")

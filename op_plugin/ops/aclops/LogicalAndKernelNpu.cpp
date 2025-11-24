@@ -24,7 +24,7 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 at::Tensor &logical_and_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Scalar other)
 {
-    auto self_copy = (self.dtype() == at::kBool) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, at::kBool);
+    auto self_copy = (self.dtype() == at::kBool) ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, at::kBool);
     at_npu::native::OpCommand cmd;
     cmd.Name("LogicalAnd").Input(self_copy).Input(other, self_copy.scalar_type()).Output(result).Run();
     return result;
@@ -38,9 +38,9 @@ at::Tensor &logical_and_out_npu_nocheck(at::Tensor &result, const at::Tensor &se
         logical_and_out_npu_nocheck(result, self, other.item());
     } else {
         auto self_copy =
-            (self.dtype() == at::kBool) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, at::kBool);
+            (self.dtype() == at::kBool) ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, at::kBool);
         auto other_copy =
-            (other.dtype() == at::kBool) ? other : at_npu::native::custom_ops::npu_dtype_cast(other, at::kBool);
+            (other.dtype() == at::kBool) ? other : at_npu::native::custom_ops::_npu_dtype_cast(other, at::kBool);
 
         at_npu::native::OpCommand cmd;
         cmd.Name("LogicalAnd").Input(self_copy).Input(other_copy).Output(result).Run();
@@ -60,7 +60,7 @@ at::Tensor &logical_and_out(const at::Tensor &self, const at::Tensor &other, at:
     } else {
         auto result_copy = npu_preparation::ApplyTensorWithSizes(output_size, self.options().dtype(at::kBool));
         logical_and_out_npu_nocheck(result_copy, self, other);
-        result_copy = at_npu::native::custom_ops::npu_dtype_cast(result_copy, self.scalar_type());
+        result_copy = at_npu::native::custom_ops::_npu_dtype_cast(result_copy, self.scalar_type());
         npu_utils::format_fresh_view(out, result_copy);
     }
     return out;

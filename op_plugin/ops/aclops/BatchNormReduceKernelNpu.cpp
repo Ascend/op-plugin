@@ -28,7 +28,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& self, dou
 
     at::Tensor self_copy = self;
     if (self.scalar_type() != at::kFloat) {
-        self_copy = at_npu::native::custom_ops::npu_dtype_cast(self_copy, at::kFloat);
+        self_copy = at_npu::native::custom_ops::_npu_dtype_cast(self_copy, at::kFloat);
     }
 
     at_npu::native::OpCommand cmd;

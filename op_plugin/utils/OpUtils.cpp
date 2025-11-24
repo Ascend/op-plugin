@@ -243,7 +243,7 @@ at::ScalarType get_divide_calculate_type(const at::Tensor &self, const at::Tenso
 
 at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type)
 {
-    at::Tensor self_cast = (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
+    at::Tensor self_cast = (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, calculate_type);
     self_cast = at_npu::native::OpPreparation::CastBackToOriFormat(self_cast);
     return self_cast;
 }

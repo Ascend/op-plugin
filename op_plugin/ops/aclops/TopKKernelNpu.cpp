@@ -90,41 +90,42 @@ std::tuple<at::Tensor&, at::Tensor&> topk_out(
     bool largest,
     bool sorted,
     at::Tensor& values,
-    at::Tensor& indices) {
-  at::Tensor self_cp = npu_preparation::CastBackToOriFormat(self);
-  auto output_size = op_infer::topk_npu_output_size(self_cp, k, dim);
-  npu_preparation::CheckOut(
-      {self},
-      values,
-      self,
-      output_size);
-  npu_preparation::CheckOut(
-      {self},
-      indices,
-      ACL_FORMAT_ND,
-      at::ScalarType::Long,
-      output_size);
+    at::Tensor& indices)
+{
+    at::Tensor self_cp = npu_preparation::CastBackToOriFormat(self);
+    auto output_size = op_infer::topk_npu_output_size(self_cp, k, dim);
+    npu_preparation::CheckOut(
+        {self},
+        values,
+        self,
+        output_size);
+    npu_preparation::CheckOut(
+        {self},
+        indices,
+        ACL_FORMAT_ND,
+        at::ScalarType::Long,
+        output_size);
 
-  at::Tensor indices_cp = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kInt);
-  bool values_match = npu_utils::check_match(&values);
-  bool indices_match = npu_utils::check_match(&indices_cp);
-  if (!(values_match && indices_match)) {
-    at::Tensor contiguous_values = values_match ? values : npu_utils::format_contiguous(values);
-    at::Tensor contiguous_indices = indices_match ? indices_cp : npu_utils::format_contiguous(indices_cp);
-    topk_out_npu_nocheck(contiguous_values, contiguous_indices, self_cp, k, dim, largest, sorted);
-    if (!values_match) {
-      npu_utils::format_fresh_view(values, contiguous_values);
+    at::Tensor indices_cp = at_npu::native::custom_ops::_npu_dtype_cast(indices, at::kInt);
+    bool values_match = npu_utils::check_match(&values);
+    bool indices_match = npu_utils::check_match(&indices_cp);
+    if (!(values_match && indices_match)) {
+        at::Tensor contiguous_values = values_match ? values : npu_utils::format_contiguous(values);
+        at::Tensor contiguous_indices = indices_match ? indices_cp : npu_utils::format_contiguous(indices_cp);
+        topk_out_npu_nocheck(contiguous_values, contiguous_indices, self_cp, k, dim, largest, sorted);
+        if (!values_match) {
+            npu_utils::format_fresh_view(values, contiguous_values);
+        }
+        if (!indices_match) {
+            npu_utils::format_fresh_view(indices_cp, contiguous_indices);
+        }
+    } else {
+        topk_out_npu_nocheck(values, indices_cp, self_cp, k, dim, largest, sorted);
     }
-    if (!indices_match) {
-      npu_utils::format_fresh_view(indices_cp, contiguous_indices);
-    }
-  } else {
-    topk_out_npu_nocheck(values, indices_cp, self_cp, k, dim, largest, sorted);
-  }
-  // indices dtype transform Int64
-  indices = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kLong);
-  indices.copy_(indices_cp);
-  return std::tie(values, indices);
+    // indices dtype transform Int64
+    indices = at_npu::native::custom_ops::_npu_dtype_cast(indices, at::kLong);
+    indices.copy_(indices_cp);
+    return std::tie(values, indices);
 }
 
 std::tuple<at::Tensor, at::Tensor> topk(
@@ -141,7 +142,7 @@ std::tuple<at::Tensor, at::Tensor> topk(
   topk_out_npu_nocheck(values, indices, self_cp, k, dim, largest, sorted);
 
   // indices dtype transform Int64
-  indices = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kLong);
+  indices = at_npu::native::custom_ops::_npu_dtype_cast(indices, at::kLong);
 
   return std::tie(values, indices);
 }

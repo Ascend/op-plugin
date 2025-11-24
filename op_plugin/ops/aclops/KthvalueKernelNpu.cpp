@@ -83,10 +83,10 @@ void kthvalue_calculate(
   }
 
   if (change_type) {
-    y = at_npu::native::custom_ops::npu_dtype_cast(y, self.scalar_type());
+    y = at_npu::native::custom_ops::_npu_dtype_cast(y, self.scalar_type());
   }
   if (is_indices) {
-    y = at_npu::native::custom_ops::npu_dtype_cast(y, at::kLong);
+    y = at_npu::native::custom_ops::_npu_dtype_cast(y, at::kLong);
   }
   result.copy_(y, false);
   at::namedinference::propagate_names_for_reduction(result, self, dim, keepdim);
@@ -116,7 +116,7 @@ std::tuple<at::Tensor, at::Tensor> kthvalue_out_nocheck(
   bool change_type = false;
   if (self.scalar_type() != at::kHalf) {
     change_type = true;
-    self_rename = at_npu::native::custom_ops::npu_dtype_cast(self_rename, at::kHalf);
+    self_rename = at_npu::native::custom_ops::_npu_dtype_cast(self_rename, at::kHalf);
   }
   auto ret = at::topk(self_rename, k, dim, false, true);
 

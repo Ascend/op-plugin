@@ -95,7 +95,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
                              other.dim() == 0) ? other : other.to(calculate_type);
 
     at::Tensor result_cast = (result_type == calculate_type) ? result :
-        at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
+        at_npu::native::custom_ops::_npu_dtype_cast(result, calculate_type);
     if (!check_mul_out_result(&result_cast)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
         mul_out_npu_nocheck(contiguous_result, self_cast, other_cast);
@@ -105,7 +105,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
     }
 
     if (result_type != calculate_type) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
+        result_cast = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, result_type);
         result.copy_(result_cast);
     }
     return result;
@@ -123,12 +123,12 @@ at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
     if (self.scalar_type() != calculate_type) {
         self_cast = npu_preparation::IsCPUScalar(self) ?
                         self.to(calculate_type) :
-                        at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
+                        at_npu::native::custom_ops::_npu_dtype_cast(self, calculate_type);
     }
     if (other.scalar_type() != calculate_type) {
         other_cast = npu_preparation::IsCPUScalar(other) ?
                          other.to(calculate_type) :
-                         at_npu::native::custom_ops::npu_dtype_cast(other, calculate_type);
+                         at_npu::native::custom_ops::_npu_dtype_cast(other, calculate_type);
     }
 
   bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self_cast) || npu_preparation::IsCPUScalar(self_cast);
@@ -138,7 +138,7 @@ at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
 
   mul_out_npu_nocheck(result, self_cast, other_cast);
   if (out_is_bool) {
-    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
+    result = at_npu::native::custom_ops::_npu_dtype_cast(result, at::kBool);
   }
   return result;
 }

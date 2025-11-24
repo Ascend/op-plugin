@@ -63,26 +63,35 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src)
     return self;
 }
 
-at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype)
+// new implementation
+at::Tensor npu_dtype_cast(
+    const at::Tensor& self,
+    int64_t dtype,
+    c10::optional<int64_t> input_dtype)
+{
+    return npu_dtype_cast_impl(self, static_cast<at::ScalarType>(dtype));
+}
+
+at::Tensor _npu_dtype_cast(
+    const at::Tensor& self,
+    at::ScalarType dtype)
 {
     return npu_dtype_cast_impl(self, dtype);
 }
 
-at::Tensor _npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype)
-{
-    return npu_dtype_cast_impl(self, dtype);
-}
-
-at::Tensor npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype)
+at::Tensor npu_dtype_cast_backward(
+    const at::Tensor& grad,
+    at::ScalarType dtype,
+    c10::optional<int64_t> grad_dtype,
+    c10::optional<int64_t> input_dtype)
 {
     grad.requires_grad_();
-    return at_npu::native::custom_ops::npu_dtype_cast(grad, dtype);
+    return at_npu::native::custom_ops::npu_dtype_cast(grad, static_cast<int64_t>(dtype), grad_dtype);
 }
 
 at::Tensor _npu_dtype_cast_backward(const at::Tensor& grad, at::ScalarType dtype)
 {
     grad.requires_grad_();
-    return at_npu::native::custom_ops::npu_dtype_cast(grad, dtype);
+    return at_npu::native::custom_ops::_npu_dtype_cast(grad, dtype);
 }
-
 }  // namespace acl_op

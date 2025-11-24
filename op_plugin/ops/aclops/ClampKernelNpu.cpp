@@ -252,8 +252,8 @@ at::Tensor& clamp_min_out(
                 "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype, OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'" + OPS_ERROR(ErrCode::TYPE));
 
-    at::Tensor self_cp = self.scalar_type() == result_dtype ? self : at_npu::native::custom_ops::npu_dtype_cast(self, result_dtype);
-    at::Tensor min_cp = min.scalar_type() == result_dtype ? min : at_npu::native::custom_ops::npu_dtype_cast(min, result_dtype);
+    at::Tensor self_cp = self.scalar_type() == result_dtype ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, result_dtype);
+    at::Tensor min_cp = min.scalar_type() == result_dtype ? min : at_npu::native::custom_ops::_npu_dtype_cast(min, result_dtype);
     if (min_cp.sizes() != self.sizes()) {
         min_cp = acl_op::npu_broadcast(min_cp, self.sizes());
     }
@@ -284,8 +284,8 @@ at::Tensor& clamp_max_out(
     TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'"
                 + OPS_ERROR(ErrCode::TYPE));
 
-    at::Tensor self_cp = self.scalar_type() == result_dtype ? self : at_npu::native::custom_ops::npu_dtype_cast(self, result_dtype);
-    at::Tensor max_cp = max.scalar_type() == result_dtype ? max : at_npu::native::custom_ops::npu_dtype_cast(max, result_dtype);
+    at::Tensor self_cp = self.scalar_type() == result_dtype ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, result_dtype);
+    at::Tensor max_cp = max.scalar_type() == result_dtype ? max : at_npu::native::custom_ops::_npu_dtype_cast(max, result_dtype);
     if (max_cp.sizes() != self.sizes()) {
         max_cp = acl_op::npu_broadcast(max_cp, self.sizes());
     }
@@ -330,11 +330,11 @@ at::Tensor& clamp_out(
                     + OPS_ERROR(ErrCode::TYPE));
 
         at::Tensor self_cp = self.scalar_type() == result_dtype ? self :
-            at_npu::native::custom_ops::npu_dtype_cast(self, result_dtype);
+            at_npu::native::custom_ops::_npu_dtype_cast(self, result_dtype);
         at::Tensor min_value_cp = min_value.scalar_type() == result_dtype ? min_value :
-            at_npu::native::custom_ops::npu_dtype_cast(min_value, result_dtype);
+            at_npu::native::custom_ops::_npu_dtype_cast(min_value, result_dtype);
         at::Tensor max_value_cp = max_value.scalar_type() == result_dtype ? max_value :
-            at_npu::native::custom_ops::npu_dtype_cast(max_value, result_dtype);
+            at_npu::native::custom_ops::_npu_dtype_cast(max_value, result_dtype);
         if (max_value_cp.sizes() != self.sizes()) {
             max_value_cp = acl_op::npu_broadcast(max_value_cp, self.sizes());
         }

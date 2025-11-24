@@ -32,7 +32,7 @@ at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& se
     }
 
     if ((mask.dtype() != at::kBool)) {
-        mask_bool = at_npu::native::custom_ops::npu_dtype_cast(mask, at::kBool);
+        mask_bool = at_npu::native::custom_ops::_npu_dtype_cast(mask, at::kBool);
     }
     at::Tensor value_tensor = value;
     if (value.dtype() != self.dtype()) {
@@ -63,7 +63,7 @@ at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& se
     }
 
     if (!(mask.dtype() == at::kBool)) {
-        mask_bool = at_npu::native::custom_ops::npu_dtype_cast(mask, at::kBool);
+        mask_bool = at_npu::native::custom_ops::_npu_dtype_cast(mask, at::kBool);
     }
 
     at_npu::native::OpCommand cmd;

@@ -37,7 +37,7 @@ std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(const at::Tensor &i
         OPS_ERROR(ErrCode::PARAM));
     const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
     at::Tensor bias_fp32 = (bias.defined() && bias.dtype() != at::kFloat) ?
-                               at_npu::native::custom_ops::npu_dtype_cast(bias, at::kFloat) :
+                               at_npu::native::custom_ops::_npu_dtype_cast(bias, at::kFloat) :
                                bias;
     auto output_size = op_infer::deformable_conv2d_npu_output_size(input, offset, kernel_size);
     TORCH_CHECK(output_size.size() >= 4,
@@ -119,19 +119,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_deformable_conv2d
     TORCH_CHECK(dilation.size() >= 4, "dilation has to contain more than 4 elements, but got ", dilation.size(),
         OPS_ERROR(ErrCode::PARAM));
     at::Tensor input = (input_ori.dtype() != at::kFloat) ?
-                           at_npu::native::custom_ops::npu_dtype_cast(input_ori, at::kFloat) :
+                           at_npu::native::custom_ops::_npu_dtype_cast(input_ori, at::kFloat) :
                            input_ori;
     at::Tensor grad_output = (grad_output_ori.dtype() != at::kFloat) ?
-                                 at_npu::native::custom_ops::npu_dtype_cast(grad_output_ori, at::kFloat) :
+                                 at_npu::native::custom_ops::_npu_dtype_cast(grad_output_ori, at::kFloat) :
                                  grad_output_ori;
     at::Tensor offset_out = (offset_out_ori.dtype() != at::kFloat) ?
-                                at_npu::native::custom_ops::npu_dtype_cast(offset_out_ori, at::kFloat) :
+                                at_npu::native::custom_ops::_npu_dtype_cast(offset_out_ori, at::kFloat) :
                                 offset_out_ori;
     at::Tensor weight = (weight_ori.dtype() != at::kFloat) ?
-                            at_npu::native::custom_ops::npu_dtype_cast(weight_ori, at::kFloat) :
+                            at_npu::native::custom_ops::_npu_dtype_cast(weight_ori, at::kFloat) :
                             weight_ori;
     at::Tensor offset = (offset_ori.dtype() != at::kFloat) ?
-                            at_npu::native::custom_ops::npu_dtype_cast(offset_ori, at::kFloat) :
+                            at_npu::native::custom_ops::_npu_dtype_cast(offset_ori, at::kFloat) :
                             offset_ori;
     // deformable_conv2d_backward includes conv2d_backward and DeformableOffsetsGrad
     c10::SmallVector<int64_t, SIZE> conv2d_stride = op_infer::array_to_small_vector(kernel_size);
@@ -222,13 +222,13 @@ std::tuple<at::Tensor, at::Tensor> npu_deformable_conv2d(const at::Tensor &input
                                                          int64_t groups, int64_t deformable_groups, bool modulated)
 {
     at::Tensor input = (input_ori.dtype() != at::kFloat) ?
-                           at_npu::native::custom_ops::npu_dtype_cast(input_ori, at::kFloat) :
+                           at_npu::native::custom_ops::_npu_dtype_cast(input_ori, at::kFloat) :
                            input_ori;
     at::Tensor weight = (weight_ori.dtype() != at::kFloat) ?
-                            at_npu::native::custom_ops::npu_dtype_cast(weight_ori, at::kFloat) :
+                            at_npu::native::custom_ops::_npu_dtype_cast(weight_ori, at::kFloat) :
                             weight_ori;
     at::Tensor offset = (offset_ori.dtype() != at::kFloat) ?
-                            at_npu::native::custom_ops::npu_dtype_cast(offset_ori, at::kFloat) :
+                            at_npu::native::custom_ops::_npu_dtype_cast(offset_ori, at::kFloat) :
                             offset_ori;
     return deformable_conv2d_nocheck(input, weight, offset, bias_opt, kernel_size, stride, padding, dilation, groups,
                                      deformable_groups, modulated);

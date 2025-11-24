@@ -101,7 +101,7 @@ at::Tensor &linalg_norm_out_npu_nocheck(at::Tensor &out, const at::Tensor &self,
 {
     at::Tensor fp32_self(self);
     if (self.scalar_type() != at::ScalarType::Float) {
-        fp32_self = npu_dtype_cast(fp32_self, at::ScalarType::Float);
+        fp32_self = _npu_dtype_cast(fp32_self, at::ScalarType::Float);
     }
     auto output_size = op_infer::reduce_ops_npu_output_size(fp32_self, dim, keepdim);
     at::Tensor result_temp = npu_preparation::ApplyTensorWithSizes(output_size, fp32_self.options());
@@ -127,7 +127,7 @@ at::Tensor &linalg_norm_out_npu_nocheck(at::Tensor &out, const at::Tensor &self,
     // trans dtype for output
     if (result.scalar_type() != dtype) {
         auto dtype_ = dtype.value_or(self.scalar_type());
-        result = npu_dtype_cast(result, dtype_);
+        result = _npu_dtype_cast(result, dtype_);
     }
     // until now, can not support resize shape of out correctly,
     // so the shape of out must be equal to output_size

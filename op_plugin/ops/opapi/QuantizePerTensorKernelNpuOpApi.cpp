@@ -177,7 +177,7 @@ void dequantize_tensor_per_tensor_affine_npu(
         qtensor.options().dtype(output_dtype).memory_format(qtensor.suggest_memory_format()));
 
     at_npu::native::NPUNativeFunctions::set_(result, qtensor);
-    rtensor = at_npu::native::custom_ops::npu_dtype_cast(result, at::ScalarType::Float);
+    rtensor = at_npu::native::custom_ops::_npu_dtype_cast(result, at::ScalarType::Float);
     rtensor = (rtensor - zero_point) * scale;
 }
 

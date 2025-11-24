@@ -64,7 +64,7 @@ at::Tensor logical_or(const at::Tensor &self, const at::Tensor &other)
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);
     logical_or_out_npu_nocheck(result, self, other);
-    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kBool);
+    result = at_npu::native::custom_ops::_npu_dtype_cast(result, at::kBool);
     return result;
 }
 

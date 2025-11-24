@@ -34,7 +34,7 @@ at::Tensor bincount(const at::Tensor &self, const c10::optional<at::Tensor> &wei
     if (self.dtype() == at::kLong) {
         TORCH_NPU_WARN_ONCE("CANN: Bincount cann't support dtype int64, input will be cast to int32.");
     }
-    auto input = (self.dtype() == at::kInt) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt);
+    auto input = (self.dtype() == at::kInt) ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, at::kInt);
 
     // weight convert dtype as same as output defined by torch
     auto weight = weights;
@@ -42,7 +42,7 @@ at::Tensor bincount(const at::Tensor &self, const c10::optional<at::Tensor> &wei
         at::TensorOptions options = input.options();
         weight = acl_op::ones(input.sizes(), at::kLong, options.layout(), options.device(), options.pinned_memory());
     } else if (!(weights.dtype() == at::kFloat)) {
-        weight = at_npu::native::custom_ops::npu_dtype_cast(weights, at::kDouble);
+        weight = at_npu::native::custom_ops::_npu_dtype_cast(weights, at::kDouble);
     }
     auto result = npu_preparation::apply_tensor(weight, {sizes});
 

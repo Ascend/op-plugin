@@ -42,18 +42,18 @@ at::Tensor &scatter_out_nocheck(at::Tensor &result, const at::Tensor &self_ex, i
     at::Tensor result_ex = result;
     at::ScalarType self_type = self.scalar_type();
     if (self_type == at::ScalarType::Half) {
-        self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
-        result_ex = at_npu::native::custom_ops::npu_dtype_cast(result_ex, at::ScalarType::Float);
+        self = at_npu::native::custom_ops::_npu_dtype_cast(self, at::ScalarType::Float);
+        result_ex = at_npu::native::custom_ops::_npu_dtype_cast(result_ex, at::ScalarType::Float);
     }
 
     at::Tensor src(src_ex);
     if (src.scalar_type() != self.scalar_type()) {
-        src = at_npu::native::custom_ops::npu_dtype_cast(src, self.scalar_type());
+        src = at_npu::native::custom_ops::_npu_dtype_cast(src, self.scalar_type());
     }
     scatter_out_npu_nocheck(result_ex, self, dim, index, src);
 
     if (result_ex.scalar_type() != self_type) {
-        result_ex = at_npu::native::custom_ops::npu_dtype_cast(result_ex, self_type);
+        result_ex = at_npu::native::custom_ops::_npu_dtype_cast(result_ex, self_type);
         result.copy_(result_ex);
     } else {
         result = result_ex;
@@ -67,18 +67,18 @@ at::Tensor &scatter_inplace_nocheck(at::Tensor &self, int64_t dim, const at::Ten
     at::ScalarType self_type = self.scalar_type();
     at::Tensor self_ex(self);
     if (self_type == at::ScalarType::Half) {
-        self_ex = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+        self_ex = acl_op::_npu_dtype_cast(self, at::ScalarType::Float);
     }
 
     at::Tensor src(src_ex);
     if (src.scalar_type() != self_ex.scalar_type()) {
-        src = acl_op::npu_dtype_cast(src, self_ex.scalar_type());
+        src = acl_op::_npu_dtype_cast(src, self_ex.scalar_type());
     }
 
     scatter_out_npu_nocheck(self_ex, self_ex, dim, index, src);
 
     if (self_ex.scalar_type() != self_type) {
-        self.copy_(acl_op::npu_dtype_cast(self_ex, self_type));
+        self.copy_(acl_op::_npu_dtype_cast(self_ex, self_type));
     }
 
     return self;

@@ -1581,18 +1581,25 @@ class TestNpuRopeQuantKVCache(TestCase):
 
 class TestGeGlu(TestCase):
     # meta shape infer
-    @unittest.skipIf("2.1." in torch.__version__, "skip this test for PyTorch version 2.1")
     def TestGeGlu(self):
         with FakeTensorMode():
-            x = torch.randn(2, 10, 1024, dtype=torch.float)
+            x = torch.randn(2, 10, 64, dtype=torch.float)
             dim = -1
             approximate = 1
             activate_left = False
-            atten_mask.requires_grad = True
-            relative_pos_bias.requires_grad = True
-            res = torch.ops.npu.npu_geglu(x, dim, approximate, activate_left)
-            self.assertTrue(x.shape == res.shape)
+            y, gelu = torch.ops.npu.npu_geglu(x, dim, approximate, activate_left)
 
+            dim_num = x.dim()
+            if dim < 0:
+                dim += dim_num
+            for index in range(dim_num):
+                if index != dim:
+                    self.assertEqual(y.size(index), x.size(index))
+                    self.assertEqual(gelu.size(index), x.size(index))
+                else:
+                    self.assertEqual(y.size(index) * 2, x.size(index))
+                    self.assertEqual(gelu.size(index) * 2, x.size(index))
+            
 
 class TestScatterUpdateMeta(TestCase):
 

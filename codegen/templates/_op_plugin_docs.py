@@ -1082,13 +1082,14 @@ tensor([[[[0.0000, 0.0639, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
 _add_torch_npu_docstr(
     "npu_dtype_cast",
     """
-torch_npu.npu_dtype_cast(input, dtype) -> Tensor
+torch_npu.npu_dtype_cast(input, dtype, input_dtype=None) -> Tensor
 功能描述
 执行张量数据类型(dtype)转换。支持FakeTensor模式。
 
 参数说明
 input (Tensor) - 输入张量。
-dtype (torch.dtype) - 返回张量的目标数据类型。
+dtype (int) - 返回张量的目标数据类型。
+input_dtype (int) - 输入张量的数据类型， 默认值为None。为None时，采用输入张量原本的数据类型。
 示例
 示例一：
 
@@ -3649,14 +3650,14 @@ y=round(x×smooth_scales/scale)
 owMax表示求一行的最大值, DTYPE_MAX表示常量, 是y输出对应的数据类型的最大值. 
 
 接口原型:
-torch_npu.npu_dynamic_quant(Tensor x, *, Tensor? smooth_scales=None, Tensor? group_index=None, ScalarType? dst_type=None) ->(Tensor, Tensor)
+torch_npu.npu_dynamic_quant(Tensor x, *, Tensor? smooth_scales=None, Tensor? group_index=None, int? dst_type=None) ->(Tensor, Tensor)
 
 参数说明:
 x: Tensor类型, 需要进行量化的源数据张量, 必选输入, 数据类型支持torch.float16、torch.bfloat16, 数据格式支持ND, 支持非连续的Tensor. 输入x的维度必须大于1. 进行int4量化时, 要求x形状的最后一维是8的整数倍. 
 smooth_scales: Tensor类型, 对x进行scales的张量, 可选输入, 数据类型支持torch.float16、torch.bfloat16, 数据格式支持ND, 支持非连续的Tensor. shape必须是1维, 和x的最后一维相等. 
 单算子模式: smooth_scales的dtype必须和x保持一致. 
 group_index: Tensor类型, 对smooth_scales进行分组的下标, 可选输入, 仅在MoE场景下生效. 数据类型支持int32, 数据格式支持ND, 支持非连续的Tensor. 
-dst_type: ScalarType类型, 指定量化输出的类型, 可选输入, 传None时当做torch.int8处理. 
+dst_type: int类型, 指定量化输出的类型, 可选输入, 传None时当做torch.int8处理. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 支持取值torch.int8、torch.quint4x2. 
 Atlas A3 训练系列产品: 支持取值torch.int8、torch.quint4x2. 
 
@@ -5048,7 +5049,7 @@ _add_torch_npu_docstr(
 先将updates进行量化, 然后将updates中的值按指定的轴axis和索引indices更新input中的值, 并将结果保存到输出tensor, input本身的数据不变. 
 
 接口原型:
-torch_npu.npu_quant_scatter(Tensor input, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=0, int quant_axis=1, str reduce='update') -> Tensor
+torch_npu.npu_quant_scatter(Tensor input, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=-2, int quant_axis=-1, str reduce='update', int? dst_type=None, str? round_mode='rint') -> Tensor
 
 参数说明:
 input: Tensor类型, 必选输入, 源数据张量, 数据类型支持int8, 数据格式支持ND, 支持非连续的Tensor, 维数只能是3~8维. 
@@ -5062,8 +5063,8 @@ Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持bfloat
 quant_zero_points: Tensor类型, 可选输入, 量化偏移张量, 数据格式支持ND, 支持非连续的Tensor. 
 Atlas 推理系列产品: 数据类型支持int32. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持bfloat16、int32. 
-axis: int类型, 可选参数, updates上用来更新的轴, 默认值为0. 
-quant_axis: int类型, 可选参数, updates上用来量化的轴, 默认值为1. 
+axis: int类型, 可选参数, updates上用来更新的轴, 默认值为-2. 
+quant_axis: int类型, 可选参数, updates上用来量化的轴, 默认值为-1. 
 reduce: 字符串类型, 可选参数, 表示数据操作方式; 当前只支持'update', 即更新操作. 
 
 输出说明:
@@ -5228,7 +5229,7 @@ _add_torch_npu_docstr(
 先将updates进行量化, 然后将updates中的值按指定的轴axis和索引indices更新input中的值, input中的数据被改变. 
 
 接口原型:
-torch_npu.npu_quant_scatter_(Tensor(a!) input, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=0, int quant_axis=1, str reduce='update') -> Tensor(a!)
+torch_npu.npu_quant_scatter_(Tensor(a!) input, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=-2, int quant_axis=-1, str reduce='update', int? dst_type=None, str? round_mode='rint') -> Tensor(a!)
 
 参数说明:
 input: Tensor类型, 必选输入, 源数据张量, 数据类型支持int8, 数据格式支持ND, 支持非连续的Tensor, 维数只能是3~8维. 
@@ -5242,8 +5243,8 @@ Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持bfloat
 quant_zero_points: Tensor类型, 可选输入, 量化偏移张量, 数据格式支持ND, 支持非连续的Tensor. 
 Atlas 推理系列产品: 数据类型支持int32. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持bfloat16、int32. 
-axis: int类型, 可选参数, updates上用来更新的轴, 默认值为0. 
-quant_axis: int类型, 可选参数, updates上用来量化的轴, 默认值为1. 
+axis: int类型, 可选参数, updates上用来更新的轴, 默认值为-2. 
+quant_axis: int类型, 可选参数, updates上用来量化的轴, 默认值为-1. 
 reduce: 字符串类型, 可选参数, 表示数据操作方式; 当前只支持'update', 即更新操作. 
 
 输出说明:
@@ -9718,7 +9719,7 @@ _add_torch_npu_docstr(
     "npu_quantize",
     """
 接口原型：
-torch_npu.npu_quantize(Tensor input, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1, bool div_mode=True) -> Tensor
+torch_npu.npu_quantize(Tensor input, Tensor scales, Tensor? zero_points, int dtype, int axis=1, bool div_mode=True) -> Tensor
 
 功能描述
 算子功能: 对输入的张量进行量化处理. 
@@ -9744,7 +9745,7 @@ Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持int8�
 div_mode为False时, 数据格式支持ND, 支持非连续的Tensor. 支持1维或多维(1维时, 对应轴的大小需要与input中第axis维相等或等于1; 多维时, scales的shape需要与input维度相等, 除axis指定的维度, 其他维度为1, axis指定的维度必须和input对应的维度相等). zero_points的shape和dtype需要和scales一致. 
 Atlas 推理系列产品: 数据类型支持float、float16. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持float、float16、bfloat16. 
-dtype: ScalarType类型int类型, 指定输出参数的类型. 
+dtype: int类型, 指定输出参数的类型. 
 div_mode为True时, 
 Atlas 推理系列产品: 类型支持torch.qint8、torch.quint8、torch.int32. 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 类型支持torch.qint8、torch.quint8、torch.int32. 

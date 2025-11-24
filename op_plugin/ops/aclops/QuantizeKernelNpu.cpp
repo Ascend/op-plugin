@@ -17,6 +17,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -43,15 +44,15 @@ at::Tensor& npu_quantize_out_nocheck(
     const at::Tensor& scales,
     const at::Tensor& zero_points,
     int64_t axis,
-    at::ScalarType dtype)
+    int64_t dtype)
 {
     auto reshape_size = quantize_reshape_size(self, axis);
     at::Tensor scales_reshape = scales.reshape(reshape_size);
     at::Tensor zp_reshape = zero_points.defined() ? zero_points.reshape(reshape_size) : (at::Tensor());
     string dtype_str = "torch.qint8";
-    if (dtype == at::ScalarType::QUInt8) {
+    if (dtype == static_cast<int64_t>(at::ScalarType::QUInt8)) {
         dtype_str = "torch.quint8";
-    } else if (dtype == at::ScalarType::QInt32) {
+    } else if (dtype == static_cast<int64_t>(at::ScalarType::QInt32)) {
         dtype_str = "torch.qint32";
     }
     at_npu::native::OpCommand cmd;
@@ -94,7 +95,7 @@ at::Tensor npu_quantize(
     const at::Tensor& self,
     const at::Tensor& scales,
     const c10::optional<at::Tensor>& zero_points_opt,
-    at::ScalarType dtype,
+    int64_t dtype,
     int64_t axis,
     bool div_mode)
 {
@@ -112,16 +113,18 @@ at::Tensor npu_quantize(
             scales.sizes()[0] == zero_points.sizes()[0],
             "Scales' size should be equal to zero points' size." + OPS_ERROR(ErrCode::PARAM));
     }
-    TORCH_CHECK(axis <= self.sizes().size() - 1, "Unexpected value of axis." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(
+        axis >= 0 && axis <= self.sizes().size() - 1,
+        "Axis should be in range [-rank(x), rank(x) - 1]." + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(
         scales.sizes()[0] == self.sizes()[axis],
-        "length of scales must equal to the specified dimension." + OPS_ERROR(ErrCode::PARAM));
+        "Length of scales must equal to the specified dimension." + OPS_ERROR(ErrCode::PARAM));
     auto output_dtype = at::kInt;
-    if (dtype == at::ScalarType::QInt8) {
+    if (dtype == static_cast<int64_t>(at::ScalarType::QInt8)) {
         output_dtype = at::kChar;
-    } else if (dtype == at::ScalarType::QUInt8) {
+    } else if (dtype == static_cast<int64_t>(at::ScalarType::QUInt8)) {
         output_dtype = at::kByte;
-    } else if (dtype == at::ScalarType::QInt32) {
+    } else if (dtype == static_cast<int64_t>(at::ScalarType::QInt32)) {
         output_dtype = at::kInt;
     }
     at::Tensor result = npu_preparation::apply_tensor(self, self.options().dtype(output_dtype));

@@ -30,7 +30,7 @@ at::Tensor& masked_scatter_out_npu_nocheck(
 {
     at::Tensor mask_bool = mask;
     if (!(mask.dtype() == at::kBool)) {
-        mask_bool = at_npu::native::custom_ops::npu_dtype_cast(mask_bool, at::kBool);
+        mask_bool = at_npu::native::custom_ops::_npu_dtype_cast(mask_bool, at::kBool);
     }
     at_npu::native::OpCommand cmd;
     cmd.Name("MaskedScatter")

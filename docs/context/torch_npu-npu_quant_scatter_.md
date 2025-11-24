@@ -14,12 +14,13 @@
 ## 函数原型
 
 ```
-torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_points=None, axis=0, quant_axis=1, reduce='update') -> Tensor
+torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_points=None, axis=0, quant_axis=1, reduce='update', int? dst_type=None, str? round_mode='rint') -> Tensor
 ```
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选输入，源数据张量，数据类型支持`int8`，数据格式支持$ND$，支持非连续的Tensor，维数只能是3~8维。
+- **input** (`Tensor`)：必选输入，源数据张量，数据格式支持$ND$，支持非连续的Tensor，维数只能是3~8维。
+    - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持`int8`.
 - **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。
 - **updates** (`Tensor`)：必选输入，更新数据张量，数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。
@@ -47,11 +48,17 @@ torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_p
 - 该接口支持图模式。
 
 - `indices`的维数只能是1维或者2维；如果是2维，其第2维的大小必须是2；不支持索引越界，索引越界不校验；`indices`映射的`input`数据段不能重合，若重合则会因为多核并发原因导致多次执行结果不一样。
-- `updates`的维数需要与`input`的维数一样；其第1维的大小等于`indices`的第1维的大小，且不大于`input`的第1维的大小；其`axis`轴的大小不大于`input`的`axis`轴的大小；其余维度的大小要跟`input`对应维度的大小相等；其最后一维的大小必须32B对齐。
+- `updates`的维数需要与`input`的维数一样；其第1维的大小等于`indices`的第1维的大小，且不大于`input`的第1维的大小；其`axis`轴的大小不大于`input`的`axis`轴的大小；其余维度的大小要跟`input`对应维度的大小相等。
+       - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas 800I A2 推理产品：其最后一维的大小必须32B对齐。
 - `quant_scales`的元素个数需要等于`updates`在`quant_axis`轴的大小。
 - `quant_zero_points`的元素个数需要等于`updates`在`quant_axis`轴的大小。
 - `axis`不能为`updates`的第1维或最后1维。
 - `quant_axis`只能为`updates`的最后1维。
+
+## 支持的型号
+
+- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
+- <term>Atlas 推理系列产品</term>
 
 ## 调用示例
 

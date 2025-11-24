@@ -34,8 +34,8 @@ std::tuple<at::Tensor, at::Tensor> npu_nms_rotated(
     at::Tensor scores_cast = scores;
     at::Tensor labels = at::zeros({}, scores.options().dtype(at::kInt));
     if (origin_dtype != at::ScalarType::Float) {
-        dets_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
-        scores_cast = at_npu::native::custom_ops::npu_dtype_cast(scores, at::kFloat);
+        dets_cast = at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat);
+        scores_cast = at_npu::native::custom_ops::_npu_dtype_cast(scores, at::kFloat);
     }
     c10::SmallVector<int64_t, SIZE> selected_index_size = {self.size(0)};
     at::Tensor selected_box = npu_preparation::apply_tensor(dets_cast);

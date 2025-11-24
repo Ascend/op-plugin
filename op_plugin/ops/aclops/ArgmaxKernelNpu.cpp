@@ -48,13 +48,13 @@ at::Tensor& argmax_out(const at::Tensor& self, at::optional<int64_t> dim, bool k
         at::kLong,
         output_size);
     at::Scalar dim_scalar = dim_value;
-    at::Tensor result_cast = at_npu::native::custom_ops::npu_dtype_cast(out, at::kInt);
+    at::Tensor result_cast = at_npu::native::custom_ops::_npu_dtype_cast(out, at::kInt);
     argmax_out_nocheck(result_cast, input, dim_scalar, keepdim_value);
     if (!npu_utils::check_match(&out)) {
-        at::Tensor contiguous_result = at_npu::native::custom_ops::npu_dtype_cast(result_cast, at::kLong);
+        at::Tensor contiguous_result = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, at::kLong);
         npu_utils::format_fresh_view(out, contiguous_result);
     } else {
-        out = at_npu::native::custom_ops::npu_dtype_cast(result_cast, at::kLong);
+        out = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, at::kLong);
     }
     return out;
 }

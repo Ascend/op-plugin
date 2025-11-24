@@ -52,14 +52,14 @@ void _cummin_helper(const at::Tensor &self, at::Tensor &values, at::Tensor &indi
 
             cummin_out_npu_nocheck(transpose_value, transpose_indices, transpose_self, first_dim);
             // Indices must to be long
-            transpose_indices = at_npu::native::custom_ops::npu_dtype_cast(transpose_indices, at::kLong);
+            transpose_indices = at_npu::native::custom_ops::_npu_dtype_cast(transpose_indices, at::kLong);
             acl_op::npu_transpose_out(transpose_value, perm, true, values);
             acl_op::npu_transpose_out(transpose_indices, perm, true, indices);
         } else {
             at::Tensor values_temp = npu_preparation::apply_tensor(self);
             at::Tensor indices_temp = npu_preparation::apply_tensor(self, self.options().dtype(at::kInt));
             cummin_out_npu_nocheck(values_temp, indices_temp, self, dim);
-            indices_temp = at_npu::native::custom_ops::npu_dtype_cast(indices_temp, at::kLong);
+            indices_temp = at_npu::native::custom_ops::_npu_dtype_cast(indices_temp, at::kLong);
             values.copy_(values_temp);
             indices.copy_(indices_temp);
         }

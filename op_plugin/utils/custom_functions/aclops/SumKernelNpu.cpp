@@ -50,7 +50,7 @@ at::Tensor check_dtype(
         out_type = at::kFloat;
     }
     at::Tensor self_cp = (self.scalar_type() == out_type) ? self :
-        acl_op::npu_dtype_cast(self, out_type);
+        acl_op::_npu_dtype_cast(self, out_type);
     return self_cp;
 }
 } // namespace
@@ -80,7 +80,7 @@ at::Tensor& sum_out_common_nocheck(
 
     at::Tensor self_cp = check_dtype(self, res_type);
     at::Tensor result_cp = result.scalar_type() == self_cp.scalar_type() ? result :
-        acl_op::npu_dtype_cast(result, self_cp.scalar_type());
+        acl_op::_npu_dtype_cast(result, self_cp.scalar_type());
     if (!npu_utils::check_match(&result_cp)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
         sum_out_npu_nocheck(contiguous_result, self_cp, dim, keepdim);
@@ -90,7 +90,7 @@ at::Tensor& sum_out_common_nocheck(
     }
 
     if (result_cp.scalar_type() != res_type) {
-        result_cp = acl_op::npu_dtype_cast(result_cp, res_type);
+        result_cp = acl_op::_npu_dtype_cast(result_cp, res_type);
         result.copy_(result_cp);
     } else {
         result = result_cp;
@@ -124,7 +124,7 @@ at::Tensor sum_common_nocheck(
     sum_out_npu_nocheck(result, self_cp, dim, keepdim);
 
     if (result.scalar_type() != out_type) {
-        result = acl_op::npu_dtype_cast(result, out_type);
+        result = acl_op::_npu_dtype_cast(result, out_type);
     }
     return result;
 }

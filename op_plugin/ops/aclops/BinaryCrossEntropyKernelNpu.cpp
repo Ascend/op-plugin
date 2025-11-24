@@ -56,7 +56,7 @@ at::Tensor& binary_cross_entropy_out(
     output_size = at::ArrayRef<int64_t>();
   }
   if (self.numel() == 0) {
-    at::Tensor result_cp = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat).fill_(NAN);
+    at::Tensor result_cp = at_npu::native::custom_ops::_npu_dtype_cast(result, at::kFloat).fill_(NAN);
     result.copy_(result_cp);
     return result;
   }
@@ -91,7 +91,7 @@ at::Tensor binary_cross_entropy(
 
   at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   if (self.numel() == 0) {
-    result = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat).fill_(NAN);
+    result = at_npu::native::custom_ops::_npu_dtype_cast(result, at::kFloat).fill_(NAN);
     return result;
   }
 

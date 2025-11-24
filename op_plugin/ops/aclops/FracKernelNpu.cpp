@@ -23,7 +23,7 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 at::Tensor& frac_out_nocheck(at::Tensor& result, const at::Tensor& self)
 {
-    at::Tensor cast_return_Tensor = at_npu::native::custom_ops::npu_dtype_cast(self, at::kInt);
+    at::Tensor cast_return_Tensor = at_npu::native::custom_ops::_npu_dtype_cast(self, at::kInt);
     at::sub_out(result, self, cast_return_Tensor);
     return result;
 }

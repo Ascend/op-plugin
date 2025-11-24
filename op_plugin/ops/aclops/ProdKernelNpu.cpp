@@ -74,9 +74,9 @@ at::Tensor &prod_out(const at::Tensor &self, int64_t dim, bool keepdim, c10::opt
 
     at::ScalarType cal_type = get_cal_type(self, dtype);
     at::Tensor self_tmp =
-        self.scalar_type() != cal_type ? at_npu::native::custom_ops::npu_dtype_cast(self, cal_type) : self;
+        self.scalar_type() != cal_type ? at_npu::native::custom_ops::_npu_dtype_cast(self, cal_type) : self;
     at::Tensor result_tmp =
-        result.scalar_type() != cal_type ? at_npu::native::custom_ops::npu_dtype_cast(result, cal_type) : result;
+        result.scalar_type() != cal_type ? at_npu::native::custom_ops::_npu_dtype_cast(result, cal_type) : result;
 
     c10::SmallVector<int64_t, N> dim_now = {dim};
     if (self.dim() == 0) {
@@ -92,7 +92,7 @@ at::Tensor &prod_out(const at::Tensor &self, int64_t dim, bool keepdim, c10::opt
     }
 
     if (cal_type != dst_type) {
-        result_tmp = at_npu::native::custom_ops::npu_dtype_cast(result_tmp, dst_type);
+        result_tmp = at_npu::native::custom_ops::_npu_dtype_cast(result_tmp, dst_type);
         result.copy_(result_tmp);
     }
     return result;
@@ -102,7 +102,7 @@ at::Tensor prod(const at::Tensor &self, int64_t dim, bool keepdim, c10::optional
 {
     at::ScalarType cal_type = get_cal_type(self, dtype);
     at::Tensor self_tmp =
-        self.scalar_type() != cal_type ? at_npu::native::custom_ops::npu_dtype_cast(self, cal_type) : self;
+        self.scalar_type() != cal_type ? at_npu::native::custom_ops::_npu_dtype_cast(self, cal_type) : self;
 
     auto output_size = op_infer::prod_npu_output_size(self, dim, keepdim);
     int64_t npu_format = calculate_prod_output_format(self_tmp, output_size);
@@ -116,7 +116,7 @@ at::Tensor prod(const at::Tensor &self, int64_t dim, bool keepdim, c10::optional
 
     prod_out_npu_nocheck(result, self_tmp, dim_now, keepdim, dtype);
     if (cal_type != dst_type) {
-        result = at_npu::native::custom_ops::npu_dtype_cast(result, dst_type);
+        result = at_npu::native::custom_ops::_npu_dtype_cast(result, dst_type);
     }
     return result;
 }
@@ -125,7 +125,7 @@ at::Tensor prod(const at::Tensor &self, c10::optional<at::ScalarType> dtype)
 {
     at::ScalarType cal_type = get_cal_type(self, dtype);
     at::Tensor self_tmp =
-        self.scalar_type() != cal_type ? at_npu::native::custom_ops::npu_dtype_cast(self, cal_type) : self;
+        self.scalar_type() != cal_type ? at_npu::native::custom_ops::_npu_dtype_cast(self, cal_type) : self;
 
     auto output_size = op_infer::prod_npu_output_size(self, false);
     int64_t npu_format = calculate_prod_output_format(self, output_size);
@@ -134,7 +134,7 @@ at::Tensor prod(const at::Tensor &self, c10::optional<at::ScalarType> dtype)
 
     prod_out_npu_nocheck(result, self_tmp, op_plugin::utils::get_dimlist_for_tensor(self), false, dtype);
     if (cal_type != dst_type) {
-        result = at_npu::native::custom_ops::npu_dtype_cast(result, dst_type);
+        result = at_npu::native::custom_ops::_npu_dtype_cast(result, dst_type);
     }
     return result;
 }

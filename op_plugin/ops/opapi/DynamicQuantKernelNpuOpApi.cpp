@@ -20,31 +20,48 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 const int64_t INT4_IN_INT32_NUM = 8;
-// Substitute INT32_OUTPUT_TYPE for ge::DataType::DT_INT32, INT8_OUTPUT_TYPE for ge::DataType::DT_INT8.
-const int INT32_OUTPUT_TYPE = 3;
-const int INT8_OUTPUT_TYPE = 2;
+constexpr int64_t DTYPE_NUM_FOR_QUINT4X2 = static_cast<int64_t>(at::ScalarType::QUInt4x2);
+
+TensorWrapper get_output_tensor_wrapper(
+    const at::Tensor &input, at::Tensor &output,
+    aclDataType &y_acltype, c10::optional<int64_t> dst_type,
+    at::SmallVector<int64_t, op_infer::SIZE> scale_size, int index)
+{
+    if (dst_type == DTYPE_NUM_FOR_QUINT4X2) { // INT4
+        TORCH_CHECK(input.size(index) % INT4_IN_INT32_NUM == 0,
+                    "Input shape last dim must be divded by 8 when int4 quantization" + OPS_ERROR(ErrCode::PARAM));
+        scale_size.push_back(input.size(index) / INT4_IN_INT32_NUM);
+        output = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Int));
+        y_acltype = aclDataType::ACL_INT32;
+    } else if (!dst_type.has_value()) { // 默认INT8
+        output = npu_preparation::apply_tensor_without_format(input.sizes(), c10::dtype(c10::ScalarType::Char));
+        y_acltype = aclDataType::ACL_INT8;
+    } else {
+        y_acltype = c10_npu::GetAclDataType(dst_type.value());
+        at::ScalarType scalar_dtype = npu_preparation::convert_to_scalar_type(y_acltype);
+        output = npu_preparation::apply_tensor_without_format(input.sizes(), c10::dtype(scalar_dtype));
+    }
+    TensorWrapper y_wrapper = {output, y_acltype};
+    return y_wrapper;
+}
 
 std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant_v0(
     const at::Tensor &input,
-
     const c10::optional<at::Tensor> &smooth_scales,
     const c10::optional<at::Tensor> &group_index,
-    c10::optional<at::ScalarType> dst_type)
+    c10::optional<int64_t> dst_type)
 {
-    TORCH_CHECK(dst_type != at::ScalarType::QUInt4x2,
-                "please update your CANN to support int4 quantization" + OPS_ERROR(ErrCode::NOT_SUPPORT));
-    TORCH_CHECK(!group_index.has_value(),
-                "please update your CANN to support MOE quantization" + OPS_ERROR(ErrCode::NOT_SUPPORT));
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
-    for (int i = 0; i < scale_dim; ++i) {
-        scale_size.push_back(input.size(i));
+    int index = 0;
+    for (; index < scale_dim; ++index) {
+        scale_size.push_back(input.size(index));
     }
-
-    at::Tensor output = npu_preparation::apply_tensor_without_format(input.sizes(), c10::dtype(c10::ScalarType::Char));
     at::Tensor scale = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
-
-    EXEC_NPU_CMD(aclnnDynamicQuant, input, smooth_scales, output, scale);
+    at::Tensor output;
+    aclDataType y_acltype;
+    TensorWrapper y_wrapper = get_output_tensor_wrapper(input, output, y_acltype, dst_type, scale_size, index);
+    EXEC_NPU_CMD(aclnnDynamicQuant, input, smooth_scales, y_wrapper, scale);
     return std::make_tuple(output, scale);
 }
 
@@ -52,10 +69,9 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(
     const at::Tensor &input,
     const c10::optional<at::Tensor> &smooth_scales,
     const c10::optional<at::Tensor> &group_index,
-    c10::optional<at::ScalarType> dst_type)
+    c10::optional<int64_t> dst_type,
+    c10::string_view quant_mode)
 {
-    TORCH_CHECK(!dst_type.has_value() || dst_type == at::ScalarType::Char || dst_type == at::ScalarType::QUInt4x2,
-                "dtype must be torch.int8 for int8 or torch.quint4x2 for int4" + OPS_ERROR(ErrCode::TYPE));
     DO_COMPATIBILITY(aclnnDynamicQuantV2, npu_dynamic_quant_v0(input, smooth_scales, group_index, dst_type));
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
@@ -64,22 +80,27 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(
         scale_size.push_back(input.size(index));
     }
     at::Tensor scale = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
-
-    int output_type;
-    at::Tensor output;
-    if (dst_type == at::ScalarType::QUInt4x2) { // INT4
-        TORCH_CHECK(input.size(index) % INT4_IN_INT32_NUM == 0,
-                    "input shape last dim must be divded by 8 when int4 quantization" + OPS_ERROR(ErrCode::PARAM));
-        output_type = INT32_OUTPUT_TYPE;
-        scale_size.push_back(input.size(index) / INT4_IN_INT32_NUM);
-        output = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Int));
-    } else { // 默认INT8
-        output_type = INT8_OUTPUT_TYPE;
-        output = npu_preparation::apply_tensor_without_format(input.sizes(), c10::dtype(c10::ScalarType::Char));
-    }
     c10::optional<at::Tensor> offset;
 
-    EXEC_NPU_CMD(aclnnDynamicQuantV2, input, smooth_scales, group_index, output_type, output, scale, offset);
+    at::Tensor output;
+    aclDataType y_acltype;
+    TensorWrapper y_wrapper = get_output_tensor_wrapper(input, output, y_acltype, dst_type, scale_size, index);
+
+    std::string quant_mode_str = std::string(quant_mode);
+    if (quant_mode_str == "pertensor") {
+        static bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicQuantV3");
+        TORCH_CHECK(npu_support_v3,
+            "Can't support quant_mode pertensor, please check device type." + OPS_ERROR(ErrCode::PARAM));
+        bool is_symmetrical = true;
+        at::SmallVector<int64_t, op_infer::SIZE> per_tensor_size = {1};
+        scale = npu_preparation::apply_tensor_without_format(per_tensor_size, c10::dtype(c10::ScalarType::Float));
+        EXEC_NPU_CMD(aclnnDynamicQuantV3, input, smooth_scales, group_index, y_acltype, is_symmetrical, "pertensor", y_wrapper, scale, offset);
+    } else if (quant_mode_str == "pertoken") {
+        EXEC_NPU_CMD(aclnnDynamicQuantV2, input, smooth_scales, group_index, y_acltype, y_wrapper, scale, offset);
+    } else {
+        TORCH_CHECK(false, "quant_mode only support pertoken or pertensor." + OPS_ERROR(ErrCode::PARAM));
+    }
+
     return std::make_tuple(output, scale);
 }
 
@@ -87,10 +108,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant_asymmetric(
     const at::Tensor &input,
     const c10::optional<at::Tensor> &smooth_scales,
     const c10::optional<at::Tensor> &group_index,
-    c10::optional<at::ScalarType> dst_type)
+    c10::optional<int64_t> dst_type,
+    c10::string_view quant_mode)
 {
-    TORCH_CHECK(!dst_type.has_value() || dst_type == at::ScalarType::Char || dst_type == at::ScalarType::QUInt4x2,
-                "dtype must be torch.int8 for int8 or torch.quint4x2 for int4 when int4 quantization" + OPS_ERROR(ErrCode::TYPE));
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
     int index = 0;
@@ -100,20 +120,27 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant_asymmetric(
 
     at::Tensor scale = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
     at::Tensor offset = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
-    int output_type;
+
     at::Tensor output;
-    if (dst_type == at::ScalarType::QUInt4x2) { // INT4
-        TORCH_CHECK(input.size(index) % INT4_IN_INT32_NUM == 0,
-                    "input shape last dim must be divded by 8" + OPS_ERROR(ErrCode::PARAM));
-        output_type = INT32_OUTPUT_TYPE;
-        scale_size.push_back(input.size(index) / INT4_IN_INT32_NUM);
-        output = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Int));
-    } else { // 默认INT8
-        output_type = INT8_OUTPUT_TYPE;
-        output = npu_preparation::apply_tensor_without_format(input.sizes(), c10::dtype(c10::ScalarType::Char));
+    aclDataType y_acltype;
+    TensorWrapper y_wrapper = get_output_tensor_wrapper(input, output, y_acltype, dst_type, scale_size, index);
+
+    std::string quant_mode_str = std::string(quant_mode);
+    if (quant_mode_str == "pertensor") {
+        static bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicQuantV3");
+        TORCH_CHECK(npu_support_v3,
+            "Can't support quant_mode pertensor, please check device type." + OPS_ERROR(ErrCode::PARAM));
+        bool is_symmetrical = false;
+        at::SmallVector<int64_t, op_infer::SIZE> per_tensor_size = {1};
+        scale = npu_preparation::apply_tensor_without_format(per_tensor_size, c10::dtype(c10::ScalarType::Float));
+        offset = npu_preparation::apply_tensor_without_format(per_tensor_size, c10::dtype(c10::ScalarType::Float));
+        EXEC_NPU_CMD(aclnnDynamicQuantV3, input, smooth_scales, group_index, y_acltype, is_symmetrical, "pertensor", y_wrapper, scale, offset);
+    } else if (quant_mode_str == "pertoken") {
+        EXEC_NPU_CMD(aclnnDynamicQuantV2, input, smooth_scales, group_index, y_acltype, y_wrapper, scale, offset);
+    } else {
+        TORCH_CHECK(false, "quant_mode only support pertoken or pertensor." + OPS_ERROR(ErrCode::PARAM));
     }
 
-    EXEC_NPU_CMD(aclnnDynamicQuantV2, input, smooth_scales, group_index, output_type, output, scale, offset);
     return std::make_tuple(output, scale, offset);
 }
 }

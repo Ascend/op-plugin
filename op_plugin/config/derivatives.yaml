@@ -106,9 +106,9 @@ backward:
   self, x1: npu_dropout_with_add_softmax_backward(grad, result0, result1, alpha, prob, dim)
   version: [v2.1, newest]
 
-- name: npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor
-  self: npu_dtype_cast_backward(grad, self.scalar_type())
-  output_differentiability: [isDifferentiableType(dtype)]
+- name: npu_dtype_cast(Tensor self, int dtype, int? input_dtype=None) -> Tensor
+  self: npu_dtype_cast_backward(grad, self.scalar_type(), dtype, input_dtype)
+  output_differentiability: [true]
   version: [v2.1, newest]
 
 - name: _npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor

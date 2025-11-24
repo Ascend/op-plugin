@@ -79,8 +79,8 @@ at::Tensor& renorm_out_nocheck(
     if (ori_type == c10::ScalarType::Half) {
         at::Tensor self_no_name = self.rename(c10::nullopt);
         at::Tensor result_no_name = result.rename(c10::nullopt);
-        self_no_name = at_npu::native::custom_ops::npu_dtype_cast(self_no_name, c10::ScalarType::Float);
-        result_no_name = at_npu::native::custom_ops::npu_dtype_cast(result_no_name, c10::ScalarType::Float);
+        self_no_name = at_npu::native::custom_ops::_npu_dtype_cast(self_no_name, c10::ScalarType::Float);
+        result_no_name = at_npu::native::custom_ops::_npu_dtype_cast(result_no_name, c10::ScalarType::Float);
         renorm_compute(
             result_bak,
             self_no_name,

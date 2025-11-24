@@ -59,7 +59,7 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
 
     at::Tensor out_cast = out;
     if (out_is_not_float) {
-        out_cast = at_npu::native::custom_ops::npu_dtype_cast(out, at::kFloat);
+        out_cast = at_npu::native::custom_ops::_npu_dtype_cast(out, at::kFloat);
     }
 
     if (!npu_utils::check_match(&out_cast)) {
@@ -71,7 +71,7 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
     }
 
     if (out_is_not_float) {
-        out_cast = at_npu::native::custom_ops::npu_dtype_cast(out_cast, out.scalar_type());
+        out_cast = at_npu::native::custom_ops::_npu_dtype_cast(out_cast, out.scalar_type());
         out.copy_(out_cast);
     } else {
         out = out_cast;
@@ -100,13 +100,13 @@ at::Tensor linspace(
 
     bool result_is_not_float = (result.dtype() != at::kFloat) ? true : false;
     if (result_is_not_float) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result, at::kFloat);
+        result_cast = at_npu::native::custom_ops::_npu_dtype_cast(result, at::kFloat);
     }
 
     linspace_npu_out_nocheck(result_cast, start, end, steps);
 
     if (result_is_not_float) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result.scalar_type());
+        result_cast = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, result.scalar_type());
     }
     result = result_cast;
     return result;

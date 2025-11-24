@@ -80,9 +80,9 @@ at::Tensor& remainder_out_scalar(
                 " can't be cast to the desired output type ", result_type, OPS_ERROR(ErrCode::TYPE));
 
     at::Tensor other_cast = (other.dtype() == calculate_type) ? other :
-        at_npu::native::custom_ops::npu_dtype_cast(other, calculate_type);
+        at_npu::native::custom_ops::_npu_dtype_cast(other, calculate_type);
     at::Tensor result_cast = (result_type == calculate_type) ? result :
-        at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
+        at_npu::native::custom_ops::_npu_dtype_cast(result, calculate_type);
 
     npu_preparation::CheckOut(
         {other},
@@ -99,7 +99,7 @@ at::Tensor& remainder_out_scalar(
     }
 
     if (result_type != calculate_type) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
+        result_cast = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, result_type);
         result.copy_(result_cast);
     }
     return result;
@@ -123,9 +123,9 @@ at::Tensor& remainder_out(
                 " can't be cast to the desired output type ", result_type, OPS_ERROR(ErrCode::TYPE));
 
     at::Tensor self_cast = (self.dtype() == calculate_type) ? self :
-        at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
+        at_npu::native::custom_ops::_npu_dtype_cast(self, calculate_type);
     at::Tensor result_cast = (result_type == calculate_type) ? result :
-        at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
+        at_npu::native::custom_ops::_npu_dtype_cast(result, calculate_type);
     if (!npu_utils::check_match(&result_cast)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
         remainder_out_scalar_npu_nocheck(contiguous_result, self_cast, other);
@@ -135,7 +135,7 @@ at::Tensor& remainder_out(
     }
 
     if (result_type != calculate_type) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
+        result_cast = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, result_type);
         result.copy_(result_cast);
     }
     return result;
@@ -168,11 +168,11 @@ at::Tensor& remainder_out(
                     self.device(), " and ", other.device(), OPS_ERROR(ErrCode::PARAM));
 
         at::Tensor self_cast =
-            (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
+            (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, calculate_type);
         at::Tensor other_cast =
-            (other.dtype() == calculate_type) ? other : at_npu::native::custom_ops::npu_dtype_cast(other, calculate_type);
+            (other.dtype() == calculate_type) ? other : at_npu::native::custom_ops::_npu_dtype_cast(other, calculate_type);
         at::Tensor result_cast =
-            (result_type == calculate_type) ? result : at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
+            (result_type == calculate_type) ? result : at_npu::native::custom_ops::_npu_dtype_cast(result, calculate_type);
         if (!npu_utils::check_match(&result_cast)) {
             at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
             remainder_out_tensor_npu_nocheck(contiguous_result, self_cast, other_cast);
@@ -182,7 +182,7 @@ at::Tensor& remainder_out(
         }
 
         if (result_type != calculate_type) {
-            result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
+            result_cast = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, result_type);
             result.copy_(result_cast);
         }
         return result;
@@ -202,9 +202,9 @@ at::Tensor remainder(const at::Tensor& self, const at::Tensor& other)
 
         at::ScalarType calculate_type = at::native::result_type(self, other);
         at::Tensor self_cast =
-            (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
+            (self.dtype() == calculate_type) ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, calculate_type);
         at::Tensor other_cast =
-            (other.dtype() == calculate_type) ? other : at_npu::native::custom_ops::npu_dtype_cast(other, calculate_type);
+            (other.dtype() == calculate_type) ? other : at_npu::native::custom_ops::_npu_dtype_cast(other, calculate_type);
 
         auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
         at::Tensor result = npu_preparation::apply_tensor(self_cast, output_size);
@@ -217,7 +217,7 @@ at::Tensor remainder(const at::Tensor& self, const at::Scalar& other)
 {
     at::ScalarType calculate_type = at::native::result_type(self, other);
     at::Tensor self_cast = (self.dtype() == calculate_type) ? self :
-        at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
+        at_npu::native::custom_ops::_npu_dtype_cast(self, calculate_type);
     at::Tensor result = npu_preparation::apply_tensor(self_cast);
     remainder_out_scalar_npu_nocheck(result, self_cast, other);
     return result;
@@ -237,7 +237,7 @@ at::Tensor remainder(const at::Scalar& self, const at::Tensor& other)
 {
     at::ScalarType calculate_type = at::native::result_type(other, self);
     at::Tensor other_cast = (other.dtype() == calculate_type) ? other :
-        at_npu::native::custom_ops::npu_dtype_cast(other, calculate_type);
+        at_npu::native::custom_ops::_npu_dtype_cast(other, calculate_type);
     at::Tensor result = npu_preparation::apply_tensor(other_cast);
     remainder_out_scalar_npu_nocheck(result, self, other_cast);
     return result;

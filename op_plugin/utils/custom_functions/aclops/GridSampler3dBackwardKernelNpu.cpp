@@ -37,13 +37,13 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler3d_backward_common_nocheck(
     at::Tensor format_cast_of_input = input;
     at::Tensor format_cast_of_grid = grid;
     if (format_cast_of_grad.scalar_type() == at::ScalarType::Half) {
-        format_cast_of_grad = acl_op::npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
+        format_cast_of_grad = acl_op::_npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
     }
     if (format_cast_of_input.scalar_type() == at::ScalarType::Half) {
-        format_cast_of_input = acl_op::npu_dtype_cast(format_cast_of_input, at::ScalarType::Float);
+        format_cast_of_input = acl_op::_npu_dtype_cast(format_cast_of_input, at::ScalarType::Float);
     }
     if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
-        format_cast_of_grid = acl_op::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
+        format_cast_of_grid = acl_op::_npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
     }
 
     at::Tensor dx = npu_preparation::apply_tensor(format_cast_of_input);

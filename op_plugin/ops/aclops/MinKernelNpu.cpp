@@ -97,7 +97,7 @@ std::tuple<at::Tensor&, at::Tensor&> min_out(
         at::ScalarType::Long,
         output_size);
 
-    at::Tensor indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices, at::kInt);
+    at::Tensor indices_dtype_cast = at_npu::native::custom_ops::_npu_dtype_cast(indices, at::kInt);
     bool output_match = npu_utils::check_match(&output);
     bool indices_match = npu_utils::check_match(&indices);
     if (!(output_match && indices_match)) {
@@ -115,7 +115,7 @@ std::tuple<at::Tensor&, at::Tensor&> min_out(
         min_out_npu_nocheck(output, indices_dtype_cast, self, dim, keepdim);
     }
 
-    indices_dtype_cast = at_npu::native::custom_ops::npu_dtype_cast(indices_dtype_cast, at::kLong);
+    indices_dtype_cast = at_npu::native::custom_ops::_npu_dtype_cast(indices_dtype_cast, at::kLong);
     indices.copy_(indices_dtype_cast);
     return std::tie(output, indices);
 }
@@ -124,7 +124,7 @@ std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, int64_t dim, bool
 {
     at::Tensor self_cast = self;
     if (self.dtype() == at::ScalarType::Bool) {
-        self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
+        self_cast = at_npu::native::custom_ops::_npu_dtype_cast(self, at::ScalarType::Float);
     }
     c10::SmallVector<int64_t, SIZE> dims = {dim};
     auto output_size = op_infer::reduce_ops_npu_output_size(self_cast, dims, keepdim);
@@ -140,9 +140,9 @@ std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, int64_t dim, bool
         ACL_FORMAT_NCHW);
 
     min_out_npu_nocheck(outputs, indices, self_cast, dim, keepdim);
-    indices = at_npu::native::custom_ops::npu_dtype_cast(indices, at::ScalarType::Long);
+    indices = at_npu::native::custom_ops::_npu_dtype_cast(indices, at::ScalarType::Long);
     if (self.dtype() == at::ScalarType::Bool) {
-        outputs = at_npu::native::custom_ops::npu_dtype_cast(outputs, at::ScalarType::Bool);
+        outputs = at_npu::native::custom_ops::_npu_dtype_cast(outputs, at::ScalarType::Bool);
     }
     return std::tie(outputs, indices);
 }
@@ -195,9 +195,9 @@ at::Tensor minimum(const at::Tensor& self, const at::Tensor& other)
         self_copy = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, self.scalar_type(), other.device());
     }
     self_copy = (self.scalar_type() != result_type) ?
-        at_npu::native::custom_ops::npu_dtype_cast(self_copy, result_type) : self_copy;
+        at_npu::native::custom_ops::_npu_dtype_cast(self_copy, result_type) : self_copy;
     other_copy = (other.scalar_type() != result_type) ?
-        at_npu::native::custom_ops::npu_dtype_cast(other_copy, result_type) : other_copy;
+        at_npu::native::custom_ops::_npu_dtype_cast(other_copy, result_type) : other_copy;
 
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::Tensor result = npu_preparation::apply_tensor(self_copy, output_size);
@@ -222,9 +222,9 @@ at::Tensor& minimum_out(const at::Tensor& self, const at::Tensor& other, at::Ten
         self_copy = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, self.scalar_type(), other.device());
     }
     self_copy = (self.scalar_type() != result_type) ?
-        at_npu::native::custom_ops::npu_dtype_cast(self_copy, result_type) : self_copy;
+        at_npu::native::custom_ops::_npu_dtype_cast(self_copy, result_type) : self_copy;
     other_copy = (other.scalar_type() != result_type) ?
-        at_npu::native::custom_ops::npu_dtype_cast(other_copy, result_type) : other_copy;
+        at_npu::native::custom_ops::_npu_dtype_cast(other_copy, result_type) : other_copy;
 
     return acl_op::min_out(self_copy, other_copy, result);
 }

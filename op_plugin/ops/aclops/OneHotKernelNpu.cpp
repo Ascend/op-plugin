@@ -26,7 +26,7 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
     at::Scalar off_value = 0;
     int64_t axis = -1;
     int64_t depth;
-    auto self_temp = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
+    auto self_temp = at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat);
 
     if (self.numel() == 0) {
         TORCH_CHECK(num_classes > 0, "Can not infer total number of classes from empty tensor."

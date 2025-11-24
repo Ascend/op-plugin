@@ -113,10 +113,10 @@ at::Tensor &index_fill_d_nocheck(at::Tensor &result, const at::Tensor &self, int
     at::ScalarType self_type = self.scalar_type();
     assist_help1 = assist_help1.scalar_type() == self_type ?
                        assist_help1 :
-                       at_npu::native::custom_ops::npu_dtype_cast(assist_help1, self_type);
+                       at_npu::native::custom_ops::_npu_dtype_cast(assist_help1, self_type);
     assist_help2 = assist_help2.scalar_type() == self_type ?
                        assist_help2 :
-                       at_npu::native::custom_ops::npu_dtype_cast(assist_help2, self_type);
+                       at_npu::native::custom_ops::_npu_dtype_cast(assist_help2, self_type);
 
     at_npu::native::OpCommand cmd;
     cmd.Name("IndexFillD").Input(self).Input(assist_help1).Input(assist_help2).Attr("dim", dim).Output(result).Run();

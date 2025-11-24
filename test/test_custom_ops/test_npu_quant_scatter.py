@@ -41,5 +41,26 @@ class TestQuantScatter(TestCase):
         custom_output = self.custom_op_exec(var2, indices2, updates2, quant_scales2)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_scatter_fp8(self, device="npu"):
+        var_data = np.random.uniform(0, 1, [1, 1, 32]).astype(np.int8)
+        var1 = torch.from_numpy(var_data).to(torch.float8_e5m2).npu()
+        var2 = var1.clone()
+
+        indices_data = np.random.uniform(0, 1, [1]).astype(np.int32)
+        indices1 = torch.from_numpy(indices_data).to(torch.int32).npu()
+        indices2 = indices1.clone()
+
+        updates_data = np.random.uniform(1, 2, [1, 1, 32]).astype(np.float16)
+        updates1 = torch.from_numpy(updates_data).to(torch.bfloat16).npu()
+        updates2 = updates1.clone()
+
+        quant_scales_data = np.random.uniform(0, 1, [1, 1, 32]).astype(np.float16)
+        quant_scales1 = torch.from_numpy(quant_scales_data).to(torch.bfloat16).npu()
+        quant_scales2 = quant_scales1.clone()
+
+        with self.assertRaisesRegex(RuntimeError, msg):
+            torch_npu.npu_quant_scatter(var, indices, updates, quant_scales, None, -2, -1, "update", torch_npu.bfloat16, "rint")
+
 if __name__ == "__main__":
     run_tests()

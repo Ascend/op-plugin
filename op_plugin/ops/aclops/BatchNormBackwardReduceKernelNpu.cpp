@@ -34,13 +34,13 @@ tensor_list batch_norm_backward_reduce_npu_impl(at::Tensor &sum_dy, at::Tensor &
 
     at::Tensor grad_out_scalar = grad_out.scalar_type() == at::kFloat ?
                                      grad_out :
-                                     at_npu::native::custom_ops::npu_dtype_cast(grad_out, at::kFloat);
+                                     at_npu::native::custom_ops::_npu_dtype_cast(grad_out, at::kFloat);
     at::Tensor self_scalar =
-        self.scalar_type() == at::kFloat ? self : at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
+        self.scalar_type() == at::kFloat ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat);
     at::Tensor mean_scalar =
-        mean.scalar_type() == at::kFloat ? mean : at_npu::native::custom_ops::npu_dtype_cast(mean, at::kFloat);
+        mean.scalar_type() == at::kFloat ? mean : at_npu::native::custom_ops::_npu_dtype_cast(mean, at::kFloat);
     at::Tensor invstd_scalar =
-        invstd.scalar_type() == at::kFloat ? invstd : at_npu::native::custom_ops::npu_dtype_cast(invstd, at::kFloat);
+        invstd.scalar_type() == at::kFloat ? invstd : at_npu::native::custom_ops::_npu_dtype_cast(invstd, at::kFloat);
 
     c10::SmallVector<int64_t, N> axes;
     int dimN = self_scalar.ndimension();

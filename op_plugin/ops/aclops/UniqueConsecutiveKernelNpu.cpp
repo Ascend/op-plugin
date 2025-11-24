@@ -32,8 +32,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> unique_consecutive_out_nocheck
 {
     at::Tensor self_copy = self;
     if (self.scalar_type() == at::ScalarType::Half) {
-        self_copy = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
-        output = at_npu::native::custom_ops::npu_dtype_cast(output, at::ScalarType::Float);
+        self_copy = at_npu::native::custom_ops::_npu_dtype_cast(self, at::ScalarType::Float);
+        output = at_npu::native::custom_ops::_npu_dtype_cast(output, at::ScalarType::Float);
     }
     c10::SmallVector<int64_t, N> output_sync_idx = {0, 2};
     at_npu::native::OpCommand cmd;
@@ -50,7 +50,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> unique_consecutive_out_nocheck
     }
     cmd.Run();
     if (self.scalar_type() == at::ScalarType::Half) {
-        output = at_npu::native::custom_ops::npu_dtype_cast(output, at::ScalarType::Half);
+        output = at_npu::native::custom_ops::_npu_dtype_cast(output, at::ScalarType::Half);
     }
     return std::tie(output, inverse_indices, counts);
 }

@@ -28,14 +28,14 @@ tensor_list batch_norm_gather_stats_update_npu_impl(at::Tensor &mean_all, at::Te
                                                     const at::Tensor &counts)
 {
     at::Tensor counts_cp =
-        counts.scalar_type() == at::kInt ? counts : at_npu::native::custom_ops::npu_dtype_cast(counts, at::kInt);
+        counts.scalar_type() == at::kInt ? counts : at_npu::native::custom_ops::_npu_dtype_cast(counts, at::kInt);
 
     auto running_mean_dtype = running_mean.scalar_type();
-    at::Tensor running_mean_ = at_npu::native::custom_ops::npu_dtype_cast(
+    at::Tensor running_mean_ = at_npu::native::custom_ops::_npu_dtype_cast(
         at_npu::native::custom_ops::npu_format_cast(
             (running_mean.defined() ? running_mean : at::zeros({self.size(1)}, sum.options())), ACL_FORMAT_ND),
         sum.scalar_type());
-    at::Tensor running_var_ = at_npu::native::custom_ops::npu_dtype_cast(
+    at::Tensor running_var_ = at_npu::native::custom_ops::_npu_dtype_cast(
         at_npu::native::custom_ops::npu_format_cast(
             (running_var.defined() ? running_var : at::ones({self.size(1)}, sum.options())), ACL_FORMAT_ND),
         sum.scalar_type());
@@ -57,8 +57,8 @@ tensor_list batch_norm_gather_stats_update_npu_impl(at::Tensor &mean_all, at::Te
 
     if (running_mean.defined()) {
         if (running_mean_.scalar_type() != running_mean_dtype) {
-            running_mean_ = at_npu::native::custom_ops::npu_dtype_cast(running_mean_, running_mean_dtype);
-            running_var_ = at_npu::native::custom_ops::npu_dtype_cast(running_var_, running_mean_dtype);
+            running_mean_ = at_npu::native::custom_ops::_npu_dtype_cast(running_mean_, running_mean_dtype);
+            running_var_ = at_npu::native::custom_ops::_npu_dtype_cast(running_var_, running_mean_dtype);
         }
         running_mean.copy_(running_mean_);
         running_var.copy_(running_var_);

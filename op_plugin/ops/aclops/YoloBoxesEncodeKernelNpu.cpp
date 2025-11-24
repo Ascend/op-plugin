@@ -65,7 +65,7 @@ at::Tensor npu_yolo_boxes_encode(
     yolo_boxes_encode_check(self, gt_bboxes, stride);
     at::Tensor result = npu_preparation::apply_tensor(gt_bboxes);
     string impl_mode_str = performance_mode ? "high_performance" : "high_precision";
-    at::Tensor stride_cp = at_npu::native::custom_ops::npu_dtype_cast(stride, at::ScalarType::Int);
+    at::Tensor stride_cp = at_npu::native::custom_ops::_npu_dtype_cast(stride, at::ScalarType::Int);
     at_npu::native::OpCommand cmd;
     cmd.Name("YoloBoxesEncode")
         .Input(self)

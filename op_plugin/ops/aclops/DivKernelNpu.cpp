@@ -76,7 +76,7 @@ at::Tensor &div_out_with_dtype(at::Tensor &result, const at::Tensor &self, const
     } else {
         other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
         result_cast = (result_type == calculate_type) ? result :
-            at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
+            at_npu::native::custom_ops::_npu_dtype_cast(result, calculate_type);
     }
 
     if (!npu_utils::check_match(&result_cast)) {
@@ -91,7 +91,7 @@ at::Tensor &div_out_with_dtype(at::Tensor &result, const at::Tensor &self, const
         acl_op::trunc_(result_cast);
     }
     if (result_type != calculate_type) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, result_type);
+        result_cast = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, result_type);
         result.copy_(result_cast);
     }
     return result;
@@ -173,7 +173,7 @@ at::Tensor div(const at::Tensor &self, const at::Scalar &other, c10::optional<c1
         at::Tensor result = acl_op::trunc(true_div_res);
         at::ScalarType high_type = at::native::result_type(self, other);
         if (true_div_res.scalar_type() != high_type) {
-            result = at_npu::native::custom_ops::npu_dtype_cast(result, high_type);
+            result = at_npu::native::custom_ops::_npu_dtype_cast(result, high_type);
         }
         return result;
     }
@@ -192,7 +192,7 @@ at::Tensor div(const at::Tensor &self, const at::Tensor &other, c10::optional<c1
         acl_op::trunc_(result);
         at::ScalarType high_type = at::native::result_type(self, other);
         if (result.scalar_type() != high_type) {
-            result = at_npu::native::custom_ops::npu_dtype_cast(result, high_type);
+            result = at_npu::native::custom_ops::_npu_dtype_cast(result, high_type);
         }
         return result;
     }

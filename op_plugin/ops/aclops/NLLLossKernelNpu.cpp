@@ -49,41 +49,42 @@ std::tuple<at::Tensor&, at::Tensor&> nll_loss_forward_out_nocheck(
     const at::Tensor& target,
     const at::Tensor& weight,
     int64_t reduction,
-    int64_t ignore_index) {
-  at::Tensor weight_tensor;
-  if (weight.defined()) {
-    weight_tensor = npu_utils::format_contiguous(weight);
-  } else {
-    weight_tensor = at::ones(self.size(1), self.options());
-  }
+    int64_t ignore_index)
+{
+    at::Tensor weight_tensor;
+    if (weight.defined()) {
+        weight_tensor = npu_utils::format_contiguous(weight);
+    } else {
+        weight_tensor = at::ones(self.size(1), self.options());
+    }
 
-  if (ignore_index >= 0 && ignore_index < self.size(-1)) {
-    at::Tensor zero = at::zeros(1, self.options());
-    calcu_op_util::AclrtMemcpyAsync({weight_tensor, ignore_index}, weight_tensor.itemsize(),
-        {zero, 0}, weight_tensor.itemsize(), ACL_MEMCPY_DEVICE_TO_DEVICE);
-  }
+    if (ignore_index >= 0 && ignore_index < self.size(-1)) {
+        at::Tensor zero = at::zeros(1, self.options());
+        calcu_op_util::AclrtMemcpyAsync({weight_tensor, ignore_index}, weight_tensor.itemsize(),
+            {zero, 0}, weight_tensor.itemsize(), ACL_MEMCPY_DEVICE_TO_DEVICE);
+    }
 
-  string reduction_str = op_plugin::utils::get_reduction_str(reduction);
+    string reduction_str = op_plugin::utils::get_reduction_str(reduction);
 
-  auto scalar_type = target.scalar_type();
-  TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),
-      "Expected object of scalar type ", at::kLong, " or ", at::kInt,
-      " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss_forward"
-      + OPS_ERROR(ErrCode::TYPE));
-  at::Tensor target_cast = (scalar_type == at::kLong) ? at_npu::native::custom_ops::npu_dtype_cast(target, at::kInt) : target;
+    auto scalar_type = target.scalar_type();
+    TORCH_CHECK((scalar_type == at::kLong || scalar_type == at::kInt),
+        "Expected object of scalar type ", at::kLong, " or ", at::kInt,
+        " but got scalar type ", scalar_type, " for argument 'target' in call to nll_loss_forward"
+        + OPS_ERROR(ErrCode::TYPE));
+    at::Tensor target_cast = (scalar_type == at::kLong) ? at_npu::native::custom_ops::_npu_dtype_cast(target, at::kInt) : target;
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("NLLLoss")
-      .Input(self)
-      .Input(target_cast)
-      .Input(weight_tensor)
-      .Output(result)
-      .Output(total_weight)
-      .Attr("reduction", reduction_str)
-      .Attr("ignore_index", ignore_index)
-      .Run();
+    at_npu::native::OpCommand cmd;
+    cmd.Name("NLLLoss")
+        .Input(self)
+        .Input(target_cast)
+        .Input(weight_tensor)
+        .Output(result)
+        .Output(total_weight)
+        .Attr("reduction", reduction_str)
+        .Attr("ignore_index", ignore_index)
+        .Run();
 
-  return std::tuple<at::Tensor&, at::Tensor&>(result, total_weight);
+    return std::tuple<at::Tensor&, at::Tensor&>(result, total_weight);
 }
 } // namespace
 

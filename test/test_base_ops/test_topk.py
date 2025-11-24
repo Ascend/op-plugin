@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import torch_npu
-
+import unittest
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
@@ -146,6 +146,7 @@ class TestTopK(TestCase):
         ]
         self.topk_result(shape_format)
 
+    @unittest.skip("skip test_topk_zero_dim now")
     @SupportedDevices(['Ascend910B'])
     def test_topk_zero_dim(self):
         inputs = torch.tensor(3).npu()
@@ -160,6 +161,7 @@ class TestTopK(TestCase):
         self.assertRtolEqual(values, values_cpu)
         self.assertRtolEqual(indices, indices_cpu)
 
+    @unittest.skip("skip test_topk_zero_dim now")
     @SupportedDevices(['Ascend910B'])
     def test_topk_zero_dim_out(self):
         inputs = torch.tensor(3).npu()

@@ -62,10 +62,10 @@ at::Tensor& addr_out(
     npu_utils::check_1d(vec2, "vec2", "addr");
     bool result_to_cast = (high_dtype == at::ScalarType::Bool);
 
-    at::Tensor self_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat) : self;
-    at::Tensor vec1_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(vec1, at::kFloat) : vec1;
-    at::Tensor vec2_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(vec2, at::kFloat) : vec2;
-    at::Tensor result_cast = result_to_cast ? at_npu::native::custom_ops::npu_dtype_cast(out, at::kFloat) : out;
+    at::Tensor self_cast = result_to_cast ? at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat) : self;
+    at::Tensor vec1_cast = result_to_cast ? at_npu::native::custom_ops::_npu_dtype_cast(vec1, at::kFloat) : vec1;
+    at::Tensor vec2_cast = result_to_cast ? at_npu::native::custom_ops::_npu_dtype_cast(vec2, at::kFloat) : vec2;
+    at::Tensor result_cast = result_to_cast ? at_npu::native::custom_ops::_npu_dtype_cast(out, at::kFloat) : out;
     at::Scalar beta_cast = result_to_cast ? beta.toFloat() : beta;
     at::Scalar alpha_cast = result_to_cast ? alpha.toFloat() : alpha;
 
@@ -82,7 +82,7 @@ at::Tensor& addr_out(
     at::add_out(result_cast, mul_result_alpha, self_cast, beta_cast);
 
     if (result_to_cast) {
-        result_cast = at_npu::native::custom_ops::npu_dtype_cast(result_cast, at::ScalarType::Bool);
+        result_cast = at_npu::native::custom_ops::_npu_dtype_cast(result_cast, at::ScalarType::Bool);
         out.copy_(result_cast);
     }
 

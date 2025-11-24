@@ -57,8 +57,8 @@ at::Tensor npu_grid_assign_positive(
     at::Scalar s(num_gts);
     auto num = at::empty({}, option);
     at::Tensor num_of_gts = acl_op::fill_(num, s);
-    at::Tensor argmax_overLaps = at_npu::native::custom_ops::npu_dtype_cast(argmax_overlaps, at::ScalarType::Int);
-    at::Tensor gt_argmax_overLaps = at_npu::native::custom_ops::npu_dtype_cast(gt_argmax_overlaps, at::ScalarType::Int);
+    at::Tensor argmax_overLaps = at_npu::native::custom_ops::_npu_dtype_cast(argmax_overlaps, at::ScalarType::Int);
+    at::Tensor gt_argmax_overLaps = at_npu::native::custom_ops::_npu_dtype_cast(gt_argmax_overlaps, at::ScalarType::Int);
 
     at_npu::native::OpCommand cmd;
     cmd.Name("GridAssignPositive")

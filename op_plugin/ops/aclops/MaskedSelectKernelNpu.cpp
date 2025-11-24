@@ -43,7 +43,7 @@ at::SmallVector<int64_t, SIZE> masked_select_npu_output_size(const at::Tensor& s
 
 at::Tensor& masked_select_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mask)
 {
-    at::Tensor mask_bool = mask.dtype() == at::kBool ? mask : at_npu::native::custom_ops::npu_dtype_cast(mask, at::kBool);
+    at::Tensor mask_bool = mask.dtype() == at::kBool ? mask : at_npu::native::custom_ops::_npu_dtype_cast(mask, at::kBool);
     c10::SmallVector<int64_t, N> output_sync_idx = {0};
     at_npu::native::OpCommand cmd;
     cmd.Sync(output_sync_idx)
