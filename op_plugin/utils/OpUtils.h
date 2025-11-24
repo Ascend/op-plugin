@@ -78,6 +78,7 @@ OP_PLUGIN_HIDDEN bool is_gte_cann_version_810rc1();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_820rc1();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_830rc1();
 OP_PLUGIN_HIDDEN int64_t get_rotary_mode(c10::string_view mode);
+OP_PLUGIN_HIDDEN const std::string DTypeToString(int64_t input_type);
 
 }  // namespace utils
 }  // namespace op_plugin

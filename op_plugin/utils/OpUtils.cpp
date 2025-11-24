@@ -19,6 +19,7 @@
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/aten/mirror/NPUTypeProperties.h"
 #include "torch_npu/csrc/core/npu/GetCANNInfo.h"
+#include "torch_npu/csrc/custom_dtype/Init.h"
 #include "op_plugin/utils/OpUtils.h"
 
 namespace op_plugin {
@@ -421,6 +422,12 @@ bool is_gte_cann_version_830rc1()
 {
     const static bool result = IsGteCANNVersion("8.3.RC1", "CANN");
     return result;
+}
+
+const std::string DTypeToString(int64_t input_type)
+{
+    return c10_npu::IsCustomDType(input_type) ?
+           c10_npu::CustomDataTypeToString(input_type) : c10::toString(static_cast<at::ScalarType>(input_type));
 }
 
 }  // namespace utils
