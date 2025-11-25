@@ -3284,5 +3284,26 @@ class TestGatherPAKVCacheFunctional(TestCase):
             self.assertEqual(value_result.shape, value_out.shape)
 
 
+class TestGroupedMatmulAdd(TestCase):
+    def test_npu_grouped_matmul_add_meta_0(self):
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            y = torch.randint(-1, 1, (4, 576, 7168), dtype=torch.float32).npu()
+            x = torch.randint(-1, 1, (512, 576), dtype=torch.float16).npu()
+            weight = torch.randint(-1, 1, (512, 7168), dtype=torch.float16).npu()
+
+            group_list = torch.Tensor([8, 181, 415, 512]).to(torch.int64).npu()
+
+            res_1 = torch_npu.npu_grouped_matmul_add_(y, x, weight, group_list, transpose_x=True, transpose_weight=False,
+                  group_type=2, group_list_type=0)
+            # x shape is k,m; weight shape is k,n; y shape is e,m,n
+            self.assertTrue(len(res_1.shape) == 3)
+            self.assertTrue(x.shape[1] == res_1.shape[1])
+            self.assertTrue(weight.shape[1] == res_1.shape[2])
+            self.assertTrue(res_1.dtype == torch.float32)
+            self.assertTrue(y.shape[0] == res_1.shape[0])
+            self.assertTrue(y.shape[1] == res_1.shape[1])
+            self.assertTrue(y.shape[2] == res_1.shape[2])
+
 if __name__ == "__main__":
     run_tests()

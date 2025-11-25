@@ -88,7 +88,7 @@ at::Tensor pure_bmm_v2(const at::Tensor &self, const at::Tensor &mat2,
 {
     auto tensor1 = self.dim() == 1 ? self.view({1, self.size(0)}) : self;
     auto tensor2 = mat2.dim() == 1 ? mat2.view({mat2.size(0), 1}) : mat2;
-
+    
     at::Tensor result =
         (tensor1.scalar_type() == at::ScalarType::Half) ?
             npu_preparation::apply_tensor_with_format(output_size, tensor1.options(), ACL_FORMAT_FRACTAL_NZ, true) :

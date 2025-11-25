@@ -580,6 +580,75 @@ def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
     return (y, mm_y)
 
 
+@impl(m, "npu_fused_matmul")
+def npu_fused_matmul_meta(x, x2, *, bias=None, x3=None, fused_op_type=''):
+    torch._check(
+        x is not None,
+        lambda: "x must not be None, please input some value" + ops_error(ErrCode.TYPE),
+    )
+    torch._check(
+        x2 is not None,
+        lambda: "x2 must not be None, please input some value" + ops_error(ErrCode.TYPE),
+    )
+
+    torch._check(
+        x.dtype == x2.dtype,
+        lambda: "x and x2 type not same. x.dtype is" + str(x.dtype) + "x2.dtype is" + str(x2.dtype) + ops_error(ErrCode.TYPE),
+    )
+
+    x_dim = x.dim()
+    torch._check(
+        x_dim >= 2,
+        lambda: "x dim num cannot be less than 2,but the actual value is " + str(x_dim) + ops_error(ErrCode.VALUE),
+    )
+    x2_dim = x2.dim()
+    torch._check(
+        x2_dim >= 2,
+        lambda: "x2 dim num cannot be less than 2,but the actual value is " + str(x2_dim) + ops_error(ErrCode.VALUE),
+    )
+
+    ma = x.size(x_dim - 2)
+    ka = x.size(x_dim - 1)
+    kb = x2.size(x2_dim - 2)
+    nb = x2.size(x2_dim - 1)
+    torch._check(
+        ka == kb,
+        lambda: "ka and kb should be the same" + ops_error(ErrCode.TYPE),
+    )
+
+    # infer output shape
+    out_dim_num = max(x_dim, x2_dim)
+    shape_long = x if x_dim > x2_dim else x2
+    shape_short = x2 if x_dim > x2_dim else x
+    vaild_offset = out_dim_num - min(x_dim, x2_dim)
+    output_shape = []
+    for i in range(0, out_dim_num - 2):
+        short_dim = 1 if i < vaild_offset else shape_short.size(i - vaild_offset)
+        long_dim = shape_long.size(i)
+        torch._check(
+            not (short_dim > 1 and long_dim > 1 and short_dim != long_dim),
+            lambda: "the batch shape cannot be broadcast" + ops_error(ErrCode.VALUE),
+        )
+        cur_batch_val = max(short_dim, long_dim)
+        output_shape.append(cur_batch_val)
+
+    output_shape.append(ma)
+    output_shape.append(nb)
+
+    if fused_op_type == "gelu_erf" or fused_op_type == "gelu_tanh":
+        torch._check(
+            x3 is None,
+            lambda: "there is no x3 for gelu_erf and gelu_tanh" + ops_error(ErrCode.TYPE),
+    )
+    if fused_op_type == "add" or fused_op_type == "mul":
+        torch._check(
+            x3 is not None,
+            lambda: "there must have x3 for add and mul" + ops_error(ErrCode.TYPE),
+        )
+    result = torch.empty(output_shape, dtype=x.dtype, device='meta')
+    return torch.empty_like(result, dtype=x.dtype)
+
+
 @impl(m, "npu_alltoallv_gmm")
 def npu_alltoallv_gmm_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                         recv_counts, *, send_counts_tensor=None,
@@ -1906,6 +1975,16 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
             num_group_list = group_list.shape[0]
             y.append(x[0].new_empty((num_group_list, x[0].shape[0], dim_n), dtype=output_dtype))
 
+    return y
+
+
+@impl(m, "npu_grouped_matmul_add_")
+def npu_grouped_matmul_add__meta(y, x1, x2, group_list, *, transpose_x=True,
+                                 transpose_weight=False, group_type=2, group_list_type=0):
+    torch._check(
+        group_type == 2,
+        lambda: f"group_type only supports 2, but got {group_type} {ops_error(ErrCode.VALUE)}",
+    )
     return y
 
 
