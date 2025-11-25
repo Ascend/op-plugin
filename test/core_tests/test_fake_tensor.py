@@ -3132,6 +3132,41 @@ class TestNpuDynamicBlockQuant(TestCase):
         self.assertEqual(actual_scale.shape, fake_scale.shape)
 
 
+class TestQuantGroupedMatmulInplaceAdd(TestCase):
+    def test_npu_quant_grouped_matmul_inplace_add_meta_0(self):
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            y = torch.randint(-1, 1, (4, 576, 7168), dtype=torch.float32).npu()
+            x1 = torch.randint(-1, 1, (512, 576), dtype=torch.int8).npu()
+            x2 = torch.randint(-1, 1, (4, 512, 7168), dtype=torch.int8).npu()
+            x2_scale = torch.randint(-1, 1, (4, 7168), dtype=torch.float32).npu()
+            x1_scale = torch.randint(-1, 1, (4,), dtype=torch.float32).npu()
+            group_list = torch.Tensor([8, 181, 415, 512]).to(torch.int64).npu()
+
+            res_1 = torch_npu.npu_add_quant_gmm_(y, x1.t(), x2, x2_scale, group_list, x1_scale=x1_scale,
+                  group_list_type=0, group_sizes=None, x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8)
+            # x1 shape is k,m; x2 shape is e,k,n; y shape is e,m,n
+            self.assertTrue(len(res_1.shape) == 3)
+            self.assertTrue(x1.shape[1] == res_1.shape[1])
+            self.assertTrue(x2.shape[0] == res_1.shape[0])
+            self.assertTrue(x2.shape[2] == res_1.shape[2])
+            self.assertTrue(res_1.dtype == torch.float32)
+            self.assertTrue(y.shape[0] == res_1.shape[0])
+            self.assertTrue(y.shape[1] == res_1.shape[1])
+            self.assertTrue(y.shape[2] == res_1.shape[2])
+
+            res_2 = torch_npu.npu_add_quant_gmm(y, x1.t(), x2, x2_scale, group_list, x1_scale=x1_scale,
+                  group_list_type=0, group_sizes=None, x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8)
+            self.assertTrue(len(res_2.shape) == 3)
+            self.assertTrue(x1.shape[1] == res_2.shape[1])
+            self.assertTrue(x2.shape[0] == res_2.shape[0])
+            self.assertTrue(x2.shape[2] == res_2.shape[2])
+            self.assertTrue(res_2.dtype == torch.float32)
+            self.assertTrue(y.shape[0] == res_2.shape[0])
+            self.assertTrue(y.shape[1] == res_2.shape[1])
+            self.assertTrue(y.shape[2] == res_2.shape[2])
+
+
 @unittest.skip("skip until CANN is updated to support aclnnMlaPrologV3WeightNz")
 class TestMlaProLogV3(TestCase):
     def testMlaProLogV3(self):

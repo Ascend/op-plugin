@@ -1998,6 +1998,50 @@ def npu_grouped_matmul_add__meta(y, x1, x2, group_list, *, transpose_x=True,
     return y
 
 
+def add_quant_gmm_check(*args):
+    group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype = args
+
+    torch._check(
+        group_sizes is None,
+        lambda: "group_sizes is not supported for now",
+    )
+    if x1_dtype is not None:
+        torch._check(
+            x1_dtype == torch_npu.hifloat8,
+            lambda: "x1_dtype is only supported hifloat8 for now, but it is " + str(x1_dtype),
+        )
+    if x2_dtype is not None:
+        torch._check(
+            x2_dtype == torch_npu.hifloat8,
+            lambda: "x2_dtype is only supported hifloat8 for now, but it is " + str(x2_dtype),
+        )
+
+    if x1_scale_dtype is not None:
+        torch._check(
+            x1_scale_dtype == torch_npu.float8_e8m0fnu,
+            lambda: "x1_scale_dtype is only supported float8_e8m0fnu for now, but it is " + str(x1_scale_dtype),
+        )
+    if x2_scale_dtype is not None:
+        torch._check(
+            x2_scale_dtype == torch_npu.float8_e8m0fnu,
+            lambda: "x2_scale_dtype is only supported float8_e8m0fnu for now, but it is " + str(x2_scale_dtype),
+        )
+
+
+@impl(m, "npu_add_quant_gmm_")
+def npu_add_quant_gmm__meta(y, x1, x2, x2_scale, group_list, *, x1_scale=None, group_list_type=0, group_sizes=None,
+                            x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+    add_quant_gmm_check(group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype)
+    return y
+
+
+@impl(m, "npu_add_quant_gmm")
+def npu_add_quant_gmm_meta(y, x1, x2, x2_scale, group_list, *, x1_scale=None, group_list_type=0, group_sizes=None,
+                            x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+    add_quant_gmm_check(group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype)
+    return torch.empty_like(y)
+
+
 @impl(m, "npu_grouped_matmul_finalize_routing")
 def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bias=None, offset=None,
                                             pertoken_scale=None, shared_input=None, logit=None,
