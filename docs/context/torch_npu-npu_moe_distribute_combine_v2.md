@@ -55,11 +55,11 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 -   **assist\_info\_for\_combine** (`Tensor`)：必选参数，表示给同一专家发送的token个数，要求为1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`assist_info_for_combine`输出。
 
 -   **ep\_send\_counts** (`Tensor`)：必选参数，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的token数（token数以前缀和的形式表示），要求为1维张量。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`ep_recv_counts`输出。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)，前`moe_expert_num`个数表示在EP通信域下该卡上每个专家收到来自各卡的token数（token数以前缀和的形式表示），2\*global\_bs\*K\*server\_num存储机间机内通信前combine可提前做reduce的token个数和通信区偏移，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)，前`moe_expert_num`个数表示在EP通信域内，该卡上每个专家收到来自其他各卡的token数（以前缀和的形式表示），2\*global\_bs\*K\*server\_num用于存储机间和机内通信前，combine可提前做reduce操作的token个数和通信区偏移量，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
 
 -   **expert\_scales** (`Tensor`)：必选参数，表示每个token的topK个专家的权重，要求为2维张量，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
--   **group\_ep** (`str`)：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)，不能和`group_tp`相同。
+-   **group\_ep** (`str`)：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)。<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>时不能和`group_tp`相同。
 -   **ep\_world\_size** (`int`)：必选参数，EP通信域size。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`ep_world_size`的取值范围如下所示。
          - `comm_alg`设置为"fullmesh"时，`ep_world_size`取值范围为16、32、64、128、256。
@@ -108,8 +108,8 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2D的Tensor，shape为(const_expert_num,H)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
 
--   **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值即可。
+-   **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参，若无TP域通信，使用默认值""即可。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：字符串长度范围为\[1, 128\)，不能和`group_ep`相同。
 
 -   **tp\_world\_size** (`int`)：可选参数，TP通信域size。有TP域通信才需要传参。
