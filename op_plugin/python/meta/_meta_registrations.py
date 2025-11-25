@@ -1183,6 +1183,11 @@ def npu_fused_infer_attention_score_v2_forward(query, key, value, *, query_rope=
 def npu_quant_lightning_indexer_forward(query, key, weights, query_dequant_scale, key_dequant_scale, query_quant_mode, key_quant_mode, *, actual_seq_lengths_query=None,
                                         actual_seq_lengths_key=None, block_table=None, layout_query="BSND",
                                         layout_key="BSND", sparse_count=2048, sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807):
+    torch._check(
+        sparse_count > 0,
+        lambda: "sparse_count should be greater than 0, but got " + str(sparse_count) +
+            ops_error(ErrCode.VALUE),
+    )
     if layout_key == "TND":
         keyHeadNum = key.size(1)
     else:
@@ -1289,6 +1294,11 @@ def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *
 def npu_lightning_indexer_forward(query, key, weights, *, actual_seq_lengths_query=None,
     actual_seq_lengths_key=None, block_table=None, layout_query="BSND", layout_key="BSND", sparse_count=2048, sparse_mode=3,
     pre_tokens=9223372036854775807, next_tokens=9223372036854775807, return_value=False):
+    torch._check(
+        sparse_count > 0,
+        lambda: "sparse_count should be greater than 0, but got " + str(sparse_count) +
+            ops_error(ErrCode.VALUE),
+    )
     if layout_query == "BSND":
         sparse_indices_out = torch.empty([query.size(0), query.size(1), key.size(2), sparse_count], dtype=torch.int32, device='meta')
     else:
