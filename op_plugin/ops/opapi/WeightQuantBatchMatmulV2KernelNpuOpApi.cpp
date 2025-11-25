@@ -85,14 +85,7 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
         quant_scale.has_value() ? x.options().dtype(at::kChar) : x.options().dtype(x.scalar_type());
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
-    if (weight_dtype.has_value()) {
-        TORCH_CHECK(weight_dtype.value() == static_cast<int>(c10_npu::DType::HIFLOAT8),
-                    "weight_dtype only support torch_npu.hifloat8.", OPS_ERROR(ErrCode::PARAM));
-    }
-
-    TensorWrapper weight_wrapper = {weight, (weight_dtype.has_value()) ?
-        c10_npu::GetAclDataType(weight_dtype.value()) :
-        npu_preparation::convert_to_acl_data_type(weight.scalar_type())};
+    TensorWrapper weight_wrapper = make_wrapper(weight, weight_dtype);
     if (quant_scale.has_value() && quant_scale_real.dtype() == at::kFloat) {
         auto quant_scale_output_size = op_infer::array_to_small_vector(quant_scale_real.sizes());
         c10::TensorOptions quant_scale_options = quant_scale_real.options().dtype(at::kLong);

@@ -1750,4 +1750,33 @@ private:
                                                            releaseMemFunc, unInitMemFunc);                             \
     }(#aclnn_api, #aclnn_api "GetWorkspaceSize", __VA_ARGS__)
 
+inline TensorWrapper make_wrapper(const at::Tensor& tensor, c10::optional<int64_t> tensor_dtype)
+{
+    if (tensor_dtype.has_value()) {
+        aclDataType tensor_acltype = c10_npu::GetAclDataType(tensor_dtype.value());
+        int acl_item_size = at_npu::native::OpPreparation::GetAclDataTypeItemSize(tensor_acltype);
+        TORCH_CHECK(tensor.itemsize() == acl_item_size,
+            "Tensor dtype:", tensor.dtype(), " itemsize:", tensor.itemsize(),
+            ", is not compatible with tensor_dtype:", c10_npu::CustomDataTypeToString(tensor_dtype.value()),
+            " itemsize:", acl_item_size, OPS_ERROR(ErrCode::PARAM));
+        return {tensor, tensor_acltype};
+    }
+
+    return {tensor, at_npu::native::OpPreparation::convert_to_acl_data_type(tensor.scalar_type())};
+}
+
+inline TensorListWrapper make_wrapper(const at::TensorList& tensorlist, c10::optional<int64_t> tensor_dtype)
+{
+    if (tensor_dtype.has_value()) {
+        aclDataType tensor_acltype = c10_npu::GetAclDataType(tensor_dtype.value());
+        int acl_item_size = at_npu::native::OpPreparation::GetAclDataTypeItemSize(tensor_acltype);
+        TORCH_CHECK(tensorlist[0].itemsize() == acl_item_size,
+            "Tensor dtype:", tensorlist[0].dtype(), " itemsize:", tensorlist[0].itemsize(),
+            ", is not compatible with tensor_dtype:", c10_npu::CustomDataTypeToString(tensor_dtype.value()),
+            " itemsize:", acl_item_size, OPS_ERROR(ErrCode::PARAM));
+        return {tensorlist, tensor_acltype};
+    }
+
+    return {tensorlist, at_npu::native::OpPreparation::convert_to_acl_data_type(tensorlist[0].scalar_type())};
+}
 #endif //  TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_H_
