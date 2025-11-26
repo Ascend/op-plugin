@@ -6083,6 +6083,9 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_lightning_indexer_grad(Tensor query, Tensor key, Tensor dy, Tensor sparse_indices, Tensor weights, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_key=None, str? layout="BSND", int? sparse_mode=3, int? pre_tokens=9223372036854775807, int? next_tokens=9223372036854775807) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+
   - func: npu_linear(Tensor input, Tensor weight, Tensor? bias=None) -> Tensor
     acl_op: all_version
     op_api: all_version
@@ -7005,6 +7008,13 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_sparse_flash_attention_grad(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, Tensor d_out, Tensor out, Tensor softmax_max, Tensor softmax_sum, float scale_value, int sparse_block_size, Tensor? query_rope=None, Tensor? key_rope=None, Tensor? actual_seq_qlen=None, Tensor? actual_seq_kvlen=None, str? layout="BSND", int? sparse_mode=3, int? pre_tokens=9223372036854775807, int? next_tokens=9223372036854775807, int? attention_mode=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+
+  - func: npu_sparse_lightning_indexer_grad_kl_loss(Tensor query, Tensor key, Tensor query_index, Tensor key_index, Tensor weights, Tensor sparse_indices, Tensor softmax_max, Tensor softmax_sum, float scale_value=1, *, Tensor? query_rope=None, Tensor? key_rope=None, SymInt[]? actual_seq_qlen=None, SymInt[]? actual_seq_klen=None, str? layout='BSND', int? sparse_mode=3, int? pre_tokens=9223372036854775807, int? next_tokens=9223372036854775807) -> (Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+    exposed: all_version
+
   - func: npu_moe_token_unpermute_grad(Tensor permuted_tokens, Tensor grad_unpermuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> (Tensor, Tensor)
     op_api: [v2.1, newest]
     gen_opapi:
@@ -7151,6 +7161,9 @@ symint:
     op_api: all_version
 
   - func: npu_add_quant_gmm(Tensor self, Tensor x1, Tensor x2, Tensor x2_scale, Tensor group_list, *, Tensor? x1_scale=None, int? group_list_type=0, SymInt[]? group_sizes=None, int? x1_dtype=None, int? x2_dtype=None, int? x1_scale_dtype=None, int? x2_scale_dtype=None) -> Tensor
+    op_api: all_version
+
+  - func: npu_sparse_lightning_indexer_grad_kl_loss(Tensor query, Tensor key, Tensor query_index, Tensor key_index, Tensor weights, Tensor sparse_indices, Tensor softmax_max, Tensor softmax_sum, float scale_value=1, *, Tensor? query_rope=None, Tensor? key_rope=None, SymInt[]? actual_seq_qlen=None, SymInt[]? actual_seq_klen=None, str? layout='BSND', int? sparse_mode=3, int? pre_tokens=9223372036854775807, int? next_tokens=9223372036854775807) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
 
 quant:

@@ -24,11 +24,10 @@ const static int64_t DIM_0 = 0;
 const static int64_t DIM_1 = 1;
 const static int64_t DIM_2 = 2;
 const static int64_t DIM_3 = 3;
-const static int64_t DIM_NUM_3 = 3;
 
-using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
+namespace {
 at::Tensor construct_sparse_flash_attention_output_tensor(
     const at::Tensor& query, std::string layout)
 {
@@ -46,6 +45,8 @@ at::Tensor construct_sparse_flash_attention_output_tensor(
 
     return output;
 }
+}
+
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_sparse_flash_attention(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
@@ -66,23 +67,18 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_sparse_flash_attention(
     std::string layout_kv_str = std::string(layout_kv);
 
     // construct the output tensor
-    at::Tensor sparse_flash_attention_output = op_api::construct_sparse_flash_attention_output_tensor(
+    at::Tensor sparse_flash_attention_output = construct_sparse_flash_attention_output_tensor(
         query, layout_query_str);
     at::Tensor softmax_max;
     at::Tensor softmax_sum;
     at::SmallVector<int64_t, SIZE> softmax_max_size;
     at::SmallVector<int64_t, SIZE> softmax_sum_size;
-    if (return_softmax_lse) {
-        if (query.dim() == DIM_NUM_3) {
-            softmax_max_size = {key.size(1), query.size(0), query.size(1) / key.size(1)};
-            softmax_sum_size = {key.size(1), query.size(0), query.size(1) / key.size(1)};
-        } else {
-            softmax_max_size = {query.size(0), key.size(2), query.size(1), query.size(2) / key.size(2)};
-            softmax_sum_size = {query.size(0), key.size(2), query.size(1), query.size(2) / key.size(2)};
-        }
+    if (query.dim() == DIM_3) {
+        softmax_max_size = {key.size(1), query.size(0), query.size(1) / key.size(1)};
+        softmax_sum_size = {key.size(1), query.size(0), query.size(1) / key.size(1)};
     } else {
-        softmax_max_size = {0};
-        softmax_sum_size = {0};
+        softmax_max_size = {query.size(0), key.size(2), query.size(1), query.size(2) / key.size(2)};
+        softmax_sum_size = {query.size(0), key.size(2), query.size(1), query.size(2) / key.size(2)};
     }
     softmax_max = at::empty(softmax_max_size, query.options().dtype(at::kFloat));
     softmax_sum = at::empty(softmax_sum_size, query.options().dtype(at::kFloat));
