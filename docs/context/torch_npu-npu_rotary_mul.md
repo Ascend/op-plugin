@@ -67,9 +67,9 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，输入维度必须为4维，数据类型支持`float16`，`bfloat16`，`float32`。
-- **r1** (`Tensor`)：必选参数，表示$cos$旋转系数，输入维度必须为4维，数据类型支持`float16`，`bfloat16`，`float32`。
-- **r2** (`Tensor`)：必选参数，表示$sin$旋转系数，输入维度必须为4维，数据类型支持`float16`，`bfloat16`，`float32`。
+- **input** (`Tensor`)：必选参数，输入维度支持3维、4维，数据类型支持`float16`，`bfloat16`，`float32`。
+- **r1** (`Tensor`)：必选参数，表示$cos$旋转系数，输入维度支持3维、4维，数据类型支持`float16`，`bfloat16`，`float32`。
+- **r2** (`Tensor`)：必选参数，表示$sin$旋转系数，输入维度支持3维、4维，数据类型支持`float16`，`bfloat16`，`float32`。
 - **rotary_mode** (`str`)：可选参数，数据类型支持`str`，用于选择计算模式，支持`half`、`interleave`两种模式。默认值为`half`。
 
 ## 返回值说明
@@ -82,26 +82,28 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
 - **`jit_compile=False`场景**（适用<term>Atlas A2 训练系列产品</term>，<term>Atlas A3 训练系列产品</term>）：
     - half模式：
 
-        `input`：layout支持：$BNSD、BSND、SBND；D < 896$，且为2的倍数；$B, N < 1000$；当需要计算$cos/sin$的反向梯度时，$B*N <= 1024$。
+        `input`：layout支持：$BNSD、BSND、SBND、TND；D < 896$，且为2的倍数；$B, N < 1000$；当需要计算$cos/sin$的反向梯度时，$B*N <= 1024$。
 
         `r1、r2`：数据范围：[-1, 1]；对应`input` layout的支持情况：
 
         - x为$BNSD$: $11SD、B1SD、BNSD$；
         - x为$BSND$: $1S1D、BS1D、BSND$；
-        - x为$SBND$: $S11D、SB1D、SBND$。
+        - x为$SBND$: $S11D、SB1D、SBND$;
+        - x为$TND$: $T1D、TND$。
 
             >**须知：**<br>
             >half模式下，当输入layout是$BNSD$，且$D$为非32Bytes对齐时，建议不使用该融合算子（模型启动脚本中不开启`--use-fused-rotary-pos-emb`选项），否则可能出现性能下降。
 
     - interleave模式：
 
-        `input`：layout支持：$BNSD、BSND、SBND; B*N < 1000; D < 896$, 且$D$为2的倍数;
+        `input`：layout支持：$BNSD、BSND、SBND、TND; B*N < 1000; D < 896$, 且$D$为2的倍数;
 
         `r1、r2`：数据范围：[-1, 1]；对应`input` layout的支持情况：
 
         - x为$BNSD: 11SD$;
         - x为$BSND: 1S1D$;
-        - x为$SBND: S11D$
+        - x为$SBND: S11D$；
+        - x为$TND: T1D$。
 
 - **`jit_compile=True`场景**（适用<term>Atlas 训练系列产品</term>，<term>Atlas A2 训练系列产品</term>，<term>Atlas 推理系列产品</term>）：
 
@@ -114,6 +116,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
 
 ## 调用示例
 
+- 四维输入示例：
 ```python
 >>> import torch
 >>> import torch_npu
@@ -151,4 +154,26 @@ tensor([[[[ 0.1017, -0.0871,  0.2722,  ...,  0.4668,  0.4320,  0.4252],
           [-0.2269, -0.1447, -0.0395,  ...,  0.1374,  0.2142,  0.3628]]]],
        device='npu:0')
 ```
+- 三维输入示例：
+```python
+>>> import torch
+>>> import torch_npu
+>>>
+>>> x = torch.rand(2, 5, 128).npu()
+>>> r1 = torch.rand(2, 1, 128).npu()
+>>> r2 = torch.rand(2, 1, 128).npu()
+>>> out = torch_npu.npu_rotary_mul(x, r1, r2，"half")
+>>> out
+tensor([[[-0.1200, -0.2515, -0.3189,  ...,  0.2283,  1.1038,  0.3439],
+         [ 0.1083,  0.0257,  0.1864,  ...,  0.5940,  0.8644,  0.5961],
+         [-0.0147, -0.1542,  0.0516,  ...,  0.7441,  0.2782,  0.4797],
+         [-0.0601, -0.0338, -0.3731,  ...,  0.9809,  0.7416,  0.4876],
+         [ 0.1785, -0.0542, -0.3634,  ...,  0.5057,  0.7511,  1.3088]],
 
+        [[ 0.0076,  0.0931, -0.4161,  ...,  0.4964,  0.2680,  0.1291],
+         [-0.2149,  0.1523, -0.0274,  ...,  0.1997,  0.8318,  0.2630],
+         [ 0.1087,  0.4846,  0.0684,  ...,  0.0183,  0.9503,  0.0555],
+         [-0.1946,  0.6020, -0.6751,  ...,  0.8629,  0.5454,  0.1392],
+         [ 0.0772,  0.5112, -0.4875,  ...,  0.7065,  0.6798,  0.1513]]],
+       device='npu:0')
+```
