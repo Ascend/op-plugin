@@ -1105,14 +1105,24 @@ def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None
     )
     num_key_value_heads = num_heads if num_key_value_heads == 0 else num_key_value_heads
 
-    # 获取query_layout, attention_out_layout
+    # get query_layout, attention_out_layout
     query_layout, attention_out_layout = get_query_and_attention_out_layout(query, input_layout)
-    # 获取value_d
+
+    # get value_d
     value_d = get_value_d(block_table, value, query, query_layout, num_key_value_heads)
 
-    # 推断attention out shape
+    # infer attention out shape
     tmp_out = infer_attention_out_shape(attention_out_layout, query, query_layout, num_heads, value_d)
 
+    # special:IFA legacy feature
+    change_d_scale = 1
+    if value is not None and value.dtype == torch.int32: # treat int4 as int32
+        change_d_scale = 8
+    if input_layout == "BNSD" and block_table is None:
+        tmp_out = torch.empty([query.size(0), query.size(1), query.size(2), value.size(3) * change_d_scale],
+            dtype=query.dtype, device='meta')
+
+    # handle quant
     if quant_scale2 is not None:
         attention_out = torch.empty_like(tmp_out, dtype=torch.int8)
     elif query.dtype == torch.int8:
@@ -1123,7 +1133,7 @@ def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None
     else:
         attention_out = torch.empty_like(tmp_out, dtype=query.dtype)
 
-    # 推断lse out shape
+    # infer lse out shape
     tmp_lse_out = infer_lse_out_shape(query, input_layout, query_layout, num_heads)
 
     if softmax_lse_flag:
@@ -1150,14 +1160,16 @@ def npu_fused_infer_attention_score_v2_forward(query, key, value, *, query_rope=
     )
     num_key_value_heads = num_query_heads if num_key_value_heads == 0 else num_key_value_heads
 
-    # 获取query_layout, attention_out_layout
+    # get query_layout, attention_out_layout
     query_layout, attention_out_layout = get_query_and_attention_out_layout(query, input_layout)
-    # 获取value_d
+
+    # get value_d
     value_d = get_value_d(block_table, value, query, query_layout, num_key_value_heads)
 
-    # 推断attention out shape
+    # infer attention out shape
     tmp_out = infer_attention_out_shape(attention_out_layout, query, query_layout, num_query_heads, value_d)
 
+    # handle quant
     if quant_scale_out is not None:
         attention_out = torch.empty_like(tmp_out, dtype=torch.int8)
     elif query.dtype == torch.int8:
@@ -1168,7 +1180,7 @@ def npu_fused_infer_attention_score_v2_forward(query, key, value, *, query_rope=
     else:
         attention_out = torch.empty_like(tmp_out, dtype=query.dtype)
 
-    # 推断lse out shape
+    # infer lse out shape
     tmp_lse_out = infer_lse_out_shape(query, input_layout, query_layout, num_query_heads)
 
     if return_softmax_lse:
