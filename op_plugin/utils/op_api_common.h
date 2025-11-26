@@ -1192,6 +1192,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
     add_param_to_buf(deterministic);
     add_param_to_buf(std::string(aclnn_api), args...);
     add_param_to_buf(device);
+    add_param_to_buf((uintptr_t)acl_stream);
     uint64_t hashId = calc_hash_id();
     setPTAHashKeyFunc(hashId);
     aclOpExecutor *executor = ptaGetExecCacheFunc(hashId, workspace_size_addr);
@@ -1245,6 +1246,7 @@ bool hit_cache_v2(
     }
     add_param_to_buf_v2(std::string(aclnn_api));
     add_params_to_buf_v2(args, std::make_index_sequence<sizeof...(Ts)>{});
+    add_param_to_buf_v2((uintptr_t)acl_stream);
     if (g_hash_offset == g_hash_buf_max_size) {
         setPTACacheHashKeyFunc(nullptr, 0);
     } else {
