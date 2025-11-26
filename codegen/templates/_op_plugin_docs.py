@@ -2082,7 +2082,7 @@ updateType：int64_t 类型，指定执行的操作类型。目前仅支持 0（
 
 输出说明
 out：Device侧的Tensor，形状为 (batch * seqLen * headNum, head_dim)，数据类型为 FLOAT，格式为 ND。
-lse_out: Tensor类型，预留参数，暂未使用
+lse_out: Tensor类型
 
 支持的型号
 ----------------
@@ -7072,7 +7072,7 @@ actual_seq_qlen和actual_seq_kvlen必须传入，且以该入参元素的数量�
 支持query每个batch的s为1-16；
 要求query的n为1/2/4/8/16/32/64/128，key、value的n为1；
 要求query_rope和keyRope不等于空，query_rope和keyRope的d为64；
-不支持开启softmax_lse、左padding、tensorlist、pse、prefix、伪量化、全量化、后量化、空Tensor。
+不支持开启左padding、tensorlist、pse、prefix、伪量化、全量化、后量化、空Tensor。
 
 当query的d不等于512时：
 当query_rope和key_rope为空时：TND场景，要求Q_D、K_D、V_D等于128，或者Q_D、K_D等于192，V_D等于128/192；NTD_TND场景，要求Q_D、K_D等于128/192，V_D等于128。当query_rope和key_rope不为空时，要求Q_D、K_D、V_D等于128；
