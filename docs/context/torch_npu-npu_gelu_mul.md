@@ -18,7 +18,7 @@
 
     1. 拆分输入张量：
     
-       沿最后一维将`input`拆分为两个形状相同的张量$x1$和$x2$。
+       沿最后一维将`input`拆分为两个形状相同的张量$x_1$和$x_2$。
          $$x_1 = \text{input}[..., :d], \quad x_2 = \text{input}[..., d:]$$
                  
          其中$x_1$、$x_2$形状与$\text{input}$除最后一维外一致，最后一维长度均为$d$。
@@ -48,7 +48,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，输入张量，数据类型支持`bfloat16`、`float16`、`float`。支持非连续的Tensor，数据格式支持$ND$，shape维度2至8维，且shape需满足最后一维值为偶数且小于等于1024。其他维度的乘积小于等于20000。
+- **input** (`Tensor`)：必选参数，输入张量，数据类型支持`bfloat16`、`float16`、`float`。支持非连续的Tensor，数据格式支持$ND$，shape维度2至8维，且shape需满足最后一维值为偶数且小于等于1024。其他维度的乘积小于等于200000。
 - **approximate** (`String`)：可选参数，指定GELU激活函数的计算模式。默认值为 "none"。支持以下选项：
   - "none"：使用误差函数（erf）模式，计算精度高，适用于对精度要求严格的场景。
   - "tanh"：使用双曲正切（tanh）近似模式，计算效率高，适用于大规模训练或推理加速场景。
@@ -64,6 +64,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 >>> import torch, torch_npu
 >>> shape = [100, 400]
 >>> input = torch.rand(shape, dtype=torch.float16).npu()
+>>> mode = "tanh"
 >>> output = torch_npu.npu_gelu_mul(input, approximate=mode)
 
 ```
