@@ -83,6 +83,58 @@ class TestRotaryMul(TestCase):
             npu_out = self.npu_to_exec(npu_x, npu_r1, npu_r2, mode='interleave')
             self.assertRtolEqual(cpu_out, npu_out)
 
+    @unittest.skip("skip") # CI版本不支持
+    @SupportedDevices(['Ascend910B'])
+    def test_rotary_mul_dim3(self):
+        dtype_list = [torch.float16, torch.float32]
+        shape_list = [
+            ((2, 2, 4), (2, 2, 4), (2, 2, 4)),
+            ((4, 8, 8), (4, 8, 8), (4, 8, 8)),
+            ((5, 10, 32), (1, 1, 32), (1, 1, 32)),
+            ((8, 4, 64), (1, 1, 64), (1, 1, 64)),
+            ((16, 8, 256), (1, 1, 256), (1, 1, 256)),
+            ((1, 128, 894), (1, 1, 894), (1, 1, 894)),
+            ((1, 256, 512), (1, 1, 512), (1, 1, 512)),
+        ]
+        items = [
+            [shape, dtype]
+            for shape in shape_list
+            for dtype in dtype_list
+        ]
+        for shape, dtype in items:
+            cpu_x, npu_x = self.gen_data(shape[0], dtype)
+            cpu_r1, npu_r1 = self.gen_data(shape[1], dtype)
+            cpu_r2, npu_r2 = self.gen_data(shape[2], dtype)
+            cpu_out = self.cpu_to_exec(cpu_x, cpu_r1, cpu_r2)
+            npu_out = self.npu_to_exec(npu_x, npu_r1, npu_r2)
+            self.assertRtolEqual(cpu_out, npu_out)
+
+    @unittest.skip("skip") # CI版本不支持
+    @SupportedDevices(['Ascend910B'])
+    def test_rotary_mul_mode_dim3(self):
+        dtype_list = [torch.float16, torch.float32]
+        shape_list = [
+            ((1, 1, 2), (1, 1, 2), (1, 1, 2)),
+            ((1, 1, 4), (1, 1, 4), (1, 1, 4)),
+            ((1, 8, 2), (1, 1, 2), (1, 1, 2)),
+            ((1, 8, 4), (1, 8, 4), (1, 8, 4)),
+            ((16, 1, 2), (1, 1, 2), (1, 1, 2)),
+            ((8, 1, 4), (8, 1, 4), (8, 1, 4)),
+            ((16, 8, 2), (1, 1, 2), (1, 1, 2)),
+        ]
+        items = [
+            [shape, dtype]
+            for shape in shape_list
+            for dtype in dtype_list
+        ]
+        for shape, dtype in items:
+            cpu_x, npu_x = self.gen_data(shape[0], dtype)
+            cpu_r1, npu_r1 = self.gen_data(shape[1], dtype)
+            cpu_r2, npu_r2 = self.gen_data(shape[2], dtype)
+            cpu_out = self.cpu_to_exec(cpu_x, cpu_r1, cpu_r2, mode='interleave')
+            npu_out = self.npu_to_exec(npu_x, npu_r1, npu_r2, mode='interleave')
+            self.assertRtolEqual(cpu_out, npu_out)
+
     @SupportedDevices(['Ascend910B'])
     def test_rotary_mul_error_param(self):
         x = torch.rand(2, 2, 5, 128).npu()
