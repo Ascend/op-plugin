@@ -430,5 +430,36 @@ const std::string DTypeToString(int64_t input_type)
            c10_npu::CustomDataTypeToString(input_type) : c10::toString(static_cast<at::ScalarType>(input_type));
 }
 
+aclDataType get_dynamic_scales_dtype(const at::Tensor &x, const c10::optional<at::Tensor> &scales, int64_t quant_mode)
+{
+    aclDataType dynamic_scale_dtype = ACL_FLOAT;
+    if (quant_mode == QuantMode::QUANT_MODE_NO_QUANT) {
+        dynamic_scale_dtype = (x.scalar_type() == at::kBFloat16 || x.scalar_type() == at::kHalf) ? ACL_FLOAT :
+           (scales.has_value() ? at_npu::native::OpPreparation::convert_to_acl_data_type(scales.value().scalar_type()) : ACL_FLOAT);
+    } else if (quant_mode == QuantMode::QUANT_MODE_MX) {
+        dynamic_scale_dtype = c10_npu::GetAclDataType(c10_npu::DType::FLOAT8_E8M0);
+    }
+    return dynamic_scale_dtype;
+}
+
+std::vector<int64_t> get_dynamic_shape(const c10::optional<at::Tensor> &scales, int64_t quant_mode, int64_t a, int64_t h)
+{
+    const static int PER_GROUP_SIZE = 128;
+    const static int MX_QUANT_SIZE = 32;
+    const static int DIM_TWO = 2;
+    std::vector<int64_t> shape{a};
+    if (quant_mode == QuantMode::QUANT_MODE_NO_QUANT && scales.has_value()) {
+        TORCH_CHECK(scales.value().dim() >= DIM_TWO, "Expected scales to be at least 2D.", OPS_ERROR(ErrCode::PARAM));
+        shape = {a * scales.value().sizes()[1]};
+    } else if (quant_mode == QuantMode::QUANT_MODE_PERTOKEN) {
+        shape = {a};
+    } else if (quant_mode == QuantMode::QUANT_MODE_PERGROUP) {
+        shape = {a, (h + PER_GROUP_SIZE - 1) / PER_GROUP_SIZE};
+    } else if (quant_mode == QuantMode::QUANT_MODE_MX) {
+        // ensure the ceiling of h divided by MX_QUANT_SIZE is even
+        shape = {a, ((h + MX_QUANT_SIZE - 1) / MX_QUANT_SIZE + 1) / 2 * 2};
+    }
+    return shape;
+}
 }  // namespace utils
 }  // namespace op_plugin

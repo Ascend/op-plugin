@@ -17,7 +17,7 @@
 #define OP_PULGIN_UTILS_CALCULATE_OP_UTILS
 
 #include <ATen/ATen.h>
-
+#include <acl/acl_base.h>
 #include "op_plugin/utils/OpConstants.h"
 #include "op_plugin/utils/Export.h"
 #include "op_plugin/utils/Version.h"
@@ -40,6 +40,14 @@ enum ForeachMappingType {
     MAP_SCALAR_DEFAULT = 0,        // mapping between foreach op tensor and scalar
     MAP_SCALARLIST_DEFAULT = 1,    // mapping between foreach op tensor and scalar_list
     MAP_POW_SCALAR_AND_TENSOR = 2, // mapping between foreach op PowScalarAndTensor tensor and scalar
+};
+
+enum QuantMode {
+    QUANT_MODE_NO_QUANT = 0,
+    QUANT_MODE_STATIC = 1,
+    QUANT_MODE_PERTOKEN = 2,
+    QUANT_MODE_PERGROUP = 3,
+    QUANT_MODE_MX = 4,
 };
 
 using NameVector = c10::SmallVector<at::Dimname, at::kDimVectorStaticSize>;
@@ -79,6 +87,8 @@ OP_PLUGIN_HIDDEN bool is_gte_cann_version_820rc1();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_830rc1();
 OP_PLUGIN_HIDDEN int64_t get_rotary_mode(c10::string_view mode);
 OP_PLUGIN_HIDDEN const std::string DTypeToString(int64_t input_type);
+OP_PLUGIN_HIDDEN aclDataType get_dynamic_scales_dtype(const at::Tensor &x, const c10::optional<at::Tensor> &scales, int64_t quant_mode);
+OP_PLUGIN_HIDDEN std::vector<int64_t> get_dynamic_shape(const c10::optional<at::Tensor> &scales, int64_t quant_mode, int64_t a, int64_t h);
 
 }  // namespace utils
 }  // namespace op_plugin
