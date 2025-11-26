@@ -23,13 +23,12 @@ namespace op_api {
 const static int64_t DIM_0 = 0;
 const static int64_t DIM_1 = 1;
 const static int64_t DIM_2 = 2;
-const static int64_t DIM_3 = 3;
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> construct_lightning_indexer_output_tensor(const at::Tensor& query,
     const at::Tensor& key, const c10::optional<at::Tensor> &actual_seq_lengths_query, int64_t sparse_count,
-    std::string query_layout_str, std::string key_layout_str, bool return_value)
+    std::string query_layout_str, std::string key_layout_str)
 {
     at::SmallVector<int64_t, SIZE> output_size;
     for (size_t i = 0; i < query.sizes().size(); i++) {
@@ -49,12 +48,7 @@ std::tuple<at::Tensor, at::Tensor> construct_lightning_indexer_output_tensor(con
         output_size = {query.size(DIM_0), key.size(n_dim_index), sparse_count};
     }
     at::Tensor sparse_indices_out = npu_preparation::apply_tensor_without_format(output_size, at::kInt);
-    at::Tensor sparse_values_out;
-    if (return_value) {
-        sparse_values_out = npu_preparation::apply_tensor_without_format(output_size, query.dtype());
-    } else {
-        sparse_values_out = npu_preparation::apply_tensor_without_format({0}, query.dtype());
-    }
+    at::Tensor sparse_values_out = npu_preparation::apply_tensor_without_format(output_size, query.dtype());
 
     return std::tuple<at::Tensor, at::Tensor>(sparse_indices_out, sparse_values_out);
 }
@@ -75,7 +69,7 @@ std::tuple<at::Tensor, at::Tensor> npu_lightning_indexer(
 
     // construct the output tensor
     std::tuple<at::Tensor, at::Tensor> lightning_indexer_output = op_api::construct_lightning_indexer_output_tensor(
-        query, key, actual_seq_lengths_query, sparse_count, query_layout_str, key_layout_str, return_value);
+        query, key, actual_seq_lengths_query, sparse_count, query_layout_str, key_layout_str);
     at::Tensor sparse_indices_out = std::get<0>(lightning_indexer_output);
     at::Tensor sparse_values_out = std::get<1>(lightning_indexer_output);
     // convert str
