@@ -211,8 +211,7 @@ static at::Tensor infer_attention_out_shape(
     if (attention_out_layout == "BSH") {
         auto [b, n1, s1, d1] = get_query_b_n_s_d(query, query_layout, num_heads);
         int outH = num_heads * valueD;
-        int h1 = d1 * num_heads;
-        outH = (outH == 0 || h1 == 0) ? h1 : outH;
+        outH = (outH == 0 || query.size(DIM_2) == 0) ? query.size(DIM_2) : outH;
         attention_out = OpPreparation::apply_tensor_without_format(
             {b, s1, outH},
             query.options().dtype(query.dtype())
@@ -309,18 +308,28 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
         num_heads,
         OPS_ERROR(ErrCode::VALUE)
     );
-    if (kv_num_heads == 0) {
-        kv_num_heads = num_heads;
-    }
+    kv_num_heads = (kv_num_heads == 0) ? num_heads : kv_num_heads;
     
-    // 获取query_layout, attention_out_layout
+    // get query_layout, attention_out_layout
     auto [query_layout, attention_out_layout] = get_query_and_attention_out_layout(query, input_layout_str);
 
-    // 计算valueD
+    // cal valueD
     int64_t valueD = get_value_d(block_table, query, value, query_layout, kv_num_heads);
 
-    // 推导attenout shape
+    // iner attenout shape
     at::Tensor tmp_output = infer_attention_out_shape(attention_out_layout, query, query_layout, num_heads, valueD);
+
+    // special IFA legacy feature
+    int64_t changeDScale = 1;
+    if (value.scalar_type() == at::kInt) { // treat int4 as int32
+        changeDScale = INT4_IN_INT32;
+    }
+    if (input_layout_str == "BNSD" && !block_table.has_value()) {
+        tmp_output = OpPreparation::apply_tensor_without_format(
+            {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2), value.size(DIM_3) * changeDScale},
+            query.options().dtype(query.dtype())
+        );
+    }
 
     at::Tensor output;
     if (quant_scale2.has_value()) {
@@ -336,7 +345,7 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
         output = npu_preparation::apply_tensor_without_format(tmp_output);
     }
 
-    // 推导lseout shape
+    // infer lseout shape
     at::Tensor softmax_lse;
     if (softmax_lse_flag) {
         softmax_lse = infer_lse_out_shape(input_layout_str, query, query_layout, num_heads);
