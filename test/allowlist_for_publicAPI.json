@@ -72,6 +72,8 @@
       "npu_mrope",
       "npu_grouped_matmul_finalize_routing",
       "npu_grouped_matmul_swiglu_quant_v2",
+      "npu_recurrent_gated_delta_rule",
+      "npu_recurrent_gated_delta_rule_functional",
       "npu_alltoallv_gmm",
       "npu_gmm_alltoallv",
       "npu_nsa_compress",

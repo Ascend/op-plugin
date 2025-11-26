@@ -2341,6 +2341,44 @@ class TestQuantMatmulReduceSum(TestCase):
             self.assertTrue(y.dtype == torch.bfloat16)
 
 
+class TestRecurrentGatedDeltaRule(TestCase):
+    def test_recurrent_gated_delta_rule(self):
+        with FakeTensorMode():
+            (b, mtp, nk, nv, dk, dv) = (64, 2, 4, 8, 128, 128)
+
+            actual_seq_lengths = (torch.ones(b) * mtp).npu().to(torch.int32)
+            T = b * mtp
+            state = torch.rand((T, nv, dv, dk), dtype=torch.bfloat16).npu()
+            query = torch.rand((T, nk, dk), dtype=torch.bfloat16).npu()
+            key = torch.rand((T, nk, dk), dtype=torch.bfloat16).npu()
+            value = torch.rand((T, nv, dv), dtype=torch.bfloat16).npu()
+            g = torch.rand((T, nv), dtype=torch.float32).npu()
+            beta = torch.rand((T, nv), dtype=torch.bfloat16).npu()
+            ssm_state_indices = (torch.arange(T).npu()).to(torch.int32)
+            query = torch.nn.functional.normalize(query, p=2, dim=-1)
+            key = torch.nn.functional.normalize(key, p=2, dim=-1)
+            scale = 0.5
+            num_accepted_tokens = torch.randint(1, mtp + 1, (b,)).npu().to(torch.int32)
+            
+            state_copy = state.clone()
+            out = torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state_copy, beta=beta, scale=scale, actual_seq_lengths=actual_seq_lengths, ssm_state_indices=ssm_state_indices, g=g, num_accepted_tokens=num_accepted_tokens)
+            expect_out_shape = torch.randn(T, nv, dv, dtype = torch.bfloat16).npu()
+            self.assertTrue(out.shape == expect_out_shape.shape)
+            self.assertTrue(out.dtype == torch.bfloat16)
+
+            state_copy = state.clone()
+            out_inplace, state_out_inplace = torch_npu.npu_recurrent_gated_delta_rule_functional(query, key, value, state, beta=beta, scale=scale, actual_seq_lengths=actual_seq_lengths, ssm_state_indices=ssm_state_indices, g=g, num_accepted_tokens=num_accepted_tokens)
+            
+            expect_out_inplace = torch.randn(T, nv, dv, dtype = torch.bfloat16).npu()
+            expect_state_inplace = torch.randn(T, nv, dv, dk, dtype = torch.bfloat16).npu()
+
+            self.assertTrue(out_inplace.shape == expect_out_inplace.shape)
+            self.assertTrue(state_out_inplace.shape == expect_state_inplace.shape)
+
+            self.assertTrue(state_out_inplace.dtype == torch.bfloat16)
+            self.assertTrue(out_inplace.dtype == torch.bfloat16)
+
+
 class TestTranQuantParam(TestCase):
     def test_npu_trans_quant_param_meta(self):
         with FakeTensorMode():

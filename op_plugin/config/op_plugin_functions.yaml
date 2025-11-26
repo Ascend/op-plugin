@@ -7042,6 +7042,16 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_recurrent_gated_delta_rule(Tensor query, Tensor key, Tensor value, Tensor(a!) state, *, Tensor? beta=None, float? scale=None, Tensor? actual_seq_lengths=None, Tensor? ssm_state_indices=None, Tensor? num_accepted_tokens=None, Tensor? g=None, Tensor? gk=None) -> Tensor
+    op_api: all_version
+    exposed: all_version
+    internal_format_opapi: all_version
+
+  - func: npu_recurrent_gated_delta_rule_functional(Tensor query, Tensor key, Tensor value, Tensor state, *, Tensor? beta=None, float? scale=None, Tensor? actual_seq_lengths=None, Tensor? ssm_state_indices=None, Tensor? num_accepted_tokens=None, Tensor? g=None, Tensor? gk=None) -> (Tensor, Tensor)
+    op_api: all_version
+    exposed: all_version
+    internal_format_opapi: all_version
+
   - func: fused_linear_online_max_sum(Tensor input, Tensor weight, Tensor target, int vocab_start_index, int vocab_end_index, bool return_logits=False) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
 
