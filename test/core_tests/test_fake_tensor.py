@@ -1406,6 +1406,80 @@ class TestFusedInferAttentionV2(TestCase):
 
             self.assertTrue(q.shape == atten_out.shape)
 
+    def testFusedInferAttentionV2_bnsd_bsnd_d_unequal(self):
+        with FakeTensorMode():
+            q = torch.randn(32, 8, 2048, 192, dtype=torch.float16).npu()
+            k = torch.randn(32, 8, 2048, 192, dtype=torch.float16).npu()
+            v = torch.randn(32, 8, 2048, 128, dtype=torch.float16).npu()
+            q.requires_grad = True
+            k.requires_grad = True
+            v.requires_grad = True
+
+            softmax_scale = 1 / 0.0078125
+            atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(
+                q, k, v, num_query_heads=8, input_layout="BNSD_BSND", 
+                softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535)
+        
+            golden_output = torch.randn(32, 2048, 8, 128, dtype=torch.float16).npu()
+
+            self.assertTrue(golden_output.shape == atten_out.shape)
+
+    def testFusedInferAttentionV2_bsnd_d_unequal(self):
+        with FakeTensorMode():
+            q = torch.randn(32, 2048, 8, 192, dtype=torch.float16).npu()
+            k = torch.randn(32, 2048, 8, 192, dtype=torch.float16).npu()
+            v = torch.randn(32, 2048, 8, 128, dtype=torch.float16).npu()
+            q.requires_grad = True
+            k.requires_grad = True
+            v.requires_grad = True
+            
+            softmax_scale = 1 / 0.0078125
+            atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(
+                q, k, v, num_query_heads=8, input_layout="BSND", 
+                softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535)
+        
+            golden_output = torch.randn(32, 2048, 8, 128, dtype=torch.float16).npu()
+
+            self.assertTrue(golden_output.shape == atten_out.shape)
+
+    def testFusedInferAttentionV2_bsh_d_unequal(self):
+        with FakeTensorMode():
+            q = torch.randn(32, 2048, 1536, dtype=torch.float16).npu()
+            k = torch.randn(32, 2048, 1536, dtype=torch.float16).npu()
+            v = torch.randn(32, 2048, 1024, dtype=torch.float16).npu()
+            q.requires_grad = True
+            k.requires_grad = True
+            v.requires_grad = True
+            
+            softmax_scale = 1 / 0.0078125
+            atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(
+                q, k, v, num_query_heads=8, input_layout="BSH", 
+                softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535)
+        
+            golden_output = torch.randn(32, 2048, 1024, dtype=torch.float16).npu()
+
+            self.assertTrue(golden_output.shape == atten_out.shape)
+
+    def testFusedInferAttentionV2_tnd_d_unequal(self):
+        with FakeTensorMode():
+            q = torch.randn(32, 8, 192, dtype=torch.float16).npu()
+            k = torch.randn(32, 8, 192, dtype=torch.float16).npu()
+            v = torch.randn(32, 8, 128, dtype=torch.float16).npu()
+            q.requires_grad = True
+            k.requires_grad = True
+            v.requires_grad = True
+
+            softmax_scale = 1 / 0.0078125
+
+            atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(
+                q, k, v, num_query_heads=8, input_layout="TND",
+                softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535)
+        
+            golden_output = torch.randn(32, 8, 128, dtype=torch.float16).npu()
+
+            self.assertTrue(golden_output.shape == atten_out.shape)
+
+
 
 class TestFlashAttentionScore(TestCase):
     def testFlashAttentionScore(self):
