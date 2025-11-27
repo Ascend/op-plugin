@@ -235,14 +235,10 @@ c10::SmallVector<int64_t, SIZE> avg_pool2d_npu_output_size(const at::Tensor &sel
 
     int self_h = self.size(-2);
     int self_w = self.size(-1);
-
-    int64_t kernel_h = ceil_mode ? (CeilDiv(self_h + 2 * padding[0] - kernel_size[0], stride[0]) + 1) :
-                                   ((self_h + 2 * padding[0] - kernel_size[0]) / stride[0] + 1);
-    int64_t kernel_w = ceil_mode ? (CeilDiv(self_w + 2 * padding[1] - kernel_size[1], stride[1]) + 1) :
-                                   ((self_w + 2 * padding[1] - kernel_size[1]) / stride[1] + 1);
-    TORCH_CHECK(kernel_h > 0, "kernel_h has to be positive, but got ", kernel_h, OPS_ERROR(ErrCode::VALUE));
-    TORCH_CHECK(kernel_w > 0, "kernel_w has to be positive, but got ", kernel_w, OPS_ERROR(ErrCode::VALUE));
-
+    int64_t kernel_h = div_rtn<int64_t>(
+        self_h + 2 * padding[0] - (kernel_size[0] - 1) - 1 + (ceil_mode ? stride[0] - 1 : 0), stride[0]) + 1;
+    int64_t kernel_w = div_rtn<int64_t>(
+        self_w + 2 * padding[1] - (kernel_size[1] - 1) - 1 + (ceil_mode ? stride[1] - 1 : 0), stride[1]) + 1;
     if (ceil_mode) {
         if ((kernel_h - 1) * stride[0] >= self_h + padding[0]) {
             --kernel_h;
@@ -259,7 +255,12 @@ c10::SmallVector<int64_t, SIZE> avg_pool2d_npu_output_size(const at::Tensor &sel
     } else {
         output_size = {self.size(0), self.size(1), kernel_h, kernel_w};
     }
-
+    TORCH_CHECK(kernel_h >= 1 && kernel_w >= 1,
+                "Given input size: (",
+                self.size(-3), "x", self.size(-2), "x", self.size(-1), "). ",
+                "Calculated output size: (",
+                self.size(-3), "x", kernel_h, "x", kernel_w, "). ",
+                "Output size is too small", OPS_ERROR(ErrCode::VALUE));
     return output_size;
 }
 
