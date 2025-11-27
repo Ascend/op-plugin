@@ -32,6 +32,19 @@ class TestGroupNormSilu(TestCase):
         custom_output = self.custom_op_exec(x, gama, beta, group, eps)
         self.assertRtolEqual(supported_output, custom_output)
 
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_910_95_(self, device="npu"):
+        x = torch.randn(24, 320, 48, 48, dtype=torch.float16).npu()
+        gama = torch.randn(320, dtype=torch.float32).npu()
+        beta = torch.randn(320, dtype=torch.float32).npu()
+
+        group = 32
+        eps = 0.0001
+
+        supported_output = self.supported_op_exec(x, gama, beta, group, eps)
+        custom_output = self.custom_op_exec(x, gama, beta, group, eps)
+        self.assertRtolEqual(supported_output, custom_output)
+
 
 if __name__ == "__main__":
     run_tests()

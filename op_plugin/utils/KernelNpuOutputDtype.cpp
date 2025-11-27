@@ -44,6 +44,23 @@ at::ScalarType polar_out_dtype(const at::Tensor& abs, const at::Tensor& angle)
     return high_type;
 }
 
+at::ScalarType npu_group_norm_silu_dst_type(const at::Tensor& input, const c10::optional<at::Tensor>& weight,
+                                            const c10::optional<at::Tensor>& bias)
+{
+    at::native::ResultTypeState state = {};
+    state = at::native::update_result_type_state(input, state);
+
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
+        if (weight.has_value()) {
+            state = at::native::update_result_type_state(weight.value(), state);
+        } else if (bias.has_value()) {
+            state = at::native::update_result_type_state(bias.value(), state);
+        }
+    }
+
+    return at::native::result_type(state);
+}
+
 at::ScalarType npu_group_quant_dst_type(c10::optional<at::ScalarType> dst_dtype)
 {
     at::ScalarType dst_type = c10::value_or_else(dst_dtype, [] {return at::ScalarType::Char;});

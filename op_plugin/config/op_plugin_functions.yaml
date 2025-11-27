@@ -6006,10 +6006,10 @@ custom:
         dtype: input
       out1:
         size: '{input.size(0), group}'
-        dtype: input
+        dtype: npu_group_norm_silu_dst_type(input, weight, bias)
       out2:
         size: '{input.size(0), group}'
-        dtype: input
+        dtype: npu_group_norm_silu_dst_type(input, weight, bias)
       exec: aclnnGroupNormSilu
 
   - func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None, Tensor[]? offset=None, Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None, Tensor[]? per_token_scale=None, Tensor? group_list=None, Tensor[]? activation_input=None, Tensor[]? activation_quant_scale=None, Tensor[]? activation_quant_offset=None, int? split_item=0, int? group_type=None, int? group_list_type=0, int? act_type=0, int[]? tuning_config=None, int? output_dtype=None, int? x_dtype=None, int? weight_dtype=None, int? scale_dtype=None, int? per_token_scale_dtype=None) -> Tensor[]
@@ -6197,6 +6197,10 @@ custom:
     exposed: all_version
 
   - func: npu_moe_gating_top_k_softmax(Tensor x, Tensor? finished=None, int k=1) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+    exposed: all_version
+
+  - func: npu_moe_gating_top_k_softmax_v2(Tensor x, *, int k=1, Tensor? finished=None, int? renorm=0, bool? output_softmax=False) -> (Tensor, Tensor, Tensor)
     op_api: all_version
     exposed: all_version
 
@@ -6481,10 +6485,12 @@ custom:
     exposed: all_version
 
   - func: npu_scaled_masked_softmax(Tensor x, Tensor mask, Scalar scale=1, bool fixed_triu_mask=False) -> Tensor
+    op_api: all_version
     acl_op: all_version
     exposed: all_version
 
   - func: npu_scaled_masked_softmax_backward(Tensor y_grad, Tensor y, Tensor mask, Scalar scale, bool fixed_triu_mask) -> Tensor
+    op_api: all_version
     acl_op: all_version
 
   - func: npu_scatter(Tensor self, Tensor indices, Tensor updates, int dim) -> Tensor

@@ -907,6 +907,33 @@ def npu_moe_gating_top_k_softmax_meta(x, finished=None, k=1):
             x.new_empty(tuple(row_idx_dim_list), dtype=torch.int32))
 
 
+@impl(m, "npu_moe_gating_top_k_softmax_v2")
+def npu_moe_gating_top_k_softmax_v2_meta(x, *, k=1, finished=None, renorm=0, output_softmax=False):
+    x_dim = x.dim()
+    torch._check(
+        x_dim == 2 or x_dim == 3,
+        lambda: "the x shape support only 2d and 3d)" + ops_error(ErrCode.VALUE),
+    )
+    if x_dim == 3:
+        y_dim_list = [x.size(0), x.size(1), k]
+        expert_idx_dim_list = [x.size(0), x.size(1), k]
+    else:
+        y_dim_list = [x.size(0), k]
+        expert_idx_dim_list = [x.size(0), k]
+
+    if renorm == 0 and output_softmax:
+        if x.dim == 3:
+            softmax_result_dim_list = [x.size(0), x.size(1), x.size(2)]
+        else:
+            softmax_result_dim_list = [x.size(0), x.size(1)]
+    else:
+        softmax_result_dim_list = [0, ]
+
+    return (x.new_empty(tuple(y_dim_list), dtype=x.dtype),
+            x.new_empty(tuple(expert_idx_dim_list), dtype=torch.int32),
+            x.new_empty(tuple(softmax_result_dim_list), dtype=torch.float32))
+
+
 @impl(m, "npu_moe_gating_top_k")
 def npu_moe_gating_top_k_meta(x, k=1, bias=None, k_group=1, group_count=1, group_select_mode=0, renorm=0, norm_type=0, out_flag=False, routed_scaling_factor=1.0, eps=1e-20):
     x_dim = x.dim()
