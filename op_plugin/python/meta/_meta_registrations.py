@@ -1655,25 +1655,13 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
 
     torch._check(
         x_dim == 2 and w_dim == 3,
-        lambda: "input tensor only support shared_input and logit empty tensor" + ops_error(ErrCode.VALUE),
+        lambda: "x_dim should be 2 and w_dim should be 3." + ops_error(ErrCode.VALUE),
     )
     torch._check(
         dimn > 0,
         lambda: "n value must bigger than 0." + ops_error(ErrCode.VALUE),
     )
 
-    scene1 = False
-    scene2 = False
-    scene1 = (scale is not None and
-              group_list is not None and shared_input is not None and
-              logit is not None and row_index is not None)
-    scene2 = (scale is not None and
-              group_list is not None and shared_input is None and
-              logit is None and row_index is not None)
-    torch._check(
-        scene1 or scene2,
-        lambda: "input tensor only support shared_input and logit empty tensor" + ops_error(ErrCode.VALUE),
-    )
     if dtype is None:
         dtype = torch.float32
     if shared_input is not None and logit is not None:

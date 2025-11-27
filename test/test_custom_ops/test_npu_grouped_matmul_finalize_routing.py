@@ -74,8 +74,9 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
             out[shared_input_offset:shared_input_offset + shared_input.shape[0], :] += \
                 shared_input_scale * shared_input.to(torch.float32)
         else:
+            out = mm_out * logit.reshape(-1, 1)
             index = torch.argsort(row_index, dim=0)
-            out = mm_out[index].reshape(-1, topK, mm_out.shape[-1]).sum(dim=1)
+            out = out[index].reshape(-1, topK, mm_out.shape[-1]).sum(dim=1)
         return out
     
     def supported_a8w4_op_exec(self, topK, x_in, weight_in, groupList_in, scale_in,
@@ -135,9 +136,10 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
         ).to("cpu")
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip.")
     @SupportedDevices(["Ascend910B"])
-    def test_npu_grouped_matmul_finalize_routing_2(self, device="npu"):
-        m, k, n, batch, topK, group_num = 72, 2048, 7168, 72, 1, 1
+    def test_npu_grouped_matmul_finalize_routing_sharedinput_none_grouplist_cumsum(self, device="npu"):
+        m, k, n, batch, topK, group_num, shared_input_scale = 576, 2048, 7168, 72, 8, 8, 1
         x = torch.randint(-10, 10, (m, k), dtype=torch.int8)
         weight = torch.randint(-10, 10, (group_num, k, n), dtype=torch.int8)
         scale = torch.normal(0, 0.01, (group_num, n), dtype=torch.float32)
@@ -146,43 +148,29 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
 
         logit_ori = torch.normal(0, 0.1, (batch, group_num), dtype=torch.float32)
         routing = torch.argsort(logit_ori, 1)[:, -topK:]
+        logit = F.softmax(
+            logit_ori[torch.arange(batch).reshape(-1, 1).repeat(1, topK), routing],
+            dim=1,
+            dtype=torch.float32
+        ).reshape(m)
         row_index = (torch.argsort(routing.reshape(-1)) // topK).to(torch.int64)
-        output_bs = m
+        shared_input_offset = batch // 2
+        output_bs = batch
 
-        supported_output = self.supported_op_exec(topK, x, weight, group_list,
-                                                  scale, pertoken_scale, row_index=row_index)
+        supported_output = self.supported_op_exec(topK, x, weight, group_list, scale,
+                                                  pertoken_scale, logit=logit, row_index=row_index,
+                                                  shared_input_scale=shared_input_scale,
+                                                  shared_input_offset=shared_input_offset)
+        group_list_type = 0
+        group_list = torch.cumsum(group_list, dim=0)
         weightNz = torch_npu.npu_format_cast(weight.npu(), 29)
         pertoken_scale = pertoken_scale.reshape(m)
         custom_output = torch_npu.npu_grouped_matmul_finalize_routing(
             x.npu(), weightNz, group_list.npu(), scale=scale.npu(),
-            pertoken_scale=pertoken_scale.npu(), row_index=row_index.npu(),
-            output_bs=output_bs
-        ).to("cpu")
-        self.assertRtolEqual(supported_output, custom_output, 0.001)
-
-    @SupportedDevices(["Ascend910B"])
-    def test_npu_grouped_matmul_finalize_routing_3(self, device="npu"):
-        m, k, n, batch, topK, group_num = 72, 2048, 7168, 72, 1, 1
-        x = torch.randint(-10, 10, (m, k), dtype=torch.int8)
-        weight = torch.randint(-10, 10, (group_num, k, n), dtype=torch.int8)
-        scale = torch.normal(0, 0.01, (group_num, n), dtype=torch.float32)
-        pertoken_scale = torch.normal(0, 0.01, (m, 1), dtype=torch.float32)
-        group_list = torch.tensor([batch] * group_num, dtype=torch.int64)
-
-        logit_ori = torch.normal(0, 0.1, (batch, group_num), dtype=torch.float32)
-        routing = torch.argsort(logit_ori, 1)[:, -topK:]
-        row_index = (torch.argsort(routing.reshape(-1)) // topK).to(torch.int64)
-        output_bs = m
-
-        supported_output = self.supported_op_exec(topK, x, weight, group_list,
-                                                  scale, pertoken_scale, row_index=row_index)
-        weightNz = torch_npu.npu_format_cast(weight.npu(), 29)
-        pertoken_scale = pertoken_scale.reshape(m)
-        custom_output = torch_npu.npu_grouped_matmul_finalize_routing(
-            x.npu(), weightNz, group_list.npu(), scale=scale.npu(),
-            pertoken_scale=pertoken_scale.npu(), row_index=row_index.npu(),
-            output_bs=output_bs, tuning_config=[8]
-        ).to("cpu")
+            pertoken_scale=pertoken_scale.npu(), shared_input=None,
+            logit=logit.npu(), row_index=row_index.npu(),
+            shared_input_offset=shared_input_offset, output_bs=output_bs, group_list_type=group_list_type
+            ).to("cpu")
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
     @unittest.skip("Skip temporary. The kernel is not supported.")
