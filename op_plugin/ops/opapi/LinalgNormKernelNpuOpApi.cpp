@@ -23,6 +23,9 @@ using npu_preparation = at_npu::native::OpPreparation;
 namespace {
 inline bool check_use_aclop(const at::Scalar& scalar_ord)
 {
+    if (c10_npu::IsAclnnOnly()) {
+        return false;
+    }
     float val = op_plugin::utils::get_scalar_float_value(scalar_ord);
     if (op_plugin::utils::is_gte_cann_version_810rc1() && (val == INFINITY || val == -INFINITY)) {
         // Version 8.1.RC1 of cann began to support norm operators with p being inf or -inf
