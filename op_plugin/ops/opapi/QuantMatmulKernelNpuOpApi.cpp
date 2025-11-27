@@ -74,7 +74,7 @@ uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::
         auto long_dim = shape_long.size(i);
         TORCH_CHECK(!(short_dim > 1 && long_dim > 1 && short_dim != long_dim),
                     "the x1 shape and x2 shape not supported for broadcast, the short_dim is ",
-                    short_dim, " and  the long_dim is ", long_dim);
+                    short_dim, " and  the long_dim is ", long_dim, OPS_ERROR(ErrCode::PARAM));
         uint64_t cur_batch_value = static_cast<uint64_t>(std::max(short_dim, long_dim));
         batch_val = batch_val * cur_batch_value;
         batch_record.push_back(cur_batch_value);
@@ -108,47 +108,42 @@ int64_t check_and_get_groups(
     return groups;
 }
 
-at::Tensor npu_quant_matmul_symint(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& scale,
-                                   const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& pertoken_scale,
-                                   const c10::optional<at::Tensor>& bias, c10::optional<at::ScalarType> output_dtype,
-                                   c10::OptionalArrayRef<c10::SymInt> group_sizes)
+at::Tensor npu_quant_matmul_symint(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &scale,
+                                   const c10::optional<at::Tensor> &offset,
+                                   const c10::optional<at::Tensor> &pertoken_scale,
+                                   const c10::optional<at::Tensor> &bias, c10::optional<int64_t> output_dtype,
+                                   c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
+                                   c10::optional<int64_t> pertoken_scale_dtype, c10::optional<int64_t> scale_dtype,
+                                   c10::OptionalArrayRef<c10::SymInt> group_sizes,
+                                   const c10::optional<at::Tensor> &y_scale)
 {
     if (is_nz_format(x2)) {
         static const bool is_quant_matmul_weight_nz_available = check_aclnn_kernel_available("aclnnQuantMatmulWeightNz");
         TORCH_CHECK(is_quant_matmul_weight_nz_available,
-                    "Get aclnnQuantMatmulWeightNz or aclnnQuantMatmulWeightNzGetWorkspaceSize faild, only "
+                    "Get aclnnQuantMatmulWeightNz or aclnnQuantMatmulWeightNzGetWorkspaceSize failed, only "
                     "aclnnQuantMatmulWeightNz support X2's format is nz, please upgrade CANN.",
                     OPS_ERROR(ErrCode::PARAM));
+    } else {
+        static const bool is_quant_matmul_v5_available = check_aclnn_kernel_available("aclnnQuantMatmulV5");
+        TORCH_CHECK(is_quant_matmul_v5_available,
+                    "Get aclnnQuantMatmulV5 or aclnnQuantMatmulV5 failed, only "
+                    "aclnnQuantMatmulV5 support A8W4, please upgrade CANN.",
+                    OPS_ERROR(ErrCode::TYPE));
     }
-
-    bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
-    bool is_a8W4 = x1.dtype() == at::kChar && x2.dtype() == at::kInt;
+    bool is_a8W4_int = x1.dtype() == at::kChar && x2.dtype() == at::kInt;
     at::IntArrayRef group_size_list = {};
     if (group_sizes.has_value()) {
         group_size_list = c10::asIntArrayRefUnchecked(group_sizes.value());
     }
     int64_t group_size = check_and_get_groups(group_size_list, x1, x2, scale, pertoken_scale);
-    if (is_a8W4) {
-        static const bool is_quant_matmul_v5_available = check_aclnn_kernel_available("aclnnQuantMatmulV5");
-        TORCH_CHECK(is_quant_matmul_v5_available,
-                    "Get aclnnQuantMatmulV5 or aclnnQuantMatmulV5 faild, only "
-                    "aclnnQuantMatmulV5 support A8W4, please upgrade CANN.",
-                    OPS_ERROR(ErrCode::TYPE));
-        TORCH_CHECK(group_size != -1, "Invalid group_sizes: -1", OPS_ERROR(ErrCode::PARAM));
-    }
+    bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
     bool trans_x2 = is_transpose_last_two_dims(x2);
     auto x1_dim_num = x1.dim();
     auto x2_dim_num = x2.dim();
-    if (is_a8W4) {
-        TORCH_CHECK(x1_dim_num == A8W4_INPUT_DIM && x2_dim_num == A8W4_INPUT_DIM,
-                    "A8W4 of npu_quant_matmul only support 2D input.", OPS_ERROR(ErrCode::PARAM));
-    }
-    auto x1_k_dim = x1.size(x1_dim_num - 1);
     auto x2_n_dim = (is_a4w4 && !trans_x2) ? x2.size(x2_dim_num - 1) * INT4_NUMS_IN_INT32 : x2.size(x2_dim_num - 1);
-    auto x2_k_dim = x2.size(x2_dim_num - LAST_SECOND_DIM_INDEX);
 
     c10::SmallVector<int64_t, SIZE> output_size;
-    if (is_a8W4) {
+    if (is_a8W4_int) {
         output_size = {x1.sizes()[0], x2.sizes()[1] * INT4_NUMS_IN_INT32};
     } else {
         std::vector<uint64_t> batch_record;
@@ -162,10 +157,12 @@ at::Tensor npu_quant_matmul_symint(const at::Tensor& x1, const at::Tensor& x2, c
         }
     }
     c10::TensorOptions options;
+    aclDataType output_acltype = ACL_INT8;
     if (!output_dtype.has_value()) {
         options = x1.options().dtype(at::kChar);
     } else {
-        options = x1.options().dtype(output_dtype.value());
+        output_acltype = c10_npu::GetAclDataType(output_dtype.value());
+        options = x1.options().dtype(npu_preparation::convert_to_scalar_type(output_acltype));
     }
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
@@ -175,46 +172,39 @@ at::Tensor npu_quant_matmul_symint(const at::Tensor& x1, const at::Tensor& x2, c
     bool transpose1 = false;
     bool transpose2 = false;
 
-    if (is_a8W4) {
-        at::Tensor x1_offset;
-        at::Tensor x2_offset;
-        at::Tensor y_scale;
-        EXEC_NPU_CMD(aclnnQuantMatmulV5, x1, x2, pertoken_scale_real, scale, y_scale, x1_offset,
-                     x2_offset, offset_real, bias_real, transpose1, transpose2, group_size, result);
-    } else if (scale.dtype() == at::kFloat && !pertoken_scale.has_value() && output_dtype != at::kBFloat16 &&
-        output_dtype != at::kInt) {
+    TensorWrapper x1_wrapper = make_wrapper(x1, x1_dtype);
+    TensorWrapper x2_wrapper = make_wrapper(x2, x2_dtype);
+    TensorWrapper x1_scale_wrapper = make_wrapper(pertoken_scale_real, pertoken_scale_dtype);
+    TensorWrapper x2_scale_wrapper = make_wrapper(scale, scale_dtype);
+    TensorWrapper result_wrapper = make_wrapper(result, output_dtype);
+    at::Tensor x1_offset = at::empty({0}, options);
+    at::Tensor y_offset = at::empty({0}, options);
+
+    bool use_trans_quant_param = scale.dtype() == at::kFloat && !pertoken_scale.has_value() &&
+                                 output_acltype != ACL_BF16 && output_acltype != ACL_INT32;
+    if (use_trans_quant_param) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
-        if (!is_a4w4 && is_nz_format(x2)) {
-            at::Tensor yscale = at::empty({0}, options);
-            at::Tensor x1Offset = at::empty({0}, options);
-            at::Tensor yOffset = at::empty({0}, options);
-            int64_t groupSize = 0;
-            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1, x2, pertoken_scale_real, quant_param, yscale, x1Offset,
-                         offset_real, yOffset, bias_real, transpose1, transpose2, groupSize, result);
+        if (is_nz_format(x2)) {
+            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1_wrapper, x2_wrapper, pertoken_scale_real, quant_param, y_scale,
+                         x1_offset, offset_real, y_offset, bias_real, transpose1, transpose2, group_size,
+                         result_wrapper);
         } else {
-            EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale_real, bias_real,
-                         transpose1, transpose2, result);
+            EXEC_NPU_CMD(aclnnQuantMatmulV5, x1_wrapper, x2_wrapper, pertoken_scale_real, quant_param, y_scale,
+                         x1_offset, offset_real, y_offset, bias_real, transpose1, transpose2, group_size,
+                         result_wrapper);
         }
-    } else if (is_a4w4 && scale.dtype() == at::kFloat && scale.dim() == PERGROUP_DIM_NUM && pertoken_scale.has_value() &&
-        offset.has_value() && output_dtype != at::kInt) {  // W4A4 Per Group
-        at::Tensor x1_offset;
-        at::Tensor y_offset;
-        at::Tensor y_scale;
-        EXEC_NPU_CMD(aclnnQuantMatmulV5, x1, x2, pertoken_scale_real, scale, y_scale, x1_offset,
-                     offset_real, y_offset, bias_real, transpose1, transpose2, group_size, result);
     } else {
         if (!is_a4w4 && is_nz_format(x2)) {
-            at::Tensor yscale = at::empty({0}, options);
-            at::Tensor x1Offset = at::empty({0}, options);
-            at::Tensor yOffset = at::empty({0}, options);
-            int64_t groupSize = 0;
-            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1, x2, pertoken_scale_real, scale, yscale, x1Offset, offset_real,
-                         yOffset, bias_real, transpose1, transpose2, groupSize, result);
+            EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1_wrapper, x2_wrapper, x1_scale_wrapper, x2_scale_wrapper, y_scale,
+                         x1_offset, offset_real, y_offset, bias_real, transpose1, transpose2, group_size,
+                         result_wrapper);
         } else {
-            EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, scale, offset_real, pertoken_scale_real, bias_real,
-                         transpose1, transpose2, result);
+            EXEC_NPU_CMD(aclnnQuantMatmulV5, x1_wrapper, x2_wrapper, x1_scale_wrapper, x2_scale_wrapper, y_scale,
+                         x1_offset, offset_real, y_offset, bias_real, transpose1, transpose2, group_size,
+                         result_wrapper);
         }
     }
+
     return result;
 }
 }

@@ -56,7 +56,7 @@ def cpu_quant_matmul_a4w4_pergroup(x, weight, x1scale, x2scale, x2offset, groups
 
 class TestQuantMatmul(TestCase):
 
-    @SupportedDevices(['Ascend910B'])
+    @SupportedDevices(['Ascend910B', 'Ascend910_95'])
     def test_npu_quant_matmul_a8w8(self):
         torch.manual_seed(0)
         x1 = torch.randint(-5, 5, (8192, 320), dtype=torch.int8)
@@ -157,7 +157,7 @@ class TestQuantMatmul(TestCase):
         custom_output = torch_npu.npu_quant_matmul(x1_clone, x2_clone.t(), scale_quant, output_dtype=torch.float16)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.01)
 
-    @SupportedDevices(['Ascend910B'])
+    @SupportedDevices(['Ascend910B', 'Ascend910_95'])
     def test_npu_quant_matmul_bf16(self):
         x1 = torch.randint(-5, 5, (8192, 320), dtype=torch.int8)
         x2 = torch.randint(-5, 5, (320, 2560), dtype=torch.int8)
@@ -167,8 +167,8 @@ class TestQuantMatmul(TestCase):
         supported_output = torch.matmul(x1.to(torch.int32), x2.to(torch.int32)) * scale
         custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale.npu(), output_dtype=torch.bfloat16)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.01)
-    
-    @SupportedDevices(['Ascend910B'])
+
+    @SupportedDevices(['Ascend910B', 'Ascend910_95'])
     def test_npu_quant_matmul_bf16_nz(self):
         x1 = torch.randint(-5, 5, (8192, 320), dtype=torch.int8)
         x2 = torch.randint(-5, 5, (320, 2560), dtype=torch.int8)
@@ -179,8 +179,8 @@ class TestQuantMatmul(TestCase):
         x2_nz = torch_npu.npu_format_cast(x2_clone.npu().contiguous(), 29)
         custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_nz.npu(), scale.npu(), output_dtype=torch.bfloat16)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.01)
-    
-    @SupportedDevices(['Ascend910B'])
+
+    @SupportedDevices(['Ascend910B', 'Ascend910_95'])
     def test_npu_quant_matmul_fp16_nz(self):
         x1 = torch.randint(-5, 5, (8192, 320), dtype=torch.int8)
         x2 = torch.randint(-5, 5, (320, 2560), dtype=torch.int8)
@@ -202,6 +202,232 @@ class TestQuantMatmul(TestCase):
         supported_output = torch.matmul(x1.to(torch.int32), x2.to(torch.int32))
         custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale.npu(), output_dtype=torch.int32)
         self.assertRtolEqual(supported_output.cpu().numpy().astype(np.float32), custom_output.cpu().numpy().astype(np.float32), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_fp8_pertensor(self):
+        x1 = torch.randint(-5, 5, (16, 38), dtype=torch.float8_e4m3fn)
+        x2 = torch.randint(-5, 5, (16, 112), dtype=torch.float8_e5m2)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randn(1, dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        scale_quant = torch_npu.npu_trans_quant_param(scale_clone.npu(), None)
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * scale
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu().t(), x2_clone.npu(), scale_quant, output_dtype=torch.float32)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.0001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_hif8_perchannel(self):
+        x1 = torch.randint(0, 255, (224, 64), dtype=torch.uint8)
+        x2 = torch.randint(0, 255, (64, 8360), dtype=torch.uint8)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        x1 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x1.numpy()))
+        x2 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x2.numpy()))
+        scale = torch.randn(8360, dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        scale_quant = torch_npu.npu_trans_quant_param(scale_clone.npu(), None)
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * scale
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_quant, x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8, output_dtype=torch.float16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_int8_pertoken(self):
+        x1 = torch.randint(-5, 5, (4183, 1088), dtype=torch.int8)
+        x2 = torch.randint(-5, 5, (960, 1088), dtype=torch.int8)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randn(1, dtype=torch.float32)
+        pertoken_scale = torch.randn(4183, dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        supported_output = torch.matmul(x1.to(torch.int32), x2.to(torch.int32)) * scale * pertoken_scale.unsqueeze(-1)
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu().t(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), output_dtype=torch.bfloat16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_fp8_pertoken(self):
+        x1 = torch.randint(-5, 5, (8192, 320), dtype=torch.float8_e4m3fn)
+        x2 = torch.randint(-5, 5, (320, 2560), dtype=torch.float8_e4m3fn)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randn(2560, dtype=torch.float32)
+        pertoken_scale = torch.randn(4183, dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * scale * pertoken_scale.unsqueeze(-1)
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), output_dtype=torch.float16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_hif8_pertoken(self):
+        x1 = torch.randint(0, 255, (8192, 320), dtype=torch.uint8)
+        x2 = torch.randint(0, 255, (320, 2560), dtype=torch.uint8)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        x1 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x1.numpy()))
+        x2 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x2.numpy()))
+        scale = torch.randn(2560, dtype=torch.float32)
+        pertoken_scale = torch.randn(4183, dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * scale * pertoken_scale.unsqueeze(-1)
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8, output_dtype=torch.float32)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.0001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_fp8_doublescale(self):
+        x1 = torch.randint(-5, 5, (544, 236), dtype=torch.float8_e5m2)
+        x2 = torch.randint(-5, 5, (544, 568), dtype=torch.float8_e5m2)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randn(1, dtype=torch.float32)
+        pertoken_scale = torch.randn(1, dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        double_scale = scale * pertoken_scale
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * double_scale
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu().t(), x2_clone.npu(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), output_dtype=torch.float32)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.0001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_hif8_doublescale(self):
+        x1 = torch.randint(0, 255, (30, 32), dtype=torch.uint8)
+        x2 = torch.randint(0, 255, (32, 8), dtype=torch.uint8)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        x1 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x1.numpy()))
+        x2 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x2.numpy()))
+        scale = torch.randn(1, dtype=torch.float32)
+        pertoken_scale = torch.randn(1, dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        double_scale = scale * pertoken_scale
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * double_scale
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8, output_dtype=torch.bfloat16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_mxfp8_odd_scaleK(self):
+        x1 = torch.randint(-5, 5, (185, 480), dtype=torch.float8_e4m3fn)
+        x2 = torch.randint(-5, 5, (1880, 480), dtype=torch.float8_e4m3fn)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randint(-5, 5, (1880, 16), dtype=torch.int8)
+        pertoken_scale = torch.randint(-5, 5, (185, 16), dtype=torch.int8)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        x1 = x1.numpy()
+        x2 = x2.numpy()
+        scale = scale.numpy().transpose()
+        pertoken_scale = pertoken_scale.numpy()
+        scale = scale[:-1, :]
+        pertoken_scale = pertoken_scale[:, :-1]
+        scale_broadcast = np.repeat(scale, 32, axis=-1)
+        pertoken_scale_broadcast = np.repeat(pertoken_scale, 32, axis=-2)
+        x1_pad_len = pertoken_scale_broadcast.shape[-1] - x1.shape[-1]
+        x2_pad_len = scale_broadcast[-2] - x2.shape[-2]
+        x1_dims = len(x1.shape)
+        x2_dims = len(x2.shape)
+        x1 = np.pad(x1, [(0, 0)] * (x1_dims - 1) + [(0, x1_pad_len)], mode='constant', constant_values=0)
+        x2 = np.pad(x2, [(0, 0)] * (x2_dims - 2) + [(0, x2_pad_len)] + [(0, 0)], mode='constant', constant_values=0)
+        x1 = x1 * pertoken_scale_broadcast
+        x2 = x2 * scale_broadcast
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32))
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu().t(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu, output_dtype=torch.float16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_mxfp8_even_scaleK(self):
+        x1 = torch.randint(-5, 5, (112, 944), dtype=torch.float8_e4m3fn)
+        x2 = torch.randint(-5, 5, (184, 944), dtype=torch.float8_e4m3fn)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randint(-5, 5, (184, 30), dtype=torch.int8)
+        pertoken_scale = torch.randint(-5, 5, (112, 30), dtype=torch.int8)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        x1 = x1.numpy()
+        x2 = x2.numpy()
+        scale = scale.numpy().transpose()
+        pertoken_scale = pertoken_scale.numpy()
+        scale = scale[:-1, :]
+        pertoken_scale = pertoken_scale[:, :-1]
+        scale_broadcast = np.repeat(scale, 32, axis=-1)
+        pertoken_scale_broadcast = np.repeat(pertoken_scale, 32, axis=-2)
+        x1_pad_len = pertoken_scale_broadcast.shape[-1] - x1.shape[-1]
+        x2_pad_len = scale_broadcast[-2] - x2.shape[-2]
+        x1_dims = len(x1.shape)
+        x2_dims = len(x2.shape)
+        x1 = np.pad(x1, [(0, 0)] * (x1_dims - 1) + [(0, x1_pad_len)], mode='constant', constant_values=0)
+        x2 = np.pad(x2, [(0, 0)] * (x2_dims - 2) + [(0, x2_pad_len)] + [(0, 0)], mode='constant', constant_values=0)
+        x1 = x1 * pertoken_scale_broadcast
+        x2 = x2 * scale_broadcast
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32))
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu().t(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu, output_dtype=torch.bfloat16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_mxfp4(self):
+        x1 = torch.randint(-5, 5, (112, 944), dtype=torch.int8)
+        x2 = torch.randint(-5, 5, (184, 944), dtype=torch.int8)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randint(-5, 5, (184, 30), dtype=torch.int8)
+        pertoken_scale = torch.randint(-5, 5, (112, 30), dtype=torch.int8)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        x1 = x1.numpy()
+        x2 = x2.numpy()
+        scale = scale.numpy().transpose()
+        pertoken_scale = pertoken_scale.numpy()
+        scale = scale[:-1, :]
+        pertoken_scale = pertoken_scale[:, :-1]
+        scale_broadcast = np.repeat(scale, 32, axis=-1)
+        pertoken_scale_broadcast = np.repeat(pertoken_scale, 32, axis=-2)
+        x1_pad_len = pertoken_scale_broadcast.shape[-1] - x1.shape[-1]
+        x2_pad_len = scale_broadcast[-2] - x2.shape[-2]
+        x1_dims = len(x1.shape)
+        x2_dims = len(x2.shape)
+        x1 = np.pad(x1, [(0, 0)] * (x1_dims - 1) + [(0, x1_pad_len)], mode='constant', constant_values=0)
+        x2 = np.pad(x2, [(0, 0)] * (x2_dims - 2) + [(0, x2_pad_len)] + [(0, 0)], mode='constant', constant_values=0)
+        x1 = x1 * pertoken_scale_broadcast
+        x2 = x2 * scale_broadcast
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32))
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu().t(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), x1_dtype=torch_npu.float4_e1m2fn_x2, x2_dtype=torch_npu.float4_e2m1fn_x2, scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu, output_dtype=torch.bfloat16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_hif8_perblock(self):
+        x1 = torch.randint(0, 255, (8192, 320), dtype=torch.uint8)
+        x2 = torch.randint(0, 255, (320, 2560), dtype=torch.uint8)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        x1 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x1.numpy()))
+        x2 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x2.numpy()))
+        scale = torch.randint(-5, 5, (3, 20), dtype=torch.float32)
+        pertoken_scale = torch.randint(-5, 5, (64, 3), dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        double_scale = scale * pertoken_scale
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * double_scale
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8, output_dtype=torch.bfloat16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_quant_matmul_fp8_pertile(self):
+        x1 = torch.randint(-5, 5, (8192, 320), dtype=torch.float8_e5m2)
+        x2 = torch.randint(-5, 5, (320, 2560), dtype=torch.float8_e5m2)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randint(-5, 5, (3, 20), dtype=torch.float32)
+        pertoken_scale = torch.randint(-5, 5, (8192, 3), dtype=torch.float32)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        double_scale = scale * pertoken_scale
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * double_scale
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu().t(), x2_clone.npu(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), output_dtype=torch.float32)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.0001)
 
     # pylint:disable = huawei-too-many-arguments
     def a8w4_quant_golden(self, x, weight, scale, perTokenScale, groupList, bias, output_dtype):
@@ -269,6 +495,72 @@ class TestQuantMatmul(TestCase):
             cmp = self.ref_compare(golden_out_tensor, out_tensor, 2 ** -7 if ksize < 2048 else 2**-6)
         return eb and cmp
 
+    def trans_np_hifuint8_tensor_to_float32(self, in_tensor):
+        for i in range(in_tensor.shape[0]):
+            for j in range(in_tensor.shape[1]):
+                if in_tensor[i][j] == 0 or in_tensor[i][j] == 128:
+                    in_tensor[i][j] = float(0)
+                elif in_tensor[i][j] == 239:
+                    in_tensor[i][j] = -32768
+                elif in_tensor[i][j] == 111:
+                    in_tensor[i][j] = 32768
+                else:
+                    if in_tensor[i][j] >= 128:
+                        sign = -1.0
+                    else:
+                        sign = 1.0
+                    dot_4_bits = in_tensor[i][j] & 120
+                    dot_4_value = dot_4_bits >> 3
+                    if dot_4_value >= 12:
+                        exponent = in_tensor[i][j] & 30
+                        exponent_int = exponent >> 1
+                        if exponent_int >= 8:
+                            exponent_value = -exponent_int
+                        else:
+                            exponent_value = exponent_int + 8
+                        fra_int = in_tensor[i][j] & 1
+                        m_value = 1.0 + fra_int * 0.5
+                    elif dot_4_value >= 8:
+                        exponent = in_tensor[i][j] & 28
+                        exponent_int = exponent >> 2
+                        if exponent_int >= 4:
+                            exponent_value = -exponent_int
+                        else:
+                            exponent_value = exponent_int + 4
+                        fra_int = in_tensor[i][j] & 3
+                        m_value = 1.0 + fra_int * 0.25
+                    elif dot_4_value >= 4:
+                        exponent = in_tensor[i][j] & 24
+                        exponent_int = exponent >> 3
+                        if exponent_int >= 2:
+                            exponent_value = -exponent_int
+                        else:
+                            exponent_value = exponent_int + 2
+                        fra_int = in_tensor[i][j] & 7
+                        m_value = 1.0 + fra_int * 0.125
+                    elif dot_4_value >= 2:
+                        exponent = in_tensor[i][j] & 8
+                        exponent_sign = exponent >> 3
+                        if exponent_sign >= 1:
+                            exponent_value = -1
+                        else:
+                            exponent_value = 1
+                        fra_int = in_tensor[i][j] & 7
+                        m_value = 1.0 + fra_int * 0.125
+                    elif dot_4_value == 1:
+                        exponent_value = 0
+                        fra_int = in_tensor[i][j] & 7
+                        m_value = 1.0 + fra_int * 0.125
+                    elif dot_4_value == 0:
+                        m_value = 1
+                        exponent_value = (in_tensor[i][j] & 7) - 23
+                    else:
+                        print("error, dot error")
+                        m_value = 0.0
+                        exponent_value = 0.0
+                    in_tensor[i][j] = sign + pow(2.0, exponent_value) * m_value
+        return in_tensor.astype(np.float32)
+
     @unittest.skip("skip test_npu_quant_matmul_A8W4")
     @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul_A8W4_float16(self):
@@ -298,7 +590,7 @@ class TestQuantMatmul(TestCase):
                                          groupList=group_size_list, bias=y_offset, output_dtype=torch.float16)
 
         self.assertTrue(self.golden_compare(npu_out.cpu(), cpu_out, K))
-    
+
     @unittest.skip("skip test_npu_quant_matmul_A8W4")
     @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul_A8W4_bfloat16(self):
