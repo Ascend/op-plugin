@@ -128,11 +128,20 @@
   "op_api: torch_npu.npu_gelu_mul(*args, **kwargs)": {
     "version": ["v2.6", "v2.7"]
   },
+  "op_api: torch_npu.npu_sim_exponential_(*args, **kwargs)": {
+    "version": ["v2.6", "v2.7"]
+  },
   "op_api: torch_npu.npu_alltoallv_gmm(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_gelu_mul(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
+  },
+  "op_api: torch_npu.npu_sim_exponential_(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "func: npu_sim_exponential_(Tensor(a!) self, float lambd=1, *, Generator? generator=None) -> Tensor(a!)": {
+    "version": ["v2.6", "newest"]
   },
   "op_api: torch_npu.npu_alloc_float_status(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]

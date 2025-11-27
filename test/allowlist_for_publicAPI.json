@@ -3,11 +3,11 @@
   {
     "v2.1": [],
     "v2.5": [],
-    "v2.6": ["npu_gelu_mul", "npu_clipped_swiglu"],
-    "v2.7": ["npu_gelu_mul", "npu_clipped_swiglu"],
-    "v2.8": ["npu_gelu_mul", "npu_clipped_swiglu"],
-    "v2.9": ["npu_gelu_mul", "npu_clipped_swiglu"],
-    "v2.10": ["npu_gelu_mul", "npu_clipped_swiglu"],
+    "v2.6": ["npu_gelu_mul", "npu_clipped_swiglu", "npu_sim_exponential_"],
+    "v2.7": ["npu_gelu_mul", "npu_clipped_swiglu", "npu_sim_exponential_"],
+    "v2.8": ["npu_gelu_mul", "npu_clipped_swiglu", "npu_sim_exponential_"],
+    "v2.9": ["npu_gelu_mul", "npu_clipped_swiglu", "npu_sim_exponential_"],
+    "v2.10": ["npu_gelu_mul", "npu_clipped_swiglu", "npu_sim_exponential_"],
     "all_version": [
       "_npu_dropout",
       "copy_memory_",

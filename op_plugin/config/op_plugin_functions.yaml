@@ -5489,6 +5489,11 @@ custom:
         approximate_ptr: 'const_cast<char*>(approximate_str.c_str())'
       exec: aclnnGeluMul, input, approximate_ptr, out
 
+  - func: npu_sim_exponential_(Tensor(a!) self, float lambd=1, *, Generator? generator=None) -> Tensor(a!)
+    op_api: [v2.6, newest]
+    exposed: [v2.6, newest]
+    tags: nondeterministic_seeded
+    
   - func: _conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)
     acl_op: all_version
 
