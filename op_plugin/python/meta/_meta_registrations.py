@@ -554,6 +554,18 @@ def npu_mm_reduce_scatter_base_meta(self, x2, hcom, world_size, reduce_op='sum',
     return torch.empty(size, dtype=dtype, device='meta')
 
 
+@impl(m, "npu_quant_mm_reduce_scatter")
+def npu_quant_mm_reduce_scatter_meta(self, x2, hcom, world_size, reduce_op='sum',
+                                     bias=None, x1_scale=None, x2_scale=None, quant_scale=None,
+                                     block_size=0, comm_turn=0, group_sizes=None, amax_output=False, y_dtype=None,
+                                     x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+    if world_size <= 0:
+        raise RuntimeError("world_size must be bigger than zero")
+    out_m = math.floor(self.size(0) / world_size)
+    torch_dtype = self.dtype if y_dtype is None else TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP[y_dtype]
+    return (self.new_empty(out_m, x2.size(1), dtype=torch_dtype), self.new_empty(0, dtype=torch.float32))
+
+
 @impl(m, "npu_gmm_alltoallv")
 def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                         recv_counts, *, send_counts_tensor=None,
@@ -715,6 +727,34 @@ def npu_all_gather_base_mm_meta(self, x2, hcom, world_size, bias=None,
 
     return (torch.empty(out_size, dtype=dtype, device='meta'),
             torch.empty(gather_output_size, dtype=self.dtype, device='meta'))
+
+
+@impl(m, "npu_all_gather_quant_mm")
+def npu_all_gather_quant_mm_meta(self, x2, hcom, world_size, bias=None, x1_scale=None, x2_scale=None,
+                                 quant_scale=None, block_size=0, gather_index=0, gather_output=True,
+                                 comm_turn=0, group_sizes=None, amax_output=False, y_dtype=None, x1_dtype=None,
+                                 x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+    if world_size <= 0:
+        raise RuntimeError("world_size must be bigger than zero")
+    # out_gather_mm
+    out_x = self.size(0)
+    if gather_index == 0:
+        out_x = self.size(0) * world_size
+    out_y = x2.size(1)
+    # out_gather
+    out_gather_x = x2.size(0) * world_size
+    out_gather_y = x2.size(1)
+    if gather_index == 0:
+        out_gather_x = self.size(0) * world_size
+        out_gather_y = self.size(1)
+    torch_dtype = self.dtype if y_dtype is None else TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP[y_dtype]
+
+    if gather_output:
+        return (self.new_empty((out_x, out_y), dtype=torch_dtype), self.new_empty(out_gather_x, out_gather_y),
+                self.new_empty(0, dtype=torch.float32))
+    else:
+        return (self.new_empty((out_x, out_y), dtype=torch_dtype), self.new_empty(0),
+                self.new_empty(0, dtype=torch.float32))
 
 
 @impl(m, "npu_moe_init_routing")
@@ -2172,18 +2212,20 @@ def group_norm_silu_meta(self, gemma, beta, group, eps=0.00001):
 def npu_mm_all_reduce_base_forward(x1, x2, hcom, reduce_op='sum', bias=None, antiquant_scale=None,
                                    antiquant_offset=None, x3=None, dequant_scale=None, pertoken_scale=None,
                                    comm_quant_scale_1=None, comm_quant_scale_2=None, antiquant_group_size=0,
-                                   comm_turn=0):
+                                   comm_turn=0, group_sizes=None, y_dtype=None, x1_dtype=None, x2_dtype=None, 
+                                   dequant_scale_dtype=None, pertoken_scale_dtype=None, comm_quant_mode=0):
     dim_list = []
     for i in range(x1.dim()):
         dim_list.append(x1.size(i))
     dim_list[-1] = x2.size(1)
+    dim_tuple = tuple(dim_list)
     if dequant_scale is not None:
-        if dequant_scale.dtype == torch.bfloat16:
-            return x1.new_empty(tuple(dim_list), dtype=torch.bfloat16)
+        if y_dtype is None:
+            dtype = torch.bfloat16 if dequant_scale.dtype == torch.bfloat16 else torch.float16
+            return x1.new_empty(dim_tuple, dtype=dtype)
         else:
-            return x1.new_empty(tuple(dim_list), dtype=torch.float16)
-    else:
-        return x1.new_empty(tuple(dim_list))
+            return x1.new_empty(dim_tuple, dtype=TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(y_dtype, torch.float16))
+    return x1.new_empty(dim_tuple)
 
 
 

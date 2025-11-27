@@ -24,6 +24,10 @@
 
 namespace op_plugin {
 namespace utils {
+static const uint64_t GROUP_MAX = 65535UL;
+static const size_t GROUP_DIM = 3;
+static const size_t OFFSET_32_BITS = 32;
+static const size_t OFFSET_16_BITS = 16;
 bool is_neox_style(std::string rotary_mode)
 {
     TORCH_CHECK(rotary_mode != "half" || rotary_mode != "interleave",
@@ -461,5 +465,26 @@ std::vector<int64_t> get_dynamic_shape(const c10::optional<at::Tensor> &scales, 
     }
     return shape;
 }
+
+int64_t check_and_get_group_size(at::IntArrayRef group_size_list)
+{
+    int64_t groups = 0;
+    if (group_size_list.empty()) {
+        return groups;
+    }
+    size_t group_dim = group_size_list.size();
+    TORCH_CHECK(group_dim == GROUP_DIM, "group_sizes only support input with three elements, but got ", group_dim,
+                OPS_ERROR(ErrCode::PARAM));
+    int64_t group_m = static_cast<int64_t>(group_size_list[0]);
+    int64_t group_n = static_cast<int64_t>(group_size_list[1]);
+    int64_t group_k = static_cast<int64_t>(group_size_list[2]);
+    bool invalid_group_param = ((group_m <= GROUP_MAX && group_m >= 0) && (group_n <= GROUP_MAX && group_n >= 0) &&
+                                (group_k <= GROUP_MAX && group_k >= 0));
+    TORCH_CHECK(invalid_group_param, "group param value must conform to range [0, 65535]", OPS_ERROR(ErrCode::VALUE));
+    groups = static_cast<int64_t>((static_cast<uint64_t>(group_m) << OFFSET_32_BITS) +
+                                  (static_cast<uint64_t>(group_n) << OFFSET_16_BITS) + static_cast<uint64_t>(group_k));
+    return groups;
+}
+
 }  // namespace utils
 }  // namespace op_plugin
