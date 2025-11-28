@@ -5490,6 +5490,11 @@ custom:
         approximate_ptr: 'const_cast<char*>(approximate_str.c_str())'
       exec: aclnnGeluMul, input, approximate_ptr, out
 
+  - func: npu_sim_exponential_(Tensor(a!) self, float lambd=1, *, Generator? generator=None) -> Tensor(a!)
+    op_api: [v2.6, newest]
+    exposed: [v2.6, newest]
+    tags: nondeterministic_seeded
+
   - func: npu_gelu_quant(Tensor self, *, Tensor? input_scale=None, Tensor? input_offset=None, str approximate='none', str quant_mode='dynamic', int? dst_type=None, str round_mode='rint') -> (Tensor, Tensor)
     op_api: [v2.1, newest]
     
