@@ -202,13 +202,13 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         -   当query的D等于128时：
             -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>约束如下：
 
-                - `input\_layout`：TND、NTD\_TND。  
+                - `input\_layout`：BSH、BSND、TND、BNSD、NTD、BSH\_BNSD、BSND\_BNSD、BNSD\_BSND、NTD\_TND。  
                 
                 - `query\_rope`配置时要求query\_rope的shape中D为64，其余维度与`query`一致。  
                 
                 - `key_rope`配置时要求`key_rope`的shape中D为64，其余维度与`key`一致。  
                 
-                - 不支持左padding、tensorlist、pse、page attention、prefix、伪量化、全量化、后量化。
+                - 不支持左padding、tensorlist、pse、prefix、伪量化、全量化、后量化。
 
             -   其余约束同TND、NTD\_TND场景下的综合限制保持一致。
 
@@ -223,14 +223,10 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
             -   不支持开启softmax\_lse、左padding、tensorlist、pse、prefix、伪量化、全量化、后量化、空Tensor。
 
         -   当query的D不等于512时：
-            -   当`query_rope`和`key_rope`为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当`query_rope`和`key_rope`不为空时，要求Q\_D、K\_D、V\_D等于128；
-            -   支持TND、NTD\_TND；
-            -   数据类型仅支持`bfloat16`；
-            -   当sparse=3时，要求每个batch单独的actualSeqLengths<actualSeqLengthsKv；
-            -   sparse模式支持sparse\_mode=4且传入mask；当sparse\_mode=4时，要求preTokens >= -actual\_seq\_qlen、nextTokens >= -actual\_seq\_kvlen、preTokens + nextTokens >= 0；
-            -   不支持左padding、tensorlist、pse、page attention、prefix、伪量化、全量化、后量化；
-            -   **不支持图模式配置Tiling调度优化**（tiling\_schedule\_optimize=True）、**reduce-overhead执行模式**（config.mode="reduce-overhead"）。
-            -   `actual_seq_lengths`和`actual_seq_lengths_kv`的元素个数不大于4096。
+            -   当`query_rope`和`key_rope`为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD场景，不支持V\_D等于192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当`query_rope`和`key_rope`不为空时，要求Q\_D、K\_D、V\_D等于128；
+            -   支持TND、NTD、NTD\_TND；
+            -   page attention场景下仅支持blocksize为16对齐且小于等于1024；
+            -   不支持左padding、tensorlist、prefix、伪量化、全量化、后量化；
 
 -   GQA伪量化场景下KV为NZ格式时的参数约束如下：
     - 支持perchannel和pertoken模式，`query`数据类型固定为`bfloat16`，`key`&`value`固定为`int8`；`query`&`key`&`value`的D仅支持128；query Sequence Length仅支持1-16；
