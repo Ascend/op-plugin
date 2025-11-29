@@ -150,8 +150,6 @@ at::Tensor npu_convert_weight_to_b4pack(const at::Tensor &weight)
     // 2）float32（float4_e2m1）ND/NZ
 
     auto weight_dim_num = weight.dim();
-    auto weight_first_dim = weight.size(weight_dim_num - 2);
-    auto weight_last_dim = weight.size(weight_dim_num - 1);
     int64_t weight_format = at_npu::native::custom_ops::get_npu_format(weight);
     bool weight_nz_flag = (weight_format == ACL_FORMAT_FRACTAL_NZ) ||
                           (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_16) ||
@@ -209,8 +207,11 @@ at::Tensor npu_convert_weight_to_b4pack(const at::Tensor &weight)
         }
         weight_packed_shape[dim_num - 1] = op_infer::CeilDiv(weight_packed_shape[dim_num - 1], INT4_NUMS_IN_INT32);
     } else {
-        weight_before_packed_shape = {weight_first_dim, weight_last_dim};
-        weight_packed_shape = {weight_first_dim, weight_last_dim / INT4_NUMS_IN_INT32};
+        for (auto idx = 0; idx < weight_dim_num; ++idx) {
+            weight_before_packed_shape.push_back(weight.size(idx));
+            weight_packed_shape.push_back(weight.size(idx));
+        }
+        weight_packed_shape[weight_dim_num - 1] /= INT4_NUMS_IN_INT32;
     }
     ASCEND_LOGI("before pack storage shape: %s", op_plugin::utils::get_vector_str(weight_before_packed_shape).c_str());
     ASCEND_LOGI("after pack storage shape: %s", op_plugin::utils::get_vector_str(weight_packed_shape).c_str());
