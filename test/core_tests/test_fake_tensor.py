@@ -2344,6 +2344,30 @@ class TestGroupedMatmul(TestCase):
             self.assertTrue(dim0 == res[0].shape[1])
             self.assertTrue(dim1 == res[0].shape[2])
 
+    def test_npu_grouped_matmul_meta_weight_float32_transpose(self):
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            K = 1024
+            M = 16
+            N = 256
+            E = 2
+            group_size = 32
+            x1 = torch.randint(0, 10, (M, K), dtype=torch.int8).view(torch.float8_e4m3fn).npu()
+            x = [x1]
+            w1 = torch.randint(0, 10, (E, N, K), dtype=torch.float32).npu()
+            w = [w1.transpose(-1, -2)]
+            antiQuant_Scale1 = torch.randint(0, 10, (E, N, K//group_size), dtype=torch.uint8).npu()
+            antiQuant_Scale = [antiQuant_Scale1.transpose(-1, -2)]
+            per_token_scale1 = torch.randint(0, 10, (M, K//group_size), dtype=torch.uint8).npu()
+            per_token_scale = [per_token_scale1]
+            group_list = [8, 8]
+            split_item = 3
+
+            res = torch_npu.npu_grouped_matmul(x, w, antiquant_scale=antiQuant_Scale, per_token_scale=per_token_scale, group_list_type=1, group_list=group_list, split_item=split_item, group_type=0)
+            self.assertTrue(x1.shape[0] == res[0].shape[0])
+            self.assertTrue((w1.shape[1]) == res[0].shape[1])
+
+
 class TestQuantMatmul(TestCase):
     def test_npu_quant_matmul_meta(self):
         with FakeTensorMode():

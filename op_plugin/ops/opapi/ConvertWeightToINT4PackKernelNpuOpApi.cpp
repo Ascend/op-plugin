@@ -156,6 +156,10 @@ at::Tensor npu_convert_weight_to_b4pack(const at::Tensor &weight)
     bool weight_nz_flag = (weight_format == ACL_FORMAT_FRACTAL_NZ) ||
                           (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_16) ||
                           (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_32);
+    bool supported_format =  weight_nz_flag || weight_format == ACL_FORMAT_ND || weight_format == ACL_FORMAT_NCL;
+    TORCH_CHECK(supported_format,
+        "weight_format only support ND/NCL/NZ/NZ_C0_16/NZ_C0_32, but it is ", weight_format, OPS_ERROR(ErrCode::PARAM));
+
     int64_t weight_elem_size = get_element_size(weight);
     int64_t weight_bytes = weight_elem_size * sizeof(int32_t);
 
@@ -230,6 +234,8 @@ at::Tensor npu_convert_weight_to_b4pack(const at::Tensor &weight)
         auto npu_format = ACL_FORMAT_FRACTAL_NZ;
         if (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_32) {
             npu_format = ACL_FORMAT_FRACTAL_NZ_C0_4;
+        } else if (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_16) {
+            npu_format = ACL_FORMAT_FRACTAL_NZ_C0_2;
         }
 
         weight_packed_npu_desc.npu_format_ = npu_format;

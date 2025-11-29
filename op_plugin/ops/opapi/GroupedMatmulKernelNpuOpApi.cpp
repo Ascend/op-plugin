@@ -84,6 +84,13 @@ void calculate_dim_m(size_t& dim_m, size_t num_x, const at::TensorList x)
     }
 }
 
+bool is_weight_trans(const at::Tensor &tensor)
+{
+    int64_t dim1 = tensor.dim() - 1;
+    int64_t dim2 = tensor.dim() - 2;
+    return tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2);
+}
+
 // Motivation for adapting this interface for each Torch version separately:
 // 1. Optional TensorList is only supported in Torch2.1 and later versions.
 //    Thus, "Tensor[] bias" is used in Torch1.11 and Torch2.0, while
@@ -189,8 +196,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     size_t dim_num_w = weight[0].sizes().size();
     size_t n0 = static_cast<size_t>(weight[0].size(dim_num_w - 1));
     // weight is trans or not
-    c10::SmallVector<int64_t, MAX_DIM_NUM> wrapper_stride = op_infer::array_to_small_vector(weight[0].strides());
-    bool weight_trans = wrapper_stride[weight[0].sizes().size() - PENULTIMATE_DIM] == 1;
+    bool weight_trans = is_weight_trans(weight[0]);
 #if VERSION_BETWEEN(V2R1, V2R7)
     bool mxfp4_valid = x_dtype.has_value() && weight_dtype.has_value() &&
                                    (x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
@@ -261,7 +267,8 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                     create_new_tensor_batch(y, num_group_list, x[0].size(0), n0 * INT4_NUMS_IN_INT32, options) :
                     create_new_tensor_batch(y, num_group_list, x[0].size(0), n_new, options);
             } else {
-                weight[0].dtype() == at::ScalarType::Int
+                (weight[0].dtype() == at::ScalarType::Int ||
+                 weight[0].dtype() == at::ScalarType::Float) && (!weight_trans)
                     ? create_new_tensor(y, x[0].size(0), n0 * INT4_NUMS_IN_INT32, options)
                     : create_new_tensor(y, x[0].size(0), n_new, options);
             }
@@ -299,8 +306,16 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
             ? c10_npu::GetAclDataType(per_token_scale_dtype.value())
             : (per_token_scale_real.empty() ? aclDataType::ACL_FLOAT
             : npu_preparation::convert_to_acl_data_type(per_token_scale_real[0].scalar_type()))};
+    TensorListWrapper antiquant_scale_wrapper = {antiquant_scale_real,
+        antiquant_scale_real.empty()
+            ? aclDataType::ACL_FLOAT16
+            : (antiquant_scale_real[0].scalar_type() == at::ScalarType::Byte ? aclDataType::ACL_FLOAT8_E8M0
+            : npu_preparation::convert_to_acl_data_type(antiquant_scale_real[0].scalar_type()))};
 
-    const bool is_weight_nz = at_npu::native::custom_ops::get_npu_format(weight[0]) == ACL_FORMAT_FRACTAL_NZ;
+    int64_t weight_format = at_npu::native::custom_ops::get_npu_format(weight[0]);
+    const bool is_weight_nz = (weight_format == ACL_FORMAT_FRACTAL_NZ) ||
+                              (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_2) ||
+                              (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_4);
     if (is_weight_nz) {
         static const bool is_weight_nz_available = check_aclnn_kernel_available("aclnnGroupedMatmulWeightNz");
         TORCH_CHECK(is_weight_nz_available,
@@ -308,7 +323,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                     "do not support with this format. Please try to update the version of CANN."
                     + OPS_ERROR(ErrCode::PARAM));
         int64_t quant_per_group_size = 0;
-        EXEC_NPU_CMD(aclnnGroupedMatmulWeightNz, x_wrapper, weight_wrapper, bias_real, scale_wrapper, offset_real, antiquant_scale_real,
+        EXEC_NPU_CMD(aclnnGroupedMatmulWeightNz, x_wrapper, weight_wrapper, bias_real, scale_wrapper, offset_real, antiquant_scale_wrapper,
             antiquant_offset_real, per_token_scale_wrapper, group_list_real, activation_input_real,
             activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,
             group_list_type_value, act_type_value, tuning_config_real, quant_per_group_size,
