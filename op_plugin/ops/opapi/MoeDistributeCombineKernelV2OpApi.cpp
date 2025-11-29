@@ -54,6 +54,7 @@ at::Tensor npu_moe_distribute_combine_v2(const at::Tensor &expand_x, const at::T
                                          const c10::optional<at::Tensor> &const_expert_alpha_1,
                                          const c10::optional<at::Tensor> &const_expert_alpha_2,
                                          const c10::optional<at::Tensor> &const_expert_v,
+                                         const c10::optional<at::Tensor> &performance_info,
                                          c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
                                          int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
                                          int64_t global_bs, int64_t comm_quant_mode,
@@ -90,7 +91,16 @@ at::Tensor npu_moe_distribute_combine_v2(const at::Tensor &expand_x, const at::T
     std::string comm_alg_str = std::string(comm_alg);
     char *comm_alg_ptr = const_cast<char *>(comm_alg_str.c_str());
 
-    if (check_aclnn_kernel_available("aclnnMoeDistributeCombineV3")) {
+    if (check_aclnn_kernel_available("aclnnMoeDistributeCombineV4")) {
+        EXEC_NPU_CMD(aclnnMoeDistributeCombineV4, expand_x, expert_ids, assist_info_for_combine, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
+                     nulltensor, nulltensor, nulltensor, expand_scales, shared_expert_x, elastic_info, ori_x, const_expert_alpha_1, const_expert_alpha_2, const_expert_v,
+                     performance_info, group_ep_ptr, ep_world_size, ep_rank_id, moe_expert_num, group_tp_ptr, tp_world_size, tp_rank_id,
+                     expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type,
+                     comm_alg_ptr, zero_expert_num, copy_expert_num, const_expert_num, output);
+    } else if (check_aclnn_kernel_available("aclnnMoeDistributeCombineV3")) {
+        TORCH_CHECK(performance_info.has_value(),
+                    "The performance_info is not supported in this CANN version, aclnnMoeDistributeDispatchV4 is not available, please update CANN version.",
+                    OPS_ERROR(ErrCode::PARAM));
         EXEC_NPU_CMD(aclnnMoeDistributeCombineV3, expand_x, expert_ids, assist_info_for_combine, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
                      nulltensor, nulltensor, nulltensor, expand_scales, shared_expert_x, elastic_info, ori_x, const_expert_alpha_1, const_expert_alpha_2, const_expert_v,
                      group_ep_ptr, ep_world_size, ep_rank_id, moe_expert_num, group_tp_ptr, tp_world_size, tp_rank_id,
