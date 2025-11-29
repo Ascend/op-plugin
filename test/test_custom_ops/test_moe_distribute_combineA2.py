@@ -63,7 +63,7 @@ class TestMoeDistributeCombine(TestCase):
     @classmethod
     def _test_npu_moe_distribute_combine(cls, c2p, p2c, expand_x, expert_ids, expand_idx,
                     ep_send_counts, tp_send_counts, expert_scales, rank_id, ep_world_size,
-                    moe_expert_num, bs, global_bs, init_pg, use_comm_alg=False, comm_alg=None):
+                    moe_expert_num, bs, global_bs, init_pg, use_comm_alg=False, comm_alg=None, performance_info=None):
         ep_hcomm_info, ep_group = init_pg(rank_id, ep_world_size)
 
         expand_x = expand_x.npu()
@@ -85,7 +85,8 @@ class TestMoeDistributeCombine(TestCase):
                         ep_rank_id=rank_id,
                         moe_expert_num=moe_expert_num,
                         global_bs=global_bs,
-                        comm_alg=comm_alg)  
+                        comm_alg=comm_alg,
+                        performance_info=performance_info[rank_id])  
         else:
             x = torch_npu.npu_moe_distribute_combine(
                         expand_x=expand_x,
@@ -130,6 +131,12 @@ class TestMoeDistributeCombine(TestCase):
             send_counts_world[rank_id * moe_expert_num: (rank_id + 1) * moe_expert_num] = torch.bincount(expert_ids, minlength=moe_expert_num)
         return send_counts_world.reshape(world_size, moe_expert_num).T.reshape(world_size, moe_expert_num).cumsum(-1, dtype=torch.int32)
 
+    def golden_compare_performance_info(self, performance_info):
+        if performance_info is None:
+            return
+        if performance_info.all(performance_info == 0):
+            raise ValueError("The performance_info Tensor is all zeros, at least one non-zero value is required!")
+        
     def gen_combine_input(self, bs: int, k: int, h: int, world_size: int, moe_expert_num: int, dtype=torch.float16):
         # 计算dispatch结果作为combine输入
         local_moe_expert_num = moe_expert_num // world_size
@@ -171,6 +178,7 @@ class TestMoeDistributeCombine(TestCase):
             ep_send_counts_world, tp_send_counts_world, expert_scales, ep_world_size, moe_expert_num, bs, global_bs = input_list[:11]
         
         comm_alg = input_list[11] if use_comm_alg and len(input_list) >= 12 else None
+        performance_info = input_list[12] if len(input_list) >= 13 else [None]*ep_world_size
 
         ctx = mp.get_context('spawn')
         c2p = ctx.Queue(ep_world_size)
@@ -179,7 +187,7 @@ class TestMoeDistributeCombine(TestCase):
         rank_list = list(np.arange(0, ep_world_size))
         for rank_id in rank_list:
             args = (c2p, p2c, expandx[rank_id], expert_ids[rank_id], expand_idx[rank_id], ep_send_counts_world[rank_id], 
-                tp_send_counts_world[rank_id], expert_scales[rank_id], rank_id, ep_world_size, moe_expert_num, bs, global_bs, init_pg, use_comm_alg, comm_alg)
+                tp_send_counts_world[rank_id], expert_scales[rank_id], rank_id, ep_world_size, moe_expert_num, bs, global_bs, init_pg, use_comm_alg, comm_alg, performance_info[rank_id])
             p = ctx.Process(target=f, args=args)
             p.start()
             p_list.append(p)
@@ -188,6 +196,7 @@ class TestMoeDistributeCombine(TestCase):
             rank, output = c2p.get()
             tol = 2 ** (-7) if output.dtype == torch.bfloat16 else 2 ** (-8)
             self.assertRtolEqual(output.float(), golden_out_tensors[rank].float(), tol)
+            self.golden_compare_performance_info(performance_info[rank_id])
 
         for _ in rank_list:
             p2c.put(0)
@@ -249,10 +258,15 @@ class TestMoeDistributeCombine(TestCase):
         x_world = x_world.reshape((ep_world_size, bs, h)).unsqueeze(-2).to(torch.float32) # (ep_world_size, bs, 1, h)
         expert_scales_world = expert_scales_world.reshape((ep_world_size, bs, k)).unsqueeze(-1).to(torch.float32) # (ep_world_size, bs, k, 1)
         golden_out_tensors = (x_world * expert_scales_world).sum(dim=-2)
+        performance_info = [torch.zeros(ep_world_size, dtype=torch.int64) for rank_id in range(ep_world_size)]
 
         self._test_multiprocess(TestMoeDistributeCombine._test_npu_moe_distribute_combine,
                 TestMoeDistributeCombine.init_hccl_comm, [golden_out_tensors, expandx, expert_ids, expand_idx, 
                         ep_send_counts_world, tp_send_counts_world, expert_scales, ep_world_size, moe_expert_num, bs, global_bs, comm_alg], use_comm_alg=True)
-
+        # test performance_info
+        self._test_multiprocess(TestMoeDistributeCombine._test_npu_moe_distribute_combine,
+                TestMoeDistributeCombine.init_hccl_comm, [golden_out_tensors, expandx, expert_ids, expand_idx, 
+                        ep_send_counts_world, tp_send_counts_world, expert_scales, ep_world_size, moe_expert_num, bs, global_bs, comm_alg, performance_info], use_comm_alg=True)
+        
 if __name__ == '__main__':
     run_tests()

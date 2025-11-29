@@ -179,9 +179,15 @@ class TestMoeDistributeDispatch(TestCase):
         ep_recv_counts_npu = npu_result[4]
         self.assertEqual(ep_recv_counts_golden, ep_recv_counts_npu,
                              ("rank {} Expect receive tensor {} but got {}.").format(rank_id, ep_recv_counts_golden, ep_recv_counts_npu))
-
+        
+    def golden_compare_performance_info(self, performance_info):
+        if performance_info is None:
+            return
+        if performance_info.all(performance_info == 0):
+            raise ValueError("The performance_info Tensor is all zeros, at least one non-zero value is required!")
+            
     @classmethod
-    def run_dispatch_npu(cls, queue, rank, x, expert_ids, scales, ep_world_size, has_scale, total_expert_num, quant_mode, global_bs, use_comm_alg=False, comm_alg=None):
+    def run_dispatch_npu(cls, queue, rank, x, expert_ids, scales, ep_world_size, has_scale, total_expert_num, quant_mode, global_bs, use_comm_alg=False, comm_alg=None, performance_info=None):
         torch_npu.npu.set_device(rank % 8)
 
         dist.init_process_group(backend="hccl", rank=rank, world_size=ep_world_size, init_method='tcp://' + "127.0.0.1" + ':' + "50000")
@@ -206,6 +212,7 @@ class TestMoeDistributeDispatch(TestCase):
                     quant_mode=quant_mode,
                     global_bs = global_bs,
                     comm_alg = comm_alg,
+                    performance_info = performance_info,
                 )
         else:
             expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, _ = torch_npu.npu_moe_distribute_dispatch(
@@ -305,6 +312,7 @@ class TestMoeDistributeDispatch(TestCase):
         x_input = self.chunk_tensor(x, ep_world_size)
         expert_ids_input = self.chunk_tensor(expert_ids, ep_world_size)
         scales_input = scales
+        performance_info = [torch.zeros(ep_world_size, dtype=torch.int64) for rank_id in range(ep_world_size)]
 
         golden_tensor_list, golden_actual_tokens = self.gen_dispatch_golden(x, expert_ids, scales, has_scale, k, quant_mode, global_bs, ep_world_size, bs, total_expert_num, expert_num_per_rank)
 
@@ -317,7 +325,7 @@ class TestMoeDistributeDispatch(TestCase):
         mp.set_start_method("forkserver", force=True)
         for rank_id in rank_list:
             p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input, 
-                                                                                    ep_world_size, has_scale, total_expert_num, quant_mode, global_bs, True, comm_alg))
+                                                                                    ep_world_size, has_scale, total_expert_num, quant_mode, global_bs, True, comm_alg, performance_info[rank_id]))
             p.start()
             p_list.append(p)
 
@@ -330,6 +338,7 @@ class TestMoeDistributeDispatch(TestCase):
 
         for rank_id in rank_list:
             self.golden_compare(rank_id, golden_tensor_list, golden_actual_tokens, results[rank_id], quant_mode, bs, k)
+            self.golden_compare_performance_info(performance_info[rank_id])
 
 if __name__ == '__main__':
     run_tests()
