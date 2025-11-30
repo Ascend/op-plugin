@@ -86,7 +86,8 @@ def _register_atb_extensions():
         raise NNAL_EX from GLOBAL_E
     _patch_atb_ops()
     from torch_npu.op_plugin.atb._atb_api_docs import _add_torch_npu_atb_api_docstr
-    _add_torch_npu_atb_api_docstr()
+    if not torch.compiler.is_compiling():
+        _add_torch_npu_atb_api_docstr()
 
 
 def lazy_load_atb_so(api_func):
