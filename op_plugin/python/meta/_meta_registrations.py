@@ -17,6 +17,17 @@ m = Library("npu", "IMPL", "Meta")
 m_aten = Library("aten", "IMPL", "Meta")
 
 
+def _is_pytorch_version_ge(min_version):
+    def parse_version(v):
+        parts = list(map(int, v.split('.')[:3]))
+        return tuple(parts + [0] * (3 - len(parts)))
+
+    current_version_str = torch.__version__.split('+')[0]
+    current_version = parse_version(current_version_str)
+    target_version = parse_version(min_version)
+    return current_version >= target_version
+
+
 @impl(m_aten, "matmul_backward")
 def matmul_backward_meta(grad, self, other, mask):
     return (torch.empty_like(self), torch.empty_like(other))
@@ -3155,3 +3166,8 @@ def npu_kv_quant_sparse_flash_attention_forward(query, key, value, sparse_indice
     if layout_query == "TND":
         out = torch.empty([query.size(0), query.size(1), query.size(2) - rope_head_dim], dtype=query.dtype, device='meta')
     return out
+
+if _is_pytorch_version_ge("2.6.0"):
+    @impl(m, "npu_sim_exponential_")
+    def npu_sim_exponential__meta(self, lambd=1, generator=None):
+        return torch.empty_like(self)
