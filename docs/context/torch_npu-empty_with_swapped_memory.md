@@ -41,7 +41,8 @@ torch_npu.empty_with_swapped_memory(size, dtype=None, device=None) -> Tensor
 `torch_npu.npu_hans_encode`<br>
 `torch_npu.npu_hans_decode`<br>
 
-- 该接口申请的特殊Tensor不支持直接打印，需要查看值时要先通过mul_转为普通Tensor再打印，详情请参考调用示例。
+- Atlas A3 训练系列产品，该接口申请的特殊Tensor支持直接打印。
+- Atlas A2 训练系列产品，该接口申请的特殊Tensor不支持直接打印，需要查看值时要先通过`mul_`转为普通Tensor再打印，详情请参考调用示例。
 
 
 ## 调用示例
