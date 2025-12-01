@@ -5419,6 +5419,12 @@ official:
   - func: split_with_sizes_copy.out(Tensor self, SymInt[] split_sizes, int dim=0, *, Tensor(a!)[] out) -> ()
     op_api: [ v2.1, newest ]
 
+  - func: linalg_cholesky.out(Tensor self, *, bool upper=False, Tensor(a!) out) -> Tensor(a!)
+    op_api: all_version
+
+  - func: linalg_cholesky(Tensor self, *, bool upper=False) -> Tensor
+    op_api: all_version
+
 autograd:
   - func: _thnn_fused_gru_cell(Tensor input_gates, Tensor hidden_gates, Tensor hx, Tensor? input_bias=None, Tensor? hidden_bias=None) -> (Tensor, Tensor)
     op_api: [v2.5, newest]
