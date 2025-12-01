@@ -36,7 +36,7 @@ torch_npu.npu_sim_exponential_(input, lambd=1, *, generator=None) -> Tensor
 
 `Tensor`
 
-表示公式中的$f(x)$，即原地更新后的`input`张量
+表示公式中的$f(x)$，即原地更新后的`input`张量。
 
 
 ## 调用示例
