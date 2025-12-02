@@ -309,12 +309,12 @@ def npu_mla_prolog_v3_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weigh
     )
 
     rope_sin_dim = rope_sin.dim()
-    torch._check(
-        rope_sin_dim == 2 or rope_sin_dim == 3,
-        lambda: "rope_sin dim num should be 2 or 3, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
-    )
-
     if token_x_dim == 3:
+        torch._check(
+            rope_sin_dim == 3,
+            lambda: "rope_sin dim num should be 3, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
+        )
+
         query_shape = []
         query_shape.append(token_x.size(0))
         query_shape.append(token_x.size(1))
@@ -342,6 +342,11 @@ def npu_mla_prolog_v3_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weigh
         dequant_scale_q_norm_shape.append(1)
 
     else:
+        torch._check(
+            rope_sin_dim == 2,
+            lambda: "rope_sin dim num should be 2, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
+        )
+
         query_shape = []
         query_shape.append(token_x.size(0))
         query_shape.append(weight_uk.size(0))
@@ -417,12 +422,12 @@ def npu_mla_prolog_v3_functional_forward(token_x, weight_dq, weight_uq_qr, weigh
     )
 
     rope_sin_dim = rope_sin.dim()
-    torch._check(
-        rope_sin_dim == 2 or rope_sin_dim == 3,
-        lambda: "rope_sin dim num should be 2 or 3, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
-    )
-
     if token_x_dim == 3:
+        torch._check(
+            rope_sin_dim == 3,
+            lambda: "rope_sin dim num should be 3, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
+        )
+
         query_shape = []
         query_shape.append(token_x.size(0))
         query_shape.append(token_x.size(1))
@@ -450,6 +455,11 @@ def npu_mla_prolog_v3_functional_forward(token_x, weight_dq, weight_uq_qr, weigh
         dequant_scale_q_norm_shape.append(1)
 
     else:
+        torch._check(
+            rope_sin_dim == 2,
+            lambda: "rope_sin dim num should be 2, but the actual value is " + str(rope_sin_dim) + ops_error(ErrCode.VALUE),
+        )
+
         query_shape = []
         query_shape.append(token_x.size(0))
         query_shape.append(weight_uk.size(0))
