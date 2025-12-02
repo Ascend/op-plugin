@@ -129,6 +129,16 @@ def npu_sparse_flash_attention_forward(query, key, value, sparse_indices, scale_
     return (attention_out, softmax_max, softmax_sum)
 
 
+@impl(m, "npu_sparse_flash_attention_grad")
+def npu_sparse_flash_attention_grad_meta(query, key, value, sparse_indices, d_out, out, softmax_max, softmax_sum, scale_value, sparse_block_size, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_kvlen=None, layout="BSND", sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807, attention_mode=0):
+    d_query = query.new_empty(query.shape, dtype=query.dtype, device='meta')
+    d_key = key.new_empty(key.shape, dtype=key.dtype, device='meta')
+    d_value = value.new_empty(value.shape, dtype=value.dtype, device='meta')
+    d_query_rope = torch.empty([0], dtype=query.dtype, device='meta') if query_rope is None else query_rope.new_empty(query_rope.shape, dtype=query_rope.dtype, device='meta')
+    d_key_rope = torch.empty([0], dtype=key.dtype, device='meta') if key_rope is None else key_rope.new_empty(key_rope.shape, dtype=key_rope.dtype, device='meta')
+    return (d_query, d_key, d_value, d_query_rope, d_key_rope)
+
+
 @impl(m, "npu_mla_prolog")
 def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
                    rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None,
@@ -1426,6 +1436,23 @@ def npu_lightning_indexer_forward(query, key, weights, *, actual_seq_lengths_que
     else:
         sparse_values_out = torch.empty([0], dtype=query.dtype, device='meta')
     return (sparse_indices_out, sparse_values_out)
+
+
+@impl(m, "npu_lightning_indexer_grad")
+def npu_lightning_indexer_grad_meta(query, key, dy, sparse_indices, weights, actual_seq_lengths_query=None, actual_seq_lengths_key=None, layout="BSND", sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807):
+    d_query = query.new_empty(query.shape, dtype=query.dtype, device='meta')
+    d_key = key.new_empty(key.shape, dtype=key.dtype, device='meta')
+    d_weights = weights.new_empty(weights.shape, dtype=weights.dtype, device='meta')
+    return (d_query, d_key, d_weights)
+
+
+@impl(m, "npu_sparse_lightning_indexer_grad_kl_loss")
+def npu_sparse_lightning_indexer_grad_kl_loss_meta(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value=1, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807):
+    d_query_index = query_index.new_empty(query_index.shape, dtype=query_index.dtype, device='meta')
+    d_key_index = key_index.new_empty(key_index.shape, dtype=key_index.dtype, device='meta')
+    d_weights = weights.new_empty(weights.shape, dtype=weights.dtype, device='meta')
+    loss = torch.empty([1], dtype=torch.float32, device='meta')
+    return (d_query_index, d_key_index, d_weights, loss)
 
 
 @impl(m, "npu_fusion_attention_grad_v2")
