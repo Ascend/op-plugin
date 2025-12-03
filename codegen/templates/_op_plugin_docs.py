@@ -12488,10 +12488,10 @@ _add_torch_npu_docstr(
     "npu_sparse_lightning_indexer_grad_kl_loss",
     """
 接口原型: 
-npu_sparse_lightning_indexer_grad_kl_loss(Tensor query, Tensor key, Tensor query_index, Tensor key_index, Tensor weights, Tensor sparse_indices, Tensor softmax_max, Tensor softmax_sum, float scale_value=1, *, Tensor? query_rope=None, Tensor? key_rope=None, SymInt[]? actual_seq_qlen=None, SymInt[]? actual_seq_klen=None, str? layout='BSND', int? sparse_mode=3, int? pre_tokens=9223372036854775807, int? next_tokens=9223372036854775807) -> (Tensor, Tensor, Tensor, Tensor)
+npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value=1, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor, Tensor, Tensor)
 
 功能描述:
-该接口实现了npu_lightning_indexer的反向功能，再额外融合了Loss的计算功能。npu_lightning_indexer将Attention的query和Attention的key之间的最高内在联系的top_k个筛选出来，存放在sparse_indices中，从而减少长序列场景下Attention的计算量，加速长序列的网络的推理和训练的性能。
+该接口实现了npu_lightning_indexer的反向功能，并融合了Loss的计算。npu_lightning_indexer用于筛选Attention的query与key间最高内在联系的Top-k项，存放在sparse_indices中，以减少长序列场景下的Attention计算量，提升训练性能。
 
 参数说明: 
 query（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1, D)、(T1, N1, D)。
@@ -12500,17 +12500,17 @@ query_index（Tensor）：必选参数，数据格式支持ND，数据类型支�
 key_index（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1index, D)、(T1, N1index, D)。
 weights（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1)、(T1, N1)。
 sparse_indices（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, topK)、(T1, topK)。
-softmax_max（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1, G)、(T1, N1, G)。
-softmax_sum（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1, G)、(T1, N1, G)。
+softmax_max（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, N2, S1, G)、(N2, T1, G)。
+softmax_sum（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, N2, S1, G)、(N2, T1, G)。
 scale_value（float）：必选参数，表示缩放系数，数据类型支持FLOAT。
 query_rope（Tensor）：可选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1, Dr)、(T1, N1, Dr)。
 key_rope（Tensor）：可选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S2, N2, Dr)、(T2, N2, Dr)。
 actual_seq_qlen（int[]）：可选参数，int类型数组，TND场景时需传入此参数。表示query每个S的累加和长度，数据类型支持INT64，数据格式支持ND，默认值为None。
 actual_seq_klen（int[]）：可选参数，int类型数组，TND场景时需传入此参数。表示key每个S的累加和长度，数据类型支持INT64，数据格式支持ND，默认值为None。
 layout（str）：可选参数，用于标识输入query的数据排布格式，数据类型支持str。当前支持BSND、TND，默认值为"BSND"。
-sparse_mode（int）：可选参数，表示sparse的模式，数据类型支持INT32.默认值为3。
-pre_tokens（int）：必选参数，数据类型支持INT64，默认值9223372036854775807。
-next_tokens（int）：必选参数，数据类型支持INT64，默认值9223372036854775807。
+sparse_mode（int）：可选参数，表示sparse的模式，数据类型支持INT32，默认值为3。
+pre_tokens（int）：可选参数，数据类型支持INT64，默认值2^63-1。
+next_tokens（int）：可选参数，数据类型支持INT64，默认值2^63-1。
 
 输出说明: 
 d_query_index（Tensor）：表示query_index的梯度，数据类型支持BFLOAT16、FLOAT16。
