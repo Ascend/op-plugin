@@ -530,8 +530,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         TORCH_CHECK(key_rope_const.dim() == DIMENSION_3D || key_rope_const.dim() == DIMENSION_4D,
             "The shapes of the input key_rope should be 3 or 4 dimensional, but got ",
             key_rope_const.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
-        TORCH_CHECK(ac_seq_qlen.size() != 0 && ac_seq_kvlen.size() != 0,
-            "the size of actual_seq_qlen and actual_seq_kvlen cannot be empty." + OPS_ERROR(ErrCode::PARAM));
+        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+            TORCH_CHECK(ac_seq_qlen.size() != 0 && ac_seq_kvlen.size() != 0,
+                "the size of actual_seq_qlen and actual_seq_kvlen cannot be empty." + OPS_ERROR(ErrCode::PARAM));
+        }
     }
     TORCH_CHECK(value.dim() == DIMENSION_3D || value.dim() == DIMENSION_4D,
         "The shapes of the input value should be 3 or 4 dimensional, but got ", value.dim(),
