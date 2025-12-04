@@ -24,6 +24,7 @@ const static int64_t DIM_0 = 0;
 const static int64_t DIM_1 = 1;
 const static int64_t DIM_2 = 2;
 const static int64_t DIM_3 = 3;
+const static int64_t DIM_4 = 4;
 
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -31,14 +32,22 @@ namespace {
 at::Tensor construct_sparse_flash_attention_output_tensor(
     const at::Tensor& query, std::string layout)
 {
+    TORCH_CHECK(layout == "BSND" || layout == "TND", "The layout of query only support BSND and TND, but got ",
+                layout, OPS_ERROR(ErrCode::PARAM));
     at::SmallVector<int64_t, SIZE> output_size;
     for (size_t i = 0; i < query.sizes().size(); i++) {
         TORCH_CHECK(query.size(i) > 0, "All values within query's shape should be greater "
-            "than 0, but shape[", i, "] is ", query.size(i));
+            "than 0, but shape[", i, "] is ", query.size(i), OPS_ERROR(ErrCode::PARAM));
     }
     if (layout == "TND") {
+        TORCH_CHECK(query.dim() == DIM_3,
+                    "When the layout of query is TND, the query dimension must be 3, but got ",
+                    query.dim(), OPS_ERROR(ErrCode::PARAM));
         output_size = {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2)};
     } else {
+        TORCH_CHECK(query.dim() == DIM_4,
+                    "When the layout of query is BSND, the query dimension must be 4, but got ",
+                    query.dim(), OPS_ERROR(ErrCode::PARAM));
         output_size = {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2), query.size(DIM_3)};
     }
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, query.options().dtype(query.dtype()));
@@ -60,8 +69,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_sparse_flash_attention(
     int64_t sparse_mode, int64_t pre_tokens, int64_t next_tokens,
     int64_t attention_mode, bool return_softmax_lse)
 {
-    TORCH_CHECK(query.numel() > 0, "Tensor query is empty.")
-    TORCH_CHECK(key.numel() > 0, "Tensor key is empty.")
+    TORCH_CHECK(query.numel() > 0, "Tensor query is empty.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(key.numel() > 0, "Tensor key is empty.", OPS_ERROR(ErrCode::PARAM));
 
     std::string layout_query_str = std::string(layout_query);
     std::string layout_kv_str = std::string(layout_kv);

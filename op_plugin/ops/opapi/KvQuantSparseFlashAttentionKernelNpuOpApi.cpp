@@ -29,19 +29,29 @@ const int DIM_0 = 0;
 const int DIM_1 = 1;
 const int DIM_2 = 2;
 const int DIM_3 = 3;
+const int DIM_4 = 4;
 
 at::Tensor construct_quant_sparse_infer_output_tensor(
     const at::Tensor& query, std::string layout_query_str,
     std::string layout_kv_str, const uint64_t &rope_head_dim)
 {
+    TORCH_CHECK(layout_query_str == "BSND" || layout_query_str == "TND",
+                "The layout of query only support BSND and TND, but got ", layout_query_str,
+                OPS_ERROR(ErrCode::PARAM));
     for (auto i = 0; i < query.sizes().size(); i++) {
         TORCH_CHECK(query.size(i) > 0, "All values within query's shape should be greater "
             "than 0, but shape[", i, "] is ", query.size(i));
     }
     at::SmallVector<int64_t, SIZE> output_size;
     if (layout_query_str == "BSND") {
+        TORCH_CHECK(query.dim() == DIM_4,
+                    "When the layout of query is BSND, the query dimension must be 4, but got ",
+                    query.dim(), OPS_ERROR(ErrCode::PARAM));
         output_size = {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2), query.size(DIM_3) - rope_head_dim};
     } else {
+        TORCH_CHECK(query.dim() == DIM_3,
+                    "When the layout of query is TND, the query dimension must be 3, but got ",
+                    query.dim(), OPS_ERROR(ErrCode::PARAM));
         output_size = {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2) - rope_head_dim};
     }
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, query.options().dtype(query.dtype()));
