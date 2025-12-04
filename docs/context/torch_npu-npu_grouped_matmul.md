@@ -43,6 +43,10 @@
         -   `x`为`int8`输入，`bias`为`bfloat16`，`float16`，`float32`输入（公式3-2）：
 
             $y_i = (x_i @ weight_i) \times scale_i \times pertokenscale_i + bias_i$
+        - `x`为`int4`输入, `weight`的数据类型为`int4`数据排布格式为`NZ`输入（公式3-3）:
+
+            $y_i=x_i@ (weight_i \times scale_i) \times pertokenscale_i$
+        
 
     -   伪量化场景（公式4）：
 
@@ -57,7 +61,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **x** (`List[Tensor]`)：必选参数。输入矩阵列表，表示矩阵乘法中的左矩阵。
     -   支持的数据类型如下：
-        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`float32`、`bfloat16`和`int8`。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`float32`、`bfloat16`、`int8`和`int4`。
         -   <term>Atlas 推理系列产品</term>：`float16`。
 
     -   列表最大长度为128。
@@ -219,6 +223,8 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
             |perchannel全量化|`int8`|`int8`|`int32`|`float32`|无需赋值|无需赋值|无需赋值|`float16`|`float16`|
             |pertoken全量化|`int8`|`int8`|`int32`|`bfloat16`|无需赋值|无需赋值|`float32`|`bfloat16`|`bfloat16`|
             |pertoken全量化|`int8`|`int8`|`int32`|`float32`|无需赋值|无需赋值|`float32`|`float16`|`float16`|
+            |pertoken全量化|`int4`|`int4`|无需赋值|`uint64`|无需赋值|无需赋值|None/`float32`|`float16`|`float16`|
+            |pertoken全量化|`int4`|`int4`|无需赋值|`uint64`|无需赋值|无需赋值|None/`float32`|`bfloat16`|`bfloat16`|
             |伪量化|`float16`|`int8`/`int4`|`float16`|无需赋值|`float16`|`float16`|无需赋值|None/`float16`|`float16`|
             |伪量化|`bfloat16`|`int8`/`int4`|`float32`|无需赋值|`bfloat16`|`bfloat16`|无需赋值|None/`bfloat16`|`bfloat16`|
 
@@ -270,31 +276,65 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 -   单算子模式调用
 
-    通用调用示例
+    -   <term>通用调用示例
 
-    ```python
-    import torch
-    import torch_npu
-    
-    x1 = torch.randn(256, 256, device='npu', dtype=torch.float16)
-    x2 = torch.randn(1024, 256, device='npu', dtype=torch.float16)
-    x3 = torch.randn(512, 1024, device='npu', dtype=torch.float16)
-    x = [x1, x2, x3]
-    
-    weight1 = torch.randn(256, 256, device='npu', dtype=torch.float16)
-    weight2 = torch.randn(256, 1024, device='npu', dtype=torch.float16)
-    weight3 = torch.randn(1024, 128, device='npu', dtype=torch.float16)
-    weight = [weight1, weight2, weight3]
-    
-    bias1 = torch.randn(256, device='npu', dtype=torch.float16)
-    bias2 = torch.randn(1024, device='npu', dtype=torch.float16)
-    bias3 = torch.randn(128, device='npu', dtype=torch.float16)
-    bias = [bias1, bias2, bias3]
-    
-    group_list = None
-    split_item = 0
-    npu_out = torch_npu.npu_grouped_matmul(x, weight, bias=bias, group_list=group_list, split_item=split_item, group_type=-1)
-    ```
+        ```python
+        import torch
+        import torch_npu
+        
+        x1 = torch.randn(256, 256, device='npu', dtype=torch.float16)
+        x2 = torch.randn(1024, 256, device='npu', dtype=torch.float16)
+        x3 = torch.randn(512, 1024, device='npu', dtype=torch.float16)
+        x = [x1, x2, x3]
+        
+        weight1 = torch.randn(256, 256, device='npu', dtype=torch.float16)
+        weight2 = torch.randn(256, 1024, device='npu', dtype=torch.float16)
+        weight3 = torch.randn(1024, 128, device='npu', dtype=torch.float16)
+        weight = [weight1, weight2, weight3]
+        
+        bias1 = torch.randn(256, device='npu', dtype=torch.float16)
+        bias2 = torch.randn(1024, device='npu', dtype=torch.float16)
+        bias3 = torch.randn(128, device='npu', dtype=torch.float16)
+        bias = [bias1, bias2, bias3]
+        
+        group_list = None
+        split_item = 0
+        npu_out = torch_npu.npu_grouped_matmul(x, weight, bias=bias, group_list=group_list, split_item=split_item, group_type=-1)
+        ```
+
+    -   <term>x为int4输入, weight的数据类型为int4数据排布格式为NZ，调用示例如下：
+
+        ```python
+        import numpy as np
+        import torch
+        import torch_npu
+
+        E, K, N = 1, 16, 64
+        x = torch.randint(10, (15, 16), dtype=torch.int8).npu()
+        weight = torch.randint(10, (1, 16, 64), dtype=torch.int8).npu()
+
+        x_quant = torch_npu.npu_quantize(x.to(torch.float32), torch.tensor([1.]).npu(), None, torch.quint4x2, -1, False)
+        weight_nz = torch_npu.npu_format_cast(weight.to(torch.float32), 29)
+        weight_quant = torch_npu.npu_quantize(weight_nz, torch.tensor([1.]).npu(), None, torch.quint4x2, -1, False)
+
+        scale = torch.rand((E, 1, N), dtype=torch.float32).npu()
+
+        k_group = scale.shape[1]
+        scale_np = scale.cpu().numpy()
+        scale_uint32 = scale_np.astype(np.float32)
+        scale_uint32.dtype = np.uint32
+        scale_uint64 = np.zeros((E, k_group, N * 2), dtype=np.uint32)
+        scale_uint64[...,::2] = scale_uint32
+        scale_uint64.dtype = np.int64
+        scale = torch.from_numpy(scale_uint64).npu()
+
+        group_list = torch.Tensor([14]).to(torch.int64).npu()
+        per_token_scale = torch.rand((15), dtype=torch.float32).npu()
+
+        output = torch_npu.npu_grouped_matmul([x_quant], [weight_quant], scale=[scale], per_token_scale=[per_token_scale],
+                                                group_list=group_list, group_list_type=0, group_type=0,
+                                                split_item=3, output_dtype=torch.float16)
+        ```
 
 -   图模式调用
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
