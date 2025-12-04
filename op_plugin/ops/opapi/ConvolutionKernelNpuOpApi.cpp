@@ -196,15 +196,6 @@ static at::Tensor _calc_convolution(const at::Tensor &input, const at::Tensor &w
     int64_t dim = k - 2; // Subtract nonspatial dimensions: 2
     bool unBatch = false;
 
-    bool is_jit_enable = !at_npu::native::env::CheckJitDisable();
-    bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
-    // CheckForbidInternalFormat = False: turn on private format；CheckJitDisable = False: turn on JitCompile
-    ASCEND_LOGI("_calc_convolution exec with jit compile: %d, allow internal format: %d",
-                is_jit_enable, is_allow_internel_format);
-    if ((is_allow_internel_format || is_jit_enable) && (dim != 3)) {
-        return acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups,
-                                    false, false, false, false);
-    }
     // Conv1D: 1, Conv2D: 2, Conv3D: 3
     if (dim != 1 && dim != 2 && dim != 3) {
         return at::Tensor();
@@ -323,18 +314,6 @@ at::Tensor &slow_conv_transpose2d_out(const at::Tensor &input, const at::Tensor 
     int64_t inputK = input.ndimension();
     bool unBatch = false;
 
-    // Groups > 1 and 3D scenes are currently not supported (binary operator problem), and path 3 implementation is
-    // temporarily called
-    // CheckForbidInternalFormat = False: turn on private format; CheckJitDisable = False: turn on JitCompile
-    bool is_jit_enable = !at_npu::native::env::CheckJitDisable();
-    bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
-    ASCEND_LOGI("slow_conv_transpose2d_out exec with jit compile: %d, allow internal format: %d",
-                is_jit_enable, is_allow_internel_format);
-    if ((is_allow_internel_format || is_jit_enable)) {
-        output = acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding,
-                                      groups, false, false, false, false);
-        return output;
-    }
     // Conv1D: 1, Conv2D: 2
     if (dim != 1 && dim != 2 && dim != 3) {
         output = at::Tensor();
@@ -421,17 +400,6 @@ at::Tensor &_slow_conv2d_forward_out(const at::Tensor &input, const at::Tensor &
         npu_preparation::check_tensor({input, weight, bias}, {output}, input.scalar_type(), out_size);
     } else {
         npu_preparation::check_tensor({input, weight}, {output}, input.scalar_type(), out_size);
-    }
-
-    // temporarily called
-    // CheckForbidInternalFormat = False: turn on private format; CheckJitDisable = False: turn on JitCompile
-    bool is_jit_enable = !at_npu::native::env::CheckJitDisable();
-    bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
-    ASCEND_LOGI("_slow_conv2d_forward_out exec with jit compile: %d, allow internal format: %d",
-                is_jit_enable, is_allow_internel_format);
-    if (is_allow_internel_format || is_jit_enable) {
-        output = acl_op::_slow_conv2d_forward_out(input, weight, kernel_size, bias, stride, padding, output);
-        return output;
     }
 
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());

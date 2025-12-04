@@ -48,15 +48,6 @@ static tensor_list3 _calc_convolution_backward(const at::Tensor &grad_output, co
     int64_t dim = k - 2;
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
 
-    bool is_jit_enable = !at_npu::native::env::CheckJitDisable();
-    bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
-    ASCEND_LOGI("_calc_convolution_backward exec with jit compile: %d, allow internal format: %d",
-                is_jit_enable, is_allow_internel_format);
-    if ((is_allow_internel_format || is_jit_enable) && (dim != 3)) {
-        return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
-                                            transposed, output_padding, groups, output_mask);
-    }
-
     c10::SmallVector<int64_t, op_infer::N> stride_expand = expand_dim_if_needed(stride, "stride", dim);
     stride = at::IntArrayRef(stride_expand);
 
@@ -190,18 +181,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _slow_conv2d_backward(const at::T
 
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
 
-    /* k == 5 and groups > 3 currently unsupported by the binary file
-      CheckForbidInternalFormat = False: turn on private format��CheckJitDisable = False: turn on JitCompile
-    */
-    bool is_jit_enable = !at_npu::native::env::CheckJitDisable();
-    bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
-    ASCEND_LOGI("_slow_conv2d_backward exec with jit compile: %d, allow internal format: %d",
-                is_jit_enable, is_allow_internel_format);
-    if (is_allow_internel_format || is_jit_enable) {
-        return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
-                                            transposed, output_padding, groups, output_mask);
-    }
-
     auto outputSizes =
         op_infer::conv2d_backward_npu_output_size(input, grad_output, weight);
 
@@ -246,16 +225,6 @@ static std::tuple<at::Tensor, at::Tensor, at::Tensor> _calc_convolution_backward
     int64_t dim = k - 2;
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
 
-    bool is_jit_enable = !at_npu::native::env::CheckJitDisable();
-    bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
-    ASCEND_LOGI("_calc_convolution_backward exec with jit compile: %d, allow internal format: %d",
-                is_jit_enable, is_allow_internel_format);
-    // CheckForbidInternalFormat = False: turn on private format��CheckJitDisable = False: turn on JitCompile
-    if ((is_allow_internel_format || is_jit_enable) && (dim != 3)) {
-        return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
-                                            transposed, output_padding, groups, output_mask);
-    }
-
     c10::SmallVector<int64_t, op_infer::N> stride_expand = expand_dim_if_needed(stride, "stride", dim);
     stride = at::IntArrayRef(stride_expand);
 
@@ -276,11 +245,17 @@ static std::tuple<at::Tensor, at::Tensor, at::Tensor> _calc_convolution_backward
     at::Tensor gradWeight;
     at::Tensor gradBias;
 
-    gradInput = npu_preparation::apply_tensor_without_format(std::get<0>(outputSizes), input.options());
-    gradWeight = npu_preparation::apply_tensor_without_format(std::get<1>(outputSizes), weight.options());
+    if (output_mask[0]) {
+        gradInput = npu_preparation::apply_tensor_without_format(std::get<0>(outputSizes), input.options());
+    }
+    if (output_mask[1]) {
+        gradWeight = npu_preparation::apply_tensor_without_format(std::get<1>(outputSizes), weight.options());
+    }
 
-    // use 2nd dimension of outputSizes
-    gradBias = npu_preparation::apply_tensor_without_format(std::get<2>(outputSizes), grad_output.options());
+    if (output_mask[2]) {
+        // use 2nd dimension of outputSizes
+        gradBias = npu_preparation::apply_tensor_without_format(std::get<2>(outputSizes), grad_output.options());
+    }
 
     int64_t input_dim = input.ndimension();
     at::optional<c10::IntArrayRef> bias_sizes = c10::nullopt;
