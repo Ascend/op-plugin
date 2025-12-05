@@ -3182,9 +3182,9 @@ class TestMlaProLogV3(TestCase):
             dequant_scale_q_norm_shape.append(1)
             
             query = torch.empty(query_shape, dtype=rope_sin.dtype, device='meta')
-            dequant_scale_q_nope = torch.empty([1], dtype=torch.float32, device='meta')
-            query_norm = torch.empty([1], dtype=w_uq_qr.dtype, device='meta')
-            dequant_scale_q_norm = torch.empty([1], dtype=torch.float32, device='meta')
+            dequant_scale_q_nope = torch.empty([0], dtype=torch.float32, device='meta')
+            query_norm = torch.empty([0], dtype=w_uq_qr.dtype, device='meta')
+            dequant_scale_q_norm = torch.empty([0], dtype=torch.float32, device='meta')
             query_rope = torch.empty(query_rope_shape, dtype=torch.bfloat16, device='meta')
             
             query_mla, query_rope_mla, dequant_scale_q_nope_mla, query_norm_mla, dequant_scale_q_norm_mla = torch_npu.npu_mla_prolog_v3(token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, rmsnorm_gamma_cq,
@@ -3232,9 +3232,9 @@ class TestMlaProLogV3Functional(TestCase):
             dequant_scale_q_norm_shape.append(1)
             
             query = torch.empty(query_shape, dtype=rope_sin.dtype, device='meta')
-            dequant_scale_q_nope = torch.empty([1], dtype=torch.float32, device='meta')
-            query_norm = torch.empty([1], dtype=w_uq_qr.dtype, device='meta')
-            dequant_scale_q_norm = torch.empty([1], dtype=torch.float32, device='meta')
+            dequant_scale_q_nope = torch.empty([0], dtype=torch.float32, device='meta')
+            query_norm = torch.empty([0], dtype=w_uq_qr.dtype, device='meta')
+            dequant_scale_q_norm = torch.empty([0], dtype=torch.float32, device='meta')
             query_rope = torch.empty(query_rope_shape, dtype=torch.bfloat16, device='meta')
             
             query_mla, query_rope_mla, dequant_scale_q_nope_mla, _, _, kv_cache_mla, kr_cache_mla = torch_npu.npu_mla_prolog_v3_functional(token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, rmsnorm_gamma_cq,
