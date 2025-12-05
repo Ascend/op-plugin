@@ -250,7 +250,7 @@ at::Tensor _convolution(const at::Tensor &input, const at::Tensor &weight, const
     params.transposed = transposed;
     params.output_padding = expand_param_if_needed(output_padding, "output_padding", dim);
     params.groups = groups;
-    check_shape_forward(input, weight.sizes(), bias.value(), params);
+    check_shape_forward(input, weight.sizes(), bias.has_value() ? bias.value() : at::Tensor(), params);
 
     DO_COMPATIBILITY(aclnnConvolution,
                      acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding,
