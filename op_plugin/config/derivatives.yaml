@@ -135,6 +135,11 @@ backward:
   query, key, value, pse, query_rope, key_rope, sink: npu_fusion_attention_grad_v2(query, key, value, grad, head_num, input_layout, pse, padding_mask, atten_mask, d_scale_q, d_scale_k, d_scale_v, d_scale_dy, d_scale_o, result1, result2, result3, result0, query_rope, key_rope, scale, keep_prob, pre_tokens, next_tokens, inner_precise, result4, result5, result6, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode, out_dtype, gen_mask_parallel, sync, pse_type, q_start_idx, kv_start_idx, softmax_layout, sink)
   version: [v2.1, newest]
 
+- name: npu_fused_floyd_attention(Tensor query_ik, Tensor key_ij, Tensor value_ij, Tensor key_jk, Tensor value_jk, *, Tensor? atten_mask=None, float scale_value=1.) -> (Tensor, Tensor, Tensor)
+  output_differentiability: [false, false, true]
+  query_ik, key_ij, value_ij, key_jk, value_jk: npu_fused_floyd_attention_backward(grad, query_ik, key_ij, value_ij, key_jk, value_jk, result2, result0, result1, atten_mask, scale_value)
+  version: [v2.6, newest]
+
 - name: npu_geglu(Tensor self, int dim=-1, int approximate=1, bool activate_left=False) -> (Tensor, Tensor)
   output_differentiability: [true, false]
   self: npu_geglu_grad(grad, self, result1, dim, approximate, activate_left)

@@ -1516,6 +1516,25 @@ def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *
             numels)
 
 
+@impl(m, "npu_fused_floyd_attention")
+def npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk, *, atten_mask=None, scale_value=1.):
+    out0_out1_shape = (query_ik.shape[0], query_ik.shape[1], query_ik.shape[2], query_ik.shape[3], 8)
+    out0 = torch.empty(out0_out1_shape, dtype=torch.float32, device='meta')
+    out1 = torch.empty_like(out0, device='meta')
+    out2 = torch.empty_like(query_ik, device='meta')
+    return (out0, out1, out2)
+
+
+@impl(m, "npu_fused_floyd_attention_backward")
+def npu_fused_floyd_attention_backward(grad_output, query_ik, key_ij, value_ij, key_jk, value_jk, attention_out, softmax_max, softmax_sum, *, atten_mask=None, scale_value=1.):
+    dquery = torch.empty_like(query_ik, device='meta')
+    dkey_0 = torch.empty_like(key_ij, device='meta')
+    dvalue_0 = torch.empty_like(value_ij, device='meta')
+    dkey_1 = torch.empty_like(key_jk, device='meta')
+    dvalue_1 = torch.empty_like(value_jk, device='meta')
+    return (dquery, dkey_0, dvalue_0, dkey_1, dvalue_1)
+
+
 @impl(m, "npu_lightning_indexer")
 def npu_lightning_indexer_forward(query, key, weights, *, actual_seq_lengths_query=None,
     actual_seq_lengths_key=None, block_table=None, layout_query="BSND", layout_key="BSND", sparse_count=2048, sparse_mode=3,

@@ -38,6 +38,12 @@
   "op_api: torch_npu.npu_gelu_backward(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
+  "op_api: torch_npu.npu_fused_floyd_attention(*args, **kwargs)": {
+    "version": ["v2.6", "v2.7"]
+  },
+  "op_api: torch_npu.npu_fused_floyd_attention_backward(*args, **kwargs)": {
+    "version": ["v2.6", "v2.7"]
+  },
   "op_api: torch_npu.npu_mla_prolog(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
@@ -141,6 +147,12 @@
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_gelu_mul(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "op_api: torch_npu.npu_fused_floyd_attention(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "op_api: torch_npu.npu_fused_floyd_attention_backward(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_sim_exponential_(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
@@ -2361,6 +2373,12 @@
     "version": ["all_version"]
   },
   "func: npu_gelu_mul(Tensor input, *, str approximate='none') -> Tensor": {
+    "version": ["v2.6", "newest"]
+  },
+  "func: npu_fused_floyd_attention(Tensor query_ik, Tensor key_ij, Tensor value_ij, Tensor key_jk, Tensor value_jk, *, Tensor? atten_mask=None, float scale_value=1.) -> (Tensor, Tensor, Tensor)": {
+    "version": ["v2.6", "newest"]
+  },
+  "func: npu_fused_floyd_attention_backward(Tensor grad_output, Tensor query_ik, Tensor key_ij, Tensor value_ij, Tensor key_jk, Tensor value_jk, Tensor attention_out, Tensor softmax_max, Tensor softmax_sum, *, Tensor? atten_mask=None, float scale_value=1.) -> (Tensor, Tensor, Tensor, Tensor, Tensor)": {
     "version": ["v2.6", "newest"]
   },
   "func: npu_add_quant_gmm_(Tensor(a!) self, Tensor x1, Tensor x2, Tensor x2_scale, Tensor group_list, *, Tensor? x1_scale=None, int? group_list_type=0, SymInt[]? group_sizes=None, int? x1_dtype=None, int? x2_dtype=None, int? x1_scale_dtype=None, int? x2_scale_dtype=None) -> Tensor(a!)": {
