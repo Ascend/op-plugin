@@ -4,6 +4,7 @@ import torch_npu
 from torch.library import Library, impl
 from torch.fx.node import has_side_effect
 from torch_npu.utils._error_code import ErrCode, ops_error
+from torch_npu.npu.utils import get_cann_version
 
 '''
 Registering Meta implementations for custom ops
@@ -3000,11 +3001,19 @@ def npu_transpose_batchmatmul_meta(input_, weight, *, bias=None, scale=None,
         check_perm_x1,
         lambda: "perm_x1 should be [0, 1, 2] or [1, 0, 2]" + ops_error(ErrCode.VALUE),
     )
-    check_perm_x2 = perm_x2[0] == 0 and perm_x2[1] == 1 and perm_x2[2] == 2
-    torch._check(
-        check_perm_x2,
-        lambda: "perm_x2 should be [0, 1, 2]" + ops_error(ErrCode.VALUE),
-    )
+    if get_cann_version() >= "8.5.0":
+        check_perm_x2 = ((perm_x2[0] == 0 and perm_x2[1] == 1 and perm_x2[2] == 2) or
+                        (perm_x2[0] == 0 and perm_x2[1] == 2 and perm_x2[2] == 1))
+        torch._check(
+            check_perm_x2,
+            lambda: "perm_x2 should be [0, 1, 2] or [0, 2, 1]" + ops_error(ErrCode.VALUE),
+        )
+    else:
+        check_perm_x2 = (perm_x2[0] == 0 and perm_x2[1] == 1 and perm_x2[2] == 2)
+        torch._check(
+            check_perm_x2,
+            lambda: "perm_x2 should be [0, 1, 2]" + ops_error(ErrCode.VALUE),
+        )
     check_perm_y = perm_y[0] == 1 and perm_y[1] == 0 and perm_y[2] == 2
     torch._check(
         check_perm_y,

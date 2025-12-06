@@ -1953,8 +1953,14 @@ c10::SmallVector<int64_t, SIZE> npu_transpose_batchmatmul_output_size(const at::
     auto check_perm_x1 = (perm_x1_real[0] == 0 && perm_x1_real[1] == 1 && perm_x1_real[2] == 2) ||
                          (perm_x1_real[0] == 1 && perm_x1_real[1] == 0 && perm_x1_real[2] == 2);
     TORCH_CHECK(check_perm_x1, "perm_x1 should be [0, 1, 2] or [1, 0, 2]" + OPS_ERROR(ErrCode::PARAM));
-    auto check_perm_x2 = perm_x2_real[0] == 0 && perm_x2_real[1] == 1 && perm_x2_real[2] == 2;
-    TORCH_CHECK(check_perm_x2, "perm_x2 should be [0, 1, 2]" + OPS_ERROR(ErrCode::PARAM));
+    if (op_plugin::utils::is_gte_cann_version_850()) {
+        auto check_perm_x2 = (perm_x2_real[0] == 0 && perm_x2_real[1] == 1 && perm_x2_real[2] == 2) ||
+                             (perm_x2_real[0] == 0 && perm_x2_real[1] == 2 && perm_x2_real[2] == 1);
+        TORCH_CHECK(check_perm_x2, "perm_x2 should be [0, 1, 2] or [0, 2, 1]" + OPS_ERROR(ErrCode::PARAM));
+    } else {
+        auto check_perm_x2 = (perm_x2_real[0] == 0 && perm_x2_real[1] == 1 && perm_x2_real[2] == 2);
+        TORCH_CHECK(check_perm_x2, "perm_x2 should be [0, 1, 2]" + OPS_ERROR(ErrCode::PARAM));
+    }
     auto check_perm_y = perm_y_real[0] == 1 && perm_y_real[1] == 0 && perm_y_real[2] == 2;
     TORCH_CHECK(check_perm_y, "perm_y should be [1, 0, 2]" + OPS_ERROR(ErrCode::PARAM));
     auto m_dim = input.size(perm_x1_real[1]);
