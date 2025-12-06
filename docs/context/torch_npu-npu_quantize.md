@@ -75,7 +75,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-- `input`数据格式为$NZ$时，`input`输入shape支持3维，形如\(e, k, n\)，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`quint4x2`。
+- `input`数据格式为$NZ$时，`input`输入shape支持3维，形如\(e, k, n\), k为256倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`quint4x2`。
 - `div_mode`为`False`时：
     - 支持<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>。
     - 当`dtype`为`quint4x2`或者`axis`为-2时，不支持<term>Atlas 推理系列产品</term>。
