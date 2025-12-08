@@ -71,6 +71,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_sparse_flash_attention(
 {
     TORCH_CHECK(query.numel() > 0, "Tensor query is empty.", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(key.numel() > 0, "Tensor key is empty.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(sparse_indices.numel() > 0, "Tensor sparse_indices is empty.")
 
     std::string layout_query_str = std::string(layout_query);
     std::string layout_kv_str = std::string(layout_kv);

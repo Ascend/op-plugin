@@ -73,6 +73,8 @@ at::Tensor npu_kv_quant_sparse_flash_attention(
     int64_t tile_size, int64_t rope_head_dim)
 {
     TORCH_CHECK(query.numel() > 0, "Tensor query is empty.")
+    TORCH_CHECK(key.numel() > 0, "Tensor key is empty.")
+    TORCH_CHECK(sparse_indices.numel() > 0, "Tensor sparse_indices is empty.")
 
     std::string layout_query_str = std::string(layout_query);
     std::string layout_kv_str = std::string(layout_kv);
