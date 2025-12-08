@@ -22,7 +22,7 @@ torch_npu.npu_rotated_iou(self, query_boxes, trans=False, mode=0, is_cross=True,
 ## 参数说明
 
 - **self** (`Tensor`)：必选参数，梯度增量数据，shape为(B, 5, N)数据类型为float32的3D张量。
-- **query_boxes** (`Tensor`)：必选参数，标注框，shape为(B, 5, K)数据类型为float32的3D张量。
+- **query_boxes** (`Tensor`)：必选参数，标注框，shape为(B, 5, K)数据类型为float32的3D张量，其中K值不大于1600。
 - **trans** (`bool`)：可选参数，值为True表示“xyxyt”，值为False表示“xywht”。默认值为False。
 - **is_cross** (`bool`)：可选参数，值为True时表示交叉计算，为False时表示一对一计算。默认值为True。
 - **mode** (`int`)：可选参数，计算模式，取值为0或1。0表示IoU，1表示IoF。默认值为0。
