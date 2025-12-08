@@ -12,7 +12,7 @@
 
 通过张量融合实现的高性能Adadelta优化器，核心功能和`torch.optim.Adadelta`兼容。
 
-Adadelta的功能和原理可参考[ADADELTA](https://pytorch.org/docs/2.1/generated/torch.optim.Adadelta.html#adadelta)。
+Adadelta的功能和原理可参考[Adadelta](https://pytorch.org/docs/stable/generated/torch.optim.Adadelta.html#adadelta)。
 
 ## 函数原型
 

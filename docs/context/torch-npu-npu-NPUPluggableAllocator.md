@@ -40,7 +40,7 @@ torch_npu.npu.NPUPluggableAllocator(path_to_so_file, alloc_fn_name, free_fn_name
 
 ## 调用示例
 
-完整调用示例可参考[LINK](https://gitcode.com/ascend/pytorch/blob/v2.1.0-7.1.0/test/allocator/test_pluggable_allocator_extensions.py)。
+完整调用示例可参考[LINK](https://gitcode.com/ascend/pytorch/blob/v2.7.1-7.3.0/test/allocator/test_pluggable_allocator_extensions.py)。
 
 **Python代码示例**：
 

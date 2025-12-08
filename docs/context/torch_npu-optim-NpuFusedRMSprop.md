@@ -13,7 +13,7 @@
 
 通过张量融合实现的高性能RMSprop优化器，核心功能和`torch.optim.RMSprop`兼容。
 
-RMSprop的功能和原理可参考[RMSPROP](https://pytorch.org/docs/2.1/generated/torch.optim.RMSprop.html#rmsprop)。
+RMSprop的功能和原理可参考[RMSprop](https://pytorch.org/docs/stable/generated/torch.optim.RMSprop.html#rmsprop)。
 
 ## 函数原型
 
