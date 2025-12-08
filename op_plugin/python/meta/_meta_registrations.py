@@ -410,7 +410,10 @@ def npu_mla_prolog_v3_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weigh
         dequant_scale_q_norm_shape.append(1)
 
     # kvcache量化
-    if weight_quant_mode == 2 and kv_cache_quant_mode == 1:
+    if weight_quant_mode == 3 and kv_cache_quant_mode == 1:
+        query = torch.empty(query_shape, dtype=torch.float8_e4m3fn, device='meta')
+        dequant_scale_q_nope = torch.empty(dequant_scale_q_nope_shape, dtype=torch.float32, device='meta')
+    elif weight_quant_mode == 2 and kv_cache_quant_mode == 1:
         query = torch.empty(query_shape, dtype=torch.int8, device='meta')
         dequant_scale_q_nope = torch.empty(dequant_scale_q_nope_shape, dtype=torch.float32, device='meta')
     else:
@@ -523,7 +526,10 @@ def npu_mla_prolog_v3_functional_forward(token_x, weight_dq, weight_uq_qr, weigh
         dequant_scale_q_norm_shape.append(1)
 
     # kvcache量化
-    if weight_quant_mode == 2 and kv_cache_quant_mode == 1:
+    if weight_quant_mode == 3 and kv_cache_quant_mode == 1:
+        query = torch.empty(query_shape, dtype=torch.float8_e4m3fn, device='meta')
+        dequant_scale_q_nope = torch.empty(dequant_scale_q_nope_shape, dtype=torch.float32, device='meta')
+    elif weight_quant_mode == 2 and kv_cache_quant_mode == 1:
         query = torch.empty(query_shape, dtype=torch.int8, device='meta')
         dequant_scale_q_nope = torch.empty(dequant_scale_q_nope_shape, dtype=torch.float32, device='meta')
     else:
