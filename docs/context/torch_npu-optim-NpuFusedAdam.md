@@ -12,7 +12,7 @@
 
 通过张量融合实现的高性能Adam优化器，核心功能和`torch.optim.Adam`兼容。
 
-Adam的功能和原理可参考[ADAM](https://pytorch.org/docs/2.1/generated/torch.optim.Adam.html#adam)。
+Adam的功能和原理可参考[Adam](https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#adam)。
 
 ## 函数原型
 

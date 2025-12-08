@@ -12,7 +12,7 @@
 
 通过张量融合实现的高性能SGD优化器，核心功能和`torch.optim.SGD`兼容。
 
-SGD的功能和原理可参考[SGD](https://pytorch.org/docs/2.1/generated/torch.optim.SGD.html#sgd)。
+SGD的功能和原理可参考[SGD](https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#sgd)。
 
 ## 函数原型
 

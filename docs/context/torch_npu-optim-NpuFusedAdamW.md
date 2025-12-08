@@ -12,7 +12,7 @@
 
 通过张量融合实现的高性能AdamW优化器，核心功能和`torch.optim.AdamW`兼容。
 
-AdamW的功能和原理可参考[ADAMW](https://pytorch.org/docs/2.1/generated/torch.optim.AdamW.html#adamw)。
+AdamW的功能和原理可参考[AdamW](https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html#adamw)。
 
 ## 函数原型
 
