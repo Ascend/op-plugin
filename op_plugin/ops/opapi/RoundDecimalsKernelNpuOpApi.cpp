@@ -22,7 +22,9 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 static void round_decimals_check(const at::Tensor& self, int64_t decimals)
 {
-    TORCH_CHECK(!isIntegralType(self.scalar_type(), true),
+    TORCH_CHECK(isFloatingType(self.scalar_type()) ||
+                self.scalar_type() == at::ScalarType::Int ||
+                self.scalar_type() == at::ScalarType::Long,
                 "\"round_npu\" not implemented for '", toString(self.scalar_type()), "'",
                 OPS_ERROR(ErrCode::TYPE));
 }
