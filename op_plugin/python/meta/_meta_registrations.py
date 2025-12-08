@@ -625,6 +625,23 @@ def npu_quant_mm_reduce_scatter_meta(self, x2, hcom, world_size, reduce_op='sum'
     return (self.new_empty(out_m, x2.size(1), dtype=torch_dtype), self.new_empty(0, dtype=torch.float32))
 
 
+@impl(m, "npu_quant_all_reduce")
+def npu_quant_all_reduce_meta(x, scales, hcom_name, world_size, reduce_op='sum',
+                              output_dtype=27, x_dtype=None, scales_dtype=None):
+    world_size = 2
+    size = [x.size(0), x.size(1)]
+    if x.dim() == 3:
+        size = [x.size(0), x.size(1), x.size(2)]
+
+    dtype = x.dtype
+    if output_dtype is not None:
+        dtype = output_dtype
+    else:
+        dtype = torch.bfloat16
+
+    return torch.empty(size, dtype=dtype, device='meta')
+
+
 @impl(m, "npu_gmm_alltoallv")
 def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                         recv_counts, *, send_counts_tensor=None,
