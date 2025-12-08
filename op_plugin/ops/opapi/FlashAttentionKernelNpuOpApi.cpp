@@ -582,13 +582,26 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         }
     } else {
         c10::optional<at::Tensor> empty_optional_tensor;
-        EXEC_NPU_CMD(
-            aclnnFlashAttentionScoreVX, format_query, format_key, format_value,
-            format_pse, format_drop_mask, format_padding_mask, format_atten_mask, empty_optional_tensor, empty_optional_tensor,
-            empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, prefixN, ac_seq_qlen, ac_seq_kvlen,
-            DEFAULT_START_IDX, DEFAULT_START_IDX, scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_char,
-            inner_precise, sparse_mode, DEFAULT_OUT_DTYPE, DEFAULT_PSE_TYPE, seed, offset, softmax_max, softmax_sum,
-            softmax_out, attention_score);
+        char softmax_layout_char[LAYOUT_MAX_LENGTH];
+        softmax_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
+        static const bool is_aclnnfav4_available = check_aclnn_kernel_available("aclnnFlashAttentionScoreV4");
+        if (is_aclnnfav4_available) {
+            EXEC_NPU_CMD(
+                aclnnFlashAttentionScoreV4, format_query, format_key, format_value,
+                format_pse, format_drop_mask, format_padding_mask, format_atten_mask, empty_optional_tensor, empty_optional_tensor,
+                empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, prefixN, ac_seq_qlen, ac_seq_kvlen,
+                DEFAULT_START_IDX, DEFAULT_START_IDX, scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_char,
+                inner_precise, sparse_mode, DEFAULT_OUT_DTYPE, DEFAULT_PSE_TYPE, softmax_layout_char, seed, offset, softmax_max, softmax_sum,
+                softmax_out, attention_score);
+        } else {
+            EXEC_NPU_CMD(
+                aclnnFlashAttentionScoreVX, format_query, format_key, format_value,
+                format_pse, format_drop_mask, format_padding_mask, format_atten_mask, empty_optional_tensor, empty_optional_tensor,
+                empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, prefixN, ac_seq_qlen, ac_seq_kvlen,
+                DEFAULT_START_IDX, DEFAULT_START_IDX, scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_char,
+                inner_precise, sparse_mode, DEFAULT_OUT_DTYPE, DEFAULT_PSE_TYPE, seed, offset, softmax_max, softmax_sum,
+                softmax_out, attention_score);
+        }
     }
     FLOP_COUNT(FlopCounter::flash_attention_forward_flop, query, key, value, head_num,
         input_layout_str, actual_seq_qlen, actual_seq_kvlen);
@@ -1100,13 +1113,26 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         }
     } else {
         c10::optional<at::Tensor> empty_optional_tensor;
-        EXEC_NPU_CMD(
-            aclnnFlashAttentionScoreVX, format_query, format_key, format_value,
-            format_pse, format_drop_mask, format_padding_mask, format_atten_mask, empty_optional_tensor, empty_optional_tensor,
-            empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, prefixN, ac_seq_qlen, ac_seq_kvlen,
-            DEFAULT_START_IDX, DEFAULT_START_IDX, scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_char,
-            inner_precise, sparse_mode, DEFAULT_OUT_DTYPE, DEFAULT_PSE_TYPE, seed, offset, softmax_max, softmax_sum,
-            softmax_out, attention_score);
+        char softmax_layout_char[LAYOUT_MAX_LENGTH];
+        softmax_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
+        static const bool is_aclnnfav4_available = check_aclnn_kernel_available("aclnnFlashAttentionScoreV4");
+        if (is_aclnnfav4_available) {
+            EXEC_NPU_CMD(
+                aclnnFlashAttentionScoreV4, format_query, format_key, format_value,
+                format_pse, format_drop_mask, format_padding_mask, format_atten_mask, empty_optional_tensor, empty_optional_tensor,
+                empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, prefixN, ac_seq_qlen, ac_seq_kvlen,
+                DEFAULT_START_IDX, DEFAULT_START_IDX, scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_char,
+                inner_precise, sparse_mode, DEFAULT_OUT_DTYPE, DEFAULT_PSE_TYPE, softmax_layout_char, seed, offset, softmax_max, softmax_sum,
+                softmax_out, attention_score);
+        } else {
+            EXEC_NPU_CMD(
+                aclnnFlashAttentionScoreVX, format_query, format_key, format_value,
+                format_pse, format_drop_mask, format_padding_mask, format_atten_mask, empty_optional_tensor, empty_optional_tensor,
+                empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, prefixN, ac_seq_qlen, ac_seq_kvlen,
+                DEFAULT_START_IDX, DEFAULT_START_IDX, scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_char,
+                inner_precise, sparse_mode, DEFAULT_OUT_DTYPE, DEFAULT_PSE_TYPE, seed, offset, softmax_max, softmax_sum,
+                softmax_out, attention_score);
+        }
     }
     FLOP_COUNT(FlopCounter::flash_attention_forward_flop, query, key, value, head_num,
                input_layout_str, actual_seq_qlen, actual_seq_kvlen);
