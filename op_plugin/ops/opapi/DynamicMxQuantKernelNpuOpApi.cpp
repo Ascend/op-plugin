@@ -24,6 +24,7 @@ constexpr int64_t BLOCK_SIZE_BASE_NUM = 32;
 constexpr int64_t BLOCK_SIZE_MAX_NUM = 1024;
 constexpr int64_t ALIGN_NUM = 2;
 constexpr int64_t FP4_IN_UINT8_NUM = 2;
+constexpr int64_t DEFAULT_SCALE_ALG = 0;
 }; // namespace
 
 std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
@@ -31,7 +32,8 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
     const int64_t axis,
     c10::string_view round_mode,
     int64_t dst_type,
-    int64_t block_size)
+    int64_t block_size,
+    c10::optional<int64_t> scale_alg)
 {
     at::Tensor y;
     at::Tensor mxscale;
@@ -72,7 +74,9 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
     mxscale = npu_preparation::apply_tensor_without_format(mxscale_shape, c10::dtype(at::ScalarType::Byte));
     TensorWrapper y_wrapper = {y, y_acltype};
     TensorWrapper mxscale_wrapper = {mxscale, aclDataType::ACL_FLOAT8_E8M0};
-    EXEC_NPU_CMD(aclnnDynamicMxQuant, input, axis, round_mode_ptr, y_acltype, block_size, y_wrapper, mxscale_wrapper);
+    int64_t scale_alg_optional = scale_alg.has_value() ? scale_alg.value() : DEFAULT_SCALE_ALG;
+    EXEC_NPU_CMD(aclnnDynamicMxQuant, input, axis, round_mode_ptr, y_acltype, block_size, scale_alg_optional, y_wrapper, mxscale_wrapper);
+    
     return std::make_tuple(y, mxscale);
 }
 
