@@ -66,7 +66,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
     auto gather_out_scalar_type = gather_index == 0 ? self.scalar_type() : x2.scalar_type();
     auto amax_dtype = at::kFloat;
     auto y_scalar_type = gather_index == 0 ? self.scalar_type() : x2.scalar_type();
-    if (!(y_scalar_type == at::kBFloat16 || y_scalar_type == at::kHalf)) {
+    if (y_scalar_type == at::kBFloat16 || y_scalar_type == at::kHalf) {
+        if (y_dtype.has_value()) {
+            y_scalar_type = npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(y_dtype.value()));
+            TORCH_CHECK(y_scalar_type == self.scalar_type(), "When input is float16 or bfloat16, output should",
+                        "be the same as input dtype. Expected output dtype:",
+                        c10::toString(self.scalar_type()), ", but got:", c10::toString(y_scalar_type),
+                        OPS_ERROR(ErrCode::PARAM));
+        }
+    } else {
         TORCH_CHECK(y_dtype.has_value(), "y_dtype should be provided when input dtype is not bf16 or fp16",
                     OPS_ERROR(ErrCode::PARAM));
         y_scalar_type = npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(y_dtype.value()));
