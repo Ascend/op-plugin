@@ -13,7 +13,6 @@
 
     需与[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)配套使用，相当于按npu\_moe\_distribute\_dispatch\_v2算子收集数据的路径原路返回。
      - 支持数据整合功能，先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）；
-     - 支持动态缩容场景，在创建通信域后，出现故障卡，将故障卡从通信域中剔除，算子可正常执行，无需重新编译；
      - 支持特殊专家场景。
 -   计算公式：
     - 数据整合功能：
@@ -88,9 +87,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求为一个2维或3维的张量，当张量为2D时，shape为\(BS, H\)；当张量为3D时，前两位的乘积需等于BS，第三维需等于H。
 
--   **elastic\_info** (`Tensor`)：可选参数，表示EP通信域的动态缩容信息。当某些通信卡因异常而从通信域中剔除，实际参与通信的卡数可从本参数中获取。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传空指针即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填空指针，传入空指针时表示不使能动态缩容功能；当传入有效数据时，要求是一个1D的Tensor，shape为(4 + 2\*ep\_world\_size,)，数据类型支持int32；数据格式要求为ND，支持非连续的Tensor。Tensor中的前四个数字分别表示（是否缩容，缩容后实际rank数，缩容后共享专家使用的rank数，缩容后moe专家的个数），后2 * epWorldSize表示2个rank映射表，缩容后本卡中因部分rank异常而从EP通信域中剔除，第一个Table的映射关系为Table1[epRankId]=localEpRankId或-1，localEpRankId表示新EP通信域中的rank Index，-1表示epRankId这张卡从通信域中被剔除，第二个Table映射关系为Table2[localEpRankId] = epRankId。
+-   **elastic\_info** (`Tensor`)：预留参数，当前版本不支持，传空指针即可。
 
 -   **ori\_x** (`Tensor`)：可选参数，表示未经过FFN的token数据，在`copy_expert_num`不为0或`const_expert_num`不为0的场景下需要本输入数据。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
@@ -168,17 +165,12 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 -   该接口支持静态图模式，`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`必须配套使用。
 -   在不同产品型号、不同通信算法或不同版本中，`npu_moe_distribute_dispatch_v2`的Tensor输出`assist_info_for_combine`、`ep_recv_counts`、`tp_recv_counts`、`expand_scales`中的元素值可能不同，使用时直接将上述Tensor传给`npu_moe_distribute_combine_v2`对应参数即可，模型其他业务逻辑不应对其存在依赖。
 -   调用接口过程中使用的`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`参数取值所有卡需保持一致，`group_ep`、`ep_world_size`、`group_tp`、`tp_world_size`、`expert_shard_type`、`global_bs`网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
--   动态缩容后的部署信息通过`elastic_info`参数传递给算子，无需修改其他参数，缩容参数仅在`tp_world_size`取值为1时生效。动态缩容后，MOE专家卡上的本卡部署MOE专家数需与缩容前保持一致，不支持缩容后无MOE专家卡。
 -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 -   moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32。
 -   参数里Shape使用的变量如下：
     -   A：表示本卡接收的最大token数量，取值范围如下
-        -   不使能动态缩容场景时：
-            -   对于共享专家，要满足A=BS\*ep\_world\_size*shared\_expert\_num/shared\_expert\_rank\_num。
-            -   对于MoE专家，当global\_bs为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当global\_bs不为0时，要满足A\>=global\_bs\* min\(local\_expert\_num, K\)。
-        -   使能动态缩容场景时：
-            -   当`global_bs`为0时，A>=max(BS\*ep_world_size\*shared_expert_num/shared_expert_rank_num, BS\*ep_world_size\*min(local_expert_num,K))；
-            -   当`global_bs`不为0时，A>=max(BS\*ep_world_size\*shared_expert_num/shared_expert_rank_num, global_bs*min(local_expert_num,K))
+        -   对于共享专家，要满足A=BS\*ep\_world\_size*shared\_expert\_num/shared\_expert\_rank\_num。
+        -   对于MoE专家，当global\_bs为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当global\_bs不为0时，要满足A\>=global\_bs\* min\(local\_expert\_num, K\)。
 
     -   H：表示hidden size隐藏层大小。
         -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`H`的取值范围如下所示。
@@ -381,9 +373,6 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         else:
             scales = None
 
-        elastic_info = torch.tensor([1, 10, 0, 20,
-                                    -1, 0, 1, 2, -1, 3, -1, 4, -1, 5, 6, 7, -1, 8, 9, -1,
-                                    1, 2, 3, 5, 7, 9, 10, 11, 13, 14, -1, -1, -1, -1, -1, -1], dtype=torch.int32).npu()
         available_ranks = [1, 2, 3, 5, 7, 9, 10, 11, 13, 14]
 
         const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
@@ -408,7 +397,6 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
                 scales=scales,
                 quant_mode=quant_mode,
                 global_bs=globalBS,
-                elastic_info=elastic_info,
                 zero_expert_num=zero_expert_num,
                 copy_expert_num=copy_expert_num,
                 const_expert_num=const_expert_num)
@@ -432,7 +420,6 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
                                                     shared_expert_rank_num=shared_expert_rank_num,
                                                     moe_expert_num=moe_expert_num,
                                                     global_bs=globalBS,
-                                                    elastic_info=elastic_info,
                                                     ori_x=x,
                                                     const_expert_alpha_1=const_expert_alpha_1,
                                                     const_expert_alpha_2=const_expert_alpha_2,
@@ -704,11 +691,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         else:
             scales = None
 
-        elastic_info = torch.tensor([
-            1, 10, 0, 20,
-            -1, 0, 1, 2, -1, 3, -1, 4, -1, 5, 6, 7, -1, 8, 9, -1,
-            1, 2, 3, 5, 7, 9, 10, 11, 13, 14, -1, -1, -1, -1, -1, -1
-        ], dtype=torch.int32).npu()
+        elastic_info = None
         available_ranks = [1, 2, 3, 5, 7, 9, 10, 11, 13, 14]
         const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
         const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
