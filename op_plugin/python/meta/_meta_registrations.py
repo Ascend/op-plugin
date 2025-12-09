@@ -50,6 +50,7 @@ TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP = {
     21: torch.bits8,
     23: torch.float8_e5m2,
     24: torch.float8_e4m3fn,
+    285: torch.uint8,  # torch_npu.int4 use torch.uint8
     290: torch.uint8,  # torch_npu.hifloat8 use torch.uint8
     291: torch.float8_e5m2,
     292: torch.float8_e4m3fn,
@@ -1726,17 +1727,17 @@ def npu_dtype_cast_meta(self, dtype, input_dtype=None):
         if dim_num != 0:
             input_shape[-1] *= 2
         else:
-            raise RuntimeError("Scalar input cannot be float4_e2m1 or float4_e1m2" +
+            raise RuntimeError("Scalar input cannot be float4_e2m1fn_x2 or float4_e1m2fn_x2" +
                                ops_error(ErrCode.PARAM))
     
-    if dtype == 296 or dtype == 297:
+    if dtype == 285 or dtype == 296 or dtype == 297:
         if dim_num == 0 or input_shape[-1] % 2:
-            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+            raise RuntimeError("If output dtype is float4_e2m1fn_x2, float4_e1m2fn_x2 or int4, " \
                                 "the last dim of input must be divisible by 2" +
                                ops_error(ErrCode.PARAM))
         input_shape[-1] //= 2
-    # torch_npu.hifloat8, torch_npu.float4_e2m1, torch_npu.float4_e1m2
-    if dtype in [290, 296, 297]:
+    # torch_npu.hifloat8, torch_npu.float4_e2m1fn_x2, torch_npu.float4_e1m2fn_x2, torch_npu.int4
+    if dtype in [285, 290, 296, 297]:
         output = self.new_empty(input_shape, dtype=torch.uint8)
     else:
         output_dst_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dtype)

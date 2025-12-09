@@ -5,7 +5,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 
@@ -72,6 +72,13 @@ class TestDtypeCast(TestCase):
 
         y[::2].copy_(x[::2])
         self.assertEqual(y, [1, 0, 3, 0, 5, 0])
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_dtype_cast_int4(self):
+        input1 = torch.tensor([1, 2, 3, 4], dtype=torch.int32).npu()
+        expectOutput = torch.tensor([33, 67], dtype=torch.uint8)
+        output = torch_npu.npu_dtype_cast(input1, dtype=torch_npu.int4, input_dtype=torch.int32).cpu()
+        self.assertEqual(expectOutput, output)
 
 
 if __name__ == "__main__":

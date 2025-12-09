@@ -488,7 +488,7 @@ inline aclTensor *ConvertType(const TensorWrapper &tensor_r)
         if (acl_data_type != ACL_STRING) {
             TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
                         OPS_ERROR(ErrCode::VALUE));
-            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2) {
+            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4) {
                 storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize() * FP4_IN_INT8);
                 if (at_tensor.sizes().size() == 1) {
                     wrapperShape[0] = wrapperShape[0] * FP4_IN_INT8;
@@ -611,7 +611,7 @@ inline aclTensor *ConvertTypeV2(TensorStructPtr at_tensor)
         if (acl_data_type != ACL_STRING) {
             TORCH_CHECK((*at_tensor).itemsize > 0, "the itemsize of tensor must be greater than 0.",
                         OPS_ERROR(ErrCode::VALUE));
-            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2) {
+            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4) {
                 storageDims.push_back((*at_tensor).nbytes / (*at_tensor).itemsize * FP4_IN_INT8);
                 if ((*at_tensor).sizes.size() == 1) {
                     wrapperShape[0] = wrapperShape[0] * FP4_IN_INT8;

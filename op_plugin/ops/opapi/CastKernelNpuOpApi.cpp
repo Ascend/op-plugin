@@ -33,7 +33,8 @@ at::Tensor npu_dtype_cast_impl_op_api(
     int64_t input_dtype_tocheck = input_dtype.has_value() ? input_dtype.value() : static_cast<int64_t>(self.scalar_type());
     bool special_output_type = (dtype == static_cast<int64_t>(c10_npu::DType::HIFLOAT8) ||
                                 dtype == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
-                                dtype == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2));
+                                dtype == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
+                                dtype == static_cast<int64_t>(c10_npu::DType::INT4));
     at::SmallVector<int64_t, op_infer::SIZE> input_shape;
     at::SmallVector<int64_t, op_infer::SIZE> output_shape;
     int32_t input_dim = self.dim();
@@ -50,12 +51,13 @@ at::Tensor npu_dtype_cast_impl_op_api(
             input_shape.push_back(self.size(index));
         }
   
-        // float4 shape check
+        // float4/int4 shape check
         if (dtype == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
-            dtype == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)) {
+            dtype == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
+            dtype == static_cast<int64_t>(c10_npu::DType::INT4)) {
             TORCH_CHECK(input_shape[index] % FP4_IN_UINT8_NUM == 0,
                         "The last dim input shape must be divisible by 2 if "
-                        "output dtype is torch_npu.float4_e2m1 or torch_npu.float4_e1m2" + OPS_ERROR(ErrCode::PARAM));
+                        "output dtype is torch_npu.float4_e2m1fn_x2, torch_npu.float4_e1m2fn_x2 or torch_npu.int4" + OPS_ERROR(ErrCode::PARAM));
             output_shape.push_back(input_shape[index] / FP4_IN_UINT8_NUM);
         } else {
             output_shape.push_back(input_shape[index]);
