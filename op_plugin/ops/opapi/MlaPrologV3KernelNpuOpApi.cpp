@@ -91,6 +91,16 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_p
         ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
         dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
 
+    if (!query_norm.defined()) {
+        query_norm = npu_preparation::apply_tensor_without_format({0}, token_x.options().dtype(weight_uq_qr.dtype()));
+    }
+    if (!dequant_scale_q_nope.defined()) {
+        dequant_scale_q_nope = npu_preparation::apply_tensor_without_format({0}, at::kFloat);
+    }
+    if (!dequant_scale_q_norm.defined()) {
+        dequant_scale_q_norm = npu_preparation::apply_tensor_without_format({0}, at::kFloat);
+    }
+
     return std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor>(query, query_rope, dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
 }
 
@@ -163,6 +173,16 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
         ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
         dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+
+    if (!query_norm.defined()) {
+        query_norm = npu_preparation::apply_tensor_without_format({0}, token_x.options().dtype(weight_uq_qr.dtype()));
+    }
+    if (!dequant_scale_q_nope.defined()) {
+        dequant_scale_q_nope = npu_preparation::apply_tensor_without_format({0}, at::kFloat);
+    }
+    if (!dequant_scale_q_norm.defined()) {
+        dequant_scale_q_norm = npu_preparation::apply_tensor_without_format({0}, at::kFloat);
+    }
 
     return std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor>(query, query_rope, dequant_scale_q_nope, query_norm, dequant_scale_q_norm, kv_cache_inplace, kr_cache_inplace);
 }
