@@ -145,5 +145,32 @@ class TestWhere(TestCase):
             npu_out = torch.where(input1.npu())
             self.assert_equal_tuple(cpu_out, npu_out)
 
+    def where_result_scalar(self, shape_format):
+        for item in shape_format:
+            cpu_input1, npu_input1 = create_common_tensor(item, -100, 100)
+            cpu_ones = torch.ones_like(cpu_input1)
+            npu_ones = cpu_ones.to("npu")
+            scalar_input = torch.tensor(0.0)
+            if cpu_input1.dtype == torch.float16:
+                cpu_input1 = cpu_input1.to(torch.float32)
+                cpu_ones = cpu_ones.to(torch.float32)
+
+            cpu_output_s = self.cpu_op_exec_condition(cpu_input1, scalar_input)
+            npu_output_s = self.npu_op_exec_condition(npu_input1, scalar_input)
+            cpu_output_s = cpu_output_s.astype(npu_output_s.dtype)
+
+            cpu_output_s_self = self.cpu_op_exec_condition(scalar_input, cpu_ones)
+            npu_output_s_self = self.npu_op_exec_condition(scalar_input, npu_ones)
+            cpu_output_s_self = cpu_output_s_self.astype(npu_output_s_self.dtype)
+
+            self.assertRtolEqual(cpu_output_s, npu_output_s)
+            self.assertRtolEqual(cpu_output_s_self, npu_output_s_self)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_where_scalar(self):
+        format_list = [0, 3]
+        shape_format = [[np.float32, i, [18]] for i in format_list]
+        self.where_result_scalar(shape_format)
+
 if __name__ == "__main__":
     run_tests()
