@@ -79,7 +79,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 **weights**(`Tensor`)：必选参数，表示lightning_indexer的权重系数，对应公式中的$W_{t}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N1)$、$(T1, N1)$。
 
-**sparse_indices**(`Tensor`)：必选参数，表示排序后`key`和`key_index`的token序号。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, topK)$、$(T1, topK)$。
+**sparse_indices**(`Tensor`)：必选参数，表示排序后`key`和`key_index`的token序号。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N2index, topK)$、$(T1, N2index, topK)$。
 
 **softmax_max**(`Tensor`)：必选参数，表示Attention softmax结果中的最大值。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, N2, S1, G)$、$(N2, T1, G)$。
 
