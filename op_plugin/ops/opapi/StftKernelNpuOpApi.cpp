@@ -22,6 +22,17 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
+
+static const int X1_NFFT = 400;
+static const int X1_HOP = 160;
+static const int TYPE_SIZE = 4; // float32
+static const int BLOCK_SIZE = 32;
+static const int PACKAGE_SIZE = 128;
+static const int MAX_CACHE_SIZE = 500 * 1024 * 1024;                   // 500MB
+static const uint64_t MAX_GM_SIZE = (uint64_t)35 * 1024 * 1024 * 1024; // 35GB
+static const int64_t DIM_ONE = 1;
+static const int64_t DIM_TWO = 2;
+
 at::ScalarType get_output_type(bool return_complex, at::ScalarType input_type)
 {
     at::ScalarType output_type;
@@ -60,6 +71,124 @@ c10::SmallVector<int64_t, SIZE> get_output_size(bool return_complex, int64_t bat
     }
     return output_size;
 }
+
+bool is_aclstft_supported(at::Tensor const &self,
+                          at::Tensor const &window,
+                          int64_t nFft,
+                          int64_t hopLength,
+                          bool normalized,
+                          bool onesided,
+                          bool returnComplex)
+{
+    if (self.scalar_type() == at::ScalarType::Double || self.scalar_type() == at::ScalarType::ComplexDouble) {
+        return true;
+    }
+    
+    bool res = false;
+    int64_t batch = self.dim() == 2 ? self.size(0) : 0;
+    int64_t len = self.dim() == 2 ? self.size(1) : self.size(0);
+    if (hopLength <= 0) {
+        return false;
+    }
+    int64_t matmulN = (len - nFft) / hopLength + 1;
+    int64_t matmulM = onesided ? nFft / 2 + 1 : nFft;
+    int alignNum =
+        (nFft == X1_NFFT && hopLength == X1_HOP && normalized == false && onesided == true && returnComplex == false) ?
+            BLOCK_SIZE / TYPE_SIZE :
+            PACKAGE_SIZE / TYPE_SIZE;
+    int64_t nFftAlign = (nFft + alignNum - 1) / alignNum * alignNum;
+    int64_t cacheSize = (matmulM * nFftAlign) * TYPE_SIZE * 2;
+    // gm size ： input + output + splitWindow workspace + matmul workspace
+    uint64_t gmSize = batch * len * TYPE_SIZE + batch * matmulM * matmulN * 2 * TYPE_SIZE +
+                      batch * matmulN * nFftAlign * TYPE_SIZE + batch * matmulM * matmulN * 2 * TYPE_SIZE;
+    if (cacheSize <= MAX_CACHE_SIZE && gmSize <= MAX_GM_SIZE && self.scalar_type() == at::ScalarType::Float) {
+        if (!window.defined() || window.scalar_type() == at::ScalarType::Float) {
+            res = true;
+        }
+    }
+    return res;
+}
+
+at::Tensor _stft(at::Tensor const &self,
+                 int64_t n_fft,
+                 c10::optional<int64_t> hop_lengthOpt,
+                 c10::optional<int64_t> win_lengthOpt,
+                 c10::optional<at::Tensor> const &window_opt,
+                 bool normalized,
+                 c10::optional<bool> onesidedOpt,
+                 c10::optional<bool> return_complexOpt,
+                 c10::optional<bool> align_to_windowOpt)
+{
+    c10::MaybeOwned<at::Tensor> window_maybe_owned = at::borrow_from_optional_tensor(window_opt);
+    const at::Tensor& window = *window_maybe_owned;
+
+    // default_init hop_length and win_length
+    auto hop_length = hop_lengthOpt.value_or(n_fft >> 2);
+    auto win_length = win_lengthOpt.value_or(n_fft);
+    const bool return_complex = return_complexOpt.value_or(
+        self.is_complex() || (window.defined() && window.is_complex()));
+
+    at::Tensor input = self;
+    if (self.dim() == 1) {
+        input = input.unsqueeze(0);
+    }
+
+    int64_t batch = input.size(0);
+    int64_t len = input.size(1);
+
+    auto window_ = window;
+    if (win_length < n_fft) {
+        // pad center
+        auto left = (n_fft - win_length) / 2;
+        if (window.defined()) {
+            window_ = at::zeros({n_fft}, window.options());
+            window_.narrow(0, left, win_length).copy_(window);
+        } else {
+            window_ = at::zeros({n_fft}, self.options());
+            window_.narrow(0, left, win_length).fill_(1);
+        }
+    }
+
+    const bool align_to_window = align_to_windowOpt.value_or(false);
+    int64_t n_frames;
+    if (align_to_window) {
+        // Calculate n_frames based on window length, since we are aligning start of window with t = 0.
+        n_frames = 1 + (len - win_length) / hop_length;
+        // Window-based padding.
+        input = at::pad(input, {(n_fft - win_length) / 2, (n_fft - win_length) / 2}, "constant");
+    } else {
+        n_frames = 1 + (len - n_fft) / hop_length;
+    }
+    // time2col
+    input = input.as_strided({batch, n_frames, n_fft}, {input.stride(0), hop_length * input.stride(1), input.stride(1)});
+    if (window_.defined()) {
+        input = input.mul(window_);
+    }
+
+    // FFT and transpose to get (batch x fft_size x num_frames)
+    const bool complex_fft = input.is_complex();
+    const auto onesided = onesidedOpt.value_or(!complex_fft);
+
+    at::Tensor out;
+    if (complex_fft) {
+        TORCH_CHECK(!onesided, "Cannot have onesided output if window or input is complex");
+        out = at::_fft_c2c(input, input.dim() - 1, static_cast<int64_t>(normalized), true);
+    } else {
+        out = at::_fft_r2c(input, input.dim() - 1, static_cast<int64_t>(normalized), onesided);
+    }
+    out.transpose_(DIM_ONE, DIM_TWO);
+
+    if (self.dim() == 1) {
+        out.squeeze_(0);
+    }
+
+    if (return_complex) {
+        return out;
+    } else {
+        return at::view_as_real(out);
+    }
+}
+
 }
 
 #if VERSION_BETWEEN(V2R1, V2R6)
@@ -100,6 +229,11 @@ at::Tensor stft(at::Tensor const &self,
     TORCH_CHECK(output_type == at::ScalarType::Float || output_type == at::ScalarType::Double ||
                 output_type == at::ScalarType::ComplexFloat || output_type == at::ScalarType::ComplexDouble,
                 "output type should be float, double, complex<float> or complex<double>", OPS_ERROR(ErrCode::TYPE));
+
+    if (!is_aclstft_supported(self, window_value, n_fft, hop_length_value, normalized, onesided_value, return_complex_value)) {
+        return _stft(self, n_fft, hop_length, win_length, window, normalized, onesided, return_complex, c10::nullopt);
+    }
+
     c10::SmallVector<int64_t, SIZE> output_size = get_output_size(return_complex_value, batch, frames, n);
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_type));
 
@@ -147,6 +281,11 @@ at::Tensor stft(at::Tensor const &self,
     TORCH_CHECK(output_type == at::ScalarType::Float || output_type == at::ScalarType::Double ||
                 output_type == at::ScalarType::ComplexFloat || output_type == at::ScalarType::ComplexDouble,
                 "output type should be float, double, complex<float> or complex<double>", OPS_ERROR(ErrCode::TYPE));
+
+    if (!is_aclstft_supported(self, window, n_fft, hop_length, normalized, onesided, return_complex)) {
+        return _stft(self, n_fft, hop_length_opt, win_length_opt, window_opt, normalized, onesided_opt, return_complex_opt, align_to_window);
+    }
+
     c10::SmallVector<int64_t, SIZE> output_size = get_output_size(return_complex, batch, frames, n);
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_type));
 
