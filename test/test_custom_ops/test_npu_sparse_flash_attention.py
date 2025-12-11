@@ -223,7 +223,6 @@ class TestSparseFlashAttention(TestCase):
         act_seq_q = torch.tensor(act_seq_q).to(torch.int32).npu()
         act_seq_kv = torch.tensor(act_seq_kv).to(torch.int32).npu()
 
-        print(f'======================== PTA eager BEGIN ========================')
         # start run custom ops
         npu_out, npu_softmax_max, npu_softmax_sum = torch_npu.npu_sparse_flash_attention(
             query, key, value, sparse_indices, scale_value, block_table=None, 
@@ -247,7 +246,66 @@ class TestSparseFlashAttention(TestCase):
             print("cpu output:\n", cpu_out, cpu_out.shape)
             print("correct ratio of cpu vs npu is:", true_ratio * 100, "%")
         self.assertTrue(true_ratio > 0.99, "precision compare fail")
-        print(f'======================== PTA eager FINISH ========================')
+
+
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    def test_sfa_saprse_size_zero(self, device = "npu"):
+        scale_value = 0.041666666666666664
+        sparse_block_size = 1
+        query_type = torch.float16
+        scale_value = 0.041666666666666664
+        sparse_block_size = 1
+        sparse_size = 0
+        t = 10
+        b = 4
+        s1 = 1
+        s2 = 8192
+        n1 = 128
+        n2 = 1
+        dn = 512
+        dr = 64
+        tile_size = 128
+        block_size = 256
+        s2_act = 4096
+        attention_mode = 2
+        return_softmax_lse = False
+
+        query = torch.tensor(np.random.uniform(-10, 10, (b, s1, n1, dn))).to(query_type)
+        key = torch.tensor(np.random.uniform(-5, 10, (b, s2, n2, dn))).to(query_type)
+        value = key.clone()
+        idxs = random.sample(range(s2_act - s1 + 1), sparse_size)
+        sparse_indices = torch.tensor([idxs for _ in range(b * s1 * n2)]).reshape(b, s1, n2, sparse_size). \
+            to(torch.int32)
+        query_rope = torch.tensor(np.random.uniform(-10, 10, (b, s1, n1, dr))).to(query_type)
+        key_rope = torch.tensor(np.random.uniform(-10, 10, (b, s2, n2, dr))).to(query_type)
+        act_seq_q = [s1] * b
+        act_seq_kv = [s2_act] * b
+
+        query = query.npu()
+        key = key.npu()
+        value = value.npu()
+        sparse_indices = sparse_indices.npu()
+        query_rope = query_rope.npu()
+        key_rope = key_rope.npu()
+        act_seq_q = torch.tensor(act_seq_q).to(torch.int32).npu()
+        act_seq_kv = torch.tensor(act_seq_kv).to(torch.int32).npu()
+
+        # start run custom ops
+        npu_out, npu_softmax_max, npu_softmax_sum = torch_npu.npu_sparse_flash_attention(
+            query, key, value, sparse_indices, scale_value, block_table=None, 
+            actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
+            query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
+            layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1,
+            attention_mode = attention_mode, return_softmax_lse = return_softmax_lse)
+
+        # compare result
+        cpu_out = self.cpu_sparse_flash_attention(
+            query, key, value, sparse_indices, scale_value, sparse_block_size,
+            actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
+            query_rope=query_rope, key_rope=key_rope,
+            layout_query='BSND', layout_kv='BSND', sparse_mode=3, block_table=None)
+        npu_out = npu_out.cpu().to(torch.float32).numpy()
+        self.assertRtolEqual(cpu_out, npu_out, prec=0.01)
 
 if __name__ == "__main__":
     run_tests()
