@@ -2196,16 +2196,12 @@ def npu_ffn_meta(x, weight1, weight2, activation, *, expert_tokens=None, expert_
 
 
 def gmm_get_dtype(output_dtype):
-    if output_dtype == TORCH_DTYPE_MAP[torch.float16]:
-        return torch.float16
-    elif output_dtype == TORCH_DTYPE_MAP[torch.bfloat16]:
-        return torch.bfloat16
-    elif output_dtype == TORCH_DTYPE_MAP[torch.float32]:
-        return torch.float32
-    elif not output_dtype:
+    if not output_dtype:
         return output_dtype
-    else:
+    elif output_dtype not in [TORCH_DTYPE_MAP[torch.float16], TORCH_DTYPE_MAP[torch.bfloat16], TORCH_DTYPE_MAP[torch.float32], TORCH_DTYPE_MAP[torch.int32]]:
         raise RuntimeError("The output dtype ", str(output_dtype), " is not supported for now.")
+    else:
+        return TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(output_dtype)
 
 
 def is_transpose_weight(weight):
