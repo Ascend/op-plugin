@@ -266,6 +266,31 @@ v (Tensor) - 变量方差。
 """
 )
 
+_add_torch_npu_docstr(
+    "npu_apply_adam_w_out",
+    """
+torch_npu.npu_apply_adam_w_out(beta1_power, beta2_power, lr, weight_decay, 
+                               beta1, beta2, epsilon, grad, max_grad_norm, amsgrad, maximize, var, m, v) -> (Tensor(a!),Tensor(b!),Tensor(c!))
+功能描述
+实现adamW优化器功能
+
+参数说明
+beta1_power (Scalar) - beta1的幂，shape要求为[1]，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+beta2_power (Scalar) - beta2的幂，shape要求为[1]，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+lr (Scalar) - 学习率，shape要求为[1]，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+weight_decay (Scalar) - 权重衰减系数，shape要求为[1]，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+beta1 (Scalar) - beta1参数，shape要求为[1]，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+beta2 (Scalar) - beta1参数，shape要求为[1]，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+epsilon (Scalar) - 防止除数为0，shape要求为[1]，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+grad (Tensor) - 梯度数据，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+max_grad_norm (Tensor，可选) - 保存参数v的最大值，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+amsgrad (Bool，可选) - 是否使用max_grad_norm变量，数据类型支持BOOL。
+maximize (Bool，可选) - 是否对梯度grad取反，应用梯度上升方向优化权重使损失函数最大化，数据类型为BOOL。
+var (Tensor) - 待计算的权重输入同时也是输出，shape支持1-8维度，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+m (Tensor) - adamW优化器的m参数，shape支持1-8维度，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+v (Tensor) - adamW优化器的v参数，shape支持1-8维度，数据类型支持FLOAT16、BFLOAT16、FLOAT32。
+"""
+)
 
 _add_torch_npu_docstr(
     "npu_batch_gather_matmul",
