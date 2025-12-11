@@ -69,4 +69,36 @@ at::Tensor _npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, d
     }
     return mask;
 }
+
+at::Tensor npu_dropout_gen_mask(at::IntArrayRef size, double p, c10::optional<at::ScalarType> dtype_opt,
+                                c10::optional<c10::Layout> layout_opt, c10::optional<c10::Device> device_opt,
+                                c10::optional<bool> pin_memory_opt)
+{
+    const int64_t BYTE_BIT = 8;
+    const int64_t DATA_ALIGN = 128;
+
+    c10::TensorOptions options = c10::TensorOptions().dtype(dtype_opt)
+        .device(device_opt)
+        .layout(layout_opt)
+        .pinned_memory(pin_memory_opt);
+    DO_COMPATIBILITY(aclnnDropoutGenMask, acl_op::npu_dropout_gen_mask(size, p, dtype_opt, layout_opt,
+                                                                       device_opt, pin_memory_opt));
+    TORCH_CHECK(p >= 0 && p <= 1, "dropout probability has to be between 0 and 1, but got ", p,
+                OPS_ERROR(ErrCode::VALUE));
+
+    int64_t numels = c10::multiply_integers(size);
+    uint64_t length = (static_cast<uint64_t>(numels) + DATA_ALIGN - 1) / DATA_ALIGN * DATA_ALIGN / BYTE_BIT;
+    at::Tensor mask = npu_preparation::apply_tensor_with_format(at::IntArrayRef{length}, options.dtype(at::kByte),
+                                                                ACL_FORMAT_ND);
+    c10::SmallVector<int64_t, SIZE> shapeSize = {numels};
+    at::IntArrayRef shapeArray = at::IntArrayRef(shapeSize);
+
+    const auto gen = at_npu::detail::getDefaultNPUGenerator();
+    auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
+    const int64_t seed = static_cast<int64_t>(pair.first);
+    const int64_t offset = static_cast<int64_t>(pair.second);
+
+    EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, p, seed, offset, mask);
+    return mask;
+}
 }  // namespace op_api

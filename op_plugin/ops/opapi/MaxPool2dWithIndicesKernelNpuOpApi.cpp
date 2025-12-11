@@ -16,6 +16,7 @@
 
 #include <ATen/native/Pool.h>
 
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -46,6 +47,7 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
     at::IntArrayRef dilation,
     bool ceil_mode)
 {
+    const int64_t DIM_SIZE = 4;
     max_pool2d_with_indices_parameter_check(self, kernel_size, stride, padding, dilation);
     at::DimnameList maybe_names = self.has_names() ? self.names() : at::DimnameList{};
 
@@ -95,17 +97,24 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
     const int64_t BLOCKSIZE = 16;
     int64_t mask_H = kernel_sizes[0] * kernel_sizes[1];
     int64_t mask_W = (op_infer::CeilDiv(output_height * output_width, BLOCKSIZE) + 1);
-    // 5HD format return the indices with mask, dtype int8,size should be muls 16*2
-    c10::SmallVector<int64_t, SIZE> indices_size =
-         self.ndimension() == 4 ?
-                c10::SmallVector<int64_t, SIZE>({n_batch, n_input_plane, mask_H, mask_W * 32}) :
-                c10::SmallVector<int64_t, SIZE>({n_input_plane, mask_H, mask_W * 32});
+    c10::SmallVector<int64_t, SIZE> indices_size;
+    at::Tensor indices;
 
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options());
-    at::Tensor indices = npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kChar));
-
-    EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_sizes,
-                 strides, paddings, dilations, ceil_mode, output, indices);
+    if (!c10_npu::IsAclnnOnly()) {
+        // 5HD format return the indices with mask, dtype int8,size should be muls 16*2
+        indices_size = self.ndimension() == DIM_SIZE ?
+            c10::SmallVector<int64_t, SIZE>({n_batch, n_input_plane, mask_H, mask_W * 32}) :
+            c10::SmallVector<int64_t, SIZE>({n_input_plane, mask_H, mask_W * 32});
+        indices = npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kChar));
+        EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_sizes,
+                     strides, paddings, dilations, ceil_mode, output, indices);
+    } else {
+        indices_size = output_size;
+        indices = npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kInt));
+        EXEC_NPU_CMD(aclnnMaxPool2dWithIndices, self, kernel_sizes,
+                     strides, paddings, dilations, ceil_mode, output, indices);
+    }
     at::namedinference::propagate_names_if_nonempty(output, maybe_names);
     at::namedinference::propagate_names_if_nonempty(indices, maybe_names);
     return std::tuple<at::Tensor, at::Tensor>(output, indices);
@@ -119,9 +128,13 @@ std::tuple<at::Tensor, at::Tensor> max_pool2d_with_indices(
     at::IntArrayRef dilation,
     bool ceil_mode)
 {
-    DO_COMPATIBILITY(aclnnMaxPool2dWithMask,
-                     acl_op::max_pool2d_with_indices(self, kernel_size,
-                                                     stride, padding, dilation, ceil_mode));
+    if (!c10_npu::IsAclnnOnly()) {
+        DO_COMPATIBILITY(aclnnMaxPool2dWithMask,
+                         acl_op::max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode));
+    } else {
+        DO_COMPATIBILITY(aclnnMaxPool2dWithIndices,
+                         acl_op::max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode));
+    }
 
     return op_api::exec_max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode);
 }
@@ -136,12 +149,19 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool2d_with_indices_out(
     at::Tensor& output,
     at::Tensor& indices)
 {
-    DO_COMPATIBILITY(aclnnMaxPool2dWithMask,
-                     acl_op::max_pool2d_with_indices_out(self, kernel_size, stride,
-                                                         padding, dilation, ceil_mode, output, indices));
-    // execute 5HD format
-    EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_size,
-                 stride, padding, dilation, ceil_mode, output, indices);
+    if (!c10_npu::IsAclnnOnly()) {
+        DO_COMPATIBILITY(aclnnMaxPool2dWithMask,
+                         acl_op::max_pool2d_with_indices_out(self, kernel_size, stride,
+                                                             padding, dilation, ceil_mode, output, indices));
+        // execute 5HD format
+        EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_size, stride, padding, dilation, ceil_mode, output, indices);
+    } else {
+        DO_COMPATIBILITY(aclnnMaxPool2dWithIndices,
+                         acl_op::max_pool2d_with_indices_out(self, kernel_size, stride,
+                                                             padding, dilation, ceil_mode, output, indices));
+        EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_size,
+                     stride, padding, dilation, ceil_mode, output, indices);
+    }
     return std::tuple<at::Tensor&, at::Tensor&>(output, indices);
 }
 }

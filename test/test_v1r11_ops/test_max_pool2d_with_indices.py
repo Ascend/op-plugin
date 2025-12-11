@@ -60,6 +60,28 @@ class TestMaxPool2dWithIndices(TestCase):
                 cpu_output = cpu_output.to(npu_output.dtype)
             self.assertRtolEqual(cpu_output, npu_output, prec=1.e-3)
 
+    @SupportedDevices(['Ascend910_95'])
+    def test_max_pool2d_with_indices_float32(self):
+        dtype_list = [np.float32, np.float32]
+        format_list = [0, 3, 4]
+        shape_list = [[256, 64, 112, 112], [1024, 24, 112, 112],
+                      [1024, 24, 56, 112], [1024, 24, 112, 56],
+                      [1234, 48, 56], [26, 16, 43]]
+        # pylint:disable=complicate-comprehension
+        shape_format = [
+            [[i, j, k], [3, 3], [2, 2], 1, 1, False] for i in dtype_list for j in format_list for k in shape_list
+        ]
+
+        for item in shape_format:
+            cpu_input, npu_input = create_common_tensor(item[0], 0, 100)
+            if item[0][0] == np.float32:
+                cpu_input = cpu_input.to(torch.float32)
+            cpu_output = self.cpu_op_exec(cpu_input, item[1], item[2], item[3], item[4], item[5])
+            npu_output = self.npu_op_exec(npu_input, item[1], item[2], item[3], item[4], item[5])
+            if item[0][0] == np.float32:
+                cpu_output = cpu_output.to(npu_output.dtype)
+            self.assertRtolEqual(cpu_output, npu_output, prec=1.e-3)
+
 
 if __name__ == "__main__":
     run_tests()
