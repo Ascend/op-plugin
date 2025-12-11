@@ -10578,6 +10578,7 @@ scale2: Tensor类型，第二路量化scale输出，shape同scale1，数据类�
 当outputMaskOptional不为空时，参数smoothScale1Optional有值时，则outputMaskOptional[0]必须为True。参数smoothScale2Optional有值时，则outputMaskOptional[1]必须为True。
 当outputMaskOptional不为空时，outputMaskOptional[0]与outputMaskOptional[1]不能同时为False。
 当outputMaskOptional为空时，参数smoothScale2Optional有值时，参数smoothScale1Optional也必须有值。
+如果y2Out为有效输出时，shape需要与y1Out保持一致；如果y2Out为无效输出时，shape为[1]。
 
 支持的型号
 Atlas A3训练系列产品/Atlas A3推理系列产品

@@ -6304,7 +6304,7 @@ custom:
         size: x1
         dtype: at::kChar
       y2:
-        size: x1
+        size: 'output_mask[1] ? x1.sizes() : at::IntArrayRef{}'
         dtype: at::kChar
       x_out:
         size: x1
@@ -6313,7 +6313,7 @@ custom:
         size: reduce_lastdim_output_size(x1)
         dtype: at::kFloat
       scale2:
-        size: reduce_lastdim_output_size(x1)
+        size: 'output_mask[1] ? reduce_lastdim_output_size(x1) : c10::SmallVector<int64_t, op_infer::SIZE>{}'
         dtype: at::kFloat
       exec: aclnnAddRmsNormDynamicQuantV2, x1, x2, gamma, smooth_scale1, smooth_scale2, beta, epsilon, output_mask, y1, y2, x_out, scale1, scale2
 
