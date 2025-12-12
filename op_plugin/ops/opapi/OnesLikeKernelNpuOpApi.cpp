@@ -34,11 +34,14 @@ at::Tensor ones_like(const at::Tensor &self,
         auto result = at::empty_like(self, dtype_opt, layout_opt, device_opt, pin_memory_opt, optional_memory_format);
         return op_api::fill_(result, 1.);
     }
-    c10::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
+    c10::TensorOptions options_ = c10::TensorOptions().dtype(dtype_opt)
                                                     .device(device_opt)
                                                     .layout(layout_opt)
                                                     .pinned_memory(pin_memory_opt);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), option);
+    c10::TensorOptions options = self.options()
+                                 .merge_in(options_)
+                                 .merge_memory_format(optional_memory_format);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), options);
     EXEC_NPU_CMD(aclnnInplaceOne, result);
     at::namedinference::propagate_names(result, self);
     return result;
