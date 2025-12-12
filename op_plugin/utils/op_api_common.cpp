@@ -149,6 +149,73 @@ std::vector<std::string> get_default_custom_lib_path()
 const std::vector<std::string> g_custom_lib_path = get_custom_lib_path();
 const std::vector<std::string> g_default_custom_lib_path = get_default_custom_lib_path();
 
+std::vector<std::string> GetAllOpApiSoFiles()
+{
+    std::vector<std::string> opApiSoFiles;
+
+    const char *ascendHomePath = std::getenv("ASCEND_HOME_PATH");
+    if (ascendHomePath == nullptr) {
+        ASCEND_LOGW("ASCEND_HOME_PATH does not exist");
+        return opApiSoFiles;
+    }
+    std::string allOpApiSoPath(ascendHomePath);
+    allOpApiSoPath = allOpApiSoPath + "/lib64";
+    std::string allOpApiSoRealPath = real_path(allOpApiSoPath);
+    if (allOpApiSoRealPath.empty()) {
+        ASCEND_LOGW("ASCEND_HOME_PATH/lib64 does not exist");
+        return opApiSoFiles;
+    }
+    if (!is_file_exist(allOpApiSoRealPath)) {
+        ASCEND_LOGW("ASCEND_HOME_PATH/lib64 does not exist or the path length is more than %d", PATH_MAX);
+        return opApiSoFiles;
+    }
+
+    try {
+        for (const auto& entry : std::filesystem::directory_iterator(allOpApiSoPath)) {
+            if (!entry.is_regular_file()) {
+                continue;
+            }
+            std::string fileName = entry.path().filename().string();
+            std::regex pattern("^libopapi_.*\\.so$");
+            if (std::regex_match(fileName, pattern)) {
+                opApiSoFiles.push_back(fileName);
+            }
+        }
+    } catch (const std::filesystem::filesystem_error& e) {
+        ASCEND_LOGW("Filesystem error: %s", e.what());
+    } catch (const std::regex_error& e) {
+        ASCEND_LOGW("Regex error: %s", e.what());
+    } catch (const std::exception& e) {
+        ASCEND_LOGW("Error: %s", e.what());
+    }
+
+    if (opApiSoFiles.empty()) {
+        ASCEND_LOGW("ASCEND_HOME_PATH does not get any libopapi_*.so file");
+    }
+
+    return opApiSoFiles;
+}
+
+const std::vector<std::string> g_opApiSoFiles = GetAllOpApiSoFiles();
+
+std::vector<void *> GetAllOpApiHandlers()
+{
+    std::vector<void *> opApiHandlers;
+
+    for (const auto& opApiSoFile : g_opApiSoFiles) {
+        auto opApiHandler = GetOpApiLibHandler(opApiSoFile.c_str());
+        opApiHandlers.push_back(opApiHandler);
+    }
+
+    if (opApiHandlers.empty()) {
+        ASCEND_LOGW("ASCEND_HOME_PATH does not get any libopapi_*.so handler");
+    }
+
+    return opApiHandlers;
+}
+
+const std::vector<void *> g_opApiHandlers = GetAllOpApiHandlers();
+
 void add_param_to_buf(const at::Tensor &at_tensor)
 {
     static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");
