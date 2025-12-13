@@ -94,6 +94,7 @@
         -   [torch_npu.npu_lightning_indexer](./context/torch_npu-npu_lightning_indexer.md)
         -   [torch_npu.npu_mla_prolog](./context/torch_npu-npu_mla_prolog.md)
         -   [torch_npu.npu_mla_prolog_v2](./context/torch_npu-npu_mla_prolog_v2.md)
+        -   [torch_npu.npu_mla_prolog_v3](./context/torch_npu-npu_mla_prolog_v3.md)
         -   [torch_npu.npu_mm_all_reduce_base](./context/torch_npu-npu_mm_all_reduce_base.md)
         -   [torch_npu.npu_mm_reduce_scatter_base](./context/torch_npu-npu_mm_reduce_scatter_base.md)
         -   [torch_npu.npu_moe_compute_expert_tokens](./context/torch_npu-npu_moe_compute_expert_tokens.md)
