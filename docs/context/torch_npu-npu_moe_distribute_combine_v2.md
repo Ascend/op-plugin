@@ -75,8 +75,8 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 -   **x\_active\_mask** (`Tensor`)：可选参数，表示token是否参与通信。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
-         - `comm_alg`设置为"fullmesh"时，要求为一个1维张量。shape为\(BS, \)，数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
-         - `comm_alg`设置为"hierarchy"时，当前版本不支持，使用默认值即可。
+         - `comm_alg`设置为"fullmesh"时，要求为一个1维或2维张量。当输入为1维时，shape为\(BS, \); 当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。支持2维张量属于零计算专家特性，此特性尚在实验阶段，请谨慎使用。
+         - `comm_alg`设置为"hierarchy"时，当前版本不支持，使用默认值None即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求为一个1维或2维张量。当输入为1维时，shape为\(BS, \); 当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
 
 -   **expand\_scales** (`Tensor`)：可选参数，对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`expand_scales`输出。
@@ -90,8 +90,10 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 -   **elastic\_info** (`Tensor`)：预留参数，当前版本不支持，传默认值None即可。
 
 -   **ori\_x** (`Tensor`)：可选参数，表示未经过FFN的token数据，在`copy_expert_num`不为0或`const_expert_num`不为0的场景下需要本输入数据。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填None，当`copy_expert_num`不为0或`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2D的Tensor，shape为(BS,H)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+         - `comm_alg`设置为"fullmesh"时，可选择传入有效数据或填None，当`copy_expert_num`不为0时必须传入有效数据；当传入有效数据时，要求是一个2D的Tensor，shape为(BS,H)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。参数为有效数据时属于零计算专家特性，此特性尚在实验阶段，请谨慎使用。
+         - `comm_alg`设置为"hierarchy"时，当前版本不支持，传默认值None即可。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填None，当`copy_expert_num`不为0或`const_expert_num`不为0时必须传入有效数据；当传入有效数据时，要求是一个2D的Tensor，shape为(BS,H)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
 
 -   **const\_expert\_alpha\_1** (`Tensor`)：可选参数，在`const_expert_num`不为0的场景下需要输入的计算系数。	
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
@@ -143,11 +145,15 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可。
 
 -   **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+         - `comm_alg`设置为"fullmesh"时，取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num\)。参数为非0时属于零计算专家特性，此特性尚在实验阶段，请谨慎使用。
+         - `comm_alg`设置为"hierarchy"时，当前版本不支持，传默认值0即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num\)。
 
 -   **copy\_expert\_num** (`int`)：可选参数，表示拷贝专家的数量。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+         - `comm_alg`设置为"fullmesh"时，取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num+zero\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。参数为非0时属于零计算专家特性，此特性尚在实验阶段，请谨慎使用。
+         - `comm_alg`设置为"hierarchy"时，当前版本不支持，传默认值0即可。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num+zero\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。
 
 -   **const\_expert\_num** (`int`)：可选参数，表示常量专家的数量。	
