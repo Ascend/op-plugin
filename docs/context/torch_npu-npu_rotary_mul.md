@@ -62,8 +62,8 @@
 torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
 ```
 
->**说明：**<br>
->在模型训练场景中，正向算子的输入`input`将被保留以供反向计算时使用。在`r1`，`r2`不需要计算反向梯度场景下（`requires_grad=False`），使用该接口相较融合前小算子使用的设备内存占用会有所增加。
+> [!NOTE]  
+> 在模型训练场景中，正向算子的输入`input`将被保留以供反向计算时使用。在`r1`，`r2`不需要计算反向梯度场景下（`requires_grad=False`），使用该接口相较融合前小算子使用的设备内存占用会有所增加。
 
 ## 参数说明
 
@@ -91,8 +91,8 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
         - x为$SBND$: $S11D、SB1D、SBND$;
         - x为$TND$: $T1D、TND$。
 
-            >**须知：**<br>
-            >half模式下，当输入layout是$BNSD$，且$D$为非32Bytes对齐时，建议不使用该融合算子（模型启动脚本中不开启`--use-fused-rotary-pos-emb`选项），否则可能出现性能下降。
+            > [!NOTICE]  
+            > half模式下，当输入layout是$BNSD$，且$D$为非32Bytes对齐时，建议不使用该融合算子（模型启动脚本中不开启`--use-fused-rotary-pos-emb`选项），否则可能出现性能下降。
 
     - interleave模式：
 

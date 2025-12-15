@@ -1,7 +1,7 @@
 # （beta）torch_npu.contrib.module.FusedColorJitter
 
->**须知：**<br>
->该接口计划废弃，可以使用`torchvision.transforms.ColorJitter`接口进行替换。
+> [!NOTICE]  
+> 该接口计划废弃，可以使用`torchvision.transforms.ColorJitter`接口进行替换。
 
 ## 产品支持情况
 

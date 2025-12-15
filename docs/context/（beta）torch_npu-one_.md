@@ -1,7 +1,7 @@
 # （beta）torch_npu.one_
 
->**须知：**<br>
->该接口计划废弃，可以使用torch.fill_或torch.ones_like接口进行替换。
+> [!NOTICE]  
+> 该接口计划废弃，可以使用torch.fill_或torch.ones_like接口进行替换。
 
 ## 产品支持情况
 

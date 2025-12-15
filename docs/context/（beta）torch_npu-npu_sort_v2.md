@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_sort_v2
 
->**须知：**<br>
->该接口计划废弃，可以使用`torch.sort`接口进行替换。
+> [!NOTICE]  
+> 该接口计划废弃，可以使用`torch.sort`接口进行替换。
 
 ## 产品支持情况
 

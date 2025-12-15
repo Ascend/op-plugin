@@ -42,7 +42,7 @@ torch_npu.profiler.profile.enable_profiler_in_child_thread(record_shapes=False, 
 
   默认值为False。
 
-  > **说明：**
+  > [!NOTE]  
   > 已知在安装有glibc<2.34的环境上采集memory数据，可能触发glibc的一个已知[Bug 19329](https://gitee.com/link?target=https%3A%2F%2Fsourceware.org%2Fbugzilla%2Fshow_bug.cgi%3Fid%3D19329)，通过升级环境的glibc版本可解决此问题。
 
 - **with_stack**(`bool`)：可选参数，算子调用栈。包括框架层及CPU算子层的调用信息。取值为：

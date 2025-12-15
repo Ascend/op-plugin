@@ -34,9 +34,9 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 -   **next\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。`next_tockens`和`pre_tockens`取值与`atten_mask`的关系请参见`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 -   **inner\_precise**（`int`）：用于提升精度，数据类型支持`int64`，默认值为0。
 
-    >**说明：**<br>
-    >当前0、1为保留配置值，2为使能无效行计算，其功能是避免在计算过程中存在整行mask进而导致精度有损失，但是该配置会导致性能下降。
-    >如果算子可判断出存在无效行场景，会自动使能无效行计算，例如`sparse_mode`为3，Sq \> Skv场景。
+    > [!NOTE]  
+    > 当前0、1为保留配置值，2为使能无效行计算，其功能是避免在计算过程中存在整行mask进而导致精度有损失，但是该配置会导致性能下降。
+    > 如果算子可判断出存在无效行场景，会自动使能无效行计算，例如`sparse_mode`为3，Sq \> Skv场景。
 
 -   **prefix**（`List[int]`）：可选参数，代表prefix稀疏计算场景每个Batch的N值。数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 -   **actual\_seq\_qlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`query`每个S的累加和长度，数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
@@ -160,8 +160,8 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 
 -   支持输入`query`的N和`key`/`value`的N不相等，但必须成比例关系，即Nq/Nkv必须是非0整数，Nq取值范围1\~256。当Nq/Nkv \> 1时，即为GQA\(grouped-query attention\)；当Nq/Nkv=1时，即为MHA\(multi-head attention\)。
 
-    >**说明：**<br>
-    >本文如无特殊说明，N表示的是Nq。
+    > [!NOTE]  
+    > 本文如无特殊说明，N表示的是Nq。
 
 -   `sparse_mode`取值说明：
     -   `sparse_mode`为1、2、3、4、5、6、7、8时，应传入对应正确的`atten_mask`，否则将导致计算结果错误。当`atten_mask`输入为None时，`sparse_mode`，`pre_tockens`，`next_tockens`参数不生效，固定为全计算。
@@ -361,9 +361,9 @@ QK<sup>T</sup>矩阵在`atten_mask`为True的位置会被遮蔽，效果如下�
 
     ![](./figures/1-14.png)
 
-    >**说明：**<br>
-    >-   如果配置sparse\_mode=7，但实际只存在一个batch，用户需按照band模式的要求来配置参数；sparse\_mode=7时，用户需要输入2048x2048的下三角mask作为该融合算子的输入。
-    >-   基于sparse\_mode=3进行外切产生的band模式的sparse的参数应符合以下条件：
+    > [!NOTE]  
+    > -   如果配置sparse\_mode=7，但实际只存在一个batch，用户需按照band模式的要求来配置参数；sparse\_mode=7时，用户需要输入2048x2048的下三角mask作为该融合算子的输入。
+    > -   基于sparse\_mode=3进行外切产生的band模式的sparse的参数应符合以下条件：
     >    -   pre\_tockens \>= last\_Skv。
     >    -   next\_tockens <= 0。
     >    -   当前模式下不支持可选输入pse。
@@ -377,9 +377,9 @@ QK<sup>T</sup>矩阵在`atten_mask`为True的位置会被遮蔽，效果如下�
 
     ![](./figures/1-15.png)
 
-    >**说明：**<br> 
-    >-   如果配置sparse\_mode=8，但实际只存在一个batch，用户需按照band模式的要求来配置参数；sparse\_mode=8时，用户需要输入2048x2048的下三角mask作为该融合算子的输入。
-    >-   基于sparse\_mode=2进行外切产生的band模式的sparse的参数应符合以下条件：
+    > [!NOTE]   
+    > -   如果配置sparse\_mode=8，但实际只存在一个batch，用户需按照band模式的要求来配置参数；sparse\_mode=8时，用户需要输入2048x2048的下三角mask作为该融合算子的输入。
+    > -   基于sparse\_mode=2进行外切产生的band模式的sparse的参数应符合以下条件：
     >    -   pre\_tockens \>= first\_Skv。
     >    -   next\_tockens范围无约束，根据实际情况进行配置。
     >    -   当前模式下不支持可选输入pse。

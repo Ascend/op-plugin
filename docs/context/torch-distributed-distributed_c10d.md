@@ -20,8 +20,8 @@ torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("
 
 注：接口为PyTorch的ProcessGroup类，backend为NPU backend的方法。ProcessGroup可以为default_pg，也可以为`torch.distributed.distributed_c10d.new_group`创建的非default_pg。
 
->**须知：**<br>
->调用该接口时，需要保证当前current device被设置为正确。
+> [!NOTICE]  
+> 调用该接口时，需要保证当前current device被设置为正确。
 
 ## 参数说明
 
@@ -29,8 +29,8 @@ torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("
 
 - **init_comm** (`int`)：可选参数，默认值为True。值为True时，表示调用`get_hccl_comm_name`时，若hccl还未完成初始化，则完成初始化，并返回group name。值为False时，表示调用`get_hccl_comm_name`时，若hccl还未完成初始化，申请内存资源等操作时，则不进行初始化，并返回空字符串。
 
->**说明：** <br>
->hccl初始化会申请内存资源，造成内存升高，默认申请内存大小为Send buffer与Recv buffer各200M，共400M。buffer大小受环境变量HCCL_BUFFSIZE控制。
+> [!NOTE]  
+> hccl初始化会申请内存资源，造成内存升高，默认申请内存大小为Send buffer与Recv buffer各200M，共400M。buffer大小受环境变量HCCL_BUFFSIZE控制。
 
 ## 返回值说明
 `string`

@@ -23,7 +23,7 @@ torch_npu.npu.set_compile_mode(jit_compile = bool)
 
 **jit_compile**（`bool`）：设置为True时表示非二进制模式，设置为False时表示二进制模式。
 
->**说明：**<br>
+> [!NOTE]  
 >- Atlas 训练系列产品/Atlas 推理系列产品默认为jit_compile=True，即非二进制模式。
 >- Atlas A2 训练系列产品/Atlas A3 训练系列产品默认为jit_compile=False，即二进制模式。
 

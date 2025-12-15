@@ -228,10 +228,10 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
             |伪量化|`float16`|`int8`/`int4`|`float16`|无需赋值|`float16`|`float16`|无需赋值|None/`float16`|`float16`|
             |伪量化|`bfloat16`|`int8`/`int4`|`float32`|无需赋值|`bfloat16`|`bfloat16`|无需赋值|None/`bfloat16`|`bfloat16`|
 
-            >**说明：**<br> 
-            >-   伪量化场景，若`weight`的类型为`int8`，仅支持perchannel模式；若`weight`的类型为`int4`，支持perchannel和pergroup两种模式。若为pergroup，pergroup数$G$或$G_i$必须要能整除对应的$k_i$。若`weight`为多tensor，定义pergroup长度$s_i= k_i/G_i$，要求所有$s_i(i=1,2,...g)$都相等。
-            >-   伪量化场景，若`weight`的类型为`int4`，则`weight`中每一组tensor的最后一维大小都应是偶数。<code>weight<sub>i</sub></code>的最后一维指`weight`不转置时<code>weight<sub>i</sub></code>的N轴或当weight转置时weight<sub>i</sub>的$K$轴。并且在pergroup场景下，当`weight`转置时，要求pergroup长度$s_i$是偶数。tensor转置：指若tensor shape为$[M,K]$时，则stride为$[1,M]$,数据排布为$[K,M]$的场景，即非连续tensor。
-            >-   当前PyTorch不支持`int4`类型数据，需要使用时可以通过[torch\_npu.npu\_quantize](torch_npu-npu_quantize.md)接口使用`int32`数据表示`int4`。
+            > [!NOTE]   
+            > -   伪量化场景，若`weight`的类型为`int8`，仅支持perchannel模式；若`weight`的类型为`int4`，支持perchannel和pergroup两种模式。若为pergroup，pergroup数$G$或$G_i$必须要能整除对应的$k_i$。若`weight`为多tensor，定义pergroup长度$s_i= k_i/G_i$，要求所有$s_i(i=1,2,...g)$都相等。
+            > -   伪量化场景，若`weight`的类型为`int4`，则`weight`中每一组tensor的最后一维大小都应是偶数。<code>weight<sub>i</sub></code>的最后一维指`weight`不转置时<code>weight<sub>i</sub></code>的N轴或当weight转置时weight<sub>i</sub>的$K$轴。并且在pergroup场景下，当`weight`转置时，要求pergroup长度$s_i$是偶数。tensor转置：指若tensor shape为$[M,K]$时，则stride为$[1,M]$,数据排布为$[K,M]$的场景，即非连续tensor。
+            > -   当前PyTorch不支持`int4`类型数据，需要使用时可以通过[torch\_npu.npu\_quantize](torch_npu-npu_quantize.md)接口使用`int32`数据表示`int4`。
 
         -   <term>Atlas 推理系列产品</term>：
 
@@ -253,9 +253,9 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     -   **`group_list`输入类型为`Tensor`时**，各场景的限制。
         -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
-            >**说明：**<br> 
-            >-   量化、伪量化仅支持`group_type`为-1和0场景。
-            >-   仅pertoken量化场景支持激活函数计算。
+            > [!NOTE]   
+            > -   量化、伪量化仅支持`group_type`为-1和0场景。
+            > -   仅pertoken量化场景支持激活函数计算。
 
             |group_type|支持场景|场景说明|场景限制|
             |--------|--------|--------|--------|

@@ -12,5 +12,5 @@ Ascend Extension for PyTorch项目采用C++和Python联合开发，当前正式�
 
 所有自定义API接口默认支持Ascend Extension for PyTorch版本匹配的全量PyTorch版本，若非全量支持会在各API的约束说明进行标注。
 
->**说明：**<br>
-Ascend Extension for PyTorch部分功能可以通过环境变量实现，具体可参考[《环境变量参考》](https://www.hiascend.com/document/detail/zh/Pytorch/720/comref/Envvariables/Envir_001.html)。
+> [!NOTE]  
+> Ascend Extension for PyTorch部分功能可以通过环境变量实现，具体可参考[《环境变量参考》](https://www.hiascend.com/document/detail/zh/Pytorch/720/comref/Envvariables/Envir_001.html)。

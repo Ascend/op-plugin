@@ -18,8 +18,8 @@
     \text{out} = \text{activation}(x * W_1 + b_1) * W_2 + b_2
     $$
 
->**说明：**<br>
->激活层为geglu/swiglu/reglu时，性能使能需要满足门槛要求，即整网中FFN结构所对应的小算子里，vector耗时30us且占比10%以上的用例，方可尝试FFN融合算子；或在不知道小算子性能的情况下，尝试使能FFN，若性能劣化则不使能FFN。
+> [!NOTE]  
+> 激活层为geglu/swiglu/reglu时，性能使能需要满足门槛要求，即整网中FFN结构所对应的小算子里，vector耗时30us且占比10%以上的用例，方可尝试FFN融合算子；或在不知道小算子性能的情况下，尝试使能FFN，若性能劣化则不使能FFN。
 
 ## 函数原型
 
@@ -35,8 +35,8 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 
 - **weight2** (`Tensor`)：必选参数，专家的权重数据，对应公式中的$W2$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K2, N2]$/$[K2, N2]$。
 
-    >**说明：**<br>
-    >$M$表示token个数，对应transform中的BS（$B$：Batch，表示输入样本批量大小，$S$：Seq-Length，表示输入样本序列长度）；$K1$表示第一个matmul的输入通道数，对应transform中的$H$（Head-Size，表示隐藏层的大小）；$N1$表示第一个matmul的输出通道数；$K2$表示第二个matmul的输入通道数；$N2$表示第二个matmul的输出通道数，对应transform中的$H$；$E$表示有专家场景的专家数。
+    > [!NOTE]  
+    > $M$表示token个数，对应transform中的BS（$B$：Batch，表示输入样本批量大小，$S$：Seq-Length，表示输入样本序列长度）；$K1$表示第一个matmul的输入通道数，对应transform中的$H$（Head-Size，表示隐藏层的大小）；$N1$表示第一个matmul的输出通道数；$K2$表示第二个matmul的输入通道数；$N2$表示第二个matmul的输出通道数，对应transform中的$H$；$E$表示有专家场景的专家数。
 
 - **activation** (`str`)：必选参数，代表使用的激活函数。当前仅支持`fastgelu、gelu、relu、silu、geglu、swiglu、reglu`。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
