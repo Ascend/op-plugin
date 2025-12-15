@@ -3884,9 +3884,6 @@
   "func: zeros.out(SymInt[] size, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
-  "func: zeros_like(Tensor self, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, MemoryFormat? memory_format=None) -> Tensor": {
-    "version": ["all_version"]
-  },
   "func: celu(Tensor self, Scalar alpha=1.0) -> Tensor": {
     "version": ["all_version"]
   },

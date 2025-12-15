@@ -5378,10 +5378,6 @@ official:
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
 
-  - func: zeros_like(Tensor self, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, MemoryFormat? memory_format=None) -> Tensor
-    acl_op: all_version
-    op_api: all_version
-
   - func: isin.Tensor_Tensor(Tensor elements, Tensor test_elements, *, bool assume_unique=False, bool invert=False) -> Tensor
     op_api: [v2.1, newest]
 
