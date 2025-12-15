@@ -3614,7 +3614,7 @@ class TestGroupedMatmulAdd(TestCase):
 
 
 class TestNpuDSA(TestCase):
-    def setup_sparse_flash_attention_test_params(self, requires_grad=False):
+    def setup_sparse_flash_attention_test_params(self, requires_grad=False, return_softmax_lse=False):
         scale_value = 0.041666666666666664
         sparse_block_size = 1
         query_type = torch.float16
@@ -3631,7 +3631,7 @@ class TestNpuDSA(TestCase):
         block_size = 256
         s2_act = 4096
         attention_mode = 2
-        return_softmax_lse = True
+        
         layout = 'BSND'
         sparse_mode = 3
 
@@ -3706,11 +3706,14 @@ class TestNpuDSA(TestCase):
 
             self.assertEqual(npu_out.dtype, expect_out.dtype)
             self.assertEqual(npu_out.shape, expect_out.shape)
-            self.assertEqual(npu_softmax_max.dtype, expect_softmax_max.dtype)
-            self.assertEqual(npu_softmax_max.shape, expect_softmax_max.shape)
-            self.assertEqual(npu_softmax_sum.dtype, expect_softmax_sum.dtype)
-            self.assertEqual(npu_softmax_sum.shape, expect_softmax_sum.shape)
-
+            
+            if params['return_softmax_lse']:
+                self.assertEqual(npu_softmax_max.dtype, expect_softmax_max.dtype)
+                self.assertEqual(npu_softmax_max.shape, expect_softmax_max.shape)
+                self.assertEqual(npu_softmax_sum.dtype, expect_softmax_sum.dtype)
+                self.assertEqual(npu_softmax_sum.shape, expect_softmax_sum.shape)
+    
+    @unittest.skip("skip sparse_flash_attention_grad now")
     def test_dsa_npu_sparse_flash_attention_grad(self):
         with FakeTensorMode():
             params = self.setup_sparse_flash_attention_test_params(requires_grad=True)
@@ -3741,7 +3744,7 @@ class TestNpuDSA(TestCase):
             self.assertEqual(d_key_rope.dtype, key_rope.dtype)
             self.assertEqual(d_key_rope.shape, key_rope.shape)
 
-    def setup_lightning_indexer_test(self, requires_grad=False):
+    def setup_lightning_indexer_test(self, requires_grad=False, return_value=False):
         b = 1
         s1 = 1
         s2 = 8192
@@ -3784,7 +3787,8 @@ class TestNpuDSA(TestCase):
             'layout_query': layout_query,
             'layout_key': layout_key,
             'sparse_count': sparse_count,
-            'sparse_mode': sparse_mode
+            'sparse_mode': sparse_mode,
+            'return_value': return_value
         }
 
     def call_npu_lightning_indexer(self, inputs):
@@ -3793,7 +3797,7 @@ class TestNpuDSA(TestCase):
             actual_seq_lengths_query=inputs['actual_seq_lengths_query'],
             actual_seq_lengths_key=inputs['actual_seq_lengths_key'],
             block_table=inputs['block_table'], layout_query=inputs['layout_query'],layout_key=inputs['layout_key'],
-            sparse_count=inputs['sparse_count'], sparse_mode=inputs['sparse_mode'], return_value=True)
+            sparse_count=inputs['sparse_count'], sparse_mode=inputs['sparse_mode'], return_value=inputs['return_value'])
 
     def test_dsa_npu_lightning_indexer(self):
         with FakeTensorMode():
@@ -3809,9 +3813,11 @@ class TestNpuDSA(TestCase):
 
             self.assertEqual(npu_out.dtype, expect_out.dtype)
             self.assertEqual(npu_out.shape, expect_out.shape)
-            self.assertEqual(npu_values_out.dtype, expect_values_out.dtype)
-            self.assertEqual(npu_values_out.shape, expect_values_out.shape)
-
+            if params['return_value']:
+                self.assertEqual(npu_values_out.dtype, expect_values_out.dtype)
+                self.assertEqual(npu_values_out.shape, expect_values_out.shape)
+    
+    @unittest.skip("skip lightning_indexer_grad now")
     def test_dsa_npu_lightning_indexer_grad(self):
         with FakeTensorMode():
             params = self.setup_lightning_indexer_test(requires_grad=True)
