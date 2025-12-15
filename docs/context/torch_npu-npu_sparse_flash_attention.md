@@ -28,13 +28,13 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 > [!NOTE]  
 >- query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
->- Q\_S和S1表示query shape中的S，KV\_S和S2表示key shape中的S，Q\_N和N1表示num\_query\_heads，KV\_N和N2表示num\_key\_value\_heads。
--   **query**（`Tensor`）：必选参数，对应公式中的$Q$，不支持非连续，维度N支持1/2/4/8/16/32/64/128，数据格式支持ND，数据类型支持`bfloat16`和`float16`。 
--   **key**（`Tensor`）：必选参数，对应公式中的$\tilde{K}$，不支持非连续，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`，layout\_kv为PA\_BSND时shape为[block\_num, block\_size, KV\_N, D]，其中block\_num为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的倍数，最大支持1024。
+>- Q\_S和S1表示query shape中的S，KV\_S和S2表示key shape中的S，Q\_N和N1表示num\_query\_heads，KV\_N和N2表示num\_key\_value\_heads，T1表示query shape中的T，T2表示key shape中的输入样本序列长度的累加和。
+-   **query**（`Tensor`）：必选参数，对应公式中的$Q$，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，其中N1支持1/2/4/8/16/32/64/128。
+-   **key**（`Tensor`）：必选参数，对应公式中的$\tilde{K}$，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`，`layout_kv`时shape为[block\_num, block\_size, KV\_N, D]，其中block\_num为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的倍数，最大支持1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, D]，`layout_kv`为TND时shape为[T2, KV\_N, D]，其中KV\_N只支持1。
 
--   **value**（`Tensor`）：必选参数，不支持非连续，对应公式中的$\tilde{V}$，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`。
+-   **value**（`Tensor`）：必选参数，不支持非连续，对应公式中的$\tilde{V}$，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`，shape与key一致。
     
--   **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持ND,数据类型支持`int32`。当query的layout为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当query的layout为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的token数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
+-   **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持ND,数据类型支持`int32`。当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
 
 -   **scale\_value**（`double`）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持`float`。
 
@@ -42,15 +42,15 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 -   **block\_table**（`Tensor`）：可选参数，表示PageAttention中kvCache存储使用的block映射表。数据格式支持ND，数据类型支持`int32`，shape为2维，其中第一维长度为B，第二维长度不小于所有batch中最大的S2对应的block数量，即S2\_max / block\_size向上取整。
 
--   **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该入参中每个Batch的有效token数不超过`query`中的维度S大小。支持长度为B的一维tensor。<br>当`query`的input\_layout为TND时，该入参必须传入，且以该入参元素的数量作为B值，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须>=前一个元素的值。不能出现负值。
+-   **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该入参中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须>=前一个元素的值。
 
--   **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`int32`。如果不指定None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。
+-   **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`int32`。如果不指定None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_kv`为TND或PA_BSND时，该入参必须传入，`layout_kv`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
 -   **query\_rope**（`Tensor`）：可选参数，表示MLA结构中的query的rope信息，不支持非连续，数据格式支持ND,数据类型支持`bfloat16`和`float16`。
     
 -   **key\_rope**（`Tensor`）：可选参数，表示MLA结构中的key的rope信息，不支持非连续，数据格式支持ND,数据类型支持`bfloat16`和`float16`。
 
--   **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`int64`，取值范围为[1,128]。
+-   **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`int64`，取值范围为[1,128]，且为2的幂次方。
     -   sparse_block_size为1时，为Token-wise稀疏化场景，将每个token视为独立单元，在计算重要性分数时，评估每个查询token与每个键值token之间的独立关联程度。
     -   sparse_block_size为大于1小于等于128时，为Block-wise稀疏化场景，将token序列划分为固定大小的连续块，以块为单位进行重要性评估，块内token共享相同的稀疏化决策。
 
@@ -68,7 +68,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 -   **attention\_mode**（`int`）：可选参数，表示attention的模式，数据类型支持`int64`，仅支持传入2，表示MLA-absorb模式，即计算过程中会将query和key的nope部分分别和query_rope和key_rope的rope部分沿头维度（D）拼接，合并形成最终的query和key用于后续计算，且key和value共享同一份底层张量数据。
 
--   **return\_softamx\_lse**（`bool`）：可选参数，用于表示是否返回softmax_max和softmax_sum，默认值`False`。
+-   **return\_softamx\_lse**（`bool`）：可选参数，用于表示是否返回softmax_max和softmax_sum。True表示返回，但图模式下不支持，False表示不返回；默认值为False。该参数仅在训练且`layout_kv`不为PA_BSND场景支持。
 
 ## 返回值说明
 
@@ -81,6 +81,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 -   该接口支持推理场景下使用。
 -   该接口支持图模式。
 -   参数query中的D和key、value的D值相等为512，参数query\_rope中的D和key\_rope的D值相等为64。
+-   参数query、key、value的数据类型必须保持一致。
 -   支持sparse\_block\_size整除block\_size。
 -   layout\_query为TND且layout\_kv为BSND场景不支持，在非PageAttention场景下，该参数值应与layout_query值保持一致。
 
