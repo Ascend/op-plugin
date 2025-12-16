@@ -98,7 +98,7 @@ at::Tensor npu_moe_distribute_combine_v2(const at::Tensor &expand_x, const at::T
                      expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type,
                      comm_alg_ptr, zero_expert_num, copy_expert_num, const_expert_num, output);
     } else if (check_aclnn_kernel_available("aclnnMoeDistributeCombineV3")) {
-        TORCH_CHECK(performance_info.has_value(),
+        TORCH_CHECK(!performance_info.has_value(),
                     "The performance_info is not supported in this CANN version, aclnnMoeDistributeDispatchV4 is not available, please update CANN version.",
                     OPS_ERROR(ErrCode::PARAM));
         EXEC_NPU_CMD(aclnnMoeDistributeCombineV3, expand_x, expert_ids, assist_info_for_combine, ep_send_counts, expert_scales, tp_send_counts, x_active_mask,
