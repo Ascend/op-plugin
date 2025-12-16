@@ -6823,6 +6823,10 @@ custom:
     op_api: all_version
     exposed: all_version
 
+  - func: npu_grouped_matmul_add(Tensor self, Tensor x, Tensor weight, Tensor group_list, *, bool transpose_x=True, bool transpose_weight=False, int group_type=2, int? group_list_type=0) -> Tensor
+    op_api: all_version
+    internal_format_opapi: all_version
+
   - func: npu_grouped_matmul_add_(Tensor(a!) self, Tensor x, Tensor weight, Tensor group_list, *, bool transpose_x=True, bool transpose_weight=False, int group_type=2, int? group_list_type=0) -> Tensor(a!)
     op_api: all_version
     internal_format_opapi: all_version    

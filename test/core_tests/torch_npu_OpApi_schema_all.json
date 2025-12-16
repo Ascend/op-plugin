@@ -695,6 +695,9 @@
   "func: _npu_dtype_cast_backward(Tensor grad, ScalarType dtype) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: npu_grouped_matmul_add(Tensor self, Tensor x, Tensor weight, Tensor group_list, *, bool transpose_x=True, bool transpose_weight=False, int group_type=2, int? group_list_type=0) -> Tensor": {
+    "version": ["all_version"]
+  },
   "func: npu_grouped_matmul_add_(Tensor(a!) self, Tensor x, Tensor weight, Tensor group_list, *, bool transpose_x=True, bool transpose_weight=False, int group_type=2, int? group_list_type=0) -> Tensor(a!)": {
     "version": ["all_version"]
   },

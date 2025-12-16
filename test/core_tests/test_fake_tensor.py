@@ -1482,7 +1482,6 @@ class TestFusedInferAttentionV2(TestCase):
             self.assertTrue(golden_output.shape == atten_out.shape)
 
 
-
 class TestFlashAttentionScore(TestCase):
     def testFlashAttentionScore(self):
         with FakeTensorMode():
@@ -1751,7 +1750,7 @@ class TestGeGlu(TestCase):
                 else:
                     self.assertEqual(y.size(index) * 2, x.size(index))
                     self.assertEqual(gelu.size(index) * 2, x.size(index))
-            
+
 
 class TestScatterUpdateMeta(TestCase):
 
@@ -3275,7 +3274,6 @@ class TestNpuMoeUnpermuteWithRoutingMap(TestCase):
                     self.assertEqual(permute_probs.shape, sorted_indices.shape)
 
 
-
 class TestNpuAttentionWorkerCombine(TestCase):
     def test_npu_attention_worker_combine(self):
         with FakeTensorMode():
@@ -3947,6 +3945,89 @@ class TestNpuDSA(TestCase):
             self.assertEqual(loss.dtype, expect_loss.dtype)
             self.assertEqual(loss.shape, expect_loss.shape)
 
+class TestNpuConv2d(TestCase):
+    def test_npu_conv2d_meta_0(self):
+        with FakeTensorMode():
+            input_ = torch.randn(1, 3, 32, 32, dtype=torch.float).npu()
+            weight = torch.randn(6, 3, 5, 5, dtype=torch.float).npu()
+            bias = torch.randn(6, dtype=torch.float).npu()
+            stride = [1, 1]
+            padding = [2, 2]
+            dilation = [1, 1]
+            groups = 1
+            output = torch_npu.npu_conv2d(
+                input_, weight, bias, stride, padding, dilation, groups
+            )
+            expect_output = torch.empty([1, 6, 32, 32], dtype=torch.float)
+            self.assertEqual(output.dtype, expect_output.dtype)
+            self.assertEqual(output.shape, expect_output.shape)
+
+class TestNpuApplyAdamW(TestCase):
+
+    def test_npu_apply_adam_w_meta_0(self):
+        with FakeTensorMode():
+            var_value = np.random.uniform(10.0, 20.0)
+            m_value = np.random.uniform(5.0, 10.0)
+
+            beta1_power = np.random.uniform(0.0, 1.0)
+            beta2_power = np.random.uniform(0.0, 1.0)
+            lr = np.random.uniform(0.0001, 0.1)
+            weight_decay = np.random.uniform(0.001, 0.1)
+            beta1 = np.random.uniform(0.5, 1.0)
+            beta2 = np.random.uniform(0.5, 1.0)
+            eps = np.random.uniform(0.00001, 0.01)
+            max_grad_norm = None
+            amsgrad = False
+            maximize = True
+
+            var = torch.empty((21130, 512), device="npu")
+            var.fill_(var_value)
+            m = torch.empty((21130, 512), device="npu")
+            m.fill_(m_value)
+            v = torch.empty((21130, 512), device="npu")
+            v.zero_()
+            grad = torch.empty((21130, 512), device="npu")
+            grad.zero_()
+            var_out, m_out, v_out = torch_npu.npu_apply_adam_w(
+                beta1_power,
+                beta2_power,
+                lr,
+                weight_decay,
+                beta1,
+                beta2,
+                eps,
+                grad,
+                max_grad_norm,
+                amsgrad,
+                maximize,
+                out=(var, m, v),
+            )
+            self.assertEqual(var_out.dtype, var.dtype)
+            self.assertEqual(var_out.shape, var.shape)
+            self.assertEqual(m_out.dtype, m.dtype)
+            self.assertEqual(m_out.shape, m.shape)
+            self.assertEqual(v_out.dtype, v.dtype)
+            self.assertEqual(v_out.shape, v.shape)
+
+
+class TestNpuCrossEntropyLoss(TestCase):
+    def test_npu_cross_entropy_loss_meta_0(self):
+        with FakeTensorMode():
+            N = 4096
+            C = 8080
+
+            input = torch.randn(N, C, dtype=torch.float32,
+                                requires_grad=True).npu()
+            target = torch.arange(0, N, dtype=torch.int64).npu()
+            loss, log_prob, _, _ = torch_npu.npu_cross_entropy_loss(
+                input, target, reduction="sum", ignore_index=100
+            )
+            expect_loss = torch.empty([N,], dtype=torch.float32)
+            expect_log_prob = torch.empty([N, C], dtype=torch.float32)
+            self.assertEqual(loss.dtype, expect_loss.dtype)
+            self.assertEqual(loss.shape, expect_loss.shape)
+            self.assertEqual(log_prob.dtype, expect_log_prob.dtype)
+            self.assertEqual(log_prob.shape, expect_log_prob.shape)
 
 if __name__ == "__main__":
     run_tests()
