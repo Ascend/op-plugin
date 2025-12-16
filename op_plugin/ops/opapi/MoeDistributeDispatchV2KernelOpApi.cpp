@@ -181,12 +181,12 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
     TensorWrapper dynamic_scales_wrapper = {dynamic_scales, acl_dynamic_scale_dtype};
 
     if (check_aclnn_kernel_available("aclnnMoeDistributeDispatchV4")) {
-        EXEC_NPU_CMD(aclnnMoeDistributeDispatchV4, x, expert_ids, scales, x_active_mask, expert_scales, elastic_info, performance_info,
+        EXEC_NPU_CMD(aclnnMoeDistributeDispatchV4, x_wrapper, expert_ids, scales_wrapper, x_active_mask, expert_scales, elastic_info, performance_info,
                      group_ep_ptr, ep_world_size, ep_rank_id, moe_expert_num,
                      group_tp_ptr, tp_world_size, tp_rank_id,
                      expert_shard_type, shared_expert_num, shared_expert_rank_num,
-                     quant_mode, global_bs_real, expert_token_nums_type, comm_alg_ptr, zero_expert_num, copy_expert_num, const_expert_num, expand_x,
-                     dynamic_scales, assist_info_forcombine, expert_token_nums, ep_recv_counts,
+                     quant_mode, global_bs_real, expert_token_nums_type, comm_alg_ptr, zero_expert_num, copy_expert_num, const_expert_num, expand_x_wrapper,
+                     dynamic_scales_wrapper, assist_info_forcombine, expert_token_nums, ep_recv_counts,
                      tp_recv_counts, expand_scales);
     } else if (check_aclnn_kernel_available("aclnnMoeDistributeDispatchV3")) {
         TORCH_CHECK(!performance_info.has_value(),
