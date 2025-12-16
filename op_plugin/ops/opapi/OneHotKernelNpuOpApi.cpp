@@ -27,6 +27,16 @@ static const int64_t MIN_NUM_CLASSES = 0;
 
 at::Tensor one_hot(const at::Tensor& self, int64_t num_classes)
 {
+    auto ks = self.key_set();
+    bool is_fake_or_meta = ks.has_all(c10::DispatchKeySet(c10::BackendComponent::MetaBit)) ||
+        ks.has_all(c10::DispatchKeySet(c10::DispatchKey::Python)) ||
+        self.is_meta();
+    if (is_fake_or_meta) {
+        TORCH_CHECK(num_classes != -1, "FakeTensorMode does not support num_classes == -1.");
+        auto options = self.options().dtype(at::kLong);
+        at::Tensor index = at::arange(num_classes, options);
+        return at::eq(self.unsqueeze(-1), index).to(at::kLong);
+    }
     DO_COMPATIBILITY(aclnnOneHot, acl_op::one_hot(self, num_classes));
     int64_t depth = num_classes;
     TORCH_CHECK(depth >= AUTO_DEPTH, "NPU error, not yet support negative num_classes, when num_classes less than -1",
