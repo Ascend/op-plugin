@@ -66,7 +66,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
 
 -   **group\_tp** (`str`)：可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参，若无TP域通信，使用默认值""即可。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：字符串长度范围为\[1, 128\)，不能和`group_ep`相同。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：字符串长度范围为\[0, 128\)，不能和`group_ep`相同，仅在无TP域时支持传空。
 
 -   **tp\_world\_size** (`int`)：可选参数，TP通信域size。有TP域通信才需要传参。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值0即可。
