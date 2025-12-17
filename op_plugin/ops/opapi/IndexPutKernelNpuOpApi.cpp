@@ -27,8 +27,8 @@ at::Tensor index_put(
     const c10::List<c10::optional<at::Tensor>>& indices,
     const at::Tensor& value,
     bool accumulate) {
-  DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::index_put(self, indices, value, accumulate));
-  return self.clone(at::MemoryFormat::Contiguous).index_put_(indices, value, accumulate);
+    DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::index_put(self, indices, value, accumulate));
+    return self.clone(at::MemoryFormat::Contiguous).index_put_(indices, value, accumulate);
 }
 
 at::Tensor& index_put_(
@@ -36,8 +36,8 @@ at::Tensor& index_put_(
     const c10::List<c10::optional<at::Tensor>>& indices,
     const at::Tensor& value,
     const bool accumulate) {
-  DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::index_put_(self, indices, value, accumulate));
-  return at::_index_put_impl_(self, indices, value, accumulate, false);
+    DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::index_put_(self, indices, value, accumulate));
+    return at::_index_put_impl_(self, indices, value, accumulate, false);
 }
 
 at::Tensor& _index_put_impl_(
@@ -46,19 +46,17 @@ at::Tensor& _index_put_impl_(
     const at::Tensor& value,
     const bool accumulate,
     const bool unsafe) {
-  DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::_index_put_impl_(self, indices, value, accumulate, unsafe));
-  if (self.device().type() == at::kCPU) {
-    return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
-  }
-  bool needCast = op_plugin::AdvanceIndex::checkIndexTensorTypes(indices);
-  auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, needCast, true);
-  std::vector<at::Tensor> all_defined_indices;
-  at::SmallVector<int64_t, op_infer::N> zeroSize = {0};
-  at::Tensor emptyTensor = npu_preparation::apply_tensor_without_format(self, zeroSize);
-  std::vector<at::Tensor> indices_expand;
+    DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::_index_put_impl_(self, indices, value, accumulate, unsafe));
+    if (self.device().type() == at::kCPU) {
+        return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
+    }
+    bool needCast = op_plugin::AdvanceIndex::checkIndexTensorTypes(indices);
+    auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, needCast, true);
+    std::vector<at::Tensor> all_defined_indices;
+    at::SmallVector<int64_t, op_infer::N> zeroSize = {0};
+    at::Tensor emptyTensor = npu_preparation::apply_tensor_without_format(self, zeroSize);
     c10::List<c10::optional<at::Tensor>> indices_expand_list;
-    indices_expand = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, needCast);
-    for (at::Tensor index_opt : indices_expand) {
+    for (at::Tensor index_opt : indices_after) {
         indices_expand_list.push_back(index_opt);
     }
     auto info = op_plugin::AdvanceIndex::make_info(self, indices_expand_list);
