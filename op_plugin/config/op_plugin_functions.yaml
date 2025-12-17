@@ -6760,6 +6760,14 @@ custom:
     gen_opapi:
       exec: aclnnGroupedMatmulAdd, x, weight, group_list, self, transpose_x, transpose_weight, group_type
 
+  - func: npu_grouped_matmul_add(Tensor self, Tensor x, Tensor weight, Tensor group_list, *, bool transpose_x=True, bool transpose_weight=False, int group_type=2) -> Tensor
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnGroupedMatmulAdd, x, weight, group_list, self, transpose_x, transpose_weight, group_type
+
   - func: npu_attn_softmax_(Tensor(a!) self) -> Tensor(a!)
     op_api: all_version
     gen_opapi:

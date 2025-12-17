@@ -103,6 +103,30 @@ class TestGroupedMatmulAdd(TestCase):
 
         self.assertTrue(self.compare_cv(golden_fp32, golden_fp64, y))
 
+    @unittest.skip("Skipping test_npu_grouped_matmul_add for now")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_add(self):
+        x = torch.randn(512, 256, dtype=torch.float16, device="npu")
+        weight = torch.randn(512, 256, dtype=torch.float16, device="npu")
+        y = torch.randn(512, 256, dtype=torch.float, device="npu")
+        group_list = torch.tensor([256, 512]).to(torch.int64).npu()
+        transpose_x = True
+        transpose_weight = False
+        group_type = 2
+
+        mx = x.clone()
+        mweight = weight.clone()
+        my = y.clone()
+        mgroup_list = group_list.clone()
+        res = torch_npu.npu_grouped_matmul_add_(
+            y, x, weight, group_list, transpose_x=transpose_x, transpose_weight=transpose_weight, group_type=group_type)
+
+        golden_fp32 = self.cpu_golden_fp32(
+            my, mx, mweight, mgroup_list, transpose_x, transpose_weight, group_type)
+        golden_fp64 = self.cpu_golden_fp64(
+            my, mx, mweight, mgroup_list, transpose_x, transpose_weight, group_type)
+
+        self.assertTrue(self.compare_cv(golden_fp32, golden_fp64, res))
 
 if __name__ == "__main__":
     run_tests()
