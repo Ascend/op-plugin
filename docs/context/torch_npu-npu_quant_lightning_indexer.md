@@ -20,7 +20,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, query_quant_mode=0, key_quant_mode=0, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> Tensor
+torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, query_quant_mode, key_quant_mode, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> Tensor
 ```
 
 ## 参数说明
@@ -38,6 +38,10 @@ torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, 
 
 -   **key_dequant_scale**（`Tensor`）：必选参数，表示Index Key的反量化系数，对应公式中的$Scale_K^T$。不支持非连续，数据格式支持$ND$，数据类型支持`float16`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数。
 
+-   **query\_quant\_mode**（`int`）：可选参数，用于标识输入`query`的量化模式，当前仅支持Per-Token-Head量化模式，当前仅支持传入0。
+
+-   **key\_quant\_mode**（`int`）：可选参数，用于标识输入`key`的量化模式，当前仅支持Per-Token-Head量化模式，当前仅支持传入0。
+
 - <strong>*</strong>：代表其之前的参数是位置相关的，必须按照顺序输入；之后的参数是可选参数，位置无关，不赋值会使用默认值。
 
 -   **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该入参中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维tensor。当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。不能出现负值。
@@ -45,10 +49,6 @@ torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, 
 -   **actual\_seq\_lengths\_key**（`Tensor`）：可选参数，表示不同Batch中`key`的有效token数，数据类型支持`int32`。如果不指定seqlen可传入None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。当`layout_kv`为TND或PA_BSND时，该入参必须传入，`layout_kv`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
 -   **block\_table**（`Tensor`）：可选参数，表示PageAttention中KV存储使用的block映射表，数据格式支持$ND$，数据类型支持`int32`。PageAttention场景下，block\_table必须为二维，第一维长度需要等于B，第二维长度不能小于maxBlockNumPerSeq(maxBlockNumPerSeq为每个batch中最大actual\_seq\_lengths\_key对应的block数量)，支持block_size取值为16的整数倍，最大支持到1024。
-
--   **query\_quant\_mode**（`int`）：可选参数，用于标识输入`query`的量化模式，当前支持Per-Token-Head量化模式，当前仅支持传入0。
-
--   **key\_quant\_mode**（`int`）：可选参数，用于标识输入`key`的量化模式，当前支持Per-Token-Head量化模式，当前仅支持传入0。
 
 -   **layout\_query**（`str`）：可选参数，用于标识输入`query`的数据排布格式，当前支持BSND、TND，默认值"BSND"。
 

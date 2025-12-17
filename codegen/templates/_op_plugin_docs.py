@@ -1278,7 +1278,7 @@ _add_torch_npu_docstr(
 QuantLightningIndexer在LightningIndexer的基础上支持了Per-Token-Head量化输入。
 
 接口原型
-custom.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, query_quant_mode=0, key_quant_mode=0, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3) -> Tensor
+custom.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, query_quant_mode, key_quant_mode, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> Tensor
 
 参数说明
 
