@@ -83,7 +83,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 -   参数query中的D和key、value的D值相等为512，参数query\_rope中的D和key\_rope的D值相等为64。
 -   参数query、key、value的数据类型必须保持一致。
 -   支持sparse\_block\_size整除block\_size。
--   layout\_query为TND且layout\_kv为BSND场景不支持，在非PageAttention场景下，该参数值应与layout_query值保持一致。
+-   `layout_kv`为PA_BSND时，`layout_query`和`layout_kv`无需一致； `layout_kv`为BSND或TND时，`layout_query`和`layout_kv`需保持一致。
 
 ## 调用示例
 - 单算子模式调用
