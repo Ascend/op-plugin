@@ -39,6 +39,7 @@ void create_new_tensor_batch(at::Tensor &y, size_t batch, size_t dim_m, size_t d
 }
 
 const static int64_t DIM_2 = 2;
+const static int64_t DIM_3 = 3;
 
 std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     const at::Tensor & x,
@@ -99,6 +100,13 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
         output = npu_preparation::apply_tensor_without_format({m, n/ MXFP_MULTI_BASE_SIZE}, c10::dtype(c10::ScalarType::Char));
         output_scale = npu_preparation::apply_tensor_without_format({m}, c10::dtype(c10::ScalarType::Float));
     } else {
+        if (dequant_dtype.has_value()) {
+            dequant_dtype_real = static_cast<int64_t>(c10_npu::GetAclDataType(dequant_dtype.value()));
+        }
+        TORCH_CHECK(!weight[0].sizes().empty(), "weight[0] is empty", OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(weight[0].dim() == DIM_3, "weight[0] dim should be equal to 3, but the actual value is ",
+                    weight[0].dim(), OPS_ERROR(ErrCode::PARAM));
+        n = weight[0].sizes()[2]; // In mx quant mode, n needs to be obtained from the dim 2 of weight.
         c10::TensorOptions options_output = x.options().dtype(quant_dtype.has_value()
                     ? npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(quant_dtype.value()))
                     : x[0].scalar_type());
