@@ -1486,6 +1486,10 @@ def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=
         S1 = query.size(0)
         S2 = key.size(0)
 
+    if input_layout == "BSND":
+        S1 = query.size(1)
+        S2 = key.size(1)
+
     seed = 0
     offset = 0
     numels = 0
@@ -4198,7 +4202,7 @@ def npu_cross_entropy_loss_meta(
     loss_out_shape = [
         input_shape[0],
     ]
-    if reduction is None:
+    if reduction != "none":
         loss_out_shape = [
             1,
         ]
@@ -4213,6 +4217,24 @@ def npu_cross_entropy_loss_meta(
         torch.empty(zloss_shape, dtype=input_.dtype, device=input_.device),
         torch.empty(lse_for_zloss_shape, dtype=input_.dtype, device=input_.device),
     )
+
+
+@impl(m, "npu_cross_entropy_loss_backward")
+def npu_cross_entropy_loss_backward_meta(
+    grad_loss, 
+    log_prob, 
+    target, 
+    weight=None, 
+    grad_zloss=None, 
+    lse_for_zloss=None, 
+    reduction='mean', 
+    ignore_index=-100, 
+    label_smoothing=0.0, 
+    lse_square_scale_for_zloss=0.0
+):
+    result = torch.empty_like(log_prob)
+
+    return result
 
 
 @impl(m, "npu_apply_adam_w.out")
@@ -4261,3 +4283,19 @@ def npu_conv2d_meta(input_, weight, bias, strides, pads, dilations, groups):
     output_dim_list = [nout, cout, hout, wout]
 
     return torch.empty(tuple(output_dim_list), dtype=input_.dtype, device=input_.device)
+
+
+@impl(m, "npu_conv2d_backward")
+def npu_conv2d_backward_meta(x, grad_output, weight, stride, padding, dilation, groups, output_mask):
+    Co = weight.size(0)
+
+    result3_shape = (Co,)
+
+    result_1 = torch.empty(x.size(), dtype=x.dtype, device='meta')
+    result_2 = torch.empty(weight.size(), dtype=weight.dtype, device='meta')
+    if output_mask[2]:
+        result_3 = torch.empty(result3_shape, dtype=x.dtype, device='meta')
+    else:
+        result_3 = None
+
+    return (result_1, result_2, result_3)
