@@ -159,7 +159,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool2d_with_indices_out(
         DO_COMPATIBILITY(aclnnMaxPool2dWithIndices,
                          acl_op::max_pool2d_with_indices_out(self, kernel_size, stride,
                                                              padding, dilation, ceil_mode, output, indices));
-        EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_size,
+        EXEC_NPU_CMD(aclnnMaxPool2dWithIndices, self, kernel_size,
                      stride, padding, dilation, ceil_mode, output, indices);
     }
     return std::tuple<at::Tensor&, at::Tensor&>(output, indices);
