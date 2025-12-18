@@ -99,6 +99,8 @@ float calculate_p(at::Scalar p)
 at::Tensor &linalg_norm_out_npu_nocheck(at::Tensor &out, const at::Tensor &self, const at::Scalar &ord,
                                         at::IntArrayRef dim, bool keepdim, at::optional<at::ScalarType> dtype)
 {
+    TORCH_CHECK(!self.is_complex(), "linalg_vector_norm does not support complex numbers. "
+            + OPS_ERROR(ErrCode::TYPE));
     at::Tensor fp32_self(self);
     if (self.scalar_type() != at::ScalarType::Float) {
         fp32_self = _npu_dtype_cast(fp32_self, at::ScalarType::Float);
