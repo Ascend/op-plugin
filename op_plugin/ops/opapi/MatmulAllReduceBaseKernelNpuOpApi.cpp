@@ -221,6 +221,9 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
             EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV3, x1, x2, bias_real, x3_real, dequant_scale_real,
                          pertoken_scale_real, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr,
                          reduce_op_ptr, comm_turn, stream_mode, result);
+        } else if (comm_quant_scale_1.has_value() || comm_quant_scale_2.has_value()) {
+            TORCH_CHECK(false,
+                "comm_quant_scale_1 and comm_quant_scale_2 should both be null or not null", OPS_ERROR(ErrCode::TYPE));
         } else if (pertoken_scale.has_value()) {
             const at::Tensor& pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
             EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV2, x1, x2, bias_real, x3_real, dequant_scale_real, pertoken_scale_real, hcom_ptr, reduce_op_ptr,
