@@ -149,6 +149,19 @@ std::vector<std::string> get_default_custom_lib_path()
 const std::vector<std::string> g_custom_lib_path = get_custom_lib_path();
 const std::vector<std::string> g_default_custom_lib_path = get_default_custom_lib_path();
 
+bool hasPrefix(const std::string &str, const std::string &prefix)
+{
+    return str.compare(0, prefix.size(), prefix) == 0;
+}
+
+bool hasSuffix(const std::string &str, const std::string &suffix)
+{
+    if (suffix.size() > str.size()) {
+        return false;
+    }
+    return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 std::vector<std::string> GetAllOpApiSoFiles()
 {
     std::vector<std::string> opApiSoFiles;
@@ -176,15 +189,13 @@ std::vector<std::string> GetAllOpApiSoFiles()
                 continue;
             }
             std::string fileName = entry.path().filename().string();
-            std::regex pattern("^libopapi_.*\\.so$");
-            if (std::regex_match(fileName, pattern)) {
+            if (hasPrefix(fileName, "libopapi_") && hasSuffix(fileName, ".so")) {
+                ASCEND_LOGI("%s is found.", fileName.c_str());
                 opApiSoFiles.push_back(fileName);
             }
         }
     } catch (const std::filesystem::filesystem_error& e) {
         ASCEND_LOGW("Filesystem error: %s", e.what());
-    } catch (const std::regex_error& e) {
-        ASCEND_LOGW("Regex error: %s", e.what());
     } catch (const std::exception& e) {
         ASCEND_LOGW("Error: %s", e.what());
     }
@@ -204,6 +215,9 @@ std::vector<void *> GetAllOpApiHandlers()
 
     for (const auto& opApiSoFile : g_opApiSoFiles) {
         auto opApiHandler = GetOpApiLibHandler(opApiSoFile.c_str());
+        if (opApiHandler != nullptr) {
+            ASCEND_LOGI("%s has got handler.", opApiSoFile.c_str());
+        }
         opApiHandlers.push_back(opApiHandler);
     }
 

@@ -21,7 +21,6 @@
 #include <dlfcn.h>
 #include <vector>
 #include <filesystem>
-#include <regex>
 #include <functional>
 #include <type_traits>
 #include <ATen/Tensor.h>
@@ -200,6 +199,7 @@ inline void *GetOpApiFuncAddr(const char *apiName)
             if (g_opApiHandlers[i] != nullptr) {
                 auto funcAddr = GetOpApiFuncAddrInLib(g_opApiHandlers[i], g_opApiSoFiles[i].c_str(), apiName);
                 if (funcAddr != nullptr) {
+                    ASCEND_LOGI("%s is found in %s.", apiName, g_opApiSoFiles[i].c_str());
                     return funcAddr;
                 }
             }
