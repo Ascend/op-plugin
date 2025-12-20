@@ -30,7 +30,10 @@ at::Tensor npu_linear(
     auto output_size = {input.size(0), weight.size(0)};
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, input.options());
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-
+    int8_t cube_math_type_passthrough = npu_preparation::get_cube_math_type();
+        if (cube_math_type_passthrough >= 0) {
+            cube_math_type = cube_math_type_passthrough;
+    }
     if (bias_opt.defined()) {
         const at::Scalar beta = 1;
         const at::Scalar alpha = 1;
@@ -51,6 +54,10 @@ std::tuple<at::Tensor, at::Tensor> npu_linear_backward(
     DO_COMPATIBILITY(aclnnMm, acl_op::npu_linear_backward(grad, input, weight));
     at::Tensor input_grad = npu_preparation::apply_tensor_without_format(input.sizes(), grad.options());
     int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    int8_t cube_math_type_passthrough = npu_preparation::get_cube_math_type();
+        if (cube_math_type_passthrough >= 0) {
+            cube_math_type = cube_math_type_passthrough;
+    }
     EXEC_NPU_CMD(aclnnMm, grad, weight, input_grad, cube_math_type);
 
     const at::Tensor &grad_t = grad.t();
