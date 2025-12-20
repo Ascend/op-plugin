@@ -7044,6 +7044,20 @@ custom:
       new_params:
         restore_shape_value: 'restore_shape.value_or(at::IntArrayRef{1})'
       exec: aclnnMoeTokenUnpermute, permuted_tokens, sorted_indices, probs, padded_mode, restore_shape_value, unpermuted_tokens
+  
+  - func: npu_attention_to_ffn(Tensor x, Tensor session_id, Tensor micro_batch_id, Tensor layer_id, Tensor expert_ids, Tensor expert_rank_table, str group, int world_size, int[] ffn_token_info_table_shape, int[] ffn_token_data_shape, int[] attn_token_info_table_shape, int moe_expert_num, *, Tensor? scales=None, Tensor? active_mask=None, int quant_mode=0, int sync_flag=0, int ffn_start_rank_id=0) -> ()
+    op_api: all_version
+    gen_opapi:
+      new_params:
+        group_ptr: 'const_cast<char *>(group.data())'
+      exec: aclnnAttentionToFFN, x, session_id, micro_batch_id, layer_id, expert_ids, expert_rank_table, scales, active_mask, group_ptr, world_size, ffn_token_info_table_shape, ffn_token_data_shape, attn_token_info_table_shape, moe_expert_num, quant_mode, sync_flag, ffn_start_rank_id
+
+  - func: npu_ffn_to_attention(Tensor x, Tensor session_ids, Tensor micro_batch_ids, Tensor token_ids, Tensor expert_offsets, Tensor actual_token_num, str group, int world_size, int[] token_info_table_shape, int[] token_data_shape, *, Tensor? attn_rank_table=None) -> ()
+    op_api: all_version
+    gen_opapi:
+      new_params:
+        group_ptr: 'const_cast<char *>(group.data())'
+      exec: aclnnFFNToAttention, x, session_ids, micro_batch_ids, token_ids, expert_offsets, actual_token_num, attn_rank_table, group_ptr, world_size, token_info_table_shape, token_data_shape
 
   - func: npu_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, *, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, Tensor? query_rope=None, Tensor? key_rope=None, int sparse_block_size=1, str layout_query="BSND", str layout_kv="BSND", int sparse_mode=3, int pre_tokens=9223372036854775807, int next_tokens=9223372036854775807, int attention_mode=0, bool return_softmax_lse=False) -> (Tensor, Tensor, Tensor)
     op_api: all_version
