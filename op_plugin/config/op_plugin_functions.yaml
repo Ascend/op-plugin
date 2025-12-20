@@ -739,7 +739,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: self
+        dtype: abs_out_dtype(self)
         name: self
       exec: aclnnAbs, self, out
 

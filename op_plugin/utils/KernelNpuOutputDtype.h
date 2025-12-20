@@ -28,6 +28,7 @@ OP_PLUGIN_HIDDEN at::ScalarType npu_group_norm_silu_dst_type(const at::Tensor& i
 OP_PLUGIN_HIDDEN at::ScalarType npu_group_quant_dst_type(c10::optional<at::ScalarType> dst_dtype);
 OP_PLUGIN_HIDDEN at::ScalarType clamp_out_dtype(const at::Tensor& self, const c10::optional<at::Tensor>& min, const c10::optional<at::Tensor>& max);
 OP_PLUGIN_HIDDEN at::ScalarType clamp_scalar_out_dtype(const at::Tensor& self, const c10::optional<at::Scalar>& min, const c10::optional<at::Scalar>& max);
+OP_PLUGIN_HIDDEN at::ScalarType abs_out_dtype(const at::Tensor& self);
 
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_DTYPE
