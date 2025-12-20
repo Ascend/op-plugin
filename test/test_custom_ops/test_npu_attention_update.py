@@ -18,13 +18,15 @@ def npu_attention_update_golden(lse_list, local_out_list, update_type=0):
         raise ValueError("local_out_list must not be empty.")
     if len(lse_list) != len(local_out_list):
         raise ValueError("lse_list and local_out_list must have the same length.")
-    if update_type != 0:
-        raise ValueError("update_type must be 0.")
+    if update_type != 0 and update_type != 1:
+        raise ValueError("update_type must be 0 or 1.")
 
     N = None
     H = None
     lse_cpu = []
     out_cpu = []
+    out_dtype = torch.float32
+
     for i, (lse_i, out_i) in enumerate(zip(lse_list, local_out_list)):
         if not isinstance(lse_i, torch.Tensor):
             raise TypeError(f"lse[{i}] must be a torch.Tensor, got {type(lse_i)}")
@@ -32,8 +34,8 @@ def npu_attention_update_golden(lse_list, local_out_list, update_type=0):
             raise TypeError(f"local_out[{i}] must be a torch.Tensor, got {type(out_i)}")
         if lse_i.dtype != torch.float32:
             raise ValueError(f"lse[{i}] must be float32, got {lse_i.dtype}")
-        if out_i.dtype != torch.float32:
-            raise ValueError(f"local_out[{i}] must be float32, got {out_i.dtype}")
+        if out_i.dtype not in (torch.float32, torch.float16, torch.bfloat16):
+            raise ValueError(f"local_out[{i}] must be float32, float16 or bfloat16, got {out_i.dtype}")
         if lse_i.dim() != 1:
             raise ValueError(f"lse[{i}] must be 1D [N], got shape {list(lse_i.shape)}")
         if out_i.dim() != 2:
@@ -42,6 +44,7 @@ def npu_attention_update_golden(lse_list, local_out_list, update_type=0):
         if N is None:
             N = lse_i.size(0)
             H = out_i.size(1)
+            out_dtype = out_i.dtype
         else:
             if lse_i.size(0) != N:
                 raise ValueError(f"lse[{i}].size(0) must be {N}, got {lse_i.size(0)}")
@@ -61,7 +64,7 @@ def npu_attention_update_golden(lse_list, local_out_list, update_type=0):
 
     weights = torch.exp(lse_stack - lse_m.unsqueeze(0))
     O = torch.sum(out_stack * weights.unsqueeze(-1), dim=0)
-    return O.contiguous()
+    return O.contiguous().to(out_dtype), lse_m
 
 
 class TestNpuAttentionUpdate(TestCase):
@@ -103,7 +106,7 @@ class TestNpuAttentionUpdate(TestCase):
 
         return (rel_error + abs_error) == 0
 
-    def _run_and_check(self, N=4, H=32, K=2, update_type=0, atol=1e-4, rtol=1e-4, benchmark=2**-10):
+    def _run_and_check(self, N=4, H=32, K=2, update_type=0, dtype=torch.float32, atol=1e-4, rtol=1e-4, benchmark=2**-10):
         if not isinstance(N, int):
             raise TypeError(f"N must be an int, got {type(N)}")
         if not isinstance(H, int):
@@ -118,18 +121,17 @@ class TestNpuAttentionUpdate(TestCase):
             raise ValueError(f"K must be > 0, got {K}")
         if H % 8 != 0:
             raise ValueError(f"H must be divisible by 8, got {H}")
-        if H >= 512:
+        if H > 512:
             raise ValueError(f"H must be less than 512, got {H}")
 
-        dtype = torch.float32
         device = 'npu'
 
-        lse_list = [torch.randn(N, dtype=dtype, device=device) for _ in range(K)]
+        lse_list = [torch.randn(N, dtype=torch.float32, device=device) for _ in range(K)]
         local_out_list = [torch.randn(N, H, dtype=dtype, device=device) for _ in range(K)]
 
         out_npu, lse_out_npu = torch_npu.npu_attention_update(lse_list, local_out_list, update_type)
 
-        out_cpu = npu_attention_update_golden([t.to("cpu") for t in lse_list],
+        out_cpu, lse_out_cpu = npu_attention_update_golden([t.to("cpu") for t in lse_list],
                                               [t.to("cpu") for t in local_out_list],
                                               update_type=update_type)
 
@@ -138,12 +140,11 @@ class TestNpuAttentionUpdate(TestCase):
         self.assertEqual(out_npu.dtype, dtype)
         self.assertEqual(out_cpu.dtype, dtype)
 
-        out_npu_cpu = out_npu.to("cpu", dtype=torch.float32)
-        out_cpu_f32 = out_cpu.to(torch.float32)
-        self.assertTrue(torch.allclose(out_npu_cpu, out_cpu_f32, atol=atol, rtol=rtol),
-                        f"allclose failed, max_abs={float((out_npu_cpu - out_cpu_f32).abs().max())}")
+        out_npu_cpu = out_npu.to("cpu")
+        self.assertTrue(torch.allclose(out_npu_cpu, out_cpu, atol=atol, rtol=rtol),
+                        f"allclose failed, max_abs={float((out_npu_cpu - out_cpu).abs().max())}")
 
-        for t in [out_npu_cpu, out_cpu_f32]:
+        for t in [out_npu_cpu, out_cpu]:
             self.assertFalse(torch.isnan(t).any().item())
             self.assertFalse(torch.isinf(t).any().item())
 
@@ -159,8 +160,14 @@ class TestNpuAttentionUpdate(TestCase):
             (120, 32, 2),
             (240, 128, 2),
         ]
+        dtype_configs = [
+            (torch.float32, 1e-4, 1e-4),
+            (torch.float16, 1e-3, 1e-3),
+            (torch.bfloat16, 4e-3, 4e-3),
+        ]
         for (N, H, K) in cases:
-            self._run_and_check(N=N, H=H, K=K, update_type=0)
+            for dtype, atol, rtol in dtype_configs:
+                self._run_and_check(N=N, H=H, K=K, update_type=0, dtype=dtype, atol=atol, rtol=rtol)
 
 if __name__ == "__main__":
     run_tests()

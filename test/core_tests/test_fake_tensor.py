@@ -2598,7 +2598,7 @@ class TestTranQuantParam(TestCase):
             self.assertTrue(res.dtype == test_2_expect_ret.dtype)
 
 
-class TestAddRmsNormQuant(TestCase):
+class TestAttentionUpdate(TestCase):
     def test_npu_attention_update_meta(self):
         with FakeTensorMode():
             N, H, K = 8, 64, 2
@@ -2606,7 +2606,7 @@ class TestAddRmsNormQuant(TestCase):
             dtype = torch.float32
             lse_list = [torch.randn([N], dtype=dtype).npu() for _ in range(K)]
             local_out_list = [torch.randn([N, H], dtype=dtype).npu() for _ in range(K)]
-            out = torch_npu.npu_attention_update(lse_list, local_out_list, update_type)
+            out, lse_out = torch_npu.npu_attention_update(lse_list, local_out_list, update_type)
             self.assertTrue(out.shape == torch.Size([N, H]))
             self.assertTrue(out.dtype == dtype)
 
