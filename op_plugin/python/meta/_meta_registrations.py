@@ -872,20 +872,23 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         x.size(0) == expert_idx.size(0),
         lambda: "the first dim of expert_idx and x should be the same" + ops_error(ErrCode.VALUE),
     )
-    torch._check(
-        active_expert_range is not None and isinstance(active_expert_range, list) and len(active_expert_range) == 2,
-        lambda: "active_expert_range is None or invalid. must be int[2]"
-    )
-    torch._check(
-        active_expert_range[1] > active_expert_range[0],
-        lambda: "active_expert_range is invalid. must be increasing"
-    )
-    torch._check(
-        active_expert_range[0] >= 0 and active_expert_range[1] <= 10240,
-        lambda: "active_expert_range must be within [0, 10240]"
-    )
-    expert_range_length = active_expert_range[1] - active_expert_range[0]
-
+    if active_expert_range:
+        torch._check(
+            active_expert_range is not None and isinstance(active_expert_range, list) and len(active_expert_range) == 2,
+            lambda: "active_expert_range is None or invalid. must be int[2]"
+        )
+        torch._check(
+            active_expert_range[1] > active_expert_range[0],
+            lambda: "active_expert_range is invalid. must be increasing"
+        )
+        torch._check(
+            active_expert_range[0] >= 0 and active_expert_range[1] <= 10240,
+            lambda: "active_expert_range must be within [0, 10240]"
+        )
+        expert_range_length = active_expert_range[1] - active_expert_range[0]
+    else:
+        expert_range_length = expert_num
+        
     torch._check(
         drop_pad_mode is not None and isinstance(drop_pad_mode, int) and drop_pad_mode in [0, 1],
         lambda: "drop_pad_mode is None or invalid. must be in [0, 1]"
@@ -893,6 +896,10 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     torch._check(
         expert_tokens_num_type is not None and isinstance(expert_tokens_num_type, int) and expert_tokens_num_type in [0, 1, 2],
         lambda: "expert_tokens_num_type is None or invalid. must be in [0, 1, 2]"
+    )
+    torch._check(
+        expert_tokens_num_flag is not None and isinstance(expert_tokens_num_flag, bool) and expert_tokens_num_flag in [True, False],
+        lambda: "expert_tokens_num_flag is None or invalid. must be in [True, False]"
     )
     torch._check(
         quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1],
@@ -916,30 +923,22 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
             )
         elif quant_mode == 0:
             torch._check(
-                scale_dim == 2 or scale_dim == 1,
-                lambda: "the scale shape should be (end-start, 1) or (end-start,) in static quant mode" + ops_error(ErrCode.VALUE),
+                scale_dim == 1,
+                lambda: "the scale shape support only 1D in static quant mode" + ops_error(ErrCode.VALUE),
             )
             torch._check(
-                expert_range_length == scale.size(0),
-                lambda: "the first dim of scale and expert_range_length should be the same" + ops_error(ErrCode.VALUE),
-            )
-            torch._check(
-                scale_dim == 1 or x.size(1) == scale.size(1) or 1 == scale.size(1),
-                lambda: "the 2nd dim of scale should be 1 or the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
+                scale.size(0) == 1,
+                lambda: "the shape of scale should be 1" + ops_error(ErrCode.VALUE),
             )
             if offset is not None:
                 offset_dim = offset.dim()
                 torch._check(
-                    offset_dim == 2 or offset_dim == 1,
-                    lambda: "the offset shape should be (end-start, 1) or (end-start,)" + ops_error(ErrCode.VALUE),
+                    offset_dim == 1,
+                    lambda: "the offset shape support only 1D" + ops_error(ErrCode.VALUE),
                 )
                 torch._check(
                     scale.size(0) == offset.size(0),
                     lambda: "the 1st dim of offset and the 1st dim of scale should be the same" + ops_error(ErrCode.VALUE),
-                )
-                torch._check(
-                    offset_dim == 1 or x.size(1) == offset.size(1) or 1 == offset.size(1),
-                    lambda: "the 2nd dim of offset and the 2nd dim of scale should be the same" + ops_error(ErrCode.VALUE),
                 )
         else:
             torch._check(
@@ -947,8 +946,8 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
                 lambda: "the scale shape support only 2D in dynamic quant mode" + ops_error(ErrCode.VALUE),
             )
             torch._check(
-                expert_range_length == scale.size(0),
-                lambda: "the first dim of scale and expert_range_length should be the same" + ops_error(ErrCode.VALUE),
+                scale.size(0) in [expert_range_length, 1],
+                lambda: "the first dim of scale must be in [expert_range_length, 1]" + ops_error(ErrCode.VALUE),
             )
             torch._check(
                 x.size(1) == scale.size(1),
@@ -958,12 +957,25 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     bs = x.size(0)
     h = x.size(1)
     k = expert_idx.size(1)
-    expanded_x_dim_list = [bs * k, h]
-    expanded_x_dtype = x.dtype if quant_mode == -1 else torch.int8
-    expanded_row_idx_dim_list = [bs * k]
-    expanded_scale_dim_list = [bs * k]
 
-    if (expert_tokens_num_type in range(0, 2)):   # [0, 1]
+    if active_num == 0:
+        active_num = bs * k 
+    expanded_x_dtype = x.dtype if quant_mode == -1 else torch.int8
+    if drop_pad_mode == 1:
+        expanded_x_dim_list = [expert_num, expert_capacity, h]
+        expanded_scale_dim_list = [expert_num * expert_capacity]
+    else:
+        expanded_x_dim_list = [min(active_num, bs * k), h]
+        expanded_scale_dim_list = [min(active_num, bs * k)]  
+
+    expanded_row_idx_dim_list = [bs * k]
+    
+    if quant_mode == 0:
+        expanded_scale_dim_list = []
+    
+    if not expert_tokens_num_flag:
+        expert_token_cumsum_or_count_dim_list = []
+    elif (expert_tokens_num_type in range(0, 2)):   # [0, 1]
         expert_token_cumsum_or_count_dim_list = [expert_range_length]
     elif (expert_tokens_num_type == 2): # 2: key_value
         expert_token_cumsum_or_count_dim_list = [expert_num, 2]

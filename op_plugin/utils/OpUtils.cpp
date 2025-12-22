@@ -434,6 +434,12 @@ bool is_gte_cann_version_850()
     return result;
 }
 
+bool is_gte_cann_version_850alpha003()
+{
+    const static bool result = IsGteCANNVersion("8.5.0.alpha003", "CANN");
+    return result;
+}
+
 const std::string DTypeToString(int64_t input_type)
 {
     return c10_npu::IsCustomDType(input_type) ?
