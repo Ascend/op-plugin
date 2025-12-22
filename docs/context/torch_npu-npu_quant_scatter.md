@@ -47,9 +47,8 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
 
 - 该接口支持图模式。
 
-- `indices`的维数只能是1维或者2维；如果是2维，其第2维的大小必须是2；不支持索引越界，索引越界不校验；`indices`映射的`input`数据段不能重合，若重合则会因为多核并发原因导致多次执行结果不一样。
-- `updates`的维数需要与`input`的维数一样；其第1维的大小等于`indices`的第1维的大小，且不大于`input`的第1维的大小；其`axis`轴的大小不大于`input`的`axis`轴的大小；其余维度的大小要跟`input`对应维度的大小相等。
-       - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas 800I A2 推理产品：其最后一维的大小必须32B对齐。
+- `indices`的维数只能是1维或者2维；如果是2维，其第2维的大小必须是2；不支持索引越界，用户需自行确保索引合法，框架不进行越界检查；`indices`映射的`input`数据段不能重合，若重合则会因为多核并发原因导致多次执行结果不一样。
+- `updates`的维数需要与`input`的维数一样；其第1维的大小等于`indices`的第1维的大小，且不大于`input`的第1维的大小；其`axis`轴的大小不大于`input`的`axis`轴的大小；其余维度的大小要跟`input`对应维度的大小相等；其最后一维的大小必须32B对齐。
 - `quant_scales`的元素个数需要等于`updates`在`quant_axis`轴的大小。
 - `quant_zero_points`的元素个数需要等于`updates`在`quant_axis`轴的大小。
 - `axis`不能为`updates`的第1维或最后1维。

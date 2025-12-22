@@ -24,10 +24,10 @@ class torch_npu.optim.NpuFusedAdamW(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-
 ## 参数说明
 
 - **params** (`dict`)：必选参数，模型参数或模型参数组，`params`为参数的可迭代对象或参数组的dict类型。
-- **lr** (`float`)：可选参数，学习率，默认值为1e-3。`lr`的值小于0时，打印“ValueError”异常信息。
-- **betas** (`Tuple[float, float]`)：可选参数，用于计算梯度及其平方的运行平均值的系数，`betas`为包含两个值的tuple类型，默认值为（0.9，0.999）。`betas`的值小于0或者`betas`的值大于1时，打印“ValueError”异常信息。
-- **eps** (`float`)：可选参数，防止除0，提高数值稳定性，默认值为1e-8。`eps`小于0时，打印“ValueError”异常信息。
-- **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`小于0时，打印“ValueError”异常信息。
+- **lr** (`float`)：可选参数，学习率，默认值为1e-3。`lr`的值小于0时，系统会抛出“ValueError”异常信息。
+- **betas** (`Tuple[float, float]`)：可选参数，用于计算梯度及其平方的运行平均值的系数，`betas`为包含两个值的tuple类型，默认值为（0.9，0.999）。`betas`的值小于0或者`betas`的值大于1时，系统会抛出“ValueError”异常信息。
+- **eps** (`float`)：可选参数，防止除0，提高数值稳定性，默认值为1e-8。`eps`小于0时，系统会抛出“ValueError”异常信息。
+- **weight_decay** (`float`)：可选参数，权重衰减，默认值为1e-2。`weight_decay`小于0时，系统会抛出“ValueError”异常信息。
 - **amsgrad** (`bool`)：可选参数，是否使用参考《[On the Convergence of Adam and Beyond](https://arxiv.org/pdf/1904.09237)》的AMSGrad变种实现，默认值为False。
 
 

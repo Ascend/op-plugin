@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-更新KvCache中指定位置的`key`和`value`。
+更新KVCache中指定位置的`key`和`value`。
 
 输入输出支持以下场景：
 
@@ -72,7 +72,7 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
 
 - 输入参数不支持非连续；
 - `key`、`value`、`key_cache`、`value_cache`的数据类型必须一致；
-- `slot_mapping`、`compress_lens`、`compress_seq_offset`、`seq_lens`的数据类型必须一致；
+- `slot_mapping`、`compress_lens`、`compress_seq_offsets`、`seq_lens`的数据类型必须一致；
 - `slot_mapping`的值范围[0, num_blocks * block_size-1]，且`slot_mapping`内的元素值保证不重复，重复时不保证正确性；
 - 当`key`和`value`都是3维，则`key`和`value`的前两维`shape`必须相同；
 - 当`key`和`value`都是4维，则`key`和`value`的前三维`shape`必须相同，且`key_cache`和`value_cache`的第三维必须是1；

@@ -30,7 +30,7 @@
          $$\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$$
 
          $$
-         \ enpand\_x=
+         \ expand\_x=
          \begin{cases}
          \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
          \ alltoall\_x\_out & \quad \ 无TP通信域 \\
@@ -50,7 +50,7 @@
          $$\ alltoall\_dynamic\_scales\_out = alltoall(1.0/dynamic\_scales)$$
 
          $$
-         \ enpand\_x=
+         \ expand\_x=
          \begin{cases}
          \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
          \ alltoall\_x\_out & \quad \ 无TP通信域 \\
@@ -68,11 +68,11 @@
 
     - 特殊专家场景：
 
-      零专家场景，即`zero_Expert_Num`不为0：
+      零专家场景，即`zero_expert_num`不为0：
 
          $$Moe(ori\_x)=0$$
 
-      拷贝专家场景，即`copy_Expert_Num`不为0：
+      拷贝专家场景，即`copy_expert_num`不为0：
 
          $$Moe(ori\_x)=ori\_x$$
 
@@ -92,7 +92,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 -   **x** (`Tensor`)：必选参数，表示计算使用的token数据，需根据`expert_ids`来发送给其他卡。要求为2维张量，shape为\(BS, H\)，表示有BS个token，数据类型支持`bfloat16`、`float16`，数据格式为$ND$，支持非连续的Tensor。
 -   **expert\_ids** (`Tensor`)：必选参数，表示每个token的topK个专家索引，决定每个token要发给哪些专家。要求为2维张量，shape为\(BS, K\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
--   **group\_ep** (`str`)：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>时不能和`group_tp`相同。
+-   **group\_ep** (`str`)：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>时，`group_ep`不能与`group_tp`相同。
 -   **ep\_world\_size**(`int`)：必选参数，EP通信域size。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`ep_world_size`的取值范围如下所示。
          - `comm_alg`设置为"fullmesh"时，`ep_world_size`取值范围为16、32、64、128、256。

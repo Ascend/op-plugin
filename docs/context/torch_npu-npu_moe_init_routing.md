@@ -31,8 +31,8 @@ torch_npu.npu_moe_init_routing(x, row_idx, expert_idx, active_num) -> (Tensor, T
 
 ## 返回值说明
 
-- **expanded_x** (`Tensor`)：根据`expert_idx`进行扩展过的特征，要求是一个2维张量，shape为(min(NUM_ROWS, active_num) \* k, H)。数据类型同`x`，数据格式要求为$ND$。
-- **expanded_row_idx** (`Tensor`)：`expanded_x`和`x`的映射关系，要求是一个1维张，shape为(NUM_ROWS\*K, )，数据类型支持`int32`，数据格式要求为$ND$。
+- **expanded_x** (`Tensor`)：根据`expert_idx`进行扩展过的特征，要求是一个2维张量，shape为(min(NUM_ROWS, active_num) \* K, H)。数据类型同`x`，数据格式要求为$ND$。
+- **expanded_row_idx** (`Tensor`)：`expanded_x`和`x`的映射关系，要求是一个1维张量，shape为(NUM_ROWS\*K, )，数据类型支持`int32`，数据格式要求为$ND$。
 - **expanded_expert_idx** (`Tensor`)：输出`expert_idx`排序后的结果。
 
 ## 约束说明

@@ -33,7 +33,7 @@ torch_npu.npu.enable_deterministic_with_backward(tensor) -> Tensor
 
 ## 约束说明
 
-- 入参`tensor`需要是训练网络中可以传递下去和整网的`output`有关联的`tensor`变量，否则无法进行反向设置确定性能力。
+- 入参`tensor`需要是训练网络中可以传递下去且与整网的`output`有关联的`tensor`变量，否则无法进行反向设置确定性能力。
 - 不支持图模式。
 
 

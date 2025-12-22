@@ -25,11 +25,11 @@
 
     - 特殊专家场景：
 
-      零专家场景，即`zero_Expert_Num`不为0：
+      零专家场景，即`zero_expert_num`不为0：
 
       $$Moe(ori\_x)=0$$
 
-      拷贝专家场景，即`copy_Expert_Num`不为0：
+      拷贝专家场景，即`copy_expert_num`不为0：
 
       $$Moe(ori\_x)=ori\_x$$
 

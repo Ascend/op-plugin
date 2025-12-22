@@ -37,7 +37,7 @@
 
         $$k^R = Cache(ROPE(x \cdot W^{KR}))$$
 
-    -   Dequant Scale Query Nope计算公式
+    -   反量化缩放因子（Dequant Scale Query Nope）计算公式
         $$\text{dequantScaleQNope} = \frac{\text{RowMax}(\text{abs}(q^N))}{127}$$
         $$q^N = \text{round}(\frac{q^N}{\text{dequantScaleQNope}})$$
 

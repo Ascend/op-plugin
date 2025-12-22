@@ -19,12 +19,12 @@ torch_npu.npu.Event().recorded_time() -> int
 
 ## 参数说明
 
-成员函数使用时必须是NPU Event对象才能调用。
+该成员函数只能在NPU Event对象上调用。
 
 ## 返回值说明
 
 
--  **int**：输出被记录的时间，是一个无符号的整数（uint64）。
+-  **int**：输出被记录的时间，是一个无符号的整数（uint64），单位为微秒。
 
 -  若返回“INTERNALError”，则表示Event对象必须在获取记录时间戳之前被记录。
 ## 约束说明

@@ -20,7 +20,7 @@
      scale = Round(scale)
      $$
 
-  3. `scale`按bit位取高19位截断，存储于`out`的bit位32位处，并将46位修改为1。
+  3. `scale`按bit位取高19位截断，存储于`out`的bit位32位处，并将第46位修改为1。
      
      $$
      out = out\ |\ (scale\ \&\ 0XFFFFE000)\ |\ (1\ll46)

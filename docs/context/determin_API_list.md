@@ -33,7 +33,7 @@
         torch.are_deterministic_algorithms_enabled()
         ```
 
-    2.  回显示例如下：
+    2.  返回显示如下：
 
         ```
         print(torch.are_deterministic_algorithms_enabled())
