@@ -25,7 +25,7 @@
         -   ⊙表示逐元素相乘。
 
     -   **旋转位置编码（RoPE）**
-        1.  重塑与转置：将rope\_in塑并转置以准备旋转
+        1.  重塑与转置：将rope\_in重塑并转置以准备旋转
 
             ![](./figures/zh-cn_formulaimage_0000002239561242.png)
 
@@ -63,7 +63,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 -   **sin** (`Tensor`)：必选参数，表示RoPE旋转位置编码的正弦分量。数据类型支持`bfloat16`、`float16`，数据格式为$ND$，要求为4维张量，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
 -   **index** (`Tensor`)：必选参数，表示缓存索引张量，用于定位`k_cache`和`ckv_cache`的写入位置。数据类型支持`int64`，数据格式为$ND$。shape取决于`cache_mode`。
 -   **k\_cache** (`Tensor`)：必选参数，用于存储量化/非量化的键向量。数据类型支持`bfloat16`、`float16`、`int8`，数据格式为$ND$。shape取决于`cache_mode`。
--   **ckv\_cache** (`Tensor`)：必选参数，用于存储量化/非量化的压缩后的kv向。数据类型支持`bfloat16`、`float16`、`int8`，数据格式为$ND$。shape取决于`cache_mode`。
+-   **ckv\_cache** (`Tensor`)：必选参数，用于存储量化/非量化的压缩后的kv向量。数据类型支持`bfloat16`、`float16`、`int8`，数据格式为$ND$。shape取决于`cache_mode`。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 -   **k\_rope\_scale** (`Tensor`)：可选参数，默认值None，表示k旋转位置编码的量化缩放因子。数据类型支持`float32`，数据格式为$ND$，要求为1维张量，形状为\[rope\_size\]。量化模式下必填。
 -   **c\_kv\_scale** (`Tensor`)：可选参数，默认值None，表示压缩后kv的量化缩放因子。数据类型支持`float32`，数据格式为$ND$，要求为1维张量，形状为\[rms\_size\]。量化模式下必填。
@@ -136,7 +136,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 -   该接口支持推理场景下使用。
 -   该接口支持图模式。
--   量化模式：当`k_rope_scale`和`c_kv_scale`非空时，`k_cache`和`ckv_cache`的dtype为`int8`，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），`k_rope_scale`和`c_kv_scale`必须同时非空，`k_rope_offset`和`c_kv_offset`必须同时为None为非空。
+-   量化模式：当`k_rope_scale`和`c_kv_scale`非空时，`k_cache`和`ckv_cache`的dtype为`int8`，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），`k_rope_scale`和`c_kv_scale`必须同时非空，`k_rope_offset`和`c_kv_offset`必须同时为None或非空。
 -   非量化模式：当`k_rope_scale`和`c_kv_scale`为空时，`k_cache`和`ckv_cache`的dtype为`bfloat16`或`float16`。
 -   索引映射：所有`cache_mode`缓存模式下，index的值不可以重复，如果传入的index值存在重复，算子的行为是未定义的且不可预知的。
     -   Norm：index的值表示每个Batch下的偏移。

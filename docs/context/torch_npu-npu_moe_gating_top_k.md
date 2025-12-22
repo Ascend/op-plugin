@@ -21,7 +21,7 @@
 
       ![](./figures/zh-cn_formulaimage_0000002313785750.png)
 
-    对计算结果按照groupCount进行分组：
+    对计算结果按照`group_count`进行分组：
     
     - 如果`group_select_mode`为1，每组按照topk2的sum值对group进行排序，取前kGroup个组：
 

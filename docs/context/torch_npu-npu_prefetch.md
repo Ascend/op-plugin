@@ -15,7 +15,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> ()
+torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
 ```
 
 ## 参数说明

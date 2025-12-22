@@ -11,7 +11,7 @@
 </thead>
 <tbody><tr id="row939163412547"><td class="cellrowborder" valign="top" width="54.559999999999995%" headers="mcps1.2.3.1.1 "><p id="p13919348541"><a name="p13919348541"></a><a name="p13919348541"></a>（<span id="ph168289415199"><a name="ph168289415199"></a><a name="ph168289415199"></a>beta</span>）torch_npu.npu.is_initialized</p>
 </td>
-<td class="cellrowborder" rowspan="11" valign="top" width="45.440000000000005%" headers="mcps1.2.3.1.2 "><p id="p20972816174218"><a name="p20972816174218"></a><a name="p20972816174218"></a>Torch_npu提供设备相关的部分接口，具体可参考<a href="https://www.hiascend.com/document/detail/zh/Pytorch/720/apiref/PyTorchNativeapi/ptaoplist_000237.html">torch.cuda</a>。</p>
+<td class="cellrowborder" rowspan="11" valign="top" width="45.440000000000005%" headers="mcps1.2.3.1.2 "><p id="p20972816174218"><a name="p20972816174218"></a><a name="p20972816174218"></a>torch_npu提供设备相关的部分接口，具体可参考<a href="https://www.hiascend.com/document/detail/zh/Pytorch/720/apiref/PyTorchNativeapi/ptaoplist_000237.html">torch.cuda</a>。</p>
 </td>
 </tr>
 <tr id="row13391173465410"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="p173915341547"><a name="p173915341547"></a><a name="p173915341547"></a>（<span id="ph1943317523417"><a name="ph1943317523417"></a><a name="ph1943317523417"></a>beta</span>）torch_npu.npu.init</p>

@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-`npu_grouped_matmul_swiglu_quant_v2`是一种融合分组矩阵乘法（GroupedMatmul）、SwiGLu混合激活函数、量化（quant）的计算方法。该方法适用于需要对矩阵乘法结果进行SwiGlu激活函数激活的场景，融合算子在底层能够对部分过程并行，达到性能优化的效果。
+`npu_grouped_matmul_swiglu_quant_v2`是一种融合分组矩阵乘法（GroupedMatmul）、SwiGLU混合激活函数、量化（quant）的计算方法。该方法适用于需要对矩阵乘法结果进行SwiGLU激活函数激活的场景，融合算子在底层能够对部分过程并行，达到性能优化的效果。
 
 ## 函数原型
 
@@ -27,11 +27,17 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **smooth\_scale**（`Tensor`）：可选输入，量化的smooth_scales。数据类型为`float32`，当前仅支持传入默认值None。
 - **weight\_assist\_matrix**（`TensorList`）：可选输入，右矩阵的辅助矩阵，数据类型支持`float32`，当前仅支持传入默认值None。
 - **bias**（`Tensor`）：可选输入，矩阵乘计算的偏移值，公式中的bias，shape支持2维，数据类型支持`int32`，当前仅支持传入默认值None。
-- **dequant\_mode**（`int`）：可选输入，表示反量化模式，参数取值含义为0：左pertoken，右perchannel；1：左pertoken，右pergroup，数据类型为`int32`。`weight`数据类型为`int8`时仅支持传入默认值0，`weight`数据类型为`int32`时支持传入0和1。
-- **dequant\_dtype**（`int`）：可选输入，表示反量化类型，参数取值含义为0：pertoken；1：pergroup，数据类型为`int32`，预留输入，当前仅支持传入默认值0。
+- **dequant\_mode**（`int`）：可选输入，表示反量化模式，数据类型为`int32`。`weight`数据类型为`int8`时仅支持传入默认值0，`weight`数据类型为`int32`时支持传入0和1。
+    - 取值为0时，表示左pertoken，右perchannel。
+    - 取值为1时，表示左pertoken，右pergroup。
+- **dequant\_dtype**（`int`）：可选输入，表示反量化类型，数据类型为`int32`，预留输入，当前仅支持传入默认值0。
+    - 取值为0时，表示pertoken。
+    - 取值为1时，表示pergroup。
 - **quant\_dtype**（`int`）：可选输入，参数表示量化后低比特数据类型。0：`int8`；1：`float8_e8m0`；2：`float8_e5m2`；3：`float8_e4m3`，数据类型为`int32`，当前仅支持传入默认值0。
-- **quant\_mode**（`int`）：可选输入，参数表示swiglu后的量化模式。0：pertoken 1：perchannel，数据类型为`int32`，当前仅支持传入默认值0。
-- **group\_list\_type**（`int`）：可选输入，参数表示grouplist的输入类型。0：cunsum 1：count，数据类型为`int32`，当前仅支持传入默认值0。
+- **quant\_mode**（`int`）：可选输入，参数表示SwiGLU后的量化模式。数据类型为`int32`，当前仅支持传入默认值0。
+    - 取值为0时，表示pertoken。
+    - 取值为1时，表示perchannel。
+- **group\_list\_type**（`int`）：可选输入，参数表示grouplist的输入类型。取值为0时，表示cumsum；取值为1时，表示count。数据类型为`int32`，当前仅支持传入默认值0。
 - **tuning\_config**（`List[int]`）：可选输入，参数数组中的第一个元素表示各个专家处理的token数的预期值。从第二个元素开始预留，用户无须填写，未来会进行扩展。默认设置为None。
 
 ## 返回值说明
@@ -44,7 +50,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 -   该接口支持推理和训练场景下使用。
 -   该接口支持图模式。
 -   输入和输出Tensor支持的数据类型组合如下：
-    |x|weight|group_list|weight_scale|x_scale|bias|weight_assit_matrix|smooth_scale|y|y_scale|
+    |x|weight|group_list|weight_scale|x_scale|bias|weight_assist_matrix|smooth_scale|y|y_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
     |`int8`|`int8`|`int64`|`float32`|`float`|`int32`|`float32`|`float32`|`int8`|`float`|
 

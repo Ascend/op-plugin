@@ -31,7 +31,7 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
     - <term>Atlas A3 训练系列产品</term>：数据类型支持`int8`、`float16`、`float32`、`bfloat16`、`int32`。
     - <term>Atlas 训练系列产品</term>：数据类型支持`int8`、`float16`、`float32`、`int32`。
 
-- **axis** (`int`)：必选参数。代表轴，用来scatter的维度，数据类型为`int64`。
+- **axis** (`int`)：必选参数。代表轴，用来表示scatter的维度，数据类型为`int64`。
 
 ## 返回值说明
 `Tensor`
@@ -44,7 +44,7 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
 ## 约束说明
 
 - `data`与`updates`的秩一致。
-- 不支持索引越界，索引越界不校验。
+- 不支持索引越界，用户需自行确保索引合法，框架不进行越界检查。
 
 ## 调用示例
 

@@ -59,7 +59,7 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 ## 调用示例
 
 - 单算子模式调用
-    - drop pad模式调用示例
+    - drop less模式调用示例
         ```python
         >>> import torch
         >>> import torch_npu
@@ -84,7 +84,7 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
         torch.float32
         ```
       
-    - drop less模式调用示例
+    - drop pad模式调用示例
       ```python
         >>> import torch
         >>> import torch_npu

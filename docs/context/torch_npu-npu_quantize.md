@@ -42,7 +42,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
     - `div_mode`为`False`时，数据格式支持$ND$。支持1维或多维（1维时，对应轴的大小需要与`input`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`input`的shape维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`input`对应的维度相等或等于1）。数据类型、数据格式需要和`input`的数据类型和数据格式一致。
         - <term>Atlas 推理系列产品</term>：数据类型支持`float`、`float16`。
-        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`float16`、`bfloat16`。当数据格式为$NZ$时，`scale`的所有元素值为1。
+        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`float16`、`bfloat16`。当数据格式为$NZ$时，`scales`的所有元素值为1。
 
 - **zero_points** (`Tensor`)：必选参数，允许为None，对`input`进行偏移的张量，对应公式中的`zero_points`。支持空Tensor，支持非连续的Tensor。
     - `div_mode`为`True`时

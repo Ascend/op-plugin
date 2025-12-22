@@ -32,7 +32,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **reduce_op** (`str`)：可选参数。reduce操作类型，当前版本仅支持`sum`，默认值：`sum`。
 - **bias** (`Tensor`)：可选参数。数据类型支持`int32`、`float16`、`bfloat16`，数据格式支持$ND$。`bias`当前仅支持一维，且维度大小与`output/x2`的最后一维大小相同。
-- **antiquant_scale** (`Tensor`)：可选参数。伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
+- **antiquant_scale** (`Tensor`)：可选参数，对应公式中的$antiquantScale$。伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
     - pertensor场景：shape为$[1]$。
     - perchannel场景：shape为$[1,n]$或者$[n]$，$n$为`x2`最后一维的大小。
     - pergroup场景：shape为$[ceil(k, antiquant\_group\_size), n]$。其中$k$为`x2`第一维的大小，$n$为`x2`最后一维的大小，$antiquant\_group\_size$为伪量化场景对输入`x2`进行反量化计算的groupSize输入。
@@ -40,7 +40,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
         > [!NOTE]  
         > $ceil(k, antiquant\_group\_size)$的计算逻辑为：$(k + antiquant\_group\_size - 1) / antiquant\_group\_size$，并对计算结果取整数部分。
 
-- **antiquant_offset** (`Tensor`)：可选参数。伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和`antiquant_scale`保持一致。
+- **antiquant_offset** (`Tensor`)：可选参数，对应公式中的$antiquantOffset$。伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和`antiquant_scale`保持一致。
 - **x3** (`Tensor`)：可选参数。matmul计算后的偏移。数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和输出`output`保持一致。
   
 - **dequant_scale** (`Tensor`)：可选参数。matmul计算后的去量化系数。数据类型支持`int64`、`uint64`、`bfloat16`、`float32`；数据格式支持$ND$。
@@ -57,7 +57,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 ## 返回值说明
 `Tensor`
 
-数据类型非量化场景以及伪量化场景与`x1`保持一致，全量化场景输出数据类型为`float16`或`bfloat16`。shape第0维度和`x1`的0维保持一致，若`x1`为2维，shape第1维度和`x2`的1维保持一致，若`x1`为3维，shape第1维度和`x1`的1维保持一致，shape第2维度和`x2`的1维保持一致。
+数据类型非量化场景以及伪量化场景与`x1`保持一致，全量化场景输出数据类型为`float16`或`bfloat16`。shape第0维度和`x1`的第0维保持一致，若`x1`为2维，shape第1维度和`x2`的第1维保持一致，若`x1`为3维，shape第1维度和`x1`的第1维保持一致，shape第2维度和`x2`的第1维保持一致。
 
 ## 约束说明
 

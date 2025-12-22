@@ -63,7 +63,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
 ```
 
 > [!NOTE]  
-> 在模型训练场景中，正向算子的输入`input`将被保留以供反向计算时使用。在`r1`，`r2`不需要计算反向梯度场景下（`requires_grad=False`），使用该接口相较融合前小算子使用的设备内存占用会有所增加。
+> 在模型训练场景中，正向算子的输入`input`将被保留以供反向计算时使用。在`r1`、`r2`不需要计算反向梯度场景下（`requires_grad=False`），使用该接口相较融合前小算子使用的设备内存占用会有所增加。
 
 ## 参数说明
 
@@ -162,7 +162,7 @@ tensor([[[[ 0.1017, -0.0871,  0.2722,  ...,  0.4668,  0.4320,  0.4252],
 >>> x = torch.rand(2, 5, 128).npu()
 >>> r1 = torch.rand(2, 1, 128).npu()
 >>> r2 = torch.rand(2, 1, 128).npu()
->>> out = torch_npu.npu_rotary_mul(x, r1, r2，"half")
+>>> out = torch_npu.npu_rotary_mul(x, r1, r2, "half")
 >>> out
 tensor([[[-0.1200, -0.2515, -0.3189,  ...,  0.2283,  1.1038,  0.3439],
          [ 0.1083,  0.0257,  0.1864,  ...,  0.5940,  0.8644,  0.5961],

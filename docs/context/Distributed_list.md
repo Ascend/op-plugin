@@ -28,7 +28,7 @@
 </tr>
 <tr id="row193021022143117"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p1530342217311"><a name="p1530342217311"></a><a name="p1530342217311"></a><a href="（beta）torch_npu-distributed-reinit_process_group.md">（beta）torch_npu.distributed.reinit_process_group</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p03031822133115"><a name="p03031822133115"></a><a name="p03031822133115"></a>重新构建processgroup集合通信域。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p03031822133115"><a name="p03031822133115"></a><a name="p03031822133115"></a>重新构建ProcessGroup集合通信域。</p>
 </td>
 </tr>
 <tr id="row6513134685111"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p451334611515"><a name="p451334611515"></a><a name="p451334611515"></a><a href="torch_npu-distributed-reduce_scatter_tensor_uneven.md">（beta）torch_npu.distributed.reduce_scatter_tensor_uneven</a></p>
