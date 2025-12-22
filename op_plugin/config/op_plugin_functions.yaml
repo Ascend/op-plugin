@@ -5610,6 +5610,12 @@ custom:
         dtype: x1
       exec: aclnnAddRmsNorm
 
+  - func: npu_add_rms_norm_v2(Tensor(a!) x1, Tensor(b!) x2, Tensor gamma, float epsilon=1e-06) -> Tensor
+    op_api: all_version
+
+  - func: npu_add_rms_norm_v2_functional(Tensor x1, Tensor x2, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+
   - func: npu_rms_norm_quant(Tensor x, Tensor gamma, Tensor beta, Tensor scale, Tensor offset, float epsilon=1e-06) -> Tensor
     op_api: all_version
     gen_opapi:

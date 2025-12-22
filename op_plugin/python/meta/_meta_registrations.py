@@ -1860,6 +1860,32 @@ def npu_add_rms_norm_meta(x1, x2, gamma, epsilon=1e-6):
     return (torch.empty_like(x1, dtype=x1.dtype), torch.empty_like(rstd), torch.empty_like(x1, dtype=x1.dtype))
 
 
+@impl(m, "npu_add_rms_norm_v2")
+def npu_add_rms_norm_v2_meta(x1, x2, gamma, epsilon=1e-6):
+    rstd_dim = x1.dim() - gamma.dim()
+    ret = []
+    for i in range(x1.dim()):
+        if i < rstd_dim:
+            ret.append(x1.size(i))
+        else:
+            ret.append(1)
+    rstd = torch.empty(ret, dtype=torch.float32, device='meta')
+    return torch.empty_like(rstd)
+
+
+@impl(m, "npu_add_rms_norm_v2_functional")
+def npu_add_rms_norm_v2_functional_meta(x1, x2, gamma, epsilon=1e-6):
+    rstd_dim = x1.dim() - gamma.dim()
+    ret = []
+    for i in range(x1.dim()):
+        if i < rstd_dim:
+            ret.append(x1.size(i))
+        else:
+            ret.append(1)
+    rstd = torch.empty(ret, dtype=torch.float32, device='meta')
+    return (torch.empty_like(rstd), torch.empty_like(x1), torch.empty_like(x2))
+
+
 @impl(m, "npu_rms_norm_quant")
 def npu_rms_norm_quant_meta(x, gamma, beta, scale, offset, epsilon=1e-06):
     return torch.empty(x.size(), dtype=torch.int8, device=x.device)
