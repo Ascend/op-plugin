@@ -41,5 +41,7 @@ add_library(${_OPPLUGIN_ATB_NAME} SHARED
     ${_OPPLUGIN_UTILS_SRCS}
 )
 
+target_link_options(${_OPPLUGIN_ATB_NAME} PRIVATE "-Wl,-Bsymbolic-functions")
+
 target_link_libraries(${_OPPLUGIN_ATB_NAME} PUBLIC torch_npu)
 target_link_libraries(${_OPPLUGIN_ATB_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/third_party/op-plugin/op_plugin/third_party/atb/libs/libatb.so)
