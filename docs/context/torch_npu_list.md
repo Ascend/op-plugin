@@ -366,6 +366,11 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001850161621_p0996174814315"><a name="zh-cn_topic_0000001850161621_p0996174814315"></a><a name="zh-cn_topic_0000001850161621_p0996174814315"></a>将INT4或者INT8数据反量化为FP16或者BF16，其中输入是INT4类型时，将每8个数据看作是一个INT32数据。</p>
 </td>
 </tr>
+<tr id="row952719519471"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18248651143510"><a name="p18248651143510"></a><a name="p18248651143510"></a><a href="torch_npu-npu_attention_to_ffn.md">torch_npu.npu_attention_to_ffn</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001850161621_p0996174814315"><a name="zh-cn_topic_0000001850161621_p0996174814315"></a><a name="zh-cn_topic_0000001850161621_p0996174814315"></a>将Attention节点上数据发往FFN节点。</p>
+</td>
+</tr>
 <tr id="row16527145114477"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1338142581"><a name="p1338142581"></a><a name="p1338142581"></a><a href="torch_npu-npu_convert_weight_to_int4pack.md">torch_npu.npu_convert_weight_to_int4pack</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p16338242582"><a name="p16338242582"></a><a name="p16338242582"></a>将数据类型为int32的输入tensor打包为int4存放，每8个int4数据通过一个int32数据承载，并进行交叠排放。</p>
