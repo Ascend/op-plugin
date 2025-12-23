@@ -12,7 +12,6 @@ class TestReshapeAndCache(TestCase):
     head_size = 16
     block_size = 16
     num_blocks = 53535
-
     def cal_nd(self, key, value, key_cache, value_cache, slot_mapping):
         key_expect = key_cache.clone()
         value_expect = value_cache.clone()

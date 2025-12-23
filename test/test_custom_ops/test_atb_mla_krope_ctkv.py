@@ -11,7 +11,6 @@ from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestMLA(TestCase):
-
     def compare_output_data(self, out, golden, ratios):
         error_count = 0
         strict_error_count = 0

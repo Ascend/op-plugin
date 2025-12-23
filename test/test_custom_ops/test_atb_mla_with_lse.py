@@ -604,5 +604,6 @@ class TestAtbAttention(TestCase):
         self.assertEqual(go_output.cpu(), go_output_graph.cpu())
         self.assertEqual(lse_output.cpu(), lse_output_graph.cpu())
 
+
 if __name__ == "__main__":
     run_tests()

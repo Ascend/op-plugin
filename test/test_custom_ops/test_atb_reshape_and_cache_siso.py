@@ -12,7 +12,6 @@ class TestReshapeAndCacheSiso(TestCase):
     head_size = 16
     block_size = 16
     num_blocks = 8
-
     def cal(self, key, key_cache, slot_mapping):
         key_expect = key_cache.clone()
         for i, slot in enumerate(slot_mapping):

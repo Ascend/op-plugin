@@ -49,7 +49,6 @@ class TestFlashAttentionPrefixEncoder(TestCase):
             s_offset += dim1len
         return torch.from_numpy(kv[0:sum(seq_len)][:])
 
-    # pylint:disable = huawei-too-many-arguments
     def set_data_params(self, dynamic_batch=False, batch_state=None, window_size=0, cache_type=0,
                         is_mask=True, is_decoder=False, is_alibi=False, alibi_dim=4,
                         batch=1, kv_head=1, heads=1, embeddim=128, embeddimv=0, max_seq=2048,
