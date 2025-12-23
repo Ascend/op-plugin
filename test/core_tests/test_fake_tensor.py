@@ -3662,6 +3662,23 @@ class TestQuantAllReduce(TestCase):
             self.assertTrue(x.shape[1] == res.shape[1])
 
 
+class TestQuantReduceScatter(TestCase):
+    def test_npu_quant_reduce_scatter(self):
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            # T-G量化
+            x = torch.randint(-5, 5, (128, 5120), dtype=torch.int8).npu()
+            scales = torch.randint(-5, 5, (128, 40), dtype=torch.float32).npu()
+            # 其他参数
+            hcom = "fake group info"
+            world_size = 2
+            # 断言
+            res = torch_npu.npu_quant_reduce_scatter(x, scales, hcom, world_size)
+            self.assertTrue(len(res.shape) == 2)
+            self.assertTrue(x.shape[0] // world_size == res.shape[0])
+            self.assertTrue(x.shape[1] == res.shape[1])
+
+
 class TestNpuDSA(TestCase):
     def setup_sparse_flash_attention_test_params(self, requires_grad=False, return_softmax_lse=False):
         scale_value = 0.041666666666666664

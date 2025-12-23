@@ -6217,6 +6217,9 @@ custom:
   - func: npu_quant_mm_reduce_scatter(Tensor self, Tensor x2, str hcom, int world_size, *, str reduce_op='sum', Tensor? bias=None, Tensor? x1_scale=None, Tensor? x2_scale=None, Tensor? quant_scale=None, int block_size=0, int comm_turn=0, int[]? group_sizes=None, bool amax_output=False, int? y_dtype=None, int? x1_dtype=None, int? x2_dtype=None, int? x1_scale_dtype=None, int? x2_scale_dtype=None) -> (Tensor, Tensor)
     op_api: all_version
 
+  - func: npu_quant_reduce_scatter(Tensor x, Tensor scales, str hcom, int world_size, *, str? reduce_op='sum', int? output_dtype=None, int? x_dtype=None, int? scales_dtype=None) -> Tensor
+    op_api: [v2.6, newest]
+
   - func: npu_quant_all_reduce(Tensor x, Tensor scales, str hcom, int world_size, *, str? reduce_op='sum', int? output_dtype=None, int? x_dtype=None, int? scales_dtype=None) -> Tensor
     op_api: [v2.6, newest]
 
