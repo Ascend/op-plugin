@@ -45,7 +45,6 @@ private:
     ~OpParamCache();
 
     std::unordered_map<uint64_t, atb::Operation*> op_map_;
-    mutable std::mutex mutex_;
 };
 
 template <typename ParamType>
@@ -60,7 +59,7 @@ atb::Operation* CreateAtbOperation(const ParamType& param, const std::string& na
 template <typename ParamType>
 OpParamCache<ParamType>& OpParamCache<ParamType>::getInstance()
 {
-    static OpParamCache instance;
+    thread_local OpParamCache instance;
     return instance;
 }
 
@@ -75,7 +74,6 @@ atb::Operation* OpParamCache<ParamType>::getOperation(const ParamType& param, co
     } else {
         uint64_t hashValue = computeHash(param);
         {
-            std::lock_guard<std::mutex> lock(mutex_);
             auto op_cache = op_map_.find(hashValue);
             if (op_cache != op_map_.end()) {
                 return op_cache->second;
@@ -90,7 +88,6 @@ atb::Operation* OpParamCache<ParamType>::getOperation(const ParamType& param, co
 template <typename ParamType>
 atb::Operation* OpParamCache<ParamType>::getOperation(uint64_t hash_id)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     auto op_cache = op_map_.find(hash_id);
     if (op_cache != op_map_.end()) {
         return op_cache->second;
@@ -103,7 +100,6 @@ atb::Operation* OpParamCache<ParamType>::getOperation(uint64_t hash_id)
 template <typename ParamType>
 void OpParamCache<ParamType>::saveOperation(uint64_t hash_id, atb::Operation* op)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     op_map_[hash_id] = op;
     return ;
 }
@@ -118,7 +114,6 @@ OpParamCache<ParamType>::OpParamCache()
 template <typename ParamType>
 OpParamCache<ParamType>::~OpParamCache()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     for (auto& op_item: op_map_) {
         DestroyOperation(op_item.second);
     }
