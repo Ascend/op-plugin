@@ -32,20 +32,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 >- query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示隐藏层的大小、N（Head Num）表示多头数、D（Head Dim）表示隐藏层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
 >- Q_S和S1表示query shape中的S，KV_S和S2表示key和value shape中的S，Q_N表示num\_query\_heads，KV_N表示num\_key\_value\_heads。
 
--   **query**（`Tensor`）：必选参数，表示attention结构的Query输入，对应公式中的`Q`。不支持非连续的Tensor，数据格式支持ND。    
+-   **query**（`Tensor`）：必选参数，表示attention结构的Query输入，对应公式中的`Q`。不支持非连续的Tensor，数据类型支持`float16`、`bfloat16`，数据格式支持ND。    
     
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
-    
--   **key**（`Tensor`）：必选参数，表示attention结构的Key输入，对应公式中的`K`。不支持非连续的Tensor，数据格式支持ND。   
-    
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`）。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`）。
-    
--   **value**（`Tensor`）：必选参数，表示attention结构的Value输入，对应公式中的`V`。不支持非连续的Tensor，数据格式支持ND。    
-    
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`）。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`）。
+-   **key**（`Tensor`）：必选参数，表示attention结构的Key输入，对应公式中的`K`。不支持非连续的Tensor，数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`），数据格式支持ND。   
+     
+-   **value**（`Tensor`）：必选参数，表示attention结构的Value输入，对应公式中的`V`。不支持非连续的Tensor，数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`），数据格式支持ND。    
     
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 -   **query\_rope**（`Tensor`）：可选参数，表示MLA（Multi-head Latent Attention）结构中`query`的rope信息，数据类型支持`float16`、`bfloat16`，不支持非连续的Tensor，数据格式支持ND。
@@ -62,19 +53,15 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - 如果Q\_S、KV\_S非16或32对齐，可以取到向上对齐的值。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
     - `sparse_mode`为2、3、4时，shape输入支持(2048,2048)或(1,2048,2048)或(1,1,2048,2048)。    
 -   **actual\_seq\_qlen**（`List[Int]`）：可选参数，表示不同Batch中`query`的有效seqlen，数据类型支持`int64`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。
-    <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个Batch的有效seqlen不超过`query`中对应batch的seqlen。当seqlen传入长度为1时，每个Batch使用相同seqlen；当seqlen传入长度>=Batch时，取seqlen的前Batch个数；其他长度不支持。当`query`的input\_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须>=前一个元素的值，且不能出现负值。
+    该入参中每个Batch的有效seqlen不超过`query`中对应batch的seqlen。当seqlen传入长度为1时，每个Batch使用相同seqlen；当seqlen传入长度>=Batch时，取seqlen的前Batch个数；其他长度不支持。当`query`的input\_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须>=前一个元素的值，且不能出现负值。
 
 -   **actual\_seq\_kvlen**（`List[Int]`）：可选参数，表示不同Batch中`key`/`value`的有效seqlenKv，数据类型支持`int64`。如果不指定None，表示和key/value的shape的S长度相同。不同O\_S值有不同的约束，具体参见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 -   **block\_table**（`Tensor`）：可选参数，表示PageAttention中KV存储使用的block映射表，数据类型支持`int32`。数据格式支持ND。如不使用该功能可传入None。
 -   **dequant\_scale\_query**（`Tensor`）：可选参数，表示`query`的反量化参数，仅支持pertoken叠加perhead。数据类型支持`float32`。数据格式支持ND，如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
--   **dequant\_scale\_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化因子。数据格式支持ND。通常支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加per head并使用page attention模式管理scale。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。    
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`float32`。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`float32`。
+-   **dequant\_scale\_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化因子。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持ND。通常支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加per head并使用page attention模式管理scale。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。    
     
 -   **dequant\_offset\_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化偏移。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理offset、pertoken叠加perhead并使用page attention模式管理offset。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 -   **dequant\_scale\_value**（`Tensor`）：可选参数，kv伪量化参数分离时表示`value`的反量化因子。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`float32`。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`float32`。
     
 -   **dequant\_offset\_value**（`Tensor`）：可选参数，kv伪量化参数分离时表示`value`的反量化偏移。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理offset、pertoken叠加perhead并使用page attention模式管理offset。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 -   **dequant\_scale\_key\_rope**（`Tensor`）：可选参数，**预留参数，暂未使用，使用默认值即可。**
@@ -82,7 +69,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 -   **quant\_offset\_out**（`Tensor`）：可选参数，表示输出的量化偏移。数据类型支持`float32`、`bfloat16`。数据格式支持ND。支持pertensor、perchannel。若传入`quant_offset_out`，需保证其类型和shape信息与`quant_scale_out`一致。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 -   **learnable_sink**（`Tensor`）：可选参数，表示通过可学习的“Sink Token”起到吸收Attention Score的作用，数据类型支持`bfloat16`，数据格式支持ND，shape输入为(Q_N,)。默认值为None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
--   **num\_query\_heads**（`int`）：可选参数，代表query的head个数，数据类型支持int64，在BNSD场景下，需要与shape中的`query`的N轴shape值相同，否则执行异常。
+-   **num\_query\_heads**（`int`）：可选参数，代表query的head个数，数据类型支持`int64`，在BNSD场景下，需要与shape中的`query`的N轴shape值相同，否则执行异常。
 -   **num\_key\_value\_heads**（`int`）：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，数据类型支持`int64`。默认值为0，表示`key`/`value`/`query`的head个数相等，需要满足`num_query_heads`整除`num_key_value_heads`，`num_query_heads`与`num_key_value_heads`的比值不能大于64。在BSND、BNSD、BNSD\_BSND（仅支持Q\_S大于1）场景下，还需要与shape中的`key`/`value`的N轴shape值相同，否则执行异常。
 -   **softmax\_scale**（`float`）：可选参数，公式中d开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float32`。数据类型与`query`数据类型需满足数据类型推导规则。默认值为1.0。
 -   **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`。默认值为2147483647，Q\_S为1时该参数无效。
@@ -92,35 +79,33 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     >**说明：**<br> 
     >注意排布格式带下划线时，下划线左边表示输入query的layout，下划线右边表示输出output的格式，算子内部会进行layout转换。
 
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持BSH、BSND、BNSD、BNSD\_BSND（输入为BNSD时，输出格式为BSND，仅支持Q\_S大于1）、BSH\_NBSD、BSND\_NBSD、BNSD\_NBSD（输出格式为NBSD时，仅支持Q\_S大于1且小于等于16）、TND、TND\_NTD、NTD\_TND（TND相关场景综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)）。
-
-    其中BNSD\_BSND含义指当输入为BNSD，输出格式为BSND，仅支持Q\_S大于1。
+    支持BSH、BSND、BNSD、BNSD\_BSND（输入为BNSD时，输出格式为BSND，仅支持Q\_S大于1）、BSH\_NBSD、BSND\_NBSD、BNSD\_NBSD（输出格式为NBSD时，仅支持Q\_S大于1且小于等于16）、TND、TND\_NTD、NTD\_TND（TND相关场景综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)）。其中BNSD\_BSND含义指当输入为BNSD，输出格式为BSND，仅支持Q\_S大于1。
 
 -   **sparse\_mode**（`int`）：可选参数，表示sparse的模式。数据类型支持`int64`。Q\_S为1且不带rope输入时该参数无效。input\_layout为TND、TND\_NTD、NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
     
-    -   sparse\_mode为0时，代表defaultMask模式，如果atten\_mask未传入则不做mask操作，忽略pre\_tokens和next\_tokens（内部赋值为INT\_MAX）；如果传入，则需要传入完整的atten\_mask矩阵（S1\*S2），表示pre\_tokens和next\_tokens之间的部分需要计算。
-    -   sparse\_mode为1时，代表allMask，必须传入完整的atten\_mask矩阵（S1\*S2）。
-    -   sparse\_mode为2时，代表leftUpCausal模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
-    -   sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景，需要传入优化后的atten\_mask矩阵（2048\*2048）。
-    -   sparse\_mode为4时，代表band模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
-    -   sparse\_mode为5、6、7、8时，分别代表prefix、global、dilated、block\_local，均暂不支持。默认值为0。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+    -   `sparse_mode`为0时，代表defaultMask模式，如果atten\_mask未传入则不做mask操作，忽略pre\_tokens和next\_tokens（内部赋值为INT\_MAX）；如果传入，则需要传入完整的atten\_mask矩阵（S1\*S2），表示pre\_tokens和next\_tokens之间的部分需要计算。
+    -   `sparse_mode`为1时，代表allMask，必须传入完整的atten\_mask矩阵（S1\*S2）。
+    -   `sparse_mode`为2时，代表leftUpCausal模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
+    -   `sparse_mode`为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景，需要传入优化后的atten\_mask矩阵（2048\*2048）。
+    -   `sparse_mode`为4时，代表band模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
+    -   `sparse_mode`为5、6、7、8时，分别代表prefix、global、dilated、block\_local，均暂不支持。默认值为0。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
     
 -   **block\_size**（`int`）：可选参数，表示PageAttention中KV存储每个block中最大的token个数，默认为0，数据类型支持`int64`。
 -   **query\_quant\_mode**（`int`）：可选参数， 表示query的伪量化方式。仅支持传入3，代表模式3：pertoken叠加perhead模式。
 -   **key\_quant\_mode**（`int`）：可选参数，表示key的伪量化方式，默认值为0。取值除了`key_quant_mode`为0且`value_quant_mode`为1的场景外，其他场景取值需要与`value_quant_mode`一致。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
-    <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当Q\_S>=2时，仅支持传入值为0、1；当Q\_S=1时，支持取值0、1、2、3、4、5。
+    当Q\_S>=2时，仅支持传入值为0、1；当Q\_S=1时，支持取值0、1、2、3、4、5。
 
-    -   key\_quant\_mode为0时，代表perchannel模式（perchannel包含pertensor）。
-    -   key\_quant\_mode为1时，代表pertoken模式。
-    -   key\_quant\_mode为2时，代表pertensor叠加perhead模式。
-    -   key\_quant\_mode为3时，代表pertoken叠加perhead模式。
-    -   key\_quant\_mode为4时，代表pertoken叠加使用page attention模式管理scale/offset模式。
-    -   key\_quant\_mode为5时，代表pertoken叠加per head并使用page attention模式管理scale/offset模式。
+    -   `key_quant_mode`为0时，代表perchannel模式（perchannel包含pertensor）。
+    -   `key_quant_mode`为1时，代表pertoken模式。
+    -   `key_quant_mode`为2时，代表pertensor叠加perhead模式。
+    -   `key_quant_mode`为3时，代表pertoken叠加perhead模式。
+    -   `key_quant_mode`为4时，代表pertoken叠加使用page attention模式管理scale/offset模式。
+    -   `key_quant_mode`为5时，代表pertoken叠加per head并使用page attention模式管理scale/offset模式。
 
 - **value\_quant\_mode**（`int`）：可选参数，表示`value`的伪量化方式，模式编号与`key_quant_mode`一致，默认值为0。取值除了`key_quant_mode`为0且`value_quant_mode`为1的场景外，其他场景取值需要与`key_quant_mode`一致。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
-  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当Q\_S>=2时，仅支持传入值为0、1；当Q\_S=1时，支持取值0、1、2、3、4、5。
+    当Q\_S>=2时，仅支持传入值为0、1；当Q\_S=1时，支持取值0、1、2、3、4、5。
 
 -   **inner\_precise**（`int`）：可选参数，数据类型支持`int64`，支持4种模式：0、1、2、3。一共两位bit位，第0位（bit0）表示高精度或者高性能选择，第1位（bit1）表示是否做行无效修正。当Q\_S\>1时，sparse\_mode为0或1，并传入用户自定义mask的情况下，建议开启行无效；Q\_S为1时该参数仅支持取0和1。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 
