@@ -52,7 +52,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 ## 变量说明
 
-- **weight**（`Tensor`）：数据格式支持`int8`。数据格式支持$NCHW$，shape为4维。
+- **weight**（`Tensor`）：数据类型支持`int8`。数据格式支持$NCHW$，shape为4维。
 - **scale**（`Tensor`）：数据类型支持`float32`和`int64`。数据格式支持$ND$，shape是1维(n,)，其中n与`weight`的`out_channels`一致。
 - **bias**（`Tensor`）：可选参数。数据类型支持`int32`，数据格式支持$ND$，shape支持1维(n,)，n与`weight`的`out_channels`一致。
 

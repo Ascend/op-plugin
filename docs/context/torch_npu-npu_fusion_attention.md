@@ -202,13 +202,12 @@ class TestNPUFlashAttention(TestCase):
         atten_mask = None
         if sparse_params[0] == 0:
             shape = [1, 8, 256, 256]
-            atten_mask_u = np.triu(np.ones(shape), k=sparse_params[1] + 1)
-            atten_mask_l = np.tril(np.ones(shape), k=-sparse_params[2] - 1)
-            atten_masks = atten_mask_u + atten_mask_l
-            atten_mask = torch.tensor(atten_masks).to(torch.float16).bool().npu()
+            mask = torch.ones(shape, dtype=torch.bool, device='npu')
+            atten_mask_u = torch.triu(mask, diagonal=sparse_params[1] + 1)
+            atten_mask_l = torch.tril(mask, diagonal=-sparse_params[2] - 1)
+            atten_mask = atten_mask_u | atten_mask_l
         if sparse_params[0] == 2 or sparse_params[0] == 3 or sparse_params[0] == 4:
-            atten_masks = torch.from_numpy(np.triu(np.ones([2048, 2048]), k=1))
-            atten_mask = torch.tensor(atten_masks).to(torch.float16).bool().npu()
+            atten_mask = torch.triu(torch.ones(2048, 2048, dtype=torch.bool, device='npu'), diagonal=1)
         return torch_npu.npu_fusion_attention(
             query, key, value, head_num=8, input_layout="BNSD", scale=scale, sparse_mode=sparse_params[0],
             atten_mask=atten_mask, pre_tockens=sparse_params[1], next_tockens=sparse_params[2])

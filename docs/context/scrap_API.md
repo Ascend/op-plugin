@@ -41,7 +41,7 @@
 </tr>
 <tr id="row12312741155519"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p83121841105519"><a name="p83121841105519"></a><a name="p83121841105519"></a><a href="（beta）torch_npu-npu_convolution.md">torch_npu.npu_convolution</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p9312041115515"><a name="p9312041115515"></a><a name="p9312041115515"></a>该接口计划废弃，可以使用torch.nn.functional.conv2d、torch.nn.functional.conv3d或torch._C._nn.slow_conv3d接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p9312041115515"><a name="p9312041115515"></a><a name="p9312041115515"></a>该接口计划废弃，可以使用torch.nn.functional.conv2d或orch.nn.functional.conv3d接口进行替换。</p>
 </td>
 </tr>
 <tr id="row78665276418"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p48674279413"><a name="p48674279413"></a><a name="p48674279413"></a><a href="（beta）torch_npu-npu_convolution_transpose.md">torch_npu.npu_convolution_transpose</a></p>
