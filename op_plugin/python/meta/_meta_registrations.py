@@ -4378,3 +4378,10 @@ has_side_effect(torch.ops.npu.npu_ffn_to_attention.default)
 def npu_ffn_to_attention_meta(x, session_ids, micro_batch_ids, token_ids, expert_offsets, actual_token_num, group, world_size,
                               token_info_table_shape, token_data_shape, attn_rank_table=None):
     return
+
+
+@impl(m, "repeat_interleave_backward_int")
+def npu_repeat_interleave_backward_int_meta(grad, x, repeats, dim=None):
+    result = torch.empty_like(x)
+
+    return result
