@@ -131,7 +131,7 @@ class TestNPUFusedFloydAttention(TestCase):
 
         x_max = x_max.reshape(B, N, S1, S2, 1).broadcast_to(B, N, S1, S2, 8)
         x_sum = x_sum.reshape(B, N, S1, S2, 1).broadcast_to(B, N, S1, S2, 8)
-        dq, dk0, dv0, dk1, dv1 = torch_npu.npu_fused_floyd_attention_grad(
+        dq, dk0, dv0, dk1, dv1 = torch_npu.npu_fused_floyd_attention_backward(
             grad,
             Q,
             K1,
