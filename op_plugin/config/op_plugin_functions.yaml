@@ -2,9 +2,11 @@ all_version: [v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10]
 official:
   - func: __ilshift__.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
 
   - func: __ilshift__.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
 
   - func: __ior__.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
     acl_op: all_version
@@ -22,9 +24,11 @@ official:
 
   - func: __lshift__.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: __lshift__.Tensor(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: __rshift__.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
