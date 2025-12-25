@@ -237,28 +237,17 @@ std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> linalg_svd_out_common(const
     // the copy as a column major matrix to the backends.
     const auto info = at::zeros(at::IntArrayRef(A.sizes().begin(), A.sizes().end() - 2), A.options().dtype(at::kInt));
 
-    // Prepare S
-    const auto S_ = S.expect_contiguous();
-
-    // Prepare U / Vh
-    // U_ and Vh_ are just going to be accessed whenever compute_uv == true
-    const auto U_ready = !compute_uv || U.mT().is_contiguous();
-    const auto U_ = borrow_else_clone(U_ready, U, U, false);
-    const auto Vh_ready =
-        !compute_uv || (!use_cusolver && Vh.mT().is_contiguous()) || (use_cusolver && Vh.is_contiguous());
-    const auto Vh_ = borrow_else_clone(Vh_ready, Vh, Vh, use_cusolver);
-
     at::Tensor U_tmp;
     at::Tensor S_tmp;
     at::Tensor V_tmp;
     std::tie(U_tmp, S_tmp, V_tmp) = _svd_helper(A, !full_matrices, compute_uv);
-    if (!U_ready) {
+    if (compute_uv) {
         U.copy_(U_tmp);
     }
     if (!S.is_same(S_tmp)) {
         S.copy_(S_tmp);
     }
-    if (!Vh_ready) {
+    if (compute_uv) {
         Vh.copy_(V_tmp);
     }
     linalg_check_errors(info, "linalg.svd", A.dim() == 2);

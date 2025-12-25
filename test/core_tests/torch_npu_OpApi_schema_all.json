@@ -1538,9 +1538,6 @@
   "func: _unsafe_index.Tensor(Tensor self, Tensor?[] indices) -> Tensor": {
     "version": ["v2.1"]
   },
-  "func: _linalg_svd(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None) -> (Tensor U, Tensor S, Tensor Vh)": {
-    "version": ["all_version"]
-  },
   "func: _linalg_svd.U(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None, Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh)": {
     "version": ["all_version"]
   },

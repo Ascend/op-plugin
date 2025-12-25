@@ -65,7 +65,6 @@ at::Tensor cal_var(const at::Tensor& self, at::IntArrayRef dim, const int64_t co
 std::tuple<at::Tensor, at::Tensor> cal_var_mean(const at::Tensor& self, at::IntArrayRef dim, bool unbiased,
                                                 int64_t correction, bool keepdim);
 int64_t var_get_shape_prod(const at::Tensor& self, at::IntArrayRef dim);
-std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor& self, bool some, bool compute_uv);
 at::Tensor index_common(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig);
 } // namespace acl_op
 #endif

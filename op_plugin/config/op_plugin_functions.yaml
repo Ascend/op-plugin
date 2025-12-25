@@ -599,11 +599,13 @@ official:
     acl_op: all_version
     op_api: all_version
 
-  - func: _linalg_svd(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None) -> (Tensor U, Tensor S, Tensor Vh)
-    acl_op: [v2.1, newest]
-
   - func: _linalg_svd.U(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None, Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh)
     acl_op: [v2.1, newest]
+    op_api: all_version
+    gen_opapi:
+      new_params:
+        V: 'Vh.transpose(-1, -2)'
+      exec: aclnnSvd, A, full_matrices, compute_uv, S, U, V
 
   - func: _log_softmax(Tensor self, int dim, bool half_to_float) -> Tensor
     acl_op: all_version
