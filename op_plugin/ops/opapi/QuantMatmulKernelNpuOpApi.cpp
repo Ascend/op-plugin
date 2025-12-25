@@ -108,14 +108,12 @@ int64_t check_and_get_groups(
     return groups;
 }
 
-at::Tensor npu_quant_matmul_symint(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &scale,
-                                   const c10::optional<at::Tensor> &offset,
-                                   const c10::optional<at::Tensor> &pertoken_scale,
-                                   const c10::optional<at::Tensor> &bias, c10::optional<int64_t> output_dtype,
-                                   c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
-                                   c10::optional<int64_t> pertoken_scale_dtype, c10::optional<int64_t> scale_dtype,
-                                   c10::OptionalArrayRef<c10::SymInt> group_sizes,
-                                   const c10::optional<at::Tensor> &y_scale)
+at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &scale,
+                            const c10::optional<at::Tensor> &offset, const c10::optional<at::Tensor> &pertoken_scale,
+                            const c10::optional<at::Tensor> &bias, c10::optional<int64_t> output_dtype,
+                            c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
+                            c10::optional<int64_t> pertoken_scale_dtype, c10::optional<int64_t> scale_dtype,
+                            c10::OptionalIntArrayRef group_sizes, const c10::optional<at::Tensor> &y_scale)
 {
     if (is_nz_format(x2)) {
         static const bool is_quant_matmul_weight_nz_available = check_aclnn_kernel_available("aclnnQuantMatmulWeightNz");
@@ -131,10 +129,7 @@ at::Tensor npu_quant_matmul_symint(const at::Tensor &x1, const at::Tensor &x2, c
                     OPS_ERROR(ErrCode::TYPE));
     }
     bool is_a8W4_int = x1.dtype() == at::kChar && x2.dtype() == at::kInt;
-    at::IntArrayRef group_size_list = {};
-    if (group_sizes.has_value()) {
-        group_size_list = c10::asIntArrayRefUnchecked(group_sizes.value());
-    }
+    at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
     int64_t group_size = check_and_get_groups(group_size_list, x1, x2, scale, pertoken_scale);
     bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
     bool trans_x2 = is_transpose_last_two_dims(x2);

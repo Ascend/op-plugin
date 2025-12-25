@@ -21,12 +21,12 @@ namespace op_api {
 
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_add_quant_gmm_symint(const at::Tensor &self, const at::Tensor &x1, const at::Tensor &x2,
-                                    const at::Tensor &x2_scale, const at::Tensor &group_list,
-                                    const c10::optional<at::Tensor> &x1_scale, c10::optional<int64_t> group_list_type,
-                                    c10::OptionalArrayRef<c10::SymInt> group_sizes, c10::optional<int64_t> x1_dtype,
-                                    c10::optional<int64_t> x2_dtype, c10::optional<int64_t> x1_scale_dtype,
-                                    c10::optional<int64_t> x2_scale_dtype)
+at::Tensor npu_add_quant_gmm(const at::Tensor &self, const at::Tensor &x1, const at::Tensor &x2,
+                             const at::Tensor &x2_scale, const at::Tensor &group_list,
+                             const c10::optional<at::Tensor> &x1_scale, c10::optional<int64_t> group_list_type,
+                             c10::OptionalIntArrayRef group_sizes, c10::optional<int64_t> x1_dtype,
+                             c10::optional<int64_t> x2_dtype, c10::optional<int64_t> x1_scale_dtype,
+                             c10::optional<int64_t> x2_scale_dtype)
 // func: npu_add_quant_gmm_(Tensor(a!) self, Tensor x1, Tensor x2, Tensor x2_scale, Tensor group_list, *,
 // Tensor? x1_scale=None, int? group_list_type=0, int[]? group_sizes=None, int? x1_dtype=None, int? x2_dtype=None,
 // int? x1_scale_dtype=None, int? x2_scale_dtype=None) -> Tensor(a!) 对应的非原地npu实现
