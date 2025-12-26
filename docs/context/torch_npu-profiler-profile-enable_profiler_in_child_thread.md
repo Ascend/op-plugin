@@ -42,7 +42,7 @@ torch_npu.profiler.profile.enable_profiler_in_child_thread(record_shapes=False, 
 
   默认值为False。
 
-  > **说明：**
+  > [!NOTE]  
   > 已知在安装有glibc<2.34的环境上采集memory数据，可能触发glibc的一个已知[Bug 19329](https://gitee.com/link?target=https%3A%2F%2Fsourceware.org%2Fbugzilla%2Fshow_bug.cgi%3Fid%3D19329)，通过升级环境的glibc版本可解决此问题。
 
 - **with_stack**(`bool`)：可选参数，算子调用栈。包括框架层及CPU算子层的调用信息。取值为：
@@ -125,12 +125,12 @@ if __name__ == "__main__":
     threads = []
     for i in range(1, 3):
         # 创建2个子线程，分别在device1与device2上进行推理任务
-        t = threading.Thread(target=train, args=(i, True))
+        t = threading.Thread(target=infer, args=(i, True))
         t.start()
         threads.append(t)
 
     # 主线程在device0上运行推理任务
-    train(0, False)
+    infer(0, False)
 
     for t in threads:
         t.join()

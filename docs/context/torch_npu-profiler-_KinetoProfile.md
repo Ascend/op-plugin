@@ -38,8 +38,8 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
 
      默认值为False。
 
-     >**说明：**<br>
-     >已知在安装有glibc<2.34的环境上采集memory数据，可能触发glibc的一个已知[Bug 19329](https://sourceware.org/bugzilla/show_bug.cgi?id=19329)，通过升级环境的glibc版本可解决此问题。
+     > [!NOTE]  
+     > 已知在安装有glibc<2.34的环境上采集memory数据，可能触发glibc的一个已知[Bug 19329](https://sourceware.org/bugzilla/show_bug.cgi?id=19329)，通过升级环境的glibc版本可解决此问题。
 
 - **with_stack** (`bool`)：可选参数，算子调用栈。包括框架层及CPU算子层的调用信息。取值为：
 
@@ -59,7 +59,7 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
 
      开启torch_npu.profiler.ProfilerActivity.CPU时生效。
 
-- **experimental_config**：可选参数，扩展参数，通过扩展配置性能分析工具常用的采集项。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md)。
+- **experimental_config**：可选参数，性能数据采集扩展。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md)。
 
 ## 返回值说明
 
