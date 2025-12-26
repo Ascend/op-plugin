@@ -18,7 +18,6 @@ class TestiRshift(TestCase):
         output = output.numpy()
         return output
 
-    @SupportedDevices(['Ascend910A'])
     def test_iRshift_tensor(self):
         format_list = [0]
         shape_list = [(256, 32, 56)]
@@ -38,8 +37,8 @@ class TestiRshift(TestCase):
         shape_format = [[np.int32, i, j] for i in format_list for j in shape_list]
         for item in shape_format:
             cpu_input1, npu_input1 = create_common_tensor(item, 0, 100)
-            cpu_input2 = torch.tensor(1).to(torch.int32)
-            npu_input2 = cpu_input2.npu()
+            cpu_input2 = 1
+            npu_input2 = cpu_input2
             cpu_output = self.cpu_op_exec(cpu_input1, cpu_input2)
             npu_output = self.npu_op_exec(npu_input1, npu_input2)
             cpu_output = cpu_output.astype(npu_output.dtype)

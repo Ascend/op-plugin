@@ -18,9 +18,11 @@ official:
 
   - func: __irshift__.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
 
   - func: __irshift__.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
 
   - func: __lshift__.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
@@ -32,9 +34,11 @@ official:
 
   - func: __rshift__.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: __rshift__.Tensor(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: _adaptive_avg_pool2d(Tensor self, SymInt[2] output_size) -> Tensor
     acl_op: [v2.1, newest]
