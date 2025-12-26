@@ -67,6 +67,16 @@ class TestOneHot(TestCase):
 
         self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_one_hot_compile_fake(self):
+
+        def fn(x):
+            return torch.nn.functional.one_hot(x, 128)
+        compiled = torch.compile(fn, backend="aot_eager")
+        input1 = torch.randint(0, 128, (5, 8), device="npu", dtype=torch.long)
+        output1 = compiled(input1)
+
+        self.assertEqual(output1.shape, (5, 8, 128))
+
 
 if __name__ == "__main__":
     run_tests()
