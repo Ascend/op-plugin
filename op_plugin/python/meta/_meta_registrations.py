@@ -3484,3 +3484,10 @@ def npu_conv2d_backward_meta(x, grad_output, weight, stride, padding, dilation, 
         result_3 = None
 
     return (result_1, result_2, result_3)
+
+
+@impl(m, "repeat_interleave_backward_int")
+def npu_repeat_interleave_backward_int_meta(grad, x, repeats, dim=None):
+    result = torch.empty_like(x)
+
+    return result

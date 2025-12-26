@@ -3735,5 +3735,26 @@ class TestNpuGroupedMatmulAdd_(TestCase):
             self.assertEqual(y.dtype, y_fake_tensor.dtype)
 
 
+class TestNpuRepeatInterleave(TestCase):
+    def test_npu_repeat_interleave_backward(self):
+        x = torch.randn(2, 2, device="npu", requires_grad=True)
+        repeats_value = 3
+
+        output = torch.repeat_interleave(x, repeats_value)
+        grad = torch.randn(output.size(), device="npu")
+        output.backward(grad)
+
+        with FakeTensorMode():
+            x_fake_tensor = torch.randn(2, 2, device="npu", requires_grad=True)
+            repeats_value = 3
+
+            output_fake_tensor = torch.repeat_interleave(x_fake_tensor, repeats_value)
+            grad_fake_tensor = torch.randn(output_fake_tensor.size(), device="npu")
+            output_fake_tensor.backward(grad_fake_tensor)
+
+            self.assertEqual(x.shape, x_fake_tensor.shape)
+            self.assertEqual(x.dtype, x_fake_tensor.dtype)
+
+
 if __name__ == "__main__":
     run_tests()
