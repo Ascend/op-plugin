@@ -228,7 +228,7 @@ class TestQuantMatmul(TestCase):
         scale_clone = scale_clone.clone()
         scale_quant = torch_npu.npu_trans_quant_param(scale_clone.npu(), None)
         supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * scale
-        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_quant, x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8, output_dtype=torch.float16)
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_quant, x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8, output_dtype=torch.bfloat16)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
 
     @SupportedDevices(['Ascend910_95'])
