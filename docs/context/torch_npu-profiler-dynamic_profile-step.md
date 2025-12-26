@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-dynamic_profile动态采集划分step。
+在dynamic_profile动态采集时划分step。
 
 ## 函数原型
 

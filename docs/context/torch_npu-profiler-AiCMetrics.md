@@ -26,9 +26,9 @@ torch_npu.profiler.AiCMetrics
 - **torch_npu.profiler.AiCMetrics.PipeUtilization**：可选参数，计算单元和搬运单元耗时占比。
 - **torch_npu.profiler.AiCMetrics.ArithmeticUtilization**：可选参数，各种计算类指标占比统计。
 - **torch_npu.profiler.AiCMetrics.Memory**：可选参数，外部内存读写类指令占比。
-- **torch_npu.profiler.AiCMetrics.MemoryL0**：可选参数，内部内存读写类指令占比。
+- **torch_npu.profiler.AiCMetrics.MemoryL0**：可选参数，内部L0内存读写类指令占比。
 - **torch_npu.profiler.AiCMetrics.ResourceConflictRatio**：可选参数，流水线队列类指令占比。
-- **torch_npu.profiler.AiCMetrics.MemoryUB**：可选参数，内部内存读写指令占比。
+- **torch_npu.profiler.AiCMetrics.MemoryUB**：可选参数，内部UB内存读写指令占比。
 - **torch_npu.profiler.AiCMetrics.L2Cache**：可选参数，读写cache命中次数和缺失后重新分配次数。
 - **torch_npu.profiler.AiCMetrics.MemoryAccess**：可选参数，算子在核上访存的带宽数据量。
 

@@ -23,7 +23,7 @@ torch_npu.npu.mstx.range_end(range_id: int, domain: str='default') -> int:
 
 ## 参数说明
 
-- **range_id** (`int`)：可选参数，通过[torch_npu.npu.mstx.range_start](./torch_npu-npu-mstx-range_start.md)接口返回的ID。
+- **range_id** (`int`)：必选参数，传入由[torch_npu.npu.mstx.range_start](./torch_npu-npu-mstx-range_start.md)接口返回的ID。
 - **domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内，标识时间段事件的结束。需要与[torch_npu.npu.mstx.range_start](./torch_npu-npu-mstx-range_start.md)接口的domain配置一致。
 
 ## 返回值说明

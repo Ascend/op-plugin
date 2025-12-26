@@ -20,11 +20,11 @@ torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, an
 
 ## 参数说明
 
-- **dir_name** (`str`)：可选参数，采集到的性能数据的存放路径。路径格式仅支持由字母、数字和下划线组成的字符串，不支持软链接。若配置tensorboard_trace_handler函数后未指定具体路径，性能数据默认落盘在当前目录；若代码中未使用on_trace_ready=torch_npu.profiler.tensorboard_trace_handler，那么落盘的性能数据为原始数据，需要使用[离线解析](./torch_npu-profiler-profiler-analyse.md)。
+- **dir_name** (`str`)：可选参数，采集到的性能数据的存放路径。路径格式仅支持由字母、数字、下划线和连字符组成的字符串，不支持软链接。若配置tensorboard_trace_handler函数后未指定具体路径，性能数据默认落盘在当前目录；若代码中未使用on_trace_ready=torch_npu.profiler.tensorboard_trace_handler，那么落盘的性能数据为原始数据，需要使用[离线解析](./torch_npu-profiler-profiler-analyse.md)。
 
     该函数优先级高于ASCEND_WORK_PATH环境变量。
 
-- **worker_name** (`str`)：可选参数，用于区分唯一的工作线程，默认为\{hostname\}_\{pid\}。路径格式仅支持由字母、数字和下划线组成的字符串，不支持软链接。
+- **worker_name** (`str`)：可选参数，用于区分唯一的工作线程，默认为\{hostname\}_\{pid\}。路径格式仅支持由字母、数字、下划线和连字符组成的字符串，不支持软链接。
 
 - **analyse_flag** (`bool`)：可选参数，性能数据自动解析开关。取值为：
 

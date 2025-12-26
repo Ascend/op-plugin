@@ -125,12 +125,12 @@ if __name__ == "__main__":
     threads = []
     for i in range(1, 3):
         # 创建2个子线程，分别在device1与device2上进行推理任务
-        t = threading.Thread(target=train, args=(i, True))
+        t = threading.Thread(target=infer, args=(i, True))
         t.start()
         threads.append(t)
 
     # 主线程在device0上运行推理任务
-    train(0, False)
+    infer(0, False)
 
     for t in threads:
         t.join()

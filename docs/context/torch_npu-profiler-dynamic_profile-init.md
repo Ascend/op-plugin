@@ -20,7 +20,7 @@ torch_npu.profiler.dynamic_profile.init(path: str)
 
 ## 参数说明
 
-**path** (`str`)：必选参数，dynamic_profile会在path下自动创建模板文件profiler_config.json，用户可基于模板文件自定义修改配置项。profiler_config_path路径格式仅支持由字母、数字和下划线组成的字符串，不支持软链接。
+**path** (`str`)：必选参数，dynamic_profile会在path下自动创建模板文件profiler_config.json，用户可基于模板文件自定义修改配置项。path路径格式仅支持由字母、数字、下划线和连字符组成的字符串，不支持软链接。
 
 profiler_config.json文件详细介绍请参见《CANN 性能调优工具用户指南》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/83RC1/devaids/Profiling/atlasprofiling_16_0033.html">Ascend PyTorch Profiler</a>”章节。
 

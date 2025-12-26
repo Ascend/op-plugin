@@ -59,7 +59,7 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
 
      开启torch_npu.profiler.ProfilerActivity.CPU时生效。
 
-- **experimental_config**：可选参数，扩展参数，通过扩展配置性能分析工具常用的采集项。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md)。
+- **experimental_config**：可选参数，性能数据采集扩展。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md)。
 
 ## 返回值说明
 

@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-查询当前支持的torch_npu.profiler. AiCMetrics的AI Core性能指标采集项。
+查询当前支持的torch_npu.profiler.AiCMetrics的AI Core性能指标采集项。
 
 ## 函数原型
 

@@ -33,7 +33,7 @@ torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportTyp
 
     原参数名称msprof_tx改名为mstx，新版本依旧兼容原参数名。
 
-- **mstx_domain_include** (`str`)：可选参数，输出需要的domain数据。调用torch_npu.npu.mstx系列打点接口，使用默认domain或指定domain进行打点时，可选择只输出本参数配置的domain数据。
+- **mstx_domain_include** (`list`)：可选参数，输出需要的domain数据。调用torch_npu.npu.mstx系列打点接口，使用默认domain或指定domain进行打点时，可选择只输出本参数配置的domain数据。
 
     domain名称为用户调用[torch_npu.npu.mstx](torch_npu-npu-mstx.md)系列接口传入的domain或默认domain（'default'），domain名称使用list类型输入。
 
@@ -41,7 +41,7 @@ torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportTyp
 
     须配置mstx=True。
 
-- **mstx_domain_exclude** (`str`)：可选参数，过滤不需要的domain数据。调用torch_npu.npu.mstx系列打点接口，使用默认domain或指定domain进行打点时，可选择不输出本参数配置的domain数据。
+- **mstx_domain_exclude** (`list`)：可选参数，过滤不需要的domain数据。调用torch_npu.npu.mstx系列打点接口，使用默认domain或指定domain进行打点时，可选择不输出本参数配置的domain数据。
 
     domain名称为用户调用torch_npu.npu.mstx系列接口传入的domain或默认domain（'default'），domain名称使用list类型输入。
 
