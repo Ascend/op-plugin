@@ -15,6 +15,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/core/npu/GetCANNInfo.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -24,6 +25,9 @@ const int DIM_3 = 3;
 const int MODE_1 = 1;
 const int MODE_2 = 2;
 const int MODE_3 = 3;
+const char* const REQUIRED_CANN_VERSION = "8.5.0.alpha002";
+const char* const CANN_PRODUCT = "CANN";
+bool cann_flag = IsGteCANNVersion(REQUIRED_CANN_VERSION, CANN_PRODUCT);
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_prolog_v3(
     const at::Tensor& token_x, const at::Tensor& weight_dq, const at::Tensor& weight_uq_qr,
@@ -103,19 +107,37 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_p
         TensorWrapper dequant_scale_w_uq_qr_wrapper = {dequant_scale_w_uq_qr_tensor, aclDataType::ACL_FLOAT8_E8M0};
         TensorWrapper dequant_scale_w_dkv_kr_wrapper = {dequant_scale_w_dkv_kr_tensor, aclDataType::ACL_FLOAT8_E8M0};
 
-        EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, dequant_scale_x_wrapper, dequant_scale_w_dq_wrapper,
-            dequant_scale_w_uq_qr_wrapper, dequant_scale_w_dkv_kr_wrapper, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
-            k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
-            ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
-            dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        if (cann_flag) {
+            EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+                rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, dequant_scale_x_wrapper, dequant_scale_w_dq_wrapper,
+                dequant_scale_w_uq_qr_wrapper, dequant_scale_w_dkv_kr_wrapper, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
+                k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, query_norm_flag, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
+                ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
+                dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        } else {
+            EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+                rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, dequant_scale_x_wrapper, dequant_scale_w_dq_wrapper,
+                dequant_scale_w_uq_qr_wrapper, dequant_scale_w_dkv_kr_wrapper, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
+                k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
+                ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
+                dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        }
     } else {
-        EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, dequant_scale_x, dequant_scale_w_dq,
-            dequant_scale_w_uq_qr, dequant_scale_w_dkv_kr, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
-            k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
-            ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
-            dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        if (cann_flag) {
+            EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+                rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, dequant_scale_x, dequant_scale_w_dq,
+                dequant_scale_w_uq_qr, dequant_scale_w_dkv_kr, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
+                k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, query_norm_flag, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
+                ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
+                dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        } else {
+            EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+                rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, dequant_scale_x, dequant_scale_w_dq,
+                dequant_scale_w_uq_qr, dequant_scale_w_dkv_kr, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
+                k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
+                ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
+                dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        }
     }
 
     if (!query_norm.defined()) {
@@ -211,19 +233,37 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         TensorWrapper dequant_scale_w_uq_qr_wrapper = {dequant_scale_w_uq_qr_tensor, aclDataType::ACL_FLOAT8_E8M0};
         TensorWrapper dequant_scale_w_dkv_kr_wrapper = {dequant_scale_w_dkv_kr_tensor, aclDataType::ACL_FLOAT8_E8M0};
 
-        EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache_inplace, kr_cache_inplace, cache_index, dequant_scale_x_wrapper, dequant_scale_w_dq_wrapper,
-            dequant_scale_w_uq_qr_wrapper, dequant_scale_w_dkv_kr_wrapper, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
-            k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
-            ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
-            dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        if (cann_flag) {
+            EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+                rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache_inplace, kr_cache_inplace, cache_index, dequant_scale_x_wrapper, dequant_scale_w_dq_wrapper,
+                dequant_scale_w_uq_qr_wrapper, dequant_scale_w_dkv_kr_wrapper, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
+                k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, query_norm_flag, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
+                ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
+                dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        } else {
+            EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+                rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache_inplace, kr_cache_inplace, cache_index, dequant_scale_x_wrapper, dequant_scale_w_dq_wrapper,
+                dequant_scale_w_uq_qr_wrapper, dequant_scale_w_dkv_kr_wrapper, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
+                k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
+                ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
+                dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        }
     } else {
-        EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
-            rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache_inplace, kr_cache_inplace, cache_index, dequant_scale_x, dequant_scale_w_dq,
-            dequant_scale_w_uq_qr, dequant_scale_w_dkv_kr, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
-            k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
-            ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
-            dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        if (cann_flag) {
+            EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+                rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache_inplace, kr_cache_inplace, cache_index, dequant_scale_x, dequant_scale_w_dq,
+                dequant_scale_w_uq_qr, dequant_scale_w_dkv_kr, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
+                k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, query_norm_flag, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
+                ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
+                dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        } else {
+            EXEC_NPU_CMD(aclnnMlaPrologV3WeightNz, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
+                rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache_inplace, kr_cache_inplace, cache_index, dequant_scale_x, dequant_scale_w_dq,
+                dequant_scale_w_uq_qr, dequant_scale_w_dkv_kr, quant_scale_ckv, quant_scale_ckr, smooth_scales_cq, actual_seq_len,
+                k_nope_clip_alpha, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv, cache_mode_ptr, weight_quant_mode, kv_cache_quant_mode, query_quant_mode,
+                ckvkr_repo_mode, quant_scale_repo_mode, tile_size, qc_qr_scale, kc_scale, query, query_rope,
+                dequant_scale_q_nope, query_norm, dequant_scale_q_norm);
+        }
     }
 
     if (!query_norm.defined()) {
