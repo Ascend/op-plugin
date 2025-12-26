@@ -880,5 +880,49 @@ class TestGroupedMatmul(TestCase):
 
             self.assertRtolEqual(supported_output[0], custom_output[0].cpu().numpy(), 0.001)
 
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_grouped_matmul_quant_int8_nz(self): # 全量化 NZ
+        torch.manual_seed(0)
+        x1 = torch.randint(1, 5, size=(16384, 7168), dtype=torch.int8)
+        x = [x1]
+        weight1 = torch.randint(1, 5, size=(4, 4096, 7168), dtype=torch.int8)
+        weight = [weight1]
+        bias1 = torch.randint(1, 5, size=(4, 4096), dtype=torch.int32)
+        bias = [bias1]
+        group_list = torch.tensor([8403, 808, 3101, 4072]).npu()
+        split_item = 2
+        group_type = 0
+
+        scale_output_dtype_list = [[torch.float32, torch.float16], [torch.bfloat16, torch.bfloat16]]
+        for item in scale_output_dtype_list:
+            dtype = item[0]
+            output_dtype = item[1]
+            x_clone = []
+            weight_clone = []
+            bias_clone = []
+            scale_npu = []
+            scale_fp32 = []
+
+            for x_i in x:
+                x_clone.append(x_i.clone().npu())
+            for weight_i in weight:
+                weight_nz = torch_npu.npu_format_cast(weight_i.clone().npu(), 29)
+                weight_clone.append(weight_nz)
+            for bias_i in bias:
+                bias_clone.append(bias_i.clone().npu())
+            for _ in range(3):
+                scale, _ = self.deq_scale_generate(256)
+                scale_fp32.append(scale)
+                scale_npu.append(torch.from_numpy(scale).npu().to(dtype))
+
+            supported_output = self.supported_op_exec(x, weight, bias=bias, scale=scale_fp32, group_list=group_list,
+                                                    split_item=split_item)
+            custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, scale=scale_npu,
+                                                group_list=group_list, split_item=split_item, group_type=group_type,
+                                                output_dtype=output_dtype)
+
+            self.assertRtolEqual(x[0], x_clone[0], 1)
+            self.assertRtolEqual(supported_output[0], custom_output[0], 1)
+
 if __name__ == "__main__":
     run_tests()
