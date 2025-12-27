@@ -67,7 +67,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     >**说明：**<br>
     >`query`、`key`、`value`数据排布格式支持从多种维度解读，其中$B$（Batch）表示输入样本批量大小、$S$（Seq-Length）表示输入样本序列长度、$H$（Head-Size）表示隐藏层的大小、$N$（Head-Num）表示多头数、$D$（Head-Dim）表示隐藏层最小的单元尺寸，且满足$D=H/N$。
 
-- **num_key_value_heads** (`int`)：可选参数。代表`key`、`value`的头数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，默认值为`0`，表示与`query`的头数相同，否则表示`key`、`value`的头数，需要能被`query`的头数（`num_heads`）整除；`num_heads`与`num_key_value_heads`的比值不能大于64。数据类型为`int64`。
+- **num_key_value_heads** (`int`)：可选参数。代表`key`、`value`的头数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，默认值为`0`，表示与`query`的头数相同，否则表示`key`、`value`的头数，且`num_heads`需要能被`num_key_value_heads`整除；`num_heads`与`num_key_value_heads`的比值不能大于64。数据类型为`int64`。
 - **block_size** (`int`)：可选参数。page attention中KV存储每个block中最大的token个数，默认值为`0`，通常为128、256等值，数据类型支持`int64`。
 - **inner_precise** (`int`)：可选参数。代表高精度/高性能选择，`0`代表高精度，`1`代表高性能，默认值为`1`（高性能），数据类型支持`int64`。
 
@@ -85,7 +85,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 - `query`、`key`、`value`的维度必须保持一致，`key`、`value`的`shape`必须保持一致。
 - `num_heads`的值要等于`query`的$N$。
 - `input_layout`的值与`query`的`shape`相关，三维是$BSH$，四维是$BNSD$或$BSND$。
-- `num_key_value_heads`的值要等于`key`、`value`的$N$，需要能被`query`的头数（`num_heads`）整除。
+- `num_key_value_heads`的值要等于`key`、`value`的$N$，且`num_heads`需要能被`num_key_value_heads`整除。
 - `query`，`key`，`value`输入，功能使用限制如下：
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>支持$B$轴小于等于65535，支持$N$轴小于等于256，支持$S$轴小于等于262144，支持$D$轴小于等于512。
     - <term>Atlas 推理系列加速卡产品</term>支持$B$轴小于等于256，支持$N$轴小于等于256，支持$S$轴小于等于65536，支持$D$轴小于等于512。

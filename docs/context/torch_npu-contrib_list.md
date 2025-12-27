@@ -17,7 +17,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p243410273524"><a name="p243410273524"></a><a name="p243410273524"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p6494173775514"><a name="p6494173775514"></a><a name="p6494173775514"></a>bert自注意力与前层规范的融合实现。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p6494173775514"><a name="p6494173775514"></a><a name="p6494173775514"></a>bert自注意力与层归一化的融合实现。</p>
 </td>
 </tr>
 <tr id="row20494037175516"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p1349410376553"><a name="p1349410376553"></a><a name="p1349410376553"></a><a href="（beta）torch_npu-contrib-npu_fused_attention.md">（beta）torch_npu.contrib.npu_fused_attention</a></p>
@@ -176,7 +176,7 @@
 </tr>
 <tr id="row16812163115611"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p1281210314562"><a name="p1281210314562"></a><a name="p1281210314562"></a><a href="（beta）torch_npu-contrib-module-SiLU.md">（beta）torch_npu.contrib.module.SiLU</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p47703172014"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p47703172014"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p47703172014"></a><a href="https://gitee.com/link?target=https://pytorch.org/docs/1.8.1/generated/torch.nn.SiLU.html?highlight=silu#torch.nn.SiLU" target="_blank" rel="noopener noreferrer">class SiLu()</a></p>
+<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p47703172014"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p47703172014"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p47703172014"></a><a href="https://gitee.com/link?target=https://pytorch.org/docs/1.8.1/generated/torch.nn.SiLU.html?highlight=silu#torch.nn.SiLU" target="_blank" rel="noopener noreferrer">class SiLU()</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="zh-cn_topic_0000001606524122_p196702038144319"><a name="zh-cn_topic_0000001606524122_p196702038144319"></a><a name="zh-cn_topic_0000001606524122_p196702038144319"></a>按元素应用基于NPU的Sigmoid线性单元（SiLU）函数。SiLU函数也称为Swish函数。</p>
 </td>

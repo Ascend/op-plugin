@@ -1739,7 +1739,7 @@ def npu_lightning_indexer_grad_meta(query, key, dy, sparse_indices, weights, act
 
 
 @impl(m, "npu_sparse_lightning_indexer_grad_kl_loss")
-def npu_sparse_lightning_indexer_grad_kl_loss_meta(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value=1, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807):
+def npu_sparse_lightning_indexer_grad_kl_loss_meta(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807):
     d_query_index = query_index.new_empty(query_index.shape, dtype=query_index.dtype, device='meta')
     d_key_index = key_index.new_empty(key_index.shape, dtype=key_index.dtype, device='meta')
     d_weights = weights.new_empty(weights.shape, dtype=weights.dtype, device='meta')

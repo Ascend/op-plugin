@@ -37,7 +37,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 -   **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持$ND$，数据类型支持`int32`，当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
 
--   **scale\_value**（`float`）：必选参数，公式中$d_k$开根号的倒数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持`float`。
+-   **scale\_value**（`double）：必选参数，公式中$d_k$开根号的倒数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持`double`。
 
 -   **key\_quant\_mode**（`int`）：必选参数，代表key的量化模式，数据类型支持`int64`，仅支持传入2，代表per_tile量化模式。
 

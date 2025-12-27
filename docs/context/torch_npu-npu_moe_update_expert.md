@@ -34,7 +34,7 @@
     active_mask_tensor = broadcast(active_mask, (BS, K))
     for i in range(BS):
         expert_scales[:] = sum(expert[i, :]) * pruning_threshold[:]
-        balanced_active_mask[i, :] = (expert_scales[i, :] < expert_scales[:]) && active_mask_tensor[i, :]
+        balanced_active_mask[i, :] = (expert_scales[i, :] < expert_scales[:]) & active_mask_tensor[i, :]
     ```
 
 ## 函数原型

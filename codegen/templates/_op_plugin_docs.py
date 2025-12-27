@@ -1333,7 +1333,7 @@ _add_torch_npu_docstr(
 随着大模型上下文长度的增加，Sparse Attention的重要性与日俱增，这一技术通过“只计算关键部分”大幅减少计算量，然而会引入大量的离散访存，造成数据搬运时间增加，进而影响整体性能。
 
 接口原型
-custom.npu_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, int sparse_block_size, *, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, Tensor? query_rope=None, Tensor? key_rope=None, str layout_query='BSND', str layout_kv='BSND', int sparse_mode=3) -> Tensor    
+custom.npu_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, double scale_value, int sparse_block_size, *, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, Tensor? query_rope=None, Tensor? key_rope=None, str layout_query='BSND', str layout_kv='BSND', int sparse_mode=3) -> Tensor    
 
 参数说明
 key（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16和float16，layout_kv为PA_BSND时shape为[block_num, block_size, KV_N, D]，其中block_num为PageAttention时block总数，block_size为一个block的token数。
@@ -1342,7 +1342,7 @@ value（Tensor）：必选参数，不支持非连续，数据格式支持ND，�
 
 sparse_indices（Tensor）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持ND,数据类型支持int32。当query的layout为BSND时，shape需要传入[B, Q_S, KV_N, sparse_size]，当query的layout为TND时，shape需要传入[Q_T, KV_N, sparse_size]，其中sparse_size为一次离散选取的token数，需要保证每行有效值均在前半部分，无效值均在后半部分。
 
-scale_value（double）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持float。
+scale_value（double）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持double。
 
 sparse_block_size（int）：必选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持int64。
 
@@ -1388,7 +1388,7 @@ _add_torch_npu_docstr(
 QuantSparseFlashAttentionAnti在SparseFlashAttention的基础上支持了Per-Token-Head-Tile-128量化输入。
 
 接口原型
-custom.npu_kv_quant_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, int sparse_block_size, int key_quant_mode, int value_quant_mode, *, Tensor? key_dequant_scale=None, Tensor? value_dequant_scale=None, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, str layout_query='BSND', str layout_kv='BSND', int sparse_mode=3, int attention_mode=0, int quant_scale_repo_mode=0, int tile_size=0, int rope_head_dim=0) -> Tensor
+custom.npu_kv_quant_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, double scale_value, int sparse_block_size, int key_quant_mode, int value_quant_mode, *, Tensor? key_dequant_scale=None, Tensor? value_dequant_scale=None, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, str layout_query='BSND', str layout_kv='BSND', int sparse_mode=3, int attention_mode=0, int quant_scale_repo_mode=0, int tile_size=0, int rope_head_dim=0) -> Tensor
 
 query（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持bfloat16，query相同dtype的q_nope和q_rope按D维度拼接得到。
 
@@ -1398,7 +1398,7 @@ value（Tensor）：必选参数，不支持非连续，数据格式支持ND，�
 
 sparse_indices（Tensor）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持ND,数据类型支持int32，shape需要传入[B, Q_S, KV_N, sparse_size]，其中sparse_size为一次离散选取的token数，需要保证每行有效值均在前半部分，无效值均在后半部分。
 
-scale_value（double）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持float。
+scale_value（double）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持double。
 
 sparse_block_size（int）：必选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持int64。
 
@@ -2273,7 +2273,7 @@ _add_torch_npu_docstr(
     """
 torch_npu.npu_layer_norm_eval(input, normalized_shape, weight=None, bias=None, eps=1e-05) -> Tensor
 功能描述
-对层归一化结果进行计数。与torch.nn.functional.layer_norm相同, 优化NPU设备实现。
+对层归一化结果进行计算。与torch.nn.functional.layer_norm相同, 优化NPU设备实现。
 
 参数说明
 input (Tensor) - 输入张量。
@@ -2461,7 +2461,7 @@ _add_torch_npu_docstr(
     """
 torch_npu.npu_max(self, dim, keepdim=False) -> (Tensor, Tensor)
 功能描述
-使用dim对最大结果进行计数。类似于torch.max, 优化NPU设备实现。
+使用dim对最大结果进行计算。类似于torch.max, 优化NPU设备实现。
 
 参数说明
 self (Tensor) - 输入张量。
@@ -2506,7 +2506,7 @@ _add_torch_npu_docstr(
     """
 torch_npu.npu_min(self, dim, keepdim=False) -> (Tensor, Tensor)
 功能描述
-使用dim对最小结果进行计数。类似于torch.min, 优化NPU设备实现。
+使用dim对最小结果进行计算。类似于torch.min, 优化NPU设备实现。
 
 参数说明
 self (Tensor) - 输入张量。
@@ -3414,7 +3414,7 @@ _add_torch_npu_docstr(
     """
 torch_npu.npu_sort_v2(self, dim=-1, descending=False, out=None) -> Tensor
 功能描述
-沿给定维度，按无index值对输入张量元素进行升序排序。若dim未设置，则选择输入的最后一个维度。如果descending为True，则元素将按值降序排序。
+沿给定维度，对输入张量元素进行升序排序（不返回索引）。若dim未设置，则选择输入的最后一个维度。如果descending为True，则元素将按值降序排序。
 
 参数说明
 self (Tensor) - 输入张量。
@@ -6504,7 +6504,7 @@ num_heads: int类型, 代表query的头数, 即query的N, 默认值为1; 数据�
 scale_value: float类型, 代表缩放系数, 用来约束梯度, 其默认值为1.0, 典型值为$\frac{1}{\sqrt{D}}$; 数据类型为float32. 
 input_layout: 字符串类型, 代表query、key、value的布局, 根据输入的query、key、value的shape确定, 三维Tensor是BSH, 四维Tensor是BNSD或BSND, 默认值为BSH, 不支持其他值; 数据类型为string. 
 query、key、value数据排布格式支持从多种维度解读, 其中B(Batch)表示输入样本批量大小、S(Seq-Length)表示输入样本序列长度、H(Head-Size)表示隐藏层的大小、N(Head-Num)表示多头数、D(Head-Dim)表示隐藏层最小的单元尺寸, 且满足D=H/N. 
-num_key_value_heads: int类型, 代表key、value的头数, 用于支持GQA(Grouped-Query Attention, 分组查询注意力)场景, 默认值为0, 表示与query的头数相同, 否则表示key、value的头数, 需要能被query的头数(num_heads)整除; num_heads与num_key_value_heads的比值不能大于64. 数据类型为int64. 
+num_key_value_heads: int类型, 代表key、value的头数, 用于支持GQA(Grouped-Query Attention, 分组查询注意力)场景, 默认值为0, 表示与query的头数相同, 否则表示key、value的头数, 且num_heads需要能被num_key_value_heads整除; num_heads与num_key_value_heads的比值不能大于64. 数据类型为int64. 
 block_size: int类型, PageAttention中KV存储每个block中最大的token个数, 默认为0, 通常为128、256等值, 数据类型支持int64. 
 inner_precise: int类型, 代表高精度/高性能选择, 0代表高精度, 1代表高性能, 默认值为1(高性能),  数据类型支持int64. 
 
@@ -6519,7 +6519,7 @@ atten_out: Tensor类型, 计算的最终结果, shape与query保持一致.
 query、key、value的维度必须保持一致, key、value的shape必须保持一致. 
 num_heads的值要等于query的N. 
 input_layout的值与query的shape相关, 三维是BSH, 四维是BNSD或BSND. 
-num_key_value_heads的值要等于key、value的N, 需要能被query的头数(num_heads)整除. 
+num_key_value_heads的值要等于key、value的N, 且num_heads需要能被num_key_value_heads整除. 
 query, key, value输入, 功能使用限制如下: 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品支持B轴小于等于65535, 支持N轴小于等于256, 支持S轴小于等于262144, 支持D轴小于等于512. 
 Atlas 推理系列加速卡产品支持B轴小于等于256, 支持N轴小于等于256, 支持S轴小于等于65536, 支持D轴小于等于512. 
@@ -9937,7 +9937,7 @@ _add_torch_npu_docstr(
 torch_npu.npu_prefetch(Tensor input, Tensor? dependency, int max_size, int offset=0) -> ()
 
 功能描述
-提供网络weight预取功能, 将需要预取的权重搬到L2 Cache中. 尤其在做较大Tensor的MatMul计算且需要搬移到L2 Cache的操作时, 可通过该接口提前预取权重, 适当提高模型性能, 具体效果基于用户对并行的处理. 
+提供网络weight预取功能, 将需要预取的权重搬到L2 Cache中. 尤其在做较大Tensor的MatMul计算且需要搬移到L2 Cache的操作时, 可通过该接口提前预取权重, 适当提高模型性能, 具体效果取决与用户采用的并行方式和配置. 
 
 参数说明
 input: Tensor类型, 表示需要预取的权重, 不做数据处理, 与数据类型和数据格式无关; 输入不能含有为None. 
@@ -12677,7 +12677,7 @@ _add_torch_npu_docstr(
     "npu_sparse_lightning_indexer_grad_kl_loss",
     """
 接口原型: 
-npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value=1, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor, Tensor, Tensor)
+npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor, Tensor, Tensor)
 
 功能描述:
 该接口实现了npu_lightning_indexer的反向功能，并融合了Loss的计算。npu_lightning_indexer用于筛选Attention的query与key间最高内在联系的Top-k项，存放在sparse_indices中，以减少长序列场景下的Attention计算量，提升训练性能。
@@ -12686,7 +12686,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 query（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1, D)、(T1, N1, D)。
 key（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S2, N2, D)、(T2, N2, D)。
 query_index（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1index, D)、(T1, N1index, D)。
-key_index（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1index, D)、(T1, N1index, D)。
+key_index（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S2, N2index, D)、(T2, N2index, D)。
 weights（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1)、(T1, N1)。
 sparse_indices（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, topK)、(T1, topK)。
 softmax_max（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, N2, S1, G)、(N2, T1, G)。
