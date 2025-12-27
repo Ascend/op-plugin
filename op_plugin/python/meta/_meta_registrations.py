@@ -2189,9 +2189,35 @@ def npu_moe_distribute_dispatch_meta(x, expert_ids, group_ep, ep_world_size, ep_
     return (expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales)
 
 
+def get_dispatch_dynamic_scales_dtype(x, scales, quant_mode):
+    dynamic_scales_dtype = torch.float32
+    if quant_mode == 0:
+        if x.dtype != torch.bfloat16 and x.dtype != torch.float16 and scales is not None:
+            dynamic_scales_dtype = scales.dtype
+    elif quant_mode == 4:
+        dynamic_scales_dtype = torch.uint8  # float8_e8m0
+    return dynamic_scales_dtype
+
+
+def get_dispatch_dynamic_shape(scales, quant_mode, a, h):
+    shape = tuple([a])
+    if quant_mode == 0 and scales is not None:
+        if scales.dim() < 2:
+            raise RuntimeError(f"Expected scales to be at least 2-d, but got {scales.dim()}-d.")
+        shape = tuple([a * scales.shape[1]])
+    elif quant_mode == 2:
+        shape = tuple([a])
+    elif quant_mode == 3:
+        shape = tuple([a, math.ceil(h / 128)])
+    elif quant_mode == 4:
+        shape = tuple([a, (math.ceil(h / 32) + 1) // 2 * 2])
+    return shape
+
+
 @impl(m, "npu_moe_distribute_dispatch_v2")
 def npu_moe_distribute_dispatch_v2_meta(x, expert_ids, group_ep, ep_world_size, ep_rank_id, moe_expert_num, scales=None, x_active_mask=None, expert_scales=None, elastic_info=None, performance_info=None, group_tp="", tp_world_size=0,
-                                        tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, quant_mode=0, global_bs=0, expert_token_nums_type=1, comm_alg="", zero_expert_num=0, copy_expert_num=0, const_expert_num=0):
+                                        tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, quant_mode=0, global_bs=0, expert_token_nums_type=1, comm_alg="",
+                                        zero_expert_num=0, copy_expert_num=0, const_expert_num=0, y_dtype=None, x_dtype=None, scales_dtype=None):
     torch._check(
         (ep_rank_id >= 0) and (ep_rank_id < ep_world_size),
         lambda: (
@@ -2223,13 +2249,17 @@ def npu_moe_distribute_dispatch_v2_meta(x, expert_ids, group_ep, ep_world_size, 
             f"{ops_error(ErrCode.VALUE)}."
         ),
     )
+    torch._check(
+        expert_token_nums_type in [0, 1],
+        lambda: "the expert_token_nums_type should be 0 or 1" + ops_error(ErrCode.VALUE)
+    )
 
     bs = x.size(0)
     h = x.size(1)
     k = expert_ids.size(1)
 
     shared_front = (expert_shard_type == 0)
-    outDtype = x.dtype
+    outDtype = torch.int8
 
     local_moe_expert_num = 1
     global_bs_real = 0
@@ -2265,16 +2295,21 @@ def npu_moe_distribute_dispatch_v2_meta(x, expert_ids, group_ep, ep_world_size, 
     else:
         ep_recv_cnt_num = ep_world_size * local_moe_expert_num
 
-    if scales is not None or quant_mode != 0:
-        outDtype = torch.int8
+    if quant_mode == 0:
+        outDtype = x.dtype
+    elif y_dtype is not None:
+        outDtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP[y_dtype]
 
     expand_idx = x.new_empty((max(bs * k, a * 128)), dtype=torch.int32)
+    expand_x = x.new_empty(tuple([max(a, a * tp_world_size), h]), dtype=outDtype)
+    dynamic_scales_dtype = get_dispatch_dynamic_scales_dtype(x, scales, quant_mode)
     if tp_world_size == 0:
-        expand_x = x.new_empty((a, h), dtype=outDtype)
-        dynamic_scales = x.new_empty((a), dtype=torch.float32)
+        dynamic_scales = x.new_empty((a), dtype=dynamic_scales_dtype)
+    elif tp_world_size == 1:
+        dynamic_scales_shape = get_dispatch_dynamic_shape(scales, quant_mode, a, h)
+        dynamic_scales = x.new_empty(dynamic_scales_shape, dtype=dynamic_scales_dtype)
     else:
-        expand_x = x.new_empty((a * tp_world_size, h), dtype=outDtype)
-        dynamic_scales = x.new_empty((a * tp_world_size), dtype=torch.float32)
+        dynamic_scales = x.new_empty((a * tp_world_size), dtype=dynamic_scales_dtype)
     expert_token_nums = x.new_empty((local_moe_expert_num), dtype=torch.int64)
     ep_recv_counts = x.new_empty((ep_recv_cnt_num), dtype=torch.int32)
     tp_recv_counts = x.new_empty((tp_world_size), dtype=torch.int32)
