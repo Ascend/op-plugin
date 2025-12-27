@@ -937,8 +937,8 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         lambda: "expert_tokens_num_flag is None or invalid. must be in [True, False]"
     )
     torch._check(
-        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1],
-        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1]"
+        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3],
+        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3]"
     )
     torch._check(
         row_idx_type is not None and isinstance(row_idx_type, int) and row_idx_type in [0, 1],
@@ -975,7 +975,7 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
                     scale.size(0) == offset.size(0),
                     lambda: "the 1st dim of offset and the 1st dim of scale should be the same" + ops_error(ErrCode.VALUE),
                 )
-        else:
+        elif quant_mode == 1:
             torch._check(
                 scale_dim == 2,
                 lambda: "the scale shape support only 2D in dynamic quant mode" + ops_error(ErrCode.VALUE),
@@ -988,26 +988,42 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
                 x.size(1) == scale.size(1),
                 lambda: "the 2nd dim of scale should be the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
             )
+        # else: quant_mode为2、3时不使用scale也不需要校验
 
     bs = x.size(0)
     h = x.size(1)
     k = expert_idx.size(1)
 
-    if active_num == 0:
-        active_num = bs * k 
-    expanded_x_dtype = x.dtype if quant_mode == -1 else torch.int8
+    expanded_x_dtype = x.dtype
+    expanded_scale_dtype = torch.float32
+    if quant_mode in [0, 1]:
+        expanded_x_dtype = torch.int8
+    elif quant_mode == 2:
+        expanded_x_dtype = torch.float8_e5m2
+        expanded_scale_dtype = torch.float8_e8m0fnu
+    elif quant_mode == 3:
+        expanded_x_dtype = torch.float8_e4m3fn
+        expanded_scale_dtype = torch.float8_e8m0fnu
+
     if drop_pad_mode == 1:
         expanded_x_dim_list = [expert_num, expert_capacity, h]
         expanded_scale_dim_list = [expert_num * expert_capacity]
     else:
-        expanded_x_dim_list = [min(active_num, bs * k), h]
-        expanded_scale_dim_list = [min(active_num, bs * k)]  
-
-    expanded_row_idx_dim_list = [bs * k]
-    
+        num_expanded_rows = bs * k if active_num <= 0 else min(active_num, bs * k)
+        expanded_x_dim_list = [num_expanded_rows, h]
+        if quant_mode in [2, 3]:
+            MXQUANT_BLOCK_SIZE = 32
+            PAD_TO_EVEN_FACTOR = 2
+            scale_cols = (h + MXQUANT_BLOCK_SIZE - 1) // MXQUANT_BLOCK_SIZE
+            scale_cols = (scale_cols + PAD_TO_EVEN_FACTOR - 1) // PAD_TO_EVEN_FACTOR * PAD_TO_EVEN_FACTOR
+            expanded_scale_dim_list = [num_expanded_rows, scale_cols]
+        elif quant_mode in [-1, 1]: # quant_mode in [-1, 0, 1]
+            expanded_scale_dim_list = [num_expanded_rows]
     if quant_mode == 0:
         expanded_scale_dim_list = []
-    
+
+    expanded_row_idx_dim_list = [bs * k]
+
     if not expert_tokens_num_flag:
         expert_token_cumsum_or_count_dim_list = []
     elif (expert_tokens_num_type in range(0, 2)):   # [0, 1]
@@ -1015,10 +1031,10 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     elif (expert_tokens_num_type == 2): # 2: key_value
         expert_token_cumsum_or_count_dim_list = [expert_num, 2]
 
-    return (x.new_empty(tuple(expanded_x_dim_list), dtype=expanded_x_dtype),
-            x.new_empty(tuple(expanded_row_idx_dim_list), dtype=torch.int32),
-            x.new_empty(tuple(expert_token_cumsum_or_count_dim_list), dtype=torch.int64),
-            x.new_empty(tuple(expanded_scale_dim_list), dtype=torch.float32))
+    return (x.new_empty(tuple(expanded_x_dim_list), dtype=expanded_x_dtype), 
+            x.new_empty(tuple(expanded_row_idx_dim_list), dtype=torch.int32), 
+            x.new_empty(tuple(expert_token_cumsum_or_count_dim_list), dtype=torch.int64), 
+            x.new_empty(tuple(expanded_scale_dim_list), dtype=expanded_scale_dtype))
 
 
 @impl(m, "ffn_worker_scheduler_")
