@@ -1565,11 +1565,52 @@ def npu_fusion_attention_backward(query, key, value, dy, head_num, input_layout,
     return (dq, dk, dv, dpse)
 
 
-@impl(m, "npu_fusion_attention_v2")
-def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None, query_rope=None,
-                                key_rope=None, d_scale_q=None, d_scale_k=None, d_scale_v=None, d_scale_dy=None, d_scale_o=None, scale=1.0, keep_prob=1.0,
+@impl(m, "npu_quant_fusion_attention")
+def npu_quant_fusion_attention_forward(query, key, value, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None, query_rope=None,
+                                key_rope=None, d_scale_q=None, d_scale_k=None, d_scale_v=None, scale=1.0, keep_prob=1.0,
                                 pre_tokens=2147483647, next_tokens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None,
                                 sparse_mode=0, out_dtype=None, gen_mask_parallel=True, sync=False, pse_type=1, q_start_idx=None, kv_start_idx=None,
+                                softmax_layout="", sink=None, query_quant_mode=0, query_dtype=None):
+    B = query.size(0)
+    N = head_num
+    S1 = query.size(2)
+    S2 = key.size(2)
+
+    if input_layout == "BSH":
+        B = query.size(0)
+        S1 = query.size(1)
+        S2 = key.size(1)
+
+    if input_layout == "SBH":
+        B = query.size(1)
+        S1 = query.size(0)
+        S2 = key.size(0)
+
+    seed = 0
+    offset = 0
+    numels = 0
+    if out_dtype is not None and out_dtype == 1:
+        attention_score = torch.empty_like(query, dtype=torch.bfloat16, device='meta')
+        softmax_out = torch.empty([0], dtype=torch.bfloat16, device='meta')
+    else:
+        attention_score = torch.empty_like(query, dtype=torch.half, device='meta')
+        softmax_out = torch.empty([0], dtype=torch.half, device='meta')
+    softmax_max = torch.empty([B, head_num, S1, 8], dtype=torch.float32, device='meta')
+    softmax_sum = torch.empty([B, head_num, S1, 8], dtype=torch.float32, device='meta')
+    return (torch.empty_like(attention_score),
+            torch.empty_like(softmax_max),
+            torch.empty_like(softmax_sum),
+            torch.empty_like(softmax_out),
+            seed,
+            offset,
+            numels)
+
+
+@impl(m, "npu_fusion_attention_v2")
+def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None, query_rope=None,
+                                key_rope=None, scale=1.0, keep_prob=1.0,
+                                pre_tokens=2147483647, next_tokens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None,
+                                sparse_mode=0, gen_mask_parallel=True, sync=False, pse_type=1, q_start_idx=None, kv_start_idx=None,
                                 softmax_layout="", sink=None):
     B = query.size(0)
     N = head_num
@@ -1690,12 +1731,38 @@ def npu_sparse_lightning_indexer_grad_kl_loss_meta(query, key, query_index, key_
     return (d_query_index, d_key_index, d_weights, loss)
 
 
-@impl(m, "npu_fusion_attention_grad_v2")
-def npu_fusion_attention_backward_v2(query, key, value, dy, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None,
-                                  d_scale_q=None, d_scale_k=None, d_scale_v=None, d_scale_dy=None, d_scale_o=None, softmax_max=None,
+@impl(m, "npu_quant_fusion_attention_grad")
+def npu_quant_fusion_attention_backward(query, key, value, dy, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None,
+                                  d_scale_q=None, d_scale_k=None, d_scale_v=None, softmax_max=None,
                                   softmax_sum=None, softmax_in=None, attention_in=None, query_rope=None, key_rope=None, scale_value=1.0,
                                   keep_prob=1.0, pre_tokens=2147483647, next_tokens=2147483647, inner_precise=0, seed=0, offset=0,
                                   numels=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, out_dtype=None,
+                                  gen_mask_parallel=True, sync=False, pse_type=1, q_start_idx=None, kv_start_idx=None,
+                                  softmax_layout="", sink=None, query_quant_mode=0, query_dtype=None):
+    if out_dtype is not None and out_dtype == 1:
+        dq = torch.empty_like(query, dtype=torch.bfloat16, device='meta')
+        dq_rope = torch.empty_like([0], dtype=torch.bfloat16, device='meta')
+        dk = torch.empty_like(key, dtype=torch.bfloat16, device='meta')
+        dk_rope = torch.empty_like([0], dtype=torch.bfloat16, device='meta')
+        dv = torch.empty_like(value, dtype=torch.bfloat16, device='meta')
+        dpse = torch.empty_like([0], dtype=torch.bfloat16, device='meta')
+    else:
+        dq = torch.empty_like(query, dtype=torch.half, device='meta')
+        dq_rope = torch.empty_like([0], dtype=torch.half, device='meta')
+        dk = torch.empty_like(key, dtype=torch.half, device='meta')
+        dk_rope = torch.empty_like([0], dtype=torch.half, device='meta')
+        dv = torch.empty_like(value, dtype=torch.half, device='meta')
+        dpse = torch.empty_like([0], dtype=torch.half, device='meta')
+    dsink = None if sink is None else torch.empty_like(sink, dtype=sink.dtype, device='meta')
+    return (dq, dk, dv, dpse, dq_rope, dk_rope, dsink)
+
+
+@impl(m, "npu_fusion_attention_grad_v2")
+def npu_fusion_attention_backward_v2(query, key, value, dy, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None,
+                                  softmax_max=None,
+                                  softmax_sum=None, softmax_in=None, attention_in=None, query_rope=None, key_rope=None, scale_value=1.0,
+                                  keep_prob=1.0, pre_tokens=2147483647, next_tokens=2147483647, inner_precise=0, seed=0, offset=0,
+                                  numels=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0,
                                   gen_mask_parallel=True, sync=False, pse_type=1, q_start_idx=None, kv_start_idx=None,
                                   softmax_layout="", sink=None):
     dq = torch.empty_like(query, dtype=query.dtype, device='meta')
