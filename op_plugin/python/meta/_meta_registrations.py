@@ -2561,7 +2561,8 @@ def npu_add_quant_gmm_meta(y, x1, x2, x2_scale, group_list, *, x1_scale=None, gr
 def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bias=None, offset=None,
                                             pertoken_scale=None, shared_input=None, logit=None,
                                             row_index=None, dtype=None, shared_input_weight=1.0,
-                                            shared_input_offset=0, output_bs=0, group_list_type=1, tuning_config=None):
+                                            shared_input_offset=0, output_bs=0, group_list_type=1, tuning_config=None,
+                                            x_dtype=None, w_dtype=None, scale_dtype=None, pertoken_scale_dtype=None):
     torch._check(
         torch.is_tensor(x),
         lambda: "x must be tensor." + ops_error(ErrCode.VALUE)
@@ -2570,6 +2571,28 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
         torch.is_tensor(w),
         lambda: "w must be tensor." + ops_error(ErrCode.VALUE)
     )
+
+    if x_dtype is not None:
+        torch._check(
+            x_dtype == torch_npu.float4_e1m2fn_x2 or x_dtype == torch_npu.float4_e2m1fn_x2,
+            lambda: "x_dtype supports float4_e1m2fn_x2, float4_e2m1fn_x2 for now, but it is " + npu_dtype_to_str(x_dtype),
+        )
+    if w_dtype is not None:
+        torch._check(
+            w_dtype == torch_npu.float4_e1m2fn_x2 or w_dtype == torch_npu.float4_e2m1fn_x2,
+            lambda: "weight_dtype only supports float4_e1m2fn_x2, float4_e2m1fn_x2  for now, but it is " + npu_dtype_to_str(w_dtype),
+        )
+    if scale_dtype is not None:
+        torch._check(
+            scale_dtype == torch_npu.float8_e8m0fnu,
+            lambda: "scale_dtype only supports float8_e8m0fnu for now, but it is " + npu_dtype_to_str(scale_dtype),
+        )
+    if pertoken_scale_dtype is not None:
+        torch._check(
+            pertoken_scale_dtype == torch_npu.float8_e8m0fnu,
+            lambda: "pertoken_scale_dtype only supports float8_e8m0fnu for now, but it is " + npu_dtype_to_str(per_token_scale_dtype),
+        )
+
     dimm = x.size(0)
     x_dim = x.dim()
     w_dim = w.dim()
@@ -2598,7 +2621,19 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
     if output_bs == 0:
         y_dimm = dimm
 
-    dim_n = dimn * INT4_IN_INT32 if w.dtype == torch.int32 else dimn
+    FP4_IN_INT8 = 2
+    w_trans = x.size(-1) == w.size(-2)
+    is_a4w4_input = False
+    if x_dtype is not None and w_dtype is not None:
+        is_a4w4_input = (x_dtype == torch_npu.float4_e1m2fn_x2 or x_dtype == torch_npu.float4_e2m1fn_x2) and \
+                        (w_dtype == torch_npu.float4_e1m2fn_x2 or w_dtype == torch_npu.float4_e2m1fn_x2)
+    if w.dtype == torch.int32:
+        dim_n = dimn * INT4_IN_INT32
+    elif is_a4w4_input and not w_trans:
+        dim_n = dimn * FP4_IN_INT8
+    else:
+        dim_n = dimn
+
     dim_list = [y_dimm, dim_n]
 
     if dtype == torch.float32:
