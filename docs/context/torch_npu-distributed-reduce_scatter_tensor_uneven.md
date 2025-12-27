@@ -31,7 +31,7 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_si
 
 ## 返回值说明
 
-该函数直接返回为进行计算时的工作句柄，实际计算结果传给output。
+该函数直接返回进行计算时的工作句柄，实际计算结果传给output。
 `output`：类型为Tensor，其shape无特殊约束。
 
 

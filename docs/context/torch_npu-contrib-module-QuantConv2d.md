@@ -29,7 +29,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 - **in_channels**（`int`）：必选参数，Conv2d的输入的channel值。
 - **out_channels**（`int`）：必选参数，Conv2d的输出的channel值。
 - **kernel_size**（`int`/`tuple`）：必选参数，卷积核大小，支持单个数字输入或者2维tuple输入。当前仅支持kernel_size范围为[1, 255]。
-- **output_dtype**（`torch.dtype`）：必选参数，输出数据类型，当前仅支持输入`float16`。
+- **output_dtype**（`torch.dtype`）：必选参数，输出数据类型，当前仅支持`float16`。
 - **stride**（`int`/`tuple`）：可选参数，默认值为1，Conv2d的stride，支持单个数字输入或者2维tuple输入。当前仅支持stride范围为[1, 63]。
 - **padding**（`int`/`tuple`）：可选参数，默认值为0，Conv2d的padding，支持单个数字输入或者2维tuple输入。当前仅支持padding范围为[0, 255]。
 - **dilation**（`int`/`tuple`）：可选参数，默认值为1，Conv2d的dilation，支持单个数字输入或者2维tuple输入。当前仅支持dilation范围为[1, 255]。

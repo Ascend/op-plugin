@@ -74,7 +74,10 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 
 -   **expanded_x** (`Tensor`)：根据`expert_idx`进行扩展过的特征，要求是2维张量，shape为(NUM_ROWS\*K, H)。非量化场景下数据类型同`x`；量化场景下数据类型支持`int8`。数据格式要求为$ND$。前available_idx_num\*H个元素为有效数据，其余为无效数据。其中available_idx_num为`expert_idx`中`active_expert_range`范围的元素的个数。量化场景下，当`x`的数据类型为`int8`时，输出值无意义。
 -   **expanded_row_idx** (`Tensor`)：`expanded_x`和`x`的映射关系，要求是1维张量，shape为(NUM_ROWS\*K, )，数据类型支持`int32`，数据格式要求为$ND$。前available_idx_num\*H个元素为有效数据，其余由`row_idx_type`决定。其中available_idx_num为`expert_idx`中`active_expert_range`范围的元素的个数。量化场景下，当`x`的数据类型为`int8`时，输出值无意义。
--   **expert_token_cumsum_or_count** (`Tensor`)：在`expert_tokens_num_type`为1的场景下，要求是1维张量，表示`active_expert_range`范围内expert对应的处理token的总数。shape为(expert_end-expert_start, )；在`expert_tokens_num_type`为2的场景下，要求是2维张量，shape为(expert_num, 2)，表示`active_expert_range`范围内token总数为非0的expert，以及对应expert处理token的总数；expert_idx在active_expert_range范围且剔除对应expert处理token为0的元素对为有效元素对，存放于Tensor头部并保持原序。数据类型支持`int64`，数据格式要求为$ND$。
+-   **expert_token_cumsum_or_count** (`Tensor`)：
+    -   在`expert_tokens_num_type`为1的场景下，要求是1维张量，表示`active_expert_range`范围内expert对应的处理token的总数。shape为(expert_end-expert_start, )。
+    -   在`expert_tokens_num_type`为2的场景下，要求是2维张量，shape为(expert_num, 2)，表示`active_expert_range`范围内token总数为非0的expert，以及对应expert处理token的总数。
+    -   expert_idx在active_expert_range范围且剔除对应expert处理token为0的元素对为有效元素对，存放于Tensor头部并保持原序。数据类型支持`int64`，数据格式要求为$ND$。
 -   **expanded_scale** (`Tensor`)：数据类型支持`float32`，数据格式要求为$ND$。令available_idx_num为`active_expert_range`范围的元素的个数。
     -   非量化场景下，shape为(NUM_ROWS\*K,)。当`scale`未输入时，输出值无意义；当`scale`输入时，输出表示一个1维张量，前available_idx_num\*H个元素为有效数据，其余为无效数据。
     -   动态quant场景下，输出量化计算过程中`scale`的中间值，shape为(NUM_ROWS \*K)。当`scale`未输入时，输出值无意义，输出表示一个1维张量，前available_idx_num个元素为有效数据，其余为无效数据，若`x`的输入类型为`int8`，输出值无意义。
