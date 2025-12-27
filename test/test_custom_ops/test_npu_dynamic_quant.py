@@ -10,7 +10,7 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 from torch.testing import assert_close
 
-
+# test
 class TestDynamicQuant(TestCase):
     def supported_op_exec(self, input_tensor, smooth_scales=None, group_index=None, dst_type=torch.int8):
         input_tensor = input_tensor.float()
@@ -51,6 +51,22 @@ class TestDynamicQuant(TestCase):
     def custom_op_exec(self, input_tensor, smooth_scales=None, group_index=None, dst_type=torch.int8):
         return torch_npu.npu_dynamic_quant(input_tensor, smooth_scales=smooth_scales, group_index=group_index, dst_type=dst_type)
 
+    def dynamic_quant_perchannel_int8(self, input_tensor, smooth_scales=None):
+        input_tensor_fp32 = input_tensor.to(torch.float32)
+        input_smooth_fp32 = smooth_scales.to(torch.float32) if smooth_scales is not None else None
+        input_scaled_tensor = input_tensor_fp32 * input_smooth_fp32 if input_smooth_fp32 is not None else input_tensor_fp32
+        scale_max = 127.0
+        input_abs = torch.abs(input_scaled_tensor)
+        input_max = torch.max(input_abs, dim=-2, keepdims=True)[0]
+        scale = input_max * (1.0 / scale_max)
+        input_scaled_tensor = input_scaled_tensor / scale
+        round_data = torch.round(input_scaled_tensor, decimals=0).to(torch.int8)
+        
+        return [round_data, scale.squeeze(-2)]
+    
+    def dynamic_quant_perchannel_impl(self, input_tensor, smooth_scales=None, group_index=None, dst_type=torch.int8, quant_mode="perchannel"):
+        return torch_npu.npu_dynamic_quant(input_tensor, smooth_scales=smooth_scales, group_index=group_index, dst_type=dst_type, quant_mode=quant_mode)
+
     def generate_input(self, input_shape, dtype="float16", use_smooth=False, group_num=1):
         date_type = torch.float16 if dtype == "float16" else torch.bfloat16
         input_tensor = torch.randn(input_shape, dtype=date_type)
@@ -68,6 +84,12 @@ class TestDynamicQuant(TestCase):
         else:
             smooth_scales = torch.randn(input_shape[-1], dtype=date_type)
         return input_tensor, smooth_scales, group_index
+    
+    def generate_input_perchannel(self, input_shape, dtype="float16"):
+        date_type = torch.float16 if dtype == "float16" else torch.bfloat16
+        input_tensor = torch.randn(input_shape, dtype=date_type)
+        smooth_scales = torch.randn((input_shape[-2], 1), dtype=date_type)
+        return input_tensor, smooth_scales
 
     def convert_int4_to_int8(self, x):
         x_uint8 = x.view(torch.uint8).view(-1, 1)
@@ -175,6 +197,17 @@ class TestDynamicQuant(TestCase):
         y = self.convert_int4_to_int8(custom_output[0]).view([2, 32, 256]).to(torch.int32)
         assert_close(supported_output[0], y, atol=1.0, rtol=0.0)
         assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_dynamic_quant_int8_bf16_input_smooth_perchannel(self, device="npu"):
+        input_tensor, smooth_scales = self.generate_input_perchannel(input_shape=[2, 32, 256], dtype="bfloat16")
+        input_tensor, smooth_scales = input_tensor.to(device), smooth_scales.to(device)
+        smooth_scales_copy = smooth_scales.squeeze().to(device)
+        supported_output = self.dynamic_quant_perchannel_int8(input_tensor.clone(), smooth_scales.clone())
+        custom_output = self.dynamic_quant_perchannel_impl(input_tensor.clone(), smooth_scales_copy.clone(), None, torch.int8, "perchannel")
+        y = custom_output[0].view([2, 32, 256])
+        assert_close(supported_output[0], y, atol=0.1, rtol=0.01)
+        assert_close(supported_output[1], custom_output[1], atol=0.01, rtol=0.001)
         
 if __name__ == "__main__":
     run_tests()

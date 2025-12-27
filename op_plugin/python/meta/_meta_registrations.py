@@ -3361,8 +3361,13 @@ def npu_dynamic_quant(input_dummy, *, smooth_scales=None, group_index=None, dst_
     # default dst_type 1 is the enum of torch.int8
     dim_num = input_dummy.dim()
     scale_shape = []
-    for dim in range(dim_num - 1):
+    for dim in range(dim_num - 2):
         scale_shape.append(input_dummy.size(dim))
+    if quant_mode == "perchannel":
+        scale_shape.append(input_dummy.size(dim_num - 1))
+    else:
+        scale_shape.append(input_dummy.size(dim_num - 2)) 
+
     scale = input_dummy.new_empty(scale_shape, dtype=torch.float32)
     if quant_mode == "pertensor":
         scale = input_dummy.new_empty([1], dtype=torch.float32)
@@ -3389,8 +3394,12 @@ def npu_dynamic_quant_asymmetric(input_dummy, *, smooth_scales=None, group_index
     # default dst_type 1 is the enum of torch.int8
     dim_num = input_dummy.dim()
     scale_offset_shape = []
-    for dim in range(dim_num - 1):
+    for dim in range(dim_num - 2):
         scale_offset_shape.append(input_dummy.size(dim))
+    if quant_mode == "perchannel":
+        scale_offset_shape.append(input_dummy.size(dim_num - 1))
+    else:
+        scale_offset_shape.append(input_dummy.size(dim_num - 2))    
     scale = input_dummy.new_empty(scale_offset_shape, dtype=torch.float32)
     offset = input_dummy.new_empty(scale_offset_shape, dtype=torch.float32)
     if quant_mode == "pertensor":

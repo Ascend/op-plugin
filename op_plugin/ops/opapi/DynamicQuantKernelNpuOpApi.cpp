@@ -21,6 +21,7 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 const int64_t INT4_IN_INT32_NUM = 8;
 constexpr int64_t DTYPE_NUM_FOR_QUINT4X2 = static_cast<int64_t>(at::ScalarType::QUInt4x2);
+constexpr int64_t INPUT_DIM_LOWER_BOUND = 1;
 
 TensorWrapper get_output_tensor_wrapper(
     const at::Tensor &input, at::Tensor &output,
@@ -72,11 +73,23 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(
     c10::optional<int64_t> dst_type,
     c10::string_view quant_mode)
 {
+    TORCH_CHECK(input.dim() > INPUT_DIM_LOWER_BOUND, "Input shape dim should be greater than 1" + OPS_ERROR(ErrCode::PARAM));
+    // if aclnnDynamicQuantV2 is not implemented, use npu_dynamic_quant_v0(aclnnDynamicQuant)
     DO_COMPATIBILITY(aclnnDynamicQuantV2, npu_dynamic_quant_v0(input, smooth_scales, group_index, dst_type));
+
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
     int index = 0;
-    for (; index < scale_dim; ++index) {
+    for (; index < scale_dim - 1; ++index) {
+        scale_size.push_back(input.size(index));
+    }
+    std::string quant_mode_str = std::string(quant_mode);
+    static bool is_symmetrical = true;
+    static bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicQuantV3");
+
+    if (quant_mode_str == "perchannel") {
+        scale_size.push_back(input.size(scale_dim));
+    } else {
         scale_size.push_back(input.size(index));
     }
     at::Tensor scale = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
@@ -84,17 +97,18 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(
 
     at::Tensor output;
     aclDataType y_acltype;
-    TensorWrapper y_wrapper = get_output_tensor_wrapper(input, output, y_acltype, dst_type, scale_size, index);
+    TensorWrapper y_wrapper = get_output_tensor_wrapper(input, output, y_acltype, dst_type, scale_size, index + 1);
 
-    std::string quant_mode_str = std::string(quant_mode);
     if (quant_mode_str == "pertensor") {
-        static bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicQuantV3");
         TORCH_CHECK(npu_support_v3,
             "Can't support quant_mode pertensor, please check device type." + OPS_ERROR(ErrCode::PARAM));
-        bool is_symmetrical = true;
         at::SmallVector<int64_t, op_infer::SIZE> per_tensor_size = {1};
         scale = npu_preparation::apply_tensor_without_format(per_tensor_size, c10::dtype(c10::ScalarType::Float));
         EXEC_NPU_CMD(aclnnDynamicQuantV3, input, smooth_scales, group_index, y_acltype, is_symmetrical, "pertensor", y_wrapper, scale, offset);
+    } else if (quant_mode_str == "perchannel") {
+        TORCH_CHECK(npu_support_v3,
+            "Can't support quant_mode perchannel, please check device type." + OPS_ERROR(ErrCode::PARAM));
+        EXEC_NPU_CMD(aclnnDynamicQuantV3, input, smooth_scales, group_index, y_acltype, is_symmetrical, "perchannel", y_wrapper, scale, offset);
     } else if (quant_mode_str == "pertoken") {
         EXEC_NPU_CMD(aclnnDynamicQuantV2, input, smooth_scales, group_index, y_acltype, y_wrapper, scale, offset);
     } else {
@@ -111,10 +125,20 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant_asymmetric(
     c10::optional<int64_t> dst_type,
     c10::string_view quant_mode)
 {
+    TORCH_CHECK(input.dim() > INPUT_DIM_LOWER_BOUND, "Input shape dim should be greater than 1" + OPS_ERROR(ErrCode::PARAM));
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
     int index = 0;
-    for (; index < scale_dim; ++index) {
+    for (; index < scale_dim - 1; ++index) {
+        scale_size.push_back(input.size(index));
+    }
+    std::string quant_mode_str = std::string(quant_mode);
+    static bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicQuantV3");
+    static bool is_symmetrical = false;
+
+    if (quant_mode_str == "perchannel") {
+        scale_size.push_back(input.size(scale_dim));
+    } else {
         scale_size.push_back(input.size(index));
     }
 
@@ -123,18 +147,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant_asymmetric(
 
     at::Tensor output;
     aclDataType y_acltype;
-    TensorWrapper y_wrapper = get_output_tensor_wrapper(input, output, y_acltype, dst_type, scale_size, index);
+    TensorWrapper y_wrapper = get_output_tensor_wrapper(input, output, y_acltype, dst_type, scale_size, index + 1);
 
-    std::string quant_mode_str = std::string(quant_mode);
     if (quant_mode_str == "pertensor") {
-        static bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicQuantV3");
         TORCH_CHECK(npu_support_v3,
             "Can't support quant_mode pertensor, please check device type." + OPS_ERROR(ErrCode::PARAM));
-        bool is_symmetrical = false;
         at::SmallVector<int64_t, op_infer::SIZE> per_tensor_size = {1};
         scale = npu_preparation::apply_tensor_without_format(per_tensor_size, c10::dtype(c10::ScalarType::Float));
         offset = npu_preparation::apply_tensor_without_format(per_tensor_size, c10::dtype(c10::ScalarType::Float));
         EXEC_NPU_CMD(aclnnDynamicQuantV3, input, smooth_scales, group_index, y_acltype, is_symmetrical, "pertensor", y_wrapper, scale, offset);
+    } else if (quant_mode_str == "perchannel") {
+        TORCH_CHECK(npu_support_v3,
+            "Can't support quant_mode perchannel, please check device type." + OPS_ERROR(ErrCode::PARAM));
+        EXEC_NPU_CMD(aclnnDynamicQuantV3, input, smooth_scales, group_index, y_acltype, is_symmetrical, "perchannel", y_wrapper, scale, offset);
     } else if (quant_mode_str == "pertoken") {
         EXEC_NPU_CMD(aclnnDynamicQuantV2, input, smooth_scales, group_index, y_acltype, y_wrapper, scale, offset);
     } else {
