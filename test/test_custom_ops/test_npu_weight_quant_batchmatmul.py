@@ -10,12 +10,14 @@ from torch_npu.testing.common_utils import SupportedDevices
 
 class TestNPUWeightQuantBatchMatmul(TestCase):
 
-    def supported_op_exec(self, x, weight, antiquant_scale, antiquant_offset):
-        res = torch.matmul(x, (weight + antiquant_offset) * antiquant_scale)
+    def supported_op_exec(self, x, weight, antiquant_scale, antiquant_offset=None):
+        if antiquant_offset is not None:
+            weight = weight + antiquant_offset
+        res = torch.matmul(x, weight * antiquant_scale)
         return res
 
-    def custom_op_exec(self, x, weight, antiquant_scale, antiquant_offset):
-        return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset)
+    def custom_op_exec(self, x, weight, antiquant_scale, antiquant_offset, weight_dtype=None):
+        return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, weight_dtype=weight_dtype)
 
     @SupportedDevices(['Ascend310P'])
     def test_npu_weight_quant_batchmatmul2(self, device="npu"):
@@ -34,6 +36,24 @@ class TestNPUWeightQuantBatchMatmul(TestCase):
             x, weight, antiquant_scale, antiquant_offset)
         custom_output = self.custom_op_exec(
             x_clone, weight_clone, antiquant_scale_clone, antiquant_offset_clone)
+
+        self.assertRtolEqual(supported_output, custom_output, 0.001)
+
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_weight_quant_batchmatmul2_with_hifloat8(self, device="npu"):
+        torch.manual_seed(0)
+        x = torch.randn((96, 320), dtype=torch.float16).npu()
+        weight = torch.randn((320, 256), dtype=torch.float32).npu()
+        antiquant_scale = torch.randn((1, 256), dtype=torch.float16).npu()
+        weight_hif8 = torch_npu.npu_dtype_cast(weight, torch_npu.hifloat8)
+
+        x_clone = x.clone()
+        weight_clone = weight.clone()
+        weight_hif8_clone = weight_hif8.clone()
+        antiquant_scale_clone = antiquant_scale.clone()
+
+        supported_output = self.supported_op_exec(x, weight, antiquant_scale)
+        custom_output = self.custom_op_exec(x_clone, weight_hif8_clone, antiquant_scale_clone, None, torch_npu.hifloat8)
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 

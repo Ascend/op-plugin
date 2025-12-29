@@ -54,7 +54,8 @@ static bool is_nz_format(const at::Tensor& x2)
 {
     const torch_npu::NPUStorageDesc &tensor_desc =
         torch_npu::NPUBridge::GetNpuStorageImpl(x2)->npu_desc_;
-    return tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ;
+    return tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ ||
+           tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ_C0_4;
 }
 
 uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::vector<uint64_t> &batch_record)
@@ -129,6 +130,7 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
                     OPS_ERROR(ErrCode::TYPE));
     }
     bool is_a8W4_int = x1.dtype() == at::kChar && x2.dtype() == at::kInt;
+    bool is_a8W4_float = x1.dtype() == at::kFloat8_e4m3fn && x2.dtype() == at::kFloat;
     at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
     int64_t group_size = check_and_get_groups(group_size_list, x1, x2, scale, pertoken_scale);
     bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
@@ -140,6 +142,12 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
     c10::SmallVector<int64_t, SIZE> output_size;
     if (is_a8W4_int) {
         output_size = {x1.sizes()[0], x2.sizes()[1] * INT4_NUMS_IN_INT32};
+    } else if (is_a8W4_float) {
+        if (trans_x2) {
+            output_size = {x1.sizes()[0], x2.sizes()[1]};
+        } else {
+            output_size = {x1.sizes()[0], x2.sizes()[1] * INT4_NUMS_IN_INT32};
+        }
     } else {
         std::vector<uint64_t> batch_record;
         uint64_t batch_val = infer_out_batch_shape(x1, x2, batch_record);

@@ -3024,8 +3024,9 @@ please check the sizes of scale and pertoken_scale" + ops_error(ErrCode.VALUE),
     )
     if is_a8w4_float:
         torch._check(
-            (group_sizes[0] == 0 and group_sizes[1] == 0 and group_sizes[2] == 32),
-            lambda: "when the dtype of input is A8W4, group_sizes's value must be 0,0,32, please check group_sizes's value" + ops_error(ErrCode.VALUE),
+            (group_sizes[0] == 0 and group_sizes[1] == 0 and group_sizes[2] == 32) or \
+            (group_sizes[0] == 1 and group_sizes[1] == 1 and group_sizes[2] == 32),
+            lambda: "when the dtype of input is A8W4, group_sizes's value must be [0,0,32] or [1,1,32], please check group_sizes's value" + ops_error(ErrCode.VALUE),
         )
         return
     is_a8w8_int = x1_dtype is None and x2_dtype is None and x1.dtype == torch.int8 and x2.dtype == torch.int8
