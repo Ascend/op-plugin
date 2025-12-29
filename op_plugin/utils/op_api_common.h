@@ -193,6 +193,7 @@ inline void *GetOpApiFuncAddr(const char *apiName)
     GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiNnHandler, "libopapi_nn.so", apiName);
     GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiCvHandler, "libopapi_cv.so", apiName);
     GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiTransformerHandler, "libopapi_transformer.so", apiName);
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiOamHandler, "libopapi_oam.so", apiName);
     GET_OP_API_FUNC_FROM_FEATURE_LIB(opapiLegacyHandler, "libopapi_legacy.so", apiName);
 
     static auto opApiHandler = GetOpApiLibHandler(GetOpApiLibName());
