@@ -4569,3 +4569,55 @@ def npu_repeat_interleave_backward_int_meta(grad, x, repeats, dim=None):
     result = torch.empty_like(x)
 
     return result
+
+
+@impl(m, "npu_dynamic_mx_quant_with_dual_axis")
+def npu_dynamic_mx_quant_with_dual_axis(input_dummy, *, round_mode="rint", dst_type=296, scale_alg=0):
+    dim_num = input_dummy.dim()
+    mxscale1_shape = []
+    mxscale2_shape = []
+    if scale_alg != 0:
+        raise RuntimeError("Invalid scale_alg value: {0}. Expected 0.".format(scale_alg) +
+                            ops_error(ErrCode.PARAM))
+    last_axis = -1
+    second_to_last_axis = -2
+    last_axis_change = last_axis + dim_num
+    second_to_last_axis_change = second_to_last_axis + dim_num
+    for dim in range(dim_num):
+        mxscale1_shape.append(input_dummy.size(dim))
+        mxscale2_shape.append(input_dummy.size(dim))
+    mxscale1_shape.append(2)
+    mxscale2_shape.append(2)
+
+    block_size = 32
+    last_dim_size = int(math.ceil(mxscale1_shape[last_axis_change] / block_size))
+    last_dim_size = (last_dim_size + 2 - 1) // 2
+    second_to_last_dim_size = int(math.ceil(mxscale2_shape[second_to_last_axis_change] / block_size))
+    second_to_last_dim_size = (second_to_last_dim_size + 2 - 1) // 2
+    mxscale1_shape[last_axis_change] = last_dim_size
+    mxscale2_shape[second_to_last_axis_change] = second_to_last_dim_size
+
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    if torch_dtype == torch.float8_e5m2 or dst_type == torch_npu.float8_e5m2:
+        y1 = torch.empty_like(input_dummy, dtype=torch.float8_e5m2)
+        y2 = torch.empty_like(input_dummy, dtype=torch.float8_e5m2)
+    elif torch_dtype == torch.float8_e4m3fn or dst_type == torch_npu.float8_e4m3fn:
+        y1 = torch.empty_like(input_dummy, dtype=torch.float8_e4m3fn)
+        y2 = torch.empty_like(input_dummy, dtype=torch.float8_e4m3fn)
+    else: # float4_e2m1, float4_e1m2
+        if input_dummy.size(dim_num - 1) % 2:
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+                                "the last dim of input must be divisible by 2, " +
+                               ops_error(ErrCode.PARAM))
+        y1_shape = []
+        y2_shape = []
+        for dim in range(dim_num - 1):
+            y1_shape.append(input_dummy.size(dim))
+            y2_shape.append(input_dummy.size(dim))
+        y1_shape.append(input_dummy.size(dim_num - 1) // 2)
+        y1 = input_dummy.new_empty(y1_shape, dtype=torch.uint8)        
+        y2_shape.append(input_dummy.size(dim_num - 1) // 2)
+        y2 = input_dummy.new_empty(y2_shape, dtype=torch.uint8)
+    mxscale1 = input_dummy.new_empty(mxscale1_shape, dtype=torch.uint8)
+    mxscale2 = input_dummy.new_empty(mxscale2_shape, dtype=torch.uint8)
+    return (y1, mxscale1, y2, mxscale2)
