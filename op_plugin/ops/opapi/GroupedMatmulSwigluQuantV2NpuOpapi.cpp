@@ -16,14 +16,19 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-const static int64_t MXFP_DIVISOR_SIZE = 64;
-const static int64_t MXFP_MULTI_BASE_SIZE = 2;
-
-const std::string GmmSwigluTypeToString(int64_t input_type)
-{
-    return c10_npu::IsCustomDType(input_type) ?
-               c10_npu::CustomDataTypeToString(input_type) : c10::toString(static_cast<at::ScalarType>(input_type));
-}
+constexpr int64_t MXFP_DIVISOR_SIZE = 64LL;
+constexpr int64_t MXFP_MULTI_BASE_SIZE = 2LL;
+constexpr int64_t NUM_TWO = 2LL;
+constexpr int64_t NUM_ONE = 1LL;
+constexpr int64_t DIM_2 = 2LL;
+constexpr int64_t DIM_1 = 1LL;
+constexpr int64_t DIM_0 = 0LL;
+constexpr int64_t WEIGHT_MAX_DIM_NUM = 3LL;
+constexpr int64_t WEIGHT_PENULTIMATE_DIM = 1LL;
+constexpr int64_t WEIGHT_LAST_DIM = 2LL;
+constexpr int64_t DIM_3 = 3LL;
+constexpr int64_t FLOAT8_E5M2 = 35LL;
+constexpr int64_t FLOAT8_E4M3FN = 36LL;
 
 void create_new_tensor(at::Tensor &y, size_t dim_m, size_t dim_n, c10::TensorOptions options)
 {
@@ -37,9 +42,6 @@ void create_new_tensor_batch(at::Tensor &y, size_t batch, size_t dim_m, size_t d
     auto output_size = op_infer::array_to_small_vector({batch, dim_m, dim_n});
     y = npu_preparation::apply_tensor_without_format(output_size, options);
 }
-
-const static int64_t DIM_2 = 2;
-const static int64_t DIM_3 = 3;
 
 std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     const at::Tensor & x,
@@ -61,25 +63,37 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     c10::optional<int64_t> weight_scale_dtype,
     c10::optional<int64_t> x_scale_dtype)
 {
-    TORCH_CHECK(x.dim() >= DIM_2, "x dim should greater than 2, but the actual value is ", x.dim(), OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(!weight_scale[0].sizes().empty(), "weight_scale[0] is empty", OPS_ERROR(ErrCode::PARAM));
-    auto x_size = x.sizes();
-    int n = weight_scale[0].sizes().back();
-    int m = x_size[0];
-    int k = x_size[1];
+    TORCH_CHECK(x.dim() >= DIM_2, "The x dim should greater than 2, but the actual value is ", x.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(!weight_scale[DIM_0].sizes().empty(), "The weight_scale[0] is empty.", OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(!(x_dtype.has_value() || weight_dtype.has_value()),
-                "The optional parameter x_dtype and weight_dtype should be null", "." + OPS_ERROR(ErrCode::VALUE));
+    auto x_size = x.sizes();
+    int n = weight[DIM_0].sizes()[DIM_2];
+    int m = x_size[DIM_0];
+    int k = x_size[DIM_1];
+
+    if (x_dtype.has_value()) {
+        TORCH_CHECK(x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2)
+                 || x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                    "The optional parameter x_dtype only supports mxfp4 or None, but the actual value is ",
+                    c10_npu::CustomDataTypeToString(x_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
+    }
+    if (weight_dtype.has_value()) {
+        TORCH_CHECK(weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2)
+                 || weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                    "The optional parameter weight_dtype only supports mxfp4 or None, but the actual value is ",
+                    c10_npu::CustomDataTypeToString(weight_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
+    }
+    TORCH_CHECK((x_dtype.has_value() && weight_dtype.has_value()) || (!x_dtype.has_value() && !weight_dtype.has_value()),
+                "The optional parameter x_dtype and weight_dtype should both be mxfp4 or None.", OPS_ERROR(ErrCode::VALUE));
 
     if (weight_scale_dtype.has_value()) {
         TORCH_CHECK(weight_scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0),
-                    "The optional parameter weight_scale_dtype only supports float8_e8m0fnu or None, but now is ",
+                    "The optional parameter weight_scale_dtype only supports float8_e8m0fnu or None, but the actual value is ",
                     c10_npu::CustomDataTypeToString(weight_scale_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
     }
-
     if (x_scale_dtype.has_value()) {
         TORCH_CHECK(x_scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0),
-                    "The optional parameter x_scale_dtype only supports float8_e8m0fnu or None, but now is ",
+                    "The optional parameter x_scale_dtype only supports float8_e8m0fnu or None, but the actual value is ",
                     c10_npu::CustomDataTypeToString(x_scale_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
     }
 
@@ -92,33 +106,78 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     auto bias_real = bias.value_or(at::Tensor());
     auto smooth_scale_real = smooth_scale.value_or(at::Tensor());
 
-    TensorListWrapper weight_scale_wrapper = make_wrapper(weight_scale, weight_scale_dtype);
-    TensorWrapper x_scale_wrapper = make_wrapper(x_scale, x_scale_dtype);
+    // infer weight is trans or not, when wight is trans, weight_strides[-2] == 1 and weight_strides[-1] == k
+    c10::SmallVector<int64_t, WEIGHT_MAX_DIM_NUM> weight_strides = op_infer::array_to_small_vector(weight[DIM_0].strides());
+    bool weight_trans = (weight_strides[WEIGHT_PENULTIMATE_DIM] == NUM_ONE && weight_strides[WEIGHT_LAST_DIM] == k);
+    static const bool mxfp4_input = x_dtype.has_value() && weight_dtype.has_value() &&
+                                   (x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
+                                    x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)) &&
+                                   (weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
+                                    weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
     at::Tensor output;
     at::Tensor output_scale;
     if (!weight_scale_dtype.has_value()) {
-        output = npu_preparation::apply_tensor_without_format({m, n/ MXFP_MULTI_BASE_SIZE}, c10::dtype(c10::ScalarType::Char));
+        output = npu_preparation::apply_tensor_without_format({m, n / MXFP_MULTI_BASE_SIZE}, c10::dtype(c10::ScalarType::Char));
         output_scale = npu_preparation::apply_tensor_without_format({m}, c10::dtype(c10::ScalarType::Float));
     } else {
         if (dequant_dtype.has_value()) {
             dequant_dtype_real = static_cast<int64_t>(c10_npu::GetAclDataType(dequant_dtype.value()));
         }
-        TORCH_CHECK(!weight[0].sizes().empty(), "weight[0] is empty", OPS_ERROR(ErrCode::PARAM));
-        TORCH_CHECK(weight[0].dim() == DIM_3, "weight[0] dim should be equal to 3, but the actual value is ",
-                    weight[0].dim(), OPS_ERROR(ErrCode::PARAM));
-        n = weight[0].sizes()[2]; // In mx quant mode, n needs to be obtained from the dim 2 of weight.
+        TORCH_CHECK(!weight[DIM_0].sizes().empty(), "weight[0] is empty.", OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(weight[DIM_0].dim() == DIM_3, "weight[0] dim should be equal to 3, but the actual value is ",
+                    weight[DIM_0].dim(), OPS_ERROR(ErrCode::PARAM));
+        n = weight[DIM_0].sizes()[DIM_2]; // In mx quant mode, n needs to be obtained from the dim 2 of weight.
         c10::TensorOptions options_output = x.options().dtype(quant_dtype.has_value()
                     ? npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(quant_dtype.value()))
-                    : x[0].scalar_type());
+                    : x[DIM_0].scalar_type());
         c10::TensorOptions options = x.options().dtype(
             npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(weight_scale_dtype.value())));
-        create_new_tensor(output, m, n / MXFP_MULTI_BASE_SIZE, options_output);
-        create_new_tensor_batch(output_scale, m, op_infer::CeilDiv(n / MXFP_MULTI_BASE_SIZE, MXFP_DIVISOR_SIZE), MXFP_MULTI_BASE_SIZE, options);
+
+        if (mxfp4_input) {
+            if (!weight_trans) {
+                if (c10_npu::GetAclDataType(quant_dtype.value()) == FLOAT8_E5M2 || c10_npu::GetAclDataType(quant_dtype.value()) == FLOAT8_E4M3FN) {
+                    create_new_tensor(output, m, ((n / MXFP_MULTI_BASE_SIZE) * FP4_IN_INT8), options_output);
+                    create_new_tensor_batch(output_scale, m, op_infer::CeilDiv(n * FP4_IN_INT8 / MXFP_MULTI_BASE_SIZE, MXFP_DIVISOR_SIZE),
+                                            MXFP_MULTI_BASE_SIZE, options);
+                } else {
+                    create_new_tensor(output, m, n / MXFP_MULTI_BASE_SIZE, options_output);
+                    create_new_tensor_batch(output_scale, m, op_infer::CeilDiv(n * FP4_IN_INT8 / MXFP_MULTI_BASE_SIZE, MXFP_DIVISOR_SIZE), MXFP_MULTI_BASE_SIZE, options);
+                }
+            } else {
+                if (c10_npu::GetAclDataType(quant_dtype.value()) == FLOAT8_E5M2 || c10_npu::GetAclDataType(quant_dtype.value()) == FLOAT8_E4M3FN) {
+                    create_new_tensor(output, m, n / MXFP_MULTI_BASE_SIZE, options_output);
+                    create_new_tensor_batch(output_scale, m, op_infer::CeilDiv(n / MXFP_MULTI_BASE_SIZE, MXFP_DIVISOR_SIZE), MXFP_MULTI_BASE_SIZE, options);
+                } else {
+                    create_new_tensor(output, m, n / MXFP_MULTI_BASE_SIZE / NUM_TWO, options_output);
+                    create_new_tensor_batch(output_scale, m, op_infer::CeilDiv(n / MXFP_MULTI_BASE_SIZE, MXFP_DIVISOR_SIZE), MXFP_MULTI_BASE_SIZE, options);
+                }
+            }
+        } else {
+            create_new_tensor(output, m, n / MXFP_MULTI_BASE_SIZE, options_output);
+            create_new_tensor_batch(output_scale, m, op_infer::CeilDiv(n / MXFP_MULTI_BASE_SIZE, MXFP_DIVISOR_SIZE), MXFP_MULTI_BASE_SIZE, options);
+        }
     }
 
+    TensorWrapper x_wrapper = {x,
+        x_dtype.has_value() ? c10_npu::GetAclDataType(x_dtype.value())
+                            : npu_preparation::convert_to_acl_data_type(x.scalar_type())};
+    TensorListWrapper weight_wrapper = {weight,
+        weight_dtype.has_value() ? c10_npu::GetAclDataType(weight_dtype.value())
+                                 : npu_preparation::convert_to_acl_data_type(weight[0].scalar_type())};
+    TensorListWrapper weight_scale_wrapper = {weight_scale,
+        weight_scale_dtype.has_value() ? c10_npu::GetAclDataType(weight_scale_dtype.value())
+                                : (weight_scale.empty() ? aclDataType::ACL_FLOAT
+                                : npu_preparation::convert_to_acl_data_type(weight_scale[0].scalar_type()))};
+    TensorWrapper x_scale_wrapper = {x_scale,
+        x_scale_dtype.has_value() ? c10_npu::GetAclDataType(x_scale_dtype.value())
+                                : (!x_scale.numel() ? aclDataType::ACL_FLOAT
+                                : npu_preparation::convert_to_acl_data_type(x_scale.scalar_type()))};
+    TensorWrapper output_wrapper = {output,
+        quant_dtype.has_value() ? c10_npu::GetAclDataType(quant_dtype.value()): aclDataType::ACL_FLOAT};
     TensorWrapper output_scale_wrapper = {output_scale,
         weight_scale_dtype.has_value() ? aclDataType::ACL_FLOAT8_E8M0 : aclDataType::ACL_FLOAT};
-    const bool is_weight_nz = at_npu::native::custom_ops::get_npu_format(weight[0]) == ACL_FORMAT_FRACTAL_NZ;
+
+    const bool is_weight_nz = at_npu::native::custom_ops::get_npu_format(weight[DIM_0]) == ACL_FORMAT_FRACTAL_NZ;
     if (is_weight_nz) {
         static const bool is_weight_nz_available = check_aclnn_kernel_available("aclnnGroupedMatmulSwigluQuantWeightNzV2");
         TORCH_CHECK(is_weight_nz_available,
@@ -143,19 +202,10 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
             output,
             output_scale_wrapper);
     } else {
-        static const bool dtypeValid = (x.scalar_type() == at::ScalarType::Float8_e4m3fn ||
-                                        x.scalar_type() == at::ScalarType::Float8_e5m2) &&
-                                        (weight[0].scalar_type() == at::ScalarType::Float8_e5m2 ||
-                                        weight[0].scalar_type() == at::ScalarType::Float8_e4m3fn);
-        TORCH_CHECK(dtypeValid,
-                    "The dtype of x and weight only supports Float8_e4m3fn/Float8_e5m2, but now x_dtype is",
-                    x.scalar_type(), "weight_dtype is", weight[0].scalar_type(),
-                    "." + OPS_ERROR(ErrCode::VALUE));
-
         EXEC_NPU_CMD(
             aclnnGroupedMatmulSwigluQuantV2,
-            x,
-            weight,
+            x_wrapper,
+            weight_wrapper,
             weight_scale_wrapper,
             weight_assist_matrix_real,
             bias_real,
@@ -167,7 +217,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
             quant_mode_real,
             group_list_type_real,
             tuning_config_real,
-            output,
+            output_wrapper,
             output_scale_wrapper);
     }
     return std::tuple<at::Tensor, at::Tensor>(output, output_scale);

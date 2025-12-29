@@ -194,7 +194,13 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         xScale = torch.randint(low=0, high=256, size=(M, math.ceil(K / 64), 2), dtype=torch.uint8)
         groupList = torch.tensor([M//2, M//2], dtype=torch.int64)
         return x, weight, weightScale, xScale, groupList
-
+    def gen_input_data_91095_mxfp4(self, E, M, K, N, transpose):
+        x = torch.randint(0, 256, (M, K), dtype=torch.uint8)
+        weight = torch.randint(0, 256, (E, K * 2, N), dtype=torch.uint8)
+        weightScale = torch.randint(low=0, high=256, size=(E, math.ceil(K / 64), N * 2, 2), dtype=torch.uint8)
+        xScale = torch.randint(low=0, high=256, size=(M, math.ceil(K / 64), 2), dtype=torch.uint8)
+        groupList = torch.tensor([int(M/2), int(M/2) + 1], dtype=torch.int64)
+        return x, weight, weightScale, xScale, groupList
     @unittest.skip("skip case")
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_swiglu_quant(self, device="npu"):
@@ -217,7 +223,7 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
 
     @unittest.skip("skip case")
     @SupportedDevices(['Ascend910_95'])
-    def test_npu_grouped_matmul_swiglu_quant(self, device="npu"):
+    def test_npu_grouped_matmul_swiglu_quant_mxfp8(self, device="npu"):
         # 生成数据
         E = 2
         M = 512
@@ -229,8 +235,30 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         # 注：有效数据截至到groupList[-1] 即output0[:groupList[-1],:],output0[:groupList[-1]]
         output0_valid = output0[:groupList[-1], :]
         output1_valid = output1[:groupList[-1]]
-        output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(), quant_mode=2,
+        output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(), dequant_dtype=torch.float32, quant_mode=2,
                                     quant_dtype=torch.float8_e5m2, weight_scale_dtype=torch_npu.float8_e8m0fnu, x_scale_dtype=torch_npu.float8_e8m0fnu)
+        output0_npu_valid = output0_npu[:groupList[-1], :]
+        output1_npu_valid = output1_npu[:groupList[-1]]
+        self.assertEqual(output0_valid, output0_npu_valid.cpu(), 1)
+        self.assertRtolEqual(output1_valid, output1_npu_valid.cpu())
+    
+    @unittest.skip("skip case")
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_grouped_matmul_swiglu_quant_mxfp4(self, device="npu"):
+        # 生成数据
+        E = 2
+        M = 2255
+        K = 9
+        N = 896
+        transpose = False
+        x, weight, weightScale, xScale, groupList = self.gen_input_data_91095_mxfp4(E, M, K, N, transpose)
+        output0, output1 = self.process_groups_910_95(x, weight, weightScale, xScale, groupList)
+        # 注：有效数据截至到groupList[-1] 即output0[:groupList[-1],:],output0[:groupList[-1]]
+        output0_valid = output0[:groupList[-1], :]
+        output1_valid = output1[:groupList[-1]]
+        output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(), dequant_dtype=torch.float32,
+                                   quant_mode=2, quant_dtype=torch.float8_e5m2, weight_scale_dtype=torch_npu.float8_e8m0fnu, x_scale_dtype=torch_npu.float8_e8m0fnu,
+                                   x_dtype=torch_npu.float4_e1m2fn_x2, weight_dtype=torch_npu.float4_e1m2fn_x2)
         output0_npu_valid = output0_npu[:groupList[-1], :]
         output1_npu_valid = output1_npu[:groupList[-1]]
         self.assertEqual(output0_valid, output0_npu_valid.cpu(), 1)
