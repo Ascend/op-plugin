@@ -311,6 +311,7 @@ static at::Tensor infer_lse_out_shape(
 std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
     const at::Tensor &query,
     const at::Tensor &value,
+    c10::optional<int64_t> query_dtype,
     c10::optional<int64_t> value_dtype,
     std::string input_layout_str,
     const c10::optional<at::Tensor> &quant_scale_out,
@@ -342,6 +343,9 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
     // 推导attenout shape
     at::Tensor tmp_output = infer_attention_out_shape(attention_out_layout, query, query_layout, num_query_heads, valueD);
 
+    // hifp8输入
+    bool is_hifloat8_input = query.dtype() == at::kByte && query_dtype.has_value() && c10_npu::GetAclDataType(query_dtype.value()) == aclDataType::ACL_HIFLOAT8;
+
     at::Tensor output;
     if (quant_scale_out.has_value()) {
         at::ScalarType output_type = at::ScalarType::Char;
@@ -349,8 +353,11 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor_v2(
             output_type = c10_npu::GetATenDType(out_dtype.value());
         }
         output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), output_type);
-    } else if (query.dtype() == at::kChar || query.dtype() == at::ScalarType::Float8_e4m3fn) {
-        if (query_rope.has_value()) {
+    } else if (query.dtype() == at::kChar || query.dtype() == at::ScalarType::Float8_e4m3fn || is_hifloat8_input) {
+        if (out_dtype.has_value()) {
+            at::ScalarType output_type = c10_npu::GetATenDType(out_dtype.value());
+            output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), output_type);
+        } else if (query_rope.has_value()) {
             const at::Tensor &query_rope_tensor = c10::value_or_else(query_rope, [] { return at::Tensor(); });
             output = npu_preparation::apply_tensor_without_format(tmp_output.sizes(), c10::dtype(query_rope_tensor.dtype()));
         } else {
@@ -405,7 +412,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
     std::string input_layout_str = std::string(input_layout);
 
     // construct the output tensor
-    std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, value_dtype, input_layout_str, quant_scale_out, block_table,
+    std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, query_dtype, value_dtype, input_layout_str, quant_scale_out, block_table,
                                                                                            num_query_heads, num_key_value_heads, return_softmax_lse, query_rope, out_dtype);
     at::Tensor output = std::get<0>(fia_output);
     at::Tensor softmax_lse = std::get<1>(fia_output);
@@ -434,13 +441,22 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
         TensorListWrapper keyTensors_wrapper = make_wrapper(keyTensors, key_dtype);
         TensorListWrapper valueTensors_wrapper = make_wrapper(valueTensors, value_dtype);
         TensorWrapper outTensor_wrapper = make_wrapper(output, out_dtype);
-        TensorWrapper query_rope_wrapper = make_wrapper(query_rope, query_rope_dtype);
-        TensorWrapper key_rope_wrapper = make_wrapper(key_rope, key_rope_dtype);
-        TensorWrapper dequant_scale_key_wrapper = make_wrapper(dequant_scale_key, dequant_scale_key_dtype);
-        TensorWrapper dequant_scale_value_wrapper = make_wrapper(dequant_scale_value, dequant_scale_value_dtype);
+
+        at::Tensor null_tensor;
+        auto query_rope_tmp = query_rope.has_value() ? query_rope.value() : null_tensor;
+        TensorWrapper query_rope_wrapper = make_wrapper(query_rope_tmp, query_rope_dtype);
+        auto key_rope_tmp = key_rope.has_value() ? key_rope.value() : null_tensor;
+        TensorWrapper key_rope_wrapper = make_wrapper(key_rope_tmp, key_rope_dtype);
+        auto dequant_scale_query_tmp = dequant_scale_query.has_value() ? dequant_scale_query.value() : null_tensor;
+        TensorWrapper dequant_scale_query_wrapper = make_wrapper(dequant_scale_query_tmp, dequant_scale_query_dtype);
+        auto dequant_scale_key_tmp = dequant_scale_key.has_value() ? dequant_scale_key.value() : null_tensor;
+        TensorWrapper dequant_scale_key_wrapper = make_wrapper(dequant_scale_key_tmp, dequant_scale_key_dtype);
+        auto dequant_scale_value_tmp = dequant_scale_value.has_value() ? dequant_scale_value.value() : null_tensor;
+        TensorWrapper dequant_scale_value_wrapper = make_wrapper(dequant_scale_value_tmp, dequant_scale_value_dtype);
+
         EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
             quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
-            dequant_offset_value, key_shared_prefix, value_shared_prefix, actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+            dequant_offset_value, key_shared_prefix, value_shared_prefix, actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
             num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
     } else {
         EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, query, keyTensors, valueTensors, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
@@ -553,7 +569,7 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     std::string input_layout_str = std::string(input_layout);
 
     // construct the output tensor
-    std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, value_dtype, input_layout_str, quant_scale_out, block_table,
+    std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, query_dtype, value_dtype, input_layout_str, quant_scale_out, block_table,
                                                                                            num_query_heads, num_key_value_heads, return_softmax_lse, query_rope, out_dtype);
     at::Tensor output = std::get<0>(fia_output);
     at::Tensor softmax_lse = std::get<1>(fia_output);
