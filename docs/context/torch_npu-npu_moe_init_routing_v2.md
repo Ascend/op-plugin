@@ -62,20 +62,20 @@
     - 非量化场景
       - 按照Scatter索引搬运
       $$
-      expandedXOut[i]=x[scatterRowIdx[i]// K]
+      expandedXOut[i]=x[scatterRowIdx[i]//K]
       $$
       - 按照Gather索引搬运
       $$
-      expandedXOut[gatherRowIdx[i]]=x[gatherRowIdx[i]// K]
+      expandedXOut[gatherRowIdx[i]]=x[i//K]
       $$
     - 量化场景
       - 按照Scatter索引搬运
       $$
-      expandedXOut[i]=quantResult[catterRowIdx[i]// K]
+      expandedXOut[i]=quantResult[scatterRowIdx[i]//K]
       $$
       - 按照Gather索引搬运
       $$
-      expandedXOut[gatherRowIdx[i]]=quantResult[gatherRowIdx[i]// K]
+      expandedXOut[gatherRowIdx[i]]=quantResult[i//K]
       $$
 
   6.expandedRowIdxOut的有效元素数量availableIdxNum，计算方式为expertIdx中activeExpertRangeOptional范围内的元素的个数
