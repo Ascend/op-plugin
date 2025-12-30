@@ -14,7 +14,7 @@
 
     $$
     expertid = exportForSourceRow[i,k] \\
-    out(i,j) = skip1_{i,j} + skip2_{i,j} + \sum^K_{k=0}(scales_{i,k} * (expandPermutedROWs_{expandedSrcRowToDstRow\_i+k*num\_rows, j}+ bias_{expertid,j}))
+    out(i,j) = skip1_{i,j} + skip2Optional_{i,j} + \sum_{k=0}^{K}(scales_{i,k} * (expandPermutedRows_{expandedSrcToDstRow_{i+k*num\_rows},j} + bias_{expertid,j}))
     $$
 
 ## 函数原型

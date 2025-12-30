@@ -9372,7 +9372,7 @@ torch_npu.npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor? skip1,
 算子功能: MoE计算中, 最后处理合并MoE FFN的输出结果. 
 计算公式: 
 expertid=exportForSourceRow[i,k]
-out(i,j)=skip1_{i,j}+skip2Optional_{i,j}+$\sum_{k=0}^{K}$(sclaes_{i,k}*(expandPermutedRowx_{expandedSrcRowToDstRowx_{i}+k*num_rows_{j}}+bias_{expertid_{j}}))
+out(i,j)=skip1_{i,j}+skip2Optional_{i,j}+\sum_{k=0}^{K}(scales_{i,k}*(expandPermutedRows_{expandedSrcToDstRow_{i+k*num_rows},j}+bias_{expertid,j}))
 
 参数说明
 expanded_permuted_rows: Tensor类型, 必选参数, 经过专家处理过的结果, 要求是一个2D的Tensor, 数据类型支持float16、bfloat16、float32, 数据格式要求为ND. shape支持(NUM_ROWS * K, H), NUM_ROWS为行数, K为从总的专家E中选出K个专家, H为列数. 
