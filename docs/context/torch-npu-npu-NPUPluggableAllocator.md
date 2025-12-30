@@ -77,7 +77,6 @@ void* my_malloc(ssize_t size, int device, aclrtStream stream)
     void *ptr;
     aclrtMallocAlign32(&ptr, size, aclrtMemMallocPolicy::ACL_MEM_MALLOC_HUGE_FIRST);
     std::cout<<"alloc ptr = "<<ptr<<", size = "<<size<<std::endl;
-    useflag = true;
     return ptr;
 }
  

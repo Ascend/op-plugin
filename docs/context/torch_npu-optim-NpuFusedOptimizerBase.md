@@ -36,6 +36,7 @@ class torch_npu.optim.NpuFusedOptimizerBase(params, default)
 ## 调用示例
 
 ```python
+import math
 import torch
 import torch_npu
 from torch_npu.optim.npu_fused_optim_base import NpuFusedOptimizerBase
