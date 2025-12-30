@@ -144,6 +144,19 @@ int64_t get_element_size(const at::Tensor &tensor)
     return shape_size;
 }
 
+int64_t get_storage_element_size(const at::Tensor &tensor)
+{
+    auto storage_impl = torch_npu::NPUBridge::GetNpuStorageImpl(tensor);
+    TORCH_CHECK(storage_impl != nullptr, "Failed to get tensor storageImpl pointer",
+                OPS_ERROR(ErrCode::PARAM));
+    auto storage_shape = storage_impl->npu_desc_.storage_sizes_;
+    int64_t shape_size = 1;
+    for (auto data : storage_shape) {
+        shape_size *= data;
+    }
+    return shape_size;
+}
+
 at::Tensor npu_convert_weight_to_b4pack(const at::Tensor &weight)
 {
     // 1）int32（int4）ND/NZ
@@ -158,7 +171,7 @@ at::Tensor npu_convert_weight_to_b4pack(const at::Tensor &weight)
     TORCH_CHECK(supported_format,
         "weight_format only support ND/NCL/NZ/NZ_C0_16/NZ_C0_32, but it is ", weight_format, OPS_ERROR(ErrCode::PARAM));
 
-    int64_t weight_elem_size = get_element_size(weight);
+    int64_t weight_elem_size = get_storage_element_size(weight);
     int64_t weight_bytes = weight_elem_size * sizeof(int32_t);
 
     // device to host
