@@ -3296,7 +3296,7 @@ def npu_transpose_batchmatmul_meta(input_, weight, *, bias=None, scale=None,
     )
     torch._check(
         bias is None,
-        lambda: "The bias is not supported in TranpsposeBatchMatMul" + str(weight.dtype) + ops_error(ErrCode.TYPE),
+        lambda: "The bias is not supported in TransposeBatchMatMul" + ops_error(ErrCode.TYPE),
     )
     M = input_.size(perm_x1.index(1))
     batchM = input_.size(perm_x1.index(0))
