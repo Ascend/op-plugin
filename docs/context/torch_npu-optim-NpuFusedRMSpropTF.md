@@ -22,7 +22,7 @@ class torch_npu.optim.NpuFusedRMSpropTF(params, lr=1e-2, alpha=0.9, eps=1e-10, w
 ## 参数说明
 
 - **params** (`dict`)：必选参数，模型参数或模型参数组，`params`为参数的可迭代对象或参数组的dict类型。
-- **lr** (`float`)：可选参数，学习率，默认值为1e-3。`lr`的值小于0时，打印“ValueError”异常信息。
+- **lr** (`float`)：可选参数，学习率，默认值为1e-2。`lr`的值小于0时，打印“ValueError”异常信息。
 - **alpha** (`float`)：可选参数，平滑常量，默认值为0.9。`alpha`的值小于0时，打印“ValueError”异常信息。
 - **eps** (`float`)：可选参数，分母防止除0项，提高数值稳定性，默认值为1e-10。`eps`的值小于0时，打印“ValueError”异常信息。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`的值小于0时，打印“ValueError”异常信息。
