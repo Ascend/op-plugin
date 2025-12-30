@@ -103,7 +103,8 @@ tensor_list rotary_mul_backward_nocheck(at::Tensor &dx, at::Tensor &dr1, at::Ten
 }
 } // namespace
 
-at::Tensor npu_rotary_mul(const at::Tensor &self, const at::Tensor &r1, const at::Tensor &r2, c10::string_view rotary_mode)
+at::Tensor npu_rotary_mul(const at::Tensor &self, const at::Tensor &r1, const at::Tensor &r2, c10::string_view rotary_mode,
+                          const c10::optional<at::Tensor> &rotate)
 {
     TORCH_CHECK(rotary_mode == "half",
         "npu_rotary_mul in aclop only support rotary_mode with half, but got ", rotary_mode,

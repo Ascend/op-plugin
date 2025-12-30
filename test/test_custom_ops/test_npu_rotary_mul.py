@@ -26,6 +26,13 @@ class TestRotaryMul(TestCase):
         npu_input = cpu_input.npu()
         return cpu_input, npu_input
 
+    def get_half_matrix(self, n, dtype):
+        matrix = torch.zeros(n, n, dtype=dtype)
+        half = n // 2
+        matrix[:half, half:] = torch.eye(half)
+        matrix[half:, :half] = -torch.eye(half)
+        return matrix
+
     def cpu_to_exec(self, x, r1, r2, mode='half'):
         if mode == 'half':
             out = self.rotary_mul(x, r1, r2)
@@ -38,6 +45,10 @@ class TestRotaryMul(TestCase):
             out = torch_npu.npu_rotary_mul(x, r1, r2)
         else:
             out = torch_npu.npu_rotary_mul(x, r1, r2, rotary_mode=mode)
+        return out.cpu()
+
+    def npu_to_exec_matrix(self, x, r1, r2, mode='half', rotate=None):
+        out = torch_npu.npu_rotary_mul(x, r1, r2, rotary_mode=mode, rotate=rotate)
         return out.cpu()
 
     @SupportedDevices(['Ascend910B'])
@@ -81,6 +92,27 @@ class TestRotaryMul(TestCase):
             cpu_r2, npu_r2 = self.gen_data(shape[2], dtype)
             cpu_out = self.cpu_to_exec(cpu_x, cpu_r1, cpu_r2, mode='interleave')
             npu_out = self.npu_to_exec(npu_x, npu_r1, npu_r2, mode='interleave')
+            self.assertRtolEqual(cpu_out, npu_out)
+
+    @unittest.skip("skip") # CI版本不支持
+    @SupportedDevices(['Ascend910B'])
+    def test_rotary_mul_mode_matrix(self):
+        dtype_list = [torch.bfloat16]
+        shape_list = [
+            [[2, 24, 28800, 128], [1, 1, 28800, 128], [1, 1, 28800, 128]],
+        ]
+        items = [
+            [shape, dtype]
+            for shape in shape_list
+            for dtype in dtype_list
+        ]
+        for shape, dtype in items:
+            cpu_x, npu_x = self.gen_data(shape[0], dtype)
+            cpu_r1, npu_r1 = self.gen_data(shape[1], dtype)
+            cpu_r2, npu_r2 = self.gen_data(shape[2], dtype)
+            rotate = self.get_half_matrix(shape[0][3], dtype).npu()
+            cpu_out = self.cpu_to_exec(cpu_x, cpu_r1, cpu_r2, mode='half')
+            npu_out = self.npu_to_exec_matrix(npu_x, npu_r1, npu_r2, mode='half', rotate=rotate)
             self.assertRtolEqual(cpu_out, npu_out)
 
     @unittest.skip("skip") # CI版本不支持

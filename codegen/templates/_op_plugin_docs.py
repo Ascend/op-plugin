@@ -3038,23 +3038,28 @@ tensor([[[[ 4.5000,  6.5000,  8.5000],
 _add_torch_npu_docstr(
     "npu_rotary_mul",
     """
-torch_npu.npu_rotary_mul(Tensor input, Tensor r1, Tensor r2, str rotary_mode='half') -> Tensor
+torch_npu.npu_rotary_mul(Tensor input, Tensor r1, Tensor r2, str rotary_mode='half', Tensor? rotate=None) -> Tensor
 功能描述
 实现RotaryEmbedding旋转位置编码。支持FakeTensor模式。
-    half模式：
-    x1, x2 = torch.chunk(input, 2, -1)
-    x_new = torch.cat((-x2, x1), dim=-1)
-    output = r1 * input + r2 * x_new
-    interleave模式：
-    x1 = input[..., ::2]
-    x2 = input[..., 1::2]
-    x_new = rearrange(torch.stack((-x2, x1), dim=-1), "... d two -> ...(d two)", two=2)
-    output = r1 * input + r2 * x_new
+    不传入rotate参数：
+        half模式：
+            x1, x2 = torch.chunk(input, 2, -1)
+            x_new = torch.cat((-x2, x1), dim=-1)
+            output = r1 * input + r2 * x_new
+        interleave模式：
+            x1 = input[..., ::2]
+            x2 = input[..., 1::2]
+            x_new = rearrange(torch.stack((-x2, x1), dim=-1), "... d two -> ...(d two)", two=2)
+            output = r1 * input + r2 * x_new
+    传入rotate时（由开发者生成rotate矩阵，生成方式参考示例）：
+        x_new = input @ rotate
+        output = r1 * input + r2 * x_new
 参数说明
 input：必选输入，4维Tensor，数据类型float16, bfloat16, float32
 cos: 必选输入，4维Tensor，数据类型float16, bfloat16, float32
 sin: 必选输入，4维Tensor，数据类型float16, bfloat16, float32
 rotary_mode: 可选属性，数据类型string，用于选择计算模式，支持'half'、'interleave'两种模式。缺省为half。
+rotate：可选参数，表示实现input位置变换的等价变化矩阵，输入维度支持2维，数据类型支持`float16`，`bfloat16`，`float32`，默认为空，不支持反向传播。
 约束说明
 jit_compile=False场景：
     half模式：
@@ -3078,12 +3083,38 @@ jit_compile=True场景：
     shape要求输入为4维，其中B维度和N维度数值需小于等于1000，D维度数值为128。
     广播场景下，广播轴的总数据量不能超过1024
     支持Atlas训练系列产品，Atlas A2训练系列产品, Atlas 推理系列产品。
-
-示例
+rotate推荐使用场景
+  interleave模式
+  half模式仅在以下场景时推荐使用：输入矩阵x需要在最后一个维度切分多份时，可以通过构造旋转编码矩阵实现一次调用获得性能收益，以x的layout为BSND需要切分为3份为例：
+     x切分为3份，$x = [x1|x2|x3]_{(dim=4)} ∈ R^{B×S×N×D}, x1 ∈ R^{B×S×N×D1},x2 ∈ R^{B×S×N×D2},x3 ∈ R^{B×S×N×D3}, 其中D = D1 + D2 + D3$，
+     那么可以构造一个rotate矩阵，实现调用一次完成x的旋转位置编码计算功能，rotate矩阵构造如下：
+     $$rotate = diag(rotate1, rotate2, rotate3) = \begin{pmatrix}rotate1&0&0\\0&rotate2&0\\0&0&rotate3\\\end{pmatrix}$$
+     其中rotate1、rotate2、rotate3分别为x1、x2、x3的旋转编码矩阵，单个旋转矩阵构建参考调用示例。
+示例1
     >>>x = torch.rand(2, 2, 5, 128).npu()
     >>>r1 = torch.rand(1, 2, 1, 128).npu()
     >>>r2 = torch.rand(1, 2, 1, 128).npu()
     >>>out = torch_npu.npu_rotary_mul(x, r1, r2)
+示例2
+    >>>n = 128
+    >>>rotate = torch.zeros(n, n, dtype=torch.bfloat16) # interleave
+    >>>for i in range(0, n, 2):
+    ...    rotate[i + 0, i + 1] = 1
+    ...    rotate[i + 1, i + 0] = 1
+    >>>x = torch.rand(2, 2, 5, n).npu()
+    >>>r1 = torch.rand(1, 1, 5, n).npu()
+    >>>r2 = torch.rand(1, 1, 5, n).npu()
+    >>>out = torch_npu.npu_rotary_mul(x, r1, r2, "interleave", rotate)
+示例3
+    >>>n = 128
+    >>>rotate = torch.zeros(n, n, dtype=torch.bfloat16) # half
+    >>>half = n // 2
+    >>>rotate[:half, half:] = torch.eye(half)
+    >>>rotate[half:, :half] = -torch.eye(half)
+    >>>x = torch.rand(2, 2, 5, n).npu()
+    >>>r1 = torch.rand(1, 1, 5, n).npu()
+    >>>r2 = torch.rand(1, 1, 5, n).npu()
+    >>>out = torch_npu.npu_rotary_mul(x, r1, r2, "half", rotate)
 """
 )
 

@@ -6514,7 +6514,7 @@ custom:
     acl_op: all_version
     op_api: all_version
 
-  - func: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2, str rotary_mode='half') -> Tensor
+  - func: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2, str rotary_mode='half', Tensor? rotate=None) -> Tensor
     acl_op: all_version
     op_api: all_version
     exposed: all_version

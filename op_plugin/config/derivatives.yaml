@@ -205,8 +205,9 @@ backward:
   self, gamma: npu_rms_norm_backward(grad, self, gamma, result1)
   version: [v2.1, newest]
 
-- name: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2, str rotary_mode='half') -> Tensor
+- name: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2, str rotary_mode='half', Tensor? rotate=None) -> Tensor
   self, r1, r2: npu_rotary_mul_backward(grad, self, r1, r2, rotary_mode)
+  rotate: non_differentiable
   version: [v2.1, newest]
 
 - name: npu_scaled_masked_softmax(Tensor x, Tensor mask, Scalar scale=1, bool fixed_triu_mask=False) -> Tensor
