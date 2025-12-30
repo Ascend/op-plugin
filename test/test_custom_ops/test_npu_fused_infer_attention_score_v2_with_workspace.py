@@ -38,11 +38,8 @@ class TestFusedInferAttentionV2WithWorkspace(TestCase):
             query, key, value, num_query_heads=32, input_layout="BNSD", softmax_scale=softmax_scale,
             pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
 
-        attention_out = torch.randn(query.size(), dtype=torch.float16).npu()
-        if return_softmax_lse:
-            softmax_lse = torch.randn(1, 32, 1, 1, dtype=torch.float32).npu()
-        else:
-            softmax_lse = torch.randn(1, dtype=torch.float32).npu()
+        attention_out, softmax_lse = torch_npu._npu_fused_infer_attention_score_v2_infer_output(
+            query, value, num_query_heads=32, input_layout="BNSD", return_softmax_lse=return_softmax_lse)
 
         return torch_npu.npu_fused_infer_attention_score_v2.out(
             query, key, value, workspace=workspace, num_query_heads=32, input_layout="BNSD",

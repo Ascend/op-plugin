@@ -539,5 +539,24 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     return workspace_tensor;
 }
 
+std::tuple<at::Tensor, at::Tensor> _npu_fused_infer_attention_score_v2_infer_output(
+    const at::Tensor &query,
+    const at::Tensor &value,
+    c10::string_view input_layout,
+    const c10::optional<at::Tensor> &quant_scale_out,
+    const c10::optional<at::Tensor> &block_table,
+    int64_t num_query_heads,
+    int64_t num_key_value_heads,
+    bool return_softmax_lse,
+    const c10::optional<at::Tensor> &query_rope)
+{
+    std::string input_layout_str = std::string(input_layout);
+    // construct the output tensor
+    std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, input_layout_str,
+                                                                                           quant_scale_out, block_table, num_query_heads, num_key_value_heads,
+                                                                                           return_softmax_lse, query_rope);
+    return fia_output;
+}
+
 #endif
 } // namespace op_api
