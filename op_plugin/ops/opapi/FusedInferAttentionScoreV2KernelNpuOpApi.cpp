@@ -603,6 +603,7 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
 std::tuple<at::Tensor, at::Tensor> _npu_fused_infer_attention_score_v2_infer_output(
     const at::Tensor &query,
     const at::Tensor &value,
+    c10::optional<int64_t> query_dtype,
     c10::optional<int64_t> value_dtype,
     c10::string_view input_layout,
     const c10::optional<at::Tensor> &quant_scale_out,
@@ -615,7 +616,7 @@ std::tuple<at::Tensor, at::Tensor> _npu_fused_infer_attention_score_v2_infer_out
 {
     std::string input_layout_str = std::string(input_layout);
     // construct the output tensor
-    std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, value_dtype, input_layout_str,
+    std::tuple<at::Tensor, at::Tensor> fia_output = op_api::construct_fia_output_tensor_v2(query, value, query_dtype, value_dtype, input_layout_str,
                                                                                            quant_scale_out, block_table, num_query_heads, num_key_value_heads,
                                                                                            return_softmax_lse, query_rope, out_dtype);
     return fia_output;

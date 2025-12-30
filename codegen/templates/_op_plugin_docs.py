@@ -7802,7 +7802,7 @@ _add_torch_npu_docstr(
 算子功能：用于npu_fused_infer_attention_score_v2算子aclgraph tilling下沉场景，推算output tensor 并创建一个此size大小的tensor， 实际返回output_tensor 和 softmax_lse_tensor。
 
 接口原型:
-torch_npu._npu_fused_infer_attention_score_v2_infer_output(Tensor query, Tensor value, *, int? value_dtype=None, str input_layout="BSH", Tensor? quant_scale_out=None, Tensor? block_table=None, int num_query_heads=1, int num_key_value_heads=0, bool return_softmax_lse=False, Tensor? query_rope=None, int? out_dtype=None) -> (Tensor, Tensor)
+torch_npu._npu_fused_infer_attention_score_v2_infer_output(Tensor query, Tensor value, *, int? query_dtype=None, int? value_dtype=None, str input_layout="BSH", Tensor? quant_scale_out=None, Tensor? block_table=None, int num_query_heads=1, int num_key_value_heads=0, bool return_softmax_lse=False, Tensor? query_rope=None, int? out_dtype=None) -> (Tensor, Tensor)
 
 参数说明:
 输入为npu_fused_infer_attention_score_v2的子集
