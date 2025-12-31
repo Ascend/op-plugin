@@ -2513,6 +2513,60 @@ def npu_grouped_matmul_add__meta(y, x1, x2, group_list, *, transpose_x=True,
     return y
 
 
+@impl(m, "npu_matmul_all_to_all")
+def npu_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, all2all_axes=None):
+    # world_size为设备卡数，这里假设卡数为2
+    world_size = 2
+    # 推导output的shape
+    # 因为该算子目前不支持转置，所以output的m维度==x1.size[0]，output的n维度==x2.size[1]
+    out_m = x1.size(0) * world_size
+    out_n = x2.size(1) // world_size
+    size = [out_m, out_n]
+    # matmul_all_to_all算子的输出dtype，必须等于输入x1和x2的dtype
+    dtype = x1.dtype
+    return torch.empty(size, dtype=dtype, device='meta')
+
+
+@impl(m, "npu_quant_matmul_all_to_all")
+def npu_quant_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, x1_scale=None, x2_scale=None, common_scale=None,
+                                     x1_offset=None, x2_offset=None, x1_quant_mode=3, x2_quant_mode=2, common_quant_mode=0,
+                                     group_sizes=None, all2all_axes=None, comm_quant_dtype=28, x1_dtype=None, x2_dtype=None,
+                                     x1_scale_dtype=None, x2_scale_dtype=None,
+                                     output_scale_dtype=None, comm_scale_dtype=None, y_dtype=None):
+    # world_size为设备卡数，这里假设卡数为2
+    world_size = 2
+    # 推导output的shape
+    # 因为该算子目前不支持转置，所以output的m维度==x1.size[0]，output的n维度==x2.size[1]
+    out_m = x1.size(0) * world_size
+    out_n = x2.size(1) // world_size
+    size = [out_m, out_n]
+    # 推导output的dtype，默认为float32
+    if y_dtype is None:
+        dtype = torch.float32
+    else:
+        dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP[y_dtype]
+    return torch.empty(size, dtype=dtype, device='meta')
+
+
+@impl(m, "npu_all_to_all_matmul")
+def npu_all_to_all_matmul_meta(x1, x2, hcom, world_size, bias=None, all2all_axes=None, all2all_out_flag=True):
+    # world_size为设备卡数，这里假设卡数为2
+    world_size = 2
+    # 推导output的shape
+    # 因为该算子目前不支持转置，所以output的m维度==x1.size[0]，output的n维度==x2.size[1]
+    out_m = x1.size(0) // world_size
+    out_n = x2.size(1)
+    size = [out_m, out_n]
+    # all_to_all_matmul算子的输出dtype，必须等于输入x1和x2的dtype
+    dtype = x1.dtype
+    if all2all_out_flag:
+        all2all_out_size = [out_m, x1.size(1) * world_size]
+        return (torch.empty(size, dtype=dtype, device='meta'),
+                torch.empty(all2all_out_size, dtype=dtype, device='meta'))
+    else:
+        return (torch.empty(size, dtype=dtype, device='meta'), None)
+
+
 def add_quant_gmm_check(*args):
     group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype = args
 
