@@ -50,8 +50,8 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 -   **gmm\_weight**（`Tensor`）：必选参数，GroupedMatMul计算的右矩阵。数据类型与`gmm_x`保持一致，支持3维，shape为$(e, H1, N1)$，数据格式支持ND。
 -   **hcom**（`str`）：必选参数，专家并行的通信域名，字符串长度要求\(0, 128\)。
 -   **ep\_world\_size**（`int`）：必选参数，EP通信域size，取值支持8、16、32、64、128。
--   **send\_counts**（`List[int]`）：必选参数，表示发送给其他卡的token数，数据类型支持`int`，取值大小为e\*`ep_world_size`，最大为256。
--   **recv\_counts**（`List[int]`）：必选参数，表示接收其他卡的token数，数据类型支持`int`，取值大小为e\*`ep_world_size`，最大为256。
+-   **send\_counts**（`List[int]`）：必选参数，为一个列表，表示发送给其他卡的token数，列表长度为卡数。列表中元素的数据类型支持`int`，取值为e\*`ep_world_size`，最大值为256。
+-   **recv\_counts**（`List[int]`）：必选参数，为一个列表，表示接收其他卡的token数，列表长度为卡数。列表中元素的数据类型支持`int`，取值大小为e\*`ep_world_size`，最大值为256。
 -   **send\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
 -   **recv\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
 -   **mm\_x**（`Tensor`）：可选参数，共享专家MatMul计算中的左矩阵。当需要融合共享专家矩阵计算时，该参数必选，数据类型支持`float16`、`bfloat16`，支持2维，shape为$(BS, H2)$。
