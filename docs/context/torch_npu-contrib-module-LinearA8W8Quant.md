@@ -73,7 +73,7 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
 - `x1`、`weight`、`scale`不能是空。
-- `x1`与`x2`最后一维的shape大小不能超过65535。
+- `x1`与`weight`最后一维的shape大小不能超过65535。
 - 输入参数或变量间支持的数据类型组合情况如下：
 
     **表1** <term>Atlas 推理系列产品</term>
