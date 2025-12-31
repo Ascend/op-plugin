@@ -17,7 +17,8 @@
 #include "torch_npu/csrc/core/npu/NPUException.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "op_plugin/utils/KernelNpuOutputDtype.h"
-
+#include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/OpApiInterface.h"
 namespace op_infer {
 
 at::ScalarType angle_out_dtype(const at::Tensor& self)

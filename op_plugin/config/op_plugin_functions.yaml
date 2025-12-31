@@ -5503,7 +5503,7 @@ custom:
 
   - func: npu_gelu_quant(Tensor self, *, Tensor? input_scale=None, Tensor? input_offset=None, str approximate='none', str quant_mode='dynamic', int? dst_type=None, str round_mode='rint') -> (Tensor, Tensor)
     op_api: [v2.1, newest]
-    
+
   - func: _conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)
     acl_op: all_version
 
@@ -5915,7 +5915,7 @@ custom:
   - func: npu_fast_gelu_backward(Tensor grad, Tensor self) -> Tensor
     acl_op: all_version
     op_api: all_version
-    
+
   - func: npu_dynamic_mx_quant(Tensor input, *, int axis=-1, str round_mode="rint", int dst_type=296, int block_size=32, int? scale_alg=0) -> (Tensor, Tensor)
     op_api: [v2.1, newest]
 
@@ -6415,7 +6415,7 @@ custom:
     op_api: all_version
     exposed: all_version
     internal_format_opapi: all_version
-  
+
   - func: npu_fused_matmul(Tensor x1, Tensor x2, *, Tensor? bias=None, Tensor? x3=None, str fused_op_type='') -> Tensor
     op_api: all_version
 
@@ -6455,19 +6455,9 @@ custom:
     exposed: all_version
     internal_format_opapi: all_version
 
-  - func: npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, float? clip_ratio=None, ScalarType? dst_dtype=None) -> (Tensor out, Tensor quant_scale)
+  - func: npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, float? clip_ratio=None, int? dst_dtype=None) -> (Tensor out, Tensor quant_scale)
     op_api: all_version
-    gen_opapi:
-      out:
-        size: kronecker_quant_out_size(x)
-        dtype: at::kInt
-      quant_scale:
-        size: kronecker_quant_scale_size(x)
-        dtype: at::kFloat
-      new_params:
-        clip_ratio_attr: clip_ratio.value_or(1.0)
-      exec: aclnnFlatQuant, x, kronecker_p1, kronecker_p2, clip_ratio_attr, out, quant_scale
-
+    internal_format_opapi: all_version
 
   - func: npu_group_quant(Tensor x, Tensor scale, Tensor group_index, *, Tensor? offset=None, ScalarType? dst_dtype=None) -> Tensor
     op_api: all_version
@@ -6597,7 +6587,7 @@ custom:
   - func: npu_gather_pa_kv_cache(Tensor key_cache, Tensor value_cache, Tensor block_tables, Tensor seq_lens, Tensor(a!) key, Tensor(b!) value, *, Tensor? seq_offset=None, bool is_seq_lens_cumsum=False) -> ()
     op_api: all_version
     internal_format_opapi: all_version
-  
+
   - func: npu_gather_pa_kv_cache_functional(Tensor key_cache, Tensor value_cache, Tensor block_tables, Tensor seq_lens, Tensor key, Tensor value, *, Tensor? seq_offset=None, bool is_seq_lens_cumsum=False) -> (Tensor, Tensor)
     op_api: all_version
     internal_format_opapi: all_version
@@ -6866,7 +6856,7 @@ custom:
 
   - func: npu_grouped_matmul_add_(Tensor(a!) self, Tensor x, Tensor weight, Tensor group_list, *, bool transpose_x=True, bool transpose_weight=False, int group_type=2, int? group_list_type=0) -> Tensor(a!)
     op_api: all_version
-    internal_format_opapi: all_version    
+    internal_format_opapi: all_version
 
   - func: npu_attn_softmax_(Tensor(a!) self) -> Tensor(a!)
     op_api: all_version
@@ -7081,7 +7071,7 @@ custom:
       new_params:
         restore_shape_value: 'restore_shape.value_or(at::IntArrayRef{1})'
       exec: aclnnMoeTokenUnpermute, permuted_tokens, sorted_indices, probs, padded_mode, restore_shape_value, unpermuted_tokens
-  
+
   - func: npu_attention_to_ffn(Tensor x, Tensor session_id, Tensor micro_batch_id, Tensor layer_id, Tensor expert_ids, Tensor expert_rank_table, str group, int world_size, int[] ffn_token_info_table_shape, int[] ffn_token_data_shape, int[] attn_token_info_table_shape, int moe_expert_num, *, Tensor? scales=None, Tensor? active_mask=None, int quant_mode=0, int sync_flag=0, int ffn_start_rank_id=0) -> ()
     op_api: all_version
     gen_opapi:

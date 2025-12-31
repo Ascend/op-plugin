@@ -575,7 +575,7 @@
   "func: adaptive_max_pool3d(Tensor self, int[3] output_size) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
-  "func: npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, float? clip_ratio=None, ScalarType? dst_dtype=None) -> (Tensor out, Tensor quant_scale)": {
+  "func: npu_kronecker_quant(Tensor x, Tensor kronecker_p1, Tensor kronecker_p2, float? clip_ratio=None, int? dst_dtype=None) -> (Tensor out, Tensor quant_scale)": {
     "version": ["all_version"]
   },
   "func: npu_add_rms_norm_cast(Tensor x1, Tensor x2, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor, Tensor, Tensor)": {

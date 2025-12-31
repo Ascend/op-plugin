@@ -61,7 +61,7 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> broadcast_ops_npu_output_size(c
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> reduce_ops_npu_output_size(const at::Tensor& self,
                                                                             c10::IntArrayRef dim, bool keepdim);
-                                                                            
+
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> reduce_lastdim_output_size(const at::Tensor& self);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> mse_loss_npu_output_size(const at::Tensor& self,
@@ -356,9 +356,6 @@ OP_PLUGIN_HIDDEN at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_zloss_out
 OP_PLUGIN_HIDDEN at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_lse_for_zloss_output_size(const at::Tensor &input,
                                                                                                  float lse_square_scale_for_zloss);
 
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> kronecker_quant_out_size(const at::Tensor &self);
-
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> kronecker_quant_scale_size(const at::Tensor &self);
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> matmul_output_size(const at::Tensor &tensor1, const at::Tensor &tensor2);
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> npu_transpose_batchmatmul_output_size(const at::Tensor &input, const at::Tensor &weight, const at::Tensor &scale_real,
                                                                                        at::IntArrayRef perm_x1_real, at::IntArrayRef perm_x2_real, at::IntArrayRef perm_y_real,
