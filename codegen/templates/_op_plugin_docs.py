@@ -3403,7 +3403,7 @@ cpu_x2 = torch.randint(-1, 1, (15, 512, 128), dtype=torch.int8)
 scale = torch.randn(1, dtype=torch.float32)
 offset = torch.randn(1, dtype=torch.float32)
 bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+model = torch.compile(model, backend=npu_backend, dynamic=True)
 npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu())
 """
 )
@@ -3693,7 +3693,7 @@ PyTorch2.1及以上
 
     cpu_model = MyModel()
     model = cpu_model.npu()
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=False)
+    model = torch.compile(model, backend=npu_backend, dynamic=False)
 
     b,m,k,n = (2,3,4,5)
     x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
@@ -3846,7 +3846,7 @@ scale = torch.randn(1, dtype=torch.float32)
 scale_1 = torch_npu.npu_trans_quant_param(scale.npu(), None)
 bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
 # dynamic=True: 动态图模式,  dynamic=False: 静态图模式
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+model = torch.compile(model, backend=npu_backend, dynamic=True)
 npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale_1, None, bias.npu())
 输出bfloat16, 示例代码如下, 仅支持如下产品: 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品
@@ -3882,7 +3882,7 @@ scale = torch.randint(-1,1, (n,), dtype=torch.bfloat16)
 pertoken_scale = torch.randint(-1,1, (m,), dtype=torch.float32)
 
 bias = torch.randint(-1,1, (n,), dtype=torch.bfloat16)
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+model = torch.compile(model, backend=npu_backend, dynamic=True)
 if bias_flag:
     npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), None, bias.npu(), pertoken_scale.npu())
 else:
@@ -3919,7 +3919,7 @@ offset = torch.randn(1, dtype=torch.float32).npu()
 bias = torch.randint(-1,1, (128,), dtype=torch.int32).npu()
 # Process scale from float32 to int64 offline to improve performance
 scale_1 = torch_npu.npu_trans_quant_param(scale, offset)
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=False)
+model = torch.compile(model, backend=npu_backend, dynamic=False)
 npu_out = model(cpu_x1, cpu_x2_t_29, scale_1, offset, bias)
 将x2非转置(batch, k, n)后转format, 示例代码如下, 仅支持如下产品: 
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品
@@ -3956,7 +3956,7 @@ scale = torch.randint(-1,1, (n,), dtype=torch.bfloat16)
 pertoken_scale = torch.randint(-1,1, (m,), dtype=torch.float32)
 
 bias = torch.randint(-1,1, (n,), dtype=torch.bfloat16)
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+model = torch.compile(model, backend=npu_backend, dynamic=True)
 if bias_flag:
     npu_out = model(cpu_x1.npu(), x2_notranspose_29, scale.npu(), None, bias.npu(), pertoken_scale.npu())
 else:
@@ -4102,7 +4102,7 @@ class MyModel(torch.nn.Module):
 
 cpu_model = MyModel()
 model = cpu_model.npu()
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+model = torch.compile(model, backend=npu_backend, dynamic=True)
 npu_out = model(cpu_x.npu(), cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
 Atlas 推理系列加速卡产品: weight输入为FRACTAL_NZ格式
 import torch_npu
@@ -4340,7 +4340,7 @@ class MyModel(torch.nn.Module):
 
 cpu_model = MyModel()
 model = cpu_model.npu()
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=True, fullgraph=True)
+model = torch.compile(model, backend=npu_backend, dynamic=True, fullgraph=True)
 
 npu_out = model(cpu_x.npu(), weight_int4pack, cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
 """
@@ -5712,9 +5712,9 @@ if name=="main":
     config = CompilerConfig()
     npu_backend = tng.get_npu_backend(compiler_config=config)
 
-    cpu_model = Model().npu()
+    model = Model().npu()
     # 图模式调用
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=False, fullgraph=True)
+    model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
     model(key_npu, value_npu, slot_mapping_npu, key_cache_npu_cast, value_cache_npu_cast)
 
 
@@ -5821,7 +5821,8 @@ class Model(torch.nn.Module):
     def forward(self,x,scale,offset):
         return torch_npu.npu_anti_quant(x, scale, offset=offset, dst_dtype=torch.float16)
 cpu_model = Model()
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=False, fullgraph=True)
+model = cpu_model.npu()
+model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
 output = model(x_tensor,scale,offset)
 """
 )
@@ -6200,7 +6201,7 @@ cpu_weight2 = torch.randn((16, 5120, 2560),device='npu',dtype=torch.float16)
 activation = "fastgelu"
 expert = [227, 62, 78, 126, 178, 27, 122, 1, 19, 182, 166, 118, 66, 217, 122, 243]
 model = cpu_model.npu()
-model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+model = torch.compile(model, backend=npu_backend, dynamic=True)
 npu_out = model(cpu_x.npu(), cpu_weight1.npu(), cpu_weight2.npu(), activation, expert)
 """
 )
@@ -8099,9 +8100,9 @@ if name=="main":
     config = CompilerConfig()
     npu_backend = tng.get_npu_backend(compiler_config=config)
 
-    cpu_model = Model_ds().npu()
+    model = Model_ds().npu()
     # 图模式调用
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=False, fullgraph=True)
+    model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
     query, query_rope, kvcache, krcache,dequant_scale_q_nope = model(token_x, w_dq, w_uq_qr, w_uk,
         w_dkv_kr, gamma_cq, gamma_ckv, sin, cos, cache_index, kv_cache, kr_cache, dequant_scale_x=dequant_scale_x, 
         dequant_scale_w_dq=dequant_scale_w_dq, dequant_scale_w_uq_qr=dequant_scale_w_uq_qr, 
@@ -8374,9 +8375,9 @@ if name=="main":
     config = CompilerConfig()
     npu_backend = tng.get_npu_backend(compiler_config=config)
 
-    cpu_model = Model_ds().npu()
+    model = Model_ds().npu()
     # 图模式调用
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=False, fullgraph=True)
+    model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
     query, query_rope, dequant_scale_q_nope, query_norm, dequant_scale_q_norm = model(token_x, w_dq, w_uq_qr, w_uk,
         w_dkv_kr, gamma_cq, gamma_ckv, sin, cos, kv_cache, kr_cache, cache_index=cache_index, dequant_scale_x=dequant_scale_x, 
         dequant_scale_w_dq=dequant_scale_w_dq, dequant_scale_w_uq_qr=dequant_scale_w_uq_qr, 
@@ -8682,9 +8683,9 @@ if name=="main":
     config = CompilerConfig()
     npu_backend = tng.get_npu_backend(compiler_config=config)
 
-    cpu_model = Model_ds().npu()
+    model = Model_ds().npu()
     # 图模式调用
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=False, fullgraph=True)
+    model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
     query_mla, query_rope_mla, dequant_scale_q_nope_mla, _, _, kv_cache_mla, kr_cache_mla = model(token_x, w_dq, w_uq_qr, w_uk, w_dkv_kr, gamma_cq, gamma_ckv,
         sin, cos, kv_cache, kr_cache, cache_index=cache_index, dequant_scale_x=dequant_scale_x,
         dequant_scale_w_dq=dequant_scale_w_dq, dequant_scale_w_uq_qr=dequant_scale_w_uq_qr, dequant_scale_w_dkv_kr=dequant_scale_w_dkv_kr,

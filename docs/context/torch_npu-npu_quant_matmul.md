@@ -226,7 +226,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         scale_1 = torch_npu.npu_trans_quant_param(scale.npu(), None)
         bias = torch.randint(-1, 1, (15, 1, 128), dtype=torch.int32)
         # dynamic=True: 动态图模式， dynamic=False: 静态图模式
-        model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+        model = torch.compile(model, backend=npu_backend, dynamic=True)
         npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale_1, None, bias.npu())
         print(npu_out.shape)
         print(npu_out)
@@ -304,7 +304,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         pertoken_scale = torch.randint(-1, 1, (m,), dtype=torch.float32)
     
         bias = torch.randint(-1, 1, (n,), dtype=torch.bfloat16)
-        model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+        model = torch.compile(model, backend=npu_backend, dynamic=True)
         if bias_flag:
             npu_out = model(
                 cpu_x1.npu(), cpu_x2.npu(), scale.npu(), None, bias.npu(), pertoken_scale.npu()
@@ -374,7 +374,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         bias = torch.randint(-1, 1, (128,), dtype=torch.int32).npu()
         # Process scale from float32 to int64 offline to improve performance
         scale_1 = torch_npu.npu_trans_quant_param(scale, offset)
-        model = torch.compile(cpu_model, backend=npu_backend, dynamic=False)
+        model = torch.compile(model, backend=npu_backend, dynamic=False)
         npu_out = model(cpu_x1, cpu_x2_t_29, scale_1, offset, bias)
         print(npu_out.shape)
         print(npu_out)
@@ -435,7 +435,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         pertoken_scale = torch.randint(-1,1, (m,), dtype=torch.float32)
     
         bias = torch.randint(-1,1, (n,), dtype=torch.bfloat16)
-        model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+        model = torch.compile(model, backend=npu_backend, dynamic=True)
         if bias_flag:
             npu_out = model(cpu_x1.npu(), x2_notranspose_29, scale.npu(), None, bias.npu(), pertoken_scale.npu())
         else:

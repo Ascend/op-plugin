@@ -99,7 +99,7 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
 
     cpu_model = MyModel()
     model = cpu_model.npu()
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=False)
+    model = torch.compile(model, backend=npu_backend, dynamic=False)
 
     b,m,k,n = (2,3,4,5)
     x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
