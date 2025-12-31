@@ -2426,7 +2426,7 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
                             split_item=0, group_type=None, group_list_type=0, act_type=0, tuning_config=None,
                             output_dtype=None, x_dtype=None, weight_dtype=None, scale_dtype=None, per_token_scale_dtype=None):
     torch._check(
-        group_type == -1 or group_type == 0 or group_type == 2,
+        group_type == -1 or group_type == 0 or group_type == 2 or (isinstance(group_list, list) and group_type is None),
         lambda: f"group_type only supports -1, 0 and 2, but got {group_type} {ops_error(ErrCode.VALUE)}",
     )
     if x_dtype is not None:
