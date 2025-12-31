@@ -129,7 +129,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
     
     cpu_model = MyModel()
     model = cpu_model.npu()
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True, fullgraph=True)
+    model = torch.compile(model, backend=npu_backend, dynamic=True, fullgraph=True)
 
     npu_out = model(cpu_x.npu(), weight_int4pack, cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
     print(npu_out)

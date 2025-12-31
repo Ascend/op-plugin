@@ -145,7 +145,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
     activation = "fastgelu"
     expert = [227, 62, 78, 126, 178, 27, 122, 1, 19, 182, 166, 118, 66, 217, 122, 243]
     model = cpu_model.npu()
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+    model = torch.compile(model, backend=npu_backend, dynamic=True)
 
     npu_out = model(cpu_x.npu(), cpu_weight1.npu(), cpu_weight2.npu(), activation, expert)
     print(npu_out.shape)

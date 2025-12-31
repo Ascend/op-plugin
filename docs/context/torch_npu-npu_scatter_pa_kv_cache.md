@@ -204,9 +204,9 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
         config = CompilerConfig()
         npu_backend = tng.get_npu_backend(compiler_config=config)
 
-        cpu_model = Model().npu()
+        model = Model().npu()
         # 图模式调用
-        model = torch.compile(cpu_model, backend=npu_backend, dynamic=False, fullgraph=True)
+        model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
         model(key_npu, value_npu, slot_mapping_npu, key_cache_npu_cast, value_cache_npu_cast)
 
         # 这里的输出与单算子一致

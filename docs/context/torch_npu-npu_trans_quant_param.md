@@ -131,7 +131,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
     offset = torch.randn(1, dtype=torch.float32)
     round_mode = 1
     bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+    model = torch.compile(model, backend=npu_backend, dynamic=True)
     
     npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu(), round_mode)
     print(npu_out.shape)

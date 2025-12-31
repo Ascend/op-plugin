@@ -190,7 +190,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
         
          cpu_model = MyModel()
          model = cpu_model.npu()
-         model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
+         model = torch.compile(model, backend=npu_backend, dynamic=True)
          npu_out = model(cpu_x.npu(), cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
          ```
 

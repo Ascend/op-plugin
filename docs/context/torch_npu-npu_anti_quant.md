@@ -101,7 +101,8 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
             return torch_npu.npu_anti_quant(x, scale, offset=offset, dst_dtype=torch.float16)
 
     cpu_model = Model()
-    model = torch.compile(cpu_model, backend=npu_backend, dynamic=False, fullgraph=True)
+    model = cpu_model.npu()
+    model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
     output = model(x_tensor,scale,offset)
     print(output)
 
