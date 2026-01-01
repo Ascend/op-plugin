@@ -4734,3 +4734,11 @@ def npu_dynamic_mx_quant_with_dual_axis(input_dummy, *, round_mode="rint", dst_t
     mxscale1 = input_dummy.new_empty(mxscale1_shape, dtype=torch.uint8)
     mxscale2 = input_dummy.new_empty(mxscale2_shape, dtype=torch.uint8)
     return (y1, mxscale1, y2, mxscale2)
+
+
+has_side_effect(torch.ops.npu.save_npugraph_tensor.default)
+
+
+@impl(m, "save_npugraph_tensor")
+def save_npugraph_tensor_meta(self, *, save_path=None):
+    return

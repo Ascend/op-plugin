@@ -7167,6 +7167,10 @@ custom:
 
   - func: npu_add_quant_gmm(Tensor self, Tensor x1, Tensor x2, Tensor x2_scale, Tensor group_list, *, Tensor? x1_scale=None, int? group_list_type=0, int[]? group_sizes=None, int? x1_dtype=None, int? x2_dtype=None, int? x1_scale_dtype=None, int? x2_scale_dtype=None) -> Tensor
     op_api: all_version
+  
+  - func: save_npugraph_tensor(Tensor self, *, str? save_path=None) -> ()
+    op_api: [v2.6, newest]
+    exposed: [v2.6, newest]
 
 symint:
   - func: npu_gather_sparse_index_backward(Tensor grad, SymInt[] self_sizes, Tensor index) -> Tensor

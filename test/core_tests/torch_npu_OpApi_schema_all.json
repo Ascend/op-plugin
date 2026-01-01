@@ -311,6 +311,9 @@
   "op_api: torch_npu.npu_clipped_swiglu(*args, **kwargs)": {
     "version": ["v2.6", "v2.7"]
   },
+  "op_api: torch_npu.save_npugraph_tensor(*args, **kwargs)": {
+    "version": ["v2.6", "v2.7"]
+  },
   "op_api: torch_npu.npu_clipped_swiglu(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
@@ -510,6 +513,9 @@
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_dynamic_block_quant(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "op_api: torch_npu.save_npugraph_tensor(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
   "func: npu_scatter_pa_cache.value(Tensor key, Tensor slot_mapping, *, Tensor? compress_lens=None, Tensor? compress_seq_offsets=None, Tensor? seq_lens=None, Tensor(a!) key_cache) -> Tensor(a!)": {
@@ -4672,5 +4678,8 @@
   },
   "func: npu_fused_matmul(Tensor x1, Tensor x2, *, Tensor? bias=None, Tensor? x3=None, str fused_op_type='') -> Tensor": {
     "version": ["all_version"]
+  },
+  "func: save_npugraph_tensor(Tensor self, *, str? save_path=None) -> ()": {
+    "version": ["v2.6", "newest"]
   }
 }

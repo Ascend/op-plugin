@@ -13297,3 +13297,53 @@ x_max_npu, x_sum_npu, output_npu = torch_npu.npu_fused_floyd_attention(
 )
 """
 )
+
+
+_add_torch_npu_docstr(
+    "save_npugraph_tensor",
+    """
+接口原型: 
+save_npugraph_tensor(Tensor self, *, str? save_path=None) -> ()
+
+功能描述：
+支持将aclgraph的图内计算节点保存到文件中，可以使用torch.load接口读取保存的tensor。
+
+参数说明：
+self(Tensor)：必选参数，源数据张量，被保存的tensor。
+save_path(str):：可选参数，文件的保存位置。
+
+返回值说明：
+不涉及。
+
+支持版本: 
+PyTorch 2.6及更高版本
+
+支持的型号: 
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例: 
+import torch
+import torch_npu
+import torchair
+from torchair.configs.compiler_config import CompilerConfig
+
+class Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, x):
+        output = torch.square(x)
+        torch_npu.save_npugraph_tensor(output, save_path="./tensor.pt")
+        return output
+
+config = CompilerConfig()
+config.mode = "reduce-overhead"
+npu_backend = torchair.get_npu_backend(compiler_config=config)
+
+x = torch.randn([10, 10]).npu()
+model = Model()
+model = torch.compile(model, backend=npu_backend)
+model(x)
+"""
+)
