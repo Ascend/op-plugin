@@ -15,7 +15,7 @@
 ## 函数原型<a name="zh-cn_topic_0000001742717129_section45077510411"></a>
 
 ```
-torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=None, padding_mask=None, atten_mask=None, scale=1., keep_prob=1., pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout="") -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
+torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=None, padding_mask=None, atten_mask=None, scale=1., keep_prob=1., pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout="", sink=None) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000001742717129_section112637109429"></a>
@@ -131,6 +131,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 -   **gen\_mask\_parallel**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为True：同AI Core并行计算；设为False：同AI Core串行计算。
 -   **sync**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为False：dropout mask异步生成；设为True：dropout mask同步生成。
 -   **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。
+-   **sink**（`Tensor`）：可选参数，每个注意力头的偏置。shape为`[head_num]`，数据类型仅支持`float32`。
 
 ## 输出说明<a name="zh-cn_topic_0000001742717129_section22231435517"></a>
 
@@ -204,13 +205,12 @@ class TestNPUFlashAttention(TestCase):
         atten_mask = None
         if sparse_params[0] == 0:
             shape = [1, 8, 256, 256]
-            atten_mask_u = np.triu(np.ones(shape), k=sparse_params[1] + 1)
-            atten_mask_l = np.tril(np.ones(shape), k=-sparse_params[2] - 1)
-            atten_masks = atten_mask_u + atten_mask_l
-            atten_mask = torch.tensor(atten_masks).to(torch.float16).bool().npu()
+            mask = torch.ones(shape, dtype=torch.bool, device='npu')
+            atten_mask_u = torch.triu(mask, diagonal=sparse_params[1] + 1)
+            atten_mask_l = torch.tril(mask, diagonal=-sparse_params[2] - 1)
+            atten_mask = atten_mask_u | atten_mask_l
         if sparse_params[0] == 2 or sparse_params[0] == 3 or sparse_params[0] == 4:
-            atten_masks = torch.from_numpy(np.triu(np.ones([2048, 2048]), k=1))
-            atten_mask = torch.tensor(atten_masks).to(torch.float16).bool().npu()
+            atten_mask = torch.triu(torch.ones(2048, 2048, dtype=torch.bool, device='npu'), diagonal=1)
         return torch_npu.npu_fusion_attention(
             query, key, value, head_num=8, input_layout="BNSD", scale=scale, sparse_mode=sparse_params[0],
             atten_mask=atten_mask, pre_tockens=sparse_params[1], next_tockens=sparse_params[2])
