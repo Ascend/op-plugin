@@ -2226,7 +2226,7 @@ official:
     gen_opapi:
       out:
         size: self
-        dtype: '(isIntegralType(at::result_type(self, other), true)) ? at::kFloat : at::result_type(self, other)'
+        dtype: at::native::result_type(self, other)
       exec: aclnnFmodScalar
 
   - func: fmod.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
@@ -2243,7 +2243,7 @@ official:
     gen_opapi:
       out:
         size: broadcast_ops_npu_output_size(self, other)
-        dtype: '(isIntegralType(at::result_type(self, other), true)) ? at::kFloat : at::result_type(self, other)'
+        dtype: at::native::result_type(self, other)
       exec: aclnnFmodTensor
 
   - func: fmod.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
