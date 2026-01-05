@@ -25,6 +25,8 @@ torch_npu.contrib.module.SiLU(nn.Module)
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> from torch_npu.contrib.module import SiLU
 >>> m = SiLU()
 >>> input_tensor = torch.randn(2, 32, 5, 5).npu()

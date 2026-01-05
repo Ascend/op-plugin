@@ -29,7 +29,7 @@ torch_npu.contrib.module.ModulatedDeformConv(in_channels, out_channels, kernel_s
 - **padding** (`int`或`Tuple`)：添加到输入两侧的零填充。默认值为0。
 - **dilation** (`int`或`Tuple`)：内核元素间距。默认值为1。
 - **groups** (`int`)：从输入通道到输出通道的阻塞连接数。默认值为1。
-- **deform_groups** (`int`)：可变形组分区的数量。
+- **deformable_groups** (`int`)：可变形组分区的数量。
 - **bias** (`bool`)：如果值为True，则向输出添加可学习偏差。默认值为False。
 - **pack** (`bool`)：如果值为True，此模块将包括conv_offset和掩码。默认值为True。
 

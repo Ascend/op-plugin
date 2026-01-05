@@ -31,6 +31,8 @@ torch_npu.npu_ptiou(bboxes, gtboxes, mode=0) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> bboxes = torch.tensor([[0, 0, 10, 10],
                            [10, 10, 20, 20],
                            [32, 32, 38, 42]], dtype=torch.float16).to("npu")

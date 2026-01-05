@@ -21,8 +21,8 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
 
 ## 参数说明
 
-- **features** (`Tensor`)：必选参数，表示待处理的特征图，要求5维张量。
-- **rois** (`Tensor`)：必选参数，表示ROI位置，支持shape为(N, 5)的2维张量。“N”表示ROI的数量，“5”表示ROI所在图像的index，分别为“x0”、“y0”、“x1”和“y1”。
+- **features** (`Tensor`)：必选参数，表示待处理的特征图，要求4维张量。
+- **rois** (`Tensor`)：必选参数，表示ROI位置，支持shape为(N, 4)的2维张量。“N”表示ROI的数量，“4”表示ROI所在图像的index，分别为“x0”、“y0”、“x1”和“y1”。
 - **spatial_scale** (`float`)：必选参数，指定`features`与原始图像的缩放比率。数据类型支持`float32`。
 - **pooled_height** (`int`)：必选参数，指定输出图像的高度。数据类型支持`int32`。
 - **pooled_width** (`int`)：必选参数，输出图像的宽度。数据类型支持`int32`。
@@ -36,6 +36,8 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> x = torch.FloatTensor([[[[1, 2, 3 , 4, 5, 6],
                             [7, 8, 9, 10, 11, 12],
                             [13, 14, 15, 16, 17, 18],

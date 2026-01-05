@@ -33,6 +33,8 @@ torch_npu.npu_alloc_float_status(input) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> input = torch.randn([1,2,3]).npu()
 ## 分配状态空间
 >>> output = torch_npu.npu_alloc_float_status(input)
@@ -49,7 +51,7 @@ tensor([0., 0., 0., 0., 0., 0., 0., 0.], device='npu:0')
 ## ...模型前向/反向传播...
 
 ## 获取检测结果
->>> result = torch_npu.npu_get_float_status(status)
+>>> result = torch_npu.npu_get_float_status(output)
 
 ```
 

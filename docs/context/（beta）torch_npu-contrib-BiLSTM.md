@@ -30,6 +30,8 @@ torch_npu.contrib.BiLSTM(input_size, hidden_size)
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> r = torch_npu.contrib.BiLSTM(512, 256).npu()
 >>> input_tensor = torch.randn(26, 2560, 512).npu()
 >>> output = r(input_tensor)

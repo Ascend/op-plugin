@@ -12,7 +12,7 @@ at::Generator& at_npu::detail::getDefaultNPUGenerator(c10::DeviceIndex device_in
 
 ## 功能说明
 
-NPU设备默认生成器获取，返回值类型Generator，与at::Generator& at::cuda::detail::getDefaultCUDAGenerator(c10::DeviceIndex  _device_index _= -1)相同。
+NPU设备默认生成器获取，返回值类型Generator，与at::Generator& at::cuda::detail::getDefaultCUDAGenerator(c10::DeviceIndex  device_index = -1)相同。
 
 ## 参数说明
 
