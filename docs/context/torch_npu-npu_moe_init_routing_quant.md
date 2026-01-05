@@ -83,8 +83,6 @@ torch_npu.npu_moe_init_routing_quant(Tensor x, Tensor expert_idx, *, Tensor? sca
 -   **drop_pad_mode** (`int`)：表示是否为Drop/Pad场景，取值为0或1。
     - 0：表示非Drop/Pad场景，该场景下不校验`expert_capacity`。
     - 1：表示Drop/Pad场景，需校验`expert_num`和`expert_capacity`；对于每个专家，超出`expert_capacity`的token将被丢弃，不足的部分将填充全0 token。
--   **expert_tokens_num_type** (`int`)：取值为0、1和2。0表示cumsum模式；1表示count模式，即输出的值为各个专家处理的token数量的累计值；2表示key_value模式，即输出的值为专家和对应专家处理token数量的累计值。当前仅支持1和2。
--   **expert_tokens_num_flag** (`bool`)：表示是否输出`expert_token_cumsum_or_count`，默认False表示不输出。当前仅支持True。
 -   **expert_tokens_num_mode** (`int`)：用于控制`expert_token_cumsum_or_count`的输出模式，取值为0、1或2。
     - 0：不输出`expert_token_cumsum_or_count`。
     - 1：输出各专家处理token数量的累计和。

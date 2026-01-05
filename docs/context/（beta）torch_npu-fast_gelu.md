@@ -33,6 +33,8 @@ torch_npu.fast_gelu(self) -> Tensor
 示例一：
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> x = torch.rand(2).npu()
 >>> x
 tensor([0.5991, 0.4094], device='npu:0')
@@ -43,6 +45,8 @@ tensor([0.4403, 0.2733], device='npu:0')
 示例二：
 
 ```python
+>>> import torch
+>>> import torch_npu
 //FakeTensor模式
 >>> from torch._subclasses.fake_tensor import FakeTensorMode
 >>> with FakeTensorMode():

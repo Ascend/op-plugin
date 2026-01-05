@@ -30,6 +30,8 @@ torch_npu.npu_giou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> import numpy as np
 >>> a=np.random.uniform(0,1,(4,10)).astype(np.float16)
 >>> b=np.random.uniform(0,1,(4,10)).astype(np.float16)

@@ -147,9 +147,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：输入为int8。
 
     -   输出为float16的场景：若存在入参quant\_offset\_out或quant\_scale\_out（即不为None），则报错并返回。
-        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：输入为int8。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：输入为int8。
-
     -   入参quant\_offset\_out和quant\_scale\_out支持pertensor或perchannel格式，数据类型支持float32、bfloat16。
 
 -   query\_rope和key\_rope输入时即为MLA场景，参数约束如下：

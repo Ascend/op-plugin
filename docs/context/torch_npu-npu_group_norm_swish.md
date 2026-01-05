@@ -15,9 +15,9 @@
   - GroupNorm: 公式中的$x$代表`input`， $E[x] = \bar{x}$ 代表$x$的均值，$Var[x] = \frac{1}{n} * \sum_{i=1}^{n} (x_i - E[x])^2$ 代表$x$的方差，$\gamma$代表`weight`，$\beta$代表`bias`，则公式如下：
   $$
   \begin{cases}
-  y & = \frac{x - E[x]}{\sqrt{Var[x]} + eps} * \gamma + \beta \\ 
+  y & = \frac{x - E[x]}{\sqrt{{Var[x]} + eps}} * \gamma + \beta \\ 
   mean & = E[x] \\ 
-  rstd & = \frac{1}{\sqrt{Var[x]} + eps}
+  rstd & = \frac{1}{\sqrt{{Var[x]} + eps}}
   \end{cases}
   $$
 
