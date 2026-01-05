@@ -103,7 +103,7 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
     >>> key_cache = np.random.randn(
     >>>     num_blocks, num_head * k_head_size // lastDim_k, block_size, lastDim_k).astype(np.float16)
     >>> value_cache = np.zeros(
-    >>>     (num_blocks, num_head * v_head_size // lastDim_k, block_si ze, lastDim_k)).astype(np.float16)
+    >>>     (num_blocks, num_head * v_head_size // lastDim_k, block_size, lastDim_k)).astype(np.float16)
     >>> slot_mapping = np.random.choice(num_blocks * block_size, bs, replace=False).astype(np.int32)
     >>>
     >>> key_npu = torch.from_numpy(key).npu()
@@ -176,13 +176,13 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
     block_size = 32
 
     class Model(torch.nn.Module):
-        def init(self):
-            super().init()
+        def __init__(self):
+            super().__init__()
 
         def forward(self, key, value, slot_mapping, key_cache, value_cache):
             torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mapping)
 
-    if name=="main":
+    if __name__ == "__main__":
         torch_npu.npu.set_device(0)
 
         key = np.random.randn(bs, num_head, k_head_size).astype(np.float16)
@@ -190,7 +190,7 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
         key_cache = np.random.randn(
             num_blocks, num_head * k_head_size // lastDim_k, block_size, lastDim_k).astype(np.float16)
         value_cache = np.zeros(
-            (num_blocks, num_head * v_head_size // lastDim_k, block_si ze, lastDim_k)).astype(np.float16)
+            (num_blocks, num_head * v_head_size // lastDim_k, block_size, lastDim_k)).astype(np.float16)
         slot_mapping = np.random.choice(num_blocks * block_size, bs, replace=False).astype(np.int32)
 
         key_npu = torch.from_numpy(key).npu()
