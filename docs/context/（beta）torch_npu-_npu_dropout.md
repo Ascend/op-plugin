@@ -27,6 +27,8 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> input = torch.tensor([1.,2.,3.,4.]).npu()
 >>> input
 tensor([1., 2., 3., 4.], device='npu:0')

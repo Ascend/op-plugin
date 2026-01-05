@@ -39,6 +39,7 @@ torch_npu.contrib.function.matmul_transpose(tensor1, tensor2)
 
 ```python
 >>> import torch
+>>> import torch_npu
 >>> from torch_npu.contrib.function import matmul_transpose
 >>> tensor1 = torch.randn(68, 5, 75, 16).npu()
 >>> tensor1.requires_grad = True

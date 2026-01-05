@@ -42,6 +42,8 @@ ModulationDeformConv仅实现fp32数据类型下的操作。注意，conv_offset
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> x = torch.randn((2, 2, 5, 5), dtype=torch.float32).npu()
 >>> x.requires_grad = True
 >>> model = torch_npu.contrib.DCNv2(2, 2, 3, 2, 1).npu()

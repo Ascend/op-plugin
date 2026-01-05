@@ -37,6 +37,8 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> anchor_box = torch.tensor([[1., 2., 3., 4.], [3.,4., 5., 6.]], dtype = torch.float32).to("npu")
 >>> ground_truth_box = torch.tensor([[5., 6., 7., 8.], [7.,8., 9., 6.]], dtype = torch.float32).to("npu")
 >>> output = torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, 0, 0, 0, 0, 0.1, 0.1, 0.2, 0.2)

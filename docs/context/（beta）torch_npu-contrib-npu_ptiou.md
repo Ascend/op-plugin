@@ -36,6 +36,8 @@ torch_npu.contrib.npu_ptiou(boxes1, boxes2, mode="ptiou", is_normalized=False, n
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> box1 = torch.randint(0, 256, size=(32, 4)).npu()
 >>> box2 = torch.randint(0, 256, size=(16, 4)).npu()
 >>> iou = torch_npu.contrib.npu_ptiou(box1, box2)

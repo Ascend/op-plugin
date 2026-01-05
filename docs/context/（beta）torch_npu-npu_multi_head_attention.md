@@ -34,12 +34,12 @@ torch_npu.npu_multi_head_attention(query, key, value, query_weight, key_weight, 
 - **key_bias**（`Tensor`）：仅支持`float16`。
 - **value_bias**（`Tensor`）：仅支持`float16`。
 - **out_proj_bias**（`Tensor`）：仅支持`float16`。
-- **dropout_mask_input**（`Tensor`）：仅支持`float16`。
+- **dropout_mask**（`Tensor`）：仅支持`float16`。
 - **attn_head_num**（`int`）： Attention Head numbers。
 - **attn_dim_per_head**（`int`）：Attention dim of a Head。
 - **src_len**（`int`）：source length。
 - **tgt_len**（`int`）：target length。
-- **keep_prob**（`float`）：dropout keep probability。
+- **dropout_prob**（`float`）：dropout keep probability。
 - **softmax_use_float**（`bool`）：SoftMax Use Float32 to keep precision。
 
 ## 返回值说明
@@ -89,9 +89,9 @@ query_bias = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("fl
 key_bias = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
 value_bias = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
 out_proj_bias = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
-dropout_mask_input = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
+dropout_mask = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
             
-npu_result, npu_dropout_mask, npu_query_res, npu_key_res, npu_value_res, npu_attn_scores, npu_attn_res, npu_context = torch_npu.npu_multi_head_attention (query, key, value, query_weight, key_weight, value_weight, attn_mask, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias,  dropout_mask_input, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float)
+npu_result, npu_dropout_mask, npu_query_res, npu_key_res, npu_value_res, npu_attn_scores, npu_attn_res, npu_context = torch_npu.npu_multi_head_attention (query, key, value, query_weight, key_weight, value_weight, attn_mask, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias,  dropout_mask, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float)
  
 print(npu_result)
  

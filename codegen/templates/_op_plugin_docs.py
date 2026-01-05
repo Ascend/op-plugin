@@ -32,6 +32,8 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
 self (Tensor) - 输入张量。
 p (Float) - 丢弃概率。
 示例
+>>> import torch
+>>> import torch_npu
 >>> input = torch.tensor([1.,2.,3.,4.]).npu()
 >>> input
 tensor([1., 2., 3., 4.], device='npu:0')
@@ -54,8 +56,8 @@ torch_npu.copy_memory_(dst, src, non_blocking=False) -> Tensor
 从src拷贝元素到self张量，并返回self。
 
 参数说明
-dst (Tensor) - 拷贝源张量。
-src (Tensor) - 返回张量所需数据类型。
+dst (Tensor) - 拷贝目标张量（即接收数据的张量）。
+src (Tensor) - 拷贝源张量（即提供数据的张量）。
 non_blocking (Bool,默认值为False) - 如果设置为True且此拷贝位于CPU和NPU之间，则拷贝可能相对于主机异步发生。在其他情况下，此参数没有效果。
 约束说明
 copy_memory_仅支持NPU张量。copy_memory_的输入张量应具有相同的dtype和设备index。
@@ -211,6 +213,8 @@ torch_npu.npu_alloc_float_status(self) -> Tensor
 self (Tensor) - 任何张量。
 
 示例
+>>> import torch
+>>> import torch_npu
 >>> input    = torch.randn([1,2,3]).npu()
 >>> output = torch_npu.npu_alloc_float_status(input)
 >>> input
@@ -562,6 +566,8 @@ stds1 (Float) - index。
 stds2 (Float) - index。
 stds3 (Float, 默认值：[1.0,1.0,1.0,1.0]) -index。 "deltas" = "deltas" x "stds" + "means"
 示例
+>>> import torch
+>>> import torch_npu
 >>> anchor_box = torch.tensor([[1., 2., 3., 4.], [3.,4., 5., 6.]], dtype = torch.float32).to("npu")
 >>> ground_truth_box = torch.tensor([[5., 6., 7., 8.], [7.,8., 9., 6.]], dtype = torch.float32).to("npu")
 >>> output = torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, 0, 0, 0, 0, 0.1, 0.1, 0.2, 0.2)
@@ -2002,6 +2008,8 @@ bboxes (Tensor) - 输入张量。
 gtboxes (Tensor) - 输入张量。
 mode (Int，默认值为0) - 0为IoU模式，1为IoF模式。
 示例
+>>> import torch
+>>> import torch_npu
 >>> bboxes = torch.tensor([[0, 0, 10, 10],
                            [10, 10, 20, 20],
                            [32, 32, 38, 42]], dtype=torch.float16).to("npu")
@@ -2334,12 +2342,12 @@ query_bias: Tensor类型，仅支持float16
 key_bias: Tensor类型，仅支持float16
 value_bias: Tensor类型，仅支持float16
 out_proj _bias: Tensor类型，仅支持float16
-dropout_mask_input: Tensor类型，仅支持float16
+dropout_mask: Tensor类型，仅支持float16
 attn_head_num： Attention Head numbers, Int型
 attn_dim_per_head：Attention dim of a Head , Int型
 src_len：source length, Int型
 tgt_len：target length, Int型
-keep_prob：dropout keep probability, Float型
+dropout_prob：dropout keep probability, Float型
 softmax_use_float：SoftMax Use Float32 to keep precision, Bool型
 输出说明
 y: Tensor类型，仅支持float16
@@ -2385,9 +2393,9 @@ query_bias = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("fl
 key_bias = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
 value_bias = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
 out_proj_bias = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
-dropout_mask_input = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
+dropout_mask = torch.from_numpy(np.random.uniform(-1, 1, (weight_col,)).astype("float16")).npu()
 
-npu_result, npu_dropout_mask, npu_query_res, npu_key_res, npu_value_res, npu_attn_scores, npu_attn_res, npu_context = torch_npu.npu_multi_head_attention (query, key, value, query_weight, key_weight, value_weight, attn_mask, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias,  dropout_mask_input, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float)
+npu_result, npu_dropout_mask, npu_query_res, npu_key_res, npu_value_res, npu_attn_scores, npu_attn_res, npu_context = torch_npu.npu_multi_head_attention (query, key, value, query_weight, key_weight, value_weight, attn_mask, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias,  dropout_mask, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float)
 
 print(npu_result)
 
@@ -2759,14 +2767,16 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
 从特征图中获取ROI特征矩阵。自定义FasterRcnn算子。
 
 参数说明
-features (Tensor) - 5HD张量
-rois (Tensor) - ROI位置，shape为(N, 5)的2D张量。“N”表示ROI的数量，“5”表示ROI所在图像的index，分别为“x0”、“y0”、“x1”和“y1”。
+features (Tensor) - 4HD张量
+rois (Tensor) - ROI位置，shape为(N, 4)的2D张量。“N”表示ROI的数量，“4”表示ROI所在图像的index，分别为“x0”、“y0”、“x1”和“y1”。
 spatial_scale (Float32) - 指定“features”与原始图像的缩放比率。
 pooled_height (Int32) - 指定H维度。
 pooled_width (Int32) - 指定W维度。
 sample_num (Int32，默认值为2) - 指定每次输出的水平和垂直采样频率。若此属性设置为0，则采样频率等于“rois”的向上取整值(一个浮点数)。
 roi_end_mode (Int32，默认值为1)
 示例
+>>> import torch
+>>> import torch_npu
 >>> x = torch.FloatTensor([[[[1, 2, 3 , 4, 5, 6],
                             [7, 8, 9, 10, 11, 12],
                             [13, 14, 15, 16, 17, 18],

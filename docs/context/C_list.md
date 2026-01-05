@@ -67,7 +67,7 @@
 </tr>
 <tr id="row11822183742111"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p145511016377"><a name="p145511016377"></a><a name="p145511016377"></a><a href="（beta）c10_npu-getDefaultNPUStream.md">（beta）c10_npu::getDefaultNPUStream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p245530143713"><a name="p245530143713"></a><a name="p245530143713"></a>获取默认NPU流，返回值类型NPUStream，与c10::CUDA::CUDAStream c10::CUDA::getDefaultCUDAStream(c10::DeviceIndex <em id="i1692521216432"><a name="i1692521216432"></a><a name="i1692521216432"></a>device_index</em> = -1)相同。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p245530143713"><a name="p245530143713"></a><a name="p245530143713"></a>获取默认NPU流，返回值类型NPUStream，与c10::cuda::CUDAStream c10::cuda::getDefaultCUDAStream(c10::DeviceIndex <em id="i1692521216432"><a name="i1692521216432"></a><a name="i1692521216432"></a>device_index</em> = -1)相同。</p>
 </td>
 </tr>
 <tr id="row6822103772114"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p2455402378"><a name="p2455402378"></a><a name="p2455402378"></a><a href="（beta）c10_npu-getCurrentNPUStream.md">（beta）c10_npu::getCurrentNPUStream</a></p>

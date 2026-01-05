@@ -28,6 +28,8 @@ torch_npu.npu.set_autocast_dtype(dtype)
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> torch_npu.npu.set_autocast_dtype(torch.float16)
 ```
 
