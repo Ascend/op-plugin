@@ -1539,7 +1539,8 @@ def npu_kv_quant_sparse_flash_attention_forward(query, key, value, sparse_indice
 @impl(m, "npu_fusion_attention")
 def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=None, padding_mask=None,
                                 atten_mask=None, scale=1.0, keep_prob=1.0, pre_tockens=2147483647, next_tockens=2147483647,
-                                inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout=""):
+                                inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0,
+                                 gen_mask_parallel=True, sync=False, softmax_layout="", sink=None):
     B = query.size(0)
     N = head_num
     S1 = query.size(2)
@@ -1573,12 +1574,14 @@ def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=
 def npu_fusion_attention_backward(query, key, value, dy, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None,
                                   softmax_max=None, softmax_sum=None, softmax_in=None, attention_in=None, scale_value=1.0,
                                   keep_prob=1.0, pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, seed=0, offset=0,
-                                  numels=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout=""):
+                                  numels=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0,
+                                  gen_mask_parallel=True, sync=False, softmax_layout="", sink=None):
     dq = query.new_empty(query.shape, dtype=query.dtype, device='meta')
     dk = key.new_empty(key.shape, dtype=query.dtype, device='meta')
     dv = value.new_empty(value.shape, dtype=query.dtype, device='meta')
     dpse = torch.empty([0], dtype=query.dtype, device='meta')
-    return (dq, dk, dv, dpse)
+    dsink = torch.empty([], device='meta') if sink is None else torch.empty(sink.shape, dtype=sink.dtype, device='meta')
+    return (dq, dk, dv, dpse, dsink)
 
 
 @impl(m, "npu_quant_fusion_attention")
