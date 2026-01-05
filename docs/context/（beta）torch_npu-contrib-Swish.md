@@ -25,6 +25,8 @@ torch_npu.contrib.Swish()
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> m = torch_npu.contrib.Swish().npu()
 >>> input_tensor = torch.randn(2, 32, 5, 5).npu()
 >>> output = m(input_tensor)

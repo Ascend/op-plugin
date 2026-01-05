@@ -300,10 +300,9 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         bias_flag = True
         cpu_x1 = torch.randint(-1, 1, (m, k), dtype=torch.int8)
         cpu_x2 = torch.randint(-1, 1, (n, k), dtype=torch.int8)
-        scale = torch.randint(-1, 1, (n,), dtype=torch.bfloat16)
-        pertoken_scale = torch.randint(-1, 1, (m,), dtype=torch.float32)
-    
-        bias = torch.randint(-1, 1, (n,), dtype=torch.bfloat16)
+        scale = torch.randn((n,), dtype=torch.bfloat16)
+        pertoken_scale = torch.randn((m,), dtype=torch.float32)
+        bias = torch.randn((n,), dtype=torch.bfloat16)
         model = torch.compile(model, backend=npu_backend, dynamic=True)
         if bias_flag:
             npu_out = model(

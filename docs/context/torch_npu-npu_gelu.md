@@ -40,7 +40,7 @@ torch_npu.npu_gelu(input, approximate='none') -> Tensor
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`float16`、`bfloat16`。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
 
-- **approximate** (`Tensor`)：可选参数，字符串类型，计算使用的激活函数模式，可配置为`none`或者`tanh`。其中`none`代表使用erf模式，`tanh`代表使用tanh模式。
+- **approximate** (`String`)：可选参数，字符串类型，计算使用的激活函数模式，可配置为`none`或者`tanh`。其中`none`代表使用erf模式，`tanh`代表使用tanh模式。
 
 ## 返回值说明
 `Tensor`

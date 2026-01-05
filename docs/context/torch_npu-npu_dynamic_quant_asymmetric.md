@@ -30,7 +30,7 @@
 ## 函数原型
 
 ```
-torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=None, dst_type=None) -> (Tensor, Tensor, Tensor)
+torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=None, dst_type=None, quant_mode="pertoken") -> (Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明

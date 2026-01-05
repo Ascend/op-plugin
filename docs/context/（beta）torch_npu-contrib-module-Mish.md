@@ -25,6 +25,7 @@ torch_npu.contrib.module.Mish(nn.Module)
 ## 调用示例
 
 ```python
+>>> import torch
 >>> from torch_npu.contrib.module import Mish
 >>> m = Mish()
 >>> input_tensor = torch.randn(2, 32, 5, 5).npu()

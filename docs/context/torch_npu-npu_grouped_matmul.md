@@ -87,7 +87,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     -   列表长度与weight列表长度相同。
     -   每个张量仅支持1维输入。
 
-- **scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配量化后的范围值，代表量化参数中的缩放因子，对应公式（2）、公式（3）和公式（5）。
+- **scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配量化后的范围值，代表量化参数中的缩放因子，对应公式（2）、公式（3）。
     -   支持的数据类型如下：
         -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
             -   当`group_list`输入类型为`List[int]`时，支持`int64`。

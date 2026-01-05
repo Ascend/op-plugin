@@ -74,7 +74,7 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
     >>> offset
     tensor([-1.1658], device='npu:0')
     >>>
-    >>> y = torch_npu.npu_group_quant(x, scale, group_index, offset=offset, dst_dtype=torch.qint8)
+    >>> y = torch_npu.npu_group_quant(x, scale, group_index, offset=offset, dst_dtype=torch.int8)
     >>> y
     tensor([[-1,  0, -1, -1],
             [-1, -1, -1, -1],
@@ -94,7 +94,7 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
     from torchair.configs.compiler_config import CompilerConfig
 
     attr_dst_type = 2
-    attr_dst_type_torch = torch.qint8 if attr_dst_type == 2 else torch.quint4x2
+    attr_dst_type_torch = torch.int8 if attr_dst_type == 2 else torch.quint4x2
 
     x = torch.randn(6, 4).to(torch.float16).npu()
     scale = torch.randn(4, 4).to(torch.float32).npu()

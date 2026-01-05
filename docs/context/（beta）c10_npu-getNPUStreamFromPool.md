@@ -12,7 +12,7 @@ c10_npu::NPUStream c10_npu::getNPUStreamFromPool(c10::DeviceIndex device = -1)
 
 ## 功能说明
 
-从NPU流池中获得一条新流，流是从池中预先分配的，并以循环的方式获取。返回值类型NPUStream，与c10::CUDA::CUDAStream c10::CUDA::getStreamFromPool(const bool  _isHighPriority_  = false, c10::DeviceIndex  _device_  = -1)相同。
+从NPU流池中获得一条新流，流是从池中预先分配的，并以循环的方式获取。返回值类型NPUStream。
 
 ## 参数说明
 

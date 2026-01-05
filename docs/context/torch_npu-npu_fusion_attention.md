@@ -174,7 +174,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 
 -   `prefix`稀疏计算场景B不大于32，varlen场景不支持非压缩prefix，即不支持sparse\_mode=5；当Sq\>Skv时，`prefix`的N值取值范围\[0, Skv\]，当Sq<=Skv时，`prefix`的N值取值范围\[Skv-Sq, Skv\]。
 -   支持`actual_seq_qlen`中某个Batch上的S长度为0；如果存在S为0的情况，不支持`pse`输入，假设真实的S长度为\[2, 2, 0, 2, 2\]，则传入的`actual_seq_qlen`为\[2, 4, 4, 6, 8\]。`actual_seq_qlen`的长度取值范围为1\~2K，varlen场景下长度最大支持1K。
--   TND格式下，支持尾部部分Batch不参与计算，此时`actual_seq_q_len`和`actual_seq_kv_len`尾部传入对应个数个0即可。假设真实的S长度为\[2, 3, 4, 5, 6\]，此时后两个Batch不参与计算，则传入的`actual_seq_qlen`为\[2, 5, 9, 0, 0\]。
+-   TND格式下，支持尾部部分Batch不参与计算，此时`actual_seq_qlen`和`actual_seq_kv_len`尾部传入对应个数个0即可。假设真实的S长度为\[2, 3, 4, 5, 6\]，此时后两个Batch不参与计算，则传入的`actual_seq_qlen`为\[2, 5, 9, 0, 0\]。
 -   部分场景下，如果计算量过大可能会导致算子执行超时\(aicore error类型报错，errorStr为：timeout or trap error\)，此时建议做轴切分处理，注：这里的计算量会受B、S、N、D等参数的影响，值越大计算量越大。
 
 ## 调用示例<a name="zh-cn_topic_0000001742717129_section14459801435"></a>
@@ -215,18 +215,18 @@ class TestNPUFlashAttention(TestCase):
             query, key, value, head_num=8, input_layout="BNSD", scale=scale, sparse_mode=sparse_params[0],
             atten_mask=atten_mask, pre_tockens=sparse_params[1], next_tockens=sparse_params[2])
 
-    def get_atten_mask(self, sparse_mode=0, pre_tokens=65536, next_tokens=65536):
+    def get_atten_mask(self, sparse_mode=0, pre_tockens=65536, next_tockens=65536):
         atten_masks = []
         shape = [1, 8, 256, 256]
         if sparse_mode == 0:
-            atten_mask_u = np.triu(np.ones(shape), k=next_tokens + 1)
-            atten_mask_l = np.tril(np.ones(shape), k=-pre_tokens - 1)
+            atten_mask_u = np.triu(np.ones(shape), k=next_tockens + 1)
+            atten_mask_l = np.tril(np.ones(shape), k=-pre_tockens - 1)
             atten_masks = atten_mask_u + atten_mask_l
 
         elif sparse_mode == 1:
             atten_masks = np.zeros(shape)
-            pre_tokens = 65536
-            next_tokens = 65536
+            pre_tockens = 65536
+            next_tockens = 65536
 
         elif sparse_mode == 2:
             atten_masks = np.triu(np.ones(shape), k=1)
@@ -235,14 +235,14 @@ class TestNPUFlashAttention(TestCase):
             atten_masks = np.triu(np.ones(shape), k=1)
 
         elif sparse_mode == 4:
-            atten_mask_u = np.triu(np.ones(shape), k=next_tokens + 1)
-            atten_mask_l = np.tril(np.ones(shape), k=-pre_tokens - 1)
+            atten_mask_u = np.triu(np.ones(shape), k=next_tockens + 1)
+            atten_mask_l = np.tril(np.ones(shape), k=-pre_tockens - 1)
             atten_masks = atten_mask_u + atten_mask_l
 
         atten_mask = torch.tensor(atten_masks).to(torch.float16)
         return atten_mask
 
-    # sparse_params = [sparse_mode, pre_tokens, next_tokens]
+    # sparse_params = [sparse_mode, pre_tockens, next_tockens]
     # Prec and prec16 indicate the precision comparison standards for float32 and float16 respectively.
     # In this example, 0.01 is used as the standard. You can change the value as required. 
     def check_result(self, query, key, value, sparse_params):
@@ -257,7 +257,7 @@ class TestNPUFlashAttention(TestCase):
         key = torch.randn(1, 8, 256, 256, dtype=torch.float16)
         value = torch.randn(1, 8, 256, 256, dtype=torch.float16)
 
-        # sparse_params: [sparse_mode, pre_tokens, next_tokens]
+        # sparse_params: [sparse_mode, pre_tockens, next_tockens]
         sparse_params_list = [
             [0, 128, 128],
             [1, 65536, 65536],
@@ -340,7 +340,7 @@ QK<sup>T</sup>矩阵在`atten_mask`为True的位置会被遮蔽，效果如下�
 
     ![](./figures/1-10.png)
 
--   当`sparse_mode`为5时，代表prefix非压缩场景，即在rightDownCasual的基础上，左侧加上一个长为Sq，宽为N的矩阵，N的值由可选参数prefix获取，例如下图中表示batch=2场景下prefix传入数组\[4,5\]，每个batch轴的N值可以不一样，参数起点为左上角。
+-   当`sparse_mode`为5时，代表prefix非压缩场景，即在rightDownCausal的基础上，左侧加上一个长为Sq，宽为N的矩阵，N的值由可选参数prefix获取，例如下图中表示batch=2场景下prefix传入数组\[4,5\]，每个batch轴的N值可以不一样，参数起点为左上角。
 
     该场景下忽略`pre_tockens`、`next_tockens`取值，`atten_mask`矩阵数据格式须为BNSS或B1SS，Masked QK<sup>T</sup>矩阵示意如下：
 
