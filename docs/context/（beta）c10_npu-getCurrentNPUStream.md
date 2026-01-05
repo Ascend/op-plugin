@@ -12,7 +12,7 @@ c10_npu::NPUStream c10_npu::getCurrentNPUStream(c10::DeviceIndex device_index = 
 
 ## 功能说明
 
-通过设备id获取当前NPU流，返回值类型NPUStream，与c10::CUDA::CUDAStream c10::CUDA::getCurrentCUDAStream(c10::DeviceIndex  _device_index_  = -1)相同。
+通过设备id获取当前NPU流，返回值类型NPUStream，与c10::CUDA::CUDAStream c10::cuda::getCurrentCUDAStream(c10::DeviceIndex _device_index_ = -1)相同。
 
 ## 参数说明
 

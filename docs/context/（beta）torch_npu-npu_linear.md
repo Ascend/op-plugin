@@ -29,6 +29,8 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> x=torch.rand(2,16).npu()
 >>> w=torch.rand(4,16).npu()
 >>> b=torch.rand(4).npu()

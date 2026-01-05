@@ -27,7 +27,7 @@
      - 当rotary_mode='interleave'时，将输入向量按交错顺序处理，然后应用旋转：
          $$
          x_1 = x[..., ::2], x_2 = x[..., 1::2]\\
-         rotate(x) = rearrange(torch.stack((-x_2, x_1), dim=-1), “... d two -> ...(d two)", two=2)\\
+         rotate(x) = rearrange(torch.stack((-x_2, x_1), dim=-1), "... d two -> ...(d two)", two=2)\\
          $$
      - 当输入rotate时，旋转矩阵的生成方式为：
          $$

@@ -20,7 +20,7 @@ class torch_npu.optim.NpuFusedOptimizerBase(params, default)
 
 ## 参数说明
 
-- **params** (`dict`)：模型参数或模型参数组，`params`为参数的可迭代对象或参数组的dict类型。
+- **params** (`iterable`)：必选参数，模型参数或模型参数组。
 - **default** (`dict`)：包含其他所有参数的字典。
 
 

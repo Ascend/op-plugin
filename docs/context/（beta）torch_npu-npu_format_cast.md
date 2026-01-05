@@ -55,6 +55,8 @@ torch_npu.npu_format_cast(input, acl_format) -> Tensor
 - 整数值调用示例：
 
     ```python
+    >>> import torch
+    >>> import torch_npu
     >>> x = torch.rand(2, 3, 4, 5).npu()
     >>> torch_npu.get_npu_format(x)
     0
@@ -66,6 +68,8 @@ torch_npu.npu_format_cast(input, acl_format) -> Tensor
 - Format类型调用示例：
 
     ```python
+    >>> import torch
+    >>> import torch_npu
     >>> x2 = torch_npu.npu_format_cast(x, torch_npu.Format.NHWC)
     >>> torch_npu.get_npu_format(x2)
     1
