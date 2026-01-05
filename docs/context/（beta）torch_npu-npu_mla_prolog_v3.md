@@ -224,7 +224,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>kv_cache per-tile量化 </td>
       <td>
           - weight_quant_mode=3, kv_cache_quant_mode=3, query_quant_mode=0<br>
-          - 入参：weight_uq_qr传入pertoken量化数据，kv_cache传入per-tile量化数据,其余入参皆为非量化数据 <br>
+          - 入参：weight_uq_qr传入pertoken量化数据，kv_cache传入per-tile量化数据，其余入参皆为非量化数据 <br>
           dequant_scale_w_uq_qr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入。 <br>
           - 出参：kv_cache_out返回pertile量化数据，其余出参返回非量化数据。
       </td>

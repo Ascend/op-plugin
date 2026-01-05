@@ -30,5 +30,5 @@ torch_npu.npu_convolution(input, weight, bias, stride, padding, dilation, groups
 - **stride**（`List[int]`）：卷积核步长。
 - **padding**（`List[int]`）：输入两侧的隐式填充。
 - **dilation**（`List[int]`）：内核元素间距。
-- **groups**（`int`）：对输入进行分组。In_channels可被组数整除。
+- **groups**（`int`）：对输入进行分组。in_channels可被组数整除。
 

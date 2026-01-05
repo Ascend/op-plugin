@@ -20,7 +20,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 ## 参数说明
 
 - **x**（`Tensor`）：必选输入，矩阵乘法的左矩阵。shape支持2维[m,k]，数据类型支持`int8`，数据格式支持ND，支持非连续的Tensor。
-- **weight**（`TensorList`）：必选输入，权重矩阵(矩阵乘法右矩阵)，shape支持3维[e,k,n]，数据类型支持`int8`、`int32`，数据格式支持FRACTAL_NZ(通过接口npu_format_cast，可实现格式转换)，支持非连续的Tensor。
+- **weight**（`TensorList`）：必选输入，权重矩阵（矩阵乘法右矩阵），shape支持3维[e,k,n]，数据类型支持`int8`、`int32`，数据格式支持FRACTAL_NZ(通过接口npu_format_cast，可实现格式转换)，支持非连续的Tensor。
 - **weight\_scale**（`TensorList`）：必选输入，右矩阵的量化因子。`weight`数据类型为`int8`时，`weight_scale`的shape支持2维，`weight`数据类型为`int32`时，`weight_scale`的shape支持2维和3维。数据类型支持`float32`，数据格式支持ND，支持非连续的Tensor。
 - **x\_scale**（`Tensor`）：必选输入，左矩阵的量化因子。shape支持1维[m]，数据类型支持`float32`，数据格式支持ND，支持非连续的Tensor。
 - **group\_list**（`Tensor`）：必选输入，指示每个分组参与计算的Token个数。shape支持1维[e]，数据类型支持`int64`，数据格式支持ND，支持非连续的Tensor。
