@@ -44,3 +44,5 @@ deprecated:
     replace: 'npu_indexing'
   - name: npu_bmmV2
     replace: 'torch.bmm and torch.view'
+  - name: npu_mla_prolog_v2
+    replace: 'npu_mla_prolog_v3'

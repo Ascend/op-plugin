@@ -7893,6 +7893,8 @@ graph output: tensor([[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.014
 _add_torch_npu_docstr(
     "npu_mla_prolog_v2",
     """
+该接口中kv_cache和kr_cache进行原地计算，未按in-place算子实现接口，推荐使用`torch_npu.npu_mla_prolog_v3`接口进行替换。
+
 功能描述:
 推理场景，Multi-Head Latent Attention前处理的计算。主要计算过程分五路，首先对输入x乘以WeightDq进行下采样和RmsNorm后分成两路，第一路乘以WeightUq和WeightUk经过两次上采样后得到query；第二路乘以WeightQr后经过旋转位置编码（ROPE)得到query_rope；第三路是输入x乘以WeightDkv进行下采样和RmsNorm后传入Cache中得到kvCache；第四路是输入x乘以Wkr后经过旋转位置编码后传入另一个Cache中得到krCache；第五路是输出query经过DynamicQuant后得到的量化参数。
 
