@@ -53,6 +53,8 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
                 OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(x2.dim() == TWO_DIMS, "The x2 input of mm is required to be 2D, but the actual x2 input is ", x2.dim(),
                 OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x1.size(1) == x2.size(0), "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
+        x1.size(1), " and the K-axis of x2 is ", x2.size(0), "." + OPS_ERROR(ErrCode::PARAM));
 
     // 校验x的dtype: float8_e4m3fn/float8_e5m2
     if (x1_dtype.has_value()) {

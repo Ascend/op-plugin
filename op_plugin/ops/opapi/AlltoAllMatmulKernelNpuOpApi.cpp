@@ -39,7 +39,11 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(const at::Tensor &x1, c
     // 校验world_size
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
         "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, OPS_ERROR(ErrCode::VALUE));
-    TORCH_CHECK(x2.size(1) % world_size == 0, "The x2 n-axis should be divisible by world_size", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x1.size(1) * world_size == x2.size(0),
+        "In AlltoAllMatmul, before Matmul, the x1 will go through alltoall, the K-axis of x1 will change to ", x1.size(1) * world_size,
+        " However, the K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
+        x1.size(1) * world_size, " and the K-axis of x2 is ", x2.size(0), "." + OPS_ERROR(ErrCode::PARAM));
 
     // pta主要是为了推导output的shape和dtype，非量化matmulalltoall的output_dtype和输入x1一致
     aclDataType output_acl_type = npu_preparation::convert_to_acl_data_type(x1.scalar_type());
@@ -62,7 +66,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(const at::Tensor &x1, c
     if (all2all_out_flag) {
         aclDataType alltoall_out_acl_type = npu_preparation::convert_to_acl_data_type(x1.scalar_type());
         at::ScalarType alltoall_out_scalar_type = npu_preparation::convert_to_scalar_type(alltoall_out_acl_type);
-        auto alltoall_out_size = {out_m, out_n * world_size};
+        auto alltoall_out_size = {out_m, x1.size(1) * world_size};
         at::Tensor alltoall_out_tensor = npu_preparation::apply_tensor_without_format(alltoall_out_size, c10::dtype(alltoall_out_scalar_type));
         // 调用aclnn接口
         EXEC_NPU_CMD(aclnnAlltoAllMatmul, x1, x2, bias, all2all_axes, group_ptr, transpose_x1, transpose_x2, output_tensor, alltoall_out_tensor);
