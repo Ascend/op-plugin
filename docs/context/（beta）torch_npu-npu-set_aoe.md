@@ -28,7 +28,9 @@ torch_npu.npu.set_aoe(dump_path)
 ```python
 import torch
 import torch_npu
+import os
 
+os.mkdir("./aoe_dump")
 dump_path = "./aoe_dump"
 torch_npu.npu.set_aoe(dump_path)
 

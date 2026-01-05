@@ -26,6 +26,8 @@ torch_npu.npu.get_mm_bmm_format_nd()
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> torch_npu.npu.get_mm_bmm_format_nd()
 True
 ```

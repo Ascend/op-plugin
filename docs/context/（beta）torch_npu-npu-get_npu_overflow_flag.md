@@ -18,8 +18,10 @@ torch_npu.npu.get_npu_overflow_flag()
 ## 调用示例
 
 ```python
->>>a = torch.Tensor([65535]).npu().half()
->>>a = a + a
->>>ret = torch_npu.npu.get_npu_overflow_flag()
+import torch
+import torch_npu
+a = torch.Tensor([65535]).npu().half()
+a = a + a
+ret = torch_npu.npu.get_npu_overflow_flag()
 ```
 

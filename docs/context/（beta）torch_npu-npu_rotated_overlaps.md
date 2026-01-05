@@ -28,15 +28,17 @@ torch_npu.npu_rotated_overlaps(self, query_boxes, trans=False) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> import numpy as np
->>> a=np.random.uniform(0,1,(1,3,5)).astype(np.float16)
->>> b=np.random.uniform(0,1,(1,2,5)).astype(np.float16)
+>>> a=np.random.uniform(0,1,(1,3,5)).astype(np.float32)
+>>> b=np.random.uniform(0,1,(1,2,5)).astype(np.float32)
 >>> box1=torch.from_numpy(a).to("npu")
->>> box2=torch.from_numpy(a).to("npu")
+>>> box2=torch.from_numpy(b).to("npu")
 >>> output = torch_npu.npu_rotated_overlaps(box1, box2, trans=False)
 >>> output
 tensor([[[0.0000, 0.1562, 0.0000],
         [0.1562, 0.3713, 0.0611],
-        [0.0000, 0.0611, 0.0000]]], device='npu:0', dtype=torch.float16)
+        [0.0000, 0.0611, 0.0000]]], device='npu:0', dtype=torch.float32)
 ```
 

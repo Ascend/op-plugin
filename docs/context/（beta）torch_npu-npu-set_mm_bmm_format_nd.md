@@ -21,5 +21,7 @@ torch_npu.npu.set_mm_bmm_format_nd(bool)
 ## 调用示例
 
 ```python
->>>torch_npu.npu.set_mm_bmm_format_nd(True)
+import torch
+import torch_npu
+torch_npu.npu.set_mm_bmm_format_nd(True)
 ```

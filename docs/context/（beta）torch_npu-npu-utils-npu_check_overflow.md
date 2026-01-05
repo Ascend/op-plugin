@@ -33,7 +33,7 @@ True溢出，False未溢出。
 
 ```python
 import torch
-
+import torch_npu
 import torch_npu.npu.utils as utils
 from torch_npu.testing.testcase import TestCase, run_tests
 

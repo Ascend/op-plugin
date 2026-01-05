@@ -29,6 +29,8 @@ torch_npu.npu_silu(self) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> a=torch.rand(2,8).npu()
 >>> output = torch_npu.npu_silu(a)
 >>> output

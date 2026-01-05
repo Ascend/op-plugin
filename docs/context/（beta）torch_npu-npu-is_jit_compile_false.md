@@ -12,7 +12,7 @@
 
 ## 功能说明
 
-确认算子计算是否采用二进制，如果是二进制计算，返回True，否则返回False。
+确认JIT编译模式是否被禁用，如果被禁用，返回True，否则返回False。
 
 ## 函数原型
 
@@ -26,8 +26,10 @@ bool型。
 ## 调用示例
 
 ```python
->>>torch_npu.npu.set_compile_mode(jit_compile=False)
->>>torch_npu.npu.is_jit_compile_false()
+import torch
+import torch_npu
+torch_npu.npu.set_compile_mode(jit_compile=False)
+torch_npu.npu.is_jit_compile_false()
 True
 ```
 
