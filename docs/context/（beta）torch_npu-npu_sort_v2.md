@@ -26,7 +26,7 @@ torch_npu.npu_sort_v2(self, dim=-1, descending=False, out=None) -> Tensor
 
 - **self**（`Tensor`）：输入张量。
 - **dim**（`int`）：可选参数，进行排序的维度，默认值为-1。
-- **descending**（`bool`）：可选参数，排序顺序控制（升序或降序），默认值为None。
+- **descending**（`bool`）：可选参数，排序顺序控制（升序或降序），默认值为False。
 
 ## 约束说明
 
@@ -35,6 +35,8 @@ torch_npu.npu_sort_v2(self, dim=-1, descending=False, out=None) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> x = torch.randn(3, 4).npu()
 >>> x
 tensor([[-0.0067,  1.7790,  0.5031, -1.7217],

@@ -30,6 +30,8 @@ torch_npu.npu_slice(self, offsets, size) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> input = torch.tensor([[1,2,3,4,5], [6,7,8,9,10]], dtype=torch.float16).to("npu")
 >>> offsets = [0, 0]
 >>> size = [2, 2]

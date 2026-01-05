@@ -39,7 +39,7 @@ torch_npu.npu_ptiou(bboxes, gtboxes, mode=0) -> Tensor
 >>> gtboxes = torch.tensor([[0, 0, 10, 20],
                             [0, 10, 10, 10],
                             [10, 10, 20, 20]], dtype=torch.float16).to("npu")
->>> output_iou = torch_npu.npu_iou(bboxes, gtboxes, 0)
+>>> output_iou = torch_npu.npu_ptiou(bboxes, gtboxes, 0)
 >>> output_iou
 tensor([[0.4985, 0.0000, 0.0000],
         [0.0000, 0.0000, 0.0000], 

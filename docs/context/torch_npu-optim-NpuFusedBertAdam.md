@@ -21,7 +21,7 @@ class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, warmup=-1, t_total=-1, s
 
 ## 参数说明
 
-- **params** (`dict`)：必选参数，模型参数或模型参数组，`params`为参数的可迭代对象或参数组的dict类型。
+- **params** (`iterable`)：必选参数，模型参数或模型参数组。
 - **lr** (`float`)：可选参数，学习率，默认值为1e-3。`lr`的值小于0时，打印“ValueError”异常信息。
 - **warmup** (`float`)：`t_total`的warmup比例，默认值为-1，表示不进行warmup。`warmup`的值小于0且`warmup`不等于-1，或者`warmup`大于等于1，打印“ValueError”异常信息。
 - **t_total** (`float`)：学习率调整的步数，默认值为-1，表示固定学习率。

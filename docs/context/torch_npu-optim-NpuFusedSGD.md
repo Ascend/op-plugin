@@ -22,7 +22,7 @@ class torch_npu.optim.NpuFusedSGD(params, lr, momentum=0, dampening=0, weight_de
 
 ## 参数说明
 
-- **params** (`dict`)：必选参数，模型参数或模型参数组，`params`为参数的可迭代对象或参数组的dict类型。
+- **params** (`iterable`)：必选参数，模型参数或模型参数组。
 - **lr** (`float`)：必选参数，学习率。`lr`不配置或值小于0时，系统会抛出“ValueError”异常信息。
 - **momentum** (`float`)：可选参数，动量系数，默认值为0。`momentum`小于0时，系统会抛出“ValueError”异常信息。
 - **dampening** (`float`)：可选参数，动量的抑制系数，默认值为0。
