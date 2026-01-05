@@ -1,5 +1,8 @@
 # torch_npu.npu_mla_prolog_v2
 
+>**须知：**<br>
+ 	 >该接口中kv_cache和kr_cache进行原地计算，未按in-place算子实现接口，推荐使用`torch_npu.npu_mla_prolog_v3`接口进行替换。
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |

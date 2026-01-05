@@ -45,4 +45,4 @@ deprecated:
   - name: npu_bmmV2
     replace: 'torch.bmm and torch.view'
   - name: npu_mla_prolog_v2
-    replace: 'npu_mla_prolog_v3 or npu_mla_prolog_v3_functional'
+    replace: 'npu_mla_prolog_v3'
