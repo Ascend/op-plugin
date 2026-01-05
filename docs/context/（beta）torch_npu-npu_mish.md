@@ -29,6 +29,8 @@ torch_npu.npu_mish(self) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> x = torch.rand(10, 30, 10).npu()
 >>> y = torch_npu.npu_mish(x)
 >>> y.shape

@@ -30,12 +30,14 @@ torch_npu.npu_min(self, dim, keepdim=False) -> (Tensor, Tensor)
 
 ## 返回值说明
 
-- **values**（`Tensor`）：输入张量中的最小值。
+- **values**（`Tensor`）：输入张量中沿指定维度上的最小值。
 - **indices**（`Tensor`）：输入张量中最小值的index。
 
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> input = torch.randn(2, 2, 2, 2, dtype = torch.float32).npu()
 >>> input
 tensor([[[[-0.9909, -0.2369],

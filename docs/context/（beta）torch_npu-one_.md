@@ -29,6 +29,8 @@ torch_npu.one_(self) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> x = torch.rand(2, 3).npu()
 
 >>> x

@@ -28,7 +28,8 @@ torch_npu.npu.is_autocast_enabled()
 ## 调用示例
 
 ``` python
->>> torch_npu.npu.is_autocast_enabled()
-False
+import torch
+import torch_npu
+torch_npu.npu.is_autocast_enabled()
 ```
 

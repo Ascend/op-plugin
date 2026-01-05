@@ -11,7 +11,8 @@
 
 ## 功能说明
 
-使用“begin,end,strides”数组对index结果进行计数。
+以begin为起始索引，end为结束索引，strides为步长,对输入张量进行切片。
+
 ## 函数原型
 
 ```
@@ -33,6 +34,8 @@ torch_npu.npu_indexing(self, begin, end, strides, begin_mask=0, end_mask=0, elli
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> input = torch.tensor([[1, 2, 3, 4],[5, 6, 7, 8]], dtype=torch.int32).to("npu")
 >>> input
 tensor([[1, 2, 3, 4],

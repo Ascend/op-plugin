@@ -28,6 +28,8 @@ torch_npu.npu.set_dump(path_to_json)
 ## 调用示例
 
 ```python
->>>torch_npu.npu.set_dump("/home/HwHiAiUser/dump.json")
+>>> import torch
+>>> import torch_npu
+>>> torch_npu.npu.set_dump("/home/HwHiAiUser/dump.json")
 ```
 

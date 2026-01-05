@@ -33,21 +33,10 @@ torch_npu.npu_giou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 >>> import torch
 >>> import torch_npu
 >>> import numpy as np
->>> a=np.random.uniform(0,1,(4,10)).astype(np.float16)
->>> b=np.random.uniform(0,1,(4,10)).astype(np.float16)
+>>> a=np.random.uniform(0,1,(10,4)).astype(np.float16)
+>>> b=np.random.uniform(0,1,(10,4)).astype(np.float16)
 >>> box1=torch.from_numpy(a).to("npu")
->>> box2=torch.from_numpy(a).to("npu")
+>>> box2=torch.from_numpy(b).to("npu")
 >>> output = torch_npu.npu_giou(box1, box2, trans=True, is_cross=False, mode=0)
->>> output
-tensor([[1.],
-        [1.],
-        [1.],
-        [1.],
-        [1.],
-        [1.],
-        [1.],
-        [1.],
-        [1.],
-        [1.]], device='npu:0', dtype=torch.float16)
 ```
 
