@@ -33,8 +33,8 @@ torch_npu.contrib.function.dropout_with_byte_mask(input1, p=0.5, training=True, 
 ```python
 import torch, torch_npu
 from torch_npu.contrib.function import npu_functional as F
-input = torch.randn((4,4), dtype=float16).npu()
+input = torch.randn(4,4).npu()
 input = torch_npu.npu_format_cast(input, 2)
-output = F.dropout_with_byte_mask(input, p=0.2, traning=True)
+output = F.dropout_with_byte_mask(input, p=0.2, training=True)
 output
 ```

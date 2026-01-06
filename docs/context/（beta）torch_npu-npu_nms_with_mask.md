@@ -32,13 +32,15 @@ torch_npu.npu_nms_with_mask(input, iou_threshold) -> (Tensor, Tensor, Tensor)
 
 ## 约束说明
 
-输入box\_scores的2nd-dim必须等于8。
+输入input的2nd-dim必须等于8。
 
 
 ## 调用示例
 
 ```python
->>> input = torch.tensor([[0.0, 1.0, 2.0, 3.0, 0.6], [6.0, 7.0, 8.0, 9.0, 0.4]], dtype=torch.float16).to("npu")
+>>> import torch
+>>> import torch_npu
+>>> input = torch.tensor([[0.0, 1.0, 2.0, 3.0, 0.6, 0.5, 0.4, 0.3], [6.0, 7.0, 8.0, 9.0, 0.4, 0.5, 0.6, 0.7]], dtype=torch.float16).to("npu")
 >>> iou_threshold = 0.5
 >>> output1, output2, output3, = torch_npu.npu_nms_with_mask(input, iou_threshold)
 >>> output1
