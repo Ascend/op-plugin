@@ -38,6 +38,8 @@ torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, gl
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> var_in = torch.rand(321538).uniform_(-32., 21.).npu()
 >>> m_in = torch.zeros(321538).npu()
 >>> v_in = torch.zeros(321538).npu()

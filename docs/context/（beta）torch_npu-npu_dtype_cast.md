@@ -32,6 +32,8 @@ torch_npu.npu_dtype_cast(input, dtype) -> Tensor
 示例一：
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> torch_npu.npu_dtype_cast(torch.tensor([0, 0.5, -1.]).npu(), dtype=torch.int)
 tensor([ 0,  0, -1], device='npu:0', dtype=torch.int32)
 ```
