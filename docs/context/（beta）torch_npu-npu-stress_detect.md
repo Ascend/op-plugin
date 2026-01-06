@@ -86,7 +86,7 @@ def train_model(model, dataloader, optimizer, loss_fn, num_epochs):
         if stress_detect_result == 0:
             print(f"Epoch {epoch + 1}/{num_epochs}: Stress detection passed.")
         elif stress_detect_result == 1:
-            print(f"Epoch {epoch + 1}/{num_epochs}: Stress detection skipped (called too frequently).")
+            print(f"Epoch {epoch + 1}/{num_epochs}: Stress detection failed.")
         else:
             # Raise an exception for any other non-zero result
             raise StressDetectionException(stress_detect_result)

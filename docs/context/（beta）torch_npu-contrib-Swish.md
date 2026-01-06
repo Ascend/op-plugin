@@ -1,7 +1,7 @@
 # （beta）torch_npu.contrib.Swish
 
 > [!NOTICE]  
-> 该接口计划废弃，可以使用`torch_npu.contrib.ModulationDeformCon`接口进行替换。
+> 该接口计划废弃，可以使用`torch_npu.contrib.SiLU`接口进行替换。
 
 ## 产品支持情况
 

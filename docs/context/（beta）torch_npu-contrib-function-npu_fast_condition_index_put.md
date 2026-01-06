@@ -24,7 +24,7 @@ torch_npu.contrib.function.npu_fast_condition_index_put(x, condition, value)
 
 - **x** (`Tensor`)：输入张量。
 - **condition** (`BoolTensor`)：判断条件。
-- **value** (`int`)：bboxes步长。
+- **value** (`int`/`float`)：bboxes步长。
 
 ## 返回值说明
 

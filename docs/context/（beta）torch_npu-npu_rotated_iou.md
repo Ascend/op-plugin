@@ -35,8 +35,8 @@ torch_npu.npu_rotated_iou(self, query_boxes, trans=False, mode=0, is_cross=True,
 >>> import torch
 >>> import torch_npu
 >>> import numpy as np
->>> a=np.random.uniform(0,1,(2,2,5)).astype(np.float16)
->>> b=np.random.uniform(0,1,(2,3,5)).astype(np.float16)
+>>> a=np.random.uniform(0,1,(2,2,5)).astype(np.float32)
+>>> b=np.random.uniform(0,1,(2,3,5)).astype(np.float32)
 >>> box1=torch.from_numpy(a).to("npu")
 >>> box2=torch.from_numpy(b).to("npu")
 >>> output = torch_npu.npu_rotated_iou(box1, box2, trans=False, mode=0, is_cross=True)

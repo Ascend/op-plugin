@@ -49,13 +49,13 @@ torch_npu.contrib.module.ChannelShuffle(in_channels, groups=2, split_shuffle=Tru
 
 
 **计算输入**
-- **x1** (`Tensor`)：输入张量。 shape为$(N, C_{in}, L_{in})$。
-- **x2** (`Tensor`)：输入张量。 shape为$(N, C_{in}, L_{in})$。
+- **x1** (`Tensor`)：输入张量。 shape为$(N, C_{in}, *)$。
+- **x2** (`Tensor`)：输入张量。 shape为$(N, C_{in}, *)$。
 
 ## 返回值说明
 
-- **out1** (`Tensor`)：输出张量。 shape为$(N, C_{out}, L_{out})$。
-- **out2** (`Tensor`)：输出张量。 shape为$(N, C_{out}, L_{out})$。
+- **out1** (`Tensor`)：输出张量。 shape为$(N, C_{out}, *)$。
+- **out2** (`Tensor`)：输出张量。 shape为$(N, C_{out}, *)$。
 
 ## 约束说明
 

@@ -107,7 +107,7 @@
 </tr>
 <tr id="row017092012245"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p101705205249"><a name="p101705205249"></a><a name="p101705205249"></a><a href="（beta）c10_npu-SetDevice.md">（beta）c10_npu::SetDevice</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p6171172042412"><a name="p6171172042412"></a><a name="p6171172042412"></a>NPU设备设置，返回值类型aclError，与cudaError_t c10::cuda::GetDevice(int <em id="i32541536164317"><a name="i32541536164317"></a><a name="i32541536164317"></a>device</em>)相同。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p6171172042412"><a name="p6171172042412"></a><a name="p6171172042412"></a>NPU设备设置，返回值类型aclError，与cudaError_t c10::cuda::SetDevice(int <em id="i32541536164317"><a name="i32541536164317"></a><a name="i32541536164317"></a>device</em>)相同。</p>
 </td>
 </tr>
 <tr id="row166762910245"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p186712293248"><a name="p186712293248"></a><a name="p186712293248"></a><a href="（beta）c10_npu-current_device.md">（beta）c10_npu::current_device</a></p>
@@ -189,7 +189,7 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>返回guard构造时的设备。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-original_stream.md">at_npu.c10_npu::NPUStreamGuard::original_stream</a></p>
+</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-original_stream.md">c10_npu::NPUStreamGuard::original_stream</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>返回guard构造时设置的流。</p>
 </td>
