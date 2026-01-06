@@ -63,7 +63,7 @@ at::Tensor index_fill(const at::Tensor& self, int64_t dim, const at::Tensor& ind
     TORCH_CHECK(value.dim() == 0, "Value should be a 0-dimensional tensor, but got ",
                 value.dim(), OPS_ERROR(ErrCode::VALUE));
     static const bool is_index_fill_available = check_aclnn_kernel_available("aclnnIndexFill");
-    if (!is_index_fill_available) {
+    if (!is_index_fill_available || c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
         DO_COMPATIBILITY(aclnnIndexFillTensor, acl_op::index_fill(self, dim, index, value));
         TORCH_CHECK(index.dim() <= MAX_DIM, "Index has to be a vector/scalar.", OPS_ERROR(ErrCode::TYPE));
         at::Scalar value_scalar = value.item();
@@ -104,7 +104,7 @@ at::Tensor index_fill(const at::Tensor& self, int64_t dim, const at::Tensor& ind
                       const at::Scalar& value)
 {
     static const bool is_index_fill_available = check_aclnn_kernel_available("aclnnIndexFill");
-    if (!is_index_fill_available) {
+    if (!is_index_fill_available || c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
         DO_COMPATIBILITY(aclnnIndexFillTensor, acl_op::index_fill(self, dim, index, value));
         TORCH_CHECK(index.dim() <= MAX_DIM, "Index has to be a vector/scalar.", OPS_ERROR(ErrCode::TYPE));
         std::vector<int64_t> idx_vec = get_index_vector(index);
