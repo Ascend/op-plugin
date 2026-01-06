@@ -26,7 +26,7 @@ torch_npu.npu.ExternalEvent()
 
 ## 约束说明
 
- ExternalEvent创建时，系统内部会申请Event资源，创建数量受芯片硬件规格限制。
+ ExternalEvent创建时，系统内部会在Device上分配32字节的内存，创建数量受芯片硬件规格限制。
 
 ## 调用示例
 ```python
@@ -40,6 +40,5 @@ default_stream = torch_npu.npu.current_stream()
 stream = torch.npu.Stream()
 
 event.wait(default_stream)
-event.reset(default_stream)
 event.record(stream)
 ```

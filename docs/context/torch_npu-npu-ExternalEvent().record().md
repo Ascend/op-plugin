@@ -32,7 +32,7 @@ torch_npu.npu.ExternalEvent().record(stream) -> None
 ## 约束说明
 
 - 该接口是异步接口，调用接口成功仅表示任务下发成功，不表示任务执行成功。
-- 接口调用顺序：torch_npu.npu.ExternalEvent().wait()-->torch_npu.npu.ExternalEvent().reset()-->torch_npu.npu.ExternalEvent().record()或torch_npu.npu.ExternalEvent().record()-->torch_npu.npu.ExternalEvent().wait()-->torch_npu.npu.ExternalEvent().reset()。
+- 接口调用顺序：torch_npu.npu.ExternalEvent().wait()-->torch_npu.npu.ExternalEvent().record()或torch_npu.npu.ExternalEvent().record()-->torch_npu.npu.ExternalEvent().wait()。
 
 ## 调用示例
 ```python
@@ -46,6 +46,5 @@ default_stream = torch_npu.npu.current_stream()
 stream = torch.npu.Stream()
 
 event.wait(default_stream)
-event.reset(default_stream)
 event.record(stream)
 ```
