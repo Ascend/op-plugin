@@ -1502,6 +1502,7 @@ official:
 
   - func: cdist(Tensor x1, Tensor x2, float p=2, int? compute_mode=None) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: ceil(Tensor self) -> Tensor
     acl_op: all_version
