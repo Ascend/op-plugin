@@ -1117,7 +1117,7 @@ def npu_fusion_attention_backward(query, key, value, dy, head_num, input_layout,
     dk = key.new_empty(key.shape, dtype=query.dtype, device='meta')
     dv = value.new_empty(value.shape, dtype=query.dtype, device='meta')
     dpse = torch.empty([0], dtype=query.dtype, device='meta')
-    dsink = None if sink is None else torch.empty(sink.shape, dtype=query.dtype, device='meta')
+    dsink = torch.empty([], device='meta') if sink is None else torch.empty(sink.shape, dtype=sink.dtype, device='meta')
     return (dq, dk, dv, dpse, dsink)
 
 
