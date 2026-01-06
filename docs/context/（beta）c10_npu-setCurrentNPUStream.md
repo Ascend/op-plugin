@@ -12,7 +12,7 @@ void c10_npu::setCurrentNPUStream(c10_npu::NPUStream stream)
 
 ## 功能说明
 
-设置当前NPU流，与void c10::CUDA::setCurrentCUDAStream(c10::CUDA::CUDAStream _stream_)相同。
+设置当前NPU流，与void c10::cuda::setCurrentCUDAStream(c10::cuda::CUDAStream _stream_)相同。
 
 ## 参数说明
 
