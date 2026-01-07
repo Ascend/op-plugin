@@ -23,7 +23,7 @@ torch_npu.npu_transpose(self, perm, require_contiguous=True) -> Tensor
 
 - **self** (`Tensor`)：输入张量。
 - **perm** (`List[int]`)：对应维度排列。
-- **require_contiguous** (`bool`)：用户是否需要对输入Tensor转为连续，默认值为True。设置为False时，表示不对输入Tensor转为连续。当用户明确输入Tensor为连续Tensor或转置Tensor时，才能设置为True。
+- **require_contiguous** (`bool`)：用户是否需要在调用函数前对输入Tensor做转连续，默认值为True。设置为False时，表示在调用函数前无需对输入Tensor做转连续。当用户明确输入Tensor为连续Tensor或转置Tensor时，才能设置为True。
 
 ## 调用示例
 

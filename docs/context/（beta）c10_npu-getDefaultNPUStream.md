@@ -16,7 +16,7 @@ c10_npu::NPUStream c10_npu::getDefaultNPUStream(c10::DeviceIndex device_index = 
 
 ## 参数说明
 
-device_index：DeviceIndex类型，获取流的NPU设备id。
+device_index：DeviceIndex类型，获取流的NPU设备id。默认值为-1，表示使用当前的NPU设备。
 
 ## 支持的型号
 
