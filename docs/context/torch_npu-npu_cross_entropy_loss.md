@@ -44,7 +44,7 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 
 - **input**（`Tensor`）: 必选参数，表示输入，对应公式中*x*；数据类型支持`float16`、`float32`、`bfloat16`；shape为[N, C]，N为批处理大小，C为标签数，必须大于0。
 - **target**（`Tensor`）: 必选参数，表示标签，对应公式中*y*；数据类型支持`int64`；shape为[N]，与`input`第零维相同，取值范围[0, C)。
-- **weight**（`Tensor`）: 可选参数，表示每个类别指定的缩放权重；数据类型支持`float32`；shape为[C]，与`input`第一维相同，取值范围(0, 1]，不指定值时默认为全一。
+- **weight**（`Tensor`）: 可选参数，表示每个类别指定的缩放权重；数据类型支持`float32`；shape为[C]，与`input`第二维相同，取值范围(0, 1]，不指定值时默认为全一。
 - **reduction**（`str`）: 可选参数，表示loss的归约方式；支持范围["mean", "sum", "none"]，`mean`表示平均归约，`sum`表示求和归约，`none`表示无归约，默认为`mean`。
 - **ignore_index**（`int`）: 可选参数，表示指定忽略的标签；数值必须小于C，当小于0时表示不指定忽略标签；默认值为-100。
 - **label_smoothing**（`float`）: 可选参数，表示计算loss时的平滑量；取值范围[0.0, 1.0)；默认值为0.0。
@@ -56,7 +56,7 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 - **loss**（`Tensor`）：表示输出损失；数据类型与`input`相同；`reduction`为`none`时shape为[N]，与`input`第零维一致，否则shape为[1]。
 - **log_prob**（`Tensor`）: 表示给反向计算的输出；数据类型与`input`相同；shape为[N, C]，与`input`一致。
 - **zloss**（`Tensor`）: 表示辅助损失；数据类型与`input`相同；shape与`loss`一致；当`return_zloss`为`True`时输出zloss，否则将返回空tensor；当前暂不支持。
-- **lse_for_zloss**（`Tensor`）:zloss场景给反向计算的输出；数据类型与`input`相同；shape为[N]，与`input`第零维一致；`lse_square_scale_for_zloss`不为`0.0`时将返回该输出，否则将返回空tensor；当前暂不支持。
+- **lse_for_zloss**（`Tensor`）:在zloss场景下给反向计算的输出；数据类型与`input`相同；shape为[N]，与`input`第零维一致；`lse_square_scale_for_zloss`不为`0.0`时将返回该输出，否则将返回空tensor；当前暂不支持。
 
 ## 约束说明
 
@@ -64,7 +64,7 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 - 当input.requires_grad=True时，`sum`/`none`模式下不支持修改`label_smoothing`的默认值；`mean`模式下只支持传入可选参数的默认值，包括`weight`，`ignore_index`和`label_smoothing`。
 - 输入`lse_square_scale_for_zloss`与`return_zloss`暂未使能。
 - 输出`zloss`与`lse_for_zloss`暂未使能。
-- 输出中仅`loss`和`zloss`支持梯度计算。
+- 输出中仅`loss`支持梯度计算。
 
 ## 调用示例
 -   当reduction设置为`mean`时，示例如下：

@@ -13,7 +13,7 @@
 -   计算公式：
     -   group分组（目前仅支持count模式）：
 
-        对输入`x`进行分组计算，`group_index`表示每个group分组的Tokens数，每组使用不同的量化scale（如`weight_scale`、`activation_scale`、`quant_scale`）。当`group_index`为1或None时，表示共享一个scale。
+        对输入`x`进行分组计算，`group_index`表示每个group分组的Tokens数，每组使用不同的量化scale（如`weight_scale`、`activation_scale`、`quant_scale`）。
 
         举例说明：假设x.shape=\[128, 2H\]，group\_index=\[2, 1, 3\]，表示有3个group，对应的scale维度为\[3, 2H\]。每个group数据使用不同的scale分别做dequant反量化+swiglu激活+quant量化操作。
 
@@ -78,7 +78,7 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 -   **weight\_scale** (`Tensor`)：可选参数，表示权重量化对应的反量化系数。要求为2维张量，shape为\[groupNum, 2H\]，数据类型支持`float32`，数据格式为$ND$。当`x`为`int32`时，要求该参数非None，表示需要做反量化。
 -   **activation\_scale** (`Tensor`)：可选参数，表示pertoken权重量化对应的反量化系数。shape为\[TokensNum, 1\]，最后一维为1， 其余与x保持一致。数据类型支持`float32`，数据格式为$ND$。当`x`为`int32`时，要求该参数非None，表示需要做反量化。
--   **bias** (`Tensor`)：可选参数，表示`x`的偏置变量。数据类型支持`int32`，数据格式为$ND$。`group_index`场景下（`bias`非None），该参数不生效为None。
+-   **bias** (`Tensor`)：可选参数，表示`x`的偏置变量。数据类型支持`int32`，数据格式为$ND$。group_index为2维的场景下bias必须为None。
 -   **quant\_scale** (`Tensor`)：可选参数，表示smooth量化系数。要求为2维张量，shape为\[groupNum, H\]，数据类型支持`float32`、`float16`和`bfloat16`，数据格式为$ND$。
 -   **quant\_offset** (`Tensor`)：可选参数，表示量化中的偏移项。数据类型支持`float32`、`float16`和`bfloat16`，数据格式为$ND$。`group_index`场景下（非None），该参数不生效为None。
 -   **group\_index** (`Tensor`)：可选参数，当前只支持count模式，表示该模式下指定分组的Tokens数（要求非负整数）。要求为1维张量，数据类型支持`int64`，数据格式$ND$。

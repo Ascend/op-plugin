@@ -15,7 +15,7 @@
 
 - 等价计算逻辑：
   
-    可使用`cpu_channel_shuffle`等价替换`torch_npu.contrib.module.ChannelShuffle`，两者计算逻辑一致。
+    split_shuffle=False场景可使用`cpu_channel_shuffle`等价替换`torch_npu.contrib.module.ChannelShuffle`，两者计算逻辑一致。
   ```python
   import torch
   def cpu_channel_shuffle(x, groups, split_shuffle):
