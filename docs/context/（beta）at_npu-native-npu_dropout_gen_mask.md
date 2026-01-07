@@ -17,7 +17,7 @@ at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, do
 ## 参数说明
 
 - self ：Tensor类型，输入的张量。
-- size：IntArrayRef类型，获取tensor的size。
+- size：IntArrayRef类型，指定生成mask的size。
 - p：double类型，元素置0的概率。
 - seed ：int64_t类型，随机数的种子，影响生成的随机数序列。
 - offset ：int64_t类型，随机数的偏移量，影响生成随机数序列的位置。

@@ -94,7 +94,7 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
 - **void c10_npu::NPUStream::setDataPreprocessStream(bool is_data_preprocess_stream)**
 
-    NPUStream is_data_preprocess_stream设置。
+    设置NPUStream为数据预处理流。
 
     is_data_preprocess_stream：bool类型，true表示将该流设置为数据预处理流。
 

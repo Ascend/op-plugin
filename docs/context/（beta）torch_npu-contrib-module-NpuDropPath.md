@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-使用NPU亲和写法替换swin_transformer.py中的原生Drop路径。丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。
+使用NPU亲和写法替换swin_transformer.py中的原生DropPath。丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。
 
 ## 函数原型
 

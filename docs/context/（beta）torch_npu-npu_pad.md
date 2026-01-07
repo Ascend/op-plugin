@@ -28,6 +28,8 @@ torch_npu.npu_pad(input, paddings) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> input = torch.tensor([[20, 20, 10, 10]], dtype=torch.float16).to("npu")
 >>> paddings = [1, 1, 1, 1]
 >>> output = torch_npu.npu_pad(input, paddings)
