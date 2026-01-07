@@ -29,6 +29,15 @@ torch_npu.npu_dropout_with_add_softmax(self, x1, alpha, prob, dim) -> (Tensor, T
 
 - **self**（`Tensor`）：4维张量，shape为(N, C, H, W)。
 - **x1**（`Tensor`）：4维张量，shape为(N, C, H, W)。
+ - **alpha**（`Float`）：缩放系数,支持正负浮点值。
+- **prob**（`Float`）：Dropout 丢弃概率,控制 Dropout 操作中元素被随机丢弃的概率，prob=0.0时无元素丢弃（等价于不执行 Dropout），prob越大丢弃元素越多。若prob ≥ 1.0会触发参数非法异常。
+- **dim**（`int`）：Softmax 计算的维度。`dim`为-1。
+
+## 返回值说明
+
+- **mask** (`Tensor`)：输出张量。shape为(N, C, H, W)。记录 Dropout 操作中元素的保留 / 丢弃状态，是dropout_genmask根据丢弃概率p随机生成的二进制掩码：掩码值为1：对应位置的self张量元素保留，参与后续加权加法计算；掩码值为0：对应位置的self张量元素被丢弃，后续计算中该位置值为 0。
+- **result_softmax** (`Tensor`)：输出张量shape为(N, C, H, W)。融合计算的最终 Softmax 结果。指定维度dim上的所有元素求和结果为 1。
+- **result_dropout** (`Tensor`)：输出张量。输出张量shape为(N, C, H, W)。输入self张量经过 Dropout 掩码后的结果。
 
 ## 约束说明
 
@@ -40,6 +49,7 @@ torch_npu.npu_dropout_with_add_softmax(self, x1, alpha, prob, dim) -> (Tensor, T
 ## 调用示例
 
 ```python
+import torch, torch_npu
 self = torch.rand(16, 16, 128, 128).npu()
 tensor([[[[7.2556e-02, 3.0909e-01, 7.9734e-01,  ..., 6.1179e-01,
            6.2624e-03, 8.5186e-01],

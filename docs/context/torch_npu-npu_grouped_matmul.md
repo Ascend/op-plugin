@@ -43,7 +43,7 @@
         -   `x`为`int8`输入，`bias`为`bfloat16`，`float16`，`float32`输入（公式3-2）：
 
             $y_i = (x_i @ weight_i) \times scale_i \times pertokenscale_i + bias_i$
-        - `x`为`int4`输入, `weight`的数据类型为`int4`数据排布格式为`NZ`输入（公式3-3）:
+        -   `x`为`int4`输入, `weight`的数据类型为`int4`，数据排布格式为`NZ`的输入（公式3-3）:
 
             $y_i=x_i@ (weight_i \times scale_i) \times pertokenscale_i$
         

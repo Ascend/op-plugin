@@ -41,7 +41,9 @@ tensor([ 0,  0, -1], device='npu:0', dtype=torch.int32)
 示例二：
 
 ```python
-//FakeTensor模式
+#FakeTensor模式
+>>> import torch
+>>> import torch_npu
 >>> from torch._subclasses.fake_tensor import FakeTensorMode
 >>> with FakeTensorMode():
 ...     x = torch.rand(2, dtype=torch.float32).npu()

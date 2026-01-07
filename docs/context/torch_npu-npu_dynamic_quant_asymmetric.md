@@ -23,8 +23,7 @@
     y = \text{round}(\frac{\mathbf{x}}{\text{scale}} + \text{offset})
     $$
 
-    -   若使用smooth quant，会引入`smooth_scales`输入，其形状与`x`最后一个维度大小一致，在进行量化前，会先令`x`乘以`smooth_scales`，再按上述公式进行量化。
-    -   若使用smooth quant，MoE（Mixture of Experts，混合专家模型）场景下会引入`smooth_scales`和`group_index`，此时`smooth_scales`中包含多组smooth向量，按`group_index`中的数值作用到`x`的不同行上。具体地，假如`x`包含m个token，`smooth_scales`有n行，`smooth_scales[0]`会作用到`x[0:group_index[0]]`上，`smooth_scales[i]`会作用到`x[group_index[i-1]: group_index[i]]`上，`i=1, 2, ..., n-1`。
+    -   若使用smooth quant，非MoE（Mixture of Experts，混合专家模型）场景下，会引入smooth_scales输入，其形状与x最后一个维度大小一致，在进行量化前，会先令x乘以smooth_scales，再按上述公式进行量化。MoE（Mixture of Experts，混合专家模型）场景下会同时引入smooth_scales和group_index，此时smooth_scales中包含多组smooth向量，按group_index中的数值作用到x的不同行上。具体地，假如x包含m个token，smooth_scales有n行，smooth_scales[0]会作用到x[0:group_index[0]]上，smooth_scales[i]会作用到x[group_index[i-1]: group_index[i]]上，i=1,2, ...,n-1。
     -   在pertensor场景下，rowMax、rowMin表示求整个tensor的最大值、最小值。
 
 ## 函数原型

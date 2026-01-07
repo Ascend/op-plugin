@@ -48,8 +48,8 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 >>> max_overlap = torch.rand(4).npu()
 >>> argmax_overlap = torch.tensor([1, 0, 1, 0], dtype=torch.int32).npu()
 >>> gt_max_overlaps = torch.rand(2).npu()
->>> gt_argmax_overlaps = torch.tensor([1, 0],dtype=torch.int32).npu()
->>> output = torch_npu.npu_grid_assign_positive(assigned_gt_inds, overlaps, box_responsible_flags, max_overlap, argmax_overlap, gt_max_overlaps, gt_argmax_overlaps, 128, 0.5, 0., True)
+>>> num_gts = torch.tensor([128], dtype=torch.int32).npu()
+>>> output = torch_npu.npu_grid_assign_positive(assigned_gt_inds, overlaps, box_responsible_flags, max_overlap, argmax_overlap, gt_max_overlaps, gt_argmax_overlaps, num_gts, 0.5, 0., True)
 >>> output.shape
 torch.Size([4])
 ```
