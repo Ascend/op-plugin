@@ -15,16 +15,16 @@
 ## 函数原型
 
 ```
-torch_npu.utils.is_combined_tensor_valid(combined_tensor, list_of_tensor) -> Bool
+torch_npu.utils.is_combined_tensor_valid(combined_tensor, list_of_tensor) -> bool
 ```
 
 ## 参数说明
 
 - **combined_tensor** (`Tensor`)：经过`torch_npu.utils.npu_combine_tensors`融合后的融合Tensor。
-- **List_of_tensor** (`ListTensor`)：需要进行校验的Tensor列表。
+- **list_of_tensor** (`List[Tensor]`)：需要进行校验的Tensor列表。
 
 ## 返回值说明
-`Bool`
+`bool`
 
 代表Tensor列表`list_of_tensor`中的Tensor是否全部属于融合Tensor `combined_tensor`。
 

@@ -28,7 +28,7 @@ torch_npu.npu_max(self, dim, keepdim=False) -> (Tensor, Tensor)
 ## 返回值说明
 
 - **values** (`Tensor`)：输入张量中的最大值。
-- **indices** (`Tensor`)：输入张量中最大值的index。
+- **indices** (`Tensor`)：输入张量中最大值的indices。
 
 
 

@@ -27,7 +27,7 @@ torch_npu.utils.save_async(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT
 - **pickle_protocol** (`int`)：Pickle协议版本，默认值为DEFAULT\_PROTOCOL。
 - **_use_new_zipfile_serialization** (`bool`)：是否使用新的Zip文件序列化，默认值为True。
 - **_disable_byteorder_record** (`bool`)：是否禁用字节顺序记录，默认值为False。
-- **model**：模型对象，需要对模型反向注册hook，torch.nn.Module，默认值为None。
+- **model**：模型对象，需要对模型（torch.nn.Module）反向注册hook，默认值为None。
 
 ## 调用示例
 

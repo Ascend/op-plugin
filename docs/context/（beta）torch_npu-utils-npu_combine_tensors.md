@@ -20,7 +20,7 @@ torch_npu.utils.npu_combine_tensors(list_of_tensor, require_copy_value=True) -> 
 
 ## 参数说明
 
-- **List_of_tensor** (`List[Tensor]`)：需要进行融合的Tensor列表。
+- **list_of_tensor** (`List[Tensor]`)：需要进行融合的Tensor列表。
 - **require_copy_value** (`Bool`)：默认值为True，是否将原Tensor的值拷贝到新融合Tensor的对应偏移地址。
 
 ## 返回值说明

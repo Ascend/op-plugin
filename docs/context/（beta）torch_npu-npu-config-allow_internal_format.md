@@ -24,9 +24,15 @@ torch_npu.npu.config.allow_internal_format = bool
 - <term>Atlas A2 训练系列产品</term>/<term>Atlas 推理系列产品</term>/<term>Atlas 训练系列产品</term>默认值为`True`。
 - <term>Atlas A3 训练系列产品</term>默认值为`False`。
 
+## 约束说明
+
+设置后，仅后续创建的Tensor会遵循该配置，已创建的Tensor不会受到影响。
+
 ## 调用示例
 
 ```python
->>>torch_npu.npu.config.allow_internal_format = False
+>>> import torch
+>>> import torch_npu
+>>> torch_npu.npu.config.allow_internal_format = False
 ```
 
