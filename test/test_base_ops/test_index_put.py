@@ -197,6 +197,13 @@ class TestIndexPut(TestCase):
         torch.set_default_device('cpu')
         with self.assertRaises(IndexError):
             result = data.index_put(indices, values, accumulate=False)
+            
+    def test_index_put_index_wrong(self):
+        index = torch.tensor([-2, 3], device='npu', dtype=torch.int32)
+        labels = torch.randint(0, 10, (1,10), device='npu')
+        values = torch.tensor([-1], dtype=torch.int64, device='npu')
+        with self.assertRaises(IndexError):
+            labels = labels.index_put((index,), values)
 
 
 if __name__ == "__main__":
