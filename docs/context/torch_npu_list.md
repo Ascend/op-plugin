@@ -273,7 +273,7 @@
 </tr>
 <tr id="row17842154219116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1384284211115"><a name="p1384284211115"></a><a name="p1384284211115"></a><a href="（beta）torch_npu-npu_silu.md">（beta）torch_npu.npu_silu</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p11842194231120"><a name="p11842194231120"></a><a name="p11842194231120"></a>计算self的Swish。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p11842194231120"><a name="p11842194231120"></a><a name="p11842194231120"></a>计算self的Swish。Swish是一种激活函数，计算公式为' x * sigmoid(x) '。</p>
 </td>
 </tr>
 <tr id="row68428425112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1842204218113"><a name="p1842204218113"></a><a name="p1842204218113"></a><a href="（beta）torch_npu-npu_slice.md">（beta）torch_npu.npu_slice</a></p>

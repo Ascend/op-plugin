@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-计算self的Swish。
+计算self的Swish。Swish是一种激活函数，计算公式为' x * sigmoid(x) '。
 
 ## 函数原型
 

@@ -2226,7 +2226,7 @@ dim (Int) - 待降低维度。
 keepdim (Bool，默认值为False) - 输出张量是否保留dim。
 输出说明
 values (Tensor) - 输入张量中的最大值。
-indices (Tensor) - 输入张量中最大值的index。
+indices (Tensor) - 输入张量中最大值的indices。
 示例
 >>> input = torch.randn(2, 2, 2, 2, dtype = torch.float32).npu()
 >>> input
@@ -2271,8 +2271,10 @@ dim (Int) - 待降低维度。
 keepdim (Bool) - 输出张量是否保留dim。
 输出说明
 values (Tensor) - 输入张量中的最小值。
-indices (Tensor) - 输入张量中最小值的index。
+indices (Tensor) - 输入张量中最小值的indices。
 示例
+>>> import torch
+>>> import torch_npu
 >>> input = torch.randn(2, 2, 2, 2, dtype = torch.float32).npu()
 >>> input
 tensor([[[[-0.9909, -0.2369],
@@ -2471,8 +2473,10 @@ scores_threshold (Tensor) - 0D浮点张量，表示决定何时删除框的分�
 pad_to_max_output_size (Bool，默认值为False) - 如果为True，则输出的selected_indices将填充为max_output_size长度。
 输出说明
 selected_indices (Tensor) - shape为[M]的1D整数张量，表示从boxes张量中选定的index，其中M <= max_output_size。
-valid_outputs (Tensor) - 0D整数张量，表示selected_indices中有效元素的数量，有效元素首先呈现。
+valid_outputs (Tensor) - 0D整数张量，表示selected_indices中有效元素的数量，有效元素首先出现。
 示例
+>>> import torch
+>>> import torch_npu
 >>> boxes=torch.randn(100,4).npu()
 >>> scores=torch.randn(100).npu()
 >>> boxes.uniform_(0,100)
@@ -2671,7 +2675,7 @@ torch_npu.npu_random_choice_with_mask(x, count=256, seed=0, seed2=0) -> (Tensor,
 x (Tensor) - 输入张量。
 count (Int，默认值为256) - 输出计数。如果值为0，则输出所有非零元素。
 seed (Int，默认值为0) - 数据类型：int32，int64。
-seed2 (Int，默认值为2) - 数据类型：int32，int64。
+seed2 (Int，默认值为0) - 数据类型：int32，int64。
 输出说明
 y (Tensor) - 2D张量, 非零元素的index。
 mask (Tensor) - 1D张量, 确定对应index是否有效。
@@ -2957,6 +2961,9 @@ mode (Int，默认值为0) - 计算模式，取值为0或1。0表示IoU，1表�
 v_threshold (Float，可选，默认值为0.0) - provide condition relaxation for intersection calculation.
 e_threshold (Float，可选，默认值为0.0) - provide condition relaxation for intersection calculation.
 示例
+>>> import torch
+>>> import torch_npu
+>>> import numpy as np
 >>> a=np.random.uniform(0,1,(2,2,5)).astype(np.float16)
 >>> b=np.random.uniform(0,1,(2,3,5)).astype(np.float16)
 >>> box1=torch.from_numpy(a).to("npu")
@@ -2984,6 +2991,9 @@ self (Tensor) -梯度增量数据，shape为(B, 5, N)数据类型为float32的3D
 query_boxes (Tensor) - 标注框，shape为(B, 5, K) 数据类型为float32的3D张量。
 trans (Bool，默认值为False) - 值为True表示“xyxyt”，值为False表示“xywht”。
 示例
+>>> import torch
+>>> import torch_npu
+>>> import numpy as np
 >>> a=np.random.uniform(0,1,(1,3,5)).astype(np.float16)
 >>> b=np.random.uniform(0,1,(1,2,5)).astype(np.float16)
 >>> box1=torch.from_numpy(a).to("npu")
@@ -3117,7 +3127,7 @@ _add_torch_npu_docstr(
     """
 torch_npu.npu_silu(self) -> Tensor
 功能描述
-计算self的Swish。
+计算self的Swish。Swish是一种激活函数，计算公式为' x * sigmoid(x) '。
 
 参数说明
 self (Tensor) - 数据类型：float16、float32

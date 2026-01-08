@@ -29,7 +29,7 @@ torch_npu.utils.FlopsCounter()
 - 含重计算的Flops（traversedCount）：默认不统计含重计算的Flops，且值为0。含重计算的Flops一般用于计算硬件算力利用率(Hardware FLOPs Utilization, HFU)。
 - 不含重计算的Flops（recordedCount）：默认不统计不含重计算的Flops，且值为0。不含重计算的Flops一般用于计算模型算力利用率(Model FLOPs Utilization, MFU)。
 
-首次创建（初始化）参数状态和通过成员函数对参数进行修改后，参数的状态如[图1](#fig1515653134316)所示。
+首次创建（初始化）参数状态，或通过成员函数对参数进行修改后，参数的状态如[图1](#fig1515653134316)所示。
 
 **图1** 参数状态<a name="fig1515653134316"></a>  
 ![](figures/参数状态.png "参数状态")
@@ -38,7 +38,7 @@ torch_npu.utils.FlopsCounter()
 
 - **torch_npu.utils.FlopsCounter.start()**
 
-    开启Flops统计。`FlopsCounter.start()`设置开关标志位（isEnabled_）为True，进行Flops计算，统计含重计算的Flops。
+    开启Flops统计。`FlopsCounter.start()`设置开关标志位（isEnabled_）为True，进行Flops计算，统计含重计算的Flops和不含重计算的Flops。
 
 - **torch_npu.utils.FlopsCounter.stop()**
 
