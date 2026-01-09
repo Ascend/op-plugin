@@ -22,7 +22,11 @@ torch_npu.npu_format_cast_(input, src) -> Tensor
 ## 参数说明
 
 - **input**（`Tensor`）：必选参数，待处理的输入张量。
-- **src**（`Tensor`/`int`/`Format`）：必选参数，目标格式。可输入张量、整数或torch_npu.Format类型。若输入张量，则将`input`的数据格式修改为此张量的格式。若输入torch_npu.Format类型会被自动转换为对应格式的整数值。例如将`input`的数据格式转换为ND格式时，此处既可以输入*ND格式的张量*，也可以输入`2`，还可以输入`torch_npu.Format.ND`。torch_npu.Format表示torch_npu的数据格式，torch_npu支持如下数据格式：
+- **src**（`Tensor`/`int`/`Format`）：必选参数，目标格式。可输入张量、整数或torch_npu.Format类型。
+
+  - 若输入张量，则将`input`的数据格式修改为此张量的格式。例如将`input`的数据格式转换为ND格式时，此处可以输入*ND格式的张量*。
+  - 若输入整数，则将`input`的数据格式修改为整数值对应的torch_npu.Format。例如将`input`的数据格式转换为ND格式时，此处可以输入`2`。
+  - 若输入torch_npu.Format，则将`input`的数据格式修改为该格式。例如将`input`的数据格式转换为ND格式时，此处可以输入`torch_npu.Format.ND`。torch_npu.Format表示torch_npu的数据格式，torch_npu支持如下数据格式：
 
     |torch_npu.Format类型|整数值|说明|
     | ------| ------|:------: |

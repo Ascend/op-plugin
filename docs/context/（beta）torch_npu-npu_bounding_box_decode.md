@@ -32,9 +32,14 @@ torch_npu.npu_bounding_box_decode(rois, deltas, means0, means1, means2, means3, 
 - **stds1** (`float`)：“y0”的缩放值。默认值为1.0。
 - **stds2** (`float`)：“x1”的缩放值。默认值为1.0。
 - **stds3** (`float`)：“y1”的缩放值。默认值为1.0。
-- **max_shape** (`List[int]` of length 2)：shape[h, w]，指定传输到网络的图像大小。用于确保转换后的bbox shape不超过“max_shape”。
+- **max_shape** (`List[int]`/`Tuple[int]` of length 2)：shape[h, w]，指定传输到网络的图像大小。用于确保转换后的bbox shape不超过“max_shape”。
 - **wh_ratio_clip** (`float`)：“dw”和“dh”的值在(-wh_ratio_clip, wh_ratio_clip)范围内。
 
+## 返回值说明
+
+`Tensor`
+
+表示解码后的边界框。
 
 ## 调用示例
 

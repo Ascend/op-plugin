@@ -27,7 +27,7 @@ torch_npu.npu_conv2d(input, weight, bias, stride, padding, dilation, groups) -> 
 
 - **input**（`Tensor`）：shape的输入张量，值为(minibatch, in_channels, iH, iW)。
 - **weight**（`Tensor`）：shape过滤器，值为(out_channels, in_channels/groups, kH, kW)。
-- **bias**（`Tensor`）：可选参数，shape偏差(out_channels)。
+- **bias**（`Tensor`）：可选参数，shape的偏差，值为(out_channels)。
 - **stride**（`List[int]`）：卷积核步长。
 - **padding**（`List[int]`）：输入两侧的隐式填充。
 - **dilation**（`List[int]`）：内核元素间距。

@@ -100,7 +100,7 @@ OpCommand是一个封装下层算子调用的类，实现了NPU设备下层算�
 
     descName：string类型，名称描述。
 
-- **at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const c10::ArrayRefdimListRef, at::IntArrayRef realShape, at::ScalarType toType = at::kDouble, CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string& realDtype = "")**
+- **at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const c10::ArrayRef& dimListRef, at::IntArrayRef realShape, at::ScalarType toType = at::kDouble, CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string& realDtype = "")**
 
     OpCommand输入浮点型数组，通常输入在cpu端，会在实现中进行h2d，返回值类型OpCommand。
 
@@ -148,7 +148,7 @@ OpCommand是一个封装下层算子调用的类，实现了NPU设备下层算�
 
     sensitive_format：aclFormat类型，optional，特定format要求。
 
-    realData：string类型，实际数据类型。
+    realType：string类型，实际数据类型。
 
 - **template at_npu::native::OpCommand& at_npu::native::OpCommand::Attr(const string& name, dataType value)**
 

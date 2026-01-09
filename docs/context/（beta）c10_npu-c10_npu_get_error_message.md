@@ -12,7 +12,7 @@ const char* c10_npu::c10_npu_get_error_message()
 
 ## 功能说明
 
-获取报错信息，返回值类型char \*，表示获取到的报错信息字符串。
+获取报错信息，返回值类型const char \*，表示获取到的报错信息字符串。
 
 ## 支持的型号
 

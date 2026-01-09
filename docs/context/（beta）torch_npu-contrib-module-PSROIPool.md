@@ -29,7 +29,7 @@ torch_npu.contrib.module.PSROIPool(nn.Module)
 
 ## 返回值说明
 
-`float` 
+`Tensor` 
 
 shape为(k, 5)和(k, 1)的张量。标签以0为基础。
 

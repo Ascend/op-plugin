@@ -21,7 +21,7 @@
 </tr>
 <tr id="row18312341155517"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p173125413551"><a name="p173125413551"></a><a name="p173125413551"></a><a href="（beta）torch_npu-npu_apply_adam.md">torch_npu.npu_apply_adam</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p1899612582515"><a name="p1899612582515"></a><a name="p1899612582515"></a>该接口计划废弃，可以使用torch.optim.Adam或torch.optim.adam接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p1899612582515"><a name="p1899612582515"></a><a name="p1899612582515"></a>该接口计划废弃，可以使用torch.optim.Adam接口进行替换。</p>
 </td>
 </tr>
 <tr id="row7674950125010"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p367510503501"><a name="p367510503501"></a><a name="p367510503501"></a><a href="（beta）torch_npu-npu_broadcast.md">torch_npu.npu_broadcast</a></p>

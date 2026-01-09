@@ -15,7 +15,7 @@
 ## 函数原型
 
 ```
-torch_npu.contrib.module.NpuCachedDropout(torch.nn.Dropout)
+torch_npu.contrib.module.NpuCachedDropout(p, module_name=None)
 ```
 
 ## 参数说明

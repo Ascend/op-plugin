@@ -30,6 +30,7 @@ torch_npu.npu_broadcast(self, size) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch, torch_npu
 >>> x = torch.tensor([[1],[2],[3]]).npu()
 >>> x.shape
 torch.Size([3, 1])

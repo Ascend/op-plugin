@@ -78,7 +78,7 @@
 </tr>
 <tr id="row589165316115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1489155321111"><a name="p1489155321111"></a><a name="p1489155321111"></a><a href="（beta）torch_npu-npu_ciou.md">（beta）torch_npu.npu_ciou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p749621223015"><a name="zh-cn_topic_0000001655404257_p749621223015"></a><a name="zh-cn_topic_0000001655404257_p749621223015"></a>应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty item，并propose CIoU。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p749621223015"><a name="zh-cn_topic_0000001655404257_p749621223015"></a><a name="zh-cn_topic_0000001655404257_p749621223015"></a>应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty term，并propose CIoU。</p>
 </td>
 </tr>
 <tr id="row138914536113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1289453191113"><a name="p1289453191113"></a><a name="p1289453191113"></a><a href="（beta）torch_npu-npu_clear_float_status.md">（beta）torch_npu.npu_clear_float_status</a></p>

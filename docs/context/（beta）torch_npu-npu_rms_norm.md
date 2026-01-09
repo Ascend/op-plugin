@@ -32,7 +32,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 ## 参数说明
 
 - **self**（`Tensor`）：必选参数，表示进行归一化计算的输入。对应计算公式中的`x`。shape支持2-8维度，数据格式支持$ND$。支持非连续Tensor，支持空Tensor。
-- **gamma**（`Tensor`）：必选参数，表示进行归一化计算的缩放因子（权重），对应计算公式中的`g`。shape支持2-8维度，数据格式支持$ND$。shape需要满足gamma_shape = self_shape\[n:\], n < x_shape.dims()，通常为`self`的最后一维。支持非连续Tensor，支持空Tensor。
+- **gamma**（`Tensor`）：必选参数，表示进行归一化计算的缩放因子（权重），对应计算公式中的`g`。shape支持2-8维度，数据格式支持$ND$。shape需要满足gamma_shape = self_shape\[n:\], n < self_shape.dims()，通常为`self`的最后一维。支持非连续Tensor，支持空Tensor。
 - **epsilon**（`double`）：可选参数，用于防止除0错误，对应计算公式中的`eps`。数据类型为`double`，默认值为1e-6。
 
 ## 返回值说明
@@ -61,6 +61,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 ## 调用示例
 
 ```python
+>>> import torch, torch_npu
 >>> x = torch.randn(24, 1, 128).npu()
 >>> w = torch.randn(128).npu()
 >>> out1 = torch_npu.npu_rms_norm(x, w, epsilon=1e-5)[0]

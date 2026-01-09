@@ -101,7 +101,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"></a><a href="https://gitee.com/link?target=https://arxiv.org/abs/1902.09630" target="_blank" rel="noopener noreferrer">def bboexs_giou()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1929945945518"><a name="p1929945945518"></a><a name="p1929945945518"></a>应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty item，并propose CIoU。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1929945945518"><a name="p1929945945518"></a><a name="p1929945945518"></a>应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty term，并propose CIoU。</p>
 </td>
 </tr>
 <tr id="row181123135613"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p381113175618"><a name="p381113175618"></a><a name="p381113175618"></a><a href="（beta）torch_npu-contrib-module-NpuCachedDropout.md">（beta）torch_npu.contrib.module.NpuCachedDropout</a></p>
