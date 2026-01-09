@@ -35,6 +35,8 @@ torch_npu.npu_reshape(self, shape, bool can_refresh=False) -> Tensor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> a=torch.rand(2,8).npu()
 >>> out=torch_npu.npu_reshape(a,(4,4))
 >>> out

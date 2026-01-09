@@ -87,9 +87,9 @@ torch_npu.npu_moe_init_routing_quant(Tensor x, Tensor expert_idx, *, Tensor? sca
     - 0：不输出`expert_token_cumsum_or_count`。
     - 1：输出各专家处理token数量的累计和。
     - 2：输出各专家处理的token数量。
--   **expert_tokens_before_capacity_flag** (`bool`)：用于控制是否输出`expert_tokens_before_capacity`，取值为false或true。
-    - false：不输出`expert_tokens_before_capacity`。
-    - true：输出各专家在Drop操作前处理的token数量。
+-   **expert_tokens_before_capacity_flag** (`bool`)：用于控制是否输出`expert_tokens_before_capacity`，取值为False或True。
+    - False：不输出`expert_tokens_before_capacity`。
+    - True：输出各专家在Drop操作前处理的token数量。
 -   **quant_mode** (`int`)：表示量化模式，取值为0或1。
     - 0：静态量化场景。
     - 1：动态量化场景。

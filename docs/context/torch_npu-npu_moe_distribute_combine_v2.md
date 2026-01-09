@@ -17,7 +17,7 @@
 -   计算公式：
     - 数据整合功能：
 
-      $rs\_out = ReduceScatterV(expend\_x)$
+      $rs\_out = ReduceScatterV(expand\_x)$
 
       $ata\_out = AlltoAllv(rs\_out)$
 
