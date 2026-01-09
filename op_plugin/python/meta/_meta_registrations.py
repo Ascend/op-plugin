@@ -4521,10 +4521,10 @@ def npu_gather_pa_kv_cache_functional_meta(key_cache, value_cache, block_tables,
     value_out = value.new_empty(value.shape, dtype=value.dtype, device='meta')
     return (key_out, value_out)
 
-if _is_pytorch_version_ge("2.6.0"):
-    @impl(m, "npu_sim_exponential_")
-    def npu_sim_exponential__meta(self, lambd=1, generator=None):
-        return torch.empty_like(self)
+
+@impl(m, "npu_sim_exponential_")
+def npu_sim_exponential__meta(self, lambd=1, generator=None):
+    return torch.empty_like(self)
 
 
 @impl(m, "npu_grouped_matmul_add")
