@@ -3355,10 +3355,10 @@ def npu_kv_quant_sparse_flash_attention_forward(query, key, value, sparse_indice
         )
     return out
 
-if _is_pytorch_version_ge("2.6.0"):
-    @impl(m, "npu_sim_exponential_")
-    def npu_sim_exponential__meta(self, lambd=1, generator=None):
-        return torch.empty_like(self)
+
+@impl(m, "npu_sim_exponential_")
+def npu_sim_exponential__meta(self, lambd=1, generator=None):
+    return torch.empty_like(self)
 
 
 @impl(m, "npu_grouped_matmul_add")
