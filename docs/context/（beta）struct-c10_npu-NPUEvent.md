@@ -60,19 +60,19 @@ NPUEvent是一个事件类，实现了NPU设备事件管理的相关功能，可
 
 - **void c10_npu::NPUEvent::record(const c10_npu::NPUStream& stream)**
 
-    NPUEvent事件记录，记录指定流的事件，与void at::cuda::CUDAEvent::record(const c10::CUDA::CUDAStream&  _stream_)相同。
+    NPUEvent事件记录，记录指定流的事件，与void at::cuda::CUDAEvent::record(const c10::cuda::CUDAStream&  _stream_)相同。
 
     stream：NPUStream类型，指定记录事件的流。
 
 - **void c10_npu::NPUEvent::recordOnce(const c10_npu::NPUStream& stream)**
 
-    NPUEvent事件记录，给定指定流，若未记录过事件则记录一次，与void at::cuda::CUDAEvent::recordOnce(const c10::CUDA::CUDAStream&  _stream_)相同。
+    NPUEvent事件记录，给定指定流，若未记录过事件则记录一次，与void at::cuda::CUDAEvent::recordOnce(const c10::cuda::CUDAStream&  _stream_)相同。
 
     stream：NPUStream类型，指定记录事件的流。
 
 - **void c10_npu::NPUEvent::block(const c10_npu::NPUStream& stream)**
 
-    NPUEvent事件阻塞，阻塞指定流的事件，与void at::cuda::CUDAEvent::block(const c10::CUDA::CUDAStream&  _stream_)相同。
+    NPUEvent事件阻塞，阻塞指定流的事件，与void at::cuda::CUDAEvent::block(const c10::cuda::CUDAStream&  _stream_)相同。
 
     stream：NPUStream类型，指定阻塞事件的流。
 
@@ -80,7 +80,7 @@ NPUEvent是一个事件类，实现了NPU设备事件管理的相关功能，可
 
     NPUEvent事件阻塞，返回值类型float，返回记录事件到当前事件经过的时间，单位为ms，与float at::cuda::CUDAEvent::elapsed_time(const at::cuda::CUDAEvent&  _other_)相同。
 
-    other：NPUStream类型，指定计算时间的终点事件。
+    other：NPUEvent类型，指定计算时间的终点事件。
 
 - **void c10_npu::NPUEvent::synchronize()**
 

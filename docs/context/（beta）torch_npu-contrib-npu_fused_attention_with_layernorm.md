@@ -34,8 +34,8 @@ torch_npu.contrib.npu_fused_attention_with_layernorm(hidden_states, attention_ma
 - **value_bias**（`Tensor`）：value的偏差值。
 - **gamma**（`Tensor`）：torch.nn.LayerNorm.weight类型的tensor。
 - **beta**（`Tensor`）：torch.nn.LayerNorm.bias类型的tensor。
-- **scale**（`double`）：计算score的缩放系数。
-- **keep_prob**：计算中保留数据的概率，值等于1-drop rate。
+- **scale**（`double`）：计算score的缩放系数。默认值为1。
+- **keep_prob**（`double`）：计算中保留数据的概率，值等于1-drop rate。默认值为0。
 
 ## 返回值说明
 

@@ -22,12 +22,12 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 
 -  **self** \(`Tensor`)：必填值，输入框的tensor，包含batch大小，数据类型为`float16`，输入示例：\[batch\_size, num\_anchors, q, 4\]，其中q=1或q=num\_classes。
 -  **scores** \(`Tensor`)：必填值，输入tensor，数据类型为`float16`，输入示例：\[batch\_size, num\_anchors, num\_classes\]。
--  **score\_threshold** \(`float`)：必填值，指定评分过滤器的iou\_threshold，用于筛选框，去除得分较低的框，数据类型为`float32`。
+-  **score\_threshold** \(`float`)：必填值，指定评分过滤器的阈值，用于筛选框，去除得分较低的框，数据类型为`float32`。
 -   **iou\_threshold** \(`float`)：必填值，指定nms的iou\_threshold，用于设定阈值，去除高于阈值的框，数据类型为`float32`。
 -   **max\_size\_per\_class** \(`int`)：必填值，指定每个类别的最大可选的框数。
 -   **max\_total\_size** \(`int`)：必填值，指定每个batch最大可选的框数。
 -   **change\_coordinate\_frame** \(`bool`)：可选值，是否正则化输出框坐标矩阵，默认值为False。
--   **transpose\_box** \(`bool`)：可选值，确定是否在此op之前插入转置，默认值为False。True表示boxes使用4，N排布。 False表示boxes使用N，4排布。
+-   **transpose\_box** \(`bool`)：可选值，确定是否在此op之前插入转置，默认值为False。True表示boxes使用(4, N)排布。 False表示boxes使用(N, 4)排布。
 
 ## 返回值说明
 
@@ -41,6 +41,7 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 ## 调用示例
 
 ```python
+>>> import torch, torch_npu
 >>> boxes = torch.randn(8, 2, 4, 4, dtype = torch.float32).to("npu")
 >>> scores = torch.randn(3, 2, 4, dtype = torch.float32).to("npu")
 >>> nmsed_boxes, nmsed_scores, nmsed_classes, nmsed_num = torch_npu.npu_batch_nms(boxes, scores, 0.3, 0.5, 3, 4)

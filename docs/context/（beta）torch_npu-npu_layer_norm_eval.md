@@ -33,6 +33,7 @@ torch_npu.npu_layer_norm_eval(input, normalized_shape, weight=None, bias=None, e
 ## 调用示例
 
 ```python
+>>> import torch, torch_npu
 >>> input = torch.rand((6, 4), dtype=torch.float32).npu()
 >>> input
 tensor([[0.1863, 0.3755, 0.1115, 0.7308],

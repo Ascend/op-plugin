@@ -32,6 +32,7 @@ torch_npu.contrib.module.FusedColorJitter(torch.nn.Module)
 ## 调用示例
 
 ```python
+>>> import torch
 >>> from PIL import Image 
 >>> from torch_npu.contrib.module import FusedColorJitter
 >>> import numpy as np

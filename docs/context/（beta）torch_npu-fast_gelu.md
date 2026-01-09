@@ -47,7 +47,7 @@ tensor([0.4403, 0.2733], device='npu:0')
 ```python
 >>> import torch
 >>> import torch_npu
-//FakeTensor模式
+# FakeTensor模式
 >>> from torch._subclasses.fake_tensor import FakeTensorMode
 >>> with FakeTensorMode():
 ...     x = torch.rand(2).npu()

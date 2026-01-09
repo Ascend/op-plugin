@@ -26,7 +26,7 @@ torch_npu.npu_clear_float_status(self) -> Tensor
 ## 返回值说明
 `Tensor`
 
-返回清除结果。
+一个包含8个float32类型全零值的Tensor。
 
 ## 调用示例
 
