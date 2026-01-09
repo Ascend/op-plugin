@@ -2575,6 +2575,15 @@ class TestQuantMatmul(TestCase):
             self.assertTrue(expect_ret.shape == res.shape)
             self.assertTrue(expect_ret.dtype == res.dtype)
 
+            x1 = torch.randint(-8, 8, (1, 8192), dtype=torch.int8).npu()
+            x2 = torch.randint(-8, 8, (8192, 128), dtype=torch.int8).npu()
+            expect_ret = torch.randn([1, 128], dtype=torch.float16).npu()
+            scale = torch.randn(1, dtype=torch.float32).npu()
+            res = torch_npu.npu_quant_matmul(x1, x2, scale, offset=None, pertoken_scale=None,
+                                             bias=None, output_dtype=torch_npu.hifloat8, x1_dtype=torch_npu.hifloat8,
+                                             x2_dtype=torch_npu.hifloat8)
+            self.assertTrue(expect_ret.shape == res.shape)
+
 
 class TestQuantMatmulReduceSum(TestCase):
     def test_quant_matmul_reduce_sum(self):

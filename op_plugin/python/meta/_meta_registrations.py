@@ -3210,8 +3210,6 @@ def npu_quant_matmul_meta(x1, x2, scale, *, offset=None, pertoken_scale=None, bi
     tensor_dtype = torch.int8
     if output_dtype is not None:
         tensor_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(output_dtype)
-        if TORCH_DTYPE_MAP[tensor_dtype] == TORCH_DTYPE_MAP[torch.bits8]:
-            tensor_dtype = torch.uint8
         if tensor_dtype is None or (tensor_dtype not in TORCH_DTYPE_MAP.keys() and tensor_dtype != torch.uint8):
             raise RuntimeError("Not supported output dtype is " + npu_dtype_to_str(output_dtype))
     return shape_long.new_empty(tuple(dim_list), dtype=tensor_dtype)
