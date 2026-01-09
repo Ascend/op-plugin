@@ -30,7 +30,7 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 - **has_biases** (`bool`)：如果值为True，则存在偏差。
 - **num_layers** (`int`)：循环层数，目前只支持单层。
 - **dropout** (`float`)：如果值为非零，则在除去最后一层以外的每个LSTM层的输出上引入一个dropout层，丢弃概率等于dropout参数值。目前不支持。
-- **train** (`bool`，默认值为True)：标识训练是否在op进行的bool参数。
+- **train** (`bool`，默认值为True)：标识是否在op进行训练的bool参数。
 - **bidirectional** (`bool`)：如果值为True，LSTM为双向。当前不支持。
 - **batch_first** (`bool`)：如果值为True，则输入和输出张量将表示为(batch, seq, feature)。当前不支持。
 - **flag_seq** (`bool`)：如果值为True，输入为PackedSequence。当前不支持。

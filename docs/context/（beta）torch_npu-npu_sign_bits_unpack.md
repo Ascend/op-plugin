@@ -47,7 +47,7 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 
 ## 约束说明
 
-`size`可被`x`的`uint8`拆包输出大小整除。`x`的`uint8`拆包输出大小为(size of x) * 8。
+`size`应能被`x`的`uint8`拆包输出大小整除。`x`的`uint8`拆包输出大小为(size of x) * 8。
 
 ## 调用示例
 
@@ -58,7 +58,7 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 >>> b
 tensor([[ 1.,  1.,  1.,  1.,  1., -1., -1.,  1.],
         [ 1.,  1.,  1.,  1., -1., -1., -1., -1.]], device='npu:0')
->>> c = torch_npu.npu_sign_bits_unpack(a, 2, torch.float32)
+>>> c = torch_npu.npu_sign_bits_unpack(a, 1, torch.float32)
 >>> c
 tensor([[ 1.,  1.,  1.,  1.,  1., -1., -1.,  1.,  1.,  1.,  1.,  1., -1., -1., -1., -1.]], device='npu:0')
 ```

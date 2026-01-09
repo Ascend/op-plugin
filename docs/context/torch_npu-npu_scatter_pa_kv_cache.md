@@ -26,9 +26,9 @@
     ```python    
     key:[batch*seq_len, num_head, k_head_size]
     value:[batch*seq_len, num_head, v_head_size]
-    keyCache:[num_blocks, block_size, num_head, k_head_size]
-    valueCache:[num_blocks, block_size, num_head, v_head_size]
-    slotMapping:[batch * seq_len]
+    key_cache:[num_blocks, block_size, num_head, k_head_size]
+    value_cache:[num_blocks, block_size, num_head, v_head_size]
+    slot_mapping:[batch * seq_len]
     ```    
 
     其中`k_head_size`与`v_head_size`可以不同，也可以相同。
