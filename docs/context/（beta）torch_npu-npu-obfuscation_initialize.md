@@ -1,6 +1,6 @@
 
 
-# torch_npu.npu.obfuscation_initialize
+# （beta）torch_npu.npu.obfuscation_initialize
 
 ## 产品支持情况
 
@@ -11,7 +11,21 @@
 
 ## 功能说明
 
-该接口用于完成PMCC（Privacy&Model Confidential Computing）模型混淆引擎的资源初始化，即与PMCC混淆引擎CA（普通OS中的Client Application）建立socket连接、对CA、TA（TEE OS中的Trusted Application）进行初始化，并返回socket连接符。
+该接口用于完成PMCC（Privacy and Model Confidential Computing）模型混淆引擎的资源初始化，即与PMCC混淆引擎CA（普通OS中的Client Application）建立socket连接、对CA、TA（TEE OS中的Trusted Application）进行初始化，并返回socket连接符。
+该接口针对于[PMCC](https://www-file.huawei.com/admin/asset/v1/pro/view/6812dab6dd4e4640b11619e401db1c47.pdf)业务，如下两种结果均符合预期：
+* 如果部署PMCC特性，该接口返回响应结果。
+* 未部署PMCC特性情况时，执行用例会返回错误码507018。
+
+PMCC特性的部署流程如下：
+1. 环境中存在NPU驱动和固件。
+2. 安装AI混淆SDK，执行一键式部署脚本，该脚本会自动完成以下任务：
+  * 配置kmsAgent。
+  * 下发npu证书。
+  * 生成obf_sdk客户端证书。
+  * 生成混淆因子绑定的psk私钥。
+3. 执行混淆因子注册脚本。
+
+PMCC特性的详细部署流程请参考对应的部署指导手册。
 
 ## 函数原型
 
