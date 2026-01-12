@@ -257,33 +257,6 @@ at::Tensor &_index_put_impl_(at::Tensor &self, const c10::List<c10::optional<at:
             all_defined_indice = all_defined_indice.to(self.device());
         }
     }
-    
-    at::IntArrayRef self_sizes = self.sizes();
-    int64_t specified_dims = all_defined_indices.size();
-    TORCH_CHECK_INDEX(
-        specified_dims <= (int64_t)self_sizes.size(),
-        "too many indices for tensor of dimension ",
-        (int)self_sizes.size(),
-        " (got ", specified_dims, ")");
-
-    for (const auto dim : c10::irange(all_defined_indices.size())) {
-        const at::Tensor& index_tensor = all_defined_indices[dim];
-        if (index_tensor.numel() == 0) {
-            continue;
-        }
-
-        at::Tensor flat_index = index_tensor.flatten();
-        int64_t num_indices = flat_index.numel();
-        for (int64_t i = 0; i < num_indices; i++) {
-            int64_t index_val = flat_index[i].item<int64_t>();
-            int64_t size = self_sizes[dim];
-            TORCH_CHECK_INDEX(
-                size > (-1 - index_val) && size > index_val,
-                "index ", index_val,
-                " is out of bounds for dimension ", dim,
-                " with size ", size);
-        }
-    }
 
     npu_preparation::CastBackToOriFormat(self);
     at::Tensor value_copy = value;
