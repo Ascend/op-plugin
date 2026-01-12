@@ -36,7 +36,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 - **groups**（`int`）：可选参数，默认值为1，Conv2d的group。当前仅支持取1。
 - **bias**（`bool`）：可选参数，默认值为True，代表是否需要bias计算参数。如果设置成False，则bias不会加入QuantConv2d计算。
 - **offset**（`bool`）：可选参数，默认值为False，**预留参数，暂未使用**。
-- **offset_x**（`int`）：可选参数，默认值为0，补的pad中填入的实际值。
+- **offset_x**（`int`）：可选参数，默认值为0，填充的的pad中填入的实际值。
 
      示例：如果`padding`为[1,1]，`offset_x`为1，fmap变化如图所示：
 

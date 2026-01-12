@@ -54,7 +54,7 @@ torch_npu.utils.FlopsCounter()
 
 - **torch_npu.utils.FlopsCounter.get_flops()**
 
-    获取统计结果。返回列表，包括不含重计算的Flops（recordedCount）和含重计算的Flops（traversedCount），例如[_100, 200_]，_100_为不含重计算的Flops（recordedCount），_200_为含重计算的Flops（traversedCount）。
+    获取统计结果。返回列表，包括不含重计算的Flops（recordedCount）和含重计算的Flops（traversedCount），例如[100, 200]，100为不含重计算的Flops（recordedCount），200为含重计算的Flops（traversedCount）。
 
 
 ## 调用示例

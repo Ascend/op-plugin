@@ -141,7 +141,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 -   索引映射：所有`cache_mode`缓存模式下，index的值不可以重复，如果传入的index值存在重复，算子的行为是未定义的且不可预知的。
     -   Norm：index的值表示每个Batch下的偏移。
     -   PA/PA\_BNSD/PA\_NZ：index的值表示全局的偏移。
-    -   PA\_BLK\_BNSD/PA\_BLK\_NZ：index的值表示每个页的全局偏移；这个场景假设cache更新是连续的，不支持非连续更新的cache。
+    -   PA\_BLK\_BNSD/PA\_BLK\_NZ：index的值表示每个页的全局偏移；该场景假设cache更新是连续的，不支持非连续更新的cache。
 
 -   Shape关联规则：不同的`cache_mode`缓存模式有不同的Shape规则。
     -   Norm：k\_cache形状为\[batch\_size, 1, cache\_length, rope\_size\]，ckv\_cache形状为\[batch\_size, 1, cache\_length, rms\_size\]，index形状为\[batch\_size, seq\_len\], cache\_length\>=seq\_len。
