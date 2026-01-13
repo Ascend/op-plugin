@@ -85,8 +85,6 @@ void save_tensor_callback(void* args)
             ACL_MEMCPY_DEVICE_TO_HOST));
     }
     write_tensor(out, path);
-    delete host_func_args;
-    host_func_args = nullptr;
 }
 
 std::string get_final_save_path(c10::optional<c10::string_view> save_path, int dev_index)

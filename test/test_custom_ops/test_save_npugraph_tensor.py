@@ -39,6 +39,19 @@ class TestNpuSaveTensor(TestCase):
         actual = torch.load("./x_device_0.pt")
         self.assertEqual(x.dtype, actual.dtype)
         self.assertEqual(x.shape, actual.shape)
+    
+    @unittest.skip("skip until CANN is updated to support aclrtLaunchHostFunc")
+    def test_save_npugraph_tensor_replay(self):
+        x = torch.randn([6, 0]).npu()
+        graph1 = torch.npu.NPUGraph()
+        with torch.npu.graph(graph1):
+            output = torch.square(x)
+            torch.ops.npu.save_npugraph_tensor(output, save_path="./out.bin")
+        
+        for _ in range(3):
+            graph1.replay()
+        
+        self.assertTrue(os.path.exists("./out_device_0.bin"))
 
 
 if __name__ == "__main__":
