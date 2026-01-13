@@ -49,7 +49,7 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 ## 返回值说明
 `Tensor`
 
-输出参数`out`,代表最后MoE FFN合并的输出结果。数据维度支持2维，shape支持$（NUM\_ROWS, H）$。
+输出参数`out`,代表最后MoE FFN合并的输出结果。数据维度支持2维，shape支持$（NUM\_ROWS, H）$，dtype与expanded_permuted_rows保持一致。
 
 ## 约束说明
 
