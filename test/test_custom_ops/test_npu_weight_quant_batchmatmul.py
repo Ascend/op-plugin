@@ -57,6 +57,28 @@ class TestNPUWeightQuantBatchMatmul(TestCase):
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
+    @SupportedDevices(['Ascend910_95'])
+    def test_npu_weight_quant_batchmatmul2_with_A16W4_nz_perchannel(self, device="npu"):
+        torch.manual_seed(0)
+        m = 1
+        k = 128
+        n = 256
+        group_size = 64
+        cpu_x = torch.randn((m, k), dtype=torch.float16)
+        cpu_weight = torch.randint(low=3, high=4, size=(k, n), dtype=torch.int32)
+        cpu_antiquant_scale = torch.randn((1, 256), dtype=torch.float16)
+
+        npu_x = cpu_x.clone().npu()
+        npu_weight = cpu_weight.clone().npu()
+        npu_weight = torch_npu.npu_format_cast(cpu_weight.npu(), 29, customize_dtype=cpu_x.dtype)
+        npu_weight = torch_npu.npu_convert_weight_to_int4pack(npu_weight)
+        npu_antiquant_scale = cpu_antiquant_scale.clone().npu()
+
+        supported_output = self.supported_op_exec(cpu_x, cpu_weight, cpu_antiquant_scale)
+        custom_output = self.custom_op_exec(npu_x, npu_weight, npu_antiquant_scale, None, None)
+
+        self.assertRtolEqual(supported_output, custom_output, 0.001)
+
 
 if __name__ == "__main__":
     run_tests()
