@@ -10,10 +10,14 @@
 ## 功能说明<a name="zh-cn_topic_0000002203575833_section14441124184110"></a>
 
 -   API功能：
-
     需与[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)或[torch\_npu.npu\_moe\_distribute\_combine\_add\_rms\_norm](torch_npu-npu_moe_distribute_combine_add_rms_norm.md)配套使用，完成MoE的并行部署下的token dispatch\_v2与combine\_v2。
      - 支持动态量化场景，对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）；
      - 支持特殊专家场景。
+
+-   相较于npu_moe_distribute_dispatch接口，该接口变更如下：
+     - npu_moe_distribute_dispatch中shape为(Bs * K,)的返回值`expand_idx`替换为shape为(A * 128,)的`assist_info_for_combine`，以包含更详细的token信息辅助torch_npu.npu_moe_distribute_combine_v2高效地进行全卡同步；
+     - 新增输入参数`comm_alg`，可用于代替HCCL_INTRA_PCIE_ENABLE和HCCL_INTRA_ROCE_ENABLE环境变量。
+
 -   计算公式：
     - 动态量化场景：
 
