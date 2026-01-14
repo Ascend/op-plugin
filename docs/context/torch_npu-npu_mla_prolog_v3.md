@@ -4,11 +4,11 @@
 
 | 产品      | 是否支持 |
 |:----------------------------|:-----------:|
-|Atlas A3 推理系列产品|      √     |
+|<term>Atlas A3 推理系列产品</term>|      √     |
 
 ## 功能说明
 
--  接口功能：推理场景下Multi-Head Latent Attention前处理的计算操作。该算子实现四条并行的计算路径：
+-  API功能：推理场景下Multi-Head Latent Attention前处理的计算操作。该算子实现四条并行的计算路径：
     -   1. 标准Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{UQ}$上采样 → $W^{UK}$上采样 → $q^N$
     -   2. 位置编码Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{QR}$ → ROPE旋转位置编码 → $q^R$
     -   3. 标准Key路径：输入$x$ → $W^{DKV}$下采样 → RmsNorm → Cache存储 → $k^C$

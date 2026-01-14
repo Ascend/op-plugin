@@ -24,8 +24,8 @@ torch_npu.npu_bmmV2(self, mat2, output_sizes) -> Tensor
 
 ## 参数说明
 
-- **self**（`Tensor`）：2D或更高维度矩阵张量。数据类型支持`float16`、`float32`、`int32`。格式支持$[ND, NHWC, FRACTAL_NZ]$。
-- **mat2**（`Tensor`）：2D或更高维度矩阵张量。数据类型支持`float16`、`float32`、`int32`。格式支持$[ND, NHWC, FRACTAL_NZ]$。
+- **self**（`Tensor`）：2D或更高维度矩阵张量。数据类型支持`float16`、`float32`、`int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$。
+- **mat2**（`Tensor`）：2D或更高维度矩阵张量。数据类型支持`float16`、`float32`、`int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$。
 - **output_sizes**（`List[int]`）：默认值为[]，输出的shape，用于matmul的反向传播。
 
 ## 调用示例

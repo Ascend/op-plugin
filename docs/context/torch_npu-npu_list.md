@@ -166,19 +166,19 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>NPUGraph场景下，用于标记待更新任务的结束。</p>
 </td>
 </tr>
-<tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="torch_npu-npu-obfuscation_initialize.md">torch_npu.npu.obfuscation_initialize</a></p>
+<tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="（beta）torch_npu-npu-obfuscation_initialize.md">（beta）torch_npu.npu.obfuscation_initialize</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p1218213753310"><a name="p1218213753310"></a><a name="p1218213753310"></a>该接口用于完成PMCC模型混淆引擎的资源初始化。</p>
 </td>
 </tr>
-<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-obfuscation_finalize.md">torch_npu.npu.obfuscation_finalize</a></p>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="（beta）torch_npu-npu-obfuscation_finalize.md">（beta）torch_npu.npu.obfuscation_finalize</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>该接口用于完成PMCC模型混淆引擎的资源释放。</p>
 </td>
 </tr>
-<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-obfuscation_calculate.md">torch_npu.npu.obfuscation_calculate</a></p>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="（beta）torch_npu-npu-obfuscation_calculate.md">（beta）torch_npu.npu.obfuscation_calculate</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>该接口用于实现矩阵乘计算输入和输出的transpose操作。</p>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>该接口用于将张量x和配置参数（如param）发送至PMCC（Privacy and Model Confidential Computing）混淆引擎。</p>
 </td>
 </tr>
 <tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="（beta）torch_npu-npu-aclnn-version.md">（beta）torch_npu.npu.aclnn.version</a></p>
