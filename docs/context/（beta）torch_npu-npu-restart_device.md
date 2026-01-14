@@ -1,6 +1,6 @@
 # （beta）torch_npu.npu.restart_device
 
->**须知：**<br>
+> [!NOTICE] 
 > 本接口为预留接口，暂不支持。
 
 ## 功能说明

@@ -22,8 +22,8 @@ torch_npu.npu_bounding_box_decode(rois, deltas, means0, means1, means2, means3, 
 
 ## 参数说明
 
-- **rois** (`Tensor`)：区域候选网络（RPN）生成的region of interests（ROI）。shape为（N,4）数据类型为float32或float16的2D张量。“N”表示ROI的数量， “4”表示“x0”、“x1”、“y0”和“y1”。
-- **deltas** (`Tensor`)：RPN生成的ROI和真值框之间的绝对变化。shape为（N,4）数据类型为float32或float16的2D张量。“N”表示区域数，“4”表示“dx”、“dy”、“dw”和“dh”。
+- **rois** (`Tensor`)：区域候选网络（RPN）生成的region of interests（ROI）。shape为（N,4），数据类型为float32或float16的2D张量。“N”表示ROI的数量， “4”表示“x0”、“x1”、“y0”和“y1”。
+- **deltas** (`Tensor`)：RPN生成的ROI和真值框之间的绝对变化。shape为（N,4），数据类型为float32或float16的2D张量。“N”表示区域数，“4”表示“dx”、“dy”、“dw”和“dh”。
 - **means0** (`float`)：“x0”的偏差值。默认值为0。
 - **means1** (`float`)：“y0”的偏差值。默认值为0。
 - **means2** (`float`)：“x1”的偏差值。默认值为0。

@@ -16,7 +16,7 @@
 ## 函数原型
 
 ```
-torch_npu.fast_gelu(self) -> Tensor
+torch_npu.fast_gelu(input) -> Tensor
 ```
 
 ## 参数说明

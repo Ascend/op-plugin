@@ -230,9 +230,9 @@
             -   [torch_npu.npu.graph_task_group_end](./context/torch_npu-npu-graph_task_group_end.md)
             -   [torch_npu.npu.graph_task_update_begin](./context/torch_npu-npu-graph_task_update_begin.md)
             -   [torch_npu.npu.graph_task_update_end](./context/torch_npu-npu-graph_task_update_end.md)
-            -   [torch_npu.npu.obfuscation_initialize](./context/（beta）torch_npu-npu-obfuscation_initialize.md)
-            -   [torch_npu.npu.obfuscation_finalize](./context/（beta）torch_npu-npu-obfuscation_finalize.md)
-            -   [torch_npu.npu.obfuscation_calculate](./context/（beta）torch_npu-npu-obfuscation_calculate.md)
+            -   [（beta）torch_npu.npu.obfuscation_initialize](./context/（beta）torch_npu-npu-obfuscation_initialize.md)
+            -   [（beta）torch_npu.npu.obfuscation_finalize](./context/（beta）torch_npu-npu-obfuscation_finalize.md)
+            -   [（beta）torch_npu.npu.obfuscation_calculate](./context/（beta）torch_npu-npu-obfuscation_calculate.md)
             -   [（beta）torch_npu.npu.aclnn.version](./context/（beta）torch_npu-npu-aclnn-version.md)
             -   [torch_npu.npu.aclnn.allow_hf32](./context/torch_npu-npu-aclnn-allow_hf32.md)              
     
