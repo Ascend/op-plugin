@@ -1980,6 +1980,19 @@ def npu_rms_norm_meta(self, gamma, epsilon=1e-6):
     return (torch.empty_like(self, dtype=self.dtype), torch.empty_like(rstd))
 
 
+@impl(m, "npu_gemma_rms_norm")
+def npu_gemma_rms_norm_meta(self, gamma, epsilon=1e-6):
+    rstd_dim = self.dim() - gamma.dim()
+    ret = []
+    for i in range(self.dim()):
+        if i < rstd_dim:
+            ret.append(self.size(i))
+        else:
+            ret.append(1)
+    rstd = torch.empty(ret, dtype=torch.float32, device='meta')
+    return (torch.empty_like(self, dtype=self.dtype), torch.empty_like(rstd))
+
+
 @impl(m, "npu_add_rms_norm")
 def npu_add_rms_norm_meta(x1, x2, gamma, epsilon=1e-6):
     rstd_dim = x1.dim() - gamma.dim()

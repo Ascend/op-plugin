@@ -58,5 +58,40 @@ class TestNPUGemmaRmsNorm(TestCase):
         self.assertRtolEqual(supported_output0, custom_output0)
         self.assertRtolEqual(supported_output1, custom_output1)
 
+    
+    @SupportedDevices(['Ascend910B'])
+    def test_gemma_rms_norm_meta(self):
+        cpu_input0 = np.random.uniform(0, 100, [256, 512]).astype(np.float32)
+        cpu_input1 = np.random.uniform(0, 100, [512]).astype(np.float32)
+        npu_input0 = torch.from_numpy(cpu_input0).to("npu")
+        npu_input1 = torch.from_numpy(cpu_input1).to("npu")
+        meta_input0 = torch.from_numpy(cpu_input0).to("meta")
+        meta_input1 = torch.from_numpy(cpu_input1).to("meta")
+
+        npu_output0, npu_output1 = torch_npu.npu_gemma_rms_norm(npu_input0, npu_input1)
+        meta_output0, meta_output1 = torch_npu.npu_gemma_rms_norm(meta_input0, meta_input1)
+        self.assertEqual(npu_output0.shape, meta_output0.shape)
+        self.assertEqual(npu_output1.shape, meta_output1.shape)
+        self.assertEqual(npu_output0.dtype, meta_output0.dtype)
+        self.assertEqual(npu_output1.dtype, meta_output1.dtype)
+
+
+    @SupportedDevices(['Ascend910B'])
+    def test_gemma_rms_norm_fp16_meta(self):
+        cpu_input0 = np.random.uniform(0, 100, [256, 512]).astype(np.float16)
+        cpu_input1 = np.random.uniform(0, 100, [512]).astype(np.float16)
+        npu_input0 = torch.from_numpy(cpu_input0).to("npu")
+        npu_input1 = torch.from_numpy(cpu_input1).to("npu")
+        meta_input0 = torch.from_numpy(cpu_input0).to("meta")
+        meta_input1 = torch.from_numpy(cpu_input1).to("meta")
+
+        npu_output0, npu_output1 = torch_npu.npu_gemma_rms_norm(npu_input0, npu_input1)
+        meta_output0, meta_output1 = torch_npu.npu_gemma_rms_norm(meta_input0, meta_input1)
+        self.assertEqual(npu_output0.shape, meta_output0.shape)
+        self.assertEqual(npu_output1.shape, meta_output1.shape)
+        self.assertEqual(npu_output0.dtype, meta_output0.dtype)
+        self.assertEqual(npu_output1.dtype, meta_output1.dtype)
+
+
 if __name__ == "__main__":
     run_tests()
