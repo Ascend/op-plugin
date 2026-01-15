@@ -3747,6 +3747,88 @@ def npu_kv_rmsnorm_rope_cache_v2_functional_meta(kv, gamma, cos, sin, index, k_c
             torch.empty_like(k_cache), torch.empty_like(ckv_cache))
 
 
+@impl(m, "npu_qkv_rms_norm_rope_cache")
+def npu_qkv_rms_norm_rope_cache_meta(qkv, q_gamma, k_gamma, cos, sin, index, q_out, k_cache, v_cache, qkv_size, head_nums, 
+                                     *, k_scale=None, v_scale=None, k_offset=None, v_offset=None, epsilon=1e-6,
+                                     cache_mode='PA_NZ', is_output_qkv=False):
+    if qkv_size is None:
+        raise RuntimeError("qkv_size must not be None" + ops_error(ErrCode.PARAM))
+    if head_nums is None:
+        raise RuntimeError("head_nums must not be None" + ops_error(ErrCode.PARAM))
+    if len(qkv_size) != 4:
+        raise RuntimeError("qkv_size must be length 4 [B, S, N, D]" + ops_error(ErrCode.PARAM))
+    if len(head_nums) != 3:
+        raise RuntimeError("head_nums must be length 3 [n_q, n_k, n_v]" + ops_error(ErrCode.PARAM))
+    if qkv.dim() != 2:
+        raise RuntimeError("2D tensor expected for input qkv" + ops_error(ErrCode.PARAM))
+    if q_gamma.dim() != 1:
+        raise RuntimeError("1D tensor expected for input q_gamma" + ops_error(ErrCode.PARAM))
+    if k_gamma.dim() != 1:
+        raise RuntimeError("1D tensor expected for input k_gamma" + ops_error(ErrCode.PARAM))
+    if cos.dim() != 2:
+        raise RuntimeError("2D tensor expected for input cos" + ops_error(ErrCode.PARAM))
+    if sin.dim() != 2:
+        raise RuntimeError("2D tensor expected for input sin" + ops_error(ErrCode.PARAM))
+    q_out_before_quant_size = []
+    k_out_before_quant_size = []
+    v_out_before_quant_size = []
+    q_out_before_quant_size.append(qkv.size(0))
+    k_out_before_quant_size.append(qkv.size(0))
+    v_out_before_quant_size.append(qkv.size(0))
+    q_out_before_quant_size.append(head_nums[0] * qkv_size[3])
+    k_out_before_quant_size.append(head_nums[1] * qkv_size[3])
+    v_out_before_quant_size.append(head_nums[2] * qkv_size[3])
+    if is_output_qkv:        
+        return (torch.empty(q_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
+                torch.empty(k_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
+                torch.empty(v_out_before_quant_size, dtype=qkv.dtype, device=qkv.device))
+    return (torch.empty([], dtype=qkv.dtype, device=qkv.device),
+                torch.empty([], dtype=qkv.dtype, device=qkv.device),
+                torch.empty([], dtype=qkv.dtype, device=qkv.device))
+
+
+@impl(m, "npu_qkv_rms_norm_rope_cache_functional")
+def npu_qkv_rms_norm_rope_cache_functional_meta(qkv, q_gamma, k_gamma, cos, sin, index, q_out, k_cache, v_cache, qkv_size, head_nums, 
+                                        *, k_scale=None, v_scale=None, k_offset=None, v_offset=None, epsilon=1e-6,
+                                        cache_mode='PA_NZ', is_output_qkv=False):
+    if qkv_size is None:
+        raise RuntimeError("qkv_size must not be None" + ops_error(ErrCode.PARAM))
+    if head_nums is None:
+        raise RuntimeError("head_nums must not be None" + ops_error(ErrCode.PARAM))
+    if len(qkv_size) != 4:
+        raise RuntimeError("qkv_size must be length 4 [B, S, N, D]" + ops_error(ErrCode.PARAM))
+    if len(head_nums) != 3:
+        raise RuntimeError("head_nums must be length 3 [n_q, n_k, n_v]" + ops_error(ErrCode.PARAM))
+    if qkv.dim() != 2:
+        raise RuntimeError("2D tensor expected for input qkv" + ops_error(ErrCode.PARAM))
+    if q_gamma.dim() != 1:
+        raise RuntimeError("1D tensor expected for input q_gamma" + ops_error(ErrCode.PARAM))
+    if k_gamma.dim() != 1:
+        raise RuntimeError("1D tensor expected for input k_gamma" + ops_error(ErrCode.PARAM))
+    if cos.dim() != 2:
+        raise RuntimeError("2D tensor expected for input cos" + ops_error(ErrCode.PARAM))
+    if sin.dim() != 2:
+        raise RuntimeError("2D tensor expected for input sin" + ops_error(ErrCode.PARAM))
+    q_out_before_quant_size = []
+    k_out_before_quant_size = []
+    v_out_before_quant_size = []
+    q_out_before_quant_size.append(qkv.size(0))
+    k_out_before_quant_size.append(qkv.size(0))
+    v_out_before_quant_size.append(qkv.size(0))
+    q_out_before_quant_size.append(head_nums[0] * qkv_size[3])
+    k_out_before_quant_size.append(head_nums[1] * qkv_size[3])
+    v_out_before_quant_size.append(head_nums[2] * qkv_size[3])
+    if is_output_qkv:        
+        return (torch.empty(q_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
+                torch.empty(k_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
+                torch.empty(v_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
+                torch.empty_like(q_out), torch.empty_like(k_cache), torch.empty_like(v_cache))
+    return (torch.empty([], dtype=qkv.dtype, device=qkv.device),
+            torch.empty([], dtype=qkv.dtype, device=qkv.device),
+            torch.empty([], dtype=qkv.dtype, device=qkv.device),
+            torch.empty_like(q_out), torch.empty_like(k_cache), torch.empty_like(v_cache))
+
+            
 @impl(m, "npu_apply_rotary_pos_emb")
 def npu_apply_rotary_pos_emb_meta(query, key, cos, sin, layout=1, rotary_mode='half'):
     return (torch.empty_like(query, dtype=query.dtype), torch.empty_like(key, dtype=key.dtype))

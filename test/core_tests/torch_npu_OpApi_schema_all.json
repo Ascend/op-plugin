@@ -4658,6 +4658,12 @@
   "func: npu_kv_rmsnorm_rope_cache_v2_functional(Tensor kv, Tensor gamma, Tensor cos, Tensor sin, Tensor index, Tensor k_cache, Tensor ckv_cache, *, Tensor? k_rope_scale=None, Tensor? c_kv_scale=None, Tensor? k_rope_offset=None, Tensor? c_kv_offset=None, Tensor? v=None, float epsilon=1e-5, str cache_mode='Norm', bool is_output_kv=False) -> (Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
+  "func: npu_qkv_rms_norm_rope_cache(Tensor qkv, Tensor q_gamma, Tensor k_gamma, Tensor cos, Tensor sin, Tensor index, Tensor(a!) q_out, Tensor(b!) k_cache, Tensor(c!) v_cache, int[4] qkv_size, int[3] head_nums, *, Tensor? k_scale=None, Tensor? v_scale=None, Tensor? k_offset=None, Tensor? v_offset=None, float epsilon=1e-6, str cache_mode='PA_NZ', bool is_output_qkv=False) -> (Tensor, Tensor, Tensor)": {
+    "version": ["v2.6", "newest"]
+  },
+  "func: npu_qkv_rms_norm_rope_cache_functional(Tensor qkv, Tensor q_gamma, Tensor k_gamma, Tensor cos, Tensor sin, Tensor index, Tensor q_out, Tensor k_cache, Tensor v_cache, int[4] qkv_size, int[3] head_nums, *, Tensor? k_scale=None, Tensor? v_scale=None, Tensor? k_offset=None, Tensor? v_offset=None, float epsilon=1e-6, str cache_mode='PA_NZ', bool is_output_qkv=False) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["v2.6", "newest"]
+  },
   "func: _quantize_per_tensor_impl.out(Tensor inputs, Tensor scales, Tensor zero_points, ScalarType dtype, *, Tensor(a!) result) -> Tensor(a!)": {
     "version": ["all_version"]
   },

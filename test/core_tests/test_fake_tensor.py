@@ -3187,6 +3187,69 @@ class TestNpuTopKTopP(TestCase):
             self.assertEqual(out_npu.shape, logits.shape)
 
 
+class TestNpuQkvRmsNormRopeCache(TestCase):
+    def test_npu_qkv_rms_norm_rope_cache_meta(self):
+        B, S = 16, 3
+        Nq, Nk, Nv = 16, 1, 1
+        D = 128     
+        N = Nq + Nk + Nv
+        qkv_size = [B, S, N, D]
+        head_nums = [Nq, Nk, Nv]
+        block_size = 128
+        block_num = (S + block_size - 1) // block_size * B
+        dtype = torch.float16
+        eps = 1e-6
+        with FakeTensorMode():
+            qkv = torch.empty(B * S, N * D, dtype=dtype).npu()
+            q_gamma = torch.empty(D, dtype=dtype).npu()
+            k_gamma = torch.empty(D, dtype=dtype).npu()
+            cos = torch.empty(B * S, D, dtype=dtype).npu()
+            sin = torch.empty(B * S, D, dtype=dtype).npu()
+            index = torch.full((B * S,), -1, dtype=torch.int64).npu()
+
+            q_out = torch.empty(B * S, Nq * D, dtype=dtype).npu()
+
+            k_cache = torch.empty(
+                block_num, Nk * D // 32, block_size, 32,
+                dtype=torch.int8
+            ).npu()
+            v_cache = torch.empty(
+                block_num, Nv * D // 32, block_size, 32,
+                dtype=torch.int8
+            ).npu()
+
+            k_scale = torch.empty(Nk, D, dtype=torch.float32).npu()
+            v_scale = torch.empty(Nv, D, dtype=torch.float32).npu()
+
+            q_out_before_quant, k_out_before_quant, v_out_before_quant = torch_npu.npu_qkv_rms_norm_rope_cache(
+                qkv=qkv,
+                q_gamma=q_gamma,
+                k_gamma=k_gamma,
+                cos=cos,
+                sin=sin,
+                index=index,
+                q_out=q_out,
+                k_cache=k_cache,
+                v_cache=v_cache,
+                qkv_size=qkv_size,
+                head_nums=head_nums,
+                k_scale=k_scale,
+                v_scale=v_scale,
+                k_offset=None,
+                v_offset=None,
+                epsilon=eps,
+                cache_mode="PA_NZ",
+                is_output_qkv=True,
+            )
+
+            self.assertEqual(q_out_before_quant.shape, torch.Size([B * S, Nq * D]))
+            self.assertEqual(q_out_before_quant.dtype, dtype)
+            self.assertEqual(k_out_before_quant.shape, torch.Size([B * S, Nk * D]))
+            self.assertEqual(k_out_before_quant.dtype, dtype)
+            self.assertEqual(v_out_before_quant.shape, torch.Size([B * S, Nv * D]))
+            self.assertEqual(v_out_before_quant.dtype, dtype)
+
+            
 class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
     def test_npu_moe_token_permute_unpermute_meta(self):
         dtype = torch.bfloat16
