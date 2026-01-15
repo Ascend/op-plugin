@@ -112,7 +112,7 @@
         -   [torch_npu.npu_recurrent_gated_delta_rule](./context/torch_npu-npu_recurrent_gated_delta_rule.md)
         -   [torch_npu.npu_scatter_nd_update](./context/torch_npu-npu_scatter_nd_update.md)
         -   [torch_npu.npu_scatter_nd_update_](./context/torch_npu-npu_scatter_nd_update_.md)
-        -   [torch_npu.npu_sparse_flash_attention](./context/torch_npu-npu_quant_lightning_indexer.md)
+        -   [torch_npu.npu_sparse_flash_attention](./context/torch_npu-npu_sparse_flash_attention.md)
         -   [torch_npu.npu_sparse_lightning_indexer_grad_kl_loss](./context/torch_npu-npu_sparse_lightning_indexer_grad_kl_loss.md)
         -   [torch_npu.npu_top_k_top_p](./context/torch_npu-npu_top_k_top_p.md)
         -   [torch_npu.npu_top_k_top_p_sample](./context/torch_npu-npu_top_k_top_p_sample.md)

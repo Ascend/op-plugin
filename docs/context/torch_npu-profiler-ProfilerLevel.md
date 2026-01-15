@@ -22,7 +22,7 @@ torch_npu.profiler.ProfilerLevel
 
 - **torch_npu.profiler.ProfilerLevel.Level_none**：可选参数，不采集所有Level层级控制的数据，即关闭profiler_level。
 
-- **torch_npu.profiler.ProfilerLevel.Level0**：可选参数，采集上层应用数据、底层NPU数据以及NPU上执行的算子信息。配置该参数时，仅采集部分数据，其中部分算子信息不采集，详细情况请参见《CANN 性能调优工具用户指南》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/83RC1/devaids/Profiling/atlasprofiling_16_0067.html">op_summary（算子详细信息）</a>”章节。
+- **torch_npu.profiler.ProfilerLevel.Level0**：可选参数，采集上层应用数据、底层NPU数据以及NPU上执行的算子信息。配置该参数时，仅采集部分数据，其中部分算子信息不采集，详细情况请参见《CANN 性能调优工具用户指南》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/850/devaids/Profiling/atlasprofiling_16_0067.html">op_summary（算子详细信息）</a>”章节。
 - **torch_npu.profiler.ProfilerLevel.Level1**：可选参数，在Level0的基础上多采集CANN层AscendCL数据和NPU上执行的AI Core性能指标信息、开启aic_metrics=torch_npu.profiler.AiCMetrics.PipeUtilization以及HCCL的communication.json和communication_matrix.json文件。
 - **torch_npu.profiler.ProfilerLevel.Level2**：可选参数，在Level1的基础上多采集CANN层Runtime数据以及AI CPU（data_preprocess.csv文件）。
 

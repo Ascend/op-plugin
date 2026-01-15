@@ -11,7 +11,7 @@
 </thead>
 <tbody><tr id="row16495752115611"><td class="cellrowborder" valign="top" width="55.25%" headers="mcps1.2.3.1.1 "><p id="p104952529563"><a name="p104952529563"></a><a name="p104952529563"></a>torch_npu.npu.amp.autocast</p>
 </td>
-<td class="cellrowborder" rowspan="4" valign="top" width="44.75%" headers="mcps1.2.3.1.2 "><p id="p8060118"><a name="p8060118"></a><a name="p8060118"></a>torch_npu提供amp相关的部分接口，具体可参考<a href="https://www.hiascend.com/document/detail/zh/Pytorch/720/apiref/PyTorchNativeapi/ptaoplist_000234.html">torch.amp</a>。</p>
+<td class="cellrowborder" rowspan="4" valign="top" width="44.75%" headers="mcps1.2.3.1.2 "><p id="p8060118"><a name="p8060118"></a><a name="p8060118"></a>torch_npu提供amp相关的部分接口，具体可参考<a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1-7.3.0/docs/zh/native_apis/pytorch_2-7-1/torch-amp.md">torch.amp</a>。</p>
 </td>
 </tr>
 <tr id="row134951052155613"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="p164952525569"><a name="p164952525569"></a><a name="p164952525569"></a>torch_npu.npu.amp.GradScaler</p>
