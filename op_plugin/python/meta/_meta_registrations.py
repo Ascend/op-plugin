@@ -727,7 +727,7 @@ def npu_fused_matmul_meta(x, x2, *, bias=None, x3=None, fused_op_type=''):
 
     torch._check(
         x.dtype == x2.dtype,
-        lambda: "x and x2 type not same. x.dtype is" + str(x.dtype) + "x2.dtype is" + str(x2.dtype) + ops_error(ErrCode.TYPE),
+        lambda: "x and x2 type not same. x.dtype is " + str(x.dtype) + ", x2.dtype is " + str(x2.dtype) + ops_error(ErrCode.TYPE),
     )
 
     x_dim = x.dim()
