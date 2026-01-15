@@ -13,54 +13,54 @@
 - 计算公式：
 
   1. Top-k value的计算公式：
-  $$
-  I_{t,:}=W_{t,:}@ReLU(\tilde{q}_{t,:}@\tilde{K}_{:t,:}^\top)
-  $$
+     $$
+     I_{t,:}=W_{t,:}@ReLU(\tilde{q}_{t,:}@\tilde{K}_{:t,:}^\top)
+     $$
   
-    - $W_{t,:}$是第$t$个token对应的$weights$；
-    - $\tilde{q}_{t,:}$是$Q_{index}$矩阵第$t$个token对应的$G$个头合轴后的结果；
-    - $\tilde{K}_{:t,:}$为$K_{index}$矩阵$t$行。
+     - $W_{t,:}$是第$t$个token对应的$weights$；
+     - $\tilde{q}_{t,:}$是$Q_{index}$矩阵第$t$个token对应的$G$个头合轴后的结果；
+     - $\tilde{K}_{:t,:}$为$K_{index}$矩阵$t$行。
   
   2. 正向的Softmax对应公式：
 
-  $$
-  p_{t,:} = \text{Softmax}(q_{t,:} @ K_{:t,:}^\top/\sqrt{d})
-  $$
+     $$
+     p_{t,:} = \text{Softmax}(q_{t,:} @ K_{:t,:}^\top/\sqrt{d})
+     $$
     
-    - $p_{t,:}$是第$t$个token对应的Softmax结果；
-    - $q_{t,:}$是$Q$矩阵第$t$个token对应的$G$个query头合轴后的结果；
-    - $K$为$K$矩阵$t$行。
+     - $p_{t,:}$是第$t$个token对应的Softmax结果；
+     - $q_{t,:}$是$Q$矩阵第$t$个token对应的$G$个query头合轴后的结果；
+     - $K$为$K$矩阵$t$行。
 
   3. npu_lightning_indexer会单独训练，对应的loss function为：
-  $$
-  Loss{=}\sum_tD_{KL}(p_{t,:}||Softmax(I_{t,:}))
-  $$
+     $$
+     Loss{=}\sum_tD_{KL}(p_{t,:}||Softmax(I_{t,:}))
+     $$
 
-  其中，$p_{t,:}$是target distribution，通过对main attention score 进行所有的head的求和，然后把求和结果沿着上下文方向进行L1正则化得到。$D_{KL}$为KL散度，其表达式为：
+     其中，$p_{t,:}$是target distribution，通过对main attention score 进行所有的head的求和，然后把求和结果沿着上下文方向进行L1正则化得到。$D_{KL}$为KL散度，其表达式为：
 
-  $$
-  D_{KL}(a||b){=}\sum_ia_i\mathrm{log}{\left(\frac{a_i}{b_i}\right)}
-  $$
+     $$
+     D_{KL}(a||b){=}\sum_ia_i\mathrm{log}{\left(\frac{a_i}{b_i}\right)}
+     $$
 
-  4.通过求导可得Loss的梯度表达式：
-  $$
-  dI\mathop{{}}\nolimits_{{t,:}}=Softmax \left( I\mathop{{}}\nolimits_{{t,:}} \left) -p\mathop{{}}\nolimits_{{t,:}}\right. \right.
-  $$
+  4. 通过求导可得Loss的梯度表达式：
+     $$
+     dI\mathop{{}}\nolimits_{{t,:}}=Softmax \left( I\mathop{{}}\nolimits_{{t,:}} \left) -p\mathop{{}}\nolimits_{{t,:}}\right. \right.
+     $$
 
-  利用链式法则可以进行weights，query和key矩阵的梯度计算：
-  $$
-  dW\mathop{{}}\nolimits_{{t,:}}=dI\mathop{{}}\nolimits_{{t,:}}\text{@} \left( ReLU \left( S\mathop{{}}\nolimits_{{t,:}} \left) \left) \mathop{{}}\nolimits^{\top}\right. \right. \right. \right.
-  $$
+     利用链式法则可以进行weights，query和key矩阵的梯度计算：
+     $$
+     dW\mathop{{}}\nolimits_{{t,:}}=dI\mathop{{}}\nolimits_{{t,:}}\text{@} \left( ReLU \left( S\mathop{{}}\nolimits_{{t,:}} \left) \left) \mathop{{}}\nolimits^{\top}\right. \right. \right. \right.
+     $$
   
-  $$
-  d\mathop{{\tilde{q}}}\nolimits_{{t,:}}=dS\mathop{{}}\nolimits_{{t,:}}@\tilde{K}\mathop{{}}\nolimits_{{:t,:}}
-  $$
+     $$
+     d\mathop{{\tilde{q}}}\nolimits_{{t,:}}=dS\mathop{{}}\nolimits_{{t,:}}@\tilde{K}\mathop{{}}\nolimits_{{:t,:}}
+     $$
   
-  $$
-  d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}=\left(dS\mathop{{}}\nolimits_{{t,:}} \left) \mathop{{}}\nolimits^{\top}@\tilde{q}\mathop{{}}\nolimits_{{:t, :}}\right. \right.
-  $$
+     $$
+     d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}=\left(dS\mathop{{}}\nolimits_{{t,:}} \left) \mathop{{}}\nolimits^{\top}@\tilde{q}\mathop{{}}\nolimits_{{:t, :}}\right. \right.
+     $$
 
-  其中，$S$为$Q_{index}$和$K_{index}$矩阵乘的结果。
+     其中，$S$为$Q_{index}$和$K_{index}$矩阵乘的结果。
 
 ## 函数原型
 

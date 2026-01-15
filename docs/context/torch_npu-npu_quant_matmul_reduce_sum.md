@@ -26,15 +26,15 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
 
 ## 参数说明
 
-- **x1** (`Tensor`)：必选参数，数据类型支持`int8`，数据格式支持ND，shape支持3维，形状为（batch, m, k）。
+- **x1** (`Tensor`)：必选参数，数据类型支持`int8`，数据格式支持$ND$，shape支持3维，形状为（batch, m, k）。
 
-- **x2** (`Tensor`)：必选参数，数据类型支持`int8`，数据格式支持NZ，shape支持3维，形状为（batch, k, n）。
-  - 可通过`x2 = torch_npu.npu_format_cast(x2.contiguous(), 29)`将ND格式的x2转换为NZ格式。
+- **x2** (`Tensor`)：必选参数，数据类型支持`int8`，数据格式支持$NZ$，shape支持3维，形状为（batch, k, n）。
+  - 可通过`x2 = torch_npu.npu_format_cast(x2.contiguous(), 29)`将ND格式的`x2`转换为NZ格式。
 
-- **x1_scale** (`Tensor`)：必选关键字参数，对应公式中的x1Scale。数据类型支持`float32`，数据格式支持ND，shape支持2维，形状为（batch, m）。
+- **x1_scale** (`Tensor`)：必选关键字参数，对应公式中的$x1Scale$。数据类型支持`float32`，数据格式支持$ND$，shape支持2维，形状为（batch, m）。
   - 在实际计算时，`x1_scale`会被广播到(batch，m，n)。
 
-- **x2_scale** (`Tensor`)：必选关键字参数，对应公式中的x2Scale。数据类型支持`bfloat16`，数据格式支持ND，shape支持1维，形状为（n,）。
+- **x2_scale** (`Tensor`)：必选关键字参数，对应公式中的$x2Scale$。数据类型支持`bfloat16`，数据格式支持$ND$，shape支持1维，形状为（n,）。
   - 在实际计算时，`x2_scale`会被广播到(batch，m，n)。
 
 

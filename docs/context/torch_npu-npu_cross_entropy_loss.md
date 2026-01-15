@@ -14,7 +14,7 @@
 
     公式中*x*是输入`input`，*y* 是标签`target`，*weight*是权重，*C* 是标签数，*N* 是批处理大小。
 
-    交叉熵损失`loss`的计算公式
+    交叉熵损失`loss`的计算公式：
       $$
      loss=\begin{cases}\sum_{n=1}^N\frac{1}{\sum_{n=1}^Nweight_{y_n}*1\{y_n\ !=\ ignoreIndex \}}l_n,&\text{if reduction = ‘mean’} \\\sum_{n=1}^Nl_n,&\text {if reduction = ‘sum’ }\\\{l_0,l_1,...,l_n\},&\text{if reduction = ‘None’ }\end{cases}
      $$

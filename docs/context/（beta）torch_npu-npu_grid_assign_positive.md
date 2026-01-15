@@ -25,7 +25,7 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 - **overlaps** (`Tensor`)：必选参数，数据类型与`self`相同，表示gt_bboxes和bboxes之间的IoU，shape为(k,n)。
 - **box_responsible_flags** (`Tensor`)：必选参数，支持`uint8`数据类型。表示框是否responsible的标志。
 - **max_overlaps** (`Tensor`)：必选参数，数据类型与`self`相同。
-- **argmax_overlaps** (`Tensor`) -必选参数，支持`int32`数据类型。
+- **argmax_overlaps** (`Tensor`)：必选参数，支持`int32`数据类型。
 - **gt_max_overlaps** (`Tensor`)：必选参数，数据类型与`self`相同。
 - **gt_argmax_overlaps** (`Tensor`)：必选参数，支持`int32`数据类型。
 - **num_gts** (`Tensor`)：必选参数，支持`int32`数据类型，real k，shape为(1, )。

@@ -34,7 +34,7 @@
             out=out*smooth\_scales
             $$
 
-        2.  动态/静态量化操作：对激活后的结果进行量化，以动态量化（dynamic_quant）为例，详细数学公式请参考[aclnnSwGluQuantV2](https://www.hiascend.com/document/detail/zh/canncommercial/850/API/aolapi/context/aclnnSwiGluQuantV2.md)。
+        2.  动态/静态量化操作：对激活后的结果进行量化，以动态量化（dynamic_quant）为例，详细数学公式请参考[aclnnSwiGluQuantV2](https://www.hiascend.com/document/detail/zh/canncommercial/850/API/aolapi/context/ops-nn/aclnnSwiGluQuantV2.md)。
             $$
             out,scale=dynamic\_quant(out)
             $$
