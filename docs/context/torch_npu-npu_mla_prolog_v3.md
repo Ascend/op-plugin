@@ -9,10 +9,10 @@
 ## 功能说明
 
 -  API功能：推理场景下Multi-Head Latent Attention前处理的计算操作。该算子实现四条并行的计算路径：
-    -   1. 标准Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{UQ}$上采样 → $W^{UK}$上采样 → $q^N$
-    -   2. 位置编码Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{QR}$ → ROPE旋转位置编码 → $q^R$
-    -   3. 标准Key路径：输入$x$ → $W^{DKV}$下采样 → RmsNorm → Cache存储 → $k^C$
-    -   4. 位置编码Key路径：输入$x$ → $W^{KR}$ → ROPE旋转位置编码 → Cache存储 → $k^R$
+    1. 标准Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{UQ}$上采样 → $W^{UK}$上采样 → $q^N$
+    2. 位置编码Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{QR}$ → ROPE旋转位置编码 → $q^R$
+    3. 标准Key路径：输入$x$ → $W^{DKV}$下采样 → RmsNorm → Cache存储 → $k^C$
+    4. 位置编码Key路径：输入$x$ → $W^{KR}$ → ROPE旋转位置编码 → Cache存储 → $k^R$
 
 -  相比torch_npu.npu_mla_prolog_v2的主要差异如下：
     -  新增输出`query_norm`和`dequant_scale_q_norm`，用于支持DeepSeekV3.2网络。

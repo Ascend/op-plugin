@@ -1,7 +1,7 @@
 # （beta）torch_npu.contrib.npu_fused_attention_with_layernorm
 
->**须知：**<br>
->该接口计划废弃，可以使用`torch_npu.npu_fusion_attention`与`torch.nn.LayerNorm`接口进行替换。
+> [!NOTICE]  
+> 该接口计划废弃，可以使用`torch_npu.npu_fusion_attention`与`torch.nn.LayerNorm`接口进行替换。
 
 ## 产品支持情况
 

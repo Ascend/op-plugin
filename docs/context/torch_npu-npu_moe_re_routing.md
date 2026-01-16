@@ -27,12 +27,12 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 
 ## 参数说明
 
->**说明：**<br>
->Tensor中shape使用的变量说明：
->-   A：表示token个数，取值要求Sum\(expert\_token\_num\_per\_rank\)=A。
->-   H：表示token长度，取值要求0<H<16384。
->-   N：表示卡数，取值无限制。
->-   E：表示卡上的专家数，取值无限制。
+> [!NOTE]  
+> Tensor中shape使用的变量说明：
+> -   A：表示token个数，取值要求Sum\(expert\_token\_num\_per\_rank\)=A。
+> -   H：表示token长度，取值要求0<H<16384。
+> -   N：表示卡数，取值无限制。
+> -   E：表示卡上的专家数，取值无限制。
 
 -   **tokens** (`Tensor`)：必选参数，表示待重新排布的token。要求为2维，shape为\[A, H\]，数据类型支持`float16`、`bfloat16`、`int8`，数据格式为$ND$。
 -   **expert\_token\_num\_per\_rank** (`Tensor`)：必选参数，二维矩阵，矩阵中元素[i, j]表示当前卡上从卡i获取到的专家j处理的token数。要求为2维，shape为\[N, E\]，数据类型支持`int32`、`int64`，数据格式为$ND$。取值必须大于0。

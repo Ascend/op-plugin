@@ -1,6 +1,6 @@
 # （beta）torch_npu.contrib.module.SiLU
 
->**须知：**<br>
+> [!NOTICE]  
 >该接口计划废弃，可以使用`torch.nn.SiLU`接口进行替换。
 
 ## 产品支持情况

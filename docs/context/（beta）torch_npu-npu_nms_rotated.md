@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_nms_rotated
 
->**须知：**<br>
->该接口计划废弃，可以参考[小算子拼接方案](https://gitcode.com/Ascend/op-plugin/blob/7.3.0/test/test_base_ops/test_nms_rotated.py)进行替换。
+> [!NOTICE]  
+> 该接口计划废弃，可以参考[小算子拼接方案](https://gitcode.com/Ascend/op-plugin/blob/7.3.0/test/test_base_ops/test_nms_rotated.py)进行替换。
 
 ## 产品支持情况
 

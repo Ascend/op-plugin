@@ -1,7 +1,7 @@
 # torch_npu.contrib.module.LinearA8W8Quant
 
->**须知：**<br>
->该接口计划废弃，可以使用torch_npu.contrib.module.LinearQuant接口进行替换。
+> [!NOTICE]  
+> 该接口计划废弃，可以使用torch_npu.contrib.module.LinearQuant接口进行替换。
 
 ## 产品支持情况
 

@@ -24,10 +24,10 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
 
 ## 参数说明<a name="zh-cn_topic_0000001832267082_section112637109429"></a>
 
->**说明：**<br>
+> [!NOTE]  
 >
->- query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示隐藏层的大小、N（Head Num）表示多头数、D（Head Dim）表示隐藏层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
->- Q_S和S1表示query shape中的S，KV_S和S2表示key和value shape中的S，Q_N表示num\_query\_heads，KV_N表示num\_key\_value\_heads。
+> - query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示隐藏层的大小、N（Head Num）表示多头数、D（Head Dim）表示隐藏层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
+> - Q_S和S1表示query shape中的S，KV_S和S2表示key和value shape中的S，Q_N表示num\_query\_heads，KV_N表示num\_key\_value\_heads。
 
 - **query** (`Tensor`)：必选参数。attention结构的Query输入，不支持非连续的Tensor，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。
 
@@ -80,8 +80,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
 - **next_tokens** (`int`)：可选参数。用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`。默认值为2147483647，Q\_S为1时该参数无效。
 - **input_layout** (`string`)：可选参数。用于标识输入`query`、`key`、`value`的数据排布格式，默认值为"BSH"。
 
-    >**说明：**<br> 
-    >注意排布格式带下划线时，下划线左边表示输入`query`的layout，下划线右边表示输出output的格式，算子内部会进行layout转换。
+    > [!NOTE]   
+    > 注意排布格式带下划线时，下划线左边表示输入`query`的layout，下划线右边表示输出output的格式，算子内部会进行layout转换。
 
     支持BSH、BSND、BNSD、BNSD\_BSND（输入为BNSD时，输出格式为BSND，仅支持Q\_S大于1）、BSH\_NBSD、BSND\_NBSD、BNSD\_NBSD（输出格式为NBSD时，仅支持Q\_S大于1且小于等于16）、TND、TND\_NTD、NTD\_TND（TND相关场景综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)）。其中BNSD\_BSND含义指当输入为BNSD，输出格式为BSND，仅支持Q\_S大于1。
 
@@ -101,8 +101,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     -   `inner_precise`为2时，代表开启高精度模式，且做行无效修正。
     -   `inner_precise`为3时，代表高性能模式，且做行无效修正。
 
-    >**说明：**<br> 
-    >`bfloat16`和`int8`不区分高精度和高性能，行无效修正对`float16`、`bfloat16`和`int8`均生效。当前0、1为保留配置值，当计算过程中“参与计算的mask部分”存在某整行全为1的情况时，精度可能会有损失。此时可以尝试将该参数配置为2或3来使能行无效功能以提升精度，但是该配置会导致性能下降。
+    > [!NOTE]   
+    > `bfloat16`和`int8`不区分高精度和高性能，行无效修正对`float16`、`bfloat16`和`int8`均生效。当前0、1为保留配置值，当计算过程中“参与计算的mask部分”存在某整行全为1的情况时，精度可能会有损失。此时可以尝试将该参数配置为2或3来使能行无效功能以提升精度，但是该配置会导致性能下降。
 
 - **block_size** (`int`)：可选参数。page attention中KV存储每个block中最大的token个数，默认为0，数据类型支持`int64`。
 - **antiquant_mode** (`int`)：可选参数。表示伪量化方式，传入0时表示为perchannel（perchannel包含pertensor），传入1时表示pertoken。默认值为0。
@@ -305,8 +305,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     
         -   管理scale/offset的量化模式如下：
     
-            >**说明：**<br> 
-            >注意scale、offset两个参数指`key_antiquant_scale`、`value_antiquant_scale`、`key_antiquant_offset`、`value_antiquant_offset`参数。
+            > [!NOTE]   
+            > 注意scale、offset两个参数指`key_antiquant_scale`、`value_antiquant_scale`、`key_antiquant_offset`、`value_antiquant_offset`参数。
 
             <a name="zh-cn_topic_0000001832267082_table3276159203213"></a>
             <table><thead align="left"><tr id="zh-cn_topic_0000001832267082_row192767598320"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="zh-cn_topic_0000001832267082_p19276135910323"><a name="zh-cn_topic_0000001832267082_p19276135910323"></a><a name="zh-cn_topic_0000001832267082_p19276135910323"></a>量化模式</p>
@@ -386,8 +386,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         -   `int4`（`int32`）伪量化场景不支持后量化。
         -   管理scale/offset的量化模式如下：
     
-            >**说明：**<br> 
-            >注意scale、offset两个参数指`key_antiquant_scale`、`value_antiquant_scale`、`key_antiquant_offset`、`value_antiquant_offset`参数。
+            > [!NOTE]   
+            > 注意scale、offset两个参数指`key_antiquant_scale`、`value_antiquant_scale`、`key_antiquant_offset`、`value_antiquant_offset`参数。
     
             <a name="zh-cn_topic_0000001832267082_table4401182238"></a>
             <table><thead align="left"><tr id="zh-cn_topic_0000001832267082_row124112817233"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="zh-cn_topic_0000001832267082_p341780235"><a name="zh-cn_topic_0000001832267082_p341780235"></a><a name="zh-cn_topic_0000001832267082_p341780235"></a>量化模式</p>

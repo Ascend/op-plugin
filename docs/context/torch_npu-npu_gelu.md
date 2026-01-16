@@ -1,7 +1,7 @@
 # torch_npu.npu_gelu
 
->**须知：**<br>
->在NPU环境下使用Torch原生接口gelu时，approximate参数不起作用且默认为tanh，如果需要approximate的默认值设定为None或者区分不同的approximate方法需要使用此接口。
+> [!NOTICE]  
+> 在NPU环境下使用Torch原生接口gelu时，approximate参数不起作用且默认为tanh，如果需要approximate的默认值设定为None或者区分不同的approximate方法需要使用此接口。
 
 ## 产品支持情况
 

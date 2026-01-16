@@ -17,8 +17,8 @@
 torch_npu.npu_slice(self, offsets, size) -> Tensor
 ```
 
->**注意：**<br>
->该接口不支持反向计算。
+> [!CAUTION]  
+> 该接口不支持反向计算。
 
 ## 参数说明
 

@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu.check_uce_in_memory
 
->**须知：**<br>
->本接口为预留接口，暂不支持。
+> [!NOTICE]  
+> 本接口为预留接口，暂不支持。
 
 ## 产品支持情况
 
@@ -15,8 +15,8 @@
 
 提供故障内存地址类型检测接口，供MindCluster进行故障恢复策略的决策。其功能是在出现UCE片上内存故障时，判断故障内存地址类型。
 
->**注意：**<br>
->此API的功能实现依赖于PyTorch的内存管理机制，仅在PYTORCH_NO_NPU_MEMORY_CACHING未配置，即开启内存复用机制时，才可使用此API，若`export PYTORCH_NO_NPU_MEMORY_CACHING=1`，即关闭内存复用机制时，此API无法使用。
+> [!CAUTION]  
+> 此API的功能实现依赖于PyTorch的内存管理机制，仅在PYTORCH_NO_NPU_MEMORY_CACHING未配置，即开启内存复用机制时，才可使用此API，若`export PYTORCH_NO_NPU_MEMORY_CACHING=1`，即关闭内存复用机制时，此API无法使用。
 
 ## 函数原型
 

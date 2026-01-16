@@ -132,7 +132,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
         该场景支持通过环境变量HCCL\_BUFFSIZE配置。
         - 设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
-        该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl_buffer_size配置（参考[《PyTorch训练模型迁移调优》](https://hiascend.com/document/redirect/canncommercial-ptmigr)中“性能调优>性能调优方法>通信优化>优化方法>hccl_buffer_size”章节）。
+        该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl_buffer_size配置（参考《[PyTorch训练模型迁移调优](https://hiascend.com/document/redirect/canncommercial-ptmigr)》中“性能调优>性能调优方法>通信优化>优化方法>hccl_buffer_size”章节）。
         - ep通信域内：设置大小要求\>=2且满足1024\^2\*\(HCCL\_BUFFSIZE\-2\)\/2\>=BS\*2\*\(H\+128\)\*\(ep\_world\_size\*local\_expert\_num\+K\+1\)，local\_expert\_num需使用MoE专家卡的本卡专家数。
         - tp通信域内：设置大小要求\>=A * (H * 2 + 128) * 2。
 -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：配置环境变量HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0可以减少跨机通信数据量，提升算子性能。此时要求HCCL\_BUFFSIZE\>=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB。并且，对于入参moe\_expert\_num，只要求moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0，不要求moe\_expert\_num\/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
@@ -152,7 +152,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
 
 -   版本配套约束：
 
-     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，Ascend Extension for PyTorch框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《Ascend Extension for PyTorch 版本说明》中“<a href="https://www.hiascend.com/document/detail/zh/Pytorch/720/releasenote/releasenote_0003.html">相关产品版本配套说明</a>”。
+     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，Ascend Extension for PyTorch框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《[Ascend Extension for PyTorch 版本说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-7.3.0/docs/zh/release_notes/release_notes.md)》中“相关产品版本配套说明””。
 
 ## 调用示例<a name="zh-cn_topic_0000002203575833_section14459801435"></a>
 

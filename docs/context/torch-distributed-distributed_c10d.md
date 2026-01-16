@@ -20,8 +20,8 @@ torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("
 
 注：接口为PyTorch的ProcessGroup类，backend为NPU backend的方法。ProcessGroup可以为default_pg，也可以为`torch.distributed.distributed_c10d.new_group`创建的非default_pg。
 
->**须知：**<br>
->调用该接口时，需要保证当前current device被设置为正确。
+> [!NOTICE]  
+> 调用该接口时，需要保证当前current device被设置为正确。
 
 ## 参数说明
 

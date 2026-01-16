@@ -34,7 +34,7 @@
             out=out*smooth\_scales
             $$
 
-        2.  动态/静态量化操作：对激活后的结果进行量化，以动态量化（dynamic_quant）为例，详细数学公式请参考[aclnnSwGluQuantV2](https://www.hiascend.com/document/detail/zh/canncommercial/83RC1/API/aolapi/context/aclnnSwiGluQuantV2.md)。
+        2.  动态/静态量化操作：对激活后的结果进行量化，以动态量化（dynamic_quant）为例，详细数学公式请参考[aclnnSwiGluQuantV2](https://www.hiascend.com/document/detail/zh/canncommercial/850/API/aolapi/context/ops-nn/aclnnSwiGluQuantV2.md)。
             $$
             out,scale=dynamic\_quant(out)
             $$
@@ -47,10 +47,10 @@ torch_npu.npu_swiglu_quant(x, *, smooth_scales=None, offsets=None, group_index=N
 
 ## 参数说明
 
->**说明：**<br>
->Tensor中shape使用的变量说明：
->-   G：表示group_index分组数量，取值\>0。
->-   N：计算输入`x`的最后一维大小的二分之一，取值\>0。
+> [!NOTE]  
+> Tensor中shape使用的变量说明：
+> -   G：表示group_index分组数量，取值\>0。
+> -   N：计算输入`x`的最后一维大小的二分之一，取值\>0。
 
 -   **x** (`Tensor`)：必选参数，表示目标张量。数据类型支持`float16`、`bfloat16`、`float32`，支持非连续的`Tensor`，数据格式为$ND$，`x`的维数必须大于1维，尾轴为偶数且长度不超过8192，当`dst_type`为`int4`量化时，`x`的最后一维需要为4的倍数。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。

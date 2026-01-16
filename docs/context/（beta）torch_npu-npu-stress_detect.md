@@ -22,8 +22,8 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
 **detect_type** (`str`)：可选参数，可支持配置为aic或hccs，分别表示硬件在线精度检测和HCCS链路在线精度检测。配置其他值时直接返回1（表示执行失败），默认值为aic。
 
->**说明：**<br>
->当`detect_type`配置为hccs时，首先基于全局通信域创建本机所有卡的子通信域，然后对该子通信域进行HCCS链路压测。
+> [!NOTE]  
+> 当`detect_type`配置为hccs时，首先基于全局通信域创建本机所有卡的子通信域，然后对该子通信域进行HCCS链路压测。
 
 
 ## 返回值说明
@@ -36,7 +36,7 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
     - 2：在线精度检测不通过，硬件故障。
 
-- 若报如下异常，则表示电压恢复失败，需参见[LINK](https://www.hiascend.com/document/detail/zh/canncommercial/83RC1/maintenref/troubleshooting/troubleshooting_0097.html)手动恢复电压或reboot。
+- 若报如下异常，则表示电压恢复失败，需参见[LINK](https://www.hiascend.com/document/detail/zh/canncommercial/850/maintenref/troubleshooting/troubleshooting_0505.html)手动恢复电压或reboot。
     ```
     Stress detect error. Error code is 574007. Error message is Voltage recovery failed.
     ```

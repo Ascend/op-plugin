@@ -81,8 +81,8 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 
     当`x1`、`weight`的数据类型均为`int32`，每个`int32`类型的数据存放8个`int4`数据。输入shape需要将数据原本`int4`类型时的最后一维shape缩小8倍。`int4`数据的最后一维shape应为8的倍数，例如：进行(m, k)乘(k, n)的`int4`类型矩阵乘计算时，需要输入`int32`类型，shape为(m, k//8)、(k, n//8)的数据，其中k与n都应是8的倍数。`x1`只能接受shape为(m, k//8)且数据排布连续的数据，`weight`只能接受shape为(n, k//8)且数据排布连续的数据。
 
-    >**说明：**<br>
-    >数据排布连续是指数组中所有相邻的数，包括换行时内存地址连续，使用Tensor.is_contiguous返回值为true则表明tensor数据排布连续。
+    > [!NOTE]  
+    > 数据排布连续是指数组中所有相邻的数，包括换行时内存地址连续，使用Tensor.is_contiguous返回值为true则表明tensor数据排布连续。
 
 - 输入参数或变量间支持的数据类型组合情况如下：
 

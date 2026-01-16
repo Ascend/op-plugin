@@ -46,16 +46,16 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 ## 参数说明<a name="zh-cn_topic_0000002236535552_section1723416525369"></a>
 
->**说明：**<br> 
->Tensor中shape使用的变量说明：
->-   batch\_size：batch的大小。
->-   seq\_len：sequence的长度。
->-   hidden\_size：表示MLA输入的向量长度，取值仅支持576。
->-   rms\_size：表示RMSNorm分支的向量长度，取值仅支持512。
->-   rope\_size：表示RoPE分支的向量长度，取值仅支持64。
->-   cache\_length：Norm模式下有效，表示KVCache支持的最大长度。
->-   block\_num：PagedAttention模式下有效，表示Block的个数。
->-   block\_size：PagedAttention模式下有效，表示Block的大小。
+> [!NOTE]   
+> Tensor中shape使用的变量说明：
+> -   batch\_size：batch的大小。
+> -   seq\_len：sequence的长度。
+> -   hidden\_size：表示MLA输入的向量长度，取值仅支持576。
+> -   rms\_size：表示RMSNorm分支的向量长度，取值仅支持512。
+> -   rope\_size：表示RoPE分支的向量长度，取值仅支持64。
+> -   cache\_length：Norm模式下有效，表示KVCache支持的最大长度。
+> -   block\_num：PagedAttention模式下有效，表示Block的个数。
+> -   block\_size：PagedAttention模式下有效，表示Block的大小。
 
 -   **kv** (`Tensor`)：必选参数，表示输入的特征张量。数据类型支持`bfloat16`、`float16`，数据格式为$BNSD$，要求为4维张量，形状为\[batch\_size, 1, seq\_len, hidden\_size\]，其中hidden\_size=rms\_size\(RMS\)+rope\_size\(RoPE\)。
 -   **gamma** (`Tensor`)：必选参数，表示RMS归一化的缩放参数。数据类型支持`bfloat16`、`float16`，数据格式为$ND$，要求为1维张量，形状为\[rms\_size\]。

@@ -96,8 +96,8 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
         - x为$SBND$: $S11D、SB1D、SBND$;
         - x为$TND$: $T1D、TND$。
 
-            >**须知：**<br>
-            >half模式下，当输入layout是$BNSD$，且$D$为非32Bytes对齐时，建议不使用该融合算子（模型启动脚本中不开启`--use-fused-rotary-pos-emb`选项），否则可能出现性能下降。
+            > [!NOTICE]  
+            > half模式下，当输入layout是$BNSD$，且$D$为非32Bytes对齐时，建议不使用该融合算子（模型启动脚本中不开启`--use-fused-rotary-pos-emb`选项），否则可能出现性能下降。
 
     - interleave模式：
 

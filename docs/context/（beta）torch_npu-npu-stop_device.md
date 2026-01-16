@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu.stop_device
 
->**须知：**<br>
->本接口为预留接口，暂不支持。
+> [!NOTICE]  
+> 本接口为预留接口，暂不支持。
 
 ## 功能说明
 

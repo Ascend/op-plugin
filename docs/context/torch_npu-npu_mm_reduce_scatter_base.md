@@ -23,8 +23,8 @@
     output = reducescatter((x1\_scale * x2\_scale) * (x1 \mathbin{@} x2 + bias))
     $$
 
->**说明：**<br> 
->使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本，否则将会引发报错，比如BUS ERROR等。
+> [!NOTE]   
+> 使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本，否则将会引发报错，比如BUS ERROR等。
 
 ## 函数原型
 

@@ -15,8 +15,8 @@
     output = allreduce\left(x1 \mathbin{@} \left((x2 + antiquantOffset) * antiquantScale\right) + bias + x3\right)
     $$
 
->**说明：**<br>
->使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本，否则将会引发报错，比如BUS ERROR等。
+> [!NOTE]  
+> 使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本，否则将会引发报错，比如BUS ERROR等。
 
 ## 函数原型
 
@@ -37,8 +37,8 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     - perchannel场景：shape为$[1,n]$或者$[n]$，$n$为`x2`最后一维的大小。
     - pergroup场景：shape为$[ceil(k, antiquant\_group\_size), n]$。其中$k$为`x2`第一维的大小，$n$为`x2`最后一维的大小，$antiquant\_group\_size$为伪量化场景对输入`x2`进行反量化计算的groupSize输入。
 
-        >**说明：**<br>
-        >$ceil(k, antiquant\_group\_size)$的计算逻辑为：$(k + antiquant\_group\_size - 1) / antiquant\_group\_size$，并对计算结果取整数部分。
+        > [!NOTE]  
+        > $ceil(k, antiquant\_group\_size)$的计算逻辑为：$(k + antiquant\_group\_size - 1) / antiquant\_group\_size$，并对计算结果取整数部分。
 
 - **antiquant_offset** (`Tensor`)：可选参数，对应公式中的$antiquantOffset$。伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和`antiquant_scale`保持一致。
 - **x3** (`Tensor`)：可选参数。matmul计算后的偏移。数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和输出`output`保持一致。
@@ -100,8 +100,8 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`float32`|`float32`|
     |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|`float32`|
 
-    >**说明：**<br>
-    >全量化场景：若`dequant_scale`需要以`float32`类型传入，在调用`torch_npu.npu_mm_all_reduce_base`前，需通过`torch_npu.npu_trans_quant_param`接口对`dequant_scale`进行处理为`int64`类型（处理方法见对应的接口使用说明）。
+    > [!NOTE]  
+    > 全量化场景：若`dequant_scale`需要以`float32`类型传入，在调用`torch_npu.npu_mm_all_reduce_base`前，需通过`torch_npu.npu_trans_quant_param`接口对`dequant_scale`进行处理为`int64`类型（处理方法见对应的接口使用说明）。
 
 ## 调用示例
 

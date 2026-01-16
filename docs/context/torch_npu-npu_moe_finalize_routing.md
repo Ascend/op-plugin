@@ -24,13 +24,13 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 ```
 
 ## 参数说明
->**说明：**<br>
->shape中的符号说明：
->-   $NUM\_ROWS$：为行数。
->-   $K$：表示从总的专家$E$中选出$K$个专家。
->-   $H$：表示每个token序列长度，为列数。
->-   $E$: 表示专家数，$E$需要大于等于$K$。
->-   $C$: 表示专家处理token数量的能力阈值
+> [!NOTE]  
+> shape中的符号说明：
+> -   $NUM\_ROWS$：为行数。
+> -   $K$：表示从总的专家$E$中选出$K$个专家。
+> -   $H$：表示每个token序列长度，为列数。
+> -   $E$: 表示专家数，$E$需要大于等于$K$。
+> -   $C$: 表示专家处理token数量的能力阈值
 
 - **expanded_permuted_rows** (`Tensor`)：必选参数，对应公式中的$expandPermutedROWs$，经过专家处理过的结果，要求为一个2维张量，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。`drop_pad_mode`参数为0或2时，shape为$（NUM\_ROWS * K, H）$，`drop_pad_mode`参数为1或3时，shape为$（E, C, H）$。
 - **skip1** (`Tensor`)：必选参数，允许为None，对应公式中的$skip1$，求和的输入参数1，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。

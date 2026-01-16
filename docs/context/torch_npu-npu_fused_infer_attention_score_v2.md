@@ -27,10 +27,10 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
 ## 参数说明<a name="zh-cn_topic_0000001832267082_section112637109429"></a>
 
->**说明：**<br> 
+> [!NOTE]   
 >
->- query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示隐藏层的大小、N（Head Num）表示多头数、D（Head Dim）表示隐藏层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
->- Q_S和S1表示query shape中的S，KV_S和S2表示key和value shape中的S，Q_N表示num\_query\_heads，KV_N表示num\_key\_value\_heads。
+> - query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示隐藏层的大小、N（Head Num）表示多头数、D（Head Dim）表示隐藏层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
+> - Q_S和S1表示query shape中的S，KV_S和S2表示key和value shape中的S，Q_N表示num\_query\_heads，KV_N表示num\_key\_value\_heads。
 
 -   **query**（`Tensor`）：必选参数，表示attention结构的Query输入，对应公式中的`Q`。不支持非连续的Tensor，数据类型支持`float16`、`bfloat16`，数据格式支持ND。    
     
@@ -76,8 +76,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 -   **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`。默认值为2147483647，Q\_S为1时该参数无效。
 -   **input\_layout**（`str`）：可选参数，用于标识输入`query`、`key`、`value`的数据排布格式，默认值为"BSH"。
 
-    >**说明：**<br> 
-    >注意排布格式带下划线时，下划线左边表示输入query的layout，下划线右边表示输出output的格式，算子内部会进行layout转换。
+    > [!NOTE]   
+    > 注意排布格式带下划线时，下划线左边表示输入query的layout，下划线右边表示输出output的格式，算子内部会进行layout转换。
 
     支持BSH、BSND、BNSD、BNSD\_BSND（输入为BNSD时，输出格式为BSND，仅支持Q\_S大于1）、BSH\_NBSD、BSND\_NBSD、BNSD\_NBSD（输出格式为NBSD时，仅支持Q\_S大于1且小于等于16）、TND、TND\_NTD、NTD\_TND（TND相关场景综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)）。其中BNSD\_BSND含义指当输入为BNSD，输出格式为BSND，仅支持Q\_S大于1。
 
@@ -114,8 +114,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     -   inner\_precise为2时，代表开启高精度模式，且做行无效修正。
     -   inner\_precise为3时，代表高性能模式，且做行无效修正。
 
-    >**说明：**<br> 
-    >bfloat16和int8不区分高精度和高性能，行无效修正对`float16`、`bfloat16`和`int8`均生效。当前0、1为保留配置值，当计算过程中“参与计算的mask部分”存在某整行全为1的情况时，精度可能会有损失。此时可以尝试将该参数配置为2或3来使能行无效功能以提升精度，但是该配置会导致性能下降。
+    > [!NOTE]   
+    > bfloat16和int8不区分高精度和高性能，行无效修正对`float16`、`bfloat16`和`int8`均生效。当前0、1为保留配置值，当计算过程中“参与计算的mask部分”存在某整行全为1的情况时，精度可能会有损失。此时可以尝试将该参数配置为2或3来使能行无效功能以提升精度，但是该配置会导致性能下降。
 
 -   **return\_softmax\_lse**（`bool`）：可选参数，表示是否输出`softmax_lse`，支持S轴外切（增加输出）。true表示输出，false表示不输出；默认值为false。
 -   **query_dtype**（`int`）：可选参数，表示`query`的数据类型，**预留参数，暂未使用，使用默认值即可。**
@@ -168,8 +168,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
                 - 不支持传入quant\_scale\_out、quant\_offset\_out、dequant\_offset\_key、dequant\_offset\_value，否则报错并返回。
                 - query\_quant\_mode仅支持pertoken叠加perhead模式，key\_quant\_mode和value\_quant\_mode仅支持pertensor模式。
                 - 支持key、value、key\_rope的input\_layout格式为NZ。
-        -   
-            当query的D等于128时：
+        -   当query的D等于128时：
             - input\_layout：BSH、BSND、TND、BNSD、NTD、BSH\_BNSD、BSND\_BNSD、BNSD\_BSND、NTD\_TND。    
             - query\_rope配置时要求query\_rope的shape中D为64，其余维度与query一致。  
             - key\_rope配置时要求key\_rope的shape中D为64，其余维度与key一致。  
@@ -275,8 +274,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         
         -   管理scale/offset的量化模式如下：
         
-            >**说明：**<br> 
-            >注意scale、offset具体指dequant\_scale\_key、dequant\_scale\_key、dequant\_offset\_value、dequant\_offset\_value参数。
+            > [!NOTE]   
+            > 注意scale、offset具体指dequant\_scale\_key、dequant\_scale\_key、dequant\_offset\_value、dequant\_offset\_value参数。
 
             <a name="zh-cn_topic_0000001832267082_table3276159203213"></a>
             <table><thead align="left"><tr id="zh-cn_topic_0000001832267082_row192767598320"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="zh-cn_topic_0000001832267082_p19276135910323"><a name="zh-cn_topic_0000001832267082_p19276135910323"></a><a name="zh-cn_topic_0000001832267082_p19276135910323"></a>量化模式</p>
@@ -344,8 +343,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         -   int4（int32）伪量化场景不支持后量化。
         -   管理scale/offset的量化模式如下：
     
-            >**说明：**<br> 
-            >注意scale、offset两个参数指dequant\_scale\_key、dequant\_scale\_key、dequant\_offset\_value、dequant\_offset\_value。
+            > [!NOTE]   
+            > 注意scale、offset两个参数指dequant\_scale\_key、dequant\_scale\_key、dequant\_offset\_value、dequant\_offset\_value。
     
             <a name="zh-cn_topic_0000001832267082_table4401182238"></a>
             <table><thead align="left"><tr id="zh-cn_topic_0000001832267082_row124112817233"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="zh-cn_topic_0000001832267082_p341780235"><a name="zh-cn_topic_0000001832267082_p341780235"></a><a name="zh-cn_topic_0000001832267082_p341780235"></a>量化模式</p>

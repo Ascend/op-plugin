@@ -1,7 +1,7 @@
 # （beta）torch_npu.empty_with_format
 
->**须知：**<br>
->该接口计划废弃，可以使用`torch.empty`接口进行替换。
+> [!NOTICE]  
+> 该接口计划废弃，可以使用`torch.empty`接口进行替换。
 
 ## 产品支持情况
 
