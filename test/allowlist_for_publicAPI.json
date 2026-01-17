@@ -129,7 +129,8 @@
       "attention_worker_scheduler",
       "ffn_worker_scheduler_",
       "ffn_worker_scheduler",
-      "npu_moe_gating_top_k_softmax_v2"
+      "npu_moe_gating_top_k_softmax_v2",
+      "npu_confusion_transpose"
     ]
   }
   
