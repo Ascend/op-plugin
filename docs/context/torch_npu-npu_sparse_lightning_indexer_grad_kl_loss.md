@@ -119,6 +119,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
     ```python
     import torch
     import torch_npu
+    import math
 
     def gen_inputs(seqlens_list_array, seqlens_list_kv_array, isTnd):
         B = 1
@@ -179,8 +180,8 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
                 k_rope_tnd = None
             weights_tnd = weights.squeeze(dim=0)
             
-            softmax_max = torch.randn(N2, S1, NQueryIndex, dtype=torch.float, device=torch.device('npu'))
-            softmax_sum = torch.randn(N2, S1, NQueryIndex, dtype=torch.float, device=torch.device('npu'))
+            softmax_max = torch.randn(N2, S1, NQuery, dtype=torch.float, device=torch.device('npu'))
+            softmax_sum = torch.randn(N2, S1, NQuery, dtype=torch.float, device=torch.device('npu'))
             return q_tnd, k_tnd, q_index_tnd, k_index_tnd, q_rope_tnd, k_rope_tnd, weights_tnd, sparse_indices, softmax_max, softmax_sum
         else :
             sparse_indices = torch.zeros(B, S1, N2, topK).to(torch.int32).npu()
@@ -196,22 +197,22 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
                 sparse_indices[:, s1Idx, 0,  0 : s2RealLen] = (torch.randint(0, s2RealSize, (s2RealLen,)).to(torch.int32)).npu()
                 sparse_indices[:, s1Idx, 0,  s2RealLen : topK] = -1
     
-            softmax_max = torch.randn(B, N2, S1, NQueryIndex, dtype=torch.float, device=torch.device('npu'))
-            softmax_sum = torch.randn(B, N2, S1, NQueryIndex, dtype=torch.float, device=torch.device('npu'))
+            softmax_max = torch.randn(B, N2, S1, NQuery, dtype=torch.float, device=torch.device('npu'))
+            softmax_sum = torch.randn(B, N2, S1, NQuery, dtype=torch.float, device=torch.device('npu'))
             return q, k, q_index, k_index, q_rope, k_rope, weights, sparse_indices, softmax_max, softmax_sum
 
 
-        actual_seq_qlen = [128]
-        actual_seq_kvlen = [128]
-        input_layout = 'TND'
-        isTnd = True
-        sparse_mode = 3
-        scale = 1.0
-        q, k, q_index, k_index, q_rope, k_rope, weights, sparse_indices, softmax_max, softmax_sum = gen_inputs(actual_seq_qlen, actual_seq_kvlen, isTnd)
-        
-        torch_npu.npu_sparse_lightning_indexer_grad_kl_loss(
-                q, k, q_index, k_index, weights, sparse_indices, softmax_max, softmax_sum, scale,
-                query_rope=q_rope, key_rope=k_rope, actual_seq_qlen=actual_seq_qlen,
-                actual_seq_klen=actual_seq_kvlen, layout=input_layout, sparse_mode=sparse_mode,
-                pre_tokens=65536, next_tokens=65536)
+   actual_seq_qlen = [128]
+   actual_seq_kvlen = [128]
+   input_layout = 'TND'
+   isTnd = True
+   sparse_mode = 3
+   scale = 1.0 / math.sqrt(512)
+   q, k, q_index, k_index, q_rope, k_rope, weights, sparse_indices, softmax_max, softmax_sum = gen_inputs(actual_seq_qlen, actual_seq_kvlen, isTnd)
+   
+   torch_npu.npu_sparse_lightning_indexer_grad_kl_loss(
+          q, k, q_index, k_index, weights, sparse_indices, softmax_max, softmax_sum, scale,
+          query_rope=q_rope, key_rope=k_rope, actual_seq_qlen=actual_seq_qlen,
+          actual_seq_klen=actual_seq_kvlen, layout=input_layout, sparse_mode=sparse_mode,
+          pre_tokens=65536, next_tokens=65536)
     ```
