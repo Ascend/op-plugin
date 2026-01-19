@@ -43,6 +43,14 @@
       "npu_fused_floyd_attention_backward",
       "save_npugraph_tensor"
     ],
+    "v2.11": [
+      "npu_gelu_mul",
+      "npu_clipped_swiglu",
+      "npu_sim_exponential_",
+      "npu_fused_floyd_attention",
+      "npu_fused_floyd_attention_backward",
+      "save_npugraph_tensor"
+    ],
     "all_version": [
       "_npu_dropout",
       "copy_memory_",
