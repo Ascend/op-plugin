@@ -158,10 +158,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - "": 配置HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0时，调用"hierarchy"算法，否则调用"fullmesh"算法。不推荐使用该方式。
         - "fullmesh": token数据直接通过RDMA方式发往topk个目标专家所在的卡。
         - "hierarchy": token数据经过跨机、机内两次发送，仅不同server同号卡之间使用RDMA通信，server内使用HCCS通信。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前版本仅支持""，"fullmesh_v1"，"fullmesh_v2"三种输入方式。
-        - ""：默认值，不使能fullmesh_v2模板；
-        - "fullmesh_v1"：不使能fullmesh_v2模板；
-        - "fullmesh_v2"：使能fullmesh_v2模板，其中commAlg仅在tp\_world\_size取值为1时生效，且不支持在各卡Bs不一致、输入xActiveMask和特殊专家场景下使能。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前版本仅支持""、"fullmesh_v1"、"fullmesh_v2"三种输入方式。
+        - ""：默认值，使能fullmesh_v1模板；
+        - "fullmesh_v1"：使能fullmesh_v1模板；
+        - "fullmesh_v2"：使能fullmesh_v2模板，其中fullmesh_v2模板仅在tp\_world\_size取值为1时生效。
 
 -   **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
@@ -219,9 +219,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
     -   BS：表示batch sequence size，即本卡最终输出的token数量。
         -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：取值范围为0<BS≤256。
-        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
+        -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512，当`comm_alg`为"fullmesh_v2"时，需满足0<Bs≤256。
 
-    -   K：表示选取topK个专家，取值范围为0<K≤16，同时满足0 < K ≤ moe\_expert\_num + zero_expert_num + copy_expert_num + const_expert_num。
+    -   K：表示选取topK个专家，取值范围为0<K≤16，同时满足0 < K ≤ moe\_expert\_num + zero_expert_num + copy_expert_num + const_expert_num，当`comm_alg`为"fullmesh_v2"时，取值范围为0<K≤12。
 
     -   server\_num：表示服务器的节点数，取值只支持2、4、8。
         -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：仅该场景的shape使用了该变量。
