@@ -31,8 +31,9 @@ TensorWrapper get_output_tensor_wrapper(
     if (dst_type == DTYPE_NUM_FOR_QUINT4X2) { // INT4
         TORCH_CHECK(input.size(index) % INT4_IN_INT32_NUM == 0,
                     "Input shape last dim must be divded by 8 when int4 quantization" + OPS_ERROR(ErrCode::PARAM));
-        scale_size.push_back(input.size(index) / INT4_IN_INT32_NUM);
-        output = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Int));
+        at::SmallVector<int64_t, op_infer::SIZE> input_shape_copy(input.sizes());
+        input_shape_copy[index] /= INT4_IN_INT32_NUM;
+        output = npu_preparation::apply_tensor_without_format(input_shape_copy, c10::dtype(c10::ScalarType::Int));
         y_acltype = aclDataType::ACL_INT32;
     } else if (!dst_type.has_value()) { // 默认INT8
         output = npu_preparation::apply_tensor_without_format(input.sizes(), c10::dtype(c10::ScalarType::Char));
