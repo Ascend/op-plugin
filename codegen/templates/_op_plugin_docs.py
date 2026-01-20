@@ -13371,3 +13371,59 @@ model = torch.compile(model, backend=npu_backend)
 model(x)
 """
 )
+
+
+_add_torch_npu_docstr(
+    "npu_dense_lightning_indexer_softmax_lse",
+    """
+接口原型: 
+npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807) -> (Tensor, Tensor)
+
+功能描述:
+是npu_dense_lightning_indexer_grad_kl_loss接口的前置接口，通过把npu_lightning_indexer的Softmax求最大值和求和运算提前来降低算子的显存占用。
+
+参数说明: 
+query_index（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1index, D)、(T1, N1index, D)。
+key_index（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S2, N2index, D)、(T2, N2index, D)。
+weights（Tensor）：必选参数，数据格式支持ND，数据类型支持BFLOAT16、FLOAT16。支持输入shape(B, S1, N1index)、(T1, N1index)。
+actual_seq_qlen（int[]）：可选参数，int类型数组，TND场景时需传入此参数。表示query每个S的累加和长度，数据类型支持INT64，数据格式支持ND，默认值为None。
+actual_seq_klen（int[]）：可选参数，int类型数组，TND场景时需传入此参数。表示key每个S的累加和长度，数据类型支持INT64，数据格式支持ND，默认值为None。
+layout（str）：可选参数，用于标识输入query的数据排布格式，数据类型支持str。当前支持BSND、TND，默认值为"BSND"。
+sparse_mode（int）：可选参数，表示sparse的模式，数据类型支持INT32，默认值为3。
+pre_tokens（int）：可选参数，数据类型支持INT64，默认值2^63-1。
+next_tokens（int）：可选参数，数据类型支持INT64，默认值2^63-1。
+
+输出说明: 
+softmax_max_index（Tensor）：表示softmax计算使用的max值，数据类型支持FLOAT。
+softmax_sum_index（Tensor）：表示softmax计算使用的sum值，数据类型支持FLOAT。
+
+支持版本: 
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号: 
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+
+调用示例: 
+import torch
+import torch_npu
+
+B = 1
+N1 = 64
+N2 = 1
+S1 = 128
+S2 = 256
+D = 128
+output_dtype = torch.float16
+
+q_index = torch.randn(B, S1, N1_index, D, dtype=output_dtype, device=torch.device('npu'))
+k_index = torch.randn(B, S2, N2_index, D, dtype=output_dtype, device=torch.device('npu'))
+weights = torch.randn(B, S1, N1_index, dtype=output_dtype, device=torch.device('npu'))
+actual_seq_qlen = None
+actual_seq_klen = None
+input_layout = 'BSND'
+sparse_mode = 3
+softmax_max_index, softmax_sum_index = torch_npu.npu_dense_lightning_indexer_softmax_lse(q_index, k_index, weights, actual_seq_qlen=actual_seq_qlen, actual_seq_klen=actual_seq_klen, layout=input_layout, sparse_mode=sparse_mode)
+"""
+)

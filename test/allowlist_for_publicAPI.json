@@ -138,7 +138,8 @@
       "ffn_worker_scheduler_",
       "ffn_worker_scheduler",
       "npu_moe_gating_top_k_softmax_v2",
-      "npu_confusion_transpose"
+      "npu_confusion_transpose",
+      "npu_dense_lightning_indexer_softmax_lse"
     ]
   }
   

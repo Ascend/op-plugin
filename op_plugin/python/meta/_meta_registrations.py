@@ -1750,6 +1750,17 @@ def npu_sparse_lightning_indexer_grad_kl_loss_meta(query, key, query_index, key_
     return (d_query_index, d_key_index, d_weights, loss)
 
 
+@impl(m, "npu_dense_lightning_indexer_softmax_lse")
+def npu_dense_lightning_indexer_softmax_lse_meta(query_index, key_index, weights, *, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807):
+    if layout == "TND":
+        output_size = [key_index.size(1), query_index.size(0)]
+    else:
+        output_size = [query_index.size(0), key_index.size(2), query_index.size(1)]
+    softmax_max_out = torch.empty(output_size, dtype=torch.float32, device='meta')
+    softmax_sum_out = torch.empty(output_size, dtype=torch.float32, device='meta')
+    return (softmax_max_out, softmax_sum_out)
+
+
 @impl(m, "npu_quant_fusion_attention_grad")
 def npu_quant_fusion_attention_backward(query, key, value, dy, head_num, input_layout, *, pse=None, padding_mask=None, atten_mask=None,
                                   d_scale_q=None, d_scale_k=None, d_scale_v=None, softmax_max=None,

@@ -150,6 +150,7 @@
         -   [torch_npu.reset_stream_limit](./context/torch_npu-reset_stream_limit.md)
         -   [torch_npu.get_stream_limit](./context/torch_npu-get_stream_limit.md)
         -   [torch_npu.npu_sim_exponential_](./context/torch_npu-npu_sim_exponential_.md)
+        -   [torch_npu.npu_dense_lightning_indexer_softmax_lse](./context/torch_npu-npu_dense_lightning_indexer_softmax_lse.md)
         
     -   [torch_npu.contrib](./context/torch_npu-contrib.md)
         -   [torch_npu.contrib接口列表](./context/torch_npu-contrib_list.md)
