@@ -4459,18 +4459,30 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
     weight_assist_matrix=None, bias=None, dequant_mode=0, dequant_dtype=0, quant_mode=0, quant_dtype=1,
     group_list_type=0, tuning_config=None, x_dtype=None, weight_dtype=None, weight_scale_dtype=None, x_scale_dtype=None):
 
+    torch._check(
+        len(weight) == 1,
+        lambda: f"The size of weight should be 1, current size is {len(weight)}.",
+    )
+    torch._check(
+        len(weight_scale) == 1,
+        lambda: f"The size of weight_scale should be 1, current size is {len(weight_scale)}.",
+    )
+
     if x_dtype is not None:
         torch._check(
             x_dtype == torch_npu.float4_e1m2fn_x2 or x_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "The optional parameter x_dtype only supports mxfp4 or None, but the actual value is " + npu_dtype_to_str(x_dtype),
+            lambda: "The optional parameter x_dtype only supports torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2 or None, but the actual value is " + npu_dtype_to_str(x_dtype),
         )
 
     if weight_dtype is not None:
         torch._check(
             weight_dtype == torch_npu.float4_e1m2fn_x2 or weight_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "The optional parameter weight_dtype only supports mxfp4 or None, but the actual value is " + npu_dtype_to_str(weight_dtype),
+            lambda: "The optional parameter weight_dtype only supports torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2 or None, but the actual value is " + npu_dtype_to_str(weight_dtype),
         )
-
+    torch._check(
+        (x_dtype is None and weight_dtype is None) or (x_dtype is not None and weight_dtype is not None),
+        lambda: "The optional parameter x_dtype and weight_dtype should both be torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2 or None",
+    )
     if weight_scale_dtype is not None:
         torch._check(
             weight_scale_dtype == torch_npu.float8_e8m0fnu,
@@ -4478,10 +4490,10 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
         )
 
         torch._check(x.dtype == torch.float8_e5m2 or x.dtype == torch.float8_e4m3fn or x_dtype == torch_npu.float4_e1m2fn_x2 or x_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "The x only supports mxfp8 or mxfp4 for now, but the actual value is " + npu_dtype_to_str(x.dtype),
+            lambda: "The x only supports torch.float8_e5m2/torch.float8_e4m3fn/torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2 for now, but the actual value is " + npu_dtype_to_str(x.dtype),
         )
         torch._check(weight[0].dtype == torch.float8_e5m2 or weight[0].dtype == torch.float8_e4m3fn or weight_dtype == torch_npu.float4_e1m2fn_x2 or weight_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "The weight only supports mxfp8 or mxfp4 for now, but the actual value is " + npu_dtype_to_str(weight[0].dtype),
+            lambda: "The weight only supports torch.float8_e5m2/torch.float8_e4m3fn/torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2 for now, but the actual value is " + npu_dtype_to_str(weight[0].dtype),
         )
     if x_scale_dtype is not None:
         torch._check(
@@ -4490,12 +4502,28 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
         )
     torch._check(quant_dtype == 1 or quant_dtype == TORCH_DTYPE_MAP[torch.float8_e5m2] or quant_dtype == TORCH_DTYPE_MAP[torch.float8_e4m3fn]
         or quant_dtype == torch_npu.float4_e1m2fn_x2 or quant_dtype == torch_npu.float4_e2m1fn_x2,
-        lambda: "quant_dtype only supports 1 or torch.float8_e5m2, torch.float8_e4m3fn, torch_npu.float4_e1m2fn_x2, torch_npu.float4_e2m1fn_x2 for now, but it is " + npu_dtype_to_str(quant_dtype),
+        lambda: "quant_dtype only supports torch.int8, torch.float8_e5m2, torch.float8_e4m3fn, torch_npu.float4_e1m2fn_x2, torch_npu.float4_e2m1fn_x2 for now, but it is " + npu_dtype_to_str(quant_dtype),
         )
-
+    torch._check(dequant_dtype == TORCH_DTYPE_MAP[torch.int8] or dequant_dtype == TORCH_DTYPE_MAP[torch.float32],
+        lambda: "dequant_dtype only supports torch.int8, torch.float32 for now, but it is " + npu_dtype_to_str(dequant_dtype),
+        )
     batch_size = x.size(0)
     dim_n = 2
     n = weight[0].size(dim_n)
+    mDim = x.size(0)
+    k = x.size(1)
+    torch._check(
+        mDim > 0,
+        lambda: f"The m dim should be greater than 0, but the actual value is {mDim}",
+    )
+    torch._check(
+        n > 0,
+        lambda: f"The n dim should be greater than 0, but the actual value is {n}",
+    )
+    torch._check(
+        k > 0,
+        lambda: f"The k dim should be greater than 0, but the actual value is {k}",
+    )
     is_a8w8_input = (x.dtype == torch.float8_e5m2 or x.dtype == torch.float8_e4m3fn) and \
                    (weight[0].dtype == torch.float8_e5m2 or weight[0].dtype == torch.float8_e4m3fn)
     is_a4w4_input = False
@@ -4511,6 +4539,8 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
     output_scale_n = n // mxfp_multi_base_size / mxfp_divisor_size
     output_n_new = ((n // mxfp_multi_base_size) * FP4_IN_INT8)
     output_scale_n_new = (math.ceil(n * FP4_IN_INT8 // mxfp_multi_base_size / mxfp_divisor_size))
+    output_shape = None
+    output_scale_shape = None
     if weight[0].dtype == torch.int8:
         output_shape = torch.empty([batch_size, n // mxfp_multi_base_size], dtype=torch.int8, device=x.device)
         output_scale_shape = torch.empty([batch_size], dtype=torch.float32, device=x.device)
