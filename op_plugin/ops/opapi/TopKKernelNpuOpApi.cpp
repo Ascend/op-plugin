@@ -60,7 +60,7 @@ std::tuple<at::Tensor, at::Tensor> topk(
     at::Tensor indices;
     if (self.dim() == 0 && k == 0) {
         values = at::zeros_like(self).fill_(self);
-        indices = at::zeros_like(self);
+        indices = at::zeros_like(self, at::kLong);
         return std::tuple<at::Tensor, at::Tensor>(values, indices);
     }
     values = npu_preparation::apply_tensor_without_format(output_size, self.options());

@@ -145,6 +145,16 @@ class TestTopK(TestCase):
             [np.float32, i, [64, 112, 7, 7]] for i in format_list
         ]
         self.topk_result(shape_format)
+    
+    @SupportedDevices(['Ascend910B'])
+    def test_topk_indices_dtype_zero_dim(self):
+        cpu_input = torch.tensor(42.5)
+        npu_input = cpu_input.npu()
+        k = 0
+        values, indices = torch.topk(npu_input, k)
+        values_cpu, indices_cpu = torch.topk(cpu_input, k)
+        self.assertRtolEqual(values, values_cpu)
+        self.assertEqual(indices.cpu(), indices_cpu)
 
     @unittest.skip("skip test_topk_zero_dim now")
     @SupportedDevices(['Ascend910B'])
