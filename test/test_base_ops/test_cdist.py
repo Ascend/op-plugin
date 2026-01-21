@@ -171,6 +171,15 @@ class Testcdist(TestCase):
         npu_output = self.op_exec(npu_input1, npu_input2, 2.0, 'npu')
         self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_cdist_x2_non_float_aclop_fixed_verified(self):
+        torch_npu.npu.set_compile_mode(jit_compile=True)
+        x1 = torch.randn(3, 4, dtype=torch.float32).npu()
+        x2 = torch.randint(0, 10, (5, 4), dtype=torch.int32).npu()
+        with self.assertRaises(RuntimeError) as cm:
+            torch.cdist(x1, x2)
+        exception = cm.exception
+        self.assertTrue("cdist only supports floating-point dtypes, X2 got: "in str(exception))
+        torch_npu.npu.set_compile_mode(jit_compile=False)
 
 if __name__ == "__main__":
     run_tests()

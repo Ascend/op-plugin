@@ -33,7 +33,7 @@ at::Tensor _cdist_forward(const at::Tensor &x1, const at::Tensor &x2, const doub
     TORCH_CHECK(at::isFloatingType(x1.scalar_type()),
         "cdist only supports floating-point dtypes, X1 got: ", x1.scalar_type(),
         OPS_ERROR(ErrCode::TYPE));
-    TORCH_CHECK(at::isFloatingType(x1.scalar_type()),
+    TORCH_CHECK(at::isFloatingType(x2.scalar_type()),
         "cdist only supports floating-point dtypes, X2 got: ", x2.scalar_type(),
         OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(p >= 0, "cdist only supports non-negative p values" + OPS_ERROR(ErrCode::PARAM));
