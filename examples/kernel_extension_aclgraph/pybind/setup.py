@@ -58,6 +58,9 @@ class AscendBuildExtension(build_ext):
         ext_fullpath = self.get_ext_fullpath(ext.name)
         os.makedirs(os.path.dirname(ext_fullpath), exist_ok=True)
 
+        use_cxx11_abi = torch._C._GLIBCXX_USE_CXX11_ABI
+        abi_value = "1" if use_cxx11_abi else "0"
+
         compile_cmd = [
             "bisheng",
             "-x", "asc",
@@ -65,6 +68,7 @@ class AscendBuildExtension(build_ext):
             "-shared",
             "-fPIC",
             "-std=c++17",
+            f"-D_GLIBCXX_USE_CXX11_ABI={abi_value}",
             "-ltorch_npu", "-ltorch", "-lc10",
             *ext.sources,
             "-o", ext_fullpath,
