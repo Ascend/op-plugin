@@ -2072,7 +2072,7 @@ def npu_add_rms_norm_dynamic_quant_meta(x1, x2, gamma, *, smooth_scale1=None, sm
 
 @impl(m, "npu_rms_norm_backward")
 def npu_rms_norm_backward_meta(dy, self, gamma, rstd):
-    return (torch.empty_like(self, dtype=self.dtype), torch.empty_like(gamma, dtype=gamma.dtype))
+    return (torch.empty_like(self, dtype=self.dtype), torch.empty_like(gamma, dtype=torch.float32))
 
 
 @impl(m, "scatter_update")
