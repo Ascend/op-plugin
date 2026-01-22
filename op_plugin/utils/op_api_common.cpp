@@ -217,9 +217,10 @@ void add_param_to_buf(const at::Scalar &at_scalar)
             break;
         }
         default: {
-            break;
+            return;
         }
     }
+    MEMCPY_TO_BUF(&scalar_data_type, sizeof(at::ScalarType));
 }
 
 void add_param_to_buf(const at::IntArrayRef &at_array)
@@ -447,9 +448,10 @@ void add_param_to_buf_v2(const at::Scalar &at_scalar)
             break;
         }
         default: {
-            break;
+            return;
         }
     }
+    MEMCPY_TO_BUF(&scalar_data_type, sizeof(at::ScalarType));
 }
 
 void add_param_to_buf_v2(const std::vector<int64_t> &at_array)
