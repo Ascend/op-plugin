@@ -144,8 +144,8 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **group_type** (`int`)：可选参数。代表需要分组的轴。数据类型支持`int32`。
     -   `group_list`输入类型为`List[int]`时仅支持传入`None`。
 
-    -   `group_list`输入类型为`Tensor`时，若矩阵乘为$C[m,n]=A[m,k]*B[k,n]$，`group_type`支持的枚举值为：-1代表不分组；0代表m轴分组；1代表n轴分组。
-        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前支持取-1、0。
+    -   `group_list`输入类型为`Tensor`时，若矩阵乘为$C[m,n]=A[m,k]*B[k,n]$，`group_type`支持的枚举值为：-1代表不分组；0代表m轴分组；2代表k轴分组。
+        -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前支持取-1、0、2。
         -   <term>Atlas 推理系列产品</term>：当前只支持取0。
 
 - **group_list_type** (`int`)：可选参数。代表`group_list`的表达形式。数据类型支持`int32`。
