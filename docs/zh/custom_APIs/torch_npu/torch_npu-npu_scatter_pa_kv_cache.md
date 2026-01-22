@@ -24,17 +24,6 @@
 
 - 场景二：
     ```python    
-    key:[batch*seq_len, num_head, k_head_size]
-    value:[batch*seq_len, num_head, v_head_size]
-    key_cache:[num_blocks, block_size, num_head, k_head_size]
-    value_cache:[num_blocks, block_size, num_head, v_head_size]
-    slot_mapping:[batch * seq_len]
-    ```    
-
-    其中`k_head_size`与`v_head_size`可以不同，也可以相同。
-
-- 场景三：
-    ```python    
     key:[batch, seq_len, num_head, k_head_size]
     value:[batch, seq_len, num_head, v_head_size]
     key_cache:[num_blocks, block_size, 1, k_head_size]
@@ -45,7 +34,7 @@
     compress_seq_offsets:[batch * num_head]
     ```    
 
-上述场景根据构造的参数来区别，符合第一种入参构造走场景一，符合第二种构造走场景二，符合第三种构造走场景三。场景一、场景二没有`compress_lens`、`seq_lens`、`compress_seq_offsets`这三个可选参数。
+上述场景根据构造的参数来区别，符合第一种入参构造走场景一，符合第二种构造走场景二。场景一没有`compress_lens`、`seq_lens`、`compress_seq_offsets`这三个可选参数。
 
 ## 函数原型
 
@@ -77,9 +66,9 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
 - 当`key`和`value`都是3维，则`key`和`value`的前两维`shape`必须相同；
 - 当`key`和`value`都是4维，则`key`和`value`的前三维`shape`必须相同，且`key_cache`和`value_cache`的第三维必须是1；
 - 当`key`和`value`是4维时，`compress_lens`、`seq_lens`为必选参数；当`key`和`value`是3维时，`compress_lens`、`compress_seq_offsets`、`seq_lens`为可选参数；
-- 当`key`和`value`都是4维时，`slot_mapping`是二维，且`slot_mapping`的第一维值等于`key`的第一维为`batch`，`slot_mapping`的第二维值等于`key`的第三维为num_head(对应场景三)；
-- 当`key`和`value`都是4维时，`seq_lens`是一维，且`seq_lens`的值等于`key`的第一维为batch(对应场景三)；
-- `seq_lens`和`compress_lens`里面的每个元素值必须满足公式：reduceSum(seq_lens[i] - compress_lens[i]) <= num_blocks * block_size(对应场景三);
+- 当`key`和`value`都是4维时，`slot_mapping`是二维，且`slot_mapping`的第一维值等于`key`的第一维为`batch`，`slot_mapping`的第二维值等于`key`的第三维为num_head(对应场景二)；
+- 当`key`和`value`都是4维时，`seq_lens`是一维，且`seq_lens`的值等于`key`的第一维为batch(对应场景二)；
+- `seq_lens`和`compress_lens`里面的每个元素值必须满足公式：reduceSum(seq_lens[i] - compress_lens[i]) <= num_blocks * block_size(对应场景二);
 
 ## 调用示例
 
