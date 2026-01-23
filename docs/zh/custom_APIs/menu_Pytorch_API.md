@@ -151,7 +151,8 @@
         -   [torch_npu.get_stream_limit](./torch_npu/torch_npu-get_stream_limit.md)
         -   [torch_npu.npu_sim_exponential_](./torch_npu/torch_npu-npu_sim_exponential_.md)
         -   [torch_npu.npu_dense_lightning_indexer_softmax_lse](./torch_npu/torch_npu-npu_dense_lightning_indexer_softmax_lse.md)
-        
+        -   [torch_npu.npu_dense_lightning_indexer_grad_kl_loss](./torch_npu/torch_npu-npu_dense_lightning_indexer_grad_kl_loss.md)
+
     -   [torch_npu.contrib](./torch_npu-contrib/torch_npu-contrib.md)
         -   [torch_npu.contrib接口列表](./torch_npu-contrib/torch_npu-contrib_list.md)
         -   [（beta）torch_npu.contrib.npu_fused_attention_with_layernorm](./torch_npu-contrib/（beta）torch_npu-contrib-npu_fused_attention_with_layernorm.md)
