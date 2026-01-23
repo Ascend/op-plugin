@@ -12,9 +12,9 @@
 ## 功能说明
 
 该接口用于完成PMCC（Privacy and Model Confidential Computing）模型混淆引擎的资源释放，即与PMCC混淆引擎CA（普通OS中的Client Application）断开socket连接。
-该接口针对于[PMCC](https://www-file.huawei.com/admin/asset/v1/pro/view/6812dab6dd4e4640b11619e401db1c47.pdf)业务，如下两种结果均符合预期：
+该接口针对[PMCC](https://www-file.huawei.com/admin/asset/v1/pro/view/6812dab6dd4e4640b11619e401db1c47.pdf)业务，如下两种结果均符合预期：
 * 如果部署PMCC特性，该接口返回响应结果。
-* 未部署PMCC特性情况时，执行用例会返回错误码507018。
+* 未部署PMCC特性时，执行用例会返回错误码507018。
 
 PMCC特性的部署流程如下：
 1. 环境中存在NPU驱动和固件。

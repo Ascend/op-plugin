@@ -57,7 +57,7 @@ npu_moe_gating_top_k(x, k, *, bias=None, k_group=1, group_count=1, group_select_
 
 -   **k_group**（`int`）：可选参数，表示每个token组筛选过程中，选出的专家组个数，数据类型为`int64`，默认值为`1`。要求`1 <= k_group <= group_count`，并且`k_group * x_shape[-1] / group_count`的值要大于等于`k`。
 
--   **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。要group_count > 0，x_shape[-1]能够被`group_count`整除且整除后的结果大于`2`，并且整除的结果按照32个数对齐后乘`group_count`的结果不大于`2048`。
+-   **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。要求group_count > 0，x_shape[-1]能够被`group_count`整除且整除后的结果大于`2`，并且整除的结果按照32个数对齐后乘`group_count`的结果不大于`2048`。
 
 -   **group_select_mode**（`int`）：可选参数，表示一个专家组的总得分计算方式。默认值为`0`，`0`表示组内取最大值，作为专家组得分；`1`表示取组内Top2的专家进行得分累加，作为专家组得分。
 
