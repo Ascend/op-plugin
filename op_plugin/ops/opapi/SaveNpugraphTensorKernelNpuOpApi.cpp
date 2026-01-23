@@ -70,11 +70,14 @@ void save_tensor_callback(void* args)
     at::Tensor tensor = host_func_args->tensor;
     std::string path = host_func_args->path;
 
+    auto source_sizes = tensor.sizes().vec();
+    auto source_dtype = tensor.scalar_type();
+    at::TensorOptions options = at::TensorOptions()
+        .dtype(source_dtype)
+        .device(at::kCPU)
+        .memory_format(at::MemoryFormat::Contiguous);
+    at::Tensor out = at::empty(source_sizes, options);
     at::Tensor tensor_contiguous = tensor.contiguous();
-    auto out = at::empty_like(
-        tensor_contiguous,
-        tensor_contiguous.options().device(at::kCPU),
-        at::MemoryFormat::Contiguous);
     const size_t nbytes = static_cast<size_t>(out.numel()) * static_cast<size_t>(out.element_size());
     if (nbytes != 0) {
         NPU_CHECK_ERROR(aclrtMemcpy(
