@@ -83,7 +83,7 @@ class TestQuantReduceScatter(TestCase):
             else:
                 out = torch.add(out, out_single)
         out = out.to(torch.float32)
-        index = x_list[0].shape[0] // world_size
+        index = x_list[0].shape[0] * x_list[0].shape[1] // world_size
         return [out[index * i:index * (i + 1), :] for i in range(world_size)]
 
     @skipIfUnsupportMultiNPU(2)
@@ -94,8 +94,8 @@ class TestQuantReduceScatter(TestCase):
         scales_dtype = np.float32
         data_format = -1
         # T-G量化
-        x_shape = [x_dtype, data_format, [2048, 5120]]
-        scales_shape = [scales_dtype, data_format, [2048, 40]]
+        x_shape = [x_dtype, data_format, [8, 32, 5120]]
+        scales_shape = [scales_dtype, data_format, [8, 32, 40]]
         x_list = []
         scales_list = []
         for _ in range(world_size):
