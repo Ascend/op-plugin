@@ -211,24 +211,22 @@ class TestQuantMatmul(TestCase):
         x2_clone = x2.clone()
         scale = torch.randn(1, dtype=torch.float32)
         scale_clone = scale_clone.clone()
-        scale_quant = torch_npu.npu_trans_quant_param(scale_clone.npu(), None)
         supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * scale
-        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu().t(), x2_clone.npu(), scale_quant, output_dtype=torch.float32)
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu().t(), x2_clone.npu(), scale_clone.npu(), output_dtype=torch.float32)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.0001)
 
     @SupportedDevices(['Ascend910_95'])
     def test_npu_quant_matmul_hif8_perchannel(self):
-        x1 = torch.randint(0, 255, (224, 64), dtype=torch.uint8)
-        x2 = torch.randint(0, 255, (64, 8360), dtype=torch.uint8)
+        x1 = torch.randint(0, 255, (224, 64), dtype=torch.int8)
+        x2 = torch.randint(0, 255, (64, 8360), dtype=torch.int8)
         x1_clone = x1.clone()
         x2_clone = x2.clone()
         x1 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x1.numpy()))
         x2 = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(x2.numpy()))
         scale = torch.randn(8360, dtype=torch.float32)
         scale_clone = scale_clone.clone()
-        scale_quant = torch_npu.npu_trans_quant_param(scale_clone.npu(), None)
         supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32)) * scale
-        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_quant, x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8, output_dtype=torch.bfloat16)
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_clone.npu(), x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8, output_dtype=torch.bfloat16)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
 
     @SupportedDevices(['Ascend910_95'])

@@ -183,9 +183,10 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
     at::Tensor x1_offset = at::empty({0}, options);
     at::Tensor y_offset = at::empty({0}, options);
 
+    bool use_aclnn_v5 = x1_dtype.has_value() || (x1.dtype() != at::kInt && x1.dtype() != at::kChar) ||
+         is_a8W4_float || is_a8W4_int;
     bool use_trans_quant_param = scale.dtype() == at::kFloat && !pertoken_scale.has_value() &&
-                                 (output_acltype != ACL_BF16 || (x1.dtype() != at::kInt && x1.dtype() != at::kChar)) &&
-                                 output_acltype != ACL_INT32;
+                                 (output_acltype != ACL_BF16 || use_aclnn_v5) && output_acltype != ACL_INT32;
     if (use_trans_quant_param) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
         if (is_nz_format(x2)) {
