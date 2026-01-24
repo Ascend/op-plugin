@@ -1,0 +1,16 @@
+cpp_namespace: at_npu::native
+
+custom:
+  - func: npu_change_data_ptr(Tensor dst, Tensor src, int index) -> int
+  - func: npu_test(Tensor input, Scalar alpha, float prob, int dim) -> Tensor
+    gen_opapi:
+      out:
+        size: input
+        dtype: input
+      exec: aclnnTest
+  - func: npu_test_backward(Tensor grad) -> Tensor
+    gen_opapi:
+      out:
+        size: grad
+        dtype: grad
+      exec: aclnnTestBackward
