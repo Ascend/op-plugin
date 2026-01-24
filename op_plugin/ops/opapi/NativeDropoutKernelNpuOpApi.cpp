@@ -24,6 +24,8 @@ namespace op_api {
 
 static const int64_t BIT_NUMBER = 128;
 static const int64_t UINT8_BIT_NUMBER = 8;
+static const double NUMBER_ZERO = 0.0;
+static const double NUMBER_ONE = 1.0;
 
 std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p)
 {
@@ -136,6 +138,8 @@ std::tuple<at::Tensor, at::Tensor> native_dropout(const at::Tensor& input, doubl
 at::Tensor native_dropout_backward(const at::Tensor& grad_output, const at::Tensor& mask, double scale)
 {
     DO_COMPATIBILITY(aclnnDropoutDoMask, acl_op::native_dropout_backward(grad_output, mask, scale));
+    TORCH_CHECK(scale == NUMBER_ZERO || scale >= NUMBER_ONE, "native_dropout_backward scale has to be 0 or greater than or equal to 1, but got ", scale,
+                OPS_ERROR(ErrCode::VALUE));
 
     double p = (scale == 0.0) ? 1 : (1 - 1 / scale);
     if (p == 0) {
