@@ -2224,9 +2224,6 @@
   "func: vdot.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
-  "func: dropout(Tensor input, float p, bool train) -> Tensor": {
-    "version": ["all_version"]
-  },
   "func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor": {
     "version": ["all_version"]
   },
@@ -4466,9 +4463,6 @@
     "version": ["all_version"]
   },
   "func: argsort.stable(Tensor self, bool stable=False, int dim=-1, bool descending=False) -> Tensor": {
-    "version": ["all_version"]
-  },
-  "func: dropout_(Tensor(a!) self, float p, bool train) -> Tensor(a!)": {
     "version": ["all_version"]
   },
   "func: _upsample_bicubic2d_aa_backward(Tensor grad_output, SymInt[2] output_size, SymInt[4] input_size, bool align_corners, float? scales_h=None, float? scales_w=None) -> Tensor": {

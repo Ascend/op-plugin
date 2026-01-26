@@ -1898,15 +1898,6 @@ official:
         size: 'c10::SmallVector<int64_t, op_infer::SIZE>{}'
       exec: aclnnDot
 
-  - func: dropout(Tensor input, float p, bool train) -> Tensor
-    acl_op: all_version
-    op_api: all_version
-    internal_format_opapi: all_version
-
-  - func: dropout_(Tensor(a!) self, float p, bool train) -> Tensor(a!)
-    op_api: all_version
-    internal_format_opapi: all_version
-
   - func: elu(Tensor self, Scalar alpha=1, Scalar scale=1, Scalar input_scale=1) -> Tensor
     acl_op: all_version
     op_api: all_version

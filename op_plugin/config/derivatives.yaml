@@ -310,3 +310,7 @@ backward:
   output_differentiability: [false, true]
   query, key, weights: npu_lightning_indexer_grad(query, key, grad, result0, weights, actual_seq_lengths_query, actual_seq_lengths_key, layout_query, sparse_mode, pre_tokens, next_tokens)
   version: all_version
+
+- name: native_dropout(Tensor input, float p, bool? train) -> (Tensor, Tensor)
+  input: "native_dropout_backward(grad, result1, (!train.has_value() || !train.value() ? 1 : (p == 1 ? 0.0 : 1.0 / (1.0 - p))))"
+  version: all_version
