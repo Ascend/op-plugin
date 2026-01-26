@@ -25,7 +25,7 @@ from typing import Iterator, Optional
 # why you need to add a toggle to the global behavior of code
 # generation.  The parameters here should really only be used
 # for "temporary" situations, where we need to temporarily change
-# the codegen in some cases because we cannot conveniently update
+# the torchnpugen in some cases because we cannot conveniently update
 # all call sites, and are slated to be eliminated once all call
 # sites are eliminated.  If you don't have a plan for how to get there,
 # DON'T add a new entry here.

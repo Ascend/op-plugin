@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from enum import auto, Enum
 from typing import Callable, Dict, Iterator, List, Optional, Sequence, Set, Tuple, Union
 
-from codegen.utils import assert_never, NamespaceHelper, OrderedSet
+from torchnpugen.op_codegen_utils import assert_never, NamespaceHelper, OrderedSet
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #
@@ -483,7 +483,7 @@ class NativeFunction:
     # # in native_functions.yaml
     # autogen: List["OperatorName"]
 
-    # # If non-empty, this kernel is subject to ufunc codegen.
+    # # If non-empty, this kernel is subject to ufunc torchnpugen.
     # # Sorted by ufunc_key
     # ufunc_inner_loop: Dict[UfuncKey, "UfuncInnerLoop"]
 

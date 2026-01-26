@@ -33,7 +33,7 @@ from dataclasses import dataclass
 from enum import auto, Enum
 from typing import List, Optional, Union
 
-from codegen.model import Argument, SelfArgument, TensorOptionsArguments
+from torchnpugen.model import Argument, SelfArgument, TensorOptionsArguments
 
 # An ArgName is just the str name of the argument in schema;
 # but in some special circumstances, we may add a little extra
@@ -60,7 +60,7 @@ class BaseCppType:
         return f"{self.ns}::{self.name}"
 
 
-# The set of all non-templated, valid, fully-qualified names of C++ types that are used in the codegen.
+# The set of all non-templated, valid, fully-qualified names of C++ types that are used in the torchnpugen.
 # Templated types get their own dataclass, mainly to make namespace parsing easier.
 byteT = BaseCppType("", "uint8_t")
 charT = BaseCppType("", "int8_t")

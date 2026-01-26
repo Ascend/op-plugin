@@ -18,8 +18,8 @@ from typing import List, Optional, Sequence, Set, Union
 from distutils.version import LooseVersion
 import os
 
-from codegen import local
-from codegen.api.types import (
+from torchnpugen import local
+from torchnpugen.api.types import (
     ArgName,
     ArrayCType,
     ArrayRefCType,
@@ -50,7 +50,7 @@ from codegen.api.types import (
     VectorCType,
     voidT,
 )
-from codegen.model import (
+from torchnpugen.model import (
     Argument,
     Arguments,
     BaseTy,
@@ -64,7 +64,7 @@ from codegen.model import (
     TensorOptionsArguments,
     Type,
 )
-from codegen.utils import assert_never
+from torchnpugen.op_codegen_utils import assert_never
 
 # This file describes the translation of JIT schema to the public C++
 # API, which is what people use when they call functions like at::add.

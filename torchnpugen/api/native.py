@@ -16,9 +16,9 @@
 
 from typing import List, Optional, Sequence, Union
 
-from codegen import local
-from codegen.api import cpp
-from codegen.api.types import (
+from torchnpugen import local
+from torchnpugen.api import cpp
+from torchnpugen.api.types import (
     ArgName,
     BaseCType,
     Binding,
@@ -35,7 +35,7 @@ from codegen.api.types import (
     scalarTypeT,
     tensorT,
 )
-from codegen.model import (
+from torchnpugen.model import (
     Argument,
     FunctionSchema,
     Return,
@@ -43,7 +43,7 @@ from codegen.model import (
     TensorOptionsArguments,
     Type,
 )
-from codegen.utils import assert_never
+from torchnpugen.op_codegen_utils import assert_never
 
 # This file describes the translation of JIT schema to the native functions API.
 # This looks a lot like the C++ API (which makes historical sense, because the

@@ -4,7 +4,7 @@ import os
 import stat
 import yaml
 
-from codegen.utils import PathManager, get_version
+from torchnpugen.op_codegen_utils import PathManager, get_version
 
 
 def main():

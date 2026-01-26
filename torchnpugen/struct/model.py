@@ -18,11 +18,11 @@ from typing import List, Dict, Sequence
 import copy
 from dataclasses import dataclass
 
-from codegen.model import (BaseTy, SchemaKind, BaseType,
+from torchnpugen.model import (BaseTy, SchemaKind, BaseType,
                            Argument, NativeFunction, ListType)
-from codegen.context import native_function_manager
-from codegen.api.types import NativeSignature
-from codegen.api import cpp
+from torchnpugen.context import native_function_manager
+from torchnpugen.api.types import NativeSignature
+from torchnpugen.api import cpp
 
 
 def filt_input_tensor(arguments: Sequence[Argument]) -> List[str]:

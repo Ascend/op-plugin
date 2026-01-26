@@ -18,9 +18,9 @@ import os
 import argparse
 import yaml
 
-from codegen.gen import FileManager, parse_native_yaml_struct
-from codegen.struct.struct_codegen import parse_struct_yaml, gen_op_api
-from codegen.utils import PathManager
+from torchnpugen.gen import FileManager, parse_native_yaml_struct
+from torchnpugen.struct.struct_codegen import parse_struct_yaml, gen_op_api
+from torchnpugen.op_codegen_utils import PathManager
 
 
 def main() -> None:
@@ -38,7 +38,7 @@ def main() -> None:
     options = parser.parse_args()
 
     fm = FileManager(
-            install_dir=options.output_dir, template_dir="codegen/struct/templates", dry_run=False
+            install_dir=options.output_dir, template_dir="torchnpugen/struct/templates", dry_run=False
         )
 
     native_yaml_path = os.path.realpath(options.native_yaml)

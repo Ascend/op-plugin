@@ -19,13 +19,13 @@ from collections import defaultdict
 from typing import List, Dict, Sequence, Tuple
 import yaml
 
-from codegen.code_template import CodeTemplate
-from codegen.gen import FileManager
-from codegen.model import (BaseTy, SchemaKind, BaseType, NativeFunction)
-from codegen.utils import concatMap, PathManager
-from codegen.context import native_function_manager
-from codegen.api.types import NativeSignature
-from codegen.api import cpp
+from torchnpugen.code_template import CodeTemplate
+from torchnpugen.gen import FileManager
+from torchnpugen.model import (BaseTy, SchemaKind, BaseType, NativeFunction)
+from torchnpugen.op_codegen_utils import concatMap, PathManager
+from torchnpugen.context import native_function_manager
+from torchnpugen.api.types import NativeSignature
+from torchnpugen.api import cpp
 from .model import StructInfo, ResInfo, filt_input_tensor
 
 

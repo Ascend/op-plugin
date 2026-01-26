@@ -1,8 +1,8 @@
 import os
 import argparse
 
-from codegen.gen import parse_native_yaml, FileManager
-from codegen.utils import concatMap, PathManager
+from torchnpugen.gen import parse_native_yaml, FileManager
+from torchnpugen.op_codegen_utils import concatMap, PathManager
 
 
 def main() -> None:
@@ -35,7 +35,7 @@ def main() -> None:
 
     def make_file_manager(install_dir: str) -> FileManager:
         return FileManager(
-            install_dir=install_dir, template_dir="codegen/templates", dry_run=False
+            install_dir=install_dir, template_dir="torchnpugen/templates", dry_run=False
         )
 
     fm = make_file_manager(options.output_dir)

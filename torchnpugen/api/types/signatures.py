@@ -17,7 +17,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from codegen.model import FunctionSchema, NativeFunction
+from torchnpugen.model import FunctionSchema, NativeFunction
 from .types_base import Binding, CType
 
 
@@ -65,4 +65,4 @@ def kernel_signature(
 
 
 # Functions only, no types
-from codegen.api import native
+from torchnpugen.api import native
