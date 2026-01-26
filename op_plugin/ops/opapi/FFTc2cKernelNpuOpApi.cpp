@@ -520,7 +520,7 @@ at::Tensor _fft_r2c(const at::Tensor& self, at::IntArrayRef dim, int64_t normali
         out_sizes, self.options().dtype(c10::toComplexType(self.scalar_type())));
 
     DO_ASDSIP_COMPATIBILITY(R2C, _exec_fft(out, self, out_sizes, dim, normalization, true, 1));
-    if (dim.size() > 1 || self.scalar_type() == at::ScalarType::Half) {
+    if ((!onesided) || dim.size() > 1 || self.scalar_type() == at::ScalarType::Half) {
         _exec_fft(out, self, out_sizes, dim, normalization, true, 1);
     } else {
         _exec_fft_asdsip(out, self, out_sizes, dim, normalization, true, 1);
@@ -541,7 +541,7 @@ at::Tensor &_fft_r2c_out(const at::Tensor &self, at::IntArrayRef dim,
         out_sizes[last_dim] = last_dim_halfsize;
     }
     DO_ASDSIP_COMPATIBILITY(R2C, _exec_fft(out, self, out_sizes, dim, normalization, true, 1));
-    if (dim.size() > 1 || self.scalar_type() == at::ScalarType::Half) {
+    if ((!onesided) || dim.size() > 1 || self.scalar_type() == at::ScalarType::Half) {
         _exec_fft(out, self, out_sizes, dim, normalization, true, 1);
     } else {
         _exec_fft_asdsip(out, self, out_sizes, dim, normalization, true, 1);
