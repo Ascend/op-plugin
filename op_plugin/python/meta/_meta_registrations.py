@@ -3591,6 +3591,41 @@ def npu_dynamic_mx_quant(input_dummy, *, axis=-1, round_mode="rint", dst_type=29
     return (output, mxscale)
 
 
+@impl(m, "npu_dynamic_dual_level_mx_quant")
+def npu_dynamic_dual_level_mx_quant(input_dummy, *, smooth_scale=None, round_mode="rint"):
+    dim_num = input_dummy.dim()
+    level0_scale_shape = []
+    level1_scale_shape = []
+
+    for dim in range(dim_num):
+        level0_scale_shape.append(input_dummy.size(dim))
+        level1_scale_shape.append(input_dummy.size(dim))
+    level1_scale_shape.append(2)
+
+    level0_block_size = 512
+    level1_block_size = 32
+    dim0_size = int(math.ceil(level0_scale_shape[dim_num - 1] / level0_block_size))
+    level0_scale_shape[dim_num - 1] = dim0_size
+    dim1_size = int(math.ceil(level1_scale_shape[dim_num - 1] / level1_block_size))
+    dim1_size = (dim1_size + 2 - 1) // 2
+    level1_scale_shape[dim_num - 1] = dim1_size
+
+    if input_dummy.size(dim_num - 1) % 2:
+        raise RuntimeError("If output dtype is float4_e2m1, " \
+                            "the last dim of input must be divisible by 2, " +
+                            ops_error(ErrCode.PARAM))
+    output_shape = []
+    for dim in range(dim_num - 1):
+        output_shape.append(input_dummy.size(dim))
+    output_shape.append(input_dummy.size(dim_num - 1) // 2)
+
+    output = input_dummy.new_empty(output_shape, dtype=torch.uint8)
+    level0_scale = input_dummy.new_empty(level0_scale_shape, dtype=torch.float32)
+    level1_scale = input_dummy.new_empty(level1_scale_shape, dtype=torch.uint8)
+
+    return (output, level0_scale, level1_scale)
+
+
 @impl(m, "npu_grouped_dynamic_mx_quant")
 def npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst_type=23, blocksize=32):
     if x is None or group_index is None:

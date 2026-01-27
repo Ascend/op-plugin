@@ -5916,6 +5916,9 @@ custom:
     acl_op: all_version
     op_api: all_version
 
+  - func: npu_dynamic_dual_level_mx_quant(Tensor input, *, Tensor? smooth_scale=None, str round_mode="rint") -> (Tensor, Tensor, Tensor)
+    op_api: [v2.1, newest]
+
   - func: npu_dynamic_mx_quant(Tensor input, *, int axis=-1, str round_mode="rint", int dst_type=296, int block_size=32, int? scale_alg=0) -> (Tensor, Tensor)
     op_api: [v2.1, newest]
 
