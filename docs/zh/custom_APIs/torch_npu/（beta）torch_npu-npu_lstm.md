@@ -24,7 +24,7 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 - **x** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
 - **weight** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ_LSTM。
 - **bias** (`Tensor`)：1D张量。数据类型支持`float16`，`float32`；格式支持ND。
-- **seqMask** (`Tensor`)：张量。仅支持为FRACTAL_NZ格式的`float16`和ND格式的`int32`类型。
+- **seqMask** (`Tensor`)：张量。仅支持FRACTAL_NZ格式的`float16`和ND格式的`int32`类型。
 - **h** (`Tensor`)： 4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
 - **c** (`Tensor`)： 4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
 - **has_biases** (`bool`)：如果值为True，则存在偏差。

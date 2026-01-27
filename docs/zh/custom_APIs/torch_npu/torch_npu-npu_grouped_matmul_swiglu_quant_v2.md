@@ -50,7 +50,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 -   该接口支持推理和训练场景下使用。
 -   该接口支持图模式。
 -   输入和输出Tensor支持的数据类型组合如下：
-    |x|weight|group_list|weight_scale|x_scale|bias|weight_assist_matrix|smooth_scale|y|y_scale|
+    |x|weight|group_list|weight_scale|x_scale|bias|weight_assist_matrix|smooth_scale|output|output_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
     |`int8`|`int8`|`int64`|`float32`|`float`|`int32`|`float32`|`float32`|`int8`|`float`|
 
