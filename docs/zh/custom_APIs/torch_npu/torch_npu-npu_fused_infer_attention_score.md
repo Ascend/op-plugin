@@ -135,7 +135,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
 -   该接口支持推理场景下使用。
 -   该接口支持图模式。
 -   该接口与PyTorch配合使用时，需要保证CANN相关包与PyTorch相关包的版本匹配。
--   入参为空的处理：算子内部需要判断参数`query`是否为空，如果是空则直接返回。参数`query`不为空Tensor，参数`key`、`value`为空tensor（即S2为0），则填充全零的对应shape的输出（填充`attention_out`）。`attention_out`为空Tensor时，框架会处理。
+-   入参为空的处理：算子内部需要判断参数`query`是否为空，如果是空则直接返回空。参数`query`不为空Tensor，参数`key`、`value`为空Tensor（即S2为0），则`attention_out`按照对应shape大小返回全0。`attention_out`为空Tensor时，返回空。
 -   参数`key`、`value`中对应tensor的shape需要完全一致；非连续场景下`key`、`value`的tensorlist中的batch只能为1，个数等于`query`的B，N和D需要相等。
 -   `int8`量化相关入参数量与输入、输出数据格式的综合限制：
     -   输出为`int8`的场景：入参`dequant_scale1`、`quant_scale1`、`dequant_scale2`、`quant_scale2`需要同时存在，`quant_offset2`可选，不传时默认为0。
@@ -192,7 +192,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
             -   支持开启page attention，此时`actual_seq_lengths_kv`长度等于`key`/`value`的batch值，代表每个batch的实际长度，值不大于KV\_S；
             -   要求`query`的N为1/2/4/8/16/32/64/128，`key`、`value`的N为1；
             -   要求`query_rope`和`key_rope`不等于空，`query_rope`和`key_rope`的D为64；
-            -   不支持左padding、tensorlist、pse、prefix、伪量化、全量化、后量化。
+            -   不支持左padding、tensorlist、pse、prefix、伪量化、全量化。
 
         -   当query的D不等于512时：
             -   当`query_rope`和`key_rope`为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD场景，不支持V\_D等于192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当`query_rope`和`key_rope`不为空时，要求Q\_D、K\_D、V\_D等于128；

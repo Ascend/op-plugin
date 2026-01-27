@@ -140,7 +140,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 -   该接口支持推理场景下使用。
 -   该接口支持图模式。
 -   该接口与PyTorch配合使用时，需要保证CANN相关包与PyTorch相关包的版本匹配。
--   入参为空的处理：算子内部需要判断参数query是否为空，如果是空则直接返回。参数query不为空Tensor，参数key、value为空tensor（即S2为0），则填充全零的对应shape的输出（填充attention\_out）。attention\_out为空Tensor时，框架会处理。
+-   入参为空的处理：算子内部需要判断参数query是否为空，如果是空则直接返回空。参数query不为空Tensor，参数key、value为空Tensor（即S2为0），则attention\_out按照对应shape大小返回全0。attention\_out为空Tensor时，返回空。
 -   参数key、value中对应tensor的shape需要完全一致；非连续场景下key、value的tensorlist中的batch只能为1，个数等于query的B，N和D需要相等。
 -   int8量化相关入参数量与输出数据格式的综合限制：
     -   输出为int8的场景：入参quant\_scale\_out需要存在，quant\_offset\_out可选，不传时默认为0。
@@ -189,7 +189,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             -   当query\_rope和key\_rope为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD场景，不支持V\_D等于192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当query\_rope和key\_rope不为空时，要求Q\_D、K\_D、V\_D等于128；GQA和PA场景不支持V_D等于192;
             -   支持TND、NTD、NTD\_TND；
             -   page attention场景下仅支持blocksize为16对齐且小于等于1024;
-            -   不支持开启左padding、tensorlist、pse、prefix、伪量化、全量化、后量化、空Tensor；
+            -   不支持开启左padding、tensorlist、pse、prefix、伪量化、全量化；
 -   GQA伪量化场景下KV为NZ格式时的参数约束如下：
     - 支持perchannel和pertoken模式，query数据类型固定为bfloat16，key&value固定为int8；query&key&value的D仅支持128；query Sequence Length仅支持1-16；
     - input\_layout仅支持BSH、BSND、BNSD；
