@@ -120,9 +120,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 -   **elastic\_info** (`Tensor`)：预留参数，当前版本不支持，传默认值None即可。
 
--   **performance\_info** (`Tensor`)：可选参数，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此用户每次启用此Tensor开始记录耗时前需对Tensor清零。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：可选择传入有效数据或填None，传入None时表示不使能记录通信耗时功能；当传入有效数据时，要求是一个1D的Tensor，shape为(ep_world_size,)，数据类型支持int64；数据格式要求为ND，支持非连续的Tensor。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：预留参数，当前版本不支持，传默认值None即可。
+-   **performance\_info** (`Tensor`)：可选参数，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不使能记录通信耗时功能；当传入有效数据时，要求是一个1D的Tensor，shape为(ep_world_size,)，数据类型支持int64，数据格式要求为ND，支持非连续的Tensor。
 
 -   **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。若有TP域通信需要传参，若无TP域通信，使用默认值""即可。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
