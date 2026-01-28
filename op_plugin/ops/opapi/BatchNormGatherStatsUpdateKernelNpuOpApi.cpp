@@ -61,7 +61,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_update(const at::Tens
     DO_COMPATIBILITY(aclnnSyncBatchNormGatherStats, acl_op::batch_norm_gather_stats_update(self, sum, square_sum,
         running_mean_opt, running_var_opt, momentum, eps, counts));
 
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         return acl_op::batch_norm_gather_stats_update(self, sum, square_sum, running_mean_opt, running_var_opt, momentum, eps, counts);
     }
 

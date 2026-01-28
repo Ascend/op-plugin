@@ -50,7 +50,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag(
     at::Tensor offset2bag = npu_preparation::apply_tensor_without_format(indices, indices.size(0));
 
     at::Tensor bag_size;
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
         bag_size = npu_preparation::apply_tensor_without_format(offsets);
     } else {
         if (include_last_offset) {
@@ -62,7 +62,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag(
 
     at::Tensor max_indices;
     if (mode == 0 || mode == 1) {
-        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
             max_indices = npu_preparation::apply_tensor_without_format({0}, offsets.options());
         } else {
             if (include_last_offset) {
@@ -90,7 +90,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag(
         bag_size_cast = bag_size_cast.to(at::kInt);
         max_indices_cast = max_indices_cast.to(at::kInt);
     }
-    if (mode == 0 && padding_idx < 0 && c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend910_95) {
+    if (mode == 0 && padding_idx < 0 && c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend950) {
         offset2bag_cast = npu_preparation::apply_tensor_without_format(offset2bag_cast, 0);
     }
 
@@ -117,7 +117,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_forwar
     at::Tensor offset2bag = npu_preparation::apply_tensor_without_format(indices, indices.size(0));
 
     at::Tensor bag_size;
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
         bag_size = npu_preparation::apply_tensor_without_format(offsets);
     } else {
         if (include_last_offset) {
@@ -129,7 +129,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_forwar
 
     at::Tensor max_indices;
     if (mode == 0 || mode == 1) {
-        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
             max_indices = npu_preparation::apply_tensor_without_format({0}, offsets.options());
         } else {
             if (include_last_offset) {
@@ -157,7 +157,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _embedding_bag_forwar
         bag_size_cast = bag_size_cast.to(at::kInt);
         max_indices_cast = max_indices_cast.to(at::kInt);
     }
-    if (mode == 0 && padding_idx < 0 && c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend910_95) {
+    if (mode == 0 && padding_idx < 0 && c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend950) {
         offset2bag_cast = npu_preparation::apply_tensor_without_format(offset2bag_cast, 0);
     }
 

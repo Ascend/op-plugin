@@ -279,7 +279,7 @@ at::Tensor npu_convert_weight_to_b4pack(const at::Tensor &weight)
 at::Tensor npu_convert_weight_to_int4pack(const at::Tensor &weight, int64_t inner_k_tiles)
 {
     int4pack_params_check(weight);
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
         return npu_convert_weight_to_b4pack(weight);
     }
     auto weight_dim_num = weight.dim();

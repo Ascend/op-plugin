@@ -203,7 +203,7 @@ class TestFusedInferAttentionV2(TestCase):
         attention_output = custom_output[0].to(torch.float64)
         self.assertRtolEqual(supported_output, attention_output, prec=0.000001, prec16=0.000001)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_d_unequal(self, device="npu"):
         query = torch.ones(1, 2, 1024, 192, dtype=torch.float16).npu()
         key = torch.ones((1, 2, 1024, 128), dtype=torch.float16).npu()
@@ -218,7 +218,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_page_attention(self, device="npu"):
         query = torch.ones(2, 1, 2048, 128, dtype=torch.float16).npu()
         key = torch.ones((32, 1, 128, 128), dtype=torch.float16).npu()
@@ -236,7 +236,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_int32_antiquant(self, device="npu"):
         query = torch.ones(2, 1, 1, 128, dtype=torch.float16).npu()
         key = torch.ones((2, 1, 256, 16), dtype=torch.int32).npu()
@@ -254,7 +254,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_fp4_antiquant(self, device="npu"):
         query = torch.ones(2, 1, 1, 128, dtype=torch.float16).npu()
         key = torch.ones((2, 1, 256, 64), dtype=torch.uint8).npu()
@@ -277,7 +277,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
     
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_without_outdtype(self, device="npu"):
         query = torch.randn(32, 2, 8, 192, dtype=torch.float16).npu()
         key = torch.randn((32, 2048, 8, 192), dtype=torch.float16).npu()
@@ -293,7 +293,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_with_outdtype(self, device="npu"):
         query = torch.randn(32, 8, 2, 192, dtype=torch.float16).npu()
         key = torch.randn((32, 8, 2048, 192), dtype=torch.float16).npu()
@@ -310,7 +310,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_bnsd_bsnd_d_unequal(self, device="npu"):
         query = torch.ones(32, 8, 1, 192, dtype=torch.float16).npu()
         key = torch.ones((32, 8, 2048, 192), dtype=torch.float16).npu()
@@ -326,7 +326,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_bsnd_d_unequal(self, device="npu"):
         query = torch.ones(32, 1, 8, 192, dtype=torch.float16).npu()
         key = torch.ones((32, 2048, 8, 192), dtype=torch.float16).npu()
@@ -342,7 +342,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_bsh_d_unequal(self, device="npu"):
         query = torch.ones(32, 1, 1536, dtype=torch.float16).npu()
         key = torch.ones((32, 2048, 1536), dtype=torch.float16).npu()
@@ -358,7 +358,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)        
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_nsd_d_unequal(self, device="npu"):
         query = torch.ones(8, 1, 192, dtype=torch.float16).npu()
         key = torch.ones((8, 2048, 192), dtype=torch.float16).npu()
@@ -374,7 +374,7 @@ class TestFusedInferAttentionV2(TestCase):
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)     
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_fused_infer_attention_score_v2_tnd_d_unequal(self, device="npu"):
         query = torch.full((32, 8, 192), 1, dtype=torch.bfloat16).npu()
         key = torch.full((32, 8, 192), 1, dtype=torch.bfloat16).npu()

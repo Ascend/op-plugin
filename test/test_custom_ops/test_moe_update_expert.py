@@ -109,7 +109,7 @@ class TestMoeUpdateExpert(TestCase):
             self.balanced_active_mask.append(torch.from_numpy(balanced_active_mask).to(torch.bool))        
 
 
-    @SupportedDevices(['Ascend910_'])
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
     def test_npu_moe_update_expert(self):
         ctx = mp.get_context('spawn')
         c2p = ctx.Queue(self.world_size)

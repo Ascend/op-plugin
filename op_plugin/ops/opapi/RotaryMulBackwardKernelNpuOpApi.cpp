@@ -44,7 +44,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(
     const at::Tensor& r2,
     c10::string_view rotary_mode)
 {
-    static bool notNeedCheck = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95;
+    static bool notNeedCheck = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
     TORCH_CHECK((notNeedCheck || (rotary_mode == "half" || rotary_mode == "interleave")),
         "The rotary_mode of npu_rotary_mul_backward should be half or interleave, but got ", rotary_mode,
         OPS_ERROR(ErrCode::PARAM));

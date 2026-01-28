@@ -127,7 +127,7 @@ class TestDistributeBarrier(TestCase):
         return out_list
     
     @skipIfUnsupportMultiNPU(16)
-    @SupportedDevices(['Ascend910_'])
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
     def test_npu_distribute_barrier(self):
         ep_world_size = 8
         tp_world_size = 1

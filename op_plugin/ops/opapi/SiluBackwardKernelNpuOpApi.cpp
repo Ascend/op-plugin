@@ -23,7 +23,7 @@ namespace op_api {
 at::Tensor& silu_backward_out(const at::Tensor& grad_output, const at::Tensor& self, at::Tensor& result)
 {
     DO_COMPATIBILITY(aclnnSiluBackward, acl_op::silu_backward_out(grad_output, self, result));
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         at_npu::native::OpPreparation::check_tensor({grad_output, self}, result, grad_output);
     }
     EXEC_NPU_CMD(aclnnSiluBackward, grad_output, self, result);
@@ -34,7 +34,7 @@ at::Tensor silu_backward(const at::Tensor& grad_output, const at::Tensor& self)
 {
     DO_COMPATIBILITY(aclnnSiluBackward, acl_op::silu_backward(grad_output, self));
     at::Tensor grad_input;
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         grad_input = at_npu::native::OpPreparation::apply_tensor_without_format(grad_output);
     } else {
         at::ScalarType output_dtype = grad_output.scalar_type();

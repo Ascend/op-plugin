@@ -30,7 +30,7 @@ class TestDynamicMxQuantWithDualAxis(TestCase):
         input_tensor = torch.full(input, value, dtype=data_type)
         return input_tensor
     
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_dynamic_mx_quant_with_dual_axis(self, device="npu"):
         input_tensor = self.generate_input(input=[1, 2, 2], dtype="bfloat16")
         input_tensor = input_tensor.to(device)

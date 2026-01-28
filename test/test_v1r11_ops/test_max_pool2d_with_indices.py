@@ -60,7 +60,7 @@ class TestMaxPool2dWithIndices(TestCase):
                 cpu_output = cpu_output.to(npu_output.dtype)
             self.assertRtolEqual(cpu_output, npu_output, prec=1.e-3)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_max_pool2d_with_indices_float32(self):
         dtype_list = [np.float32, np.float32]
         format_list = [0, 3, 4]

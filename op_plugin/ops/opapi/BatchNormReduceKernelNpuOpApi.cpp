@@ -20,7 +20,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& self, double eps)
 {
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         return acl_op::batch_norm_reduce(self, eps);
     } else {
         TORCH_CHECK(self.dim() > 1, "The dim input tensor [self] must more than 1." + OPS_ERROR(ErrCode::PARAM));

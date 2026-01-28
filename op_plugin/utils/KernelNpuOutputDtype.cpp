@@ -51,7 +51,7 @@ at::ScalarType npu_group_norm_silu_dst_type(const at::Tensor& input, const c10::
     at::native::ResultTypeState state = {};
     state = at::native::update_result_type_state(input, state);
 
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
         if (weight.has_value()) {
             state = at::native::update_result_type_state(weight.value(), state);
         } else if (bias.has_value()) {

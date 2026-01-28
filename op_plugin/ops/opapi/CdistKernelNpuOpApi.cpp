@@ -29,7 +29,7 @@ static at::Tensor &cdist_out_op_api(const at::Tensor &x1, const at::Tensor &x2, 
 
 at::Tensor cdist(const at::Tensor &x1, const at::Tensor &x2, const double p, c10::optional<int64_t> compute_mode)
 {
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         return acl_op::cdist(x1, x2, p, compute_mode);
     } else {
         float p_float;

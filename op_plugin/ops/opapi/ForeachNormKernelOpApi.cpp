@@ -52,7 +52,7 @@ bool checkData(const at::TensorList self, const at::Scalar& scalar)
 bool checkDataWithInfinit(const at::TensorList self, const at::Scalar& scalar)
 {
     double p = 0.0;
-    static bool isRegBaseSoc = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95;
+    static bool isRegBaseSoc = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
     scalarProcess(scalar, &p);
 
     const bool has_int_or_complex = std::any_of(self.begin(), self.end(), [](const auto &t) {
@@ -101,7 +101,7 @@ std::vector<at::Tensor> _foreach_norm(const at::TensorList self, const at::Scala
 
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1 ||
-                                          c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95);
+                                          c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950);
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_norm_slow(self, scalar);
     }
@@ -130,7 +130,7 @@ std::vector<at::Tensor> _foreach_norm(const at::TensorList self, const at::Scala
 
     static const bool is_support_nd_out = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1 ||
-                                          c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95);
+                                          c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950);
     if (!is_support_nd_out) {
         return at::native::foreach_tensor_norm_slow(self, scalar, opt_dtype);
     }

@@ -18,8 +18,8 @@ class TestGroupedMatmul(TestCase):
         output = output + y
         return output
 
-    @SupportedDevices(['Ascend910_95'])
-    def test_npu_grouped_matmul_quant_910_95(self): # 量化 单单单
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    def test_npu_grouped_matmul_quant_950(self): # 量化 单单单
         torch.manual_seed(0)
         group_list = torch.tensor([16, ]).to(torch.int64).npu()
 

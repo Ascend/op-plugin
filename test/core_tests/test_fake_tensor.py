@@ -2447,7 +2447,7 @@ class TestGroupedMatmul(TestCase):
             self.assertTrue(x[0].shape[0] == res[0].shape[0])
             self.assertTrue(w[0].shape[2] == res[0].shape[1])
 
-    def test_npu_grouped_matmul_meta_910_95_fp8_1(self):
+    def test_npu_grouped_matmul_meta_950_fp8_1(self):
         with FakeTensorMode():
             torch.manual_seed(0)
             x1 = torch.randint(2, 3, size=(16, 256), dtype=torch.int8).view(torch.float8_e4m3fn).npu()
@@ -2464,7 +2464,7 @@ class TestGroupedMatmul(TestCase):
             self.assertTrue(dim0 == res[0].shape[0])
             self.assertTrue(dim1 == res[0].shape[1])
 
-    def test_npu_grouped_matmul_meta_910_95_fp8_group_type_2(self):
+    def test_npu_grouped_matmul_meta_950_fp8_group_type_2(self):
         with FakeTensorMode():
             torch.manual_seed(0)
             x1 = torch.randint(2, 3, size=(128, 4096), dtype=torch.int8).view(torch.float8_e4m3fn).npu()

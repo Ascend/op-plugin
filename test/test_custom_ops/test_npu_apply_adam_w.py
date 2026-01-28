@@ -32,7 +32,7 @@ def gen_apply_adam_w(var, m, v, grad, max_grad_norm, beta1_power, beta2_power, l
     return var_out, m_out, v_out
 
 class TestQuantScatter(TestCase):
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_apply_adam_w(self, device="npu"):
         var_data = np.random.uniform(0, 1, [20000]).astype(np.float32)
         var1 = torch.from_numpy(var_data).to(torch.float32).npu()

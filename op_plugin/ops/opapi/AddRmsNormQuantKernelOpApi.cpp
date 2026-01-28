@@ -47,7 +47,7 @@ namespace op_api {
 
         TensorWrapper y1_wrapper = {y1, y_acltype};
         TensorWrapper y2_wrapper = {y2, y_acltype};
-        if ((c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) && check_aclnn_kernel_available("aclnnAddRmsNormQuantV2")) {
+        if ((c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) && check_aclnn_kernel_available("aclnnAddRmsNormQuantV2")) {
             EXEC_NPU_CMD(aclnnAddRmsNormQuantV2, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, beta, axis, epsilon, div_mode, y1, y2, x_out, rmsnorm_out);
         } else {
             TORCH_CHECK(!beta.has_value(), "In the current CANN version, aclnnAddRmsNormQuant does not support the parameter beta input. It is recommended to upgrade the CANN package. Or please remove the beta input parameter.", OPS_ERROR(ErrCode::PARAM));

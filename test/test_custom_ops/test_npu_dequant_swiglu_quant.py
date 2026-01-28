@@ -363,7 +363,7 @@ class TestNPUDequantSwigluQuant(TestCase):
             )
         self.assertRtolEqual(y_cpu.numpy(), y_npu.cpu().numpy())
 
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend910_95", "Ascend950"])
     def test_npu_dequant_swiglu_quant_4(self, device="npu"):
         x_shape = [8, 4]
         x = torch.randint(-10, 10, x_shape, dtype=torch.int32)

@@ -321,7 +321,7 @@ class TestMoeDistributeCombine(TestCase):
         return expand_x_list, out_list, idx_list, ep_recvCount_list, tp_recvCount_list
 
     @skipIfUnsupportMultiNPU(16)
-    @SupportedDevices(['Ascend910_'])
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
     def test_npu_moe_distribute_combine(self):
         ep_world_size = 8
         tp_world_size = 2

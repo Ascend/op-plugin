@@ -102,7 +102,7 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
         out = combine_func(mm_out, logits, residual, residScale, sourceRow, topK, shared_input_offset)
         return out
     
-    def gen_input_data_91095_mxfp8(self, E, M, K, N, w_transpose):
+    def gen_input_data_950_mxfp8(self, E, M, K, N, w_transpose):
         if w_transpose:
             weight = torch.randint(-128, 127, (E, N, K), dtype=torch.int8).to(torch.float8_e4m3fn).npu()
             Scale = torch.randint(low=0, high=256, size=(E, N, math.ceil(K / 64), 2), dtype=torch.uint8).npu()
@@ -114,7 +114,7 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
         groupList = torch.tensor([M//2, M//2], dtype=torch.int64).npu()
         return x, weight, Scale, pertoken_scale, groupList
     
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend910_95", "Ascend950"])
     def test_npu_grouped_matmul_finalize_routing_mxfp4(self, device="npu"):
         m, k, n, batch, topK, group_num = 72, 32, 7168, 72, 1, 1
         k1 = k * 2
@@ -147,11 +147,11 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
             logit=logit_clone, row_index=row_index_clone, shared_input_offset=shared_input_offset, output_bs=output_bs, 
             group_list_type=group_list_type,x_dtype=x_dtype, w_dtype=w_dtype, scale_dtype=scale_dtype, pertoken_scale_dtype=pertoken_scale_dtype)
     
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend910_95", "Ascend950"])
     def test_npu_grouped_matmul_finalize_routing_mxfp8_wtrans(self, device="npu"):
         m, k, n, batch, topK, group_num = 72, 512, 7168, 72, 1, 1
         w_transpose = True
-        x_clone, weight_clone, scale_clone, pertoken_scale_clone, group_list_clone = self.gen_input_data_91095_mxfp8(m, k, n, group_num, w_transpose)
+        x_clone, weight_clone, scale_clone, pertoken_scale_clone, group_list_clone = self.gen_input_data_950_mxfp8(m, k, n, group_num, w_transpose)
         shared_input = np.random.normal(0, 0.1, (batch // 4, n * 2)).astype(np.float32)
         shared_input_clone = torch.from_numpy(shared_input).to(torch.bfloat16).npu()
         logit_ori = np.random.normal(0, 0.1, (batch, group_num)).astype(np.float32)
@@ -178,11 +178,11 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
             logit=logit_clone, row_index=row_index_clone, shared_input_offset=shared_input_offset, output_bs=output_bs, 
             group_list_type=group_list_type,x_dtype=x_dtype, w_dtype=w_dtype, scale_dtype=scale_dtype, pertoken_scale_dtype=pertoken_scale_dtype)
 
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend910_95", "Ascend950"])
     def test_npu_grouped_matmul_finalize_routing_mxfp8(self, device="npu"):
         m, k, n, batch, topK, group_num = 128, 1024, 4096, 32, 4, 4
         w_transpose = False
-        x_clone, weight_clone, scale_clone, pertoken_scale_clone, group_list_clone = self.gen_input_data_91095_mxfp8(m, k, n, group_num, w_transpose)
+        x_clone, weight_clone, scale_clone, pertoken_scale_clone, group_list_clone = self.gen_input_data_950_mxfp8(m, k, n, group_num, w_transpose)
         shared_input = np.random.normal(0, 0.1, (batch // 4, n * 2)).astype(np.float32)
         shared_input_clone = torch.from_numpy(shared_input).to(torch.bfloat16).npu()
         logit_ori = np.random.normal(0, 0.1, (batch, group_num)).astype(np.float32)

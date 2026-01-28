@@ -41,7 +41,7 @@ class TestQuantScatter(TestCase):
         custom_output = self.custom_op_exec(var2, indices2, updates2, quant_scales2)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_quant_scatter_fp8(self, device="npu"):
         var_data = np.random.uniform(0, 1, [1, 1, 32]).astype(np.int8)
         var1 = torch.from_numpy(var_data).to(torch.float8_e5m2).npu()

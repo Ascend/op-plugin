@@ -73,7 +73,7 @@ class TestDtypeCast(TestCase):
         y[::2].copy_(x[::2])
         self.assertEqual(y, [1, 0, 3, 0, 5, 0])
 
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_dtype_cast_int4(self):
         input1 = torch.tensor([1, 2, 3, 4], dtype=torch.int32).npu()
         expectOutput = torch.tensor([33, 67], dtype=torch.uint8)

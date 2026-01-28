@@ -165,7 +165,7 @@ class TestAlltoAllvGmm(TestCase):
         return matrix
     
     @skipIfUnsupportMultiNPU(8)
-    @SupportedDevices(['Ascend910_'])
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
     def test_npu_alltoallv_gmm(self):
         dtype = torch.float16
         is_balance = True

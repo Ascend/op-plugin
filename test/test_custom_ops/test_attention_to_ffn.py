@@ -219,7 +219,7 @@ class TestAttentionToFFN(TestCase):
 
     @unittest.skip("skip test_attention_to_ffn, no module named torchair")
     @skipIfUnsupportMultiNPU(16)
-    @SupportedDevices(['Ascend910_'])
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
     def test_attention_to_ffn(self):
         ep_world_size = 16
         tp_world_size = 1

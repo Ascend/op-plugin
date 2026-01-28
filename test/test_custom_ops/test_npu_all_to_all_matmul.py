@@ -115,7 +115,7 @@ class TestAlltoAllMatmul(TestCase):
         return expt_out_list
 
     @skipIfUnsupportMultiNPU(2)
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
     def test_npu_matmul_all_to_all(self):
         # 设备卡数
         world_size = 2

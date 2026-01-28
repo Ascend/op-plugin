@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor npu_scaled_masked_softmax(const at::Tensor& x, const at::Tensor& mask, const at::Scalar& scale,
     bool fixed_triu_mask)
 {
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         return acl_op::npu_scaled_masked_softmax(x, mask, scale, fixed_triu_mask);
     }
     DO_COMPATIBILITY(aclnnScaledMaskedSoftmax, acl_op::npu_scaled_masked_softmax(x, mask, scale, fixed_triu_mask));
@@ -47,7 +47,7 @@ at::Tensor npu_scaled_masked_softmax_backward(
     const at::Scalar& scale,
     bool fixed_triu_mask)
 {
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         return acl_op::npu_scaled_masked_softmax_backward(y_grad, y, mask, scale, fixed_triu_mask);
     }
     DO_COMPATIBILITY(aclnnScaledMaskedSoftmaxBackward, acl_op::npu_scaled_masked_softmax_backward(y_grad, y, mask, scale, fixed_triu_mask));

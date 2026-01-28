@@ -90,7 +90,7 @@ at::Tensor npu_weight_quant_batchmatmul(const at::Tensor &x, const at::Tensor &w
     int64_t weight_format = at_npu::native::custom_ops::get_npu_format(weight);
     const bool is_weight_nz = (weight_format == ACL_FORMAT_FRACTAL_NZ) ||
                               (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_2);
-    if (is_weight_nz && c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910_95) {
+    if (is_weight_nz && c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
         static const bool is_weight_quant_matmul_nz_available =
             check_aclnn_kernel_available("aclnnWeightQuantBatchMatmulNz");
         TORCH_CHECK(is_weight_quant_matmul_nz_available,
