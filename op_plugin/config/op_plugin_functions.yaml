@@ -6741,6 +6741,26 @@ custom:
         cubeMathType: 'npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32())'
       exec: aclnnTransposeBatchMatMul, input, weight, bias, scale_real, perm_x1_real, perm_x2_real, perm_y_real, cubeMathType, batch_split_factor_value, out
 
+  - func: npu_transpose_quant_batchmatmul(Tensor x1, Tensor x2, int dtype, *, Tensor? bias=None, Tensor? x1_scale=None, Tensor? x2_scale=None, int? group_size=0, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor
+    op_api: all_version
+    exposed: all_version
+    gen_opapi:
+      out:
+        size: 'npu_transpose_quant_batchmatmul_output_size(x1, x2, dtype, x1_scale_real, x2_scale_real, group_size_value, perm_x1_real, perm_x2_real, perm_y_real, batch_split_factor_value)'
+        dtype: 'dtype_value == 27 ? at::ScalarType::BFloat16 : at::ScalarType::Half'
+      new_params:
+        dtype_value: 'static_cast<int32_t>(dtype)'
+        default_perm_x: 'std::vector<int64_t>{0, 1, 2}'
+        default_perm_y: 'std::vector<int64_t>{1, 0, 2}'
+        x1_scale_real: 'x1_scale.value_or(at::Tensor())'
+        x2_scale_real: 'x2_scale.value_or(at::Tensor())'
+        group_size_value: 'static_cast<int32_t>(group_size.value_or(0))'
+        perm_x1_real: 'perm_x1.value_or(at::IntArrayRef(default_perm_x))'
+        perm_x2_real: 'perm_x2.value_or(at::IntArrayRef(default_perm_x))'
+        perm_y_real: 'perm_y.value_or(at::IntArrayRef(default_perm_y))'
+        batch_split_factor_value: 'static_cast<int32_t>(batch_split_factor.value_or(1))'
+      exec: aclnnTransposeQuantBatchMatMul, x1, x2, bias, x1_scale_real, x2_scale_real, dtype, group_size_value, perm_x1_real, perm_x2_real, perm_y_real, batch_split_factor_value, out
+
   - func: npu_yolo_boxes_encode(Tensor self, Tensor gt_bboxes, Tensor stride, bool performance_mode=False) -> Tensor
     acl_op: all_version
     exposed: all_version

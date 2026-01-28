@@ -251,6 +251,9 @@
   "op_api: torch_npu.npu_transpose_batchmatmul(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
+  "op_api: torch_npu.npu_transpose_quant_batchmatmul(*args, **kwargs)": {
+    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
+  },
   "op_api: torch_npu.npu_cross_entropy_loss(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
@@ -512,6 +515,9 @@
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_transpose_batchmatmul(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "op_api: torch_npu.npu_transpose_quant_batchmatmul(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.scatter_update(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
@@ -1445,6 +1451,9 @@
     "version": ["all_version"]
   },
   "func: npu_transpose_batchmatmul(Tensor input, Tensor weight, *, Tensor? bias=None, Tensor? scale=None, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: npu_transpose_quant_batchmatmul(Tensor x1, Tensor x2, int dtype, *, Tensor? bias=None, Tensor? x1_scale=None, Tensor? x2_scale=None, int? group_size=0, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor": {
     "version": ["all_version"]
   },
   "func: npu_trans_quant_param(Tensor scale, Tensor? offset=None, int? round_mode=0) -> Tensor": {
