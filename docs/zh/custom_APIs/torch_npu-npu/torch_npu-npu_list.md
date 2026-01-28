@@ -191,6 +191,11 @@
 <td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>设置conv算子是否支持hf32，一个属性值，对aclnn的allow_hf32属性的设置和查询。</p>
 </td>
 </tr>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-set_op_timeout_ms.md">torch_npu.npu.set_op_timeout_ms</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>该接口用于设置NPU上算子的执行超时时间，单位为毫秒（ms）。</p>
+</td>
+</tr>
 </tbody>
 </table>
 

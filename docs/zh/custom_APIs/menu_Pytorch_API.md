@@ -238,8 +238,8 @@
             -   [（beta）torch_npu.npu.obfuscation_finalize](./torch_npu-npu/（beta）torch_npu-npu-obfuscation_finalize.md)
             -   [（beta）torch_npu.npu.obfuscation_calculate](./torch_npu-npu/（beta）torch_npu-npu-obfuscation_calculate.md)
             -   [（beta）torch_npu.npu.aclnn.version](./torch_npu-npu/（beta）torch_npu-npu-aclnn-version.md)
-            -   [torch_npu.npu.aclnn.allow_hf32](./torch_npu-npu/torch_npu-npu-aclnn-allow_hf32.md)              
-    
+            -   [torch_npu.npu.aclnn.allow_hf32](./torch_npu-npu/torch_npu-npu-aclnn-allow_hf32.md)  
+            -   [torch_npu.npu.set_op_timeout_ms](./torch_npu-npu/torch_npu-npu-set_op_timeout_ms.md)    
         -   [amp](./torch_npu-npu/amp.md)
             -   [（beta）torch_npu.npu.get_amp_supported_dtype](./torch_npu-npu/（beta）torch_npu-npu-get_amp_supported_dtype.md)
             -   [（beta）torch_npu.npu.is_autocast_enabled](./torch_npu-npu/（beta）torch_npu-npu-is_autocast_enabled.md)
