@@ -2670,6 +2670,18 @@ def npu_add_quant_gmm_meta(y, x1, x2, x2_scale, group_list, *, x1_scale=None, gr
     return torch.empty_like(y)
 
 
+@impl(m, "npu_add_quant_matmul_")
+def npu_add_quant_matmul__meta(y, x1, x2, x2_scale, *, x1_scale=None, group_sizes=None,
+                               x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+    return y
+
+
+@impl(m, "npu_add_quant_matmul")
+def npu_add_quant_matmul_meta(y, x1, x2, x2_scale, *, x1_scale=None, group_sizes=None,
+                              x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+    return torch.empty_like(y)
+
+
 @impl(m, "npu_grouped_matmul_finalize_routing")
 def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bias=None, offset=None,
                                             pertoken_scale=None, shared_input=None, logit=None,
