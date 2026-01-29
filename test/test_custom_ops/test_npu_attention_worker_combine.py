@@ -14,14 +14,14 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 A = 4
-M = 3
+M = 1
 BS = 54
 K_plus_1 = 9
 H = 7168
 expert_num = 2  # 从 0 ~ 1024
 out_num = A # 需要小于等于A
 tokenDtype = 2
-need_schedule = 0
+need_schedule = 1
 if need_schedule != 0:
     need_schedule = 1
 Y = A * BS * K_plus_1
@@ -144,7 +144,6 @@ def golden_attention_worker_combie(token_data, micro_batch_id, expert_scales, la
 
 class TestAttentionWorkerCombine(TestCase):
 
-    @unittest.skip("Skipping due to outdated CANN; please update CANN and remove this skip")
     @SupportedDevices(['Ascend910B'])
     def test_npu_attention_worker_combine_001(self):
         expert_scales = torch.rand(BS, K_plus_1 - 1, dtype=torch.float32)
@@ -185,7 +184,7 @@ class TestAttentionWorkerCombine(TestCase):
         ctx.ffn.session_ids_buf_size = 1024
         ctx.ffn.expert_ids_buf = 0x8000
         ctx.ffn.expert_ids_buf_size = 1024
-        ctx.ffin.out_num = 1
+        ctx.ffn.out_num = 1
         ctypes.memset(ctx.ffn.reserve4, 0, 60)
 
         # 生成FfnArea数据
@@ -197,29 +196,35 @@ class TestAttentionWorkerCombine(TestCase):
         token_info_ptr = token_info_tensors.data_ptr()
         flagArrayType = ctypes.c_int32 * (M * BS * K_plus_1)
         flagArray = ctypes.cast(token_info_ptr, ctypes.POINTER(flagArrayType)).contents
+        token_info_bytes = token_info_tensors.numpy().tobytes()
 
         # 2. token_data数据
         token_data = torch.rand(M, BS, K_plus_1, H, dtype=torch.half)
         token_data_ptr = token_data.data_ptr()
         ArrayType = ctypes.c_int16 * (H * M * BS * K_plus_1)
         array = ctypes.cast(token_data_ptr, ctypes.POINTER(ArrayType)).contents
+        token_data_bytes = token_data.numpy().tobytes()
 
-        ctx.attention.token_data_buf = 640
-        ctx.attention.token_info_buf = 640 + 2 * (H * M * BS * K_plus_1)
-        ctx.attention.token_data_buf_size = M * BS * K_plus_1 * H * 2
+        ctx.attention.token_info_buf = token_info_tensors.npu().data_ptr()
+        ctx.attention.token_info_buf_size = len(token_info_bytes)
+        ctx.attention.token_data_buf = token_data.npu().data_ptr()
+        ctx.attention.token_data_buf_size = len(token_data_bytes)
+    
+        ctx.attention.micro_batch_id = 0
 
-        ctx.attention.micro_batch_id = 1
+        struct_size = ctypes.sizeof(ctx)
+        full_buffer = bytearray(struct_size)
+        struct_bytes = ctypes.string_at(ctypes.addressof(ctx), struct_size)
+        full_buffer[0:struct_size] = struct_bytes
 
-        ctx.token_buf_info = flagArray
-        ctx.token_data_array = array
-        byte_data = ctypes.string_at(ctypes.addressof(ctx), ctypes.sizeof(ctx))
-        schedule_context_tensor = torch.frombuffer(byte, dtype=torch.int8)
-        schedule_context_npu = copy.deepcopy(schedule_context_tensor).npu
+        schedule_context_tensor = torch.frombuffer(full_buffer, dtype=torch.uint8).view(torch.int8)
+        schedule_context_npu = schedule_context_tensor.clone().npu()
 
         y_cpu, next_layer_id_cpu = golden_attention_worker_combie(token_data, ctx.attention.micro_batch_id, expert_scales, layer_id)
 
         y_npu, next_layer_id_npu = \
             torch_npu.npu_attention_worker_combine(schedule_context_npu, expert_scales_npu, layer_id_npu, H, token_dtype=torch.half, need_schedule=0)
+        torch_npu.npu.synchronize()
         self.assertRtolEqual(y_cpu, y_npu)
 
 

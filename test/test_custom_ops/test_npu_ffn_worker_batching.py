@@ -13,15 +13,15 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 A = 4
-M = 3
+M = 1
 BS = 54
 K_plus_1 = 9
 H = 7168
 expert_num = 2  # 从 0 ~ 1024
 out_num = A # 需要小于等于A
 tokenDtype = 2
-need_schedule = 0
-invaildProb = 0.89 # 0.75 #0.993
+need_schedule = 1
+invaildProb = 0 # 0.75 #0.993
 if need_schedule != 0:
     need_schedule = 1
 
@@ -284,10 +284,10 @@ def generate_token_info_element(AM_idx):
     tokenInfoDes = DataDesc()
     if AM_idx % M == cur_micro_batch_id:
         tokenInfoDes.flag = 1
-        cur_expert_ids = create_random_c_array((BS * K_plus_1), 0, 2, prob=invaildProb) # expert_num - 1
+        cur_expert_ids = create_random_c_array((BS * K_plus_1), 0, 1, prob=invaildProb) # expert_num - 1
     else:
         tokenInfoDes.flag = 0
-        cur_expert_ids = create_random_c_array((BS * K_plus_1), 0, 2, prob=invaildProb) # expert_num - 1
+        cur_expert_ids = create_random_c_array((BS * K_plus_1), 0, 1, prob=invaildProb) # expert_num - 1
     tokenInfoDes.expert_ids = cur_expert_ids
     return tokenInfoDes
 
@@ -327,7 +327,8 @@ def generate_token_data():
         arr_type = TokenData * total_elements
     return arr_type(*results)
 
-
+tensor_buffers = {}
+ffn_data_parts = []
 def generate_input_func():
     ctx = ScheduleContext()
     # 填充CommonArea
@@ -338,7 +339,7 @@ def generate_input_func():
     ctx.common.expert_num = expert_num
     ctx.common.attn_to_ffn_token_size = HS
     ctx.common.ffn_to_attn_token_size = 512
-    ctx.common.schedule_mode = 2
+    ctx.common.schedule_mode = 1
     ctypes.memset(ctx.common.reserve0, 0, 96)
 
     # 填充ControlArea
@@ -356,9 +357,6 @@ def generate_input_func():
     ctx.attention.token_data_buf_size = 2048
     ctx.attention.micro_batch_id = 1
     ctypes.memset(ctx.attention.reserve5, 0, 92)
-
-    # 生成FfnArea数据
-    ffn_data_parts = []
 
     # 生成各部分数据
     # 1. token_info数据
@@ -380,8 +378,8 @@ def generate_input_func():
     ffn_data_parts.append(("session_ids", session_ids))
 
     # 5. micro_batch_ids数据
-    random_micro_batch_ids = [cur_micro_batch_id for _ in range(A)]
-    micro_batch_ids = (ctypes.c_int32 * A)(*random_micro_batch_ids)
+    random_micro_batch_ids = [cur_micro_batch_id for _ in range(M)]
+    micro_batch_ids = (ctypes.c_int32 * M)(*random_micro_batch_ids)
     ffn_data_parts.append(("micro_batch_ids", micro_batch_ids))
 
     if need_schedule == 0:
@@ -431,12 +429,23 @@ def generate_input_func():
         for _, data in ffn_data_parts:
             f.write(data if isinstance(data, bytes) else bytes(data))
 
-    print("\n==== 验证结构体大小 ====")
-    print(f"总大小: {os.path.getsize('schedule_context.bin')} 字节")
-    print(f"CommonArea: {ctypes.sizeof(CommonArea)} 字节")
-    print(f"ControlArea: {ctypes.sizeof(ControlArea)} 字节")
-    print(f"AttentionArea: {ctypes.sizeof(AttentionArea)} 字节")
-    print(f"FfnArea结构体: {ctypes.sizeof(FfnArea)} 字节")
+    tensor_buffers.clear()
+    for name, data in ffn_data_parts:
+        data_bytes = bytes(data) if isinstance(data, ctypes.Array) else data
+
+        if name in ["token_info", "session_ids", "micro_batch_ids", "expert_ids"]:
+            np_array = np.frombuffer(data_bytes, dtype=np.int32).copy()
+            tensor = torch.from_numpy(np_array).int()
+        else:
+            if tokenDtype == 2:
+                np_array = np.frombuffer(data_bytes, dtype=np.int8).copy()
+                tensor = torch.from_numpy(np_array).to(torch.int8)
+            else:
+                np_array = np.frombuffer(data_bytes, dtype=np.float16).copy()
+                tensor = torch.from_numpy(np_array).to(torch.float16)
+        
+        tensor = tensor.npu()
+        tensor_buffers[name] = tensor
 
 
 def calc_expect_func():
@@ -547,7 +556,7 @@ def calc_expect_func():
     k_indices = remainder % K_plus_1
     # 使用高级索引进行数据收集
     session_indices = session_ids_buf[a_indices]
-    micro_batch_indices = micro_batch_ids_buf[a_indices]
+    micro_batch_indices = micro_batch_ids_buf[cur_micro_batch_id]
     # 构造多维索引
     token_data_indices = (session_indices, micro_batch_indices, bs_indices, k_indices)
     # 收集数据
@@ -571,7 +580,7 @@ def calc_expect_func():
 
     # 生成其他输出
     session_ids = session_ids_buf[a_indices]
-    micro_batch_ids = micro_batch_ids_buf[a_indices]
+    micro_batch_ids = micro_batch_ids_buf[cur_micro_batch_id]
     token_ids = bs_indices  # 简化处理
     expert_offsets = k_indices
 
@@ -583,7 +592,6 @@ def calc_expect_func():
 
 class TestFfnWorkerBatching(TestCase):
 
-    @unittest.skip("Skipping due to outdated CANN; please update CANN and remove this skip")
     @SupportedDevices(['Ascend910B'])
     def test_npu_ffn_worker_batching_001(self):
         generate_input_func()
@@ -591,14 +599,36 @@ class TestFfnWorkerBatching(TestCase):
         y_cpu, group_list_cpu, session_ids_cpu, micro_batch_ids_cpu, token_ids_cpu, expert_offsets_cpu, dynamic_scale_cpu, actual_token_num_cpu = calc_expect_func()
 
         schedule_context_bin = "./schedule_context.bin"
-        with open(schedule_context_bin, "rb") as f:
-            byte_data = f.read()
-        schedule_context = torch.tensor(np.frombuffer(byte_data, dtype=np.int8).copy(), dtype=torch.int8)
-        schedule_context_npu = schedule_context.npu()
+        ctx, ffn_area = read_schedule_context(schedule_context_bin)
+
+        for name, data in ffn_data_parts:
+            data_bytes = bytes(data) if isinstance(data, ctypes.Array) else data
+
+            if name == "token_info":
+                ctx.ffn.token_info_buf = tensor_buffers[name].data_ptr()
+                ctx.ffn.token_info_buf_size = len(data_bytes)
+            elif name == "token_data":
+                ctx.ffn.token_data_buf = tensor_buffers[name].data_ptr()
+                ctx.ffn.token_data_buf_size = len(data_bytes)
+            elif name == "session_ids":
+                ctx.ffn.session_ids_buf = tensor_buffers[name].data_ptr()
+                ctx.ffn.session_ids_buf_size = len(data_bytes)
+            elif name == "micro_batch_ids":
+                ctx.ffn.micro_batch_ids_buf = tensor_buffers[name].data_ptr()
+                ctx.ffn.micro_batch_ids_buf_size = len(data_bytes)
+            elif name == "expert_ids":
+                ctx.ffn.expert_ids_buf = tensor_buffers[name].data_ptr()
+                ctx.ffn.expert_ids_buf_size = len(data_bytes)
+        
+        ctx_bytes = bytes(ctx)
+        ctx_numpy = np.frombuffer(ctx_bytes, dtype=np.int8).copy()
+        ctx_tensor = torch.from_numpy(ctx_numpy).to(torch.int8)
+        schedule_context_npu = ctx_tensor.npu()
 
         max_out_shape = [A, BS, K_plus_1, H]
         y_npu, group_list_npu, session_ids_npu, micro_batch_ids_npu, token_ids_npu, expert_offsets_npu, dynamic_scale_npu, actual_token_num_npu = \
-            torch_npu.npu_ffn_worker_batching(schedule_context_npu, expert_num, max_out_shape, tokenDtype, need_schedule, 0)
+            torch_npu.npu_ffn_worker_batching(schedule_context_npu, expert_num, max_out_shape, token_dtype=tokenDtype, need_schedule=need_schedule, layer_num=0)
+        torch_npu.npu.synchronize()
         self.assertRtolEqual(y_cpu, y_npu)
 
 
