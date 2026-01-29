@@ -4261,7 +4261,7 @@ def npu_dequant_swiglu_quant_meta(x, weight_scale=None, activation_scale=None, b
     dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
 
     # fp4
-    if dst_torch_dtype == torch.uint8:
+    if dst_torch_dtype == torch.uint8 and dst_type != torch_npu.hifloat8:
         y_size[-1] = y_size[-1] // 2
 
     return (torch.empty(y_size, dtype=dst_torch_dtype, device=x.device),
