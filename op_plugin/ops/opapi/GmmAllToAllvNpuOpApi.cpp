@@ -42,7 +42,7 @@ namespace op_api {
         const at::Tensor &mm_weight_real = mm_weight.value_or(at::Tensor());
         const at::Tensor &send_count_tensor_real = send_counts_tensor.value_or(at::Tensor());
         const at::Tensor &recv_count_tensor_real = recv_counts_tensor.value_or(at::Tensor());
-        const char *hcom_ptr = (char *)hcom.data();
+        char* hcom_ptr = const_cast<char*>(hcom.data());
         EXEC_NPU_CMD(aclnnGroupedMatMulAlltoAllv,
                      gmm_x,
                      gmm_weight,
