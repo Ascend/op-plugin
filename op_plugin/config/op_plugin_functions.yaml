@@ -5428,16 +5428,9 @@ custom:
   - func: attention_worker_scheduler(Tensor self) -> Tensor
     op_api: [v2.1, newest]
 
-  - func: npu_top_k_top_p_sample(Tensor logits, Tensor top_k, Tensor top_p, Tensor? q=None, float eps=1e-8, bool is_need_logits=False, int top_k_guess=32) -> (Tensor, Tensor)
+  - func: npu_top_k_top_p_sample(Tensor logits, Tensor top_k, Tensor top_p, *, Tensor? q=None, Tensor? min_ps=None, float? eps=1e-8, bool? is_need_logits=False, int? top_k_guess=32, int? ks_max=1024, bool? input_is_logits=True, str? post_sample='qSample', Generator? generator=None) -> (Tensor, Tensor)
     op_api: all_version
-    gen_opapi:
-      logits_select_idx:
-        size: top_k
-        dtype: at::kLong
-      logits_top_kp_select:
-        size: logits
-        dtype: at::kFloat
-      exec: aclnnTopKTopPSample
+    tags: nondeterministic_seeded
 
   - func: npu_gather_backward(Tensor grad, SymInt[] self_size, int dim, Tensor index, bool sparse_grad) -> Tensor
     op_api: all_version
