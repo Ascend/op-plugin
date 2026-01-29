@@ -66,6 +66,7 @@
       "npu_cross_entropy_loss",
       "npu_format_cast_",
       "npu_fusion_attention",
+      "npu_fusion_attention_v3",
       "npu_get_float_status",
       "npu_nms_rotated",
       "npu_random_choice_with_mask",

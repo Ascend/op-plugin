@@ -1,4 +1,4 @@
-# torch\_npu.npu\_fusion\_attention<a name="ZH-CN_TOPIC_0000002266361349"></a>
+# torch\_npu.npu\_fusion\_attention\_v3<a name="ZH-CN_TOPIC_0000002266361349"></a>
 
 ## 产品支持情况
 
@@ -12,10 +12,12 @@
 
 ![](../../figures/zh-cn_formulaimage_0000002272066629.png)
 
+该接口为`torch_npu.npu_fusion_attention`支持图模式的版本，aclgraph支持`input_layout`为`BNSD`的场景。
+
 ## 函数原型<a name="zh-cn_topic_0000001742717129_section45077510411"></a>
 
 ```
-torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=None, padding_mask=None, atten_mask=None, scale=1., keep_prob=1., pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout="", sink=None) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
+torch_npu.npu_fusion_attention_v3(query, key, value, head_num, input_layout, pse=None, padding_mask=None, atten_mask=None, scale=1., keep_prob=1., pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout="", sink=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000001742717129_section112637109429"></a>
@@ -24,7 +26,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 -   **key**（`Tensor`）：数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 -   **value**（`Tensor`）：数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 -   **head\_num**（`int`）：代表head个数，数据类型支持`int64`。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   **input\_layout**（`string`）：代表输入`query`、`key`、`value`的数据排布格式，支持BSH、SBH、BSND、BNSD、TND（`actual_seq_qlen`/`actual_seq_kvlen`需传值，`input_layou`t为TND时即为varlen场景）；后续章节如无特殊说明，S表示`query`或`key`、`value`的sequence length，Sq表示query的sequence length，Skv表示`key`、`value`的sequence length，SS表示Sq\*Skv。
+-   **input\_layout**（`string`）：代表输入`query`、`key`、`value`的数据排布格式，支持BSH、SBH、BSND、BNSD、TND（`actual_seq_qlen`/`actual_seq_kvlen`需传值，`input_layout`为TND时即为varlen场景）；后续章节如无特殊说明，S表示`query`或`key`、`value`的sequence length，Sq表示query的sequence length，Skv表示`key`、`value`的sequence length，SS表示Sq\*Skv。
 -   **pse**（`Tensor`）：可选参数，表示位置编码。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。
      - 非varlen场景支持四维输入，包含BNSS格式、BN1Skv格式、1NSS格式。
      - 若非varlen场景Sq大于1024或varlen场景、每个batch的Sq与Skv等长且是sparse\_mode为0、2、3的下三角掩码场景，可使能alibi位置编码压缩，此时只需要输入原始PSE最后1024行进行内存优化，即alibi\_compress = ori\_pse\[:, :, -1024:, :\]，参数每个batch不相同时，输入BNHSkv\(H=1024\)，每个batch相同时，输入1NHSkv\(H=1024\)。
@@ -41,11 +43,11 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
     >如果算子可判断出存在无效行场景，会自动使能无效行计算，例如`sparse_mode`为3，Sq \> Skv场景。
 
 -   **prefix**（`List[int]`）：可选参数，代表prefix稀疏计算场景每个Batch的N值。数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
--   **actual\_seq\_qlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`query`每个S的累加和长度，数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **actual\_seq\_qlen**（`Tensor`）：可选参数，varlen场景时需要传入此参数，具体为一维数组的cpu Tensor。表示`query`每个S的累加和长度，数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 
     比如真正的S长度列表为：2 2 2 2 2，则`actual_seq_qlen`传：2 4 6 8 10。
 
--   **actual\_seq\_kvlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`key`/`value`每个S的累加和长度。数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+-   **actual\_seq\_kvlen**（`Tensor`）：可选参数，varlen场景时需要传入此参数，具体为一维数组的cpu Tensor。表示`key`/`value`每个S的累加和长度。数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 
     比如真正的S长度列表为：2 2 2 2 2，则actual\_seq\_kvlen传：2 4 6 8 10。
 
@@ -135,20 +137,18 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 
 ## 输出说明<a name="zh-cn_topic_0000001742717129_section22231435517"></a>
 
-共7个输出，类型依次为**Tensor、Tensor、Tensor、Tensor、int、int、int。**
+共6个输出，类型依次为**Tensor、Tensor、Tensor、Tensor、Tensor、Tensor。**
 
 -   第1个输出为`Tensor`，计算公式的最终输出$attention\_out$，数据类型支持`float16`、`bfloat16`、`float32`。
 -   第2个输出为`Tensor`，Softmax计算的Max中间结果，用于反向计算，数据类型支持`float`。
 -   第3个输出为`Tensor`，Softmax计算的Sum中间结果，用于反向计算，数据类型支持`float`。
 -   第4个输出为`Tensor`，预留参数，暂未使用。
--   第5个输出为`int`，DSA生成dropout mask中，Philox算法的seed。
--   第6个输出为`int`，DSA生成dropout mask中，Philox算法的offset。
--   第7个输出为`int`，DSA生成dropout mask的长度。
+-   第5个输出为`Tensor`，DSA生成dropout mask中，Philox算法的seed。在aclgraph场景下，返回的是npu Tensor，在非aclgraph场景下，返回的是cpu Tensor。
+-   第6个输出为`Tensor`，DSA生成dropout mask中，Philox算法的offset。在aclgraph场景下，返回的是npu Tensor，在非aclgraph场景下，返回的是cpu Tensor。
 
 ## 约束说明<a name="zh-cn_topic_0000001742717129_section12345537164214"></a>
 
 -   该接口仅在训练场景下使用。
--   该接口暂不支持图模式，不支持aclgraph。
 -   输入`query`、`key`、`value`、`pse`的数据类型必须一致。
 -   输入`query`、`key`、`value`的`input_layout`必须一致。
 -   输入`query`、`key`、`value`的shape说明：
@@ -211,7 +211,7 @@ class TestNPUFlashAttention(TestCase):
             atten_mask = atten_mask_u | atten_mask_l
         if sparse_params[0] == 2 or sparse_params[0] == 3 or sparse_params[0] == 4:
             atten_mask = torch.triu(torch.ones(2048, 2048, dtype=torch.bool, device='npu'), diagonal=1)
-        return torch_npu.npu_fusion_attention(
+        return torch_npu.npu_fusion_attention_v3(
             query, key, value, head_num=8, input_layout="BNSD", scale=scale, sparse_mode=sparse_params[0],
             atten_mask=atten_mask, pre_tockens=sparse_params[1], next_tockens=sparse_params[2])
 

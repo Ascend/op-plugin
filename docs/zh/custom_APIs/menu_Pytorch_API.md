@@ -84,6 +84,7 @@
         -   [torch_npu.npu_fused_infer_attention_score](./torch_npu/torch_npu-npu_fused_infer_attention_score.md)
         -   [torch_npu.npu_fused_infer_attention_score_v2](./torch_npu/torch_npu-npu_fused_infer_attention_score_v2.md)
         -   [torch_npu.npu_fusion_attention](./torch_npu/torch_npu-npu_fusion_attention.md)
+        -   [torch_npu.npu_fusion_attention_v3](./torch_npu/torch_npu-npu_fusion_attention_v3.md)
         -   [torch_npu.npu_gelu](./torch_npu/torch_npu-npu_gelu.md)
         -   [torch_npu.npu_gelu_mul](./torch_npu/torch_npu-npu_gelu_mul.md)
         -   [torch_npu.npu_group_norm_silu](./torch_npu/torch_npu-npu_group_norm_silu.md)
