@@ -52,7 +52,8 @@ static tensor_list3 _calc_convolution_backward(const at::Tensor &grad_output, co
     bool is_allow_internel_format = !at_npu::native::env::CheckForbidInternalFormat();
     ASCEND_LOGI("_calc_convolution_backward exec with jit compile: %d, allow internal format: %d",
                 is_jit_enable, is_allow_internel_format);
-    if ((is_allow_internel_format || is_jit_enable) && (dim != 3)) {
+    static auto gelu_sc = at_npu::native::env::CheckStrongConsistency();
+    if ((is_allow_internel_format || is_jit_enable) && (dim != 3) && (!gelu_sc)) { // 3 for dimensions
         return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                                             transposed, output_padding, groups, output_mask);
     }
@@ -251,7 +252,8 @@ static std::tuple<at::Tensor, at::Tensor, at::Tensor> _calc_convolution_backward
     ASCEND_LOGI("_calc_convolution_backward exec with jit compile: %d, allow internal format: %d",
                 is_jit_enable, is_allow_internel_format);
     // CheckForbidInternalFormat = False: turn on private format��CheckJitDisable = False: turn on JitCompile
-    if ((is_allow_internel_format || is_jit_enable) && (dim != 3)) {
+    static auto gelu_sc = at_npu::native::env::CheckStrongConsistency();
+    if ((is_allow_internel_format || is_jit_enable) && (dim != 3) || (!gelu_sc)) { // 3 for dimensions
         return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                                             transposed, output_padding, groups, output_mask);
     }

@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import SkipIfNotGteCANNVersion
 
 
 class TestConv2dBackward(TestCase):
@@ -38,6 +39,7 @@ class TestConv2dBackward(TestCase):
             output = output.to("cpu")
         return output
 
+    @SkipIfNotGteCANNVersion("9.0.0")
     def test_conv2d_backward_shape_format_fp16(self):
         shape_format = [  # input, weight, padding, stride, dilation, bias, groups
             # shuflenet
@@ -93,4 +95,5 @@ class TestConv2dBackward(TestCase):
 
 
 if __name__ == "__main__":
+    torch_npu.npu.use_consistent_algorithms(True)
     run_tests()
