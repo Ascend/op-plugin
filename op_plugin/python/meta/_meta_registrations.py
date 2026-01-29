@@ -635,6 +635,8 @@ else:
         tmp_out = torch.empty_like(query, dtype=query.dtype, device='meta')
         if input_layout == "TND":
             tmp_out = torch.empty([query.size(0), query.size(1), value.size(2)], dtype=query.dtype, device='meta')
+        if input_layout == "BNSD_BSND":
+            tmp_out = torch.empty([query.size(0), query.size(2), query.size(1), query.size(3)], dtype=query.dtype, device='meta')
 
         if quant_scale2 is not None:
             return torch.empty_like(tmp_out, dtype=torch.int8)
