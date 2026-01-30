@@ -268,7 +268,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                     create_new_tensor_batch(y, num_group_list, x[0].size(0), n_new, options);
             } else {
                 (weight[0].dtype() == at::ScalarType::Int ||
-                 weight[0].dtype() == at::ScalarType::Float) && (!weight_trans)
+                 (weight[0].dtype() == at::ScalarType::Float && weight[0].dtype() != x[0].dtype())) && (!weight_trans)
                     ? create_new_tensor(y, x[0].size(0), n0 * INT4_NUMS_IN_INT32, options)
                     : create_new_tensor(y, x[0].size(0), n_new, options);
             }

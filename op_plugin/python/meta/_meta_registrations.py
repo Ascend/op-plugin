@@ -2537,7 +2537,7 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
             pre_offset = cur_offset
     elif split_item == 2:
         dim_m = 0
-        dim_n = n * INT4_IN_INT32 if (weight[0].dtype == torch.int32 or weight[0].dtype == torch.float32) and \
+        dim_n = n * INT4_IN_INT32 if (weight[0].dtype == torch.int32 or (weight[0].dtype == torch.float32 and weight[0].dtype != x[0].dtype)) and \
                 not is_transpose_weight(weight[0]) else n
         for i in range(num_x):
             dim_m += x[i].shape[0]
@@ -2549,7 +2549,7 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
             num_group_list = group_list.shape[0]
             y.append(x[0].new_empty((num_group_list, dim_m, dim_n), dtype=output_dtype))
     elif split_item == 3:
-        dim_n = n * INT4_IN_INT32 if (weight[0].dtype == torch.int32 or weight[0].dtype == torch.float32) and \
+        dim_n = n * INT4_IN_INT32 if (weight[0].dtype == torch.int32 or (weight[0].dtype == torch.float32 and weight[0].dtype != x[0].dtype)) and \
                 not is_transpose_weight(weight[0]) else n
         if is_a4w4_mxfp:
             dim_n = n if x[0].size(x[0].dim() - 1) == weight[0].size(weight[0].dim() - 2) else n * FP4_IN_INT8
@@ -3854,7 +3854,7 @@ def npu_kv_rmsnorm_rope_cache_v2_functional_meta(kv, gamma, cos, sin, index, k_c
 
 
 @impl(m, "npu_qkv_rms_norm_rope_cache")
-def npu_qkv_rms_norm_rope_cache_meta(qkv, q_gamma, k_gamma, cos, sin, index, q_out, k_cache, v_cache, qkv_size, head_nums, 
+def npu_qkv_rms_norm_rope_cache_meta(qkv, q_gamma, k_gamma, cos, sin, index, q_out, k_cache, v_cache, qkv_size, head_nums,
                                      *, k_scale=None, v_scale=None, k_offset=None, v_offset=None, epsilon=1e-6,
                                      cache_mode='PA_NZ', is_output_qkv=False):
     if qkv_size is None:
@@ -3884,7 +3884,7 @@ def npu_qkv_rms_norm_rope_cache_meta(qkv, q_gamma, k_gamma, cos, sin, index, q_o
     q_out_before_quant_size.append(head_nums[0] * qkv_size[3])
     k_out_before_quant_size.append(head_nums[1] * qkv_size[3])
     v_out_before_quant_size.append(head_nums[2] * qkv_size[3])
-    if is_output_qkv:        
+    if is_output_qkv:
         return (torch.empty(q_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
                 torch.empty(k_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
                 torch.empty(v_out_before_quant_size, dtype=qkv.dtype, device=qkv.device))
@@ -3894,7 +3894,7 @@ def npu_qkv_rms_norm_rope_cache_meta(qkv, q_gamma, k_gamma, cos, sin, index, q_o
 
 
 @impl(m, "npu_qkv_rms_norm_rope_cache_functional")
-def npu_qkv_rms_norm_rope_cache_functional_meta(qkv, q_gamma, k_gamma, cos, sin, index, q_out, k_cache, v_cache, qkv_size, head_nums, 
+def npu_qkv_rms_norm_rope_cache_functional_meta(qkv, q_gamma, k_gamma, cos, sin, index, q_out, k_cache, v_cache, qkv_size, head_nums,
                                         *, k_scale=None, v_scale=None, k_offset=None, v_offset=None, epsilon=1e-6,
                                         cache_mode='PA_NZ', is_output_qkv=False):
     if qkv_size is None:
@@ -3924,7 +3924,7 @@ def npu_qkv_rms_norm_rope_cache_functional_meta(qkv, q_gamma, k_gamma, cos, sin,
     q_out_before_quant_size.append(head_nums[0] * qkv_size[3])
     k_out_before_quant_size.append(head_nums[1] * qkv_size[3])
     v_out_before_quant_size.append(head_nums[2] * qkv_size[3])
-    if is_output_qkv:        
+    if is_output_qkv:
         return (torch.empty(q_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
                 torch.empty(k_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
                 torch.empty(v_out_before_quant_size, dtype=qkv.dtype, device=qkv.device),
@@ -3934,7 +3934,7 @@ def npu_qkv_rms_norm_rope_cache_functional_meta(qkv, q_gamma, k_gamma, cos, sin,
             torch.empty([], dtype=qkv.dtype, device=qkv.device),
             torch.empty_like(q_out), torch.empty_like(k_cache), torch.empty_like(v_cache))
 
-            
+
 @impl(m, "npu_apply_rotary_pos_emb")
 def npu_apply_rotary_pos_emb_meta(query, key, cos, sin, layout=1, rotary_mode='half'):
     return (torch.empty_like(query, dtype=query.dtype), torch.empty_like(key, dtype=key.dtype))

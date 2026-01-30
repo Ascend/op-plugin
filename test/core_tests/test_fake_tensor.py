@@ -1435,9 +1435,9 @@ class TestFusedInferAttentionV2(TestCase):
 
             softmax_scale = 1 / 0.0078125
             atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(
-                q, k, v, num_query_heads=8, input_layout="BNSD_BSND", 
+                q, k, v, num_query_heads=8, input_layout="BNSD_BSND",
                 softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535)
-        
+
             golden_output = torch.randn(32, 2048, 8, 128, dtype=torch.float16).npu()
 
             self.assertTrue(golden_output.shape == atten_out.shape)
@@ -1450,12 +1450,12 @@ class TestFusedInferAttentionV2(TestCase):
             q.requires_grad = True
             k.requires_grad = True
             v.requires_grad = True
-            
+
             softmax_scale = 1 / 0.0078125
             atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(
-                q, k, v, num_query_heads=8, input_layout="BSND", 
+                q, k, v, num_query_heads=8, input_layout="BSND",
                 softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535)
-        
+
             golden_output = torch.randn(32, 2048, 8, 128, dtype=torch.float16).npu()
 
             self.assertTrue(golden_output.shape == atten_out.shape)
@@ -1468,12 +1468,12 @@ class TestFusedInferAttentionV2(TestCase):
             q.requires_grad = True
             k.requires_grad = True
             v.requires_grad = True
-            
+
             softmax_scale = 1 / 0.0078125
             atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(
-                q, k, v, num_query_heads=8, input_layout="BSH", 
+                q, k, v, num_query_heads=8, input_layout="BSH",
                 softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535)
-        
+
             golden_output = torch.randn(32, 2048, 1024, dtype=torch.float16).npu()
 
             self.assertTrue(golden_output.shape == atten_out.shape)
@@ -1492,7 +1492,7 @@ class TestFusedInferAttentionV2(TestCase):
             atten_out, softmax_lse = torch.ops.npu.npu_fused_infer_attention_score_v2(
                 q, k, v, num_query_heads=8, input_layout="TND",
                 softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535)
-        
+
             golden_output = torch.randn(32, 8, 128, dtype=torch.float16).npu()
 
             self.assertTrue(golden_output.shape == atten_out.shape)
@@ -1654,7 +1654,7 @@ class TestFusedFloydAttentionGrad(TestCase):
             key_jk.requires_grad = True
             value_jk.requires_grad = True
             dquery, dkey_0, dvalue_0, dkey_1, dvalue_1 = torch_npu.npu_fused_floyd_attention_backward(grad_output, query_ik, key_ij, value_ij, key_jk, value_jk,
-                                                                                                  attention_out, softmax_max, softmax_sum, 
+                                                                                                  attention_out, softmax_max, softmax_sum,
                                                                                                   atten_mask=atten_mask,
                                                                                                   scale_value=1.0)
 
@@ -2157,7 +2157,7 @@ class TestNpuAddRmsNorm(TestCase):
             self.assertEqual(result_x.dtype, npu_x1.dtype)
             self.assertEqual(result_x.shape, npu_x1.shape)
             self.assertEqual(result_x.device, npu_x1.device)
-            
+
 
 class TestNpuAddRmsNormV2(TestCase):
     def test_npu_add_rms_norm_v2(self):
@@ -2171,7 +2171,7 @@ class TestNpuAddRmsNormV2(TestCase):
             self.assertEqual(result_rstd.shape, torch.Size([2, 1]))
             self.assertEqual(result_rstd.device, npu_x1.device)
             self.assertEqual(result_rstd.dtype, torch.float32)
-            
+
 
 class TestNpuAddRmsNormV2Functional(TestCase):
     def test_npu_add_rms_norm_v2_functional(self):
@@ -2495,6 +2495,65 @@ class TestGroupedMatmul(TestCase):
             self.assertTrue(x[0].shape[0] == res[0].shape[0])
             self.assertTrue(w[0].shape[2] == res[0].shape[1])
 
+    def test_npu_grouped_matmul_meta_10(self): # 单多单fp32
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            x1 = torch.randn(1792, 1024, dtype=torch.float32).npu()
+            x = [x1]
+            w1 = torch.randn(1024, 256, dtype=torch.float32).npu()
+            w2 = torch.randn(1024, 256, dtype=torch.float32).npu()
+            w3 = torch.randn(1024, 256, dtype=torch.float32).npu()
+            w = [w1, w2, w3]
+            b1 = torch.randn(256, dtype=torch.float32).npu()
+            b2 = torch.randn(256, dtype=torch.float32).npu()
+            b3 = torch.randn(256, dtype=torch.float32).npu()
+            b = [b1, b2, b3]
+            group_list = [256, 1280, 1792]
+            split_item = 3
+
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=0)
+            self.assertTrue(x[0].shape[0] == res[0].shape[0])
+            self.assertTrue(w[0].shape[1] == res[0].shape[1])
+
+    def test_npu_grouped_matmul_meta_11(self): # 单单单fp32
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            x1 = torch.randn(1792, 1024, dtype=torch.float32).npu()
+            x = [x1]
+            w1 = torch.randn(3, 1024, 256, dtype=torch.float32).npu()
+            w = [w1]
+            b1 = torch.randn(256, dtype=torch.float32).npu()
+            b2 = torch.randn(256, dtype=torch.float32).npu()
+            b3 = torch.randn(256, dtype=torch.float32).npu()
+            b = [b1, b2, b3]
+            group_list = [256, 1280, 1792]
+            split_item = 3
+
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=0)
+            self.assertTrue(x[0].shape[0] == res[0].shape[0])
+            self.assertTrue(w[0].shape[2] == res[0].shape[1])
+
+    def test_npu_grouped_matmul_meta_12(self): # 单多单fp32
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            x1 = torch.randn(1792, 1024, dtype=torch.float32).npu()
+            x = [x1]
+            w1 = torch.randn(1024, 256, dtype=torch.float32).npu()
+            w2 = torch.randn(1024, 256, dtype=torch.float32).npu()
+            w3 = torch.randn(1024, 256, dtype=torch.float32).npu()
+            w = [w1, w2, w3]
+            b1 = torch.randn(256, dtype=torch.float32).npu()
+            b2 = torch.randn(256, dtype=torch.float32).npu()
+            b3 = torch.randn(256, dtype=torch.float32).npu()
+            b = [b1, b2, b3]
+            group_list = torch.tensor([256, 1280, 1792]).to(torch.int64).npu()
+            split_item = 3
+            group_type = 0
+
+            res = torch_npu.npu_grouped_matmul(x, w, bias=b, group_list=group_list, split_item=split_item, group_type=group_type)
+            self.assertTrue(x[0].shape[0] == res[0].shape[0])
+            self.assertTrue(w[0].shape[1] == res[0].shape[1])
+
     def test_npu_grouped_matmul_meta_950_fp8_1(self):
         with FakeTensorMode():
             torch.manual_seed(0)
@@ -2665,7 +2724,7 @@ class TestRecurrentGatedDeltaRule(TestCase):
             key = torch.nn.functional.normalize(key, p=2, dim=-1)
             scale = 0.5
             num_accepted_tokens = torch.randint(1, mtp + 1, (b,)).npu().to(torch.int32)
-            
+
             state_copy = state.clone()
             out = torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state_copy, beta=beta, scale=scale, actual_seq_lengths=actual_seq_lengths, ssm_state_indices=ssm_state_indices, g=g, num_accepted_tokens=num_accepted_tokens)
             expect_out_shape = torch.randn(T, nv, dv, dtype = torch.bfloat16).npu()
@@ -2674,7 +2733,7 @@ class TestRecurrentGatedDeltaRule(TestCase):
 
             state_copy = state.clone()
             out_inplace, state_out_inplace = torch_npu.npu_recurrent_gated_delta_rule_functional(query, key, value, state, beta=beta, scale=scale, actual_seq_lengths=actual_seq_lengths, ssm_state_indices=ssm_state_indices, g=g, num_accepted_tokens=num_accepted_tokens)
-            
+
             expect_out_inplace = torch.randn(T, nv, dv, dtype = torch.bfloat16).npu()
             expect_state_inplace = torch.randn(T, nv, dv, dk, dtype = torch.bfloat16).npu()
 
@@ -2889,7 +2948,7 @@ class TestGMMFinalizeRouting(TestCase):
             expect_ret = torch.normal(0, 0.1, (output_bs, n), dtype=torch.float32)
             self.assertTrue(result.shape == expect_ret.shape)
             self.assertTrue(result.dtype == expect_ret.dtype)
-    
+
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip.")
     def test_npu_grouped_matmul_finalise_routing_sharedinput_none_grouplist_cumsum_meta(self):
         with FakeTensorMode():
@@ -2975,7 +3034,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
             x1_scale = torch.randint(1, 10, (M, ), dtype=torch.float32)
             x2_scale = torch.randint(1, 10, (N, ), dtype=torch.float32)
             result = torch_npu.npu_transpose_quant_batchmatmul(x1.npu(), x2.npu(), dtype=torch.float16,
-                                                        x1_scale=x1_scale.npu(), x2_scale=x2_scale.npu(), 
+                                                        x1_scale=x1_scale.npu(), x2_scale=x2_scale.npu(),
                                                         perm_x1=[1, 0, 2], perm_y=[1, 0, 2])
             expect_ret = torch.randint(-2, 2, (M, 1, Batch * N), dtype=torch.float16)
             self.assertTrue(result.shape == expect_ret.shape)
@@ -2990,7 +3049,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
             x1_scale = torch.randint(1, 10, (M, ), dtype=torch.float32)
             x2_scale = torch.randint(1, 10, (N, ), dtype=torch.float32)
             result = torch_npu.npu_transpose_quant_batchmatmul(x1.npu(), x2.npu(), dtype=torch.float16,
-                                                        x1_scale=scale.npu(), x2_scale=scale.npu(), 
+                                                        x1_scale=scale.npu(), x2_scale=scale.npu(),
                                                         perm_x1=[1, 0, 2], perm_y=[1, 0, 2])
             expect_ret = torch.randint(-2, 2, (M, 1, Batch * N), dtype=torch.float16)
             self.assertTrue(result.shape == expect_ret.shape)
@@ -3005,7 +3064,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
             x1_scale = torch.randint(1, 10, (M, ), dtype=torch.float32)
             x2_scale = torch.randint(1, 10, (N, ), dtype=torch.float32)
             result = torch_npu.npu_transpose_quant_batchmatmul(x1.npu(), x2.npu(), dtype=torch.bfloat16,
-                                                        x1_scale=x1_scale.npu(), x2_scale=x2_scale.npu(), 
+                                                        x1_scale=x1_scale.npu(), x2_scale=x2_scale.npu(),
                                                         perm_x1=[1, 0, 2], perm_y=[1, 0, 2])
             expect_ret = torch.randint(-2, 2, (M, 1, Batch * N), dtype=torch.bfloat16)
             self.assertTrue(result.shape == expect_ret.shape)
@@ -3020,7 +3079,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
             x1_scale = torch.randint(1, 10, (M, ), dtype=torch.float32)
             x2_scale = torch.randint(1, 10, (N, ), dtype=torch.float32)
             result = torch_npu.npu_transpose_quant_batchmatmul(x1.npu(), x2.npu(), dtype=torch.bfloat16,
-                                                        x1_scale=x1_scale.npu(), x2_scale=x2_scale.npu(), 
+                                                        x1_scale=x1_scale.npu(), x2_scale=x2_scale.npu(),
                                                         perm_x1=[1, 0, 2], perm_y=[1, 0, 2])
             expect_ret = torch.randint(-2, 2, (M, 1, Batch * N), dtype=torch.bfloat16)
             self.assertTrue(result.shape == expect_ret.shape)
@@ -3301,7 +3360,7 @@ class TestNpuQkvRmsNormRopeCache(TestCase):
     def test_npu_qkv_rms_norm_rope_cache_meta(self):
         B, S = 16, 3
         Nq, Nk, Nv = 16, 1, 1
-        D = 128     
+        D = 128
         N = Nq + Nk + Nv
         qkv_size = [B, S, N, D]
         head_nums = [Nq, Nk, Nv]
@@ -3359,7 +3418,7 @@ class TestNpuQkvRmsNormRopeCache(TestCase):
             self.assertEqual(v_out_before_quant.shape, torch.Size([B * S, Nv * D]))
             self.assertEqual(v_out_before_quant.dtype, dtype)
 
-            
+
 class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
     def test_npu_moe_token_permute_unpermute_meta(self):
         dtype = torch.bfloat16
@@ -3981,7 +4040,7 @@ class TestNpuDSA(TestCase):
         block_size = 256
         s2_act = 4096
         attention_mode = 2
-        
+
         layout = 'BSND'
         sparse_mode = 3
 
@@ -4056,13 +4115,13 @@ class TestNpuDSA(TestCase):
 
             self.assertEqual(npu_out.dtype, expect_out.dtype)
             self.assertEqual(npu_out.shape, expect_out.shape)
-            
+
             if params['return_softmax_lse']:
                 self.assertEqual(npu_softmax_max.dtype, expect_softmax_max.dtype)
                 self.assertEqual(npu_softmax_max.shape, expect_softmax_max.shape)
                 self.assertEqual(npu_softmax_sum.dtype, expect_softmax_sum.dtype)
                 self.assertEqual(npu_softmax_sum.shape, expect_softmax_sum.shape)
-    
+
     @unittest.skip("skip sparse_flash_attention_grad now")
     def test_dsa_npu_sparse_flash_attention_grad(self):
         with FakeTensorMode():
@@ -4166,7 +4225,7 @@ class TestNpuDSA(TestCase):
             if params['return_value']:
                 self.assertEqual(npu_values_out.dtype, expect_values_out.dtype)
                 self.assertEqual(npu_values_out.shape, expect_values_out.shape)
-    
+
     @unittest.skip("skip lightning_indexer_grad now")
     def test_dsa_npu_lightning_indexer_grad(self):
         with FakeTensorMode():
@@ -4310,7 +4369,7 @@ class TestNpuDSA(TestCase):
         output_dtype = torch.float16
         q = torch.randn(B, S1, N1, D, dtype=output_dtype, device=torch.device('npu'))
         k = torch.randn(B, S2, N2, D, dtype=output_dtype, device=torch.device('npu'))
-    
+
         q_index = torch.randn(B, S1, N1_index, D, dtype=output_dtype, device=torch.device('npu'))
         k_index = torch.randn(B, S2, N2_index, D, dtype=output_dtype, device=torch.device('npu'))
         if Dr != 0:
@@ -4332,7 +4391,7 @@ class TestNpuDSA(TestCase):
                 q_rope_tnd = None
                 k_rope_tnd = None
             weights_tnd = weights.squeeze(dim=0)
-            
+
             softmax_max = (torch.randn(N2, S1, 1, dtype=torch.float32, device=torch.device('npu')).abs() + 0.4) * D
             softmax_sum = torch.ones(N2, S1, 1, dtype=torch.float32, device=torch.device('npu'))
             actual_seq_qlen = [S1]
@@ -4358,7 +4417,7 @@ class TestNpuDSA(TestCase):
             weights = torch.randn(B, S1, N1_index, dtype=q_dtype)
             softmax_max = (torch.randn(B, N2, S1, 1, dtype=torch.float32).abs() + 0.4) * D  # N1=N2
             softmax_sum = torch.ones(B, N2, S1, 1, dtype=torch.float32)
-            softmax_max_index = (torch.randn(B, 1, S1, dtype=torch.float32).abs() + 0.4) * D * N1_index  
+            softmax_max_index = (torch.randn(B, 1, S1, dtype=torch.float32).abs() + 0.4) * D * N1_index
             softmax_sum_index = torch.ones(B, 1, S1, dtype=torch.float32)
             actual_seq_qlen = [S1]
             actual_seq_klen = [S2]
@@ -4409,7 +4468,7 @@ class TestNpuConv2d(TestCase):
         output_tensor = torch_npu.npu_conv2d(input_tensor, weight_tensor, bias, stride, padding, dilation, groups)
         grad_output = torch.ones_like(output_tensor, device="npu")
 
-        input_grad, weight_grad, bias_grad = torch_npu.npu_conv2d_backward(input_tensor, grad_output, weight_tensor, stride, padding, dilation, groups, output_mask) 
+        input_grad, weight_grad, bias_grad = torch_npu.npu_conv2d_backward(input_tensor, grad_output, weight_tensor, stride, padding, dilation, groups, output_mask)
 
         with FakeTensorMode():
             input_fake_tensor = torch.randn(4, 3, 28, 28, device="npu", requires_grad=True)
@@ -4519,7 +4578,7 @@ class TestNpuCrossEntropyLoss(TestCase):
 
 class TestNpuFusionAttention(TestCase):
     def test_npu_fusion_attention_input_layout_is_BSND(self):
-        
+
         with FakeTensorMode():
             B, N, S, D = 4, 8, 32, 32
             shape = (B, S, N, D)
