@@ -748,12 +748,12 @@
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_dense_lightning_indexer_softmax_lse.md">torch_npu.npu_dense_lightning_indexer_softmax_lse</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>该接口实现了npu_lightning_indexer的softmax求最大值和求和计算，是dense_lightning_indexer_grad_kl_loss的前置接口。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>是npu_dense_lightning_indexer_grad_kl_loss接口的前置接口，通过把Lightning Indexer组件的Softmax求最大值和求和运算提前来降低接口的显存占用。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_dense_lightning_indexer_grad_kl_loss.md">torch_npu.npu_dense_lightning_indexer_grad_kl_loss</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>该接口实现了npu_lightning_indexer的反向功能(dense)，并融合了Loss的计算。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>该接口实现了Lightning Indexer组件warmup阶段训练的反向梯度计算，并融合了Loss的计算。</p>
 </td>
 </tr>
 </tbody>
