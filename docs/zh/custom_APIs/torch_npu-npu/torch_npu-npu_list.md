@@ -409,6 +409,11 @@
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863035964_p75031810165517"><a name="zh-cn_topic_0000001863035964_p75031810165517"></a><a name="zh-cn_topic_0000001863035964_p75031810165517"></a>该接口涉及高危操作，使用请参考<a href="torch-npu-npu-change_current_allocator.md">torch.npu.npu.change_current_allocator</a>。</p>
 </td>
 </tr>
+<tr id="zh-cn_topic_0000001863035964_row10860101635520"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p1486012165527"><a name="zh-cn_topic_0000001863035964_p1486012165527"></a><a name="zh-cn_topic_0000001863035964_p1486012165527"></a><a href="torch_npu-npu-host_empty_cache.md">torch_npu.npu.host_empty_cache</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>释放当前由缓存持有的所有未占用的host物理内存。</p>
+</td>
+</tr>
 </tbody>
 </table>
 

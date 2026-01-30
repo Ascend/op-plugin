@@ -255,6 +255,7 @@
             -   [torch_npu.npu.empty_virt_addr_cache](./torch_npu-npu/torch_npu-npu-empty_virt_addr_cache.md)
             -   [torch_npu.npu.NPUPluggableAllocator](./torch_npu-npu/torch-npu-npu-NPUPluggableAllocator.md)
             -   [torch_npu.npu.change_current_allocator](./torch_npu-npu/torch-npu-npu-change_current_allocator.md)
+            -   [torch_npu.npu.host_empty_cache](./torch_npu-npu/torch_npu-npu-host_empty_cache.md)
     
         -   [aoe](./torch_npu-npu/aoe.md)
             -   [（beta）torch_npu.npu.set_aoe](./torch_npu-npu/（beta）torch_npu-npu-set_aoe.md)
