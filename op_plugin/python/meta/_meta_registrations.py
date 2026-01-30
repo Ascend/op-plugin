@@ -3157,15 +3157,16 @@ please check the sizes of scale and pertoken_scale" + ops_error(ErrCode.VALUE),
     is_a8w8_int = x1_dtype is None and x2_dtype is None and x1.dtype == torch.int8 and x2.dtype == torch.int8
     if is_a8w8_int:
         torch._check(
-            (group_sizes[0] == 0 and group_sizes[1] == 0 or group_sizes[2] == 0),
-            lambda: "when the dtype of input is int8, group_sizes's value must be 0, please check group_sizes's value" + ops_error(ErrCode.VALUE),
+            (group_sizes[0] == 0 and group_sizes[1] == 0 or group_sizes[2] == 0) or \
+            (group_sizes[0] == 1 and group_sizes[1] == 128 and group_sizes[2] == 128),
+            lambda: "when the dtype of input is int8, group_sizes's value must be 0 or [1,128,128], please check group_sizes's value" + ops_error(ErrCode.VALUE),
         )
     if pertoken_scale is None:
         torch._check(
             group_sizes[0] == 0 or group_sizes[1] == 0 or group_sizes[2] == 0,
             lambda: "when the pertoken_scale is None, group_sizes's value must be 0, please check group_sizes's value" + ops_error(ErrCode.VALUE),
         )
-    group_input_dtype_lst = [torch.uint8, torch.bits8, torch.float8_e4m3fn, torch.float8_e5m2]
+    group_input_dtype_lst = [torch.uint8, torch.bits8, torch.float8_e4m3fn, torch.float8_e5m2, torch.int8]
     group_scale_dtype_lst = [torch.float32]
     has_group = (group_sizes[0] > 1 or group_sizes[1] > 1 or group_sizes[2] > 1)
     if group_sizes is not None and has_group:
@@ -3176,7 +3177,7 @@ please check the sizes of scale and pertoken_scale" + ops_error(ErrCode.VALUE),
         )
         torch._check(
             (x1_dtype is not None and x2_dtype is not None) or (x1.dtype in group_input_dtype_lst or x2.dtype in group_input_dtype_lst),
-            lambda: "When group_sizes's value is not 0, x1_dtype and x2_dtype are None, dtype of input must be uint8, float8_e4m3fn, float8_e5m2 or int32, but x1's dtype is " +
+            lambda: "When group_sizes's value is not 0, x1_dtype and x2_dtype are None, dtype of input must be uint8, float8_e4m3fn, float8_e5m2 , int8 or int32, but x1's dtype is " +
                     str(x1.dtype) + " x2's dtype is " + str(x2.dtype) + ops_error(ErrCode.TYPE),
         )
         if group_sizes[0] > 1:
