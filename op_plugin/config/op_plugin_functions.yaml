@@ -2339,20 +2339,10 @@ official:
   - func: gelu(Tensor self, *, str approximate='none') -> Tensor
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
-    gen_opapi:
-      out:
-        size: self
-        dtype: self
-      exec: aclnnGelu, self, out
 
   - func: gelu_backward(Tensor grad_output, Tensor self, *, str approximate='none') -> Tensor
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
-    gen_opapi:
-      grad_input:
-        size: 'broadcast_ops_npu_output_size(grad_output, self)'
-        dtype: 'at::native::result_type(grad_output, self)'
-      exec: aclnnGeluBackward, grad_output, self, grad_input
 
   - func: glu(Tensor self, int dim=-1) -> Tensor
     acl_op: all_version
