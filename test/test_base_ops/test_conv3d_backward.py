@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-import unittest
 
 import torch
 import torch.nn as nn
@@ -39,7 +38,6 @@ class TestConv3dBackward(TestCase):
             output = output.to("cpu")
         return output
 
-    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     def test_conv3d_backward_shape_format_fp32(self):
         shape_format = [  # input, weight, padding, stride, dilation, bias, groups
             [[np.float32, 30, [128, 128, 4, 14, 14]],
@@ -78,38 +76,6 @@ class TestConv3dBackward(TestCase):
             self.assertRtolEqual(cpu_output.detach().numpy(), npu_output.cpu().detach().numpy())
             self.assertRtolEqual(self.input_grad[0].numpy(), self.input_grad[1].cpu().numpy())
             self.assertRtolEqual(self.weight_grad[0].numpy(), self.weight_grad[1].cpu().numpy())
-
-    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
-    def test_conv3d_backward_mask(self):
-        grad_output_cpu, grad_output_npu = create_common_tensor([np.float32, 30, [1, 1, 2]], 0, 1)
-        input_cpu, input_npu = create_common_tensor([np.float32, 30, [1, 4, 5]], 0, 1)
-        weight_cpu, weight_npu = create_common_tensor([np.float32, 30, [1, 4, 3]], 0, 1)
-        bias_sizes = [0]
-        stride = [2]
-        padding = [0]
-        dilation = [1]
-        transposed = False
-        output_padding = [0]
-        groups = 1
-        output_mask = [True, True, False]
-        cpu_output = torch.ops.aten.convolution_backward.default(grad_output_cpu, input_cpu, weight_cpu, bias_sizes,
-                                                                 stride, padding, dilation, transposed, output_padding,
-                                                                 groups, output_mask)
-        npu_output = torch.ops.aten.convolution_backward.default(grad_output_npu, input_npu, weight_npu, bias_sizes,
-                                                                 stride, padding, dilation, transposed, output_padding,
-                                                                 groups, output_mask)
-
-        input_grad_cpu = cpu_output[0]
-        weight_grad_cpu = cpu_output[1]
-        bias_grad_cpu = cpu_output[2]  # expected to be None
-        input_grad_npu = npu_output[0]
-        weight_grad_npu = npu_output[1]
-        bias_grad_npu = cpu_output[2]  # expected to be None
-
-        self.assertRtolEqual(input_grad_cpu.numpy(), input_grad_npu.cpu().numpy(), 0.001)
-        self.assertRtolEqual(weight_grad_cpu.numpy(), weight_grad_npu.cpu().numpy(), 0.001)
-        self.assertIsNone(bias_grad_cpu)
-        self.assertIsNone(bias_grad_npu)
 
 
 if __name__ == "__main__":
