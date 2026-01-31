@@ -18,23 +18,10 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-#if VERSION_BETWEEN(V1R11, V2R5)
-at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self, c10::string_view approximate)
-{
-    DO_COMPATIBILITY(aclnnGeluBackward, acl_op::gelu_backward(grad_output, self, approximate));
-    auto output_size_0 = broadcast_ops_npu_output_size(grad_output, self);
-    auto output_dtype_0 = at::native::result_type(grad_output, self);
-    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(output_size_0,
-                                                                         grad_output.options().dtype(output_dtype_0));
-    EXEC_NPU_CMD(aclnnGeluBackward, grad_output, self, grad_input);
-    return grad_input;
-}
-#endif
 
-#if VERSION_BETWEEN(V2R6, VERSION_NEWEST)
 at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self, c10::string_view approximate)
 {
-    static auto gelu_sc = at_npu::native::env::CheckStrongConsistency();
+    static auto gelu_sc = at_npu::native::env::CheckCompatibleImpl();
     auto output_size_0 = op_infer::broadcast_ops_npu_output_size(grad_output, self);
     auto output_dtype_0 = at::native::result_type(grad_output, self);
     at::Tensor grad_input = npu_preparation::apply_tensor_without_format(output_size_0,
@@ -49,5 +36,4 @@ at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self
     }
     return grad_input;
 }
-#endif
 }

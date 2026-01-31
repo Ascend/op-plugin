@@ -93,8 +93,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
             at_npu::native::OpPreparation::apply_tensor_without_format(mean_shape, input.options().dtype(acc_type));
     }
     // call HostAPI function
-    static auto gelu_sc = at_npu::native::env::CheckStrongConsistency();
-    if (!gelu_sc) {
+    static auto layer_sc = at_npu::native::env::CheckCompatibleImpl();
+    if (!layer_sc) {
         EXEC_NPU_CMD(aclnnLayerNorm, input, normalized_shape, input_weight, input_bias, eps, output, mean_out, rstd_out);
     } else {
         EXEC_NPU_CMD(aclnnFastLayerNorm, input, normalized_shape, input_weight, input_bias, eps, output, mean_out, rstd_out);

@@ -124,5 +124,5 @@ class TestGelu(TestCase):
 
 if __name__ == "__main__":
     np.random.seed(1234)
-    torch_npu.npu.use_consistent_algorithms(True)
+    torch_npu.npu.use_compatible_impl(True)
     run_tests()

@@ -106,5 +106,5 @@ class TestLayerNorm(TestCase):
 
 
 if __name__ == "__main__":
-    torch_npu.npu.use_consistent_algorithms(True)
+    torch_npu.npu.use_compatible_impl(True)
     run_tests()

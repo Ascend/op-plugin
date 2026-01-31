@@ -18,23 +18,9 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-#if VERSION_BETWEEN(V1R11, V2R5)
 at::Tensor gelu(const at::Tensor & self, c10::string_view approximate)
 {
-    DO_COMPATIBILITY(aclnnGelu, acl_op::gelu(self, approximate));
-    auto output_size_0 = self.sizes();
-    auto output_dtype_0 = self.scalar_type();
-    at::Tensor out = npu_preparation::apply_tensor_without_format(output_size_0,
-                                                                  self.options().dtype(output_dtype_0));
-    EXEC_NPU_CMD(aclnnGelu, self, out);
-    return out;
-}
-#endif
-
-#if VERSION_BETWEEN(V2R6, VERSION_NEWEST)
-at::Tensor gelu(const at::Tensor & self, c10::string_view approximate)
-{
-    static auto gelu_sc = at_npu::native::env::CheckStrongConsistency();
+    static auto gelu_sc = at_npu::native::env::CheckCompatibleImpl();
     auto output_size_0 = self.sizes();
     auto output_dtype_0 = self.scalar_type();
     at::Tensor out = npu_preparation::apply_tensor_without_format(output_size_0,
@@ -48,5 +34,4 @@ at::Tensor gelu(const at::Tensor & self, c10::string_view approximate)
     }
     return out;
 }
-#endif
 }
