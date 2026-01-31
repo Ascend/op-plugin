@@ -1495,9 +1495,6 @@
   "func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor? skip1, Tensor? skip2, Tensor? bias, Tensor? scales, Tensor expanded_src_to_dst_row, Tensor? export_for_source_row, int? drop_pad_mode=0) -> Tensor": {
     "version": ["all_version"]
   },
-  "func: matmul_double_backward(Tensor? grad_self, Tensor? grad_other, Tensor grad_out, Tensor self, Tensor other, bool[3] mask) -> (Tensor, Tensor, Tensor)": {
-    "version": ["all_version"]
-  },
   "func: __ilshift__.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)": {
     "version": ["all_version"]
   },
@@ -2897,15 +2894,6 @@
     "version": ["all_version"]
   },
   "func: masked_select.out(Tensor self, Tensor mask, *, Tensor(a!) out) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
-  "func: matmul(Tensor self, Tensor other) -> Tensor": {
-    "version": ["all_version"]
-  },
-  "func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)": {
-    "version": ["all_version"]
-  },
-  "func: matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
   "func: max(Tensor self) -> Tensor": {
