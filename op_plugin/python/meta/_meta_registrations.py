@@ -5002,17 +5002,17 @@ def save_npugraph_tensor_meta(self, *, save_path=None):
 
 
 @impl(m, "npu_grouped_dynamic_block_quant")
-def npu_dynamic_block_quant_meta(x, group_list, *, min_scale=0.0, round_mode="rint", dst_type=torch.float8_e5m2, row_block_size=1, col_block_size=128, group_list_type=0):
+def npu_grouped_dynamic_block_quant_meta(x, group_list, *, min_scale=0.0, round_mode="rint", dst_type=torch.float8_e5m2, row_block_size=1, col_block_size=128, group_list_type=0):
     dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.float8_e5m2)
     y = torch.empty(x.shape, dtype=dtype, device=x.device)
     scale_shape = list(x.shape)
 
     if len(scale_shape) == 2:
-        scale_shape[0] = scale_shape[0] / row_block_size + group_list.shape[0]
-        scale_shape[1] = math.ceil(scale_shape[1] / col_block_size)
+        scale_shape[0] = int(scale_shape[0] / row_block_size + group_list.shape[0])
+        scale_shape[1] = int(math.ceil(scale_shape[1] / col_block_size))
     elif len(scale_shape) == 3:
-        scale_shape[1] = scale_shape[1] / row_block_size + group_list.shape[0]
-        scale_shape[2] = math.ceil(scale_shape[2] / col_block_size)
+        scale_shape[1] = int(scale_shape[1] / row_block_size + group_list.shape[0])
+        scale_shape[2] = int(math.ceil(scale_shape[2] / col_block_size))
     else:
         raise RuntimeError(f"Expected x to have 2 or 3 dimensions, but got {x.dim()}.")
 
