@@ -23,6 +23,11 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 static const int TWO_DIMS = 2;
+static const int64_t PERTOKEN_QUANT_MODE = 3;
+static const int64_t PERCHANNEL_QUANT_MODE = 2;
+static const int64_t NON_QUANT = 0;
+static const int64_t NON_GROUP = 0;
+static const int64_t ACL_UNDEFINED = -1;
 
 // world_size
 const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16};
@@ -41,9 +46,9 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
     int64_t world_size, const c10::optional<at::Tensor>& bias, const c10::optional<at::Tensor>& x1_scale,
     const c10::optional<at::Tensor>& x2_scale, const c10::optional<at::Tensor>& common_scale,
     const c10::optional<at::Tensor>& x1_offset, const c10::optional<at::Tensor>& x2_offset,
-    int64_t x1_quant_mode, int64_t x2_quant_mode, int64_t common_quant_mode,
+    c10::optional<int64_t> x1_quant_mode, c10::optional<int64_t> x2_quant_mode, c10::optional<int64_t> common_quant_mode,
     c10::OptionalIntArrayRef group_sizes, c10::OptionalIntArrayRef all2all_axes,
-    int64_t comm_quant_dtype, c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
+    c10::optional<int64_t> comm_quant_dtype, c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
     c10::optional<int64_t> x1_scale_dtype, c10::optional<int64_t> x2_scale_dtype,
     c10::optional<int64_t> output_scale_dtype, c10::optional<int64_t> comm_scale_dtype, c10::optional<int64_t> y_dtype
 )
@@ -87,7 +92,7 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
 
     // pta主要是为了推导output的shape和dtype，如果这里的output_dtype没有传入，则默认是fp32
     int64_t output_default_dtype = static_cast<int64_t>(at::ScalarType::Float);
-    if (y_dtype.has_value()) {
+    if (y_dtype.has_value() && y_dtype.value() != ACL_UNDEFINED) {
         // 这里应该校验output_dtype，但是目前没有bfloat16的类型定义。怕影响正常功能，因此这里不校验了
         output_default_dtype = y_dtype.value();
     }
@@ -103,13 +108,17 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
 
     // 生成aclnn接口需要的默认值
     char *group_ptr = const_cast<char *>(hcom.data());
-    int64_t group_size = 0;
+    int64_t x1QuantMode = x1_quant_mode.has_value() ? x1_quant_mode.value() : PERTOKEN_QUANT_MODE;
+    int64_t x2QuantMode = x2_quant_mode.has_value() ? x2_quant_mode.value() : PERCHANNEL_QUANT_MODE;
+    int64_t commonQuantMode = common_quant_mode.has_value() ? common_quant_mode.value() : NON_QUANT;
+    int64_t commQuantDtype = comm_quant_dtype.has_value() ? comm_quant_dtype.value() : ACL_UNDEFINED;
+    int64_t group_size = NON_GROUP;
     bool transpose_x1 = false;
     bool transpose_x2 = false;
 
     // 前面的wrapper打包传进去之后，这里直接调用aclnn接口
     EXEC_NPU_CMD(aclnnQuantMatmulAlltoAll, x1, x2, bias, x1_scale, x2_scale, common_scale, x1_offset, x2_offset,
-        all2all_axes, group_ptr, x1_quant_mode, x2_quant_mode, common_quant_mode, comm_quant_dtype, group_size,
+        all2all_axes, group_ptr, x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, group_size,
         transpose_x1, transpose_x2, output_tensor);
     return output_tensor;
 }

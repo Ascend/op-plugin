@@ -52,7 +52,7 @@ class TestQuantMatmulAlltoAll(TestCase):
         common_quant_mode = 0
         group_size = [0]
         all2all_axes=[-1,-2]
-        comm_quant_dtype = 0
+        comm_quant_dtype = -1
         x1_dtype = None
         x2_dtype = None
         x1_scale_dtype = None
@@ -145,7 +145,7 @@ class TestQuantMatmulAlltoAll(TestCase):
         return expt_out_list
 
     @skipIfUnsupportMultiNPU(2)
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_quant_matmul_all_to_all(self):
         # 设备卡数
         world_size = 2
