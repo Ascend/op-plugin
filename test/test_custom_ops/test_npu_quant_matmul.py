@@ -427,6 +427,17 @@ class TestQuantMatmul(TestCase):
         custom_output = torch_npu.npu_quant_matmul(x1_clone.npu().t(), x2_clone.npu(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), output_dtype=torch.float32)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.0001)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_fp8_pertile_invaild_trans(self):
+        x1 = torch.randint(-5, 5, (10, 256), dtype=torch.float8_e5m2)
+        x2 = torch.randint(-5, 5, (512, 256), dtype=torch.float8_e5m2)
+        scale = torch.randint(-5, 5, (4, 2), dtype=torch.float32)
+        pertoken_scale = torch.randint(-5, 5, (10, 2), dtype=torch.float32)
+        try:
+            custom_output = torch_npu.npu_quant_matmul(x1.npu(), x2.npu().t(), scale.npu(), pertoken_scale=pertoken_scale.npu(), output_dtype=torch.float32)
+        except RuntimeError as e:
+            self.assertTrue("transpose are not same, please check input" in str(e))
+
     # pylint:disable = huawei-too-many-arguments
     def a8w4_quant_golden(self, x, weight, scale, perTokenScale, groupList, bias, output_dtype):
         m, k = x.shape

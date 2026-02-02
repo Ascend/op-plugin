@@ -50,6 +50,29 @@ bool static is_transpose_last_two_dims(const at::Tensor &tensor)
     return false;
 }
 
+static bool is_transpose_certain_two_dims(const at::Tensor &tensor, int64_t dim)
+{
+    return tensor.stride(dim + 1) == tensor.stride(dim) * tensor.size(dim);
+}
+
+static bool is_x_scale_same_transpose(const at::Tensor &x, const at::Tensor &scale, int64_t dim_x, int64_t dim_scale)
+{
+    if (x.dim() < dim_x + 2 || scale.dim() < dim_scale + 2) { // make sure dims after the start dim are no less than 2
+        return true;
+    }
+    if (x.size(dim_x) == 1 && x.size(dim_x + 1)== 1) {
+        return true;
+    }
+    if (scale.size(dim_scale) == 1 && scale.size(dim_scale + 1)== 1) {
+        return true;
+    }
+    bool x_trans = is_transpose_certain_two_dims(x, dim_x);
+    bool scale_trans = is_transpose_certain_two_dims(scale, dim_scale);
+    if (x_trans == scale_trans) {
+        return true;
+    }
+    return false;
+}
 static bool is_nz_format(const at::Tensor& x2)
 {
     const torch_npu::NPUStorageDesc &tensor_desc =
@@ -185,6 +208,32 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
 
     bool use_aclnn_v5 = x1_dtype.has_value() || (x1.dtype() != at::kInt && x1.dtype() != at::kChar) ||
          is_a8W4_float || is_a8W4_int;
+
+    aclDataType pertoken_scale_dtype_real = pertoken_scale_dtype.has_value()
+        ? c10_npu::GetAclDataType(pertoken_scale_dtype.value())
+        : (pertoken_scale.has_value()
+            ? c10_npu::GetAclDataType(static_cast<int64_t>(pertoken_scale_real.scalar_type()))
+            : aclDataType::ACL_INT8);
+    bool need_check_trans = pertoken_scale.has_value()
+        && (((pertoken_scale_real.dim() == x1.dim() && scale.dim() == x2.dim())
+                || pertoken_scale_dtype_real == aclDataType::ACL_FLOAT8_E8M0)
+            && (pertoken_scale_real.dim() >= 2 && scale.dim() >= 2))
+        && !(is_a8W4_float || is_a8W4_int);
+    if (need_check_trans) {
+        int64_t dim_x = 0;
+        int64_t dim_scale = 0;
+        if (pertoken_scale_dtype_real != aclDataType::ACL_FLOAT8_E8M0) {
+            dim_x = x1.dim() - 2; //  not mx quant, check the last 2 dim
+            dim_scale = pertoken_scale_real.dim() - 2; // check the last 2 dim
+        }
+        TORCH_CHECK(is_x_scale_same_transpose(x1, pertoken_scale_real, dim_x, dim_scale),
+                    "Input x1 tensor and pertoken_scale tensor's transpose are not same, please check input.",
+                    OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(is_x_scale_same_transpose(x2, scale, dim_x, dim_scale),
+                    "Input x2 tensor and scale tensor's transpose are not same, please check input.",
+                    OPS_ERROR(ErrCode::PARAM));
+    }
+
     bool use_trans_quant_param = scale.dtype() == at::kFloat && !pertoken_scale.has_value() &&
                                  (output_acltype != ACL_BF16 || use_aclnn_v5) && output_acltype != ACL_INT32;
     if (use_trans_quant_param) {
