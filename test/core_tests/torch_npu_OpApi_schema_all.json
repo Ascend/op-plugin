@@ -1477,6 +1477,9 @@
   "func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, *, Tensor? offset=None, Tensor? pertoken_scale=None, Tensor? bias=None, int? output_dtype=None, int? x1_dtype=None, int? x2_dtype=None, int? pertoken_scale_dtype=None, int? scale_dtype=None, int[]? group_sizes=None, Tensor? y_scale=None) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: npu_dual_level_quant_matmul(Tensor x1, Tensor x2, Tensor x1_level0_scale, Tensor x2_level0_scale, Tensor x1_level1_scale, Tensor x2_level1_scale, *, Tensor? bias=None, int output_dtype=15) -> Tensor": {
+    "version": ["v2.1", "newest"]
+  },
   "func: _npu_dropout_gen_mask.Tensor(Tensor self, int[] size, float p, int seed, int offset, *, bool? parallel=True, bool? sync=None) -> Tensor": {
     "version": ["all_version"]
   },
