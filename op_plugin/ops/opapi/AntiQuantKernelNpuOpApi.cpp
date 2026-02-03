@@ -54,6 +54,8 @@ at::Tensor npu_anti_quant(const at::Tensor &x, const at::Tensor &scale, const c1
     }
 
     at::ScalarType dst_type = c10::value_or_else(dst_dtype, [] {return at::ScalarType::Half;});
+    TORCH_CHECK(c10::toString(dst_type) != "UNKNOWN_SCALAR", "Input dst_type must be valid, but got ",
+                c10::toString(dst_type), OPS_ERROR(ErrCode::TYPE));
 
     // construct the output tensor of the NPU
     at::Tensor result = apply_anti_quant_out_tensor(x, dst_type);
