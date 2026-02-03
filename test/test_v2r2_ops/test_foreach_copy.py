@@ -134,5 +134,14 @@ class TestForeachCopy(TestCase):
             torch._foreach_copy_(npu_tensors_y, cpu_tensors_x)
             self.assertRtolEqual(npu_tensors_y, cpu_tensors_x)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_foreach_copy_different_dtype(self):
+        tensor_num_list = [20, 50]
+        for tensor_num in tensor_num_list:
+            cpu_tensors_x, npu_tensors_x = self.create_tensors(tensor_num, "int32")
+            cpu_tensors_y, npu_tensors_y = self.create_tensors(tensor_num, "double")
+            torch._foreach_copy_(npu_tensors_y, npu_tensors_x)
+            self.assertRtolEqual(npu_tensors_y, npu_tensors_x)    
+
 if __name__ == "__main__":
     run_tests()
