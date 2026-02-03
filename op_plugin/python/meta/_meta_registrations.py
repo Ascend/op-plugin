@@ -2816,7 +2816,7 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
 
 @impl(m, "npu_group_norm_silu")
 def group_norm_silu_meta(self, gemma, beta, group, eps=0.00001):
-    N = self.size(1)
+    N = self.size(0)
     if gemma is None or beta is None:
         return (torch.empty_like(self, dtype=self.dtype), self.new_empty((N, group), dtype=self.dtype), self.new_empty((N, group), dtype=self.dtype))
     else:
