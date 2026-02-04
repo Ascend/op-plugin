@@ -5045,3 +5045,93 @@ def npu_grouped_dynamic_block_quant_meta(x, group_list, *, min_scale=0.0, round_
 
     scale = torch.empty(scale_shape, dtype=torch.float32, device=x.device)
     return y, scale
+
+
+@impl(m, "npu_deformable_conv2d")
+def npu_deformable_conv2d_meta(input, weight, offset, bias, kernel_size, stride, padding,
+                               dilation=None, groups=1, deformable_groups=1):
+    if dilation is None:
+        dilation = [1, 1, 1, 1]
+
+    MIN_DIM = 4
+    torch._check(input.dim() >= MIN_DIM, lambda: f"input has to be more than {MIN_DIM}D, but got Tensor of dimension {input.dim()}.")
+    torch._check(offset.dim() >= MIN_DIM, lambda: f"offset has to be more than {MIN_DIM}D, but got Tensor of dimension {offset.dim()}.")
+    torch._check(len(stride) >= MIN_DIM, lambda: f"stride must have at least 4 elements.")
+    torch._check(len(dilation) >= MIN_DIM, lambda: f"dilation must have at least 4 elements.")
+
+    N, in_c, in_h, in_w = input.shape
+    out_c, inc_or_groups, k_h, k_w = weight.shape
+
+    dil_h = (k_h - 1) * dilation[2] + 1
+    dil_w = (k_w - 1) * dilation[3] + 1
+
+    out_h = (in_h + padding[0] + padding[1] - dil_h) // stride[2] + 1
+    out_w = (in_w + padding[2] + padding[3] - dil_w) // stride[3] + 1
+
+    out_shape = (N, out_c, out_h, out_w)
+    deform_out_shape = (N, in_c, out_h * k_h, out_w * k_w)
+
+    out = input.new_empty(out_shape)
+    deform_out = input.new_empty(deform_out_shape)
+
+    return out, deform_out
+
+
+@impl(m, "npu_ps_roi_pooling")
+def npu_ps_roi_pooling_meta(x, rois, spatial_scale, group_size, output_dim):
+    MIN_ROIS_DIM = 3
+    torch._check(
+        rois.dim() >= MIN_ROIS_DIM,
+        lambda: f"rois only supports at least {MIN_ROIS_DIM}D tensors, rois got: {rois.dim()}D."
+    )
+
+    batch_size, _, rois_num = rois.shape
+    total_rois = batch_size * rois_num
+
+    out = x.new_empty((total_rois, output_dim, group_size, group_size))
+
+    return out
+
+
+@impl(m, "npu_convolution")
+def npu_convolution_meta(input, weight, bias, stride, padding, dilation, groups):
+    torch._check(input.dim() >= 4, lambda: f"Convolution input must be at least 4D.")
+    
+    HW_START_DIM = 2
+    N = input.size(0)
+    out_channels = weight.size(0)
+
+    spatial_in = input.shape[HW_START_DIM:]
+    kernel = weight.shape[HW_START_DIM:]
+
+    out_shape = []
+    for i, (spatial_num, kernel_num, stride_num, padding_num, dilation_num) in enumerate(
+        zip(spatial_in, kernel, stride, padding, dilation)
+    ):
+        O_size = (spatial_num + 2 * padding_num - dilation_num * (kernel_num - 1) - 1) // stride_num + 1
+        torch._check(O_size > 0, lambda: f"Invalid output size at dim {i}: {O_size}.")
+        out_shape.append(O_size)
+    
+    return input.new_empty((N, out_channels, *out_shape))
+
+
+@impl(m, "npu_convolution_transpose")
+def npu_convolution_transpose_meta(input, weight, bias, padding, output_padding, stride, dilation, groups):
+    torch._check(input.dim() >= 4, lambda: f"Convolution input must be at least 4D.")
+
+    HW_START_DIM = 2
+    N = input.size(0)
+    out_channels = weight.size(1) * groups
+
+    spatial_in = input.shape[HW_START_DIM:]
+    kernel = weight.shape[HW_START_DIM:]
+
+    out_shape = []
+    for i, (spatial_num, kernel_num, stride_num, padding_num, op_num, dilation_num) in enumerate(
+        zip(spatial_in, kernel, stride, padding, output_padding, dilation)
+    ):
+        O_size = ((spatial_num - 1) * stride_num - 2 * padding_num + dilation_num * (kernel_num - 1) + op_num + 1)
+        torch._check(O_size > 0, lambda: f"Invalid output size at dim {i}: {O_size}.")
+        out_shape.append(O_size)
+    
+    return input.new_empty((N, out_channels, *out_shape))

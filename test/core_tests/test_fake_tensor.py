@@ -4662,5 +4662,70 @@ class TestQuantMatmulInplaceAdd(TestCase):
             self.assertTrue(x2.shape[1] == res_1.shape[1])
             self.assertTrue(res_1.dtype == torch.float32)
 
+class TestNpuDeformableConv2d(TestCase):
+    def test_npu_deformable_conv2d(self):
+        with FakeTensorMode():
+            input = torch.rand(16, 32, 32, 32).npu()
+            weight = torch.rand(32, 32, 5, 5).npu()
+            offset = torch.rand(16, 75, 38, 38).npu()
+
+            out, deformOut = torch_npu.npu_deformable_conv2d(
+                input,
+                weight,
+                offset,
+                None,
+                kernel_size=[5, 5],
+                stride=[1, 1, 1, 1],
+                padding=[4, 6, 8, 2]
+            )
+
+            self.assertEqual(out.shape, (16, 32, 38, 38))
+            self.assertEqual(deformOut.shape, (16, 32, 190, 190))
+
+
+class TestNpuPsRoiPooling(TestCase):
+    def test_npu_ps_roi_pooling(self):
+        with FakeTensorMode():
+            x = torch.rand((8, 68, 32, 32, 1), dtype=torch.float).npu()
+            roi = torch.rand((8, 5, 2), dtype=torch.float).npu()
+
+            out = torch_npu.npu_ps_roi_pooling(x, roi, 0.5, 2, 2)
+
+            self.assertEqual(out.shape, (16, 2, 2, 2))
+
+
+class TestNpuConvolution(TestCase):
+    def test_npu_convolution(self):
+        with FakeTensorMode():
+            input = torch.empty([1, 128, 4, 14, 14], dtype=torch.float).uniform_(-1, 1).npu()
+            weight = torch.empty([1, 128, 3, 3, 3], dtype=torch.float).uniform_(-1, 1).npu()
+            bias = None
+            stride = [1, 1, 1]
+            padding = [1, 1, 1]
+            dilation = [1, 1, 1]
+            groups = 1
+
+            out = torch_npu.npu_convolution(input, weight, bias, stride, padding, dilation, groups)
+
+            self.assertEqual(out.shape, (1, 1, 4, 14, 14))
+
+
+class TestNpuConvolutionTranspose(TestCase):
+    def test_npu_convolution_transpose(self):
+        with FakeTensorMode():
+            input = torch.empty([1, 3, 3, 3], dtype=torch.float).uniform_(-1, 1).npu()
+            weight = torch.empty([3, 2, 3, 3], dtype=torch.float).uniform_(-1, 1).npu()
+            bias = torch.empty([2], dtype=torch.float).uniform_(-1, 1).npu()
+            padding = [1, 1]
+            output_padding = [0, 0]
+            stride = [1, 1]
+            dilation = [1, 1]
+            groups = 1
+
+            out = torch_npu.npu_convolution_transpose(input, weight, bias, padding, output_padding, stride, dilation, groups)
+
+            self.assertEqual(out.shape, (1, 2, 3, 3))
+
+
 if __name__ == "__main__":
     run_tests()
