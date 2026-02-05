@@ -38,6 +38,7 @@ namespace op_api {
             permute_tokens_size.push_back(tokens.size(i));
         }
         const at::Tensor &per_token_scales = c10::value_or_else(per_token_scales_opt, [] { return at::Tensor(); });
+        auto per_token_scales_dtype = per_token_scales.dtype();
         if (per_token_scales.defined()) {
             for (int i = 0; i < per_token_scales.dim(); i++) {
                 permute_per_token_scales_size.push_back(per_token_scales.size(i));
@@ -56,10 +57,17 @@ namespace op_api {
         at::Tensor permute_token_idx = npu_preparation::apply_tensor_without_format(permute_token_idx_size, c10::dtype(c10::ScalarType::Int));
         at::Tensor expert_token_num = npu_preparation::apply_tensor_without_format(expert_token_num_size, expert_token_num_per_rank.options());
 
-        EXEC_NPU_CMD(aclnnMoeReRouting, tokens, expert_token_num_per_rank, per_token_scales,
-            expert_token_num_type, idx_type,
-            permute_tokens, permute_per_token_scales, permute_token_idx, expert_token_num);
-
+        if (per_token_scales_dtype == at::kByte) {
+            TensorWrapper per_token_scales_wrapper = {per_token_scales, aclDataType::ACL_FLOAT8_E8M0};
+            TensorWrapper permute_per_token_scales_wrapper = {permute_per_token_scales, aclDataType::ACL_FLOAT8_E8M0};
+            EXEC_NPU_CMD(aclnnMoeReRouting, tokens, expert_token_num_per_rank, per_token_scales_wrapper,
+                         expert_token_num_type, idx_type, permute_tokens, permute_per_token_scales_wrapper,
+                         permute_token_idx, expert_token_num);
+        } else {
+            EXEC_NPU_CMD(aclnnMoeReRouting, tokens, expert_token_num_per_rank, per_token_scales,
+                         expert_token_num_type, idx_type, permute_tokens, permute_per_token_scales,
+                         permute_token_idx, expert_token_num);
+        }
         return std::tie(permute_tokens, permute_per_token_scales, permute_token_idx, expert_token_num);
     }
 }
