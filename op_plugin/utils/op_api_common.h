@@ -148,6 +148,18 @@ inline void UnInitCacheThreadLocal()
     }
 }
 
+// Check a tensor is on NPU and that a tensor with non-zero elements has allocated storage.
+inline void CheckNpuTensorValid(const at::Tensor& at_tensor)
+{
+    TORCH_CHECK(torch_npu::utils::is_npu(at_tensor),
+        "Expected all tensors to be on the same device. "
+        "Expected NPU tensor, please check whether the input tensor device is correct.",
+        OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(at_tensor.numel() <= 0 || at_tensor.unsafeGetTensorImpl()->storage_initialized(),
+        "The tensor has a non-zero number of elements, but its data is not allocated yet.",
+        OPS_ERROR(ErrCode::VALUE));
+}
+
 template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *aclnn_api, void *phrase2, Args &&...args)
 {
     static const auto ptaGetExecCacheAddr = GetOpApiFuncAddr("PTAGetExecCache");
