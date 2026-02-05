@@ -790,3 +790,753 @@ bool check_aclnn_kernel_available(std::string aclnn_name)
     }
     return true;
 }
+
+inline void CollectB4ShapeInfo(const at::Tensor &at_tensor,
+                               c10::SmallVector<int64_t, MAX_DIM_NUM>& wrapperStride,
+                               c10::SmallVector<int64_t, MAX_DIM_NUM>& wrapperShape)
+{
+    if (at_tensor.sizes().size() == 1) {
+        wrapperShape[0] = wrapperShape[0] * FP4_IN_INT8;
+    } else if (at_tensor.sizes().size() > 1) {
+        if (wrapperStride[at_tensor.sizes().size() - 1] == 1) {
+            wrapperStride[at_tensor.sizes().size() - PENULTIMATE_DIM] =
+                wrapperStride[at_tensor.sizes().size() - PENULTIMATE_DIM] * FP4_IN_INT8;
+            wrapperShape[at_tensor.sizes().size() - 1] =
+                wrapperShape[at_tensor.sizes().size() - 1] * FP4_IN_INT8;
+        } else if (wrapperStride[at_tensor.sizes().size() - PENULTIMATE_DIM] == 1) {
+            wrapperStride[at_tensor.sizes().size() - 1] =
+                wrapperStride[at_tensor.sizes().size() - 1] * FP4_IN_INT8;
+            wrapperShape[at_tensor.sizes().size() - PENULTIMATE_DIM] =
+                wrapperShape[at_tensor.sizes().size() - PENULTIMATE_DIM] * FP4_IN_INT8;
+        }
+
+        for (auto i = 0; i < at_tensor.sizes().size() - PENULTIMATE_DIM; i++) {
+            wrapperStride[i] = wrapperStride[i] * FP4_IN_INT8;
+        }
+    } else {
+        TORCH_CHECK(false, "unsupported tensor size() in 4-bit dtype.", OPS_ERROR(ErrCode::VALUE));
+    }
+}
+
+void *GetOpApiFuncAddr(const char *apiName)
+{
+    if (!g_custom_lib_path.empty()) {
+        for (auto &it : g_custom_lib_path) {
+            auto cust_opapi_lib = real_path(it + "/" + GetCustOpApiLibName());
+            if (cust_opapi_lib.empty()) {
+                continue;
+            }
+            auto custOpApiHandler = GetOpApiLibHandler(cust_opapi_lib.c_str());
+            if (custOpApiHandler != nullptr) {
+                auto funcAddr =
+                    GetOpApiFuncAddrInLib(custOpApiHandler, GetCustOpApiLibName(), apiName);
+                if (funcAddr != nullptr) {
+                    // check owner
+                    if (!checkOwner(cust_opapi_lib)) {
+                        continue;
+                    }
+                    ASCEND_LOGI("%s is found in %s.", apiName, cust_opapi_lib.c_str());
+                    return funcAddr;
+                }
+            }
+        }
+        ASCEND_LOGI("%s is not in custom lib.", apiName);
+    }
+
+    if (!g_default_custom_lib_path.empty()) {
+        for (auto &it : g_default_custom_lib_path) {
+            auto default_cust_opapi_lib = real_path(it + "/" + GetCustOpApiLibName());
+            if (default_cust_opapi_lib.empty()) {
+                continue;
+            }
+            auto custOpApiHandler = GetOpApiLibHandler(default_cust_opapi_lib.c_str());
+            if (custOpApiHandler != nullptr) {
+                auto funcAddr =
+                    GetOpApiFuncAddrInLib(custOpApiHandler, GetCustOpApiLibName(), apiName);
+                if (funcAddr != nullptr) {
+                    // check owner
+                    if (!checkOwner(default_cust_opapi_lib)) {
+                        continue;
+                    }
+                    ASCEND_LOGI("%s is found in %s.", apiName, default_cust_opapi_lib.c_str());
+                    return funcAddr;
+                }
+            }
+        }
+        ASCEND_LOGI("%s is not in default custom lib.", apiName);
+    }
+
+    if (!g_opApiHandlers.empty()) {
+        for (size_t i = 0; i < g_opApiHandlers.size(); ++i) {
+            if (g_opApiHandlers[i] != nullptr) {
+                auto funcAddr = GetOpApiFuncAddrInLib(g_opApiHandlers[i], g_opApiSoFiles[i].c_str(), apiName);
+                if (funcAddr != nullptr) {
+                    ASCEND_LOGI("%s is found in %s.", apiName, g_opApiSoFiles[i].c_str());
+                    return funcAddr;
+                }
+            }
+        }
+    }
+
+    static auto opApiHandler = GetOpApiLibHandler(GetOpApiLibName());
+    if (opApiHandler != nullptr) {
+        auto funcAddr = GetOpApiFuncAddrInLib(opApiHandler, GetOpApiLibName(), apiName);
+        if (funcAddr != nullptr) {
+            return funcAddr;
+        }
+    }
+    return GetOpApiFuncAddrFromFeatureLib(apiName);
+}
+
+aclTensor *ConvertType(const at::Tensor &at_tensor)
+{
+    static const auto aclCreateTensor = GET_OP_API_FUNC(aclCreateTensor);
+    if (aclCreateTensor == nullptr) {
+        return nullptr;
+    }
+
+    if (!at_tensor.defined()) {
+        return nullptr;
+    }
+    TORCH_CHECK(torch_npu::utils::is_npu(at_tensor),
+        "Expected all tensors to be on the same device. "
+        "Expected NPU tensor, please check whether the input tensor device is correct.",
+        OPS_ERROR(ErrCode::TYPE));
+    at::ScalarType scalar_data_type = at_tensor.scalar_type();
+    aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(scalar_data_type);
+    c10::SmallVector<int64_t, MAX_DIM_NUM> storageDims;
+    c10::SmallVector<int64_t, MAX_DIM_NUM> wrapperStride = op_infer::array_to_small_vector(at_tensor.strides());
+    c10::SmallVector<int64_t, MAX_DIM_NUM> wrapperShape = op_infer::array_to_small_vector(at_tensor.sizes());
+
+    const auto dimNum = at_tensor.sizes().size();
+    aclFormat format = ACL_FORMAT_ND;
+    if (!at_npu::native::FormatHelper::IsOpInputBaseFormat(at_tensor)) {
+        format = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.npu_format_;
+        // if acl_data_type is ACL_STRING, storageDims is empty.
+        if (acl_data_type != ACL_STRING) {
+            TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
+                        OPS_ERROR(ErrCode::VALUE));
+            storageDims = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.storage_sizes_;
+        }
+    } else {
+        switch (dimNum) {
+            case NCL_DIM_NUM:
+                format = ACL_FORMAT_NCL;
+                break;
+            case NCHW_DIM_NUM:
+                format = ACL_FORMAT_NCHW;
+                break;
+            case NCDHW_DIM_NUM:
+                format = ACL_FORMAT_NCDHW;
+                break;
+            default:
+                format = ACL_FORMAT_ND;
+        }
+        // if acl_data_type is ACL_STRING, storageDims is empty.
+        if (acl_data_type != ACL_STRING) {
+            TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
+                        OPS_ERROR(ErrCode::VALUE));
+            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4) {
+                storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize() * FP4_IN_INT8);
+                CollectB4ShapeInfo(at_tensor, wrapperStride, wrapperShape);
+            } else {
+                storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
+            }
+        }
+    }
+
+    if (at_npu::native::OpPreparation::is_scalar_wrapped_to_tensor(at_tensor)) {
+        c10::Scalar expScalar = at_tensor.item();
+        at::Tensor aclInput = at_npu::native::OpPreparation::copy_scalar_to_device(expScalar, scalar_data_type);
+        return aclCreateTensor(aclInput.sizes().data(), aclInput.sizes().size(), acl_data_type,
+                               aclInput.strides().data(), aclInput.storage_offset(), format, storageDims.data(),
+                               storageDims.size(), const_cast<void *>(aclInput.storage().data()));
+    }
+
+    auto acl_tensor =
+        aclCreateTensor(wrapperShape.data(), at_tensor.sizes().size(), acl_data_type, wrapperStride.data(),
+                        at_tensor.storage_offset(), format, storageDims.data(), storageDims.size(),
+                        const_cast<void *>(at_tensor.storage().data()));
+    return acl_tensor;
+}
+
+aclScalar *ConvertType(const at::Scalar &at_scalar)
+{
+    static const auto aclCreateScalar = GET_OP_API_FUNC(aclCreateScalar);
+    if (aclCreateScalar == nullptr) {
+        return nullptr;
+    }
+
+    at::ScalarType scalar_data_type = at_scalar.type();
+    aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(scalar_data_type);
+    aclScalar *acl_scalar = nullptr;
+    switch (scalar_data_type) {
+        case at::ScalarType::Double:
+            {
+                double value = at_scalar.toDouble();
+                acl_scalar = aclCreateScalar(&value, acl_data_type);
+                break;
+            }
+        case at::ScalarType::Long:
+            {
+                int64_t value = at_scalar.toLong();
+                acl_scalar = aclCreateScalar(&value, acl_data_type);
+                break;
+            }
+        case at::ScalarType::Bool:
+            {
+                bool value = at_scalar.toBool();
+                acl_scalar = aclCreateScalar(&value, acl_data_type);
+                break;
+            }
+        case at::ScalarType::ComplexDouble:
+            {
+                auto value = at_scalar.toComplexDouble();
+                acl_scalar = aclCreateScalar(&value, acl_data_type);
+                break;
+            }
+        default:
+            acl_scalar = nullptr;
+            break;
+    }
+
+    return acl_scalar;
+}
+
+aclIntArray *ConvertType(const at::IntArrayRef &at_array)
+{
+    static const auto aclCreateIntArray = GET_OP_API_FUNC(aclCreateIntArray);
+    if (aclCreateIntArray == nullptr) {
+        return nullptr;
+    }
+    auto array = aclCreateIntArray(at_array.data(), at_array.size());
+    return array;
+}
+
+aclIntArray *ConvertType(const at::ArrayRef<c10::SymInt> &at_array)
+{
+    static const auto aclCreateIntArray = GET_OP_API_FUNC(aclCreateIntArray);
+    if (aclCreateIntArray == nullptr) {
+        return nullptr;
+    }
+    auto int_array = c10::asIntArrayRefUnchecked(at_array);
+    auto array = aclCreateIntArray(int_array.data(), int_array.size());
+    return array;
+}
+
+aclBoolArray *ConvertType(const at::ArrayRef<bool> &value)
+{
+    static const auto aclCreateBoolArray = GET_OP_API_FUNC(aclCreateBoolArray);
+    if (aclCreateBoolArray == nullptr) {
+        return nullptr;
+    }
+
+    auto array = aclCreateBoolArray(value.data(), value.size());
+    return array;
+}
+
+aclTensorList *ConvertType(const at::TensorList &at_tensor_list)
+{
+    static const auto aclCreateTensorList = GET_OP_API_FUNC(aclCreateTensorList);
+    if (aclCreateTensorList == nullptr) {
+        return nullptr;
+    }
+
+    std::vector<const aclTensor *> tensor_list(at_tensor_list.size());
+    for (size_t i = 0; i < at_tensor_list.size(); i++) {
+        tensor_list[i] = ConvertType(at_tensor_list[i]);
+    }
+    auto acl_tensor_list = aclCreateTensorList(tensor_list.data(), tensor_list.size());
+    return acl_tensor_list;
+}
+
+aclScalarList *ConvertType(const at::ArrayRef<at::Scalar> &at_scalar_list)
+{
+    static const auto aclCreateScalarList = GET_OP_API_FUNC(aclCreateScalarList);
+    if (aclCreateScalarList == nullptr) {
+        return nullptr;
+    }
+
+    std::vector<const aclScalar *> scalar_list(at_scalar_list.size());
+    for (size_t i = 0; i < at_scalar_list.size(); i++) {
+        scalar_list[i] = ConvertType(at_scalar_list[i]);
+    }
+    auto acl_scalar_list = aclCreateScalarList(scalar_list.data(), scalar_list.size());
+    return acl_scalar_list;
+}
+
+aclTensor *ConvertType(const c10::optional<at::Tensor> &opt_tensor)
+{
+    if (opt_tensor.has_value() && opt_tensor.value().defined()) {
+        return ConvertType(opt_tensor.value());
+    }
+
+    return nullptr;
+}
+
+aclIntArray *ConvertType(const c10::optional<at::IntArrayRef> &opt_array)
+{
+    if (opt_array.has_value()) {
+        return ConvertType(opt_array.value());
+    }
+
+    return nullptr;
+}
+
+aclIntArray *ConvertType(const c10::OptionalArrayRef<c10::SymInt> &opt_array)
+{
+    if (opt_array.has_value()) {
+        return ConvertType(opt_array.value());
+    }
+
+    return nullptr;
+}
+
+aclIntArray *ConvertType(const c10::OptionalIntArrayRef &opt_array)
+{
+    if (opt_array.has_value()) {
+        return ConvertType(opt_array.value());
+    }
+
+    return nullptr;
+}
+
+aclScalar *ConvertType(const c10::optional<at::Scalar> &opt_scalar)
+{
+    if (opt_scalar.has_value()) {
+        return ConvertType(opt_scalar.value());
+    }
+
+    return nullptr;
+}
+
+aclDataType ConvertType(const at::ScalarType scalarType)
+{
+    return at_npu::native::OpPreparation::convert_to_acl_data_type(scalarType);
+}
+
+aclTensor *ConvertType(const TensorWrapper &tensor_r)
+{
+    static const auto aclCreateTensor = GET_OP_API_FUNC(aclCreateTensor);
+    if (aclCreateTensor == nullptr) {
+        return nullptr;
+    }
+
+    const at::Tensor &at_tensor = tensor_r.tensor_;
+
+    if (!at_tensor.defined()) {
+        return nullptr;
+    }
+    TORCH_CHECK(torch_npu::utils::is_npu(at_tensor),
+        "Expected all tensors to be on the same device. "
+        "Expected NPU tensor, please check whether the input tensor device is correct.",
+        OPS_ERROR(ErrCode::TYPE));
+
+    aclDataType acl_data_type = tensor_r.dtype;
+    c10::SmallVector<int64_t, MAX_DIM_NUM> storageDims;
+    c10::SmallVector<int64_t, MAX_DIM_NUM> wrapperStride = op_infer::array_to_small_vector(at_tensor.strides());
+    c10::SmallVector<int64_t, MAX_DIM_NUM> wrapperShape = op_infer::array_to_small_vector(at_tensor.sizes());
+
+    const auto dimNum = at_tensor.sizes().size();
+    aclFormat format = ACL_FORMAT_ND;
+    if (!at_npu::native::FormatHelper::IsOpInputBaseFormat(at_tensor)) {
+        format = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.npu_format_;
+        // if acl_data_type is ACL_STRING, storageDims is empty.
+        if (acl_data_type != ACL_STRING) {
+            TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
+                OPS_ERROR(ErrCode::VALUE));
+            storageDims = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.storage_sizes_;
+        }
+    } else {
+        switch (dimNum) {
+            case NCL_DIM_NUM:
+                format = ACL_FORMAT_NCL;
+                break;
+            case NCHW_DIM_NUM:
+                format = ACL_FORMAT_NCHW;
+                break;
+            case NCDHW_DIM_NUM:
+                format = ACL_FORMAT_NCDHW;
+                break;
+            default:
+                format = ACL_FORMAT_ND;
+        }
+        // if acl_data_type is ACL_STRING, storageDims is empty.
+        if (acl_data_type != ACL_STRING) {
+            TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
+                        OPS_ERROR(ErrCode::VALUE));
+            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4) {
+                storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize() * FP4_IN_INT8);
+                CollectB4ShapeInfo(at_tensor, wrapperStride, wrapperShape);
+            } else {
+                storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
+            }
+        }
+    }
+
+    auto acl_tensor =
+        aclCreateTensor(wrapperShape.data(), at_tensor.sizes().size(), acl_data_type, wrapperStride.data(),
+                        at_tensor.storage_offset(), format, storageDims.data(), storageDims.size(),
+                        const_cast<void *>(at_tensor.storage().data()));
+    return acl_tensor;
+}
+
+aclTensorList *ConvertType(const TensorListWrapper &tensor_list_wrapper)
+{
+    static const auto aclCreateTensorList = GET_OP_API_FUNC(aclCreateTensorList);
+    if (aclCreateTensorList == nullptr) {
+        return nullptr;
+    }
+
+    std::vector<const aclTensor *> tensor_list(tensor_list_wrapper.tensor_list_.size());
+    for (size_t i = 0; i < tensor_list.size(); i++) {
+        tensor_list[i] = ConvertType(TensorWrapper{
+            tensor_list_wrapper.tensor_list_[i], tensor_list_wrapper.dtype});
+    }
+    auto acl_tensor_list = aclCreateTensorList(tensor_list.data(), tensor_list.size());
+    return acl_tensor_list;
+}
+
+
+aclTensor *ConvertTypeV2(TensorStructPtr at_tensor)
+{
+    static const auto aclCreateTensor = GET_OP_API_FUNC(aclCreateTensor);
+    if (aclCreateTensor == nullptr) {
+        return nullptr;
+    }
+
+    if (at_tensor == nullptr) {
+        return nullptr;
+    }
+    aclDataType acl_data_type = (*at_tensor).acl_type;
+    c10::SmallVector<int64_t, MAX_DIM_NUM> storageDims;
+    c10::SmallVector<int64_t, MAX_DIM_NUM> wrapperStride = op_infer::array_to_small_vector((*at_tensor).strides);
+    c10::SmallVector<int64_t, MAX_DIM_NUM> wrapperShape = op_infer::array_to_small_vector((*at_tensor).sizes);
+
+    const auto dimNum = (*at_tensor).sizes.size();
+    aclFormat format = ACL_FORMAT_ND;
+    if (!at_npu::native::FormatHelper::IsBaseFormatType((*at_tensor).acl_format)) {
+        format = (*at_tensor).acl_format;
+        // if acl_data_type is ACL_STRING, storageDims is empty.
+        if (acl_data_type != ACL_STRING) {
+            TORCH_CHECK((*at_tensor).itemsize > 0, "the itemsize of tensor must be greater than 0.",
+                        OPS_ERROR(ErrCode::VALUE));
+            storageDims = (*at_tensor).storage_sizes;
+        }
+    } else {
+        switch (dimNum) {
+            case NCL_DIM_NUM:
+                format = ACL_FORMAT_NCL;
+                break;
+            case NCHW_DIM_NUM:
+                format = ACL_FORMAT_NCHW;
+                break;
+            case NCDHW_DIM_NUM:
+                format = ACL_FORMAT_NCDHW;
+                break;
+            default:
+                format = ACL_FORMAT_ND;
+        }
+        // if acl_data_type is ACL_STRING, storageDims is empty.
+        if (acl_data_type != ACL_STRING) {
+            TORCH_CHECK((*at_tensor).itemsize > 0, "the itemsize of tensor must be greater than 0.",
+                        OPS_ERROR(ErrCode::VALUE));
+            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4) {
+                storageDims.push_back((*at_tensor).nbytes / (*at_tensor).itemsize * FP4_IN_INT8);
+                if ((*at_tensor).sizes.size() == 1) {
+                    wrapperShape[0] = wrapperShape[0] * FP4_IN_INT8;
+                } else if ((*at_tensor).sizes.size() > 1 && wrapperStride[(*at_tensor).sizes.size() - 1] == 1) {
+                    wrapperStride[(*at_tensor).sizes.size() - PENULTIMATE_DIM] =
+                        wrapperStride[(*at_tensor).sizes.size() - PENULTIMATE_DIM] * FP4_IN_INT8;
+                    for (auto i = 0; i < (*at_tensor).sizes.size() - PENULTIMATE_DIM; i++) {
+                        wrapperStride[i] = wrapperStride[i] * FP4_IN_INT8;
+                    }
+                    wrapperShape[(*at_tensor).sizes.size() - 1] =
+                        wrapperShape[(*at_tensor).sizes.size() - 1] * FP4_IN_INT8;
+                } else if ((*at_tensor).sizes.size() > 1 &&
+                           wrapperStride[(*at_tensor).sizes.size() - PENULTIMATE_DIM] == 1) {
+                    wrapperStride[(*at_tensor).sizes.size() - 1] =
+                        wrapperStride[(*at_tensor).sizes.size() - 1] * FP4_IN_INT8;
+                    for (auto i = 0; i < (*at_tensor).sizes.size() - PENULTIMATE_DIM; i++) {
+                        wrapperStride[i] = wrapperStride[i] * FP4_IN_INT8;
+                    }
+                    wrapperShape[(*at_tensor).sizes.size() - PENULTIMATE_DIM] =
+                        wrapperShape[(*at_tensor).sizes.size() - PENULTIMATE_DIM] * FP4_IN_INT8;
+                } else {
+                    TORCH_CHECK(false, "unsupported tensor wrapper strides in 4-bit dtype.", OPS_ERROR(ErrCode::VALUE));
+                }
+            } else {
+                storageDims.push_back((*at_tensor).nbytes / (*at_tensor).itemsize);
+            }
+        }
+    }
+
+    auto acl_tensor = aclCreateTensor(
+        wrapperShape.data(), (*at_tensor).sizes.size(), acl_data_type, wrapperStride.data(),
+        (*at_tensor).storage_offset, format, storageDims.data(), storageDims.size(), (*at_tensor).data_ptr);
+    return acl_tensor;
+}
+
+TensorStructPtr CopyTypeV2(const at::Tensor &at_tensor)
+{
+    if (!at_tensor.defined()) {
+        return nullptr;
+    }
+    TORCH_CHECK(torch_npu::utils::is_npu(at_tensor),
+        "Expected all tensors to be on the same device. "
+        "Expected NPU tensor, please check whether the input tensor device is correct.",
+        OPS_ERROR(ErrCode::TYPE));
+    aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(at_tensor.scalar_type());
+    return std::make_shared<TensorStruct>(
+        const_cast<void *>(at_tensor.storage().data()),
+        acl_data_type,
+        torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.npu_format_,
+        at_tensor.storage().nbytes(),
+        at_tensor.itemsize(),
+        at_tensor.storage_offset(),
+        at_tensor.sizes(),
+        at_tensor.strides(),
+        torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.storage_sizes_);
+}
+
+TensorStructPtr CopyTypeV2(const TensorWrapper &tensor_r)
+{
+    const at::Tensor &at_tensor = tensor_r.tensor_;
+    if (!at_tensor.defined()) {
+        return nullptr;
+    }
+    TORCH_CHECK(torch_npu::utils::is_npu(at_tensor),
+        "Expected all tensors to be on the same device. "
+        "Expected NPU tensor, please check whether the input tensor device is correct.",
+        OPS_ERROR(ErrCode::TYPE));
+    return std::make_shared<TensorStruct>(
+        const_cast<void *>(at_tensor.storage().data()),
+        tensor_r.dtype,
+        torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.npu_format_,
+        at_tensor.storage().nbytes(),
+        at_tensor.itemsize(),
+        at_tensor.storage_offset(),
+        at_tensor.sizes(),
+        at_tensor.strides(),
+        torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.storage_sizes_);
+}
+
+aclScalar *ConvertTypeV2(const at::Scalar &at_scalar)
+{
+    static const auto aclCreateScalar = GET_OP_API_FUNC(aclCreateScalar);
+    if (aclCreateScalar == nullptr) {
+        return nullptr;
+    }
+
+    at::ScalarType scalar_data_type = at_scalar.type();
+    aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(scalar_data_type);
+    aclScalar *acl_scalar = nullptr;
+    switch (scalar_data_type) {
+        case at::ScalarType::Double:
+            {
+                double value = at_scalar.toDouble();
+                acl_scalar = aclCreateScalar(&value, acl_data_type);
+                break;
+            }
+        case at::ScalarType::Long:
+            {
+                int64_t value = at_scalar.toLong();
+                acl_scalar = aclCreateScalar(&value, acl_data_type);
+                break;
+            }
+        case at::ScalarType::Bool:
+            {
+                bool value = at_scalar.toBool();
+                acl_scalar = aclCreateScalar(&value, acl_data_type);
+                break;
+            }
+        case at::ScalarType::ComplexDouble:
+            {
+                auto value = at_scalar.toComplexDouble();
+                acl_scalar = aclCreateScalar(&value, acl_data_type);
+                break;
+            }
+        default:
+            acl_scalar = nullptr;
+            break;
+    }
+
+    return acl_scalar;
+}
+
+aclIntArray *ConvertTypeV2(const std::vector<int64_t> &int_list)
+{
+    static const auto aclCreateIntArray = GET_OP_API_FUNC(aclCreateIntArray);
+    if (aclCreateIntArray == nullptr) {
+        return nullptr;
+    }
+    auto array = aclCreateIntArray(int_list.data(), int_list.size());
+    return array;
+}
+
+std::vector<int64_t> CopyTypeV2(const at::IntArrayRef &at_array)
+{
+    return at_array.vec();
+}
+
+std::vector<int64_t> CopyTypeV2(const at::ArrayRef<c10::SymInt> &at_array)
+{
+    auto int_array = c10::asIntArrayRefUnchecked(at_array);
+    return int_array.vec();
+}
+
+aclBoolArray *ConvertTypeV2(const std::vector<bool> &value)
+{
+    static const auto aclCreateBoolArray = GET_OP_API_FUNC(aclCreateBoolArray);
+    if (aclCreateBoolArray == nullptr) {
+        return nullptr;
+    }
+
+    bool *value_ptr = reinterpret_cast<bool *>(malloc(value.size() * sizeof(bool)));
+    for (size_t i = 0; i < value.size(); i++) {
+        value_ptr[i] = value[i];
+    }
+    auto array = aclCreateBoolArray(value_ptr, value.size());
+    free(value_ptr);
+    return array;
+}
+
+std::vector<bool> CopyTypeV2(const at::ArrayRef<bool> &value)
+{
+    return value.vec();
+}
+
+aclTensorList *ConvertTypeV2(const std::vector<TensorStructPtr> &at_tensor_list)
+{
+    static const auto aclCreateTensorList = GET_OP_API_FUNC(aclCreateTensorList);
+    if (aclCreateTensorList == nullptr) {
+        return nullptr;
+    }
+
+    std::vector<const aclTensor *> tensor_list(at_tensor_list.size());
+    for (size_t i = 0; i < at_tensor_list.size(); i++) {
+        tensor_list[i] = ConvertTypeV2(at_tensor_list[i]);
+    }
+    auto acl_tensor_list = aclCreateTensorList(tensor_list.data(), tensor_list.size());
+    return acl_tensor_list;
+}
+
+std::vector<TensorStructPtr> CopyTypeV2(const at::TensorList &at_tensor_list)
+{
+    std::vector<TensorStructPtr> tensor_list(at_tensor_list.size());
+    for (size_t i = 0; i < at_tensor_list.size(); i++) {
+        tensor_list[i] = CopyTypeV2(at_tensor_list[i]);
+    }
+    return tensor_list;
+}
+
+std::vector<TensorStructPtr> CopyTypeV2(const TensorListWrapper &tensor_list_wrapper)
+{
+    std::vector<TensorStructPtr> tensor_list(tensor_list_wrapper.tensor_list_.size());
+    for (size_t i = 0; i < tensor_list.size(); i++) {
+        tensor_list[i] = CopyTypeV2(TensorWrapper{
+            tensor_list_wrapper.tensor_list_[i], tensor_list_wrapper.dtype});
+    }
+    return tensor_list;
+}
+
+aclScalarList *ConvertTypeV2(const std::vector<at::Scalar> &at_scalar_list)
+{
+    static const auto aclCreateScalarList = GET_OP_API_FUNC(aclCreateScalarList);
+    if (aclCreateScalarList == nullptr) {
+        return nullptr;
+    }
+
+    std::vector<const aclScalar *> scalar_list(at_scalar_list.size());
+    for (size_t i = 0; i < at_scalar_list.size(); i++) {
+        scalar_list[i] = ConvertTypeV2(at_scalar_list[i]);
+    }
+    auto acl_scalar_list = aclCreateScalarList(scalar_list.data(), scalar_list.size());
+    return acl_scalar_list;
+}
+
+std::vector<at::Scalar> CopyTypeV2(const at::ArrayRef<at::Scalar> &at_scalar_list)
+{
+    return at_scalar_list.vec();
+}
+
+TensorStructPtr CopyTypeV2(const c10::optional<at::Tensor> &opt_tensor)
+{
+    if (opt_tensor.has_value() && opt_tensor.value().defined()) {
+        return CopyTypeV2(opt_tensor.value());
+    }
+
+    return nullptr;
+}
+
+aclIntArray *ConvertTypeV2(const c10::optional<std::vector<int64_t>> &opt_array)
+{
+    if (opt_array.has_value()) {
+        return ConvertTypeV2(opt_array.value());
+    }
+
+    return nullptr;
+}
+
+c10::optional<std::vector<int64_t>> CopyTypeV2(const c10::optional<at::IntArrayRef> &opt_array)
+{
+    if (opt_array.has_value()) {
+        return CopyTypeV2(opt_array.value());
+    }
+
+    return c10::nullopt;
+}
+
+c10::optional<std::vector<int64_t>> CopyTypeV2(const c10::OptionalArrayRef<c10::SymInt> &opt_array)
+{
+    if (opt_array.has_value()) {
+        return CopyTypeV2(opt_array.value());
+    }
+
+    return c10::nullopt;
+}
+
+c10::optional<std::vector<int64_t>> CopyTypeV2(const c10::OptionalIntArrayRef &opt_array)
+{
+    if (opt_array.has_value()) {
+        return CopyTypeV2(opt_array.value());
+    }
+
+    return c10::nullopt;
+}
+
+aclScalar *ConvertTypeV2(const c10::optional<at::Scalar> &opt_scalar)
+{
+    if (opt_scalar.has_value()) {
+        return ConvertTypeV2(opt_scalar.value());
+    }
+
+    return nullptr;
+}
+
+aclDataType ConvertTypeV2(const at::ScalarType scalarType)
+{
+    return at_npu::native::OpPreparation::convert_to_acl_data_type(scalarType);
+}
+
+char* ConvertTypeV2(const std::string &str)
+{
+    char* string_ptr = const_cast<char *>(str.c_str());
+    return string_ptr;
+}
+
+std::string CopyTypeV2(char* str)
+{
+    std::string result = str;
+    return result;
+}
+
+void MemcpyToBufImpl(const void* data, size_t size)
+{
+    if (g_hash_offset + size > g_hash_buf_size) {
+        g_hash_offset = g_hash_buf_max_size;
+        return;
+    }
+    memcpy(g_hash_buf + g_hash_offset, data, size);
+    g_hash_offset += size;
+}
