@@ -3186,9 +3186,11 @@ official:
 
   - func: logspace(Scalar start, Scalar end, int steps, float base=10.0, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: logspace.out(Scalar start, Scalar end, int steps, float base=10.0, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
 
   - func: logsumexp(Tensor self, int[1] dim, bool keepdim=False) -> Tensor
     acl_op: all_version
