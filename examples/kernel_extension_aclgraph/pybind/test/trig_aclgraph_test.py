@@ -60,7 +60,7 @@ class TestCustomTrig(TestCase):
         g.replay()
         self.check_res(real_x, static_out_sin, static_out_cos, static_out_tan)
 
-    # Test using torch.npu.NPUGraph
+    # Test using make_graphed_callables
     def test_make_graphed_callables(self):
         model = Model().npu()
         x, out_sin, out_cos = self.get_rand_input()
@@ -70,7 +70,7 @@ class TestCustomTrig(TestCase):
         real_out_tan = model(real_x, out_sin, out_cos)
         self.check_res(real_x, out_sin, out_cos, real_out_tan)
 
-    # Test using make_graphed_callables
+    # Test using the npugraph_ex backend for model compilation
     def test_npugraph_ex_backend(self):
         model = Model().npu()
         compiled_model = torch.compile(model, backend="npugraph_ex", fullgraph=True, dynamic=True)
@@ -84,7 +84,6 @@ class TestCustomTrig(TestCase):
         out_tan = torch.ops.ascendc_ops.ascendc_trig(x, out_sin, out_cos)
         self.check_res(x, out_sin, out_cos, out_tan)
 
-    # Test using the npugraph_ex backend for model compilation
     def check_res(self, x, out_sin, out_cos, out_tan):
         cpu_out_sin = torch.sin(x)
         cpu_out_cos = torch.cos(x)
