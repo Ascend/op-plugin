@@ -551,6 +551,22 @@ class FakeTensorTest(TestCase):
 
     @unittest.skipIf(TEST_WITH_TORCHDYNAMO, "isinstance check for FakeTensor won't work with compile")
     @unittest.skipIf(not RUN_NPU, "requires npu")
+    def test_batch_norm_gather_stats_update_fake_tensor(self):
+        with FakeTensorMode():
+            input_t = torch.rand(2, 3, 4, 4, device="npu")
+            mean = torch.rand(4, 3, device="npu")
+            invstd = torch.rand(4, 3, device="npu")
+            running_mean = torch.rand(3, device="npu")
+            running_var = torch.rand(3, device="npu")
+            counts = torch.tensor([1, 1, 1, 1], dtype=torch.float32, device="npu")
+            batch_mean, batch_invstd = torch_npu.batch_norm_gather_stats_update(
+                input_t, mean, invstd, running_mean, running_var, 0.1, 1e-5, counts
+            )
+        self.checkType(batch_mean, "npu", [3])
+        self.checkType(batch_invstd, "npu", [3])
+
+    @unittest.skipIf(TEST_WITH_TORCHDYNAMO, "isinstance check for FakeTensor won't work with compile")
+    @unittest.skipIf(not RUN_NPU, "requires npu")
     def test_aten_copy_multi_device(self):
         with FakeTensorMode():
             x1 = torch.rand(4, device="cpu")

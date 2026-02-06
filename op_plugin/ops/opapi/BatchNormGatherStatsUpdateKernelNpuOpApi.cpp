@@ -61,15 +61,11 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_update(const at::Tens
     DO_COMPATIBILITY(aclnnSyncBatchNormGatherStats, acl_op::batch_norm_gather_stats_update(self, sum, square_sum,
         running_mean_opt, running_var_opt, momentum, eps, counts));
 
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
-        return acl_op::batch_norm_gather_stats_update(self, sum, square_sum, running_mean_opt, running_var_opt, momentum, eps, counts);
-    }
-
     const at::Tensor &running_mean = c10::value_or_else(running_mean_opt, [] { return at::Tensor(); });
     const at::Tensor &running_var = c10::value_or_else(running_var_opt, [] { return at::Tensor(); });
 
-    at::Tensor batch_mean = npu_preparation::apply_tensor_without_format(output_size, self.options());
-    at::Tensor batch_invstd = npu_preparation::apply_tensor_without_format(output_size, self.options());
+    at::Tensor batch_mean = npu_preparation::apply_tensor_without_format(output_size, sum.options());
+    at::Tensor batch_invstd = npu_preparation::apply_tensor_without_format(output_size, sum.options());
 
     batch_norm_gather_stats_update_npu_impl(self, sum, square_sum, counts, running_mean, running_var, momentum, eps, batch_mean, batch_invstd);
     return std::make_tuple(batch_mean, batch_invstd);
