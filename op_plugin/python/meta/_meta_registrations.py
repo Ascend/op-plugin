@@ -5138,7 +5138,7 @@ def npu_convolution_transpose_meta(input, weight, bias, padding, output_padding,
 
 
 @impl(m_aten, "_convolution")
-def convolution_meta(input_tensor, weight, bias, stride, padding, dilation, transposeds, 
+def convolution_meta(input_tensor, weight, bias, stride, padding, dilation, transposeds,
                     output_padding, groups, benchmark, deterministic, cudnn_enabled, *args):
 
     batch_size, in_channels = input_tensor.shape[0], input_tensor.shape[1]
@@ -5146,18 +5146,25 @@ def convolution_meta(input_tensor, weight, bias, stride, padding, dilation, tran
     if isinstance(stride, (tuple, list)):
         stride_h, stride_w = stride
     else:
-        stride_h = stride_w = stride    
+        stride_h = stride_w = stride
     if isinstance(padding, (tuple, list)):
         pad_h, pad_w = padding
     else:
-        pad_h = pad_w = padding     
+        pad_h = pad_w = padding
     if isinstance(dilation, (tuple, list)):
         dilation_h, dilation_w = dilation
     else:
-        dilation_h = dilation_w = dilation    
+        dilation_h = dilation_w = dilation
     kernel_h, kernel_w = weight.shape[2], weight.shape[3]
     input_h, input_w = input.shape[2], input.shape[3]
     output_h = (input_h + 2 * pad_h - dilation_h * (kernel_h - 1) - 1) // stride_h + 1
     output_w = (input_w + 2 * pad_w - dilation_w * (kernel_w - 1) - 1) // stride_w + 1
     output_shape = (batch_size, out_channels, output_h, output_w)
     return torch.empty(output_shape, dtype=input.dtype, device='meta')
+
+
+@impl(m, "batch_norm_reduce")
+def batch_norm_reduce_meta(self, eps):
+    out_sum = torch.empty(self.size(1), dtype=self.dtype, device='meta')
+    out_square_sum = torch.empty(self.size(1), dtype=self.dtype, device='meta')
+    return (out_sum, out_square_sum)
