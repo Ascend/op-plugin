@@ -22,7 +22,7 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 // world_size
-const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16, 32};
+const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8};
 // x valid dtype
 const std::set<int64_t> SUPPORT_X_DTYPE_LIST{
     static_cast<int64_t>(c10_npu::DType::INT8),
@@ -65,7 +65,8 @@ at::Tensor npu_quant_reduce_scatter(const at::Tensor &x, const at::Tensor &scale
                     op_plugin::utils::DTypeToString(x_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
     }
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
-                "The world_size should be in [2, 4, 8, 16, 32], but the actual value is ", world_size, OPS_ERROR(ErrCode::VALUE));
+                "The world_size should be in ", c10::Join(", ", SUPPORT_WORLD_SIZE_LIST),
+                ", but the actual value is ", world_size, OPS_ERROR(ErrCode::VALUE));
 
     uint32_t axis_h_idx = (x.dim() == DIM_THREE ? 2 : 1);
     TORCH_CHECK(x.size(axis_h_idx) >= H_LOWER_LIMIT && x.size(axis_h_idx) <= H_UPPER_LIMIT && x.size(axis_h_idx) % NUM_128 == 0,

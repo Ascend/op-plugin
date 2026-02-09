@@ -30,7 +30,7 @@ static const int H_LOWER_LIMIT = 1024;
 static const int H_UPPER_LIMIT = 8192;
 
 // world_size
-const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16, 32};
+const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8};
 // x valid dtype
 const std::set<int64_t> SUPPORT_X_DTYPE_LIST{
     static_cast<int64_t>(c10_npu::DType::INT8),
@@ -80,7 +80,8 @@ at::Tensor npu_quant_all_reduce(const at::Tensor &x, const at::Tensor &scales, c
     }
 
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
-                "The world_size should be in [2, 4, 8, 16, 32], but the actual value is ", world_size, OPS_ERROR(ErrCode::VALUE));
+                "The world_size should be in ", c10::Join(", ", SUPPORT_WORLD_SIZE_LIST),
+                ", but the actual value is ", world_size, OPS_ERROR(ErrCode::VALUE));
 
     // x.shape是(bs, h)或者(b, s, h)，所以第0维可能是bs，也可能是b
     int64_t axis_bs = x.size(0);
