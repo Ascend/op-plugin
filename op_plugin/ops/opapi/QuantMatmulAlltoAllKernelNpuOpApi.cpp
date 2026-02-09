@@ -54,41 +54,12 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
 )
 {
     // 校验x的shape, 2维(m, k) or (k, n)
-    TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of mm is required to be 2D, but the actual x1 input is ", x1.dim(),
-                OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(x2.dim() == TWO_DIMS, "The x2 input of mm is required to be 2D, but the actual x2 input is ", x2.dim(),
-                OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(x1.size(1) == x2.size(0), "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
-        x1.size(1), " and the K-axis of x2 is ", x2.size(0), "." + OPS_ERROR(ErrCode::PARAM));
-
-    // 校验x的dtype: float8_e4m3fn/float8_e5m2
-    if (x1_dtype.has_value()) {
-        TORCH_CHECK(SUPPORT_X_DTYPE_LIST.find(x1_dtype.value()) != SUPPORT_X_DTYPE_LIST.end(),
-                    "The optional parameter x1_dtype only supports float8_e4m3fn/float8_e5m2, but now is ",
-                    op_plugin::utils::DTypeToString(x1_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
-    }
-    if (x2_dtype.has_value()) {
-        TORCH_CHECK(SUPPORT_X_DTYPE_LIST.find(x2_dtype.value()) != SUPPORT_X_DTYPE_LIST.end(),
-                    "The optional parameter x2_dtype only supports float8_e4m3fn/float8_e5m2, but now is ",
-                    op_plugin::utils::DTypeToString(x2_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
-    }
-
-    // 校验scales的dtype: float32
-    if (x1_scale_dtype.has_value()) {
-        TORCH_CHECK(SUPPORT_SCALES_DTYPE_LIST.find(x1_scale_dtype.value()) != SUPPORT_SCALES_DTYPE_LIST.end(),
-                    "The optional parameter x1_scale_dtype only supports float32, but now is ",
-                    op_plugin::utils::DTypeToString(x1_scale_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
-    }
-    if (x2_scale_dtype.has_value()) {
-        TORCH_CHECK(SUPPORT_SCALES_DTYPE_LIST.find(x2_scale_dtype.value()) != SUPPORT_SCALES_DTYPE_LIST.end(),
-                    "The optional parameter x2_scale_dtype only supports float/float_e8m0, but now is ",
-                    op_plugin::utils::DTypeToString(x2_scale_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
-    }
+    TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of quantmatmulalltoall is required to be 2D, but the actual x1 input is ", x1.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x2.dim() == TWO_DIMS, "The x2 input of quantmatmulalltoall is required to be 2D, but the actual x2 input is ", x2.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
 
     // 校验world_size
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
-        "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, OPS_ERROR(ErrCode::VALUE));
-    TORCH_CHECK(x2.size(1) % world_size == 0, "The x2 n-axis should be divisible by world_size", OPS_ERROR(ErrCode::PARAM));
+        "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, "." + OPS_ERROR(ErrCode::VALUE));
 
     // pta主要是为了推导output的shape和dtype，如果这里的output_dtype没有传入，则默认是fp32
     int64_t output_default_dtype = static_cast<int64_t>(at::ScalarType::Float);

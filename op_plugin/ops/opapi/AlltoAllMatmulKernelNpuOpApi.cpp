@@ -31,19 +31,13 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(const at::Tensor &x1, c
                                                          const c10::optional<at::Tensor>& bias, c10::OptionalIntArrayRef all2all_axes, bool all2all_out_flag)
 {
     // 校验x的shape, 2维(m, k) or (k, n)
-    TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of mm is required to be 2D, but the actual x1 input is ", x1.dim(),
-                OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(x2.dim() == TWO_DIMS, "The x2 input of mm is required to be 2D, but the actual x2 input is ", x2.dim(),
-                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of alltoallmatmul is required to be 2D, but the actual x1 input is ", x1.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x2.dim() == TWO_DIMS, "The x2 input of alltoallmatmul is required to be 2D, but the actual x2 input is ", x2.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
 
     // 校验world_size
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
-        "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, OPS_ERROR(ErrCode::VALUE));
-    TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size", OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(x1.size(1) * world_size == x2.size(0),
-        "In AlltoAllMatmul, before Matmul, the x1 will go through alltoall, the K-axis of x1 will change to ", x1.size(1) * world_size,
-        " However, the K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
-        x1.size(1) * world_size, " and the K-axis of x2 is ", x2.size(0), "." + OPS_ERROR(ErrCode::PARAM));
+        "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, "." + OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size.", OPS_ERROR(ErrCode::PARAM));
 
     // pta主要是为了推导output的shape和dtype，非量化matmulalltoall的output_dtype和输入x1一致
     aclDataType output_acl_type = npu_preparation::convert_to_acl_data_type(x1.scalar_type());

@@ -46,19 +46,15 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     c10::optional<int64_t> output_scale_dtype, c10::optional<int64_t> comm_scale_dtype, c10::optional<int64_t> y_dtype)
 {
     // 校验x1x2的shape, 2维(m, k) or (k, n)
-    TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of mm is required to be 2D, but the actual x1 input is ", x1.dim(), OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(x2.dim() == TWO_DIMS, "The x2 input of mm is required to be 2D, but the actual x2 input is ", x2.dim(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of alltoallquantmatmul is required to be 2D, but the actual x1 input is ", x1.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(x2.dim() == TWO_DIMS, "The x2 input of alltoallquantmatmul is required to be 2D, but the actual x2 input is ", x2.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
 
     // 校验world_size
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
-        "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, OPS_ERROR(ErrCode::VALUE));
+        "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, "." + OPS_ERROR(ErrCode::VALUE));
     if (world_size != 0) {
-        TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size", OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size.", OPS_ERROR(ErrCode::PARAM));
     }
-    TORCH_CHECK(x1.size(1) * world_size == x2.size(0),
-        "In AlltoAllQuantMatmul, before Matmul, the x1 will go through alltoall, the K-axis of x1 will change to ", x1.size(1) * world_size,
-        " However, the K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
-        x1.size(1) * world_size, " and the K-axis of x2 is ", x2.size(0), "." + OPS_ERROR(ErrCode::PARAM));
 
     // pta主要是为了推导output的shape和dtype，如果这里的y_dtype没有传入，则默认是fp32
     int64_t output_default_dtype = (y_dtype.has_value() && y_dtype.value() != ACL_UNDEFINED) ? y_dtype.value() : static_cast<int64_t>(at::ScalarType::Float);
