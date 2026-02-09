@@ -125,9 +125,26 @@ official:
 
   - func: _cdist_backward(Tensor grad, Tensor x1, Tensor x2, float p, Tensor cdist) -> Tensor
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      new_params:
+        p_float: 'static_cast<float>(p)'
+      out:
+        size: x1
+        dtype: grad
+      exec: aclnnCdistBackward, grad, x1, x2, cdist, p_float, out
 
   - func: _cdist_forward(Tensor x1, Tensor x2, float p, int? compute_mode) -> Tensor
     acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      new_params:
+        p_float: 'static_cast<float>(p)'
+        mode: 'compute_mode.value_or(0)'
+      out:
+        size: 'op_infer::cdist_npu_output_size(x1, x2)'
+        dtype: 'x1.scalar_type()'
+      exec: aclnnCdist, x1, x2, p_float, mode, out
 
   - func: _convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, SymInt[] padding, int[] dilation, bool transposed, SymInt[] output_padding, int groups, bool benchmark, bool deterministic, bool cudnn_enabled, bool allow_tf32) -> Tensor
     acl_op: [v2.1, newest]
@@ -1503,6 +1520,14 @@ official:
   - func: cdist(Tensor x1, Tensor x2, float p=2, int? compute_mode=None) -> Tensor
     acl_op: all_version
     op_api: all_version
+    gen_opapi:
+      new_params:
+        p_float: 'static_cast<float>(p)'
+        mode: 'compute_mode.value_or(0)'
+      out:
+        size: 'op_infer::cdist_npu_output_size(x1, x2)'
+        dtype: 'x1.scalar_type()'
+      exec: aclnnCdist, x1, x2, p_float, mode, out
 
   - func: ceil(Tensor self) -> Tensor
     acl_op: all_version

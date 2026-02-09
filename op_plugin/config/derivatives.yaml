@@ -314,3 +314,8 @@ backward:
 - name: native_dropout(Tensor input, float p, bool? train) -> (Tensor, Tensor)
   input: "native_dropout_backward(grad, result1, (!train.has_value() || !train.value() ? 1 : (p == 1 ? 0.0 : 1.0 / (1.0 - p))))"
   version: all_version
+
+- name: cdist(Tensor x1, Tensor x2, float p=2, int? compute_mode=None) -> Tensor
+  x1: _cdist_backward(grad, x1, x2, p, result)
+  x2: _cdist_backward(grad.mT().contiguous(), x2, x1, p, result.mT().contiguous())
+  version: all_version
