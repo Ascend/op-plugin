@@ -89,4 +89,43 @@ torch_npu.npu_moe_init_routing(x, row_idx, expert_idx, active_num) -> (Tensor, T
     print(expanded_row_idx)
     print(expanded_expert_idx)
     ```
+    
+- 等价计算逻辑
+
+    ```python
+    import numpy as np
+
+    def cpu_op_exec( x, row_idx, expert_idx, active_num):
+        num_rows = x.shape[0]
+        hidden_size = x.shape[-1]
+        k = expert_idx.shape[-1]
+        sort_expert_for_source_row = np.argsort(
+            expert_idx.reshape((-1,)), axis=-1, kind="stable")
+        expanded_expert_idx = np.sort(
+            expert_idx.reshape((-1,)), axis=-1)
+
+        expanded_dst_to_src_row = np.take_along_axis(
+            row_idx.reshape((-1,)), sort_expert_for_source_row, axis=-1)
+        expanded_row_idx = np.zeros(expanded_dst_to_src_row.shape).astype(np.int32)
+        expanded_row_idx[expanded_dst_to_src_row] = np.arange(
+            expanded_dst_to_src_row.shape[-1])
+        active_num = min(active_num, num_rows) * k
+        expanded_x = x[expanded_dst_to_src_row[:active_num] % num_rows, :]
+        return expanded_x, expanded_row_idx, expanded_expert_idx
+
+
+    if __name__ == "__main__":
+        n = 10
+        col = 200
+        k = 2
+        dtype = np.float32 
+        x = np.random.uniform(-1, 1, size=(n, col)).astype(dtype)
+        row_idx = np.arange(n * k).reshape([k, n]).transpose(1, 0).astype(np.int32)
+        expert_idx = np.random.randint(0, 100, size=(n, k)).astype(np.int32)
+        active_num = n
+        expanded_x, expanded_row_idx, expanded_expert_idx = cpu_op_exec( x, row_idx, expert_idx, active_num)
+        print(f"expanded_x:{expanded_x}")
+        print(f"expanded_row_idx:{expanded_row_idx}")
+        print(f"expanded_expert_idx:{expanded_expert_idx}")
+    ```  
 
