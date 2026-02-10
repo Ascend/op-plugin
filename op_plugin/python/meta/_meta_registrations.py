@@ -78,17 +78,6 @@ def npu_dtype_to_str(dtype):
     return str(torch_dtype)
 
 
-def _is_pytorch_version_ge(min_version):
-    def parse_version(v):
-        parts = list(map(int, v.split('.')[:3]))
-        return tuple(parts + [0] * (3 - len(parts)))
-
-    current_version_str = torch.__version__.split('+')[0]
-    current_version = parse_version(current_version_str)
-    target_version = parse_version(min_version)
-    return current_version >= target_version
-
-
 @impl(m_aten, "matmul_backward")
 def matmul_backward_meta(grad, self, other, mask):
     return (torch.empty_like(self), torch.empty_like(other))
@@ -1908,15 +1897,14 @@ def npu_gelu_backward_meta(grad, self, *, approximate="none"):
     return torch.empty_like(self)
 
 
-if _is_pytorch_version_ge("2.6.0"):
-    @impl(m, "npu_gelu_mul")
-    def npu_gelu_mul_meta(input_tensor, *, approximate="none"):
-        output_shape = list(input_tensor.shape)
-        last_dim = input_tensor.shape[-1]
-        output_shape[-1] = last_dim // 2
-        output_shape = tuple(output_shape)
-        output_dtype = input_tensor.dtype
-        return torch.empty(size=output_shape, dtype=output_dtype, device=torch.device("meta"))
+@impl(m, "npu_gelu_mul")
+def npu_gelu_mul_meta(input_tensor, *, approximate="none"):
+    output_shape = list(input_tensor.shape)
+    last_dim = input_tensor.shape[-1]
+    output_shape[-1] = last_dim // 2
+    output_shape = tuple(output_shape)
+    output_dtype = input_tensor.dtype
+    return torch.empty(size=output_shape, dtype=output_dtype, device=torch.device("meta"))
 
 
 @impl(m, "npu_gelu_quant")
