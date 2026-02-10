@@ -29,7 +29,7 @@
 ## 函数原型
 
 ```
-npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, x1_dtype=None, x2_dtype=None, pertoken_scale_dtype=None, scale_dtype=None, group_sizes=None) -> Tensor
+npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, group_sizes=None) -> Tensor
 ```
 
 ## 参数说明
@@ -61,14 +61,6 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int8`、`float16`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`float16`、`bfloat16`、`int32`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`float16`、`bfloat16`、`int32`。
-
-- **x1_dtype** (`int`)：可选参数，指定输入`x1` 的数据类型。
-
-- **x2_dtype** (`int`)：可选参数，指定输入`x2`的数据类型。
-
-- **pertoken_scale_dtype** (`int`)：可选参数，指定输入`pertoken_scale`的数据类型。
-
-- **scale_dtype** (`int`)：可选参数，指定输入`scale`的数据类型。
 
 - **group_sizes** (`list[int]`)：可选参数，表示分组量化粒度。
 
