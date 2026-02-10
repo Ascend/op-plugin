@@ -935,7 +935,7 @@ class TestPromptFlashAttetion(TestCase):
         self.assertRtolEqual(dequant_scale_q_nope_mla.to(torch.float32), dequant_scale_q_nope.to(torch.float32), prec=0.005, prec16=0.005)
     
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_op_exec_mla_prolog_npu_v3_mxfp8(self):
         B = 2
         He = 7168
@@ -1042,7 +1042,7 @@ class TestPromptFlashAttetion(TestCase):
         self.assertRtolEqual(dequant_scale_q_nope_mla.to(torch.float32), dequant_scale_q_nope.to(torch.float32), prec=0.005, prec16=0.005)
 
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_op_exec_mla_prolog_npu_v3_functional_mxfp8(self):
         B = 2
         He = 7168

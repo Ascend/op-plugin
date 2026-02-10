@@ -46,7 +46,7 @@ class TestNPUGeluQuant(TestCase):
         round_data = round_data.to(torch.int8)
         return round_data, scale.squeeze(-1)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_gelu_quant_static(self):
         # dst_type = int8 only
         shape = [100, 400]
@@ -73,7 +73,7 @@ class TestNPUGeluQuant(TestCase):
             self.assertRtolEqual(out_scale.type(torch.float32), golden_out_scale.type(torch.float32))
 
     
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_gelu_quant_dynamic(self):
         # dst_type = int8 only
         shape = [100, 400]

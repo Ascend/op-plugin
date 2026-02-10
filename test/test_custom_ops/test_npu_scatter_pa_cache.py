@@ -24,7 +24,7 @@ class TestScatterPaCache(TestCase):
     def custom_op_exec(self, key, keyCache, slotMapping):
         return torch_npu.npu_scatter_pa_cache(key, slotMapping, key_cache=keyCache)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_scatter_pa_cache(self, device="npu"):
         key = torch.randint(-1, 1, (256, 16, 16), dtype=torch.float32).npu()
         keyCache = torch.randint(-1, 1, (16, 16, 16, 16), dtype=torch.float32).npu()

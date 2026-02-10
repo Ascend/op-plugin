@@ -104,7 +104,7 @@ class TestGroupedMatmulAdd(TestCase):
         self.assertTrue(self.compare_cv(golden_fp32, golden_fp64, y))
 
     @unittest.skip("Skipping test_npu_grouped_matmul_add_ for now")
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_add_(self):
         x = torch.randn(512, 256, dtype=torch.float16, device="npu")
         weight = torch.randn(512, 256, dtype=torch.float16, device="npu")
@@ -152,7 +152,7 @@ class TestGroupedMatmulAdd(TestCase):
         self.assertTrue(self.compare_cv(golden_fp32, golden_fp64, res))
 
     @unittest.skip("Skipping test_npu_grouped_matmul_add_ for now")
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_add(self):
         x = torch.randn(512, 256, dtype=torch.float16, device="npu")
         weight = torch.randn(512, 256, dtype=torch.float16, device="npu")

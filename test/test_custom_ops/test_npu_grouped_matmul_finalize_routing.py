@@ -114,7 +114,7 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
         groupList = torch.tensor([M//2, M//2], dtype=torch.int64).npu()
         return x, weight, Scale, pertoken_scale, groupList
     
-    @SupportedDevices(["Ascend910_95", "Ascend950"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_grouped_matmul_finalize_routing_mxfp4(self, device="npu"):
         m, k, n, batch, topK, group_num = 72, 32, 7168, 72, 1, 1
         k1 = k * 2
@@ -147,7 +147,7 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
             logit=logit_clone, row_index=row_index_clone, shared_input_offset=shared_input_offset, output_bs=output_bs, 
             group_list_type=group_list_type,x_dtype=x_dtype, w_dtype=w_dtype, scale_dtype=scale_dtype, pertoken_scale_dtype=pertoken_scale_dtype)
     
-    @SupportedDevices(["Ascend910_95", "Ascend950"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_grouped_matmul_finalize_routing_mxfp8_wtrans(self, device="npu"):
         m, k, n, batch, topK, group_num = 72, 512, 7168, 72, 1, 1
         w_transpose = True
@@ -178,7 +178,7 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
             logit=logit_clone, row_index=row_index_clone, shared_input_offset=shared_input_offset, output_bs=output_bs, 
             group_list_type=group_list_type,x_dtype=x_dtype, w_dtype=w_dtype, scale_dtype=scale_dtype, pertoken_scale_dtype=pertoken_scale_dtype)
 
-    @SupportedDevices(["Ascend910_95", "Ascend950"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_grouped_matmul_finalize_routing_mxfp8(self, device="npu"):
         m, k, n, batch, topK, group_num = 128, 1024, 4096, 32, 4, 4
         w_transpose = False

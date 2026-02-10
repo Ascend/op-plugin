@@ -39,7 +39,7 @@ class TestNPUWeightQuantBatchMatmul(TestCase):
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_weight_quant_batchmatmul2_with_hifloat8(self, device="npu"):
         torch.manual_seed(0)
         x = torch.randn((96, 320), dtype=torch.float16).npu()
@@ -57,7 +57,7 @@ class TestNPUWeightQuantBatchMatmul(TestCase):
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_weight_quant_batchmatmul2_with_A16W4_nz_perchannel(self, device="npu"):
         torch.manual_seed(0)
         m = 1

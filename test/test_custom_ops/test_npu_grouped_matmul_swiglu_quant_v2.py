@@ -222,7 +222,7 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         self.assertRtolEqual(output1_valid, output1_npu_valid.cpu())
 
     @unittest.skip("skip case")
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_swiglu_quant_mxfp8(self, device="npu"):
         # 生成数据
         E = 2
@@ -243,7 +243,7 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         self.assertRtolEqual(output1_valid, output1_npu_valid.cpu())
     
     @unittest.skip("skip case")
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_swiglu_quant_mxfp4(self, device="npu"):
         # 生成数据
         E = 2

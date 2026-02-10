@@ -106,7 +106,7 @@ class TestAllGatherQuantMm(TestCase):
         return out_list, gather_out
 
     # @skipIfUnsupportMultiNPU(8)
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_all_gather_quant_mm(self):
         world_size = 2
         dtype = np.float16

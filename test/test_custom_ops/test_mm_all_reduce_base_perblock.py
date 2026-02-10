@@ -196,7 +196,7 @@ class TestMmAllReduceBase(TestCase):
         return out_list
 
     @skipIfUnsupportMultiNPU(8)
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_mm_all_reduce_base_perblock(self):
         world_size = 8
         x1_dtype = np.uint8

@@ -32,7 +32,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
         return output.to(torch.float16)
 
     @unittest.skip("Skipping test_npu_transpose_quant_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randn((M, Batch, K), dtype=torch.float8_e5m2)
@@ -46,7 +46,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
         self.assertRtolEqual(supported_output, custom_output, 0.01)
 
     @unittest.skip("Skipping test_npu_transpose_quant_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_1(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randn((M, Batch, K), dtype=torch.float8_e5m2)
@@ -60,7 +60,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
         self.assertRtolEqual(supported_output, custom_output, 0.01)
 
     @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_2(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randn((M, Batch, K), dtype=torch.float8_e4m3fn)
@@ -74,7 +74,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
     @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_3(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randn((M, Batch, K), dtype=torch.float8_e4m3fn)
@@ -88,7 +88,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
     @unittest.skip("Skipping test_npu_transpose_quant_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_4(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randn((M, Batch, K), dtype=torch.float8_e5m2)
@@ -99,7 +99,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
                                             perm_y=[1, 0, 2]).to("cpu")
 
     @unittest.skip("Skipping test_npu_transpose_quant_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_5(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randn((M, Batch, K), dtype=torch.float8_e4m3fn)
@@ -110,7 +110,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
                                             perm_y=[1, 0, 2]).to("cpu")
 
     @unittest.skip("Skipping npu_transpose_quant_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_6(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randn((M, Batch, K), dtype=torch.float8_e4m3fn)
@@ -121,7 +121,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
                                             perm_y=[1, 1, 2]).to("cpu")
 
     @unittest.skip("Skipping npu_transpose_quant_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_7(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randint(-10, 10, (M, Batch, K), dtype=torch.float16)
@@ -132,7 +132,7 @@ class TestTransposeQuantBatchMatmul(TestCase):
                                             perm_y=[1, 0, 2]).to("cpu")
 
     @unittest.skip("Skipping npu_transpose_quant_batchmatmul temporarily")
-    @SupportedDevices(["Ascend910_95"])
+    @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_8(self, device="npu"):
         M, K, N, Batch = 32, 512, 128, 32
         x1 = torch.randn((M, Batch, K), dtype=torch.float8_e4m3fn)

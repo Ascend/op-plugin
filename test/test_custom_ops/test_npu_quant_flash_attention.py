@@ -70,7 +70,7 @@ class TestNPUQuantFlashAttentionV2(TestCase):
             d_scale_q=d_scale_q, d_scale_k=d_scale_k, d_scale_v=d_scale_v)
 
     
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_quant_flash_attention_with_fp8(self, device="npu"):
         query = torch.randn(1, 8, 256, 128, dtype=torch.float16)
         key = torch.randn(1, 8, 256, 128, dtype=torch.float16)

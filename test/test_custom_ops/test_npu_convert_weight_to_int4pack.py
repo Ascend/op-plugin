@@ -43,7 +43,7 @@ class TestNPUConvertWeightToINT4Pack(TestCase):
                     weight_packed[gid, kid, nid] = w8_0 + (w8_1 << 8) + (w8_2 << 16) + (w8_3 << 24)
         return torch.from_numpy(weight_packed).to(torch.int32)
 
-    @SupportedDevices(['Ascend910B', 'Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend910B', 'Ascend950'])
     def test_npu_convert_weight_to_int4pack(self, device="npu"):
         torch.manual_seed(0)
         m = 128
@@ -76,7 +76,7 @@ class TestNPUConvertWeightToINT4Pack(TestCase):
 
         self.assertRtolEqual(supported_output.to(torch.float16), custom_output, 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_convert_weight_to_int4pack(self, device="npu"):
         torch.manual_seed(0)
         m = 128
@@ -109,7 +109,7 @@ class TestNPUConvertWeightToINT4Pack(TestCase):
 
         self.assertRtolEqual(supported_output.to(torch.float16), custom_output, 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_convert_weight_to_int4pack_3dim_nd(self, device="npu"):
         g = 2
         k = 8

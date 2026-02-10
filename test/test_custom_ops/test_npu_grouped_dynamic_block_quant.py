@@ -39,7 +39,7 @@ class TestGroupedDynamicBlockQuant(TestCase):
 
         return input_tensor, group_list_tensor
     
-    @SupportedDevices(['Ascend910_95'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_dynamic_block_quant(self, device="npu"):
         input_tensor, group_list_tensor = self.generate_input(input=[1, 2], group_list=[1], input_dtype="float16")
         input_tensor = input_tensor.to(device)

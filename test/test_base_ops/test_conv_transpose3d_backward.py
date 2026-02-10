@@ -107,7 +107,7 @@ class TestConvTranspose3dBackward(TestCase):
             with self.assertRaises(RuntimeError):
                 npu_output = self.npu_op_exec(npu_input, npu_weight, bias1=npu_bias, padding=0)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_conv_transpose3d_backward_shape_format_fp16_filter_emptydhw_950(self):
         shape_format = [
             [[np.float16, 30, [1, 1, 1, 1, 1]], [np.float16, 30, [1, 1, 0, 1, 1]]],

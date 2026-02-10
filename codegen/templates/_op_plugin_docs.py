@@ -4774,7 +4774,7 @@ npu_transpose_quant_batchmatmul(Tensor x1, Tensor x2, int dtype, *, Tensor? bias
 -x1_scale和x2_scale当前暂不支持非1D输入
 
 支持的芯片型号:
--昇腾910_95 AI处理器
+-昇腾950 AI处理器
 
 调用示例:
 # 单算子调用

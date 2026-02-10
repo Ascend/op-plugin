@@ -913,7 +913,7 @@ class TestGroupedMatmul(TestCase):
             _ = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
                                     split_item=split_item)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_quant_950(self): # 量化 单单单
         torch.manual_seed(0)
         group_list = torch.tensor([16, ]).to(torch.int64).npu()
@@ -956,7 +956,7 @@ class TestGroupedMatmul(TestCase):
 
             self.assertRtolEqual(supported_output[0], custom_output[0].cpu().numpy(), 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_no_quant_case_1(self): # 单单单
         torch.manual_seed(0)
         x1 = torch.normal(mean=0., std=0.1, size=(64, 256), dtype=torch.float16)
@@ -981,7 +981,7 @@ class TestGroupedMatmul(TestCase):
 
         self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_quant_950_mxfp4(self): # 量化 单单单
         torch.manual_seed(0)
         group_list = torch.tensor([16, ]).to(torch.int64).npu()
@@ -1024,7 +1024,7 @@ class TestGroupedMatmul(TestCase):
 
             self.assertRtolEqual(supported_output[0], custom_output[0].cpu().numpy(), 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_quant_int8_nz(self): # 全量化 NZ
         torch.manual_seed(0)
         x1 = torch.randint(1, 5, size=(16384, 7168), dtype=torch.int8)
@@ -1068,7 +1068,7 @@ class TestGroupedMatmul(TestCase):
             self.assertRtolEqual(x[0], x_clone[0], 1)
             self.assertRtolEqual(supported_output[0], custom_output[0], 1)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_mx_a8w4_nz_sss(self):
         # 单单单
         torch.manual_seed(0)

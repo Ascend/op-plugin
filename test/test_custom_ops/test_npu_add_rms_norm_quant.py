@@ -407,7 +407,7 @@ class TestNPUAddRmsNormQuant(TestCase):
             x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
             self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_add_rms_norm_quant_float8_e5m2(self):
         x_shape = [2, 16]
         x1 = torch.randn(x_shape, dtype=torch.float32)

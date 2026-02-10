@@ -87,7 +87,7 @@ class TestQuantReduceScatter(TestCase):
         return [out[index * i:index * (i + 1), :] for i in range(world_size)]
 
     @skipIfUnsupportMultiNPU(2)
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_quant_reduce_scatter(self):
         world_size = 2
         x_dtype = np.int8

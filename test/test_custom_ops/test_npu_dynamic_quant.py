@@ -198,7 +198,7 @@ class TestDynamicQuant(TestCase):
         assert_close(supported_output[0], y, atol=1.0, rtol=0.0)
         assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_dynamic_quant_int8_bf16_input_smooth_perchannel(self, device="npu"):
         input_tensor, smooth_scales = self.generate_input_perchannel(input_shape=[2, 32, 256], dtype="bfloat16")
         input_tensor, smooth_scales = input_tensor.to(device), smooth_scales.to(device)

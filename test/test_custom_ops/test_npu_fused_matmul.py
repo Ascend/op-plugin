@@ -28,7 +28,7 @@ class TestNPUFusedMatmul(TestCase):
     def custom_op_exec(self, x1, x2, bias, x3, fused_op_type):
         return torch_npu.npu_fused_matmul(x1, x2, bias=None, x3=x3, fused_op_type=fused_op_type)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_fused_matmul_add(self, device="npu"):
         torch.manual_seed(0)
         x1 = torch.randn((16, 48), dtype=torch.float16).npu()
@@ -42,7 +42,7 @@ class TestNPUFusedMatmul(TestCase):
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_fused_matmul_mul(self, device="npu"):
         torch.manual_seed(0)
         x1 = torch.randn((16, 48), dtype=torch.float16).npu()
@@ -56,7 +56,7 @@ class TestNPUFusedMatmul(TestCase):
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_fused_matmul_gelu_erf(self, device="npu"):
         torch.manual_seed(0)
         x1 = torch.randn((16, 48), dtype=torch.float16).npu()

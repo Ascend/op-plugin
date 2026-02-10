@@ -39,7 +39,7 @@ class TestMmAllReduceBase(TestCase):
             p.join()
 
     @skipIfUnsupportMultiNPU(2)
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_mm_all_reduce_base(self):
         world_size = 2
         dtype = torch.float16

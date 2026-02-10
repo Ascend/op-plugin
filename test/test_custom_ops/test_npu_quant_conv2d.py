@@ -36,7 +36,7 @@ def gen_quant_conv2d_golden(fmap_tensor, weight_tensor, cout, stride, padding, d
     return res, scale_tensor
 
 class TestQuantMatmul(TestCase):
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_quant_conv2d_int8(self):
         torch.manual_seed(0)
         conv_input = torch.randint(-1, 1, (1, 1, 4, 4), dtype=torch.int8)

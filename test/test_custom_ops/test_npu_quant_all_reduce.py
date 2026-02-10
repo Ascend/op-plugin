@@ -86,7 +86,7 @@ class TestQuantAllReduce(TestCase):
         return out.to(torch.float32)
 
     @skipIfUnsupportMultiNPU(2)
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_quant_all_reduce(self):
         world_size = 2
         x_dtype = np.int8

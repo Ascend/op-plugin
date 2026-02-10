@@ -1478,7 +1478,7 @@ at::Tensor dropout_gen_mask_tensor(const at::Tensor &query, const at::Tensor &ke
             offset = gen_state_.offset_.ptr->clone();
             offset.add_(gen_state_.offset_intragraph_);
         }
-        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
             drop_mask = dropout_gen_mask_tensor_dispatch(query, keep_prob, seed, offset, numels,
                 gen_mask_parallel, sync, is_capture, offset_intragraph);
         }
@@ -1572,7 +1572,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
 
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGTH - 1);
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         if (format_sink.defined()) { // sink is defined
             auto format_query_rope = at::Tensor();
             auto format_key_rope = at::Tensor();
@@ -1645,7 +1645,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
                     inner_precise, sparse_mode, dq, dk, dv, dpse);
             }
         }
-    } else { // Ascend910_95
+    } else { // Ascend950
         // TO BE DONE
     }
     FLOP_COUNT(FlopCounter::flash_attention_backward_flop, query, key, value,
@@ -1689,7 +1689,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     c10::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink)
 {
-    TORCH_CHECK(c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95, "Ascend910_95 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
+    TORCH_CHECK(c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950, "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     TORCH_CHECK(query.dim() == DIMENSION_3D || query.dim() == DIMENSION_4D,
         "The shapes of the input query should be 3 or 4 dimensional, but got ",
@@ -1764,7 +1764,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     length += LENGTH_BIAS;
     at::Tensor drop_mask;
     c10_npu::CaptureStatus is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95 && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const at::Tensor &seed_const = seed.value_or(at::Tensor());
         const at::Tensor &offset_const = offset.value_or(at::Tensor());
         drop_mask = dropout_gen_mask_tensor_dispatch(query, keep_prob, seed_const, offset_const, numels, gen_mask_parallel, sync, is_capture);
@@ -1795,7 +1795,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
     c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
 {
-    TORCH_CHECK(c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95, "Ascend910_95 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
+    TORCH_CHECK(c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950, "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     std::string input_layout_str1(input_layout);
     std::string softmax_layout_str1(softmax_layout);
@@ -1958,7 +1958,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     static const bool is_fa_V4_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV4");
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910_95) {
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         if (format_sink.defined()) { // sink is defined
             auto format_query_rope = at::Tensor();
             auto format_key_rope = at::Tensor();
@@ -2024,7 +2024,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
                     inner_precise, sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
             }
         }
-    } else { // Ascend910_95
+    } else { // Ascend950
         // TO BE DONE, not support
     }
     FLOP_COUNT(FlopCounter::flash_attention_forward_flop, query, key, value, head_num,

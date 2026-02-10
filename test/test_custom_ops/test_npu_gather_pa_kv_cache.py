@@ -294,11 +294,11 @@ class TestGatherPaKvCache(TestCase):
         self.assertRtolEqual(key_gold, out_key_cpu, rtol=rtol, atol=atol)
         self.assertRtolEqual(value_gold, out_value_cpu, rtol=rtol, atol=atol)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_out_of_place_eager_fp16(self):
         self._run_test("out_of_place", "eager", torch.float16)
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_inplace_eager_fp16(self):
         self._run_test("inplace", "eager", torch.float16)
 
