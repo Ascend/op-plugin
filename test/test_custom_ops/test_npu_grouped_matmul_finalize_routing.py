@@ -136,8 +136,8 @@ class TestGroupedMatmulFinalizeRouting(TestCase):
         shared_input_offset = batch // 2
         group_list_type = 1
         output_bs = batch
-        x_dtype = torch_npu.float4_e1m2fn_x2
-        w_dtype = torch_npu.float4_e1m2fn_x2
+        x_dtype = torch_npu.float4_e2m1fn_x2
+        w_dtype = torch_npu.float4_e2m1fn_x2
         scale_dtype = torch_npu.float8_e8m0fnu
         pertoken_scale_dtype = torch_npu.float8_e8m0fnu
 

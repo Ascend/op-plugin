@@ -199,23 +199,18 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     bool weight_trans = is_weight_trans(weight[0]);
 #if VERSION_BETWEEN(V2R1, V2R7)
     bool mxfp4_valid = x_dtype.has_value() && weight_dtype.has_value() &&
-                                   (x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
-                                    x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)) &&
-                                   (weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
-                                    weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
+                                   x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
+                                   weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
 #endif
 #if VERSION_BETWEEN(V2R8, VERSION_NEWEST)
     bool mxfp4_valid = false;
     if (x_dtype.has_value()) {
-        mxfp4_valid = (x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
-                       x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
+        mxfp4_valid = x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
     } else {
         mxfp4_valid = x[0].scalar_type() == at::ScalarType::Float4_e2m1fn_x2;
     }
     if (weight_dtype.has_value()) {
-        mxfp4_valid = mxfp4_valid &&
-                      (weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
-                       weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
+        mxfp4_valid = mxfp4_valid && weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
     } else {
         mxfp4_valid = mxfp4_valid &&
                       weight[0].scalar_type() == at::ScalarType::Float4_e2m1fn_x2;

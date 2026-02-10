@@ -170,13 +170,13 @@ class TestGroupedMatmul(TestCase):
                                                 antiquant_scale=antiquantScale, antiquant_offset=antiquantOffset,
                                                 group_list=group_list, split_item=split_item,
                                                 group_type=group_type, output_dtype=output_dtype,
-                                                x_dtype=torch_npu.float4_e1m2fn_x2, weight_dtype=torch_npu.float4_e2m1fn_x2,
+                                                x_dtype=torch_npu.float4_e2m1fn_x2, weight_dtype=torch_npu.float4_e2m1fn_x2,
                                                 scale_dtype=torch_npu.float8_e8m0fnu, per_token_scale_dtype=torch_npu.float8_e8m0fnu)
         else:
             return torch_npu.npu_grouped_matmul(x, weight, bias=bias, scale=scale, offset=offset,
                                                 antiquant_scale=antiquantScale, antiquant_offset=antiquantOffset,
                                                 group_list=group_list, split_item=split_item, output_dtype=output_dtype,
-                                                x_dtype=torch_npu.float4_e1m2fn_x2, weight_dtype=torch_npu.float4_e2m1fn_x2,
+                                                x_dtype=torch_npu.float4_e2m1fn_x2, weight_dtype=torch_npu.float4_e2m1fn_x2,
                                                 scale_dtype=torch_npu.float8_e8m0fnu, per_token_scale_dtype=torch_npu.float8_e8m0fnu)
 
     def get_group_list(self, m, g):

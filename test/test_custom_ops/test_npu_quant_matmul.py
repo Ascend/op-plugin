@@ -392,7 +392,7 @@ class TestQuantMatmul(TestCase):
         x1 = x1 * pertoken_scale_broadcast
         x2 = x2 * scale_broadcast
         supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32))
-        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu().t(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), x1_dtype=torch_npu.float4_e1m2fn_x2, x2_dtype=torch_npu.float4_e2m1fn_x2, scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu, output_dtype=torch.bfloat16)
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu().t(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), x1_dtype=torch_npu.float4_e2m1fn_x2, x2_dtype=torch_npu.float4_e2m1fn_x2, scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu, output_dtype=torch.bfloat16)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
 
     @SupportedDevices(['Ascend910_95', 'Ascend950'])

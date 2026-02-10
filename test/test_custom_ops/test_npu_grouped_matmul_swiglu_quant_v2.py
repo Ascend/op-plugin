@@ -258,7 +258,7 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         output1_valid = output1[:groupList[-1]]
         output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(), dequant_dtype=torch.float32,
                                    quant_mode=2, quant_dtype=torch.float8_e5m2, weight_scale_dtype=torch_npu.float8_e8m0fnu, x_scale_dtype=torch_npu.float8_e8m0fnu,
-                                   x_dtype=torch_npu.float4_e1m2fn_x2, weight_dtype=torch_npu.float4_e1m2fn_x2)
+                                   x_dtype=torch_npu.float4_e2m1fn_x2, weight_dtype=torch_npu.float4_e2m1fn_x2)
         output0_npu_valid = output0_npu[:groupList[-1], :]
         output1_npu_valid = output1_npu[:groupList[-1]]
         self.assertEqual(output0_valid, output0_npu_valid.cpu(), 1)
