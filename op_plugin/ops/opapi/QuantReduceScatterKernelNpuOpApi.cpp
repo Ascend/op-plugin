@@ -54,7 +54,7 @@ at::Tensor npu_quant_reduce_scatter(const at::Tensor &x, const at::Tensor &scale
     if (x.dim() == DIM_TWO) {
         TORCH_CHECK(x.size(0) != 0 && x.size(1) != 0, "The input 2 dim tensor x can not be empty tensor", OPS_ERROR(ErrCode::PARAM));
     } else if (x.dim() == DIM_THREE) {
-        TORCH_CHECK(x.size(0) != 0 && x.size(1) != 0 && x.size(DIM_TWO) != 0, "The input 3 dim tensor x tensor can not be empty tensor",
+        TORCH_CHECK(x.size(0) != 0 && x.size(1) != 0 && x.size(DIM_TWO) != 0, "The input 3 dim tensor x can not be empty tensor",
                     OPS_ERROR(ErrCode::PARAM));
     }
 
