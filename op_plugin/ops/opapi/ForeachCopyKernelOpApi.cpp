@@ -25,17 +25,35 @@
 
 namespace op_api {
 namespace {
-    c10::optional<c10::ScalarType> get_uniform_dtype(const at::TensorList tensors)
-{
-    if (tensors.empty()) return c10::nullopt;
-    c10::ScalarType first_dtype = tensors[0].scalar_type();
-    for (size_t i = 1; i< tensors.size(); ++i) {
-        if (tensors[i].scalar_type() != first_dtype) {
-            return c10::nullopt;
+    bool should_group(const at::TensorList tensors, const at::TensorList tensors2)
+    {
+        if (tensors.empty() && tensors2.empty()) {
+            return false;
         }
+
+        const at::Tensor& base_tensor = !tensors.empty() ? tensors[0] : tensors2[0];
+        const auto base_device = base_tensor.device();
+        const auto base_dtype = base_tensor.scalar_type();
+
+        bool has_dtype_mismatch = false;
+
+        auto check_list = [&base_device, &base_dtype, &has_dtype_mismatch](const at::TensorList& list) -> bool {
+            for (const auto& t : list) {
+                if (t.device() != base_device) {
+                    return false;
+                }
+                if (t.scalar_type() != base_dtype) {
+                    has_dtype_mismatch = true;
+                }
+            }
+            return true;
+        };
+        if (!check_list(tensors) || !check_list(tensors2)) {
+            return false;
+        }
+
+        return has_dtype_mismatch;
     }
-    return first_dtype;
-}
 } // namespace anonymous
 
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
@@ -245,7 +263,7 @@ void _foreach_copy_(const at::TensorList self, const at::TensorList src, bool no
                                           c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
                                           (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend910_9391);
 
-    if (get_uniform_dtype(src).has_value()) {
+    if (!should_group(src, self)) {
         process_tensor_list_batch(self, src, non_blocking, is_support_nd_out, is_support_batch);
     } else {
         std::unordered_map<c10::ScalarType, std::pair<std::vector<at::Tensor>, std::vector<at::Tensor>>> temp_groups;
