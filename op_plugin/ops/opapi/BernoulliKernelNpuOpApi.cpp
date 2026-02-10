@@ -18,6 +18,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
+#include "torch_npu/csrc/aten/mirror/NPUMemoryOverlap.h"
 
 namespace op_api {
 static const uint64_t PHILOX_DEFAULT_NUM = 10;
@@ -25,6 +26,7 @@ static const uint64_t PHILOX_DEFAULT_NUM = 10;
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> gen) {
+    at_npu::native::assert_no_internal_overlap(self);
   DO_COMPATIBILITY(aclnnInplaceBernoulli, acl_op::bernoulli_(self, p, gen));
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(PHILOX_DEFAULT_NUM);
@@ -37,6 +39,7 @@ at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> 
 }
 
 at::Tensor& bernoulli_(at::Tensor& self, const at::Tensor& p, c10::optional<at::Generator> gen) {
+    at_npu::native::assert_no_internal_overlap(self);
   DO_COMPATIBILITY(aclnnInplaceBernoulliTensor, acl_op::bernoulli_(self, p, gen));
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(PHILOX_DEFAULT_NUM);

@@ -89,7 +89,7 @@ backward:
   x, gx, beta, gamma: npu_deep_norm_backward(grad, x, gx, gamma, result0, result1, alpha)
   version: [v2.1, newest]
 
-- name: npu_deformable_conv2d(Tensor input, Tensor weight, Tensor offset, Tensor? bias, int[2] kernel_size, int[] stride, int[] padding, int[] dilation=[1,1,1,1], int groups=1, int deformable_groups=1, bool modulated=True) -> (Tensor, Tensor)
+- name: npu_deformable_conv2d(Tensor input, Tensor weight, Tensor offset, Tensor? bias, int[2] kernel_size, int[] stride, int[] padding, int[4] dilation=1, int groups=1, int deformable_groups=1, bool modulated=True) -> (Tensor, Tensor)
   input, weight, offset, bias: npu_deformable_conv2dbk(input, grad, result1, weight, offset, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated)
   version: [v2.1, newest]
 
