@@ -16,7 +16,6 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -42,10 +41,14 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool3d_out(const at::Tensor& s
         indices.copy_(std::get<1>(cpuout));
         return std::tuple<at::Tensor&, at::Tensor&>(out, indices);
     }
-
     auto out_size = op_infer::max_pool3d_output_size(self, output_size);
     npu_preparation::check_tensor({self}, out, self.scalar_type(), out_size);
-    npu_preparation::check_tensor({self}, indices, at::kInt, out_size);
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+        at::ScalarType indices_dtype = indices.scalar_type() == at::kLong ? at::kLong : at::kInt;
+        npu_preparation::check_tensor({self}, indices, indices_dtype, out_size);
+    } else {
+        npu_preparation::check_tensor({self}, indices, at::kInt, out_size);
+    }
 
     EXEC_NPU_CMD(aclnnAdaptiveMaxPool3d, self, output_size, out, indices);
     return std::tuple<at::Tensor&, at::Tensor&>(out, indices);
@@ -60,11 +63,14 @@ std::tuple<at::Tensor, at::Tensor> adaptive_max_pool3d(const at::Tensor& self, a
         auto indices_npu = std::get<1>(result).to(self.device());
         return std::tuple<at::Tensor, at::Tensor>(out_npu, indices_npu);
     }
-
     auto out_size = op_infer::max_pool3d_output_size(self, output_size);
     at::Tensor out = npu_preparation::apply_tensor_without_format(out_size, self.options());
-    at::Tensor indices = npu_preparation::apply_tensor_without_format(out_size, self.options().dtype(at::kInt));
-
+    at::Tensor indices;
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+        indices = npu_preparation::apply_tensor_without_format(out_size, self.options().dtype(at::kLong));
+    } else {
+        indices = npu_preparation::apply_tensor_without_format(out_size, self.options().dtype(at::kInt));
+    }
     EXEC_NPU_CMD(aclnnAdaptiveMaxPool3d, self, output_size, out, indices);
     return std::tuple<at::Tensor, at::Tensor>(out, indices);
 }
