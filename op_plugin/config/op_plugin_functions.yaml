@@ -6393,6 +6393,7 @@ custom:
 
   - func: npu_one_hot(Tensor self, int num_classes=-1, int depth=1, Scalar on_value=1, Scalar off_value=0) -> Tensor
     acl_op: all_version
+    op_api: all_version
     exposed: all_version
 
   - func: npu_pad(Tensor input, int[] paddings) -> Tensor

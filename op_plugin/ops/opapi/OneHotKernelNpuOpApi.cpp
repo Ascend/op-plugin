@@ -72,4 +72,59 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes)
     EXEC_NPU_CMD(aclnnOneHot, self, depth, on_value_tensor, off_value_tensor, axis, result);
     return result;
 }
+
+at::Tensor npu_one_hot(
+    const at::Tensor& self,
+    int64_t num_classes,
+    int64_t depth,
+    const at::Scalar& on_value,
+    const at::Scalar& off_value)
+{
+    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+        return acl_op::npu_one_hot(self, num_classes, depth, on_value, off_value);
+    }
+
+    auto ks = self.key_set();
+    bool is_fake_or_meta = ks.has_all(c10::DispatchKeySet(c10::BackendComponent::MetaBit)) ||
+        ks.has_all(c10::DispatchKeySet(c10::DispatchKey::Python)) ||
+        self.is_meta();
+    if (is_fake_or_meta) {
+        TORCH_CHECK(depth != -1, "FakeTensorMode does not support depth == -1.");
+
+#if VERSION_BETWEEN(V2R9, VERSION_NEWEST)
+        at::DTensorAllowImplicitReplication guard;
+#endif
+
+        auto options = self.options().dtype(at::kLong);
+        at::Tensor index = at::arange(depth, options);
+        return at::eq(self.unsqueeze(-1), index).to(at::kLong);
+    }
+
+    DO_COMPATIBILITY(aclnnOneHot, acl_op::npu_one_hot(self, num_classes, depth, on_value, off_value));
+
+    TORCH_CHECK(depth >= AUTO_DEPTH, "NPU error, not yet support negative depth, when depth less than -1",
+                OPS_ERROR(ErrCode::PARAM));
+    // when the self is empty, num_classes should be greater than 0
+    TORCH_CHECK(self.numel() != 0 || depth > MIN_NUM_CLASSES,
+                "NPU error, can not infer total number of classes from empty tensor.", OPS_ERROR(ErrCode::PARAM));
+    if (depth == AUTO_DEPTH) {
+        depth = self.max().item().toLong() + 1;
+        if (depth < MIN_DEPTH) {
+            depth = MIN_DEPTH;
+        }
+    }
+    // construct on_value tensor
+    at::Tensor on_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
+    op_api::fill_(on_value_tensor, on_value);
+    // construct off_value tensor
+    at::Tensor off_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
+    op_api::fill_(off_value_tensor, off_value);
+    auto output_size = op_infer::array_to_small_vector(self.sizes());
+    output_size.emplace_back(depth);
+    // construct the output tensor of the NPU
+    at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
+    int64_t axis = num_classes;
+    EXEC_NPU_CMD(aclnnOneHot, self, depth, on_value_tensor, off_value_tensor, axis, result);
+    return result;
+}
 }
