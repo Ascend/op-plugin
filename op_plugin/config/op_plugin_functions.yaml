@@ -3290,6 +3290,20 @@ official:
   - func: _masked_softmax(Tensor self, Tensor mask, int? dim=None, int? mask_type=None) -> Tensor
     op_api: all_version
 
+  - func: matmul(Tensor self, Tensor other) -> Tensor
+    acl_op: all_version
+    op_api: [v2.1, newest]
+    internal_format_opapi: all_version
+
+  - func: matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
+    acl_op: all_version
+    op_api: [v2.1, newest]
+    internal_format_opapi: all_version
+
+  - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
+    acl_op: [v2.1, newest]
+    op_api: [v2.1, newest]
+
   - func: max(Tensor self) -> Tensor
     sparse: [v2.1, newest]
     acl_op: all_version
@@ -5582,6 +5596,9 @@ custom:
   - func: slow_conv_dilated2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)
     acl_op: all_version
     op_api: all_version
+
+  - func: matmul_double_backward(Tensor? grad_self, Tensor? grad_other, Tensor grad_out, Tensor self, Tensor other, bool[3] mask) -> (Tensor, Tensor, Tensor)
+    op_api: [v2.1, newest]
 
   - func: npu_add_layer_norm(Tensor x1, Tensor x2, Tensor gamma, Tensor beta, float epsilon=1e-05, bool additional_output=False) -> (Tensor, Tensor, Tensor, Tensor)
     acl_op: all_version
