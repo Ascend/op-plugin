@@ -26,7 +26,6 @@ static const int TWO_DIMS = 2;
 static const int64_t PERTOKEN_QUANT_MODE = 3;
 static const int64_t PERCHANNEL_QUANT_MODE = 2;
 static const int64_t NON_QUANT = 0;
-static const int64_t NON_GROUP = 0;
 static const int64_t ACL_UNDEFINED = -1;
 
 // world_size
@@ -61,6 +60,10 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
         "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, "." + OPS_ERROR(ErrCode::VALUE));
 
+    // 处理group_sizes
+    at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
+    int64_t group_size = op_plugin::utils::check_and_get_group_size(group_size_list);
+
     // pta主要是为了推导output的shape和dtype，如果这里的output_dtype没有传入，则默认是fp32
     int64_t output_default_dtype = static_cast<int64_t>(at::ScalarType::Float);
     if (y_dtype.has_value() && y_dtype.value() != ACL_UNDEFINED) {
@@ -83,7 +86,6 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
     int64_t x2QuantMode = x2_quant_mode.has_value() ? x2_quant_mode.value() : PERCHANNEL_QUANT_MODE;
     int64_t commonQuantMode = common_quant_mode.has_value() ? common_quant_mode.value() : NON_QUANT;
     int64_t commQuantDtype = comm_quant_dtype.has_value() ? comm_quant_dtype.value() : ACL_UNDEFINED;
-    int64_t group_size = NON_GROUP;
     bool transpose_x1 = false;
     bool transpose_x2 = false;
 

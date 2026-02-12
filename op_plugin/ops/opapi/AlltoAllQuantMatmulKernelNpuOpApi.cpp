@@ -56,6 +56,10 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
         TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size.", OPS_ERROR(ErrCode::PARAM));
     }
 
+    // 处理group_sizes
+    at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
+    int64_t group_size = op_plugin::utils::check_and_get_group_size(group_size_list);
+
     // pta主要是为了推导output的shape和dtype，如果这里的y_dtype没有传入，则默认是fp32
     int64_t output_default_dtype = (y_dtype.has_value() && y_dtype.value() != ACL_UNDEFINED) ? y_dtype.value() : static_cast<int64_t>(at::ScalarType::Float);
     aclDataType output_acl_type = c10_npu::GetAclDataType(output_default_dtype);
@@ -76,7 +80,6 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     int64_t x1QuantMode = x1_quant_mode.has_value() ? x1_quant_mode.value() : DYN_PERTOKEN_QUANT_MODE;
     int64_t x2QuantMode = x2_quant_mode.has_value() ? x2_quant_mode.value() : PERCHANNEL_QUANT_MODE;
     int64_t commonQuantMode = common_quant_mode.has_value() ? common_quant_mode.value() : NON_QUANT;
-    int64_t group_size = NON_GROUP;
     bool transpose_x1 = false;
     bool transpose_x2 = false;
     int64_t commQuantDtype = comm_quant_dtype.has_value() ? comm_quant_dtype.value() : ACL_UNDEFINED;
