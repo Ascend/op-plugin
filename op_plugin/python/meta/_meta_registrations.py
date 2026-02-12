@@ -18,17 +18,6 @@ m = Library("npu", "IMPL", "Meta")
 m_aten = Library("aten", "IMPL", "Meta")
 
 
-def _is_pytorch_version_ge(min_version):
-    def parse_version(v):
-        parts = list(map(int, v.split('.')[:3]))
-        return tuple(parts + [0] * (3 - len(parts)))
-
-    current_version_str = torch.__version__.split('+')[0]
-    current_version = parse_version(current_version_str)
-    target_version = parse_version(min_version)
-    return current_version >= target_version
-
-
 @impl(m_aten, "matmul_backward")
 def matmul_backward_meta(grad, self, other, mask):
     return (torch.empty_like(self), torch.empty_like(other))
