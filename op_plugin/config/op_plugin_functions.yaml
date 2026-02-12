@@ -6767,7 +6767,7 @@ custom:
         cubeMathType: 'npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32())'
       exec: aclnnTransposeBatchMatMul, input, weight, bias, scale_real, perm_x1_real, perm_x2_real, perm_y_real, cubeMathType, batch_split_factor_value, out
 
-  - func: npu_transpose_quant_batchmatmul(Tensor x1, Tensor x2, int dtype, *, Tensor? bias=None, Tensor? x1_scale=None, Tensor? x2_scale=None, int? group_size=0, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor
+  - func: npu_transpose_quant_batchmatmul(Tensor x1, Tensor x2, int dtype, *, Tensor? bias=None, Tensor? x1_scale=None, Tensor? x2_scale=None, int[]? group_size=None, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor
     op_api: all_version
     exposed: all_version
     gen_opapi:
@@ -6778,9 +6778,10 @@ custom:
         dtype_value: 'static_cast<int32_t>(dtype)'
         default_perm_x: 'std::vector<int64_t>{0, 1, 2}'
         default_perm_y: 'std::vector<int64_t>{1, 0, 2}'
+        default_group_size: 'std::vector<int64_t>{0, 0, 0}'
         x1_scale_real: 'x1_scale.value_or(at::Tensor())'
         x2_scale_real: 'x2_scale.value_or(at::Tensor())'
-        group_size_value: 'static_cast<int32_t>(group_size.value_or(0))'
+        group_size_value: 'check_and_get_group_size(group_size.value_or(at::IntArrayRef(default_group_size)))'
         perm_x1_real: 'perm_x1.value_or(at::IntArrayRef(default_perm_x))'
         perm_x2_real: 'perm_x2.value_or(at::IntArrayRef(default_perm_x))'
         perm_y_real: 'perm_y.value_or(at::IntArrayRef(default_perm_y))'

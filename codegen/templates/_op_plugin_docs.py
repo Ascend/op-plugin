@@ -4761,7 +4761,7 @@ npu_transpose_quant_batchmatmul(Tensor x1, Tensor x2, int dtype, *, Tensor? bias
 - bias(Tensor, 计算输入): 可选参数, 一个1D的Device侧Tensor输入，矩阵计算的bias参数。数据类型支持float32、float16、bfloat16，数据格式支持ND。当前仅支持配置为空。
 - x1_scale(Tensor, 计算输入): 1D的Device侧Tensor输入，左矩阵计算量化参数。数据类型为FLOAT32，数据格式支持ND。
 - x2_scale(Tensor, 计算输入): 1D的Device侧Tensor输入，右矩阵计算量化参数。数据类型为FLOAT32，数据格式支持ND。
-- group_size(Int, 计算输入): 可选参数, 默认为0, 表示量化分组大小，预留参数，当前仅支持配置为0，取值不生效。
+- group_size(ListInt, 计算输入): 可选参数, int类型列表, 表示量化分组大小，预留参数，当前仅支持配置为全0，其他取值不生效。
 - perm_x1(ListInt, 计算输入): 可选参数, int类型列表，将input在矩阵乘之前排列成[B, M, K]。
 - perm_x2(ListInt, 计算输入): 可选参数, int类型列表，将weight在矩阵乘之前排列成[B, K, N]。
 - perm_y(ListInt, 计算输入): 可选参数, int类型列表，将y在矩阵乘后重新排列成[M, B, N]。

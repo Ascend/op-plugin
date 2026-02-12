@@ -3595,7 +3595,7 @@ def npu_transpose_batchmatmul_meta(input_, weight, *, bias=None, scale=None,
 
 
 @impl(m, "npu_transpose_quant_batchmatmul")
-def npu_transpose_quant_batchmatmul_meta(input_, weight, dtype, bias=None, x1_scale=None, x2_scale=None, group_size=0, 
+def npu_transpose_quant_batchmatmul_meta(input_, weight, dtype, bias=None, x1_scale=None, x2_scale=None, group_size=None, 
                                    perm_x1=None, perm_x2=None, perm_y=None, batch_split_factor=1):
     M = input_.size(perm_x1.index(1))
     batch_m = input_.size(perm_x1.index(0))
