@@ -19,14 +19,14 @@ def npu_fusion_attention_forward_v3(query, key, value, head_num, input_layout, p
         H = query.size(2)
         D = H / head_num
         D2 = 0 if D == 0 or key.size(2) == 0 else value.size(2) / (key.size(2) / D)
-        aten_score_shape = [B, S1, head_num * D2]
+        aten_score_shape = [B, S1, int(head_num * D2)]
     elif input_layout == "SBH":
         B = query.size(1)
         S1 = query.size(0)
         H = query.size(2)
         D = H / head_num
         D2 = 0 if D == 0 or key.size(2) == 0 else value.size(2) / (key.size(2) / D)
-        aten_score_shape = [S1, B, head_num * D2]
+        aten_score_shape = [S1, B, int(head_num * D2)]
     elif input_layout == "BNSD":
         D2 = value.size(3)
         aten_score_shape = [B, N_L, S1, D2]
