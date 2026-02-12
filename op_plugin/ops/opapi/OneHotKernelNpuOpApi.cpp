@@ -120,10 +120,27 @@ at::Tensor npu_one_hot(
     at::Tensor off_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
     op_api::fill_(off_value_tensor, off_value);
     auto output_size = op_infer::array_to_small_vector(self.sizes());
-    output_size.emplace_back(depth);
+    int64_t max_num_classes = static_cast<int64_t>(output_size.size());
+    TORCH_CHECK(num_classes >= AUTO_DEPTH,
+                "NPU error: num_classes cannot be less than -1",
+                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(num_classes < max_num_classes,
+                "NPU error: num_classes must be less than ", max_num_classes,
+                OPS_ERROR(ErrCode::PARAM));
+    int64_t axis = (num_classes + max_num_classes) % max_num_classes;
+
+    c10::SmallVector<int64_t, SIZE> output_shape;
+    for (int64_t i = 0; i < axis; i++) {
+        output_shape.emplace_back(self.size(i));
+    }
+    output_shape.emplace_back(depth);
+    for (int64_t i = axis+1; i < max_num_classes; i++) {
+        output_shape.emplace_back(self.size(i));
+    }
+
     // construct the output tensor of the NPU
-    at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
-    int64_t axis = num_classes;
+    at::Tensor result = npu_preparation::apply_tensor(output_shape, self.options(), self);
+
     EXEC_NPU_CMD(aclnnOneHot, self, depth, on_value_tensor, off_value_tensor, axis, result);
     return result;
 }
