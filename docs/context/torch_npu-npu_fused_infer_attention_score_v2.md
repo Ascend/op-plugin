@@ -120,7 +120,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 -   **query_dtype**（`int`）：可选参数，表示`query`的数据类型，**预留参数，暂未使用，使用默认值即可。**
 -   **key_dtype**（`int`）：可选参数，表示`key`的数据类型，**预留参数，暂未使用，使用默认值即可。**
 -   **value_dtype**（`int`）：可选参数，表示`value`的数据类型，**预留参数，暂未使用，使用默认值即可。**
--   **query_rope_dtype**（`int`）：可选参数，表示`query_repo`的数据类型，**预留参数，暂未使用，使用默认值即可。**
+-   **query_rope_dtype**（`int`）：可选参数，表示`query_rope`的数据类型，**预留参数，暂未使用，使用默认值即可。**
 -   **key_rope_dtype**（`int`）：可选参数，表示`key_rope`的数据类型，**预留参数，暂未使用，使用默认值即可。**
 -   **key_shared_prefix_dtype**（`int`）：可选参数，表示key_shared_prefix的数据类型，**预留参数，暂未使用，使用默认值即可。**
 -   **value_shared_prefix_dtype**（`int`）：可选参数，表示value_shared_prefix的数据类型，**预留参数，暂未使用，使用默认值即可。**

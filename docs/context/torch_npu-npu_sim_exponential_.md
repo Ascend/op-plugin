@@ -29,7 +29,7 @@ torch_npu.npu_sim_exponential_(input, lambd=1, *, generator=None) -> Tensor
 
 **lambd**(`double`)：可选参数，指数分布的参数，公式中的$λ$，可配置为任意正实数，默认值为1。
 
-**generator**(`Generator`):：可选参数，用于生成seed和offset，供aclnnSimThreadExponential算子使用，默认为None。
+**generator**(`Generator`)：可选参数，用于生成seed和offset，供aclnnSimThreadExponential算子使用，默认为None。
 
 
 ## 返回值说明

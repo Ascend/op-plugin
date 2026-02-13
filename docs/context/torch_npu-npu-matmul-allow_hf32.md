@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-matmul类算子开启支持hf32类型能力。
+matmul类算子开启对hf32类型的支持能力。
 
 `torch_npu.npu.matmul.allow_hf32`功能和调用方式与`torch.backends.cuda.matmul.allow_tf32`类似，`torch.backends.cuda.matmul.allow_tf32`的功能具体请参考[https://pytorch.org/docs/stable/backends.html\#torch.backends.cuda.matmul.allow_tf32](https://pytorch.org/docs/stable/backends.html#torch.backends.cuda.matmul.allow_tf32)。
 

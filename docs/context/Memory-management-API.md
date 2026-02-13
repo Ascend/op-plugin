@@ -72,12 +72,12 @@
 </tr>
 <tr id="row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="p7819165411224"><a name="p7819165411224"></a><a name="p7819165411224"></a>torch_npu.npu.NPUPluggableAllocator</p>
 </td>
-<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p172891387259"><a name="p172891387259"></a><a name="p172891387259"></a>该接口涉及高危操作，使用请参考<a href="torch-npu-npu-NPUPluggableAllocator.md">torch_npu.npu.NPUPluggableAllocator</a>。</p>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p172891387259"><a name="p172891387259"></a><a name="p172891387259"></a>该接口涉及高危操作，具体使用方法请参考<a href="torch-npu-npu-NPUPluggableAllocator.md">torch_npu.npu.NPUPluggableAllocator</a>。</p>
 </td>
 </tr>
 <tr id="row12478193618244"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="p681913541224"><a name="p681913541224"></a><a name="p681913541224"></a>torch_npu.npu.change_current_allocator</p>
 </td>
-<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p75031810165517"><a name="p75031810165517"></a><a name="p75031810165517"></a>该接口涉及高危操作，使用请参考<a href="torch-npu-npu-change_current_allocator.md">torch_npu.npu.change_current_allocator</a>。</p>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p75031810165517"><a name="p75031810165517"></a><a name="p75031810165517"></a>该接口涉及高危操作，具体使用方法请参考<a href="torch-npu-npu-change_current_allocator.md">torch_npu.npu.change_current_allocator</a>。</p>
 </td>
 </tr>
 </tbody>

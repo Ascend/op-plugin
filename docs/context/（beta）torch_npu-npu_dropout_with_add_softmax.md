@@ -29,8 +29,8 @@ torch_npu.npu_dropout_with_add_softmax(self, x1, alpha, prob, dim) -> (Tensor, T
 
 - **self**（`Tensor`）：4维张量，shape为(N, C, H, W)。
 - **x1**（`Tensor`）：4维张量，shape为(N, C, H, W)。
- - **alpha**（`Float`）：缩放系数,支持正负浮点值。
-- **prob**（`Float`）：Dropout 丢弃概率,控制 Dropout 操作中元素被随机丢弃的概率，prob=0.0时无元素丢弃（等价于不执行 Dropout），prob越大丢弃元素越多。若prob ≥ 1.0会触发参数非法异常。
+ - **alpha**（`Float`）：缩放系数，支持正负浮点值。
+- **prob**（`Float`）：Dropout 丢弃概率，控制 Dropout 操作中元素被随机丢弃的概率，prob=0.0时无元素丢弃（等价于不执行 Dropout），prob越大丢弃元素越多。若prob ≥ 1.0会触发参数非法异常。
 - **dim**（`int`）：Softmax 计算的维度。`dim`为-1。
 
 ## 返回值说明

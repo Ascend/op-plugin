@@ -34,7 +34,7 @@ torch_npu.npu.change_current_allocator(allocator) -> None
 
 ## 约束说明
 
-如果内存分配器已被初始化时，调用该函数将失败。
+如果内存分配器已被初始化，调用该函数将失败。
 
 
 

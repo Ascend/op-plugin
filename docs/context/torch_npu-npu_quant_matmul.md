@@ -225,7 +225,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     
         # 执行上述代码的输出类似如下
         torch.Size([15, 1, 128])
-        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
+        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[[-103.6875, -104.5000, -113.6250,  ..., -108.6875,  -99.5625,
                 -101.1875]],
     
@@ -309,7 +309,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     
         # 执行上述代码的输出类似如下
         torch.Size([15, 6912])
-        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
+        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[-1.0000e+00,  0.0000e+00, -1.0000e+00,  ...,  0.0000e+00,
                 -1.0000e+00, -1.0000e+00],
                 [ 2.8480e+03,  2.7840e+03, -1.0000e+00,  ...,  2.7840e+03,
@@ -358,7 +358,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
         model = cpu_model.npu()
         cpu_x1 = torch.randint(-1, 1, (15, 1, 512), dtype=torch.int8).npu()
         cpu_x2 = torch.randint(-1, 1, (15, 512, 128), dtype=torch.int8).npu()
-        # Process x2 into a high-bandwidth format(29) offline to improve performance, please ensure that the input is continuous with (batch,n,k) layout
+        # Process x2 into a high-bandwidth format(29) offline to improve performance, please ensure that the input is contiguous with (batch,n,k) layout
         cpu_x2_t_29 = torch_npu.npu_format_cast(cpu_x2.transpose(2, 1).contiguous(), 29)
         scale = torch.randn(1, dtype=torch.float32).npu()
         offset = torch.randn(1, dtype=torch.float32).npu()
@@ -436,7 +436,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     
         # 执行上述代码的输出类似如下
         torch.Size([15, 6912])
-        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
+        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[ 0.0000e+00, -1.0000e+00, -1.0000e+00,  ..., -1.0000e+00,
                 0.0000e+00, -1.0000e+00],
                 [ 0.0000e+00, -1.0000e+00, -1.0000e+00,  ..., -1.0000e+00,
