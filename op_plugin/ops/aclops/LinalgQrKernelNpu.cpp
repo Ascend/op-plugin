@@ -47,7 +47,7 @@ inline void qr_check(
 {
     TORCH_CHECK(
         self.ndimension() >= 2,
-        "Expected nonempty least 2D tensor, but got a tensor with sizes ",
+        "The input tensor must have at least 2 dimensions.",
         self.dim(),
         OPS_ERROR(ErrCode::PARAM));
 }

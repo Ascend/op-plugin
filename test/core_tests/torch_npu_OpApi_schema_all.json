@@ -2842,9 +2842,6 @@
   "func: logical_xor.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
-  "func: logspace(Scalar start, Scalar end, int steps, float base=10.0, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor": {
-    "version": ["all_version"]
-  },
   "func: logspace.out(Scalar start, Scalar end, int steps, float base=10.0, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },

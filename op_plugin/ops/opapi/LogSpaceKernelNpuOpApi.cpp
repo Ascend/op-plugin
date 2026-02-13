@@ -28,7 +28,6 @@ at::Tensor& logspace_out_nocheck(at::Tensor& result,
 {
     DO_COMPATIBILITY(aclnnLogSpace, acl_op::logspace_out(start, end, steps, base, result));
 
-    TORCH_CHECK(steps >= 0, "logspace requires non-negative steps, given steps is ", steps, OPS_ERROR(ErrCode::PARAM));
     if ((base <= 0) && ((!start.isIntegral(false)) || (!end.isIntegral(false)))) {
         TORCH_NPU_WARN("Warning: start and end in logspace should both b n base <= 0, get type ",
                        start.type(), " and", end.type());
@@ -43,34 +42,21 @@ at::Tensor& logspace_out(const at::Scalar& start,
                          double base,
                          at::Tensor& out)
 {
-    npu_preparation::CheckOut({ },
-                              out,
-                              ACL_FORMAT_ND,
-                              out.scalar_type(),
-                              {steps});
+    TORCH_CHECK(steps >= 0, "logspace requires non-negative steps, given steps is ", steps,
+        OPS_ERROR(ErrCode::PARAM));
+    if (out.numel() != steps) {
+        out.resize_({steps});
+    }
 
     if (!npu_utils::check_match(&out)) {
         at::Tensor contiguous_out = npu_utils::format_contiguous(out);
-        logspace_out_nocheck(contiguous_out, start, end, steps, base);
+        at::Tensor contiguous_out_1d = contiguous_out.dim() != 1 ? contiguous_out.view({steps}) : contiguous_out;
+        logspace_out_nocheck(contiguous_out_1d, start, end, steps, base);
         npu_utils::format_fresh_view(out, contiguous_out);
     } else {
-        logspace_out_nocheck(out, start, end, steps, base);
+        at::Tensor out_1d = out.dim() != 1 ? out.view({steps}) : out;
+        logspace_out_nocheck(out_1d, start, end, steps, base);
     }
     return out;
-}
-
-at::Tensor logspace(const at::Scalar& start,
-                    const at::Scalar& end,
-                    int64_t steps,
-                    double base,
-                    c10::optional<at::ScalarType> dtype,
-                    c10::optional<at::Layout> layout,
-                    c10::optional<at::Device> device,
-                    c10::optional<bool> pin_memory)
-{
-    auto device_opt = c10::device_or_default(device);
-    at::TensorOptions options = c10::TensorOptions().dtype(dtype).layout(layout).device(device_opt).pinned_memory(pin_memory);
-    at::Tensor result = npu_preparation::apply_tensor_with_format({steps}, options, ACL_FORMAT_ND);
-    return logspace_out_nocheck(result, start, end, steps, base);
 }
 }

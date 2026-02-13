@@ -90,7 +90,7 @@ class TestLogSpace(TestCase):
             cpu_output = self.cpu_op_exec_fp16(item[0], item[1], item[2], item[3], item[4])
             npu_output = self.npu_op_exec_dtype(item[0], item[1], item[2], item[3], item[4])
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
     def supported_op_exec(self, start, end, steps, base, dtype=torch.float32):
         exponents = torch.linspace(start, end, steps, dtype=dtype)
         output = torch.pow(base, exponents)
@@ -117,6 +117,11 @@ class TestLogSpace(TestCase):
         custom_output = self.custom_op_exec(start, end, steps, base)
 
         self.assertRtolEqual(supported_output, custom_output)
+
+    def test_logspace_non_contiguous(self):
+        x = torch.zeros(2, 3, device='npu', dtype=torch.float32)
+        torch.logspace(0, 3, 4, base=2, out=x.narrow(1, 1, 2))
+        self.assertRtolEqual(x, torch.tensor(((0, 1, 2), (0, 4, 8)), dtype=torch.float32))
 
 if __name__ == "__main__":
     run_tests()
