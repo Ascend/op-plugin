@@ -2097,8 +2097,20 @@ def npu_add_rms_norm_v2_functional_meta(x1, x2, gamma, epsilon=1e-6):
 
 
 @impl(m, "npu_rms_norm_quant")
-def npu_rms_norm_quant_meta(x, gamma, beta, scale, offset, epsilon=1e-06):
-    return torch.empty(x.size(), dtype=torch.int8, device=x.device)
+def npu_rms_norm_quant_meta(x, gamma, beta, scale, offset, epsilon=1e-06, dst_dtype=None):
+    dst_dtype = dst_dtype if dst_dtype is not None else 1
+    dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_dtype, torch.int8)
+    if dst_torch_dtype == torch.quint4x2:
+        dim_num = x.dim()
+        if x.size(dim_num - 1) % 8:
+            raise RuntimeError("If dtype is quint4x2, the last dim of input must be divided by 8" +
+                               ops_error(ErrCode.NOT_SUPPORT))
+        output_shape = []
+        for dim in range(dim_num - 1):
+            output_shape.append(x.size(dim))
+        output_shape.append(x.size(dim_num - 1) // 8)
+        return torch.empty(output_shape, dtype=torch.int32, device=x.device)
+    return torch.empty(x.size(), dtype=dst_torch_dtype, device=x.device)
 
 
 @impl(m, "npu_add_rms_norm_cast")

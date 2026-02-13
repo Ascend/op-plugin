@@ -5625,13 +5625,8 @@ custom:
   - func: npu_add_rms_norm_v2_functional(Tensor x1, Tensor x2, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor, Tensor)
     op_api: all_version
 
-  - func: npu_rms_norm_quant(Tensor x, Tensor gamma, Tensor beta, Tensor scale, Tensor offset, float epsilon=1e-06) -> Tensor
+  - func: npu_rms_norm_quant(Tensor x, Tensor gamma, Tensor beta, Tensor scale, Tensor offset, float epsilon=1e-06, *, int? dst_dtype=None) -> Tensor
     op_api: all_version
-    gen_opapi:
-      y:
-        size: x
-        dtype: at::kChar
-      exec: aclnnRmsNormQuant, x, gamma, beta, scale, offset, epsilon, y
 
   - func: npu_add_rms_norm_cast(Tensor x1, Tensor x2, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
