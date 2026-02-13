@@ -84,31 +84,6 @@ void *GetOpApiFuncAddrFromFeatureLib(const char *api_name);
 
 bool check_aclnn_kernel_available(std::string aclnn_name);
 
-template <typename Function, typename Tuple, size_t... I> auto call(Function f, Tuple t, std::index_sequence<I...>)
-{
-    return f(std::get<I>(t)...);
-}
-
-template <typename Function, typename Tuple> auto call(Function f, Tuple t)
-{
-    static constexpr auto size = std::tuple_size<Tuple>::value;
-    return call(f, t, std::make_index_sequence<size>{});
-}
-
-template <typename Tuple, size_t... I>
-auto ConvertToOpApiFunc(const Tuple &params, void *opApiAddr, std::index_sequence<I...>)
-{
-    typedef int (*OpApiFunc)(typename std::decay<decltype(std::get<I>(params))>::type...);
-    auto func = reinterpret_cast<OpApiFunc>(opApiAddr);
-    return func;
-}
-
-template <typename Tuple> auto ConvertToOpApiFunc(const Tuple &params, void *opApiAddr)
-{
-    static constexpr auto size = std::tuple_size<Tuple>::value;
-    return ConvertToOpApiFunc(params, opApiAddr, std::make_index_sequence<size>{});
-}
-
 uint64_t calc_hash_id();
 
 #define DO_COMPATIBILITY(aclnn_api, originCallExpression)                                                              \

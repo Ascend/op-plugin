@@ -1185,7 +1185,6 @@ aclTensorList *ConvertType(const TensorListWrapper &tensor_list_wrapper)
     return acl_tensor_list;
 }
 
-
 aclTensor *ConvertTypeV2(TensorStructPtr at_tensor)
 {
     static const auto aclCreateTensor = GET_OP_API_FUNC(aclCreateTensor);
@@ -1521,4 +1520,306 @@ void MemcpyToBufImpl(const void* data, size_t size)
     }
     memcpy(g_hash_buf + g_hash_offset, data, size);
     g_hash_offset += size;
+}
+
+bool CacheParams::GetDeterministicStatus() const
+{
+    return deterministic_status_;
+}
+
+uint32_t CacheParams::GetAicNum() const
+{
+    return aic_num_;
+}
+
+uint32_t CacheParams::GetAivNum() const
+{
+    return aiv_num_;
+}
+
+CacheParams GetCacheParams()
+{
+    CacheParams params;
+
+    params.deterministic_status_ = at::globalContext().deterministicAlgorithms();
+
+    if (c10_npu::is_core_control_enabled()) {
+        params.aic_num_ = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_CUBE_CORE);
+        params.aiv_num_ = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_VECTOR_CORE);
+    }
+
+    return params;
+}
+
+void GetApiFunc(
+    const char* api_name,
+    const char* workspace_api_name,
+    void*& opApiFuncAddr,
+    void*& getWorkspaceSizeFuncAddr
+)
+{
+    opApiFuncAddr = GetOpApiFuncAddr(api_name);
+    getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(workspace_api_name);
+
+    TORCH_CHECK(opApiFuncAddr != nullptr && getWorkspaceSizeFuncAddr != nullptr,
+        api_name, " or ", workspace_api_name, " not in ", GetOpApiLibName(),
+        ", or ", GetOpApiLibName(), " not found.",
+        OPS_ERROR(ErrCode::PTR));
+}
+
+void InitExecCommonCtx()
+{
+    void* initMemAddr = GetOpApiFuncAddr("InitHugeMemThreadLocal");
+
+    InitHugeMemThreadLocal initMemFunc = initMemAddr ? reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr) : nullptr;
+
+    if (initMemFunc) {
+        initMemFunc(nullptr, false);
+    }
+}
+
+void InitExecSubTheadCtx(aclrtStream acl_stream)
+{
+    if (c10_npu::check_dequeue_need_use(acl_stream)) {
+        c10_npu::UseStreamResInCurrentThread(acl_stream);
+    }
+}
+
+void UnInitExecCommonCtx()
+{
+    void* unInitMemAddr = GetOpApiFuncAddr("UnInitHugeMemThreadLocal");
+    void* releaseMemAddr = GetOpApiFuncAddr("ReleaseHugeMem");
+
+    UnInitHugeMemThreadLocal unInitMemFunc = unInitMemAddr ? reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr) : nullptr;
+
+    if (releaseMemAddr) {
+        ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);
+        releaseMemFunc(nullptr, false);
+    }
+    if (unInitMemFunc) {
+        unInitMemFunc(nullptr, false);
+    }
+
+    UnInitCacheThreadLocal();
+}
+
+aclrtStream GetAclStream()
+{
+    auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);
+    if (c10_npu::check_enqueue_need_use(acl_stream)) {
+        c10_npu::UseStreamResInCurrentThread(acl_stream);
+    }
+    return acl_stream;
+}
+
+void SetExecConfig()
+{
+    at_npu::native::SetDeterministic();
+}
+
+void SetExecConfigV2(CacheParams cache_params)
+{
+    at_npu::native::SetDeterministicOps(cache_params.GetDeterministicStatus());
+}
+
+void* GetWorkSpaceAddr(
+    uint64_t workspace_size)
+{
+    void* workspace_addr = nullptr;
+    if (workspace_size != 0) {
+        auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);
+        workspace_addr = const_cast<void*>(workspace_tensor.storage().data());
+    }
+    return workspace_addr;
+}
+
+int ExecuteApiFunc(
+    const void* opApiFuncAddr,
+    aclrtStream acl_stream,
+    uint64_t workspace_size,
+    aclOpExecutor* executor
+)
+{
+    auto workspace_addr = GetWorkSpaceAddr(workspace_size);
+    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);
+    auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);
+
+    return api_ret;
+}
+
+bool CheckAndInitFunc(const char* aclnn_api)
+{
+    static const auto ptaGetExecCacheAddr = GetOpApiFuncAddr("PTAGetExecCache");
+    static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");
+    static const auto setPTAHashKeyAddr = GetOpApiFuncAddr("SetPTAHashKey");
+    static const auto canUsePTACacheAddr = GetOpApiFuncAddr("CanUsePTACache");
+
+    PTAGetExecCache ptaGetExecCacheFunc = reinterpret_cast<PTAGetExecCache>(ptaGetExecCacheAddr);
+    InitPTACacheThreadLocal initPTACacheThreadLocalFunc =
+        reinterpret_cast<InitPTACacheThreadLocal>(initPTACacheThreadLocalAddr);
+    SetPTAHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTAHashKey>(setPTAHashKeyAddr);
+    CanUsePTACache canUsePTACacheFunc = reinterpret_cast<CanUsePTACache>(canUsePTACacheAddr);
+
+    bool has_valid_funcs = (ptaGetExecCacheFunc != nullptr) &&
+                           (initPTACacheThreadLocalFunc != nullptr) &&
+                           (setPTAHashKeyFunc != nullptr);
+    bool can_use_cache = (canUsePTACacheFunc != nullptr) && canUsePTACacheFunc(aclnn_api);
+
+    bool check_result = has_valid_funcs && can_use_cache;
+
+    if (!check_result) {
+        return false;
+    } else {
+        // 执行初始化相关操作
+        initPTACacheThreadLocalFunc();
+        g_hash_offset = 0;
+    }
+    return true;
+}
+
+bool CheckAndInitFuncV2(const char* aclnn_api)
+{
+    static const auto ptaFindExecCacheAddr = GetOpApiFuncAddr("PTAFindExecCache");
+    static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");
+    static const auto setPTACacheHashKeyAddr = GetOpApiFuncAddr("SetPTACacheHashKey");
+    static const auto canUsePTACacheAddr = GetOpApiFuncAddr("CanUsePTACache");
+
+    PTAFindExecCache ptaFindExecCacheFunc = reinterpret_cast<PTAFindExecCache>(ptaFindExecCacheAddr);
+    InitPTACacheThreadLocal initPTACacheThreadLocalFunc =
+        reinterpret_cast<InitPTACacheThreadLocal>(initPTACacheThreadLocalAddr);
+    SetPTACacheHashKey setPTACacheHashKeyFunc = reinterpret_cast<SetPTACacheHashKey>(setPTACacheHashKeyAddr);
+    CanUsePTACache canUsePTACacheFunc = reinterpret_cast<CanUsePTACache>(canUsePTACacheAddr);
+
+    bool has_valid_funcs = (ptaFindExecCacheFunc != nullptr) &&
+                           (initPTACacheThreadLocalFunc != nullptr) &&
+                           (setPTACacheHashKeyFunc != nullptr);
+    bool can_use_cache = (canUsePTACacheFunc != nullptr) && canUsePTACacheFunc(aclnn_api);
+
+    bool check_result = has_valid_funcs && can_use_cache;
+
+    if (!check_result) {
+        return false;
+    } else {
+        // 执行初始化相关操作
+        initPTACacheThreadLocalFunc();
+        g_hash_offset = 0;
+    }
+    return true;
+}
+
+void AddCacheConfigParams(aclrtStream acl_stream, CacheParams cache_params)
+{
+    bool deterministic_status = cache_params.GetDeterministicStatus();
+    uint32_t aic_num = cache_params.GetAicNum();
+    uint32_t aiv_num = cache_params.GetAivNum();
+
+    add_param_to_buf(deterministic_status);
+    if (aic_num != UINT32_MAX && aiv_num != UINT32_MAX) {
+        add_param_to_buf(aic_num);
+        add_param_to_buf(aiv_num);
+    }
+    auto device = c10_npu::current_device();
+    add_param_to_buf(device);
+    add_param_to_buf(reinterpret_cast<uintptr_t>(acl_stream));
+}
+
+void AddCacheConfigParamsV2(aclrtStream acl_stream, CacheParams cache_params, const char* aclnn_api)
+{
+    bool deterministic_status = cache_params.GetDeterministicStatus();
+    uint32_t aic_num = cache_params.GetAicNum();
+    uint32_t aiv_num = cache_params.GetAivNum();
+
+    add_param_to_buf_v2(deterministic_status);
+    if (aic_num != UINT32_MAX && aiv_num != UINT32_MAX) {
+        add_param_to_buf_v2(aic_num);
+        add_param_to_buf_v2(aiv_num);
+    }
+    add_param_to_buf_v2(std::string(aclnn_api));
+    add_param_to_buf_v2(reinterpret_cast<uintptr_t>(acl_stream));
+}
+
+aclOpExecutor* GetCacheExecutorV2(uint64_t* workspace_size)
+{
+    static const auto ptaFindExecCacheAddr = GetOpApiFuncAddr("PTAFindExecCache");
+    static const auto setPTACacheHashKeyAddr = GetOpApiFuncAddr("SetPTACacheHashKey");
+
+    PTAFindExecCache ptaFindExecCacheFunc = reinterpret_cast<PTAFindExecCache>(ptaFindExecCacheAddr);
+    SetPTACacheHashKey setPTACacheHashKeyFunc = reinterpret_cast<SetPTACacheHashKey>(setPTACacheHashKeyAddr);
+
+    if (g_hash_offset == g_hash_buf_max_size) {
+        setPTACacheHashKeyFunc(nullptr, 0);
+    } else {
+        setPTACacheHashKeyFunc(reinterpret_cast<uint8_t *>(g_hash_buf), g_hash_offset);
+    }
+    return ptaFindExecCacheFunc(reinterpret_cast<uint8_t *>(g_hash_buf),
+        g_hash_offset, workspace_size);
+}
+
+aclOpExecutor* GetCacheExecutor(uint64_t* workspace_size)
+{
+    uint64_t hashId = calc_hash_id();
+
+    static const auto ptaGetExecCacheAddr = GetOpApiFuncAddr("PTAGetExecCache");
+    static const auto setPTAHashKeyAddr = GetOpApiFuncAddr("SetPTAHashKey");
+
+    SetPTAHashKey setPTAHashKeyFunc = reinterpret_cast<SetPTAHashKey>(setPTAHashKeyAddr);
+    PTAGetExecCache ptaGetExecCacheFunc = reinterpret_cast<PTAGetExecCache>(ptaGetExecCacheAddr);
+
+    setPTAHashKeyFunc(hashId);
+
+    return ptaGetExecCacheFunc(hashId, workspace_size);
+}
+
+bool ExecuteCachedOp(aclrtStream acl_stream, const char* aclnn_api, void* phrase2)
+{
+    uint64_t workspace_size = 0;
+    aclOpExecutor* executor = GetCacheExecutor(&workspace_size);
+    if (executor == nullptr) {
+        return false;
+    }
+
+    void* workspace_addr = nullptr;
+    at::Tensor workspace_tensor;
+    if (workspace_size != 0) {
+        workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);
+        workspace_addr = const_cast<void*>(workspace_tensor.storage().data());
+    }
+
+    auto acl_call = [workspace_addr, workspace_size, acl_stream, executor, phrase2]()->int {
+        OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(phrase2);
+        auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);
+        NPU_CHECK_ERROR(api_ret, "call failed");
+        return api_ret;
+    };
+
+    at_npu::native::OpCommand::RunOpApiV2(aclnn_api, acl_call);
+    UnInitCacheThreadLocal(); // 清理缓存线程本地资源
+    return true;
+}
+
+bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, int* api_ret)
+{
+    uint64_t workspace_size = 0;
+    aclOpExecutor* executor = GetCacheExecutorV2(&workspace_size);
+    if (executor == nullptr) {
+        return false;
+    }
+
+    void *workspace_addr = nullptr;
+    at::Tensor workspace_tensor;
+    if (workspace_size != 0) {
+        workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size, acl_stream);
+        workspace_addr = const_cast<void *>(workspace_tensor.storage().data());
+    }
+
+    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(phrase2);
+    *api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);
+    NPU_CHECK_ERROR(*api_ret, "call failed");
+    UnInitCacheThreadLocal();
+    return true;
+}
+
+void RunAclCall(const string &op_name, const PROC_FUNC &func)
+{
+    at_npu::native::OpCommand::RunOpApiV2(op_name, func);
 }
