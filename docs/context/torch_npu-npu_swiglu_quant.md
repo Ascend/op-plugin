@@ -70,47 +70,33 @@ torch_npu.npu_swiglu_quant(x, *, smooth_scales=None, offsets=None, group_index=N
 
 ## 调用示例
 ```python
-import os
-import shutil
-import unittest
-
 import torch
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestNPUSwigluQuant(TestCase):
     def test_npu_swiglu_quant(self, device="npu"):
-        batch_size = 4608
-        hidden_size = 2048
-        x_shape = (batch_size, hidden_size)
-        input_data = np.random.randn(*x_shape).astype(np.float32)
-
-        quant_mode = 1
-        group_list_type = 0
-        dst_type = torch.int8
-        activate_left = False
-        offsets = None
+        batch_size, hidden_size = 4608, 2048
         num_groups = 8
-        group_sizes = batch_size // num_groups
-        group_index = [(i + 1) * group_sizes for i in range(num_groups)]
-        smooth_scales = np.random.randn(num_groups, hidden_size // 2).astype(np.float32)
+        group_size = batch_size // num_groups
+        
+        npu_x = torch.randn(batch_size, hidden_size, dtype=torch.float32, device=device)
+        g_index = torch.tensor([(i + 1) * group_size for i in range(num_groups)], dtype=torch.int32, device=device)
+        s_scales = torch.randn(num_groups, hidden_size // 2, dtype=torch.float32, device=device)
+        offsets = torch.randn(num_groups, hidden_size // 2, dtype=torch.float32, device=device)
 
-        device = "npu"
-        npu_x = torch.from_numpy(input_data).to(device)
-        npu_group_index = torch.from_numpy(np.array(group_index)).to(device)
-        npu_smooth_scales = torch.from_numpy(smooth_scales).to(device)
         result = torch_npu.npu_swiglu_quant(
             npu_x,
-            smooth_scales=npu_smooth_scales,
+            smooth_scales=s_scales,
             offsets=offsets,
-            group_index=npu_group_index,
+            group_index=g_index,
             activate_left=False,
-            quant_mode=quant_mode,
-            group_list_type=group_list_type,
-            dst_type=dst_type
+            quant_mode=1,
+            group_list_type=0,
+            dst_type=torch.int8
         )
+
 
 if __name__ == "__main__":
     run_tests()
