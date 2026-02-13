@@ -46,20 +46,15 @@ const std::set<int64_t> SUPPORT_SCALES_DTYPE_LIST{
     static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0)
 };
 
-static c10::SmallVector<int64_t, SIZE> array_to_small_vector(c10::IntArrayRef shape)
-{
-    c10::SmallVector<int64_t, SIZE> shape_small_vec;
-    for (uint64_t i = 0; i < shape.size(); i++) {
-        shape_small_vec.emplace_back(shape[i]);
-    }
-    return shape_small_vec;
-}
-
 at::Tensor npu_quant_all_reduce(const at::Tensor &x, const at::Tensor &scales, c10::string_view hcom,
                                 int64_t world_size, c10::optional<c10::string_view> reduce_op,
                                 c10::optional<int64_t> output_dtype, c10::optional<int64_t> x_dtype,
                                 c10::optional<int64_t> scales_dtype)
 {
+    // 校验空tensor
+    TORCH_CHECK(x.defined(), "The input tensor x can not be None.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(scales.defined(), "The input tensor scales can not be None.", OPS_ERROR(ErrCode::PARAM));
+
     // 校验x的shape, 2维(bs, h)或3维(b, s, h)
     TORCH_CHECK(x.dim() == DIM_TWO || x.dim() == DIM_THREE,
                 "The input x tensor shape is required to be 2 or 3 dim, but the actual input shape is ",
@@ -129,7 +124,8 @@ at::Tensor npu_quant_all_reduce(const at::Tensor &x, const at::Tensor &scales, c
     aclDataType output_acl_type = c10_npu::GetAclDataType(output_default_dtype);
     at::ScalarType output_scalar_type = npu_preparation::convert_to_scalar_type(output_acl_type);
     // 推导output_tensor：output_tensor按照实际的shape和dtype去创建，output的shape和传入的x的shape完全一致
-    at::Tensor output_tensor = npu_preparation::apply_tensor_without_format(array_to_small_vector(x.sizes()), c10::dtype(output_scalar_type));
+    at::Tensor output_tensor = npu_preparation::apply_tensor_without_format(op_infer::array_to_small_vector(x.sizes()),
+                                                                            c10::dtype(output_scalar_type));
 
     // attr
     char *group_ptr = const_cast<char *>(hcom.data());

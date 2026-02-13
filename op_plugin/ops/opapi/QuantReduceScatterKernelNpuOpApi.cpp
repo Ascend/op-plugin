@@ -46,6 +46,10 @@ at::Tensor npu_quant_reduce_scatter(const at::Tensor &x, const at::Tensor &scale
                                     c10::optional<int64_t> output_dtype, c10::optional<int64_t> x_dtype,
                                     c10::optional<int64_t> scales_dtype)
 {
+    // 校验空tensor
+    TORCH_CHECK(x.defined(), "The input tensor x can not be None.", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(scales.defined(), "The input tensor scales can not be None.", OPS_ERROR(ErrCode::PARAM));
+
     // 校验x的shape, 2维或者3维
     TORCH_CHECK(x.dim() == DIM_TWO || x.dim() == DIM_THREE,
                 "The input x tensor shape is required to be 2 or 3 dim, but the actual input shape is ",

@@ -681,7 +681,20 @@ def npu_quant_mm_reduce_scatter_meta(self, x2, hcom, world_size, reduce_op='sum'
 @impl(m, "npu_quant_reduce_scatter")
 def npu_quant_reduce_scatter_meta(x, scales, hcom_name, world_size, reduce_op='sum',
                                   output_dtype=None, x_dtype=None, scales_dtype=None):
-    world_size = 2
+    torch._check(
+        x is not None,
+        lambda: "x cannot be None, please input some value" + ops_error(ErrCode.TYPE),
+    )
+    torch._check(
+        scales is not None,
+        lambda: "scales cannot be None, please input some value" + ops_error(ErrCode.TYPE),
+    )
+
+    world_size_list = [2, 4, 8]
+    torch._check(
+        world_size in world_size_list,
+        lambda: "world_size must be in " + str(world_size_list) + ", but actual value is: " + str(world_size) + ops_error(ErrCode.VALUE),
+    )
 
     if x.dim() == 2:
         size = [x.size(0) // world_size, x.size(1)]
@@ -700,7 +713,21 @@ def npu_quant_reduce_scatter_meta(x, scales, hcom_name, world_size, reduce_op='s
 @impl(m, "npu_quant_all_reduce")
 def npu_quant_all_reduce_meta(x, scales, hcom_name, world_size, reduce_op='sum',
                               output_dtype=None, x_dtype=None, scales_dtype=None):
-    world_size = 2
+    torch._check(
+        x is not None,
+        lambda: "x cannot be None, please input some value" + ops_error(ErrCode.TYPE),
+    )
+    torch._check(
+        scales is not None,
+        lambda: "scales cannot be None, please input some value" + ops_error(ErrCode.TYPE),
+    )
+
+    world_size_list = [2, 4, 8]
+    torch._check(
+        world_size in world_size_list,
+        lambda: "world_size must be in " + str(world_size_list) + ", but actual value is: " + str(world_size) + ops_error(ErrCode.VALUE),
+    )
+
     size = x.size()
     dtype = x.dtype
     if output_dtype is not None:
