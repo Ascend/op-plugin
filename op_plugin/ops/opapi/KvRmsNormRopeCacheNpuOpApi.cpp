@@ -70,8 +70,8 @@ namespace op_api {
             c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V2_MODE_IDX];
         } else {
             // Use Dk and Dv sizes for V1 as defaults
-            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V1_MODE_IDX];
-            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V1_MODE_IDX];
+            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = cos.size(TOKEN_FEATURE_DIM_IDX);
+            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = gamma.size(0);
         }
 
         char *cache_mode_ptr = const_cast<char *>(cache_mode.data());
@@ -133,8 +133,8 @@ namespace op_api {
             c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V2_MODE_IDX];
         } else {
             // Use Dk and Dv sizes for V1 as defaults
-            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V1_MODE_IDX];
-            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V1_MODE_IDX];
+            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = cos.size(TOKEN_FEATURE_DIM_IDX);
+            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = gamma.size(0);
         }
 
         char *cache_mode_ptr = const_cast<char *>(cache_mode.data());
@@ -195,8 +195,8 @@ namespace op_api {
             c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V2_MODE_IDX];
         } else {
             // Use Dk and Dv sizes for V1 as defaults
-            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V1_MODE_IDX];
-            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V1_MODE_IDX];
+            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = cos.size(TOKEN_FEATURE_DIM_IDX);
+            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = gamma.size(0);
         }
 
         char *cache_mode_ptr = const_cast<char *>(cache_mode.data());
