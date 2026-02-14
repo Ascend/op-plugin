@@ -1,2 +1,0 @@
-- name: npu_test(Tensor input, Scalar alpha, float prob, int dim) -> Tensor
-  input: npu_test_backward(grad)

@@ -37,8 +37,14 @@ def main() -> None:
         '-o', '--output_dir', help='output directory')
     options = parser.parse_args()
 
+    env_aclnn_extension_switch = os.getenv('ACLNN_EXTENSION_SWITCH')
+    if env_aclnn_extension_switch:
+        template_dir_fm = "../../torchnpugen/struct/templates"
+    else:
+        template_dir_fm = "torchnpugen/struct/templates"
+    
     fm = FileManager(
-            install_dir=options.output_dir, template_dir="torchnpugen/struct/templates", dry_run=False
+            install_dir=options.output_dir, template_dir=template_dir_fm, dry_run=False
         )
 
     native_yaml_path = os.path.realpath(options.native_yaml)

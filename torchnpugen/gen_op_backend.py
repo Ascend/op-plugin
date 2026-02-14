@@ -33,9 +33,15 @@ def main() -> None:
     PathManager.check_directory_path_readable(deprecate_yaml_path)
     backend_declarations, dispatch_registrations_body = parse_native_yaml(source_yaml_path, deprecate_yaml_path)
 
+    env_aclnn_extension_switch = os.getenv('ACLNN_EXTENSION_SWITCH')
+    if env_aclnn_extension_switch:
+        template_dir_make_file_manager = "../../torchnpugen/templates"
+    else:
+        template_dir_make_file_manager = "torchnpugen/templates"
+        
     def make_file_manager(install_dir: str) -> FileManager:
         return FileManager(
-            install_dir=install_dir, template_dir="torchnpugen/templates", dry_run=False
+            install_dir=install_dir, template_dir=template_dir_make_file_manager, dry_run=False
         )
 
     fm = make_file_manager(options.output_dir)

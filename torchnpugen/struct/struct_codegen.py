@@ -114,9 +114,10 @@ def filt_op_branch(struct_ops: Dict) -> Dict:
     def filt_gen_opapi(op) -> bool:
         return 'gen_opapi' in op.keys() and is_support_version(op)
 
-    for op in struct_ops['symint']:
-        if is_support_version(op):
-            SYMINT_OPS.add(op['func'].split("(")[0])
+    if 'symint' in struct_ops and struct_ops['symint']:
+        for op in struct_ops['symint']:
+            if is_support_version(op):
+                SYMINT_OPS.add(op['func'].split("(")[0])
 
     filt_ops = list(filter(lambda op: filt_gen_opapi(op), support_ops))
     return filt_ops
