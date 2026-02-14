@@ -62,8 +62,8 @@ namespace op_api {
             k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V2_MODE_IDX];
             c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V2_MODE_IDX];
         } else {
-            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V1_MODE_IDX];
-            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V1_MODE_IDX];
+            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = cos.size(TOKEN_FEATURE_DIM_IDX);
+            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = gamma.size(0);
         }
         char *cache_mode_ptr = const_cast<char *>(cache_mode.data());
         at::Tensor k_rope = npu_preparation::apply_tensor_without_format(k_rope_shape, kv.options());
@@ -117,8 +117,8 @@ namespace op_api {
             k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V2_MODE_IDX];
             c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V2_MODE_IDX];
         } else {
-            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V1_MODE_IDX];
-            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V1_MODE_IDX];
+            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = cos.size(TOKEN_FEATURE_DIM_IDX);
+            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = gamma.size(0);
         }
         char *cache_mode_ptr = const_cast<char *>(cache_mode.data());
         at::Tensor k_rope = npu_preparation::apply_tensor_without_format(k_rope_shape, kv.options());
@@ -172,8 +172,8 @@ namespace op_api {
             k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V2_MODE_IDX];
             c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V2_MODE_IDX];
         } else {
-            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = DK_SIZES[V1_MODE_IDX];
-            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = DV_SIZES[V1_MODE_IDX];
+            k_rope_shape[TOKEN_FEATURE_DIM_IDX] = cos.size(TOKEN_FEATURE_DIM_IDX);
+            c_kv_shape[TOKEN_FEATURE_DIM_IDX] = gamma.size(0);
         }
 
         char *cache_mode_ptr = const_cast<char *>(cache_mode.data());
