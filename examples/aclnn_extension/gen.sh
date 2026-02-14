@@ -26,12 +26,12 @@ export PYTORCH_CUSTOM_DERIVATIVES_PATH="${CDIR}/op_plugin/config/${PYTORCH_VERSI
 export ACLNN_EXTENSION_PATH="${CDIR}"
 export ACLNN_EXTENSION_SWITCH="TRUE"
 
-ATRN_DIR="$CDIR/csrc/aten" 
+ATRN_DIR="$CDIR/torch_npu/csrc/aten" 
 if [ ! -d "${ATRN_DIR}" ]; then
     mkdir -p "${ATRN_DIR}"
 fi
 
-UTILS_DIR="$CDIR/utils" 
+UTILS_DIR="$CDIR/torch_npu/utils" 
 if [ ! -d "${UTILS_DIR}" ]; then
     mkdir -p "${UTILS_DIR}"
 fi
@@ -75,13 +75,13 @@ python3 -m torchnpugen.struct.gen_struct_opapi \
 #################### torch_npu torchnpugen ####################
 
 python3 -m torchnpugen.gen_backend_stubs  \
-  --output_dir="$CDIR/csrc/aten" \
+  --output_dir="$CDIR/torch_npu/csrc/aten" \
   --source_yaml="./test_native_functions.yaml" \
-  --impl_path="$CDIR/csrc/aten" \
+  --impl_path="$CDIR/torch_npu/csrc/aten" \
   --op_plugin_impl_path="$CDIR/op_plugin/ops" \
   --op_plugin_yaml_path="$CDIR/op_plugin/config/v2r7/op_plugin_functions.yaml"
 
 python3 -m torchnpugen.autograd.gen_autograd \
-  --out_dir="$CDIR/csrc/aten" \
+  --out_dir="$CDIR/torch_npu/csrc/aten" \
   --autograd_dir="$CDIR/autograd" \
   --npu_native_function_dir="./test_native_functions.yaml"

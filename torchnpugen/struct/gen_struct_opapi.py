@@ -39,7 +39,9 @@ def main() -> None:
 
     env_aclnn_extension_switch = os.getenv('ACLNN_EXTENSION_SWITCH')
     if env_aclnn_extension_switch:
-        template_dir_fm = "../../torchnpugen/struct/templates"
+        # Use absolute path relative to current script for templates
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        template_dir_fm = os.path.join(script_dir, "templates")
     else:
         template_dir_fm = "torchnpugen/struct/templates"
     
