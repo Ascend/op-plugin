@@ -15,6 +15,7 @@
 
 #include <pwd.h>
 #include <sys/stat.h>
+#include "op_api_common_base.h"
 #include "op_api_common.h"
 
 thread_local char g_hash_buf[g_hash_buf_size];
@@ -1617,7 +1618,7 @@ void SetExecConfig()
     at_npu::native::SetDeterministic();
 }
 
-void SetExecConfigV2(CacheParams cache_params)
+void SetExecConfigV2(const CacheParams& cache_params)
 {
     at_npu::native::SetDeterministicOps(cache_params.GetDeterministicStatus());
 }
@@ -1707,7 +1708,7 @@ bool CheckAndInitFuncV2(const char* aclnn_api)
     return true;
 }
 
-void AddCacheConfigParams(aclrtStream acl_stream, CacheParams cache_params)
+void AddCacheConfigParams(aclrtStream acl_stream, const CacheParams& cache_params)
 {
     bool deterministic_status = cache_params.GetDeterministicStatus();
     uint32_t aic_num = cache_params.GetAicNum();
@@ -1723,7 +1724,7 @@ void AddCacheConfigParams(aclrtStream acl_stream, CacheParams cache_params)
     add_param_to_buf(reinterpret_cast<uintptr_t>(acl_stream));
 }
 
-void AddCacheConfigParamsV2(aclrtStream acl_stream, CacheParams cache_params, const char* aclnn_api)
+void AddCacheConfigParamsV2(aclrtStream acl_stream, const CacheParams& cache_params, const char* aclnn_api)
 {
     bool deterministic_status = cache_params.GetDeterministicStatus();
     uint32_t aic_num = cache_params.GetAicNum();
@@ -1822,4 +1823,9 @@ bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phra
 void RunAclCall(const string &op_name, const PROC_FUNC &func)
 {
     at_npu::native::OpCommand::RunOpApiV2(op_name, func);
+}
+
+TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable()
+{
+    return c10_npu::option::OptionsManager::GetTaskQueueEnable();
 }

@@ -396,11 +396,11 @@ private:
 TORCH_NPU_API CacheParams GetCacheParams();
 
 TORCH_NPU_API bool CheckAndInitFunc(const char* aclnn_api);
-TORCH_NPU_API void AddCacheConfigParams(aclrtStream acl_stream, CacheParams cache_params);
+TORCH_NPU_API void AddCacheConfigParams(aclrtStream acl_stream, const CacheParams& cache_params);
 TORCH_NPU_API bool ExecuteCachedOp(aclrtStream acl_stream, const char* aclnn_api, void* phrase2);
 
 TORCH_NPU_API bool CheckAndInitFuncV2(const char* aclnn_api);
-TORCH_NPU_API void AddCacheConfigParamsV2(aclrtStream acl_stream, CacheParams cache_params, const char* aclnn_api);
+TORCH_NPU_API void AddCacheConfigParamsV2(aclrtStream acl_stream, const CacheParams& cache_params, const char* aclnn_api);
 TORCH_NPU_API bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, int* api_ret);
 
 template <typename... Args>
@@ -412,7 +412,7 @@ void BuildCacheHashParams(aclrtStream acl_stream, const char* aclnn_api, Args&&.
 }
 
 template <typename... Ts>
-void BuildCacheHashParamsV2(aclrtStream acl_stream, CacheParams cache_params, const char* aclnn_api, const std::tuple<Ts...> &args)
+void BuildCacheHashParamsV2(aclrtStream acl_stream, const CacheParams& cache_params, const char* aclnn_api, const std::tuple<Ts...> &args)
 {
     AddCacheConfigParamsV2(acl_stream, cache_params, aclnn_api);
     add_params_to_buf_v2(args, std::make_index_sequence<sizeof...(Ts)>{});
@@ -435,7 +435,7 @@ bool hit_cache_ext(aclrtStream acl_stream, const char* aclnn_api, void* phrase2,
 template <typename ...Ts>
 bool hit_cache_v2_ext(
     aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const std::tuple<Ts...> &args, int* api_ret,
-    CacheParams cache_params)
+    const CacheParams& cache_params)
 {
     // 步骤1：检查缓存功能并初始化
     if (!CheckAndInitFuncV2(aclnn_api)) {
@@ -457,7 +457,7 @@ TORCH_NPU_API void InitExecCommonCtx();
 TORCH_NPU_API void UnInitExecCommonCtx();
 TORCH_NPU_API aclrtStream GetAclStream();
 TORCH_NPU_API void SetExecConfig();
-TORCH_NPU_API void SetExecConfigV2(CacheParams cache_params);
+TORCH_NPU_API void SetExecConfigV2(const CacheParams& cache_params);
 TORCH_NPU_API int ExecuteApiFunc(
     const void* opApiFuncAddr,
     aclrtStream acl_stream,
@@ -470,6 +470,8 @@ TORCH_NPU_API void InitExecSubTheadCtx(aclrtStream acl_stream);
 using PROC_FUNC = std::function<int()>;
 
 TORCH_NPU_API void RunAclCall(const string &op_name, const PROC_FUNC &func);
+
+TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable();
 
 #define EXEC_NPU_CMD_V1_EXT(aclnn_api, ...)                                                                            \
     do {                                                                                                               \
@@ -558,7 +560,7 @@ TORCH_NPU_API void RunAclCall(const string &op_name, const PROC_FUNC &func);
 
 #define EXEC_NPU_CMD_EXT(aclnn_api, ...)                                                                               \
     do {                                                                                                               \
-        static const auto task_queue_enable = c10_npu::option::OptionsManager::GetTaskQueueEnable();                   \
+        static const auto task_queue_enable = OpApiGetTaskQueueEnable();                                               \
         if (task_queue_enable == 2) {                                                                                  \
             EXEC_NPU_CMD_V2_EXT(aclnn_api, __VA_ARGS__);                                                               \
         } else {                                                                                                       \

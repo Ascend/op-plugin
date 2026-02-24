@@ -16,8 +16,6 @@
 #ifndef OP_PULGIN_INCLUDE_NPU_CPU_EXTENSION
 #define OP_PULGIN_INCLUDE_NPU_CPU_EXTENSION
 
-#include <ATen/ATen.h>
-
 #include "op_plugin/utils/op_api_common_base.h"
 
 #endif  // OP_PULGIN_INCLUDE_NPU_CPU_EXTENSION
