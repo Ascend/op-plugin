@@ -2633,8 +2633,6 @@ def npu_grouped_matmul_add__meta(y, x1, x2, group_list, *, transpose_x=True,
 
 @impl(m, "npu_matmul_all_to_all")
 def npu_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, all2all_axes=None):
-    # world_size为设备卡数，这里假设卡数为2
-    world_size = 2
     # 校验dim
     x1_dim = x1.dim()
     x2_dim = x2.dim()
@@ -2662,7 +2660,10 @@ def npu_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, all2all_axes
         lambda: "The second dim of x2 should not be 0." + ops_error(ErrCode.VALUE),
     )
     # 推导output的shape
-    # 因为该算子目前不支持转置，所以output的m维度==x1.size[0]，output的n维度==x2.size[1]
+    torch._check(
+        world_size != 0,
+        lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
+    )
     out_m = x1.size(0) * world_size
     out_n = x2.size(1) // world_size
     size = [out_m, out_n]
@@ -2677,8 +2678,6 @@ def npu_quant_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, x1_sca
                                      group_sizes=None, all2all_axes=None, comm_quant_dtype=None, x1_dtype=None, x2_dtype=None,
                                      x1_scale_dtype=None, x2_scale_dtype=None,
                                      output_scale_dtype=None, comm_scale_dtype=None, y_dtype=None):
-    # world_size为设备卡数，这里假设卡数为2
-    world_size = 2
     # 校验dim
     x1_dim = x1.dim()
     x2_dim = x2.dim()
@@ -2711,7 +2710,10 @@ def npu_quant_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, x1_sca
         lambda: "The second dim of x2 should not be 0." + ops_error(ErrCode.VALUE),
     )
     # 推导output的shape
-    # 因为该算子目前不支持转置，所以output的m维度==x1.size[0]，output的n维度==x2.size[1]
+    torch._check(
+        world_size != 0,
+        lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
+    )
     out_m = x1.size(0) * world_size
     out_n = x2.size(1) // world_size
     size = [out_m, out_n]
@@ -2725,8 +2727,6 @@ def npu_quant_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, x1_sca
 
 @impl(m, "npu_all_to_all_matmul")
 def npu_all_to_all_matmul_meta(x1, x2, hcom, world_size, bias=None, all2all_axes=None, all2all_out_flag=True):
-    # world_size为设备卡数，这里假设卡数为2
-    world_size = 2
     # 校验dim
     x1_dim = x1.dim()
     x2_dim = x2.dim()
@@ -2754,7 +2754,10 @@ def npu_all_to_all_matmul_meta(x1, x2, hcom, world_size, bias=None, all2all_axes
         lambda: "The second dim of x2 should not be 0." + ops_error(ErrCode.VALUE),
     )
     # 推导output的shape
-    # 因为该算子目前不支持转置，所以output的m维度==x1.size[0]，output的n维度==x2.size[1]
+    torch._check(
+        world_size != 0,
+        lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
+    )
     out_m = x1.size(0) // world_size
     out_n = x2.size(1)
     size = [out_m, out_n]
@@ -2773,8 +2776,6 @@ def npu_all_to_all_quant_matmul_meta(x1, x2, hcom, world_size, all2all_out_flag=
                                      x1_offset=None, x2_offset=None, x1_quant_mode=None, x2_quant_mode=None, common_quant_mode=None, group_sizes=None,
                                      all2all_axes=None, comm_quant_dtype=None, x1_quant_dtype=None, x1_dtype=None, x2_dtype=None, x1_scale_dtype=None,
                                      x2_scale_dtype=None, output_scale_dtype=None, comm_scale_dtype=None, y_dtype=None):
-    # world_size为设备卡数，这里假设卡数为2
-    world_size = 2
     # 校验dim
     x1_dim = x1.dim()
     x2_dim = x2.dim()
@@ -2807,7 +2808,10 @@ def npu_all_to_all_quant_matmul_meta(x1, x2, hcom, world_size, all2all_out_flag=
         lambda: "The second dim of x2 should not be 0." + ops_error(ErrCode.VALUE),
     )
     # 推导output的shape
-    # 因为该算子目前不支持转置，所以output的m维度==x1.size[0]，output的n维度==x2.size[1]
+    torch._check(
+        world_size != 0,
+        lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
+    )
     out_m = x1.size(0) // world_size
     out_n = x2.size(1)
     size = [out_m, out_n]

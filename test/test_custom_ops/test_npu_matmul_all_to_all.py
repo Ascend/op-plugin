@@ -117,15 +117,15 @@ class TestMatmulAlltoAll(TestCase):
 
         return expt_out_list
 
-    @skipIfUnsupportMultiNPU(2)
+    @skipIfUnsupportMultiNPU(4)
     @SupportedDevices(['Ascend950'])
     def test_npu_matmul_all_to_all(self):
         # 设备卡数
-        world_size = 2
+        world_size = 4
         # 初始化dtype，因为matmul_all_to_all的x1、x2和output的dtype一致，bias可以等于x1也可以为float32，这里统一使用bfloat16
         dtype = torch.bfloat16  # Simulate supported dtype
         # 初始化shape
-        m, k, n = 16, 32, 32
+        m, k, n = 16, 64, 32
         # 初始化format，取-1是因为后续要使用create_common_tensor生成张量，format为-1时，不会做特殊处理。
         data_format = -1
         # 初始化create_common_tensor需要的参数
