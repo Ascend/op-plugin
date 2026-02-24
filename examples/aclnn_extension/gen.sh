@@ -64,7 +64,7 @@ python3 -m torchnpugen.gen_op_backend  \
   --version="$PYTORCH_VERSION" \
   --output_dir="$CDIR/op_plugin/" \
   --source_yaml="$OUTPUT_DIR/op_plugin_functions.yaml" \
-  --deprecate_yaml="../../op_plugin/config/deprecated.yaml" \
+  --deprecate_yaml="$CDIR/deprecated.yaml"
 
 python3 -m torchnpugen.struct.gen_struct_opapi \
   --output_dir="$OPAPI_OUTPUT_DIR/" \

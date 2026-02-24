@@ -399,8 +399,9 @@ def parse_native_yaml(
         gen_function_declaration(f, backend_declarations)
     deprecated = dp["deprecated"]
     deprecated_dict = {}
-    for item in deprecated:
-        deprecated_dict[item.get("name")] = item.get("replace", None)
+    if deprecated:
+        for item in deprecated:
+            deprecated_dict[item.get("name")] = item.get("replace", None)
     dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f, deprecated_dict), res)))
 
     return backend_declarations, dispatch_registrations_body
