@@ -57,7 +57,7 @@ def main() -> None:
     native_functions = parse_native_yaml_struct(es)
 
     struct_info = parse_struct_yaml(options.struct_yaml, native_functions)
-    gen_op_api(fm, struct_info)
+    gen_op_api(fm, struct_info, env_aclnn_extension_switch)
 
 if __name__ == '__main__':
     main()
