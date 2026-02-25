@@ -419,7 +419,9 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
 
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
-    at::Tensor actual_shared_prefix_len {nullptr};
+    at::Tensor default_actual_shared_prefix_len {nullptr};
+    at::Tensor default_q_start_idx {nullptr};
+    at::Tensor default_kv_start_idx {nullptr};
     at::Tensor dequant_scale1;
     at::Tensor quant_scale1;
     at::Tensor dequant_scale2;
@@ -430,6 +432,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
     at::Tensor key_shared_prefix;
     at::Tensor value_shared_prefix;
     int64_t antiquant_mode = 0;
+    int64_t default_pse_type_value = 0;
 
     at::TensorList valueTensors = value;
     at::TensorList keyTensors = key;
@@ -451,10 +454,18 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
     auto dequant_scale_value_tmp = dequant_scale_value.has_value() ? dequant_scale_value.value() : null_tensor;
     TensorWrapper dequant_scale_value_wrapper = make_wrapper(dequant_scale_value_tmp, dequant_scale_value_dtype);
 
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
-        quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
-        dequant_offset_value, key_shared_prefix, value_shared_prefix, actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
-        num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
+    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
+            quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
+            dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+            num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
+    } else {
+        // Interface aclnnFusedInferAttentionScore versions V1 to V4 are no longer supported on Ascend950
+        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV5, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
+            quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
+            dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, default_q_start_idx, default_kv_start_idx, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+            num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, default_pse_type_value, outTensor_wrapper, softmax_lse);
+    }
 
     return std::tuple<at::Tensor, at::Tensor>(output, softmax_lse);
 }
@@ -496,7 +507,9 @@ std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_score_v2_out_sy
     std::string input_layout_str = std::string(input_layout);
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
-    at::Tensor actual_shared_prefix_len {nullptr};
+    at::Tensor default_actual_shared_prefix_len {nullptr};
+    at::Tensor default_q_start_idx {nullptr};
+    at::Tensor default_kv_start_idx {nullptr};
     at::Tensor dequant_scale1;
     at::Tensor quant_scale1;
     at::Tensor dequant_scale2;
@@ -507,6 +520,7 @@ std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_score_v2_out_sy
     at::Tensor key_shared_prefix;
     at::Tensor value_shared_prefix;
     int64_t antiquant_mode = 0;
+    int64_t default_pse_type_value = 0;
 
     at::TensorList valueTensors = value;
     at::TensorList keyTensors = key;
@@ -528,19 +542,37 @@ std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_score_v2_out_sy
     auto dequant_scale_value_tmp = dequant_scale_value.has_value() ? dequant_scale_value.value() : null_tensor;
     TensorWrapper dequant_scale_value_wrapper = make_wrapper(dequant_scale_value_tmp, dequant_scale_value_dtype);
 
-    if (workspace.has_value()) {
-        void* workspace_addr = const_cast<void *>(workspace.value().storage().data());
-        uint64_t workspace_size = static_cast<uint64_t>(workspace.value().numel() * workspace.value().element_size());
-        EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, workspace_addr, workspace_size, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
-            quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
-            dequant_offset_value, key_shared_prefix, value_shared_prefix, actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
-            num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
+    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+        if (workspace.has_value()) {
+            void* workspace_addr = const_cast<void *>(workspace.value().storage().data());
+            uint64_t workspace_size = static_cast<uint64_t>(workspace.value().numel() * workspace.value().element_size());
+            EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, workspace_addr, workspace_size, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
+                quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
+                dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+                num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
+        } else {
+            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
+                quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
+                dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+                num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
+        }
     } else {
-        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
-            quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
-            dequant_offset_value, key_shared_prefix, value_shared_prefix, actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
-            num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
+        // Interface aclnnFusedInferAttentionScore versions V1 to V4 are no longer supported on Ascend950
+        if (workspace.has_value()) {
+            void* workspace_addr = const_cast<void *>(workspace.value().storage().data());
+            uint64_t workspace_size = static_cast<uint64_t>(workspace.value().numel() * workspace.value().element_size());
+            EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV5, workspace_addr, workspace_size, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
+                quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
+                dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, default_q_start_idx, default_kv_start_idx, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+                num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, default_pse_type_value, outTensor_wrapper, softmax_lse);
+        } else {
+            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV5, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
+                quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
+                dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, default_q_start_idx, default_kv_start_idx, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+                num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, default_pse_type_value, outTensor_wrapper, softmax_lse);
+        }
     }
+
     return std::tuple<at::Tensor&, at::Tensor&>(attention_out, softmax_lse);
 }
 
@@ -585,7 +617,9 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     // convert str
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
-    at::Tensor actual_shared_prefix_len {nullptr};
+    at::Tensor default_actual_shared_prefix_len {nullptr};
+    at::Tensor default_q_start_idx {nullptr};
+    at::Tensor default_kv_start_idx {nullptr};
     at::Tensor dequant_scale1;
     at::Tensor quant_scale1;
     at::Tensor dequant_scale2;
@@ -596,6 +630,7 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     at::Tensor key_shared_prefix;
     at::Tensor value_shared_prefix;
     int64_t antiquant_mode = 0;
+    int64_t default_pse_type_value = 0;
 
     at::TensorList valueTensors = value;
     at::TensorList keyTensors = key;
@@ -616,11 +651,21 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     TensorWrapper dequant_scale_key_wrapper = make_wrapper(dequant_scale_key_tmp, dequant_scale_key_dtype);
     auto dequant_scale_value_tmp = dequant_scale_value.has_value() ? dequant_scale_value.value() : null_tensor;
     TensorWrapper dequant_scale_value_wrapper = make_wrapper(dequant_scale_value_tmp, dequant_scale_value_dtype);
+    uint64_t workspace_size = 0;
 
-    uint64_t workspace_size = EXEC_GET_MAX_WORKSPACE_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
-        quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
-        dequant_offset_value, key_shared_prefix, value_shared_prefix, actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
-        num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
+    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+        workspace_size = EXEC_GET_MAX_WORKSPACE_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
+            quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
+            dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+            num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, outTensor_wrapper, softmax_lse);
+    } else {
+        // Interface aclnnFusedInferAttentionScore versions V1 to V4 are no longer supported on Ascend950
+        workspace_size = EXEC_GET_MAX_WORKSPACE_CMD(aclnnFusedInferAttentionScoreV5, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
+            quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
+            dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, default_q_start_idx, default_kv_start_idx, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
+            num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, default_pse_type_value, outTensor_wrapper, softmax_lse);
+    }
+    
     at::Tensor workspace_tensor = npu_preparation::apply_tensor_without_format({workspace_size}, query.options().dtype(query.dtype()));
     return workspace_tensor;
 }
