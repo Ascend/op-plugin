@@ -70,7 +70,8 @@ at::Tensor npu_kv_quant_sparse_flash_attention(
     const c10::optional<at::Tensor> &actual_seq_lengths_kv,
     int64_t sparse_block_size, c10::string_view layout_query, c10::string_view layout_kv,
     int64_t sparse_mode, int64_t pre_tokens, int64_t next_tokens, int64_t attention_mode, int64_t quant_scale_repo_mode,
-    int64_t tile_size, int64_t rope_head_dim)
+    int64_t tile_size, int64_t rope_head_dim,
+    c10::optional<int64_t> key_dtype, c10::optional<int64_t> value_dtype)
 {
     TORCH_CHECK(query.numel() > 0, "Tensor query is empty.")
     TORCH_CHECK(key.numel() > 0, "Tensor key is empty.")
@@ -86,11 +87,22 @@ at::Tensor npu_kv_quant_sparse_flash_attention(
     char *layout_query_ptr = const_cast<char *>(layout_query_str.c_str());
     char *layout_kv_ptr = const_cast<char *>(layout_kv_str.c_str());
 
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvQuantSparseFlashAttention, query,
-        key, value, sparse_indices, key_dequant_scale, value_dequant_scale, block_table, actual_seq_lengths_query,
-        actual_seq_lengths_kv, scale_value, key_quant_mode, value_quant_mode, sparse_block_size, layout_query_ptr,
-        layout_kv_ptr, sparse_mode, pre_tokens, next_tokens, attention_mode, quant_scale_repo_mode, tile_size,
-        rope_head_dim, output);
+    bool is_hifloat8_kv = key_dtype.has_value() && c10_npu::GetAclDataType(key_dtype.value()) == aclDataType::ACL_HIFLOAT8;
+    if (is_hifloat8_kv) {
+        TensorWrapper key_wrapper = make_wrapper(key, key_dtype);
+        TensorWrapper value_wrapper = make_wrapper(value, value_dtype);
+        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvQuantSparseFlashAttention, query, key_wrapper,
+            value_wrapper, sparse_indices, key_dequant_scale, value_dequant_scale, block_table, actual_seq_lengths_query,
+            actual_seq_lengths_kv, scale_value, key_quant_mode, value_quant_mode, sparse_block_size, layout_query_ptr,
+            layout_kv_ptr, sparse_mode, pre_tokens, next_tokens, attention_mode, quant_scale_repo_mode, tile_size,
+            rope_head_dim, output);
+    } else {
+        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvQuantSparseFlashAttention, query,
+            key, value, sparse_indices, key_dequant_scale, value_dequant_scale, block_table, actual_seq_lengths_query,
+            actual_seq_lengths_kv, scale_value, key_quant_mode, value_quant_mode, sparse_block_size, layout_query_ptr,
+            layout_kv_ptr, sparse_mode, pre_tokens, next_tokens, attention_mode, quant_scale_repo_mode, tile_size,
+            rope_head_dim, output);
+    }
     return output;
 }
 
