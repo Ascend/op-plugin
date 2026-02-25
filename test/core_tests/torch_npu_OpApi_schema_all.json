@@ -308,6 +308,9 @@
   "op_api: torch_npu.npu_quant_matmul(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
+  "op_api: torch_npu.npu_quant_matmul_gelu(*args, **kwargs)": {
+    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
+  },
   "op_api: torch_npu.npu_all_gather_base_mm(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
@@ -491,6 +494,9 @@
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_quant_matmul(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "op_api: torch_npu.npu_quant_matmul_gelu(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_quant_matmul_reduce_sum(*args, **kwargs)": {
@@ -1475,6 +1481,9 @@
     "version": ["all_version"]
   },
   "func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, *, Tensor? offset=None, Tensor? pertoken_scale=None, Tensor? bias=None, int? output_dtype=None, int? x1_dtype=None, int? x2_dtype=None, int? pertoken_scale_dtype=None, int? scale_dtype=None, int[]? group_sizes=None, Tensor? y_scale=None) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: npu_quant_matmul_gelu(Tensor x1, Tensor x2, Tensor x1_scale, Tensor x2_scale, *, Tensor? bias=None, str? approximate='gelu_erf') -> Tensor": {
     "version": ["all_version"]
   },
   "func: npu_dual_level_quant_matmul(Tensor x1, Tensor x2, Tensor x1_level0_scale, Tensor x2_level0_scale, Tensor x1_level1_scale, Tensor x2_level1_scale, *, Tensor? bias=None, int output_dtype=15) -> Tensor": {

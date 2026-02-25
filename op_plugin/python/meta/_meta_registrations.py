@@ -3537,6 +3537,158 @@ def npu_quant_matmul_reduce_sum_meta(x1, x2, *, x1_scale=None, x2_scale=None):
     return torch.empty(dst_shape, dtype=torch.bfloat16, device=x1.device)
 
 
+@impl(m, "npu_quant_matmul_gelu")
+def npu_quant_matmul_gelu_meta(x1, x2, x1_scale, x2_scale, *, bias=None, approximate="gelu_erf"):
+    INT4_IN_INT32 = 8
+    LAST_SECOND_DIM_INDEX = 2
+    
+    # 校验approximate参数
+    torch._check(
+        approximate in ["gelu_tanh", "gelu_erf"],
+        lambda: f"approximate must be 'gelu_tanh' or 'gelu_erf', but got {approximate} {ops_error(ErrCode.PARAM)}",
+    )
+    
+    # 校验量化场景（A4W4或A8W8）
+    is_a4w4 = ((x1.dtype == torch.int32 or x1.dtype == torch.quint4x2) and
+               (x2.dtype == torch.int32 or x2.dtype == torch.quint4x2))
+    is_a8w8 = (x1.dtype == torch.int8 and x2.dtype == torch.int8)
+    
+    torch._check(
+        is_a4w4 or is_a8w8,
+        lambda: f"Only A4W4 (int4/int32) or A8W8 (int8) quantization is supported, "
+                f"but got x1.dtype={x1.dtype}, x2.dtype={x2.dtype} {ops_error(ErrCode.TYPE)}",
+    )
+    
+    # 校验x1_scale和x2_scale
+    torch._check(x1_scale is not None, lambda: f"x1_scale should not be None.")
+    torch._check(x2_scale is not None, lambda: f"x2_scale should not be None.")
+    torch._check(x1_scale.dim() == 1, lambda: f"x1_scale dim must be 1, but got {x1_scale.dim()}.")
+    torch._check(x2_scale.dim() == 1, lambda: f"x2_scale dim must be 1, but got {x2_scale.dim()}.")
+    
+    # 推导输出shape
+    x1_dim_num = x1.dim()
+    x2_dim_num = x2.dim()
+    out_dim_num = max(x1_dim_num, x2_dim_num)
+    shape_long = x1 if x1_dim_num > x2_dim_num else x2
+    shape_short = x2 if x1_dim_num > x2_dim_num else x1
+    valid_offset = out_dim_num - min(x1_dim_num, x2_dim_num)
+    
+    # 计算batch维度
+    batch_val = 1
+    dim_list = []
+    for i in range(0, out_dim_num - LAST_SECOND_DIM_INDEX):
+        short_dim = 1 if i < valid_offset else shape_short.size(i - valid_offset)
+        long_dim = shape_long.size(i)
+        torch._check(
+            not (short_dim > 1 and long_dim > 1 and short_dim != long_dim),
+            lambda: "the batch shape cannot be broadcast" + ops_error(ErrCode.VALUE),
+        )
+        cur_batch_val = max(short_dim, long_dim)
+        batch_val = batch_val * cur_batch_val
+        dim_list.append(cur_batch_val)
+    
+    # 计算x1的m维度和k维度
+    x1_m_dim = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX)
+    x1_k_dim = x1.size(x1_dim_num - 1)
+    
+    # 计算x2的k维度和n维度（考虑INT4打包）
+    x2_k_dim = x2.size(x2_dim_num - LAST_SECOND_DIM_INDEX)
+    x2_n_dim = x2.size(x2_dim_num - 1)
+    
+    # 校验k维度匹配
+    if is_a4w4:
+        # A4W4场景：k维度匹配检查
+        if x1.dtype == torch.int32 and x2.dtype == torch.int32:
+            # 两个都是int32（打包INT4），k维度应该相等
+            torch._check(
+                x1_k_dim == x2_k_dim,
+                lambda: f"A4W4 (int32): k dim of x1 ({x1_k_dim}) must equal k dim of x2 ({x2_k_dim}) {ops_error(ErrCode.VALUE)}",
+            )
+        elif x1.dtype == torch.quint4x2 and x2.dtype == torch.quint4x2:
+            # 两个都是quint4x2（直接INT4），k维度应该相等
+            torch._check(
+                x1_k_dim == x2_k_dim,
+                lambda: f"A4W4 (quint4x2): k dim of x1 ({x1_k_dim}) must equal k dim of x2 ({x2_k_dim}) {ops_error(ErrCode.VALUE)}",
+            )
+        elif x1.dtype == torch.int32 and x2.dtype == torch.quint4x2:
+            # x1是int32（打包），x2是quint4x2（直接），x1的k维度 * 8应该等于x2的k维度
+            torch._check(
+                x1_k_dim * INT4_IN_INT32 == x2_k_dim,
+                lambda: f"A4W4 (int32/quint4x2): k dim of x1 ({x1_k_dim}) * 8 must equal k dim of x2 ({x2_k_dim}) {ops_error(ErrCode.VALUE)}",
+            )
+        elif x1.dtype == torch.quint4x2 and x2.dtype == torch.int32:
+            # x1是quint4x2（直接），x2是int32（打包），x1的k维度应该等于x2的k维度 * 8
+            torch._check(
+                x1_k_dim == x2_k_dim * INT4_IN_INT32,
+                lambda: f"A4W4 (quint4x2/int32): k dim of x1 ({x1_k_dim}) must equal k dim of x2 ({x2_k_dim}) * 8 {ops_error(ErrCode.VALUE)}",
+            )
+        
+        # A4W4场景：当x2为int32类型时，恢复实际的n维度（INT4打包）
+        if x2.dtype == torch.int32:
+            x2_n_dim = x2_n_dim * INT4_IN_INT32
+    else:
+        # A8W8场景：k维度应该相等
+        torch._check(
+            x1_k_dim == x2_k_dim,
+            lambda: f"A8W8: k dim of x1 ({x1_k_dim}) must equal k dim of x2 ({x2_k_dim}) {ops_error(ErrCode.VALUE)}",
+        )
+    
+    dim_list.append(x1_m_dim)
+    dim_list.append(x2_n_dim)
+    
+    # 校验x1_scale和x2_scale的shape
+    torch._check(
+        x1_scale.size(0) == x1_m_dim,
+        lambda: f"x1_scale size(0) must equal to x1's m dimension ({x1_m_dim}), but got {x1_scale.size(0)} {ops_error(ErrCode.VALUE)}",
+    )
+    torch._check(
+        x2_scale.size(0) == 1 or x2_scale.size(0) == x2_n_dim,
+        lambda: f"x2_scale size(0) must be 1 or equal to x2's n dimension ({x2_n_dim}), but got {x2_scale.size(0)} {ops_error(ErrCode.VALUE)}",
+    )
+    
+    # 校验bias shape（如果提供）
+    if bias is not None:
+        if is_a4w4:
+            # A4W4场景：bias shape仅支持1维(n,)
+            torch._check(
+                bias.dim() == 1,
+                lambda: f"A4W4 quantization only supports 1D bias, but got bias.dim()={bias.dim()} {ops_error(ErrCode.VALUE)}",
+            )
+            torch._check(
+                bias.size(0) == x2_n_dim,
+                lambda: f"bias size(0) must equal to x2's n dimension ({x2_n_dim}), but got {bias.size(0)} {ops_error(ErrCode.VALUE)}",
+            )
+        else:
+            # A8W8场景：bias shape支持1维(n,)或3维(batch, 1, n)
+            torch._check(
+                bias.dim() == 1 or bias.dim() == 3,
+                lambda: f"A8W8 quantization supports 1D or 3D bias, but got bias.dim()={bias.dim()} {ops_error(ErrCode.VALUE)}",
+            )
+            if bias.dim() == 1:
+                torch._check(
+                    bias.size(0) == x2_n_dim,
+                    lambda: f"bias size(0) must equal to x2's n dimension ({x2_n_dim}), but got {bias.size(0)} {ops_error(ErrCode.VALUE)}",
+                )
+            else:  # bias.dim() == 3
+                torch._check(
+                    len(dim_list) == 3,
+                    lambda: f"when bias dim is 3, out dim need to be 3 {ops_error(ErrCode.TYPE)}",
+                )
+                torch._check(
+                    bias.size(0) == batch_val and bias.size(1) == 1 and bias.size(2) == x2_n_dim,
+                    lambda: f"bias shape must be ({batch_val}, 1, {x2_n_dim}), but got {tuple(bias.shape)} {ops_error(ErrCode.VALUE)}",
+                )
+    
+    # 确定输出数据类型（根据x2_scale的数据类型）
+    output_dtype = torch.bfloat16 if x2_scale.dtype == torch.bfloat16 else torch.float16
+    
+    # 在FakeTensor模式下，使用meta设备；否则使用x1的设备
+    # 确保设备一致性，避免设备传播错误
+    output_device = 'meta' if x1.device.type == 'meta' else x1.device
+    
+    return torch.empty(tuple(dim_list), dtype=output_dtype, device=output_device)
+
+
 @impl(m, "npu_quant_grouped_matmul_dequant")
 def npu_quant_grouped_matmul_dequant_meta(x, quantized_weight, weight_scale, group_list, *,
                                           bias=None, x_scale=None, x_offset=None, smooth_scale=None, quant_mode="pertoken"):

@@ -6448,6 +6448,11 @@ custom:
     op_api: [v2.1, newest]
     internal_format_opapi: [v2.1, newest]
 
+  - func: npu_quant_matmul_gelu(Tensor x1, Tensor x2, Tensor x1_scale, Tensor x2_scale, *, Tensor? bias=None, str? approximate='gelu_erf') -> Tensor
+    op_api: all_version
+    internal_format_opapi: all_version
+    exposed: all_version
+
   - func: npu_fused_matmul(Tensor x1, Tensor x2, *, Tensor? bias=None, Tensor? x3=None, str fused_op_type='') -> Tensor
     op_api: all_version
 

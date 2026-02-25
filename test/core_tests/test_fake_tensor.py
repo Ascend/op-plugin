@@ -2731,6 +2731,67 @@ class TestQuantMatmulReduceSum(TestCase):
             self.assertTrue(y.dtype == torch.bfloat16)
 
 
+class TestQuantMatmulGelu(TestCase):
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    def test_npu_quant_matmul_gelu_meta(self):
+        with FakeTensorMode():
+            # Test A8W8 scenario
+            m, k, n = 128, 256, 512
+            x1 = torch.randint(-5, 5, (m, k), dtype=torch.int8).npu()
+            x2 = torch.randint(-5, 5, (k, n), dtype=torch.int8).npu()
+            x1_scale = torch.randn(m, dtype=torch.float32).abs() * 0.01
+            x2_scale = torch.randn(n, dtype=torch.float32).abs() * 0.01
+            
+            expect_ret = torch.randn((m, n), dtype=torch.float16).npu()
+            res = torch_npu.npu_quant_matmul_gelu(x1, x2, x1_scale.npu(), x2_scale.npu(), approximate="gelu_tanh")
+            self.assertTrue(expect_ret.shape == res.shape)
+            self.assertTrue(expect_ret.dtype == res.dtype)
+            
+            # Test A8W8 with bias
+            bias = torch.randn(n, dtype=torch.float32) * 0.1
+            res_bias = torch_npu.npu_quant_matmul_gelu(x1, x2, x1_scale.npu(), x2_scale.npu(), bias=bias.npu(), approximate="gelu_erf")
+            self.assertTrue(expect_ret.shape == res_bias.shape)
+            self.assertTrue(expect_ret.dtype == res_bias.dtype)
+            
+            # Test A8W8 with BF16 output
+            x2_scale_bf16 = torch.randn(n, dtype=torch.bfloat16).abs() * 0.01
+            expect_ret_bf16 = torch.randn((m, n), dtype=torch.bfloat16).npu()
+            res_bf16 = torch_npu.npu_quant_matmul_gelu(x1, x2, x1_scale.npu(), x2_scale_bf16.npu(), approximate="gelu_tanh")
+            self.assertTrue(expect_ret_bf16.shape == res_bf16.shape)
+            self.assertTrue(expect_ret_bf16.dtype == res_bf16.dtype)
+            
+            # Test A8W8 with batch dimensions
+            batch, m, k, n = 4, 64, 128, 256
+            x1_batch = torch.randint(-5, 5, (batch, m, k), dtype=torch.int8).npu()
+            x2_batch = torch.randint(-5, 5, (batch, k, n), dtype=torch.int8).npu()
+            x1_scale_batch = torch.randn(m, dtype=torch.float32).abs() * 0.01
+            x2_scale_batch = torch.randn(n, dtype=torch.float32).abs() * 0.01
+            expect_ret_batch = torch.randn((batch, m, n), dtype=torch.float16).npu()
+            res_batch = torch_npu.npu_quant_matmul_gelu(x1_batch, x2_batch, x1_scale_batch.npu(), x2_scale_batch.npu())
+            self.assertTrue(expect_ret_batch.shape == res_batch.shape)
+            self.assertTrue(expect_ret_batch.dtype == res_batch.dtype)
+            
+            # Test A4W4 with int32 (packed INT4)
+            m, k, n = 64, 128, 256
+            k_packed = k // 8
+            n_packed = n // 8
+            x1_int32 = torch.randint(-8, 8, (m, k_packed), dtype=torch.int32).npu()
+            x2_int32 = torch.randint(-8, 8, (k_packed, n_packed), dtype=torch.int32).npu()
+            x1_scale_int32 = torch.randn(m, dtype=torch.float32).abs() * 0.01
+            x2_scale_int32 = torch.randn(n, dtype=torch.float32).abs() * 0.01
+            expect_ret_int32 = torch.randn((m, n), dtype=torch.float16).npu()
+            res_int32 = torch_npu.npu_quant_matmul_gelu(x1_int32, x2_int32, x1_scale_int32.npu(), x2_scale_int32.npu(), approximate="gelu_tanh")
+            self.assertTrue(expect_ret_int32.shape == res_int32.shape)
+            self.assertTrue(expect_ret_int32.dtype == res_int32.dtype)
+            
+            # Test A4W4 with int32 and bias
+            bias_int32 = torch.randint(-5, 5, (n,), dtype=torch.int32)
+            res_int32_bias = torch_npu.npu_quant_matmul_gelu(x1_int32, x2_int32, x1_scale_int32.npu(), x2_scale_int32.npu(),
+                                                             bias=bias_int32.npu(), approximate="gelu_erf")
+            self.assertTrue(expect_ret_int32.shape == res_int32_bias.shape)
+            self.assertTrue(expect_ret_int32.dtype == res_int32_bias.dtype)
+
+
 class TestRecurrentGatedDeltaRule(TestCase):
     def test_recurrent_gated_delta_rule(self):
         with FakeTensorMode():

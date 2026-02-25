@@ -108,6 +108,7 @@
         -   [torch_npu.npu_prompt_flash_attention](./torch_npu/torch_npu-npu_prompt_flash_attention.md)
         -   [torch_npu.npu_quant_lightning_indexer](./torch_npu/torch_npu-npu_quant_lightning_indexer.md)
         -   [torch_npu.npu_quant_matmul](./torch_npu/torch_npu-npu_quant_matmul.md)
+        -   [torch_npu.npu_quant_matmul_gelu](./torch_npu/torch_npu-npu_quant_matmul_gelu.md)
         -   [torch_npu.npu_quant_matmul_reduce_sum](./torch_npu/torch_npu-npu_quant_matmul_reduce_sum.md)
         -   [torch_npu.npu_quant_scatter](./torch_npu/torch_npu-npu_quant_scatter.md)
         -   [torch_npu.npu_quant_scatter_](./torch_npu/torch_npu-npu_quant_scatter_.md)
