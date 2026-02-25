@@ -18,15 +18,11 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-at::Tensor gelu(const at::Tensor & self, c10::string_view approximate)
+at::Tensor& gelu_out(const at::Tensor & self, c10::string_view approximate, at::Tensor& out)
 {
     static auto gelu_sc = at_npu::native::env::CheckCompatibleImpl();
-    auto output_size_0 = self.sizes();
-    auto output_dtype_0 = self.scalar_type();
-    at::Tensor out = npu_preparation::apply_tensor_without_format(output_size_0,
-                                                                  self.options().dtype(output_dtype_0));
     if (!gelu_sc) {
-        DO_COMPATIBILITY(aclnnGelu, acl_op::gelu(self, approximate));
+        DO_COMPATIBILITY(aclnnGelu, acl_op::gelu_out(self, approximate, out));
         EXEC_NPU_CMD(aclnnGelu, self, out);
     } else {
         auto approximate_mode = op_infer::npu_gelu_approximate_mode(approximate);

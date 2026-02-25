@@ -961,6 +961,9 @@ official:
   - func: addmm_(Tensor(a!) self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+  
+  - func: _addmm_activation.out(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, bool use_gelu=False, Tensor(a!) out) -> Tensor(a!)
+    op_api: all_version
 
   - func: addmv(Tensor self, Tensor mat, Tensor vec, *, Scalar beta=1, Scalar alpha=1) -> Tensor
     acl_op: all_version
@@ -2372,7 +2375,7 @@ official:
     acl_op: all_version
     op_api: all_version
 
-  - func: gelu(Tensor self, *, str approximate='none') -> Tensor
+  - func: gelu.out(Tensor self, *, str approximate='none', Tensor(a!) out) -> Tensor(a!)
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
 

@@ -20,9 +20,11 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor gelu(const at::Tensor& self, c10::string_view gelu)
+at::Tensor& gelu_out(const at::Tensor& self, c10::string_view gelu, at::Tensor& out)
 {
-    return gelu_common_nocheck(self);
+    auto result = gelu_common_nocheck(self);
+    out.copy_(result);
+    return out;
 }
 
 } // namespace acl_op

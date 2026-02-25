@@ -1765,6 +1765,9 @@
   "func: addmm_(Tensor(a!) self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)": {
     "version": ["all_version"]
   },
+  "func: _addmm_activation.out(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, bool use_gelu=False, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["all_version"]
+  },
   "func: addmv(Tensor self, Tensor mat, Tensor vec, *, Scalar beta=1, Scalar alpha=1) -> Tensor": {
     "version": ["all_version"]
   },
@@ -2458,7 +2461,7 @@
   "func: ge_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)": {
     "version": ["all_version"]
   },
-  "func: gelu(Tensor self, *, str approximate='none') -> Tensor": {
+  "func: gelu.out(Tensor self, *, str approximate='none', Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
   "func: gelu_backward(Tensor grad_output, Tensor self, *, str approximate='none') -> Tensor": {
