@@ -3345,6 +3345,17 @@ class TestAddRmsNormDynamicQuant(TestCase):
             self.assertEqual(s2_npu.shape, x1.shape[:-1])
             self.assertEqual(s2_npu.dtype, torch.float32)
 
+            # y_dtype=torch.quint4x2 (int4): y1/y2 dtype int32, last_dim/8 (8 int4 packed per int32)
+            y1_npu, y2_npu, x_out_npu, s1_npu, s2_npu = torch_npu.npu_add_rms_norm_dynamic_quant(
+                x1, x2, gamma, smooth_scale1=smooth_scale1, smooth_scale2=smooth_scale2, beta=beta, y_dtype=torch.quint4x2
+            )
+            expected_y_shape = list(x1.shape)
+            expected_y_shape[-1] = expected_y_shape[-1] // 8
+            self.assertEqual(y1_npu.shape, tuple(expected_y_shape))
+            self.assertEqual(y1_npu.dtype, torch.int32)
+            self.assertEqual(y2_npu.shape, tuple(expected_y_shape))
+            self.assertEqual(y2_npu.dtype, torch.int32)
+
 
 class TestMoeUpdateExpert(TestCase):
     def test_moe_update_expert(self):

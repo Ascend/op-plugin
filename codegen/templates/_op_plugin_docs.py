@@ -11117,7 +11117,7 @@ _add_torch_npu_docstr(
     "npu_add_rms_norm_dynamic_quant",
     """
 接口原型：
-npu_add_rms_norm_dynamic_quant(Tensor x1, Tensor x2, Tensor gamma, *, Tensor? smooth_scale1=None, Tensor? smooth_scale2=None, Tensor? beta=None, float epsilon=1e-6, bool[2] output_mask=[]) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+npu_add_rms_norm_dynamic_quant(Tensor x1, Tensor x2, Tensor gamma, *, Tensor? smooth_scale1=None, Tensor? smooth_scale2=None, Tensor? beta=None, float epsilon=1e-6, bool[2] output_mask=[], ScalarType? y_dtype=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
 
 功能描述
 将RmsNorm前的Add操作、RmsNorm归一化和最多两路DynamicQuant量化进行融合，减少数据搬入搬出操作。
@@ -11131,10 +11131,11 @@ smooth_scale2: Tensor类型，第二路量化的smooth_scale张量。可选，sh
 beta: Tensor类型，归一化偏置项。可选，shape和数据类型与gamma一致。不支持空Tensor
 epsilon: double类型，防止除0错误，默认值为1e-6.
 output_mask: 数组，表示输出的掩码，数据类型支持BOOL，支持空指针，或长度为2的数组
+y_dtype: ScalarType类型，y1/y2的量化输出数据类型。None或torch.int8表示INT8（默认），shape与x1一致；torch.quint4x2表示INT4，输出为torch.int32（8个int4打包为1个int32），shape最后一维为x1最后一维的1/8。
 
 输出说明
-y1: Tensor类型，第一路量化输出。数据类型支持INT8。shape、数据格式需要与入参x1保持一致。支持非连续的Tensor，不支持空Tensor。
-y2: Tensor类型，第二路量化输出。数据类型支持INT8。shape、数据格式需要与入参x1保持一致。支持非连续的Tensor，不支持空Tensor。若未输入smooth_scale2，此输出无实际意义。
+y1: Tensor类型，第一路量化输出。y_dtype=torch.int8时dtype为int8、shape与x1一致；y_dtype=torch.quint4x2时dtype为int32、shape最后一维为x1最后一维/8。支持非连续的Tensor，不支持空Tensor。
+y2: Tensor类型，第二路量化输出。dtype、shape与y1一致。支持非连续的Tensor，不支持空Tensor。若未输入smooth_scale2，此输出无实际意义。
 x_out: Tensor类型，x1与x2之和。shape、数据类型与x1一致。
 scale1: Tensor类型，第一路量化scale输出。shape为x1除最后一维后的shape，数据类型为float32，数据格式支持ND，支持非连续的Tensor，不支持空Tensor
 scale2: Tensor类型，第二路量化scale输出，shape同scale1，数据类型为float32， 数据类型支持ND，支持非连续的Tensor，不支持空Tensor。若未输入smooth_scale2，此输出无实际意义。

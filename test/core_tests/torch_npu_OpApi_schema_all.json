@@ -188,7 +188,7 @@
   "op_api: torch_npu.npu_add_rms_norm_cast(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
-  "func: npu_add_rms_norm_dynamic_quant(Tensor x1, Tensor x2, Tensor gamma, *, Tensor? smooth_scale1=None, Tensor? smooth_scale2=None, Tensor? beta=None, float epsilon=1e-6, bool[2] output_mask=[]) -> (Tensor, Tensor, Tensor, Tensor, Tensor)": {
+  "func: npu_add_rms_norm_dynamic_quant(Tensor x1, Tensor x2, Tensor gamma, *, Tensor? smooth_scale1=None, Tensor? smooth_scale2=None, Tensor? beta=None, float epsilon=1e-6, bool[2] output_mask=[], ScalarType? y_dtype=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
   "op_api: torch_npu.attention_worker_scheduler_(*args, **kwargs)": {

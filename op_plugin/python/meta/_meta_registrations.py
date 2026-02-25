@@ -2154,9 +2154,20 @@ def npu_add_rms_norm_cast_meta(x1, x2, gamma, epsilon=1e-6):
 
 
 @impl(m, "npu_add_rms_norm_dynamic_quant")
-def npu_add_rms_norm_dynamic_quant_meta(x1, x2, gamma, *, smooth_scale1=None, smooth_scale2=None, beta=None, epsilon=1e-6, output_mask=None):
-    return (torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
-            torch.empty(x1.size(), dtype=torch.int8, device=x1.device),
+def npu_add_rms_norm_dynamic_quant_meta(x1, x2, gamma, *, smooth_scale1=None, smooth_scale2=None, beta=None, epsilon=1e-6, output_mask=None, y_dtype=None):
+    # y_dtype: None or torch.int8 -> int8 (same shape); torch.quint4x2 -> int4 (int32 packed, last_dim/8)
+    if y_dtype is None or y_dtype == torch.int8:
+        y_shape = x1.size()
+        y_dtype_actual = torch.int8
+    else:
+        # int4: aclnn uses int32 with 8 int4 per int32
+        y_shape = list(x1.size())
+        y_shape[-1] = y_shape[-1] // 8
+        y_dtype_actual = torch.int32
+    # when output_mask[1] is False, y2 has shape [0] (empty, 1-dim size 0)
+    y2_shape = y_shape if (output_mask is None or (len(output_mask) > 1 and output_mask[1])) else (0,)
+    return (torch.empty(y_shape, dtype=y_dtype_actual, device=x1.device),
+            torch.empty(y2_shape, dtype=y_dtype_actual, device=x1.device),
             torch.empty(x1.size(), dtype=x1.dtype, device=x1.device),
             torch.empty(x1.size()[:-1], dtype=torch.float32, device=x1.device),
             torch.empty(x1.size()[:-1], dtype=torch.float32, device=x1.device))

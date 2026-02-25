@@ -1994,6 +1994,21 @@ c10::SmallVector<int64_t, SIZE> npu_group_quant_out_size(const at::Tensor& x, c1
     return output_shape;
 }
 
+c10::SmallVector<int64_t, SIZE> npu_add_rms_norm_dynamic_quant_y_size(const at::Tensor& x1, c10::optional<at::ScalarType> y_dtype)
+{
+    c10::SmallVector<int64_t, SIZE> output_shape = op_infer::array_to_small_vector(x1.sizes());
+    at::ScalarType dtype = c10::value_or_else(y_dtype, [] { return at::ScalarType::Char; });
+    if (dtype == at::ScalarType::QUInt4x2) {
+        auto ndim = x1.dim();
+        TORCH_CHECK(ndim >= 1, "x1 must have at least 1 dimension.", OPS_ERROR(ErrCode::PARAM));
+        int64_t last_dim = output_shape[ndim - 1];
+        TORCH_CHECK(last_dim % INT4_NUMS_IN_INT32_SPACE == 0,
+                    "x1 last dim must be divisible by 8 for int4 output, but got ", last_dim, OPS_ERROR(ErrCode::PARAM));
+        output_shape[ndim - 1] = last_dim / INT4_NUMS_IN_INT32_SPACE;
+    }
+    return output_shape;
+}
+
 c10::SmallVector<int64_t, SIZE> npu_gather_sparse_index_out_size(const at::Tensor& input, const at::Tensor& index)
 {
     c10::SmallVector<int64_t, SIZE> output_shape;
