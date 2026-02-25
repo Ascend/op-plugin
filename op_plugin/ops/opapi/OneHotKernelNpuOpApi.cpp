@@ -124,18 +124,18 @@ at::Tensor npu_one_hot(
     TORCH_CHECK(num_classes >= AUTO_DEPTH,
                 "NPU error: num_classes cannot be less than -1",
                 OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(num_classes < max_num_classes,
-                "NPU error: num_classes must be less than ", max_num_classes,
+    TORCH_CHECK(num_classes <= max_num_classes,
+                "NPU error: num_classes must be less than or equal to", max_num_classes,
                 OPS_ERROR(ErrCode::PARAM));
-    int64_t axis = (num_classes + max_num_classes) % max_num_classes;
+    int64_t axis = ((num_classes == AUTO_DEPTH) ? max_num_classes : num_classes);
 
     c10::SmallVector<int64_t, SIZE> output_shape;
     for (int64_t i = 0; i < axis; i++) {
         output_shape.emplace_back(self.size(i));
     }
     output_shape.emplace_back(depth);
-    for (int64_t i = axis+1; i < max_num_classes; i++) {
-        output_shape.emplace_back(self.size(i));
+    for (int64_t i = axis+1; i < max_num_classes+MIN_DEPTH; i++) {
+        output_shape.emplace_back(self.size(i-1));
     }
 
     // construct the output tensor of the NPU
