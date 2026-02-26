@@ -53,7 +53,7 @@ std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_meta(const at::Tenso
 // 通过继承torch::autograd::Function类实现前反向绑定
 class AddCustomFunction : public torch::autograd::Function<AddCustomFunction> {
 public:
-    static at::Tensor forward(Autog radContext *ctx, at::Tensor self, at::Tensor other)
+    static at::Tensor forward(AutogradContext *ctx, at::Tensor self, at::Tensor other)
     {
         at::AutoDispatchBelowADInplaceOrView guard;
         static auto op = torch::Dispatcher::singleton()
