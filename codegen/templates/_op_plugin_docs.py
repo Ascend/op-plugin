@@ -4919,7 +4919,7 @@ npu_transpose_quant_batchmatmul(Tensor x1, Tensor x2, int dtype, *, Tensor? bias
 参数说明: 
 - x1(Tensor, 计算输入): 必选参数, 一个3D的Device侧Tensor输入，矩阵计算的左矩阵。数据类型支持float8_e5m2、float8_e4m3fn，数据格式支持ND。
 - x2(Tensor, 计算输入): 必选参数, 一个3D的Device侧Tensor输入，矩阵计算的右矩阵。数据类型支持float8_e5m2、float8_e4m3fn，数据格式支持ND。
-- dtype(Int, 计算输入): 必选参数，声明output的数据类型，支持1和27, 1表示torch.float16，27表示torch.bfloat16。
+- dtype(torch.dtype, 计算输入): 必选参数，声明output的数据类型，支持传值: torch.float16和torch.bfloat16。
 - bias(Tensor, 计算输入): 可选参数, 一个1D的Device侧Tensor输入，矩阵计算的bias参数。数据类型支持float32、float16、bfloat16，数据格式支持ND。当前仅支持配置为空。
 - x1_scale(Tensor, 计算输入): 1D的Device侧Tensor输入，左矩阵计算量化参数。数据类型为FLOAT32，数据格式支持ND。
 - x2_scale(Tensor, 计算输入): 1D的Device侧Tensor输入，右矩阵计算量化参数。数据类型为FLOAT32，数据格式支持ND。
@@ -4931,9 +4931,9 @@ npu_transpose_quant_batchmatmul(Tensor x1, Tensor x2, int dtype, *, Tensor? bias
 - y(Tensor, 计算输出): 一个3D的Tensor，输出数据类型支持float16、bfloat16，由dtype参数决定。
 
 约束说明:
--右矩阵K仅支持512, N仅支持128
--当前暂不支持bias、group_size、batch_split_factor
--x1_scale和x2_scale当前暂不支持非1D输入
+-右矩阵K仅支持512, N仅支持128。
+-当前暂不支持bias、group_size、batch_split_factor, 为预留字段。
+-x1_scale和x2_scale当前仅支持1D输入。
 
 支持的芯片型号:
 -昇腾950 AI处理器
@@ -4944,11 +4944,11 @@ import torch
 import torch_npu
 
 M, K, N, Batch = 32, 512, 128, 32
-x1 = torch.randint(-3, 3, (M, Batch, K), dtype=torch.float8_e4m3fn).npu
-x2 = torch.randint(-3, 3, (Batch, K, N), dtype=torch.float8_e4m3fn).npu
-x1_scale = torch.rand(-3, 3, (M, ), dtype=torch.float32).npu
-x2_scale = torch.rand(-3, 3, (N, ), dtype=torch.float32).npu
-y = torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype=1, x1_scale=x1_scale,
+x1 = torch.randint(-5, 5, (M, Batch, K), dtype=torch.int8).to(torch.float8_e5m2).npu()
+x2 = torch.randint(-5, 5, (Batch, K, N), dtype=torch.int8).to(torch.float8_e5m2).npu()
+x1_scale = torch.randint(-3, 3, (M, ), dtype=torch.float32).npu()
+x2_scale = torch.randint(-3, 3, (N, ), dtype=torch.float32).npu()
+y = torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype=torch.bfloat16, x1_scale=x1_scale,
                                         x2_scale=x2_scale, perm_x1=[1, 0, 2], 
                                         perm_x2=[0, 1, 2], perm_y=[1, 0, 2])
 """
