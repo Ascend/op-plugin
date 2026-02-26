@@ -143,7 +143,7 @@ at::Tensor native_dropout_backward(const at::Tensor& grad_output, const at::Tens
 
     double p = (scale == 0.0) ? 1 : (1 - 1 / scale);
     if (p == 0) {
-        return grad_output;
+        return grad_output.clone();
     }
     if (p == 1) {
         at::TensorOptions options = grad_output.options();

@@ -5472,11 +5472,11 @@ def convolution_meta(input_tensor, weight, bias, stride, padding, dilation, tran
     else:
         dilation_h = dilation_w = dilation
     kernel_h, kernel_w = weight.shape[2], weight.shape[3]
-    input_h, input_w = input.shape[2], input.shape[3]
+    input_h, input_w = input_tensor.shape[2], input_tensor.shape[3]
     output_h = (input_h + 2 * pad_h - dilation_h * (kernel_h - 1) - 1) // stride_h + 1
     output_w = (input_w + 2 * pad_w - dilation_w * (kernel_w - 1) - 1) // stride_w + 1
     output_shape = (batch_size, out_channels, output_h, output_w)
-    return torch.empty(output_shape, dtype=input.dtype, device='meta')
+    return torch.empty(output_shape, dtype=input_tensor.dtype, device='meta')
 
 
 @impl(m, "batch_norm_reduce")
