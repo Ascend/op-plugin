@@ -300,10 +300,17 @@ Use {deprecated_replace} instead.");'
                 place_holder.append(f", {a.name} is internal format: %d")
             inputs_list += f"{a.name}, "
         inputs_list = inputs_list[:-2]
-            
+
+        aclnn_extension = os.getenv('ACLNN_EXTENSION_SWITCH') == 'TRUE'
 
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
-            if not f.internal_format_opapi:
+            if aclnn_extension:
+                ret.append(f"""{sig.defn(name=op_name)}{{
+    {deprecated_warn}
+    return op_api::{impl_name}({args_exprs_str});
+}}
+""")
+            elif not f.internal_format_opapi:
                 ret.append(f"""{sig.defn(name=op_name)}{{
     {deprecated_warn}
     bool is_jit_disable = at_npu::native::env::CheckJitDisable();
@@ -338,7 +345,13 @@ Use {deprecated_replace} instead.");'
 """)
         elif "op_api" in f.impl_ns:
             ns = f.impl_ns[0]
-            if f.internal_format_opapi:
+            if aclnn_extension:
+                ret.append(f"""{sig.defn(name=op_name)}{{
+    {deprecated_warn}
+    return {ns}::{impl_name}({args_exprs_str});
+}}
+""")
+            elif f.internal_format_opapi:
                 ret.append(f"""{sig.defn(name=op_name)}{{
     {deprecated_warn}
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});

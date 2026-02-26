@@ -80,12 +80,39 @@ def main() -> None:
             },
         )
 
+    # When ACLNN_EXTENSION_SWITCH is set, use simplified includes (no FormatHelper/op_log) for OpInterface.cpp
+    if env_aclnn_extension_switch:
+        includes_block = '''#include "torch_npu/csrc/framework/interface/EnvVariables.h"
+// #include "torch_npu/csrc/framework/FormatHelper.h"
+#include "torch_npu/csrc/core/npu/npu_log.h"
+#include "torch_npu/csrc/core/npu/NpuVariables.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/SparseOpsInterface.h"
+// #include "op_plugin/utils/op_log.h"
+#include "op_plugin/OpInterface.h"
+'''
+    else:
+        includes_block = '''#include "torch_npu/csrc/framework/interface/EnvVariables.h"
+#include "torch_npu/csrc/framework/FormatHelper.h"
+#include "torch_npu/csrc/core/npu/npu_log.h"
+#include "torch_npu/csrc/core/npu/NpuVariables.h"
+#include "torch_npu/csrc/core/npu/NPUException.h"
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/SparseOpsInterface.h"
+#include "op_plugin/utils/op_log.h"
+#include "op_plugin/OpInterface.h"
+'''
+
     fm.write_with_template(
         "OpInterface.cpp",
         "OpInterface.cpp",
         lambda: {
             "namespace": "op_plugin",
             "declarations": dispatch_registrations_body,
+            "includes_block": includes_block,
         },
     )
 
