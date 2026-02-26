@@ -119,7 +119,7 @@ tensor([0.4403, 0.2733], device='npu:0')
 >>> with FakeTensorMode():
 ...     x = torch.rand(2).npu()
 ...     torch_npu.fast_gelu(x)
->>> FakeTensor(..., device='npu:0', size=(2,))
+FakeTensor(..., device='npu:0', size=(2,))
 """
 )
 
@@ -2386,10 +2386,7 @@ tensor(0.0146, device='npu:0')
 >>> max_value = torch.max(input)
 >>> max_value
 tensor(0.9746, device='npu:0')
->>> hist = torch.histc(input.to('cpu'),
-                         bins=128,
-                         min=min_value.to('cpu'),
-                         max=max_value.to('cpu'))
+>>> hist = torch.histc(input.to('cpu'), bins=128, min=min_value.to('cpu'), max=max_value.to('cpu'))
 >>> hist
 tensor([1., 0., 0., 2., 0., 0., 0., 1., 1., 0., 1., 0., 1., 0., 0., 0., 0., 0.,
           0., 1., 0., 0., 2., 1., 0., 0., 0., 0., 2., 1., 0., 0., 0., 0., 0., 1.,
@@ -2398,7 +2395,8 @@ tensor([1., 0., 0., 2., 0., 0., 0., 1., 1., 0., 1., 0., 1., 0., 0., 0., 0., 0.,
           0., 0., 1., 0., 0., 2., 0., 0., 0., 0., 0., 0., 2., 0., 0., 0., 0., 0.,
          0., 0., 1., 1., 0., 0., 0., 0., 0., 1., 0., 0., 0., 1., 1., 2., 0., 0.,
           1., 1., 1., 0., 1., 0., 0., 1., 0., 1., 1., 0., 0., 0., 1., 0., 1., 1.,
-          0., 1.])  >>> cdf = torch.cumsum(hist,dim=0).int().npu()
+          0., 1.])  
+>>> cdf = torch.cumsum(hist,dim=0).int().npu()
 >>> cdf
 tensor([ 1,  1,  1,  3,  3,  3,  3,  4,  5,  5,  6,  6,  7,  7,  7,  7,  7,  7,
           7,  8,  8,  8, 10, 11, 11, 11, 11, 11, 13, 14, 14, 14, 14, 14, 14, 15,
@@ -2408,18 +2406,11 @@ tensor([ 1,  1,  1,  3,  3,  3,  3,  4,  5,  5,  6,  6,  7,  7,  7,  7,  7,  7,
          30, 30, 31, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 34, 35, 37, 37, 37,
           38, 39, 40, 40, 41, 41, 41, 42, 42, 43, 44, 44, 44, 44, 45, 45, 46, 47,
           47, 48], device='npu:0', dtype=torch.int32)
->>> scale, offset = torch_npu.npu_ifmr(input,
-                                     min_value,
-                                    max_value,
-                                   cdf,
-                                    min_percentile=0.999999,
-                                    max_percentile=0.999999,
-                                     search_start=0.7,
-                                    search_end=1.3,
-                                    search_step=0.01,
-                                     with_offset=False)
->>> scale  tensor(0.0080, device='npu:0')
->>> offset  tensor(0., device='npu:0')
+>>> scale, offset = torch_npu.npu_ifmr(input, min_value, max_value, cdf, min_percentile=0.999999, max_percentile=0.999999, search_start=0.7, search_end=1.3, search_step=0.01, with_offset=False)
+>>> scale
+tensor(0.0080, device='npu:0')
+>>> offset
+tensor(0., device='npu:0')
 """
 )
 
@@ -2467,12 +2458,9 @@ bboxes (Tensor) - 输入张量。
 gtboxes (Tensor) - 输入张量。
 mode (Int，默认值为0) - 0为IoU模式，1为IoF模式。
 示例
->>> bboxes = torch.tensor([[0, 0, 10, 10],
-                           [10, 10, 20, 20],
-                           [32, 32, 38, 42]], dtype=torch.float16).to("npu")
->>> gtboxes = torch.tensor([[0, 0, 10, 20],
-                            [0, 10, 10, 10],
-                            [10, 10, 20, 20]], dtype=torch.float16).to("npu")
+
+>>> bboxes = torch.tensor([[0, 0, 10, 10],[10, 10, 20, 20],[32, 32, 38, 42]], dtype=torch.float16).to("npu")
+>>> gtboxes = torch.tensor([[0, 0, 10, 20],[0, 10, 10, 10],[10, 10, 20, 20]], dtype=torch.float16).to("npu")
 >>> output_iou = torch_npu.npu_iou(bboxes, gtboxes, 0)
 >>> output_iou
 tensor([[0.4985, 0.0000, 0.0000],
@@ -3074,12 +3062,8 @@ spatial_scale (Float32) - 将输入坐标映射到ROI坐标的缩放系数。
 group_size (Int32) - 指定用于编码position-sensitive评分图的组数。该值必须在(0,128)范围内。
 output_dim (Int32) - 指定输出通道数。必须大于0。
 示例
->>> roi = torch.tensor([[[1], [2], [3], [4], [5]],
-                        [[6], [7], [8], [9], [10]]], dtype = torch.float16).npu()
->>> x = torch.tensor([[[[ 1]], [[ 2]], [[ 3]], [[ 4]],
-                      [[ 5]], [[ 6]], [[ 7]], [[ 8]]],
-                      [[[ 9]], [[10]], [[11]], [[12]],
-                      [[13]], [[14]], [[15]], [[16]]]], dtype = torch.float16).npu()
+>>> roi = torch.tensor([[[1], [2], [3], [4], [5]],[[6], [7], [8], [9], [10]]], dtype = torch.float16).npu()
+>>> x = torch.tensor([[[[ 1]], [[ 2]], [[ 3]], [[ 4]],[[ 5]], [[ 6]], [[ 7]], [[ 8]]],[[[ 9]], [[10]], [[11]], [[12]],[[13]], [[14]], [[15]], [[16]]]], dtype = torch.float16).npu()
 >>> out = torch_npu.npu_ps_roi_pooling(x, roi, 0.5, 2, 2)
 >>> out
 tensor([[[[0., 0.],
@@ -3106,14 +3090,12 @@ bboxes (Tensor) - 输入张量。
 gtboxes (Tensor) - 输入张量。
 mode (Int，默认值为0) - 0为IoU模式，1为IoF模式。
 示例
->>> import torch
->>> import torch_npu
 >>> bboxes = torch.tensor([[0, 0, 10, 10],
-                           [10, 10, 20, 20],
-                           [32, 32, 38, 42]], dtype=torch.float16).to("npu")
+>>>                        [10, 10, 20, 20],
+>>>                       [32, 32, 38, 42]], dtype=torch.float16).to("npu")
 >>> gtboxes = torch.tensor([[0, 0, 10, 20],
-                            [0, 10, 10, 10],
-                            [10, 10, 20, 20]], dtype=torch.float16).to("npu")
+>>>                         [0, 10, 10, 10],
+>>>                        [10, 10, 20, 20]], dtype=torch.float16).to("npu")
 >>> output_iou = torch_npu.npu_iou(bboxes, gtboxes, 0)
 >>> output_iou
 tensor([[0.4985, 0.0000, 0.0000],
@@ -3243,11 +3225,11 @@ roi_end_mode (Int32，默认值为1)
 >>> import torch
 >>> import torch_npu
 >>> x = torch.FloatTensor([[[[1, 2, 3 , 4, 5, 6],
-                            [7, 8, 9, 10, 11, 12],
-                            [13, 14, 15, 16, 17, 18],
-                            [19, 20, 21, 22, 23, 24],
-                            [25, 26, 27, 28, 29, 30],
-                            [31, 32, 33, 34, 35, 36]]]]).npu()
+>>>                          [7, 8, 9, 10, 11, 12],
+>>>                          [13, 14, 15, 16, 17, 18],
+>>>                          [19, 20, 21, 22, 23, 24],
+>>>                          [25, 26, 27, 28, 29, 30],
+>>>                          [31, 32, 33, 34, 35, 36]]]]).npu()
 >>> rois = torch.tensor([[0, -2.0, -2.0, 22.0, 22.0]]).npu()
 >>> out = torch_npu.npu_roi_align(x, rois, 0.25, 3, 3, 2, 0)
 >>> out
@@ -3315,30 +3297,30 @@ rotate推荐使用场景
      $$rotate = diag(rotate1, rotate2, rotate3) = \begin{pmatrix}rotate1&0&0\\0&rotate2&0\\0&0&rotate3\\\end{pmatrix}$$
      其中rotate1、rotate2、rotate3分别为x1、x2、x3的旋转编码矩阵，单个旋转矩阵构建参考调用示例。
 示例1
-    >>>x = torch.rand(2, 2, 5, 128).npu()
-    >>>r1 = torch.rand(1, 2, 1, 128).npu()
-    >>>r2 = torch.rand(1, 2, 1, 128).npu()
-    >>>out = torch_npu.npu_rotary_mul(x, r1, r2)
+    >>> x = torch.rand(2, 2, 5, 128).npu()
+    >>> r1 = torch.rand(1, 2, 1, 128).npu()
+    >>> r2 = torch.rand(1, 2, 1, 128).npu()
+    >>> out = torch_npu.npu_rotary_mul(x, r1, r2)
 示例2
-    >>>n = 128
-    >>>rotate = torch.zeros(n, n, dtype=torch.bfloat16) # interleave
-    >>>for i in range(0, n, 2):
+    >>> n = 128
+    >>> rotate = torch.zeros(n, n, dtype=torch.bfloat16) # interleave
+    >>> for i in range(0, n, 2):
     ...    rotate[i + 0, i + 1] = 1
     ...    rotate[i + 1, i + 0] = 1
-    >>>x = torch.rand(2, 2, 5, n).npu()
-    >>>r1 = torch.rand(1, 1, 5, n).npu()
-    >>>r2 = torch.rand(1, 1, 5, n).npu()
-    >>>out = torch_npu.npu_rotary_mul(x, r1, r2, "interleave", rotate)
+    >>> x = torch.rand(2, 2, 5, n).npu()
+    >>> r1 = torch.rand(1, 1, 5, n).npu()
+    >>> r2 = torch.rand(1, 1, 5, n).npu()
+    >>> out = torch_npu.npu_rotary_mul(x, r1, r2, "interleave", rotate)
 示例3
-    >>>n = 128
-    >>>rotate = torch.zeros(n, n, dtype=torch.bfloat16) # half
-    >>>half = n // 2
-    >>>rotate[:half, half:] = torch.eye(half)
-    >>>rotate[half:, :half] = -torch.eye(half)
-    >>>x = torch.rand(2, 2, 5, n).npu()
-    >>>r1 = torch.rand(1, 1, 5, n).npu()
-    >>>r2 = torch.rand(1, 1, 5, n).npu()
-    >>>out = torch_npu.npu_rotary_mul(x, r1, r2, "half", rotate)
+    >>> n = 128
+    >>> rotate = torch.zeros(n, n, dtype=torch.bfloat16) # half
+    >>> half = n // 2
+    >>> rotate[:half, half:] = torch.eye(half)
+    >>> rotate[half:, :half] = -torch.eye(half)
+    >>> x = torch.rand(2, 2, 5, n).npu()
+    >>> r1 = torch.rand(1, 1, 5, n).npu()
+    >>> r2 = torch.rand(1, 1, 5, n).npu()
+    >>> out = torch_npu.npu_rotary_mul(x, r1, r2, "half", rotate)
 """
 )
 
@@ -3579,10 +3561,10 @@ size(Int) - reshape时输出张量的第一个维度。
 Size可被float打包的输出整除。如果x的size可被8整除，则输出的size为(size of x)/8；否则，输出的size为(size of x // 8) + 1。将在小端位置添加-1浮点值以填充可整除性。Atlas 训练系列产品支持float32和float16类型输入。Atlas 推理系列产品(Ascend 310P处理器)支持float32和float16类型输入。Atlas 200/300/500 推理产品仅支持float16类型输入。
 
 示例
-    >>>a = torch.tensor([5,4,3,2,0,-1,-2, 4,3,2,1,0,-1,-2],dtype=torch.float32).npu()
-    >>>b = torch_npu.npu_sign_bits_pack(a, 2)
-    >>>b
-    >>>tensor([[159],[15]], device='npu:0')
+>>> a = torch.tensor([5,4,3,2,0,-1,-2, 4,3,2,1,0,-1,-2],dtype=torch.float32).npu()
+>>> b = torch_npu.npu_sign_bits_pack(a, 2)
+>>> b
+tensor([[159],[15]], device='npu:0')
 """
 )
 
@@ -3602,11 +3584,11 @@ dtype(torch.dtype) - 值为1设置输出类型为float16，值为0设置输出�
 Size可被uint8s拆包的输出整除。输出大小为(size of x) * 8。
 
 示例
-    >>>a = torch.tensor([159, 15], dtype=torch.uint8).npu()
-    >>>b = torch_npu.npu_sign_bits_unpack(a, 2, torch.float32)
-    >>>b
-    >>>tensor([[1., 1., 1., 1., 1., -1., -1., 1.],
-    >>>[1., 1., 1., 1., -1., -1., -1., -1.]], device='npu:0')
+>>> a = torch.tensor([159, 15], dtype=torch.uint8).npu()
+>>> b = torch_npu.npu_sign_bits_unpack(a, 2, torch.float32)
+>>> b
+tensor([[1., 1., 1., 1., 1., -1., -1., 1.],
+       [1., 1., 1., 1., -1., -1., -1., -1.]], device='npu:0')
 (binary form of 159 is ob00001111)
 """
 )
@@ -13343,7 +13325,7 @@ def gen_inputs(seqlens_list_array, seqlens_list_kv_array, isTnd):
                 s2RealSize = (int)((seqlens_list_kv_array[bIdx] - seqlens_list_array[bIdx]) + s1Idx + 1)
                 if s2RealSize <= 0:
                     s2RealSize = seqlens_list_kv_array[bIdx]
-                
+                    
                 if s2RealSize > topK:
                     s2RealLen = topK
                 else:
@@ -13363,7 +13345,7 @@ def gen_inputs(seqlens_list_array, seqlens_list_kv_array, isTnd):
             q_rope_tnd = None
             k_rope_tnd = None
         weights_tnd = weights.squeeze(dim=0)
-        
+
         softmax_max = torch.randn(N2, S1, NQueryIndex, dtype=torch.float, device=torch.device('npu'))
         softmax_sum = torch.randn(N2, S1, NQueryIndex, dtype=torch.float, device=torch.device('npu'))
         return q_tnd, k_tnd, q_index_tnd, k_index_tnd, q_rope_tnd, k_rope_tnd, weights_tnd, sparse_indices, softmax_max, softmax_sum
