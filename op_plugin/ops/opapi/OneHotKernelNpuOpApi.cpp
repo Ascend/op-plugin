@@ -28,12 +28,11 @@ static const int64_t MIN_DEPTH = 1;
 static const int64_t AUTO_DEPTH = -1;
 static const int64_t MIN_NUM_CLASSES = 0;
 
-at::Tensor one_hot(const at::Tensor& self, int64_t num_classes)
+at::Tensor one_hot(const at::Tensor &self, int64_t num_classes)
 {
     auto ks = self.key_set();
     bool is_fake_or_meta = ks.has_all(c10::DispatchKeySet(c10::BackendComponent::MetaBit)) ||
-        ks.has_all(c10::DispatchKeySet(c10::DispatchKey::Python)) ||
-        self.is_meta();
+                           ks.has_all(c10::DispatchKeySet(c10::DispatchKey::Python)) || self.is_meta();
     if (is_fake_or_meta) {
         TORCH_CHECK(num_classes != -1, "FakeTensorMode does not support num_classes == -1.");
 
@@ -47,23 +46,37 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes)
     }
     DO_COMPATIBILITY(aclnnOneHot, acl_op::one_hot(self, num_classes));
     int64_t depth = num_classes;
-    TORCH_CHECK(depth >= AUTO_DEPTH, "NPU error, not yet support negative num_classes, when num_classes less than -1",
-                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(depth >= AUTO_DEPTH,
+        "NPU error, not yet support negative num_classes, when num_classes less than -1",
+        OPS_ERROR(ErrCode::PARAM));
     // when the self is empty, num_classes should be greater than 0
     TORCH_CHECK(self.numel() != 0 || num_classes > MIN_NUM_CLASSES,
-                "NPU error, can not infer total number of classes from empty tensor.", OPS_ERROR(ErrCode::PARAM));
+        "NPU error, can not infer total number of classes from empty tensor.",
+        OPS_ERROR(ErrCode::PARAM));
     if (depth == AUTO_DEPTH) {
         depth = self.max().item().toLong() + 1;
         if (depth < MIN_DEPTH) {
             depth = MIN_DEPTH;
         }
     }
-    // construct on_value tensor
-    at::Tensor on_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
-    on_value_tensor.fill_(1);
-    // construct off_value tensor
-    at::Tensor off_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
-    off_value_tensor.fill_(0);
+
+    // construct on_value/off_value tensor
+    at::Tensor on_value_tensor;
+    at::Tensor off_value_tensor;
+    auto self_dtype = self.dtype();
+    if (self_dtype != at::kByte) {
+        on_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
+        on_value_tensor.fill_(1);
+        off_value_tensor = npu_preparation::apply_tensor_without_format({1}, self.options());
+        off_value_tensor.fill_(0);
+    } else {
+        at::Tensor tmp_int8_tensor = npu_preparation::apply_tensor_without_format({1}, self.options().dtype(at::kChar));
+        tmp_int8_tensor.fill_(1);
+        on_value_tensor = tmp_int8_tensor.to(self_dtype);
+        tmp_int8_tensor.fill_(0);
+        off_value_tensor = tmp_int8_tensor.to(self_dtype);
+    }
+
     auto output_size = op_infer::array_to_small_vector(self.sizes());
     output_size.emplace_back(depth);
     // construct the output tensor of the NPU
@@ -74,11 +87,7 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes)
 }
 
 at::Tensor npu_one_hot(
-    const at::Tensor& self,
-    int64_t num_classes,
-    int64_t depth,
-    const at::Scalar& on_value,
-    const at::Scalar& off_value)
+    const at::Tensor &self, int64_t num_classes, int64_t depth, const at::Scalar &on_value, const at::Scalar &off_value)
 {
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         return acl_op::npu_one_hot(self, num_classes, depth, on_value, off_value);
@@ -86,8 +95,7 @@ at::Tensor npu_one_hot(
 
     auto ks = self.key_set();
     bool is_fake_or_meta = ks.has_all(c10::DispatchKeySet(c10::BackendComponent::MetaBit)) ||
-        ks.has_all(c10::DispatchKeySet(c10::DispatchKey::Python)) ||
-        self.is_meta();
+                           ks.has_all(c10::DispatchKeySet(c10::DispatchKey::Python)) || self.is_meta();
     if (is_fake_or_meta) {
         TORCH_CHECK(depth != -1, "FakeTensorMode does not support depth == -1.");
 
@@ -102,11 +110,13 @@ at::Tensor npu_one_hot(
 
     DO_COMPATIBILITY(aclnnOneHot, acl_op::npu_one_hot(self, num_classes, depth, on_value, off_value));
 
-    TORCH_CHECK(depth >= AUTO_DEPTH, "NPU error, not yet support negative depth, when depth less than -1",
-                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(depth >= AUTO_DEPTH,
+        "NPU error, not yet support negative depth, when depth less than -1",
+        OPS_ERROR(ErrCode::PARAM));
     // when the self is empty, num_classes should be greater than 0
     TORCH_CHECK(self.numel() != 0 || depth > MIN_NUM_CLASSES,
-                "NPU error, can not infer total number of classes from empty tensor.", OPS_ERROR(ErrCode::PARAM));
+        "NPU error, can not infer total number of classes from empty tensor.",
+        OPS_ERROR(ErrCode::PARAM));
     if (depth == AUTO_DEPTH) {
         depth = self.max().item().toLong() + 1;
         if (depth < MIN_DEPTH) {
@@ -121,12 +131,11 @@ at::Tensor npu_one_hot(
     op_api::fill_(off_value_tensor, off_value);
     auto output_size = op_infer::array_to_small_vector(self.sizes());
     int64_t max_num_classes = static_cast<int64_t>(output_size.size());
-    TORCH_CHECK(num_classes >= AUTO_DEPTH,
-                "NPU error: num_classes cannot be less than -1",
-                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(num_classes >= AUTO_DEPTH, "NPU error: num_classes cannot be less than -1", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(num_classes <= max_num_classes,
-                "NPU error: num_classes must be less than or equal to", max_num_classes,
-                OPS_ERROR(ErrCode::PARAM));
+        "NPU error: num_classes must be less than or equal to",
+        max_num_classes,
+        OPS_ERROR(ErrCode::PARAM));
     int64_t axis = ((num_classes == AUTO_DEPTH) ? max_num_classes : num_classes);
 
     c10::SmallVector<int64_t, SIZE> output_shape;
@@ -134,8 +143,8 @@ at::Tensor npu_one_hot(
         output_shape.emplace_back(self.size(i));
     }
     output_shape.emplace_back(depth);
-    for (int64_t i = axis+1; i < max_num_classes+MIN_DEPTH; i++) {
-        output_shape.emplace_back(self.size(i-1));
+    for (int64_t i = axis + 1; i < max_num_classes + MIN_DEPTH; i++) {
+        output_shape.emplace_back(self.size(i - 1));
     }
 
     // construct the output tensor of the NPU
@@ -144,4 +153,4 @@ at::Tensor npu_one_hot(
     EXEC_NPU_CMD(aclnnOneHot, self, depth, on_value_tensor, off_value_tensor, axis, result);
     return result;
 }
-}
+}  // namespace op_api
