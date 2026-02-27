@@ -2605,7 +2605,7 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
             dim_n = ni * INT4_IN_INT32 if weight[i].dtype == torch.int32 else ni
             y.append(x[0].new_empty((cur_offset - pre_offset, dim_n), dtype=output_dtype))
             pre_offset = cur_offset
-    elif split_item == 2:
+    elif split_item == 2 or split_item == 3:
         dim_m = 0
         dim_n = n * INT4_IN_INT32 if (weight[0].dtype == torch.int32 or (weight[0].dtype == torch.float32 and weight[0].dtype != x[0].dtype)) and \
                 not is_transpose_weight(weight[0]) else n
@@ -2618,16 +2618,6 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
         else:
             num_group_list = group_list.shape[0]
             y.append(x[0].new_empty((num_group_list, dim_m, dim_n), dtype=output_dtype))
-    elif split_item == 3:
-        dim_n = n * INT4_IN_INT32 if (weight[0].dtype == torch.int32 or (weight[0].dtype == torch.float32 and weight[0].dtype != x[0].dtype)) and \
-                not is_transpose_weight(weight[0]) else n
-        if is_a4w4_mxfp:
-            dim_n = n if x[0].size(x[0].dim() - 1) == weight[0].size(weight[0].dim() - 2) else n * FP4_IN_INT8
-        if group_type != 2:
-            y.append(x[0].new_empty((x[0].shape[0], dim_n), dtype=output_dtype))
-        else:
-            num_group_list = group_list.shape[0]
-            y.append(x[0].new_empty((num_group_list, x[0].shape[0], dim_n), dtype=output_dtype))
 
     return y
 
