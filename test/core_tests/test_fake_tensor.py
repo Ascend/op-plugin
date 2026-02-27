@@ -4836,5 +4836,28 @@ class TestBatchNormReduce(TestCase):
             self.assertEqual(input_fake_tensor.dtype, output_fake_tensor2.dtype)
 
 
+class TestMatmul(TestCase):
+    def test_matmul_backward(self):
+        x = torch.randn(8, 4, 8, device="npu", requires_grad=True)
+        y = torch.randn(8, 8, 8, 4, device="npu", requires_grad=True)
+
+        output = torch.matmul(x, y)
+        grad = torch.randn(output.size(), device="npu")
+        output.backward(grad)
+
+        with FakeTensorMode():
+            x_fake_tensor = torch.randn(8, 4, 8, device="npu", requires_grad=True)
+            y_fake_tensor = torch.randn(8, 8, 8, 4, device="npu", requires_grad=True)
+
+            output_fake_tensor = torch.matmul(x_fake_tensor, y_fake_tensor)
+            grad_fake_tensor = torch.randn(output_fake_tensor.size(), device="npu")
+            output_fake_tensor.backward(grad_fake_tensor)
+
+            self.assertEqual(x.grad.shape, x_fake_tensor.grad.shape)
+            self.assertEqual(x.grad.dtype, x_fake_tensor.grad.dtype)
+            self.assertEqual(y.grad.shape, y_fake_tensor.grad.shape)
+            self.assertEqual(y.grad.dtype, y_fake_tensor.grad.dtype)
+
+
 if __name__ == "__main__":
     run_tests()
