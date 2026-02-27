@@ -85,6 +85,12 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     int64_t commQuantDtype = comm_quant_dtype.has_value() ? comm_quant_dtype.value() : ACL_UNDEFINED;
     int64_t x1QuantDtype = x1_quant_dtype.has_value() ? x1_quant_dtype.value() : ACL_FP8_E5M2;
 
+    // mx量化下scale为fp8_e8m0，需要wrapper包装
+    const at::Tensor &x1_scale_real = x1_scale.value_or(at::Tensor());
+    const at::Tensor &x2_scale_real = x2_scale.value_or(at::Tensor());
+    TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
+    TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
+
     // 推导alltoallOutput
     if (all2all_out_flag) {
         aclDataType alltoall_out_acl_type = npu_preparation::convert_to_acl_data_type(x1.scalar_type());
@@ -92,14 +98,14 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
         auto alltoall_out_size = {out_m, x1.size(1) * world_size};
         at::Tensor alltoall_out_tensor = npu_preparation::apply_tensor_without_format(alltoall_out_size, c10::dtype(alltoall_out_scalar_type));
         // 调用aclnn接口
-        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1, x2, bias, x1_scale, x2_scale, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
+        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1, x2, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
             x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
             output_tensor, alltoall_out_tensor);
         return std::tuple<at::Tensor, at::Tensor>(output_tensor, alltoall_out_tensor);
     } else {
         const std::nullptr_t& alltoalloutNullptr = nullptr;
         // 调用aclnn接口
-        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1, x2, bias, x1_scale, x2_scale, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
+        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1, x2, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
             x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
             output_tensor, alltoalloutNullptr);
         return std::tuple<at::Tensor, at::Tensor>(output_tensor, alltoalloutNullptr);
