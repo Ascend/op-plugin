@@ -4504,8 +4504,6 @@ approximate必须为"gelu_tanh"或"gelu_erf".
   转置信息由算子内部根据tensor的stride自动推导, 无需手动指定. 
 对于A8W8量化: 
   支持ND格式和NZ格式. 
-  当x2为ND格式时, 自动调用aclnnFusedQuantMatmul接口. 
-  当x2为NZ格式时, 自动调用aclnnFusedQuantMatmulWeightNz接口. 
   如果需要使用NZ格式以提升性能, 可以手动调用torch_npu.npu_format_cast完成输入x2(weight)的NZ格式转换. 
   转置信息由算子内部根据tensor的stride自动推导, 无需手动指定. 
 
