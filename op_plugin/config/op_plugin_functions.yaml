@@ -3242,6 +3242,9 @@ official:
   - func: lstm_cell(Tensor input, Tensor[] hx, Tensor w_ih, Tensor w_hh, Tensor? b_ih=None, Tensor? b_hh=None) -> (Tensor, Tensor)
     acl_op: all_version
 
+  - func: _thnn_fused_lstm_cell_backward_impl(Tensor? grad_hy, Tensor? grad_cy, Tensor cx, Tensor cy, Tensor workspace, bool has_bias) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+
   - func: lt.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
     op_api: all_version
