@@ -11483,6 +11483,177 @@ if __name__ == "__main__":
 )
 
 _add_torch_npu_docstr(
+    "npu_alltoallv_quant_gmm",
+    """
+接口原型：
+npu_alltoallv_quant_gmm(Tensor gmm_x, Tensor gmm_weight, Tensor gmm_x_scale, Tensor gmm_weight_scale, str hcom, int ep_world_size, int[] send_counts, int[] recv_counts, int gmm_y_dtype, *, Tensor? send_counts_tensor=None, Tensor? recv_counts_tensor=None, Tensor? mm_x=None, Tensor? mm_weight=None, Tensor? mm_x_scale=None, Tensor? mm_weight_scale=None, Tensor? gmm_x_offset=None, Tensor? gmm_weight_offset=None, Tensor? mm_x_offset=None, Tensor? mm_weight_offset=None, int? gmm_x_quant_mode=None, int? gmm_weight_quant_mode=None, int? mm_x_quant_mode=None, int? mm_weight_quant_mode=None, bool permute_out_flag=False, int[]? group_size=None, int? gmm_x_dtype=None, int? gmm_weight_dtype=None, int? gmm_x_scale_dtype=None, int? gmm_weight_scale_dtype=None, int? mm_x_dtype=None, int? mm_weight_dtype=None, int? mm_x_scale_dtype=None, int? mm_weight_scale_dtype=None, int? mm_y_dtype=None) -> (Tensor, Tensor, Tensor)
+
+功能描述
+完成路由专家AlltoAllv和GroupedMatMul的融合，先通信后计算。同时，与共享专家MatMul计算并行融合。
+
+参数说明
+    gmm_x (Tensor): 必选输入，表示本卡通信前路由专家原始左矩阵的输入。数据类型为 hifloat8。维度为 2 维，shape为(BSK, H1)，format为ND，不支持非连续 Tensor。
+    gmm_weight (Tensor)：必选输入，表示本卡路由专家分组矩阵乘的右矩阵输入。数据类型为 hifloat8。维度为 3 维，shape为(e, H1, N1)，format为ND，不支持非连续Tensor。
+    gmm_x_scale (Tensor): 必选输入，表示路由专家左矩阵 gmm_x 的量化系数。数据类型为 float32。per‑tensor 量化场景下维度为 1 维，shape为 (1,)。format为ND，不支持非连续Tensor。
+    gmm_weight_scale (Tensor): 必选输入，表示路由专家右矩阵 gmm_weight 的量化系数。数据类型为 float32。per‑tensor 量化场景下维度为 1 维，shape为 (1,)。format为ND，不支持非连续 Tensor。
+    hcom (str): 必选输入，Host侧标识列组的字符串，即通信域名称，通过get_hccl_comm_name接口获取。
+    ep_world_size (int): 必选输入，通信域内的rank总数。支持范围为2, 4, 8, 16, 32, 64, 128, 256。
+    send_counts (List(int)): 必选输入，长度为 e * ep_world_size 的整数列表，表示本卡发送给每个目标卡的 token 数。假设目标卡号为i（0<=i<ep_world_size），发送专家号为j（0<=j<e），send_counts[i][j] 表示本卡发送给第 i 张卡第j个专家的 token 数。约束：长度必须等于 e * ep_world_size，且元素均为非负整数。
+    recv_counts (List(int)): 必选输入，长度为 e * ep_world_size 的整数列表，表示本卡从每个目标卡接收的 token 数。假设目标卡号为i（0<=i<ep_world_size），接收专家号为j（0<=j<e），recv_counts[i][j] 表示本卡接收第 i 张卡第j个专家的 token 数。约束：长度必须等于 e * ep_world_size，且元素均为非负整数。
+    gmm_y_dtype (int): 必选输入，表示路由专家分组矩阵乘计算输出张量 gmm_y 的数据类型（例如：torch.float16）。
+    send_counts_tensor (Tensor): 可选输入，当前仅支持输入None。
+    recv_counts_tensor (Tensor): 可选输入，当前仅支持输入None。
+    mm_x (Tensor): 可选输入，默认 None。表示共享专家分组矩阵乘的左矩阵输入，仅在启用共享专家时输入。数据类型为 hifloat8。维度为2维，shape为 (BS, H2)。format为 ND，不支持非连续 Tensor。
+    mm_weight (Tensor): 可选输入，默认 None。表示共享专家分组矩阵乘的右矩阵输入，仅在启用共享专家时输入。数据类型为 hifloat8。维度为2维，shape为 (H2, N2)。format为 ND，不支持非连续 Tensor。
+    mm_x_scale (Tensor): 可选输入，默认 None。表示共享专家左矩阵 mm_x 的量化系数。数据类型为 float32。pertensor 量化场景下维度为 1 维，shape为 (1,)。format为ND，不支持非连续 Tensor。
+    mm_weight_scale (Tensor): 可选输入，默认 None。表示共享专家右矩阵 mm_weight 的量化系数。数据类型为 float32。per‑tensor 量化场景下维度为 1 维，shape为 (1,)。format为ND，不支持非连续 Tensor。
+    gmm_x_offset (Tensor): 可选输入，必须为 None。表示路由专家左矩阵的量化偏置，预留参数。
+    gmm_weight_offset (Tensor): 可选输入，必须为 None。表示路由专家右矩阵的量化偏置，预留参数。
+    mm_x_offset (Tensor): 可选输入，必须为 None。表示共享专家左矩阵的量化偏置，预留参数。
+    mm_weight_offset (Tensor): 可选输入，必须为 None。表示共享专家右矩阵的量化偏置，预留参数。
+    gmm_x_quant_mode (int): 可选输入，表示路由专家左矩阵的量化模式。当前仅支持1，表示pertensor量化。
+    gmm_weight_quant_mode (int): 可选输入，表示路由专家右矩阵的量化模式。当前仅支持1，表示pertensor量化。
+    mm_x_quant_mode (int): 可选输入，表示共享专家左矩阵的量化模式。当前仅支持1，表示pertensor量化。
+    mm_weight_quant_mode (int): 可选输入，表示共享专家右矩阵的量化模式。当前仅支持1，表示pertensor量化。
+    permute_out_flag (bool): 可选输入，默认 False。是否返回通信后重排的路由专家矩阵（即 permute_out）。若为 True，则返回值中包含该张量。
+    group_size (List(int)): 可选输入，当前仅支持None，预留参数，暂不支持传参。
+    gmm_x_dtype (int): 可选输入，默认 None。表示路由专家左矩阵 gmm_x 的实际数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+    gmm_weight_dtype (int): 可选输入，默认 None。表示路由专家右矩阵 gmm_weight 的实际数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+    gmm_x_scale_dtype (int): 可选输入，默认 None。表示路由专家左矩阵量化系数 gmm_x_scale 的实际数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+    gmm_weight_scale_dtype (int): 可选输入，默认 None。表示路由专家右矩阵量化系数 gmm_weight_scale 的实际数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+    mm_x_dtype (int): 可选输入，表示共享专家左矩阵 mm_x 的数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+    mm_weight_dtype (int): 可选输入，表示共享专家右矩阵 mm_weight 的数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+    mm_x_scale_dtype (int): 可选输入，表示共享专家左矩阵量化系数 mm_x_scale 的数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+    mm_weight_scale_dtype (int): 可选输入，表示共享专家右矩阵量化系数 mm_weight_scale 的数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+    mm_y_dtype (int): 可选输入，表示共享专家输出张量 mm_y 的数据类型。对于PyTroch原生原生不支持的数据类型（如float8_e8m0）需要指定该参数取值。
+
+输出说明
+    gmm_y（Tensor）：计算输出，表示最终的计算结果，数据类型为gmm_y_dtype指定的类型，支持2维，shape为(A, N1)。format为ND。
+    mm_y（Tensor）：计算输出，共享专家MatMul的输出，数据类型为mm_y_dtype指定的类型，支持2维，shape为(BS, N2)。仅当传入mm_x与mm_weight才输出。 format为ND。
+    permute_out（Tensor）：计算输出，Permute之后的输出，数据类型与gmm_x保持一致。 format为ND。
+
+约束说明
+该接口支持训练、推理场景下使用。
+该接口仅支持单算子模式调用。
+参数说明中Shape涉及的变量说明：
+    BS表示batch sequence size。
+    K表示选取的topK专家个数。当存在共享专家计算时，K需要满足取值范围[2, 8]。
+    BSK=sum(send_counts)，表示本卡Alltoallv通信中发送给其他卡的总token数，取值范围(0, 52428800)。
+    H1表示本卡路由专家hidden size，取值范围(0, 65536)。
+    H2表示本卡共享专家hidden size，取值范围(0, 12288]。
+    N1表示路由专家的head_num，取值范围(0, 65536)。
+    N2表示共享专家的head_num，取值范围(0, 65536)。
+    e表示通信后每张卡上专家数量，取值范围(0, 32]。e * epWorldSize<=256。
+    A表示路由专家计算输出的总token数，A=sum(recv_counts)。EP通信域内所有卡上的A累加和等于所有卡上的BSK累加和。
+第i张卡发送到第j张卡数据量为send_counts[j]与第j张卡接受数据量为recv_counts[i]必须相等。
+gmm_x_quant_mode、gmm_weight_quant_mode、mm_x_quant_mode、mm_weight_quant_mode值与量化模式关系如下：
+    0：不量化
+    1：pertensor
+    2: perchannel
+    3: pertoken
+    4: pergroup
+    5: perblock
+    6: mx量化
+    7：pertoken动态量化
+当前仅支持取1，表示pertensor量化场景。
+
+调用示例:
+import torch
+import torch_npu
+import torch.distributed as dist
+import torch.multiprocessing as mp
+import numpy as np
+
+def generate_counts(ep_world_size, e, total_tokens, seed=None):
+    np.random.seed(seed if seed is not None else 42)
+    per_rank_total = total_tokens
+    base = per_rank_total // (ep_world_size * e)
+    remainder = per_rank_total % (ep_world_size * e)
+    send_counts = [base] * (ep_world_size * e)
+    for i in range(remainder):
+        send_counts[-1 - i] += 1
+    recv_counts = send_counts.copy()
+    return send_counts, recv_counts
+
+def run_npu_alltoallv_quant_gmm(rank, world_size, master_ip, master_port):
+    torch_npu.npu.set_device(rank)
+    init_method = f"tcp://{master_ip}:{master_port}"
+    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+
+    from torch.distributed.distributed_c10d import _get_default_group
+    default_pg = _get_default_group()
+    if torch.__version__ > "2.0.1":
+        hcom_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+    else:
+        hcom_info = default_pg.get_hccl_comm_name(rank)
+
+    BS, K = 128, 2
+    H1, N1 = 256, 256
+    H2, N2 = 256, 128
+    e = 2
+    total_tokens = BS * K
+
+    send_counts, recv_counts = generate_counts(world_size, e, total_tokens, seed=rank)
+
+    gmm_x = torch.randint(0, 255, (total_tokens, H1), dtype=torch.uint8).npu().view(torch_npu.hifloat8)
+    gmm_weight = torch.randint(0, 255, (e, H1, N1), dtype=torch.uint8).npu().view(torch_npu.hifloat8)
+    gmm_x_scale = torch.tensor([0.5], dtype=torch.float32).npu()
+    gmm_weight_scale = torch.tensor([0.3], dtype=torch.float32).npu()
+
+    mm_x = torch.randint(0, 255, (BS, H2), dtype=torch.uint8).npu().view(torch_npu.hifloat8)
+    mm_weight = torch.randint(0, 255, (H2, N2), dtype=torch.uint8).npu().view(torch_npu.hifloat8)
+    mm_x_scale = torch.tensor([0.4], dtype=torch.float32).npu()
+    mm_weight_scale = torch.tensor([0.2], dtype=torch.float32).npu()
+
+    quant_mode = 1
+    out_dtype = torch.float16
+
+    gmm_y, mm_y, permute_out = torch_npu.npu_alltoallv_quant_gmm(
+                                                gmm_x=gmm_x,
+                                                gmm_weight=gmm_weight,
+                                                gmm_x_scale = gmm_x_scale,
+                                                gmm_weight_scale = gmm_weight_scale,
+                                                hcom = hcom_info,
+                                                ep_world_size=world_size,
+                                                send_counts=send_counts,
+                                                recv_counts=recv_counts,
+                                                gmm_y_dtype=out_dtype,
+                                                mm_x=mm_x,
+                                                mm_weight=mm_weight,
+                                                mm_x_scale = mm_x_scale,
+                                                mm_weight_scale = mm_weight_scale,
+                                                gmm_x_quant_mode = quant_mode,
+                                                gmm_weight_quant_mode = quant_mode,
+                                                mm_x_quant_mode = quant_mode,
+                                                mm_weight_quant_mode = quant_mode,
+                                                permute_out_flag=True,
+                                                send_counts_tensor=None,
+                                                recv_counts_tensor=None,
+                                                gmm_x_offset = None,
+                                                gmm_weight_offset = None,
+                                                mm_x_offset = None,
+                                                mm_weight_offset = None,
+                                                group_size=None,
+                                                gmm_x_dtype=torch_npu.hifloat8,
+                                                gmm_weight_dtype=torch_npu.hifloat8,
+                                                gmm_x_scale_dtype=torch.float32,
+                                                gmm_weight_scale_dtype=torch.float32,
+                                                mm_x_dtype=torch_npu.hifloat8,
+                                                mm_weight_dtype=torch_npu.hifloat8,
+                                                mm_x_scale_dtype=torch.float32,
+                                                mm_weight_scale_dtype=torch.float32,
+                                                mm_y_dtype=out_dtype)
+
+if __name__ == "__main__":
+    world_size = 2
+    master_ip = "127.0.0.1"
+    master_port = "50001"
+
+    mp.spawn(run_npu_alltoallv_quant_gmm, args=(world_size, master_ip, master_port), nprocs=world_size, join=True)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_swiglu_quant",
     """
 torch_npu.npu_swiglu_quant(Tensor x, *, Tensor? smooth_scales=None, Tensor? offsets=None, Tensor? group_index=None, bool activate_left=False, int quant_mode=0, int group_list_type=0, ScalarType? dst_type=None) -> (Tensor, Tensor)
