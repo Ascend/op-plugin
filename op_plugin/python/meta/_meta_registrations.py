@@ -5,7 +5,7 @@ from torch.library import Library, impl
 from torch.fx.node import has_side_effect
 from torch_npu.utils._error_code import ErrCode, ops_error
 from torch_npu.npu.utils import get_cann_version
-
+from torch_npu.npu._backends import get_soc_version
 '''
 Registering Meta implementations for custom ops
 '''
@@ -201,6 +201,10 @@ def npu_mla_prolog_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weight_d
                    rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None,
                    quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None,
                    rmsnorm_epsilon_cq=1e-5, rmsnorm_epsilon_ckv=1e-5, cache_mode="PA_BSND"):
+    torch._check(
+        get_soc_version() < 260,
+        lambda: "npu_mla_prolog not support on this soc version, please use npu_mla_prolog_v3" + ops_error(ErrCode.NOT_SUPPORT),
+    )
     require_param = {"token_x": token_x, "weight_dq": weight_dq, "weight_uq_qr": weight_uq_qr, "weight_uk": weight_uk, "weight_dkv_kr": weight_dkv_kr, "rmsnorm_gamma_cq": rmsnorm_gamma_cq, "rmsnorm_gamma_ckv": rmsnorm_gamma_ckv, "rope_sin": rope_sin, "rope_cos": rope_cos, "cache_index": cache_index, "kv_cache": kv_cache, "kr_cache": kr_cache}
 
     for item_name, item in require_param.items():
@@ -263,7 +267,10 @@ def npu_mla_prolog_v2_forward(token_x, weight_dq, weight_uq_qr, weight_uk, weigh
                     rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None,
                     quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None,
                     rmsnorm_epsilon_cq=1e-5, rmsnorm_epsilon_ckv=1e-5, cache_mode="PA_BSND"):
-
+    torch._check(
+        get_soc_version() < 260,
+        lambda: "npu_mla_prolog_v2 not support on this soc version, please use npu_mla_prolog_v3" + ops_error(ErrCode.NOT_SUPPORT),
+    )
     require_param = {"token_x": token_x, "weight_dq": weight_dq, "weight_uq_qr": weight_uq_qr, "weight_uk": weight_uk, "weight_dkv_kr": weight_dkv_kr, "rmsnorm_gamma_cq": rmsnorm_gamma_cq, "rmsnorm_gamma_ckv": rmsnorm_gamma_ckv, "rope_sin": rope_sin, "rope_cos": rope_cos, "cache_index": cache_index, "kv_cache": kv_cache, "kr_cache": kr_cache}
 
     for item_name, item in require_param.items():

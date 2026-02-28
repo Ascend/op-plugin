@@ -32,6 +32,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> npu_mla_prolog_no
     double rmsnorm_epsilon_ckv, c10::string_view cache_mode, at::Tensor& query,
     at::Tensor& query_rope, at::Tensor& kv_cache_out, at::Tensor& kr_cache_out)
 {
+    TORCH_CHECK(!c10_npu::IsAclnnOnly(), "npu_mla_prolog not support on this soc version, please use npu_mla_prolog_v3", OPS_ERROR(ErrCode::NOT_SUPPORT));
     at_npu::native::OpCommand cmd;
     cmd.Name("MlaProlog")
        .Input(token_x, "token_x")
@@ -111,6 +112,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_prolog(
     const c10::optional<at::Tensor>& quant_scale_ckr_opt, const c10::optional<at::Tensor>& smooth_scales_cq_opt,
     double rmsnorm_epsilon_cq, double rmsnorm_epsilon_ckv, c10::string_view cache_mode)
 {
+    TORCH_CHECK(!c10_npu::IsAclnnOnly(), "npu_mla_prolog not support on this soc version, please use npu_mla_prolog_v3", OPS_ERROR(ErrCode::NOT_SUPPORT));
     std::map<std::string, at::Tensor> mMap = { {"token_x", token_x}, {"weight_dq", weight_dq}, {"weight_uq_qr", weight_uq_qr}, {"weight_uk", weight_uk}, {"weight_dkv_kr", weight_dkv_kr}, {"rmsnorm_gamma_cq", rmsnorm_gamma_cq}, {"rmsnorm_gamma_ckv", rmsnorm_gamma_ckv}, {"rope_sin", rope_sin}, {"rope_cos", rope_cos}, {"cache_index", cache_index}, {"kv_cache", kv_cache}, {"kr_cache", kr_cache}};
 
     for (auto item : mMap) {
