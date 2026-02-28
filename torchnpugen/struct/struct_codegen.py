@@ -109,7 +109,8 @@ def is_support_version(op):
 def filt_op_branch(struct_ops: Dict) -> Dict:
     support_ops = []
     for key in USED_KEYS:
-        support_ops += struct_ops[key]
+        if struct_ops[key] is not None:
+            support_ops += struct_ops[key]
 
     def filt_gen_opapi(op) -> bool:
         return 'gen_opapi' in op.keys() and is_support_version(op)

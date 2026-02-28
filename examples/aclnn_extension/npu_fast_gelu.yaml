@@ -1,7 +1,6 @@
 all_version: [v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10, v2.11]
 official:
-  - func: _thnn_fused_gru_cell(Tensor input_gates, Tensor hidden_gates, Tensor hx, Tensor? input_bias=None, Tensor? hidden_bias=None) -> (Tensor, Tensor)
-    op_api: [v2.5, newest]
+
 
 custom:
   - func: npu_fast_gelu_custom(Tensor self) -> Tensor
@@ -20,12 +19,9 @@ custom:
       exec: aclnnFastGeluBackward
 
 autograd:
-  - func: _thnn_fused_gru_cell(Tensor input_gates, Tensor hidden_gates, Tensor hx, Tensor? input_bias=None, Tensor? hidden_bias=None) -> (Tensor, Tensor)
-    op_api: [v2.5, newest]
+
 
 symint:
 
 
 quant:
-  - func: q_scale(Tensor self) -> float
-    acl_op: v2.2
