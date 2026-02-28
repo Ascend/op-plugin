@@ -220,16 +220,18 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
             && (pertoken_scale_real.dim() >= 2 && scale.dim() >= 2))
         && !(is_a8W4_float || is_a8W4_int);
     if (need_check_trans) {
-        int64_t dim_x = 0;
-        int64_t dim_scale = 0;
+        int64_t dim_x1 = x1.dim() - 2; //  check the last 2 dim
+        int64_t dim_x2 = x2.dim() - 2; //  check the last 2 dim
+        int64_t dim_x1_scale = 0;
+        int64_t dim_x2_scale = 0;
         if (pertoken_scale_dtype_real != aclDataType::ACL_FLOAT8_E8M0) {
-            dim_x = x1.dim() - 2; //  not mx quant, check the last 2 dim
-            dim_scale = pertoken_scale_real.dim() - 2; // check the last 2 dim
+            dim_x1_scale = pertoken_scale_real.dim() - 2; // check the last 2 dim in GB/BB
+            dim_x2_scale = scale.dim() - 2; // check the last 2 dim in GB/BB
         }
-        TORCH_CHECK(is_x_scale_same_transpose(x1, pertoken_scale_real, dim_x, dim_scale),
+        TORCH_CHECK(is_x_scale_same_transpose(x1, pertoken_scale_real, dim_x1, dim_x1_scale),
                     "Input x1 tensor and pertoken_scale tensor's transpose are not same, please check input.",
                     OPS_ERROR(ErrCode::PARAM));
-        TORCH_CHECK(is_x_scale_same_transpose(x2, scale, dim_x, dim_scale),
+        TORCH_CHECK(is_x_scale_same_transpose(x2, scale, dim_x2, dim_x2_scale),
                     "Input x2 tensor and scale tensor's transpose are not same, please check input.",
                     OPS_ERROR(ErrCode::PARAM));
     }

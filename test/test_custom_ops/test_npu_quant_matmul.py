@@ -366,6 +366,36 @@ class TestQuantMatmul(TestCase):
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
 
     @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_mxfp8_with_batch(self):
+        x1 = torch.randint(-5, 5, (1, 112, 944), dtype=torch.float8_e4m3fn)
+        x2 = torch.randint(-5, 5, (184, 944), dtype=torch.float8_e4m3fn)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        scale = torch.randint(-5, 5, (184, 30), dtype=torch.int8)
+        pertoken_scale = torch.randint(-5, 5, (112, 30), dtype=torch.int8)
+        scale_clone = scale_clone.clone()
+        pertoken_scale_clone = pertoken_scale.clone()
+        x1 = x1.numpy().reshape(112, 944)
+        x2 = x2.numpy()
+        scale = scale.numpy().transpose()
+        pertoken_scale = pertoken_scale.numpy()
+        scale = scale[:-1, :]
+        pertoken_scale = pertoken_scale[:, :-1]
+        scale_broadcast = np.repeat(scale, 32, axis=-1)
+        pertoken_scale_broadcast = np.repeat(pertoken_scale, 32, axis=-2)
+        x1_pad_len = pertoken_scale_broadcast.shape[-1] - x1.shape[-1]
+        x2_pad_len = scale_broadcast[-2] - x2.shape[-2]
+        x1_dims = len(x1.shape)
+        x2_dims = len(x2.shape)
+        x1 = np.pad(x1, [(0, 0)] * (x1_dims - 1) + [(0, x1_pad_len)], mode='constant', constant_values=0)
+        x2 = np.pad(x2, [(0, 0)] * (x2_dims - 2) + [(0, x2_pad_len)] + [(0, 0)], mode='constant', constant_values=0)
+        x1 = x1 * pertoken_scale_broadcast
+        x2 = x2 * scale_broadcast
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32))
+        custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu().t(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu, output_dtype=torch.bfloat16)
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend950'])
     def test_npu_quant_matmul_mxfp4(self):
         x1 = torch.randint(-5, 5, (112, 944), dtype=torch.int8)
         x2 = torch.randint(-5, 5, (184, 944), dtype=torch.int8)
