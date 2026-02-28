@@ -606,8 +606,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         H = query.size(THIRD_ELEMENT);
         D = H / head_num;
         auto keySize = key.size(THIRD_ELEMENT);
-        auto divisor = keySize / D;
-        D2 = (D == 0 || keySize == 0 || divisor == 0) ? 0 : value.size(THIRD_ELEMENT) / divisor;
+        auto divisor = (D == 0) ? 0 : keySize / D;
+        D2 = (D == 0 || keySize == 0 || divisor == 0) ? D : value.size(THIRD_ELEMENT) / divisor;
         atten_score_shape = {B, S0, head_num * D2};
     } else if (input_layout_str == "SBH") {
         B = query.size(1);
@@ -616,8 +616,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         H = query.size(THIRD_ELEMENT);
         D = H / head_num;
         auto keySize = key.size(THIRD_ELEMENT);
-        auto divisor = keySize / D;
-        D2 = (D == 0 || keySize == 0 || divisor == 0) ? 0 : value.size(THIRD_ELEMENT) / divisor;
+        auto divisor = (D == 0) ? 0 : keySize / D;
+        D2 = (D == 0 || keySize == 0 || divisor == 0) ? D : value.size(THIRD_ELEMENT) / divisor;
         atten_score_shape = {S0, B, head_num * D2};
     } else if (input_layout_str == "BNSD") {
         B = query.size(0);
@@ -1183,8 +1183,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         H = query.size(THIRD_ELEMENT);
         D = H / head_num;
         auto keySize = key.size(THIRD_ELEMENT);
-        auto divisor = keySize / D;
-        D2 = (D == 0 || keySize == 0 || divisor == 0) ? 0 : value.size(THIRD_ELEMENT) / divisor;
+        auto divisor = (D == 0) ? 0 : keySize / D;
+        D2 = (D == 0 || keySize == 0 || divisor == 0) ? D : value.size(THIRD_ELEMENT) / divisor;
         atten_score_shape = {B, S0, head_num * D2};
     } else if (input_layout_str == "SBH") {
         B = query.size(1);
@@ -1193,8 +1193,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         H = query.size(THIRD_ELEMENT);
         D = H / head_num;
         auto keySize = key.size(THIRD_ELEMENT);
-        auto divisor = keySize / D;
-        D2 = (D == 0 || keySize == 0 || divisor == 0) ? 0 : value.size(THIRD_ELEMENT) / divisor;
+        auto divisor = (D == 0) ? 0 : keySize / D;
+        D2 = (D == 0 || keySize == 0 || divisor == 0) ? D : value.size(THIRD_ELEMENT) / divisor;
         atten_score_shape = {S0, B, head_num * D2};
     } else if (input_layout_str == "BNSD") {
         B = query.size(0);
@@ -1885,8 +1885,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         H = query.size(THIRD_ELEMENT);
         D = H / head_num;
         auto keySize = key.size(THIRD_ELEMENT);
-        auto divisor = keySize / D;
-        D2 = (D == 0 || keySize == 0 || divisor == 0) ? 0 : value.size(THIRD_ELEMENT) / divisor;
+        auto divisor = (D == 0) ? 0 : keySize / D;
+        D2 = (D == 0 || keySize == 0 || divisor == 0) ? D : value.size(THIRD_ELEMENT) / divisor;
         atten_score_shape = {B, S0, head_num * D2};
     } else if (input_layout_str == "SBH") {
         B = query.size(1);
@@ -1895,8 +1895,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         H = query.size(THIRD_ELEMENT);
         D = H / head_num;
         auto keySize = key.size(THIRD_ELEMENT);
-        auto divisor = keySize / D;
-        D2 = (D == 0 || keySize == 0 || divisor == 0) ? 0 : value.size(THIRD_ELEMENT) / divisor;
+        auto divisor = (D == 0) ? 0 : keySize / D;
+        D2 = (D == 0 || keySize == 0 || divisor == 0) ? D : value.size(THIRD_ELEMENT) / divisor;
         atten_score_shape = {S0, B, head_num * D2};
     } else if (input_layout_str == "BNSD") {
         B = query.size(0);
