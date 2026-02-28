@@ -625,7 +625,7 @@ official:
     op_api: all_version
     gen_opapi:
       new_params:
-        V: 'Vh.transpose(-1, -2)'
+        V: 'Vh.dim() <= 1 ? Vh : Vh.transpose(-1, -2)'
       exec: aclnnSvd, A, full_matrices, compute_uv, S, U, V
 
   - func: _log_softmax(Tensor self, int dim, bool half_to_float) -> Tensor
