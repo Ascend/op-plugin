@@ -28,10 +28,7 @@ namespace op_api {
                                        const c10::optional<at::Tensor> &zero_points2, int64_t axis, double epsilon,
                                        bool div_mode, c10::optional<int64_t> dst_type)
     {
-        TORCH_CHECK(!scales2.has_value(), "scales2 only support None.", OPS_ERROR(ErrCode::PARAM));
-        TORCH_CHECK(!zero_points2.has_value(), "zero_points2 only support None.", OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(axis == -1, "axis only support -1.", OPS_ERROR(ErrCode::PARAM));
-        TORCH_CHECK(div_mode == true, "div_mode only support True.", OPS_ERROR(ErrCode::PARAM));
 
         int64_t dst_type_value = dst_type.has_value() ? dst_type.value() : static_cast<int>(at::ScalarType::Char);
         at::Tensor y;
@@ -50,7 +47,10 @@ namespace op_api {
         if ((c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) && check_aclnn_kernel_available("aclnnAddRmsNormQuantV2")) {
             EXEC_NPU_CMD(aclnnAddRmsNormQuantV2, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, beta, axis, epsilon, div_mode, y1, y2, x_out, rmsnorm_out);
         } else {
-            TORCH_CHECK(!beta.has_value(), "In the current CANN version, aclnnAddRmsNormQuant does not support the parameter beta input. It is recommended to upgrade the CANN package. Or please remove the beta input parameter.", OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(!scales2.has_value(), "In the current CANN version, for aclnnAddRmsNormQuant, the parameter scales2 input only support None. It is recommended to upgrade the CANN package to version 8.3 or higher. Or please set the scales2=None.", OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(!zero_points2.has_value(), "In the current CANN version, for aclnnAddRmsNormQuant,  the parameter zero_points2 input only supprt None. It is recommended to upgrade the CANN package to version 8.3 or higher. Or please set the zero_points2=None.", OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(!beta.has_value(), "In the current CANN version, aclnnAddRmsNormQuant does not support the parameter beta input. It is recommended to upgrade the CANN package to version 8.3 or higher. Or please remove the beta input parameter.", OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(div_mode == true, "In the current CANN version, for aclnnAddRmsNormQuant, the parameter div_mode only support True. It is recommended to upgrade the CANN package to version 8.3 or higher. Or please set the div_mode=True.", OPS_ERROR(ErrCode::PARAM));
             EXEC_NPU_CMD(aclnnAddRmsNormQuant, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, axis, epsilon, div_mode, y1_wrapper, y2_wrapper, x_out);
         }
         return std::make_tuple(std::move(y1), std::move(y2), std::move(x_out));
