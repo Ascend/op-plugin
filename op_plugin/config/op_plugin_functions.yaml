@@ -2279,19 +2279,10 @@ official:
   - func: fmod.Tensor(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      out:
-        size: broadcast_ops_npu_output_size(self, other)
-        dtype: at::native::result_type(self, other)
-      exec: aclnnFmodTensor
 
   - func: fmod.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      out:
-        size: broadcast_ops_npu_output_size(self, other)
-      exec: aclnnFmodTensor
 
   - func: fmod_.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
     acl_op: all_version
@@ -2302,8 +2293,6 @@ official:
   - func: fmod_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      exec: aclnnInplaceFmodTensor
 
   - func: frac(Tensor self) -> Tensor
     acl_op: all_version
