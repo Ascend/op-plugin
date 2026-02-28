@@ -175,13 +175,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &drop_mask,
     const c10::optional<at::Tensor> &padding_mask, const c10::optional<at::Tensor> &atten_mask,
     const c10::optional<at::Tensor> &d_scale_q, const c10::optional<at::Tensor> &d_scale_k, const c10::optional<at::Tensor> &d_scale_v,
-    const c10::optional<at::Tensor> &softmax_max, const c10::optional<at::Tensor> &softmax_sum,
+    const c10::optional<at::Tensor> &d_scale_dy, const c10::optional<at::Tensor> &softmax_max, const c10::optional<at::Tensor> &softmax_sum,
     const c10::optional<at::Tensor> &softmax_in, const c10::optional<at::Tensor> &attention_in,
     const c10::optional<at::Tensor> &query_rope, const c10::optional<at::Tensor> &key_rope, double scale_value,
     double keep_prob, int64_t pre_tokens, int64_t next_tokens, int64_t inner_precise, int64_t seed,
     int64_t offset, c10::OptionalIntArrayRef prefix, c10::OptionalIntArrayRef actual_seq_qlen, c10::OptionalIntArrayRef actual_seq_kvlen,
     c10::OptionalIntArrayRef q_start_idx, c10::OptionalIntArrayRef kv_start_idx, int64_t sparse_mode, int64_t out_dtype, int64_t pse_type,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink, c10::optional<int64_t> query_quant_mode, c10::optional<int64_t> query_dtype,
+    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink, c10::optional<int64_t> query_quant_mode,
+    const c10::optional<at::Tensor> &p_scale, const c10::optional<at::Tensor> &ds_scale, c10::optional<int64_t> query_dtype,
     bool is_fp8)
 {
     double scale = scale_value;
@@ -193,8 +194,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     const at::Tensor &d_scale_q_const = d_scale_q.value_or(at::Tensor());
     const at::Tensor &d_scale_k_const = d_scale_k.value_or(at::Tensor());
     const at::Tensor &d_scale_v_const = d_scale_v.value_or(at::Tensor());
-    const at::Tensor &d_scale_dy_const = at::Tensor();
+    const at::Tensor &d_scale_dy_const = d_scale_dy.value_or(at::Tensor());
     const at::Tensor &d_scale_o_const = at::Tensor();
+    const at::Tensor &p_scale_const = p_scale.value_or(at::Tensor());
+    const at::Tensor &ds_scale_const = ds_scale.value_or(at::Tensor());
     const at::Tensor &softmax_max_const = softmax_max.value_or(at::Tensor());
     const at::Tensor &softmax_sum_const = softmax_sum.value_or(at::Tensor());
     const at::Tensor &softmax_const = softmax_in.value_or(at::Tensor());
@@ -230,6 +233,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     at::Tensor format_softmax = format_trans(softmax_const);
     at::Tensor format_attention = format_trans(attention_const);
     at::Tensor format_sink = format_trans(sink_const);
+    at::Tensor format_p_scale = format_trans(p_scale_const);
+    at::Tensor format_ds_scale = format_trans(ds_scale_const);
     at::Tensor dq = OpPreparation::apply_tensor_without_format(format_query);
     at::Tensor dk = OpPreparation::apply_tensor_without_format(format_key);
     at::Tensor dv = OpPreparation::apply_tensor_without_format(format_value);
@@ -238,8 +243,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     at::Tensor dq_rope;
     at::Tensor dk_rope;
     if (is_fp8) {
-        TORCH_CHECK(d_scale_q.has_value() || d_scale_k.has_value() || d_scale_v.has_value(),
-                    "No fp8-related d_scale_q, d_scale_k, or d_scale_v inputs.", OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(d_scale_q.has_value() || d_scale_k.has_value() || d_scale_v.has_value() || d_scale_dy.has_value(),
+                    "No fp8-related d_scale_q, d_scale_k, d_scale_v or d_scale_dy inputs.", OPS_ERROR(ErrCode::PARAM));
         if (out_dtype == 0) {
             dq = OpPreparation::apply_tensor_without_format(format_query.sizes(), format_query.options().dtype(at::kHalf));
             dk = OpPreparation::apply_tensor_without_format(format_key.sizes(), format_key.options().dtype(at::kHalf));
@@ -351,20 +356,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         char softmax_layout_char[LAYOUT_MAX_LENGTH];
         strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
         softmax_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
-        bool use_wrapper = is_fp8 && query_dtype.has_value();
-        if (use_wrapper) {
+        if (is_fp8) {
             TensorWrapper query_wrapper = make_wrapper(format_query, query_dtype);
             TensorWrapper key_wrapper = make_wrapper(format_key, query_dtype);
             TensorWrapper value_wrapper = make_wrapper(format_value, query_dtype);
-            EXEC_NPU_CMD(
-                aclnnFlashAttentionScoreGradV4, query_wrapper, key_wrapper, value_wrapper, format_dy,
-                format_pse, format_drop_mask, format_padding_mask, format_atten_mask, format_softmax_max,
-                format_softmax_sum, format_softmax, format_attention, format_sink, format_query_rope, format_key_rope,
-                format_d_scale_q, format_d_scale_k, format_d_scale_v, format_d_scale_dy, format_d_scale_o,
-                prefixN, ac_seq_qlen, ac_seq_kvlen,
-                q_start_idx_val, kv_start_idx_val, scale_value, keep_prob, pre_tokens, next_tokens, head_num,
-                input_layout_char, softmax_layout_char, inner_precise, sparse_mode, pse_type, seed, offset, out_dtype,
-                dq, dk, dv, dq_rope, dk_rope, dpse, dsink);
+            TensorWrapper dy_wrapper = make_wrapper(format_dy, query_dtype);
+            EXEC_NPU_CMD(aclnnQuantFlashAttentionScoreGrad, query_wrapper,
+                         key_wrapper, value_wrapper, dy_wrapper,
+                         format_atten_mask, format_softmax_max,
+                         format_softmax_sum, format_attention, format_d_scale_q,
+                         format_d_scale_k, format_d_scale_v, format_d_scale_dy,
+                         format_ds_scale, format_p_scale, scale_value,
+                         pre_tokens, next_tokens, head_num, input_layout_char,
+                         sparse_mode, out_dtype, dq, dk, dv);
         } else {
             EXEC_NPU_CMD(
                 aclnnFlashAttentionScoreGradV4, format_query, format_key, format_value, format_dy,
@@ -411,6 +415,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     const c10::optional<at::Tensor> &d_scale_q,
     const c10::optional<at::Tensor> &d_scale_k,
     const c10::optional<at::Tensor> &d_scale_v,
+    const c10::optional<at::Tensor> &d_scale_dy,
     const c10::optional<at::Tensor> &softmax_max,
     const c10::optional<at::Tensor> &softmax_sum,
     const c10::optional<at::Tensor> &softmax_in,
@@ -438,6 +443,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     c10::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink,
     c10::optional<int64_t> query_quant_mode,
+    const c10::optional<at::Tensor> &p_scale,
+    const c10::optional<at::Tensor> &ds_scale,
     c10::optional<int64_t> query_dtype,
     bool is_fp8)
 {
@@ -500,9 +507,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     }
     auto result = npu_fusion_attention_backward_common(query,
         key, value, dy, head_num, input_layout_str, pse, drop_mask, padding_mask, atten_mask, d_scale_q, d_scale_k,
-        d_scale_v, softmax_max, softmax_sum, softmax_in, attention_in, query_rope, key_rope,
+        d_scale_v, d_scale_dy, softmax_max, softmax_sum, softmax_in, attention_in, query_rope, key_rope,
         scale_value, keep_prob, pre_tokens, next_tokens, inner_precise, seed, offset, prefix, actual_seq_qlen, actual_seq_kvlen,
-        q_start_idx, kv_start_idx, sparse_mode, out_dtype_val, pse_type, softmax_layout, sink, query_quant_mode, query_dtype, is_fp8);
+        q_start_idx, kv_start_idx, sparse_mode, out_dtype_val, pse_type, softmax_layout, sink, query_quant_mode, p_scale, ds_scale, query_dtype, is_fp8);
     if (!sync) {
         c10_npu::NPUEvent npu_event;
         npu_event.record(c10_npu::getCurrentNPUStream());
@@ -551,81 +558,85 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     const at::Tensor &d_scale_q = at::Tensor();
     const at::Tensor &d_scale_k = at::Tensor();
     const at::Tensor &d_scale_v = at::Tensor();
+    const at::Tensor &d_scale_dy = at::Tensor();
+    const at::Tensor &p_scale = at::Tensor();
+    const at::Tensor &ds_scale = at::Tensor();
     auto out_dtype = 0;
     bool query_quant_mode = 0;
     bool query_dtype = 0;
     bool is_fp8 = false;
     auto result = npu_fusion_attention_grad_common(query, key, value, dy, head_num, input_layout, pse, padding_mask,
-        atten_mask, d_scale_q, d_scale_k, d_scale_v, softmax_max, softmax_sum, softmax_in, attention_in, query_rope,
+        atten_mask, d_scale_q, d_scale_k, d_scale_v, d_scale_dy, softmax_max, softmax_sum, softmax_in, attention_in, query_rope,
         key_rope, scale_value, keep_prob, pre_tokens, next_tokens, inner_precise, seed, offset, numels, prefix,
         actual_seq_qlen, actual_seq_kvlen, sparse_mode, out_dtype, gen_mask_parallel, sync, pse_type, q_start_idx,
-        kv_start_idx, softmax_layout, sink, query_quant_mode, query_dtype, is_fp8);
+        kv_start_idx, softmax_layout, sink, query_quant_mode, p_scale, ds_scale, query_dtype, is_fp8);
 
     return result;
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_quant_fusion_attention_grad(
-    const at::Tensor &query,
-    const at::Tensor &key,
-    const at::Tensor &value,
-    const at::Tensor &dy,
-    int64_t head_num,
-    c10::string_view input_layout,
-    const c10::optional<at::Tensor> &pse,
-    const c10::optional<at::Tensor> &padding_mask,
-    const c10::optional<at::Tensor> &atten_mask,
-    const c10::optional<at::Tensor> &d_scale_q,
-    const c10::optional<at::Tensor> &d_scale_k,
-    const c10::optional<at::Tensor> &d_scale_v,
+    const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
+    const at::Tensor &dy, int64_t head_num, c10::string_view input_layout,
+    const at::Tensor &d_scale_q, const at::Tensor &d_scale_k,
+    const at::Tensor &d_scale_v, const at::Tensor &d_scale_dy,
+    const c10::optional<at::Tensor> &p_scale,
+    const c10::optional<at::Tensor> &ds_scale,
     const c10::optional<at::Tensor> &softmax_max,
     const c10::optional<at::Tensor> &softmax_sum,
-    const c10::optional<at::Tensor> &softmax_in,
-    const c10::optional<at::Tensor> &attention_in,
-    const c10::optional<at::Tensor> &query_rope,
-    const c10::optional<at::Tensor> &key_rope,
-    double scale_value,
-    double keep_prob,
-    int64_t pre_tokens,
-    int64_t next_tokens,
-    int64_t inner_precise,
-    int64_t seed,
-    int64_t offset,
-    int64_t numels,
-    c10::OptionalIntArrayRef prefix,
-    c10::OptionalIntArrayRef actual_seq_qlen,
-    c10::OptionalIntArrayRef actual_seq_kvlen,
-    int64_t sparse_mode,
-    c10::optional<int64_t> out_dtype,
-    bool gen_mask_parallel,
-    bool sync,
-    int64_t pse_type,
-    c10::OptionalIntArrayRef q_start_idx,
-    c10::OptionalIntArrayRef kv_start_idx,
-    c10::string_view softmax_layout,
-    const c10::optional<at::Tensor> &sink,
-    c10::optional<int64_t> query_quant_mode,
+    const c10::optional<at::Tensor> &attention_in, double scale_value,
     c10::optional<int64_t> query_dtype)
 {
+    const at::Tensor &pse = at::Tensor();
+    const at::Tensor &padding_mask = at::Tensor();
+    const at::Tensor &atten_mask = at::Tensor();
+    const at::Tensor &softmax_in = at::Tensor();
+    const at::Tensor &query_rope = at::Tensor();
+    const at::Tensor &key_rope = at::Tensor();
+    double keep_prob = 1.0;
+    int64_t pre_tokens = 2147483647;
+    int64_t next_tokens = 2147483647;
+    int64_t inner_precise = 0;
+    int64_t seed = 0;
+    int64_t offset = 0;
+    int64_t numels = 0;
+    c10::OptionalIntArrayRef prefix = c10::nullopt;
+    c10::OptionalIntArrayRef actual_seq_qlen = c10::nullopt;
+    c10::OptionalIntArrayRef actual_seq_kvlen = c10::nullopt;
+    int64_t sparse_mode = 0;
+    auto out_dtype = 1;
+    bool gen_mask_parallel = true;
+    bool sync = false;
+    int64_t pse_type = 1;
+    c10::OptionalIntArrayRef q_start_idx = c10::nullopt;
+    c10::OptionalIntArrayRef kv_start_idx = c10::nullopt;
+    c10::string_view softmax_layout = "";
+    const c10::optional<at::Tensor> &sink = at::Tensor();
+    auto query_quant_mode = 0;
+
     bool is_fp8 = true;
-    auto result = npu_fusion_attention_grad_common(query, key, value, dy, head_num, input_layout, pse, padding_mask,
-        atten_mask, d_scale_q, d_scale_k, d_scale_v, softmax_max, softmax_sum, softmax_in, attention_in, query_rope,
-        key_rope, scale_value, keep_prob, pre_tokens, next_tokens, inner_precise, seed, offset, numels, prefix,
-        actual_seq_qlen, actual_seq_kvlen, sparse_mode, out_dtype, gen_mask_parallel, sync, pse_type, q_start_idx,
-        kv_start_idx, softmax_layout, sink, query_quant_mode, query_dtype, is_fp8);
+    auto result = npu_fusion_attention_grad_common(
+        query, key, value, dy, head_num, input_layout, pse, padding_mask,
+        atten_mask, d_scale_q, d_scale_k, d_scale_v, d_scale_dy, softmax_max,
+        softmax_sum, softmax_in, attention_in, query_rope, key_rope,
+        scale_value, keep_prob, pre_tokens, next_tokens, inner_precise, seed,
+        offset, numels, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode,
+        out_dtype, gen_mask_parallel, sync, pse_type, q_start_idx, kv_start_idx,
+        softmax_layout, sink, query_quant_mode, p_scale, ds_scale, query_dtype,
+        is_fp8);
     return result;
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int64_t> npu_fusion_attention_common(
-    const at::Tensor &query, const at::Tensor &key,
-    const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
+    const at::Tensor &query, const at::Tensor &key, const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
     const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask, const c10::optional<at::Tensor> &query_rope, const c10::optional<at::Tensor> &key_rope,
-    const c10::optional<at::Tensor> &d_scale_q_opt, const c10::optional<at::Tensor> &d_scale_k_opt, const c10::optional<at::Tensor> &d_scale_v_opt,
-    double scale, double keep_prob, int64_t pre_tokens,
-    int64_t next_tokens, int64_t inner_precise, c10::OptionalIntArrayRef prefix, c10::OptionalIntArrayRef actual_seq_qlen,
+    const c10::optional<at::Tensor> &d_scale_q_opt, const c10::optional<at::Tensor> &d_scale_k_opt,
+    const c10::optional<at::Tensor> &d_scale_v_opt, const c10::optional<at::Tensor> &p_scale_opt, double scale, double keep_prob,
+    int64_t pre_tokens, int64_t next_tokens, int64_t inner_precise, c10::OptionalIntArrayRef prefix, c10::OptionalIntArrayRef actual_seq_qlen,
     c10::OptionalIntArrayRef actual_seq_kvlen, int64_t sparse_mode, c10::optional<int64_t> out_dtype, bool gen_mask_parallel, bool sync,
     int64_t pse_type, c10::OptionalIntArrayRef q_start_idx, c10::OptionalIntArrayRef kv_start_idx,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink, c10::optional<int64_t> query_quant_mode, c10::optional<int64_t> query_dtype, bool is_fp8)
+    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink, c10::optional<int64_t> query_quant_mode,
+    c10::optional<int64_t> query_dtype, bool is_fp8)
 {
     const at::Tensor &pse_const = pse.value_or(at::Tensor());
     const at::Tensor &padding_mask_const = padding_mask.value_or(at::Tensor());
@@ -636,6 +647,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const at::Tensor &d_scale_q = d_scale_q_opt.value_or(at::Tensor());
     const at::Tensor &d_scale_k = d_scale_k_opt.value_or(at::Tensor());
     const at::Tensor &d_scale_v = d_scale_v_opt.value_or(at::Tensor());
+    const at::Tensor &p_scale = p_scale_opt.value_or(at::Tensor());
     auto prefixN = prefix.value_or(at::IntArrayRef{});
     auto ac_seq_qlen = actual_seq_qlen.value_or(at::IntArrayRef{});
     auto ac_seq_kvlen = actual_seq_kvlen.value_or(at::IntArrayRef{});
@@ -782,19 +794,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     at::Tensor format_d_scale_q = format_trans(d_scale_q);
     at::Tensor format_d_scale_k = format_trans(d_scale_k);
     at::Tensor format_d_scale_v = format_trans(d_scale_v);
+    at::Tensor format_p_scale = format_trans(p_scale);
 
     at::Tensor attention_score;
     at::Tensor softmax_out;
     if (is_fp8) {
-        TORCH_CHECK(d_scale_q_opt.has_value() || d_scale_k_opt.has_value() || d_scale_v_opt.has_value(),
-                    "No fp8-related d_scale_q_opt, d_scale_k_opt, or d_scale_v_opt inputs.", OPS_ERROR(ErrCode::PARAM));
-        if (out_dtype_val == 0) {
-            attention_score = OpPreparation::apply_tensor_without_format(tmp_output.sizes(), query.options().dtype(at::kHalf));
-            softmax_out = at::empty({0}, query.options().dtype(at::kHalf));
-        } else {
-            attention_score = OpPreparation::apply_tensor_without_format(tmp_output.sizes(), query.options().dtype(at::kBFloat16));
-            softmax_out = at::empty({0}, query.options().dtype(at::kBFloat16));
-        }
+        TORCH_CHECK(d_scale_q_opt.has_value() || d_scale_k_opt.has_value() || d_scale_v_opt.has_value() || p_scale_opt.has_value(),
+                    "No fp8-related d_scale_q_opt, d_scale_k_opt, d_scale_v_opt or p_scale_opt inputs.", OPS_ERROR(ErrCode::PARAM));
+        attention_score = OpPreparation::apply_tensor_without_format(tmp_output.sizes(), query.options().dtype(at::kBFloat16));
+        softmax_out = at::empty({0}, query.options().dtype(at::kBFloat16));
     } else {
         attention_score = npu_preparation::apply_tensor_without_format(atten_score_shape, query.options());
         softmax_out = at::empty({0}, query.options());
@@ -823,10 +831,17 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     at::Tensor softmax_sum;
 
     if (input_layout_str != "TND") {
-        softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, SOFTMAXMAX_LAST_DIMSHAPE},
-            query.options().dtype(at::kFloat)); // [B, N, S0, 8]
-        softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, SOFTMAXMAX_LAST_DIMSHAPE},
-            query.options().dtype(at::kFloat)); // [B, N, S0, 8]
+        if (is_fp8) {
+            softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, 1},
+                query.options().dtype(at::kFloat)); // [B, N, S0, 1]
+            softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, 1},
+                query.options().dtype(at::kFloat)); // [B, N, S0, 1]
+        } else {
+            softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, SOFTMAXMAX_LAST_DIMSHAPE},
+                query.options().dtype(at::kFloat)); // [B, N, S0, 8]
+            softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, SOFTMAXMAX_LAST_DIMSHAPE},
+                query.options().dtype(at::kFloat)); // [B, N, S0, 8]
+        }
     } else {
         softmax_max = OpPreparation::apply_tensor_without_format({T, N_local, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [T, N, 8]
@@ -897,17 +912,21 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         char softmax_layout_char[LAYOUT_MAX_LENGTH];
         strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
         softmax_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
-        bool use_wrapper = is_fp8 && query_dtype.has_value();
-        if (use_wrapper) {
-            TensorWrapper query_wrapper = make_wrapper(format_query, query_dtype);
-            TensorWrapper key_wrapper = make_wrapper(format_key, query_dtype);
-            TensorWrapper value_wrapper = make_wrapper(format_value, query_dtype);
-            EXEC_NPU_CMD(
-                aclnnFlashAttentionScoreV4, query_wrapper, key_wrapper, value_wrapper,
-                format_pse, format_drop_mask, format_padding_mask, format_atten_mask, format_query_rope, format_key_rope,
-                format_d_scale_q, format_d_scale_k, format_d_scale_v, format_sink, prefixN, ac_seq_qlen, ac_seq_kvlen, q_start_idx_val,
-                kv_start_idx_val, scale, keep_prob, pre_tokens, next_tokens, head_num, input_layout_char, inner_precise,
-                sparse_mode, out_dtype_val, pse_type, softmax_layout_char, seed, offset, softmax_max, softmax_sum, softmax_out, attention_score);
+        if (is_fp8) {
+            if (query_dtype.has_value()) {
+                TensorWrapper query_wrapper = make_wrapper(format_query, query_dtype);
+                TensorWrapper key_wrapper = make_wrapper(format_key, query_dtype);
+                TensorWrapper value_wrapper = make_wrapper(format_value, query_dtype);
+                EXEC_NPU_CMD(
+                    aclnnQuantFlashAttentionScore, query_wrapper, key_wrapper, value_wrapper, format_atten_mask, format_d_scale_q,
+                    format_d_scale_k, format_d_scale_v, format_p_scale, scale, pre_tokens, next_tokens, head_num, input_layout_char,
+                    sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
+            } else {
+                EXEC_NPU_CMD(
+                    aclnnQuantFlashAttentionScore, format_query, format_key, format_value, format_atten_mask, format_d_scale_q,
+                    format_d_scale_k, format_d_scale_v, format_p_scale, scale, pre_tokens, next_tokens, head_num, input_layout_char,
+                    sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
+            }
         } else {
             EXEC_NPU_CMD(
                 aclnnFlashAttentionScoreV4, format_query, format_key, format_value,
@@ -945,12 +964,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const at::Tensor &d_scale_q_opt = at::Tensor();
     const at::Tensor &d_scale_k_opt = at::Tensor();
     const at::Tensor &d_scale_v_opt = at::Tensor();
+    const at::Tensor &p_scale_opt = at::Tensor();
     auto out_dtype = 0;
     bool query_quant_mode = 0;
     bool query_dtype = 0;
     bool is_fp8 = false;
     auto result = npu_fusion_attention_common(query, key, value, head_num, input_layout, pse, padding_mask, atten_mask,
-        query_rope, key_rope, d_scale_q_opt, d_scale_k_opt, d_scale_v_opt, scale, keep_prob, pre_tokens, next_tokens,
+        query_rope, key_rope, d_scale_q_opt, d_scale_k_opt, d_scale_v_opt, p_scale_opt, scale, keep_prob, pre_tokens, next_tokens,
         inner_precise, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode, out_dtype, gen_mask_parallel, sync,
         pse_type, q_start_idx, kv_start_idx, softmax_layout, sink, query_quant_mode, query_dtype, is_fp8);
 
@@ -958,20 +978,35 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int64_t> npu_quant_fusion_attention(
-    const at::Tensor &query, const at::Tensor &key,
-    const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
-    const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &padding_mask,
-    const c10::optional<at::Tensor> &atten_mask, const c10::optional<at::Tensor> &query_rope, const c10::optional<at::Tensor> &key_rope,
-    const c10::optional<at::Tensor> &d_scale_q_opt, const c10::optional<at::Tensor> &d_scale_k_opt, const c10::optional<at::Tensor> &d_scale_v_opt,
-    double scale, double keep_prob, int64_t pre_tokens,
-    int64_t next_tokens, int64_t inner_precise, c10::OptionalIntArrayRef prefix, c10::OptionalIntArrayRef actual_seq_qlen,
-    c10::OptionalIntArrayRef actual_seq_kvlen, int64_t sparse_mode, c10::optional<int64_t> out_dtype, bool gen_mask_parallel, bool sync,
-    int64_t pse_type, c10::OptionalIntArrayRef q_start_idx, c10::OptionalIntArrayRef kv_start_idx,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink, c10::optional<int64_t> query_quant_mode, c10::optional<int64_t> query_dtype)
+    const at::Tensor &query, const at::Tensor &key, const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
+    const at::Tensor &d_scale_q, const at::Tensor &d_scale_k, const at::Tensor &d_scale_v, const c10::optional<at::Tensor> &p_scale,
+    double scale, c10::optional<int64_t> query_dtype)
 {
     bool is_fp8 = true;
+    float keep_prob = 1.0f;
+    int pre_tokens = 2147483647;
+    int next_tokens = 2147483647;
+    int inner_precise = 0;
+    int sparse_mode = 0;
+    int pse_type = 1;
+    c10::string_view softmax_layout = "";
+    const at::Tensor &pse = at::Tensor();
+    const at::Tensor &padding_mask = at::Tensor();
+    const at::Tensor &atten_mask = at::Tensor();
+    const at::Tensor &query_rope = at::Tensor();
+    const at::Tensor &key_rope = at::Tensor();
+    const at::Tensor &sink = at::Tensor();
+    auto prefix = at::IntArrayRef{};
+    auto actual_seq_qlen = at::IntArrayRef{};
+    auto actual_seq_kvlen = at::IntArrayRef{};
+    auto q_start_idx = at::IntArrayRef{};
+    auto kv_start_idx = at::IntArrayRef{};
+    auto out_dtype = 0;
+    bool gen_mask_parallel = false;
+    bool sync = false;
+    bool query_quant_mode = 0;
     auto result = npu_fusion_attention_common(query, key, value, head_num, input_layout, pse, padding_mask, atten_mask,
-        query_rope, key_rope, d_scale_q_opt, d_scale_k_opt, d_scale_v_opt, scale, keep_prob, pre_tokens, next_tokens,
+        query_rope, key_rope, d_scale_q, d_scale_k, d_scale_v, p_scale, scale, keep_prob, pre_tokens, next_tokens,
         inner_precise, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode, out_dtype, gen_mask_parallel, sync,
         pse_type, q_start_idx, kv_start_idx, softmax_layout, sink, query_quant_mode, query_dtype, is_fp8);
     return result;
