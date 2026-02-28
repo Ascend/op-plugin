@@ -72,19 +72,23 @@ at::Tensor npu_grouped_matmul_finalize_routing(
     TORCH_CHECK(x_dim_num == EXPECTED_X_DIM && w_dim_num == EXPECTED_W_DIM,
                 "x dim is ", EXPECTED_X_DIM, " weight dim is ", EXPECTED_W_DIM,
                 OPS_ERROR(ErrCode::PARAM));
-    
+
     if (x_dtype.has_value()) {
-        TORCH_CHECK(x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
-                    "The optional parameter x_dtype only supports float4_e2m1fn_x2 or None, but now is ",
-                    c10_npu::CustomDataTypeToString(x_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
+        TORCH_CHECK(x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
+                        x_dtype.value() == static_cast<int64_t>(c10_npu::DType::HIFLOAT8),
+            "The optional parameter x_dtype only supports float4_e2m1fn_x2, hifloat8 or None, but now is ",
+            c10_npu::CustomDataTypeToString(x_dtype.value()),
+            "." + OPS_ERROR(ErrCode::VALUE));
     }
 
     if (w_dtype.has_value()) {
-        TORCH_CHECK(w_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
-                    "The optional parameter w_dtype only supports float4_e2m1fn_x2 or None, but now is ",
-                    c10_npu::CustomDataTypeToString(w_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
+        TORCH_CHECK(w_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
+                        w_dtype.value() == static_cast<int64_t>(c10_npu::DType::HIFLOAT8),
+            "The optional parameter w_dtype only supports float4_e2m1fn_x2, hifloat8 or None, but now is ",
+            c10_npu::CustomDataTypeToString(w_dtype.value()),
+            "." + OPS_ERROR(ErrCode::VALUE));
     }
-    
+
     if (scale_dtype.has_value()) {
         TORCH_CHECK(scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0),
                     "The optional parameter scale_dtype only supports float8_e8m0fnu or None, but now is ",

@@ -2922,13 +2922,13 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
 
     if x_dtype is not None:
         torch._check(
-            x_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "x_dtype supports float4_e2m1fn_x2 for now, but it is " + npu_dtype_to_str(x_dtype),
+            x_dtype == torch_npu.hifloat8 or x_dtype == torch_npu.float4_e2m1fn_x2,
+            lambda: "x_dtype supports float4_e2m1fn_x2 or hifloat8 for now, but it is " + npu_dtype_to_str(x_dtype),
         )
     if w_dtype is not None:
         torch._check(
-            w_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "weight_dtype only supports float4_e2m1fn_x2  for now, but it is " + npu_dtype_to_str(w_dtype),
+            w_dtype == torch_npu.hifloat8 or w_dtype == torch_npu.float4_e2m1fn_x2,
+            lambda: "weight_dtype only supports float4_e2m1fn_x2 or hifloat8 for now, but it is " + npu_dtype_to_str(w_dtype),
         )
     if scale_dtype is not None:
         torch._check(
