@@ -999,8 +999,8 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         lambda: "expert_tokens_num_flag is None or invalid. must be in [True, False]"
     )
     torch._check(
-        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3],
-        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3]"
+        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3, 7, 8],
+        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3, 7, 8]"
     )
     torch._check(
         row_idx_type is not None and isinstance(row_idx_type, int) and row_idx_type in [0, 1],
@@ -1050,7 +1050,12 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
                 x.size(1) == scale.size(1),
                 lambda: "the 2nd dim of scale should be the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
             )
-        # else: quant_mode为2、3时不使用scale也不需要校验
+        if quant_mode == 7:
+            torch._check(
+                scale_dim == 1,
+                lambda: "the scale shape support only 1D (bs,) in no quant mode" + ops_error(ErrCode.VALUE),
+            )
+        # else: quant_mode为2、3、8时不使用scale也不需要校验
 
     bs = x.size(0)
     h = x.size(1)
@@ -1066,6 +1071,9 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     elif quant_mode == 3:
         expanded_x_dtype = torch.float8_e4m3fn
         expanded_scale_dtype = torch.float8_e8m0fnu
+    elif quant_mode in [7, 8]:
+        expanded_x_dtype = torch.uint8
+        expanded_scale_dtype = torch.float32
 
     if drop_pad_mode == 1:
         expanded_x_dim_list = [expert_num, expert_capacity, h]
@@ -1079,9 +1087,9 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
             scale_cols = (h + MXQUANT_BLOCK_SIZE - 1) // MXQUANT_BLOCK_SIZE
             scale_cols = (scale_cols + PAD_TO_EVEN_FACTOR - 1) // PAD_TO_EVEN_FACTOR * PAD_TO_EVEN_FACTOR
             expanded_scale_dim_list = [num_expanded_rows, scale_cols]
-        elif quant_mode in [-1, 1]: # quant_mode in [-1, 0, 1]
+        elif quant_mode in [-1, 1, 8]: # quant_mode in [-1, 1, 8]
             expanded_scale_dim_list = [num_expanded_rows]
-    if quant_mode == 0:
+    if quant_mode in [0, 7]:
         expanded_scale_dim_list = []
 
     expanded_row_idx_dim_list = [bs * k]
