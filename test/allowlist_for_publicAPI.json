@@ -124,6 +124,7 @@
       "npu_alltoallv_gmm",
       "npu_alltoallv_quant_gmm",
       "npu_gmm_alltoallv",
+      "npu_quant_gmm_alltoallv",
       "npu_nsa_compress",
       "npu_nsa_compress_infer",
       "npu_nsa_compress_attention",
