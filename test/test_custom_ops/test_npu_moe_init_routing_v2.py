@@ -10,15 +10,15 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 def numpy_hifloat8():
-        try:
-            from en_dtypes import hifloat8
-            return hifloat8
-        except ModuleNotFoundError:
-            raise RuntimeError("en_dtypes is needed to support hifloat8 dtype!!! "
-                               "Please install with `pip3 install en-dtypes`")
-        except ImportError:
-            raise RuntimeError("Please upgrade en_dtypes to v0.0.3 at least to support hifloat8 dtype!!! "
-                               "Command is `pip3 install --upgrade en-dtypes`")
+    try:
+        from en_dtypes import hifloat8
+        return hifloat8
+    except ModuleNotFoundError:
+        raise RuntimeError("en_dtypes is needed to support hifloat8 dtype!!! "
+                        "Please install with `pip3 install en-dtypes`")
+    except ImportError:
+        raise RuntimeError("Please upgrade en_dtypes to v0.0.3 at least to support hifloat8 dtype!!! "
+                        "Command is `pip3 install --upgrade en-dtypes`")
 
 def numpy_to_torch(np_arr):
     FP8_DTYPE_MAP_NUMPY_TO_TORCH = {
@@ -26,7 +26,7 @@ def numpy_to_torch(np_arr):
         "float8_e5m2": torch.float8_e5m2,
         "float8_e4m3fn": torch.float8_e4m3fn,
         "float8_e8m0": None if not hasattr(torch, "float8_e8m0fnu") else getattr(torch, "float8_e8m0fnu"),
-        "hifloat8": torch_npu.hifloat8
+        "hifloat8": torch_npu.hifloat8,
     }
 
     def _bitcast_float8_to_torch(np_arr):
@@ -432,6 +432,9 @@ class TestNpuMoeInitRoutingV2(TestCase):
             expanded_scale = expanded_scale.reshape(
                 *ess[:-2], ess[-2] * ess[-1])
         
+        elif quant_mode == 6:
+            expanded_x = expanded_x.astype(numpy_hifloat8())
+            expanded_scale = None
         elif quant_mode == 7:
             HIFLOAT8_MIN = -32768.0
             HIFLOAT8_MAX = 32768.0            
@@ -452,10 +455,8 @@ class TestNpuMoeInitRoutingV2(TestCase):
             x_max_per_token = np.max(x_abs, axis=-1, keepdims=True)
             expanded_scale = x_max_per_token / 32768.0
 
-            if np.all(expand_scale == 0):
-                expanded_x = expanded_x
-            else:
-                expanded_x = expanded_x / expanded_scale 
+            expand_scale_safe = np.where(expanded_scale == 0, 1.0, expanded_scale)
+            expanded_x = expanded_x / expand_scale_safe
             expanded_x = np.clip(expanded_x, HIFLOAT8_MIN, HIFLOAT8_MAX)
             expanded_x = expanded_x.astype(numpy_hifloat8(), copy=False)
 
@@ -466,7 +467,7 @@ class TestNpuMoeInitRoutingV2(TestCase):
 
         return expanded_x, expanded_row_idx.astype(np.int32), expert_tokens_count, expanded_scale
 
-    def npu_op_exec(self, x, expert_idx, scale, offset, active_expert_range, quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity):
+    def npu_op_exec(self, x, expert_idx, scale, offset, active_expert_range, quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity, x_dtype=None):
         bs = x.shape[0]
         k = expert_idx.shape[1]
         expert_num = 32
@@ -475,7 +476,8 @@ class TestNpuMoeInitRoutingV2(TestCase):
             active_num=active_num, expert_capacity=expert_capacity, expert_num=expert_num,
             drop_pad_mode=drop_pad_mode,
             expert_tokens_num_type=expert_tokens_num_type, expert_tokens_num_flag=expert_tokens_num_flag,
-            active_expert_range=active_expert_range, quant_mode=quant_mode, row_idx_type=row_idx_type
+            active_expert_range=active_expert_range, quant_mode=quant_mode, row_idx_type=row_idx_type,
+            x_dtype=x_dtype
         )
         return expanded_x, expanded_row_idx, expert_token_cumsum_or_count, expanded_scale
 
@@ -523,12 +525,12 @@ class TestNpuMoeInitRoutingV2(TestCase):
         return x, expert_idx, scale, offset, x_npu, expert_idx_npu, scale_npu, offset_npu, expert_tokens_num_type, row_idx_type, active_num, expert_capacity
 
     def calc_npu_vs_golden(self, x, expert_idx, scale, offset,
-                           x_npu, expert_idx_npu, scale_npu, offset_npu,
-                           expert_range, quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity):
+                           x_npu, expert_idx_npu, scale_npu, offset_npu, expert_range, 
+                           quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity, x_dtype=None):
         expanded_x_npu, expanded_row_idx_npu, expert_tokens_count_npu, expanded_scale_npu = self.npu_op_exec(
             x_npu, expert_idx_npu, scale=scale_npu, offset=offset_npu,
             active_expert_range=expert_range, quant_mode=quant_mode, row_idx_type=row_idx_type, expert_tokens_num_flag=expert_tokens_num_flag, expert_tokens_num_type=expert_tokens_num_type,
-            drop_pad_mode=drop_pad_mode, active_num=active_num, expert_capacity=expert_capacity)
+            drop_pad_mode=drop_pad_mode, active_num=active_num, expert_capacity=expert_capacity, x_dtype=x_dtype)
         expanded_x, expanded_row_idx, expert_tokens_count, expanded_scale = self.cpu_op_exec(
             x, expert_idx, scale=scale, offset=offset,
             expert_range=expert_range, quant_mode=quant_mode, row_idx_type=row_idx_type, expert_tokens_num_flag=expert_tokens_num_flag, expert_tokens_num_type=expert_tokens_num_type,
@@ -566,7 +568,7 @@ class TestNpuMoeInitRoutingV2(TestCase):
         drop_pad_mode_list = [0, 1]
         row_idx_type_list = [0, 1]
         expert_tokens_num_flags = [True, False]
-        dtype_list = [np.int8, np.float16, np.float32, torch.bfloat16]
+        dtype_list = [np.int8, np.float16, np.float32, torch.bfloat16, torch_npu.hifloat8]
         none_scales = [True, False]
         none_offsets = [True]
         for bs, h, k, expert_range, quant_mode, row_idx_type, dtype, none_scale, none_offset, expert_tokens_num_flag, drop_pad_mode in itertools.product(
@@ -578,11 +580,14 @@ class TestNpuMoeInitRoutingV2(TestCase):
                 bs, h, k, dtype, scale_shape, none_scale, none_offset, drop_pad_mode)
             if drop_pad_mode == 1 or expert_tokens_num_flag == False or expert_tokens_num_type == 0:
                 continue
+            x_dtype = None
+            if dtype == torch_npu.hifloat8:
+                x_dtype = torch_npu.hifloat8
             expanded_x, local_expanded_x_npu, expanded_row_idx, local_expanded_row_idx_npu, \
                 expert_tokens_count, local_expert_tokens_count_npu, expanded_scale, local_expanded_scale_npu \
                 = self.calc_npu_vs_golden(x, expert_idx, scale, offset,
                                           x_npu, expert_idx_npu, scale_npu, offset_npu,
-                                          expert_range, quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity)
+                                          expert_range, quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity, x_dtype)
 
             self.assertExpandedXRtolEqual(
                 expanded_x, local_expanded_x_npu, dtype)
@@ -663,6 +668,47 @@ class TestNpuMoeInitRoutingV2(TestCase):
 
             self.assertExpandedXRtolEqual(
                 expanded_x, local_expanded_x_npu, np.int8)
+            self.assertRtolEqual(
+                expanded_row_idx, local_expanded_row_idx_npu.numpy())
+            if expert_tokens_num_flag:
+                self.assertRtolEqual(expert_tokens_count,
+                                     local_expert_tokens_count_npu.numpy())
+            if none_scale:
+                return
+            self.assertRtolEqual(
+                expanded_scale, local_expanded_scale_npu.numpy())
+    
+    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    def test_npu_moe_init_routing_hif8_no_quant(self):
+        bs_list = [32]
+        h_list = [14, 200]
+        k_list = [5]
+        expert_range_list = [[0, 16]]
+        quant_mode_list = [-1]
+        drop_pad_mode_list = [0, 1]
+        row_idx_type_list = [0, 1]
+        expert_tokens_num_flags = [True, False]
+        dtype_list = [torch_npu.hifloat8]
+        none_scales = [True, False]
+        none_offsets = [True]
+        for bs, h, k, expert_range, quant_mode, row_idx_type, dtype, none_scale, none_offset, expert_tokens_num_flag, drop_pad_mode in itertools.product(
+                bs_list, h_list, k_list, expert_range_list, quant_mode_list, row_idx_type_list,
+                dtype_list, none_scales, none_offsets, expert_tokens_num_flags, drop_pad_mode_list):
+            scale_shape = (bs,)
+            expert_range = [0, 32] if drop_pad_mode == 1 else [0, 16]
+            x, expert_idx, scale, offset, x_npu, expert_idx_npu, scale_npu, offset_npu, expert_tokens_num_type, row_idx_type, active_num, expert_capacity = self.generate_inputs(
+                bs, h, k, dtype, scale_shape, none_scale, none_offset, drop_pad_mode)
+            if drop_pad_mode == 1 or expert_tokens_num_flag == False or expert_tokens_num_type == 0:
+                continue
+            x_dtype = torch_npu.hifloat8
+            expanded_x, local_expanded_x_npu, expanded_row_idx, local_expanded_row_idx_npu, \
+                expert_tokens_count, local_expert_tokens_count_npu, expanded_scale, local_expanded_scale_npu \
+                = self.calc_npu_vs_golden(x, expert_idx, scale, offset,
+                                          x_npu, expert_idx_npu, scale_npu, offset_npu, expert_range, 
+                                          quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity, x_dtype)
+
+            self.assertExpandedXRtolEqual(
+                expanded_x, local_expanded_x_npu, dtype)
             self.assertRtolEqual(
                 expanded_row_idx, local_expanded_row_idx_npu.numpy())
             if expert_tokens_num_flag:
