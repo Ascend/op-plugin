@@ -3,7 +3,7 @@ import numpy as np
 
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-
+from torch_npu.testing.common_utils import SupportedDevices
 
 class TestDeformableConv2d(TestCase):
     def create_single_npu_tensor(self, item, minvalue, maxvalue):
@@ -394,6 +394,23 @@ class TestDeformableConv2d(TestCase):
         self.assertRtolEqual(dcn_bk_golden_list[2].cpu().detach(), dcn_do.cpu().detach(), 0.0003)
         self.assertRtolEqual(dcn_bk_golden_list[3].cpu().detach(), dcn_db.cpu().detach())
 
+    @SupportedDevices(['Ascend950'])
+    def test_deformable_conv2d_opapi(self):
+        npu_x = self.create_single_npu_tensor([np.float32, 0, (1, 32, 32, 32)], 0, 10)
+        npu_w = self.create_single_npu_tensor([np.float32, 0, (32, 32, 5, 5)], 0, 10)
+        npu_o = self.create_single_npu_tensor([np.float32, 0, (1, 75, 32, 32)], 0, 10)
+        ksize = [5, 5]
+        strides = [1, 1, 1, 1]
+        pads = [2, 2, 2, 2]
+        dilations = [1, 1, 1, 1]
+        groups = 1
+
+        dcn_out, deformable_offsets_out = torch_npu.npu_deformable_conv2d(
+            npu_x, npu_w, npu_o, None, kernel_size=ksize, stride=strides, padding=pads)
+        args = (ksize, strides, pads, dilations, groups)
+        dcn_golden, deformable_offsets_golden = self.get_fwd_golden(npu_x, npu_w, npu_o, args)
+        self.assertRtolEqual(dcn_golden.cpu().detach(), dcn_out.cpu().detach())
+        self.assertRtolEqual(deformable_offsets_golden.cpu().detach(), deformable_offsets_out.cpu().detach())
 
 if __name__ == "__main__":
     np.random.seed(123)
