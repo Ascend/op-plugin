@@ -113,6 +113,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor& isin_out(const at::Tensor& elements, const at::Tensor &test_elements,
                      bool assume_unique, bool invert, at::Tensor& result)
 {
+    npu_preparation::check_tensor({elements, test_elements}, result, at::kBool, elements.sizes());
     isin_Tensor_Tensor_out_impl(elements, test_elements, assume_unique, invert, result);
     return result;
 }
