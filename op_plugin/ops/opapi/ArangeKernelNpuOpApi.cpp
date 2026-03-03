@@ -53,6 +53,8 @@ at::Tensor arange(const at::Scalar& start, const at::Scalar& end, const at::Scal
             auto step_value = step.to<accscalar_type>();
 
             TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero", OPS_ERROR(ErrCode::VALUE));
+            TORCH_CHECK(std::isfinite(static_cast<double>(start_value)) && std::isfinite(static_cast<double>(end_value)),
+                        "unsupported range: ", static_cast<double>(start_value), " -> ", static_cast<double>(end_value), OPS_ERROR(ErrCode::VALUE));
             TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) ||
                             ((step_value < 0) && (end_value <= start_value)),
                         "upper bound and larger bound inconsistent with step sign", OPS_ERROR(ErrCode::VALUE));
@@ -99,15 +101,23 @@ at::Tensor& arange_out(const at::Scalar& start, const at::Scalar& end, const at:
         auto step_value = step.to<accscalar_type>();
 
         TORCH_CHECK(step_value > 0 || step_value < 0, "step must be nonzero", OPS_ERROR(ErrCode::VALUE));
+        TORCH_CHECK(std::isfinite(static_cast<double>(start_value)) && std::isfinite(static_cast<double>(end_value)),
+                    "unsupported range: ", static_cast<double>(start_value), " -> ", static_cast<double>(end_value), OPS_ERROR(ErrCode::VALUE));
         TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) ||
                         ((step_value < 0) && (end_value <= start_value)),
                     "upper bound and larger bound inconsistent with step sign", OPS_ERROR(ErrCode::VALUE));
     });
 
     auto output_size = op_infer::infersize_arange(start, end, step, out.scalar_type());
-    if (out.numel() != output_size[0]) {
-        TORCH_NPU_WARN("The out tensor size does not match the computed size, it will resize to computed size (",
-                       output_size[0], ",).");
+    int64_t size = output_size[0];
+    int64_t numel = out.numel();
+    if (numel != size) {
+        if (numel > 0) {
+            TORCH_WARN("The number of elements in the out tensor of shape ", out.sizes(),
+                       " is ", numel, " which does not match the computed number of elements ", size,
+                       ". Note that this may occur as a result of rounding error. "
+                       "The out tensor will be resized to a tensor of shape (", size, ",).");
+        }
         out.resize_(output_size);
     }
     arange_out_op_api(start, end, step, out);

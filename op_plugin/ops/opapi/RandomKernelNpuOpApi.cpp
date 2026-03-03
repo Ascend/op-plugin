@@ -14,6 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <limits>
+#include <c10/core/ScalarTypeToTypeMeta.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
@@ -56,8 +58,65 @@ int64_t get_dtype_max_value(at::ScalarType dtype)
     return iter->second;
 }
 
+#define CHECK_OUT_OF_BOUNDS(var, name, min, max, dtype) \
+    TORCH_CHECK((var) >= (min) && (var) <= (max), (name), " is out of bounds for ", (dtype)); \
+
+#define WARN_OUT_OF_BOUNDS(var, name, digits, dtype) \
+    if ((var) < -(1LL << (digits)) || (var) > (1LL << (digits))) { \
+        TORCH_WARN((name), " is out of bounds [-(2^", (digits), "), 2^", (digits), "]. ", \
+            "Due to precision limitations ", (dtype), " can support discrete uniform distribution only within this range. ", \
+            "This warning will become an error in next release, please fix the code in advance"); \
+    }
+
+void check_random_bounds(caffe2::TypeMeta dtype, int64_t from, int64_t to)
+{
+    TORCH_CHECK(from < to, "random_ expects 'from' to be less than 'to', but got from=", from, " >= to=", to);
+
+    const auto scalar_type = c10::typeMetaToScalarType(dtype);
+    if (at::isFloatingType(scalar_type)) {
+        AT_DISPATCH_FLOATING_TYPES_AND2(at::ScalarType::Half, at::ScalarType::BFloat16, scalar_type, "check_random_fp_bounds", [&] {
+            const auto min = static_cast<double>(std::numeric_limits<scalar_t>::lowest());
+            const auto max = static_cast<double>(std::numeric_limits<scalar_t>::max());
+            CHECK_OUT_OF_BOUNDS(from, "from", min, max, dtype);
+            CHECK_OUT_OF_BOUNDS((to - 1), "to - 1", min, max, dtype);
+
+            constexpr auto digits = std::numeric_limits<scalar_t>::digits;
+            WARN_OUT_OF_BOUNDS(from, "from", digits, dtype);
+            WARN_OUT_OF_BOUNDS((to - 1), "to - 1", digits, dtype);
+        });
+    } else if (scalar_type == at::kUInt64) {
+        const auto min = static_cast<int64_t>(std::numeric_limits<uint64_t>::min());
+        const auto max = static_cast<int64_t>(std::numeric_limits<uint64_t>::max());
+        TORCH_CHECK(static_cast<uint64_t>(from) >= static_cast<uint64_t>(min) &&
+                        static_cast<uint64_t>(from) <= static_cast<uint64_t>(max),
+                    "from is out of bounds for ", dtype);
+        TORCH_CHECK(static_cast<uint64_t>(to - 1) >= static_cast<uint64_t>(min) &&
+                        static_cast<uint64_t>(to - 1) <= static_cast<uint64_t>(max),
+                    "to - 1 is out of bounds for ", dtype);
+    } else if (at::isIntegralType(scalar_type, true)) {
+        if (scalar_type == at::kBool) {
+            const auto min = 0;
+            const auto max = 1;
+            CHECK_OUT_OF_BOUNDS(from, "from", min, max, dtype);
+            CHECK_OUT_OF_BOUNDS((to - 1), "to - 1", min, max, dtype);
+        } else {
+            AT_DISPATCH_ALL_TYPES_AND2(at::kUInt16, at::kUInt32, scalar_type, "check_random_integral_bounds", [&] {
+                if constexpr (std::is_integral_v<scalar_t>) {
+                    const auto min = static_cast<int64_t>(std::numeric_limits<scalar_t>::lowest());
+                    const auto max = static_cast<int64_t>(std::numeric_limits<scalar_t>::max());
+                    CHECK_OUT_OF_BOUNDS(from, "from", min, max, dtype);
+                    CHECK_OUT_OF_BOUNDS((to - 1), "to - 1", min, max, dtype);
+                }
+            });
+        }
+    } else {
+        TORCH_CHECK(false, "check_random_bounds handles only integral, floating-point and boolean types");
+    }
+}
+
 at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::optional<at::Generator> generator)
 {
+    check_random_bounds(self.dtype(), from, to);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
     if (is_capture == c10_npu::CaptureStatus::None) {
