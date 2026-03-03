@@ -50,6 +50,9 @@ at::Tensor addmv(const at::Tensor &self, const at::Tensor &mat, const at::Tensor
     DO_COMPATIBILITY(aclnnAddmv, acl_op::addmv(self, mat, vec, beta, alpha));
     auto output_size = op_infer::addmv_npu_output_size(self, mat);
     at::ScalarType promote_dtype = at::native::result_type({self, mat, vec});
+    if ((!alpha.equal(1) || !beta.equal(1)) && promote_dtype == at::ScalarType::Bool) {
+        promote_dtype = at::ScalarType::Long;
+    }
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(promote_dtype));
     addmv_out_op_api(self, mat, vec, beta, alpha, result);
     at::namedinference::propagate_names_if_nonempty(result, names);
