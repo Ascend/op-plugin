@@ -86,7 +86,6 @@ tensor_list npu_top_k_top_p_sample(const at::Tensor &logits, const at::Tensor &t
 
     bool is_need_sample_result = false;
 
-    at::Tensor logits_select_idx = npu_preparation::apply_tensor_without_format({batch, }, logits.options().dtype(at::kLong));
     at::Tensor logits_top_kp_select = npu_preparation::apply_tensor_without_format({batch, voc_size}, logits.options().dtype(at::kFloat));
 
     at::Tensor logits_idx = npu_preparation::apply_tensor_without_format({batch, voc_size}, logits.options().dtype(at::kLong));
@@ -94,17 +93,18 @@ tensor_list npu_top_k_top_p_sample(const at::Tensor &logits, const at::Tensor &t
 
     std::string post_sample_str = std::string(post_sample);
     if (post_sample_str == "multiNomial") {
+        at::Tensor logits_select_idx = npu_preparation::apply_tensor_without_format({batch, 1}, logits.options().dtype(at::kLong));
         is_need_sample_result = true;
         EXEC_NPU_CMD(aclnnTopKTopPSampleV2, logits, top_k, top_p, q, min_ps, eps, is_need_logits, top_k_guess, ks_max, input_is_logits, is_need_sample_result, logits_select_idx, logits_top_kp_select, logits_idx, logits_sort_masked);
         at::Tensor multinomial_result = multinomial_top_k_top_p_sample(logits_sort_masked, 1, true, generator);
-        for (uint32_t i = 0; i < batch; ++i) {
-            int64_t real_index = logits_idx[i][multinomial_result[i].item<int64_t>()].item<int64_t>();
-            logits_select_idx[i] = real_index;
-        }
+        int64_t dim = 1;
+        EXEC_NPU_CMD(aclnnGather, logits_idx, dim, multinomial_result, logits_select_idx);
+        at::Tensor ret_idx = logits_select_idx.reshape({-1});
+        return std::tie(ret_idx, logits_top_kp_select);
     } else {
+        at::Tensor logits_select_idx = npu_preparation::apply_tensor_without_format({batch, }, logits.options().dtype(at::kLong));
         EXEC_NPU_CMD(aclnnTopKTopPSampleV2, logits, top_k, top_p, q, min_ps, eps, is_need_logits, top_k_guess, ks_max, input_is_logits, is_need_sample_result, logits_select_idx, logits_top_kp_select, logits_idx, logits_sort_masked);
+        return std::tie(logits_select_idx, logits_top_kp_select);
     }
-
-    return std::tie(logits_select_idx, logits_top_kp_select);
 }
 }
