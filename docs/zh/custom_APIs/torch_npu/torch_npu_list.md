@@ -163,7 +163,7 @@
 </tr>
 <tr id="row557919470115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p157994710118"><a name="p157994710118"></a><a name="p157994710118"></a><a href="（beta）torch_npu-npu_indexing.md">（beta）torch_npu.npu_indexing</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p191786291"><a name="zh-cn_topic_0000001655404257_p191786291"></a><a name="zh-cn_topic_0000001655404257_p191786291"></a>使用“begin,end,strides”数组对index结果进行计数。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p191786291"><a name="zh-cn_topic_0000001655404257_p191786291"></a><a name="zh-cn_topic_0000001655404257_p191786291"></a>以begin为起始索引，end为结束索引，strides为步长，对输入张量进行切片。</p>
 </td>
 </tr>
 <tr id="row11579164761115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p195798473119"><a name="p195798473119"></a><a name="p195798473119"></a><a href="（beta）torch_npu-npu_iou.md">（beta）torch_npu.npu_iou</a></p>

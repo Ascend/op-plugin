@@ -24,7 +24,7 @@ torch_npu.npu_yolo_boxes_encode(self, gt_bboxes, stride, performance_mode=False)
 - **self** (`Tensor`)：必选参数，YOLO训练集生成的锚点框。shape为(N, 4)数据类型为`float32`或`float16`的2D张量。“N”表示ROI的数量，值“4”表示(tx, ty, tw, th)。
 - **gt_bboxes** (`Tensor`)：必选参数，转换目标，例如真值框。shape为(N, 4)数据类型为`float32`或`float16`的2D张量。“N”表示ROI的数量，值“4”表示(dx, dy, dw, dh)。
 - **stride** (`Tensor`)：必选参数，各框比例。shape为(N,)数据类型为`int32`的1D张量。“N”表示ROI的数量。
-- **performance_mode** (Bool)：可选参数，选择性能模式为“high_precision”或“high_performance”。如果值为True，则性能模式为“high_performance”；如果值为False，则性能模式为“high_precision”，默认值为False。当输入数据类型为`float32`时，选择“high_precision”，输出张量精度将小于0.0001。当输入数据类型为`float16`时，选择“high_performance”，ops将是最佳性能，但精度将只小于0.005。
+- **performance_mode** (`bool`)：可选参数，选择性能模式为“high_precision”或“high_performance”。如果值为True，则性能模式为“high_performance”；如果值为False，则性能模式为“high_precision”，默认值为False。当输入数据类型为`float32`时，选择“high_precision”，输出张量精度将小于0.0001。当输入数据类型为`float16`时，选择“high_performance”，ops将是最佳性能，但精度将只小于0.005。
 
 ## 约束说明
 

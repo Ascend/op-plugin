@@ -29,7 +29,7 @@
 ## 函数原型
 
 ```
-npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, x1_dtype=None, x2_dtype=None, pertoken_scale_dtype=None, scale_dtype=None, group_sizes=None) -> Tensor
+torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, group_sizes=None) -> Tensor
 ```
 
 ## 参数说明
@@ -61,14 +61,6 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int8`、`float16`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`float16`、`bfloat16`、`int32`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`float16`、`bfloat16`、`int32`。
-
-- **x1_dtype** (`int`)：可选参数，指定输入`x1` 的数据类型。
-
-- **x2_dtype** (`int`)：可选参数，指定输入`x2`的数据类型。
-
-- **pertoken_scale_dtype** (`int`)：可选参数，指定输入`pertoken_scale`的数据类型。
-
-- **scale_dtype** (`int`)：可选参数，指定输入`scale`的数据类型。
 
 - **group_sizes** (`list[int]`)：可选参数，表示分组量化粒度。
 
@@ -233,7 +225,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     
         # 执行上述代码的输出类似如下
         torch.Size([15, 1, 128])
-        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
+        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[[-103.6875, -104.5000, -113.6250,  ..., -108.6875,  -99.5625,
                 -101.1875]],
     
@@ -317,7 +309,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     
         # 执行上述代码的输出类似如下
         torch.Size([15, 6912])
-        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
+        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[-1.0000e+00,  0.0000e+00, -1.0000e+00,  ...,  0.0000e+00,
                 -1.0000e+00, -1.0000e+00],
                 [ 2.8480e+03,  2.7840e+03, -1.0000e+00,  ...,  2.7840e+03,
@@ -444,7 +436,7 @@ npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, 
     
         # 执行上述代码的输出类似如下
         torch.Size([15, 6912])
-        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast repalce with float. (function operator())
+        [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[ 0.0000e+00, -1.0000e+00, -1.0000e+00,  ..., -1.0000e+00,
                 0.0000e+00, -1.0000e+00],
                 [ 0.0000e+00, -1.0000e+00, -1.0000e+00,  ..., -1.0000e+00,

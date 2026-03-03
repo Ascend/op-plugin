@@ -104,7 +104,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 -   `quant_scale`和`quant_offset`的输入shape要保持一致，且`quant_offset`不能独立于`quant_scale`存在。
 -   如需传入`int64`数据类型的`quant_scale`，需要提前调用`torch_npu.npu_trans_quant_param`接口将数据类型为`float32`的`quant_scale`和`quant_offset`转换为数据类型为`int64`的`quant_scale`输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。
 -   当输入`weight`为$FRACTAL\_NZ$格式且类型为`int32`时，perchannel场景需满足`weight`为转置输入；pergroup场景需满足`x`为转置输入，`weight`为非转置输入，`antiquant_group_size`为64或128，K为`antiquant_group_size`对齐，N为64对齐。
--   不支持输入`weight`` shape为\(1, 8\)且类型为`int4`，同时`weight`带有transpose的场景，否则会报错`x`矩阵和`weight`矩阵K轴不匹配，该场景建议走非量化算子获取更高精度和性能。
+-   不支持输入`weight` shape为\(1, 8\)且类型为`int4`，同时`weight`带有transpose的场景，否则会报错`x`矩阵和`weight`矩阵K轴不匹配，该场景建议走非量化算子获取更高精度和性能。
 -   当`antiquant_scale`为`float16`、`bfloat16`，单算子模式要求`x`和`antiquant_scale`数据类型一致，图模式允许不一致，如果出现不一致，接口内部会自行判断是否转换成一致的数据类型。用户可dump图信息查看实际参与计算的数据类型。
 
 ## 调用示例<a name="zh-cn_topic_0000001771071862_section14459801435"></a>
