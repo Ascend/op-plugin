@@ -39,7 +39,8 @@ class TestLinalgNorm(TestCase):
                 self.assertRtolEqual(cpu_output_2, npu_output_2)
 
     def test_linalg_norm_fp32(self):
-        ords = [torch.inf, -torch.inf, -1, 1, -2, 2, "fro", "nuc"]
+        # Skipping ords [-2, 2, "nuc"] due to dependency on CANN 9.0.0, see PR https://gitcode.com/cann/ops-math/pull/1128"
+        ords = [torch.inf, -torch.inf, -1, 1, "fro"]
         keepdim_list = [True, False]
         for ord_ in ords:
             for keepdim in keepdim_list:
@@ -64,7 +65,8 @@ class TestLinalgNorm(TestCase):
                 self.assertRtolEqual(cpu_input_1.grad, npu_input_1.grad)
 
     def test_linalg_matrix_norm_fp32(self):
-        ords = [torch.inf, -torch.inf, -1, 1, -2, 2, "fro", "nuc"]
+        # Skipping ords [-2, 2, "nuc"] due to dependency on CANN 9.0.0, see PR https://gitcode.com/cann/ops-math/pull/1128"
+        ords = [torch.inf, -torch.inf, -1, 1, "fro"]
         keepdim_list = [True, False]
         dim_list = [[0, 1], [0, 2], [1, 2]]
 
