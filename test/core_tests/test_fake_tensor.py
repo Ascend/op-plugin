@@ -3393,6 +3393,7 @@ class TestNpuMropeMeta(TestCase):
         with FakeTensorMode():
             dtype = torch.bfloat16
             rotary_mode = 'half'
+            cache_mode = 'default'
             num_tokens = 8
             num_q_heads = 8
             head_size = 128
@@ -3418,6 +3419,7 @@ class TestNpuMropeMeta(TestCase):
                 head_size,
                 mrope_section=mrope_section,
                 rotary_mode=rotary_mode,
+                cache_mode=cache_mode,
             )
 
             self.assertEqual(query_out.shape, query_npu.shape)

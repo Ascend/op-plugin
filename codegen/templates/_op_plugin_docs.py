@@ -3328,7 +3328,7 @@ rotate推荐使用场景
 _add_torch_npu_docstr(
     "npu_mrope",
     """
-torch_npu.npu_mrope(Tensor positions, Tensor query, Tensor key, Tensor cos_sin_cache, int head_size, *, int[]? mrope_section, str? rotary_mode='half') -> (Tensor, Tensor)
+torch_npu.npu_mrope(Tensor positions, Tensor query, Tensor key, Tensor cos_sin_cache, int head_size, *, int[]? mrope_section, str? rotary_mode='half', str? cache_mode='default') -> (Tensor, Tensor)
 功能描述
 实现旋转位置编码。通过传入cos和sin的cache执行旋转位置编码计算。
 
@@ -3340,6 +3340,7 @@ cosSinCache (Tensor): 参与计算的位置编码张量，要求shape为一个2D
 headSize(int): 表示每个注意力头维度大小。数据类型int64。
 mropeSection(int[]): 可选参数，multimodal section配置，用于整合输入的位置编码张量信息，输入mropeSection属性表示使能mrope模式。默认值为不使能mrope模式(即rope模式)输入为[0, 0, 0]。
 rotary_mode(str): 可选参数，旋转模式，'half'表示rotate_half(GPT-NeoX style)计算模式，'interleave'表示rotate_interleaved(GPT-J style)计算模式。默认值为'half'。
+cache_mode(str): 可选参数，cos和sin的拼接方式，'default'表示三段式拼接，'interleave'表示交错式拼接。默认值为'default'。
 
 约束说明
 queryIn、keyIn、cosSinCache只支持2维shape输入。
@@ -3359,8 +3360,9 @@ mrope模式下，mropeSection输入mropeSection[0]+mropeSection[1]+mropeSection[
 >>> key = torch.rand(num_tokens, num_kv_heads*head_size, dtype=torch.float32).npu()
 >>> cos_sin_cache = torch.rand(max_seq_len, rotary_dim, dtype=torch.float32).npu()
 >>> rotary_mode = 'half'
+>>> cache_mode = 'default'
 >>> mrope_section = [16, 24, 24]
->>> query_out, key_out = torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, mrope_section=mrope_section, rotary_mode=rotary_mode)
+>>> query_out, key_out = torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, mrope_section=mrope_section, rotary_mode=rotary_mode, cache_mode=cache_mode)
 """
 )
 
