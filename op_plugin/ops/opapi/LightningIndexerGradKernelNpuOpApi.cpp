@@ -49,7 +49,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_lightning_indexer_grad(
     const int64_t pre_tokens_const = pre_tokens.value_or(9223372036854775807);
     const int64_t next_tokens_const = next_tokens.value_or(9223372036854775807);
     const int64_t head_num = 0;
-    const bool deterministic = true;
+    const bool deterministic = at::globalContext().deterministicAlgorithms();
 
     EXEC_NPU_NO_FORMAT_CHECK_CMD(
         aclnnLightningIndexerGrad, query, key, dy, sparse_indices, weights,
