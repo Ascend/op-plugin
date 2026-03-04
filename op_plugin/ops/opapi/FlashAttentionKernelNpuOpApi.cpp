@@ -759,6 +759,11 @@ at::Tensor npu_prompt_flash_attention(
     int64_t sparse_mode)
 {
     // construct the output tensor of the NPU
+    TORCH_CHECK(
+        c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950,
+        "Interface npu_prompt_flash_attention is no longer supported on Ascend950.",
+        OPS_ERROR(ErrCode::NOT_SUPPORT)
+    );
     at::Tensor output;
     at::Tensor tmp_output = npu_preparation::apply_tensor_without_format(query);
     std::string input_layout_str = std::string(input_layout);
@@ -1374,6 +1379,11 @@ at::Tensor npu_prompt_flash_attention(
     int64_t sparse_mode)
 {
     // construct the output tensor of the NPU
+    TORCH_CHECK(
+        c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950,
+        "Interface npu_prompt_flash_attention is no longer supported on Ascend950.",
+        OPS_ERROR(ErrCode::NOT_SUPPORT)
+    );
     at::Tensor output;
     at::Tensor tmp_output = npu_preparation::apply_tensor_without_format(query);
     std::string input_layout_str = std::string(input_layout);
@@ -1431,6 +1441,11 @@ at::Tensor npu_incre_flash_attention_symint(
     int64_t block_size, int64_t inner_precise)
 {
     // construct the output tensor of the NPU
+    TORCH_CHECK(
+        c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950,
+        "Interface npu_incre_flash_attention is no longer supported on Ascend950.",
+        OPS_ERROR(ErrCode::NOT_SUPPORT)
+    );
     at::Tensor output;
     if (quant_scale2.has_value()) {
         output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Char));
