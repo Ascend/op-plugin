@@ -77,6 +77,7 @@
         -   [torch_npu.npu_all_gather_base_mm](./torch_npu/torch_npu-npu_all_gather_base_mm.md)
         -   [torch_npu.npu_anti_quant](./torch_npu/torch_npu-npu_anti_quant.md)
         -   [torch_npu.npu_attention_to_ffn](./torch_npu/torch_npu-npu_attention_to_ffn.md)
+        -   [torch_npu.npu_attention_update](./torch_npu/torch_npu-npu_attention_update.md)
         -   [torch_npu.npu_convert_weight_to_int4pack](./torch_npu/torch_npu-npu_convert_weight_to_int4pack.md)
         -   [torch_npu.npu_dynamic_quant](./torch_npu/torch_npu-npu_dynamic_quant.md)
         -   [torch_npu.npu_dynamic_quant_asymmetric](./torch_npu/torch_npu-npu_dynamic_quant_asymmetric.md)
@@ -157,6 +158,7 @@
         -   [torch_npu.npu_dense_lightning_indexer_softmax_lse](./torch_npu/torch_npu-npu_dense_lightning_indexer_softmax_lse.md)
         -   [torch_npu.npu_dense_lightning_indexer_grad_kl_loss](./torch_npu/torch_npu-npu_dense_lightning_indexer_grad_kl_loss.md)
         -   [torch_npu.npu_add_rms_norm](./torch_npu/torch_npu-npu_add_rms_norm.md)
+        -   [torch_npu.npu_add_rms_norm_dynamic_quant](./torch_npu/torch_npu-npu_add_rms_norm_dynamic_quant.md)
         -   [torch_npu.save_npugraph_tensor](./torch_npu/torch_npu-save_npugraph_tensor.md)
         -   [torch_npu.npu_fused_floyd_attention](./torch_npu/torch_npu-npu_fused_floyd_attention.md)
 
