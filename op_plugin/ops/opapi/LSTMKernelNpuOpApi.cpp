@@ -11,6 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
@@ -153,6 +154,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm(
     int64_t num_layers, double dropout,
     bool train, bool bidirectional, bool batch_first)
 {
+    DO_COMPATIBILITY(aclnnLSTM, acl_op::lstm(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first));
     auto output = at_npu::native::custom_ops::_lstm_npu(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first);
     return std::make_tuple(std::get<0>(output), std::get<1>(output), std::get<2>(output)); // 0 for output_y, 1 for output_h, 2 for output_c
 }
@@ -163,6 +165,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm(
     int64_t num_layers, double dropout,
     bool train, bool bidirectional)
 {
+    DO_COMPATIBILITY(aclnnLSTM, acl_op::lstm(data, batch_sizes, hx, params, has_biases, num_layers, dropout, train, bidirectional));
     auto output = at_npu::native::custom_ops::_lstm_npu(data, hx, params, has_biases, num_layers, dropout, train, bidirectional, false, batch_sizes);
     return std::make_tuple(std::get<0>(output), std::get<1>(output), std::get<2>(output)); // 0 for output_y, 1 for output_h, 2 for output_c
 }

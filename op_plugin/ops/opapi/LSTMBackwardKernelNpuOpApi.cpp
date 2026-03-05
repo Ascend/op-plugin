@@ -31,7 +31,7 @@ std::vector<at::Tensor> squeeze_chunk_result(const at::TensorList& chunk_result)
     return squeezed_result;
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, std::vector<at::Tensor>> _lstm_backward_npu(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, std::vector<at::Tensor>> _lstm_npu_backward(
     const at::Tensor &grad_y,
     const at::Tensor &grad_hy,
     const at::Tensor &grad_cy,
