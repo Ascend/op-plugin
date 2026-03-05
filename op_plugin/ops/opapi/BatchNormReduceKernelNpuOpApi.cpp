@@ -20,6 +20,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& self, double eps)
 {
+    DO_COMPATIBILITY(aclnnBatchNormReduce, acl_op::batch_norm_reduce(self, eps));
     TORCH_CHECK(self.dim() > 1, "The dim input tensor [self] must more than 1." + OPS_ERROR(ErrCode::PARAM));
     int64_t c_value;
     int64_t self_npu_format = npu_preparation::get_tensor_npu_format(self);
