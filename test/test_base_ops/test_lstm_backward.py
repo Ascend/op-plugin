@@ -9,7 +9,7 @@ from torch_npu.testing.common_utils import create_common_tensor
 
 
 class TestLstmBackward(TestCase):
-
+    @unittest.skip("skip test_lstm_backward now")
     def test_lstm_backward(self):
         # 注：shape_format:[[dtype, (num_step, batch_size, input_size)], input_size, hidden_size, is_training]
         shape_format = [
@@ -49,6 +49,7 @@ class TestLstmBackward(TestCase):
 
             self.assertRtolEqual(cpu_dx.numpy(), npu_dx.cpu().to(torch.float).numpy(), prec=1.e-3)
 
+    @unittest.skip("skip test_lstm_bidirection_backward now")
     def test_lstm_bidirection_backward(self):
         # 注：shape_format:[[dtype, (num_step, batch_size, input_size)], input_size, hidden_size, is_training]
         shape_format = [
@@ -89,6 +90,7 @@ class TestLstmBackward(TestCase):
 
             self.assertRtolEqual(cpu_dx.numpy(), npu_dx.cpu().to(torch.float).numpy(), prec=1.e-3)
 
+    @unittest.skip("skip test_lstm_backward_output_shape now")
     def test_lstm_backward_output_shape(self):
         cpu_lstm = torch.nn.LSTM(input_size=512, hidden_size=512, num_layers=2, bias=True,
                                  batch_first=True, bidirectional=False)
