@@ -41,7 +41,8 @@ float calculate_p(c10::optional<at::Scalar> p)
 
 inline bool check_use_aclop(float pfloat)
 {
-    if (c10_npu::IsAclnnOnly()) {
+    if (c10_npu::IsAclnnOnly() || op_plugin::utils::is_gte_cann_version_900()) {
+        // Version 9.0.0 of cann supports all norm operators in aclnn
         return false;
     }
     if (pfloat != 0.0 && pfloat != 1.0 && pfloat != 2.0 && pfloat != 3.0) {
