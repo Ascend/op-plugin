@@ -63,10 +63,11 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`ep_world_size`的取值范围如下所示。
          - `comm_alg`设置为"fullmesh"时，`ep_world_size`取值范围为2、3、4、5、6、7、8、16、32、64、128、256。
          - `comm_alg`设置为"hierarchy"时，`ep_world_size`取值范围为16、32、64。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持\[2, 768\]。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持\[2, 768\]。`comm_alg`设置为"hierarchy"时，取值范围为[16, 256]，且为16的整数倍。
 
 -   **ep\_rank\_id** (`int`)：必选参数，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的`ep_rank_id`不重复。
 -   **moe\_expert\_num** (`int`)：必选参数，MoE专家数量，取值范围\[1, 1024\]，并且满足以下条件：moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`comm_alg`设置为"hierarchy"时，取值范围为(0, 512]。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 -   **tp\_send\_counts** (`Tensor`)：可选参数，表示本卡每个专家发给TP（Tensor Parallelism）通信域每个卡的数据量。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`tp_recv_counts`输出。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP通信域，使用默认输入。
@@ -135,7 +136,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 -   **global\_bs** (`int`)：可选参数，表示EP域全局的batch size大小。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 
 -   **comm\_quant\_mode** (`int`)：可选参数，表示通信量化类型。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。仅当commAlg配置为"hierarchy"或HCCL\_INTRA\_PCIE\_ENABLE=1且HCCL\_INTRA\_ROCE\_ENABLE=0且驱动版本不低于25.0.RC1.1时才支持取2。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。仅当`comm_alg`配置为"hierarchy"或HCCL\_INTRA\_PCIE\_ENABLE=1且HCCL\_INTRA\_ROCE\_ENABLE=0且驱动版本不低于25.0.RC1.1时才支持取2。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。当且仅当`tp_world_size`不等于2时，可以使能`int8`量化。
 
 -   **comm\_alg** (`str`)：可选参数，表示通信亲和内存布局算法。
@@ -143,7 +144,9 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         - "": 配置HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0时，调用"hierarchy"算法，否则调用"fullmesh"算法。不推荐使用该方式。
         - "fullmesh": token数据直接通过RDMA方式发回目标卡。
         - "hierarchy": token数据经过机内、跨机两次发送，先在server内将同一个token数据汇总求和，再跨机发送，以减少跨机数据量。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值即可。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前版本支持""，"hierarchy"两种输入方式。
+        - "": 默认值，token数据直接通过MTE方式发回目标卡。
+        - "hierarchy": token数据经过机内、跨机两次发送，先在server内将同一个token数据汇总求和，再跨机发送，以减少跨机数据量。模板仅支持`tp_world_size`为1、共享专家为0的场景，且不支持二维mask、特殊专家、动态缩容、性能打点场景。
 
 -   **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
@@ -206,15 +209,16 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     调用本接口前需检查通信域缓存区大小取值是否合理，单位MB，不配置时默认为200MB。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
         该场景支持通过环境变量HCCL\_BUFFSIZE配置。
-        - comm\_alg配置为"": 仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
-        - comm\_alg配置为"fullmesh": 设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
-        - comm\_alg配置为"hierarchy": 设置大小要求 \>= \(moe\_expert\_num + ep\_world\_size / 4\) \* max_bs \* \(H \* sizeof\(dtype_x\) + 4 \* \(\(K + 7\) / 8 \* 8\) \* sizeof\(uint32\)\) \* 1B + 6MB。
+        - `comm\_alg`配置为"": 仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
+        - `comm\_alg`配置为"fullmesh": 设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
+        - `comm\_alg`配置为"hierarchy": 设置大小要求 \>= \(moe\_expert\_num + ep\_world\_size / 4\) \* max_bs \* \(H \* sizeof\(dtype_x\) + 4 \* \(\(K + 7\) / 8 \* 8\) \* sizeof\(uint32\)\) \* 1B + 6MB。
 
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
         该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl_buffer_size配置（参考《[PyTorch训练模型迁移调优](https://hiascend.com/document/redirect/canncommercial-ptmigr)》中“性能调优>性能调优方法>通信优化>优化方法>hccl_buffer_size”章节）。
         - ep通信域内：设置大小要求 \>= 2且满足\>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* h\) + 64\) + \(k + shared\_expert\_num\) \* max\_bs\* Align512\(2 \* h\)\)。
         - tp通信域内：设置大小要求 \>= (A \* Align512(Align32(h \* 2) + 44) + A \* Align512(h \* 2)) \* 2。
         - 其中 480Align512(x) = ((x+480-1)/480)\*512,Align512(x) = ((x+512-1)/512)\*512,Align32(x) = ((x+32-1)/32)\*32。
+        - `comm\_alg`配置为"hierarchy"时，仅支持通过环境变量HCCL\_BUFFSIZE配置。
 
 -   HCCL_INTRA_PCIE_ENABLE和HCCL_INTRA_ROCE_ENABLE:
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：该环境变量不再推荐使用，建议`comm_alg`配置"hierarchy"。
