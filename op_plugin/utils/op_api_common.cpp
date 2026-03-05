@@ -28,6 +28,10 @@ constexpr int OWNER_ROOT_UID = 0;
 
 typedef void(*AddTensorAddrToCachedList) (void *addr);
 
+static std::unordered_map<aclFormat, aclFormat> FORMAT_FAKE_TO_REAL {
+    { ACL_FORMAT_FRACTAL_NZ_C0_16, ACL_FORMAT_FRACTAL_NZ_C0_32 },
+};
+
 bool checkOwner(string cusLibPath)
 {
     struct stat fileInfo;
@@ -813,6 +817,11 @@ inline void CollectB4ShapeInfo(const at::Tensor &at_tensor,
     }
 }
 
+inline bool Is4BitDtype(const aclDataType acl_data_type)
+{
+    return acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4;
+}
+
 void *GetOpApiFuncAddr(const char *apiName)
 {
     if (!g_custom_lib_path.empty()) {
@@ -909,6 +918,14 @@ aclTensor *ConvertType(const at::Tensor &at_tensor)
             TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
                         OPS_ERROR(ErrCode::VALUE));
             storageDims = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.storage_sizes_;
+            if (Is4BitDtype(acl_data_type)) {
+                storageDims.back() *= FP4_IN_INT8;
+                CollectB4ShapeInfo(at_tensor, wrapperStride, wrapperShape);
+                auto realFormat = FORMAT_FAKE_TO_REAL.find(format);
+                TORCH_CHECK(realFormat != FORMAT_FAKE_TO_REAL.end(), "not support convert ", format, ".",
+                    OPS_ERROR(ErrCode::VALUE));
+                format = realFormat->second;
+            }
         }
     } else {
         switch (dimNum) {
@@ -928,7 +945,7 @@ aclTensor *ConvertType(const at::Tensor &at_tensor)
         if (acl_data_type != ACL_STRING) {
             TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
                         OPS_ERROR(ErrCode::VALUE));
-            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4) {
+            if (Is4BitDtype(acl_data_type)) {
                 storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize() * FP4_IN_INT8);
                 CollectB4ShapeInfo(at_tensor, wrapperStride, wrapperShape);
             } else {
@@ -1138,6 +1155,14 @@ aclTensor *ConvertType(const TensorWrapper &tensor_r)
             TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
                 OPS_ERROR(ErrCode::VALUE));
             storageDims = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.storage_sizes_;
+            if (Is4BitDtype(acl_data_type)) {
+                storageDims.back() *= FP4_IN_INT8;
+                CollectB4ShapeInfo(at_tensor, wrapperStride, wrapperShape);
+                auto realFormat = FORMAT_FAKE_TO_REAL.find(format);
+                TORCH_CHECK(realFormat != FORMAT_FAKE_TO_REAL.end(), "not support convert ", format, ".",
+                    OPS_ERROR(ErrCode::VALUE));
+                format = realFormat->second;
+            }
         }
     } else {
         switch (dimNum) {
@@ -1157,7 +1182,7 @@ aclTensor *ConvertType(const TensorWrapper &tensor_r)
         if (acl_data_type != ACL_STRING) {
             TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
                         OPS_ERROR(ErrCode::VALUE));
-            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4) {
+            if (Is4BitDtype(acl_data_type)) {
                 storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize() * FP4_IN_INT8);
                 CollectB4ShapeInfo(at_tensor, wrapperStride, wrapperShape);
             } else {
@@ -1235,7 +1260,7 @@ aclTensor *ConvertTypeV2(TensorStructPtr at_tensor)
         if (acl_data_type != ACL_STRING) {
             TORCH_CHECK((*at_tensor).itemsize > 0, "the itemsize of tensor must be greater than 0.",
                         OPS_ERROR(ErrCode::VALUE));
-            if (acl_data_type == ACL_FLOAT4_E2M1 || acl_data_type == ACL_FLOAT4_E1M2 || acl_data_type == ACL_INT4) {
+            if (Is4BitDtype(acl_data_type)) {
                 storageDims.push_back((*at_tensor).nbytes / (*at_tensor).itemsize * FP4_IN_INT8);
                 if ((*at_tensor).sizes.size() == 1) {
                     wrapperShape[0] = wrapperShape[0] * FP4_IN_INT8;
