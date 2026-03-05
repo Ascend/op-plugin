@@ -2924,17 +2924,10 @@ official:
   - func: linalg_cross(Tensor self, Tensor other, *, int dim=-1) -> Tensor
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      structured_inherit: linalg_cross.out
 
   - func: linalg_cross.out(Tensor self, Tensor other, *, int dim=-1, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      out:
-        size: broadcast_ops_npu_output_size(self, other)
-        dtype: self
-      exec: aclnnLinalgCross
 
   - func: linalg_qr(Tensor self, str mode='reduced') -> (Tensor Q, Tensor R)
     acl_op: all_version
