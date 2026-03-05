@@ -5,11 +5,13 @@ from distutils.errors import CompileError
 from distutils.spawn import find_executable
 import torch
 import torch_npu
+from torch.utils.cpp_extension import BuildExtension
 import torch.utils.cpp_extension as cpp_extension
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+USE_NINJA = os.getenv('USE_NINJA') == '1'
 source_files = glob.glob(os.path.join(BASE_DIR, "csrc", "*.asc"), recursive=True)
 
 
@@ -42,7 +44,7 @@ def get_dependency_paths():
     }
 
 
-class AscendBuildExtension(build_ext):
+class AscendBuildExtension(BuildExtension):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -97,5 +99,5 @@ setup(
     version="0.1",
     ext_modules=[your_ext],
     packages=find_packages(),
-    cmdclass={"build_ext": AscendBuildExtension},
+    cmdclass={"build_ext": AscendBuildExtension.with_options(use_ninja=USE_NINJA)},
 )
