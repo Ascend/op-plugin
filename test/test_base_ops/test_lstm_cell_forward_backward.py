@@ -29,7 +29,7 @@ class TestLSTMCellForwardBackward(TestCase):
             prec: Relative tolerance for comparison
         """
         # Create LSTMCell on CPU and NPU
-        cpu_lstm = nn.LSTMCell(input_size=input_size, hidden_size=hidden_size, bias=has_bias, dtype=dtype)
+        cpu_lstm = nn.LSTMCell(input_size=input_size, hidden_size=hidden_size, bias=has_bias)
         npu_lstm = copy.deepcopy(cpu_lstm).npu()
 
         # Create input and hidden states
@@ -69,32 +69,46 @@ class TestLSTMCellForwardBackward(TestCase):
         grad_h = torch.randn_like(h_cpu)
         grad_c = torch.randn_like(c_cpu)
 
-        # CPU backward
-        h_cpu.backward(grad_h, retain_graph=True)
-        c_cpu.backward(grad_c, retain_graph=True)
+        # CPU backward using autograd.grad
+        cpu_grads = torch.autograd.grad(
+            outputs=(h_cpu, c_cpu),
+            inputs=(input_cpu, h0_cpu, c0_cpu),
+            grad_outputs=(grad_h, grad_c),
+            retain_graph=True
+        )
+        cpu_input_grad = cpu_grads[0]
+        cpu_h0_grad = cpu_grads[1]
+        cpu_c0_grad = cpu_grads[2]
 
-        # NPU backward (convert grad to NPU dtype)
+        # NPU backward using autograd.grad
         grad_h_npu = grad_h.to(dtype).npu()
         grad_c_npu = grad_c.to(dtype).npu()
-        h_npu.backward(grad_h_npu, retain_graph=True)
-        c_npu.backward(grad_c_npu, retain_graph=True)
+        npu_grads = torch.autograd.grad(
+            outputs=(h_npu, c_npu),
+            inputs=(input_npu, h0_npu, c0_npu),
+            grad_outputs=(grad_h_npu, grad_c_npu),
+            retain_graph=True
+        )
+        npu_input_grad = npu_grads[0]
+        npu_h0_grad = npu_grads[1]
+        npu_c0_grad = npu_grads[2]
 
         # Compare gradients for input
         self.assertRtolEqual(
-            input_cpu.grad.numpy(), 
-            input_npu.grad.cpu().to(torch.float32).numpy(), 
+            cpu_input_grad.numpy(), 
+            npu_input_grad.cpu().to(torch.float32).numpy(), 
             prec=prec
         )
 
         # Compare gradients for hidden states
         self.assertRtolEqual(
-            h0_cpu.grad.numpy(), 
-            h0_npu.grad.cpu().to(torch.float32).numpy(), 
+            cpu_h0_grad.numpy(), 
+            npu_h0_grad.cpu().to(torch.float32).numpy(), 
             prec=prec
         )
         self.assertRtolEqual(
-            c0_cpu.grad.numpy(), 
-            c0_npu.grad.cpu().to(torch.float32).numpy(), 
+            cpu_c0_grad.numpy(), 
+            npu_c0_grad.cpu().to(torch.float32).numpy(), 
             prec=prec
         )
 
