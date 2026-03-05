@@ -201,6 +201,64 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         xScale = torch.randint(low=0, high=256, size=(M, math.ceil(K / 64), 2), dtype=torch.uint8)
         groupList = torch.tensor([int(M/2), int(M/2) + 1], dtype=torch.int64)
         return x, weight, weightScale, xScale, groupList
+
+    def gen_input_data_a4w4(self, E, M, K, N):
+        x = torch.randint(-8, 7, (M, K), dtype=torch.int8)
+        weight = torch.randint(-5, 5, (E, K, N), dtype=torch.int8)
+        weightScale = torch.randn(E, N).to(torch.float32) * 0.01
+        xScale = torch.randn(M, dtype=torch.float32) * 0.5
+        smooth_scale = torch.randn(E, N // 2, dtype=torch.float32)
+        groupList = torch.tensor([M], dtype=torch.int64) if E == 1 else torch.tensor([int(M / 2), M], dtype=torch.int64)
+        return x, weight, weightScale, xScale, smooth_scale, groupList
+
+    def prepare_a4w4_npu_inputs(self, x, weight, weightScale, xScale, smooth_scale, groupList, E, K, N, weight_format=0):
+        if weight_format == 0:
+            weight_quant = torch_npu.npu_quantize(
+                weight.to(torch.float32).npu(), torch.tensor([1.], device='npu'), None, torch.quint4x2, -1, False)
+        else:
+            weight_quant = weight.reshape(E, K // 16, 16, N // 64, 64).permute(0, 3, 1, 2, 4).contiguous()
+            weight_quant = weight_quant.npu()
+            weight_quant = torch_npu.npu_quantize(
+                weight_quant.to(torch.float32), torch.tensor([1.], device='npu'), None, torch.quint4x2, -1, False)
+        weightScale = weightScale.view(E, N)
+        scale_np = weightScale.cpu().numpy()
+        scale_uint32 = scale_np.astype(np.float32)
+        scale_uint32 = scale_uint32.view(np.uint32)
+        scale_uint64 = np.zeros((E, N * 2), dtype=np.uint32)
+        scale_uint64[..., ::2] = scale_uint32.reshape(E, N)
+        scale_uint64 = scale_uint64.view(np.int64).reshape(E, N)
+        scale = torch.from_numpy(scale_uint64.copy())
+        x_quant = torch_npu.npu_quantize(
+            x.to(torch.float32).npu(), torch.tensor([1.], device='npu'), None, torch.quint4x2, -1, False)
+        return x_quant, weight_quant, scale.npu(), xScale.npu(), smooth_scale.npu(), groupList.npu()
+
+    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_swiglu_quant_v2_a4w4(self, device="npu"):
+        # 生成数据
+        E, M, K, N = 1, 7, 64, 64
+        x, weight, weightScale, xScale, smooth_scale, groupList = self.gen_input_data_a4w4(E, M, K, N)
+        x_quant, weight_quant, weightScale_npu, xScale_npu, smoothScale_npu, groupList_npu = \
+            self.prepare_a4w4_npu_inputs(x, weight, weightScale, xScale, smooth_scale, groupList, E, K, N,
+                                        weight_format=1)
+        output_npu, output_scale_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x_quant,
+            [weight_quant],
+            [weightScale_npu],
+            xScale_npu,
+            groupList_npu,
+            smooth_scale=smoothScale_npu,
+            weight_assist_matrix=None,
+            dequant_mode=0,
+            dequant_dtype=torch.float32,
+            group_list_type=0,
+        )
+        self.assertEqual(output_npu.dim(), 2)
+        self.assertEqual(output_npu.shape[0], M)
+        self.assertEqual(output_npu.shape[1], N // 2)
+        self.assertEqual(output_scale_npu.dim(), 1)
+        self.assertEqual(output_scale_npu.shape[0], M)
+
     @unittest.skip("skip case")
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_swiglu_quant(self, device="npu"):

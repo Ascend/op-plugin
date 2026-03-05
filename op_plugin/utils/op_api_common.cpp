@@ -1029,6 +1029,9 @@ aclBoolArray *ConvertType(const at::ArrayRef<bool> &value)
 
 aclTensorList *ConvertType(const at::TensorList &at_tensor_list)
 {
+    if (at_tensor_list.size() == 0) {
+        return nullptr;
+    }
     static const auto aclCreateTensorList = GET_OP_API_FUNC(aclCreateTensorList);
     if (aclCreateTensorList == nullptr) {
         return nullptr;
@@ -1172,6 +1175,9 @@ aclTensor *ConvertType(const TensorWrapper &tensor_r)
 
 aclTensorList *ConvertType(const TensorListWrapper &tensor_list_wrapper)
 {
+    if (tensor_list_wrapper.tensor_list_.size() == 0) {
+        return nullptr;
+    }
     static const auto aclCreateTensorList = GET_OP_API_FUNC(aclCreateTensorList);
     if (aclCreateTensorList == nullptr) {
         return nullptr;

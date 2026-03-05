@@ -221,6 +221,9 @@ inline void Release(aclBoolArray *p)
 
 inline void Release(aclTensorList *p)
 {
+    if (p == nullptr) {
+        return;
+    }
     static const auto aclDestroyTensorList = GET_OP_API_FUNC(aclDestroyTensorList);
     if (aclDestroyTensorList == nullptr) {
         return;
