@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Huawei Technologies Co., Ltd
+// Copyright (c) 2026 Huawei Technologies Co., Ltd
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -88,10 +88,12 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
         }
         int64_t n1 = gmm_weight.size(2);
         if (mm_x.has_value() && mm_weight.has_value()) {
-            TORCH_CHECK(mm_x_quant_mode == QUANT_MODE_PERTENSOR, "mm_x_quant_mode only support 1 (QUANT_MODE_PERTENSOR), but got ",
-                mm_x_quant_mode, OPS_ERROR(ErrCode::PARAM));
-            TORCH_CHECK(mm_weight_quant_mode == QUANT_MODE_PERTENSOR, "mm_weight_quant_mode only support 1 (QUANT_MODE_PERTENSOR), but got ",
-                mm_weight_quant_mode, OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(mm_x_quant_mode.value_or(QUANT_MODE_PERTENSOR) == QUANT_MODE_PERTENSOR,
+                "mm_x_quant_mode only support 1 (QUANT_MODE_PERTENSOR), but got ",
+                mm_x_quant_mode.value_or(QUANT_MODE_PERTENSOR), OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(mm_weight_quant_mode.value_or(QUANT_MODE_PERTENSOR) == QUANT_MODE_PERTENSOR,
+                "mm_weight_quant_mode only support 1 (QUANT_MODE_PERTENSOR), but got ",
+                mm_weight_quant_mode.value_or(QUANT_MODE_PERTENSOR), OPS_ERROR(ErrCode::PARAM));
             TORCH_CHECK(mm_x_scale.has_value() && mm_weight_scale.has_value(),
                 "mm_x_scale and mm_weight_scale are required when mm_x and mm_weight are provided",
                 OPS_ERROR(ErrCode::PARAM));

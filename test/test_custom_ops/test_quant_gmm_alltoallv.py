@@ -24,6 +24,7 @@ class TestQuantGmmAlltoAllv(TestCase):
     def _test_npu_quant_gmm_alltoallv(cls, rank, dtype, c2p, init_pg, input_list1, input_list2, expertTokenNum):
         gmmX, gmmWeight, gmm_x_scale, gmm_weight_scale, mmX, mmWeight, mm_x_scale, mm_weight_scale, gmm_y_dtype, mm_y_dtype = input_list1
         epWorldSize, e_epWorldSize, mc2_send_counts, mc2_recv_counts, balance = input_list2
+        e = e_epWorldSize // epWorldSize
         pg = init_pg(rank, epWorldSize)
         group = pg.distributed_c10d._get_default_group()
         if torch.__version__ >= '2.0':
@@ -47,9 +48,9 @@ class TestQuantGmmAlltoAllv(TestCase):
             mm_x_scale = mm_x_scale.npu()
         if mm_weight_scale is not None:
             mm_weight_scale = mm_weight_scale.npu()
-        gmmYOut, mmYOut = torch_npu.npu_quant_gmm_allto_allv(
-                                                    gmm_x=gmm_x,
-                                                    gmm_weight=gmm_weight,
+        gmmYOut, mmYOut = torch_npu.npu_quant_gmm_alltoallv(
+                                                    gmm_x=gmmX,
+                                                    gmm_weight=gmmWeight,
                                                     gmm_x_scale = gmm_x_scale,
                                                     gmm_weight_scale = gmm_weight_scale,
                                                     hcom = hcom_name,
@@ -103,7 +104,7 @@ class TestQuantGmmAlltoAllv(TestCase):
         hccl_recv_counts = torch.tensor(np.sum(mc2_send_counts[rank].reshape(-1, e), axis=1).reshape(epWorldSize)).npu().to(torch.int64).to(torch.device('cpu')).numpy()
         gmmX = gmmX.npu()
         gmmWeight = gmmWeight.npu()
-        num_tokens_per_local_expert = torch.tenser(np.sum(mc2_recv_counts[rank].reshape(-1, e), axis=0).reshape(e)).npu().to(torch.int64)
+        num_tokens_per_local_expert = torch.tensor(np.sum(mc2_recv_counts[rank].reshape(-1, e), axis=0).reshape(e)).npu().to(torch.int64)
         alltoAllvGolden = torch_npu.npu_grouped_matmul(
             x=[gmmX],
             weight=[gmmWeight],
@@ -111,12 +112,12 @@ class TestQuantGmmAlltoAllv(TestCase):
             group_list_type=1,
             split_item=3
         )
-        unpermuteGolden = TestGmmAlltoAllv.unpermute_npu(alltoAllvGolden[0], e, epWorldSize, expertTokenNum, rank)
+        unpermuteGolden = TestQuantGmmAlltoAllv.unpermute_npu(alltoAllvGolden[0], e, epWorldSize, expertTokenNum, rank)
         gmmYGolden = torch.empty((bsk, gmmWeight.size(2)), dtype=dtype).npu()
         dist.all_to_all_single(gmmYGolden, unpermuteGolden, hccl_recv_counts, hccl_send_counts)
         mmGolden = None
         if (mmX is not None) and (mmWeight is not None):
-            mmGolden = torch.matmul(mmX.npu(), mmWeight.transpose(1, 0).npu()) if is_trans_mm_weight else torch.matmul(mmX.npu(), mmWeight.npu())
+            mmGolden = torch.matmul(mmX.npu(), mmWeight.npu())
         if mmGolden is not None:
             mmGolden = mmGolden.cpu()
         return gmmYGolden[0].cpu(), mmGolden
@@ -182,7 +183,7 @@ class TestQuantGmmAlltoAllv(TestCase):
             part_col_size = ep_world_size
             part_sum = bsk // e
             tail_sum = bsk % e
-            matrix = np.hstack([np.random.multinominal(part_sum - part_col_size, [1 / part_col_size] * part_col_size, size=row_size) + 1 for _ in range(e)])
+            matrix = np.hstack([np.random.multinomial(part_sum - part_col_size, [1 / part_col_size] * part_col_size, size=row_size) + 1 for _ in range(e)])
             matrix[:, -1] += tail_sum
         return matrix
     
@@ -210,8 +211,8 @@ class TestQuantGmmAlltoAllv(TestCase):
         gmmX = torch.rand(gmm_x_shape).to(dtype)
         gmm_weight_shape = (e, H1, N1)
         gmmWeight = torch.rand(gmm_weight_shape).to(dtype)
-        if is_trans_gmm_weight:
-            gmmWeight = gmmWeight.transpose(0, 1, 2)
+        gmm_x_scale = torch.tensor([1.0], dtype=torch.float32)
+        gmm_weight_scale = torch.tensor([1.0], dtype=torch.float32)
         mm_x_shape = (BS, H2)
         mm_weight_shape = (H2, N2)
         mmX = torch.rand(mm_x_shape)
@@ -222,12 +223,226 @@ class TestQuantGmmAlltoAllv(TestCase):
         else:
             mmX = None
             mmWeight = None
+        mm_x_scale = torch.tensor([1.0], dtype=torch.float32) if mmX is not None else None
+        mm_weight_scale = torch.tensor([1.0], dtype=torch.float32) if mmWeight is not None else None
+        balance = is_balance
         self._test_multiprocess(
-            TestGmmAlltoAllv._test_npu_quant_gmm_alltoallv,
-            TestGmmAlltoAllv._init_dist_hccl,
+            TestQuantGmmAlltoAllv._test_npu_quant_gmm_alltoallv,
+            TestQuantGmmAlltoAllv._init_dist_hccl,
             [gmmX, gmmWeight, gmm_x_scale, gmm_weight_scale, mmX, mmWeight, mm_x_scale, mm_weight_scale, gmm_y_dtype, mm_y_dtype],
             [epWorldSize, e_epWorldSize, mc2_send_counts, mc2_recv_counts, balance],
             dtype, expertTokenNum)
+
+
+class TestQuantGmmAlltoAllvException(TestCase):
+    """PTA-layer exception interception tests for npu_quant_gmm_alltoallv.
+
+    These tests validate TORCH_CHECK guards fire before EXEC_NPU_CMD,
+    so they only need a single NPU card (no HCCL group required).
+    """
+
+    def _make_valid_params(self):
+        """Construct a set of valid GMM-only default parameters."""
+        e, H, N = 4, 256, 128
+        bsk = 256
+        ep_world_size = 2
+        return dict(
+            gmm_x=torch.randn(bsk, H, dtype=torch.float16).npu(),
+            gmm_weight=torch.randn(e, H, N, dtype=torch.float16).npu(),
+            gmm_x_scale=torch.tensor([1.0], dtype=torch.float32).npu(),
+            gmm_weight_scale=torch.tensor([1.0], dtype=torch.float32).npu(),
+            hcom="dummy_group",
+            ep_world_size=ep_world_size,
+            send_counts=[bsk // (e * ep_world_size)] * (e * ep_world_size),
+            recv_counts=[bsk // (e * ep_world_size)] * (e * ep_world_size),
+            gmm_y_dtype=torch.float16,
+        )
+
+    def _make_valid_params_with_mm(self):
+        """Construct a set of valid parameters including MM branch."""
+        params = self._make_valid_params()
+        H2, N2 = 256, 128
+        BS = 128
+        params.update(
+            mm_x=torch.randn(BS, H2, dtype=torch.float16).npu(),
+            mm_weight=torch.randn(H2, N2, dtype=torch.float16).npu(),
+            mm_x_scale=torch.tensor([1.0], dtype=torch.float32).npu(),
+            mm_weight_scale=torch.tensor([1.0], dtype=torch.float32).npu(),
+            mm_x_quant_mode=1,
+            mm_weight_quant_mode=1,
+            mm_y_dtype=torch.float16,
+        )
+        return params
+
+    # ================================================================
+    # A. GMM quant mode validation
+    # ================================================================
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_x_quant_mode_invalid(self):
+        params = self._make_valid_params()
+        params["gmm_x_quant_mode"] = 0
+        self.assertRaisesRegex(
+            RuntimeError, "gmm_x_quant_mode only support 1",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_x_quant_mode_invalid_2(self):
+        params = self._make_valid_params()
+        params["gmm_x_quant_mode"] = 2
+        self.assertRaisesRegex(
+            RuntimeError, "gmm_x_quant_mode only support 1",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_x_quant_mode_default(self):
+        """gmm_x_quant_mode=None should default to PERTENSOR, no PTA error."""
+        params = self._make_valid_params()
+        # Do not pass gmm_x_quant_mode, let it default to None
+        try:
+            torch_npu.npu_quant_gmm_alltoallv(**params)
+        except RuntimeError as e:
+            self.assertNotIn("gmm_x_quant_mode only support 1", str(e))
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_weight_quant_mode_invalid(self):
+        params = self._make_valid_params()
+        params["gmm_weight_quant_mode"] = 0
+        self.assertRaisesRegex(
+            RuntimeError, "gmm_weight_quant_mode only support 1",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_weight_quant_mode_default(self):
+        """gmm_weight_quant_mode=None should default to PERTENSOR, no PTA error."""
+        params = self._make_valid_params()
+        try:
+            torch_npu.npu_quant_gmm_alltoallv(**params)
+        except RuntimeError as e:
+            self.assertNotIn("gmm_weight_quant_mode only support 1", str(e))
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_comm_quant_mode_invalid(self):
+        params = self._make_valid_params()
+        params["comm_quant_mode"] = 1
+        self.assertRaisesRegex(
+            RuntimeError, "comm_quant_mode only support 0",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_comm_quant_mode_default(self):
+        """comm_quant_mode=None should default to 0, no PTA error."""
+        params = self._make_valid_params()
+        try:
+            torch_npu.npu_quant_gmm_alltoallv(**params)
+        except RuntimeError as e:
+            self.assertNotIn("comm_quant_mode only support 0", str(e))
+
+    # ================================================================
+    # B. GMM dimension validation
+    # ================================================================
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_x_wrong_dim_3d(self):
+        params = self._make_valid_params()
+        params["gmm_x"] = torch.randn(4, 64, 256, dtype=torch.float16).npu()
+        self.assertRaisesRegex(
+            RuntimeError, "dimension of gmm_x should be 2D",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_x_wrong_dim_1d(self):
+        params = self._make_valid_params()
+        params["gmm_x"] = torch.randn(256, dtype=torch.float16).npu()
+        self.assertRaisesRegex(
+            RuntimeError, "dimension of gmm_x should be 2D",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_weight_wrong_dim_2d(self):
+        params = self._make_valid_params()
+        params["gmm_weight"] = torch.randn(256, 128, dtype=torch.float16).npu()
+        self.assertRaisesRegex(
+            RuntimeError, "dimension of gmm_weight should be 3D",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_gmm_weight_wrong_dim_4d(self):
+        params = self._make_valid_params()
+        params["gmm_weight"] = torch.randn(4, 2, 256, 128, dtype=torch.float16).npu()
+        self.assertRaisesRegex(
+            RuntimeError, "dimension of gmm_weight should be 3D",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    # ================================================================
+    # C. MM quant mode validation (bug fix verification)
+    # ================================================================
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_mm_x_quant_mode_invalid(self):
+        params = self._make_valid_params_with_mm()
+        params["mm_x_quant_mode"] = 0
+        self.assertRaisesRegex(
+            RuntimeError, "mm_x_quant_mode only support 1",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_mm_x_quant_mode_default(self):
+        """mm_x_quant_mode=None should default to PERTENSOR after bug fix."""
+        params = self._make_valid_params_with_mm()
+        del params["mm_x_quant_mode"]
+        try:
+            torch_npu.npu_quant_gmm_alltoallv(**params)
+        except RuntimeError as e:
+            self.assertNotIn("mm_x_quant_mode only support 1", str(e))
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_mm_weight_quant_mode_invalid(self):
+        params = self._make_valid_params_with_mm()
+        params["mm_weight_quant_mode"] = 0
+        self.assertRaisesRegex(
+            RuntimeError, "mm_weight_quant_mode only support 1",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_mm_weight_quant_mode_default(self):
+        """mm_weight_quant_mode=None should default to PERTENSOR after bug fix."""
+        params = self._make_valid_params_with_mm()
+        del params["mm_weight_quant_mode"]
+        try:
+            torch_npu.npu_quant_gmm_alltoallv(**params)
+        except RuntimeError as e:
+            self.assertNotIn("mm_weight_quant_mode only support 1", str(e))
+
+    # ================================================================
+    # D. MM scale consistency validation
+    # ================================================================
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_mm_scale_both_missing(self):
+        params = self._make_valid_params_with_mm()
+        del params["mm_x_scale"]
+        del params["mm_weight_scale"]
+        self.assertRaisesRegex(
+            RuntimeError, "mm_x_scale and mm_weight_scale are required",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_mm_x_scale_missing(self):
+        params = self._make_valid_params_with_mm()
+        del params["mm_x_scale"]
+        self.assertRaisesRegex(
+            RuntimeError, "mm_x_scale and mm_weight_scale are required",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
+    @SupportedDevices(['Ascend910_93', 'Ascend950'])
+    def test_mm_weight_scale_missing(self):
+        params = self._make_valid_params_with_mm()
+        del params["mm_weight_scale"]
+        self.assertRaisesRegex(
+            RuntimeError, "mm_x_scale and mm_weight_scale are required",
+            torch_npu.npu_quant_gmm_alltoallv, **params)
+
 
 if __name__ == "__main__":
     run_tests()
