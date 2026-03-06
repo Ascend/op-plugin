@@ -44,8 +44,8 @@ def npu_fusion_attention_forward_v3(query, key, value, head_num, input_layout, p
     else:
         softmax_shape = [B, head_num, S1, 8]
 
-    seed = torch.empty([1], dtype=torch.long, device='cpu')
-    offset = torch.empty([1], dtype=torch.long, device='cpu')
+    seed = torch.empty([1], dtype=torch.long, device=query.device)
+    offset = torch.empty([1], dtype=torch.long, device=query.device)
     attention_score = query.new_empty(aten_score_shape, dtype=query.dtype, device=query.device)
     softmax_max = torch.empty(softmax_shape, dtype=torch.float32, device=query.device)
     softmax_sum = torch.empty(softmax_shape, dtype=torch.float32, device=query.device)
