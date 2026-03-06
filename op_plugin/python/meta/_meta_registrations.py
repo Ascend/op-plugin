@@ -1641,7 +1641,7 @@ def npu_kv_quant_sparse_flash_attention_forward(query, key, value, sparse_indice
 def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=None, padding_mask=None,
                                 atten_mask=None, scale=1.0, keep_prob=1.0, pre_tockens=2147483647, next_tockens=2147483647,
                                 inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0,
-                                 gen_mask_parallel=True, sync=False, softmax_layout="", sink=None):
+                                 gen_mask_parallel=True, sync=False, softmax_layout="", sink=None, dropout_mask=None, seed=0, offset=0):
     B = query.size(0)
     N = head_num
     S1 = query.size(2)
@@ -1728,7 +1728,7 @@ def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *
                                 key_rope=None, scale=1.0, keep_prob=1.0,
                                 pre_tokens=2147483647, next_tokens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None,
                                 sparse_mode=0, gen_mask_parallel=True, sync=False, pse_type=1, q_start_idx=None, kv_start_idx=None,
-                                softmax_layout="", sink=None):
+                                softmax_layout="", sink=None, dropout_mask=None, seed=0, offset=0):
     B = query.size(0)
     N = head_num
     S1 = query.size(2)
@@ -1744,8 +1744,6 @@ def npu_fusion_attention_forward_v2(query, key, value, head_num, input_layout, *
         S1 = query.size(0)
         S2 = key.size(0)
 
-    seed = 0
-    offset = 0
     numels = 0
     attention_score = torch.empty_like(query, dtype=query.dtype, device='meta')
     softmax_max = torch.empty([B, head_num, S1, 8], dtype=torch.float32, device='meta')

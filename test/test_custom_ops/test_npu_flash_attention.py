@@ -80,6 +80,16 @@ def get_drop_mask(q, length, seed=2, gen_p=0.2):
     return drop_mask_bit.cpu()
 
 
+def get_drop_mask_for_npu(B, N, S1, S2, seed=2, gen_p=0.2, device="npu"):
+    torch.npu.set_compile_mode(jit_compile=False)
+    torch.npu.manual_seed(seed)
+    shape = [B, N, S1, S2]
+    drop_mask_uint8 = torch_npu._npu_dropout_gen_mask(
+        torch.randn(1, device=device), shape, p=gen_p, seed=seed, offset=0,
+        parallel=True, sync=False)
+    return drop_mask_uint8
+
+
 class TestNPUFlashAttention(TestCase):
     def supported_op_exec(self, query, key, value, scale, drop_mask=None, keep_prob=1.0):
         qk = torch.matmul(query, key.transpose(2, 3)).mul(scale)
@@ -192,6 +202,15 @@ class TestNPUFlashAttention(TestCase):
             actual_seq_qlen=actual_seq_qlen, actual_seq_kvlen=actual_seq_kvlen, softmax_layout=softmax_layout,
             keep_prob=keep_prob)
 
+    # pylint:disable = huawei-too-many-arguments
+    def custom_op_exec_with_dropout_mask(self, query, key, value, head_num, scale, input_layout,
+                                          dropout_mask=None, seed=0, offset=0, actual_seq_qlen=None,
+                                          actual_seq_kvlen=None, softmax_layout="", keep_prob=1.0):
+        return torch_npu.npu_fusion_attention(
+            query, key, value, head_num=head_num, input_layout=input_layout, scale=scale,
+            actual_seq_qlen=actual_seq_qlen, actual_seq_kvlen=actual_seq_kvlen, softmax_layout=softmax_layout,
+            keep_prob=keep_prob, dropout_mask=dropout_mask, seed=seed, offset=offset)
+
     def trans_BNSD2BSH(self, tensor: torch.Tensor):
         tensor = torch.transpose(tensor, 1, 2)
         tensor = torch.reshape(tensor, (tensor.shape[0], tensor.shape[1], -1))
@@ -286,6 +305,80 @@ class TestNPUFlashAttention(TestCase):
                                      keep_prob=keep_prob)
         attention_score = result[0]
         self.assertRtolEqual(output, attention_score)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_flash_attention_with_external_dropout_mask(self, device="npu"):
+        B, N, S, D = 1, 32, 128, 128
+        query = torch.randn(B, N, S, D, dtype=torch.float16)
+        key = torch.randn(B, N, S, D, dtype=torch.float16)
+        value = torch.randn(B, N, S, D, dtype=torch.float16)
+        keep_prob = 0.8
+        seed = 123
+        offset = 0
+
+        q_npu = self.trans_BNSD2BSH(query).npu()
+        k_npu = self.trans_BNSD2BSH(key).npu()
+        v_npu = self.trans_BNSD2BSH(value).npu()
+
+        dropout_mask = get_drop_mask_for_npu(B, N, S, S, seed=seed, gen_p=1-keep_prob, device=device)
+
+        attention_score, softmax_max, softmax_sum, softmax_out, out_seed, out_offset, numels = \
+            self.custom_op_exec_with_dropout_mask(
+                q_npu, k_npu, v_npu, head_num=N, scale=0.08838, input_layout="BSH",
+                dropout_mask=dropout_mask, seed=seed, offset=offset, keep_prob=keep_prob)
+
+        self.assertEqual(attention_score.shape, q_npu.shape)
+        self.assertEqual(softmax_max.shape[0], B)
+        self.assertEqual(softmax_max.shape[1], N)
+        self.assertEqual(softmax_sum.shape[0], B)
+        self.assertEqual(softmax_sum.shape[1], N)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_flash_attention_dropout_mask_reproducibility(self, device="npu"):
+        B, N, S, D = 1, 32, 128, 128
+        query = torch.randn(B, N, S, D, dtype=torch.float16)
+        key = torch.randn(B, N, S, D, dtype=torch.float16)
+        value = torch.randn(B, N, S, D, dtype=torch.float16)
+        keep_prob = 0.9
+        seed = 456
+        offset = 0
+
+        q_npu = self.trans_BNSD2BSH(query).npu()
+        k_npu = self.trans_BNSD2BSH(key).npu()
+        v_npu = self.trans_BNSD2BSH(value).npu()
+
+        dropout_mask = get_drop_mask_for_npu(B, N, S, S, seed=seed, gen_p=1-keep_prob, device=device)
+
+        result1, _, _, _, _, _, _ = self.custom_op_exec_with_dropout_mask(
+            q_npu, k_npu, v_npu, head_num=N, scale=0.125, input_layout="BSH",
+            dropout_mask=dropout_mask, seed=seed, offset=offset, keep_prob=keep_prob)
+
+        result2, _, _, _, _, _, _ = self.custom_op_exec_with_dropout_mask(
+            q_npu, k_npu, v_npu, head_num=N, scale=0.125, input_layout="BSH",
+            dropout_mask=dropout_mask, seed=seed, offset=offset, keep_prob=keep_prob)
+
+        self.assertRtolEqual(result1, result2)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_flash_attention_without_dropout_mask(self, device="npu"):
+        B, N, S, D = 1, 32, 128, 128
+        query = torch.randn(B, N, S, D, dtype=torch.float16)
+        key = torch.randn(B, N, S, D, dtype=torch.float16)
+        value = torch.randn(B, N, S, D, dtype=torch.float16)
+        keep_prob = 1.0
+        seed = 0
+        offset = 0
+
+        q_npu = self.trans_BNSD2BSH(query).npu()
+        k_npu = self.trans_BNSD2BSH(key).npu()
+        v_npu = self.trans_BNSD2BSH(value).npu()
+
+        attention_score, softmax_max, softmax_sum, softmax_out, out_seed, out_offset, numels = \
+            self.custom_op_exec_with_dropout_mask(
+                q_npu, k_npu, v_npu, head_num=N, scale=0.125, input_layout="BSH",
+                dropout_mask=None, seed=seed, offset=offset, keep_prob=keep_prob)
+
+        self.assertEqual(attention_score.shape, q_npu.shape)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_flash_attention_tnd_with_dropmask(self, device="npu"):
