@@ -77,6 +77,14 @@ class TestOnesLike(TestCase):
             self.assertEqual(cpu_dtype, npu_dtype)
             self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_ones_cpu_cases(self):
+        cpu_input = torch.tensor([3, 1], device="cpu", dtype=torch.int32)
+        npu_input = torch.tensor([3, 1], device="npu", dtype=torch.int32)
+        kwargs = {"device": "cpu"}
+        cpu_output = torch.ones_like(cpu_input, **kwargs)
+        npu_output = torch.ones_like(npu_input, **kwargs)
+        self.assertRtolEqual(cpu_output, npu_output)
+
 
 if __name__ == "__main__":
     run_tests()

@@ -42,7 +42,7 @@ at::Tensor ones_like(
   auto device = c10::device_or_default(device_opt);
   if (!torch_npu::utils::is_npu(device)) {
     auto result = at::empty_like(self, dtype_opt, layout_opt, device_opt, pin_memory_opt, optional_memory_format);
-    return acl_op::fill_(result, 1.);
+    return result.fill_(1);
   }
 
   c10::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
