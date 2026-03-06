@@ -574,7 +574,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     return result;
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_quant_fusion_attention_grad(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_quant_fusion_attention_backward(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const at::Tensor &dy, int64_t head_num, c10::string_view input_layout,
     const at::Tensor &d_scale_q, const at::Tensor &d_scale_k,

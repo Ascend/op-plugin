@@ -1868,7 +1868,7 @@ def npu_dense_lightning_indexer_softmax_lse_meta(query_index, key_index, weights
     return (softmax_max_out, softmax_sum_out)
 
 
-@impl(m, "npu_quant_fusion_attention_grad")
+@impl(m, "npu_quant_fusion_attention_backward")
 def npu_quant_fusion_attention_backward(query, key, value, dy, head_num, input_layout, d_scale_q, d_scale_k, d_scale_v, d_scale_dy, *, p_scale=None, ds_scale=None, softmax_max=None, softmax_sum=None, attention_in=None, scale_value=1.0, query_dtype=None):
     if out_dtype is not None and out_dtype == 1:
         dq = torch.empty_like(query, dtype=torch.bfloat16, device='meta')
