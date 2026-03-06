@@ -78,22 +78,94 @@ def npu_dtype_to_str(dtype):
         return str(dtype)
     return str(torch_dtype)
 
+
+def _matmul_get_output_size(tensor1, tensor2):
+    dim_tensor1 = tensor1.dim()
+    dim_tensor2 = tensor2.dim()
+
+    if dim_tensor1 == 1 and dim_tensor2 == 1:
+        return []
+    elif dim_tensor1 == 2 and dim_tensor2 == 1:
+        return [tensor2.size(0)]
+    elif dim_tensor1 == 1 and dim_tensor2 == 2:
+        return [tensor2.size(1)]
+    elif dim_tensor1 == 2 and dim_tensor2 == 2:
+        return [tensor1.size(0), tensor2.size(1)]
+    elif dim_tensor1 >= 3 and (dim_tensor2 == 1 or dim_tensor2 == 2):
+        size1 = list(tensor1.size())[:-1]
+        if dim_tensor2 > 1:
+            size2 = list(tensor2.size())
+            output_size = size1 + [size2[-1]]
+        else:
+            output_size = size1
+        return output_size
+    elif (dim_tensor1 == 1 or dim_tensor1 == 2) and dim_tensor2 >= 3:
+        size2 = list(tensor2.size())[:-2]
+        if dim_tensor1 > 1:
+            size1 = list(tensor1.size())
+            output_size = size2 + [size1[0]] + [tensor2.size(-1)]
+        else:
+            output_size = size2 + [tensor2.size(-1)]
+        return output_size
+    elif dim_tensor1 >= 3 and dim_tensor2 >= 3:
+        n = tensor1.size(-2)
+        batch_tensor1 = list(tensor1.size())[:-2]
+        p = tensor2.size(-1)
+        batch_tensor2 = list(tensor2.size())[:-2]
+        broadcast_batch = torch.broadcast_shapes(torch.Size(batch_tensor1), torch.Size(batch_tensor2))
+        output_size = list(broadcast_batch) + [n, p]
+        return output_size
+    else:
+        raise RuntimeError(f"matmul got error sizes: ({dim_tensor1}, {dim_tensor2})")
+
 if os.getenv("TORCH_NPU_USE_COMPATIBLE_IMPL") != "1":
     @impl(m_aten, "matmul_backward")
     def matmul_backward_meta(grad, self, other, mask):
-        self_len = len(self.size())
-        other_len = len(other.size())
-        if self_len == 1 and (other_len == 1 or other_len == 2):
-            self_shape = (1,) + self.size()
-            return (torch.empty(self_shape, dtype=self.dtype, device=self.device), torch.empty_like(other))
-        elif self_len != other_len and self_len > other_len > 2:
-            other_shape = self.size()[:-2] + (self.size()[-1], grad.size()[-1])
-            return (torch.empty_like(self), torch.empty(other_shape, dtype=other.dtype, device=other.device))
-        elif self_len != other_len and other_len > self_len > 2:
-            self_shape = grad.size()[:-1] + (other.size()[-2],)
-            return (torch.empty(self_shape, dtype=self.dtype, device=self.device), torch.empty_like(other))
+        mat1 = self
+        mat2 = other
+        grad_tensor = grad
 
-        return (torch.empty_like(self), torch.empty_like(other))
+        while mat1.dim() > 2 and mat1.size(0) == 1:
+            mat1 = mat1.squeeze(0)
+
+        if mat2.dim() == 1:
+            mat2 = mat2.unsqueeze(-1)
+            grad_tensor = grad_tensor.unsqueeze(-1)
+
+        if mat1.dim() == 1:
+            mat1 = mat1.unsqueeze(0)
+            grad_tensor = grad_tensor.unsqueeze(-2)
+
+        if mat1.dim() == 2 and mat2.dim() > 2:
+            self_grad = torch.empty(list(mat1.size()), dtype=grad_tensor.dtype, device=grad_tensor.device)
+        else:
+            mat2_transposed = mat2.transpose(-2, -1)
+            self_grad_size = _matmul_get_output_size(grad_tensor, mat2_transposed)
+            self_grad = torch.empty(self_grad_size, dtype=grad_tensor.dtype, device=grad_tensor.device)
+
+        mat1 = self
+        mat2 = other
+        grad_tensor = grad
+
+        while mat2.dim() > 2 and mat2.size(0) == 1:
+            mat2 = mat2.squeeze(0)
+
+        if mat2.dim() == 1:
+            mat2 = mat2.unsqueeze(-1)
+            grad_tensor = grad_tensor.unsqueeze(-1)
+
+        if mat1.dim() == 1:
+            mat1 = mat1.unsqueeze(0)
+            grad_tensor = grad_tensor.unsqueeze(-2)
+
+        if mat2.dim() == 2 and mat1.dim() > 2:
+            other_grad = torch.empty(list(mat2.size()), dtype=mat1.dtype, device=mat1.device)
+        else:
+            mat1_transposed = mat1.transpose(-2, -1)
+            other_grad_size = _matmul_get_output_size(mat1_transposed, grad_tensor)
+            other_grad = torch.empty(other_grad_size, dtype=mat1.dtype, device=mat1.device)
+
+        return (self_grad, other_grad)
 
 
 @impl(m, "npu_incre_flash_attention")
