@@ -4621,6 +4621,45 @@ print(output.dtype)  # torch.float16
 )
 
 _add_torch_npu_docstr(
+    "npu_matmul_compress_dequant",
+    """
+接口原型:
+torch_npu.npu_matmul_compress_dequant(Tensor x1, Tensor x2, Tensor compress_index, Tensor bias, Tensor scale, *, Tensor? offsetW=None, int? offsetX=None) -> Tensor
+
+功能描述:
+对压缩存储的权重重建后进行矩阵乘与反量化计算。即使用压缩索引(compress_index)对压缩权重(x2)解压，与输入(x1)做矩阵乘，加上偏置(bias)，再按 scale 做反量化，得到 float16 结果。适用于 8x8 块压缩的权重量化推理场景。
+
+参数说明:
+x1 (Tensor) - 矩阵乘左输入，2 维，形状 [M, K]。数据类型支持 int8。
+x2 (Tensor) - 压缩后的权重重建矩阵，与 compress_index 配合使用，数据类型支持 int8。
+compress_index (Tensor) - 压缩索引，用于从压缩格式还原权重。
+bias (Tensor) - 偏置，2 维，形状与输出的第二维 N 一致，例如 (1, N)。数据类型支持 int32。
+scale (Tensor) - 反量化 scale，2 维，第二维 n 与矩阵乘输出的 N 对应，例如 (1, n)。用于将整型结果反量化为 float16。
+offsetW (Tensor, 可选) - 权重量化偏移。当前仅支持传入 None，请勿传入具体张量。
+offsetX (int, 可选) - 输入量化偏移。当前仅支持 0，默认值为 0。
+
+输出说明:
+返回 Tensor，形状 [M, N]，其中 M 为 x1 的第 0 维，N 为 bias 的第 1 维。数据格式为 ND，数据类型为 float16。
+
+约束说明:
+x1、scale、bias 必须为 2 维。offsetW 当前仅支持 None；offsetX 当前仅支持 0。依赖 CANN 提供的 aclnnMatmulCompressDequant，请确保 CANN 版本支持该算子。
+
+示例:
+>>> import torch
+>>> import torch_npu
+>>> m, k, n = 16, 256, 128
+>>> x1 = torch.ones((m, k), dtype=torch.int8).npu()
+>>> x2 = torch.zeros((k, n), dtype=torch.int8).npu()  # 实际使用时为压缩权重重建结果
+>>> compress_index = torch.zeros(8, dtype=torch.int8).npu()  # 压缩索引，shape 与压缩格式一致
+>>> bias = torch.zeros((1, n), dtype=torch.int32).npu()
+>>> scale = torch.ones((1, n), dtype=torch.float32).npu()
+>>> out = torch_npu.npu_matmul_compress_dequant(x1, x2, compress_index, bias, scale)
+>>> out.shape
+torch.Size([16, 128])
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_weight_quant_batchmatmul",
     """
 功能描述:
