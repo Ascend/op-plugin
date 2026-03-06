@@ -5418,7 +5418,15 @@ has_side_effect(torch.ops.npu.save_npugraph_tensor.default)
 
 
 @impl(m, "save_npugraph_tensor")
-def save_npugraph_tensor_meta(self, *, save_path=None):
+def save_npugraph_tensor_meta(input, *, save_path=None):
+    return
+
+
+has_side_effect(torch.ops.npu.save_npugraph_tensor.tensorlist)
+
+
+@impl(m, "save_npugraph_tensor.tensorlist")
+def save_npugraph_tensor_tensorlist_meta(input, *, save_name=None, save_dir=None, suffix=None):
     return
 
 

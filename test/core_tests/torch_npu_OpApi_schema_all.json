@@ -4783,7 +4783,10 @@
   "func: _lstm_npu_backward(Tensor grad_y, Tensor grad_hy, Tensor grad_cy, Tensor input, Tensor[] hx, Tensor[] params, Tensor i, Tensor j, Tensor f, Tensor o, Tensor h, Tensor c, Tensor tanhc, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor, Tensor, Tensor[])": {
     "version": ["all_version"]
   },
-  "func: save_npugraph_tensor(Tensor self, *, str? save_path=None) -> ()": {
+  "func: save_npugraph_tensor(Tensor input, *, str? save_path=None) -> ()": {
+    "version": ["v2.6", "newest"]
+  },
+  "func: save_npugraph_tensor.tensorlist(Tensor[] input, *, str? save_name=None, str? save_dir=None, str? suffix=None) -> ()": {
     "version": ["v2.6", "newest"]
   }
 }
