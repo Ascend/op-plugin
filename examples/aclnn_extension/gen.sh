@@ -2,8 +2,7 @@
 
 # the first parameter is the yaml file
 YAML_FILE="$1"
-# the second parameter is the derivatives yaml file, optional
-DERIVATIVES_YAML_FILE="$2"
+DERIVATIVES_YAML_FILE="npu_custom_derivatives.yaml"
 
 CDIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
@@ -79,4 +78,4 @@ python3 -m torchnpugen.gen_backend_stubs  \
   --source_yaml="./test_native_functions.yaml" \
   --impl_path="$CDIR/torch_npu/csrc/aten" \
   --op_plugin_impl_path="$CDIR/op_plugin/ops" \
-  --op_plugin_yaml_path="$CDIR/op_plugin/config/v2r7/op_plugin_functions.yaml"
+  --op_plugin_yaml_path="$CDIR/op_plugin/config/$PYTORCH_VERSION_DIR/op_plugin_functions.yaml"

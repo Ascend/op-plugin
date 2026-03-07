@@ -25,10 +25,13 @@
 ### 运行前
 ```
 aclnn_extension/
+├── aclnn_extension/
+│   └── __init__.py                   # 构建用init文件
+├── deprecated.yaml                   # 废弃api配置
 ├── gen.sh                            # 一键生成脚本：调用 torchnpugen 生成算子适配代码
 ├── setup.py                          # 项目构建脚本，用于编译生成 whl 包
-├── npu_fast_gelu.yaml                # 自定义算子 YAML（含前向/反向 ATen IR 与 aclnn 映射）
-├── npu_fast_gelu_derivatives.yaml    # 前向/反向绑定配置（用于 autograd）
+├── npu_custom.yaml                   # 自定义算子 YAML（含前向/反向 ATen IR 与 aclnn 映射）
+├── npu_custom_derivatives.yaml       # 前向/反向绑定配置
 ├── test_native_functions.yaml        # NPU backend 声明（生成 stub 等时会使用）
 ├── test/
 │   └── test_npu_fast_gelu_custom.py  # 自定义算子测试脚本
@@ -39,21 +42,20 @@ aclnn_extension/
 
 ### 运行后
 
-先执行 `gen.sh` 生成适配代码，再执行 `setup.py` 构建后，在 `./dist/`下得到 **`aclnn-extension.whl`**：
+先执行 `gen.sh` 生成适配代码，再执行 `setup.py` 构建后，在 `./dist/`下得到 **`aclnn_extension*.whl`**：
 
 ```
 aclnn_extension/
 ├── ...         # 运行前已有文件保持不变
+├── build/      # gen.sh生成的中间产物
 ├── op_plugin/  # gen.sh生成的中间产物
-├── csrc/
-├── autograd/
-├── utils/
+├── torch_npu/  # gen.sh生成的中间产物
 ├── dist/
-│   └── aclnn-extension.whl # 最终生成的whl包
+│   └── aclnn_extension*.whl # 最终生成的whl包
 └── ...
 ```
 
-使用方式：`pip install aclnn-extension.whl` 安装后，即可在 Python 中调用本样例接入的自定义算子（如 `torch.ops.npu.npu_fast_gelu_custom`）。
+使用方式：`pip install aclnn_extension*.whl` 安装后，即可在 Python 中调用本样例接入的自定义算子（如 `torch.ops.npu.npu_fast_gelu_custom`）。
 
 
 ## 一键运行样例
@@ -62,12 +64,12 @@ aclnn_extension/
 
 ```bash
 # 1. 先执行 gen.sh，生成适配代码
-bash gen.sh npu_fast_gelu.yaml npu_fast_gelu_derivatives.yaml
+bash gen.sh npu_custom.yaml
 
 # 2. 再执行 setup.py 构建 whl 包并安装
-python setup.py build bdist_wheel
+python setup.py bdist_wheel
 cd dist
-pip install aclnn-extension.whl
+pip install aclnn_extension*.whl
 
 # 3. 运行测试验证
 cd ..
@@ -111,41 +113,24 @@ custom:
 - `gen_opapi.out`：输出 tensor 的 shape/dtype 由哪个输入推导（如 `self` / `grad`）。
 - `exec`：实际调用的 aclnn 接口名。
 
-### 2. 可选：编写前反向绑定 YAML（用于 autograd）
-
-若需要自动求导，在 `npu_fast_gelu_derivatives.yaml` 中配置前向对反向的绑定，例如：
-
-```yaml
-all_version: [v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10, v2.11]
-
-backward:
-  - name: npu_fast_gelu_custom(Tensor self) -> Tensor
-    self: npu_fast_gelu_custom_backward(grad, self)
-    version: all_version
-```
-
-### 3. 执行代码生成
+### 2. 执行代码生成
 
 在 `aclnn_extension` 目录下执行：
 
 ```bash
-# 仅生成主算子（无前反向绑定）
-bash gen.sh npu_fast_gelu.yaml
-
-# 生成主算子 + 前反向绑定
-bash gen.sh npu_fast_gelu.yaml npu_fast_gelu_derivatives.yaml
+bash gen.sh npu_custom.yaml
 ```
 
 脚本会根据当前环境的 PyTorch 版本生成各类适配代码，用户无需关注。
 
 ### 4. 构建 whl 包并运行测试
 
-在步骤 3 完成（gen.sh 已执行）后，再执行 `setup.py` 构建，在 `./dist/`下得到 **`aclnn-extension.whl`**：
+在步骤 3 完成（gen.sh 已执行）后，再执行 `setup.py` 构建，在 `./dist/`下得到 **`aclnn_extension*.whl`**：
 
 ```bash
-python setup.py build bdist_wheel
+python setup.py bdist_wheel
 cd dist
-pip install aclnn-extension.whl
+pip install aclnn_extension*.whl
 ```
 
 安装完成后即可在代码中调用接入的自定义算子（如 `torch_npu.npu_fast_gelu_custom`）。例如用样例自带的测试用例验证：
@@ -157,16 +142,17 @@ python test_npu_fast_gelu_custom.py
 
 测试通过即说明算子已正确接入、结果与参考实现一致。
 
+注意运行测试脚本时不能在`aclnn_extension` 目录下执行，会受init文件所在同名路径影响。
+
 ## 自用时的替换与扩展
 
 改成接入自己的算子时，**核心是把 YAML 里的内容换成自己算子的定义**：
 
-- **算子 YAML**（如 `npu_fast_gelu.yaml` 或自建 `my_op.yaml`）：在 `custom` 段中写上自己的 `func`、`gen_opapi.out`、`exec`（aclnn 接口名）等，格式参考本样例。
-- **前反向绑定**（可选）：若需自动求导，在 derivatives YAML 中配置前向与反向的对应关系；若不需要，可不提供该文件，`gen.sh` 只传算子 YAML 即可。
-- **gen.sh 参数**：若使用新文件名（如 `my_op.yaml`），则执行 `bash gen.sh my_op.yaml` 或 `bash gen.sh my_op.yaml my_op_derivatives.yaml`。
+- **算子 YAML**（如 `npu_custom.yaml` 或自建 `my_op.yaml`）：在 `custom` 段中写上自己的 `func`、`gen_opapi.out`、`exec`（aclnn 接口名）等，格式参考本样例。
+- **gen.sh 参数**：若使用新文件名（如 `my_op.yaml`），则执行 `bash gen.sh my_op.yaml` 或 `bash gen.sh my_op.yaml`。
 - **测试脚本**：在 `test/` 下修改或新增测试，调用你暴露的算子名做数值验证。
 
-流程不变：先执行 `gen.sh`（传入你的 YAML），再执行 `setup.py` 构建得到 `aclnn-extension.whl`，`pip install` 后即可调用。
+流程不变：先执行 `gen.sh`（传入你的 YAML），再执行 `setup.py` 构建得到 `aclnn_extension*.whl`，`pip install` 后即可调用。
 
 ## gen.sh 结构与代码生成指令说明
 
@@ -175,8 +161,7 @@ python test_npu_fast_gelu_custom.py
 ### 脚本参数与环境
 
 - **入参**：`gen.sh` 接收两个参数（第二个可选）。
-  - `$1`：算子 YAML 文件（必填），如 `npu_fast_gelu.yaml`。
-  - `$2`：前反向绑定 derivatives YAML（可选），如 `npu_fast_gelu_derivatives.yaml`。
+  - `$1`：算子 YAML 文件（必填），如 `npu_custom.yaml`。
 - **工作目录**：脚本会 `cd` 到自身所在目录（`aclnn_extension/`），后续路径均相对该目录。
 - **版本与目录名**：从当前环境的 `torch.__version__` 解析出 `PYTORCH_VERSION`（如 `2.7.0`），并得到目录后缀 `PYTORCH_VERSION_DIR`（如 `v2r7`），用于 `op_plugin/config/v2r7/` 等路径。
 - **环境变量**：脚本会设置并 `export`：
@@ -184,7 +169,7 @@ python test_npu_fast_gelu_custom.py
   - `PYTORCH_CUSTOM_DERIVATIVES_PATH`：生成的 derivatives 文件路径，供后续 autograd 等使用。
   - `ACLNN_EXTENSION_PATH`：当前样例根目录。
   - `ACLNN_EXTENSION_SWITCH="TRUE"`：标识走 aclnn extension 逻辑（部分 torchnpugen 模块会据此分支）。
-- **创建的目录**：若不存在则会创建 `csrc/aten`、`utils`、`op_plugin/config/<vXrY>`、`op_plugin/ops/opapi`。
+- **创建的目录**：若不存在则会创建 `build`、`op_plugin`、`torch_npu`。
 
 ### 代码生成指令（执行顺序）
 
@@ -207,14 +192,11 @@ python test_npu_fast_gelu_custom.py
 - **更换输入 YAML**：修改脚本入参或内部 `$YAML_FILE` / `$DERIVATIVES_YAML_FILE`，或增加新的 YAML 变量并传给对应模块的 `--source_yaml`、`--struct_yaml` 等。
 - **输出路径**：修改 `OUTPUT_DIR`、`OPAPI_OUTPUT_DIR`、`--output_dir`、`--out_dir`、`--autograd_dir` 等，使生成结果落到你希望的目录（需与 `setup.py` 的编译路径一致）。
 - **PyTorch 版本**：脚本已按当前环境自动解析版本；若需写死某版本，可改 `PYTORCH_VERSION` / `PYTORCH_VERSION_DIR` 的赋值。
-- **增删步骤**：例如不需要前反向绑定时不传 `$2` 即可（步骤 2 会跳过）；若不需要 stub 或 autograd，可注释或删除步骤 5、6 的调用（可能需同步调整 `setup.py` 的编译列表）。
-- **deprecate / 其它 YAML**：步骤 3 的 `--deprecate_yaml` 指向仓库内固定路径，若你拷贝脚本到别处使用，需改为实际可访问的路径或移除该参数（若工具支持）。
-- **gen_backend_stubs 的 op_plugin_yaml_path**：当前脚本中可能写死为 `op_plugin/config/v2r7/op_plugin_functions.yaml`；若需兼容多 PyTorch 版本，可改为使用变量 `op_plugin/config/${PYTORCH_VERSION_DIR}/op_plugin_functions.yaml`。
 
 按上述说明即可在保留主流程的前提下，按需裁剪或扩展 `gen.sh` 中的指令与参数。
 
 ## 小结
 
 - **适用**：自定义 aclnn 算子、语义与 ATen 对齐、适配层仅做 output 申请的结构化场景。  
-- **执行流程**：先执行 `gen.sh npu_fast_gelu.yaml npu_fast_gelu_derivatives.yaml` 生成适配代码，再执行 `setup.py` 构建得到 `aclnn-extension.whl`，`pip install` 后即可调用接入的算子。  
+- **执行流程**：先执行 `gen.sh npu_custom.yaml` 生成适配代码，再执行 `setup.py` 构建得到 `aclnn_extension*.whl`，`pip install` 后即可调用接入的算子。  
 - **自用**：把 YAML 里的内容换成自己算子的定义，gen.sh 传入对应 YAML 文件名，同样先 gen.sh 再 setup.py 即可。
