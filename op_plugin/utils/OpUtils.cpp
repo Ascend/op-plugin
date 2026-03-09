@@ -461,6 +461,12 @@ bool is_gte_cann_version_850()
     return result;
 }
 
+bool is_gte_cann_version_851()
+{
+    const static bool result = IsGteCANNVersion("8.5.1", "CANN");
+    return result;
+}
+
 bool is_gte_cann_version_850alpha003()
 {
     const static bool result = IsGteCANNVersion("8.5.0.alpha003", "CANN");
