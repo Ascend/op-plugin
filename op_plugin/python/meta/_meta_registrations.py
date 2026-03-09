@@ -2903,8 +2903,13 @@ def npu_all_to_all_quant_matmul_meta(x1, x2, hcom, world_size, all2all_out_flag=
         world_size != 0,
         lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
     )
+    INT4_IN_INT32 = 8
+    is_w4 = x2.dtype == torch.int32
+    if is_w4:
+        out_n = x2.size(1) * INT4_IN_INT32
+    else:
+        out_n = x2.size(1)
     out_m = x1.size(0) // world_size
-    out_n = x2.size(1)
     size = [out_m, out_n]
     # 推导output的dtype，默认为float32
     if y_dtype is None:

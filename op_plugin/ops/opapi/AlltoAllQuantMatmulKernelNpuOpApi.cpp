@@ -29,6 +29,7 @@ static const int64_t NON_QUANT = 0;
 static const int64_t NON_GROUP = 0;
 static const int64_t ACL_UNDEFINED = -1;
 static const int64_t ACL_FP8_E5M2 = 35;
+static const int64_t INT4_NUMS_IN_INT32 = 8;
 
 // world_size
 const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16};
@@ -56,6 +57,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
         TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size.", OPS_ERROR(ErrCode::PARAM));
     }
 
+    bool is_w4 = x2.dtype() == at::kInt;
     // 处理group_sizes
     at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
     int64_t group_size = op_plugin::utils::check_and_get_group_size(group_size_list);
@@ -70,7 +72,12 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     if (world_size != 0) {
         out_m = x1.size(0) / world_size;
     }
-    int64_t out_n = x2.size(1);
+    int64_t out_n;
+    if (is_w4) {
+        out_n = x2.size(1) * INT4_NUMS_IN_INT32;
+    } else {
+        out_n = x2.size(1);
+    }
     auto output_size = {out_m, out_n};
     // output_tensor按照实际的shape和dtype去创建
     at::Tensor output_tensor = npu_preparation::apply_tensor_without_format(output_size, c10::dtype(output_scalar_type));
