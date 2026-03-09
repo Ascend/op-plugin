@@ -357,9 +357,6 @@ OP_PLUGIN_HIDDEN at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_lse_for_z
                                                                                                  float lse_square_scale_for_zloss);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> matmul_output_size(const at::Tensor &tensor1, const at::Tensor &tensor2);
-OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> npu_transpose_batchmatmul_output_size(const at::Tensor &input, const at::Tensor &weight, const at::Tensor &scale_real,
-                                                                                       at::IntArrayRef perm_x1_real, at::IntArrayRef perm_x2_real, at::IntArrayRef perm_y_real,
-                                                                                       int32_t batch_split_factor_value);
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> npu_transpose_quant_batchmatmul_output_size(const at::Tensor &x1,
     const at::Tensor &x2, int32_t dtype, const at::Tensor &x1_scale_real, const at::Tensor &x2_scale_real,
     int32_t group_size_value, at::IntArrayRef perm_x1_real, at::IntArrayRef perm_x2_real, at::IntArrayRef perm_y_real,

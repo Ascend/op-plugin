@@ -3126,6 +3126,18 @@ class TestTransposeBatchMatmul(TestCase):
             self.assertTrue(result.shape == expect_ret.shape)
             self.assertTrue(result.dtype == expect_ret.dtype)
 
+    @unittest.skip("skip test_npu_transpose_batchmatmul")
+    def test_npu_transpose_batchmatmul_meta_4(self):
+        with FakeTensorMode():
+            M, K, N, Batch = 32, 512, 128, 16
+            x1 = torch.randn((M, Batch, K), dtype=torch.float16)
+            x2 = torch.randn((Batch, K, N), dtype=torch.float16)
+            x2_nz = torch_npu.npu_format_cast(x2.npu(), acl_format=29)
+            result = torch_npu.npu_transpose_batchmatmul(x1.npu(), x2_nz.npu(),
+                                                        perm_x1=[1, 0, 2], perm_y=[1, 0, 2])
+            expect_ret = torch.randn((M, Batch, N), dtype=torch.float16)
+            self.assertTrue(result.shape == expect_ret.shape)
+            self.assertTrue(result.dtype == expect_ret.dtype)
 
 class TestTransposeQuantBatchMatmul(TestCase):
     @unittest.skip("skip test_npu_transpose_quant_batchmatmul")

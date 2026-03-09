@@ -123,6 +123,17 @@ class TestTransposeBatchMatmul(TestCase):
                                             perm_x1=[1, 0, 2], perm_x2=[0, 1, 2],
                                             perm_y=[1, 0, 2]).to("cpu")
 
+    @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
+    @SupportedDevices(["Ascend910B"])
+    def test_npu_transpose_batchmatmul_9(self, device="npu"):
+        M, K, N, Batch = 32, 512, 128, 32
+        x1 = torch.randn((M, Batch, K), dtype=torch.bfloat16)
+        x2 = torch.randn((Batch, K, N), dtype=torch.bfloat16)
+        x2_nz = torch_npu.npu_format_cast(x2.npu(), acl_format=29)
+        supported_output = self.supported_op_exec_2(x1, x2)
+        custom_output = torch_npu.npu_transpose_batchmatmul(x1.npu(), x2_nz.npu(), scale=None,
+                                                            perm_x1=[1, 0, 2], perm_x2=[0, 1, 2], perm_y=[1, 0, 2]).to("cpu")
+        self.assertRtolEqual(supported_output, custom_output, 0.001)
 
 if __name__ == "__main__":
     run_tests()
