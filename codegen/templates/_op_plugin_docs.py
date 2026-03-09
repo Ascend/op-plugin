@@ -1259,7 +1259,7 @@ layout_query（str）：可选参数，用于标识输入query的数据排布格
 
 layout_key（str）：可选参数，用于标识输入key的数据排布格式，当前支持PA_BSND、BSND、TND，默认值"BSND"，在非PageAttention场景下，该参数值应与layout_query值保持一致。
 
-sparse_count（int）：可选参数，代表topK阶段需要保留的block数量，支持1-2048，数据类型支持int32。
+sparse_count（int）：可选参数，代表topK阶段需要保留的block数量，支持1-2048以及3072、4096、5120、6144、7168、8192，数据类型支持int32。
 
 sparse_mode（int）：可选参数，表示sparse的模式，支持0/3，数据类型支持int32。
 
