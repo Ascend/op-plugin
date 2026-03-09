@@ -3021,10 +3021,6 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
         x_dim == 2 and w_dim == 3,
         lambda: "x_dim should be 2 and w_dim should be 3." + ops_error(ErrCode.VALUE),
     )
-    torch._check(
-        dimn > 0,
-        lambda: "n value must bigger than 0." + ops_error(ErrCode.VALUE),
-    )
 
     if dtype is None:
         dtype = torch.float32
@@ -5045,20 +5041,6 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
     batch_size = x.size(0)
     dim_n = 2
     n = weight[0].size(dim_n)
-    mDim = x.size(0)
-    k = x.size(1)
-    torch._check(
-        mDim > 0,
-        lambda: f"The m dim should be greater than 0, but the actual value is {mDim}",
-    )
-    torch._check(
-        n > 0,
-        lambda: f"The n dim should be greater than 0, but the actual value is {n}",
-    )
-    torch._check(
-        k > 0,
-        lambda: f"The k dim should be greater than 0, but the actual value is {k}",
-    )
     is_a8w8_input = (x.dtype == torch.float8_e5m2 or x.dtype == torch.float8_e4m3fn) and \
                    (weight[0].dtype == torch.float8_e5m2 or weight[0].dtype == torch.float8_e4m3fn)
     is_a4w4_input = False
