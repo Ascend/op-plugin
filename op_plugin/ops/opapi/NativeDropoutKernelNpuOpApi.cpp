@@ -97,6 +97,7 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
                 capture_event_begin.block(secondary_stream);
                 ASCEND_LOGI("Event: record and block in dropout op capture begin is successfully executed, event=%p", capture_event_begin.event());
             }
+            NPUStatus ret = c10_npu::emptyAllNPUStream();
             c10_npu::SecondaryStreamGuard guard(secondary_stream);
             mask = at_npu::native::OpPreparation::apply_tensor_without_format({length}, self.options().dtype(at::kByte));
             at::IntArrayRef shapeArray(self.sizes());
