@@ -54,7 +54,7 @@ torch_npu.npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk
 
     K：取值范围为128~1M且K%128==0。
 
-    D：取值范围为16~128。
+    D：只支持32/64/128。
 
 - `query_ik`与`key_ij`的第0/2/4轴需相同。
 - `key_ij`与`value_ij`的shape需相同。
