@@ -70,9 +70,12 @@ at::Tensor npu_fused_matmul(
     for (int64_t i = 0; i < long_tensor.dim() - X_DIM; i++) {
         output_size[i] = static_cast<int64_t>(batch_record[i]);
     }
-      
+    auto output_type = x.dtype();
+    if (fused_op_type == "16cast32") {
+        output_type = at::kFloat;
+    }
     auto result = at_npu::native::OpPreparation::apply_tensor_without_format(output_size,
-                                                                             x.dtype());
+                                                                             output_type);
     const at::Tensor &x3_real = x3.value_or(at::Tensor());
     const at::Tensor &bias_real = bias.value_or(at::Tensor());
 
