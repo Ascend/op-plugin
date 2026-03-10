@@ -211,6 +211,7 @@
 <td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>该接口用于查询`torch_npu.npu.use_compatible_impl`的配置情况。</p>
 </td>
 </tr>
+
 </tbody>
 </table>
 
