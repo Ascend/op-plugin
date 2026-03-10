@@ -47,7 +47,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 -   该接口支持单算子模式和图模式。
 -   输入参数Tensor中shape使用的变量说明：
     -   当perm\_x1为\[1, 0, 2\]时，即input矩阵需要转置时，K\*B的取值范围\[1, 65536\)；当perm\_x1为\[0, 1, 2\]时，K需要小于65536。
-    -   K和N需要能被128整除。
+    -   K和N需要能被16整除。
 
 ## 调用示例<a name="zh-cn_topic_0000002319693140_section14459801435"></a>
 
@@ -70,23 +70,23 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
     import torch_npu
     import torchair as tng
     from torchair.configs.compiler_config import CompilerConfig
-    
+
     torch.npu.set_compile_mode(jit_compile=True)
     config = CompilerConfig()
     npu_backend = tng.get_npu_backend(compiler_config=config)
     M, K, N, Batch = 32, 512, 128, 16
     x1 = torch.randn((M, Batch, K), dtype=torch.float16)
     x2 = torch.randn((Batch, K, N), dtype=torch.float16)
-    
+
     class MyModel1(torch.nn.Module):
         def __init__(self):
             super().__init__()
-    
+
         def forward(self, x1, x2, perm_x1, perm_y, batch_split_factor=1):
             output = torch_npu.npu_transpose_batchmatmul(x1, x2, perm_x1=perm_x1, perm_y=perm_y, batch_split_factor=batch_split_factor)
             output = output.add(1)
             return output
-    
+
     model = MyModel1().npu()
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     output = model(x1.npu(), x2.npu(), (1, 0, 2), (1, 0, 2)).to("cpu")
