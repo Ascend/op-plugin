@@ -52,7 +52,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
     int64_t group_size = op_plugin::utils::check_and_get_group_size(group_size_list);
     TORCH_CHECK(group_size != -1, "Invalid group_sizes.", OPS_ERROR(ErrCode::PARAM));
     int64_t stream_mode = 1;
-    const char* hcom_value = (char*)hcom.data();
+    std::string hcom_str = std::string(hcom);
+    char *hcom_value = const_cast<char *>(hcom_str.c_str());
     const at::Tensor& bias_value = bias.value_or(at::Tensor());
     const at::Tensor& x1_scale_value = x1_scale.value_or(at::Tensor());
     const at::Tensor& x2_scale_value = x2_scale.value_or(at::Tensor());
