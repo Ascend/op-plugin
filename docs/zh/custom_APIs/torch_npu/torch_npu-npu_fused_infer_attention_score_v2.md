@@ -206,7 +206,9 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - num\_query\_heads与num\_key\_value\_heads支持组合有(10, 1)、(64, 8)、(80, 8)、(128, 16)。
 -   learnable_sink的参数约束如下：
     - 仅支持TND、NTD\_TND；
-    - 仅支持value的d小于等于128；
+    - 仅支持value的D小于等于128；
+    - 仅支持非量化场景。
+    - 不支持pse、左padding、公共前缀、后量化。
 -   **当Q\_S大于1时：**
     -   query、key、value输入，功能使用限制如下：
         -   支持B轴小于等于65536，D轴32byte不对齐时仅支持到128。
