@@ -10999,10 +10999,10 @@ torch_npu.npu_clipped_swiglu(x, *, group_index=None, dim=-1, alpha=1.702, limit=
 (4)根据输入参数 alpha、limit、bias 进行变体SwiGlu计算，公式如下：A = A.clamp(min=None, max=limit), B = B.clamp(min=-limit, max=limit)
                                                                 y_glu = A * sigmoid(alpha * A)
                                                                 y = y_glu * (B + bias)
-(5)重塑输出张量y的维度数量与合轴前的x的维度数量一致，dim轴上的大小为x的一半，其他维度与x相同。
+(5)重塑输出张量y的维度数量与合轴前的x的维度数量一致，第dim轴上的大小为x的一半，其他维度与x相同。
 
 参数说明:
-x：Tensor类型，必选参数，表示目标张量。数据类型支持float16、bfloat16、float32，不支持非连续的Tensor，数据格式为ND，x的维数必须大于1维，dim轴为偶数。
+x：Tensor类型，必选参数，表示目标张量。数据类型支持float16、bfloat16、float32，不支持非连续的Tensor，数据格式为ND，x的维数必须大于1维，第dim轴为偶数。
 group_index：Tensor类型，可选参数，表示对x进行分组的情况。要求为1维张量，第i个元素代表第i组需要处理的x合轴后的token数量，数据类型支持int64，数据格式ND。
 dim： int类型，可选参数，表示需要对x进行切分的维度序号，取值范围为[-x.dim(), x.dim()-1]，默认 -1。
 alpha：float类型，可选参数，表示glu激活函数系数，默认 1.702。
@@ -11021,30 +11021,61 @@ Atlas A2 推理系列产品
 Atlas A3 推理系列产品
 
 调用示例:
+
+单算子调用
 import torch
 import torch_npu
-from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import SupportedDevices
 
-class TestNPUClippedSwiglu(TestCase):
-    def test_npu_clipped_swiglu(self, device="npu"):
-        tokens_num = 4608
-        hidden_size = 2048
-        x = torch.randint(-10, 10, (tokens_num, hidden_size), dtype=torch.float32)
-        group_index = torch.randint(1, 101, (4, ), dtype=torch.int64)
+tokens_num = 4608
+hidden_size = 2048
+x = torch.randint(-10, 10, (tokens_num, hidden_size), dtype=torch.float32)
+group_index = torch.randint(1, 101, (4, ), dtype=torch.int64)
+y = torch_npu.npu_clipped_swiglu(
+    x.npu(),
+    group_index=group_index.npu(),
+    dim=-1,
+    alpha=1.702,
+    limit=7.0,
+    bias=1.0,
+    interleaved=True
+)
+
+图模式调用
+import torch
+import torch_npu
+import torchair as tng
+from torchair.configs.compiler_config import CompilerConfig
+
+torch_npu.npu.set_compile_mode(jit_compile=True)
+config = CompilerConfig()
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+device = torch.device(f'npu:0')
+torch_npu.npu.set_device(device)
+
+class ClippedSwigluModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x, group_index, dim, alpha, limit, bias, interleaved):
         y = torch_npu.npu_clipped_swiglu(
             x.npu(),
             group_index=group_index.npu(),
-            dim=-1,
-            alpha=1.702,
-            limit=7.0,
-            bias=1.0,
-            interleaved=True
+            dim=dim,
+            alpha=alpha,
+            limit=limit,
+            bias=bias,
+            interleaved=interleaved
         )
+        return y
 
-if __name__ == "__main__":
-    run_tests()
-
+tokens_num = 4608
+hidden_size = 2048
+x = torch.randint(-10, 10, (tokens_num, hidden_size), dtype=torch.float32)
+group_index = torch.randint(1, 101, (4, ), dtype=torch.int64)
+clipped_swiglu_model = ClippedSwigluModel().npu()
+clipped_swiglu_model = torch.compile(clipped_swiglu_model, backend=npu_backend, dynamic=True)
+y = clipped_swiglu_model(x, group_index, -1, 1.702, 7.0, 1.0, True)
 """
 )
 
