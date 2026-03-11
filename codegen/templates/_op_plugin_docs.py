@@ -13896,7 +13896,7 @@ save_npugraph_tensor(Tensor self, *, str? save_path=None) -> ()
 参数说明：
 input(Tensor/List[Tensor])：必选参数，用于保存的tensor或tensorlist。当输入为单个tensor时，可以使用此接口保存单个tensor至指定的路径。当输入为tensorlist时，可以将tensorlist中的所有tensor分别保存至指定路径下。
 save_path(str):：可选参数，仅支持在保存单个tensor时使用，文件的保存位置。
-save_name(str)：必选参数，仅支持在保存tensorlist时使用，tensorlist/tuple中所有tensor的保存用名。
+save_name(str)：可选参数，仅支持在保存tensorlist时使用，tensorlist/tuple中所有tensor的保存名主体。
 save_dir(str)：可选参数，仅支持在保存tensorlist时使用，tensorlist/tuple中所有tensor的保存路径。
 suffix(str)：可选参数，仅支持在保存tensorlist时使用，tensorlist/tuple中所有tensor的保存后缀。
 

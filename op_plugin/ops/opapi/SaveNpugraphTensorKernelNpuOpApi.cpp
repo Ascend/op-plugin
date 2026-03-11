@@ -189,7 +189,7 @@ std::string get_final_save_path(c10::optional<c10::string_view> save_path, int d
     std::filesystem::path file_path(path_str);
     std::string suffix = file_path.extension();
     TORCH_CHECK(suffix == ".bin" || suffix == ".pt",
-                "Invalid file extension, must be .pt or .bin: ",
+                "Invalid file extension, must be .pt or .bin, given: ",
                 path_str, OPS_ERROR(ErrCode::PARAM));
     std::filesystem::path parent_dir = file_path.parent_path();
     std::string file_stem = file_path.stem().string();
@@ -269,7 +269,7 @@ std::string get_final_suffix(c10::optional<c10::string_view> suffix)
     } else {
         final_suffix = std::string(suffix.value().data(), suffix.value().size());
         TORCH_CHECK(final_suffix == ".pt" || final_suffix == ".bin",
-                    "Invalid file extension, must be .pt or .bin: ",
+                    "Invalid file extension, must be .pt or .bin, given: ",
                     final_suffix, OPS_ERROR(ErrCode::PARAM));
     }
     return final_suffix;
