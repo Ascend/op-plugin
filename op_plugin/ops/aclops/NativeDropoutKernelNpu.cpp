@@ -56,6 +56,9 @@ at::Tensor native_dropout_backward(
 {
     double p = (scale == static_cast<double>(0.0)) ? 1 : (1 - 1 / scale);
     at::TensorOptions options = grad_output.options();
+    if (mask.numel() == 0) {
+        return at_npu::native::OpPreparation::apply_tensor_without_format(mask.sizes(), options);
+    }
     if (p == static_cast<double>(0)) {
         return grad_output;
     }

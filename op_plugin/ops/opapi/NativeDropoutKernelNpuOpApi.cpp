@@ -121,8 +121,11 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
 at::Tensor npu_dropout_backward(const at::Tensor& grad_output, const at::Tensor& mask, double scale)
 {
     DO_COMPATIBILITY(aclnnDropoutDoMask, acl_op::npu_dropout_backward(grad_output, mask, scale));
-
-    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(grad_output);
+    at::Tensor result;
+    if (mask.numel() == 0) {
+        return at_npu::native::OpPreparation::apply_tensor_without_format(mask.sizes(), grad_output.options());
+    }
+    result = at_npu::native::OpPreparation::apply_tensor_without_format(grad_output);
     EXEC_NPU_CMD(aclnnDropoutDoMask, grad_output, mask, scale, result);
     return result;
 }
