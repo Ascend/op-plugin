@@ -183,6 +183,11 @@ backward:
   input, weight, bias, h, c: npu_lstm_data_backward(grads[0], grads[1], grads[2], input, batch_sizes, weight, bias, h, c, result0, result1, result2, result3, result4, result5, result6, result7, direction)
   version: [v2.1, newest]
 
+- name: _lstm_npu(Tensor input, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+  output_differentiability: [true, true, true, false, false, false, false, false, false, false]
+  input, hx, params: _lstm_npu_backward(grads[0], grads[1], grads[2], input, hx, params, result3, result4, result5, result6, result7, result8, result9, has_biases, num_layers, dropout, train, bidirectional, batch_first, batch_sizes)
+  version: all_version
+
 - name: npu_max.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
   self: npu_max_backward(grad, dim, indices, self.sym_sizes(), keepdim)
   version: [v2.1, newest]

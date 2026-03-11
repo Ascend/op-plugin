@@ -14041,3 +14041,577 @@ softmax_max_index, softmax_sum_index = torch_npu.npu_dense_lightning_indexer_sof
 torch_npu.npu_dense_lightning_indexer_grad_kl_loss(q, k, q_index, k_index, weights, softmax_max, softmax_sum, softmax_max_index, softmax_sum_index, scale, query_rope=q_rope, key_rope=k_rope, actual_seq_qlen=actual_seq_qlen, actual_seq_klen=actual_seq_klen, layout=input_layout, sparse_mode=sparse_mode)
 """
 )
+
+
+_add_torch_npu_docstr(
+    "_lstm_npu",
+    """
+接口原型: 
+_lstm_npu(Tensor input, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+
+
+功能描述:
+LSTM（Long Short-Term Memory，长短时记忆）网络是一种特殊的循环神经网络（RNN）模型。进行LSTM网络计算，接收输入序列和初始状态，返回输出序列和最终状态。
+
+计算公式：
+  
+  $$
+  \begin{aligned}
+  (1)\qquad f_t &=\sigma(W_f[h_{t-1}, x_t] + b_f) \\
+  (2)\qquad     i_t &=\sigma(W_i[h_{t-1}, x_t] + b_i) \\
+  (3)\qquad     o_t &=\sigma(W_o[h_{t-1}, x_t] + b_o) \\
+  (4)\qquad     \tilde{c}_t &=tanh(W_c[h_{t-1}, x_t] + b_c) \\
+  (5)\qquad     c_t &=f_t ⊙ c_{t-1} + i_t ⊙ \tilde{c}_t \\
+  (6)\qquad     c_{o}^{t} &=tanh(c_t) \\
+  (7)\qquad     h_t &=o_t ⊙ c_{o}^{t} \\
+  \end{aligned}
+  $$
+
+  - $x_t ∈ R^{d}$：LSTM单元的输入向量。
+  - $f_t ∈ (0, 1)^{h}$：遗忘门激活向量。
+  - $i_t ∈ (0, 1)^{h}$：输入门、更新门激活向量。
+  - $o_t ∈ (0, 1)^{h}$：输出门激活向量。
+  - $h_i ∈ (-1, 1)^{h}$：隐藏状态向量，也称为LSTM单元的输出向量。
+  - $\tilde{c}_t ∈ (-1, 1)^{h}$：cell输入激活向量。
+  - $c_t ∈ R^{h}$：cell状态向量。
+  - $W ∈ R^{h×d}，(U ∈ R^{h×h})∩(b ∈ R^{h})$：训练中需要学习的权重矩阵和偏置向量参数。
+
+
+参数说明: 
+input (Tensor类型)：必选参数，LSTM单元的输入向量，数据格式支持ND，数据类型支持FLOAT16、FLOAT32，非连续Tensor。
+(1)若batch_sizes传入空指针：当batch_first=False时shape应为（time_step, batch_size, input_size）, 否则为（batch_size, time_step, input_size）。其中，batch_first表示batch是否在第一维；time_step表示时间维度；batch_size表示每个时刻需要处理的batch数量；input_size表示输入的特征数量。
+(2)若传入有效batch_sizes：shape应为(time_step * batch_size, input_size)，其内存排列与(time_step, batch_size, input_size)相同。
+hx (TensorList)：必选入参，表示LSTM运算中的初始hidden和cell状态列表，Device侧的TensorList,数据类型支持FLOAT16、FLOAT32，列表长度为2，列表中每个shape支持三维（D * num_layers, batch_size, hidden_size），若输入为空，则表示输入的初始hidden和cell状态为0。
+params (TensorList)：必选入参，表示LSTM运算中的权重和偏置张量列表,Device侧的TensorList，数据格式支持ND，数据类型支持FLOAT16、FLOAT32。
+                     列表长度为 2 * D * B * num_layers, 其中，num_layers对应参数numLayers，表示LSTM层数，bidirection为True时 D = 2， 否则 D = 1, has_biases为True时 B = 2, 否则 B = 1；
+                     其中bidirection为True， 且has_biases为True时，参数排布如下：[weight_ih_0, weight_hh_0, bias_ih_0, bias_hh_0, weight_ih_reverse_0, weight_hh_reverse_0, bias_ih_reverse_0, bias_hh_reverse_0], 
+                     其中 weight_ih_0 表示第0层输入的权重参数，其shape为（4 * hidden_size, cur_input_size），其中cur_intput_size 表示LSTM每层计算时的输入的特征数量（首层为input_size, 后续层为hidden_size, 如果bidirection为True，则为2 * hidden_size）；
+                     weight_hh_0 表示第0层隐藏层的权重参数，其shape为（4 * hidden_size, hidden_size）,bias_ih_0 表示第0层输入权重参数的偏置，其shape为（4 * hidden_size）,bias_hh_0 表示第0层隐藏层权重参数的偏置，其shape为（4 * hidden_size）。
+has_biases (bool)：必选入参，表示是否有biases。
+num_layers (int)：必选入参，表示LSTM层数。
+dropout (float)：表示随机掩码的概率。当前不支持该功能。
+train (bool)：必选入参，表示是否是训练模式。其中train = True时，在计算前向LSTM时会保存中间结果用于反向传播，train = False的时候，前向计算过程不保存中间结果。
+bidirectional(bool):必选入参，表示是否是双向。
+batch_first(bool):可选入参，表示输入数据格式是否是Batch在第一轴（B, T, H）。
+batch_sizes(Tensor类型):可选参数，表示每个时间步实际参与计算的有效Batch数。传入nullptr时，代表输入input为定长模式数据，否则为不定长模式。shape为(time_step,)，其中元素应按降序排列，元素值为正整数且最大不超过总Batch数量，且第一位元素值应与总Batch数量相等。
+
+输出说明:
+
+output (Tensor)：输出张量，表示LSTM运算中最后一层每个时间步的输出结果,数据类型支持FLOAT16、FLOAT32，非连续Tensor。当batch_first=False时shape支持三维（time_step, batch_size, D * hidden_size），否则支持三维（batch_size,time_step, D * hidden_size）。
+hy (Tensor)：输出张量，表示进行LSTM运算中每层最后一个时间步的隐藏层（公式（7）的输出）。shape支持三维（D * num_layers, batch_size, hidden_size）。数据格式支持ND，数据类型支持FLOAT16、FLOAT32。
+cy (Tensor)：输出张量，表示进行LSTM运算中每层最后一个时间步的Cell状态（公式（5）的输出）。shape支持三维（D * num_layers, batch_size, hidden_size）。数据格式支持ND，数据类型支持FLOAT16、FLOAT32。
+i_out(Tensor)：输出张量，表示LSTM运算中每层输入门的激活值（sigmoid输出，公式（2）的输出），数据类型支持FLOAT16、FLOAT32。原始列表长度为 D * num_layers，列表中每个元素为三维张量（time_step, batch_size, hidden_size）；
+最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, time_step, batch_size, hidden_size)；当train=False时，输出为空张量。
+j_out(Tensor)：输出张量，表示LSTM运算中每层的候选cell状态（tanh输出，公式（4）的输出），数据类型支持FLOAT16、FLOAT32。原始列表长度为 D * num_layers，列表中每个元素为三维张量（time_step, batch_size, hidden_size）；
+最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, time_step, batch_size, hidden_size)；当train=False时，输出为空张量。
+f_out(Tensor)：输出张量，表示LSTM运算中每层遗忘门的激活值（sigmoid输出），数据类型支持FLOAT16、FLOAT32。原始列表长度为 D * num_layers，列表中每个元素为三维张量（time_step, batch_size, hidden_size）；
+最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, time_step, batch_size, hidden_size)；当train=False时，输出为空张量。
+o_out(Tensor)：输出张量，表示LSTM运算中每层输出门的激活值（sigmoid输出，公式（3）的输出），数据类型支持FLOAT16、FLOAT32。原始列表长度为 D * num_layers，列表中每个元素为三维张量（time_step, batch_size, hidden_size）；
+最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, time_step, batch_size, hidden_size)；当train=False时，输出为空张量。
+h_out(Tensor)：输出张量，表示LSTM运算中每层的隐藏层（公式（7）的输出），数据类型支持FLOAT16、FLOAT32。train=True时：原始列表长度为 D * num_layers，列表中每个元素为三维张量（time_step, batch_size, hidden_size）；最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, time_step, batch_size, hidden_size)；
+train=False时：原始列表长度为 D * num_layers，列表中每个元素为二维张量（batch_size, hidden_size）；最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, batch_size, hidden_size)；
+c_out(Tensor)：输出张量，表示LSTM运算中每层的最终Cell状态（公式（5）的输出），数据类型支持FLOAT16、FLOAT32。train=True时：原始列表长度为 D * num_layers，列表中每个元素为三维张量（time_step, batch_size, hidden_size）；最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, time_step, batch_size, hidden_size)；
+train=False时：原始列表长度为 D * num_layers，列表中每个元素为二维张量（batch_size, hidden_size）；最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, batch_size, hidden_size)；
+tanh_c_out(Tensor)：输出张量，表示LSTM运算中每层最终cell状态经过tanh激活函数后的输出（公式（6）的输出），数据类型支持FLOAT16、FLOAT32。原始列表长度为 D * num_layers，列表中每个元素为三维张量（time_step, batch_size, hidden_size）；最终输出为将列表张量在维度0上堆叠后的张量，shape为 (D * num_layers, time_step, batch_size, hidden_size)；当train=False时，输出为空张量。
+
+
+约束说明
+确定性计算：_lstm_npu默认支持确定性实现。
+
+支持版本: 
+PyTorch 2.6及更高版本
+
+支持的型号: 
+Atlas A3 训练系列产品/Atlas A3 推理系列产品
+Atlas A2 训练系列产品/Atlas A2 推理系列产品
+Atlas 推理系列产品
+Atlas 训练系列产品
+
+调用示例: 
+import torch
+import torch_npu
+
+torch.npu.set_device(0)
+device = torch.device("npu:0")
+dtype = torch.float32
+
+input_tensor = torch.randn((2, 3, 8), dtype=dtype, device=device)
+h0 = torch.randn((2, 2, 4), dtype=dtype, device=device)
+c0 = torch.randn((2, 2, 4), dtype=dtype, device=device)
+hx = [h0, c0]
+hidden_size = 4
+gate_size = 4 * hidden_size
+weight_ih = torch.randn((gate_size, 8), dtype=dtype, device=device)
+weight_hh = torch.randn((gate_size, 4), dtype=dtype, device=device)
+params = [weight_ih, weight_hh, weight_hh, weight_hh]
+c0 = torch.randn((1, 2, 16), dtype=dtype, device=device)
+batch_sizes = torch.randn((4*hidden_size), dtype=dtype, device=device)
+input_tensor = input_tensor.to(device, dtype=dtype)
+hx = [
+    t.to(device=device, dtype=dtype)
+    for t in hx
+]
+params = [
+    p.to(device=device, dtype=dtype)
+    for p in params
+]
+
+
+out, out_h, out_c,  _, _, _, _, hn_list, cn_list, _ = torch_npu._lstm_npu(
+    input_tensor,    # 1. input
+    hx,              # 2. hx
+    params,          # 3. params
+    False,           # 4. has_biases
+    2,               # 5. num_layers
+    0.0,             # 6. dropout
+    False,           # 7. train
+    False,           # 8. bidirectional
+    batch_first=True,            # 9. batch_first（位置参数，非关键字）
+    batch_sizes=None             # 10. batch_sizes
+)
+
+"""
+)
+
+
+_add_torch_npu_docstr(
+    "_lstm_npu_backward",
+    """
+接口原型: 
+_lstm_npu_backward(Tensor grad_y, Tensor grad_hy, Tensor grad_cy, Tensor input, Tensor[] hx, Tensor[] params, Tensor i, Tensor j, Tensor f, Tensor o, Tensor h, Tensor c, Tensor tanhc, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor[], Tensor[])
+
+
+功能描述:
+LSTM的反向传播，计算正向输入input、权重params、初始状态hx的梯度。
+
+计算公式：
+  
+  <details>
+    <summary> 单层LSTM反向传播计算公式</summary>
+
+    | 组件 | 公式 |
+    |:---|:---|
+    | 输入拼接 | $\mathbf{z}_t = \begin{bmatrix} \mathbf{h}_{t-1} \\ \mathbf{x}_t \end{bmatrix}$ |
+    | 遗忘门 | $\mathbf{f}_t = \sigma(\mathbf{W}_f \mathbf{z}_t + \mathbf{b}_f)$ |
+    | 输入门 | $\mathbf{i}_t = \sigma(\mathbf{W}_i \mathbf{z}_t + \mathbf{b}_i)$ |
+    | 候选状态 | $\mathbf{g}_t = \tanh(\mathbf{W}_g \mathbf{z}_t + \mathbf{b}_c)$ |
+    | 输出门 | $\mathbf{o}_t = \sigma(\mathbf{W}_o \mathbf{z}_t + \mathbf{b}_o)$ |
+    | 细胞状态 | $\mathbf{c}_t = \mathbf{f}_t \odot \mathbf{c}_{t-1} + \mathbf{i}_t \odot \mathbf{g}_t$ |
+    | 隐藏状态 | $\mathbf{h}_t = \mathbf{o}_t \odot \tanh(\mathbf{c}_t)$ |
+
+    其中：
+
+    - $\sigma$ 是 sigmoid 函数
+    - $\odot$ 表示逐元素乘法 (Hadamard product)
+    - $W_*$ 是可学习的权重矩阵
+    - $b_*$ 是可学习的偏置项
+  </details>
+
+  <details>
+
+    <summary> 反向传播变量定义</summary>
+
+    - 总损失：$L = \sum_{t=1}^{T} L_t$
+    - 隐藏状态梯度：$\delta\mathbf{h}_t = \frac{\partial L}{\partial \mathbf{h}_t}$
+    - 细胞状态梯度：$\delta\mathbf{c}_t = \frac{\partial L}{\partial \mathbf{c}_t}$
+  </details>
+
+  <details>
+
+    <summary> 反向传播算法（时间步 t -> t-1）</summary>
+
+    - **初始化**
+
+    $$
+    \delta\mathbf{h}_{T} = \mathbf{0}, \quad \delta\mathbf{c}_{T} = \mathbf{0}, \quad \mathbf{f}_{T} = \mathbf{0}
+    $$
+
+    - **循环 $t = T - 1$ 到 $0$**
+
+      1.**当前隐藏状态梯度**
+
+        $$
+        \delta\mathbf{h}_t = \frac{\partial L_t}{\partial \mathbf{h}_t} + \delta\mathbf{h}_{\text{next}}
+        $$
+
+      2.**当前细胞状态梯度**
+
+        $$
+        \delta\mathbf{c}_t = \delta\mathbf{h}_t \odot \mathbf{o}_t \odot (1 - \tanh^2(\mathbf{c}_t)) + \delta\mathbf{c}_{\text{next}} \odot \mathbf{f}_{\text{next}}
+        $$
+
+      3.**门控梯度计算**
+
+        $$
+        \delta\mathbf{o}_t = \delta\mathbf{h}_t \odot \tanh(\mathbf{c}_t) \odot \mathbf{o}_t \odot (1 - \mathbf{o}_t)
+        $$
+
+        $$
+        \delta\mathbf{g}_t = \delta\mathbf{c}_t \odot \mathbf{i}_t \odot (1 - \mathbf{g}_t^2)
+        $$
+
+        $$
+        \delta\mathbf{i}_t = \delta\mathbf{c}_t \odot \mathbf{g}_t \odot \mathbf{i}_t \odot (1 - \mathbf{i}_t)
+        $$
+
+        $$
+        \delta\mathbf{f}_t = \delta\mathbf{c}_t \odot \mathbf{c}_{t-1} \odot \mathbf{f}_t \odot (1 - \mathbf{f}_t)
+        $$
+
+      4.**参数梯度累加**
+
+        $$
+        \frac{\partial L}{\partial \mathbf{W}_f} \mathrel{+}= \delta\mathbf{f}_t \mathbf{z}_t^\top
+        $$
+
+        $$
+        \frac{\partial L}{\partial \mathbf{b}_f} \mathrel{+}= \delta\mathbf{f}_t
+        $$
+
+        $$
+        \frac{\partial L}{\partial \mathbf{W}_i} \mathrel{+}= \delta\mathbf{i}_t \mathbf{z}_t^\top
+        $$
+
+        $$
+        \frac{\partial L}{\partial \mathbf{b}_i} \mathrel{+}= \delta\mathbf{i}_t
+        $$
+
+        $$
+        \frac{\partial L}{\partial \mathbf{W}_g} \mathrel{+}= \delta\mathbf{g}_t \mathbf{z}_t^\top
+        $$
+
+        $$
+        \frac{\partial L}{\partial \mathbf{b}_g} \mathrel{+}= \delta\mathbf{g}_t
+        $$
+
+        $$
+        \frac{\partial L}{\partial \mathbf{W}_o} \mathrel{+}= \delta\mathbf{o}_t \mathbf{z}_t^\top
+        $$
+
+        $$
+        \frac{\partial L}{\partial \mathbf{b}_o} \mathrel{+}= \delta\mathbf{o}_t
+        $$
+
+      5.**传播到前一时刻**
+
+        $$
+        \delta\mathbf{z}_t = \mathbf{W}_f^\top \delta\mathbf{f}_t + \mathbf{W}_i^\top \delta\mathbf{i}_t + \mathbf{W}_g^\top \delta\mathbf{g}_t + \mathbf{W}_o^\top \delta\mathbf{o}_t
+        $$
+
+        $$
+        \delta\mathbf{h}_{\text{prev}} = \delta\mathbf{z}_t[1:\dim(\mathbf{h}_{t-1})]
+        $$
+
+        $$
+        \delta\mathbf{c}_{\text{prev}} = \delta\mathbf{c}_t \odot \mathbf{f}_t
+        $$
+
+      6.**更新传播变量**
+
+        $$
+        \delta\mathbf{h}_{\text{next}} \leftarrow \delta\mathbf{h}_{\text{prev}}
+        $$
+
+        $$
+        \delta\mathbf{c}_{\text{next}} \leftarrow \delta\mathbf{c}_{\text{prev}}
+        $$
+
+        $$
+        \mathbf{f}_{\text{next}} \leftarrow \mathbf{f}_t
+        $$
+
+    </details>
+
+  <details>
+    <summary> 梯度计算原理</summary>
+
+    - **细胞状态梯度推导**
+
+      $$
+      \delta\mathbf{c}_t = \frac{\partial L}{\partial \mathbf{h}_t} \frac{\partial \mathbf{h}_t}{\partial \mathbf{c}_t} + \frac{\partial L}{\partial \mathbf{c}_{t+1}} \frac{\partial \mathbf{c}_{t+1}}{\partial \mathbf{c}_t}
+      $$
+
+      其中：
+
+      $$
+      \frac{\partial \mathbf{h}_t}{\partial \mathbf{c}_t} = \mathbf{o}_t \odot (1 - \tanh^2(\mathbf{c}_t))
+      $$
+
+      $$
+      \frac{\partial \mathbf{c}_{t+1}}{\partial \mathbf{c}_t} = \mathbf{f}_{t+1}
+      $$
+
+    - **遗忘门梯度推导**
+
+      $$
+      \delta\mathbf{f}_t = \frac{\partial L}{\partial \mathbf{a}_f^t} = \delta\mathbf{c}_t \odot \mathbf{c}_{t-1} \odot \mathbf{f}_t \odot (1 - \mathbf{f}_t)
+      $$
+
+    - **参数梯度推导**
+
+      $$
+      \frac{\partial L}{\partial \mathbf{W}_f} = \sum_{t=1}^{T} \delta\mathbf{f}_t \mathbf{z}_t^\top
+      $$
+
+    - **LSTM 梯度流动特性**
+
+      **长程依赖处理**
+
+      $$
+      \frac{\partial \mathbf{c}_T}{\partial \mathbf{c}_1} = \prod_{k=2}^{T} \mathbf{f}_k \quad \text{(对角矩阵)}
+      $$
+
+  </details>
+
+  <details>
+    <summary> 多层LSTMBackward反向传播</summary>
+    在多层LSTM网络中，层与层之间的梯度传播仅关注隐藏状态的传递（忽略单层内部细节，如门控机制或单元状态）。设：
+
+    - $\mathbf{h}^{(l)}$：第 $l$ 层的隐藏状态（$l = 1, 2, \dots, L$，其中 $L$ 为总层数）
+    - $L$：损失函数
+    - $\frac{\partial L}{\partial \mathbf{h}^{(l)}}$：损失函数对第 $l$ 层隐藏状态的梯度
+
+    **核心传播公式**
+
+    梯度从顶层（$l = L$）向底层（$l = 1$）传播，层间关系由链式法则给出：
+
+    $$
+    \frac{\partial L}{\partial \mathbf{h}^{(l-1)}} = \frac{\partial L}{\partial \mathbf{h}^{(l)}} \cdot \frac{\partial \mathbf{h}^{(l)}}{\partial \mathbf{h}^{(l-1)}}
+    $$
+
+    其中：
+
+    - $\frac{\partial L}{\partial \mathbf{h}^{(l)}}$：当前层 $l$ 的梯度（已由上一层反向传播得到）
+    - $\frac{\partial \mathbf{h}^{(l)}}{\partial \mathbf{h}^{(l-1)}}$：第 $l$ 层隐藏状态对第 $l-1$ 层隐藏状态的雅可比矩阵
+    - $\cdot$：矩阵乘法（梯度传播本质为向量-矩阵乘法）
+
+    即每层的输出的梯度dx为上一层输入的梯度dy。
+  </details>
+
+
+参数说明: 
+grad_y (Tensor类型)：必选参数，LSTM正向最后一层输出hidden的梯度。对应公式中的∂L/∂h^(l)。双向时数据沿最后一维按前后向排布。数据类型与input一致。数据格式支持ND，数据类型支持FLOAT16、FLOAT32。非连续Tensor。
+若传入有效batchSizesOptional，shape为[time_step * batch_size, hidden_size * D];若传入空指针batchSizesOptional，shape为[time_step, batch_size, hidden_size * D] 或 [batch_size, time_step, hidden_size * D]。
+grad_hy (Tensor类型)：必选入参，LSTM正向每层输出hidden在T时刻从下一个时间步传来的梯度。对应δh_next。多层双向时数据沿第0维按先双向后逐层排布。数据类型与input一致。数据格式支持ND，数据类型支持FLOAT16、FLOAT32。非连续Tensor,shape为[numLayers * D, batch_size, hidden_size]。
+grad_cy (Tensor类型)：必选入参，LSTM每层输出cell在T时刻从下一个时间步传来的梯度。对应δc_next。多层双向时数据沿第0维按先双向后逐层排布。数据类型与input一致。数据格式支持ND，数据类型支持FLOAT16、FLOAT32。非连续Tensor。shape为[numLayers * D, batch_size, hidden_size]。
+input (Tensor类型)：必选参数，LSTM单元的输入向量，数据格式支持ND，数据类型支持FLOAT16、FLOAT32，非连续Tensor。若传入有效batchSizesOptional，shape为[time_step * batch_size, input_size];
+若传入空指针batchSizesOptional，shape为[time_step, batch_size, input_size] 或 [batch_size, time_step, input_size],batch_size表示序列组数；time_step表示时间维度；input_size表示输入的特征数量。
+hx (TensorList)：必选入参，LSTM每层的初始hidden和cell状态。对应0时刻的h(t-1)与c(t-1)。列表长度为2，包含h_0和c_0。多层双向时每个tensor数据沿第0维按先双向后逐层排布。数据类型与input一致。数据格式支持ND，数据类型支持FLOAT16、FLOAT32。非连续Tensor。列表内每个tensor shape为[D * num_layers, batch_size, hidden_size]。
+params (TensorList)：必选入参，LSTM每层的权重和偏置张量列表，对应公式中的w与b。bidirection为True时 `D = 2`，否则 `D = 1`，hasBiases为True时 `B = 2`，否则 `B = 1`。列表长度为 D * B * num_layers。当bidirection和hasBias均为True时排布为：[weight_ih_0, weight_hh_0, bias_ih_0, bias_hh_0, weight_ih_reverse_0, weight_hh_reverse_0, bias_ih_reverse_0, bias_hh_reverse_0]。hasBias为False时无bias项；bidirection为False时无reverse项。多层时逐层排布。数据类型与input一致。
+数据格式支持ND，数据类型支持FLOAT16、FLOAT32。非连续Tensor。weight_ih: [4*hidden_size, cur_input_size];weight_hh: [4*hidden_size, hidden_size];bias_ih: [4*hidden_size];bias_hh: [4*hidden_size]。
+i (Tensor类型)：必选入参，LSTM正向中每层输出的输入门的激活值。对应公式中的i。
+  原始输入形态：为Tensor列表，列表长度为 D * num_layers；多层双向场景下，列表内Tensor按「先双向、后多层」的顺序排布；
+  列表中单个Tensor特征：非连续Tensor，数据类型与input一致，支持FLOAT16、FLOAT32；shape为[time_step, batch_size, hidden_size]；
+  代码处理后形态：将列表内Tensor在维度0上堆叠为单个大Tensor，最终shape为[D * num_layers, time_step, batch_size, hidden_size]；若列表为空则输出空Tensor。
+j (Tensor类型)：必选入参，LSTM正向中每层输出的候选cell状态的激活值。对应公式中的g。
+  原始输入形态：为Tensor列表，列表长度为 D * num_layers；多层双向场景下，列表内Tensor按「先双向、后多层」的顺序排布；
+  列表中单个Tensor特征：非连续Tensor，数据类型与input一致，支持FLOAT16、FLOAT32；shape为[time_step, batch_size, hidden_size]；
+  代码处理后形态：将列表内Tensor在维度0上堆叠为单个大Tensor，最终shape为[D * num_layers, time_step, batch_size, hidden_size]；若列表为空则输出空Tensor。
+f (Tensor类型)：必选入参，LSTM正向中每层遗忘门的激活值。对应公式中的f。
+  原始输入形态：为Tensor列表，列表长度为 D * num_layers；多层双向场景下，列表内Tensor按「先双向、后多层」的顺序排布；
+  列表中单个Tensor特征：非连续Tensor，数据类型与input一致，支持FLOAT16、FLOAT32；shape为[time_step, batch_size, hidden_size]；
+  代码处理后形态：将列表内Tensor在维度0上堆叠为单个大Tensor，最终shape为[D * num_layers, time_step, batch_size, hidden_size]；若列表为空则输出空Tensor。
+o (Tensor类型)：必选入参，LSTM正向中每层输出门的激活值。对应公式中的o。
+  原始输入形态：为Tensor列表，列表长度为 D * num_layers；多层双向场景下，列表内Tensor按「先双向、后多层」的顺序排布；
+  列表中单个Tensor特征：非连续Tensor，数据类型与input一致，支持FLOAT16、FLOAT32；shape为[time_step, batch_size, hidden_size]；
+  代码处理后形态：将列表内Tensor在维度0上堆叠为单个大Tensor，最终shape为[D * num_layers, time_step, batch_size, hidden_size]；若列表为空则输出空Tensor。
+h (Tensor类型)：必选入参，LSTM正向中每层的隐藏hidden状态。对应公式中的h。
+  原始输入形态：为Tensor列表，列表长度为 D * num_layers；多层双向场景下，列表内Tensor按「先双向、后多层」的顺序排布；
+  列表中单个Tensor特征：非连续Tensor，数据类型与input一致，支持FLOAT16、FLOAT32；shape为[time_step, batch_size, hidden_size]；
+  代码处理后形态：将列表内Tensor在维度0上堆叠为单个大Tensor，最终shape为[D * num_layers, time_step, batch_size, hidden_size]；若列表为空则输出空Tensor。
+c (Tensor类型)：必选入参，LSTM正向中每层的最终cell状态。对应公式中的c。
+  原始输入形态：为Tensor列表，列表长度为 D * num_layers；多层双向场景下，列表内Tensor按「先双向、后多层」的顺序排布；
+  列表中单个Tensor特征：非连续Tensor，数据类型与input一致，支持FLOAT16、FLOAT32；shape为[time_step, batch_size, hidden_size]；
+  代码处理后形态：将列表内Tensor在维度0上堆叠为单个大Tensor，最终shape为[D * num_layers, time_step, batch_size, hidden_size]；若列表为空则输出空Tensor。
+tanhc (Tensor类型)：必选入参，LSTM正向中每层最终cell状态经过tanh激活函数后的输出。对应公式中的tanh(c)。
+  原始输入形态：为Tensor列表，列表长度为 D * num_layers；多层双向场景下，列表内Tensor按「先双向、后多层」的顺序排布；
+  列表中单个Tensor特征：非连续Tensor，数据类型与input一致，支持FLOAT16、FLOAT32；shape为[time_step, batch_size, hidden_size]；
+  代码处理后形态：将列表内Tensor在维度0上堆叠为单个大Tensor，最终shape为[D * num_layers, time_step, batch_size, hidden_size]；若列表为空则输出空Tensor。
+has_biases(bool):必选入参，表示是否有偏置b。
+num_layers(int):必选入参，表示LSTM层数。值大于0。
+dropout (float)：表示随机掩码的概率。当前不支持该功能。
+train (bool)：必选入参，表示是否是训练模式。其中train = True时，在计算前向LSTM时会保存中间结果用于反向传播，train = False的时候，前向计算过程不保存中间结果。
+bidirectional(bool):必选入参，表示是否是双向。bidirectional为true时D为2，bidirectional为false时D为1。
+batch_first(bool):可选入参，表示输入数据格式是否是Batch在第一轴（B, T, H）。
+batch_sizes(Tensor类型):可选参数，变长LSTM输入序列各个时刻的有效序列batch数。变长序列时支持。shape为[time_step]。
+
+
+输出说明:
+dx_out (Tensor)：输出张量，输入input上的梯度，对应公式中的δx。shape与input一致。数据类型与input一致。shape为[time_step, batch_size, input_size] 或 [batch_size, time_step, input_size]，数据格式支持ND，数据类型支持FLOAT16、FLOAT32。非连续Tensor。
+out_hx_prev (TensorList)：输出张量列表，由张量dh_prev_out和dc_prev_out拼接结果，列表长度为2。dh_prev_out是LSTM每层初始hidden的梯度，对应t=0时的δh_prev。数据类型与input一致。shape为[D * num_layers, batch_size, hidden_size]，数据格式支持ND，数据类型支持FLOAT16、FLOAT32。非连续Tensor。dc_prev_out是多层双向时数据沿第0维按先双向后逐层排布。数据类型与input一致。shape为[D * num_layers, batch_size, hidden_size]，数据格式支持ND，数据类型支持FLOAT16、FLOAT32。非连续Tensor。
+dparams_out(TensorList)：输出张量列表，权重和偏置的梯度张量列表。对应公式中的δw和δb。列表长度为 D * B * num_layers。排布与输入params一致。数据类型与input一致。dweight_ih: [4*hidden_size, cur_input_size]，dweight_hh: [4*hidden_size, hidden_size]，dbias: [4*hidden_size]
+
+
+约束说明
+确定性计算：_lstm_npu_backward默认支持确定性实现。
+
+支持版本: 
+PyTorch 2.6及更高版本
+
+支持的型号: 
+Atlas A3 训练系列产品/Atlas A3 推理系列产品
+Atlas A2 训练系列产品/Atlas A2 推理系列产品
+Atlas 推理系列产品
+Atlas 训练系列产品
+
+调用示例: 
+
+import torch
+import torch_npu
+
+def _lstm_backward_npu(
+    grad_y: torch.Tensor,
+    grad_hy: torch.Tensor,
+    grad_cy: torch.Tensor,
+    input: torch.Tensor,
+    hx: List[torch.Tensor],
+    params: List[torch.Tensor],
+    i: torch.Tensor,
+    j: torch.Tensor,
+    f: torch.Tensor,
+    o: torch.Tensor,
+    h: torch.Tensor,
+    c: torch.Tensor,
+    tanhc: torch.Tensor,
+    has_biases: bool = True,
+    num_layers: int = 1,
+    dropout: float = 0.0,
+    train: bool = True,
+    bidirectional: bool = False,
+    batch_first: Optional[bool] = None,
+    batch_sizes: Optional[torch.Tensor] = None
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, List[torch.Tensor]]:
+
+    # 1. 强制所有张量转到NPU设备，且确保类型为float32（解决double dtype警告）
+    npu_device = torch.device('npu:0')
+    dtype = torch.float32  # NPU不支持double，统一用float32
+    
+    # 类型+设备转换
+    def to_npu_tensor(t: torch.Tensor) -> torch.Tensor:
+        if t is None:
+            return t
+        return t.to(device=npu_device, dtype=dtype)
+    
+    grad_y = to_npu_tensor(grad_y)
+    grad_hy = to_npu_tensor(grad_hy)
+    grad_cy = to_npu_tensor(grad_cy)
+    input = to_npu_tensor(input)
+    i = to_npu_tensor(i)
+    j = to_npu_tensor(j)
+    f = to_npu_tensor(f)
+    o = to_npu_tensor(o)
+    h = to_npu_tensor(h)
+    c = to_npu_tensor(c)
+    tanhc = to_npu_tensor(tanhc)
+    
+    hx = [to_npu_tensor(t) for t in hx]
+    params = [to_npu_tensor(p) for p in params]
+    if batch_sizes is not None:
+        batch_sizes = to_npu_tensor(batch_sizes)
+    
+    # 2. 处理batch_first默认值（接口声明中默认False）
+    if batch_first is None:
+        batch_first = False
+    
+    # 3. 核心调用：严格匹配接口声明的入参类型
+    # 关键：i/j/f/o/h/c/tanhc直接传原始Tensor，不做chunk拆分！
+    output = torch_npu._lstm_backward_npu(
+        grad_y,                  # 0: Tensor grad_y
+        grad_hy,                 # 1: Tensor grad_hy
+        grad_cy,                 # 2: Tensor grad_cy
+        input,                   # 3: Tensor input
+        hx,                      # 4: Tensor[] hx (Python列表)
+        params,                  # 5: Tensor[] params (Python列表)
+        i,                       # 6: Tensor i （核心修复：传单个Tensor，非tuple）
+        j,                       # 7: Tensor j
+        f,                       # 8: Tensor f
+        o,                       # 9: Tensor o
+        h,                       # 10: Tensor h
+        c,                       # 11: Tensor c
+        tanhc,                   # 12: Tensor tanhc
+        has_biases,              # 13: bool has_biases
+        num_layers,              # 14: int num_layers
+        dropout,                 # 15: float dropout
+        train,                   # 16: bool train
+        bidirectional,           # 17: bool bidirectional
+        batch_first=batch_first, # 18: bool? batch_first（关键字参数，接口声明要求）
+        batch_sizes=batch_sizes  # 19: Tensor? batch_sizes（关键字参数）
+    )
+    
+    # 4. 解析输出
+    input_grad = output[0]          # 输入序列梯度
+    hx_prev_grad = output[1]         # 初始hx梯度
+    param_grads_list = output[2]    # 参数梯度列表
+
+    return input_grad, hx_prev_grad, param_grads_list
+
+if __name__ == "__main__":
+    # 1. 初始化测试参数（严格匹配接口要求）
+    seq_len = 8
+    batch_size = 4
+    input_size = 6
+    hidden_size = 4
+    num_layers = 1
+    bidirectional = False
+    num_dir = 2 if bidirectional else 1
+    
+    # 2. 构造NPU张量（float32，避免double dtype警告）
+    device = torch.device('npu:0')
+    dtype = torch.float32
+    
+    # 输入序列 [seq_len, batch, input_size]
+    input = torch.randn(seq_len, batch_size, input_size, device=device, dtype=dtype)
+    # 输出梯度 [seq_len, batch, hidden_size*num_dir]
+    grad_y = torch.randn(seq_len, batch_size, hidden_size * num_dir, device=device, dtype=dtype)
+    # 最后一层h/c梯度 [num_layers*num_dir, batch, hidden_size]
+    grad_hy = torch.randn(num_layers * num_dir, batch_size, hidden_size, device=device, dtype=dtype)
+    grad_cy = torch.randn(num_layers * num_dir, batch_size, hidden_size, device=device, dtype=dtype)
+    
+    # 初始h0/c0 [num_layers*num_dir, batch, hidden_size]
+    h0 = torch.randn(num_layers * num_dir, batch_size, hidden_size, device=device, dtype=dtype)
+    c0 = torch.randn(num_layers * num_dir, batch_size, hidden_size, device=device, dtype=dtype)
+    hx = [h0, c0]
+    
+    # LSTM参数（w_ih, w_hh, b_ih, b_hh）
+    w_ih = torch.randn(4 * hidden_size, input_size, device=device, dtype=dtype)
+    w_hh = torch.randn(4 * hidden_size, hidden_size, device=device, dtype=dtype)
+    b_ih = torch.randn(4 * hidden_size, device=device, dtype=dtype)
+    b_hh = torch.randn(4 * hidden_size, device=device, dtype=dtype)
+    params = [w_ih, w_hh, b_ih, b_hh]
+    
+    # 前向中间结果（核心：不拆分，直接传原始Tensor）
+    # 形状：[seq_len, batch, num_layers*num_dir*hidden_size]
+    i = torch.randn(seq_len, batch_size, num_layers * num_dir * hidden_size, device=device, dtype=dtype)
+    j = torch.randn_like(i)
+    f = torch.randn_like(i)
+    o = torch.randn_like(i)
+    h = torch.randn_like(i)
+    c = torch.randn_like(i)
+    tanhc = torch.tanh(c).to(dtype=dtype)  # 确保dtype一致
+    
+
+    input_grad, h_prev_grad, c_prev_grad, param_grads = _lstm_backward_npu(
+        grad_y=grad_y,
+        grad_hy=grad_hy,
+        grad_cy=grad_cy,
+        input=input,
+        hx=hx,
+        params=params,
+        i=i,           # 直接传单个Tensor，无chunk
+        j=j,
+        f=f,
+        o=o,
+        h=h,
+        c=c,
+        tanhc=tanhc,
+        has_biases=True,
+        num_layers=num_layers,
+        dropout=0.0,
+        train=True,
+        bidirectional=bidirectional,
+        batch_first=False,
+        batch_sizes=None
+    )
+
+"""
+)

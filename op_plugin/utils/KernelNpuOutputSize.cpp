@@ -2229,13 +2229,14 @@ c10::SmallVector<int64_t, SIZE> lstm_backward_npu_output_size(const at::Tensor &
 {
     c10::SmallVector<int64_t, SIZE> output_shape;
     if (batch_sizes.has_value()) {
-        output_shape = {input.size(0), input.size(1)};
-    } else {
-        if (batch_first) {
-            output_shape = {input.size(1), input.size(0), input.size(2)};
+        const at::Tensor& bs_tensor = batch_sizes.value();
+        if (bs_tensor.numel() > 0) {
+            output_shape = {input.size(0), input.size(1)};
         } else {
             output_shape = {input.size(0), input.size(1), input.size(2)};
         }
+    } else {
+        output_shape = {input.size(0), input.size(1), input.size(2)};
     }
     return output_shape;
 }
@@ -2249,11 +2250,15 @@ c10::SmallVector<int64_t, SIZE> lstm_backward_npu_hc_prev_output_size(const at::
     int64_t time_step;
     if (batch_sizes.has_value()) {
         const at::Tensor& bs_tensor = batch_sizes.value();
-        time_step = bs_tensor.size(0);
-        TORCH_CHECK(time_step > 0 && input.size(0) % time_step == 0,
-                    "The input batch_sizes is invalid, time_step must > 0 and input.size(0) must be divisible by time_step, but got ",
-                    "time_step=", time_step, ", input_size0=", input.size(0), ", batch_sizes_shape=", bs_tensor.sizes(), OPS_ERROR(ErrCode::PARAM));
-        batch_size = input.size(0) / time_step;
+        if (bs_tensor.numel() > 0) {
+            time_step = bs_tensor.size(0);
+            TORCH_CHECK(time_step > 0 && input.size(0) % time_step == 0,
+                        "The _lstm_npu_backward input batch_sizes is invalid, time_step must > 0 and input.size(0) must be divisible by time_step, but got ",
+                        "time_step=", time_step, ", input_size0=", input.size(0), ", batch_sizes_shape=", bs_tensor.sizes(), OPS_ERROR(ErrCode::PARAM));
+            batch_size = input.size(0) / time_step;
+        } else {
+            batch_size = batch_first ? input.size(0) : input.size(1);
+        }
     } else {
         batch_size = batch_first ? input.size(0) : input.size(1);
     }

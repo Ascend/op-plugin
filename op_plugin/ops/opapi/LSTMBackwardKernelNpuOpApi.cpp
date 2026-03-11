@@ -31,7 +31,7 @@ std::vector<at::Tensor> squeeze_chunk_result(const at::TensorList& chunk_result)
     return squeezed_result;
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, std::vector<at::Tensor>> _lstm_npu_backward(
+std::tuple<at::Tensor, std::vector<at::Tensor>, std::vector<at::Tensor>> _lstm_npu_backward(
     const at::Tensor &grad_y,
     const at::Tensor &grad_hy,
     const at::Tensor &grad_cy,
@@ -71,7 +71,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, std::vector<at::Tensor>> _lstm_np
     }
 
     int64_t list_length = D * num_layers;
-
     const int64_t split_dim = 0;
     auto i_chunk_origin = at::chunk(i, list_length, split_dim);
     auto j_chunk_origin = at::chunk(j, list_length, split_dim);
@@ -127,10 +126,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, std::vector<at::Tensor>> _lstm_np
         out_c_prev,
         param_list_);
 
+    std::vector<at::Tensor> hx_prev_vec;
+    hx_prev_vec.push_back(out_h_prev);
+    hx_prev_vec.push_back(out_c_prev);
+    at::TensorList out_hx_prev = at::TensorList(hx_prev_vec);
     return std::make_tuple(
         out0,
-        out_h_prev,
-        out_c_prev,
+        out_hx_prev.vec(),
         param_list_.vec());
 }
+
 }
