@@ -23,6 +23,20 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
+constexpr int DIM_2D = 2;
+
+static void check_linalg_solve_triangular_inputs(const at::Tensor& self, const at::Tensor& B)
+{
+    TORCH_CHECK(
+        self.dim() >= DIM_2D,
+        "linalg.solve_triangular: The input tensor A must have at least 2 dimensions.",
+        OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(
+        B.dim() >= DIM_2D,
+        "linalg.solve_triangular: The input tensor B must have at least 2 dimensions.",
+        OPS_ERROR(ErrCode::PARAM));
+}
+
 at::Tensor exec_triangular_solve(
     const at::Tensor& self,
     const at::Tensor& A,
@@ -49,6 +63,7 @@ at::Tensor& linalg_solve_triangular_out(
     bool unitriangular,
     at::Tensor& out)
 {
+    check_linalg_solve_triangular_inputs(self, B);
     at::Tensor X;
     at::Tensor X_transpose;
     bool transpose = false;
@@ -70,6 +85,7 @@ at::Tensor linalg_solve_triangular(
     bool left,
     bool unitriangular)
 {
+    check_linalg_solve_triangular_inputs(self, B);
     at::Tensor X;
     at::Tensor X_transpose;
     bool transpose = false;
