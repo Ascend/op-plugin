@@ -69,7 +69,7 @@ $$
 
 ## 函数原型
 ```
-torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, smooth_scale2=None, beta=None, epsilon=1e-6, output_mask=[]) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, smooth_scale2=None, beta=None, epsilon=1e-6, output_mask=[], y_dtype=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明
@@ -82,12 +82,13 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 - **smooth_scale2**(`Tensor`)：可选参数，第二路量化的smooth缩放因子，对应公式中的$smoothScale2$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时量化分支不进行smooth操作。
 - **beta**(`Tensor`)：可选参数，RmsNorm的偏置项，对应公式中的$beta$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时不添加偏置。
 - **epsilon**(`float`)：可选参数，表示添加到分母中的值，以确保数值稳定，对应公式中的$epsilon$。默认值为`1e-6`。
-- **output_mask**(`bool[2]`)：可选参数，长度为2的布尔数组，用于控制是否计算两路量化输出，对应公式中的$outputMask$。`output_mask[0]`控制第一路量化输出（y1, scale1），`output_mask[1]`控制第二路量化输出（y2, scale2）。默认值为空列表，等价于`[True, True]`。
+- **output_mask**(`bool[2]`)：可选参数，长度为2的布尔数组，用于控制是否计算两路量化输出，对应公式中的$outputMask$。`output_mask[0]`控制第一路量化输出（y1, scale1），`output_mask[1]`控制第二路量化输出（y2, scale2）。
+- **y_dtype**(`ScalarType`)：可选参数，y1和y2的量化输出数据类型。`None`或`torch.int8`表示`int8`；`torch.quint4x2`表示`int4`，`int4`场景下`x1`必须能被8整除。默认值为`None`。
 
 ## 返回值说明
 
-- **y1**(`Tensor`)：第一路动态量化后的输出Tensor，对应公式中的$y1Out$。当`output_mask[0]`为`True`时，数据类型为`int8`，shape与`x1`一致；当`output_mask[0]`为`False`时，返回空Tensor。
-- **y2**(`Tensor`)：第二路动态量化后的输出Tensor，对应公式中的$y2Out$。当`output_mask[1]`为`True`时，数据类型为`int8`，shape与`x1`一致；当`output_mask[1]`为`False`时，返回空Tensor。
+- **y1**(`Tensor`)：第一路动态量化后的输出Tensor，对应公式中的$y1Out$。当`output_mask[0]`为`True`时，数据类型支持`int8`、`int4`，shape与`x1`一致；当`output_mask[0]`为`False`时，返回空Tensor。
+- **y2**(`Tensor`)：第二路动态量化后的输出Tensor，对应公式中的$y2Out$。当`output_mask[1]`为`True`时，数据类型支持`int8`、`int4`，shape与`x1`一致；当`output_mask[1]`为`False`时，返回空Tensor。
 - **x_out**(`Tensor`)：Add计算的结果，对应公式中的$x$。数据类型和shape与输入`x1`保持一致。
 - **scale1**(`Tensor`)：第一路动态量化的缩放系数，对应公式中的$scale1Out$。当`output_mask[0]`为`True`时，数据类型为`float32`，shape为`x1`的shape剔除最后一维；当`output_mask[0]`为`False`时，返回空Tensor。
 - **scale2**(`Tensor`)：第二路动态量化的缩放系数，对应公式中的$scale2Out$。当`output_mask[1]`为`True`时，数据类型为`float32`，shape为`x1`的shape剔除最后一维；当`output_mask[1]`为`False`时，返回空Tensor。
@@ -96,7 +97,6 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 
 - 当`output_mask`不为空时，参数`smooth_scale1`有值时，则`output_mask[0]`必须为True。参数`smooth_scale2`有值时，则`output_mask[1]`必须为True。
 - 当`output_mask`不为空时，`output_mask[0]`与`output_mask[1]`不能同时为False。
-- 当`output_mask`为空时，参数`smooth_scale2`有值时，参数`smooth_scale1`也必须有值。
 
 ## 调用示例
 

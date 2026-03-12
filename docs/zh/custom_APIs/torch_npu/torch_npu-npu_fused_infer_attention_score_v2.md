@@ -186,9 +186,10 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             -   不支持开启左padding、tensorlist、pse、prefix、伪量化、全量化、后量化、空Tensor。
 
         -   当query的D不等于512时：
-            -   当query\_rope和key\_rope为空时：TND场景，要求Q\_D、K\_D、V\_D等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD场景，不支持V\_D等于192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当query\_rope和key\_rope不为空时，要求Q\_D、K\_D、V\_D等于128；GQA和PA场景不支持V_D等于192;
+            -   当query\_rope和key\_rope为空时：TND场景，要求Q\_D（`query`的D维度）、K\_D（`key`的D维度）、V\_D（`value`的D维度）等于128，或者Q\_D、K\_D等于192，V\_D等于128/192；NTD场景，不支持V\_D等于192；NTD\_TND场景，要求Q\_D、K\_D等于128/192，V\_D等于128。当query\_rope和key\_rope不为空时，要求Q\_D、K\_D、V\_D等于128；GQA和PA场景不支持V_D等于192; MHA（Multi-Head Attention）场景Q\_D、K\_D、V\_D都等于64，或Q\_D、K\_D、V\_D都等于128，或Q\_D和K\_D等于192时V\_D等于128，
             -   支持TND、NTD、NTD\_TND；
             -   page attention场景下仅支持blocksize为16对齐且小于等于1024;
+            -   MHA场景下仅支持数据类型为`float16`、`bfloat16`，当数据类型为`float16`，inner\_precise仅支持0和1，当数据类型为`bfloat16`，inner\_precise仅支持0。当sparse\_mode=0不传atten\_mask矩阵，sparse\_mode为3/4传优化后的atten\_mask矩阵。page attention仅支持BnBsH格式，BnBsH表示KV Cache的排布格式为（blockNum, blocksize, H），其中blockNum为块数量、blocksize为每个块中的token个数、H为隐藏层大小；
             -   不支持开启左padding、tensorlist、pse、prefix、伪量化、全量化；
 -   GQA伪量化场景下KV为NZ格式时的参数约束如下：
     - 支持perchannel和pertoken模式，query数据类型固定为bfloat16，key&value固定为int8；query&key&value的D仅支持128；query Sequence Length仅支持1-16；
