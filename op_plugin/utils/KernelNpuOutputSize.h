@@ -157,6 +157,9 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at:
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> index_select_npu_output_size(const at::Tensor& self, int64_t dim,
                                                                               const at::Tensor& index);
 
+OP_PLUGIN_HIDDEN c10::IntArrayRef isclose_output_size(const at::Tensor& self, const at::Tensor& other, float rtol,
+                                                      float atol, bool equal_nan);
+
 OP_PLUGIN_HIDDEN std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> layer_norm_backward_npu_output_size(
     const at::Tensor& X, const at::Tensor& gamma);
 
