@@ -28,6 +28,8 @@ constexpr int64_t WEIGHT_PENULTIMATE_DIM = 1LL;
 constexpr int64_t WEIGHT_LAST_DIM = 2LL;
 constexpr int64_t DIM_3 = 3LL;
 constexpr int64_t DIM_5 = 5LL;
+constexpr int64_t WEIGHT_NZ_A8W8_LAST_DIM = 32LL;
+constexpr int64_t WEIGHT_NZ_A4W4_LAST_DIM = 64LL;
 constexpr int64_t FLOAT8_E5M2 = 35LL;
 constexpr int64_t FLOAT8_E4M3FN = 36LL;
 constexpr int64_t HIFLOAT8 = 34LL;
@@ -74,7 +76,16 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     const bool is_weight_nz = at_npu::native::custom_ops::get_npu_format(weight[DIM_0]) == ACL_FORMAT_FRACTAL_NZ
                               || weight[DIM_0].dim() == DIM_5;
     auto x_size = x.sizes();
-    int n = is_weight_nz ? static_cast<int>(weight[DIM_0].size(1) * 64) : static_cast<int>(weight[DIM_0].sizes()[DIM_2]);
+    int n = 0;
+    const bool is_5d_nz = is_weight_nz && (weight[DIM_0].dim() == DIM_5);
+    if (is_5d_nz) {
+        const int64_t last_dim = weight[DIM_0].size(4);
+        n = (last_dim == WEIGHT_NZ_A8W8_LAST_DIM)
+                ? static_cast<int>(weight_scale[DIM_0].size(1))
+                : static_cast<int>(weight[DIM_0].size(1) * WEIGHT_NZ_A4W4_LAST_DIM);
+    } else {
+        n = static_cast<int>(weight[DIM_0].sizes()[DIM_2]);
+    }
     int m = x_size[DIM_0];
     int k = x_size[DIM_1];
 
