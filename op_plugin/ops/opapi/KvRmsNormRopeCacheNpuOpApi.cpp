@@ -108,7 +108,9 @@ namespace op_api {
         const c10::optional<at::Tensor> &v,
         double epsilon,
         c10::string_view cache_mode,
-        bool is_output_kv)
+        bool is_output_kv,
+        c10::optional<int64_t> k_cache_dtype,
+        c10::optional<int64_t> ckv_cache_dtype)
     {
         TORCH_CHECK((kv.dim() == MAX_DIM), "4D tensor expected for input kv" + OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK((gamma.dim() == 1), "1D tensor expected for input gamma" + OPS_ERROR(ErrCode::PARAM));
@@ -138,17 +140,27 @@ namespace op_api {
         }
 
         char *cache_mode_ptr = const_cast<char *>(cache_mode.data());
+
+        aclDataType k_Cache_Type = at_npu::native::OpPreparation::convert_to_acl_data_type(k_cache.scalar_type());
+        aclDataType ckv_Cache_Type = at_npu::native::OpPreparation::convert_to_acl_data_type(ckv_cache.scalar_type());
+
+        aclDataType k_cache_acltype = k_cache_dtype.has_value() ? c10_npu::GetAclDataType(k_cache_dtype.value()) : k_Cache_Type;
+        aclDataType ckv_cache_acltype = ckv_cache_dtype.has_value() ? c10_npu::GetAclDataType(ckv_cache_dtype.value()) : ckv_Cache_Type;
+
+        TensorWrapper k_cache_wrapper = {k_cache, k_cache_acltype};
+        TensorWrapper ckv_cache_wrapper = {ckv_cache, ckv_cache_acltype};
+
         at::Tensor k_rope = npu_preparation::apply_tensor_without_format(k_rope_shape, kv.options());
         at::Tensor c_kv = npu_preparation::apply_tensor_without_format(c_kv_shape, kv.options());
 
         if (exec_v2_flag) {
             // V2 : v is ignored in V1
-            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvRmsNormRopeCacheV2, kv, gamma, cos, sin, index, k_cache, ckv_cache,
+            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvRmsNormRopeCacheV2, kv, gamma, cos, sin, index, k_cache_wrapper, ckv_cache_wrapper,
                                          k_rope_scale, c_kv_scale, k_rope_offset, c_kv_offset, v_tsr_opt, epsilon, cache_mode_ptr,
                                          is_output_kv, k_rope, c_kv);
         } else {
             // Compatibility for CANN supports only V1
-            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvRmsNormRopeCache, kv, gamma, cos, sin, index, k_cache, ckv_cache,
+            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvRmsNormRopeCache, kv, gamma, cos, sin, index, k_cache_wrapper, ckv_cache_wrapper,
                                          k_rope_scale, c_kv_scale, k_rope_offset, c_kv_offset, epsilon, cache_mode_ptr,
                                          is_output_kv, k_rope, c_kv);
         }
@@ -170,7 +182,9 @@ namespace op_api {
         const c10::optional<at::Tensor> &v,
         double epsilon,
         c10::string_view cache_mode,
-        bool is_output_kv)
+        bool is_output_kv,
+        c10::optional<int64_t> k_cache_dtype,
+        c10::optional<int64_t> ckv_cache_dtype)
     {
         TORCH_CHECK((kv.dim() == MAX_DIM), "4D tensor expected for input kv" + OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK((gamma.dim() == 1), "1D tensor expected for input gamma" + OPS_ERROR(ErrCode::PARAM));
@@ -200,6 +214,16 @@ namespace op_api {
         }
 
         char *cache_mode_ptr = const_cast<char *>(cache_mode.data());
+
+        aclDataType k_Cache_Type = at_npu::native::OpPreparation::convert_to_acl_data_type(k_cache.scalar_type());
+        aclDataType ckv_Cache_Type = at_npu::native::OpPreparation::convert_to_acl_data_type(ckv_cache.scalar_type());
+
+        aclDataType k_cache_acltype = k_cache_dtype.has_value() ? c10_npu::GetAclDataType(k_cache_dtype.value()) : k_Cache_Type;
+        aclDataType ckv_cache_acltype = ckv_cache_dtype.has_value() ? c10_npu::GetAclDataType(ckv_cache_dtype.value()) : ckv_Cache_Type;
+
+        TensorWrapper k_cache_wrapper = {k_cache, k_cache_acltype};
+        TensorWrapper ckv_cache_wrapper = {ckv_cache, ckv_cache_acltype};
+
         at::Tensor k_rope = npu_preparation::apply_tensor_without_format(k_rope_shape, kv.options());
         at::Tensor c_kv = npu_preparation::apply_tensor_without_format(c_kv_shape, kv.options());
 
@@ -208,12 +232,12 @@ namespace op_api {
 
         if (exec_v2_flag) {
             // V2 : v is ignored in V1
-            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvRmsNormRopeCacheV2, kv, gamma, cos, sin, index, k_cache, ckv_cache,
+            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvRmsNormRopeCacheV2, kv, gamma, cos, sin, index, k_cache_wrapper, ckv_cache_wrapper,
                                          k_rope_scale, c_kv_scale, k_rope_offset, c_kv_offset, v_tsr_opt, epsilon, cache_mode_ptr,
                                          is_output_kv, k_rope, c_kv);
         } else {
             // Compatibility for CANN supports only V1
-            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvRmsNormRopeCache, kv, gamma, cos, sin, index, k_cache, ckv_cache,
+            EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvRmsNormRopeCache, kv, gamma, cos, sin, index, k_cache_wrapper, ckv_cache_wrapper,
                                          k_rope_scale, c_kv_scale, k_rope_offset, c_kv_offset, epsilon, cache_mode_ptr,
                                          is_output_kv, k_rope, c_kv);
         }
