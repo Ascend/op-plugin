@@ -40,10 +40,6 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
                                                            const c10::optional<at::Tensor> &mm_weight,
                                                            const c10::optional<at::Tensor> &mm_x_scale,
                                                            const c10::optional<at::Tensor> &mm_weight_scale,
-                                                           const c10::optional<at::Tensor> &gmm_x_offset,
-                                                           const c10::optional<at::Tensor> &gmm_weight_offset,
-                                                           const c10::optional<at::Tensor> &mm_x_offset,
-                                                           const c10::optional<at::Tensor> &mm_weight_offset,
                                                            const c10::optional<at::Tensor> &comm_quant_scale,
                                                            c10::optional<int64_t> gmm_x_quant_mode,
                                                            c10::optional<int64_t> gmm_weight_quant_mode,
@@ -132,10 +128,6 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
             : npu_preparation::convert_to_acl_data_type(gmm_weight_scale.scalar_type())};
         TensorWrapper mm_x_scale_wrapper = {mm_x_scale.value_or(at::Tensor()), c10_npu::GetAclDataType(mm_x_scale_dtype.value_or(0))};
         TensorWrapper mm_weight_scale_wrapper = {mm_weight_scale.value_or(at::Tensor()), c10_npu::GetAclDataType(mm_weight_scale_dtype.value_or(0))};
-        TensorWrapper gmm_x_offset_wrapper = {gmm_x_offset.value_or(at::Tensor()), c10_npu::GetAclDataType(gmm_x_dtype.value_or(0))};
-        TensorWrapper gmm_weight_offset_wrapper = {gmm_weight_offset.value_or(at::Tensor()), c10_npu::GetAclDataType(gmm_weight_dtype.value_or(0))};
-        TensorWrapper mm_x_offset_wrapper = {mm_x_offset.value_or(at::Tensor()), c10_npu::GetAclDataType(mm_x_dtype.value_or(0))};
-        TensorWrapper mm_weight_offset_wrapper = {mm_weight_offset.value_or(at::Tensor()), c10_npu::GetAclDataType(mm_weight_dtype.value_or(0))};
         TensorWrapper comm_quant_scale_wrapper = {comm_quant_scale.value_or(at::Tensor()), c10_npu::GetAclDataType(comm_quant_dtype.value_or(0))};
         TensorWrapper gmm_y_wrapper = {gmm_y, c10_npu::GetAclDataType(gmm_y_dtype)};
         TensorWrapper mm_y_wrapper = {mm_y, c10_npu::GetAclDataType(mm_y_dtype.value_or(0))};
@@ -154,16 +146,12 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
                      gmm_weight_wrapper,
                      gmm_x_scale_wrapper,
                      gmm_weight_scale_wrapper,
-                     gmm_x_offset_wrapper,
-                     gmm_weight_offset_wrapper,
                      send_count_tensor_real,
                      recv_count_tensor_real,
                      mm_x_wrapper,
                      mm_weight_wrapper,
                      mm_x_scale_wrapper,
                      mm_weight_scale_wrapper,
-                     mm_x_offset_wrapper,
-                     mm_weight_offset_wrapper,
                      comm_quant_scale_wrapper,
                      gmm_x_quant_mode_real,
                      gmm_weight_quant_mode_real,
