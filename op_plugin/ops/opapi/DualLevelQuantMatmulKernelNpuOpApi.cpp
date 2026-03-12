@@ -18,10 +18,10 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-constexpr int DIM_ZERO = 0;
-constexpr int DIM_ONE = 1;
-constexpr int DIM_TWO = 2;
-constexpr int SHAPE_SIZE_TWO = 2;
+constexpr int64_t DIM_ZERO = 0;
+constexpr int64_t DIM_ONE = 1;
+constexpr int64_t DIM_TWO = 2;
+constexpr int64_t SHAPE_SIZE_TWO = 2;
 const int64_t B4_NUMS_IN_B8 = 2;
 
 static bool is_nz_format(const at::Tensor &x2)
@@ -62,8 +62,8 @@ at::Tensor npu_dual_level_quant_matmul(const at::Tensor &x1, const at::Tensor &x
     output_size[DIM_ONE] = x2.size(DIM_ZERO);
 
     const at::Tensor &bias_v = bias.value_or(at::Tensor());
-    int l0_group_size = 512;
-    int l1_group_size = 32;
+    int64_t l0_group_size = 512;
+    int64_t l1_group_size = 32;
 
     TensorWrapper x1_wrapper =
         make_wrapper(x1, c10::optional<int64_t>(static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)));
