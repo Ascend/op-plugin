@@ -15,7 +15,7 @@
 ## 函数原型<a name="zh-cn_topic_0000001742717129_section45077510411"></a>
 
 ```
-torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=None, padding_mask=None, atten_mask=None, scale=1., keep_prob=1., pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout="", sink=None) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
+torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=None, padding_mask=None, atten_mask=None, scale=1., keep_prob=1., pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout="", sink=None, dropout_mask=None, seed=0, offset=0) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000001742717129_section112637109429"></a>
@@ -132,6 +132,9 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 -   **sync**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为False：dropout mask异步生成；设为True：dropout mask同步生成。
 -   **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。
 -   **sink**（`Tensor`）：可选参数，每个注意力头的偏置。shape为`[head_num]`，数据类型仅支持`float32`。
+-   **dropout\_mask**（`Tensor`）：可选参数，外部传入的dropout掩码，用于控制dropout行为。当传入此参数时，将使用外部掩码而非内部生成，实现可复现的dropout效果。数据类型支持`uint8`，数据格式支持$ND$。若不传入此参数，则由算子内部根据`seed`和`offset`自动生成dropout mask。若传入此参数，则需要使用内部接口[_npu_dropout_gen_mask](https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/DropoutGenMaskKernelNpuOpApi.cpp)生成dropout_mask。
+-   **seed**（`int`）：可选参数，DSA生成dropout mask中Philox算法的种子值，数据类型支持`int64`，默认值为0。当`dropout_mask`参数未传入时，若`seed`为0，则使用默认随机种子；若`seed`非0，则使用指定的种子值生成dropout mask。当传入dropout_mask时，需传入生成dropout_mask所需的seed值。
+-   **offset**（`int`）：可选参数，DSA生成dropout mask中Philox算法的偏移值，数据类型支持`int64`，默认值为0。配合`seed`参数使用，用于控制dropout mask的生成位置。当传入dropout_mask时，需传入生成dropout_mask所需的offset值。
 
 ## 输出说明<a name="zh-cn_topic_0000001742717129_section22231435517"></a>
 
@@ -271,6 +274,58 @@ class TestNPUFlashAttention(TestCase):
 
 if __name__ == "__main__":
     run_tests()
+```
+
+使用外部dropout\_mask的示例：
+ 	 
+```python
+import torch
+import torch_npu
+ 	 
+ 	 def example_with_dropout_mask():
+ 	     """
+ 	     使用外部dropout_mask实现可复现的dropout效果
+ 	     """
+ 	     B, N, S, D = 1, 8, 64, 64
+ 	     head_num = 8
+ 	     keep_prob = 0.9
+ 	     seed = 42
+ 	     offset = 0
+ 	 
+ 	     query = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
+ 	     key = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
+ 	     value = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
+ 	 
+ 	     dropout_mask = torch_npu._npu_dropout_gen_mask(
+ 	         torch.randn(1, device="npu"),
+ 	         [B, N, S, S],
+ 	         p=1 - keep_prob,
+ 	         seed=seed,
+ 	         offset=offset,
+ 	         parallel=True,
+ 	         sync=False
+ 	     )
+ 	 
+ 	     attention_score, softmax_max, softmax_sum, softmax_out, out_seed, out_offset, numels = \
+ 	         torch_npu.npu_fusion_attention(
+ 	             query, key, value,
+ 	             head_num=head_num,
+ 	             input_layout="BSH",
+ 	             scale=0.125,
+ 	             keep_prob=keep_prob,
+ 	             dropout_mask=dropout_mask,
+ 	             seed=seed,
+ 	             offset=offset
+ 	         )
+ 	 
+ 	     print(f"Output shape: {attention_score.shape}")
+ 	     print(f"Returned seed: {out_seed}, offset: {out_offset}, numels: {numels}")
+ 	 
+ 	     return attention_score
+ 	 
+if __name__ == "__main__":
+    if torch.npu.is_available():
+        example_with_dropout_mask()
 ```
 
 ## 参考资源<a name="zh-cn_topic_0000001742717129_section28169228374"></a>
