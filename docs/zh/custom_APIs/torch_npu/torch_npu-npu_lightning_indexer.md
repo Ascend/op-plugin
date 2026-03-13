@@ -33,7 +33,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
     
 -   **key**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_kv`为BSND时shape为[B, S2, N2, D]，`layout_kv`为TND时shape为[T2, N2, D]，N2仅支持1。
     
--   **weights**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`，支持输入shape[B,S1,N1]、[T,N1]。
+-   **weights**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`、`float16`和`float32`，支持输入shape[B,S1,N1]、[T,N1]。
     
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
@@ -74,7 +74,8 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 -   该接口支持图模式。
 -   参数query中的N支持64，key中的N支持1。
 -   参数query中的D和参数key中的D值相等为128。
--   参数query、key、weights的数据类型应保持一致。
+-   参数query、key的数据类型应保持一致。
+-   参数weights不为`float32`时，参数query、key、weights的数据类型应保持一致。
 
 ## 调用示例
 

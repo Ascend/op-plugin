@@ -77,7 +77,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 **key_index**(`Tensor`)：必选参数，表示lightning_indexer正向的输入`key`，对应公式中的$\tilde{K}_{t}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S2, N2index, D)$、$(T2, N2index, D)$。
 
-**weights**(`Tensor`)：必选参数，表示lightning_indexer的权重系数，对应公式中的$W_{t}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N1index)$、$(T1, N1index)$。
+**weights**(`Tensor`)：必选参数，表示lightning_indexer的权重系数，对应公式中的$W_{t}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`、`float32`。shape支持$(B, S1, N1index)$、$(T1, N1index)$。
 
 **sparse_indices**(`Tensor`)：必选参数，表示排序后`key`和`key_index`的token序号。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N2index, topK)$、$(T1, N2index, topK)$。
 
@@ -109,9 +109,27 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 ## 返回值说明
 -   **d\_query\_index**(`Tensor`)：对应公式中的$d\tilde{q}_{t}$，表示`query_index`的梯度，数据类型支持`bfloat16`、`float16`。
 -   **d\_key\_index**(`Tensor`)：对应公式中的$d\tilde{K}_{t}$，表示`key_index`的梯度，数据类型支持`bfloat16`、`float16`。
--   **d\_weights**(`Tensor`)：对应公式中的$dW_{t}$，表示`weights`的梯度，数据类型支持`bfloat16`、`float16`。
+-   **d\_weights**(`Tensor`)：对应公式中的$dW_{t}$，表示`weights`的梯度，数据类型支持`bfloat16`、`float16`、`float32`。
 -   **loss**(`Tensor`)：对应公式中的$dI_{t}$，表示网络正向输出和golden值的差异，数据类型支持`float`。
 
+
+## 约束说明
+-   参数query、key、query_index、key_index的数据类型应保持一致。
+-   参数weights不为`float32`时，参数query、key、query_index、key_index、weights的数据类型应保持一致。
+-   规格约束：
+
+| 规格项     | 规格                                    | 规格说明                  |
+|---------|---------------------------------------|-----------------------|
+| B       | 1~256                                 | -                     |
+| S1、S2   | S1支持1~8K，S2支持1~128K                   | S1、S2支持不等长            |
+| N1      | 32、64、128                             | -                     |
+| N1index | 8、16、32、64                            | -                     |
+| N2      | 32、64、128                             | -                     |
+| N2index | 1                                     | -                     |
+| D       | 512                                   | query与query_index的D不同 |
+| Dr      | 64                                    | -                     |
+| K       | 1024、2048、3081、4096、5120、6144、7168、8192 | -                     |
+| layout  | BSND/TND                              | -                     |
 
 ## 调用示例
 - 单算子模式调用

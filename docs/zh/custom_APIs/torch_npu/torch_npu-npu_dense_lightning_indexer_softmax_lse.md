@@ -37,7 +37,7 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 
 **key_index**(`Tensor`)：必选参数，表示Lightning Indexer正向的输入key，对应公式中的$\tilde{K}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S2, N2index, D)$、$(T2, N2index, D)$。
 
-**weights**(`Tensor`)：必选参数，表示Lightning Indexer的权重系数，对应公式中的$W$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N1index)$、$(T1, N1index)$。
+**weights**(`Tensor`)：必选参数，表示Lightning Indexer的权重系数，对应公式中的$W$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`、`float32`。shape支持$(B, S1, N1index)$、$(T1, N1index)$。
 
 **actual_seq_qlen**(`list[int]`)：可选参数，TND场景时需传入此参数。表示query每个S的累加和长度，数据类型支持`int64`，数据格式支持$ND$，默认值为`None`。
 
@@ -60,7 +60,10 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 $，数据格式支持$ND$，数据类型支持`float`。
 
 ## 约束说明
-shape数值约束：
+-   参数query_index、key_index的数据类型应保持一致。
+-   参数weights不为`float32`时，参数query_index、key_index、weights的数据类型应保持一致的数据类型应保持一致。
+-   shape数值约束：
+
 | 规格项    | 规格       | 规格说明         |
 |-----------|------------|-----------------|
 | B         | 1~256      | -               |
