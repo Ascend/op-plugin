@@ -1021,6 +1021,12 @@ def npu_all_gather_quant_mm_meta(self, x2, hcom, world_size, bias=None, x1_scale
                 self.new_empty(0, dtype=torch.float32))
 
 
+@impl(m, "npu_mhc_post")
+def npu_mhc_post(x, h_res, h_out, h_post):
+    y_size = tuple(x.shape)
+    return torch.empty(y_size, dtype=x.dtype, device='meta')
+
+
 @impl(m, "npu_moe_init_routing")
 def npu_moe_init_routing_meta(x, row_idx, expert_idx, active_num=99):
     n = x.size(0)

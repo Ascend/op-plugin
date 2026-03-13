@@ -148,7 +148,8 @@
       "npu_dense_lightning_indexer_grad_kl_loss",
       "npu_dense_lightning_indexer_softmax_lse",
       "npu_one_hot",
-      "npu_quant_matmul_gelu"
+      "npu_quant_matmul_gelu",
+      "npu_mhc_post"
     ]
   }
   

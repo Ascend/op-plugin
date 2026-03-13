@@ -3997,6 +3997,93 @@ npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu(
 )
 
 _add_torch_npu_docstr(
+    "npu_mhc_post",
+    """
+接口原型：
+torch_npu.npu_mhc_post(Tensor x, Tensor h_res, Tensor h_out, Tensor h_post) -> Tensor
+
+功能描述
+算子功能: 融合主分支特征h_out与残差分支特征x_l（或residual），通过门控H_post和经sinkhorn投影后的双随机矩阵H_res机制实现信息流动. 
+计算公式为: 
+x_{l+1} = (H_{l}^{res})^{T} \times x_l + h_{l}^{out} \otimes H_{t}^{post}
+
+参数说明
+x: Tensor类型, 必选输入, 待计算数据，代表网络中mHC层的输入数据. 数据格式为ND，支持非连续Tensor, 支持的数据类型为BFLOAT16和FLOAT16， 数据维度可为3维[T, n, D]和4维.[B, S, n, D]. 
+h_res: Tensor类型, 必选输入, mHC的h_res变换矩阵，是做完sinkhorn变换之后的双随机矩阵.数据格式为ND，支持非连续Tensor, 支持的数据类型为FLOAT32， 数据维度可为3维[T, n, n]和4维[B, S, n, n].
+h_out: Tensor类型, 必选输入，Attn/MLP层输出.数据格式为ND，支持非连续Tensor, 支持的数据类型为BFLOAT16和FLOAT16， 数据维度可为3维[B, S, D]和2维[T, D].
+h_post: Tensor类型, 必选输入，mHC的h_post变换矩阵.数据格式为ND，支持非连续Tensor, 支持的数据类型为FLOAT32， 数据维度可为3维[B, S, n]和2维[T, n].
+n：shape中n常取4，6，8.
+
+输出说明
+y: Tensor类型, 必选输入, 网络中mHC层的输出数据. 数据格式为ND，支持非连续Tensor, 支持的数据类型为BFLOAT16和FLOAT16， 数据维度可为3维[T, n, D]和4维.[B, S, n, D]. 
+
+约束说明
+该接口支持pytorch调用(torch_npu). 
+该接口支持图模式. 
+
+支持的PyTorch版本
+PyTorch 2.7.1
+
+支持的型号
+-昇腾950 AI处理器
+
+调用示例
+单算子模式调用
+import torch 
+import torch_npu
+device = "npu:0"
+x_shape = [1,1,4,512]
+h_res_shape = [1,1,4,4]
+h_out_shape = [1,1,512]
+h_post_shape = [1,1,2]
+x = (torch.rand(x_shape, dtype=torch.bfloat16)).clamp(min=1e-4)
+h_res = (torch.rand(h_res_shape, dtype=torch.float32)).clamp(min=1e-4)
+h_out = (torch.rand(h_out_shape, dtype=torch.bfloat16)).clamp(min=1e-4)
+h_post = (torch.rand(h_post_shape, dtype=torch.float32)).clamp(min=1e-4)
+x_npu = x.npu()
+h_res_npu = h_res.npu()
+h_out_npu = h_out.npu()
+h_post_npu = h_post.npu()
+y_npu = torch_npu.npu_mhc_post(x_npu, h_res_npu, h_out_npu, h_post_npu)
+
+图模式调用
+import torch
+import torch_npu
+import torchair as tng
+from torchair.configs.compiler_config import CompilerConfig
+torch_npu.npu.set_compile_mode(jit_compile=False)
+config = CompilerConfig()
+config.mode = "reduce-overhead"
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+device=torch.device(f'npu:0')
+
+torch_npu.npu.set_device(device)
+
+class MhcPostModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x, h_res, h_out, h_post):
+        y = torch_npu.npu_mhc_post(x, h_res, h_out, h_post)
+        return y
+
+x_shape = [1,1,4,512]
+h_res_shape = [1,1,4,4]
+h_out_shape = [1,1,512]
+h_post_shape = [1,1,4]
+x = torch.rand(x_shape, device='npu', dtype=torch.float16)
+h_res = torch.rand(h_res_shape, device='npu', dtype=torch.float32)
+h_out = torch.rand(h_out_shape, device='npu', dtype=torch.float16)
+h_post = torch.rand(h_post_shape, device='npu', dtype=torch.float32)
+
+mhc_post_model = MhcPostModel().npu()
+mhc_post_model = torch.compile(mhc_post_model, backend=npu_backend, dynamic=True)
+y = mhc_post_model(x, h_res, h_out, h_post)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_dynamic_quant",
     """
 功能描述:
