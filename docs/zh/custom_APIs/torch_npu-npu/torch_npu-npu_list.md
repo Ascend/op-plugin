@@ -41,6 +41,11 @@
 <td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1366417191513"><a name="p1366417191513"></a><a name="p1366417191513"></a>功能和调用方式与torch.backends.cudnn.allow_tf32类似。</p>
 </td>
 </tr>
+<tr id="row11664117121511"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p116643710154"><a name="p116643710154"></a><a name="p116643710154"></a><a href="torch_npu-npu-matmul-cubeMathType.md">torch_npu.npu.matmul.cube_math_type</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p26648741510"><a name="p26648741510"></a><a name="p26648741510"></a>用于设置或查询matmul算子的计算精度类型。通过设置不同的CubeMathType枚举值，以控制算子的数学计算模式。</p>
+</td>
+</tr>
 <tr id="row196641378158"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p36640731519"><a name="p36640731519"></a><a name="p36640731519"></a><a href="（beta）torch_npu-npu-set_option.md">（beta）torch_npu.npu.set_option</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p566467161517"><a name="p566467161517"></a><a name="p566467161517"></a>详细使用参见<span id="ph4356918191716"><a name="ph4356918191716"></a><a name="ph4356918191716"></a>《PyTorch 训练模型迁移调优指南》中的“<a href="https://www.hiascend.com/document/detail/zh/Pytorch/730/ptmoddevg/trainingmigrguide/PT_LMTMOG_0076.html">设置算子编译选项</a>”章节</span>。</p>

@@ -219,6 +219,7 @@
             -   [torch_npu.npu.disable_deterministic_with_backward](./torch_npu-npu/torch_npu-npu-disable_deterministic_with_backward.md)
             -   [torch_npu.npu.matmul.allow_hf32](./torch_npu-npu/torch_npu-npu-matmul-allow_hf32.md)
             -   [torch_npu.npu.conv.allow_hf32](./torch_npu-npu/torch_npu-npu-conv-allow_hf32.md)
+            -   [torch_npu.npu.matmul.cube_math_type](./torch_npu-npu/torch_npu-npu-matmul-cubeMathType.md)
             -   [torch_npu.npu.NpuGraphOpHandler](./torch_npu-npu/torch_npu-npu_npugraph_handlers.md)
             -   [（beta）torch_npu.npu.set_option](./torch_npu-npu/（beta）torch_npu-npu-set_option.md)
             -   [（beta）torch_npu.npu.config.allow_internal_format](./torch_npu-npu/（beta）torch_npu-npu-config-allow_internal_format.md)
