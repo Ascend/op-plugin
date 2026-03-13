@@ -61,6 +61,7 @@
       "npu_advance_step_flashattn",
       "npu_batch_gather_matmul",
       "npu_batch_gather_matmul_",
+      "npu_block_sparse_attention",
       "npu_bert_apply_adam",
       "npu_clear_float_status",
       "npu_cross_entropy_loss",

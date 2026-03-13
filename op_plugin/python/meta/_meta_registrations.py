@@ -2121,6 +2121,34 @@ def npu_dtype_cast_backward_meta(self, dtype, grad_dtype=None, input_dtype=None)
     return output
 
 
+@impl(m, "npu_block_sparse_attention")
+def npu_block_sparse_attention_meta(query, key, value, block_sparse_mask, block_shape, *, q_input_layout='TND', kv_input_layout='TND',
+                                   num_key_value_heads=1, scale_value=0.0, inner_precise=1,
+                                   actual_seq_lengths=None, actual_seq_lengths_kv=None, softmax_lse_flag=0):
+    torch._check(
+        query.dim() == 3 or query.dim() == 4,
+        lambda: "query should be 3 or 4 dimensional, but got " + str(query.dim()) + ops_error(ErrCode.PARAM),
+    )
+    torch._check(
+        len(block_shape) >= 2 and block_shape[1] % 128 == 0,
+        lambda: "block_shape[1] (blockShapeY) must be a multiple of 128, got " + str(block_shape[1])
+        + ops_error(ErrCode.PARAM),
+    )
+    torch._check(
+        query.dtype != torch.bfloat16 or inner_precise == 0,
+        lambda: "when query/key/value are bfloat16, inner_precise must be 0, got " + str(inner_precise)
+        + ops_error(ErrCode.PARAM),
+    )
+    attention_out_shape = list(query.size())
+    attention_out_shape[-1] = value.size(-1)
+    attention_out = query.new_empty(attention_out_shape)
+    if query.dim() == 4:
+        softmax_lse = query.new_empty([query.size(0), query.size(1), query.size(2), 1], dtype=torch.float32)
+    else:
+        softmax_lse = query.new_empty([query.size(0), query.size(1), 1], dtype=torch.float32)
+    return (attention_out, softmax_lse)
+
+
 @impl(m, "npu_bmmV2")
 def npu_bmmV2_meta(self, mat2, output_sizes):
     dim1 = self.size(0)
