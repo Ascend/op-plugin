@@ -3611,6 +3611,53 @@ def npu_quant_matmul_meta(x1, x2, scale, *, offset=None, pertoken_scale=None, bi
     return shape_long.new_empty(tuple(dim_list), dtype=tensor_dtype)
 
 
+@impl(m, "npu_matmul_compress_dequant")
+def npu_matmul_compress_dequant_meta(x1, x2, compress_index, bias, scale, *, offsetW=None, offsetX=None):
+    torch._check(
+        x1.dim() == 2,
+        lambda: "the x1 dim support only 2" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x1.dtype == torch.int8,
+        lambda: "the x1 dtype support only int8" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x2.dim() == 1,
+        lambda: "the x2 dim support only 1" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x2.dtype == torch.int8,
+        lambda: "the x2 dtype support only int8" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        compress_index.dim() == 1,
+        lambda: "the compress_index dim support only 1" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        compress_index.dtype == torch.int8,
+        lambda: "the compress_index dtype support only int8" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        bias.dim() == 2,
+        lambda: "the bias dim support only 2" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        bias.dtype == torch.int32,
+        lambda: "the bias dtype support only int32" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        scale.dim() == 2,
+        lambda: "the scale dim support only 2" + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        scale.dtype == torch.uint64,
+        lambda: "the scale dtype support only uint64" + ops_error(ErrCode.VALUE),
+    )
+    dim_list = (x1.shape[0], bias.shape[1])
+
+    return torch.empty(dim_list, dtype=torch.float16, device='meta')
+
+
 @impl(m, "npu_quant_matmul_dequant")
 def npu_quant_matmul_dequant_meta(x, quantized_weight, weight_scale, *,
                                   bias=None, x_scale=None, x_offset=None, smooth_scale=None, quant_mode="pertoken"):

@@ -2832,7 +2832,8 @@ class TestMatmulCompressDequant(TestCase):
             compress_index = torch.zeros(8, dtype=torch.int8).npu()
             bias = torch.zeros((1, n), dtype=torch.int32).npu()
             scale = torch.ones((1, n), dtype=torch.float32).npu()
-            res = torch_npu.npu_matmul_compress_dequant(x1, x2, compress_index, bias, scale)
+            scale_uint64 = torch_npu.npu_trans_quant_param(scale).to(torch.uint64)
+            res = torch_npu.npu_matmul_compress_dequant(x1, x2, compress_index, bias, scale_uint64)
             self.assertEqual(res.shape, (m, n))
             self.assertEqual(res.dtype, torch.float16)
 
