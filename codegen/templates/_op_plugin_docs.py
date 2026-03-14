@@ -3813,6 +3813,82 @@ tensor([[[[[2.]]],
 
 
 _add_torch_npu_docstr(
+    "npu_mhc_sinkhorn",
+    """
+接口原型:
+torch_npu.npu_mhc_sinkhorn(Tensor x, *, float eps=1e-6, SymInt num_iters=20, int out_flag=0) -> (Tensor, Tensor, Tensor)
+
+功能描述
+算子功能：通过将残差分支投影矩阵约束为双随机矩阵，在保持多路残差连接表达的能力的基础上，实现恒等映射兼容、范数保证、训练稳定的深度Transformer特征传递。
+
+参数说明:
+x: Tensor类型, 数据类型支持float32, 数据格式支持ND, shape是3维(T, n, n)或者4维(B, S, n, n), 其中n仅支持4, 6, 8. 待计算数据，表示mHC层的输入数据。 
+eps: Scalar类型, 可选参数. 数据类型支持float32, 表示归一化防除零参数，默认值为1e-6. 
+num_iters: Scalar类型, 可选参数. 数据类型支持int64, 表示迭代次数, 取值范围[1, 100], 默认值为20. 
+out_flag: Scalar类型, 可选参数. 数据类型支持int64, 表示是否输出中间结果标识, 默认值为0(仅输出最终变换结果). 
+
+输出说明:
+一个Tensor类型的输出, 代表mhc_sinkhorn. 数据类型和张量形状与输入x保持一致。数据格式支持ND.
+
+约束说明:
+该接口支持pytorch调用（torch_npu). 
+该接口支持图模式. 
+
+支持的PyTorch版本
+PyTorch 2.7.1
+
+支持的型号:
+Atlas A5 训练系列产品
+
+调用示例:
+单算子模式调用
+import torch
+import torch_npu
+device = "npu:0"
+x_shape = [1, 128, 4 , 4]
+x = torch.rand(x_shape, dtype=torch.float32).clamp(min=1e-4)
+x_npu = x.npu()
+eps = 1e-6
+num_iters = 20
+out_flag = 0
+y = torch_npu.npu_mhc_sinkhorn(x_npu, eps=eps, num_iters=num_iters, out_flag=out_flag)
+
+图模式调用
+import torch
+import torch_npu
+import torchair as tng
+from torchair.configs.compiler_config import CompilerConfig
+torch_npu.npu.set_compile_mode(jit_compile=False)
+config = CompilerConfig()
+config.mode="reduce-overhead"
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+device=torch.device(f'npu:0')
+
+torch_npu.npu.set_device(device)
+
+class MhcSinkhornModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x, eps, num_iters, out_flag):
+        y = torch_npu.npu_mhc_sinkhorn(x, eps=eps, num_iters=num_iters, out_flag=out_flag)
+        return y
+
+x_shape = [1, 128, 4 , 4]
+x = torch.rand(x_shape, device="npu", dtype=torch.float32)
+eps = 1e-6
+num_iters = 20
+out_flag = 0
+
+mhc_sinkhorn_model = MhcSinkhornModel().npu()
+mhc_sinkhorn_model = torch.compile(mhc_sinkhorn_model, backend=npu_backend, dynamic=True)
+y = mhc_sinkhorn_model(x, eps=eps, num_iters=num_iters, out_flag=out_flag)
+"""
+)
+
+
+_add_torch_npu_docstr(
     "npu_transpose",
     """
 torch_npu.npu_transpose(self, perm, require_contiguous=True) -> Tensor
