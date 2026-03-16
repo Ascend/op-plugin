@@ -261,10 +261,12 @@ backward:
 
 - name: _fft_r2c(Tensor self, int[] dim, int normalization, bool onesided) -> Tensor
   self: fft_r2c_backward(grad, dim, normalization, onesided, self.size(dim.back()))
+  result: auto_linear
   version: [v2.1, newest]
 
 - name: _fft_c2r(Tensor self, int[] dim, int normalization, SymInt last_dim_size) -> Tensor
   self: fft_c2r_backward(grad, dim, normalization)
+  result: auto_linear
   version: [v2.1, newest]
 
 - name: npu_moe_token_permute_with_routing_map(Tensor tokens, Tensor routing_map, *, Tensor? probs=None, int? num_out_tokens=None, bool drop_and_pad=False) -> (Tensor, Tensor, Tensor)
