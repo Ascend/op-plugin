@@ -628,7 +628,7 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 ## 返回值说明<a name="zh-cn_topic_0000002271534921_section18510124618368"></a>
 
 -   **expanded_x** (`Tensor`)：根据`expert_idx`进行扩展过的特征，Dropless场景shape为[NUM_ROWS * K, H]。Active场景shape为[min(activeNum, NUM_ROWS * K), H]。Drop/Pad场景下要求是一个3D的Tensor，shape为[expertNum, expertCapacity, H]。非量化场景下数据类型同`x`；量化场景下数据类型为`int8`。数据格式要求为$ND$。量化场景下，当`x`的数据类型为`int8`时，输出值无意义。
--   **expanded_row_idx** (`Tensor`)：`expanded_x`和`x`的映射关系，要求是1维张量，shape为(NUM_ROWS\*K, )，数据类型支持`int32`，数据格式要求为$ND$。前available_idx_num\*H个元素为有效数据，其余由`row_idx_type`决定。当rowIdxType为0时，无效数据由-1填充；当rowIdxType为1时，无效数据未初始化。
+-   **expanded_row_idx** (`Tensor`)：`expanded_x`和`x`的映射关系，要求是1维张量，shape为(NUM_ROWS\*K, )，数据类型支持`int32`，数据格式要求为$ND$。当`row_idx_type`为1时， 前available_idx_num个元素为有效数据，无效数据未初始化；当`row_idx_type`为0时，无效数据由-1填充。
 -   **expert_token_cumsum_or_count** (`Tensor`)：表示输出每个专家处理的token数量的统计结果或累加值。
     -   在`expertTokensNumType`为0时，表示`active_expert_range`范围内expert在排序后处理token总数的前缀和。
     -   在`expert_tokens_num_type`为1的场景下，要求是1维张量，表示`active_expert_range`范围内expert对应的处理token的总数，shape为(expert_end-expert_start, )。shape为(expert_end-expert_start, )；
