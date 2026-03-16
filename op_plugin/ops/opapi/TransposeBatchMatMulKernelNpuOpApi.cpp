@@ -46,9 +46,11 @@ at::Tensor npu_transpose_batchmatmul(const at::Tensor &input, const at::Tensor &
     // Use the correct function call with all required parameters
     const at::Tensor &bias_real = bias.value_or(at::Tensor());
     const at::Tensor &scale_real = scale.value_or(at::Tensor());
-    const auto &perm_x1_real = perm_x1.value_or(at::IntArrayRef({0, 1, 2}));
-    const auto &perm_x2_real = perm_x2.value_or(at::IntArrayRef({0, 1, 2}));
-    const auto &perm_y_real = perm_y.value_or(at::IntArrayRef({1, 0, 2}));
+    const auto default_perm_x = std::vector<int64_t>{0, 1, 2};
+    const auto default_perm_y = std::vector<int64_t>{1, 0, 2};
+    const auto perm_x1_real = perm_x1.value_or(at::IntArrayRef(default_perm_x));
+    const auto perm_x2_real = perm_x2.value_or(at::IntArrayRef(default_perm_x));
+    const auto perm_y_real = perm_y.value_or(at::IntArrayRef(default_perm_y));
     int64_t batch_split_factor_value = batch_split_factor.value_or(1);
     auto output_size = cal_output_size(input, weight, scale_real, perm_x1_real, perm_x2_real, batch_split_factor_value);
     
