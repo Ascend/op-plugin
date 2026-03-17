@@ -23,10 +23,24 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
+namespace {
+void check_normal_std(double std)
+{
+    TORCH_CHECK(std >= 0.0, "normal expects std >= 0.0, but found std ", std, OPS_ERROR(ErrCode::VALUE));
+}
+
+void check_normal_tensor_std(const at::Tensor& std)
+{
+    TORCH_CHECK(!std.is_complex(), "normal expects standard deviation to be non-complex", OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(std.numel() == 0 || std.is_meta() || std.min().ge(0).item<bool>(),
+        "normal expects all elements of std >= 0.0", OPS_ERROR(ErrCode::VALUE));
+}
+} // namespace
+
 at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at::Generator> generator)
 {
     DO_COMPATIBILITY(aclnnInplaceNormal, acl_op::normal_(self, mean, std, generator));
-    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
+    check_normal_std(std);
     npu_preparation::check_tensor({}, self, self, self.sizes());
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
@@ -56,6 +70,7 @@ at::Tensor& normal_out(const at::Tensor& mean, const at::Tensor& std, c10::optio
                        at::Tensor& out)
 {
     DO_COMPATIBILITY(aclnnNormalTensorTensor, acl_op::normal_out(mean, std, generator, out));
+    check_normal_tensor_std(std);
     at::SmallVector<int64_t, SIZE> output_size = op_infer::broadcast_ops_npu_output_size(mean, std);
     npu_preparation::check_tensor({mean, std}, out, out, output_size);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
@@ -72,6 +87,7 @@ at::Tensor& normal_out(const at::Tensor& mean, const at::Tensor& std, c10::optio
 at::Tensor normal(const at::Tensor& mean, const at::Tensor& std, c10::optional<at::Generator> generator)
 {
     DO_COMPATIBILITY(aclnnNormalTensorTensor, acl_op::normal(mean, std, generator));
+    check_normal_tensor_std(std);
     at::SmallVector<int64_t, SIZE> output_size = op_infer::broadcast_ops_npu_output_size(mean, std);
     at::Tensor result = npu_preparation::apply_tensor_without_format(mean, output_size);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
@@ -90,7 +106,7 @@ at::Tensor& normal_out(const at::Tensor& mean, double std, c10::optional<at::Gen
                        at::Tensor& out)
 {
     DO_COMPATIBILITY(aclnnNormalTensorFloat, acl_op::normal_out(mean, std, generator, out));
-    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
+    check_normal_std(std);
     npu_preparation::check_tensor({mean}, out, out);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
@@ -107,7 +123,7 @@ at::Tensor& normal_out(const at::Tensor& mean, double std, c10::optional<at::Gen
 at::Tensor normal(const at::Tensor& mean, double std, c10::optional<at::Generator> generator)
 {
     DO_COMPATIBILITY(aclnnNormalTensorFloat, acl_op::normal(mean, std, generator));
-    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
+    check_normal_std(std);
     at::Tensor result = npu_preparation::apply_tensor_without_format(mean);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
@@ -126,6 +142,7 @@ at::Tensor& normal_out(double mean, const at::Tensor& std, c10::optional<at::Gen
                        at::Tensor& out)
 {
     DO_COMPATIBILITY(aclnnNormalFloatTensor, acl_op::normal_out(mean, std, generator, out));
+    check_normal_tensor_std(std);
     npu_preparation::check_tensor({std}, out, out);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
@@ -142,6 +159,7 @@ at::Tensor& normal_out(double mean, const at::Tensor& std, c10::optional<at::Gen
 at::Tensor normal(double mean, const at::Tensor& std, c10::optional<at::Generator> generator)
 {
     DO_COMPATIBILITY(aclnnNormalFloatTensor, acl_op::normal(mean, std, generator));
+    check_normal_tensor_std(std);
     at::Tensor result = npu_preparation::apply_tensor_without_format(std);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
@@ -160,7 +178,7 @@ at::Tensor& normal_out(double mean, double std, at::IntArrayRef size,
                        c10::optional<at::Generator> generator, at::Tensor& out)
 {
     DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal_out(mean, std, size, generator, out));
-    TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std, OPS_ERROR(ErrCode::VALUE));
+    check_normal_std(std);
     npu_preparation::check_tensor({}, out, out, size);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
@@ -185,6 +203,7 @@ at::Tensor normal(double mean, double std,
 {
     DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal(mean, std, size, generator, dtype,
                                                            layout, device, pin_memory));
+    check_normal_std(std);
     c10::TensorOptions option = c10::TensorOptions().dtype(dtype)
         .device(device)
         .layout(layout)

@@ -183,7 +183,7 @@ class TestNormal(TestCase):
     def test_normal_broadcast(self):
         torch.manual_seed(23)
         mean = torch.randn(2, 1, 4, 5).npu()
-        std = torch.randn(2, 3, 4, 5).npu()
+        std = torch.randn(2, 3, 4, 5).abs().npu()
         output1 = torch.normal(mean, std)
         torch.manual_seed(23)
         output2 = torch.normal(mean, std)
