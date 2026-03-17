@@ -2192,6 +2192,64 @@ class TestDistributeBarrier(TestCase):
             world_size = ep_world_size, time_out = time_out, elastic_info = elastic_info)
             self.assertEqual(result.shape, x_ref.shape)
 
+class TestKvQuantSparseFlashAttentionPioneer(TestCase):
+    def test_npu_kv_quant_sparse_flash_attention_pioneer(self):
+        with FakeTensorMode():
+            query_type = torch.bfloat16
+            scale_value = 0.041666666666666664
+            sparse_block_size = 1
+            sparse_block_count = 2048
+            t = 1
+            b = 1
+            s1 = 1
+            s2 = 3904
+            n1 = 48
+            n2 = 1
+            dn = 512
+            dr = 64
+            tile_size = 128
+            block_size = 128
+            layout_query = 'TND'
+            s2_act = 3904
+
+            query = torch.tensor(np.random.uniform(-10, 100, (t, n1, dn))).to(query_type)
+            query_ref = query
+            key = torch.tensor(np.random.uniform(-100, 100, (b * (s2 // block_size), block_size, n2, dn))).to(torch.float8_e4m3fn)
+            value = key.clone()
+            idxs = random.sample(range(s2_act - s1 + 1), sparse_block_count)
+            sparse_indices = torch.tensor([idxs for _ in range(b * s1 * n2)]).reshape(t, n2, sparse_block_count). \
+                to(torch.int32)
+            query_rope = torch.tensor(np.random.uniform(-10, 10, (t, n1, dr))).to(query_type)
+            key_rope = torch.tensor(np.random.uniform(-10, 10, (b * (s2 // block_size), block_size, n2, dr))).to(query_type)
+            act_seq_q = torch.tensor([s1] * b).to(torch.int32)
+            act_seq_kv = torch.tensor([s2_act] * b).to(torch.int32)
+            antiquant_scale = torch.tensor(np.random.uniform(-100, 100, (b * (s2 // block_size), block_size, n2,
+                dn // tile_size))).to(torch.float32)
+            key = torch.cat((key, key_rope.view(torch.float8_e4m3fn), antiquant_scale.view(torch.float8_e4m3fn)), axis=3)
+            query = torch.cat((query, query_rope), axis=2)
+            block_table = torch.tensor([range(b * s2 // block_size)], dtype=torch.int32).reshape(b, -1)
+            query = query.npu()
+            key = key.npu()
+            value = value.npu()
+            sparse_indices = sparse_indices.npu()
+            query_rope = query_rope.npu()
+            key_rope = key_rope.npu()
+            act_seq_q = act_seq_q.npu()
+            act_seq_kv = act_seq_kv.npu()
+            block_table = block_table.npu()
+            antiquant_scale = antiquant_scale.npu()
+
+            result = torch_npu._npu_kv_quant_sparse_flash_attention_pioneer(
+                query, key, value, sparse_indices, 
+                scale_value=scale_value, sparse_block_size=sparse_block_size,
+                actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv, key_sink=None, value_sink=None,
+                layout_query='TND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,
+                attention_mode=2, quant_scale_repo_mode=1, tile_size=tile_size, key_quant_mode=2,
+                value_quant_mode=2, rope_head_dim=64, key_dtype=None, value_dtype=None)
+            
+            self.assertEqual(result.dtype, query_ref.dtype)
+            self.assertEqual(result.shape, query_ref.shape)
+
 
 class TestNpuAddRmsNorm(TestCase):
     def test_npu_add_rms_norm(self):

@@ -1,0 +1,111 @@
+// Copyright (c) 2025 Huawei Technologies Co., Ltd
+// All rights reserved.
+//
+// Licensed under the BSD 3-Clause License (the "License");
+// you may not use this file except in compliance with the License.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
+#include "torch_npu/csrc/aten/CustomFunctions.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/custom_functions/opapi/update_op_api_common.h"
+
+namespace op_api {
+using namespace at_npu::native;
+using npu_preparation = at_npu::native::OpPreparation;
+
+// npu tensor max size
+const int SIZE = 8;
+const int DIM_0 = 0;
+const int DIM_1 = 1;
+const int DIM_2 = 2;
+const int DIM_3 = 3;
+const int DIM_4 = 4;
+
+at::Tensor construct_quant_sparse_infer_pioneer_output_tensor(
+    const at::Tensor& query, std::string layout_query_str,
+    std::string layout_kv_str, const uint64_t &rope_head_dim)
+{
+    TORCH_CHECK(layout_query_str == "BSND" || layout_query_str == "TND",
+                "The layout of query only support BSND and TND, but got ", layout_query_str,
+                OPS_ERROR(ErrCode::PARAM));
+    for (auto i = 0; i < query.sizes().size(); i++) {
+        TORCH_CHECK(query.size(i) > 0, "All values within query's shape should be greater "
+            "than 0, but shape[", i, "] is ", query.size(i));
+    }
+    at::SmallVector<int64_t, SIZE> output_size;
+    if (layout_query_str == "BSND") {
+        TORCH_CHECK(query.dim() == DIM_4,
+                    "When the layout of query is BSND, the query dimension must be 4, but got ",
+                    query.dim(), OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(query.size(DIM_3) > rope_head_dim,
+                    "The hidden_dim of query shoulld be greater than rope_head_dim", OPS_ERROR(ErrCode::PARAM));
+        output_size = {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2), query.size(DIM_3) - rope_head_dim};
+    } else {
+        TORCH_CHECK(query.dim() == DIM_3,
+                    "When the layout of query is TND, the query dimension must be 3, but got ",
+                    query.dim(), OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(query.size(DIM_3) > rope_head_dim,
+                    "The hidden_dim of query shoulld be greater than rope_head_dim", OPS_ERROR(ErrCode::PARAM));
+        output_size = {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2) - rope_head_dim};
+    }
+    at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, query.options().dtype(query.dtype()));
+
+    return output;
+}
+
+at::Tensor _npu_kv_quant_sparse_flash_attention_pioneer(
+    const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
+    const at::Tensor &sparse_indices, double scale_value,
+    int64_t key_quant_mode, int64_t value_quant_mode,
+    const c10::optional<at::Tensor> &key_dequant_scale,
+    const c10::optional<at::Tensor> &value_dequant_scale,
+    const c10::optional<at::Tensor> &block_table,
+    const c10::optional<at::Tensor> &actual_seq_lengths_query,
+    const c10::optional<at::Tensor> &actual_seq_lengths_kv,
+    const c10::optional<at::Tensor> &key_sink,
+    const c10::optional<at::Tensor> &value_sink,
+    int64_t sparse_block_size, c10::string_view layout_query, c10::string_view layout_kv,
+    int64_t sparse_mode, int64_t pre_tokens, int64_t next_tokens, int64_t attention_mode, int64_t quant_scale_repo_mode,
+    int64_t tile_size, int64_t rope_head_dim,
+    c10::optional<int64_t> key_dtype, c10::optional<int64_t> value_dtype)
+{
+    TORCH_CHECK(query.numel() > 0, "Tensor query is empty.")
+    TORCH_CHECK(key.numel() > 0, "Tensor key is empty.")
+    TORCH_CHECK(sparse_indices.numel() > 0, "Tensor sparse_indices is empty.")
+
+    std::string layout_query_str = std::string(layout_query);
+    std::string layout_kv_str = std::string(layout_kv);
+
+    // construct the output tensor
+    at::Tensor output = op_api::construct_quant_sparse_infer_pioneer_output_tensor(
+        query, layout_query_str, layout_kv_str, rope_head_dim);
+    // convert str
+    char *layout_query_ptr = const_cast<char *>(layout_query_str.c_str());
+    char *layout_kv_ptr = const_cast<char *>(layout_kv_str.c_str());
+
+    bool is_hifloat8_kv = key_dtype.has_value() && c10_npu::GetAclDataType(key_dtype.value()) == aclDataType::ACL_HIFLOAT8;
+    if (is_hifloat8_kv) {
+        TensorWrapper key_wrapper = make_wrapper(key, key_dtype);
+        TensorWrapper value_wrapper = make_wrapper(value, value_dtype);
+        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvQuantSparseFlashAttentionPioneer, query, key_wrapper,
+            value_wrapper, sparse_indices, key_dequant_scale, value_dequant_scale, block_table, actual_seq_lengths_query,
+            actual_seq_lengths_kv, key_sink, value_sink, scale_value, key_quant_mode, value_quant_mode, sparse_block_size, layout_query_ptr,
+            layout_kv_ptr, sparse_mode, pre_tokens, next_tokens, attention_mode, quant_scale_repo_mode, tile_size,
+            rope_head_dim, output);
+    } else {
+        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnKvQuantSparseFlashAttentionPioneer, query,
+            key, value, sparse_indices, key_dequant_scale, value_dequant_scale, block_table, actual_seq_lengths_query,
+            actual_seq_lengths_kv, key_sink, value_sink, scale_value, key_quant_mode, value_quant_mode, sparse_block_size, layout_query_ptr,
+            layout_kv_ptr, sparse_mode, pre_tokens, next_tokens, attention_mode, quant_scale_repo_mode, tile_size,
+            rope_head_dim, output);
+    }
+    return output;
+}
+
+} // namespace op_api
