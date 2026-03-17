@@ -130,8 +130,8 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 
 -   **gen\_mask\_parallel**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为True：同AI Core并行计算；设为False：同AI Core串行计算。
 -   **sync**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为False：dropout mask异步生成；设为True：dropout mask同步生成。
--   **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。
--   **sink**（`Tensor`）：可选参数，每个注意力头的偏置。shape为`[head_num]`，数据类型仅支持`float32`。
+-   **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。此参数为Ascend Extension for PyTorch 7.2.0版本新增参数，支持在CANN8.3.RC1及以上版本使用。
+-   **sink**（`Tensor`）：可选参数，每个注意力头的偏置。shape为`[head_num]`，数据类型仅支持`float32`。此参数为Ascend Extension for PyTorch 7.3.0版本新增参数，支持在CANN8.5.0及以上版本使用。
 -   **dropout\_mask**（`Tensor`）：可选参数，外部传入的dropout掩码，用于控制dropout行为。当传入此参数时，将使用外部掩码而非内部生成，实现可复现的dropout效果。数据类型支持`uint8`，数据格式支持$ND$。若不传入此参数，则由算子内部根据`seed`和`offset`自动生成dropout mask。若传入此参数，则需要使用内部接口[_npu_dropout_gen_mask](https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/DropoutGenMaskKernelNpuOpApi.cpp)生成dropout_mask。
 -   **seed**（`int`）：可选参数，DSA生成dropout mask中Philox算法的种子值，数据类型支持`int64`，默认值为0。当`dropout_mask`参数未传入时，若`seed`为0，则使用默认随机种子；若`seed`非0，则使用指定的种子值生成dropout mask。当传入dropout_mask时，需传入生成dropout_mask所需的seed值。
 -   **offset**（`int`）：可选参数，DSA生成dropout mask中Philox算法的偏移值，数据类型支持`int64`，默认值为0。配合`seed`参数使用，用于控制dropout mask的生成位置。当传入dropout_mask时，需传入生成dropout_mask所需的offset值。
