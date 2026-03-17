@@ -101,7 +101,8 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
     at::Tensor indices;
 
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options());
-    if (!c10_npu::IsAclnnOnly()) {
+    static auto maxpool2d_sc = at_npu::native::env::CheckCompatibleImpl();
+    if (!c10_npu::IsAclnnOnly() && !maxpool2d_sc) {
         // 5HD format return the indices with mask, dtype int8,size should be muls 16*2
         indices_size = self.ndimension() == DIM_SIZE ?
             c10::SmallVector<int64_t, SIZE>({n_batch, n_input_plane, mask_H, mask_W * 32}) :
@@ -128,7 +129,8 @@ std::tuple<at::Tensor, at::Tensor> max_pool2d_with_indices(
     at::IntArrayRef dilation,
     bool ceil_mode)
 {
-    if (!c10_npu::IsAclnnOnly()) {
+    static auto maxpool2d_sc = at_npu::native::env::CheckCompatibleImpl();
+    if (!c10_npu::IsAclnnOnly() && !maxpool2d_sc) {
         DO_COMPATIBILITY(aclnnMaxPool2dWithMask,
                          acl_op::max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode));
     } else {
@@ -149,7 +151,8 @@ std::tuple<at::Tensor&, at::Tensor&> max_pool2d_with_indices_out(
     at::Tensor& output,
     at::Tensor& indices)
 {
-    if (!c10_npu::IsAclnnOnly()) {
+    static auto maxpool2d_sc = at_npu::native::env::CheckCompatibleImpl();
+    if (!c10_npu::IsAclnnOnly() && !maxpool2d_sc) {
         DO_COMPATIBILITY(aclnnMaxPool2dWithMask,
                          acl_op::max_pool2d_with_indices_out(self, kernel_size, stride,
                                                              padding, dilation, ceil_mode, output, indices));
