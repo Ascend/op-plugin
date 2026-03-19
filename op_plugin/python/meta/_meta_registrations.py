@@ -86,7 +86,7 @@ def _matmul_get_output_size(tensor1, tensor2):
     if dim_tensor1 == 1 and dim_tensor2 == 1:
         return []
     elif dim_tensor1 == 2 and dim_tensor2 == 1:
-        return [tensor2.size(0)]
+        return [tensor1.size(0)]
     elif dim_tensor1 == 1 and dim_tensor2 == 2:
         return [tensor2.size(1)]
     elif dim_tensor1 == 2 and dim_tensor2 == 2:
@@ -137,7 +137,7 @@ if os.getenv("TORCH_NPU_USE_COMPATIBLE_IMPL") != "1":
             grad_tensor = grad_tensor.unsqueeze(-2)
 
         if mat1.dim() == 2 and mat2.dim() > 2:
-            self_grad = torch.empty(list(mat1.size()), dtype=grad_tensor.dtype, device=grad_tensor.device)
+            self_grad = torch.empty(list(self.size()), dtype=grad_tensor.dtype, device=grad_tensor.device)
         else:
             mat2_transposed = mat2.transpose(-2, -1)
             self_grad_size = _matmul_get_output_size(grad_tensor, mat2_transposed)
@@ -165,6 +165,9 @@ if os.getenv("TORCH_NPU_USE_COMPATIBLE_IMPL") != "1":
             other_grad_size = _matmul_get_output_size(mat1_transposed, grad_tensor)
             other_grad = torch.empty(other_grad_size, dtype=mat1.dtype, device=mat1.device)
 
+        if other.dim() == 1 and other_grad.size(-1) == 1 and other_grad.dim() != 1:
+            other_grad = other_grad.squeeze(-1)
+             
         return (self_grad, other_grad)
 
 
