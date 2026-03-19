@@ -200,7 +200,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
             layout=input_layout,
             sparse_mode=sparse_mode)
     
-    torch_npu.npu_sparse_lightning_indexer_grad_kl_loss(
+    torch_npu.npu_dense_lightning_indexer_grad_kl_loss(
             q, k, q_index, k_index, weights, softmax_max, softmax_sum, softmax_max_index, softmax_sum_index, scale,
             query_rope=q_rope, key_rope=k_rope, actual_seq_qlen=actual_seq_qlen,
             actual_seq_klen=actual_seq_klen, layout=input_layout, sparse_mode=sparse_mode)

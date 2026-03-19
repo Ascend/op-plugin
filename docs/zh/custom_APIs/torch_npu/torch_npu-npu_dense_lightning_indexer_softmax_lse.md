@@ -117,7 +117,7 @@ $，数据格式支持$ND$，数据类型支持`float`。
         weights, 
         actual_seq_qlen=actual_seq_qlen, 
         actual_seq_klen=actual_seq_klen, 
-        layout=input_layout, 
+        layout=layout, 
         sparse_mode=sparse_mode,
         pre_tokens=pre_tokens,
         next_tokens=next_tokens)
