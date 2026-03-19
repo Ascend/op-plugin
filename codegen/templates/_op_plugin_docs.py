@@ -10802,7 +10802,7 @@ _add_torch_npu_docstr(
 torch_npu.npu_prefetch(Tensor input, Tensor? dependency, int max_size, int offset=0) -> ()
 
 功能描述
-提供网络weight预取功能, 将需要预取的权重搬到L2 Cache中. 尤其在做较大Tensor的MatMul计算且需要搬移到L2 Cache的操作时, 可通过该接口提前预取权重, 适当提高模型性能, 具体效果取决与用户采用的并行方式和配置. 
+提供网络weight预取功能，用于在计算执行前将指定的权重数据预先加载到L2 Cache中，减少算子访问这些权重时的访存等待时间。例如，在MatMul等算子之前进行预取，算子执行时可直接从低时延的L2 Cache中读取权重，进而提升算子数据访问与计算效率。实际性能收益取决于用户采用的并行方式和配置。
 
 参数说明
 input: Tensor类型, 表示需要预取的权重, 不做数据处理, 与数据类型和数据格式无关; 输入不能含有为None. 
