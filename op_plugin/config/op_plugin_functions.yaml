@@ -140,7 +140,7 @@ official:
     gen_opapi:
       new_params:
         p_float: 'static_cast<float>(p)'
-        mode: 'compute_mode.value_or(0)'
+        mode: 'std::abs(p - 2.0) < 1e-6 ? 2 : compute_mode.value_or(0)'
       out:
         size: 'op_infer::cdist_npu_output_size(x1, x2)'
         dtype: 'x1.scalar_type()'
@@ -1526,7 +1526,7 @@ official:
     gen_opapi:
       new_params:
         p_float: 'static_cast<float>(p)'
-        mode: 'compute_mode.value_or(0)'
+        mode: 'std::abs(p - 2.0) < 1e-6 ? 2 : compute_mode.value_or(0)'
       out:
         size: 'op_infer::cdist_npu_output_size(x1, x2)'
         dtype: 'x1.scalar_type()'
