@@ -5685,9 +5685,11 @@ custom:
 
   - func: npu_apply_adam(Scalar beta1_power, Scalar beta2_power, Scalar lr, Scalar beta1, Scalar beta2, Scalar epsilon, Tensor grad, bool? use_locking, bool? use_nesterov) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
+    op_api: all_version
 
   - func: npu_apply_adam.out(Scalar beta1_power, Scalar beta2_power, Scalar lr, Scalar beta1, Scalar beta2, Scalar epsilon, Tensor grad, bool? use_locking, bool? use_nesterov, *, Tensor(a!) var, Tensor(b!) m, Tensor(c!) v) -> (Tensor(a!), Tensor(b!), Tensor(c!))
     acl_op: all_version
+    op_api: all_version
 
   - func: npu_apply_adam_w(Scalar beta1_power, Scalar beta2_power, Scalar lr, Scalar weight_decay, Scalar beta1, Scalar beta2, Scalar epsilon, Tensor grad, Tensor? max_grad_norm, bool? amsgrad, bool? maximize) -> (Tensor, Tensor, Tensor)
     acl_op: all_version
