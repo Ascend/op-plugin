@@ -61,14 +61,7 @@ at::Tensor npu_anti_quant(const at::Tensor &x, const at::Tensor &scale, const c1
     at::Tensor result = apply_anti_quant_out_tensor(x, dst_type);
 
     bool sqrt_mode = false;
-
-    if (src_dtype.has_value() && src_dtype.value() != input_dtype) {
-        at::Tensor converted = x.to(src_dtype.value());
-        EXEC_NPU_CMD(aclnnAscendAntiQuant, converted, scale, offset, dst_type, sqrt_mode, result);
-    } else {
-        EXEC_NPU_CMD(aclnnAscendAntiQuant, x, scale, offset, dst_type, sqrt_mode, result);
-    }
-
+    EXEC_NPU_CMD(aclnnAscendAntiQuant, x, scale, offset, dst_type, sqrt_mode, result);
     return result;
 }
 } // namespace op_api

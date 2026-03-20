@@ -85,7 +85,7 @@ class TestAntiQuant(TestCase):
                 npu_input_x,
                 npu_scale,
                 offset = npu_offset,
-                dst_type = invalid_dst_type,
+                dst_dtype = invalid_dst_type,
                 src_dtype = torch.int8
             )
             self.fail("Do not throw the expected exception")
