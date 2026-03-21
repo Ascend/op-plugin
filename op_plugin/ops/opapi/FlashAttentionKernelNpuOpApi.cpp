@@ -995,8 +995,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     } else { // Ascend950
         c10::optional<at::Tensor> empty_optional_tensor;
         at::Tensor empty_out_tensor;
+
+        std::string softmax_layout_str = std::string(softmax_layout);
+        softmax_layout_str = (softmax_layout_str == "TND") ? "same_as_input" : softmax_layout_str;
         char softmax_layout_char[LAYOUT_MAX_LENGTH];
+        strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
         softmax_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
+        
         EXEC_NPU_CMD(
             aclnnFlashAttentionScoreGradV4, format_query, format_key, format_value, format_dy,
             format_pse, format_drop_mask, format_padding_mask, format_atten_mask, format_softmax_max,
