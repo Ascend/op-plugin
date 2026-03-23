@@ -1435,6 +1435,9 @@
   "func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: kl_div_target_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor": {
+    "version": ["all_version"]
+  },
   "func: npu_mm_reduce_scatter_base(Tensor self, Tensor x2, str hcom, int world_size, *, str reduce_op='sum', Tensor? bias=None, int comm_turn=0) -> Tensor": {
     "version": ["all_version"]
   },

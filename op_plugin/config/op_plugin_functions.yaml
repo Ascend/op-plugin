@@ -5573,6 +5573,14 @@ custom:
         dtype: self
       exec: aclnnKlDivBackward
 
+  - func: kl_div_target_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
+    op_api: [v2.1, newest]
+    gen_opapi:
+      out:
+        size: target
+        dtype: target
+      exec: aclnnKlDivTargetBackward
+
   - func: l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
