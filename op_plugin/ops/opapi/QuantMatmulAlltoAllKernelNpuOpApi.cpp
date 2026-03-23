@@ -30,16 +30,7 @@ static const int64_t ACL_UNDEFINED = -1;
 
 // world_size
 const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16};
-// x valid dtype
-const std::set<int64_t> SUPPORT_X_DTYPE_LIST {
-    static_cast<int64_t>(c10_npu::DType::FLOAT8_E4M3FN),
-    static_cast<int64_t>(c10_npu::DType::FLOAT8_E5M2)
-};
 
-// scales valid dtype
-const std::set<int64_t> SUPPORT_SCALES_DTYPE_LIST {
-    static_cast<int64_t>(c10_npu::DType::FLOAT)
-};
 
 at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x2, c10::string_view hcom,
     int64_t world_size, const c10::optional<at::Tensor>& bias, const c10::optional<at::Tensor>& x1_scale,
@@ -89,14 +80,16 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
     bool transpose_x1 = false;
     bool transpose_x2 = false;
 
-    // mx量化下scale为fp8_e8m0，需要wrapper包装
+    // mx量化下scale为fp8_e8m0，mxfp4量化下x为fp4_e2m1，均需要wrapper包装
+    TensorWrapper x1_wrapper = make_wrapper(x1, x1_dtype);
+    TensorWrapper x2_wrapper = make_wrapper(x2, x2_dtype);
     const at::Tensor &x1_scale_real = x1_scale.value_or(at::Tensor());
     const at::Tensor &x2_scale_real = x2_scale.value_or(at::Tensor());
     TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
     TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
 
     // 前面的wrapper打包传进去之后，这里直接调用aclnn接口
-    EXEC_NPU_CMD(aclnnQuantMatmulAlltoAll, x1, x2, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset,
+    EXEC_NPU_CMD(aclnnQuantMatmulAlltoAll, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset,
         all2all_axes, group_ptr, x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, group_size,
         transpose_x1, transpose_x2, output_tensor);
     return output_tensor;

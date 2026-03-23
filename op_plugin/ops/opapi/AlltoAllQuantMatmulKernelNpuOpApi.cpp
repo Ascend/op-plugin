@@ -26,7 +26,6 @@ static const int TWO_DIMS = 2;
 static const int DYN_PERTOKEN_QUANT_MODE = 7;
 static const int64_t PERCHANNEL_QUANT_MODE = 2;
 static const int64_t NON_QUANT = 0;
-static const int64_t NON_GROUP = 0;
 static const int64_t ACL_UNDEFINED = -1;
 static const int64_t ACL_FP8_E5M2 = 35;
 static const int64_t INT4_NUMS_IN_INT32 = 8;
@@ -53,9 +52,6 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     // 校验world_size
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
         "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, "." + OPS_ERROR(ErrCode::VALUE));
-    if (world_size != 0) {
-        TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size.", OPS_ERROR(ErrCode::PARAM));
-    }
 
     bool is_w4 = x2.dtype() == at::kInt;
     // 处理group_sizes
@@ -90,9 +86,13 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     bool transpose_x1 = false;
     bool transpose_x2 = false;
     int64_t commQuantDtype = comm_quant_dtype.has_value() ? comm_quant_dtype.value() : ACL_UNDEFINED;
-    int64_t x1QuantDtype = x1_quant_dtype.has_value() ? x1_quant_dtype.value() : ACL_FP8_E5M2;
+    // x1_quant_dtype入参为torch数据类型枚举值，向下传递时需要修改为acl数据类型枚举值
+    int64_t x1QuantDtype = x1_quant_dtype.has_value() ?
+        static_cast<int64_t>(c10_npu::GetAclDataType(x1_quant_dtype.value())) : ACL_FP8_E5M2;
 
-    // mx量化下scale为fp8_e8m0，需要wrapper包装
+    // mx量化下scale为fp8_e8m0，mxfp4量化下x为fp4_e2m1，均需要wrapper包装
+    TensorWrapper x1_wrapper = make_wrapper(x1, x1_dtype);
+    TensorWrapper x2_wrapper = make_wrapper(x2, x2_dtype);
     const at::Tensor &x1_scale_real = x1_scale.value_or(at::Tensor());
     const at::Tensor &x2_scale_real = x2_scale.value_or(at::Tensor());
     TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
@@ -104,15 +104,16 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
         at::ScalarType alltoall_out_scalar_type = npu_preparation::convert_to_scalar_type(alltoall_out_acl_type);
         auto alltoall_out_size = {out_m, x1.size(1) * world_size};
         at::Tensor alltoall_out_tensor = npu_preparation::apply_tensor_without_format(alltoall_out_size, c10::dtype(alltoall_out_scalar_type));
+        TensorWrapper alltoall_out_wrapper = make_wrapper(alltoall_out_tensor, x1_dtype);
         // 调用aclnn接口
-        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1, x2, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
+        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
             x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
-            output_tensor, alltoall_out_tensor);
+            output_tensor, alltoall_out_wrapper);
         return std::tuple<at::Tensor, at::Tensor>(output_tensor, alltoall_out_tensor);
     } else {
         const std::nullptr_t& alltoalloutNullptr = nullptr;
         // 调用aclnn接口
-        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1, x2, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
+        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
             x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
             output_tensor, alltoalloutNullptr);
         return std::tuple<at::Tensor, at::Tensor>(output_tensor, alltoalloutNullptr);
