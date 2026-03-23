@@ -44,7 +44,7 @@
       $$
 
 ## 函数原型
-```
+```python
 torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None, scales2=None, zero_points2=None, *, axis=-1, epsilon=1e-06, div_mode=True) -> (y1, y2, x)
 ```
 
@@ -52,11 +52,11 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 
   - **x1**（`Tensor`）：必选参数，表示标准化过程中的源数据张量，公式中的$x1$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float16`、`bfloat16`。shape支持1-8维。
   - **x2**（`Tensor`）：必选参数，表示标准化过程中的源数据张量，公式中的$x2$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float16`、`bfloat16`。shape支持1-8维，shape和数据类型需要与`x1`保持一致。
-  - **gamma**（`Tensor`）：必选参数，表示标准化过程中的权重张量，公式中的$gamma$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float16`、`bfloat16`。shape支持1维，元素数量与`x1`最后一维大小一致，数据类型需要与`x1`保持一致。
-  - **scales1**（`Tensor`）：必选参数，表示量化过程中得到`y1`的scale张量，公式中的$scales1$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float32`、`bfloat16`。shape需要与`gamma`保持一致。当参数`div_mode`的值为True时，该参数的值不能为0。
+  - **gamma**（`Tensor`）：必选参数，表示标准化过程中的权重张量，公式中的$gamma$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float16`、`bfloat16`。shape支持1-8维，shape与`x1`需要norm的维度一致，数据类型需要与`x1`保持一致。
+  - **scales1**（`Tensor`）：必选参数，表示量化过程中得到`y1`的scales张量，公式中的$scales1$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float32`、`bfloat16`。shape需要与`gamma`保持一致。当参数`div_mode`的值为True时，该参数的值不能为0。
   - **zero_points1**（`Tensor`）：可选参数，表示量化过程中得到`y1`的offset张量，公式中的$zero\_points1$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`int32`、`bfloat16`。shape需要与`gamma`保持一致。
   - **beta**（`Tensor`）：可选参数，表示标准化过程中的偏置项，公式中的$beta$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float16`、`bfloat16`，数据类型需要与`gamma`保持一致。shape需要与`gamma`保持一致。默认值为None。
-  - **scales2**（`Tensor`）：可选参数，表示量化过程中得到`y2`的scale张量，公式中的$scales2$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float32`、`bfloat16`，数据类型需要与`scales1`保持一致。shape需要与`gamma`保持一致。当参数`div_mode`的值为True时，该参数的值不能为0。默认值为None。
+  - **scales2**（`Tensor`）：可选参数，表示量化过程中得到`y2`的scales张量，公式中的$scales2$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float32`、`bfloat16`，数据类型需要与`scales1`保持一致。shape需要与`gamma`保持一致。当参数`div_mode`的值为True时，该参数的值不能为0。默认值为None。
   - **zero_points2**（`Tensor`）：可选参数，表示量化过程中得到`y2`的offset张量，公式中的$zero\_points2$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`int32`、`bfloat16`，数据类型需要与`zero_points1`保持一致。shape需要与`gamma`保持一致。默认值为None。
   - **axis**（`int64_t`）：可选参数，表示需要进行量化的elewise轴，其他的轴做broadcast，指定的轴不能超过输入x的维度数。当前仅支持默认值-1，传其他值均不生效。
   - **epsilon**（`double`）可选参数，公式中的输入$epsilon$，用于防止除0错误，数据类型为double。建议传较小的正数，默认值为1e-6。
@@ -66,30 +66,29 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 
   - **y1**（`Tensor`）：表示量化后的输出Tensor，公式中的$y1$。数据格式支持$ND$，支持非连续的Tensor。数据类型为`int8`，shape与输入`x1`一致。
   - **y2**（`Tensor`）：表示量化后的输出Tensor，公式中的$y2$。数据格式支持$ND$，支持非连续的Tensor。数据类型为`int8`，shape与输入`x1`一致。
-  - **x**（`Tensor`）：表示`x1`和`x2`的和，公式中的$x$。数据格式支持ND，支持非连续的Tensor。数据类型和shape与输入`x1`一致。
+  - **x**（`Tensor`）：表示`x1`和`x2`的和，公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。数据类型和shape与输入`x1`一致。
 
 ## 约束说明
-- Atlas 推理系列产品：`x1`、`x2`的最后一维数据个数不能小于32。`gamma`、`beta`、`scales1`、`zero_points1`、`scales2`、`zero_points2`的数据个数不能小于32。
+- <term>Atlas 推理系列产品</term>：`x1`、`x2`的最后一维数据个数不能小于32。`gamma`、`beta`、`scales1`、`zero_points1`、`scales2`、`zero_points2`的数据个数不能小于32。
 
 - **边界值场景说明**
 
-  - Atlas 推理系列产品：输入不支持包含inf和nan。
-  - Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：当输入是inf时，输出为inf。当输入是nan时，输出为nan。
+  - <term>Atlas 推理系列产品</term>：输入不支持包含inf和nan。
+  - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当输入是inf时，输出为inf。当输入是nan时，输出为nan。
 
 - **维度的边界说明**
 
-  参数`x1`、`x2`、`gamma`、`scales1`、`zero_points1`、`beta`、`scales2`、`zero_points2`、`y1`、`y2`、`x`的shape中每一维大小都不大于int32的最大值2147483647。
-  
+  参数`x1`、`x2`、`gamma`、`scales1`、`zero_points1`、`beta`、`scales2`、`zero_points2`、`y1`、`y2`、`x`的shape中每一维大小都不大于int32的最大值2147483647。  
 
 - **各产品型号支持数据类型说明**
-  - Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：
+  - <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
      | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
      | ---------- | ---------- | ------------- | --------------- | ----------------------- | --------------------------- | --------------------------- | -------------------- | ------------- | ------------- | ------------ |
      | float16    | float16    | float16       | float32         | float32                 | int32                       | int32                       | float16              | int8          | int8          | float16      |
      | bfloat16   | bfloat16   | bfloat16      | bfloat16        | bfloat16                | bfloat16                    | bfloat16                    | bfloat16             | int8          | int8          | bfloat16     |
 
-  - Atlas 推理系列产品：
+  - <term>Atlas 推理系列产品</term>：
 
     | x1 | x2 | gamma | scales1| scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | ---------- | ---------- | ------------- | --------------- | ----------------------- | --------------------------- | --------------------------- | -------------------- | ------------- | ------------- | ------------ |
