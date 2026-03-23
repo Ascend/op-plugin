@@ -30,6 +30,7 @@ OP_PLUGIN_HIDDEN at::ScalarType npu_add_rms_norm_dynamic_quant_y_dtype(c10::opti
 OP_PLUGIN_HIDDEN at::ScalarType clamp_out_dtype(const at::Tensor& self, const c10::optional<at::Tensor>& min, const c10::optional<at::Tensor>& max);
 OP_PLUGIN_HIDDEN at::ScalarType clamp_scalar_out_dtype(const at::Tensor& self, const c10::optional<at::Scalar>& min, const c10::optional<at::Scalar>& max);
 OP_PLUGIN_HIDDEN at::ScalarType abs_out_dtype(const at::Tensor& self);
+OP_PLUGIN_HIDDEN at::ScalarType npu_moe_distribute_dispatch_setup_out_dtype(c10::optional<int64_t> y_dtype);
 
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_DTYPE

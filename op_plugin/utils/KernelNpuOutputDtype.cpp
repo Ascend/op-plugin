@@ -139,4 +139,11 @@ at::ScalarType abs_out_dtype(const at::Tensor& self)
     return output;
 }
 
+at::ScalarType npu_moe_distribute_dispatch_setup_out_dtype(c10::optional<int64_t> y_dtype)
+{
+    auto output_dtype = at::kChar;
+    output_dtype = at_npu::native::OpPreparation::convert_to_scalar_type(c10_npu::GetAclDataType(y_dtype.value()));
+    return output_dtype;
+}
+
 } // namespace op_infer

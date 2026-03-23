@@ -2715,6 +2715,206 @@ def npu_moe_distribute_combine_add_rms_norm_meta(expand_x, expert_ids, expand_id
     return (expand_x.new_empty(tuple(dim_list), dtype=expand_x.dtype), expand_x.new_empty(tuple(dim_list2), dtype=torch.float32), expand_x.new_empty(tuple(dim_list), dtype=expand_x.dtype))
 
 
+@impl(m, "npu_moe_distribute_dispatch_setup")
+def npu_moe_distribute_dispatch_setup_meta(x, expert_ids, group_ep, ep_world_size, ep_rank_id, moe_expert_num, 
+                                           scales=None, x_active_mask=None, expert_shard_type=0, shared_expert_num=1, 
+                                           shared_expert_rank_num=0, quant_mode=0, global_bs=0, comm_type=0, 
+                                           comm_alg="", y_dtype=None):
+    def Align(x, align_len):
+        if (align_len <= 0):
+            return -1
+        return math.ceil(x / align_len) * align_len
+    
+    DIM_2 = 2
+    UNQUANT = 0
+    STATIC_QUANT = 1
+    PERTOKEN_DYNAMIC_QUANT = 2
+    PERGROUP_DYNAMIC_QUANT = 3
+    MX_QUANT = 4
+    BYTE_2 = 2
+    BYTE_4 = 4
+    ALGIN_2 = 2
+    ALGIN_32 = 32
+    ALGIN_128 = 128
+    ALGIN_256 = 256
+    ALGIN_512 = 512
+
+    torch._check(
+        (x.dim() == DIM_2),
+        lambda: (
+            f"The dims of input x should be 2 dimensional, "
+            f"but got {x.dim()}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    torch._check(
+        (expert_ids.dim() == DIM_2),
+        lambda: (
+            f"The dims of input expert_ids should be 2 dimensional, "
+            f"but got {expert_ids.dim()}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+
+    bs = x.size(0)
+    h = x.size(1)
+    k = expert_ids.size(1)
+    # 根据量化类型计算hs大小
+    if quant_mode == UNQUANT:
+        hs = Align(Align(h * BYTE_2, ALGIN_32), ALGIN_512) // BYTE_2
+    elif quant_mode == STATIC_QUANT:
+        hs = Align(Align(h, ALGIN_32), ALGIN_512)
+    elif quant_mode == PERTOKEN_DYNAMIC_QUANT:
+        hs = Align(Align(h, ALGIN_32) + BYTE_4, ALGIN_512)
+    elif quant_mode == PERGROUP_DYNAMIC_QUANT:
+        hs = Align((Align(h, ALGIN_128) + math.ceil(h / ALGIN_128) * BYTE_4), ALGIN_512)
+    elif quant_mode == MX_QUANT:
+        hs = Align(Align(h, ALGIN_256) + Align(math.ceil(h / ALGIN_32), ALGIN_2), ALGIN_512)
+
+    local_moe_expert_num = 0
+    torch._check(
+        (ep_rank_id >= 0 and ep_rank_id < ep_world_size),
+        lambda: (
+            f"ep_rank_id should be in [0, ep_world_size), "
+            f"but got ep_rank_id: {ep_rank_id}, ep_world_size: {ep_world_size}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    torch._check(
+        (shared_expert_rank_num >= 0 and shared_expert_rank_num <= ep_world_size // 2),
+        lambda: (
+            f"shared_expert_rank_num should be in [0, ep_world_size / 2], "
+            f"but got shared_expert_rank_num: {shared_expert_rank_num}, ep_world_size: {ep_world_size}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    if expert_shard_type == 0:
+        if ep_rank_id < shared_expert_rank_num:
+            local_moe_expert_num = 1
+        else:
+            local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
+    local_moe_expert_num = int(local_moe_expert_num)
+
+    outDtype = x.dtype
+    if scales is not None or quant_mode != 0:
+        outDtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP[y_dtype]
+
+    y = x.new_empty((bs * (k + shared_expert_num), hs), dtype=outDtype)
+    expand_idx = x.new_empty((bs * k), dtype=torch.int32)
+    comm_cmd_info = x.new_empty(((bs * (k + shared_expert_num) + ep_world_size * local_moe_expert_num) * 16), dtype=torch.int32)
+    return (y, expand_idx, comm_cmd_info)
+
+
+@impl(m, "npu_moe_distribute_dispatch_teardown")
+def npu_moe_distribute_dispatch_teardown_meta(x, y, expert_ids, comm_cmd_info, group_ep, ep_world_size, ep_rank_id, 
+                                              moe_expert_num, expert_shard_type=0, shared_expert_num=1, 
+                                              shared_expert_rank_num=0, quant_mode=0, global_bs=0, 
+                                              expert_token_nums_type=1, comm_type=0, comm_alg=""):
+    DIM_2 = 2
+    
+    torch._check(
+        (x.dim() == DIM_2),
+        lambda: (
+            f"The dims of input x should be 2 dimensional, "
+            f"but got {x.dim()}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    torch._check(
+        (expert_ids.dim() == DIM_2),
+        lambda: (
+            f"The dims of input expert_ids should be 2 dimensional, "
+            f"but got {expert_ids.dim()}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    bs = x.size(0)
+    h = x.size(1)
+    k = expert_ids.size(1)
+
+    local_moe_expert_num = 0
+    global_bs_real = (bs * ep_world_size) if global_bs == 0 else global_bs
+    a = 0
+    if expert_shard_type == 0:
+        if ep_rank_id < shared_expert_rank_num:
+            local_moe_expert_num = 1
+            a = global_bs_real // shared_expert_rank_num
+        else:
+            local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
+            a = global_bs_real * min(local_moe_expert_num, k)
+    else:
+        if ep_rank_id >= ep_world_size - shared_expert_rank_num:
+            local_moe_expert_num = 1
+            a = global_bs_real // shared_expert_rank_num
+        else:
+            local_moe_expert_num = moe_expert_num // (ep_world_size - shared_expert_rank_num)
+            a = global_bs_real * min(local_moe_expert_num, k)
+
+    local_moe_expert_num = int(local_moe_expert_num)
+
+    outDtype = torch.int8 if (quant_mode != 0) else x.dtype
+    expand_x = x.new_empty(tuple([a, h]), dtype=outDtype)
+    dynamic_scales = x.new_empty(tuple([a]), dtype=torch.float32)
+    assist_info_for_combine = x.new_empty(tuple([a * 128]), dtype=torch.int32)
+    expert_token_nums = x.new_empty(tuple([local_moe_expert_num]), dtype=torch.int64)
+    return (expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums)
+
+
+@impl(m, "npu_moe_distribute_combine_setup")
+def npu_moe_distribute_combine_setup_meta(expand_x, expert_ids, assist_info_for_combine, group_ep, ep_world_size, 
+                                          ep_rank_id, moe_expert_num, expert_shard_type=0, shared_expert_num=1, 
+                                          shared_expert_rank_num=0, global_bs=0, comm_quant_mode=0, comm_type=0, 
+                                          comm_alg="", y_dtype=0):
+    def Align(x, align_len):
+        if (align_len <= 0):
+            return -1
+        return math.ceil(x / align_len) * align_len
+
+    DIM_2 = 2
+
+    torch._check(
+        (expand_x.dim() == DIM_2),
+        lambda: (
+            f"The dims of input expand_x should be 2 dimensional, "
+            f"but got {expand_x.dim()}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+
+    a = expand_x.size(0)
+    h = expand_x.size(1)
+    hs = Align(Align(h, 32) + Align(h, 8) // 8 * 4, 512)
+    quant_expand_x = expand_x.new_empty(tuple([a, hs]), dtype=torch.int8)
+    comm_cmd_info = expand_x.new_empty(tuple([(a + ep_world_size) * 16]), dtype=torch.int32)
+    return (quant_expand_x, comm_cmd_info)
+
+
+@impl(m, "npu_moe_distribute_combine_teardown")
+def npu_moe_distribute_combine_teardown_meta(expand_x, quant_expand_x, expert_ids, expand_idx, expert_scales, 
+                                             group_ep, ep_world_size, ep_rank_id, moe_expert_num, x_active_mask=None, 
+                                             shared_expert_x=None, expert_shard_type=0, shared_expert_num=1, 
+                                             shared_expert_rank_num=0, global_bs=0, comm_quant_mode=0, comm_type=0):
+    DIM_2 = 2
+    
+    torch._check(
+        (expand_x.dim() == DIM_2),
+        lambda: (
+            f"The dims of input expand_x should be 2 dimensional, "
+            f"but got {expand_x.dim()}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    torch._check(
+        (expert_ids.dim() == DIM_2),
+        lambda: (
+            f"The dims of input expert_ids should be 2 dimensional, "
+            f"but got {expert_ids.dim()}."
+            f"{ops_error(ErrCode.VALUE)}."
+        ),
+    )
+    return (expand_x.new_empty(tuple([expert_ids.size(0), expand_x.size(1)]), dtype=expand_x.dtype))
+
+
 @impl(m, "_npu_distribute_barrier")
 def _npu_distribute_barrier(x_ref, group, world_size, *, time_out=None, elastic_info=None):
     return torch.empty_like(x_ref)

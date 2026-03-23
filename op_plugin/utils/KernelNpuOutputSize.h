@@ -385,5 +385,18 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> lstm_npu_ijfo_hc_tanhc_output_s
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> lstm_backward_npu_output_size(const at::Tensor &input, bool batch_first, const c10::optional<at::Tensor> &batch_sizes);
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> lstm_backward_npu_hc_prev_output_size(const at::Tensor &input, at::TensorList params, int64_t num_layers, bool bidirectional, bool batch_first, const c10::optional<at::Tensor> &batch_sizes);
+
+OP_PLUGIN_HIDDEN std::vector<c10::SmallVector<int64_t, SIZE>> npu_moe_distribute_dispatch_teardown_out_size(
+    const at::Tensor &x, const at::Tensor expert_ids, int64_t ep_world_size, int64_t ep_rank_id,
+    int64_t moe_expert_num, int64_t expert_shard_type, int64_t shared_expert_rank_num, int64_t global_bs, int64_t quant_mode);
+OP_PLUGIN_HIDDEN std::vector<c10::SmallVector<int64_t, SIZE>> npu_moe_distribute_dispatch_setup_out_size(
+    const at::Tensor &x, const at::Tensor &expert_ids, int64_t ep_world_size, int64_t ep_rank_id,
+    int64_t moe_expert_num, int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
+    int64_t quant_mode, c10::optional<int64_t> y_dtype);
+OP_PLUGIN_HIDDEN std::vector<c10::SmallVector<int64_t, SIZE>> npu_moe_distribute_combine_setup_out_size(
+    const at::Tensor expand_x, int64_t ep_world_size);
+OP_PLUGIN_HIDDEN std::vector<c10::SmallVector<int64_t, SIZE>> npu_moe_distribute_combine_teardown_out_size(
+    const at::Tensor expand_x, const at::Tensor expert_ids);
+    
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE
