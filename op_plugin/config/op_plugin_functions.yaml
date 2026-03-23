@@ -2608,17 +2608,10 @@ official:
   - func: histc(Tensor self, int bins=100, Scalar min=0, Scalar max=0) -> Tensor
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      structured_inherit: histc.out
 
   - func: histc.out(Tensor self, int bins=100, Scalar min=0, Scalar max=0, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      out:
-        size: '{bins}'
-        dtype: self
-      exec: aclnnHistc
 
   - func: index.Tensor(Tensor self, Tensor?[] indices) -> Tensor
     acl_op: all_version
