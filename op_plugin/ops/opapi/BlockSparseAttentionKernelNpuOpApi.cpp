@@ -62,9 +62,7 @@ std::tuple<at::Tensor, at::Tensor> npu_block_sparse_attention(
     check_params(query, key, value, inner_precise);
 
     // 分配输出 Tensor
-    auto attention_out_shape = query.sizes().vec();
-    attention_out_shape[attention_out_shape.size() - 1] = value.size(-1);
-    at::Tensor attention_out = npu_preparation::apply_tensor_without_format(attention_out_shape, query.options());
+    at::Tensor attention_out = npu_preparation::apply_tensor_without_format(query.sizes(), query.options());
 
     at::Tensor softmax_lse_out;
     if (query.dim() == DIMENSION_4D) {

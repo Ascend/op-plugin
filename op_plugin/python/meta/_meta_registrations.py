@@ -2243,6 +2243,16 @@ def npu_block_sparse_attention_meta(query, key, value, block_sparse_mask, block_
     return (attention_out, softmax_lse)
 
 
+@impl(m, "npu_block_sparse_attention_backward")
+def npu_block_sparse_attention_backward_meta(d_out, query, key, value, attention_out, softmax_lse, block_sparse_mask,
+                                            block_shape, actual_seq_lengths, actual_seq_lengths_kv,
+                                            q_input_layout, kv_input_layout, num_key_value_heads, scale_value):
+    d_query = query.new_empty(query.size())
+    d_key = key.new_empty(key.size())
+    d_value = value.new_empty(value.size())
+    return (d_query, d_key, d_value)
+
+
 @impl(m, "npu_bmmV2")
 def npu_bmmV2_meta(self, mat2, output_sizes):
     dim1 = self.size(0)
