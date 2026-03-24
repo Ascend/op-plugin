@@ -19,6 +19,7 @@
 
 namespace op_api {
 namespace {
+constexpr int64_t kChannelDim = 1;
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct ConvParams {
@@ -71,6 +72,28 @@ inline std::vector<int64_t> expand_param_if_needed(at::IntArrayRef list_param, c
     } else {
         return list_param.vec();
     }
+}
+
+inline bool is_empty_channel_input(const at::Tensor& input)
+{
+    return input.size(kChannelDim) == 0;
+}
+
+at::Tensor make_empty_channel_output(
+    const at::Tensor& input,
+    const at::Tensor& weight,
+    const c10::optional<at::Tensor>& bias,
+    at::IntArrayRef stride,
+    at::IntArrayRef padding,
+    at::IntArrayRef dilation,
+    bool transposed,
+    at::IntArrayRef output_padding,
+    int64_t groups)
+{
+    auto output_size =
+        op_infer::conv_npu_output_size(input, weight, bias, padding, output_padding, stride, dilation, groups, transposed);
+    output_size[kChannelDim] = 0;
+    return at::empty(output_size, input.options());
 }
 
 } // namespace
@@ -262,6 +285,10 @@ at::Tensor _convolution(const at::Tensor &input, const at::Tensor &weight, const
     params.groups = groups;
     check_shape_forward(input, weight.sizes(), bias.has_value() ? bias.value() : at::Tensor(), params);
 
+    if (is_empty_channel_input(input)) {
+        return make_empty_channel_output(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups);
+    }
+
     DO_COMPATIBILITY(aclnnConvolution,
                      acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding,
                                           groups, benchmark, deterministic, cudnn_enabled, allow_tf32));
@@ -446,6 +473,17 @@ at::Tensor slow_conv3d_forward(const at::Tensor &input, const at::Tensor &weight
                                const c10::optional<at::Tensor> &bias_opt, at::IntArrayRef stride,
                                at::IntArrayRef padding)
 {
+    if (is_empty_channel_input(input)) {
+        std::vector<int64_t> dilation_vec = {1, 1, 1};
+        at::IntArrayRef dilation(dilation_vec);
+        bool transposed = false;
+        std::vector<int64_t> output_padding_vec = {0, 0, 0};
+        at::IntArrayRef output_padding(output_padding_vec);
+        int64_t groups = 1;
+        return make_empty_channel_output(input, weight, bias_opt, stride, padding, dilation, transposed, output_padding,
+                                         groups);
+    }
+
     if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend310P1 &&
         c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
         return acl_op::slow_conv3d_forward(input, weight, kernel_size, bias_opt, stride, padding);
@@ -543,6 +581,10 @@ at::Tensor convolution_overrideable(const at::Tensor &input, const at::Tensor &w
                                     c10::IntArrayRef padding, c10::IntArrayRef dilation, bool transposed,
                                     c10::IntArrayRef output_padding, int64_t groups)
 {
+    if (is_empty_channel_input(input)) {
+        return make_empty_channel_output(input, weight, bias, stride, padding, dilation, transposed, output_padding,
+                                         groups);
+    }
     DO_COMPATIBILITY(aclnnConvolution, acl_op::_convolution(input, weight, bias, stride, padding, dilation, transposed,
                                                             output_padding, groups, false, false, false, false));
     return _calc_convolution(input, weight, bias, stride, padding, dilation, transposed, output_padding, groups);
