@@ -78,7 +78,8 @@ static bool is_nz_format(const at::Tensor& x2)
     const torch_npu::NPUStorageDesc &tensor_desc =
         torch_npu::NPUBridge::GetNpuStorageImpl(x2)->npu_desc_;
     return tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ ||
-           tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ_C0_4;
+           tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ_C0_4 ||
+           tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ_C0_16;
 }
 
 uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::vector<uint64_t> &batch_record)
