@@ -101,10 +101,13 @@ tensor_list npu_top_k_top_p_sample(const at::Tensor &logits, const at::Tensor &t
         EXEC_NPU_CMD(aclnnGather, logits_idx, dim, multinomial_result, logits_select_idx);
         at::Tensor ret_idx = logits_select_idx.reshape({-1});
         return std::tie(ret_idx, logits_top_kp_select);
-    } else {
-        at::Tensor logits_select_idx = npu_preparation::apply_tensor_without_format({batch, }, logits.options().dtype(at::kLong));
+    }
+    at::Tensor logits_select_idx = npu_preparation::apply_tensor_without_format({batch, }, logits.options().dtype(at::kLong));
+    if (check_aclnn_kernel_available("aclnnTopKTopPSampleV2")) {
         EXEC_NPU_CMD(aclnnTopKTopPSampleV2, logits, top_k, top_p, q, min_ps, eps, is_need_logits, top_k_guess, ks_max, input_is_logits, is_need_sample_result, logits_select_idx, logits_top_kp_select, logits_idx, logits_sort_masked);
         return std::tie(logits_select_idx, logits_top_kp_select);
     }
+    EXEC_NPU_CMD(aclnnTopKTopPSample, logits, top_k, top_p, q, eps, is_need_logits, top_k_guess, logits_select_idx, logits_top_kp_select);
+    return std::tie(logits_select_idx, logits_top_kp_select);
 }
 }
