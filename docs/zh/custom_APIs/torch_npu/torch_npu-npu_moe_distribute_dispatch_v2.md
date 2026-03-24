@@ -109,7 +109,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：取值范围为\[1, 1024\]。
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为\[1, 1024\]。`comm_alg`设置为"hierarchy"时，取值范围为[1, 512]。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
--   **scales** (`Tensor`)：可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)，数据类型支持`float`，数据格式为$ND$，不支持非连续的Tensor。
+-   **scales** (`Tensor`)：可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)，数据类型支持`float32`，数据格式为$ND$，不支持非连续的Tensor。
 -   **x\_active\_mask** (`Tensor`)：可选参数，表示token是否参与通信。
     -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
          - `comm_alg`设置为"fullmesh"时，要求是一个1维或者2维张量。当输入为1维时，shape为\(BS, \); 当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入；当输入为2D时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。支持2维张量属于零计算专家特性，此特性尚在实验阶段，请谨慎使用。
@@ -117,8 +117,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求是一个1维或者2维张量。当输入为1维时，shape为\(BS, \); 当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入；当输入为2D时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
 
 -   **expert\_scales** (`Tensor`)：可选参数，表示每个token的topK个专家权重。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求为2维张量，shape为\(BS, K\)，数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`comm_alg`设置为"hierarchy"时，要求为2维张量，shape为\(BS, K\)，数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。`comm_alg`设置为""，"fullmesh_v1"，"fullmesh_v2"时，暂不支持该参数，使用默认值即可。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求为2维张量，shape为\(BS, K\)，数据类型支持`float32`，数据格式为$ND$，支持非连续的Tensor。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`comm_alg`设置为"hierarchy"时，要求为2维张量，shape为\(BS, K\)，数据类型支持`float32`，数据格式为$ND$，支持非连续的Tensor。`comm_alg`设置为""，"fullmesh_v1"，"fullmesh_v2"时，暂不支持该参数，使用默认值即可。
 
 -   **elastic\_info** (`Tensor`)：预留参数，当前版本不支持，传默认值None即可。
 
@@ -183,7 +183,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 ## 输出说明<a name="zh-cn_topic_0000002203575833_section22231435517"></a>
 
 -   **expand\_x** (`Tensor`)：表示本卡收到的token数据，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持`bfloat16`、`float16`、`int8`。量化时类型为`int8`，非量化时与`x`数据类型保持一致。数据格式为$ND$，支持非连续的Tensor。
--   **dynamic\_scales** (`Tensor`)：表示计算得到的动态量化参数。当`quant_mode`不为0时才有该输出，要求为1维张量，shape为\(A,\)，数据类型支持`float`，数据格式支持$ND$，支持非连续的Tensor。
+-   **dynamic\_scales** (`Tensor`)：表示计算得到的动态量化参数。当`quant_mode`不为0时才有该输出，要求为1维张量，shape为\(A,\)，数据类型支持`float32`，数据格式支持$ND$，支持非连续的Tensor。
 -   **assist\_info\_for\_combine** (`Tensor`)：表示给同一专家发送的token个数，要求是一个1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`assist_info_for_combine`输入。
 
 -   **expert\_token\_nums** (`Tensor`)：本卡每个专家实际收到的token数量，要求为1维张量，shape为\(local\_expert\_num,\)，数据类型`int64`，数据格式支持$ND$，支持非连续的Tensor。
@@ -196,8 +196,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1D Tensor，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
 
 -   **expand\_scales** (`Tensor`)：表示`expert_scales`与`x`一起进行alltoallv之后的输出。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求是一个1维张量，shape为\(A, \)，数据类型支持`float`，数据格式要求为$ND$，支持非连续的Tensor。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该输出，返回None。
+    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求是一个1维张量，shape为\(A, \)，数据类型支持`float32`，数据格式要求为$ND$，支持非连续的Tensor。
+    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`comm_alg`设置为"hierarchy"时，要求是一个1维张量，shape为\(A, \)，数据类型支持`float32`，数据格式要求为$ND$，支持非连续的Tensor。`comm_alg`设置为""，"fullmesh_v1"，"fullmesh_v2"时，暂不支持该输出，返回None。
 
 ## 约束说明<a name="zh-cn_topic_0000002203575833_section12345537164214"></a>
 
