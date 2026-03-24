@@ -29,7 +29,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 > - query、key、weights参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
 > - S1表示query shape中的S，S2表示key shape中的S，T1表示query shape中的T，T2表示key shape中的T，N1表示query shape中的N，N2表示key shape中的N。
 
--   **query**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1仅支持64。
+-   **query**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1仅支持小于等于64。
     
 -   **key**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_kv`为BSND时shape为[B, S2, N2, D]，`layout_kv`为TND时shape为[T2, N2, D]，N2仅支持1。
     
@@ -72,7 +72,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 ## 约束说明
 
 -   该接口支持图模式。
--   参数query中的N支持64，key中的N支持1。
+-   参数query中的N支持小于等于64，key中的N支持1。
 -   参数query中的D和参数key中的D值相等为128。
 -   参数query、key的数据类型应保持一致。
 -   参数weights不为`float32`时，参数query、key、weights的数据类型应保持一致。
