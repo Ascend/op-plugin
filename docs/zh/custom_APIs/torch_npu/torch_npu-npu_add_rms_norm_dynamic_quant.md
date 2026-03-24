@@ -87,8 +87,8 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 
 ## 返回值说明
 
-- **y1**(`Tensor`)：第一路动态量化后的输出Tensor，对应公式中的$y1Out$。当`output_mask[0]`为`True`时，数据类型支持`int8`，shape与`x1`一致；当`output_mask[0]`为`False`时，返回空Tensor。
-- **y2**(`Tensor`)：第二路动态量化后的输出Tensor，对应公式中的$y2Out$。当`output_mask[1]`为`True`时，数据类型支持`int8`，shape与`x1`一致；当`output_mask[1]`为`False`时，返回空Tensor。
+- **y1**(`Tensor`)：第一路动态量化后的输出Tensor，对应公式中的$y1Out$。当`output_mask[0]`为`True`时，数据类型支持`int8`、`int4`，shape与`x1`一致；当`output_mask[0]`为`False`时，返回空Tensor。
+- **y2**(`Tensor`)：第二路动态量化后的输出Tensor，对应公式中的$y2Out$。当`output_mask[1]`为`True`时，数据类型支持`int8`、`int4`，shape与`x1`一致；当`output_mask[1]`为`False`时，返回空Tensor。
 - **x_out**(`Tensor`)：Add计算的结果，对应公式中的$x$。数据类型和shape与输入`x1`保持一致。
 - **scale1**(`Tensor`)：第一路动态量化的缩放系数，对应公式中的$scale1Out$。当`output_mask[0]`为`True`时，数据类型为`float32`，shape为`x1`的shape剔除最后一维；当`output_mask[0]`为`False`时，返回空Tensor。
 - **scale2**(`Tensor`)：第二路动态量化的缩放系数，对应公式中的$scale2Out$。当`output_mask[1]`为`True`时，数据类型为`float32`，shape为`x1`的shape剔除最后一维；当`output_mask[1]`为`False`时，返回空Tensor。
