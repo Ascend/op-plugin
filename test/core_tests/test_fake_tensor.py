@@ -5177,5 +5177,25 @@ class TestMatmul(TestCase):
             self.assertEqual(y.grad.dtype, y_fake_tensor.grad.dtype)
 
 
+class TestKLDivLoss(TestCase):
+    def test_kl_div_backward(self):
+        loss_fn = torch.nn.KLDivLoss(reduction="sum", log_target=True).to("npu")
+        pred = torch.randn(4, 4, device="npu", requires_grad=True)
+        target = torch.randn(4, 4, device="npu")
+
+        loss = loss_fn(pred.log_softmax(dim=-1), target)
+        loss.backward()
+
+        with FakeTensorMode():
+            pred_fake_tensor = torch.randn(4, 4, device="npu", requires_grad=True)
+            target_fake_tensor = torch.randn(4, 4, device="npu")
+
+            loss_fake_tensor = loss_fn(pred_fake_tensor.log_softmax(dim=-1), target_fake_tensor)
+            loss_fake_tensor.backward()
+
+            self.assertEqual(pred.grad.shape, pred_fake_tensor.grad.shape)
+            self.assertEqual(pred.grad.dtype, pred_fake_tensor.grad.dtype)
+
+
 if __name__ == "__main__":
     run_tests()

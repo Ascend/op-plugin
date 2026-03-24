@@ -5926,3 +5926,10 @@ def batch_norm_reduce_meta(self, eps):
     out_sum = torch.empty(self.size(1), dtype=self.dtype, device='meta')
     out_square_sum = torch.empty(self.size(1), dtype=self.dtype, device='meta')
     return (out_sum, out_square_sum)
+
+
+@impl(m, "kl_div_backward")
+def kl_div_backward_meta(grad_out, x, target, reduction="mean", log_target=False):
+    result = torch.empty_like(x)
+
+    return result
