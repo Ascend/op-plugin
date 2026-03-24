@@ -2,12 +2,12 @@
 
 ## 产品支持情况
 
-|产品             |  是否支持  |
-|:-------------------------|:----------:|
-|  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |     √    |
-|  <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>     |     √    |
-|  <term>Atlas 200I/500 A2 推理产品</term>     |     √    |
-|  <term>Atlas 推理系列产品</term>   |     √    |
+| 产品 | 是否支持 |
+| :---------------------- | :------: |
+| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>                        |    √    |
+| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> |    √    |
+| <term>Atlas 200I/500 A2 推理产品</term>                                         |    √    |
+| <term>Atlas 推理系列产品</term>                                                |    √    |
 
 ## 功能说明
 
@@ -21,8 +21,7 @@
   $$
   y = round((quant\_in * scales) + offset)
   $$
-
-- 上面公式中的`round`操作支持CAST_RINT模式。
+  上面公式中的`round`操作支持CAST_RINT模式。
 
 ## 函数原型
 
@@ -52,32 +51,36 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06) -> Te
 
 - **epsilon** (`float`)：可选参数，对应公式中的$eps$，用于防止除零错误，默认值为 `1e-6`。建议传入较小的正数。
 
+- **dst_dtype** (`int`): 可选参数，指定量化输出的类型，传`None`时当做int8处理，支持取值`int8`、`quint4x2`。
 ## 返回值说明
   
   `Tensor`
   
-  返回结果，对应公式中的$y$，即最终量化输出张量。
+  返回结果，对应公式中的$y$，即最终量化输出张量，数据类型由`dst_dtype`指定。当`dst_dtype`是`quint4x2`时，`y`的数据类型为`int32`，形状最后一维为`x`最后一维除以8，其余维度与`x`一致，每个`int32`元素包含8个`int4`结果。其他场景下`y`形状与输入`x`一致，数据类型由`dst_dtype`指定。
 
 ## 约束说明
 
-- Atlas 推理系列产品：`x`、`y`的尾轴长度，以及`gamma`的尾轴长度必大于等于32 Bytes。
+- <term>Atlas 推理系列产品</term>：x、y的尾轴长度，以及gamma的尾轴长度必须大于等于32Bytes。
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当`dst_dtype`取`quint4x2`时，`x`、`gamma`以及`beta`的最后一维必须为偶数，并且`x`最后一维必须能整除8。
 - 各产品型号支持数据类型说明：
+  
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
-  **表 1** Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    | x | gamma | beta | scale | offset | epsilon | y |
+    | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
+    | float16   | float16       | float16       | float16       | int8           | double      |int8      |
+    | bfloat16  | bfloat16      | bfloat16      | bfloat16      | int8           | double      |int8      |
+    | float16   | float16       | float16       | float16       | int8           | double      |int32      |
+    | bfloat16  | bfloat16      | bfloat16      | bfloat16      | int8           | double      |int32      |
 
-  | x | gamma | beta | scale | offset | epsilon | y |
-  | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-  | `float16` | `float16` | `float16` | `float16` | `int8` | `double` | `int8` |
-  | `bfloat16` | `bfloat16` | `bfloat16` | `bfloat16` | `int8` | `double` | `int8` |
+  - <term>Atlas 推理系列产品</term>、<term>Atlas 200I/500 A2 推理产品</term>：
 
-  **表 2** Atlas 推理系列产品、Atlas 200I/500 A2 推理产品
-
-  | x | gamma | beta | scale | offset | epsilon | y |
-  | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-  | `float16` | `float16` | `float16` | `float16` | `int8` | `double` | `int8` |
+    | x | gamma | beta | scale | offset | epsilon | y
+    | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
+    | float16   | float16       | float16       | float16       | int8           | double      |int8      |
+    | float16   | float16       | float16       | float16       | int8           | double      |int32      |
 
 ## 调用示例
-
 ```python
 >>> import torch
 >>> import torch_npu
