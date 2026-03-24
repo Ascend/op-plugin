@@ -44,12 +44,16 @@ at::Tensor exec_triangular_solve(
     bool transpose,
     bool unitriangular)
 {
+    at::native::checkInputsSolver(A, self, true, "linalg.solve_triangular");
     at::Tensor self_broadcasted;
     at::Tensor a_broadcasted;
-    std::tie(self_broadcasted, a_broadcasted) = at::native::_linalg_broadcast_batch_dims(self, A, "triangular_solve");
+    std::tie(self_broadcasted, a_broadcasted) = at::native::_linalg_broadcast_batch_dims(self, A, nullptr);
+    if (self_broadcasted.scalar_type() != a_broadcasted.scalar_type()) {
+        self_broadcasted = self_broadcasted.to(a_broadcasted.scalar_type());
+    }
     auto self_working_copy = npu_preparation::apply_tensor(self_broadcasted);
     auto a_working_copy = a_broadcasted.clone();
-    EXEC_NPU_CMD(aclnnTriangularSolve, self, A, upper, transpose, unitriangular, self_working_copy, a_working_copy);
+    EXEC_NPU_CMD(aclnnTriangularSolve, self_broadcasted, a_broadcasted, upper, transpose, unitriangular, self_working_copy, a_working_copy);
     return self_working_copy;
 }
 
