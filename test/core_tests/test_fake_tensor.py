@@ -3065,8 +3065,8 @@ class TestAttentionUpdate(TestCase):
 
 
 class TestAntiQuant(TestCase):
-    @unittest.skipIf("2.1." not in torch.__version__,
-                     "OP `AntiQuant` is only supported on torch v2.1, skip this test for torch version other than 2.1")
+    @unittest.skipIf(torch.__version__ < '2.1.0',
+                     "OP `AntiQuant` is supported on torch v2.1 and above, skip this test for torch version below 2.1")
     def test_npu_anti_quant_meta(self):
         with FakeTensorMode():
             x = torch.randint(low=-128, high=127, size=(20, 100), dtype=torch.int8).npu()

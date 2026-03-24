@@ -4534,17 +4534,24 @@ def npu_moe_compute_expert_tokens_meta(sorted_experts, num_experts=1):
 @impl(m, "npu_anti_quant")
 def npu_anti_quant_meta(x, scale, *, offset=None, dst_dtype=None, src_dtype=None):
     if dst_dtype is None:
-        dst_dtype = torch.float16
+        y_dtype = torch.float16
+    else:
+        y_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_dtype)
 
+    if x.dtype == torch.float8_e5m2 or x.dtype == torch.float8_e4m3fn or x.dtype == torch.uint8:
+        if scale.dtype != torch.float32 or (offset is not None and offset.dtype != torch.float32):
+            raise RuntimeError("When x datatype is hifloat8, float8_e5m2 or float8_e4m3fn, scale_dtype and offset_dtype is only support float32" +
+                                ops_error(ErrCode.NOT_SUPPORT))
+            
     if x.dtype == torch.int32:
         x_shape = x.size()
         if len(x_shape) == 0:
             raise RuntimeError("Not supported for x is scalar when x dtype is int32" + ops_error(ErrCode.NOT_SUPPORT))
         y_shape = (*(x_shape[:-1]), x_shape[-1] * 8)
-        y = x.new_empty(y_shape, dtype=dst_dtype)
+        y = x.new_empty(y_shape, dtype=y_dtype)
         return torch.empty_like(y)
     else:
-        return torch.empty_like(x, dtype=dst_dtype)
+        return torch.empty_like(x, dtype=y_dtype)
 
 
 @impl(m, "npu_kronecker_quant")

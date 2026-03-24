@@ -5669,7 +5669,7 @@ custom:
     acl_op: all_version
     exposed: all_version
 
-  - func: npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None, ScalarType? src_dtype=None) -> Tensor
+  - func: npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, int? dst_dtype=None, int? src_dtype=None) -> Tensor
     op_api: [v2.1, newest]
     exposed: [v2.1, newest]
 

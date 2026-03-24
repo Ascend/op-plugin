@@ -44,7 +44,7 @@ class TestAntiQuant(TestCase):
         output = torch_npu.npu_anti_quant(input_x, scale, offset=offset, dst_dtype=dst_dtype, src_dtype=src_dtype)
         return output.cpu().detach()
 
-    @SupportedDevices(['Ascend910B'])
+    @SupportedDevices(['Ascend950'])
     def test_anti_quant(self, device="npu"):
         shape_format = [
             [[np.int8, -1, [10, 100]], [np.float32, -1, [100]], None, torch.float16, None],
@@ -73,7 +73,7 @@ class TestAntiQuant(TestCase):
             self.assertRtolEqual(npu_output, custom_output)
 
 
-    @SupportedDevices(['Ascend910B'])
+    @SupportedDevices(['Ascend950'])
     def test_anti_quant_invalid_dtype(self, device="npu"):
         npu_input_x = torch.tensor([1,2,3,4], dtype=torch.int8).npu()
         npu_scale = torch.tensor([2,0], dtype=torch.float32).npu()
