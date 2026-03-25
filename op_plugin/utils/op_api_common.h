@@ -39,6 +39,13 @@ constexpr int64_t PENULTIMATE_DIM = 2;
 std::string real_path(const std::string &path);
 bool checkOwner(string cusLibPath);
 
+inline bool Is310PBoolCheck()
+{
+    bool isSoc310P = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend310P1 &&
+                        c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend310P7);
+    return isSoc310P;
+}
+
 #define GET_OP_API_FUNC(apiName) reinterpret_cast<_##apiName>(GetOpApiFuncAddr(#apiName))
 
 inline const char *GetOpApiLibName(void)
