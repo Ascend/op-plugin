@@ -4852,5 +4852,8 @@
   },
   "func: save_npugraph_tensor.tensorlist(Tensor[] input, *, str? save_name=None, str? save_dir=None, str? suffix=None) -> ()": {
     "version": ["v2.6", "newest"]
+  },
+  "func: npu_dynamic_block_mx_quant(Tensor input, *, str round_mode=\"rint\", int dst_type=296, int scale_alg=0, float dst_type_max=0.0) -> (Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
   }
 }

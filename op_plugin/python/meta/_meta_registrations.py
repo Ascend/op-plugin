@@ -6014,3 +6014,46 @@ def npu_l1_loss_backward_meta(grad_output,   input, target, reduction):
 @impl(m, "npu_linear_backward")
 def npu_npu_linear_backward_meta(grad_output, input1, input2):
     return torch.empty_like(input1), torch.empty_like(input2)
+
+
+@impl(m, "npu_dynamic_block_mx_quant")
+def npu_dynamic_block_mx_quant(input_dummy, *, round_mode="rint", dst_type=296, scale_alg=0, dst_type_max=0.0):
+    dim_num = input_dummy.dim()
+    scale1_shape = []
+    scale2_shape = []
+    last_axis = -1
+    second_to_last_axis = -2
+    last_axis_change = last_axis + dim_num
+    second_to_last_axis_change = second_to_last_axis + dim_num
+    for dim in range(dim_num):
+        scale1_shape.append(input_dummy.size(dim))
+        scale2_shape.append(input_dummy.size(dim))
+    scale1_shape.append(2)
+    scale2_shape.append(2)
+
+    block_size = 32
+    last_dim_size = int(math.ceil(scale1_shape[last_axis_change] / block_size))
+    last_dim_size = (last_dim_size + 2 - 1) // 2
+    second_to_last_dim_size = int(math.ceil(scale2_shape[second_to_last_axis_change] / block_size))
+    second_to_last_dim_size = (second_to_last_dim_size + 2 - 1) // 2
+    scale1_shape[last_axis_change] = last_dim_size
+    scale2_shape[second_to_last_axis_change] = second_to_last_dim_size
+
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    if torch_dtype == torch.float8_e5m2 or dst_type == torch_npu.float8_e5m2:
+        y = torch.empty_like(input_dummy, dtype=torch.float8_e5m2)
+    elif torch_dtype == torch.float8_e4m3fn or dst_type == torch_npu.float8_e4m3fn:
+        y = torch.empty_like(input_dummy, dtype=torch.float8_e4m3fn)
+    else: # float4_e2m1, float4_e1m2
+        if input_dummy.size(dim_num - 1) % 2:
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+                                "the last dim of input must be divisible by 2, " +
+                               ops_error(ErrCode.PARAM))
+        y_shape = []
+        for dim in range(dim_num - 1):
+            y_shape.append(input_dummy.size(dim))
+        y_shape.append(input_dummy.size(dim_num - 1) // 2)
+        y = input_dummy.new_empty(y_shape, dtype=torch.uint8)
+    scale1 = input_dummy.new_empty(scale1_shape, dtype=torch.uint8)
+    scale2 = input_dummy.new_empty(scale2_shape, dtype=torch.uint8)
+    return (y, scale1, scale2)

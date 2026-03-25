@@ -5197,5 +5197,35 @@ class TestKLDivLoss(TestCase):
             self.assertEqual(pred.grad.dtype, pred_fake_tensor.grad.dtype)
 
 
+@unittest.skip("skip until CANN is updated to support aclnnDynamicBlockMxQuant")
+class TestNpuDynamicBlockMxQuant(TestCase):
+    def test_npu_dynamic_block_mx_quant_meta(self):
+        # 2 dim
+        x = torch.rand(64, 256).to("npu").to(torch.float16)
+        actual_y, actual_scale1, actual_scale2 = torch_npu.npu_dynamic_block_mx_quant(x)
+        with FakeTensorMode():
+            fake_x = torch.rand(64, 256).to("npu").to(torch.float16)
+            fake_y, fake_scale1, fake_scale2 = torch_npu.npu_dynamic_block_mx_quant(fake_x)
+        self.assertEqual(actual_y.shape, fake_y.shape)
+        self.assertEqual(actual_scale1.shape, fake_scale1.shape)
+        self.assertEqual(actual_scale2.shape, fake_scale2.shape)
+        self.assertEqual(actual_y.dtype, fake_y.dtype)
+        self.assertEqual(actual_scale1.dtype, fake_scale1.dtype)
+        self.assertEqual(actual_scale2.dtype, fake_scale2.dtype)
+
+        # 3 dim
+        x = torch.rand(32, 64, 256).to("npu").to(torch.float16)
+        actual_y, actual_scale1, actual_scale2 = torch_npu.npu_dynamic_block_mx_quant(x)
+        with FakeTensorMode():
+            fake_x = torch.rand(32, 64, 256).to("npu").to(torch.float16)
+            fake_y, fake_scale1, fake_scale2 = torch_npu.npu_dynamic_block_mx_quant(fake_x)
+        self.assertEqual(actual_y.shape, fake_y.shape)
+        self.assertEqual(actual_scale1.shape, fake_scale1.shape)
+        self.assertEqual(actual_scale2.shape, fake_scale2.shape)
+        self.assertEqual(actual_y.dtype, fake_y.dtype)
+        self.assertEqual(actual_scale1.dtype, fake_scale1.dtype)
+        self.assertEqual(actual_scale2.dtype, fake_scale2.dtype)
+
+
 if __name__ == "__main__":
     run_tests()
