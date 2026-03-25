@@ -1805,34 +1805,39 @@ def _npu_kv_quant_sparse_flash_attention_pioneer_forward(query, key, value, spar
 
 @impl(m, "npu_fusion_attention")
 def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=None, padding_mask=None,
-                                atten_mask=None, scale=1.0, keep_prob=1.0, pre_tockens=2147483647, next_tockens=2147483647,
-                                inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0,
+                                 atten_mask=None, scale=1.0, keep_prob=1.0, pre_tockens=2147483647, next_tockens=2147483647,
+                                 inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0,
                                  gen_mask_parallel=True, sync=False, softmax_layout="", sink=None, dropout_mask=None, seed=0, offset=0):
     B = query.size(0)
     N = head_num
     S1 = query.size(2)
-    S2 = key.size(2)
 
     if input_layout == "BSH":
         B = query.size(0)
         S1 = query.size(1)
-        S2 = key.size(1)
 
     if input_layout == "SBH":
         B = query.size(1)
         S1 = query.size(0)
-        S2 = key.size(0)
 
     if input_layout == "BSND":
         S1 = query.size(1)
-        S2 = key.size(1)
 
     seed = 0
     offset = 0
     numels = 0
-    attention_score = query.new_empty(query.shape, dtype=query.dtype, device='meta')
-    softmax_max = torch.empty([B, head_num, S1, 8], dtype=torch.float32, device='meta')
-    softmax_sum = torch.empty([B, head_num, S1, 8], dtype=torch.float32, device='meta')
+    attention_score = query.new_empty(
+        query.shape, dtype=query.dtype, device='meta')
+    if input_layout == "TND":
+        softmax_max = torch.empty(
+            [B, head_num, 8], dtype=torch.float32, device='meta')
+        softmax_sum = torch.empty(
+            [B, head_num, 8], dtype=torch.float32, device='meta')
+    else:
+        softmax_max = torch.empty(
+            [B, head_num, S1, 8], dtype=torch.float32, device='meta')
+        softmax_sum = torch.empty(
+            [B, head_num, S1, 8], dtype=torch.float32, device='meta')
     softmax_out = torch.empty([0], dtype=query.dtype, device='meta')
     return (attention_score, softmax_max, softmax_sum, softmax_out, seed, offset, numels)
 
@@ -1846,8 +1851,9 @@ def npu_fusion_attention_backward(query, key, value, dy, head_num, input_layout,
     dq = query.new_empty(query.shape, dtype=query.dtype, device='meta')
     dk = key.new_empty(key.shape, dtype=query.dtype, device='meta')
     dv = value.new_empty(value.shape, dtype=query.dtype, device='meta')
-    dpse = torch.empty([0], dtype=query.dtype, device='meta')
-    dsink = torch.empty([], device='meta') if sink is None else torch.empty(sink.shape, dtype=sink.dtype, device='meta')
+    dpse = None
+    dsink = torch.empty([0], device='meta') if sink is None else torch.empty(
+        sink.shape, dtype=sink.dtype, device='meta')
     return (dq, dk, dv, dpse, dsink)
 
 
@@ -2108,6 +2114,34 @@ def npu_gelu_backward_meta(grad, self, *, approximate="none"):
     return torch.empty_like(self)
 
 
+@impl(m, "npu_silu")
+def npu_silu_meta(self):
+    return torch.empty_like(self)
+
+
+@impl(m, "npu_silu_backward")
+def npu_silu_backward_meta(grad_output, x0, x1):
+    return torch.empty_like(grad_output)
+
+
+@impl(m, "npu_layer_norm_eval")
+def npu_layer_norm_eval_meta(input, normalized_shape, weight=None, bias=None, eps=1e-5):
+    return torch.empty_like(input)
+
+
+@impl(m, "npu_add_layer_norm")
+def npu_add_layer_norm_meta(x1, x2, gamma, beta, epsilon=1e-5, additional_output=False):
+    rstd_dim = x1.dim() - gamma.dim()
+    ret = []
+    for i in range(x1.dim()):
+        if i < rstd_dim:
+            ret.append(x1.size(i))
+        else:
+            ret.append(1)
+    rstd = torch.empty(ret, dtype=torch.float32, device='meta')
+    return (torch.empty_like(x1, dtype=x1.dtype), torch.empty_like(rstd), torch.empty_like(rstd), torch.empty_like(x1, dtype=x1.dtype))
+
+
 @impl(m, "npu_gelu_mul")
 def npu_gelu_mul_meta(input_tensor, *, approximate="none"):
     output_shape = list(input_tensor.shape)
@@ -2278,6 +2312,19 @@ def npu_deep_norm_meta(self, gx, beta, gamma, alpha=0.3, epsilon=1e-6):
             ret.append(1)
     rstd = torch.empty(ret, dtype=torch.float32, device='meta')
     return (torch.empty_like(rstd), torch.empty_like(rstd), torch.empty_like(self, dtype=self.dtype))
+
+
+@impl(m, "npu_deep_norm_backward")
+def npu_deep_norm_backward_meta(dy, x, gx, gamma, mean, rstd, alpha=0.3):
+    return (torch.empty_like(x), torch.empty_like(gx), torch.empty_like(gamma), torch.empty_like(gamma))
+
+
+@impl(m, "npu_group_norm_swish")
+def npu_group_norm_swish_meta(input, num_groups, weight, bias, eps=1e-5, swish_scale=1.0):
+    mean_rstd_shape = [input.size(0), num_groups]
+    return (torch.empty_like(input, dtype=input.dtype),
+            torch.empty(mean_rstd_shape, dtype=input.dtype, device=torch.device('meta')),
+            torch.empty(mean_rstd_shape, dtype=input.dtype, device=torch.device('meta')))
 
 
 @impl(m, "npu_rms_norm")
@@ -2494,6 +2541,16 @@ def npu_dropout_backward_meta(grad_output, mask, p):
 @impl(m, "npu_masked_softmax_with_rel_pos_bias")
 def npu_masked_softmax_with_rel_pos_bias_meta(x, atten_mask, relative_pos_bias, scale_value=1.0, inner_precision_mode=0):
     return torch.empty_like(x, dtype=x.dtype)
+
+
+@impl(m, "npu_scaled_masked_softmax")
+def npu_scaled_masked_softmax_meta(x, mask, scale=1, fixed_triu_mask=False):
+    return torch.empty_like(x, dtype=x.dtype)
+
+
+@impl(m, "npu_scaled_masked_softmax_backward")
+def npu_scaled_masked_softmax_backward_meta(y_grad, y, mask, scale, fixed_triu_mask):
+    return torch.empty_like(y_grad, dtype=y_grad.dtype)
 
 
 @impl(m, "npu_moe_distribute_dispatch")
@@ -5938,5 +5995,22 @@ def batch_norm_reduce_meta(self, eps):
 @impl(m, "kl_div_backward")
 def kl_div_backward_meta(grad_out, x, target, reduction="mean", log_target=False):
     result = torch.empty_like(x)
-
     return result
+
+
+@impl(m, "npu_dropout_with_add_softmax")
+def npu_dropout_with_add_softmax_meta(x1, x2, alpha, prod, axis):
+    add = x1 + x2
+    softmax = add.softmax(axis=axis)
+    dropout = torch.empty_like(softmax)
+    return (add.flatten().to(torch.uint8), softmax, dropout)
+
+
+@impl(m, "l1_loss_backward")
+def npu_l1_loss_backward_meta(grad_output,   input, target, reduction):
+    return torch.empty_like(input)
+
+
+@impl(m, "npu_linear_backward")
+def npu_npu_linear_backward_meta(grad_output, input1, input2):
+    return torch.empty_like(input1), torch.empty_like(input2)
