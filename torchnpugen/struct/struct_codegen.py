@@ -205,42 +205,25 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
         define_dtype = "".join(
             [f"auto {name} = {dtype};\n" for dtype, name in dtype_map.items()])
         
-        # 当环境变量存在时，不生成大小和数据类型的定义
-        if env_aclnn_extension_switch:
-            define_size_or_dtype = "" 
-        else:
-            define_size_or_dtype = "" if kind == SchemaKind.inplace else "".join([define_size, define_dtype])
+        define_size_or_dtype = "" if kind == SchemaKind.inplace else "".join([define_size, define_dtype])
 
-        if env_aclnn_extension_switch:
-            # 如果环境变量存在，使用 at::empty_like
-            if kind == SchemaKind.out:
-                apply_tensor_list = []
-            elif kind == SchemaKind.inplace:
-                apply_tensor_list = []
-            else:
-                apply_tensor_list = list(concatMap(
-                    lambda res_info:
-                    [f"at::Tensor {res_info.name} = at::empty_like({res_info.option});\n"],
-                    res_infos))
+        if kind == SchemaKind.out:
+            apply_tensor_list = list(concatMap(
+                lambda res_info:
+                [CHECK_TENSOR.substitute(input=tensor_arguments,
+                                            result_name=res_info.name,
+                                            size=size_map[res_info.size],
+                                            dtype=dtype_map[res_info.dtype])],
+                res_infos))
+        elif kind == SchemaKind.inplace:
+            apply_tensor_list = []
         else:
-            # 否则使用默认方式
-            if kind == SchemaKind.out:
-                apply_tensor_list = list(concatMap(
-                    lambda res_info:
-                    [CHECK_TENSOR.substitute(input=tensor_arguments,
-                                             result_name=res_info.name,
-                                             size=size_map[res_info.size],
-                                             dtype=dtype_map[res_info.dtype])],
-                    res_infos))
-            elif kind == SchemaKind.inplace:
-                apply_tensor_list = []
-            else:
-                apply_tensor_list = list(concatMap(
-                    lambda res_info:
-                    [APPLY_TENSOR.substitute(result_name=res_info.name,
-                                             size=size_map[res_info.size],
-                                             dtype=f'{res_info.option}.options().dtype({dtype_map[res_info.dtype]})')],
-                    res_infos))
+            apply_tensor_list = list(concatMap(
+                lambda res_info:
+                [APPLY_TENSOR.substitute(result_name=res_info.name,
+                                            size=size_map[res_info.size],
+                                            dtype=f'{res_info.option}.options().dtype({dtype_map[res_info.dtype]})')],
+                res_infos))
         
         compute_name_list = []
         infer_name_list = []
