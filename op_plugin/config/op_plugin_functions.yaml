@@ -1731,6 +1731,12 @@ official:
     gen_opapi:
       exec: aclnnInplaceClampMinTensor
 
+  - func: _chunk_cat(Tensor[] tensors, int dim, int num_chunks) -> Tensor
+    op_api: [v2.1, newest]
+  
+  - func: _chunk_cat.out(Tensor[] tensors, int dim, int num_chunks, *, Tensor(a!) out) -> Tensor(a!)
+    op_api: [v2.1, newest]      
+
   - func: complex(Tensor real, Tensor imag) -> Tensor
     acl_op: all_version
     op_api: all_version

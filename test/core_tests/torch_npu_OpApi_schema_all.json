@@ -2191,6 +2191,13 @@
   "func: channel_shuffle(Tensor self, int groups) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: _chunk_cat(Tensor[] tensors, int dim, int num_chunks) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: _chunk_cat.out(Tensor[] tensors, int dim, int num_chunks, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["all_version"]
+  },  
+
   "func: clamp(Tensor self, Scalar? min=None, Scalar? max=None) -> Tensor": {
     "version": ["all_version"]
   },
