@@ -73,6 +73,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 - `query`、`key`、`value`数据类型必须一致，且为`float16`或`bfloat16`。
 - `query`的head数$N1$与`key`/`value`的head数$N2$需满足$N1 ≥ N2$且$N1 \% N2 = 0$。
 - 序列长度不需要被`block_shape`整除，分块数按向上取整计算。
+- 当前版本下，当且仅当`q_input_layout`和`kv_input_layout`为`"BNSD"`、MHA场景（`query`的head数$N1$与`key`/`value`的head数$N2$相等），且headDim=128时，支持反向计算。
 
 ## 调用示例
 
