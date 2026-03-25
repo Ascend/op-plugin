@@ -73,6 +73,11 @@ at::Tensor npu_quant_lightning_indexer(
     std::string query_layout_str = std::string(layout_query);
     std::string key_layout_str = std::string(layout_key);
 
+    bool check_qdtype = query_dtype.has_value() && c10_npu::GetAclDataType(query_dtype.value()) != aclDataType::ACL_HIFLOAT8;
+    TORCH_CHECK(!check_qdtype, "The query_dtype is only used to support hifloat8, and should be default when the dtype of query tensor is not hifloat8.")
+    bool check_kdtype = key_dtype.has_value() && c10_npu::GetAclDataType(key_dtype.value()) != aclDataType::ACL_HIFLOAT8;
+    TORCH_CHECK(!check_kdtype, "The key_dtype is only used to support hifloat8, and should be default when the dtype of key tensor is not hifloat8.")
+
     // construct the output tensor
     at::Tensor quant_lightning_indexer_output = construct_quant_lightning_indexer_output_tensor(
         query, key, sparse_count, query_layout_str, key_layout_str);

@@ -80,6 +80,11 @@ at::Tensor npu_kv_quant_sparse_flash_attention(
     std::string layout_query_str = std::string(layout_query);
     std::string layout_kv_str = std::string(layout_kv);
 
+    bool check_kdtype = key_dtype.has_value() && c10_npu::GetAclDataType(key_dtype.value()) != aclDataType::ACL_HIFLOAT8;
+    TORCH_CHECK(!check_kdtype, "The key_dtype is only used to support hifloat8, and should be default when the dtype of key tensor is not hifloat8.")
+    bool check_vdtype = value_dtype.has_value() && c10_npu::GetAclDataType(value_dtype.value()) != aclDataType::ACL_HIFLOAT8;
+    TORCH_CHECK(!check_vdtype, "The value_dtype is only used to support hifloat8, and should be default when the dtype of value tensor is not hifloat8.")
+
     // construct the output tensor
     at::Tensor output = op_api::construct_quant_sparse_infer_output_tensor(
         query, layout_query_str, layout_kv_str, rope_head_dim);
