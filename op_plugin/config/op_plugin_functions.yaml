@@ -2720,7 +2720,7 @@ official:
     op_api: all_version
     gen_opapi:
       out:
-        size: 'at::isFloatingType(self.scalar_type()) && equal_nan ? self.sizes() : broadcast_ops_npu_output_size(self, other)'
+        size: 'isclose_output_size(self, other, rtol, atol, equal_nan)'
         dtype: at::kBool
       exec: aclnnIsClose
 
