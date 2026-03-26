@@ -561,14 +561,4 @@ TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable();
         RunAclCall(#aclnn_api, acl_call);                                                                              \
     } while (false)
 
-#define EXEC_NPU_CMD_EXT(aclnn_api, ...)                                                                               \
-    do {                                                                                                               \
-        static const auto task_queue_enable = OpApiGetTaskQueueEnable();                                               \
-        if (task_queue_enable == 2) {                                                                                  \
-            EXEC_NPU_CMD_V2_EXT(aclnn_api, __VA_ARGS__);                                                               \
-        } else {                                                                                                       \
-            EXEC_NPU_CMD_V1_EXT(aclnn_api, __VA_ARGS__);                                                               \
-        }                                                                                                              \
-    } while (false)
-
 #endif //  TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_BASE_H_
