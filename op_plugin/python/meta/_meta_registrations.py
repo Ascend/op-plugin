@@ -1548,6 +1548,47 @@ def infer_lse_out_shape(query, input_layout, query_layout, num_heads):
         lse_out = torch.empty([b, n1, s1, 1], dtype=torch.float32, device='meta')
     return lse_out
 
+@impl(m, "_npu_attention_pioneer")
+def npu_attention_pioneer_forward(query, key, value, *, atten_mask=None, actual_seq_lengths=None, actual_seq_lengths_kv=None,
+                                    block_table=None, query_rope=None, key_rope=None, key_sink=None, key_rope_sink=None, value_sink=None, num_heads=1, scale=1.0, pre_tokens=2147483647, next_tokens=2147483647,
+                                    input_layout="BSH", num_key_value_heads=0, sparse_mode=0, block_size=0, softmax_lse_flag=False):
+    torch._check(
+        num_heads > 0,
+        lambda: "numHeads should be greater than 0, but got " + str(num_heads) +
+            ops_error(ErrCode.VALUE),
+    )
+    num_key_value_heads = num_heads if num_key_value_heads == 0 else num_key_value_heads
+
+    # get query_layout, attention_out_layout
+    query_layout, attention_out_layout = get_query_and_attention_out_layout(query, input_layout)
+
+    # get value_d
+    value_d = get_value_d(block_table, value, query, query_layout, num_key_value_heads)
+    # 获取change_d_scale
+    change_d_scale = get_change_d_scale(value)
+    value_d = value_d * change_d_scale
+
+    # infer attention out shape
+    tmp_out = infer_attention_out_shape(attention_out_layout, query, query_layout, num_heads, value_d)
+
+    # handle quant
+    if query.dtype == torch.int8:
+        if query_rope is not None:
+            attention_out = torch.empty_like(tmp_out, dtype=query_rope.dtype)
+        else:
+            attention_out = torch.empty_like(tmp_out, dtype=torch.half)
+    else:
+        attention_out = torch.empty_like(tmp_out, dtype=query.dtype)
+
+    # infer lse out shape
+    tmp_lse_out = infer_lse_out_shape(query, input_layout, query_layout, num_heads)
+
+    if softmax_lse_flag:
+        lse_out = torch.empty_like(tmp_lse_out, dtype=torch.float32)
+    else:
+        lse_out = torch.empty([0], dtype=torch.float32, device='meta')
+
+    return attention_out, lse_out
 
 @impl(m, "npu_fused_infer_attention_score")
 def npu_fused_infer_attention_score_forward(query, key, value, *, pse_shift=None, atten_mask=None, actual_seq_lengths=None, actual_seq_lengths_kv=None,
