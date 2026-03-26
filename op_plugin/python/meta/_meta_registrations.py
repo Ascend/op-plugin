@@ -2450,6 +2450,54 @@ def npu_rms_norm_quant_meta(x, gamma, beta, scale, offset, epsilon=1e-06, dst_dt
     return torch.empty(x.size(), dtype=dst_torch_dtype, device=x.device)
 
 
+@impl(m, "npu_rms_norm_dynamic_mx_quant")
+def npu_rms_norm_dynamic_mx_quant_meta(x, gamma, *, beta=None, epsilon=1e-06, scale_alg=0, round_mode='rint', dst_type=296):
+    if scale_alg not in [0, 1]:
+        raise RuntimeError(f"Invalid scale_alg value: {scale_alg}. Expected 0 or 1." +
+                            ops_error(ErrCode.PARAM))
+
+    # 以下变量为本函数局部使用
+    align_num = 2
+    mxscale_block_size = 32
+
+    dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    if dst_torch_dtype == torch.float8_e5m2 or dst_type == 291:
+        y = torch.empty_like(x, dtype=torch.float8_e5m2)
+    elif dst_torch_dtype == torch.float8_e4m3fn or dst_type == 292:
+        y = torch.empty_like(x, dtype=torch.float8_e4m3fn)
+    else: # float4_e2m1, float4_e1m2
+        if x.size(x.dim() - 1) % 2:
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+                                "the last dim of input must be divisible by 2, " +
+                               ops_error(ErrCode.PARAM))
+        y_shape = []
+        for dim in range(x.dim() - 1):
+            y_shape.append(x.size(dim))
+        y_shape.append(x.size(x.dim() - 1) // align_num)
+        y = x.new_empty(y_shape, dtype=torch.uint8)
+
+    # mxscale
+    mxscale_shape = []
+    for dim in range(x.dim()):
+        mxscale_shape.append(x.size(dim))
+    mxscale_shape.append(2)
+    last_axis_change = x.dim() - 1
+    last_dim_size = int(math.ceil(mxscale_shape[last_axis_change] / (mxscale_block_size * align_num)))
+    mxscale_shape[last_axis_change] = last_dim_size
+    mxscale = x.new_empty(mxscale_shape, dtype=torch.uint8)
+
+    # rstd
+    rstd_dim = x.dim() - gamma.dim()
+    ret = []
+    for dim in range(x.dim()):
+        if dim < rstd_dim:
+            ret.append(x.size(dim))
+        else:
+            ret.append(1)
+    rstd = torch.empty(ret, dtype=torch.float32, device='meta')
+    return (y, mxscale, rstd)
+
+
 @impl(m, "npu_add_rms_norm_cast")
 def npu_add_rms_norm_cast_meta(x1, x2, gamma, epsilon=1e-6):
     rstd_dim = x1.dim() - gamma.dim()
@@ -2481,6 +2529,60 @@ def npu_add_rms_norm_dynamic_quant_meta(x1, x2, gamma, *, smooth_scale1=None, sm
             torch.empty(x1.size(), dtype=x1.dtype, device=x1.device),
             torch.empty(x1.size()[:-1], dtype=torch.float32, device=x1.device),
             torch.empty(x1.size()[:-1], dtype=torch.float32, device=x1.device))
+
+
+@impl(m, "npu_add_rms_norm_dynamic_mx_quant")
+def npu_add_rms_norm_dynamic_mx_quant_meta(x1, x2, gamma, *, beta=None, epsilon=1e-6, scale_alg=0, round_mode='rint', dst_type=296):
+    if scale_alg not in [0, 1]:
+        raise RuntimeError(f"Invalid scale_alg value: {scale_alg}. Expected 0 or 1." +
+                            ops_error(ErrCode.PARAM))
+    
+    dim_num = x1.dim()
+
+    # 以下变量为本函数局部使用
+    align_num = 2
+    mxscale_block_size = 32
+    
+    # y
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    if torch_dtype == torch.float8_e5m2 or dst_type == torch_npu.float8_e5m2:
+        y = torch.empty_like(x1, dtype=torch.float8_e5m2)
+    elif torch_dtype == torch.float8_e4m3fn or dst_type == torch_npu.float8_e4m3fn:
+        y = torch.empty_like(x1, dtype=torch.float8_e4m3fn)
+    else: # float4_e2m1, float4_e1m2
+        if x1.size(dim_num - 1) % 2:
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+                                "the last dim of input must be divisible by 2, " +
+                               ops_error(ErrCode.PARAM))
+        y_shape = []
+        for dim in range(dim_num - 1):
+            y_shape.append(x1.size(dim))
+        y_shape.append(x1.size(dim_num - 1) // align_num)
+        y = x1.new_empty(y_shape, dtype=torch.uint8)
+
+    # x_out
+    x_out = torch.empty_like(x1, dtype=x1.dtype)
+
+    # mxscale
+    mxscale_shape = []
+    for dim in range(dim_num):
+        mxscale_shape.append(x1.size(dim))
+    mxscale_shape.append(2)
+    last_axis_change = dim_num - 1
+    last_dim_size = int(math.ceil(mxscale_shape[last_axis_change] / (mxscale_block_size * align_num)))
+    mxscale_shape[last_axis_change] = last_dim_size
+    mxscale = x1.new_empty(mxscale_shape, dtype=torch.uint8)
+
+    # rstd
+    rstd_dim = dim_num - gamma.dim()
+    ret = []
+    for i in range(dim_num):
+        if i < rstd_dim:
+            ret.append(x1.size(i))
+        else:
+            ret.append(1)
+    rstd = torch.empty(ret, dtype=torch.float32, device='meta')
+    return (y, x_out, mxscale, rstd)
 
 
 @impl(m, "npu_rms_norm_backward")

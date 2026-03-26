@@ -212,6 +212,9 @@
   "func: npu_add_rms_norm_dynamic_quant(Tensor x1, Tensor x2, Tensor gamma, *, Tensor? smooth_scale1=None, Tensor? smooth_scale2=None, Tensor? beta=None, float epsilon=1e-6, bool[2] output_mask=[], ScalarType? y_dtype=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
+  "func: npu_add_rms_norm_dynamic_mx_quant(Tensor x1, Tensor x2, Tensor gamma, *, Tensor? beta=None, float epsilon=1e-06, int scale_alg=0, str round_mode=\"rint\", int dst_type=296) -> (Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
   "op_api: torch_npu.attention_worker_scheduler_(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
@@ -1129,6 +1132,9 @@
   "func: npu_rms_norm_backward(Tensor dy, Tensor self, Tensor gamma, Tensor rstd) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
+  "func: npu_rms_norm_dynamic_mx_quant(Tensor x, Tensor gamma, *, Tensor? beta=None, float epsilon=1e-06, int scale_alg=0, str round_mode=\"rint\", int dst_type=296) -> (Tensor, Tensor, Tensor)": {
+ 	  "version": ["all_version"]
+ 	},
   "func: npu_swiglu(Tensor self, int dim=-1) -> Tensor": {
     "version": ["all_version"]
   },

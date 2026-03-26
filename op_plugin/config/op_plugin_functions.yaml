@@ -5620,6 +5620,9 @@ custom:
   - func: npu_rms_norm_quant(Tensor x, Tensor gamma, Tensor beta, Tensor scale, Tensor offset, float epsilon=1e-06, *, int? dst_dtype=None) -> Tensor
     op_api: all_version
 
+  - func: npu_rms_norm_dynamic_mx_quant(Tensor x, Tensor gamma, *, Tensor? beta=None, float epsilon=1e-06, int scale_alg=0, str round_mode="rint", int dst_type=296) -> (Tensor, Tensor, Tensor)
+    op_api: all_version
+
   - func: npu_add_rms_norm_cast(Tensor x1, Tensor x2, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
     gen_opapi:
@@ -6484,6 +6487,9 @@ custom:
         size: 'output_mask[1] ? reduce_lastdim_output_size(x1) : c10::SmallVector<int64_t, op_infer::SIZE>{}'
         dtype: at::kFloat
       exec: aclnnAddRmsNormDynamicQuantV2, x1, x2, gamma, smooth_scale1, smooth_scale2, beta, epsilon, output_mask, y1, y2, x_out, scale1, scale2
+
+  - func: npu_add_rms_norm_dynamic_mx_quant(Tensor x1, Tensor x2, Tensor gamma, *, Tensor? beta=None, float epsilon=1e-06, int scale_alg=0, str round_mode="rint", int dst_type=296) -> (Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
 
   - func: npu_attention_worker_combine(Tensor schedule_context, Tensor expert_scales, Tensor layer_id, int hidden_size, *, int token_dtype=0, int need_schedule=0) -> (Tensor, Tensor)
     op_api: all_version
