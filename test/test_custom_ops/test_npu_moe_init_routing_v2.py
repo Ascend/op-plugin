@@ -558,6 +558,41 @@ class TestNpuMoeInitRoutingV2(TestCase):
         return expanded_x, local_expanded_x_npu, expanded_row_idx, local_expanded_row_idx_npu, \
             expert_tokens_count, local_expert_tokens_count_npu, expanded_scale, local_expanded_scale_npu
 
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_moe_init_routing_empty_tensor(self):
+        bs_list = [0]
+        h_list = [8192]
+        k_list = [12]
+        expert_range_list = [[0, 768]]
+        quant_mode_list = [1]
+        drop_pad_mode_list = [0]
+        row_idx_type_list = [1]
+        expert_tokens_num_flags = [True]
+        dtype_list = [torch.bfloat16]
+        none_scales = [False]
+        none_offsets = [True]
+        for bs, h, k, expert_range, quant_mode, row_idx_type, dtype, none_scale, none_offset, expert_tokens_num_flag, drop_pad_mode in itertools.product(
+                bs_list, h_list, k_list, expert_range_list, quant_mode_list, row_idx_type_list,
+                dtype_list, none_scales, none_offsets, expert_tokens_num_flags, drop_pad_mode_list):
+            scale_shape = (bs,)
+            expert_range = [0, 32] if drop_pad_mode == 1 else [0, 16]
+            x, expert_idx, scale, offset, x_npu, expert_idx_npu, scale_npu, offset_npu, expert_tokens_num_type, row_idx_type, active_num, expert_capacity = self.generate_inputs(
+                bs, h, k, dtype, scale_shape, none_scale, none_offset, drop_pad_mode)
+            x_dtype = None
+            if dtype == torch_npu.hifloat8:
+                x_dtype = torch_npu.hifloat8
+            expanded_x_npu, expanded_row_idx_npu, expert_tokens_count_npu, expanded_scale_npu = self.npu_op_exec(
+            x_npu, expert_idx_npu, scale=scale_npu, offset=offset_npu,
+            active_expert_range=expert_range, quant_mode=quant_mode, row_idx_type=row_idx_type, expert_tokens_num_flag=expert_tokens_num_flag, expert_tokens_num_type=expert_tokens_num_type,
+            drop_pad_mode=drop_pad_mode, active_num=active_num, expert_capacity=expert_capacity, x_dtype=x_dtype)
+
+            assert torch.numel(expanded_x_npu) == 0
+            assert torch.numel(expanded_row_idx_npu) == 0
+            assert torch.all(expert_tokens_count_npu == 0)
+            assert torch.numel(expanded_scale_npu) == 0
+
+
     @SupportedDevices(['Ascend910B', 'Ascend950'])
     def test_npu_moe_init_routing_no_quant(self):
         bs_list = [32]
