@@ -49,7 +49,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 -   调用接口过程中使用的`group`、`world_size`、`moe_expert_num`参数取值所有卡需保持一致，且网络中不同层中也需保持一致。
 -   Atlas A3 训练系列产品/Atlas A3 推理系列产品：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 -   参数里Shape使用的变量如下：
-    -   X：表示mcro batch sequence size，即token组数，当前版本仅支持 X = 1。
+    -   X：表示micro batch sequence size，即token组数，当前版本仅支持 X = 1。
 
     -   H：表示hidden size隐藏层大小，取值为\[1024, 8192\]。
 

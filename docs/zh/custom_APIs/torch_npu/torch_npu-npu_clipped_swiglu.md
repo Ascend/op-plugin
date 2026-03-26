@@ -9,7 +9,7 @@
 
 ## 功能说明
 
--   API功能：带截断的Swish门控线性单元激活函数，实现`x`的变体SwiGlu计算。本接口相较于torch_npu.npu_swiglu，新增了部分输入参数：`group_index`、`alpha`、`limit`、`bias`、`interleaved`，用于支持GPT-OSS模型使用的变体SwiGlu以及MoE模型使用的分组场景。
+-   API功能：带截断的Swish门控线性单元激活函数，实现`x`的变体SwiGLU计算。本接口相较于torch_npu.npu_swiglu，新增了部分输入参数：`group_index`、`alpha`、`limit`、`bias`、`interleaved`，用于支持GPT-OSS模型使用的变体SwiGLU以及MoE模型使用的分组场景。
 
 -   计算公式：
 
@@ -51,7 +51,7 @@
         B = x[ : , h : ]
         $$
 
-    4. 根据输入参数`alpha`、`limit`、`bias`进行变体SwiGlu计算，公式如下：
+    4. 根据输入参数`alpha`、`limit`、`bias`进行变体SwiGLU计算，公式如下：
         $$
         A = A.clamp(min=None, max=limit)
         $$
@@ -83,8 +83,8 @@ torch_npu.npu_clipped_swiglu(x, *, group_index=None, dim=-1, alpha=1.702, limit=
 -   **group_index** (`Tensor`)：可选参数，表示对`x`进行分组的情况。要求为1维张量，第i个元素代表第i组需要处理的`x`合轴后的token数量，数据类型支持`int64`，数据格式$ND$。默认值为None，表示不对`x`进行分组处理。
 -   **dim** (`int`)：可选参数，表示需要对`x`进行切分的维度序号，取值范围为[-x.dim(), x.dim()-1]，默认值为-1。
 -   **alpha** (`float`)：可选参数，表示glu激活函数系数，默认值为1.702。
--   **limit** (`float`)：可选参数，表示变体SwiGlu输入门限，默认值为7.0。
--   **bias** (`float`)：可选参数，表示变体SwiGlu计算中的偏差，默认值为1.0。
+-   **limit** (`float`)：可选参数，表示变体SwiGLU输入门限，默认值为7.0。
+-   **bias** (`float`)：可选参数，表示变体SwiGLU计算中的偏差，默认值为1.0。
 -   **interleaved** (`bool`)：可选参数，表示输入`x`是否按奇偶方式切分，True表示为奇偶方式切分，False表示为前后方式切分，默认值为为True。
 
 ## 返回值说明

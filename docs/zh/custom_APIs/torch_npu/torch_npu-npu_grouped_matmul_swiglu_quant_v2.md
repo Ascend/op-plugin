@@ -130,7 +130,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **dequant\_mode**（`int`）：可选输入，表示反量化模式，数据类型为`int32`，默认值为0。A8W4场景下，dequant_mode支持取值0和1；A8W8和A4W4场景下，dequant_mode仅支持取值0。
     - 取值为0时，表示激活矩阵per-token，权重矩阵per-channel。
     - 取值为1时，表示激活矩阵per-token，权重矩阵per-group。
-- **dequant\_dtype**（`int`）：可选输入，表示反量化类型，数据类型为`int32`，当前仅支持传入默认值0（表示float32）。
+- **dequant\_dtype**（`int`）：可选输入，表示反量化类型，数据类型为`int32`，当前仅支持传入默认值0（表示`float32`）。
 - **quant\_mode**（`int`）：可选输入，参数表示SwiGLU后的量化模式。数据类型为`int32`，当前仅支持传入默认值0（表示per-token）。
 - **quant\_dtype**（`int`）：可选输入，参数表示量化后低比特数据类型。数据类型为`int32`，当前仅支持传入默认值0（表示`int8`）。
 - **group\_list\_type**（`int`）：可选输入，参数表示`group_list`的输入类型，数据类型为`int32`，默认值为0。
@@ -141,7 +141,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 ## 返回值说明
 
 - **output**（`Tensor`）：输出的量化结果，对应公式中的$Q$，数据类型支持`int8`，shape支持2维[m, n/2]。数据格式支持$ND$，支持非连续的Tensor。
-- **output\_scale**（`Tensor`）：输出的量化因子，对应公式中的$Q_scale$，数据类型支持`float`，shape支持1维[m]。数据格式支持$ND$，支持非连续的Tensor。
+- **output\_scale**（`Tensor`）：输出的量化因子，对应公式中的$Q_scale$，数据类型支持`float32`，shape支持1维[m]。数据格式支持$ND$，支持非连续的Tensor。
 
 ## 约束说明
 
@@ -153,9 +153,9 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
         |量化场景|x|weight|weight\_scale|x\_scale|smooth\_scale|output|output\_scale|
         |--------|--------|--------|--------|--------|--------|--------|--------|
-        |A8W8|`int8`|`int8`|`float32`、`float16`、`bfloat16`|`float32`|-|`int8`|`float`|
-        |A8W4|`int8`|`int4`、`int32`|`uint64`|`float32`|-|`int8`|`float`|
-        |A4W4|`int4`、`int32`|`int4`、`int32`|`float32`|`float32`|`float32`|`int8`|`float`|
+        |A8W8|`int8`|`int8`|`float32`、`float16`、`bfloat16`|`float32`|-|`int8`|`float32`|
+        |A8W4|`int8`|`int4`、`int32`|`uint64`|`float32`|-|`int8`|`float32`|
+        |A4W4|`int4`、`int32`|`int4`、`int32`|`float32`|`float32`|`float32`|`int8`|`float32`|
 
     -   shape约束如下：
 

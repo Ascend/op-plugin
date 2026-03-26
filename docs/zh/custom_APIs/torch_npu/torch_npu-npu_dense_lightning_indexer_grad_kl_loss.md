@@ -82,15 +82,15 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 **weights**(`Tensor`)：必选参数，表示Lightning Indexer的权重系数，对应公式中的$W$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`、`float32`。shape支持$(B, S1, N1index)$、$(T1, N1index)$。
 
-**softmax_max**(`Tensor`)：必选参数，表示Attention softmax结果中的最大值。数据格式支持$ND$，数据类型支持`float`。shape支持$(B, N2, S1, G)$、$(N2, T1, G)$。$G$等于$N1/N2$。
+**softmax_max**(`Tensor`)：必选参数，表示Attention softmax结果中的最大值。数据格式支持$ND$，数据类型支持`float32`。shape支持$(B, N2, S1, G)$、$(N2, T1, G)$。$G$等于$N1/N2$。
 
-**softmax_sum**(`Tensor`)：必选参数，表示Attention softmax结果的求和。数据格式支持$ND$，数据类型支持`float`。shape支持$(B, N2, S1, G)$、$(N2, T1, G)$。$G$等于$N1/N2$。
+**softmax_sum**(`Tensor`)：必选参数，表示Attention softmax结果的求和。数据格式支持$ND$，数据类型支持`float32`。shape支持$(B, N2, S1, G)$、$(N2, T1, G)$。$G$等于$N1/N2$。
 
-**softmax_max_index**(`Tensor`)：必选参数，表示Index attention softmax结果中的最大值。数据格式支持$ND$，数据类型支持`float`。shape支持$(B, N2index, S1)$、$(N2index, T1)$。
+**softmax_max_index**(`Tensor`)：必选参数，表示Index attention softmax结果中的最大值。数据格式支持$ND$，数据类型支持`float32`。shape支持$(B, N2index, S1)$、$(N2index, T1)$。
 
-**softmax_sum_index**(`Tensor`)：必选参数，表示Index attention softmax结果的求和。数据格式支持$ND$，数据类型支持`float`。shape支持$(B, N2index, S1)$、$(N2index, T1)$。
+**softmax_sum_index**(`Tensor`)：必选参数，表示Index attention softmax结果的求和。数据格式支持$ND$，数据类型支持`float32`。shape支持$(B, N2index, S1)$、$(N2index, T1)$。
 
-**scale_value**(`float`)：必选参数，表示缩放系数，数据类型支持`float`。默认值为`1`。
+**scale_value**(`float`)：可选参数，表示缩放系数，数据类型支持`float32`。默认值为`1`。
 
 **query_rope**(`Tensor`)：可选参数，表示MLA结构中的query的rope信息。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N1, Dr)$、$(T1, N1, Dr)$。
 
@@ -115,7 +115,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 -   **d\_query\_index**(`Tensor`)：对应公式中的$d\tilde{Q}$，表示`query_index`的梯度，数据类型支持`bfloat16`、`float16`。
 -   **d\_key\_index**(`Tensor`)：对应公式中的$d\tilde{K}$，表示`key_index`的梯度，数据类型支持`bfloat16`、`float16`。
 -   **d\_weights**(`Tensor`)：对应公式中的$dW$，表示`weights`的梯度，数据类型支持`bfloat16`、`float16`、`float32`。
--   **loss**(`Tensor`)：对应公式中的$Loss$，表示网络正向输出和golden值的差异，数据类型支持`float`。
+-   **loss**(`Tensor`)：对应公式中的$Loss$，表示网络正向输出和golden值的差异，数据类型支持`float32`。
 
 ## 约束说明
 -   参数query、key、query_index、key_index的数据类型应保持一致。

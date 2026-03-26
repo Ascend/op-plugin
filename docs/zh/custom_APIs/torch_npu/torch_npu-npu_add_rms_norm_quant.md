@@ -11,16 +11,16 @@
 
 ## 功能说明
 
-- API功能：RmsNorm是大模型常用的标准化操作，相比LayerNorm其去掉了减去均值的部分。torch_npu.npu_add_rms_norm_quant算子将RmsNorm前的Add算子以及RmsNorm后的Quantize算子融合起来，减少搬入搬出操作。
+- API功能：RMSNorm是大模型常用的标准化操作，相比LayerNorm其去掉了减去均值的部分。torch_npu.npu_add_rms_norm_quant算子将RMSNorm前的Add算子以及RMSNorm后的Quantize算子融合起来，减少搬入搬出操作。
 - 计算公式：
-  - AddRmsNorm计算过程：
+  - AddRMSNorm计算过程：
 
   $$
   x_i={x1}+{x2}
   $$
 
   $$
-  y=\operatorname{RmsNorm}(x)=\frac{x}{\operatorname{Rms}(\mathbf{x})}\cdot gamma+beta, \quad \text { where } \operatorname{Rms}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+epsilon}
+  y=\operatorname{RMSNorm}(x)=\frac{x}{\operatorname{RMS}(\mathbf{x})}\cdot gamma+beta, \quad \text { where } \operatorname{RMS}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+epsilon}
   $$
 
   - 量化计算过程：
@@ -58,7 +58,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
   - **beta**（`Tensor`）：可选参数，表示标准化过程中的偏置项，公式中的$beta$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float16`、`bfloat16`，数据类型需要与`gamma`保持一致。shape需要与`gamma`保持一致。默认值为None。
   - **scales2**（`Tensor`）：可选参数，表示量化过程中得到`y2`的scales张量，公式中的$scales2$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`float32`、`bfloat16`，数据类型需要与`scales1`保持一致。shape需要与`gamma`保持一致。当参数`div_mode`的值为True时，该参数的值不能为0。默认值为None。
   - **zero_points2**（`Tensor`）：可选参数，表示量化过程中得到`y2`的offset张量，公式中的$zero\_points2$。数据格式支持$ND$，支持非连续的Tensor。数据类型支持`int32`、`bfloat16`，数据类型需要与`zero_points1`保持一致。shape需要与`gamma`保持一致。默认值为None。
-  - **axis**（`int64_t`）：可选参数，表示需要进行量化的elewise轴，其他的轴做broadcast，指定的轴不能超过输入x的维度数。当前仅支持默认值-1，传其他值均不生效。
+  - **axis**（`int64_t`）：可选参数，表示需要进行量化的elementwise轴，其他的轴做broadcast，指定的轴不能超过输入x的维度数。当前仅支持默认值-1，传其他值均不生效。
   - **epsilon**（`double`）可选参数，公式中的输入$epsilon$，用于防止除0错误，数据类型为double。建议传较小的正数，默认值为1e-6。
   - **div_mode**（`bool`）：可选参数，公式中决定量化公式是否使用除法的参数，数据类型为bool，默认值为True。
 

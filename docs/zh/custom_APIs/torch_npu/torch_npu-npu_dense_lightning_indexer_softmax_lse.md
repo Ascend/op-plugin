@@ -24,7 +24,7 @@ $$
 sumIndex=\text{ReduceSum}\left(\text{exp}\left(res-maxIndex\right)\right)
 $$
 
-$maxIndex$，$sumIndex$作为输出传递给接口npu_dense_lightning_indexer_grad_kl_loss作为输入计算Softmax使用。
+$maxIndex$，$sumIndex$作为输出传递给接口npu_dense_lightning_indexer_grad_kl_loss，作为输入用于计算Softmax。
 
 ## 函数原型
 
@@ -55,20 +55,20 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 
 
 ## 返回值说明
--   **softmax_max_index**(`Tensor`)：表示softmax计算使用的max值，对应公式中的$maxIndex$，数据格式支持$ND$，数据类型支持`float`。
+-   **softmax_max_index**(`Tensor`)：表示softmax计算使用的max值，对应公式中的$maxIndex$，数据格式支持$ND$，数据类型支持`float32`。
 -   **softmax_sum_index**(`Tensor`)：表示softmax计算使用的sum值，对应公式中的$sumIndex
-$，数据格式支持$ND$，数据类型支持`float`。
+$，数据格式支持$ND$，数据类型支持`float32`。
 
 ## 约束说明
 -   参数query_index、key_index的数据类型应保持一致。
--   参数weights不为`float32`时，参数query_index、key_index、weights的数据类型应保持一致的数据类型应保持一致。
+-   参数weights不为`float32`时，参数query_index、key_index、weights的数据类型应保持一致。
 -   shape数值约束：
 
 | 规格项    | 规格       | 规格说明         |
 |-----------|------------|-----------------|
 | B         | 1~256      | -               |
-| S1、S2    | 1~128K     | S1、S2支持不等长 |
-| N1index   | 16、32、64 | -               |
+| S1、S2    | 1~128K     | S1、S2支持不等长，当`layout`为BSND时，S1<=S2；`layout`为TND时，`actual_seq_qlen`小于等于`actual_seq_klen`相同索引位置的值，且相同索引位置S1<=S2 |
+| N1index   | 8、16、32、64 | -               |
 | N2index   | 1          | -               |
 | D         | 128        | -               |
 
@@ -95,7 +95,7 @@ $，数据格式支持$ND$，数据类型支持`float`。
         if isTnd:
             query_index = query_index.reshape(B*S1, N1, D)
             key_index = key_index.reshape(B*S2, N2, D)
-            weights = weigths.reshape(B*S1, N1)
+            weights = weights.reshape(B*S1, N1)
             layout = 'TND'
             actual_seq_qlen = [S1*(i+1) for i in range(B)]
             actual_seq_klen = [S2*(i+1) for i in range(B)]

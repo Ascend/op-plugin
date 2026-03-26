@@ -19,7 +19,7 @@
   $$
 
   $$
-  \operatorname{RmsNorm}(x_i)=\frac{x_i}{\operatorname{Rms}(\mathbf{x})} gamma_i, \quad \text { where } \operatorname{Rms}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+epsilon}
+  \operatorname{RMSNorm}(x_i)=\frac{x_i}{\operatorname{RMS}(\mathbf{x})} gamma_i, \quad \text { where } \operatorname{RMS}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+epsilon}
   $$
 
 ## 函数原型
@@ -31,16 +31,16 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
 
 - **x1**(`Tensor`)：必选参数，表示用于Add计算的第一个输入，对应公式中的$x1$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float32`、`float16`、`bfloat16`。支持1-8维张量。
 - **x2**(`Tensor`)：必选参数，表示用于Add计算的第二个输入，对应公式中的$x2$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float32`、`float16`、`bfloat16`。支持1-8维张量。
-- **gamma**(`Tensor`)：必选参数，表示RmsNorm的缩放因子（权重）。对应公式中的$gamma$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型与`x1`的数据类型保持一致，shape需要与`x1`后几维保持一致，后几维为`x1`需要归一化处理的维度。
+- **gamma**(`Tensor`)：必选参数，表示RMSNorm的缩放因子（权重）。对应公式中的$gamma$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型与`x1`的数据类型保持一致，shape需要与`x1`后几维保持一致，后几维为`x1`需要归一化处理的维度。
 - **epsilon**(`float`)：可选参数，表示添加到分母中的值，以确保数值稳定，对应公式中的$epsilon$。默认值为`1e-6`。
 
 ## 返回值说明
 
-- **yOut**(`Tensor`)：对应公式中的$RmsNorm(x)$，表示最后的输出。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型和shape与输入`x1`的数据类型和shape保持一致。
+- **yOut**(`Tensor`)：对应公式中的$RMSNorm(x)$，表示最后的输出。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型和shape与输入`x1`的数据类型和shape保持一致。
 
-- **rstdOut**(`Tensor`)：对应公式中$Rms(x)$的倒数，表示归一化后标准差的倒数。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float32`。shape与`x1`前几维保持一致，前几维表示不需要归一化处理的维度。`rstdOut`shape与`x1`shape，`gamma`shape关系举例：
-  - 若`x1`shape:(2，3，4，8)，`gamma`shape:(8)，`rstdOut`shape(2，3，4，1)；
-  - 若`x1`shape:(2，3，4，8)，`gamma`shape:(4，8)，`rstdOut`shape(2，3，1，1)。
+- **rstdOut**(`Tensor`)：对应公式中$RMS(x)$的倒数，表示归一化后标准差的倒数。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float32`。shape与`x1`前几维保持一致，前几维表示不需要归一化处理的维度。`rstdOut`shape与`x1`shape，`gamma`shape关系举例：
+  - 若`x1`shape:(2,3,4,8)，`gamma`shape:(8)，`rstdOut`shape:(2,3,4,1)；
+  - 若`x1`shape:(2,3,4,8)，`gamma`shape:(4,8)，`rstdOut`shape:(2,3,1,1)。
 
 - **xOut**(`Tensor`)：对应公式中的$x$，表示add计算的结果。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型和shape与输入`x1`的数据类型和shape保持一致。
 
