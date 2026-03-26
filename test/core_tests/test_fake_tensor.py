@@ -5245,6 +5245,22 @@ class TestKLDivLoss(TestCase):
 
             self.assertEqual(pred.grad.shape, pred_fake_tensor.grad.shape)
             self.assertEqual(pred.grad.dtype, pred_fake_tensor.grad.dtype)
+            
+
+class TestSwigluMxQuant(TestCase):
+    def test_npu_swiglu_mx_quant_meta(self):
+        with FakeTensorMode():
+            x = torch.randn([4, 8], dtype=torch.float16, device='npu')
+            group_index = None
+            y_npu, mxscale_npu = torch_npu.npu_swiglu_mx_quant(
+                x, group_index=group_index, activate_dim=-1, activate_left=False, swiglu_mode=0,
+                clamp_limit=7, glu_alpha=1.702, glu_bias=1, group_mode=0, axis=-1,
+                dst_type=torch_npu.float4_e2m1fn_x2, round_mode="rint", scale_alg=0, max_dtype_value=0
+            )
+            self.assertEqual(y_npu.shape, torch.Size([4, 2]))
+            self.assertEqual(y_npu.dtype, torch.uint8)
+            self.assertEqual(mxscale_npu.shape, torch.Size([4, 1, 2]))
+            self.assertEqual(mxscale_npu.dtype, torch.uint8)
 
 
 @unittest.skip("skip until CANN is updated to support aclnnDynamicBlockMxQuant")

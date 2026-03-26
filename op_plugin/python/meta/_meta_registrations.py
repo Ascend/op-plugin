@@ -5314,6 +5314,54 @@ def npu_dequant_swiglu_quant_meta(x, weight_scale=None, activation_scale=None, b
             torch.empty(scale_size, dtype=torch.float32, device=x.device))
 
 
+@impl(m, "npu_swiglu_mx_quant")
+def npu_swiglu_mx_quant_meta(x, group_index=None, activate_dim=-1, activate_left=False,
+                              swiglu_mode=0, clamp_limit=7.0, glu_alpha=1.702, glu_bias=1.0,
+                              group_mode=0, axis=-1, dst_type=296, round_mode="rint",
+                              scale_alg=0, max_dtype_value=0):
+    activate_dim = activate_dim if activate_dim is not None else -1
+    select_dim = activate_dim if activate_dim >= 0 else activate_dim + x.dim()
+    quant_dim = axis if axis >= 0 else axis + x.dim()
+    y_size = []
+    scale_size = []
+    swish_num = 2
+    block_size = 64
+    
+    # infer the size of y
+    for i in range(x.dim()):
+        if i == select_dim:
+            y_size.append(x.size(i) // swish_num)
+        else:
+            y_size.append(x.size(i))
+    # infer the size of scale
+    for i in range(x.dim()):
+        if i == select_dim:
+            scale_size.append(x.size(i) // swish_num)
+        else:
+            scale_size.append(x.size(i))
+    
+    # modify the size of scale
+    if group_index is None:
+        quant_size = int(math.ceil(scale_size[quant_dim] / block_size))
+    else:
+        if quant_dim == x.dim() - 1:
+            quant_size = int(math.ceil(scale_size[quant_dim] / block_size))
+        else:
+            quant_size = int(math.floor(scale_size[quant_dim] / block_size) + group_index.shape[0])
+
+    scale_size[quant_dim] = quant_size
+    scale_size.append(swish_num)
+
+    dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch_npu.uint8)
+
+    # fp4
+    if dst_torch_dtype == torch.uint8 and dst_type != torch_npu.hifloat8:
+        y_size[-1] = y_size[-1] // swish_num
+    
+    return (torch.empty(y_size, dtype=dst_torch_dtype, device=x.device),
+            torch.empty(scale_size, dtype=torch.uint8, device=x.device))
+
+
 @impl(m, "npu_clipped_swiglu")
 def npu_clipped_swiglu_meta(x, group_index=None, dim=-1, alpha=1.702, limit=7.0, bias=1.0, interleaved=True):
     output_size = []
