@@ -210,7 +210,6 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
         // 处理group_sizes
         at::IntArrayRef group_size_list = group_size.value_or(at::IntArrayRef{});
         int64_t group_sizes = op_plugin::utils::check_and_get_group_size(group_size_list);
-        TORCH_CHECK(group_sizes != -1, "Invalid group_size.", OPS_ERROR(ErrCode::PARAM));
 
         // mm_x and mm_weight consistency check
         bool mm_x_has_value = mm_x.has_value();
