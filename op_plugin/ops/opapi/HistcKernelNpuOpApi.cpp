@@ -26,7 +26,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 namespace {
 std::pair<at::Scalar, at::Scalar> histc_check_and_get_min_max(const at::Tensor &self, int64_t bins, const at::Scalar &min, const at::Scalar &max)
 {
-    TORCH_CHECK(self.scalar_type() != at::kHalf, "HalfTensor is not supported", OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(bins > 0, "bins must be > 0", OPS_ERROR(ErrCode::VALUE));
     double leftmost_edge = min.to<double>();
     double rightmost_edge = max.to<double>();
