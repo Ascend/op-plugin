@@ -68,7 +68,7 @@
 ## 函数原型
 
 ```
-npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, softmax_max, softmax_sum, softmax_max_index, softmax_sum_index, scale_value=1, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor, Tensor, Tensor)
+npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, softmax_max, softmax_sum, softmax_max_index, softmax_sum_index, scale_value, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明
@@ -90,7 +90,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 **softmax_sum_index**(`Tensor`)：必选参数，表示Index attention softmax结果的求和。数据格式支持$ND$，数据类型支持`float32`。shape支持$(B, N2index, S1)$、$(N2index, T1)$。
 
-**scale_value**(`float`)：可选参数，表示缩放系数，数据类型支持`float32`。默认值为`1`。
+**scale_value**(`float`)：必选参数，表示缩放系数，数据类型支持`float32`。
 
 **query_rope**(`Tensor`)：可选参数，表示MLA结构中的query的rope信息。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N1, Dr)$、$(T1, N1, Dr)$。
 
@@ -127,7 +127,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 | B         | 1~256      | -               |
 | S1、S2    | 1~128K     | S1、S2支持不等长 |
 | N1        | 32、64、128| -               |
-| N1index   | 16、32、64 | -               |
+| N1index   | 8、16、32、64 | -               |
 | N2        | 32、64、128| N2=N1           |
 | N2index   | 1          | -               |
 | D         | 128        | -               |
