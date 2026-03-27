@@ -690,7 +690,6 @@ class TestQuantMatmul(TestCase):
                     in_tensor[i][j] = sign + pow(2.0, exponent_value) * m_value
         return in_tensor.astype(np.float32)
 
-    @unittest.skip("skip test_npu_quant_matmul_A8W4")
     @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul_A8W4_float16(self):
         M = 1
@@ -720,7 +719,6 @@ class TestQuantMatmul(TestCase):
 
         self.assertTrue(self.golden_compare(npu_out.cpu(), cpu_out, K))
 
-    @unittest.skip("skip test_npu_quant_matmul_A8W4")
     @SupportedDevices(['Ascend910B'])
     def test_npu_quant_matmul_A8W4_bfloat16(self):
         M = 1

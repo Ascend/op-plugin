@@ -240,7 +240,13 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
     TensorWrapper x2_scale_wrapper = make_wrapper(scale, scale_dtype);
     TensorWrapper result_wrapper = make_wrapper(result, output_dtype);
     at::Tensor x1_offset = at::empty({0}, options);
+    at::Tensor x2_offset = at::Tensor();
     at::Tensor y_offset = at::empty({0}, options);
+    if (is_a8W4_int) {  // Only A8W4 int needs y_offset
+        y_offset = offset_real;
+    } else {
+        x2_offset = offset_real;
+    }
 
     bool use_aclnn_v5 = x1_dtype.has_value() || (x1.dtype() != at::kInt && x1.dtype() != at::kChar) ||
          is_a8W4_float || is_a8W4_int;
@@ -278,22 +284,18 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
         if (is_nz_format(x2)) {
             EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1_wrapper, x2_wrapper, pertoken_scale_real, quant_param, y_scale,
-                         x1_offset, offset_real, y_offset, bias_real, transpose1, transpose2, group_size,
-                         result_wrapper);
+                         x1_offset, x2_offset, y_offset, bias_real, transpose1, transpose2, group_size, result_wrapper);
         } else {
             EXEC_NPU_CMD(aclnnQuantMatmulV5, x1_wrapper, x2_wrapper, pertoken_scale_real, quant_param, y_scale,
-                         x1_offset, offset_real, y_offset, bias_real, transpose1, transpose2, group_size,
-                         result_wrapper);
+                         x1_offset, x2_offset, y_offset, bias_real, transpose1, transpose2, group_size, result_wrapper);
         }
     } else {
         if (!is_a4w4 && is_nz_format(x2)) {
             EXEC_NPU_CMD(aclnnQuantMatmulWeightNz, x1_wrapper, x2_wrapper, x1_scale_wrapper, x2_scale_wrapper, y_scale,
-                         x1_offset, offset_real, y_offset, bias_real, transpose1, transpose2, group_size,
-                         result_wrapper);
+                         x1_offset, x2_offset, y_offset, bias_real, transpose1, transpose2, group_size, result_wrapper);
         } else {
             EXEC_NPU_CMD(aclnnQuantMatmulV5, x1_wrapper, x2_wrapper, x1_scale_wrapper, x2_scale_wrapper, y_scale,
-                         x1_offset, offset_real, y_offset, bias_real, transpose1, transpose2, group_size,
-                         result_wrapper);
+                         x1_offset, x2_offset, y_offset, bias_real, transpose1, transpose2, group_size, result_wrapper);
         }
     }
 
