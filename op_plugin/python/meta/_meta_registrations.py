@@ -929,6 +929,61 @@ def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
     return (y, mm_y)
 
 
+@impl(m, "npu_quant_gmm_alltoallv")
+def npu_quant_gmm_alltoallv_meta(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_scale, hcom, ep_world_size,
+                        send_counts, recv_counts, gmm_y_dtype, *, send_counts_tensor=None,
+                        recv_counts_tensor=None, mm_x=None, mm_weight=None, mm_x_scale=None,
+                        mm_weight_scale=None, comm_quant_scale=None, gmm_x_quant_mode=None, 
+                        gmm_weight_quant_mode=None, mm_x_quant_mode=None, mm_weight_quant_mode=None, 
+                        comm_quant_mode=None, group_size=None, gmm_x_dtype=None, gmm_weight_dtype=None, 
+                        gmm_x_scale_dtype=None, gmm_weight_scale_dtype=None, mm_x_dtype=None, 
+                        mm_weight_dtype=None, mm_x_scale_dtype=None, mm_weight_scale_dtype=None, 
+                        comm_quant_dtype=None, mm_y_dtype=None):
+    if ep_world_size <= 0:
+        ep_world_size = 1
+    if gmm_x is not None:
+        torch._check(
+            gmm_x.dim() == 2,
+            lambda: f"The gmm_x's dim should be 2, but got {gmm_x.dim()}.",
+            )
+    if gmm_weight is not None:
+        torch._check(
+            gmm_weight.dim() == 3,
+            lambda: f"The gmm_weight's dim should be 3, but got {gmm_weight.dim()}.",
+            )
+    if mm_x is not None:
+        torch._check(
+            mm_x.dim() == 2,
+            lambda: f"The mm_x's dim should be 2, but got {mm_x.dim()}.",
+            )
+    if mm_weight is not None:
+        torch._check(
+            mm_weight.dim() == 2,
+            lambda: f"The mm_weight's dim should be 2, but got {mm_weight.dim()}.",
+            )
+    scale_list = [gmm_x_scale, gmm_weight_scale, mm_x_scale, mm_weight_scale]
+    for scale in scale_list:
+        if scale is not None:
+            torch._check(
+                scale.dim() == 1 and scale.size(0) == 1,
+                lambda: f"Scale's shape should be (1,), but got {list(scale.shape)}.",
+            )
+    out_x = sum(recv_counts)
+    out_y = gmm_weight.size(2)
+    out_mm_x = 0
+    out_mm_y = 0
+    y = None
+    mm_y = None
+    out_scalar_type = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(gmm_y_dtype)
+    if mm_x is not None:
+        out_mm_x = mm_x.size(0)
+        out_mm_y = mm_weight.size(1)
+        mm_out_scalar_type = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(mm_y_dtype)
+        mm_y = torch.empty([out_mm_x, out_mm_y], dtype=mm_out_scalar_type, device='meta')
+    y = torch.empty([out_x, out_y], dtype=out_scalar_type, device='meta')
+    return (y, mm_y)
+
+
 @impl(m, "npu_fused_matmul")
 def npu_fused_matmul_meta(x, x2, *, bias=None, x3=None, fused_op_type=''):
     torch._check(
@@ -1064,6 +1119,67 @@ def npu_all_gather_base_mm_meta(self, x2, hcom, world_size, bias=None,
 
     return (torch.empty(out_size, dtype=dtype, device='meta'),
             torch.empty(gather_output_size, dtype=self.dtype, device='meta'))
+
+
+@impl(m, "npu_alltoallv_quant_gmm")
+def npu_alltoallv_quant_gmm_meta(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_scale, hcom, ep_world_size, 
+                        send_counts, recv_counts, gmm_y_dtype, *, send_counts_tensor=None, 
+                        recv_counts_tensor=None, mm_x=None, mm_weight=None, mm_x_scale=None, 
+                        mm_weight_scale=None, gmm_x_quant_mode=None, gmm_weight_quant_mode=None, 
+                        mm_x_quant_mode=None, mm_weight_quant_mode=None, permute_out_flag=False, 
+                        group_size=None, gmm_x_dtype=None, gmm_weight_dtype=None, gmm_x_scale_dtype=None, 
+                        gmm_weight_scale_dtype=None, mm_x_dtype=None, mm_weight_dtype=None, 
+                        mm_x_scale_dtype=None, mm_weight_scale_dtype=None, mm_y_dtype=None):
+    if ep_world_size <= 0:
+        ep_world_size = 1
+    if gmm_x is not None:
+        torch._check(
+            gmm_x.dim() == 2,
+            lambda: f"The gmm_x's dim should be 2, but got {gmm_x.dim()}.",
+            )
+    if gmm_weight is not None:
+        torch._check(
+            gmm_weight.dim() == 3,
+            lambda: f"The gmm_weight's dim should be 3, but got {gmm_weight.dim()}.",
+            )
+    if mm_x is not None:
+        torch._check(
+            mm_x.dim() == 2,
+            lambda: f"The mm_x's dim should be 2, but got {mm_x.dim()}.",
+            )
+    if mm_weight is not None:
+        torch._check(
+            mm_weight.dim() == 2,
+            lambda: f"The mm_weight's dim should be 2, but got {mm_weight.dim()}.",
+            )
+    scale_list = [gmm_x_scale, gmm_weight_scale, mm_x_scale, mm_weight_scale]
+    for scale in scale_list:
+        if scale is not None:
+            torch._check(
+                scale.dim() == 1 and scale.size(0) == 1,
+                lambda: f"Scale's shape should be (1,), but got {list(scale.shape)}.",
+            )
+    out_x = sum(recv_counts)
+    out_y = gmm_weight.size(2)
+    out_mm_x = 0
+    out_mm_y = 0
+    permute_out_x = 0
+    permute_out_y = 0
+    gmm_y = None
+    mm_y = None
+    permute_out = None
+    out_scalar_type = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(gmm_y_dtype)
+    if mm_x is not None:
+        out_mm_x = mm_x.size(0)
+        out_mm_y = mm_weight.size(1)
+        mm_out_scalar_type = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(mm_y_dtype)
+        mm_y = torch.empty([out_mm_x, out_mm_y], dtype=mm_out_scalar_type, device='meta')
+    if permute_out_flag:
+        permute_out_x = out_x
+        permute_out_y = gmm_x.size(1)
+        permute_out = gmm_x.new_empty(permute_out_x, permute_out_y)
+    gmm_y = torch.empty([out_x, out_y], dtype=out_scalar_type, device='meta')
+    return (gmm_y, mm_y, permute_out)
 
 
 @impl(m, "npu_all_gather_quant_mm")
