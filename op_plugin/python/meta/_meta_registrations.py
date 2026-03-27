@@ -5407,6 +5407,20 @@ def npu_clipped_swiglu_meta(x, group_index=None, dim=-1, alpha=1.702, limit=7.0,
     return torch.empty(output_size, dtype=x.dtype, device=x.device)
 
 
+@impl(m, "npu_fused_causal_conv1d_functional")
+def npu_fused_causal_conv1d_functional_meta(x, weight, conv_states, *, query_start_loc=None, cache_indices=None, 
+                                            initial_state_mode=None, bias=None, num_accepted_tokens=None, 
+                                            activation_mode="None", pad_slot_id=-1, run_mode=0, residual_connection=0):
+    return torch.empty_like(x, dtype=x.dtype), torch.empty_like(conv_states, dtype=conv_states.dtype)
+
+
+@impl(m, "npu_fused_causal_conv1d")
+def npu_fused_causal_conv1d_meta(x, weight, conv_states, *, query_start_loc=None, cache_indices=None, 
+                                initial_state_mode=None, bias=None, num_accepted_tokens=None, 
+                                activation_mode="None", pad_slot_id=-1, run_mode=0, residual_connection=0):
+    return torch.empty_like(x, dtype=x.dtype)
+
+
 @impl(m, "npu_dequant_rope_quant_kvcache")
 def npu_dequant_rope_quant_kvcache_meta(x, cos, sin, k_cache, v_cache, indices, scale_k, scale_v, size_splits, *,
                                         offset_k=None, offset_v=None, weight_scale=None, activation_scale=None,

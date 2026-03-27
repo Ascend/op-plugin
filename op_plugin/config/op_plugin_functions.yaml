@@ -7346,6 +7346,15 @@ custom:
     op_api: [v2.6, newest]
     exposed: [v2.6, newest]
     internal_format_opapi: [v2.6, newest]
+
+  - func: npu_fused_causal_conv1d_functional(Tensor x, Tensor weight, Tensor conv_states, *, Tensor? query_start_loc=None, Tensor? cache_indices=None, Tensor? initial_state_mode=None, Tensor? bias=None, Tensor? num_accepted_tokens=None, str? activation_mode="None", int? pad_slot_id=-1, int? run_mode=0, int? residual_connection=0) -> (Tensor, Tensor)
+    op_api: [v2.6, newest]
+    internal_format_opapi: [v2.6, newest]
+
+  - func: npu_fused_causal_conv1d(Tensor x, Tensor weight, Tensor(a!) conv_states, *, Tensor? query_start_loc=None, Tensor? cache_indices=None, Tensor? initial_state_mode=None, Tensor? bias=None, Tensor? num_accepted_tokens=None, str? activation_mode="None", int? pad_slot_id=-1, int? run_mode=0, int? residual_connection=0) -> Tensor
+    op_api: [v2.6, newest]
+    exposed: [v2.6, newest]
+    internal_format_opapi: [v2.6, newest]
   
   - func: save_npugraph_tensor.tensorlist(Tensor[] input, *, str? save_name=None, str? save_dir=None, str? suffix=None) -> ()
     op_api: [v2.6, newest]
