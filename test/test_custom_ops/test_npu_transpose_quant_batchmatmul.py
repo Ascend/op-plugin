@@ -87,6 +87,40 @@ class TestTransposeQuantBatchMatmul(TestCase):
                                                             perm_x1=[1, 0, 2], perm_x2=[0, 1, 2], perm_y=[1, 0, 2]).to("cpu")
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
+    @unittest.skip("Skipping test_npu_transpose_batchmatmul temporarily")
+    @SupportedDevices(['Ascend950'])
+    def test_npu_transpose_quant_batchmatmul_mxfp8(self):
+        M, K, N, Batch = 32, 512, 128, 32
+        x1 = torch.randint(-5, 5, (M, Batch, K), dtype=torch.int8).to(torch.float8_e4m3fn)
+        x2 = torch.randint(-5, 5, (Batch, K, N), dtype=torch.int8).to(torch.float8_e4m3fn)
+        x1_clone = x1.clone()
+        x2_clone = x2.clone()
+        x1_scale = torch.full((M, Batch, int(K/64), 2), 2, dtype=torch.uint8)
+        x2_scale = torch.full((Batch, int(K/64), N, 2), 2, dtype=torch.uint8)
+        x1_scale_clone = torch.full((M, Batch, int(K/64), 2), 2, dtype=torch.float8_e8m0fnu)
+        x2_scale_clone = torch.full((Batch, int(K/64), N, 2), 2, dtype=torch.float8_e8m0fnu)
+        x1 = x1.to(torch.float32).numpy()
+        x2 = x2.to(torch.float32).numpy()
+        x1 = x1.transpose(1,0,2)
+        x1_scale = x1_scale.numpy().astype(np.float32)
+        x2_scale = x2_scale.numpy().astype(np.float32)
+        x1_scale = x1_scale.reshape(x1_scale.shape[0], x1_scale.shape[1], x1_scale.shape[2] * 2)
+        x1_scale = x1_scale.transpose(1,0,2)
+        x2_scale = x2_scale.transpose(0,1,3,2)
+        x2_scale = x2_scale.reshape(x2_scale.shape[0], x2_scale.shape[1] * 2, x2_scale.shape[3])
+        x1_scale_broadcast = np.repeat(x1_scale, 32, axis=-1)
+        x2_scale_broadcast = np.repeat(x2_scale, 32, axis=-2)
+        x1 = x1 * x1_scale_broadcast
+        x2 = x2 * x2_scale_broadcast
+        x1 = torch.from_numpy(x1.astype(np.float32))
+        x2 = torch.from_numpy(x2.astype(np.float32))
+        supported_output = torch.matmul(x1.to(torch.float32), x2.to(torch.float32))
+        supported_output = torch.permute(supported_output, [1, 0, 2])
+        custom_output = torch_npu.npu_transpose_quant_batchmatmul(x1_clone.npu(), x2_clone.npu(), dtype=torch.bfloat16, 
+                                                            x1_scale=x1_scale_clone.npu(), x2_scale=x2_scale_clone.npu(),
+                                                            group_sizes=[0, 0, 32], perm_x1=[1, 0, 2], perm_x2=[0, 1, 2], perm_y=[1, 0, 2])
+        self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
     @unittest.skip("Skipping test_npu_transpose_quant_batchmatmul temporarily")
     @SupportedDevices(["Ascend950"])
     def test_npu_transpose_quant_batchmatmul_4(self, device="npu"):

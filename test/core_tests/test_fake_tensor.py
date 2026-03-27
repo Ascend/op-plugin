@@ -3416,6 +3416,23 @@ class TestTransposeQuantBatchMatmul(TestCase):
             self.assertTrue(result.shape == expect_ret.shape)
             self.assertTrue(result.dtype == expect_ret.dtype)
 
+    @unittest.skip("skip test_npu_transpose_quant_batchmatmul")
+    def test_npu_transpose_quant_batchmatmul_meta_5(self):
+        with FakeTensorMode():
+            M, K, N, Batch = 32, 512, 128, 16
+            x1 = torch.randint(-5, 5, (M, Batch, K), dtype=torch.int8).to(torch.float8_e4m3fn)
+            x2 = torch.randint(-5, 5, (Batch, K, N), dtype=torch.int8).to(torch.float8_e4m3fn)
+            x1_scale = torch.randint(0, 3, (M, Batch, int(K/64), 2), dtype=torch.uint8)
+            x2_scale = torch.randint(0, 3, (Batch, int(K/64), N, 2), dtype=torch.uint8)
+            x1_scale =x1_scale.view(torch.float8_e8m0fnu)
+            x2_scale =x2_scale.view(torch.float8_e8m0fnu)
+            result = torch_npu.npu_transpose_quant_batchmatmul(x1.npu(), x2.npu(), dtype=torch.float16,
+                                                        x1_scale=x1_scale.npu(), x2_scale=x2_scale.npu(),
+                                                        group_sizes=[0,0,32],perm_x1=[1, 0, 2],perm_x2=[0, 1, 2], perm_y=[1, 0, 2])
+            expect_ret = torch.randint(-2, 2, (M, Batch, N), dtype=torch.float16)
+            self.assertTrue(result.shape == expect_ret.shape)
+            self.assertTrue(result.dtype == expect_ret.dtype)
+
 
 class TestNpuPrefetch(TestCase):
     def test_npu_prefetch(self):
