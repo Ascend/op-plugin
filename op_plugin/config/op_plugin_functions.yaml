@@ -6401,8 +6401,7 @@ custom:
     gen_opapi:
       out_expand_x:
         size: 'out_sizes[0]'
-        dtype: '(quant_mode == 0) ? y.scalar_type() : at::kChar'
-        # dtype : y
+        dtype : y
       out_dynamic_scales:
         size: 'out_sizes[1]'
         dtype: '(quant_mode == 4) ? float8_e8m0_dtype : at::kFloat'
