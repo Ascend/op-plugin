@@ -158,10 +158,30 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
     at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
     int64_t group_size = check_and_get_groups(group_size_list, x1, x2, scale, pertoken_scale);
     bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
+    bool trans_x1 = is_transpose_last_two_dims(x1);
     bool trans_x2 = is_transpose_last_two_dims(x2);
     auto x1_dim_num = x1.dim();
     auto x2_dim_num = x2.dim();
     auto x2_n_dim = (is_a4w4 && !trans_x2) ? x2.size(x2_dim_num - 1) * INT4_NUMS_IN_INT32 : x2.size(x2_dim_num - 1);
+
+#if VERSION_BETWEEN(V2R1, V2R7)
+    bool mxfp4_valid = x1_dtype.has_value() && x2_dtype.has_value() &&
+                       x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
+                       x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+#endif
+#if VERSION_BETWEEN(V2R8, VERSION_NEWEST)
+    bool mxfp4_valid = false;
+    if (x1_dtype.has_value()) {
+        mxfp4_valid = x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+    } else {
+        mxfp4_valid = x1.scalar_type() == at::ScalarType::Float4_e2m1fn_x2;
+    }
+    if (x2_dtype.has_value()) {
+        mxfp4_valid = mxfp4_valid && x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+    } else {
+        mxfp4_valid = mxfp4_valid && x2.scalar_type() == at::ScalarType::Float4_e2m1fn_x2;
+    }
+#endif
 
     c10::SmallVector<int64_t, SIZE> output_size;
     if (is_a8W4_int) {
@@ -177,8 +197,23 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
         uint64_t batch_val = infer_out_batch_shape(x1, x2, batch_record);
         const at::Tensor long_tensor = x1_dim_num > x2_dim_num ? x1 : x2;
         output_size = op_infer::array_to_small_vector(long_tensor.sizes());
-        output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX);
-        output_size[long_tensor.dim() - 1] = x2_n_dim;
+        if (mxfp4_valid) {
+            TORCH_CHECK(x1.dim() >= 2 && x1.dim() <= 6,
+                "x1 dim num should be 2 ~ 6, please check x1 dim num. Actual x1 dim = ", x1.dim(),
+                OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(x2.dim() >= 2 && x2.dim() <= 6,
+                "x2 dim num should be 2 ~ 6, please check x2 dim num. Actual x2 dim = ", x2.dim(),
+                OPS_ERROR(ErrCode::PARAM));
+            int64_t x1_size_last_second = x1.sizes()[x1_dim_num - LAST_SECOND_DIM_INDEX];
+            int64_t x2_size_last = x2.sizes()[x2_dim_num - 1];
+            int64_t real_m = !trans_x1 ? x1_size_last_second : x1_size_last_second * FP4_IN_INT8;
+            int64_t real_n = trans_x2 ? x2_size_last : x2_size_last * FP4_IN_INT8;
+            output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = real_m;
+            output_size[long_tensor.dim() - 1] = real_n;
+        } else {
+            output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX);
+            output_size[long_tensor.dim() - 1] = x2_n_dim;
+        }
         for (int64_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
             output_size[i] = static_cast<int64_t>(batch_record[i]);
         }

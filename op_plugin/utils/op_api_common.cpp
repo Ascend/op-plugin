@@ -30,6 +30,7 @@ typedef void(*AddTensorAddrToCachedList) (void *addr);
 
 static std::unordered_map<aclFormat, aclFormat> FORMAT_FAKE_TO_REAL {
     { ACL_FORMAT_FRACTAL_NZ_C0_16, ACL_FORMAT_FRACTAL_NZ_C0_32 },
+    { ACL_FORMAT_FRACTAL_NZ, ACL_FORMAT_FRACTAL_NZ }
 };
 
 bool checkOwner(string cusLibPath)
@@ -794,22 +795,30 @@ inline void CollectB4ShapeInfo(const at::Tensor &at_tensor,
                                c10::SmallVector<int64_t, MAX_DIM_NUM>& wrapperStride,
                                c10::SmallVector<int64_t, MAX_DIM_NUM>& wrapperShape)
 {
-    if (at_tensor.sizes().size() == 1) {
+    int64_t nDim = at_tensor.sizes().size();
+    if (nDim == 1) {
         wrapperShape[0] = wrapperShape[0] * FP4_IN_INT8;
-    } else if (at_tensor.sizes().size() > 1) {
-        if (wrapperStride[at_tensor.sizes().size() - 1] == 1) {
-            wrapperStride[at_tensor.sizes().size() - PENULTIMATE_DIM] =
-                wrapperStride[at_tensor.sizes().size() - PENULTIMATE_DIM] * FP4_IN_INT8;
-            wrapperShape[at_tensor.sizes().size() - 1] =
-                wrapperShape[at_tensor.sizes().size() - 1] * FP4_IN_INT8;
-        } else if (wrapperStride[at_tensor.sizes().size() - PENULTIMATE_DIM] == 1) {
-            wrapperStride[at_tensor.sizes().size() - 1] =
-                wrapperStride[at_tensor.sizes().size() - 1] * FP4_IN_INT8;
-            wrapperShape[at_tensor.sizes().size() - PENULTIMATE_DIM] =
-                wrapperShape[at_tensor.sizes().size() - PENULTIMATE_DIM] * FP4_IN_INT8;
+    } else if (nDim > 1) {
+        if (wrapperStride[nDim - 1] == 1 && wrapperStride[nDim - PENULTIMATE_DIM] == 1) {
+            if (wrapperShape[nDim - PENULTIMATE_DIM] == 1) {
+                wrapperStride[nDim - 1] = wrapperStride[nDim - 1] * FP4_IN_INT8;
+                wrapperShape[nDim - PENULTIMATE_DIM] = wrapperShape[nDim - PENULTIMATE_DIM] * FP4_IN_INT8;
+            } else if (wrapperShape[nDim - 1] == 1) {
+                wrapperStride[nDim - PENULTIMATE_DIM] = wrapperStride[nDim - PENULTIMATE_DIM] * FP4_IN_INT8;
+                wrapperShape[nDim - 1] = wrapperShape[nDim - 1] * FP4_IN_INT8;
+            }
+        } else if (wrapperStride[nDim - 1] == 1) {
+            wrapperStride[nDim - PENULTIMATE_DIM] =
+                wrapperStride[nDim - PENULTIMATE_DIM] * FP4_IN_INT8;
+            wrapperShape[nDim - 1] = wrapperShape[nDim - 1] * FP4_IN_INT8;
+        } else if (wrapperStride[nDim - PENULTIMATE_DIM] == 1) {
+            wrapperStride[nDim - 1] =
+                wrapperStride[nDim - 1] * FP4_IN_INT8;
+            wrapperShape[nDim - PENULTIMATE_DIM] =
+                wrapperShape[nDim - PENULTIMATE_DIM] * FP4_IN_INT8;
         }
 
-        for (auto i = 0; i < at_tensor.sizes().size() - PENULTIMATE_DIM; i++) {
+        for (auto i = 0; i < nDim - PENULTIMATE_DIM; i++) {
             wrapperStride[i] = wrapperStride[i] * FP4_IN_INT8;
         }
     } else {
