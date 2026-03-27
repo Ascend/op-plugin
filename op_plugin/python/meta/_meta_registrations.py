@@ -171,6 +171,64 @@ if os.getenv("TORCH_NPU_USE_COMPATIBLE_IMPL") != "1":
         return (self_grad, other_grad)
 
 
+@impl(m, "npu_mhc_pre")
+def npu_mhc_pre_meta(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=1e-6, out_flag=0):
+    torch._check(
+        x.numel() > 0,
+        lambda: "Input x should not be empty." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        phi.numel() > 0,
+        lambda: "Input phi should not be empty." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        alpha.numel() == 3,
+        lambda: "Input alpha must have 3 elements, but got " + str(alpha.numel()) + "." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        bias.numel() > 0,
+        lambda: "Input bias should not be empty." + ops_error(ErrCode.VALUE),
+    )
+
+    torch._check(
+        x.dim() == 3 or x.dim() == 4,
+        lambda: f"Input x must be 3D or 4D, but got {x.dim()}D." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        out_flag == 0 or out_flag == 1,
+        lambda: f"Input out_flag must be 0 or 1, but got {out_flag}." + ops_error(ErrCode.VALUE),
+    )
+
+    if x.dim() == 4:
+        batch = x.size(0)
+        sequence = x.size(1)
+        num_residual = x.size(2)
+        dim = x.size(3)
+        mat_k = phi.size(0)
+
+        out_hin = torch.empty([batch, sequence, dim], dtype=x.dtype, device="meta")
+        out_hpost = torch.empty([batch, sequence, num_residual], dtype=torch.float32, device="meta")
+        out_hres = torch.empty([batch, sequence, num_residual, num_residual], dtype=torch.float32, device="meta")
+        out_inv_rms = torch.empty([batch, sequence], dtype=torch.float32, device="meta")
+        out_hmix = torch.empty([batch, sequence, mat_k], dtype=torch.float32, device="meta")
+        out_hpre = torch.empty([batch, sequence, num_residual], dtype=torch.float32, device="meta")
+    else:
+        t = x.size(0)
+        num_residual = x.size(1)
+        dim = x.size(2)
+        mat_k = phi.size(0)
+
+        out_hin = torch.empty([t, dim], dtype=x.dtype, device="meta")
+        out_hpost = torch.empty([t, num_residual], dtype=torch.float32, device="meta")
+        out_hres = torch.empty([t, num_residual, num_residual], dtype=torch.float32, device="meta")
+        out_inv_rms = torch.empty([t], dtype=torch.float32, device="meta")
+        out_hmix = torch.empty([t, mat_k], dtype=torch.float32, device="meta")
+        out_hpre = torch.empty([t, num_residual], dtype=torch.float32, device="meta")
+
+    output_tensors = (out_hin, out_hpost, out_hres, out_inv_rms, out_hmix, out_hpre)
+    return output_tensors
+
+
 @impl(m, "npu_incre_flash_attention")
 def npu_incre_flash_attention_forward(query, key, value, *, padding_mask=None, atten_mask=None, pse_shift=None, actual_seq_lengths=None,
                                       antiquant_scale=None, antiquant_offset=None, block_table=None,

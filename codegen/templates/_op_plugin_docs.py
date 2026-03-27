@@ -3883,6 +3883,114 @@ tensor([[[[[2.]]],
 """
 )
 
+_add_torch_npu_docstr(
+    "npu_mhc_pre",
+    """
+接口原型：
+torch_npu.npu_mhc_pre(Tensor x, Tensor phi, Tensor alpha, Tensor bias, *, Tensor? gamma=None, float norm_eps=1e-6, float hc_eps=1e-6, int out_flag=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+
+功能描述：
+通过一系列计算，可得到 MHC (流形约束超连接)架构中 hidden 层对应的投影矩阵 Hres 和 Hpost，以及作为 Atten 或 MLP 层输入的矩阵 Hin。
+
+输入说明：
+x: Tensor类型，必选输入，待计算数据，代表网络中 mHC 层的输入数据。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 BFLOAT16 和 FLOAT16，数据维度可为 3 维 [T, n, D] 和 4 维 [B, S, n, D]。
+phi: Tensor类型，必选输入，mHC 的参数矩阵。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 FLOAT32，数据维度为 2 维 [n^2 + 2n, nD]。
+alpha: Tensor类型，必选输入，mHC 的缩放参数。支持的数据类型为 FLOAT32，数据维度为 1 维 [3]。
+bias: Tensor类型，必选输入，mHC 的 bias 参数。支持的数据类型为 FLOAT32，数据维度为 1 维 [n^2 + 2n]。
+gamma: Tensor类型，可选输入，表示进行 RMSNorm 计算时的缩放因子。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 FLOAT32，数据维度为 2 维 [n, D]。
+norm_eps: Float类型，可选输入，RMSNorm 的防除零参数。
+hc_eps: Float类型，可选输入，H_pre 经过 sigmoid 运算后的 eps 参数。
+out_flag: Int类型，可选输入，表示是否输出中间结果标识，默认值为0(仅输出最终变换结果)。
+n：shape 中的 n 常取 4、6、8。
+
+输出说明:
+Hin: Tensor类型，必选输出，输出的 h_in，作为 Atten/MLP 层的输入。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 BFLOAT16 和 FLOAT16，数据维度可为 2 维 [T, D] 和 3 维 [B, S, D]。
+Hpost: Tensor类型，必选输出，输出的 mHC 的 h_post 变换矩阵。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 FLOAT32，数据维度可为 2 维 [T, n] 和 3 维 [B, S, n]。
+Hres: Tensor类型，必选输出，输出的 mHC 的 h_res 变换矩阵，未做 sinkhorn 变换。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 FLOAT32，数据维度可为 3 维 [T, n, n] 和 4 维 [B, S, n, n]。
+invRms: Tensor类型，可选输出，RMSNorm 计算得到的 1 / r。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 FLOAT32，数据维度可为 1 维 [T] 和 2 维 [B, S]。
+hMix: Tensor类型，可选输出，x 与 phi 矩阵乘的结果。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 FLOAT32，数据维度可为 2 维 [T, n^2 + 2n] 和 3 维 [B, S, n^2 + 2n]。
+hPre: Tensor类型，可选输出，做完 sigmoid 计算之后的 h_pre 矩阵。数据格式为 ND，支持非连续 Tensor，支持的数据类型为 FLOAT32，数据维度可为 2 维 [T, n] 和 3 维 [B, S, n]。
+
+约束说明:
+该接口支持pytorch调用(torch_npu)。
+该接口支持图模式。
+
+支持的PyTorch版本:
+PyTorch 2.6.0
+
+支持的型号:
+- 昇腾950 AI处理器
+
+调用示例:
+1. 单算子模式调用:
+import torch
+import torch_npu
+
+T, n, D = 1024, 8, 2560
+
+x = torch.randn(T, n, D, dtype=torch.bfloat16).npu()
+phi = torch.randn(n * n + 2 * n, n * D, dtype=torch.float32).npu()
+alpha = torch.tensor([0.5, 0.5, 0.5], dtype=torch.float32).npu()
+bias_pre = torch.full((n,), 0.01, dtype=torch.float32)
+bias_post = torch.full((n,), 0.01, dtype=torch.float32)
+bias_res = torch.full((n, n), 0.01, dtype=torch.float32)
+bias = torch.cat([bias_pre, bias_post, bias_res.reshape(-1)], dim=0).npu()
+gamma = torch.randn(n, D, dtype=torch.float32).npu()
+
+out_flag = 1
+h_in, h_post, h_res, inv_rms, h_mix, h_pre = torch_npu.npu_mhc_pre(
+    x,
+    phi,
+    alpha,
+    bias,
+    gamma=gamma,
+    out_flag=out_flag
+)
+
+2. 图模式调用:
+import os
+import torch
+import torch_npu
+import torchair
+
+os.environ["ENABLE_ACLNN"] = "false"
+
+config = torchair.CompilerConfig()
+config.mode = "reduce-overhead"
+npu_backend = torchair.get_npu_backend(compiler_config=config)
+
+
+class MyModule(torch.nn.Module):
+    def forward(self, x, phi, alpha, bias, gamma, out_flag):
+        return torch_npu.npu_mhc_pre(
+            x,
+            phi,
+            alpha,
+            bias,
+            gamma=gamma,
+            out_flag=out_flag
+        )
+
+
+T, n, D = 256, 8, 2560
+x = torch.randn(T, n, D, dtype=torch.bfloat16).npu()
+phi = torch.randn(n * n + 2 * n, n * D, dtype=torch.float32).npu()
+alpha = torch.tensor([0.5, 0.5, 0.5], dtype=torch.float32).npu()
+bias_pre = torch.full((n,), 0.01, dtype=torch.float32)
+bias_post = torch.full((n,), 0.01, dtype=torch.float32)
+bias_res = torch.full((n, n), 0.01, dtype=torch.float32)
+bias = torch.cat([bias_pre, bias_post, bias_res.reshape(-1)], dim=0).npu()
+gamma = torch.randn(n, D, dtype=torch.float32).npu()
+
+out_flag = 0
+model = MyModule().npu().eval()
+model = torch.compile(model, backend=npu_backend, dynamic=False)
+
+with torch.no_grad():
+    outputs = model(x, phi, alpha, bias, gamma, out_flag)
+    torch.npu.synchronize()
+"""
+)
 
 _add_torch_npu_docstr(
     "npu_mhc_sinkhorn",
