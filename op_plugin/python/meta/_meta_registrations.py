@@ -6004,7 +6004,7 @@ def npu_moe_token_unpermute_with_routing_map_grad(unpermuted_tokens_grad, out_in
 
 @impl(m, "npu_dynamic_block_quant")
 # pylint:disable = huawei-too-many-arguments
-def npu_dynamic_block_quant_meta(x, *, min_scale=0.0, round_mode="rint", dst_type=1, row_block_size=1, col_block_size=128):
+def npu_dynamic_block_quant_meta(x, *, min_scale=0.0, round_mode="rint", dst_type=1, row_block_size=1, col_block_size=128, dst_type_max=0.0):
     # dst_type only support torch.int8 in 910B/C
     dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.float8_e5m2)
     y = torch.empty(x.shape, dtype=dtype, device=x.device)
