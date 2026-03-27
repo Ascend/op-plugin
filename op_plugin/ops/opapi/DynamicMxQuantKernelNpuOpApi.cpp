@@ -33,7 +33,8 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
     c10::string_view round_mode,
     int64_t dst_type,
     int64_t block_size,
-    c10::optional<int64_t> scale_alg)
+    c10::optional<int64_t> scale_alg,
+    double dst_type_max)
 {
     at::Tensor y;
     at::Tensor mxscale;
@@ -75,7 +76,12 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
     TensorWrapper y_wrapper = {y, y_acltype};
     TensorWrapper mxscale_wrapper = {mxscale, aclDataType::ACL_FLOAT8_E8M0};
     int64_t scale_alg_optional = scale_alg.has_value() ? scale_alg.value() : DEFAULT_SCALE_ALG;
-    EXEC_NPU_CMD(aclnnDynamicMxQuant, input, axis, round_mode_ptr, y_acltype, block_size, scale_alg_optional, y_wrapper, mxscale_wrapper);
+    static bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicMxQuantV2");
+    if (npu_support_v2) {
+        EXEC_NPU_CMD(aclnnDynamicMxQuantV2, input, axis, round_mode_ptr, y_acltype, block_size, scale_alg_optional, dst_type_max, y_wrapper, mxscale_wrapper);
+    } else {
+        EXEC_NPU_CMD(aclnnDynamicMxQuant, input, axis, round_mode_ptr, y_acltype, block_size, scale_alg_optional, y_wrapper, mxscale_wrapper);
+    }
     
     return std::make_tuple(y, mxscale);
 }
