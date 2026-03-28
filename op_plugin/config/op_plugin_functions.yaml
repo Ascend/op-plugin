@@ -126,13 +126,6 @@ official:
   - func: _cdist_backward(Tensor grad, Tensor x1, Tensor x2, float p, Tensor cdist) -> Tensor
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      new_params:
-        p_float: 'static_cast<float>(p)'
-      out:
-        size: x1
-        dtype: grad
-      exec: aclnnCdistBackward, grad, x1, x2, cdist, p_float, out
 
   - func: _cdist_forward(Tensor x1, Tensor x2, float p, int? compute_mode) -> Tensor
     acl_op: all_version
