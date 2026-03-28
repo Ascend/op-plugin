@@ -2,6 +2,7 @@ from collections import namedtuple
 
 import torch
 import numpy as np
+import unittest
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
@@ -165,6 +166,29 @@ class TestAddmm(TestCase):
 
         self.assertRtolEqual(cpu_transpose_output, npu_transpose_output)
 
+    @unittest.skip("skip test_addmm_cubemathtype_four")
+    def test_addmm_cubemathtype_four(self):
+        torch.npu.matmul.cube_math_type = torch.npu.CubeMathType.FORCE_GRP_ACC_FOR_FP32
+        shape_list = [(4096), (1, 4096), (4096, 4096)]
+        shape_format1 = [np.float32, 0, shape_list[0]]
+        shape_format2 = [np.float32, 0, shape_list[1]]
+        shape_format3 = [np.float32, 0, shape_list[2]]
+        cpu_input1, npu_input1 = create_common_tensor(shape_format1, 0, 2)
+        cpu_input2, npu_input2 = create_common_tensor(shape_format2, 0, 2)
+        cpu_input3, npu_input3 = create_common_tensor(shape_format3, 0, 2)
+
+        cpu_input1 = cpu_input1.to(torch.float32)
+        cpu_input2 = cpu_input2.to(torch.float32)
+        cpu_input3 = cpu_input3.to(torch.float32)
+
+        scalar1 = self.generate_scalar("float32", 0, 10)
+        scalar2 = self.generate_scalar("float32", 0, 10)
+
+        cpu_transpose_output = self.cpu_op_transpose_exec(cpu_input1, cpu_input2, cpu_input3, scalar1, scalar2)
+        npu_transpose_output = self.npu_op_transpose_exec(npu_input1, npu_input2, npu_input3, scalar1, scalar2)
+        cpu_transpose_output = cpu_transpose_output.astype(npu_transpose_output.dtype)
+
+        self.assertRtolEqual(cpu_transpose_output, npu_transpose_output)
 
 if __name__ == "__main__":
     run_tests()
