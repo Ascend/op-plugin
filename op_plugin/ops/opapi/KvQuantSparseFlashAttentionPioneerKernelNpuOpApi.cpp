@@ -50,7 +50,7 @@ at::Tensor construct_quant_sparse_infer_pioneer_output_tensor(
         TORCH_CHECK(query.dim() == DIM_3,
                     "When the layout of query is TND, the query dimension must be 3, but got ",
                     query.dim(), OPS_ERROR(ErrCode::PARAM));
-        TORCH_CHECK(query.size(DIM_3) > rope_head_dim,
+        TORCH_CHECK(query.size(DIM_2) > rope_head_dim,
                     "The hidden_dim of query shoulld be greater than rope_head_dim", OPS_ERROR(ErrCode::PARAM));
         output_size = {query.size(DIM_0), query.size(DIM_1), query.size(DIM_2) - rope_head_dim};
     }
