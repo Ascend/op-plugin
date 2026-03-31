@@ -14,10 +14,9 @@
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedRMSpropTF(params, lr=1e-2, alpha=0.9, eps=1e-10, weight_decay=0, momentum=0., centered=False, decoupled_decay=False, lr_in_momentum=True)
 ```
-
 
 ## 参数说明
 
@@ -31,11 +30,9 @@ class torch_npu.optim.NpuFusedRMSpropTF(params, lr=1e-2, alpha=0.9, eps=1e-10, w
 - **decoupled_decay** (`bool`)：可选参数，权重衰减仅作用于参数，默认值为False。
 - **lr_in_momentum** (`bool`)：可选参数，计算动量buffer时使用lr，默认值为True。
 
-
 ## 返回值说明
 
 类型为`NpuFusedRMSpropTF`的对象。
-
 
 ## 约束说明
 
@@ -78,4 +75,3 @@ fused_opt = NpuFusedRMSpropTF(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

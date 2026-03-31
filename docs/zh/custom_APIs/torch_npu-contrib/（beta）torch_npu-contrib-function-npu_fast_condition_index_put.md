@@ -9,14 +9,13 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 使用NPU亲和写法替换bool型index_put函数中的原生写法。
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.npu_fast_condition_index_put(x, condition, value)
 ```
 
@@ -56,4 +55,3 @@ tensor([[0.9661, 1.6750, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
 torch.Size([128, 8192])
 
 ```
-

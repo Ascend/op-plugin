@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_convolution(input, weight, bias, stride, padding, dilation, groups) -> Tensor
 ```
 
@@ -31,4 +31,3 @@ torch_npu.npu_convolution(input, weight, bias, stride, padding, dilation, groups
 - **padding**（`List[int]`）：输入两侧的隐式填充。
 - **dilation**（`List[int]`）：内核元素间距。
 - **groups**（`int`）：对输入进行分组。In_channels可被组数整除。
-

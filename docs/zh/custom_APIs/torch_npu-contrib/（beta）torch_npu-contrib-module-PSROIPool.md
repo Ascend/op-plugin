@@ -1,6 +1,6 @@
 # （beta）torch_npu.contrib.module.PSROIPool
-## 产品支持情况
 
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
@@ -8,14 +8,14 @@
 |<term>Atlas A2 训练系列产品</term>  | √    |
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
+
 ## 功能说明
 
 使用NPU API进行PSROIPool。
 
-
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.PSROIPool(nn.Module)
 ```
 
@@ -37,11 +37,9 @@ shape为(k, 5)和(k, 1)的张量。标签以0为基础。
 
 仅实现了pooled_height == pooled_width == group_size。
 
-
 ## 调用示例
 
 ```python
 >>> from torch_npu.contrib.module import PSROIPool
 >>> model = PSROIPool(pooled_height=7, pooled_width=7, spatial_scale=1 / 16.0, group_size=7, output_dim=22)
 ```
-

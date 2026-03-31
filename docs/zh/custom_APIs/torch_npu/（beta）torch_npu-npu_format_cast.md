@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_format_cast(input, acl_format) -> Tensor
 ```
 
@@ -46,6 +46,7 @@ torch_npu.npu_format_cast(input, acl_format) -> Tensor
     > 数据排布格式具体可参考《CANN Ascend C算子开发指南》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/850/opdevg/Ascendcopdevg/atlas_ascendc_10_0099.html">数据排布格式</a>”章节。
 
 ## 返回值说明
+
 `Tensor`
 
 返回修改后的新张量。

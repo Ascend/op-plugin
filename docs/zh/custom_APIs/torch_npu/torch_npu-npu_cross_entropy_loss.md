@@ -9,8 +9,8 @@
 
 ## 功能说明
 
--   API功能：计算输入`input`和标签`target`之间的交叉熵损失。此API将原生`CrossEntropyLoss`中的log_softmax和nll_loss融合，降低计算时使用的内存。
--   计算公式：
+- API功能：计算输入`input`和标签`target`之间的交叉熵损失。此API将原生`CrossEntropyLoss`中的log_softmax和nll_loss融合，降低计算时使用的内存。
+- 计算公式：
 
     公式中*x*是输入`input`，*y* 是标签`target`，*weight*是权重，*C* 是标签数，*N* 是批处理大小。
 
@@ -33,10 +33,9 @@
      logProb_{n,c} = x_{n,c} - lse_n
      $$
 
-
 ## 函数原型
 
-```
+```python
 torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", ignore_index=-100, label_smoothing=0.0, lse_square_scale_for_zloss=0.0, return_zloss=False) -> (Tensor, Tensor, Tensor, Tensor)
 ```
 
@@ -67,7 +66,8 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 - 输出中仅`loss`支持梯度计算。
 
 ## 调用示例
--   当reduction设置为`mean`时，示例如下：
+
+- 当reduction设置为`mean`时，示例如下：
 
     ```python
     import torch
@@ -86,8 +86,7 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
     loss.backward()
     ```
     
-
--   当reduction设置为`sum`时，示例如下：
+- 当reduction设置为`sum`时，示例如下：
 
     ```python
     import torch
@@ -105,4 +104,3 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 
     loss.backward()
     ```
-

@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.profiler.schedule (wait, active, warmup = 0, repeat = 0, skip_first = 0)
 ```
 

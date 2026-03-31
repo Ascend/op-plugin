@@ -9,20 +9,19 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 主要用于优化ScriptFunction或ScriptModule，以获取更好的性能。
+
 ## 函数原型
 
-```
+```python
 torch_npu.jit.optimize(jit_mod)
 ```
 
 ## 参数说明
 
 **jit_mod**：必选参数。用于被优化的ScriptFunction或ScriptModule。
-
 
 ## 调用示例
 

@@ -15,7 +15,7 @@ AOE调优使能。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.set_aoe(dump_path)
 ```
 

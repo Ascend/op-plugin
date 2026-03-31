@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.SiLU(nn.Module)
 ```
 

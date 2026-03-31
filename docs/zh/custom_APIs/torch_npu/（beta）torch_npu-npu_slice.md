@@ -1,4 +1,5 @@
 # （beta）torch_npu.npu_slice
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -7,13 +8,14 @@
 |<term>Atlas A2 训练系列产品</term>  | √    |
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
+
 ## 功能说明
 
 从张量中提取切片。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_slice(self, offsets, size) -> Tensor
 ```
 
@@ -25,7 +27,6 @@ torch_npu.npu_slice(self, offsets, size) -> Tensor
 - **self** (`Tensor`)：输入张量。
 - **offsets** (`List[int]`)：支持的数据类型为`int32`，`int64`。
 - **size** (`List[int]`)：支持的数据类型为`int32`，`int64`。
-
 
 ## 调用示例
 

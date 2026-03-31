@@ -42,7 +42,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 ```
 
@@ -53,6 +53,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 - **round_mode** (`int`)：可选参数。量化计算中数据类型的转换模式选择，默认值为0。0表示截断填充模式（取高19位），1表示R_INT模式（可提升计算精度）。
 
 ## 返回值说明
+
 `Tensor`
 
 代表`trans_quant_param`的计算结果，对应公式中的`out`。数据类型支持`int64`，数据格式支持$ND$。

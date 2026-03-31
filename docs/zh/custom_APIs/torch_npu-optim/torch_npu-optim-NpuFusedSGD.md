@@ -16,7 +16,7 @@ SGD的功能和原理可参考[SGD](https://pytorch.org/docs/stable/generated/to
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedSGD(params, lr, momentum=0, dampening=0, weight_decay=0, nesterov=False)
 ```
 
@@ -29,11 +29,9 @@ class torch_npu.optim.NpuFusedSGD(params, lr, momentum=0, dampening=0, weight_de
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`小于0时，系统会抛出“ValueError”异常信息。
 - **nesterov** (`bool`)：可选参数，是否使用Nesterov动量，默认值为False。`nesterov`为True，同时`momentum`小于0或者`dampening`不等于0，系统会抛出“TypeError”异常信息。
 
-
 ## 返回值说明
 
 类型为`NpuFusedSGD`的对象。
-
 
 ## 约束说明
 
@@ -44,7 +42,6 @@ class torch_npu.optim.NpuFusedSGD(params, lr, momentum=0, dampening=0, weight_de
 - 将模型参数对象置为None
 
 对模型参数对象进行inplace计算，或者读取参数的值，`NpuFusedSGD`可正常工作。
-
 
 ## 调用示例
 
@@ -77,4 +74,3 @@ fused_opt = NpuFusedSGD(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

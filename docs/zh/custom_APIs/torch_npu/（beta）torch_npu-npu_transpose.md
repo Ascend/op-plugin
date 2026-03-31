@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_transpose(self, perm, require_contiguous=True) -> Tensor
 ```
 
@@ -38,4 +38,3 @@ torch.Size([5, 2, 3])
 >>> x2.shape
 torch.Size([5, 2, 3])
 ```
-

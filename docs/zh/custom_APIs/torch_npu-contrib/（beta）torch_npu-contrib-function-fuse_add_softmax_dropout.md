@@ -16,6 +16,7 @@
 * 等价计算逻辑：
 
     可使用`npu_fuse_add_softmax_dropout`等价替换`torch_npu.contrib.function.fuse_add_softmax_dropout`，两者计算逻辑一致。
+
     ```python
     import torch
     import math
@@ -26,9 +27,10 @@
         attn_probs = dropout(attn_probs)
         return attn_probs
     ```
+
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask, attn_scores, attn_head_size, p=0.5, dim=-1) -> Tensor
 ```
 
@@ -43,6 +45,7 @@ torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask
 - **dim** (`int`)：可选参数，待计算softmax的维度，默认值为-1。
 
 ## 返回值说明
+
 `Tensor`
 
 返回计算结果。

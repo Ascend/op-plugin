@@ -8,7 +8,6 @@
 | <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term> |    √     |
 | <term>Atlas 推理系列产品 </term>                             |    √     |
 
-
 ## 功能说明
 
 - API功能：RMSNorm是大模型常用的标准化操作，相比LayerNorm其去掉了减去均值的部分。torch_npu.npu_add_rms_norm_quant算子将RMSNorm前的Add算子以及RMSNorm后的Quantize算子融合起来，减少搬入搬出操作。
@@ -44,6 +43,7 @@
       $$
 
 ## 函数原型
+
 ```python
 torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None, scales2=None, zero_points2=None, *, axis=-1, epsilon=1e-06, div_mode=True) -> (y1, y2, x)
 ```
@@ -69,6 +69,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
   - **x**（`Tensor`）：表示`x1`和`x2`的和，公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。数据类型和shape与输入`x1`一致。
 
 ## 约束说明
+
 - <term>Atlas 推理系列产品</term>：`x1`、`x2`的最后一维数据个数不能小于32。`gamma`、`beta`、`scales1`、`zero_points1`、`scales2`、`zero_points2`的数据个数不能小于32。
 
 - **边界值场景说明**

@@ -1,4 +1,5 @@
 # （beta）torch_npu.npu_random_choice_with_mask
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -14,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_random_choice_with_mask(x, count=256, seed=0, seed2=0) -> (Tensor, Tensor)
 ```
 

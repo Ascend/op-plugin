@@ -6,7 +6,7 @@ torch_npu\csrc\libs\init_npu.h
 
 ## 函数原型
 
-```
+```cpp
 void torch::npu::synchronize(int64_t device_index = -1)
 ```
 
@@ -24,4 +24,3 @@ device_index：int64_t类型，用来同步设备的index，默认-1，即同步
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

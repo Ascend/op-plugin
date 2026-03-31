@@ -1,4 +1,5 @@
 # torch_npu.npu.graph_task_update_end
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -8,14 +9,13 @@
 |<term>Atlas A2 训练系列产品</term>  | √   |
 |<term>Atlas A2 推理系列产品</term> |    √     |
 
-
 ## 功能说明
 
 NPUGraph场景下，用于标记待更新任务的结束。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.graph_task_update_end(stream) -> None
 ```
 
@@ -34,6 +34,7 @@ torch_npu.npu.graph_task_update_end(stream) -> None
 - 入参stream需要同[torch_npu.npu.graph_task_update_begin](torch_npu-npu-graph_task_update_begin.md)保持一致。
 
 ## 调用示例
+
 ```python
 import torch
 import torch_npu
@@ -100,4 +101,3 @@ with torch.no_grad():
 
 
 ```
-

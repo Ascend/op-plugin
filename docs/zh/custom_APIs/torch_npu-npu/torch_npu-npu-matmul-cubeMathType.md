@@ -9,7 +9,6 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 设置或查询matmul类算子的cube计算类型。
@@ -35,7 +34,6 @@ torch_npu.npu.matmul.cube_math_type = CubeMathType
 | CubeMathType.USE_FP16       | 2    | 使用FP16计算模式                   |
 | CubeMathType.USE_HF32       | 3    | 使用HF32计算模式                   |
 | CubeMathType.FORCE_GRP_ACC_FOR_FP32 | 4    | 强制使用FP32分组精度               |
-
 
 ## 返回值说明
 

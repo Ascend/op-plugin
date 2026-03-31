@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.npu_diou(boxes1, boxes2, trans=True, is_cross=False, mode=0)
 ```
 
@@ -52,4 +52,3 @@ torch_npu.contrib.function.npu_diou(boxes1, boxes2, trans=True, is_cross=False, 
 >>> l = diou.sum()
 >>> l.backward()
 ```
-

@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.npu_giou(boxes1, boxes2, is_permuted=True)
 ```
 
@@ -40,4 +40,3 @@ torch_npu.contrib.npu_giou(boxes1, boxes2, is_permuted=True)
 >>> l = iou.sum()
 >>> l.backward()
 ```
-

@@ -9,15 +9,12 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
-
 ## 功能说明
 
 结束dump。配置前需要确保环境变量`NPU_DUMP_ENABLE=1`已设置。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.finalize_dump()
 ```
-

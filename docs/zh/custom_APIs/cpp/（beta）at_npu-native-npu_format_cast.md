@@ -6,7 +6,7 @@ torch_npu\csrc\core\npu\NPUFormat.h
 
 ## 函数原型
 
-```
+```cpp
 at::Tensor at_npu::native::npu_format_cast(const at::Tensor& self, int64_t acl_format)
 ```
 
@@ -26,4 +26,3 @@ acl_format：int64_t型，待转换的格式。
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

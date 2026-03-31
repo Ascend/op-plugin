@@ -7,7 +7,6 @@
 |  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>   |     √    |
 |  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
 
-
 ## 功能说明
 
 - API功能：RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。DynamicQuant算子则是为输入张量进行对称动态量化的算子。AddRmsNormDynamicQuant算子将RmsNorm前的Add算子和RmsNorm归一化输出给到的1个或2个DynamicQuant算子融合起来，减少搬入搬出操作。
@@ -50,7 +49,6 @@
     \end{cases}
   $$
 
-
 $$
   scale2Out=\begin{cases}
     row\_max(abs(input2))/127 & outputMask[1]=True\ ||\ (!outputMask\ \&\ smoothScale1Optional\ \&\ smoothScale2Optional) \\
@@ -68,7 +66,8 @@ $$
   公式中的row\_max代表每行求最大值。
 
 ## 函数原型
-```
+
+```python
 torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, smooth_scale2=None, beta=None, epsilon=1e-6, output_mask=[], y_dtype=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
 ```
 

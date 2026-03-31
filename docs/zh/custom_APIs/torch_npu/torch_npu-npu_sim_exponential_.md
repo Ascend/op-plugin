@@ -1,6 +1,5 @@
 # torch_npu.npu_sim_exponential_
 
-
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -8,20 +7,17 @@
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>        |    √     |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>        |    √     |
 
-
 ## 功能说明
 
 - API功能：根据参数`lambd`生成指数分布随机数，并原地填充至输入张量`input`。
 - 计算公式：
     $$f(x) = -1/λ * ln(1-u), u ~ Uniform(0, 1]$$
 
-
 ## 函数原型
 
-```
+```python
 torch_npu.npu_sim_exponential_(input, lambd=1, *, generator=None) -> Tensor
 ```
-
 
 ## 参数说明
 
@@ -31,13 +27,11 @@ torch_npu.npu_sim_exponential_(input, lambd=1, *, generator=None) -> Tensor
 
 **generator**(`Generator`)：可选参数，用于生成seed和offset，供aclnnSimThreadExponential算子使用，默认为None。
 
-
 ## 返回值说明
 
 `Tensor`
 
 表示公式中的$f(x)$，即原地更新后的`input`张量。
-
 
 ## 调用示例
 

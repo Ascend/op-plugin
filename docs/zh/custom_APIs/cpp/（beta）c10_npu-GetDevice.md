@@ -6,7 +6,7 @@ torch_npu\csrc\core\npu\NPUFunctions.h
 
 ## 函数原型
 
-```
+```cpp
 aclError c10_npu::GetDevice(c10::DeviceIndex* device)
 ```
 
@@ -24,4 +24,3 @@ device：DeviceIndex类型，存储获取的设备id。
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

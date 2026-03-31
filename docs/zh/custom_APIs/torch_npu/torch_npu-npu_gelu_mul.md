@@ -39,10 +39,9 @@
                  
         其中$\text{out}$形状与原始输入`input`完全一致。
 
-
 ## 函数原型
 
-```
+```python
 torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 ```
 
@@ -54,6 +53,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
   - "tanh"：使用双曲正切（tanh）近似模式，计算效率高，适用于大规模训练或推理加速场景。
 
 ## 返回值说明
+
 `Tensor`
 
 输出张量，对应公式中的$out$，数据类型支持bfloat16、float16、float。shape维度2至8维。支持非连续的Tensor，数据格式支持$ND$，输出的数据类型与输入`input`保持一致，输出shape和输入shape其他维度一致，最后一维的值为输入shape最后一维值的二分之一。

@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_min(self, dim, keepdim=False) -> (Tensor, Tensor)
 ```
 
@@ -65,4 +65,3 @@ tensor([[[0, 1],
         [[1, 1],
         [0, 1]]], device='npu:0', dtype=torch.int32)
 ```
-

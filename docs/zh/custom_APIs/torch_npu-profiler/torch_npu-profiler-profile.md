@@ -8,14 +8,13 @@
 | <term>Atlas A2 训练系列产品</term> |    √     |
 | <term>Atlas 训练系列产品</term>    |    √     |
 
-
 ## 功能说明
 
 提供PyTorch训练过程中的性能数据采集功能。
 
 ## 函数原型
 
-```
+```python
 torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, record_shapes=False, profile_memory=False, with_stack=False, with_modules, with_flops=False, experimental_config=None)
 ```
 

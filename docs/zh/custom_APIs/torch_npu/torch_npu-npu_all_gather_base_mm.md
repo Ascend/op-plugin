@@ -1,7 +1,5 @@
 # torch\_npu.npu\_all\_gather\_base\_mm
 
-
-
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -11,9 +9,9 @@
 
 ## 功能说明<a name="zh-cn_topic_0000001694916914_section14441124184110"></a>
 
--   API功能：TP切分场景下，融合`allgather`和`matmul`，实现通信和计算流水并行。
+- API功能：TP切分场景下，融合`allgather`和`matmul`，实现通信和计算流水并行。
 
--   计算公式：
+- 计算公式：
     $x1$代表输入`x1`
     
     基础场景：
@@ -36,44 +34,46 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, bias=None, x1_scale=None, x2_scale=None, gather_index=0, gather_output=True, comm_turn=0, output_dtype=None, comm_mode=None) -> tuple[Tensor, Tensor]
 ```
 
 ## 参数说明
 
--   **x1** (`Tensor`)：必选参数，表示矩阵乘法中的左矩阵，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持ND，输入shape支持2维，形如\(m, k\)，轴满足matmul算子入参要求，第二轴与`x2`的第一轴相等，且k的取值范围为\[256, 65535\)。
--   **x2** (`Tensor`)：必选参数，表示矩阵乘法中的右矩阵，数据类型需要和`x1`保持一致，数据格式支持$ND$、$NZ$。$NZ$仅在`comm_mode`为`aiv`时支持。输入shape支持2维，形如\(k, n\)，轴满足matmul算子入参要求，第一轴与`x1`的第二轴相等，且k的取值范围为\[256, 65535\)。
--   **hcom** (`string`)：必选参数，通信域handle名，通过get\_hccl\_comm\_name接口获取。
--   **world\_size** (`int`)：必选参数，通信域内的rank总数。
-    -   <term>Atlas A2 训练系列产品</term>：支持2、4、8卡，支持hccs链路all mesh组网（每张卡和其它卡两两相连）。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持2、4、8、16、32卡，支持hccs链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
--   **bias** (`Tensor`)：可选参数，数据类型支持float16、bfloat16，数据格式支持ND格式。数据类型需要和`x1`保持一致。bias仅支持一维，且维度大小与`output`的第1维大小相同。**当前版本暂不支持bias输入为非0的场景。**
+- **x1** (`Tensor`)：必选参数，表示矩阵乘法中的左矩阵，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持ND，输入shape支持2维，形如\(m, k\)，轴满足matmul算子入参要求，第二轴与`x2`的第一轴相等，且k的取值范围为\[256, 65535\)。
+- **x2** (`Tensor`)：必选参数，表示矩阵乘法中的右矩阵，数据类型需要和`x1`保持一致，数据格式支持$ND$、$NZ$。$NZ$仅在`comm_mode`为`aiv`时支持。输入shape支持2维，形如\(k, n\)，轴满足matmul算子入参要求，第一轴与`x1`的第二轴相等，且k的取值范围为\[256, 65535\)。
+- **hcom** (`string`)：必选参数，通信域handle名，通过get\_hccl\_comm\_name接口获取。
+- **world\_size** (`int`)：必选参数，通信域内的rank总数。
+    - <term>Atlas A2 训练系列产品</term>：支持2、4、8卡，支持hccs链路all mesh组网（每张卡和其它卡两两相连）。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持2、4、8、16、32卡，支持hccs链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
+- **bias** (`Tensor`)：可选参数，数据类型支持float16、bfloat16，数据格式支持ND格式。数据类型需要和`x1`保持一致。bias仅支持一维，且维度大小与`output`的第1维大小相同。**当前版本暂不支持bias输入为非0的场景。**
 - **x1\_scale** (`Tensor`)：可选参数，mm左矩阵反量化参数。数据类型支持`float32`，数据格式支持$ND$格式。数据维度为\(m, 1\)，支持pertoken量化。
 - **x2\_scale** (`Tensor`)：可选参数，mm右矩阵反量化参数。数据类型支持`float32`、`int64`，数据格式支持$ND$格式。数据维度为\(1, n\)，支持perchannel量化。如需传入`int64`数据类型的，需要提前调用torch_npu.npu_trans_quant_param来获取`int64`数据类型的`x2_scale`。
--  **gather\_index** (`int`)：可选参数，表示gather操作对象，0表示对`x1`做gather，1表示对`x2`做gather。默认值0。**当前版本仅支持输入0。**
--   **gather\_output** (`bool`)：可选参数，表示是否需要gather输出。默认值True。
--   **comm\_turn** (`int`)：可选参数，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
+- **gather\_index** (`int`)：可选参数，表示gather操作对象，0表示对`x1`做gather，1表示对`x2`做gather。默认值0。**当前版本仅支持输入0。**
+- **gather\_output** (`bool`)：可选参数，表示是否需要gather输出。默认值True。
+- **comm\_turn** (`int`)：可选参数，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
 - **output_dtype** (`ScalarType`)：可选参数，表示第一个输出的数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`float32`时，可指定输出数据类型为`bfloat16`或`float16`，默认值为`bfloat16`。
 - **comm\_mode** (`string`)：可选参数，表示通信模式，支持`ai_cpu`、`aiv`两种模式。`ai_cpu`模式仅支持基础场景。`aiv`模式支持基础场景和量化场景。默认值为`ai_cpu`。
 
 ## 返回值说明<a name="zh-cn_topic_0000001694916914_section15236153161410"></a>
--   **output** (`Tensor`)：第一个输出Tensor，allgather+matmul的结果。
+
+- **output** (`Tensor`)：第一个输出Tensor，allgather+matmul的结果。
 基础场景时数据类型和`x1`保持一致。
 量化场景下，`x2_scale`为`int64`数据类型时，输出数据类型为`float16`。`x1_scale`和`x2_scale`均为`float32`时，输出数据类型由`output_dtype`指定，默认为`bfloat16`。
--   **gather_out** (`Tensor`)：第二个输出Tensor，allgather的结果，由`gather_output`参数控制是否输出，`gather_output`为False时，返回空Tensor。
+- **gather_out** (`Tensor`)：第二个输出Tensor，allgather的结果，由`gather_output`参数控制是否输出，`gather_output`为False时，返回空Tensor。
 
 ## 约束说明
--   `x1`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`x1`的最后一维相同，满足matmul的计算条件。
--   `comm_mode`为`ai_cpu`时：
-     -   该接口支持训练场景下使用。
-     -   该接口支持图模式。  
-     -   <term>Atlas A2 训练系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
--   `comm_mode`为`aiv`时，训练和推理场景均可使用。
+
+- `x1`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`x1`的最后一维相同，满足matmul的计算条件。
+- `comm_mode`为`ai_cpu`时：
+     - 该接口支持训练场景下使用。
+     - 该接口支持图模式。  
+     - <term>Atlas A2 训练系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
+- `comm_mode`为`aiv`时，训练和推理场景均可使用。
 
 ## 调用示例<a name="zh-cn_topic_0000001694916914_section14459801435"></a>
 
--   单算子模式调用
+- 单算子模式调用
 
     ```python
     import torch
@@ -109,7 +109,7 @@ torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, bias=None, x1_scale=N
         mp.spawn(run_all_gather_base_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
     ```
 
--   图模式调用
+- 图模式调用
 
     ```python
     import torch
@@ -165,4 +165,3 @@ torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, bias=None, x1_scale=N
         dtype = torch.float16
         mp.spawn(run_all_gather_base_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
     ```
-

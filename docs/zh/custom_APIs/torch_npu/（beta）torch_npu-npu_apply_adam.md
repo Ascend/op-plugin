@@ -1,4 +1,5 @@
 # （beta）torch_npu.npu_apply_adam
+>
 > [!NOTICE]  
 > 该接口计划废弃，可以使用`torch.optim.Adam`接口进行替换。
 
@@ -17,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_apply_adam(beta1_power, beta2_power, lr, beta1, beta2, epsilon, grad, use_locking, use_nesterov, out = (var, m, v))
 ```
 

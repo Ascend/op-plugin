@@ -14,6 +14,7 @@
 输入输出支持以下场景：
 
 - 场景一：
+
     ```python
     key:[batch, num_head, k_head_size]
     value:[batch, num_head, v_head_size]
@@ -23,6 +24,7 @@
     ```    
 
 - 场景二：
+
     ```python    
     key:[batch, seq_len, num_head, k_head_size]
     value:[batch, seq_len, num_head, v_head_size]
@@ -38,7 +40,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mapping, *, compress_lens=None, compress_seq_offsets=None, seq_lens=None) -> ()
 ```
 

@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.copy_memory_(self, src, non_blocking=False) -> Tensor
 ```
 
@@ -40,4 +40,3 @@ copy_memory_仅支持NPU张量。copy_memory_的输入张量应具有相同的dt
 >>> torch_npu.copy_memory_(a, b)
 tensor([1, 1, 1], device='npu:0', dtype=torch.int32)
 ```
-

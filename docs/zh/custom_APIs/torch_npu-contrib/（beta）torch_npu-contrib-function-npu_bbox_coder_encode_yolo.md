@@ -1,6 +1,6 @@
 # （beta）torch_npu.contrib.function.npu_bbox_coder_encode_yolo
-## 产品支持情况
 
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
@@ -8,13 +8,14 @@
 |<term>Atlas A2 训练系列产品</term>  | √    |
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
+
 ## 功能说明
 
 通过 NPU OP来计算从源框（bbox）到目标框（gt_bbox）的 YOLO 风格框回归转换 deltas。
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 ```
 
@@ -25,6 +26,7 @@ torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 - **stride** (`Tensor`)：bbox步长。仅支持`int`张量。
 
 ## 返回值说明
+
 `Tensor`
 
 框转换deltas。
@@ -43,4 +45,3 @@ torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 >>> print('npu_bbox_coder_encode_yolo done. output shape is ', out.shape)
 npu_bbox_coder_encode_yolo done. output shape is torch.Size([1024, 4])
 ```
-

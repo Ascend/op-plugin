@@ -1,4 +1,5 @@
 # （beta）torch_npu.distributed.reduce_scatter_tensor_uneven
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -12,10 +13,9 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_sizes =None, op=dist.ReduceOp.SUM, group=None, async_op=False) -> torch.distributed.distributed_c10d.Work
 ```
-
 
 ## 参数说明
 
@@ -28,19 +28,16 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_si
 - **group** (`torch.distributed.distributed_c10d.ProcessGroup`)：可选参数，分布式进程组，默认值None。
 - **async_op** (`bool`)：可选参数，是否异步调用，默认值False。
 
-
 ## 返回值说明
 
 该函数直接返回进行计算时的工作句柄，实际计算结果传给output。
 `output`：类型为Tensor，其shape无特殊约束。
-
 
 ## 约束说明
 
 - 此接口仅可在单机场景下使用。
 
 - `input_split_sizes`元素之和等于`input`的0维；`input_split_sizes`元素个数等于`group`的size。
-
 
 ## 调用示例
 
@@ -67,7 +64,6 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(
 
 执行如下命令。
 
-```
+```bash
 torchrun --nproc-per-node=2 test.py
 ```
-

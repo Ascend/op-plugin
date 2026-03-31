@@ -6,7 +6,7 @@ third_party\op-plugin\op_plugin\include\ops.h
 
 ## 函数原型
 
-```
+```cpp
 at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, double p, int64_t seed, int64_t offset, c10::optional<bool> parallel, c10::optional<bool> sync)
 ```
 
@@ -30,4 +30,3 @@ at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, do
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

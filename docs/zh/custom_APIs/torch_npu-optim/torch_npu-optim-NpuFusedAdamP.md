@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedAdamP(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0, delta=0.1, wd_ratio=0.1, nesterov=False)
 ```
 
@@ -28,7 +28,6 @@ class torch_npu.optim.NpuFusedAdamP(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-
 - **delta** (`float`)：余弦相似度阈值，默认值为0.1。
 - **wd_ratio** (`float`)：权重衰减动态调整速率，默认值为0.1。
 - **nesterov** (`bool`)：使用Nesterov动量，默认值为False。
-
 
 ## 返回值说明
 
@@ -75,4 +74,3 @@ fused_opt = NpuFusedAdamP(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

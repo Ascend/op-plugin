@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.FusedColorJitter(torch.nn.Module)
 ```
 
@@ -40,4 +40,3 @@ torch_npu.contrib.module.FusedColorJitter(torch.nn.Module)
 >>> fcj = FusedColorJitter(0.1, 0.1, 0.1, 0.1).npu()
 >>> img = fcj(image)
 ```
-

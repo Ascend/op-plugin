@@ -7,7 +7,7 @@
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
 
-## 功能说明: 
+## 功能说明 
 
 - API功能：从输入Tensor的指定维度，按照`index`中的下标序号提取元素，保存到输出Tensor中。
 
@@ -40,12 +40,9 @@
   \end{bmatrix}
   $$
 
-
-
 ## 函数原型
 
-
-```
+```python
 torch_npu.npu_gather_sparse_index(input, index) -> Tensor
 ```
 
@@ -61,12 +58,12 @@ torch_npu.npu_gather_sparse_index(input, index) -> Tensor
 接口计算获得的结果，包含按照`index`中的下标序号提取的元素。数据类型与`input`一致，输出维度为$index.dim + input.dim - 1$。例如`input.shape = [16, 32]`, `index.shape = [2, 3]`，则输出张量 `out.shape = [2, 3, 32]`。
 
 ## 约束说明
+
 - `input`的维度与`index`的维度之和减1不能超过8，即$index.dim + input.dim - 1<=8$。
 - 为获取性能收益，`input`和`index`需要满足如下约束：
      1. `input`的shape内积需要大于$150 * 1024 / itemsize$，其中itemsize为`input` dtype对应元素大小，可以通过`torch.dtype.itemsize`查询。
      2. `index`的shape内积大于960。
      3. 数据需要聚合，即非0值分布集中，0值分布集中。
-
 
 ## 调用示例
 

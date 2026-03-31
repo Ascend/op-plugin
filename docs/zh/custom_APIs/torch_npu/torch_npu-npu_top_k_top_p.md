@@ -1,4 +1,5 @@
 # torch\_npu.npu\_top\_k\_top\_p
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -7,7 +8,6 @@
 |<term>Atlas A3 推理系列产品</term>                              | √  |
 |<term>Atlas A2 训练系列产品</term>                              | √   |
 |<term>Atlas A2 推理系列产品</term>        |    √     |
-
 
 ## 功能说明
 
@@ -49,7 +49,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 ```
 
@@ -60,6 +60,7 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 - **k** (`Tensor`)：必选参数，表示`top-k`的阈值张量，值域为`[1, 1024]`，且最大值需要小于等于logits.size(1)，数据类型支持`int32`，shape支持1维且需要与`logits`的第一维相同，数据格式支持$ND$，支持非连续的Tensor。
 
 ## 返回值说明
+
 `Tensor`
 
 表示过滤后的数据。数据类型支持`float32`、`float16`和`bfloat16`，数据类型与`logits`一致，shape支持2维且需要与`logits`一致，支持非连续Tensor，数据格式支持$ND$。
@@ -67,7 +68,6 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 ## 约束说明
 
 在输入`logits`第二维大于1024场景下平均性能优于小算子实现，建议在`logits`第二维大于1024场景下使用该接口。
-
 
 ## 调用示例
 

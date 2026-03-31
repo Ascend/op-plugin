@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.DCNv2(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, deformable_groups=1, bias=True, pack=True)
 ```
 
@@ -50,4 +50,3 @@ ModulationDeformConv仅实现fp32数据类型下的操作。注意，conv_offset
 >>> output = model(x)
 >>> output.sum().backward()
 ```
-

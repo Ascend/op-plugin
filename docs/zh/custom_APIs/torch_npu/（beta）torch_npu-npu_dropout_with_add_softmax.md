@@ -21,7 +21,7 @@ output = 根据mask舍弃x中的元素，留下来的元素乘(1/prob)
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_dropout_with_add_softmax(self, x1, alpha, prob, dim) -> (Tensor, Tensor, Tensor)
 ```
 
@@ -274,4 +274,3 @@ tensor([[[[0.0000, 0.0639, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
           [0.0000, 0.0000, 0.1976,  ..., 0.0000, 0.0000, 0.0000]]]],
        device='npu:0')
 ```
-

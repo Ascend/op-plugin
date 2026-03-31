@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_bboxes, stride, num_base_anchors)
 ```
 
@@ -31,7 +31,6 @@ torch_npu.contrib.function.npu_single_level_responsible_flags(featmap_size, gt_b
 `Tensor` 
 
 代表单层特征图中每个锚点的有效标志。输出大小为[featmap_size[0] \* featmap_size[1] \* num_base_anchors]。
-
 
 ## 调用示例
 
@@ -52,4 +51,3 @@ torch.Size([1200]) tensor(1, device='npu:0', dtype=torch.uint8) tensor(0, device
 torch.Size([4800]) tensor(1, device='npu:0', dtype=torch.uint8) tensor(0, device='npu:0', dtype=torch.uint8)
 
 ```
-

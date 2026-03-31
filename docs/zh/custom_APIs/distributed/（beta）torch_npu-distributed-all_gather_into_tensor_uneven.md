@@ -1,4 +1,5 @@
 # （beta）torch_npu.distributed.all_gather_into_tensor_uneven
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -12,10 +13,9 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.distributed.all_gather_into_tensor_uneven(output, input, output_split_sizes =None, group=None, async_op=False) -> torch.distributed.distributed_c10d.Work
 ```
-
 
 ## 参数说明
 
@@ -31,13 +31,11 @@ torch_npu.distributed.all_gather_into_tensor_uneven(output, input, output_split_
 
 `output`的shape为所有卡上`input`的shape拼接大小。
 
-
 ## 约束说明
 
 - 此接口仅可在单机场景下使用。
 
 - `output_split_sizes`元素之和等于`output`的0维；`output_split_sizes`元素个数等于`group`的size。
-
 
 ## 调用示例
 
@@ -67,7 +65,6 @@ torch_npu.distributed.all_gather_into_tensor_uneven(
 
 执行如下命令。
 
-```
+```bash
 torchrun --nproc-per-node=2 test.py
 ```
-

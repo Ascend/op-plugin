@@ -21,7 +21,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=None) -> Tensor
 ```
 
@@ -52,6 +52,7 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`quint4x2`或`int8`。
 
 ## 返回值说明
+
 `Tensor`
 
 代表`npu_anti_quant`的计算结果，对应公式中的*out*。支持非连续的Tensor，支持空Tensor。

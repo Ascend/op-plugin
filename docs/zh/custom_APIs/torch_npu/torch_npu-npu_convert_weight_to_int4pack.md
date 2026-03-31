@@ -13,7 +13,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
 ```
 
@@ -23,6 +23,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
 - **inner_k_tiles** (`int`)：用于指定内部打包格式中，多少个K-tiles被打包在一起，默认值为`0`。**预留参数，暂未使用**。
 
 ## 返回值说明
+
 `Tensor`
 
 代表`int4`打包后的输出，数据类型为`int32`，shape为$（k, n/8）$, $(n, k/8)$，数据格式支持$ND$。
@@ -31,7 +32,6 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-
 
 ## 调用示例
 
@@ -144,4 +144,3 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
             [ 34.9375, -15.1797, -23.1094,  ..., -13.6797,   8.7734,   6.8750]],
         device='npu:0', dtype=torch.float16)
     ```
-

@@ -9,7 +9,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.stop_device(device_id: int) -> int 
 ```
 
@@ -18,6 +18,7 @@ torch_npu.npu.stop_device(device_id: int) -> int
 **device_id**（`int`）：需要处理的device id，确保是一个有效的device。
 
 ## 返回值说明
+
 `int`
 
 返回值为`int`，代表执行结果，0表示执行成功，1表示执行失败。
@@ -30,4 +31,3 @@ torch_npu.npu.stop_device(device_id: int) -> int
 >>> torch.npu.set_device(0) 
 >>> torch_npu.npu.stop_device(0)
  ```
-

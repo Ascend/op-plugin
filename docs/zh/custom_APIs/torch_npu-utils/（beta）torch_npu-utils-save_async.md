@@ -1,4 +1,5 @@
 # （beta）torch\_npu.utils.save\_async
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -8,14 +9,13 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 异步保存一个对象到一个硬盘文件上。
 
 ## 函数原型
 
-```
+```python
 torch_npu.utils.save_async(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL, _use_new_zipfile_serialization=True, _disable_byteorder_record=False, model=None)
 ```
 
@@ -62,4 +62,3 @@ for epoch in range(3):
         save_path = os.path.join(f"model_{epoch}_{step}.path")
         torch_npu.utils.save_async(model, save_path, model=model)
 ```
-

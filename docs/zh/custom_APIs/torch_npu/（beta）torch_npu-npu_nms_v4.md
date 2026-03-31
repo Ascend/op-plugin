@@ -1,4 +1,5 @@
 # （beta）torch_npu.npu_nms_v4
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -14,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_threshold, pad_to_max_output_size=False) -> (Tensor, Tensor)
 ```
 
@@ -31,8 +32,6 @@ torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_thres
 
 - **selected_indices** (`Tensor`)：shape为[M]的1D整数张量，表示从boxes张量中选定的index，其中M <= max_output_size。
 - **valid_outputs**(`Tensor`)：0D整数张量，表示selected_indices中有效元素的数量，有效元素首先出现。
-
-
 
 ## 调用示例
 

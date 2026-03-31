@@ -16,10 +16,9 @@ Adadelta的功能和原理可参考[Adadelta](https://pytorch.org/docs/stable/ge
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedAdadelta(params, lr=1.0, rho=0.9, eps=1e-6, weight_decay=0)
 ```
-
 
 ## 参数说明
 
@@ -29,11 +28,9 @@ class torch_npu.optim.NpuFusedAdadelta(params, lr=1.0, rho=0.9, eps=1e-6, weight
 - **eps** (`float`)：可选参数，分母防止除0项，提高数值稳定性，默认值为1e-6。`eps`小于0时，系统会抛出“ValueError”异常信息。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`小于0时，系统会抛出“ValueError”异常信息。
 
-
 ## 返回值说明
 
 类型为`NpuFusedAdadelta`的对象。
-
 
 ## 约束说明
 
@@ -44,7 +41,6 @@ class torch_npu.optim.NpuFusedAdadelta(params, lr=1.0, rho=0.9, eps=1e-6, weight
 - 将模型参数对象置为None
 
 对模型参数对象进行inplace计算，或者读取参数的值，`NpuFusedAdadelta`可正常工作。
-
 
 ## 调用示例
 
@@ -77,4 +73,3 @@ fused_opt = NpuFusedAdadelta(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

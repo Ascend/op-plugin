@@ -19,9 +19,10 @@ $$
 $$
 \text{attention\_out} = \text{einsum}(\text{weights}, \text{value}_1) + \text{einsum}(\text{weights}, \text{value}_2)
 $$
+
 ## 函数原型
 
-```
+```python
 torch_npu.npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk, *, atten_mask=None, scale_value=1.) -> (Tensor, Tensor, Tensor)
 ```
 
@@ -36,6 +37,7 @@ torch_npu.npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk
 - **scale_value** (`float`)：可选参数，代表缩放系数，对应公式中的$scale\_value$，数据类型支持`float`。默认值为1。
 
 ## 返回值说明
+
 - **softmax_max_out** (`Tensor`)：输出张量，Softmax计算的Max中间结果，用于反向计算。数据类型支持`float`，输出的shape类型为[BHNM8]。数据格式支持$ND$。
 - **softmax_sum_out** (`Tensor`)：输出张量，Softmax计算的Sum中间结果，用于反向计算。数据类型支持`float`，输出的shape类型为[BHNM8]。数据格式支持$ND$。
 - **attention_out** (`Tensor`)：输出张量，计算公式的最终输出，对应公式中的$attention\_out$。数据类型支持`bfloat16`、`float16`。数据类型和shape类型与`query_ik`保持一致，数据格式支持$ND$，输入shape支持[BHNMD]。
@@ -64,6 +66,7 @@ torch_npu.npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk
 - 支持PyTorch2.6.0及以上版本。
 
 ## 调用示例
+
 ```python
 import torch
 import torch_npu

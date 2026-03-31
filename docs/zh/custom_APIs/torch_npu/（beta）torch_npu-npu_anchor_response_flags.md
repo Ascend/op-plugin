@@ -16,6 +16,7 @@
 * 等价计算逻辑：
 
     可使用`anchor_response_flags_golden`等价替换`torch_npu.npu_anchor_response_flags`，两者计算逻辑一致。
+
     ```python
     import torch
     
@@ -44,7 +45,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors) -> Tensor
 ```
 
@@ -56,6 +57,7 @@ torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors
 - **num_base_anchors** (`int`)：base anchors的数量。
 
 ## 返回值说明
+
 `Tensor`
 
 返回响应标志结果。
@@ -69,4 +71,3 @@ torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors
 >>> y.shape
 torch.Size([32400])
 ```
-

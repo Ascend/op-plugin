@@ -1,4 +1,5 @@
 # torch.npu.set_device_limit
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -6,15 +7,13 @@
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
 
-
 ## 功能说明
 
 设置一个进程上指定device，执行算子时所使用的cube和vector核数。
 
-
 ## 函数原型
 
-```
+```python
 torch.npu.set_device_limit(device, cube_num=-1, vector_num=-1) -> None
 ```
 
@@ -25,6 +24,7 @@ torch.npu.set_device_limit(device, cube_num=-1, vector_num=-1) -> None
 - **vector_num** (`int`)：可选参数，设置的vector的核数，默认为-1不设置分核。
 
 ## 返回值说明
+
 `None`
 
 代表无返回值。

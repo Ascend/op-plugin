@@ -1,11 +1,11 @@
 # torch.npu.get_device_limit
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
-
 
 ## 功能说明
 
@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch.npu.get_device_limit(device) ->Dict
 ```
 
@@ -23,6 +23,7 @@ torch.npu.get_device_limit(device) ->Dict
 **device** (`Device`)：必选参数，设置控核的卡号。
 
 ## 返回值说明
+
 `Dict`
 
 代表`Device`的Cube和Vector核数。

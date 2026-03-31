@@ -113,7 +113,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, group_list, *, smooth_scale=None, weight_assist_matrix=None, bias=None, dequant_mode=0, dequant_dtype=0, quant_mode=0, quant_dtype=0, group_list_type=0, tuning_config=None) -> (Tensor, Tensor)
 ```
 
@@ -145,11 +145,11 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 ## 约束说明
 
--   该接口支持推理和训练场景下使用。
--   该接口支持图模式。
--   确定性计算：该接口默认为确定性实现，即对于相同的输入，多次执行会产生相同的结果，确保计算结果的可重复性。
--   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
-    -   支持A8W8、A8W4、A4W4量化场景，输入和输出Tensor支持的数据类型组合如下：
+- 该接口支持推理和训练场景下使用。
+- 该接口支持图模式。
+- 确定性计算：该接口默认为确定性实现，即对于相同的输入，多次执行会产生相同的结果，确保计算结果的可重复性。
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+    - 支持A8W8、A8W4、A4W4量化场景，输入和输出Tensor支持的数据类型组合如下：
 
         |量化场景|x|weight|weight\_scale|x\_scale|smooth\_scale|output|output\_scale|
         |--------|--------|--------|--------|--------|--------|--------|--------|
@@ -157,7 +157,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         |A8W4|`int8`|`int4`、`int32`|`uint64`|`float32`|-|`int8`|`float32`|
         |A4W4|`int4`、`int32`|`int4`、`int32`|`float32`|`float32`|`float32`|`int8`|`float32`|
 
-    -   shape约束如下：
+    - shape约束如下：
 
         |量化场景|x|weight|weight\_scale|x\_scale|smooth\_scale|output|output\_scale|
         |--------|--------|--------|--------|--------|--------|--------|--------|
@@ -165,13 +165,13 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         |A8W4|(M, K)|$ND$格式{(E, K, N)}或NZ格式|per-channel:{(E, N)}; per-group:{(E, K\_group\_num, N)}|(M,)|-|(M, N/2)|(M,)|
         |A4W4|(M, K)|$ND$格式{(E, K, N)}或NZ格式|{(E, N)}|(M,)|(E, N/2)或(E,)|(M, N/2)|(M,)|
 
-    -   A8W8场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于65536。
-    -   A8W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
-    -   A4W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
+    - A8W8场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于65536。
+    - A8W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
+    - A4W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
 
 ## 调用示例
 
--   单算子模式调用
+- 单算子模式调用
 
     ```python
     import numpy as np
@@ -197,7 +197,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), [weight_npu], [weightScale.npu()], xScale.npu(), groupList.npu())
     ```
 
--   图模式调用：
+- 图模式调用：
 
     ```python
     import numpy as np

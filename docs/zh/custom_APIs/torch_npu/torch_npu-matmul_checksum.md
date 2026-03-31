@@ -1,4 +1,5 @@
 # torch_npu.matmul_checksum
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -12,7 +13,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.matmul_checksum(a, b, c) -> Tensor
 ```
 
@@ -23,6 +24,7 @@ torch_npu.matmul_checksum(a, b, c) -> Tensor
 - **c** (`Tensor`)：必选输入，原生matmul计算的输出out。
 
 ## 返回值说明
+
 `Tensor`
 
 返回NPU上的bool标量。结果为True时，标识存在aicore错误的硬件故障。
@@ -32,7 +34,6 @@ torch_npu.matmul_checksum(a, b, c) -> Tensor
 该接口仅支持bf16格式，且device为NPU的场景。
 
 ## 调用示例
-
 
    ```python
     >>> import torch

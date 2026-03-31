@@ -29,7 +29,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type=None) ->(Tensor, Tensor)
 ```
 
@@ -155,4 +155,3 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
     tensor([[0.0080, 0.0422, 0.0219, 0.0132],
             [0.0176, 0.0069, 0.0093, 0.0368]], device='npu:0')
     ```
-

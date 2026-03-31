@@ -1,6 +1,6 @@
 # （beta）torch_npu.contrib.function.npu_batched_multiclass_nms
-## 产品支持情况
 
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
@@ -15,11 +15,9 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.npu_batched_multiclass_nms(multi_bboxes, multi_scores, score_thr=0.05, nms_thr=0.45, max_num=50, score_factors=None)
 ```
-
-
 
 ## 参数说明
 
@@ -40,7 +38,6 @@ torch_npu.contrib.function.npu_batched_multiclass_nms(multi_bboxes, multi_scores
 
 在动态shape条件下，最多支持20个类别（nmsed_classes）和10000个框（nmsed_boxes）。
 
-
 ## 调用示例
 
 ```python
@@ -54,4 +51,3 @@ torch.Size([4, 3, 5])
 >>> det_labels.shape
 torch.Size([4, 3])
 ```
-

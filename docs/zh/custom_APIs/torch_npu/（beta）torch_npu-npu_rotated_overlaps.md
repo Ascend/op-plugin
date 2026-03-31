@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_rotated_overlaps(self, query_boxes, trans=False) -> Tensor
 ```
 
@@ -41,4 +41,3 @@ tensor([[[0.0000, 0.1562, 0.0000],
         [0.1562, 0.3713, 0.0611],
         [0.0000, 0.0611, 0.0000]]], device='npu:0', dtype=torch.float32)
 ```
-

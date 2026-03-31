@@ -13,7 +13,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.Event().recorded_time() -> int
 ```
 
@@ -23,10 +23,10 @@ torch_npu.npu.Event().recorded_time() -> int
 
 ## 返回值说明
 
+- **int**：输出被记录的时间，是一个无符号的整数（uint64），单位为微秒。
 
--  **int**：输出被记录的时间，是一个无符号的整数（uint64），单位为微秒。
+- 若返回“INTERNALError”，则表示Event对象必须在获取记录时间戳之前被记录。
 
--  若返回“INTERNALError”，则表示Event对象必须在获取记录时间戳之前被记录。
 ## 约束说明
 
 Event对象在创建的时候，需要传入参数enable_timing=True。
@@ -41,4 +41,3 @@ event = torch_npu.npu.Event(enable_timing=True)
 event.record()
 res = event.recorded_time()
 ```
-

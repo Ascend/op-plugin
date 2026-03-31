@@ -17,12 +17,11 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.mstx.mark(message: str='None', stream=None, domain: str='default') -> none:
 ```
 
 ## 参数说明
-
 
 - **message** (`str`)：可选参数，打点携带信息字符串指针，默认为None。传入的message字符串长度要求：
   - MSPTI场景：不能超过255字节。
@@ -39,7 +38,6 @@ torch_npu.npu.mstx.mark(message: str='None', stream=None, domain: str='default')
 ## 调用示例
 
 以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
-
 
 ```python
 import torch

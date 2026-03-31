@@ -17,7 +17,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse_shift=None, atten_mask=None, actual_seq_lengths=None, dequant_scale1=None, quant_scale1=None, dequant_scale2=None, quant_scale2=None, quant_offset2=None, antiquant_scale=None, antiquant_offset=None, block_table=None, kv_padding_size=None, num_heads=1, scale_value=1.0, input_layout="BSH", num_key_value_heads=0, block_size=0, inner_precise=1) -> Tensor
 ```
 
@@ -72,9 +72,11 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 - **inner_precise** (`int`)：可选参数。代表高精度/高性能选择，`0`代表高精度，`1`代表高性能，默认值为`1`（高性能），数据类型支持`int64`。
 
 ## 返回值说明
+
 `Tensor`
 
 计算的最终结果，对应公式中的$atten\_out$，`shape`与`query`保持一致。
+
 - 非量化场景下，输出数据类型与`query`的数据类型保持一致。
 - 量化场景下，若传入`quant_scale2`，则输出数据类型为`int8`。
 
@@ -197,4 +199,3 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
             [[-0.9595, -0.9609, -0.6602,  ...,  0.7959,  1.7920,  0.0783]]],
            device='npu:0', dtype=torch.float16) torch.Size([2, 1, 5120])
     ```
-

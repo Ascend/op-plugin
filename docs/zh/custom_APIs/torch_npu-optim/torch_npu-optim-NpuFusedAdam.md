@@ -16,7 +16,7 @@ Adam的功能和原理可参考[Adam](https://pytorch.org/docs/stable/generated/
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedAdam(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0, amsgrad=False)
 ```
 
@@ -29,11 +29,9 @@ class torch_npu.optim.NpuFusedAdam(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`小于0时，打印“ValueError”异常信息。
 - **amsgrad** (`bool`)：可选参数，是否使用AMSGrad，默认值为False。
 
-
 ## 返回值说明
 
 类型为`NpuFusedAdam`的对象。
-
 
 ## 约束说明
 
@@ -76,4 +74,3 @@ fused_opt = NpuFusedAdam(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

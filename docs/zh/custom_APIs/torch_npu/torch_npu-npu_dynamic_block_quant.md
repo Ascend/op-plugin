@@ -11,7 +11,7 @@
 
 ## 功能说明
 
--   API功能：对输入张量，通过给定的`row_block_size`和`col_block_size`将输入划分成多个数据块，以数据块为基本粒度进行量化。在每个块中，先计算出当前块对应的量化参数`scale`，并根据`scale`对输入进行量化。输出最终的量化结果，以及每个块的量化参数`scale`。
+- API功能：对输入张量，通过给定的`row_block_size`和`col_block_size`将输入划分成多个数据块，以数据块为基本粒度进行量化。在每个块中，先计算出当前块对应的量化参数`scale`，并根据`scale`对输入进行量化。输出最终的量化结果，以及每个块的量化参数`scale`。
 
 - 计算公式：
   $$
@@ -30,7 +30,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_type=1, row_block_size=1, col_block_size=128) -> (Tensor, Tensor)
 ```
 

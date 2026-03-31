@@ -14,10 +14,9 @@
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedLamb(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-6, weight_decay=0, adam=False, use_global_grad_norm=False)
 ```
-
 
 ## 参数说明
 
@@ -29,11 +28,9 @@ class torch_npu.optim.NpuFusedLamb(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-6
 - **adam** (`bool`)：可选参数，是否通过将trust ratio设置为1，退化为Adam，默认值为False。
 - **use_global_grad_norm** (`bool`)：可选参数，是否使用全局梯度正则，默认值为False。
 
-
 ## 返回值说明
 
 类型为`NpuFusedLamb`的对象。
-
 
 ## 约束说明
 
@@ -44,7 +41,6 @@ class torch_npu.optim.NpuFusedLamb(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-6
 - 将模型参数对象置为None
 
 对模型参数对象进行inplace计算，或者读取参数的值，`NpuFusedLamb`可正常工作。
-
 
 ## 调用示例
 
@@ -77,4 +73,3 @@ fused_opt = NpuFusedLamb(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

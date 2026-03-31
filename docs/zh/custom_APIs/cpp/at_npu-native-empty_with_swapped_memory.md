@@ -1,11 +1,11 @@
 # at_npu::native::empty_with_swapped_memory
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
-
 
 ## 功能说明
 
@@ -17,7 +17,7 @@ torch_npu\csrc\core\npu\NPUFormat.h
 
 ## 函数原型
 
-```
+```cpp
 at::Tensor empty_with_swapped_memory(c10::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<c10::Device> device_opt)
 ```
 
@@ -27,9 +27,8 @@ at::Tensor empty_with_swapped_memory(c10::IntArrayRef size, c10::optional<at::Sc
 - **dtype_opt** (`c10::optional<at::ScalarType>`)：必选参数，表示生成Tensor的数据类型，若为`c10::nullopt`，则表示使用dtype全局默认值。
 - **device_opt** (`c10::optional<c10::Device>`)：必选参数，表示生成Tensor的设备信息，若为`c10::nullopt`，则表示使用当前默认device。
 
-
-
 ## 返回值说明
+
 `at::Tensor`
 
 代表生成的特殊Tensor。

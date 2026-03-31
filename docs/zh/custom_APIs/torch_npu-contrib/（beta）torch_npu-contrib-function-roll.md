@@ -2,7 +2,6 @@
 
 ## 产品支持情况
 
-
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品</term>            |    √     |
@@ -15,10 +14,10 @@
 使用NPU亲和写法替换swin-transformer中的原生roll。
 
 ## 函数原型
-```
+
+```python
 torch_npu.contrib.function.roll(input1, shifts, dims)
 ```
-
 
 ## 参数说明
 
@@ -47,4 +46,3 @@ torch_npu.contrib.function.roll(input1, shifts, dims)
 >>> shifted_x_npu.shape
 torch.Size([32, 56, 56, 16])
 ```
-

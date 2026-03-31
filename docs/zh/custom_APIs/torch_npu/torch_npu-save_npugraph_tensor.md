@@ -20,7 +20,7 @@ aclgraph模式下，由于Python原生的print函数包含同步处理，在`tor
 
 ## 函数原型
 
-```
+```python
 torch_npu.save_npugraph_tensor(input, save_path=None, save_name=None, save_dir=None, suffix=None) -> None
 ```
 

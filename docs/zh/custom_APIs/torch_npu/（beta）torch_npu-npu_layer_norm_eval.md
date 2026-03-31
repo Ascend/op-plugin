@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_layer_norm_eval(input, normalized_shape, weight=None, bias=None, eps=1e-05) -> Tensor
 ```
 
@@ -60,4 +60,3 @@ tensor([[        nan,  6.7474e-41,  8.3182e-20,  2.0687e-40],
         [        nan,  3.5663e-41,  1.2002e-19,  1.4314e-40],
         [        nan, -6.2792e-42,  1.7902e-20,  2.1050e-40]], device='npu:0')
 ```
-

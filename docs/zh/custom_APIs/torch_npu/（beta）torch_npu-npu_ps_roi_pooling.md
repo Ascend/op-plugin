@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_ps_roi_pooling(x, rois, spatial_scale, group_size, output_dim) -> Tensor
 ```
 
@@ -49,4 +49,3 @@ tensor([[[[0., 0.],
         [[0., 0.],
           [0., 0.]]]], device='npu:0', dtype=torch.float16)
 ```
-

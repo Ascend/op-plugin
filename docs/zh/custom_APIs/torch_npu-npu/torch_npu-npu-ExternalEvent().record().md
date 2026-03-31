@@ -1,4 +1,5 @@
 # torch_npu.npu.ExternalEvent().record()
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -10,14 +11,13 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 在指定stream上记录Event事件。本接口被调用时，会捕获当前Stream上已下发的任务，并记录到Event事件中，因此后续若调用wait接口，会等待该Event事件中所捕获的任务都已经完成。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.ExternalEvent().record(stream) -> None
 ```
 
@@ -35,6 +35,7 @@ torch_npu.npu.ExternalEvent().record(stream) -> None
 - 接口调用顺序：torch_npu.npu.ExternalEvent().wait()-->torch_npu.npu.ExternalEvent().record()或torch_npu.npu.ExternalEvent().record()-->torch_npu.npu.ExternalEvent().wait()。
 
 ## 调用示例
+
 ```python
 import torch
 import torch_npu

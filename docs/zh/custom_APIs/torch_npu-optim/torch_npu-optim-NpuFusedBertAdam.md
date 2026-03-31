@@ -14,10 +14,9 @@
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, warmup=-1, t_total=-1, schedule="warmup_linear", b1=0.9, b2=0.999, e=1e-6, weight_decay=0.01, max_grad_norm=1.0)
 ```
-
 
 ## 参数说明
 
@@ -32,11 +31,9 @@ class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, warmup=-1, t_total=-1, s
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0.01。
 - **max_grad_norm** (`float`)：最大梯度范围，默认值为1.0，-1表示不做裁剪。
 
-
 ## 返回值说明
 
 类型为`NpuFusedBertAdam`的对象。
-
 
 ## 约束说明
 
@@ -47,7 +44,6 @@ class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, warmup=-1, t_total=-1, s
 - 将模型参数对象置为None
 
 对模型参数对象进行inplace计算，或者读取参数的值，`NpuFusedBertAdam`可正常工作。
-
 
 ## 调用示例
 
@@ -80,4 +76,3 @@ fused_opt = NpuFusedBertAdam(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

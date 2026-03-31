@@ -15,14 +15,14 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
 ```
 
 ## 参数说明
 
--   **self** (`Tensor`)：输入张量。
--   **p** (`float`)：丢弃概率。
+- **self** (`Tensor`)：输入张量。
+- **p** (`float`)：丢弃概率。
 
 ## 调用示例
 
@@ -40,4 +40,3 @@ tensor([0.0000, 2.8571, 0.0000, 0.0000], device='npu:0')
 tensor([ 98, 255, 188, 186, 120, 157, 175, 159,  77, 223, 127,  79, 247, 151,
       253, 255], device='npu:0', dtype=torch.uint8)
 ```
-

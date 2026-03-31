@@ -23,7 +23,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert_tokens_index=None, bias1=None, bias2=None, scale=None, offset=None, deq_scale1=None, deq_scale2=None, antiquant_scale1=None, antiquant_scale2=None, antiquant_offset1=None, antiquant_offset2=None, inner_precise=None, output_dtype=None) -> Tensor
 ```
 
@@ -65,6 +65,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 - **output_dtype** (`ScalarType`)：可选参数，该参数只在量化场景生效，其他场景不生效。表示输出Tensor的数据类型，支持输入`float16`、`bfloat16`。默认值为`None`，代表输出Tensor数据类型为`float16`。
 
 ## 返回值说明
+
 `Tensor`
 
 一个Tensor类型的输出，对应公式中的输出$y$，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，输出维度与`x`一致。
@@ -168,4 +169,3 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
             -58.9688]], device='npu:0', dtype=torch.float16)
 
     ```
-

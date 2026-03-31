@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_width, sample_num, roi_end_mode) -> Tensor
 ```
 
@@ -51,4 +51,3 @@ tensor([[[[ 4.5000,  6.5000,  8.5000],
           [16.5000, 18.5000, 20.5000],
           [28.5000, 30.5000, 32.5000]]]], device='npu:0')
 ```
-

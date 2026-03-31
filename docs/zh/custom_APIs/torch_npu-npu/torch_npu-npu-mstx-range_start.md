@@ -17,7 +17,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.mstx.range_start(message: str='None', stream=None, domain: str='default') -> int:
 ```
 

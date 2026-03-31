@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_rotated_iou(self, query_boxes, trans=False, mode=0, is_cross=True,v_threshold=0.0, e_threshold=0.0) -> Tensor
 ```
 
@@ -41,4 +41,3 @@ torch_npu.npu_rotated_iou(self, query_boxes, trans=False, mode=0, is_cross=True,
 >>> box2=torch.from_numpy(b).to("npu")
 >>> output = torch_npu.npu_rotated_iou(box1, box2, trans=False, mode=0, is_cross=True)
 ```
-

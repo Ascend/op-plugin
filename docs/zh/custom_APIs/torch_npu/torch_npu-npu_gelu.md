@@ -29,7 +29,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_gelu(input, approximate='none') -> Tensor
 ```
 
@@ -43,10 +43,10 @@ torch_npu.npu_gelu(input, approximate='none') -> Tensor
 - **approximate** (`String`)：可选参数，字符串类型，计算使用的激活函数模式，可配置为`none`或者`tanh`。其中`none`代表使用erf模式，`tanh`代表使用tanh模式。
 
 ## 返回值说明
+
 `Tensor`
 
 数据类型必须和`input`一样，数据格式支持$ND$，shape必须和`input`一样，支持非连续的Tensor。
-
 
 ## 约束说明
 
@@ -112,4 +112,3 @@ torch_npu.npu_gelu(input, approximate='none') -> Tensor
     # 执行上述代码的输出类似如下
     torch.Size([100, 10, 20]) torch.float32
     ```
-

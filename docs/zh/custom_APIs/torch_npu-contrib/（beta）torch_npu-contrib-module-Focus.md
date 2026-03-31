@@ -15,12 +15,12 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.Focus(c1, c2, k=1, s=1, p=None, g=1, act=True)
 ```
 
-
 ## 参数说明
+
 **计算参数**
 
 - **c1** (`int`)：输入图像中的通道数。
@@ -36,6 +36,7 @@ torch_npu.contrib.module.Focus(c1, c2, k=1, s=1, p=None, g=1, act=True)
 - **x**(`Tensor`): 输入张量。
 
 ## 返回值说明
+
 `Tensor`
 
 Focus计算结果。
@@ -53,4 +54,3 @@ Focus计算结果。
 >>> output.shape
 torch.Size([4, 13, 150, 20])
 ```
-

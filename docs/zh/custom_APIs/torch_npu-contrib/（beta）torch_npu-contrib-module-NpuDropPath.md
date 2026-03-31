@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.NpuDropPath(drop_prob=None)
 ```
 
@@ -30,6 +30,7 @@ torch_npu.contrib.module.NpuDropPath(drop_prob=None)
 - **x** (`Tensor`)：应用dropout的输入张量。
 
 ## 返回值说明
+
 `Tensor`
 
 dropout的计算结果。
@@ -47,4 +48,3 @@ dropout的计算结果。
 >>> output = input1 + fast_drop_path(input2)
 >>> output.sum().backward()
 ```
-

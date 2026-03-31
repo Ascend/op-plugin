@@ -12,60 +12,59 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_ids, expert_rank_table, group, world_size, ffn_token_info_table_shape, ffn_token_data_shape, attn_token_info_table_shape, moe_expert_num, *, scales=None, active_mask=None, quant_mode=0, sync_flag=0, ffn_start_rank_id=0) -> ()
 ```
 
 ## 参数说明
 
--   **x** (`Tensor`)：必选参数，表示计算使用的token数据，需根据`expert_ids`和`expert_rank_table`来发送给其他卡。要求为3维张量，shape为\(X, BS, H\)，表示有X个microBatch，每个microBatch里有BS个token，数据类型支持`bfloat16`、`float16`，数据格式为$ND$，支持非连续的Tensor。
--   **session\_id** (`Tensor`)：必选参数，Attention域本卡ID，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
--   **micro\_batch\_id** (`Tensor`)：必选参数，当前microBatch组的ID，，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
--   **layer\_id** (`Tensor`)：必选参数，模型层数ID，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
--   **expert\_ids** (`Tensor`)：必选参数，每个micro batch组中每个token的topK个专家索引，决定每个token要发给哪些专家。要求为3维张量，shape为\(X, BS, K\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
--   **expert\_rank\_table** (`Tensor`)：必选参数，每个micro batch组中专家Id到FFN卡专家部署的映射表，外部需保证值正确。要求为3维张量，shape为\(L, shared\_expert\_num + moe\_expert\_num, M\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
--   **group** (`str`)：必选参数，通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。
--   **world\_size**(`int`)：必选参数，通信域size。取值支持\[2, 768\]。
--   **ffn\_token\_info\_table\_shape** (`List(int)`)：必选参数，表示FFN卡上token信息表格shape大小，长度为3，包括Attention节点的数量、microBatchSize的大小以及每个token对应的相关发送状态信息shape的大小。
--   **ffn\_token\_data\_shape** (`List(int)`)：必选参数，表示FFN卡上token数据表格shape大小，长度为5，包括Attention节点的数量、microBatchSize的大小、batchSize大小、每个token需发送的专家数量（包括共享专家）、单个token的长度。
--   **attn\_token\_info\_table\_shape** (`List(int)`)：必选参数，表示Attention卡上token信息表格shape大小，长度为3，包括microBatchSize的大小、batchSize大小、每个token需发送的专家数量（包括共享专家）。
--   **moe\_expert\_num** (`int`)：必选参数，MoE专家数量，取值范围\[1, 1024\]。
+- **x** (`Tensor`)：必选参数，表示计算使用的token数据，需根据`expert_ids`和`expert_rank_table`来发送给其他卡。要求为3维张量，shape为\(X, BS, H\)，表示有X个microBatch，每个microBatch里有BS个token，数据类型支持`bfloat16`、`float16`，数据格式为$ND$，支持非连续的Tensor。
+- **session\_id** (`Tensor`)：必选参数，Attention域本卡ID，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+- **micro\_batch\_id** (`Tensor`)：必选参数，当前microBatch组的ID，，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+- **layer\_id** (`Tensor`)：必选参数，模型层数ID，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+- **expert\_ids** (`Tensor`)：必选参数，每个micro batch组中每个token的topK个专家索引，决定每个token要发给哪些专家。要求为3维张量，shape为\(X, BS, K\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
+- **expert\_rank\_table** (`Tensor`)：必选参数，每个micro batch组中专家Id到FFN卡专家部署的映射表，外部需保证值正确。要求为3维张量，shape为\(L, shared\_expert\_num + moe\_expert\_num, M\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+- **group** (`str`)：必选参数，通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。
+- **world\_size**(`int`)：必选参数，通信域size。取值支持\[2, 768\]。
+- **ffn\_token\_info\_table\_shape** (`List(int)`)：必选参数，表示FFN卡上token信息表格shape大小，长度为3，包括Attention节点的数量、microBatchSize的大小以及每个token对应的相关发送状态信息shape的大小。
+- **ffn\_token\_data\_shape** (`List(int)`)：必选参数，表示FFN卡上token数据表格shape大小，长度为5，包括Attention节点的数量、microBatchSize的大小、batchSize大小、每个token需发送的专家数量（包括共享专家）、单个token的长度。
+- **attn\_token\_info\_table\_shape** (`List(int)`)：必选参数，表示Attention卡上token信息表格shape大小，长度为3，包括microBatchSize的大小、batchSize大小、每个token需发送的专家数量（包括共享专家）。
+- **moe\_expert\_num** (`int`)：必选参数，MoE专家数量，取值范围\[1, 1024\]。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
--   **scales** (`Tensor`)：可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为3维张量，shape为\(L, shared\_expert\_num + moe\_expert\_num, H\)，数据类型支持`float`，数据格式为$ND$，不支持非连续的Tensor。当`quant_mode`为2，`scales`可不为None；当`quant_mode`为0，`scales`必须为None。
--   **active\_mask** (`Tensor`)：可选参数，表示token是否参与通信。要求是一个2维张量，shape为\(X, BS\)。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入。默认所有token都会参与通信。
--   **quant\_mode** (`int`)：可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。
--   **sync\_flag** (`int`)：可选参数，表示同步、异步。支持取值：0表示同步（默认），1表示异步。
--   **ffn\_start\_rank\_id** (`int`)：可选参数，FFN域起始ID。取值范围\[0, world\_size\)，默认为0。
-
+- **scales** (`Tensor`)：可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为3维张量，shape为\(L, shared\_expert\_num + moe\_expert\_num, H\)，数据类型支持`float`，数据格式为$ND$，不支持非连续的Tensor。当`quant_mode`为2，`scales`可不为None；当`quant_mode`为0，`scales`必须为None。
+- **active\_mask** (`Tensor`)：可选参数，表示token是否参与通信。要求是一个2维张量，shape为\(X, BS\)。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入。默认所有token都会参与通信。
+- **quant\_mode** (`int`)：可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。
+- **sync\_flag** (`int`)：可选参数，表示同步、异步。支持取值：0表示同步（默认），1表示异步。
+- **ffn\_start\_rank\_id** (`int`)：可选参数，FFN域起始ID。取值范围\[0, world\_size\)，默认为0。
 
 ## 返回值说明
 
--   无
+- 无
 
 ## 约束说明
 
--   该接口支持推理场景下使用。
--   该接口支持静态图模式，分离系列算子必须配套使用。
--   调用接口过程中使用的`group`、`world_size`、`moe_expert_num`参数取值所有卡需保持一致，且网络中不同层中也需保持一致。
--   Atlas A3 训练系列产品/Atlas A3 推理系列产品：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
--   参数里Shape使用的变量如下：
-    -   X：表示micro batch sequence size，即token组数，当前版本仅支持 X = 1。
+- 该接口支持推理场景下使用。
+- 该接口支持静态图模式，分离系列算子必须配套使用。
+- 调用接口过程中使用的`group`、`world_size`、`moe_expert_num`参数取值所有卡需保持一致，且网络中不同层中也需保持一致。
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+- 参数里Shape使用的变量如下：
+    - X：表示micro batch sequence size，即token组数，当前版本仅支持 X = 1。
 
-    -   H：表示hidden size隐藏层大小，取值为\[1024, 8192\]。
+    - H：表示hidden size隐藏层大小，取值为\[1024, 8192\]。
 
-    -   BS：表示batch sequence size，即本卡最终输出的token数量，取值范围为0 < BS ≤ 512。
+    - BS：表示batch sequence size，即本卡最终输出的token数量，取值范围为0 < BS ≤ 512。
 
-    -   K：表示选取topK个专家，取值范围为0 < K ≤ 16，同时满足0 < K ≤ moe\_expert\_num。
+    - K：表示选取topK个专家，取值范围为0 < K ≤ 16，同时满足0 < K ≤ moe\_expert\_num。
 
-    -   L：表示模型层数，当前版本仅支持 L = 1。
+    - L：表示模型层数，当前版本仅支持 L = 1。
 
-    -   shared_expert_num：表示共享专家数量（一个共享专家可以复制部署到多个FFN节点上），取值范围为\[0, 4\]。
+    - shared_expert_num：表示共享专家数量（一个共享专家可以复制部署到多个FFN节点上），取值范围为\[0, 4\]。
 
--   HCCL通信域缓存区大小:调用本接口前需检查通信域缓存区大小取值是否合理，单位MB，不配置时默认为200MB。
+- HCCL通信域缓存区大小:调用本接口前需检查通信域缓存区大小取值是否合理，单位MB，不配置时默认为200MB。
 
 ## 调用示例
 
--   单算子模式调用
+- 单算子模式调用
 
     ```python
     import os
@@ -221,7 +220,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
         print("run npu success.")
     ```
 
--   图模式调用
+- 图模式调用
 
     ```python
     # 仅支持静态图

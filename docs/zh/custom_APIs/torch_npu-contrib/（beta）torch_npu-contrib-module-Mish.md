@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.Mish(nn.Module)
 ```
 
@@ -31,4 +31,3 @@ torch_npu.contrib.module.Mish(nn.Module)
 >>> input_tensor = torch.randn(2, 32, 5, 5).npu()
 >>> output = m(input_tensor)
 ```
-

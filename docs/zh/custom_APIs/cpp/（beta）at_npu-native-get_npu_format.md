@@ -6,7 +6,7 @@ torch_npu\csrc\core\npu\NPUFormat.h
 
 ## 函数原型
 
-```
+```cpp
 int64_t at_npu::native::get_npu_format(const at::Tensor& self)
 ```
 
@@ -27,4 +27,3 @@ self：Tensor类型，待获取格式信息的tensor。
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

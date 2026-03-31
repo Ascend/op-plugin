@@ -13,7 +13,7 @@ GroupedMatMul和MoeFinalizeRouting的融合算子，GroupedMatMul计算后的输
 
 ## 函数原型<a name="zh-cn_topic_0000002259406069_section45077510411"></a>
 
-```
+```python
 torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, bias=None, offset=None, pertoken_scale=None, shared_input=None, logit=None, row_index=None, dtype=None, shared_input_weight=1.0, shared_input_offset=0, output_bs=0, group_list_type=1) -> Tensor
 ```
 
@@ -21,8 +21,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
 - **x** (`Tensor`)：必选参数。矩阵计算的左矩阵，不支持非连续的Tensor。数据类型支持`int8`，数据格式支持$ND$，维度为\(m, k\)。m取值范围为\[1, 16\*1024\*8\]。
 - **w** (`Tensor`)：必选参数。矩阵计算的右矩阵，不支持非连续的Tensor。数据类型支持`int8`、`int4`。
-    -   A8W8量化场景下，数据格式支持$NZ$，维度为\(e, n1, k1, k0, n0\)，其中k0=16、n0=32，`x` shape中的k和`w` shape中的k1需要满足以下关系：ceilDiv\(k, 16\) = k1，e取值范围\[1, 256\]，k取值为16整倍数，n取值为32整倍数，且n大于等于256。
-    -   A8W4量化场景下数据格式支持$ND$，维度为\(e, k, n\)，k支持2048，n只支持7168。
+    - A8W8量化场景下，数据格式支持$NZ$，维度为\(e, n1, k1, k0, n0\)，其中k0=16、n0=32，`x` shape中的k和`w` shape中的k1需要满足以下关系：ceilDiv\(k, 16\) = k1，e取值范围\[1, 256\]，k取值为16整倍数，n取值为32整倍数，且n大于等于256。
+    - A8W4量化场景下数据格式支持$ND$，维度为\(e, k, n\)，k支持2048，n只支持7168。
 
 - **group\_list** (`Tensor`)：必选参数。GroupedMatMul的各分组大小。不支持非连续的Tensor。数据类型支持`int64`，数据格式支持$ND$，维度为\(e,\)，e与`w`的e一致。`group_list`的值总和要求≤m。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -47,9 +47,10 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
 ## 约束说明<a name="zh-cn_topic_0000002259406069_section12345537164214"></a>
 
--   该接口支持推理和训练场景下使用。
--   该接口支持图模式。
--   输入和输出Tensor支持的数据类型组合如下：
+- 该接口支持推理和训练场景下使用。
+- 该接口支持图模式。
+- 输入和输出Tensor支持的数据类型组合如下：
+
     |x|w|group_list|scale|bias|offset|pertoken_scale|shared_input|logit|row_index|y|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
     |`int8`|`int8`|`int64`|`float32`|None|None|`float32`|`bfloat16`|`float32`|`int64`|`float32`|
@@ -59,7 +60,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
 ## 调用示例<a name="zh-cn_topic_0000002259406069_section14459801435"></a>
 
--   单算子模式调用
+- 单算子模式调用
 
     ```python
     import numpy as np
@@ -101,7 +102,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
                 shared_input_offset=shared_input_offset, output_bs=output_bs)
     ```
 
--   图模式调用：
+- 图模式调用：
 
     ```python
     import numpy as np
@@ -156,4 +157,3 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     y = model(x_clone, weightNz, group_list_clone, scale_clone, pertoken_scale_clone, shared_input_clone, logit_clone, row_index_clone, shared_input_offset, output_bs)
     ```
-

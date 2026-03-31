@@ -6,12 +6,14 @@
 | :----------------------------------------------------------- | :------: |
 | <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |    √     |
 
-
 ## 功能说明
+
 本API支持负载均衡和专家剪枝功能。经过映射后的专家表和mask可传入Moe层进行数据分发和处理。
+
 - 负载均衡：完成冗余专家部署场景下每个token的topK个专家逻辑卡号到物理卡号的映射。计算方法如下所示：
 
    负载均衡对于`expert_ids`中的第i个值，即第i个token：
+
     ```python
     new_expert_id = eplb_table[table_offset + 1]
     expert_id = expert_ids[i]
@@ -27,9 +29,11 @@
             place_idx = i % place_num
     new_expert_id = eplb_table[table_offset + place_idx]
     ```
+
 - 专家剪枝：支持根据阈值对token发送的topK个专家进行剪枝。计算方法如下所示：
    
    将shape为$(BS,)$的`active_mask`进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中BS对应为False的专家会直接被剪枝。对于active_mask_tensor为True的`expert_scales`的元素，满足条件也将被剪枝。
+
     ```python
     active_mask_tensor = broadcast(active_mask, (BS, K))
     for i in range(BS):
@@ -39,31 +43,32 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, pruning_threshold=None, active_mask=None, local_rank_id=-1, world_size=-1, balance_mode=0) -> (Tensor, Tensor)
 ```
 
 ## 参数说明
 
--   **expert_ids**（`Tensor`）：必选参数，表示每个token的topK个专家索引，shape为$(BS, K)$。数据类型支持`int32`、`int64`，数据格式要求为$ND$，支持非连续的Tensor。
--   **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行\[1, count\]列为对应实例的卡号，取值范围\[0, `moe_expert_num`\)，shape为$(moe\_expert\_num, F)$。数据类型支持`int32`，数据格式要求为$ND$，支持非连续的Tensor。其中F表示输入映射表的列数，取值范围\[2, `world_size`+1\]，第一列为各行号对应Moe专家部署的实例个数（值>0），后F-1列为该Moe专家部署的物理卡号。
--   **expert_scales**（`Tensor`）：可选参数，每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或空指针，该参数传入有效数据时，`pruning_threshold`也需要传入有效数据。shape为$(BS, K)$。数据类型支持`fp16`、`bf16`、`float`，数据格式要求为$ND$，支持非连续的Tensor。
--   **pruning_threshold**（`Tensor`）：可选参数，专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或空指针，该参数传入有效数据时，`expert_scales`也需要传入有效数据。shape为$(K,)$或$(1, K)$。数据类型支持`float`，数据格式要求为$ND$，支持非连续的Tensor。
--   **active_mask**（`Tensor`）：可选参数，表示token是否参与通信，可选择传入有效数据或空指针。传入有效数据时，`expert_scales`、`pruning_threshold`也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；传入空指针时表示所有token都会参与通信。shape为$(BS,)$。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。
+- **expert_ids**（`Tensor`）：必选参数，表示每个token的topK个专家索引，shape为$(BS, K)$。数据类型支持`int32`、`int64`，数据格式要求为$ND$，支持非连续的Tensor。
+- **eplb_table**（`Tensor`）：必选参数，表示逻辑专家到物理专家的映射表，外部调用者需保证输入Tensor的值正确：每行第一列为行号对应逻辑专家部署的实例数count，值需大于等于1，每行\[1, count\]列为对应实例的卡号，取值范围\[0, `moe_expert_num`\)，shape为$(moe\_expert\_num, F)$。数据类型支持`int32`，数据格式要求为$ND$，支持非连续的Tensor。其中F表示输入映射表的列数，取值范围\[2, `world_size`+1\]，第一列为各行号对应Moe专家部署的实例个数（值>0），后F-1列为该Moe专家部署的物理卡号。
+- **expert_scales**（`Tensor`）：可选参数，每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或空指针，该参数传入有效数据时，`pruning_threshold`也需要传入有效数据。shape为$(BS, K)$。数据类型支持`fp16`、`bf16`、`float`，数据格式要求为$ND$，支持非连续的Tensor。
+- **pruning_threshold**（`Tensor`）：可选参数，专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或空指针，该参数传入有效数据时，`expert_scales`也需要传入有效数据。shape为$(K,)$或$(1, K)$。数据类型支持`float`，数据格式要求为$ND$，支持非连续的Tensor。
+- **active_mask**（`Tensor`）：可选参数，表示token是否参与通信，可选择传入有效数据或空指针。传入有效数据时，`expert_scales`、`pruning_threshold`也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；传入空指针时表示所有token都会参与通信。shape为$(BS,)$。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。
 
--   **local_rank_id**（`int`）：本卡ID，数据类型支持`int64`，当`balance_mode`设置0时，本属性取值范围为\[0, `world_size`\)。
--   **world_size**（`int`）：通信域size，数据类型支持`int64`，当`balance_mode`设置0时，本属性取值范围为\[2, 768\]
--   **balance_mode**（`int`）：均衡规则，数据类型支持`int64`，取值支持0和1，0表示用`local_rank_id`进行负载均衡，1表示使用`token_id`进行负载均衡。当本属性取值为0时，`local_rank_id`和`world_size`必须传入有效值。
+- **local_rank_id**（`int`）：本卡ID，数据类型支持`int64`，当`balance_mode`设置0时，本属性取值范围为\[0, `world_size`\)。
+- **world_size**（`int`）：通信域size，数据类型支持`int64`，当`balance_mode`设置0时，本属性取值范围为\[2, 768\]
+- **balance_mode**（`int`）：均衡规则，数据类型支持`int64`，取值支持0和1，0表示用`local_rank_id`进行负载均衡，1表示使用`token_id`进行负载均衡。当本属性取值为0时，`local_rank_id`和`world_size`必须传入有效值。
 
 ## 返回值说明
 
--   **balanced_expert_ids**（`Tensor`）：映射后每个token的topK个专家所在物理卡的卡号，shape为(BS, K)，数据类型、数据格式与`expert_ids`保持一致。
--   **balanced_active_mask**（`Tensor`）：剪枝后的`active_mask`，当`expert_scales`、`pruning_threshold`传入有效数据时该输出有效。shape为\(BS, K\)，数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。
+- **balanced_expert_ids**（`Tensor`）：映射后每个token的topK个专家所在物理卡的卡号，shape为(BS, K)，数据类型、数据格式与`expert_ids`保持一致。
+- **balanced_active_mask**（`Tensor`）：剪枝后的`active_mask`，当`expert_scales`、`pruning_threshold`传入有效数据时该输出有效。shape为\(BS, K\)，数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。
 
 ## 约束说明
 
--   该接口必须与`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`接口配合使用。
--   调用接口过程中使用的`world_size` 、`moe_expert_num` 参数取值所有卡须保持一致，网络中不同层中也需保持一致，本接口中参数和`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`有如下对应关系：
+- 该接口必须与`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`接口配合使用。
+- 调用接口过程中使用的`world_size` 、`moe_expert_num` 参数取值所有卡须保持一致，网络中不同层中也需保持一致，本接口中参数和`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`有如下对应关系：
+
     |`torch_npu.npu_moe_update_expert`     |`torch_npu.npu_moe_distribute_dispatch`/`torch_npu.npu_moe_distribute_dispatch_v2`|
     |---------------------------|-----------------------------------------------------------|
     |`local_rank_id`            |`ep_rank_id`                                               |
@@ -71,18 +76,19 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
     |`eplb_table`第一列的count之和 |`moe_expert_num`                                           |
     |`BS`                       |`BS`                                                       |
     |`K`                        |`K`                                                        |
--   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
--   参数说明里shape格式说明：
-    -   `BS`：表示batch sequence size，即本卡最终输出的token数量，<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
-    -   `K`：表示选取topK个专家，取值范围为0< K ≤16同时满足0 < K ≤ moe_expert_num。
-    -   `moe_expert_num`：表示Moe专家数，取值范围\(0, 1024\]。
-    -   `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, world_size + 1\]。
-    -   每个专家部署副本个数值（即eplb_table第一列的count），最小为1，最大为`world_size`。
-    -   所有专家部署的副本个数和（即eplb_table第一列count之和）需小于等于1024，且整除`world_size`。
+
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+- 参数说明里shape格式说明：
+    - `BS`：表示batch sequence size，即本卡最终输出的token数量，<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
+    - `K`：表示选取topK个专家，取值范围为0< K ≤16同时满足0 < K ≤ moe_expert_num。
+    - `moe_expert_num`：表示Moe专家数，取值范围\(0, 1024\]。
+    - `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, world_size + 1\]。
+    - 每个专家部署副本个数值（即eplb_table第一列的count），最小为1，最大为`world_size`。
+    - 所有专家部署的副本个数和（即eplb_table第一列count之和）需小于等于1024，且整除`world_size`。
 
 ## 调用示例
 
--   单算子模式调用
+- 单算子模式调用
 
     ```python
     import os
@@ -272,7 +278,7 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
         print("run npu success.")
     ```
 
--   图模式调用
+- 图模式调用
 
     ```python
     # 修改graph_type支持静态图、动态图

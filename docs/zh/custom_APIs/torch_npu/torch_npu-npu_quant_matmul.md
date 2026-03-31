@@ -28,7 +28,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, group_sizes=None) -> Tensor
 ```
 
@@ -69,6 +69,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 `Tensor`
 
 代表量化matmul的计算结果。
+
 - 如果`output_dtype`为`float16`，输出的数据类型为`float16`。
 - 如果`output_dtype`为`int8`或者`None`，输出的数据类型为`int8`。
 - 如果`output_dtype`为`bfloat16`，输出的数据类型为`bfloat16`。
@@ -98,6 +99,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 - 输入参数间支持的数据类型组合情况如下：
 
     **表 1** <term>Atlas 推理系列加速卡产品</term>
+
     |x1|x2|scale|offset|bias|pertoken_scale|output_dtype|
     |---------|--------|--------|--------|--------|--------|--------|
     |int8|int8|int64/float32|None|int32/None|None|float16|
@@ -114,7 +116,6 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     |int32|int32|int64/float32|None|int32/None|None|float16|
     |int32|int32|float32|float16|None|float32|bfloat16/float16|
     |int8|int8|float32/bfloat16|None|int32/None|None|int32|
-
 
 ## 调用示例
 

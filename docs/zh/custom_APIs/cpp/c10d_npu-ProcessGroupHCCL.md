@@ -17,7 +17,7 @@ torch_npu\csrc\distributed\ProcessGroupHCCL.hpp
 
 ## 函数原型
 
-```
+```cpp
 class c10d_npu::ProcessGroupHCCL
 ```
 
@@ -42,5 +42,3 @@ recv<br>
 recv_anysource<br>
 alltoall_base<br>
 alltoall<br>
-
-

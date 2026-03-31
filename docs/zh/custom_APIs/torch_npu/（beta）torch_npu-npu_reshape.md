@@ -18,7 +18,7 @@ reshape张量。仅更改张量shape，其数据不变。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_reshape(self, shape, bool can_refresh=False) -> Tensor
 ```
 
@@ -45,4 +45,3 @@ tensor([[0.6657, 0.9857, 0.7614, 0.4368],
         [0.7002, 0.3063, 0.9279, 0.5085],
         [0.1009, 0.7133, 0.8118, 0.6193]], device='npu:0')
 ```
-

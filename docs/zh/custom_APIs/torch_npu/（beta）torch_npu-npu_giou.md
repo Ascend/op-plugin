@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_giou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 ```
 
@@ -39,4 +39,3 @@ torch_npu.npu_giou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 >>> box2=torch.from_numpy(b).to("npu")
 >>> output = torch_npu.npu_giou(box1, box2, trans=True, is_cross=False, mode=0)
 ```
-

@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_confusion_transpose(self, perm, shape, transpose_first) -> Tensor
 ```
 
@@ -42,4 +42,3 @@ torch.Size([2, 4, 18])
 >>> y2.shape
 torch.Size([2, 6, 12])
 ```
-

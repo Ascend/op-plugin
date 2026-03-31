@@ -15,7 +15,7 @@ bert自注意力的融合实现。
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kernel, key_kernel, value_kernel, query_bias, key_bias, value_bias, scale=1, keep_prob=0)
 ```
 
@@ -37,4 +37,3 @@ torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kerne
 `Tensor`
 
 self attention的结果。
-

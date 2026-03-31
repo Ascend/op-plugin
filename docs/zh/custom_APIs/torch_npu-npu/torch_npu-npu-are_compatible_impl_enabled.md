@@ -17,7 +17,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.are_compatible_impl_enabled()
 ```
 
@@ -26,11 +26,10 @@ torch_npu.npu.are_compatible_impl_enabled()
 无
 
 ## 返回值说明
+
 `bool`
 
 True为已开启，False为未开启。
-
-
 
 ## 约束说明
 

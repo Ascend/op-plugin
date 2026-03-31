@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.npu_ptiou(boxes1, boxes2, mode="ptiou", is_normalized=False, normalized_scale=100.)
 ```
 
@@ -42,4 +42,3 @@ torch_npu.contrib.npu_ptiou(boxes1, boxes2, mode="ptiou", is_normalized=False, n
 >>> box2 = torch.randint(0, 256, size=(16, 4)).npu()
 >>> iou = torch_npu.contrib.npu_ptiou(box1, box2)
 ```
-

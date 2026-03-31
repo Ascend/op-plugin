@@ -14,14 +14,13 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 复位一个Event。Event复用场景，用于复位因record任务完成置位的标志位。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.ExternalEvent().reset(stream) -> None
 ```
 
@@ -39,6 +38,7 @@ torch_npu.npu.ExternalEvent().reset(stream) -> None
 - 接口调用顺序：torch_npu.npu.ExternalEvent().wait()-->torch_npu.npu.ExternalEvent().reset()-->torch_npu.npu.ExternalEvent().record()或torch_npu.npu.ExternalEvent().record()-->torch_npu.npu.ExternalEvent().wait()-->torch_npu.npu.ExternalEvent().reset()。
 
 ## 调用示例
+
 ```python
 import torch
 import torch_npu

@@ -27,7 +27,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_fast_gelu(input) -> Tensor
 ```
 
@@ -41,6 +41,7 @@ torch_npu.npu_fast_gelu(input) -> Tensor
 - <term>Atlas 推理系列产品</term>：数据类型仅支持`float16`、`float32`。
 
 ## 返回值说明
+
 `Tensor`
 
 代表`fast_gelu`的计算结果。
@@ -101,4 +102,3 @@ torch_npu.npu_fast_gelu(input) -> Tensor
     shape of y: (4, 2048, 16, 128)
     dtype of y: float32
     ```
-

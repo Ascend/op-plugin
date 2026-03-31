@@ -1,4 +1,4 @@
-#  torch_npu.npu.mstx.mstx_range
+# torch_npu.npu.mstx.mstx_range
 
 ## 产品支持情况
 
@@ -17,7 +17,7 @@ range装饰器，用来采集被装饰函数的range执行耗时。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.mstx.mstx_range(msg: str='None', stream=None, domain: str='default')
 ```
 

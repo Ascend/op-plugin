@@ -1,6 +1,6 @@
 # （beta）torch_npu.npu_bounding_box_encode
-## 产品支持情况
 
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
@@ -15,10 +15,9 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, means2, means3, stds0, stds1, stds2, stds3) -> Tensor
 ```
-
 
 ## 参数说明
 
@@ -34,10 +33,10 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 - **stds3** (`float`)：“y1”的缩放值。
 
 ## 返回值说明
+
 `Tensor`
 
 代表编码后的坐标张量，形状为`(N,4)`，分别对应`(x0,y0,x1,y1)`，数据类型为`float32`。
-
 
 ## 调用示例
 
@@ -51,4 +50,3 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 tensor([[13.3281, 13.3281,  0.0000,  0.0000],
         [13.3281,  6.6641,  0.0000,     nan]], device='npu:0')
 ```
-

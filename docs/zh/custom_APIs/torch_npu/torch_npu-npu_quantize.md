@@ -25,7 +25,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True) -> Tensor
 ```
 
@@ -67,6 +67,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 - **div_mode** (`bool`)：可选参数，表示计算`scales`模式，对应公式中的`div_mode`。当`div_mode`为`True`时，表示用除法计算`scales`；`div_mode`为`False`时，表示用乘法计算`scales`，默认值为`True`。
 
 ## 返回值说明
+
 `Tensor`
 
 对应公式中的`result`。数据类型由参数`dtype`指定，如果参数`dtype`为`quint4x2`，输出的`dtype`是`int32`，shape的最后一维是`input`的shape最后一维的1/8，shape其他维度和`input`的shape其他维度保持一致；如果参数`dtype`不为`quint4x2`时，shape与输入`input`的shape保持一致。输出的数据格式与输入`input`的数据格式保持一致，且当数据格式为$NZ$时，数据类型仅支持INT32。支持空Tensor，支持非连续的Tensor。
@@ -205,4 +206,3 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
         dtype=torch.int8)
 
     ```
-

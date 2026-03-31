@@ -1,4 +1,5 @@
 # torch_npu.npu.graph_task_group_end
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -8,14 +9,13 @@
 |<term>Atlas A2 训练系列产品</term>  | √   |
 |<term>Atlas A2 推理系列产品</term> |    √     |
 
-
 ## 功能说明
 
 NPUGraph场景下，用于标记任务组结束位置。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.graph_task_group_end(stream) -> handle
 ```
 
@@ -33,6 +33,7 @@ torch_npu.npu.graph_task_group_end(stream) -> handle
 - 入参stream需要同[torch_npu.npu.graph_task_group_begin](torch_npu-npu-graph_task_group_begin.md)保持一致。
 
 ## 调用示例
+
 ```python
 import torch
 import torch_npu
@@ -99,4 +100,3 @@ with torch.no_grad():
 
 
 ```
-

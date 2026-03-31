@@ -8,7 +8,6 @@
 |<term>Atlas A2 训练系列产品</term>  | √   |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 通过张量融合实现的高性能RMSprop优化器，核心功能和`torch.optim.RMSprop`兼容。
@@ -17,10 +16,9 @@ RMSprop的功能和原理可参考[RMSprop](https://pytorch.org/docs/stable/gene
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedRMSprop(params, lr=1e-2, alpha=0.99, eps=1e-8, weight_decay=0, momentum=0, centered=False)
 ```
-
 
 ## 参数说明
 
@@ -32,11 +30,9 @@ class torch_npu.optim.NpuFusedRMSprop(params, lr=1e-2, alpha=0.99, eps=1e-8, wei
 - **momentum** (`float`)：可选参数，动量因子，默认值为0。`momentum`的值小于0时，打印“ValueError”异常信息。
 - **centered** (`bool`)：可选参数，计算中心RMSProp，梯度将被方差的估计值归一化，默认值为False。
 
-
 ## 返回值说明
 
 类型为`NpuFusedRMSprop`的对象。
-
 
 ## 约束说明
 
@@ -47,7 +43,6 @@ class torch_npu.optim.NpuFusedRMSprop(params, lr=1e-2, alpha=0.99, eps=1e-8, wei
 - 将模型参数对象置为None
 
 对模型参数对象进行inplace计算，或读取参数的值时，`NpuFusedRMSprop`都可以正常工作。
-
 
 ## 调用示例
 
@@ -80,4 +75,3 @@ fused_opt = NpuFusedRMSprop(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

@@ -1,4 +1,5 @@
 # torch_npu.npu.graph_task_update_begin
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -8,14 +9,13 @@
 |<term>Atlas A2 训练系列产品</term>  | √   |
 |<term>Atlas A2 推理系列产品</term> |    √     |
 
-
 ## 功能说明
 
 NPUGraph场景下，用于标记待更新任务的起始。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.graph_task_update_begin(stream, handle) -> None
 ```
 
@@ -35,6 +35,7 @@ torch_npu.npu.graph_task_update_begin(stream, handle) -> None
 - 图更新阶段的流同图捕获阶段的流必须不同。
 
 ## 调用示例
+
 ```python
 import torch
 import torch_npu
@@ -101,4 +102,3 @@ with torch.no_grad():
 
 
 ```
-
