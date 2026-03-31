@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, means=None, stds=None, is_normalized=False, normalized_scale=10000.)
 ```
 
@@ -29,6 +29,7 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 - **normalized_scale** (`Float`)：设置坐标恢复的归一化比例，默认值为10000.。
 
 ## 返回值说明
+
 `Tensor`
 
 代表框转换deltas。
@@ -50,4 +51,3 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 >>> print('npu_bbox_coder_encode_xyxy2xywh done. output shape is ', out.shape)
 npu_bbox_coder_encode_xyxy2xywh done. output shape is torch.Size([1024, 4])
 ```
-

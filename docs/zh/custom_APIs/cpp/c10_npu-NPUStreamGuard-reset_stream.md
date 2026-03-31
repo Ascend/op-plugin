@@ -17,7 +17,7 @@ torch_npu\csrc\core\npu\NPUGuard.h
 
 ## 函数原型
 
-```
+```cpp
 void c10_npu::NPUStreamGuard::reset_stream(c10::Stream stream)
 ```
 

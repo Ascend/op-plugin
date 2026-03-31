@@ -1,6 +1,6 @@
 # （beta）torch_npu.contrib.module.ROIAlign
-## 产品支持情况
 
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
@@ -13,13 +13,11 @@
 
 使用NPU API进行ROIAlign。
 
-
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.ROIAlign(output_size, spatial_scale, sampling_ratio, aligned=True)
 ```
-
 
 ## 参数说明
 
@@ -39,13 +37,11 @@ torch_npu.contrib.module.ROIAlign(output_size, spatial_scale, sampling_ratio, al
 - **input_tensor**(`Tensor`): 输入张量，格式为NCHW。
 - **rois**(`Tensor`): roi框，2D张量，第二个维度size为5，第一列表示roi框的索引，其余4列为roi框的坐标。
 
-
 ## 返回值说明
 
 `Tensor` 
 
 ROIAlign计算结果。
-
 
 ## 调用示例
 
@@ -66,4 +62,3 @@ ROIAlign计算结果。
 >>> output.shape
 torch.Size([1, 1, 3, 3])
 ```
-

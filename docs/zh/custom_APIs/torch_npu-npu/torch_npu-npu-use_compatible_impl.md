@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.use_compatible_impl(is_enable)
 ```
 

@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, analyse_flag=True, async_mode=False)
 ```
 

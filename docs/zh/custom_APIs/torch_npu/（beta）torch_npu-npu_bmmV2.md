@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_bmmV2(self, mat2, output_sizes) -> Tensor
 ```
 
@@ -53,4 +53,3 @@ torch.Size([10, 3, 5])
 >>> result
 FakeTensor(..., device='npu:0', size=(10, 3, 5))
 ```
-

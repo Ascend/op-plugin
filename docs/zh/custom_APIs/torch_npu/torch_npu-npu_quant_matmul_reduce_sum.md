@@ -19,10 +19,9 @@ $$
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -> Tensor
 ```
-
 
 ## 参数说明
 
@@ -37,7 +36,6 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
 - **x2_scale** (`Tensor`)：必选关键字参数，对应公式中的$x2Scale$。数据类型支持`bfloat16`，数据格式支持$ND$，shape支持1维，形状为（n,）。
   - 在实际计算时，`x2_scale`会被广播到(batch，m，n)。
 
-
 ## 返回值说明
 
 `Tensor`
@@ -50,15 +48,16 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
 - 该接口支持静态图模式。
 - 传入的`x1`、`x2`、`x1_scale`、`x2_scale`不能是空。
 - 输入和输出支持以下数据类型组合：
+
   | x1   | x2   | x1_scale | x2_scale  | out      |
   |------|------|---------|----------|----------|
   | int8 | int8 | float32 | bfloat16 | bfloat16 |
 
-
 ## 调用示例
 
 - 单算子调用
-    ```
+
+    ```python
     import torch
     import torch_npu
 
@@ -72,6 +71,7 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
     ```
 
 - 图模式调用
+
     ```python
     import torch
     import torch_npu

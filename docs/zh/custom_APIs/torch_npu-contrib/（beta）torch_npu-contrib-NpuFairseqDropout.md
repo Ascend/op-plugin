@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.NpuFairseqDropout(p, module_name=None)
 ```
 

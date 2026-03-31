@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.SyncLaunchStream(device)
 ```
 
@@ -31,7 +31,6 @@ torch_npu.npu.SyncLaunchStream(device)
 - 由于不再下发到taskqueue，因此该流的下发性能相比普通流有所降低，建议在集群训练时某些节点出现故障，其他节点保存ckpt时创建一条同步下发NPUStream。
 - 同步下发流资源池只有4条，创建超过4条时将会循环从资源池中获取。
 
-
 ## 调用示例
 
 ```python
@@ -43,4 +42,3 @@ with torch.npu.stream(s):
     tensor2 = tensor1 + tensor1
     s.synchronize()
 ```
-

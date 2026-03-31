@@ -9,11 +9,11 @@
 
 ## 功能说明
 
--   API功能：
+- API功能：
 
     对输入的张量进行动态非对称量化。支持pertoken、pertensor和MoE（Mixture of Experts，混合专家模型）场景。
 
--   计算公式：
+- 计算公式：
     
     pertoken场景，rowMax、rowMin代表按行取最大值、按行取最小值，此处的“行”对应`x`最后一个维度的数据，即一个token。DST_MAX、DST_MIN分别对应量化后dtype的最大值和最小值，公式如下：
 
@@ -23,11 +23,11 @@
     y = \text{round}(\frac{\mathbf{x}}{\text{scale}} + \text{offset})
     $$
 
-    -   若使用smooth quant，非MoE（Mixture of Experts，混合专家模型）场景下，会引入smooth_scales输入，其形状与x最后一个维度大小一致，在进行量化前，会先令x乘以smooth_scales，再按上述公式进行量化。MoE（Mixture of Experts，混合专家模型）场景下会同时引入smooth_scales和group_index，此时smooth_scales中包含多组smooth向量，按group_index中的数值作用到x的不同行上。具体地，假如x包含m个token，smooth_scales有n行，smooth_scales[0]会作用到x[0:group_index[0]]上，smooth_scales[i]会作用到x[group_index[i-1]: group_index[i]]上，i=1,2, ...,n-1。
+    - 若使用smooth quant，非MoE（Mixture of Experts，混合专家模型）场景下，会引入smooth_scales输入，其形状与x最后一个维度大小一致，在进行量化前，会先令x乘以smooth_scales，再按上述公式进行量化。MoE（Mixture of Experts，混合专家模型）场景下会同时引入smooth_scales和group_index，此时smooth_scales中包含多组smooth向量，按group_index中的数值作用到x的不同行上。具体地，假如x包含m个token，smooth_scales有n行，smooth_scales[0]会作用到x[0:group_index[0]]上，smooth_scales[i]会作用到x[group_index[i-1]: group_index[i]]上，i=1,2, ...,n-1。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=None, dst_type=None, quant_mode="pertoken") -> (Tensor, Tensor, Tensor)
 ```
 
@@ -36,13 +36,13 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
 - **x** (`Tensor`)：必选参数，需要进行量化的源数据张量，数据类型支持`float16`、`bfloat16`，数据格式支持ND，支持非连续的Tensor。输入`x`的维度必须大于1。进行int4量化时，要求x形状的最后一维是8的整数倍。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **smooth_scales** (`Tensor`)：可选参数，对`x`进行scales的张量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，支持非连续的Tensor。
-    -   在非MoE场景shape必须是1维，和`x`的最后一维相等。
-    -   在MoE场景shape是2维[E, H]。其中E是专家数，取值范围在[1, 1024]且与group_index的第一维相同；H是x的最后一维。
-    -   单算子模式下`smooth_scales`的dtype必须和`x`保持一致，图模式下可以不一致。
+    - 在非MoE场景shape必须是1维，和`x`的最后一维相等。
+    - 在MoE场景shape是2维[E, H]。其中E是专家数，取值范围在[1, 1024]且与group_index的第一维相同；H是x的最后一维。
+    - 单算子模式下`smooth_scales`的dtype必须和`x`保持一致，图模式下可以不一致。
 - **group_index** (`Tensor`)：可选参数，对`smooth_scales`进行分组下标（代表`x`的行数索引），仅在MoE场景下生效。数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。`group_index`的shape为[E,]，E的取值范围在[1, 1024]且与smooth_scales第一维相同。tensor的取值必须递增且范围为[1, S]，最后一个值必须等于S（S代表输入`x`的行数，是`x`的shape除最后一维度外的乘积）。
 - **dst_type** (`ScalarType`)：可选参数，指定量化输出的类型，传None时当作`int8`处理。
-    -   <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`quint4x2`。
-    -   <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`quint4x2`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`quint4x2`。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`quint4x2`。
 - **quant_mode** (`str`)：可选参数，量化模式，支持"pertoken"、"pertensor"。默认值为"pertoken"。若`group_index`不为None，只支持"pertoken"。
 
 ## 返回值说明
@@ -53,14 +53,14 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
 
 ## 约束说明
 
--   该接口支持推理场景下使用。
--   该接口支持图模式。
--   使用可选参数`smooth_scales`、`group_index`、`dst_type`时，必须使用关键字传参。
+- 该接口支持推理场景下使用。
+- 该接口支持图模式。
+- 使用可选参数`smooth_scales`、`group_index`、`dst_type`时，必须使用关键字传参。
 
 ## 调用示例
 
--   单算子模式调用
-    -   只有一个输入`x`，进行`int8`量化
+- 单算子模式调用
+    - 只有一个输入`x`，进行`int8`量化
 
         ```python
         import torch
@@ -70,7 +70,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    -   只有一个输入`x`，进行`int4`量化
+    - 只有一个输入`x`，进行`int4`量化
 
         ```python
         import torch
@@ -80,7 +80,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    -   使用`smooth_scales`输入，非MoE场景（不使用`group_index`），进行`int8`量化
+    - 使用`smooth_scales`输入，非MoE场景（不使用`group_index`），进行`int8`量化
 
         ```python
         import torch
@@ -91,7 +91,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    -   使用`smooth_scales`输入，MoE场景（使用`group_index`），进行`int8`量化
+    - 使用`smooth_scales`输入，MoE场景（使用`group_index`），进行`int8`量化
 
         ```python
         import torch
@@ -103,7 +103,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
--   图模式调用
+- 图模式调用
 
     ```python
     import torch
@@ -135,4 +135,3 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
     print(scale)
     print(offset)
     ```
-

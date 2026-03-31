@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_memory=False, with_stack=False, with_flops=False, with_modules=False, experimental_config=None)
 ```
 

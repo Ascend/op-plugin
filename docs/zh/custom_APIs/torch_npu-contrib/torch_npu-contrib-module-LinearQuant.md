@@ -14,7 +14,7 @@ LinearQuant是对torch_npu.npu_quant_matmul接口的封装类，完成A8W8、A4W
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, offset=False, pertoken_scale=False, device=None, dtype=None, output_dtype=None)
 ```
 
@@ -349,4 +349,3 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     output = model(x1)
     ```
-

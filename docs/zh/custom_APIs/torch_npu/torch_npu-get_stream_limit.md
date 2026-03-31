@@ -1,11 +1,11 @@
 # torch.npu.get_stream_limit
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
-
 
 ## 功能说明
 
@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch.npu.get_stream_limit(stream) ->Dict
 ```
 
@@ -24,6 +24,7 @@ torch.npu.get_stream_limit(stream) ->Dict
 **stream** (`torch_npu.npu.Stream`)：必选参数，设置控核的流。
 
 ## 返回值说明
+
 `Dict`
 
 代表`stream`的Cube和Vector核数。

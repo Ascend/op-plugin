@@ -9,14 +9,13 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 查询aclnn算子版本信息。aclnn算子详情可参考《CANN AOL算子加速库接口》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/850/API/aolapi/operatorlist_00001.html">接口简介</a>”章节。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.aclnn.version(): -> None
 ```
 
@@ -31,4 +30,3 @@ torch_npu.npu.aclnn.version(): -> None
 >>> import torch_npu
 >>> res = torch_npu.npu.aclnn.version()
 ```
-

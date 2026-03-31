@@ -21,7 +21,7 @@ $$
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_softmax_cross_entropy_with_logits(features, labels) -> Tensor
 ```
 
@@ -31,17 +31,18 @@ torch_npu.npu_softmax_cross_entropy_with_logits(features, labels) -> Tensor
 
   - <term>Atlas 训练系列产品</term>、<term>Atlas 推理系列产品</term>：数据类型不支持bfloat16。
 
-
 - **labels** (`Tensor`)：必选参数，输入标签，shape和数据类型与`features`保持一致。对应公式中的$y_i$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持2维。支持空Tensor。数据类型支持float、float16、bfloat16。
 
   - <term>Atlas 训练系列产品</term>、<term>Atlas 推理系列产品</term>：数据类型不支持bfloat16。
 
 ## 返回值说明
+
 `Tensor`
 
 对应公式中$loss$，表示softmax和cross entropy的交叉熵损失计算结果。
 
 ## 调用示例
+
 ```python
 >>> import torch, torch_npu
 >>> batch_size = 4

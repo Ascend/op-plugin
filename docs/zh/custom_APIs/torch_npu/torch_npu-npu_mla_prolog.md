@@ -7,7 +7,6 @@
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    | √  |
 
-
 ## 功能说明
 
 - API功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。
@@ -18,27 +17,27 @@
   - 第三路是输入x乘以W<sup>DKV</sup>进行下采样和RmsNorm后传入Cache中得到k<sup>C</sup>；
   - 第四路是输入x乘以W<sup>KR</sup>后经过旋转位置编码后传入另一个Cache中得到k<sup>R</sup>。
   
--   计算公式：
-    -   RmsNorm公式:
+- 计算公式：
+    - RmsNorm公式:
         $$RmsNorm(x) = \gamma \cdot \frac{x} {\sqrt{\frac{1}{N} \sum_{i=1}^{N} x_i^2 + \epsilon}}$$
 
-    -   Query计算公式：
+    - Query计算公式：
         $$c^Q = RmsNorm(x \cdot W^{DQ})$$
         $$q^C = c^Q \cdot W^{UQ}$$
         $$q^N = q^C \cdot W^{UK}$$
 
-    -   Query ROPE旋转位置编码:
+    - Query ROPE旋转位置编码:
         $$q^R = ROPE(c^Q \cdot W^{QR})$$
 
-    -   Key计算公式:
+    - Key计算公式:
         $$k^C = Cache(RmsNorm(x \cdot W^{DKV}))$$
 
-    -   Key ROPE旋转位置编码:
+    - Key ROPE旋转位置编码:
         $$k^R = Cache(ROPE(x \cdot W^{KR}))$$
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv, rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None, quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, rmsnorm_epsilon_cq=1e-05, rmsnorm_epsilon_ckv=1e-05, cache_mode="PA_BSND") -> (Tensor, Tensor, Tensor, Tensor)
 ```
 
@@ -47,10 +46,10 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
 - **token\_x**（`Tensor`）：必选参数，对应公式中x。shape支持2维和3维，格式为\(T, He\)和\(B, S, He\)，dtype支持`bfloat16`，数据格式支持ND。
 - **weight\_dq**（`Tensor`）：必选参数，表示计算Query的下采样权重矩阵，即公式中W<sup>DQ</sup>。shape支持2维，格式为\(He, Hcq\)，dtype支持`bfloat16`，数据格式支持FRACTAL\_NZ（可通过`torch_npu.npu_format_cast`将ND格式转为FRACTAL\_NZ格式）。
 - **weight\_uq\_qr**（`Tensor`）：必选参数，表示计算Query的上采样权重矩阵和Query的位置编码权重矩阵，即公式中W<sup>UQ</sup>和W<sup>QR</sup>。shape支持2维，格式为\(Hcq, N\*\(D+Dr\)\)，dtype支持`bfloat16`和`int8`，数据格式支持FRACTAL\_NZ。   
-    -   当`weight_uq_qr`为`int8`类型时，`weight_uq_qr`是一个pertensor的量化后的输入，表示当前为部分量化场景。  
+    - 当`weight_uq_qr`为`int8`类型时，`weight_uq_qr`是一个pertensor的量化后的输入，表示当前为部分量化场景。  
         - 若`kv_cache`、`kr_cache`为`bfloat16`类型，对应`kv_cache_out`、`kr_cache_out`为非量化输出，此时`dequant_scale_w_uq_qr`字段必须传入，`smooth_scales_cq`字段可选传入。  
         - 若`kv_cache`、`kr_cache`为`int8`类型，对应`kv_cache_out`、`kr_cache_out`为量化输出，此时`dequant_scale_w_uq_qr`、`quant_scale_ckv`、`quant_scale_ckr`字段必须传入，`smooth_scales_cq`字段可选传入。    
-    -   当`weight_uq_qr`为`bfloat16`类型时，表示当前为非量化场景。   
+    - 当`weight_uq_qr`为`bfloat16`类型时，表示当前为非量化场景。   
         此时`dequant_scale_w_uq_qr`、`quant_scale_ckv`、`quant_scale_ckr`、`smooth_scales_cq`字段不能传入（即为none）。
   
 - **weight\_uk**（`Tensor`）：必选参数，表示计算Key的上采样权重，即公式中W<sup>UK</sup>。shape支持3维，格式为\(N, D, Hckv\)，dtype支持`bfloat16`，数据格式支持ND。
@@ -76,38 +75,38 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
 
 ## 返回值说明
 
--   **query**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。shape支持3维和4维，格式为\(T, N, Hckv\)和\(B, S, N, Hckv\)，dtype支持`bfloat16`，数据格式支持ND。
--   **query\_rope**（`Tensor`）：表示Query位置编码的输出Tensor，即公式中q<sup>R</sup>。shape支持3维和4维，格式为\(T, N, Dr\)和\(B, S, N, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
--   **kv\_cache\_out**（`Tensor`）：表示Key输出到`kv_cache`中的Tensor（本质in-place更新），即公式中k<sup>C</sup>。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Hckv\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
--   **kr\_cache\_out**（`Tensor`）：表示Key的位置编码输出到`kr_cache`中的Tensor（本质in-place更新），即公式中k<sup>R</sup>。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
+- **query**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。shape支持3维和4维，格式为\(T, N, Hckv\)和\(B, S, N, Hckv\)，dtype支持`bfloat16`，数据格式支持ND。
+- **query\_rope**（`Tensor`）：表示Query位置编码的输出Tensor，即公式中q<sup>R</sup>。shape支持3维和4维，格式为\(T, N, Dr\)和\(B, S, N, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
+- **kv\_cache\_out**（`Tensor`）：表示Key输出到`kv_cache`中的Tensor（本质in-place更新），即公式中k<sup>C</sup>。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Hckv\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
+- **kr\_cache\_out**（`Tensor`）：表示Key的位置编码输出到`kr_cache`中的Tensor（本质in-place更新），即公式中k<sup>R</sup>。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
 
 ## 约束说明
 
--   该接口支持推理场景下使用。
--   该接口支持图模式。
--   接口参数中shape格式字段含义：
-    -   B：Batch表示输入样本批量大小，取值范围为0\~65536。
-    -   S：Seq-Length表示输入样本序列长度，取值范围为0\~16。
-    -   He：Head-Size表示隐藏层的大小，取值为7168。
+- 该接口支持推理场景下使用。
+- 该接口支持图模式。
+- 接口参数中shape格式字段含义：
+    - B：Batch表示输入样本批量大小，取值范围为0\~65536。
+    - S：Seq-Length表示输入样本序列长度，取值范围为0\~16。
+    - He：Head-Size表示隐藏层的大小，取值为7168。
 
-    -   Hcq：q低秩矩阵维度，取值为1536。
-    -   N：Head-Num表示多头数，取值范围为1、2、4、8、16、32、64、128。
+    - Hcq：q低秩矩阵维度，取值为1536。
+    - N：Head-Num表示多头数，取值范围为1、2、4、8、16、32、64、128。
 
-    -   Hckv：kv低秩矩阵维度，取值为512。
-    -   D：qk不含位置编码维度，取值为128。
-    -   Dr：qk位置编码维度，取值为64。
-    -   Nkv：kv的head数，取值为1。
-    -   BlockNum：PagedAttention场景下的块数，取值为计算B\*Skv/BlockSize的值后再向上取整，其中Skv表示kv的序列长度，该值允许取0。
-    -   BlockSize：PagedAttention场景下的块大小，取值范围为16、128。
-    -   T：BS合轴后的大小，取值范围：0\~1048576。注：若采用BS合轴，此时token\_x、rope\_sin、rope\_cos均为2维，cache\_index为1维，query、query\_rope为3维。
--   shape约束
-    -   B、S、T、Skv值允许一个或多个取0，即Shape与B、S、T、Skv值相关的入参允许传入空Tensor，其余入参不支持传入空Tensor。
-        -   如果B、S、T取值为0，则query、query_rope输出空Tensor，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新。
-        -   如果Skv取值为0，则query、query_rope正常计算，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新，即输出空Tensor。
+    - Hckv：kv低秩矩阵维度，取值为512。
+    - D：qk不含位置编码维度，取值为128。
+    - Dr：qk位置编码维度，取值为64。
+    - Nkv：kv的head数，取值为1。
+    - BlockNum：PagedAttention场景下的块数，取值为计算B\*Skv/BlockSize的值后再向上取整，其中Skv表示kv的序列长度，该值允许取0。
+    - BlockSize：PagedAttention场景下的块大小，取值范围为16、128。
+    - T：BS合轴后的大小，取值范围：0\~1048576。注：若采用BS合轴，此时token\_x、rope\_sin、rope\_cos均为2维，cache\_index为1维，query、query\_rope为3维。
+- shape约束
+    - B、S、T、Skv值允许一个或多个取0，即Shape与B、S、T、Skv值相关的入参允许传入空Tensor，其余入参不支持传入空Tensor。
+        - 如果B、S、T取值为0，则query、query_rope输出空Tensor，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新。
+        - 如果Skv取值为0，则query、query_rope正常计算，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新，即输出空Tensor。
 
 ## 调用示例
 
--   单算子模式调用
+- 单算子模式调用
 
     ```python
     import torch
@@ -158,7 +157,7 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
             device='npu:0', dtype=torch.bfloat16)
     ```
 
--   图模式调用
+- 图模式调用
 
     ```python
     # 入图方式
@@ -250,4 +249,3 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
             [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]]]],
             device='npu:0', dtype=torch.bfloat16) 
     ```
-

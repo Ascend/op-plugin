@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportType.Text], profiler_level=torch_npu.profiler.ProfilerLevel.Level0, mstx=False, mstx_domain_include=[], mstx_domain_exclude=[], aic_metrics=torch_npu.profiler.AiCMetrics.AiCoreNone, l2_cache=False, op_attr=False, data_simplification=True, record_op_args=False, gc_detect_threshold=None, host_sys=[], sys_io=False, sys_interconnection=False)
 ```
 
@@ -35,7 +35,7 @@ torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportTyp
 
 - **mstx_domain_include** (`list`)：可选参数，输出需要的domain数据。调用torch_npu.npu.mstx系列打点接口，使用默认domain或指定domain进行打点时，可选择只输出本参数配置的domain数据。
 
-    domain名称为用户调用[torch_npu.npu.mstx](torch_npu-npu-mstx.md)系列接口传入的domain或默认domain（'default'），domain名称使用list类型输入。
+    domain名称为用户调用[torch_npu.npu.mstx](../torch_npu-npu/torch_npu-npu-mstx.md)系列接口传入的domain或默认domain（'default'），domain名称使用list类型输入。
 
     与mstx_domain_exclude参数互斥，若同时配置，则只有mstx_domain_include生效。
 

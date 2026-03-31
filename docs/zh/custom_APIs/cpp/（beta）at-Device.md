@@ -2,7 +2,7 @@
 
 ## 函数原型
 
-```
+```cpp
 at::Device(const std::string &device_string)
 ```
 
@@ -12,7 +12,7 @@ at::Device(const std::string &device_string)
 
 ## 参数说明
 
-device_ring：string类型，提供的字符串必须遵循以下架构：(npu)[:<device-index\>]，其中NPU指定设备类型，<device-index\>可选，指定设备索引。
+device_ring：string类型，提供的字符串必须遵循以下架构：`(npu)[:<device-index>]`，其中NPU指定设备类型，<device-index\>可选，指定设备索引。
 
 ## 支持的型号
 
@@ -20,4 +20,3 @@ device_ring：string类型，提供的字符串必须遵循以下架构：(npu)[
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

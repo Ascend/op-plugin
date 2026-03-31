@@ -10,14 +10,13 @@
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 |<term>Atlas 200I/500 A2 推理产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 关闭“确定性”功能。确定性算法是指在模型的前向传播过程中，每次输入相同，输出也相同。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.disable_deterministic_with_backward(tensor) -> Tensor
 ```
 
@@ -26,6 +25,7 @@ torch_npu.npu.disable_deterministic_with_backward(tensor) -> Tensor
 **tensor** (`Tensor`)：该接口为透明传输接口，不做数据处理，类型支持和数据格式为PyTorch在各芯片上的可支持的数据类型和数据格式，无接口级别的约束。
 
 ## 返回值说明
+
 `Tensor`
 
 代表`disable_deterministic_with_backward`的计算结果。
@@ -34,7 +34,6 @@ torch_npu.npu.disable_deterministic_with_backward(tensor) -> Tensor
 
 - 入参`tensor`需要是训练网络中可以传递下去且与整网的`output`有关联的`tensor`变量，否则无法进行反向设置确定性能力。
 - 不支持图模式。
-
 
 ## 调用示例
 
@@ -91,4 +90,3 @@ Ran 1 test in 4.636s
 
 OK
 ```
-

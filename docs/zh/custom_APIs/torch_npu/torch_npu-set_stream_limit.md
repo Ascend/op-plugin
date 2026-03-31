@@ -1,11 +1,11 @@
 # torch.npu.set_stream_limit
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
-
 
 ## 功能说明
 
@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
 ```
 
@@ -26,6 +26,7 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
 - **vector_num** (`int`)：可选参数，设置的vector的核数，默认为-1不设置分核。
 
 ## 返回值说明
+
 `None`
 
 代表无返回值。
@@ -48,8 +49,10 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
  ```
 
 ## 控核生效示例
+
 1. 使用Ascend PyTorch Profiler接口采集性能数据，主要包括PyTorch层算子信息、CANN层算子信息、底层NPU算子信息以及算子内存占用信息等。
    > **说明**：Ascend PyTorch Profiler是CANN针对PyTorch框架开发的性能分析工具，通过在PyTorch脚本中添加Ascend PyTorch Profiler接口（推荐torch_npu.profiler.profile接口）采集指定指标数据，模型执行时同步采集性能数据，详细的使用方法和结果文件介绍请参考《[CANN 性能调优工具用户指南](https://hiascend.com/document/redirect/CanncommercialToolProfiling)》中的“Ascend PyTorch Profiler”章节。
+
      ```python
      >>> import torch
      >>> import torch_npu
@@ -71,15 +74,19 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
      >>>    with torch.npu.stream(stream2):
      >>>       output = torch_npu.npu_swiglu(x1, dim=-1)
      ```
+
    当显示如下打印信息时，代表采集正常，“Start parsing profiling data”信息表示采集结果路径。
-     ```
+
+     ```shell
      2025-07-01 08:50:41 [INFO] [367681] profiler.py: Start parsing profiling data: /home/prof/${hostname}_${pid}_${timestamp}_ascend_pt
      2025-07-01 08:50:44 [INFO] [367725] profiler.py: CANN profiling data parsed in a total time of 0:00:03.169691
      2025-07-01 08:50:45 [INFO] [367681] profiler.py: All profiling data parsed in a total time of 0:00:04.654659
      ......
      ```
+
    关键产物如下：
-     ```
+
+     ```shell
      |-- /home/prof/${hostname}_${pid}_${timestamp}_ascend_pt   
        |-- ASCEND_PROFILER_OUTPUT           // 采集并解析的性能数据目录
          |-- api_statistic.csv             // profiler_level配置为Level1或Level2级别时生成，统计CANN层API执行耗时信息
@@ -93,6 +100,7 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
        |-- logs                             // 解析过程日志
        ......
    ```
+
 2. 查看采集结果文件（json、csv等格式）。 
 
    单算子控核可以查看**kernel_details.csv**文件，查看算子的**BlockDim**列（算子计算所用核数），BlockDim小于等于用户设置的控核数即可认为控核成功。

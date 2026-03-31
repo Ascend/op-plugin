@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_iou(bboxes, gtboxes, mode=0) -> Tensor 
 ```
 
@@ -42,4 +42,3 @@ tensor([[0.4985, 0.0000, 0.0000],
         [0.0000, 0.0000, 0.0000], 
        [0.0000, 0.9961, 0.0000]], device='npu:0', dtype=torch.float16)
 ```
-

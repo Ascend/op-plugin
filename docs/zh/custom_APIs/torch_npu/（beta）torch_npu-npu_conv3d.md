@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_conv3d(input, weight, bias, stride, padding, dilation, groups) -> Tensor
 ```
 

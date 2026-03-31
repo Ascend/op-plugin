@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_convolution_transpose(input, weight, bias, padding, output_padding, stride, dilation, groups) -> Tensor
 ```
 
@@ -32,4 +32,3 @@ torch_npu.npu_convolution_transpose(input, weight, bias, padding, output_padding
 - **stride**（`List[int]`）：卷积核步长。
 - **dilation**（`List[int]`）：内核元素间距。
 - **groups**（`int`）：对输入进行分组。in_channels可被组数整除。
-

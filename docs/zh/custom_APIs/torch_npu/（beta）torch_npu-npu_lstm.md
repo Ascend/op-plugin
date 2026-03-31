@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropout, train, bidirectional, batch_first, flag_seq, direction)
 ```
 
@@ -46,4 +46,3 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 - **f** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
 - **o** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
 - **tanhct** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
-

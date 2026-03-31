@@ -10,7 +10,6 @@
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
 
-
 ## 功能说明
 
 提供故障内存地址类型检测接口，供MindCluster进行故障恢复策略的决策。其功能是在出现UCE片上内存故障时，判断故障内存地址类型。
@@ -20,7 +19,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.check_uce_in_memory(device_id:int)
 ```
 
@@ -28,14 +27,12 @@ torch_npu.npu.check_uce_in_memory(device_id:int)
 
 **device_id** (`int`)：需要处理的device id。
 
-
 ## 返回值说明
 
 - 0：无UCE故障地址。
 - 1：UCE故障地址为非Ascend Extension for PyTorch使用的内存地址。
 - 2：UCE故障地址为Ascend Extension for PyTorch使用的临时内存地址。
 - 3：UCE故障地址为Ascend Extension for PyTorch使用的常驻内存地址。
-
 
 ## 约束说明
 
@@ -48,4 +45,3 @@ torch_npu.npu.check_uce_in_memory(device_id:int)
 >>> torch.npu.set_device(0)
 >>> torch_npu.npu.check_uce_in_memory(0)
  ```
-

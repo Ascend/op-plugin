@@ -6,7 +6,7 @@ torch_npu\csrc\aten\NPUGeneratorImpl.h
 
 ## 函数原型
 
-```
+```cpp
 at::Generator at_npu::detail::createNPUGenerator(c10::DeviceIndex device_index = -1)
 ```
 
@@ -24,4 +24,3 @@ device_index：DeviceIndex类型，指定创建生成器的NPU设备id。
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

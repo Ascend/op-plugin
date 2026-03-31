@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 ```
 
@@ -24,7 +24,6 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 - **input** (`Tensor`)：必选参数，2D矩阵张量。数据类型支持`float32`、`float16`、`int32`、`int8`。格式支持[ND, NHWC, FRACTAL_NZ]。
 - **weight** (`Tensor`)：必选参数，2D矩阵张量。数据类型支持`float32`、`float16`、`int32`、`int8`。格式支持[ND, NHWC, FRACTAL_NZ]。
 - **bias** (`Tensor`)：可选参数，1D张量。数据类型支持`float32`、`float16`、`int32`。格式支持[ND, NHWC]。默认值为None。
-
 
 ## 调用示例
 
@@ -39,4 +38,3 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 tensor([[3.6335, 4.3713, 2.4440, 2.0081],
         [5.3273, 6.3089, 3.9601, 3.2410]], device='npu:0')
 ```
-

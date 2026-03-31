@@ -25,7 +25,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06) -> Tensor
 ```
 
@@ -52,6 +52,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06) -> Te
 - **epsilon** (`float`)：可选参数，对应公式中的$eps$，用于防止除零错误，默认值为 `1e-6`。建议传入较小的正数。
 
 - **dst_dtype** (`int`): 可选参数，指定量化输出的类型，传`None`时当做int8处理，支持取值`int8`、`quint4x2`。
+
 ## 返回值说明
   
   `Tensor`
@@ -81,6 +82,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06) -> Te
     | float16   | float16       | float16       | float16       | int8           | double      |int32      |
 
 ## 调用示例
+
 ```python
 >>> import torch
 >>> import torch_npu

@@ -1,4 +1,5 @@
 # （beta）torch_npu.npu_grid_assign_positive
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -8,14 +9,13 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
 ## 功能说明
 
 执行position-sensitive的候选区域池化梯度计算。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_overlaps, argmax_overlaps, gt_max_overlaps, gt_argmax_overlaps, num_gts, pos_iou_thr, min_pos_iou, gt_max_assign_all) -> Tensor
 ```
 
@@ -34,6 +34,7 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 - **gt_max_assign_all** (`bool`)：必选参数，是否将与某个gt有相同最高重叠的所有检测框分配给该gt。
 
 ## 返回值说明
+
 `Tensor`
 
 候选区域池化梯度计算结果。

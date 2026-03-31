@@ -7,7 +7,6 @@
 |  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>   |     √    |
 |  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
 
-
 ## 功能说明
 
 - API功能：将各SP域PA算子的输出的中间结果`lse`，`local_out`两个局部变量结果更新成全局结果。
@@ -31,7 +30,8 @@
   $$
 
 ## 函数原型
-```
+
+```python
 torch_npu.npu_attention_update(lse, local_out, update_type) -> (Tensor, Tensor)
 ```
 
@@ -47,6 +47,7 @@ torch_npu.npu_attention_update(lse, local_out, update_type) -> (Tensor, Tensor)
 - **lse_out**(`Tensor`)：可选输出，对应公式中的$lse_m$。shape为$(batch \times seqLen \times headNum)$，数据类型为`float32`，数据格式为$ND$。仅当`update_type=1`时有效。
 
 ## 约束说明
+
 - 确定性计算：该接口默认为确定性实现，即对于相同的输入，多次执行会产生相同的结果，确保计算结果的可重复性。
 - 序列并行的并行度SP取值范围[1, 16]。
 - head_dim取值范围[8, 512]且是8的倍数。

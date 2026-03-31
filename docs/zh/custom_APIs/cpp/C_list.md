@@ -164,56 +164,55 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>申请一个device信息为NPU且实际内存在host侧的特殊Tensor。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard.md">c10_npu::NPUStreamGuard</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard.md">c10_npu::NPUStreamGuard</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>NPU设备流guard，保障作用域内的设备流，与`c10::cuda::CUDAStreamGuard`相同。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-current_device.md">c10_npu::NPUStreamGuard::current_device</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-current_device.md">c10_npu::NPUStreamGuard::current_device</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>返回guard当前设备。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-current_stream.md">c10_npu::NPUStreamGuard::current_stream</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-current_stream.md">c10_npu::NPUStreamGuard::current_stream</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>返回guard当前保障的流。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-NPUStreamGuard.md">c10_npu::NPUStreamGuard::NPUStreamGuard</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-NPUStreamGuard.md">c10_npu::NPUStreamGuard::NPUStreamGuard</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>构造函数，创建一个流guard。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-original_device.md">c10_npu::NPUStreamGuard::original_device</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-original_device.md">c10_npu::NPUStreamGuard::original_device</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>返回guard构造时的设备。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-original_stream.md">c10_npu::NPUStreamGuard::original_stream</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-original_stream.md">c10_npu::NPUStreamGuard::original_stream</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>返回guard构造时设置的流。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-reset_stream.md">c10_npu::NPUStreamGuard::reset_stream</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-reset_stream.md">c10_npu::NPUStreamGuard::reset_stream</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>给guard重新设置新的流。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-stream_synchronize.md">c10_npu::stream_synchronize</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-stream_synchronize.md">c10_npu::stream_synchronize</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>NPU设备流同步，与`c10::cuda::stream_synchronize`相同。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10d_npu-ProcessGroupHCCL.md">c10d_npu::ProcessGroupHCCL</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10d_npu-ProcessGroupHCCL.md">c10d_npu::ProcessGroupHCCL</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>ProcessGroupHCCL继承自`c10d::Backend`，实现`HCCL`后端的相关接口，用于通信算子调用。</p>
 </td>
 </tr>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10d_npu-ProcessGroupHCCL-batch_isend_irecv.md">c10d_npu::ProcessGroupHCCL::batch_isend_irecv</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10d_npu-ProcessGroupHCCL-batch_isend_irecv.md">c10d_npu::ProcessGroupHCCL::batch_isend_irecv</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>发送或接收一批tensor，异步处理P2P操作序列中的每一个操作，并返回对应的请求。</p>
 </td>
 </tr>
 </tbody>
 </table>
-

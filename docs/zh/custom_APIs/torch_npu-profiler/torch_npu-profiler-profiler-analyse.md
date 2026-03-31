@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.profiler.profiler.analyse(profiler_path="", max_process_number=max_process_number, export_type=export_type)
 ```
 

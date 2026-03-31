@@ -1,6 +1,7 @@
 # torch_npu.npu_dense_lightning_indexer_softmax_lse
 
 ## 产品支持情况
+
 | 产品                           | 是否支持 |
 |------------------------------| :------: |
 | <term>Atlas A3 训练系列产品</term> | √  |
@@ -28,11 +29,12 @@ $maxIndex$，$sumIndex$作为输出传递给接口npu_dense_lightning_indexer_gr
 
 ## 函数原型
 
-```
+```python
 npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor)
 ```
 
 ## 参数说明
+
 **query_index**(`Tensor`)：必选参数，表示Lightning Indexer正向的输入query，对应公式中的$\tilde{Q}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N1index, D)$、$(T1, N1index, D)$。
 
 **key_index**(`Tensor`)：必选参数，表示Lightning Indexer正向的输入key，对应公式中的$\tilde{K}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S2, N2index, D)$、$(T2, N2index, D)$。
@@ -51,18 +53,17 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 
 **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值2^63-1。
 
-
-
-
 ## 返回值说明
--   **softmax_max_index**(`Tensor`)：表示softmax计算使用的max值，对应公式中的$maxIndex$，数据格式支持$ND$，数据类型支持`float32`。
--   **softmax_sum_index**(`Tensor`)：表示softmax计算使用的sum值，对应公式中的$sumIndex
+
+- **softmax_max_index**(`Tensor`)：表示softmax计算使用的max值，对应公式中的$maxIndex$，数据格式支持$ND$，数据类型支持`float32`。
+- **softmax_sum_index**(`Tensor`)：表示softmax计算使用的sum值，对应公式中的$sumIndex
 $，数据格式支持$ND$，数据类型支持`float32`。
 
 ## 约束说明
--   参数query_index、key_index的数据类型应保持一致。
--   参数weights不为`float32`时，参数query_index、key_index、weights的数据类型应保持一致。
--   shape数值约束：
+
+- 参数query_index、key_index的数据类型应保持一致。
+- 参数weights不为`float32`时，参数query_index、key_index、weights的数据类型应保持一致。
+- shape数值约束：
 
 | 规格项    | 规格       | 规格说明         |
 |-----------|------------|-----------------|
@@ -72,8 +73,8 @@ $，数据格式支持$ND$，数据类型支持`float32`。
 | N2index   | 1          | -               |
 | D         | 128        | -               |
 
-
 ## 调用示例
+
 - 单算子模式调用
 
     ```python

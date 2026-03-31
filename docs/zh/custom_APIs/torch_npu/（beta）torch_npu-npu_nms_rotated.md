@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_nms_rotated(dets, scores, iou_threshold, scores_threshold=0, max_output_size=-1, mode=0) -> (Tensor, Tensor)
 ```
 
@@ -58,4 +58,3 @@ tensor([76, 48, 15, 65, 91, 82, 21, 96, 62, 90, 13, 59,  0, 18, 47, 23,  8, 56,
 >>> output2
 tensor([62], device='npu:0', dtype=torch.int32)
 ```
-

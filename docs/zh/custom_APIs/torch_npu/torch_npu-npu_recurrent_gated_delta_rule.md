@@ -26,7 +26,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None, scale=None, actual_seq_lengths=None, ssm_state_indices=None, num_accepted_tokens=None, g=None, gk=None) -> Tensor
 ```
 
@@ -61,6 +61,7 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 公式中的$o$，注意力计算结果。输出的数据类型为`bfloat16`，数据格式为ND，shape为($T$, $N_v$, $D_v$)。
 
 ## 约束说明
+
 - 参数里Shape使用的变量如下：
     - $T=\sum_i^B L_i$ 表示累积序列长度。
     - $B$ 表示batch size。
@@ -76,6 +77,7 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 ## 调用示例
 
 - 单算子调用
+
     ```python
     import torch
     import torch_npu
@@ -107,6 +109,7 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
     ```
 
 - 静态图模式调用
+
     ```python
     import torch
     import torch_npu

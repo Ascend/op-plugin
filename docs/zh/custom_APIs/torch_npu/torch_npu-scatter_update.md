@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.scatter_update(data, indices, updates, axis) -> Tensor
 ```
 
@@ -34,9 +34,11 @@ torch_npu.scatter_update(data, indices, updates, axis) -> Tensor
 - **axis** (`int`)：必选参数。代表轴，用来表示scatter的维度，数据类型为`int64`。
 
 ## 返回值说明
+
 `Tensor`
 
 计算输出，只支持2-8维，且维度大小需要与`data`一致；支持非连续的tensor；数据格式支持$ND$；不支持空Tensor。
+
 - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`float16`、`float32`、`bfloat16`、`int32`。
 - <term>Atlas A3 训练系列产品</term>：数据类型支持`int8`、`float16`、`float32`、`bfloat16`、`int32`。
 - <term>Atlas 训练系列产品</term>：数据类型支持`int8`、`float16`、`float32`、`int32`。
@@ -57,4 +59,3 @@ indices = torch.tensor ([1],dtype=torch.int64).npu()
 updates = torch.tensor([[[[3,3,3,3,3,3,3,3]]]] , dtype=torch.float32).npu()
 out = torch_npu.scatter_update(data, indices, updates, axis=-2)
 ```
-

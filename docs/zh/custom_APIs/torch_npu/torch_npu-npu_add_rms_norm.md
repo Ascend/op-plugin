@@ -8,7 +8,6 @@
 |  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
 |  <term>Atlas 推理系列产品</term>    |     √    |
 
-
 ## 功能说明
 
 - API功能：将Add计算与RMSNorm归一化融合，常用于大模型中将残差连接后的张量进行归一化处理。
@@ -23,7 +22,8 @@
   $$
 
 ## 函数原型
-```
+
+```python
 torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Tensor)
 ```
 

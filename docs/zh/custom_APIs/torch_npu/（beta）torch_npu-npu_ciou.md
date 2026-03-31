@@ -1,6 +1,6 @@
 # （beta）torch_npu.npu_ciou
-## 产品支持情况
 
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
@@ -15,11 +15,9 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_ciou(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_flag=False) -> Tensor
 ```
-
-
 
 ## 参数说明
 
@@ -31,6 +29,7 @@ torch_npu.npu_ciou(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_f
 - **atan_sub_flag** (`bool`)：可选参数，是否将正向的第二个值传递给反向。默认值为False。
 
 ## 返回值说明
+
 `Tensor`
 
 mask操作的结果。
@@ -38,7 +37,6 @@ mask操作的结果。
 ## 约束说明
 
 到目前为止，CIoU向后只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
-
 
 ## 调用示例
 
@@ -51,4 +49,3 @@ mask操作的结果。
 >>> l = ciou.sum()
 >>> l.backward()
 ```
-

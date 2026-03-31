@@ -14,7 +14,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.profiler.dynamic_profile.start(config_path: str = None)
 ```
 

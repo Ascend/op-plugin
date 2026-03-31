@@ -19,7 +19,7 @@ $$
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, padding_mask=None, atten_mask=None, actual_seq_lengths=None, deq_scale1=None, quant_scale1=None, deq_scale2=None, quant_scale2=None, quant_offset2=None, num_heads=1, scale_value=1.0, pre_tokens=2147483647, next_tokens=0, input_layout="BSH",num_key_value_heads=0, actual_seq_lengths_kv=None, sparse_mode=0) -> Tensor
 ```
 
@@ -84,6 +84,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - `sparse_mode`为5、6、7、8时，分别代表`prefix、global、dilated、block_local`，均暂不支持。
 
 ## 返回值说明
+
 `Tensor`
 
 公式中的$atten\_out$，表示计算的最终结果。当`input_layout`为$BNSD\_BSND$时，输入`query`的shape是$BNSD$，输出shape为$BSND$，其余情况shape与`query`的shape保持一致。
@@ -240,4 +241,3 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
             [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]]]],
             device='npu:0', dtype=torch.float16) torch.Size([1, 8, 164, 128])
     ```
-

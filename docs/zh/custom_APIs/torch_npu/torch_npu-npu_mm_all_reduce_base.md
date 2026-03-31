@@ -20,7 +20,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, antiquant_scale=None, antiquant_offset=None, x3=None, dequant_scale=None, pertoken_scale=None, comm_quant_scale_1=None, comm_quant_scale_2=None, comm_turn=0, antiquant_group_size=0) -> Tensor
 ```
 
@@ -55,6 +55,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **antiquant_group_size** (`int`)：可选参数。表示伪量化pergroup算法模式下，对输入`x2`进行反量化计算的groupSize输入，描述一组反量化参数对应的待反量化数据量在$k$轴方向的大小。当伪量化算法模式不为pergroup时传入`0`；当伪量化算法模式为pergroup时传入值的范围为`[32, min(k-1, INT_MAX)]`且值要求是32的倍数，其中$k$为`x2`第一维的大小。默认值`0`，为`0`则表示非pergroup场景。
 
 ## 返回值说明
+
 `Tensor`
 
 数据类型非量化场景以及伪量化场景与`x1`保持一致，全量化场景输出数据类型为`float16`或`bfloat16`。shape第0维度和`x1`的第0维保持一致，若`x1`为2维，shape第1维度和`x2`的第1维保持一致，若`x1`为3维，shape第1维度和`x1`的第1维保持一致，shape第2维度和`x2`的第1维保持一致。
@@ -81,18 +82,21 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - 不同场景下数据类型支持情况：
 
     **表1** 非量化场景
+
     |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|
     |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`float16`|`float16`|`float16`|`float16`|`float16`|None|None|None|
     |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|None|None|
     
     **表2** 伪量化场景
+
     |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|
     |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`float16`|`int8`|`float16`|`float16`|`float16`|`float16`|`float16`|None|
     |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`bfloat16`|`int8`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|
     
     **表3** 全量化场景
+
     |产品型号|x1|x2|bias|x3|output（输出）|antiquant_scale|antiquant_offset|dequant_scale|pertoken_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
     |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`uint64`或`int64`|None|

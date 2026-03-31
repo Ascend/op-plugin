@@ -1,4 +1,5 @@
 # torch_npu.erase_stream
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -6,7 +7,6 @@
 | <term>Atlas A2 训练系列产品</term>  | √   |
 | <term>Atlas 训练系列产品</term>                                       |    √     |
 
- 
 ## 功能说明
 
 - `Tensor`通过record_stream在内存池上添加的已被stream使用的标记后，可以通过该接口移除该标记。
@@ -17,7 +17,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.erase_stream(tensor, stream) -> None
 ```
 
@@ -27,6 +27,7 @@ torch_npu.erase_stream(tensor, stream) -> None
 - **stream** (`torch_npu.npu.Stream`)：必选参数，被移除标记所属的stream。
 
 ## 返回值说明
+
 `None`
 
 无返回值
@@ -36,7 +37,6 @@ torch_npu.erase_stream(tensor, stream) -> None
 该接口需要结合event wait来使用，保证算子执行完成后才对标记进行移除，避免出现内存踩踏行为。
 
 ## 调用示例
-
 
 ```python
 >>> import torch

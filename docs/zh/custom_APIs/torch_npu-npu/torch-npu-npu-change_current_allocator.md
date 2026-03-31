@@ -9,9 +9,6 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
-
-
 ## 功能说明
 
 更改使用的内存分配器。
@@ -22,11 +19,9 @@ torch_npu/npu/memory.py
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.change_current_allocator(allocator) -> None
 ```
-
-
 
 ## 参数说明
 
@@ -35,8 +30,6 @@ torch_npu.npu.change_current_allocator(allocator) -> None
 ## 约束说明
 
 如果内存分配器已被初始化，调用该函数将失败。
-
-
 
 ## 调用示例
 
@@ -96,4 +89,3 @@ ASCEND_LOGD("Pluggable Allocator malloc: malloc = %zu", size);
  
 ASCEND_LOGD("Pluggable Allocator free: free= %zu", size);
 ```
-

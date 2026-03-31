@@ -6,7 +6,7 @@ torch_npu\csrc\core\npu\NPUStream.h
 
 ## 函数原型
 
-```
+```cpp
 c10_npu::NPUStream c10_npu::getNPUStreamFromPool(c10::DeviceIndex device = -1)
 ```
 
@@ -24,4 +24,3 @@ device：DeviceIndex类型，获取流的NPU设备id。
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

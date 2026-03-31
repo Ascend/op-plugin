@@ -67,7 +67,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_deformable_conv2d(self, weight, offset, bias=None, kernel_size, stride, padding, dilation=[1,1,1,1], groups=1, deformable_groups=1, modulated=True) -> (Tensor, Tensor)
 ```
 
@@ -77,7 +77,7 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias=None, kernel_size, st
 - **weight** (`Tensor`): 必选参数，可学习过滤器的4D张量，对应公式中的`weight`。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据格式需与`self`相同。数据按以下顺序存储：`[out_channels, in_channels / groups, filter_height, filter_width]`。其中，`filter_height`表示卷积核的高度，`filter_width`表示卷积核的宽度。
 - **offset** (`Tensor`): 必选参数，x-y坐标偏移和掩码的4D张量，对应公式中的`offset`。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据格式需与`self`相同。当`modulated`为True时，数据按以下顺序存储：`[batch, deformable_groups * filter_height * filter_width * 3, out_height, out_width]`；当`modulated`为False时，数据按以下顺序存储为`[batch, deformable_groups * filter_height * filter_width * 2, out_height, out_width]`。
 - **bias** (`Tensor`): 可选参数，过滤器输出附加偏置（additive bias）的1D张量，对应公式中的`bias`。不支持空Tensor，支持非连续的Tensor。数据格式为$ND$。默认值为None，如果不为None时数据按`[out_channels]`的顺序存储。
-- **kernel_size** (`List[int]`): 必选参数，内核大小，对应公式中的`K_H`、`K_W`。2个整数的元组/列表(K_H, K_W)，各元素均大于零，K_H * K_W不能超过2048，K_H * K_W * in_channels/groups不能超过65535。
+- **kernel_size** (`List[int]`): 必选参数，内核大小，对应公式中的`K_H`、`K_W`。2个整数的元组/列表(K_H, K_W)，各元素均大于零，K_H \* K_W不能超过2048，K_H \* K_W \* in_channels/groups不能超过65535。
 - **stride** (`List[int]`): 必选参数，4个整数的列表，表示每个输入维度的滑动窗口步长，对应公式中的`stride`。维度顺序根据`self`的数据格式解释。各元素均大于零，N维和C维必须设置为1。
 - **padding** (`List[int]`): 必选参数，4个整数的列表，表示要添加到输入每侧（顶部、底部、左侧、右侧）的像素数，对应公式中的`padding`。
 - **dilation** (`List[int]`): 可选参数，4个整数的列表，表示输入每个维度的膨胀系数（dilation factor），对应公式中的`dilation`。维度顺序根据`self`的数据格式解释。各元素均大于零，N维和C维必须设置为1。默认值为`[1, 1, 1, 1]`。
@@ -86,13 +86,13 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias=None, kernel_size, st
 - **modulated** (`bool`): 可选参数，表示`offset`中是否包含掩码。默认值为True，表示`offset`中包含掩码；若为False，则不包含。
 
 ## 返回值说明
+
 - **conv_output** (`Tensor`): 经过变形卷积处理后的结果张量，对应公式中的`out`。不支持空Tensor，支持非连续的Tensor。shape为`[batch, out_channels, out_height, out_width]`。数据格式需与`self`相同。
 - **deformable_offset** (`Tensor`): 变形卷积中用于调整采样位置的偏移量张量，对应公式中的`deformOut`。不支持空Tensor，支持非连续的Tensor。shape为`[batch, in_channels, out_height * K_H, out_width * K_W]`数据格式需与`self`相同。
 
 ## 约束说明
 
 所有Tensor类型的输入参数，无论输入何种数据类型都会被自动转换为`float32`；输出参数的数据类型为`float32`。
-
 
 ## 调用示例
 
@@ -107,4 +107,3 @@ torch.Size([16, 32, 32, 32])
 >>> deform_offset.shape
 torch.Size([16, 32, 160, 160])
 ```
-

@@ -16,10 +16,9 @@ AdamW的功能和原理可参考[AdamW](https://pytorch.org/docs/stable/generate
 
 ## 函数原型
 
-```
+```python
 class torch_npu.optim.NpuFusedAdamW(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=1e-2, amsgrad=False)
 ```
-
 
 ## 参数说明
 
@@ -30,11 +29,9 @@ class torch_npu.optim.NpuFusedAdamW(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为1e-2。`weight_decay`小于0时，系统会抛出“ValueError”异常信息。
 - **amsgrad** (`bool`)：可选参数，是否使用参考《[On the Convergence of Adam and Beyond](https://arxiv.org/pdf/1904.09237)》的AMSGrad变种实现，默认值为False。
 
-
 ## 返回值说明
 
 类型为`NpuFusedAdamW`的对象。
-
 
 ## 约束说明
 
@@ -45,7 +42,6 @@ class torch_npu.optim.NpuFusedAdamW(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-
 - 将模型参数对象置为None
 
 对模型参数对象进行inplace计算，或者读取参数的值，`NpuFusedAdamW`可正常工作。
-
 
 ## 调用示例
 
@@ -78,4 +74,3 @@ fused_opt = NpuFusedAdamW(params, **opt_kwargs)
 with torch.no_grad():
     fused_opt.step()
 ```
-

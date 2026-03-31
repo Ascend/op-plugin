@@ -1,6 +1,6 @@
 # （beta）torch_npu.contrib.module.npu_modules.DropoutWithByteMask
-## 产品支持情况
 
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
@@ -8,13 +8,14 @@
 |<term>Atlas A2 训练系列产品</term>  | √    |
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
+
 ## 功能说明
 
 应用NPU兼容的DropoutWithByteMask操作。
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.npu_modules.DropoutWithByteMask(p=0.5, inplace=False, max_seed=2 ** 10 - 1)
 ```
 
@@ -36,7 +37,6 @@ torch_npu.contrib.module.npu_modules.DropoutWithByteMask(p=0.5, inplace=False, m
 
 输出张量与输入张量的shape相同。
 
-
 ## 调用示例
 
 ```python
@@ -48,4 +48,3 @@ torch_npu.contrib.module.npu_modules.DropoutWithByteMask(p=0.5, inplace=False, m
 >>> output.shape
 torch.Size([16, 16])
 ```
-

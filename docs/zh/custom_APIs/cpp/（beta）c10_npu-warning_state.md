@@ -6,7 +6,7 @@ torch_npu\csrc\core\npu\NPUFunctions.h
 
 ## 函数原型
 
-```
+```cpp
 c10_npu::WarningState& c10_npu::warning_state()
 ```
 
@@ -20,4 +20,3 @@ c10_npu::WarningState& c10_npu::warning_state()
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

@@ -1,4 +1,5 @@
 # （beta）torch_npu.npu.utils.is_support_inf_nan
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -14,18 +15,17 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.utils.is_support_inf_nan() -> bool
 ```
 
-
 ## 返回值说明
+
 `bool`
 
 返回值为True时，代表是INF_NAN模式。
 
 返回值为False时，代表为饱和模式。
-
 
 ## 调用示例
 
@@ -46,4 +46,3 @@ class TestCheckOverFlow(TestCase):
 if __name__ == "__main__":
     run_tests()
 ```
-

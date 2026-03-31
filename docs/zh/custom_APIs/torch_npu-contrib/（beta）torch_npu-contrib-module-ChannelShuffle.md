@@ -1,6 +1,6 @@
 # （beta）torch_npu.contrib.module.ChannelShuffle
-## 产品支持情况
 
+## 产品支持情况
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
@@ -16,6 +16,7 @@
 - 等价计算逻辑：
   
     split_shuffle=False场景可使用`cpu_channel_shuffle`等价替换`torch_npu.contrib.module.ChannelShuffle`，两者计算逻辑一致。
+
   ```python
   import torch
   def cpu_channel_shuffle(x, groups, split_shuffle):
@@ -36,19 +37,20 @@
   
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.ChannelShuffle(in_channels, groups=2, split_shuffle=True)
 ```
 
 ## 参数说明
+
 **计算参数**
 
 - **in_channels** (`int`)：必选参数。输入张量中的通道总数。
 - **groups** (`int`)：可选参数。shuffle组数。默认值为2。
 - **split_shuffle** (`bool`)：可选参数。shuffle后是否执行chunk操作。默认值为True。
 
-
 **计算输入**
+
 - **x1** (`Tensor`)：输入张量。 shape为$(N, C_{in}, *)$。
 - **x2** (`Tensor`)：输入张量。 shape为$(N, C_{in}, *)$。
 
@@ -60,7 +62,6 @@ torch_npu.contrib.module.ChannelShuffle(in_channels, groups=2, split_shuffle=Tru
 ## 约束说明
 
 只实现了groups为2场景，请自行修改其他groups场景。
-
 
 ## 调用示例
 
@@ -76,4 +77,3 @@ torch.Size([2, 32, 7, 7])
 >>> out2.shape
 torch.Size([2, 32, 7, 7])
 ```
-

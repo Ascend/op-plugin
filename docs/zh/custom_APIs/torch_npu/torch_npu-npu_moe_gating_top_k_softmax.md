@@ -20,7 +20,7 @@ $$
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_moe_gating_top_k_softmax(x, finished=None, k=1) -> (Tensor, Tensor, Tensor)
 ```
 
@@ -77,4 +77,3 @@ torch_npu.npu_moe_gating_top_k_softmax(x, finished=None, k=1) -> (Tensor, Tensor
     res = moe_gating_topk_softmax_model(x, None, 2)
     print(res)
     ```
-

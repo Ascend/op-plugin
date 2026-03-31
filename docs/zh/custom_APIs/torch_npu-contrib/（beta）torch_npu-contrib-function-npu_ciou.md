@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.npu_ciou(boxes1, boxes2, trans=True, is_cross=False, mode=0)
 ```
 
@@ -40,7 +40,6 @@ torch_npu.contrib.function.npu_ciou(boxes1, boxes2, trans=True, is_cross=False, 
 
 到目前为止，CIoU向后只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
 
-
 ## 调用示例
 
 ```python
@@ -53,4 +52,3 @@ torch_npu.contrib.function.npu_ciou(boxes1, boxes2, trans=True, is_cross=False, 
 >>> l = ciou.sum()
 >>> l.backward()
 ```
-

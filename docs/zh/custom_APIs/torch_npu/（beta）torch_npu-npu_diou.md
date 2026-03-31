@@ -9,17 +9,15 @@
 |<term>Atlas 训练系列产品</term> | √   |
 |<term>Atlas 推理系列产品</term>| √   |
 
-
 ## 功能说明
 
 应用基于NPU的DIoU操作。考虑到目标之间距离，以及距离和范围的重叠率，不同目标或边界需趋于稳定。
+
 ## 函数原型
 
-```
+```python
 torch_npu.npu_diou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 ```
-
-
 
 ## 参数说明
 
@@ -30,6 +28,7 @@ torch_npu.npu_diou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 - **mode** (`int`)：选择DIoU的计算方式。0表示IoU，1表示IoF。默认值为0。
 
 ## 返回值说明
+
 `Tensor`
 
 mask操作的结果。
@@ -37,7 +36,6 @@ mask操作的结果。
 ## 约束说明
 
 到目前为止，DIoU反向只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
-
 
 ## 调用示例
 
@@ -50,4 +48,3 @@ mask操作的结果。
     >>> l = diou.sum()
     >>> l.backward()
 ```
-

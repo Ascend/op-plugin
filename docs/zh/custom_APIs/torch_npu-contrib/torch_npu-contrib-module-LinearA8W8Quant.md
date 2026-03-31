@@ -11,14 +11,13 @@
 | <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    |    √     |
 | <term>Atlas 推理系列产品</term>     |    √     |
 
-
 ## 功能说明
 
 LinearA8W8Quant是对torch_npu.npu_quant_matmul接口的封装类，完成A8W8量化算子的矩阵乘计算。
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True, offset=False, pertoken_scale=False, output_dtype=None)
 ```
 
@@ -60,6 +59,7 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`。
 
 ## 返回值说明
+
 `Tensor`
 
 代表量化matmul的计算结果：
@@ -216,7 +216,6 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
     </tbody>
     </table>
 
-
 ## 调用示例
 
 - 单算子模式调用
@@ -282,4 +281,3 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     output = model(x1)
     ```
-

@@ -17,7 +17,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None) -> Tensor
 ```
 
@@ -31,12 +31,12 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
 - **dst_dtype** (`ScalarType`)：可选参数，输入值允许为`int8`或`quint4x2`，默认值为`int8`。
 
 ## 返回值说明
+
 `Tensor`
 
 代表`npu_group_quant`的计算结果，对应公式中的`y`。如果参数`dst_dtype`为`int8`，输出shape与输入`x`的shape一致。如果参数`dst_dtype`为`quint4x2`，输出的数据类型是`int32`，shape的第0维大小与输入`x`的第0维大小一致，最后一维是输入`x`的最后一维的1/8。支持空Tensor，支持非连续的Tensor。
 
 ## 约束说明
-
 
 - 输入`group_index`必须是非递减序列，最小值不能小于0，最大值必须与输入`x`的shape的第0维大小相等。
 - 该接口支持图模式。
@@ -125,4 +125,3 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
             [ 1, -1,  0,  1],
             [ 0,  0, -1, -1]], device='npu:0', dtype=torch.int8)
     ```
-

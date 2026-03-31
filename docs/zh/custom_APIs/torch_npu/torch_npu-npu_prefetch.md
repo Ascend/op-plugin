@@ -1,6 +1,5 @@
 # torch_npu.npu_prefetch
 
-
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -8,14 +7,13 @@
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>      |    √     |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>            |    √     |
 
- 
 ## 功能说明
 
 提供网络`weight`预取功能，用于在计算执行前将指定的权重数据预先加载到L2 Cache中，减少算子访问这些权重时的访存等待时间。例如，在MatMul等算子之前进行预取，算子执行时可直接从低时延的L2 Cache中读取权重，进而提升算子数据访问与计算效率。实际性能收益取决于用户采用的并行方式和配置。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
 ```
 
@@ -33,8 +31,6 @@ torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
 ## 约束说明
 
 该接口支持图模式。
-
-
 
 ## 调用示例
 
@@ -114,4 +110,3 @@ torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
             [75411.2188]], device='npu:0')
     torch.Size([10000, 1])
     ```
-

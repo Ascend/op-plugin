@@ -15,9 +15,10 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_indexing(self, begin, end, strides, begin_mask=0, end_mask=0, ellipsis_mask=0, new_axis_mask=0, shrink_axis_mask=0) -> Tensor
 ```
+
 ## 参数说明
 
 - **self** (`Tensor`)：必选参数，输入张量。
@@ -29,7 +30,6 @@ torch_npu.npu_indexing(self, begin, end, strides, begin_mask=0, end_mask=0, elli
 - **ellipsis_mask** (`int`)：可选参数，位掩码，其中位“i”为“1”意味着第“i”个位置实际上是省略号。默认值为0。
 - **new_axis_mask** (`int`)：可选参数，位掩码，其中位“i”为“1”意味着在第“i”位创建新的1D shape。默认值为0。
 - **shrink_axis_mask** (`int`)：可选参数，位掩码，其中位“i”意味着第“i”位应缩小维数。默认值为0。
-
 
 ## 调用示例
 

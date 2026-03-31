@@ -6,7 +6,7 @@ torch_npu\csrc\libs\init_npu.h
 
 ## 函数原型
 
-```
+```cpp
 c10::DeviceIndex c10::npu::current_device()
 ```
 
@@ -20,4 +20,3 @@ c10::DeviceIndex c10::npu::current_device()
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

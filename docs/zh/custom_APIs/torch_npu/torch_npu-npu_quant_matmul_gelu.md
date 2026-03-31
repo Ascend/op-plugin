@@ -26,7 +26,6 @@
         qbmmout = x1@x2 * x2Scale * x1Scale
         $$
 
-    
     - GELU激活函数，GELU类型由`approximate`输入指定：
         - 当`approximate`为`gelu_tanh`时：
         $$
@@ -39,7 +38,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_quant_matmul_gelu(x1, x2, x1_scale, x2_scale, *, bias=None, approximate="gelu_erf") -> Tensor
 ```
 
@@ -68,6 +67,7 @@ A8W8量化场景下，支持昇腾亲和的$NZ$数据排布格式，可通过`to
 `Tensor`
 
 代表量化矩阵乘融合GELU激活的计算结果。
+
 - 输出数据类型的确定规则：
   - 如果`x2_scale`的数据类型为`float32`，输出的数据类型为`float16`。
   - 如果`x2_scale`的数据类型为`bfloat16`，输出的数据类型为`bfloat16`。

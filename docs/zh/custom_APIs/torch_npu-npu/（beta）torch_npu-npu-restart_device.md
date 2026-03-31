@@ -9,7 +9,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.restart_device(device_id: int, rebuild_all_resource: bool = False) -> None
 ```
 
@@ -22,7 +22,6 @@ torch_npu.npu.restart_device(device_id: int, rebuild_all_resource: bool = False)
 
 要确保是一个有效的device，这个device可以是被stop过的也可以是没有被stop。
 
-
 ## 调用示例
 
  ```python
@@ -32,4 +31,3 @@ torch_npu.npu.restart_device(device_id: int, rebuild_all_resource: bool = False)
 >>> torch_npu.npu.stop_device(0)
 >>> torch_npu.npu.restart_device(0)
  ```
-

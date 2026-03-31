@@ -9,7 +9,6 @@
 |  <term>Atlas 推理系列产品</term>   |     √    |
 |  <term>Atlas 训练系列产品</term>   |     √    |
 
-
 ## 功能说明
 
 - API功能：RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。
@@ -25,7 +24,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor) 
 ```
 
@@ -45,6 +44,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 - <term>Atlas 推理系列产品</term>：`self`、`gamma`输入的尾轴长度必须大于等于32 Bytes。
 - 各产品支持数据类型及对应关系说明：
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+
     | `self`数据类型 | `gamma`数据类型 |
     | -------- | -------- |
     | `float16` | `float32` |
@@ -52,7 +52,9 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     | `float16` | `float16` |
     | `bfloat16` | `bfloat16` |
     | `float32` | `float32`  |
+
   - <term>Atlas 推理系列产品</term>、<term>Atlas 训练系列产品</term>：
+
     | `self`数据类型 | `gamma`数据类型 |
     | -------- | -------- |
     | `float16` | `float16` |
@@ -75,4 +77,3 @@ tensor([[[-0.1875,  0.2383,  0.2334,  ...,  0.8555, -0.0908, -0.3574]],
         [[ 0.0972, -1.2344, -1.0078,  ..., -0.5195,  0.3145, -3.7656]]],
        device='npu:0')
 ```
-

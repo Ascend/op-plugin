@@ -1,6 +1,7 @@
 # torch_npu.npu_sparse_lightning_indexer_grad_kl_loss
 
 ## 产品支持情况
+
 | 产品                           | 是否支持 |
 |------------------------------| :------: |
 | <term>Atlas A3 训练系列产品</term> | √  |
@@ -64,11 +65,12 @@
 
 ## 函数原型
 
-```
+```python
 npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明
+
 **query**(`Tensor`)：必选参数，表示Attention中的query，对应公式中的$q_{t}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S1, N1, D)$、$(T1, N1, D)$。
 
 **key**(`Tensor`)：必选参数，表示Attention中的key，对应公式中的$K_{t}$。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, S2, N2, D)$、$(T2, N2, D)$。
@@ -103,20 +105,18 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值2^63-1。
 
-
-
-
 ## 返回值说明
--   **d\_query\_index**(`Tensor`)：对应公式中的$d\tilde{q}_{t}$，表示`query_index`的梯度，数据类型支持`bfloat16`、`float16`。
--   **d\_key\_index**(`Tensor`)：对应公式中的$d\tilde{K}_{t}$，表示`key_index`的梯度，数据类型支持`bfloat16`、`float16`。
--   **d\_weights**(`Tensor`)：对应公式中的$dW_{t}$，表示`weights`的梯度，数据类型支持`bfloat16`、`float16`、`float32`。
--   **loss**(`Tensor`)：对应公式中的$dI_{t}$，表示网络正向输出和golden值的差异，数据类型支持`float`。
 
+- **d\_query\_index**(`Tensor`)：对应公式中的$d\tilde{q}_{t}$，表示`query_index`的梯度，数据类型支持`bfloat16`、`float16`。
+- **d\_key\_index**(`Tensor`)：对应公式中的$d\tilde{K}_{t}$，表示`key_index`的梯度，数据类型支持`bfloat16`、`float16`。
+- **d\_weights**(`Tensor`)：对应公式中的$dW_{t}$，表示`weights`的梯度，数据类型支持`bfloat16`、`float16`、`float32`。
+- **loss**(`Tensor`)：对应公式中的$dI_{t}$，表示网络正向输出和golden值的差异，数据类型支持`float`。
 
 ## 约束说明
--   参数query、key、query_index、key_index的数据类型应保持一致。
--   参数weights不为`float32`时，参数query、key、query_index、key_index、weights的数据类型应保持一致。
--   规格约束：
+
+- 参数query、key、query_index、key_index的数据类型应保持一致。
+- 参数weights不为`float32`时，参数query、key、query_index、key_index、weights的数据类型应保持一致。
+- 规格约束：
 
 | 规格项     | 规格                                    | 规格说明                  |
 |---------|---------------------------------------|-----------------------|
@@ -132,6 +132,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 | layout  | BSND/TND                              | -                     |
 
 ## 调用示例
+
 - 单算子模式调用
 
     ```python

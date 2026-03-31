@@ -14,4 +14,3 @@ NPUHooksArgs是一个Hook参数类，提供了NPU Hook的相关参数。
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

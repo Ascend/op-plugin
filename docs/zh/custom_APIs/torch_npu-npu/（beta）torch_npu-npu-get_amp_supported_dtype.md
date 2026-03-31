@@ -9,15 +9,13 @@
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
 
-
-
 ## 功能说明
 
 获取npu设备支持的数据类型，可能设备支持不止一种数据类型。
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.get_amp_supported_dtype()
 ```
 
@@ -35,4 +33,3 @@ supported_dtypes = torch_npu.npu.get_amp_supported_dtype()
 print(f"NPU支持的AMP数据类型：{supported_dtypes}")
 
 ```
-

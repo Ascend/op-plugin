@@ -17,7 +17,7 @@ torch_npu\csrc\distributed\ProcessGroupHCCL.hpp
 
 ## 函数原型
 
-```
+```cpp
 c10::intrusive_ptr<c10d::Work> batch_isend_irecv(std::vector<std::string>& op_type, std::vector<at::Tensor>& tensors, std::vector<uint32_t> remote_rank_list)
 ```
 

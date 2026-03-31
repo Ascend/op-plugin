@@ -11,7 +11,6 @@
 | <term>Atlas 推理系列产品</term>                           |    √     |
 | <term>Atlas 训练系列产品</term>                           |    √     |
 
-
 ## 功能说明
 
 注册Profiler采集回调函数，采集用户子线程下发的torch算子等框架侧数据。该参数中可另外配置[torch_npu.profiler.profile](./torch_npu-profiler-profile.md)的参数（包括record_shapes、profile_memory、with_stack、with_flops、with_modules），作为Profiler子线程的采集配置。

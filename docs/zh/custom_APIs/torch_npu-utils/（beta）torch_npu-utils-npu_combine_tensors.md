@@ -1,4 +1,5 @@
 # （beta）torch_npu.utils.npu_combine_tensors
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -14,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.utils.npu_combine_tensors(list_of_tensor, require_copy_value=True) -> Tensor
 ```
 
@@ -24,6 +25,7 @@ torch_npu.utils.npu_combine_tensors(list_of_tensor, require_copy_value=True) -> 
 - **require_copy_value** (`bool`)：默认值为True，是否将原Tensor的值拷贝到新融合Tensor的对应偏移地址。
 
 ## 返回值说明
+
 `Tensor`
 
 代表融合后的新Tensor。

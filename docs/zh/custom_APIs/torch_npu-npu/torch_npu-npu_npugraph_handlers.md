@@ -13,12 +13,13 @@
 本接口用于注册自定义算子处理器，使自定义算子支持NPU Graph的动态Shape更新与重放功能。在NPU Graph模式下，用户调用 `g.update()` 传入新的参数时，Ascend Extension for PyTorch框架通过注册的处理器将数据映射到算子输入位置。
 
 核心机制：
+
 1. Capture预处理：定义算子捕获时的输入数据预处理逻辑。
 2. Update动态更新：在Graph Replay（回放）阶段，无需重新Capture图结构，即可动态修改算子输入参数（如序列长度、Batch Size等）的机制。具体流程如下：
-    1.  用户在Replay前调用`g.update(cpu_update_input=[...])`传入新参数。
-    2.  框架遍历Graph中的算子，查找注册的`NpuGraphOpHandler`。
-    3.  框架调用Handler的`update_args`方法，传入`dispatch_record` 和`update_input`。
-    4.  在`update_args`中，用户直接修改`dispatch_record.args`指定索引的值。
+    1. 用户在Replay前调用`g.update(cpu_update_input=[...])`传入新参数。
+    2. 框架遍历Graph中的算子，查找注册的`NpuGraphOpHandler`。
+    3. 框架调用Handler的`update_args`方法，传入`dispatch_record` 和`update_input`。
+    4. 在`update_args`中，用户直接修改`dispatch_record.args`指定索引的值。
 
 ## 定义文件
 
@@ -51,15 +52,18 @@ def register_npu_graph_handler(op_names: str | list[str]): ...
 ### NpuGraphOpHandler基类
 
 #### 1. prepare_capture
+
 - **func**（`Callable`）：原始算子函数对象。
 - **args**（`Tuple`）：位置参数元组。
 - **kwargs**（`Dict`）：关键字参数字典。
 
 #### 2. postprocess_result
+
 - **result**（`Any`）：算子执行的原始结果。
 - **kwargs**（`Dict`）：关键字参数字典。
 
 #### 3. update_args
+
 - **dispatch_record**（`DispatchRecord`）：包含算子运行时信息的记录对象，可通过 `dispatch_record.args` 修改参数。
 - **update_input**（`Dict`）：用户传入的更新参数字典。
 
@@ -69,7 +73,7 @@ def register_npu_graph_handler(op_names: str | list[str]): ...
 - **value**（`Any`）：关键字参数的值。
 - **tensor_param_names**（`List[str]`）：张量参数名称列表。
 
-> [!CAUTION]</br>
+> [!CAUTION]<br>
 > 所有方法必须声明为 `classmethod`，禁止使用 `self` 存储状态（无状态设计）。
 
 ### register_npu_graph_handler装饰器
@@ -101,7 +105,6 @@ def register_npu_graph_handler(op_names: str | list[str]): ...
 返回被装饰的原始类。 
 
 ## 调用示例
-
 
 本示例展示如何自定义一个Handler，同时实现输出预分配（`prepare_capture`）、返回值格式调整（`postprocess_result`）、动态参数更新（`update_args`）以及kwargs自定义存储（`record_wrap_kwarg`）。
 
@@ -161,4 +164,3 @@ with torch.npu.graph(g, auto_dispatch_capture=True):
 g.update(cpu_update_input=[{"seq_len": new_seq_len}])
 g.replay()
 ```
-

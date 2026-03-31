@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_dtype_cast(input, dtype) -> Tensor
 ```
 
@@ -52,4 +52,3 @@ tensor([ 0,  0, -1], device='npu:0', dtype=torch.int32)
 >>> res
 FakeTensor(..., device='npu:0', size=(2,), dtype=torch.float16)
 ```
-

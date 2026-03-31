@@ -13,7 +13,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_points=None, axis=0, quant_axis=1, reduce='update', int? dst_type=None, str? round_mode='rint') -> Tensor
 ```
 
@@ -39,6 +39,7 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
 - **reduce** (`str`)：可选参数，表示数据操作方式；当前只支持`'update'`，即更新操作。
 
 ## 返回值说明
+
 `Tensor`
 
 代表`input`被更新后的结果。
@@ -258,4 +259,3 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
                1,  0,  0,  2,  1,  0,  1,  1,  0,  1,  0,  1,  0,  1,  0]]],
            device='npu:0', dtype=torch.int8) torch.Size([11, 1, 32])
     ```
-

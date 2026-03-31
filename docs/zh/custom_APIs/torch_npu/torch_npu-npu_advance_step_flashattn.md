@@ -29,9 +29,10 @@
      seqLens[i] = inputPositions[i] + 1 \\
      slotMapping[i] = ({blockTables}[i] + blockTablesStride * i) * blockSize + (inputPositions[i]\%blockSize)
      $$
+
 ## 函数原型
 
-```
+```python
 torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_positions, seq_lens, slot_mapping, block_tables, num_seqs, num_queries, block_size) -> ()
 ```
 
@@ -65,6 +66,7 @@ torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_posi
 ## 调用示例
 
 非投机场景：
+
 ```python
 import numpy as np
  
@@ -94,6 +96,7 @@ torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_posi
 ```
 
 投机场景：
+
 ```python
 import numpy as np
 

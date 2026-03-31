@@ -8,17 +8,16 @@
 |<term>Atlas A2 训练系列产品</term>  | √    |
 |<term>Atlas 推理系列产品</term>                                       |    √     |
 |<term>Atlas 训练系列产品</term>                                       |    √     |
+
 ## 功能说明
 
 申请一个专门用于存储浮点运算状态标志的Tensor。该Tensor用于后续记录计算过程中的溢出状态。
 
-
 ## 函数原型
 
-```
+```python
 torch_npu.npu_alloc_float_status(input) -> Tensor
 ```
-
 
 ## 参数说明
 
@@ -54,4 +53,3 @@ tensor([0., 0., 0., 0., 0., 0., 0., 0.], device='npu:0')
 >>> result = torch_npu.npu_get_float_status(output)
 
 ```
-

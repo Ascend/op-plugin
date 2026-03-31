@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_yolo_boxes_encode(self, gt_bboxes, stride, performance_mode=False) -> Tensor
 ```
 
@@ -40,4 +40,3 @@ torch_npu.npu_yolo_boxes_encode(self, gt_bboxes, stride, performance_mode=False)
 >>> output.shape
 torch.Size([2, 4])
 ```
-

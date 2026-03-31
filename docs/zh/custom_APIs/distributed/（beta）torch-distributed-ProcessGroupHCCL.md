@@ -1,4 +1,5 @@
 # （beta）torch.distributed.ProcessGroupHCCL
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -13,7 +14,8 @@
 创建一个ProcessGroupHCCL对象并返回。
 
 ## 函数原型
-```
+
+```python
 torch.distributed.ProcessGroupHCCL(store, rank, size, timeout) -> ProcessGroup
 ```
 
@@ -25,4 +27,5 @@ torch.distributed.ProcessGroupHCCL(store, rank, size, timeout) -> ProcessGroup
 - **timeout**：通讯中断时间，判断节点断连，默认值为1800s。
 
 ## 返回值说明
+
 `ProcessGroup`

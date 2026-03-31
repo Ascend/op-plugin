@@ -16,7 +16,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu.set_op_timeout_ms(timeout)
 ```
 

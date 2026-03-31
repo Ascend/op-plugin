@@ -6,7 +6,7 @@ torch_npu\csrc\libs\init_npu.h
 
 ## 函数原型
 
-```
+```cpp
 void torch_npu::init_npu(const c10::DeviceIndex device_index = 0)
 void torch_npu::init_npu(const std::string& device_str)
 void torch_npu::init_npu(const at::Device& device)
@@ -28,4 +28,3 @@ void torch_npu::init_npu(const at::Device& device)
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas 推理系列产品</term>
-

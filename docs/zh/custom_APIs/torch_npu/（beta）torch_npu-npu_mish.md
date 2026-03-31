@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_mish(self) -> Tensor
 ```
 
@@ -36,4 +36,3 @@ torch_npu.npu_mish(self) -> Tensor
 >>> y.shape
 torch.Size([10, 30, 10])
 ```
-

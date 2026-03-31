@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, means=None, stds=None, max_shape=[9999, 9999], wh_ratio_clip=16 / 1000)
 ```
 
@@ -48,4 +48,3 @@ torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, 
 >>> print('npu_bbox_coder_decode_xywh2xyxy done. output shape is ', out.shape)
 npu_bbox_coder_decode_xywh2xyxy done. output shape is torch.Size([1024, 4])
 ```
-

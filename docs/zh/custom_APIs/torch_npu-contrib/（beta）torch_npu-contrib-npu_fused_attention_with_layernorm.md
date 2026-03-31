@@ -18,7 +18,7 @@ bert自注意力与层归一化的融合实现。
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.npu_fused_attention_with_layernorm(hidden_states, attention_mask, query_kernel, key_kernel, value_kernel, query_bias, key_bias, value_bias, gamma, beta, scale=1, keep_prob=0)
 ```
 
@@ -42,4 +42,3 @@ torch_npu.contrib.npu_fused_attention_with_layernorm(hidden_states, attention_ma
 `torch.Tensor`
 
 self attention的结果。
-

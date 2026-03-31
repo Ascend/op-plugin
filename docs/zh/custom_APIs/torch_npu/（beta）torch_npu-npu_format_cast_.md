@@ -15,7 +15,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.npu_format_cast_(input, src) -> Tensor
 ```
 
@@ -50,6 +50,7 @@ torch_npu.npu_format_cast_(input, src) -> Tensor
     > 数据排布格式具体可参考《CANN Ascend C算子开发指南》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/850/opdevg/Ascendcopdevg/atlas_ascendc_10_0099.html">数据排布格式</a>”章节。
 
 ## 返回值说明
+
 `Tensor`
 
 返回原地修改后的`input`。
@@ -57,6 +58,7 @@ torch_npu.npu_format_cast_(input, src) -> Tensor
 ## 调用示例
 
 - 整数值调用示例：
+
     ```python
      >>> x = torch.rand(2, 3, 4, 5).npu()
      >>> torch_npu.get_npu_format(x)

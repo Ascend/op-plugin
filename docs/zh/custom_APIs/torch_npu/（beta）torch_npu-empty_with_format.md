@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.empty_with_format(size, dtype, layout, device, pin_memory, acl_format)
 ```
 
@@ -38,4 +38,3 @@ torch_npu.empty_with_format(size, dtype, layout, device, pin_memory, acl_format)
 tensor([[1., 1., 1.],
         [1., 1., 1.]], device='npu:0')
 ```
-
