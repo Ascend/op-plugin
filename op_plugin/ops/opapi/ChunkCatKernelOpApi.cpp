@@ -87,7 +87,8 @@ namespace op_api {
 
     at::Tensor _chunk_cat( at::TensorList tensors, int64_t dim, int64_t num_chunks)
     {
-        static bool npu_support_aclnn = check_aclnn_kernel_available("aclnnChunkCat");
+        static bool npu_support_aclnn = check_aclnn_kernel_available("aclnnChunkCat")
+                                          && c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950;
         if (!npu_support_aclnn) {
             return at::native::_chunk_cat(tensors, dim, num_chunks);
         }
@@ -105,7 +106,8 @@ namespace op_api {
 
     at::Tensor& _chunk_cat_out( at::TensorList tensors, int64_t dim, int64_t num_chunks, at::Tensor& out)
     {
-        static bool npu_support_aclnn = check_aclnn_kernel_available("aclnnChunkCat");
+        static bool npu_support_aclnn = check_aclnn_kernel_available("aclnnChunkCat")
+                                          && c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950;
         if (!npu_support_aclnn) {
             return at::native::_chunk_cat_out(tensors, dim, num_chunks, out);
         }
