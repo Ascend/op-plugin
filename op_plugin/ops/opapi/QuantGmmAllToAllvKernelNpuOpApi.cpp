@@ -251,17 +251,6 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
             }
             TORCH_CHECK(false, error_msg, OPS_ERROR(ErrCode::PARAM));
         }
-        // mmx and mmweight is not exist
-        if (!mm_x.has_value() && !mm_weight.has_value()) {
-            TORCH_CHECK(!mm_x_quant_mode.has_value(),
-                "The input mm_x_quant_mode should be None when mm_x is not provided.",
-                OPS_ERROR(ErrCode::PARAM));
-
-            TORCH_CHECK(!mm_weight_quant_mode.has_value(),
-                "The input mm_weight_quant_mode should be None when mm_x is not provided.",
-                OPS_ERROR(ErrCode::PARAM));
-            
-        }
         // mmx and mmweight is exist
         if (mm_x.has_value() && mm_weight.has_value()) {
             TORCH_CHECK(mm_y_dtype.has_value(),
@@ -426,6 +415,25 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
             aclDataType mm_y_acltype = c10_npu::GetAclDataType(mm_y_dtype.value());
             at::ScalarType mm_y_scalar_dtype = at_npu::native::OpPreparation::convert_to_scalar_type(mm_y_acltype);
             mm_y = at_npu::native::OpPreparation::apply_tensor_without_format({bs, n2}, c10::dtype(mm_y_scalar_dtype));
+        } else {
+            TORCH_CHECK(!mm_x_quant_mode.has_value(),
+                "The input mm_x_quant_mode should be None when mm_x is not provided.",
+                OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(!mm_x_dtype.has_value(),
+                "The input mm_x_dtype should be None when mm_x is not provided.",
+                OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(!mm_x_scale_dtype.has_value(),
+                "The input mm_x_scale_dtype should be None when mm_x is not provided.",
+                OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(!mm_weight_quant_mode.has_value(),
+                "The input mm_weight_quant_mode should be None when mm_weight is not provided.",
+                OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(!mm_weight_dtype.has_value(),
+                "The input mm_weight_dtype should be None when mm_weight is not provided.",
+                OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(!mm_weight_scale_dtype.has_value(),
+                "The input mm_weight_scale_dtype should be None when mm_weight is not provided.",
+                OPS_ERROR(ErrCode::PARAM));
         }
 
         int64_t n1 = gmm_weight.size(2);
