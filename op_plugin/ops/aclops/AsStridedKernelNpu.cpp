@@ -40,12 +40,12 @@ at::Tensor& stride_copy_out_npu_nocheck(
     // When the last dimension of the input tensor stride is greater than 256, we use
     // AsStrided + Transpose instead of AsStrided to get better performance.
     if (stride.back() >= 256) {
-        std::set<std::pair<int, std::pair<int, int>>> stride_perm_shape_set;
+        std::set<std::pair<int64_t, std::pair<int64_t, int64_t>>> stride_perm_shape_set;
         int tensor_dim = static_cast<int>(stride.size());
         for (int i = 0; i < tensor_dim; i++) {
         stride_perm_shape_set.insert({stride[i], {i, shape[i]}});
         }
-        std::set<std::pair<int, std::pair<int, int>>>::reverse_iterator iter;
+        std::set<std::pair<int64_t, std::pair<int64_t, int64_t>>>::reverse_iterator iter;
         std::vector<int64_t> output_stride;
         std::vector<int64_t> output_shape;
         std::vector<int64_t> output_perm_origin;
