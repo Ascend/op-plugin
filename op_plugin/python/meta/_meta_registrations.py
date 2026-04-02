@@ -1503,6 +1503,36 @@ def ffn_worker_scheduler_meta(self, *, sync_group_size=1, execute_mode=0):
 def attention_worker_scheduler_meta(self):
     return torch.empty_like(self)
 
+@impl(m, "_npu_dropout_gen_mask.Tensor")
+def _npu_dropout_gen_mask_meta(self, size, p, seed, offset, parallel=None, sync=None):
+    BYTE_BIT = 8
+    DATA_ALIGN = 128
+    numels = 1
+    for dim in size:
+        numels *= dim
+    length = ((numels + DATA_ALIGN - 1) // DATA_ALIGN) * DATA_ALIGN // BYTE_BIT
+    return torch.empty(length, dtype=torch.uint8, device='meta')
+
+@impl(m, "npu_softmax_cross_entropy_with_logits")
+def npu_softmax_cross_entropy_with_logits_meta(self, labels):
+    batch_size = self.size(0)
+    return torch.empty(batch_size, dtype=torch.float32, device=self.device)
+
+@impl(m, "npu_softmax_cross_entropy_with_logits_backward")
+def npu_softmax_cross_entropy_with_logits_backward_meta(grad, self, labels):
+    return torch.empty_like(self, device=self.device)
+
+@impl(m, "_npu_index_add")
+def _npu_index_add_meta(self, index, source, alpha=1):
+    return torch.empty_like(self, device=self.device)
+
+@impl(m, "_npu_index_add_")
+def _npu_index_add__meta(self, index, source, alpha=1):
+    return self
+
+@impl(m, "npu_reshape")
+def npu_reshape_meta(self, shape, can_refresh=False):
+    return torch.empty(tuple(shape), dtype=self.dtype, device='meta')
 
 @impl(m, "npu_ffn_worker_batching")
 def npu_ffn_worker_batching(schedule_context, expert_num, max_out_shape, *, token_dtype=0, need_schedule=0, layer_num=0):
