@@ -66,8 +66,8 @@ at::Tensor multinomial_top_k_top_p_sample(
 }
 
 tensor_list npu_top_k_top_p_sample(const at::Tensor &logits, const at::Tensor &top_k, const at::Tensor &top_p, const c10::optional<at::Tensor> &q_option,
-                                   const c10::optional<at::Tensor> &min_ps_option, c10::optional<double> eps_option, c10::optional<bool> is_need_logits_option,
-                                   c10::optional<int64_t> top_k_guess_option, c10::optional<int64_t> ks_max_potion, c10::optional<bool> input_is_logits_option,
+                                   c10::optional<double> eps_option, c10::optional<bool> is_need_logits_option, c10::optional<int64_t> top_k_guess_option,
+                                   const c10::optional<at::Tensor> &min_ps_option, c10::optional<int64_t> ks_max_potion, c10::optional<bool> input_is_logits_option,
                                    c10::optional<c10::string_view> post_sample_option, c10::optional<at::Generator> generator)
 {
     const at::Tensor &q = c10::value_or_else(q_option, [] { return at::Tensor(); });
