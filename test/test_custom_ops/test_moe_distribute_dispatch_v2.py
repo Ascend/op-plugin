@@ -53,7 +53,8 @@ class TestMoeDistributeDispatch(TestCase):
 
         x = x.npu()
         topk = topk.npu()
-        elastic_info = elastic_info.npu()
+        if elastic_info is not None:
+            elastic_info = elastic_info.npu()
         out, _, _, _, _, _, _ = torch_npu.npu_moe_distribute_dispatch_v2(x=x,
                                                            expert_ids=topk,
                                                            elastic_info=elastic_info,
@@ -87,8 +88,8 @@ class TestMoeDistributeDispatch(TestCase):
         p2c.get()
 
     def _test_multiprocess(self, f, init_pg, input_list):
-        expt_out_list, expt_token_list, x1_list, x2_list, topk1_list, topk2_list, ep_world_size, tp_world_size, globalBS,\
-            sharedExpertRankNum, moeExpertNum, h = input_list
+        expt_out_list, expt_token_list, x1_list, x2_list, topk1_list, topk2_list, elastic_info, ep_world_size,\
+            tp_world_size, globalBS, sharedExpertRankNum, moeExpertNum, h = input_list
         ctx = mp.get_context('spawn')
         tp_world_size_2 = 2 
         c2p = ctx.Queue(ep_world_size * tp_world_size_2)
@@ -98,8 +99,8 @@ class TestMoeDistributeDispatch(TestCase):
         for i in range(ep_world_size * tp_world_size_2):
             p = ctx.Process(
                 target=f,
-                args=(i, [expt_token_list, x1_list, x2_list, topk1_list, topk2_list, ep_world_size, tp_world_size,
-                          globalBS, sharedExpertRankNum, moeExpertNum, h, init_pg, c2p, p2c]))
+                args=(i, [expt_token_list, x1_list, x2_list, topk1_list, topk2_list, elastic_info, ep_world_size,
+                            tp_world_size, globalBS, sharedExpertRankNum, moeExpertNum, h, init_pg, c2p, p2c]))
             p.start()
             ps.append(p)
 
@@ -236,16 +237,59 @@ class TestMoeDistributeDispatch(TestCase):
 
         self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch_v2,
                 TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_1, expt_token_list_1, x1_list, x2_list, topk1_list,
-                topk2_list, ep_world_size, tp_world_size, global_bs, shared_expert_rank_num_1, moe_expert_num_7, h])
+                topk2_list, elastic_info, ep_world_size, tp_world_size, global_bs, shared_expert_rank_num_1, moe_expert_num_7, h])
         self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch_v2,
                 TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_2, expt_token_list_2, x1_list, x2_list, topk1_list,
-                topk2_list, ep_world_size, tp_world_size, global_bs, shared_expert_rank_num_0, moe_expert_num_8, h])
+                topk2_list, elastic_info, ep_world_size, tp_world_size, global_bs, shared_expert_rank_num_0, moe_expert_num_8, h])
         self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch_v2,
                 TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_3, expt_token_list_3, x1_list, x2_list, topk1_list,
-                topk2_list, ep_world_size, tp_world_size_1, global_bs, shared_expert_rank_num_1, moe_expert_num_7, h])
+                topk2_list, elastic_info, ep_world_size, tp_world_size_1, global_bs, shared_expert_rank_num_1, moe_expert_num_7, h])
         self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch_v2,
                 TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_4, expt_token_list_4, x1_list, x2_list, topk1_list,
-                topk2_list, ep_world_size, tp_world_size_1, global_bs, shared_expert_rank_num_0, moe_expert_num_8, h])
+                topk2_list, elastic_info, ep_world_size, tp_world_size_1, global_bs, shared_expert_rank_num_0, moe_expert_num_8, h])
+
+    @skipIfUnsupportMultiNPU(8)
+    @SupportedDevices(['Ascend950'])
+    def test_npu_moe_distribute_dispatch_arch35(self):
+        ep_world_size = 8
+        tp_world_size = 1
+        world_size = ep_world_size * tp_world_size
+        bs = 64
+        h = 4096
+        k = 16
+        shared_expert_rank_num_1 = 1
+        moe_expert_num_7 = 7
+        shared_expert_rank_num_0 = 0
+        moe_expert_num_8 = 8
+        global_bs = bs * ep_world_size
+        dtype = np.bfloat16
+        data_format = -1
+        topk = torch.tile(torch.arange(k), (bs,)).int().view(-1, k)
+        topk1_list = []
+        topk2_list = []
+        x1_shape = [dtype, data_format, [bs, h]]
+        x2_shape = [dtype, data_format, [bs, h]]
+        x1_list = []
+        x2_list = []
+        elastic_info = None
+        for _ in range(ep_world_size):
+            x1, _ = create_common_tensor(x1_shape, -1, 1)
+            x2, _ = create_common_tensor(x2_shape, -1, 1)
+            x1_list.append(x1)
+            x2_list.append(x2)
+            topk1_list.append(topk)
+            topk2_list.append(topk)
+        expt_out_list_1, expt_token_list_1 = self._construct_excepted_result(x1_list, x2_list, topk1_list, topk2_list, bs, h, k,
+                                                            global_bs, shared_expert_rank_num_1, moe_expert_num_7, ep_world_size, tp_world_size)
+        expt_out_list_2, expt_token_list_2 = self._construct_excepted_result(x1_list, x2_list, topk1_list, topk2_list, bs, h, k,
+                                                            global_bs, shared_expert_rank_num_0, moe_expert_num_8, ep_world_size, tp_world_size)
+
+        self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch_v2,
+                TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_1, expt_token_list_1, x1_list, x2_list, topk1_list,
+                topk2_list, elastic_info, ep_world_size, tp_world_size, global_bs, shared_expert_rank_num_1, moe_expert_num_7, h])
+        self._test_multiprocess(TestMoeDistributeDispatch._test_npu_moe_distribute_dispatch_v2,
+                TestMoeDistributeDispatch._init_dist_hccl, [expt_out_list_2, expt_token_list_2, x1_list, x2_list, topk1_list,
+                topk2_list, elastic_info, ep_world_size, tp_world_size, global_bs, shared_expert_rank_num_0, moe_expert_num_8, h])
 
 if __name__ == '__main__':
     run_tests()
