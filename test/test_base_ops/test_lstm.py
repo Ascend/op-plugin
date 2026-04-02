@@ -3,10 +3,85 @@ import unittest
 import torch
 import numpy as np
 import torch_npu
+from torch.nn.utils.rnn import pack_padded_sequence
 from torch_npu.testing.testcase import TestCase, run_tests
 
 
 class TestLstm(TestCase):
+    device = "npu"
+
+    def _build_lstm(self, dtype=torch.float32):
+        model = torch.nn.LSTM(
+            input_size=4,
+            hidden_size=6,
+            num_layers=2,
+            bias=True,
+            batch_first=False,
+            dropout=0.0,
+            bidirectional=False,
+        ).to(self.device, dtype=dtype)
+        model.eval()
+        return model
+
+    def _make_dense_inputs(self, dtype):
+        x = torch.randn(5, 3, 4, device=self.device, dtype=dtype)
+        h0 = torch.randn(2, 3, 6, device=self.device, dtype=dtype)
+        c0 = torch.randn(2, 3, 6, device=self.device, dtype=dtype)
+        return x, h0, c0
+
+    def _make_packed_inputs(self, dtype):
+        lengths = [5, 3, 2]
+        padded = torch.randn(5, 3, 4, device=self.device, dtype=dtype)
+        packed = pack_padded_sequence(padded, lengths, enforce_sorted=True)
+        h0 = torch.randn(2, 3, 6, device=self.device, dtype=dtype)
+        c0 = torch.randn(2, 3, 6, device=self.device, dtype=dtype)
+        return packed, h0, c0
+
+    def _run_raw_lstm(self, model, x, hx):
+        model._update_flat_weights()
+        params = tuple(model._flat_weights)
+        return torch._VF.lstm(
+            x, hx, params,
+            model.bias,
+            model.num_layers,
+            float(model.dropout),
+            model.training,
+            model.bidirectional,
+            model.batch_first,
+        )
+
+    def _run_raw_packed_lstm(self, model, packed, hx):
+        model._update_flat_weights()
+        params = tuple(model._flat_weights)
+        return torch._VF.lstm(
+            packed.data,
+            packed.batch_sizes,
+            hx,
+            params,
+            model.bias,
+            model.num_layers,
+            float(model.dropout),
+            model.training,
+            model.bidirectional,
+        )
+
+    def test_lstm_dense_fallback(self):
+        model = self._build_lstm(dtype=torch.float32)
+        x, h0, c0 = self._make_dense_inputs(torch.float16)
+        y, h, c = self._run_raw_lstm(model, x, (h0, c0))
+
+        self.assertEqual(y.shape, (5, 3, 6))
+        self.assertEqual(h.shape, (2, 3, 6))
+        self.assertEqual(c.shape, (2, 3, 6))
+
+    def test_lstm_packed_fallback(self):
+        model = self._build_lstm(dtype=torch.float32)
+        packed, h0, c0 = self._make_packed_inputs(torch.float16)
+        y, h, c = self._run_raw_packed_lstm(model, packed, (h0, c0))
+
+        self.assertEqual(h.shape, (2, 3, 6))
+        self.assertEqual(c.shape, (2, 3, 6))
+        self.assertTrue(y.dim() >= 2)
 
     def test_lstm_single_direction(self):
         # shape_format:[[dtype, (num_step, batch_size, input_size)],
