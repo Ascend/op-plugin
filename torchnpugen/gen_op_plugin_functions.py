@@ -80,15 +80,17 @@ def main():
             for func in old_yaml[key]:
                 if version in func['version']:
                     new_yaml.get(key).append(func['func'])
-    else:
+    elif 'tocpu' in new_yaml and 'unsupported' in new_yaml:
         del new_yaml['tocpu'], new_yaml['unsupported']
 
-    if version in ['v1.11', 'v2.0', 'v2.1']:
+    if version in ['v1.11', 'v2.0', 'v2.1'] and 'quant' in new_yaml:
         del new_yaml['quant']
 
     # save to new yaml
     flags = os.O_WRONLY | os.O_CREAT
     modes = stat.S_IWUSR | stat.S_IRUSR
+    if os.path.islink(output_dir):
+        raise RuntimeError(f'output_dir: Invalid path is a soft chain')
     with os.fdopen(os.open(f'{output_dir}/op_plugin_functions.yaml', flags, modes), 'w') as f:
         yaml.dump(data=new_yaml, stream=f, width=2000, sort_keys=False)
 

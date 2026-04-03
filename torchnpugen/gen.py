@@ -69,8 +69,6 @@ class FileManager:
 
     @staticmethod
     def _remove_path_safety(filepath: str) -> None:
-        if os.path.islink(filepath):
-            raise RuntimeError(f"Invalid path is a soft chain: {filepath}")
         if os.path.exists(filepath):
             os.remove(filepath)
 
@@ -78,6 +76,8 @@ class FileManager:
     def _write_if_changed(filename: str, contents: str) -> None:
         old_contents: Optional[str]
         filepath = os.path.realpath(filename)
+        if os.path.islink(filepath):
+            raise RuntimeError(f"Invalid path is a soft chain: {filepath}")
         try:
             with open(filepath, 'r') as f:
                 old_contents = f.read()
@@ -402,7 +402,7 @@ def parse_native_yaml(
 
     with open(path, "r") as f:
         es = yaml.safe_load(f)
-    
+
     with open(deprecate_path, "r") as f:
         dp = yaml.safe_load(f)
 

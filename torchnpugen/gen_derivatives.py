@@ -33,6 +33,8 @@ def main():
 
     flags = os.O_WRONLY | os.O_CREAT
     modes = stat.S_IWUSR | stat.S_IRUSR
+    if os.path.islink(output_dir):
+        raise RuntimeError(f'output_dir: Invalid path is a soft chain')
     with os.fdopen(os.open(f'{output_dir}/derivatives.yaml', flags, modes), 'w') as f:
         yaml.dump(data=new_yaml, stream=f, width=2000, sort_keys=False)
 

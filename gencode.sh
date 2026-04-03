@@ -28,6 +28,11 @@ for minor_version in $(seq 1 ${newest_minor_version}); do
 done
 
 PYTORCH_VERSION="$1"
+if ! [[ "$PYTORCH_VERSION" =~ ^[0-9.]+[a-zA-Z0-9.-]*$ ]]; then
+    echo "Error: Invalid $PYTORCH_VERSION format"
+    exit 1
+fi
+
 IFS='.' read -ra version_parts <<< "$PYTORCH_VERSION"
 PYTORCH_VERSION_DIR="v${version_parts[0]}r${version_parts[1]}"
 python_execute="$2"
