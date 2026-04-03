@@ -13,8 +13,32 @@
 
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/AclOpsInterface.h"
+
+namespace {
+
+bool parse_rotary_mode_to_neox_style(const std::string &rotary_mode)
+{
+    TORCH_CHECK(
+        rotary_mode == "half" || rotary_mode == "interleave",
+        "rotary_mode only support half or interleave",
+        OPS_ERROR(ErrCode::VALUE));
+    return rotary_mode == "half";
+}
+
+int64_t parse_cache_mode_to_int(const std::string &cache_mode)
+{
+    if (cache_mode == "default") {
+        return 0;
+    }
+    if (cache_mode == "interleave") {
+        return 1;
+    }
+    TORCH_CHECK(false, "cache_mode only support default or interleave", OPS_ERROR(ErrCode::VALUE));
+    return 0;
+}
+
+} // namespace
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -49,8 +73,8 @@ std::tuple<at::Tensor, at::Tensor> npu_mrope(
     std::string rotary_mode_str = rotary_mode.has_value() ? std::string(rotary_mode.value()) : "half";
     std::string cache_mode_str = cache_mode.has_value() ? std::string(cache_mode.value()) : "default";
     
-    bool is_neox_style = op_plugin::utils::is_neox_style(rotary_mode_str);
-    int64_t cache_mode_value = op_plugin::utils::cache_mode_to_int(cache_mode_str);
+    bool is_neox_style = parse_rotary_mode_to_neox_style(rotary_mode_str);
+    int64_t cache_mode_value = parse_cache_mode_to_int(cache_mode_str);
     
     static const bool is_mrope_v2_available = check_aclnn_kernel_available("aclnnRopeWithSinCosCacheV2");
     
