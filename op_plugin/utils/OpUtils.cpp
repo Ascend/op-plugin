@@ -29,28 +29,6 @@ static const uint64_t GROUP_MAX = 65535UL;
 static const size_t GROUP_DIM = 3;
 static const size_t OFFSET_32_BITS = 32;
 static const size_t OFFSET_16_BITS = 16;
-bool is_neox_style(std::string rotary_mode)
-{
-    TORCH_CHECK(rotary_mode != "half" || rotary_mode != "interleave",
-        "rotary_mode only support half or interleave", OPS_ERROR(ErrCode::VALUE));
-    if (rotary_mode == "half") {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-int64_t cache_mode_to_int(std::string cache_mode)
-{
-    if (cache_mode == "default") {
-        return 0;
-    } else if (cache_mode == "interleave") {
-        return 1;
-    } else {
-        TORCH_CHECK(false, "cache_mode only support default or interleave", OPS_ERROR(ErrCode::VALUE));
-        return 0;
-    }
-}
 
 std::string get_reduction_str(int64_t reduction)
 {
