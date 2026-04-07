@@ -149,6 +149,9 @@
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr, #aclnn_api "GetMaxWorkspaceSize", " not in ",                 \
                     GetOpApiLibName(), ", or ", GetOpApiLibName(), "not found.", OPS_ERROR(ErrCode::PTR));             \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
+        if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
+            c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
+        }                                                                                                              \
         uint64_t workspace_size = 0;                                                                                   \
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
         aclOpExecutor *executor = nullptr;                                                                             \
