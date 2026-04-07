@@ -159,7 +159,7 @@ if os.getenv("TORCH_NPU_USE_COMPATIBLE_IMPL") != "1":
             grad_tensor = grad_tensor.unsqueeze(-2)
 
         if mat2.dim() == 2 and mat1.dim() > 2:
-            other_grad = torch.empty(list(mat2.size()), dtype=mat1.dtype, device=mat1.device)
+            other_grad = torch.empty(list(other.size()), dtype=mat1.dtype, device=mat1.device)
         else:
             mat1_transposed = mat1.transpose(-2, -1)
             other_grad_size = _matmul_get_output_size(mat1_transposed, grad_tensor)
