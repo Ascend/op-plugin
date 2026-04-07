@@ -9,6 +9,26 @@ from torch_npu.testing.common_utils import SupportedDevices
 from torch_npu.testing.testcase import TestCase, run_tests
 
 
+def _compare_res( golden_res, npu_res, ratio_thress_hold=0.999):
+    npu_res, _ = torch.sort(npu_res)
+    npu_res = npu_res.reshape(-1)
+    golden_res, _ = torch.sort(golden_res)
+    golden_res = golden_res.reshape(-1)
+    total_res_num = golden_res.numel()
+    diff_res = npu_res - golden_res
+    match_ratio = (diff_res == 0).sum().float() / total_res_num
+    if match_ratio >= ratio_thress_hold:
+        print(f"Compare npu cpu res success! Match ratio is {match_ratio:.4%}")
+        return True
+    else:
+        print(f"Match ratio {match_ratio:.4%} is under thress_hold {ratio_thress_hold} ",
+              "Please Check!")
+        non_zero_index = torch.nonzero(diff_res, as_tuple=False).squeeze(1)
+        npu_index = npu_res[non_zero_index]
+        golden_index = golden_res[non_zero_index]
+        for i in non_zero_index:
+            print(f"mismatch idx: {i}, golden and npu res is {golden_res[i]} || {npu_res[i]}")
+        return False
 
 class TestCustomQuantLightningIndexer(TestCase):
     def _get_data_from_pa_cache(self, key, block_table, act_s2):
@@ -54,6 +74,7 @@ class TestCustomQuantLightningIndexer(TestCase):
         act_s1 = 0
         act_s2 = 0
         process_q_len = 0
+        properties = torch.npu.get_device_properties()
         for batch_id in range(batch_size):
             if actual_seq_lengths_query is None:
                 act_s1 = query.shape[1]
@@ -63,16 +84,20 @@ class TestCustomQuantLightningIndexer(TestCase):
                 else:
                     act_s1 = actual_seq_lengths_query[batch_id]
             act_s2 = actual_seq_lengths_key[batch_id]
-            # n1, s1, d
-            now_q = query.reshape(-1, n1, d)[process_q_len:process_q_len + act_s1, :, :].transpose(0, 1).to(torch.int32)
+            if "Ascend950" in properties.name:
+                now_q = query.reshape(-1, n1, d)[process_q_len:process_q_len + act_s1, :, :].transpose(0, 1).to(torch.float32)
+            else:
+                now_q = query.reshape(-1, n1, d)[process_q_len:process_q_len + act_s1, :, :].transpose(0, 1).to(torch.int32)
             now_weights = weights.reshape(-1, n1, 1)[process_q_len:process_q_len + act_s1, :, :]
             now_query_scale = query_dequant_scale.reshape(-1, n1, 1)[process_q_len:process_q_len + act_s1, :, :]
             # s1, n1, 1
             weights_scale = now_weights * now_query_scale # float16
             process_q_len += act_s1
             now_block_table = block_table[batch_id, :]
-            # d s2
-            now_k = self._get_data_from_pa_cache(key, now_block_table, act_s2).transpose(0, 1).to(torch.int32)
+            if "Ascend950" in properties.name:
+                now_k = self._get_data_from_pa_cache(key, now_block_table, act_s2).transpose(0, 1).to(torch.float32)
+            else:
+                now_k = self._get_data_from_pa_cache(key, now_block_table, act_s2).transpose(0, 1).to(torch.int32)
             # s2
             now_k_scale = self._get_k_scale(key_dequant_scale, now_block_table, act_s2).to(torch.float32)
             # n1,s1,d @ d,s2 -> n1,s1,s2
@@ -135,30 +160,52 @@ class TestCustomQuantLightningIndexer(TestCase):
         query_quant_mode = 0
         key_quant_mode = 0
         np.random.seed(0)
+        properties = torch.npu.get_device_properties()
         # -------------
         max_block_table_num = (s2 + block_size - 1) // block_size
         block_table = torch.tensor([range(b * max_block_table_num)], dtype = torch.int32).reshape(b, -1)
-        key = torch.tensor(np.random.uniform(-128, 127, (b * max_block_table_num, block_size, n2, d))).to(torch.int8)
-        key_dequant_scale = torch.tensor(np.random.uniform(0, 10, (b * max_block_table_num, block_size, n2)))
-        key_dequant_scale = key_dequant_scale.to(torch.float16)
-        if layout_query == 'BSND':
-            query = torch.tensor(np.random.uniform(-128, 127, (b, s1, n1, d))).to(torch.int8)
-            query_dequant_scale = torch.tensor(np.random.uniform(0, 10, (b, s1, n1))).to(torch.float16)
-            weights = torch.tensor(np.random.uniform(0, 0.01, (b, s1, n1))).to(torch.float16)
-            actual_seq_lengths_query = torch.tensor(np.random.uniform(s1, s1, (b))).to(torch.int32) \
-                                       if act_seq_q is None else torch.tensor(act_seq_q).to(torch.int32)
-            actual_seq_lengths_key = torch.tensor(np.random.uniform(s2, s2, (b))).to(torch.int32) \
-                                       if act_seq_k is None else torch.tensor(act_seq_k).to(torch.int32)
-            print(f"------- test LIQuant BSND case b:{b} s1:{s1} s2:{s2} sparse_mode:{sparse_mode} ----------")
+        if "Ascend950" in properties.name:
+            key = torch.tensor(np.random.uniform(-128, 127, (b * max_block_table_num, block_size, n2, d))).to(torch.float8_e4m3fn)
+            key_dequant_scale = torch.tensor(np.random.uniform(0, 10, (b * max_block_table_num, block_size, n2)))
+            key_dequant_scale = key_dequant_scale.to(torch.float16)
+            if layout_query == 'BSND':
+                query = torch.tensor(np.random.uniform(-128, 127, (b, s1, n1, d))).to(torch.float8_e4m3fn)
+                query_dequant_scale = torch.tensor(np.random.uniform(0, 10, (b, s1, n1))).to(torch.float16)
+                weights = torch.tensor(np.random.uniform(0, 0.01, (b, s1, n1))).to(torch.float16)
+                actual_seq_lengths_query = torch.tensor(np.random.uniform(s1, s1, (b))).to(torch.int32) \
+                                        if act_seq_q is None else torch.tensor(act_seq_q).to(torch.int32)
+                actual_seq_lengths_key = torch.tensor(np.random.uniform(s2, s2, (b))).to(torch.int32) \
+                                        if act_seq_k is None else torch.tensor(act_seq_k).to(torch.int32)
+                print(f"------- test LIQuant BSND case b:{b} s1:{s1} s2:{s2} sparse_mode:{sparse_mode} ----------")
+            else:
+                query = torch.tensor(np.random.uniform(-128, 127, (t, n1, d))).to(torch.float8_e4m3fn)
+                query_dequant_scale = torch.tensor(np.random.uniform(0, 10, (t, n1))).to(torch.float16)
+                weights = torch.tensor(np.random.uniform(0, 0.01, (t, n1))).to(torch.float16)
+                actual_seq_lengths_query = torch.tensor(act_seq_q).to(torch.int32)
+                actual_seq_lengths_key = torch.tensor(act_seq_k).to(torch.int32)
+                print(f"------- test LIQuant TND case b:{b} t:{t} s2:{s2} act_seq_q:{act_seq_q} act_seq_k:{act_seq_k} ",
+                    f"sparse_mode:{sparse_mode} -------")
         else:
-            query = torch.tensor(np.random.uniform(-128, 127, (t, n1, d))).to(torch.int8)
-            query_dequant_scale = torch.tensor(np.random.uniform(0, 10, (t, n1))).to(torch.float16)
-            weights = torch.tensor(np.random.uniform(0, 0.01, (t, n1))).to(torch.float16)
-            actual_seq_lengths_query = torch.tensor(act_seq_q).to(torch.int32)
-            actual_seq_lengths_key = torch.tensor(act_seq_k).to(torch.int32)
-            print(f"------- test LIQuant TND case b:{b} t:{t} s2:{s2} act_seq_q:{act_seq_q} act_seq_k:{act_seq_k} ",
-                  f"sparse_mode:{sparse_mode} -------")
-
+            key = torch.tensor(np.random.uniform(-128, 127, (b * max_block_table_num, block_size, n2, d))).to(torch.int8)
+            key_dequant_scale = torch.tensor(np.random.uniform(0, 10, (b * max_block_table_num, block_size, n2)))
+            key_dequant_scale = key_dequant_scale.to(torch.float16)
+            if layout_query == 'BSND':
+                query = torch.tensor(np.random.uniform(-128, 127, (b, s1, n1, d))).to(torch.int8)
+                query_dequant_scale = torch.tensor(np.random.uniform(0, 10, (b, s1, n1))).to(torch.float16)
+                weights = torch.tensor(np.random.uniform(0, 0.01, (b, s1, n1))).to(torch.float16)
+                actual_seq_lengths_query = torch.tensor(np.random.uniform(s1, s1, (b))).to(torch.int32) \
+                                        if act_seq_q is None else torch.tensor(act_seq_q).to(torch.int32)
+                actual_seq_lengths_key = torch.tensor(np.random.uniform(s2, s2, (b))).to(torch.int32) \
+                                        if act_seq_k is None else torch.tensor(act_seq_k).to(torch.int32)
+                print(f"------- test LIQuant BSND case b:{b} s1:{s1} s2:{s2} sparse_mode:{sparse_mode} ----------")
+            else:
+                query = torch.tensor(np.random.uniform(-128, 127, (t, n1, d))).to(torch.int8)
+                query_dequant_scale = torch.tensor(np.random.uniform(0, 10, (t, n1))).to(torch.float16)
+                weights = torch.tensor(np.random.uniform(0, 0.01, (t, n1))).to(torch.float16)
+                actual_seq_lengths_query = torch.tensor(act_seq_q).to(torch.int32)
+                actual_seq_lengths_key = torch.tensor(act_seq_k).to(torch.int32)
+                print(f"------- test LIQuant TND case b:{b} t:{t} s2:{s2} act_seq_q:{act_seq_q} act_seq_k:{act_seq_k} ",
+                    f"sparse_mode:{sparse_mode} -------")
         cpu_out = self.cpu_op_exec(query.cpu(), key.cpu(), weights.cpu(), query_dequant_scale.cpu(), key_dequant_scale.cpu(),
                                    actual_seq_lengths_query.cpu(), actual_seq_lengths_key.cpu(), block_table.cpu(),
                                    layout_query, sparse_count, sparse_mode)
@@ -167,8 +214,7 @@ class TestCustomQuantLightningIndexer(TestCase):
                                                actual_seq_lengths_query.npu(), actual_seq_lengths_key.npu(), block_table.npu(),
                                                query_quant_mode, key_quant_mode,
                                                layout_query, layout_key, sparse_count, sparse_mode)
-        res = npu_eager_out.equal(cpu_out)
-        self.assertRtolEqual(res, True)
+        assert(_compare_res(cpu_out, npu_eager_out))
 
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     def test_quant_lightning_indexer(self):

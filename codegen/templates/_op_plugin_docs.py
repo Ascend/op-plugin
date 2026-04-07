@@ -1380,13 +1380,15 @@ custom.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key
 
 参数说明
 
-key（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持int8，layout_key为PA_BSND时shape为[block_count, block_size, N2, D]，其中block_count为PageAttention时block总数，block_size为一个block的token数。
+query（Tensor）：必选参数，不支持非连续，数据格式支持ND，Atlas A3 推理系列产品数据类型支持int8，Ascend 950PR/Ascend 950DT数据类型支持float8_e4m3fn, hifloat8。layout_query为BSND时shape为[B,S1,N1,D]，当layout_query为TND时shape为[T1,N1,D]。
 
-weights（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持float16，支持输入shape[B,S1,N1]、[T,N1]。
+key（Tensor）：必选参数，不支持非连续，数据格式支持ND，Atlas A3 推理系列产品数据类型支持int8，Ascend 950PR/Ascend 950DT数据类型支持float8_e4m3fn，hifloat8。layout_key为PA_BSND时shape为[block_count, block_size, N2, D]，其中block_count为PageAttention时block总数，block_size为一个block的token数。
 
-query_dequant_scale（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持float16，支持输入shape[B,S1,N1]、[T,N1]。
+weights（Tensor）：必选参数，不支持非连续，数据格式支持ND，Atlas A3 推理系列产品数据类型支持float16，Ascend 950PR/Ascend 950DT数据类型支持float16，bfloat16。支持输入shape[B,S1,N1]、[T,N1]。
 
-key_dequant_scale（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持float16，layout_key为PA_BSND时shape为[block_count, block_size, N2]，其中block_count为PageAttention时block总数，block_size为一个block的token数。
+query_dequant_scale（Tensor）：必选参数，不支持非连续，数据格式支持ND，Atlas A3 推理系列产品数据类型支持float16，Ascend 950PR/Ascend 950DT数据类型支持float16，float32，支持输入shape[B,S1,N1]、[T,N1]。
+
+key_dequant_scale（Tensor）：必选参数，不支持非连续，数据格式支持ND，Atlas A3 推理系列产品数据类型支持float16，Ascend 950PR/Ascend 950DT数据类型支持float16，float32，layout_key为PA_BSND时shape为[block_count, block_size, N2]，其中block_count为PageAttention时block总数，block_size为一个block的token数。
 
 *：代表其之前的参数是位置相关的，必须按照顺序输入，属于必选参数；其之后的参数是键值对赋值，与位置无关，属于可选参数（不传入会使用默认值）。
 
@@ -1419,7 +1421,6 @@ out（Tensor）：公式中的输出，数据类型支持int32。数据格式支
 说明：
 query、key、weights、query_dequant_scale、key_dequant_scale参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
 S1表示query shape中的S，S2表示key shape中的S，N1表示query shape中的N，N2表示key shape中的N。
-query（Tensor）：必选参数，不支持非连续，数据格式支持ND，数据类型支持int8。
 """
 )
 
