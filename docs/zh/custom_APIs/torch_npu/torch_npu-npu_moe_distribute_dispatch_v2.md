@@ -422,8 +422,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         else:
             scales = None
 
-        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()	
-        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()	
+        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()    
+        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()    
         const_expert_v = gen_const_expert_v().npu()
 
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
@@ -739,8 +739,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             scales = None
 
         elastic_info = None
-        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()	
-        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()	
+        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()    
+        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()    
         const_expert_v = gen_const_expert_v().npu()
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
 

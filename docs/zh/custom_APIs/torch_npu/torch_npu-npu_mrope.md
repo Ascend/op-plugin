@@ -7,7 +7,6 @@
 | <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |    √     |
 | <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |    √     |
 
-
 ## 功能说明
 
 - API功能：推理场景下将sin、cos以预计算cache形式传入，对`query`、`key`做旋转位置编码（RoPE）。支持普通**RoPE**（一维`positions`）与多模态**MRoPE**（二维`positions`，按`mrope_section`整合多段位置编码），`cache_mode='default'`为分段式拼接，`cache_mode='interleave'`为交错式拼接。
@@ -143,31 +142,31 @@
       query = torch.cat((queryRot, queryPass), dim=-1)
       $$
 
-  -  `rotary_mode`为`interleaved`（GPT-J style）计算模式：
+    - `rotary_mode`为`interleaved`（GPT-J style）计算模式：
 
-    $$
-    x1 = queryRot[..., ::2]
-    $$
+      $$
+      x1 = queryRot[..., ::2]
+      $$
 
-    $$
-    x2 = queryRot[..., 1::2]
-    $$
+      $$
+      x2 = queryRot[..., 1::2]
+      $$
 
-    $$
-    o1[i] = x1[i] * cos[i] - x2[i] * sin[i]
-    $$
+      $$
+      o1[i] = x1[i] * cos[i] - x2[i] * sin[i]
+      $$
 
-    $$
-    o2[i] = x2[i] * cos[i] + x1[i] * sin[i]
-    $$
+      $$
+      o2[i] = x2[i] * cos[i] + x1[i] * sin[i]
+      $$
 
-    $$
-    queryRot = torch.stack((o1, o2), dim=-1)
-    $$
+      $$
+      queryRot = torch.stack((o1, o2), dim=-1)
+      $$
 
-    $$
-    query = torch.cat((queryRot, queryPass), dim=-1)
-    $$
+      $$
+      query = torch.cat((queryRot, queryPass), dim=-1)
+      $$
 
   **RoPE模式**：
   
@@ -189,7 +188,7 @@
   queryPass = query[..., rotaryDim:]
   $$
 
-  - `rotary_mode`为half（GPT-NeoX style）计算模式：
+  - `rotary_mode`为`half`（GPT-NeoX style）计算模式：
 
     $$
     x1, x2 = torch.chunk(queryRot, 2, dim=-1)
@@ -211,7 +210,7 @@
     query = torch.cat((queryRot, queryPass), dim=-1)
     $$
 
-  -  `rotary_mode`为interleaved（GPT-J style）计算模式：
+  - `rotary_mode`为`interleaved`（GPT-J style）计算模式：
 
     $$
     x1 = queryRot[..., ::2]
@@ -256,7 +255,7 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
 - **cos_sin_cache**（`Tensor`）：必选参数，预计算的位置编码cache，对应公式中的$cosSinCache$。2维张量，shape`(max_seq_len, rotary_dim)`。最后一维经`chunk(2, dim=-1)`拆成cos、sin两半。`query`、`key`、`cos_sin_cache`的浮点类型须一致。
 - **head_size**（`int`）：必选参数，单头维度大小，即每个注意力头的特征维长度。
 - **mrope_section**（`int[]`）：可选参数，MRoPE各段在half旋转维度上的长度配置。不传或`[0, 0, 0]`表示RoPE模式；传`[16, 24, 24]`、`[24, 20, 20]`、`[8, 12, 12]`、`[16, 16, 16, 16]`表示MRoPE模式，MRoPE时需与`positions`的行数一致。
-- **rotary_mode**（`str`）：可选参数，`half`表示NeoX风格，`interleave`表示GPT-J风格。默认值为`half`。
+- **rotary_mode**（`str`）：可选参数，`half`表示NeoX风格，`interleaved`表示GPT-J风格。默认值为`half`。
 - **cache_mode**（`str`）：可选参数，`default`对应分段式cos/sin拼接；`interleave`对应交错式拼接。默认值为`default`。RoPE下仅支持`default`;MRoPE下支持`default`与`interleave`.
 
 ## 返回值说明

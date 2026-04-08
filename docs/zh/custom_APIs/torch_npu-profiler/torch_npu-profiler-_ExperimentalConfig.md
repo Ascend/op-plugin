@@ -125,17 +125,17 @@ import torch_npu
 ...
 
 experimental_config = torch_npu.profiler._ExperimentalConfig(
-	export_type=[
-		torch_npu.profiler.ExportType.Text
-		],
-	profiler_level=torch_npu.profiler.ProfilerLevel.Level0,
-	msprof_tx=False,
-	aic_metrics=torch_npu.profiler.AiCMetrics.AiCoreNone,
-	l2_cache=False,
-	op_attr=False,
-	data_simplification=False,
-	record_op_args=False,
-	gc_detect_threshold=None
+    export_type=[
+        torch_npu.profiler.ExportType.Text
+        ],
+    profiler_level=torch_npu.profiler.ProfilerLevel.Level0,
+    msprof_tx=False,
+    aic_metrics=torch_npu.profiler.AiCMetrics.AiCoreNone,
+    l2_cache=False,
+    op_attr=False,
+    data_simplification=False,
+    record_op_args=False,
+    gc_detect_threshold=None
 )
 
 with torch_npu.profiler.profile(

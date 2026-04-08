@@ -39,10 +39,10 @@ from torch_npu.profiler import dynamic_profile as dp
 dp.init("profiler_config_path")
 …
 for step in steps:
-	if step==5:
-		# 设置start接口Profiling配置文件路径
-		dp.start("start_config_path")
-	train_one_step()
-	# 划分step，需要进行profile的代码需在dp.start()接口和dp.step()接口之间
-	dp.step()
+    if step==5:
+        # 设置start接口Profiling配置文件路径
+        dp.start("start_config_path")
+    train_one_step()
+    # 划分step，需要进行profile的代码需在dp.start()接口和dp.step()接口之间
+    dp.step()
 ```

@@ -100,7 +100,7 @@ torch_npu.npu_scatter_nd_update_(input, indices, updates) -> Tensor
             # 调用目标接口
             res = torch_npu.npu_scatter_nd_update_(var, indices, update)
             return res
-    		
+            
     npu_mode = Network()
     config = CompilerConfig()
     npu_backend = tng.get_npu_backend(compiler_config=config)
