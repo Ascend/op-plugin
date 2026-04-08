@@ -67,8 +67,8 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     c10::optional<int64_t> weight_scale_dtype,
     c10::optional<int64_t> x_scale_dtype)
 {
-    TORCH_CHECK(weight.size() == 1, "The size of weight should be 1, current size is ", weight.size(), OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(weight_scale.size() == 1, "The size of weight_scale should be 1, current size is ",
+    TORCH_CHECK(weight.size() == NUM_ONE, "The size of weight should be 1, current size is ", weight.size(), OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight_scale.size() == NUM_ONE, "The size of weight_scale should be 1, current size is ",
                 weight_scale.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(x.dim() >= DIM_2, "The x dim should greater than 2, but the actual value is ", x.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(!weight_scale[DIM_0].sizes().empty(), "The weight_scale[0] is empty.", OPS_ERROR(ErrCode::PARAM));
@@ -114,13 +114,15 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
                     "The optional parameter x_scale_dtype only supports float8_e8m0fnu or None, but the actual value is ",
                     c10_npu::CustomDataTypeToString(x_scale_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
     }
-    if (dequant_dtype.has_value()) {
-        TORCH_CHECK(dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::Float)
-                    || dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::Char)
-                    || dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::Half)
-                    || dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::BFloat16),
-                    "The optional parameter dequant_dtype only support torch.float32, torch.int8, torch.float16 and torch.bfloat16 ,but the actual value is ",
-                    c10_npu::CustomDataTypeToString(dequant_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+        if (dequant_dtype.has_value()) {
+            TORCH_CHECK(dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::Float)
+                        || dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::Char)
+                        || dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::Half)
+                        || dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::BFloat16),
+                        "The optional parameter dequant_dtype only support torch.float32, torch.int8, torch.float16 and torch.bfloat16 ,but the actual value is ",
+                        c10_npu::CustomDataTypeToString(dequant_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
+        }
     }
 
     int64_t dequant_mode_real = dequant_mode.value_or(0);
