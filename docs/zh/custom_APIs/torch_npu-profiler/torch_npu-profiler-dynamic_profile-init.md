@@ -39,7 +39,7 @@ from torch_npu.profiler import dynamic_profile as dp
 dp.init("profiler_config_path")
 …
 for step in steps:
-	train_one_step()
-	# 划分step
-	dp.step()
+    train_one_step()
+    # 划分step
+    dp.step()
 ```

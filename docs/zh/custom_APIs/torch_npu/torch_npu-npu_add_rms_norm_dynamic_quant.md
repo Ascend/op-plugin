@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-- API功能：RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。DynamicQuant算子则是为输入张量进行对称动态量化的算子。AddRmsNormDynamicQuant算子将RmsNorm前的Add算子和RmsNorm归一化输出给到的1个或2个DynamicQuant算子融合起来，减少搬入搬出操作。
+- API功能：RMSNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。DynamicQuant算子则是为输入张量进行对称动态量化的算子。AddRmsNormDynamicQuant算子将RMSNorm前的Add算子和RMSNorm归一化输出给到的1个或2个DynamicQuant算子融合起来，减少搬入搬出操作。
 
 - 计算公式：
 
@@ -18,7 +18,7 @@
   $$
 
   $$
-  y = \operatorname{RmsNorm}(x)=\frac{x}{\operatorname{Rms}(\mathbf{x})}\cdot gamma+beta, \quad \text { where } \operatorname{Rms}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+epsilon}
+  y = \operatorname{RMSNorm}(x)=\frac{x}{\operatorname{RMS}(\mathbf{x})}\cdot gamma+beta, \quad \text { where } \operatorname{RMS}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+epsilon}
   $$
 
   $$
@@ -75,11 +75,11 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 
 - **x1**(`Tensor`)：必选参数，表示用于Add计算的第一个输入，对应公式中的$x1$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float16`、`bfloat16`。支持2-8维张量。
 - **x2**(`Tensor`)：必选参数，表示用于Add计算的第二个输入，对应公式中的$x2$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float16`、`bfloat16`。shape与`x1`保持一致。
-- **gamma**(`Tensor`)：必选参数，表示RmsNorm的缩放因子（权重），对应公式中的$gamma$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。
+- **gamma**(`Tensor`)：必选参数，表示RMSNorm的缩放因子（权重），对应公式中的$gamma$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **smooth_scale1**(`Tensor`)：可选参数，第一路量化的smooth缩放因子，对应公式中的$smoothScale1$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时量化分支不进行smooth操作。
 - **smooth_scale2**(`Tensor`)：可选参数，第二路量化的smooth缩放因子，对应公式中的$smoothScale2$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时量化分支不进行smooth操作。
-- **beta**(`Tensor`)：可选参数，RmsNorm的偏置项，对应公式中的$beta$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时不添加偏置。
+- **beta**(`Tensor`)：可选参数，RMSNorm的偏置项，对应公式中的$beta$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时不添加偏置。
 - **epsilon**(`float`)：可选参数，表示添加到分母中的值，以确保数值稳定，对应公式中的$epsilon$。默认值为`1e-6`。
 - **output_mask**(`bool[2]`)：可选参数，长度为2的布尔数组，用于控制是否计算两路量化输出，对应公式中的$outputMask$。`output_mask[0]`控制第一路量化输出（y1, scale1），`output_mask[1]`控制第二路量化输出（y2, scale2）。
 - **y_dtype**(`ScalarType`)：可选参数，y1和y2的量化输出数据类型。`None`或`torch.int8`表示`int8`；`torch.quint4x2`表示`int4`，`int4`场景下`x1`最后一维必须能被8整除。默认值为`None`。

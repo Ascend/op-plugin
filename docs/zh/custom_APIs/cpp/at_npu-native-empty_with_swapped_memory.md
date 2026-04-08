@@ -24,8 +24,8 @@ at::Tensor empty_with_swapped_memory(c10::IntArrayRef size, c10::optional<at::Sc
 ## 参数说明
 
 - **size** (`c10::IntArrayRef`)：必选参数，表示生成Tensor的shape。
-- **dtype_opt** (`c10::optional<at::ScalarType>`)：必选参数，表示生成Tensor的数据类型，若为`c10::nullopt`，则表示使用dtype全局默认值。
-- **device_opt** (`c10::optional<c10::Device>`)：必选参数，表示生成Tensor的设备信息，若为`c10::nullopt`，则表示使用当前默认device。
+- **dtype_opt** (`c10::optional<at::ScalarType>`)：可选参数，表示生成Tensor的数据类型，若为`c10::nullopt`，则表示使用dtype全局默认值。
+- **device_opt** (`c10::optional<c10::Device>`)：可选参数，表示生成Tensor的设备信息，若为`c10::nullopt`，则表示使用当前默认device。
 
 ## 返回值说明
 

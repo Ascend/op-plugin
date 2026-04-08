@@ -130,7 +130,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 
 - **gen\_mask\_parallel**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为True：同AI Core并行计算；设为False：同AI Core串行计算。
 - **sync**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为False：dropout mask异步生成；设为True：dropout mask同步生成。
-- **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。此参数为Ascend Extension for PyTorch 7.2.0版本新增参数，支持在CANN8.3.RC1及以上版本使用。
+- **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout="TND"时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。此参数为Ascend Extension for PyTorch 7.2.0版本新增参数，支持在CANN8.3.RC1及以上版本使用。
 - **sink**（`Tensor`）：可选参数，每个注意力头的偏置。shape为`[head_num]`，数据类型仅支持`float32`。此参数为Ascend Extension for PyTorch 7.3.0版本新增参数，支持在CANN8.5.0及以上版本使用。
 - **dropout\_mask**（`Tensor`）：可选参数，外部传入的dropout掩码，用于控制dropout行为。当传入此参数时，将使用外部掩码而非内部生成，实现可复现的dropout效果。数据类型支持`uint8`，数据格式支持$ND$。若不传入此参数，则由算子内部根据`seed`和`offset`自动生成dropout mask。若传入此参数，则需要使用内部接口[_npu_dropout_gen_mask](https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/DropoutGenMaskKernelNpuOpApi.cpp)生成dropout_mask。
 - **seed**（`int`）：可选参数，DSA生成dropout mask中Philox算法的种子值，数据类型支持`int64`，默认值为0。当`dropout_mask`参数未传入时，若`seed`为0，则使用默认随机种子；若`seed`非0，则使用指定的种子值生成dropout mask。当传入dropout_mask时，需传入生成dropout_mask所需的seed值。
@@ -177,7 +177,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 
 - `prefix`稀疏计算场景B不大于32，varlen场景不支持非压缩prefix，即不支持sparse\_mode=5；当Sq\>Skv时，`prefix`的N值取值范围\[0, Skv\]，当Sq<=Skv时，`prefix`的N值取值范围\[Skv-Sq, Skv\]。
 - 支持`actual_seq_qlen`中某个Batch上的S长度为0；如果存在S为0的情况，不支持`pse`输入，假设真实的S长度为\[2, 2, 0, 2, 2\]，则传入的`actual_seq_qlen`为\[2, 4, 4, 6, 8\]。`actual_seq_qlen`的长度取值范围为1\~2K，varlen场景下长度最大支持1K。
-- TND格式下，支持尾部部分Batch不参与计算，此时`actual_seq_qlen`和`actual_seq_kv_len`尾部传入对应个数个0即可。假设真实的S长度为\[2, 3, 4, 5, 6\]，此时后两个Batch不参与计算，则传入的`actual_seq_qlen`为\[2, 5, 9, 0, 0\]。
+- TND格式下，支持尾部部分Batch不参与计算，此时`actual_seq_qlen`和`actual_seq_kvlen`尾部传入对应个数个0即可。假设真实的S长度为\[2, 3, 4, 5, 6\]，此时后两个Batch不参与计算，则传入的`actual_seq_qlen`为\[2, 5, 9, 0, 0\]。
 - 部分场景下，如果计算量过大可能会导致算子执行超时\(aicore error类型报错，errorStr为：timeout or trap error\)，此时建议做轴切分处理，注：这里的计算量会受B、S、N、D等参数的影响，值越大计算量越大。
 
 ## 调用示例<a name="zh-cn_topic_0000001742717129_section14459801435"></a>
@@ -281,48 +281,48 @@ if __name__ == "__main__":
 ```python
 import torch
 import torch_npu
- 	 
- 	 def example_with_dropout_mask():
- 	     """
- 	     使用外部dropout_mask实现可复现的dropout效果
- 	     """
- 	     B, N, S, D = 1, 8, 64, 64
- 	     head_num = 8
- 	     keep_prob = 0.9
- 	     seed = 42
- 	     offset = 0
- 	 
- 	     query = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
- 	     key = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
- 	     value = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
- 	 
- 	     dropout_mask = torch_npu._npu_dropout_gen_mask(
- 	         torch.randn(1, device="npu"),
- 	         [B, N, S, S],
- 	         p=1 - keep_prob,
- 	         seed=seed,
- 	         offset=offset,
- 	         parallel=True,
- 	         sync=False
- 	     )
- 	 
- 	     attention_score, softmax_max, softmax_sum, softmax_out, out_seed, out_offset, numels = \
- 	         torch_npu.npu_fusion_attention(
- 	             query, key, value,
- 	             head_num=head_num,
- 	             input_layout="BSH",
- 	             scale=0.125,
- 	             keep_prob=keep_prob,
- 	             dropout_mask=dropout_mask,
- 	             seed=seed,
- 	             offset=offset
- 	         )
- 	 
- 	     print(f"Output shape: {attention_score.shape}")
- 	     print(f"Returned seed: {out_seed}, offset: {out_offset}, numels: {numels}")
- 	 
- 	     return attention_score
- 	 
+     
+     def example_with_dropout_mask():
+         """
+         使用外部dropout_mask实现可复现的dropout效果
+         """
+         B, N, S, D = 1, 8, 64, 64
+         head_num = 8
+         keep_prob = 0.9
+         seed = 42
+         offset = 0
+     
+         query = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
+         key = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
+         value = torch.randn(B, S, N * D, dtype=torch.float16, device="npu")
+     
+         dropout_mask = torch_npu._npu_dropout_gen_mask(
+             torch.randn(1, device="npu"),
+             [B, N, S, S],
+             p=1 - keep_prob,
+             seed=seed,
+             offset=offset,
+             parallel=True,
+             sync=False
+         )
+     
+         attention_score, softmax_max, softmax_sum, softmax_out, out_seed, out_offset, numels = \
+             torch_npu.npu_fusion_attention(
+                 query, key, value,
+                 head_num=head_num,
+                 input_layout="BSH",
+                 scale=0.125,
+                 keep_prob=keep_prob,
+                 dropout_mask=dropout_mask,
+                 seed=seed,
+                 offset=offset
+             )
+     
+         print(f"Output shape: {attention_score.shape}")
+         print(f"Returned seed: {out_seed}, offset: {out_offset}, numels: {numels}")
+     
+         return attention_score
+     
 if __name__ == "__main__":
     if torch.npu.is_available():
         example_with_dropout_mask()

@@ -45,5 +45,5 @@ torch_npu.profiler.profiler.analyse(profiler_path="", max_process_number=max_pro
 from torch_npu.profiler.profiler import analyse
 
 if __name__ == "__main__":
-	analyse(profiler_path="./result_data", max_process_number=max_process_number)
+    analyse(profiler_path="./result_data", max_process_number=max_process_number)
 ```
