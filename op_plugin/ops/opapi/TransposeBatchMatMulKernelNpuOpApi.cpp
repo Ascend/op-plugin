@@ -13,6 +13,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/OpUtils.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -56,15 +57,15 @@ at::Tensor npu_transpose_batchmatmul(const at::Tensor &input, const at::Tensor &
     
     // Construct the output tensor of the NPU
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, input.options());
-    int cubeMathType = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
     // Check format and execute the appropriate NPU command
     bool is_nd_nz_format = op_plugin::utils::is_nz_format(weight) && !op_plugin::utils::is_nz_format(input);
     if (is_nd_nz_format) {
         EXEC_NPU_CMD(aclnnTransposeBatchMatMulWeightNz, input, weight, bias_real, scale_real, perm_x1_real,
-                     perm_x2_real, perm_y_real, cubeMathType, batch_split_factor_value, result);
+                     perm_x2_real, perm_y_real, cube_math_type, batch_split_factor_value, result);
     } else {
         EXEC_NPU_CMD(aclnnTransposeBatchMatMul, input, weight, bias_real, scale_real, perm_x1_real, perm_x2_real,
-                     perm_y_real, cubeMathType, batch_split_factor_value, result);
+                     perm_y_real, cube_math_type, batch_split_factor_value, result);
     }
 
     return result;

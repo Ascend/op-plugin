@@ -14,7 +14,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-
+#include "op_plugin/utils/OpUtils.h"
 
 namespace op_api {
 
@@ -23,11 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor &npu_attn_softmax_backward_(at::Tensor &self, const at::Tensor &grad_output, const at::Tensor &values)
 {
     // allow dicrease precision
-    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-    int8_t cube_math_type_passthrough = npu_preparation::get_cube_math_type();
-        if (cube_math_type_passthrough >= 0) {
-            cube_math_type = cube_math_type_passthrough;
-    }
+    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
     at::Tensor values_tmp = values;
     values_tmp = values_tmp.transpose(-2, -1);
     auto output_size = op_infer::matmul_output_size(grad_output, values_tmp);
