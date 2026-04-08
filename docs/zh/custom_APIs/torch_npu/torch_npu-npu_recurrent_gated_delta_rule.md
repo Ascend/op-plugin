@@ -5,7 +5,7 @@
 |产品             |  是否支持  |
 |:-------------------------|:----------:|
 |  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>   |     √    |
-|  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
+|  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>   |     √    |
 
 ## 功能说明
 
@@ -16,13 +16,13 @@
   在每个时间步 $t$，网络根据当前的输入 $q_t$、$k_t$、$v_t$ 和上一个隐藏状态 $S_{t-1}$，计算当前的输出 $o_t$ 和新的隐藏状态 $S_t$。
   在这个过程中，门控单元会决定有多少新信息存入隐藏状态，以及有多少旧信息需要被遗忘。
   $$
-  S_t := S_{t-1}(\alpha_t(I - \beta_t k_t k_t^T)) + \beta_t v_t k_t^T = \alpha_t S_{t-1} + \beta_t (v_t - \alpha_t S_{t-1}k_t)k_t^T
+  S_t := S_{t-1}(\alpha_t Diag(\alpha_{kt}) (I - \beta_t k_t k_t^T)) + \beta_t v_t k_t^T = \alpha_t Diag(\alpha_{kt}) S_{t-1} + \beta_t (v_t - \alpha_t Diag(\alpha_{kt}) S_{t-1}k_t)k_t^T
   $$
   $$
   o_t := \frac{S_t q_t}{\sqrt{D_k}}
   $$
 
-  其中，$S_{t-1},S_t \in R^{D_v \times D_k}$，$q_t, k_t \in R^{D_k}$，$v_t \in R^{D_v}$，$\alpha_t \in R$，$\beta_t \in R$，$o_t \in R^{D_v}$。
+  其中，$S_{t-1},S_t \in R^{D_v \times D_k}$，$q_t, k_t \in R^{D_k}$，$v_t \in R^{D_v}$，$\alpha_t \in R$，$\alpha_{kt} \in R^{D_k}$，$\beta_t \in R$，$o_t \in R^{D_v}$。
 
 ## 函数原型
 
@@ -44,15 +44,15 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 
 - **scale** (`float`)：必选输入。表示query的缩放因子，对应公式中的 $1/\sqrt{D_k}$。数据类型支持`float32`。
 
-- **actual_seq_lengths** (`Tensor`)：必选输入。表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
+- **actual_seq_lengths** (`Tensor`)：必选输入。表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$）。要求$1 \le L_i \le 8$，$L_i$ 表示第i个actual_seq_lengths的值。
 
-- **ssm_state_indices** (`Tensor`)：必选输入。表示输入序列到状态矩阵的映射索引。`state[ssm_state_indices[i]]`表示第i个token的状态矩阵。数据类型支持`int32`，数据格式支持ND，shape为（$T$,）。
+- **ssm_state_indices** (`Tensor`)：必选输入。表示输入序列到状态矩阵的映射索引。`state[ssm_state_indices[i]]`表示第i个token的状态矩阵。`ssm_state_indices[i]`要求取值大于等于0且小于$BlockNum$。数据类型支持`int32`，数据格式支持ND，shape为（$T$）。
 
-- **num_accepted_tokens** (`Tensor`)：可选输入，投机推理每个batch接受的token数量。默认为None，表示每个batch接受的token数为1。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
+- **num_accepted_tokens** (`Tensor`)：可选输入，`num_accepted_tokens[i]`表示投机推理第i个batch接受的token数量，要求取值大于等于1且不大于$L_i$。默认为None，表示每个batch接受的token数为1。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
 
 - **g** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$）。
 
-- **gk** (`Tensor`)：可选输入，衰减系数，当前版本暂不支持，传None即可。
+- **gk** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^{gk}$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$, $D_k$）。
 
 ## 返回值说明
 
@@ -65,7 +65,7 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 - 参数里Shape使用的变量如下：
     - $T=\sum_i^B L_i$ 表示累积序列长度。
     - $B$ 表示batch size。
-    - $L_i$ 表示第i个序列的长度，其取值范围为$1 \le L_i \le 8$。
+    - $L_i$ 表示第i个序列的长度，由actual_seq_lengths传入，其取值范围为$1 \le L_i \le 8$。
     - $N_k$ 表示key的头数，其取值范围为$1 \le N_k \le 256$。
     - $N_v$ 表示value的头数，其取值范围为$1 \le N_v \le 256$。
     - $D_k$ 表示key向量的维度，其取值范围为$1 \le D_k \le 512$。
