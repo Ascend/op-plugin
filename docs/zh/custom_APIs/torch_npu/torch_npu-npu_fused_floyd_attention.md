@@ -64,6 +64,7 @@ torch_npu.npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk
 - `softmax_max_out`与`softmax_sum_out`的shape需相同。
 - `query_ik`、`key_ij`、`value_ij`、`key_jk`和`value_jk`的数据类型需保持一致。
 - 支持PyTorch2.6.0及以上版本。
+- 该接口的反向计算不支持确定性。
 
 ## 调用示例
 
