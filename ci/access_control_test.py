@@ -6,6 +6,7 @@ import sys
 import subprocess
 import threading
 import queue
+import glob
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 
@@ -39,16 +40,14 @@ class AccurateTest(metaclass=ABCMeta):
     @staticmethod
     def find_ut_by_regex(regex, test_path):
         ut_files = []
-        cmd = "find {} -name {}".format(test_path, regex)
-        status, output = subprocess.getstatusoutput(cmd)
-        # For the ones that cannot be found, no action will be taken temporarily.
-        if status or not output:
-            pass
-        else:
-            files = output.split('\n')
+        pattern = os.path.join(test_path, "**", regex)
+        try:
+            files = glob.glob(pattern, recursive=True)
             for ut_file in files:
                 if ut_file.endswith(".py"):
                     ut_files.append(ut_file)
+        except Exception as e:
+            pass
         return ut_files
 
     def get_ut_files(self, regex):
