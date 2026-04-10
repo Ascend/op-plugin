@@ -85,7 +85,7 @@ torch_npu.npu_clipped_swiglu(x, *, group_index=None, dim=-1, alpha=1.702, limit=
 - **alpha** (`float`)：可选参数，表示glu激活函数系数，默认值为1.702。
 - **limit** (`float`)：可选参数，表示变体SwiGLU输入门限，默认值为7.0。
 - **bias** (`float`)：可选参数，表示变体SwiGLU计算中的偏差，默认值为1.0。
-- **interleaved** (`bool`)：可选参数，表示输入`x`是否按奇偶方式切分，True表示为奇偶方式切分，False表示为前后方式切分，默认值为为True。
+- **interleaved** (`bool`)：可选参数，表示输入`x`是否按奇偶方式切分，True表示为奇偶方式切分，False表示为前后方式切分，默认值为True。
 
 ## 返回值说明
 

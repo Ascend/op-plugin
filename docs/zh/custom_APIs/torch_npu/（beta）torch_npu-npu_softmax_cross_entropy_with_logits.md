@@ -1,5 +1,8 @@
 # （beta）torch_npu.npu_softmax_cross_entropy_with_logits
 
+> [!NOTICE]  
+> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |

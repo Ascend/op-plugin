@@ -129,7 +129,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **actual_seq_len**（`Tensor`）：可选参数，表示每个batch中的序列长度，以前缀和的形式储存。不支持非连续，数据格式支持ND，数据类型支持`int32`，shape为[B]，支持非空tensor（仅BS合轴且cache_mode为"PA_BLK_BSND"或"PA_BLK_NZ"时需要传入）。当前不会对传入值的合法性进行校验，需用户自行保证。
 
-- **k_nope_clip_alpha**（`Tensor`）：可选参数，表示kv_cache做clip操作时的缩放因子，当前仅在kvcache per-tile量化场景下使用。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1]。
+- **k_nope_clip_alpha**（`Tensor`）：可选参数，表示kv_cache做clip操作时的缩放因子，当前仅在kv_cache per-tile量化场景下使用。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1]。
 
 - **rmsnorm_epsilon_cq**（`float`）：可选参数，计算$c^Q$的RmsNorm公式中的$\epsilon$参数。默认值为1e-05。
 
@@ -210,7 +210,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>kv_cache非量化 </td>
       <td>
           - weight_quant_mode=1，kv_cache_quant_mode=0，query_quant_mode=0<br>
-          - 入参：weight_uq_qr传入pertoken量化数据，其余入参皆为非量化数据。dequant_scale_w_uq_qr字段必须传入，smooth_scale_cq字段可选传入。 <br>
+          - 入参：weight_uq_qr传入pertoken量化数据，其余入参皆为非量化数据。dequant_scale_w_uq_qr字段必须传入，smooth_scale_cq字段可选传入 <br>
           - 出参：所有出参返回非量化数据。
       </td>
     </tr>
@@ -219,17 +219,17 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           - weight_quant_mode=2，kv_cache_quant_mode=2，query_quant_mode=0<br>
           - 入参：weight_uq_qr传入pertoken量化数据，kv_cache、kr_cache传入perchannel量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_w_uq_qr、quant_scale_ckv、quant_scale_ckr字段必须传入，smooth_scale_cq字段可选传入。 <br>
-          - 出参：kv_cache、kr_cache返回perchannel量化数据，其余出参返回非量化数据。
+          dequant_scale_w_uq_qr、quant_scale_ckv、quant_scale_ckr字段必须传入，smooth_scale_cq字段可选传入 <br>
+          - 出参：kv_cache、kr_cache返回perchannel量化数据，其余出参返回非量化数据
       </td>
     </tr>
     <tr>
       <td>kv_cache per-tile量化 </td>
       <td>
           - weight_quant_mode=3, kv_cache_quant_mode=3, query_quant_mode=0<br>
-          - 入参：weight_uq_qr传入pertoken量化数据，kv_cache传入per-tile量化数据,其余入参皆为非量化数据 <br>
-          dequant_scale_w_uq_qr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入。 <br>
-          - 出参：kv_cache_out返回pertile量化数据，其余出参返回非量化数据。
+          - 入参：weight_uq_qr传入pertoken量化数据，kv_cache传入per-tile量化数据，其余入参皆为非量化数据 <br>
+          dequant_scale_w_uq_qr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入 <br>
+          - 出参：kv_cache_out返回pertile量化数据，其余出参返回非量化数据
       </td>
     </tr>
     <tr>
@@ -238,8 +238,8 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           - weight_quant_mode=2，kv_cache_quant_mode=0，query_quant_mode=0<br>
           - 入参：token_x传入pertoken量化数据，weight_dq、weight_uq_qr、weight_dkv_kr传入perchannel量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr字段必须传入，smooth_scale_cq字段可选传入。 <br>
-          - 出参：所有出参皆为非量化数据。
+          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr字段必须传入，smooth_scale_cq字段可选传入<br>
+          - 出参：所有出参皆为非量化数据
       </td>
     </tr>
     <tr>
@@ -247,17 +247,17 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           - weight_quant_mode=2，kv_cache_quant_mode=1，query_quant_mode=1<br>
           - 入参：token_x传入pertoken量化数据，weight_dq、weight_uq_qr、weight_dkv_kr传入perchannel量化数据，kv_cache传入pertensor量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入。 <br>
-          - 出参：query_out返回pertoken_head量化数据，kv_cache出参返回pertensor量化数据，其余出参范围非量化数据。
+          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入<br>
+          - 出参：query_out返回pertoken_head量化数据，kv_cache出参返回pertensor量化数据，其余出参范围非量化数据
       </td>
     </tr>
     <tr>
       <td> kv_cache per-tile量化 </td>
       <td>
           - weight_quant_mode=3，kv_cache_quant_mode=3，query_quant_mode=1<br>
-          - 入参：token_x传入pertoken量化数据，weight_dq、weight_uq_qr、weight_dkv_kr传入perchannel量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入。 <br>
-          - 出参：query_out返回pertoken_head量化数据，kv_cache出参返回pertensor量化数据，其余出参范围非量化数据。
+          - 入参：token_x传入pertoken量化数据，weight_dq、weight_uq_qr、weight_dkv_kr传入perchannel量化数据，其余入参皆为非量化数据<br>
+          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入<br>
+          - 出参：query_out返回pertoken_head量化数据，kv_cache出参返回pertensor量化数据，其余出参范围非量化数据
       </td>
     </tr>
   </table>

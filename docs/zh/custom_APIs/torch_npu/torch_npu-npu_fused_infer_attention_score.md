@@ -236,7 +236,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     
         <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于`key`/`value`中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当`key`/`value`的`input_layout`为TND/NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
         
-    - 参数`sparse_mode`当前仅支持值为0、1、2、3、4的场景，取其它值时会报错。
+    - 参数`sparse_mode`当前仅支持值为0、1、2、3、4的场景，取其他值时会报错。
         
         - `sparse_mode`为0时，`atten_mask`如果为None，或者在左padding场景传入`atten_mask`，则忽略入参pre\_tokens、next\_tokens（内部赋值为INT\_MAX）。
         - `sparse_mode`为2、3、4时，`atten_mask`的shape需要为\(S, S\)或\(1, S, S\)或\(1, 1, S, S\)，其中S的值需要固定为2048，且需要用户保证传入的`atten_mask`为下三角，不传入`atten_mask`或者传入的shape不正确报错。        
@@ -342,7 +342,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     - `query`、`key`、`value`输入，功能使用限制如下：
         - 支持B轴小于等于65536，支持N轴小于等于256，支持S轴小于等于262144，支持D轴小于等于512。
         - `query`、`key`、`value`输入类型均为`int8`的场景暂不支持。
-        - 在`int4`（`int32`）伪量化场景下，PyTorch入图调用仅支持KV `int4`拼接成`int32`输入（建议通过dynamicQuant生成`int4`格式的数据，因为dynamicQuant就是一个`int32`包括8个`int4`）。
+        - 在`int4`（`int32`）伪量化场景下，PyTorch入图调用仅支持KV `int4`拼接成`int32`输入（建议通过dynamic_quant生成`int4`格式的数据，因为dynamic_quant就是一个`int32`包括8个`int4`）。
         - 在`int4`（`int32`）伪量化场景下，若KV `int4`拼接成`int32`输入，那么KV的N、D或者H是实际值的八分之一（prefix同理）。并且，`int4`伪量化仅支持D 64对齐（`int32`支持D 8对齐）。
 
     - `actual_seq_lengths`：
@@ -370,7 +370,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - page attention场景下，使能`atten_mask`，当`sparse_mode`不为2、3、4时，传入的`atten_mask`的最后一维需要大于等于`block_table`的第二维 * `block_size`。
         - page attention场景下，使能`pse_shift`，传入的`pse_shift`的最后一维需要大于等于`block_table`的第二维 * `block_size`。
         - page attention场景下，以下场景输入S需要大于等于`block_table`的第二维 * `block_size`。
-            - 使能伪量化pertoken模式：输入参数`antiqunant_scale`和`antiquant_offset`的shape均为\(2, B, S\)。
+            - 使能伪量化pertoken模式：输入参数`antiquant_scale`和`antiquant_offset`的shape均为\(2, B, S\)。
             - 使能pertoken叠加perhead模式：两个参数的shape均为\(B, N, S\)，数据类型固定为`float32`。支持`key`、`value`数据类型为`int8`、`int4`\(`int32`\)。
     
     - kv左padding场景：

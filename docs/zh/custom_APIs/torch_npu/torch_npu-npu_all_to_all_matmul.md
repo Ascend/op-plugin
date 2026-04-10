@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- 接口功能：完成AlltoAll通信、Permute(保证通信后地址连续)和Matmul计算的融合，**先通信后计算**。
+- 接口功能：完成AlltoAll通信、Permute（保证通信后地址连续）和Matmul计算的融合，**先通信后计算**。
 
 - 计算公式：假设x1输入shape为(BS, H)，rankSize为NPU卡数
 

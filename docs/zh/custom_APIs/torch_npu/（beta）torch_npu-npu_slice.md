@@ -1,5 +1,8 @@
 # （beta）torch_npu.npu_slice
 
+> [!NOTICE]  
+> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，建议使用torch.slice。
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |

@@ -22,7 +22,7 @@ at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, do
 - seed ：int64_t类型，随机数的种子，影响生成的随机数序列。
 - offset ：int64_t类型，随机数的偏移量，影响生成随机数序列的位置。
 - parallel ：可选参数bool类型，是否并行计算。
-- sync：可选参数bool类型，是否做同步。
+- sync：可选参数bool类型，是否作同步。
 
 ## 支持的型号
 

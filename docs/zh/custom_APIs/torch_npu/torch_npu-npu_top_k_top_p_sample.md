@@ -16,18 +16,18 @@
 
   | 计算场景 | topK采样 | topP采样 | minP采样 | 后继处理 |备注|
   | :-------:| :------:|:-------:|:-------:|:-------:|:-------:|
-  |Argmax采样|×|×|×|None|对输入`logits`每个batch取最大logits和对应索引，结果作为logits_select_idx[batch,1]。|
+  |Argmax采样|×|×|×|None|对输入`logits`每个batch取最大logits和对应索引，结果作为logits_select_idx[batch,1]|
   |topK采样|√|×|×|None|无|
   |topP采样|×|√|×|None|无|
-  |qSample采样|×|×|×|qSample|对输入`logits`每个batch使用`q[i]`进行指数采样，从结果中取最大值和索引，作为logits_select_idx[batch,1]。|
+  |qSample采样|×|×|×|qSample|对输入`logits`每个batch使用`q[i]`进行指数采样，从结果中取最大值和索引，作为logits_select_idx[batch,1]|
   |topK-topP采样|√|√|×|None|无|
   |topK-qSample采样|√|×|×|qSample|无|
   |topK-multiNomial采样|√|×|×|multiNomial|无| 
   |topK-minP-multiNomial采样|√|×|√|multiNomial|无| 
   |topP-qSample采样|×|√|×|qSample|无|
-  |topK-topP-qSample采样|√|√|×|qSample|VLLM框架标准完整功能。|
+  |topK-topP-qSample采样|√|√|×|qSample|VLLM框架标准完整功能|
   |topK-topP-multiNomial采样|√|√|×|multiNomial|min_ps为无效值，但仍执行多项式采样|
-  |topK-topP-minP-multiNomial采样|√|√|√|multiNomial|Sglang框架标准完整功能。|
+  |topK-topP-minP-multiNomial采样|√|√|√|multiNomial|Sglang框架标准完整功能|
 
 - 计算公式：
   输入`logits`为大小是[batch, voc_size]的词频表，其中每个batch对应一条输入序列，而voc_size则是约定每个batch的统一长度。<br>
@@ -130,7 +130,7 @@
     \text{logitsSortMasked}[b, \text{Len}(\text{logitsIdx}[b][:])\text{:}] = \text{defLogit}
     $$
 
-  * (sglang框架支持更新)直接使用截断后的sortedValue作为logitsSortMasked：
+  * （sglang框架支持更新）直接使用截断后的sortedValue作为logitsSortMasked：
   $$
   logitsSortMasked[b,:] = sortedValue[b]
   $$
