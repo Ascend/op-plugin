@@ -48,3 +48,39 @@ deprecated:
     replace: 'npu_mla_prolog_v3'
   - name: npu_mla_prolog
     replace: 'npu_mla_prolog_v3'
+  - name: npu_alloc_float_status
+  - name: npu_anchor_response_flags
+  - name: npu_batch_nms
+  - name: npu_bert_apply_adam
+  - name: npu_bounding_box_decode
+  - name: npu_bounding_box_encode
+  - name: npu_ciou
+  - name: npu_clear_float_status
+  - name: npu_diou
+  - name: npu_get_float_status
+  - name: npu_giou
+  - name: npu_grid_assign_positive
+  - name: npu_indexing
+  - name: npu_iou
+  - name: npu_nms_v4
+  - name: npu_nms_with_mask
+  - name: npu_one_hot
+  - name: npu_pad
+    replace: 'torch.nn.functional.pad'
+  - name: npu_ps_roi_pooling
+  - name: npu_random_choice_with_mask
+  - name: npu_rotated_iou
+  - name: npu_rotated_overlaps
+  - name: npu_sign_bits_pack
+  - name: npu_sign_bits_unpack
+  - name: npu_slice
+    replace: 'torch.slice'
+  - name: npu_softmax_cross_entropy_with_logits
+  - name: npu_transpose
+    replace: 'torch.permute'
+  - name: npu_yolo_boxes_encode
+  - name: npu_fused_attention_score
+    replace: 'npu_fusion_attention'
+  - name: npu_multi_head_attention
+  - name: npu_dropout_with_add_softmax
+  - name: dropout_with_byte_mask
