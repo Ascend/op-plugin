@@ -11,7 +11,6 @@
   aclnn 算子与目标 ATen IR 的语义一致，适配层**除申请 output tensor（shape/dtype 由输入推导）外，无其他复杂逻辑**。  
   满足时即可用 YAML 做结构化描述，由工具自动生成 C++ 适配代码，无需手写适配层。
 
-
 不适用或需手写适配的情况：算子语义与 ATen 不一致、需要复杂 shape/type 推导、或需在适配层写额外逻辑时，应使用非结构化方式（如 opapi）。
 
 ## 环境与依赖
@@ -19,11 +18,11 @@
 - **运行/编译依赖**：PyTorch、torch_npu、CANN。  
   安装与版本要求见 [torch_npu 安装说明](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85)。
 
-
 ## 目录与文件结构
 
 ### 运行前
-```
+
+```text
 aclnn_extension/
 ├── aclnn_extension/
 │   └── __init__.py                   # 构建用init文件
@@ -38,13 +37,11 @@ aclnn_extension/
 └── README.md
 ```
 
-
-
 ### 运行后
 
 先执行 `gen.sh` 生成适配代码，再执行 `setup.py` 构建后，在 `./dist/`下得到 **`aclnn_extension*.whl`**：
 
-```
+```text
 aclnn_extension/
 ├── ...         # 运行前已有文件保持不变
 ├── build/      # gen.sh生成的中间产物
@@ -56,7 +53,6 @@ aclnn_extension/
 ```
 
 使用方式：`pip install aclnn_extension*.whl` 安装后，即可在 Python 中调用本样例接入的自定义算子（如 `torch.ops.npu.npu_fast_gelu_custom`）。
-
 
 ## 一键运行样例
 

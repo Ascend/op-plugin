@@ -8,7 +8,7 @@ OpPlugin 是 Ascend Extension for PyTorch（torch_npu）的算子插件，为使
 
 ### 项目架构
 
-```
+```text
 op-plugin
 ├── ci/                            # CI 构建脚本
 │── docs/                          # 项目文档
@@ -64,6 +64,7 @@ op-plugin
 **Issue 类型**：需求/功能建议
 
 **需要包含的内容**：
+
 - **功能背景**：该功能解决什么问题、能为用户带来什么价值
 - **功能描述**：详细描述建议的功能
 - **设计方案**：技术思路、关键模块设计、上下游组件关系
@@ -74,6 +75,7 @@ op-plugin
 如果您发现 Bug 或文档问题，我们真诚欢迎您的反馈和修复建议。
 
 **Bug Report 格式**：
+
 - **环境信息**：OpPlugin 版本、torch_npu 版本、Python 版本、CANN 版本等
 - **问题描述**：添加标签以便在问题仪表板上突出显示
 - **复现步骤**：尽可能详细地描述如何重现问题
@@ -81,6 +83,7 @@ op-plugin
 - **给审稿人的特别说明**：如有任何特殊情况
 
 **修复流程**：
+
 1. 在 Issue 中找到对应的 Bug 描述
 2. 评论 `/assign` 认领该任务
 3. 创建分支进行修复
@@ -104,16 +107,16 @@ op-plugin
 
 2. **克隆到本地**：
 
-```bash
-git clone https://gitcode.com/<your-username>/op-plugin.git
-cd op-plugin
-```
+    ```bash
+    git clone https://gitcode.com/<your-username>/op-plugin.git
+    cd op-plugin
+    ```
 
 3. **创建开发分支**：
 
-```bash
-git checkout -b {new_branch_name} origin/master
-```
+    ```bash
+    git checkout -b {new_branch_name} origin/master
+    ```
 
 4. **代码开发**：请遵循 **[代码规范](#代码规范)**
 
@@ -137,6 +140,7 @@ git checkout -b {new_branch_name} origin/master
 **计算类新增 API 接口约束**：
 
 对于计算类新增 API 接口，提交者需要额外提供精度测试结果，确保新接口的计算精度符合要求。精度测试应包括：
+
 - 与 PyTorch CPU/GPU后端的对比结果
 - 误差范围统计（最大误差、平均误差、均方根误差等）
 - 典型场景验证（如神经网络模型中的实际表现）
@@ -194,6 +198,7 @@ git checkout -b {new_branch_name} origin/master
 ### 环境搭建与编译
 
 **编译构建**：
+
 ```bash
 # 安装依赖并编译
 bash ci/build.sh
@@ -207,6 +212,7 @@ make -j$(nproc)
 ### PR 合入要求
 
 **合入检查清单**（详细要求参考 [PR 模板](./.gitcode/PULL_REQUEST_TEMPLATE.md)）：
+
 - [ ] 代码编译通过
 - [ ] 静态检查通过（CppLint、CppCheck 等）
 - [ ] UT 测试用例通过
@@ -220,10 +226,12 @@ make -j$(nproc)
 ### 功能验证指导
 
 **测试用例位置**：
+
 - `test/test_base_ops/` - 算子基础功能测试
 - `test/core_tests/` - 核心功能测试
 
 **运行测试**：
+
 ```bash
 # 安装测试依赖
 pip3 install -r test/requirements.txt
@@ -247,17 +255,18 @@ python test/run_test.py -i test_add
 
 1. **推送代码到远程仓库**：
 
-```bash
-git add .
-git status
-git commit -m "Your commit title"
-git commit -s --amend  # 添加详细描述
-git push origin {new_branch_name}
-```
+    ```bash
+    git add .
+    git status
+    git commit -m "Your commit title"
+    git commit -s --amend  # 添加详细描述
+    git push origin {new_branch_name}
+    ```
 
 2. **创建 Pull Request**
 
 在 GitCode 上创建 Pull Request，根据 [PR 模板](./.gitcode/PULL_REQUEST_TEMPLATE.md) 完整填写：
+
 - 合入来源
 - 修改方案
 - 资料变更

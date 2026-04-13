@@ -7,10 +7,12 @@
 ### 前提条件
 
 在开始之前，请确保您已完成以下环境的安装。
+
 1. 完成CANN软件的安装具体请参见《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/canncommercial/850/softwareinst/instg/instg_0000.html)》（商用版）或《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/850/softwareinst/instg/instg_0000.html)》（社区版）。
 2. 完成PyTorch框架的安装具体请参见《[Ascend Extension for PyTorch 软件安装指南](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/installation_guide/installation_description.md)》。
 
 ### 适配文件结构
+
 ```text
 ├── build_and_run.sh                // 自定义算子wheel包编译安装并执行用例的脚本
 ├── csrc                            // 算子适配层c++代码目录
@@ -24,8 +26,6 @@
 ```
 
 ### 操作步骤
-
-
 
 1. 在算子适配层c++代码目录（csrc）中，通过`add_custom.cpp`文件完成C++侧的算子代码适配、注册自定义算子schema及具体实现的绑定。PyTorch提供的TORCH_LIBRARY宏用于定义唯一命名空间（该命名空间的名称必须保证全局唯一性），并在该命名空间中注册算子schema。具体示例如下：
 
@@ -97,6 +97,7 @@
     # 进入代码目录
     cd examples/cpp_extension_base
     ```
+
 3. 完成算子适配，具体可参考[算子适配开发](#算子适配开发)。
 4. 执行如下命令，完成编译、安装、测试。
 
@@ -105,7 +106,9 @@
     ```
 
     得到结果如下即为执行成功。
+
     ```bash
     Ran xx tests in xx s
     OK
     ```
+    
