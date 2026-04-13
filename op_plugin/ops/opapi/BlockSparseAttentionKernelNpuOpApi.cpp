@@ -27,20 +27,12 @@ using npu_preparation = at_npu::native::OpPreparation;
 // 入参检查
 static void check_params(const at::Tensor &query,
                          const at::Tensor &key,
-                         const at::Tensor &value,
-                         int64_t inner_precise)
+                         const at::Tensor &value)
 {
     // Q/K/V 数据类型必须一致
     TORCH_CHECK(query.scalar_type() == key.scalar_type() && key.scalar_type() == value.scalar_type(),
         "query, key, value must have the same dtype, got query=", query.scalar_type(),
         ", key=", key.scalar_type(), ", value=", value.scalar_type(), OPS_ERROR(ErrCode::PARAM));
-
-    // 当Q为bf16时，inner_precise必须为0
-    if (query.scalar_type() == at::kBFloat16) {
-        TORCH_CHECK(inner_precise == 0,
-            "when query/key/value are bfloat16, inner_precise must be 0, got ", inner_precise,
-            OPS_ERROR(ErrCode::PARAM));
-    }
 }
 
 // PTA 接口实现
@@ -59,7 +51,7 @@ std::tuple<at::Tensor, at::Tensor> npu_block_sparse_attention(
     const c10::OptionalIntArrayRef actual_seq_lengths_kv,
     c10::optional<int64_t> softmax_lse_flag)
 {
-    check_params(query, key, value, inner_precise);
+    check_params(query, key, value);
 
     // 分配输出 Tensor
     at::Tensor attention_out = npu_preparation::apply_tensor_without_format(query.sizes(), query.options());
@@ -80,8 +72,8 @@ std::tuple<at::Tensor, at::Tensor> npu_block_sparse_attention(
     const int64_t softmax_lse_flag_value = softmax_lse_flag.value_or(0);
 
     // 初始化aclnn中的暂不支持参数
-    const at::Tensor atten_mask = at::Tensor();
-    const at::Tensor block_table = at::Tensor();
+    const at::Tensor atten_mask{nullptr};
+    const at::Tensor block_table{nullptr};
     const int64_t mask_type = 0;
     const int64_t block_size = 0;
     const int64_t pre_tokens = 2147483647;
