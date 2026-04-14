@@ -2380,6 +2380,57 @@ class TestKvQuantSparseFlashAttentionPioneer(TestCase):
             self.assertEqual(result.dtype, query_ref.dtype)
             self.assertEqual(result.shape, query_ref.shape)
 
+class TestQuantLightningIndexer(TestCase):
+    def quant_lightning_indexer_result(self):
+        with FakeTensorMode():
+            b = 1
+            t = None
+            s1 = 4
+            s2 = 512
+            act_seq_q = None
+            act_seq_k = None
+            sparse_mode = 0
+            sparse_count = 2048
+            n1 = 64
+            n2 = 1
+            d = 128
+            block_size = 128
+            layout_query = "BSND"
+            layout_key = 'PA_BSND'
+            query_quant_mode = 0
+            key_quant_mode = 0
+            np.random.seed(0)
+            # -------------
+            max_block_table_num = (s2 + block_size - 1) // block_size
+            block_table = torch.tensor([range(b * max_block_table_num)], dtype = torch.int32).reshape(b, -1)
+            key = torch.tensor(np.random.uniform(-128, 127, (b * max_block_table_num, block_size, n2, d))).to(torch.int8)
+            key_dequant_scale = torch.tensor(np.random.uniform(0, 10, (b * max_block_table_num, block_size, n2)))
+            key_dequant_scale = key_dequant_scale.to(torch.float16)
+            if layout_query == 'BSND':
+                query = torch.tensor(np.random.uniform(-128, 127, (b, s1, n1, d))).to(torch.int8)
+                query_dequant_scale = torch.tensor(np.random.uniform(0, 10, (b, s1, n1))).to(torch.float16)
+                weights = torch.tensor(np.random.uniform(0, 0.01, (b, s1, n1))).to(torch.float16)
+                actual_seq_lengths_query = torch.tensor(np.random.uniform(s1, s1, (b))).to(torch.int32) \
+                                        if act_seq_q is None else torch.tensor(act_seq_q).to(torch.int32)
+                actual_seq_lengths_key = torch.tensor(np.random.uniform(s2, s2, (b))).to(torch.int32) \
+                                        if act_seq_k is None else torch.tensor(act_seq_k).to(torch.int32)
+            else:
+                query = torch.tensor(np.random.uniform(-128, 127, (t, n1, d))).to(torch.int8)
+                query_dequant_scale = torch.tensor(np.random.uniform(0, 10, (t, n1))).to(torch.float16)
+                weights = torch.tensor(np.random.uniform(0, 0.01, (t, n1))).to(torch.float16)
+                actual_seq_lengths_query = torch.tensor(act_seq_q).to(torch.int32)
+                actual_seq_lengths_key = torch.tensor(act_seq_k).to(torch.int32)
+
+            cpu_out = self.cpu_op_exec(query.cpu(), key.cpu(), weights.cpu(), query_dequant_scale.cpu(), key_dequant_scale.cpu(),
+                                    actual_seq_lengths_query.cpu(), actual_seq_lengths_key.cpu(), block_table.cpu(),
+                                    layout_query, sparse_count, sparse_mode)
+
+            npu_eager_out = self.npu_op_exec_eager(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(), key_dequant_scale.npu(),
+                                                actual_seq_lengths_query.npu(), actual_seq_lengths_key.npu(), block_table.npu(),
+                                                query_quant_mode, key_quant_mode,
+                                                layout_query, layout_key, sparse_count, sparse_mode)
+            res = npu_eager_out.equal(cpu_out)
+            self.assertRtolEqual(res, True)
 
 class TestNpuAddRmsNorm(TestCase):
     def test_npu_add_rms_norm(self):
