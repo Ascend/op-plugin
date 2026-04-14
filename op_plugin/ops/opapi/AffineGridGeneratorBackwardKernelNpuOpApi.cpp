@@ -16,6 +16,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/OpUtils.h"
 
 namespace op_api {
 const int FOUR_DIM = 4;
@@ -55,7 +56,7 @@ at::Tensor affine_grid_generator_backward(
 
     auto reassist = assist.view({size[0], size[2] * size[3], 3}).transpose(1, 2);
     auto grad_view = grad.view({size[0], size[2] * size[3], 2});
-    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowConvHF32());
+    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
     EXEC_NPU_CMD(aclnnBatchMatMul, reassist, grad_view, result, cube_math_type);
     auto fresult = result.transpose(1, 2);
     return fresult;
