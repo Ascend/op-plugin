@@ -55,6 +55,22 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
         U = at::empty({0}, A.options());
         Vh = at::empty({0}, A.options());
     }
+
+    // Handle empty tensor case (same logic as linalg_svd_out_common in aclops)
+    if (A.numel() == 0) {
+        if (compute_uv && full_matrices) {
+            if (U.numel() != 0) {
+                U.zero_();
+                U.diagonal(0, -2, -1).fill_(1.);
+            }
+            if (Vh.numel() != 0) {
+                Vh.zero_();
+                Vh.diagonal(0, -2, -1).fill_(1.);
+            }
+        }
+        return std::make_tuple(U, S, Vh);
+    }
+
     return op_api::_linalg_svd_out(A, full_matrices, compute_uv, driver, U, S, Vh);
 }
 }
