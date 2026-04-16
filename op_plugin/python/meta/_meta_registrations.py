@@ -2817,13 +2817,13 @@ def scatter_nd_update__meta(self, indices, updates):
 
 @impl(m, "npu_scatter_pa_kv_cache_functional")
 def npu_scatter_pa_kv_cache_functional_meta(key, value, key_cache, value_cache, slot_mapping, *, compress_lens=None,
-    compress_seq_offsets=None, seq_lens=None):
+    compress_seq_offsets=None, seq_lens=None, cache_mode='PA_NZ'):
     return (torch.empty_like(key_cache, dtype=key_cache.dtype), torch.empty_like(value_cache, dtype=value_cache.dtype))
 
 
 @impl(m, "npu_scatter_pa_kv_cache")
 def npu_scatter_pa_kv_cache_meta(key, value, key_cache, value_cache, slot_mapping, *, compress_lens=None,
-    compress_seq_offsets=None, seq_lens=None):
+    compress_seq_offsets=None, seq_lens=None, cache_mode='PA_NZ'):
     return
 
 

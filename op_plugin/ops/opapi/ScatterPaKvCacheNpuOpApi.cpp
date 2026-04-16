@@ -28,9 +28,10 @@ std::tuple<at::Tensor, at::Tensor> npu_scatter_pa_kv_cache_functional(
     const at::Tensor& slot_mapping,
     const c10::optional<at::Tensor>& compress_lens,
     const c10::optional<at::Tensor>& compress_seq_offsets,
-    const c10::optional<at::Tensor>& seq_lens)
+    const c10::optional<at::Tensor>& seq_lens,
+    c10::optional<c10::string_view> cache_mode)
 {
-    char* cache_mode = "PA_NZ";
+    char* cache_mode_ptr = cache_mode.has_value() ? const_cast<char *>(cache_mode.value().data()) : nullptr;
     char* scatter_mode = "None";
     c10::SmallVector<int64_t, op_infer::SIZE> strides_size = {1, 1};
     at::IntArrayRef strides = at::IntArrayRef(strides_size);
@@ -39,7 +40,7 @@ std::tuple<at::Tensor, at::Tensor> npu_scatter_pa_kv_cache_functional(
     auto keyCacheClone = key_cache.clone(at::MemoryFormat::Contiguous);
     auto valueCacheClone = value_cache.clone(at::MemoryFormat::Contiguous);
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnScatterPaKvCache, key, keyCacheClone, slot_mapping, value,
-        valueCacheClone, compress_lens, compress_seq_offsets, seq_lens, cache_mode, scatter_mode, strides, offsets);
+        valueCacheClone, compress_lens, compress_seq_offsets, seq_lens, cache_mode_ptr, scatter_mode, strides, offsets);
     return std::make_tuple(keyCacheClone, valueCacheClone);
 }
 
@@ -51,9 +52,10 @@ void npu_scatter_pa_kv_cache(
     const at::Tensor& slot_mapping,
     const c10::optional<at::Tensor>& compress_lens,
     const c10::optional<at::Tensor>& compress_seq_offsets,
-    const c10::optional<at::Tensor>& seq_lens)
+    const c10::optional<at::Tensor>& seq_lens,
+    c10::optional<c10::string_view> cache_mode)
 {
-    char* cache_mode = "PA_NZ";
+    char* cache_mode_ptr = cache_mode.has_value() ? const_cast<char *>(cache_mode.value().data()) : nullptr;
     char* scatter_mode = "None";
     c10::SmallVector<int64_t, op_infer::SIZE> strides_size = {1, 1};
     at::IntArrayRef strides = at::IntArrayRef(strides_size);
@@ -61,7 +63,7 @@ void npu_scatter_pa_kv_cache(
     at::IntArrayRef offsets = at::IntArrayRef(offsets_size);
 
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnScatterPaKvCache, key, key_cache, slot_mapping, value, value_cache,
-        compress_lens, compress_seq_offsets, seq_lens, cache_mode, scatter_mode, strides, offsets);
+        compress_lens, compress_seq_offsets, seq_lens, cache_mode_ptr, scatter_mode, strides, offsets);
 }
 
 }
