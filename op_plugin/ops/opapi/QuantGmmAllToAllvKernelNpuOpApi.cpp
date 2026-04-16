@@ -21,6 +21,30 @@
 namespace op_api {
 
 using npu_preparation = at_npu::native::OpPreparation;
+
+static bool is_transpose_last_two_dims(const at::Tensor &tensor)
+{
+    if (tensor.dim() < 2 || tensor.dim() > 6) {
+        return false;
+    }
+    int64_t dim1 = tensor.dim() - 1;
+    int64_t dim2 = tensor.dim() - 2;
+    if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
+        int64_t tmpNxD = tensor.size(dim1) * tensor.size(dim2);
+        for (int64_t batchDim = tensor.dim() - 3; batchDim >= 0; batchDim--) {
+            if (tensor.stride(batchDim) != tmpNxD) {
+                return false;
+            }
+            tmpNxD *= tensor.size(batchDim);
+        }
+        if (tensor.size(dim1) == 1 && tensor.size(dim2) == 1) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
 // dim
 static const int DIM_ONE = 1;
 static const int DIM_TWO = 2;
@@ -97,13 +121,24 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
                 ".",
                 OPS_ERROR(ErrCode::TYPE));
         } else if (gmm_x_quant_mode_real == MX_QUANT_MODE) {
+            if (gmm_x.scalar_type() == at::ScalarType::Byte){
+                TORCH_CHECK(gmm_x_dtype.has_value(),
+                    "The input gmm_x_dtype must be provided for mx quant mode when gmm_x dtype is uint8.",
+                    OPS_ERROR(ErrCode::PARAM));
+                TORCH_CHECK(gmm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                    "The input gmm_x_dtype should be float4_e2m1 for mx quant mode when gmm_x dtype is uint8, but got ",
+                    op_plugin::utils::DTypeToString(gmm_x_dtype.value()),
+                    ".",
+                    OPS_ERROR(ErrCode::VALUE));
+            }
             if (gmm_x_dtype.has_value()) {
                 bool is_supported = (gmm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E4M3FN) ||
                                      gmm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E5M2) ||
                                      gmm_x_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e4m3fn) ||
-                                     gmm_x_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e5m2));
+                                     gmm_x_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e5m2) ||
+                                     gmm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
                 TORCH_CHECK(is_supported,
-                    "The input gmm_x_dtype must be float8_e4m3_fn or float8_e5m2 for mx quant mode, but got ",
+                    "The input gmm_x_dtype must be float8_e4m3_fn, float8_e5m2 or float4_e2m1 for mx quant mode, but got ",
                     op_plugin::utils::DTypeToString(gmm_x_dtype.value()),
                     ".",
                     OPS_ERROR(ErrCode::VALUE));
@@ -132,13 +167,24 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
                 ".",
                 OPS_ERROR(ErrCode::TYPE));
         } else if (gmm_weight_quant_mode_real == MX_QUANT_MODE) {
+            if(gmm_weight.scalar_type() == at::ScalarType::Byte){
+                TORCH_CHECK(gmm_weight_dtype.has_value(),
+                    "The input gmm_weight_dtype must be provided for mx quant mode when gmm_weight dtype is uint8.",
+                    OPS_ERROR(ErrCode::PARAM));
+                TORCH_CHECK(gmm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                    "The input gmm_weight_dtype should be float4_e2m1 for mx quant mode when gmm_weight dtype is uint8, but got ",
+                    op_plugin::utils::DTypeToString(gmm_weight_dtype.value()),
+                    ".",
+                    OPS_ERROR(ErrCode::VALUE));
+            }
             if (gmm_weight_dtype.has_value()) {
                 bool is_supported = (gmm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E4M3FN) ||
                                      gmm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E5M2) ||
                                      gmm_weight_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e4m3fn) ||
-                                     gmm_weight_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e5m2));
+                                     gmm_weight_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e5m2) ||
+                                     gmm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
                 TORCH_CHECK(is_supported,
-                    "The input gmm_weight_dtype must be float8_e4m3_fn or float8_e5m2 for mx quant mode, but got ",
+                    "The input gmm_weight_dtype must be float8_e4m3_fn, float8_e5m2 or float4_e2m1 for mx quant mode, but got ",
                     op_plugin::utils::DTypeToString(gmm_weight_dtype.value()),
                     ".",
                     OPS_ERROR(ErrCode::VALUE));
@@ -239,6 +285,25 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
         at::IntArrayRef group_size_list = group_size.value_or(at::IntArrayRef{});
         int64_t group_sizes = op_plugin::utils::check_and_get_group_size(group_size_list);
 
+        bool gmm_mxfp4_valid = false;
+        if (gmm_x_dtype.has_value()) {
+            gmm_mxfp4_valid = gmm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+        }
+        if (gmm_weight_dtype.has_value()) {
+            gmm_mxfp4_valid = gmm_mxfp4_valid &&
+                gmm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+        }
+
+        bool mm_mxfp4_valid = false;
+        if (mm_x_dtype.has_value()) {
+            mm_mxfp4_valid = mm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+        }
+        if (mm_weight_dtype.has_value()) {
+            mm_mxfp4_valid = mm_mxfp4_valid &&
+                mm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+        }
+        bool mm_weight_trans = mm_weight_real.defined() && is_transpose_last_two_dims(mm_weight_real);
+
         // mm_x and mm_weight consistency check
         bool mm_x_has_value = mm_x.has_value();
         bool mm_weight_has_value = mm_weight.has_value();
@@ -289,12 +354,23 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
                     ".",
                     OPS_ERROR(ErrCode::TYPE));
             } else if (mm_x_quant_mode_real == MX_QUANT_MODE) {
+                if (mm_x_value.scalar_type() == at::ScalarType::Byte){
+                    TORCH_CHECK(mm_x_dtype.has_value(),
+                        "The input mm_x_dtype must be provided for mx quant mode when mm_x dtype is uint8.",
+                        OPS_ERROR(ErrCode::PARAM));
+                    TORCH_CHECK(mm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                        "The input mm_x_dtype should be float4_e2m1 for mx quant mode when mm_x dtype is uint8, but got ",
+                        op_plugin::utils::DTypeToString(mm_x_dtype.value()),
+                        ".",
+                        OPS_ERROR(ErrCode::VALUE));
+                }
                 if (mm_x_dtype.has_value()) {
                     TORCH_CHECK(mm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E4M3FN) ||
                                     mm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E5M2) ||
                                     mm_x_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e4m3fn) ||
-                                    mm_x_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e5m2),
-                        "The input mm_x_dtype must be float8_e4m3_fn or float8_e5m2 for mx quant mode, but got ",
+                                    mm_x_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e5m2) ||
+                                    mm_x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                        "The input mm_x_dtype must be float8_e4m3_fn, float8_e5m2 or float4_e2m1 for mx quant mode, but got ",
                         op_plugin::utils::DTypeToString(mm_x_dtype.value()),
                         ".",
                         OPS_ERROR(ErrCode::VALUE));
@@ -322,12 +398,23 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
                     ".",
                     OPS_ERROR(ErrCode::TYPE));
             } else if (mm_weight_quant_mode_real == MX_QUANT_MODE) {
+                if (mm_weight_value.scalar_type() == at::ScalarType::Byte){
+                    TORCH_CHECK(mm_weight_dtype.has_value(),
+                        "The input mm_weight_dtype must be provided for mx quant mode when mm_weight dtype is uint8.",
+                        OPS_ERROR(ErrCode::PARAM));
+                    TORCH_CHECK(mm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                        "The input mm_weight_dtype should be float4_e2m1 for mx quant mode when mm_weight dtype is uint8, but got ",
+                        op_plugin::utils::DTypeToString(mm_weight_dtype.value()),
+                        ".",
+                        OPS_ERROR(ErrCode::VALUE));
+                }
                 if (mm_weight_dtype.has_value()) {
                     TORCH_CHECK(mm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E4M3FN) ||
                                     mm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E5M2) ||
                                     mm_weight_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e4m3fn) ||
-                                    mm_weight_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e5m2),
-                        "The input mm_weight_dtype must be float8_e4m3_fn or float8_e5m2 for mx quant mode, but got ",
+                                    mm_weight_dtype.value() == static_cast<int64_t>(at::ScalarType::Float8_e5m2) ||
+                                    mm_weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                        "The input mm_weight_dtype must be float8_e4m3_fn, float8_e5m2 or float4_e2m1 for mx quant mode, but got ",
                         op_plugin::utils::DTypeToString(mm_weight_dtype.value()),
                         ".",
                         OPS_ERROR(ErrCode::VALUE));
@@ -335,6 +422,9 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
             }
             int64_t bs = mm_x_value.size(0);   // shape (BS， H)
             int64_t n2 = mm_weight_value.size(1);
+            if (mm_mxfp4_valid && !mm_weight_trans) {
+                n2 *= FP4_IN_INT8;
+            }
             // mm_x_scale
             if (mm_x_scale.has_value()) {
                 const at::Tensor &mm_x_scale_val = mm_x_scale.value();
@@ -437,6 +527,9 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
         }
 
         int64_t n1 = gmm_weight.size(2);
+        if (gmm_mxfp4_valid && !is_transpose_last_two_dims(gmm_weight)) {
+            n1 *= FP4_IN_INT8;
+        }
         // 推导输出gmm_y的shape
         aclDataType gmm_y_acl_type = c10_npu::GetAclDataType(gmm_y_dtype);
         at::ScalarType gmm_y_scalar_type = npu_preparation::convert_to_scalar_type(gmm_y_acl_type);
