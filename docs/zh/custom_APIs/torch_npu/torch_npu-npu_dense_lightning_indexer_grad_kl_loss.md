@@ -1,5 +1,8 @@
 # torch_npu.npu_dense_lightning_indexer_grad_kl_loss
 
+> [!NOTICE]  
+> 此接口为本版本新增功能，具体依赖要求请参考《版本说明》中的“[接口变更说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/release_notes/release_notes.md#%E6%8E%A5%E5%8F%A3%E5%8F%98%E6%9B%B4%E8%AF%B4%E6%98%8E)”。
+
 ## 产品支持情况
 
 | 产品                           | 是否支持 |
@@ -15,55 +18,55 @@
 
 - 计算公式：
 
-  1. Top-k value的计算公式：
-     $$
-     I_{t,:}=W_{t,:}@ReLU(\tilde{q}_{t,:}@\tilde{K}_{:t,:}^\top)
-     $$
+    1. Top-k value的计算公式：
+        $$
+        I_{t,:}=W_{t,:}@ReLU(\tilde{q}_{t,:}@\tilde{K}_{:t,:}^\top)
+        $$
   
-     - $W_{t,:}$是$W$矩阵中第$t$个token对应的$weights$；
-     - $\tilde{q}_{t,:}$是$\tilde{Q}$矩阵第$t$个token对应的$G$个query头合轴后的结果；
-     - $\tilde{K}_{:t,:}$为$t$行$\tilde{K}$矩阵。
+        - $W_{t,:}$是$W$矩阵中第$t$个token对应的$weights$；
+        - $\tilde{q}_{t,:}$是$\tilde{Q}$矩阵第$t$个token对应的$G$个query头合轴后的结果；
+        - $\tilde{K}_{:t,:}$为$t$行$\tilde{K}$矩阵。
   
-  2. 正向的Softmax对应公式：
+    2. 正向的Softmax对应公式：
 
-     $$
-     p_{t,:} = \text{Softmax}(q_{t,:} @ K_{:t,:}^\top/\sqrt{d})
-     $$
+        $$
+        p_{t,:} = \text{Softmax}(q_{t,:} @ K_{:t,:}^\top/\sqrt{d})
+        $$
     
-     - $p_{t,:}$是第$t$个token对应的Softmax结果；
-     - $q_{t,:}$是$Q$矩阵第$t$个token对应的$G$个query头合轴后的结果；
-     - $K_{:t,:}$为$t$行$K$矩阵。
+        - $p_{t,:}$是第$t$个token对应的Softmax结果；
+        - $q_{t,:}$是$Q$矩阵第$t$个token对应的$G$个query头合轴后的结果；
+        - $K_{:t,:}$为$t$行$K$矩阵。
 
-  3. Lightning Indexer会单独训练，对应的loss function为：
-     $$
-     Loss{=}\sum_tD_{KL}(p_{t,:}||Softmax(I_{t,:}))
-     $$
+    3. Lightning Indexer会单独训练，对应的loss function为：
+        $$
+        Loss{=}\sum_tD_{KL}(p_{t,:}||Softmax(I_{t,:}))
+        $$
 
-     其中，$p_{t,:}$是target distribution，通过对main attention score 进行所有的head的求和，然后把求和结果沿着上下文方向进行L1正则化得到。$D_{KL}$为KL散度，其表达式为：
+        其中，$p_{t,:}$是target distribution，通过对main attention score 进行所有的head的求和，然后把求和结果沿着上下文方向进行L1正则化得到。$D_{KL}$为KL散度，其表达式为：
 
-     $$
-     D_{KL}(a||b){=}\sum_ia_i\mathrm{log}{\left(\frac{a_i}{b_i}\right)}
-     $$
+        $$
+        D_{KL}(a||b){=}\sum_ia_i\mathrm{log}{\left(\frac{a_i}{b_i}\right)}
+        $$
 
-  4. 通过求导可得Loss的梯度表达式：
-     $$
-     dI\mathop{{}}\nolimits_{{t,:}}=Softmax \left( I\mathop{{}}\nolimits_{{t,:}} \left) -p\mathop{{}}\nolimits_{{t,:}}\right. \right.
-     $$
+    4. 通过求导可得Loss的梯度表达式：
+        $$
+        dI\mathop{{}}\nolimits_{{t,:}}=Softmax \left( I\mathop{{}}\nolimits_{{t,:}} \left) -p\mathop{{}}\nolimits_{{t,:}}\right. \right.
+        $$
 
-     利用链式法则可以进行`weights`，`query`和`key`矩阵的梯度计算：
-     $$
-     dW\mathop{{}}\nolimits_{{t,:}}=dI\mathop{{}}\nolimits_{{t,:}}\text{@} \left( ReLU \left( S\mathop{{}}\nolimits_{{t,:}} \left) \left) \mathop{{}}\nolimits^{\top}\right. \right. \right. \right.
-     $$
+        利用链式法则可以进行`weights`，`query`和`key`矩阵的梯度计算：
+        $$
+        dW\mathop{{}}\nolimits_{{t,:}}=dI\mathop{{}}\nolimits_{{t,:}}\text{@} \left( ReLU \left( S\mathop{{}}\nolimits_{{t,:}} \left) \left) \mathop{{}}\nolimits^{\top}\right. \right. \right. \right.
+        $$
   
-     $$
-     d\mathop{{\tilde{q}}}\nolimits_{{t,:}}=dS\mathop{{}}\nolimits_{{t,:}}@\tilde{K}\mathop{{}}\nolimits_{{:t,:}}
-     $$
+        $$
+        d\mathop{{\tilde{q}}}\nolimits_{{t,:}}=dS\mathop{{}}\nolimits_{{t,:}}@\tilde{K}\mathop{{}}\nolimits_{{:t,:}}
+        $$
   
-     $$
-     d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}=\left(dS\mathop{{}}\nolimits_{{t,:}} \left) \mathop{{}}\nolimits^{\top}@\tilde{q}\mathop{{}}\nolimits_{{:t, :}}\right. \right.
-     $$
+        $$
+        d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}=\left(dS\mathop{{}}\nolimits_{{t,:}} \left) \mathop{{}}\nolimits^{\top}@\tilde{q}\mathop{{}}\nolimits_{{:t, :}}\right. \right.
+        $$
 
-     其中，$S$为$\tilde{Q}$和$\tilde{K}$矩阵乘的结果，$S_{t,:}$是$S$矩阵中第$t$行。$dW_{t,:}$是$dW$矩阵中第$t$行，$d\mathop{{\tilde{q}}}\nolimits_{{t,:}}$是$d\tilde{Q}$矩阵中第$t$行，$d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}$是$d\tilde{K}$矩阵中$t$行累加值。
+        其中，$S$为$\tilde{Q}$和$\tilde{K}$矩阵乘的结果，$S_{t,:}$是$S$矩阵中第$t$行。$dW_{t,:}$是$dW$矩阵中第$t$行，$d\mathop{{\tilde{q}}}\nolimits_{{t,:}}$是$d\tilde{Q}$矩阵中第$t$行，$d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}$是$d\tilde{K}$矩阵中$t$行累加值。
 
 ## 函数原型
 

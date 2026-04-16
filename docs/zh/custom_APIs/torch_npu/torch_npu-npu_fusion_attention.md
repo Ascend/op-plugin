@@ -1,5 +1,8 @@
 # torch\_npu.npu\_fusion\_attention<a name="ZH-CN_TOPIC_0000002266361349"></a>
 
+> [!NOTICE]  
+> 此接口在本版本中有变更，具体变更内容请参考《版本说明》中的“[接口变更说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/release_notes/release_notes.md#%E6%8E%A5%E5%8F%A3%E5%8F%98%E6%9B%B4%E8%AF%B4%E6%98%8E)”。
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -33,7 +36,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 - **scale**（`float`）：可选参数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float`，默认值为1。
 - **keep\_prob**（`float`）：可选参数，代表Dropout中1的比例，取值范围为\(0, 1\] 。数据类型支持`float`，默认值为1，表示全部保留。
 - **pre\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **next\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。`next_tockens`和`pre_tockens`取值与`atten_mask`的关系请参见`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **next\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。`next_tockens`和`pre_tockens`取值与`atten_mask`的关系请参考`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 - **inner\_precise**（`int`）：用于提升精度，数据类型支持`int64`，默认值为0。
 
     > [!NOTE]  
@@ -49,7 +52,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 
     比如真正的S长度列表为：2 2 2 2 2，则actual\_seq\_kvlen传：2 4 6 8 10。
 
-- **sparse\_mode**（`int`）：表示sparse的模式，可选参数，默认值为0。取值如[表1](#zh-cn_topic_0000001742717129_table1946917414436)所示，不同模式的原理参见[参考资源](#zh-cn_topic_0000001742717129_section28169228374)。当整网的`atten_mask`都相同且shape小于2048\*2048时，建议使用defaultMask模式，来减少内存使用量。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **sparse\_mode**（`int`）：表示sparse的模式，可选参数，默认值为0。取值如[表1](#zh-cn_topic_0000001742717129_table1946917414436)所示，不同模式的原理参考[参考资源](#zh-cn_topic_0000001742717129_section28169228374)。当整网的`atten_mask`都相同且shape小于2048\*2048时，建议使用defaultMask模式，来减少内存使用量。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 
     **表1** sparse\_mode不同取值场景说明
 
