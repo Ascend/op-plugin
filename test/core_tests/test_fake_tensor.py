@@ -5621,5 +5621,265 @@ class TestNpuDynamicBlockMxQuant(TestCase):
         self.assertEqual(actual_scale2.dtype, fake_scale2.dtype)
 
 
+class TestNpuMultiHeadAttention(TestCase):
+    def test_npu_multi_head_attention_meta(self):
+        with FakeTensorMode():
+            batch = 2
+            tgt_len = 16
+            src_len = 16
+            attn_head_num = 8
+            attn_dim_per_head = 64
+            weight_col = attn_head_num * attn_dim_per_head
+            dropout_prob = 0.5
+            softmax_use_float = True
+            query = torch.randn(batch * tgt_len, weight_col,
+                                dtype=torch.float16).npu()
+            key = torch.randn(batch * src_len, weight_col,
+                              dtype=torch.float16).npu()
+            value = torch.randn(batch * src_len, weight_col,
+                                dtype=torch.float16).npu()
+            query_weight = torch.randn(
+                weight_col, weight_col, dtype=torch.float16).npu()
+            key_weight = torch.randn(
+                weight_col, weight_col, dtype=torch.float16).npu()
+            value_weight = torch.randn(
+                weight_col, weight_col, dtype=torch.float16).npu()
+            attn_mask = torch.randn(
+                batch * attn_head_num * tgt_len * src_len, dtype=torch.float16).npu()
+            out_proj_weight = torch.randn(
+                weight_col, weight_col, dtype=torch.float16).npu()
+            query_bias = torch.randn(1, weight_col, dtype=torch.float16).npu()
+            key_bias = torch.randn(1, weight_col, dtype=torch.float16).npu()
+            value_bias = torch.randn(1, weight_col, dtype=torch.float16).npu()
+            out_proj_bias = torch.randn(
+                1, weight_col, dtype=torch.float16).npu()
+            dropout_mask_input = torch.randint(
+                0, 1, (weight_col, ), dtype=torch.uint8).npu()
+            y, dropout_mask, query_res, key_res, value_res, attn_scores, attn_res, context = torch_npu.npu_multi_head_attention(
+                query, key, value, query_weight, key_weight, value_weight, attn_mask, out_proj_weight,
+                query_bias, key_bias, value_bias, out_proj_bias, attn_head_num=attn_head_num,
+                attn_dim_per_head=attn_dim_per_head, src_len=src_len, tgt_len=tgt_len, dropout_mask=dropout_mask_input, dropout_prob=dropout_prob, softmax_use_float=softmax_use_float
+            )
+
+            self.assertEqual(y.shape, (batch * tgt_len, weight_col))
+            self.assertEqual(y.dtype, query.dtype)
+            self.assertEqual(dropout_mask.shape,
+                             (batch * attn_head_num * tgt_len * src_len // 8,))
+            self.assertEqual(dropout_mask.dtype, torch.uint8)
+            self.assertEqual(
+                query_res.shape, (batch, attn_head_num, tgt_len, attn_dim_per_head))
+            self.assertEqual(
+                key_res.shape, (batch, attn_head_num, src_len, attn_dim_per_head))
+            self.assertEqual(
+                value_res.shape, (batch, attn_head_num, src_len, attn_dim_per_head))
+            self.assertEqual(attn_scores.shape,
+                             (batch, attn_head_num, tgt_len, src_len))
+            self.assertEqual(
+                attn_res.shape, (batch, attn_head_num, tgt_len, src_len))
+            self.assertEqual(context.shape, (batch * tgt_len, weight_col))
+
+
+class TestNpuMultiHeadAttentionBackward(TestCase):
+    def test_npu_multi_head_attention_backward_meta(self):
+        with FakeTensorMode():
+            batch = 8
+            attn_head_num = 16
+            attn_dim_per_head = 64
+            src_len = 64
+            tgt_len = 64
+            dropout_prob = 0.0
+            softmax_use_float = True
+            dropout_prob = 0.0
+            softmax_use_float = True
+            weight_col = attn_head_num * attn_dim_per_head
+            query = torch.randn(batch * tgt_len, weight_col,
+                                dtype=torch.float16).npu()
+            key = torch.randn(batch * src_len, weight_col,
+                              dtype=torch.float16).npu()
+            value = torch.randn(batch * tgt_len, weight_col,
+                                dtype=torch.float16).npu()
+            query_weight = torch.randn(
+                weight_col, weight_col, dtype=torch.float16).npu()
+            key_weight = torch.randn(
+                weight_col, weight_col, dtype=torch.float16).npu()
+            value_weight = torch.randn(
+                weight_col, weight_col, dtype=torch.float16).npu()
+            out_proj_weight = torch.randn(
+                weight_col, weight_col, dtype=torch.float16).npu()
+            attn_mask = torch.randn(
+                batch, attn_head_num, tgt_len, src_len, dtype=torch.float16).npu()
+            query_bias = torch.randn(weight_col, dtype=torch.float16).npu()
+            key_bias = torch.randn(weight_col, dtype=torch.float16).npu()
+            value_bias = torch.randn(weight_col, dtype=torch.float16).npu()
+            out_proj_bias = torch.randn(weight_col, dtype=torch.float16).npu()
+            dropout_mask = torch.randint(
+                0, 1, (weight_col, ), dtype=torch.uint8).npu()
+
+            result0, result1, result2, result3, result4, result5, result6, result7 = torch_npu.npu_multi_head_attention(
+                query, key, value, query_weight, key_weight, value_weight, attn_mask, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias,  dropout_mask, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float)
+
+            grad = torch.ones_like(result0)
+            query_weight_grad, key_weight_grad, value_weight_grad, out_proj_weight_grad, query_grad, key_grad, value_grad, query_bias_grad, key_bias_grad, value_bias_grad, out_proj_bias_grad = torch_npu.npu_multi_head_attention_backward(
+                query, key, value, query_weight, key_weight, value_weight, out_proj_weight, query_bias, key_bias, value_bias, out_proj_bias,
+                result2, result3, result4, result5, result6, result7, grad, result1, attn_head_num, attn_dim_per_head, src_len, tgt_len, dropout_prob, softmax_use_float
+            )
+
+            self.assertEqual(query_weight_grad.shape, (weight_col, weight_col))
+            self.assertEqual(key_weight_grad.shape, (weight_col, weight_col))
+            self.assertEqual(value_weight_grad.shape, (weight_col, weight_col))
+            self.assertEqual(out_proj_weight_grad.shape,
+                             (weight_col, weight_col))
+            self.assertEqual(query_grad.shape, (batch * tgt_len, weight_col))
+            self.assertEqual(key_grad.shape, (batch * src_len, weight_col))
+            self.assertEqual(value_grad.shape, (batch * src_len, weight_col))
+            self.assertEqual(query_bias_grad.shape, (1, weight_col))
+            self.assertEqual(key_bias_grad.shape, (1, weight_col))
+            self.assertEqual(value_bias_grad.shape, (1, weight_col))
+            self.assertEqual(out_proj_bias_grad.shape, (1, weight_col))
+
+
+class TestNpuLstmCell(TestCase):
+    def test_npu_lstm_cell_meta(self):
+        with FakeTensorMode():
+            batch_size = 2
+            hidden_size = 64
+            input_size = 128
+
+            input_ = torch.randn(batch_size, input_size,
+                                 dtype=torch.float16).npu()
+            w_ih = torch.randn(4 * hidden_size, input_size,
+                               dtype=torch.float16).npu()
+            w_hh = torch.randn(4 * hidden_size, hidden_size,
+                               dtype=torch.float16).npu()
+            h = torch.randn(batch_size, hidden_size, dtype=torch.float16).npu()
+            c = torch.randn(batch_size, hidden_size, dtype=torch.float16).npu()
+            b_ih = torch.randn(4 * hidden_size, dtype=torch.float16).npu()
+            b_hh = torch.randn(4 * hidden_size, dtype=torch.float16).npu()
+
+            y_output, h_out, c_out, i_output, j_output, f_output, o_output, tanhc = torch_npu.npu_lstm_cell(
+                input_, w_ih, w_hh, h, c, b_ih, b_hh
+            )
+            self.assertEqual(y_output.shape, (1, batch_size, hidden_size // 4))
+            self.assertEqual(h_out.shape, (batch_size, hidden_size // 4))
+            self.assertEqual(c_out.shape, (batch_size, hidden_size // 4))
+            self.assertEqual(i_output.shape, (1, batch_size, hidden_size // 4))
+            self.assertEqual(j_output.shape, (1, batch_size, hidden_size // 4))
+            self.assertEqual(f_output.shape, (1, batch_size, hidden_size // 4))
+            self.assertEqual(o_output.shape, (1, batch_size, hidden_size // 4))
+            self.assertEqual(tanhc.shape, (1, batch_size, hidden_size // 4))
+
+
+class TestNpuLstmCellBackward(TestCase):
+    def test_npu_lstm_cell_backward_meta(self):
+        with FakeTensorMode():
+            batch_size = 2
+            hidden_size = 64
+            input_size = 128
+
+            input = torch.randn(batch_size, input_size,
+                                dtype=torch.float16).npu()
+            w_ih = torch.randn(4 * hidden_size, input_size,
+                               dtype=torch.float16).npu()
+            w_hh = torch.randn(4 * hidden_size, hidden_size,
+                               dtype=torch.float16).npu()
+            h = torch.randn(batch_size, hidden_size, dtype=torch.float16).npu()
+            c = torch.randn(batch_size, hidden_size, dtype=torch.float16).npu()
+            y_output = torch.randn(
+                1, batch_size, hidden_size, dtype=torch.float16).npu()
+            h_output = torch.randn(
+                batch_size, hidden_size, dtype=torch.float16).npu()
+            c_output = torch.randn(
+                batch_size, hidden_size, dtype=torch.float16).npu()
+            i = torch.randn(1, batch_size, hidden_size,
+                            dtype=torch.float16).npu()
+            j = torch.randn(1, batch_size, hidden_size,
+                            dtype=torch.float16).npu()
+            f = torch.randn(1, batch_size, hidden_size,
+                            dtype=torch.float16).npu()
+            o = torch.randn(1, batch_size, hidden_size,
+                            dtype=torch.float16).npu()
+            tanhc = torch.randn(1, batch_size, hidden_size,
+                                dtype=torch.float16).npu()
+            grad_y = torch.randn(1, batch_size, hidden_size,
+                                 dtype=torch.float16).npu()
+            grad_h = torch.randn(batch_size, hidden_size,
+                                 dtype=torch.float16).npu()
+            grad_c = torch.randn(batch_size, hidden_size,
+                                 dtype=torch.float16).npu()
+
+            grad_input, grad_wih, grad_whh, grad_bias1, grad_bias2, grad_ht, grad_ct = torch_npu.npu_lstm_cell_backward(
+                grad_y, grad_h, grad_c, input, w_ih, w_hh, h, c, y_output, h_output, c_output, i, j, f, o, tanhc
+            )
+
+            self.assertEqual(grad_input.shape, input.shape)
+            self.assertEqual(grad_wih.shape, w_ih.shape)
+            self.assertEqual(grad_whh.shape, w_hh.shape)
+            self.assertEqual(grad_bias1.shape, (4 * hidden_size,))
+            self.assertEqual(grad_bias2.shape, (4 * hidden_size,))
+            self.assertEqual(grad_ht.shape, h.shape)
+            self.assertEqual(grad_ct.shape, c.shape)
+
+
+class TestNpuFusedAttentionScoreFwd(TestCase):
+    def test_npu_fused_attention_score_fwd_meta(self):
+        with FakeTensorMode():
+            batch_size = 2
+            num_heads = 8
+            seq_len = 16
+            head_dim = 64
+
+            query_layer = torch.randn(
+                batch_size, num_heads, seq_len, head_dim, dtype=torch.float16).npu()
+            key_layer = torch.randn(
+                batch_size, num_heads, seq_len, head_dim, dtype=torch.float16).npu()
+            value_layer = torch.randn(
+                batch_size, num_heads, seq_len, head_dim, dtype=torch.float16).npu()
+            attention_mask = torch.randn(
+                batch_size * num_heads * seq_len * seq_len, dtype=torch.float16).npu()
+            scale = 1.0 / (head_dim ** 0.5)
+            keep_prob = 1.0
+            attention_score, softmax_output, drop_mask = torch_npu.npu_fused_attention_score_fwd(
+                query_layer, key_layer, value_layer, attention_mask, scale, keep_prob
+            )
+
+            self.assertEqual(attention_score.shape,
+                             (batch_size * seq_len, num_heads * head_dim))
+            self.assertEqual(softmax_output.shape,
+                             (batch_size, num_heads, seq_len, seq_len))
+            self.assertEqual(drop_mask.shape, (batch_size *
+                             num_heads * seq_len * seq_len,))
+            self.assertEqual(drop_mask.dtype, torch.uint8)
+
+
+class TestNpuFusedAttentionScoreBackward(TestCase):
+    def test_npu_fused_attention_score_backward_meta(self):
+        with FakeTensorMode():
+            batch_size = 2
+            num_heads = 8
+            seq_len = 16
+            head_dim = 64
+
+            query_layer = torch.randn(
+                batch_size, num_heads, seq_len, head_dim, dtype=torch.float16).npu()
+            key_layer = torch.randn(
+                batch_size, num_heads, seq_len, head_dim, dtype=torch.float16).npu()
+            value_layer = torch.randn(
+                batch_size, num_heads, seq_len, head_dim, dtype=torch.float16).npu()
+            softmax_output = torch.randn(
+                batch_size, num_heads, seq_len, seq_len, dtype=torch.float16).npu()
+            drop_mask = torch.randint(
+                0, 1, (batch_size * num_heads * seq_len * seq_len, ), dtype=torch.uint8).npu()
+            grad_output = torch.randn(
+                batch_size, num_heads, seq_len, head_dim, dtype=torch.float16).npu()
+            scale = 1.0 / (head_dim ** 0.5)
+
+            query_dx, key_dw, value_dw = torch_npu.npu_fused_attention_score_backward(
+                grad_output, softmax_output, query_layer, key_layer, value_layer, drop_mask, scale, False, False, False, False)
+
+            self.assertEqual(query_dx.shape, grad_output.shape)
+            self.assertEqual(key_dw.shape, grad_output.shape)
+            self.assertEqual(value_dw.shape, grad_output.shape)
+
+
 if __name__ == "__main__":
     run_tests()

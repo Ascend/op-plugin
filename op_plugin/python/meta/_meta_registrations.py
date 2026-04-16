@@ -6541,7 +6541,7 @@ def npu_dropout_with_add_softmax_meta(x1, x2, alpha, prod, axis):
 
 
 @impl(m, "l1_loss_backward")
-def npu_l1_loss_backward_meta(grad_output,   input, target, reduction):
+def npu_l1_loss_backward_meta(grad_output, input, target, reduction):
     return torch.empty_like(input)
 
 
@@ -6568,20 +6568,22 @@ def npu_dynamic_block_mx_quant(input_dummy, *, round_mode="rint", dst_type=296, 
     block_size = 32
     last_dim_size = int(math.ceil(scale1_shape[last_axis_change] / block_size))
     last_dim_size = (last_dim_size + 2 - 1) // 2
-    second_to_last_dim_size = int(math.ceil(scale2_shape[second_to_last_axis_change] / block_size))
+    second_to_last_dim_size = int(
+        math.ceil(scale2_shape[second_to_last_axis_change] / block_size))
     second_to_last_dim_size = (second_to_last_dim_size + 2 - 1) // 2
     scale1_shape[last_axis_change] = last_dim_size
     scale2_shape[second_to_last_axis_change] = second_to_last_dim_size
 
-    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.int8)
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(
+        dst_type, torch.int8)
     if torch_dtype == torch.float8_e5m2 or dst_type == torch_npu.float8_e5m2:
         y = torch.empty_like(input_dummy, dtype=torch.float8_e5m2)
     elif torch_dtype == torch.float8_e4m3fn or dst_type == torch_npu.float8_e4m3fn:
         y = torch.empty_like(input_dummy, dtype=torch.float8_e4m3fn)
-    else: # float4_e2m1, float4_e1m2
+    else:  # float4_e2m1, float4_e1m2
         if input_dummy.size(dim_num - 1) % 2:
-            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
-                                "the last dim of input must be divisible by 2, " +
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, "
+                               "the last dim of input must be divisible by 2, " +
                                ops_error(ErrCode.PARAM))
         y_shape = []
         for dim in range(dim_num - 1):
@@ -6591,3 +6593,138 @@ def npu_dynamic_block_mx_quant(input_dummy, *, round_mode="rint", dst_type=296, 
     scale1 = input_dummy.new_empty(scale1_shape, dtype=torch.uint8)
     scale2 = input_dummy.new_empty(scale2_shape, dtype=torch.uint8)
     return (y, scale1, scale2)
+
+
+@impl(m, "npu_multi_head_attention")
+def npu_multi_head_attention_meta(query, key, value, query_weight, key_weight, value_weight, attn_mask,
+                                  out_proj_weight, query_bias=None, key_bias=None, value_bias=None,
+                                  out_proj_bias=None, dropout_mask=None, attn_head_num=1, attn_dim_per_head=64,
+                                  src_len=1, tgt_len=1, dropout_prob=0.0, softmax_use_float=False):
+    query_shape = query.size()
+    batch = query_shape[0] // tgt_len
+    weight_col = attn_head_num * attn_dim_per_head
+
+    y = torch.empty([query_shape[0], weight_col],
+                    dtype=query.dtype, device='meta')
+    dropout_mask_out = torch.empty(
+        [batch * attn_head_num * tgt_len * src_len // 8], dtype=torch.uint8, device='meta')
+    query_res = torch.empty([batch, attn_head_num, tgt_len,
+                            attn_dim_per_head], dtype=query.dtype, device='meta')
+    key_res = torch.empty([batch, attn_head_num, src_len,
+                          attn_dim_per_head], dtype=query.dtype, device='meta')
+    value_res = torch.empty([batch, attn_head_num, src_len,
+                            attn_dim_per_head], dtype=query.dtype, device='meta')
+    if softmax_use_float:
+        attn_scores = torch.empty(
+            [batch, attn_head_num, tgt_len, src_len], dtype=torch.float32, device='meta')
+    else:
+        attn_scores = torch.empty(
+            [batch, attn_head_num, tgt_len, src_len], dtype=query.dtype, device='meta')
+    attn_res = torch.empty(
+        [batch, attn_head_num, tgt_len, src_len], dtype=query.dtype, device='meta')
+    context = torch.empty([query_shape[0], weight_col],
+                          dtype=query.dtype, device='meta')
+
+    return (y, dropout_mask_out, query_res, key_res, value_res, attn_scores, attn_res, context)
+
+
+@impl(m, "npu_lstm_cell")
+def npu_lstm_cell_meta(input, w_ih, w_hh, h, c, b_ih=None, b_hh=None):
+    batch_size = input.size(0)
+    hidden_size = w_hh.size(1) // 4
+    num_step = 1
+
+    y_output = torch.empty(
+        [num_step, batch_size, hidden_size], dtype=input.dtype, device='meta')
+    h_out = torch.empty([batch_size, hidden_size],
+                        dtype=input.dtype, device='meta')
+    c_out = torch.empty([batch_size, hidden_size],
+                        dtype=input.dtype, device='meta')
+    i_output = torch.empty(
+        [num_step, batch_size, hidden_size], dtype=input.dtype, device='meta')
+    j_output = torch.empty(
+        [num_step, batch_size, hidden_size], dtype=input.dtype, device='meta')
+    f_output = torch.empty(
+        [num_step, batch_size, hidden_size], dtype=input.dtype, device='meta')
+    o_output = torch.empty(
+        [num_step, batch_size, hidden_size], dtype=input.dtype, device='meta')
+    tanhc = torch.empty([num_step, batch_size, hidden_size],
+                        dtype=input.dtype, device='meta')
+
+    return (y_output, h_out, c_out, i_output, j_output, f_output, o_output, tanhc)
+
+
+@impl(m, "npu_lstm_cell_backward")
+def npu_lstm_cell_backward_meta(grad_y=None, grad_h=None, grad_c=None, input=None, w_ih=None, w_hh=None, h=None, c=None,
+                                y_output=None, h_output=None, c_output=None, i=None, j=None, f=None, o=None, tanhc=None):
+    hidden_size = y_output.size(2)
+
+    grad_input = torch.empty_like(input, dtype=input.dtype, device='meta')
+    grad_wih = torch.empty_like(w_ih, dtype=w_ih.dtype, device='meta')
+    grad_whh = torch.empty_like(w_hh, dtype=w_hh.dtype, device='meta')
+    grad_bias = torch.empty(
+        [4 * hidden_size], dtype=input.dtype, device='meta')
+    grad_ht = torch.empty_like(h, dtype=h.dtype, device='meta')
+    grad_ct = torch.empty_like(c, dtype=c.dtype, device='meta')
+
+    return (grad_input, grad_wih, grad_whh, grad_bias, grad_bias, grad_ht, grad_ct)
+
+
+@impl(m, "npu_fused_attention_score_fwd")
+def npu_fused_attention_score_fwd_meta(query_layer, key_layer, value_layer, attention_mask, scale, keep_prob=1.0,
+                                       query_transpose=False, key_transpose=False, bmm_score_transpose_a=False,
+                                       bmm_score_transpose_b=False, value_transpose=False, dx_transpose=False):
+    attention_score = torch.empty([query_layer.size(0) * query_layer.size(2), query_layer.size(1) * query_layer.size(3)],
+                                  dtype=query_layer.dtype, device='meta')
+    softmax_output = torch.empty([query_layer.size(0), query_layer.size(1), query_layer.size(2), query_layer.size(2)],
+                                 dtype=query_layer.dtype, device='meta')
+    drop_mask = torch.empty([softmax_output.numel()],
+                            dtype=torch.uint8, device='meta')
+
+    return (attention_score, softmax_output, drop_mask)
+
+
+@impl(m, "npu_fused_attention_score")
+def npu_fused_attention_score_meta(query_layer, key_layer, value_layer, attention_mask, scale, keep_prob=1.0,
+                                   query_transpose=False, key_transpose=False, bmm_score_transpose_a=False,
+                                   bmm_score_transpose_b=False, value_transpose=False, dx_transpose=False):
+    attention_score = torch.empty([query_layer.size(0) * query_layer.size(2), query_layer.size(1) * query_layer.size(3)],
+                                  dtype=query_layer.dtype, device='meta')
+    return attention_score
+
+@impl(m, "npu_fused_attention_score_backward")
+def npu_fused_attention_score_backward_meta(grad_output, softmax_output, query_layer, key_layer, value_layer, drop_mask,
+                                              scale, keep_prob=1.0, query_transpose=False, key_transpose=False,
+                                              value_transpose=False, dx_transpose=False):
+    query_dx = torch.empty_like(grad_output, dtype=grad_output.dtype, device='meta')
+    key_dw = torch.empty_like(grad_output, dtype=grad_output.dtype, device='meta')
+    value_dw = torch.empty_like(grad_output, dtype=grad_output.dtype, device='meta')
+
+    return (query_dx, key_dw, value_dw)
+
+
+@impl(m, "npu_multi_head_attention_backward")
+def npu_multi_head_attention_backward_meta(query, key, value, query_weight, key_weight, value_weight, out_proj_weight,
+                                          query_bias=None, key_bias=None, value_bias=None, out_proj_bias=None,
+                                          query_res=None, key_res=None, value_res=None, attn_scores=None,
+                                          attn_res=None, context=None, y_grad=None, dropout_mask=None,
+                                          attn_head_num=1, attn_dim_per_head=64, src_len=1, tgt_len=1,
+                                          dropout_prob=0.0, softmax_use_float=False):
+    query_shape = query.size()
+    batch = query_shape[0] // tgt_len
+    weight_col = attn_head_num * attn_dim_per_head
+
+    query_weight_grad = torch.empty([weight_col, weight_col], dtype=query_weight.dtype, device='meta')
+    key_weight_grad = torch.empty([weight_col, weight_col], dtype=key_weight.dtype, device='meta')
+    value_weight_grad = torch.empty([weight_col, weight_col], dtype=value_weight.dtype, device='meta')
+    out_proj_weight_grad = torch.empty([weight_col, weight_col], dtype=out_proj_weight.dtype, device='meta')
+    query_grad = torch.empty([query_shape[0], weight_col], dtype=query.dtype, device='meta')
+    key_grad = torch.empty([batch * src_len, weight_col], dtype=key.dtype, device='meta')
+    value_grad = torch.empty([batch * src_len, weight_col], dtype=value.dtype, device='meta')
+    query_bias_grad = torch.empty([1, weight_col], dtype=query.dtype, device='meta')
+    key_bias_grad = torch.empty([1, weight_col], dtype=key.dtype, device='meta')
+    value_bias_grad = torch.empty([1, weight_col], dtype=value.dtype, device='meta')
+    out_proj_bias_grad = torch.empty([1, weight_col], dtype=query.dtype, device='meta')
+
+    return (query_weight_grad, key_weight_grad, value_weight_grad, out_proj_weight_grad, query_grad,
+            key_grad, value_grad, query_bias_grad, key_bias_grad, value_bias_grad, out_proj_bias_grad)
