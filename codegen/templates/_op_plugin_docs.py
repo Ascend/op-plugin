@@ -3466,6 +3466,7 @@ rotate推荐使用场景
     >>> r1 = torch.rand(1, 2, 1, 128).npu()
     >>> r2 = torch.rand(1, 2, 1, 128).npu()
     >>> out = torch_npu.npu_rotary_mul(x, r1, r2)
+
 示例2
     >>> n = 128
     >>> rotate = torch.zeros(n, n, dtype=torch.bfloat16) # interleave
@@ -3476,6 +3477,7 @@ rotate推荐使用场景
     >>> r1 = torch.rand(1, 1, 5, n).npu()
     >>> r2 = torch.rand(1, 1, 5, n).npu()
     >>> out = torch_npu.npu_rotary_mul(x, r1, r2, "interleave", rotate)
+    
 示例3
     >>> n = 128
     >>> rotate = torch.zeros(n, n, dtype=torch.bfloat16) # half
