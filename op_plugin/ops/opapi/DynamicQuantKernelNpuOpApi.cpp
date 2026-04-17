@@ -112,18 +112,18 @@ void dynamic_quant_run_aclnn(const at::Tensor &input,
     TensorWrapper &y_wrapper,
     at::Tensor &scale,
     T &offset,
-    const DynamicQuantParams& attr)
+    const DynamicQuantParams& attr,
+    char *quant_mode_str)
 {
     int version = select_version(attr);
-    const char* quant_mode = attr.quant_mode.c_str();
     switch (version) {
         case USE_ACLNN_DYNAMIC_QUANT_V4:
             EXEC_NPU_CMD(aclnnDynamicQuantV4, input, smooth_scales, group_index, attr.dst_type,
-                attr.is_symmetrical, quant_mode, attr.dst_type_max, y_wrapper, scale, offset);
+                attr.is_symmetrical, quant_mode_str, attr.dst_type_max, y_wrapper, scale, offset);
             break;
         case USE_ACLNN_DYNAMIC_QUANT_V3:
             EXEC_NPU_CMD(aclnnDynamicQuantV3, input, smooth_scales, group_index, attr.dst_type,
-                attr.is_symmetrical, quant_mode, y_wrapper, scale, offset);
+                attr.is_symmetrical, quant_mode_str, y_wrapper, scale, offset);
             break;
         case USE_ACLNN_DYNAMIC_QUANT_V2:
             EXEC_NPU_CMD(aclnnDynamicQuantV2, input, smooth_scales, group_index,
@@ -179,7 +179,8 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(
         scale = npu_preparation::apply_tensor_without_format(per_tensor_size, c10::dtype(c10::ScalarType::Float));
     }
 
-    dynamic_quant_run_aclnn<c10::optional<at::Tensor>>(input, smooth_scales, group_index, y_wrapper, scale, offset, attr);
+    char *quant_mode_ptr = const_cast<char *>(quant_mode.data());
+    dynamic_quant_run_aclnn<c10::optional<at::Tensor>>(input, smooth_scales, group_index, y_wrapper, scale, offset, attr, quant_mode_ptr);
 
     return std::make_tuple(output, scale);
 }
@@ -225,7 +226,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant_asymmetric(
         offset = npu_preparation::apply_tensor_without_format(per_tensor_size, c10::dtype(c10::ScalarType::Float));
     }
 
-    dynamic_quant_run_aclnn<at::Tensor>(input, smooth_scales, group_index, y_wrapper, scale, offset, attr);
+    char *quant_mode_ptr = const_cast<char *>(quant_mode.data());
+    dynamic_quant_run_aclnn<at::Tensor>(input, smooth_scales, group_index, y_wrapper, scale, offset, attr, quant_mode_ptr);
 
     return std::make_tuple(output, scale, offset);
 }
