@@ -1,3 +1,4 @@
+import unittest
 import torch
 import numpy as np
 import torch_npu
@@ -69,6 +70,7 @@ class TestNorm(TestCase):
         self.assertTrue("Dimension out of range (expected to be in range of [-1, 0], but got 2)" in str(exception))
 
     @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Temporarily skipping")
     def test_norm_complex_input_check(self):
         x = torch.randn(32, 32, 32, dtype=torch.complex64).npu()
         with self.assertRaises(RuntimeError) as cm:

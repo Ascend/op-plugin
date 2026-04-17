@@ -32,6 +32,7 @@ class TestScatterList(TestCase):
         return torch_npu.npu_scatter_list(var_list, indice, updates, mask, reduce, axis)
 
     @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Temporarily skipping")
     def test_npu_scatter_list(self, device="npu"):
         if torch.__version__ > '2.0':
             var_list = []

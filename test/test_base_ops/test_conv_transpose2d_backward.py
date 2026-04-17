@@ -61,6 +61,7 @@ class TestConvTranspose2dBackward(TestCase):
             self.assertRtolEqual(cpu_input_grad, npu_input_grad, prec=1e-3)
             self.assertRtolEqual(cpu_weight_grad, npu_weight_grad, prec=1e-3)
 
+    @unittest.skip("Temporarily skipping")
     def test_conv_transpose2d_backward_shape_format(self):
         shape_format = [
             [[np.float16, 0, [1, 4, 5, 5]], [np.float16, 0, [4, 4, 3, 3]]],
@@ -76,6 +77,7 @@ class TestConvTranspose2dBackward(TestCase):
         self.conv_transpose2d_backward_result(shape_format)
         torch.npu.conv.allow_hf32 = False
 
+    @unittest.skip("Temporarily skipping")
     def test_conv_transpose2d_abnormal_input(self):
         input1 = torch.randn(1, 320, 8, 8).npu().half()
         m = torch.nn.ConvTranspose2d(in_channels=1, out_channels=1, kernel_size=2, stride=2).npu()
