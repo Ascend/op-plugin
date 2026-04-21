@@ -3161,9 +3161,7 @@ def npu_moe_distribute_dispatch_v2_meta(x, expert_ids, group_ep, ep_world_size, 
     else:
         expand_x = x.new_empty(tuple([max(a, a * tp_world_size), h]), dtype=outDtype)
     dynamic_scales_dtype = get_dispatch_dynamic_scales_dtype(x, scales, quant_mode)
-    if tp_world_size == 0:
-        dynamic_scales = x.new_empty((a), dtype=dynamic_scales_dtype)
-    elif tp_world_size == 1:
+    if tp_world_size <= 1:
         dynamic_scales_shape = get_dispatch_dynamic_shape(scales, quant_mode, a, h)
         dynamic_scales = x.new_empty(dynamic_scales_shape, dtype=dynamic_scales_dtype)
     else:

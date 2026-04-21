@@ -149,13 +149,14 @@ tensor_list npu_moe_distribute_dispatch_v2(const at::Tensor &x, const at::Tensor
     at::Tensor dynamic_scales{nullptr};
     aclDataType acl_dynamic_scale_dtype = op_plugin::utils::get_dynamic_scales_dtype(x, scales, scales_dtype, quant_mode);
     auto scalar_dynamic_scale_dtype = npu_preparation::convert_to_scalar_type(acl_dynamic_scale_dtype);
-    if (tp_world_size == 0) {
-        dynamic_scales = npu_preparation::apply_tensor_without_format({a},
+    if (c10_npu::IsAclnnOnly()) {
+        auto dynamic_scales_shape = op_plugin::utils::get_dynamic_shape(scales, quant_mode,
+            std::max(a, a * tp_world_size), h);
+        dynamic_scales = npu_preparation::apply_tensor_without_format(dynamic_scales_shape,
             x.options().dtype(scalar_dynamic_scale_dtype));
     } else {
-        if (c10_npu::IsAclnnOnly()) {
-            auto dynamic_scales_shape = op_plugin::utils::get_dynamic_shape(scales, quant_mode, a, h);
-            dynamic_scales = npu_preparation::apply_tensor_without_format(dynamic_scales_shape,
+        if (tp_world_size == 0) {
+            dynamic_scales = npu_preparation::apply_tensor_without_format({a},
                 x.options().dtype(scalar_dynamic_scale_dtype));
         } else {
             dynamic_scales = npu_preparation::apply_tensor_without_format({a * tp_world_size},

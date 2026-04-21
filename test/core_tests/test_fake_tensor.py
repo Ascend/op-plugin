@@ -3551,6 +3551,77 @@ class TestMoeDistributeDispatch(TestCase):
             self.assertEqual(result[6].dtype, torch.float32)
 
 
+class TestMoeDistributeDispatchV2(TestCase):
+    def _run_dispatch_v2(self, tp_world_size, quant_mode, scales=None, y_dtype=None):
+        with FakeTensorMode():
+            ep_world_size = 16
+            bs = 8
+            h = 7168
+            k = 8
+            moeExpertNum = 16
+            global_bs = bs * ep_world_size
+
+            local_moe_expert_num = moeExpertNum // ep_world_size
+            a = global_bs * min(local_moe_expert_num, k)
+
+            x = torch.randn(bs, h).to(torch.bfloat16)
+            expert_ids = torch.randn(bs, k).to(torch.int32)
+
+            result = torch_npu.npu_moe_distribute_dispatch_v2(
+                x, expert_ids, "group_ep", ep_world_size, 0, moeExpertNum,
+                scales=scales, x_active_mask=None, expert_scales=None,
+                group_tp="", tp_world_size=tp_world_size, tp_rank_id=0,
+                expert_shard_type=0, shared_expert_num=0, shared_expert_rank_num=0,
+                quant_mode=quant_mode, global_bs=global_bs, expert_token_nums_type=1,
+                y_dtype=y_dtype)
+
+            return result, a, h, local_moe_expert_num
+
+    def test_tp0_pertoken(self):
+        result, a, h, _ = self._run_dispatch_v2(tp_world_size=0, quant_mode=2)
+        self.assertEqual(result[0].shape, torch.Size([a, h]))
+        self.assertEqual(result[0].dtype, torch.int8)
+        self.assertEqual(result[1].shape, torch.Size([a]))
+
+    def test_tp1_pertoken(self):
+        result, a, h, _ = self._run_dispatch_v2(tp_world_size=1, quant_mode=2)
+        self.assertEqual(result[0].shape, torch.Size([a, h]))
+        self.assertEqual(result[0].dtype, torch.int8)
+        self.assertEqual(result[1].shape, torch.Size([a]))
+
+    def test_tp0_pergroup(self):
+        result, a, h, _ = self._run_dispatch_v2(
+            tp_world_size=0, quant_mode=3, y_dtype=torch.float8_e5m2)
+        expected_dim1 = math.ceil(h / 128)
+        self.assertEqual(result[1].shape, torch.Size([a, expected_dim1]))
+
+    def test_tp1_pergroup(self):
+        result, a, h, _ = self._run_dispatch_v2(
+            tp_world_size=1, quant_mode=3, y_dtype=torch.float8_e5m2)
+        expected_dim1 = math.ceil(h / 128)
+        self.assertEqual(result[1].shape, torch.Size([a, expected_dim1]))
+
+    def test_tp0_mx(self):
+        result, a, h, _ = self._run_dispatch_v2(
+            tp_world_size=0, quant_mode=4, y_dtype=torch.float8_e4m3fn)
+        expected_dim1 = (math.ceil(h / 32) + 1) // 2 * 2
+        self.assertEqual(result[1].shape, torch.Size([a, expected_dim1]))
+        self.assertEqual(result[1].dtype, torch.uint8)
+
+    def test_tp1_mx(self):
+        result, a, h, _ = self._run_dispatch_v2(
+            tp_world_size=1, quant_mode=4, y_dtype=torch.float8_e4m3fn)
+        expected_dim1 = (math.ceil(h / 32) + 1) // 2 * 2
+        self.assertEqual(result[1].shape, torch.Size([a, expected_dim1]))
+        self.assertEqual(result[1].dtype, torch.uint8)
+
+    def test_tp0_no_quant(self):
+        result, a, h, _ = self._run_dispatch_v2(tp_world_size=0, quant_mode=0)
+        self.assertEqual(result[0].shape, torch.Size([a, h]))
+        self.assertEqual(result[0].dtype, torch.bfloat16)
+        self.assertEqual(result[1].shape, torch.Size([a]))
+
+
 class TestMoeDistributeCombineAddRmsNorm(TestCase):
     def test_moe_distribute_combine_add_rms_norm(self):
         with FakeTensorMode():
