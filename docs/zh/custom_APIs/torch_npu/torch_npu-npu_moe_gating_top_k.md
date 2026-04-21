@@ -23,11 +23,11 @@
 
     对计算结果按照`group_count`进行分组：
     
-    - 如果`group_select_mode`为1，每组按照topk2的sum值对group进行排序，取前kGroup个组：
+    - 如果`group_select_mode`为1，每组按照topk2的sum值对group进行排序，取前`k_group`个组：
 
       ![](../../figures/zh-cn_formulaimage_0000002219010398.png)
 
-    - 如果`group_select_mode`为0，每组按照组内的最大值对group进行排序，取前kGroup个组：
+    - 如果`group_select_mode`为0，每组按照组内的最大值对group进行排序，取前`k_group`个组：
 
       ![](../../figures/zh-cn_formulaimage_0000002347834049.png)
 

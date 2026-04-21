@@ -31,7 +31,7 @@ torch_npu.matmul_checksum(a, b, c) -> Tensor
 
 ## 约束说明
 
-该接口仅支持bf16格式，且device为NPU的场景。
+该接口仅支持bfloat16格式，且device为NPU的场景。
 
 ## 调用示例
 

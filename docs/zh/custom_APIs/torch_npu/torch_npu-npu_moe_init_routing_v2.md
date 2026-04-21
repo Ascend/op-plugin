@@ -10,38 +10,38 @@
 ## 功能说明<a name="zh-cn_topic_0000002271534921_section1650913464367"></a>
 
 - API功能：MoE（Mixture of Experts）的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理，支持不量化、动态量化和静态量化模式。
-- 计算公式：  
+- 计算公式：
 
-  1.对输入expertIdx做排序，得出排序后的结果sortedExpertIdx和对应的序号sortedRowIdx：
+    1. 对输入expertIdx做排序，得出排序后的结果sortedExpertIdx和对应的序号sortedRowIdx：
 
-    $$
-    sortedExpertIdx, sortedRowIdx=keyValueSort(expertIdx,rowIdx)
-    $$
+        $$
+        sortedExpertIdx, sortedRowIdx=keyValueSort(expertIdx,rowIdx)
+        $$
 
-  2.以sortedRowIdx做位置映射得出expandedRowIdxOut：
-    - rowIdxType等于1时, 输出scatter索引
-      $$
-      expandedRowIdxOut[i]=sortedRowIdx[i]
-      $$
-    - rowIdxType等于0时, 输出gather索引
-      $$
-      expandedRowIdxOut[sortedRowIdx[i]]=i
-      $$
+    2. 以sortedRowIdx做位置映射得出expandedRowIdxOut：
+        - rowIdxType等于1时, 输出scatter索引
+        $$
+        expandedRowIdxOut[i]=sortedRowIdx[i]
+        $$
+        - rowIdxType等于0时, 输出gather索引
+        $$
+        expandedRowIdxOut[sortedRowIdx[i]]=i
+        $$
       
-  3.对sortedExpertIdx的每个专家统计直方图结果，得出expertTokensCountOrCumsumOutOptional：
+    3. 对sortedExpertIdx的每个专家统计直方图结果，得出expertTokensCountOrCumsumOutOptional：
 
-    $$
-    expertTokensCountOrCumsumOutOptional[i]=Histogram(sortedExpertIdx)
-    $$
+        $$
+        expertTokensCountOrCumsumOutOptional[i]=Histogram(sortedExpertIdx)
+        $$
 
-  4.如果quantMode不等于-1, 计算量化结果：
-     - 静态量化：
-     $$
-     quantResult=round((x∗scaleOptional)+offsetOptional)
-     $$
+    4. 如果quantMode不等于-1, 计算量化结果：
+        - 静态量化：
+        $$
+        quantResult=round((x∗scaleOptional)+offsetOptional)
+        $$
      
-     - 动态量化：
-        - 若不输入scale：
+        - 动态量化：
+            - 若不输入scale：
             $$
             dynamicQuantScaleOutOptional = row\_max(abs(x)) / 127
             $$
@@ -49,7 +49,7 @@
             $$
             quantResult = round(x / dynamicQuantScaleOutOptional)
             $$
-        - 若输入scale:
+            - 若输入scale:
             $$
             dynamicQuantScaleOutOptional = row\_max(abs(x * scaleOptional)) / 127
             $$
@@ -58,30 +58,30 @@
             quantResult = round(x / dynamicQuantScaleOutOptional)
             $$
   
-  5.若活跃的expert范围为全专家范围时，按照Scatter索引搬运token；反之按照Gather索引搬运token。在dropPadMode为1时将每个专家需要处理的Token个数对齐为expertCapacity个，超过expertCapacity个的Token会被Drop，不足的会用0填充。得出expandedXOut：
-    - 非量化场景
-      - 按照Scatter索引搬运
-      $$
-      expandedXOut[i]=x[scatterRowIdx[i]//K]
-      $$
-      - 按照Gather索引搬运
-      $$
-      expandedXOut[gatherRowIdx[i]]=x[i//K]
-      $$
-    - 量化场景
-      - 按照Scatter索引搬运
-      $$
-      expandedXOut[i]=quantResult[scatterRowIdx[i]//K]
-      $$
-      - 按照Gather索引搬运
-      $$
-      expandedXOut[gatherRowIdx[i]]=quantResult[i//K]
-      $$
+    5. 若活跃的expert范围为全专家范围时，按照Scatter索引搬运token；反之按照Gather索引搬运token。在dropPadMode为1时将每个专家需要处理的Token个数对齐为expertCapacity个，超过expertCapacity个的Token会被Drop，不足的会用0填充。得出expandedXOut：
+        - 非量化场景
+            - 按照Scatter索引搬运
+            $$
+            expandedXOut[i]=x[scatterRowIdx[i]//K]
+            $$
+            - 按照Gather索引搬运
+            $$
+            expandedXOut[gatherRowIdx[i]]=x[i//K]
+            $$
+        - 量化场景
+            - 按照Scatter索引搬运
+            $$
+            expandedXOut[i]=quantResult[scatterRowIdx[i]//K]
+            $$
+            - 按照Gather索引搬运
+            $$
+            expandedXOut[gatherRowIdx[i]]=quantResult[i//K]
+            $$
 
-  6.expandedRowIdxOut的有效元素数量availableIdxNum，计算方式为expertIdx中activeExpertRangeOptional范围内的元素的个数
-    $$
-    availableIdxNum = |\{x\in expertIdx| expert\_start \le x<expert\_end \ \}|
-    $$
+    6. expandedRowIdxOut的有效元素数量availableIdxNum，计算方式为expertIdx中activeExpertRangeOptional范围内的元素的个数。
+        $$
+        availableIdxNum = |\{x\in expertIdx| expert\_start \le x<expert\_end \ \}|
+        $$
 
 - 等价计算逻辑
 

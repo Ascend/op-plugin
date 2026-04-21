@@ -32,7 +32,7 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，源数据张量，维度需要为2~8维且第1维度能整除`group`。数据格式支持$ND$，支持非连续的Tensor。
+- **input** (`Tensor`)：必选参数，源数据张量，维度需要为2~8维且第1维度能被`group`整除。数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
@@ -68,7 +68,7 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 - `out`、`meanOut`、`rstdOut`的数据类型与`input`相同；`weight`、`bias`与`input`可以不同。
 - `weight`与`bias`的数据类型必须保持一致，且数据类型的精度不能低于`input`的数据类型。
 - `weight`与`bias`的维度需为1且元素数量需与输入`input`的第1维度保持相同。
-- `input`维度需大于一维且小于等于八维，且`input`第1维度能整除`group`。
+- `input`维度需大于一维且小于等于八维，且`input`第1维度能被`group`整除。
 - `input`任意维都需大于0。
 - `out`的shape与`input`相同。
 - `meanOut`与`rstdOut`的shape为\(N, group\)，其中N为`input`第0维度值。

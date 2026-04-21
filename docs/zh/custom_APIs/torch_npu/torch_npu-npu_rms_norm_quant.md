@@ -29,7 +29,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06) -> Tensor
+torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_dtype='int8') -> Tensor
 ```
 
 ## 参数说明
@@ -52,9 +52,9 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06) -> Te
 
 - **offset** (`Tensor`)：必选参数，表示量化过程中的偏移张量，对应公式中的$offset$。shape需与 `scale` 保持一致，数据格式支持 `ND`，支持非连续 `Tensor`，不支持空 `Tensor`。数据类型支持 `int8`。
 
-- **epsilon** (`float`)：可选参数，对应公式中的$eps$，用于防止除零错误，默认值为 `1e-6`。建议传入较小的正数。
+- **epsilon** (`double`)：可选参数，对应公式中的$eps$，用于防止除零错误，默认值为 `1e-6`。建议传入较小的正数。
 
-- **dst_dtype** (`int`): 可选参数，指定量化输出的类型，传`None`时当做int8处理，支持取值`int8`、`quint4x2`。
+- **dst_dtype** (`int`): 可选参数，指定量化输出的类型，默认值为`int8`。传`None`时当做int8处理，支持取值`int8`、`quint4x2`。
 
 ## 返回值说明
   

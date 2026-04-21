@@ -81,7 +81,7 @@
 </tr>
 <tr id="row43319341418"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p63313347411"><a name="p63313347411"></a><a name="p63313347411"></a><a href="./torch_npu/（beta）torch_npu-npu_ptiou.md">torch_npu.npu_ptiou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p143099280139"><a name="p143099280139"></a><a name="p143099280139"></a>该接口计划废弃，可以使用torch_npu.npu_iou接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p143099280139"><a name="p143099280139"></a><a name="p143099280139"></a>该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。</p>
 </td>
 </tr>
 <tr id="row333133464112"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p1533111343412"><a name="p1533111343412"></a><a name="p1533111343412"></a><a href="./torch_npu/（beta）torch_npu-npu_reshape.md">torch_npu.npu_reshape</a></p>
@@ -121,22 +121,22 @@
 </tr>
 <tr id="row13466103954110"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p5467143917412"><a name="p5467143917412"></a><a name="p5467143917412"></a><a href="./torch_npu-contrib/（beta）torch_npu-contrib-npu_giou.md">torch_npu.contrib.npu_giou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p3480527105515"><a name="p3480527105515"></a><a name="p3480527105515"></a>该接口计划废弃，可以使用torch_npu.npu_giou接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p3480527105515"><a name="p3480527105515"></a><a name="p3480527105515"></a>该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。</p>
 </td>
 </tr>
 <tr id="row746723920415"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p104671339184114"><a name="p104671339184114"></a><a name="p104671339184114"></a><a href="./torch_npu-contrib/（beta）torch_npu-contrib-npu_ptiou.md">torch_npu.contrib.npu_ptiou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p119998332552"><a name="p119998332552"></a><a name="p119998332552"></a>该接口计划废弃，可以使用torch_npu.npu_iou接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p119998332552"><a name="p119998332552"></a><a name="p119998332552"></a>该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。</p>
 </td>
 </tr>
 <tr id="row9467103913412"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p1946712394415"><a name="p1946712394415"></a><a name="p1946712394415"></a><a href="./torch_npu-contrib/（beta）torch_npu-contrib-npu_iou.md">torch_npu.contrib.npu_iou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p1261323935510"><a name="p1261323935510"></a><a name="p1261323935510"></a>该接口计划废弃，可以使用torch_npu.npu_iou接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p1261323935510"><a name="p1261323935510"></a><a name="p1261323935510"></a>该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。</p>
 </td>
 </tr>
 <tr id="row174671139164110"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p84677395415"><a name="p84677395415"></a><a name="p84677395415"></a><a href="./torch_npu-contrib/（beta）torch_npu-contrib-function-npu_diou.md">torch_npu.contrib.function.npu_diou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p3545164812557"><a name="p3545164812557"></a><a name="p3545164812557"></a>该接口计划废弃，可以使用torch_npu.npu_diou接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p3545164812557"><a name="p3545164812557"></a><a name="p3545164812557"></a>该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。</p>
 </td>
 </tr>
 <tr id="row13467173915415"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p24671739124114"><a name="p24671739124114"></a><a name="p24671739124114"></a><a href="./torch_npu-contrib/（beta）torch_npu-contrib-function-npu_ciou.md">torch_npu.contrib.function.npu_ciou</a></p>

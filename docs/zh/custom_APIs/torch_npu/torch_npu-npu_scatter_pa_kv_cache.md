@@ -18,7 +18,7 @@
     ```python
     key:[batch, num_head, k_head_size]
     value:[batch, num_head, v_head_size]
-    key_cache:[num_blocks, num_head * k_head_size /last_dim_k, block_size, last_dim_k]
+    key_cache:[num_blocks, num_head * k_head_size // last_dim_k, block_size, last_dim_k]
     value_cache:[num_blocks, num_head * v_head_size // last_dim_k, block_size, last_dim_k]
     slot_mapping:[batch]
     ```    

@@ -16,7 +16,7 @@
 | [torch_npu.profiler.AiCMetrics](./torch_npu-profiler-AiCMetrics.md) | AI Core的性能指标采集项，作为 _ExperimentalConfig类的aic_metrics参数。 |
 | [torch_npu.profiler.supported_activities](./torch_npu-profiler-supported_activities.md) | 查询当前支持采集的activities参数的CPU、NPU事件。             |
 | [torch_npu.profiler.supported_profiler_level](./torch_npu-profiler-supported_profiler_level.md) | 查询当前支持的torch_npu.profiler.ProfilerLevel级别。         |
-| [torch_npu.profiler.supported_ai_core_metrics](./torch_npu-profiler-supported_ai_core_metrics.md) | 查询当前支持的torch_npu.profiler. AiCMetrics的AI Core性能指标采集项。 |
+| [torch_npu.profiler.supported_ai_core_metrics](./torch_npu-profiler-supported_ai_core_metrics.md) | 查询当前支持的torch_npu.profiler.AiCMetrics的AI Core性能指标采集项。 |
 | [torch_npu.profiler.supported_export_type](./torch_npu-profiler-supported_export_type.md) | 查询当前支持的torch_npu.profiler.ExportType的性能数据结果文件类型。 |
 | [torch_npu.profiler.dynamic_profile.init](./torch_npu-profiler-dynamic_profile-init.md) | 初始化dynamic_profile动态采集。                              |
 | [torch_npu.profiler.dynamic_profile.step](./torch_npu-profiler-dynamic_profile-step.md) | dynamic_profile动态采集划分step。                            |

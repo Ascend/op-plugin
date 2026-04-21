@@ -57,56 +57,56 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
 
 - 单算子调用
 
-    ```python
-    import torch
-    import torch_npu
+  ```python
+  import torch
+  import torch_npu
 
-    b,m,k,n = (2,3,4,5)
-    x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
-    x2_nd = torch.ones((b, k, n), dtype=torch.int8).npu()
-    x2 = torch_npu.npu_format_cast(x2_nd.contiguous(), 29)
-    x1_scale = torch.ones((b, m), dtype=torch.float32).npu()
-    x2_scale = torch.ones((n,), dtype=torch.bfloat16).npu()
-    y = torch_npu.npu_quant_matmul_reduce_sum(x1, x2, x1_scale=x1_scale, x2_scale=x2_scale)
-    ```
+  b,m,k,n = (2,3,4,5)
+  x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
+  x2_nd = torch.ones((b, k, n), dtype=torch.int8).npu()
+  x2 = torch_npu.npu_format_cast(x2_nd.contiguous(), 29)
+  x1_scale = torch.ones((b, m), dtype=torch.float32).npu()
+  x2_scale = torch.ones((n,), dtype=torch.bfloat16).npu()
+  y = torch_npu.npu_quant_matmul_reduce_sum(x1, x2, x1_scale=x1_scale, x2_scale=x2_scale)
+  ```
 
 - 图模式调用
 
-    ```python
-    import torch
-    import torch_npu
-    import torchair as tng
-    from torchair.ge_concrete_graph import ge_apis as ge
-    from torchair.configs.compiler_config import CompilerConfig
-    import logging
-    from torchair.core.utils import logger
+  ```python
+  import torch
+  import torch_npu
+  import torchair as tng
+  from torchair.ge_concrete_graph import ge_apis as ge
+  from torchair.configs.compiler_config import CompilerConfig
+  import logging
+  from torchair.core.utils import logger
 
-    logger.setLevel(logging.DEBUG)
-    import os
-    import numpy as np
+  logger.setLevel(logging.DEBUG)
+  import os
+  import numpy as np
 
-    # "ENABLE_ACLNN"是否使能走aclnn, true: 回调走aclnn, false: 在线编译
-    os.environ["ENABLE_ACLNN"] = "false"
-    config = CompilerConfig()
-    npu_backend = tng.get_npu_backend(compiler_config=config)
+  # "ENABLE_ACLNN"是否使能走aclnn, true: 回调走aclnn, false: 在线编译
+  os.environ["ENABLE_ACLNN"] = "false"
+  config = CompilerConfig()
+  npu_backend = tng.get_npu_backend(compiler_config=config)
 
-    class MyModel(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
+  class MyModel(torch.nn.Module):
+      def __init__(self):
+          super().__init__()
  
-        def forward(self, x1, x2, scale, pertoken_scale):
-            return torch_npu.npu_quant_matmul_reduce_sum(x1, x2, x1_scale=pertoken_scale, x2_scale=scale)
+      def forward(self, x1, x2, scale, pertoken_scale):
+          return torch_npu.npu_quant_matmul_reduce_sum(x1, x2, x1_scale=pertoken_scale, x2_scale=scale)
 
-    cpu_model = MyModel()
-    model = cpu_model.npu()
-    model = torch.compile(model, backend=npu_backend, dynamic=False)
+  cpu_model = MyModel()
+  model = cpu_model.npu()
+  model = torch.compile(model, backend=npu_backend, dynamic=False)
 
-    b,m,k,n = (2,3,4,5)
-    x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
-    x2_nd = torch.ones((b, k, n), dtype=torch.int8).npu()
-    x2 = torch_npu.npu_format_cast(x2_nd.contiguous(), 29)
-    pertoken_scale = torch.ones((b, m), dtype=torch.float32).npu()
-    scale = torch.ones((n,), dtype=torch.bfloat16).npu()
-    npu_out = model(x1, x2, scale, pertoken_scale)
-    print(npu_out)
-    ```
+  b,m,k,n = (2,3,4,5)
+  x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
+  x2_nd = torch.ones((b, k, n), dtype=torch.int8).npu()
+  x2 = torch_npu.npu_format_cast(x2_nd.contiguous(), 29)
+  pertoken_scale = torch.ones((b, m), dtype=torch.float32).npu()
+  scale = torch.ones((n,), dtype=torch.bfloat16).npu()
+  npu_out = model(x1, x2, scale, pertoken_scale)
+  print(npu_out)
+  ```

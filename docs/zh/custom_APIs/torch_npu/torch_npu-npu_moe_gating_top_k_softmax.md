@@ -14,7 +14,7 @@
 $$
 softmaxOut = softmax(x, axis = -1) \\
 yOut, expertIdxOut = topK(softmaxOut, k = k) \\
-rowIdxRange = orange(expertIdxOut.shape[0] * expertIdxOut.shape[1])\\
+rowIdxRange = arange(expertIdxOut.shape[0] * expertIdxOut.shape[1])\\
 rowIdxOut = rowIdxRange.reshape([expertIdxOut.shape[1], expertIdxOut.shape[0]]).transpose(1, 0)
 $$
 

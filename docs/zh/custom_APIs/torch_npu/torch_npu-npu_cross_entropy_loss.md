@@ -15,23 +15,23 @@
     公式中*x*是输入`input`，*y* 是标签`target`，*weight*是权重，*C* 是标签数，*N* 是批处理大小。
 
     交叉熵损失`loss`的计算公式：
-      $$
-     loss=\begin{cases}\sum_{n=1}^N\frac{1}{\sum_{n=1}^Nweight_{y_n}*1\{y_n\ !=\ ignoreIndex \}}l_n,&\text{if reduction = ‘mean’} \\\sum_{n=1}^Nl_n,&\text {if reduction = ‘sum’ }\\\{l_0,l_1,...,l_n\},&\text{if reduction = ‘None’ }\end{cases}
-     $$
+    $$
+    loss=\begin{cases}\sum_{n=1}^N\frac{1}{\sum_{n=1}^Nweight_{y_n}*1\{y_n\ !=\ ignoreIndex \}}l_n,&\text{if reduction = ‘mean’} \\\sum_{n=1}^Nl_n,&\text {if reduction = ‘sum’ }\\\{l_0,l_1,...,l_n\},&\text{if reduction = ‘None’ }\end{cases}
+    $$
     
     其中$l_n$的计算公式为：
-     $$
-     l_n = -weight_{y_n}*log\frac{exp(x_{n,y_n})}{\sum_{c=1}^Cexp(x_{n,c})}*1\{y_n\ !=\ ignoreIndex \}
-     $$
+    $$
+    l_n = -weight_{y_n}*log\frac{exp(x_{n,y_n})}{\sum_{c=1}^Cexp(x_{n,c})}*1\{y_n\ !=\ ignoreIndex \}
+    $$
   
     第*n*个样本对第*c*个类别的对数概率`log_prob`计算公式为：
-     $$
-     lse_n = log*\sum_{c=1}^{C}exp(x_{n,c})
-     $$
+    $$
+    lse_n = log\sum_{c=1}^{C}exp(x_{n,c})
+    $$
 
-     $$
-     logProb_{n,c} = x_{n,c} - lse_n
-     $$
+    $$
+    logProb_{n,c} = x_{n,c} - lse_n
+    $$
 
 ## 函数原型
 

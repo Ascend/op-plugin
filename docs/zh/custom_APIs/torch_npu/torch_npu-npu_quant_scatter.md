@@ -55,16 +55,11 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
 - `axis`不能为`updates`的第1维或最后1维。
 - `quant_axis`只能为`updates`的最后1维。
 
-## 支持的型号
-
-- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>
-- <term>Atlas 推理系列产品</term>
-
 ## 调用示例
 
 - 单算子模式调用
 
-    ```python
+   ```python
    >>> import torch
    >>> import torch_npu
    >>> import numpy as np
@@ -143,7 +138,7 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
             [0, 0, 0,  ..., 0, 0, 0],
             [0, 0, 0,  ..., 0, 0, 0],
             [0, 0, 0,  ..., 0, 0, 0]]], device='npu:0', dtype=torch.int8)
-    ```
+   ```
 
 - 图模式调用
 
