@@ -62,6 +62,11 @@ backward:
   target: l1_loss_backward(grad, self, target, reduction) * -1
   version: [v2.1, newest]
 
+- name: matmul(Tensor self, Tensor other) -> Tensor
+  self, other: matmul_backward(grad, self, other, grad_input_mask)
+  result: matmul(self_t, other_p) + matmul(self_p, other_t)
+  version: [v2.1, newest]
+
 - name: matmul_backward(Tensor grad_out, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
   output_differentiability: [true, true]
   grad_out, self, other: matmul_double_backward(grads[0], grads[1], grad_out, self, other, grad_input_mask)
