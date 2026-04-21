@@ -10,7 +10,9 @@
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
       "save_npugraph_tensor",
-      "npu_fused_causal_conv1d"
+      "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward"
     ],
     "v2.7": [
       "npu_gelu_mul",
@@ -19,7 +21,9 @@
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
       "save_npugraph_tensor",
-      "npu_fused_causal_conv1d"
+      "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward"
     ],
     "v2.8": [
       "npu_gelu_mul",
@@ -28,7 +32,9 @@
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
       "save_npugraph_tensor",
-      "npu_fused_causal_conv1d"
+      "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward"
     ],
     "v2.9": [
       "npu_gelu_mul",
@@ -37,7 +43,9 @@
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
       "save_npugraph_tensor",
-      "npu_fused_causal_conv1d"
+      "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward"
     ],
     "v2.10": [
       "npu_gelu_mul",
@@ -46,7 +54,9 @@
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
       "save_npugraph_tensor",
-      "npu_fused_causal_conv1d"
+      "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward"
     ],
     "v2.11": [
       "npu_gelu_mul",
@@ -55,7 +65,9 @@
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
       "save_npugraph_tensor",
-      "npu_fused_causal_conv1d"
+      "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward"
     ],
     "v2.12": [
       "npu_gelu_mul",
@@ -64,7 +76,9 @@
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
       "save_npugraph_tensor",
-      "npu_fused_causal_conv1d"
+      "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward"
     ],
     "all_version": [
       "_npu_dropout",

@@ -242,6 +242,10 @@ backward:
   self: npu_softmax_cross_entropy_with_logits_backward(grad, self, labels)
   version: [v2.1, newest]
 
+- name: npu_masked_causal_conv1d(Tensor input, Tensor weight, *, Tensor? mask=None) -> Tensor
+  input, weight: npu_masked_causal_conv1d_backward(grad, input, weight, mask)
+  version: [v2.6, newest]
+
 - name: npu_swiglu(Tensor self, int dim=-1) -> Tensor
   self: npu_swiglu_backward(grad, self, dim)
   version: [v2.1, newest]

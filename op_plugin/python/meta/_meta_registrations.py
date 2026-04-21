@@ -5698,6 +5698,18 @@ def npu_clipped_swiglu_meta(x, group_index=None, dim=-1, alpha=1.702, limit=7.0,
     return torch.empty(output_size, dtype=x.dtype, device=x.device)
 
 
+@impl(m, "npu_masked_causal_conv1d")
+def npu_masked_causal_conv1d_meta(input, weight, *, mask=None):
+    return torch.empty_like(input, dtype=input.dtype)
+
+
+@impl(m, "npu_masked_causal_conv1d_backward")
+def npu_masked_causal_conv1d_backward_meta(grad_output, input, weight, *, mask=None):
+    grad_input = torch.empty_like(grad_output, dtype=grad_output.dtype)
+    grad_weight = torch.empty_like(weight, dtype=grad_output.dtype)
+    return grad_input, grad_weight
+
+
 @impl(m, "npu_fused_causal_conv1d_functional")
 def npu_fused_causal_conv1d_functional_meta(x, weight, conv_states, *, query_start_loc=None, cache_indices=None, 
                                             initial_state_mode=None, bias=None, num_accepted_tokens=None, 
