@@ -36,7 +36,7 @@ torch_npu.npu.matmul.cube_math_type = CubeMathType
 | CubeMathType.ALLOW_FP32_DOWN_PRECISION | 1    | 允许FP32降精度                     |
 | CubeMathType.USE_FP16       | 2    | 使用FP16计算模式                   |
 | CubeMathType.USE_HF32       | 3    | 使用HF32计算模式                   |
-| CubeMathType.FORCE_GRP_ACC_FOR_FP32 | 4    | 强制使用FP32分组精度               |
+| CubeMathType.USE_FP32_ADD | 4    | 使用高精度模式               |
 
 ## 返回值说明
 
