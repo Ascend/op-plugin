@@ -345,3 +345,8 @@ backward:
   x1: _cdist_backward(grad, x1, x2, p, result)
   x2: _cdist_backward(grad.mT().contiguous(), x2, x1, p, result.mT().contiguous())
   version: all_version
+
+- name: npu_mhc_pre(Tensor x, Tensor phi, Tensor alpha, Tensor bias, *, Tensor? gamma=None, float norm_eps=1e-6, float hc_eps=1e-6, int out_flag=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+  output_differentiability: [true, true, true, false, false, false]
+  x, phi, alpha, bias, gamma: 'npu_mhc_pre_backward(x, phi, alpha, grads[0], grads[1], grads[2], result3, result4, result5, result1, gamma, hc_eps, c10::nullopt)'
+  version: all_version

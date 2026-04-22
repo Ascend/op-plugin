@@ -182,7 +182,8 @@
       "npu_one_hot",
       "npu_quant_matmul_gelu",
       "npu_mhc_post",
-      "npu_mhc_pre"
+      "npu_mhc_pre",
+      "npu_mhc_pre_backward"
     ]
   }
   

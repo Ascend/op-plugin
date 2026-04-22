@@ -5429,6 +5429,10 @@ custom:
     op_api: all_version
     internal_format_opapi: all_version
 
+  - func: npu_mhc_pre_backward(Tensor x, Tensor phi, Tensor alpha, Tensor grad_h_in, Tensor grad_h_post, Tensor grad_h_res, Tensor inv_rms, Tensor h_mix, Tensor h_pre, Tensor h_post, Tensor? gamma=None, float hc_eps=1e-6, Tensor? grad_x_post=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+    internal_format_opapi: all_version
+    
   - func: npu_top_k_top_p_sample(Tensor logits, Tensor top_k, Tensor top_p, Tensor? q=None, float? eps=1e-8, bool? is_need_logits=False, int? top_k_guess=32, Tensor? min_ps=None, int? ks_max=1024, bool? input_is_logits=True, str? post_sample='qSample', Generator? generator=None) -> (Tensor, Tensor)
     op_api: all_version
     tags: nondeterministic_seeded

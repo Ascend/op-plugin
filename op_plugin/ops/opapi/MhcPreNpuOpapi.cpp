@@ -54,7 +54,7 @@ inline void check_mhc_pre_supported()
  * (outHin, outHpost, outHres, outInvRms, outHmix, outHpre)
  */
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> construct_mhc_pre_outputs(
-    const at::Tensor &x, const at::Tensor &phi)
+    const at::Tensor &x, const at::Tensor &phi, int64_t out_flag)
 {
     c10::TensorOptions hInOptions = x.options().dtype(x.dtype());
     c10::TensorOptions hOptions = x.options().dtype(at::kFloat);
@@ -115,9 +115,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         outHin = at::empty(outHinSize, hInOptions);
         outHpost = at::empty(outHpostSize, hOptions);
         outHres = at::empty(outHresSize, hOptions);
-        outInvRms = at::empty(outInvRmsSize, hOptions);
-        outHmix = at::empty(outHmixSize, hOptions);
-        outHpre = at::empty(outHpreSize, hOptions);
+        if (out_flag == 1) {
+            outInvRms = at::empty(outInvRmsSize, hOptions);
+            outHmix = at::empty(outHmixSize, hOptions);
+            outHpre = at::empty(outHpreSize, hOptions);
+        }
     } else {
         auto t = x.size(DIM_0);
         auto numResidual = x.size(DIM_1);
@@ -159,9 +161,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         outHin = at::empty(outHinSize, hInOptions);
         outHpost = at::empty(outHpostSize, hOptions);
         outHres = at::empty(outHresSize, hOptions);
-        outInvRms = at::empty(outInvRmsSize, hOptions);
-        outHmix = at::empty(outHmixSize, hOptions);
-        outHpre = at::empty(outHpreSize, hOptions);
+        if (out_flag == 1) {
+            outInvRms = at::empty(outInvRmsSize, hOptions);
+            outHmix = at::empty(outHmixSize, hOptions);
+            outHpre = at::empty(outHpreSize, hOptions);
+        }
     }
 
     return std::make_tuple(outHin, outHpost, outHres, outInvRms, outHmix, outHpre);
@@ -189,7 +193,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 
     check_mhc_pre_supported();
 
-    auto mhcPreOutput = construct_mhc_pre_outputs(x, phi);
+    auto mhcPreOutput = construct_mhc_pre_outputs(x, phi, out_flag);
 
     at::Tensor outHin = std::get<0>(mhcPreOutput);
     at::Tensor outHpost = std::get<1>(mhcPreOutput);
@@ -198,15 +202,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     at::Tensor outHmix = std::get<4>(mhcPreOutput);
     at::Tensor outHpre = std::get<5>(mhcPreOutput);
 
-    at::Tensor nullTensor;
-    if (out_flag == 1) {
-        EXEC_NPU_CMD(aclnnMhcPre, x, phi, alpha, bias, gamma, norm_eps, hc_eps, outHin, outHpost,
+    EXEC_NPU_CMD(aclnnMhcPre, x, phi, alpha, bias, gamma, norm_eps, hc_eps, outHin, outHpost,
                      outHres, outInvRms, outHmix, outHpre);
-    } else {
-        EXEC_NPU_CMD(aclnnMhcPre, x, phi, alpha, bias, gamma, norm_eps, hc_eps, outHin, outHpost,
-                     outHres, nullTensor, nullTensor, nullTensor);
-    }
-
     return std::make_tuple(outHin, outHpost, outHres, outInvRms, outHmix, outHpre);
 }
 } // namespace op_api
