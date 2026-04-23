@@ -272,6 +272,9 @@
   "op_api: torch_npu.npu_advance_step_flashattn(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
+  "op_api: torch_npu.npu_rotate_quant(*args, **kwargs)": {
+    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
+  },
   "op_api: torch_npu.npu_advance_step_flashattn(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
@@ -503,6 +506,9 @@
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_moe_update_expert(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
+  "op_api: torch_npu.npu_rotate_quant(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
   "op_api: torch_npu.npu_mhc_post(*args, **kwargs)": {
@@ -4923,6 +4929,9 @@
     "version": ["v2.6", "newest"]
   },
   "func: npu_dynamic_block_mx_quant(Tensor input, *, str round_mode=\"rint\", int dst_type=296, int scale_alg=0, float dst_type_max=0.0) -> (Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
+  "func: npu_rotate_quant(Tensor x, Tensor rotation, *, float? alpha=0.0, int? dst_dtype=None) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   }
 }

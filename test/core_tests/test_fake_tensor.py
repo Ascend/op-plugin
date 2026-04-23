@@ -5952,5 +5952,23 @@ class TestNpuFusedAttentionScoreBackward(TestCase):
             self.assertEqual(value_dw.shape, grad_output.shape)
 
 
+@unittest.skip("skip until CANN is updated to support aclnnRotateQuant.")
+class TestRotateQuant(TestCase):
+    def test_npu_rotate_quant(self):
+        with FakeTensorMode():
+            M = 512
+            N = 1024
+            K = 1024
+            x = torch.randn(M, N, dtype=torch.bfloat16)
+            rotation = torch.randn(K, K, dtype=torch.bfloat16)
+            output0 = torch.empty([M, N], dtype=torch.int8, device=x.device)
+            output1 = torch.empty([M], dtype=torch.float32, device=x.device)
+            output0_npu, output1_npu = torch_npu.npu_rotate_quant(x.npu(), rotation.npu(), alpha=0.0, dst_dtype=2)
+            self.assertTrue(output0_npu.shape == output0.shape)
+            self.assertTrue(output0_npu.dtype == output0.dtype)
+            self.assertTrue(output1_npu.shape == output1.shape)
+            self.assertTrue(output1_npu.dtype == output1.dtype)
+
+
 if __name__ == "__main__":
     run_tests()
