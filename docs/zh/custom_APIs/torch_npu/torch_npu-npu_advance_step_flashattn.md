@@ -33,7 +33,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_positions, seq_lens, slot_mapping, block_tables, num_seqs, num_queries, block_size) -> ()
+torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_positions, seq_lens, slot_mapping, block_tables, num_seqs, num_queries, block_size, spec_token, accepted_num) -> ()
 ```
 
 ## 参数说明

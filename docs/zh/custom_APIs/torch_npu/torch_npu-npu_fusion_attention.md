@@ -164,7 +164,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
     - 要求T（B\*S）取值范围1\~1M。
     - `atten_mask`输入不支持补pad，即`atten_mask`中不能存在某一行全1的场景。
 
-- 支持输入`query`的N和`key`/`value`的N不相等，但必须成比例关系，即Nq/Nkv必须是非0整数，Nq取值范围1\~256。当Nq/Nkv \> 1时，即为GQA\(grouped-query attention\)；当Nq/Nkv=1时，即为MHA\(multi-head attention\)。
+- 支持输入`query`的N和`key`/`value`的N不相等，但必须成比例关系，即Nq/Nkv必须是非0整数，Nq取值范围1\~256。当Nq/Nkv \> 1时，即为GQA\(grouped-query attention\)；当Nq/Nkv=1时，即为MHA\(multi-head attention，即多头注意力机制)。
 
     > [!NOTE]  
     > 本文如无特殊说明，N表示的是Nq。
