@@ -1,4 +1,4 @@
-# 适配开发及调用（完整样例-`TORCH_LIBRARY_IMPL`）
+# 适配开发及调用（完整样例-TORCH_LIBRARY_IMPL）
 
 基于C++ extensions方式，通过torch_npu来调用单算子API的适配开发过程，其中前反向绑定通过PyTorch中`TORCH_LIBRARY_IMPL`注册实现。
 
@@ -7,11 +7,13 @@
 ### 前提条件
 
 在开始之前，请确保您已完成以下环境的安装。
+
 1. 完成CANN软件的安装，具体请参见《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/canncommercial/850/softwareinst/instg/instg_0000.html)》（商用版）或《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/850/softwareinst/instg/instg_0000.html)》（社区版）。
 2. 完成PyTorch框架的安装，具体请参见《[Ascend Extension for PyTorch 软件安装指南](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/installation_guide/installation_description.md)》。
 
 ### 适配文件结构
-```
+
+```text
 ├── build_and_run.sh                // 自定义算子wheel包编译安装并执行用例的脚本
 ├── csrc                            // 算子适配层c++代码目录
 │   └── add_custom.cpp              // 自定义算子正反向适配代码、ATen IR注册以及绑定
@@ -31,7 +33,7 @@
     > 
     > 多卡场景必须在适配代码中加`const c10::OptionalDeviceGuard device_guard(device_of(Tensor))`保障跨device访问，单卡场景可不加此代码。
 
-  ```cpp
+    ```cpp
     // 为NPU设备注册前向实现
     at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
     {
@@ -99,33 +101,33 @@
         m.def("add_custom_backward(Tensor self) -> (Tensor, Tensor)");
     }
 
-  ```
+    ```
 
 2. 在`cpp_extension_full`目录下的`__init__.py`及`_load.py`文件中，添加ops调用及读取so文件，具体示例如下：
 
-  ```Python
-  # __init__.py
-  __all__ = ['ops', 'add_custom', 'add_custom_backward']
-  from .ops import add_custom, add_custom_backward
-  import pathlib
-  import torch
-  # Load the custom operator library
-  def _load_opextension_so():
-      so_dir = pathlib.Path(__file__).parents[0]
-      so_files = list(so_dir.glob('custom_ops_lib*.so'))
-      if not so_files:
-          raise FileNotFoundError(f"not find custom_ops_lib*.so in {so_dir}")
-      atb_so_path = str(so_files[0])
-      torch.ops.load_library(atb_so_path)
-  _load_opextension_so()
+    ```Python
+    # __init__.py
+    __all__ = ['ops', 'add_custom', 'add_custom_backward']
+    from .ops import add_custom, add_custom_backward
+    import pathlib
+    import torch
+    # Load the custom operator library
+    def _load_opextension_so():
+        so_dir = pathlib.Path(__file__).parents[0]
+        so_files = list(so_dir.glob('custom_ops_lib*.so'))
+        if not so_files:
+            raise FileNotFoundError(f"not find custom_ops_lib*.so in {so_dir}")
+        atb_so_path = str(so_files[0])
+        torch.ops.load_library(atb_so_path)
+    _load_opextension_so()
 
-  # ops.py
-  import torch
-  def add_custom(self, other):
-      return torch.ops.cpp_extension_full.add_custom(self, other)
-  def add_custom_backward(grad):
-      return torch.ops.cpp_extension_full.add_custom_backward(grad)
-  ```
+    # ops.py
+    import torch
+    def add_custom(self, other):
+        return torch.ops.cpp_extension_full.add_custom(self, other)
+    def add_custom_backward(grad):
+        return torch.ops.cpp_extension_full.add_custom_backward(grad)
+    ```
 
 ## 调用样例
 
@@ -133,21 +135,25 @@
 
 1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发指南](https://www.hiascend.com/document/detail/zh/canncommercial/850/opdevg/Ascendcopdevg/atlas_ascendc_10_0002.html)》。
 2. 下载示例代码。
+
     ```bash
     # 下载样例代码
     git clone https://gitcode.com/Ascend/op-plugin
     # 进入代码目录
     cd examples/cpp_extension_full/torch_library_impl
     ```
+
 3. 完成算子适配，具体可参考[算子适配开发](#算子适配开发)。
 4. 执行如下命令，完成编译、安装、测试。
+
     ```bash
     bash build_and_run.sh
     ```
 
     得到结果如下即为执行成功。
+
     ```bash
     Ran xx tests in xx s
     OK
     ```
-
+    

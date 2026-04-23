@@ -18,3 +18,11 @@ if [ $? -ne 0 ]; then
 else
     echo "[INFO]: Run add_custom test success!"
 fi
+
+# 运行测试用例
+python3 test_add_custom_graph.py
+if [ $? -ne 0 ]; then
+    echo "[ERROR]: Run add_custom_graph test failed!"
+else
+    echo "[INFO]: Run add_custom_graph test success!"
+fi
