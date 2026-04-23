@@ -3,7 +3,7 @@ import torch
 from torch.library import impl, Library
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-import cpp_extension_base
+import cpp_extension_full
 
 
 class TestTorchCompileCustomAdd(TestCase):
@@ -17,7 +17,7 @@ class TestTorchCompileCustomAdd(TestCase):
                 super().__init__()
 
             def forward(self, x, y):
-                result = cpp_extension_base.ops.add_custom(x, y)
+                result = cpp_extension_full.ops.add_custom(x, y)
                 return result
         mod = torch.compile(Module().npu(), backend="npugraph_ex")
 

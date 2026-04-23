@@ -7,7 +7,7 @@ python3 setup.py build bdist_wheel
 
 # 安装wheel包
 cd ${BASE_DIR}/dist
-pip3 install *.whl
+pip3 install *.whl --no-deps --force-reinstall
 
 
 # 运行测试用例
