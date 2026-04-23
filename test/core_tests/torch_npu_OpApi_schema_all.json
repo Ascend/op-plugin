@@ -3926,6 +3926,12 @@
   "func: sum.dim_IntList(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: nanmean(Tensor self, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: nanmean.out(Tensor self, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["all_version"]
+  },
   "func: nansum(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor": {
     "version": ["all_version"]
   },

@@ -3609,6 +3609,12 @@ official:
         dtype: at::kLong
       exec: aclnnNanMedianDim
 
+  - func: nanmean(Tensor self, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
+    op_api: [v2.1, newest]
+
+  - func: nanmean.out(Tensor self, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
+    op_api: [v2.1, newest]
+
   - func: nansum(Tensor self, int[1]? dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
     op_api: [v2.1, newest]
 

@@ -17,6 +17,23 @@
 
 namespace op_api {
 
+static void check_resize_output(const at::Tensor& output, at::IntArrayRef shape)
+{
+    if (output.sizes().equals(shape)) {
+        return;
+    }
+    if (output.numel() != 0) {
+        TORCH_WARN(
+            "An output with one or more elements was resized since it had ",
+            "shape ", output.sizes(), ", which does not match the required ",
+            "output shape ", shape, ". ",
+            "This behavior is deprecated, and in a future PyTorch release outputs ",
+            "will not be resized unless they have zero elements. You can explicitly ",
+            "reuse an out tensor t by resizing it, inplace, to zero elements with ",
+            "t.resize_(0).");
+    }
+}
+
 at::Tensor& nansum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
                        c10::optional<c10::ScalarType> dtype, at::Tensor& out)
 {
@@ -39,6 +56,7 @@ at::Tensor& nansum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool
     }
     // infer reduecshape
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
+    check_resize_output(out, output_size);
     at_npu::native::OpPreparation::check_tensor({self}, out, out.scalar_type(), output_size);
 
     EXEC_NPU_CMD(aclnnReduceNansum, self, dimArray, keepdim, dstType, out);
