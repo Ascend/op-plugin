@@ -20,7 +20,7 @@ class TestNpuMhcSinkhorn(TestCase):
         return y
    
     def custom_op_exec(self, x, eps, num_iters, out_flag):
-        y, norm_out, sum_out = torch_npu.npu_mhc_sinkhorn(x, eps, num_iters, out_flag)
+        y, norm_out, sum_out = torch_npu.npu_mhc_sinkhorn(x, eps=eps, num_iters=num_iters, out_flag=out_flag)
         return y
     
     @SupportedDevices(['Ascend950'])
