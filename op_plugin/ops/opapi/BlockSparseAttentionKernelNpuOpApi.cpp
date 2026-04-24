@@ -67,8 +67,6 @@ std::tuple<at::Tensor, at::Tensor> npu_block_sparse_attention(
 
     // 获取参数
     const at::IntArrayRef block_shape_value = block_shape;
-    const at::IntArrayRef actual_seq_lengths_q_value = actual_seq_lengths.value_or(at::IntArrayRef{});
-    const at::IntArrayRef actual_seq_lengths_kv_value = actual_seq_lengths_kv.value_or(at::IntArrayRef{});
     const int64_t softmax_lse_flag_value = softmax_lse_flag.value_or(0);
 
     // 初始化aclnn中的暂不支持参数
@@ -86,7 +84,7 @@ std::tuple<at::Tensor, at::Tensor> npu_block_sparse_attention(
     // 调用aclnn接口
     EXEC_NPU_NO_FORMAT_CHECK_CMD(
         aclnnBlockSparseAttention, query, key, value, block_sparse_mask, atten_mask,
-        block_shape_value, actual_seq_lengths_q_value, actual_seq_lengths_kv_value, block_table,
+        block_shape_value, actual_seq_lengths, actual_seq_lengths_kv, block_table,
         q_input_layout_ptr, kv_input_layout_ptr, num_key_value_heads, mask_type, scale_value,
         inner_precise, block_size, pre_tokens, next_tokens, softmax_lse_flag_value,
         attention_out, softmax_lse_out);
