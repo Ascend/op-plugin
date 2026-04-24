@@ -189,7 +189,6 @@ class TestNPUBlockSparseAttention(TestCase):
             query, key, value, block_sparse_mask, block_shape,
             q_input_layout="BNSD", kv_input_layout="BNSD",
             num_key_value_heads=num_kv_heads, scale_value=scale_value, inner_precise=1,
-            actual_seq_lengths=[S] * B, actual_seq_lengths_kv=[S] * B,
             softmax_lse_flag=1,
         )
 

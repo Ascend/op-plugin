@@ -69,11 +69,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_block_sparse_attention_backwa
     const at::IntArrayRef block_shape_value = (block_shape.has_value() && block_shape->size() >= 2)
         ? *block_shape
         : at::IntArrayRef(kDefaultBlockShape, 2);
-    const at::IntArrayRef actual_seq_lengths_value = actual_seq_lengths.value_or(at::IntArrayRef{});
-    const at::IntArrayRef actual_seq_lengths_kv_value = actual_seq_lengths_kv.value_or(at::IntArrayRef{});
 
     // 初始化 aclnn 中的暂不支持参数
-    const at::Tensor atten_mask = at::Tensor();
+    const at::Tensor atten_mask{nullptr};
     const int64_t mask_type = 0;
     const int64_t pre_tokens = 2147483647;
     const int64_t next_tokens = 2147483647;
@@ -88,7 +86,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_block_sparse_attention_backwa
         d_out, query, key, value,
         attention_out, softmax_lse,
         block_sparse_mask, atten_mask, block_shape_value,
-        actual_seq_lengths_value, actual_seq_lengths_kv_value,
+        actual_seq_lengths, actual_seq_lengths_kv,
         q_input_layout_ptr, kv_input_layout_ptr,
         num_key_value_heads, mask_type, scale_value,
         pre_tokens, next_tokens,
