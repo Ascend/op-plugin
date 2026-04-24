@@ -500,18 +500,28 @@ class TestNpuMoeInitRoutingV2(TestCase):
         elif dtype == np.int8:
             x = np.random.uniform(-127, 128, size=(bs, h)).astype(dtype)
             x_npu = torch.from_numpy(x).npu()
+        elif dtype == torch.float8_e4m3fn or dtype == torch.float8_e5m2:
+            x = torch.randn((bs, h), dtype = torch.float32).to(dtype)
+            x_npu = x.npu()
         else:
             x = np.random.uniform(-1, 1, size=(bs, h)).astype(dtype)
             x_npu = torch.from_numpy(x).npu()
         expert_idx = np.random.randint(0, 32, size=(bs, k)).astype(np.int32)
-        scale = None if none_scale else np.random.uniform(
-            -1, 1, size=scale_shape).astype(np.float32)
+        scale_npu = None
+        if none_scale:
+            scale = None
+        else:
+            if dtype == torch.float8_e4m3fn or dtype == torch.float8_e5m2:
+                scale = torch.randint(0, 256, scale_shape, dtype=torch.uint8)
+                scale = scale.view(torch.float8_e8m0fnu)
+                scale_npu = scale.npu()
+            else:
+                scale = np.random.uniform(-1, 1, size=scale_shape).astype(np.float32)
+                scale_npu = torch.from_numpy(scale).contiguous().npu()
         offset = None if none_offset or none_scale else np.random.uniform(
             -1, 1, size=scale_shape).astype(np.float32)
 
         expert_idx_npu = torch.from_numpy(expert_idx).npu()
-        scale_npu = None if scale is None else torch.from_numpy(
-            scale).contiguous().npu()
         offset_npu = None if offset is None else torch.from_numpy(
             offset).contiguous().npu()
 
@@ -713,7 +723,7 @@ class TestNpuMoeInitRoutingV2(TestCase):
             self.assertRtolEqual(
                 expanded_scale, local_expanded_scale_npu.numpy())
     
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_moe_init_routing_hif8_no_quant(self):
         bs_list = [32]
         h_list = [14, 200]
@@ -753,6 +763,48 @@ class TestNpuMoeInitRoutingV2(TestCase):
                 return
             self.assertRtolEqual(
                 expanded_scale, local_expanded_scale_npu.numpy())
+    
+    @SupportedDevices(['Ascend950'])
+    def test_npu_moe_init_routing_mxfp8_no_quant(self):
+        ALIGN_BASE = 64
+        MXFP8_SCALE_THIRD_DIM_SIZE = 2
+        bs_list = [32]
+        h_list = [14, 200]
+        k_list = [5]
+        expert_range_list = [[0, 16]]
+        quant_mode_list = [-1]
+        drop_pad_mode_list = [0, 1]
+        row_idx_type_list = [0, 1]
+        expert_tokens_num_flags = [True, False]
+        dtype_list = [torch.float8_e4m3fn, torch.float8_e5m2]
+        none_scales = [True, False]
+        none_offsets = [True]
+        for bs, h, k, expert_range, quant_mode, row_idx_type, dtype, none_scale, none_offset, expert_tokens_num_flag, drop_pad_mode in itertools.product(
+                bs_list, h_list, k_list, expert_range_list, quant_mode_list, row_idx_type_list,
+                dtype_list, none_scales, none_offsets, expert_tokens_num_flags, drop_pad_mode_list):
+            scale_shape = (bs, (h + ALIGN_BASE -1) // ALIGN_BASE, MXFP8_SCALE_THIRD_DIM_SIZE)
+            expert_range = [0, 32] if drop_pad_mode == 1 else [0, 16]
+            x, expert_idx, scale, offset, x_npu, expert_idx_npu, scale_npu, offset_npu, expert_tokens_num_type, row_idx_type, active_num, expert_capacity = self.generate_inputs(
+                bs, h, k, dtype, scale_shape, none_scale, none_offset, drop_pad_mode)
+            if drop_pad_mode == 1 or expert_tokens_num_flag == False or expert_tokens_num_type == 0:
+                continue
+            expanded_x, local_expanded_x_npu, expanded_row_idx, local_expanded_row_idx_npu, \
+                expert_tokens_count, local_expert_tokens_count_npu, expanded_scale, local_expanded_scale_npu \
+                = self.calc_npu_vs_golden(x, expert_idx, scale, offset,
+                                          x_npu, expert_idx_npu, scale_npu, offset_npu, expert_range, 
+                                          quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity, x_dtype)
+
+            assert_tensors_close(numpy_to_torch(
+                expanded_x), local_expanded_x_npu)
+            assert_tensors_close(numpy_to_torch(
+                expanded_row_idx), local_expanded_row_idx_npu)
+            if expert_tokens_num_flag:
+                assert_tensors_close(numpy_to_torch(expert_tokens_count),
+                                     local_expert_tokens_count_npu)
+            if none_scale:
+                return
+            assert_tensors_close(numpy_to_torch(
+                expanded_scale), local_expanded_scale_npu)
 
     @unittest.skipIf(
         torch.__version__ < "2.7" or
@@ -797,7 +849,7 @@ class TestNpuMoeInitRoutingV2(TestCase):
             assert_tensors_close(numpy_to_torch(
                 expanded_scale), local_expanded_scale_npu)
     
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_moe_init_routing_hif8_pertensor_quant(self):
         bs_list = [32]
         h_list = [14, 200]
@@ -831,7 +883,7 @@ class TestNpuMoeInitRoutingV2(TestCase):
             assert_tensors_close(numpy_to_torch(
                 expert_tokens_count), local_expert_tokens_count_npu)
     
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_moe_init_routing_hif8_pertoken_quant(self):
         bs_list = [32]
         h_list = [14, 200]
