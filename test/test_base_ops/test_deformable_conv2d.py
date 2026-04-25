@@ -412,6 +412,16 @@ class TestDeformableConv2d(TestCase):
         self.assertRtolEqual(dcn_golden.cpu().detach(), dcn_out.cpu().detach())
         self.assertRtolEqual(deformable_offsets_golden.cpu().detach(), deformable_offsets_out.cpu().detach())
 
+        npu_grad = torch.ones_like(dcn_out)
+        dcn_dx, dcn_dw, dcn_do, dcn_db = torch_npu.npu_deformable_conv2dbk(
+            npu_x, npu_grad, deformable_offsets_out, npu_w, npu_o, kernel_size=ksize, stride=strides, padding=pads)
+        bkw_inputs = (npu_x, npu_grad, deformable_offsets_out, npu_w, npu_o)
+        dcn_bk_golden_list = self.get_bkw_golden(bkw_inputs, args[:4])
+        self.assertRtolEqual(dcn_bk_golden_list[0].cpu().detach(), dcn_dx.cpu().detach())
+        self.assertRtolEqual(dcn_bk_golden_list[1].cpu().detach(), dcn_dw.cpu().detach())
+        self.assertRtolEqual(dcn_bk_golden_list[2].cpu().detach(), dcn_do.cpu().detach(), 0.0003)
+        self.assertRtolEqual(dcn_bk_golden_list[3].cpu().detach(), dcn_db.cpu().detach())
+        
 if __name__ == "__main__":
     np.random.seed(123)
     torch.npu.conv.allow_hf32 = False
