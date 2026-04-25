@@ -11752,6 +11752,74 @@ loss, log_prob, _, _ = torch_npu.npu_cross_entropy_loss(input, target)
 )
 
 _add_torch_npu_docstr(
+    "npu_chunk_gated_delta_rule",
+    """
+功能描述:
+Chunked Gated Delta Rule(CGDR)是GDR的chunk版实现，它通过将输入序列切块，实现了一定的并行效果，在长上下文场景其计算效率相对Recurrent Gated Delta Rule更高，适用于prefill阶段。
+
+接口原型:
+npu_chunk_gated_delta_rule(Tensor query, Tensor key, Tensor value, *, Tensor? beta=None, Tensor? initial_state=None, Tensor? actual_seq_lengths=None, float? scale=None, Tensor? g=None) -> (Tensor, Tensor)
+
+参数说明:
+令 $B$ 表示batch size，$L_i$ 表示第i个序列的长度，$T=\sum_i^B L_i$ 表示累积序列长度。$N_k$ 表示key的头数，$N_v$ 表示value的头数，$D_k$ 表示key向量的维度，$D_v$ 表示value向量的维度。
+- query (Tensor)：必选输入，对应公式中的q，数据类型支持bfloat16，数据格式支持ND，shape为（T, Nk, Dk）。
+- key (Tensor)：必选输入，对应公式中的k，数据类型支持bfloat16，数据格式支持ND，shape为（T, Nk, Dk）。
+- value (Tensor)：必选输入，对应公式中的v，数据类型支持bfloat16，数据格式支持ND，shape为（T, Nv, Dv）。
+- beta (Tensor)：必选输入，对应公式中的β，数据类型支持bfloat16，数据格式支持ND，shape为（T, Nv）。
+- initial_state (Tensor)：必选输入&输出，对应公式中的状态矩阵S，数据类型支持bfloat16，数据格式支持ND，shape为（BlockNum, Nv, Dv, Dk）。
+- actual_seq_lengths (Tensor)：必选输入，各batch的输入序列长度。数据类型支持int32，数据格式支持ND，shape为（B,）。
+- g (Tensor)：必选输入，衰减系数，对应公式中的α=e^g。默认为None，表示全0。数据类型支持float32，数据格式支持ND，shape为（T, Nv）。
+- scale_value (Scalar)：必选输入，query的缩放因子，对应公式中的 $1/\sqrt{d_k}$。数据类型支持float32。
+
+输出说明:
+注意力计算结果。输出的数据类型为bfloat16，数据格式为ND，形状为(T, Nv, Dv)。
+
+约束说明:
+- 该接口支持推理场景下使用。
+- 该接口支持静态图模式。
+- 输入shape大小需满足约束：$L_i \le 8$，$N_k \le 64$，$N_v \le 64$，$D_k = 128$，$D_v = 128$，$N_v$是$N_k$整数倍。
+
+支持的PyTorch版本:
+PyTorch 2.1 及更高版本
+
+支持的型号:
+Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件
+Atlas A3 训练系列产品/Atlas A3 推理系列产品
+
+调用示例:
+单算子模式调用
+import torch
+import torch_npu
+
+# 构造输入
+B, seqlen, nk, nv, dk, dv = (2, 100, 4, 8, 128, 128)
+actual_seq_lengths = (torch.ones(B) * seqlen).to("npu").to(torch.int32)
+T = int(torch.sum(actual_seq_lengths))
+
+state = torch.rand((B, nv, dv, dk), dtype=torch.bfloat16).npu()
+query = torch.rand((T, nk, dk), dtype=torch.bfloat16).npu()
+key = torch.rand((T, nk, dk), dtype=torch.bfloat16).npu()
+value = torch.rand((T, nv, dv), dtype=torch.bfloat16).npu()
+g = torch.rand((T, nv), dtype=torch.float32).npu() * (-1.0)
+beta = torch.rand((T, nv), dtype=torch.bfloat16).npu()
+
+query = torch.nn.functional.normalize(query, p=2, dim=-1)
+key = torch.nn.functional.normalize(key, p=2, dim=-1)
+scale = dk ** -0.5
+
+# 调用算子
+o, final_state = torch_npu.npu_chunk_gated_delta_rule(
+    query, key, value,
+    beta=beta,
+    initial_state=state,
+    actual_seq_lengths=actual_seq_lengths,
+    scale=scale,
+    g=g)
+print(o.shape, final_state.shape)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_gemma_rms_norm",
     """
 接口原型：

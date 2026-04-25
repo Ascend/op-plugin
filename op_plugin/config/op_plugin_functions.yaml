@@ -7385,6 +7385,9 @@ custom:
 
   - func: npu_dynamic_block_mx_quant(Tensor input, *, str round_mode="rint", int dst_type=296, int scale_alg=0, float dst_type_max=0.0) -> (Tensor, Tensor, Tensor)
     op_api: all_version
+  
+  - func: npu_chunk_gated_delta_rule(Tensor query, Tensor key, Tensor value, *, Tensor? beta=None, Tensor? initial_state=None, Tensor? actual_seq_lengths=None, float? scale=None, Tensor? g=None) -> (Tensor, Tensor)
+    op_api: all_version
 
 
   - func: npu_rotate_quant(Tensor x, Tensor rotation, *, float? alpha=0.0, int? dst_dtype=None) -> (Tensor, Tensor)
