@@ -5828,7 +5828,7 @@ def npu_moe_token_unpermute_grad_meta(permuted_tokens, grad_unpermuted_tokens, s
     torch._check(sorted_indices.dim() == 1, lambda: f"The dims of input sorted_indices should be 1 dimensional, but got {sorted_indices.dim()}-dimensional.")
 
     grad_permuted_tokens = torch.empty_like(permuted_tokens)
-    grad_probs = torch.empty_like(probs, dtype=grad_unpermuted_tokens.dtype) if probs is not None else None
+    grad_probs = torch.empty_like(probs, dtype=probs.dtype) if probs is not None else None
 
     return grad_permuted_tokens, grad_probs
 
