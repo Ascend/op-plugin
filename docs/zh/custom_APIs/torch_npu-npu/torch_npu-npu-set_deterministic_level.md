@@ -13,7 +13,7 @@
 
 ## 功能说明
 
-该接口用于控制CANN侧强一致性功能。具体为重新配置CANN侧参数，参数详细说明可见：[aclSysParamOpt](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/850/API/appdevgapi/aclcppdevg_03_1393.html)。
+该接口用于控制CANN侧强一致性功能。具体为重新配置CANN侧参数，参数详细说明可见：[aclSysParamOpt](https://www.hiascend.com/document/detail/zh/canncommercial/900/API/runtimeapi/aclcppdevg_03_1393.html)。
 
 实际level对应配置如下表所示：
 

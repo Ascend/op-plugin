@@ -48,7 +48,7 @@
 </tr>
 <tr id="row196641378158"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p36640731519"><a name="p36640731519"></a><a name="p36640731519"></a><a href="（beta）torch_npu-npu-set_option.md">（beta）torch_npu.npu.set_option</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p566467161517"><a name="p566467161517"></a><a name="p566467161517"></a>详细使用参见<span id="ph4356918191716"><a name="ph4356918191716"></a><a name="ph4356918191716"></a>《PyTorch 训练模型迁移调优指南》中的“<a href="https://www.hiascend.com/document/detail/zh/Pytorch/730/ptmoddevg/trainingmigrguide/PT_LMTMOG_0076.html">设置算子编译选项</a>”章节</span>。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p566467161517"><a name="p566467161517"></a><a name="p566467161517"></a>详细使用参见<span id="ph4356918191716"><a name="ph4356918191716"></a><a name="ph4356918191716"></a>《PyTorch 训练模型迁移调优指南》中的“<a href="https://gitcode.com/Ascend/docs/blob/master/FrameworkPTAdapter/26.0.0/zh/pytorch_model_migration_fine_tuning/config_op_comp_opts.md">设置算子编译选项</a>”章节</span>。</p>
 </td>
 </tr>
 <tr id="row14664573152"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1366415716151"><a name="p1366415716151"></a><a name="p1366415716151"></a><a href="（beta）torch_npu-npu-config-allow_internal_format.md">（beta）torch_npu.npu.config.allow_internal_format</a></p>

@@ -117,7 +117,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     - 列表长度与`weight`列表长度相同。
     - 每个张量输入维度和`antiquant_scale`输入维度一致。
 
-- **per_token_scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配量化后的范围值，代表pertoken量化参数中由`x`量化引入的缩放因子，对应公式（3）和公式（5）。
+- **per_token_scale** (`List[Tensor]`)：可选参数。用于缩放原数值以匹配量化后的范围值，代表pertoken量化参数中由`x`量化引入的缩放因子，对应公式（3）。
     - `group_list`输入类型为`List[int]`时，当前只支持传入`None`。
     - `group_list`输入类型为`Tensor`时：
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`。
