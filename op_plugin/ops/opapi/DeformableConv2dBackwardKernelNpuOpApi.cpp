@@ -71,11 +71,9 @@ namespace op_api
             return npu_deformable_conv2dbk_out(input, grad_output, offset_out, weight, offset,
                                                kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
         }
-        else
-        {
-            return acl_op::npu_deformable_conv2dbk(input, grad_output, offset_out, weight, offset,
-                                                   kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
-        }
+
+        return acl_op::npu_deformable_conv2dbk(input, grad_output, offset_out, weight, offset,
+                                               kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
     }
 
 } // namespace op_api

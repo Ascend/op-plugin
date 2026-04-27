@@ -81,11 +81,10 @@ std::tuple<at::Tensor, at::Tensor> npu_deformable_conv2d(const at::Tensor &input
     if (c10_npu::IsAclnnOnly()) {
         return npu_deformable_conv2d_out(input, weight, offset, bias, kernel_size, stride, padding, dilation,
                                          groups, deformable_groups, modulated);
-    } else {
-        TORCH_NPU_WARN("current soc not support aclnnDeformableConv2d");
-        return acl_op::npu_deformable_conv2d(input, weight, offset, bias, kernel_size, stride, padding, dilation,
-                                             groups, deformable_groups, modulated);
     }
+
+    return acl_op::npu_deformable_conv2d(input, weight, offset, bias, kernel_size, stride, padding, dilation,
+                                         groups, deformable_groups, modulated);
 }
 
 } // namespace op_api
