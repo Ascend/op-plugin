@@ -32,7 +32,7 @@
   1 & 0
   \end{bmatrix}
   $$
-  此时输入$x$的shape为$[3, 3]$，索引$idx$的shape为$[2]$， 以上索引的含义为分别提取$x$中的第1行和第0行，则输出shape为$[2, 3]$，输出结果如下：
+  此时输入$x$的shape为$[3, 3]$，索引$idx$的shape为$[2]$(一维向量)， 以上索引的含义为分别提取$x$中的第1行和第0行，则输出shape为$[2, 3]$，输出结果如下：
   $$
   \begin{bmatrix}
   4 & 5 & 6\\
@@ -48,7 +48,7 @@ torch_npu.npu_gather_sparse_index(input, index) -> Tensor
 
 ## 参数说明
 
-**input**(`Tensor`)：必选参数，输入张量，数据维度仅支持2维。数据类型支持`float32`, `float16`, `bfloat16`, `int64`, `int32`, `int16`，`int8`, `uint8`, `bool`, `float64`, `complex64`, `complex128`。
+**input**(`Tensor`)：必选参数，输入张量，数据格式支持ND。数据类型支持`float32`, `float16`, `bfloat16`, `int64`, `int32`, `int16`，`int8`, `uint8`, `bool`, `float64`, `complex64`, `complex128`。
 
 **index**(`Tensor`)：必选参数，代表目标元素下标序号的张量。数据维度不超过7维。数据类型支持`int64`, `int32`。取值范围$[0, input.shape[0] - 1]$, 不支持负数索引。
 

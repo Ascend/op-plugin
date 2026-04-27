@@ -13272,7 +13272,7 @@ torch_npu.npu_gather_sparse_index(input, index) -> torch.Tensor
 从输入Tensor的指定维度dim，按照index中的下标序号提取元素，保存到out Tensor中。
 
 参数说明: 
-input(torch.Tensor): 输入张量，数据维度仅支持2维。
+input(torch.Tensor): 输入张量，数据格式支持ND。
     在Atlas A2/Atlas A3上数据类型支持torch.float32, torch.float16, torch.bfloat16, torch.int64, torch.int32, torch.int16,
     torch.int8, torch.uint8, torch.bool, torch.float64, torch.complex64, torch.complex128
 index(torch.Tensor): 包含目标元素下标序号的张量。数据维度不超过8维。数据类型支持torch.int64, torch.int32。取值范围[0, input.shape[0] - 1], 不支持负数索引。
