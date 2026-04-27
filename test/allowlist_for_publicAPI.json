@@ -124,6 +124,7 @@
       "npu_grouped_matmul",
       "npu_moe_finalize_routing",
       "npu_mhc_sinkhorn",
+      "npu_mhc_sinkhorn_backward",
       "npu_quant_matmul",
       "npu_quant_matmul_reduce_sum",
       "npu_quant_scatter",

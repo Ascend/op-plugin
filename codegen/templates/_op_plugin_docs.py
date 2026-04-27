@@ -4071,6 +4071,54 @@ y = mhc_sinkhorn_model(x, eps=eps, num_iters=num_iters, out_flag=out_flag)
 )
 
 _add_torch_npu_docstr(
+    "npu_mhc_sinkhorn_backward",
+    """
+接口原型:
+torch_npu.npu_mhc_sinkhorn_backward(Tensor grad_y, Tensor norm, Tensor sum) -> Tensor
+
+功能描述
+算子功能：MhcSinkhornBackward是MhcSinkhorn的反向算子。mHC（Manifold-Constrained Hyper-Connections）架构中的MhcSinkhorn算子对输入矩阵做sinkhorn变换得到双随机矩阵$\mathbf{H}_{\text{res}}$，输出的双随机矩阵的所有元素≥0、每一行之和为1且每一列之和为1 (具有范数保持、组合封闭性和凸组合几何解释三大特性)。
+
+参数说明:
+gradOutput: Tensor类型, 必选参数. 数据类型支持float32, 数据格式支持ND, shape是3维(T, n, n)或者4维(B, S, n, n), 其中n仅支持4, 6, 8. Sinkhorn变换输出的H_res的梯度。 
+normOut: Tensor类型, 必选参数. 数据类型支持float32, 数据格式支持ND, shape是1维, 表示Sinkhorn变换正向计算保存的中间norm结果。
+sumOut: Tensor类型, 必选参数. 数据类型支持float32, 数据格式支持ND, shape是1维, 表示Sinkhorn变换正向计算保存的中间sum结果。
+
+输出说明:
+一个Tensor类型的输出, Sinkhorn变换的输入的H_res的梯度. 数据类型和张量形状与输入gradOutput保持一致。数据格式支持ND.
+
+约束说明:
+该接口支持pytorch调用（torch_npu). 
+
+支持的PyTorch版本
+PyTorch 2.7.1
+
+支持的型号:
+Atlas A5 训练系列产品
+
+调用示例:
+单算子模式调用
+import torch
+import torch_npu
+device = "npu:0"
+x_shape = [128, 4 , 4]
+T, n, _ = x_shape
+x = torch.rand(x_shape, dtype=torch.float32, requires_grad=True).clamp(min=1e-4)
+x_npu = x.npu()
+eps = 1e-6
+num_iters = 20
+out_flag = 1
+
+# 正向传播
+y, norm_out, sum_out = torch_npu.npu_mhc_sinkhorn(x_npu, eps=eps, num_iters=num_iters, out_flag=out_flag)
+
+# 反向传播
+grad_y = torch.randn(T, n, n, dtype=torch.float32)
+torch.autograd.backward(tensors=[y], grad_tensors=[grad_y.npu()])
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_mhc_pre_backward",
     """
 接口原型：

@@ -380,6 +380,12 @@
   "op_api: torch_npu.npu_mhc_sinkhorn(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
+  "op_api: torch_npu.npu_mhc_sinkhorn_backward(*args, **kwargs)": {
+    "version": ["v2.5", "v2.6", "v2.7"]
+  },
+  "op_api: torch_npu.npu_mhc_sinkhorn_backward(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
+  },
   "op_api: torch_npu.npu_apply_adam(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
@@ -791,6 +797,9 @@
     "version": ["all_version"]
   },
   "func: npu_mhc_sinkhorn(Tensor x, *, float eps=1e-6, SymInt num_iters=20, int out_flag=0) -> (Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },  
+  "func: npu_mhc_sinkhorn_backward(Tensor grad_y, Tensor norm, Tensor sum) -> Tensor": {
     "version": ["all_version"]
   },
   "func: npu_moe_token_unpermute(Tensor permuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> Tensor": {
