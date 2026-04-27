@@ -25,7 +25,8 @@ static bool is_nz_format(const at::Tensor& w)
 {
     const torch_npu::NPUStorageDesc &tensor_desc =
         torch_npu::NPUBridge::GetNpuStorageImpl(w)->npu_desc_;
-    return tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ;
+    return tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ ||
+           tensor_desc.npu_format_ == ACL_FORMAT_FRACTAL_NZ_C0_16;
 }
 
 static bool is_weight_trans(const at::Tensor &tensor)
