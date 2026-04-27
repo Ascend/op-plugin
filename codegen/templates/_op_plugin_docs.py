@@ -12064,7 +12064,8 @@ input_positions = torch.tensor(input_position, dtype=torch.int64, device="npu")
 seq_lens = torch.tensor(seq_len, dtype=torch.int64, device="npu")
 slot_mappings = torch.tensor(slot_mapping, dtype=torch.int64, device="npu")
 
-block_table = np.random.randint(10, size=(num_seqs, torch.max(seq_lens.cpu()) // block_size + 1))
+max_seq_len = seq_lens.max().item()
+block_table = np.random.randint(10, size=(num_seqs, max_seq_len // block_size + 1))
 block_tables = torch.tensor(block_table, dtype=torch.int64, device="npu")
 
 
@@ -12098,7 +12099,8 @@ slot_mappings = torch.tensor(slot_mapping, dtype=torch.int64, device="npu")
 spec_tokens = torch.tensor(spec_token, dtype=torch.int64, device="npu")
 accepted_nums = torch.tensor(accepted_num, dtype=torch.int64, device="npu")
 
-block_table = np.random.randint(10, size=(num_seqs, torch.max(seq_lens.cpu()) // block_size + 1))
+max_seq_len = seq_lens.max().item()
+block_table = np.random.randint(10, size=(num_seqs, max_seq_len // block_size + 1))
 block_tables = torch.tensor(block_table, dtype=torch.int64, device="npu")
 
 
