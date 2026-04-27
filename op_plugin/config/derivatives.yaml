@@ -355,3 +355,7 @@ backward:
   output_differentiability: [true, false, false]
   x: npu_mhc_sinkhorn_backward(grad, result1, result2)
   version: all_version
+
+- name: npu_mhc_post(Tensor x, Tensor h_res, Tensor h_out, Tensor h_post) -> Tensor
+  x, h_res, h_out, h_post: npu_mhc_post_backward(grad, x, h_res, h_out, h_post)
+  version: all_version

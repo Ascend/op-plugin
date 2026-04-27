@@ -4474,6 +4474,64 @@ y = mhc_post_model(x, h_res, h_out, h_post)
 )
 
 _add_torch_npu_docstr(
+    "npu_mhc_post_backward",
+    """
+接口原型：
+torch_npu.npu_mhc_post_backward(Tensor grad_output, Tensor x, Tensor h_res, Tensor h_out, Tensor h_post) -> (Tensor, Tensor, Tensor, Tensor)
+
+功能描述
+算子功能: MhcPostBackward是MhcPost的反向算子. 融合主分支特征h_out与残差分支特征x_l（或residual），通过门控h_post和经sinkhorn投影后的双随机矩阵h_res机制实现信息流动. 
+
+参数说明
+grad_output: Tensor类型, 必选输入, 表示前向输出的梯度张量. 数据格式为ND, 支持的数据类型为BFLOAT16和FLOAT16, 数据维度可为3维[T, n, D]和4维[B, S, n, D]. 
+x: Tensor类型, 必选输入, 待计算数据, 代表网络中mHC层的输入数据. 数据格式为ND, 支持的数据类型为BFLOAT16和FLOAT16, 数据维度可为3维[T, n, D]和4维[B, S, n, D]. 
+h_res: Tensor类型, 必选输入, mHC的h_res变换矩阵, 是做完sinkhorn变换之后的双随机矩阵. 数据格式为ND, 支持的数据类型为FLOAT32, 数据维度可为3维[T, n, n]和4维[B, S, n, n].
+h_out: Tensor类型, 必选输入, Attn/MLP层输出. 数据格式为ND, 支持的数据类型为BFLOAT16和FLOAT16, 数据维度可为3维[B, S, D]和2维[T, D].
+h_post: Tensor类型, 必选输入, mHC的h_post变换矩阵. 数据格式为ND, 支持的数据类型为FLOAT32, 数据维度可为3维[B, S, n]和2维[T, n].
+n: shape中n仅支持4, 6, 8.
+
+输出说明
+grad_x: Tensor类型, 对前向输入x的梯度, shape和数据类型与x一致, 数据格式为ND.
+grad_h_res: Tensor类型, 对前向输入h_res的梯度, shape和数据类型与h_res一致, 数据格式为ND.
+grad_h_out: Tensor类型, 对前向输入h_out的梯度, shape和数据类型与h_out一致, 数据格式为ND.
+grad_h_post: Tensor类型, 对前向输入h_post的梯度, shape和数据类型与h_post一致, 数据格式为ND.
+
+约束说明
+该接口支持pytorch调用(torch_npu).
+
+支持的PyTorch版本
+PyTorch 2.7.1
+
+支持的型号
+-昇腾950 AI处理器
+
+调用示例
+单算子模式调用
+import torch 
+import torch_npu
+
+grad_output_shape = (1, 4, 1024)
+x_shape = (1, 4, 1024)
+h_res_shape = (1, 4, 4)
+h_out_shape = (1, 1024)
+h_post_shape = (1, 4)
+grad_output = (torch.rand(grad_output_shape, dtype=torch.bfloat16)).clamp(min=1e-4)
+x = (torch.rand(x_shape, dtype=torch.bfloat16)).clamp(min=1e-4)
+h_res = (torch.rand(h_res_shape, dtype=torch.float32)).clamp(min=1e-4)
+h_out = (torch.rand(h_out_shape, dtype=torch.bfloat16)).clamp(min=1e-4)
+h_post = (torch.rand(h_post_shape, dtype=torch.float32)).clamp(min=1e-4)
+
+grad_output_npu = grad_output.npu()
+x_npu = x.npu()
+h_res_npu = h_res.npu()
+h_out_npu = h_out.npu()
+h_post_npu = h_post.npu()
+
+grad_x, grad_h_res, grad_h_out, grad_h_post = torch_npu.npu_mhc_post_backward(grad_output_npu, x_npu, h_res_npu, h_out_npu, h_post_npu)
+"""
+)
+
+_add_torch_npu_docstr(
     "npu_dynamic_quant",
     """
 功能描述:
