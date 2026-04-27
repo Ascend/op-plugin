@@ -1040,12 +1040,27 @@ def npu_quant_gmm_alltoallv_meta(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_scal
             mm_weight.dim() == 2,
             lambda: f"The mm_weight's dim should be 2, but got {mm_weight.dim()}.",
             )
-    scale_list = [gmm_x_scale, gmm_weight_scale, mm_x_scale, mm_weight_scale]
-    for scale in scale_list:
-        if scale is not None:
+    if gmm_x_quant_mode == 1 and gmm_weight_quant_mode == 1:
+        scale_list = [gmm_x_scale, gmm_weight_scale, mm_x_scale, mm_weight_scale]
+        for scale in scale_list:
+            if scale is not None:
+                torch._check(
+                    scale.dim() == 1 and scale.size(0) == 1,
+                    lambda: f"In TT quant mode, scale's shape should be (1,), but got {list(scale.shape)}.",
+                )
+    elif gmm_x_quant_mode == 6 and gmm_weight_quant_mode == 6:
+        scale_list = [gmm_x_scale, mm_x_scale, mm_weight_scale]
+        scale_name = ["gmm_x_scale", "mm_x_scale", "mm_weight_scale"]
+        for scale, name in zip(scale_list, scale_name):
+            if scale is not None:
+                torch._check(
+                    scale.dim() == 3,
+                    lambda: f"In MX quant mode, the {name}'s dim should be 3, but got {scale.dim()}.",
+                )
+        if gmm_weight_scale is not None:
             torch._check(
-                scale.dim() == 1 and scale.size(0) == 1,
-                lambda: f"Scale's shape should be (1,), but got {list(scale.shape)}.",
+                gmm_weight_scale.dim() == 4,
+                lambda: f"In MX quant mode, the gmm_weight_scale's dim should be 4, but got {gmm_weight_scale.dim()}.",
             )
     out_x = sum(recv_counts)
     out_y = gmm_weight.size(2)
@@ -1053,13 +1068,29 @@ def npu_quant_gmm_alltoallv_meta(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_scal
     out_mm_y = 0
     y = None
     mm_y = None
+    INT4_IN_INT8 = 2
+    is_w4 = (gmm_x_dtype == torch_npu.float4_e2m1fn_x2 and gmm_x_scale_dtype == torch_npu.float8_e8m0fnu)
+    if is_w4:
+        is_trans_gmm_weight = False
+        if (gmm_weight.stride(1) == 1 and gmm_weight.stride(2) == gmm_weight.size(1)):
+            if not (gmm_weight.size(1) == 1 and gmm_weight.size(2) == 1):
+                is_trans_gmm_weight = True
+        if not is_trans_gmm_weight:
+            out_y = gmm_weight.size(2) * INT4_IN_INT8
     out_scalar_type = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(gmm_y_dtype)
-    if mm_x is not None:
+    y = torch.empty([out_x, out_y], dtype=out_scalar_type, device='meta')
+    if mm_x is not None and mm_weight is not None:
         out_mm_x = mm_x.size(0)
         out_mm_y = mm_weight.size(1)
+        if is_w4:
+            is_trans_mm_weight = False
+            if (mm_weight.stride(0) == 1 and mm_weight.stride(1) == mm_weight.size(0)):
+                if not (mm_weight.size(0) == 1 and mm_weight.size(1) == 1):
+                    is_trans_mm_weight = True
+            if not is_trans_mm_weight:
+                out_mm_y =  mm_weight.size(1) * INT4_IN_INT8
         mm_out_scalar_type = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(mm_y_dtype)
         mm_y = torch.empty([out_mm_x, out_mm_y], dtype=mm_out_scalar_type, device='meta')
-    y = torch.empty([out_x, out_y], dtype=out_scalar_type, device='meta')
     return (y, mm_y)
 
 
