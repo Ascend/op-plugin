@@ -3577,13 +3577,13 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
     )
     if x_dtype is not None:
         torch._check(
-            x_dtype == torch_npu.hifloat8 or x_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: npu_non_native_tensor_dtype_kwarg_error_message("x", "x_dtype", x_dtype),
+            x_dtype == torch_npu.hifloat8 or x_dtype == torch_npu.float4_e2m1fn_x2 or x_dtype == torch_npu.float4_e1m2fn_x2,
+            lambda: "x_dtype supports hifloat8, mxfp4 for now, but it is " + npu_dtype_to_str(x_dtype),
         )
     if weight_dtype is not None:
         torch._check(
-            weight_dtype == torch_npu.hifloat8 or weight_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: npu_non_native_tensor_dtype_kwarg_error_message("weight", "weight_dtype", weight_dtype),
+            weight_dtype == torch_npu.hifloat8 or weight_dtype == torch_npu.float4_e2m1fn_x2 or weight_dtype == torch_npu.float4_e1m2fn_x2,
+            lambda: "weight_dtype only supports hifloat8, mxfp4 for now, but it is " + npu_dtype_to_str(weight_dtype),
         )
     if scale_dtype is not None:
         torch._check(
@@ -3608,7 +3608,8 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
     output_dtype = gmm_get_dtype(output_dtype)
     INT4_IN_INT32 = 8
     FP4_IN_INT8 = 2
-    is_a4w4_mxfp = x_dtype == torch_npu.float4_e2m1fn_x2 and weight_dtype == torch_npu.float4_e2m1fn_x2
+    is_a4w4_mxfp = (x_dtype == torch_npu.float4_e2m1fn_x2 or x_dtype == torch_npu.float4_e1m2fn_x2) and \
+    (weight_dtype == torch_npu.float4_e2m1fn_x2 or weight_dtype == torch_npu.float4_e1m2fn_x2)
     is_a8w8 = x[0].dtype == torch.int8 and weight[0].dtype == torch.int8
     is_hifloat8 = x_dtype == torch_npu.hifloat8 and weight_dtype == torch_npu.hifloat8
     is_fp8 = (x[0].dtype == torch.float8_e4m3fn or x[0].dtype == torch.float8_e5m2) and (weight[0].dtype == torch.float8_e4m3fn or weight[0].dtype == torch.float8_e5m2)

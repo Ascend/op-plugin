@@ -1109,6 +1109,59 @@ class TestGroupedMatmul(TestCase):
 
         self.assertRtolEqual(supported_output[0].to(torch.float32).numpy(),
                              custom_output[0].to(torch.float32).cpu().numpy(), 0.001)
+        
+    @SupportedDevices(['Ascend950'])
+    def test_npu_grouped_matmul_quant_float4_weight_nz(self): # 全量化 float4 + weight NZ
+        torch.manual_seed(0)
+        group_list = torch.tensor([16, ]).to(torch.int64).npu()
+        split_item = 2
+        group_type = 0
+
+        dtype_list = [
+            [torch_npu.float4_e2m1fn_x2, torch_npu.float4_e2m1fn_x2],
+            [torch_npu.float4_e1m2fn_x2, torch_npu.float4_e1m2fn_x2],
+        ]
+        scale_output_dtype_list = [[torch.int64, torch.float32], [torch.float32, torch.float32]]
+
+        for x_dtype, weight_dtype in dtype_list:
+            for scale_dtype, output_dtype in scale_output_dtype_list:
+                # uint8 storage: each byte packs two float4 values, logical K is 256.
+                x1 = torch.randint(2, 3, size=(16, 128), dtype=torch.int8).view(torch.uint8)
+                x = [x1]
+
+                weight1 = torch.randint(2, 3, size=(1, 256, 32), dtype=torch.int8).view(torch.uint8)
+                weight = [weight1]
+
+                x_clone = [x1.clone().npu()]
+                weight_nz = torch_npu.npu_format_cast(weight1.clone().npu(), 29)
+                weight_clone = [weight_nz]
+
+                scales_npu = []
+                scales_fp32 = []
+                if scale_dtype == torch.int64:
+                    scale_fp32, scale_int64 = self.perchannelcube_templater_scale_generate((1, 32))
+                    scales_fp32.append(scale_fp32)
+                    scales_npu.append(torch.from_numpy(scale_int64).npu().to(scale_dtype))
+                else:
+                    deq_scale = np.random.uniform(low=-5, high=5, size=(1, 32)).astype(np.float32)
+                    scales_fp32.append(deq_scale)
+                    scales_npu.append(torch.from_numpy(deq_scale).npu().to(scale_dtype))
+
+                # Golden follows existing mxfp4 UT style: use unpacked fp32 path for shape and scale validation.
+                x_fp32 = x1.to(torch.float32).numpy()
+                weight_fp32 = weight1.to(torch.float32).numpy()
+                supported_output = self.single_matmul(
+                    x_fp32, weight_fp32[0], b=None, scale=scales_fp32[0][0], out_dtype=output_dtype)
+
+                custom_output = torch_npu.npu_grouped_matmul(
+                    x_clone, weight_clone, bias=None, scale=scales_npu, offset=None,
+                    antiquant_scale=None, antiquant_offset=None, group_list=group_list,
+                    split_item=split_item, group_type=group_type, output_dtype=output_dtype,
+                    x_dtype=x_dtype, weight_dtype=weight_dtype,
+                    scale_dtype=torch_npu.float8_e8m0fnu,
+                    per_token_scale_dtype=torch_npu.float8_e8m0fnu)
+
+                self.assertRtolEqual(supported_output[0], custom_output[0].cpu().numpy(), 0.001)
 
 
 if __name__ == "__main__":
