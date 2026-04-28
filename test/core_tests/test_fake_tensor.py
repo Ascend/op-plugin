@@ -2908,6 +2908,41 @@ class TestGroupedMatmul(TestCase):
             self.assertTrue(x1.shape[0] == res[0].shape[0])
             self.assertTrue((w1.shape[1]) == res[0].shape[1])
 
+    def test_npu_grouped_matmul_meta_quant_empty_tensor_m0(self):
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            K = 128
+            M = 0
+            N = 128
+            E = 2
+            x1 = torch.randint(0, 10, (M, K), dtype=torch.int8).view(torch.float8_e4m3fn).npu()
+            x2 = torch.randint(0, 10, (E, N, K), dtype=torch.int8).view(torch.float8_e5m2).npu()
+            x = [x1,]
+            w = [x2,]
+            group_list = torch.tensor([0, 0]).to(torch.int64).npu()
+            split_item = 2
+            scale2 = torch.randint(0, 10, (E, N), dtype=torch.int64).npu()
+            scale = [scale2,]
+            res = torch_npu.npu_grouped_matmul(x, w, bias=None, scale=scale, group_list=group_list, split_item=split_item, group_type=0, group_list_type=0, output_dtype=torch.float16)
+            self.assertTrue(len(res[0]) == 0)
+
+    def test_npu_grouped_matmul_meta_quant_empty_tensor_k0(self):
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            K = 0
+            M = 128
+            N = 128
+            E = 2
+            x1 = torch.randint(0, 10, (M, K), dtype=torch.int8).view(torch.float8_e4m3fn).npu()
+            x2 = torch.randint(0, 10, (E, K, N), dtype=torch.int8).view(torch.float8_e5m2).npu()
+            x = [x1,]
+            w = [x2,]
+            group_list = torch.tensor([0, 0]).to(torch.int64).npu()
+            split_item = 2
+            scale2 = torch.randint(0, 10, (E, N), dtype=torch.int64).npu()
+            scale = [scale2,]
+            with self.assertRaises(RuntimeError):
+                torch_npu.npu_grouped_matmul(x, w, bias=None, scale=scale, group_list=group_list, split_item=split_item, group_type=0, group_list_type=0, output_dtype=torch.float16)
 
 class TestQuantMatmul(TestCase):
     def test_npu_quant_matmul_meta(self):

@@ -3592,12 +3592,24 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
         )
     y = []
     num_x = len(x)
+    torch._check(num_x > 0 and len(weight) > 0, lambda: "The number of x and weight should be greater than 0, but they are " + str(num_x) + "and " + str(len(weight)) + "." + ops_error(ErrCode.VALUE),)
     singleWeight = len(weight) == 1 and len(weight[0].shape) == 3
     n = weight[0].shape[2] if singleWeight else weight[0].shape[1]
+    k = 0
+    m = 0
+    for i in range(num_x):
+        k += x[i].shape[1]
+        m += x[i].shape[0]
     output_dtype = gmm_get_dtype(output_dtype)
     INT4_IN_INT32 = 8
     FP4_IN_INT8 = 2
     is_a4w4_mxfp = x_dtype == torch_npu.float4_e2m1fn_x2 and weight_dtype == torch_npu.float4_e2m1fn_x2
+    is_a8w8 = x[0].dtype == torch.int8 and weight[0].dtype == torch.int8
+    is_hifloat8 = x_dtype == torch_npu.hifloat8 and weight_dtype == torch_npu.hifloat8
+    is_fp8 = (x[0].dtype == torch.float8_e4m3fn or x[0].dtype == torch.float8_e5m2) and (weight[0].dtype == torch.float8_e4m3fn or weight[0].dtype == torch.float8_e5m2)
+    if is_a8w8 or is_a4w4_mxfp or is_fp8 or is_hifloat8:
+        if m > 0 and n > 0:
+            torch._check(k > 0, lambda: "k must be a positive integer when m and n are positive, but it is " + str(k) + "." + ops_error(ErrCode.VALUE),)
     if num_x > 0 and output_dtype is None:
         output_dtype = x[0].dtype
     if split_item == 0:
@@ -3846,8 +3858,10 @@ def npu_all_to_all_quant_matmul_meta(x1, x2, hcom, world_size, all2all_out_flag=
 
 
 def add_quant_gmm_check(*args):
-    group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype = args
+    m, n, k, group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype = args
 
+    if m > 0 and n > 0:
+        torch._check(k > 0, lambda: "k must be a positive integer when m and n are positive, but it is " + str(k) + "." + ops_error(ErrCode.VALUE),)
     torch._check(
         group_sizes is None,
         lambda: "group_sizes is not supported for now",
@@ -3878,14 +3892,16 @@ def add_quant_gmm_check(*args):
 @impl(m, "npu_add_quant_gmm_")
 def npu_add_quant_gmm__meta(y, x1, x2, x2_scale, group_list, *, x1_scale=None, group_list_type=0, group_sizes=None,
                             x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
-    add_quant_gmm_check(group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype)
+    m, n, k = x1.shape[0], x2.shape[1], x2.shape[0]
+    add_quant_gmm_check(m, n, k, group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype)
     return y
 
 
 @impl(m, "npu_add_quant_gmm")
 def npu_add_quant_gmm_meta(y, x1, x2, x2_scale, group_list, *, x1_scale=None, group_list_type=0, group_sizes=None,
                             x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
-    add_quant_gmm_check(group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype)
+    m, n, k = x1.shape[0], x2.shape[1], x2.shape[0]
+    add_quant_gmm_check(m, n, k, group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype)
     return torch.empty_like(y)
 
 
