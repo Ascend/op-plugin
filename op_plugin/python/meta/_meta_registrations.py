@@ -293,10 +293,6 @@ def npu_sparse_flash_attention_forward(query, key, value, sparse_indices, scale_
         sparse_indices.numel() > 0,
         lambda: "Input sparse_indices should not be empty." + ops_error(ErrCode.VALUE),
     )
-    torch._check(
-        not return_softmax_lse,
-        lambda: "when return_softmax_lse is true, not support pytorch compile." + ops_error(ErrCode.VALUE),
-    )
 
     if layout_query == "TND":
         torch._check(
