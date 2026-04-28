@@ -4099,6 +4099,62 @@ class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
                 self.assertEqual(grad_tokens.dtype, tokens.dtype)
                 self.assertEqual(grad_tokens.shape, tokens.shape)
 
+    def test_npu_moe_token_unpermute_grad_mixed_dtype(self):
+        """Test grad_probs dtype matches probs when probs and grad_unpermuted_tokens have different dtypes"""
+        num_tokens = 100
+        hidden_size = 64
+        num_experts = 8
+        topk = 4
+
+        with FakeTensorMode():
+            tokens = torch.randn(num_tokens, hidden_size).npu().to(torch.bfloat16)
+            indices = torch.randint(0, num_experts, (num_tokens, topk)).npu()
+            permuted_tokens, sorted_indices = torch_npu.npu_moe_token_permute(tokens, indices)
+
+            probs = (torch.ones(num_tokens, topk) / topk).npu().to(torch.float32)
+            grad_unpermuted_tokens = torch.randn(num_tokens, hidden_size).npu().to(torch.bfloat16)
+
+            grad_permuted_tokens, grad_probs = torch_npu.npu_moe_token_unpermute_grad(
+                permuted_tokens=permuted_tokens,
+                grad_unpermuted_tokens=grad_unpermuted_tokens,
+                sorted_indices=sorted_indices,
+                probs=probs,
+                padded_mode=False,
+                restore_shape=None,
+            )
+
+            self.assertEqual(grad_permuted_tokens.dtype, permuted_tokens.dtype)
+            self.assertIsNotNone(grad_probs)
+            self.assertEqual(grad_probs.dtype, probs.dtype)
+            self.assertEqual(grad_probs.shape, probs.shape)
+
+    def test_npu_moe_token_unpermute_grad_probs_none(self):
+        """Test npu_moe_token_unpermute_grad when probs is None"""
+        num_tokens = 100
+        hidden_size = 64
+        num_experts = 8
+        topk = 1
+
+        with FakeTensorMode():
+            tokens = torch.randn(num_tokens, hidden_size).npu().to(torch.bfloat16)
+            indices = torch.randint(0, num_experts, (num_tokens, topk)).npu()
+            permuted_tokens, sorted_indices = torch_npu.npu_moe_token_permute(tokens, indices)
+
+            grad_unpermuted_tokens = torch.randn(num_tokens, hidden_size).npu().to(torch.bfloat16)
+
+            grad_permuted_tokens, grad_probs = torch_npu.npu_moe_token_unpermute_grad(
+                permuted_tokens=permuted_tokens,
+                grad_unpermuted_tokens=grad_unpermuted_tokens,
+                sorted_indices=sorted_indices,
+                probs=None,
+                padded_mode=False,
+                restore_shape=None,
+            )
+
+            self.assertEqual(grad_permuted_tokens.dtype, permuted_tokens.dtype)
+            self.assertEqual(grad_permuted_tokens.shape, permuted_tokens.shape)
+            self.assertIsNone(grad_probs)
+
 
 class TestNpuMoeUnpermuteWithRoutingMap(TestCase):
     def test_npu_moe_token_unpermute_with_routing_map_meta(self):

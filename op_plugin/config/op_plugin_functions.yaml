@@ -7327,7 +7327,7 @@ custom:
         dtype: permuted_tokens
       grad_probs:
         size: 'npu_moe_token_unpermute_grad_probs_out_size(permuted_tokens, grad_unpermuted_tokens, sorted_indices, probs)'
-        dtype: grad_unpermuted_tokens
+        dtype: 'probs.has_value() && probs->defined() ? probs->scalar_type() : grad_unpermuted_tokens.scalar_type()'
       new_params:
         restore_shape_value: 'restore_shape.value_or(at::IntArrayRef{1})'
       exec: aclnnMoeTokenUnpermuteGrad, permuted_tokens, grad_unpermuted_tokens, sorted_indices, probs, padded_mode, restore_shape_value, grad_permuted_tokens, grad_probs
