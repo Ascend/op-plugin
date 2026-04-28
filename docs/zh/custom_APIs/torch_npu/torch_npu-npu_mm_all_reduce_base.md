@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- API功能：TP切分场景下，实现mm和all_reduce的融合，融合算子内部实现计算和通信流水并行。
+- API功能：TP切分（Tensor Parallelism，张量并行）场景下，实现mm和all_reduce的融合，融合算子内部实现计算和通信流水并行。
 
 - 计算公式：
     $$
