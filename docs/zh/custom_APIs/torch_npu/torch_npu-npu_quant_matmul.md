@@ -44,14 +44,14 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`和`int32`（`int32`含义同`x1`，表示`int4`类型计算）。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`和`int32`（`int32`含义同`x1`，表示`int4`类型计算）。
 
-- **scale** (`Tensor`)：必选参数，量化缩放因子。该参数支持1维shape $(t, )$（其中$t=1$或$n$）。此外，**仅当`x1`和`x2`均为`int32`类型时**，该参数还支持2维shape $(CeilDiv(k, k\_group\_size), n)$。参数$k$和$n$与`x2`的维度一致。如需传入`int64`数据类型的`scale`，需要提前调用`torch_npu.npu_trans_quant_param`来获取`int64`数据类型的`scale`。
+- **scale** (`Tensor`)：必选参数，量化缩放因子。该参数支持1维shape $(t, )$（其中$t=1$或$n$，其中$n$表示`x2`的最后一维）。如需传入`int64`数据类型的`scale`，需要提前调用`torch_npu.npu_trans_quant_param`来获取`int64`数据类型的`scale`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float32`、`int64`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
 
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **offset** (`Tensor`)：仅当`scale`为2维时为必选参数，并且数据类型仅支持`float16`，shape需要是2维且与`scale`相同；其他场景下为可选参数，用于调整量化后的数值偏移量。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(t,)$，$t=1$或$n$，其中$n$与`x2`的$n$一致。
-- **pertoken_scale** (`Tensor`)：仅当`scale`为2维时为必选参数，shape需要是2维$(m,1)$，其中$m$与`x1`的$m$一致；其他场景为可选参数，用于缩放原数值以匹配量化后的范围值。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致。<term>Atlas 推理系列加速卡产品</term>当前不支持`pertoken_scale`。
+- **pertoken_scale** (`Tensor`)：可选参数，用于缩放原数值以匹配量化后的范围值。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致，表示`x1`的倒数第二维。<term>Atlas 推理系列加速卡产品</term>当前不支持`pertoken_scale`。
 - **bias** (`Tensor`)：可选参数，偏置项，数据格式支持$ND$，shape支持1维$(n,)$或3维$（batch, 1, n）$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是2、4、5、6维情况下，`bias`的shape必须为1维。当输出是3维情况下，`bias`的shape可以为1维或3维。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。
@@ -62,7 +62,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`float16`、`bfloat16`、`int32`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`float16`、`bfloat16`、`int32`。
 
-- **group_sizes** (`list[int]`)：可选参数，表示分组量化粒度。
+- **group_sizes** (`list[int]`)：可选参数，表示分组量化粒度，用于输入$m$（`x1`倒数第二维）、$n$（`x2`最后一维）、$k$（`x1`最后一维/`x2`倒数第二维）方向上的量化分组大小，格式为 [group_m, group_n, group_k]，列表必须包含3个元素，且每个元素须为0或正整数。
 
 ## 返回值说明
 
