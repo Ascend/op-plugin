@@ -14,14 +14,24 @@
 - 计算公式：
     $x1$代表输入`input`。
     
-    基础场景：
-    $$
-    output = reducescatter(x1 \mathbin{@} x2 + bias)
-    $$
-    量化场景：
-    $$
-    output = reducescatter((x1\_scale * x2\_scale) * (x1 \mathbin{@} x2 + bias))
-    $$
+    - 基础场景：
+        $$
+        output = reducescatter(x1 \mathbin{@} x2 + bias)
+        $$
+    - 量化场景：
+        $$
+        output = reducescatter((x1\_scale * x2\_scale) * (x1 \mathbin{@} x2 + bias))
+        $$
+        量化场景scale参数使用说明：
+        - 仅提供`x2_scale`时：
+            $$
+            output = reducescatter(x2\_scale * (x1 \mathbin{@} x2 + bias))
+            $$
+        - 同时提供`x1_scale`和`x2_scale`时：
+            $$
+            output = reducescatter((x1\_scale * x2\_scale) * (x1 \mathbin{@} x2 + bias))
+            $$
+        - 其中，`x1_scale`按\(m, 1\)广播，`x2_scale`按\(1, n\)广播。
 
 > [!NOTE]   
 > 使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者配套的更高版本，否则将会引发报错，比如BUS ERROR等。
@@ -54,18 +64,39 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 
 `Tensor`
 
-shape维度和`input`保持一致。
+输出shape为\(m // world_size, n\)。
 基础场景时数据类型和`input`保持一致。
 量化场景下，`x2_scale`为`int64`数据类型时，输出数据类型为`float16`。`x1_scale`和`x2_scale`均为`float32`时, 输出数据类型由`output_dtype`指定，默认为`bfloat16`。
 
 ## 约束说明
 
 - `input`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`input`的最后一维相同，满足matmul的计算条件。
-- `comm_mode`为`ai_cpu`时：
-     - 该接口仅在训练场景下使用。
-     - 该接口支持图模式。
-     - <term>Atlas A2 训练系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
-- `comm_mode`为`aiv`时，训练和推理场景均可使用。  
+- `world_size`必须等于实际通信域中的rank总数，且`input`的m轴必须能够被`world_size`整除。
+- **通信模式约束**
+  - `comm_mode`为`ai_cpu`时：
+       - 该接口仅在训练场景下使用。
+       - 该接口支持图模式。
+       - <term>Atlas A2 训练系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
+  - `comm_mode`为`aiv`时，训练和推理场景均可使用。  
+
+- **comm_mode支持矩阵**
+
+|   场景   | `comm_mode` |     `input`数据类型      |  是否支持 |
+| -------- | --------- | -------------------- | -------- |
+| 基础场景 | `ai_cpu` | `float16` / `bfloat16` | 支持 |
+| 量化场景 | `ai_cpu` |       `int8`           | 不支持 |
+| 基础场景 |  `aiv`  |  `float16` / `bfloat16` | 支持 |
+| 量化场景 |  `aiv`  |         `int8`          | 支持 |
+
+- **scale参数组合约束**
+
+|  场景   |  `x1_scale`  | `x2_scale`  |     输出数据类型 |
+| ------- | ---------- | --------- |   ----------- |
+| 基础场景 |    不传    |  不传     |   与`input`一致 |
+| 量化场景 |  不传      | `float32` |  由`output_dtype`指定，默认`bfloat16` |
+| 量化场景 | `float32` | `float32` |  由`output_dtype`指定，默认`bfloat16` |
+| 量化场景 | `float32` |  `int64`  |  由`output_dtype`指定，默认`bfloat16` |
+| 量化场景 |  不传     |  `int64`  |   由`output_dtype`指定，默认`bfloat16` |
 
 ## 调用示例
 
