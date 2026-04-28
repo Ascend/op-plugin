@@ -12,8 +12,8 @@ from torch.testing import assert_close
 
 
 class TestDynamicMxQuantWithDualAxis(TestCase):
-    def custom_op_exec(self, input_tensor, round_mode="rint", dst_type=torch.float8_e5m2, scale_alg=0):
-        return torch_npu.npu_dynamic_mx_quant_with_dual_axis(input_tensor, round_mode=round_mode, dst_type=dst_type, scale_alg=scale_alg)
+    def custom_op_exec(self, input_tensor, round_mode="rint", dst_type=torch.float8_e5m2, scale_alg=0, dst_type_max=0.0):
+        return torch_npu.npu_dynamic_mx_quant_with_dual_axis(input_tensor, round_mode=round_mode, dst_type=dst_type, scale_alg=scale_alg, dst_type_max=dst_type_max)
 
     def supported_op_exec(self, input_tensor):
         if torch.all(torch.eq(input_tensor, 0.0)) and input_tensor.shape == torch.Size([1, 2, 2]):
@@ -35,7 +35,7 @@ class TestDynamicMxQuantWithDualAxis(TestCase):
         input_tensor = self.generate_input(input=[1, 2, 2], dtype="bfloat16")
         input_tensor = input_tensor.to(device)
         supported_output = self.supported_op_exec(input_tensor.clone())
-        custom_output = self.custom_op_exec(input_tensor.clone(), "rint", 23, 0)
+        custom_output = self.custom_op_exec(input_tensor.clone(), "rint", 23, 0, 0.0)
         y1 = custom_output[0].view([1, 2, 2]).view(torch.uint8)
         mxscale1 = custom_output[1].view([1, 2, 1, 2])
         mxscale1_uint8 = mxscale1.to(torch.uint8)

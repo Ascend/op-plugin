@@ -25,13 +25,15 @@ constexpr int64_t BLOCK_SIZE_MAX_NUM = 1024;
 constexpr int64_t ALIGN_NUM = 2;
 constexpr int64_t FP4_IN_UINT8_NUM = 2;
 constexpr int64_t MIN_INPUT_DIM = 2;
+constexpr double DEFAULT_DST_TYPE_MAX = 0.0;
 }; // namespace
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_with_dual_axis(
     const at::Tensor &input,
     c10::string_view round_mode,
     int64_t dst_type,
-    int64_t scale_alg)
+    int64_t scale_alg,
+    c10::optional<double> dst_type_max)
 {
     at::Tensor y1;
     at::Tensor mxscale1;
@@ -45,6 +47,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_
     auto y2_shape = op_infer::array_to_small_vector(input.sizes());
     auto mxscale2_shape = op_infer::array_to_small_vector(input.sizes());
     mxscale2_shape.emplace_back(ALIGN_NUM);
+    double dst_type_max_real = dst_type_max.has_value() ? dst_type_max.value() : DEFAULT_DST_TYPE_MAX;
 
     int64_t last_axis = -1;
     int64_t second_to_last_axis = -2;
@@ -90,7 +93,17 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_
     TensorWrapper y2_wrapper = {y2, y_acltype};
     TensorWrapper mxscale1_wrapper = {mxscale1, aclDataType::ACL_FLOAT8_E8M0};
     TensorWrapper mxscale2_wrapper = {mxscale2, aclDataType::ACL_FLOAT8_E8M0};
-    EXEC_NPU_CMD(aclnnDynamicMxQuantWithDualAxis, input, round_mode_ptr, y_acltype, scale_alg, y1_wrapper, mxscale1_wrapper, y2_wrapper, mxscale2_wrapper);
+    static bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicMxQuantWithDualAxisV2");
+
+    if (npu_support_v2) {
+        EXEC_NPU_CMD(aclnnDynamicMxQuantWithDualAxisV2, input, round_mode_ptr, y_acltype, scale_alg, dst_type_max_real, y1_wrapper, mxscale1_wrapper, y2_wrapper, mxscale2_wrapper);
+    } else {
+        if (dst_type_max.has_value()) {
+                TORCH_NPU_WARN_ONCE("CAUTION: The operator aten::npu_dynamic_mx_quant_with_dual_axis does not support the dst_type_max parameter and this parameter is currently ignored. "
+                    "If you want to use the functionality of this parameter, please try to update your CANN version.");
+            }
+        EXEC_NPU_CMD(aclnnDynamicMxQuantWithDualAxis, input, round_mode_ptr, y_acltype, scale_alg, y1_wrapper, mxscale1_wrapper, y2_wrapper, mxscale2_wrapper);
+    }
     
     return std::make_tuple(y1, mxscale1, y2, mxscale2);
 }

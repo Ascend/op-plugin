@@ -6457,12 +6457,12 @@ def npu_repeat_interleave_backward_int_meta(grad, x, repeats, dim=None):
 
 
 @impl(m, "npu_dynamic_mx_quant_with_dual_axis")
-def npu_dynamic_mx_quant_with_dual_axis(input_dummy, *, round_mode="rint", dst_type=296, scale_alg=0):
+def npu_dynamic_mx_quant_with_dual_axis(input_dummy, *, round_mode="rint", dst_type=296, scale_alg=0, dst_type_max=0.0):
     dim_num = input_dummy.dim()
     mxscale1_shape = []
     mxscale2_shape = []
-    if scale_alg != 0:
-        raise RuntimeError("Invalid scale_alg value: {0}. Expected 0.".format(scale_alg) +
+    if scale_alg not in [0, 1, 2]:
+        raise RuntimeError("Invalid scale_alg value: {scale_alg}. Expected 0 、1 or 2." +
                             ops_error(ErrCode.PARAM))
     last_axis = -1
     second_to_last_axis = -2
