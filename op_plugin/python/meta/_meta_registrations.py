@@ -79,6 +79,15 @@ def npu_dtype_to_str(dtype):
     return str(torch_dtype)
 
 
+def npu_non_native_tensor_dtype_kwarg_error_message(tensor_name, param_name, actual_dtype):
+    return (
+        f"Pass {param_name} only when {tensor_name} is not a native PyTorch dtype (e.g. torch_npu.float4_e2m1fn_x2, "
+        f"torch_npu.hifloat8); otherwise omit it. PyTorch 2.8+ natively supports float4_e2m1fn_x2, so on "
+        f"2.8+ you may pass {param_name} or omit it for that dtype. Invalid {param_name}: " +
+        npu_dtype_to_str(actual_dtype) + ops_error(ErrCode.TYPE)
+    )
+
+
 def _matmul_get_output_size(tensor1, tensor2):
     dim_tensor1 = tensor1.dim()
     dim_tensor2 = tensor2.dim()
@@ -3573,12 +3582,12 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
     if x_dtype is not None:
         torch._check(
             x_dtype == torch_npu.hifloat8 or x_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "x_dtype supports hifloat8, mxfp4 for now, but it is " + npu_dtype_to_str(x_dtype),
+            lambda: npu_non_native_tensor_dtype_kwarg_error_message("x", "x_dtype", x_dtype),
         )
     if weight_dtype is not None:
         torch._check(
             weight_dtype == torch_npu.hifloat8 or weight_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "weight_dtype only supports hifloat8, mxfp4 for now, but it is " + npu_dtype_to_str(weight_dtype),
+            lambda: npu_non_native_tensor_dtype_kwarg_error_message("weight", "weight_dtype", weight_dtype),
         )
     if scale_dtype is not None:
         torch._check(
@@ -3935,12 +3944,12 @@ def npu_grouped_matmul_finalize_routing_meta(x, w, group_list, *, scale=None, bi
     if x_dtype is not None:
         torch._check(
             x_dtype == torch_npu.hifloat8 or x_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "x_dtype supports float4_e2m1fn_x2 or hifloat8 for now, but it is " + npu_dtype_to_str(x_dtype),
+            lambda: npu_non_native_tensor_dtype_kwarg_error_message("x", "x_dtype", x_dtype),
         )
     if w_dtype is not None:
         torch._check(
             w_dtype == torch_npu.hifloat8 or w_dtype == torch_npu.float4_e2m1fn_x2,
-            lambda: "weight_dtype only supports float4_e2m1fn_x2 or hifloat8 for now, but it is " + npu_dtype_to_str(w_dtype),
+            lambda: npu_non_native_tensor_dtype_kwarg_error_message("w", "w_dtype", w_dtype),
         )
     if scale_dtype is not None:
         torch._check(
@@ -4260,8 +4269,7 @@ def quant_matmul_extra_dtype_check(*args):
     if x1_dtype is not None:
         torch._check(
             x1_dtype == torch_npu.float4_e2m1fn_x2 or x1_dtype == torch_npu.hifloat8,
-            lambda: "The x1_dtype supported for torch_npu.float4_e2m1fn_x2, torch_npu.hifloat8, but x1_dtype is " +
-                    npu_dtype_to_str(x2_dtype) + ops_error(ErrCode.TYPE),
+            lambda: npu_non_native_tensor_dtype_kwarg_error_message("x1", "x1_dtype", x1_dtype),
         )
         torch._check(
             x1.element_size() == 1,
@@ -4271,8 +4279,7 @@ def quant_matmul_extra_dtype_check(*args):
     if x2_dtype is not None and not is_a8w4_float:
         torch._check(
             x2_dtype == torch_npu.float4_e2m1fn_x2 or x2_dtype == torch_npu.hifloat8,
-            lambda: "The x1_dtype supported for torch_npu.float4_e2m1fn_x2, torch_npu.hifloat8, but x1_dtype is " +
-                    npu_dtype_to_str(x2_dtype) + ops_error(ErrCode.TYPE),
+            lambda: npu_non_native_tensor_dtype_kwarg_error_message("x2", "x2_dtype", x2_dtype),
         )
         torch._check(
             x2.element_size() == 1,
@@ -6103,13 +6110,13 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
     if x_dtype is not None:
         torch._check(
             x_dtype == torch_npu.float4_e2m1fn_x2 or x_dtype == torch_npu.hifloat8,
-            lambda: "The optional parameter x_dtype only supports torch_npu.float4_e2m1fn_x2, torch_npu.hifloat8, or None, but the actual value is " + npu_dtype_to_str(x_dtype),
+            lambda: npu_non_native_tensor_dtype_kwarg_error_message("x", "x_dtype", x_dtype),
         )
 
     if weight_dtype is not None:
         torch._check(
             weight_dtype == torch_npu.float4_e2m1fn_x2 or weight_dtype == torch_npu.hifloat8,
-            lambda: "The optional parameter weight_dtype only supports torch_npu.float4_e2m1fn_x2, torch_npu.hifloat8, or None, but the actual value is " + npu_dtype_to_str(weight_dtype),
+            lambda: npu_non_native_tensor_dtype_kwarg_error_message("weight", "weight_dtype", weight_dtype),
         )
     if weight_scale_dtype is not None:
         torch._check(
