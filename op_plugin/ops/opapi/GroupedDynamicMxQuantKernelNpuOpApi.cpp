@@ -23,6 +23,8 @@ namespace {
 constexpr int64_t BLOCKSIZE_BASE_NUM = 32;
 constexpr int64_t X_DIM_NUM = 2;
 constexpr int64_t NUM_TWO = 2;
+constexpr int64_t DEFAULT_SCALE_ALG = 0;
+constexpr double DEFAULT_DST_TYPE_MAX = 0.0;
 }; // namespace
 
 std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_mx_quant(
@@ -30,7 +32,8 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_mx_quant(
     const at::Tensor &group_index,
     c10::string_view round_mode,
     int64_t dst_type,
-    int64_t blocksize)
+    int64_t blocksize,
+    c10::optional<int64_t> scale_alg)
 {
     // input x and group_index dim check
     TORCH_CHECK(x.sizes().size() == X_DIM_NUM,
@@ -47,6 +50,8 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_mx_quant(
 
     TORCH_CHECK(blocksize == BLOCKSIZE_BASE_NUM,
         "Parameter blocksize must be 32, got ", blocksize, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(scale_alg == 0 || scale_alg == 1,
+        "Parameter scale_alg must be 0 or 1, got ", scale_alg, OPS_ERROR(ErrCode::PARAM));
     // if x shape is [m, n], group_index shape is [g] (without initial 0 and ends with m),
     // then mxscale shape is [m / (blocksize * 2) + g, n, 2]
     mxscale_shape[0] = mxscale_shape[0] / blocksize / NUM_TWO + group_index.sizes()[0];
@@ -60,7 +65,18 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_mx_quant(
     ASCEND_LOGI("[npu_grouped_dynamic_mx_quant]: Setting aclTensor y dtype to: %s", at_npu::native::AclDataTypeToString(y_acltype).c_str());
     TensorWrapper y_wrapper = {y, y_acltype};
     TensorWrapper mxscale_wrapper = {mxscale, aclDataType::ACL_FLOAT8_E8M0};
-    EXEC_NPU_CMD(aclnnGroupedDynamicMxQuant, x, group_index, round_mode_ptr, y_acltype, blocksize, y_wrapper, mxscale_wrapper);
+    int64_t scale_alg_optional = scale_alg.has_value() ? scale_alg.value() : DEFAULT_SCALE_ALG;
+
+    static bool npu_support_v2 = check_aclnn_kernel_available("aclnnGroupedDynamicMxQuantV2");
+    if (npu_support_v2) {
+        EXEC_NPU_CMD(aclnnGroupedDynamicMxQuantV2, x, group_index, round_mode_ptr, y_acltype, blocksize, scale_alg_optional, DEFAULT_DST_TYPE_MAX, y_wrapper, mxscale_wrapper);
+    } else {
+        TORCH_CHECK(!scale_alg.has_value(),
+            "The current CANN version does not support the parameter scale_alg. It is recommended to upgrade the CANN package.",
+            OPS_ERROR(ErrCode::PARAM));
+        EXEC_NPU_CMD(aclnnGroupedDynamicMxQuant, x, group_index, round_mode_ptr, y_acltype, blocksize, y_wrapper, mxscale_wrapper);
+    }
+
     return std::make_tuple(y, mxscale);
 }
 

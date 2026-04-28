@@ -1162,7 +1162,7 @@
   "func: npu_dynamic_quant(Tensor input, *, Tensor? smooth_scales=None, Tensor? group_index=None, int? dst_type=None, str quant_mode=\"pertoken\", float dst_type_max=0.0) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
-  "func: npu_grouped_dynamic_mx_quant(Tensor x, Tensor group_index, *, str round_mode=\"rint\", int dst_type=23, int blocksize=32) -> (Tensor, Tensor)": {
+  "func: npu_grouped_dynamic_mx_quant(Tensor x, Tensor group_index, *, str round_mode=\"rint\", int dst_type=23, int blocksize=32, int? scale_alg=0) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
   "func: npu_dynamic_mx_quant(Tensor input, *, int axis=-1, str round_mode=\"rint\", int dst_type=296, int block_size=32, int? scale_alg=0, float dst_type_max=0.0) -> (Tensor, Tensor)": {
