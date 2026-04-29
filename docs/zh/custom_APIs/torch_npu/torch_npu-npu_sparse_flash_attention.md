@@ -38,6 +38,14 @@
 
     本次公布的`sparse_flash_attention`是面向Sparse Attention的全新算子，针对离散访存进行了指令缩减及搬运聚合的细致优化。
 
+    典型使用流程如下：
+    1. 使用选择算法（如`lightning_indexer`）根据Query和Key计算出重要token的索引；
+    2. 将索引填充为`sparse_indices`参数所要求的格式；
+    3. 将`sparse_indices`传入本API，完成稀疏注意力计算。
+    > [!NOTE]
+    >
+    > `lightning_indexer` 是一种稀疏KV选择算法，用于识别长序列推理中与当前查询最相关的Key/Value区块。它的输出即为本API所需的`sparse_indices`张量。若不使用`lightning_indexer`，用户需自行实现索引选择逻辑，保证`sparse_indices`满足[参数说明](#参数说明)中的格式要求。
+
 ## 函数原型
 
 ```python
@@ -55,8 +63,8 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - **key**（`Tensor`）：必选参数，对应公式中的$\tilde{K}$，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`，`layout_kv`为PA_BSND时shape为[block\_num, block\_size, KV\_N, D]，其中block\_num为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的倍数，最大支持1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, D]，`layout_kv`为TND时shape为[T2, KV\_N, D]，其中KV\_N只支持1。
 
 - **value**（`Tensor`）：必选参数，不支持非连续，对应公式中的$\tilde{V}$，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`，shape与`key`的shape一致。
-
-- **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持ND,数据类型支持`int32`。当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
+    
+- **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，该索引通常由稀疏选择算法（如`lightning_indexer`）生成，具体生成流程见[功能说明](#功能说明)中的典型使用流程。不支持非连续，数据格式支持ND，数据类型支持`int32`。当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
 
 - **scale\_value**（`double`）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持`double`。
 
@@ -138,6 +146,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
     query = torch.tensor(np.random.uniform(-10, 10, (b, s1, n1, dn))).to(query_type)
     key = torch.tensor(np.random.uniform(-5, 10, (b, s2, n2, dn))).to(query_type)
     value = key.clone()
+    # 注意：此处使用 random.sample 仅为演示目的，生产环境中应使用稀疏选择算法（如 lightning_indexer）生成 sparse_indices
     idxs = random.sample(range(s2_act - s1 + 1), sparse_block_count)
     sparse_indices = torch.tensor([idxs for _ in range(b * s1 * n2)]).reshape(b, s1, n2, sparse_block_count). \
         to(torch.int32)
