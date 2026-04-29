@@ -1972,6 +1972,12 @@
   "func: addmm(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: addmm.dtype(Tensor self, Tensor mat1, Tensor mat2, ScalarType output_dtype, *, Scalar beta=1, Scalar alpha=1) -> Tensor": {
+    "version": ["v2.9", "newest"]
+  },
+  "func: addmm.dtype_out(Tensor self, Tensor mat1, Tensor mat2, ScalarType output_dtype, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.9", "newest"]
+  },
   "func: addmm.out(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
@@ -2262,6 +2268,12 @@
   },
   "func: bmm(Tensor self, Tensor mat2) -> Tensor": {
     "version": ["all_version"]
+  },
+  "func: bmm.dtype(Tensor self, Tensor mat2, ScalarType output_dtype) -> Tensor": {
+    "version": ["v2.9", "newest"]
+  },
+  "func: bmm.dtype_out(Tensor self, Tensor mat2, ScalarType output_dtype, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.9", "newest"]
   },
   "func: bmm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
@@ -3259,6 +3271,12 @@
   },
   "func: mm(Tensor self, Tensor mat2) -> Tensor": {
     "version": ["all_version"]
+  },
+  "func: mm.dtype(Tensor self, Tensor mat2, ScalarType output_dtype) -> Tensor": {
+    "version": ["v2.9", "newest"]
+  },
+  "func: mm.dtype_out(Tensor self, Tensor mat2, ScalarType output_dtype, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.9", "newest"]
   },
   "func: mm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]

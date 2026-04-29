@@ -21,7 +21,38 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result)
+at::Tensor &bmm_out(
+    const at::Tensor &self,
+    const at::Tensor &mat2,
+    const at::ScalarType output_dtype,
+    at::Tensor &result)
+{
+    TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
+    TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
+
+    DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm_out(self, mat2, result));
+    auto output_size = {self.size(0), self.size(1), mat2.size(2)};
+    npu_preparation::check_tensor({self, mat2}, result, output_dtype, output_size);
+
+    // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should
+    // use and functions such as hfloat32 can be enabled through this switch
+    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+
+    if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
+        EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+    } else {
+        EXEC_NPU_CMD(aclnnBatchMatMul, self, mat2, result, cube_math_type);
+    }
+
+    auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
+    at::namedinference::propagate_names_if_nonempty(result, outnames);
+    return result;
+}
+
+at::Tensor &bmm_out(
+    const at::Tensor &self,
+    const at::Tensor &mat2,
+    at::Tensor &result)
 {
     TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
     TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
@@ -42,6 +73,34 @@ at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &
 
     auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
     at::namedinference::propagate_names_if_nonempty(result, outnames);
+    return result;
+}
+
+at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2, const at::ScalarType output_dtype)
+{
+    TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
+    TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
+
+    DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm(self, mat2));
+
+    // calculate the output size
+    auto output_size = {self.size(0), self.size(1), mat2.size(2)};
+
+    // construct the output tensor of the NPU
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_dtype));
+
+    // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should
+    // use and functions such as hfloat32 can be enabled through this switch
+    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+    if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
+        EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+    } else {
+        EXEC_NPU_CMD(aclnnBatchMatMul, self, mat2, result, cube_math_type);
+    }
+
+    auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
+    at::namedinference::propagate_names_if_nonempty(result, outnames);
+    FLOP_COUNT(FlopCounter::bmm_flop, self, mat2);
     return result;
 }
 
