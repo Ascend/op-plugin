@@ -9,12 +9,96 @@
 
 ## 功能说明<a name="zh-cn_topic_0000001832267082_section14441124184110"></a>
 
-- API功能：适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当`query`矩阵的S为1，进入IncreFlashAttention分支，其余场景进入PromptFlashAttention分支。
+- API功能：适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当`query`矩阵的S为1，进入IncreFlashAttention分支，其余场景进入PromptFlashAttention分支。支持的两种场景如下。
+  - PromptFlashAttention：用于prefill/prompt阶段，通常`query/key/value`都是整段序列的张量，可配合`atten_mask`和可选`pse_shift`使用。该模式更关注吞吐，长序列场景下需要关注超时风险与切分策略。
+  - IncreFlashAttention：用于decode阶段，`query`的S维为1，`key/value`通常来自KV Cache。该模式更关注单步延迟与KV Cache访问效率，启用page attention可以改善吞吐/访存，但会引入额外约束。
 - 计算公式：
 
-    $$
-    attention\_out = softmax \left(scale * (query * key^\top) + atten\_mask \right) * value
-    $$
+  基本公式：
+
+  $$
+  attention\_out = softmax \left(scale * (query * key^\top) + atten\_mask \right) * value
+  $$
+
+  位置编码：
+
+  $$
+  attention\_out = softmax\left( scale \cdot (query \cdot key^\top) + pse\_shift + atten\_mask \right) \cdot value
+  $$
+
+  全量化公式：
+
+  $$
+  query_{fp} = query \cdot dequant\_scale1
+  $$
+
+  $$
+  key_{fp} = key \cdot dequant\_scale1
+  $$
+
+  $$
+  value_{fp} = value \cdot dequant\_scale1
+  $$
+
+  $$
+  score_{fp} = scale \cdot (query_{fp} \cdot key_{fp}^\top) + mask
+  $$
+
+  $$
+  score_{int8} = quantize(score_{fp}, quant\_scale1)
+  $$
+
+  $$
+  atten\_prob_{int8} = softmax(score_{int8})
+  $$
+
+  $$
+  out_{fp} = atten\_prob_{int8} \cdot value_{fp}
+  $$
+
+  $$
+  attention\_out = quantize(out_{fp}, quant\_scale2, quant\_offset2)
+  $$
+
+  后量化公式：
+
+  $$
+  out_{fp} = softmax(scale \cdot (query \cdot key^\top) + mask) \cdot value
+  $$
+
+  $$
+  attention\_out = quantize(out_{fp}, quant\_scale2, quant\_offset2)
+  $$
+  其中，`quantize`为量化函数。
+
+  伪量化公式：
+
+  $$
+  key_{fp} = key \cdot antiquant\_scale + antiquant\_offset
+  $$
+
+  $$
+  value_{fp} = value \cdot antiquant\_scale + antiquant\_offset
+  $$
+
+  $$
+  attention\_out = softmax(scale \cdot (query \cdot key_{fp}^\top) + mask) \cdot value_{fp}
+  $$
+
+  MLA场景：
+
+  $$
+  query_{rot} = RoPE(query, query\_rope)
+  $$
+
+  $$
+  key_{rot} = RoPE(key, key\_rope)
+  $$
+
+  $$
+  attention\_out = softmax(scale \cdot (query_{rot} \cdot key_{rot}^\top) + mask) \cdot value
+  $$
+  其中，`RoPE`为旋转位置编码函数。
 
 ## 函数原型<a name="zh-cn_topic_0000001832267082_section45077510411"></a>
 
@@ -52,8 +136,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     限制：该入参中每个Batch的有效seqlen应该不大于`query`中对应Batch的seqlen。seqlen的传入长度为1时，每个Batch使用相同seqlen；传入长度大于等于Batch时取seqlen的前Batch个数。其他长度不支持。当`query`的input\_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
 
 - **actual_seq_lengths_kv** (`List[int]`)：可选参数。代表不同Batch中`key`/`value`的有效seqlenKv，数据类型支持`int64`。如果不指定None，表示和`key`/`value`的shape的S长度相同。不同Q\_S值有不同的约束，具体参见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
-- **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`uint64`、`float32`。数据格式支持$ND$，表示BMM1后面的反量化因子，支持pertensor。如不使用该功能时传入None。
-- **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`。数据格式支持$ND$，表示BMM2前面的量化因子，支持pertensor。如不使用该功能时可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`uint64`、`float32`。数据格式支持$ND$，表示BMM1后面的反量化因子，支持pertensor。如不使用该功能时传入None。BMM1定义请见[参考资源](#zh-cn_topic_0000001832267082_section28169228374)。
+- **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`。数据格式支持$ND$，表示BMM2前面的量化因子，支持pertensor。如不使用该功能时可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。BMM2定义请见[参考资源](#zh-cn_topic_0000001832267082_section28169228374)。
 - **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`uint64`、`float32`。数据格式支持$ND$，表示BMM2后面的反量化因子，支持pertensor。如不使用该功能时传入None。
 - **quant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`、`bfloat16`。数据格式支持$ND$，表示输出的量化因子，支持pertensor、perchannel。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为BSH时，要求`quant_scale2`所有维度的乘积等于H；其他layout要求乘积等于Q\_N\*D（建议输出layout为BSH时，`quant_scale2` shape传入\(1, 1, H\)或\(H,\)；输出为BNSD时，建议传入\(1, Q\_N, 1, D\)或\(Q\_N, D\)；输出为BSND时，建议传入\(1, 1, Q\_N, D\)或\(Q\_N, D\)）。如不使用该功能时可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
 - **quant_offset2** (`Tensor`)：可选参数。数据类型支持`float32`、`bfloat16`。数据格式支持ND，表示输出的量化偏移，支持pertensor、perchannel。若传入`quant_offset2`，需保证其类型和shape信息与`quant_scale2`一致。如不使用该功能时可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
@@ -128,7 +212,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
 ## 返回值说明<a name="zh-cn_topic_0000001832267082_section22231435517"></a>
 
 - **attention\_out** (`Tensor`)：公式中的输出，数据类型支持`float16`、`bfloat16`、`int8`。数据格式支持$ND$。限制：该返回值的D维度与`value`的D保持一致，其余维度需要与入参`query`的shape保持一致。
-- **softmax_lse** (`Tensor`)：ring attention算法对query乘key的结果，先取max得到softmax\_max。`query`乘`key`的结果减去softmax\_max，再取exp，最后取sum，得到softmax\_sum，最后对softmax\_sum取log，再加上softmax\_max得到的结果。数据类型支持`float32`，`softmax_lse_flag`为True时，一般情况下，输出shape为\(B, Q\_N, Q\_S, 1\)的Tensor，当input\_layout为TND/NTD\_TND时，输出shape为\(T,Q\_N,1\)的Tensor；`softmax_lse_flag`为False时，则输出shape为\[1\]的值为0的Tensor。
+- **softmax_lse** (`Tensor`)：Ring Attention算法对query乘key的结果，先取max得到softmax\_max。`query`乘`key`的结果减去softmax\_max，再取exp，最后取sum，得到softmax\_sum，最后对softmax\_sum取log，再加上softmax\_max得到的结果。数据类型支持`float32`，`softmax_lse_flag`为True时，一般情况下，输出shape为\(B, Q\_N, Q\_S, 1\)的Tensor，当input\_layout为TND/NTD\_TND时，输出shape为\(T,Q\_N,1\)的Tensor；`softmax_lse_flag`为False时，则输出shape为\[1\]的值为0的Tensor。关于Ring Attention的说明见[参考资源](#zh-cn_topic_0000001832267082_section28169228374)。
 
 ## 约束说明<a name="zh-cn_topic_0000001832267082_section12345537164214"></a>
 
@@ -586,3 +670,45 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
             [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]]]],
             device='npu:0', dtype=torch.float16) torch.Size([1, 8, 164, 128])
     ```
+
+## 参考资源<a name="zh-cn_topic_0000001832267082_section28169228374"></a>
+
+- BMM1（Batch Matrix Multiply 1）
+
+  概念：指第一次矩阵乘法，用于计算`attention score`。
+
+  计算公式：
+  $$
+  attention\_score = query \cdot key^{\top}
+  $$
+
+- BMM2（Batch Matrix Multiply 2）
+
+  概念：指第二次矩阵乘法，用于将`attention`权重应用到`value`上得到最终输出。
+
+  计算公式：
+  $$
+  attention\_out = atten\_prob \cdot value
+  $$
+  `atten_prob` 为归一化后的注意力权重：
+
+  $$
+  atten\_prob = softmax(\cdot)
+  $$
+
+- Ring Attention
+
+  概念：一种分布式注意力算法，将长序列按块（block）切分到多个设备上，通过环形通信逐块计算注意力，从而降低单卡显存占用并支持超长序列。在单卡场景下，Ring Attention退化为标准注意力。
+
+  计算逻辑：当 `softmax_lse_flag=True` 时，算子会额外输出 softmax 的 log-sum-exp（LSE）值，用于在分布式环境中合并多个设备的注意力结果。假设两个设备分别计算了部分序列的注意力输出 \(O_1, O_2\) 和对应的LSE值 \(lse_1, lse_2\)，则全局输出为：
+
+  $$
+  O_{global} = \frac{e^{lse_1 - lse_{max}} O_1 + e^{lse_2 - lse_{max}} O_2}{e^{lse_1 - lse_{max}} + e^{lse_2 - lse_{max}}}
+  $$
+  `lse_max`的定义如下：
+
+  $$
+  lse_{max} = max(lse_1, lse_2)。
+  $$
+
+  应用场景：该技术常用于超大序列推理或训练。

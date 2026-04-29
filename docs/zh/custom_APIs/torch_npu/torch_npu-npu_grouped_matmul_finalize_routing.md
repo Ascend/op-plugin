@@ -13,6 +13,16 @@
   - **MoE**: Mixture of Experts，混合专家模型。每个token按路由结果分配到一个或多个专家进行计算。
   - **MoeFinalizeRouting**: MoE路由最终化过程。将各专家计算结果按路由索引回填到token原始顺序，并对同一token的多个专家结果进行聚合，得到最终输出。  
 
+其中，GroupedMatMul是一种针对批量稀疏矩阵乘法的优化计算模式。在MoE（Mixture of Experts，混合专家模型）结构中，每个token被分配给某个专家，不同专家处理的token数量不同。GroupedMatMul将同一专家负责的所有token聚合为一个组，然后一次性执行该专家的矩阵乘法，从而避免为每个token单独调用矩阵乘法带来的调度开销，提升计算效率。
+
+GroupedMatMul的输入通常包括输入张量`x`、专家权重`w`以及分组信息`group_list`。其中，`x`的形状为\(M, K\)，\(M\)表示token总数，\(K\)表示输入特征维度；专家权重`w`可理解为包含\(E\)个专家权重的张量；`group_list`用于描述每个专家处理的token数量或分组前缀和。
+
+计算时，算子根据`group_list`将`x`的行按专家划分为多个连续分组。对于每个专家，取其对应的token分组，并与该专家对应的权重执行矩阵乘法，得到该专家的输出。所有专家的输出按分组顺序拼接后得到GroupedMatMul的输出。
+
+随后，MoeFinalizeRouting根据`row_index`将GroupedMatMul的输出按照目标token位置进行combine；当输入`logit`时，专家输出会先与对应token的logit权重相乘后再进行combine；当输入`shared_input`时，共享专家输出会按照`shared_input_weight`和`shared_input_offset`参与最终累加。
+
+该融合算子常用于MoE模型的FFN层、高性能推理以及动态批处理等场景，可减少零填充、降低算子调度开销并提升NPU吞吐量。
+
 ## 函数原型<a name="zh-cn_topic_0000002259406069_section45077510411"></a>
 
 ```python
