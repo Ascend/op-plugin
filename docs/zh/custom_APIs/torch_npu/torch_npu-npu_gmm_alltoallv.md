@@ -22,20 +22,30 @@
 - API功能：MoE网络中，完成路由专家GroupedMatMul、AlltoAllv融合并实现与共享专家MatMul并行融合，先计算后通信。
 - 路由专家计算公式：
 
-    ![](../../figures/zh-cn_formulaimage_0000002323688460.png)
+    $$
+    \begin{aligned}
+    &\text{gmm\_y}=\operatorname{GroupedMatMul}(\text{gmm\_x},\ \text{gmm\_weight}) \\
+    &\text{unpermute\_out}=\operatorname{Unpermute}(\text{gmm\_y}) \\
+    &\text{y}=\operatorname{AlltoAllv}(\text{unpermute\_out},\ \text{send\_counts},\ \text{recv\_counts})
+    \end{aligned}
+    $$
 
     - gmm\_x指路由专家GroupedMatMul计算的左矩阵。
-    - gmm\_weight指路由专家GroupedMatMul计算的右矩阵。
+    - gmm\_weight指路由专家GroupedMatMul计算的右矩阵。当`trans_gmm_weight`取值为true时，GroupedMatMul使用转置后的`gmm_weight`。
     - gmm\_y指路由专家进行GroupedMatMul计算的输出，后续用于Unpermute计算。
     - unpermute\_out是gmm\_y进行Unpermute计算的输出结果，作为AlltoAllv通信的输入。
     - y指对unpermute\_out进行AlltoAllv通信输出。
+    - send_counts表示本卡在AlltoAllv中向EP通信域内各专家分片发送的token数分布。
+    - recv_counts表示本卡在AlltoAllv中从EP通信域内各专家分片接收的token数分布，用于确定输出y的第一维大小。
 
 - 共享专家计算公式：
 
-    ![](../../figures/zh-cn_formulaimage_0000002323838248.png)
+    $$
+    \text{mm\_y}=\text{mm\_x}\times\text{mm\_weight}
+    $$
 
     - mm\_x指共享专家MatMul计算的左矩阵。
-    - mm\_weight指共享专家MatMul计算的右矩阵。
+    - mm\_weight指共享专家MatMul计算的右矩阵。当`trans_mm_weight`取值为true时，共享专家MatMul计算使用转置后的`mm_weight`。
     - mm\_y指共享专家MatMul计算的输出。
 
 ## 函数原型<a name="zh-cn_topic_0000002317314449_section45077510411"></a>
@@ -50,8 +60,22 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **gmm\_weight**（`Tensor`）：必选参数，GroupedMatMul计算的右矩阵。数据类型与`gmm_x`保持一致，支持3维，shape为$(e, H1, N1)$，数据格式支持ND。
 - **hcom**（`str`）：必选参数，专家并行的通信域名，字符串长度要求\(0, 128\)。
 - **ep\_world\_size**（`int`）：必选参数，EP通信域size，取值支持8、16、32、64、128。
-- **send\_counts**（`List[int]`）：必选参数，为一个列表，表示发送给其他卡的token数，列表长度为卡数。列表中元素的数据类型支持`int`，取值为e\*`ep_world_size`，最大值为256。
-- **recv\_counts**（`List[int]`）：必选参数，为一个列表，表示接收其他卡的token数，列表长度为卡数。列表中元素的数据类型支持`int`，取值大小为e\*`ep_world_size`，最大值为256。
+- **send\_counts**（`List[int]`）：必选参数，表示本卡向EP通信域内其他卡发送的token数分布。列表长度固定为`e * ep_world_size`（最大支持256）。列表元素数据类型为`int`，每个元素取值范围为\[0, 52428800\]，表示一个专家分片对应的发送token数；所有元素累加和为本卡发送token总数`A`。
+- **recv\_counts**（`List[int]`）：必选参数，表示本卡从EP通信域内其他卡接收的token数分布。列表长度固定为`e * ep_world_size`（最大支持256）。列表元素数据类型为`int`，每个元素取值范围为\[0, 52428800\]，表示一个专家分片对应的接收token数；所有元素累加和为本卡接收token总数`BSK`，用于确定输出`y`的第一维大小。
+
+  `send_counts`/`recv_counts`简短计算示例如下：
+
+  ```python
+  e = 4
+  ep_world_size = 8
+  send_counts = [128] * (e * ep_world_size)  # 长度为32
+  recv_counts = [128] * (e * ep_world_size)  # 长度为32
+
+  A = sum(send_counts)      # 本卡发送token总数
+  BSK = sum(recv_counts)    # 本卡接收token总数，也是输出y第一维
+  # y.shape = (BSK, N1)
+  ```
+
 - **send\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
 - **recv\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持`int`，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
 - **mm\_x**（`Tensor`）：可选参数，共享专家MatMul计算中的左矩阵。当需要融合共享专家矩阵计算时，该参数必选，数据类型支持`float16`、`bfloat16`，支持2维，shape为$(BS, H2)$。
