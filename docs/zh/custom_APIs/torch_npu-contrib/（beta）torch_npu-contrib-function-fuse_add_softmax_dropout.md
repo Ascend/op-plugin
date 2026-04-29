@@ -61,7 +61,7 @@ torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask
 >>> npu_input2 = torch.rand(96, 12, 30, 30).half().npu()
 >>> alpha = 0.125
 >>> axis = -1
->>> output = fuse_add_softmax_dropout(training, dropout, npu_input1, npu_input2, alpha, p=axis)
+>>> output = fuse_add_softmax_dropout(training, dropout, npu_input1, npu_input2, alpha, dim=axis)
 >>> output.shape
 torch.Size([96, 12, 30, 30])
 ```

@@ -9,27 +9,30 @@
 
 ## 功能说明
 
-- API功能：TP切分场景下，实现matmul和reduce\_scatter的融合，融合算子内部实现计算和通信流水并行。支持perchannel，pertoken量化。
+- API功能：TP切分场景下，实现matmul和reduce\_scatter的融合，融合算子内部实现计算和通信流水并行。支持如下两种量化方式：
+    - perchannel 量化：针对权重（Weight）张量，沿输出特征维度（Output Channel）为每个通道维护独立的缩放因子与零点。
+    - pertoken 量化：针对激活（Activation）张量，沿序列长度维度（Sequence Length / Token）为每个 Token 维护独立的量化参数。
 
 - 计算公式：
-    $x1$代表输入`input`。
-    
+    $x_1$代表输入`input`, 场景由 `comm_mode` 与 `x1` 数据类型共同决定：`comm_mode` 为 `ai_cpu`时，始终为基础场景；`comm_mode` 为 `aiv` 时，`x1` 为 `float16` 或 `bfloat16` 走基础场景，`x1` 为 `int8` 走量化场景。
+
     - 基础场景：
         $$
-        output = reducescatter(x1 \mathbin{@} x2 + bias)
+        output = reducescatter(x_1 \mathbin{@} x_2 + bias)
         $$
+                                
     - 量化场景：
         $$
-        output = reducescatter((x1\_scale * x2\_scale) * (x1 \mathbin{@} x2 + bias))
+        output = reducescatter((x1\_scale * x2\_scale) * (x_1 \mathbin{@} x_2 + bias))
         $$
         量化场景scale参数使用说明：
         - 仅提供`x2_scale`时：
             $$
-            output = reducescatter(x2\_scale * (x1 \mathbin{@} x2 + bias))
+            output = reducescatter(x2\_scale * (x_1 \mathbin{@} x_2 + bias))
             $$
         - 同时提供`x1_scale`和`x2_scale`时：
             $$
-            output = reducescatter((x1\_scale * x2\_scale) * (x1 \mathbin{@} x2 + bias))
+            output = reducescatter((x1\_scale * x2\_scale) * (x_1 \mathbin{@} x_2 + bias))
             $$
         - 其中，`x1_scale`按\(m, 1\)广播，`x2_scale`按\(1, n\)广播。
 
