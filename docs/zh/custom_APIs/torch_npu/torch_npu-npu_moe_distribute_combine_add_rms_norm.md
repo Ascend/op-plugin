@@ -53,7 +53,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - **expand\_x**（`Tensor`）：必选参数，根据`expert_ids`进行扩展过的token特征，要求为2D的Tensor，shape为\(max\(`tp_world_size`, 1\) \*A, H\)，数据类型支持`bfloat16`，数据格式为ND，支持非连续的Tensor。
 - **expert\_ids**（`Tensor`）：必选参数，每个token的topK个专家索引，要求为2D的Tensor，shape为\(BS, K\)。数据类型支持`int32`，数据格式为ND，支持非连续的Tensor。对应`torch_npu.npu_moe_distribute_dispatch`的`expert_ids`输入，张量里value取值范围为\[0, `moe_expert_num`\)，且同一行中的K个value不能重复。
 - **expand\_idx**（`Tensor`）：必选参数，表示给同一专家发送的token个数，要求是1D的Tensor，shape为\(A\*128, \)。数据类型支持int32，数据格式为ND，支持非连续的Tensor。对应`torch_npu.npu_moe_distribute_dispatch`的`expand_idx`输出。
-- **ep\_send\_counts**（`Tensor`）：必选参数，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1D的Tensor 。数据类型支持`int32`，数据格式为ND，支持非连续的Tensor。对应`torch_npu.npu_moe_distribute_dispatch`的`ep_recv_counts`输出。
+- **ep\_send\_counts**（`Tensor`）：必选参数，表示本卡每个专家发给EP（Expert Parallelism，专家并行）域每个卡的数据量，要求是1D的Tensor 。数据类型支持`int32`，数据格式为ND，支持非连续的Tensor。对应`torch_npu.npu_moe_distribute_dispatch`的`ep_recv_counts`输出。其中，EP是MoE（Mixture of Experts，专家混合网络）特有的并行方式，将不同的专家分布到不同卡上，每张卡只持有完整专家集合的一个子集。每个token通过路由决定需要由哪些专家处理，并通过AlltoAll通信被发送到对应专家所在的卡上完成计算。
     <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(`ep_world_size`\*max\(`tp_world_size`, 1\)\*local\_expert\_num, \)。
 
 - **expert\_scales**（`Tensor`）：必选参数，表示每个token的topK个专家的权重，要求是2D的Tensor，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为ND，支持非连续的Tensor。
@@ -65,7 +65,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
 - **ep\_rank\_id**（`int`）：必选参数，EP通信域本卡ID，取值范围\[0, `ep_world_size`\)，同一个EP通信域中各卡的ep\_rank\_id不重复。
 - **moe\_expert\_num**（`int`）：必选参数，MoE专家数量，取值范围\[1, 1024\]，并且满足`moe_expert_num`%\(`ep_world_size`-`shared_expert_rank_num`\)=0。
-- **tp\_send\_counts**（`Tensor`）：可选参数，表示本卡每个专家发给TP（Tensor  Parallelism）通信域每个卡的数据量。对应`torch_npu.npu_moe_distribute_dispatch`的`tp_recv_counts`输出。
+- **tp\_send\_counts**（`Tensor`）：可选参数，表示本卡每个专家发给TP（Tensor Parallelism，张量并行）通信域每个卡的数据量。对应`torch_npu.npu_moe_distribute_dispatch`的`tp_recv_counts`输出。其中，TP是通用的模型并行方式，将单个算子的权重/激活张量在某一维度上切分到多张卡上，多卡协作完成一次计算，计算后通过AllReduce/ AllGather等集合通信聚合结果。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1D Tensor，shape为\(`tp_world_size`, \)，数据类型支持`int32`，数据格式要求为ND，支持非连续的Tensor。
 
 - **x\_active\_mask**（`Tensor`）：Tensor类型，

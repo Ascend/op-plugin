@@ -10,6 +10,11 @@
 ## 功能说明
 
 - API功能：MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列。
+    - MoE 网络：混合专家（Mixture of Experts）网络，每层包含多个并行“专家”子网络，由路由（Routing）模块决定每个token由哪个或哪些专家处理。
+    - token：模型处理的最小数据单元，通常为词或子词经过嵌入（embedding） 后得到的特征向量。
+    - 专家（Expert）：MoE网络中的子网络。在多卡部署时，专家被切分到不同卡上，每张卡承载若干个专家。
+    - AlltoAll操作：集合通信原语。每张卡将本地数据按目的卡切分后发送给所有其他卡，同时接收来自所有其他卡的数据。
+
 - 计算公式：
 
     $$SrcOffset = \sum_{i=0}^{cur\_rank} \left( \sum_{j=0}^{cur\_expert} expert\_token\_num\_per\_rank(i,j) \right)$$

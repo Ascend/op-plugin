@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-通过张量融合实现的高性能AdamW优化器，核心功能和`torch.optim.AdamW`兼容。
+通过张量融合实现的高性能AdamW（Adam with decoupled Weight decay，解耦权重衰减的Adam）优化器，是Adam（Adaptive Moment Estimation，自适应矩估计优化器）的改进版本。它将权重衰减项从梯度计算中解耦出来，直接作用于参数更新步，修正了原始Adam中L2正则与自适应学习率相互干扰的问题。核心功能和`torch.optim.AdamW`兼容。
 
 AdamW的功能和原理可参考[AdamW](https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html#adamw)。
 

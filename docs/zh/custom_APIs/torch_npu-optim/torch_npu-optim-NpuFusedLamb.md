@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-通过张量融合实现的高性能Lamb优化器，原理可参考《[Large Batch Optimization for Deep Learning: Training BERT in 76 minutes](https://arxiv.org/pdf/1904.00962)》。
+通过张量融合实现的高性能Lamb优化器，Lamb（Layer-wise Adaptive Moments optimizer for Batch training，逐层自适应矩优化器）是Adam（Adaptive Moment Estimation，自适应矩估计优化器）的扩展版本。它在Adam的一阶、二阶矩估计基础上引入逐层信赖比（trust ratio），对每层的更新量按“参数范数/更新量范数”进行自适应缩放，从而在超大batch size训练场景下仍能保持稳定收敛。原理可参考《[Large Batch Optimization for Deep Learning: Training BERT in 76 minutes](https://arxiv.org/pdf/1904.00962)》。
 
 ## 函数原型
 

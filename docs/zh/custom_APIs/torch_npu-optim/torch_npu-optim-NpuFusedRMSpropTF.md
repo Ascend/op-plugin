@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-通过张量融合实现的高性能RMSpropTF优化器，核心功能和torch.optim.RMSprop兼容。RMSpropTF的功能和原理可参考[https://github.com/huggingface/pytorch-image-models/blob/main/timm/optim/rmsprop_tf.py\#L14](https://github.com/huggingface/pytorch-image-models/blob/main/timm/optim/rmsprop_tf.py#L14)。
+通过张量融合实现的高性能RMSpropTF优化器，RMSpropTF是timm库（pytorch-image-models）中提供的RMSprop变体， 其实现对齐TensorFlow版RMSprop的行为（故后缀为 "TF"），与torch.optim.RMSprop在初始化方式、epsilon加入位置、动量更新顺序等细节上存在差异，核心功能和torch.optim.RMSprop兼容。RMSpropTF的功能和原理可参考[https://github.com/huggingface/pytorch-image-models/blob/main/timm/optim/rmsprop_tf.py\#L14](https://github.com/huggingface/pytorch-image-models/blob/main/timm/optim/rmsprop_tf.py#L14)。
 
 ## 函数原型
 
