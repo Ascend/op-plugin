@@ -12,12 +12,40 @@
 - API功能：MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列。
 - 计算公式：
 
-    ![](../../figures/zh-cn_formulaimage_0000002277237821.png)
+    $$SrcOffset = \sum_{i=0}^{cur\_rank} \left( \sum_{j=0}^{cur\_expert} expert\_token\_num\_per\_rank(i,j) \right)$$
+
+    $$DstOffset = \sum_{j=0}^{cur\_expert} \left( \sum_{i=0}^{cur\_rank} expert\_token\_num\_per\_rank(i,j) \right)$$
 
     - SrcOffset指当前需要移动的token源偏移，根据输入`expert_token_num_per_rank`的值进行计算。
     - DstOffset指当前需要移动的token目的偏移。
     - cur\_rank是`expert_token_num_per_rank`的纵轴索引，表示该token原本在的卡。
     - cur\_expert是`expert_token_num_per_rank`的横轴索引，表示该token由卡上专家cur\_expert计算。
+
+- 流程说明
+
+    该算子位于MoE（Mixture of Experts）并行推理流程的**通信与计算衔接阶段**，具体位置如下：
+
+    ```text
+    Gating/TopK Routing
+        ↓
+    npu_moe_distribute_dispatch_v2  （AlltoAll 分发 token 到各卡）
+        ↓
+    npu_moe_re_routing  ← 本算子：按专家顺序重排 token
+        ↓
+    Expert FFN 计算
+        ↓
+    npu_moe_distribute_combine_v2  （结果聚合与 AlltoAll 返回）
+    ```
+
+  - 作用说明：
+
+    1. **前置阶段**：`npu_moe_distribute_dispatch_v2` 通过AlltoAll通信将token从各卡收集到本地。此时token在本地内存中是**按源卡（rank）顺序**排列的。
+
+    2. **本算子作用**：由于每个专家需要连续、批量地处理属于自己的token，本算子将token从"按源卡排列"转换为"**按专家（expert）排列**"，即同一专家的token在内存中连续存放。同时输出 `permute_token_idx`，用于后续Expert计算完成后恢复原始token顺序。
+
+    3. **后置阶段**：Expert FFN层根据 `expert_token_num` 中记录的专家token数量，依次读取 `permute_tokens` 中连续的数据块进行计算。
+
+    4. **数据恢复**：Expert计算结束后，利用本算子输出的 `permute_token_idx`，通过 `npu_moe_distribute_combine_v2` 将计算结果按原路聚合并返回。
 
 ## 函数原型
 

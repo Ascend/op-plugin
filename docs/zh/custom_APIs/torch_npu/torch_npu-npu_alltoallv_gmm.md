@@ -12,7 +12,11 @@
 
 - 路由专家计算公式：
 
-    ![](../../figures/zh-cn_formulaimage_0000002357766385.png)
+    $$ata\_out = AlltoAllv(gmm\_x)$$
+
+    $$permute\_out = Permute(ata\_out)$$
+
+    $$gmm\_y = permute\_out \times gmm\_weight$$
 
     - ata\_out是gmm\_x进行AlltoAllv通信的输出结果，后续用于Permute计算。
     - permute\_out是ata\_out进行Permute计算的输出结果，作为路由专家进行GroupedMatMul计算的左矩阵。
@@ -21,11 +25,29 @@
 
 - 共享专家计算公式：
 
-    ![](../../figures/zh-cn_formulaimage_0000002323547858.png)
-
+    $$mm\_y = mm\_x \times mm\_weight$$
     - mm\_x指共享专家MatMul计算的左矩阵。
     - mm\_weight指共享专家MatMul计算的右矩阵。
     - mm\_y指共享专家MatMul计算的输出。
+- 术语表
+
+    | 术语 | 定义 |
+    | --- | --- |
+    | **MoE**（Mixture of Experts，混合专家模型） | 一种神经网络架构，将前馈层替换为多个"专家"子网络，通过门控机制为每个输入token动态选择部分专家进行计算，从而在扩大模型容量的同时控制计算成本。 |
+    | **路由专家**（Routing Expert） | MoE 中由门控机制动态选择的专家。每个token经TopK路由后，仅激活少数路由专家进行计算。 |
+    | **共享专家**（Shared Expert） | MoE 中所有token都会经过的固定专家，不参与路由选择，用于捕获通用知识，与路由专家并行计算。 |
+    | **token** | 模型处理的基本数据单元。在NLP中通常对应一个单词或子词；在MoE上下文中，每个token经门控后被分配到若干专家进行计算。 |
+    | **TopK 路由** | 门控机制为每个输入token选择得分最高的K个专家进行处理，K的取值范围通常为 \[2, 8\]。 |
+    | **EP**（Expert Parallelism，专家并行） | 将不同专家分布在不同计算卡（rank）上的并行策略。每张卡只存储部分专家的权重，通过跨卡通信将token发送到持有目标专家的卡上进行计算。 |
+    | **EP 通信域** | 参与专家并行的所有计算卡组成的通信组。`ep_world_size` 表示该通信域内的卡数。 |
+    | **AlltoAllv** | 集合通信操作，每张卡向其他每张卡发送不同数量的数据，同时接收来自其他每张卡的数据。与标准AlltoAll的区别在于各卡间发送/接收的数据量可以不等。 |
+    | **Permute** | 数据重排操作。在MoE通信后，将token按专家维度重新排列，使同一专家的token在内存中连续存放，便于后续批量计算。 |
+    | **GroupedMatMul**（GMM） | 分组矩阵乘法。对多组矩阵对分别执行矩阵乘法，各组数据的形状可以不同，适用于MoE中不同专家处理不同数量token的场景。 |
+    | **MatMul** | 标准矩阵乘法。 |
+    | **hidden size** | 隐藏层维度大小，即特征向量的长度。路由专家与共享专家可分别具有不同的hidden size（H1、H2）。 |
+    | **head\_num** | 注意力头数量。在本算子中用于描述专家输出维度（N1、N2）。 |
+    | **batch sequence size（BS）** | 批次序列长度，即输入序列中的token数量。 |
+    | **专家个数（e）** | 单张计算卡上部署的专家数量。全部卡上的专家总数为 `e * ep_world_size`。 |
 
 ## 函数原型<a name="zh-cn_topic_0000002282815538_section45077510411"></a>
 
