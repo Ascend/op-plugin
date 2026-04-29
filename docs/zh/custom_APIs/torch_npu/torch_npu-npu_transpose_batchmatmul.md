@@ -11,10 +11,17 @@
 
 - API功能：完成张量`input`与张量`weight`的矩阵乘计算。仅支持三维的Tensor传入。Tensor支持转置，转置序列根据传入的数列进行变更。`perm_x1`代表张量input的转置序列，`perm_x2`代表张量weight的转置序列，序列值为0的是batch维度，其余两个维度做矩阵乘法。
 - 计算公式：
+    - 非量化融合：
+    $$
+    Y = (input^{T_1} @ weight^{T_2} + bias)^{T_y}
+    $$
 
-    T1、T2、Ty分别通过参数`perm_x1`、`perm_x2`、`perm_y`描述转置序列。
+    - 量化融合：
+    $$
+    Y = (input^{T_1} @ weight^{T_2} + bias)^{T_y} * scale
+    $$    
 
-    ![](../../figures/zh-cn_formulaimage_0000002328618340.png)
+    $T_1$、$T_2$、$T_y$分别通过参数`perm_x1`、`perm_x2`、`perm_y`描述转置序列。
 
 ## 函数原型<a name="zh-cn_topic_0000002319693140_section45077510411"></a>
 

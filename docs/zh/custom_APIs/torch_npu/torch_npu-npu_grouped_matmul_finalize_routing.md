@@ -43,11 +43,11 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 - **shared\_input** (`Tensor`)：可选参数。MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持`bfloat16`，数据格式支持$ND$，维度\(batch/dp, n\)，n与`scale`的n一致，batch/dp取值范围\[1, 2\*1024\]，batch取值范围\[1, 16\*1024\]。
 - **logit** (`Tensor`)：可选参数。MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度\(m,\)，m与`x`的m一致。
 - **row\_index** (`Tensor`)：可选参数。MoE专家输出按照该row_index进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据类型支持`int32`、`int64`，数据格式支持$ND$，维度为\(m,\)，m与`x`的m一致。
-- **dtype** (`ScalarType`)：可选参数。指定GroupedMatMul计算的输出类型。0表示`float32`，1表示`float16`，2表示`bfloat16`。默认值为0。
+- **dtype** (`ScalarType`)：可选参数。指定GroupedMatMul计算的输出类型。默认值为`float32`，仅支持`float32`。
 - **shared\_input\_weight** (`float`)：可选参数。指共享专家与MoE专家进行combine的系数，`shared_input`先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
 - **shared\_input\_offset** (`int`)：可选参数。共享专家与MoE专家累加的行偏移量。默认值为0，表示没有偏移。
 - **output\_bs** (`int`)：可选参数。输出的最高维大小。默认值为0。
-- **group\_list\_type** (`List[int]`)：可选参数。GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
+- **group\_list\_type** (`int`)：可选参数。GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
 
 ## 返回值说明<a name="zh-cn_topic_0000002259406069_section22231435517"></a>
 
@@ -77,7 +77,9 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     import torch
     import torch_npu
     from scipy.special import softmax
-     
+
+    torch_npu.npu.config.allow_internal_format = True
+
     m, k, n = 576, 2048, 7168
     batch = 72
     topK = 8

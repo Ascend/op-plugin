@@ -14,9 +14,20 @@
 
      activation表示使用的激活函数，$W_1$和$W_2$对应输入参数的`weight1`和`weight2`，$b_1$和$b_2$对应输入参数的`bias1`和`bias2`。
 
-    $$
-    \text{out} = \text{activation}(x * W_1 + b_1) * W_2 + b_2
-    $$
+    - 非量化场景：
+        $$
+        y=activation(x * W1 + b1) * W2 + b2
+        $$
+
+    - 量化场景：
+        $$
+        y=((activation((x * W1 + b1) * deq\_scale1) * scale + offset) * W2 + b2) * deq\_scale2
+        $$
+
+    - 伪量化场景：
+        $$
+        y=activation(x * ((W1 + antiquant\_offset1) * antiquant\_scale1) + b1) * ((W2 + antiquant\_offset2) * antiquant\_scale2) + b2
+        $$
 
 > [!NOTE]  
 > 激活层为geglu/swiglu/reglu时，性能使能需要满足门槛要求，即整网中FFN结构所对应的小算子里，vector耗时30us且占比10%以上的用例，方可尝试FFN融合算子；或在不知道小算子性能的情况下，尝试使能FFN，若性能劣化则不使能FFN。
