@@ -7425,11 +7425,6 @@ custom:
   - func: npu_add_quant_matmul(Tensor self, Tensor x1, Tensor x2, Tensor x2_scale, *, Tensor? x1_scale=None, int[]? group_sizes=None, int? x1_dtype=None, int? x2_dtype=None, int? x1_scale_dtype=None, int? x2_scale_dtype=None) -> Tensor
     op_api: all_version
 
-  - func: save_npugraph_tensor(Tensor input, *, str? save_path=None) -> ()
-    op_api: [v2.6, newest]
-    exposed: [v2.6, newest]
-    internal_format_opapi: [v2.6, newest]
-
   - func: npu_masked_causal_conv1d(Tensor input, Tensor weight, *, Tensor? mask=None) -> Tensor
     op_api: [v2.6, newest]
     exposed: [v2.6, newest]
@@ -7459,12 +7454,6 @@ custom:
     exposed: [v2.6, newest]
     internal_format_opapi: [v2.6, newest]
   
-  - func: save_npugraph_tensor.tensorlist(Tensor[] input, *, str? save_name=None, str? save_dir=None, str? suffix=None) -> ()
-    op_api: [v2.6, newest]
-    exposed: [v2.6, newest]
-    internal_format_opapi: [v2.6, newest]
-  
-
   - func: npu_dynamic_block_mx_quant(Tensor input, *, str round_mode="rint", int dst_type=296, int scale_alg=0, float dst_type_max=0.0) -> (Tensor, Tensor, Tensor)
     op_api: all_version
   

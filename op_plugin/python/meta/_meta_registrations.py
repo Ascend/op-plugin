@@ -6569,22 +6569,6 @@ def npu_dynamic_mx_quant_with_dual_axis(input_dummy, *, round_mode="rint", dst_t
     return (y1, mxscale1, y2, mxscale2)
 
 
-has_side_effect(torch.ops.npu.save_npugraph_tensor.default)
-
-
-@impl(m, "save_npugraph_tensor")
-def save_npugraph_tensor_meta(input, *, save_path=None):
-    return
-
-
-has_side_effect(torch.ops.npu.save_npugraph_tensor.tensorlist)
-
-
-@impl(m, "save_npugraph_tensor.tensorlist")
-def save_npugraph_tensor_tensorlist_meta(input, *, save_name=None, save_dir=None, suffix=None):
-    return
-
-
 @impl(m, "npu_grouped_dynamic_block_quant")
 def npu_grouped_dynamic_block_quant_meta(x, group_list, *, min_scale=0.0, round_mode="rint", dst_type=torch.float8_e5m2, row_block_size=1, col_block_size=128, group_list_type=0):
     dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type, torch.float8_e5m2)

@@ -9,7 +9,6 @@
       "npu_sim_exponential_",
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
-      "save_npugraph_tensor",
       "npu_fused_causal_conv1d",
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward"
@@ -20,7 +19,6 @@
       "npu_sim_exponential_",
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
-      "save_npugraph_tensor",
       "npu_fused_causal_conv1d",
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward"
@@ -31,7 +29,6 @@
       "npu_sim_exponential_",
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
-      "save_npugraph_tensor",
       "npu_fused_causal_conv1d",
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward"
@@ -42,7 +39,6 @@
       "npu_sim_exponential_",
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
-      "save_npugraph_tensor",
       "npu_fused_causal_conv1d",
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward"
@@ -53,7 +49,6 @@
       "npu_sim_exponential_",
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
-      "save_npugraph_tensor",
       "npu_fused_causal_conv1d",
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward"
@@ -64,7 +59,6 @@
       "npu_sim_exponential_",
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
-      "save_npugraph_tensor",
       "npu_fused_causal_conv1d",
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward"
@@ -75,7 +69,6 @@
       "npu_sim_exponential_",
       "npu_fused_floyd_attention",
       "npu_fused_floyd_attention_backward",
-      "save_npugraph_tensor",
       "npu_fused_causal_conv1d",
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward"

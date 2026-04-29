@@ -163,7 +163,6 @@
         -   [torch_npu.npu_dense_lightning_indexer_grad_kl_loss](./torch_npu/torch_npu-npu_dense_lightning_indexer_grad_kl_loss.md)
         -   [torch_npu.npu_add_rms_norm](./torch_npu/torch_npu-npu_add_rms_norm.md)
         -   [torch_npu.npu_add_rms_norm_dynamic_quant](./torch_npu/torch_npu-npu_add_rms_norm_dynamic_quant.md)
-        -   [torch_npu.save_npugraph_tensor](./torch_npu/torch_npu-save_npugraph_tensor.md)
         -   [torch_npu.npu_fused_floyd_attention](./torch_npu/torch_npu-npu_fused_floyd_attention.md)
         -   [torch_npu.npu_masked_causal_conv1d](./torch_npu/torch_npu-npu_masked_causal_conv1d.md)
         -   [torch_npu.npu_clipped_swiglu](./torch_npu/torch_npu-npu_clipped_swiglu.md)
