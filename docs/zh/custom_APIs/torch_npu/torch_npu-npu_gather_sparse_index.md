@@ -63,7 +63,11 @@ torch_npu.npu_gather_sparse_index(input, index) -> Tensor
 - 为获取性能收益，`input`和`index`需要满足如下约束：
      1. `input`的shape内积需要大于$150 * 1024 / itemsize$，其中itemsize为`input` dtype对应元素大小，可以通过`torch.dtype.itemsize`查询。
      2. `index`的shape内积大于960。
-     3. 数据需要聚合，即非0值分布集中，0值分布集中。
+     3. 数据需要聚合，即`input`中0值元素和非0值元素分别集中在连续区域内，而不是频繁交错分布。可将 `input != 0`按行优先顺序展开为一维布尔序列$mask$，统计相邻元素状态切换比例：
+     $$
+     \mathrm{switch\_ratio} = \frac{\sum_{i=1}^{N-1} \mathbf{1}(\mathrm{mask}_i \ne \mathrm{mask}_{i-1})}{N - 1}
+     $$
+     其中，$N$为`input`元素总数，$\mathrm{mask}_i$表示布尔序列$\mathrm{mask}$中第$i$个元素。$\mathrm{switch\_ratio}$越小，说明0值和非0值连续分布越明显，数据聚合程度越高；$\mathrm{switch\_ratio}$越大，说明0值和非0值越分散，可能无法获得预期性能收益。
 
 ## 调用示例
 
