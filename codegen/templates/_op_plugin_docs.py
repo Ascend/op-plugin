@@ -12239,35 +12239,31 @@ Atlas A3训练系列产品
 调用示例:
 非投机场景：
 import numpy as np
-
+ 
 import torch
 import torch_npu
-
+ 
 num_seqs = 16
 num_queries = 8
 block_size = 8
-spec_num = 2
-
-input_token = np.random.randint(10, size=(num_seqs,))
-sampled_token_id = np.random.randint(10, size=(num_queries, 1))
-input_position = np.random.randint(10, size=(num_seqs,))
-seq_len = np.random.randint(10, size=(num_seqs,))
+ 
+input_tokens = np.random.randint(10, size=(num_seqs,))
+sampled_token_ids = np.random.randint(10, size=(num_queries,1))
+input_positions = np.random.randint(10, size=(num_seqs,))
+seq_lens = np.random.randint(10, size=(num_seqs,))
 slot_mapping = np.random.randint(10, size=(num_seqs,))
-
-input_tokens = torch.tensor(input_token, dtype=torch.int64, device="npu")
-sampled_token_ids = torch.tensor(sampled_token_id, dtype=torch.int64, device="npu")
-input_positions = torch.tensor(input_position, dtype=torch.int64, device="npu")
-seq_lens = torch.tensor(seq_len, dtype=torch.int64, device="npu")
-slot_mappings = torch.tensor(slot_mapping, dtype=torch.int64, device="npu")
-
+ 
+input_tokens = torch.tensor(input_tokens, dtype=torch.int64, device="npu")
+sampled_token_ids = torch.tensor(sampled_token_ids, dtype=torch.int64, device="npu")
+input_positions = torch.tensor(input_positions, dtype=torch.int64, device="npu")
+seq_lens = torch.tensor(seq_lens, dtype=torch.int64, device="npu")
+slot_mapping = torch.tensor(slot_mapping, dtype=torch.int64, device="npu")
+ 
 max_seq_len = seq_lens.max().item()
-block_table = np.random.randint(10, size=(num_seqs, max_seq_len // block_size + 1))
-block_tables = torch.tensor(block_table, dtype=torch.int64, device="npu")
-
-
-torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_positions,
-                                     seq_lens, slot_mappings, block_tables, num_seqs,
-                                     num_queries, block_size, spec_token=None, accepted_num=None)
+block_tables = np.random.randint(10, size=(num_seqs, max_seq_len // block_size + 1))
+block_tables = torch.tensor(block_tables, dtype=torch.int64, device="npu")
+ 
+torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_positions, seq_lens, slot_mapping, block_tables, num_seqs, num_queries, block_size)
 
 投机场景：
 import numpy as np
@@ -12276,33 +12272,33 @@ import torch
 import torch_npu
 
 num_seqs = 16
+num_queries = 16
 block_size = 8
 spec_num = 2
 
-input_token = np.random.randint(10, size=(num_seqs, 1 + spec_num))
-sampled_token_id = np.random.randint(10, size=(num_seqs, 1 + spec_num))
-input_position = np.random.randint(10, size=(num_seqs,))
-seq_len = np.random.randint(10, size=(num_seqs,))
-slot_mapping = np.random.randint(10, size=(num_seqs,))
+input_tokens = np.random.randint(10, size=(num_seqs*(1 + spec_num),))
+sampled_token_ids = np.random.randint(10, size=(num_seqs, 1 + spec_num))
+input_positions = np.random.randint(10, size=(num_seqs*(1 + spec_num),))
+seq_lens = np.random.randint(10, size=(num_seqs*(1 + spec_num),))
+slot_mapping = np.random.randint(10, size=(num_seqs*(1 + spec_num),))
 spec_token = np.random.randint(10, size=(num_seqs, spec_num))
 accepted_num = np.random.randint(10, size=(num_seqs,))
 
-input_tokens = torch.tensor(input_token, dtype=torch.int64, device="npu")
-sampled_token_ids = torch.tensor(sampled_token_id, dtype=torch.int64, device="npu")
-input_positions = torch.tensor(input_position, dtype=torch.int64, device="npu")
-seq_lens = torch.tensor(seq_len, dtype=torch.int64, device="npu")
-slot_mappings = torch.tensor(slot_mapping, dtype=torch.int64, device="npu")
-spec_tokens = torch.tensor(spec_token, dtype=torch.int64, device="npu")
-accepted_nums = torch.tensor(accepted_num, dtype=torch.int64, device="npu")
+input_tokens = torch.tensor(input_tokens, dtype=torch.int64, device="npu")
+sampled_token_ids = torch.tensor(sampled_token_ids, dtype=torch.int64, device="npu")
+input_positions = torch.tensor(input_positions, dtype=torch.int64, device="npu")
+seq_lens = torch.tensor(seq_lens, dtype=torch.int64, device="npu")
+slot_mapping = torch.tensor(slot_mapping, dtype=torch.int64, device="npu")
+spec_token = torch.tensor(spec_token, dtype=torch.int64, device="npu")
+accepted_num = torch.tensor(accepted_num, dtype=torch.int64, device="npu")
 
 max_seq_len = seq_lens.max().item()
-block_table = np.random.randint(10, size=(num_seqs, max_seq_len // block_size + 1))
-block_tables = torch.tensor(block_table, dtype=torch.int64, device="npu")
-
+block_tables = np.random.randint(10, size=(num_seqs, max_seq_len // block_size + 1))
+block_tables = torch.tensor(block_tables, dtype=torch.int64, device="npu")
 
 torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_positions,
-                                     seq_lens, slot_mappings, block_tables, num_seqs,
-                                     num_seqs, block_size, spec_token=spec_tokens, accepted_num=accepted_nums)
+                                     seq_lens, slot_mapping, block_tables, num_seqs,
+                                     num_queries, block_size, spec_token=spec_token, accepted_num=accepted_num)
 """
 )
 
