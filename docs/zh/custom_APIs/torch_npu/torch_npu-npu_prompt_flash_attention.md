@@ -162,10 +162,11 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     >>> scale = 1/math.sqrt(128.0)
     >>> actseqlen = [164]
     >>> actseqlenkv = [1024]
+    >>> atten_mask = torch.triu(torch.ones((164, 1024), dtype=torch.bool), diagonal=1).npu()
     >>>
     >>> # 调用PFA算子
     >>> out = torch_npu.npu_prompt_flash_attention(q, k, v,
-    ... actual_seq_lengths = actseqlen, actual_seq_lengths_kv = actseqlenkv,
+    ... atten_mask = atten_mask, actual_seq_lengths = actseqlen, actual_seq_lengths_kv = actseqlenkv,
     ... num_heads = 8, input_layout = "BNSD", scale_value=scale, pre_tokens=65535, next_tokens=65535)
     >>> out.shape
     torch.Size([1, 8, 164, 128])
@@ -180,13 +181,13 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     import torch
     import torch_npu
     import math
-    
-    import torchair as tng    
+
+    import torchair as tng
     from torchair.configs.compiler_config import CompilerConfig
     import torch._dynamo
     TORCHDYNAMO_VERBOSE=1
     TORCH_LOGS="+dynamo"
-    
+
     # 支持入图的打印宏
     import logging
     from torchair.core.utils import logger
@@ -195,13 +196,13 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     config.debug.graph_dump.type = "pbtxt"
     npu_backend = tng.get_npu_backend(compiler_config=config)
     from torch.library import Library, impl
-    
+
     # 数据生成
     q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
     k = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
     v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
     scale = 1/math.sqrt(128.0)
-    
+
     class Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
@@ -218,10 +219,10 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
         single_op = torch_npu.npu_prompt_flash_attention(q, k, v, num_heads = 8, input_layout = "BNSD", scale_value=scale, pre_tokens=65535, next_tokens=65535)
         print("single op output with mask:", single_op, single_op.shape)
         print("graph output with mask:", graph_output, graph_output.shape)
-        
+
     if __name__ == "__main__":
         MetaInfershape()
-    
+
     # 执行上述代码的输出类似如下
     single op output with mask: tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
             [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
@@ -231,7 +232,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
             [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
             [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]]]],
             device='npu:0', dtype=torch.float16) torch.Size([1, 8, 164, 128])
-    
+
     graph output with mask: tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
             [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
             [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],

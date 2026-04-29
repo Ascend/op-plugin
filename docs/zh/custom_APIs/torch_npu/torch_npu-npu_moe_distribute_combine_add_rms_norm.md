@@ -11,6 +11,10 @@
 - API功能：
 
     需与[torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)配套使用，相当于按`npu_moe_distribute_dispatch_v2`算子收集数据的路径原路返回后对数据进行`add_rms_norm`操作。
+    与[torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的参数配对关系见[参数说明](#zh-cn_topic_0000002322738573_section187018431529)和[约束说明](#zh-cn_topic_0000002322738573_section470214314214)。
+    > [!NOTE]
+    > 若未按配对关系使用，可能导致路由恢复错误或通信结果错误。
+
      - 支持数据整合功能，即对moe_distribute_combine、add及rms_norm进行功能融合；
      - 支持特殊专家场景。
 - 计算公式：
@@ -33,7 +37,7 @@
         - 拷贝专家场景（copy_expert_num ≠ 0）：
 
             $$Moe(ori\_x)=ori\_x$$
-      
+
         - 常量专家场景（const_expert_num ≠ 0）：
 
             $$Moe(ori\_x)=const\_expert\_alpha\_1*ori\_x+const\_expert\_alpha\_2*const\_expert\_v$$
@@ -130,7 +134,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - 参数里Shape使用的变量如下：
     - A：表示本卡需要分发的最大token数量，取值范围如下：
         - 当`global_bs`为0时，要满足A >= Bs \* epWorldSize \* min(localExpertNum, K)；
-        - 当`global_bs`非0时，要满足A >= globalBs * min(localExpertNum, K)。   
+        - 当`global_bs`非0时，要满足A >= globalBs * min(localExpertNum, K)。
 
     - H：表示hidden size隐藏层大小。
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[1024, 8192\]。
@@ -172,7 +176,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     import torch.distributed as dist
     from torch.distributed import ReduceOp
     import time
-    
+
     # 控制模式
     quant_mode = 2                       # 2为动态量化
     is_dispatch_scales = True            # 动态量化可选择是否传scales
@@ -212,7 +216,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     def gen_const_expert_v():
         const_expert_v = torch.empty(size=[const_expert_num, h], dtype=input_dtype).uniform_(-1, 1)
         return const_expert_v
-    
+
     def gen_unique_topk_array(low, high, bs, k):
         array = []
         for i in range(bs):
@@ -220,7 +224,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
             random.shuffle(top_idx)
             array.append(top_idx[0:k])
         return np.array(array)
-    
+
     def get_new_group(rank):
         for i in range(tp_world_size):
             # 如果tp_world_size = 2，ep_world_size = 8，则为[[0, 2, 4, 6, 8, 10, 12, 14], [1, 3, 5, 7, 9, 11, 13, 15]]
@@ -237,14 +241,14 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                 tp_group_t = tp_group
                 print(f"rank:{rank} tp_ranks:{tp_ranks}")
         return ep_group_t, tp_group_t
-    
+
     def get_hcomm_info(rank, comm_group):
         if torch.__version__ > '2.0.1':
             hcomm_info = comm_group._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcomm_info = comm_group.get_hccl_comm_name(rank)
         return hcomm_info
-    
+
     def warm_up_dispatch(rank, group_ep, group_tp):
         x_warm_up = torch.empty(size=[1, h], dtype=input_dtype).uniform_(-1024, 1024).to(input_dtype).npu()
         expert_ids_warm_up = torch.arange(0, k, dtype=torch.int32).unsqueeze(0).npu()
@@ -267,7 +271,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         return expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts
 
     def get_dispatch_kwargs_warmup(
-        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id, 
+        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id,
     ):
         x_warm_up = x_warm_up.to(input_dtype).npu()
         expert_ids_warm_up = expert_ids_warm_up.to(torch.int32).npu()
@@ -298,7 +302,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         ep_group, tp_group = get_new_group(rank)
         ep_hcomm_info = get_hcomm_info(rank, ep_group)
         tp_hcomm_info = get_hcomm_info(rank, tp_group)
-    
+
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
         expert_ids = torch.tensor([[ 5,  7, 17,  4,  2,  6, 11, 16],
@@ -344,7 +348,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
         if is_quant:
             expand_x = expand_x.to(input_dtype)
-    
+
         bs_local = expert_ids.shape[0]
         torch.manual_seed(42)
         residual_x = torch.rand((bs_local, 1, h), dtype=torch.bfloat16).npu()
@@ -382,7 +386,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         )
         time.sleep(10)
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
-    
+
     if __name__ == "__main__":
         print(f"bs={bs}")
         print(f"global_bs={globalBS}")
@@ -393,23 +397,23 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
         print(f"tp_world_size={tp_world_size}", flush=True)
         print(f"ep_world_size={ep_world_size}", flush=True)
-    
+
         if tp_world_size != 1 and local_moe_expert_num > 1:
             print("unSupported tp = 2 and local moe > 1")
             exit(0)
-    
+
         if shared_expert_rank_num > ep_world_size:
             print("shared_expert_rank_num 不能大于 ep_world_size")
             exit(0)
-    
+
         if shared_expert_rank_num > 0 and ep_world_size % shared_expert_rank_num != 0:
             print("ep_world_size 必须是 shared_expert_rank_num的整数倍")
             exit(0)
-    
+
         if moe_expert_num % moe_rank_num != 0:
             print("moe_expert_num 必须是 moe_rank_num 的整数倍")
             exit(0)
-    
+
         p_list = []
         for rank in range(rank_per_dev):
             p = Process(target=run_npu_process, args=(rank,))
@@ -435,7 +439,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     import torch.distributed as dist
     from torch.distributed import ReduceOp
     import time
-    
+
     # 控制模式
     quant_mode = 2                         # 2为动态量化
     is_dispatch_scales = True              # 动态量化可选择是否传scales
@@ -467,7 +471,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     class MOE_DISTRIBUTE_GRAPH_Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
-    
+
         def forward(self, x, expert_ids, group_ep, group_tp, ep_world_size, tp_world_size,
                     ep_rank_id, tp_rank_id, expert_shard_type, shared_expert_rank_num, moe_expert_num,
                     scales, quant_mode, global_bs, expert_scales, residual_x, gamma, norm_eps, elastic_info, const_expert_alpha_1, const_expert_alpha_2, const_expert_v, zero_expert_num, copy_expert_num, const_expert_num):
@@ -489,7 +493,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                                                                         zero_expert_num=zero_expert_num,
                                                                         copy_expert_num=copy_expert_num,
                                                                         const_expert_num=const_expert_num)
-    
+
             expand_x_npu, _, expand_idx_npu, _, ep_recv_counts_npu, tp_recv_counts_npu, expand_scales = output_dispatch_npu
             if expand_x_npu.dtype == torch.int8:
                 expand_x_npu = expand_x_npu.to(input_dtype)
@@ -521,7 +525,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                                                                                zero_expert_num=zero_expert_num,
                                                                                copy_expert_num=copy_expert_num,
                                                                                const_expert_num=const_expert_num)
-    
+
             return [y, rstd_out, x]
 
     def gen_const_expert_alpha_1():
@@ -543,8 +547,8 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
             random.shuffle(top_idx)
             array.append(top_idx[0:k])
         return np.array(array)
-    
-    
+
+
     def get_new_group(rank):
         for i in range(tp_world_size):
             ep_ranks = [x * tp_world_size + i for x in range(ep_world_size)]
@@ -559,14 +563,14 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                 tp_group_t = tp_group
                 print(f"rank:{rank} tp_ranks:{tp_ranks}")
         return ep_group_t, tp_group_t
-    
+
     def get_hcomm_info(rank, comm_group):
         if torch.__version__ > '2.0.1':
             hcomm_info = comm_group._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcomm_info = comm_group.get_hccl_comm_name(rank)
         return hcomm_info
-    
+
 
     def warm_up_dispatch(rank, group_ep, group_tp):
         x_warm_up = torch.empty(size=[1, h], dtype=input_dtype).uniform_(-1024, 1024).to(input_dtype).npu()
@@ -590,7 +594,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         return expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts
 
     def get_dispatch_kwargs_warmup(
-        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id, 
+        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id,
     ):
         x_warm_up = x_warm_up.to(input_dtype).npu()
         expert_ids_warm_up = expert_ids_warm_up.to(torch.int32).npu()
@@ -621,7 +625,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         ep_group, tp_group = get_new_group(rank)
         ep_hcomm_info = get_hcomm_info(rank, ep_group)
         tp_hcomm_info = get_hcomm_info(rank, tp_group)
-    
+
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
         expert_ids = torch.tensor([[0, 8, 4, 1, 6, 12, 14, 17],
@@ -639,7 +643,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
             scales = torch.randn(scales_shape, dtype=torch.float32).npu()
         else:
             scales = None
-    
+
         bs_local = expert_ids.shape[0]
         torch.manual_seed(42)
         residual_x = torch.rand((bs_local, 1, h), dtype=torch.bfloat16).npu()
@@ -651,7 +655,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
         const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
         const_expert_v = gen_const_expert_v().npu()
-    
+
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
         model = MOE_DISTRIBUTE_GRAPH_Model()
         model = model.npu()
@@ -663,7 +667,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         torch.npu.synchronize()
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
         time.sleep(10)
-    
+
     if __name__ == "__main__":
         print(f"bs={bs}")
         print(f"global_bs={globalBS}")
@@ -674,23 +678,23 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
         print(f"tp_world_size={tp_world_size}", flush=True)
         print(f"ep_world_size={ep_world_size}", flush=True)
-    
+
         if tp_world_size != 1 and local_moe_expert_num > 1:
             print("unSupported tp = 2 and local moe > 1")
             exit(0)
-    
+
         if shared_expert_rank_num > ep_world_size:
             print("shared_expert_rank_num 不能大于 ep_world_size")
             exit(0)
-    
+
         if shared_expert_rank_num > 0 and ep_world_size % shared_expert_rank_num != 0:
             print("ep_world_size 必须是 shared_expert_rank_num的整数倍")
             exit(0)
-    
+
         if moe_expert_num % moe_rank_num != 0:
             print("moe_expert_num 必须是 moe_rank_num 的整数倍")
             exit(0)
-    
+
         p_list = []
         for rank in range(rank_per_dev):
             p = Process(target=run_npu_process, args=(rank,))

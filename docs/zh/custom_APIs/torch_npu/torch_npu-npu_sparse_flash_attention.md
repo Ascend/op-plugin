@@ -1,4 +1,4 @@
-# torch_npu.npu_sparse_flash_attention
+﻿# torch_npu.npu_sparse_flash_attention
 
 ## 产品支持情况
 
@@ -17,7 +17,25 @@
     \text{softmax}(\frac{Q@\tilde{K}^T}{\sqrt{d_k}})@\tilde{V}
     $$
 
-    其中$\tilde{K},\tilde{V}$为基于某种选择算法（如`lightning_indexer`）得到的重要性较高的Key和Value，一般具有稀疏或分块稀疏的特征，$d_k$为$Q,\tilde{K}$每一个头的维度。
+    其中$\tilde{K},\tilde{V}$为基于某种选择算法（如`lightning_indexer`）得到的重要性较高的Key和Value，一般具有稀疏或分块稀疏的特征，$d_k$为$Q,\tilde{K}$每一个头的维度。对应于`sparse_indices`中的索引值为`b`，表示选择KV序列中从`b * sparse_block_size`开始的一段连续token。将`key/value`按`sparse_indices`收集后，即得到公式中的$\tilde{K},\tilde{V}$。
+
+    当`attention_mode = 2`时，表示MLA-absorb模式。此时原公式中的$Q$和$\tilde{K}$由`nope`部分和`rope`部分拼接而成：
+
+    $$
+    Q = [Q_{nope}, Q_{rope}], \quad \tilde{K} = [\tilde{K}_{nope}, \tilde{K}_{rope}]
+    $$
+
+    其中，`query/key`提供$Q_{nope}, \tilde{K}_{nope}$，`query_rope/key_rope`提供$Q_{rope}, \tilde{K}_{rope}$。
+
+    不同`sparse_mode`下，公式中$\tilde{K},\tilde{V}$对应的“有效KV集合”有所不同：
+
+    - 当`sparse_mode = 0`时，仅按照`sparse_indices`选择出的KV位置构造$\tilde{K},\tilde{V}$，即只做稀疏选择，不额外施加因果mask。
+    - 当`sparse_mode = 3`时，在`sparse_indices`选择出的KV位置基础上，还会继续叠加`rightDownCausal`约束，限定当前query允许访问的因果范围。若当前batch的query和kv有效长度分别为$L_q$和$L_{kv}$，则对第$i$个query位置，允许访问的kv位置$j$为：
+
+      $$
+      j \le (L_{kv} - L_q) + i
+      $$
+
     本次公布的`sparse_flash_attention`是面向Sparse Attention的全新算子，针对离散访存进行了指令缩减及搬运聚合的细致优化。
 
 ## 函数原型
@@ -28,7 +46,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 ## 参数说明
 
-> [!NOTE]  
+> [!NOTE]
 >
 >- query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
 >- Q\_S和S1表示query shape中的S，KV\_S和S2表示key shape中的S，Q\_N和N1表示num\_query\_heads，KV\_N和N2表示num\_key\_value\_heads，T1表示query shape中的T，T2表示key shape中的输入样本序列长度的累加和。
@@ -37,7 +55,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - **key**（`Tensor`）：必选参数，对应公式中的$\tilde{K}$，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`，`layout_kv`时shape为[block\_num, block\_size, KV\_N, D]，其中block\_num为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的倍数，最大支持1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, D]，`layout_kv`为TND时shape为[T2, KV\_N, D]，其中KV\_N只支持1。
 
 - **value**（`Tensor`）：必选参数，不支持非连续，对应公式中的$\tilde{V}$，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`，shape与`key`的shape一致。
-    
+
 - **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持ND,数据类型支持`int32`。当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
 
 - **scale\_value**（`double`）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持`double`。
@@ -51,7 +69,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`int32`。如果不指定None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_kv`为TND或PA_BSND时，该入参必须传入，`layout_kv`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
 - **query\_rope**（`Tensor`）：可选参数，表示MLA结构中的query的rope信息，不支持非连续，数据格式支持ND,数据类型支持`bfloat16`和`float16`。
-    
+
 - **key\_rope**（`Tensor`）：可选参数，表示MLA结构中的key的rope信息，不支持非连续，数据格式支持ND,数据类型支持`bfloat16`和`float16`。
 
 - **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`int64`，取值范围为[1,128]，且为2的幂次方。
@@ -98,7 +116,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
     import torch_npu
     import numpy as np
     import random
-    
+
     query_type = torch.float16
     scale_value = 0.041666666666666664
     sparse_block_size = 1
@@ -138,7 +156,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
     act_seq_kv = torch.tensor(act_seq_kv).to(torch.int32).npu()
 
     attention_out, softmax_max, softmax_sum = torch_npu.npu_sparse_flash_attention(
-        query, key, value, sparse_indices, scale_value, block_table=None, 
+        query, key, value, sparse_indices, scale_value, block_table=None,
         actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
         query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
         layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1,
@@ -201,23 +219,23 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
         def __init__(self):
             super(Network, self).__init__()
 
-        def forward(self, query, key, value, sparse_indices, scale_value, 
+        def forward(self, query, key, value, sparse_indices, scale_value,
             block_table, actual_seq_lengths_query, actual_seq_lengths_kv,
             query_rope, key_rope, sparse_block_size, layout_query, layout_kv,
             sparse_mode, pre_tokens, next_tokens, attention_mode, return_softmax_lse):
-            
+
             attention_out, softmax_max, softmax_sum = torch_npu.npu_sparse_flash_attention(
-                query, key, value, sparse_indices, scale_value, block_table=None, 
+                query, key, value, sparse_indices, scale_value, block_table=None,
                 actual_seq_lengths_query=actual_seq_lengths_query, actual_seq_lengths_kv=actual_seq_lengths_kv,
                 query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
-                layout_query=layout_query, layout_kv=layout_kv, sparse_mode=sparse_mode, 
-                pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1, attention_mode = attention_mode, 
+                layout_query=layout_query, layout_kv=layout_kv, sparse_mode=sparse_mode,
+                pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1, attention_mode = attention_mode,
                 return_softmax_lse = return_softmax_lse)
             return attention_out, softmax_max, softmax_sum
 
     mod = torch.compile(Network().npu(), backend=npu_backend, fullgraph=True)
 
-    attention_out, softmax_max, softmax_sum = mod(query, key, value, sparse_indices, 
+    attention_out, softmax_max, softmax_sum = mod(query, key, value, sparse_indices,
         scale_value, block_table=None, actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
         query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
         layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1,
