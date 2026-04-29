@@ -180,7 +180,8 @@
       "npu_mhc_pre",
       "npu_chunk_gated_delta_rule",
       "npu_rotate_quant",
-      "npu_mhc_pre_backward"
+      "npu_mhc_pre_backward",
+      "npu_quant_max"
     ]
   }
   

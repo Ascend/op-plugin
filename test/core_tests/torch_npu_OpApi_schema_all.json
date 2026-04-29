@@ -4993,5 +4993,14 @@
   },
   "func: npu_rotate_quant(Tensor x, Tensor rotation, *, float? alpha=0.0, int? dst_dtype=None) -> (Tensor, Tensor)": {
     "version": ["all_version"]
+  },
+  "func: npu_quant_max(Tensor x, Tensor scale, *, str round_mode=\"rint\", int dst_dtype=291) -> (Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
+  "op_api: torch_npu.npu_quant_max(*args, **kwargs)": {
+ 	     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
+ 	},
+  "op_api: torch_npu.npu_quant_max(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
   }
 }

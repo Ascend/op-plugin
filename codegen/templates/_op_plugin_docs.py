@@ -15511,3 +15511,81 @@ _add_torch_npu_docstr(
  """
  )
  
+_add_torch_npu_docstr(
+    "npu_quant_max",
+    """
+功能描述:
+算子功能: 对输入张量x进行量化操作，同时计算并输出绝对值最大值amax。
+计算公式: y = cast(x * scale, dst_dtype), amax = max(|x|)
+
+接口原型:
+torch_npu.npu_quant_max(Tensor x, Tensor scale, *, str round_mode="rint", int dst_dtype=291) -> (Tensor, Tensor)
+
+参数说明:
+x: Tensor类型, 输入张量, 待量化的数据。数据格式支持ND, 支持非连续的Tensor。输入最大支持8维。
+数据类型支持`float32`、`bfloat16`和`float16`。
+scale: Tensor类型, 量化缩放因子。仅支持1维Tensor, shape为(1,)。数据格式支持ND。
+数据类型支持float32。
+round_mode: String类型, 可选参数, 舍入模式, 默认值为"rint"。支持的取值:
+- "rint": 四舍六入五成双舍入模式, 适用于float8_e5m2/float8_e4m3fn输出类型。
+- "round": 向最近整数舍入模式, 适用于hifloat8输出类型。
+- "hybrid": 混合舍入模式, 适用于hifloat8输出类型。
+dst_dtype: int类型, 可选参数, 指定输出y的数据类型对应的枚举值, 默认值为torch.float8_e5m2。支持的取值:
+- torch_npu.hifloat8
+- torch.float8_e5m2
+- torch.float8_e4m3fn
+
+输出说明:
+返回两个Tensor:
+- y: Tensor类型, 量化后的输出, 数据类型由dst_dtype指定, shape与输入x相同。
+- amax: Tensor类型, 输入x的绝对值最大值, 数据类型与输入x相同, 一维Tensor, shape为[1]。
+
+约束说明:
+该接口支持推理、训练场景下使用。
+该接口支持图模式。
+x、scale这两个输入中不能含有None。
+round_mode与dst_dtype的搭配需遵循约束: float8_e5m2/float8_e4m3fn仅支持"rint", hifloat8仅支持"round"或"hybrid"。
+
+支持的PyTorch版本
+PyTorch 2.1及以上
+
+支持的NPU产品
+Atlas 350加速卡
+
+调用示例
+单算子调用
+import torch
+import torch_npu
+
+# 输入数据
+x_tensor = torch.randn((16, 128), dtype=torch.bfloat16).npu()
+scale = torch.tensor([2.0], dtype=torch.float32).npu()
+
+# 调用算子
+y, amax = torch_npu.npu_quant_max(x_tensor, scale, round_mode="rint", dst_dtype=torch.float8_e5m2)
+
+图模式调用
+import torch
+import torch_npu
+import torchair as tng
+from torchair.configs.compiler_config import CompilerConfig
+
+config = CompilerConfig()
+config.debug.graph_dump.type = 'pbtxt'
+npu_backend = tng.get_npu_backend(compiler_config=config)
+
+x_tensor = torch.randn((16, 128), dtype=torch.bfloat16).npu()
+scale = torch.tensor([2.0], dtype=torch.float32).npu()
+
+class Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x, scale):
+        return torch_npu.npu_quant_max(x, scale, round_mode="rint", dst_dtype=torch.float8_e5m2)
+
+cpu_model = Model()
+model = cpu_model.npu()
+model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
+y, amax = model(x_tensor, scale)
+"""
+)
