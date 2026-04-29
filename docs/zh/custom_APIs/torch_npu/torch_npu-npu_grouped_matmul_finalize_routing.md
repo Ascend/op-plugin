@@ -9,17 +9,9 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002259406069_section14441124184110"></a>
 
-- **API功能**
-  GroupedMatMul和MoeFinalizeRouting的融合算子，GroupedMatMul计算后的输出按照索引做combine动作。
-- **术语说明**
-  - **MoE**：Mixture of Experts，混合专家模型。每个token按路由结果分配到一个或多个专家进行计算。
-  - **MoeFinalizeRouting**：MoE路由最终化过程。将各专家计算结果按路由索引回填到token原始顺序，并对同一token的多个专家结果进行聚合，得到最终输出。
-- **流程说明**
-  GroupedMatMul负责分专家计算，MoeFinalizeRouting负责按路由关系回填与聚合，两者串联形成完整的MoE输出路径。详细步骤如下：
-  - 按`group_list`完成GroupedMatMul，得到各专家分组的计算结果；
-  - 若配置`logit`，对专家结果进行加权；
-  - 按`row_index`将专家结果回填到对应token位置，并进行累加；
-  - 若配置`shared_input`，再按`shared_input_weight`和`shared_input_offset`与共享专家结果融合。  
+- **API功能**: GroupedMatMul和MoeFinalizeRouting的融合算子，其中，GroupedMatMul负责分专家计算，MoeFinalizeRouting负责按路由关系回填并聚合GroupedMatMul结果，两者串联形成完整的MoE输出路径。
+  - **MoE**: Mixture of Experts，混合专家模型。每个token按路由结果分配到一个或多个专家进行计算。
+  - **MoeFinalizeRouting**: MoE路由最终化过程。将各专家计算结果按路由索引回填到token原始顺序，并对同一token的多个专家结果进行聚合，得到最终输出。  
 
 ## 函数原型<a name="zh-cn_topic_0000002259406069_section45077510411"></a>
 
