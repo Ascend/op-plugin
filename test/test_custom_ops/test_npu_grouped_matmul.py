@@ -913,6 +913,25 @@ class TestGroupedMatmul(TestCase):
             _ = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
                                     split_item=split_item)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_invalid_group_type(self):
+        # Negative test: invalid group_type should be rejected by C++ layer
+        torch.manual_seed(0)
+        x1 = torch.normal(mean=0., std=0.1, size=(1792, 256), dtype=torch.float16)
+        x = [x1]
+        weight1 = torch.normal(mean=0., std=0.1, size=(1792, 256), dtype=torch.float16)
+        weight = [weight1]
+        group_list = torch.tensor([256, 512, 1024, 1792]).npu()
+        split_item = 3
+
+        x_clone = [x1.clone().npu()]
+        weight_clone = [weight1.clone().npu()]
+
+        for invalid_type in [1, 3, 100]:
+            with self.assertRaisesRegex(RuntimeError, "The group type must be"):
+                self.custom_op_exec(x_clone, weight_clone, group_list=group_list,
+                                    split_item=split_item, group_type=invalid_type)
+
     @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_quant_950(self): # 量化 单单单
         torch.manual_seed(0)
