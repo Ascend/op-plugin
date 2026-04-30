@@ -372,6 +372,75 @@ if __name__ == "__main__":
         example_with_sink()
 ```
 
+使用`prefix`参数的示例：
+
+```python
+import math
+import torch
+import torch_npu
+
+
+def supported_prefix_exec(query, key, value, prefix, scale):
+    b, n, sq, _ = query.shape
+    skv = key.shape[2]
+    qk = torch.matmul(query.float(), key.float().transpose(2, 3)).mul(scale)
+
+    mask = torch.ones((b, n, sq, skv), dtype=torch.bool)
+    row_idx = torch.arange(sq).view(sq, 1)
+    col_idx = torch.arange(skv).view(1, skv)
+    causal_mask = col_idx <= row_idx
+    for batch_idx, prefix_len in enumerate(prefix):
+        prefix_mask = col_idx < prefix_len
+        mask[batch_idx] = ~(causal_mask | prefix_mask)
+
+    qk = qk.masked_fill(mask, -10000.0)
+    softmax_res = torch.nn.functional.softmax(qk, dim=-1)
+    return torch.matmul(softmax_res, value.float()).half()
+
+
+def custom_prefix_exec(query, key, value, prefix, scale):
+    b, n, sq, _ = query.shape
+    skv = key.shape[2]
+    atten_mask = torch.ones((b, n, sq, skv), dtype=torch.bool, device="npu")
+    row_idx = torch.arange(sq, device="npu").view(sq, 1)
+    col_idx = torch.arange(skv, device="npu").view(1, skv)
+    causal_mask = col_idx <= row_idx
+    for batch_idx, prefix_len in enumerate(prefix):
+        prefix_mask = col_idx < prefix_len
+        atten_mask[batch_idx] = ~(causal_mask | prefix_mask)
+
+    return torch_npu.npu_fusion_attention(
+        query.npu(),
+        key.npu(),
+        value.npu(),
+        head_num=n,
+        input_layout="BNSD",
+        atten_mask=atten_mask,
+        scale=scale,
+        prefix=prefix,
+        sparse_mode=5,
+    )[0]
+
+
+def example_with_prefix():
+    torch.manual_seed(0)
+    b, n, s, d = 2, 4, 32, 64
+    prefix = [4, 8]
+    scale = 1.0 / math.sqrt(d)
+
+    query = torch.randn(b, n, s, d, dtype=torch.float16)
+    key = torch.randn(b, n, s, d, dtype=torch.float16)
+    value = torch.randn(b, n, s, d, dtype=torch.float16)
+
+    cpu_output = supported_prefix_exec(query, key, value, prefix, scale)
+    npu_output = custom_prefix_exec(query, key, value, prefix, scale).cpu()
+    torch.testing.assert_close(npu_output, cpu_output, rtol=1e-2, atol=1e-2)
+
+
+if __name__ == "__main__":
+    example_with_prefix()
+```
+
 使用外部dropout\_mask的示例：
 
 ```python

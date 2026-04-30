@@ -19,7 +19,7 @@
      
      slotMapping[blockIdx] = ({blockTables}[blockIdx] + blockTablesStride * blockIdx) * blockSize + (seqLens[blockIdx]\%blockSize)
      $$
-- 投机场景计算公式：$i$是当前代码被执行的请求的索引。
+- 投机场景计算公式：$i$是当前代码被执行的请求的索引，$inputTokens$按shape为[num_seqs, 1 + spec_num]的二维视图理解。
      $$
      lastToken = \text{last valid token of each request in }sampledTokenIds \\
      blockTablesStride = blockTables.stride(0) \\
@@ -38,11 +38,11 @@ torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_posi
 
 ## 参数说明
 
-- **input_tokens** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输出$inputTokens$，用于更新vLLM模型中的token值，数据类型支持`int64`。如果是非投机场景，shape为[num_seqs,]；如果是投机场景，shape为[num_seqs, 1 + spec_num]。不支持空tensor，取值范围为大于0的正整数。
+- **input_tokens** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输出$inputTokens$，用于更新vLLM模型中的token值，数据类型支持`int64`。如果是非投机场景，shape为[num_seqs,]；如果是投机场景，shape为[num_seqs * (1 + spec_num),]。不支持空tensor，取值范围为大于0的正整数。
 - **sampled_token_ids** (`Tensor`)：必选参数，输入张量，对应公式中的输入$sampledTokenIds$，用于储存token_id，数据类型支持`int64`。如果是非投机场景，shape为[num_queries, 1]；如果是投机场景，shape为[num_seqs, 1 + spec_num]。不支持空tensor，取值范围为大于0的正整数。
-- **input_positions** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输出$inputPositions$，用于记录token的index，数据类型支持`int64`。如果是非投机场景，shape为[num_queries, 1]；如果是投机场景，shape为[num_seqs, 1 + spec_num]。不支持空tensor，取值范围为大于0的正整数。
-- **seq_lens** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输入/输出$seqLens$，用于记录不同block_idx下seq的长度，数据类型支持`int64`。如果是非投机场景，shape为[num_queries, 1]；如果是投机场景，shape为[num_seqs, 1 + spec_num]。不支持空tensor，取值范围为大于0的正整数。
-- **slot_mapping** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输出$slotMapping$，用于将token值在序列中的位置映射到物理位置，数据类型支持`int64`。如果是非投机场景，shape为[num_queries, 1]；如果是投机场景，shape为[num_seqs, 1 + spec_num]。不支持空tensor，取值范围为大于0的正整数。
+- **input_positions** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输出$inputPositions$，用于记录token的index，数据类型支持`int64`。如果是非投机场景，shape为[num_seqs,]；如果是投机场景，shape为[num_seqs * (1 + spec_num),]。不支持空tensor，取值范围为大于0的正整数。
+- **seq_lens** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输入/输出$seqLens$，用于记录不同block_idx下seq的长度，数据类型支持`int64`。如果是非投机场景，shape为[num_seqs,]；如果是投机场景，shape为[num_seqs * (1 + spec_num),]。不支持空tensor，取值范围为大于0的正整数。
+- **slot_mapping** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输出$slotMapping$，用于将token值在序列中的位置映射到物理位置，数据类型支持`int64`。如果是非投机场景，shape为[num_seqs,]；如果是投机场景，shape为[num_seqs * (1 + spec_num),]。不支持空tensor，取值范围为大于0的正整数。
 - **block_tables** (`Tensor`)：必选参数，输入/输出张量，对应公式中的输入$blockTables$，用于记录不同block_idx下block的大小，数据类型支持`int64`。shape为二维，第一维长度与`num_seqs`相同，第二维长度需要大于`seq_lens`中最大值除以`block_size`的整数部分，不支持空tensor，取值范围为大于0的正整数。
 - **num_seqs** (`int`)：必选参数，记录输入的seq数量；取值范围为大于0的正整数。
 - **num_queries** (`int`)：必选参数，记录输入的query数量；取值范围为大于0的正整数。
@@ -56,9 +56,9 @@ torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_posi
 
 ## 约束说明
 
-- 输入`input_tokens`，`input_positions`，`seq_lens`，`slot_mapping`和`block_tables`的第一维长度与`num_seqs`相同。
-- 投机场景下，输入`input_tokens`的第二维长度为`1 + spec_num`，其中`spec_num`为投机token数量。
-- 输入`sampled_token_ids`的第一维长度与`num_queries`相同且第二维长度为1。
+- 非投机场景下，输入`input_tokens`，`input_positions`，`seq_lens`，`slot_mapping`和`block_tables`的第一维长度与`num_seqs`相同。
+- 投机场景下，输入`input_tokens`，`input_positions`，`seq_lens`，`slot_mapping`为一维张量，长度为`num_seqs * (1 + spec_num)`，其中`spec_num`为投机token数量。
+- 输入`sampled_token_ids`的第一维长度与`num_queries`相同；非投机场景下第二维长度为1，投机场景下第二维长度为`1 + spec_num`。
 - 输入`block_tables`的shape的第二维长度大于`seq_lens`中最大值除以`block_size`的整数部分。
 - 非投机场景下，输入`num_seqs`必须大于输入`num_queries`；投机场景下，`num_queries`与`num_seqs`相同。
 - 该接口仅限推理场景使用，无反向函数。
