@@ -11327,6 +11327,7 @@ kronecker_p1: Device侧的Tensor类型，表示输入；数据类型支持FLOAT1
 kronecker_p2: Device侧的Tensor类型，表示输入；数据类型支持FLOAT16、BFLOAT16类型，数据类型与x一致；shape为[N, N]，N与x第二维相同。
 clip_ratio: float类型，可选参数，数据范围为(0, 1]，默认值为1。
 dst_dtype：ScalarType类型，可选参数，输入值允许为torch.int32，默认值为torch.int32。
+dst_type_max: float类型，可选参数，数据范围为0、[6, 12]，默认值为0。
 
 输出说明
 out：Device侧的Tensor类型，表示量化输出；数据类型支持INT32；shape为[K, M, N/8]，第零维和第一维与x一致，第二维是x的1/8。

@@ -5267,7 +5267,7 @@ def npu_anti_quant_meta(x, scale, *, offset=None, dst_dtype=None, src_dtype=None
 
 
 @impl(m, "npu_kronecker_quant")
-def npu_kronecker_quant_meta(x, kronecker_p1, kronecker_p2, clip_ratio=1.0, dst_dtype=None):
+def npu_kronecker_quant_meta(x, kronecker_p1, kronecker_p2, clip_ratio=1.0, dst_dtype=None, dst_type_max=0.0):
     if dst_dtype is None:
         dst_dtype = torch.int32
     if dst_dtype != torch.int32 and dst_dtype != torch_npu.float4_e2m1fn_x2:
