@@ -10,6 +10,15 @@
 ## 功能说明<a name="zh-cn_topic_0000002236535552_section1023311522369"></a>
 
 - API功能：融合了MLA（Multi-head Latent Attention）结构中RMSNorm归一化计算与RoPE（Rotary Position Embedding）位置编码以及更新KVCache的ScatterUpdate操作。
+    - **MLA（Multi-head Latent Attention）**：
+      一种DeepSeek-V2提出的高效注意力机制，通过低秩潜在表示压缩 Key/Value，减少 KV Cache 和计算开销，同时保持长序列建模能力。
+
+    - **RoPE（Rotary Position Embedding）**：
+      一种位置编码方法，通过对向量施加旋转变换注入位置信息，能够建模相对位置关系，适用于长上下文场景，其中通过 RotateHalf 操作实现向量旋转。
+
+    - **RMSNorm（Root Mean Square Normalization）**：
+      一种归一化方法，通过均方根对输入进行缩放，计算简单、开销较低，常用于大模型训练。
+
 - 计算公式：
     - **输入张量kv拆分**：拆分为两部分，其中B为批次大小，T为序列长度。
 
@@ -137,8 +146,9 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-- 量化模式：当`k_rope_scale`和`c_kv_scale`非空时，`k_cache`和`ckv_cache`的dtype为`int8`，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），`k_rope_scale`和`c_kv_scale`必须同时非空，`k_rope_offset`和`c_kv_offset`必须同时为None或非空。
+- 量化模式：当`k_rope_scale`和`c_kv_scale`非空时，`k_cache`和`ckv_cache`的dtype为`int8`，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），`k_rope_scale`和`c_kv_scale`必须同时非空。
 - 非量化模式：当`k_rope_scale`和`c_kv_scale`为空时，`k_cache`和`ckv_cache`的dtype为`bfloat16`或`float16`。
+- 非对称量化参数：`k_rope_offset`和`c_kv_offset`暂不支持配置。
 - 索引映射：所有`cache_mode`缓存模式下，index的值不可以重复，如果传入的index值存在重复，算子的行为是未定义的且不可预知的。
     - Norm：index的值表示每个Batch下的偏移。
     - PA/PA\_BNSD/PA\_NZ：index的值表示全局的偏移。
@@ -153,6 +163,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 - 单算子模式调用
 
     ```python
+    # 示例1：基础样例（非量化，cache_mode="PA_BNSD"）
     import torch
     import torch_npu
     
@@ -169,11 +180,11 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     
     k_cache = torch.ones(page_num, page_size, 1, 64, dtype = input_dtype).npu()
     ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
-    index_shape = (batch_size * seq_len,)
-    index = torch.arange(start=0, end=index_shape[0], step=1, dtype=torch.int64).npu()
     k_rope_scale = None
     c_kv_scale = None
     cache_mode="PA_BNSD"
+    index_shape = (batch_size * seq_len,)
+    index = torch.arange(start=0, end=index_shape[0], step=1, dtype=torch.int64).npu()
     is_output_kv = True
     
     
@@ -198,6 +209,35 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     model = Model().npu()
     _, _, k_rope, c_kv = model(kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, None, None, 1e-5, cache_mode, is_output_kv)
     
+    # 示例2： 量化模式
+    ## 1. 创建int8 cache (量化)
+    k_cache = torch.ones(page_num, page_size, 1, 64, dtype = torch.int8).npu()
+    ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
+    ## 2. 准备量化参数 
+    k_rope_scale = torch.randn([64], dtype=torch.float32).npu() # K的RoPE部分scale
+    c_kv_scale = torch.randn([512], dtype=torch.float32).npu() # 压缩KV的scale
+    # 其余代码不变
+
+    # 示例3： Norm
+    cache_mode = "Norm"
+    index_shape = (batch_size, seq_len)
+    index = torch.arange(start=0, end=batch_size*seq_len, step=1, dtype=torch.int64).reshape(index_shape).npu()
+    is_output_kv = False
+    # 其余代码不变
+
+    # 示例4： PA_NZ
+    cache_mode = "PA_NZ"
+    # 其余代码不变
+
+    # 示例5： PA_BLK_BNSD
+    cache_mode = "PA_BLK_BNSD"
+    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
+    # 其余代码不变
+
+    # 示例5： PA_BLK_NZ
+    cache_mode = "PA_BLK_NZ"
+    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
+    # 其余代码不变
     ```
 
 - 图模式调用
@@ -224,11 +264,11 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     
     k_cache = torch.ones(page_num, page_size, 1, 64, dtype = input_dtype).npu()
     ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
-    index_shape = (batch_size * seq_len,)
-    index = torch.arange(start=0, end=index_shape[0], step=1, dtype=torch.int64).npu()
     k_rope_scale = None
     c_kv_scale = None
     cache_mode="PA_BNSD"
+    index_shape = (batch_size * seq_len,)
+    index = torch.arange(start=0, end=index_shape[0], step=1, dtype=torch.int64).npu()
     is_output_kv = True
     
     
@@ -253,4 +293,34 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     model = Model().npu()
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     _, _, k_rope, c_kv = model(kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, None, None, 1e-5, cache_mode, is_output_kv)
+
+    # 示例2： 量化模式
+    ## 1. 创建int8 cache (量化)
+    k_cache = torch.ones(page_num, page_size, 1, 64, dtype = torch.int8).npu()
+    ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
+    ## 2. 准备量化参数 
+    k_rope_scale = torch.randn([64], dtype=torch.float32).npu() # K的RoPE部分scale
+    c_kv_scale = torch.randn([512], dtype=torch.float32).npu() # 压缩KV的scale
+    # 其余代码不变
+
+    # 示例3： Norm
+    cache_mode = "Norm"
+    index_shape = (batch_size, seq_len)
+    index = torch.arange(start=0, end=batch_size*seq_len, step=1, dtype=torch.int64).reshape(index_shape).npu()
+    is_output_kv = False
+    # 其余代码不变
+
+    # 示例4： PA_NZ
+    cache_mode = "PA_NZ"
+    # 其余代码不变
+
+    # 示例5： PA_BLK_BNSD
+    cache_mode = "PA_BLK_BNSD"
+    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
+    # 其余代码不变
+
+    # 示例5： PA_BLK_NZ
+    cache_mode = "PA_BLK_NZ"
+    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
+    # 其余代码不变
     ```
