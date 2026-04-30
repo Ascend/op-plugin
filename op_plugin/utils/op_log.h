@@ -40,16 +40,16 @@ extern thread_local int log_depth;
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO && op_plugin::logging::log_depth == 0) {         \
             op_plugin::logging::log_depth += 1;                                                                                             \
-            op_plugin::logging::LOGGER->long_info("%s %s with task_queue = %s%s",                                                           \
+            op_plugin::logging::LOGGER->long_info(__FILE__, __LINE__, "%s %s with task_queue = %s%s",                                       \
                          op_name, exec_cmd, task_queue, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());         \
             op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG && op_plugin::logging::log_depth == 0) {        \
             op_plugin::logging::log_depth += 1;                                                                                             \
             at_npu::native::OpCommand cmd;                                                                                                  \
-            op_plugin::logging::LOGGER->long_info("%s %s with task_queue = %s%s",                                                           \
+            op_plugin::logging::LOGGER->long_info(__FILE__, __LINE__, "%s %s with task_queue = %s%s",                                       \
                 op_name, exec_cmd, task_queue, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                  \
-            op_plugin::logging::LOGGER->long_debug("%s %s",                                                                                 \
+            op_plugin::logging::LOGGER->long_debug(__FILE__, __LINE__, "%s %s",                                                             \
                 op_name, op_plugin::logging::generate_debug_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                                  \
             op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
@@ -60,14 +60,14 @@ extern thread_local int log_depth;
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO && op_plugin::logging::log_depth == 0) {         \
             op_plugin::logging::log_depth += 1;                                                                                             \
-            op_plugin::logging::LOGGER->long_info("%s %s with task_queue = %s%s",                                                           \
+            op_plugin::logging::LOGGER->long_info(__FILE__, __LINE__, "%s %s with task_queue = %s%s",                                       \
                          op_name, exec_cmd, task_queue, params_log_info);                                                                   \
             op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG && op_plugin::logging::log_depth == 0) {        \
             op_plugin::logging::log_depth += 1;                                                                                             \
             at_npu::native::OpCommand cmd;                                                                                                  \
-            op_plugin::logging::LOGGER->long_info("%s %s with task_queue = %s%s",                                                           \
+            op_plugin::logging::LOGGER->long_info(__FILE__, __LINE__, "%s %s with task_queue = %s%s",                                       \
                 op_name, exec_cmd, task_queue, params_log_info);                                                                            \
             op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
@@ -78,15 +78,15 @@ extern thread_local int log_depth;
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO && op_plugin::logging::log_depth == 0) {         \
             op_plugin::logging::log_depth += 1;                                                                                             \
-            op_plugin::logging::LOGGER->long_info("%s %s with%s",                                                                           \
+            op_plugin::logging::LOGGER->long_info(__FILE__, __LINE__, "%s %s with%s",                                                       \
                 #op_name, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                             \
             op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG && op_plugin::logging::log_depth == 0) {        \
             op_plugin::logging::log_depth += 1;                                                                                             \
-            op_plugin::logging::LOGGER->long_info("%s %s with%s",                                                                           \
+            op_plugin::logging::LOGGER->long_info(__FILE__, __LINE__, "%s %s with%s",                                                       \
                 #op_name, exec_cmd, op_plugin::logging::generate_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                             \
-            op_plugin::logging::LOGGER->long_debug("%s %s",                                                                                 \
+            op_plugin::logging::LOGGER->long_debug(__FILE__, __LINE__, "%s %s",                                                             \
                 #op_name, op_plugin::logging::generate_debug_log_infos(#__VA_ARGS__, __VA_ARGS__).c_str());                                 \
             op_plugin::logging::log_depth -= 1;                                                                                             \
         }                                                                                                                                   \
@@ -96,39 +96,39 @@ extern thread_local int log_depth;
 #define OP_LOG_DEBUG(fmt, ...)                                                                                                              \
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG) {                                              \
-            op_plugin::logging::LOGGER->debug("%s", #fmt);                                                                                  \
+            op_plugin::logging::LOGGER->debug(__FILE__, __LINE__, "%s", #fmt);                                                              \
         }                                                                                                                                   \
     } while (0);
 
 #define OP_LOG_INFO(fmt, ...)                                                                                                               \
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO) {                                               \
-            op_plugin::logging::LOGGER->info("%s", #fmt);                                                                                   \
+            op_plugin::logging::LOGGER->info(__FILE__, __LINE__, "%s", #fmt);                                                               \
         }                                                                                                                                   \
     } while (0);
 
 #define OP_LOG_WARNING(fmt, ...)                                                                                                            \
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::WARNING) {                                            \
-            op_plugin::logging::LOGGER->warn("%s", #fmt);                                                                                   \
+            op_plugin::logging::LOGGER->warn(__FILE__, __LINE__, "%s", #fmt);                                                               \
         }                                                                                                                                   \
     } while (0);
 
 #define OP_LOG_ERROR(fmt, ...)                                                                                                              \
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::ERROR) {                                              \
-            op_plugin::logging::LOGGER->error("%s", #fmt);                                                                                  \
+            op_plugin::logging::LOGGER->error(__FILE__, __LINE__, "%s", #fmt);                                                              \
         }                                                                                                                                   \
     } while (0);
 
 #define OP_LOG_CRITICAL(fmt, ...)                                                                                                           \
     do {                                                                                                                                    \
         if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::CRITICAL) {                                           \
-            op_plugin::logging::LOGGER->critical("%s", #fmt);                                                                               \
+            op_plugin::logging::LOGGER->critical(__FILE__, __LINE__, "%s", #fmt);                                                           \
         }                                                                                                                                   \
     } while (0);
 
-}  // namespace utils
+}  // namespace logging
 }  // namespace op_plugin
 
 #endif //  TORCHNPU_TORCH_NPU_UTILS_OP_LOG_H_
