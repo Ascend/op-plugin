@@ -23,7 +23,7 @@
 ## 函数原型<a name="zh-cn_topic_0000001832267082_section45077510411"></a>
 
 ```python
-torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=None, key_rope=None, pse_shift=None, atten_mask=None, actual_seq_qlen=None, actual_seq_kvlen=None, block_table=None, dequant_scale_query=None, dequant_scale_key=None, dequant_offset_key=None, dequant_scale_value=None, dequant_offset_value=None, dequant_scale_key_rope=None, quant_scale_out=None, quant_offset_out=None, learnable_sink=None, num_query_heads=1, num_key_value_heads=0, softmax_scale=1.0, pre_tokens=2147483647, next_tokens=2147483647, input_layout="BSH", sparse_mode=0, block_size=0, query_quant_mode=0, key_quant_mode=0, value_quant_mode=0, inner_precise=0, return_softmax_lse=False, query_dtype=None, key_dtype=None, value_dtype=None, query_rope_dtype=None, key_rope_dtype=None, key_shared_prefix_dtype=None, value_shared_prefix_dtype=None, dequant_scale_query_dtype=None, dequant_scale_key_dtype=None, dequant_scale_value_dtype=None, dequant_scale_key_rope_dtype=None) -> (Tensor, Tensor)
+torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=None, key_rope=None, pse_shift=None, atten_mask=None, actual_seq_qlen=None, actual_seq_kvlen=None, block_table=None, dequant_scale_query=None, dequant_scale_key=None, dequant_offset_key=None, dequant_scale_value=None, dequant_offset_value=None, dequant_scale_key_rope=None, quant_scale_out=None, quant_offset_out=None, quant_scale_p=None, learnable_sink=None, num_query_heads=1, num_key_value_heads=0, softmax_scale=1.0, pre_tokens=2147483647, next_tokens=2147483647, input_layout="BSH", sparse_mode=0, block_size=0, query_quant_mode=0, key_quant_mode=0, value_quant_mode=0, inner_precise=0, return_softmax_lse=False, query_dtype=None, key_dtype=None, value_dtype=None, query_rope_dtype=None, key_rope_dtype=None, key_shared_prefix_dtype=None, value_shared_prefix_dtype=None, dequant_scale_query_dtype=None, dequant_scale_key_dtype=None, dequant_scale_value_dtype=None, dequant_scale_key_rope_dtype=None, out_dtype=None) -> (Tensor, Tensor)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000001832267082_section112637109429"></a>
@@ -32,6 +32,57 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 >
 > - query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示隐藏层的大小、N（Head Num）表示多头数、D（Head Dim）表示隐藏层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
 > - Q_S和S1表示query shape中的S，KV_S和S2表示key和value shape中的S，Q_N表示num\_query\_heads，KV_N表示num\_key\_value\_heads。
+>
+
+**参数快速参考**
+
+| 参数 | 必选/可选 | 类型 | 默认值 | 说明 |
+|------|-----------|------|--------|------|
+| query | 必选 | Tensor | - | Query输入 |
+| key | 必选 | Tensor | - | Key输入 |
+| value | 必选 | Tensor | - | Value输入 |
+| query_rope | 可选 | Tensor | None | MLA结构中query的rope信息 |
+| key_rope | 可选 | Tensor | None | MLA结构中key的rope信息 |
+| pse_shift | 可选 | Tensor | None | 位置编码参数 |
+| atten_mask | 可选 | Tensor | None | 注意力掩码 |
+| actual_seq_qlen | 可选 | List[Int] | None | query的有效seqlen |
+| actual_seq_kvlen | 可选 | List[Int] | None | key/value的有效seqlen |
+| block_table | 可选 | Tensor | None | PageAttention的block映射表 |
+| dequant_scale_query | 可选 | Tensor | None | query的反量化参数 |
+| dequant_scale_key | 可选 | Tensor | None | key的反量化因子 |
+| dequant_offset_key | 可选 | Tensor | None | key的反量化偏移 |
+| dequant_scale_value | 可选 | Tensor | None | value的反量化因子 |
+| dequant_offset_value | 可选 | Tensor | None | value的反量化偏移 |
+| dequant_scale_key_rope | 可选 | Tensor | None | 预留参数，暂未使用 |
+| quant_scale_out | 可选 | Tensor | None | 输出的量化因子 |
+| quant_offset_out | 可选 | Tensor | None | 输出的量化偏移 |
+| quant_scale_p | 可选 | Tensor | None | 预留参数，暂未使用 |
+| learnable_sink | 可选 | Tensor | None | 可学习的Sink Token |
+| num_query_heads | 可选 | int | 1 | query的head个数 |
+| num_key_value_heads | 可选 | int | 0 | key/value的head个数，0表示与query相同 |
+| softmax_scale | 可选 | float | 1.0 | 缩放系数，建议传入1/√D |
+| pre_tokens | 可选 | int | 2147483647 | 稀疏计算前向Token数 |
+| next_tokens | 可选 | int | 2147483647 | 稀疏计算后向Token数 |
+| input_layout | 可选 | str | "BSH" | 输入数据排布格式 |
+| sparse_mode | 可选 | int | 0 | sparse模式 |
+| block_size | 可选 | int | 0 | PageAttention每个block最大token数 |
+| query_quant_mode | 可选 | int | 0 | query的伪量化方式 |
+| key_quant_mode | 可选 | int | 0 | key的伪量化方式 |
+| value_quant_mode | 可选 | int | 0 | value的伪量化方式 |
+| inner_precise | 可选 | int | 0 | 精度模式 |
+| return_softmax_lse | 可选 | bool | False | 是否输出softmax_lse |
+| query_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| key_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| value_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| query_rope_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| key_rope_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| key_shared_prefix_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| value_shared_prefix_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| dequant_scale_query_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| dequant_scale_key_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| dequant_scale_value_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| dequant_scale_key_rope_dtype | 可选 | int | None | 预留参数，暂未使用 |
+| out_dtype | 可选 | int | None | 输出的数据类型 |
 
 - **query**（`Tensor`）：必选参数，表示attention结构的Query输入，对应公式中的`Q`。不支持非连续的Tensor，数据类型支持`float16`、`bfloat16`，数据格式支持ND。    
     
@@ -51,7 +102,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - `sparse_mode`为0、1时
         - 支持shape传入(1,Q_S,KV_S)、(B,1,Q_S,KV_S)、(1,1,Q_S,KV_S)。
         - 当输入`input_layout`为BSH、BSND、BNSD、BNSD_BSND时，且query、key、value的D相等，并且不传`query_rope`和`key_rope`时，Q_S为1可支持传入(B,KV_S)，Q_S大于1时可支持传入(Q_S,KV_S)。
-        - 如果Q\_S、KV\_S非16或32对齐，可以取到向上对齐的值。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        - 如果Q\_S、KV\_S非16或32对齐，可以取到向上对齐的值。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)。
     - `sparse_mode`为2、3、4时，shape输入支持(2048,2048)或(1,2048,2048)或(1,1,2048,2048)。
     - `sparse_mode`为9时：
         - `input_layout`为BSH、BSND或BNSD时，shape输入支持(B, Q_S, Q_S)。
@@ -59,23 +110,24 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **actual\_seq\_qlen**（`List[Int]`）：可选参数，表示不同Batch中`query`的有效seqlen，数据类型支持`int64`。默认值为None，表示和`query`的shape的S长度相同。
     该入参中每个Batch的有效seqlen不超过`query`中对应batch的seqlen。当seqlen传入长度为1时，每个Batch使用相同seqlen；当seqlen传入长度>=Batch时，取seqlen的前Batch个数；其他长度不支持。当`query`的input\_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须>=前一个元素的值，且不能出现负值。
 
-- **actual\_seq\_kvlen**（`List[Int]`）：可选参数，表示不同Batch中`key`/`value`的有效seqlenKv，数据类型支持`int64`。默认值为None，表示和key/value的shape的S长度相同。不同O\_S值有不同的约束，具体参见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- **actual\_seq\_kvlen**（`List[Int]`）：可选参数，表示不同Batch中`key`/`value`的有效seqlenKv，数据类型支持`int64`。默认值为None，表示和key/value的shape的S长度相同。不同O\_S值有不同的约束，具体参见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)和[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)。
 - **block\_table**（`Tensor`）：可选参数，表示PageAttention中KV存储使用的block映射表，数据类型支持`int32`。数据格式支持ND。如不使用该功能可传入None。
-- **dequant\_scale\_query**（`Tensor`）：可选参数，表示`query`的反量化参数，仅支持pertoken叠加perhead。数据类型支持`float32`。数据格式支持ND，如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
-- **dequant\_scale\_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化因子。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持ND。通常支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。    
+- **dequant\_scale\_query**（`Tensor`）：可选参数，表示`query`的反量化参数，仅支持pertoken叠加perhead。数据类型支持`float32`。数据格式支持ND，如不使用该功能可传入None，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
+- **dequant\_scale\_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化因子。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持ND。通常支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)、[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
     
-- **dequant\_offset\_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化偏移。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理offset、pertoken叠加perhead并使用page attention模式管理offset。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
-- **dequant\_scale\_value**（`Tensor`）：可选参数，kv伪量化参数分离时表示`value`的反量化因子。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- **dequant\_offset\_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化偏移。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理offset、pertoken叠加perhead并使用page attention模式管理offset。如不使用该功能可传入None。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)、[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
+- **dequant\_scale\_value**（`Tensor`）：可选参数，kv伪量化参数分离时表示`value`的反量化因子。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None，综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)、[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
     
-- **dequant\_offset\_value**（`Tensor`）：可选参数，kv伪量化参数分离时表示`value`的反量化偏移。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理offset、pertoken叠加perhead并使用page attention模式管理offset。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- **dequant\_offset\_value**（`Tensor`）：可选参数，kv伪量化参数分离时表示`value`的反量化偏移。数据类型支持`float16`、`bfloat16`、`float32`。数据格式支持ND。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理offset、pertoken叠加perhead并使用page attention模式管理offset。如不使用该功能可传入None，综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)、[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
 - **dequant\_scale\_key\_rope**（`Tensor`）：可选参数，**预留参数，暂未使用，使用默认值即可。**
-- **quant\_scale\_out**（`Tensor`）：可选参数，表示输出的量化因子。数据类型支持`float32`、`bfloat16`。数据格式支持ND。支持pertensor、perchannel。当输入为`bfloat16`时，同时支持`float32`、`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为BSH时，要求`quant_scale_out`所有维度的乘积等于H；其他layout要求乘积等于Q\_N\*D（建议输出layout为BSH时，quant\_scale\_out shape传入\(1, 1, H\)或\(H,\)；输出为BNSD时，建议传入\(1, Q\_N, 1, D\)或\(Q\_N, D\)；输出为BSND时，建议传入\(1, 1, Q\_N, D\)或\(Q\_N, D\)）。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
-- **quant\_offset\_out**（`Tensor`）：可选参数，表示输出的量化偏移。数据类型支持`float32`、`bfloat16`。数据格式支持ND。支持pertensor、perchannel。若传入`quant_offset_out`，需保证其类型和shape信息与`quant_scale_out`一致。如不使用该功能可传入None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
-- **learnable_sink**（`Tensor`）：可选参数，表示通过可学习的“Sink Token”起到吸收Attention Score的作用，数据类型支持`bfloat16`，数据格式支持ND，shape输入为(Q_N,)。默认值为None，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- **quant\_scale\_out**（`Tensor`）：可选参数，表示输出的量化因子。数据类型支持`float32`、`bfloat16`。数据格式支持ND。支持pertensor、perchannel。当输入为`bfloat16`时，同时支持`float32`、`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为BSH时，要求`quant_scale_out`所有维度的乘积等于H；其他layout要求乘积等于Q\_N\*D（建议输出layout为BSH时，quant\_scale\_out shape传入\(1, 1, H\)或\(H,\)；输出为BNSD时，建议传入\(1, Q\_N, 1, D\)或\(Q\_N, D\)；输出为BSND时，建议传入\(1, 1, Q\_N, D\)或\(Q\_N, D\)）。如不使用该功能可传入None，综合约束请见[通用约束](#zh-cn_topic_0000001832267082_section_general_constraint)。
+- **quant\_offset\_out**（`Tensor`）：可选参数，表示输出的量化偏移。数据类型支持`float32`、`bfloat16`。数据格式支持ND。支持pertensor、perchannel。若传入`quant_offset_out`，需保证其类型和shape信息与`quant_scale_out`一致。如不使用该功能可传入None，综合约束请见[通用约束](#zh-cn_topic_0000001832267082_section_general_constraint)。
+- **quant_scale_p**（`Tensor`）：可选参数，**预留参数，暂未使用，使用默认值即可。**
+- **learnable_sink**（`Tensor`）：可选参数，表示通过可学习的“Sink Token”起到吸收Attention Score的作用，数据类型支持`bfloat16`，数据格式支持ND，shape输入为(Q_N,)。默认值为None，综合约束请见[learnable_sink约束](#zh-cn_topic_0000001832267082_section_learnable_sink_constraint)。
 
-- **num\_query\_heads**（`int`）：可选参数，代表query的head个数，数据类型支持`int64`，在BNSD场景下，需要与shape中的`query`的N轴shape值相同，否则执行异常。
-- **num\_key\_value\_heads**（`int`）：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，数据类型支持`int64`。默认值为0，表示`key`/`value`/`query`的head个数相等，需要满足`num_query_heads`整除`num_key_value_heads`，`num_query_heads`与`num_key_value_heads`的比值不能大于64。在BSND、BNSD、BNSD\_BSND（仅支持Q\_S大于1）场景下，还需要与shape中的`key`/`value`的N轴shape值相同，否则执行异常。
-- **softmax\_scale**（`float`）：可选参数，公式中d开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float32`。数据类型与`query`数据类型需满足数据类型推导规则。默认值为1.0。
+- **num\_query\_heads**（`int`）：可选参数，代表query的head个数，数据类型支持`int64`，在BNSD场景下，需要与shape中的`query`的N轴shape值相同，否则执行异常。综合约束请见[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。
+- **num\_key\_value\_heads**（`int`）：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，数据类型支持`int64`。默认值为0，表示`key`/`value`/`query`的head个数相等，需要满足`num_query_heads`整除`num_key_value_heads`，`num_query_heads`与`num_key_value_heads`的比值不能大于64。在BSND、BNSD、BNSD\_BSND（仅支持Q\_S大于1）场景下，还需要与shape中的`key`/`value`的N轴shape值相同，否则执行异常。综合约束请见[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。
+- **softmax\_scale**（`float`）：可选参数，公式中d开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float32`。数据类型与`query`数据类型需满足数据类型推导规则。默认值为1.0，即不做缩放。**建议传入`1/√D`（D为Head Dim）**，例如当D=128时传入`1/math.sqrt(128.0)`，以获得正确的注意力计算结果。
 - **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`。默认值为2147483647，Q\_S为1时该参数无效。
 - **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`。默认值为2147483647，Q\_S为1时该参数无效。
 - **input\_layout**（`str`）：可选参数，用于标识输入`query`、`key`、`value`的数据排布格式，默认值为"BSH"。
@@ -83,21 +135,35 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     > [!NOTE]   
     > 注意排布格式带下划线时，下划线左边表示输入query的layout，下划线右边表示输出output的格式，算子内部会进行layout转换。
 
-    支持BSH、BSND、BNSD、BNSD\_BSND（输入为BNSD时，输出格式为BSND，仅支持Q\_S大于1）、BSH\_NBSD、BSND\_NBSD、BNSD\_NBSD（输出格式为NBSD时，仅支持Q\_S大于1且小于等于16）、TND、TND\_NTD、NTD\_TND（TND相关场景综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)）。其中BNSD\_BSND含义指当输入为BNSD，输出格式为BSND，仅支持Q\_S大于1。
+    支持BSH、BSND、BNSD、BNSD\_BSND（输入为BNSD时，输出格式为BSND，仅支持Q\_S大于1）、BSH\_NBSD、BSND\_NBSD、BNSD\_NBSD（输出格式为NBSD时，仅支持Q\_S大于1且小于等于16）、TND、TND\_NTD、NTD\_TND（TND相关场景综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)）。其中BNSD\_BSND含义指当输入为BNSD，输出格式为BSND，仅支持Q\_S大于1。
 
-- **sparse\_mode**（`int`）：可选参数，表示sparse的模式。数据类型支持`int64`。Q\_S为1且不带rope输入时该参数无效。input\_layout为TND、TND\_NTD、NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
-    
-    - `sparse_mode`为0时，代表defaultMask模式，如果atten\_mask未传入则不做mask操作，忽略pre\_tokens和next\_tokens（内部赋值为INT\_MAX）；如果传入，则需要传入完整的atten\_mask矩阵（S1\*S2），表示pre\_tokens和next\_tokens之间的部分需要计算。
-    - `sparse_mode`为1时，代表allMask，必须传入完整的atten\_mask矩阵（S1\*S2）。
-    - `sparse_mode`为2时，代表leftUpCausal模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
-    - `sparse_mode`为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景，需要传入优化后的atten\_mask矩阵（2048\*2048）。
-    - `sparse_mode`为4时，代表band模式的mask，需要传入优化后的atten\_mask矩阵（2048\*2048）。
-    - `sparse_mode`为5、6、7、8时，分别代表prefix、global、dilated、block\_local，均暂不支持。
-    - `sparse_mode`为9时，代表treeMask模式，用于推测解码场景的树形注意力掩码。需传入自定义tree mask，仅MLA场景（query\_rope和key\_rope不为空）支持。不支持左padding、pse\_shift、sharedPrefix，输出dtype不支持int8，每个batch需满足Q\_S ≤ KV\_S。默认值为0。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+    | `input_layout` | `query` shape | `key` shape | `value` shape | 输出(`attention_out`) shape | 说明 |
+    |---------------|-------------|-----------|-------------|------------|------|
+    | BSH | (B, Q\_S, H) | (B, KV\_S, H) | (B, KV\_S, H) | (B, Q\_S, H) | H=N\*D |
+    | BSND | (B, Q\_S, Q\_N, D) | (B, KV\_S, KV\_N, D) | (B, KV\_S, KV\_N, D) | (B, Q\_S, Q\_N, D) | N和D分开 |
+    | BNSD | (B, Q\_N, Q\_S, D) | (B, KV\_N, KV\_S, D) | (B, KV\_N, KV\_S, D) | (B, Q\_N, Q\_S, D) | N和D分开，N在前 |
+    | BNSD\_BSND | (B, Q\_N, Q\_S, D) | (B, KV\_N, KV\_S, D) | (B, KV\_N, KV\_S, D) | (B, Q\_S, Q\_N, D) | 输入BNSD，输出BSND，仅Q\_S>1 |
+    | BSH\_NBSD | (B, Q\_S, H) | (B, KV\_S, H) | (B, KV\_S, H) | (Q\_N, B, Q\_S, D) | 输入BSH，输出NBSD |
+    | BSND\_NBSD | (B, Q\_S, Q\_N, D) | (B, KV\_S, KV\_N, D) | (B, KV\_S, KV\_N, D) | (Q\_N, B, Q\_S, D) | 输入BSND，输出NBSD |
+    | BNSD\_NBSD | (B, Q\_N, Q\_S, D) | (B, KV\_N, KV\_S, D) | (B, KV\_N, KV\_S, D) | (Q\_N, B, Q\_S, D) | 输入BNSD，输出NBSD，仅Q\_S 1~16 |
+    | TND | (T, Q\_N, D) | (T, KV\_N, D) | (T, KV\_N, D) | (T, Q\_N, D) | T为所有Batch的S累加和 |
+    | TND\_NTD | (T, Q\_N, D) | (T, KV\_N, D) | (T, KV\_N, D) | (Q\_N, T, D) | 输入TND，输出NTD |
+    | NTD\_TND | (Q\_N, T, D) | (KV\_N, T, D) | (KV\_N, T, D) | (T, Q\_N, D) | 输入NTD，输出TND |
+
+- **sparse\_mode**（`int`）：可选参数，表示sparse的模式，默认值为0。数据类型支持`int64`。Q\_S为1且不带rope输入时该参数无效。input\_layout为TND、TND\_NTD、NTD\_TND时，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)；GQA伪量化场景下综合约束请见[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。当前仅支持取值0、1、2、3、4、9，取值5、6、7、8（分别代表prefix、global、dilated、block\_local）暂未实现，请勿使用。
+
+    | 取值 | 模式名称 | 说明 | `atten_mask`要求 |
+    |------|----------|------|-----------------|
+    | 0 | defaultMask | 如果atten\_mask未传入则不做mask操作，忽略pre\_tokens和next\_tokens（内部赋值为INT\_MAX）；如果传入，则需要传入完整的atten\_mask矩阵（S1\*S2），表示pre\_tokens和next\_tokens之间的部分需要计算 | 可选 |
+    | 1 | allMask | 必须传入完整的atten\_mask矩阵（S1\*S2） | 必须传入(S1\*S2) |
+    | 2 | leftUpCausal | 左上角因果模式的mask | 优化后的atten\_mask矩阵(2048\*2048) |
+    | 3 | rightDownCausal | 右下角因果模式的mask，对应以右顶点为划分的下三角场景 | 优化后的atten\_mask矩阵(2048\*2048) |
+    | 4 | band | band模式的mask | 优化后的atten\_mask矩阵(2048\*2048) |
+    | 9 | treeMask | 推测解码场景的树形注意力掩码。仅MLA场景（query\_rope和key\_rope不为空）支持。不支持左padding、pse\_shift、sharedPrefix，输出dtype不支持int8，每个batch需满足Q\_S ≤ KV\_S | 需传入自定义tree mask |
     
 - **block\_size**（`int`）：可选参数，表示PageAttention中KV存储每个block中最大的token个数，默认为0，数据类型支持`int64`。
 - **query\_quant\_mode**（`int`）：可选参数， 表示query的伪量化方式。仅支持传入3，代表模式3：pertoken叠加perhead模式。
-- **key\_quant\_mode**（`int`）：可选参数，表示key的伪量化方式，默认值为0。取值除了`key_quant_mode`为0且`value_quant_mode`为1的场景外，其他场景取值需要与`value_quant_mode`一致。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- **key\_quant\_mode**（`int`）：可选参数，表示key的伪量化方式，默认值为0。取值除了`key_quant_mode`为0且`value_quant_mode`为1的场景外，其他场景取值需要与`value_quant_mode`一致。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)和[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)。
 
     当Q\_S>=2时，仅支持传入值为0、1；当Q\_S=1时，支持取值0、1、2、3、4、5。
 
@@ -108,11 +174,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - `key_quant_mode`为4时，代表pertoken叠加使用page attention模式管理scale/offset模式。
     - `key_quant_mode`为5时，代表pertoken叠加perhead并使用page attention模式管理scale/offset模式。
 
-- **value\_quant\_mode**（`int`）：可选参数，表示`value`的伪量化方式，模式编号与`key_quant_mode`一致，默认值为0。取值除了`key_quant_mode`为0且`value_quant_mode`为1的场景外，其他场景取值需要与`key_quant_mode`一致。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- **value\_quant\_mode**（`int`）：可选参数，表示`value`的伪量化方式，模式编号与`key_quant_mode`一致，默认值为0。取值除了`key_quant_mode`为0且`value_quant_mode`为1的场景外，其他场景取值需要与`key_quant_mode`一致。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)和[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。
 
     当Q\_S>=2时，仅支持传入值为0、1；当Q\_S=1时，支持取值0、1、2、3、4、5。
 
-- **inner\_precise**（`int`）：可选参数，数据类型支持`int64`，支持4种模式：0、1、2、3。一共两位bit位，第0位（bit0）表示高精度或者高性能选择，第1位（bit1）表示是否做行无效修正。当Q\_S\>1时，sparse\_mode为0或1，并传入用户自定义mask的情况下，建议开启行无效；Q\_S为1时该参数仅支持取0和1。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+- **inner\_precise**（`int`）：可选参数，数据类型支持`int64`，支持4种模式：0、1、2、3。一共两位bit位，第0位（bit0）表示高精度或者高性能选择，第1位（bit1）表示是否做行无效修正。当Q\_S\>1时，sparse\_mode为0或1，并传入用户自定义mask的情况下，建议开启行无效；Q\_S为1时该参数仅支持取0和1。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
 
     - inner\_precise为0时，代表开启高精度模式，且不做行无效修正。
     - inner\_precise为1时，代表高性能模式，且不做行无效修正。
@@ -134,6 +200,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **dequant_scale_key_dtype**（`int`）：可选参数，表示`dequant_scale_key`的数据类型，**预留参数，暂未使用，使用默认值即可。**
 - **dequant_scale_value_dtype**（`int`）：可选参数，表示`dequant_scale_value`的数据类型，**预留参数，暂未使用，使用默认值即可。**
 - **dequant_scale_key_rope_dtype**（`int`）：可选参数，表示`dequant_scale_key_rope`的数据类型，**预留参数，暂未使用，使用默认值即可。**
+- **out_dtype**（`int`）：可选参数，表示输出的数据类型。当输入为`int8`或`float8_e4m3fn`时，可通过该参数指定输出的数据类型（如`float8_e5m2`）。如不使用该功能可传入None。
 
 ## 返回值说明<a name="zh-cn_topic_0000001832267082_section22231435517"></a>
 
@@ -141,6 +208,18 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **softmax\_lse**（`Tensor`）：ring attention算法对query乘key的结果先取max得到softmax\_max，query乘key的结果减去softmax\_max，再取exp，最后取sum，得到softmax\_sum，最后对softmax\_sum取log，再加上softmax\_max得到的结果。数据类型支持`float32`，当`return_softmax_lse`为True时，一般情况下输出shape为\(B, Q\_N, Q\_S, 1\)，若input\_layout为TND/NTD\_TND时，输出shape为\(T,Q\_N,1\)；当`return_softmax_lse`为False时，输出shape为\[1\]的值为0的Tensor。
 
 ## 约束说明<a name="zh-cn_topic_0000001832267082_section12345537164214"></a>
+
+> [!NOTICE]
+> 约束说明按场景组织，可按需查阅：
+>
+> - [**通用约束**](#zh-cn_topic_0000001832267082_section_general_constraint)：入参为空处理、key/value shape一致性、int8量化限制。
+> - [**MLA场景约束**](#zh-cn_topic_0000001832267082_section_mla_constraint)（query_rope和key_rope输入时）：D=512约束、D=128约束、TND场景约束。
+> - [**GQA伪量化+KV NZ格式约束**](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)：KV NZ输入格式、dequant_scale约束、sparse_mode限制、num_query_heads/num_key_value_heads组合限制。
+> - [**learnable_sink约束**](#zh-cn_topic_0000001832267082_section_learnable_sink_constraint)：入参`learnable_sink`在使用时的场景限制。
+> - [**Q_S>1（全量推理）约束**](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)：输入shape限制、sparse_mode限制、page attention限制、量化限制、pse_shift限制、kv伪量化参数分离。
+> - [**Q_S=1（增量推理）约束**](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)：输入shape限制、page attention限制、kv伪量化参数分离。
+
+### 通用约束<a name="zh-cn_topic_0000001832267082_section_general_constraint"></a>
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
@@ -154,6 +233,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
     - 输出为float16的场景：若存在入参quant\_offset\_out或quant\_scale\_out（即不为None），则报错并返回。
     - 入参quant\_offset\_out和quant\_scale\_out支持pertensor或perchannel格式，数据类型支持float32、bfloat16。
+
+### MLA场景约束<a name="zh-cn_topic_0000001832267082_section_mla_constraint"></a>
 
 - query\_rope和key\_rope输入时即为MLA场景，参数约束如下：
     - query\_rope的数据类型、数据格式与query一致。
@@ -196,6 +277,9 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             - page attention场景下仅支持blocksize为16对齐且小于等于1024;
             - MHA场景下仅支持数据类型为`float16`、`bfloat16`，当数据类型为`float16`，inner\_precise仅支持0和1，当数据类型为`bfloat16`，inner\_precise仅支持0。当sparse\_mode=0不传atten\_mask矩阵，sparse\_mode为3/4传优化后的atten\_mask矩阵。page attention仅支持BnBsH格式，BnBsH表示KV Cache的排布格式为（blockNum, blocksize, H），其中blockNum为块数量、blocksize为每个块中的token个数、H为隐藏层大小；
             - 不支持开启左padding、tensorlist、pse、prefix、伪量化、全量化；
+
+### GQA伪量化+KV NZ格式约束<a name="zh-cn_topic_0000001832267082_section_gqa_nz_constraint"></a>
+
 - GQA伪量化场景下KV为NZ格式时的参数约束如下：
     - 支持perchannel和pertoken模式，query数据类型固定为bfloat16，key&value固定为int8；query&key&value的D仅支持128；query Sequence Length仅支持1-16；
     - input\_layout仅支持BSH、BSND、BNSD；
@@ -210,11 +294,17 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - 不支持配置query\_rope和key\_rope；
     - 不支持左padding、tensorlist、pse、prefix、后量化；
     - num\_query\_heads与num\_key\_value\_heads支持组合有(10, 1)、(64, 8)、(80, 8)、(128, 16)。
+
+### learnable_sink约束<a name="zh-cn_topic_0000001832267082_section_learnable_sink_constraint"></a>
+
 - learnable_sink的参数约束如下：
     - 仅支持TND、NTD\_TND；
     - 仅支持value的D小于等于128；
     - 仅支持非量化场景。
     - 不支持pse、左padding、公共前缀、后量化。
+
+### Q_S>1（全量推理）约束<a name="zh-cn_topic_0000001832267082_section_qs_gt1_constraint"></a>
+
 - **当Q\_S大于1时：**
     - query、key、value输入，功能使用限制如下：
         - 支持B轴小于等于65536，D轴32byte不对齐时仅支持到128。
@@ -231,11 +321,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
     - actual\_seq\_qlen：
     
-        <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于query中对应batch的Sequence Length。seqlen的传入长度为1时，每个Batch使用相同seqlen；传入长度大于等于Batch时取seqlen的前Batch个数。其他长度不支持。当query的input\_layout为TND/NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于query中对应batch的Sequence Length。seqlen的传入长度为1时，每个Batch使用相同seqlen；传入长度大于等于Batch时取seqlen的前Batch个数。其他长度不支持。当query的input\_layout为TND/NTD\_TND时，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
         
     - actual\_seq\_kvlen：
     
-        <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的input\_layout为TND/NTD\_TND时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的input\_layout为TND/NTD\_TND时，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
         
     - 参数sparse\_mode当前仅支持值为0、1、2、3、4、9的场景，取其它值时会报错。
 
@@ -316,6 +406,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             </tbody>
             </table>
     
+### Q_S=1（增量推理）约束<a name="zh-cn_topic_0000001832267082_section_qs_eq1_constraint"></a>
+
 - **当Q\_S等于1时：**
     - query、key、value输入，功能使用限制如下：
         - 支持B轴小于等于65536，支持N轴小于等于256，支持S轴小于等于262144，支持D轴小于等于512。
@@ -325,11 +417,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
     - actual\_seq\_qlen：
     
-        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当query的input\_layout不为TND时，Q\_S为1时该参数无效。当query的input\_layout为TND/TND\_NTD时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当query的input\_layout不为TND时，Q\_S为1时该参数无效。当query的input\_layout为TND/TND\_NTD时，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
         
     - actual\_seq\_kvlen：
     
-        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的input\_layout为TND/TND\_NTD时，综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
+        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的input\_layout为TND/TND\_NTD时，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
         
     - page attention场景：
         - 使能必要条件是block\_table存在且有效，同时key、value是按照block\_table中的索引在一片连续内存中排布，在该场景下key、value的input\_layout参数无效。

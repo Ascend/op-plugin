@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-按元素计算self的双曲正切。
+按元素计算Mish激活函数结果。Mish激活函数定义：mish(x) = x * tanh(softplus(x))，其中softplus(x) = ln(1 + e^x)。
 
 ## 函数原型
 
