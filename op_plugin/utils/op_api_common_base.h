@@ -458,15 +458,24 @@ TORCH_NPU_API void GetApiFunc(
 );
 TORCH_NPU_API void InitExecCommonCtx();
 TORCH_NPU_API void UnInitExecCommonCtx();
+TORCH_NPU_API void ReleaseExecCommonCtx();
 TORCH_NPU_API aclrtStream GetAclStream();
 TORCH_NPU_API void SetExecConfig();
 TORCH_NPU_API void SetExecConfigV2(const CacheParams& cache_params);
 TORCH_NPU_API int ExecuteApiFunc(
     const void* opApiFuncAddr,
     aclrtStream acl_stream,
+    void* workspace_addr,
     uint64_t workspace_size,
     aclOpExecutor* executor
 );
+TORCH_NPU_API int ExecuteApiFuncV2(
+    const void* opApiFuncAddr,
+    aclrtStream acl_stream,
+    uint64_t workspace_size,
+    aclOpExecutor* executor
+);
+TORCH_NPU_API void* GetWorkSpaceAddr(uint64_t workspace_size);
 
 TORCH_NPU_API void InitExecSubTheadCtx(aclrtStream acl_stream);
 
@@ -501,18 +510,20 @@ TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable();
         auto converted_params = ConvertTypes(__VA_ARGS__, workspace_size_addr, executor_addr);                         \
         auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);                    \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
+        void* workspace_addr = GetWorkSpaceAddr(workspace_size);                                                      \
         /* 7.定义子线程执行函数 */                                                                                        \
-        auto acl_call = [converted_params, workspace_size, acl_stream, executor, opApiFuncAddr]()->int {               \
+        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor, opApiFuncAddr]()->int {\
             /* 7.1.初始化子进程上下文 */                                                                                  \
             InitExecSubTheadCtx(acl_stream);                                                                           \
             /* 7.2.执行aclnn函数 */                                                                                     \
-            auto api_ret = ExecuteApiFunc(opApiFuncAddr, acl_stream, workspace_size, executor);                        \
+            auto api_ret = ExecuteApiFunc(opApiFuncAddr, acl_stream, workspace_addr, workspace_size, executor);        \
             /* 7.3.清理参数、内存 */                                                                                     \
             ReleaseConvertTypes(converted_params);                                                                     \
-            UnInitExecCommonCtx();                                                                                     \
+            ReleaseExecCommonCtx();                                                                                    \
             return api_ret;                                                                                            \
         };                                                                                                             \
         RunAclCall(#aclnn_api, acl_call);                                                                              \
+        UnInitExecCommonCtx();                                                                                         \
     } while (false)
 
 #define EXEC_NPU_CMD_V2_EXT(aclnn_api, ...)                                                                            \
@@ -551,9 +562,10 @@ TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable();
             auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);                \
             auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                      \
             /* 5.6.执行aclnn函数 */                                                                                     \
-            api_ret = ExecuteApiFunc(opApiFuncAddr, acl_stream, workspace_size, executor);                             \
+            api_ret = ExecuteApiFuncV2(opApiFuncAddr, acl_stream, workspace_size, executor);                             \
             /* 5.7.清理参数、内存 */                                                                                      \
             ReleaseConvertTypes(converted_params);                                                                     \
+            ReleaseExecCommonCtx();                                                                                    \
             UnInitExecCommonCtx();                                                                                     \
             return api_ret;                                                                                            \
         };                                                                                                             \
