@@ -821,5 +821,15 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_rotate_quant_desc"><a name="p_rotate_quant_desc"></a><a name="p_rotate_quant_desc"></a><span>npu_rotate_quant是一种融合旋转（Rotate）和量化（Quant）的计算方法，用于模型性能优化。</span></p>
 </td>
 </tr>
+<tr id="save_npugraph_tensor"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_save_npugraph_tensor"><a name="p_save_npugraph_tensor"></a><a name="p_save_npugraph_tensor"></a><a href="torch_npu-save_npugraph_tensor.md">torch_npu.save_npugraph_tensor</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_save_npugraph_tensor_desc"><a name="p_save_npugraph_tensor_desc"></a><a name="p_save_npugraph_tensor_desc"></a><span>save_npugraph_tensor接口提供了类似原生PyTorch的`torch.save`接口特性且不影响aclgraph捕获、重放的tensor dump能力，允许将aclgraph中间节点的tensor数据、数据类型、shape信息保存到指定二进制文件中以便用户观察aclgraph的执行过程的tensor数据，以快速定位问题。</span></p>
+</td>
+</tr>
+<tr id="print_npugraph_tensor"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_print_npugraph_tensor"><a name="p_print_npugraph_tensor"></a><a name="p_print_npugraph_tensor"></a><a href="torch_npu-print_npugraph_tensor.md">torch_npu.print_npugraph_tensor</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_print_npugraph_tensor_desc"><a name="p_print_npugraph_tensor_desc"></a><a name="p_print_npugraph_tensor_desc"></a><span>print_npugraph_tensor接口提供了类似原生Python的print接口特性且不影响aclgraph捕获、重放的tensor打印能力，允许将aclgraph中间节点的tensor数据、数据类型、shape信息直接打印出来，以便用户观察aclgraph的执行过程中的tensor数据，以快速定位问题。</span></p>
+</td>
+</tr>
 </tbody>
 </table>
