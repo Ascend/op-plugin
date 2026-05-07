@@ -94,14 +94,14 @@ static bool check_v2_param(const c10::optional<at::Tensor> &elastic_info, int64_
         } else {
             output3 = npu_preparation::apply_tensor_without_format({n, 1, h}, expert_ids.options().dtype(at::kHalf));
         }
-
+        float norm_eps_float = static_cast<float>(norm_eps);
         if (check_aclnn_kernel_available("aclnnMoeDistributeCombineAddRmsNormV2")) {
             EXEC_NPU_CMD(aclnnMoeDistributeCombineAddRmsNormV2, expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, residual_x, gamma, tp_send_counts, x_active_mask,
                          activation_scale, weight_scale, group_list, expand_scales,
                          shared_expert_x, elastic_info, ori_x, const_expert_alpha_1, const_expert_alpha_2, const_expert_v,
                          group_ep_ptr, ep_world_size, ep_rank_id,
                          moe_expert_num, group_tp_ptr, tp_world_size, tp_rank_id,
-                         expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type, commAlg_ptr, norm_eps,
+                         expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type, commAlg_ptr, norm_eps_float,
                          zero_expert_num, copy_expert_num, const_expert_num, output, output2, output3);
         } else {
             TORCH_CHECK(!check_v2_param(elastic_info, zero_expert_num, copy_expert_num, const_expert_num), "The aclnnMoeDistributeCombineAddRmsNormV2 is not supported", OPS_ERROR(ErrCode::PARAM));
@@ -111,7 +111,7 @@ static bool check_v2_param(const c10::optional<at::Tensor> &elastic_info, int64_
                          group_ep_ptr, ep_world_size, ep_rank_id,
                          moe_expert_num,
                          group_tp_ptr, tp_world_size, tp_rank_id,
-                         expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type, commAlg_ptr, norm_eps, output, output2, output3);
+                         expert_shard_type, shared_expert_num, shared_expert_rank_num, global_bs_real, out_dtype, comm_quant_mode, group_list_type, commAlg_ptr, norm_eps_float, output, output2, output3);
         }
         return std::tie(output, output2, output3);
     }
