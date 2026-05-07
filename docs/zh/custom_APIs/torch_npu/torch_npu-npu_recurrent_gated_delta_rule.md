@@ -71,7 +71,7 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
     - $D_k$ 表示key向量的维度，其取值范围为$1 \le D_k \le 512$。
     - $D_v$ 表示value向量的维度，其取值范围为$1 \le D_v \le 512$。
     - $BlockNum$为状态矩阵分块数量，其值不小于$T$。
-- 该接口仅支持推理场景下使用。
+- 该接口仅支持在推理场景下使用。
 - 该接口仅支持单算子和静态图模式。
 
 ## 调用示例

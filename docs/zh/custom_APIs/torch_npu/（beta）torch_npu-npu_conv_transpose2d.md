@@ -31,4 +31,4 @@ torch_npu.npu_conv_transpose2d(input, weight, bias, padding, output_padding, str
 - **output_padding**（`List[int]`）：添加到输出shape每个维度一侧的附加尺寸。
 - **stride**（`List[int]`）：卷积核步长。
 - **dilation**（`List[int]`）：内核元素间距。
-- **groups**（`int`）：对输入进行分组。In_channels可被组数整除。
+- **groups**（`int`）：对输入进行分组。in_channels可被组数整除。

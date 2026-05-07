@@ -1,5 +1,8 @@
 # （beta）torch_npu.npu_nms_v4
 
+> [!NOTICE]  
+> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -21,17 +24,17 @@ torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_thres
 
 ## 参数说明
 
-- **boxes** (`Tensor`)：必选参数，shape为[num_boxes, 4]的2D浮点张量。
-- **scores** (`Tensor`)：必选参数，shape为[num_boxes]的1D浮点张量，表示每个框对应的一个分数。
+- **boxes** (`Tensor`)：必选参数，shape为[num_boxes, 4]的2维浮点张量。
+- **scores** (`Tensor`)：必选参数，shape为[num_boxes]的1维浮点张量，表示每个框对应的一个分数。
 - **max_output_size** (`Scalar`)：必选参数，表示non-max suppression下要选择的最大框数的标量。
-- **iou_threshold** (`Tensor`)：必选参数，0D浮点张量，表示框与IoU重叠上限的阈值。
-- **scores_threshold** (`Tensor`)：必选参数，0D浮点张量，表示决定何时删除框的分数阈值。
+- **iou_threshold** (`Tensor`)：必选参数，0维浮点张量，表示框与IoU重叠上限的阈值。
+- **scores_threshold** (`Tensor`)：必选参数，0维浮点张量，表示决定何时删除框的分数阈值。
 - **pad_to_max_output_size** (`bool`)：可选参数，如果为True，则输出的selected_indices将填充为max_output_size长度。默认值为False。
 
 ## 返回值说明
 
-- **selected_indices** (`Tensor`)：shape为[M]的1D整数张量，表示从boxes张量中选定的index，其中M <= max_output_size。
-- **valid_outputs**(`Tensor`)：0D整数张量，表示selected_indices中有效元素的数量，有效元素首先出现。
+- **selected_indices** (`Tensor`)：shape为[M]的1维整数张量，表示从boxes张量中选定的index，其中M <= max_output_size。
+- **valid_outputs**(`Tensor`)：0维整数张量，表示selected_indices中有效元素的数量，有效元素首先出现。
 
 ## 调用示例
 

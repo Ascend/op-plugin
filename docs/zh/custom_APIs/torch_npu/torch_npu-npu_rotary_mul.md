@@ -178,7 +178,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
     >>> x = torch.rand(2, 5, 128).npu()
     >>> r1 = torch.rand(2, 1, 128).npu()
     >>> r2 = torch.rand(2, 1, 128).npu()
-    >>> out = torch_npu.npu_rotary_mul(x, r1, r2，"half")
+    >>> out = torch_npu.npu_rotary_mul(x, r1, r2, "half")
     >>> out
     tensor([[[-0.1200, -0.2515, -0.3189,  ...,  0.2283,  1.1038,  0.3439],
             [ 0.1083,  0.0257,  0.1864,  ...,  0.5940,  0.8644,  0.5961],
@@ -235,5 +235,5 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
         x = torch.rand(2, 2, 5, 128).npu()
         r1 = torch.rand(1, 2, 1, 128).npu()
         r2 = torch.rand(1, 2, 1, 128).npu()
-        out = torch_npu.npu_rotary_mul(x, r1, r2，"interleave", inter_mat_128.npu())
+        out = torch_npu.npu_rotary_mul(x, r1, r2, "interleave", inter_mat_128.npu())
     ```

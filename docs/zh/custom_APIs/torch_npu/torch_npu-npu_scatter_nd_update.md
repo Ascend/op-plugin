@@ -24,14 +24,14 @@ torch_npu.npu_scatter_nd_update(input, indices, updates) -> Tensor
 - **input** (`Tensor`)：必选输入，源数据张量，数据格式支持$ND$，支持非连续的Tensor，数据类型需要与`updates`一致，维数只能是1~8维。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`float16`、`bool`、`bfloat16`、`int64`、`int8`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`float16`、`bool`、`bfloat16`、`int64`、`int8`。
-    - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float32`、`float16`、`bool`。
+    - <term>Atlas 推理系列产品</term>：数据类型支持`float32`、`float16`、`bool`。
     - <term>Atlas 训练系列产品</term>：数据类型支持`float32`、`float16`、`bool`。
       
 - **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`int32`、`int64`，数据格式支持$ND$，支持非连续的Tensor，`indices`中的索引数据不支持越界。
 - **updates** (`Tensor`)：必选输入，更新数据张量，数据格式支持$ND$，支持非连续的Tensor，数据类型需要与`input`一致。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`float16`、`bool`、`bfloat16`、`int64`、`int8`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`float16`、`bool`、`bfloat16`、`int64`、`int8`。
-    - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float32`、`float16`、`bool`。
+    - <term>Atlas 推理系列产品</term>：数据类型支持`float32`、`float16`、`bool`。
     - <term>Atlas 训练系列产品</term>：数据类型支持`float32`、`float16`、`bool`。
 
 ## 返回值

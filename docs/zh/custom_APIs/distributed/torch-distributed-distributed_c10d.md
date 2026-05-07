@@ -26,7 +26,7 @@ torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("
 
 ## 参数说明
 
-- **rankid** (`int`)：必选参数，集合通信对应device的rankid。传入的rankid为全局的rankid，多机间device具有唯一的rankid。
+- **rankid** (`int`)：必选参数，集合通信对应device的rankid。传入的rankid为全局的rankid，多机之间device具有唯一的rankid。
 
 - **init_comm** (`int`)：可选参数，默认值为True。当值为True时，调用`get_hccl_comm_name`会在hccl还未完成初始化的情况下完成初始化，并返回group name。当值为False时，调用`get_hccl_comm_name`在hccl还未完成初始化时，不会进行初始化（包括申请内存资源等操作），并返回空字符串。
 

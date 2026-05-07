@@ -361,7 +361,7 @@
 </thead>
 <tbody><tr id="zh-cn_topic_0000001863035964_row12860101605513"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p486019163553"><a name="zh-cn_topic_0000001863035964_p486019163553"></a><a name="zh-cn_topic_0000001863035964_p486019163553"></a>（<span id="zh-cn_topic_0000001863035964_ph168289415199"><a name="zh-cn_topic_0000001863035964_ph168289415199"></a><a name="zh-cn_topic_0000001863035964_ph168289415199"></a>beta</span>）torch_npu.npu.caching_allocator_alloc</p>
 </td>
-<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863035964_p6146131084320"><a name="zh-cn_topic_0000001863035964_p6146131084320"></a><a name="zh-cn_topic_0000001863035964_p6146131084320"></a>Torch_npu提供内存管理相关的部分接口，具体可参考<a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1-7.3.0/docs/zh/native_apis/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>。</p>
+<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863035964_p6146131084320"><a name="zh-cn_topic_0000001863035964_p6146131084320"></a><a name="zh-cn_topic_0000001863035964_p6146131084320"></a>torch_npu提供内存管理相关的部分接口，具体可参考<a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1-7.3.0/docs/zh/native_apis/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>。</p>
 </td>
 </tr>
 <tr id="zh-cn_topic_0000001863035964_row0860131635519"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p19860111610554"><a name="zh-cn_topic_0000001863035964_p19860111610554"></a><a name="zh-cn_topic_0000001863035964_p19860111610554"></a>（<span id="zh-cn_topic_0000001863035964_ph1545853943420"><a name="zh-cn_topic_0000001863035964_ph1545853943420"></a><a name="zh-cn_topic_0000001863035964_ph1545853943420"></a>beta</span>）torch_npu.npu.caching_allocator_delete</p>
@@ -420,12 +420,12 @@
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>轻量化empty_cache，只释放虚拟内存，调用方式与torch_npu.npu.empty_cache类似。</p>
 </td>
 </tr>
-<tr id="zh-cn_topic_0000001863035964_row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p7819165411224"><a name="zh-cn_topic_0000001863035964_p7819165411224"></a><a name="zh-cn_topic_0000001863035964_p7819165411224"></a>torch.npu.npu.NPUPluggableAllocator</p>
+<tr id="zh-cn_topic_0000001863035964_row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p7819165411224"><a name="zh-cn_topic_0000001863035964_p7819165411224"></a><a name="zh-cn_topic_0000001863035964_p7819165411224"></a>torch_npu.npu.NPUPluggableAllocator</p>
 </td>
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863035964_p172891387259"><a name="zh-cn_topic_0000001863035964_p172891387259"></a><a name="zh-cn_topic_0000001863035964_p172891387259"></a>该接口涉及高危操作，使用请参考<a href="torch-npu-npu-NPUPluggableAllocator.md">torch.npu.npu.NPUPluggableAllocator</a>。</p>
 </td>
 </tr>
-<tr id="zh-cn_topic_0000001863035964_row12478193618244"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p681913541224"><a name="zh-cn_topic_0000001863035964_p681913541224"></a><a name="zh-cn_topic_0000001863035964_p681913541224"></a>torch.npu.npu.change_current_allocator</p>
+<tr id="zh-cn_topic_0000001863035964_row12478193618244"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p681913541224"><a name="zh-cn_topic_0000001863035964_p681913541224"></a><a name="zh-cn_topic_0000001863035964_p681913541224"></a>torch_npu.npu.change_current_allocator</p>
 </td>
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001863035964_p75031810165517"><a name="zh-cn_topic_0000001863035964_p75031810165517"></a><a name="zh-cn_topic_0000001863035964_p75031810165517"></a>该接口涉及高危操作，使用请参考<a href="torch-npu-npu-change_current_allocator.md">torch.npu.npu.change_current_allocator</a>。</p>
 </td>
