@@ -45,6 +45,21 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 ## 参数说明<a name="zh-cn_topic_0000002168254826_section112637109429"></a>
 
+### 参数概览
+
+| 分组 | 参数列表 |
+| ---- | -------- |
+| **核心数据参数** | expand_x (必选), expert_ids (必选), expert_scales (必选), ori_x (可选) |
+| **通信辅助参数** | assist_info_for_combine (必选), ep_send_counts (必选), tp_send_counts (可选), expand_scales (可选), x_active_mask (可选) |
+| **EP通信域参数** | group_ep (必选), ep_world_size (必选), ep_rank_id (必选) |
+| **TP通信域参数** | group_tp (可选), tp_world_size (可选), tp_rank_id (可选) |
+| **专家配置参数** | moe_expert_num (必选), expert_shard_type (可选), shared_expert_num (可选), shared_expert_rank_num (可选), shared_expert_x (可选) |
+| **特殊专家参数** | zero_expert_num (可选), copy_expert_num (可选), const_expert_num (可选), const_expert_alpha_1 (可选), const_expert_alpha_2 (可选), const_expert_v (可选) |
+| **通信配置参数** | global_bs (可选), comm_quant_mode (可选), comm_alg (可选) |
+| **其他参数** | <strong>*</strong> (必选), elastic_info (可选), performance_info (可选) |
+
+### 参数详细说明
+
 - **expand\_x** (`Tensor`)：必选参数，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，数据类型支持`bfloat16`、`float16`，数据格式为$ND$，支持非连续的Tensor。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持共享专家场景。
 
