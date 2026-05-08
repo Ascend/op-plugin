@@ -1,8 +1,12 @@
+# 适配开发及调用
+
 ## 概述
-本样例展示了自定义算子通过torch原生提供的cppextension方式注册eager模式与torch.compile模式的注册样例，eager模式与torch.compile模式的介绍参考：[Link](https://pytorch.org/get-started/pytorch-2.0)。
+
+本样例展示了自定义算子通过torch原生提供的cppextension方式注册eager模式与torch.compile模式的注册样例，eager模式与torch.compile模式的介绍参考：[Link](https://docs.pytorch.ac.cn/docs/stable/generated/torch.compile.html)。
 
 ## 目录结构介绍
-```
+
+```text
 ├── build_and_run.sh                // 自定义算子wheel包编译安装并执行用例的脚本
 ├── csrc                            // 算子适配层c++代码目录
 │   ├── add_custom.cpp              // 自定义算子正反向适配代码以及绑定
@@ -21,21 +25,26 @@
 ## 样例脚本build_and_run.sh关键步骤解析
 
   - 编译适配层代码并生成wheel包
+
     ```bash
     python3 setup.py build bdist_wheel
     ```
 
   - 安装编译生成的wheel包
+
     ```bash
     cd ${BASE_DIR}
     pip3 install dist/*.whl
     ```
 
 ## 自定义算子入图关键步骤解析
+
   可以在test_add_custom_graph.py文件查看相关注册实现。
+
   - 根据Ascend C工程产生的REG_OP算子原型填充torchair.ge.custom_op的参数。
 
     AddCustom的REG_OP原型为：
+
     ```cpp
     REG_OP(AddCustom)
         .INPUT(x, ge::TensorType::ALL())
@@ -45,6 +54,7 @@
     ```
 
   - 注册自定义算子converter
+
     ```python
     from torchair import register_fx_node_ge_converter
     from torchair.ge import Tensor
@@ -58,15 +68,19 @@
     ```
 
 ## 运行样例算子
+
 该样例脚本基于Pytorch2.1、python3.9 运行
+
 ### 1.编译算子工程
-运行此样例前，请参考[编译算子工程](../README.md#operatorcompile)完成前期准备。
+
+运行此样例前，请参考[编译算子工程](https://gitee.com/ascend/samples/blob/master/operator/ascendc/0_introduction/1_add_frameworklaunch/README.md#operatorcompile)完成前期准备。
 
 ### 2.pytorch调用的方式调用样例运行
 
   - 进入到样例目录
 
     以命令行方式下载样例代码，master分支为例。
+
     ```bash
     cd ${git_clone_path}/samples/operator/ascendc/0_introduction/1_add_frameworklaunch/CppExtensionInvocation
     ```
@@ -74,25 +88,33 @@
   - 样例执行
 
     样例执行过程中会自动生成测试数据，然后运行pytorch样例，最后检验运行结果。具体过程可参见build_and_run.sh脚本。
+    
     ```bash
     bash build_and_run.sh
     ```
 
 #### 其他样例运行说明
+
   - 环境安装完成后，样例支持单独执行：eager模式与compile模式的测试用例
+
     - 执行pytorch eager模式的自定义算子测试文件
+
       ```bash
       python3 test_add_custom.py
       ```
+
     - 执行pytorch torch.compile模式的自定义算子测试文件
+
       ```bash
       python3 test_add_custom_graph.py
       ```
 
 ### 其他说明
+
     更加详细的Pytorch适配算子开发指导可以参考[LINK](https://gitee.com/ascend/op-plugin/wikis)中的“算子适配开发指南”。
 
 ## 更新说明
+
 | 时间       | 更新事项     |
 | ---------- | ------------ |
 | 2025/01/17 | 新增本readme |

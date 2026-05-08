@@ -7,8 +7,9 @@
 ### 前提条件
 
 在开始之前，请确保您已完成以下环境的安装。
-1. 完成CANN软件的安装具体请参见《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/canncommercial/850/softwareinst/instg/instg_0000.html)》（商用版）或《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/850/softwareinst/instg/instg_0000.html)》（社区版）。
-2. 完成PyTorch框架的安装具体请参见《[Ascend Extension for PyTorch 软件安装指南](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/installation_guide/installation_description.md)》。
+
+1. 请参考《[CANN 快速安装](https://www.hiascend.com/cann/download)》安装昇腾NPU驱动和CANN软件（包含Toolkit、ops和NNAL包），并配置环境变量。
+2. 请参考《[Ascend Extension for PyTorch 软件安装指南](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/installation_guide/installation_description.md)》完成PyTorch框架的安装。
 
 ### 适配文件结构
 
@@ -31,7 +32,7 @@ cpp_extension_structured/
 
 > [!NOTE]
 >
-> 结构化适配暂未支持前反向绑定，用户可参考[cpp_extension_full/module](./adaptation_description_single.md)章节通过Python绑定。
+> 结构化适配暂未支持前反向绑定，用户可参考[cpp_extension_full/module](../cpp_extension_full/module/README.md)章节通过Python绑定。
 
 1. 算子适配层c++代码目录（csrc）中，通过`npu_custom.yaml`文件完成结构化适配的配置。
 
@@ -81,9 +82,9 @@ cpp_extension_structured/
 
 完成了算子适配开发后，即可实现C++ extensions的方式调用自定义算子。
 
-1.  完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发指南](https://www.hiascend.com/document/detail/zh/canncommercial/850/opdevg/Ascendcopdevg/atlas_ascendc_10_0002.html)》。
+1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发指南](https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html)》。
 
-2.  下载示例代码。
+2. 下载示例代码。
 
     ```bash
     # 下载样例代码
@@ -92,7 +93,7 @@ cpp_extension_structured/
     cd examples/cpp_extension_structured
     ```
 
-3.  完成算子适配，具体可参考[适配开发](#算子适配开发)。
+3. 完成算子适配，具体可参考[适配开发](#算子适配开发)。
 
 4. 执行如下命令，完成编译、安装、测试。
 
@@ -101,8 +102,8 @@ cpp_extension_structured/
     ```
 
     得到结果如下即为执行成功。
+
     ```bash
     Ran xx tests in xx s
     OK
     ```
-

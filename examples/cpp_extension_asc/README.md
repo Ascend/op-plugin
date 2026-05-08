@@ -7,12 +7,13 @@
 ### 前提条件
 
 在开始之前，请确保您已完成以下环境的安装。
-1. 完成CANN软件的安装，具体请参见《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/canncommercial/850/softwareinst/instg/instg_0000.html)》（商用版）或《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/850/softwareinst/instg/instg_0000.html)》（社区版）。
-2. 完成PyTorch框架的安装，具体请参见《[Ascend Extension for PyTorch 软件安装指南](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/installation_guide/installation_description.md)》。
+
+1. 请参考《[CANN 快速安装](https://www.hiascend.com/cann/download)》安装昇腾NPU驱动和CANN软件（包含Toolkit、ops和NNAL包），并配置环境变量。
+2. 请参考《[Ascend Extension for PyTorch 软件安装指南](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/installation_guide/installation_description.md)》完成PyTorch框架的安装。
 
 ### 适配文件结构
 
-```
+```text
 ├── build_and_run.sh                // 自定义算子wheel包编译安装并执行用例的脚本
 ├── csrc                            // 算子适配层c++代码目录
 │   ├── add_custom.asc              // 自定义add算子适配代码、ATen IR注册以及绑定
@@ -25,6 +26,7 @@
     ├── add_aclgraph_test.py        // add用例脚本
     └── trig_aclgraph_test.py       // trig用例脚本
 ```
+
 > [!NOTE]
 > 
 > 以上适配文件仅以add算子和trig算子为例，用户可自行适配自定义算子，更多add算子和trig算子信息可参考[算子详情](#参考信息)。
@@ -180,21 +182,26 @@
 ## 调用样例
 
 完成了算子适配开发后，即可实现C++ extensions的方式调用自定义算子。
-1.  完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发指南](https://www.hiascend.com/document/detail/zh/canncommercial/850/opdevg/Ascendcopdevg/atlas_ascendc_10_0002.html)》。
-2.  下载示例代码。
+
+1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发指南](https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html)》。
+2. 下载示例代码。
+
     ```bash
     # 下载样例代码
     git clone https://gitcode.com/Ascend/op-plugin
     # 进入代码目录
     cd examples/cpp_extension_base
     ```
-3.  完成算子适配，具体可参考[算子适配开发](#算子适配开发)。
-4.  执行如下命令，完成编译、安装，并运行测试脚本。
+
+3. 完成算子适配，具体可参考[算子适配开发](#算子适配开发)。
+4. 执行如下命令，完成编译、安装，并运行测试脚本。
+
     ```bash
     bash build_and_run.sh
     ```
 
     得到结果如下即为执行成功。
+
     ```bash
     Ran xx tests in xx s
     OK
@@ -208,22 +215,18 @@
 
   Add算子实现了两个数据相加，返回相加结果的功能。对应的算子原型为：
   
-  ```
+  ```python
   ascendc_add(Tensor x, Tensor y) -> Tensor
   ```
+
 - 算子规格：
   
   <table>
    <tr><td rowspan="1" align="center">核函数名</td><td colspan="4" align="center">add_custom</td></tr>
-  </tr>
   <tr><td rowspan="3" align="center">算子输入</td><td align="center">name</td><td align="center">shape</td><td align="center">data type</td><td align="center">format</td></tr>
   <tr><td align="center">x</td><td align="center">8 * 2048</td><td align="center">int</td><td align="center">ND</td></tr>
   <tr><td align="center">y</td><td align="center">8 * 2048</td><td align="center">int</td><td align="center">ND</td></tr>
-  </tr>
-  </tr>
   <tr><td rowspan="1" align="center">算子输出</td><td align="center">z</td><td align="center">8 * 2048</td><td align="center">int</td><td align="center">ND</td></tr>
-  </tr>
- 
   </table>
 
 ### trig算子
@@ -232,27 +235,19 @@
 
   该算子入参为x, out_sin ,out_cos, 算子调用后，out_sin会被原地修改为sin(x)计算结果，out_cos会被原地修改为cos(x)计算结果，返回值tan(x)计算结果。对应的算子原型为：
   
-  ```
+  ```python
   ascendc_trig(Tensor x, Tensor(a!) out_sin, Tensor(b!) out_cos) -> Tensor
   ```
+
 - 算子规格：
 
   <table>
   <tr><td rowspan="1" align="center">核函数名</td><td colspan="4" align="center">trig_inplace_custom</td></tr>
-  </tr>
   <tr><td rowspan="4" align="center">算子输入</td><td align="center">name</td><td align="center">shape</td><td align="center">data type</td><td align="center">format</td></tr>
   <tr><td align="center">x</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
   <tr><td align="center">out_sin</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
   <tr><td align="center">out_cos</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
-  
-  </tr>
-  </tr>
   <tr><td rowspan="3" align="center">算子输出</td><td align="center">out_sin</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
   <tr><td align="center">out_cos</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
   <tr><td align="center">out_tan</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
-  </tr>
- 
   </table>
-
-
-
