@@ -5992,7 +5992,7 @@ def npu_moe_token_permute_with_routing_map_grad_meta(permuted_token_out_grad, pr
 
 
 @impl(m, "npu_moe_re_routing")
-def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=None, expert_token_num_type=1, idx_type=0):
+def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=None, expert_token_num_type=1, idx_type=0, tokens_dtype=None):
     permute_tokens_size = []
     permute_per_token_scales_size = []
     permute_token_idx_size = []
@@ -6008,7 +6008,8 @@ def npu_moe_re_routing_meta(tokens, expert_token_num_per_rank, per_token_scales=
         permute_per_token_scales_dtype = per_token_scales.dtype
     permute_token_idx_size.append(tokens.size(0))
     expert_token_num_size.append(expert_token_num_per_rank.size(1))
-    return (torch.empty(permute_tokens_size, dtype=tokens.dtype, device=tokens.device),
+    permute_tokens_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(tokens_dtype) if tokens_dtype is not None else tokens.dtype
+    return (torch.empty(permute_tokens_size, dtype=permute_tokens_dtype, device=tokens.device),
             torch.empty(permute_per_token_scales_size, dtype=permute_per_token_scales_dtype, device=tokens.device),
             torch.empty(permute_token_idx_size, dtype=torch.int32, device=tokens.device),
             torch.empty(expert_token_num_size, dtype=expert_token_num_per_rank.dtype, device=tokens.device))

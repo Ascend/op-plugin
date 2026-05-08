@@ -688,7 +688,7 @@
   "func: npu_ffn_worker_batching(Tensor schedule_context, int expert_num, int[4] max_out_shape, *, int token_dtype=0, int need_schedule=0, int layer_num=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
-  "func: npu_moe_re_routing(Tensor tokens, Tensor expert_token_num_per_rank, *, Tensor? per_token_scales=None, int expert_token_num_type=1, int idx_type=0) -> (Tensor, Tensor, Tensor, Tensor)": {
+  "func: npu_moe_re_routing(Tensor tokens, Tensor expert_token_num_per_rank, *, Tensor? per_token_scales=None, int expert_token_num_type=1, int idx_type=0, int? tokens_dtype=None) -> (Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
   "func: npu_attention_worker_combine(Tensor schedule_context, Tensor expert_scales, Tensor layer_id, int hidden_size, *, int token_dtype=0, int need_schedule=0) -> (Tensor, Tensor)":{
