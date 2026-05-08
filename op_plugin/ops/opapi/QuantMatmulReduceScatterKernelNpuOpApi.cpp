@@ -51,8 +51,8 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     if (is_fp16_or_bf16) {
         if (y_dtype.has_value()) {
             auto y_scalar_type = npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(y_dtype.value()));
-            std::string selfType = c10::getDtypeNames(self.scalar_type()).first;
-            std::string yType = c10::getDtypeNames(y_scalar_type).first;
+            auto selfType = c10::getDtypeNames(self.scalar_type()).first;
+            auto yType = c10::getDtypeNames(y_scalar_type).first;
             TORCH_CHECK(y_scalar_type == self.scalar_type(), "When input is float16 or bfloat16, output should ",
                         "be the same as input dtype. Expected output dtype:", selfType,
                         ", but got:", yType,

@@ -70,8 +70,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
     if (y_scalar_type == at::kBFloat16 || y_scalar_type == at::kHalf) {
         if (y_dtype.has_value()) {
             y_scalar_type = npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(y_dtype.value()));
-            std::string selfType = c10::getDtypeNames(self.scalar_type()).first;
-            std::string yType = c10::getDtypeNames(y_scalar_type).first;
+            auto selfType = c10::getDtypeNames(self.scalar_type()).first;
+            auto yType = c10::getDtypeNames(y_scalar_type).first;
             TORCH_CHECK(y_scalar_type == self.scalar_type(), "When input is float16 or bfloat16, output should ",
                         "be the same as input dtype. Expected output dtype:", selfType,
                         ", but got:", yType,
