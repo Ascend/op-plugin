@@ -4386,6 +4386,9 @@ official:
         dtype: at::native::result_type(self, other)
       exec: aclnnRsub
 
+  - func: _fused_sdp_choice(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None, bool enable_gqa=False) -> int
+    op_api: [v2.7, newest]
+
   - func: scaled_dot_product_attention(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None) -> Tensor
     op_api: v2.1, v2.2, v2.3, v2.4
 

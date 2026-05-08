@@ -5002,5 +5002,8 @@
  	},
   "op_api: torch_npu.npu_quant_max(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
+  },
+  "func: _fused_sdp_choice(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None, bool enable_gqa=False) -> int": {
+    "version": ["v2.7", "newest"]
   }
 }
