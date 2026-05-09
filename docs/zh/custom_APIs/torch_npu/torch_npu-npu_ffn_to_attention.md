@@ -50,14 +50,14 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 
     - K：表示选取topK个专家，取值范围为0 < `K` ≤ 16。
 
-    - ffnRankNum：表示选取ffnRankNum个卡作为FFnWorker,取值范围为0 < `ffnRankNum` < `world_size`
+    - ffnRankNum：表示选取ffnRankNum个卡作为FFNWorker,取值范围为0 < `ffnRankNum` < `world_size`
 
     - attnRankNum：表示选取attnRankNum个卡作为AttnWorker，取值范围为0 < `attnRankNum` < `world_size`。
 
     - sharedExpertNum：表示共享专家数量（一个共享专家可以复制部署到多个ffnRank卡上），取值范围为0 ≤ `sharedExpertNum` ≤ 4。
 
 - 通信域使用约束：
-    - FFNtoAttention算子的通信域中不允许有其他算子。
+    - FFNToAttention算子的通信域中不允许有其他算子。
 
 ## 调用示例<a name="zh-cn_topic_0000002203575833_section14459801435"></a>
 

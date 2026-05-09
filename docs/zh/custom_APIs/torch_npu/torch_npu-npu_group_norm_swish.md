@@ -79,5 +79,5 @@ bias = torch.randn(input.size(1), dtype=torch.float32).npu()
 num_groups = input.size(1)
 eps = 1e-5
 swish_scale = 1.0
-  out, mean, rstd = torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=eps, swish_scale=swish_scale)
+out, mean, rstd = torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=eps, swish_scale=swish_scale)
 ```

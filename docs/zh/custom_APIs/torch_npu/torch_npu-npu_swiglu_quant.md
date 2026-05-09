@@ -1,5 +1,8 @@
 # torch\_npu.npu\_swiglu\_quant
 
+> [!NOTICE]  
+> 此接口为本版本新增功能，具体依赖要求请参考《版本说明》中的“[接口变更说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/release_notes/release_notes.md#%E6%8E%A5%E5%8F%A3%E5%8F%98%E6%9B%B4%E8%AF%B4%E6%98%8E)”。
+
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
@@ -34,7 +37,7 @@
             out=out*smooth\_scales
             $$
 
-        2. 动态/静态量化操作：对激活后的结果进行量化，以动态量化（dynamic_quant）为例，详细数学公式请参考[aclnnSwiGluQuantV2](https://www.hiascend.com/document/detail/zh/canncommercial/850/API/aolapi/context/ops-nn/aclnnSwiGluQuantV2.md)。
+        2. 动态/静态量化操作：对激活后的结果进行量化，以动态量化（dynamic_quant）为例，详细数学公式请参考[aclnnSwiGluQuantV2](https://www.hiascend.com/document/detail/zh/canncommercial/900/API/aolapi/context/ops-nn/aclnnSwiGluQuantV2.md)。
             $$
             out,scale=dynamic\_quant(out)
             $$

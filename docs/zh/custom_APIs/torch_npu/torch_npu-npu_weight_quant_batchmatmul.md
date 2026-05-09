@@ -116,19 +116,19 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
 
-             ```python
-             import torch
-             import torch_npu
-             # 输入int8+ND 
-             cpu_x = torch.randn((8192, 320),dtype=torch.float16)
-             cpu_weight = torch.randint(low=-8, high=8, size=(320, 256),dtype=torch.int8)
-             cpu_antiquantscale = torch.randn((1, 256),dtype=torch.float16)
-             cpu_antiquantoffset = torch.randn((1, 256),dtype=torch.float16)
-             cpu_quantscale = torch.randn((1, 256),dtype=torch.float32)
-             cpu_quantoffset = torch.randn((1, 256),dtype=torch.float32)
-             quantscale= torch_npu.npu_trans_quant_param(cpu_quantscale.npu(), cpu_quantoffset.npu())
-             npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(),quantscale.npu())
-             ```
+            ```python
+            import torch
+            import torch_npu
+            # 输入int8+ND 
+            cpu_x = torch.randn((8192, 320),dtype=torch.float16)
+            cpu_weight = torch.randint(low=-8, high=8, size=(320, 256),dtype=torch.int8)
+            cpu_antiquantscale = torch.randn((1, 256),dtype=torch.float16)
+            cpu_antiquantoffset = torch.randn((1, 256),dtype=torch.float16)
+            cpu_quantscale = torch.randn((1, 256),dtype=torch.float32)
+            cpu_quantoffset = torch.randn((1, 256),dtype=torch.float32)
+            quantscale= torch_npu.npu_trans_quant_param(cpu_quantscale.npu(), cpu_quantoffset.npu())
+            npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(),quantscale.npu())
+            ```
 
     - weight transpose+antiquant\_scale场景，仅支持如下产品：
 
@@ -136,77 +136,77 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
         - <term>Atlas 推理系列加速卡产品</term>
 
-             ```python
-             import torch
-             import torch_npu
-             cpu_x = torch.randn((96, 320),dtype=torch.float16)
-             cpu_weight = torch.randint(low=-8, high=8, size=(256, 320),dtype=torch.int8)
-             cpu_antiquantscale = torch.randn((256),dtype=torch.float16)
-             # 构建int64类型的scale参数
-             antiquant_scale = torch_npu.npu_trans_quant_param(cpu_antiquantscale.to(torch.float32).npu()).reshape(256, 1)
-             cpu_antiquantoffset = torch.randint(-128, 127, (256, 1), dtype=torch.int32)
-             npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), cpu_weight.transpose(-1,-2).npu(), antiquant_scale.transpose(-1,-2).npu(), cpu_antiquantoffset.transpose(-1,-2).npu())
-             ```
+            ```python
+            import torch
+            import torch_npu
+            cpu_x = torch.randn((96, 320),dtype=torch.float16)
+            cpu_weight = torch.randint(low=-8, high=8, size=(256, 320),dtype=torch.int8)
+            cpu_antiquantscale = torch.randn((256),dtype=torch.float16)
+            # 构建int64类型的scale参数
+            antiquant_scale = torch_npu.npu_trans_quant_param(cpu_antiquantscale.to(torch.float32).npu()).reshape(256, 1)
+            cpu_antiquantoffset = torch.randint(-128, 127, (256, 1), dtype=torch.int32)
+            npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), cpu_weight.transpose(-1,-2).npu(), antiquant_scale.transpose(-1,-2).npu(), cpu_antiquantoffset.transpose(-1,-2).npu())
+            ```
 
     - weight transpose+antiquant\_scale场景，仅支持如下产品：
 
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
 
-             ```python
-             import torch
-             import torch_npu
-             # 输入int8+ND 
-             cpu_x = torch.randn((96, 320),dtype=torch.float16)
-             cpu_weight = torch.randint(low=-8, high=8, size=(256, 320),dtype=torch.int8)
-             cpu_antiquantscale = torch.randn((256,1),dtype=torch.float16)
-             cpu_antiquantoffset = torch.randint(-128, 127, (256,1), dtype=torch.float16)
-             npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), cpu_weight.npu().transpose(-1, -2), cpu_antiquantscale.npu().transpose(-1, -2), cpu_antiquantoffset.npu().transpose(-1, -2))
-             ```
+            ```python
+            import torch
+            import torch_npu
+            # 输入int8+ND 
+            cpu_x = torch.randn((96, 320),dtype=torch.float16)
+            cpu_weight = torch.randint(low=-8, high=8, size=(256, 320),dtype=torch.int8)
+            cpu_antiquantscale = torch.randn((256,1),dtype=torch.float16)
+            cpu_antiquantoffset = torch.randint(-128, 127, (256,1), dtype=torch.float16)
+            npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), cpu_weight.npu().transpose(-1, -2), cpu_antiquantscale.npu().transpose(-1, -2), cpu_antiquantoffset.npu().transpose(-1, -2))
+            ```
 
 - 图模式调用
     - weight输入为ND格式
 
-         ```python
-         # 图模式
-         import torch
-         import torch_npu
-         import  torchair as tng
-         from torchair.configs.compiler_config import CompilerConfig
-         config = CompilerConfig()
-         config.debug.graph_dump.type = "pbtxt"
-         npu_backend = tng.get_npu_backend(compiler_config=config)
+        ```python
+        # 图模式
+        import torch
+        import torch_npu
+        import  torchair as tng
+        from torchair.configs.compiler_config import CompilerConfig
+        config = CompilerConfig()
+        config.debug.graph_dump.type = "pbtxt"
+        npu_backend = tng.get_npu_backend(compiler_config=config)
         
-         cpu_x = torch.randn((8192, 320),device='npu',dtype=torch.bfloat16)
-         cpu_weight = torch.randint(low=-8, high=8, size=(320, 256), dtype=torch.int8, device='npu')
-         cpu_antiquantscale = torch.randn((1, 256),device='npu',dtype=torch.bfloat16)
-         cpu_antiquantoffset = torch.randn((1, 256),device='npu',dtype=torch.bfloat16)
+        cpu_x = torch.randn((8192, 320),device='npu',dtype=torch.bfloat16)
+        cpu_weight = torch.randint(low=-8, high=8, size=(320, 256), dtype=torch.int8, device='npu')
+        cpu_antiquantscale = torch.randn((1, 256),device='npu',dtype=torch.bfloat16)
+        cpu_antiquantoffset = torch.randn((1, 256),device='npu',dtype=torch.bfloat16)
         
-         class MyModel(torch.nn.Module):
-             def __init__(self):
-                 super().__init__()
+        class MyModel(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
         
-             def forward(self, x, weight, antiquant_scale, antiquant_offset, quant_scale,quant_offset, bias, antiquant_group_size):
-                 return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, quant_scale ,quant_offset, bias, antiquant_group_size)
+            def forward(self, x, weight, antiquant_scale, antiquant_offset, quant_scale,quant_offset, bias, antiquant_group_size):
+                return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, quant_scale ,quant_offset, bias, antiquant_group_size)
         
-         cpu_model = MyModel()
-         model = cpu_model.npu()
-         model = torch.compile(model, backend=npu_backend, dynamic=True)
-         npu_out = model(cpu_x.npu(), cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
-         ```
+        cpu_model = MyModel()
+        model = cpu_model.npu()
+        model = torch.compile(model, backend=npu_backend, dynamic=True)
+        npu_out = model(cpu_x.npu(), cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
+        ```
 
     - weight输入为FRACTAL\_NZ格式，仅支持<term>Atlas 推理系列加速卡产品</term>。
 
-         ```python
-         import torch_npu
-         import torch
-         from torchair.configs.compiler_config import CompilerConfig
-         import torchair as tng
-         config = CompilerConfig()
-         config.debug.graph_dump.type = "pbtxt"
-         npu_backend = tng.get_npu_backend(compiler_config=config)
-         class NPUQuantizedLinearA16W8(torch.nn.Module):
-             def __init__(self,
+        ```python
+        import torch_npu
+        import torch
+        from torchair.configs.compiler_config import CompilerConfig
+        import torchair as tng
+        config = CompilerConfig()
+        config.debug.graph_dump.type = "pbtxt"
+        npu_backend = tng.get_npu_backend(compiler_config=config)
+        class NPUQuantizedLinearA16W8(torch.nn.Module):
+            def __init__(self,
                          weight,
                          antiquant_scale,
                          antiquant_offset,
@@ -234,8 +234,8 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
                 self.quant_scale = quant_scale
                 self.transpose_x = transpose_x
         
-             def forward(self, x):
-                 x = torch_npu.npu_weight_quant_batchmatmul(x.transpose(0, 1) if self.transpose_x else x,
+            def forward(self, x):
+                x = torch_npu.npu_weight_quant_batchmatmul(x.transpose(0, 1) if self.transpose_x else x,
                                                            self.weight.transpose(0, 1),
                                                            self.antiquant_scale.transpose(0, 1),
                                                            self.antiquant_offset.transpose(0, 1),
@@ -245,16 +245,16 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
                 return x
         
         
-         m, k, n = 4, 1024, 4096
-         cpu_x = torch.randn((m, k),dtype=torch.float16)
-         cpu_weight = torch.randint(1, 10, (k, n),dtype=torch.int8)
-         cpu_weight = cpu_weight.transpose(-1, -2)
+        m, k, n = 4, 1024, 4096
+        cpu_x = torch.randn((m, k),dtype=torch.float16)
+        cpu_weight = torch.randint(1, 10, (k, n),dtype=torch.int8)
+        cpu_weight = cpu_weight.transpose(-1, -2)
         
-         cpu_antiquantscale = torch.randn((1, n),dtype=torch.float16)
-         cpu_antiquantoffset = torch.randn((1, n),dtype=torch.float16)
-         cpu_antiquantscale = cpu_antiquantscale.transpose(-1, -2)
-         cpu_antiquantoffset = cpu_antiquantoffset.transpose(-1, -2)
-         model = NPUQuantizedLinearA16W8(cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu())
-         model = torch.compile(model, backend=npu_backend, dynamic=True)
-         out = model(cpu_x.npu())
-         ```
+        cpu_antiquantscale = torch.randn((1, n),dtype=torch.float16)
+        cpu_antiquantoffset = torch.randn((1, n),dtype=torch.float16)
+        cpu_antiquantscale = cpu_antiquantscale.transpose(-1, -2)
+        cpu_antiquantoffset = cpu_antiquantoffset.transpose(-1, -2)
+        model = NPUQuantizedLinearA16W8(cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu())
+        model = torch.compile(model, backend=npu_backend, dynamic=True)
+        out = model(cpu_x.npu())
+        ```
