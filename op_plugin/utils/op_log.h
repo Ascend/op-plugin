@@ -55,24 +55,6 @@ extern thread_local int log_depth;
         }                                                                                                                                   \
     } while (0);
 
-// Logging function for op execute with task queue (for array-based params).
-#define OP_EXEC_LOG_EXT_WITH_TASK_QUEUE(op_name, exec_cmd, task_queue, params_log_info)                                                     \
-    do {                                                                                                                                    \
-        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::INFO && op_plugin::logging::log_depth == 0) {         \
-            op_plugin::logging::log_depth += 1;                                                                                             \
-            op_plugin::logging::LOGGER->long_info(__FILE__, __LINE__, "%s %s with task_queue = %s%s",                                       \
-                         op_name, exec_cmd, task_queue, params_log_info);                                                                   \
-            op_plugin::logging::log_depth -= 1;                                                                                             \
-        }                                                                                                                                   \
-        if (op_plugin::logging::LOGGER->getAllowLevel() == npu_logging::LoggingLevel::DEBUG && op_plugin::logging::log_depth == 0) {        \
-            op_plugin::logging::log_depth += 1;                                                                                             \
-            at_npu::native::OpCommand cmd;                                                                                                  \
-            op_plugin::logging::LOGGER->long_info(__FILE__, __LINE__, "%s %s with task_queue = %s%s",                                       \
-                op_name, exec_cmd, task_queue, params_log_info);                                                                            \
-            op_plugin::logging::log_depth -= 1;                                                                                             \
-        }                                                                                                                                   \
-    } while (0);
-
 // Logging function for op execute.
 #define OP_EXEC_LOG(op_name, exec_cmd, ...)                                                                                                 \
     do {                                                                                                                                    \
