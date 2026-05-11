@@ -51,6 +51,9 @@ at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
 
 at::Tensor max(const at::Tensor &self)
 {
+    TORCH_CHECK(self.numel() > 0,
+    "max(): Expected reduction dim to be specified for input.numel() == 0. "
+    "Specify the reduction dim with the 'dim' argument.");
     DO_COMPATIBILITY(aclnnMax, acl_op::max(self));
     at::SmallVector<int64_t, op_infer::SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);

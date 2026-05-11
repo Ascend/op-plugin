@@ -29,6 +29,7 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(
     int64_t blank,
     bool zero_infinity)
 {
+    TORCH_CHECK(log_probs.numel() > 0, "_ctc_loss: log_probs tensor must not be empty");
     DO_COMPATIBILITY(aclnnCtcLoss, acl_op::_ctc_loss(log_probs, targets, input_lengths_list, target_lengths_list, blank,
                                                      zero_infinity));
 

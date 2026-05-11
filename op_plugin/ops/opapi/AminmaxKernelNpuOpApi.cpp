@@ -27,6 +27,9 @@ std::tuple<at::Tensor, at::Tensor> aminmax(const at::Tensor &self,
     if (dim.has_value()) {
         dims = dim.value();
     } else {
+        TORCH_CHECK(
+        self.numel() > 0,
+        "aminmax(): cannot compute aminmax over an empty dimension as the operation has no identity.");
         dimlist = op_plugin::utils::get_dimlist_for_tensor(self);
         dims = dimlist;
     }

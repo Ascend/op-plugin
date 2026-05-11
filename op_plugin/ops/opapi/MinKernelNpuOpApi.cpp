@@ -51,6 +51,9 @@ at::Tensor& minimum_out(const at::Tensor& self, const at::Tensor& other, at::Ten
 
 at::Tensor min(const at::Tensor& self)
 {
+    TORCH_CHECK(self.numel() > 0,
+    "min(): Expected reduction dim to be specified for input.numel() == 0. "
+    "Specify the reduction dim with the 'dim' argument.");
     DO_COMPATIBILITY(aclnnMin, acl_op::min(self));
     at::SmallVector<int64_t, op_infer::SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
