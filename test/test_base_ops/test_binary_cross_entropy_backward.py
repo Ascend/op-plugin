@@ -60,7 +60,6 @@ class TestBinaryCrossEntropyBackward(TestCase):
         res = res.numpy()
         return npu_input, res
 
-    @unittest.skip("Temporarily skipping")
     def test_binary_cross_entropy_backward_float16(self):
         shape_list = [(10, 64)]
         reduction_list = ["none", "mean", "sum"]
@@ -78,7 +77,6 @@ class TestBinaryCrossEntropyBackward(TestCase):
             self.assertRtolEqual(cpu_output, npu_output)
             self.assertRtolEqual(cpu_grad, npu_grad)
 
-    @unittest.skip("Temporarily skipping")
     def test_binary_cross_entropy_backward_float32(self):
         shape_list = [(10, 64)]
         reduction_list = ["none", "mean", "sum"]
@@ -96,7 +94,6 @@ class TestBinaryCrossEntropyBackward(TestCase):
             self.assertRtolEqual(cpu_output, npu_output)
             self.assertRtolEqual(cpu_grad, npu_grad)
 
-    @unittest.skip("Temporarily skipping")
     def test_binary_cross_entropy_backward_with_weight_float16(self):
         shape_list = [(10, 64)]
         reduction_list = ["none", "mean", "sum"]
@@ -115,7 +112,6 @@ class TestBinaryCrossEntropyBackward(TestCase):
             self.assertRtolEqual(cpu_output, npu_output)
             self.assertRtolEqual(cpu_grad, npu_grad)
 
-    @unittest.skip("Temporarily skipping")
     def test_binary_cross_entropy_backward_with_weight_float32(self):
         shape_list = [(10, 64)]
         reduction_list = ["none", "mean", "sum"]
