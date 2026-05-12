@@ -5955,6 +5955,49 @@ def npu_batch_gather_matmul__meta(self, x, weight_b, indices, weight_a=None,
 
 @impl(m, "npu_gather_backward")
 def npu_gather_backward__meta(grad, self_size, dim, index, sparse_grad):
+    if sparse_grad:
+        self_dim = len(self_size)
+        if self_dim == 0:
+            return torch.sparse_coo_tensor(
+                torch.empty((0, grad.numel()), dtype=index.dtype, device=grad.device),
+                grad,
+                self_size,
+                device=grad.device,
+            )
+        if grad.dim() == 0:
+            return torch.sparse_coo_tensor(
+                index.view(1, 1),
+                grad,
+                self_size,
+                device=grad.device,
+            )
+
+        sparse_ind = torch.empty((self_dim, grad.numel()), dtype=torch.long, device=grad.device)
+        grad_numel = grad.numel()
+        if grad_numel > 0:
+            n_above = grad_numel
+            n_below = 1
+            if dim < 0:
+                dim += self_dim
+            for i in range(self_dim):
+                n_above //= grad.size(i)
+                if i == dim:
+                    sparse_ind[i] = index.reshape(-1)
+                else:
+                    sparse_ind[i] = (
+                        torch.arange(grad.size(i), dtype=torch.long, device=grad.device)
+                        .unsqueeze(1)
+                        .expand(grad.size(i), n_above)
+                        .reshape(-1)
+                        .repeat(n_below)
+                    )
+                n_below *= grad.size(i)
+        return torch.sparse_coo_tensor(
+            sparse_ind,
+            grad.reshape(-1),
+            self_size,
+            device=grad.device,
+        )
     return torch.empty(self_size, dtype=grad.dtype, device=grad.device)
 
 
