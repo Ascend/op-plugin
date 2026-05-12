@@ -1,5 +1,5 @@
 {
-  "torch_npu": 
+  "torch_npu":
   {
     "v2.1": [],
     "v2.5": [],
@@ -73,6 +73,16 @@
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward"
     ],
+    "v2.13": [
+ 	    "npu_gelu_mul",
+ 	    "npu_clipped_swiglu",
+ 	    "npu_sim_exponential_",
+ 	    "npu_fused_floyd_attention",
+ 	    "npu_fused_floyd_attention_backward",
+ 	    "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward"
+ 	  ],
     "all_version": [
       "_npu_dropout",
       "copy_memory_",
@@ -184,5 +194,5 @@
       "npu_quant_max"
     ]
   }
-  
+
 }

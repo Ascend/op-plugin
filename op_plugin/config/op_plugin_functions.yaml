@@ -1,4 +1,4 @@
-all_version: [v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10, v2.11, v2.12]
+all_version: [v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10, v2.11, v2.12, v2.13]
 official:
   - func: __ilshift__.Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
     acl_op: all_version
@@ -616,7 +616,7 @@ official:
   - func: _linalg_svd(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None) -> (Tensor U, Tensor S, Tensor Vh)
     acl_op: [v2.1, newest]
     op_api: all_version
-    
+
   - func: _linalg_svd.U(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None, Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh)
     acl_op: [v2.1, newest]
     op_api: all_version
@@ -966,7 +966,7 @@ official:
   - func: addmm_(Tensor(a!) self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
-  
+
   - func: _addmm_activation.out(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, bool use_gelu=False, Tensor(a!) out) -> Tensor(a!)
     op_api: all_version
 
@@ -1497,7 +1497,7 @@ official:
     acl_op: all_version
     op_api: all_version
     internal_format_opapi: all_version
-  
+
   - func: bmm.dtype(Tensor self, Tensor mat2, ScalarType output_dtype) -> Tensor
     op_api: [v2.9, newest]
     internal_format_opapi: [v2.9, newest]
@@ -1505,7 +1505,7 @@ official:
   - func: bmm.dtype_out(Tensor self, Tensor mat2, ScalarType output_dtype, *, Tensor(a!) out) -> Tensor(a!)
     op_api: [v2.9, newest]
     internal_format_opapi: [v2.9, newest]
-  
+
   - func: bucketize.Scalar(Scalar self, Tensor boundaries, *, bool out_int32=False, bool right=False) -> Tensor
     op_api: all_version
 
@@ -1742,9 +1742,9 @@ official:
 
   - func: _chunk_cat(Tensor[] tensors, int dim, int num_chunks) -> Tensor
     op_api: [v2.1, newest]
-  
+
   - func: _chunk_cat.out(Tensor[] tensors, int dim, int num_chunks, *, Tensor(a!) out) -> Tensor(a!)
-    op_api: [v2.1, newest]      
+    op_api: [v2.1, newest]
 
   - func: complex(Tensor real, Tensor imag) -> Tensor
     acl_op: all_version
@@ -1793,7 +1793,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      resutl:
+      result:
         size: self
         dtype: 'isIntegralType(self.scalar_type(), true) ? at::kFloat : self.scalar_type()'
         name: self
@@ -5464,7 +5464,7 @@ custom:
   - func: npu_mhc_pre_backward(Tensor x, Tensor phi, Tensor alpha, Tensor grad_h_in, Tensor grad_h_post, Tensor grad_h_res, Tensor inv_rms, Tensor h_mix, Tensor h_pre, Tensor h_post, Tensor? gamma=None, float hc_eps=1e-6, Tensor? grad_x_post=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
     internal_format_opapi: all_version
-    
+
   - func: npu_top_k_top_p_sample(Tensor logits, Tensor top_k, Tensor top_p, Tensor? q=None, float? eps=1e-8, bool? is_need_logits=False, int? top_k_guess=32, Tensor? min_ps=None, int? ks_max=1024, bool? input_is_logits=True, str? post_sample='qSample', Generator? generator=None) -> (Tensor, Tensor)
     op_api: all_version
     tags: nondeterministic_seeded
@@ -6352,7 +6352,7 @@ custom:
         size: x
         dtype: x
       exec: aclnnMhcPost
-  
+
   - func: npu_mhc_post_backward(Tensor grad_output, Tensor x, Tensor h_res, Tensor h_out, Tensor h_post) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
     gen_opapi:
@@ -7455,10 +7455,10 @@ custom:
     op_api: [v2.6, newest]
     exposed: [v2.6, newest]
     internal_format_opapi: [v2.6, newest]
-  
+
   - func: npu_dynamic_block_mx_quant(Tensor input, *, str round_mode="rint", int dst_type=296, int scale_alg=0, float dst_type_max=0.0) -> (Tensor, Tensor, Tensor)
     op_api: all_version
-  
+
   - func: npu_chunk_gated_delta_rule(Tensor query, Tensor key, Tensor value, *, Tensor? beta=None, Tensor? initial_state=None, Tensor? actual_seq_lengths=None, float? scale=None, Tensor? g=None) -> (Tensor, Tensor)
     op_api: all_version
 

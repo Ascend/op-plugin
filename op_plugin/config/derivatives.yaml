@@ -1,4 +1,4 @@
-all_version: [v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10, v2.11, v2.12]
+all_version: [v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10, v2.11, v2.12, v2.13]
 backward:
 - name: linalg_cholesky(Tensor self, *, bool upper=False) -> Tensor
   self: cholesky_backward(grad, upper, result)
@@ -319,7 +319,7 @@ backward:
   output_differentiability: [true, false, false, false]
   permuted_tokens, probs: "drop_and_pad ? npu_moe_token_unpermute_with_routing_map_grad(grad, result1, result2, routing_map, permuted_tokens, probs, drop_and_pad, restore_shape) : npu_moe_token_unpermute_with_routing_map_grad(grad, sorted_indices, sorted_indices, routing_map, permuted_tokens, probs, drop_and_pad, restore_shape)"
   version: [v2.1, newest]
-  
+
 - name: npu_moe_token_permute(Tensor tokens, Tensor indices, int? num_out_tokens=None, bool padded_mode=False) -> (Tensor, Tensor)
   tokens: npu_moe_token_permute_grad(tokens, grad, indices, result1, padded_mode)
   version: [v2.1, newest]

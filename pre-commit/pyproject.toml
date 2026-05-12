@@ -73,6 +73,9 @@ disable = [
   "unused-variable",
   "unused-import",
 
+  # 跨文件重复代码（测试辅助方法允许重复）
+  "duplicate-code",
+
   # 所有保护成员访问警告
   "protected-access",
 
