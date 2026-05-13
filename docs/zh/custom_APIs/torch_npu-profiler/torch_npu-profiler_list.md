@@ -24,3 +24,5 @@
 | [torch_npu.profiler.profiler.analyse](./torch_npu-profiler-profiler-analyse.md) | Ascend PyTorch Profiler性能数据离线解析。                    |
 | [torch_npu.profiler.profile.enable_profiler_in_child_thread](./torch_npu-profiler-profile-enable_profiler_in_child_thread.md) | 注册Profiler采集回调函数。                                   |
 | [torch_npu.profiler.profile.disable_profiler_in_child_thread](./torch_npu-profiler-profile-disable_profiler_in_child_thread.md) | 注销Profiler采集回调函数。                                   |
+| [set_custom_trace_id_callback](set_custom_trace_id_callback.md) | 设置生成trace_id的回调。                                     |
+| [get_trace_id](get_trace_id.md)                              | 获取当前的trace_id。                                         |
