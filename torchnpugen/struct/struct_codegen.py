@@ -21,7 +21,7 @@ import yaml
 
 from torchnpugen.code_template import CodeTemplate
 from torchnpugen.gen import FileManager
-from torchnpugen.model import (BaseTy, SchemaKind, BaseType, NativeFunction)
+from torchnpugen.model import SchemaKind, NativeFunction
 from torchnpugen.op_codegen_utils import concatMap, PathManager
 from torchnpugen.context import native_function_manager
 from torchnpugen.api.types import NativeSignature
@@ -38,6 +38,7 @@ PYTORCH_VERSION = os.environ.get('PYTORCH_VERSION').split('.')
 ACLNN_FUNCTIONS_DEFINITION = CodeTemplate("""\
 ${return_type} ${func_name}(${args_str})
 {
+    ${integral_identity_guard}
     ${do_compatibility}
     ${new_params_def}
     ${compute_names}
@@ -61,6 +62,14 @@ ${return_type} ${func_name}(${args_str})
 
 DO_COMPATIBILITY = CodeTemplate("""\
 DO_COMPATIBILITY(${aclnnname}, acl_op::${func_name}(${args_exprs_str}));
+""")
+
+
+INTEGRAL_IDENTITY_GUARD = CodeTemplate("""\
+if (at::isIntegralType(${tensor}.scalar_type(), /*includeBool=*/false)) {
+    return acl_op::${func_name}(${args_exprs_str});
+}
+
 """)
 
 
@@ -95,6 +104,7 @@ def is_support_version(op):
 
     def parse_version(v):
         return tuple(map(int, v.lstrip('v').split('.')))
+
     if op_api_version is None:
         is_support = False
     elif op_api_version == 'all_version':
@@ -120,7 +130,7 @@ def filt_op_branch(struct_ops: Dict) -> Dict:
             if is_support_version(op):
                 SYMINT_OPS.add(op['func'].split("(")[0])
 
-    filt_ops = list(filter(lambda op: filt_gen_opapi(op), support_ops))
+    filt_ops = [op for op in support_ops if filt_gen_opapi(op)]
     return filt_ops
 
 
@@ -133,7 +143,7 @@ def remove_empty_lines(text):
 def parse_struct_yaml(path, native_functions: Sequence[NativeFunction]) -> List[StructInfo]:
     path = os.path.realpath(path)
     PathManager.check_directory_path_readable(path)
-    with open(path, 'r') as struct_file:
+    with open(path, 'r', encoding='utf-8') as struct_file:
         struct_ops = yaml.safe_load(struct_file)
 
     filt_ops = filt_op_branch(struct_ops)
@@ -174,65 +184,90 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
             delegate_name = cpp.name(delegate_function.func)
             delegate_name = delegate_name + '_symint' if is_symint else delegate_name
             delegate_args_exprs_str = f'{args_exprs_str}, {f.func.arguments.self_arg.argument.name}'
-            return [ACLNN_FUNCTIONS_DELEGATE.substitute(
+            return [
+                ACLNN_FUNCTIONS_DELEGATE.substitute(
                     return_type=return_type,
                     func_name=name,
                     args_str=args_str,
                     func_name_out=delegate_name,
-                    args_str_out=delegate_args_exprs_str,)]
+                    args_str_out=delegate_args_exprs_str,
+                )
+            ]
 
-        do_compatibility = DO_COMPATIBILITY.substitute(aclnnname=struct.aclnn_name,
-                                                       func_name=name,
-                                                       args_exprs_str=args_exprs_str) if struct.acl_op else ""
+        do_compatibility = (
+            DO_COMPATIBILITY.substitute(aclnnname=struct.aclnn_name, func_name=name, args_exprs_str=args_exprs_str)
+            if struct.acl_op
+            else ""
+        )
+
+        integral_identity_guard = ""
+        if struct.integral_identity_tensor is not None:
+            integral_identity_guard = INTEGRAL_IDENTITY_GUARD.substitute(
+                tensor=struct.integral_identity_tensor, func_name=name, args_exprs_str=args_exprs_str
+            )
 
         tensor_arguments = ", ".join(filt_input_tensor(f.func.arguments.flat_non_out))
 
         new_params_def = "".join(
-            [f"auto {para_name} = {para_def};\n" for para_name, para_def in struct.new_params.items()])
+            [f"auto {para_name} = {para_def};\n" for para_name, para_def in struct.new_params.items()]
+        )
 
-        valid_param_set = set(struct.new_params.keys()) | set(map(lambda arg: arg.name, args)) | \
-                          set(map(lambda res: res.name, res_infos))
+        valid_param_set = (
+            set(struct.new_params.keys())
+            | set(map(lambda arg: arg.name, args))
+            | set(map(lambda res: res.name, res_infos))
+        )
         aclnn_params_set = set(map(lambda arg: arg.strip(), struct.cmd_args.split(',')[1:]))
 
         if not aclnn_params_set.issubset(valid_param_set):
-            raise RuntimeError(f"exec configuration field contains invalid parameters"
-                               f"{aclnn_params_set - valid_param_set}")
+            raise RuntimeError(
+                f"exec configuration field contains invalid parameters{aclnn_params_set - valid_param_set}"
+            )
 
         size_map, dtype_map = gen_size_dtype_map(res_infos)
 
-        define_size = "".join(
-            [f"auto {name} = {size};\n" for size, name in size_map.items()])
-        define_dtype = "".join(
-            [f"auto {name} = {dtype};\n" for dtype, name in dtype_map.items()])
-        
+        define_size = "".join([f"auto {name} = {size};\n" for size, name in size_map.items()])
+        define_dtype = "".join([f"auto {name} = {dtype};\n" for dtype, name in dtype_map.items()])
+
         define_size_or_dtype = "" if kind == SchemaKind.inplace else "".join([define_size, define_dtype])
 
         if kind == SchemaKind.out:
-            apply_tensor_list = list(concatMap(
-                lambda res_info:
-                [CHECK_TENSOR.substitute(input=tensor_arguments,
-                                            result_name=res_info.name,
-                                            size=size_map[res_info.size],
-                                            dtype=dtype_map[res_info.dtype])],
-                res_infos))
+            apply_tensor_list = list(
+                concatMap(
+                    lambda res_info: [
+                        CHECK_TENSOR.substitute(
+                            input=tensor_arguments,
+                            result_name=res_info.name,
+                            size=size_map[res_info.size],
+                            dtype=dtype_map[res_info.dtype],
+                        )
+                    ],
+                    res_infos,
+                )
+            )
         elif kind == SchemaKind.inplace:
             apply_tensor_list = []
         else:
-            apply_tensor_list = list(concatMap(
-                lambda res_info:
-                [APPLY_TENSOR.substitute(result_name=res_info.name,
-                                            size=size_map[res_info.size],
-                                            dtype=f'{res_info.option}.options().dtype({dtype_map[res_info.dtype]})')],
-                res_infos))
-        
+            apply_tensor_list = list(
+                concatMap(
+                    lambda res_info: [
+                        APPLY_TENSOR.substitute(
+                            result_name=res_info.name,
+                            size=size_map[res_info.size],
+                            dtype=f'{res_info.option}.options().dtype({dtype_map[res_info.dtype]})',
+                        )
+                    ],
+                    res_infos,
+                )
+            )
+
         compute_name_list = []
         infer_name_list = []
         for res_info in res_infos:
             if res_info.infer_name is not None:
                 tensor_list = res_info.infer_name.split(", ")
                 if len(tensor_list) == 1:
-                    names = INFER_NAME.substitute(result_name=res_info.name,
-                                                  infer_func=res_info.infer_name) 
+                    names = INFER_NAME.substitute(result_name=res_info.name, infer_func=res_info.infer_name)
                     infer_name_list.append(names)
                     compute_name_list.append("")
                 else:
@@ -245,18 +280,20 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
                 compute_name_list.append("")
 
         compute_names = "".join(compute_name_list)
-        
+
         infer_name = "".join(infer_name_list)
 
         apply_tensor = "".join(apply_tensor_list)
-        
+
         # 根据环境变量选择使用 EXEC_NPU_CMD 还是 EXEC_NPU_CMD_EXT
         exec_cmd = "EXEC_NPU_CMD_EXT" if env_aclnn_extension_switch else "EXEC_NPU_CMD"
 
-    return [remove_empty_lines(
+    return [
+        remove_empty_lines(
             ACLNN_FUNCTIONS_DEFINITION.substitute(
                 return_type=return_type,
                 func_name=name,
+                integral_identity_guard=integral_identity_guard,
                 new_params_def=new_params_def,
                 define_size_or_dtype=define_size_or_dtype,
                 args_str=args_str,
@@ -266,19 +303,19 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
                 exec_cmd=exec_cmd,
                 aclnnargs=struct.cmd_args,
                 result=struct.return_args,
-                infer_name=infer_name))]
+                infer_name=infer_name,
+            )
+        )
+    ]
 
 
-def gen_op_api(
-    fm: FileManager,
-    struct_functions: Sequence[StructInfo],
-    env_aclnn_extension_switch: bool
-) -> None:
+def gen_op_api(fm: FileManager, struct_functions: Sequence[StructInfo], env_aclnn_extension_switch: bool) -> None:
     # 根据环境变量生成不同的include语句
     if env_aclnn_extension_switch:
         includes = """#include <torch/library.h>
 #include <torch/csrc/autograd/custom_function.h>
 #include <torch/extension.h>
+#include <ATen/native/TypeProperties.h>
 #include "op_plugin/include/npu_cpp_extension.h" """
     else:
         includes = """#include <ATen/native/TypeProperties.h>
@@ -286,11 +323,19 @@ def gen_op_api(
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h" """
 
-    fm.write_with_template(
-        f'StructKernelNpuOpApi.cpp', f'StructKernelNpuOpApi.cpp', lambda: {
+    def struct_kernel_template_env():
+        return {
             'includes': includes,
-            'op_api_definition': list(concatMap(
-                lambda f: compute_op_api_definition(f, env_aclnn_extension_switch),
-                struct_functions
-            ))}
+            'op_api_definition': list(
+                concatMap(
+                    lambda f: compute_op_api_definition(f, env_aclnn_extension_switch),
+                    struct_functions,
+                )
+            ),
+        }
+
+    fm.write_with_template(
+        'StructKernelNpuOpApi.cpp',
+        'StructKernelNpuOpApi.cpp',
+        struct_kernel_template_env,
     )

@@ -131,6 +131,16 @@ nd = "nd"
 
 [type.css.extend-words]
 
+# PyTorch ATen schema lines include names like constant_pad_nd (_nd is not "and").
+[type.yaml]
+extend-glob = ["**/*.yaml", "**/*.yml"]
+extend-ignore-identifiers-re = []
+extend-ignore-words-re = []
+extend-ignore-re = []
+
+[type.yaml.extend-identifiers]
+constant_pad_nd = "constant_pad_nd"
+
 [type.man]
 extend-glob = []
 extend-ignore-identifiers-re = []

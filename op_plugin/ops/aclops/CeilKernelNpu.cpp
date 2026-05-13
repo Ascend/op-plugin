@@ -21,38 +21,49 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& ceil_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Ceil")
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
+at::Tensor &ceil_out_npu_nocheck(at::Tensor &result, const at::Tensor &self) {
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Ceil").Input(self).Output(result).Run();
+    return result;
+}
+
+bool ceil_integral_identity(const at::Tensor &self) {
+    // Match PyTorch CPU: ceil on integer tensors is the identity (no rounding needed).
+    // CANN aclnnInplaceCeil / Ceil only supports floating dtypes; skip the kernel for integers.
+    return at::isIntegralType(self.scalar_type(), /*includeBool=*/false);
 }
 } // namespace
 
-at::Tensor& ceil_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    ceil_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
+at::Tensor &ceil_out(const at::Tensor &self, at::Tensor &result) {
+    npu_preparation::CheckOut({self}, result, self);
+    if (ceil_integral_identity(self)) {
+        if (!npu_utils::check_match(&result)) {
+            at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+            contiguous_result.copy_(self);
+            npu_utils::format_fresh_view(result, contiguous_result);
+        } else {
+            result.copy_(self);
+        }
+        return result;
+    }
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        ceil_out_npu_nocheck(contiguous_result, self);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        ceil_out_npu_nocheck(result, self);
+    }
+    return result;
+}
+
+at::Tensor ceil(const at::Tensor &self) {
+    if (ceil_integral_identity(self)) {
+        return self.clone();
+    }
+    at::Tensor result = npu_preparation::apply_tensor(self);
     ceil_out_npu_nocheck(result, self);
-  }
-  return result;
+    return result;
 }
 
-at::Tensor ceil(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  ceil_out_npu_nocheck(result, self);
-  return result;
-}
-
-at::Tensor& ceil_(at::Tensor& self) {
-  return acl_op::ceil_out(self, self);
-}
+at::Tensor &ceil_(at::Tensor &self) { return acl_op::ceil_out(self, self); }
 } // namespace acl_op
