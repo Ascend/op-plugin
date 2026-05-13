@@ -1380,7 +1380,7 @@ custom.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key
 
 参数说明
 
-query（Tensor）：必选参数，不支持非连续，数据格式支持ND，Atlas A3 推理系列产品数据类型支持int8，Ascend 950PR/Ascend 950DT数据类型支持float8_e4m3fn, hifloat8。layout_query为BSND时shape为[B,S1,N1,D]，当layout_query为TND时shape为[T1,N1,D]。
+query（Tensor）：必选参数，不支持非连续，数据格式支持ND，Atlas A3 推理系列产品数据类型支持int8，Ascend 950PR/Ascend 950DT数据类型支持float8_e4m3fn, hifloat8。layout_query为BSND时shape为[B,S1,N1,D]，当layout_query为TND时shape为[T1,N1,D]，N1支持小于等于64。
 
 key（Tensor）：必选参数，不支持非连续，数据格式支持ND，Atlas A3 推理系列产品数据类型支持int8，Ascend 950PR/Ascend 950DT数据类型支持float8_e4m3fn，hifloat8。layout_key为PA_BSND时shape为[block_count, block_size, N2, D]，其中block_count为PageAttention时block总数，block_size为一个block的token数。
 

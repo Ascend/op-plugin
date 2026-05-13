@@ -26,15 +26,15 @@ torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, 
 
 ## 参数说明
 >
-> [!NOTE]   
+> [!NOTE]
 >
 > - query、key、weights、query_dequant_scale、key_dequant_scale参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
 > - 使用S1和S2分别表示query和key的输入样本序列长度，N1和N2分别表示query和key对应的多头数，k表示最后选取的索引个数。参数query中的D和参数key中的D值相等为128。T1和T2分别表示query和key的输入样本序列长度的累加和。
 >
-- **query**（`Tensor`）：必选参数，表示输入Index Query，对应公式中的$Q_{index}^{INT8}\in\R^{g\times d}$。不支持非连续，数据格式支持$ND$，数据类型支持`int8`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1仅支持64。
-    
+- **query**（`Tensor`）：必选参数，表示输入Index Query，对应公式中的$Q_{index}^{INT8}\in\R^{g\times d}$。不支持非连续，数据格式支持$ND$，数据类型支持`int8`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1支持小于等于64。
+
 - **key**（`Tensor`）：必选参数，表示输入Index Key，对应公式中的$K_{index}^{INT8}\in\R^{S_{k}\times d}$。不支持非连续，数据格式支持$ND$，数据类型支持`int8`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
-    
+
 - **weights**（`Tensor`）：必选参数，表示权重系数，对应公式中的$W$。不支持非连续，数据格式支持$ND$，数据类型支持`float16`，支持输入shape[B,S1,N1]、[T,N1]。
 
 - **query_dequant_scale**（`Tensor`）：必选参数，表示Index Query的反量化系数$Scale_Q$ 。不支持非连续，数据格式支持$ND$，数据类型支持`float16`，支持输入shape[B,S1,N1]、[T,N1]。
@@ -118,7 +118,7 @@ torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, 
                                 if act_seq_q is None else torch.tensor(act_seq_q).to(torch.int32)
     actual_seq_lengths_key = torch.tensor(np.random.uniform(s2, s2, (b))).to(torch.int32) \
                                 if act_seq_k is None else torch.tensor(act_seq_k).to(torch.int32)
-    
+
     npu_out = torch_npu.npu_quant_lightning_indexer(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(),
                                                     key_dequant_scale.npu(),
                                                     actual_seq_lengths_query=actual_seq_lengths_query.npu(),
@@ -170,16 +170,16 @@ torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, 
                                 if act_seq_q is None else torch.tensor(act_seq_q).to(torch.int32)
     actual_seq_lengths_key = torch.tensor(np.random.uniform(s2, s2, (b))).to(torch.int32) \
                                 if act_seq_k is None else torch.tensor(act_seq_k).to(torch.int32)
-    
+
     class LIQuantNetwork(nn.Module):
         def __init__(self):
             super(LIQuantNetwork, self).__init__()
 
-        def forward(self, query, key, weights, query_dequant_scale, key_dequant_scale, actual_seq_lengths_query=None, 
+        def forward(self, query, key, weights, query_dequant_scale, key_dequant_scale, actual_seq_lengths_query=None,
                     actual_seq_lengths_key=None, block_table=None, query_quant_mode=0, key_quant_mode=0,
                     layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3):
 
-            out = torch_npu.npu_quant_lightning_indexer(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(),       
+            out = torch_npu.npu_quant_lightning_indexer(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(),
                                                         key_dequant_scale.npu(),
                                                         actual_seq_lengths_query=actual_seq_lengths_query.npu(),
                                                         actual_seq_lengths_key=actual_seq_lengths_key.npu(),
@@ -190,7 +190,7 @@ torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, 
                                                         layout_key=layout_key, sparse_count=sparse_count,
                                                         sparse_mode=sparse_mode)
             return out
-    
+
     from torchair.configs.compiler_config import CompilerConfig
     config = CompilerConfig()
     npu_backend = torchair.get_npu_backend(compiler_config=config)
