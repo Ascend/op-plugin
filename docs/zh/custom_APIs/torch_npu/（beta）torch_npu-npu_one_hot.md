@@ -35,7 +35,7 @@ torch_npu.npu_one_hot(input, num_classes=-1, depth=1, on_value=1, off_value=0) -
 ```python
 >>> a=torch.IntTensor([5, 3, 2, 1]).npu()
 >>> b=torch_npu.npu_one_hot(a, depth=5)
->>> b
+>>> print(b)
 tensor([[0., 0., 0., 0., 0.],
         [0., 0., 0., 1., 0.],
         [0., 0., 1., 0., 0.],

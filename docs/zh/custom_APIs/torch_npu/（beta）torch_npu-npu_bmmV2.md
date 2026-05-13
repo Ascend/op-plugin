@@ -36,7 +36,7 @@ torch_npu.npu_bmmV2(self, mat2, output_sizes) -> Tensor
 >>> mat1 = torch.randn(10, 3, 4).npu()
 >>> mat2 = torch.randn(10, 4, 5).npu()
 >>> res = torch_npu.npu_bmmV2(mat1, mat2, [])
->>> res.shape
+>>> print(res.shape)
 torch.Size([10, 3, 5])
 ```
 
@@ -50,6 +50,6 @@ torch.Size([10, 3, 5])
 ...     mat2 = torch.randn(10, 4, 5).npu()
 ...     result = torch_npu.npu_bmmV2(mat1, mat2, [])
 ...
->>> result
+>>> print(result)
 FakeTensor(..., device='npu:0', size=(10, 3, 5))
 ```

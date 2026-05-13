@@ -46,6 +46,6 @@ torch_npu.contrib.function.matmul_transpose(tensor1, tensor2)
 >>> tensor2.requires_grad = True
 >>> output = matmul_transpose(tensor1, tensor2)
 >>> output.sum().backward()
->>> output.shape
+>>> print(output.shape)
 torch.Size([68, 5, 75, 75])
 ```

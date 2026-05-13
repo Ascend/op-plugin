@@ -78,7 +78,7 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
     >>> scale = torch.tensor([2.0], dtype=torch.float).npu()
     >>> offset = torch.tensor([2.0], dtype=torch.float).npu()
     >>> out = torch_npu.npu_anti_quant(x_tensor, scale, offset=offset, dst_dtype=torch.float16)
-    >>> out
+    >>> print(out)
     tensor([ 6.,  8., 10., 12.], device='npu:0', dtype=torch.float16)
     ```
 

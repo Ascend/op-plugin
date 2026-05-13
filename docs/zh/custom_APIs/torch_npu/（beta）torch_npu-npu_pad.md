@@ -35,7 +35,7 @@ torch_npu.npu_pad(input, paddings) -> Tensor
 >>> input = torch.tensor([[20, 20, 10, 10]], dtype=torch.float16).to("npu")
 >>> paddings = [1, 1, 1, 1]
 >>> output = torch_npu.npu_pad(input, paddings)
->>> output
+>>> print(output)
 tensor([[ 0.,  0.,  0.,  0.,  0.,  0.],
         [ 0., 20., 20., 10., 10.,  0.],
         [ 0.,  0.,  0.,  0.,  0.,  0.]], device='npu:0', dtype=torch.float16)

@@ -569,6 +569,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     actual_seq_qlen = actseqlen, actual_seq_kvlen = actseqlenkv,
     num_query_heads = 8, input_layout = "BNSD", softmax_scale = softmax_scale, pre_tokens=65535, next_tokens=65535)
 
+    print(out)
     # 执行上述代码的输出out类似如下
     tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
             [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],

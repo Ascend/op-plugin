@@ -40,6 +40,6 @@ torch_npu.npu_yolo_boxes_encode(self, gt_bboxes, stride, performance_mode=False)
 >>> gt_bboxes = torch.rand(2, 4).npu()
 >>> stride = torch.tensor([2, 2], dtype=torch.int32).npu()
 >>> output = torch_npu.npu_yolo_boxes_encode(anchor_boxes, gt_bboxes, stride, False)
->>> output.shape
+>>> print(output.shape)
 torch.Size([2, 4])
 ```

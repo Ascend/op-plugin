@@ -64,7 +64,7 @@ torch_npu.npu_gelu(input, approximate='none') -> Tensor
     >>> input_tensor = torch.randn(100, 200)
     >>> output_tensor = torch_npu.npu_gelu(input_tensor.npu(), approximate='tanh')
     >>>
-    >>> output_tensor
+    >>> print(output_tensor)
     tensor([[ 0.5795, -0.0274, -0.1477,  ...,  0.2422, -0.0843, -0.1154],
             [-0.0385,  0.8736,  0.1809,  ..., -0.0676,  0.2404,  0.4038],
             [ 0.0438,  0.0205, -0.1536,  ...,  0.2910,  1.1553,  0.3319],
@@ -73,9 +73,9 @@ torch_npu.npu_gelu(input, approximate='none') -> Tensor
             [ 0.1980,  0.0535, -0.1685,  ..., -0.1528, -0.1484,  1.0703],
             [-0.1351,  1.5851, -0.0222,  ..., -0.0230,  1.4319, -0.1700]],
         device='npu:0')
-    >>> output_tensor.shape
+    >>> print(output_tensor.shape)
     torch.Size([100, 200])
-    >>> output_tensor.dtype
+    >>> print(output_tensor.dtype)
     torch.float32
     ```
 

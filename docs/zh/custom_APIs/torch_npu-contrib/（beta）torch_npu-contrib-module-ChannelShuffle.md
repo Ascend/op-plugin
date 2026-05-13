@@ -72,8 +72,8 @@ torch_npu.contrib.module.ChannelShuffle(in_channels, groups=2, split_shuffle=Tru
 >>> x2 = torch.randn(2, 32, 7, 7).npu()
 >>> m = ChannelShuffle(64, split_shuffle=True)
 >>> out1, out2 = m(x1, x2)
->>> out1.shape
+>>> print(out1.shape)
 torch.Size([2, 32, 7, 7])
->>> out2.shape
+>>> print(out2.shape)
 torch.Size([2, 32, 7, 7])
 ```

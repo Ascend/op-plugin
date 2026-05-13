@@ -135,7 +135,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     >>>
     >>> # 调用IFA算子
     >>> out = torch_npu.npu_incre_flash_attention(q, k, v, num_heads=40, input_layout="BSH", scale_value=scale)                                        
-    >>> out
+    >>> print(out)
     [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
     tensor([[[-1.4863,  0.1667,  0.7256,  ...,  0.3052, -0.3630, -0.1936]],
 

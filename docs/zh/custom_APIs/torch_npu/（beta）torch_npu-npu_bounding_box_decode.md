@@ -49,7 +49,7 @@ torch_npu.npu_bounding_box_decode(rois, deltas, means0, means1, means2, means3, 
 >>> rois = torch.tensor([[1., 2., 3., 4.], [3.,4., 5., 6.]], dtype = torch.float32).to("npu")
 >>> deltas = torch.tensor([[5., 6., 7., 8.], [7.,8., 9., 6.]], dtype = torch.float32).to("npu")
 >>> output = torch_npu.npu_bounding_box_decode(rois, deltas, 0, 0, 0, 0, 1, 1, 1, 1, (10, 10), 0.1)
->>> output
+>>> print(output)
 tensor([[2.5000, 6.5000, 9.0000, 9.0000],
         [9.0000, 9.0000, 9.0000, 9.0000]], device='npu:0')
 ```

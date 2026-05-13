@@ -40,8 +40,8 @@ torch_npu.npu_random_choice_with_mask(x, count=256, seed=0, seed2=0) -> (Tensor,
 >>> import torch, torch_npu
 >>> x = torch.tensor([1, 0, 1, 0], dtype=torch.bool).to("npu")
 >>> result, mask = torch_npu.npu_random_choice_with_mask(x, 2, 1, 0)
->>> result
+>>> print(result)
 tensor([[0],[2]], device='npu:0', dtype=torch.int32)
->>> mask
+>>> print(mask)
 tensor([True, True], device='npu:0')
 ```

@@ -45,12 +45,12 @@ torch_npu.npu_nms_with_mask(input, iou_threshold) -> (Tensor, Tensor, Tensor)
 >>> input = torch.tensor([[0.0, 1.0, 2.0, 3.0, 0.6, 0.5, 0.4, 0.3], [6.0, 7.0, 8.0, 9.0, 0.4, 0.5, 0.6, 0.7]], dtype=torch.float16).to("npu")
 >>> iou_threshold = 0.5
 >>> output1, output2, output3, = torch_npu.npu_nms_with_mask(input, iou_threshold)
->>> output1
+>>> print(output1)
 tensor([[0.0000, 1.0000, 2.0000, 3.0000, 0.6001],
         [6.0000, 7.0000, 8.0000, 9.0000, 0.3999]], device='npu:0',      
         dtype=torch.float16)
->>> output2
+>>> print(output2)
 tensor([0, 1], device='npu:0', dtype=torch.int32)
->>> output3
+>>> print(output3)
 tensor([1, 1], device='npu:0', dtype=torch.uint8)
 ```

@@ -155,9 +155,9 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
         >>> expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device,dtype=torch.int32)
         >>> drop_pad_mode = 0
         >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
-        >>> output.shape
+        >>> print(output.shape)
         torch.Size([50, 10])
-        >>> output.dtype
+        >>> print(output.dtype)
         torch.float32
         ```
       
@@ -182,9 +182,9 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
         >>> expanded_src_to_dst_row = torch.randint(low=-1, high=expert_num * expert_capacity - 1, size=(num_rows * top_k,), device=device,dtype=torch.int32)
         >>> drop_pad_mode = 1
         >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
-        >>> output.shape
+        >>> print(output.shape)
       torch.Size([50, 10])
-        >>> output.dtype
+        >>> print(output.dtype)
       torch.float32
       ```
 

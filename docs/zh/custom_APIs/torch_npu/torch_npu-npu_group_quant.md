@@ -50,7 +50,7 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
     >>> import torch_npu
     >>>
     >>> x = torch.randn(6, 4).to(torch.float16).npu()
-    >>> x
+    >>> print(x)
     tensor([[ 1.0029, -1.2373,  1.0107, -0.2681],
             [ 0.5791,  0.1101,  1.0059, -0.9658],
             [-1.7637,  1.7588, -1.3193,  0.3989],
@@ -60,22 +60,22 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
         dtype=torch.float16)
     >>>
     >>> scale = torch.randn(4, 4).to(torch.float32).npu()
-    >>> scale
+    >>> print(scale)
     tensor([[-0.2710, -0.9381,  0.2850, -1.1230],
             [ 0.5217, -0.7233, -0.1730, -0.1245],
             [-1.5433, -0.9129, -2.2095,  1.7371],
             [-0.8253,  0.3973,  0.1430,  0.3885]], device='npu:0')
     >>>
     >>> group_index = torch.tensor([1, 4, 6, 6], dtype=torch.int32).npu()
-    >>> group_index
+    >>> print(group_index)
     tensor([1, 4, 6, 6], device='npu:0', dtype=torch.int32)
     >>>
     >>> offset = torch.randn(1).to(torch.float32).npu()
-    >>> offset
+    >>> print(offset)
     tensor([-1.1658], device='npu:0')
     >>>
     >>> y = torch_npu.npu_group_quant(x, scale, group_index, offset=offset, dst_dtype=torch.int8)
-    >>> y
+    >>> print(y)
     tensor([[-1,  0, -1, -1],
             [-1, -1, -1, -1],
             [-2, -2, -1, -1],

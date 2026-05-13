@@ -33,11 +33,11 @@ torch_npu.one_(self) -> Tensor
 >>> import torch_npu
 >>> x = torch.rand(2, 3).npu()
 
->>> x
+>>> print(x)
 tensor([[0.8517, 0.1428, 0.0839],
         [0.1416, 0.9540, 0.9125]], device='npu:0')
 
->>> torch_npu.one_(x)
+>>> print(torch_npu.one_(x))
 tensor([[1., 1., 1.],
         [1., 1., 1.]], device='npu:0')
 ```

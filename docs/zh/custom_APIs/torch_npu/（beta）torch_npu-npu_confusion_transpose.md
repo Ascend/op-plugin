@@ -33,12 +33,12 @@ torch_npu.npu_confusion_transpose(self, perm, shape, transpose_first) -> Tensor
 
 ```python
 >>> x = torch.rand(2, 3, 4, 6).npu()
->>> x.shape
+>>> print(x.shape)
 torch.Size([2, 3, 4, 6])
 >>> y = torch_npu.npu_confusion_transpose(x, (0, 2, 1, 3), (2, 4, 18), True)
->>> y.shape
+>>> print(y.shape)
 torch.Size([2, 4, 18])
 >>> y2 = torch_npu.npu_confusion_transpose(x, (0, 2, 1), (2, 12, 6), False)
->>> y2.shape
+>>> print(y2.shape)
 torch.Size([2, 6, 12])
 ```

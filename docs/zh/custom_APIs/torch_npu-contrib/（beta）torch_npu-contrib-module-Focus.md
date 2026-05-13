@@ -51,6 +51,6 @@ Focus计算结果。
 >>> fast_focus = Focus(8, 13).npu()
 >>> output = fast_focus(input)
 >>> output.sum().backward()
->>> output.shape
+>>> print(output.shape)
 torch.Size([4, 13, 150, 20])
 ```

@@ -54,7 +54,7 @@ torch_npu.empty_with_swapped_memory(size, dtype=None, device=None) -> Tensor
 >>> swapped_tensor = torch_npu.empty_with_swapped_memory([2, 2], dtype=torch.float32, device=torch.device("npu:0"))
 >>> tmp_tensor = swapped_tensor.fill_(3.14)
 >>> out = torch.empty_like(swapped_tensor).fill_(1).mul_(tmp_tensor)
->>> out
+>>> print(out)
 tensor([[3.1400, 3.1400],
         [3.1400, 3.1400]], device='npu:0')
 ```

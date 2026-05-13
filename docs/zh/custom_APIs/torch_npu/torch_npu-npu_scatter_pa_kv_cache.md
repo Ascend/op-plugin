@@ -107,7 +107,7 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
     >>> slot_mapping_npu = torch.from_numpy(slot_mapping).npu()
     >>>
     >>> torch_npu.npu_scatter_pa_kv_cache(key_npu, value_npu, key_cache_npu_cast, value_cache_npu_cast, slot_mapping_npu)
-    >>> key_cache_npu_cast
+    >>> print(key_cache_npu_cast)
     tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
         [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
         [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],

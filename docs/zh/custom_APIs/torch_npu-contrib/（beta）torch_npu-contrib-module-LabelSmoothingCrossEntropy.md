@@ -48,6 +48,6 @@ torch_npu.contrib.module.LabelSmoothingCrossEntropy(num_classes=1000, smooth_fac
 >>> m = LabelSmoothingCrossEntropy(10)
 >>> npu_output = m(pred, target)
 >>> npu_output.backward()
->>> npu_output
+>>> print(npu_output)
 tensor(1.9443, device='npu:0', grad_fn=<MeanBackward1>)
 ```

@@ -43,6 +43,6 @@ torch_npu.contrib.function.roll(input1, shifts, dims)
 >>> input1 = torch.randn(32, 56, 56, 16).npu()
 >>> shift_size = 3
 >>> shifted_x_npu = roll(input1, shifts=(-shift_size, -shift_size), dims=(1, 2))
->>> shifted_x_npu.shape
+>>> print(shifted_x_npu.shape)
 torch.Size([32, 56, 56, 16])
 ```

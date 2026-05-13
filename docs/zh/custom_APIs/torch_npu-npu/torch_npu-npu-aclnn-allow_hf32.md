@@ -33,14 +33,14 @@ torch_npu.npu.aclnn.allow_hf32:bool
 >>> import torch
 >>> import torch_npu
 >>> res = torch_npu.npu.aclnn.allow_hf32
->>> res
+>>> print(res)
 True
 >>> torch_npu.npu.aclnn.allow_hf32 = False
 >>> res = torch_npu.npu.aclnn.allow_hf32
->>> res
+>>> print(res)
 False
 >>> torch_npu.npu.aclnn.allow_hf32 = True
 >>> res = torch_npu.npu.aclnn.allow_hf32
->>> res
+>>> print(res)
 True
 ```

@@ -29,6 +29,6 @@ bool型。
 import torch
 import torch_npu
 torch_npu.npu.set_compile_mode(jit_compile=False)
-torch_npu.npu.is_jit_compile_false()
+print(torch_npu.npu.is_jit_compile_false())
 True
 ```

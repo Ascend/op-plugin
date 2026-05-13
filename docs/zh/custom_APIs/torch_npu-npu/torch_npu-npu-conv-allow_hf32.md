@@ -34,12 +34,12 @@ torch_npu.npu.conv.allow_hf32 = bool
 ```python
 >>>import torch
 >>>import torch_npu
->>>torch_npu.npu.conv.allow_hf32
+>>>print(torch_npu.npu.conv.allow_hf32)
 True
 >>>torch_npu.npu.conv.allow_hf32=False
->>>torch_npu.npu.conv.allow_hf32
+>>>print(torch_npu.npu.conv.allow_hf32)
 False
 >>>torch_npu.npu.conv.allow_hf32=True
->>>torch_npu.npu.conv.allow_hf32
+>>>print(torch_npu.npu.conv.allow_hf32)
 True
 ```

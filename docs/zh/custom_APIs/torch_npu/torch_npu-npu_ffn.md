@@ -118,11 +118,11 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
     >>> activation = "fastgelu"
     >>> npu_out = torch_npu.npu_ffn(x, weight1, weight2, activation, inner_precise=1)
     >>>
-    >>> npu_out
+    >>> print(npu_out)
     tensor([[ 1474.0000,  2000.0000,  1683.0000,  ...,  1938.0000, -1353.0000,
             207.8750]], device='npu:0', dtype=torch.float16)
     >>>
-    >>> npu_out.shape
+    >>> print(npu_out.shape)
     torch.Size([1, 1280])
     ```
 

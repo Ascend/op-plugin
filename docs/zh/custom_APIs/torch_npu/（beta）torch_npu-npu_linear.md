@@ -34,7 +34,7 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 >>> w=torch.rand(4,16).npu()
 >>> b=torch.rand(4).npu()
 >>> output = torch_npu.npu_linear(x, w, b)
->>> output
+>>> print(output)
 tensor([[3.6335, 4.3713, 2.4440, 2.0081],
         [5.3273, 6.3089, 3.9601, 3.2410]], device='npu:0')
 ```

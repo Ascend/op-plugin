@@ -55,7 +55,7 @@ torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
     >>> abs = torch.abs(add)
     >>> mul = torch.matmul(abs, abs)
     >>> out = torch.matmul(mul, y)
-    >>> out
+    >>> print(out)
     [W428 20:51:15.589252880 ToKernelNpu.cpp:41] Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
     tensor([[-993366.4375],
             [-987970.6250],
@@ -64,7 +64,7 @@ torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
             [-992221.5625],
             [-980903.0000],
             [-999433.1875]], device='npu:0')
-    >>> out.shape
+    >>> print(out.shape)
     torch.Size([10000, 1])
     ```
 

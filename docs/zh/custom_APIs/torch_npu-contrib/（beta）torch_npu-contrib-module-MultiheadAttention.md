@@ -58,7 +58,7 @@ Multi-head attention的计算结果。
 >>> s_len=64
 >>> model = model.to("npu")
 >>> output = model(query, key, value, bsz, tgt_len, s_len, key_padding_mask)
->>> output
+>>> print(output)
 (tensor([[-0.0385,  0.0441,  0.2432,  ...,  0.0627,  0.0254,  0.0400],
         [-0.0999, -0.0258,  0.1002,  ...,  0.0632,  0.0344,  0.0573],
         [-0.0830,  0.0405,  0.1694,  ...,  0.0787, -0.0089,  0.0544],

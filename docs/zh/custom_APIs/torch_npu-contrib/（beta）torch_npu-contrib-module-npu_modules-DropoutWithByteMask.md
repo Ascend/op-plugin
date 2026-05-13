@@ -45,6 +45,6 @@ torch_npu.contrib.module.npu_modules.DropoutWithByteMask(p=0.5, inplace=False, m
 >>> m = DropoutWithByteMask(p=0.5)
 >>> input = torch.randn(16, 16).npu()
 >>> output = m(input)
->>> output.shape
+>>> print(output.shape)
 torch.Size([16, 16])
 ```

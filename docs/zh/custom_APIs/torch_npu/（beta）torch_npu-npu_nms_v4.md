@@ -49,7 +49,7 @@ torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_thres
 >>> iou_threshold = torch.tensor(0.5).npu()
 >>> scores_threshold = torch.tensor(0.3).npu()
 >>> npu_output = torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_threshold)
->>> npu_output
+>>> print(npu_output)
 (tensor([57, 65, 25, 45, 43, 12, 52, 91, 23, 78, 53, 11, 24, 62, 22, 67,  9, 94,
         54, 92], device='npu:0', dtype=torch.int32), tensor(20, device='npu:0', dtype=torch.int32))
 ```

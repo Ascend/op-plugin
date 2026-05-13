@@ -71,6 +71,6 @@ torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors
 >>> import torch, torch_npu
 >>> x = torch.rand(100, 4).npu()
 >>> y = torch_npu.npu_anchor_response_flags(x, [60, 60], [2, 2], 9)
->>> y.shape
+>>> print(y.shape)
 torch.Size([32400])
 ```

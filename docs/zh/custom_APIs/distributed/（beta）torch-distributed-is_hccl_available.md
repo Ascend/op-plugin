@@ -29,7 +29,7 @@ torch.distributed.is_hccl_available()
 import torch
 import torch_npu
 
-torch.distributed.is_hccl_available()
+print(torch.distributed.is_hccl_available())
 
 True
 ```

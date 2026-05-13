@@ -65,7 +65,7 @@ torch_npu.npu_scatter_nd_update_(input, indices, updates) -> Tensor
     >>> updates = torch.from_numpy(data_updates).to(torch.float16).npu()
     >>>
     >>> out=torch_npu.npu_scatter_nd_update_(var, indices, updates)
-    >>> out
+    >>> print(out)
     [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
     tensor([[1.8271, 1.4551, 1.3154,  ..., 1.9854, 1.4365, 1.0732],
             [1.9492, 1.6455, 1.6504,  ..., 1.5957, 1.6201, 1.4385],

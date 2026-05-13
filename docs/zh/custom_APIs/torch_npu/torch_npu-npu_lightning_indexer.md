@@ -113,6 +113,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
             actual_seq_lengths_key=actual_seq_lengths_key, block_table=block_table, layout_query=layout_query, 
             layout_key=layout_key, sparse_count=sparse_count, sparse_mode=sparse_mode)
 
+    print(sparse_indices)
     # 执行上述代码的输出sparse_indices类似如下
     tensor([[[[4488, 3926, 1154, ..., 3535, 8031, 8180]]]],
             device='npu:0', dtype=torch.int32)

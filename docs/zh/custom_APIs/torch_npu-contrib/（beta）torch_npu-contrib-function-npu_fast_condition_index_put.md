@@ -42,7 +42,7 @@ torch_npu.contrib.function.npu_fast_condition_index_put(x, condition, value)
 >>> value = 0.
 >>> x1 = copy.deepcopy(x)[condition] = value
 >>> x1_opt = npu_fast_condition_index_put(x, condition, value)
->>> x1_opt
+>>> print(x1_opt)
 tensor([[0.9661, 1.6750, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
         [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
         [1.3621, 0.0000, 0.9606,  ..., 1.4324, 0.0000, 0.0000],
@@ -51,7 +51,7 @@ tensor([[0.9661, 1.6750, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
         [0.0000, 0.9325, 0.7112,  ..., 0.0000, 0.9814, 1.4227],
         [1.0037, 0.0000, 0.0000,  ..., 0.0000, 1.6497, 0.0000]],
        device='npu:0')
->>> x1_opt.shape
+>>> print(x1_opt.shape)
 torch.Size([128, 8192])
 
 ```

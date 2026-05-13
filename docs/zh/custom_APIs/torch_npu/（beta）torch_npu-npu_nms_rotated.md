@@ -50,11 +50,11 @@ torch_npu.npu_nms_rotated(dets, scores, iou_threshold, scores_threshold=0, max_o
 >>> dets.uniform_(0,100)
 >>> scores.uniform_(0,1)
 >>> output1, output2 = torch_npu.npu_nms_rotated(dets, scores, 0.2, 0, -1, 0)
->>> output1
+>>> print(output1)
 tensor([76, 48, 15, 65, 91, 82, 21, 96, 62, 90, 13, 59,  0, 18, 47, 23,  8, 56,
         55, 63, 72, 39, 97, 81, 16, 38, 17, 25, 74, 33, 79, 44, 36, 88, 83, 37,
         64, 45, 54, 41, 22, 28, 98, 40, 30, 20,  1, 86, 69, 57, 43,  9, 42, 27,
         71, 46, 19, 26, 78, 66,  3, 52], device='npu:0', dtype=torch.int32)
->>> output2
+>>> print(output2)
 tensor([62], device='npu:0', dtype=torch.int32)
 ```

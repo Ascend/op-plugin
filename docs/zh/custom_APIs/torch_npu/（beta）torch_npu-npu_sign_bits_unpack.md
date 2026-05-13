@@ -59,10 +59,10 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 >>> import torch, torch_npu
 >>> a = torch.tensor([159, 15], dtype=torch.uint8).npu()
 >>> b = torch_npu.npu_sign_bits_unpack(a, 2, torch.float32)
->>> b
+>>> print(b)
 tensor([[ 1.,  1.,  1.,  1.,  1., -1., -1.,  1.],
         [ 1.,  1.,  1.,  1., -1., -1., -1., -1.]], device='npu:0')
 >>> c = torch_npu.npu_sign_bits_unpack(a, 1, torch.float32)
->>> c
+>>> print(c)
 tensor([[ 1.,  1.,  1.,  1.,  1., -1., -1.,  1.,  1.,  1.,  1.,  1., -1., -1., -1., -1.]], device='npu:0')
 ```

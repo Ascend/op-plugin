@@ -60,6 +60,6 @@ torch_npu.utils.get_cann_version(module="CANN")
 >>> import torch_npu
 >>> from torch_npu.utils import get_cann_version
 >>> version = get_cann_version(module="CANN")
->>> version
+>>> print(version)
 '8.3.RC1'
 ```

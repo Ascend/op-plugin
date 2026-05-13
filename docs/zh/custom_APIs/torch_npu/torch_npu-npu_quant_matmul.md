@@ -137,7 +137,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
         >>> npu_out = torch_npu.npu_quant_matmul(
         ...     cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset=offset.npu(), bias=bias.npu()
         ... )
-        >>> npu_out
+        >>> print(npu_out)
         tensor([[[  75, -128,   -7,  ...,   30, -128,  -27],
                 [-128, -128,  -98,  ...,   -1, -128, -102],
                 [-128,  127, -128,  ...,   32,  -12,  -11],
@@ -161,7 +161,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
         >>> npu_out = torch_npu.npu_quant_matmul(
         ...     cpu_x1.npu(), cpu_x2.npu(), scale_1, bias=bias.npu()
         ... )
-        >>> npu_out
+        >>> print(npu_out)
         tensor([[[  75, -128,   -7,  ...,   30, -128,  -27],
                 [-128, -128,  -98,  ...,   -1, -128, -102],
                 [-128,  127, -128,  ...,   32,  -12,  -11],
@@ -225,7 +225,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
         print(npu_out)
     
         # 执行上述代码的输出类似如下
-        torch.Size([15, 1, 128])
+        print(torch.Size([15, 1, 128]))
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[[-103.6875, -104.5000, -113.6250,  ..., -108.6875,  -99.5625,
                 -101.1875]],
@@ -309,7 +309,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
         print(npu_out)
     
         # 执行上述代码的输出类似如下
-        torch.Size([15, 6912])
+        print(torch.Size([15, 6912]))
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[-1.0000e+00,  0.0000e+00, -1.0000e+00,  ...,  0.0000e+00,
                 -1.0000e+00, -1.0000e+00],
@@ -436,7 +436,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
         print(npu_out)
     
         # 执行上述代码的输出类似如下
-        torch.Size([15, 6912])
+        print(torch.Size([15, 6912]))
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[ 0.0000e+00, -1.0000e+00, -1.0000e+00,  ..., -1.0000e+00,
                 0.0000e+00, -1.0000e+00],

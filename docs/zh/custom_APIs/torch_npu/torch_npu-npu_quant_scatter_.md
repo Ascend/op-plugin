@@ -85,11 +85,11 @@ torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_p
    >>> reduce = "update"
    >>>
    >>> out=torch_npu.npu_quant_scatter_(var, indices, updates, quant_scales, quant_zero_points, axis=axis, quant_axis=quant_axis, reduce=reduce)
-   >>> out.shape
+   >>> print(out.shape)
    torch.Size([24, 4096, 128])
-   >>> out.dtype
+   >>> print(out.dtype)
    torch.int8
-   >>> out
+   >>> print(out)
    tensor([[[2, 3, 2,  ..., 3, 6, 1],
             [0, 0, 0,  ..., 0, 0, 0],
             [0, 0, 0,  ..., 0, 0, 0],

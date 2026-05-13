@@ -46,7 +46,7 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
                             [31, 32, 33, 34, 35, 36]]]]).npu()
 >>> rois = torch.tensor([[0, -2.0, -2.0, 22.0]]).npu()
 >>> out = torch_npu.npu_roi_align(x, rois, 0.25, 3, 3, 2, 0)
->>> out
+>>> print(out)
 tensor([[[[ 4.5000,  6.5000,  8.5000],
           [16.5000, 18.5000, 20.5000],
           [28.5000, 30.5000, 32.5000]]]], device='npu:0')

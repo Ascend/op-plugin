@@ -102,8 +102,8 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias=None, kernel_size, st
 >>> weight = torch.rand(32, 32, 5, 5).npu()
 >>> offset = torch.rand(16, 75, 32, 32).npu()
 >>> output, deform_offset = torch_npu.npu_deformable_conv2d(x, weight, offset, None, kernel_size=[5, 5], stride = [1, 1, 1, 1], padding = [2, 2, 2, 2])
->>> output.shape
+>>> print(output.shape)
 torch.Size([16, 32, 32, 32])
->>> deform_offset.shape
+>>> print(deform_offset.shape)
 torch.Size([16, 32, 160, 160])
 ```

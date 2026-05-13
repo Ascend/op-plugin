@@ -46,8 +46,8 @@ torch_npu.contrib.function.npu_batched_multiclass_nms(multi_bboxes, multi_scores
 >>> boxes = torch.randint(1, 255, size=(4, 200, 80, 4)).npu().half()
 >>> scores = torch.randn(4, 200, 81).npu().half()
 >>> det_bboxes, det_labels = npu_batched_multiclass_nms(boxes, scores, score_thr=0.3, nms_thr=0.5, max_num=3)
->>> det_bboxes.shape
+>>> print(det_bboxes.shape)
 torch.Size([4, 3, 5])
->>> det_labels.shape
+>>> print(det_labels.shape)
 torch.Size([4, 3])
 ```

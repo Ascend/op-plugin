@@ -59,6 +59,6 @@ ROIAlign计算结果。
 >>> model = ROIAlign(output_size, spatial_scale, sampling_ratio, aligned=aligned).npu()
 >>> output = model(input1, roi)
 >>> output.sum().backward()
->>> output.shape
+>>> print(output.shape)
 torch.Size([1, 1, 3, 3])
 ```

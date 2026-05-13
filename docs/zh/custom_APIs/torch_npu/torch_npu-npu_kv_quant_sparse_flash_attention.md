@@ -145,6 +145,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
         attention_mode=2, quant_scale_repo_mode=1, tile_size=tile_size, key_quant_mode=2,
         value_quant_mode=2, rope_head_dim=64)
 
+    print(out)
     # 执行上述代码的输出out类似如下
     tensor([[[[ 0.0000,  -72.0000,  0.0000,  ...,  0.0000, 0.0000, 189.0000],
             [ -390.0000,  780.0000, -390.0000,  ...,  168.0000,  84.0000, -504.0000],

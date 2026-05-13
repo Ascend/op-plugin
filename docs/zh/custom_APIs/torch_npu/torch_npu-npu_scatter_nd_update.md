@@ -65,7 +65,7 @@ torch_npu.npu_scatter_nd_update(input, indices, updates) -> Tensor
     >>> updates = torch.from_numpy(data_updates).to(torch.float16).npu()
     >>>
     >>> out = torch_npu.npu_scatter_nd_update(var, indices, updates)
-    >>> out
+    >>> print(out)
     tensor([[0.6475, 0.3469, 0.2915,  ..., 0.7368, 0.8301, 0.1155],
             [0.5308, 0.7754, 0.5967,  ..., 0.2219, 0.0421, 0.2339],
             [1.7646, 1.1406, 1.5127,  ..., 1.3438, 1.8018, 1.0361],
@@ -74,7 +74,7 @@ torch_npu.npu_scatter_nd_update(input, indices, updates) -> Tensor
             [0.0737, 0.0457, 0.4727,  ..., 0.5068, 0.8418, 0.6104],
             [0.4180, 0.9102, 0.1122,  ..., 0.0540, 0.4041, 0.3889]],
         device='npu:0', dtype=torch.float16)
-    >>> out.shape
+    >>> print(out.shape)
     torch.Size([24, 128])
     ```
 

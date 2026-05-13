@@ -93,11 +93,11 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
         >>> x = torch.randn(1, 1, 12).bfloat16().npu()
         >>> scale = torch.tensor([0.1] * 12).bfloat16().npu()
         >>> out = torch_npu.npu_quantize(x, scale, None, torch.qint8, -1, False)
-        >>> x
+        >>> print(x)
         tensor([[[ 0.9609,  1.3281, -0.6172,  0.5469, -1.1797, -1.1719, -0.7422,
                 0.9727, -0.9062, -0.0815, -0.8047,  1.0703]]], device='npu:0',
             dtype=torch.bfloat16)
-        >>> out
+        >>> print(out)
         tensor([[[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]], device='npu:0',
             dtype=torch.int8)
         ```
@@ -111,7 +111,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
         >>> x = torch.randn((2, 3, 12), dtype=torch.float).npu()
         >>> scale = torch.tensor(([3] * 12),dtype=torch.float).npu()
         >>> out = torch_npu.npu_quantize(x, scale, None, torch.qint8, -1, False)
-        >>> x
+        >>> print(x)
         tensor([[[-7.7834e-01, -1.0473e+00, -1.1155e+00,  1.2233e+00, -1.2271e+00,
                 -2.5612e+00, -1.8274e-01,  2.8293e+00,  1.9029e-01, -1.9333e+00,
                 -4.9270e-01, -1.0650e+00],
@@ -131,7 +131,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
                 [-1.2505e+00,  1.5474e+00, -7.4332e-02, -1.6657e+00,  1.3275e+00,
                 5.8914e-02,  8.4287e-01, -1.7109e+00,  1.8256e-01,  3.2937e-01,
                 2.4875e+00,  1.3921e+00]]], device='npu:0')
-        >>> out
+        >>> print(out)
         tensor([[[-2, -3, -3,  4, -4, -8, -1,  8,  1, -6, -1, -3],
                 [-3,  0, -2, -1,  0, -1,  0, -2,  2, -1, -4, -1],
                 [ 0,  0, -3, -3,  0,  3,  0,  4,  3, -1,  0, -2]],

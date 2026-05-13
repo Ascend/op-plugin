@@ -33,6 +33,6 @@ torch_npu.npu_mish(self) -> Tensor
 >>> import torch_npu
 >>> x = torch.rand(10, 30, 10).npu()
 >>> y = torch_npu.npu_mish(x)
->>> y.shape
+>>> print(y.shape)
 torch.Size([10, 30, 10])
 ```

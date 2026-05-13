@@ -40,10 +40,10 @@ torch_npu.npu_alloc_float_status(input) -> Tensor
 >>> input = torch.randn([1,2,3]).npu()
 ## 分配状态空间
 >>> output = torch_npu.npu_alloc_float_status(input)
->>> input
+>>> print(input)
 tensor([[[ 2.2324,  0.2478, -0.1056],
         [ 1.1273, -0.2573,  1.0558]]], device='npu:0')
->>> output
+>>> print(output)
 tensor([0., 0., 0., 0., 0., 0., 0., 0.], device='npu:0')
 
 ## 清除状态

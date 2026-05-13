@@ -53,6 +53,6 @@ torch_npu.npu_softmax_cross_entropy_with_logits(features, labels) -> Tensor
 >>> features = torch.rand(1, batch_size * num_classes).npu()
 >>> labels = torch.rand(1, batch_size * num_classes).npu() 
 >>> output = torch_npu.npu_softmax_cross_entropy_with_logits(features, labels)
->>> output
+>>> print(output)
 tensor([97.9450], device='npu:0')
 ```

@@ -72,6 +72,7 @@ normalized_shape = input.size()[1:]
 weight = torch.ones(normalized_shape, dtype=input.dtype, device=input.device)
 bias = torch.zeros(normalized_shape, dtype=input.dtype, device=input.device)
 output = torch_npu.npu_layer_norm_eval(input, normalized_shape, weight, bias, 1e-5)
+print(output)
 # 执行上述代码的输出类似如下
 # tensor([[-0.6879,  0.1022, -1.0002,  1.5859],
 #         [ 0.0143,  0.3474,  1.1999, -1.5616],

@@ -40,11 +40,11 @@ torch_npu.npu_indexing(self, begin, end, strides, begin_mask=0, end_mask=0, elli
 >>> import torch
 >>> import torch_npu
 >>> input = torch.tensor([[1, 2, 3, 4],[5, 6, 7, 8]], dtype=torch.int32).to("npu")
->>> input
+>>> print(input)
 tensor([[1, 2, 3, 4],
         [5, 6, 7, 8]], device='npu:0', dtype=torch.int32)
 >>> output = torch_npu.npu_indexing(input, [0, 0], [2, 2], [1, 1])
->>> output
+>>> print(output)
 tensor([[1, 2],
         [5, 6]], device='npu:0', dtype=torch.int32)
 ```

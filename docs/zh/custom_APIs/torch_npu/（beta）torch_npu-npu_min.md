@@ -39,7 +39,7 @@ torch_npu.npu_min(self, dim, keepdim=False) -> (Tensor, Tensor)
 >>> import torch
 >>> import torch_npu
 >>> input = torch.randn(2, 2, 2, 2, dtype = torch.float32).npu()
->>> input
+>>> print(input)
 tensor([[[[-0.9909, -0.2369],
           [-0.9569, -0.6223]],
 
@@ -52,13 +52,13 @@ tensor([[[[-0.9909, -0.2369],
         [[-1.2335,  0.2131],
           [ 1.0748, -0.7046]]]], device='npu:0')
 >>> outputs, indices = torch_npu.npu_min(input, 2)
->>> outputs
+>>> print(outputs)
 tensor([[[-0.9909, -0.6223],
         [-0.7761, -0.3147]],
 
         [[ 0.6940, -0.6367],
         [-1.2335, -0.7046]]], device='npu:0')
->>> indices
+>>> print(indices)
 tensor([[[0, 1],
         [1, 0]],
 

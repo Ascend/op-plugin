@@ -32,12 +32,12 @@ torch_npu.npu_transpose(self, perm, require_contiguous=True) -> Tensor
 
 ```python
 >>> x = torch.randn(2, 3, 5).npu()
->>> x.shape
+>>> print(x.shape)
 torch.Size([2, 3, 5])
 >>> x1 = torch_npu.npu_transpose(x, (2, 0, 1))
->>> x1.shape
+>>> print(x1.shape)
 torch.Size([5, 2, 3])
 >>> x2 = torch_npu.npu_transpose(x, (2, 0, 1))
->>> x2.shape
+>>> print(x2.shape)
 torch.Size([5, 2, 3])
 ```

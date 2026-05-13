@@ -49,7 +49,7 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 >>> anchor_box = torch.tensor([[1., 2., 3., 4.], [3.,4., 5., 6.]], dtype = torch.float32).to("npu")
 >>> ground_truth_box = torch.tensor([[5., 6., 7., 8.], [7.,8., 9., 6.]], dtype = torch.float32).to("npu")
 >>> output = torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, 0, 0, 0, 0, 0.1, 0.1, 0.2, 0.2)
->>> output
+>>> print(output)
 tensor([[13.3281, 13.3281,  0.0000,  0.0000],
         [13.3281,  6.6641,  0.0000,     nan]], device='npu:0')
 ```

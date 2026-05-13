@@ -84,15 +84,15 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
     >>> round_mode = 1
     >>> npu_out = torch_npu.npu_trans_quant_param(scale.npu(), offset.npu(), round_mode)
     >>>
-    >>> npu_out
+    >>> print(npu_out)
     tensor([ 70507248869376,  70509369614336,  70507209793536, 140463653937152,
             140603250524160, 140603257561088, 140603230814208,  70369813069824,
             70369794605056, 140463675252736,  70784266256384,  70507233009664,
             140601114345472,  70371966238720, 140603258257408, 140603254505472],
         device='npu:0')
-    >>> npu_out.dtype
+    >>> print(npu_out.dtype)
     torch.int64
-    >>> npu_out.shape
+    >>> print(npu_out.shape)
     torch.Size([16])
     ```
 

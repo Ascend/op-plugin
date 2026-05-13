@@ -83,7 +83,7 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
    >>> k = torch.randint(10, 1024, (16,)).npu().to(torch.int32)
    >>> out = torch_npu.npu_top_k_top_p(logits, p, k)
    >>>
-   >>> out
+   >>> print(out)
    tensor([[0.0000, 0.0000, 0.0000,  ...,   -inf,   -inf,   -inf],
         [0.0000, 0.0000, 0.0000,  ...,   -inf,   -inf,   -inf],
         [0.0000, 0.0000, 0.0000,  ...,   -inf,   -inf,   -inf],

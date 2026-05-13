@@ -33,7 +33,7 @@ torch_npu.npu_silu(self) -> Tensor
 >>> import torch_npu
 >>> a=torch.rand(2,8).npu()
 >>> output = torch_npu.npu_silu(a)
->>> output
+>>> print(output)
 tensor([[0.4397, 0.7178, 0.5190, 0.2654, 0.2230, 0.2674, 0.6051, 0.3522],
         [0.4679, 0.1764, 0.6650, 0.3175, 0.0530, 0.4787, 0.5621, 0.4026]],
        device='npu:0')

@@ -39,7 +39,7 @@ torch_npu.npu_rotated_overlaps(self, query_boxes, trans=False) -> Tensor
 >>> box1=torch.from_numpy(a).to("npu")
 >>> box2=torch.from_numpy(b).to("npu")
 >>> output = torch_npu.npu_rotated_overlaps(box1, box2, trans=False)
->>> output
+>>> print(output)
 tensor([[[0.0000, 0.1562, 0.0000],
         [0.1562, 0.3713, 0.0611],
         [0.0000, 0.0611, 0.0000]]], device='npu:0', dtype=torch.float32)

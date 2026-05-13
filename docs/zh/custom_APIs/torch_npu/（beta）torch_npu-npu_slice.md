@@ -40,7 +40,7 @@ torch_npu.npu_slice(self, offsets, size) -> Tensor
 >>> offsets = [0, 0]
 >>> size = [2, 2]
 >>> output = torch_npu.npu_slice(input, offsets, size)
->>> output
+>>> print(output)
 tensor([[1., 2.],
         [6., 7.]], device='npu:0', dtype=torch.float16)
 ```

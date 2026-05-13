@@ -54,7 +54,7 @@ torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, gl
 >>> epsilon = 1e-06
 >>> global_grad_norm = 0.
 >>> var_out, m_out, v_out = torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, global_grad_norm, weight_decay, out=(var_in, m_in, v_in))
->>> var_out
+>>> print(var_out)
 tensor([ 14.7733, -30.1218,  -1.3647,  ..., -16.6840,   7.1518,   8.4872],
       device='npu:0')
 ```
