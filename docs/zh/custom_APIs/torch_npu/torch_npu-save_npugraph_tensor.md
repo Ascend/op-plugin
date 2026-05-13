@@ -33,7 +33,7 @@ torch_npu.save_npugraph_tensor(input, save_path=None, overwrite=False) -> None
 - **save_path** (`str`)：可选参数，仅支持在需要保存单个tensor时使用，文件的完整保存路径。
   - 支持绝对/相对路径，需要具体到文件名，如果路径不存在会优先尝试创建。
   - 支持的文件后缀与原生`torch.save`一致，支持".pt"，".pth"，".bin"等后缀。
-  - 如果不指定文件保存路径则在默认当前路径保存，默认命名格式为"tensor_当前时间戳_device_设备序号_计数标识.pt"，例如"tensor_2026010100000_device_0_0.pt"。
+  - 如果不指定文件保存路径则在默认当前路径保存，默认命名格式为"tensor_当前时间戳_device_设备序号_计数标识.pt"，例如"tensor_20260101_000000_000000_device_0_0.pt"。
   
 - **overwrite** (`bool`)：可选参数，是否覆盖已有同名文件，默认值为`False`。
   - 当`overwrite=False`时，遇到同名文件自动添加计数标识，例如"tensor_device_0_0.pt"、"tensor_device_0_1.pt"。
