@@ -32,6 +32,7 @@ constexpr int64_t QUANT_MODE_MXFP8_E4M3FN = 3;
 constexpr int64_t QUANT_MODE_HIF8_CAST = 6;
 constexpr int64_t QUANT_MODE_HIF8_PERTENSOR = 7;
 constexpr int64_t QUANT_MODE_HIF8_PER_TOKEN_DIM = 8;
+constexpr int64_t QUANT_MODE_MXFP4_E2M1 = 9;
 constexpr int64_t MXQUANT_BLOCK_SIZE = 32;
 constexpr int64_t PAD_TO_EVEN_FACTOR = 2;
 
@@ -41,13 +42,15 @@ constexpr int64_t EXPERT_NUM_MAX_V2 = 128;
 constexpr int64_t HIDDEN_DIM_VAL_V2 = 2048;
 };  // namespace
 
-inline bool IsQuantModeMXFP8(int64_t quantMode)
-{
+inline bool IsQuantModeMXFP4(int64_t quantMode) {
+    return quantMode == QUANT_MODE_MXFP4_E2M1;
+}
+
+inline bool IsQuantModeMXFP8(int64_t quantMode) {
     return quantMode == QUANT_MODE_MXFP8_E5M2 || quantMode == QUANT_MODE_MXFP8_E4M3FN;
 }
 
-inline bool IsQuantModeHIF8(int64_t quantMode)
-{
+inline bool IsQuantModeHIF8(int64_t quantMode) {
     return quantMode == QUANT_MODE_HIF8_CAST || quantMode == QUANT_MODE_HIF8_PERTENSOR || quantMode == QUANT_MODE_HIF8_PER_TOKEN_DIM;
 }
 
@@ -56,8 +59,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 using tensor_list = std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor>;
 
-at::IntArrayRef init_new_active_expert_range(at::IntArrayRef &active_expert_range, int64_t expert_num)
-{
+at::IntArrayRef init_new_active_expert_range(at::IntArrayRef &active_expert_range, int64_t expert_num) {
     if (active_expert_range.empty()) {
         static std::vector<int64_t> default_active_expert_range = {0, expert_num};
         return at::IntArrayRef(default_active_expert_range);
@@ -67,8 +69,7 @@ at::IntArrayRef init_new_active_expert_range(at::IntArrayRef &active_expert_rang
 }
 
 static bool CheckV2Case(int hidden_dim, int64_t expert_num, at::IntArrayRef active_expert_range,
-    int64_t expert_tokens_num_type, int64_t quant_mode)
-{
+    int64_t expert_tokens_num_type, int64_t quant_mode) {
     if (expert_num == EXPERT_NUM_V2 && active_expert_range[0] == EXPERT_NUM_MIN_V2 &&
         active_expert_range[1] == EXPERT_NUM_MAX_V2 && hidden_dim == HIDDEN_DIM_VAL_V2) {
         if (quant_mode == -1 && expert_tokens_num_type == 1) {
@@ -82,8 +83,7 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
     const c10::optional<at::Tensor> &scale, const c10::optional<at::Tensor> &offset, int64_t active_num,
     int64_t expert_capacity, int64_t expert_num, int64_t drop_pad_mode, int64_t expert_tokens_num_type,
     bool expert_tokens_num_flag, int64_t quant_mode, at::IntArrayRef active_expert_range, int64_t row_idx_type,
-    c10::optional<int64_t> x_dtype)
-{
+    c10::optional<int64_t> x_dtype) {
 #if !VERSION_BETWEEN(V2R7, VERSION_NEWEST)
     // 小于2.7的版本不支持MXFP8量化需要的float8_e8m0fnu类型
     TORCH_CHECK(!IsQuantModeMXFP8(quant_mode),
@@ -107,7 +107,7 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
         "The expert_idx should be ",
         DIM_EXPERT_IDX,
         "-Dimension, current is ",
-        expert_idx,
+        expert_idx_dim,
         "-Dimension.",
         OPS_ERROR(ErrCode::PARAM));
 
@@ -129,6 +129,9 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
 
     int bs = x_size[0];
     int h = x_size[1];
+    if (x_dtype.has_value() && x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)) {
+        h = h * 2;
+    }
     int k = expert_idx_size[1];
     // more suitable cases for v2
     bool using_v2 = CheckV2Case(h, expert_num, active_expert_range, expert_tokens_num_type, quant_mode);
@@ -155,6 +158,10 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
                 expanded_x = npu_preparation::apply_tensor_without_format(
                     {expanded_scale_len, h}, x.options().dtype(at::kFloat8_e4m3fn));
                 break;
+            case QUANT_MODE_MXFP4_E2M1:
+                expanded_x = npu_preparation::apply_tensor_without_format(
+                    {expanded_scale_len, h / 2}, x.options().dtype(at::kByte));
+                break;
 #endif
             case QUANT_MODE_STATIC:
             case QUANT_MODE_DYNAMIC:
@@ -169,7 +176,7 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
                 break;
             }
             default:  // quant_mode == QUANT_MODE_UNQUANT
-                expanded_x = npu_preparation::apply_tensor_without_format(x, {expanded_scale_len, h});
+                expanded_x = npu_preparation::apply_tensor_without_format(x, {expanded_scale_len, x_size[1]});
         }
     }
 
@@ -196,7 +203,7 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
         int64_t expert_tokens_count_or_cumsum_flag = Is310PBoolCheck() ? 1 : 2;
         bool expert_tokens_before_capacity_flag = false;
         if (bs == 0) {
-            // return when using empty tensor 
+            // return when using empty tensor
             expert_tokens_count_or_cumsum.zero_();
             return std::tie(expanded_x, expanded_row_idx, expert_tokens_count_or_cumsum, expert_tokens_before_capacity);
         }
@@ -227,6 +234,12 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
     } else if (quant_mode == -1 && (x.scalar_type() == at::kFloat8_e5m2 || x.scalar_type() == at::kFloat8_e4m3fn)) {
         expanded_scale = npu_preparation::apply_tensor_without_format(
             {expanded_scale_len, op_infer::CeilDiv(h, 64), 2}, x.options().dtype(at::kByte));
+    } else if (quant_mode == -1 && (x_dtype.has_value() && x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1))) {
+        expanded_scale = npu_preparation::apply_tensor_without_format(
+            {expanded_scale_len, op_infer::CeilDiv(h, 64), 2}, x.options().dtype(at::kByte));
+    } else if (IsQuantModeMXFP4(quant_mode)) {
+        expanded_scale = npu_preparation::apply_tensor_without_format(
+            {expanded_scale_len, op_infer::CeilDiv(h, 64), 2}, x.options().dtype(at::kByte));
     } else {
         expanded_scale =
             npu_preparation::apply_tensor_without_format({expanded_scale_len}, x.options().dtype(at::kFloat));
@@ -237,12 +250,21 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
 #endif
     auto scale_scalar_dtype = p_scale.defined() ? p_scale.scalar_type() : at::kFloat;
     auto expanded_scale_scalar_dtype = expanded_scale.defined() ? expanded_scale.scalar_type() : at::kFloat;
-    TensorWrapper scale_wrapper = {p_scale, (quant_mode == -1 && (x.scalar_type() == at::kFloat8_e5m2 || x.scalar_type() == at::kFloat8_e4m3fn)) ?
-        aclDataType::ACL_FLOAT8_E8M0:
-        npu_preparation::convert_to_acl_data_type(scale_scalar_dtype)};
-    TensorWrapper expanded_scale_wrapper = {expanded_scale, (quant_mode == -1 && (x.scalar_type() == at::kFloat8_e5m2 || x.scalar_type() == at::kFloat8_e4m3fn)) ?
-        aclDataType::ACL_FLOAT8_E8M0:
-        npu_preparation::convert_to_acl_data_type(expanded_scale_scalar_dtype)};
+    TensorWrapper scale_wrapper = {
+        p_scale,
+        (quant_mode == -1 && (x.scalar_type() == at::kFloat8_e5m2 || x.scalar_type() == at::kFloat8_e4m3fn ||
+        x_dtype.has_value() && x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1))) ?
+            aclDataType::ACL_FLOAT8_E8M0:
+            npu_preparation::convert_to_acl_data_type(scale_scalar_dtype)
+    };
+    TensorWrapper expanded_scale_wrapper = {
+        expanded_scale,
+        (quant_mode == -1 && (x.scalar_type() == at::kFloat8_e5m2 || x.scalar_type() == at::kFloat8_e4m3fn ||
+        x_dtype.has_value() && x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1))) ?
+            aclDataType::ACL_FLOAT8_E8M0:
+            npu_preparation::convert_to_acl_data_type(expanded_scale_scalar_dtype)
+    };
+
     TensorWrapper x_wrapper = {x, (quant_mode == -1 && x_dtype.has_value()) ?
         c10_npu::GetAclDataType(x_dtype.value()):
         npu_preparation::convert_to_acl_data_type(x.scalar_type())};
@@ -251,6 +273,9 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
         expanded_x_wrapper.dtype = c10_npu::GetAclDataType(x_dtype.value());
     } else if (IsQuantModeHIF8(quant_mode)) {
         expanded_x_wrapper.dtype = aclDataType::ACL_HIFLOAT8;
+    } else if (IsQuantModeMXFP4(quant_mode)) {
+        expanded_x_wrapper.dtype = aclDataType::ACL_FLOAT4_E2M1;
+        expanded_scale_wrapper.dtype = aclDataType::ACL_FLOAT8_E8M0;
     }
     if (bs == 0) {
         // return when using empty tensor
@@ -277,4 +302,4 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
         expanded_scale_wrapper);
     return std::tie(expanded_x, expanded_row_idx, expert_tokens_count_or_cumsum, expanded_scale);
 }
-}  // namespace op_api
+} // namespace op_api
