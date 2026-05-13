@@ -5074,6 +5074,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         dtype: self
@@ -5084,7 +5085,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      exec: aclnnInplaceTrunc
+      structured_inherit: trunc.out
 
   - func: _transform_bias_rescale_qkv(Tensor qkv, Tensor qkv_bias, int num_heads) -> (Tensor, Tensor, Tensor)
     op_api: all_version

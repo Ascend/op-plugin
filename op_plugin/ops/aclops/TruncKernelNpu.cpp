@@ -21,23 +21,31 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& trunc_nocheck(at::Tensor& result, const at::Tensor& self)
-{
+at::Tensor &trunc_nocheck(at::Tensor &result, const at::Tensor &self) {
     at_npu::native::OpCommand cmd;
-    cmd.Name("Trunc")
-        .Input(self)
-        .Output(result)
-        .Run();
+    cmd.Name("Trunc").Input(self).Output(result).Run();
     return result;
+}
+
+bool trunc_integral_identity(const at::Tensor &self) {
+    // Match PyTorch CPU: trunc on integer tensors is the identity.
+    // CANN aclnn trunc ops only support floating dtypes; skip the kernel for integers.
+    return at::isIntegralType(self.scalar_type(), /*includeBool=*/false);
 }
 } // namespace
 
-at::Tensor& trunc_out(const at::Tensor& self, at::Tensor& out)
-{
-    npu_preparation::CheckOut(
-        {self},
-        out,
-        self);
+at::Tensor &trunc_out(const at::Tensor &self, at::Tensor &out) {
+    npu_preparation::CheckOut({self}, out, self);
+    if (trunc_integral_identity(self)) {
+        if (!npu_utils::check_match(&out)) {
+            at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+            contiguous_result.copy_(self);
+            npu_utils::format_fresh_view(out, contiguous_result);
+        } else {
+            out.copy_(self);
+        }
+        return out;
+    }
     if (!npu_utils::check_match(&out)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         trunc_nocheck(contiguous_result, self);
@@ -45,17 +53,15 @@ at::Tensor& trunc_out(const at::Tensor& self, at::Tensor& out)
     } else {
         trunc_nocheck(out, self);
     }
-
     return out;
 }
 
-at::Tensor& trunc_(at::Tensor& self)
-{
-    return acl_op::trunc_out(self, self);
-}
+at::Tensor &trunc_(at::Tensor &self) { return acl_op::trunc_out(self, self); }
 
-at::Tensor trunc(const at::Tensor& self)
-{
+at::Tensor trunc(const at::Tensor &self) {
+    if (trunc_integral_identity(self)) {
+        return self.clone();
+    }
     at::Tensor result = npu_preparation::apply_tensor(self);
     trunc_nocheck(result, self);
     return result;
