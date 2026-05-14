@@ -2,9 +2,11 @@
 
 ## 产品支持情况
 
-| 产品      | 是否支持 |
+|产品      | 是否支持 |
 |:----------------------------|:-----------:|
-|<term>Atlas A3 推理系列产品</term>|      √     |
+|<term>Atlas 350 加速卡</term>|      √     |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>|      √     |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>|      √     |
 
 ## 功能说明
 
@@ -79,23 +81,24 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index=None, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None, quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, actual_seq_len=None, k_nope_clip_alpha=None, rmsnorm_epsilon_cq=1e-05, rmsnorm_epsilon_ckv=1e-05, cache_mode='PA_BSND', query_norm_flag=False, weight_quant_mode=0, kv_cache_quant_mode=0, query_quant_mode=0, ckvkr_repo_mode=0, quant_scale_repo_mode=0, tile_size=128, qc_qr_scale=1.0, kc_scale=1.0) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index=None, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None, dequant_scale_w_dkv_kr=None, quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, actual_seq_len=None, k_nope_clip_alpha=None, rmsnorm_epsilon_cq=1e-05, rmsnorm_epsilon_ckv=1e-05, cache_mode='PA_BSND', query_norm_flag=False, weight_quant_mode=0, kv_cache_quant_mode=0, query_quant_mode=0, ckvkr_repo_mode=0, quant_scale_repo_mode=0, tile_size=128, qc_qr_scale=1.0, kc_scale=1.0, token_x_dtype=None, weight_dq_dtype=None, weight_uq_qr_dtype=None, weight_dkv_kr_dtype=None, kv_cache_dtype=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明
 
-> [!NOTE]
-> B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、He（Head Size）表示隐藏层大小、N（Head Num）表示多头数、Hcq表示q低秩矩阵维度、Hckv表示kv低秩矩阵维度、Dtile表示kv_cache的D轴维度、D表示qk不含位置编码维度、Dr表示qk位置编码维度、Nkv表示kv的head数、BlockNum表示PagedAttention场景下的块数、BlockSize表示PagedAttention场景下的块大小、T表示BS合轴后的大小。
+  > [!NOTE]
+  >
+  > - B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、He（Head Size）表示隐藏层大小、N（Head Num）表示多头数、Hcq表示q低秩矩阵维度、Hckv表示kv低秩矩阵维度、Dtile表示kv_cache的D轴维度、D表示qk不含位置编码维度、Dr表示qk位置编码维度、Nkv表示kv的head数、BlockNum表示PagedAttention场景下的块数、BlockSize表示PagedAttention场景下的块大小、T表示BS合轴后的大小。
 
-- **token_x**（`Tensor`）：必选参数，公式中用于计算Query和Key的输入tensor。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`。BS合轴时，shape为[T, He]；BS非合轴时，shape为[B, S, He]。
+- **token_x**（`Tensor`）：必选参数，公式中用于计算Query和Key的输入tensor。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`。BS合轴时，shape为[T, He]；BS非合轴时，shape为[B, S, He]。
 
-- **weight_dq**（`Tensor`）：必选参数，公式中用于计算Query的下采样权重矩阵$W^{DQ}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`，shape为[He, Hcq]。
+- **weight_dq**（`Tensor`）：必选参数，公式中用于计算Query的下采样权重矩阵$W^{DQ}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`，shape为[He, Hcq]。
 
-- **weight_uq_qr**（`Tensor`）：必选参数，公式中用于计算Query的上采样权重矩阵$W^{UQ}$和位置编码权重矩阵$W^{QR}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`，shape为[Hcq, N*(D+Dr)]。
+- **weight_uq_qr**（`Tensor`）：必选参数，公式中用于计算Query的上采样权重矩阵$W^{UQ}$和位置编码权重矩阵$W^{QR}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`，shape为[Hcq, N*(D+Dr)]。
 
 - **weight_uk**（`Tensor`）：必选参数，公式中用于计算Key的上采样权重$W^{UK}$。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`，shape为[N, D, Hckv]。
 
-- **weight_dkv_kr**（`Tensor`）：必选参数，公式中用于计算Key的下采样权重矩阵$W^{DKV}$和位置编码权重矩阵$W^{KR}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`，shape为[He, Hckv+Dr]。
+- **weight_dkv_kr**（`Tensor`）：必选参数，公式中用于计算Key的下采样权重矩阵$W^{DKV}$和位置编码权重矩阵$W^{KR}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`，shape为[He, Hckv+Dr]。
 
 - **rmsnorm_gamma_cq**（`Tensor`）：必选参数，计算$c^Q$的RmsNorm公式中的$\gamma$参数。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`，shape为[Hcq]。
 
@@ -105,7 +108,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **rope_cos**（`Tensor`）：必选参数，用于计算旋转位置编码的余弦参数矩阵。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`；BS合轴时，shape为[T, Dr]；BS非合轴时，shape为[B, S, Dr]。支持B=0,S=0,T=0的空Tensor。
 
-- **kv_cache**（`Tensor`）：必选参数，表示cache的索引，计算结果原地更新（对应公式中的$k^C$）。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dtile]，支持B=0,Skv=0的空Tensor;当cache_mode为"BSND"时shape为[B, S, Nkv, Dtile]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dtile]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
+- **kv_cache**（`Tensor`）：必选参数，表示cache的索引，计算结果原地更新（对应公式中的$k^C$）。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dtile]，支持B=0,Skv=0的空Tensor;当cache_mode为"BSND"时shape为[B, S, Nkv, Dtile]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dtile]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
 
 - **kr_cache**（`Tensor`）：必选参数，用于key位置编码的cache，计算结果原地更新（对应公式中的$k^R$）。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dr]，支持B=0,Skv=0的空Tensor；当cache_mode为"BSND"时shape为[B, S, Nkv, Dr]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dr]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
 
@@ -113,27 +116,27 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **cache_index**（`Tensor`）：可选参数，用于存储`kv_cache`和`kr_cache`的索引。不支持非连续，数据格式支持ND，数据类型支持`int64`，当`cache_mode`为"PA_BSND"或"PA_NZ"：BS合轴时shape为[T]，BS非合轴时shape为[B, S]，取值范围需在[0, BlockNum*BlockSize)内; 当`cache_mode`为"PA_BLK_BSND"或"PA_BLK_NZ"：BS合轴时shape为[Sum(Ceil(S_i/BlockSize))]（S_i表示第i个batch的序列长度），BS非合轴时shape为[B, Ceil(S/BlockSize)]，取值范围需在[0, BlockNum)内；当`cache_mode`为"BSND"或"TND"：`cache_index`无需传入。当前不会对传入值的合法性进行校验，需用户自行保证。
 
-- **dequant_scale_x**（`Tensor`）：可选参数，token_x的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[T]或[B*S, 1]，支持B=0,S=0,T=0的空Tensor。
+- **dequant_scale_x**（`Tensor`）：可选参数，token_x的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`、`float8_e8m0`。weight_quant_mode=2/4/5时，shape为[T]或[B\*S, 1]；weight_quant_mode=3时，shape为[T, He/32]或[B*S, He/32]；weight_quant_mode=1时无需赋值。支持B=0,S=0,T=0的空Tensor。
 
-- **dequant_scale_w_dq**（`Tensor`）：可选参数，weight_dq的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1, Hcq]。
+- **dequant_scale_w_dq**（`Tensor`）：可选参数，weight_dq的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`、`float8_e8m0`。weight_quant_mode=2/4/5时，shape为[1,Hcq]；weight_quant_mode=3时，shape为[Hcq, He/32]；weight_quant_mode=1时无需赋值。
 
-- **dequant_scale_w_uq_qr**（`Tensor`）：可选参数，用于MatmulQcQr矩阵乘后反量化操作的per-channel参数。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1, N*(D+Dr)]。
+- **dequant_scale_w_uq_qr**（`Tensor`）：可选参数，用于MatmulQcQr矩阵乘后反量化操作的per-channel参数。不支持非连续，数据格式支持ND，数据类型支持`float`、`float8_e8m0`。weight_quant_mode=1/2/4/5时，shape为[1,N*(D+Dr)]；weight_quant_mode=3时，shape为[N*(D+Dr), Hcq/32]。
 
-- **dequant_scale_w_dkv_kr**（`Tensor`）：可选参数，weight_dkv_kr的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1, Hckv+Dr]。
+- **dequant_scale_w_dkv_kr**（`Tensor`）：可选参数，weight_dkv_kr的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`、`float8_e8m0`。weight_quant_mode=2/4/5时，shape为[(1,Hckv+Dr)]；weight_quant_mode=3时，shape为[Hckv+Dr, He/32]。weight_quant_mode=1时无需赋值。
 
-- **quant_scale_ckv**（`Tensor`）：可选参数，用于对kv_cache输出数据做量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`，*部分量化*场景时shape为[1, Hckv]，*全量化*场景时shape为[1]，支持非空Tensor（仅kv_cache为`int8` dtype输出场景需传）。
+- **quant_scale_ckv**（`Tensor`）：可选参数，用于对kv_cache输出数据做量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`，kv_cache_quant_mode=1时shape为[1]；kv_cache_quant_mode=2时shape为[1, Hckv]；kv_cache_quant_mode=3时无需赋值。支持非空Tensor。
 
-- **quant_scale_ckr**（`Tensor`）：可选参数，用于对kr_cache输出数据做量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1, Dr]，支持非空Tensor（仅`int8` dtype量化输出场景需传）。
+- **quant_scale_ckr**（`Tensor`）：可选参数，用于对kr_cache输出数据做量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`。kv_cache_quant_mode=2时，shape为[1, Dr]；kv_cache_quant_mode=1/3时无需赋值。支持非空Tensor。
 
-- **smooth_scales_cq**（`Tensor`）：可选参数，用于对RmsNorm_cq输出做动态量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1, Hcq]或[1]，支持非空Tensor（仅`int8` dtype量化输出场景可选传）。
+- **smooth_scales_cq**（`Tensor`）：可选参数，用于对RmsNorm_cq输出做动态量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`。weight_quant_mode=1/2/4/5时，shape为[1, Hcq]；weight_quant_mode=3时无需赋值。支持非空Tensor。
 
 - **actual_seq_len**（`Tensor`）：可选参数，表示每个batch中的序列长度，以前缀和的形式储存。不支持非连续，数据格式支持ND，数据类型支持`int32`，shape为[B]，支持非空tensor（仅BS合轴且cache_mode为"PA_BLK_BSND"或"PA_BLK_NZ"时需要传入）。当前不会对传入值的合法性进行校验，需用户自行保证。
 
-- **k_nope_clip_alpha**（`Tensor`）：可选参数，表示kv_cache做clip操作时的缩放因子，当前仅在kv_cache per-tile量化场景下使用。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1]。
+- **k_nope_clip_alpha**（`Tensor`）：可选参数，表示kv_cache做clip操作时的缩放因子，在部分量化per-tile场景和int8全量化per-tile场景下使用，其他场景无需赋值。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1]。
 
-- **rmsnorm_epsilon_cq**（`float`）：可选参数，计算$c^Q$的RmsNorm公式中的$\epsilon$参数。默认值为1e-05。
+- **rmsnorm_epsilon_cq**（`double`）：可选参数，计算$c^Q$的RmsNorm公式中的$\epsilon$参数。默认值为1e-05。
 
-- **rmsnorm_epsilon_ckv**（`float`）：可选参数，计算$c^{KV}$的RmsNorm公式中的$\epsilon$参数。默认值为1e-05。
+- **rmsnorm_epsilon_ckv**（`double`）：可选参数，计算$c^{KV}$的RmsNorm公式中的$\epsilon$参数。默认值为1e-05。
 
 - **cache_mode**（`str`）：可选参数，表示kv_cache的模式。可选值为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"、"TND"（对应BS合轴）和"BSND"（对应非BS合轴），默认为"PA_BSND"。
 
@@ -149,23 +152,47 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **quant_scale_repo_mode**（`int`）：可选参数，表示量化scale的存储模式。0表示量化scale和数据分别存储，1表示量化scale和数据合并存储，默认值为0。
 
-- **tile_size**（`int`）：可选参数，表示per-tile量化时每个tile的大小，仅在kv_cache_quant_mode为3时有效，默认值为128。
+- **tile_size**（`int`）：可选参数，表示per-tile量化时每个tile的大小，仅在kv_cache_quant_mode为3时有效，默认值为128；kv_cache_quant_mode=1/2时无需赋值。
 
-- **qc_qr_scale**（`float`）：可选参数，表示Query的尺度矫正系数，默认值为1.0。
+- **qc_qr_scale**（`double`）：可选参数，表示Query的尺度矫正系数，默认值为1.0。
 
-- **kc_scale**（`float`）：可选参数，表示Key的尺度矫正系数，默认值为1.0。
+- **kc_scale**（`double`）：可选参数，表示Key的尺度矫正系数，默认值为1.0。
+
+- **token_x_dtype**（`int`）：可选参数，表示参数token_x的传入dtype，在hif8全量化场景为torch_npu.hifloat8，其他场景为None。
+
+- **weight_dq_dtype**（`int`）：可选参数，表示参数weight_dq的传入dtype，在hif8全量化场景为torch_npu.hifloat8，其他场景为None。
+
+- **weight_uq_qr_dtype**（`int`）：可选参数，表示参数weight_uq_qr的传入dtype，在hif8全量化场景为torch_npu.hifloat8，其他场景为None。
+
+- **weight_dkv_kr_dtype**（`int`）：可选参数，表示参数weight_dkv_kr的传入dtype，在hif8全量化场景为torch_npu.hifloat8，其他场景为None。
+
+- **kv_cache_dtype**（`int`）：可选参数，表示参数kv_cache的传入dtype，在hif8 kv_cache per-tensor量化和hif8 kv_cache per-tile量化场景为torch_npu.hifloat8，其他场景为None。
+
+  > [!NOTE]
+  >
+  > <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+  > 
+  > - token_x、weight_dq、weight_uq_qr、weight_dkv_kr、kv_cache不支持float8_e4m3fn、hifloat8数据类型。
+  > - dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr不支持float8_e8m0数据类型。
 
 ## 返回值说明
 
-- **query**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。数据格式支持ND，dtype支持`bfloat16`和`int8`。shape支持3维和4维，格式为[T, N, Hckv]和[B, S, N, Hckv]。
+- **query**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。数据格式支持ND，dtype支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`。shape支持3维和4维，格式为[T, N, Hckv]和[B, S, N, Hckv]。
 
 - **query_rope**（`Tensor`）：表示Query位置编码的输出Tensor，即公式中q<sup>R</sup>。数据格式支持ND，dtype支持`bfloat16`。shape支持3维和4维，格式为[T, N, Dr]和[B, S, N, Dr]。
 
-- **dequant_scale_q_nope**（`Tensor`）：表示Query的输出Tensor的反量化参数。数据格式支持ND，dtype支持`float`。shape支持1维和3维，全量化kv_cache量化场景下，其shape为[T, N, 1]和[B*S, N, 1]；其他场景下，其shape为[0]。
+- **dequant_scale_q_nope**（`Tensor`）：表示Query的输出Tensor的反量化参数。数据格式支持ND，dtype支持`float`。shape支持3维，weightQuantMode=2/3/4/5时，其shape为[T, N, 1]和[B*S, N, 1]；weightQuantMode=0/1时为nullptr。
 
-- **query_norm**（`Tensor`）：Query做RmsNorm_cq后的输出tensor（对应$q^C$）。数据格式支持ND，dtype支持`bfloat16`、`int8`。shape支持2维和3维，`query_norm_flag=True`时有效，shape为[T, Hcq]或[B, S, Hcq]；`query_norm_flag=False`时无效，shape为[0]。
+- **query_norm**（`Tensor`）：Query做RmsNorm_cq后的输出tensor（对应$q^C$）。数据格式支持ND，dtype支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`。shape支持2维和3维，`query_norm_flag=True`时有效，shape为[T, Hcq]或[B, S, Hcq]；`query_norm_flag=False`时为nullptr。
 
-- **dequant_scale_q_norm**（`Tensor`）：Query做RmsNorm_cq后的反量化参数。数据格式支持ND，数据类型支持`float`。shape支持1维和3维，`query_norm_flag=True`且`weight_quant_mode=1/2/3/4/5`时有效，shape为[T, 1]或[B*S, 1]；其余情况无效，shape为[0]。
+- **dequant_scale_q_norm**（`Tensor`）：Query做RmsNorm_cq后的反量化参数。数据格式支持ND，数据类型支持`float`、`float8_e8m0`。shape支持2维，`query_norm_flag=True`且`weight_quant_mode=1/2/3/4/5`时有效。`weight_quant_mode=0`时为nullptr。`weight_quant_mode=1/2/4/5`时，shape为[T,1]或[B\*S,1]；`weightQuantMode=3`时，shape为[T, Hcq/32]或[B*S, Hcq/32]。
+
+  > [!NOTE]
+  >
+  > <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+  > 
+  > - query、query_norm不支持float8_e4m3fn、hifloat8数据类型。
+  > - dequant_scale_q_norm不支持float8_e8m0数据类型。
 
 ## 约束说明
 
@@ -189,9 +216,16 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     | Nkv          | kv 的 head 数                  | 取值固定为：1                                                               |
     | BlockNum     | PagedAttention 场景下per-tile量的块数    | 取值为计算 `B*Skv/BlockSize` 的结果后向上取整（Skv 表示 kv 的序列长度，允许取 0） |
     | BlockSize    | PagedAttention 场景下的块大小  | 取值范围：16-1024，且为16的倍数                                                           |
-    | T            | BS 合轴后的大小                | 取值范围：不限制；注：若采用 BS 合轴，此时 token_x、rope_sin、rope_cos、query_norm 均为 2 维，query_out、query_rope_out 为 3维，cache_index 为 1 维 |                                                    |
+    | T            | BS 合轴后的大小                | 取值范围：不限制；注：若采用 BS 合轴，此时 token_x、rope_sin、rope_cos、query_norm 均为 2 维，query_out、query_rope_out 为 3维，cache_index 为 1 维 |
 
 - 支持场景：
+
+  > [!NOTE]
+  >
+  > <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+  > 
+  > - 当前不支持 fp8/hif8/mxfp8 全量化场景
+
   <table style="table-layout: auto;" border="1">
     <tr>
       <th colspan="2">场景</th>
