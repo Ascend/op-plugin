@@ -4428,25 +4428,38 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      new_params:
+        # Comma chain: pre_check and warn must run before right_eff; single entry avoids key-order hazards.
+        right_eff: '(op_plugin::searchsorted_validate_scalar_op(sorted_sequence, self, out_int32, right, side, sorter), op_plugin::warn_if_searchsorted_scalar_inputs_noncontiguous(sorted_sequence, sorter), op_plugin::resolve_searchsorted_effective_right(right, side))'
       out:
         size: 'c10::SmallVector<int64_t, op_infer::SIZE>{}'
         dtype: 'out_int32 ? at::kInt : at::kLong'
-      exec: aclnnSearchSorteds, sorted_sequence, self, out_int32, right, sorter, out
+      exec: aclnnSearchSorteds, sorted_sequence, self, out_int32, right_eff, sorter, out
 
   - func: searchsorted.Tensor(Tensor sorted_sequence, Tensor self, *, bool out_int32=False, bool right=False, str? side=None, Tensor? sorter=None) -> Tensor
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      structured_inherit: searchsorted.Tensor_out
+      new_params:
+        # Functional: out is not a function arg yet when new_params run — use core check only (incl. sorter size).
+        right_eff: '(op_plugin::searchsorted_validate_core_no_output(sorted_sequence, self, out_int32, right, side, sorter), op_plugin::warn_if_searchsorted_inputs_noncontiguous(sorted_sequence, self, sorter), op_plugin::resolve_searchsorted_effective_right(right, side))'
+      out:
+        size: self
+        dtype: 'out_int32 ? at::kInt : at::kLong'
+      exec: aclnnSearchSorted, sorted_sequence, self, out_int32, right_eff, sorter, out
 
   - func: searchsorted.Tensor_out(Tensor sorted_sequence, Tensor self, *, bool out_int32=False, bool right=False, str? side=None, Tensor? sorter=None, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      new_params:
+        # Comma chain: full ATen pre_check (incl. out dtype) before warn and before resolve; ensures PyTorch
+        # RuntimeError text before npu_preparation::check_tensor / aclnn ("expected dtype Long...").
+        right_eff: '(op_plugin::searchsorted_validate_tensor_out_op(sorted_sequence, self, out, out_int32, right, side, sorter), op_plugin::warn_if_searchsorted_inputs_noncontiguous(sorted_sequence, self, sorter), op_plugin::resolve_searchsorted_effective_right(right, side))'
       out:
         size: self
         dtype: 'out_int32 ? at::kInt : at::kLong'
-      exec: aclnnSearchSorted, sorted_sequence, self, out_int32, right, sorter, out
+      exec: aclnnSearchSorted, sorted_sequence, self, out_int32, right_eff, sorter, out
 
   - func: sgn(Tensor self) -> Tensor
     acl_op: all_version
