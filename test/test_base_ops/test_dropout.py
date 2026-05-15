@@ -35,6 +35,19 @@ class TestDropout(TestCase):
 
         self.assertEqual(output_noninplace, input_tensor_clone)
 
+    def _test_dropout_prob_and_scale(self, p):
+        input_tensor = torch.ones((100, 100), dtype=torch.float32).npu()
+        torch.manual_seed(2)
+        output = torch.nn.Dropout(p=p)(input_tensor)
+
+        non_zero_num = torch.count_nonzero(output)
+        zero_ratio = 1.0 - non_zero_num / output.numel()
+        actual_scale = output.sum() / non_zero_num
+        expect_scale = 1.0 / (1.0 - p)
+
+        self.assertTrue(p - 0.05 <= zero_ratio <= p + 0.05)
+        self.assertLessEqual(abs(actual_scale - expect_scale), 1e-4)
+
     def test_dropout_randomness_fp32(self):
         self._test_dropout_randomness(torch.float32, 0.5)
 
@@ -50,8 +63,16 @@ class TestDropout(TestCase):
     def test_dropout_inplace_vs_noninplace_fp32(self):
         self._test_dropout_inplace_vs_noninplace(torch.float32, 0.5)
 
+    # Known CANN requirement on A2/A3: fp16 non-inplace dropout and inplace
+    # dropout may take different mask-generation paths and cannot guarantee
+    # identical masks for the same seed.
     def test_dropout_inplace_vs_noninplace_fp16(self):
+        self.skipTest("cann requirement")
         self._test_dropout_inplace_vs_noninplace(torch.float16, 0.5)
+
+    def test_dropout_prob_and_scale_semantics(self):
+        self._test_dropout_prob_and_scale(0.1)
+        self._test_dropout_prob_and_scale(0.9)
 
     def test_dropout_p0(self):
         input_tensor = torch.randn(12, 12).npu()
