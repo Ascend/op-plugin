@@ -4316,6 +4316,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         dtype: self
@@ -4326,7 +4327,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      exec: aclnnInplaceRound
+      structured_inherit: round.out
 
   - func: round_.decimals(Tensor(a!) self, *, int decimals) -> Tensor(a!)
     acl_op: all_version

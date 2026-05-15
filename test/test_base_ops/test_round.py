@@ -92,6 +92,26 @@ class TestRound(TestCase):
             self.assertRtolEqual(cpu_output, npu_output1)
             self.assertRtolEqual(cpu_output, npu_output2)
 
+    def test_round_integer_identity_npu(self):
+        """Integer round/round_ is identity on NPU (int8/int16/uint8 unsupported by aclnn round; see op_plugin yaml)."""
+        dtypes = [
+            torch.int8,
+            torch.uint8,
+            torch.int16,
+            torch.int32,
+            torch.int64,
+        ]
+        for dt in dtypes:
+            cpu_x = torch.tensor([[1, -2, 7], [-3, 0, 42]], dtype=dt)
+            npu_x = cpu_x.npu()
+
+            self.assertEqual(torch.round(cpu_x), cpu_x)
+            self.assertEqual(torch.round(npu_x).cpu(), cpu_x)
+
+            npu_inplace = cpu_x.clone().npu()
+            npu_inplace.round_()
+            self.assertEqual(npu_inplace.cpu(), cpu_x)
+
 
 if __name__ == "__main__":
     run_tests()

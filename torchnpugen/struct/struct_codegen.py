@@ -206,6 +206,13 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
                 tensor=struct.integral_identity_tensor, func_name=name, args_exprs_str=args_exprs_str
             )
 
+        integral_identity_guard = ""
+        if struct.integral_identity_tensor is not None:
+            integral_identity_guard = INTEGRAL_IDENTITY_GUARD.substitute(
+                tensor=struct.integral_identity_tensor,
+                func_name=name,
+                args_exprs_str=args_exprs_str)
+
         tensor_arguments = ", ".join(filt_input_tensor(f.func.arguments.flat_non_out))
 
         new_params_def = "".join(

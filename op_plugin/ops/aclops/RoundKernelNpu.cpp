@@ -20,6 +20,12 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
+bool round_integral_identity(const at::Tensor& self) {
+  // Match PyTorch: round on integer tensors is identity. CANN aclnn round ops
+  // do not support int8 / int16 / uint8; use the same path for all integral dtypes.
+  return at::isIntegralType(self.scalar_type(), /*includeBool=*/false);
+}
+
 namespace {
 
 at::Tensor& round_out_npu_nocheck(at::Tensor& result, const at::Tensor& self)
@@ -38,6 +44,17 @@ at::Tensor& round_out(const at::Tensor& self, at::Tensor& out)
 {
     npu_preparation::CheckOut({self}, out, self);
 
+    if (round_integral_identity(self)) {
+        if (!npu_utils::check_match(&out)) {
+            at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+            contiguous_result.copy_(self);
+            npu_utils::format_fresh_view(out, contiguous_result);
+        } else {
+            out.copy_(self);
+        }
+        return out;
+    }
+
     if (!npu_utils::check_match(&out)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         round_out_npu_nocheck(contiguous_result, self);
@@ -50,6 +67,9 @@ at::Tensor& round_out(const at::Tensor& self, at::Tensor& out)
 
 at::Tensor round(const at::Tensor& self)
 {
+    if (round_integral_identity(self)) {
+        return self.clone();
+    }
     at::Tensor result = npu_preparation::apply_tensor(self);
     round_out_npu_nocheck(result, self);
 
