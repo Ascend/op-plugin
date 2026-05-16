@@ -921,20 +921,16 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
         softmax_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
         if (is_fp8) {
-            if (query_dtype.has_value()) {
-                TensorWrapper query_wrapper = make_wrapper(format_query, query_dtype);
-                TensorWrapper key_wrapper = make_wrapper(format_key, query_dtype);
-                TensorWrapper value_wrapper = make_wrapper(format_value, query_dtype);
-                EXEC_NPU_CMD(
-                    aclnnQuantFlashAttentionScore, query_wrapper, key_wrapper, value_wrapper, format_atten_mask, format_d_scale_q,
-                    format_d_scale_k, format_d_scale_v, format_p_scale, scale, pre_tokens, next_tokens, head_num, input_layout_char,
-                    sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
-            } else {
-                EXEC_NPU_CMD(
-                    aclnnQuantFlashAttentionScore, format_query, format_key, format_value, format_atten_mask, format_d_scale_q,
-                    format_d_scale_k, format_d_scale_v, format_p_scale, scale, pre_tokens, next_tokens, head_num, input_layout_char,
-                    sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
-            }
+            TORCH_CHECK(query_dtype.has_value(),
+                "In FP8 mode, query_dtype must be provided and shall only be set to hifloat8.",
+                OPS_ERROR(ErrCode::PARAM));
+            TensorWrapper query_wrapper = make_wrapper(format_query, query_dtype);
+            TensorWrapper key_wrapper = make_wrapper(format_key, query_dtype);
+            TensorWrapper value_wrapper = make_wrapper(format_value, query_dtype);
+            EXEC_NPU_CMD(
+                aclnnQuantFlashAttentionScore, query_wrapper, key_wrapper, value_wrapper, format_atten_mask, format_d_scale_q,
+                format_d_scale_k, format_d_scale_v, format_p_scale, scale, pre_tokens, next_tokens, head_num, input_layout_char,
+                sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
         } else {
             EXEC_NPU_CMD(
                 aclnnFlashAttentionScoreV4, format_query, format_key, format_value,

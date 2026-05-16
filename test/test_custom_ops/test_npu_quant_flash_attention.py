@@ -91,5 +91,24 @@ class TestNPUQuantFlashAttentionV2(TestCase):
                                               d_scale_v.npu(), p_scale.npu())
         self.assertRtolEqual(output.half(), fa_result[0], prec=0.01, prec16=0.01)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_flash_attention_with_hifp8(self, device="npu"):
+        scale = 0.08838
+        query = torch.ones(1, 57600, 5, 128, dtype=torch.uint8).npu()
+        key = torch.ones(1, 57600, 5, 128, dtype=torch.uint8).npu()
+        value = torch.ones(1, 57600, 5, 128, dtype=torch.uint8).npu()
+        d_scale_q = torch.ones(1, 5, 450, 1, dtype=torch.float32).npu()
+        d_scale_k = torch.ones(1, 5, 225, 1, dtype=torch.float32).npu()
+        d_scale_v = torch.ones(1, 5, 113, 1, dtype=torch.float32).npu()
+        query_dtype = torch_npu.hifloat8
+        p_scale = torch.ones(1, dtype=torch.float32).npu()
+
+        custom_output = torch_npu.npu_quant_fusion_attention(
+            query, key, value, head_num=5, input_layout="BSND", scale=scale,
+            d_scale_q=d_scale_q, d_scale_k=d_scale_k, d_scale_v=d_scale_v, p_scale=p_scale, query_dtype=query_dtype)
+        golden_output = torch.ones(2, 1, 1, 128, dtype=torch.float16).npu()
+        res = custom_output[0].equal(golden_output)
+        self.assertRtolEqual(res, True)
+
 if __name__ == "__main__":
     run_tests()
