@@ -46,7 +46,7 @@ class TestQuantScatter(TestCase):
         sin2 = sin1.clone()
 
         supported_output = self.supported_op_exec(query1, key1, cos1, sin1)
-        custom_output = torch_npu.npu_apply_rotary_pos_emb(query2, key2, cos2, sin2, 'BSND')
+        custom_output = torch_npu.npu_apply_rotary_pos_emb(query2, key2, cos2, sin2, 'BSND', 'half')
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
     @unittest.skip("Skip until CANN is updated to support layout TND format")
@@ -69,7 +69,7 @@ class TestQuantScatter(TestCase):
         sin2 = sin1.clone()
 
         supported_output = self.supported_op_exec(query1, key1, cos1, sin1)
-        custom_output = torch_npu.npu_apply_rotary_pos_emb(query2, key2, cos2, sin2, 'TND')
+        custom_output = torch_npu.npu_apply_rotary_pos_emb(query2, key2, cos2, sin2, 'TND','half')
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
 if __name__ == "__main__":

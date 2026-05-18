@@ -5747,8 +5747,9 @@ custom:
     acl_op: all_version
     op_api: all_version
 
-  - func: npu_apply_rotary_pos_emb(Tensor query, Tensor key, Tensor cos, Tensor sin, str layout='BSH', str rotary_mode='half') -> (Tensor, Tensor)
+  - func: npu_apply_rotary_pos_emb(Tensor query, Tensor key, Tensor cos, Tensor sin, str layout='BSND', str rotary_mode='half') -> (Tensor, Tensor)
     op_api: all_version
+    exposed: [v2.7, newest]
 
   - func: npu_kv_rmsnorm_rope_cache(Tensor kv, Tensor gamma, Tensor cos, Tensor sin, Tensor index, Tensor k_cache, Tensor ckv_cache, *, Tensor? k_rope_scale=None, Tensor? c_kv_scale=None, Tensor? k_rope_offset=None, Tensor? c_kv_offset=None, Tensor? v=None, float epsilon=1e-5, str cache_mode='Norm', bool is_output_kv=False) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version

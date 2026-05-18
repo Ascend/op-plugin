@@ -2095,7 +2095,7 @@ class TestNpuApplyRotoryPosEmbMeta(TestCase):
             self.assertIsNotNone(fake_key)
             self.assertIsNotNone(fake_cos)
             self.assertIsNotNone(fake_sin)
-            fake_query_result, fake_key_result = torch.ops.npu.npu_apply_rotary_pos_emb(fake_query, fake_key, fake_cos, fake_sin, "BSH")
+            fake_query_result, fake_key_result = torch.ops.npu.npu_apply_rotary_pos_emb(fake_query, fake_key, fake_cos, fake_sin, "BSND","half")
             self.assertEqual(fake_query_result.shape, data_query.shape)
             self.assertEqual(fake_query_result.dtype, data_query.dtype)
             self.assertEqual(fake_query_result.device, data_query.device)
