@@ -70,4 +70,10 @@ ${python_execute} -m torchnpugen.struct.gen_struct_opapi  \
   --native_yaml="$OUTPUT_DIR/op_plugin_functions.yaml" \
   --struct_yaml="$CDIR/op_plugin/config/op_plugin_functions.yaml"
 
+${python_execute} -m torchnpugen.gen_atb_ops \
+  --config="$CDIR/op_plugin/config/atb_ops.yaml" \
+  --header="$CDIR/op_plugin/include/AtbOpsInterface.h" \
+  --source="$CDIR/op_plugin/ops/atb/AtbOpsInterface.cpp" \
+  --atb-src-dir="$CDIR/op_plugin/ops/atb"
+
 sh $CDIR/op_plugin/third_party/atb/libs/build_stub.sh

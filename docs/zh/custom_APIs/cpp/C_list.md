@@ -216,3 +216,13 @@
 </tr>
 </tbody>
 </table>
+
+## ATB C++接口说明
+
+Ascend Extension for PyTorch提供了一组ATB C++接口，用于在C++侧调用已暴露的ATB能力。这组接口通过统一入口头文件对外提供。
+
+- [`op_plugin/include/atb_ops.h`](../../../../op_plugin/include/atb_ops.h)：ATB C++接口统一入口头文件。
+- [`op_plugin/config/atb_ops.yaml`](../../../../op_plugin/config/atb_ops.yaml)：当前对外暴露接口列表。
+- `libop_plugin_atb.so`：导出上述ATB C++接口对应符号。
+
+相关接口可通过`at_npu::native::atb`命名空间访问。
