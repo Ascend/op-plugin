@@ -13,6 +13,7 @@
 - API功能：全量FA实现。
 
 - 计算公式：
+
 $$
 atten\_out = softmax\left(scale \cdot (Q \cdot K) + atten\_mask\right) \cdot V
 $$

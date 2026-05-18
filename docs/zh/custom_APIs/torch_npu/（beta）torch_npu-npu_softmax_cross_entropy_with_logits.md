@@ -1,6 +1,6 @@
 # （beta）torch_npu.npu_softmax_cross_entropy_with_logits
 
-> [!NOTICE]  
+> [!NOTICE]
 > 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
@@ -16,7 +16,8 @@
 
 - API功能: 计算softmax的交叉熵损失。
 
-- 计算公式: 
+- 计算公式:
+
 $$
      loss = -\sum_{i=1}^{N}y_i * log(softmax(x_i))
 $$
@@ -51,7 +52,7 @@ torch_npu.npu_softmax_cross_entropy_with_logits(features, labels) -> Tensor
 >>> batch_size = 4
 >>> num_classes = 12
 >>> features = torch.rand(1, batch_size * num_classes).npu()
->>> labels = torch.rand(1, batch_size * num_classes).npu() 
+>>> labels = torch.rand(1, batch_size * num_classes).npu()
 >>> output = torch_npu.npu_softmax_cross_entropy_with_logits(features, labels)
 >>> print(output)
 tensor([97.9450], device='npu:0')

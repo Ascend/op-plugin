@@ -10,7 +10,9 @@
 ## 功能说明
 
 - API功能：在MoE（混合专家模型，Mixture of Experts）架构的门控机制中，用于专家路由计算。对输入`x`做Softmax计算，再做topk操作，以挑选出权重最高的前K个专家。
+
 - 计算公式：
+
 $$
 softmaxOut = softmax(x, axis = -1) \\
 yOut, expertIdxOut = topK(softmaxOut, k = k) \\

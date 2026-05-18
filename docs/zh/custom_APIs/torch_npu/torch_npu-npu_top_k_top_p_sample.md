@@ -22,8 +22,8 @@
   |qSample采样|×|×|×|qSample|对输入`logits`每个batch使用`q[i]`进行指数采样，从结果中取最大值和索引，作为logits_select_idx[batch,1]|
   |topK-topP采样|√|√|×|None|无|
   |topK-qSample采样|√|×|×|qSample|无|
-  |topK-multiNomial采样|√|×|×|multiNomial|无| 
-  |topK-minP-multiNomial采样|√|×|√|multiNomial|无| 
+  |topK-multiNomial采样|√|×|×|multiNomial|无|
+  |topK-minP-multiNomial采样|√|×|√|multiNomial|无|
   |topP-qSample采样|×|√|×|qSample|无|
   |topK-topP-qSample采样|√|√|×|qSample|VLLM框架标准完整功能|
   |topK-topP-multiNomial采样|√|√|×|multiNomial|min_ps为无效值，但仍执行多项式采样|
@@ -31,7 +31,7 @@
 
 - 计算公式：
   输入`logits`为大小是[batch, voc_size]的词频表，其中每个batch对应一条输入序列，而voc_size则是约定每个batch的统一长度。<br>
-  `logits`中的每一行logits[batch][:]根据相应的top_k[batch]、top_p[batch]、q[batch, :]、min_ps[batch]，执行不同的计算场景。<br> 
+  `logits`中的每一行$logits[batch][:]$根据相应的top_k[batch]、top_p[batch]、q[batch, :]、min_ps[batch]，执行不同的计算场景。<br>
   下述公式中使用b和v来分别表示batch和voc_size方向上的索引。
 
   topK采样
@@ -41,7 +41,7 @@
   * 具体计算流程如下所示：
 
   * 根据输入`top_k[b]`与`ks_max`的关系，判断是否进行topK采样：
-  
+
   | 参数类型 | ≤ | 有效域 | 无效域 |
   | :-------:| :------:|:-------:|:-------:|
   |`top_k[b]`|跳过topK采样|1≤topK≤min(voc_size,ks_max),执行topK采样|top_k>min(voc_size,ks_max),跳过topK采样|
@@ -93,7 +93,7 @@
   * 根据入参约束属性Attr.optional.Bool.input_is_logits(false)，如果该属性为True，则对排序后结果进行归一化：
 
     $$
-    \text{logit\_sortProb} = 
+    \text{logit\_sortProb} =
     \begin{cases}
     \text{softmax}(\text{logits\_sort}), & \text{inputIsLogits} = \text{True} \\
     \text{logits\_sort}, & \text{inputIsLogits} = \text{False}
@@ -126,7 +126,7 @@
     \end{cases}
     $$
 
-  * 将需要过滤的位置设置为默认无效值defLogit，得到logits_sort，记为sortedValue[b][v]:
+  * 将需要过滤的位置设置为默认无效值defLogit，得到logits_sort，记为$sortedValue[b][v]$:
 
     $$
     sortedValue[b][v] =
@@ -136,7 +136,7 @@
     \end{cases}
     $$
 
-  * 取过滤后sortedValue[b][v]每行中前topK个元素，查找这些元素在输入中的原始索引，整合为logits_idx:
+  * 取过滤后$sortedValue[b][v]$每行中前topK个元素，查找这些元素在输入中的原始索引，整合为logits_idx:
 
     $$
     logitsIdx[b][v] = Index(sortedValue[b][v] \in Logits)
@@ -168,15 +168,15 @@
     \text{minPThd} = \text{logitsMax}[b] * \text{minPs}[b]
     $$
     $$
-    \text{minPMask}[b] = 
-    \begin{cases} 
+    \text{minPMask}[b] =
+    \begin{cases}
     0, & \text{logitsSortMasked}[b] < \text{minPThd} \\
     1, & \text{logitsSortMasked}[b] \geq \text{minPThd}
     \end{cases}
     $$
     $$
-    \text{logitsSortMasked}[b,:] = 
-    \begin{cases} 
+    \text{logitsSortMasked}[b,:] =
+    \begin{cases}
     \text{defLogit}, & \text{minPMask}[b] = 0 \\
     \text{logitsSortMasked}[b,:], & \text{minPMask}[b] = 1
     \end{cases}
@@ -185,7 +185,7 @@
   * 其他情况：
 
     $$
-    \text{logitsSortMasked}[b, :] = 
+    \text{logitsSortMasked}[b, :] =
     \begin{cases}
         \text{logitsSortMasked}[b, :], & \text{if } minPs[b] \leq 0 \\
         \max(\text{logitsSortMasked}[b, :]), & \text{if } minPs[b] \geq 1
@@ -208,8 +208,8 @@
   * 接下来使用logitsIndexMasked对输入logits进行Select，过滤输入logits中的高频token作为`logits_top_kp_select`输出：
 
     $$
-    \text{logitsTopKpSelect}[b][v] = 
-    \begin{cases} 
+    \text{logitsTopKpSelect}[b][v] =
+    \begin{cases}
     \text{logits}[b][v], & \text{if } logitsIndexMasked[b,v] = \text{True} \\
     \text{defLogit}, & \text{if } logitsIndexMasked[b,v] = \text{False}
     \end{cases}
@@ -222,7 +222,7 @@
   * 此处输入须要确保logitsSortMasked∈(0,1)，根据输入logits的实际情况，配置入参约束属性Attr.optional.Bool.input_is_logits，即：
 
     $$
-    \text{inputIsLogits} = 
+    \text{inputIsLogits} =
     \begin{cases}
     True, & \text{Logits} \notin [0,1] \\
     False, & \text{Logits} \in [0,1]
@@ -234,7 +234,7 @@
     $$
     接下来有三种模式：None，qSample，multiNomial，通过入参约束属性attr.optional.Str.post_sample加以控制。
 
-  * None 
+  * None
 
   * 直接对每个batch通过Argmax取最大元素和索引，并通过gatherOut输出。
     $$
@@ -244,7 +244,7 @@
   * qSample
 
   * 先对probs进行指数分布采样：
-  
+
     $$
     qCnt = \text{Sum}(\text{MinPMask} == 1)
     $$
@@ -257,7 +257,7 @@
     $$
     \text{logitsSelectIdx}[b] = \text{LogitsIdx}[b][\text{ArgMax}(\text{probsOpt}[b][:])]
     $$
-    
+
   * multiNomial
 
   * 使用多项式随机采样，根据logitsSortMasked中的概率值，执行无放回的多项式采样，对每个batch取1个样本，将采样结果作为当期batch的输出：
@@ -288,7 +288,7 @@
     $$
 
   * 该采样过程以aclnn.Multinomial为基准，可参看：<https://gitcode.com/cann/ops-math-dev/blob/master/random/dsa_random_uniform/docs/aclnnMultinomial.md>。
-  
+
   * Ascend Extension for PyTorch调用时，采样种子和偏移默认使用内建值，可参看：<https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>。
 
 ## 函数原型
@@ -363,6 +363,6 @@ npu_out_index, logits_top_kp_select = torch_npu.npu_top_k_top_p_sample(logits, t
 
 print(npu_out_index)
 print(logits_top_kp_select)
-``` 
+```
 
 #
