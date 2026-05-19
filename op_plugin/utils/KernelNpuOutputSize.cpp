@@ -2100,6 +2100,18 @@ c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_out_size(const at::Tenso
     return output_shape;
 }
 
+c10::SmallVector<int64_t, SIZE> npu_moe_token_permute_grad_v2_out_size(const int64_t tokens_size_0, const at::Tensor &grad_permuted_tokens, const at::Tensor &sorted_indices)
+{
+    TORCH_CHECK(grad_permuted_tokens.dim() == DIM_2,
+                "The dims of input grad_permuted_tokens should be 2 dimensional, but got ", grad_permuted_tokens.dim(), "-dimensional." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(sorted_indices.dim() == DIM_1 || sorted_indices.dim() == DIM_2,
+                "The dims of input sorted_indices should be 2 or 1 dimensional, but got ", sorted_indices.dim(), "-dimensional." + OPS_ERROR(ErrCode::PARAM));
+    int64_t num_tokens = tokens_size_0;
+    c10::SmallVector<int64_t, SIZE> output_shape;
+    output_shape = {num_tokens, grad_permuted_tokens.size(1)};
+    return output_shape;
+}
+
 c10::SmallVector<int64_t, SIZE> npu_moe_token_permute_grad_out_size(const at::Tensor &tokens, const at::Tensor &grad_permuted_tokens, const at::Tensor &indices, const at::Tensor &sorted_indices)
 {
     TORCH_CHECK(tokens.dim() == DIM_2,

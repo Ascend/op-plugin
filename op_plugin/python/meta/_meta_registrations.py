@@ -6192,6 +6192,15 @@ def npu_moe_token_permute_grad_meta(tokens, grad_permuted_tokens, indices, sorte
     return torch.empty((N, D), dtype=tokens.dtype, device=tokens.device)
 
 
+@impl(m, "npu_moe_token_permute_grad_v2")
+def npu_moe_token_permute_grad_v2_meta(grad_permuted_tokens, sorted_indices, tokens_size_0, tokens_dtype, num_topK, padded_mode=False):
+    torch._check(grad_permuted_tokens.dim() == 2, lambda: f"The dims of input grad_permuted_tokens should be 2 dimensional, but got {grad_permuted_tokens.dim()}-dimensional.")
+    torch._check(sorted_indices.dim() == 1, lambda: f"The dims of input sorted_indices should be 1 dimensional, but got {sorted_indices.dim()}-dimensional.")
+
+    N, D = tokens_size_0, grad_permuted_tokens.shape[1]
+    return torch.empty((N, D), dtype=tokens_dtype, device=grad_permuted_tokens.device)
+
+
 @impl(m, "npu_moe_token_unpermute_grad")
 def npu_moe_token_unpermute_grad_meta(permuted_tokens, grad_unpermuted_tokens, sorted_indices, probs=None, padded_mode=False, restore_shape=None):
     torch._check(permuted_tokens.dim() == 2, lambda: f"The dims of input permuted_tokens should be 2 dimensional, but got {permuted_tokens.dim()}-dimensional.")

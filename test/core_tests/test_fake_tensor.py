@@ -4134,6 +4134,18 @@ class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
                 self.assertEqual(grad_tokens.dtype, tokens.dtype)
                 self.assertEqual(grad_tokens.shape, tokens.shape)
 
+                grad_tokens_v2 = torch_npu.npu_moe_token_permute_grad_v2(
+                    grad_permuted_tokens=grad_permuted_tokens_for_permute, 
+                    sorted_indices=sorted_indices, 
+                    tokens_size_0=tokens.shape[0], 
+                    tokens_dtype=tokens.dtype, 
+                    num_topK=topk, 
+                    padded_mode=False,
+                )
+
+                self.assertEqual(grad_tokens_v2.dtype, tokens.dtype)
+                self.assertEqual(grad_tokens_v2.shape, tokens.shape)
+
     def test_npu_moe_token_unpermute_grad_mixed_dtype(self):
         """Test grad_probs dtype matches probs when probs and grad_unpermuted_tokens have different dtypes"""
         num_tokens = 100
