@@ -30,11 +30,11 @@
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
-        OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "1", __VA_ARGS__);              \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
             c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
         }                                                                                                              \
+        OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "1", acl_stream, __VA_ARGS__);  \
         aclOpExecutor *executor = nullptr;                                                                             \
         aclOpExecutor **executor_addr = &executor;                                                                     \
         InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);                    \
@@ -90,11 +90,11 @@
         TORCH_CHECK(getWorkspaceSizeFuncAddr != nullptr && opApiFuncAddr != nullptr, #aclnn_api, " or ",               \
                     #aclnn_api "GetWorkspaceSize", " not in ", GetOpApiLibName(), ", or ", GetOpApiLibName(),          \
                     "not found.", OPS_ERROR(ErrCode::PTR));                                                            \
-        OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "2", __VA_ARGS__);              \
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);                                                \
         if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
             c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
         }                                                                                                              \
+        OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "2", acl_stream, __VA_ARGS__);  \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         auto acl_call = [workspace_addr, workspace_size, copied_params, acl_stream]()->int {                           \
             if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
@@ -152,6 +152,7 @@
         if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
             c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
         }                                                                                                              \
+        OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_GET_MAX_WORKSPACE_CMD", "1", acl_stream);                        \
         uint64_t workspace_size = 0;                                                                                   \
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
         aclOpExecutor *executor = nullptr;                                                                             \

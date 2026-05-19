@@ -80,7 +80,15 @@ inline std::string convert_info(const at::Tensor &at_tensor)
 
     if (at_tensor.dim() == 0) {
         if (torch_npu::utils::is_npu(at_tensor)) {
-            ss << "NPU scalar Tensor: " << at_tensor << ", dtype: " << at_tensor.dtype();
+            if (typeid(*at_tensor.storage().unsafeGetStorageImpl()) == typeid(torch_npu::NPUStorageImpl)) {
+                if (c10_npu::currentStreamCaptureStatus() != c10_npu::CaptureStatus::None) {
+                    ss << "NPU scalar Tensor(capturing), dtype: " << at_tensor.dtype();
+                } else {
+                    ss << "NPU scalar Tensor: " << at_tensor << ", dtype: " << at_tensor.dtype();
+                }
+            } else {
+                ss << "NPU scalar FakeTensor, dtype: " << at_tensor.dtype();
+            }
             std::string res = ss.str();
             replace_and_append_newline(res);
             return res;
@@ -333,7 +341,15 @@ inline std::string convert_info(const TensorWrapper &tensor_r)
 
     if (at_tensor.dim() == 0) {
         if (torch_npu::utils::is_npu(at_tensor)) {
-            ss << "NPU scalar Tensor: " << at_tensor << ", dtype: " << at_tensor.dtype();
+            if (typeid(*at_tensor.storage().unsafeGetStorageImpl()) == typeid(torch_npu::NPUStorageImpl)) {
+                if (c10_npu::currentStreamCaptureStatus() != c10_npu::CaptureStatus::None) {
+                    ss << "NPU scalar Tensor(capturing), dtype: " << at_tensor.dtype();
+                } else {
+                    ss << "NPU scalar Tensor: " << at_tensor << ", dtype: " << at_tensor.dtype();
+                }
+            } else {
+                ss << "NPU scalar FakeTensor, dtype: " << at_tensor.dtype();
+            }
             std::string res = ss.str();
             replace_and_append_newline(res);
             return res;
@@ -402,16 +418,27 @@ inline std::string convert_debug_info(const at::Tensor &at_tensor)
         }
         auto at_tensor_sizes = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->get_npu_desc();
         if (at_tensor.dim() == 0) {
-            ss << "NPU scalar Tensor: "
-               << at_tensor
-               << ", npu_format: "
-               << at_tensor_sizes.npu_format_
-               << ", base_sizes: "
-               << at_tensor_sizes.base_sizes_
-               << ", base_strides: "
-               << at_tensor_sizes.base_strides_
-               << ", storage_sizes: "
-               << at_tensor_sizes.storage_sizes_;
+            if (c10_npu::currentStreamCaptureStatus() != c10_npu::CaptureStatus::None) {
+                ss << "NPU scalar Tensor(capturing), npu_format: "
+                   << at_tensor_sizes.npu_format_
+                   << ", base_sizes: "
+                   << at_tensor_sizes.base_sizes_
+                   << ", base_strides: "
+                   << at_tensor_sizes.base_strides_
+                   << ", storage_sizes: "
+                   << at_tensor_sizes.storage_sizes_;
+            } else {
+                ss << "NPU scalar Tensor: "
+                   << at_tensor
+                   << ", npu_format: "
+                   << at_tensor_sizes.npu_format_
+                   << ", base_sizes: "
+                   << at_tensor_sizes.base_sizes_
+                   << ", base_strides: "
+                   << at_tensor_sizes.base_strides_
+                   << ", storage_sizes: "
+                   << at_tensor_sizes.storage_sizes_;
+            }
         } else {
             ss << "Tensor npu_format: "
                << at_tensor_sizes.npu_format_
@@ -477,18 +504,33 @@ inline std::string convert_debug_info(const TensorWrapper &tensor_r)
     }
 
     if (torch_npu::utils::is_npu(at_tensor)) {
+        // fake tensor
+        if (typeid(*at_tensor.storage().unsafeGetStorageImpl()) != typeid(torch_npu::NPUStorageImpl)) {
+            return "FakeTensor does not have npu_desc\n";
+        }
         auto at_tensor_sizes = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->get_npu_desc();
         if (at_tensor.dim() == 0) {
-            ss << "NPU scalar Tensor: "
-               << at_tensor
-               << ", npu_format: "
-               << at_tensor_sizes.npu_format_
-               << ", base_sizes: "
-               << at_tensor_sizes.base_sizes_
-               << ", base_strides: "
-               << at_tensor_sizes.base_strides_
-               << ", storage_sizes: "
-               << at_tensor_sizes.storage_sizes_;
+            if (c10_npu::currentStreamCaptureStatus() != c10_npu::CaptureStatus::None) {
+                ss << "NPU scalar Tensor(capturing), npu_format: "
+                   << at_tensor_sizes.npu_format_
+                   << ", base_sizes: "
+                   << at_tensor_sizes.base_sizes_
+                   << ", base_strides: "
+                   << at_tensor_sizes.base_strides_
+                   << ", storage_sizes: "
+                   << at_tensor_sizes.storage_sizes_;
+            } else {
+                ss << "NPU scalar Tensor: "
+                   << at_tensor
+                   << ", npu_format: "
+                   << at_tensor_sizes.npu_format_
+                   << ", base_sizes: "
+                   << at_tensor_sizes.base_sizes_
+                   << ", base_strides: "
+                   << at_tensor_sizes.base_strides_
+                   << ", storage_sizes: "
+                   << at_tensor_sizes.storage_sizes_;
+            }
         } else {
             ss << "Tensor npu_format: "
                << at_tensor_sizes.npu_format_
@@ -571,6 +613,9 @@ inline std::string concat_element_info(const std::vector<std::string>& vec, cons
 
 template <typename... Ts> inline std::string generate_log_infos(const char* arg_names, Ts &...args)
 {
+    if constexpr (sizeof...(Ts) == 0) {
+        return "";
+    }
     std::vector<std::string> split_result = split_and_processing_args(arg_names);
     auto converted_info = std::make_tuple(convert_info(args)...);
     TORCH_CHECK(compare_length_vector_tuple(split_result, converted_info), "Length of arg and info are not equal!");
@@ -581,6 +626,9 @@ template <typename... Ts> inline std::string generate_log_infos(const char* arg_
 
 template <typename... Ts> inline std::string generate_debug_log_infos(const char* arg_names, Ts &...args)
 {
+    if constexpr (sizeof...(Ts) == 0) {
+        return "";
+    }
     std::vector<std::string> split_result = split_and_processing_args(arg_names);
     auto converted_info = std::make_tuple(convert_debug_info(args)...);
     TORCH_CHECK(compare_length_vector_tuple(split_result, converted_info), "Length of arg and info are not equal!");
