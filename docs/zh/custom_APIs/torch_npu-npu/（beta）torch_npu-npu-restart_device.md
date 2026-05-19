@@ -17,13 +17,14 @@
 ## 函数原型
 
 ```python
-torch_npu.npu.restart_device(device_id: int, rebuild_all_resource: bool = False) -> None
+torch_npu.npu.restart_device(device_id, rebuild_all_resources=False, disable_tensor_unsafe_check=False) -> None
 ```
 
 ## 参数说明
 
-- **device_id** (`int`)：需要处理的device id。
-- **rebuild_all_resource** (`bool`)：该参数为一个保留参数，在当前接口中没有实际的功能。
+- **device_id** (`int`)：必选参数，需要处理的device id。
+- **rebuild_all_resources** (`bool`)：可选参数，是否重建该device上的资源，默认为False。设置为True时，会恢复该device上的所有NPU stream，并联动`disable_tensor_unsafe_check`决定是否进行数据标脏。
+- **disable_tensor_unsafe_check** (`bool`)：可选参数，是否禁用数据标脏，默认为False。仅在`rebuild_all_resources=True`时生效。为False时将该device上的所有NPU tensor进行标脏；为True时跳过标脏。
 
 ## 约束说明
 
