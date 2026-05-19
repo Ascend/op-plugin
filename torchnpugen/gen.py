@@ -31,6 +31,9 @@ from torchnpugen.api.types.signatures import NativeSignature
 from torchnpugen.context import native_function_manager
 from torchnpugen.op_codegen_utils import concatMap, context
 
+# DVM lazy-fusion codegen is opt-in via the _TORCH_NPU_ENABLE_DVM env var
+ENABLE_DVM = os.environ.get("_TORCH_NPU_ENABLE_DVM", "0").lower() == "1"
+
 
 
 T = TypeVar('T')
@@ -244,6 +247,8 @@ def gen_function_declaration(
         sig_str = f"OP_PLUGIN_HIDDEN {sig.decl(name=op_name)};"
         backend_decalarations["op_api"].append(sig_str)
         backend_decalarations["acl_op"].append(sig_str)
+        if ENABLE_DVM and "dvm" in f.impl_ns:
+            backend_decalarations["lazy_fusion"].append(sig_str)
         if f.sparse is not None:
             op_name += "_sparse"
             backend_decalarations["sparse"].append(f"OP_PLUGIN_HIDDEN {sig.decl(name=op_name)};")
@@ -303,6 +308,18 @@ Use {deprecated_replace} instead.");'
 
         aclnn_extension = os.getenv('ACLNN_EXTENSION_SWITCH') == 'TRUE'
 
+        dvm_call = ""
+        if ENABLE_DVM and "dvm" in f.impl_ns:
+            if len(f.func.returns) == 0:
+                dvm_call = f"""if (lazy_fusion::IsEnabled()) {{
+            lazy_fusion::{impl_name}({args_exprs_str});
+            return;
+        }}"""
+            else:
+                dvm_call = f"""if (lazy_fusion::IsEnabled()) {{
+            return lazy_fusion::{impl_name}({args_exprs_str});
+        }}"""
+
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
             if aclnn_extension:
                 ret.append(f"""{sig.defn(name=op_name)}{{
@@ -319,6 +336,7 @@ Use {deprecated_replace} instead.");'
     ASCEND_LOGI("{impl_name} exec with jit compile: %d{"".join(place_holder)}",
                 !is_jit_disable{"".join(format_display)});
     if (is_jit_disable{"".join(format_check)}) {{
+        {dvm_call}
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
         if ({is_aclnn_only}) {{
@@ -337,6 +355,7 @@ Use {deprecated_replace} instead.");'
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     ASCEND_LOGI("{impl_name} exec with jit compile: %d", !is_jit_disable);
     if (is_jit_disable) {{
+        {dvm_call}
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
         return acl_op::{impl_name}({args_exprs_str});
@@ -355,6 +374,7 @@ Use {deprecated_replace} instead.");'
                 ret.append(f"""{sig.defn(name=op_name)}{{
     {deprecated_warn}
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
+    {dvm_call}
     return {ns}::{impl_name}({args_exprs_str});
 }}
 """)
@@ -368,6 +388,7 @@ Use {deprecated_replace} instead.");'
             "Current operator {impl_name} do not support internal format. ",
             PTA_ERROR(ErrCode::NOT_SUPPORT));
     }}
+    {dvm_call}
     return {ns}::{impl_name}({args_exprs_str});
 }}
 """)

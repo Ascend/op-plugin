@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from torchnpugen.gen import parse_native_yaml, FileManager
+from torchnpugen.gen import parse_native_yaml, FileManager, ENABLE_DVM
 from torchnpugen.op_codegen_utils import concatMap, PathManager
 
 
@@ -69,6 +69,8 @@ def main() -> None:
         "acl_op": "AclOpsInterface.h",
         "sparse": "SparseOpsInterface.h",
     }
+    if ENABLE_DVM:
+        header_files["lazy_fusion"] = "DvmOpsInterface.h"
     for op_type, file_name in header_files.items():
         fm.write_with_template(
             file_name,
@@ -80,9 +82,13 @@ def main() -> None:
             },
         )
 
+    dvm_includes = (
+        '#include "op_plugin/DvmOpsInterface.h"\n'
+        '#include "op_plugin/ops/dvm/lazy_fusion_kernel.h"\n'
+    ) if ENABLE_DVM else ''
     # When ACLNN_EXTENSION_SWITCH is set, use simplified includes (no FormatHelper/op_log) for OpInterface.cpp
     if env_aclnn_extension_switch:
-        includes_block = '''#include "torch_npu/csrc/framework/interface/EnvVariables.h"
+        includes_block = f'''#include "torch_npu/csrc/framework/interface/EnvVariables.h"
 // #include "torch_npu/csrc/framework/FormatHelper.h"
 #include "torch_npu/csrc/core/npu/npu_log.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
@@ -90,11 +96,11 @@ def main() -> None:
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/SparseOpsInterface.h"
-// #include "op_plugin/utils/op_log.h"
+{dvm_includes}// #include "op_plugin/utils/op_log.h"
 #include "op_plugin/OpInterface.h"
 '''
     else:
-        includes_block = '''#include "torch_npu/csrc/framework/interface/EnvVariables.h"
+        includes_block = f'''#include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/framework/FormatHelper.h"
 #include "torch_npu/csrc/core/npu/npu_log.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
@@ -102,7 +108,7 @@ def main() -> None:
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/SparseOpsInterface.h"
-#include "op_plugin/utils/op_log.h"
+{dvm_includes}#include "op_plugin/utils/op_log.h"
 #include "op_plugin/OpInterface.h"
 '''
 
