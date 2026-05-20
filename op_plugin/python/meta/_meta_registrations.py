@@ -7030,3 +7030,9 @@ def npu_quant_max(x, scale, *, round_mode="rint", dst_dtype=291):
         y = torch.empty_like(x, dtype=torch.uint8)
     amax = x.new_empty([1], dtype=x.dtype)
     return (y, amax)
+
+
+@impl(m, "npu_iou")
+def npu_iou_meta(bboxes, gtboxes, mode=0):
+    output_size = [gtboxes.size(0), bboxes.size(0)]
+    return torch.empty(output_size, dtype=bboxes.dtype, device=bboxes.device)
