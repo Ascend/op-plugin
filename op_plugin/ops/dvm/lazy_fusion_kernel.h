@@ -294,6 +294,20 @@ class Manager {
       ASCEND_LOGI("Set dvm online tuning = %d", enable_tuning);
       runtime_init = true;
     }
+    {
+      static int dvm_determ_oldstatus = -1;
+      int determ = at::globalContext().deterministicAlgorithms() ? 1 : 0;
+      if (dvm_determ_oldstatus != determ) {
+        auto &conf = dvm::Config::Instance();
+        if (determ) {
+          conf.SetDeterm();
+        } else {
+          conf.UnsetDeterm();
+        }
+        dvm_determ_oldstatus = determ;
+        ASCEND_LOGI("Set dvm determ = %d", determ);
+      }
+    }
     auto stream = c10_npu::getCurrentNPUStream().stream(false);
     if (current_ != nullptr) {
       if (current_stream_ != stream) {
