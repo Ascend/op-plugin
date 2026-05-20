@@ -84,7 +84,11 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
                 ? static_cast<int>(weight_scale[DIM_0].size(1))
                 : static_cast<int>(weight[DIM_0].size(1) * WEIGHT_NZ_A4W4_LAST_DIM);
     } else {
-        n = static_cast<int>(weight[DIM_0].sizes()[DIM_2]);
+        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+            n = static_cast<int>(weight[DIM_0].sizes()[DIM_2]);
+        } else {
+            n = static_cast<int>(weight_scale[DIM_0].sizes().back());
+        }
     }
     int m = x_size[DIM_0];
     int k = x_size[DIM_1];
@@ -169,7 +173,11 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
         if (!is_weight_nz) {
             TORCH_CHECK(weight[DIM_0].dim() == DIM_3, "weight[0] dim should be equal to 3, but the actual value is ",
                         weight[DIM_0].dim(), OPS_ERROR(ErrCode::PARAM));
-            n = weight[DIM_0].sizes()[DIM_2];
+            if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+                n = static_cast<int>(weight[DIM_0].sizes()[DIM_2]);
+            } else {
+                n = static_cast<int>(weight_scale[DIM_0].sizes().back());
+            }
         }
         c10::TensorOptions options_output = x.options().dtype(quant_dtype.has_value()
                     ? npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(quant_dtype.value()))
