@@ -249,7 +249,7 @@ void process_tensor_list_batch(const at::TensorList self, const at::TensorList s
         return at::native::foreach_tensor_copy_list_kernel_slow_(self, src, non_blocking);
     }
 
-    split_and_exec_npu_cmd_copy(self, src, non_blocking);
+    split_and_exec_npu_cmd_copy(self, src, /*non_blocking=*/true);
 }
 
 void _foreach_copy_(const at::TensorList self, const at::TensorList src, bool non_blocking)
