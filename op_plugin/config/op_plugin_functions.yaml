@@ -5626,6 +5626,7 @@ custom:
 
   - func: _npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> (Tensor, Tensor)
     acl_op: all_version
+    op_api: all_version
 
   - func: _npu_dropout(Tensor self, float p) -> (Tensor, Tensor)
     acl_op: all_version
@@ -5899,10 +5900,12 @@ custom:
 
   - func: npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> Tensor
     acl_op: all_version
+    op_api: all_version
     exposed: all_version
 
   - func: npu_ciou_backward(Tensor grad, Tensor bboxes, Tensor gtboxes, Tensor? atan_sub, bool trans=False, bool is_cross=True, int mode=0) -> (Tensor, Tensor)
     acl_op: all_version
+    op_api: all_version
 
   - func: npu_clear_float_status(Tensor self, int mode=0) -> Tensor
     acl_op: all_version

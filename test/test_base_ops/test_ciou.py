@@ -4,7 +4,7 @@ import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-
+from torch_npu.testing.common_utils import SupportedDevices
 
 class TestNpuCiou(TestCase):
     def generate_giou_data(self, n, m, dtype):
@@ -59,6 +59,7 @@ class TestNpuCiou(TestCase):
         overlap = overlap.numpy()
         return overlap
 
+    @SupportedDevices(['Ascend910A', 'Ascend910B'])
     def test_npu_ciou_shape_format(self):
         shape_list = [
             [6, 6],
@@ -80,6 +81,68 @@ class TestNpuCiou(TestCase):
             cpu_overlap = self.cpu_op_exec(list1[0], list1[1], item[1], is_cross, item[-1])
             overlap = self.npu_op_exec(list1[2], list1[3], item[1], is_cross, mode_digit)
             self.assertRtolEqual(cpu_overlap, overlap)
+
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_ciou_shape_format_1024(self):
+        shape_list = [
+            [1024, 1024],
+            [2048, 2048],
+            [3072, 3072]
+        ]
+        is_trans_list = [True]
+        mode_list = ["iou"]
+        dtype = np.float32
+        # pylint:disable=complicate-comprehension
+        shape_format = [[j, k, m]
+                        for j in shape_list
+                        for k in is_trans_list
+                        for m in mode_list]
+        for item in shape_format:
+            mode_digit = 0 if item[-1] == "iou" else 1
+            is_cross = False
+            list1 = self.generate_giou_data(*item[0], dtype)
+            cpu_overlap = self.cpu_op_exec(list1[0], list1[1], item[1], is_cross, item[-1])
+            overlap = self.npu_op_exec(list1[2], list1[3], item[1], is_cross, mode_digit)
+            self.assertRtolEqual(cpu_overlap, overlap)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_ciou_fp16(self):
+        list1 = self.generate_giou_data(1024, 1024, np.float16)
+        overlap = self.npu_op_exec(list1[2], list1[3], trans=True, is_cross=False, mode=0)
+        self.assertEqual(overlap.shape[0], 1)
+        self.assertEqual(overlap.shape[1], 1024)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_ciou_mode_iof(self):
+        n = 1024
+        list1 = self.generate_giou_data(n, n, np.float32)
+        overlap = self.npu_op_exec(list1[2], list1[3], trans=True, is_cross=False, mode=1)
+        self.assertEqual(overlap.shape[0], 1)
+        self.assertEqual(overlap.shape[1], n)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_ciou_atan_sub_flag_false(self):
+        n = 1024
+        list1 = self.generate_giou_data(n, n, np.float32)
+        overlap = torch_npu.npu_ciou(list1[2], list1[3], trans=True, is_cross=False, mode=0, atan_sub_flag=False)
+        self.assertEqual(overlap.shape, [1, n])
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_ciou_mixed_precision(self):
+        n = 1024
+        data_bboxes = 20 * np.random.rand(4, n).astype(np.float16)
+        data_gtboxes = 20 * np.random.rand(4, n).astype(np.float32)
+        npu_bboxes = torch.from_numpy(data_bboxes).npu()
+        npu_gtboxes = torch.from_numpy(data_gtboxes).npu()
+        overlap = torch_npu.npu_ciou(npu_bboxes, npu_gtboxes, trans=True, is_cross=False, mode=0, atan_sub_flag=True)
+        self.assertEqual(overlap.shape, [1, n])
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_ciou_invalid_shape(self):
+        n = 100
+        list1 = self.generate_giou_data(n, n, np.float32)
+        self.assertRaises(RuntimeError, torch_npu.npu_ciou, list1[2], list1[3], True, False, 0, True)
 
 
 if __name__ == "__main__":
