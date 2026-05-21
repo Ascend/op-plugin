@@ -38,6 +38,8 @@ torch_npu.npu.matmul.cube_math_type = CubeMathType
 | CubeMathType.USE_HF32       | 3    | 使用HF32计算模式                   |
 | CubeMathType.USE_FP32_ADD | 4    | 使用高精度模式               |
 
+`aclnnAddmv`, `aclnnAddbmm`, `aclnnInplaceAddbmm`, `aclnnBatchMatMul`, `aclnnBatchMatMulWeightNz`, `aclnnGemm`, `aclnnAddmmWeightNz`, `aclnnMv`, `aclnnTransposeBatchMatMul`, `aclnnTransposeBatchMatMulWeightNz` 算子暂不支持 `CubeMathType=4`，会回退到 `CubeMathType=0`。
+
 ## 返回值说明
 
 返回`CubeMathType`枚举类型。
