@@ -153,5 +153,26 @@ class TestNPUFlashAttentionV2(TestCase):
 
         self.assertEqual(attention_score.shape, q_npu.shape)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_flash_attention_v2_dropout_mask_with_offset_seed(self, device="npu"):
+        B, N, S, D = 1, 32, 128, 128
+        query = torch.randn(B, N, S, D, dtype=torch.float16)
+        key = torch.randn(B, N, S, D, dtype=torch.float16)
+        value = torch.randn(B, N, S, D, dtype=torch.float16)
+        keep_prob = 0.8
+        seed = 100
+        offset = 200
+
+        q_npu = self.trans_BNSD2BSH(query).npu()
+        k_npu = self.trans_BNSD2BSH(key).npu()
+        v_npu = self.trans_BNSD2BSH(value).npu()
+
+        attention_score, softmax_max, softmax_sum, softmax_out, out_seed, out_offset, numels = \
+            self.custom_op_exec_with_dropout_mask(
+                q_npu, k_npu, v_npu, dropout_mask=None, seed=seed, offset=offset, keep_prob=keep_prob)
+
+        self.assertEqual(seed, out_seed)
+        self.assertEqual(offset, out_offset)
+
 if __name__ == "__main__":
     run_tests()
