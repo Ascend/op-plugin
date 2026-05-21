@@ -6105,6 +6105,79 @@ def npu_attention_update_meta(lse, local_out, update_type):
             torch.empty(ref_lse.size(), dtype=ref_lse.dtype, device=ref_lse.device))
 
 
+@impl(m, "npu_ring_attention_update")
+def npu_ring_attention_update_meta(prev_attn_out, prev_softmax_max, prev_softmax_sum, cur_attn_out,
+                                      cur_softmax_max, cur_softmax_sum, *, actual_seq_qlen=None,
+                                      input_layout="SBH", input_softmax_layout=""):
+    torch._check(
+        input_layout in ("SBH", "TND"),
+        lambda: f"input_layout only supports 'SBH' or 'TND', but got {input_layout}." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        input_softmax_layout in ("", "SBH", "TND"),
+        lambda: "input_softmax_layout only supports '', 'SBH' or 'TND'." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        prev_attn_out.shape == cur_attn_out.shape,
+        lambda: "prev_attn_out and cur_attn_out must have the same shape." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        prev_attn_out.dtype == cur_attn_out.dtype,
+        lambda: "prev_attn_out and cur_attn_out must have the same dtype." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        prev_attn_out.dtype in (torch.float16, torch.float32, torch.bfloat16),
+        lambda: "attn_out dtype only supports float16, float32 or bfloat16." + ops_error(ErrCode.TYPE),
+    )
+    torch._check(
+        prev_softmax_max.shape == prev_softmax_sum.shape ==
+        cur_softmax_max.shape == cur_softmax_sum.shape,
+        lambda: "softmax tensors must keep the same shape." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        prev_softmax_max.dtype == torch.float32 and
+        prev_softmax_sum.dtype == torch.float32 and
+        cur_softmax_max.dtype == torch.float32 and
+        cur_softmax_sum.dtype == torch.float32,
+        lambda: "softmax tensors must use float32." + ops_error(ErrCode.TYPE),
+    )
+    torch._check(
+        prev_softmax_max.dim() > 0 and prev_softmax_max.size(-1) == 8,
+        lambda: "softmax tensors require the last dimension to be 8." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        prev_attn_out.dim() == 3 and cur_attn_out.dim() == 3,
+        lambda: "attention tensors must be 3D." + ops_error(ErrCode.VALUE),
+    )
+
+    if input_layout == "SBH":
+        torch._check(
+            prev_softmax_max.dim() == 4,
+            lambda: "softmax tensors must be 4D when input_layout is 'SBH'." + ops_error(ErrCode.VALUE),
+        )
+    else:
+        torch._check(
+            actual_seq_qlen is not None,
+            lambda: "actual_seq_qlen is required when input_layout is 'TND'." + ops_error(ErrCode.VALUE),
+        )
+        torch._check(
+            prev_softmax_max.dim() == 3,
+            lambda: "softmax tensors must be 3D when input_layout is 'TND'." + ops_error(ErrCode.VALUE),
+        )
+
+    if actual_seq_qlen is not None:
+        torch._check(
+            actual_seq_qlen.dtype == torch.int64,
+            lambda: "actual_seq_qlen must use int64 dtype." + ops_error(ErrCode.TYPE),
+        )
+
+    return (
+        torch.empty_like(prev_attn_out, device='meta'),
+        torch.empty_like(prev_softmax_max, device='meta'),
+        torch.empty_like(prev_softmax_sum, device='meta'),
+    )
+
+
 @impl(m, "npu_mrope")
 def npu_mrope_meta(positions, query, key, cos_sin_cache, head_size, *, mrope_section=None, rotary_mode='half', cache_mode='default'):
     return (torch.empty_like(query), torch.empty_like(key))

@@ -3181,6 +3181,48 @@ class TestAttentionUpdate(TestCase):
             self.assertTrue(out.dtype == dtype)
 
 
+class TestRingAttentionUpdate(TestCase):
+    def test_npu_ring_attention_update_meta_sbh(self):
+        with FakeTensorMode():
+            prev_attn_out = torch.randn((4, 2, 32), dtype=torch.float16).npu()
+            cur_attn_out = torch.randn((4, 2, 32), dtype=torch.float16).npu()
+            prev_softmax_max = torch.randn((2, 2, 4, 8), dtype=torch.float32).abs().npu()
+            prev_softmax_sum = torch.randn((2, 2, 4, 8), dtype=torch.float32).abs().npu()
+            cur_softmax_max = torch.randn((2, 2, 4, 8), dtype=torch.float32).abs().npu()
+            cur_softmax_sum = torch.randn((2, 2, 4, 8), dtype=torch.float32).abs().npu()
+
+            attn_out, softmax_max, softmax_sum = torch_npu.npu_ring_attention_update(
+                prev_attn_out, prev_softmax_max, prev_softmax_sum,
+                cur_attn_out, cur_softmax_max, cur_softmax_sum)
+            self.assertEqual(attn_out.shape, prev_attn_out.shape)
+            self.assertEqual(attn_out.dtype, prev_attn_out.dtype)
+            self.assertEqual(attn_out.device.type, "npu")
+            self.assertEqual(softmax_max.shape, prev_softmax_max.shape)
+            self.assertEqual(softmax_max.dtype, torch.float32)
+            self.assertEqual(softmax_sum.shape, prev_softmax_sum.shape)
+            self.assertEqual(softmax_sum.dtype, torch.float32)
+
+    def test_npu_ring_attention_update_meta_tnd(self):
+        with FakeTensorMode():
+            prev_attn_out = torch.randn((5, 2, 64), dtype=torch.bfloat16).npu()
+            cur_attn_out = torch.randn((5, 2, 64), dtype=torch.bfloat16).npu()
+            prev_softmax_max = torch.randn((5, 2, 8), dtype=torch.float32).abs().npu()
+            prev_softmax_sum = torch.randn((5, 2, 8), dtype=torch.float32).abs().npu()
+            cur_softmax_max = torch.randn((5, 2, 8), dtype=torch.float32).abs().npu()
+            cur_softmax_sum = torch.randn((5, 2, 8), dtype=torch.float32).abs().npu()
+            actual_seq_qlen = torch.tensor([2, 5], dtype=torch.int64).npu()
+
+            attn_out, softmax_max, softmax_sum = torch_npu.npu_ring_attention_update(
+                prev_attn_out, prev_softmax_max, prev_softmax_sum,
+                cur_attn_out, cur_softmax_max, cur_softmax_sum,
+                actual_seq_qlen=actual_seq_qlen, input_layout="TND", input_softmax_layout="TND")
+            self.assertEqual(attn_out.shape, prev_attn_out.shape)
+            self.assertEqual(attn_out.dtype, prev_attn_out.dtype)
+            self.assertEqual(attn_out.device.type, "npu")
+            self.assertEqual(softmax_max.shape, prev_softmax_max.shape)
+            self.assertEqual(softmax_sum.shape, prev_softmax_sum.shape)
+
+
 class TestAntiQuant(TestCase):
     @unittest.skipIf(torch.__version__ < '2.1.0',
                      "OP `AntiQuant` is supported on torch v2.1 and above, skip this test for torch version below 2.1")

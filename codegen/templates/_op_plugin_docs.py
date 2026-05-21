@@ -2823,6 +2823,61 @@ out, lse_out = torch_npu.npu_attention_update(lse, local_out, update_type)
 
 
 _add_torch_npu_docstr(
+    "npu_ring_attention_update",
+    """
+接口原型：
+npu_ring_attention_update(Tensor prev_attn_out, Tensor prev_softmax_max, Tensor prev_softmax_sum, Tensor cur_attn_out, Tensor cur_softmax_max, Tensor cur_softmax_sum, *, Tensor? actual_seq_qlen=None, str input_layout="SBH", str input_softmax_layout="") -> (Tensor, Tensor, Tensor)
+
+功能描述
+将两次FlashAttention的输出按照softmax的max和sum进行更新，输出新的attention结果、softmax_max和softmax_sum。
+
+计算公式：
+softmax_max = max(prev_softmax_max, cur_softmax_max)
+softmax_sum = prev_softmax_sum * exp(prev_softmax_max - softmax_max) + cur_softmax_sum * exp(cur_softmax_max - softmax_max)
+attn_out = prev_attn_out * exp(prev_softmax_max - softmax_max) * prev_softmax_sum / softmax_sum
+         + cur_attn_out * exp(cur_softmax_max - softmax_max) * cur_softmax_sum / softmax_sum
+
+参数说明
+prev_attn_out: Tensor类型, 第一次FlashAttention的输出。数据类型支持FLOAT16、FLOAT、BFLOAT16, 数据格式支持ND。
+prev_softmax_max: Tensor类型, 第一次FlashAttention的softmax max结果。数据类型支持FLOAT, 数据格式支持ND。
+prev_softmax_sum: Tensor类型, 第一次FlashAttention的softmax sum结果。数据类型支持FLOAT, 数据格式支持ND。
+cur_attn_out: Tensor类型, 第二次FlashAttention的输出。数据类型和shape需与prev_attn_out一致。
+cur_softmax_max: Tensor类型, 第二次FlashAttention的softmax max结果。数据类型和shape需与prev_softmax_max一致。
+cur_softmax_sum: Tensor类型, 第二次FlashAttention的softmax sum结果。数据类型和shape需与prev_softmax_sum一致。
+actual_seq_qlen: Tensor类型, 可选参数, TND场景下必选, 表示从0开始累计的query序列长度前缀和。数据类型支持int64, 数据格式支持ND。
+input_layout: string类型, 可选参数, attention输入输出排布。支持"SBH"和"TND", 默认值为"SBH"。
+input_softmax_layout: string类型, 可选参数, softmax相关输入排布。支持""、"SBH"、"TND", 默认值为""。仅在input_layout为"TND"时生效。
+
+输出说明
+attn_out: Tensor类型, 更新后的attention输出。shape和数据类型与prev_attn_out一致。
+softmax_max: Tensor类型, 更新后的softmax max。shape与prev_softmax_max一致, 数据类型为FLOAT。
+softmax_sum: Tensor类型, 更新后的softmax sum。shape与prev_softmax_sum一致, 数据类型为FLOAT。
+
+支持的型号
+----------------
+Ascend 950PR/Ascend 950DT
+Atlas A3训练系列产品/Atlas A3推理系列产品
+Atlas A2训练系列产品/Atlas A2推理系列产品
+
+调用示例
+----------------
+import torch
+import torch_npu
+
+prev_attn_out = torch.randn((4, 2, 32), dtype=torch.float16, device="npu")
+cur_attn_out = torch.randn((4, 2, 32), dtype=torch.float16, device="npu")
+prev_softmax_max = torch.rand((2, 2, 4, 1), dtype=torch.float32, device="npu").repeat(1, 1, 1, 8)
+prev_softmax_sum = torch.rand((2, 2, 4, 1), dtype=torch.float32, device="npu").repeat(1, 1, 1, 8)
+cur_softmax_max = torch.rand((2, 2, 4, 1), dtype=torch.float32, device="npu").repeat(1, 1, 1, 8)
+cur_softmax_sum = torch.rand((2, 2, 4, 1), dtype=torch.float32, device="npu").repeat(1, 1, 1, 8)
+attn_out, softmax_max, softmax_sum = torch_npu.npu_ring_attention_update(
+    prev_attn_out, prev_softmax_max, prev_softmax_sum,
+    cur_attn_out, cur_softmax_max, cur_softmax_sum)
+"""
+)
+
+
+_add_torch_npu_docstr(
     "npu_linear",
     """
 torch_npu.npu_linear(input, weight, bias=None) -> Tensor
