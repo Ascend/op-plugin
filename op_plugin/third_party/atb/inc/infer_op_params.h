@@ -539,7 +539,8 @@ struct SelfAttentionParam {
     //!
     enum KernelType : int {
         KERNELTYPE_DEFAULT = 0,   //!< i:float16, bmm:float16, o:float16
-        KERNELTYPE_HIGH_PRECISION //!< i:float16, bmm:float, o:float16
+        KERNELTYPE_HIGH_PRECISION, //!< i:float16, bmm:float, o:float16
+        KERNELTYPE_EXP_M8V2,       //!< i:float16, bmm:float16, exp:m8v2, softmax:default
     };
     //!
     //! \enum ClampType

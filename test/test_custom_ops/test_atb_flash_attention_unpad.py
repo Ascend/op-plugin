@@ -6,6 +6,9 @@ from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 
 
+KERNELTYPE_DEFAULT = 0
+KERNELTYPE_EXP_M8V2 = 2
+
 class TestFaUnPad(TestCase):
     def gen_seq_len(self, batch, max_seq, variate_seq=False):
         if variate_seq:
@@ -137,10 +140,15 @@ class TestFaUnPad(TestCase):
         ret_data = q, k, v, q_len, tor, heads, out_expect
         return ret_data
 
+    def calc_expect_with_kernel_type(self, batch, seqlen, heads, embed, kernel_type, group_num=32):
+        data = self.calc_expect_func(batch, seqlen, heads, embed, group_num)
+        return data + (kernel_type,)
+
     @SupportedDevices(['Ascend910B'])
     def test_flash_attention_unpad(self):
         kv_head = 32
-        data = self.calc_expect_func(16, 128, 32, 128, group_num=kv_head)
+        kernel_type = KERNELTYPE_DEFAULT
+        data = self.calc_expect_with_kernel_type(16, 128, 32, 128, kernel_type, group_num=kv_head)
         param_seqlen = data[4].tolist()
 
         # 检查每个元素是否为 numpy 数组，如果是标量则转换为数组
@@ -160,9 +168,51 @@ class TestFaUnPad(TestCase):
         heads = data[5]
         group_num = kv_head
         cal_out = in_tensors[6]
+        kernel_type_tensor = data[7]
         out = torch.empty_like(in_tensors[6]).npu()
         torch_npu._npu_flash_attention_unpad(query, key, value, seq_len, tor, heads, group_num, out)
         self.assertRtolEqual(cal_out, out)
+
+    @SupportedDevices(['Ascend310P'])
+    def test_flash_attention_unpad_exp_m8v2(self):
+        batch = 1
+        seqlen = 128
+        heads = 32
+        kv_head = 32
+        embed = 128
+        kernel_type = KERNELTYPE_EXP_M8V2
+
+        q = np.random.uniform(-1.0, 1.0, size=(batch * seqlen, heads * embed)).astype(np.float16)
+        k = np.random.uniform(-1.0, 1.0, size=(batch * seqlen, kv_head * embed)).astype(np.float16)
+        v = np.random.uniform(-1.0, 1.0, size=(batch * seqlen, kv_head * embed)).astype(np.float16)
+        seq_len = np.ones((batch,), dtype=np.int32) * seqlen
+        scale = np.float16(1.0 / math.sqrt(embed))
+
+        q_3d = torch.from_numpy(q).npu().reshape(-1, heads, embed)
+        k_3d = torch.from_numpy(k).npu().reshape(-1, kv_head, embed)
+        v_3d = torch.from_numpy(v).npu().reshape(-1, kv_head, embed)
+        cal_out = self._calc_attention_ref(q, k, v, seq_len, scale, heads, kv_head, embed)
+        out = torch.empty(batch * seqlen, heads, embed, dtype=torch.float16).npu()
+        torch_npu._npu_flash_attention_unpad_v2(
+            q_3d, k_3d, v_3d, torch.from_numpy(seq_len), scale, heads, kv_head, kernel_type = KERNELTYPE_EXP_M8V2, out = out)
+        self.assertRtolEqual(cal_out, out)
+
+    def _calc_attention_ref(self, q, k, v, seq_len, scale, heads, kv_head, embed):
+        ntokens = q.shape[0]
+        q_reshaped = q.reshape(ntokens, heads, embed).transpose(1, 0, 2)
+        k_reshaped = k.reshape(ntokens, kv_head, embed).transpose(1, 0, 2)
+        v_reshaped = v.reshape(ntokens, kv_head, embed).transpose(1, 0, 2)
+        score = np.matmul(q_reshaped.astype(np.float32),
+                          k_reshaped.astype(np.float32).transpose(0, 2, 1))
+        score = score * float(scale)
+        score_max = np.max(score, axis=-1, keepdims=True)
+        score = score - score_max
+        score_exp = np.exp(score)
+        score_sum = np.sum(score_exp, axis=-1, keepdims=True)
+        p = score_exp / score_sum
+        out = np.matmul(p.astype(np.float32), v_reshaped.astype(np.float32))
+        out = out.transpose(1, 0, 2).reshape(ntokens, heads, embed)
+        return torch.from_numpy(out.astype(np.float16))
 
 if __name__ == '__main__':
     run_tests()
