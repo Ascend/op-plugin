@@ -26,6 +26,12 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
     const c10::optional<at::Scalar>& correction,
     bool keepdim)
 {
+    if (!correction_fits_aclnn_int64(correction)) {
+        auto cpu_tup = at::std_mean(self.cpu(), dim, correction, keepdim);
+        return std::make_tuple(
+            std::get<0>(cpu_tup).to(self.options()),
+            std::get<1>(cpu_tup).to(self.options()));
+    }
     DO_COMPATIBILITY(aclnnStdMeanCorrection, acl_op::std_mean(self, dim, correction, keepdim));
     c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
     if (dim.has_value()) {

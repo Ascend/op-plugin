@@ -15,6 +15,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/StdVarCorrectionUtils.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
@@ -81,6 +82,12 @@ at::Tensor& std_out(
     bool keepdim,
     at::Tensor& result)
 {
+    if (!correction_fits_aclnn_int64(correction)) {
+        at::Tensor cpu_out = result.cpu();
+        at::std_out(cpu_out, self.cpu(), dim, correction, keepdim);
+        result.copy_(cpu_out);
+        return result;
+    }
     c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
     if (dim.has_value()) {
         dims = op_infer::array_to_small_vector(dim.value());
@@ -113,6 +120,9 @@ at::Tensor std(
     const c10::optional<c10::Scalar>& correction,
     bool keepdim)
 {
+    if (!correction_fits_aclnn_int64(correction)) {
+        return at::std(self.cpu(), dim, correction, keepdim).to(self.options());
+    }
     c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
     if (dim.has_value()) {
         dims = op_infer::array_to_small_vector(dim.value());
@@ -133,6 +143,12 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
     const c10::optional<c10::Scalar>& correction,
     bool keepdim)
 {
+    if (!correction_fits_aclnn_int64(correction)) {
+        auto cpu_tup = at::std_mean(self.cpu(), dim, correction, keepdim);
+        return std::make_tuple(
+            std::get<0>(cpu_tup).to(self.options()),
+            std::get<1>(cpu_tup).to(self.options()));
+    }
     c10::SmallVector<int64_t, SIZE> dims = op_plugin::utils::get_dimlist_for_tensor(self);
     if (dim.has_value()) {
         dims = op_infer::array_to_small_vector(dim.value());
@@ -146,4 +162,4 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
     std_mean_out_nocheck(result1, result2, self, dims, unbiased, keepdim, real_correction);
     return std::tie(result1, result2);
 }
-} // namespace at_npu
+} // namespace acl_op

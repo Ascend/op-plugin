@@ -25,6 +25,12 @@ at::Tensor& var_out(
     bool keepdim,
     at::Tensor& out)
 {
+    if (!correction_fits_aclnn_int64(correction)) {
+        at::Tensor cpu_out = out.cpu();
+        at::var_out(cpu_out, self.cpu(), dim, correction, keepdim);
+        out.copy_(cpu_out);
+        return out;
+    }
     DO_COMPATIBILITY(aclnnVarCorrection, acl_op::var_out(self, dim, correction, keepdim, out));
     c10::SmallVector<int64_t, op_infer::SIZE> real_dim = {};
     if (dim.has_value()) {
@@ -50,6 +56,9 @@ at::Tensor var(
     const c10::optional<c10::Scalar>& correction,
     bool keepdim)
 {
+    if (!correction_fits_aclnn_int64(correction)) {
+        return at::var(self.cpu(), dim, correction, keepdim).to(self.options());
+    }
     DO_COMPATIBILITY(aclnnVarCorrection, acl_op::var(self, dim, correction, keepdim));
     c10::SmallVector<int64_t, op_infer::SIZE> real_dim = {};
     if (dim.has_value()) {
@@ -76,6 +85,12 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     const c10::optional<c10::Scalar>& correction,
     bool keepdim)
 {
+    if (!correction_fits_aclnn_int64(correction)) {
+        auto cpu_tup = at::var_mean(self.cpu(), dim, correction, keepdim);
+        return std::make_tuple(
+            std::get<0>(cpu_tup).to(self.options()),
+            std::get<1>(cpu_tup).to(self.options()));
+    }
     c10::SmallVector<int64_t, N> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
     if (dim.has_value()) {
         real_dim = op_infer::array_to_small_vector(dim.value());
