@@ -58,6 +58,24 @@ class TestHardSwish(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
 
+    def _boundary_values(self):
+        """Values around hardswish boundaries -3 and 3."""
+        return [-3.5, -3.1, -3.0, -2.999, -2.5, -1.0, 0.0, 1.0, 2.5, 2.999, 3.0, 3.1, 3.5]
+
+    def test_hardswish_boundary_fp32(self):
+        boundary = torch.tensor([self._boundary_values()], dtype=torch.float32)
+        cpu_output = self.cpu_op_exec(boundary)
+        npu_input = boundary.to("npu")
+        npu_output = self.npu_op_exec(npu_input)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_hardswish_boundary_fp16(self):
+        cpu_input = torch.tensor([self._boundary_values()], dtype=torch.float32)
+        cpu_output = self.cpu_op_exec(cpu_input)
+        npu_input = torch.tensor([self._boundary_values()], dtype=torch.float16).to("npu")
+        npu_output = self.npu_op_exec(npu_input)
+        cpu_output = cpu_output.astype(npu_output.dtype)
+        self.assertRtolEqual(cpu_output, npu_output)
 
 if __name__ == "__main__":
     run_tests()

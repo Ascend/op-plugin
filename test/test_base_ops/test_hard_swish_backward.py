@@ -8,7 +8,7 @@ from torch_npu.testing.common_utils import create_common_tensor
 
 class TestHardSwishBackWard(TestCase):
     def cpu_op_exec(self, input1):
-        input1.requires_grad = True
+        input1 = input1.clone().detach().requires_grad_(True)
         cpu_output = torch.nn.functional.hardswish(input1, inplace=False)
         cpu_output.backward(torch.ones_like(cpu_output))
         output_grad = input1.grad
@@ -18,7 +18,7 @@ class TestHardSwishBackWard(TestCase):
         return cpu_output, output_grad
 
     def npu_op_exec(self, input1):
-        input1.requires_grad = True
+        input1 = input1.clone().detach().requires_grad_(True)
         output = torch.nn.functional.hardswish(input1, inplace=False)
         output.backward(torch.ones_like(output))
         output = output.to("cpu")
@@ -71,6 +71,28 @@ class TestHardSwishBackWard(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
             self.assertRtolEqual(cpu_output_grad, npu_output_grad)
+
+    def _boundary_values(self):
+        """Values around hardswish boundaries -3 and 3."""
+        return [-3.5, -3.1, -3.0, -2.999, -2.5, -1.0, 0.0, 1.0, 2.5, 2.999, 3.0, 3.1, 3.5]
+
+    def test_hardswish_boundary_fp32(self):
+        boundary = torch.tensor([self._boundary_values()], dtype=torch.float32)
+        cpu_output, cpu_grad = self.cpu_op_exec(boundary)
+        npu_input = boundary.to("npu")
+        npu_output, npu_grad = self.npu_op_exec(npu_input)
+        self.assertRtolEqual(cpu_output, npu_output)
+        self.assertRtolEqual(cpu_grad, npu_grad)
+
+    def test_hardswish_boundary_fp16(self):
+        cpu_input = torch.tensor([self._boundary_values()], dtype=torch.float32)
+        cpu_output, cpu_grad = self.cpu_op_exec(cpu_input)
+        npu_input = torch.tensor([self._boundary_values()], dtype=torch.float16).to("npu")
+        npu_output, npu_grad = self.npu_op_exec(npu_input)
+        cpu_output = cpu_output.astype(npu_output.dtype)
+        cpu_grad = cpu_grad.astype(npu_grad.dtype)
+        self.assertRtolEqual(cpu_output, npu_output)
+        self.assertRtolEqual(cpu_grad, npu_grad)
 
 
 if __name__ == "__main__":

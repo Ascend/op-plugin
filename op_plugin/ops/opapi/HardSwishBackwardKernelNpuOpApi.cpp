@@ -34,17 +34,22 @@ at::Tensor hardswish_backward(const at::Tensor & grad_output, const at::Tensor &
 at::Tensor hardswish_backward(const at::Tensor & grad_output, const at::Tensor & self)
 {
     DO_COMPATIBILITY(aclnnHardswishBackward, acl_op::hardswish_backward(grad_output, self));
+    static const bool checkv2_is_available = check_aclnn_kernel_available("aclnnHardswishBackwardV2");
     auto output_size_0 = self.sizes();
     auto output_dtype_0 = self.scalar_type();
     at::Tensor out = npu_preparation::apply_tensor_without_format(output_size_0,
                                                                   grad_output.options().dtype(output_dtype_0));
-    EXEC_NPU_CMD(aclnnHardswishBackward, grad_output, self, out);
-    at::Tensor values_le3 = at::empty({}, self.options());
-    at::Tensor values_ge3 = at::empty({}, self.options());
-    op_api::fill_(values_le3, 0.0f);
-    op_api::fill_(values_ge3, 1.0f);
-    out.index_put_({self.eq(-3.0f)}, values_le3);
-    out.index_put_({self.eq(3.0f)}, values_ge3);
+    if (checkv2_is_available) {
+        EXEC_NPU_CMD(aclnnHardswishBackwardV2, grad_output, self, out);
+    } else {
+        EXEC_NPU_CMD(aclnnHardswishBackward, grad_output, self, out);
+        at::Tensor values_le3 = at::empty({}, self.options());
+        at::Tensor values_ge3 = at::empty({}, self.options());
+        op_api::fill_(values_le3, 0.0f);
+        op_api::fill_(values_ge3, 1.0f);
+        out.index_put_({self.eq(-3.0f)}, values_le3);
+        out.index_put_({self.eq(3.0f)}, values_ge3);
+    }
     return out;
 }
 #endif
