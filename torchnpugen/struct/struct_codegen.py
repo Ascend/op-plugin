@@ -21,7 +21,7 @@ import yaml
 
 from torchnpugen.code_template import CodeTemplate
 from torchnpugen.gen import FileManager
-from torchnpugen.model import SchemaKind, NativeFunction
+from torchnpugen.model import BaseTy, SchemaKind, BaseType, NativeFunction
 from torchnpugen.op_codegen_utils import concatMap, PathManager
 from torchnpugen.context import native_function_manager
 from torchnpugen.api.types import NativeSignature
@@ -41,9 +41,11 @@ ${return_type} ${func_name}(${args_str})
     ${integral_identity_guard}
     ${do_compatibility}
     ${new_params_def}
+    ${cpu_scalar_h2d_code}
     ${compute_names}
     ${define_size_or_dtype}
     ${check_or_apply_tensor}
+    ${cpu_scalar_op_code}
     ${exec_cmd}(${aclnnargs});
     ${infer_name}
     return${result};
@@ -163,6 +165,112 @@ def gen_size_dtype_map(resinfos: List['ResInfo']) -> Tuple[Dict[str, str], Dict[
     return size_map, dtype_map
 
 
+def _gen_cpu_scalar_op_code(struct: StructInfo, args, exec_cmd: str) -> str:
+    if not struct.cpu_scalar_op:
+        return ""
+    branch_code_parts = []
+    copy_set = set(struct.cpu_scalar_h2d) if struct.cpu_scalar_h2d else set()
+    result_names = [res.name for res in struct.results] if struct.results else []
+    cmd_args_list = [arg.strip() for arg in struct.cmd_args.split(',')]
+    original_params = cmd_args_list[1:]
+    # Collect scalar params that need .item() to avoid binding rvalue to lvalue reference
+    scalar_params = {}
+    for op in struct.cpu_scalar_op:
+        if op.param not in scalar_params:
+            scalar_params[op.param] = f"{op.param}_scalar"
+    # Generate scalar variable declarations
+    scalar_decls = "".join(
+        f"at::Scalar {var} = {param}.item();\n"
+        for param, var in scalar_params.items()
+    )
+    for op in struct.cpu_scalar_op:
+        params_list = list(original_params)
+        for i, p in enumerate(params_list):
+            if p == op.param:
+                params_list[i] = scalar_params[op.param]
+            elif p in copy_set:
+                params_list[i] = f"{p}_cp"
+        for result_name in result_names:
+            for i, p in enumerate(params_list):
+                if p == "out":
+                    params_list[i] = result_name
+        params_str = ", ".join(params_list)
+        condition = f"npu_preparation::IsCPUScalar({op.param})"
+        branch_code_parts.append(
+            f"if ({condition}) {{\n"
+            f"    {scalar_decls}"
+            f"    {exec_cmd}({op.exec_cmd}, {params_str});\n"
+            f"    return{struct.return_args};\n"
+            f"}}\n"
+        )
+    return "".join(branch_code_parts)
+
+
+def _gen_cpu_scalar_h2d_code(struct: StructInfo, args) -> str:
+    if not struct.cpu_scalar_h2d:
+        return ""
+    copy_code_parts = []
+    arg_names = [a.name for a in args]
+    tensor_arg_names = [a.name for a in args
+                        if hasattr(a, 'argument') and hasattr(a.argument, 'type')
+                        and isinstance(a.argument.type, BaseType) and a.argument.type.name == BaseTy.Tensor]
+    copy_set = set(struct.cpu_scalar_h2d)
+    for param in struct.cpu_scalar_h2d:
+        if param not in arg_names:
+            raise RuntimeError(f"cpu_scalar_h2d contains invalid parameter: {param}")
+        non_copy_tensor_args = [n for n in tensor_arg_names if n not in copy_set]
+        other_copy_params = [p for p in struct.cpu_scalar_h2d if p != param]
+        if non_copy_tensor_args:
+            device_expr = f"{non_copy_tensor_args[0]}.device()"
+        elif other_copy_params:
+            device_expr = f"{other_copy_params[0]}.device()"
+        else:
+            device_expr = "c10::Device(c10::DeviceType::PrivateUse1)"
+        copy_code_parts.append(
+            f"at::Tensor {param}_cp = {param};\n"
+            f"if (npu_preparation::IsCPUScalar({param})) {{\n"
+            f"    at::Scalar {param}_scalar = {param}.item();\n"
+            f"    {param}_cp = npu_preparation::copy_scalar_to_device({param}_scalar, {param}.scalar_type(), {device_expr});\n"
+            f"}}\n"
+        )
+    return "".join(copy_code_parts)
+
+
+def _replace_cmd_args_with_copy(struct: StructInfo, args) -> str:
+    if not struct.cpu_scalar_h2d:
+        return struct.cmd_args
+    cmd_args_list = [arg.strip() for arg in struct.cmd_args.split(',')]
+    scalar_set = set(struct.cpu_scalar_h2d)
+    new_args_list = []
+    for arg in cmd_args_list:
+        if arg in scalar_set:
+            new_args_list.append(f"{arg}_cp")
+        else:
+            new_args_list.append(arg)
+    return ", ".join(new_args_list)
+
+
+def _replace_scalar_refs_in_expr(expr: str, cpu_scalar_h2d: List[str]) -> str:
+    if not cpu_scalar_h2d or expr is None:
+        return expr
+    result = expr
+    for param in cpu_scalar_h2d:
+        result = result.replace(f"{param}.sizes()", f"{param}_cp.sizes()")
+        result = result.replace(f"{param}.scalar_type()", f"{param}_cp.scalar_type()")
+        result = result.replace(f"{param}.device()", f"{param}_cp.device()")
+        result = result.replace(f"{param}.options()", f"{param}_cp.options()")
+        result = result.replace(f"({param},", f"({param}_cp,")
+        result = result.replace(f", {param},", f", {param}_cp,")
+        result = result.replace(f", {param})", f", {param}_cp)")
+        result = result.replace(f"({param})", f"({param}_cp)")
+    if result == expr:
+        for param in cpu_scalar_h2d:
+            if result == param:
+                result = f"{param}_cp"
+                break
+    return result
+
+
 def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bool):
     f = struct.func
     is_symint = struct.name in SYMINT_OPS
@@ -213,11 +321,28 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
                 func_name=name,
                 args_exprs_str=args_exprs_str)
 
-        tensor_arguments = ", ".join(filt_input_tensor(f.func.arguments.flat_non_out))
+        if struct.cpu_scalar_op and struct.acl_op:
+            for op in struct.cpu_scalar_op:
+                if op.exec_cmd != struct.aclnn_name:
+                    do_compatibility += DO_COMPATIBILITY.substitute(aclnnname=op.exec_cmd,
+                                                                     func_name=name,
+                                                                     args_exprs_str=args_exprs_str)
+
+        tensor_arguments_list = filt_input_tensor(f.func.arguments.flat_non_out)
+        if struct.cpu_scalar_h2d:
+            scalar_set = set(struct.cpu_scalar_h2d)
+            tensor_arguments_list = [f"{t}_cp" if t in scalar_set else t for t in tensor_arguments_list]
+        tensor_arguments = ", ".join(tensor_arguments_list)
 
         new_params_def = "".join(
             [f"auto {para_name} = {para_def};\n" for para_name, para_def in struct.new_params.items()]
         )
+
+        exec_cmd = "EXEC_NPU_CMD_EXT" if env_aclnn_extension_switch else "EXEC_NPU_CMD"
+
+        cpu_scalar_op_code = _gen_cpu_scalar_op_code(struct, args, exec_cmd)
+        cpu_scalar_h2d_code = _gen_cpu_scalar_h2d_code(struct, args)
+        cmd_args = _replace_cmd_args_with_copy(struct, args)
 
         valid_param_set = (
             set(struct.new_params.keys())
@@ -232,6 +357,18 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
             )
 
         size_map, dtype_map = gen_size_dtype_map(res_infos)
+
+        if struct.cpu_scalar_h2d:
+            new_res_infos = []
+            for ri in res_infos:
+                new_size = _replace_scalar_refs_in_expr(ri.size, struct.cpu_scalar_h2d)
+                new_dtype = _replace_scalar_refs_in_expr(ri.dtype, struct.cpu_scalar_h2d)
+                new_option = _replace_scalar_refs_in_expr(ri.option, struct.cpu_scalar_h2d)
+                new_res_infos.append(ResInfo(
+                    name=ri.name, size=new_size, dtype=new_dtype,
+                    option=new_option, infer_name=ri.infer_name))
+            res_infos = new_res_infos
+            size_map, dtype_map = gen_size_dtype_map(res_infos)
 
         define_size = "".join([f"auto {name} = {size};\n" for size, name in size_map.items()])
         define_dtype = "".join([f"auto {name} = {dtype};\n" for dtype, name in dtype_map.items()])
@@ -292,7 +429,7 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
 
         apply_tensor = "".join(apply_tensor_list)
 
-        # 根据环境变量选择使用 EXEC_NPU_CMD 还是 EXEC_NPU_CMD_EXT
+        # use EXEC_NPU_CMD or EXEC_NPU_CMD_EXT according to environment variable
         exec_cmd = "EXEC_NPU_CMD_EXT" if env_aclnn_extension_switch else "EXEC_NPU_CMD"
 
     return [
@@ -308,9 +445,11 @@ def compute_op_api_definition(struct: StructInfo, env_aclnn_extension_switch: bo
                 do_compatibility=do_compatibility,
                 compute_names=compute_names,
                 exec_cmd=exec_cmd,
-                aclnnargs=struct.cmd_args,
+                aclnnargs=cmd_args,
                 result=struct.return_args,
                 infer_name=infer_name,
+                cpu_scalar_op_code=cpu_scalar_op_code,
+                cpu_scalar_h2d_code=cpu_scalar_h2d_code
             )
         )
     ]

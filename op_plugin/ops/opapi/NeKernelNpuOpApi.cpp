@@ -26,7 +26,15 @@ at::Tensor& ne_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
     DO_COMPATIBILITY(aclnnNeTensor, acl_op::ne_out(self, other, result));
     auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
     npu_preparation::check_tensor({self, other}, result, result.scalar_type(), at::IntArrayRef(outputSize));
-    EXEC_NPU_CMD(aclnnNeTensor, self, other, result);
+    if (npu_preparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnNeScalar, other, self_scalar, result);
+    } else if (npu_preparation::IsCPUScalar(other)) {
+        const at::Scalar other_scalar = other.item();
+        EXEC_NPU_CMD(aclnnNeScalar, self, other_scalar, result);
+    } else {
+        EXEC_NPU_CMD(aclnnNeTensor, self, other, result);
+    }
     return result;
 }
 
@@ -45,7 +53,10 @@ at::Tensor ne(const at::Tensor& self, const at::Tensor& other)
     at::Tensor result =
         npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
 
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (npu_preparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnNeScalar, other, self_scalar, result);
+    } else if (npu_preparation::IsCPUScalar(other)) {
         const at::Scalar other_scalar = other.item();
         EXEC_NPU_CMD(aclnnNeScalar, self, other_scalar, result);
     } else {

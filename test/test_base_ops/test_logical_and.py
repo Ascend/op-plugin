@@ -100,5 +100,22 @@ class TestLogicalAnd(TestCase):
         self.assertRtolEqual(cpu_output, npu_output)
 
 
+    def test_logical_and_second_arg_0d_cpu_tensor(self):
+        cpu_a = torch.tensor([True, False, True])
+        cpu_b = torch.tensor(True)
+        npu_a = cpu_a.npu()
+        cpu_output = torch.logical_and(cpu_a, cpu_b)
+        npu_output = torch.logical_and(npu_a, cpu_b)
+        self.assertEqual(cpu_output, npu_output.cpu())
+
+    def test_logical_and_inplace_second_arg_0d_cpu_tensor(self):
+        cpu_a = torch.tensor([True, False, True])
+        cpu_b = torch.tensor(True)
+        npu_a = cpu_a.clone().npu()
+        cpu_a.logical_and_(cpu_b)
+        npu_a.logical_and_(cpu_b)
+        self.assertEqual(cpu_a, npu_a.cpu())
+
+
 if __name__ == "__main__":
     run_tests()

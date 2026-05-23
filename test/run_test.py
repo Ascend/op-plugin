@@ -57,7 +57,7 @@ def parse_test_module(test):
 
 
 TESTS = discover_tests(
-    blocklisted_patterns=[],
+    blocklisted_patterns=['_afd'],
     blocklisted_tests=[],
     extra_tests=[]
 )

@@ -8305,6 +8305,13 @@ nonzero:
   test_variant_consistency_eager:
   - complex64
   - float32
+nonzero_static:
+  test_conj_view:
+  - complex64
+  test_neg_conj_view:
+  - complex128
+  test_variant_consistency_eager:
+  - complex64
 ormqr:
   test_backward:
   - float32

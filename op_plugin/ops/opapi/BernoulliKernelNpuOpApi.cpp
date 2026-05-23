@@ -41,11 +41,16 @@ at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> 
 at::Tensor& bernoulli_(at::Tensor& self, const at::Tensor& p, c10::optional<at::Generator> gen) {
     at_npu::native::assert_no_internal_overlap(self);
   DO_COMPATIBILITY(aclnnInplaceBernoulliTensor, acl_op::bernoulli_(self, p, gen));
+  at::Tensor cp_p = p;
+  if (npu_preparation::IsCPUScalar(p)) {
+      at::Scalar scalar = p.item();
+      cp_p = npu_preparation::copy_scalar_to_device(scalar, p.scalar_type(), self.device());
+  }
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
   auto pair = gen_->philox_engine_inputs(PHILOX_DEFAULT_NUM);
   const uint64_t seed = pair.first;
   const uint64_t offset = pair.second;
-  EXEC_NPU_CMD(aclnnInplaceBernoulliTensor, self, p, seed, offset);
+  EXEC_NPU_CMD(aclnnInplaceBernoulliTensor, self, cp_p, seed, offset);
   return self;
 }
 

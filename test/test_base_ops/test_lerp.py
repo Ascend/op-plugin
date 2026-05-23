@@ -196,5 +196,26 @@ class TestLerp(TestCase):
             Exception, "doesn't match the broadcast shape", lerp_inplace, npu_input1, npu_input2)
 
 
+    def test_lerp_weight_0d_cpu_tensor(self):
+        cpu_a = torch.tensor([1.0, 2.0, 3.0])
+        cpu_b = torch.tensor([4.0, 5.0, 6.0])
+        cpu_w = torch.tensor(0.5)
+        npu_a = cpu_a.npu()
+        npu_b = cpu_b.npu()
+        cpu_output = torch.lerp(cpu_a, cpu_b, cpu_w)
+        npu_output = torch.lerp(npu_a, npu_b, cpu_w)
+        self.assertRtolEqual(cpu_output, npu_output.cpu())
+
+    def test_lerp_inplace_weight_0d_cpu_tensor(self):
+        cpu_a = torch.tensor([1.0, 2.0, 3.0])
+        cpu_b = torch.tensor([4.0, 5.0, 6.0])
+        cpu_w = torch.tensor(0.5)
+        npu_a = cpu_a.clone().npu()
+        npu_b = cpu_b.npu()
+        cpu_a.lerp_(cpu_b, cpu_w)
+        npu_a.lerp_(npu_b, cpu_w)
+        self.assertRtolEqual(cpu_a, npu_a.cpu())
+
+
 if __name__ == '__main__':
     run_tests()

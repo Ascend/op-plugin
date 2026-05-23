@@ -25,7 +25,15 @@ at::Tensor& lt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 
   at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
 
-  EXEC_NPU_CMD(aclnnLtTensor, self, other, result);
+  if (npu_preparation::IsCPUScalar(self)) {
+      const at::Scalar self_scalar = self.item();
+      EXEC_NPU_CMD(aclnnGtScalar, other, self_scalar, result);
+  } else if (npu_preparation::IsCPUScalar(other)) {
+      const at::Scalar other_scalar = other.item();
+      EXEC_NPU_CMD(aclnnLtScalar, self, other_scalar, result);
+  } else {
+      EXEC_NPU_CMD(aclnnLtTensor, self, other, result);
+  }
   return result;
 }
 
@@ -39,7 +47,10 @@ at::Tensor lt(const at::Tensor& self, const at::Tensor& other) {
                                                                                    self.options().dtype(at::kBool));
 
     // calculate the output result of the NPU
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (npu_preparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnGtScalar, other, self_scalar, result);
+    } else if (npu_preparation::IsCPUScalar(other)) {
         const at::Scalar other_scalar = other.item();
         EXEC_NPU_CMD(aclnnLtScalar, self, other_scalar, result);
     } else {
@@ -74,8 +85,12 @@ at::Tensor lt(const at::Tensor &self, const at::Scalar& other)
 
 at::Tensor& lt_(at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnInplaceLtTensor, acl_op::lt_(self, other));
-  EXEC_NPU_CMD(aclnnInplaceLtTensor, self, other);
-  return self;
+  if (npu_preparation::IsCPUScalar(other)) {
+      return op_api::lt_(self, other.item());
+  } else {
+      EXEC_NPU_CMD(aclnnInplaceLtTensor, self, other);
+      return self;
+  }
 }
 
 at::Tensor& lt_(at::Tensor& self, const at::Scalar& other) {

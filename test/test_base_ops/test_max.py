@@ -577,6 +577,22 @@ class TestMax(TestCase):
         torch.max(npu_input0, npu_input1, out=npu_val[0:2, 0:2, 0:2, 0:2])
         self.assertRtolEqual(cpu_val.numpy(), npu_val.cpu().numpy())
 
+    def test_max_first_arg_0d_cpu_tensor(self):
+        cpu_a = torch.tensor(5.0)
+        cpu_b = torch.tensor([1.0, 2.0, 3.0])
+        npu_b = cpu_b.npu()
+        cpu_output = torch.max(cpu_a, cpu_b)
+        npu_output = torch.max(cpu_a, npu_b)
+        self.assertRtolEqual(cpu_output, npu_output.cpu())
+
+    def test_maximum_first_arg_0d_cpu_tensor(self):
+        cpu_a = torch.tensor(5.0)
+        cpu_b = torch.tensor([1.0, 2.0, 3.0])
+        npu_b = cpu_b.npu()
+        cpu_output = torch.maximum(cpu_a, cpu_b)
+        npu_output = torch.maximum(cpu_a, npu_b)
+        self.assertRtolEqual(cpu_output, npu_output.cpu())
+
 
 if __name__ == "__main__":
     run_tests()

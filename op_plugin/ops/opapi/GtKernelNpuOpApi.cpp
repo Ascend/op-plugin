@@ -57,7 +57,15 @@ at::Tensor& gt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 
     npu_preparation::check_tensor({self, other}, result, output_size);
 
-    EXEC_NPU_CMD(aclnnGtTensor, self, other, result);
+    if (npu_preparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnLtScalar, other, self_scalar, result);
+    } else if (npu_preparation::IsCPUScalar(other)) {
+        const at::Scalar other_scalar = other.item();
+        EXEC_NPU_CMD(aclnnGtScalar, self, other_scalar, result);
+    } else {
+        EXEC_NPU_CMD(aclnnGtTensor, self, other, result);
+    }
     return result;
 }
 
@@ -71,7 +79,10 @@ at::Tensor gt(const at::Tensor& self, const at::Tensor& other)
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
 
     // calculate the output result of the NPU
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (npu_preparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnLtScalar, other, self_scalar, result);
+    } else if (npu_preparation::IsCPUScalar(other)) {
         const at::Scalar other_scalar = other.item();
         EXEC_NPU_CMD(aclnnGtScalar, self, other_scalar, result);
     } else {

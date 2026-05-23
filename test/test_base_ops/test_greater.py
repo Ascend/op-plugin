@@ -277,6 +277,22 @@ class TestGreater(TestCase):
         npu_output = self.npu_op_exec(npu_input2, npu_input4)
         self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_greater_first_arg_0d_cpu_tensor(self):
+        cpu_a = torch.tensor(2.0)
+        cpu_b = torch.tensor([1.0, 2.0, 3.0])
+        npu_b = cpu_b.npu()
+        cpu_output = torch.greater(cpu_a, cpu_b)
+        npu_output = torch.greater(cpu_a, npu_b)
+        self.assertEqual(cpu_output, npu_output.cpu())
+
+    def test_greater_inplace_second_arg_0d_cpu_tensor(self):
+        cpu_a = torch.tensor([1.0, 2.0, 3.0])
+        cpu_b = torch.tensor(2.0)
+        npu_a = cpu_a.clone().npu()
+        cpu_a.greater_(cpu_b)
+        npu_a.greater_(cpu_b)
+        self.assertEqual(cpu_a, npu_a.cpu())
+
 
 if __name__ == '__main__':
     np.random.seed(1234)

@@ -157,5 +157,22 @@ class TestRsub(TestCase):
         self.assertRtolEqual(c_out.numpy(), n_out.cpu().numpy())
 
 
+    def test_rsub_second_arg_0d_cpu_tensor(self):
+        cpu_a = torch.tensor([1.0, 2.0, 3.0])
+        cpu_b = torch.tensor(5.0)
+        npu_a = cpu_a.npu()
+        cpu_output = torch.rsub(cpu_a, cpu_b)
+        npu_output = torch.rsub(npu_a, cpu_b)
+        self.assertRtolEqual(cpu_output, npu_output.cpu())
+
+    def test_rsub_first_arg_0d_cpu_tensor(self):
+        cpu_a = torch.tensor(5.0)
+        cpu_b = torch.tensor([1.0, 2.0, 3.0])
+        npu_b = cpu_b.npu()
+        cpu_output = torch.rsub(cpu_a, cpu_b)
+        npu_output = torch.rsub(cpu_a, npu_b)
+        self.assertRtolEqual(cpu_output, npu_output.cpu())
+
+
 if __name__ == "__main__":
     run_tests()

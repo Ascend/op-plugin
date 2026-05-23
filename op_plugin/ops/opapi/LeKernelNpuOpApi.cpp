@@ -24,7 +24,15 @@ at::Tensor &le_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &
     DO_COMPATIBILITY(aclnnLeTensor, acl_op::le_out(self, other, result));
     auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
     at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
-    EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
+    if (at_npu::native::OpPreparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnGeScalar, other, self_scalar, result);
+    } else if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+        const at::Scalar other_scalar = other.item();
+        EXEC_NPU_CMD(aclnnLeScalar, self, other_scalar, result);
+    } else {
+        EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
+    }
     return result;
 }
 
@@ -44,7 +52,10 @@ at::Tensor le(const at::Tensor &self, const at::Tensor &other)
     auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
     at::Tensor result =
         at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
-    if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+    if (at_npu::native::OpPreparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnGeScalar, other, self_scalar, result);
+    } else if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
         const at::Scalar other_scalar = other.item();
         EXEC_NPU_CMD(aclnnLeScalar, self, other_scalar, result);
     } else {

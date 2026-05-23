@@ -70,7 +70,15 @@ at::Tensor& remainder_out(const at::Tensor& self, const at::Tensor& other, at::T
     auto broadcast_shape = op_infer::broadcast_ops_npu_output_size(self, other);
     npu_preparation::check_tensor({self, other}, out, out.scalar_type(), broadcast_shape);
 
-    EXEC_NPU_CMD(aclnnRemainderTensorTensor, self, other, out);
+    if (npu_preparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnRemainderScalarTensor, self_scalar, other, out);
+    } else if (npu_preparation::IsCPUScalar(other)) {
+        const at::Scalar other_scalar = other.item();
+        EXEC_NPU_CMD(aclnnRemainderTensorScalar, self, other_scalar, out);
+    } else {
+        EXEC_NPU_CMD(aclnnRemainderTensorTensor, self, other, out);
+    }
     return out;
 }
 
@@ -82,7 +90,16 @@ at::Tensor remainder(const at::Tensor& self, const at::Tensor& other)
     at::ScalarType result_type = at::native::result_type(self, other); // promote_type
     at::Tensor result = npu_preparation::apply_tensor(output_size, output_tensor.options().dtype(result_type),
         output_tensor);
-    EXEC_NPU_CMD(aclnnRemainderTensorTensor, self, other, result);
+
+    if (npu_preparation::IsCPUScalar(self)) {
+        const at::Scalar self_scalar = self.item();
+        EXEC_NPU_CMD(aclnnRemainderScalarTensor, self_scalar, other, result);
+    } else if (npu_preparation::IsCPUScalar(other)) {
+        const at::Scalar other_scalar = other.item();
+        EXEC_NPU_CMD(aclnnRemainderTensorScalar, self, other_scalar, result);
+    } else {
+        EXEC_NPU_CMD(aclnnRemainderTensorTensor, self, other, result);
+    }
 
     return result;
 }
@@ -90,6 +107,10 @@ at::Tensor remainder(const at::Tensor& self, const at::Tensor& other)
 at::Tensor& remainder_(at::Tensor& self, const at::Tensor& other)
 {
     DO_COMPATIBILITY(aclnnInplaceRemainderTensorTensor, acl_op::remainder_(self, other));
+    if (npu_preparation::IsCPUScalar(other)) {
+        const at::Scalar other_scalar = other.item();
+        return op_api::remainder_(self, other_scalar);
+    }
     at::ScalarType promote_type = at::native::result_type(self, other);
     EXEC_NPU_CMD(aclnnInplaceRemainderTensorTensor, self, other);
 

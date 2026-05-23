@@ -120,5 +120,14 @@ class TestBernoulli(TestCase):
             self.assertEqual(npu_expect_output, npu_output)
 
 
+    def test_bernoulli_inplace_p_0d_cpu_tensor(self):
+        torch.manual_seed(42)
+        npu_a = torch.tensor([0.0, 0.0, 0.0], device='npu')
+        cpu_p = torch.tensor(0.5)
+        npu_a.bernoulli_(cpu_p)
+        torch.npu.synchronize()
+        self.assertEqual(npu_a.device.type, 'npu')
+
+
 if __name__ == '__main__':
     run_tests()

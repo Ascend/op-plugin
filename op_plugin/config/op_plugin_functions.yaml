@@ -2951,6 +2951,9 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      cpu_scalar_op:
+        - param: weight
+          exec: aclnnLerps
       out:
         size: broadcast_ops_npu_output_size(broadcast_ops_npu_output_size(self, end), weight.sizes())
         dtype: self
@@ -2960,6 +2963,9 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      cpu_scalar_op:
+        - param: weight
+          exec: aclnnLerps
       out:
         size: broadcast_ops_npu_output_size(broadcast_ops_npu_output_size(self, end), weight.sizes())
       exec: aclnnLerp
@@ -2974,6 +2980,9 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      cpu_scalar_op:
+        - param: weight
+          exec: aclnnInplaceLerps
       exec: aclnnInplaceLerp
 
   - func: linalg_cross(Tensor self, Tensor other, *, int dim=-1) -> Tensor
@@ -3170,6 +3179,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      cpu_scalar_h2d: [other]
       out:
         size: broadcast_ops_npu_output_size(self, other)
         dtype: at::kBool
@@ -3180,6 +3190,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      cpu_scalar_h2d: [other]
       out:
         size: broadcast_ops_npu_output_size(self, other)
         name: self, other
@@ -3189,6 +3200,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      cpu_scalar_h2d: [other]
       self:
         name: self, other
       exec: aclnnInplaceLogicalAnd
@@ -4438,6 +4450,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      cpu_scalar_h2d: [self]
       out:
         size: self
         dtype: at::native::result_type(self, other)
@@ -4447,6 +4460,10 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      cpu_scalar_h2d: [self]
+      cpu_scalar_op:
+        - param: other
+          exec: aclnnRsubs
       out:
         size: broadcast_ops_npu_output_size(self, other)
         dtype: at::native::result_type(self, other)

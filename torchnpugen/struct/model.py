@@ -101,6 +101,21 @@ class ResInfo:
 
 
 @dataclass(frozen=True)
+class CpuScalarOp:
+    param: str
+    exec_cmd: str
+
+    @staticmethod
+    def parse(op_list: List[Dict[str, str]]) -> List['CpuScalarOp']:
+        ops = []
+        for op in op_list:
+            param = op.get('param', '')
+            exec_cmd = op.get('exec', '')
+            ops.append(CpuScalarOp(param=param, exec_cmd=exec_cmd))
+        return ops
+
+
+@dataclass(frozen=True)
 class StructInfo:
     name: str
     structured_inherit: 'NativeFunction' = None
@@ -112,6 +127,8 @@ class StructInfo:
     results: List[ResInfo] = None
     new_params: Dict[str, str] = None
     integral_identity_tensor: str = None
+    cpu_scalar_h2d: List[str] = None
+    cpu_scalar_op: List[CpuScalarOp] = None
 
     @staticmethod
     def from_yaml(
@@ -189,6 +206,10 @@ class StructInfo:
             aclnn_name = aclnn_arguments_list[0]
             new_params_dict = gen_opapi_info.pop('new_params', dict())
 
+            cpu_scalar_h2d = gen_opapi_info.pop('cpu_scalar_h2d', None)
+            cpu_scalar_op_raw = gen_opapi_info.pop('cpu_scalar_op', None)
+            cpu_scalar_op = CpuScalarOp.parse(cpu_scalar_op_raw) if cpu_scalar_op_raw else None
+
             cmd_args_expand = False
             if len(aclnn_arguments_list) == 1:
                 cmd_args_expand = True
@@ -237,6 +258,8 @@ class StructInfo:
                 acl_op=acl_op,
                 new_params=new_params_dict,
                 integral_identity_tensor=integral_identity_tensor,
+                cpu_scalar_h2d=cpu_scalar_h2d,
+                cpu_scalar_op=cpu_scalar_op,
             )
             struct_infos.append(struct_info)
 
