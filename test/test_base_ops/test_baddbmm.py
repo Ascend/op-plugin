@@ -40,7 +40,6 @@ class TestBaddBmm(TestCase):
         input1 = input1.numpy()
         return input1
 
-    @unittest.skip("Temporarily skipping")
     def test_baddbmm_common_shape_format(self):
         shape_format = [
             [
