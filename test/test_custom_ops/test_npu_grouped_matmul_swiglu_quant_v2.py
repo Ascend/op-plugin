@@ -9,6 +9,13 @@ import math
 
 
 class TestNpuGroupedMatmulSwigluQuant(TestCase):
+    def setUp(self):
+        self.ori_allow_internal_format = torch_npu._C._npu_getOption("ALLOW_INTERNAL_FORMAT")
+        torch.npu.config.allow_internal_format = True
+
+    def tearDown(self):
+        torch.npu.config.allow_internal_format = self.ori_allow_internal_format
+
     def GMM_Swiglu_quant(self, x: torch.Tensor, weight: torch.Tensor, perChannelScale: torch.Tensor, perTokenScale: torch.Tensor, m: int):
         """
         执行量化的 GMM（通用矩阵乘法）操作，并使用 SwiGLU 激活函数。
@@ -131,10 +138,10 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
             if (tempV > 0):
             # 调用 GMM_Swiglu_quant 处理当前组
                 quantOutput[start_idx:start_idx + tempV], quantScaleOutput[start_idx:start_idx + tempV] = \
-                    self.GMM_Swiglu_quant(x[start_idx:start_idx + tempV], 
-                                    weight[i], 
-                                    perChannelScale[i], 
-                                    perTokenScale[start_idx:start_idx + tempV], 
+                    self.GMM_Swiglu_quant(x[start_idx:start_idx + tempV],
+                                    weight[i],
+                                    perChannelScale[i],
+                                    perTokenScale[start_idx:start_idx + tempV],
                                     tempV)
 
             start_idx += tempV  # 更新起始索引以处理下一组
@@ -170,10 +177,10 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
             if (tempV > 0):
             # 调用 GMM_Swiglu_quant 处理当前组
                 quantOutput[start_idx:start_idx + tempV], quantScaleOutput[start_idx:start_idx + tempV] = \
-                    self.GMM_Swiglu_quant_950(i, x[start_idx:start_idx + tempV], 
-                                    weight[i], 
-                                    weightScale[i], 
-                                    xScale[start_idx:start_idx + tempV], 
+                    self.GMM_Swiglu_quant_950(i, x[start_idx:start_idx + tempV],
+                                    weight[i],
+                                    weightScale[i],
+                                    xScale[start_idx:start_idx + tempV],
                                     tempV)
 
             start_idx += tempV  # 更新起始索引以处理下一组
@@ -251,7 +258,95 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
             weightScale_npu = weightScale.npu()
         return x_npu, weight_npu, weightScale_npu, xScale.npu(), groupList.npu()
 
-    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
+    def _assert_gmm_swiglu_quant_shape(self, output, output_scale, output_shape, output_scale_shape):
+        self.assertEqual(tuple(output.shape), output_shape)
+        self.assertEqual(tuple(output_scale.shape), output_scale_shape)
+
+    def _assert_nz_weight(self, weight):
+        if torch_npu._C._npu_getOption("ALLOW_INTERNAL_FORMAT") == b"enable":
+            self.assertEqual(torch_npu.get_npu_format(weight), torch_npu.Format.FRACTAL_NZ)
+        else:
+            self.assertEqual(weight.dim(), 3)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_swiglu_quant_v2_nz_a8w4_int32_pack_shape(self, device="npu"):
+        # A8W4 INT32 packed NZ: 3D packed view keeps tail N/8, so logical N must come from weightScale.
+        E, M, K, N = 2, 2, 64, 512
+        x = torch.empty((M, K), dtype=torch.int8).npu()
+        weight_pack = torch.empty((E, K, N // 8), dtype=torch.int32).npu()
+        weight = torch_npu.npu_format_cast(weight_pack, 29)
+        self._assert_nz_weight(weight)
+        self.assertEqual(tuple(weight.shape), (E, K, N // 8))
+        self.assertNotEqual(weight.size(2), N)
+        weight_scale = torch.empty((E, N), dtype=torch.int64).npu()
+        weight_assist = torch.empty((E, N), dtype=torch.float32).npu()
+        x_scale = torch.empty((M,), dtype=torch.float32).npu()
+        group_list = torch.tensor([1, M], dtype=torch.int64).npu()
+
+        output, output_scale = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x, [weight], [weight_scale], x_scale, group_list,
+            weight_assist_matrix=[weight_assist], dequant_mode=0, dequant_dtype=torch.float32)
+        self._assert_gmm_swiglu_quant_shape(output, output_scale, (M, N // 2), (M,))
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_swiglu_quant_v2_nz_a8w8_int8_shape(self, device="npu"):
+        # A8W8 NZ: validates weightScale-based N inference does not regress int8 weights.
+        E, M, K, N = 2, 2, 64, 128
+        x = torch.empty((M, K), dtype=torch.int8).npu()
+        weight_nd = torch.empty((E, K, N), dtype=torch.int8).npu()
+        weight = torch_npu.npu_format_cast(weight_nd, 29).view(E, N // 32, K // 16, 16, 32)
+        self._assert_nz_weight(weight)
+        weight_scale = torch.empty((E, N), dtype=torch.float32).npu()
+        x_scale = torch.empty((M,), dtype=torch.float32).npu()
+        group_list = torch.tensor([1, M], dtype=torch.int64).npu()
+
+        output, output_scale = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x, [weight], [weight_scale], x_scale, group_list,
+            dequant_mode=0, dequant_dtype=torch.float32)
+        self._assert_gmm_swiglu_quant_shape(output, output_scale, (M, N // 2), (M,))
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_swiglu_quant_v2_nz_per_group_shape(self, device="npu"):
+        # A8W4 per-group packed NZ: weightScale has shape (E, K_group_num, N), and N is the tail axis.
+        E, M, K, N, k_group_num = 2, 2, 64, 512, 2
+        x = torch.empty((M, K), dtype=torch.int8).npu()
+        weight_pack = torch.empty((E, K, N // 8), dtype=torch.int32).npu()
+        weight = torch_npu.npu_format_cast(weight_pack, 29)
+        self._assert_nz_weight(weight)
+        self.assertEqual(tuple(weight.shape), (E, K, N // 8))
+        self.assertNotEqual(weight.size(2), N)
+        weight_scale = torch.empty((E, k_group_num, N), dtype=torch.int64).npu()
+        weight_assist = torch.empty((E, N), dtype=torch.float32).npu()
+        x_scale = torch.empty((M,), dtype=torch.float32).npu()
+        group_list = torch.tensor([1, M], dtype=torch.int64).npu()
+
+        output, output_scale = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x, [weight], [weight_scale], x_scale, group_list,
+            weight_assist_matrix=[weight_assist], dequant_mode=1, dequant_dtype=torch.float32)
+        self._assert_gmm_swiglu_quant_shape(output, output_scale, (M, N // 2), (M,))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_grouped_matmul_swiglu_quant_v2_nz_mx_shape(self, device="npu"):
+        # MX FP8 NZ non-transpose: legal Ascend950 WeightNzV2 path with logical 3D weight and NZ storage.
+        E, M, K, N = 8, 2048, 7168, 4096
+        x = torch.empty((M, K), dtype=torch.float8_e4m3fn).npu()
+        weight_nd = torch.empty((E, K, N), dtype=torch.float8_e4m3fn).npu()
+        weight = torch_npu.npu_format_cast(weight_nd, 29)
+        self._assert_nz_weight(weight)
+        self.assertEqual(tuple(weight.shape), (E, K, N))
+        weight_scale = torch.empty((E, math.ceil(K / 64), N, 2), dtype=torch.uint8).npu()
+        x_scale = torch.empty((M, math.ceil(K / 64), 2), dtype=torch.uint8).npu()
+        group_list = torch.tensor([256, 512, 768, 1024, 1280, 1536, 1792, M], dtype=torch.int64).npu()
+
+        output, output_scale = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x, [weight], [weight_scale], x_scale, group_list,
+            dequant_dtype=torch.float32, dequant_mode=2, quant_mode=2,
+            quant_dtype=torch.float8_e4m3fn,
+            weight_scale_dtype=torch_npu.float8_e8m0fnu,
+            x_scale_dtype=torch_npu.float8_e8m0fnu)
+        self._assert_gmm_swiglu_quant_shape(
+            output, output_scale, (M, N // 2), (M, math.ceil((N // 2) / 64), 2))
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_swiglu_quant_v2_a4w4(self, device="npu"):
         # 生成数据
@@ -278,7 +373,6 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         self.assertEqual(output_scale_npu.dim(), 1)
         self.assertEqual(output_scale_npu.shape[0], M)
 
-    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_swiglu_quant_v2_a8w8(self, device="npu"):
         # 生成数据
@@ -315,7 +409,6 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
             prec=1.0,
         )
 
-    @unittest.skip("skip case")
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_swiglu_quant(self, device="npu"):
         # 生成数据
@@ -337,7 +430,7 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         self.assertEqual(output0_valid, output0_npu_valid.cpu(), 1)
         self.assertRtolEqual(output1_valid, output1_npu_valid.cpu())
 
-    @unittest.skip("skip case")
+    @unittest.skip("Skip existing Ascend950 MXFP8 numeric reference: CPU golden does not support float8 MX inputs yet.")
     @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_swiglu_quant_mxfp8(self, device="npu"):
         # 生成数据
@@ -357,8 +450,8 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         output1_npu_valid = output1_npu[:groupList[-1]]
         self.assertEqual(output0_valid, output0_npu_valid.cpu(), 1)
         self.assertRtolEqual(output1_valid, output1_npu_valid.cpu())
-    
-    @unittest.skip("skip case")
+
+    @unittest.skip("Skip existing Ascend950 MXFP4 numeric reference: CPU golden does not support packed float4 MX inputs yet.")
     @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_swiglu_quant_mxfp4(self, device="npu"):
         # 生成数据
@@ -394,7 +487,7 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
                 weight_scale_dtype=torch_npu.float8_e8m0fnu,
                 x_scale_dtype=torch_npu.float8_e8m0fnu)
             self.assertEqual(output_npu.dim(), 2)
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_swiglu_quant_v2_dequant_dtype_valid_pertoken(self, device="npu"):
         """Ascend950 上 dequant_dtype 合法值 (float16/bfloat16) 校验"""

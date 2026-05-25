@@ -27,9 +27,8 @@ constexpr int64_t WEIGHT_MAX_DIM_NUM = 3LL;
 constexpr int64_t WEIGHT_PENULTIMATE_DIM = 1LL;
 constexpr int64_t WEIGHT_LAST_DIM = 2LL;
 constexpr int64_t DIM_3 = 3LL;
+constexpr int64_t DIM_4 = 4LL;
 constexpr int64_t DIM_5 = 5LL;
-constexpr int64_t WEIGHT_NZ_A8W8_LAST_DIM = 32LL;
-constexpr int64_t WEIGHT_NZ_A4W4_LAST_DIM = 64LL;
 constexpr int64_t FLOAT8_E5M2 = 35LL;
 constexpr int64_t FLOAT8_E4M3FN = 36LL;
 constexpr int64_t HIFLOAT8 = 34LL;
@@ -45,6 +44,44 @@ void create_new_tensor_batch(at::Tensor &y, size_t batch, size_t dim_m, size_t d
 {
     auto output_size = op_infer::array_to_small_vector({batch, dim_m, dim_n});
     y = npu_preparation::apply_tensor_without_format(output_size, options);
+}
+
+bool is_transpose_last_two_dims(const at::Tensor &tensor)
+{
+    if (tensor.dim() < DIM_2) {
+        return false;
+    }
+    auto sizes = tensor.sizes();
+    auto strides = tensor.strides();
+    int64_t last_dim = tensor.dim() - DIM_1;
+    int64_t penultimate_dim = tensor.dim() - DIM_2;
+    if (strides[penultimate_dim] != NUM_ONE || strides[last_dim] != sizes[penultimate_dim]) {
+        return false;
+    }
+    // Match CANN's transposed contiguous-view check: batch strides must also follow the swapped last-two dims.
+    int64_t expected_stride = sizes[last_dim] * sizes[penultimate_dim];
+    for (int64_t batch_dim = tensor.dim() - DIM_3; batch_dim >= DIM_0; --batch_dim) {
+        if (strides[batch_dim] != expected_stride) {
+            return false;
+        }
+        expected_stride *= sizes[batch_dim];
+    }
+    return true;
+}
+
+int64_t infer_nz_logical_n(const at::Tensor &weight_scale, bool weight_trans, bool is_mx_quant)
+{
+    TORCH_CHECK(weight_scale.dim() >= DIM_2, "The dim of weight_scale[0] should be greater than or equal to 2, "
+                "but got ", weight_scale.dim(), OPS_ERROR(ErrCode::PARAM));
+    // For NZ V2, logical N follows CANN's weightScale contract. In MX mode CANN only accepts
+    // 4D weightScale: [E, ceil(K/64), N, 2] or [E, N, ceil(K/64), 2] for transposed weight.
+    // The last dim is fixed to 2, so it cannot be used as logical N.
+    if (is_mx_quant) {
+        TORCH_CHECK(weight_scale.dim() == DIM_4, "The dim of weight_scale[0] should be equal to 4 in MX quant mode, "
+                    "but got ", weight_scale.dim(), OPS_ERROR(ErrCode::PARAM));
+        return weight_trans ? weight_scale.size(DIM_1) : weight_scale.size(DIM_2);
+    }
+    return weight_scale.size(weight_scale.dim() - DIM_1);
 }
 
 std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
@@ -77,12 +114,10 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
                               || weight[DIM_0].dim() == DIM_5;
     auto x_size = x.sizes();
     int n = 0;
-    const bool is_5d_nz = is_weight_nz && (weight[DIM_0].dim() == DIM_5);
-    if (is_5d_nz) {
-        const int64_t last_dim = weight[DIM_0].size(4);
-        n = (last_dim == WEIGHT_NZ_A8W8_LAST_DIM)
-                ? static_cast<int>(weight_scale[DIM_0].size(1))
-                : static_cast<int>(weight[DIM_0].size(1) * WEIGHT_NZ_A4W4_LAST_DIM);
+    bool weight_trans = is_weight_nz ? is_transpose_last_two_dims(weight[DIM_0]) : false;
+    const bool is_mx_quant = weight_scale_dtype.has_value();
+    if (is_weight_nz) {
+        n = static_cast<int>(infer_nz_logical_n(weight_scale[DIM_0], weight_trans, is_mx_quant));
     } else {
         if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
             n = static_cast<int>(weight[DIM_0].sizes()[DIM_2]);
@@ -148,7 +183,9 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     auto smooth_scale_real = smooth_scale.value_or(at::Tensor());
 
     c10::SmallVector<int64_t, WEIGHT_MAX_DIM_NUM> weight_strides = op_infer::array_to_small_vector(weight[DIM_0].strides());
-    bool weight_trans = !is_weight_nz && (weight_strides[WEIGHT_PENULTIMATE_DIM] == NUM_ONE && weight_strides[WEIGHT_LAST_DIM] == k);
+    if (!is_weight_nz) {
+        weight_trans = (weight_strides[WEIGHT_PENULTIMATE_DIM] == NUM_ONE && weight_strides[WEIGHT_LAST_DIM] == k);
+    }
     static const bool mxfp4_input = x_dtype.has_value() && weight_dtype.has_value() &&
                                    x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
                                    weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);

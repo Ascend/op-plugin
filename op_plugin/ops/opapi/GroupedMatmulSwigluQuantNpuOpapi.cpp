@@ -27,7 +27,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant(
     const c10::optional<at::Tensor> & offset)
 {
     auto x_size = x.sizes();
-    int n = weight.sizes()[2];
+    // CANN WeightNZ infers logical N from weightScale, not from packed/NZ weight storage shape.
+    int n = weight_scale.sizes().back();
     int m = x_size[0];
     int k = x_size[1];
 

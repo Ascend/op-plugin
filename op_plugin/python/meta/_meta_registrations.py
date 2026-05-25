@@ -6192,7 +6192,7 @@ def npu_moe_token_unpermute_grad_meta(permuted_tokens, grad_unpermuted_tokens, s
 @impl(m, "npu_grouped_matmul_swiglu_quant")
 def npu_grouped_matmul_swiglu_quant_meta(x, weight, group_list, weight_scale, x_scale, *, bias=None, offset=None):
     batch_size = x.size(0)
-    n = weight.size(2)
+    n = weight_scale.size(-1)
     output_shape = torch.empty([batch_size, n // 2], dtype=torch.int8, device=x.device)
     output_scale_shape = torch.empty([batch_size], dtype=torch.float32, device=x.device)
     output_offset_shape = torch.empty([], dtype=torch.float32, device=x.device)
@@ -6249,8 +6249,19 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
         lambda: "dequant_dtype only supports torch.int8, torch.float32, torch.bfloat16, torch.float16 for now, but it is " + npu_dtype_to_str(dequant_dtype),
         )
     batch_size = x.size(0)
-    dim_n = 2
-    n = weight[0].size(dim_n)
+    weight_trans = is_transpose_last_two_dims(weight[0])
+    # Meta follows CANN graph infer shape: logical N comes from weightScale, not packed/NZ weight storage.
+    # In MX mode CANN accepts 4D weightScale only:
+    # [E, ceil(K/64), N, 2] or [E, N, ceil(K/64), 2] for transposed weight.
+    # The tail axis is fixed to 2, so N must be selected by the weight transpose state.
+    if weight_scale_dtype is not None:
+        torch._check(
+            weight_scale[0].dim() == 4,
+            lambda: f"The dim of weight_scale[0] should be equal to 4 in MX quant mode, but got {weight_scale[0].dim()}.",
+        )
+        n = weight_scale[0].size(1) if weight_trans else weight_scale[0].size(2)
+    else:
+        n = weight_scale[0].size(-1)
     is_a8w8_input = (x.dtype == torch.float8_e5m2 or x.dtype == torch.float8_e4m3fn) and \
                    (weight[0].dtype == torch.float8_e5m2 or weight[0].dtype == torch.float8_e4m3fn)
     is_a4w4_input = False
@@ -6258,7 +6269,6 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
         is_a4w4_input = x_dtype == torch_npu.float4_e2m1fn_x2 and weight_dtype == torch_npu.float4_e2m1fn_x2
 
     FP4_IN_INT8 = 2
-    weight_trans = (x.size(-1) == weight[0].size(-2))
     mxfp_multi_base_size = 2
     mxfp_divisor_size = 64
     output_n = n // mxfp_multi_base_size
