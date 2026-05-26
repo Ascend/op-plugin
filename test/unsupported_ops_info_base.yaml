@@ -3097,6 +3097,9 @@ as_strided:
   test_variant_consistency_eager:
   - complex64
   - float32
+as_strided_copy:
+  test_non_standard_bool_values:
+  - bool
 as_strided_scatter:
   test_backward:
   - float32
