@@ -916,9 +916,6 @@
   "func: npu_dequant_bias(Tensor x, Tensor weight_scale, Tensor? activation_scale, Tensor? bias, *, ScalarType? output_dtype=None) -> Tensor": {
     "version": ["all_version"]
   },
-  "func: _npu_dtype_cast(Tensor self, ScalarType dtype) -> Tensor": {
-    "version": ["all_version"]
-  },
   "func: repeat_interleave_backward_tensor(Tensor grad, Tensor self, Tensor repeats, int? dim=None) -> Tensor": {
     "version": ["all_version"]
   },
@@ -1535,9 +1532,6 @@
     "version": ["all_version"]
   },
   "func: npu_scaled_masked_softmax_backward(Tensor y_grad, Tensor y, Tensor mask, Scalar scale, bool fixed_triu_mask) -> Tensor": {
-    "version": ["all_version"]
-  },
-  "func: _npu_dtype_cast_backward(Tensor grad, ScalarType dtype) -> Tensor": {
     "version": ["all_version"]
   },
   "func: npu_dtype_cast_backward(Tensor grad, ScalarType dtype, int? grad_dtype=None, int? input_dtype=None) -> Tensor": {
