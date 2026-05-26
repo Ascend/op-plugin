@@ -68,8 +68,8 @@ at::Tensor _cdist_forward(const at::Tensor &x1, const at::Tensor &x2, const doub
     std::vector<int64_t> tensor2_expand_size(expand_batch_portion);
     tensor2_expand_size.insert(tensor2_expand_size.end(), {r2, c2});
 
-    int expand_batch_product =
-        std::accumulate(expand_batch_portion.begin(), expand_batch_portion.end(), 1, std::multiplies<int64_t>());
+    int64_t expand_batch_product =
+        std::accumulate(expand_batch_portion.begin(), expand_batch_portion.end(), int64_t(1), std::multiplies<int64_t>());
     std::vector<int64_t> tensor1_view{expand_batch_product, r1, 1, c1};
     std::vector<int64_t> tensor2_view{expand_batch_product, 1, r2, c2};
     std::vector<int64_t> result_size{expand_batch_product, r1, r2};

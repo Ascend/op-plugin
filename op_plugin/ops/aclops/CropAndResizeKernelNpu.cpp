@@ -31,6 +31,7 @@ at::Tensor crop_and_resize(
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);
 
     std::vector<int64_t> boxes_shape = {boxes->size() / 4, 4};
+    std::string method_str(method);
     at_npu::native::OpCommand cmd;
     cmd.Name("CropAndResizeV2")
         .Input(self)
@@ -39,7 +40,7 @@ at::Tensor crop_and_resize(
         .Input(crop_size, at::kInt)
         .Output(result)
         .Attr<float>("extrapolation_value", extrapolation_value)
-        .Attr<std::string>("method", std::string(method).data())
+        .Attr<std::string>("method", method_str.data())
         .Attr("dtype", result.scalar_type())
         .Run();
 

@@ -50,10 +50,10 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ada
     const at::Tensor& self,
     at::IntArrayRef output_size)
 {
-    int64_t n = self.size(0);
-    int64_t c = self.size(1);
-    int64_t h = self.size(2);
-    int64_t w = self.size(3);
+    int64_t n = (self.dim() == DIMENSION_4D) ? self.size(0) : 1;
+    int64_t c = (self.dim() == DIMENSION_4D) ? self.size(1) : self.size(0);
+    int64_t h = (self.dim() == DIMENSION_4D) ? self.size(2) : self.size(1);
+    int64_t w = (self.dim() == DIMENSION_4D) ? self.size(3) : self.size(2);
     TORCH_CHECK(output_size[0] != 0 && output_size[1] != 0, "out put size cannot not be Zero"
         + OPS_ERROR(ErrCode::PARAM));
     int64_t stride_h = h / output_size[0];

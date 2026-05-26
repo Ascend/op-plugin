@@ -25,7 +25,7 @@ std::vector<at::Tensor> npu_fused_attention_layernorm_qkv_fwd(
     const c10::optional<at::Tensor> &bias_key, const c10::optional<at::Tensor> &bias_value, int64_t seq_len,
     int64_t num_heads, double eps)
 {
-    TORCH_CHECK(seq_len != 0 || num_heads != 0, "seq_len and num_heads cannot be equal to 0."
+    TORCH_CHECK(seq_len != 0 && num_heads != 0, "seq_len and num_heads cannot be equal to 0."
         + OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(x.dim() >= 2, "x must be at least 2 dimensions, but got ", x.dim(),
         OPS_ERROR(ErrCode::PARAM));

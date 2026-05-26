@@ -38,8 +38,10 @@ at::Tensor batch_norm_elemt(const at::Tensor& input, const c10::optional<at::Ten
                             double eps)
 {
     DO_COMPATIBILITY(aclnnBatchNormElemt, acl_op::batch_norm_elemt(input, weight, bias, mean, invstd, eps));
+    const at::Tensor& bias_value = c10::value_or_else(bias, [] { return at::Tensor(); });
+    const at::Tensor& weight_value = c10::value_or_else(weight, [] { return at::Tensor(); });
     at::Tensor result = npu_preparation::apply_tensor_without_format(input);
-    EXEC_NPU_CMD(aclnnBatchNormElemt, input, weight, bias, mean, invstd, eps, result);
+    EXEC_NPU_CMD(aclnnBatchNormElemt, input, weight_value, bias_value, mean, invstd, eps, result);
     return result;
 }
 

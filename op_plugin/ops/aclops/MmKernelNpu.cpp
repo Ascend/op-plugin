@@ -167,6 +167,9 @@ bool is_transpose_inner_axis(const at::Tensor &self)
 
 bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2)
 {
+    TORCH_CHECK(self.dim() >= 2 && mat2.dim() >= 2,
+        "is_transpose_both_inner_axis expects tensors with at least 2 dimensions"
+        + OPS_ERROR(ErrCode::PARAM));
     const static int64_t kInnerAxisMaxLimit = 65535;
     int64_t self_inner_axis = self.size(self.dim() - 1);
     int64_t self_outer_axis = self.size(self.dim() - 2);

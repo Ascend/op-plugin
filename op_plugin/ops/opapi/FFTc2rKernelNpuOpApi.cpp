@@ -26,6 +26,7 @@ at::Tensor fft_c2r_backward(
     at::IntArrayRef dim,
     int64_t normalization)
 {
+    TORCH_CHECK(!dim.empty(), "dim must not be empty", OPS_ERROR(ErrCode::PARAM));
     auto gI = at::_fft_r2c(grad, dim, normalization, true);
     auto double_length = grad.sym_size(dim.back()) - gI.sym_size(dim.back());
     if (double_length > 0) { // also covers case when signal size is zero

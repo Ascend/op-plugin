@@ -32,7 +32,7 @@ at::Tensor& upsample_bilinear2d_out_nocheck(
 {
     at_npu::native::OpCommand cmd;
     bool half_pixel_centers = !align_corners;
-    TORCH_CHECK(output_size.size() >= 1, "The dim input tensor [output_size] must more than 1."
+    TORCH_CHECK(output_size.size() >= 2, "The dim input tensor [output_size] must be at least 2."
         + OPS_ERROR(ErrCode::PARAM));
     int64_t H = output_size[0];
     int64_t W = output_size[1];

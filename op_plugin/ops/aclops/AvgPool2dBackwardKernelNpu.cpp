@@ -79,9 +79,10 @@ at::Tensor& avg_pool2d_backward_out(
     TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 2,
         "avg_pool2d: kernel_size must either be a single int, or a tuple of two ints"
         + OPS_ERROR(ErrCode::PARAM));
+    c10::SmallVector<int64_t, SIZE> kernel_sizes_storage;
     if (kernel_size.size() == 1) {
-        c10::SmallVector<int64_t, SIZE> kernel_sizes = {kernel_size[0], kernel_size[0]};
-        kernel_size = at::IntArrayRef(kernel_sizes);
+        kernel_sizes_storage = {kernel_size[0], kernel_size[0]};
+        kernel_size = at::IntArrayRef(kernel_sizes_storage);
     }
     // cbeck stride
     TORCH_CHECK(stride.empty() || stride.size() == 1 || stride.size() == 2,
@@ -92,9 +93,10 @@ at::Tensor& avg_pool2d_backward_out(
     TORCH_CHECK(padding.size() == 1 || padding.size() == 2,
         "avg_pool2d: padding must either be a single int, or a tuple of two ints"
         + OPS_ERROR(ErrCode::PARAM));
+    c10::SmallVector<int64_t, SIZE> paddings_storage;
     if (padding.size() == 1) {
-        c10::SmallVector<int64_t, SIZE> paddings = {padding[0], padding[0]};
-        padding = at::IntArrayRef(paddings);
+        paddings_storage = {padding[0], padding[0]};
+        padding = at::IntArrayRef(paddings_storage);
     }
     // check divisor_override
     TORCH_CHECK(!divisor_override.has_value() || divisor_override.value() != 0, "divisor must be not zero"

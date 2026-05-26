@@ -245,19 +245,24 @@ inline bool operator==(const FFTParam &one, const FFTParam &other)
 inline asdFftHandle createHandle(const FFTParam &param)
 {
     asdFftHandle handle;
-    asdSipFftCreate(handle);
+    TORCH_CHECK(asdSipFftCreate(handle) == 0,
+        "asdSipFftCreate failed", OPS_ERROR(ErrCode::INTERNAL));
     if (param.fftYSize == 0) {
-        asdSipFftMakePlan1D(handle, param.fftXSize, param.fftType, param.direction, param.batchSize, param.dimType);
+        TORCH_CHECK(asdSipFftMakePlan1D(handle, param.fftXSize, param.fftType, param.direction, param.batchSize, param.dimType) == 0,
+            "asdSipFftMakePlan1D failed", OPS_ERROR(ErrCode::INTERNAL));
     } else {
-        asdSipFftMakePlan2D(handle, param.fftXSize, param.fftYSize, param.fftType, param.direction, param.batchSize);
+        TORCH_CHECK(asdSipFftMakePlan2D(handle, param.fftXSize, param.fftYSize, param.fftType, param.direction, param.batchSize) == 0,
+            "asdSipFftMakePlan2D failed", OPS_ERROR(ErrCode::INTERNAL));
     }
     return handle;
 }
 
 inline void destoryHandle(asdFftHandle handle)
 {
-    asdSipFftSynchronize(handle);
-    asdSipFftDestroy(handle);
+    TORCH_CHECK(asdSipFftSynchronize(handle) == 0,
+        "asdSipFftSynchronize failed", OPS_ERROR(ErrCode::INTERNAL));
+    TORCH_CHECK(asdSipFftDestroy(handle) == 0,
+        "asdSipFftDestroy failed", OPS_ERROR(ErrCode::INTERNAL));
 }
 
 #endif //  __TORCH_NPU_OP_PLUGIN_UTILS_ASD_SIP_NPU_OP_API__

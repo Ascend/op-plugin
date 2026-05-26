@@ -84,6 +84,7 @@ inline void *GetApiFuncAddr(const char *apiName)
         }
         TORCH_CHECK(false, "GetApiFuncAddr not found ", apiName);
     }
+    return nullptr;
 }
 
 

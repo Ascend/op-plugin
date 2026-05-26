@@ -32,7 +32,12 @@ from .model import StructInfo, ResInfo, filt_input_tensor
 USED_KEYS = ['official', 'custom', 'autograd']
 SYMINT_OPS = set()
 
-PYTORCH_VERSION = os.environ.get('PYTORCH_VERSION').split('.')
+_torch_ver = os.environ.get('PYTORCH_VERSION')
+if not _torch_ver:
+    raise RuntimeError('PYTORCH_VERSION environment variable is required')
+PYTORCH_VERSION = _torch_ver.split('.')
+if len(PYTORCH_VERSION) < 2:
+    raise RuntimeError('PYTORCH_VERSION must contain major and minor components')
 
 
 ACLNN_FUNCTIONS_DEFINITION = CodeTemplate("""\

@@ -40,7 +40,8 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(const at::Tensor &log_probs, const 
     }
     // add max_length info
     auto shape = log_probs.sizes();
-    blank = blank + max_length * shape[2];
+    int64_t num_classes = (log_probs.dim() == 3) ? shape[2] : shape[1];
+    blank = blank + max_length * num_classes;
 
     auto output_sizes = op_infer::ctc_loss_npu_output_size(log_probs, max_length);
     at::Tensor neg_log_likelihood = npu_preparation::apply_tensor_with_format(

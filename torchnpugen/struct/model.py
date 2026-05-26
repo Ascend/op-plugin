@@ -67,7 +67,9 @@ class ResInfo:
             if kind == SchemaKind.out and info is None:
                 size, dtype = name, name
                 infer_name = None
-            elif kind == SchemaKind.inplace and info is not None:
+            elif info is None:
+                raise RuntimeError(f"The '{name}' is missing in results for {f.func.name}")
+            elif kind == SchemaKind.inplace:
                 size = info.pop('size', None)
                 dtype = info.pop('dtype', None)
                 infer_name = info.pop('name', None)

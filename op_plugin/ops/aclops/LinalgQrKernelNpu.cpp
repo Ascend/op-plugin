@@ -26,9 +26,9 @@ std::tuple<c10::SmallVector<int64_t, N>, c10::SmallVector<int64_t, N>> qr_npu_ou
     const at::Tensor& self,
     bool some)
 {
-    int m = self.size(-2);
-    int n = self.size(-1);
-    auto k = std::min<int>(m, n);
+    int64_t m = self.size(-2);
+    int64_t n = self.size(-1);
+    auto k = std::min<int64_t>(m, n);
     auto shape = op_infer::array_to_small_vector(self.sizes());
     c10::SmallVector<int64_t, N> q_size(shape.begin(), shape.end() - 2);
     c10::SmallVector<int64_t, N> r_size(shape.begin(), shape.end() - 2);

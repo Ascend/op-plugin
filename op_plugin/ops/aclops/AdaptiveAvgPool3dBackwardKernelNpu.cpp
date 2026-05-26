@@ -30,6 +30,9 @@ int64_t adaptive_avg_pool3d_backward_safe_size(const at::Tensor& self)
     }
     for (int64_t ndim : dims) {
         ndim = op_plugin::utils::make_warp_dim(ndim, self.sizes().size());
+        TORCH_CHECK(size <= std::numeric_limits<int64_t>::max() / self.sizes()[ndim],
+            "adaptive_avg_pool3d_backward_safe_size: integer overflow detected",
+            OPS_ERROR(ErrCode::VALUE));
         size *= self.sizes()[ndim];
     }
     return size;

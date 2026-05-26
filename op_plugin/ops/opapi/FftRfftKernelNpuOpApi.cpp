@@ -46,7 +46,7 @@ at::Tensor fft_rfft(const at::Tensor &self, c10::optional<int64_t> n, int64_t di
         dim += self.dim();
     }
     
-    TORCH_CHECK((dim < self.dim() || dim >= 0), "Dimension out of range (expected to be in range of [-dims, dims - 1])", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK((dim >= 0 && dim < self.dim()), "Dimension out of range (expected to be in range of [-dims, dims - 1])", OPS_ERROR(ErrCode::PARAM));
     int64_t N = self.size(dim);
     int64_t length = n.value_or(N);
     int64_t normalize = get_norm_RFFT(norm1);
