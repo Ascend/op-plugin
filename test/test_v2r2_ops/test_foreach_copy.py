@@ -26,20 +26,20 @@ class TestForeachCopy(TestCase):
                 self.fail("result error!")
         return True
 
-    def create_tensors(self, tensor_nums, dtype):
+    def create_tensors(self, tensor_nums, dtype, size=(1, 1)):
         cpu_tensors = []
         npu_tensors = []
         for i in range(tensor_nums):
             if dtype in ("int32", "int64"):
-                t = torch.randint(low=-100, high=100, size=(1, 1), dtype=self.torch_dtypes.get(dtype))
+                t = torch.randint(low=-100, high=100, size=size, dtype=self.torch_dtypes.get(dtype))
             elif dtype == "double":
-                t = torch.rand(size=(1, 1), dtype=self.torch_dtypes.get(dtype))
+                t = torch.rand(size=size, dtype=self.torch_dtypes.get(dtype))
                 t = t * 200 - 100
             elif dtype == "bool":
-                t = torch.randint(low=0, high=2, size=(1, 1), dtype=self.torch_dtypes.get(dtype))
+                t = torch.randint(low=0, high=2, size=size, dtype=self.torch_dtypes.get(dtype))
                 t = t.bool()
             else:
-                t = torch.randn((1, 1), dtype=self.torch_dtypes.get(dtype))
+                t = torch.randn(size, dtype=self.torch_dtypes.get(dtype))
             cpu_tensors.append(t)
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
@@ -143,9 +143,63 @@ class TestForeachCopy(TestCase):
         for tensor_num in tensor_num_list:
             cpu_tensors_x, npu_tensors_x = self.create_tensors(tensor_num, "int32")
             cpu_tensors_y, npu_tensors_y = self.create_tensors(tensor_num, "double")
+            torch._foreach_copy_(cpu_tensors_y, cpu_tensors_x)
             torch._foreach_copy_(npu_tensors_y, npu_tensors_x)
             torch.npu.synchronize()
-            self.assertRtolEqual(npu_tensors_y, npu_tensors_x)
+            self.assertRtolEqual(cpu_tensors_y, npu_tensors_y)
+
+
+    @SupportedDevices(["Ascend910B"])
+    def test_foreach_copy_float32_to_float16(self):
+        tensor_num_list = [20, 50]
+        size_list = [(1, 1), (4, 8), (16, 16)]
+        for tensor_num in tensor_num_list:
+            for size in size_list:
+                cpu_tensors_x, npu_tensors_x = self.create_tensors(tensor_num, "float32", size)
+                cpu_tensors_y, npu_tensors_y = self.create_tensors(tensor_num, "float16", size)
+                torch._foreach_copy_(cpu_tensors_y, cpu_tensors_x)
+                torch._foreach_copy_(npu_tensors_y, npu_tensors_x)
+                torch.npu.synchronize()
+                self.assert_equal(cpu_tensors_y, npu_tensors_y)
+
+    @SupportedDevices(["Ascend910B"])
+    def test_foreach_copy_float32_to_bfloat16(self):
+        tensor_num_list = [20, 50]
+        size_list = [(1, 1), (4, 8), (16, 16)]
+        for tensor_num in tensor_num_list:
+            for size in size_list:
+                cpu_tensors_x, npu_tensors_x = self.create_tensors(tensor_num, "float32", size)
+                cpu_tensors_y, npu_tensors_y = self.create_tensors(tensor_num, "bfloat16", size)
+                torch._foreach_copy_(cpu_tensors_y, cpu_tensors_x)
+                torch._foreach_copy_(npu_tensors_y, npu_tensors_x)
+                torch.npu.synchronize()
+                self.assert_equal(cpu_tensors_y, npu_tensors_y)
+
+    @SupportedDevices(["Ascend910B"])
+    def test_foreach_copy_float16_to_float32(self):
+        tensor_num_list = [20, 50]
+        size_list = [(1, 1), (4, 8), (16, 16)]
+        for tensor_num in tensor_num_list:
+            for size in size_list:
+                cpu_tensors_x, npu_tensors_x = self.create_tensors(tensor_num, "float16", size)
+                cpu_tensors_y, npu_tensors_y = self.create_tensors(tensor_num, "float32", size)
+                torch._foreach_copy_(cpu_tensors_y, cpu_tensors_x)
+                torch._foreach_copy_(npu_tensors_y, npu_tensors_x)
+                torch.npu.synchronize()
+                self.assert_equal(cpu_tensors_y, npu_tensors_y)
+
+    @SupportedDevices(["Ascend910B"])
+    def test_foreach_copy_bfloat16_to_float32(self):
+        tensor_num_list = [20, 50]
+        size_list = [(1, 1), (4, 8), (16, 16)]
+        for tensor_num in tensor_num_list:
+            for size in size_list:
+                cpu_tensors_x, npu_tensors_x = self.create_tensors(tensor_num, "bfloat16", size)
+                cpu_tensors_y, npu_tensors_y = self.create_tensors(tensor_num, "float32", size)
+                torch._foreach_copy_(cpu_tensors_y, cpu_tensors_x)
+                torch._foreach_copy_(npu_tensors_y, npu_tensors_x)
+                torch.npu.synchronize()
+                self.assert_equal(cpu_tensors_y, npu_tensors_y)
 
 
 if __name__ == "__main__":

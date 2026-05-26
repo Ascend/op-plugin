@@ -232,10 +232,42 @@ void memcpyBatch(const at::TensorList dst, at::TensorList src, bool non_blocking
     }
 }
 
+bool is_supported_cross_dtype_copy(at::ScalarType src_dtype, at::ScalarType dst_dtype)
+{
+    if (src_dtype == at::ScalarType::Float &&
+        (dst_dtype == at::ScalarType::Half || dst_dtype == at::ScalarType::BFloat16)) {
+        return true;
+    }
+    if ((src_dtype == at::ScalarType::Half || src_dtype == at::ScalarType::BFloat16) &&
+        dst_dtype == at::ScalarType::Float) {
+        return true;
+    }
+    return false;
+}
+
+bool check_cross_dtype_supported(const at::TensorList dst, const at::TensorList src)
+{
+    if (!op_plugin::utils::is_gte_cann_version_910()) {
+        return false;
+    }
+    if (dst.size() != src.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < src.size(); ++i) {
+        if (!is_supported_cross_dtype_copy(src[i].scalar_type(), dst[i].scalar_type())) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void process_tensor_list_batch(const at::TensorList self, const at::TensorList src, bool non_blocking,
     bool is_support_nd_out, bool is_support_batch)
 {
-    if (!is_support_nd_out || !at::native::can_use_fast_route(self, src) || !check_tensor_dtype_support_base(src)) {
+    bool can_fast_route = at::native::can_use_fast_route(self, src);
+    bool cross_dtype_supported = !can_fast_route && check_cross_dtype_supported(self, src);
+
+    if (!is_support_nd_out || (!can_fast_route && !cross_dtype_supported) || !check_tensor_dtype_support_base(src)) {
         if (is_support_batch && ((non_blocking && c10_npu::acl::IsExistMemcpyBatchAsync()) ||
                 (!non_blocking && c10_npu::acl::IsExistMemcpyBatch())) && check_tensor_device_dtype_base(self, src, non_blocking)) {
             return memcpyBatch(self, src, non_blocking);
