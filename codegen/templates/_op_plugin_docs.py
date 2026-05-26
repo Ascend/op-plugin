@@ -541,6 +541,9 @@ query 的 head 数 N1 与 key/value 的 head 数 N2，需满足 N1 >= N2 且 N1 
 block_sparse_mask 必传，且shape必须为[batch, headNum, ceilDiv(maxQS, blockShapeX), ceilDiv(maxKVS, blockShapeY)]. 
 block_shape 必传，必须包含至少两个元素[blockShapeX, blockShapeY]，且值必须大于0；blockShapeY 必须为 128 的倍数。
 当 q_input_layout 为 "TND" 时 actual_seq_lengths 必选; 当 kv_input_layout 为 "TND" 时 actual_seq_lengths_kv 必选. 
+actual_seq_lengths 与 actual_seq_lengths_kv 当前必须同时配置或同时不配置，仅配置其中之一会被算子拦截.
+正向路径当前支持 headDim=64 或 128; 反向路径当前支持 headDim=128.
+反向路径支持 q_input_layout 和 kv_input_layout 同为 "BNSD" 或同为 "TND"，并支持 MHA/GQA 场景. MHA 场景下 N1 == N2, GQA 场景下需满足 N1 > N2 且 N1 % N2 == 0, 其中 N1 为 query 的 head 数, N2 为 key/value 的 head 数.
 inner_precise 仅支持 0（表示float32 softmax） 或 1（表示float16 softmax）；当 query/key/value 为 bfloat16 时，仅支持 0.
 
 支持的PyTorch版本

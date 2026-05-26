@@ -1,21 +1,20 @@
 """
 npu_block_sparse_attention_backward 反向算子单测。
 
-当前反向算子仅支持 BNSD MHA 场景（BNSD 布局，num_heads == num_kv_heads）。
-与正向解耦用例：attention_out、softmax_lse 由 CPU 正向标杆生成，仅反向在 NPU 执行并与 CPU 反向标杆对比。
-
 测试场景覆盖：
 - BNSD MHA（num_heads == num_kv_heads）
+- TND GQA（num_heads > num_kv_heads，多个 Q head 共享同一个 KV head）
+- TND 变长序列（NPU 接口传每 batch 实际长度，CPU 标杆使用累计 offset 切分 TND）
 - head_dim=128（算子限制 head_dim <= 128，用例覆盖边界）
 - float16、bfloat16 数据类型
 - 多块稀疏（block_shape=[8,128]）
-- 稀疏掩码（每个 q_block 仅 attend 一个 kv_block）
+- 稀疏掩码（每个 q_block 仅 attend 部分 kv_block）
 - 正反向算子同时调用（forward 输出作为 backward 输入）
-- autograd 前反向绑定
+- autograd 端到端前反向绑定
 
-精度说明：为保障 NPU 与 CPU 标杆公平对比，所有与 CPU 对比的用例均使用 CPU 正向标杆生成
-attention_out、softmax_lse，确保双方使用同一 P 矩阵。若使用 NPU 正向输出，NPU 的 fp16 与 CPU 的 fp32
-P 存在差异，会导致梯度对比间歇性超阈值。
+精度说明：为保障 NPU 与 CPU 标杆公平对比，显式 backward CPU 对比用例使用 CPU 正向标杆生成
+attention_out、softmax_lse，确保双方使用同一 P 矩阵。TND/GQA autograd 用例走 NPU 正向并与 CPU
+backward 标杆对比，验证实际网络中 .backward() 路径可用。
 """
 
 import gc
@@ -31,6 +30,13 @@ DTYPE = torch.float16
 B, S, N, D = 2, 32, 8, 128  # head_dim=128，满足 head_dim <= 128 算子限制
 NUM_KV_HEADS = 8
 BLOCK_SHAPE = [128, 128]
+TND_GQA_B = 13
+TND_GQA_NUM_HEADS = 12
+TND_GQA_NUM_KV_HEADS = 3
+TND_GQA_HEAD_DIM = 128
+TND_GQA_BLOCK_SHAPE = [128, 128]
+TND_GQA_Q_LENGTHS = [355, 17, 41, 83, 129, 211, 7, 53, 97, 151, 233, 301, 19]
+TND_GQA_KV_LENGTHS = [533, 23, 67, 101, 173, 257, 11, 89, 137, 199, 281, 349, 31]
 
 
 def _softmax_np(x):
@@ -145,6 +151,155 @@ def cpu_block_sparse_attention_backward_bnsd(
     )
 
 
+def _make_cumulative_seq_lengths(lengths):
+    seq_lengths = [0]
+    for length in lengths:
+        seq_lengths.append(seq_lengths[-1] + length)
+    return seq_lengths
+
+
+def _make_tnd_gqa_case(
+    full_mask=True,
+    num_heads=TND_GQA_NUM_HEADS,
+    num_kv_heads=TND_GQA_NUM_KV_HEADS,
+    head_dim=TND_GQA_HEAD_DIM,
+    block_shape=TND_GQA_BLOCK_SHAPE,
+    q_lengths=TND_GQA_Q_LENGTHS,
+    kv_lengths=TND_GQA_KV_LENGTHS,
+):
+    batch = len(q_lengths)
+    assert batch == len(kv_lengths)
+    assert num_heads % num_kv_heads == 0
+    scale_value = 1.0 / math.sqrt(head_dim)
+    actual_seq_offsets = _make_cumulative_seq_lengths(q_lengths)
+    actual_seq_offsets_kv = _make_cumulative_seq_lengths(kv_lengths)
+    total_q = actual_seq_offsets[-1]
+    total_kv = actual_seq_offsets_kv[-1]
+
+    query = torch.randn(total_q, num_heads, head_dim, dtype=DTYPE)
+    key = torch.randn(total_kv, num_kv_heads, head_dim, dtype=DTYPE)
+    value = torch.randn(total_kv, num_kv_heads, head_dim, dtype=DTYPE)
+    d_out = torch.randn(total_q, num_heads, head_dim, dtype=DTYPE)
+
+    max_q = max(q_lengths)
+    max_kv = max(kv_lengths)
+    ceil_q = (max_q + block_shape[0] - 1) // block_shape[0]
+    ceil_kv = (max_kv + block_shape[1] - 1) // block_shape[1]
+    if full_mask:
+        block_sparse_mask = torch.ones(batch, num_heads, ceil_q, ceil_kv, dtype=torch.int8)
+    else:
+        block_sparse_mask = torch.zeros(batch, num_heads, ceil_q, ceil_kv, dtype=torch.int8)
+        for b in range(batch):
+            valid_ceil_kv = (kv_lengths[b] + block_shape[1] - 1) // block_shape[1]
+            for n in range(num_heads):
+                for q_block in range(ceil_q):
+                    block_sparse_mask[b, n, q_block, (q_block + b + n) % valid_ceil_kv] = 1
+                    if valid_ceil_kv > 1 and (q_block + n) % 2 == 0:
+                        block_sparse_mask[b, n, q_block, (q_block + b + n + 1) % valid_ceil_kv] = 1
+
+    return {
+        "query": query,
+        "key": key,
+        "value": value,
+        "d_out": d_out,
+        "block_sparse_mask": block_sparse_mask,
+        "block_shape": block_shape,
+        "actual_seq_lengths": q_lengths,
+        "actual_seq_lengths_kv": kv_lengths,
+        "actual_seq_offsets": actual_seq_offsets,
+        "actual_seq_offsets_kv": actual_seq_offsets_kv,
+        "num_kv_heads": num_kv_heads,
+        "scale_value": scale_value,
+    }
+
+
+def _expand_block_sparse_mask(mask, block_shape, q_len, kv_len):
+    block_x, block_y = int(block_shape[0]), int(block_shape[1])
+    return mask.repeat_interleave(block_x, dim=0).repeat_interleave(block_y, dim=1)[:q_len, :kv_len].bool()
+
+
+def cpu_block_sparse_attention_tnd_gqa_with_lse(
+    query, key, value, block_sparse_mask, block_shape, scale_value, actual_seq_offsets, actual_seq_offsets_kv
+):
+    query_f = query.cpu().to(torch.float32)
+    key_f = key.cpu().to(torch.float32)
+    value_f = value.cpu().to(torch.float32)
+    mask = block_sparse_mask.cpu()
+    total_q, num_heads, head_dim = query_f.shape
+    num_kv_heads = key_f.shape[1]
+    group_size = num_heads // num_kv_heads
+    attention_out = torch.zeros(total_q, num_heads, head_dim, dtype=torch.float32)
+    softmax_lse = torch.zeros(total_q, num_heads, 1, dtype=torch.float32)
+
+    for b in range(len(actual_seq_offsets) - 1):
+        q_start, q_end = actual_seq_offsets[b], actual_seq_offsets[b + 1]
+        kv_start, kv_end = actual_seq_offsets_kv[b], actual_seq_offsets_kv[b + 1]
+        q_len = q_end - q_start
+        kv_len = kv_end - kv_start
+        for n in range(num_heads):
+            kv_head = n // group_size
+            q_b = query_f[q_start:q_end, n, :]
+            k_b = key_f[kv_start:kv_end, kv_head, :]
+            v_b = value_f[kv_start:kv_end, kv_head, :]
+            scores = torch.matmul(q_b, k_b.transpose(0, 1)) * float(scale_value)
+            full_mask = _expand_block_sparse_mask(mask[b, n], block_shape, q_len, kv_len)
+            scores = scores.masked_fill(~full_mask, -1e10)
+            probs = torch.softmax(scores, dim=-1)
+            attention_out[q_start:q_end, n, :] = torch.matmul(probs, v_b)
+            softmax_lse[q_start:q_end, n, 0] = torch.logsumexp(scores, dim=-1)
+
+    return attention_out.to(query.dtype), softmax_lse
+
+
+def cpu_block_sparse_attention_backward_tnd_gqa(
+    query, key, value, d_out, block_sparse_mask, block_shape, scale_value, actual_seq_offsets, actual_seq_offsets_kv
+):
+    query_f = query.cpu().to(torch.float32)
+    key_f = key.cpu().to(torch.float32)
+    value_f = value.cpu().to(torch.float32)
+    d_out_f = d_out.cpu().to(torch.float32)
+    mask = block_sparse_mask.cpu()
+    total_q, num_heads, head_dim = query_f.shape
+    total_kv, num_kv_heads, _ = key_f.shape
+    group_size = num_heads // num_kv_heads
+    d_query = torch.zeros(total_q, num_heads, head_dim, dtype=torch.float32)
+    d_key = torch.zeros(total_kv, num_kv_heads, head_dim, dtype=torch.float32)
+    d_value = torch.zeros(total_kv, num_kv_heads, head_dim, dtype=torch.float32)
+
+    for b in range(len(actual_seq_offsets) - 1):
+        q_start, q_end = actual_seq_offsets[b], actual_seq_offsets[b + 1]
+        kv_start, kv_end = actual_seq_offsets_kv[b], actual_seq_offsets_kv[b + 1]
+        q_len = q_end - q_start
+        kv_len = kv_end - kv_start
+        for n in range(num_heads):
+            kv_head = n // group_size
+            q_b = query_f[q_start:q_end, n, :]
+            k_b = key_f[kv_start:kv_end, kv_head, :]
+            v_b = value_f[kv_start:kv_end, kv_head, :]
+            dout_b = d_out_f[q_start:q_end, n, :]
+            scores = torch.matmul(q_b, k_b.transpose(0, 1)) * float(scale_value)
+            full_mask = _expand_block_sparse_mask(mask[b, n], block_shape, q_len, kv_len)
+            scores = scores.masked_fill(~full_mask, -1e10)
+            probs = torch.softmax(scores, dim=-1)
+            d_p = torch.matmul(dout_b, v_b.transpose(0, 1))
+            d_s = (d_p - (d_p * probs).sum(dim=-1, keepdim=True)) * probs * float(scale_value)
+            d_query[q_start:q_end, n, :] = torch.matmul(d_s, k_b)
+            d_key[kv_start:kv_end, kv_head, :] += torch.matmul(d_s.transpose(0, 1), q_b)
+            d_value[kv_start:kv_end, kv_head, :] += torch.matmul(probs.transpose(0, 1), dout_b)
+
+    return d_query.to(query.dtype), d_key.to(key.dtype), d_value.to(value.dtype)
+
+
+def _copy_tnd_gqa_case_to_device(case, device):
+    return {
+        "query": case["query"].to(device),
+        "key": case["key"].to(device),
+        "value": case["value"].to(device),
+        "d_out": case["d_out"].to(device),
+        "block_sparse_mask": case["block_sparse_mask"].to(device),
+    }
+
+
 class TestNPUBlockSparseAttentionBackward(TestCase):
     """Test npu_block_sparse_attention_backward，与 CPU 反向标杆对比."""
 
@@ -160,6 +315,10 @@ class TestNPUBlockSparseAttentionBackward(TestCase):
         gc.collect()
         torch.npu.empty_cache()
         super().tearDown()
+
+    def _assert_tnd_gqa_grads_equal(self, cpu_grads, npu_grads):
+        for cpu_grad, npu_grad in zip(cpu_grads, npu_grads):
+            self.assertRtolEqual(cpu_grad.cpu().float(), npu_grad.cpu().float(), prec=0.02, prec16=0.02)
 
     @SkipIfNotGteCANNVersion("9.0.0")
     @SupportedDevices(['Ascend910B'])
@@ -297,6 +456,177 @@ class TestNPUBlockSparseAttentionBackward(TestCase):
         self.assertRtolEqual(dq_cpu.cpu().float(), d_query.cpu().float(), prec=0.01, prec16=0.01)
         self.assertRtolEqual(dk_cpu.cpu().float(), d_key.cpu().float(), prec=0.01, prec16=0.01)
         self.assertRtolEqual(dv_cpu.cpu().float(), d_value.cpu().float(), prec=0.01, prec16=0.01)
+
+    def _run_tnd_gqa_backward_cpu_compare(self, device, full_mask, **case_kwargs):
+        torch.npu.empty_cache()
+        case = _make_tnd_gqa_case(full_mask=full_mask, **case_kwargs)
+        dq_cpu, dk_cpu, dv_cpu = cpu_block_sparse_attention_backward_tnd_gqa(
+            case["query"], case["key"], case["value"], case["d_out"], case["block_sparse_mask"],
+            case["block_shape"], case["scale_value"], case["actual_seq_offsets"], case["actual_seq_offsets_kv"])
+        attention_out_cpu, softmax_lse_cpu = cpu_block_sparse_attention_tnd_gqa_with_lse(
+            case["query"], case["key"], case["value"], case["block_sparse_mask"],
+            case["block_shape"], case["scale_value"], case["actual_seq_offsets"], case["actual_seq_offsets_kv"])
+
+        npu_case = _copy_tnd_gqa_case_to_device(case, device)
+
+        d_query, d_key, d_value = torch_npu.npu_block_sparse_attention_backward(
+            npu_case["d_out"], npu_case["query"], npu_case["key"], npu_case["value"],
+            attention_out_cpu.to(device), softmax_lse_cpu.to(device), npu_case["block_sparse_mask"],
+            block_shape=case["block_shape"],
+            actual_seq_lengths=case["actual_seq_lengths"],
+            actual_seq_lengths_kv=case["actual_seq_lengths_kv"],
+            q_input_layout="TND", kv_input_layout="TND",
+            num_key_value_heads=case["num_kv_heads"],
+            scale_value=case["scale_value"],
+        )
+        torch.npu.synchronize()
+        self._assert_tnd_gqa_grads_equal((dq_cpu, dk_cpu, dv_cpu), (d_query, d_key, d_value))
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_gqa_full_mask_cpu_compare(self, device="npu"):
+        """Backward TND GQA with full block sparse mask, compared with CPU golden."""
+        self._run_tnd_gqa_backward_cpu_compare(device, full_mask=True)
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_gqa_sparse_mask_cpu_compare(self, device="npu"):
+        """Backward TND GQA with sparse block mask, compared with CPU golden."""
+        self._run_tnd_gqa_backward_cpu_compare(device, full_mask=False)
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_gqa_single_batch_cpu_compare(self, device="npu"):
+        """Backward TND GQA with a single batch, compared with CPU golden."""
+        self._run_tnd_gqa_backward_cpu_compare(
+            device, full_mask=True,
+            num_heads=4, num_kv_heads=2,
+            q_lengths=[127], kv_lengths=[191])
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_gqa_uneven_seq_lengths_cpu_compare(self, device="npu"):
+        """Backward TND GQA with uneven variable lengths, compared with CPU golden."""
+        self._run_tnd_gqa_backward_cpu_compare(
+            device, full_mask=False,
+            num_heads=4, num_kv_heads=2,
+            q_lengths=[1, 64, 129, 17],
+            kv_lengths=[128, 3, 257, 65])
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_gqa_group_size_4_cpu_compare(self, device="npu"):
+        """Backward TND GQA with group size 4, compared with CPU golden."""
+        self._run_tnd_gqa_backward_cpu_compare(
+            device, full_mask=False,
+            num_heads=8, num_kv_heads=2,
+            q_lengths=[96, 137],
+            kv_lengths=[111, 259])
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_mqa_cpu_compare(self, device="npu"):
+        """Backward TND MQA with one shared KV head, compared with CPU golden."""
+        self._run_tnd_gqa_backward_cpu_compare(
+            device, full_mask=False,
+            num_heads=8, num_kv_heads=1,
+            q_lengths=[65, 130],
+            kv_lengths=[129, 33])
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_gqa_non_128_tail_block_cpu_compare(self, device="npu"):
+        """Backward TND GQA with non-default Q block and tail blocks, compared with CPU golden."""
+        self._run_tnd_gqa_backward_cpu_compare(
+            device, full_mask=False,
+            num_heads=4, num_kv_heads=2,
+            block_shape=[64, 128],
+            q_lengths=[65, 127, 3],
+            kv_lengths=[129, 11, 64])
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_actual_seq_lengths_required(self, device="npu"):
+        """TND backward requires corresponding actual sequence lengths."""
+        case = _make_tnd_gqa_case(
+            full_mask=True,
+            num_heads=4, num_kv_heads=2,
+            q_lengths=[16], kv_lengths=[16])
+        attention_out_cpu, softmax_lse_cpu = cpu_block_sparse_attention_tnd_gqa_with_lse(
+            case["query"], case["key"], case["value"], case["block_sparse_mask"],
+            case["block_shape"], case["scale_value"], case["actual_seq_offsets"], case["actual_seq_offsets_kv"])
+        npu_case = _copy_tnd_gqa_case_to_device(case, device)
+
+        common_args = (
+            npu_case["d_out"], npu_case["query"], npu_case["key"], npu_case["value"],
+            attention_out_cpu.to(device), softmax_lse_cpu.to(device), npu_case["block_sparse_mask"])
+        common_kwargs = {
+            "block_shape": case["block_shape"],
+            "q_input_layout": "TND",
+            "kv_input_layout": "TND",
+            "num_key_value_heads": case["num_kv_heads"],
+            "scale_value": case["scale_value"],
+        }
+        with self.assertRaisesRegex(RuntimeError, "actual_seq_lengths must be specified"):
+            torch_npu.npu_block_sparse_attention_backward(
+                *common_args,
+                actual_seq_lengths=None,
+                actual_seq_lengths_kv=case["actual_seq_lengths_kv"],
+                **common_kwargs)
+        with self.assertRaisesRegex(RuntimeError, "actual_seq_lengths_kv must be specified"):
+            torch_npu.npu_block_sparse_attention_backward(
+                *common_args,
+                actual_seq_lengths=case["actual_seq_lengths"],
+                actual_seq_lengths_kv=None,
+                **common_kwargs)
+
+    @SkipIfNotGteCANNVersion("9.0.0")
+    @SupportedDevices(['Ascend910B'])
+    @unittest.skip("Skip until gate CANN version supports BlockSparseAttention TND/GQA backward.")
+    def test_npu_block_sparse_attention_backward_tnd_gqa_autograd_cpu_compare(self, device="npu"):
+        """End-to-end autograd TND GQA path, compared with CPU backward golden."""
+        torch.npu.empty_cache()
+        case = _make_tnd_gqa_case(full_mask=False)
+        dq_cpu, dk_cpu, dv_cpu = cpu_block_sparse_attention_backward_tnd_gqa(
+            case["query"], case["key"], case["value"], case["d_out"], case["block_sparse_mask"],
+            case["block_shape"], case["scale_value"], case["actual_seq_offsets"], case["actual_seq_offsets_kv"])
+
+        npu_case = _copy_tnd_gqa_case_to_device(case, device)
+        query = npu_case["query"]
+        key = npu_case["key"]
+        value = npu_case["value"]
+        query.requires_grad = True
+        key.requires_grad = True
+        value.requires_grad = True
+
+        attention_out, _ = torch_npu.npu_block_sparse_attention(
+            query, key, value, npu_case["block_sparse_mask"], case["block_shape"],
+            q_input_layout="TND", kv_input_layout="TND",
+            num_key_value_heads=case["num_kv_heads"],
+            scale_value=case["scale_value"],
+            inner_precise=1,
+            actual_seq_lengths=case["actual_seq_lengths"],
+            actual_seq_lengths_kv=case["actual_seq_lengths_kv"],
+            softmax_lse_flag=1,
+        )
+        attention_out.backward(gradient=npu_case["d_out"])
+        torch.npu.synchronize()
+
+        self.assertIsNotNone(query.grad)
+        self.assertIsNotNone(key.grad)
+        self.assertIsNotNone(value.grad)
+        self.assertEqual(query.grad.shape, query.shape)
+        self.assertEqual(key.grad.shape, key.shape)
+        self.assertEqual(value.grad.shape, value.shape)
+        self._assert_tnd_gqa_grads_equal((dq_cpu, dk_cpu, dv_cpu), (query.grad, key.grad, value.grad))
 
     @SkipIfNotGteCANNVersion("9.0.0")
     @SupportedDevices(['Ascend910B'])
