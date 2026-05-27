@@ -20,6 +20,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/RandomUtil.h"
 #include "torch_npu/csrc/core/npu/NPUGraphsUtils.h"
 
 namespace op_api {
@@ -119,16 +120,37 @@ at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::opti
     check_random_bounds(self.dtype(), from, to);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self, from, to, true);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         EXEC_NPU_CMD(aclnnInplaceRandom, self, from, to, pair.first, pair.second);
     } else {
 #if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
-        auto gen_state_ = gen->philox_npu_state(10);
+        auto gen_state_ = gen->philox_npu_state(counter_offset);
         const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
         const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
         const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
         EXEC_NPU_CMD(aclnnInplaceRandomTensor, self, from, to, *seed_ptr, *offset_ptr, offset_intragraph);
+#endif
+    }
+    return self;
+}
+
+at::Tensor& random_without_from_to_op_api_(at::Tensor& self, c10::optional<at::Generator> generator)
+{
+    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self);
+    if (is_capture == c10_npu::CaptureStatus::None) {
+        auto pair = gen->philox_engine_inputs(counter_offset);
+        EXEC_NPU_CMD(aclnnInplaceRandomWithoutFromTo, self, pair.first, pair.second);
+    } else {
+#if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
+        auto gen_state_ = gen->philox_npu_state(counter_offset);
+        const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
+        const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
+        const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
+        EXEC_NPU_CMD(aclnnInplaceRandomWithoutFromToTensor, self, *seed_ptr, *offset_ptr, offset_intragraph);
 #endif
     }
     return self;
@@ -153,10 +175,15 @@ at::Tensor& random_(at::Tensor& self, int64_t to, c10::optional<at::Generator> g
 
 at::Tensor& random_(at::Tensor& self, c10::optional<at::Generator> generator)
 {
-    DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, generator));
-    int64_t from = 0;
-    int64_t to = get_dtype_max_value(self.scalar_type());
-    random_op_api_(self, from, to, generator);
+    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 && self.scalar_type() != at::kDouble) {
+        DO_COMPATIBILITY(aclnnInplaceRandomWithoutFromTo, acl_op::random_(self, generator));
+        random_without_from_to_op_api_(self, generator);
+    } else {
+        DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, generator));
+        int64_t from = 0;
+        int64_t to = get_dtype_max_value(self.scalar_type());
+        random_op_api_(self, from, to, generator);
+    }
     return self;
 }
 

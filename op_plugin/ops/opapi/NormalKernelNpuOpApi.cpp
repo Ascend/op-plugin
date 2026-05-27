@@ -17,6 +17,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/RandomUtil.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 #include "torch_npu/csrc/core/npu/NPUGraphsUtils.h"
 
@@ -44,8 +45,9 @@ at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at:
     npu_preparation::check_tensor({}, self, self, self.sizes());
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         float mean_cast = static_cast<float>(mean);
@@ -53,7 +55,7 @@ at::Tensor& normal_(at::Tensor& self, double mean, double std, c10::optional<at:
         EXEC_NPU_CMD(aclnnInplaceNormal, self, mean_cast, rstd_cast, seed, offset);
     } else {
 #if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
-        auto gen_state_ = gen->philox_npu_state(10);
+        auto gen_state_ = gen->philox_npu_state(counter_offset);
         const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
         const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
         const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
@@ -75,8 +77,9 @@ at::Tensor& normal_out(const at::Tensor& mean, const at::Tensor& std, c10::optio
     npu_preparation::check_tensor({mean, std}, out, out, output_size);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(out);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         EXEC_NPU_CMD(aclnnNormalTensorTensor, mean, std, seed, offset, out);
@@ -92,8 +95,9 @@ at::Tensor normal(const at::Tensor& mean, const at::Tensor& std, c10::optional<a
     at::Tensor result = npu_preparation::apply_tensor_without_format(mean, output_size);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(result);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         EXEC_NPU_CMD(aclnnNormalTensorTensor, mean, std, seed, offset, result);
@@ -110,8 +114,9 @@ at::Tensor& normal_out(const at::Tensor& mean, double std, c10::optional<at::Gen
     npu_preparation::check_tensor({mean}, out, out);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(out);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         float rstd_cast = static_cast<float>(std);
@@ -127,8 +132,9 @@ at::Tensor normal(const at::Tensor& mean, double std, c10::optional<at::Generato
     at::Tensor result = npu_preparation::apply_tensor_without_format(mean);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(result);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         float rstd_cast = static_cast<float>(std);
@@ -146,8 +152,9 @@ at::Tensor& normal_out(double mean, const at::Tensor& std, c10::optional<at::Gen
     npu_preparation::check_tensor({std}, out, out);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(out);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         float mean_cast = static_cast<float>(mean);
@@ -163,8 +170,9 @@ at::Tensor normal(double mean, const at::Tensor& std, c10::optional<at::Generato
     at::Tensor result = npu_preparation::apply_tensor_without_format(std);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(result);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         float mean_cast = static_cast<float>(mean);
@@ -182,8 +190,9 @@ at::Tensor& normal_out(double mean, double std, at::IntArrayRef size,
     npu_preparation::check_tensor({}, out, out, size);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(out);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         float mean_cast = static_cast<float>(mean);
@@ -211,8 +220,9 @@ at::Tensor normal(double mean, double std,
     at::Tensor result = npu_preparation::apply_tensor_without_format(size, option);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(result);
     if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(10);
+        auto pair = gen->philox_engine_inputs(counter_offset);
         const int64_t seed = static_cast<int64_t>(pair.first);
         const int64_t offset = static_cast<int64_t>(pair.second);
         float mean_cast = static_cast<float>(mean);

@@ -132,7 +132,7 @@ class TestRandom(TestCase):
     def test_random_toIsNone(self, dtype):
         size = 2000
         alpha = 0.1
-        from_ = -800
+        from_ = 8
 
         if dtype == torch.float:
             to_inc = 1 << 24
