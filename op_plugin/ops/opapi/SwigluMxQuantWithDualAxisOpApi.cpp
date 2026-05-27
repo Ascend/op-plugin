@@ -64,8 +64,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_swiglu_mx_quant_w
     // Infer mxscale2 shape: floor(second_to_last_dim / 64) + group_num + append 2
     auto mxscale2_shape = op_infer::array_to_small_vector(y_shape);
     int64_t second_to_last_dim = mxscale2_shape[mxscale2_shape.size() - 2];
-    int64_t quant_size = static_cast<int64_t>(std::floor(static_cast<double>(second_to_last_dim) / SPLIT_BLOCK_SIZE));
+    int64_t quant_size = static_cast<int64_t>(std::ceil(static_cast<double>(second_to_last_dim) / SPLIT_BLOCK_SIZE));
     if (group_index_opt.defined()) {
+        quant_size = static_cast<int64_t>(std::floor(static_cast<double>(second_to_last_dim) / SPLIT_BLOCK_SIZE));
         quant_size = quant_size + group_index_opt.size(0);
     }
     mxscale2_shape[mxscale2_shape.size() - 2] = quant_size;

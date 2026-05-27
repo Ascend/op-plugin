@@ -29,6 +29,17 @@ class TestSwigluMxQuantWithDualAxis(TestCase):
                                 dtype=torch.uint8)
         return y1, mxscale1, y2, mxscale2
 
+    def golden_with_no_group_op_exec(self, input_tensor):
+        device = input_tensor.device
+        y1 = torch.tensor([[128, 128, 128, 128], [128, 128, 128, 128], [128, 128, 128, 128], [128, 128, 128, 128]],
+                          dtype=torch.uint8)
+        mxscale1 = torch.tensor([[[118, 0]], [[118, 0]], [[118, 0]], [[118, 0]]], dtype=torch.uint8)
+        y2 = torch.tensor([[128, 128, 128, 128], [128, 128, 128, 128], [128, 128, 128, 128], [128, 128, 128, 128]],
+                          dtype=torch.uint8)
+        mxscale2 = torch.tensor([[[118, 0], [118, 0], [118, 0], [118, 0]]],
+                                dtype=torch.uint8)
+        return y1, mxscale1, y2, mxscale2
+    
     def generate_input(self, input, value, dtype="float16"):
         if dtype == "float16":
             data_type = torch.float16
@@ -50,6 +61,25 @@ class TestSwigluMxQuantWithDualAxis(TestCase):
         mxscale1 = npu_output[1].cpu().view([4, 1, 2]).to(torch.uint8)
         y2 = npu_output[2].cpu().view([4, 4]).to(torch.uint8)
         mxscale2 = npu_output[3].cpu().view([2, 4, 2]).to(torch.uint8)
+
+        assert torch.all(y1 == golden_output[0].view(torch.uint8))
+        assert torch.all(mxscale1 == golden_output[1].view(torch.uint8))
+        assert torch.all(y2 == golden_output[2].view(torch.uint8))
+        assert torch.all(mxscale2 == golden_output[3].view(torch.uint8))
+
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_swiglu_mx_quant_with_dual_axi_no_group_float8_e4m3fn(self, device="npu"):
+        x = self.generate_input(input=[4, 8], value=1, dtype="bfloat16")
+        x = x.to(device).requires_grad_(True)
+
+        golden_output = self.golden_with_no_group_op_exec(x.clone().detach())
+        npu_output = self.npu_op_exec(x)
+
+        y1 = npu_output[0].cpu().view([4, 4]).to(torch.uint8)
+        mxscale1 = npu_output[1].cpu().view([4, 1, 2]).to(torch.uint8)
+        y2 = npu_output[2].cpu().view([4, 4]).to(torch.uint8)
+        mxscale2 = npu_output[3].cpu().view([1, 4, 2]).to(torch.uint8)
 
         assert torch.all(y1 == golden_output[0].view(torch.uint8))
         assert torch.all(mxscale1 == golden_output[1].view(torch.uint8))
