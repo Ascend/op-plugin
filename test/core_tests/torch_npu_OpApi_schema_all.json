@@ -5002,5 +5002,14 @@
   },
   "func: _fused_sdp_choice(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None, bool enable_gqa=False) -> int": {
     "version": ["v2.7", "newest"]
+  },
+  "func: npu_moe_gating_top_k_backward(Tensor x_norm, Tensor grad_y, Tensor expertIdx, *, int renorm=0, int norm_type=0, float routed_scaling_factor=1.0, float eps=1e-20) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "op_api: torch_npu.npu_moe_gating_top_k_backward(*args, **kwargs)": {
+    "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
+  },
+  "op_api: torch_npu.npu_moe_gating_top_k_backward(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+    "version": ["v2.8", "newest"]
   }
 }
