@@ -28,4 +28,34 @@ at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float)
     log_softmax_nocheck(result, self, dim, result_type);
     return result;
 }
+
+at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float, at::Tensor& out)
+{
+    auto dst_type = half_to_float ? at::kFloat : self.scalar_type();
+    npu_preparation::CheckOut(
+        {self},
+        out,
+        npu_preparation::get_tensor_npu_format(out),
+        dst_type,
+        self.sizes());
+
+    auto self_dtype = self.scalar_type();
+    if (half_to_float) {
+        TORCH_CHECK(self_dtype == at::kHalf, "conversion is supported for Half type only" + OPS_ERROR(ErrCode::TYPE));
+    } else {
+        TORCH_CHECK(at::isFloatingType(self_dtype), "_log_softmax_npu not implemented for '", toString(self_dtype),
+            "'" + OPS_ERROR(ErrCode::NOT_SUPPORT));
+    }
+
+    at::Tensor self_cast = dst_type == self.scalar_type() ?
+        self : at_npu::native::custom_ops::_npu_dtype_cast(self, dst_type);
+    if (!npu_utils::check_match(&out)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(out);
+        log_softmax_nocheck(contiguous_result, self_cast, dim, dst_type);
+        npu_utils::format_fresh_view(out, contiguous_result);
+    } else {
+        log_softmax_nocheck(out, self_cast, dim, dst_type);
+    }
+    return out;
+}
 } // namespace acl_op

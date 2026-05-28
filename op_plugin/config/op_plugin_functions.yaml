@@ -643,6 +643,15 @@ official:
         dtype: 'half_to_float ? at::kFloat : self.scalar_type()'
       exec: aclnnLogSoftmax, self, dim, out
 
+  - func: _log_softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)
+    acl_op: all_version
+    op_api: all_version
+    gen_opapi:
+      out:
+        size: self
+        dtype: 'half_to_float ? at::kFloat : self.scalar_type()'
+      exec: aclnnLogSoftmax, self, dim, out
+
   - func: _log_softmax_backward_data(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype) -> Tensor
     acl_op: all_version
     op_api: all_version
