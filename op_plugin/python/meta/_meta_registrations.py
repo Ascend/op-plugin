@@ -5114,6 +5114,25 @@ def npu_dynamic_mx_quant(input_dummy, *, axis=-1, round_mode="rint", dst_type=29
     return (output, mxscale)
 
 
+@impl(m, "npu_anti_mx_quant")
+def npu_anti_mx_quant(input_dummy, mxscale, *, axis=-1, dst_type=15, src_type=292):
+    dim_num = input_dummy.dim()
+    tail_num = input_dummy.size(dim_num - 1)
+    if axis < -dim_num or axis >= dim_num:
+        raise RuntimeError("Parameter axis is out of input dimension range [{0}, {1}]".format(-dim_num, dim_num - 1) +
+                           ops_error(ErrCode.PARAM))
+
+    torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type)
+    if not (input_dummy.dtype == torch.float8_e5m2 or input_dummy.dtype == torch.float8_e4m3fn):  # float4_e2m1/float4_e1m2
+        input_dummy_shape = input_dummy.size()
+        y_shape = (*(input_dummy_shape[:-1]), input_dummy_shape[-1] * 2)
+        y = input_dummy.new_empty(y_shape, dtype=torch_dtype)
+        return torch.empty_like(y)
+    else:
+        return torch.empty_like(input_dummy, dtype=torch_dtype)
+
+
+
 @impl(m, "npu_dynamic_dual_level_mx_quant")
 def npu_dynamic_dual_level_mx_quant(input_dummy, *, smooth_scale=None, round_mode="rint"):
     dim_num = input_dummy.dim()
