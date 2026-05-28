@@ -79,6 +79,7 @@
         -   [torch_npu.npu_anti_quant](./torch_npu/torch_npu-npu_anti_quant.md)
         -   [torch_npu.npu_attention_to_ffn](./torch_npu/torch_npu-npu_attention_to_ffn.md)
         -   [torch_npu.npu_attention_update](./torch_npu/torch_npu-npu_attention_update.md)
+        -   [torch_npu.npu_ring_attention_update](./torch_npu/torch_npu-npu_ring_attention_update.md)
         -   [torch_npu.npu_block_sparse_attention](./torch_npu/torch_npu-npu_block_sparse_attention.md)
         -   [torch_npu-npu_chunk_gated_delta_rule](./torch_npu/torch_npu-npu_chunk_gated_delta_rule.md)
         -   [torch_npu.npu_convert_weight_to_int4pack](./torch_npu/torch_npu-npu_convert_weight_to_int4pack.md)
@@ -170,7 +171,15 @@
         -   [torch_npu.save_npugraph_tensor](./torch_npu/torch_npu-save_npugraph_tensor.md)
         -   [torch_npu.print_npugraph_tensor](./torch_npu/torch_npu-print_npugraph_tensor.md)
         -   [torch_npu.apply_rotary_pos_emb](./torch_npu/torch_npu-apply_rotary_pos_emb.md)
-
+        -   [torch_npu.npu_add_quant_matmul_](torch_npu/torch_npu-npu_add_quant_matmul_.md)
+        -   [torch_npu.npu_dynamic_dual_level_mx_quant](torch_npu/torch_npu-npu_dynamic_dual_level_mx_quant.md)
+        -   [torch_npu.npu_fused_causal_conv1d](torch_npu/torch_npu-npu_fused_causal_conv1d.md)
+        -   [torch_npu.npu_grouped_dynamic_block_quant](torch_npu/torch_npu-npu_grouped_dynamic_block_quant.md)
+        -   [torch_npu.npu_mhc_post](torch_npu/torch_npu-npu_mhc_post.md)
+        -   [torch_npu.npu_mhc_pre](torch_npu/torch_npu-npu_mhc_pre.md)
+        -   [torch_npu.npu_mhc_sinkhorn](torch_npu/torch_npu-npu_mhc_sinkhorn.md)
+        -   [torch_npu.npu_transpose_quant_batchmatmul](torch_npu/torch_npu-npu_transpose_quant_batchmatmul.md)
+        
     -   [torch_npu.contrib](./torch_npu-contrib/torch_npu-contrib.md)
         -   [torch_npu.contrib接口列表](./torch_npu-contrib/torch_npu-contrib_list.md)
         -   [（beta）torch_npu.contrib.npu_fused_attention_with_layernorm](./torch_npu-contrib/（beta）torch_npu-contrib-npu_fused_attention_with_layernorm.md)
@@ -205,19 +214,19 @@
         -   [（beta）torch_npu.contrib.module.PSROIPool](./torch_npu-contrib/（beta）torch_npu-contrib-module-PSROIPool.md)
         -   [（beta）torch_npu.contrib.module.ROIAlign](./torch_npu-contrib/（beta）torch_npu-contrib-module-ROIAlign.md)
         -   [（beta）torch_npu.contrib.module.FusedColorJitter](./torch_npu-contrib/（beta）torch_npu-contrib-module-FusedColorJitter.md)
-        -   [（beta）torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy](./torch_npu-contrib/（beta）torch_npu-contrib-function-npu_bbox_coder_decode_xywh2xyxy.md)
+    -   [（beta）torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy](./torch_npu-contrib/（beta）torch_npu-contrib-function-npu_bbox_coder_decode_xywh2xyxy.md)
         -   [（beta）torch_npu.contrib.function.npu_bbox_coder_encode_yolo](./torch_npu-contrib/（beta）torch_npu-contrib-function-npu_bbox_coder_encode_yolo.md)
         -   [（beta）torch_npu.contrib.module.npu_modules.DropoutWithByteMask](./torch_npu-contrib/（beta）torch_npu-contrib-module-npu_modules-DropoutWithByteMask.md)
         -   [（beta）torch_npu.contrib.function.dropout_with_byte_mask](./torch_npu-contrib/（beta）torch_npu-contrib-function-dropout_with_byte_mask.md)
-        -   [torch_npu.contrib.module.LinearA8W8Quant](./torch_npu-contrib/torch_npu-contrib-module-LinearA8W8Quant.md)
+    -   [torch_npu.contrib.module.LinearA8W8Quant](./torch_npu-contrib/torch_npu-contrib-module-LinearA8W8Quant.md)
         -   [torch_npu.contrib.module.LinearQuant](./torch_npu-contrib/torch_npu-contrib-module-LinearQuant.md)
         -   [torch_npu.contrib.module.LinearWeightQuant](./torch_npu-contrib/torch_npu-contrib-module-LinearWeightQuant.md)
         -   [torch_npu.contrib.module.QuantConv2d](./torch_npu-contrib/torch_npu-contrib-module-QuantConv2d.md)
-
+    
     -   [torch_npu.jit](./torch_npu-jit/torch_npu-jit.md)
         -   [torch_npu.jit接口列表](./torch_npu-jit/torch_npu-jit_list.md)
         -   [（beta）torch_npu.jit.optimize](./torch_npu-jit/（beta）torch_npu-jit-optimize.md)
-
+    
     -   [torch_npu.npu](./torch_npu-npu/torch_npu-npu-1.md)
         -   [torch_npu.npu接口列表](./torch_npu-npu/torch_npu-npu_list.md)
         -   [torch_npu.npu](./torch_npu-npu/torch_npu-npu-2.md)
@@ -261,7 +270,7 @@
             -   [torch_npu.npu.aclnn.allow_hf32](./torch_npu-npu/torch_npu-npu-aclnn-allow_hf32.md)
             -   [torch_npu.npu.set_op_timeout_ms](./torch_npu-npu/torch_npu-npu-set_op_timeout_ms.md)
             -   [torch_npu.npu.set_deterministic_level](./torch_npu-npu/torch_npu-npu-set_deterministic_level.md)
-            -   [torch_npu.npu.use_compatible_impl](./torch_npu-npu/torch_npu-npu-use_compatible_impl.md)
+        -   [torch_npu.npu.use_compatible_impl](./torch_npu-npu/torch_npu-npu-use_compatible_impl.md)
             -   [torch_npu.npu.are_compatible_impl_enabled](./torch_npu-npu/torch_npu-npu-are_compatible_impl_enabled.md)
         -   [amp](./torch_npu-npu/amp.md)
             -   [（beta）torch_npu.npu.get_amp_supported_dtype](./torch_npu-npu/（beta）torch_npu-npu-get_amp_supported_dtype.md)
@@ -269,36 +278,36 @@
             -   [（beta）torch_npu.npu.set_autocast_enabled](./torch_npu-npu/（beta）torch_npu-npu-set_autocast_enabled.md)
             -   [（beta）torch_npu.npu.get_autocast_dtype](./torch_npu-npu/（beta）torch_npu-npu-get_autocast_dtype.md)
             -   [（beta）torch_npu.npu.set_autocast_dtype](./torch_npu-npu/（beta）torch_npu-npu-set_autocast_dtype.md)
-
-        -   [Random Number Generator](./torch_npu-npu/Random-Number-Generator.md)
+    
+    -   [Random Number Generator](./torch_npu-npu/Random-Number-Generator.md)
         -   [NPU Device](./torch_npu-npu/NPU-Device.md)
         -   [Memory management](./torch_npu-npu/Memory-management.md)
-            -   [Memory management API](./torch_npu-npu/Memory-management-API.md)
+        -   [Memory management API](./torch_npu-npu/Memory-management-API.md)
             -   [torch_npu.npu.empty_virt_addr_cache](./torch_npu-npu/torch_npu-npu-empty_virt_addr_cache.md)
             -   [torch_npu.npu.NPUPluggableAllocator](./torch_npu-npu/torch-npu-npu-NPUPluggableAllocator.md)
             -   [torch_npu.npu.change_current_allocator](./torch_npu-npu/torch-npu-npu-change_current_allocator.md)
             -   [torch_npu.npu.host_empty_cache](./torch_npu-npu/torch_npu-npu-host_empty_cache.md)
-
+    
         -   [aoe](./torch_npu-npu/aoe.md)
-            -   [（beta）torch_npu.npu.set_aoe](./torch_npu-npu/（beta）torch_npu-npu-set_aoe.md)
-
-        -   [profiler](./torch_npu-npu/profiler.md)
+        -   [（beta）torch_npu.npu.set_aoe](./torch_npu-npu/（beta）torch_npu-npu-set_aoe.md)
+    
+    -   [profiler](./torch_npu-npu/profiler.md)
             -   [torch_npu.npu.mstx](./torch_npu-npu/torch_npu-npu-mstx.md)
-            -   [torch_npu.npu.mstx.mark](./torch_npu-npu/torch_npu-npu-mstx-mark.md)
+        -   [torch_npu.npu.mstx.mark](./torch_npu-npu/torch_npu-npu-mstx-mark.md)
             -   [torch_npu.npu.mstx.range_start](./torch_npu-npu/torch_npu-npu-mstx-range_start.md)
             -   [torch_npu.npu.mstx.range_end](./torch_npu-npu/torch_npu-npu-mstx-range_end.md)
             -   [torch_npu.npu.mstx.mstx_range](./torch_npu-npu/torch_npu-npu-mstx-mstx_range.md)
-
+    
         -   [torch_npu Storage](./torch_npu-npu/torch_npu-Storage.md)
-
+    
         -   [（beta）NPU Tensor](./torch_npu-npu/（beta）NPU-Tensor.md)
-
+    
     -   [torch_npu.npu.amp](./torch_npu-npu-amp/torch_npu-npu-amp.md)
     -   [torch_npu.optim](./torch_npu-optim/torch_npu-optim.md)
         -   [torch_npu.optim接口列表](./torch_npu-optim/torch_npu-optim_list.md)
         -   [torch_npu.optim.NpuFusedOptimizerBase](./torch_npu-optim/torch_npu-optim-NpuFusedOptimizerBase.md)
         -   [torch_npu.optim.NpuFusedSGD](./torch_npu-optim/torch_npu-optim-NpuFusedSGD.md)
-        -   [torch_npu.optim.NpuFusedAdadelta](./torch_npu-optim/torch_npu-optim-NpuFusedAdadelta.md)
+    -   [torch_npu.optim.NpuFusedAdadelta](./torch_npu-optim/torch_npu-optim-NpuFusedAdadelta.md)
         -   [torch_npu.optim.NpuFusedLamb](./torch_npu-optim/torch_npu-optim-NpuFusedLamb.md)
         -   [torch_npu.optim.NpuFusedAdam](./torch_npu-optim/torch_npu-optim-NpuFusedAdam.md)
         -   [torch_npu.optim.NpuFusedAdamW](./torch_npu-optim/torch_npu-optim-NpuFusedAdamW.md)
@@ -306,7 +315,7 @@
         -   [torch_npu.optim.NpuFusedBertAdam](./torch_npu-optim/torch_npu-optim-NpuFusedBertAdam.md)
         -   [torch_npu.optim.NpuFusedRMSprop](./torch_npu-optim/torch_npu-optim-NpuFusedRMSprop.md)
         -   [torch_npu.optim.NpuFusedRMSpropTF](./torch_npu-optim/torch_npu-optim-NpuFusedRMSpropTF.md)
-
+    
     -   [torch_npu.profiler](./torch_npu-profiler/torch_npu-profiler.md)
         -   [torch_npu.profiler接口列表](./torch_npu-profiler/torch_npu-profiler_list.md)
         -   [torch_npu.profiler.profile](./torch_npu-profiler/torch_npu-profiler-profile.md)
@@ -323,7 +332,7 @@
         -   [torch_npu.profiler.supported_profiler_level](./torch_npu-profiler/torch_npu-profiler-supported_profiler_level.md)
         -   [torch_npu.profiler.supported_ai_core_metrics](./torch_npu-profiler/torch_npu-profiler-supported_ai_core_metrics.md)
         -   [torch_npu.profiler.supported_export_type](./torch_npu-profiler/torch_npu-profiler-supported_export_type.md)
-        -   [torch_npu.profiler.dynamic_profile.init](./torch_npu-profiler/torch_npu-profiler-dynamic_profile-init.md)
+    -   [torch_npu.profiler.dynamic_profile.init](./torch_npu-profiler/torch_npu-profiler-dynamic_profile-init.md)
         -   [torch_npu.profiler.dynamic_profile.step](./torch_npu-profiler/torch_npu-profiler-dynamic_profile-step.md)
         -   [torch_npu.profiler.dynamic_profile.start](./torch_npu-profiler/torch_npu-profiler-dynamic_profile-start.md)
         -   [torch_npu.profiler.profiler.analyse](./torch_npu-profiler/torch_npu-profiler-profiler-analyse.md)
@@ -331,10 +340,10 @@
         -   [torch_npu.profiler.profile.disable_profiler_in_child_thread](./torch_npu-profiler/torch_npu-profiler-profile-disable_profiler_in_child_thread.md)
         -   [set_custom_trace_id_callback](./torch_npu-profiler/set_custom_trace_id_callback.md)
         -   [get_trace_id](./torch_npu-profiler/get_trace_id.md)
-
+    
     -   [torch_npu.utils](./torch_npu-utils/torch_npu-utils.md)
         -   [torch_npu.utils接口列表](./torch_npu-utils/torch_npu-utils_list.md)
-        -   [（beta）torch_npu.utils.save_async](./torch_npu-utils/（beta）torch_npu-utils-save_async.md)
+    -   [（beta）torch_npu.utils.save_async](./torch_npu-utils/（beta）torch_npu-utils-save_async.md)
         -   [（beta）torch_npu.utils.npu_combine_tensors](./torch_npu-utils/（beta）torch_npu-utils-npu_combine_tensors.md)
         -   [（beta）torch_npu.utils.get_part_combined_tensor](./torch_npu-utils/（beta）torch_npu-utils-get_part_combined_tensor.md)
         -   [（beta）torch_npu.utils.is_combined_tensor_valid](./torch_npu-utils/（beta）torch_npu-utils-is_combined_tensor_valid.md)
@@ -342,7 +351,7 @@
         -   [torch_npu.utils.set_thread_affinity](./torch_npu-utils/torch_npu-utils.set_thread_affinity.md)
         -   [torch_npu.utils.reset_thread_affinity](./torch_npu-utils/torch_npu-utils.reset_thread_affinity.md)
         -   [torch_npu.utils.get_cann_version](./torch_npu-utils/torch_npu-utils-get_cann_version.md)
-
+    
     -   [Distributed](./distributed/Distributed.md)
         -   [Distributed接口列表](./distributed/Distributed_list.md)
         -   [（beta）torch.distributed.is_hccl_available](./distributed/（beta）torch-distributed-is_hccl_available.md)

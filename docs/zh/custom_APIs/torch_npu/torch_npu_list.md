@@ -5,6 +5,7 @@
 **表1** torch_npu API
 
 <a name="table1849611717116"></a>
+
 <table><thead align="left"><tr id="row10496101716111"><th class="cellrowborder" valign="top" width="38.61%" id="mcps1.2.3.1.1"><p id="p1649713174119"><a name="p1649713174119"></a><a name="p1649713174119"></a>API名称</p>
 </th>
 <th class="cellrowborder" valign="top" width="61.39%" id="mcps1.2.3.1.2"><p id="p9497217151115"><a name="p9497217151115"></a><a name="p9497217151115"></a>说明</p>
@@ -837,5 +838,43 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_apply_rotary_pos_emb_desc"><a name="p_npu_apply_rotary_pos_emb_desc"></a><a name="p_npu_apply_rotary_pos_emb_desc"></a><span>为提升推理网络性能，将query和key两路算子融合为单路，在旋转位置编码计算中直接对结果执行原地更新。</span></p>
 </td>
 </tr>
+<tr id="row_ring_attention_update"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_ring_attention_update"><a name="p_ring_attention_update"></a><a name="p_ring_attention_update"></a><a href="torch_npu-npu_ring_attention_update.md">torch_npu.npu_ring_attention_update</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_ring_attention_update_desc"><a name="p_ring_attention_update_desc"></a><a name="p_ring_attention_update_desc"></a><span>将两次 FlashAttention 的输出按照 softmax max 和 softmax sum 进行增量更新，支持 SBH 与 TND 排布。</span></p>
+</td>
+<tr id="row_ring_attention_update"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_ring_attention_update"><a name="p_ring_attention_update"></a><a name="p_ring_attention_update"></a><a href="torch_npu-npu_add_quant_matmul_.md">torch_npu.npu_add_quant_matmul_</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_ring_attention_update_desc"><a name="p_ring_attention_update_desc"></a><a name="p_ring_attention_update_desc"></a><span>训练场景下micro-batch的梯度累计会存在大量QuantBatchMatmul操作接InplaceAdd操作，本接口将操作融合起来，以提高网络性能。</span></p>
+</td>
+</tr>
+<tr id="row_ring_attention_update"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_ring_attention_update"><a name="p_ring_attention_update"></a><a name="p_ring_attention_update"></a><a href="torch_npu-npu_dynamic_dual_level_mx_quant.md">torch_npu.npu_dynamic_dual_level_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_ring_attention_update_desc"><a name="p_ring_attention_update_desc"></a><a name="p_ring_attention_update_desc"></a><span>实现目的数据类型为FLOAT4类的MX量化。只对输入张量的尾轴量化，其他轴均按合轴处理。</span></p>
+</td>
+</tr>
+</tr>
+<tr id="row_ring_attention_update"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_ring_attention_update"><a name="p_ring_attention_update"></a><a name="p_ring_attention_update"></a><a href="torch_npu-npu_fused_causal_conv1d.md">torch_npu.npu_fused_causal_conv1d</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_ring_attention_update_desc"><a name="p_ring_attention_update_desc"></a><a name="p_ring_attention_update_desc"></a><span>对序列执行因果一维卷积。沿序列维度，使用缓存数据（长度为卷积核宽减1）对各序列头部进行padding，确保输出依赖当前及历史输入；卷积完成后，将当前序列尾部的数据（长度为卷积核宽减1）原地更新到缓存。</span></p>
+</td>
+</tr>
+<tr id="row_ring_attention_update"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_ring_attention_update"><a name="p_ring_attention_update"></a><a name="p_ring_attention_update"></a><a href="torch_npu-npu_grouped_dynamic_block_quant.md">torch_npu.npu_grouped_dynamic_block_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_ring_attention_update_desc"><a name="p_ring_attention_update_desc"></a><a name="p_ring_attention_update_desc"></a><span>根据传入的分组索引的起始值（group_list）对各个group以基本块的粒度进行量化，量化为（FP8/HiFP8），并输出量化参数scale（FP32）。</span></p></td>
+</tr>
+<tr id="row_ring_attention_update"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_ring_attention_update"><a name="p_ring_attention_update"></a><a name="p_ring_attention_update"></a><a href="torch_npu-npu_mhc_post.md">torch_npu.npu_mhc_post</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_ring_attention_update_desc"><a name="p_ring_attention_update_desc"></a><a name="p_ring_attention_update_desc"></a><span>对mHC(Manifold-Constrained Hyper-Connections)架构中第l层输出h<sub>l</sub><sup>out</sup>进行Post Mapping，对第l层的输入x<sub>l</sub>进行Res Mapping，然后对二者进行残差连接，得到第(l+1)层的输入x<sub>l+1</sub>。</span></p></td>
+</tr>
+<tr id="row_ring_attention_update"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_ring_attention_update"><a name="p_ring_attention_update"></a><a name="p_ring_attention_update"></a><a href="torch_npu-npu_mhc_sinkhorn.md">torch_npu.npu_mhc_sinkhorn</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_ring_attention_update_desc"><a name="p_ring_attention_update_desc"></a><a name="p_ring_attention_update_desc"></a><span>对mHC架构中的H′<sub>res</sub>矩阵（即网络中mHC层的输入数据）执行Sinkhorn迭代归一化变换，最终得到双随机矩阵H<sub>res</sub>，支持输出迭代过程中的中间归一化结果（norm_out）和求和结果（sum_out），用于反向梯度计算。</span></p></td>
+</tr>
+</tr>
+<tr id="row_ring_attention_update"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_ring_attention_update"><a name="p_ring_attention_update"></a><a name="p_ring_attention_update"></a><a href="torch_npu-npu_transpose_quant_batchmatmul.md">torch_npu.npu_transpose_quant_batchmatmul</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_ring_attention_update_desc"><a name="p_ring_attention_update_desc"></a><a name="p_ring_attention_update_desc"></a><span>完成张量x1与张量x2量化的矩阵乘计算。仅支持三维的Tensor传入。Tensor支持转置，转置序列根据传入的数列进行变更。perm_x1代表张量x1的转置序列，perm_x2代表张量x2的转置序列，序列值为0的是batch维度，其余两个维度做矩阵乘法。</span></p></td>
+</tr>
 </tbody>
 </table>
+
