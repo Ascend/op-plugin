@@ -136,7 +136,7 @@ class TestNPURmsNormQuant(TestCase):
         return y, rstd
 
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_rms_norm_quant_int8(self):
         x_shape = [4, 32]
         quant_shape = [32]
@@ -174,7 +174,7 @@ class TestNPURmsNormQuant(TestCase):
         self.assertTrue(self.compare(y_ref_flat, y_npu_flat, benchmark_float32))
         self.assertTrue(self.compare(rstd_ref_flat, rstd_npu_flat, benchmark_float32))
     
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_rms_norm_quant_hifloat8(self):
         x_shape = [4, 32]
         quant_shape = [32]
@@ -213,7 +213,7 @@ class TestNPURmsNormQuant(TestCase):
         self.assertTrue(self.compare(rstd_ref_flat, rstd_npu_flat, benchmark_float32))
 
 
-    @SupportedDevices(['Ascend910_95', 'Ascend950'])
+    @SupportedDevices(['Ascend950'])
     def test_npu_rms_norm_quant_float8_e5m2(self):
         x_shape = [4, 32]
         quant_shape = [32]
