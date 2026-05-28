@@ -3619,6 +3619,7 @@ official:
     dvm: all_version
 
   - func: mul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
+    sparse: [v2.1, newest]
     acl_op: all_version
     op_api: all_version
 

@@ -37,5 +37,6 @@ inline void alias_into_sparse(
 }
 
 SparseTensor& mul_out_sparse_scalar(SparseTensor& r, const SparseTensor& t, const at::Scalar& value);
+at::Tensor& mul_out_sparse(const at::Tensor& self, const at::Tensor& other, at::Tensor& out);
 
 }

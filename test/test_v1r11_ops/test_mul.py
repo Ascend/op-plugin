@@ -194,6 +194,17 @@ class TestMuls(TestCase):
             self.assertRegex(
                 str(e), "result type Float can't be cast to the desired output type Long")
 
+    def test_sparse_mul_out(self):
+        cpu_input1 = torch.tensor([[1.0, 0.0, 2.0], [0.0, 3.0, 0.0]], dtype=torch.float32)
+        cpu_input2 = torch.tensor([[4.0, 5.0, 0.0], [0.0, 6.0, 7.0]], dtype=torch.float32)
+        npu_input1 = cpu_input1.npu().to_sparse()
+        npu_input2 = cpu_input2.npu().to_sparse()
+        npu_out = torch.empty_like(npu_input1)
+
+        torch.mul(npu_input1, npu_input2, out=npu_out)
+
+        self.assertRtolEqual(torch.mul(cpu_input1, cpu_input2).numpy(), npu_out.to_dense().cpu().numpy())
+
 
 if __name__ == "__main__":
     run_tests()

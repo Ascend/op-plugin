@@ -76,6 +76,17 @@ SparseTensor& mul_out_sparse_scalar(SparseTensor& r, const SparseTensor& t, cons
     return mul_out_sparse_zerodim(r, t, at::native::wrapped_scalar_tensor(value));
 }
 
+at::Tensor& mul_out_sparse(const at::Tensor& self, const at::Tensor& other, at::Tensor& out)
+{
+    TORCH_CHECK(self.is_sparse() || other.is_sparse(), "mul: expected at least one sparse input",
+        OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(out.is_sparse(), "mul: expected 'out' to be a sparse tensor", OPS_ERROR(ErrCode::VALUE));
+
+    const auto sparse_dim = self.is_sparse() ? self.sparse_dim() : other.sparse_dim();
+    auto dense_result = at::mul(self.is_sparse() ? self.to_dense() : self, other.is_sparse() ? other.to_dense() : other);
+    return at::copy_sparse_to_sparse_(out, dense_result.to_sparse(sparse_dim));
+}
+
 }
 
 namespace at {
