@@ -1334,7 +1334,7 @@ def npu_alltoallv_quant_gmm_meta(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_scal
 def npu_all_gather_quant_mm_meta(self, x2, hcom, world_size, bias=None, x1_scale=None, x2_scale=None,
                                  quant_scale=None, block_size=0, gather_index=0, gather_output=True,
                                  comm_turn=0, group_sizes=None, amax_output=False, y_dtype=None, x1_dtype=None,
-                                 x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+                                 x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None, comm_mode=None):
     if world_size <= 0:
         raise RuntimeError("world_size must be bigger than zero")
     # out_gather_mm

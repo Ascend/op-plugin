@@ -42,7 +42,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
     const c10::optional<at::Tensor>& x2_scale, const c10::optional<at::Tensor>& quant_scale, int64_t block_size,
     int64_t gather_index, bool gather_output, int64_t comm_turn, c10::OptionalIntArrayRef group_sizes,
     bool amax_output, c10::optional<int64_t> y_dtype, c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
-    c10::optional<int64_t> x1_scale_dtype, c10::optional<int64_t> x2_scale_dtype)
+    c10::optional<int64_t> x1_scale_dtype, c10::optional<int64_t> x2_scale_dtype, c10::optional<c10::string_view> comm_mode)
 {
     TORCH_CHECK(world_size >= MIN_SUPPORT_WORLD_SIZE && world_size <= MAX_SUPPORT_WORLD_SIZE &&
                 (world_size & (world_size - 1)) == 0,
@@ -108,9 +108,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
                                       (x2_scale_dtype.has_value())
                                           ? c10_npu::GetAclDataType(x2_scale_dtype.value())
                                           : npu_preparation::convert_to_acl_data_type(x2_scale_scalar_dtype)};
-    const char* comm_mode = "ccu";
+    c10::string_view comm_mode_value = comm_mode.value_or("");
+    char *comm_mode_ptr = const_cast<char *>(comm_mode_value.data());
     EXEC_NPU_CMD(aclnnAllGatherMatmulV2, x1_wrapper, x2_wrapper, bias_value, x1_scale_wrapper, x2_scale_wrapper,
-                 quant_scale_value, block_size, hcom_value, gather_index, comm_turn, stream_mode, group_size, comm_mode,
+                 quant_scale_value, block_size, hcom_value, gather_index, comm_turn, stream_mode, group_size, comm_mode_ptr,
                  y, gather_out_wrapper, amax);
     return std::tie(y, gather_out, amax);
 }
