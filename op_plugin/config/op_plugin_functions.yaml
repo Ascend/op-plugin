@@ -5766,6 +5766,10 @@ custom:
   - func: npu_rms_norm_quant(Tensor x, Tensor gamma, Tensor beta, Tensor scale, Tensor offset, float epsilon=1e-06, *, int? dst_dtype=None) -> Tensor
     op_api: all_version
 
+  - func: npu_rms_norm_quant_v2(Tensor x, Tensor gamma, Tensor scale, *, Tensor? offset=None, Tensor? beta=None, float epsilon=1e-06, bool div_mode=True, int? dst_dtype=None) -> (Tensor, Tensor)
+    op_api: all_version
+    internal_format_opapi: all_version
+
   - func: npu_rms_norm_dynamic_mx_quant(Tensor x, Tensor gamma, *, Tensor? beta=None, float epsilon=1e-06, int scale_alg=0, str round_mode="rint", int dst_type=296) -> (Tensor, Tensor, Tensor)
     op_api: all_version
 

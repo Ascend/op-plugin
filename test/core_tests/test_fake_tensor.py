@@ -2249,6 +2249,37 @@ class TestRmsNormQuant(TestCase):
             self.assertTrue(y.dtype == torch.float8_e5m2)
 
 
+class TestRmsNormQuantV2(TestCase):
+    def test_rms_norm_quant_v2(self):
+        with FakeTensorMode():
+            x = torch.randn([2, 16], dtype=torch.float16).npu()
+            gamma = torch.randn([16, ], dtype=torch.float16).npu()
+            scale = torch.randn(1, dtype=torch.float16).npu()
+            offset = torch.randint(-10, 10, (1, ), dtype=torch.float16).npu()
+            beta = torch.randn([16, ], dtype=torch.float16).npu()
+            y, rstd = torch_npu.npu_rms_norm_quant_v2(x, gamma, scale, offset=offset, beta=beta, epsilon=1e-06, div_mode=True, dst_dtype=1)
+            self.assertTrue(y.shape == x.shape)
+            self.assertTrue(y.dtype == torch.int8)
+
+            x = torch.randn([2, 16], dtype=torch.bfloat16).npu()
+            gamma = torch.randn([16, ], dtype=torch.bfloat16).npu()
+            scale = torch.randn(1, dtype=torch.bfloat16).npu()
+            offset = torch.randint(-10, 10, (1, ), dtype=torch.bfloat16).npu()
+            beta = torch.randn([16, ], dtype=torch.bfloat16).npu()
+            y, rstd = torch_npu.npu_rms_norm_quant_v2(x, gamma, scale, offset=offset, beta=beta, epsilon=1e-06, div_mode=True, dst_dtype=1)
+            self.assertTrue(y.shape == x.shape)
+            self.assertTrue(y.dtype == torch.int8)
+
+            x = torch.randn([2, 16], dtype=torch.float16).npu()
+            gamma = torch.randn([16, ], dtype=torch.float16).npu()
+            scale = torch.randn(1, dtype=torch.float16).npu()
+            offset = torch.randint(-10, 10, (1, ), dtype=torch.float16).npu()
+            beta = torch.randn([16, ], dtype=torch.float16).npu()
+            y, rstd = torch_npu.npu_rms_norm_quant_v2(x, gamma, scale, offset=offset, beta=beta, epsilon=1e-06, div_mode=False, dst_dtype=291)
+            self.assertTrue(y.shape == x.shape)
+            self.assertTrue(y.dtype == torch.float8_e5m2)
+
+
 class TestRmsNormDynamicMxQuant(TestCase):
     def test_npu_rms_norm_dynamic_mx_quant_meta(self):
         with FakeTensorMode():

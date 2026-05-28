@@ -2757,6 +2757,31 @@ def npu_rms_norm_quant_meta(x, gamma, beta, scale, offset, epsilon=1e-06, dst_dt
         return torch.empty(output_shape, dtype=torch.int32, device=x.device)
     return torch.empty(x.size(), dtype=dst_torch_dtype, device=x.device)
 
+@impl(m, "npu_rms_norm_quant_v2")
+def npu_rms_norm_quant_v2_meta(x, gamma, scale, offset, beta, epsilon=1e-06, div_mode=True, dst_dtype=1):
+    dim_num = x.dim()
+    rstd_shape = []
+    for dim in range(x.dim() - 1):
+        rstd_shape.append(x.size(dim))
+    rstd_shape.append(1)
+    rstd = torch.empty(rstd_shape, dtype=torch.float32, device=x.device)
+    
+    dst_dtype = dst_dtype if dst_dtype is not None else 1
+    dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_dtype, torch.int8)
+    if dst_torch_dtype == torch.quint4x2:
+        dim_num = x.dim()
+        if x.size(dim_num - 1) % 8:
+            raise RuntimeError("If dtype is quint4x2, the last dim of input must be divided by 8" +
+                               ops_error(ErrCode.NOT_SUPPORT))
+        output_shape = []
+        for dim in range(dim_num - 1):
+            output_shape.append(x.size(dim))
+        output_shape.append(x.size(dim_num - 1) // 8)
+        y = torch.empty(output_shape, dtype=torch.int32, device=x.device)
+        return (y, rstd)
+    y = torch.empty(x.size(), dtype=dst_torch_dtype, device=x.device)
+    return (y, rstd)
+
 
 @impl(m, "npu_rms_norm_dynamic_mx_quant")
 def npu_rms_norm_dynamic_mx_quant_meta(x, gamma, *, beta=None, epsilon=1e-06, scale_alg=0, round_mode='rint', dst_type=296):
