@@ -13,12 +13,12 @@
 
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/RandomUtil.h"
 #include "op_plugin/AclOpsInterface.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 #include "torch_npu/csrc/core/npu/NPUGraphsUtils.h"
 
 namespace op_api {
-constexpr uint64_t EXP_INCREMENT = 4;
 
 at::Tensor& npu_sim_exponential_(at::Tensor& self, double lambd, c10::optional<at::Generator> generator)
 {
@@ -30,7 +30,8 @@ at::Tensor& npu_sim_exponential_(at::Tensor& self, double lambd, c10::optional<a
     }
 
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
-    auto pair = gen->philox_engine_inputs(EXP_INCREMENT);
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self);
+    auto pair = gen->philox_engine_inputs(counter_offset);
     int64_t seed = static_cast<int64_t>(pair.first);
     int64_t offset = static_cast<int64_t>(pair.second);
     int64_t count = self.numel();
