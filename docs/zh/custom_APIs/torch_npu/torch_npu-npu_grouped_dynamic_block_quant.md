@@ -11,7 +11,11 @@
 - API功能：根据传入的分组索引的起始值（group\_list）对各个group以基本块的粒度进行量化，量化为（FP8/HiFP8），并输出量化参数scale（FP32）。
 - 计算公式：
 
-    ![](figures/zh-cn_formulaimage_0000002546320375.png)
+$$
+input\_max=block\_reduce\_max(abs(input)) \\
+scale=min(input\_max/FP8\_MAX, 1/min\_scale) \\
+y=cast\_to\_[HiF8/FP8](input/scale)
+$$
 
 ## 函数原型
 

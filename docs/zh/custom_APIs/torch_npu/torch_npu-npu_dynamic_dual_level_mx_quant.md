@@ -12,29 +12,41 @@
 - 计算公式：
     1. 将输入张量x在尾轴上按k<sub>0</sub>= 512个数分组，一组k<sub>0</sub>个数$x_{i=1}^{k_0}$，对每个数据块进行一级动态量化，每个分组量化尺度和一级量化结果如下，最终合并输出得到量化尺度level0\_scale以及一级量化结果temp。
 
-        ![](figures/zh-cn_formulaimage_0000002547293203.png)
+    $$
+    input\_max_i = max_i(abs(x_i))
+    $$
 
-        ![](figures/zh-cn_formulaimage_0000002515693370.png)
+    $$
+    level0\_scale_i = input\_max_i / (FP4\_E2M1\_MAX)
+    $$
 
-        ![](figures/zh-cn_formulaimage_0000002547293205.png)
+    $$
+    temp_i = cast\_to\_x\_type(x_i / level0\_scale_i), \space i\space from\space 1\space to\space 512
+    $$
 
     2. 然后将temp在尾轴上按k<sub>1</sub>  =32个数分组，一组k<sub>1</sub>个数$temp_{i=1}^{k_1}$，对每个数据块进行二级动态量化，每个分组量化尺度如下，最终合并输出得到量化尺度level1\_scale。
 
-        ![](figures/zh-cn_formulaimage_0000002515693372.png)
+    $$
+    shared\_exp_i = floor(log_2(max_i(|temp_i|))) - emax
+    $$
 
-        ![](figures/zh-cn_formulaimage_0000002547293207.png)
+    $$
+    level1\_scale_i = 2^{shared\_exp_i}
+    $$
 
     3. 最后根据round\_mode进行数据类型的转换，得到每个分组量化结果$y_i$。
 
-        ![](figures/zh-cn_formulaimage_0000002515693374.png)
+    $$
+    y_i = cast\_to\_FP4\_E2M1(temp_i/level1\_scale_i, round\_mode), \space i\space from\space 1\space to\space 32
+    $$
 
-        量化后的y<sub>i</sub>按对应的x<sub>i</sub>的位置组成输出y，level0\_scale<sub>i</sub>按尾轴对应的分组组成输出level0\_scale，level1\_scale<sub>i</sub>按尾轴对应的分组组成输出level1\_scale。
+    量化后的 $y_i$ 按对应的 $x_i$ 的位置组成输出 $y$，$level0\_scale_i$ 按尾轴对应的分组组成输出 $level0\_scale$，$level1\_scale_i$ 按尾轴对应的分组组成输出 $level1\_scale$。
 
-        其中max<sub>i</sub>代表求第i个分组中的最大值，emax表示对应数据类型的最大正则数的指数位，对应关系如下：
+    其中 $max_i$ 代表求第 $i$ 个分组中的最大值，$emax$ 表示对应数据类型的最大正则数的指数位，对应关系如下：
 
-        | dst_type | emax |
-        | --- | --- |
-        | float4_e2m1fn_x2 | 2 |
+    | dst_type | emax |
+    | --- | --- |
+    | float4_e2m1fn_x2 | 2 |
 
 ## 函数原型
 
