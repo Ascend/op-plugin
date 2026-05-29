@@ -5858,18 +5858,26 @@ def npu_masked_causal_conv1d_backward_meta(grad_output, input, weight, *, mask=N
     return grad_input, grad_weight
 
 
-@impl(m, "npu_fused_causal_conv1d_functional")
-def npu_fused_causal_conv1d_functional_meta(x, weight, conv_states, *, query_start_loc=None, cache_indices=None,
-                                            initial_state_mode=None, bias=None, num_accepted_tokens=None,
-                                            activation_mode="None", pad_slot_id=-1, run_mode=0, residual_connection=0):
-    return torch.empty_like(x, dtype=x.dtype), torch.empty_like(conv_states, dtype=conv_states.dtype)
-
-
 @impl(m, "npu_fused_causal_conv1d")
 def npu_fused_causal_conv1d_meta(x, weight, conv_states, *, query_start_loc=None, cache_indices=None,
                                 initial_state_mode=None, bias=None, num_accepted_tokens=None,
-                                activation_mode="None", pad_slot_id=-1, run_mode=0, residual_connection=0):
+                                activation="None", pad_slot_id=-1, run_mode=0,
+                                residual_connection=0, max_query_len=-1,
+                                num_computed_tokens=None, block_idx_first_scheduled_token=None,
+                                block_idx_last_scheduled_token=None, initial_state_idx=None,
+                                block_size=128, conv_mode="default"):
     return torch.empty_like(x, dtype=x.dtype)
+
+
+@impl(m, "npu_fused_causal_conv1d_v2")
+def npu_fused_causal_conv1d_v2_meta(x, weight, conv_states, *, query_start_loc=None, cache_indices=None,
+                                  initial_state_mode=None, bias=None, num_accepted_tokens=None,
+                                  activation="None", pad_slot_id=-1, run_mode=0,
+                                  residual_connection=0, max_query_len=-1,
+                                  num_computed_tokens=None, block_idx_first_scheduled_token=None,
+                                  block_idx_last_scheduled_token=None, initial_state_idx=None,
+                                  block_size=128, conv_mode="default"):
+    return
 
 
 @impl(m, "npu_dequant_rope_quant_kvcache")

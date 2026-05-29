@@ -7586,13 +7586,12 @@ custom:
         dtype: grad_output
       exec: aclnnMaskedCausalConv1dBackward
 
-  - func: npu_fused_causal_conv1d_functional(Tensor x, Tensor weight, Tensor conv_states, *, Tensor? query_start_loc=None, Tensor? cache_indices=None, Tensor? initial_state_mode=None, Tensor? bias=None, Tensor? num_accepted_tokens=None, str? activation_mode="None", int? pad_slot_id=-1, int? run_mode=0, int? residual_connection=0) -> (Tensor, Tensor)
+  - func: npu_fused_causal_conv1d(Tensor x, Tensor weight, Tensor(a!) conv_states, *, Tensor? query_start_loc=None, Tensor? cache_indices=None, Tensor? initial_state_mode=None, Tensor? bias=None, Tensor? num_accepted_tokens=None, str? activation="None", int? pad_slot_id=-1, int? run_mode=0, int? residual_connection=0, int? max_query_len=-1, Tensor? num_computed_tokens=None, Tensor? block_idx_first_scheduled_token=None, Tensor? block_idx_last_scheduled_token=None, Tensor? initial_state_idx=None, int? block_size=128, str? conv_mode="default") -> Tensor
     op_api: [v2.6, newest]
     internal_format_opapi: [v2.6, newest]
 
-  - func: npu_fused_causal_conv1d(Tensor x, Tensor weight, Tensor(a!) conv_states, *, Tensor? query_start_loc=None, Tensor? cache_indices=None, Tensor? initial_state_mode=None, Tensor? bias=None, Tensor? num_accepted_tokens=None, str? activation_mode="None", int? pad_slot_id=-1, int? run_mode=0, int? residual_connection=0) -> Tensor
+  - func: npu_fused_causal_conv1d_v2(Tensor(a!) x, Tensor weight, Tensor(b!) conv_states, *, Tensor? query_start_loc=None, Tensor? cache_indices=None, Tensor? initial_state_mode=None, Tensor? bias=None, Tensor? num_accepted_tokens=None, str? activation="None", int? pad_slot_id=-1, int? run_mode=0, int? residual_connection=0, int? max_query_len=-1, Tensor? num_computed_tokens=None, Tensor? block_idx_first_scheduled_token=None, Tensor? block_idx_last_scheduled_token=None, Tensor? initial_state_idx=None, int? block_size=128, str? conv_mode="default") -> ()
     op_api: [v2.6, newest]
-    exposed: [v2.6, newest]
     internal_format_opapi: [v2.6, newest]
 
   - func: npu_dynamic_block_mx_quant(Tensor input, *, str round_mode="rint", int dst_type=296, int scale_alg=0, float dst_type_max=0.0) -> (Tensor, Tensor, Tensor)
