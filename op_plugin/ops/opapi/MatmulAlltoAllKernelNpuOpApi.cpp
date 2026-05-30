@@ -12,6 +12,7 @@
 // limitations under the License.
 
 #include <set>
+#include <cstring>
 #include <op_plugin/OpApiInterface.h>
 #include <torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h>
 #include "op_plugin/utils/op_api_common.h"
@@ -28,7 +29,8 @@ static const int TWO_DIMS = 2;
 const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16};
 
 at::Tensor npu_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x2, c10::string_view hcom, int64_t world_size,
-                                 const c10::optional<at::Tensor>& bias, c10::OptionalIntArrayRef all2all_axes)
+    const c10::optional<at::Tensor> &bias, c10::OptionalIntArrayRef all2all_axes,
+    c10::optional<c10::string_view> comm_mode)
 {
     // 校验x的shape, 2维(m, k) or (k, n)
     TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of mm is required to be 2D, but the actual x1 input is ", x1.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
@@ -56,7 +58,16 @@ at::Tensor npu_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x2, c10
     bool transpose_x2 = false;
 
     // 调用aclnn接口
-    EXEC_NPU_CMD(aclnnMatmulAlltoAll, x1, x2, bias, all2all_axes, group_ptr, transpose_x1, transpose_x2, output_tensor);
+    if (comm_mode.has_value()) {
+        TORCH_CHECK(check_aclnn_kernel_available("aclnnMatmulAlltoAllV2"),
+                    "Too old ops-transformer package, please update. Or use comm_mode = None." + OPS_ERROR(ErrCode::PARAM));
+        char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
+        EXEC_NPU_CMD(aclnnMatmulAlltoAllV2, x1, x2, bias, all2all_axes, group_ptr, comm_mode_ptr, transpose_x1,
+            transpose_x2, output_tensor);
+    } else {
+        EXEC_NPU_CMD(
+            aclnnMatmulAlltoAll, x1, x2, bias, all2all_axes, group_ptr, transpose_x1, transpose_x2, output_tensor);
+    }
     return output_tensor;
 }
 } // namespace op_api

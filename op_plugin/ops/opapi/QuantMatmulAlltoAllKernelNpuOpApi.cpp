@@ -12,6 +12,7 @@
 // limitations under the License.
 
 #include <set>
+#include <cstring>
 #include <op_plugin/OpApiInterface.h>
 #include <torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h>
 #include "op_plugin/utils/op_api_common.h"
@@ -40,7 +41,8 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
     c10::OptionalIntArrayRef group_sizes, c10::OptionalIntArrayRef all2all_axes,
     c10::optional<int64_t> comm_quant_dtype, c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
     c10::optional<int64_t> x1_scale_dtype, c10::optional<int64_t> x2_scale_dtype,
-    c10::optional<int64_t> output_scale_dtype, c10::optional<int64_t> comm_scale_dtype, c10::optional<int64_t> y_dtype
+    c10::optional<int64_t> output_scale_dtype, c10::optional<int64_t> comm_scale_dtype, c10::optional<int64_t> y_dtype,
+    c10::optional<c10::string_view> comm_mode
 )
 {
     // 校验x的shape, 2维(m, k) or (k, n)
@@ -89,9 +91,18 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
     TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
 
     // 前面的wrapper打包传进去之后，这里直接调用aclnn接口
-    EXEC_NPU_CMD(aclnnQuantMatmulAlltoAll, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset,
-        all2all_axes, group_ptr, x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, group_size,
-        transpose_x1, transpose_x2, output_tensor);
+    if (comm_mode.has_value()) {
+        TORCH_CHECK(check_aclnn_kernel_available("aclnnQuantMatmulAlltoAllV2"),
+                    "Too old ops-transformer package, please update. Or use comm_mode = None." + OPS_ERROR(ErrCode::PARAM));
+        char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
+        EXEC_NPU_CMD(aclnnQuantMatmulAlltoAllV2, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper,
+            common_scale, x1_offset, x2_offset, all2all_axes, group_ptr, comm_mode_ptr, x1QuantMode, x2QuantMode,
+            commonQuantMode, commQuantDtype, group_size, transpose_x1, transpose_x2, output_tensor);
+    } else {
+        EXEC_NPU_CMD(aclnnQuantMatmulAlltoAll, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper,
+            common_scale, x1_offset, x2_offset, all2all_axes, group_ptr, x1QuantMode, x2QuantMode, commonQuantMode,
+            commQuantDtype, group_size, transpose_x1, transpose_x2, output_tensor);
+    }
     return output_tensor;
 }
 } // namespace op_api
