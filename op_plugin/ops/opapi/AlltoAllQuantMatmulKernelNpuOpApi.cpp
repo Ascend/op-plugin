@@ -12,6 +12,7 @@
 // limitations under the License.
 
 #include <set>
+#include <cstring>
 #include <op_plugin/OpApiInterface.h>
 #include <torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h>
 #include "op_plugin/utils/op_api_common.h"
@@ -43,7 +44,8 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     c10::optional<int64_t> comm_quant_dtype, c10::optional<int64_t> x1_quant_dtype,
     c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
     c10::optional<int64_t> x1_scale_dtype, c10::optional<int64_t> x2_scale_dtype,
-    c10::optional<int64_t> output_scale_dtype, c10::optional<int64_t> comm_scale_dtype, c10::optional<int64_t> y_dtype)
+    c10::optional<int64_t> output_scale_dtype, c10::optional<int64_t> comm_scale_dtype, c10::optional<int64_t> y_dtype,
+    c10::optional<c10::string_view> comm_mode)
 {
     // 校验x1x2的shape, 2维(m, k) or (k, n)
     TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of alltoallquantmatmul is required to be 2D, but the actual x1 input is ", x1.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
@@ -106,16 +108,30 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
         at::Tensor alltoall_out_tensor = npu_preparation::apply_tensor_without_format(alltoall_out_size, c10::dtype(alltoall_out_scalar_type));
         TensorWrapper alltoall_out_wrapper = make_wrapper(alltoall_out_tensor, x1_dtype);
         // 调用aclnn接口
-        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
+        if (comm_mode.has_value()) {
+            char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
+            EXEC_NPU_CMD(aclnnAlltoAllQuantMatmulV2, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, comm_mode_ptr,
+            all2all_axes, x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
+            output_tensor, alltoall_out_wrapper);
+        } else {
+            EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
             x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
             output_tensor, alltoall_out_wrapper);
+        }
         return std::tuple<at::Tensor, at::Tensor>(output_tensor, alltoall_out_tensor);
     } else {
         const std::nullptr_t& alltoalloutNullptr = nullptr;
         // 调用aclnn接口
-        EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
+        if (comm_mode.has_value()) {
+            char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
+            EXEC_NPU_CMD(aclnnAlltoAllQuantMatmulV2, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, comm_mode_ptr,
+            all2all_axes, x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
+            output_tensor, alltoalloutNullptr);
+        } else {
+            EXEC_NPU_CMD(aclnnAlltoAllQuantMatmul, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, all2all_axes,
             x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
             output_tensor, alltoalloutNullptr);
+        }
         return std::tuple<at::Tensor, at::Tensor>(output_tensor, alltoalloutNullptr);
     }
 }

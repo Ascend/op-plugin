@@ -28,7 +28,8 @@ static const int TWO_DIMS = 2;
 const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16};
 
 std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(const at::Tensor &x1, const at::Tensor &x2, c10::string_view hcom, int64_t world_size,
-                                                         const c10::optional<at::Tensor>& bias, c10::OptionalIntArrayRef all2all_axes, bool all2all_out_flag)
+                                                         const c10::optional<at::Tensor>& bias, c10::OptionalIntArrayRef all2all_axes, bool all2all_out_flag,
+                                                         c10::optional<c10::string_view> comm_mode)
 {
     // 校验x的shape, 2维(m, k) or (k, n)
     TORCH_CHECK(x1.dim() == TWO_DIMS, "The x1 input of alltoallmatmul is required to be 2D, but the actual x1 input is ", x1.dim(), "D." + OPS_ERROR(ErrCode::PARAM));
@@ -63,12 +64,22 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(const at::Tensor &x1, c
         auto alltoall_out_size = {out_m, x1.size(1) * world_size};
         at::Tensor alltoall_out_tensor = npu_preparation::apply_tensor_without_format(alltoall_out_size, c10::dtype(alltoall_out_scalar_type));
         // 调用aclnn接口
-        EXEC_NPU_CMD(aclnnAlltoAllMatmul, x1, x2, bias, all2all_axes, group_ptr, transpose_x1, transpose_x2, output_tensor, alltoall_out_tensor);
+        if (comm_mode.has_value()) {
+            char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
+            EXEC_NPU_CMD(aclnnAlltoAllMatmulV2, x1, x2, bias, all2all_axes, group_ptr, comm_mode_ptr, transpose_x1, transpose_x2, output_tensor, alltoall_out_tensor);
+        } else {
+            EXEC_NPU_CMD(aclnnAlltoAllMatmul, x1, x2, bias, all2all_axes, group_ptr, transpose_x1, transpose_x2, output_tensor, alltoall_out_tensor);
+        }
         return std::tuple<at::Tensor, at::Tensor>(output_tensor, alltoall_out_tensor);
     } else {
         const std::nullptr_t& alltoalloutNullptr = nullptr;
         // 调用aclnn接口
-        EXEC_NPU_CMD(aclnnAlltoAllMatmul, x1, x2, bias, all2all_axes, group_ptr, transpose_x1, transpose_x2, output_tensor, alltoalloutNullptr);
+        if (comm_mode.has_value()) {
+            char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
+            EXEC_NPU_CMD(aclnnAlltoAllMatmulV2, x1, x2, bias, all2all_axes, group_ptr, comm_mode_ptr, transpose_x1, transpose_x2, output_tensor, alltoalloutNullptr);
+        } else {
+            EXEC_NPU_CMD(aclnnAlltoAllMatmul, x1, x2, bias, all2all_axes, group_ptr, transpose_x1, transpose_x2, output_tensor, alltoalloutNullptr);
+        }
         return std::tuple<at::Tensor, at::Tensor>(output_tensor, alltoalloutNullptr);
     }
 }
