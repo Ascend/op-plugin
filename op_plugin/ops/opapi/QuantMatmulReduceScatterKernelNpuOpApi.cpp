@@ -28,7 +28,7 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     const c10::optional<at::Tensor>& x2_scale, const c10::optional<at::Tensor>& quant_scale, int64_t block_size,
     int64_t comm_turn, c10::OptionalIntArrayRef group_sizes, bool amax_output, c10::optional<int64_t> y_dtype,
     c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype, c10::optional<int64_t> x1_scale_dtype,
-    c10::optional<int64_t> x2_scale_dtype)
+    c10::optional<int64_t> x2_scale_dtype, c10::optional<c10::string_view> comm_mode)
 {
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
                 "world_size should be in [2, 4, 8, 16, 32, 64], but the actual value is ", world_size,
@@ -42,6 +42,7 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     TORCH_CHECK(world_size != 0, "world_size cannot be zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.size(0) % world_size == 0, "The M-axis in input of Matmul should be be divisible by world_size",
                 OPS_ERROR(ErrCode::PARAM));
+    c10::string_view comm_mode_value = comm_mode.value_or("");
     at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
     int64_t group_size = op_plugin::utils::check_and_get_group_size(group_size_list);
     TORCH_CHECK(group_size != -1, "Invalid group_sizes.", OPS_ERROR(ErrCode::PARAM));
@@ -68,6 +69,7 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     auto result = npu_preparation::apply_tensor_without_format(output_size, options);
     char* reduce_op_ptr = const_cast<char*>(reduce_op.data());
     char* hcom_ptr = const_cast<char*>(hcom.data());
+    char *comm_mode_ptr = const_cast<char *>(comm_mode_value.data());
     const at::Tensor& bias_real = bias.value_or(at::Tensor());
     const at::Tensor& quant_scale_real = quant_scale.value_or(at::Tensor());
     int64_t stream_mode = ACL_STOP_ON_FAILURE;
@@ -91,9 +93,8 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
                                       (x2_scale_dtype.has_value())
                                           ? c10_npu::GetAclDataType(x2_scale_dtype.value())
                                           : npu_preparation::convert_to_acl_data_type(x2_scale_scalar_dtype)};
-    const char* comm_mode = "ccu";
     EXEC_NPU_CMD(aclnnMatmulReduceScatterV2, x1_wrapper, x2_wrapper, bias_real, x1_scale_wrapper, x2_scale_wrapper,
-                 quant_scale_real, block_size, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, group_size, comm_mode,
+                 quant_scale_real, block_size, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, group_size, comm_mode_ptr,
                  result, amax_output_result);
 
     FLOP_COUNT(FlopCounter::mm_flop, self, x2);
