@@ -7,6 +7,7 @@
 | <term>Atlas 350 加速卡</term>                             |    √    |
 | <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |    √    |
 | <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> |    √    |
+| <term>Atlas 推理系列产品</term>                        |    √    |
 
 ## 功能说明
 
@@ -20,23 +21,23 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
 
 ## 参数说明
 
-- **query**（`Tensor`）：必选参数，待执行旋转位置编码的第一个张量。要求为连续的Tensor，数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持空Tensor，shape最后一维（D）必须等于128或者64。
+- **query**（`Tensor`）：必选参数，待执行旋转位置编码的第一个张量。数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
+  - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持空Tensor，shape最后一维（D）必须等于128或者64。
   - Atlas 350 加速卡：支持空Tensor，shape最后一维（D）小于等于1024。
-- **key**（`Tensor`）：必选参数，待执行旋转位置编码的第二个张量。要求为连续的Tensor，数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持空Tensor，shape最后一维（D）必须等于128或者64。
+- **key**（`Tensor`）：必选参数，待执行旋转位置编码的第二个张量。数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
+  - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持空Tensor，shape最后一维（D）必须等于128或者64。
   - Atlas 350 加速卡：支持空Tensor,shape最后一维（D）小于等于1024。
-- **cos**（`Tensor`）：必选参数，旋转位置编码余弦值张量。要求为连续的Tensor，数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持空Tensor,shape中B维度与`query`、`key`的B维度一致，shape第3维（N）必须等于1，shape最后一维（D）必须等于128或者64。
+- **cos**（`Tensor`）：必选参数，旋转位置编码余弦值张量。数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
+  - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持空Tensor,shape中B维度与`query`、`key`的B维度一致，shape第3维（N）必须等于1，shape最后一维（D）必须等于128或者64。
   - Atlas 350 加速卡：支持空Tensor，shape中B维度与`query`、`key`的B维度一致，或者等于1，shape中N维度必须等于1，shape最后一维（D）小于等于1024。
-- **sin**（`Tensor`）：必选参数，旋转位置编码正弦值张量。要求为连续的Tensor，数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持空Tensor，shape中B维度与`query`、`key`的B维度一致，shape第3维（N）必须等于1，shape最后一维（D）必须等于128或者64。
+- **sin**（`Tensor`）：必选参数，旋转位置编码正弦值张量。数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
+  - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持空Tensor，shape中B维度与`query`、`key`的B维度一致，shape第3维（N）必须等于1，shape最后一维（D）必须等于128或者64。
   - Atlas 350 加速卡：支持空Tensor，shape中B维度与`query`、`key`的B维度一致，或者等于1，shape最后一维（D）小于等于1024。
 - **layout**（`str`）：可选参数，张量布局格式，支持"BSND"、"SBND"、"BNSD"、"TND"。默认值为"BSND"。
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持BSND的4维Tensor、TND的3维Tensor。
+  - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持BSND的4维Tensor、TND的3维Tensor。
   - Atlas 350 加速卡：支持BSND、SBND、BNSD的4维Tensor, TND的3维Tensor。
 - **rotary_mode**（`str`）：可选参数，旋转编码模式，支持"half"、"quarter"、"interleave"，默认值为"half"。
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持"half"模式。
+  - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持"half"模式。
   - Atlas 350 加速卡：支持"half"、"interleave"、"quarter"模式。
 
 ## 返回值说明
@@ -56,6 +57,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - 对于任意`layout`，`query`与`key`除N维度外其他维度必须相同；`query`、`key`输入shape的最后一维（D）必须相等，`cos`、`sin`输入shape的最后一维（D）必须相等，且小于等于`query`、`key`输入shape的最后一维（D）。
   - 输入张量`query`、`key`、`cos`、`sin`的数据类型必须相同。
   - `rotary_mode`为"half"和"interleave"时，输入shape最后一维必须被2整除；`rotary_mode`为"quarter"时，输入shape最后一维必须被4整除。
+- Atlas 推理系列产品不支持`bfloat16`。
 
 ## 调用示例
 
