@@ -65,6 +65,8 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(const at::Tensor &x1, c
         at::Tensor alltoall_out_tensor = npu_preparation::apply_tensor_without_format(alltoall_out_size, c10::dtype(alltoall_out_scalar_type));
         // 调用aclnn接口
         if (comm_mode.has_value()) {
+            TORCH_CHECK(check_aclnn_kernel_available("aclnnAlltoAllMatmulV2"),
+                        "Current CANN version do not support this api. Please try to update the version of CANN." + OPS_ERROR(ErrCode::PARAM));
             char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
             EXEC_NPU_CMD(aclnnAlltoAllMatmulV2, x1, x2, bias, all2all_axes, group_ptr, comm_mode_ptr, transpose_x1, transpose_x2, output_tensor, alltoall_out_tensor);
         } else {
@@ -75,6 +77,8 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(const at::Tensor &x1, c
         const std::nullptr_t& alltoalloutNullptr = nullptr;
         // 调用aclnn接口
         if (comm_mode.has_value()) {
+            TORCH_CHECK(check_aclnn_kernel_available("aclnnAlltoAllMatmulV2"),
+                        "Current CANN version do not support this api. Please try to update the version of CANN." + OPS_ERROR(ErrCode::PARAM));
             char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
             EXEC_NPU_CMD(aclnnAlltoAllMatmulV2, x1, x2, bias, all2all_axes, group_ptr, comm_mode_ptr, transpose_x1, transpose_x2, output_tensor, alltoalloutNullptr);
         } else {

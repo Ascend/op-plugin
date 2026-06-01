@@ -992,7 +992,7 @@ def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                         recv_counts, *, send_counts_tensor=None,
                         recv_counts_tensor=None, mm_x=None,
                         mm_weight=None, trans_gmm_weight=False,
-                        trans_mm_weight=False):
+                        trans_mm_weight=False, comm_mode=None):
     if ep_world_size <= 0:
         ep_world_size = 1
     out_x = sum(recv_counts)
@@ -1173,7 +1173,7 @@ def npu_alltoallv_gmm_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                         recv_counts, *, send_counts_tensor=None,
                         recv_counts_tensor=None, mm_x=None,
                         mm_weight=None, trans_gmm_weight=False,
-                        trans_mm_weight=False, permute_out_flag=False):
+                        trans_mm_weight=False, permute_out_flag=False, comm_mode=None):
     if ep_world_size <= 0:
         ep_world_size = 1
     out_x = sum(recv_counts)

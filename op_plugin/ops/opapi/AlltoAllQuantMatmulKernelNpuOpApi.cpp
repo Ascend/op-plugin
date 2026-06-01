@@ -109,6 +109,8 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
         TensorWrapper alltoall_out_wrapper = make_wrapper(alltoall_out_tensor, x1_dtype);
         // 调用aclnn接口
         if (comm_mode.has_value()) {
+            TORCH_CHECK(check_aclnn_kernel_available("aclnnAlltoAllQuantMatmulV2"),
+                        "Current CANN version do not support this api. Please try to update the version of CANN." + OPS_ERROR(ErrCode::PARAM));
             char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
             EXEC_NPU_CMD(aclnnAlltoAllQuantMatmulV2, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, comm_mode_ptr,
             all2all_axes, x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
@@ -123,6 +125,8 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
         const std::nullptr_t& alltoalloutNullptr = nullptr;
         // 调用aclnn接口
         if (comm_mode.has_value()) {
+            TORCH_CHECK(check_aclnn_kernel_available("aclnnAlltoAllQuantMatmulV2"),
+                        "Current CANN version do not support this api. Please try to update the version of CANN." + OPS_ERROR(ErrCode::PARAM));
             char *comm_mode_ptr = const_cast<char *>(comm_mode.value().data());
             EXEC_NPU_CMD(aclnnAlltoAllQuantMatmulV2, x1_wrapper, x2_wrapper, bias, x1_scale_wrapper, x2_scale_wrapper, common_scale, x1_offset, x2_offset, group_ptr, comm_mode_ptr,
             all2all_axes, x1QuantMode, x2QuantMode, commonQuantMode, commQuantDtype, x1QuantDtype, group_size, transpose_x1, transpose_x2,
