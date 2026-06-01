@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstring>
 #include <set>
 #include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
@@ -75,7 +76,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_alltoallv_quant_gmm(const at:
     c10::optional<int64_t> gmm_x_dtype, c10::optional<int64_t> gmm_weight_dtype,
     c10::optional<int64_t> gmm_x_scale_dtype, c10::optional<int64_t> gmm_weight_scale_dtype,
     c10::optional<int64_t> mm_x_dtype, c10::optional<int64_t> mm_weight_dtype, c10::optional<int64_t> mm_x_scale_dtype,
-    c10::optional<int64_t> mm_weight_scale_dtype, c10::optional<int64_t> mm_y_dtype)
+    c10::optional<int64_t> mm_weight_scale_dtype, c10::optional<int64_t> mm_y_dtype,
+    c10::optional<c10::string_view> comm_mode)
 {
     // gmm_x_quant_mode
     TORCH_CHECK(gmm_x_quant_mode.has_value(), "The input gmm_x_quant_mode must be provided, but got None.",
@@ -449,13 +451,23 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_alltoallv_quant_gmm(const at:
         at_npu::native::OpPreparation::convert_to_acl_data_type(gmm_x.scalar_type()) };
     bool transposeGmmWeight = false;
     bool transposeMmWeight = false;
-
-    EXEC_NPU_CMD(aclnnAlltoAllvQuantGroupedMatMul, gmm_x_wrapper, gmm_weight_wrapper, gmm_x_scale_wrapper,
-        gmm_weight_scale_wrapper, send_count_tensor_real, recv_count_tensor_real, mm_x_wrapper, mm_weight_wrapper,
-        mm_x_scale_wrapper, mm_weight_scale_wrapper, gmm_x_quant_mode_value, gmm_weight_quant_mode_value,
-        mm_x_quant_mode_value, mm_weight_quant_mode_value, hcom_ptr, ep_world_size, send_counts, recv_counts,
-        transposeGmmWeight, transposeMmWeight, group_sizes, permute_out_flag, gmm_y, mm_y, permute_out_wrapper);
-
+    if (comm_mode.has_value()) {
+        TORCH_CHECK(check_aclnn_kernel_available("aclnnAlltoAllvQuantGroupedMatMulV2"),
+                    "Current CANN version do not support this api. Please try to update the version of CANN." + OPS_ERROR(ErrCode::PARAM));
+        const char* comm_mode_real = const_cast<char *>(comm_mode.value().data());
+        EXEC_NPU_CMD(aclnnAlltoAllvQuantGroupedMatMulV2, gmm_x_wrapper, gmm_weight_wrapper, gmm_x_scale_wrapper,
+            gmm_weight_scale_wrapper, send_count_tensor_real, recv_count_tensor_real, mm_x_wrapper, mm_weight_wrapper,
+            mm_x_scale_wrapper, mm_weight_scale_wrapper, gmm_x_quant_mode_value, gmm_weight_quant_mode_value,
+            mm_x_quant_mode_value, mm_weight_quant_mode_value, hcom_ptr, comm_mode_real, ep_world_size, send_counts, recv_counts,
+            transposeGmmWeight, transposeMmWeight, group_sizes, permute_out_flag,
+            gmm_y, mm_y, permute_out_wrapper);
+    } else {
+        EXEC_NPU_CMD(aclnnAlltoAllvQuantGroupedMatMul, gmm_x_wrapper, gmm_weight_wrapper, gmm_x_scale_wrapper,
+            gmm_weight_scale_wrapper, send_count_tensor_real, recv_count_tensor_real, mm_x_wrapper, mm_weight_wrapper,
+            mm_x_scale_wrapper, mm_weight_scale_wrapper, gmm_x_quant_mode_value, gmm_weight_quant_mode_value,
+            mm_x_quant_mode_value, mm_weight_quant_mode_value, hcom_ptr, ep_world_size, send_counts, recv_counts,
+            transposeGmmWeight, transposeMmWeight, group_sizes, permute_out_flag, gmm_y, mm_y, permute_out_wrapper);
+    }
     return std::tie(gmm_y, mm_y, permute_out);
 }
 } // namespace op_api

@@ -1022,7 +1022,7 @@ def npu_quant_gmm_alltoallv_meta(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_scal
                         comm_quant_mode=None, group_size=None, gmm_x_dtype=None, gmm_weight_dtype=None,
                         gmm_x_scale_dtype=None, gmm_weight_scale_dtype=None, mm_x_dtype=None,
                         mm_weight_dtype=None, mm_x_scale_dtype=None, mm_weight_scale_dtype=None,
-                        comm_quant_dtype=None, mm_y_dtype=None):
+                        comm_quant_dtype=None, mm_y_dtype=None, comm_mode=None):
     if ep_world_size <= 0:
         ep_world_size = 1
     if gmm_x is not None:
@@ -1244,7 +1244,7 @@ def npu_alltoallv_quant_gmm_meta(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_scal
                         mm_x_quant_mode=None, mm_weight_quant_mode=None, permute_out_flag=False,
                         group_size=None, gmm_x_dtype=None, gmm_weight_dtype=None, gmm_x_scale_dtype=None,
                         gmm_weight_scale_dtype=None, mm_x_dtype=None, mm_weight_dtype=None,
-                        mm_x_scale_dtype=None, mm_weight_scale_dtype=None, mm_y_dtype=None):
+                        mm_x_scale_dtype=None, mm_weight_scale_dtype=None, mm_y_dtype=None, comm_mode=None):
     if ep_world_size <= 0:
         ep_world_size = 1
     if gmm_x is not None:

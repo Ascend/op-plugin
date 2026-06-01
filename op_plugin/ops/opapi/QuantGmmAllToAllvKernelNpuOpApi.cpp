@@ -89,7 +89,8 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
                                                            c10::optional<int64_t> mm_x_scale_dtype,
                                                            c10::optional<int64_t> mm_weight_scale_dtype,
                                                            c10::optional<int64_t> comm_quant_dtype,
-                                                           c10::optional<int64_t> mm_y_dtype
+                                                           c10::optional<int64_t> mm_y_dtype,
+                                                           c10::optional<c10::string_view> comm_mode
                                                            )
     {
         // gmm_x_quant_mode
@@ -560,34 +561,67 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(const at::Tensor &gmm
 
         bool trans_gmm_weight = false;
         bool trans_mm_weight = false;
-
-        EXEC_NPU_CMD(aclnnQuantGroupedMatMulAlltoAllv,
-                     gmm_x_wrapper,
-                     gmm_weight_wrapper,
-                     gmm_x_scale_wrapper,
-                     gmm_weight_scale_wrapper,
-                     send_count_tensor_real,
-                     recv_count_tensor_real,
-                     mm_x_wrapper,
-                     mm_weight_wrapper,
-                     mm_x_scale_wrapper,
-                     mm_weight_scale_wrapper,
-                     comm_quant_scale,
-                     gmm_x_quant_mode_real,
-                     gmm_weight_quant_mode_real,
-                     mm_x_quant_mode_real,
-                     mm_weight_quant_mode_real,
-                     comm_quant_mode_real,
-                     comm_quant_dtype_real,
-                     group_sizes,
-                     hcom_ptr,
-                     ep_world_size,
-                     send_counts,
-                     recv_counts,
-                     trans_gmm_weight,
-                     trans_mm_weight,
-                     gmm_y,
-                     mm_y);
+        if (comm_mode.has_value()) {
+            TORCH_CHECK(check_aclnn_kernel_available("aclnnQuantGroupedMatMulAlltoAllvV2"),
+                        "Current CANN version do not support this api. Please try to update the version of CANN." + OPS_ERROR(ErrCode::PARAM));
+            const char* comm_mode_real = const_cast<char *>(comm_mode.value().data());
+            EXEC_NPU_CMD(aclnnQuantGroupedMatMulAlltoAllvV2,
+                         gmm_x_wrapper,
+                         gmm_weight_wrapper,
+                         gmm_x_scale_wrapper,
+                         gmm_weight_scale_wrapper,
+                         send_count_tensor_real,
+                         recv_count_tensor_real,
+                         mm_x_wrapper,
+                         mm_weight_wrapper,
+                         mm_x_scale_wrapper,
+                         mm_weight_scale_wrapper,
+                         comm_quant_scale,
+                         gmm_x_quant_mode_real,
+                         gmm_weight_quant_mode_real,
+                         mm_x_quant_mode_real,
+                         mm_weight_quant_mode_real,
+                         comm_quant_mode_real,
+                         comm_quant_dtype_real,
+                         group_sizes,
+                         hcom_ptr,
+                         comm_mode_real,
+                         ep_world_size,
+                         send_counts,
+                         recv_counts,
+                         trans_gmm_weight,
+                         trans_mm_weight,
+                         gmm_y,
+                         mm_y);
+        } else {
+            EXEC_NPU_CMD(aclnnQuantGroupedMatMulAlltoAllv,
+                         gmm_x_wrapper,
+                         gmm_weight_wrapper,
+                         gmm_x_scale_wrapper,
+                         gmm_weight_scale_wrapper,
+                         send_count_tensor_real,
+                         recv_count_tensor_real,
+                         mm_x_wrapper,
+                         mm_weight_wrapper,
+                         mm_x_scale_wrapper,
+                         mm_weight_scale_wrapper,
+                         comm_quant_scale,
+                         gmm_x_quant_mode_real,
+                         gmm_weight_quant_mode_real,
+                         mm_x_quant_mode_real,
+                         mm_weight_quant_mode_real,
+                         comm_quant_mode_real,
+                         comm_quant_dtype_real,
+                         group_sizes,
+                         hcom_ptr,
+                         ep_world_size,
+                         send_counts,
+                         recv_counts,
+                         trans_gmm_weight,
+                         trans_mm_weight,
+                         gmm_y,
+                         mm_y);
+        }
         return std::tie(gmm_y, mm_y);
     }
 } // namespace op_api
