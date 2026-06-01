@@ -7,7 +7,7 @@ from torch_npu.testing.testcase import TestCase, run_tests
 
 
 class TestBucketize(TestCase):
-    
+
     def test_bucketize_aclnn_search(self):
         v = torch.tensor([[3, 6, 9], [3, 6, 9]], dtype=torch.float64)
         boundaries = torch.tensor([1, 3, 5, 7, 9], dtype=torch.float64)
@@ -16,7 +16,7 @@ class TestBucketize(TestCase):
         npu_output = torch.bucketize(v.npu(), boundaries.npu())
 
         self.assertRtolEqual(cpu_output, npu_output)
-    
+
     def test_bucketize_aclnn_bucketize(self):
         v = torch.tensor([[3, 6, 9], [3, 6, 9]], dtype=torch.int32)
         boundaries = torch.tensor([1, 3, 5, 7, 9], dtype=torch.int32)

@@ -198,7 +198,7 @@ def _mx_quantize_to_element_format(fp_array: np.ndarray, share_exp: np.ndarray,
         mantissa_bits = int(match.group(2))
     else:
         raise ValueError(f'mx element dtype [{mx_ele_dtype}] is not recognized.')
-    
+
     ret = fp_array / (2 ** (share_exp - 127))
     private_exp = np.floor(np.log2(np.abs(ret.astype(np.float32)) + (ret == 0))).astype(fp_array.dtype, copy=False)
     # The minimum representable exponent
@@ -219,13 +219,13 @@ def pad_to_even(tensor: np.ndarray, axis: int) ->np.ndarray:
         raise ValueError("Input must be a numpy ndarray.")
     if axis < 0 or axis >= tensor.ndim:
         raise ValueError(f"Axis {axis} is out of bounds for tensor with {tensor.ndim} dimensions.")
-    
+
     shape = tensor.shape
     length = shape[axis]
 
     if length % 2 == 0:
         return tensor
-    
+
     pad_width = [(0, 0)] * tensor.ndim
     pad_width[axis] = (0, 1)
 
@@ -250,10 +250,10 @@ def interleave(tensor:np.ndarray, axis: int, n_group: int = 2)-> np.ndarray:
     reshaped = tensor.reshape(new_shape)
 
     transpose_order = (
-        list(range(0, axis + 1)) + 
-        list(range(axis + 2, len(new_shape))) + 
+        list(range(0, axis + 1)) +
+        list(range(axis + 2, len(new_shape))) +
         [axis + 1,])
-    
+
     transposed = reshaped.transpose(transpose_order)
 
     return transposed
@@ -276,7 +276,7 @@ def numpy_float8_e4m3fn():
         raise RuntimeError("ml_dtypes is needed to support float8_e4m3fn dtype!!! "
                         "Please install with pip3 install ml-dtypes")
 
-def dynamic_mx_quant_cq(fp_array: np.ndarray, mx_ele_dtype: str = "float4_e2m1", 
+def dynamic_mx_quant_cq(fp_array: np.ndarray, mx_ele_dtype: str = "float4_e2m1",
                         axis: int = -1, block_size: int = 32, round_mode: str = "rint") -> tuple:
     if not isinstance(fp_array, np.ndarray):
         raise RuntimeError(f"Input tensor to be quantized should be numpy array. But got {type(fp_array)}")
@@ -311,7 +311,7 @@ def dynamic_mx_quant_cq(fp_array: np.ndarray, mx_ele_dtype: str = "float4_e2m1",
     # When axis is -1, do not need interleave
     if axis != (len(fp_array.shape) - 1):
         scale_array_pad = interleave(scale_array_pad, axis=axis)
-    
+
     scale_array_pad = scale_array_pad.reshape(result_shape)
     scale_array = scale_array_pad.astype("uint8", copy=False)
     return scale_array, ele_array
@@ -484,7 +484,7 @@ class TestPromptFlashAttetion(TestCase):
         kr_cache_out_mla = kr_cache.reshape(kr_cache_out_mla_shape)
 
         return query_mla, query_rope_mla, kv_cache_out_mla, kr_cache_out_mla, dequant_scale_q_nope
-    
+
     def baseline_mxfp8(self, token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq,
             rmsnorm_gamma_ckv, rope_sin, rope_cos, kv_cache, kr_cache, cache_index, rmsnorm_epsilon_cq, rmsnorm_epsilon_ckv,
             cache_mode, dequant_scale_x, dequant_scale_w_dq, dequant_scale_w_uqqr, dequant_scale_w_dkvkr, quant_scale_ckv,
@@ -624,7 +624,7 @@ class TestPromptFlashAttetion(TestCase):
         query_mla = torch.tensor(out_np.astype(np.float32)).to(torch.float8_e4m3fn)
         dequant_scale_q_nope = torch.from_numpy(deq_scale_q_nope_np)
         query_mla = query_mla if mla_param["t_flag"] else query_mla.reshape(B, S1, N1, Hckv)
-        
+
         # rotary1 : -> splitd1_res2(B*S1,N,Dr) * cos(B*S1,Dr) * sin(B*S1,Dr) -> query_rope_mla(B,S1,N,Dr)
         expanded_cos = cos.unsqueeze(1).repeat(1, N1, 1)
         expanded_sin = sin.unsqueeze(1).repeat(1, N1, 1)
@@ -933,7 +933,7 @@ class TestPromptFlashAttetion(TestCase):
         self.assertRtolEqual(kv_cache_mla.to(torch.float32), kv_cache_out.to(torch.float32), prec=0.005, prec16=0.005)
         self.assertRtolEqual(kr_cache_mla.to(torch.float32), kr_cache_out.to(torch.float32), prec=0.005, prec16=0.005)
         self.assertRtolEqual(dequant_scale_q_nope_mla.to(torch.float32), dequant_scale_q_nope.to(torch.float32), prec=0.005, prec16=0.005)
-    
+
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend950'])
     def test_op_exec_mla_prolog_npu_v3_mxfp8(self):

@@ -41,7 +41,7 @@ class TestQuantMatmulGelu(TestCase):
             # A8W8 case: int8
             x1_int32 = x1.to(torch.int32)
             x2_int32 = x2.to(torch.int32)
-        
+
         # Compute quantized matmul: x1 @ x2 * x1_scale * x2_scale
         result = torch.matmul(x1_int32, x2_int32).float()
         result = result * x1_scale.view(-1, 1) * x2_scale.view(1, -1)
@@ -293,7 +293,7 @@ class TestQuantMatmulGelu(TestCase):
         # Shape for int32: (m, k//8) and (k, n//8)
         k_packed = k // 8
         n_packed = n // 8
-        
+
         x1 = torch.randint(-8, 8, (m, k_packed), dtype=torch.int32)
         x2 = torch.randint(-8, 8, (k, n_packed), dtype=torch.int32)
 
@@ -319,7 +319,7 @@ class TestQuantMatmulGelu(TestCase):
         # Generate INT4 data packed in INT32 format
         k_packed = k // 8
         n_packed = n // 8
-        
+
         x1 = torch.randint(-8, 8, (m, k_packed), dtype=torch.int32)
         x2 = torch.randint(-8, 8, (k, n_packed), dtype=torch.int32)
 
@@ -344,7 +344,7 @@ class TestQuantMatmulGelu(TestCase):
         # Generate INT4 data packed in INT32 format
         k_packed = k // 8
         n_packed = n // 8
-        
+
         x1 = torch.randint(-8, 8, (m, k_packed), dtype=torch.int32)
         x2 = torch.randint(-8, 8, (k, n_packed), dtype=torch.int32)
 

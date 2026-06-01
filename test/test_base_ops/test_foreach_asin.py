@@ -64,7 +64,7 @@ class TestForeachAsin(TestCase):
             torch._foreach_asin_(npu_tensors)
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
-    
+
     def test_foreach_asin_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :

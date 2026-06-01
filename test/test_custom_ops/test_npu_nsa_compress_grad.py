@@ -21,7 +21,7 @@ from torch_npu.testing.common_utils import create_common_tensor, SupportedDevice
 
 
 class TestNpuCompressGrad(TestCase):
-    
+
     # pylint:disable = huawei-too-many-arguments
     def cpu_op_exec(self, grad, input_cpu, weight, compress_block_size, compress_stride, actual_seq_len):
         def compress_sample_bwd(outputGrad, input_cpu, weight, block_size, compressBlockStride):

@@ -9,7 +9,7 @@ from torch_npu.testing.common_utils import SupportedDevices, SkipIfNotGteCANNVer
 class TestThnnFusedLstmCell(TestCase):
     def thnn_fused_lstm_cell_reference(self, input_gates, hidden_gates, c, input_bias=None, hidden_bias=None):
         """Reference implementation of _thnn_fused_lstm_cell for CPU comparison.
-        
+
         LSTM cell equations:
         i = sigmoid(W_ii * x + b_ii + W_hi * h + b_hi)
         f = sigmoid(W_if * x + b_if + W_hf * h + b_hf)
@@ -17,14 +17,14 @@ class TestThnnFusedLstmCell(TestCase):
         o = sigmoid(W_io * x + b_io + W_ho * h + b_ho)
         c' = f * c + i * g
         h' = o * tanh(c')
-        
+
         Args:
             input_gates: Tensor of shape (batch_size, 4*hidden_size) containing input gates
             hidden_gates: Tensor of shape (batch_size, 4*hidden_size) containing hidden gates
             c: Tensor of shape (batch_size, hidden_size) - cell state
             input_bias: Optional bias for input gates, shape (4*hidden_size,)
             hidden_bias: Optional bias for hidden gates, shape (4*hidden_size,)
-        
+
         Returns:
             hy: Tensor of shape (batch_size, hidden_size) - new hidden state
             cy: Tensor of shape (batch_size, hidden_size) - new cell state
@@ -123,22 +123,22 @@ class TestThnnFusedLstmCell(TestCase):
         """Test _thnn_fused_lstm_cell without bias."""
         batch_size = 16
         hidden_size = 8
-        
+
         # Create input tensors on NPU (no bias)
         input_gates = torch.randn(batch_size, 4 * hidden_size, dtype=torch.float32, device="npu")
         hidden_gates = torch.randn(batch_size, 4 * hidden_size, dtype=torch.float32, device="npu")
         c = torch.randn(batch_size, hidden_size, dtype=torch.float32, device="npu")
-        
+
         # NPU forward
         npu_hy, npu_cy, npu_workspace = torch.ops.aten._thnn_fused_lstm_cell(
             input_gates, hidden_gates, c, None, None
         )
-        
+
         # CPU reference
         cpu_hy, cpu_cy, cpu_workspace = self.thnn_fused_lstm_cell_reference(
             input_gates.cpu(), hidden_gates.cpu(), c.cpu(), None, None
         )
-        
+
         # Compare results
         self.assertRtolEqual(npu_hy.cpu().numpy(), cpu_hy.numpy(), prec=1.e-3)
         self.assertRtolEqual(npu_cy.cpu().numpy(), cpu_cy.numpy(), prec=1.e-3)
@@ -157,7 +157,7 @@ class TestThnnFusedLstmCell(TestCase):
         c = torch.randn(batch_size, hidden_size, dtype=torch.float32, device="npu")
         input_bias = torch.randn(4 * hidden_size, dtype=torch.float32, device="npu")
         hidden_bias = torch.randn(4 * hidden_size, dtype=torch.float32, device="npu")
-        
+
         # NPU forward
         npu_hy, npu_cy, npu_workspace = torch.ops.aten._thnn_fused_lstm_cell(
             input_gates, hidden_gates, c, input_bias, hidden_bias

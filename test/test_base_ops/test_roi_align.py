@@ -19,7 +19,7 @@ class TestRoiAlign(TestCase):
                                      [28.5000, 30.5000, 32.5000]]]], dtype=torch.float32)
         out = torch_npu.npu_roi_align(_input, rois, 0.25, 3, 3, 2, 0)
         self.assertRtolEqual(expect_out, out.cpu())
-    
+
     @skipIfUnsupportMultiNPU(2)
     def test_roi_align_device_check(self):
         _input = torch.FloatTensor([[[[1, 2, 3, 4, 5, 6],

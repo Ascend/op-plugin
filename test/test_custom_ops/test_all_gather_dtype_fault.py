@@ -50,7 +50,7 @@ class TestAllGatherQuantMm(TestCase):
                                                                 ydtype = ydtype)
 
             c2p.put((rank, out.cpu(), gather_out.cpu()))
-        
+
         except RuntimeError as e:
             expected_error_keywords = [
                 "When input is",
@@ -93,7 +93,7 @@ class TestAllGatherQuantMm(TestCase):
                 result.append(data)
             except queue.Empty:
                 raise RuntimeError(f"Timeout waiting for rank resaults (world_size={world_size})")
-            
+
         for p in ps:
             p.join()
 

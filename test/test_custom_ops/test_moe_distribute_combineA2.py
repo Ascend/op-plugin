@@ -14,7 +14,7 @@ from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 # ------------------------ 环境配置部分 --------------------------
 # 1. 基础环境准备
-#    1.1 加载CANN环境：source {CANN安装路径}/set_env.sh  
+#    1.1 加载CANN环境：source {CANN安装路径}/set_env.sh
 #
 #    1.2 conda环境：conda环境安装torch，torch_npu及相关依赖numpy等
 #
@@ -37,12 +37,12 @@ from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 #
 # ------------------------ 数据准备部分 --------------------------
 # 3. 数据同步方案
-#    3.1 生成并保存数据：在主机ip_a中将gen_combine_input函数输出的数据都用torch.save()保存      
+#    3.1 生成并保存数据：在主机ip_a中将gen_combine_input函数输出的数据都用torch.save()保存
 #           例如：torch.save(x_world, "x_world.pt")
 #
 #    3.2 两机数据同步：在ip_b机器执行 scp user@ip_a:/target/file/path/*.pt /current/script/path
 #
-#    3.3 双机加载数据：双机注释掉相关生成数据部分代码，并用torch.load()函数加载pt文件            
+#    3.3 双机加载数据：双机注释掉相关生成数据部分代码，并用torch.load()函数加载pt文件
 #           例如：x_world = torch.load("x_world.pt")
 #
 # ------------------------ 执行验证部分 --------------------------
@@ -86,7 +86,7 @@ class TestMoeDistributeCombine(TestCase):
                         moe_expert_num=moe_expert_num,
                         global_bs=global_bs,
                         comm_alg=comm_alg,
-                        performance_info=performance_info[rank_id])  
+                        performance_info=performance_info[rank_id])
         else:
             x = torch_npu.npu_moe_distribute_combine(
                         expand_x=expand_x,
@@ -136,7 +136,7 @@ class TestMoeDistributeCombine(TestCase):
             return
         if performance_info.all(performance_info == 0):
             raise ValueError("The performance_info Tensor is all zeros, at least one non-zero value is required!")
-        
+
     def gen_combine_input(self, bs: int, k: int, h: int, world_size: int, moe_expert_num: int, dtype=torch.float16):
         # 计算dispatch结果作为combine输入
         local_moe_expert_num = moe_expert_num // world_size
@@ -176,7 +176,7 @@ class TestMoeDistributeCombine(TestCase):
     def _test_multiprocess(self, f, init_pg, input_list, use_comm_alg=False):
         golden_out_tensors, expandx, expert_ids, expand_idx, \
             ep_send_counts_world, tp_send_counts_world, expert_scales, ep_world_size, moe_expert_num, bs, global_bs = input_list[:11]
-        
+
         comm_alg = input_list[11] if use_comm_alg and len(input_list) >= 12 else None
         performance_info = input_list[12] if len(input_list) >= 13 else [None]*ep_world_size
 
@@ -186,7 +186,7 @@ class TestMoeDistributeCombine(TestCase):
         p_list = []
         rank_list = list(np.arange(0, ep_world_size))
         for rank_id in rank_list:
-            args = (c2p, p2c, expandx[rank_id], expert_ids[rank_id], expand_idx[rank_id], ep_send_counts_world[rank_id], 
+            args = (c2p, p2c, expandx[rank_id], expert_ids[rank_id], expand_idx[rank_id], ep_send_counts_world[rank_id],
                 tp_send_counts_world[rank_id], expert_scales[rank_id], rank_id, ep_world_size, moe_expert_num, bs, global_bs, init_pg, use_comm_alg, comm_alg, performance_info[rank_id])
             p = ctx.Process(target=f, args=args)
             p.start()
@@ -218,7 +218,7 @@ class TestMoeDistributeCombine(TestCase):
         global_bs = bs * ep_world_size
 
         x_world, expandx_world, expert_ids_world, expand_idx_world, ep_send_counts_world, tp_send_counts_world, expert_scales_world = self.gen_combine_input(bs, k, h, ep_world_size, moe_expert_num)
-        
+
         expandx = self.chunk_tensor(expandx_world, ep_world_size)
         expert_ids = self.chunk_tensor(expert_ids_world, ep_world_size)
         expand_idx = self.chunk_tensor(expand_idx_world, ep_world_size)
@@ -230,7 +230,7 @@ class TestMoeDistributeCombine(TestCase):
         golden_out_tensors = (x_world * expert_scales_world).sum(dim=-2)
 
         self._test_multiprocess(TestMoeDistributeCombine._test_npu_moe_distribute_combine,
-                TestMoeDistributeCombine.init_hccl_comm, [golden_out_tensors, expandx, expert_ids, expand_idx, 
+                TestMoeDistributeCombine.init_hccl_comm, [golden_out_tensors, expandx, expert_ids, expand_idx,
                         ep_send_counts_world, tp_send_counts_world, expert_scales, ep_world_size, moe_expert_num, bs, global_bs])
 
     @skipIfUnsupportMultiNPU(16)
@@ -248,7 +248,7 @@ class TestMoeDistributeCombine(TestCase):
         comm_alg = "fullmesh"
 
         x_world, expandx_world, expert_ids_world, expand_idx_world, ep_send_counts_world, tp_send_counts_world, expert_scales_world = self.gen_combine_input(bs, k, h, ep_world_size, moe_expert_num)
-        
+
         expandx = self.chunk_tensor(expandx_world, ep_world_size)
         expert_ids = self.chunk_tensor(expert_ids_world, ep_world_size)
         expand_idx = self.chunk_tensor(expand_idx_world, ep_world_size)
@@ -261,12 +261,12 @@ class TestMoeDistributeCombine(TestCase):
         performance_info = [torch.zeros(ep_world_size, dtype=torch.int64) for rank_id in range(ep_world_size)]
 
         self._test_multiprocess(TestMoeDistributeCombine._test_npu_moe_distribute_combine,
-                TestMoeDistributeCombine.init_hccl_comm, [golden_out_tensors, expandx, expert_ids, expand_idx, 
+                TestMoeDistributeCombine.init_hccl_comm, [golden_out_tensors, expandx, expert_ids, expand_idx,
                         ep_send_counts_world, tp_send_counts_world, expert_scales, ep_world_size, moe_expert_num, bs, global_bs, comm_alg], use_comm_alg=True)
         # test performance_info
         self._test_multiprocess(TestMoeDistributeCombine._test_npu_moe_distribute_combine,
-                TestMoeDistributeCombine.init_hccl_comm, [golden_out_tensors, expandx, expert_ids, expand_idx, 
+                TestMoeDistributeCombine.init_hccl_comm, [golden_out_tensors, expandx, expert_ids, expand_idx,
                         ep_send_counts_world, tp_send_counts_world, expert_scales, ep_world_size, moe_expert_num, bs, global_bs, comm_alg, performance_info], use_comm_alg=True)
-        
+
 if __name__ == '__main__':
     run_tests()

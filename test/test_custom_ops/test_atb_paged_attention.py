@@ -18,7 +18,7 @@ kv_heads = 16
 head_size = 288
 num_heads = 32
 dtype = np.float16
-head_size_v = 96  
+head_size_v = 96
 
 
 class TestPagedAttention(TestCase):
@@ -41,16 +41,16 @@ class TestPagedAttention(TestCase):
         query = query * scale
         query = query.transpose(1, 0, 2)
         key = key.transpose(1, 2, 0)
-        
+
         # QK^T计算
         sim = self.group_matmul(query.shape[0], key.shape[0], query, key)
-        
+
         # Softmax归一化
         sim = sim - np.max(sim, axis=-1, keepdims=True)
         exp_sim = np.exp(sim.astype(np.float32))
         p = exp_sim / np.sum(exp_sim, axis=-1, keepdims=True)
         p = p.astype(dtype)
-        
+
         # Value加权
         value = value.transpose(1, 0, 2)
         out = self.group_matmul(p.shape[0], key.shape[0], p, value)
@@ -60,12 +60,12 @@ class TestPagedAttention(TestCase):
         """参考实现入口"""
         scale = 1.0 / np.sqrt(head_size)
         output = np.zeros((num_tokens, num_heads, head_size_v), dtype=dtype)
-        
+
         for i in range(num_tokens):
             # 从缓存中收集当前序列的KV
             seq_blocks = block_tables[i]
             context_len = context_lens[i]
-            
+
             keys = []
             values = []
             for pos in range(context_len):
@@ -73,11 +73,11 @@ class TestPagedAttention(TestCase):
                 offset = pos % block_size
                 keys.append(key_cache[block_id, offset].reshape(kv_heads, -1))
                 values.append(value_cache[block_id, offset].reshape(kv_heads, -1))
-            
+
             # 执行注意力计算
             out = self.ref_masked_attention(
-                query[i:i + 1], 
-                np.stack(keys), 
+                query[i:i + 1],
+                np.stack(keys),
                 np.stack(values),
                 scale
             )
@@ -88,11 +88,11 @@ class TestPagedAttention(TestCase):
         """生成测试输入数据"""
         # Query输入
         query = np.random.uniform(-1, 1, (num_tokens, num_heads, head_size)).astype(dtype)
-        
+
         # KV缓存初始化
         key_cache = np.random.uniform(-1, 1, (num_blocks, block_size, kv_heads, head_size)).astype(dtype)
         value_cache = np.random.uniform(-1, 1, (num_blocks, block_size, kv_heads, head_size_v)).astype(dtype)
-        
+
         # 序列信息
         context_lens = np.full(num_tokens, MAX_SEQ_LEN, dtype=np.int32)
         max_blocks_per_seq = (MAX_SEQ_LEN + block_size - 1) // block_size
@@ -100,7 +100,7 @@ class TestPagedAttention(TestCase):
             [random.randint(0, num_blocks - 1) for _ in range(max_blocks_per_seq)]
             for _ in range(num_tokens)
         ], dtype=np.int32)
-        
+
         return query, key_cache, value_cache, block_tables, context_lens
 
     @SupportedDevices(["Ascend910B"])
@@ -108,20 +108,20 @@ class TestPagedAttention(TestCase):
 
         query_np, key_cache_np, value_cache_np, block_tables_np, context_lens_np = self.prepare_inputs()
         ref_output = self.ref_attention_impl(query_np, key_cache_np, value_cache_np, block_tables_np, context_lens_np)
-        
+
         query_t = torch.from_numpy(query_np).npu()
         key_cache_t = torch.from_numpy(key_cache_np).npu()
         value_cache_t = torch.from_numpy(value_cache_np).npu()
         block_tables_t = torch.from_numpy(block_tables_np).npu()
         context_lens_t = torch.from_numpy(context_lens_np)
         output_t = torch.zeros_like(query_t[:, :, :head_size_v]).npu()
-        
+
         torch_npu._npu_paged_attention(
             query_t, key_cache_t, value_cache_t,
             kv_heads, num_heads, 1.0 / np.sqrt(head_size),
             block_tables_t, context_lens_t, output_t
         )
-        
+
         ref_output = torch.from_numpy(ref_output)
         self.assertRtolEqual(output_t, ref_output)
 
@@ -130,20 +130,20 @@ class TestPagedAttention(TestCase):
 
         query_np, key_cache_np, value_cache_np, block_tables_np, context_lens_np = self.prepare_inputs()
         ref_output = self.ref_attention_impl(query_np, key_cache_np, value_cache_np, block_tables_np, context_lens_np)
-        
+
         query_t = torch.from_numpy(query_np).npu()
         key_cache_t = torch.from_numpy(key_cache_np).npu()
         value_cache_t = torch.from_numpy(value_cache_np).npu()
         block_tables_t = torch.from_numpy(block_tables_np).npu()
         context_lens_t = torch.from_numpy(context_lens_np).npu()
         output_t = torch.zeros_like(query_t[:, :, :head_size_v]).npu()
-        
+
         torch_npu._npu_paged_attention(
             query_t, key_cache_t, value_cache_t,
             kv_heads, num_heads, 1.0 / np.sqrt(head_size),
             block_tables_t, context_lens_t.cpu(), output_t
         )
-        
+
         ref_output = torch.from_numpy(ref_output)
         self.assertRtolEqual(output_t, ref_output)
 
@@ -182,7 +182,7 @@ class TestPagedAttention(TestCase):
                             kv_heads, num_heads, 1.0 / np.sqrt(head_size),
                             block_tables_t, context_lens_np, output_graph, workspace=workspace)
             handle = torch.npu.graph_task_group_end(stream)
-        
+
         with torch.npu.stream(update_stream):
             torch.npu.graph_task_update_begin(update_stream, handle)
             torch_npu._npu_paged_attention(

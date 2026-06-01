@@ -36,7 +36,7 @@ class TestNPUSwigluQuantV2(TestCase):
                 begin_index = end_index
         else:
             y = y * smooth_scales + (offsets if quant_mode == 0 else 0)
-        
+
         scale = None
         if quant_mode == 1:
             scale = dst_type_scale / torch.max(torch.abs(y), dim=1)[0]

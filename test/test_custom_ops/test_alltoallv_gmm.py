@@ -19,7 +19,7 @@ class TestAlltoAllvGmm(TestCase):
         torch_npu.npu.set_device(rank)
         dist.init_process_group(backend='hccl', world_size=world_size, rank=rank)
         return dist
-    
+
     @classmethod
     def _test_npu_alltoallv_gmm(cls, rank, dtype, c2p, init_pg, input_list1, input_list2, expertTokenNum):
         gmmX, gmmWeight, mmX, mmWeight, is_trans_gmm_weight, is_trans_mm_weight = input_list1
@@ -127,7 +127,7 @@ class TestAlltoAllvGmm(TestCase):
             combined = torch.tensor(exp_token)
             out.append(tokens.npu().index_select(0, combined.npu()))
         return torch.cat(out, dim=0).npu()
-    
+
     def _test_multiprocess(self, f, init_pg, input_list1, input_list2, dtype, expertTokenNum):
         ctx = mp.get_context("spawn")
         gmmX, gmmWeight, mmX, mmWeight, is_trans_gmm_weight, is_trans_mm_weight = input_list1
@@ -145,7 +145,7 @@ class TestAlltoAllvGmm(TestCase):
             c2p.get()
         for p in ps:
             p.join()
-    
+
     def generate_matrix(self, e, ep_world_size, bsk, balance=True, name="alltoallv_gmm", max_iter=10000):
         if name is not None:
             import hashlib
@@ -163,7 +163,7 @@ class TestAlltoAllvGmm(TestCase):
         else:
             matrix = np.random.multinomial(bsk - col_size, [1 / col_size] * col_size, size=row_size) + 1
         return matrix
-    
+
     @skipIfUnsupportMultiNPU(8)
     @SupportedDevices(['Ascend910_93', 'Ascend950'])
     def test_npu_alltoallv_gmm(self):

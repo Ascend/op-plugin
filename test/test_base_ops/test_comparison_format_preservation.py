@@ -52,23 +52,23 @@ class TestComparisonFormatPreservation(TestCase):
                 # 创建两个输入张量
                 tensor1 = self.create_test_tensor(shape, dtype, input_format)
                 tensor2 = self.create_test_tensor(shape, dtype, input_format)
-                
+
                 # 保存原始格式
                 original_format1 = torch_npu.get_npu_format(tensor1)
                 original_format2 = torch_npu.get_npu_format(tensor2)
-                                
+
                 for op_func, op_name in comparison_ops:
                     with self.subTest(op_name=op_name):
                         # 测试 tensor-tensor 比较
                         result = op_func(tensor1, tensor2)
-                        
+
                         # 验证输入张量格式未改变
                         current_format1 = torch_npu.get_npu_format(tensor1)
                         current_format2 = torch_npu.get_npu_format(tensor2)
-                        
-                        self.assertEqual(current_format1, original_format1, 
+
+                        self.assertEqual(current_format1, original_format1,
                                         f"{op_name}: Tensor1 format changed from {original_format1} to {current_format1}")
-                        self.assertEqual(current_format2, original_format2, 
+                        self.assertEqual(current_format2, original_format2,
                                         f"{op_name}: Tensor2 format changed from {original_format2} to {current_format2}")
 
 if __name__ == "__main__":

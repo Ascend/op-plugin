@@ -37,7 +37,7 @@ class TestUpsampleNearestExact1d(TestCase):
     def npu_op_exec(self, inputs, shapes):
         output = interpolate(inputs, size=shapes, mode="nearest-exact")
         return output
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_UpsampleNearestExact1d_common_shape_format(self):
         shape_format = [

@@ -25,7 +25,7 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                         output_mode,
                         input_dtype):
         # generate inputs
-        kv = torch.randn(batch_size, 1, seq_len, 576, dtype=input_dtype) if method_mode == 0 else torch.randn(batch_size, 1, seq_len, 192, dtype=input_dtype) 
+        kv = torch.randn(batch_size, 1, seq_len, 576, dtype=input_dtype) if method_mode == 0 else torch.randn(batch_size, 1, seq_len, 192, dtype=input_dtype)
         gamma = torch.randn(dim_kv[method_mode], dtype=input_dtype)
         cos = torch.randn(batch_size, 1, seq_len, 64, dtype=input_dtype)
         sin = torch.randn(batch_size, 1, seq_len, 64, dtype=input_dtype)
@@ -143,7 +143,7 @@ class TestNPUKvRmsNormRopeCache(TestCase):
             v_in = v.to(torch.float32)
             y = rms_in / torch.sqrt(torch.mean(rms_in ** 2,
                                     dim=-1, keepdim=True) + epsilon)
-            y = y * gamma.to(torch.float32) 
+            y = y * gamma.to(torch.float32)
             k = y[..., :64].view(batch_size, 1, seq_len, 32, 2).transpose(
                 4, 3).reshape(batch_size, 1, seq_len, 64)
             k_embed = (k * cos.to(torch.float32)) + \
@@ -593,7 +593,7 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                 max_diff = torch.max(torch.abs(c_kv_npu.cpu() - c_kv_cpu))
                 self.assertLessEqual(
                     max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
-    
+
     @unittest.skip("skip test_kv_rms_norm_rope_cache_v2 now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_kv_rmsnorm_rope_cache_PA_BLK_BNSD(self, device="npu"):
@@ -646,7 +646,7 @@ class TestNPUKvRmsNormRopeCache(TestCase):
                 max_diff = torch.max(torch.abs(c_kv_npu.cpu() - c_kv_cpu))
                 self.assertLessEqual(
                     max_diff, 1, f"Output mismatch. Max diff: {max_diff}")
-        
+
     @unittest.skip("skip test_kv_rms_norm_rope_cache_v2 now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_kv_rmsnorm_rope_cache_PA_NZ(self, device="npu"):

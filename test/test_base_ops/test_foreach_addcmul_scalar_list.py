@@ -36,7 +36,7 @@ class TestForeachAddcmulScalarList(TestCase):
             cpu_tensors.append(t)
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 3
         cpu_inputs = []
@@ -51,7 +51,7 @@ class TestForeachAddcmulScalarList(TestCase):
             cpu_inputs.append(cpu_tensors)
             npu_inputs.append(npu_tensors)
         return cpu_inputs, npu_inputs
-    
+
     def create_input_scalars(self, tensor_nums, dtype):
         sacalars = []
         for i in range(tensor_nums):
@@ -61,7 +61,7 @@ class TestForeachAddcmulScalarList(TestCase):
             sacalars.append(m)
         return tuple(sacalars)
 
-    
+
     def test_foreach_addcmul_scalar_list_out_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -69,7 +69,7 @@ class TestForeachAddcmulScalarList(TestCase):
             scalars = self.create_input_scalars(tensor_num, "float32")
             cpu_output = torch._foreach_addcmul(cpu_tensors[0], cpu_tensors[1], cpu_tensors[2], scalars)
             npu_output = torch._foreach_addcmul(npu_tensors[0], npu_tensors[1], npu_tensors[2], scalars)
-            
+
             self.assertRtolEqual(cpu_output, npu_output)
 
     @unittest.skip("Temporarily skipping")
@@ -122,7 +122,7 @@ class TestForeachAddcmulScalarList(TestCase):
             torch._foreach_addcmul_(npu_tensors[0], npu_tensors[1], npu_tensors[2], scalars)
 
             self.assertRtolEqual(cpu_output, npu_tensors[0])
-            
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_addcmul_scalar_list_inplace_bfloat16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]

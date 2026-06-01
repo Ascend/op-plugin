@@ -45,7 +45,7 @@ class TestDenseLightningIndexerGradKLLoss(TestCase):
         p_reduce *= (1 / q_head_num)
 
         return p_reduce, softmax_max_res, softmax_sum_res
-    
+
     def _process_sy(self, input_query_index, input_key_index, input_weight, input_softmax_max_index, input_softmax_sum_index):
         _, _, N1, D = input_query_index.shape
         _, _, N2, _ = input_key_index.shape
@@ -74,7 +74,7 @@ class TestDenseLightningIndexerGradKLLoss(TestCase):
         s_div = s_exp.div(softmax_sum_index_res.unsqueeze(-1))
 
         return s_div, s_relu, softmax_max_index_res, softmax_sum_index_res
-    
+
     def _process_kl_loss(self, p_result, sy_result):
         # clip
         min_value = torch.tensor([1e-8])
@@ -94,7 +94,7 @@ class TestDenseLightningIndexerGradKLLoss(TestCase):
 
 
     def _process_dwqk(self, p_result, sy_result, relu_res, input_query_index, input_key_index, input_weight, q_dtype):
-        
+
         _, _, N1, D = input_query_index.shape
         _, _, N2, _ = input_key_index.shape
         group_size = N1 // N2
@@ -140,7 +140,7 @@ class TestDenseLightningIndexerGradKLLoss(TestCase):
 
 
     def _dense_lightning_indexer_grad_kl_loss(self, query, key, query_index, key_index, weights, softmax_max, softmax_sum, softmax_max_index, softmax_sum_index, scale, query_rope, key_rope):
-        
+
         query = torch.cat((query, query_rope), dim=-1)
         key = torch.cat((key, key_rope), dim=-1)
         # process P
@@ -155,7 +155,7 @@ class TestDenseLightningIndexerGradKLLoss(TestCase):
         d_weight, d_query_index, d_key_index = self._process_dwqk(p_result, sy_result, relu_res, query_index, key_index, weights, q_dtype)
 
         return d_query_index, d_key_index, d_weight, loss
-    
+
     def _get_input(self, layout="BSND"):
         torch.manual_seed(0)
         np.random.seed(0)
@@ -171,7 +171,7 @@ class TestDenseLightningIndexerGradKLLoss(TestCase):
         weights = torch.randn(B, S1, N1_index, dtype=q_dtype)
         softmax_max = (torch.randn(B, N2, S1, 1, dtype=torch.float32).abs() + 0.4) * D  # N1=N2
         softmax_sum = torch.ones(B, N2, S1, 1, dtype=torch.float32)
-        softmax_max_index = (torch.randn(B, 1, S1, dtype=torch.float32).abs() + 0.4) * D * N1_index  
+        softmax_max_index = (torch.randn(B, 1, S1, dtype=torch.float32).abs() + 0.4) * D * N1_index
         softmax_sum_index = torch.ones(B, 1, S1, dtype=torch.float32)
         actual_seq_qlen = [S1]
         actual_seq_klen = [S2]
@@ -187,7 +187,7 @@ class TestDenseLightningIndexerGradKLLoss(TestCase):
         layout = 'BSND'
         input_list = self._get_input(layout)
         query, key, query_index, key_index, weights, softmax_max, softmax_sum, softmax_max_index, softmax_sum_index, query_rope, key_rope, actual_seq_qlen, actual_seq_klen = input_list
-        cpu_out = self._dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, softmax_max, softmax_sum, softmax_max_index, 
+        cpu_out = self._dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, softmax_max, softmax_sum, softmax_max_index,
                                                             softmax_sum_index, scale, query_rope, key_rope)
 
         for i in range(len(input_list)):

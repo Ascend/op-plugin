@@ -316,7 +316,7 @@ def stage1_chunk(
     C = query.shape[0]
 
     # bf16 @ bf16 -> bf16
-    kkt = (key @ key.transpose(-1, -2)) 
+    kkt = (key @ key.transpose(-1, -2))
     kkt = kkt.float()  # (C, C)
     kkt = kkt * beta.float().unsqueeze(-1)    # (C, Dk)
     # kkt = k_beta @ key.transpose(-1, -2)  # (C, C)

@@ -260,7 +260,7 @@ def create_random_c_array(array_length, min_val, max_val, c_type=ctypes.c_int32,
 
 
 def generate_token_data_element(_):
-    """生成单个TokenData结构体元素（支持float16）""" 
+    """生成单个TokenData结构体元素（支持float16）"""
     if tokenDtype == 2:
         token = TokenDataQuant()
         # 1. 生成随机 int8 数据
@@ -443,7 +443,7 @@ def generate_input_func():
             else:
                 np_array = np.frombuffer(data_bytes, dtype=np.float16).copy()
                 tensor = torch.from_numpy(np_array).to(torch.float16)
-        
+
         tensor = tensor.npu()
         tensor_buffers[name] = tensor
 
@@ -492,7 +492,7 @@ def calc_expect_func():
         token_data = torch.from_numpy(float16_data_writable)  # 不再警告
         # 验证类型
         token_data = token_data.view(A, M, BS, K_plus_1, H)
-    
+
     if need_schedule == 0:
         # 转换专家ID（直接转PyTorch）
         expert_ids = convert_ctypes_to_torch(
@@ -619,7 +619,7 @@ class TestFfnWorkerBatching(TestCase):
             elif name == "expert_ids":
                 ctx.ffn.expert_ids_buf = tensor_buffers[name].data_ptr()
                 ctx.ffn.expert_ids_buf_size = len(data_bytes)
-        
+
         ctx_bytes = bytes(ctx)
         ctx_numpy = np.frombuffer(ctx_bytes, dtype=np.int8).copy()
         ctx_tensor = torch.from_numpy(ctx_numpy).to(torch.int8)

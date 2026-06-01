@@ -12,7 +12,7 @@ class TestRFFT(TestCase):
 
     def custom_op_exec(self, x, length, dim, norm):
         return torch.fft.rfft(input=x.npu(), n=length, dim=dim, norm=norm)
-        
+
     def test_npu_rfft_meta(self):
         shape = [64, 64, 1024]
         length = shape[-1]
@@ -24,6 +24,6 @@ class TestRFFT(TestCase):
         custom_output = self.custom_op_exec(x, length, dim, norm)
         self.assertRtolEqual(supported_output.real, custom_output.real)
         self.assertRtolEqual(supported_output.imag, custom_output.imag)
-            
+
 if __name__ == "__main__":
     run_tests()

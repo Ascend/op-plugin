@@ -45,12 +45,12 @@ class TestQuantRmsNorm(TestCase):
         output_npu = torch.zeros_like(x, dtype=torch.int8).npu()
 
         output_cpu = self.cpu_quant_rms_norm(x, gamma, beta, scale, offset)
-        torch_npu._npu_quant_rms_norm(x.npu(), 
-                                    gamma.npu(), 
-                                    beta.npu(), 
-                                    scale.npu(), 
-                                    offset.npu(), 
-                                    output_npu, 
+        torch_npu._npu_quant_rms_norm(x.npu(),
+                                    gamma.npu(),
+                                    beta.npu(),
+                                    scale.npu(),
+                                    offset.npu(),
+                                    output_npu,
                                     eps=1e-5)
 
         self.assertEqual(output_npu.cpu(), output_cpu)

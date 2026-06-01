@@ -13,7 +13,7 @@ from torch_npu.testing.common_utils import SupportedDevices, create_common_tenso
 class TestNPUAdvanceStepFlashattn(TestCase):
 
     # pylint:disable = huawei-too-many-arguments
-    def advance_step_flashattn_golden(self, num_seqs, num_queries, block_size, input_tokens, sampled_token_ids, 
+    def advance_step_flashattn_golden(self, num_seqs, num_queries, block_size, input_tokens, sampled_token_ids,
                                      input_positions, seq_lens, slot_mapping, block_tables):
         num_core = 40
         cmd = 'npu-smi info -t common -i 0'
@@ -38,22 +38,22 @@ class TestNPUAdvanceStepFlashattn(TestCase):
             cur_query_id = block_idx * 1 + 0
             if cur_query_id >= num_queries:
                 break
-            
+
             input_tokens[cur_query_id] = sampled_token_ids[cur_query_id]
             seq_len = seq_lens[cur_query_id]
             next_seq_len = seq_len + 1
             next_input_pos = next_seq_len - 1
             seq_lens[cur_query_id] = next_seq_len
             input_positions[cur_query_id] = next_input_pos
-            
+
             block_index = next_input_pos // block_size
             block_offset = next_input_pos % block_size
             cur_block = block_tables.flatten()[block_index]
             slot_num = (cur_block + block_tables.stride(0) * cur_query_id) * block_size + block_offset
-            
+
             slot_mapping[cur_query_id] = slot_num
 
-    def advance_step_spec_flashattn_golden(self, num_seqs, num_queries, block_size, input_tokens, sampled_token_ids, 
+    def advance_step_spec_flashattn_golden(self, num_seqs, num_queries, block_size, input_tokens, sampled_token_ids,
                                      input_positions, seq_lens, slot_mapping, block_tables, spec_token, accepted_num):
         token_each_reqs = 1 + len(spec_token[0])
         input_positions += torch.repeat_interleave(accepted_num, token_each_reqs) + 1
@@ -102,10 +102,10 @@ class TestNPUAdvanceStepFlashattn(TestCase):
             input_positions_cpu, input_positions = create_common_tensor(shape_format_num_seqs, 5, 50)
             seq_lens_cpu, seq_lens = create_common_tensor(shape_format_num_seqs, 5, 50)
             slot_mapping_cpu, slot_mapping = create_common_tensor(shape_format_num_seqs, 5, 50)
-            
+
             shape_format_block_tables = [np.int64, 2, [num_seqs, torch.max(seq_lens_cpu) // block_size + 1]]
             block_tables_cpu, block_tables = create_common_tensor(shape_format_block_tables, 5, 50)
-            
+
             self.advance_step_flashattn_golden(num_seqs, num_queries, block_size, input_tokens_cpu,
                                                sampled_token_ids_cpu, input_positions_cpu, seq_lens_cpu,
                                                slot_mapping_cpu, block_tables_cpu)
@@ -137,10 +137,10 @@ class TestNPUAdvanceStepFlashattn(TestCase):
             slot_mapping_cpu, slot_mapping = create_common_tensor(shape_format_num_seqs, 5, 50)
             spec_token_cpu, spec_token = create_common_tensor(shape_format_spec_token, 5, 50)
             accepted_num_cpu, accepted_num = create_common_tensor(shape_format_accepted_num, 5, 50)
-            
+
             shape_format_block_tables = [np.int64, 2, [num_seqs, 10000]]
             block_tables_cpu, block_tables = create_common_tensor(shape_format_block_tables, 5, 50)
-            
+
             self.advance_step_spec_flashattn_golden(num_seqs, num_seqs, block_size, input_tokens_cpu,
                                                sampled_token_ids_cpu, input_positions_cpu, seq_lens_cpu,
                                                slot_mapping_cpu, block_tables_cpu, spec_token_cpu, accepted_num_cpu)

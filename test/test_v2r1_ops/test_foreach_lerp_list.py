@@ -14,7 +14,7 @@ class TestForeachLerpList(TestCase):
         "float32" : torch.float32,
         "bfloat16" : torch.bfloat16
     }
-    
+
     def assert_equal(self, cpu_outs, npu_outs):
         for cpu_out, npu_out in zip(cpu_outs, npu_outs):
             if (cpu_out.shape != npu_out.shape):
@@ -34,7 +34,7 @@ class TestForeachLerpList(TestCase):
             cpu_tensors.append(t)
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 3
         cpu_inputs = []
@@ -56,9 +56,9 @@ class TestForeachLerpList(TestCase):
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float32")
             cpu_output = torch._foreach_lerp(cpu_tensors[0], cpu_tensors[1], cpu_tensors[2])
             npu_output = torch._foreach_lerp(npu_tensors[0], npu_tensors[1], npu_tensors[2])
-            
+
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
     def test_foreach_lerp_list_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -86,7 +86,7 @@ class TestForeachLerpList(TestCase):
             torch._foreach_lerp_(npu_tensors[0], npu_tensors[1], npu_tensors[2])
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-    
+
     def test_foreach_lerp_list_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -95,7 +95,7 @@ class TestForeachLerpList(TestCase):
             torch._foreach_lerp_(npu_tensors[0], npu_tensors[1], npu_tensors[2])
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-            
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_lerp_list_inplace_bfloat16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]

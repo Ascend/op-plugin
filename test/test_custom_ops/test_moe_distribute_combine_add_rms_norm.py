@@ -147,9 +147,9 @@ class TestMoeDistributeCombineAddRmsNorm(TestCase):
                     shared[i][j] = int(bs // sharedExpertRankNum)
         result_tensor = torch.cat((shared, result_tensor), dim=0)
         return result_tensor.flatten()
-    
+
     class ConstructArgs:
-        def __init__(self, x1_list, topk1_list, bs, h, k, globalBS, 
+        def __init__(self, x1_list, topk1_list, bs, h, k, globalBS,
                      sharedExpertRankNum, moeExpertNum, ep_world_size, tp_world_size, scales1):
             self.x1_list = x1_list
             self.topk1_list = topk1_list

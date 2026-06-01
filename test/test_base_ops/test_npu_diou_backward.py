@@ -26,7 +26,7 @@ class TestNpuDiouBackward(TestCase):
         list1 = [cpu_input1, cpu_input2, npu_input1, npu_input2]
         return list1
 
-    
+
     def cpu_op_exec(self, box1, box2, trans=False, is_cross=False, mode="iou", eps=1e-9):
         if box1.dtype == torch.half:
             box1 = box1.astype(torch.float32)
@@ -90,7 +90,7 @@ class TestNpuDiouBackward(TestCase):
         ]
         is_trans_list1 = [True]
         mode_list1 = ["iou"]
-        
+
         shape_format1 = [[j, k, m]
                          for j in shape_list1
                          for k in is_trans_list1

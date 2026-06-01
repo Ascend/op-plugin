@@ -44,7 +44,7 @@ class TestNpuGiouBackward(TestCase):
         ]
         is_trans_list1 = [True]
         mode_list1 = ["iou"]
-        
+
         shape_format1 = [[j, k, m]
                          for j in shape_list1
                          for k in is_trans_list1

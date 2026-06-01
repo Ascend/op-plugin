@@ -117,7 +117,7 @@ class TestViewCopy(TestCase):
             npu_res = npu_res.cpu()
             self.assertRtolEqual(cpu_res, npu_res)
 
-    @SupportedDevices(['Ascend910A'])  
+    @SupportedDevices(['Ascend910A'])
     def test_view_copy_of_slice(self):
         cpu_x = torch.rand(2, 3)
         cpu_other = torch.rand(2, 1)
@@ -131,7 +131,7 @@ class TestViewCopy(TestCase):
         self.assertEqual(check_operators_in_prof(['ViewCopy'], prof), True, "Error operators called!")
         self.assertRtolEqual(cpu_slice, npu_slice.cpu())
 
-    @SupportedDevices(['Ascend910A'])  
+    @SupportedDevices(['Ascend910A'])
     def test_view_copy_of_transpose(self):
         cpu_x = torch.rand(2, 3)
         cpu_other = torch.rand(3, 2)
@@ -144,8 +144,8 @@ class TestViewCopy(TestCase):
             npu_t.copy_(npu_other)
         self.assertEqual(check_operators_in_prof(['ViewCopy'], prof), True, "Error operators called!")
         self.assertRtolEqual(cpu_t, npu_t.cpu())
-      
-    @SupportedDevices(['Ascend910B'])  
+
+    @SupportedDevices(['Ascend910B'])
     def test_view_copy_of_slice(self):
         cpu_x = torch.rand(2, 3)
         cpu_other = torch.rand(2, 1)
@@ -159,7 +159,7 @@ class TestViewCopy(TestCase):
         self.assertEqual(check_operators_in_prof(['aclnnInplaceCopy'], prof), True, "Error operators called!")
         self.assertRtolEqual(cpu_slice, npu_slice.cpu())
 
-    @SupportedDevices(['Ascend910B'])  
+    @SupportedDevices(['Ascend910B'])
     def test_view_copy_of_transpose(self):
         cpu_x = torch.rand(2, 3)
         cpu_other = torch.rand(3, 2)

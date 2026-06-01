@@ -122,7 +122,7 @@ class TestConvTranspose3dBackward(TestCase):
             _, npu_weight = create_common_tensor(item[1], -2, 2)
             npu_output = nn.functional.conv_transpose3d(npu_input, npu_weight, padding=0, bias=npu_bias)
             self.assertEqual(npu_output.shape, npu_weight.shape)
-            
+
     @unittest.skip("skip test_conv_transpose3d_backward_shape_format_fp32 now")
     def test_conv_transpose3d_backward_shape_format_fp32(self):
         shape_format = [

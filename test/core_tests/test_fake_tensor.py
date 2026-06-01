@@ -3003,25 +3003,25 @@ class TestQuantMatmulGelu(TestCase):
             x2 = torch.randint(-5, 5, (k, n), dtype=torch.int8).npu()
             x1_scale = torch.randn(m, dtype=torch.float32).abs() * 0.01
             x2_scale = torch.randn(n, dtype=torch.float32).abs() * 0.01
-            
+
             expect_ret = torch.randn((m, n), dtype=torch.float16).npu()
             res = torch_npu.npu_quant_matmul_gelu(x1, x2, x1_scale.npu(), x2_scale.npu(), approximate="gelu_tanh")
             self.assertTrue(expect_ret.shape == res.shape)
             self.assertTrue(expect_ret.dtype == res.dtype)
-            
+
             # Test A8W8 with bias
             bias = torch.randn(n, dtype=torch.float32) * 0.1
             res_bias = torch_npu.npu_quant_matmul_gelu(x1, x2, x1_scale.npu(), x2_scale.npu(), bias=bias.npu(), approximate="gelu_erf")
             self.assertTrue(expect_ret.shape == res_bias.shape)
             self.assertTrue(expect_ret.dtype == res_bias.dtype)
-            
+
             # Test A8W8 with BF16 output
             x2_scale_bf16 = torch.randn(n, dtype=torch.bfloat16).abs() * 0.01
             expect_ret_bf16 = torch.randn((m, n), dtype=torch.bfloat16).npu()
             res_bf16 = torch_npu.npu_quant_matmul_gelu(x1, x2, x1_scale.npu(), x2_scale_bf16.npu(), approximate="gelu_tanh")
             self.assertTrue(expect_ret_bf16.shape == res_bf16.shape)
             self.assertTrue(expect_ret_bf16.dtype == res_bf16.dtype)
-            
+
             # Test A8W8 with batch dimensions
             batch, m, k, n = 4, 64, 128, 256
             x1_batch = torch.randint(-5, 5, (batch, m, k), dtype=torch.int8).npu()
@@ -3032,7 +3032,7 @@ class TestQuantMatmulGelu(TestCase):
             res_batch = torch_npu.npu_quant_matmul_gelu(x1_batch, x2_batch, x1_scale_batch.npu(), x2_scale_batch.npu())
             self.assertTrue(expect_ret_batch.shape == res_batch.shape)
             self.assertTrue(expect_ret_batch.dtype == res_batch.dtype)
-            
+
             # Test A4W4 with int32 (packed INT4)
             m, k, n = 64, 128, 256
             k_packed = k // 8
@@ -3045,7 +3045,7 @@ class TestQuantMatmulGelu(TestCase):
             res_int32 = torch_npu.npu_quant_matmul_gelu(x1_int32, x2_int32, x1_scale_int32.npu(), x2_scale_int32.npu(), approximate="gelu_tanh")
             self.assertTrue(expect_ret_int32.shape == res_int32.shape)
             self.assertTrue(expect_ret_int32.dtype == res_int32.dtype)
-            
+
             # Test A4W4 with int32 and bias
             bias_int32 = torch.randint(-5, 5, (n,), dtype=torch.int32)
             res_int32_bias = torch_npu.npu_quant_matmul_gelu(x1_int32, x2_int32, x1_scale_int32.npu(), x2_scale_int32.npu(),
@@ -4137,11 +4137,11 @@ class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
                 self.assertEqual(grad_tokens.shape, tokens.shape)
 
                 grad_tokens_v2 = torch_npu.npu_moe_token_permute_grad_v2(
-                    grad_permuted_tokens=grad_permuted_tokens_for_permute, 
-                    sorted_indices=sorted_indices, 
-                    tokens_size_0=tokens.shape[0], 
-                    tokens_dtype=tokens.dtype, 
-                    num_topK=topk, 
+                    grad_permuted_tokens=grad_permuted_tokens_for_permute,
+                    sorted_indices=sorted_indices,
+                    tokens_size_0=tokens.shape[0],
+                    tokens_dtype=tokens.dtype,
+                    num_topK=topk,
                     padded_mode=False,
                 )
 
@@ -5753,7 +5753,7 @@ class TestKLDivLoss(TestCase):
 
             self.assertEqual(pred.grad.shape, pred_fake_tensor.grad.shape)
             self.assertEqual(pred.grad.dtype, pred_fake_tensor.grad.dtype)
-            
+
 class TestNpuDropoutGenMaskMeta(TestCase):
     def test_npu_dropout_gen_mask(self):
         size = (2, 1024, 768)
@@ -5807,7 +5807,7 @@ class TestNpuIndexAddMeta(TestCase):
     @unittest.skip("Skip until CANN supports aclnnIndexAddV2; do not execute")
     def test_npu_index_add(self):
         x = torch.randn(10, 5, device="npu")
-        index = torch.randint(0, 10, (2,), dtype=torch.int64, device="npu")  
+        index = torch.randint(0, 10, (2,), dtype=torch.int64, device="npu")
         source = torch.randn(2, 5, device="npu")
         out = torch_npu._npu_index_add(x, index, source, alpha=1)
 
@@ -5825,9 +5825,9 @@ class TestNpuIndexAddInplaceMeta(TestCase):
     @unittest.skip("Skip until CANN supports aclnnIndexAddV2; do not execute")
     def test_npu_index_add_(self):
         x = torch.randn(10, 5, device="npu")
-        index = torch.randint(0, 10, (2,), dtype=torch.int64, device="npu")  
+        index = torch.randint(0, 10, (2,), dtype=torch.int64, device="npu")
         source = torch.randn(2, 5, device="npu")
-        out = torch_npu._npu_index_add_(x, index, source, alpha=1)  
+        out = torch_npu._npu_index_add_(x, index, source, alpha=1)
 
         with FakeTensorMode():
             x_fake_tensor = torch.empty(10, 5, device='meta')

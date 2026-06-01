@@ -22,7 +22,7 @@ class TestReshape(TestCase):
         dtype_list = [np.float16, np.float32, np.int32, np.bool_]
         format_list = [0]
         shape_list = [[8, 8], [2, 4, 8], [2, 4, 4, 2]]
-        
+
         shape_format = [
             [i, j, k] for i in dtype_list for j in format_list for k in shape_list
         ]

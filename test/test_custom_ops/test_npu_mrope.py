@@ -39,7 +39,7 @@ class TestNPUMrope(TestCase):
             sin = sin.reshape(
                 3, -1, rotary_dim // 2
             )  # [3, num_tokens, rotary_dim // 2]
-            
+
             # Map cache_mode string to int: 'default' -> 0, 'interleave' -> 1
             if cache_mode == 'default':
                 cache_mode_value = 0
@@ -47,7 +47,7 @@ class TestNPUMrope(TestCase):
                 cache_mode_value = 1
             else:
                 cache_mode_value = 0  # default fallback
-            
+
             if cache_mode_value == 0:
                 # cacheMode为0: 按顺序拼接
                 cos_0 = cos[0, :, : mrope_section[0]]
@@ -140,7 +140,7 @@ class TestNPUMrope(TestCase):
                 cache_mode,
                 dtype,
         ) in itertools.product(
-            num_tokens_list, num_q_heads_list, head_size_list, 
+            num_tokens_list, num_q_heads_list, head_size_list,
             rotary_mode_list, cache_mode_list, dtype_list
         ):
             num_kv_heads = num_q_heads
@@ -214,7 +214,7 @@ class TestNPUMrope(TestCase):
                 cache_mode,
                 dtype,
         ) in itertools.product(
-            num_tokens_list, num_q_heads_list, head_size_list, 
+            num_tokens_list, num_q_heads_list, head_size_list,
             rotary_mode_list, cache_mode_list, dtype_list
         ):
             num_kv_heads = num_q_heads
@@ -238,7 +238,7 @@ class TestNPUMrope(TestCase):
             query = query.to(golden_dtype)
             key = key.to(golden_dtype)
             cos_sin_cache = cos_sin_cache.to(golden_dtype)
-            
+
             query_out, key_out = torch_npu.npu_mrope(
                 positions_npu,
                 query_npu,

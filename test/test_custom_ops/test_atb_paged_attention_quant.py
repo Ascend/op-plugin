@@ -21,7 +21,7 @@ class TestQuantRmsNorm(TestCase):
         strict_limit_error = torch.maximum(torch.abs(golden * ratios[2]), torch.tensor(ratios[3]))
         error_count = torch.gt(diff, limit_error).sum().item()
         strict_error_count = torch.gt(diff, strict_limit_error).sum().item()
-        
+
         print("1/1000 Accuracy is %f", 1 - float(error_count) / length)
         print("5/1000 Accuracy is %f", 1 - float(strict_error_count) / length)
         print("accuracy is correct in old standard: %r", (float(strict_error_count) / length) <= ratios[2])
@@ -269,7 +269,7 @@ class TestQuantRmsNorm(TestCase):
                 if razor_rope:
                     offset = razor_offset[block_number, block_offset]
                     razor_offset_list.append(offset)
-        
+
             keys = torch.stack(keys, axis=0)
             values = torch.stack(values, axis=0)
             if razor_rope:
@@ -278,7 +278,7 @@ class TestQuantRmsNorm(TestCase):
 
             if self.compressHead:
                 razor_mod = i % self.kv_heads
-            
+
             scale = np.float32(1.0 / (head_size ** 0.5))
             if mask_dim == 4:
                 out, out_high = self.ref_masked_attention(q, keys, values, scale, mask[i, :, :, :context_len], razor_rope, razor_offset_list, razor_mod, mask_data_type)
@@ -406,7 +406,7 @@ class TestQuantRmsNorm(TestCase):
             random_values = np.random.uniform(0, 20, size=np.sum(mask))
             active_rows = np.where(mask)[0]
             razor_offset[active_rows, random_indices] = torch.from_numpy(random_values).to(torch.float32)
-        
+
         if dynamic_batch:
             context_lens = dynamic_seqlen
         else:
@@ -469,7 +469,7 @@ class TestQuantRmsNorm(TestCase):
             razor_offset,
             razor_rope,
             mask_dim,
-            mask_data_type 
+            mask_data_type
         )
         self.q = query
         self.key_cache = key_cache
@@ -483,12 +483,12 @@ class TestQuantRmsNorm(TestCase):
 
     @SupportedDevices(["Ascend910B"])
     def test_pa_quant_case_normal_mask(self):
-        num_tokens = 96        
+        num_tokens = 96
         num_heads = 8
         kv_heads = 1
         block_size = 128
         head_size = 128
-        num_blocks = 480 
+        num_blocks = 480
         dynamic_batch = False
         batch_tatus = [1] * num_tokens
         k_seqlen = 7

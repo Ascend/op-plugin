@@ -37,7 +37,7 @@ class TestNpuMoeGatingTopKSoftmaxV2(TestCase):
         else:
             if finished is not None and finished.ndim > 1:
                 finished = finished.reshape(-1)
-        
+
         softmax_full_f32 = self.softmax_func(x_2d.astype(np.float32), axis=-1)
 
         if renorm == 1:
@@ -47,7 +47,7 @@ class TestNpuMoeGatingTopKSoftmaxV2(TestCase):
         else:
             indices = np.argsort(-softmax_full_f32, axis=-1, kind='stable')[:, :k]
             out = np.take_along_axis(softmax_full_f32, indices, axis=-1).astype(x.dtype)
-        
+
         indices = indices.astype(np.int32)
         if finished is not None:
             finished_expanded = np.tile(finished.reshape(-1, 1), (1, k))
@@ -92,7 +92,7 @@ class TestNpuMoeGatingTopKSoftmaxV2(TestCase):
             except Exception as e:
                 raise AssertionError(f"Task failed unecpectedly: {e}") from e
 
-            
+
 
 
 if __name__ == "__main__":

@@ -91,7 +91,7 @@ class TestMoeDistributeDispatch(TestCase):
         expt_out_list, expt_token_list, x1_list, x2_list, topk1_list, topk2_list, elastic_info, ep_world_size,\
             tp_world_size, globalBS, sharedExpertRankNum, moeExpertNum, h = input_list
         ctx = mp.get_context('spawn')
-        tp_world_size_2 = 2 
+        tp_world_size_2 = 2
         c2p = ctx.Queue(ep_world_size * tp_world_size_2)
         p2c = ctx.Queue(ep_world_size * tp_world_size_2)
         ps = []
@@ -108,7 +108,7 @@ class TestMoeDistributeDispatch(TestCase):
             rank, output = c2p.get()
             self.assertEqual(output, expt_out_list[rank],
                              ("rank {} Expect receive tensor {} but got {}.").format(rank, expt_out_list[rank], output))
-        
+
         for _ in range(ep_world_size * tp_world_size_2):
             p2c.put(0)
 
@@ -166,7 +166,7 @@ class TestMoeDistributeDispatch(TestCase):
         else:
             golden_expandX1 = expandX1.view(-1, h)
             golden_expandX2 = expandX2.view(-1, h)
-        
+
         sums1 = 0
         sums2 = 0
         out_list = []

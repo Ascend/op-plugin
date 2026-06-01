@@ -25,7 +25,7 @@ class TestRmsNormDynamicMxQuant(TestCase):
 
     # 此处传递的是已经.npu()后的
     def npu_op_exec(self, x, gamma, beta=None, epsilon=1e-6, scale_alg=0, round_mode="rint", dst_type=torch_npu.float8_e5m2):
-        return torch_npu.npu_rms_norm_dynamic_mx_quant(x, gamma, beta=beta, epsilon=epsilon, scale_alg=scale_alg, 
+        return torch_npu.npu_rms_norm_dynamic_mx_quant(x, gamma, beta=beta, epsilon=epsilon, scale_alg=scale_alg,
                                                        round_mode=round_mode, dst_type=dst_type)
 
     def golden_op_exec(self, input_tensor):

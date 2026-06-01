@@ -42,11 +42,11 @@ def gather_pa_kv_cache_nd(context, key_cache, value_cache, block_tables, seq_len
             block_start = 0
         else:
             block_start = seq_offset[i] // block_size
-        
+
         for j in range(seq_len):
             if kv_rslt_id >= key.shape[0]:
                 break
-            
+
             block_table_idx = block_start + j // block_size
             if block_table_idx >= block_table.shape[0]:
                 is_filled_with_zero = True
@@ -54,7 +54,7 @@ def gather_pa_kv_cache_nd(context, key_cache, value_cache, block_tables, seq_len
             else:
                 is_filled_with_zero = False
                 block_id = block_table[block_table_idx]
-            
+
             block_offset = j % block_size
 
             if block_id >= num_blocks or block_id < 0 or is_filled_with_zero:
@@ -96,7 +96,7 @@ def gather_pa_kv_cache_nz(context, key_cache, value_cache, block_tables, seq_len
             block_table = 0
         else:
             block_start = seq_offset[i] // block_size
-        
+
         for j in range(seq_len):
             if kv_rslt_id >= key.shape[0]:
                 break
@@ -107,7 +107,7 @@ def gather_pa_kv_cache_nz(context, key_cache, value_cache, block_tables, seq_len
             else:
                 block_id = block_table[block_table_idx]
                 block_offset = j % block_size
-            
+
             temp_k = np.zeros_like((num_heads_k,), dtype=key.dtype)
             temp_v = np.zeros_like((num_heads_v,), dtype=value.dtype)
 
@@ -122,11 +122,11 @@ def gather_pa_kv_cache_nz(context, key_cache, value_cache, block_tables, seq_len
             key[kv_rslt_id] = temp_k
             value[kv_rslt_id] = temp_v
             kv_rslt_id += 1
-    
+
     key = key.reshape((num_tokens, num_heads, head_size_k))
     value = value.reshape((num_tokens, num_heads, head_size_v))
     return [key, value]
-    
+
 
 def golden_gather_pa_kv_cache(
     key_cache: torch.Tensor,
@@ -187,7 +187,7 @@ class GatherPaKvCacheModel(torch.nn.Module):
 
     def forward(self, key_cache, value_cache, block_tables, seq_lens, key, value, seq_offset, is_seq_lens_cumsum):
         output_key, output_value = torch_npu.npu_gather_pa_kv_cache_functional(
-            key_cache, value_cache, block_tables, seq_lens, key, value, 
+            key_cache, value_cache, block_tables, seq_lens, key, value,
             seq_offset=seq_offset, is_seq_lens_cumsum=is_seq_lens_cumsum
         )
         return output_key, output_value
@@ -199,7 +199,7 @@ class GatherPaKvCacheInplaceModel(torch.nn.Module):
 
     def forward(self, key_cache, value_cache, block_tables, seq_lens, key, value, seq_offset, is_seq_lens_cumsum):
         torch_npu.npu_gather_pa_kv_cache(
-            key_cache, value_cache, block_tables, seq_lens, key, value, 
+            key_cache, value_cache, block_tables, seq_lens, key, value,
             seq_offset=seq_offset, is_seq_lens_cumsum=is_seq_lens_cumsum
         )
         return key, value
@@ -211,7 +211,7 @@ class TestGatherPaKvCache(TestCase):
         super().setUpClass()
         random.seed(0)
         torch.manual_seed(0)
-    
+
     def _run_test(self, mode, api_impl_mode, input_dtype=torch.float16):
         batch_size = 2
         num_blocks = 8
@@ -283,7 +283,7 @@ class TestGatherPaKvCache(TestCase):
                 seq_offset=seq_offset_npu,
                 is_seq_lens_cumsum=is_seq_lens_cumsum
             )
-        
+
         torch.npu.synchronize()
         out_key_cpu = out_key_npu.cpu()
         out_value_cpu = out_value_npu.cpu()

@@ -22,12 +22,12 @@ class TestForeachTan(TestCase):
         for i in range(tensor_nums):
             m = random.randint(1, 100)
             n = random.randint(1, 100)
-            t = torch.rand((m, n), dtype=self.torch_dtypes.get(dtype)) * 1.4 - 1.4 
+            t = torch.rand((m, n), dtype=self.torch_dtypes.get(dtype)) * 1.4 - 1.4
             cpu_tensors.append(t)
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
 
-    
+
     def test_foreach_tan_out_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -36,8 +36,8 @@ class TestForeachTan(TestCase):
             npu_output = torch._foreach_tan(npu_tensors)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
-    
+
+
     def test_foreach_tan_out_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -58,7 +58,7 @@ class TestForeachTan(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
 
-    
+
     def test_foreach_tan_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -67,8 +67,8 @@ class TestForeachTan(TestCase):
             torch._foreach_tan_(npu_tensors)
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
-    
-    
+
+
     def test_foreach_tan_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :

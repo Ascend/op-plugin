@@ -30,7 +30,7 @@ class TestForeachPowList(TestCase):
                 cpu_tensors.append(t)
                 npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 2
         cpu_inputs = []
@@ -51,18 +51,18 @@ class TestForeachPowList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float32")
-            
+
             cpu_output = torch._foreach_pow(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_pow(npu_tensors[0], npu_tensors[1])
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_pow_list_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float16")
-            
+
             cpu_output = torch._foreach_pow(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_pow(npu_tensors[0], npu_tensors[1])
 
@@ -73,7 +73,7 @@ class TestForeachPowList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "bfloat16")
-            
+
             cpu_output = torch._foreach_pow(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_pow(npu_tensors[0], npu_tensors[1])
 
@@ -84,7 +84,7 @@ class TestForeachPowList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "int32")
-            
+
             cpu_output = torch._foreach_pow(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_pow(npu_tensors[0], npu_tensors[1])
 
@@ -92,33 +92,33 @@ class TestForeachPowList(TestCase):
 
     @SupportedDevices(['Ascend910B'])
     def test_foreach_pow_list_inplace_float32_shpae_tensor_num(self):
-        
+
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float32")
-            
+
             torch._foreach_pow_(cpu_tensors[0], cpu_tensors[1])
             torch._foreach_pow_(npu_tensors[0], npu_tensors[1])
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_pow_list_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float16")
-            
+
             torch._foreach_pow_(cpu_tensors[0], cpu_tensors[1])
             torch._foreach_pow_(npu_tensors[0], npu_tensors[1])
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-            
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_pow_list_inplace_bfloat16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "bfloat16")
-            
+
             torch._foreach_pow_(cpu_tensors[0], cpu_tensors[1])
             torch._foreach_pow_(npu_tensors[0], npu_tensors[1])
 
@@ -129,7 +129,7 @@ class TestForeachPowList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "int32")
-            
+
             torch._foreach_pow_(cpu_tensors[0], cpu_tensors[1])
             torch._foreach_pow_(npu_tensors[0], npu_tensors[1])
 

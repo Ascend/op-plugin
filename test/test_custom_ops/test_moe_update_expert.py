@@ -53,7 +53,7 @@ class TestMoeUpdateExpert(TestCase):
                                                    balance_mode=balance_mode)
         c2p.put((rank_id, out_expert_idx.cpu(), out_mask.cpu()))
         p2c.get()
-    
+
     def gen_exp_result(self):
         for rank_id in range(self.world_size):
             eplb_table = np.zeros((self.log_ep_size, self.F - 1))
@@ -106,7 +106,7 @@ class TestMoeUpdateExpert(TestCase):
                             else:
                                 balanced_active_mask[i][j] = 1
             self.balanced_expert_ids.append(torch.from_numpy(balanced_expert_ids).to(torch.int64))
-            self.balanced_active_mask.append(torch.from_numpy(balanced_active_mask).to(torch.bool))        
+            self.balanced_active_mask.append(torch.from_numpy(balanced_active_mask).to(torch.bool))
 
 
     @SupportedDevices(['Ascend910_93', 'Ascend950'])
@@ -119,7 +119,7 @@ class TestMoeUpdateExpert(TestCase):
         for rank_id in range(self.world_size):
             p = ctx.Process(
                 target=self._test_npu_moe_update_expert,
-                args=(rank_id, [self.expert_ids[rank_id], self.eplb_table[rank_id], self.world_size, 
+                args=(rank_id, [self.expert_ids[rank_id], self.eplb_table[rank_id], self.world_size,
                                 self.expert_scales[rank_id], self.pruning_threshold[rank_id], self.active_mask[rank_id],
                                 self.balance_mode, self._init_dist_hccl, c2p, p2c]))
             p.start()

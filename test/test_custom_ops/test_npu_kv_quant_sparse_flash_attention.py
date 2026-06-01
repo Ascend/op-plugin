@@ -315,7 +315,7 @@ class TestKvQuantSparseFlashAttention(TestCase):
                   batch, n2_idx, s1_idx, cur_actual_seq_lengths_kv):
         s2_sparse = list()
         for sparse_id in sparse_indices:
-            if sparse_id == -1: 
+            if sparse_id == -1:
                 break
             begin_idx = sparse_id * sparse_block_size
             end_idx = begin_idx + sparse_block_size \
@@ -451,7 +451,7 @@ class TestKvQuantSparseFlashAttention(TestCase):
         antiquant_scale = antiquant_scale.npu()
 
         npu_out = torch_npu.npu_kv_quant_sparse_flash_attention(
-            query, key, value, sparse_indices, 
+            query, key, value, sparse_indices,
             scale_value=scale_value, sparse_block_size=sparse_block_size,
             actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
             layout_query='BSND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,
@@ -526,7 +526,7 @@ class TestKvQuantSparseFlashAttention(TestCase):
         antiquant_scale = antiquant_scale.npu()
 
         npu_out = torch_npu.npu_kv_quant_sparse_flash_attention(
-            query, key, value, sparse_indices, 
+            query, key, value, sparse_indices,
             scale_value=scale_value, sparse_block_size=sparse_block_size,
             actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
             layout_query='BSND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,

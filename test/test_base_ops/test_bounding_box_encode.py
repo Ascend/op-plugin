@@ -19,7 +19,7 @@ class TesBoundingBoxEncode(TestCase):
         output_fp16 = torch_npu.npu_bounding_box_encode(input1_fp16, input2_fp16, 0, 0, 0, 0, 0.1, 0.1, 0.2, 0.2)
         self.assertRtolEqual(expedt_output, output.cpu())
         self.assertRtolEqual(expedt_output.to(torch.half), output_fp16.cpu())
-        
+
     @SupportedDevices(["Ascend910B"])
     def test_encode_shape_format(self):
         input1 = torch.tensor([[1., 2., 3., 4.], [3., 4., 5., 6.]], dtype=torch.float32).to("npu")

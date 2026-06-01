@@ -30,7 +30,7 @@ class TestForeachErfc(TestCase):
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
 
-    
+
     def test_foreach_erfc_out_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -39,8 +39,8 @@ class TestForeachErfc(TestCase):
             npu_output = torch._foreach_erfc(npu_tensors)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
-    
+
+
     def test_foreach_erfc_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -61,7 +61,7 @@ class TestForeachErfc(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
 
-    
+
     def test_foreach_erfc_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -70,8 +70,8 @@ class TestForeachErfc(TestCase):
             torch._foreach_erfc_(npu_tensors)
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
-    
-    
+
+
     def test_foreach_erfc_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :

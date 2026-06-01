@@ -40,7 +40,7 @@ class TestNotEqual(TestCase):
         dtype_list = [np.float32]
         format_list = [0, 3]
         shape_list = [[1024], [8, 128], [2, 8, 128], [2, 8, 128, 512]]
-        
+
         shape_format = [
             [d, i, j] for d in dtype_list for i in format_list for j in shape_list
         ]
@@ -55,7 +55,7 @@ class TestNotEqual(TestCase):
         dtype_list = [np.float16]
         format_list = [0, 3]
         shape_list = [[1024], [8, 128], [2, 8, 128], [2, 8, 128, 512]]
-        
+
         shape_format = [
             [d, i, j] for d in dtype_list for i in format_list for j in shape_list
         ]
@@ -73,7 +73,7 @@ class TestNotEqual(TestCase):
         dtype_list = [np.float16, np.float32]
         format_list = [0, 3]
         shape_list = [[1024], [8, 128], [2, 8, 128], [2, 8, 128, 512]]
-        
+
         shape_format = [
             [d, i, j] for d in dtype_list for i in format_list for j in shape_list
         ]
@@ -91,7 +91,7 @@ class TestNotEqual(TestCase):
         dtype_list = [np.float16, np.float32]
         format_list = [0, 3]
         shape_list = [[1024], [8, 128], [2, 8, 128], [2, 8, 128, 512]]
-        
+
         shape_format = [
             [d, i, j] for d in dtype_list for i in format_list for j in shape_list
         ]
@@ -108,7 +108,7 @@ class TestNotEqual(TestCase):
         dtype_list = [np.float32]
         format_list = [0]
         shape_list = [[1024], [8, 128], [2, 8, 128], [2, 8, 128, 512]]
-        
+
         shape_format = [
             [[d, i, j]] for d in dtype_list for i in format_list for j in shape_list
         ]
@@ -123,7 +123,7 @@ class TestNotEqual(TestCase):
         dtype_list = [np.float32]
         format_list = [0]
         shape_list = [[1024], [8, 128], [2, 8, 128], [2, 8, 128, 512]]
-        
+
         shape_format = [
             [[d, i, j]] for d in dtype_list for i in format_list for j in shape_list
         ]

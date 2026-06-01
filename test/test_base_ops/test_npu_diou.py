@@ -26,7 +26,7 @@ class TestNpudiou(TestCase):
         list1 = [cpu_input1, cpu_input2, npu_input1, npu_input2]
         return list1
 
-    
+
     def cpu_op_exec(self, box1, box2, trans=False, is_cross=False, mode="iou", eps=1e-9):
         box3 = box1.numpy()
         dtype = box3.dtype

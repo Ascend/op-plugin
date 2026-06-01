@@ -66,7 +66,7 @@ class TestOneHot(TestCase):
         npu_output = self.npu_op_exec(input1, 4)
 
         self.assertRtolEqual(cpu_output, npu_output)
-    
+
     def test_one_hot_compile_fake(self):
 
         def fn(x):

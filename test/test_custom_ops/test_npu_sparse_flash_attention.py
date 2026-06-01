@@ -12,7 +12,7 @@ class TestSparseFlashAttention(TestCase):
                 cur_actual_seq_lengths_kv):
         s2_sparse = list()
         for sparse_id in sparse_indices:
-            if sparse_id == -1: 
+            if sparse_id == -1:
                 break
             begin_idx = sparse_id * sparse_block_size
             end_idx = begin_idx + sparse_block_size \
@@ -225,7 +225,7 @@ class TestSparseFlashAttention(TestCase):
 
         # start run custom ops
         npu_out, npu_softmax_max, npu_softmax_sum = torch_npu.npu_sparse_flash_attention(
-            query, key, value, sparse_indices, scale_value, block_table=None, 
+            query, key, value, sparse_indices, scale_value, block_table=None,
             actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
             query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
             layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1,
@@ -292,7 +292,7 @@ class TestSparseFlashAttention(TestCase):
 
         # start run custom ops
         npu_out, npu_softmax_max, npu_softmax_sum = torch_npu.npu_sparse_flash_attention(
-            query, key, value, sparse_indices, scale_value, block_table=None, 
+            query, key, value, sparse_indices, scale_value, block_table=None,
             actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
             query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
             layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1,

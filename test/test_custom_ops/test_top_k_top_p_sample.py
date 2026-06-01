@@ -41,7 +41,7 @@ class additionAttr:
 def mySoftmaxAndSort(x, dim=-1):
     if dim < 0:
         dim = x.dim() + dim
-    
+
     max_vals = torch.max(x, dim=dim, keepdim=True)[0]
     shifted = x - max_vals
     exp_vals = torch.exp(shifted)
@@ -49,12 +49,12 @@ def mySoftmaxAndSort(x, dim=-1):
     sorted_probs, sorted_indices = torch.sort(softmax_output, dim=dim, descending=True)
 
     return sorted_probs, sorted_indices
-    
+
 
 def onlySoftmax(x, dim=-1):
     if dim < 0:
         dim = x.dim() + dim
-    
+
     max_vals = torch.max(x, dim=dim, keepdim=True)[0]
     shifted = x - max_vals
     exp_vals = torch.exp(shifted)
@@ -141,11 +141,11 @@ def top_k_top_p_sample(data, run_attr: additionAttr, generator):
     else:
         rs_value = torch.empty(0)
 
-    # compute golden 
+    # compute golden
     for i in range(batch_size):
         # 保存原始logits，用于后续填充rs_value
         original_logits = logits[i].float()
-  
+
         # TopKSample switch
         k_val = topK[i].item()  # 获取标量值
         top_ks_max = min(k_max, vocab_size)
@@ -154,7 +154,7 @@ def top_k_top_p_sample(data, run_attr: additionAttr, generator):
         # topPSample switch
         p = topP[i].item()
         use_top_p = p<ALL_P_MAX
-        
+
         # sort input logits firstly （降序）
         topk_logits, topk_indices = torch.sort(original_logits, dim=-1, descending=True, stable=True)
 
@@ -191,12 +191,12 @@ def top_k_top_p_sample(data, run_attr: additionAttr, generator):
             top_p_sel = ~top_p_mask
 
             # 获取通过筛选的token在排序后概率中的索引
-            selected_probs_indices = sorted_probs_indices[top_p_sel]    # local indices    
+            selected_probs_indices = sorted_probs_indices[top_p_sel]    # local indices
 
             # 映射回原始索引
             if USE_FAST_PROBS:
                 # 统一使用截断的top_p采样结果
-                selected_indices = topk_indices[selected_probs_indices]  
+                selected_indices = topk_indices[selected_probs_indices]
                 selected_logits = sorted_probs[top_p_sel]   # Logits
             else:
                 selected_indices = topk_indices[selected_probs_indices]
@@ -211,7 +211,7 @@ def top_k_top_p_sample(data, run_attr: additionAttr, generator):
             false_count = topk_probs.numel()
             top_p_sel = [True] * false_count
             top_p_sel = torch.tensor(top_p_sel)
-        
+
         if p <= 0 and input_is_logits: # kernel侧p小于零时取最大值，并且概率为1
             selected_logits[0] = 1
 
@@ -243,7 +243,7 @@ def top_k_top_p_sample(data, run_attr: additionAttr, generator):
 
         min_p_sel = torch.tensor(min_p_sel)
         # if not use_top_k and not use_top_p: # 当不使能topK、topP时，对logits归一化结果直接进行minP采样
-        
+
         selected_logits = selected_logits[min_p_sel]
         selected_indices = selected_indices[min_p_sel]
         false_count = selected_logits.numel()
@@ -260,7 +260,7 @@ def top_k_top_p_sample(data, run_attr: additionAttr, generator):
                 # 已经归一化，则使用直接值以免梯度消失 (sglang)
                 selected_probs = selected_logits
 
-        # Post sample 
+        # Post sample
 
         if post_sample == "qSample": # qsample
             q_i = q[i, :false_count]
@@ -285,8 +285,8 @@ def top_k_top_p_sample(data, run_attr: additionAttr, generator):
         probs_index = torch.multinomial(logits_sort_masked.npu(), num_samples=1, replacement=True, generator=generator)
         probs_index = probs_index.cpu()
         for j in range(batch_size):
-            rs_index[j] = logits_idx[j][probs_index[j]]        
-        
+            rs_index[j] = logits_idx[j][probs_index[j]]
+
     return rs_index, rs_value
 
 
@@ -372,14 +372,14 @@ class TestTopKTopPSample(TestCase):
                 min_ps = torch.rand(size=(bs, ), dtype=dtype)
         else:
             min_ps = None
-        
+
         # generator
         if post_sample == "multiNomial":
             generator = torch.Generator(device="npu")
             generator_npu = torch.Generator(device="npu")
             generator.manual_seed(1)
             generator_npu.manual_seed(1)
-            
+
         else:
             generator = None
             generator_npu = None
@@ -395,11 +395,11 @@ class TestTopKTopPSample(TestCase):
             min_ps_npu = min_ps.npu()
         else:
             min_ps_npu = None
-            
+
         logits_select_idx_golden_npu, logits_top_kp_select_golden_npu = \
             self.cpu_exec([logits, top_k, top_p, q, min_ps], run_attr, generator)
-            
-            
+
+
         logits_select_idx_npu, logits_top_kp_select_npu = self.npu_exec([logits_npu, top_k_npu, top_p_npu, q_npu, min_ps_npu], run_attr, generator_npu)
 
         return logits_select_idx_npu, logits_top_kp_select_npu, logits_select_idx_golden_npu, logits_top_kp_select_golden_npu
@@ -410,7 +410,7 @@ class TestTopKTopPSample(TestCase):
     def test_top_k_top_p_sample_major(self, device="npu"):
         bs_rng_list = [(1, 128)]
         voc_size = 2 ** 10
-        topK_flags = [0, 1] # topK and topP can not be 0 at the same time 
+        topK_flags = [0, 1] # topK and topP can not be 0 at the same time
         topP_flags = [0, 1]
         minPs_flags = [0, 1]
         need_logits_flags = [0, 1]
@@ -432,7 +432,7 @@ class TestTopKTopPSample(TestCase):
                 self.assertRtolEqual(logits_select_idx_npu, logits_select_idx_golden_npu)
                 if is_need_logits == 1:
                     self.assertTrue(torch.allclose(logits_top_kp_select_npu, logits_top_kp_select_golden_npu))
-                
+
                 case_no += 1
                 print(f"{case_no} cases passed.")
 

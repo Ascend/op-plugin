@@ -41,7 +41,7 @@ class TestUpsampleBicubic2dAABackward(TestCase):
         output.backward(torch.ones_like(output))
         grad = inputs.grad
         return grad
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_UpsampleBicubic2dAABackward_common_shape_format(self):
         shape_format = [

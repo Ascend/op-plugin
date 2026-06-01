@@ -68,11 +68,11 @@ class TestDistributeBarrier(TestCase):
             table1 = elastic_info[4 : 4 + ep_world_size]
             table2 = elastic_info[4 + ep_world_size: 4 + 2 * ep_world_size]
         return elastic_info
-    
+
     @classmethod
     def _test_npu_distribute_barrier(cls, rank, x_ref, time_out, elastic_info,
                                          ep_world_size, tp_world_size, init_pg, c2p, p2c ):
-        
+
         pg, ep_group, tp_group = init_pg(rank, ep_world_size * tp_world_size, ep_world_size, tp_world_size)
         ep_hcomm_name = ep_group._get_backend(torch.device('npu')).get_hccl_comm_name(rank)
         tp_hcomm_name = tp_group._get_backend(torch.device('npu')).get_hccl_comm_name(rank)
@@ -117,7 +117,7 @@ class TestDistributeBarrier(TestCase):
         for p in ps:
             p.join()
 
-    def _construct_excepted_result(self, x_ref, elastic_info, ep_world_size): 
+    def _construct_excepted_result(self, x_ref, elastic_info, ep_world_size):
         out_list = []
         for i in elastic_info[4 + ep_world_size: 4 + 2 * ep_world_size]:
             if i == -1:
@@ -125,7 +125,7 @@ class TestDistributeBarrier(TestCase):
             else:
                 out_list.append(x_ref)
         return out_list
-    
+
     @skipIfUnsupportMultiNPU(16)
     @SupportedDevices(['Ascend910_93', 'Ascend950'])
     def test_npu_distribute_barrier(self):
@@ -145,7 +145,7 @@ class TestDistributeBarrier(TestCase):
         elastic_info_x1 = TestDistributeBarrier.gen_elastic_info(is_elastic, ep_world_size * tp_world_size,
             shared_expert_rank_num, shared_broken_card_num, moe_broken_card_num, local_moe,ep_world_size,
             moe_expert_num)
-        
+
         for _ in range(ep_world_size):
             expt_out_list_1 = self._construct_excepted_result(x_ref, elastic_info_x1, ep_world_size)
 

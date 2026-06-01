@@ -131,7 +131,7 @@ class TestVar(TestCase):
         format_list = [-1]
         shape_list = [[32, 24], [32, 8, 24]]
         unbiased_list = [True, False]
-        
+
         shape_format = [
             [np.float16, i, j, k] for i in format_list for j in shape_list for k in unbiased_list
         ]
@@ -147,7 +147,7 @@ class TestVar(TestCase):
         format_list = [-1]
         shape_list = [[32, 24], [32, 8, 24]]
         unbiased_list = [True, False]
-        
+
         shape_format = [
             [np.float32, i, j, k] for i in format_list for j in shape_list for k in unbiased_list
         ]
@@ -298,7 +298,7 @@ class TestVar(TestCase):
         format_list = [-1]
         shape_list = [[32, 24], [32, 8, 24]]
         unbiased_list = [True, False]
-        
+
         shape_format = [
             [np.float16, i, j, k] for i in format_list for j in shape_list
             for k in unbiased_list
@@ -316,7 +316,7 @@ class TestVar(TestCase):
     def test_var_mean_shape_format_fp32(self):
         format_list = [-1]
         shape_list = [[32, 24], [32, 8, 24]]
-        unbiased_list = [True, False] 
+        unbiased_list = [True, False]
         shape_format = [
             [np.float32, i, j, k] for i in format_list for j in shape_list
             for k in unbiased_list
@@ -410,18 +410,18 @@ class TestVar(TestCase):
             cpu_output1 = cpu_output1.astype(np.float16)
             npu_output1 = self.npu_op_dim_exec(npu_input1, item[3], item[4], item[5])
             self.assertRtolEqual(cpu_output1, npu_output1, prec16=0.004)
-    
+
     def cpu_op_var_correction_exec(self, input1, correction):
         output = torch.var(input1, correction=correction)
         output = output.numpy()
         return output
-    
+
     def npu_op_var_correction_exec(self, input1, correction):
         output = torch.var(input1, correction=correction)
         output = output.to("cpu")
         output = output.numpy()
         return output
-    
+
     def cpu_op_mean_dim_correction_exec(self, input1, dim, correction):
         output = torch.var_mean(input1, dim, correction=correction)
         output1 = output[0]
@@ -441,7 +441,7 @@ class TestVar(TestCase):
     def test_var_correction(self):
         shape_list = [[32, 24], [32, 8, 24]]
         correction_list = [-3, 1, 2147483647, 2147483648, -2147483647, -2147483648]
-        
+
         shape_format = [
             [np.float32, -1, shape, correction] for shape in shape_list for correction in correction_list
         ]
@@ -453,7 +453,7 @@ class TestVar(TestCase):
                 self.assertTrue(npu_output == torch.inf)
             else:
                 self.assertRtolEqual(cpu_output, npu_output)
-    
+
     def test_var_mean_dim_correction(self):
         shape_list = [[32, 24], [32, 8, 24]]
         correction_list = [-3, 1, 2147483647, 2147483648, -2147483647, -2147483648]

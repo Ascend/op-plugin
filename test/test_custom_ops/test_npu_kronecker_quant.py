@@ -26,7 +26,7 @@ class TestNPUFlatQuant(TestCase):
 
         npu_input_x = torch.from_numpy(input_x).to(dtype = datainfo.dtype)
         npu_input_p1 = torch.from_numpy(input_p1).to(dtype = datainfo.dtype)
-        npu_input_p2 = torch.from_numpy(input_p2).to(dtype = datainfo.dtype) 
+        npu_input_p2 = torch.from_numpy(input_p2).to(dtype = datainfo.dtype)
 
         return [npu_input_x.to("npu"), npu_input_p1.to("npu"), npu_input_p2.to("npu")]
 
@@ -36,7 +36,7 @@ class TestNPUFlatQuant(TestCase):
         if(dst_type_max is None):
             dst_type_max = 0.0
         K, M, N = input_x.shape
-        x1 = input_x @ input_p2 
+        x1 = input_x @ input_p2
         x2 = input_p1 @ x1
         x2 = x2.flatten(-2, -1)
         qscale = torch.abs(x2).max(dim=-1, keepdim=True)[0].to(torch.float)
@@ -45,7 +45,7 @@ class TestNPUFlatQuant(TestCase):
         golden_out = (x2.to(torch.float) * qscale2).to(torch.half).to(torch.int8).reshape(K, M, N)
         golden_scale = torch.flatten(qscale / ratio).reshape(K)
         return golden_out.to("cpu").numpy(), golden_scale.to("cpu").numpy()
-    
+
     def tensor_int32_to_int8(self, tensor_int32):
         K, M, N = tensor_int32.shape
         tensor_array = tensor_int32.reshape(1, tensor_int32.numel())[0]
@@ -58,7 +58,7 @@ class TestNPUFlatQuant(TestCase):
     def npu_op_exec_kronecker_quant(self, input_x, input_p1, input_p2):
         out, quantScale = torch_npu.npu_kronecker_quant(input_x, input_p1, input_p2)
         return self.tensor_int32_to_int8(out.to("cpu")).numpy(), quantScale.to("cpu").numpy()
-    
+
     def npu_op_exec_kronecker_quant_ratio(self, input_x, input_p1, input_p2, clip_ratio):
         out, quantScale = torch_npu.npu_kronecker_quant(input_x, input_p1, input_p2, clip_ratio)
         return self.tensor_int32_to_int8(out.to("cpu")).numpy(), quantScale.to("cpu").numpy()
@@ -76,7 +76,7 @@ class TestNPUFlatQuant(TestCase):
         npu_out, npu_scale = self.npu_op_exec_kronecker_quant(x, p1, p2)
         self.assertRtolEqual(golden_out, npu_out)
         self.assertRtolEqual(golden_scale, npu_scale)
-        
+
     @unittest.skip("skip test_npu_kronecker_quant_bfloat16 now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_kronecker_quant_bfloat16(self):
@@ -106,7 +106,7 @@ class TestNPUFlatQuant(TestCase):
         npu_out, npu_scale = self.npu_op_exec_kronecker_quant_ratio(x, p1, p2, 0.7848)
         self.assertRtolEqual(golden_out, npu_out)
         self.assertRtolEqual(golden_scale, npu_scale)
-    
+
     @unittest.skip("skip test_npu_kronecker_quant_float16_dst_type_max now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_kronecker_quant_float16_dst_type_max(self):
@@ -116,7 +116,7 @@ class TestNPUFlatQuant(TestCase):
         npu_out, npu_scale = self.npu_op_exec_kronecker_quant_dst_type_max(x, p1, p2, 1.0, 0.0)
         self.assertRtolEqual(golden_out, npu_out)
         self.assertRtolEqual(golden_scale, npu_scale)
-    
+
     @unittest.skip("skip test_npu_kronecker_quant_bfloat16_dst_type_max now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_kronecker_quant_bfloat16_dst_type_max(self):

@@ -26,7 +26,7 @@ class TestForeachRound(TestCase):
             if not result:
                 self.fail("result error!")
         return True
-    
+
     def create_tensors(self, tensor_nums, dtype):
         cpu_tensors = []
         npu_tensors = []
@@ -38,7 +38,7 @@ class TestForeachRound(TestCase):
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
 
-    
+
     def test_foreach_round_off_number_out_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -48,8 +48,8 @@ class TestForeachRound(TestCase):
             npu_output = torch._foreach_round(npu_tensors)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
-    
+
+
     def test_foreach_round_off_number_out_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -70,7 +70,7 @@ class TestForeachRound(TestCase):
 
             self.assert_equal(cpu_output, npu_output)
 
-    
+
     def test_foreach_round_off_number_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -79,8 +79,8 @@ class TestForeachRound(TestCase):
             torch._foreach_round_(npu_tensors)
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
-    
-    
+
+
     def test_foreach_round_off_number_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :

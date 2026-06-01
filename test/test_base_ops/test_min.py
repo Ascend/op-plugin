@@ -529,7 +529,7 @@ class TestMin(TestCase):
                         in keepdim_list
                         ]
         self.amin_result(shape_format)
-    
+
     def test_minimum_scalar(self):
         a = torch.randn(2, 3).npu()
         b = torch.tensor(1)

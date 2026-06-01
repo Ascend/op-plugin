@@ -26,7 +26,7 @@ class TestForeachClampMaxList(TestCase):
             if not result:
                 self.fail("result error!")
         return True
-    
+
     def create_tensors(self, dtype, shapes):
         cpu_tensors = []
         npu_tensors = []
@@ -41,7 +41,7 @@ class TestForeachClampMaxList(TestCase):
                 cpu_tensors.append(t)
                 npu_tensors.append(t)
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 2
         cpu_inputs = []
@@ -62,18 +62,18 @@ class TestForeachClampMaxList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float32")
-            
+
             cpu_output = torch._foreach_clamp_max(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_clamp_max(npu_tensors[0], npu_tensors[1])
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
 
     def test_foreach_clamp_max_list_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float16")
-            
+
             cpu_output = torch._foreach_clamp_max(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_clamp_max(npu_tensors[0], npu_tensors[1])
 
@@ -84,7 +84,7 @@ class TestForeachClampMaxList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "bfloat16")
-            
+
             cpu_output = torch._foreach_clamp_max(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_clamp_max(npu_tensors[0], npu_tensors[1])
 
@@ -94,7 +94,7 @@ class TestForeachClampMaxList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "int32")
-            
+
             cpu_output = torch._foreach_clamp_max(cpu_tensors[0], cpu_tensors[1])
             npu_output = torch._foreach_clamp_max(npu_tensors[0], npu_tensors[1])
 
@@ -104,7 +104,7 @@ class TestForeachClampMaxList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float32")
-            
+
             torch._foreach_clamp_max_(cpu_tensors[0], cpu_tensors[1])
             torch._foreach_clamp_max_(npu_tensors[0], npu_tensors[1])
 
@@ -114,18 +114,18 @@ class TestForeachClampMaxList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "float16")
-            
+
             torch._foreach_clamp_max_(cpu_tensors[0], cpu_tensors[1])
             torch._foreach_clamp_max_(npu_tensors[0], npu_tensors[1])
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-            
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_clamp_max_list_inplace_bfloat16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "bfloat16")
-            
+
             torch._foreach_clamp_max_(cpu_tensors[0], cpu_tensors[1])
             torch._foreach_clamp_max_(npu_tensors[0], npu_tensors[1])
 
@@ -135,7 +135,7 @@ class TestForeachClampMaxList(TestCase):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
             cpu_tensors, npu_tensors = self.create_input_tensors(tensor_num, "int32")
-            
+
             torch._foreach_clamp_max_(cpu_tensors[0], cpu_tensors[1])
             torch._foreach_clamp_max_(npu_tensors[0], npu_tensors[1])
 

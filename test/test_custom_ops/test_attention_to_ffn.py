@@ -64,7 +64,7 @@ class TestAttentionToFFN(TestCase):
             layer_id = torch.tensor([default_layer_id], dtype = torch.int32).npu()
             expert_ids = expert_ids_list[rank - ffn_worker_num].to(torch.int32).npu()
             expert_rank_table_npu = expert_rank_table.to(torch.int32).npu()
-            
+
             torch_npu.npu_attention_to_ffn(x=x,
                 session_id = session_id,
                 micro_batch_id = micro_batch_id,
@@ -95,16 +95,16 @@ class TestAttentionToFFN(TestCase):
 
             token_info_cpu = token_info_npu.cpu()
             token_data_cpu = token_data_npu.cpu()
-            c2p.put([rank, 
+            c2p.put([rank,
                 [token_info_cpu, token_data_cpu]
             ])
-        
+
         p2c.get()
 
     def _test_multiprocess(self, f, init_pg, input_list):
         bs, k, h, micro_batch_num, default_micro_batch_id, default_layer_id, attention_worker_num, ffn_worker_num, world_size, ep_world_size, tp_world_size, moe_expert_num, window_size, input_type, \
             x, expert_ids, expert_rank_table, ffn_token_info_table_shape, ffn_token_data_shape, attn_token_info_table_shape, token_info_golden, token_data_golden, token_data_mask = input_list
-        
+
         ctx = mp.get_context('spawn')
         c2p = ctx.Queue(world_size)
         p2c = ctx.Queue(world_size)
@@ -125,7 +125,7 @@ class TestAttentionToFFN(TestCase):
             if rank < ffn_worker_num:
                 token_info_list[rank] = output[0]
                 token_data_list[rank] = output[1]
-        
+
         for rank in range(ffn_worker_num):
             self.assertEqual(token_info_list[rank], token_info_golden[rank],
                              ("rank {} Expect receive tensor {} but got {}.").format(rank, token_info_golden[rank], token_info_list[rank]))
@@ -133,7 +133,7 @@ class TestAttentionToFFN(TestCase):
         for rank in range(ffn_worker_num):
              self.assertEqual(token_data_list[rank], token_data_golden[rank],
                              ("rank {} Expect receive tensor {} but got {}.").format(rank, token_data_list[rank], token_data_golden[rank]))
-        
+
         for _ in range(world_size):
             p2c.put(0)
 
@@ -171,7 +171,7 @@ class TestAttentionToFFN(TestCase):
             for token_id in range(bs):
                 attn2ffn(token_id, x_golden[attn_id, X - 1, token_id], expert_ids_golden[attn_id, X - 1, token_id], attn_id)
         token_info_golden[:, :, :, 0] = 1
-        
+
         return token_info_golden, token_data_golden, token_data_mask
 
     def gen_expert_rank_table(self, moe_rank_ffn_num, experts_per_rank, moe_expert_num, layer_num, ffn_worker_num):
@@ -185,7 +185,7 @@ class TestAttentionToFFN(TestCase):
             start = i * experts_per_rank
             end = start + experts_per_rank
             cards[i] = valid_exp_id[start:end]
-        
+
         for _ in range(layer_num):
             layer_e1 = []
             for _ in range(moe_expert_num):
@@ -202,7 +202,7 @@ class TestAttentionToFFN(TestCase):
                     num_exp_id = random.choice(cards_h[num_rank_id])
                     item.append(num_exp_id)
                     cards_h[num_rank_id].remove(num_exp_id)
-                
+
                 layer_e1.append(item)
                 max_len = max(max_len, len(item))
             layer_e1.append([1, ffn_worker_num - 1, moe_expert_num])
@@ -241,7 +241,7 @@ class TestAttentionToFFN(TestCase):
         ffn_worker_num = 5
         input_type = torch.bfloat16
         window_size = 1024 * 1024 * 200
-        
+
         x = torch.empty([attention_worker_num, X, bs, h], dtype = input_type).uniform_(-1024, 1024)
         ep_expert_ids = [torch.randperm(moe_expert_num, dtype = torch.int32)[:k] for _ in range(bs * attention_worker_num)]
         expert_ids = torch.cat(ep_expert_ids).view([attention_worker_num, X, bs, k])

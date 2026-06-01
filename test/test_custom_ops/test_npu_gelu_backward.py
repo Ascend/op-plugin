@@ -12,7 +12,7 @@ class TestNPUGeluBackward(TestCase):
     def get_golden(self, grad_tensor, input_self_tensor, approximate="none"):
         output = torch.ops.aten.gelu_backward(grad_tensor, input_self_tensor, approximate=approximate)
         return output
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_gelu_backward(self):
         shape = [100, 400]

@@ -63,9 +63,9 @@ class TestGroupedMatmulAdd(TestCase):
             weight_tensor = weight[last:i, :].cpu().to(torch.float)
             result.append(torch.matmul(x_tensor.t(), weight_tensor))
             last = i
-        
+
         result = torch.stack(result).reshape(y.shape) + y.cpu()
-        
+
         return result.npu()
 
     def cpu_golden_fp64(self, y, x, weight, group_list, transpose_x, transpose_weight, group_type):
@@ -76,9 +76,9 @@ class TestGroupedMatmulAdd(TestCase):
             weight_tensor = weight[last:i, :].cpu().to(torch.float64)
             result.append(torch.matmul(x_tensor.t(), weight_tensor))
             last = i
-        
+
         result = torch.stack(result).reshape(y.shape) + y.cpu().to(torch.float64)
-        
+
         return result.npu()
 
     @unittest.skip("Skipping test_npu_grouped_matmul_add_ for now")

@@ -32,7 +32,7 @@ class TestPolar(TestCase):
         for item in shape_format:
             cpu_input1, npu_input1 = create_common_tensor([item[0], 0, item[1]], -1, 1)
             cpu_input2, npu_input2 = create_common_tensor([item[0], 0, item[1]], -1, 1)
-            
+
             cpu_output, cpu_input1_grad, cpu_input2_grad = self.cpu_op_exec(cpu_input1, cpu_input2)
             npu_output, npu_input1_grad, npu_input2_grad = self.npu_op_exec(npu_input1, npu_input2)
 

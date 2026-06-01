@@ -82,10 +82,10 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
             if (tempV > 0):
             # 调用 GMM_Swiglu_quant 处理当前组
                 quantOutput[start_idx:start_idx + tempV], quantScaleOutput[start_idx:start_idx + tempV] = \
-                    self.GMM_Swiglu_quant(x[start_idx:start_idx + tempV], 
-                                    weight[i], 
-                                    perChannelScale[i], 
-                                    perTokenScale[start_idx:start_idx + tempV], 
+                    self.GMM_Swiglu_quant(x[start_idx:start_idx + tempV],
+                                    weight[i],
+                                    perChannelScale[i],
+                                    perTokenScale[start_idx:start_idx + tempV],
                                     tempV)
 
             start_idx += tempV  # 更新起始索引以处理下一组

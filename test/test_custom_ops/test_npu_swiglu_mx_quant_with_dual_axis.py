@@ -39,7 +39,7 @@ class TestSwigluMxQuantWithDualAxis(TestCase):
         mxscale2 = torch.tensor([[[118, 0], [118, 0], [118, 0], [118, 0]]],
                                 dtype=torch.uint8)
         return y1, mxscale1, y2, mxscale2
-    
+
     def generate_input(self, input, value, dtype="float16"):
         if dtype == "float16":
             data_type = torch.float16

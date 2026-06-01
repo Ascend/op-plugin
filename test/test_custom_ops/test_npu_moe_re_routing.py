@@ -46,7 +46,7 @@ def numpy_to_torch(np_arr):
         np_uint8 = np_arr.view(np.uint8)
         t_uint8 = torch.from_numpy(np_uint8)
         return t_uint8.view(torch_dtype)
-    
+
     if str(np_arr.dtype) in list(FP8_DTYPE_MAP_NUMPY_TO_TORCH.keys()):
         return _bitcast_float8_to_torch(np_arr)
     return torch.from_numpy(np_arr)
@@ -111,7 +111,7 @@ class TestMoeReRouting(TestCase):
         for i in range(rank_num):
             for j in range(expert_num):
                 expert_token_num_per_rank[i, j] = (bs // expert_num) + np.random.randint(0, 5)
-        
+
         if dtype == torch_npu.float4_e2m1fn_x2:
             fp4_dtype = numpy_float4_e2m1fn()
             tokens = np.random.randn(bs, hidden_dim // 2).astype(fp4_dtype)
@@ -120,10 +120,10 @@ class TestMoeReRouting(TestCase):
             tokens = tokens.astype(numpy_hifloat8())
         else:
             tokens = np.random.randn(bs, hidden_dim).astype(np.float16)
-        
+
         return tokens, expert_token_num_per_rank
 
-    def custom_op_exec(self, tokens_npu, expert_token_num_per_rank_npu, per_token_scales_npu, 
+    def custom_op_exec(self, tokens_npu, expert_token_num_per_rank_npu, per_token_scales_npu,
                         expert_token_num_type, idx_type, tokens_dtype=None):
         return torch_npu.npu_moe_re_routing(
             tokens_npu,
@@ -139,18 +139,18 @@ class TestMoeReRouting(TestCase):
         hidden_dim = tokens.shape[1]
         rank_num = expert_token_num_per_rank.shape[0]
         expert_num = expert_token_num_per_rank.shape[1]
-        
+
         permute_tokens = np.zeros((bs, hidden_dim), dtype=tokens.dtype)
         permute_per_token_scales = np.ones((bs,), dtype=np.float32)
         permute_token_idx = np.arange(bs, dtype=np.int32)
-        
+
         if str(tokens.dtype) == "hifloat8":
             permute_tokens = tokens.copy()
         else:
             permute_tokens = tokens.copy()
-        
+
         expert_token_num = expert_token_num_per_rank[0, :expert_num].copy()
-        
+
         return permute_tokens, permute_per_token_scales, permute_token_idx, expert_token_num
 
     @SupportedDevices(['Ascend910B'])
@@ -158,18 +158,18 @@ class TestMoeReRouting(TestCase):
         bs_list = [32, 128]
         hidden_dim_list = [4096]
         dtype_list = [torch.float16]
-        
+
         for bs, hidden_dim, dtype in zip(bs_list, hidden_dim_list, dtype_list):
             tokens, expert_token_num_per_rank = self.generate_inputs(bs, hidden_dim, dtype)
             tokens_npu = torch.from_numpy(tokens).npu()
             expert_token_num_per_rank_npu = torch.from_numpy(expert_token_num_per_rank).npu()
-            
+
             permute_tokens, permute_scales, permute_idx, expert_token_num = \
                 self.custom_op_exec(tokens_npu, expert_token_num_per_rank_npu, None, 1, 0)
-            
+
             golden_tokens, golden_scales, golden_idx, golden_expert_num = \
                 self.golden_calc(tokens, expert_token_num_per_rank)
-            
+
             self.assertEqual(permute_tokens.shape[0], bs)
             self.assertEqual(permute_tokens.shape[1], hidden_dim)
 
@@ -178,15 +178,15 @@ class TestMoeReRouting(TestCase):
         bs_list = [32]
         hidden_dim_list = [4096]
         dtype_list = [torch.bfloat16]
-        
+
         for bs, hidden_dim, dtype in zip(bs_list, hidden_dim_list, dtype_list):
             tokens, expert_token_num_per_rank = self.generate_inputs(bs, hidden_dim, dtype)
             tokens_npu = torch.from_numpy(tokens).npu()
             expert_token_num_per_rank_npu = torch.from_numpy(expert_token_num_per_rank).npu()
-            
+
             permute_tokens, permute_scales, permute_idx, expert_token_num = \
                 self.custom_op_exec(tokens_npu, expert_token_num_per_rank_npu, None, 1, 0)
-            
+
             self.assertEqual(permute_tokens.shape[0], bs)
             self.assertEqual(permute_tokens.shape[1], hidden_dim)
 
@@ -200,30 +200,30 @@ class TestMoeReRouting(TestCase):
         hidden_dim_list = [4096, 7168]
         expert_token_num_type_list = [1]
         idx_type_list = [0, 1]
-        
+
         for bs, hidden_dim, expert_token_num_type, idx_type in zip(
                 bs_list, hidden_dim_list, expert_token_num_type_list, idx_type_list):
             tokens, expert_token_num_per_rank = self.generate_inputs(bs, hidden_dim, torch_npu.hifloat8)
-            
+
             tokens_uint8 = tokens.view(np.uint8)
             tokens_npu = torch.from_numpy(tokens_uint8).npu()
             expert_token_num_per_rank_npu = torch.from_numpy(expert_token_num_per_rank).npu()
-            
+
             permute_tokens, permute_scales, permute_idx, expert_token_num = \
-                self.custom_op_exec(tokens_npu, expert_token_num_per_rank_npu, None, 
+                self.custom_op_exec(tokens_npu, expert_token_num_per_rank_npu, None,
                                     expert_token_num_type, idx_type, tokens_dtype=290)
-            
+
             self.assertEqual(permute_tokens.dtype, torch.uint8)
             self.assertEqual(permute_tokens.shape[0], bs)
             self.assertEqual(permute_tokens.shape[1], hidden_dim)
-            
+
             golden_tokens, golden_scales, golden_idx, golden_expert_num = \
                 self.golden_calc(tokens, expert_token_num_per_rank, expert_token_num_type)
-            
+
             permute_tokens_cpu = permute_tokens.cpu()
             golden_tokens_torch = numpy_to_torch(golden_tokens)
-            
-            assert_tensors_close(permute_tokens_cpu, golden_tokens_torch, rtol=1e-2, atol=1e-2, 
+
+            assert_tensors_close(permute_tokens_cpu, golden_tokens_torch, rtol=1e-2, atol=1e-2,
                                  label=f"hif8_tokens_bs={bs}_h={hidden_dim}")
 
     @unittest.skipIf(
@@ -236,25 +236,25 @@ class TestMoeReRouting(TestCase):
         hidden_dim_list = [4096]
         expert_token_num_type = 1
         idx_type = 0
-        
+
         for bs, hidden_dim in zip(bs_list, hidden_dim_list):
             tokens, expert_token_num_per_rank = self.generate_inputs(bs, hidden_dim, torch_npu.hifloat8)
-            
+
             per_token_scales = np.random.randn(bs).astype(np.float32)
-            
+
             tokens_uint8 = tokens.view(np.uint8)
             tokens_npu = torch.from_numpy(tokens_uint8).npu()
             expert_token_num_per_rank_npu = torch.from_numpy(expert_token_num_per_rank).npu()
             per_token_scales_npu = torch.from_numpy(per_token_scales).npu()
-            
+
             permute_tokens, permute_scales, permute_idx, expert_token_num = \
                 self.custom_op_exec(tokens_npu, expert_token_num_per_rank_npu, per_token_scales_npu,
                                     expert_token_num_type, idx_type, tokens_dtype=290)
-            
+
             self.assertEqual(permute_tokens.dtype, torch.uint8)
             self.assertEqual(permute_scales.dtype, torch.float32)
             self.assertEqual(permute_idx.dtype, torch.int32)
-            
+
             self.assertEqual(permute_tokens.shape[0], bs)
             self.assertEqual(permute_tokens.shape[1], hidden_dim)
 
@@ -268,18 +268,18 @@ class TestMoeReRouting(TestCase):
         hidden_dim_list = [4096, 7168]
         expert_token_num_type = 1
         idx_type = 0
-        
+
         for bs, hidden_dim in zip(bs_list, hidden_dim_list):
             tokens, expert_token_num_per_rank = self.generate_inputs(bs, hidden_dim, torch_npu.float4_e2m1fn_x2)
-            
+
             tokens_uint8 = tokens.view(np.uint8)
             tokens_npu = torch.from_numpy(tokens_uint8).npu()
             expert_token_num_per_rank_npu = torch.from_numpy(expert_token_num_per_rank).npu()
-            
+
             permute_tokens, permute_scales, permute_idx, expert_token_num = \
                 self.custom_op_exec(tokens_npu, expert_token_num_per_rank_npu, None,
                                     expert_token_num_type, idx_type, tokens_dtype=296)
-            
+
             self.assertEqual(permute_tokens.dtype, torch.uint8)
             self.assertEqual(permute_tokens.shape[0], bs)
             self.assertEqual(permute_tokens.shape[1], hidden_dim // 2)
@@ -294,25 +294,25 @@ class TestMoeReRouting(TestCase):
         hidden_dim_list = [4096]
         expert_token_num_type = 1
         idx_type = 0
-        
+
         for bs, hidden_dim in zip(bs_list, hidden_dim_list):
             tokens, expert_token_num_per_rank = self.generate_inputs(bs, hidden_dim, torch_npu.float4_e2m1fn_x2)
-            
+
             per_token_scales = np.random.randn(bs).astype(np.float32)
-            
+
             tokens_uint8 = tokens.view(np.uint8)
             tokens_npu = torch.from_numpy(tokens_uint8).npu()
             expert_token_num_per_rank_npu = torch.from_numpy(expert_token_num_per_rank).npu()
             per_token_scales_npu = torch.from_numpy(per_token_scales).npu()
-            
+
             permute_tokens, permute_scales, permute_idx, expert_token_num = \
                 self.custom_op_exec(tokens_npu, expert_token_num_per_rank_npu, per_token_scales_npu,
                                     expert_token_num_type, idx_type, tokens_dtype=296)
-            
+
             self.assertEqual(permute_tokens.dtype, torch.uint8)
             self.assertEqual(permute_scales.dtype, torch.float32)
             self.assertEqual(permute_idx.dtype, torch.int32)
-            
+
             self.assertEqual(permute_tokens.shape[0], bs)
             self.assertEqual(permute_tokens.shape[1], hidden_dim // 2)
 

@@ -28,7 +28,7 @@ class TestNPUAddRmsNormV2(TestCase):
     def custom_op_exec_functional(self, x1, x2, gamma, epsilon=1e-6):
         rstd, x1_inplace, x2_inplace = torch_npu.npu_add_rms_norm_v2_functional(x1, x2, gamma, epsilon)
         return rstd.cpu().numpy(), x1_inplace.cpu().numpy(), x2_inplace.cpu().numpy()
-    
+
     def custom_op_exec(self, x1, x2, gamma, epsilon=1e-6):
         rstd = torch_npu.npu_add_rms_norm_v2(x1, x2, gamma, epsilon)
         return rstd.cpu().numpy()
@@ -43,9 +43,9 @@ class TestNPUAddRmsNormV2(TestCase):
         npu_input0 = torch.from_numpy(cpu_input0).npu()
         npu_input1 = torch.from_numpy(cpu_input1).npu()
         npu_input2 = torch.from_numpy(cpu_input2).npu()
-        
+
         rstd_cpu, result_cpu, x_cpu = self.supported_op_exec(cpu_input0, cpu_input1, cpu_input2)
-        
+
         rstd_func, x1_inplace, x2_inplace = self.custom_op_exec_functional(npu_input0, npu_input1, npu_input2)
         self.assertRtolEqual(rstd_func, rstd_cpu, 0.0001)
         self.assertRtolEqual(x1_inplace, result_cpu, 0.0001)
@@ -64,9 +64,9 @@ class TestNPUAddRmsNormV2(TestCase):
         npu_input0 = torch.from_numpy(cpu_input0).npu()
         npu_input1 = torch.from_numpy(cpu_input1).npu()
         npu_input2 = torch.from_numpy(cpu_input2).npu()
-        
+
         rstd_cpu, result_cpu, x_cpu = self.supported_op_exec(cpu_input0, cpu_input1, cpu_input2)
-        
+
         rstd_func, x1_inplace, x2_inplace = self.custom_op_exec_functional(npu_input0, npu_input1, npu_input2)
         self.assertRtolEqual(rstd_func, rstd_cpu, 0.0001)
         self.assertRtolEqual(x1_inplace, result_cpu, 0.0001)

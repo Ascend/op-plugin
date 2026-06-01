@@ -34,7 +34,7 @@ class TestNpuPrefetch(TestCase):
         self.assertRtolEqual(original_output1, npu_output1)
         self.assertRtolEqual(original_output2, npu_output2)
         self.assertRtolEqual(original_output3, npu_output3)
-   
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_prefetch_dependency(self):
         input_shape = [np.float16, -1, (8, 8)]

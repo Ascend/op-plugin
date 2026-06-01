@@ -61,9 +61,9 @@ class TestDynamicQuant(TestCase):
         scale = input_max * (1.0 / scale_max)
         input_scaled_tensor = input_scaled_tensor / scale
         round_data = torch.round(input_scaled_tensor, decimals=0).to(torch.int8)
-        
+
         return [round_data, scale.squeeze(-2)]
-    
+
     def dynamic_quant_perchannel_impl(self, input_tensor, smooth_scales=None, group_index=None, dst_type=torch.int8, quant_mode="perchannel"):
         return torch_npu.npu_dynamic_quant(input_tensor, smooth_scales=smooth_scales, group_index=group_index, dst_type=dst_type, quant_mode=quant_mode)
 
@@ -84,7 +84,7 @@ class TestDynamicQuant(TestCase):
         else:
             smooth_scales = torch.randn(input_shape[-1], dtype=date_type)
         return input_tensor, smooth_scales, group_index
-    
+
     def generate_input_perchannel(self, input_shape, dtype="float16"):
         date_type = torch.float16 if dtype == "float16" else torch.bfloat16
         input_tensor = torch.randn(input_shape, dtype=date_type)
@@ -97,7 +97,7 @@ class TestDynamicQuant(TestCase):
         x_uint8_right = ((x_uint8 & 0x0F) << 4).view(torch.int8) >> 4
         x_int4 = torch.cat([x_uint8_right, x_uint8_left], dim=-1).contiguous()
         return x_int4
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_dynamic_quant_fp16_input(self, device="npu"):
         input_tensor, _, _ = self.generate_input(input_shape=[2, 32, 256],
@@ -144,7 +144,7 @@ class TestDynamicQuant(TestCase):
         supported_output = self.supported_op_exec(input_tensor.clone(), smooth_scales.clone(), group_index.clone())
         custom_output = self.custom_op_exec(input_tensor.clone(), smooth_scales.clone(), group_index.clone(), torch.int8)
         assert_close(supported_output[0], custom_output[0], atol=1.0, rtol=0.0)
-        assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001)   
+        assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_dynamic_quant_int4_fp16_input(self, device="npu"):
@@ -208,6 +208,6 @@ class TestDynamicQuant(TestCase):
         y = custom_output[0].view([2, 32, 256])
         assert_close(supported_output[0], y, atol=0.1, rtol=0.01)
         assert_close(supported_output[1], custom_output[1], atol=0.01, rtol=0.001)
-        
+
 if __name__ == "__main__":
     run_tests()

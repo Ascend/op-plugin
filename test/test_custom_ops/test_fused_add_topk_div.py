@@ -34,8 +34,8 @@ class TestAtbFusedAddTopkDiv(TestCase):
         output = input0.clone()
         group_tensor = torch.topk(input0, n).values
         group_tensor = torch.sum(group_tensor, dim=-1)
-        sort_index = torch.from_numpy(np.argsort(-group_tensor.numpy(), kind='stable')) 
-        cols_to_use = torch.arange(group_topk, group_num, dtype=torch.long) 
+        sort_index = torch.from_numpy(np.argsort(-group_tensor.numpy(), kind='stable'))
+        cols_to_use = torch.arange(group_topk, group_num, dtype=torch.long)
         row_indices = torch.arange(sort_index.shape[0]).repeat_interleave(cols_to_use.shape[0])
         col_indices = sort_index.index_select(1, cols_to_use).view(-1)
         output[row_indices, col_indices] = float(0)

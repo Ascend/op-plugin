@@ -14,7 +14,7 @@ class TestDenseLightningIndexerSoftmaxLse(TestCase):
             score_tmp = torch.matmul(q[i*g_size:(i+1)*g_size, :, :].to(torch.float32), k[i:i+1, :, :].to(torch.float32))
             score = torch.cat((score, score_tmp), 0) if score is not None else score_tmp
         return score
-    
+
     def _dense_lightning_indexer_softmax_lse(self, query_index, key_index, weights, actual_seq_lengths_query, actual_seq_lengths_key, layout, sparse_mode=3):
         if layout == 'BSND':
             B, q_seq_len, q_head_num, head_dim = query_index.shape
@@ -38,7 +38,7 @@ class TestDenseLightningIndexerSoftmaxLse(TestCase):
                 k_seq_len_1batch = k_seq_len
                 q_index_1batch = query_index[i]
                 k_index_1batch = key_index[i]
-                w = weights[i] 
+                w = weights[i]
             else: # TND
                 if i == 0:
                     q_seq_len_1batch = actual_seq_lengths_query[i]
@@ -99,9 +99,9 @@ class TestDenseLightningIndexerSoftmaxLse(TestCase):
         query_index = query_index.npu()
         key_index = key_index.npu()
         weights = weights.npu()
-        npu_out, npu_out1 = torch_npu.npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, 
-                                                                              actual_seq_qlen=actual_seq_lengths_query, 
-                                                                              actual_seq_klen=actual_seq_lengths_key, 
+        npu_out, npu_out1 = torch_npu.npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights,
+                                                                              actual_seq_qlen=actual_seq_lengths_query,
+                                                                              actual_seq_klen=actual_seq_lengths_key,
                                                                               layout=layout,
                                                                               sparse_mode=sparse_mode)
 
@@ -137,9 +137,9 @@ class TestDenseLightningIndexerSoftmaxLse(TestCase):
         weights = weights.npu()
         actual_seq_lengths_query = actual_seq_lengths_query.npu()
         actual_seq_lengths_key = actual_seq_lengths_key.npu()
-        npu_out, npu_out1 = torch_npu.npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, 
-                                                                              actual_seq_qlen=actual_seq_lengths_query, 
-                                                                              actual_seq_klen=actual_seq_lengths_key, 
+        npu_out, npu_out1 = torch_npu.npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights,
+                                                                              actual_seq_qlen=actual_seq_lengths_query,
+                                                                              actual_seq_klen=actual_seq_lengths_key,
                                                                               layout=layout,
                                                                               sparse_mode=sparse_mode)
 

@@ -97,7 +97,7 @@ class TestNpuGiou(TestCase):
         ]
         is_trans_list = [True]
         mode_list = ["iou"]
-        
+
         shape_format = [[j, k, m]
                         for j in shape_list
                         for k in is_trans_list

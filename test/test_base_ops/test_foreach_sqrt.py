@@ -27,7 +27,7 @@ class TestForeachSqrt(TestCase):
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
 
-    
+
     def test_foreach_sqrt_out_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -36,8 +36,8 @@ class TestForeachSqrt(TestCase):
             npu_output = torch._foreach_sqrt(npu_tensors)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
-    
+
+
     def test_foreach_sqrt_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -58,7 +58,7 @@ class TestForeachSqrt(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
 
-    
+
     def test_foreach_sqrt_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -67,8 +67,8 @@ class TestForeachSqrt(TestCase):
             torch._foreach_sqrt_(npu_tensors)
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
-    
-    
+
+
     def test_foreach_sqrt_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :

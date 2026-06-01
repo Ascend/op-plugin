@@ -58,7 +58,7 @@ class TestNPUGemmaRmsNorm(TestCase):
         self.assertRtolEqual(supported_output0, custom_output0)
         self.assertRtolEqual(supported_output1, custom_output1)
 
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_gemma_rms_norm_meta(self):
         cpu_input0 = np.random.uniform(0, 100, [256, 512]).astype(np.float32)

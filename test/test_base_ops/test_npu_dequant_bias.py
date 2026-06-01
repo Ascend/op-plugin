@@ -24,9 +24,9 @@ class TestNpuDequantBias(TestCase):
     def golden_dequant_bias(self, params: DequantBiasParams):
         x = params.x.float()
         weight_scale = params.weight_scale.float()
-        
+
         dequantized = x * weight_scale
-        
+
         result = dequantized.to(params.output_dtype)
         return result.cpu().numpy()
 
@@ -37,20 +37,20 @@ class TestNpuDequantBias(TestCase):
         weight_scale = torch.rand(3, dtype=torch.float32).npu()
         activation_scale = torch.rand(2, dtype=torch.float32).npu()
         bias = torch.randn(3, dtype=torch.float32).npu()
-        
+
         npu_result = torch_npu.npu_dequant_bias(
-            x, 
+            x,
             weight_scale,
             activation_scale,
             bias,
             output_dtype=torch.float16
         )
-        
+
         params = DequantBiasParams(
             x, weight_scale, activation_scale, bias, torch.float16
         )
         golden_result = self.golden_dequant_bias(params)
-        
+
         self.assertRtolEqual(golden_result, golden_result, prec16=1e-2)
 
     @unittest.skip("skip test_npu_dequant_bias_no_optional now")
@@ -58,20 +58,20 @@ class TestNpuDequantBias(TestCase):
     def test_npu_dequant_bias_no_optional(self):
         x = torch.randint(0, 255, (4, 5), dtype=torch.int32).npu()
         weight_scale = torch.rand(5, dtype=torch.float32).npu()
-        
+
         npu_result = torch_npu.npu_dequant_bias(
-            x, 
+            x,
             weight_scale,
             None,
             None,
             output_dtype=torch.float16
         )
-        
+
         params = DequantBiasParams(
             x, weight_scale, None, None, torch.float16
         )
         golden_result = self.golden_dequant_bias(params)
-        
+
         self.assertRtolEqual(golden_result, golden_result, prec16=1e-2)
 
     @unittest.skip("skip test_npu_dequant_bias_broadcast now")
@@ -80,20 +80,20 @@ class TestNpuDequantBias(TestCase):
         x = torch.randint(0, 255, (1, 4), dtype=torch.int32).npu()
         weight_scale = torch.rand(4, dtype=torch.float32).npu()
         activation_scale = torch.rand(1, dtype=torch.float32).npu()
-        
+
         npu_result = torch_npu.npu_dequant_bias(
-            x, 
+            x,
             weight_scale,
             activation_scale,
             None,
             output_dtype=torch.float16
         )
-        
+
         params = DequantBiasParams(
             x, weight_scale, activation_scale, None, torch.float16
         )
         golden_result = self.golden_dequant_bias(params)
-        
+
         self.assertRtolEqual(golden_result, golden_result, prec16=1e-2)
 
 

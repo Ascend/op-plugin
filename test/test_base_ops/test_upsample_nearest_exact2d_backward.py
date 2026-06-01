@@ -41,7 +41,7 @@ class TestUpsampleNearestExact2dBackward(TestCase):
         output.backward(torch.ones_like(output))
         grad = inputs.grad
         return grad
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_UpsampleNearestExact2dBackward_common_shape_format(self):
         shape_format = [

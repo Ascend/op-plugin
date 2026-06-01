@@ -20,7 +20,7 @@ class TestMatmulAlltoAll(TestCase):
         dist.init_process_group(backend='hccl', world_size=world_size, rank=rank)
         return dist
 
-    
+
     @classmethod
     def _test_npu_matmul_all_to_all(cls, rank, input_list):
         # Unpack inputs
@@ -47,7 +47,7 @@ class TestMatmulAlltoAll(TestCase):
         # Return result
         c2p.put((rank, out.cpu()))
         pg.barrier()
-        
+
     def _test_multiprocess(self, f, init_pg, input_list): # f function, init_pg function, input_list list[]
         expt_out_list, x1_list, x2_list, bias_list, world_size = input_list
 

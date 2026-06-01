@@ -15,7 +15,7 @@ class TestForeachClampMinScalar(TestCase):
         "int32" : torch.int32,
         "bfloat16" : torch.bfloat16
     }
-    
+
     def assert_equal(self, cpu_outs, npu_outs):
         for cpu_out, npu_out in zip(cpu_outs, npu_outs):
             if (cpu_out.shape != npu_out.shape):
@@ -26,7 +26,7 @@ class TestForeachClampMinScalar(TestCase):
             if not result:
                 self.fail("result error!")
         return True
-        
+
     def create_tensors(self, dtype, shapes):
         cpu_tensors = []
         npu_tensors = []
@@ -41,7 +41,7 @@ class TestForeachClampMinScalar(TestCase):
                 cpu_tensors.append(t)
                 npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 1
         cpu_inputs = []

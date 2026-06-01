@@ -39,7 +39,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
             sum_col_size = ceil_align(ubfactor * n_align)
             sum_row_size = ceil_align(ubfactor * n_align)
             return inque_size + outque_size + 2 * norm_que_size + sum_col_size + sum_row_size
-        
+
         def backward_split_core(ub_size, total_core, T):
             aviable_ub_size = (ub_size - self.MASK_BUFFER - self.MAX_BUFFER_BACKWARD) // self.DOUBLE_BUFFER
             t_main = (T + total_core - 1) // total_core
@@ -64,7 +64,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
                 one_pice_size = forward_cal_occupy_size(1) * self.SIZEOF_FLOAT
                 ubfactor = aviable_ub_size // one_pice_size
             return SplitInfo(t_main, t_tail, used_core_num, ubfactor)
-        
+
         ub_size = 248 * 1024
         total_core = 64
         backward_split_info = backward_split_core(ub_size, total_core, T)
@@ -89,7 +89,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
         loop = (t_num + ubfactor - 1) // ubfactor
         main_num = ubfactor * (loop - 1)
         tail_num = t_num - main_num
-        
+
         iter_main_cache = []
         iter_tail_cache = []
         for norm in norm_cache_single_core:
@@ -134,7 +134,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
         loop = (t_num + ubfactor - 1) // ubfactor
         main_num = ubfactor * (loop - 1)
         tail_num = t_num - main_num
-        
+
         iter_main_cache = []
         iter_tail_cache = []
         for i in range(len(sum_col_cache_single_core)):
@@ -154,7 +154,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
                 row_ = row_main_reshape.reshape(loop - 1, -1) # [2, 8 * 2]
                 main_loop = torch.cat((row_, col_), dim=1) # [2, 32]
                 iter_main_cache.append(main_loop)
-                
+
             # tailloop处理
             sum_col_tail = sum_col[main_num:]
             sum_row_tail = sum_row[main_num:]
@@ -166,7 +166,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
             row_ = row_tail_reshape.reshape(1, -1) # [1, 8 * 1]
             tail_loop = torch.cat((row_, col_), dim=1) # [2, 8]
             iter_tail_cache.append(tail_loop)
-        
+
         if loop > 1:
             main_layout = torch.cat(iter_main_cache, dim=1) # [40, 16]
             tail_layout = torch.cat(iter_tail_cache, dim=1) # [40, 8]
@@ -274,7 +274,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
         # 最后一次迭代：列归一化
         dot_prod = torch.sum(grad_curr * norm_out[1], dim=0, keepdim=True)  # [1, n, T]
         grad_curr = (grad_curr - dot_prod) / sum_out[1].unsqueeze(0)
-        
+
         dot_prod = torch.sum(grad_curr * norm_out[0], dim=1, keepdim=True)  # [n, 1, T]
         grad_input = norm_out[0] * (grad_curr - dot_prod)  # [n, n, T]
         # 将结果从[n, n, T]转回[T, n, n]
@@ -320,7 +320,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
     # 手动反向传播
     def cpu_op_exec(self, grad_output, norm_list_golden, sum_list_golden, num_iters, bsnn_flag):
         norm_out_golden, sum_out_golden = self.convert_to_npu_format(norm_list_golden, sum_list_golden, num_iters)
-        grad_input_golden = self.sinkhorn_backward_golden(grad_output, norm_out_golden, sum_out_golden, num_iters, bsnn_flag)        
+        grad_input_golden = self.sinkhorn_backward_golden(grad_output, norm_out_golden, sum_out_golden, num_iters, bsnn_flag)
         return grad_input_golden
 
     def npu_op_exec(self, grad_output, norm_out, sum_out):
@@ -352,7 +352,7 @@ class TestNpuMhcSinkhornBackward(TestCase):
             sum_pad = F.pad(sum_col, (0, n_align - n1), mode='constant', value=PAD_VALE)
             sum_reshape = sum_pad.reshape(-1, *sum_pad.shape[-1:])
             return sum_reshape
-        
+
         tiling_info = []
         if out_flag != 0:
             tiling_info = self.do_op_tiling(T, n0, n_align)
@@ -365,12 +365,12 @@ class TestNpuMhcSinkhornBackward(TestCase):
         h_comb_softmax = prob + eps
         sum_col = h_comb_softmax.sum(dim=-2, keepdim=True) + eps
         h_comb = h_comb_softmax / sum_col
-        
+
         norm_cache.append(pad_norm(prob))
         norm_cache.append(pad_norm(h_comb))
         sum_row_cache.append(torch.ones(T, n0))
         sum_col_cache.append(pad_sum(sum_col))
-        
+
         for i in range(max(num_iters - 1, 0)):
             # Row Norm
             sum_row = (h_comb.sum(dim=-1, keepdim=True) + eps)
@@ -384,11 +384,11 @@ class TestNpuMhcSinkhornBackward(TestCase):
             norm_cache.append(pad_norm(h_comb))
             sum_col_cache.append(pad_sum(sum_col))
 
-        if out_flag != 0:                    
+        if out_flag != 0:
             norm_out, sum_out = self.proc_norm(norm_cache, sum_col_cache, sum_row_cache, tiling_info)
             norm_out = norm_out.reshape(-1)
             sum_out = sum_out.reshape(-1)
-        
+
         y, norm_list_golden, sum_list_golden = self.sinkhorn_forward_simple(tensor_x, num_iters, eps)
         # 构造输出梯度（假设loss = sum(y^2)）
         if bsnn_flag == 1:

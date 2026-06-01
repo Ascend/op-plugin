@@ -30,7 +30,7 @@ class TestRreluWithNoise(TestCase):
         dtype_list = [np.float32, np.float16]
         shape_list = [(1, 6, 4), (1, 4, 8), (1, 6, 8),
                       (2, 4, 5), (2, 5, 10), (2, 4, 10)]
-        
+
         shape_format = [[[i, j, k]] for i in dtype_list
                         for j in format_list for k in shape_list]
 
@@ -49,7 +49,7 @@ class TestRreluWithNoise(TestCase):
         format_list = [0, 3]
         dtype_list = [np.float32, np.float16]
         shape_list = [(1, 6, 4), (2, 5, 10), (2, 4, 10)]
-        
+
         shape_format = [[[i, j, k]] for i in dtype_list
                         for j in format_list for k in shape_list]
 

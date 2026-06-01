@@ -10,10 +10,10 @@ class TestDropout(TestCase):
         b = np.random.randint(0,100,size=(0)).astype(np.uint8)
         mask = torch.tensor(b).to(torch.uint8)
         output_cpu = torch.ops.aten.native_dropout_backward(grad_output, mask, p)
-        output_npu = torch.ops.aten.native_dropout_backward(grad_output.npu(), mask.npu(), p) 
+        output_npu = torch.ops.aten.native_dropout_backward(grad_output.npu(), mask.npu(), p)
         self.assertEqual(output_cpu, output_npu)
-    
-    
+
+
     def test_native_dropout_backward_fp32(self):
         self._test_native_dropout_backward(torch.float32, 2)
 

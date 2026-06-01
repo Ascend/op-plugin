@@ -24,11 +24,11 @@ class TestNPUCrossEntropyLoss(TestCase):
         else:
             ignore_mask = torch.ones((N,)).npu()
         loss_out = loss_out * ignore_mask
-        
+
         smooth_loss = -torch.sum(log_softmax_probs * weight.unsqueeze(0), -1, keepdim=False)
         if ignore_index >= 0:
             smooth_loss = smooth_loss * ignore_mask
-        
+
         if reduction == "mean":
             weight_after_mask = weight_yn * ignore_mask
             mean_out = torch.sum(loss_out, -1, keepdim=False) / torch.sum(weight_after_mask, -1, keepdim=False)
@@ -71,7 +71,7 @@ class TestNPUCrossEntropyLoss(TestCase):
             target_npu = torch.arange(0, N).npu()
             input_golden = input_npu.clone()
             target_golden = target_npu.clone()
-            
+
             golden0, golden1 = self.cross_entropy_loss_golden(N, C, input_golden,
                                                               target_golden, weight=None, ignore_index=-100,
                                                               label_smoothing=0.0, reduction=item[2])
@@ -85,7 +85,7 @@ class TestNPUCrossEntropyLoss(TestCase):
             else:
                 self.assertRtolEqual(golden0, out0, 2**(-10))
                 self.assertRtolEqual(golden1, out1, 2**(-10))
-    
+
     @unittest.skip("Skipping test_npu_cross_entropy_loss_backward for now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_cross_entropy_loss_backward(self):
@@ -105,10 +105,10 @@ class TestNPUCrossEntropyLoss(TestCase):
             target_npu = torch.arange(0, N).npu()
             input_golden = input_npu.clone()
             target_golden = target_npu.clone()
-            
+
             input_golden.requires_grad_()
             input_npu.requires_grad_()
-            
+
             golden0, _ = self.cross_entropy_loss_golden(N, C, input_golden,
                                                               target_golden, weight=None, ignore_index=-100,
                                                               label_smoothing=0.0, reduction=item[2])

@@ -15,7 +15,7 @@ class TestForeachAddScalar(TestCase):
         "int32" : torch.int32,
         "bfloat16" : torch.bfloat16
     }
-    
+
     def create_tensors(self, dtype, shapes):
         cpu_tensors = []
         npu_tensors = []
@@ -30,7 +30,7 @@ class TestForeachAddScalar(TestCase):
                 cpu_tensors.append(t)
                 npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 1
         cpu_inputs = []
@@ -106,7 +106,7 @@ class TestForeachAddScalar(TestCase):
             torch._foreach_add_(npu_tensors[0], scalar)
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-            
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_add_scalar_inplace_bfloat16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]

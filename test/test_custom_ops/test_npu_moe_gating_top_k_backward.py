@@ -236,16 +236,16 @@ class TestNpuMoeGatingTopKBackward(TestCase):
         # =====================================================================
         logits_gpu = logits_base.to(grad_y_dtype).npu().requires_grad_(True)
         bias_gpu = bias_base.to(grad_y_dtype).npu()
-        
+
         y_gpu, idx_gpu = topk_routing_with_score_function(
-            logits_gpu, 
-            topk=K, 
-            score_function="sigmoid", 
+            logits_gpu,
+            topk=K,
+            score_function="sigmoid",
             expert_bias=bias_gpu,
-            norm_topk_prob=True, 
+            norm_topk_prob=True,
             scaling_factor=routed_scaling_factor
         )
-        
+
         grad_out_gpu = grad_output_base.to(grad_y_dtype).npu()
         y_gpu.backward(grad_out_gpu)
         gpu_golden = logits_gpu.grad.detach().clone()
@@ -255,16 +255,16 @@ class TestNpuMoeGatingTopKBackward(TestCase):
         # =====================================================================
         logits_cpu = logits_base.to(torch.float64).requires_grad_(True)
         bias_cpu = bias_base.to(torch.float64)
-        
+
         y_cpu, _ = topk_routing_with_score_function(
-            logits_cpu, 
-            topk=K, 
-            score_function="sigmoid", 
+            logits_cpu,
+            topk=K,
+            score_function="sigmoid",
             expert_bias=bias_cpu,
-            norm_topk_prob=True, 
+            norm_topk_prob=True,
             scaling_factor=routed_scaling_factor
         )
-        
+
         grad_out_cpu = grad_output_base.to(torch.float64)
         y_cpu.backward(grad_out_cpu)
         cpu_golden = logits_cpu.grad.detach().clone()
@@ -274,10 +274,10 @@ class TestNpuMoeGatingTopKBackward(TestCase):
         # =====================================================================
         # Manually compute unnormalized sigmoid in fp32 for the custom operator
         x_norm_npu = torch.sigmoid(logits_base.to(torch.float32)).npu()
-        
+
         idx_npu = idx_gpu.detach().to(torch.int32)
         grad_out_npu = grad_out_gpu.detach()
-        
+
         npu_result = torch_npu.npu_moe_gating_top_k_backward(
             x_norm_npu,
             grad_out_npu,
@@ -295,7 +295,7 @@ class TestNpuMoeGatingTopKBackward(TestCase):
         # Move everything to CPU and cast to FP64 for the precision check
         npu_out_fp64 = npu_result.cpu().to(torch.float64)
         gpu_out_fp64 = gpu_golden.cpu().to(torch.float64)
-        
+
         ok = precision_check(npu_out_fp64, gpu_out_fp64, cpu_golden, grad_y_dtype)
         self.assertTrue(ok, "Precision check failed")
 

@@ -143,7 +143,7 @@ class TestNPUFlashAttention(TestCase):
                 if not (N1 == N2):
                     ki = broadcastKV_sigle(N1, N2, ki, ki.dtype)
                     vi = broadcastKV_sigle(N1, N2, vi, vi.dtype)
-                
+
                 if drop_mask.numel() > 1:
                     drop_maski = drop_mask[(qk_pointer[i]*N1):(qk_pointer[i+1]*N1)].reshape(N1, seqlens_list_q[i],
                                                                                             seqlens_list_k[i])
@@ -601,7 +601,7 @@ class TestNPUFlashAttention(TestCase):
         query = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
         key = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
         value = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
-        
+
         result = self.custom_op_tensor_exec(query, key, value, head_num=32, scale=0.08838, input_layout="BSH")
         result2 = result[0].clone()
 
@@ -610,7 +610,7 @@ class TestNPUFlashAttention(TestCase):
             query = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
             key = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
             value = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
-            
+
             result = self.custom_op_tensor_exec(query, key, value, head_num=32, scale=0.08838, input_layout="BSH")
 
         torch.npu.set_rng_state(s)
@@ -725,7 +725,7 @@ class TestNPUFlashAttention(TestCase):
         query = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
         key = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
         value = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
-        
+
         result = self.custom_op_tensor_exec(query, key, value, head_num=32, scale=0.08838, input_layout="BSH",
                                      keep_prob=keep_prob)
         result2 = result[0].clone()
@@ -735,7 +735,7 @@ class TestNPUFlashAttention(TestCase):
             query = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
             key = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
             value = torch.randn(1, 128, 4096, dtype=torch.float16, device="npu")
-            
+
             result = self.custom_op_tensor_exec(query, key, value, head_num=32, scale=0.08838, input_layout="BSH",
                                          keep_prob=keep_prob)
 

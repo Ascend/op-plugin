@@ -99,7 +99,7 @@ class TestFmod(TestCase):
         cpu_output = self.cpu_op_exec(npu_input1, npu_input3)
         npu_output = self.npu_op_exec(npu_input2, npu_input4)
         self.assertRtolEqual(cpu_output, npu_output)
-        
+
     def test_fmod_int_dtype(self):
         cpu_input1, npu_input1 = create_common_tensor([np.uint8, 0, (2, 3)], 1, 100)
         cpu_input2, npu_input2 = create_common_tensor([np.float16, 0, (2, 3)], 1, 100)

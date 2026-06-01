@@ -35,7 +35,7 @@ class TestDiag(TestCase):
         output.sum().backward()
         grad = output.grad.numpy()
         return grad
-    
+
     def npu_op_exec_backward(self, input1, diagonal):
         output = torch.diag(input1, diagonal=diagonal)
         output.retain_grad()
@@ -118,7 +118,7 @@ class TestDiag(TestCase):
             cpu_output = self.cpu_op_exec_fp16(cpu_input, item[1])
             npu_output = self.npu_op_exec(npu_input, item[1])
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
     def test_diag_backward(self):
         shape_format = [
             [[np.float32, -1, [16]], 0],    # test the condition of 1-dimension

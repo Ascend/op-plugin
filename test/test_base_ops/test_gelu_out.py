@@ -74,7 +74,7 @@ class TestGelu(TestCase):
         cpu_output = self.cpu_op_exec_fp16(cpu_input1)
         npu_output = self.npu_op_exec_fp16(npu_input1)
         self.assertRtolEqual(cpu_output, npu_output)
-    
+
     def test_gelu_negative_input(self):
         npu_input1 = torch.tensor([-1.0, 0.0, 1.0], dtype=torch.float32)
         cpu_input1 = copy.deepcopy(npu_input1)

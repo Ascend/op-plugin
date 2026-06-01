@@ -16,7 +16,7 @@ from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 
 # ------------------------ 环境配置部分 --------------------------
 # 1. 基础环境准备
-#    1.1 加载CANN环境：source {CANN安装路径}/set_env.sh  
+#    1.1 加载CANN环境：source {CANN安装路径}/set_env.sh
 #
 #    1.2 conda环境：conda环境安装torch，torch_npu及相关依赖numpy等
 #
@@ -39,12 +39,12 @@ from torch_npu.testing.common_distributed import skipIfUnsupportMultiNPU
 #
 # ------------------------ 数据准备部分 --------------------------
 # 3. 数据同步方案
-#    3.1 生成并保存数据：在主机ip_a中将gen_x()，gen_expert_ids，gen_scale()三个函数输出的数据都用torch.save()保存      
+#    3.1 生成并保存数据：在主机ip_a中将gen_x()，gen_expert_ids，gen_scale()三个函数输出的数据都用torch.save()保存
 #           例如：torch.save(x_input, "x_input.pt")
 #
 #    3.2 两机数据同步：在ip_b机器执行 scp user@ip_a:/target/file/path/*.pt /current/script/path
 #
-#    3.3 双机加载数据：双机注释掉相关生成数据部分代码，并用torch.load()函数加载pt文件            
+#    3.3 双机加载数据：双机注释掉相关生成数据部分代码，并用torch.load()函数加载pt文件
 #           例如：x_input = torch.load("x_input.pt")
 #
 # ------------------------ 执行验证部分 --------------------------
@@ -179,13 +179,13 @@ class TestMoeDistributeDispatch(TestCase):
         ep_recv_counts_npu = npu_result[4]
         self.assertEqual(ep_recv_counts_golden, ep_recv_counts_npu,
                              ("rank {} Expect receive tensor {} but got {}.").format(rank_id, ep_recv_counts_golden, ep_recv_counts_npu))
-        
+
     def golden_compare_performance_info(self, performance_info):
         if performance_info is None:
             return
         if performance_info.all(performance_info == 0):
             raise ValueError("The performance_info Tensor is all zeros, at least one non-zero value is required!")
-            
+
     @classmethod
     def run_dispatch_npu(cls, queue, rank, x, expert_ids, scales, ep_world_size, has_scale, total_expert_num, quant_mode, global_bs, use_comm_alg=False, comm_alg=None, performance_info=None):
         torch_npu.npu.set_device(rank % 8)
@@ -268,7 +268,7 @@ class TestMoeDistributeDispatch(TestCase):
         result_queue = manager.Queue()
         mp.set_start_method("forkserver", force=True)
         for rank_id in rank_list:
-            p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input, 
+            p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input,
                                                                                     ep_world_size, has_scale, total_expert_num, quant_mode, global_bs))
             p.start()
             p_list.append(p)
@@ -324,7 +324,7 @@ class TestMoeDistributeDispatch(TestCase):
         result_queue = manager.Queue()
         mp.set_start_method("forkserver", force=True)
         for rank_id in rank_list:
-            p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input, 
+            p = mp.Process(target=TestMoeDistributeDispatch.run_dispatch_npu, args=(result_queue, rank_id, x_input[rank_id], expert_ids_input[rank_id], scales_input,
                                                                                     ep_world_size, has_scale, total_expert_num, quant_mode, global_bs, True, comm_alg, performance_info[rank_id]))
             p.start()
             p_list.append(p)

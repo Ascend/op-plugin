@@ -36,7 +36,7 @@ class TestForeachAddcdivTensor(TestCase):
             cpu_tensors.append(t)
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 3
         cpu_inputs = []
@@ -51,7 +51,7 @@ class TestForeachAddcdivTensor(TestCase):
             cpu_inputs.append(cpu_tensors)
             npu_inputs.append(npu_tensors)
         return cpu_inputs, npu_inputs
-    
+
     def create_input_scalars(self, tensor_nums, dtype):
         sacalars = []
         for i in range(tensor_nums):
@@ -69,7 +69,7 @@ class TestForeachAddcdivTensor(TestCase):
             scalars = torch.randn(len(cpu_tensors[0]), dtype=torch.float32)
             cpu_output = torch._foreach_addcdiv(cpu_tensors[0], cpu_tensors[1], cpu_tensors[2], scalars)
             npu_output = torch._foreach_addcdiv(npu_tensors[0], npu_tensors[1], npu_tensors[2], scalars)
-            
+
             self.assertRtolEqual(cpu_output, npu_output)
 
     @SupportedDevices(['Ascend910B'])
@@ -107,7 +107,7 @@ class TestForeachAddcdivTensor(TestCase):
             torch._foreach_addcdiv_(npu_tensors[0], npu_tensors[1], npu_tensors[2], scalars)
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_addcdiv_tensor_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
@@ -122,7 +122,7 @@ class TestForeachAddcdivTensor(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_tensors[0])
 
-            
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_addcdiv_tensor_inplace_bfloat16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]

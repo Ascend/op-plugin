@@ -12,7 +12,7 @@ class TestRotaryMul(TestCase):
         x_new = torch.cat((-x2, x1), dim=-1)
         output = r1 * x + r2 * x_new
         return output
-    
+
     def rotary_mul_mode(self, x, r1, r2):
         x1 = x[..., ::2]
         x2 = x[..., 1::2]

@@ -8,7 +8,7 @@ from torch_npu.testing.common_utils import create_common_tensor
 
 
 class TestMaskedFillRange(TestCase):
-    
+
     # pylint:disable = huawei-too-many-arguments
     def cpu_op_exec(self, input1, start, end, value, axis, dim):
         out = input1.clone()

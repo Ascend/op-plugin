@@ -95,7 +95,7 @@ class TestMmAllReduceBase(TestCase):
         x1_list = []
         x2_list = []
         scale, _ = create_common_tensor(scale_shape, 1, 100) # 量化场景scale的取值范围
-        scale = scale.to(torch.bfloat16) 
+        scale = scale.to(torch.bfloat16)
         for _ in range(world_size):
             x1, _ = create_common_tensor(x1_shape, -1, 1)
             x2, _ = create_common_tensor(x2_shape, -1, 1)

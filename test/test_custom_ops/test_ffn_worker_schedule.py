@@ -20,9 +20,9 @@ ffn_window = ffn_window_tensor.data_ptr()
 
 context_holder = torch_npu._afd.create_schedule_context_holder(schedule_mode = 0, session_num = attn_workers,
     micro_batch_num = micro_batch_number, micro_batch_size = batch_size, selected_expert_num = top_k + 1,
-    expert_num = expert_num, attn_to_ffn_token_size = attn_to_ffn_token_size, ffn_to_attn_token_size = ffn_to_attn_token_size, 
+    expert_num = expert_num, attn_to_ffn_token_size = attn_to_ffn_token_size, ffn_to_attn_token_size = ffn_to_attn_token_size,
     ffn_window = ffn_window, ffn_window_size = window_size)
-    
+
 schedule_context = context_holder.get_schedule_context_tensor()
 
 def _set_all_flags():

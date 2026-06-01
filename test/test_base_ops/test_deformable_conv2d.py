@@ -421,7 +421,7 @@ class TestDeformableConv2d(TestCase):
         self.assertRtolEqual(dcn_bk_golden_list[1].cpu().detach(), dcn_dw.cpu().detach())
         self.assertRtolEqual(dcn_bk_golden_list[2].cpu().detach(), dcn_do.cpu().detach(), 0.0003)
         self.assertRtolEqual(dcn_bk_golden_list[3].cpu().detach(), dcn_db.cpu().detach())
-        
+
 if __name__ == "__main__":
     np.random.seed(123)
     torch.npu.conv.allow_hf32 = False

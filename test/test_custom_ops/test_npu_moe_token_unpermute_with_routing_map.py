@@ -10,11 +10,11 @@ class TestMoeUnpermuteWithRoutingMap(TestCase):
 
     def generate_bool_matrix(self, m, n, k):
         matrix = torch.zeros((m, n), dtype=torch.bool)
-        
+
         for i in range(m):
             indices = torch.randperm(n)[:k]
             matrix[i, indices] = True
-        
+
         return matrix.to(torch.int8)
 
     # pylint:disable = huawei-too-many-arguments

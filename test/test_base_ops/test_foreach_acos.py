@@ -35,8 +35,8 @@ class TestForeachAcos(TestCase):
             npu_output = torch._foreach_acos(npu_tensors)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
-    
+
+
     def test_foreach_acos_out_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -65,7 +65,7 @@ class TestForeachAcos(TestCase):
             torch._foreach_acos_(npu_tensors)
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
-    
+
     def test_foreach_acos_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :

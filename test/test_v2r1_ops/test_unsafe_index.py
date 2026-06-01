@@ -33,7 +33,7 @@ class TestUnsafeIndex(TestCase):
         for i in dtype_list:
             for j in format_list:
                 for k in shape_list:
-                    shape_format_tensor.append([[i, j, k], [np.int64, 0, (1, 2)]])   
+                    shape_format_tensor.append([[i, j, k], [np.int64, 0, (1, 2)]])
 
         for item in shape_format_tensor:
             cpu_input1, npu_input1 = create_common_tensor(item[0], 1, 100)
@@ -51,7 +51,7 @@ class TestUnsafeIndex(TestCase):
         for i in dtype_list:
             for j in format_list:
                 for k in shape_list:
-                    shape_format_multiTensor.append([[i, j, k], [np.int64, 0, [1, 2]]])          
+                    shape_format_multiTensor.append([[i, j, k], [np.int64, 0, [1, 2]]])
 
         for item in shape_format_multiTensor:
             cpu_input1, npu_input1 = create_common_tensor(item[0], 1, 100)
@@ -70,7 +70,7 @@ class TestUnsafeIndex(TestCase):
         for i in dtype_list:
             for j in format_list:
                 for k in shape_list:
-                    shape_format_list.append([[i, j, k], (0, 1)])        
+                    shape_format_list.append([[i, j, k], (0, 1)])
 
         for item in shape_format_list:
             _, npu_input1 = create_common_tensor(item[0], 1, 100)
@@ -103,13 +103,13 @@ class TestUnsafeIndex(TestCase):
                       (True, range(4)), (True, False)]
         shape_format_tensor_bool_list = [
             [[i, j, k], l] for i in dtype_list for j in format_list for k in shape_list for l in index_list
-        ]       
+        ]
 
         for item in shape_format_tensor_bool_list:
             _, npu_input1 = create_common_tensor(item[0], 1, 100)
             with self.assertRaises(RuntimeError):
                 self.npu_op_exec(npu_input1, item[1])
-                
+
     def test_unsafe_index_wrong_shape(self):
         # test index with wrong shape
         dtype_list = [np.float32, np.float16, np.int32]

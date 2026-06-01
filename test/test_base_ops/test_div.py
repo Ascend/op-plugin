@@ -175,7 +175,7 @@ class TestDiv(TestCase):
                 continue
             npu_output_inp = self.npu_op_exec_mode_inp(npu_input, item[1], item[2])
             self.assertRtolEqual(cpu_output_inp, npu_output_inp)
-            
+
     def test_div_scalar_mode_trunc(self):
         shape_format = [
             [[np.float32, 0, (20, 16)], 17.2, 'trunc'],

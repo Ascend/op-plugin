@@ -38,7 +38,7 @@ class TestNPUDeepNorm(TestCase):
         cpu_input_gx = np.random.uniform(0, 100, [1024, 2, 12288]).astype(np.float32)
         cpu_input_beta = np.random.uniform(0, 100, [2, 12288]).astype(np.float32)
         cpu_input_gamma = np.random.uniform(0, 100, [2, 12288]).astype(np.float32)
-        
+
         npu_input_x = torch.from_numpy(cpu_input_x).to(device)
         npu_input_gx = torch.from_numpy(cpu_input_gx).to(device)
         npu_input_beta = torch.from_numpy(cpu_input_beta).to(device)
@@ -46,7 +46,7 @@ class TestNPUDeepNorm(TestCase):
 
         supported_mean, supported_rstd, supported_y = self.supported_op_exec(cpu_input_x, cpu_input_gx, cpu_input_beta, cpu_input_gamma)
         custom_mean, custom_rstd, custom_y = self.custom_op_exec(npu_input_x, npu_input_gx, npu_input_beta, npu_input_gamma)
-        
+
         self.assertRtolEqual(supported_mean, custom_mean)
         self.assertRtolEqual(supported_rstd, custom_rstd)
         self.assertRtolEqual(supported_y, custom_y)

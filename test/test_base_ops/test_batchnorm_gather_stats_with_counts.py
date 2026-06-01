@@ -7,7 +7,7 @@ from torch_npu.testing.common_utils import create_common_tensor
 
 
 class TestBatchNormGatherStatsWithCounts(TestCase):
-    
+
     def cpu_op_exec(self, inputs):
         mean, invstd, running_mean, running_var, momentum, eps, counts = inputs
         mean = mean.float()

@@ -39,7 +39,7 @@ class TestStdMean(TestCase):
         format_list = [0, 3, 4]
         shape_list = [[1024], [32, 1024], [32, 8, 1024]]
         unbiased_list = [True, False]
-        
+
         shape_format = [
             [np.float16, i, j, k] for i in format_list for j in shape_list for k in unbiased_list
         ]
@@ -57,7 +57,7 @@ class TestStdMean(TestCase):
         format_list = [0, 3, 4]
         shape_list = [[1024], [32, 1024], [32, 8, 1024]]
         unbiased_list = [True, False]
-        
+
         shape_format = [
             [np.float32, i, j, k] for i in format_list for j in shape_list for k in unbiased_list
         ]
@@ -126,7 +126,7 @@ class TestStdMean(TestCase):
         npu_output = torch.std_mean(npu_input, dim=dim)
         self.assertRtolEqual(cpu_output[0].to(torch.float16).numpy(), npu_output[0].cpu().numpy())
         self.assertRtolEqual(cpu_output[1].to(torch.float16).numpy(), npu_output[1].cpu().numpy())
-    
+
     def cpu_op_dim_mean_correction_exec(self, input1, dim, correction):
         output = torch.std_mean(input1, dim, correction=correction)
         result = []
@@ -140,7 +140,7 @@ class TestStdMean(TestCase):
         result.append(output[0].to("cpu").numpy())
         result.append(output[1].to("cpu").numpy())
         return result
-    
+
     def test_std_mean_correction_fp32(self):
         shape_list = [[1024], [32, 1024], [32, 8, 1024]]
         correction_list = [-3, 1, 2147483647, 2147483648, -2147483647, -2147483648]

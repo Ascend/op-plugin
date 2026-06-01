@@ -44,7 +44,7 @@ class TestNpuMoeInitRouting(TestCase):
         expanded_x, expanded_row_idx, expanded_expert_idx = torch_npu.npu_moe_init_routing(x, row_idx, expert_idx,
                                                                                            active_num)
         return expanded_x, expanded_row_idx, expanded_expert_idx
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_noe_init_routing(self, device="npu"):
         n_list = [10, 430, 520]
@@ -59,7 +59,7 @@ class TestNpuMoeInitRouting(TestCase):
             row_idx_npu = torch.from_numpy(row_idx).contiguous().npu()
             expert_idx_npu = torch.from_numpy(expert_idx).npu()
             active_num = n
-            
+
             expanded_x, expanded_row_idx, expanded_expert_idx = self.cpu_op_exec(x, row_idx, expert_idx, active_num)
             expanded_x_npu, expanded_row_idx_npu, expanded_expert_idx_npu = self.npu_op_exec(x_npu, row_idx_npu,
                                                                                         expert_idx_npu, active_num)

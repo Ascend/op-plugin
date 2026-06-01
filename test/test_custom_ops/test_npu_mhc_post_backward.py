@@ -47,10 +47,10 @@ class TestNpuMhcPostBackward(TestCase):
     def npu_op_exec(self, grad_output, x, h_res, h_out, h_post):
         grad_x, grad_h_res, grad_h_out, grad_h_post = torch_npu.npu_mhc_post_backward(grad_output, x, h_res, h_out, h_post)
         return grad_x, grad_h_res, grad_h_out, grad_h_post
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_mhc_post_backward(self, device="npu"):
-        
+
         grad_output_shape = (1, 4, 1024)
         x_shape = (1, 4, 1024)
         h_res_shape = (1, 4, 4)

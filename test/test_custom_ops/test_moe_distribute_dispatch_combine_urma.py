@@ -71,8 +71,8 @@ def test_npu_moe_distribute_dispatch_combine_urma_(rank, c2p, p2c):
         global_bs=globalBS)
     torch.npu.synchronize()
     expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums = torch_npu.npu_moe_distribute_dispatch_teardown(
-        x=x, 
-        y=y, 
+        x=x,
+        y=y,
         expert_ids=expert_ids,
         comm_cmd_info=comm_cmd_info,
         group_ep=ep_hcomm_info,
@@ -87,7 +87,7 @@ def test_npu_moe_distribute_dispatch_combine_urma_(rank, c2p, p2c):
         expand_x = expand_x.to(input_dtype)
     torch.npu.synchronize()
     quant_expand_x, comm_cmd_info = torch_npu.npu_moe_distribute_combine_setup(
-        expand_x=expand_x,  
+        expand_x=expand_x,
         expert_ids=expert_ids,
         assist_info_for_combine=assist_info_for_combine,
         group_ep=ep_hcomm_info,
@@ -100,10 +100,10 @@ def test_npu_moe_distribute_dispatch_combine_urma_(rank, c2p, p2c):
         global_bs=globalBS)
     torch.npu.synchronize()
     out = torch_npu.npu_moe_distribute_combine_teardown(
-        expand_x=expand_x, 
+        expand_x=expand_x,
         quant_expand_x=quant_expand_x,
         expert_ids=expert_ids,
-        expand_idx=expand_idx, 
+        expand_idx=expand_idx,
         expert_scales=expert_scales,
         comm_cmd_info=comm_cmd_info,
         group_ep=ep_hcomm_info,

@@ -34,7 +34,7 @@ class TestNPUDropoutGenMask(TestCase):
         res = self.npu_op_exec(x, prob)
         res_cpu = self.cpu_op_exec_p0(x)
         self.assertRtolEqual(res, res_cpu)
-    
+
     def test_dropout_gen_mask(self):
         h, w = 17, 19
         x = torch.randn(h, w, dtype=torch.float32)

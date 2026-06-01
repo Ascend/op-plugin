@@ -209,7 +209,7 @@ class TestAttentionWorkerCombine(TestCase):
         ctx.attention.token_info_buf_size = len(token_info_bytes)
         ctx.attention.token_data_buf = token_data.npu().data_ptr()
         ctx.attention.token_data_buf_size = len(token_data_bytes)
-    
+
         ctx.attention.micro_batch_id = 0
 
         struct_size = ctypes.sizeof(ctx)

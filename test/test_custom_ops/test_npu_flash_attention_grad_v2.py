@@ -40,7 +40,7 @@ class TestNPUFlashAttentionV2(TestCase):
         dv = torch.matmul(drop_res.transpose(2, 3), dy)
         softmax_grad_res = (tsoftmax_grad(dp_drop, softmax_res) * scale)
         dq = torch.matmul(softmax_grad_res, key)
-        dk = torch.matmul(softmax_grad_res.transpose(2, 3), query)       
+        dk = torch.matmul(softmax_grad_res.transpose(2, 3), query)
         dq = dq.transpose(1, 2)
         dq = dq.reshape(dq.shape[0], dq.shape[1], -1)
         dk = dk.transpose(1, 2)
@@ -59,7 +59,7 @@ class TestNPUFlashAttentionV2(TestCase):
         tensor = torch.transpose(tensor, 1, 2)
         tensor = torch.reshape(tensor, (tensor.shape[0], tensor.shape[1], -1))
         return tensor
-    
+
     def get_drop_mask(self, q, B, N1, S1, S2, seed=2, gen_p=0.2):
         torch.npu.set_compile_mode(jit_compile=False)
         torch.npu.manual_seed(seed)

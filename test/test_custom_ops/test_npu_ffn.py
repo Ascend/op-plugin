@@ -44,7 +44,7 @@ class TestFFN(TestCase):
             x = x.to(torch.int32)
             weight1 = torch.from_numpy(weight1).to(torch.int32)
             weight2 = torch.from_numpy(weight2).to(torch.int32)
-            
+
         # mm1
         mm1_res = x @ weight1
         if scale is not None:
@@ -68,7 +68,7 @@ class TestFFN(TestCase):
         mm2_res = torch.matmul(activation_res, weight2).to(torch.float16)
         if scale is not None:
             deq_scale2 = deq_scale2.reshape(1, -1)[:, :mm2_res.shape[-1]]
-            deq_scale2 = torch.from_numpy(deq_scale2)    
+            deq_scale2 = torch.from_numpy(deq_scale2)
             mm2_res = (mm2_res * deq_scale2).to(torch.float16)
         return mm2_res
 
@@ -83,7 +83,7 @@ class TestFFN(TestCase):
             y = torch.cat(y)
         else:
             y = self.calc_ffn(x, weight1, weight2, activation, **kwargs)
-        
+
         return y
 
     def custom_op_exec(self, x, weight1, weight2, activation, *, expert_tokens=None, expert_tokens_index=None,

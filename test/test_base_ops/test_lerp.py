@@ -181,7 +181,7 @@ class TestLerp(TestCase):
             npu_input1.lerp_(npu_input2, 1)
         self.assertRaisesRegex(
             Exception, "CheckShape failed", lerp_inplace, npu_input1, npu_input2)
-        
+
     @SupportedDevices(['Ascend910A'])
     def test_lerp_inplace_shape_format(self):
         cpu_input1, npu_input1 = create_common_tensor([np.float32, -1, [2, 1]], 10, 100)

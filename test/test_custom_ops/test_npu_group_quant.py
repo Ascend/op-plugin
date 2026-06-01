@@ -53,7 +53,7 @@ class TestNPUGroupQuant(TestCase):
             if x_start_row < x_end_row:
                 y_rows = input_x[x_start_row:x_end_row] * input_scale[row_scale] + input_offset
                 y = np.concatenate([y, y_rows], axis=0)
-        
+
         y = np.round(y, 0)
         y = np.clip(y, -128, 127).astype("int8")
         return y

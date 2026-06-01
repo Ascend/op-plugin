@@ -8,7 +8,7 @@ torch.npu.config.allow_internal_format = False
 
 
 class TestNPUGeluQuant(TestCase):
-    
+
     def get_golden(self, input_self_tensor, input_scale_tensor=None, input_offset_tensor=None, approximate="none", quant_mode='static'):
         output = torch.nn.functional.gelu(input_self_tensor, approximate=approximate)
         if quant_mode == 'static':
@@ -16,7 +16,7 @@ class TestNPUGeluQuant(TestCase):
         else:
             result = self.dynamic_quant(input_self_tensor, input_scale_tensor)
         return result
-    
+
     def quantize(self, x, input_scale_tensor, input_offset_tensor=None):
         input_scale_tensor = input_scale_tensor.to(torch.float32)
         input_offset_tensor = input_offset_tensor.to(torch.float32) if input_offset_tensor is not None else None
@@ -27,7 +27,7 @@ class TestNPUGeluQuant(TestCase):
         round_data = torch.clip(round_data, -128, 127)
         round_data = round_data.to(torch.int8)
         return round_data, None
-    
+
     def dynamic_quant(self, x, smooth_scale_tensor=None):
         # symmetrical dynamic quant only, quant axis is -1 (per-channel scenario)
         scale_max = 127.0
@@ -59,7 +59,7 @@ class TestNPUGeluQuant(TestCase):
         quant_mode = 'static'
         approximate = "tanh"
         round_mode = 'rint'
-        output, out_scale = torch.ops.npu.npu_gelu_quant(input_self_tensor, 
+        output, out_scale = torch.ops.npu.npu_gelu_quant(input_self_tensor,
                                                          input_scale=input_scale_tensor,
                                                          input_offset=input_offset_tensor,
                                                          approximate=approximate,
@@ -72,7 +72,7 @@ class TestNPUGeluQuant(TestCase):
         if out_scale is not None:
             self.assertRtolEqual(out_scale.type(torch.float32), golden_out_scale.type(torch.float32))
 
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_gelu_quant_dynamic(self):
         # dst_type = int8 only
@@ -86,7 +86,7 @@ class TestNPUGeluQuant(TestCase):
         quant_mode = 'dynamic'
         approximate = "tanh"
         round_mode = 'rint'
-        output, out_scale = torch.ops.npu.npu_gelu_quant(input_self_tensor, 
+        output, out_scale = torch.ops.npu.npu_gelu_quant(input_self_tensor,
                                                          input_scale=input_scale_tensor,
                                                          input_offset=input_offset_tensor,
                                                          approximate=approximate,

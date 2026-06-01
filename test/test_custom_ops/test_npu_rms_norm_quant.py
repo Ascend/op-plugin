@@ -58,7 +58,7 @@ class TestNPURmsNormQuant(TestCase):
                     diff_rel_item = 1
                 elif a[i] != 0 and b[i].item() != 0:
                     diff_rel_item = diff_abs[i].item() / abs(a[i].item())
-                        
+
                 if abs(a[i].item()) < 1 and diff_abs[i].item() > benchmark:
                     abs_error += 1
                 elif abs(a[i].item()) >= 1 and diff_rel_item > benchmark:
@@ -72,14 +72,14 @@ class TestNPURmsNormQuant(TestCase):
 
     def npu_rms_norm_quant_golden(self, x, gamma, beta, scale,
                                     offset, epsilon=1e-06, dst_dtype=1):
-    
+
         x_fp32 = x.float()
         input_gamma_fp32 = gamma.float()
         input_beta_fp32 = beta.float()
         tensor_scales = scale.float()
         offset = offset.float()
         ori_shape = x.shape
-    
+
         len_shape_x = len(x_fp32.shape)
         len_shape_gamma = len(gamma.shape)
         axis = len_shape_x - len_shape_gamma
@@ -105,28 +105,28 @@ class TestNPURmsNormQuant(TestCase):
     @unittest.skip("skip until CANN is updated to support aclnnRmsNormQuant")
     @SupportedDevices(['Ascend910B'])
     def test_npu_rms_norm_quant(self):
-        torch.manual_seed(42) 
-        np.random.seed(42)  
+        torch.manual_seed(42)
+        np.random.seed(42)
         shape_list = [
-            [[16, ], [16, ]],    
-            [[16, ], [1, 16]],   
-            [[1, 16], [16, ]],     
-            [[1, 16], [1, 16]],   
-            [[1, 1, 16], [16, ]], 
+            [[16, ], [16, ]],
+            [[16, ], [1, 16]],
+            [[1, 16], [16, ]],
+            [[1, 16], [1, 16]],
+            [[1, 1, 16], [16, ]],
             [[1, 1, 16], [1, 16]],
-            [[1, 1, 1, 16], [16, ]], 
+            [[1, 1, 1, 16], [16, ]],
             [[1, 1, 1, 16], [1, 16]],
-            [[1, 1, 1, 1, 16], [16, ]], 
+            [[1, 1, 1, 1, 16], [16, ]],
             [[1, 1, 1, 1, 16], [1, 16]],
-            [[1, 1, 1, 1, 1, 16], [16, ]], 
+            [[1, 1, 1, 1, 1, 16], [16, ]],
             [[1, 1, 1, 1, 1, 16], [1, 16]],
-            [[1, 1, 1, 1, 1, 1, 16], [16, ]], 
-            [[1, 1, 1, 1, 1, 1, 16], [1, 16]],     
-            [[1, 1, 1, 1, 1, 1, 1, 16], [16, ]], 
-            [[1, 1, 1, 1, 1, 1, 1, 16], [1, 16]],  
+            [[1, 1, 1, 1, 1, 1, 16], [16, ]],
+            [[1, 1, 1, 1, 1, 1, 16], [1, 16]],
+            [[1, 1, 1, 1, 1, 1, 1, 16], [16, ]],
+            [[1, 1, 1, 1, 1, 1, 1, 16], [1, 16]],
         ]
 
-        benchmark_int8 = 1              
+        benchmark_int8 = 1
 
         for x_shape, quant_shape in shape_list:
             D = x_shape[-1]
@@ -140,43 +140,43 @@ class TestNPURmsNormQuant(TestCase):
                 gamma = torch.randn(1, D, dtype=torch.float16)
                 beta = torch.randn(1, D, dtype=torch.float16)
 
-            scale = (torch.rand(1, dtype=torch.float16) * 0.8 + 0.2)  
+            scale = (torch.rand(1, dtype=torch.float16) * 0.8 + 0.2)
             offset = torch.randint(-5, 6, (1, ), dtype=torch.int8)
-            x_npu = x.npu()     
-            gamma_npu = gamma.npu() 
-            beta_npu = beta.npu() 
-            scale_npu = scale.npu() 
-            offset_npu = offset.npu() 
-            
+            x_npu = x.npu()
+            gamma_npu = gamma.npu()
+            beta_npu = beta.npu()
+            scale_npu = scale.npu()
+            offset_npu = offset.npu()
+
             y_ref = self.npu_rms_norm_quant_golden(x, gamma, beta, scale, offset, epsilon=1e-6)
             y_npu = torch_npu.npu_rms_norm_quant(x_npu, gamma_npu, beta_npu, scale_npu, offset_npu, epsilon=1e-6)
             y_ref_flat = y_ref.reshape(1, y_ref.numel())[0].cpu()
             y_npu_flat = y_npu.reshape(1, y_npu.numel())[0].cpu()
             self.assertTrue(self.compare(y_ref_flat, y_npu_flat, benchmark_int8))
-    
+
     @unittest.skip("skip until CANN is updated to support aclnnRmsNormQuant")
     @SupportedDevices(['Ascend910B'])
     def test_npu_rms_norm_quant_bf16(self):
         shape_list = [
-            [[16, ], [16, ]],    
-            [[16, ], [1, 16]],   
-            [[1, 16], [16, ]],     
-            [[1, 16], [1, 16]],   
-            [[1, 1, 16], [16, ]], 
+            [[16, ], [16, ]],
+            [[16, ], [1, 16]],
+            [[1, 16], [16, ]],
+            [[1, 16], [1, 16]],
+            [[1, 1, 16], [16, ]],
             [[1, 1, 16], [1, 16]],
-            [[1, 1, 1, 16], [16, ]], 
+            [[1, 1, 1, 16], [16, ]],
             [[1, 1, 1, 16], [1, 16]],
-            [[1, 1, 1, 1, 16], [16, ]], 
+            [[1, 1, 1, 1, 16], [16, ]],
             [[1, 1, 1, 1, 16], [1, 16]],
-            [[1, 1, 1, 1, 1, 16], [16, ]], 
+            [[1, 1, 1, 1, 1, 16], [16, ]],
             [[1, 1, 1, 1, 1, 16], [1, 16]],
-            [[1, 1, 1, 1, 1, 1, 16], [16, ]], 
-            [[1, 1, 1, 1, 1, 1, 16], [1, 16]],    
-            [[1, 1, 1, 1, 1, 1, 1, 16], [16, ]], 
-            [[1, 1, 1, 1, 1, 1, 1, 16], [1, 16]],  
+            [[1, 1, 1, 1, 1, 1, 16], [16, ]],
+            [[1, 1, 1, 1, 1, 1, 16], [1, 16]],
+            [[1, 1, 1, 1, 1, 1, 1, 16], [16, ]],
+            [[1, 1, 1, 1, 1, 1, 1, 16], [1, 16]],
         ]
 
-        benchmark_int8 = 1              
+        benchmark_int8 = 1
 
         for x_shape, quant_shape in shape_list:
             D = x_shape[-1]
@@ -191,18 +191,18 @@ class TestNPURmsNormQuant(TestCase):
             scale = (torch.rand(1, dtype=torch.bfloat16) * 0.8 + 0.2)  # (0.2, 1.0]
             offset = torch.randint(-5, 6, (1, ), dtype=torch.int8)
 
-            x_npu = x.npu()     
-            gamma_npu = gamma.npu() 
-            beta_npu = beta.npu() 
-            scale_npu = scale.npu() 
-            offset_npu = offset.npu() 
+            x_npu = x.npu()
+            gamma_npu = gamma.npu()
+            beta_npu = beta.npu()
+            scale_npu = scale.npu()
+            offset_npu = offset.npu()
 
             y_ref = self.npu_rms_norm_quant_golden(x, gamma, beta, scale, offset, epsilon=1e-6)
             y_npu = torch_npu.npu_rms_norm_quant(x_npu, gamma_npu, beta_npu, scale_npu, offset_npu, epsilon=1e-6)
 
             y_ref_flat = y_ref.reshape(1, y_ref.numel())[0].cpu()
             y_npu_flat = y_npu.reshape(1, y_npu.numel())[0].cpu()
-           
+
             self.assertTrue(self.compare(y_ref_flat, y_npu_flat, benchmark_int8))
 
     @SupportedDevices(['Ascend910_95', 'Ascend950'])

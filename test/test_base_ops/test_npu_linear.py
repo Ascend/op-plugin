@@ -45,7 +45,7 @@ class TestNpuLinear(TestCase):
             cpu_output = self.cpu_op_exec(cpu_x.float(), cpu_w.float(), cpu_b.float()).astype(np.float16)
             npu_output = self.npu_op_exec(npu_x, npu_w, npu_b)
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
     @skipIfUnsupportMultiNPU(2)
     def test_npu_linear_device_check(self):
         x = torch.rand(2, 16).npu()

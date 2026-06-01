@@ -10,13 +10,13 @@ from torch_npu.testing.common_utils import SupportedDevices, SkipIfNotGteCANNVer
 
 class TestLSTMCellForwardBackward(TestCase):
     """Test LSTMCell forward and backward through torch.nn.LSTMCell.
-    
+
     This test validates that the aclnn implementation of _thnn_fused_lstm_cell
     and _thnn_fused_lstm_cell_backward_impl works correctly when called through
     the standard torch.nn.LSTMCell interface.
     """
 
-    def _test_lstm_cell_forward_backward(self, batch_size, input_size, hidden_size, 
+    def _test_lstm_cell_forward_backward(self, batch_size, input_size, hidden_size,
                                           dtype, has_bias=True, prec=1.e-3):
         """Helper function to test LSTMCell forward and backward.
 
@@ -55,13 +55,13 @@ class TestLSTMCellForwardBackward(TestCase):
 
         # Compare forward results
         self.assertRtolEqual(
-            h_cpu.detach().numpy(), 
-            h_npu.cpu().to(torch.float32).detach().numpy(), 
+            h_cpu.detach().numpy(),
+            h_npu.cpu().to(torch.float32).detach().numpy(),
             prec=prec
         )
         self.assertRtolEqual(
-            c_cpu.detach().numpy(), 
-            c_npu.cpu().to(torch.float32).detach().numpy(), 
+            c_cpu.detach().numpy(),
+            c_npu.cpu().to(torch.float32).detach().numpy(),
             prec=prec
         )
 
@@ -95,20 +95,20 @@ class TestLSTMCellForwardBackward(TestCase):
 
         # Compare gradients for input
         self.assertRtolEqual(
-            cpu_input_grad.numpy(), 
-            npu_input_grad.cpu().to(torch.float32).numpy(), 
+            cpu_input_grad.numpy(),
+            npu_input_grad.cpu().to(torch.float32).numpy(),
             prec=prec
         )
 
         # Compare gradients for hidden states
         self.assertRtolEqual(
-            cpu_h0_grad.numpy(), 
-            npu_h0_grad.cpu().to(torch.float32).numpy(), 
+            cpu_h0_grad.numpy(),
+            npu_h0_grad.cpu().to(torch.float32).numpy(),
             prec=prec
         )
         self.assertRtolEqual(
-            cpu_c0_grad.numpy(), 
-            npu_c0_grad.cpu().to(torch.float32).numpy(), 
+            cpu_c0_grad.numpy(),
+            npu_c0_grad.cpu().to(torch.float32).numpy(),
             prec=prec
         )
 

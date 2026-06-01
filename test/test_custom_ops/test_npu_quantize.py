@@ -34,7 +34,7 @@ class TestNPUQuantize(TestCase):
         output = torch.quantize_per_channel(input_x, input_scales, input_zero_points, axis, dtype).int_repr()
         output = output.numpy()
         return output
-    
+
     def cpu_op_exec_ascend_quant_v2(self, input_x, input_scales, input_zero_points, axis, dtype):
         input_x = input_x.astype("float32")
         input_scales = input_scales.astype("float32")
@@ -44,7 +44,7 @@ class TestNPUQuantize(TestCase):
         round_data = np.round(add_offset, 0)
         output = np.clip(round_data, -128, 127).astype("int8")
         return output
-    
+
     def npu_op_exec_ascend_quant_v2(self, input_x, input_scales, input_zero_points, axis, dtype):
         input_x = input_x.to("npu")
         input_scales = input_scales.to("npu")

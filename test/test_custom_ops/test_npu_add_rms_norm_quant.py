@@ -59,7 +59,7 @@ class TestNPUAddRmsNormQuant(TestCase):
                     diff_rel_item = 1
                 elif a[i] != 0 and b[i].item() != 0:
                     diff_rel_item = diff_abs[i].item() / abs(a[i].item())
-                        
+
                 if abs(a[i].item()) < 1 and diff_abs[i].item() > benchmark:
                     abs_error += 1
                 elif abs(a[i].item()) >= 1 and diff_rel_item > benchmark:
@@ -337,7 +337,7 @@ class TestNPUAddRmsNormQuant(TestCase):
             x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
             self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
 
-            y1_v2, _, x_out = torch_npu.npu_add_rms_norm_quant(x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu, beta_npu) 
+            y1_v2, _, x_out = torch_npu.npu_add_rms_norm_quant(x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu, beta_npu)
             y1_v2_cpu, _, x_out_cpu = self.npu_add_rms_norm_quant_v2_golden(x1, x2, gamma, scales1, zero_points1, beta)
 
             y1_v2_cpu_data = y1_v2_cpu.reshape(1, y1_v2_cpu.numel())[0].cpu()
@@ -347,7 +347,7 @@ class TestNPUAddRmsNormQuant(TestCase):
             x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
             x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
             self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
-    
+
     @unittest.skip("Skip test_npu_add_rms_norm_quant due to low version of cann")
     @SupportedDevices(['Ascend910B'])
     def test_npu_add_rms_norm_quant_bf16(self):
@@ -396,7 +396,7 @@ class TestNPUAddRmsNormQuant(TestCase):
             x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
             self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
 
-            y1_v2, _, x_out = torch_npu.npu_add_rms_norm_quant(x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu, beta_npu) 
+            y1_v2, _, x_out = torch_npu.npu_add_rms_norm_quant(x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu, beta_npu)
             y1_v2_cpu, _, x_out_cpu = self.npu_add_rms_norm_quant_v2_golden(x1, x2, gamma, scales1, zero_points1, beta)
 
             y1_v2_cpu_data = y1_v2_cpu.reshape(1, y1_v2_cpu.numel())[0].cpu()

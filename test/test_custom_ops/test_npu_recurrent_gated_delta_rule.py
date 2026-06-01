@@ -32,7 +32,7 @@ def genrate_input(query, key, value, state, beta, scale, actual_seq_lengths, ssm
         for head_id in range(n_heads_v):
             S = init_state[head_id]
             for slot_id in range(seq_start, seq_start + actual_seq_lengths[i]):
-                
+
                 q_i = q[slot_id][head_id // (n_heads_v // n_heads_k)]
                 k_i = k[slot_id][head_id // (n_heads_v // n_heads_k)]
                 v_i = v[slot_id][head_id]
@@ -84,7 +84,7 @@ class TestRecurrentGatedDeltaRule(TestCase):
         out, state_out = torch_npu.npu_recurrent_gated_delta_rule_functional(query, key, value, state_copy, beta=beta, scale=scale, actual_seq_lengths=actual_seq_lengths, ssm_state_indices=ssm_state_indices, g=g, num_accepted_tokens=num_accepted_tokens)
         out = out.to(torch.float32).cpu()
         state_out = state_out.to(torch.float32).cpu()
-        
+
         self.assertRtolEqual(out_golden, out, 0.001)
         self.assertRtolEqual(state_golden, state_out, 0.001)
 

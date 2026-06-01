@@ -35,7 +35,7 @@ class TestUpsampleBilinear2dAA(TestCase):
     def npu_op_exec(self, inputs, shapes):
         output = interpolate(inputs, size=shapes, mode="bilinear", align_corners=True, antialias=True)
         return output
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_UpsampleBilinear2dAA_common_shape_format(self):
         shape_format = [

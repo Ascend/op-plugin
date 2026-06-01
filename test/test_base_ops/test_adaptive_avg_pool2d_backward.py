@@ -94,7 +94,7 @@ class TestAdaptiveAvgPool2dBackward(TestCase):
         msg = "adaptive_avg_pool2d: elements of output_size must be greater than or equal to 0"
         with self.assertRaisesRegex(RuntimeError, msg):
             F.adaptive_avg_pool2d(npu_input, output_size)
-        
+
         npu_input = torch.randn((1, 3, 3, 3), dtype=torch.float32).npu()
         output_size = np.array((2, 2, 2))
         msg = "adaptive_avg_pool2d: output size must be 2"

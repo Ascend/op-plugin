@@ -229,7 +229,7 @@ class TestScatterPaKvCache(TestCase):
 
         key_cache_npu_cast, value_cache_npu_cast, key_cache_golden_npu, value_cache_golden_npu = \
             self._custom_test(bs, num_blocks, [block_size, num_head, k_head_size, v_head_size, lastDim_k])
-        
+
         self.assertRtolEqual(key_cache_npu_cast, key_cache_golden_npu)
         self.assertRtolEqual(value_cache_npu_cast, value_cache_golden_npu)
 

@@ -53,7 +53,7 @@ class TestRepeatInterleave(TestCase):
         shape_list = [[2, 7, 3]]
         repeats_list = [[4, 2, 3]]
         dim_list = [2]
-        
+
         shape_format = [
             [[np.int64, i, j], p, v]
             for i in format_list
@@ -75,7 +75,7 @@ class TestRepeatInterleave(TestCase):
         shape_list = [[2, 7, 3]]
         repeats_list = [4, 2, 3]
         dim_list = [2]
-        
+
         shape_format = [
             [[np.int32, i, j], p, v]
             for i in format_list

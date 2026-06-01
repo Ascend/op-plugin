@@ -813,7 +813,7 @@
   },
   "func: npu_mhc_sinkhorn(Tensor x, *, float eps=1e-6, SymInt num_iters=20, int out_flag=0) -> (Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
-  },  
+  },
   "func: npu_mhc_sinkhorn_backward(Tensor grad_y, Tensor norm, Tensor sum) -> Tensor": {
     "version": ["all_version"]
   },
@@ -2328,7 +2328,7 @@
   },
   "func: _chunk_cat.out(Tensor[] tensors, int dim, int num_chunks, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
-  },  
+  },
 
   "func: clamp(Tensor self, Scalar? min=None, Scalar? max=None) -> Tensor": {
     "version": ["all_version"]

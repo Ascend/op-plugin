@@ -106,7 +106,7 @@ class TestConvTranspose2dBackward(TestCase):
     @unittest.skip("skip test_conv_transpose2d_3D_input now, acc error")
     def test_conv_transpose2d_3D_input(self):
         torch.npu.config.allow_internal_format = True
-        device = torch.device('npu') 
+        device = torch.device('npu')
         cpu_input = torch.randn(1, 640, 480)
         npu_input = cpu_input.to(device)
 

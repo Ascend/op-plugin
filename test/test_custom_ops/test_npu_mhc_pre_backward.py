@@ -171,15 +171,15 @@ class TestNpuMhcPre(TestCase):
             # Squeeze back to TND: [1, T, n, D] -> [T, n, D]
             dx = dx.squeeze(0)
 
-        return dx.to(torch.bfloat16), dphi, dalpha, dbias, dgamma   
+        return dx.to(torch.bfloat16), dphi, dalpha, dbias, dgamma
 
     def npu_op_exec(self, x, phi, alpha,
             dh_in, dh_post, dh_res,
-            inv_rms, h_mix, h_pre, h_post, 
+            inv_rms, h_mix, h_pre, h_post,
             gamma, hc_eps, grad_x_post=None):
         return torch_npu.npu_mhc_pre_backward(
             x, phi, alpha, dh_in, dh_post, dh_res,
-            inv_rms, h_mix, h_pre, h_post, 
+            inv_rms, h_mix, h_pre, h_post,
             gamma=gamma, hc_eps=hc_eps, grad_x_post=grad_x_post
         )
 

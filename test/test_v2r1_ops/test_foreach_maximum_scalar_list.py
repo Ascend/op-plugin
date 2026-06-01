@@ -15,7 +15,7 @@ class TestForeachMaximumScalarList(TestCase):
         "bfloat16" : torch.bfloat16,
         "int32" : torch.int32
     }
-    
+
     def assert_equal(self, cpu_outs, npu_outs):
         for cpu_out, npu_out in zip(cpu_outs, npu_outs):
             if (cpu_out.shape != npu_out.shape):
@@ -41,7 +41,7 @@ class TestForeachMaximumScalarList(TestCase):
                 cpu_tensors.append(t)
                 npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 1
         cpu_inputs = []
@@ -56,7 +56,7 @@ class TestForeachMaximumScalarList(TestCase):
             cpu_inputs.append(cpu_tensors)
             npu_inputs.append(npu_tensors)
         return cpu_inputs, npu_inputs
-    
+
     def create_input_scalars(self, tensor_nums, dtype):
         sacalars = []
         for i in range(tensor_nums):
@@ -75,7 +75,7 @@ class TestForeachMaximumScalarList(TestCase):
             npu_output = torch._foreach_maximum(npu_tensors[0], scalars)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
     def test_foreach_maximum_scalar_list_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -96,7 +96,7 @@ class TestForeachMaximumScalarList(TestCase):
             npu_output = torch._foreach_maximum(npu_tensors[0], scalars)
 
             self.assert_equal(cpu_output, npu_output)
-        
+
     def test_foreach_maximum_scalar_list_out_int32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -106,7 +106,7 @@ class TestForeachMaximumScalarList(TestCase):
             npu_output = torch._foreach_maximum(npu_tensors[0], scalars)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
 
     def test_foreach_maximum_scalar_list_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
@@ -117,7 +117,7 @@ class TestForeachMaximumScalarList(TestCase):
             torch._foreach_maximum_(npu_tensors[0], scalars)
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-    
+
     def test_foreach_maximum_scalar_list_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -127,7 +127,7 @@ class TestForeachMaximumScalarList(TestCase):
             torch._foreach_maximum_(npu_tensors[0], scalars)
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-            
+
     @SupportedDevices(['Ascend910B'])
     def test_foreach_maximum_scalar_list_inplace_bfloat16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]

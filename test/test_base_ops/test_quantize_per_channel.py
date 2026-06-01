@@ -6,7 +6,7 @@ from torch_npu.testing.testcase import TestCase, run_tests
 
 
 class TestQuantizePerChannel(TestCase):
-    
+
     def generate_data_per_channel(self, min_d, max_d, shape_x, shape_scale, shape_zp, dtype_x, dtype_scale, dtype_zp):
         input_x = np.random.uniform(min_d, max_d, shape_x).astype(dtype_x)
         scales = np.random.uniform(min_d, max_d, shape_scale).astype(dtype_scale)
@@ -16,7 +16,7 @@ class TestQuantizePerChannel(TestCase):
         npu_input_zero_points = torch.from_numpy(zero_points)
         return npu_input_x, npu_input_scales, npu_input_zero_points
 
-    
+
     def cpu_op_exec_per_channel(self, input_x, input_scales, input_zero_points, axis, dtype, dequantize=False):
         if dequantize:
             output = torch.quantize_per_channel(input_x, input_scales, input_zero_points, axis, dtype).dequantize()
@@ -25,7 +25,7 @@ class TestQuantizePerChannel(TestCase):
         output = output.numpy()
         return output
 
-    
+
     def npu_op_exec_per_channel(self, input_x, input_scales, input_zero_points, axis, dtype, dequantize=False):
         input_x = input_x.to("npu")
         input_scales = input_scales.to("npu")

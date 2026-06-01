@@ -40,36 +40,36 @@ class TestPagedAttention(TestCase):
         # 转置张量维度
         query = query.permute(1, 0, 2)  # [num_heads, seq_len, head_size]
         key = key.permute(1, 2, 0)      # [kv_heads, head_size, seq_len]
-        
+
         # 分组矩阵乘法计算相似度
         sim_high = self.group_mm_torch(query.size(0), key.size(0), query, key)
         sim_high = sim_high * scale
-        
+
         # 添加ALiBi偏置（如果存在）
         if alibi_bias is not None:
             sim_high += alibi_bias.float()
-        
+
         # Softmax归一化
         p_high = self.softmax(sim_high)
-        
+
         # 计算注意力输出
         value = value.permute(1, 0, 2)  # [kv_heads, seq_len, head_size]
         out = self.group_mm_torch(p_high.size(0), value.size(0), p_high, value)
         return out.permute(1, 0, 2)     # [seq_len, num_heads, head_size]
 
-    def ref_single_query_cached_kv_attention(self, output, query, key_cache, value_cache, 
+    def ref_single_query_cached_kv_attention(self, output, query, key_cache, value_cache,
                                         block_tables, context_lens):
         """参考实现的单查询缓存KV注意力"""
         scale = 1.0 / (HEAD_SIZE_QK ** 0.5)
-        
+
         for i, context_len in enumerate(context_lens):
             if context_len == 0:
                 continue
-            
+
             # 从缓存中收集KV数据
             keys = [key_cache[block_tables[i][j // BLOCK_SIZE], j % BLOCK_SIZE] for j in range(context_len)]
             values = [value_cache[block_tables[i][j // BLOCK_SIZE], j % BLOCK_SIZE] for j in range(context_len)]
-            
+
             # 计算注意力
             attn_output = self.ref_masked_attention(
                 query[i].unsqueeze(0),  # 增加batch维度
@@ -88,7 +88,7 @@ class TestPagedAttention(TestCase):
         query = torch.randn(NUM_TOKENS, NUM_HEADS, HEAD_SIZE_QK, dtype=DTYPE)
         key_cache = torch.randn(NUM_BLOCKS, BLOCK_SIZE, KV_HEADS, HEAD_SIZE_QK, dtype=DTYPE)
         value_cache = key_cache[..., :HEAD_SIZE_VO].clone()
-        
+
         # 生成块表
         max_context_len = K_SEQLEN
         max_blocks_per_seq = (max_context_len + BLOCK_SIZE - 1) // BLOCK_SIZE
@@ -97,7 +97,7 @@ class TestPagedAttention(TestCase):
             for _ in range(NUM_TOKENS)
         ]
         context_lens = [K_SEQLEN] * NUM_TOKENS
-        
+
         return query, key_cache, value_cache, block_tables, context_lens
 
     def run_reference(self, query, key_cache, value_cache, block_tables, context_lens):
@@ -114,9 +114,9 @@ class TestPagedAttention(TestCase):
         key_cache_npu = key_cache.to(device)
         block_tables_npu = torch.tensor(block_tables, dtype=torch.int32, device=device)
         context_lens_npu = torch.tensor(context_lens, dtype=torch.int32)
-        
+
         output_npu = torch.zeros(NUM_TOKENS, NUM_HEADS, HEAD_SIZE_VO, dtype=DTYPE, device=device)
-        
+
         torch_npu._npu_paged_attention_mla(
             query_npu,
             key_cache_npu,
@@ -133,10 +133,10 @@ class TestPagedAttention(TestCase):
     @SupportedDevices(["Ascend910B"])
     def test_paged_attention_mla(self):
         query, key_cache, value_cache, block_tables, context_lens = self.init_data()
-        
+
         ref_output = self.run_reference(query, key_cache, value_cache, block_tables, context_lens)
         npu_output = self.run_npu_optimized(query, key_cache, block_tables, context_lens)
-        
+
         self.assertRtolEqual(npu_output, ref_output)
 
 

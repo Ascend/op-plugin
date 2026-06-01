@@ -21,7 +21,7 @@ class TestNPUConvertWeightToINT4Pack(TestCase):
     def custom_op_exec(self, x, weight, antiquant_scale, antiquant_offset, antiquant_group_size=0):
         return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset,
                                                       antiquant_group_size=antiquant_group_size)
-    
+
     def pack_int4_3dim(self, weight_unpack, g, k, n):
         weight_packed = np.zeros((g, k, n//8), dtype=np.int32)
         for gid in range(g):

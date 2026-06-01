@@ -51,9 +51,9 @@ class TestThresholdBackward(TestCase):
 
     def test_threshold_backward_broadcast_output_shape(self):
         shape_format = [
-            [[np.float32, 0, (9, 34, 48, 25)], [np.float32, 0, (1, 1, 1, 1)], [1.0], 
-            [np.float32, 0, (9, 34, 48, 25)], [np.float32, 0, (1, 1, 1, 1)], [0], 
-            [np.float32, 0, (9, 34, 48, 25)], [np.float16, 0, (1, 1, 1, 1)], [1.0], 
+            [[np.float32, 0, (9, 34, 48, 25)], [np.float32, 0, (1, 1, 1, 1)], [1.0],
+            [np.float32, 0, (9, 34, 48, 25)], [np.float32, 0, (1, 1, 1, 1)], [0],
+            [np.float32, 0, (9, 34, 48, 25)], [np.float16, 0, (1, 1, 1, 1)], [1.0],
             [np.float32, 0, (9, 34, 48, 25)], [np.float16, 0, (1, 1, 1, 1)], [0]]
         ]
 
@@ -65,7 +65,7 @@ class TestThresholdBackward(TestCase):
                 cpu_input1 = cpu_input1.to(torch.float32)
             if cpu_input2.dtype == torch.float16:
                 cpu_input2 = cpu_input2.to(torch.float32)
-                
+
             threshold = item[2][0]
             cpu_output = torch.ops.aten.threshold_backward(cpu_input1, cpu_input2, threshold=threshold)
             npu_output = torch.ops.aten.threshold_backward(npu_input1, npu_input2, threshold=threshold)

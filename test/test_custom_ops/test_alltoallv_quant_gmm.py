@@ -19,7 +19,7 @@ class TestAlltoAllvQuantGmm(TestCase):
         torch_npu.npu.set_device(rank)
         dist.init_process_group(backend='hccl', world_size=world_size, rank=rank)
         return dist
-    
+
     @classmethod
     def _test_npu_alltoallv_quant_gmm(cls, rank, dtype, c2p, init_pg, input_list1, input_list2, expertTokenNum):
         gmmX, gmmWeight, gmm_x_scale, gmm_weight_scale, mmX, mmWeight, mm_x_scale, mm_weight_scale, gmm_y_dtype, mm_y_dtype = input_list1
@@ -150,7 +150,7 @@ class TestAlltoAllvQuantGmm(TestCase):
             combined = torch.tensor(exp_token)
             out.append(tokens.npu().index_select(0, combined.npu()))
         return torch.cat(out, dim=0).npu()
-    
+
     def _test_multiprocess(self, f, init_pg, input_list1, input_list2, dtype, expertTokenNum):
         ctx = mp.get_context("spawn")
         gmmX, gmmWeight, gmm_x_scale, gmm_weight_scale, mmX, mmWeight, mm_x_scale, mm_weight_scale, gmm_y_dtype, mm_y_dtype = input_list1
@@ -168,7 +168,7 @@ class TestAlltoAllvQuantGmm(TestCase):
             c2p.get()
         for p in ps:
             p.join()
-    
+
     def generate_matrix(self, e, ep_world_size, bsk, balance=True, name="alltoallv_quant_gmm", max_iter=10000):
         if name is not None:
             import hashlib
@@ -186,7 +186,7 @@ class TestAlltoAllvQuantGmm(TestCase):
         else:
             matrix = np.random.multinomial(bsk - col_size, [1 / col_size] * col_size, size=row_size) + 1
         return matrix
-    
+
     @skipIfUnsupportMultiNPU(8)
     @SupportedDevices(['Ascend910_93', 'Ascend950'])
     def test_npu_alltoallv_gmm(self):

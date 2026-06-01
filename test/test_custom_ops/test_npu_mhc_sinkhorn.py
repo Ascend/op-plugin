@@ -8,7 +8,7 @@ import itertools
 
 
 class TestNpuMhcSinkhorn(TestCase):
-   
+
     def cpu_op_exec(self, x, eps, num_iters, out_flag):
         y = torch.softmax(x, dim=-1) + eps
         y = y / (y.sum(dim=-2, keepdim=True) + eps)
@@ -18,11 +18,11 @@ class TestNpuMhcSinkhorn(TestCase):
             # Col Norm
             y = y / (y.sum(dim=-2, keepdim=True) + eps)
         return y
-   
+
     def custom_op_exec(self, x, eps, num_iters, out_flag):
         y, norm_out, sum_out = torch_npu.npu_mhc_sinkhorn(x, eps=eps, num_iters=num_iters, out_flag=out_flag)
         return y
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_mhc_sinkhorn(self, device="npu"):
         x_shape = [1, 128, 4, 4]
@@ -37,4 +37,4 @@ class TestNpuMhcSinkhorn(TestCase):
 
 
 if __name__ == "__main__":
-    run_tests()        
+    run_tests()

@@ -41,7 +41,7 @@ class TestUpsampleNearestExact3dGrad(TestCase):
         output.sum().backward()
         output = inputs.grad
         return output
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_UpsampleNearestExact3dGrad_common_shape_format(self):
         shape_format = [

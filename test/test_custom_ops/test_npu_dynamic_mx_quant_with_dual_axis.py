@@ -29,7 +29,7 @@ class TestDynamicMxQuantWithDualAxis(TestCase):
         value = 0.0
         input_tensor = torch.full(input, value, dtype=data_type)
         return input_tensor
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_dynamic_mx_quant_with_dual_axis(self, device="npu"):
         input_tensor = self.generate_input(input=[1, 2, 2], dtype="bfloat16")
@@ -47,6 +47,6 @@ class TestDynamicMxQuantWithDualAxis(TestCase):
         assert torch.all(y2 == supported_output[2].view(torch.uint8))
         assert_close(supported_output[1], mxscale1_uint8, atol=0.01, rtol=0.001)
         assert_close(supported_output[3], mxscale2_uint8, atol=0.01, rtol=0.001)
-        
+
 if __name__ == "__main__":
     run_tests()

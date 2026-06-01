@@ -30,7 +30,7 @@ def chunked_matmul_with_dv_quant(left: torch.Tensor, right: torch.Tensor, scale_
     B, N2, G1, S2, S1 = left.shape
     B_r, N2_r, G2, S1_r, D = right.shape
     G_out = max(G1, G2)
-    result = torch.zeros((B, N2, G_out, S2, D), 
+    result = torch.zeros((B, N2, G_out, S2, D),
                         dtype=left.dtype,
                         device=left.device)
     s1_tail = PER_BLOCK_S1_SIZE_FOR_SCALE_DS if S1 % PER_BLOCK_S1_SIZE_FOR_SCALE_DS == 0 else S1 % PER_BLOCK_S1_SIZE_FOR_SCALE_DS
@@ -39,7 +39,7 @@ def chunked_matmul_with_dv_quant(left: torch.Tensor, right: torch.Tensor, scale_
             for g in range(G_out):
                 g_left = 0 if G1 == 1 else g
                 g_right = 0 if G2 == 1 else g
-                for s2 in range(0, S2, PER_BLOCK_S2_SIZE):   
+                for s2 in range(0, S2, PER_BLOCK_S2_SIZE):
                     s2_start = s2
                     s2_end = s2_start + PER_BLOCK_S2_SIZE
                     s2_end = min(s2_end, S2)
@@ -48,7 +48,7 @@ def chunked_matmul_with_dv_quant(left: torch.Tensor, right: torch.Tensor, scale_
                         s1_start = s1
                         s1_end = s1_start + PER_BLOCK_S1_SIZE_FOR_SCALE_DS
                         s1_end = min(s1_end, S1)
-                        
+
                         left_block = left[b, n, g_left, s2_start:s2_end, s1_start:s1_end]
                         scale_left_value = scale_left
                         right_block = right[b, n, g_right, s1_start:s1_end, :]
@@ -68,7 +68,7 @@ def chunked_matmul_with_quant(left: torch.Tensor, right: torch.Tensor, scale: to
     B_r, N2_r, G2, S2_r, D = right.shape
 
     G_out = max(G1, G2)
-    result = torch.zeros((B, N2, G_out, S1, D), 
+    result = torch.zeros((B, N2, G_out, S1, D),
                         dtype=left.dtype,
                         device=left.device)
     for b in range(B):
@@ -81,10 +81,10 @@ def chunked_matmul_with_quant(left: torch.Tensor, right: torch.Tensor, scale: to
                     end = start + PER_BLOCK_S2_SIZE
                     end = min(end, S2)
                     current_chunk = min(PER_BLOCK_S2_SIZE, S2 - start)
-                    
+
                     left_block = left[b, n, g_left, :, start:end]
                     right_block = right[b, n, g_right, start:end, :]
-                    
+
                     scale_g_idx = 0 if scale.shape[2] == 1 else g
                     result[b, n, g] += torch.matmul(left_block, right_block) * scale[b, n, scale_g_idx, start // PER_BLOCK_S2_SIZE, 0]
     return result
@@ -93,7 +93,7 @@ def chunked_matmul_with_dq_quant(left: torch.Tensor, right: torch.Tensor, scale_
     B, N2, G1, S1, S2 = left.shape
     B_r, N2_r, G2, S2_r, D = right.shape
     G_out = max(G1, G2)
-    result = torch.zeros((B, N2, G_out, S1, D), 
+    result = torch.zeros((B, N2, G_out, S1, D),
                         dtype=left.dtype,
                         device=left.device)
     s1_tail = PER_BLOCK_S1_SIZE_FOR_SCALE_DS if S1 % PER_BLOCK_S1_SIZE_FOR_SCALE_DS == 0 else S1 % PER_BLOCK_S1_SIZE_FOR_SCALE_DS
@@ -102,7 +102,7 @@ def chunked_matmul_with_dq_quant(left: torch.Tensor, right: torch.Tensor, scale_
             for g in range(G_out):
                 g_left = 0 if G1 == 1 else g
                 g_right = 0 if G2 == 1 else g
-                for s2 in range(0, S2, PER_BLOCK_S2_SIZE):   
+                for s2 in range(0, S2, PER_BLOCK_S2_SIZE):
                     s2_start = s2
                     s2_end = s2_start + PER_BLOCK_S2_SIZE
                     s2_end = min(s2_end, S2)
@@ -127,7 +127,7 @@ def chunked_matmul_with_dk_quant(left: torch.Tensor, right: torch.Tensor, scale_
     B, N2, G1, S2, S1 = left.shape
     B_r, N2_r, G2, S1_r, D = right.shape
     G_out = max(G1, G2)
-    result = torch.zeros((B, N2, G_out, S2, D), 
+    result = torch.zeros((B, N2, G_out, S2, D),
                         dtype=left.dtype,
                         device=left.device)
     s1_tail = PER_BLOCK_S1_SIZE_FOR_SCALE_DS if S1 % PER_BLOCK_S1_SIZE_FOR_SCALE_DS == 0 else S1 % PER_BLOCK_S1_SIZE_FOR_SCALE_DS
@@ -136,7 +136,7 @@ def chunked_matmul_with_dk_quant(left: torch.Tensor, right: torch.Tensor, scale_
             for g in range(G_out):
                 g_left = 0 if G1 == 1 else g
                 g_right = 0 if G2 == 1 else g
-                for s2 in range(0, S2, PER_BLOCK_S2_SIZE):   
+                for s2 in range(0, S2, PER_BLOCK_S2_SIZE):
                     s2_start = s2
                     s2_end = s2_start + PER_BLOCK_S2_SIZE
                     s2_end = min(s2_end, S2)
@@ -145,7 +145,7 @@ def chunked_matmul_with_dk_quant(left: torch.Tensor, right: torch.Tensor, scale_
                         s1_start = s1
                         s1_end = s1_start + PER_BLOCK_S1_SIZE_FOR_SCALE_DS
                         s1_end = min(s1_end, S1)
-                        
+
                         left_block = left[b, n, g_left, s2_start:s2_end, s1_start:s1_end]
                         scale_left_value = scale_left
                         right_block = right[b, n, g_right, s1_start:s1_end, :]
@@ -241,7 +241,7 @@ def tbackward(dx, q, k, v, softmax_res, y, scale, dscale_q, dscale_k, dscale_v, 
 
     dx = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(trans_np_float_tensor_to_hifuint8(dx.cpu().numpy())))
     softmax_res_quant = torch.from_numpy(trans_np_hifuint8_tensor_to_float32(trans_np_float_tensor_to_hifuint8(softmax_res_quant.cpu().numpy())))
-    
+
     drop_res = softmax_res_quant
     dv = chunked_matmul_with_dv_quant(drop_res.permute(0, 1, 2, 4, 3), dx, dscale_p, dscale_dx)
 
@@ -277,7 +277,7 @@ def trans_np_hifuint8_tensor_to_float32(in_tensor):
     from en_dtypes import hifloat8
     if isinstance(in_tensor, torch.Tensor):
         in_tensor = in_tensor.cpu().numpy()
-    
+
     if in_tensor.dtype == np.uint8:
         in_tensor = in_tensor.view(hifloat8)
 
@@ -348,7 +348,7 @@ class TestNPUQuantFlashAttentionV2(TestCase):
         key_hifp8 = trans_np_float_tensor_to_hifuint8(key_hifp8.cpu().numpy())
         value_hifp8 = trans_np_float_tensor_to_hifuint8(value_hifp8.cpu().numpy())
         dy_hifp8 = trans_np_float_tensor_to_hifuint8(dy_hifp8.cpu().numpy())
-        
+
         query_hifp8 = torch.from_numpy(query_hifp8)
         key_hifp8 = torch.from_numpy(key_hifp8)
         value_hifp8 = torch.from_numpy(value_hifp8)

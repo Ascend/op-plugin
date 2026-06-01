@@ -41,10 +41,10 @@ class TestFFNToAttention(TestCase):
     @classmethod
     def _test_ffn_to_attention(cls, rank, input_list):
         import torchair
-        
+
         bs, k, h, micro_batch_num, attention_worker_num, ffn_worker_num, expert_num, world_size, window_size, ep_world_size, tp_world_size, input_type, \
         x, session_ids, micro_batch_ids, token_ids, expert_offsets, actual_token_num, attn_rank_table, token_info_table_shape, token_data_shape, init_pg, c2p, p2c = input_list
-        
+
         # 准备
         pg, ep_group, tp_group = init_pg(rank, world_size, ep_world_size, tp_world_size)
         ep_hcomm_name = ep_group._get_backend(torch.device('npu')).get_hccl_comm_name(rank)
@@ -63,7 +63,7 @@ class TestFFNToAttention(TestCase):
             token_ids = token_ids.to(torch.int32).npu()
             expert_offsets = expert_offsets.to(torch.int32).npu()
             attn_rank_table = attn_rank_table.to(torch.int32).npu()
-            
+
             torch_npu.npu_ffn_to_attention(x=x,
                 session_ids = session_ids,
                 micro_batch_ids = micro_batch_ids,
@@ -91,7 +91,7 @@ class TestFFNToAttention(TestCase):
 
             token_info_cpu = token_info_npu.cpu()
             token_data_cpu = token_data_npu.cpu()
-            c2p.put([rank, 
+            c2p.put([rank,
                 [token_info_cpu, token_data_cpu]
             ])
 
@@ -121,7 +121,7 @@ class TestFFNToAttention(TestCase):
             if rank < attention_worker_num:
                 token_info_list[rank] = output[0]
                 token_data_list[rank] = output[1]
-        
+
         for rank in range(attention_worker_num):
             self.assertEqual(token_info_list[rank], token_info_golden[rank],
                              ("rank {} Expect receive tensor {} but got {}.").format(rank, token_info_golden[rank], token_info_list[rank]))

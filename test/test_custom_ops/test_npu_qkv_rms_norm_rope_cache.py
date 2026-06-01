@@ -25,12 +25,12 @@ class TestNPUQkvRmsNormRopeCache(TestCase):
                         input_dtype):
         # generate inputs
         Nqkv = Nq + Nk + Nv
-        qkv = torch.randn(batch_size * seq_len, Nqkv * dim, dtype=input_dtype) 
+        qkv = torch.randn(batch_size * seq_len, Nqkv * dim, dtype=input_dtype)
         q_gamma = torch.randn(dim, dtype=input_dtype)
         k_gamma = torch.randn(dim, dtype=input_dtype)
         cos = torch.randn(batch_size * seq_len, dim, dtype=input_dtype)
         sin = torch.randn(batch_size * seq_len, dim, dtype=input_dtype)
-        
+
         if cache_mode == "PA_NZ":
             q_out = torch.ones(batch_size * seq_len, Nq * dim, dtype=input_dtype) * 9
             k_cache = torch.ones(block_num, Nk * dim // 32, block_size, 32, dtype=input_dtype) * 9
@@ -170,8 +170,8 @@ class TestNPUQkvRmsNormRopeCache(TestCase):
 
         Srope = cos.shape[0] // batch_size
         Nrope = cos.shape[1] // dim
-        cos = cos.view(batch_size, Srope, Nrope, dim)    
-        sin = sin.view(batch_size, Srope, Nrope, dim) 
+        cos = cos.view(batch_size, Srope, Nrope, dim)
+        sin = sin.view(batch_size, Srope, Nrope, dim)
 
         # q计算
         rope_range = [0, dim]
@@ -205,11 +205,11 @@ class TestNPUQkvRmsNormRopeCache(TestCase):
         if is_output_qkv:
             return q_out_res, k_cache_res, v_cache_res, q_proto_out, k_out_before_quant, v_out_before_quant
         return q_out_res, k_cache_res, v_cache_res, None, None, None
-        
+
 
     def custom_op_exec(self, qkv, q_gamma, k_gamma, cos, sin, index, q_out, k_cache, v_cache,
                        qkv_size=None, num_heads=None,
-                       k_scale=None, v_scale=None, k_offset=None, v_offset=None, 
+                       k_scale=None, v_scale=None, k_offset=None, v_offset=None,
                        epsilon=1e-06, cache_mode="PA_NZ", is_output_qkv=False):
         qkv = qkv.npu()
         q_gamma = q_gamma.npu()
@@ -225,7 +225,7 @@ class TestNPUQkvRmsNormRopeCache(TestCase):
         if v_scale is not None:
             v_scale = v_scale.npu()
         q_out_before_quant_npu, k_out_before_quant_npu, v_out_before_quant_npu = torch_npu.npu_qkv_rms_norm_rope_cache(qkv, q_gamma, k_gamma,
-                                                                                                    cos, sin, index, 
+                                                                                                    cos, sin, index,
                                                                                                     q_out, k_cache, v_cache,
                                                                                                     qkv_size = qkv_size,
                                                                                                     head_nums = num_heads,
@@ -258,7 +258,7 @@ class TestNPUQkvRmsNormRopeCache(TestCase):
         # call npu api
         npu_out = self.custom_op_exec(qkv, q_gamma, k_gamma, cos, sin, index, q_out, k_cache, v_cache, qkv_size=qkv_size, num_heads=num_heads,
                                     k_scale=k_scale, v_scale=v_scale,
-                                    k_offset=None, v_offset=None, 
+                                    k_offset=None, v_offset=None,
                                     epsilon=1e-06, cache_mode=cache_mode, is_output_qkv=is_output_qkv)
 
         q_out_cpu, k_cache_cpu, v_cache_cpu, q_out_before_quant_cpu, k_out_before_quant_cpu, v_out_before_quant_cpu = npu_out
@@ -278,7 +278,7 @@ class TestNPUQkvRmsNormRopeCache(TestCase):
         self.assertRtolEqual(q_out_cpu, q_out_res, prec=rtol)
         self.assertRtolEqual(k_cache_cpu, k_cache_res, prec=rtol)
         self.assertRtolEqual(v_cache_cpu, v_cache_res, prec=rtol)
-    
+
         if is_output_qkv:
             self.assertEqual(q_out_before_quant_cpu.shape, q_out_before_quant.shape)
             self.assertEqual(k_out_before_quant_cpu.shape, k_out_before_quant.shape)

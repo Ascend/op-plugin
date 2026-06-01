@@ -49,7 +49,7 @@ class TestFusedInferAttentionV2(TestCase):
 
         attn_output1 = torch.matmul(attn_weights1, past_value)
         return attn_output1, lse
-    
+
     def supported_op_exec_ntd(self, query_states1, past_key, past_value, head_dim, T, N):
         attn_weights1 = torch.matmul(query_states1, past_key.transpose(1, 2)) / 0.0078125
 
@@ -63,7 +63,7 @@ class TestFusedInferAttentionV2(TestCase):
         q_tensor = rearrange(query_states1, 's n d -> 1 n s d').to(torch.float64)
         k_tensor = rearrange(past_key, 's n d -> 1 n s d').to(torch.float64)
         v_tensor = rearrange(past_value, 's n d -> 1 n s d').to(torch.float64)
-    
+
         qkEleRes = torch.matmul(q_tensor, k_tensor.transpose(3, 2)) / 0.0078125
         softmax_res, x_max, x_sum = self.npSoftmax_new(qkEleRes, learnable_sink)
         y = torch.matmul(softmax_res, v_tensor)
@@ -80,7 +80,7 @@ class TestFusedInferAttentionV2(TestCase):
         return torch_npu.npu_fused_infer_attention_score_v2(
             query, key, value, num_query_heads=32, input_layout="TND", softmax_scale=softmax_scale,
             pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
-    
+
     def custom_op_exec_tnd_pa(self, query, key, value, return_softmax_lse, block_table):
         softmax_scale = 1 / 0.0078125
         return torch_npu.npu_fused_infer_attention_score_v2(
@@ -100,7 +100,7 @@ class TestFusedInferAttentionV2(TestCase):
             query, key, value, learnable_sink=learnable_sink, num_query_heads=8, input_layout="TND",
             softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535, actual_seq_qlen=actseqlen,
             actual_seq_kvlen=actseqlenkv, return_softmax_lse=return_softmax_lse)
-    
+
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
     def test_npu_fused_infer_attention_score_v2(self, device="npu"):
@@ -162,7 +162,7 @@ class TestFusedInferAttentionV2(TestCase):
         custom_output = self.custom_op_exec_ntd_tnd(query, key, value, head_dim, actseqlen, actseqlenkv, return_softmax_lse)
         attention_out = custom_output[0]
         self.assertRtolEqual(golden_output, attention_out, prec=0.000001, prec16=0.000001)
-    
+
     @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
     @SupportedDevices(['Ascend910B'])
     def test_npu_fused_infer_attention_score_v2(self, device="npu"):
@@ -211,9 +211,9 @@ class TestFusedInferAttentionV2(TestCase):
 
         return_softmax_lse = False
         custom_output = torch_npu.npu_fused_infer_attention_v2(
-            query, key, value, num_query_heads=2, input_layout="BNSD", 
+            query, key, value, num_query_heads=2, input_layout="BNSD",
             pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
-        
+
         golden_output = torch.ones(1, 2, 1024, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
@@ -229,9 +229,9 @@ class TestFusedInferAttentionV2(TestCase):
 
         return_softmax_lse = False
         custom_output = torch_npu.npu_fused_infer_attention_v2(
-            query, key, value, num_query_heads=1, input_layout="BNSD", block_table=block_table, actual_seq_qlen=actseqlen, actual_seq_kvlen=actseqlenkv, 
+            query, key, value, num_query_heads=1, input_layout="BNSD", block_table=block_table, actual_seq_qlen=actseqlen, actual_seq_kvlen=actseqlenkv,
             block_size=128, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
-        
+
         golden_output = torch.ones(2, 1, 2048, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
@@ -247,9 +247,9 @@ class TestFusedInferAttentionV2(TestCase):
 
         return_softmax_lse = False
         custom_output = torch_npu.npu_fused_infer_attention_v2(
-            query, key, value, num_query_heads=1, input_layout="BNSD", dequant_scale_key=key_antiquant_scale, dequant_scale_value=value_antiquant_scale, 
+            query, key, value, num_query_heads=1, input_layout="BNSD", dequant_scale_key=key_antiquant_scale, dequant_scale_value=value_antiquant_scale,
             key_quant_mode=antiquant_mode, value_quant_mode=antiquant_mode, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
-        
+
         golden_output = torch.ones(2, 1, 1, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
@@ -269,14 +269,14 @@ class TestFusedInferAttentionV2(TestCase):
 
         return_softmax_lse = False
         custom_output = torch_npu.npu_fused_infer_attention_v2(
-            query, key, value, num_query_heads=1, input_layout="BNSD", dequant_scale_key=key_antiquant_scale, dequant_scale_value=value_antiquant_scale, 
+            query, key, value, num_query_heads=1, input_layout="BNSD", dequant_scale_key=key_antiquant_scale, dequant_scale_value=value_antiquant_scale,
             key_quant_mode=antiquant_mode, value_quant_mode=antiquant_mode, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse,
             key_dtype=key_dtype, value_dtype=value_dtype, dequant_scale_key_dtype=dequant_scale_key_dtype, dequant_scale_value_dtype=dequant_scale_value_dtype)
-        
+
         golden_output = torch.zeros(2, 1, 1, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_fused_infer_attention_score_v2_without_outdtype(self, device="npu"):
         query = torch.randn(32, 2, 8, 192, dtype=torch.float16).npu()
@@ -286,7 +286,7 @@ class TestFusedInferAttentionV2(TestCase):
         return_softmax_lse = False
         softmax_scale = 1 / 0.78127
         custom_output = torch_npu.npu_fused_infer_attention_score_v2(
-            query, key, value, num_query_heads=8, input_layout="BSND", 
+            query, key, value, num_query_heads=8, input_layout="BSND",
             quant_scale_out=quant_scale_out,
             softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
         golden_output = torch.randn((32, 2, 8, 128), dtype=torch.int8).npu()
@@ -303,7 +303,7 @@ class TestFusedInferAttentionV2(TestCase):
         return_softmax_lse = False
         softmax_scale = 1 / 0.0078125
         custom_output = torch_npu.npu_fused_infer_attention_score_v2(
-            query, key, value, num_query_heads=8, input_layout="BNSD", 
+            query, key, value, num_query_heads=8, input_layout="BNSD",
             quant_scale_out=quant_scale_out, out_dtype=out_dtype,
             softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
         golden_output = torch.randn((32, 8, 2, 128), dtype=torch.float8_e5m2).npu()
@@ -319,9 +319,9 @@ class TestFusedInferAttentionV2(TestCase):
         return_softmax_lse = False
         softmax_scale = 1 / 0.0078125
         custom_output = torch_npu.npu_fused_infer_attention_score_v2(
-            query, key, value, num_query_heads=8, input_layout="BNSD_BSND", 
+            query, key, value, num_query_heads=8, input_layout="BNSD_BSND",
             softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
-        
+
         golden_output = torch.ones(32, 1, 8, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
@@ -335,9 +335,9 @@ class TestFusedInferAttentionV2(TestCase):
         return_softmax_lse = False
         softmax_scale = 1 / 0.0078125
         custom_output = torch_npu.npu_fused_infer_attention_score_v2(
-            query, key, value, num_query_heads=8, input_layout="BSND", 
+            query, key, value, num_query_heads=8, input_layout="BSND",
             softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
-        
+
         golden_output = torch.ones(32, 1, 8, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)
@@ -351,12 +351,12 @@ class TestFusedInferAttentionV2(TestCase):
         return_softmax_lse = False
         softmax_scale = 1 / 0.0078125
         custom_output = torch_npu.npu_fused_infer_attention_score_v2(
-            query, key, value, num_query_heads=8, input_layout="BSH", 
+            query, key, value, num_query_heads=8, input_layout="BSH",
             softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
-        
+
         golden_output = torch.ones(32, 1, 1024, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
-        self.assertRtolEqual(res, True)        
+        self.assertRtolEqual(res, True)
 
     @SupportedDevices(['Ascend950'])
     def test_npu_fused_infer_attention_score_v2_nsd_d_unequal(self, device="npu"):
@@ -367,12 +367,12 @@ class TestFusedInferAttentionV2(TestCase):
         softmax_lse_flag = False
         scale = 1 / 0.0078125
         custom_output = torch_npu.npu_fused_infer_attention_score_v2(
-            query, key, value, num_query_heads=8, input_layout="NSD", 
+            query, key, value, num_query_heads=8, input_layout="NSD",
             softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535, return_softmax_lse=return_softmax_lse)
-        
+
         golden_output = torch.ones(8, 1, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
-        self.assertRtolEqual(res, True)     
+        self.assertRtolEqual(res, True)
 
     @SupportedDevices(['Ascend950'])
     def test_npu_fused_infer_attention_score_v2_tnd_d_unequal(self, device="npu"):
@@ -389,7 +389,7 @@ class TestFusedInferAttentionV2(TestCase):
             query, key, value, num_query_heads=8, input_layout="TND",
             softmax_scale=softmax_scale, pre_tokens=65535, next_tokens=65535,
             actual_seq_qlen=actseqlen, actual_seq_kvlen=actseqlenkv, return_softmax_lse=return_softmax_lse)
-        
+
         golden_output = torch.ones(32, 8, 128, dtype=torch.float16).npu()
         res = custom_output[0].equal(golden_output)
         self.assertRtolEqual(res, True)

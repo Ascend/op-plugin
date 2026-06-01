@@ -9,7 +9,7 @@ import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 
-def gen_apply_adam_w(var, m, v, grad, max_grad_norm, beta1_power, beta2_power, lr, weight_decay, 
+def gen_apply_adam_w(var, m, v, grad, max_grad_norm, beta1_power, beta2_power, lr, weight_decay,
                      beta1, beta2, epsilon, amsgrad=True, maximize=False):
     if maximize:
         gt = -1 * grad

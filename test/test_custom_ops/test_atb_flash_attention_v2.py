@@ -58,7 +58,7 @@ class SelfAttentionV2Test(TestCase):
         c_offset = 0
         s_offset = 0
         for i, _ in enumerate(seq_len):
-            kv[c_offset:c_offset + seq_len[i]][:] = kv[s_offset:s_offset + seq_len[i]][:] 
+            kv[c_offset:c_offset + seq_len[i]][:] = kv[s_offset:s_offset + seq_len[i]][:]
             c_offset += seq_len[i]
             s_offset += dim1len
         return torch.from_numpy(kv[0:sum(seq_len)][:])
@@ -125,7 +125,7 @@ class SelfAttentionV2Test(TestCase):
             mm = torch.pow(m1, torch.arange(1, 1 + 2 * (n_heads - n), 2))
             slopes = torch.cat([slopes, mm])
         return slopes
-    
+
     def get_alibi_bias(self, n_heads, max_seqlen):
         if not self.left_align:
             self.bias = torch.arange(max_seqlen)
@@ -158,7 +158,7 @@ class SelfAttentionV2Test(TestCase):
             closest_power_of_2 = 2 ** math.floor(math.log2(n))
             return get_interleave_power_of_2(closest_power_of_2, alibi_bias_max) + \
                 self.get_interleave(2 * closest_power_of_2)[0::2][:n - closest_power_of_2]
-    
+
     def gen_mask(self, batch, heads, data_type, mask_type):
         q_max_seq = self.max_seq
         kv_max_seq = self.max_seq

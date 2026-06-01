@@ -36,13 +36,13 @@ class TestNpuMhcPost(TestCase):
         if (x_dtype == 'bfloat16'):
             x = x.to(torch.float32)
             h_out = h_out.to(torch.float32)
-            
+
         if (x_ndim == 3):
             x = torch.unsqueeze(x, dim=0)
             h_res = torch.unsqueeze(h_res, dim=0)
             h_out = torch.unsqueeze(h_out, dim=0)
             h_post = torch.unsqueeze(h_post, dim=0)
-        
+
         h_out_fp32 = h_out.float()
         x_fp32 = x.float()
         h_post_term = h_post.unsqueeze(-1) * h_out_fp32.unsqueeze(-2)
@@ -57,7 +57,7 @@ class TestNpuMhcPost(TestCase):
     def npu_op_exec(self, x, h_res, h_out, h_post):
         y = torch_npu.npu_mhc_post(x, h_res, h_out, h_post)
         return y
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_mhc_post(self, device="npu"):
         x_shape = [1,1,4,512]

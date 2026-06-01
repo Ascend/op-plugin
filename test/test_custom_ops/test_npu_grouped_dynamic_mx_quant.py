@@ -31,7 +31,7 @@ class TestGroupedDynamicMxQuant(TestCase):
         group_index_value = 1
         group_index_tensor = torch.full(group_index, group_index_value, dtype=group_index_data_type)
         return input_tensor, group_index_tensor
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_grouped_dynamic_mx_quant_(self, device="npu"):
         input_tensor, group_index_tensor = self.generate_input(input=[1, 2], group_index=[1], dtype="float16")
@@ -44,6 +44,6 @@ class TestGroupedDynamicMxQuant(TestCase):
 
         assert torch.all(y == supported_output[0].view(torch.uint8))
         assert_close(supported_output[1], mxscale, atol=0.01, rtol=0.001)
-        
+
 if __name__ == "__main__":
     run_tests()

@@ -22,10 +22,10 @@ class TestForeachNorm(TestCase):
             if (cpu_out.shape != npu_out.shape):
                 self.fail("shape error!")
             result = torch.allclose(cpu_out, npu_out.cpu(), rtol=0.001, atol=0.001)
-            if not result:              
+            if not result:
                 self.fail("result error!")
         return True
-    
+
     def create_tensors(self, dtype, shapes):
         cpu_tensors = []
         npu_tensors = []
@@ -37,7 +37,7 @@ class TestForeachNorm(TestCase):
                 cpu_tensors.append(t)
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 1
         cpu_inputs = []

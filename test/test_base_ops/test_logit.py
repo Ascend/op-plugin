@@ -12,7 +12,7 @@ class TestLogit(TestCase):
         output = torch.logit(input1, eps)
         output = output.numpy()
         return output
-    
+
     def cpu_backward_op_exec(self, input1, eps=None):
         input1.requires_grad_(True)
         output = torch.logit(input1, eps)

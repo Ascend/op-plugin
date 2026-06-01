@@ -25,7 +25,7 @@ from torch_npu.testing.decorator import Dtypes, instantiate_tests
 @instantiate_tests
 class TestRandom(TestCase):
 
-    @Dtypes(torch.float32, torch.float64, torch.float16, torch.bfloat16, torch.uint8, 
+    @Dtypes(torch.float32, torch.float64, torch.float16, torch.bfloat16, torch.uint8,
             torch.int8, torch.int16, torch.int32, torch.int64)
     def test_random_from_to(self, dtype):
         size = 2000

@@ -45,10 +45,10 @@ class TestNPUSimExponential(TestCase):
             shape = tuple(np.random.randint(10, 100, size=(k,)))
             # 随机选择 λ 值
             lambd = np.random.choice(lambd_list)
-            
+
             # 生成输入 tensor
             tensor_cpu = torch.empty(size=shape, dtype=torch.float32)
-            
+
             # CPU 基准结果
             np_cpu = self.supported_op_exec(tensor_cpu.clone(), lambd)
             # NPU 算子结果
@@ -62,7 +62,7 @@ class TestNPUSimExponential(TestCase):
 
         # 校验拒绝次数是否在可接受范围内
         reject_num = self.cal_reject_num(alpha, N)
-        self.assertTrue(count <= reject_num, 
+        self.assertTrue(count <= reject_num,
                         f"Reject count {count} exceeds threshold {reject_num}, distribution mismatch")
 
     @unittest.skip("skip") # CI版本不支持

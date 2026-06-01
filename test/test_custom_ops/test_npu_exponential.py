@@ -39,13 +39,13 @@ class TestExponential(TestCase):
             test_output = kstest(np_cpu.flatten(), np_npu.flatten())
             if test_output.pvalue < alpha:
                 count += 1
-    
+
         reject_num = self.cal_reject_num(alpha, N)
         if count <= reject_num:
             return True
         else:
             return False
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_exponential_no_zero(self):
         for _ in range(100):

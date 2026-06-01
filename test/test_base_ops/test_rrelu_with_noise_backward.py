@@ -28,7 +28,7 @@ class TestRreluWithNoiseBackward(TestCase):
         dtype_list2 = [np.float32]
         shape_list2 = [(1, 6, 4), (1, 4, 8), (1, 6, 8),
                        (2, 4, 5), (2, 5, 10), (2, 4, 10)]
-        
+
         shape_format2 = [[[i, j, k]] for i in dtype_list2
                          for j in format_list2 for k in shape_list2]
 
@@ -44,7 +44,7 @@ class TestRreluWithNoiseBackward(TestCase):
         dtype_list3 = [np.float16]
         shape_list3 = [(1, 6, 4), (1, 4, 8), (1, 6, 8),
                        (2, 4, 5), (2, 5, 10), (2, 4, 10)]
-        
+
         shape_format3 = [[[i, j, k]] for i in dtype_list3
                          for j in format_list3 for k in shape_list3]
 

@@ -12,7 +12,7 @@ class TestNPUGelu(TestCase):
     def get_golden(self, input_self_tensor, approximate="none"):
         output = torch.nn.functional.gelu(input_self_tensor, approximate=approximate)
         return output
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_gelu(self):
         shape = [100, 400]

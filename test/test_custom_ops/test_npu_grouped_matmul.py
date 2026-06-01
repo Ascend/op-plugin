@@ -1128,7 +1128,7 @@ class TestGroupedMatmul(TestCase):
 
         self.assertRtolEqual(supported_output[0].to(torch.float32).numpy(),
                              custom_output[0].to(torch.float32).cpu().numpy(), 0.001)
-        
+
     @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_quant_float4_weight_nz(self): # 全量化 float4 + weight NZ
         torch.manual_seed(0)

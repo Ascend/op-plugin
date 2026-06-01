@@ -37,7 +37,7 @@ class TestAngle(TestCase):
             cpu_output = self.cpu_op_exec(cpu_input1)
             npu_output = self.npu_op_exec(npu_input1)
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
     @unittest.skip("Temporarily skipping")
     def test_angle_common_shape_format_fp16(self):
         format_list = [0]
@@ -50,7 +50,7 @@ class TestAngle(TestCase):
             cpu_output = self.cpu_op_exec(cpu_input1)
             npu_output = self.npu_op_exec(npu_input1)
             self.assertRtolEqual(cpu_output, npu_output)
-    
+
     @SupportedDevices(['Ascend910B'])
     @unittest.skip("Temporarily skipping")
     def test_angle_common_shape_format_complex64(self):

@@ -42,7 +42,7 @@ class TestNPUQuantFlashAttentionV2(TestCase):
                     epsilon = 1e-8
                     scale_for_tensor[b, n, s // PER_BLOCK_SIZE, 0] = FP8_MAX / (max_val + epsilon)
         return scale_for_tensor
-    
+
     def supported_op_exec_quant(self, query, key, value, d_scale_q, d_scale_k, d_scale_v):
         scale = 0.08838
         query = query.to(torch.float32)
@@ -62,14 +62,14 @@ class TestNPUQuantFlashAttentionV2(TestCase):
         attention_out = torch.matmul(softmax_res, value * d_scale_vf)
         attention_out_res = attention_out / sum
         return attention_out_res
-    
+
     def custom_op_exec_quant(self, query, key, value, d_scale_q, d_scale_k, d_scale_v, p_scale):
         scale = 0.08838
         return torch_npu.npu_quant_fusion_attention(
             query, key, value, head_num=8, input_layout="BNSD", scale=scale,
             d_scale_q=d_scale_q, d_scale_k=d_scale_k, d_scale_v=d_scale_v, p_scale=p_scale)
 
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_quant_flash_attention_with_fp8(self, device="npu"):
         query = torch.randn(1, 8, 256, 128, dtype=torch.float16)

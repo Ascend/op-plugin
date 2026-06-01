@@ -8,7 +8,7 @@ from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestFFT1d(TestCase):
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_fft_1d(self):
         real_part = torch.tensor([1.0, 2.0, 3.0, 4.0])

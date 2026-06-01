@@ -179,7 +179,7 @@ class TestIndexPut(TestCase):
         cpu_output2 = self.cpu_op_exec(input1, (cpu_indices,), values)
         npu_output2 = self.npu_op_exec(input1, (npu_indices,), values)
         self.assertRtolEqual(cpu_output2, npu_output2)
-        
+
     def test_index_put_shape_mismatch(self):
         torch.set_default_device('npu')
         data_tensor = torch.zeros(3, 3)

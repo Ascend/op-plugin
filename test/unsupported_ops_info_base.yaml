@@ -11071,6 +11071,6 @@ _refs.nn.functional.channel_shuffle:
   test_neg_view:
   - float64
   test_conj_view:
-  - complex64  
+  - complex64
   test_neg_conj_view:
   - complex128

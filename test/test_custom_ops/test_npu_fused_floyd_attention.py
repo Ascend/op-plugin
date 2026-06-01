@@ -49,7 +49,7 @@ class TestNPUFusedFloydAttention(TestCase):
 
         p = self.simple_softmax(s * scale, x_max, x_sum)
         ds = p * (dp - (grad * output).sum(dim=-1, keepdim=True)) * scale
-        
+
         dQ = torch.einsum('bhikj,bhijc->bhikc', ds, K1) + torch.einsum('bhikj,bhjkc->bhikc', ds, K2)
         dK1 = torch.einsum('bhikj,bhikc->bhijc', ds, Q)
         dK2 = torch.einsum('bhikj,bhikc->bhjkc', ds, Q)
@@ -72,7 +72,7 @@ class TestNPUFusedFloydAttention(TestCase):
         scale = 1.0/math.sqrt(D)
         gtype = torch.float32
         atten_mask = torch.zeros([B, 1, S1, 1, S3]).to(torch.bool).npu()
-        output, x_max, x_sum = self.floyd_attn_forward_manual_simple(Q.to(gtype), K1.to(gtype), K2.to(gtype), 
+        output, x_max, x_sum = self.floyd_attn_forward_manual_simple(Q.to(gtype), K1.to(gtype), K2.to(gtype),
                                                             V1.to(gtype), V2.to(gtype), scale, atten_mask)
 
         dQ, dK1, dV1, dK2, dV2 = self.floyd_attn_backward_manual_simple(Q.to(gtype), K1.to(gtype), K2.to(gtype),
@@ -122,7 +122,7 @@ class TestNPUFusedFloydAttention(TestCase):
         gtype = torch.float32
         atten_mask = torch.zeros([B, 1, S1, 1, S3]).to(torch.bool).npu()
 
-        output, x_max, x_sum = self.floyd_attn_forward_manual_simple(Q.to(gtype), K1.to(gtype), K2.to(gtype), 
+        output, x_max, x_sum = self.floyd_attn_forward_manual_simple(Q.to(gtype), K1.to(gtype), K2.to(gtype),
                                                             V1.to(gtype), V2.to(gtype), scale, atten_mask)
 
         dQ, dK1, dV1, dK2, dV2 = self.floyd_attn_backward_manual_simple(Q.to(gtype), K1.to(gtype), K2.to(gtype),

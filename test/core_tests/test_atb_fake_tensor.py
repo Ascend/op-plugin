@@ -27,10 +27,10 @@ class TestAtbFakeTensor(TestCase):
             block_tables = torch.randint(0, 10, (batch, max_num_blocks_per_query), dtype=torch.int32).npu()
             context_lens = [2] * batch
             atten_out = torch_npu.atb.npu_multi_head_latent_attention(q_nope, q_rope, ctkv, k_rope, block_tables, context_lens, 32, 1.0, 1)
-            
+
             self.assertTrue(atten_out.shape == q_nope.shape)
             self.assertEqual(atten_out.dtype, q_rope.dtype)
-    
+
     def test_npu_multi_head_latent_attentionn_lse(self):
         with FakeTensorMode():
             block_size = 128
@@ -50,7 +50,7 @@ class TestAtbFakeTensor(TestCase):
             context_lens = [2] * batch
             return_lse = True
             atten_out, lse_out = torch_npu.atb.npu_multi_head_latent_attention(q_nope, q_rope, ctkv, k_rope, block_tables, context_lens, 32, 1.0, 1, return_lse)
-            
+
             self.assertTrue(atten_out.shape == q_nope.shape)
             self.assertEqual(atten_out.dtype, q_rope.dtype)
             self.assertTrue(lse_out.shape == torch.Size([num_tokens, num_heads, 1]))

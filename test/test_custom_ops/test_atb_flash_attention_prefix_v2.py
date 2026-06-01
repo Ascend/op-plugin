@@ -59,7 +59,7 @@ class TestFlashAttentionPrefixEncoder(TestCase):
                         tor=1, bnsd=False, is_compress=False, q_seqlens=None, num_blocks=None,
                         block_size=None):
         if kv_seqLen is None:
-            kv_seqLen = [] 
+            kv_seqLen = []
         self.dynamic_batch = dynamic_batch
         self.batch_state = batch_state
         self.is_mask = is_mask
@@ -855,7 +855,7 @@ class TestFlashAttentionPrefixEncoder(TestCase):
         else:
             print("accuracy is correct in old standard: %r", (float(strict_error_count) / out_len) <= ratios[0])
 
-        calc_times = self.heads * self.max_seq + 4 
+        calc_times = self.heads * self.max_seq + 4
         if self.data_type == torch.bfloat16:
             if calc_times < 2048:
                 error = 2**(-7)

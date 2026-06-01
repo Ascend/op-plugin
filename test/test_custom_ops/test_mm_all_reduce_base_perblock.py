@@ -53,7 +53,7 @@ class TestMmAllReduceBase(TestCase):
         for i in range(world_size):
             p = ctx.Process(
                 target=f,
-                args=(i, [x1_list[i], x2_list[i], world_size, x1_scale_list[i], x2_sacle_list[i], 
+                args=(i, [x1_list[i], x2_list[i], world_size, x1_scale_list[i], x2_sacle_list[i],
                       y_dtype, x1_dtype, x2_dtype, pertoken_scale_dtype, dequant_scale_dtype, group_sizes, init_pg, c2p]))
             p.start()
             ps.append(p)
@@ -173,7 +173,7 @@ class TestMmAllReduceBase(TestCase):
             out = torch.reshape(out, [m, n])
         return out
 
-    def _construct_excepted_result(self, x1_list, x2_list, world_size, x1_scale_list, x2_scale_list, 
+    def _construct_excepted_result(self, x1_list, x2_list, world_size, x1_scale_list, x2_scale_list,
                                    y_dtype, x1_dtype, x2_dtype, pertoken_scale_dtype, dequant_scale_dtype, group_sizes):
         out = None
         out_list = []
@@ -223,12 +223,12 @@ class TestMmAllReduceBase(TestCase):
             x2_list.append(x2)
             x1_scale_list.append(x1_scale)
             x2_scale_list.append(x2_scale)
-        expt_out_list = self._construct_excepted_result(x1_list, x2_list, world_size, x1_scale_list, x2_scale_list, 
+        expt_out_list = self._construct_excepted_result(x1_list, x2_list, world_size, x1_scale_list, x2_scale_list,
                                                         y_dtype, x1_dtype, x2_dtype, pertoken_scale_dtype, dequant_scale_dtype, group_sizes)
         self._test_multiprocess(TestMmAllReduceBase._test_npu_mm_all_reduce_base_perblock,
-                                TestMmAllReduceBase._init_dist_hccl, [expt_out_list, x1_list, x2_list, world_size, x1_scale_list, x2_scale_list, 
+                                TestMmAllReduceBase._init_dist_hccl, [expt_out_list, x1_list, x2_list, world_size, x1_scale_list, x2_scale_list,
                                                                       y_dtype, x1_dtype, x2_dtype, pertoken_scale_dtype, dequant_scale_dtype, group_sizes])
-      
+
 
 if __name__ == '__main__':
     run_tests()

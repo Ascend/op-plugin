@@ -28,7 +28,7 @@ class TestRfftBackward(TestCase):
             self.fail("value error!")
 
         return True
-    
+
     def create_input_tensor(self, shape, dtype):
         return torch.rand(shape, dtype=dtype)
 

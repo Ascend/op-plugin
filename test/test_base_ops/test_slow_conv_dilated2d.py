@@ -55,7 +55,7 @@ class TestSlowConvDilated2D(TestCase):
             m1.bias.data = bias_
         m1.weight.register_hook(lambda grad: self.getWeightGrad(grad))
         return input1, m1
-    
+
     def op_exec_cpu(self, input2, weight, bias_, in_channels, out_channels,
                     kernel_size, padding=0, stride=1, dilation=2, bias=True):
         input1, m1 = self.op_exec_conv2d(input2, weight, bias_, in_channels, out_channels,

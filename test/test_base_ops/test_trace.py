@@ -10,13 +10,13 @@ class TestTrace(TestCase):
         output = torch.trace(input1)
         output = output.numpy()
         return output
-    
+
     def npu_op_exec(self, input1):
         output = torch.trace(input1)
         output = output.to('cpu')
         output = output.numpy()
         return output
-    
+
     def test_trace_float32(self):
         cpu_input = torch.rand(3, 3)
         npu_input = cpu_input.to('npu')

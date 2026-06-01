@@ -367,10 +367,10 @@ class TestNpuCompressAttentionInfer(TestCase):
 
     # pylint:disable = huawei-too-many-arguments
     def npu_op_exec(self, query, key, value, scale_value, head_num, key_value_head_num, select_block_size, select_block_count, page_block_size, compress_block_size, compress_stride, layout, block_table, atten_mask, topk_mask, actual_seq_qlen, actual_cmp_seq_kvlen, actual_sel_seq_kvlen):
-        output = torch_npu.npu_nsa_compress_attention_infer(query, key, value, scale_value, head_num, key_value_head_num, 
-                                                            select_block_size, select_block_count, page_block_size, 
-                                                            compress_block_size, compress_stride, layout=layout, block_table=block_table, 
-                                                            atten_mask=None, topk_mask=None, actual_seq_qlen=None, 
+        output = torch_npu.npu_nsa_compress_attention_infer(query, key, value, scale_value, head_num, key_value_head_num,
+                                                            select_block_size, select_block_count, page_block_size,
+                                                            compress_block_size, compress_stride, layout=layout, block_table=block_table,
+                                                            atten_mask=None, topk_mask=None, actual_seq_qlen=None,
                                                             actual_cmp_seq_kvlen=actual_cmp_seq_kvlen, actual_sel_seq_kvlen=None)
         return output
 
@@ -396,16 +396,16 @@ class TestNpuCompressAttentionInfer(TestCase):
         actual_sel_seq_kvlen = None
         layout = "TND"
 
-        npuout = self.npu_op_exec(query.npu(), key.npu(), value.npu(), scale_value, head_num, key_value_head_num, 
-                                  select_block_size, select_block_count, page_block_size, compress_block_size, 
-                                  compress_stride, layout, block_table.npu(), atten_mask, topk_mask, 
+        npuout = self.npu_op_exec(query.npu(), key.npu(), value.npu(), scale_value, head_num, key_value_head_num,
+                                  select_block_size, select_block_count, page_block_size, compress_block_size,
+                                  compress_stride, layout, block_table.npu(), atten_mask, topk_mask,
                                   actual_seq_qlen, actual_cmp_seq_kvlen, actual_sel_seq_kvlen)
 
-        golden_atten_out, _, _, _ = self.cpu_op_exec(query, key, value, 
-                                                                                                       block_table, actual_cmp_seq_kvlen, 
-                                                                                                       head_num, key_value_head_num, 
-                                                                                                       select_block_size, select_block_count, 
-                                                                                                       compress_block_size, compress_stride, 
+        golden_atten_out, _, _, _ = self.cpu_op_exec(query, key, value,
+                                                                                                       block_table, actual_cmp_seq_kvlen,
+                                                                                                       head_num, key_value_head_num,
+                                                                                                       select_block_size, select_block_count,
+                                                                                                       compress_block_size, compress_stride,
                                                                                                        scale_value, page_block_size, layout='TND')
 
         self.assertRtolEqual(golden_atten_out.numpy(), npuout[0].cpu().numpy(), 0.001, 0.001)
@@ -432,17 +432,17 @@ class TestNpuCompressAttentionInfer(TestCase):
         actual_seq_qlen = None
         actual_sel_seq_kvlen = None
 
-        npuout = self.npu_op_exec(query.npu(), key.npu(), value.npu(), scale_value, head_num, key_value_head_num, 
-                                  select_block_size, select_block_count, page_block_size, compress_block_size, 
-                                  compress_stride, layout, block_table.npu(), atten_mask, topk_mask, 
+        npuout = self.npu_op_exec(query.npu(), key.npu(), value.npu(), scale_value, head_num, key_value_head_num,
+                                  select_block_size, select_block_count, page_block_size, compress_block_size,
+                                  compress_stride, layout, block_table.npu(), atten_mask, topk_mask,
                                   actual_seq_qlen, actual_cmp_seq_kvlen, actual_sel_seq_kvlen)
 
         query = query.reshape(1, 32, 65)
-        golden_atten_out, _, _, _ = self.cpu_op_exec(query, key, value, 
-                                                    block_table, actual_cmp_seq_kvlen, 
-                                                    head_num, key_value_head_num, 
-                                                    select_block_size, select_block_count, 
-                                                    compress_block_size, compress_stride, 
+        golden_atten_out, _, _, _ = self.cpu_op_exec(query, key, value,
+                                                    block_table, actual_cmp_seq_kvlen,
+                                                    head_num, key_value_head_num,
+                                                    select_block_size, select_block_count,
+                                                    compress_block_size, compress_stride,
                                                     scale_value, page_block_size, layout=layout)
 
         self.assertRtolEqual(golden_atten_out.numpy(), npuout[0].reshape(1, 32, 18).cpu().numpy(), 0.001, 0.001)

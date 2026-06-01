@@ -80,7 +80,7 @@ class TestDropout(TestCase):
         output = dropout_layer(input_tensor)
 
         self.assertEqual(output, input_tensor)
-        
+
         dropout_layer_inplace = torch.nn.Dropout(p=0, inplace=True)
         output_inplace = dropout_layer_inplace(input_tensor)
 
@@ -93,13 +93,13 @@ class TestDropout(TestCase):
         output = dropout_layer(input_tensor)
 
         self.assertTrue(torch.all(output == 0))
-        
+
         dropout_layer_inplace = torch.nn.Dropout(p=1, inplace=True)
         output_inplace = dropout_layer_inplace(input_tensor)
 
         self.assertTrue(input_tensor is output_inplace)
         self.assertTrue(torch.all(input_tensor == 0))
 
-     
+
 if __name__ == '__main__':
     run_tests()

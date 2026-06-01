@@ -15,7 +15,7 @@ class TestForeachClampMaxScalar(TestCase):
         "int32" : torch.int32,
         "bfloat16" : torch.bfloat16
     }
-    
+
     def assert_equal(self, cpu_outs, npu_outs):
         for cpu_out, npu_out in zip(cpu_outs, npu_outs):
             if (cpu_out.shape != npu_out.shape):

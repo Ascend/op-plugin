@@ -147,7 +147,7 @@ class TestNpuFusedPermuteAndUnpermute():
         sorted_indices_ori = torch.argsort(sorted_indices_ori, stable=True).to(sorted_indices_fused.dtype)
         assert torch.equal(sorted_indices_ori, sorted_indices_fused)
 
-        # test the grad output for permute backward 
+        # test the grad output for permute backward
         grad_output = torch.ones_like(permuted_tokens_fused).to(dtype)
 
         permuted_tokens_ori.backward(grad_output)
@@ -184,13 +184,13 @@ class TestNpuFusedPermuteAndUnpermute():
             permuted_tokens_fused, sorted_indices_fused, probs=probs_fused)
 
         assert torch.allclose(unpermuted_tokens_ori, unpermuted_tokens_fused, **tols)
-       
-        # test the grad output for unpermute backward       
+
+        # test the grad output for unpermute backward
         grad_output = torch.ones_like(unpermuted_tokens_fused).to(dtype)
-        
+
         unpermuted_tokens_ori.backward(grad_output)
         unpermuted_tokens_fused.backward(grad_output)
-        
+
         assert torch.allclose(permuted_tokens_ori.grad, permuted_tokens_fused.grad, **tols), "Gradient mismatch for permuted_tokens!"
 
         if topk > 1:

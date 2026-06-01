@@ -15,7 +15,7 @@ class TestForeachLog2(TestCase):
         "float32" : torch.float32,
         "bfloat16" : torch.bfloat16,
     }
-    
+
     def assert_equal(self, cpu_outs, npu_outs):
         for cpu_out, npu_out in zip(cpu_outs, npu_outs):
             if (cpu_out.shape != npu_out.shape):
@@ -38,7 +38,7 @@ class TestForeachLog2(TestCase):
             npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
 
-    
+
     def test_foreach_log2_out_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -47,8 +47,8 @@ class TestForeachLog2(TestCase):
             npu_output = torch._foreach_log2(npu_tensors)
 
             self.assertRtolEqual(cpu_output, npu_output)
-    
-    
+
+
     def test_foreach_log2_out_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -69,7 +69,7 @@ class TestForeachLog2(TestCase):
 
             self.assert_equal(cpu_output, npu_output)
 
-    
+
     def test_foreach_log2_inplace_float32_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :
@@ -78,8 +78,8 @@ class TestForeachLog2(TestCase):
             torch._foreach_log2_(npu_tensors)
 
             self.assertRtolEqual(cpu_tensors, npu_tensors)
-    
-    
+
+
     def test_foreach_log2_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [12, 62]
         for tensor_num in tensor_num_list :

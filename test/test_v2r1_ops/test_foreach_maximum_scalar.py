@@ -15,7 +15,7 @@ class TestForeachMaximumScalar(TestCase):
         "int32" : torch.int32,
         "bfloat16" : torch.bfloat16
     }
-    
+
     def assert_equal(self, cpu_outs, npu_outs):
         for cpu_out, npu_out in zip(cpu_outs, npu_outs):
             if (cpu_out.shape != npu_out.shape):
@@ -41,7 +41,7 @@ class TestForeachMaximumScalar(TestCase):
                 cpu_tensors.append(t)
                 npu_tensors.append(t.npu())
         return tuple(cpu_tensors), tuple(npu_tensors)
-    
+
     def create_input_tensors(self, tensor_num, dtype):
         input_nums = 1
         cpu_inputs = []
@@ -107,7 +107,7 @@ class TestForeachMaximumScalar(TestCase):
             torch._foreach_maximum_(npu_tensors[0], scalar)
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
-    
+
     def test_foreach_maximum_scalar_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :

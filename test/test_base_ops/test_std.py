@@ -90,7 +90,7 @@ class TestStd(TestCase):
         shape_list = [[1024], [32, 1024], [32, 8, 1024], [128, 32, 8, 1024]]
         dim_list = [0]
         unbiased_list = [True, False]
-        keepdim_list = [True, False]  
+        keepdim_list = [True, False]
         shape_format = [
             [np.float16, i, j, k, l, m] for i in format_list for j in shape_list
             for k in dim_list for l in unbiased_list for m in keepdim_list
@@ -108,7 +108,7 @@ class TestStd(TestCase):
         shape_list = [[1024], [32, 1024], [32, 8, 1024], [128, 32, 8, 1024]]
         dim_list = [0]
         unbiased_list = [True, False]
-        keepdim_list = [True, False]      
+        keepdim_list = [True, False]
         shape_format = [
             [np.float32, i, j, k, l, m] for i in format_list for j in shape_list
             for k in dim_list for l in unbiased_list for m in keepdim_list
@@ -124,7 +124,7 @@ class TestStd(TestCase):
         shape_list = [[1024], [32, 24], [32, 8, 24], [12, 32, 8, 24]]
         dim_list = [0]
         unbiased_list = [True, False]
-        keepdim_list = [True, False]  
+        keepdim_list = [True, False]
         shape_format = [
             [np.float16, i, j, k, l, m] for i in format_list for j in shape_list
             for k in dim_list for l in unbiased_list for m in keepdim_list
@@ -211,7 +211,7 @@ class TestStd(TestCase):
         cpu_output = torch.std(cpu_input, dim=dim, out=cpu_output)
         npu_output = torch.std(npu_input, dim=dim, out=npu_output)
         self.assertRtolEqual(cpu_output.numpy(), npu_output.cpu().numpy())
-    
+
     def cpu_op_correction_exec(self, input1, correction):
         output = torch.std(input1, correction=correction)
         output = output.numpy()
@@ -222,7 +222,7 @@ class TestStd(TestCase):
         output = output.to("cpu")
         output = output.numpy()
         return output
-    
+
     def test_std_correction_fp32(self):
         shape_list = [[1024], [32, 1024], [32, 8, 1024], [128, 32, 8, 1024]]
         correction_list = [-3, 1, 2147483647, 2147483648, -2147483647, -2147483648]

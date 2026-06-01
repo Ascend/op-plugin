@@ -28,7 +28,7 @@ class TestDynamicDualLevelMxQuant(TestCase):
         value = 8.0
         input_tensor = torch.full(input, value, dtype=data_type)
         return input_tensor
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_dynamic_dual_level_mx_quant(self, device="npu"):
         input_tensor = self.generate_input(input=[1, 512], dtype="bfloat16")
@@ -43,6 +43,6 @@ class TestDynamicDualLevelMxQuant(TestCase):
         assert torch.all(y == supported_output[0].view(torch.uint8))
         assert_close(supported_output[1], level0_scale, atol=0.01, rtol=0.001)
         assert_close(supported_output[2], level1_scale, atol=0.01, rtol=0.001)
-        
+
 if __name__ == "__main__":
     run_tests()

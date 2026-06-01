@@ -25,7 +25,7 @@ class TestNpuMoeGatingTopK(TestCase):
         original_x = x
         if bias is not None:
             x = x + bias
-        
+
         if group_count > 1:
             x = x.reshape(x.shape[0], group_count, -1)
             if group_select_mode == 0:
@@ -194,7 +194,7 @@ class TestNpuMoeGatingTopK(TestCase):
 
         self.assertRtolEqual(y, y_npu.cpu())
         self.assertRtolEqual(expert_idx, expert_idx_npu.cpu().numpy())
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_moe_gating_topk_4(self):
         x = numpy.random.uniform(-2, 2, (128, 256)).astype(numpy.float32)
