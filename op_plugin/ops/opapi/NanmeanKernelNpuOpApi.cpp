@@ -39,35 +39,4 @@ at::Tensor& nanmean_out(const at::Tensor& self, at::OptionalIntArrayRef dim, boo
 
     return out;
 }
-
-at::Tensor nanmean(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
-                   c10::optional<c10::ScalarType> dtype)
-{
-    TORCH_CHECK(
-        self.is_floating_point() || self.is_complex(),
-        "nanmean(): expected input to have floating point or complex dtype but got ",
-        self.scalar_type());
-
-    // Calculate output size
-    at::IntArrayRef dimArray;
-    c10::SmallVector<int64_t, N> dimlist;
-    if (dim.has_value()) {
-        dimArray = dim.value();
-    } else {
-        dimlist = op_plugin::utils::get_dimlist_for_tensor(self);
-        dimArray = dimlist;
-    }
-
-    // Determine output dtype
-    c10::ScalarType dstType = dtype.has_value() ? dtype.value() : self.scalar_type();
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
-
-    // Create result tensor
-    at::Tensor result =
-        at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(dstType));
-
-    // Call nanmean_out to compute the result
-    op_api::nanmean_out(self, dim, keepdim, dtype, result);
-    return result;
-}
 }
