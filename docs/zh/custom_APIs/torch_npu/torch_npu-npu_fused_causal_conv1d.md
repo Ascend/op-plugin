@@ -30,19 +30,31 @@
 
     1. 缓存拼接
 
-        ![](figures/zh-cn_formulaimage_0000002567675999.png)
+    $$
+    x'[i, dim] =
+    \begin{cases}
+    conv\_states[i, dim], & 0 \leq i < K-1 \\
+    x[i - (K-1), dim], & K-1 \leq i < L + K - 1
+    \end{cases}
+    $$
 
     2. 因果1维卷积
 
-        ![](figures/zh-cn_formulaimage_0000002567676367.png)
+    $$
+    y[i, dim] = \sum_{k=0}^{K-1} w[k, dim] \cdot x'[i + k, dim]
+    $$
 
     3. 缓存更新
 
-        ![](figures/zh-cn_formulaimage_0000002536756506.png)
+    $$
+    conv\_states[i, dim] = x'[L + i, dim], \quad i = 0, 1, \dots, K-2
+    $$
 
     4. 残差连接（可选）
 
-        ![](figures/zh-cn_formulaimage_0000002536639128.png)
+    $$
+    y[i, dim] += x[i, dim]
+    $$
 
 ## 函数原型
 
