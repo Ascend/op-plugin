@@ -26,7 +26,7 @@ from torchnpugen.op_codegen_utils import concatMap, PathManager
 from torchnpugen.context import native_function_manager
 from torchnpugen.api.types import NativeSignature
 from torchnpugen.api import cpp
-from .model import StructInfo, ResInfo, filt_input_tensor
+from .model import STRUCTURED_GEN_OPAPI_ALLOWED_KEYS, StructInfo, ResInfo, filt_input_tensor
 
 
 USED_KEYS = ['official', 'custom', 'autograd']
@@ -130,7 +130,23 @@ def filt_op_branch(struct_ops: Dict) -> Dict:
             support_ops += struct_ops[key]
 
     def filt_gen_opapi(op) -> bool:
-        return 'gen_opapi' in op.keys() and is_support_version(op)
+        if 'gen_opapi' not in op.keys() or not is_support_version(op):
+            return False
+        gen_opapi_info = op.get('gen_opapi')
+        if not isinstance(gen_opapi_info, dict):
+            raise RuntimeError(f"{op.get('func')} has invalid gen_opapi configuration")
+        if op.get('structured_delegate') is not None:
+            raise RuntimeError(
+                f"{op.get('func')} specifies structured_delegate, so gen_opapi is not allowed"
+            )
+        if bool(op.get('structured', False)):
+            invalid_keys = set(gen_opapi_info.keys()) - STRUCTURED_GEN_OPAPI_ALLOWED_KEYS
+            if invalid_keys:
+                raise RuntimeError(
+                    f"{op.get('func')} is marked structured, so gen_opapi only supports "
+                    f"{sorted(STRUCTURED_GEN_OPAPI_ALLOWED_KEYS)}. Unsupported keys: {sorted(invalid_keys)}"
+                )
+        return True
 
     if 'symint' in struct_ops and struct_ops['symint']:
         for op in struct_ops['symint']:

@@ -72,6 +72,14 @@ class TestSoftmaxBackward(TestCase):
             self.npu_op_exec(npu_input1, 0)
             self.assertRtolEqual(input_grad, npu_input_grad)
 
+    def test_softmax_backward_data_half_to_float_result_dtype(self):
+        grad_output = torch.randn(2, 3, dtype=torch.float32)
+        output = torch.softmax(torch.randn(2, 3, dtype=torch.float32), dim=-1)
+        actual = torch._softmax_backward_data(grad_output.npu(), output.npu(), -1, torch.float16)
+
+        self.assertEqual(actual.dtype, torch.float16)
+        self.assertEqual(actual.shape, grad_output.shape)
+
 
 if __name__ == "__main__":
     run_tests()

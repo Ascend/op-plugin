@@ -24,6 +24,9 @@ from torchnpugen.api.types import NativeSignature
 from torchnpugen.api import cpp
 
 
+STRUCTURED_GEN_OPAPI_ALLOWED_KEYS = {'new_params', 'exec'}
+
+
 def filt_input_tensor(arguments: Sequence[Argument]) -> List[str]:
     input_tensors = []
     for arg in arguments:
@@ -131,6 +134,7 @@ class StructInfo:
     integral_identity_tensor: str = None
     cpu_scalar_h2d: List[str] = None
     cpu_scalar_op: List[CpuScalarOp] = None
+    use_structured_meta: bool = False
 
     @staticmethod
     def from_yaml(
@@ -151,6 +155,25 @@ class StructInfo:
 
         def gen_func_name(schema: str) -> str:
             return schema.split('(')[0]
+
+        def get_return_arguments(func: NativeFunction, results: List[ResInfo]) -> List[str]:
+            kind = func.func.kind()
+            if kind == SchemaKind.inplace:
+                return [func.func.arguments.self_arg.argument.name]
+            if kind == SchemaKind.out and len(results) == 0:
+                return cpp.return_names(func)
+            return [result.name for result in results]
+
+        def format_return_args(func: NativeFunction, return_argument: List[str]) -> str:
+            kind = func.func.kind()
+            if len(return_argument) == 0:
+                return ''
+            if len(return_argument) == 1:
+                return ''.join([' ', return_argument[0]])
+            if kind == SchemaKind.out:
+                return ''.join([' ', f"std::forward_as_tuple({', '.join(return_argument)})"])
+            move_args = ', '.join(f'std::move({arg})' for arg in return_argument)
+            return ''.join([' ', f'std::make_tuple({move_args})'])
 
         funcname_map: Dict[str, NativeFunction] = {}
         struct_map: Dict[str, Dict] = {}
@@ -184,6 +207,9 @@ class StructInfo:
             acl_op = 'acl_op' in schema_function.impl_ns
 
             gen_opapi_info = e.get('gen_opapi')
+            if not isinstance(gen_opapi_info, dict):
+                raise RuntimeError(f"The Aten function {schema_str} has invalid gen_opapi configuration")
+
             structured_inherit = gen_opapi_info.pop('structured_inherit', None)
 
             if structured_inherit is not None:
@@ -203,6 +229,8 @@ class StructInfo:
 
             integral_identity_tensor = gen_opapi_info.pop('integral_identity_tensor', None)
             aclnn_arguments = gen_opapi_info.pop('exec', None)
+            if aclnn_arguments is None:
+                raise RuntimeError(f"The Aten function {schema_str}'s gen_opapi has no exec configuration")
 
             aclnn_arguments_list = [argument.strip() for argument in aclnn_arguments.split(',')]
             aclnn_name = aclnn_arguments_list[0]
@@ -228,24 +256,10 @@ class StructInfo:
                     if key not in output_names:
                         raise ValueError(f"Result infomations contains invalid key: {key} in {schema_str}")
 
-            results = ResInfo.parse(gen_opapi_info, schema_function)
-
-            if func_kind == SchemaKind.inplace:
-                return_argument = [schema_function.func.arguments.self_arg.argument.name]
-            else:
-                return_argument = [result.name for result in results]
-
-            if len(return_argument) == 0:
-                return_args = ''
-            else:
-                if len(return_argument) == 1:
-                    return_args = return_argument[0]
-                elif func_kind == SchemaKind.out:
-                    return_args = f"std::forward_as_tuple({', '.join(return_argument)})"
-                else:
-                    move_args = ', '.join(f'std::move({arg})' for arg in return_argument)
-                    return_args = f'std::make_tuple({move_args})'
-                return_args = ''.join([' ', return_args])
+            use_structured_meta = bool(e.get('structured', False))
+            results = [] if use_structured_meta else ResInfo.parse(gen_opapi_info, schema_function)
+            return_argument = get_return_arguments(schema_function, results)
+            return_args = format_return_args(schema_function, return_argument)
 
             if cmd_args_expand and func_kind == SchemaKind.functional:
                 aclnn_arguments = f"{aclnn_arguments}, {', '.join(return_argument)}"
@@ -262,6 +276,7 @@ class StructInfo:
                 integral_identity_tensor=integral_identity_tensor,
                 cpu_scalar_h2d=cpu_scalar_h2d,
                 cpu_scalar_op=cpu_scalar_op,
+                use_structured_meta=use_structured_meta
             )
             struct_infos.append(struct_info)
 

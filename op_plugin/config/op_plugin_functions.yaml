@@ -625,14 +625,12 @@ official:
   - func: _linalg_svd(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None) -> (Tensor U, Tensor S, Tensor Vh)
     acl_op: [v2.1, newest]
     op_api: all_version
+    structured_delegate: _linalg_svd.U
 
   - func: _linalg_svd.U(Tensor A, bool full_matrices=False, bool compute_uv=True, *, str? driver=None, Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) Vh)
     acl_op: [v2.1, newest]
     op_api: all_version
-    gen_opapi:
-      new_params:
-        V: 'Vh.dim() <= 1 ? Vh : Vh.transpose(-1, -2)'
-      exec: aclnnSvd, A, full_matrices, compute_uv, S, U, V
+    structured: True
 
   - func: _log_softmax(Tensor self, int dim, bool half_to_float) -> Tensor
     acl_op: all_version
@@ -710,19 +708,13 @@ official:
   - func: _softmax_backward_data(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype) -> Tensor
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      grad_input:
-        size: output
-        dtype: output
-      exec: aclnnSoftmaxBackward, grad_output, output, dim, grad_input
+    structured_delegate: _softmax_backward_data.out
 
   - func: _softmax_backward_data.out(Tensor grad_output, Tensor output, int dim, ScalarType input_dtype, *, Tensor(a!) grad_input) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
+    structured: True
     gen_opapi:
-      grad_input:
-        size: grad_output
-        dtype: grad_output
       exec: aclnnSoftmaxBackward, grad_output, output, dim, grad_input
 
   - func: _prelu_kernel(Tensor self, Tensor weight) -> Tensor

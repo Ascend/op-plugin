@@ -104,6 +104,15 @@ class TestLinalgSvd(TestCase):
                             if cpu_Vh.numel() > 0:
                                 self.assertRtolEqual(cpu_Vh.numpy(), npu_Vh_cpu.numpy())
 
+    def test_linalg_svd_out(self):
+        A = torch.rand(2, 3, device='npu')
+        U = torch.rand(0, 1, device='npu')
+        S = torch.rand(1, device='npu')
+        Vh = torch.rand(3, 4, device='npu')
+        expected = torch.svd(A)
+        out = (U, S, Vh)
+        torch.svd(A, out=out)
+        self.assertEqual(expected, out)
 
 if __name__ == "__main__":
     run_tests()

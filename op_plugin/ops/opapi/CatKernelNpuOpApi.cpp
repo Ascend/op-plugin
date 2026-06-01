@@ -121,35 +121,6 @@ at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& 
     return out;
 }
 
-at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim)
-{
-    DO_COMPATIBILITY(aclnnCat, acl_op::cat(tensors, dim));
-    auto materialized = tensors.materialize();
-    cat_check_no_zero_dim(materialized);
-    c10::SmallVector<at::Tensor, op_infer::N> inputTensors = cat_dest_tensor_list_opapi(materialized);
-    at::TensorList tensor_list(inputTensors.begin(), inputTensors.end());
-    at::ScalarType high_type = at::native::result_type(materialized);
-
-    int64_t dim_post_expr = 0;
-    if (inputTensors.size() > 0) {
-        dim_post_expr = inputTensors[0].dim();
-    } else {
-        at::Tensor result = npu_preparation::apply_tensor_without_format(materialized[0]);
-        return result;
-    }
-    dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
-    // Checking names before the actual dimensions.
-    auto maybe_outnames = at::namedinference::compute_cat_outnames(materialized);
-
-    // calculate the output size
-    auto outputSize = cat_npu_output_size_opapi(inputTensors, dim);
-    at::Tensor result =
-        npu_preparation::apply_tensor_without_format(outputSize, inputTensors[0].options().dtype(high_type));
-    EXEC_NPU_CMD(aclnnCat, tensor_list, dim, result);
-    at::namedinference::propagate_names_if_nonempty(result, maybe_outnames);
-    return result;
-}
-
 at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& out)
 {
     DO_COMPATIBILITY(aclnnCat, acl_op::cat_out(tensors, dim, out));

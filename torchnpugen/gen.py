@@ -416,6 +416,10 @@ Use {deprecated_replace} instead.");'
     return ret
 
 
+def should_generate_op_interface(f: NativeFunction) -> bool:
+    return f.structured_delegate is None
+
+
 def parse_native_yaml(
     path: str,
     deprecate_path: str,
@@ -430,12 +434,15 @@ def parse_native_yaml(
     res = parse_native_yaml_struct(es)
     backend_declarations = defaultdict(list)
     for f in res:
+        if not should_generate_op_interface(f):
+            continue
         gen_function_declaration(f, backend_declarations)
     deprecated = dp["deprecated"]
     deprecated_dict = {}
     if deprecated:
         for item in deprecated:
             deprecated_dict[item.get("name")] = item.get("replace", None)
-    dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f, deprecated_dict), res)))
+    dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f, deprecated_dict),
+                                                       filter(should_generate_op_interface, res))))
 
     return backend_declarations, dispatch_registrations_body
