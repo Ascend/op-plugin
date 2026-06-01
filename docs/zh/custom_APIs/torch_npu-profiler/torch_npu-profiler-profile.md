@@ -74,13 +74,6 @@ torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, 
 
 - **experimental_config**：可选参数，扩展参数，通过扩展配置性能分析工具常用的采集项。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](./torch_npu-profiler-_ExperimentalConfig.md)。
 
-- **use_cuda** (`bool`)：可选参数，昇腾环境不支持。开启采集cuda性能数据开关。取值为：
-
-  - True：开启。
-  - False：关闭。默认值。
-
-  torch_npu.profiler._KinetoProfile不支持该参数。
-
 ## 返回值说明
 
 无
@@ -89,40 +82,35 @@ torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, 
 
 以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
 
+torch_npu.profiler.profile采集的性能数据会自动解析到torch_npu.profiler.tensorboard_trace_handler指定的目录，请参见《[MindStudio Insight系统调优](https://gitcode.com/Ascend/msinsight/blob/26.0.0/docs/zh/user_guide/system_tuning.md)》进行可视化展示与分析。
+
 ```python
 import torch
 import torch_npu
 
 ...
 
+# 添加Profiling采集扩展配置参数，详细参数介绍可参考下文的参数说明
 experimental_config = torch_npu.profiler._ExperimentalConfig(
-    export_type=[
-        torch_npu.profiler.ExportType.Text
-        ],
+    export_type=torch_npu.profiler.ExportType.Text,
     profiler_level=torch_npu.profiler.ProfilerLevel.Level0,
-    msprof_tx=False,
-    aic_metrics=torch_npu.profiler.AiCMetrics.AiCoreNone,
-    l2_cache=False,
-    op_attr=False,
-    data_simplification=False,
-    record_op_args=False,
-    gc_detect_threshold=None
+    aic_metrics=torch_npu.profiler.AiCMetrics.AiCoreNone
 )
 
+# 添加Profiling采集基础配置参数，详细参数介绍可参考下文的参数说明
 with torch_npu.profiler.profile(
     activities=[
         torch_npu.profiler.ProfilerActivity.CPU,
         torch_npu.profiler.ProfilerActivity.NPU
         ],
-    schedule=torch_npu.profiler.schedule(wait=0, warmup=0, active=1, repeat=1, skip_first=1),
+    schedule=torch_npu.profiler.schedule(wait=0, warmup=0, active=1, repeat=1, skip_first=0, skip_first_wait=0),    # 与prof.step()配套使用
     on_trace_ready=torch_npu.profiler.tensorboard_trace_handler("./result"),
-    record_shapes=False,
     profile_memory=False,
-    with_stack=False,
     with_modules=False,
-    with_flops=False,
     experimental_config=experimental_config) as prof:
-    for step in range(steps): # 训练函数
-        train_one_step() # 训练函数
-        prof.step()
+
+    # 启动性能数据采集
+    for step in range(steps):    # 训练函数
+        train_one_step()    # 训练函数
+        prof.step()    # 与schedule配套使用
 ```
