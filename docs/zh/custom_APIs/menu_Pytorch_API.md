@@ -294,14 +294,17 @@
     -   [profiler](./torch_npu-npu/profiler.md)
             -   [torch_npu.npu.mstx](./torch_npu-npu/torch_npu-npu-mstx.md)
         -   [torch_npu.npu.mstx.mark](./torch_npu-npu/torch_npu-npu-mstx-mark.md)
+            -   [torch_npu.npu.mstx.range_push](./torch_npu-npu/torch_npu-npu-mstx-range_push.md)
+            -   [torch_npu.npu.mstx.range_pop](./torch_npu-npu/torch_npu-npu-mstx-range_pop.md)
             -   [torch_npu.npu.mstx.range_start](./torch_npu-npu/torch_npu-npu-mstx-range_start.md)
             -   [torch_npu.npu.mstx.range_end](./torch_npu-npu/torch_npu-npu-mstx-range_end.md)
+            -   [torch_npu.npu.mstx.mstx.annotate](./torch_npu-npu/torch_npu-npu-mstx-annotate.md)
             -   [torch_npu.npu.mstx.mstx_range](./torch_npu-npu/torch_npu-npu-mstx-mstx_range.md)
-    
+            
         -   [torch_npu Storage](./torch_npu-npu/torch_npu-Storage.md)
-    
+        
         -   [（beta）NPU Tensor](./torch_npu-npu/（beta）NPU-Tensor.md)
-    
+        
     -   [torch_npu.npu.amp](./torch_npu-npu-amp/torch_npu-npu-amp.md)
     -   [torch_npu.optim](./torch_npu-optim/torch_npu-optim.md)
         -   [torch_npu.optim接口列表](./torch_npu-optim/torch_npu-optim_list.md)

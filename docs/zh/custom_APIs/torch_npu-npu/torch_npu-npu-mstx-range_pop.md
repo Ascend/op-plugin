@@ -1,4 +1,4 @@
-# torch_npu.npu.mstx.range_end
+# torch_npu.npu.mstx.range_pop
 
 ## 产品支持情况
 
@@ -15,29 +15,28 @@
 
 标识打点结束。
 
-与[torch_npu.npu.mstx.range_start](./torch_npu-npu-mstx-range_start.md)成对使用。
+与[torch_npu.npu.mstx.range_push](./torch_npu-npu-mstx-range_push.md)成对使用。
 
 ## 函数原型
 
 ```python
-torch_npu.npu.mstx.range_end(range_id: int, domain: str='default') -> int
+torch_npu.npu.mstx.range_pop(domain: str='default') -> int
 ```
 
 ## 参数说明
 
-- **range_id** (`int`)：必选参数，传入由torch_npu.npu.mstx.range_start接口返回的ID。
-- **domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内，标识时间段事件的结束。需要与torch_npu.npu.mstx.range_start接口的domain配置一致。
+**domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内，标识时间段事件的结束。需要与torch_npu.npu.mstx.range_push接口的domain配置一致。
 
 ## 返回值说明
 
-无
+返回线程内配对的torch_npu.npu.mstx.range_push接口记录range打点的层级；无配对的torch_npu.npu.mstx.range_push接口时，接口执行失败，返回-1。
 
 ## 调用示例
 
 以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
 
 ```python
-id = torch_npu.npu.mstx.range_start("dataloader", None)
+torch_npu.npu.mstx.range_push("dataloader")
 dataloader()
-torch_npu.npu.mstx.range_end(id)
+torch_npu.npu.mstx.range_pop()
 ```

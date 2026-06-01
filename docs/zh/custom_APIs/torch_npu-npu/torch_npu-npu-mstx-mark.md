@@ -18,18 +18,18 @@
 ## 函数原型
 
 ```python
-torch_npu.npu.mstx.mark(message: str='None', stream=None, domain: str='default') -> none:
+torch_npu.npu.mstx.mark(message: str='None', stream=None, domain: str='default') -> None
 ```
 
 ## 参数说明
 
-- **message** (`str`)：可选参数，打点携带信息字符串指针，默认为None。传入的message字符串长度要求：
-  - MSPTI场景：不能超过255字节。
-  - 非MSPTI场景：不能超过156字节。
-- **stream** (`int`)：可选参数，用于执行打点任务的stream，默认为None。
+- **message** (`str`)：可选参数，打点携带信息的字符串，默认为'None'。传入的message字符串长度要求：
+  - msPTI场景：不能超过255字节。
+  - msProf或torch_npu.profiler采集场景：不能超过156字节。
+- **stream** (`torch_npu.npu.Stream`)：可选参数，用于执行打点任务的stream，默认为None。
   - 配置为None时，只标记Host侧的瞬时事件。
   - 配置为有效的stream时，标记Host侧和对应Device侧的瞬时事件。
-- **domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内标记瞬时事件。默认为default，表示默认domain，不设置也为默认domain。
+- x import torchimport torch_npu​@torch_npu.npu.mstx.mstx_range("train_one_step")def train_one_step(step, steps, train_loader, model, optimizer, criterion):    # 函数代码    pass​experimental_config = torch_npu.profiler._ExperimentalConfig(    profiler_level=torch_npu.profiler.ProfilerLevel.Level_none,    mstx=True,    export_type=[        torch_npu.profiler.ExportType.Db        ])with torch_npu.profiler.profile(    schedule=torch_npu.profiler.schedule(wait=1, warmup=1, active=2, repeat=1, skip_first=1),    on_trace_ready=torch_npu.profiler.tensorboard_trace_handler("./result"),    experimental_config=experimental_config) as prof:           for epoch in range(epochs):        for step in range(steps):            train_one_step(step, steps, train_loader, model, optimizer, criterion)            prof.step()python
 
 ## 返回值说明
 

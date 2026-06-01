@@ -23,11 +23,11 @@ torch_npu.npu.mstx.mstx_range(msg: str='None', stream=None, domain: str='default
 
 ## 参数说明
 
-- **msg** (`str`)：可选参数，打点携带信息字符串指针，默认为None。
-- **stream** (`int`)：可选参数，用于执行打点任务的stream，默认为None。
+- **msg** (`str`)：可选参数，打点携带信息的字符串，默认为'None'。
+- **stream** (`torch_npu.npu.Stream`)：可选参数，用于执行打点任务的stream，默认为None。
   - 配置为None时，只标记Host侧的瞬时事件。
   - 配置为有效的stream时，标记Host侧和对应Device侧的瞬时事件。
-- **domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内，标识时间段事件。默认为default，表示默认domain，不设置也为默认domain。
+- **domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内，标识时间段事件。默认为'default'，表示默认domain，不设置也为默认domain。
 
 ## 返回值说明
 
@@ -61,6 +61,4 @@ with torch_npu.profiler.profile(
         for step in range(steps):
             train_one_step(step, steps, train_loader, model, optimizer, criterion)
             prof.step()
-
-
 ```

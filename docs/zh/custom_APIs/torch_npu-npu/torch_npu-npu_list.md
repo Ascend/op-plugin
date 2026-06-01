@@ -5,6 +5,7 @@
 **表1** torch_npu.npu API
 
 <a name="table0664117101518"></a>
+
 <table><thead align="left"><tr id="row466412731514"><th class="cellrowborder" valign="top" width="37.4%" id="mcps1.2.3.1.1"><p id="p11664187201510"><a name="p11664187201510"></a><a name="p11664187201510"></a>API名称</p>
 </th>
 <th class="cellrowborder" valign="top" width="62.6%" id="mcps1.2.3.1.2"><p id="p10664197111510"><a name="p10664197111510"></a><a name="p10664197111510"></a>说明</p>
@@ -458,6 +459,7 @@
 **表7** Profiler API
 
 <a name="table17382716193111"></a>
+
 <table><thead align="left"><tr id="row1238261612314"><th class="cellrowborder" valign="top" width="37.97%" id="mcps1.2.3.1.1"><p id="p18285834183113"><a name="p18285834183113"></a><a name="p18285834183113"></a>API名称</p>
 </th>
 <th class="cellrowborder" valign="top" width="62.029999999999994%" id="mcps1.2.3.1.2"><p id="p14285193423110"><a name="p14285193423110"></a><a name="p14285193423110"></a>说明</p>
@@ -474,17 +476,32 @@
 <td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001983773542_p2038911486504"><a name="zh-cn_topic_0000001983773542_p2038911486504"></a><a name="zh-cn_topic_0000001983773542_p2038911486504"></a>标记瞬时事件。</p>
 </td>
 </tr>
+<tr id="row2068217208539"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p568362035310"><a name="p568362035310"></a><a name="p568362035310"></a><a href="torch_npu-npu-mstx-range_push.md">torch_npu.npu.mstx.range_push</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>标识打点开始，线程级。</p>
+</td>
+</tr>
+<tr id="row2068217208539"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p568362035310"><a name="p568362035310"></a><a name="p568362035310"></a><a href="torch_npu-npu-mstx-range_pop.md">torch_npu.npu.mstx.range_pop</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>标识打点结束，线程级。</p>
+</td>
+</tr>
 <tr id="row2068217208539"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p568362035310"><a name="p568362035310"></a><a name="p568362035310"></a><a href="torch_npu-npu-mstx-range_start.md">torch_npu.npu.mstx.range_start</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>标识打点开始。</p>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>标识打点开始，进程级。</p>
 </td>
 </tr>
 <tr id="row1373517244535"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p673592411537"><a name="p673592411537"></a><a name="p673592411537"></a><a href="torch_npu-npu-mstx-range_end.md">torch_npu.npu.mstx.range_end</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p1995741111568"><a name="p1995741111568"></a><a name="p1995741111568"></a>标识打点结束。</p>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p1995741111568"><a name="p1995741111568"></a><a name="p1995741111568"></a>标识打点结束，进程级。</p>
 </td>
 </tr>
-<tr id="row1159973155314"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p115992314539"><a name="p115992314539"></a><a name="p115992314539"></a><a href="torch_npu-npu-mstx-mstx_range.md">torch_npu.npu.mstx.mstx_range</a></p>
+<tr id="row1159973155314"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p115992314539"><a name="p115992314539"></a><a name="p115992314539"></a><a href="torch_npu-npu-mstx-annotate.md">torch_npu.npu.mstx.annotate</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>API级的打点，可自定义选择API或函数进行耗时采集。</p>
+</td>
+</tr>
+<tr id="row1373517244535"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p673592411537"><a name="p673592411537"></a><a name="p673592411537"></a><a href="torch_npu-npu-mstx-mstx_range.md">torch_npu.npu.mstx_range</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p1059918319532"><a name="p1059918319532"></a><a name="p1059918319532"></a>range装饰器，用来采集被装饰函数的range执行耗时。</p>
 </td>
