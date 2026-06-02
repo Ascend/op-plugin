@@ -4014,7 +4014,7 @@ def npu_mm_all_reduce_base_forward(x1, x2, hcom, reduce_op='sum', bias=None, ant
                                    antiquant_offset=None, x3=None, dequant_scale=None, pertoken_scale=None,
                                    comm_quant_scale_1=None, comm_quant_scale_2=None, antiquant_group_size=0,
                                    comm_turn=0, group_sizes=None, y_dtype=None, x1_dtype=None, x2_dtype=None,
-                                   dequant_scale_dtype=None, pertoken_scale_dtype=None, comm_quant_mode=0):
+                                   dequant_scale_dtype=None, pertoken_scale_dtype=None, comm_quant_mode=0, comm_mode=None):
     dim_list = []
     for i in range(x1.dim()):
         dim_list.append(x1.size(i))

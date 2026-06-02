@@ -172,8 +172,11 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
                                   c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype,
                                   c10::optional<int64_t> dequant_scale_dtype,
                                   c10::optional<int64_t> pertoken_scale_dtype,
-                                  int64_t comm_quant_mode)
+                                  int64_t comm_quant_mode, c10::optional<c10::string_view> comm_mode)
 {
+    bool is_comm_mode = comm_mode.has_value();
+    c10::string_view comm_mode_value = comm_mode.value_or("");
+    char *comm_mode_ptr = const_cast<char *>(comm_mode_value.data());
     bool is_a8 = (x1_dtype.has_value() ?
         (x1_dtype.value() == static_cast<int>(c10_npu::DType::HIFLOAT8)) : false) ||
         (x1.scalar_type() == at::kFloat8_e4m3fn) || (x1.scalar_type() == at::kFloat8_e5m2);
@@ -216,7 +219,10 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
     char* reduce_op_ptr = const_cast<char*>(reduce_op.data());
     char* hcom_ptr = const_cast<char*>(hcom.data());
     const at::Tensor& bias_real = bias.value_or(at::Tensor());
+    const at::Tensor& antiquant_scale_real = antiquant_scale.value_or(at::Tensor());
+    const at::Tensor& antiquant_offset_real = antiquant_offset.value_or(at::Tensor());
     const at::Tensor& x3_real = x3.value_or(at::Tensor());
+    const at::Tensor& dequant_scale_real = dequant_scale.value_or(at::Tensor());
     const at::Tensor& pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
     const at::Tensor& comm_quant_scale_1_real = comm_quant_scale_1.value_or(at::Tensor());
     const at::Tensor& comm_quant_scale_2_real = comm_quant_scale_2.value_or(at::Tensor());
@@ -227,55 +233,77 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
     TensorWrapper x2_wrapper = {x2, (x2_dtype.has_value()) ?
         c10_npu::GetAclDataType(x2_dtype.value()) :
         npu_preparation::convert_to_acl_data_type(x2.scalar_type())};
+    auto pertoken_scale_tensor_dtype = pertoken_scale.has_value() ?
+        npu_preparation::convert_to_acl_data_type(pertoken_scale_real.scalar_type()) :
+        aclDataType::ACL_FLOAT;
+    TensorWrapper pertoken_scale_wrapper = {pertoken_scale_real, (pertoken_scale_dtype.has_value()) ?
+        c10_npu::GetAclDataType(pertoken_scale_dtype.value()) :
+        pertoken_scale_tensor_dtype};
+    auto dequant_scale_tensor_dtype = dequant_scale.has_value() ?
+        npu_preparation::convert_to_acl_data_type(dequant_scale_real.scalar_type()) :
+        aclDataType::ACL_FLOAT;
+    TensorWrapper dequant_scale_wrapper = {dequant_scale_real, (dequant_scale_dtype.has_value()) ?
+        c10_npu::GetAclDataType(dequant_scale_dtype.value()) :
+        dequant_scale_tensor_dtype};
+    
     // a8w8: x1/x2: fp8; a4w4 x1/x2 fp4
     if (is_a8 || is_a4) {
         TORCH_CHECK(dequant_scale.has_value(), "a8w8 or a4w4 scense should input dequant_scale",
             OPS_ERROR(ErrCode::PARAM));
-        auto pertoken_scale_tensor_dtype =
-                pertoken_scale.has_value()
-                    ? npu_preparation::convert_to_acl_data_type(pertoken_scale_real.scalar_type())
-                    : aclDataType::ACL_FLOAT;
-        TensorWrapper pertoken_scale_wrapper = {pertoken_scale_real, (pertoken_scale_dtype.has_value()) ?
-            c10_npu::GetAclDataType(pertoken_scale_dtype.value()) :
-            pertoken_scale_tensor_dtype};
-        TensorWrapper dequant_scale_wrapper = {dequant_scale.value(), (dequant_scale_dtype.has_value()) ?
-            c10_npu::GetAclDataType(dequant_scale_dtype.value()) :
-            npu_preparation::convert_to_acl_data_type(dequant_scale.value().scalar_type())};
-        EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV4, x1_wrapper, x2_wrapper, bias_real, x3_real, pertoken_scale_wrapper,
-                     dequant_scale_wrapper, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr, reduce_op_ptr,
-                     comm_turn, stream_mode, group_size, comm_quant_mode, result);
+        if (is_comm_mode) {
+            EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV5, x1_wrapper, x2_wrapper, bias_real, x3_real, pertoken_scale_wrapper,
+                         dequant_scale_wrapper, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr, reduce_op_ptr,
+                         comm_mode_ptr, comm_turn, stream_mode, group_size, comm_quant_mode, result);
+        } else {
+            EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV4, x1_wrapper, x2_wrapper, bias_real, x3_real, pertoken_scale_wrapper,
+                         dequant_scale_wrapper, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr, reduce_op_ptr,
+                         comm_turn, stream_mode, group_size, comm_quant_mode, result);
+        }
     }
 
     if (!isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type()) && !is_fp8 && !is_a4) {
-        if (x3.has_value()) {
-            EXEC_NPU_CMD(aclnnMatmulAllReduceV2, x1, x2, bias_real, x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, result);
+        if (is_comm_mode) {
+            EXEC_NPU_CMD(aclnnMatmulAllReduceV3, x1, x2, bias_real, x3_real, hcom_ptr, reduce_op_ptr,
+                        comm_mode_ptr, comm_turn, stream_mode, result);
         } else {
-            EXEC_NPU_CMD(aclnnMatmulAllReduce, x1, x2, bias_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, result);
+            if (x3.has_value()) {
+                EXEC_NPU_CMD(aclnnMatmulAllReduceV2, x1, x2, bias_real, x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, result);
+            } else {
+                EXEC_NPU_CMD(aclnnMatmulAllReduce, x1, x2, bias_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, result);
+            }
         }
     }
+
     if (isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type()) && !is_fp8 && !is_a4) {
-        const at::Tensor& dequant_scale_real = dequant_scale.value_or(at::Tensor());
-        if (comm_quant_scale_1.has_value() && comm_quant_scale_2.has_value()) {
-            const at::Tensor& pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
-            EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV3, x1, x2, bias_real, x3_real, dequant_scale_real,
-                         pertoken_scale_real, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr,
-                         reduce_op_ptr, comm_turn, stream_mode, result);
-        } else if (comm_quant_scale_1.has_value() || comm_quant_scale_2.has_value()) {
-            TORCH_CHECK(false,
-                "comm_quant_scale_1 and comm_quant_scale_2 should both be null or not null", OPS_ERROR(ErrCode::TYPE));
-        } else if (pertoken_scale.has_value()) {
-            const at::Tensor& pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
-            EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV2, x1, x2, bias_real, x3_real, dequant_scale_real, pertoken_scale_real, hcom_ptr, reduce_op_ptr,
-                         comm_turn, stream_mode, result);
+        if (is_comm_mode) {
+            EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV5, x1, x2, bias_real, x3_real, dequant_scale_real,
+                        pertoken_scale_real, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr,
+                        reduce_op_ptr, comm_mode_ptr, comm_turn, stream_mode, group_size, comm_quant_mode, result);
         } else {
-            EXEC_NPU_CMD(aclnnQuantMatmulAllReduce, x1, x2, bias_real, x3_real, dequant_scale_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, result);
+            if (comm_quant_scale_1.has_value() && comm_quant_scale_2.has_value()) {
+                EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV3, x1, x2, bias_real, x3_real, dequant_scale_real,
+                             pertoken_scale_real, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr,
+                             reduce_op_ptr, comm_turn, stream_mode, result);
+            } else if (comm_quant_scale_1.has_value() || comm_quant_scale_2.has_value()) {
+                TORCH_CHECK(false,
+                    "comm_quant_scale_1 and comm_quant_scale_2 should both be null or not null", OPS_ERROR(ErrCode::TYPE));
+            } else if (pertoken_scale.has_value()) {
+                EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV2, x1, x2, bias_real, x3_real, dequant_scale_real, pertoken_scale_real, hcom_ptr, reduce_op_ptr,
+                             comm_turn, stream_mode, result);
+            } else {
+                EXEC_NPU_CMD(aclnnQuantMatmulAllReduce, x1, x2, bias_real, x3_real, dequant_scale_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, result);
+            }
         }
     }
+
     if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type()) || (!is_a8 && is_w8)) {
-        const at::Tensor& antiquant_scale_real = antiquant_scale.value_or(at::Tensor());
-        const at::Tensor& antiquant_offset_real = antiquant_offset.value_or(at::Tensor());
-        EXEC_NPU_CMD(aclnnWeightQuantMatmulAllReduce, x1_wrapper, x2_wrapper, bias_real, antiquant_scale_real, antiquant_offset_real,
-                     x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, antiquant_group_size, result);
+        if (is_comm_mode) {
+            EXEC_NPU_CMD(aclnnWeightQuantMatmulAllReduceV2, x1_wrapper, x2_wrapper, bias_real, antiquant_scale_real, antiquant_offset_real,
+                         x3_real, hcom_ptr, reduce_op_ptr, comm_mode_ptr, comm_turn, stream_mode, antiquant_group_size, result);
+        } else {
+            EXEC_NPU_CMD(aclnnWeightQuantMatmulAllReduce, x1_wrapper, x2_wrapper, bias_real, antiquant_scale_real, antiquant_offset_real,
+                         x3_real, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, antiquant_group_size, result);
+        }
     }
 
     FLOP_COUNT(FlopCounter::mm_flop, x1, x2);
