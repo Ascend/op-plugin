@@ -1528,8 +1528,8 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
     running_mean.value().contiguous() : at::zeros({channels}, input.options().dtype(at::kFloat));
   auto running_var_tensor = running_var.has_value() ?
     running_var.value().contiguous() : at::ones({channels}, input.options().dtype(at::kFloat));
-  auto save_mean = at::empty({0}, input.options());
-  auto save_invstd = at::empty({0}, input.options());
+  auto save_mean = at::zeros({channels}, input.options().dtype(at::kFloat));
+  auto save_invstd = at::zeros({channels}, input.options().dtype(at::kFloat));
 
   // Inference BatchNorm:
   //   y = ((x - running_mean) / sqrt(running_var + eps)) * weight + bias
