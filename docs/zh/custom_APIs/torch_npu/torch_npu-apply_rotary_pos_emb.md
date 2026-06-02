@@ -47,7 +47,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
 
 ## 约束说明
 
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
+- <term>Atlas 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
   - `layout`为"BSND"，`query`、`key`、`cos`、`sin`输入shape的前2维（B、S）必须相等；`layout`为"TND"时，第1维（T）必须相等。
   - `query`、`key`输入shape的最后一维（D）必须相等，`cos`、`sin`输入shape的最后一维（D）必须相等。
   - 输入张量`query`、`key`、`cos`、`sin`的数据类型必须相同。

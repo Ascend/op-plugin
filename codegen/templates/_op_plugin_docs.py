@@ -15717,7 +15717,7 @@ query_out (Tensor): 原地更新后的query张量。
 key_out (Tensor): 原地更新后的key张量。
 
 约束说明:
-Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品:
+Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品:
 1. layout为"BSND"，query、key、cos、sin输入shape的前2维（B、S）必须相等；layout为"TND"时，第1维（T）必须相等。
 2. query、key输入shape的最后一维（D）必须相等，cos、sin输入shape的最后一维（D）必须相等。
 3. 输入张量query、key、cos、sin的数据类型必须相同。
