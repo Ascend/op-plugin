@@ -115,9 +115,10 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
                               || weight[DIM_0].dim() == DIM_5;
     auto x_size = x.sizes();
     int n = 0;
-    bool weight_trans = is_weight_nz ? is_transpose_last_two_dims(weight[DIM_0]) : false;
+    bool weight_trans = is_transpose_last_two_dims(weight[DIM_0]);
     const bool is_mx_quant = weight_scale_dtype.has_value();
-    if (is_weight_nz) {
+    const bool is_5d_nz = is_weight_nz && (weight[DIM_0].dim() == DIM_5);
+    if (is_5d_nz) {
         n = static_cast<int>(infer_nz_logical_n(weight_scale[DIM_0], weight_trans, is_mx_quant));
     } else {
         if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
@@ -135,22 +136,24 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
                                      weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
 
     if (x_dtype.has_value()) {
-        TORCH_CHECK(x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)
+        TORCH_CHECK(x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2)
+                 || x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)
                  || x_dtype.value() == static_cast<int64_t>(c10_npu::DType::HIFLOAT8),
-                    "The optional parameter x_dtype only supports torch_npu.float4_e2m1fn_x2, torch_npu.hifloat8, or None, but the actual value is ",
+                    "The optional parameter x_dtype only supports torch_npu.float4_e2m1fn_x2, torch_npu.float4_e1m2fn_x2, torch_npu.hifloat8, or None, but the actual value is ",
                     c10_npu::CustomDataTypeToString(x_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
     }
     if (weight_dtype.has_value()) {
-        TORCH_CHECK(weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)
+        TORCH_CHECK(weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2)
+                 || weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)
                  || weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::HIFLOAT8),
-                    "The optional parameter weight_dtype only supports torch_npu.float4_e2m1fn_x2, torch_npu.hifloat8, or None, but the actual value is ",
+                    "The optional parameter weight_dtype only supports torch_npu.float4_e2m1fn_x2, torch_npu.float4_e1m2fn_x2, torch_npu.hifloat8, or None, but the actual value is ",
                     c10_npu::CustomDataTypeToString(weight_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
     }
 
     if (!mxfp8w4_nz_input) {
         TORCH_CHECK(
             (x_dtype.has_value() && weight_dtype.has_value()) || (!x_dtype.has_value() && !weight_dtype.has_value()),
-            "The optional parameter x_dtype and weight_dtype should both be torch_npu.float4_e2m1fn_x2, "
+            "The optional parameter x_dtype and weight_dtype should both be torch_npu.float4_e2m1fn_x2, torch_npu.float4_e1m2fn_x2"
             "torch_npu.hifloat8, or None.",
             OPS_ERROR(ErrCode::VALUE));
     }
@@ -195,12 +198,11 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     auto smooth_scale_real = smooth_scale.value_or(at::Tensor());
 
     c10::SmallVector<int64_t, WEIGHT_MAX_DIM_NUM> weight_strides = op_infer::array_to_small_vector(weight[DIM_0].strides());
-    if (!is_weight_nz) {
-        weight_trans = (weight_strides[WEIGHT_PENULTIMATE_DIM] == NUM_ONE && weight_strides[WEIGHT_LAST_DIM] == k);
-    }
-    static const bool mxfp4_input = x_dtype.has_value() && weight_dtype.has_value() &&
-                                   x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
-                                   weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+    const bool mxfp4_input = x_dtype.has_value() && weight_dtype.has_value() &&
+                                   (x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
+                                    x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)) &&
+                                   (weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
+                                    weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
     at::Tensor output;
     at::Tensor output_scale;
     if (!weight_scale_dtype.has_value()) {
@@ -312,10 +314,13 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
             }
             c10::SmallVector<at::Tensor, 1> weight_nz_vec = {weight_for_nz};
             at::TensorList weight_nz_list(weight_nz_vec);
+            TensorListWrapper weight_nz_wrapper = {weight_nz_list,
+                weight_dtype.has_value() ? c10_npu::GetAclDataType(weight_dtype.value())
+                                 : npu_preparation::convert_to_acl_data_type(weight[0].scalar_type())};
             EXEC_NPU_CMD(
                 aclnnGroupedMatmulSwigluQuantWeightNzV2,
-                x,
-                weight_nz_list,
+                x_wrapper,
+                weight_dtype.has_value() ? weight_wrapper : weight_nz_wrapper,
                 weight_scale_wrapper,
                 weight_assist_matrix_real,
                 bias_real,
@@ -327,7 +332,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
                 quant_mode_real,
                 group_list_type_real,
                 tuning_config_real,
-                output,
+                output_wrapper,
                 output_scale_wrapper);
         }
     } else {
