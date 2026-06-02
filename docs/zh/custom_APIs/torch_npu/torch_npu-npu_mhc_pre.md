@@ -10,25 +10,22 @@
 
 - API功能：基于一系列计算得到mHC\(Manifold-Constrained Hyper-Connections\)架构中hidden层的H<sup>res</sup>和H<sup>post</sup>投影矩阵，以及Atten层或MLP层的输入矩阵h<sup>in</sup>。
 - 计算公式：
-
-    ![](figures/zh-cn_formulaimage_0000002527791040.png)
-
-    ![](figures/zh-cn_formulaimage_0000002558788951.png)
-
-    ![](figures/zh-cn_formulaimage_0000002527788950.png)
-
-    ![](figures/zh-cn_formulaimage_0000002527949226.png)
-
-    ![](figures/zh-cn_formulaimage_0000002558802589.png)
-
-    ![](figures/zh-cn_formulaimage_0000002526859836.png)
-
-    ![](figures/zh-cn_formulaimage_0000002558789155.png)
-
-    ![](figures/zh-cn_formulaimage_0000002527951050.png)
-
-    ![](figures/zh-cn_formulaimage_0000002558790965.png)
-
+$$
+\begin{aligned}
+\vec{x^{'}_{l}} &=\operatorname{RmsNorm}(\vec{x_{l}})\\
+H^{pre}_l &= \alpha^{pre}_{l} ·(\vec{x^{'}_{l}}\varphi^{pre}_{l}) + b^{pre}_{l}\\
+H^{post}_l &= \alpha^{post}_{l} ·(\vec{x^{'}_{l}}\varphi^{post}_{l}) + b^{post}_{l}\\
+H^{res}_l &= \alpha^{res}_{l} ·(\vec{x^{'}_{l}}\varphi^{res}_{l}) + b^{res}_{l}\\
+H^{pre}_l &= \sigma (H^{pre}_{l}) + hc\_eps\\
+H^{post}_l &= 2\sigma (H^{post}_{l})\\
+h_{in} &=\vec{x_{l}}H^{pre}_l
+\end{aligned}
+$$
+其中：
+$$
+\operatorname{RmsNorm}(x_i)=\frac{x_i}{\operatorname{Rms}(\mathbf{x})} g_i, \quad \text { where } \operatorname{Rms}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+norm\_eps}
+$$
+   
 ## 函数原型
 
 ```python
