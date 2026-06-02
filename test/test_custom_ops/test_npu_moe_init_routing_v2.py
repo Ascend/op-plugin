@@ -468,6 +468,108 @@ class TestNpuMoeInitRoutingV2(TestCase):
         elif quant_mode == 9:
             expanded_scale, expanded_x = simplified_mx_quantize(
                 expanded_x, mx_ele_dtype=quant_mode_dtype_str_map[quant_mode])
+        
+        elif quant_mode == 11 or quant_mode == 12:
+            quant_mode_dtype_str_map = {11: "float8_e5m2", 12: "float8_e4m3fn"}
+            from ml_dtypes import float8_e5m2, float8_e4m3fn
+
+            def block_max_with_padding(x, row_block_size, col_block_size):
+                rows, cols = x.shape
+
+                # 计算需要填充的行数和列数
+                pad_rows = (row_block_size - rows % row_block_size) % row_block_size
+                pad_cols = (col_block_size - cols % col_block_size) % col_block_size
+
+                # 对数组进行填充，填充值为 0
+                x_padded = np.pad(x, ((0, pad_rows), (0, pad_cols)),
+                                mode='constant', constant_values=0)
+                padded_rows, padded_cols = x_padded.shape
+
+                row_blocks = padded_rows // row_block_size
+                col_blocks = padded_cols // col_block_size
+
+                # 初始化结果数组
+                result = np.zeros((row_blocks, col_blocks))
+
+                # 对每个块进行取最大值操作
+                for i in range(row_blocks):
+                    for j in range(col_blocks):
+                        # 获取当前块
+                        block = x_padded[i * row_block_size:(i + 1) * row_block_size,
+                                j * col_block_size:(j + 1) * col_block_size]
+                        # 取最大值
+                        result[i, j] = np.max(block)
+
+                return result
+
+            def pad_to_even_zero(tensor, axis):
+                if tensor.shape[axis] % 2 == 0:
+                    return tensor
+                    
+                pad_width = [(0, 0)] * tensor.ndim
+                pad_width[axis] = (0, 1)
+                return np.pad(tensor, pad_width, mode='constant', constant_values=0)
+            
+            def get_dtype_range(dt):
+                if "float8_e5m2" in str(dt):
+                    return -float.fromhex("0x1.Cp15"), float.fromhex("0x1.Cp15")
+                if "float8_e4m3fn" in str(dt):
+                    return -float.fromhex("0x1.Cp8"), float.fromhex("0x1.Cp8")
+
+                numpy_dtype = np.dtype(dt)
+                if numpy_dtype.kind in "iu":
+                    numpy_info = np.iinfo(numpy_dtype)
+                else:
+                    numpy_info = np.finfo(numpy_dtype)
+                return np.min, np.max
+
+            row_block_size = 1
+            col_block_size = 128
+            dst_type_str = quant_mode_dtype_str_map[quant_mode]
+            max_value = 0
+
+            if dst_type_str == 'float8_e5m2':
+                max_value = (2 - pow(2, -2)) * pow(2, 15)
+            elif dst_type_str == 'float8_e4m3fn':
+                max_value = (2 - pow(2, -2)) * pow(2, 8)
+
+            x_abs = np.abs(expand_x)
+            # 对数组进行分块并取最大值（包含填充操作）
+            block_max = block_max_with_padding(x_abs, row_block_size, col_block_size)
+
+            block_max_f32 = block_max.astype(np.float32)
+            scale = block_max_f32 / max_value
+
+            # 处理 subnormal 值
+            min_normal_fp32 = np.finfo(np.float32).tiny
+            scale = np.where(scale < min_normal_fp32, 0, scale)
+            scale = pad_to_even_zero(scale, axis=2)
+
+            # 扩展 scale，使每个块的缩放因子应用到对应的区域
+            scale_expanded = np.zeros_like(expand_x).astype(np.float32)
+            for i in range(scale.shape[0]):
+                for j in range(scale.shape[1]):
+                    scale_expanded[i * row_block_size:(i + 1) * row_block_size,
+                    j * col_block_size:(j + 1) * col_block_size] = scale[i, j]
+
+            x_f32 = expand_x.astype(np.float32)
+            out_f32 = x_f32 / scale_expanded
+
+            max_norm = get_dtype_range(dst_type_str)[1]
+            np.clip(out_f32, a_min=-max_norm, a_max=max_norm, out=out_f32)
+
+            output_scale = scale.astype("float32")
+            round_data = np.round(out_f32, 8)
+            # NPU will cast NaN (with or without sign) to positive ZERO (sign is dropped)
+            round_data = np.nan_to_num(round_data, nan=0.0, copy=False)
+
+            if dst_type_str == 'float8_e5m2':
+                round_data = round_data.astype(float8_e5m2, copy=False)
+            elif dst_type_str == 'float8_e4m3fn':
+                round_data = round_data.astype(float8_e4m3fn, copy=False)
+
+            expand_x = round_data
+            expand_scales = output_scale
 
         if drop_pad_mode == 1:
             expanded_x = np.ma.array(
@@ -935,6 +1037,42 @@ class TestNpuMoeInitRoutingV2(TestCase):
             assert_tensors_close(numpy_to_torch(
                 expanded_scale), local_expanded_scale_npu)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_moe_init_routing_fp8_perblock_quant(self):
+        bs_list = [32]
+        h_list = [7168, 7184]
+        k_list = [8]
+        expert_range_list = [[0, 32]]
+        quant_mode_list = [11, 12]
+        drop_pad_mode_list = [0]
+        row_idx_type_list = [0, 1]
+        expert_tokens_num_type = 1
+        expert_tokens_num_flags = [True]
+        dtype_list = [torch.float16, torch.bfloat16]
+        none_scales = [True]
+        none_offsets = [True]
+        for bs, h, k, expert_range, quant_mode, row_idx_type, x_dtype, none_scale, none_offset, expert_tokens_num_flag, drop_pad_mode in itertools.product(
+                bs_list, h_list, k_list, expert_range_list, quant_mode_list, row_idx_type_list,
+                dtype_list, none_scales, none_offsets, expert_tokens_num_flags, drop_pad_mode_list):
+            # generate inputs
+            scale_shape = (bs*k, h)
+            x, expert_idx, scale, offset, x_npu, expert_idx_npu, scale_npu, offset_npu, _, _, active_num, expert_capacity = self.generate_inputs(
+                bs, h, k, x_dtype, scale_shape, none_scale, none_offset, drop_pad_mode)
+            # run npu&cpu
+            expanded_x, local_expanded_x_npu, expanded_row_idx, local_expanded_row_idx_npu, \
+                expert_tokens_count, local_expert_tokens_count_npu, expanded_scale, local_expanded_scale_npu \
+                = self.calc_npu_vs_golden(x, expert_idx, scale, offset,
+                                          x_npu, expert_idx_npu, scale_npu, offset_npu,
+                                          expert_range, quant_mode, row_idx_type, expert_tokens_num_flag, expert_tokens_num_type, drop_pad_mode, active_num, expert_capacity)
+            # compare
+            assert_tensors_close(numpy_to_torch(
+                expanded_x), local_expanded_x_npu)
+            assert_tensors_close(numpy_to_torch(
+                expanded_row_idx), local_expanded_row_idx_npu)
+            assert_tensors_close(numpy_to_torch(
+                expert_tokens_count), local_expert_tokens_count_npu)
+            assert_tensors_close(numpy_to_torch(
+                expanded_scale), local_expanded_scale_npu)
 
 
 if __name__ == "__main__":
