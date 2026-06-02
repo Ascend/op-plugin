@@ -6092,7 +6092,7 @@ custom:
 
   - func: npu_grouped_dynamic_mx_quant(Tensor x, Tensor group_index, *, str round_mode="rint", int dst_type=23, int blocksize=32, int? scale_alg=0) -> (Tensor, Tensor)
     op_api: [v2.1, newest]
-  
+
   - func: npu_anti_mx_quant(Tensor x, Tensor mxscale, *, int? axis=-1, int? dst_type=15, int? src_type=292) -> Tensor
     op_api: [v2.7, newest]
 
@@ -7016,6 +7016,9 @@ custom:
     op_api: all_version
 
   - func: npu_swiglu_mx_quant_with_dual_axis(Tensor x, *, Tensor? group_index=None, bool activate_left=True, str round_mode="rint", int scale_alg=1, int dst_type=24, float dst_type_max=0) -> (Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+
+  - func: _npu_swiglu_backward_mx_quant_with_dual_axis(Tensor x, Tensor y_grad, *, Tensor? group_index=None, bool activate_left=True, str round_mode="rint", int scale_alg=1, int dst_type=24, float dst_type_max=0) -> (Tensor, Tensor, Tensor, Tensor)
     op_api: all_version
 
   - func: npu_dequant_rope_quant_kvcache(Tensor x, Tensor cos, Tensor sin, Tensor k_cache, Tensor v_cache, Tensor indices, Tensor scale_k, Tensor scale_v, int[3] size_splits, *, Tensor? offset_k=None, Tensor? offset_v=None, Tensor? weight_scale=None, Tensor? activation_scale=None, Tensor? bias=None, int quant_mode=0, str input_layout="BSND", bool kv_output=False, str cache_mode="contiguous") -> (Tensor, Tensor, Tensor, Tensor, Tensor)

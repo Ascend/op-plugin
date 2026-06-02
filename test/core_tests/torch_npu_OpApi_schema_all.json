@@ -865,6 +865,9 @@
   "func: npu_swiglu_mx_quant_with_dual_axis(Tensor x, *, Tensor? group_index=None, bool activate_left=True, str round_mode=\"rint\", int scale_alg=1, int dst_type=24, float dst_type_max=0) -> (Tensor, Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
+  "func: _npu_swiglu_backward_mx_quant_with_dual_axis(Tensor x, Tensor y_grad, *, Tensor? group_index=None, bool activate_left=True, str round_mode=\"rint\", int scale_alg=1, int dst_type=24, float dst_type_max=0) -> (Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
   "func: adaptive_max_pool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)": {
     "version": ["all_version"]
   },
