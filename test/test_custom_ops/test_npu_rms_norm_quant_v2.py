@@ -51,10 +51,10 @@ class TestNPURmsNormQuant(TestCase):
             y_quant = y_quant.astype(self.numpy_hifloat8(), copy=False)
 
         return y_quant
-        
+
     def pack_ml_int4_to_int32(self, int4_array):
         bit8_data = np.asarray(int4_array, dtype=np.uint8)
-        
+
         reshaped = bit8_data.reshape(-1, 8).astype(np.uint32)
         packed = np.zeros(reshaped.shape[0], dtype=np.uint32)
         for i in range(8):
@@ -83,7 +83,7 @@ class TestNPURmsNormQuant(TestCase):
                     diff_rel_item = 1
                 elif a[i] != 0 and b[i].item() != 0:
                     diff_rel_item = diff_abs[i].item() / abs(a[i].item())
-                        
+
                 if abs(a[i].item()) < 1 and diff_abs[i].item() > benchmark:
                     abs_error += 1
                 elif abs(a[i].item()) >= 1 and diff_rel_item > benchmark:
@@ -97,14 +97,14 @@ class TestNPURmsNormQuant(TestCase):
 
     def npu_rms_norm_quant_v2_golden(self, x, gamma, scale,
                                     offset, beta, epsilon=1e-06, div_mode=True, dst_dtype=1):
-    
+
         x_fp32 = x.to(torch.float32)
         gamma_fp32 = gamma.to(torch.float32).reshape(-1)
         scale_fp32 = scale.to(torch.float32).expand(gamma_fp32.shape)
-        
+
         offset_fp32 = offset.to(torch.float32).expand(gamma_fp32.shape) if offset is not None else None
         beta_fp32 = beta.to(torch.float32).reshape(-1) if beta is not None else None
-    
+
         len_shape_x = len(x_fp32.shape)
         len_shape_gamma = len(gamma.shape)
         axis = len_shape_x - len_shape_gamma
@@ -114,19 +114,17 @@ class TestNPURmsNormQuant(TestCase):
         result_mid = x_fp32 * rstd
         y_array = result_mid * gamma_fp32 + beta_fp32 if beta_fp32 is not None else result_mid * gamma_fp32
         y = y_array.type(torch.float32)
-        
-        
+
         if div_mode:
             y1 = y / scale_fp32
             y1 = y1 + offset_fp32 if offset_fp32 is not None else y1
         else:
             y1 = y * scale_fp32
             y1 = y1 + offset_fp32 if offset_fp32 is not None else y1
-    
-        
+
         y1_np = y1.cpu().numpy()
         dst_type = DST_TYPE_MAP[dst_dtype]
-        
+
         y1_np = self.quant_process(y1_np, dst_type)
         if dst_type == "int4":
             packed = self.pack_ml_int4_to_int32(y1_np)
@@ -157,7 +155,7 @@ class TestNPURmsNormQuant(TestCase):
         beta_npu = beta.npu()
 
         y_ref, rstd_ref = self.npu_rms_norm_quant_v2_golden(x, gamma, scale, offset, beta, epsilon=eps, div_mode=div_mode, dst_dtype=dst_dtype)
-        
+
         y_npu, rstd_npu = torch_npu.npu_rms_norm_quant_v2(x_npu, gamma_npu, scale_npu, offset=offset_npu, beta=beta_npu,
                                                 epsilon=eps, div_mode=div_mode, dst_dtype=dst_dtype)
         if dst_dtype == 290:
@@ -165,7 +163,7 @@ class TestNPURmsNormQuant(TestCase):
         else:
             y_npu_flat = y_npu.to(torch.float32)
         benchmark_float32 = 1e-6
-        
+
         y_ref_flat = y_ref.reshape(1, y_ref.numel())[0].cpu()
         y_npu_flat = y_npu_flat.to(torch.float32).reshape(1, y_npu.numel())[0].cpu()
         rstd_ref_flat = rstd_ref.cpu()
@@ -173,7 +171,7 @@ class TestNPURmsNormQuant(TestCase):
 
         self.assertTrue(self.compare(y_ref_flat, y_npu_flat, benchmark_float32))
         self.assertTrue(self.compare(rstd_ref_flat, rstd_npu_flat, benchmark_float32))
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_rms_norm_quant_hifloat8(self):
         x_shape = [4, 32]
@@ -195,7 +193,7 @@ class TestNPURmsNormQuant(TestCase):
         beta_npu = beta.npu()
 
         y_ref, rstd_ref = self.npu_rms_norm_quant_v2_golden(x, gamma, scale, offset, beta, epsilon=eps, div_mode=div_mode, dst_dtype=dst_dtype)
-        
+
         y_npu, rstd_npu = torch_npu.npu_rms_norm_quant_v2(x_npu, gamma_npu, scale_npu, offset=offset_npu, beta=beta_npu,
                                                 epsilon=eps, div_mode=div_mode, dst_dtype=dst_dtype)
         if dst_dtype == 290:
@@ -203,7 +201,7 @@ class TestNPURmsNormQuant(TestCase):
         else:
             y_npu_flat = y_npu.to(torch.float32)
         benchmark_float32 = 1e-6
-        
+
         y_ref_flat = y_ref.reshape(1, y_ref.numel())[0].cpu()
         y_npu_flat = y_npu_flat.to(torch.float32).reshape(1, y_npu.numel())[0].cpu()
         rstd_ref_flat = rstd_ref.cpu()
@@ -234,7 +232,7 @@ class TestNPURmsNormQuant(TestCase):
         beta_npu = beta.npu()
 
         y_ref, rstd_ref = self.npu_rms_norm_quant_v2_golden(x, gamma, scale, offset, beta, epsilon=eps, div_mode=div_mode, dst_dtype=dst_dtype)
-        
+
         y_npu, rstd_npu = torch_npu.npu_rms_norm_quant_v2(x_npu, gamma_npu, scale_npu, offset=offset_npu, beta=beta_npu,
                                                 epsilon=eps, div_mode=div_mode, dst_dtype=dst_dtype)
         if dst_dtype == 290:
@@ -242,7 +240,45 @@ class TestNPURmsNormQuant(TestCase):
         else:
             y_npu_flat = y_npu.to(torch.float32)
         benchmark_float32 = 1e-6
-        
+
+        y_ref_flat = y_ref.reshape(1, y_ref.numel())[0].cpu()
+        y_npu_flat = y_npu_flat.to(torch.float32).reshape(1, y_npu.numel())[0].cpu()
+        rstd_ref_flat = rstd_ref.cpu()
+        rstd_npu_flat = rstd_npu.cpu()
+
+        self.assertTrue(self.compare(y_ref_flat, y_npu_flat, benchmark_float32))
+        self.assertTrue(self.compare(rstd_ref_flat, rstd_npu_flat, benchmark_float32))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_rms_norm_quant_gamma_multi_float8_e5m2(self):
+        x_shape = [4, 32]
+        quant_shape = [1, 32]
+        x = torch.randn(x_shape, dtype=torch.float16)
+        gamma = torch.randn(quant_shape, dtype=torch.float16)
+        scale = (torch.rand(1, dtype=torch.float16) * 0.8 + 0.2)  # [0.2, 1.0)
+        offset = torch.randint(-5, 6, (1,), dtype=torch.float16)
+        beta = torch.randn(quant_shape, dtype=torch.float16)
+        eps = 1e-6
+        div_mode = True
+        dst_dtype = 1
+        output_rstd = True
+
+        x_npu = x.npu().requires_grad_(output_rstd)
+        gamma_npu = gamma.npu()
+        scale_npu = scale.npu()
+        offset_npu = offset.npu()
+        beta_npu = beta.npu()
+
+        y_ref, rstd_ref = self.npu_rms_norm_quant_v2_golden(x, gamma, scale, offset, beta, epsilon=eps, div_mode=div_mode, dst_dtype=dst_dtype)
+
+        y_npu, rstd_npu = torch_npu.npu_rms_norm_quant_v2(x_npu, gamma_npu, scale_npu, offset=offset_npu, beta=beta_npu,
+                                                epsilon=eps, div_mode=div_mode, dst_dtype=dst_dtype)
+        if dst_dtype == 290:
+            y_npu_flat = torch_npu.npu_dtype_cast(y_npu, torch.float32, torch_npu.hifloat8)
+        else:
+            y_npu_flat = y_npu.to(torch.float32)
+        benchmark_float32 = 1e-6
+
         y_ref_flat = y_ref.reshape(1, y_ref.numel())[0].cpu()
         y_npu_flat = y_npu_flat.to(torch.float32).reshape(1, y_npu.numel())[0].cpu()
         rstd_ref_flat = rstd_ref.cpu()

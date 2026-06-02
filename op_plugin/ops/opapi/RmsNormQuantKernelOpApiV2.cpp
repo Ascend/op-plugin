@@ -20,6 +20,16 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 const int64_t INT4_IN_INT32_NUM = 8;
 
+c10::SmallVector<int64_t, SIZE> get_rstd_shape(const at::Tensor &self)
+{
+    c10::SmallVector<int64_t, SIZE> rstd_shape;
+    for (int64_t i = 0; i < self.dim() - 1; i++) {
+        rstd_shape.emplace_back(self.size(i));
+    }
+    rstd_shape.emplace_back(1);
+    return rstd_shape;
+}
+
 std::tuple<at::Tensor, at::Tensor> npu_rms_norm_quant_v2(const at::Tensor &x, const at::Tensor &gamma,
     const at::Tensor &scale, const c10::optional<at::Tensor> &offset, const c10::optional<at::Tensor> &beta,
     double epsilon, bool div_mode, c10::optional<int64_t> dst_dtype) {
@@ -32,8 +42,8 @@ std::tuple<at::Tensor, at::Tensor> npu_rms_norm_quant_v2(const at::Tensor &x, co
     if (!output_rstd) {
         rstd = npu_preparation::apply_tensor_without_format({0}, c10::dtype(at::ScalarType::Float));
     } else {
-        auto output_size = op_infer::rms_norm_npu_output_size(x, gamma);
-        rstd = npu_preparation::apply_tensor_with_format(output_size[1], x.options().dtype(at::kFloat), ACL_FORMAT_ND);
+        auto rstd_shape = get_rstd_shape(x);
+        rstd = npu_preparation::apply_tensor_with_format(rstd_shape, x.options().dtype(at::kFloat), ACL_FORMAT_ND);
     }
 
     at::ScalarType scalar_dtype = at::ScalarType::Undefined;
