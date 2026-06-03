@@ -7577,7 +7577,7 @@ custom:
     op_api: all_version
 
 
-  - func: npu_rotate_quant(Tensor x, Tensor rotation, *, float? alpha=0.0, int? dst_dtype=None) -> (Tensor, Tensor)
+  - func: npu_rotate_quant(Tensor x, Tensor rotation, *, Tensor? alpha=None, int? dst_dtype=None, int? axis=-1, str? round_mode="rint", int? scale_alg=0, float? dst_type_max=0.0, bool? transpose_y=False) -> (Tensor, Tensor)
     op_api: all_version
     exposed: all_version
     internal_format_opapi: all_version

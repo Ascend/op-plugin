@@ -6211,23 +6211,80 @@ class TestNpuFusedAttentionScoreBackward(TestCase):
             self.assertEqual(key_dw.shape, grad_output.shape)
             self.assertEqual(value_dw.shape, grad_output.shape)
 
-
 @unittest.skip("skip until CANN is updated to support aclnnRotateQuant.")
 class TestRotateQuant(TestCase):
-    def test_npu_rotate_quant(self):
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_rotate_quant_int8(self):
         with FakeTensorMode():
             M = 512
             N = 1024
             K = 1024
-            x = torch.randn(M, N, dtype=torch.bfloat16)
-            rotation = torch.randn(K, K, dtype=torch.bfloat16)
-            output0 = torch.empty([M, N], dtype=torch.int8, device=x.device)
-            output1 = torch.empty([M], dtype=torch.float32, device=x.device)
-            output0_npu, output1_npu = torch_npu.npu_rotate_quant(x.npu(), rotation.npu(), alpha=0.0, dst_dtype=2)
-            self.assertTrue(output0_npu.shape == output0.shape)
-            self.assertTrue(output0_npu.dtype == output0.dtype)
-            self.assertTrue(output1_npu.shape == output1.shape)
-            self.assertTrue(output1_npu.dtype == output1.dtype)
+            x = torch.randn(M, N, dtype=torch.bfloat16).npu()
+            rotation = torch.randn(K, K, dtype=torch.bfloat16).npu()
+            output0_npu, output1_npu = torch_npu.npu_rotate_quant(x, rotation, dst_dtype=torch.int8)
+            self.assertEqual(output0_npu.shape, torch.Size([M, N]))
+            self.assertEqual(output0_npu.dtype, torch.int8)
+            self.assertEqual(output1_npu.shape, torch.Size([M]))
+            self.assertEqual(output1_npu.dtype, torch.float32)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_rotate_quant_int4(self):
+        with FakeTensorMode():
+            M = 512
+            N = 1024
+            K = 1024
+            x = torch.randn(M, N, dtype=torch.bfloat16).npu()
+            rotation = torch.randn(K, K, dtype=torch.bfloat16).npu()
+            output0_npu, output1_npu = torch_npu.npu_rotate_quant(x, rotation, dst_dtype=torch.quint4x2)
+            self.assertEqual(output0_npu.shape, torch.Size([M, N // 8]))
+            self.assertEqual(output0_npu.dtype, torch.int32)
+            self.assertEqual(output1_npu.shape, torch.Size([M]))
+            self.assertEqual(output1_npu.dtype, torch.float32)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_rotate_quant_mxfp4(self):
+        with FakeTensorMode():
+            M = 512
+            N = 1024
+            K = 1024
+            x = torch.randn(M, N, dtype=torch.bfloat16).npu()
+            rotation = torch.randn(K, K, dtype=torch.bfloat16).npu()
+            output0_npu, output1_npu = torch_npu.npu_rotate_quant(
+                x, rotation, dst_dtype=torch_npu.float4_e2m1fn_x2, axis=-1, round_mode="rint")
+            self.assertEqual(output0_npu.shape, torch.Size([M, N // 2]))
+            self.assertEqual(output0_npu.dtype, torch.uint8)
+            self.assertEqual(output1_npu.shape, torch.Size([M, 16, 2]))
+            self.assertEqual(output1_npu.dtype, torch_npu.float8_e8m0fnu)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_rotate_quant_mxfp8_e5m2(self):
+        with FakeTensorMode():
+            M = 512
+            N = 1024
+            K = 1024
+            x = torch.randn(M, N, dtype=torch.bfloat16).npu()
+            rotation = torch.randn(K, K, dtype=torch.bfloat16).npu()
+            output0_npu, output1_npu = torch_npu.npu_rotate_quant(
+                x, rotation, dst_dtype=torch.float8_e5m2, axis=-1, round_mode="rint")
+            self.assertEqual(output0_npu.shape, torch.Size([M, N]))
+            self.assertEqual(output0_npu.dtype, torch.float8_e5m2)
+            self.assertEqual(output1_npu.shape, torch.Size([M, 16, 2]))
+            self.assertEqual(output1_npu.dtype, torch_npu.float8_e8m0fnu)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_rotate_quant_mxfp8_e4m3fn(self):
+        with FakeTensorMode():
+            M = 512
+            N = 1024
+            K = 1024
+            x = torch.randn(M, N, dtype=torch.bfloat16).npu()
+            rotation = torch.randn(K, K, dtype=torch.bfloat16).npu()
+            output0_npu, output1_npu = torch_npu.npu_rotate_quant(
+                x, rotation, dst_dtype=torch.float8_e4m3fn, axis=-1, round_mode="rint")
+            self.assertEqual(output0_npu.shape, torch.Size([M, N]))
+            self.assertEqual(output0_npu.dtype, torch.float8_e4m3fn)
+            self.assertEqual(output1_npu.shape, torch.Size([M, 16, 2]))
+            self.assertEqual(output1_npu.dtype, torch_npu.float8_e8m0fnu)
 
 
 if __name__ == "__main__":
