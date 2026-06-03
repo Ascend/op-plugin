@@ -12,25 +12,30 @@
 - 计算公式：
     1. 在第一次迭代即初始化时：
 
-        ![](figures/zh-cn_image_0000002537090628.png)
-
-        ![](figures/zh-cn_image_0000002568010367.png)
-
-        ![](figures/zh-cn_image_0000002568090357.png)
+        $$
+        \begin{aligned}
+        \operatorname{norm\_out}[0] &= \operatorname{softmax}(x, \dim=-1) + \varepsilon\\
+        \operatorname{sum\_out}[1] &= \sum_{\dim=-2,keepdim=True} \operatorname{norm\_out}[0] + \varepsilon\\
+        \operatorname{norm\_out}[1] &= \frac{\operatorname{norm\_out}[0]}{\operatorname{sum\_out}[1]}
+        \end{aligned}
+        $$
 
     2. 第i次迭代\(i=1,2,..., \(num\_iters-1\)\)：
 
-        ![](figures/zh-cn_image_0000002537250558.png)
+        $$
+        \begin{aligned}
+        \operatorname{sum\_out}[2i] &= \sum_{\dim=-1,keepdim=True} \operatorname{norm\_out}[2i-1] + \varepsilon\\
+        \operatorname{norm\_out}[2i] &= \frac{\operatorname{norm\_out}[2i-1]}{\operatorname{sum\_out}[2i]}\\
+        \operatorname{sum\_out}[2i+1] &= \sum_{\dim=-2,keepdim=True} \operatorname{norm\_out}[2i] + \varepsilon\\
+        \operatorname{norm\_out}[2i+1] &= \frac{\operatorname{norm\_out}[2i]}{\operatorname{sum\_out}[2i+1]}
+        \end{aligned}
+        $$
 
-        ![](figures/zh-cn_image_0000002537090630.png)
+    3. 最终输出:
 
-        ![](figures/zh-cn_image_0000002568010369.png)
-
-        ![](figures/zh-cn_image_0000002568090359.png)
-
-    3. 最终输出
-
-        ![](figures/zh-cn_image_0000002537250560.png)
+        $$
+        \operatorname{output} = \operatorname{norm\_out}[2 \times num\_iters - 1]
+        $$
 
 ## 函数原型
 
