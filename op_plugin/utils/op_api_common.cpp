@@ -791,11 +791,10 @@ bool check_aclnn_kernel_available(std::string aclnn_name)
     return true;
 }
 
-inline void CollectB4ShapeInfo(const at::Tensor &at_tensor,
+inline void CollectB4ShapeInfo(int64_t nDim,
                                c10::SmallVector<int64_t, MAX_DIM_NUM>& wrapperStride,
                                c10::SmallVector<int64_t, MAX_DIM_NUM>& wrapperShape)
 {
-    int64_t nDim = at_tensor.sizes().size();
     if (nDim == 1) {
         wrapperShape[0] = wrapperShape[0] * FP4_IN_INT8;
     } else if (nDim > 1) {
@@ -824,6 +823,13 @@ inline void CollectB4ShapeInfo(const at::Tensor &at_tensor,
     } else {
         TORCH_CHECK(false, "unsupported tensor size() in 4-bit dtype.", OPS_ERROR(ErrCode::VALUE));
     }
+}
+
+inline void CollectB4ShapeInfo(const at::Tensor &at_tensor,
+                               c10::SmallVector<int64_t, MAX_DIM_NUM>& wrapperStride,
+                               c10::SmallVector<int64_t, MAX_DIM_NUM>& wrapperShape)
+{
+    CollectB4ShapeInfo(static_cast<int64_t>(at_tensor.sizes().size()), wrapperStride, wrapperShape);
 }
 
 inline bool Is4BitDtype(const aclDataType acl_data_type)
@@ -1250,6 +1256,14 @@ aclTensor *ConvertTypeV2(TensorStructPtr at_tensor)
             TORCH_CHECK((*at_tensor).itemsize > 0, "the itemsize of tensor must be greater than 0.",
                         OPS_ERROR(ErrCode::VALUE));
             storageDims = (*at_tensor).storage_sizes;
+            if (Is4BitDtype(acl_data_type)) {
+                storageDims.back() *= FP4_IN_INT8;
+                CollectB4ShapeInfo(static_cast<int64_t>(dimNum), wrapperStride, wrapperShape);
+                auto realFormat = FORMAT_FAKE_TO_REAL.find(format);
+                TORCH_CHECK(realFormat != FORMAT_FAKE_TO_REAL.end(), "not support convert ", format, ".",
+                    OPS_ERROR(ErrCode::VALUE));
+                format = realFormat->second;
+            }
         }
     } else {
         switch (dimNum) {
