@@ -268,6 +268,34 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
         else:
             self.assertEqual(weight.dim(), 3)
 
+    def _assert_ascend950_mxfp4_shape(self, quant_dtype, expected_output_dtype):
+        # Ascend950 MXFP4 shape-only path: CANN sees FP4 through dtype wrappers while tensors use uint8 storage.
+        E, M, K, N = 2, 16, 136, 128
+        x = torch.empty((M, K // 2), dtype=torch.uint8).npu()
+        weight = torch.empty((E, K, N), dtype=torch.uint8).npu()
+        # The weight N axis is packed in uint8 storage, so weightScale carries the unpacked logical N.
+        weight_scale = torch.empty((E, math.ceil(K / 64), N * 2, 2), dtype=torch.uint8).npu()
+        x_scale = torch.empty((M, math.ceil(K / 64), 2), dtype=torch.uint8).npu()
+        group_list = torch.tensor([M // 2, M], dtype=torch.int64).npu()
+
+        output, output_scale = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x, [weight], [weight_scale], x_scale, group_list,
+            dequant_dtype=torch.float32, dequant_mode=2, quant_mode=2,
+            quant_dtype=quant_dtype,
+            weight_scale_dtype=torch_npu.float8_e8m0fnu,
+            x_scale_dtype=torch_npu.float8_e8m0fnu,
+            x_dtype=torch_npu.float4_e2m1fn_x2,
+            weight_dtype=torch_npu.float4_e2m1fn_x2)
+
+        if quant_dtype in [torch.float8_e4m3fn, torch.float8_e5m2]:
+            expected_output_shape = (M, N)
+        else:
+            expected_output_shape = (M, N // 2)
+        self._assert_gmm_swiglu_quant_shape(
+            output, output_scale, expected_output_shape, (M, math.ceil(N / 64), 2))
+        self.assertTrue(output.dtype == expected_output_dtype)
+        self.assertTrue(output_scale.dtype == torch.float8_e8m0fnu)
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_swiglu_quant_v2_nz_a8w4_int32_pack_shape(self, device="npu"):
         # A8W4 INT32 packed NZ: 3D packed view keeps tail N/8, so logical N must come from weightScale.
@@ -346,6 +374,25 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
             x_scale_dtype=torch_npu.float8_e8m0fnu)
         self._assert_gmm_swiglu_quant_shape(
             output, output_scale, (M, N // 2), (M, math.ceil((N // 2) / 64), 2))
+
+    @unittest.skipIf(
+        not hasattr(torch_npu, "float4_e2m1fn_x2"),
+        "torch_npu float4 dtype wrappers are required for Ascend950 MXFP4 shape cases.")
+    @SupportedDevices(['Ascend950'])
+    def test_npu_grouped_matmul_swiglu_quant_v2_mxfp4_shape_fp8_output(self, device="npu"):
+        # MXFP4 input with FP8 output: catches stale FP4-in-uint8 output shape compensation.
+        for quant_dtype in [torch.float8_e4m3fn, torch.float8_e5m2]:
+            with self.subTest(quant_dtype=quant_dtype):
+                self._assert_ascend950_mxfp4_shape(quant_dtype, quant_dtype)
+
+    @unittest.skipIf(
+        not hasattr(torch_npu, "float4_e2m1fn_x2"),
+        "torch_npu float4 dtype wrappers are required for Ascend950 MXFP4 shape cases.")
+    @SupportedDevices(['Ascend950'])
+    def test_npu_grouped_matmul_swiglu_quant_v2_mxfp4_shape_fp4_output(self, device="npu"):
+        # MXFP4 input with FP4 output: catches stale FP4-in-uint8 outputScale shape compensation.
+        expected_output_dtype = torch.float4_e2m1fn_x2 if hasattr(torch, "float4_e2m1fn_x2") else torch.uint8
+        self._assert_ascend950_mxfp4_shape(torch_npu.float4_e2m1fn_x2, expected_output_dtype)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_swiglu_quant_v2_a4w4(self, device="npu"):

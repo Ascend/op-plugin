@@ -23,9 +23,6 @@ constexpr int64_t NUM_ONE = 1LL;
 constexpr int64_t DIM_2 = 2LL;
 constexpr int64_t DIM_1 = 1LL;
 constexpr int64_t DIM_0 = 0LL;
-constexpr int64_t WEIGHT_MAX_DIM_NUM = 3LL;
-constexpr int64_t WEIGHT_PENULTIMATE_DIM = 1LL;
-constexpr int64_t WEIGHT_LAST_DIM = 2LL;
 constexpr int64_t DIM_3 = 3LL;
 constexpr int64_t DIM_4 = 4LL;
 constexpr int64_t DIM_5 = 5LL;
@@ -69,19 +66,18 @@ bool is_transpose_last_two_dims(const at::Tensor &tensor)
     return true;
 }
 
-int64_t infer_nz_logical_n(const at::Tensor &weight_scale, bool weight_trans, bool is_mx_quant)
+int64_t infer_nz_logical_n(const at::Tensor &weight_scale, bool is_mx_quant)
 {
     TORCH_CHECK(weight_scale.dim() >= DIM_2, "The dim of weight_scale[0] should be greater than or equal to 2, "
                 "but got ", weight_scale.dim(), OPS_ERROR(ErrCode::PARAM));
-    // For NZ V2, logical N follows CANN's weightScale contract. In MX mode CANN only accepts
-    // 4D weightScale: [E, ceil(K/64), N, 2] or [E, N, ceil(K/64), 2] for transposed weight.
-    // The last dim is fixed to 2, so it cannot be used as logical N.
     if (is_mx_quant) {
         TORCH_CHECK(weight_scale.dim() == DIM_4, "The dim of weight_scale[0] should be equal to 4 in MX quant mode, "
                     "but got ", weight_scale.dim(), OPS_ERROR(ErrCode::PARAM));
-        return weight_trans ? weight_scale.size(DIM_1) : weight_scale.size(DIM_2);
+        // Runtime callers normalize MX weight to the non-transposed logical layout before this op.
+        // Thus 4D MX weightScale is [E, ceil(K/64), N, 2], and logical N is dim2.
+        return weight_scale.size(DIM_2);
     }
-    return weight_scale.size(weight_scale.dim() - DIM_1);
+    return weight_scale.sizes().back();
 }
 
 std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
@@ -119,7 +115,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     const bool is_mx_quant = weight_scale_dtype.has_value();
     const bool is_5d_nz = is_weight_nz && (weight[DIM_0].dim() == DIM_5);
     if (is_5d_nz) {
-        n = static_cast<int>(infer_nz_logical_n(weight_scale[DIM_0], weight_trans, is_mx_quant));
+        n = static_cast<int>(infer_nz_logical_n(weight_scale[DIM_0], is_mx_quant));
     } else {
         if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
             n = static_cast<int>(weight[DIM_0].sizes()[DIM_2]);
@@ -197,7 +193,6 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     auto bias_real = bias.value_or(at::Tensor());
     auto smooth_scale_real = smooth_scale.value_or(at::Tensor());
 
-    c10::SmallVector<int64_t, WEIGHT_MAX_DIM_NUM> weight_strides = op_infer::array_to_small_vector(weight[DIM_0].strides());
     const bool mxfp4_input = x_dtype.has_value() && weight_dtype.has_value() &&
                                    (x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2) ||
                                     x_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)) &&
@@ -236,6 +231,8 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
         c10::TensorOptions options = x.options().dtype(npu_preparation::convert_to_scalar_type(c10_npu::GetAclDataType(weight_scale_dtype.value())));
 
         if (mxfp4_input) {
+            // In the non-NZ MXFP4 path, uint8 storage packs two FP4 values. For non-transposed weight,
+            // n is the packed physical N from weight.shape[2], while CANN validates against logical N = n * 2.
             if (!weight_trans) {
                 if (c10_npu::GetAclDataType(quant_dtype.value()) == FLOAT8_E5M2 || c10_npu::GetAclDataType(quant_dtype.value()) == FLOAT8_E4M3FN) {
                     create_new_tensor(output, m, ((n / MXFP_MULTI_BASE_SIZE) * FP4_IN_INT8), options_output);
@@ -285,7 +282,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
                     "Format of weight in npu_grouped_matmul is FRACTAL_NZ, current CANN version "
                     "do not support with this format. Please try to update the version of CANN."
                     + OPS_ERROR(ErrCode::PARAM));
-        
+
         if (mxfp8w4_nz_input) {
             EXEC_NPU_CMD(
                 aclnnGroupedMatmulSwigluQuantWeightNzV2,

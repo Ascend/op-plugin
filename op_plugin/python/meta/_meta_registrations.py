@@ -2818,7 +2818,7 @@ def npu_rms_norm_quant_v2_meta(x, gamma, scale, offset, beta, epsilon=1e-06, div
         rstd_shape.append(x.size(dim))
     rstd_shape.append(1)
     rstd = torch.empty(rstd_shape, dtype=torch.float32, device=x.device)
-    
+
     dst_dtype = dst_dtype if dst_dtype is not None else 1
     dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_dtype, torch.int8)
     if dst_torch_dtype == torch.quint4x2:
@@ -6359,9 +6359,8 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
         )
     batch_size = x.size(0)
     # Meta follows CANN graph infer shape: logical N comes from weightScale, not packed/NZ weight storage.
-    # In MX mode CANN accepts 4D weightScale only:
-    # [E, ceil(K/64), N, 2] or [E, N, ceil(K/64), 2] for transposed weight.
-    # The tail axis is fixed to 2, so N must be selected by the weight transpose state.
+    # In MX mode op-plugin normalizes weight to non-transposed layout, so 4D weightScale is
+    # [E, ceil(K/64), N, 2]. The tail axis is fixed to 2 and cannot be used as logical N.
     if weight_scale_dtype is not None:
         torch._check(
             weight_scale[0].dim() == 4,
